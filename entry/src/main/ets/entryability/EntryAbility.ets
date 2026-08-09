@@ -19,6 +19,7 @@ import {
   NhClipboardLinkService,
   NhClipboardLinkSettings,
   ReadButtonStyleSettings,
+  requestGalleryDirectLaunch,
   requestLoginRecoveryLaunch,
   publishNhClipboardGalleryCandidate,
   TabletLayoutSettings,
@@ -40,11 +41,14 @@ export default class EntryAbility extends UIAbility {
   private abilityForeground: boolean = true
   private clipboardProbeInFlight: boolean = false
   private loginRecoveryRequestedAtLaunch: boolean = false
+  private galleryDirectLaunchIdAtLaunch: number = 0
   private accountRestoredAtBootstrap: boolean = false
 
   onCreate(want: Want, _launchParam: AbilityConstant.LaunchParam): void {
+    this.galleryDirectLaunchIdAtLaunch = this.galleryDirectLaunchId(want)
     const recoveryValue: Object | undefined = want.parameters?.['nextn_login_recovery']
-    this.loginRecoveryRequestedAtLaunch = typeof recoveryValue === 'string' && recoveryValue === '1'
+    this.loginRecoveryRequestedAtLaunch = this.galleryDirectLaunchIdAtLaunch === 0 &&
+      typeof recoveryValue === 'string' && recoveryValue === '1'
     AppStrings.init(this.context)
     // Follow NextE's application-level ArkWeb boot order. Cookie access is
     // queried by the Account route before its visible Web component attaches,
@@ -125,6 +129,10 @@ export default class EntryAbility extends UIAbility {
       if (this.loginRecoveryRequestedAtLaunch && !this.accountRestoredAtBootstrap) {
         requestLoginRecoveryLaunch()
       }
+      if (this.galleryDirectLaunchIdAtLaunch > 0) {
+        requestGalleryDirectLaunch(this.galleryDirectLaunchIdAtLaunch)
+        this.galleryDirectLaunchIdAtLaunch = 0
+      }
       windowStage.loadContent(ENTRY_PAGE, (error): void => {
         if (error.code) {
           console.error(`NextN failed to load ${ENTRY_PAGE}: ${JSON.stringify(error)}`)
@@ -196,8 +204,25 @@ export default class EntryAbility extends UIAbility {
     this.probeClipboardLinkIfReady()
   }
 
+  onNewWant(want: Want, _launchParam: AbilityConstant.LaunchParam): void {
+    const galleryId: number = this.galleryDirectLaunchId(want)
+    if (galleryId <= 0) {
+      return
+    }
+    if (this.mainContentReady) {
+      requestGalleryDirectLaunch(galleryId)
+      return
+    }
+    this.galleryDirectLaunchIdAtLaunch = galleryId
+  }
+
   onBackground(): void {
     this.abilityForeground = false
+  }
+
+  private galleryDirectLaunchId(want: Want): number {
+    const value: Object | undefined = want.parameters?.['nextn_gallery_id']
+    return typeof value === 'number' && Number.isSafeInteger(value) && value > 0 ? value : 0
   }
 
   private probeClipboardLinkIfReady(): void {

@@ -87,6 +87,11 @@ export {
   connectLoginRecoveryLaunch,
   requestLoginRecoveryLaunch,
 } from './state/LoginRecoveryLaunchState'
+export {
+  GalleryDirectLaunchState,
+  connectGalleryDirectLaunch,
+  requestGalleryDirectLaunch,
+} from './state/GalleryDirectLaunchState'
 export { AccountProfileState, connectAccountProfile } from './state/AccountProfileState'
 export { FavoriteMutationState, connectFavoriteMutations } from './state/FavoriteMutationState'
 export {

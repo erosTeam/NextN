@@ -50,6 +50,7 @@ import {
   nextNHdsTitle,
   nextNHdsTitleBar,
   AppStrings,
+  GalleryDirectLaunchState,
   LayoutSafeAreaBridge,
   LayoutSafeAreaState,
   LoginRecoveryLaunchState,
@@ -68,6 +69,7 @@ import {
   TabletLayoutSettings,
   TabletLayoutState,
   ThemeDisplayState,
+  connectGalleryDirectLaunch,
   connectLayoutSafeArea,
   connectLoginRecoveryLaunch,
   connectDownloadQueueActions,
@@ -257,6 +259,7 @@ struct Index {
   @Local private readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
   @Local private settingsNavigation: SettingsNavigationState = connectSettingsNavigation()
   @Local private clipboardLink: NhClipboardLinkState = connectNhClipboardLink()
+  @Local private galleryDirectLaunch: GalleryDirectLaunchState = connectGalleryDirectLaunch()
   @Local private loginRecoveryLaunch: LoginRecoveryLaunchState = connectLoginRecoveryLaunch()
   // HDS keeps the scrollable reference it is bound to.  Rebind it explicitly
   // on every root-tab switch, as NextE does, rather than deriving a temporary
@@ -282,6 +285,7 @@ struct Index {
   aboutToAppear(): void {
     this.installRootNavigationStateTracking()
     this.readerOverlay.reset()
+    this.handleGalleryDirectLaunch()
     this.handleClipboardGalleryCandidate()
     this.handleLoginRecoveryLaunch()
   }
@@ -325,6 +329,26 @@ struct Index {
   @Monitor('loginRecoveryLaunch.requestVersion')
   onLoginRecoveryLaunchRequested(): void {
     this.handleLoginRecoveryLaunch()
+  }
+
+  @Monitor('galleryDirectLaunch.requestVersion')
+  onGalleryDirectLaunchRequested(): void {
+    this.handleGalleryDirectLaunch()
+  }
+
+  /** Opens one explicit numeric Gallery route without a Browse-card detour. */
+  private handleGalleryDirectLaunch(): void {
+    const galleryId: number = this.galleryDirectLaunch.consume()
+    if (!Number.isSafeInteger(galleryId) || galleryId <= 0) {
+      return
+    }
+    this.readerOverlay.reset()
+    if (this.stack.getAllPathName().length > 0) {
+      this.stack.clear(false)
+    }
+    this.settingsNavigation.clearRootLocation()
+    this.clearHomeGallerySelection()
+    this.pushGallery(galleryId)
   }
 
   /** Consumes the one-shot cold-start recovery Want without opening Settings. */
