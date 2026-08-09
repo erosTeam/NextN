@@ -1,0 +1,14 @@
+{
+  "device": "192.168.50.237:12345",
+  "feature": "ErosN/NextE-derived Reader auto advance",
+  "package": "debug signed NextN HAP",
+  "precondition": "An existing complete app-private download was retained. The run records no account state, gallery text, page URL, image content, screenshot, or local file path.",
+  "steps": [
+    "In the native HDS Reader settings, select the bounded 2-second interval from the same 2/3/5/8/10-second range as NextE; reopen the native Reader and reveal its overlay chrome.",
+    "Record only the safe page counter, activate the clock action, then record the counter after two completed intervals: 1 / 55 became 3 / 55.",
+    "Activate the same clock action to stop. Record the counter immediately and after a three-second wait: 11 / 55 remained 11 / 55.",
+    "Return to HDS Settings and restore the durable default interval to 3 seconds."
+  ],
+  "result": "Passed: auto advance is an explicit Reader-chrome action, waits for a decoded page before starting that page's interval, uses the persisted interval, advances the native Reader, and stops cleanly when toggled off.",
+  "cleanup": "All temporary device and host accessibility-layout files were removed; the app was returned to its root route and the normal 10000 ms screen-off timeout was restored."
+}

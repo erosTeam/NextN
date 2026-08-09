@@ -1,0 +1,197 @@
+import { NhGallerySummary } from '../model/NhGallery'
+import { ThemeTokens } from '../theme/ThemeTokens'
+import { AppStrings } from '../i18n/AppStrings'
+import { CoverBackgroundState, connectCoverBackground } from '../state/CoverBackgroundState'
+import {
+  GalleryLanguageCornerBadge,
+  LANGUAGE_BADGE_COMPACT_TEXT_CENTER_X_RATIO,
+  LANGUAGE_BADGE_COMPACT_TEXT_CENTER_Y_RATIO,
+} from './GalleryLanguageCornerBadge'
+
+const COVER_META_PAD_X: number = 7
+const COVER_META_PAD_Y: number = 3
+// Keep this classification aligned with NextE's `EhThumbnail.coverObjectFit()`.
+// It measures h / w because the fixed grid slot is expressed as width / height.
+const GRID_MIN_CONTAIN_SOURCE_RATIO: number = 0.8
+const GRID_MAX_CONTAIN_SOURCE_RATIO: number = 2.2
+
+/**
+ * The default NextE browse card, adapted only at the data boundary for the
+ * read-only NextN gallery DTO. It deliberately keeps a compact, cover-first
+ * rhythm: metadata overlays the cover, while title and page count remain in a
+ * fixed information block below it.
+ */
+@ComponentV2
+export struct GalleryGridCard {
+  @Require @Param gallery: NhGallerySummary
+  @Param selected: boolean = false
+  @Local isThumbnailLoading: boolean = true
+  @Local hasThumbnailError: boolean = false
+  @Local coverBackground: CoverBackgroundState = connectCoverBackground()
+  @Event onOpen?: (galleryId: number) => void
+
+  @Monitor('gallery')
+  onGalleryChanged(): void {
+    this.isThumbnailLoading = this.gallery.thumbnailUrl.length > 0
+    this.hasThumbnailError = false
+  }
+
+  /**
+   * NextE keeps the fixed cover-grid frame, but only center-crops source
+   * ratios inside its normal h/w band. Extremely wide or tall covers retain
+   * their full content in the same frame instead of becoming a crop strip.
+   */
+  private useContainFit(): boolean {
+    if (this.gallery.thumbnailWidth <= 0 || this.gallery.thumbnailHeight <= 0) {
+      return false
+    }
+    const sourceRatio: number = this.gallery.thumbnailHeight / this.gallery.thumbnailWidth
+    return sourceRatio <= GRID_MIN_CONTAIN_SOURCE_RATIO ||
+      sourceRatio >= GRID_MAX_CONTAIN_SOURCE_RATIO
+  }
+
+  private shouldBlurLetterboxBackground(): boolean {
+    return this.coverBackground.blurLetterboxBackground &&
+      this.gallery.thumbnailUrl.length > 0 &&
+      !this.hasThumbnailError &&
+      this.useContainFit()
+  }
+
+  private accessibilityLabel(): string {
+    return AppStrings.format('gallery_card_a11y', [
+      this.gallery.displayTitle(),
+      AppStrings.format('gallery_meta_pages', [this.gallery.pageCount.toString()]),
+    ])
+  }
+
+  @Builder
+  private ThumbnailState() {
+    if (this.isThumbnailLoading || this.hasThumbnailError || this.gallery.thumbnailUrl.length === 0) {
+      Column({ space: ThemeTokens.SPACE_XS }) {
+        if (this.hasThumbnailError || this.gallery.thumbnailUrl.length === 0) {
+          SymbolGlyph($r('sys.symbol.picture'))
+            .fontSize(24)
+            .fontColor([ThemeTokens.TEXT_TERTIARY])
+        } else {
+          LoadingProgress()
+            .width(22)
+            .height(22)
+            .color(ThemeTokens.TEXT_TERTIARY)
+        }
+      }
+      .width('100%')
+      .height('100%')
+      .justifyContent(FlexAlign.Center)
+      .alignItems(HorizontalAlign.Center)
+    }
+  }
+
+  @Builder
+  private CoverMeta() {
+    Text(`${this.gallery.pageCount}P`)
+      .fontSize(ThemeTokens.FONT_SIZE_TINY)
+      .fontWeight(FontWeight.Medium)
+      .fontColor(ThemeTokens.TEXT_ON_BRAND)
+      .backgroundColor('rgba(0, 0, 0, 0.48)')
+      .borderRadius(ThemeTokens.RADIUS_MD)
+      .padding({
+        left: COVER_META_PAD_X,
+        right: COVER_META_PAD_X,
+        top: COVER_META_PAD_Y,
+        bottom: COVER_META_PAD_Y,
+      })
+      .position({ right: ThemeTokens.SPACE_XS, bottom: ThemeTokens.SPACE_XS })
+  }
+
+  @Builder
+  private Cover() {
+    Stack({ alignContent: Alignment.TopEnd }) {
+      Stack({ alignContent: Alignment.Center }) {
+        // Match the existing NextN contain-cover path: when enabled, the
+        // blurred same-image backing fills the letterbox without changing the
+        // source image's fit or the card's fixed grid geometry.
+        if (this.shouldBlurLetterboxBackground()) {
+          Image(this.gallery.thumbnailUrl)
+            .width('100%')
+            .height('100%')
+            .objectFit(ImageFit.Cover)
+            .scale({ x: 1.08, y: 1.08 })
+            .blur(20)
+            .opacity(0.72)
+            .renderGroup(true)
+        }
+        if (this.gallery.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
+          Image(this.gallery.thumbnailUrl)
+            .width('100%')
+            .height('100%')
+            .objectFit(this.useContainFit() ? ImageFit.Contain : ImageFit.Cover)
+            .borderRadius(ThemeTokens.THUMB_RADIUS)
+            .onComplete((): void => {
+              this.isThumbnailLoading = false
+              this.hasThumbnailError = false
+            })
+            .onError((): void => {
+              this.isThumbnailLoading = false
+              this.hasThumbnailError = true
+            })
+        }
+        this.ThumbnailState()
+      }
+      .width('100%')
+      .height('100%')
+      GalleryLanguageCornerBadge({
+        languageCode: this.gallery.languageCode(),
+        textCenterXRatio: LANGUAGE_BADGE_COMPACT_TEXT_CENTER_X_RATIO,
+        textCenterYRatio: LANGUAGE_BADGE_COMPACT_TEXT_CENTER_Y_RATIO,
+      })
+      this.CoverMeta()
+    }
+    .width('100%')
+    .aspectRatio(ThemeTokens.GALLERY_GRID_COVER_RATIO)
+    .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
+    .borderRadius(ThemeTokens.THUMB_RADIUS)
+    .clip(true)
+  }
+
+  @Builder
+  private Info() {
+    Column({ space: ThemeTokens.SPACE_XS }) {
+      Text(this.gallery.displayTitle())
+        .fontSize(ThemeTokens.FONT_SIZE_BODY)
+        .fontColor(ThemeTokens.TEXT_PRIMARY)
+        .maxLines(2)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .height(ThemeTokens.GALLERY_GRID_TITLE_HEIGHT)
+        .width('100%')
+      Text(`#${this.gallery.id}`)
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontColor(ThemeTokens.TEXT_SECONDARY)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .height(ThemeTokens.GALLERY_GRID_META_HEIGHT)
+        .width('100%')
+    }
+    .width('100%')
+    .height(ThemeTokens.GALLERY_GRID_INFO_HEIGHT)
+    .justifyContent(FlexAlign.Start)
+    .padding({ left: ThemeTokens.SPACE_XS, right: ThemeTokens.SPACE_XS })
+  }
+
+  build() {
+    Column({ space: ThemeTokens.SPACE_XS }) {
+      this.Cover()
+      this.Info()
+    }
+    .width('100%')
+    .alignItems(HorizontalAlign.Start)
+    .borderRadius(ThemeTokens.GALLERY_GRID_CARD_RADIUS)
+    .backgroundColor(this.selected ? $r('app.color.navigation_item_selected') : ThemeTokens.CARD_BACKGROUND)
+    .clip(true)
+    .accessibilityText(this.accessibilityLabel())
+    .onClick((): void => {
+      if (this.onOpen) {
+        this.onOpen(this.gallery.id)
+      }
+    })
+  }
+}

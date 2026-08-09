@@ -1,0 +1,15 @@
+{
+  "device": "192.168.50.237:12345",
+  "feature": "NextE-derived Reader immersive chrome and status-bar lifecycle",
+  "package": "debug signed NextN HAP",
+  "precondition": "An existing complete app-private download was retained. The run records no account state, gallery text, page URL, image content, screenshot, or local file path.",
+  "steps": [
+    "Install the debug-signed HAP with replace semantics, open Downloads, and open the complete task's native Reader.",
+    "With the persisted Full screen Reader preference enabled, inspect only safe accessibility indicators: no page counter, no Reader action button, and no status-bar marker.",
+    "Tap the canvas once and inspect only safe indicators: page counter 1 / 55, status-bar marker present, and the native back button bounds are [24,135][156,267].",
+    "Tap the canvas again and confirm those Reader chrome/status-bar indicators are absent.",
+    "Reveal the chrome once more, activate its top back control, and confirm the local Downloads route and its Read control return with the status bar restored."
+  ],
+  "result": "Passed: the Reader uses an overlay chrome that does not reserve canvas height, synchronizes status-bar visibility with the chrome, and restores the prior route before the status bar is returned to the app shell.",
+  "cleanup": "All temporary device and host accessibility-layout files were removed; the device screen-off timeout was restored to 10000 ms."
+}

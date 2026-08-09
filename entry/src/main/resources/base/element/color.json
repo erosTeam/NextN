@@ -1,0 +1,14 @@
+{
+  "color": [
+    { "name": "start_window_background", "value": "#303A44" },
+    { "name": "surface", "value": "#F5F5F5" },
+    { "name": "surface_container", "value": "#FFFFFF" },
+    { "name": "navigation_item_selected", "value": "#E6E8EB" },
+    { "name": "reader_background", "value": "#101114" },
+    { "name": "tagns_artist", "value": "#E6D6D0" },
+    { "name": "tagns_parody", "value": "#D8E6E2" },
+    { "name": "tagns_character", "value": "#D5E4F7" },
+    { "name": "tagns_group", "value": "#DFD6F7" },
+    { "name": "tagns_language", "value": "#F5D5E5" }
+  ]
+}

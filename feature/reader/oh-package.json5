@@ -1,0 +1,9 @@
+{
+  "name": "reader",
+  "version": "1.0.0",
+  "description": "NextN native reader feature",
+  "main": "src/main/ets/Index.ets",
+  "dependencies": {
+    "shared": "file:../../shared"
+  }
+}

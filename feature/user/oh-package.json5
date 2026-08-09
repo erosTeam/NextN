@@ -1,0 +1,9 @@
+{
+  "name": "user",
+  "version": "1.0.0",
+  "description": "NextN user-local history feature",
+  "main": "src/main/ets/Index.ets",
+  "dependencies": {
+    "shared": "file:../../shared"
+  }
+}

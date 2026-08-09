@@ -1,0 +1,9 @@
+{
+  "name": "gallery",
+  "version": "1.0.0",
+  "description": "NextN gallery detail feature",
+  "main": "src/main/ets/Index.ets",
+  "dependencies": {
+    "shared": "file:../../shared"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "device": "192.168.50.237:12345",
+  "feature": "NextE compact simple Browse list",
+  "package": "debug signed NextN HAP",
+  "precondition": "The native Browse root is opened. The run records no gallery title, image, URL, account state, screenshot, or raw accessibility layout.",
+  "steps": [
+    "Install the debug-signed HAP, cold-start NextN at Browse, and dump the accessibility tree.",
+    "Read only generic component types and bounds: one List, seven ListItem nodes, and ten Image nodes were present.",
+    "Verify the first four cover bounds were [72,309][288,615], [72,664][288,970], [72,1019][288,1325], and [72,1374][288,1680]."
+  ],
+  "result": "Passed: at the device's 3x density each compact cover is 216x306 px, matching the shared 72x102vp NextE simple-row component. Its 72px horizontal start is the NextE 12vp list inset plus 12vp simple-row inset. The Browse root is List-backed rather than a large-card Grid.",
+  "cleanup": "All temporary device and host accessibility-layout files were removed; NextN remained at its normal root route."
+}

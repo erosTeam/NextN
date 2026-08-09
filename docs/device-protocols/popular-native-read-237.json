@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-popular-native-read-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-popular-native-read-protocol-20260807",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "debug-signed-20260807",
+    "page": "popular-native-read",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "The app is foregrounded at the Browse root. The second HDS title action opens Popular and performs only an anonymous native GET. Inspect postflight locally for the Popular title, list-backed content, and absence of loading/error/empty text; do not retain gallery titles, account state, or screenshots."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "browse-anchor",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-popular-anchor.json"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-popular",
+        "uiInput": ["click", "1068", "201"],
+        "pauseAfterMs": 1200,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "popular-post-state",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-popular-post.json"]
+    }
+  ]
+}

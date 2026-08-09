@@ -1,0 +1,1917 @@
+import { common } from '@kit.AbilityKit'
+import { HdsTabsController } from '@kit.UIDesignKit'
+import {
+  ContentFilterService,
+  ContentFilterState,
+  GalleryTitleState,
+  DownloadQueueService,
+  DownloadQueueState,
+  FavoriteMutationState,
+  HistoryRepository,
+  InlineRetryNotice,
+  LayoutSafeAreaBridge,
+  LayoutSafeAreaState,
+  NhApiClient,
+  AccountSessionState,
+  AppStrings,
+  NhComment,
+  NhGalleryDetail,
+  NhGalleryFavoriteStatus,
+  NhGalleryExternalOpenService,
+  NhGalleryPage,
+  NhGalleryShareService,
+  NhGallerySummary,
+  NhDownloadTask,
+  NhDownloadTaskStatus,
+  NhTag,
+  NhTagQuery,
+  NhTorrentFileExportService,
+  NextNHdsCapsuleBarButton,
+  NextNPullRefreshController,
+  nextNHdsCapsuleActivityHeight,
+  NextNGroupedListSection,
+  NextNModalScaffold,
+  PullRefreshListScaffold,
+  TagTranslationRepository,
+  PageErrorState,
+  PageLoadingState,
+  ReadButtonStyleSettings,
+  ReadButtonStyleState,
+  ThemeTokens,
+  connectAccountSession,
+  connectContentFilters,
+  connectDownloadQueue,
+  connectFavoriteMutations,
+  connectGalleryTitle,
+  connectLayoutSafeArea,
+  connectReaderOverlayNavigation,
+  connectReadButtonStyle,
+  ReaderOverlayNavigationState,
+} from 'shared'
+import { GalleryChromeState } from '../state/GalleryChromeState'
+import { GalleryThumbnailsChromeState } from '../state/GalleryThumbnailsChromeState'
+import { GalleryThumbnailGridContent } from '../components/GalleryThumbnailGridContent'
+import { GalleryCompactPreviewTile } from '../components/GalleryCompactPreviewTile'
+import {
+  GalleryCommentPreviewCarousel,
+  GalleryRelatedCarousel,
+} from '../components/GalleryDetailContentSections'
+
+const DETAIL_TITLE_REVEAL_OFFSET: number = 160
+// The cached destination width is an ArkUI layout measurement in vp.  A
+// detail pane only becomes a workspace after HDS has actually resolved the
+// root to Split and the real secondary pane can comfortably hold both halves.
+const GALLERY_DETAIL_WIDE_WORKSPACE_MIN_WIDTH: number = 720
+// Compact detail intentionally mounts only a bounded, non-scrollable preview
+// peek inside its metadata List. The full virtualised page browser remains a
+// separate destination, while a page tile still carries its real Reader index.
+const GALLERY_COMPACT_PREVIEW_LIMIT: number = 6
+/**
+ * A retained Gallery destination has three materially different request
+ * starts. Only a validated refresh for the same route may keep its current
+ * snapshot interactive while the replacement response is pending.
+ */
+enum GalleryDetailLoadKind {
+  INITIAL,
+  SAME_GALLERY_REFRESH,
+  ROUTE_CHANGE,
+}
+
+/**
+ * Presentation-only tag grouping. The source API remains a flat array, so the
+ * original index stays with every item and keeps local translation lookup
+ * aligned with the raw tag that is used for search.
+ */
+class GalleryTagVisualItem {
+  tag: NhTag
+  originalIndex: number
+  translatedName: string
+
+  constructor(tag: NhTag, originalIndex: number, translatedName: string) {
+    this.tag = tag
+    this.originalIndex = originalIndex
+    this.translatedName = translatedName
+  }
+}
+
+class GalleryTagVisualGroup {
+  namespace: string
+  items: GalleryTagVisualItem[] = []
+
+  constructor(namespace: string) {
+    this.namespace = namespace
+  }
+}
+
+/** Local presentation for stable NH namespaces; members retain raw tag data. */
+class GalleryTagNamespacePresentation {
+  label: string
+  foreground: ResourceColor
+  background: ResourceColor
+
+  constructor(label: string, foreground: ResourceColor, background: ResourceColor) {
+    this.label = label
+    this.foreground = foreground
+    this.background = background
+  }
+}
+
+@ComponentV2
+export struct GalleryDetailPage {
+  @Require @Param galleryId: number
+  @Local detail: NhGalleryDetail = new NhGalleryDetail()
+  @Local isLoading: boolean = true
+  @Local errorMessage: string = ''
+  @Local isDetailReadyForCurrentGallery: boolean = false
+  /** Distinct from index zero: only Reader persistence may set this true. */
+  @Local hasReadProgress: boolean = false
+  /**
+   * The locally persisted zero-based Reader position. It is meaningful only
+   * while `hasReadProgress` is true, because page zero is a real resume page.
+   */
+  @Local resumePageIndex: number = 0
+  /**
+   * The full-title sheet is strictly presentational. It is two-way bound to
+   * the native sheet so drag/back dismissal cannot leave stale local state.
+   */
+  @Local fullTitleSheetShown: boolean = false
+  @Local coverFailedUrl: string = ''
+  @Local tagTranslationLabels: string[] = []
+  @Local relatedGalleries: NhGallerySummary[] = []
+  /** Related rows use the same local title-rule view as every other gallery list. */
+  @Local rawRelatedGalleries: NhGallerySummary[] = []
+  /** The public discussion cache is filtered locally before the compact peek renders. */
+  @Local commentPeek: NhComment[] = []
+  @Local rawCommentPeek: NhComment[] = []
+  @Local favoriteStatusKnown: boolean = false
+  @Local isFavorited: boolean = false
+  @Local isFavoriteMutationInFlight: boolean = false
+  @Local isTorrentExportInFlight: boolean = false
+  @Local favoriteCountFromSession: number = -1
+  @Local contentFilters: ContentFilterState = connectContentFilters()
+  @Local accountSession: AccountSessionState = connectAccountSession()
+  @Local favoriteMutations: FavoriteMutationState = connectFavoriteMutations()
+  @Local layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
+  // Seed future wide-detail decisions from the width measured for the root
+  // HDS mode that is actually active, not merely from the persisted policy.
+  // Keep this adjacent to the layout connection: it must be available on the
+  // destination's first frame before its own area measurement runs.
+  @Local detailRootWidth: number = connectLayoutSafeArea().rememberedGalleryDetailContentWidth(
+    connectLayoutSafeArea().rootNavigationSplit,
+  )
+  @Local galleryTitle: GalleryTitleState = connectGalleryTitle()
+  @Local readButtonStyle: ReadButtonStyleState = connectReadButtonStyle()
+  @Local downloadQueue: DownloadQueueState = connectDownloadQueue()
+  // This is not navigation ownership. Gallery only stages its already
+  // validated public DTO; the entry-owned overlay attaches it to the next
+  // matching Reader route and Reader consumes it exactly once.
+  private readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
+  @Param scroller: Scroller = new Scroller()
+  @Param chrome: GalleryChromeState = new GalleryChromeState()
+  @Param externalOpenVersion: number = 0
+  @Param shareVersion: number = 0
+  @Param favoriteVersion: number = 0
+  @Param torrentShareVersion: number = 0
+  @Event onOpenGallery?: (galleryId: number) => void
+  @Event onOpenThumbnails?: (galleryId: number, pages: NhGalleryPage[]) => void
+  @Event onOpenReader?: (galleryId: number, initialPageIndex: number) => void
+  @Event onOpenComments?: (galleryId: number) => void
+  @Event onOpenDownloads?: () => void
+  @Event onSearchQuery?: (query: string) => void
+  @Event onChromeChanged?: () => void
+  private requestGeneration: number = 0
+  private relatedRequestGeneration: number = 0
+  private commentPeekGeneration: number = 0
+  private favoriteStatusGeneration: number = 0
+  private handledDownloadRequestVersion: number = 0
+  private readFabController: HdsTabsController = new HdsTabsController()
+  /** Shared refresh host; it never represents this page's initial-load state. */
+  private detailRefreshController: NextNPullRefreshController = new NextNPullRefreshController()
+  // This owner intentionally never aliases the metadata List scroller: the
+  // reference wide workspace keeps full-thumbnail browsing independent.
+  private widePreviewScroller: Scroller = new Scroller()
+  private widePreviewChrome: GalleryThumbnailsChromeState = new GalleryThumbnailsChromeState()
+
+  aboutToAppear(): void {
+    this.resetNavigationChromeForCurrentRoute()
+    this.publishWideThumbnailActionAvailability()
+    // A retained destination returning from Reader already has a verified
+    // snapshot. Reloading it here was what painted an unsolicited pull-refresh
+    // state on every return; only the first unresolved route loads on appear.
+    if (this.detail.id !== this.galleryId) {
+      this.loadDetail()
+    }
+  }
+
+  aboutToDisappear(): void {
+    // A pushed Reader keeps this detail destination alive on the navigation
+    // stack.  Cancel an in-flight response, but do not revoke the already
+    // verified detail: returning from Reader must leave its Read action ready.
+    this.requestGeneration += 1
+    // Related galleries are supplemental. Do not let an old background
+    // response mutate this retained destination while another route is shown.
+    this.relatedRequestGeneration += 1
+    // The comments peek is also supplementary. Its request must not mutate a
+    // retained destination after Reader or another gallery takes focus.
+    this.commentPeekGeneration += 1
+  }
+
+  @Monitor('galleryId')
+  onGalleryChanged(): void {
+    // `loadDetail` classifies this as ROUTE_CHANGE before starting the
+    // request, so stale route actions cannot remain interactive while the
+    // retained destination resolves the replacement Gallery.
+    this.loadDetail()
+  }
+
+  @Monitor('contentFilters.revision')
+  onContentFiltersChanged(): void {
+    this.applyRelatedContentFilters()
+    this.applyCommentPeekFilters()
+  }
+
+  /** The route-local HDS command reuses the same generation-fenced loader. */
+  @Monitor('chrome.reloadVersion')
+  onReloadRequested(): void {
+    if (this.chrome.reloadVersion > 0) {
+      this.requestDetailRefresh()
+    }
+  }
+
+  @Monitor('layoutSafeArea.rootNavigationSplit')
+  onRootNavigationModeChanged(): void {
+    // HDS has changed its resolved physical mode. Reuse only the matching
+    // cache until onAreaChange provides this destination's current width.
+    this.detailRootWidth = this.layoutSafeArea.rememberedGalleryDetailContentWidth(
+      this.layoutSafeArea.rootNavigationSplit,
+    )
+    this.publishWideThumbnailActionAvailability()
+  }
+
+  @Monitor('accountSession.revision')
+  onAccountSessionChanged(): void {
+    // Account status can change while this destination is retained. Consume
+    // Entry's published state; this page must not inspect or restore session
+    // material on its own.
+    if (this.isDetailReadyForCurrentGallery && !this.isFavoriteMutationInFlight) {
+      if (!this.hasPublishedAccountSession()) {
+        this.favoriteStatusKnown = false
+        this.isFavorited = false
+        this.favoriteCountFromSession = -1
+        this.publishFavoriteChrome(false, false, false)
+        return
+      }
+      this.loadFavoriteStatus(this.requestGeneration, this.detail.id)
+    }
+  }
+
+  private hasPublishedAccountSession(): boolean {
+    return this.accountSession.initialized && this.accountSession.signedIn &&
+      !this.accountSession.verificationRequired
+  }
+
+  @Monitor('chrome.wideThumbnailFirstPageRequestVersion')
+  onWideThumbnailFirstPageRequested(): void {
+    if (this.chrome.wideThumbnailFirstPageRequestVersion <= 0 ||
+      !this.wideThumbnailActionsAvailable()) {
+      return
+    }
+    this.widePreviewChrome.firstPageRequestVersion += 1
+  }
+
+  @Monitor('chrome.wideThumbnailJumpPageRequestVersion')
+  onWideThumbnailJumpPageRequested(): void {
+    if (this.chrome.wideThumbnailJumpPageRequestVersion <= 0 ||
+      !this.wideThumbnailActionsAvailable()) {
+      return
+    }
+    this.widePreviewChrome.jumpPageRequestVersion += 1
+  }
+
+  private applyRelatedContentFilters(): void {
+    this.relatedGalleries = ContentFilterService.filterGalleries(this.rawRelatedGalleries)
+  }
+
+  private applyCommentPeekFilters(): void {
+    this.commentPeek = ContentFilterService.filterComments(this.rawCommentPeek)
+  }
+
+  @Monitor('shareVersion')
+  onShareRequested(): void {
+    if (this.shareVersion > 0) {
+      this.shareCurrentGallery()
+    }
+  }
+
+  @Monitor('externalOpenVersion')
+  onExternalOpenRequested(): void {
+    if (this.externalOpenVersion > 0) {
+      this.openCurrentGalleryExternally()
+    }
+  }
+
+  @Monitor('chrome.downloadRequestVersion')
+  onDownloadRequested(): void {
+    const requestVersion: number = this.chrome.downloadRequestVersion
+    if (requestVersion <= this.handledDownloadRequestVersion) {
+      return
+    }
+    // Record the epoch before checking readiness: a stale request must never
+    // replay after a route replacement finishes loading.
+    this.handledDownloadRequestVersion = requestVersion
+    if (!this.isDownloadActionReady()) {
+      return
+    }
+    this.handleDownloadAction()
+  }
+
+  @Monitor('downloadQueue.revision')
+  onDownloadQueueChanged(): void {
+    this.publishDownloadChrome()
+  }
+
+  @Monitor('favoriteVersion')
+  onFavoriteRequested(): void {
+    if (this.favoriteVersion > 0) {
+      this.requestFavoriteToggle()
+    }
+  }
+
+  @Monitor('torrentShareVersion')
+  onTorrentShareRequested(): void {
+    if (this.torrentShareVersion > 0) {
+      this.confirmTorrentFileExport()
+    }
+  }
+
+  private context(): common.UIAbilityContext {
+    return this.getUIContext().getHostContext() as common.UIAbilityContext
+  }
+
+  private isCurrentRequest(generation: number): boolean {
+    return generation === this.requestGeneration
+  }
+
+  private isCurrentRelatedRequest(generation: number): boolean {
+    return generation === this.relatedRequestGeneration
+  }
+
+  private detailLoadKind(): GalleryDetailLoadKind {
+    if (this.detail.id <= 0) {
+      return GalleryDetailLoadKind.INITIAL
+    }
+    if (this.isDetailReadyForCurrentGallery && this.detail.id === this.galleryId) {
+      return GalleryDetailLoadKind.SAME_GALLERY_REFRESH
+    }
+    return GalleryDetailLoadKind.ROUTE_CHANGE
+  }
+
+  /**
+   * Initial loads and route changes must not leave a previous Gallery's
+   * actions, title, preview, or account-scoped chrome reachable. A same-ID
+   * refresh deliberately does not call this: its validated snapshot remains
+   * usable until the next response replaces it.
+   */
+  private resetDetailForReplacementRoute(): void {
+    this.isDetailReadyForCurrentGallery = false
+    this.detail = new NhGalleryDetail()
+    this.hasReadProgress = false
+    this.resumePageIndex = 0
+    this.fullTitleSheetShown = false
+    this.coverFailedUrl = ''
+    this.tagTranslationLabels = []
+    this.favoriteStatusGeneration += 1
+    this.favoriteStatusKnown = false
+    this.isFavorited = false
+    this.isFavoriteMutationInFlight = false
+    this.favoriteCountFromSession = -1
+    this.publishNavigationChrome('', false)
+    this.publishFavoriteChrome(false, false, false)
+    this.publishDownloadChrome()
+    this.publishWideThumbnailActionAvailability()
+    this.relatedRequestGeneration += 1
+    this.rawRelatedGalleries = []
+    this.applyRelatedContentFilters()
+    this.commentPeekGeneration += 1
+    this.rawCommentPeek = []
+    this.applyCommentPeekFilters()
+  }
+
+  /**
+   * Same-gallery refreshes fence every background response without clearing
+   * the already validated snapshot. This keeps Read, thumbnail navigation,
+   * favourite/download actions, and metadata responsive while Refresh owns
+   * the in-flight affordance.
+   */
+  private invalidateSameGalleryRefreshRequests(): void {
+    this.favoriteStatusGeneration += 1
+    this.relatedRequestGeneration += 1
+    this.commentPeekGeneration += 1
+  }
+
+  private beginDetailLoad(): number {
+    const loadKind: GalleryDetailLoadKind = this.detailLoadKind()
+    const generation: number = this.requestGeneration + 1
+    this.requestGeneration = generation
+    this.isLoading = true
+    this.publishRefreshChrome(true)
+    this.errorMessage = ''
+    switch (loadKind) {
+      case GalleryDetailLoadKind.SAME_GALLERY_REFRESH:
+        this.invalidateSameGalleryRefreshRequests()
+        break
+      case GalleryDetailLoadKind.INITIAL:
+      case GalleryDetailLoadKind.ROUTE_CHANGE:
+        this.resetDetailForReplacementRoute()
+        break
+      default:
+        this.resetDetailForReplacementRoute()
+    }
+    return generation
+  }
+
+  private publishNavigationChrome(title: string, showTitle: boolean): void {
+    const normalizedTitle: string = title.trim()
+    if (this.chrome.title === normalizedTitle && this.chrome.showTitle === showTitle) {
+      return
+    }
+    this.chrome.title = normalizedTitle
+    this.chrome.showTitle = showTitle
+    if (this.onChromeChanged) {
+      this.onChromeChanged()
+    }
+  }
+
+  private publishFavoriteChrome(known: boolean, favorited: boolean, busy: boolean): void {
+    if (this.chrome.favoriteKnown === known && this.chrome.isFavorited === favorited &&
+      this.chrome.favoriteBusy === busy) {
+      return
+    }
+    this.chrome.favoriteKnown = known
+    this.chrome.isFavorited = favorited
+    this.chrome.favoriteBusy = busy
+    if (this.onChromeChanged) {
+      this.onChromeChanged()
+    }
+  }
+
+  /**
+   * The refresh affordance lives in the entry-owned HDS title bar, so mirror
+   * only this page's existing loading truth through its route-local chrome.
+   */
+  private publishRefreshChrome(inFlight: boolean): void {
+    if (this.chrome.refreshInFlight === inFlight) {
+      return
+    }
+    this.chrome.refreshInFlight = inFlight
+    if (this.onChromeChanged) {
+      this.onChromeChanged()
+    }
+  }
+
+  /**
+   * Lifecycle changes may intentionally replace an in-flight request, but a
+   * repeated title command must not create a second request for this detail.
+   */
+  private requestDetailRefresh(): void {
+    if (this.isLoading) {
+      return
+    }
+    if (this.isDetailReadyForCurrentGallery && this.detail.id === this.galleryId) {
+      this.detailRefreshController.requestRefresh()
+      return
+    }
+    // There is no mounted interactive host while initial/route replacement
+    // error content is on screen, so retry that unresolved state directly.
+    this.loadDetail()
+  }
+
+  /** Called only by the shared top-pull/programmatic refresh host. */
+  private async refreshCurrentDetail(): Promise<void> {
+    if (this.isLoading || !this.isDetailReadyForCurrentGallery || this.detail.id !== this.galleryId) {
+      return
+    }
+    await this.loadDetail()
+  }
+
+  private isDownloadActionReady(): boolean {
+    return this.isDetailReadyForCurrentGallery &&
+      this.detail.id === this.galleryId &&
+      this.detail.pages.length > 0
+  }
+
+  private currentDownloadTask(): NhDownloadTask | null {
+    if (!this.isDownloadActionReady()) {
+      return null
+    }
+    const task: NhDownloadTask | undefined = this.downloadQueue.tasks.find(
+      (candidate: NhDownloadTask): boolean => candidate.galleryId === this.detail.id,
+    )
+    return task ?? null
+  }
+
+  private publishDownloadChrome(): void {
+    const ready: boolean = this.isDownloadActionReady()
+    const task: NhDownloadTask | null = this.currentDownloadTask()
+    const status: string = task === null ? '' : task.status
+    const pageCount: number = task === null ? 0 : Math.max(0, task.pageCount)
+    const completedPages: number = task === null || pageCount === 0
+      ? 0
+      : Math.min(pageCount, Math.max(0, task.completedPages))
+    if (this.chrome.downloadActionReady === ready &&
+      this.chrome.downloadStatus === status &&
+      this.chrome.downloadCompletedPages === completedPages &&
+      this.chrome.downloadPageCount === pageCount) {
+      return
+    }
+    this.chrome.downloadActionReady = ready
+    this.chrome.downloadStatus = status
+    this.chrome.downloadCompletedPages = completedPages
+    this.chrome.downloadPageCount = pageCount
+    if (this.onChromeChanged) {
+      this.onChromeChanged()
+    }
+  }
+
+  private resetNavigationChromeForCurrentRoute(): void {
+    if (this.detail.id !== this.galleryId) {
+      this.publishNavigationChrome('', false)
+      this.publishFavoriteChrome(false, false, false)
+      this.publishDownloadChrome()
+    }
+  }
+
+  private updateNavigationChromeForScroll(): void {
+    if (!this.isDetailReadyForCurrentGallery || this.detail.id !== this.galleryId) {
+      this.publishNavigationChrome('', false)
+      return
+    }
+    // Detail data can arrive before its metadata List has attached the
+    // Scroller. ArkUI then returns undefined here; treating that first frame
+    // as the collapsed title state avoids surfacing a raw runtime error.
+    const currentOffset = this.scroller.currentOffset()
+    const revealTitle: boolean = currentOffset !== undefined &&
+      currentOffset.yOffset > DETAIL_TITLE_REVEAL_OFFSET
+    this.publishNavigationChrome(this.galleryHeroPrimaryTitle(), revealTitle)
+  }
+
+  private openReader(initialPageIndex: number = -1): void {
+    if (!this.isDetailReadyForCurrentGallery || this.detail.id !== this.galleryId || this.detail.pages.length === 0 || !this.onOpenReader) {
+      return
+    }
+    if (initialPageIndex >= this.detail.pages.length) {
+      return
+    }
+    this.readerOverlay.stageDetailSeed(this.detail)
+    try {
+      this.onOpenReader(this.detail.id, initialPageIndex)
+    } finally {
+      // The entry opens Reader synchronously and has already attached the
+      // seed. A no-op/alternate host must not leave it staged for a later
+      // unrelated Reader route.
+      this.readerOverlay.discardStagedDetailSeed(this.detail.id)
+    }
+  }
+
+  private openComments(): void {
+    if (!this.isDetailReadyForCurrentGallery || this.detail.id !== this.galleryId || !this.onOpenComments) {
+      return
+    }
+    this.onOpenComments(this.detail.id)
+  }
+
+  private openRelatedGallery(galleryId: number): void {
+    if (galleryId <= 0 || galleryId === this.galleryId || !this.onOpenGallery) {
+      return
+    }
+    this.onOpenGallery(galleryId)
+  }
+
+  private openThumbnails(): void {
+    const onOpenThumbnails = this.onOpenThumbnails
+    if (!this.canOpenThumbnails() || !onOpenThumbnails) {
+      return
+    }
+    onOpenThumbnails(this.detail.id, this.detail.pages)
+  }
+
+  private async shareCurrentGallery(): Promise<void> {
+    if (!this.isDetailReadyForCurrentGallery || this.detail.id !== this.galleryId) {
+      return
+    }
+    const opened: boolean = await NhGalleryShareService.shareCanonicalGallery(this.context(), this.detail.id)
+    if (!opened) {
+      this.showShareUnavailable()
+    }
+  }
+
+  private async openCurrentGalleryExternally(): Promise<void> {
+    if (!this.isDetailReadyForCurrentGallery || this.detail.id !== this.galleryId) {
+      return
+    }
+    const opened: boolean = await NhGalleryExternalOpenService.openCanonicalGallery(this.context(), this.detail.id)
+    if (!opened) {
+      this.showExternalOpenUnavailable()
+    }
+  }
+
+  private openDownloads(): void {
+    if (this.onOpenDownloads) {
+      this.onOpenDownloads()
+    }
+  }
+
+  private async handleDownloadAction(): Promise<void> {
+    if (!this.isDownloadActionReady()) {
+      return
+    }
+    const existing: NhDownloadTask | null = this.currentDownloadTask()
+    if (existing === null) {
+      await this.enqueueDownload()
+      return
+    }
+    if (existing.isComplete()) {
+      this.openReader()
+      return
+    }
+    if (existing.status === NhDownloadTaskStatus.PAUSED || existing.status === NhDownloadTaskStatus.ERROR) {
+      try {
+        await DownloadQueueService.resume(this.context(), existing.galleryId)
+      } catch (_error) {
+        this.showDownloadToast(AppStrings.get('gallery_error_add_download'))
+        return
+      }
+    }
+    // Active downloads belong to the durable queue screen; do not enqueue a
+    // duplicate or pretend that a paused/error task is newly added.
+    this.openDownloads()
+  }
+
+  private async enqueueDownload(): Promise<void> {
+    if (!this.isDownloadActionReady()) {
+      return
+    }
+    try {
+      await DownloadQueueService.enqueue(this.context(), this.detail)
+      this.showDownloadToast(AppStrings.get('gallery_toast_added_downloads'))
+    } catch (_error) {
+      this.showDownloadToast(AppStrings.get('gallery_error_add_download'))
+    }
+  }
+
+  private showDownloadToast(message: string): void {
+    try {
+      this.getUIContext().getPromptAction().showToast({ message: message })
+    } catch (_error) {}
+  }
+
+  private confirmTorrentFileExport(): void {
+    if (!this.isDetailReadyForCurrentGallery || this.detail.id !== this.galleryId || this.isTorrentExportInFlight) {
+      return
+    }
+    if (!this.hasPublishedAccountSession()) {
+      this.showTorrentToast(AppStrings.get('gallery_error_signin_export_torrent'))
+      return
+    }
+    this.getUIContext().showAlertDialog({
+      title: AppStrings.get('gallery_dialog_export_torrent_title'),
+      message: AppStrings.get('gallery_dialog_export_torrent_message'),
+      primaryButton: {
+        value: AppStrings.get('gallery_action_cancel'),
+        action: (): void => {},
+      },
+      secondaryButton: {
+        value: AppStrings.get('gallery_action_continue'),
+        action: (): void => {
+          this.exportTorrentFile()
+        },
+      },
+    })
+  }
+
+  private async exportTorrentFile(): Promise<void> {
+    if (this.isTorrentExportInFlight || !this.isDetailReadyForCurrentGallery ||
+      this.detail.id !== this.galleryId || !this.hasPublishedAccountSession()) {
+      return
+    }
+    const galleryId: number = this.detail.id
+    this.isTorrentExportInFlight = true
+    try {
+      const issuedUrl: string = await NhApiClient.issueTorrentLink(galleryId)
+      if (this.detail.id !== galleryId || this.galleryId !== galleryId) {
+        return
+      }
+      const shared: boolean = await NhTorrentFileExportService.downloadAndShare(this.context(), galleryId, issuedUrl)
+      if (!shared) {
+        this.showTorrentToast(AppStrings.get('gallery_error_export_torrent_retry'))
+      }
+    } catch (_error) {
+      this.showTorrentToast(AppStrings.get('gallery_error_export_torrent_session'))
+    } finally {
+      this.isTorrentExportInFlight = false
+    }
+  }
+
+  private showTorrentToast(message: string): void {
+    try {
+      this.getUIContext().getPromptAction().showToast({ message: message })
+    } catch (_error) {}
+  }
+
+  /**
+   * Resolves account-scoped favourite state only after the public detail is
+   * ready. A failed lookup remains deliberately unknown, so the next title
+   * action refreshes rather than guessing whether to add or remove remotely.
+   */
+  private async loadFavoriteStatus(detailGeneration: number, galleryId: number): Promise<void> {
+    const statusGeneration: number = this.favoriteStatusGeneration + 1
+    this.favoriteStatusGeneration = statusGeneration
+    const status: NhGalleryFavoriteStatus = await NhApiClient.favoriteStatus(galleryId)
+    if (!this.isCurrentRequest(detailGeneration) || this.detail.id !== galleryId ||
+      statusGeneration !== this.favoriteStatusGeneration || this.isFavoriteMutationInFlight) {
+      return
+    }
+    this.favoriteStatusKnown = status.known
+    this.isFavorited = status.isFavorited
+    this.favoriteCountFromSession = status.hasFavoriteCount ? status.favoriteCount : -1
+    this.publishFavoriteChrome(status.known, status.isFavorited, false)
+  }
+
+  /** True only while this retained destination still owns the local read result. */
+  private isCurrentReadProgressRequest(detailGeneration: number, galleryId: number): boolean {
+    return this.isCurrentRequest(detailGeneration) &&
+      this.isDetailReadyForCurrentGallery &&
+      this.galleryId === galleryId &&
+      this.detail.id === galleryId
+  }
+
+  /**
+   * Reader opens the actual `detail.pages` collection, so its length is the
+   * only page-count authority that can safely label the local resume index.
+   */
+  private localResumePageCount(): number {
+    return Math.max(0, this.detail.pages.length)
+  }
+
+  /** Clamp stale durable state to the current Gallery page collection. */
+  private clampResumePageIndex(pageIndex: number): number {
+    const pageCount: number = this.localResumePageCount()
+    return Math.min(Math.max(0, Math.floor(pageIndex)), Math.max(0, pageCount - 1))
+  }
+
+  /**
+   * The gallery read control needs only local resume truth. This remains
+   * independent of detail, account, comments, and any remote request state.
+   * Read the marker before the index: page zero is a valid Reader position,
+   * not evidence that this Gallery has never been read.
+   */
+  private async loadReadProgress(detailGeneration: number, galleryId: number): Promise<void> {
+    try {
+      const hasProgress: boolean = await HistoryRepository.hasReadProgress(this.context(), galleryId)
+      if (!this.isCurrentReadProgressRequest(detailGeneration, galleryId)) {
+        return
+      }
+      let resumePageIndex: number = 0
+      if (hasProgress) {
+        const persistedPageIndex: number = await HistoryRepository.progress(this.context(), galleryId)
+        if (!this.isCurrentReadProgressRequest(detailGeneration, galleryId)) {
+          return
+        }
+        resumePageIndex = this.clampResumePageIndex(persistedPageIndex)
+      }
+      if (!this.isCurrentReadProgressRequest(detailGeneration, galleryId)) {
+        return
+      }
+      this.hasReadProgress = hasProgress
+      this.resumePageIndex = resumePageIndex
+    } catch (error) {
+      if (this.isCurrentRequest(detailGeneration)) {
+        console.warn(`Unable to load local reading progress: ${(error as Error).message}`)
+      }
+    }
+  }
+
+  private requestFavoriteToggle(): void {
+    if (!this.isDetailReadyForCurrentGallery || this.detail.id !== this.galleryId ||
+      this.isFavoriteMutationInFlight) {
+      return
+    }
+    if (!this.hasPublishedAccountSession()) {
+      this.showFavoriteToast(AppStrings.get('gallery_error_signin_favourites'))
+      return
+    }
+    if (!this.favoriteStatusKnown) {
+      this.loadFavoriteStatus(this.requestGeneration, this.detail.id)
+      this.showFavoriteToast(AppStrings.get('gallery_error_favourite_status'))
+      return
+    }
+    if (this.isFavorited) {
+      this.confirmRemoveFavorite()
+      return
+    }
+    this.saveFavorite(true)
+  }
+
+  private confirmRemoveFavorite(): void {
+    this.getUIContext().showAlertDialog({
+      title: AppStrings.get('gallery_dialog_remove_favourite_title'),
+      message: AppStrings.get('gallery_dialog_remove_favourite_message'),
+      primaryButton: {
+        value: AppStrings.get('gallery_action_cancel'),
+        action: (): void => {},
+      },
+      secondaryButton: {
+        value: AppStrings.get('gallery_action_remove'),
+        fontColor: Color.Red,
+        action: (): void => {
+          this.saveFavorite(false)
+        },
+      },
+    })
+  }
+
+  private async saveFavorite(shouldFavorite: boolean): Promise<void> {
+    if (this.isFavoriteMutationInFlight || !this.isDetailReadyForCurrentGallery ||
+      this.detail.id !== this.galleryId) {
+      return
+    }
+    this.isFavoriteMutationInFlight = true
+    this.favoriteStatusGeneration += 1
+    this.publishFavoriteChrome(this.favoriteStatusKnown, this.isFavorited, true)
+    const galleryId: number = this.detail.id
+    try {
+      const status: NhGalleryFavoriteStatus = await NhApiClient.setFavorite(galleryId, shouldFavorite)
+      // The mutation is confirmed by the typed v2 response even if this
+      // retained route was replaced while it was in flight. Publish before
+      // route-local state checks so Favorites cannot retain a stale snapshot.
+      this.favoriteMutations.publishConfirmedMutation(galleryId, status.isFavorited)
+      if (this.detail.id !== galleryId || this.galleryId !== galleryId) {
+        return
+      }
+      this.favoriteStatusKnown = status.known
+      this.isFavorited = status.isFavorited
+      this.favoriteCountFromSession = status.hasFavoriteCount ? status.favoriteCount : -1
+      this.showFavoriteToast(status.isFavorited
+        ? AppStrings.get('gallery_toast_favourite_added')
+        : AppStrings.get('gallery_toast_favourite_removed'))
+    } catch (error) {
+      const message: string = (error as Error).message || AppStrings.get('gallery_error_update_favourites')
+      this.showFavoriteToast(message)
+    } finally {
+      this.isFavoriteMutationInFlight = false
+      if (this.detail.id === this.galleryId) {
+        this.publishFavoriteChrome(this.favoriteStatusKnown, this.isFavorited, false)
+      }
+    }
+  }
+
+  private showFavoriteToast(message: string): void {
+    try {
+      this.getUIContext().getPromptAction().showToast({ message: message })
+    } catch (_error) {}
+  }
+
+  private showShareUnavailable(): void {
+    try {
+      this.getUIContext().getPromptAction().showToast({ message: AppStrings.get('gallery_error_share_unavailable') })
+    } catch (_error) {
+      // A failed notification must not mutate gallery state or expose its link.
+    }
+  }
+
+  private showExternalOpenUnavailable(): void {
+    try {
+      this.getUIContext().getPromptAction().showToast({ message: AppStrings.get('gallery_error_external_open_unavailable') })
+    } catch (_error) {
+      // A failed notification must not mutate gallery state or expose its link.
+    }
+  }
+
+  private async loadDetail(): Promise<void> {
+    const generation: number = this.beginDetailLoad()
+    try {
+      const detail: NhGalleryDetail = await NhApiClient.detail(this.galleryId)
+      if (!this.isCurrentRequest(generation)) {
+        return
+      }
+      if (detail.id <= 0 || detail.id !== this.galleryId) {
+        throw new Error('Gallery response did not match the requested gallery.')
+      }
+      this.detail = detail
+      this.isDetailReadyForCurrentGallery = true
+      this.publishDownloadChrome()
+      this.publishWideThumbnailActionAvailability()
+      this.updateNavigationChromeForScroll()
+      this.loadTagTranslations(generation, detail.tags)
+      this.loadRelatedGalleries(detail.id)
+      this.loadCommentPeek(generation, detail.id)
+      this.loadFavoriteStatus(generation, detail.id)
+      try {
+        await HistoryRepository.recordOpen(this.context(), detail)
+      } catch (error) {
+        if (this.isCurrentRequest(generation)) {
+          console.warn(`Unable to record local reading history: ${(error as Error).message}`)
+        }
+      }
+      await this.loadReadProgress(generation, detail.id)
+    } catch (error) {
+      if (!this.isCurrentRequest(generation)) {
+        return
+      }
+      this.errorMessage = (error as Error).message || AppStrings.get('gallery_error_load')
+    } finally {
+      if (this.isCurrentRequest(generation)) {
+        this.isLoading = false
+        this.publishRefreshChrome(false)
+      }
+    }
+  }
+
+  private canOpenReader(): boolean {
+    return this.isDetailReadyForCurrentGallery &&
+      this.detail.id === this.galleryId &&
+      this.detail.pages.length > 0
+  }
+
+  /** The compact preview header owns the one standalone all-pages route. */
+  private canOpenThumbnails(): boolean {
+    return this.isDetailReadyForCurrentGallery &&
+      this.detail.id === this.galleryId &&
+      this.detail.pages.length > 0 &&
+      this.onOpenThumbnails !== undefined
+  }
+
+  /**
+   * Use the same public, parsed comments client as the full destination only
+   * after this exact detail has passed its id check. The request runs outside
+   * the detail lifecycle, so failure is intentionally invisible and cannot
+   * delay Read, tags, preview pages, or the full Comments route.
+   */
+  private async loadCommentPeek(detailGeneration: number, galleryId: number): Promise<void> {
+    const generation: number = this.commentPeekGeneration + 1
+    this.commentPeekGeneration = generation
+    try {
+      const comments: NhComment[] = await NhApiClient.comments(galleryId)
+      if (generation !== this.commentPeekGeneration ||
+        !this.isCurrentRequest(detailGeneration) ||
+        !this.isDetailReadyForCurrentGallery ||
+        this.galleryId !== galleryId ||
+        this.detail.id !== galleryId) {
+        return
+      }
+      this.rawCommentPeek = comments
+      this.applyCommentPeekFilters()
+    } catch (_error) {
+      // The full destination retains retry/error UI. This optional response
+      // stays empty on failure, while the already-available Comments route
+      // remains visible and never competes with the ready detail surface.
+    }
+  }
+
+  /**
+   * The user policy is deliberately not consulted here: HDS alone confirms
+   * whether this destination really lives in the root Split, and this page's
+   * mode-keyed width cache is the only geometry gate for the wide workspace.
+   */
+  private usesWideDetailWorkspace(): boolean {
+    return this.layoutSafeArea.rootNavigationSplit &&
+      this.detailRootWidth >= GALLERY_DETAIL_WIDE_WORKSPACE_MIN_WIDTH
+  }
+
+  private wideThumbnailActionsAvailable(): boolean {
+    return this.usesWideDetailWorkspace() && this.canOpenReader() && this.onOpenReader !== undefined
+  }
+
+  /**
+   * In wide mode the inline right pane, not a duplicate pushed route, owns
+   * First/Jump. The entry title bar only publishes route-local intent.
+   */
+  private publishWideThumbnailActionAvailability(): void {
+    const available: boolean = this.wideThumbnailActionsAvailable()
+    if (this.chrome.wideThumbnailActionsAvailable === available) {
+      return
+    }
+    this.chrome.wideThumbnailActionsAvailable = available
+    if (this.onChromeChanged) {
+      this.onChromeChanged()
+    }
+  }
+
+  private readFabUsesHdsMaterial(): boolean {
+    return this.readButtonStyle.style === ReadButtonStyleSettings.STYLE_HDS
+  }
+
+  /** NextE rail geometry: HDS owns its activity padding; Filled owns its inset. */
+  private readFabRailSideInset(): number {
+    return this.readFabUsesHdsMaterial() ? 0 : ThemeTokens.SPACE_LG
+  }
+
+  private readFabRailBottomInset(): number {
+    return this.readFabUsesHdsMaterial() ? 0 : ThemeTokens.SPACE_LG
+  }
+
+  /** Must remain the exact NextNHdsCapsuleBarButton activity box. */
+  private readFabOuterHeight(): number {
+    return this.readFabUsesHdsMaterial()
+      ? nextNHdsCapsuleActivityHeight(ThemeTokens.ACTION_HEIGHT, ThemeTokens.SPACE_LG)
+      : ThemeTokens.ACTION_HEIGHT
+  }
+
+  /**
+   * Both style branches reserve the same source-derived 78vp tail: HDS owns
+   * its 46 + 2×16 activity box; Filled uses 46 + bottom 16 + terminal 16.
+   */
+  private readFabContentReserve(): number {
+    return this.readFabOuterHeight() + this.readFabRailBottomInset() +
+      (this.readFabUsesHdsMaterial() ? 0 : ThemeTokens.SPACE_LG)
+  }
+
+  private readActionLabel(): string {
+    return AppStrings.get(this.hasReadProgress ? 'gallery_action_continue' : 'gallery_action_read')
+  }
+
+  /** A marker-backed, one-based local resume label; never infer it from index zero alone. */
+  private resumePageContext(): string {
+    if (!this.hasReadProgress) {
+      return ''
+    }
+    const pageCount: number = this.localResumePageCount()
+    if (pageCount <= 0) {
+      return ''
+    }
+    const pageIndex: number = this.clampResumePageIndex(this.resumePageIndex)
+    return AppStrings.format('gallery_resume_page_context', [
+      (pageIndex + 1).toString(),
+      pageCount.toString(),
+    ])
+  }
+
+  private canOpenComments(): boolean {
+    return this.isDetailReadyForCurrentGallery && this.detail.id === this.galleryId
+  }
+
+  private commentPreviewItems(): NhComment[] {
+    // The compact rail has a fixed height. A server record can be structurally
+    // valid yet contain no body; keep it reachable from the full Comments
+    // route, but do not mount a visually empty preview card.
+    return this.commentPeek.filter((comment: NhComment): boolean => comment.body.trim().length > 0)
+  }
+
+  /** The full Comments route is useful even while its optional peek is empty. */
+  private shouldShowCommentPreview(): boolean {
+    return this.canOpenComments()
+  }
+
+  private shouldShowRelatedGalleries(): boolean {
+    return this.isDetailReadyForCurrentGallery &&
+      this.detail.id === this.galleryId &&
+      this.relatedGalleries.length > 0
+  }
+
+  private galleryPageCountText(): string {
+    return this.detail.pageCount > 0
+      ? AppStrings.format('gallery_meta_pages', [this.detail.pageCount.toString()])
+      : ''
+  }
+
+  private galleryFavoriteCountText(): string {
+    const count: number = this.favoriteCountFromSession >= 0
+      ? this.favoriteCountFromSession
+      : this.detail.favoriteCount
+    return count > 0
+      ? AppStrings.format('gallery_meta_favourites', [count.toString()])
+      : ''
+  }
+
+  /** The v2 detail has no separate language field; its language tag is authoritative. */
+  private galleryLanguageText(): string {
+    for (let index: number = 0; index < this.detail.tags.length; index++) {
+      const tag: NhTag = this.detail.tags[index]
+      const type: string = tag.type.trim().toLowerCase()
+      if (type === 'language' || type === 'languages') {
+        return tag.name.trim()
+      }
+    }
+    return ''
+  }
+
+  /** Preserve the API timestamp as a compact, locale-neutral metadata cell. */
+  private galleryUploadDateText(): string {
+    if (this.detail.uploadDate <= 0) {
+      return ''
+    }
+    const date: Date = new Date(this.detail.uploadDate * 1000)
+    if (isNaN(date.getTime())) {
+      return ''
+    }
+    const month: string = `${date.getMonth() + 1}`.padStart(2, '0')
+    const day: string = `${date.getDate()}`.padStart(2, '0')
+    return `${date.getFullYear()}-${month}-${day}`
+  }
+
+  private openTagSearch(tag: NhTag): void {
+    const query: string = NhTagQuery.format(tag)
+    if (query.length > 0 && this.onSearchQuery) {
+      this.onSearchQuery(query)
+    }
+  }
+
+  private async loadTagTranslations(generation: number, tags: NhTag[]): Promise<void> {
+    try {
+      const translations: Map<string, string> = await TagTranslationRepository.lookup(this.context(), tags)
+      if (!this.isCurrentRequest(generation)) {
+        return
+      }
+      const labels: string[] = []
+      let translatedCount: number = 0
+      for (let index: number = 0; index < tags.length; index++) {
+        const translated: string | undefined = translations.get(TagTranslationRepository.keyFor(tags[index]))
+        const label: string = translated === undefined ? '' : translated
+        if (label.length > 0) {
+          translatedCount += 1
+        }
+        labels.push(label)
+      }
+      this.tagTranslationLabels = labels
+      console.info(`NextNTagDictionary galleryMatched=${translatedCount} galleryTags=${tags.length}`)
+    } catch (_error) {
+      // The optional local dictionary must never delay Gallery metadata or
+      // replace the raw tag with an error when it is absent or unavailable.
+    }
+  }
+
+  /**
+   * This deliberately remains outside the detail request lifecycle: a slow or
+   * failed related response must never delay, invalidate, or retry metadata,
+   * Read, comments, or any paginated source list.
+   */
+  private async loadRelatedGalleries(galleryId: number): Promise<void> {
+    const generation: number = this.relatedRequestGeneration + 1
+    this.relatedRequestGeneration = generation
+    try {
+      const related: NhGallerySummary[] = await NhApiClient.related(galleryId)
+      if (!this.isCurrentRelatedRequest(generation) ||
+        !this.isDetailReadyForCurrentGallery ||
+        this.galleryId !== galleryId ||
+        this.detail.id !== galleryId) {
+        return
+      }
+      this.rawRelatedGalleries = this.uniqueRelatedGalleries(related, galleryId)
+      this.applyRelatedContentFilters()
+    } catch (error) {
+      if (this.isCurrentRelatedRequest(generation)) {
+        console.warn(`Unable to load related galleries: ${(error as Error).message}`)
+      }
+    }
+  }
+
+  private uniqueRelatedGalleries(galleries: NhGallerySummary[], sourceGalleryId: number): NhGallerySummary[] {
+    const unique: NhGallerySummary[] = []
+    galleries.forEach((gallery: NhGallerySummary): void => {
+      if (gallery.id <= 0 || gallery.id === sourceGalleryId ||
+        unique.some((existing: NhGallerySummary): boolean => existing.id === gallery.id)) {
+        return
+      }
+      unique.push(gallery)
+    })
+    return unique
+  }
+
+  private tagSearchLabel(tag: NhTag): string {
+    return `${tag.type}: ${tag.name}`
+  }
+
+  private isSearchableTag(tag: NhTag): boolean {
+    return NhTagQuery.format(tag).length > 0
+  }
+
+  private tagVisualGroups(): GalleryTagVisualGroup[] {
+    const groups: GalleryTagVisualGroup[] = []
+    for (let index: number = 0; index < this.detail.tags.length; index++) {
+      const tag: NhTag = this.detail.tags[index]
+      const namespace: string = tag.type.trim().length > 0 ? tag.type.trim() : AppStrings.get('gallery_tag_fallback')
+      let group: GalleryTagVisualGroup | null = null
+      for (let groupIndex: number = 0; groupIndex < groups.length; groupIndex++) {
+        if (groups[groupIndex].namespace === namespace) {
+          group = groups[groupIndex]
+          break
+        }
+      }
+      if (group === null) {
+        group = new GalleryTagVisualGroup(namespace)
+        groups.push(group)
+      }
+      const translatedName: string = index < this.tagTranslationLabels.length
+        ? this.tagTranslationLabels[index]
+        : ''
+      group.items.push(new GalleryTagVisualItem(tag, index, translatedName))
+    }
+    return groups
+  }
+
+  private tagMemberLabel(item: GalleryTagVisualItem): string {
+    return item.translatedName.length > 0 ? item.translatedName : item.tag.name
+  }
+
+  /** Mirrors ErosN's localized namespace header without changing raw tag members. */
+  private tagNamespacePresentation(namespace: string): GalleryTagNamespacePresentation {
+    const normalized: string = namespace.trim().toLowerCase()
+    let label: string = namespace
+    switch (normalized) {
+      case 'parody':
+      case 'parodies':
+        label = AppStrings.get('gallery_tag_namespace_parodies')
+        return new GalleryTagNamespacePresentation(
+          label,
+          ThemeTokens.TEXT_PRIMARY,
+          $r('app.color.tagns_parody'),
+        )
+      case 'character':
+      case 'characters':
+        label = AppStrings.get('gallery_tag_namespace_characters')
+        return new GalleryTagNamespacePresentation(
+          label,
+          ThemeTokens.TEXT_PRIMARY,
+          $r('app.color.tagns_character'),
+        )
+      case 'tag':
+      case 'tags':
+        label = AppStrings.get('gallery_tag_namespace_tags')
+        break
+      case 'artist':
+      case 'artists':
+        label = AppStrings.get('gallery_tag_namespace_artists')
+        return new GalleryTagNamespacePresentation(
+          label,
+          ThemeTokens.TEXT_PRIMARY,
+          $r('app.color.tagns_artist'),
+        )
+      case 'group':
+      case 'groups':
+        label = AppStrings.get('gallery_tag_namespace_groups')
+        return new GalleryTagNamespacePresentation(
+          label,
+          ThemeTokens.TEXT_PRIMARY,
+          $r('app.color.tagns_group'),
+        )
+      case 'language':
+      case 'languages':
+        label = AppStrings.get('gallery_tag_namespace_languages')
+        return new GalleryTagNamespacePresentation(
+          label,
+          ThemeTokens.TEXT_PRIMARY,
+          $r('app.color.tagns_language'),
+        )
+      case 'category':
+      case 'categories':
+        label = AppStrings.get('gallery_tag_namespace_categories')
+        break
+    }
+    // NH's tag/category namespaces have no equivalent NextE namespace swatch,
+    // so retain the neutral header rather than inventing a brand-color meaning.
+    return new GalleryTagNamespacePresentation(label, ThemeTokens.TEXT_PRIMARY, ThemeTokens.SURFACE_SUB)
+  }
+
+  private tagGroupKey(group: GalleryTagVisualGroup, index: number): string {
+    return `${index}_${group.namespace}`
+  }
+
+  private tagMemberKey(item: GalleryTagVisualItem): string {
+    return `${item.originalIndex}_${item.tag.id}_${item.tag.type}_${item.tag.name}`
+  }
+
+  private tagNamespaceLabel(namespace: string): string {
+    return this.tagNamespacePresentation(namespace).label
+  }
+
+  private tagNamespaceForeground(namespace: string): ResourceColor {
+    return this.tagNamespacePresentation(namespace).foreground
+  }
+
+  private tagNamespaceBackground(namespace: string): ResourceColor {
+    return this.tagNamespacePresentation(namespace).background
+  }
+
+  @Builder
+  private GalleryMetaItem(icon: Resource, value: string) {
+    Row({ space: ThemeTokens.SPACE_XS }) {
+      SymbolGlyph(icon)
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontColor([ThemeTokens.TEXT_TERTIARY])
+      Text(value)
+        .fontSize(ThemeTokens.FONT_SIZE_BODY)
+        .fontColor(ThemeTokens.TEXT_PRIMARY)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .layoutWeight(1)
+    }
+    .width('50%')
+    .padding({ top: ThemeTokens.SPACE_XS, bottom: ThemeTokens.SPACE_XS })
+    .alignItems(VerticalAlign.Center)
+  }
+
+  /** Metadata with no stable peer owns a complete row. */
+  @Builder
+  private GalleryMetaFullRow(icon: Resource, value: string) {
+    Row({ space: ThemeTokens.SPACE_XS }) {
+      SymbolGlyph(icon)
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontColor([ThemeTokens.TEXT_TERTIARY])
+      Text(value)
+        .fontSize(ThemeTokens.FONT_SIZE_BODY)
+        .fontColor(ThemeTokens.TEXT_PRIMARY)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .layoutWeight(1)
+    }
+    .width('100%')
+    .padding({ top: ThemeTokens.SPACE_XS, bottom: ThemeTokens.SPACE_XS })
+    .alignItems(VerticalAlign.Center)
+  }
+
+  /** Detail metadata is a peer information block, not hero-card decoration. */
+  @Builder
+  private GalleryInformation() {
+    if (this.isDetailReadyForCurrentGallery && this.detail.id === this.galleryId) {
+      NextNGroupedListSection({ inset: ThemeTokens.SPACE_MD }) {
+        Flex({ wrap: FlexWrap.Wrap }) {
+          if (this.galleryLanguageText().length > 0) {
+            this.GalleryMetaItem($r('sys.symbol.translate'), this.galleryLanguageText())
+          }
+          if (this.galleryPageCountText().length > 0) {
+            this.GalleryMetaItem($r('sys.symbol.picture'), this.galleryPageCountText())
+          }
+          if (this.resumePageContext().length > 0) {
+            this.GalleryMetaFullRow($r('sys.symbol.doc_plaintext'), this.resumePageContext())
+          }
+          if (this.detail.scanlator.length > 0) {
+            this.GalleryMetaFullRow($r('sys.symbol.person'), this.detail.scanlator)
+          }
+          if (this.galleryFavoriteCountText().length > 0) {
+            this.GalleryMetaItem($r('sys.symbol.heart'), this.galleryFavoriteCountText())
+          }
+          if (this.galleryUploadDateText().length > 0) {
+            this.GalleryMetaItem($r('sys.symbol.clock'), this.galleryUploadDateText())
+          }
+        }
+        .width('100%')
+      }
+    }
+  }
+
+  @Builder
+  private GalleryHero() {
+    NextNGroupedListSection({ inset: ThemeTokens.SPACE_MD }) {
+      Row({ space: ThemeTokens.SPACE_MD }) {
+        Stack({ alignContent: Alignment.Center }) {
+          if (this.detail.coverUrl.length > 0 && this.coverFailedUrl !== this.detail.coverUrl) {
+            Image(this.detail.coverUrl)
+              .width('100%')
+              .height('100%')
+              .objectFit(ImageFit.Contain)
+              .onError((): void => {
+                // A cover is presentation-only. Keep the detail and its Read
+                // action usable when the remote thumbnail cannot be displayed.
+                this.coverFailedUrl = this.detail.coverUrl
+              })
+          } else {
+            SymbolGlyph($r('sys.symbol.picture'))
+              .fontSize(32)
+              .fontColor([ThemeTokens.TEXT_TERTIARY])
+          }
+        }
+        .width(ThemeTokens.DETAIL_COVER_WIDTH)
+        .height(ThemeTokens.DETAIL_COVER_HEIGHT)
+        .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
+        .borderRadius(ThemeTokens.DETAIL_COVER_RADIUS)
+        .clip(true)
+        Column({ space: ThemeTokens.SPACE_XS }) {
+          Text(this.galleryHeroPrimaryTitle())
+            .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(ThemeTokens.TEXT_PRIMARY)
+            .lineHeight(ThemeTokens.LINE_HEIGHT_TITLE)
+            .maxLines(this.galleryHeroTitleMaxLines())
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+            .width('100%')
+            .onClick((): void => {
+              this.openFullTitleSheet()
+            })
+          if (this.galleryHeroSecondaryTitle().length > 0) {
+            Text(this.galleryHeroSecondaryTitle())
+              .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+              .fontColor(ThemeTokens.TEXT_SECONDARY)
+              .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
+              .maxLines(2)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+              .width('100%')
+              .onClick((): void => {
+                this.openFullTitleSheet()
+              })
+          }
+        }
+        .layoutWeight(1)
+        .height(ThemeTokens.DETAIL_COVER_HEIGHT)
+        .clip(true)
+        .alignItems(HorizontalAlign.Start)
+        .bindSheet($$this.fullTitleSheetShown, this.FullTitleSheet(), {
+          detents: [SheetSize.LARGE],
+          showClose: false,
+        })
+      }
+      .width('100%')
+      .alignItems(VerticalAlign.Top)
+    }
+  }
+
+  /** Direct NextE header-line budget: secondary text keeps its two lines. */
+  private galleryHeroPrimaryTitle(): string {
+    if (this.galleryTitle.japaneseTitlePrimary && this.detail.japaneseTitle.length > 0) {
+      return this.detail.japaneseTitle
+    }
+    return this.detail.displayTitle()
+  }
+
+  private galleryHeroSecondaryTitle(): string {
+    const standard: string = this.detail.displayTitle()
+    const japanese: string = this.detail.japaneseTitle
+    if (this.galleryTitle.japaneseTitlePrimary) {
+      return japanese.length > 0 && japanese !== standard ? standard : ''
+    }
+    return japanese.length > 0 && japanese !== standard ? japanese : ''
+  }
+
+  private galleryHeroTitleMaxLines(): number {
+    const hasSecondary: boolean = this.galleryHeroSecondaryTitle().length > 0
+    const secondaryReserve: number = hasSecondary
+      ? 2 * ThemeTokens.LINE_HEIGHT_BODY + ThemeTokens.SPACE_XS
+      : 0
+    const available: number = ThemeTokens.DETAIL_COVER_HEIGHT - secondaryReserve
+    const lines: number = Math.floor(available / ThemeTokens.LINE_HEIGHT_TITLE)
+    return Math.min(Math.max(lines, 1), 6)
+  }
+
+  /**
+   * Long hero titles are ellipsized to protect the fixed cover slot. Their
+   * disclosure is deliberately local: only a validated detail for this route
+   * may open it, and it neither refreshes nor changes gallery data.
+   */
+  private openFullTitleSheet(): void {
+    if (!this.isDetailReadyForCurrentGallery || this.detail.id !== this.galleryId ||
+      this.galleryHeroPrimaryTitle().trim().length === 0) {
+      return
+    }
+    this.fullTitleSheetShown = true
+  }
+
+  private closeFullTitleSheet(): void {
+    this.fullTitleSheetShown = false
+  }
+
+  /**
+   * Keep the hero's preference-resolved order intact rather than exposing
+   * raw model fields. The modal List provides unbounded, scrollable text for
+   * titles that cannot fit inside the compact or wide header card.
+   */
+  @Builder
+  private FullTitleSheet() {
+    NextNModalScaffold({
+      title: this.galleryHeroPrimaryTitle(),
+      onClose: (): void => {
+        this.closeFullTitleSheet()
+      },
+    }) {
+      ListItem() {
+        NextNGroupedListSection({ inset: ThemeTokens.SPACE_MD }) {
+          Column({ space: ThemeTokens.SPACE_SM }) {
+            Text(this.galleryHeroPrimaryTitle())
+              .fontSize(ThemeTokens.FONT_SIZE_HEADING)
+              .fontWeight(FontWeight.Medium)
+              .fontColor(ThemeTokens.TEXT_PRIMARY)
+              .lineHeight(ThemeTokens.LINE_HEIGHT_TITLE)
+              .width('100%')
+            if (this.galleryHeroSecondaryTitle().length > 0) {
+              Divider()
+                .strokeWidth(0.5)
+                .color(ThemeTokens.DIVIDER)
+              Text(this.galleryHeroSecondaryTitle())
+                .fontSize(ThemeTokens.FONT_SIZE_BODY)
+                .fontColor(ThemeTokens.TEXT_SECONDARY)
+                .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
+                .width('100%')
+            }
+          }
+          .width('100%')
+        }
+      }
+    }
+  }
+
+  @Builder
+  private TagMember(item: GalleryTagVisualItem) {
+    Text(this.tagMemberLabel(item))
+      .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+      .lineHeight(ThemeTokens.TAG_LINE_HEIGHT)
+      .fontColor(ThemeTokens.TEXT_SECONDARY)
+      .backgroundColor(ThemeTokens.SURFACE_SUB)
+      .borderRadius(ThemeTokens.TAG_RADIUS)
+      .padding({
+        left: ThemeTokens.SPACE_SM,
+        right: ThemeTokens.SPACE_SM,
+        top: ThemeTokens.TAG_PADDING_VERTICAL,
+        bottom: ThemeTokens.TAG_PADDING_VERTICAL,
+      })
+      .margin({ right: ThemeTokens.SPACE_XS, bottom: ThemeTokens.SPACE_XS })
+      .maxLines(1)
+      .textOverflow({ overflow: TextOverflow.Ellipsis })
+      .constraintSize({ maxWidth: 180 })
+      .accessibilityText(this.isSearchableTag(item.tag)
+        ? AppStrings.format('gallery_tag_search_a11y', [this.tagSearchLabel(item.tag)])
+        : this.tagSearchLabel(item.tag))
+      .onClick((): void => {
+        if (this.isSearchableTag(item.tag)) {
+          this.openTagSearch(item.tag)
+        }
+      })
+  }
+
+  @Builder
+  private TagGroupRow(group: GalleryTagVisualGroup) {
+    Row({ space: ThemeTokens.SPACE_SM }) {
+      Text(this.tagNamespaceLabel(group.namespace))
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .lineHeight(ThemeTokens.TAG_LINE_HEIGHT)
+        .fontWeight(FontWeight.Medium)
+        .fontColor(this.tagNamespaceForeground(group.namespace))
+        .backgroundColor(this.tagNamespaceBackground(group.namespace))
+        .borderRadius(ThemeTokens.TAG_RADIUS)
+        .padding({ left: 6, right: 6, top: ThemeTokens.TAG_PADDING_VERTICAL, bottom: ThemeTokens.TAG_PADDING_VERTICAL })
+        .constraintSize({ minWidth: 44 })
+        .textAlign(TextAlign.Center)
+        .maxLines(1)
+        .flexShrink(0)
+      Flex({ wrap: FlexWrap.Wrap }) {
+        ForEach(group.items, (item: GalleryTagVisualItem): void => {
+          this.TagMember(item)
+        }, (item: GalleryTagVisualItem): string => this.tagMemberKey(item))
+      }
+      .layoutWeight(1)
+    }
+    .width('100%')
+    .alignItems(VerticalAlign.Top)
+  }
+
+  @Builder
+  private GalleryTags() {
+    NextNGroupedListSection({ inset: ThemeTokens.SPACE_MD }) {
+      Column({ space: ThemeTokens.SPACE_SM }) {
+        Text(AppStrings.get('gallery_section_tags'))
+          .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(ThemeTokens.TEXT_PRIMARY)
+        ForEach(this.tagVisualGroups(), (group: GalleryTagVisualGroup, index: number): void => {
+          this.TagGroupRow(group)
+        }, (group: GalleryTagVisualGroup, index: number): string => this.tagGroupKey(group, index))
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Start)
+    }
+  }
+
+  /**
+   * Compact detail follows ErosN's single all-thumbnails entry plus a bounded
+   * horizontal first-page rail. The tiles retain their actual zero-based
+   * Reader index; the section header is the sole route to all thumbnails.
+   */
+  private shouldShowCompactPreview(): boolean {
+    return !this.usesWideDetailWorkspace() && this.canOpenThumbnails()
+  }
+
+  private compactPreviewPages(): NhGalleryPage[] {
+    return this.detail.pages.slice(0, GALLERY_COMPACT_PREVIEW_LIMIT)
+  }
+
+  private compactPreviewPageKey(page: NhGalleryPage, pageIndex: number): string {
+    return `compact_preview_${pageIndex}_${page.number}`
+  }
+
+  @Builder
+  private CompactPreviewPeek() {
+    NextNGroupedListSection({ inset: 0 }) {
+      Column({ space: ThemeTokens.SPACE_SM }) {
+        Row({ space: ThemeTokens.SPACE_XS }) {
+          SymbolGlyph($r('sys.symbol.square_fill_grid_2x2'))
+            .fontSize(ThemeTokens.FONT_SIZE_BODY)
+            .fontColor([ThemeTokens.TEXT_SECONDARY])
+          Text(AppStrings.get('gallery_preview'))
+            .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(ThemeTokens.TEXT_PRIMARY)
+          Text(this.detail.pages.length.toString())
+            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+            .fontColor(ThemeTokens.TEXT_TERTIARY)
+          Blank()
+          Text(AppStrings.get('detail_view_all'))
+            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+            .fontColor(ThemeTokens.TEXT_SECONDARY)
+          SymbolGlyph($r('sys.symbol.chevron_right'))
+            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+            .fontColor([ThemeTokens.TEXT_TERTIARY])
+        }
+        .width('100%')
+        .padding({
+          left: ThemeTokens.SPACE_MD,
+          top: ThemeTokens.SPACE_MD,
+          right: ThemeTokens.SPACE_MD,
+        })
+        .alignItems(VerticalAlign.Center)
+        .accessibilityText(AppStrings.format('gallery_pages_a11y', [this.detail.pages.length.toString()]))
+        .onClick((): void => {
+          this.openThumbnails()
+        })
+        List({ space: ThemeTokens.SPACE_SM }) {
+          ForEach(this.compactPreviewPages(), (page: NhGalleryPage, pageIndex: number): void => {
+            ListItem() {
+              GalleryCompactPreviewTile({
+                page: page,
+                pageIndex: pageIndex,
+                onOpen: (selectedIndex: number): void => {
+                  this.openReader(selectedIndex)
+                },
+              })
+            }
+            .margin({
+              left: pageIndex === 0 ? ThemeTokens.SPACE_MD : 0,
+              right: pageIndex === this.compactPreviewPages().length - 1 ? ThemeTokens.SPACE_MD : 0,
+            })
+          }, (page: NhGalleryPage, pageIndex: number): string => this.compactPreviewPageKey(page, pageIndex))
+        }
+        .width('100%')
+        .height(132 + ThemeTokens.FONT_SIZE_TINY + ThemeTokens.SPACE_XS)
+        .listDirection(Axis.Horizontal)
+        .scrollBar(BarState.Off)
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Start)
+      .padding({ bottom: ThemeTokens.SPACE_MD })
+    }
+  }
+
+  @Builder
+  private DetailRefreshState() {
+    if (this.errorMessage.length > 0) {
+      InlineRetryNotice({
+        message: this.errorMessage,
+        onRetry: (): void => {
+          this.requestDetailRefresh()
+        },
+      })
+    }
+  }
+
+  @Builder
+  private ReadFab() {
+    if (this.canOpenReader()) {
+      if (!this.readFabUsesHdsMaterial()) {
+        this.ReadFabFilled()
+      } else {
+        this.ReadFabHds()
+      }
+    }
+  }
+
+  @Builder
+  private ReadFabFilled() {
+    Button({ type: ButtonType.Capsule }) {
+      Row({ space: ThemeTokens.SPACE_SM }) {
+        SymbolGlyph($r('sys.symbol.doc_plaintext_fill'))
+          .fontSize(ThemeTokens.FONT_SIZE_HEADING)
+          .fontColor([ThemeTokens.TEXT_ON_BRAND])
+        Text(this.readActionLabel())
+          .fontSize(ThemeTokens.FONT_SIZE_BODY)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(ThemeTokens.TEXT_ON_BRAND)
+      }
+      .height(ThemeTokens.ACTION_HEIGHT)
+      .justifyContent(FlexAlign.Center)
+      .alignItems(VerticalAlign.Center)
+    }
+    .height(ThemeTokens.ACTION_HEIGHT)
+    .padding({ left: ThemeTokens.SPACE_LG, right: ThemeTokens.SPACE_LG })
+    .backgroundColor(ThemeTokens.BRAND)
+    .shadow(ShadowStyle.OUTER_DEFAULT_MD)
+    .onClick((): void => {
+      // Reader remains the only resume authority: it resolves its own
+      // marker-backed local index when no explicit page was selected.
+      this.openReader(-1)
+    })
+  }
+
+  @Builder
+  private ReadFabHds() {
+    NextNHdsCapsuleBarButton({
+      controller: this.readFabController,
+      barWidth: 120,
+      barHeight: ThemeTokens.ACTION_HEIGHT,
+      activityPadding: ThemeTokens.SPACE_LG,
+      barBottomMargin: ThemeTokens.SPACE_LG,
+      onButtonClick: (): void => {
+        // Keep the exact same Reader-owned resume path as the filled action.
+        this.openReader(-1)
+      },
+    }) {
+      Row({ space: ThemeTokens.SPACE_SM }) {
+        SymbolGlyph($r('sys.symbol.doc_plaintext_fill'))
+          .fontSize(ThemeTokens.FONT_SIZE_HEADING)
+          .fontColor([ThemeTokens.BRAND])
+        Text(this.readActionLabel())
+          .fontSize(ThemeTokens.FONT_SIZE_BODY)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(ThemeTokens.BRAND)
+      }
+      .width('100%')
+      .height(ThemeTokens.ACTION_HEIGHT)
+      .justifyContent(FlexAlign.Center)
+      .alignItems(VerticalAlign.Center)
+      .translate({ y: -ThemeTokens.SPACE_XS })
+    }
+  }
+
+  /**
+   * HDS Tabs needs a measured, transparent rail above the detail Scroll.
+   * This preserves the capsule material's own touch target while preventing
+   * the full-page Scroll from winning an overlapping hit test.
+   */
+  @Builder
+  private ReadFabRail() {
+    if (this.canOpenReader()) {
+      Row() {
+        this.ReadFab()
+      }
+      .width('100%')
+      .height(this.readFabOuterHeight())
+      .padding({
+        left: this.readFabRailSideInset(),
+        right: this.readFabRailSideInset(),
+      })
+      .justifyContent(FlexAlign.End)
+      .hitTestBehavior(HitTestMode.Transparent)
+      .position({ left: 0, bottom: this.readFabRailBottomInset() })
+    }
+  }
+
+  /**
+   * The compact metadata surface stays one List. The wide workspace mounts
+   * this exact List in its left pane, so horizontal navigation and content
+   * insets remain owned by the existing root HDS destination.
+   */
+  @Builder
+  private DetailMetadataList() {
+    PullRefreshListScaffold({
+      scroller: this.scroller,
+      listSpace: ThemeTokens.SPACE_MD,
+      bottomPadding: this.readFabContentReserve(),
+      controller: this.detailRefreshController,
+      onRefresh: async (): Promise<void> => {
+        await this.refreshCurrentDetail()
+      },
+      onDidScroll: (_offset: number, _state: ScrollState): void => {
+        this.updateNavigationChromeForScroll()
+      },
+    }) {
+      ListItem() {
+        this.GalleryHero()
+      }
+      if (this.errorMessage.length > 0 && this.detail.id === this.galleryId) {
+        ListItem() {
+          this.DetailRefreshState()
+        }
+      }
+      ListItem() {
+        this.GalleryInformation()
+      }
+      if (this.detail.tags.length > 0) {
+        ListItem() {
+          this.GalleryTags()
+        }
+      }
+      if (this.shouldShowCompactPreview()) {
+        ListItem() {
+          this.CompactPreviewPeek()
+        }
+      }
+      if (this.shouldShowRelatedGalleries()) {
+        ListItem() {
+          GalleryRelatedCarousel({
+            galleries: this.relatedGalleries,
+            onOpen: (galleryId: number): void => {
+              this.openRelatedGallery(galleryId)
+            },
+          })
+        }
+      }
+      if (this.shouldShowCommentPreview()) {
+        ListItem() {
+          GalleryCommentPreviewCarousel({
+            comments: this.commentPreviewItems(),
+            onOpen: (): void => {
+              this.openComments()
+            },
+          })
+        }
+      }
+    }
+  }
+
+  /**
+   * Mirrors NextE's detail pull refresh without coupling the independent wide
+   * preview Grid to metadata gestures. Both layouts bind the same request
+   * state that drives the route-local HDS title action.
+   */
+  @Builder
+  private DetailMetadataRefreshSurface() {
+    this.DetailMetadataList()
+  }
+
+  /** The wide right pane is the same full-thumbnail owner as the HDS route. */
+  @Builder
+  private WidePreviewPane() {
+    GalleryThumbnailGridContent({
+      pages: this.detail.pages,
+      chrome: this.widePreviewChrome,
+      scroller: this.widePreviewScroller,
+      bottomPadding: this.readFabContentReserve(),
+      onOpenPage: (pageIndex: number): void => {
+        this.openReader(pageIndex)
+      },
+    })
+  }
+
+  /**
+   * Keep the existing compact Stack intact below the actual-mode/width gate.
+   * The wide branch is one root workspace: two equal panes and one outer
+   * full-width Read capsule rail, without a nested HDS navigation surface.
+   */
+  @Builder
+  private DetailWorkspace() {
+    Stack() {
+      if (this.usesWideDetailWorkspace()) {
+        Row() {
+          Column() {
+            this.DetailMetadataRefreshSurface()
+          }
+          .layoutWeight(1)
+          .height('100%')
+          .id('gallery-detail-metadata-pane')
+
+          Column() {
+            this.WidePreviewPane()
+          }
+          .layoutWeight(1)
+          .height('100%')
+          .id('gallery-detail-preview-pane')
+        }
+        .width('100%')
+        .height('100%')
+        .alignItems(VerticalAlign.Top)
+        this.ReadFabRail()
+      } else {
+        this.DetailMetadataRefreshSurface()
+        this.ReadFabRail()
+      }
+    }
+    .layoutWeight(1)
+    .width('100%')
+  }
+
+  build() {
+    Column() {
+      if (this.isLoading && this.detail.id === 0) {
+        PageLoadingState({ text: AppStrings.get('gallery_status_loading') })
+      } else if (this.errorMessage.length > 0 && this.detail.id === 0) {
+        PageErrorState({
+          message: this.errorMessage,
+          onRetry: (): void => {
+            this.requestDetailRefresh()
+          },
+        })
+      } else {
+        this.DetailWorkspace()
+      }
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(ThemeTokens.SURFACE)
+    .onAreaChange((_oldArea: Area, area: Area): void => {
+      const width: number = area.width as number
+      if (this.detailRootWidth !== width) {
+        this.detailRootWidth = width
+      }
+      this.publishWideThumbnailActionAvailability()
+      LayoutSafeAreaBridge.publishGalleryDetailContentWidth(
+        width,
+        this.layoutSafeArea.rootNavigationSplit,
+      )
+    })
+  }
+}

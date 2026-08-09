@@ -1,0 +1,16 @@
+{
+  "device": "192.168.50.237:12345",
+  "feature": "ArkWeb and direct system Browser public login-page comparison",
+  "precondition": "No username, password, cookie value, screenshot, page text, URL text, or raw accessibility tree is read, stored, or emitted.",
+  "system_browser": {
+    "action": "Launch the device Browser through the standard view-data action and wait 12 seconds.",
+    "generic_evidence": "Two Navigation components, one Web component, Browser-chrome marker true, Cloudflare-resource marker true, verification-marker false."
+  },
+  "nextn_arkweb": {
+    "action": "Install the current debug-signed NextN HAP with first-party periodic ArkWeb-session capture; navigate by the Settings Account row only; wait 15 seconds without entering account data.",
+    "generic_evidence": "One Navigation component, one Web component, Browser-chrome marker false, Cloudflare-resource marker true, verification-marker false, and no native loading indicator remained."
+  },
+  "result": "Passed: NextN opened a real ArkWeb login surface using its controller-attached UA and cookie configuration. Both containers loaded Cloudflare-related resources in the same bounded observation. The ArkWeb Cloudflare marker remained after 15 seconds, so this run explicitly does not assert Cloudflare completion or account authentication.",
+  "session_boundary": "The system Browser and ArkWeb own separate cookie jars. NextN intentionally captures only trusted ArkWeb first-party session state; it cannot and must not import Browser cookies. The visible ArkWeb page now polls its URL-scoped cookie state while open so a same-page login completion is captured without DOM inspection, cookie logging, or credential access.",
+  "cleanup": "Temporary host/device layout files are removed and NextN is restarted at its root route."
+}

@@ -1,0 +1,7 @@
+{
+  "name": "shared",
+  "version": "1.0.0",
+  "description": "NextN shared domain, network, UI and theme layer",
+  "main": "src/main/ets/Index.ets",
+  "dependencies": {}
+}

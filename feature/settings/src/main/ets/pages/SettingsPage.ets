@@ -1,0 +1,2423 @@
+import { common } from '@kit.AbilityKit'
+import { SymbolGlyphModifier } from '@kit.ArkUI'
+import {
+  AppStrings,
+  CatalogPreferencesService,
+  CatalogPreferencesState,
+  LanguageSettings,
+  LanguageState,
+  LayoutSafeAreaState,
+  NhTagTranslationStatus,
+  NhReaderMode,
+  NhReaderTapZoneInvert,
+  NhReaderTapZoneLayout,
+  NextNGroupedListSection,
+  NextNListRow,
+  NextNModalScaffold,
+  SecondaryListScaffold,
+  ReaderImageCacheService,
+  ReaderImageCacheStatus,
+  ReaderPresentationService,
+  ReaderPresentationState,
+  DownloadQueueService,
+  DownloadSettingsService,
+  DownloadSettingsState,
+  HomeTabAutoHideState,
+  HomeTabSettings,
+  ImmersiveMaterialOption,
+  ImmersiveMaterialSettings,
+  ImmersiveMaterialSettingsState,
+  NhAccountProfileService,
+  AccountSessionState,
+  AccountProfileState,
+  BrowsePresentationService,
+  BrowsePresentationState,
+  CoverBackgroundSettings,
+  CoverBackgroundState,
+  GalleryTitleSettings,
+  GalleryTitleState,
+  ReadButtonStyleSettings,
+  ReadButtonStyleState,
+  NhClipboardLinkSettings,
+  NhClipboardLinkState,
+  NhBrowsePresentation,
+  NhSearchLanguage,
+  NhSearchOptions,
+  NhSearchSort,
+  TagTranslationRepository,
+  TagTranslationUpdateService,
+  ThemeTokens,
+  ThemeDisplayState,
+  ThemeSettings,
+  TabletLayoutSettings,
+  TabletLayoutState,
+  SettingsNavigationState,
+  SETTINGS_ROOT_BROWSER_SESSION,
+  SETTINGS_ROOT_LAYOUT,
+  SETTINGS_ROOT_CATALOG,
+  SETTINGS_ROOT_READER,
+  SETTINGS_ROOT_DOWNLOAD,
+  SETTINGS_ROOT_CACHE,
+  SETTINGS_ROOT_ADVANCED,
+  SETTINGS_ROOT_ABOUT,
+  galleryBaseMinColumnWidth,
+  supportsGalleryColumnDensity,
+  connectAccountSession,
+  connectAccountProfile,
+  connectBrowsePresentation,
+  connectCatalogPreferences,
+  connectCoverBackground,
+  connectGalleryTitle,
+  connectNhClipboardLink,
+  connectReadButtonStyle,
+  connectReaderPresentation,
+  connectDownloadSettings,
+  connectHomeTabAutoHide,
+  connectImmersiveMaterialSettings,
+  connectLanguageState,
+  connectLayoutSafeArea,
+  connectSettingsNavigation,
+  connectTabletLayout,
+  connectThemeDisplay,
+} from 'shared'
+
+const CATALOG_LANGUAGES: NhSearchLanguage[] = [
+  NhSearchLanguage.ALL,
+  NhSearchLanguage.JAPANESE,
+  NhSearchLanguage.CHINESE,
+  NhSearchLanguage.ENGLISH,
+  NhSearchLanguage.TRANSLATED,
+]
+
+const CATALOG_SORTS: NhSearchSort[] = [
+  NhSearchSort.RECENT,
+  NhSearchSort.POPULAR_TODAY,
+  NhSearchSort.POPULAR_WEEK,
+  NhSearchSort.POPULAR_MONTH,
+  NhSearchSort.POPULAR_ALL_TIME,
+]
+
+/**
+ * The Settings tab follows NextE's root-entry model: the tab itself contains
+ * only stable navigation choices, and each implemented capability owns a
+ * normal HDS destination. This prevents the root tab from becoming a long
+ * stack of unrelated configuration cards.
+ */
+export enum SettingsSurface {
+  ROOT,
+  LAYOUT,
+  CATALOG,
+  READER,
+  DOWNLOAD,
+  CACHE,
+  ADVANCED,
+  ABOUT,
+}
+
+/**
+ * Presentation-only failure codes. TagTranslationUpdateService deliberately
+ * keeps its transport and parsing failures raw for diagnostics; Settings
+ * maps the user-visible result at this boundary instead of treating protocol
+ * text as localized copy.
+ */
+class TagDictionaryUiErrorCode {
+  static readonly UPDATE_FAILED: string = 'tag_dictionary_update_failed'
+}
+
+/**
+ * Settings keeps NextE's grouped native-list grammar: HDS rows carry the
+ * hierarchy and actions, while the surrounding sections only explain the
+ * capability boundary. No setting here implies an unavailable remote action.
+ */
+@ComponentV2
+export struct SettingsPage {
+  @Local tagDictionaryStatus: NhTagTranslationStatus = new NhTagTranslationStatus()
+  @Local tagDictionaryRowCount: number = 0
+  @Local isUpdatingTagDictionary: boolean = false
+  @Local tagDictionaryError: string = ''
+  @Local readerCacheStatus: ReaderImageCacheStatus = new ReaderImageCacheStatus()
+  @Local isLoadingReaderCache: boolean = false
+  @Local isClearingReaderCache: boolean = false
+  @Local readerCacheError: string = ''
+  @Local readerPresentation: ReaderPresentationState = connectReaderPresentation()
+  @Local readerModeError: string = ''
+  @Local browsePresentationError: string = ''
+  @Local catalogPreferencesError: string = ''
+  @Local readerModeMenuShown: boolean = false
+  @Local readerPreloadMenuShown: boolean = false
+  @Local readerAutoPageMenuShown: boolean = false
+  @Local readerTapZoneMenuShown: boolean = false
+  @Local readerTapZoneInvertMenuShown: boolean = false
+  @Local downloadSettings: DownloadSettingsState = connectDownloadSettings()
+  @Local accountSession: AccountSessionState = connectAccountSession()
+  @Local accountProfile: AccountProfileState = connectAccountProfile()
+  @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
+  @Local catalogPreferences: CatalogPreferencesState = connectCatalogPreferences()
+  @Local tabletLayout: TabletLayoutState = connectTabletLayout()
+  @Local homeTab: HomeTabAutoHideState = connectHomeTabAutoHide()
+  @Local coverBackground: CoverBackgroundState = connectCoverBackground()
+  @Local galleryTitle: GalleryTitleState = connectGalleryTitle()
+  @Local clipboardLink: NhClipboardLinkState = connectNhClipboardLink()
+  @Local readButtonStyle: ReadButtonStyleState = connectReadButtonStyle()
+  @Local immersiveMaterial: ImmersiveMaterialSettingsState = connectImmersiveMaterialSettings()
+  @Local themeDisplay: ThemeDisplayState = connectThemeDisplay()
+  @Local language: LanguageState = connectLanguageState()
+  @Local layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
+  @Local settingsNavigation: SettingsNavigationState = connectSettingsNavigation()
+  @Local isAccountSignedIn: boolean = false
+  @Local downloadSettingsError: string = ''
+  @Local isSavingDownloadSettings: boolean = false
+  @Local galleryConcurrencyMenuShown: boolean = false
+  @Local pageConcurrencyMenuShown: boolean = false
+  @Local retryCountMenuShown: boolean = false
+  @Local themeMenuShown: boolean = false
+  @Local immersiveMaterialMenuShown: boolean = false
+  @Local languageMenuShown: boolean = false
+  @Local browsePresentationMenuShown: boolean = false
+  @Local catalogBrowseLanguageMenuShown: boolean = false
+  @Local catalogBrowseSortMenuShown: boolean = false
+  @Local catalogSearchLanguageMenuShown: boolean = false
+  @Local catalogSearchSortMenuShown: boolean = false
+  @Local tabletLayoutMenuShown: boolean = false
+  @Local clipboardLinkSaving: boolean = false
+  @Local readButtonStyleMenuShown: boolean = false
+  @Param scroller: Scroller = new Scroller()
+  @Param surface: SettingsSurface = SettingsSurface.ROOT
+  /** Reader mounts this same semantic surface inside its private sheet. */
+  @Param sheetPresentation: boolean = false
+  @Event onClose?: () => void
+  @Event onOpenBrowserSession?: () => void
+  @Event onOpenLayoutSettings?: () => void
+  @Event onOpenCatalogSettings?: () => void
+  @Event onOpenBrowseDensity?: (mode: NhBrowsePresentation) => void
+  @Event onOpenReaderSettings?: () => void
+  @Event onOpenDownloadSettings?: () => void
+  @Event onOpenCacheSettings?: () => void
+  @Event onOpenAdvancedSettings?: () => void
+  @Event onOpenAbout?: () => void
+  @Event onOpenContentFilters?: () => void
+  @Event onDidScroll?: (offset: number, state: ScrollState) => void
+
+  aboutToAppear(): void {
+    if (this.surface === SettingsSurface.ROOT) {
+      this.refreshAccountSession()
+      return
+    }
+    if (this.surface === SettingsSurface.LAYOUT) {
+      this.loadLayoutSettings()
+      return
+    }
+    if (this.surface === SettingsSurface.CATALOG) {
+      this.loadCatalogSettings()
+      return
+    }
+    if (this.surface === SettingsSurface.READER) {
+      this.loadReaderPresentation()
+      return
+    }
+    if (this.surface === SettingsSurface.DOWNLOAD) {
+      this.loadDownloadSettings()
+      return
+    }
+    if (this.surface === SettingsSurface.CACHE) {
+      this.loadReaderCacheStatus()
+      return
+    }
+    if (this.surface === SettingsSurface.ADVANCED) {
+      this.loadAdvancedSettings()
+    }
+  }
+
+  private isSettingsRootSelected(name: string): boolean {
+    return this.settingsNavigation.isRootSelected(name, this.layoutSafeArea.rootNavigationSplit)
+  }
+
+  @Monitor('accountSession.revision')
+  onAccountSessionChanged(): void {
+    if (this.surface === SettingsSurface.ROOT) {
+      this.refreshAccountSession()
+    }
+  }
+
+  private context(): common.UIAbilityContext {
+    return this.getUIContext().getHostContext() as common.UIAbilityContext
+  }
+
+  private async refreshAccountSession(): Promise<void> {
+    this.isAccountSignedIn = this.accountSession.initialized && this.accountSession.signedIn
+    if (!this.isAccountSignedIn) {
+      return
+    }
+    try {
+      // The profile snapshot is intentionally separate from the session
+      // owner. Settings may read it for display, but it must never trigger a
+      // second RDB/HUKS/ArkWeb restore attempt.
+      await NhAccountProfileService.restore(this.context())
+    } catch (_error) {
+      // A display-profile read failure never changes the published session.
+    }
+  }
+
+  /**
+   * Layout is the one durable display destination, matching NextE's root
+   * hierarchy. Keep the restored state local-only: none of these preferences
+   * fetches, mutates, or reinterprets a gallery response.
+   */
+  private async loadLayoutSettings(): Promise<void> {
+    this.browsePresentationError = ''
+    try {
+      await Promise.all([
+        ThemeSettings.restore(this.context()),
+        LanguageSettings.restore(this.context()),
+        ImmersiveMaterialSettings.restore(this.context()),
+        BrowsePresentationService.restore(this.context()),
+        HomeTabSettings.restore(this.context()),
+        CoverBackgroundSettings.restore(this.context()),
+        GalleryTitleSettings.restore(this.context()),
+        ReadButtonStyleSettings.restore(this.context()),
+        TabletLayoutSettings.restore(this.context()),
+      ])
+    } catch (_error) {
+      this.browsePresentationError = AppStrings.get('settings_browse_presentation_unavailable')
+    }
+  }
+
+  /** Browse and Search request defaults belong to their own root destination. */
+  private async loadCatalogSettings(): Promise<void> {
+    this.catalogPreferencesError = ''
+    try {
+      await CatalogPreferencesService.restore(this.context())
+    } catch (_error) {
+      this.catalogPreferencesError = AppStrings.get('settings_catalog_preferences_unavailable')
+    }
+  }
+
+  private themeModeLabel(): string {
+    if (this.themeDisplay.mode === ThemeSettings.MODE_LIGHT) {
+      return AppStrings.get('theme_light')
+    }
+    if (this.themeDisplay.mode === ThemeSettings.MODE_DARK) {
+      return AppStrings.get('theme_dark')
+    }
+    return AppStrings.get('appearance_follow_system')
+  }
+
+  private languageModeLabel(): string {
+    if (this.language.mode === LanguageSettings.MODE_ZH_CN) {
+      return AppStrings.get('language_zh')
+    }
+    if (this.language.mode === LanguageSettings.MODE_EN) {
+      return AppStrings.get('language_en')
+    }
+    if (this.language.mode === LanguageSettings.MODE_JA) {
+      return AppStrings.get('language_ja')
+    }
+    return AppStrings.get('appearance_follow_system')
+  }
+
+  private setTheme(mode: string): void {
+    this.themeMenuShown = false
+    ThemeSettings.setMode(this.context(), mode).catch((): void => {})
+  }
+
+  private setImmersiveMaterial(level: string): void {
+    this.immersiveMaterialMenuShown = false
+    ImmersiveMaterialSettings.setLevel(this.context(), level).catch((): void => {})
+  }
+
+  private immersiveMaterialLabel(): string {
+    const level: string = ImmersiveMaterialSettings.normalizeLevel(this.immersiveMaterial.level)
+    if (level === ImmersiveMaterialSettings.LEVEL_EXQUISITE) {
+      return AppStrings.get('immersive_material_exquisite')
+    }
+    if (level === ImmersiveMaterialSettings.LEVEL_GENTLE) {
+      return AppStrings.get('immersive_material_gentle')
+    }
+    if (level === ImmersiveMaterialSettings.LEVEL_SMOOTH) {
+      return AppStrings.get('immersive_material_smooth')
+    }
+    return AppStrings.get('common_auto')
+  }
+
+  private setLanguage(mode: string): void {
+    this.languageMenuShown = false
+    LanguageSettings.setMode(this.context(), mode).catch((): void => {})
+  }
+
+  private tabletLayoutLabelFor(mode: string): string {
+    const normalized: string = TabletLayoutSettings.normalizeMode(mode)
+    if (normalized === TabletLayoutSettings.MODE_OFF) {
+      return AppStrings.get('common_off')
+    }
+    if (normalized === TabletLayoutSettings.MODE_LANDSCAPE_ONLY) {
+      return AppStrings.get('tablet_layout_landscape_only')
+    }
+    return AppStrings.get('common_auto')
+  }
+
+  private tabletLayoutLabel(): string {
+    return this.tabletLayoutLabelFor(this.tabletLayout.mode)
+  }
+
+  private setTabletLayout(mode: string): void {
+    this.tabletLayoutMenuShown = false
+    TabletLayoutSettings.setMode(this.context(), mode).catch((): void => {})
+  }
+
+  private browsePresentationLabel(): string {
+    if (this.browsePresentation.mode === NhBrowsePresentation.LIST) {
+      return AppStrings.get('browse_list')
+    }
+    if (this.browsePresentation.mode === NhBrowsePresentation.WATERFALL) {
+      return AppStrings.get('browse_waterfall')
+    }
+    if (this.browsePresentation.mode === NhBrowsePresentation.WATERFALL_COMPACT) {
+      return AppStrings.get('browse_waterfall_compact')
+    }
+    if (this.browsePresentation.mode === NhBrowsePresentation.COVER_WALL) {
+      return AppStrings.get('browse_cover_wall')
+    }
+    return this.browsePresentation.mode === NhBrowsePresentation.COVER_GRID
+      ? AppStrings.get('browse_cover_grid')
+      : AppStrings.get('browse_simple_list')
+  }
+
+  private async saveBrowsePresentation(mode: NhBrowsePresentation): Promise<void> {
+    this.browsePresentationError = ''
+    try {
+      await BrowsePresentationService.setMode(this.context(), mode)
+    } catch (_error) {
+      this.browsePresentationError = AppStrings.get('settings_browse_presentation_save_failed')
+    }
+  }
+
+  private catalogLanguageLabel(language: NhSearchLanguage): string {
+    return NhSearchOptions.languageLabel(language)
+  }
+
+  private catalogSortLabel(sort: NhSearchSort): string {
+    return NhSearchOptions.sortLabel(sort)
+  }
+
+  private setCatalogBrowseLanguage(language: NhSearchLanguage): void {
+    this.catalogBrowseLanguageMenuShown = false
+    this.catalogPreferencesError = ''
+    CatalogPreferencesService.setBrowseLanguage(this.context(), language).catch((): void => {
+      this.catalogPreferencesError = AppStrings.get('settings_catalog_preferences_save_failed')
+    })
+  }
+
+  private setCatalogBrowseSort(sort: NhSearchSort): void {
+    this.catalogBrowseSortMenuShown = false
+    this.catalogPreferencesError = ''
+    CatalogPreferencesService.setBrowseSort(this.context(), sort).catch((): void => {
+      this.catalogPreferencesError = AppStrings.get('settings_catalog_preferences_save_failed')
+    })
+  }
+
+  private setCatalogSearchLanguage(language: NhSearchLanguage): void {
+    this.catalogSearchLanguageMenuShown = false
+    this.catalogPreferencesError = ''
+    CatalogPreferencesService.setSearchLanguage(this.context(), language).catch((): void => {
+      this.catalogPreferencesError = AppStrings.get('settings_catalog_preferences_save_failed')
+    })
+  }
+
+  private setCatalogSearchSort(sort: NhSearchSort): void {
+    this.catalogSearchSortMenuShown = false
+    this.catalogPreferencesError = ''
+    CatalogPreferencesService.setSearchSort(this.context(), sort).catch((): void => {
+      this.catalogPreferencesError = AppStrings.get('settings_catalog_preferences_save_failed')
+    })
+  }
+
+  private setHomeTabAutoHide(autoHide: boolean): void {
+    HomeTabSettings.save(this.context(), autoHide).catch((): void => {})
+  }
+
+  private setBlurLetterboxBackground(value: boolean): void {
+    CoverBackgroundSettings.save(this.context(), value).catch((): void => {})
+  }
+
+  private setJapaneseTitlePrimary(value: boolean): void {
+    GalleryTitleSettings.save(this.context(), value).catch((): void => {})
+  }
+
+  private async loadReaderPresentation(): Promise<void> {
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.restore(this.context())
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_layout_unavailable')
+    }
+  }
+
+  private readButtonStyleLabel(): string {
+    return this.readButtonStyle.style === ReadButtonStyleSettings.STYLE_HDS
+      ? AppStrings.get('read_button_style_hds')
+      : AppStrings.get('read_button_style_filled')
+  }
+
+  private setReadButtonStyle(style: string): void {
+    ReadButtonStyleSettings.save(this.context(), style).catch((): void => {})
+  }
+
+  private setClipboardLinkEnabled(value: boolean): void {
+    if (this.clipboardLinkSaving) {
+      return
+    }
+    this.clipboardLinkSaving = true
+    NhClipboardLinkSettings.setEnabled(this.context(), value)
+      .then((applied: boolean): void => {
+        if (value && !applied) {
+          try {
+            this.getUIContext().getPromptAction().showToast({
+              message: AppStrings.get('clipboard_link_permission_denied'),
+            })
+          } catch (_error) {}
+        }
+      })
+      .finally((): void => {
+        this.clipboardLinkSaving = false
+      })
+  }
+
+  private browseColumnWidth(): number {
+    const mode: NhBrowsePresentation = this.browsePresentation.mode
+    const override: number = this.browsePresentation.columnWidthFor(mode)
+    return override > 0 ? override : galleryBaseMinColumnWidth(mode)
+  }
+
+  private async loadTagDictionaryStatus(): Promise<void> {
+    try {
+      this.applyTagDictionaryStatus(await TagTranslationRepository.status(this.context()))
+    } catch (_error) {
+      this.tagDictionaryError = AppStrings.get('settings_tag_translation_status_unavailable')
+    }
+  }
+
+  private async loadAdvancedSettings(): Promise<void> {
+    await Promise.all([
+      this.loadTagDictionaryStatus(),
+      NhClipboardLinkSettings.restore(this.context()),
+    ])
+  }
+
+  private async updateTagDictionary(): Promise<void> {
+    if (this.isUpdatingTagDictionary) {
+      return
+    }
+    this.isUpdatingTagDictionary = true
+    this.tagDictionaryError = ''
+    try {
+      this.applyTagDictionaryStatus(await TagTranslationUpdateService.updateFromPublicRelease(this.context()))
+    } catch (_error) {
+      this.tagDictionaryError = this.tagDictionaryErrorMessage(TagDictionaryUiErrorCode.UPDATE_FAILED)
+    } finally {
+      this.isUpdatingTagDictionary = false
+    }
+  }
+
+  private tagDictionaryErrorMessage(errorCode: string): string {
+    switch (errorCode) {
+      case TagDictionaryUiErrorCode.UPDATE_FAILED:
+        return AppStrings.get('settings_tag_translation_error_update')
+      default:
+        return AppStrings.get('settings_tag_translation_error_update')
+    }
+  }
+
+  private applyTagDictionaryStatus(status: NhTagTranslationStatus): void {
+    this.tagDictionaryStatus = status
+    this.tagDictionaryRowCount = status.rowCount
+  }
+
+  private tagDictionarySubtitle(): string {
+    if (this.tagDictionaryRowCount > 0) {
+      return AppStrings.format('settings_tag_translation_available', [this.tagDictionaryRowCount.toString()])
+    }
+    return AppStrings.get('settings_tag_translation_hint')
+  }
+
+  private tagDictionaryActionLabel(): string {
+    if (this.isUpdatingTagDictionary) {
+      return AppStrings.get('settings_tag_translation_updating')
+    }
+    return this.tagDictionaryRowCount > 0
+      ? AppStrings.get('settings_tag_translation_update')
+      : AppStrings.get('settings_tag_translation_download')
+  }
+
+  private async loadReaderCacheStatus(): Promise<void> {
+    if (this.isClearingReaderCache) {
+      return
+    }
+    this.isLoadingReaderCache = true
+    this.readerCacheError = ''
+    try {
+      this.readerCacheStatus = ReaderImageCacheService.status(this.context())
+    } catch (error) {
+      const message: string = (error as Error).message
+      this.readerCacheError = message.length > 0
+        ? message
+        : AppStrings.get('settings_reader_cache_status_unavailable')
+    } finally {
+      this.isLoadingReaderCache = false
+    }
+  }
+
+  private async loadDownloadSettings(): Promise<void> {
+    this.downloadSettingsError = ''
+    try {
+      await DownloadSettingsService.restore(this.context())
+    } catch (_error) {
+      this.downloadSettingsError = AppStrings.get('settings_download_settings_unavailable')
+    }
+  }
+
+  private async saveGalleryConcurrency(value: number): Promise<void> {
+    if (this.isSavingDownloadSettings) {
+      return
+    }
+    this.isSavingDownloadSettings = true
+    this.downloadSettingsError = ''
+    try {
+      await DownloadSettingsService.setMaxConcurrentGalleries(this.context(), value)
+      await DownloadQueueService.applySettings(this.context())
+    } catch (_error) {
+      this.downloadSettingsError = AppStrings.get('settings_download_gallery_concurrency_save_failed')
+    } finally {
+      this.isSavingDownloadSettings = false
+    }
+  }
+
+  private async savePageConcurrency(value: number): Promise<void> {
+    if (this.isSavingDownloadSettings) {
+      return
+    }
+    this.isSavingDownloadSettings = true
+    this.downloadSettingsError = ''
+    try {
+      await DownloadSettingsService.setMaxConcurrentPages(this.context(), value)
+      await DownloadQueueService.applySettings(this.context())
+    } catch (_error) {
+      this.downloadSettingsError = AppStrings.get('settings_download_page_concurrency_save_failed')
+    } finally {
+      this.isSavingDownloadSettings = false
+    }
+  }
+
+  private async saveRetryCount(value: number): Promise<void> {
+    if (this.isSavingDownloadSettings) {
+      return
+    }
+    this.isSavingDownloadSettings = true
+    this.downloadSettingsError = ''
+    try {
+      await DownloadSettingsService.setRetryCount(this.context(), value)
+      await DownloadQueueService.applySettings(this.context())
+    } catch (_error) {
+      this.downloadSettingsError = AppStrings.get('settings_download_retry_count_save_failed')
+    } finally {
+      this.isSavingDownloadSettings = false
+    }
+  }
+
+  private downloadPolicySubtitle(): string {
+    const total: number = this.downloadSettings.maxConcurrentGalleries * this.downloadSettings.maxConcurrentPages
+    if (total > 8) {
+      return AppStrings.format('settings_download_parallel_requests', [total.toString()])
+    }
+    return AppStrings.format('settings_download_worker_slots', [
+      this.downloadSettings.maxConcurrentGalleries.toString(),
+      this.downloadSettings.maxConcurrentPages.toString(),
+    ])
+  }
+
+  private retryCountLabelFor(count: number): string {
+    return count === 1
+      ? AppStrings.format('settings_download_retry_one', [count.toString()])
+      : AppStrings.format('settings_download_retry_other', [count.toString()])
+  }
+
+  private retryCountLabel(): string {
+    return this.retryCountLabelFor(this.downloadSettings.retryCount)
+  }
+
+  private readerModeLabel(): string {
+    if (this.readerPresentation.mode === NhReaderMode.PAGED_RTL) {
+      return AppStrings.get('settings_reader_mode_paged_rtl')
+    }
+    if (this.readerPresentation.mode === NhReaderMode.PAGED_VERTICAL) {
+      return AppStrings.get('settings_reader_mode_paged_vertical')
+    }
+    if (this.readerPresentation.mode === NhReaderMode.PAGED) {
+      return AppStrings.get('settings_reader_mode_paged')
+    }
+    return AppStrings.get('settings_reader_mode_vertical')
+  }
+
+  private readerModeIcon(mode: NhReaderMode): Resource {
+    if (mode === NhReaderMode.PAGED_RTL) {
+      return $r('sys.symbol.arrow_left_and_square')
+    }
+    if (mode === NhReaderMode.PAGED_VERTICAL) {
+      return $r('sys.symbol.single_page_flipping')
+    }
+    if (mode === NhReaderMode.VERTICAL) {
+      return $r('sys.symbol.scroll_vertical')
+    }
+    return $r('sys.symbol.arrow_right_and_square')
+  }
+
+  private readerTapZoneLayoutLabel(): string {
+    if (this.readerPresentation.tapZoneLayout === NhReaderTapZoneLayout.L_SHAPED) {
+      return AppStrings.get('settings_reader_tap_zone_l_shaped')
+    }
+    if (this.readerPresentation.tapZoneLayout === NhReaderTapZoneLayout.KINDLE) {
+      return AppStrings.get('settings_reader_tap_zone_kindle')
+    }
+    if (this.readerPresentation.tapZoneLayout === NhReaderTapZoneLayout.EDGE) {
+      return AppStrings.get('settings_reader_tap_zone_edge')
+    }
+    return AppStrings.get('settings_reader_tap_zone_right_left')
+  }
+
+  private readerTapZoneInvertLabel(): string {
+    if (this.readerPresentation.tapZoneInvert === NhReaderTapZoneInvert.HORIZONTAL) {
+      return AppStrings.get('settings_reader_tap_zone_invert_horizontal')
+    }
+    if (this.readerPresentation.tapZoneInvert === NhReaderTapZoneInvert.VERTICAL) {
+      return AppStrings.get('settings_reader_tap_zone_invert_vertical')
+    }
+    if (this.readerPresentation.tapZoneInvert === NhReaderTapZoneInvert.BOTH) {
+      return AppStrings.get('settings_reader_tap_zone_invert_both')
+    }
+    return AppStrings.get('settings_reader_tap_zone_invert_none')
+  }
+
+  @Builder
+  private GalleryConcurrencyMenu() {
+    Menu() {
+      MenuItem({
+        content: '1',
+        symbolEndIcon: this.downloadSettings.maxConcurrentGalleries === 1
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveGalleryConcurrency(1)
+        this.galleryConcurrencyMenuShown = false
+      })
+      MenuItem({
+        content: '2',
+        symbolEndIcon: this.downloadSettings.maxConcurrentGalleries === 2
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveGalleryConcurrency(2)
+        this.galleryConcurrencyMenuShown = false
+      })
+      MenuItem({
+        content: '3',
+        symbolEndIcon: this.downloadSettings.maxConcurrentGalleries === 3
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveGalleryConcurrency(3)
+        this.galleryConcurrencyMenuShown = false
+      })
+      MenuItem({
+        content: '4',
+        symbolEndIcon: this.downloadSettings.maxConcurrentGalleries === 4
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveGalleryConcurrency(4)
+        this.galleryConcurrencyMenuShown = false
+      })
+      MenuItem({
+        content: '5',
+        symbolEndIcon: this.downloadSettings.maxConcurrentGalleries === 5
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveGalleryConcurrency(5)
+        this.galleryConcurrencyMenuShown = false
+      })
+    }
+  }
+
+  @Builder
+  private PageConcurrencyMenu() {
+    Menu() {
+      MenuItem({
+        content: '1',
+        symbolEndIcon: this.downloadSettings.maxConcurrentPages === 1
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.savePageConcurrency(1)
+        this.pageConcurrencyMenuShown = false
+      })
+      MenuItem({
+        content: '2',
+        symbolEndIcon: this.downloadSettings.maxConcurrentPages === 2
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.savePageConcurrency(2)
+        this.pageConcurrencyMenuShown = false
+      })
+      MenuItem({
+        content: '3',
+        symbolEndIcon: this.downloadSettings.maxConcurrentPages === 3
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.savePageConcurrency(3)
+        this.pageConcurrencyMenuShown = false
+      })
+      MenuItem({
+        content: '4',
+        symbolEndIcon: this.downloadSettings.maxConcurrentPages === 4
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.savePageConcurrency(4)
+        this.pageConcurrencyMenuShown = false
+      })
+      MenuItem({
+        content: '5',
+        symbolEndIcon: this.downloadSettings.maxConcurrentPages === 5
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.savePageConcurrency(5)
+        this.pageConcurrencyMenuShown = false
+      })
+    }
+  }
+
+  @Builder
+  private RetryCountMenu() {
+    Menu() {
+      MenuItem({
+        content: this.retryCountLabelFor(0),
+        symbolEndIcon: this.downloadSettings.retryCount === 0
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveRetryCount(0)
+        this.retryCountMenuShown = false
+      })
+      MenuItem({
+        content: this.retryCountLabelFor(1),
+        symbolEndIcon: this.downloadSettings.retryCount === 1
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveRetryCount(1)
+        this.retryCountMenuShown = false
+      })
+      MenuItem({
+        content: this.retryCountLabelFor(2),
+        symbolEndIcon: this.downloadSettings.retryCount === 2
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveRetryCount(2)
+        this.retryCountMenuShown = false
+      })
+      MenuItem({
+        content: this.retryCountLabelFor(3),
+        symbolEndIcon: this.downloadSettings.retryCount === 3
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveRetryCount(3)
+        this.retryCountMenuShown = false
+      })
+    }
+  }
+
+  @Builder
+  private ReaderModeMenu() {
+    Menu() {
+      MenuItem({
+        content: AppStrings.get('settings_reader_mode_paged'),
+        symbolStartIcon: new SymbolGlyphModifier(this.readerModeIcon(NhReaderMode.PAGED)),
+        symbolEndIcon: this.readerPresentation.mode === NhReaderMode.PAGED
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveReaderMode(NhReaderMode.PAGED)
+        this.readerModeMenuShown = false
+      })
+      MenuItem({
+        content: AppStrings.get('settings_reader_mode_paged_rtl'),
+        symbolStartIcon: new SymbolGlyphModifier(this.readerModeIcon(NhReaderMode.PAGED_RTL)),
+        symbolEndIcon: this.readerPresentation.mode === NhReaderMode.PAGED_RTL
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveReaderMode(NhReaderMode.PAGED_RTL)
+        this.readerModeMenuShown = false
+      })
+      MenuItem({
+        content: AppStrings.get('settings_reader_mode_paged_vertical'),
+        symbolStartIcon: new SymbolGlyphModifier(this.readerModeIcon(NhReaderMode.PAGED_VERTICAL)),
+        symbolEndIcon: this.readerPresentation.mode === NhReaderMode.PAGED_VERTICAL
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveReaderMode(NhReaderMode.PAGED_VERTICAL)
+        this.readerModeMenuShown = false
+      })
+      MenuItem({
+        content: AppStrings.get('settings_reader_mode_vertical'),
+        symbolStartIcon: new SymbolGlyphModifier(this.readerModeIcon(NhReaderMode.VERTICAL)),
+        symbolEndIcon: this.readerPresentation.mode === NhReaderMode.VERTICAL
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveReaderMode(NhReaderMode.VERTICAL)
+        this.readerModeMenuShown = false
+      })
+    }
+  }
+
+  @Builder
+  private ReaderTapZoneMenuItem(layout: NhReaderTapZoneLayout) {
+    MenuItem({
+      content: this.readerTapZoneLayoutLabelFor(layout),
+      symbolEndIcon: this.readerPresentation.tapZoneLayout === layout
+        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+        : undefined,
+    }).onClick((): void => {
+      this.saveReaderTapZoneLayout(layout)
+      this.readerTapZoneMenuShown = false
+    })
+  }
+
+  private readerTapZoneLayoutLabelFor(layout: NhReaderTapZoneLayout): string {
+    if (layout === NhReaderTapZoneLayout.L_SHAPED) {
+      return AppStrings.get('settings_reader_tap_zone_l_shaped')
+    }
+    if (layout === NhReaderTapZoneLayout.KINDLE) {
+      return AppStrings.get('settings_reader_tap_zone_kindle')
+    }
+    if (layout === NhReaderTapZoneLayout.EDGE) {
+      return AppStrings.get('settings_reader_tap_zone_edge')
+    }
+    return AppStrings.get('settings_reader_tap_zone_right_left')
+  }
+
+  @Builder
+  private ReaderTapZoneMenu() {
+    Menu() {
+      this.ReaderTapZoneMenuItem(NhReaderTapZoneLayout.RIGHT_LEFT)
+      this.ReaderTapZoneMenuItem(NhReaderTapZoneLayout.L_SHAPED)
+      this.ReaderTapZoneMenuItem(NhReaderTapZoneLayout.KINDLE)
+      this.ReaderTapZoneMenuItem(NhReaderTapZoneLayout.EDGE)
+    }
+  }
+
+  @Builder
+  private ReaderTapZoneInvertMenuItem(invert: NhReaderTapZoneInvert) {
+    MenuItem({
+      content: this.readerTapZoneInvertLabelFor(invert),
+      symbolEndIcon: this.readerPresentation.tapZoneInvert === invert
+        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+        : undefined,
+    }).onClick((): void => {
+      this.saveReaderTapZoneInvert(invert)
+      this.readerTapZoneInvertMenuShown = false
+    })
+  }
+
+  private readerTapZoneInvertLabelFor(invert: NhReaderTapZoneInvert): string {
+    if (invert === NhReaderTapZoneInvert.HORIZONTAL) {
+      return AppStrings.get('settings_reader_tap_zone_invert_horizontal')
+    }
+    if (invert === NhReaderTapZoneInvert.VERTICAL) {
+      return AppStrings.get('settings_reader_tap_zone_invert_vertical')
+    }
+    if (invert === NhReaderTapZoneInvert.BOTH) {
+      return AppStrings.get('settings_reader_tap_zone_invert_both')
+    }
+    return AppStrings.get('settings_reader_tap_zone_invert_none')
+  }
+
+  @Builder
+  private ReaderTapZoneInvertMenu() {
+    Menu() {
+      this.ReaderTapZoneInvertMenuItem(NhReaderTapZoneInvert.NONE)
+      this.ReaderTapZoneInvertMenuItem(NhReaderTapZoneInvert.HORIZONTAL)
+      this.ReaderTapZoneInvertMenuItem(NhReaderTapZoneInvert.VERTICAL)
+      this.ReaderTapZoneInvertMenuItem(NhReaderTapZoneInvert.BOTH)
+    }
+  }
+
+  @Builder
+  private ReadButtonStyleMenu() {
+    Menu() {
+      MenuItem({
+        content: AppStrings.get('read_button_style_filled'),
+        symbolEndIcon: this.readButtonStyle.style === ReadButtonStyleSettings.STYLE_FILLED
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.setReadButtonStyle(ReadButtonStyleSettings.STYLE_FILLED)
+        this.readButtonStyleMenuShown = false
+      })
+      MenuItem({
+        content: AppStrings.get('read_button_style_hds'),
+        symbolEndIcon: this.readButtonStyle.style === ReadButtonStyleSettings.STYLE_HDS
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.setReadButtonStyle(ReadButtonStyleSettings.STYLE_HDS)
+        this.readButtonStyleMenuShown = false
+      })
+    }
+  }
+
+  @Builder
+  private TabletLayoutMenu() {
+    Menu() {
+      MenuItem({
+        content: this.tabletLayoutLabelFor(TabletLayoutSettings.MODE_AUTO),
+        symbolEndIcon: TabletLayoutSettings.normalizeMode(this.tabletLayout.mode) === TabletLayoutSettings.MODE_AUTO
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.setTabletLayout(TabletLayoutSettings.MODE_AUTO)
+      })
+      MenuItem({
+        content: this.tabletLayoutLabelFor(TabletLayoutSettings.MODE_OFF),
+        symbolEndIcon: TabletLayoutSettings.normalizeMode(this.tabletLayout.mode) === TabletLayoutSettings.MODE_OFF
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.setTabletLayout(TabletLayoutSettings.MODE_OFF)
+      })
+      MenuItem({
+        content: this.tabletLayoutLabelFor(TabletLayoutSettings.MODE_LANDSCAPE_ONLY),
+        symbolEndIcon: TabletLayoutSettings.normalizeMode(this.tabletLayout.mode) === TabletLayoutSettings.MODE_LANDSCAPE_ONLY
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.setTabletLayout(TabletLayoutSettings.MODE_LANDSCAPE_ONLY)
+      })
+    }
+  }
+
+  @Builder
+  private ReaderPreloadMenuItem(pages: number) {
+    MenuItem({
+      content: `${pages}`,
+      symbolEndIcon: this.readerPresentation.preloadPages === pages
+        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+        : undefined,
+    }).onClick((): void => {
+      this.saveReaderPreloadPages(pages)
+      this.readerPreloadMenuShown = false
+    })
+  }
+
+  @Builder
+  private ReaderPreloadMenu() {
+    Menu() {
+      this.ReaderPreloadMenuItem(0)
+      this.ReaderPreloadMenuItem(1)
+      this.ReaderPreloadMenuItem(2)
+      this.ReaderPreloadMenuItem(3)
+      this.ReaderPreloadMenuItem(4)
+      this.ReaderPreloadMenuItem(5)
+    }
+  }
+
+  @Builder
+  private ReaderAutoPageMenuItem(seconds: number) {
+    MenuItem({
+      content: AppStrings.format('settings_reader_auto_page_seconds', [seconds.toString()]),
+      symbolEndIcon: this.readerPresentation.autoPageSeconds === seconds
+        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+        : undefined,
+    }).onClick((): void => {
+      this.saveReaderAutoPageSeconds(seconds)
+      this.readerAutoPageMenuShown = false
+    })
+  }
+
+  @Builder
+  private ReaderAutoPageMenu() {
+    Menu() {
+      this.ReaderAutoPageMenuItem(2)
+      this.ReaderAutoPageMenuItem(3)
+      this.ReaderAutoPageMenuItem(5)
+      this.ReaderAutoPageMenuItem(8)
+      this.ReaderAutoPageMenuItem(10)
+    }
+  }
+
+  private async saveReaderMode(mode: NhReaderMode): Promise<void> {
+    if (this.readerPresentation.mode === mode) {
+      return
+    }
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setMode(this.context(), mode)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_layout_save_failed')
+    }
+  }
+
+  private async saveReaderKeepScreenOn(enabled: boolean): Promise<void> {
+    if (this.readerPresentation.keepScreenOn === enabled) {
+      return
+    }
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setKeepScreenOn(this.context(), enabled)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_keep_screen_on_save_failed')
+    }
+  }
+
+  private async saveReaderPreloadPages(pages: number): Promise<void> {
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setPreloadPages(this.context(), pages)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_preload_save_failed')
+    }
+  }
+
+  private async saveReaderFullscreen(enabled: boolean): Promise<void> {
+    if (this.readerPresentation.fullscreen === enabled) {
+      return
+    }
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setFullscreen(this.context(), enabled)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_fullscreen_save_failed')
+    }
+  }
+
+  private async saveReaderAutoPageSeconds(seconds: number): Promise<void> {
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setAutoPageSeconds(this.context(), seconds)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_auto_advance_save_failed')
+    }
+  }
+
+  private async saveReaderVolumeKeyTurn(enabled: boolean): Promise<void> {
+    if (this.readerPresentation.volumeKeyTurn === enabled) {
+      return
+    }
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setVolumeKeyTurn(this.context(), enabled)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_volume_key_save_failed')
+    }
+  }
+
+  private async saveReaderDoublePageEnabled(enabled: boolean): Promise<void> {
+    if (this.readerPresentation.doublePageEnabled === enabled) {
+      return
+    }
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setDoublePageEnabled(this.context(), enabled)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_double_page_save_failed')
+    }
+  }
+
+  private async saveReaderTapZoneLayout(layout: NhReaderTapZoneLayout): Promise<void> {
+    if (this.readerPresentation.tapZoneLayout === layout) {
+      return
+    }
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setTapZoneLayout(this.context(), layout)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_tap_zone_save_failed')
+    }
+  }
+
+  private async saveReaderTapZoneInvert(invert: NhReaderTapZoneInvert): Promise<void> {
+    if (this.readerPresentation.tapZoneInvert === invert) {
+      return
+    }
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setTapZoneInvert(this.context(), invert)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_tap_zone_save_failed')
+    }
+  }
+
+  private readerAutoPageLabel(): string {
+    return AppStrings.format('settings_reader_auto_page_seconds', [this.readerPresentation.autoPageSeconds.toString()])
+  }
+
+  private readerPreloadLabel(): string {
+    const pages: number = this.readerPresentation.preloadPages
+    return pages === 1
+      ? AppStrings.format('settings_reader_preload_page_one', [pages.toString()])
+      : AppStrings.format('settings_reader_preload_page_other', [pages.toString()])
+  }
+
+  private toggleStateLabel(enabled: boolean): string {
+    return AppStrings.get(enabled ? 'settings_toggle_on' : 'settings_toggle_off')
+  }
+
+  private cacheSizeLabel(bytes: number): string {
+    const normalized: number = Math.max(0, Math.floor(bytes))
+    if (normalized < 1024) {
+      return AppStrings.format('settings_cache_size_bytes', [normalized.toString()])
+    }
+    if (normalized < 1024 * 1024) {
+      return AppStrings.format('settings_cache_size_kilobytes', [Math.ceil(normalized / 1024).toString()])
+    }
+    const tenths: number = Math.round((normalized * 10) / (1024 * 1024))
+    return AppStrings.format('settings_cache_size_megabytes', [
+      Math.floor(tenths / 10).toString(),
+      (tenths % 10).toString(),
+    ])
+  }
+
+  private readerCacheSubtitle(): string {
+    if (this.isLoadingReaderCache) {
+      return AppStrings.get('settings_reader_cache_calculating')
+    }
+    if (this.readerCacheStatus.fileCount === 0) {
+      return AppStrings.get('settings_reader_cache_empty')
+    }
+    const values: string[] = [
+      this.readerCacheStatus.fileCount.toString(),
+      this.cacheSizeLabel(this.readerCacheStatus.bytes),
+    ]
+    return this.readerCacheStatus.fileCount === 1
+      ? AppStrings.format('settings_reader_cache_file_one', values)
+      : AppStrings.format('settings_reader_cache_file_other', values)
+  }
+
+  private clearReaderCache(): void {
+    if (this.isClearingReaderCache || this.readerCacheStatus.fileCount === 0) {
+      return
+    }
+    this.getUIContext().showAlertDialog({
+      title: AppStrings.get('settings_reader_cache_clear_title'),
+      message: AppStrings.get('settings_reader_cache_clear_message'),
+      primaryButton: {
+        value: AppStrings.get('common_cancel'),
+        action: (): void => {},
+      },
+      secondaryButton: {
+        value: AppStrings.get('common_clear'),
+        fontColor: Color.Red,
+        action: (): void => {
+          this.performReaderCacheClear()
+        },
+      },
+    })
+  }
+
+  @Builder
+  private RootAccountSection() {
+    NextNGroupedListSection() {
+      if (this.isAccountSignedIn && this.accountProfile.hasSnapshot) {
+        NextNListRow({
+          useCustomLeading: true,
+          customLeading: (): void => {
+            this.AccountAvatarPrefix()
+          },
+          title: this.accountProfile.username,
+          subtitle: AppStrings.format('account_profile_id', [this.accountProfile.userId]),
+          selected: this.isSettingsRootSelected(SETTINGS_ROOT_BROWSER_SESSION),
+          accessibilityLabel: AppStrings.get('account_open_page_a11y'),
+          onAction: (): void => {
+            if (this.onOpenBrowserSession) {
+              this.onOpenBrowserSession()
+            }
+          },
+        })
+      } else {
+        NextNListRow({
+          leadingIcon: $r('sys.symbol.person'),
+          title: AppStrings.get('account_title'),
+          subtitle: this.isAccountSignedIn
+            ? AppStrings.get('account_subtitle_signed_in_device')
+            : AppStrings.get('account_subtitle_sign_in'),
+          trailingText: this.isAccountSignedIn ? AppStrings.get('account_status_signed_in') : '',
+          selected: this.isSettingsRootSelected(SETTINGS_ROOT_BROWSER_SESSION),
+          accessibilityLabel: AppStrings.get('account_open_page_a11y'),
+          onAction: (): void => {
+            if (this.onOpenBrowserSession) {
+              this.onOpenBrowserSession()
+            }
+          },
+        })
+      }
+    }
+  }
+
+  /** Same 44vp circular identity prefix as NextE's Settings root. */
+  @Builder
+  private AccountAvatar() {
+    Stack() {
+      if (this.accountProfile.avatarUrl.length > 0) {
+        Image(this.accountProfile.avatarUrl)
+          .width(ThemeTokens.ACCOUNT_AVATAR_SIZE)
+          .height(ThemeTokens.ACCOUNT_AVATAR_SIZE)
+          .objectFit(ImageFit.Cover)
+      } else {
+        SymbolGlyph($r('sys.symbol.person_fill'))
+          .fontSize(ThemeTokens.ACCOUNT_AVATAR_SIZE / 2)
+          .fontColor([Color.White])
+      }
+    }
+    .width(ThemeTokens.ACCOUNT_AVATAR_SIZE)
+    .height(ThemeTokens.ACCOUNT_AVATAR_SIZE)
+    .borderRadius(ThemeTokens.ACCOUNT_AVATAR_SIZE / 2)
+    .clip(true)
+    .backgroundColor(ThemeTokens.BRAND)
+  }
+
+  /**
+   * HDS custom prefixes have no automatic image-to-text gap. Reserve the same
+   * 6 + 44 + 13vp track that NextE's ConciseListRow uses for its account
+   * avatar, instead of inheriting the oversized generic PrefixImage track.
+   */
+  @Builder
+  private AccountAvatarPrefix() {
+    Row() {
+      this.AccountAvatar()
+      Blank().width(ThemeTokens.ACCOUNT_AVATAR_PREFIX_TEXT_GAP)
+    }
+    .padding({ left: ThemeTokens.ACCOUNT_AVATAR_PREFIX_LEFT_INSET })
+  }
+
+  /** Directly mirrors the NextE Settings root-list grammar for real NextN capabilities. */
+  @Builder
+  private RootMainSection() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.paintpalette'),
+        title: AppStrings.get('settings_layout'),
+        subtitle: AppStrings.format('settings_layout_summary', [
+          this.themeModeLabel(),
+          this.browsePresentationLabel(),
+        ]),
+        selected: this.isSettingsRootSelected(SETTINGS_ROOT_LAYOUT),
+        accessibilityLabel: AppStrings.format('settings_layout_a11y', [
+          AppStrings.get('settings_layout'),
+          this.themeModeLabel(),
+          this.browsePresentationLabel(),
+        ]),
+        onAction: (): void => {
+          if (this.onOpenLayoutSettings) {
+            this.onOpenLayoutSettings()
+          }
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.magnifyingglass'),
+        title: AppStrings.get('settings_catalog'),
+        selected: this.isSettingsRootSelected(SETTINGS_ROOT_CATALOG),
+        accessibilityLabel: AppStrings.get('settings_catalog'),
+        onAction: (): void => {
+          if (this.onOpenCatalogSettings) {
+            this.onOpenCatalogSettings()
+          }
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.doc_plaintext'),
+        title: AppStrings.get('settings_reader'),
+        selected: this.isSettingsRootSelected(SETTINGS_ROOT_READER),
+        accessibilityLabel: AppStrings.get('settings_reader'),
+        onAction: (): void => {
+          if (this.onOpenReaderSettings) {
+            this.onOpenReaderSettings()
+          }
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.arrow_down_to_line'),
+        title: AppStrings.get('settings_download'),
+        selected: this.isSettingsRootSelected(SETTINGS_ROOT_DOWNLOAD),
+        accessibilityLabel: AppStrings.get('settings_download'),
+        onAction: (): void => {
+          if (this.onOpenDownloadSettings) {
+            this.onOpenDownloadSettings()
+          }
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.externaldrive'),
+        title: AppStrings.get('settings_cache'),
+        selected: this.isSettingsRootSelected(SETTINGS_ROOT_CACHE),
+        accessibilityLabel: AppStrings.get('settings_cache'),
+        onAction: (): void => {
+          if (this.onOpenCacheSettings) {
+            this.onOpenCacheSettings()
+          }
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.gearshape'),
+        title: AppStrings.get('settings_advanced'),
+        selected: this.isSettingsRootSelected(SETTINGS_ROOT_ADVANCED),
+        accessibilityLabel: AppStrings.get('settings_advanced'),
+        onAction: (): void => {
+          if (this.onOpenAdvancedSettings) {
+            this.onOpenAdvancedSettings()
+          }
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.info_circle'),
+        title: AppStrings.get('settings_about'),
+        selected: this.isSettingsRootSelected(SETTINGS_ROOT_ABOUT),
+        accessibilityLabel: AppStrings.get('settings_about'),
+        onAction: (): void => {
+          if (this.onOpenAbout) {
+            this.onOpenAbout()
+          }
+        },
+      })
+    }
+  }
+
+  private async performReaderCacheClear(): Promise<void> {
+    if (this.isClearingReaderCache) {
+      return
+    }
+    this.isClearingReaderCache = true
+    this.readerCacheError = ''
+    try {
+      this.readerCacheStatus = await ReaderImageCacheService.clear(this.context())
+    } catch (error) {
+      const message: string = (error as Error).message
+      this.readerCacheError = message.length > 0
+        ? message
+        : AppStrings.get('settings_reader_cache_clear_failed')
+    } finally {
+      this.isClearingReaderCache = false
+    }
+  }
+
+  @Builder
+  private RowDivider() {
+    Divider()
+      .strokeWidth(0.5)
+      .color(ThemeTokens.DIVIDER)
+      .margin({ left: ThemeTokens.SPACE_MD })
+  }
+
+  @Builder
+  private GroupNote(text: string) {
+    Text(text)
+      .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+      .fontColor(ThemeTokens.TEXT_SECONDARY)
+      .maxLines(3)
+      .textOverflow({ overflow: TextOverflow.Ellipsis })
+      .width('100%')
+      .padding({
+        left: ThemeTokens.SPACE_MD,
+        right: ThemeTokens.SPACE_MD,
+      })
+  }
+
+  @Builder
+  private TagDictionaryGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.doc_plaintext'),
+        title: AppStrings.get('settings_tag_translation_local_title'),
+        subtitle: this.tagDictionarySubtitle(),
+        trailingText: this.tagDictionaryRowCount > 0
+          ? AppStrings.get('settings_tag_translation_ready')
+          : AppStrings.get('settings_tag_translation_optional'),
+        showChevron: false,
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.arrow_clockwise'),
+        title: this.tagDictionaryActionLabel(),
+        showChevron: !this.isUpdatingTagDictionary,
+        isEnabled: !this.isUpdatingTagDictionary,
+        accessibilityLabel: AppStrings.get('settings_tag_translation_update_a11y'),
+        onAction: () => {
+          this.updateTagDictionary()
+        },
+      })
+    }
+  }
+
+  @Builder
+  private ClipboardLinkGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.link'),
+        title: AppStrings.get('settings_clipboard_link'),
+        subtitle: AppStrings.get('settings_clipboard_link_hint'),
+        hasSwitch: true,
+        checked: this.clipboardLink.enabled,
+        showChevron: false,
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_clipboard_link'),
+          this.toggleStateLabel(this.clipboardLink.enabled),
+        ]),
+        onAction: (): void => {
+          this.setClipboardLinkEnabled(!this.clipboardLink.enabled)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.setClipboardLinkEnabled(value)
+        },
+      })
+    }
+  }
+
+  @Builder
+  private ReaderCacheGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.folder_fill'),
+        title: AppStrings.get('settings_reader_cache_title'),
+        subtitle: this.readerCacheSubtitle(),
+        trailingText: this.isLoadingReaderCache
+          ? AppStrings.get('settings_reader_cache_checking')
+          : AppStrings.get('settings_reader_cache_private'),
+        showChevron: false,
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.trash'),
+        title: this.isClearingReaderCache
+          ? AppStrings.get('settings_reader_cache_clearing')
+          : AppStrings.get('settings_reader_cache_clear'),
+        subtitle: AppStrings.get('settings_reader_cache_clear_hint'),
+        trailingText: this.isClearingReaderCache ? AppStrings.get('settings_reader_cache_wait') : '',
+        showChevron: !this.isClearingReaderCache,
+        isEnabled: !this.isClearingReaderCache && this.readerCacheStatus.fileCount > 0,
+        accessibilityLabel: AppStrings.get('settings_reader_cache_clear_a11y'),
+        onAction: (): void => {
+          this.clearReaderCache()
+        },
+      })
+    }
+  }
+
+  @Builder
+  private DownloadPolicyGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.rectangle_stack'),
+        title: AppStrings.get('settings_download_gallery_concurrency'),
+        subtitle: this.downloadPolicySubtitle(),
+        trailingText: `${this.downloadSettings.maxConcurrentGalleries}`,
+        isEnabled: !this.isSavingDownloadSettings,
+        accessibilityLabel: AppStrings.format('settings_download_gallery_concurrency_a11y', [
+          this.downloadSettings.maxConcurrentGalleries.toString(),
+        ]),
+        onAction: (): void => {
+          this.galleryConcurrencyMenuShown = true
+        },
+      })
+      .bindMenu(this.galleryConcurrencyMenuShown, this.GalleryConcurrencyMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.galleryConcurrencyMenuShown = false
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.square_grid_2x2'),
+        title: AppStrings.get('settings_download_page_concurrency'),
+        subtitle: AppStrings.get('settings_download_page_concurrency_hint'),
+        trailingText: `${this.downloadSettings.maxConcurrentPages}`,
+        isEnabled: !this.isSavingDownloadSettings,
+        accessibilityLabel: AppStrings.format('settings_download_page_concurrency_a11y', [
+          this.downloadSettings.maxConcurrentPages.toString(),
+        ]),
+        onAction: (): void => {
+          this.pageConcurrencyMenuShown = true
+        },
+      })
+      .bindMenu(this.pageConcurrencyMenuShown, this.PageConcurrencyMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.pageConcurrencyMenuShown = false
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.arrow_clockwise'),
+        title: AppStrings.get('settings_download_failed_page_retries'),
+        subtitle: AppStrings.get('settings_download_failed_page_retries_hint'),
+        trailingText: this.retryCountLabel(),
+        isEnabled: !this.isSavingDownloadSettings,
+        accessibilityLabel: AppStrings.format('settings_download_failed_page_retries_a11y', [
+          this.retryCountLabel(),
+        ]),
+        onAction: (): void => {
+          this.retryCountMenuShown = true
+        },
+      })
+      .bindMenu(this.retryCountMenuShown, this.RetryCountMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.retryCountMenuShown = false
+        },
+      })
+    }
+  }
+
+  @Builder
+  private ReaderPresentationGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.rectangle_split_2x1'),
+        title: AppStrings.get('settings_reader_layout'),
+        subtitle: AppStrings.get('settings_reader_layout_hint'),
+        trailingText: this.readerModeLabel(),
+        accessibilityLabel: AppStrings.format('settings_reader_layout_a11y', [this.readerModeLabel()]),
+        onAction: (): void => {
+          this.readerModeMenuShown = true
+        },
+      })
+      .bindMenu(this.readerModeMenuShown, this.ReaderModeMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.readerModeMenuShown = false
+        },
+      })
+      this.RowDivider()
+      // This is intentionally a durable request instead of a device-class
+      // switch. ReaderPage applies it only on a wide horizontal paged canvas
+      // and restores the same choice when that local viewport becomes wide.
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.rectangle_split_2x1'),
+        title: AppStrings.get('settings_reader_double_page'),
+        subtitle: AppStrings.get('settings_reader_double_page_hint'),
+        hasSwitch: true,
+        checked: this.readerPresentation.doublePageEnabled,
+        showChevron: false,
+        accessibilityLabel: AppStrings.format('settings_reader_double_page_a11y', [
+          this.toggleStateLabel(this.readerPresentation.doublePageEnabled),
+        ]),
+        onAction: (): void => {
+          this.saveReaderDoublePageEnabled(!this.readerPresentation.doublePageEnabled)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.saveReaderDoublePageEnabled(value)
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.rectangle_split_2x1'),
+        title: AppStrings.get('settings_reader_tap_zones'),
+        subtitle: AppStrings.get('settings_reader_tap_zones_hint'),
+        trailingText: this.readerTapZoneLayoutLabel(),
+        accessibilityLabel: AppStrings.format('settings_reader_tap_zones_a11y', [
+          this.readerTapZoneLayoutLabel(),
+        ]),
+        onAction: (): void => {
+          this.readerTapZoneMenuShown = true
+        },
+      })
+      .bindMenu(this.readerTapZoneMenuShown, this.ReaderTapZoneMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.readerTapZoneMenuShown = false
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.arrow_left_and_square'),
+        title: AppStrings.get('settings_reader_tap_zone_invert'),
+        subtitle: AppStrings.get('settings_reader_tap_zone_invert_hint'),
+        trailingText: this.readerTapZoneInvertLabel(),
+        accessibilityLabel: AppStrings.format('settings_reader_tap_zone_invert_a11y', [
+          this.readerTapZoneInvertLabel(),
+        ]),
+        onAction: (): void => {
+          this.readerTapZoneInvertMenuShown = true
+        },
+      })
+      .bindMenu(this.readerTapZoneInvertMenuShown, this.ReaderTapZoneInvertMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.readerTapZoneInvertMenuShown = false
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.fullscreen'),
+        title: AppStrings.get('settings_reader_fullscreen'),
+        subtitle: AppStrings.get('settings_reader_fullscreen_hint'),
+        hasSwitch: true,
+        checked: this.readerPresentation.fullscreen,
+        showChevron: false,
+        accessibilityLabel: AppStrings.format('settings_reader_fullscreen_a11y', [
+          this.toggleStateLabel(this.readerPresentation.fullscreen),
+        ]),
+        onAction: (): void => {
+          this.saveReaderFullscreen(!this.readerPresentation.fullscreen)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.saveReaderFullscreen(value)
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.clock'),
+        title: AppStrings.get('settings_reader_auto_advance_interval'),
+        subtitle: AppStrings.get('settings_reader_auto_advance_interval_hint'),
+        trailingText: this.readerAutoPageLabel(),
+        accessibilityLabel: AppStrings.format('settings_reader_auto_advance_interval_a11y', [
+          this.readerAutoPageLabel(),
+        ]),
+        onAction: (): void => {
+          this.readerAutoPageMenuShown = true
+        },
+      })
+      .bindMenu(this.readerAutoPageMenuShown, this.ReaderAutoPageMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.readerAutoPageMenuShown = false
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.speaker_wave_2'),
+        title: AppStrings.get('settings_reader_volume_keys_turn_pages'),
+        subtitle: AppStrings.get('settings_reader_volume_keys_turn_pages_hint'),
+        hasSwitch: true,
+        checked: this.readerPresentation.volumeKeyTurn,
+        showChevron: false,
+        accessibilityLabel: AppStrings.format('settings_reader_volume_keys_turn_pages_a11y', [
+          this.toggleStateLabel(this.readerPresentation.volumeKeyTurn),
+        ]),
+        onAction: (): void => {
+          this.saveReaderVolumeKeyTurn(!this.readerPresentation.volumeKeyTurn)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.saveReaderVolumeKeyTurn(value)
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.rectangle_stack'),
+        title: AppStrings.get('settings_reader_preload_pages'),
+        subtitle: AppStrings.get('settings_reader_preload_pages_hint'),
+        trailingText: this.readerPreloadLabel(),
+        accessibilityLabel: AppStrings.format('settings_reader_preload_pages_a11y', [this.readerPreloadLabel()]),
+        onAction: (): void => {
+          this.readerPreloadMenuShown = true
+        },
+      })
+      .bindMenu(this.readerPreloadMenuShown, this.ReaderPreloadMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.readerPreloadMenuShown = false
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.lightbulb'),
+        title: AppStrings.get('settings_reader_keep_screen_on'),
+        subtitle: AppStrings.get('settings_reader_keep_screen_on_hint'),
+        hasSwitch: true,
+        checked: this.readerPresentation.keepScreenOn,
+        showChevron: false,
+        accessibilityLabel: AppStrings.format('settings_reader_keep_screen_on_a11y', [
+          this.toggleStateLabel(this.readerPresentation.keepScreenOn),
+        ]),
+        onAction: (): void => {
+          this.saveReaderKeepScreenOn(!this.readerPresentation.keepScreenOn)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.saveReaderKeepScreenOn(value)
+        },
+      })
+    }
+  }
+
+  /** Shared content for the routed Settings surface and the Reader-owned sheet. */
+  @Builder
+  private ReaderPresentationListItems() {
+    ListItem() {
+      this.ReaderPresentationGroup()
+    }
+    if (this.readerModeError.length > 0) {
+      ListItem() {
+        this.GroupNote(this.readerModeError)
+      }
+    }
+  }
+
+  /**
+   * Match NextE's Reader sheet grammar: a modal HDS title owns close while
+   * the familiar Reader settings rows remain the single semantic surface.
+   */
+  @Builder
+  private ReaderPresentationSheet() {
+    NextNModalScaffold({
+      title: AppStrings.get('settings_reader'),
+      onClose: (): void => {
+        if (this.onClose) {
+          this.onClose()
+        }
+      },
+    }) {
+      this.ReaderPresentationListItems()
+    }
+  }
+
+  @Builder
+  private ThemeMenu() {
+    Menu() {
+      MenuItem({
+        content: AppStrings.get('appearance_follow_system'),
+        symbolEndIcon: this.themeDisplay.mode === ThemeSettings.MODE_SYSTEM
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.setTheme(ThemeSettings.MODE_SYSTEM)
+      })
+      MenuItem({
+        content: AppStrings.get('theme_light'),
+        symbolEndIcon: this.themeDisplay.mode === ThemeSettings.MODE_LIGHT
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.setTheme(ThemeSettings.MODE_LIGHT)
+      })
+      MenuItem({
+        content: AppStrings.get('theme_dark'),
+        symbolEndIcon: this.themeDisplay.mode === ThemeSettings.MODE_DARK
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.setTheme(ThemeSettings.MODE_DARK)
+      })
+    }
+  }
+
+  @Builder
+  private ImmersiveMaterialMenu() {
+    Menu() {
+      ForEach(
+        ImmersiveMaterialSettings.options(),
+        (option: ImmersiveMaterialOption): void => {
+          MenuItem({
+            content: option.label,
+            symbolEndIcon: this.immersiveMaterial.level === option.value
+              ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+              : undefined,
+          }).onClick((): void => {
+            this.setImmersiveMaterial(option.value)
+          })
+        },
+        (option: ImmersiveMaterialOption): string => option.value,
+      )
+    }
+  }
+
+  @Builder
+  private LanguageMenu() {
+    Menu() {
+      MenuItem({
+        content: AppStrings.get('appearance_follow_system'),
+        symbolEndIcon: this.language.mode === LanguageSettings.MODE_SYSTEM
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.setLanguage(LanguageSettings.MODE_SYSTEM)
+      })
+      MenuItem({
+        content: AppStrings.get('language_zh'),
+        symbolEndIcon: this.language.mode === LanguageSettings.MODE_ZH_CN
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.setLanguage(LanguageSettings.MODE_ZH_CN)
+      })
+      MenuItem({
+        content: AppStrings.get('language_en'),
+        symbolEndIcon: this.language.mode === LanguageSettings.MODE_EN
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.setLanguage(LanguageSettings.MODE_EN)
+      })
+      MenuItem({
+        content: AppStrings.get('language_ja'),
+        symbolEndIcon: this.language.mode === LanguageSettings.MODE_JA
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.setLanguage(LanguageSettings.MODE_JA)
+      })
+    }
+  }
+
+  @Builder
+  private AppearanceGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.moon'),
+        title: AppStrings.get('settings_theme'),
+        trailingText: this.themeModeLabel(),
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_theme'),
+          this.themeModeLabel(),
+        ]),
+        onAction: (): void => {
+          this.themeMenuShown = true
+        },
+      })
+      .bindMenu(this.themeMenuShown, this.ThemeMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.themeMenuShown = false
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.picture'),
+        title: AppStrings.get('immersive_material'),
+        trailingText: this.immersiveMaterialLabel(),
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('immersive_material'),
+          this.immersiveMaterialLabel(),
+        ]),
+        onAction: (): void => {
+          this.immersiveMaterialMenuShown = true
+        },
+      })
+      .bindMenu(this.immersiveMaterialMenuShown, this.ImmersiveMaterialMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.immersiveMaterialMenuShown = false
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.translate'),
+        title: AppStrings.get('settings_language'),
+        trailingText: this.languageModeLabel(),
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_language'),
+          this.languageModeLabel(),
+        ]),
+        onAction: (): void => {
+          this.languageMenuShown = true
+        },
+      })
+      .bindMenu(this.languageMenuShown, this.LanguageMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.languageMenuShown = false
+        },
+      })
+    }
+  }
+
+  @Builder
+  private BrowsePresentationMenu() {
+    Menu() {
+      MenuItem({
+        content: AppStrings.get('browse_list'),
+        symbolEndIcon: this.browsePresentation.mode === NhBrowsePresentation.LIST
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveBrowsePresentation(NhBrowsePresentation.LIST)
+        this.browsePresentationMenuShown = false
+      })
+      MenuItem({
+        content: AppStrings.get('browse_simple_list'),
+        symbolEndIcon: this.browsePresentation.mode === NhBrowsePresentation.SIMPLE_LIST
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveBrowsePresentation(NhBrowsePresentation.SIMPLE_LIST)
+        this.browsePresentationMenuShown = false
+      })
+      MenuItem({
+        content: AppStrings.get('browse_cover_grid'),
+        symbolEndIcon: this.browsePresentation.mode === NhBrowsePresentation.COVER_GRID
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveBrowsePresentation(NhBrowsePresentation.COVER_GRID)
+        this.browsePresentationMenuShown = false
+      })
+      MenuItem({
+        content: AppStrings.get('browse_waterfall'),
+        symbolEndIcon: this.browsePresentation.mode === NhBrowsePresentation.WATERFALL
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveBrowsePresentation(NhBrowsePresentation.WATERFALL)
+        this.browsePresentationMenuShown = false
+      })
+      MenuItem({
+        content: AppStrings.get('browse_waterfall_compact'),
+        symbolEndIcon: this.browsePresentation.mode === NhBrowsePresentation.WATERFALL_COMPACT
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveBrowsePresentation(NhBrowsePresentation.WATERFALL_COMPACT)
+        this.browsePresentationMenuShown = false
+      })
+      MenuItem({
+        content: AppStrings.get('browse_cover_wall'),
+        symbolEndIcon: this.browsePresentation.mode === NhBrowsePresentation.COVER_WALL
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveBrowsePresentation(NhBrowsePresentation.COVER_WALL)
+        this.browsePresentationMenuShown = false
+      })
+    }
+  }
+
+  @Builder
+  private BrowsePresentationGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.square_grid_2x2'),
+        title: AppStrings.get('browse_presentation'),
+        subtitle: AppStrings.get('browse_presentation_hint'),
+        trailingText: this.browsePresentationLabel(),
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('browse_presentation'),
+          this.browsePresentationLabel(),
+        ]),
+        onAction: (): void => {
+          this.browsePresentationMenuShown = true
+        },
+      })
+      .bindMenu(this.browsePresentationMenuShown, this.BrowsePresentationMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.browsePresentationMenuShown = false
+        },
+      })
+      if (supportsGalleryColumnDensity(this.browsePresentation.mode)) {
+        this.RowDivider()
+        NextNListRow({
+          leadingIcon: $r('sys.symbol.arrowtriangle_2_inward_square'),
+          title: AppStrings.get('settings_browse_column_width'),
+          subtitle: AppStrings.format('settings_browse_column_width_hint', [
+            this.browsePresentationLabel(),
+          ]),
+          trailingText: AppStrings.format('settings_browse_column_width_value', [
+            this.browseColumnWidth().toString(),
+          ]),
+          accessibilityLabel: AppStrings.format('settings_browse_column_width_a11y', [
+            this.browsePresentationLabel(),
+            this.browseColumnWidth().toString(),
+          ]),
+          onAction: (): void => {
+            if (this.onOpenBrowseDensity) {
+              this.onOpenBrowseDensity(this.browsePresentation.mode)
+            }
+          },
+        })
+      }
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.picture'),
+        title: AppStrings.get('settings_cover_background_blur'),
+        subtitle: AppStrings.get('settings_cover_background_blur_hint'),
+        hasSwitch: true,
+        checked: this.coverBackground.blurLetterboxBackground,
+        showChevron: false,
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_cover_background_blur'),
+          this.toggleStateLabel(this.coverBackground.blurLetterboxBackground),
+        ]),
+        onAction: (): void => {
+          this.setBlurLetterboxBackground(!this.coverBackground.blurLetterboxBackground)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.setBlurLetterboxBackground(value)
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.doc_plaintext'),
+        title: AppStrings.get('settings_gallery_japanese_title_primary'),
+        subtitle: AppStrings.get('settings_gallery_japanese_title_primary_hint'),
+        hasSwitch: true,
+        checked: this.galleryTitle.japaneseTitlePrimary,
+        showChevron: false,
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_gallery_japanese_title_primary'),
+          this.toggleStateLabel(this.galleryTitle.japaneseTitlePrimary),
+        ]),
+        onAction: (): void => {
+          this.setJapaneseTitlePrimary(!this.galleryTitle.japaneseTitlePrimary)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.setJapaneseTitlePrimary(value)
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.rectangle_grid_1x2'),
+        title: AppStrings.get('settings_home_tab_auto_hide'),
+        subtitle: AppStrings.get('settings_home_tab_auto_hide_hint'),
+        hasSwitch: true,
+        checked: this.homeTab.autoHide,
+        showChevron: false,
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_home_tab_auto_hide'),
+          this.toggleStateLabel(this.homeTab.autoHide),
+        ]),
+        onAction: (): void => {
+          this.setHomeTabAutoHide(!this.homeTab.autoHide)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.setHomeTabAutoHide(value)
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.paintbrush'),
+        title: AppStrings.get('settings_read_button_style'),
+        subtitle: AppStrings.get('settings_read_button_style_hint'),
+        trailingText: this.readButtonStyleLabel(),
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_read_button_style'),
+          this.readButtonStyleLabel(),
+        ]),
+        onAction: (): void => {
+          this.readButtonStyleMenuShown = true
+        },
+      })
+      .bindMenu(this.readButtonStyleMenuShown, this.ReadButtonStyleMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.readButtonStyleMenuShown = false
+        },
+      })
+    }
+  }
+
+  @Builder
+  private TabletLayoutGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.rectangle_split_2x1'),
+        title: AppStrings.get('settings_tablet_layout'),
+        trailingText: this.tabletLayoutLabel(),
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_tablet_layout'),
+          this.tabletLayoutLabel(),
+        ]),
+        onAction: (): void => {
+          this.tabletLayoutMenuShown = true
+        },
+      })
+      .bindMenu(this.tabletLayoutMenuShown, this.TabletLayoutMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.tabletLayoutMenuShown = false
+        },
+      })
+    }
+  }
+
+  @Builder
+  private CatalogBrowseLanguageMenu() {
+    Menu() {
+      ForEach(CATALOG_LANGUAGES, (language: NhSearchLanguage): void => {
+        MenuItem({
+          content: this.catalogLanguageLabel(language),
+          symbolEndIcon: this.catalogPreferences.browseLanguage === language
+            ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+            : undefined,
+        }).onClick((): void => {
+          this.setCatalogBrowseLanguage(language)
+        })
+      }, (language: NhSearchLanguage): string => language)
+    }
+  }
+
+  @Builder
+  private CatalogBrowseSortMenu() {
+    Menu() {
+      ForEach(CATALOG_SORTS, (sort: NhSearchSort): void => {
+        MenuItem({
+          content: this.catalogSortLabel(sort),
+          symbolEndIcon: this.catalogPreferences.browseSort === sort
+            ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+            : undefined,
+        }).onClick((): void => {
+          this.setCatalogBrowseSort(sort)
+        })
+      }, (sort: NhSearchSort): string => sort)
+    }
+  }
+
+  @Builder
+  private CatalogSearchLanguageMenu() {
+    Menu() {
+      ForEach(CATALOG_LANGUAGES, (language: NhSearchLanguage): void => {
+        MenuItem({
+          content: this.catalogLanguageLabel(language),
+          symbolEndIcon: this.catalogPreferences.searchLanguage === language
+            ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+            : undefined,
+        }).onClick((): void => {
+          this.setCatalogSearchLanguage(language)
+        })
+      }, (language: NhSearchLanguage): string => language)
+    }
+  }
+
+  @Builder
+  private CatalogSearchSortMenu() {
+    Menu() {
+      ForEach(CATALOG_SORTS, (sort: NhSearchSort): void => {
+        MenuItem({
+          content: this.catalogSortLabel(sort),
+          symbolEndIcon: this.catalogPreferences.searchSort === sort
+            ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+            : undefined,
+        }).onClick((): void => {
+          this.setCatalogSearchSort(sort)
+        })
+      }, (sort: NhSearchSort): string => sort)
+    }
+  }
+
+  /** Separate Browse and Search defaults mirror their independent public request contexts. */
+  @Builder
+  private CatalogPreferencesGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.translate'),
+        title: AppStrings.get('settings_catalog_browse_language'),
+        subtitle: AppStrings.get('settings_catalog_preferences_hint'),
+        trailingText: this.catalogLanguageLabel(this.catalogPreferences.browseLanguage),
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_catalog_browse_language'),
+          this.catalogLanguageLabel(this.catalogPreferences.browseLanguage),
+        ]),
+        onAction: (): void => {
+          this.catalogBrowseLanguageMenuShown = true
+        },
+      })
+      .bindMenu(this.catalogBrowseLanguageMenuShown, this.CatalogBrowseLanguageMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.catalogBrowseLanguageMenuShown = false
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.arrow_clockwise'),
+        title: AppStrings.get('settings_catalog_browse_sort'),
+        trailingText: this.catalogSortLabel(this.catalogPreferences.browseSort),
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_catalog_browse_sort'),
+          this.catalogSortLabel(this.catalogPreferences.browseSort),
+        ]),
+        onAction: (): void => {
+          this.catalogBrowseSortMenuShown = true
+        },
+      })
+      .bindMenu(this.catalogBrowseSortMenuShown, this.CatalogBrowseSortMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.catalogBrowseSortMenuShown = false
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.magnifyingglass'),
+        title: AppStrings.get('settings_catalog_search_language'),
+        trailingText: this.catalogLanguageLabel(this.catalogPreferences.searchLanguage),
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_catalog_search_language'),
+          this.catalogLanguageLabel(this.catalogPreferences.searchLanguage),
+        ]),
+        onAction: (): void => {
+          this.catalogSearchLanguageMenuShown = true
+        },
+      })
+      .bindMenu(this.catalogSearchLanguageMenuShown, this.CatalogSearchLanguageMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.catalogSearchLanguageMenuShown = false
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.rectangle_stack'),
+        title: AppStrings.get('settings_catalog_search_sort'),
+        trailingText: this.catalogSortLabel(this.catalogPreferences.searchSort),
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_catalog_search_sort'),
+          this.catalogSortLabel(this.catalogPreferences.searchSort),
+        ]),
+        onAction: (): void => {
+          this.catalogSearchSortMenuShown = true
+        },
+      })
+      .bindMenu(this.catalogSearchSortMenuShown, this.CatalogSearchSortMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.catalogSearchSortMenuShown = false
+        },
+      })
+    }
+  }
+
+  @Builder
+  private BrowserSessionGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.security_shield'),
+        title: AppStrings.get('account_title'),
+        subtitle: AppStrings.get('account_subtitle_sign_in'),
+        accessibilityLabel: AppStrings.get('account_open_page_a11y'),
+        onAction: () => {
+          if (this.onOpenBrowserSession) {
+            this.onOpenBrowserSession()
+          }
+        },
+      })
+    }
+  }
+
+  @Builder
+  private ContentFiltersGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.eye_slash'),
+        title: AppStrings.get('settings_content_filters'),
+        subtitle: AppStrings.get('settings_content_filters_subtitle'),
+        accessibilityLabel: AppStrings.get('settings_content_filters_a11y'),
+        onAction: (): void => {
+          if (this.onOpenContentFilters) {
+            this.onOpenContentFilters()
+          }
+        },
+      })
+    }
+  }
+
+  build() {
+    if (this.surface === SettingsSurface.READER && this.sheetPresentation) {
+      this.ReaderPresentationSheet()
+    } else {
+      Column() {
+        SecondaryListScaffold({
+        scroller: this.scroller,
+        bottomPadding: this.surface === SettingsSurface.ROOT
+          ? ThemeTokens.ROOT_FLOATING_TAB_RESERVE
+          : ThemeTokens.LIST_BOTTOM_PADDING,
+        alwaysEnableEdgeSpring: true,
+        onDidScroll: (offset: number, state: ScrollState): void => {
+          if (this.onDidScroll) {
+            this.onDidScroll(offset, state)
+          }
+        },
+      }) {
+        if (this.surface === SettingsSurface.ROOT) {
+          ListItem() {
+            this.RootAccountSection()
+          }
+          ListItem() {
+            this.RootMainSection()
+          }
+        } else if (this.surface === SettingsSurface.LAYOUT) {
+          ListItem() {
+            this.AppearanceGroup()
+          }
+          ListItem() {
+            this.TabletLayoutGroup()
+          }
+          ListItem() {
+            this.BrowsePresentationGroup()
+          }
+          if (this.browsePresentationError.length > 0) {
+            ListItem() {
+              this.GroupNote(this.browsePresentationError)
+            }
+          }
+        } else if (this.surface === SettingsSurface.CATALOG) {
+          ListItem() {
+            this.CatalogPreferencesGroup()
+          }
+          if (this.catalogPreferencesError.length > 0) {
+            ListItem() {
+              this.GroupNote(this.catalogPreferencesError)
+            }
+          }
+        } else if (this.surface === SettingsSurface.READER) {
+          this.ReaderPresentationListItems()
+        } else if (this.surface === SettingsSurface.DOWNLOAD) {
+          ListItem() {
+            this.DownloadPolicyGroup()
+          }
+          if (this.downloadSettingsError.length > 0) {
+            ListItem() {
+              this.GroupNote(this.downloadSettingsError)
+            }
+          }
+        } else if (this.surface === SettingsSurface.CACHE) {
+          ListItem() {
+            this.ReaderCacheGroup()
+          }
+          if (this.readerCacheError.length > 0) {
+            ListItem() {
+              this.GroupNote(this.readerCacheError)
+            }
+          }
+        } else if (this.surface === SettingsSurface.ADVANCED) {
+          ListItem() {
+            this.ClipboardLinkGroup()
+          }
+          ListItem() {
+            this.TagDictionaryGroup()
+          }
+          if (this.tagDictionaryError.length > 0) {
+            ListItem() {
+              this.GroupNote(this.tagDictionaryError)
+            }
+          }
+          ListItem() {
+            this.ContentFiltersGroup()
+          }
+        }
+        }
+      }
+      .width('100%')
+      .height('100%')
+      .backgroundColor(ThemeTokens.SURFACE_SUB)
+    }
+  }
+}

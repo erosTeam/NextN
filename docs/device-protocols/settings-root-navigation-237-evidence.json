@@ -1,0 +1,19 @@
+{
+  "device": "192.168.50.237:12345",
+  "feature": "NextE-style Settings root and implemented destination routing",
+  "build": "debug-signed NextN HAP built after the Settings root refactor",
+  "precondition": "The device screen was awake with a 600000ms override. No account data, web-page text, cookie data, screenshots, or gallery content was read or retained.",
+  "root": {
+    "visible_labels": ["Account", "Reader", "Download", "Cache", "Advanced", "Settings"],
+    "result": "Passed: the Settings root rendered a dedicated Account group followed by the native HDS Settings rows. The former flat configuration stack was not present after force-stopping and relaunching the replaced Debug HAP."
+  },
+  "destinations": {
+    "Reader": ["Reader", "Reader layout", "Full screen Reader", "Auto advance interval", "Volume keys turn pages", "Preload Reader pages", "Keep screen on while reading"],
+    "Download": ["Download", "Gallery concurrency", "Page concurrency", "Failed page retries"],
+    "Cache": ["Cache", "Reader page cache", "Clear Reader cache"],
+    "Advanced": ["Advanced", "Local tag translations", "Content filters"],
+    "Account": "Passed: selecting Account opened the native Account destination with exactly one ArkWeb component. No credentials were entered and no completion/authentication claim is made."
+  },
+  "boundary": "This evidence covers only root structure and destination reachability. Existing preferences were not changed. About was added after this device pass and therefore remains pending its own device acceptance after temporary-layout cleanup is authorized.",
+  "cleanup": "The individual Reader, Download, Cache, and Advanced temporary layouts were removed during the run. The final Account temporary layout was not read or emitted, but its deletion was rejected by the local approval channel after a transport disconnect; it is explicitly pending cleanup rather than treated as cleared."
+}

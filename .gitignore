@@ -1,0 +1,13 @@
+.DS_Store
+.idea/
+.hvigor/
+oh_modules/
+**/oh_modules/
+**/build/
+**/BuildProfile.ets
+oh-package-lock.json5
+build-profile.local.json5
+.nextn-test-account.local.json5
+*.p12
+*.p7b
+*.cer

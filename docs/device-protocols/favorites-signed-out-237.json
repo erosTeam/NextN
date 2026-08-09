@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-favorites-signed-out-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-favorites-signed-out-protocol-20260807",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "debug-signed-20260807",
+    "page": "favorites-signed-out-root",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "The app is foregrounded at the signed-out Favorites root. The expected visible state is the HDS Favorites title, signed-out explanatory text, and the selected Favorites root tab. No credentials, cookies, gallery titles, or screenshots are recorded."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "favorites-anchor",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-favorites-anchor.json"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "reselect-favorites-root",
+        "uiInput": ["click", "564", "1964"],
+        "pauseAfterMs": 250,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "favorites-post-state",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-favorites-post.json"]
+    }
+  ]
+}

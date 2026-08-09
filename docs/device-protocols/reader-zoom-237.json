@@ -1,0 +1,14 @@
+{
+  "device": "192.168.50.237:12345",
+  "feature": "NextE-derived native Reader zoom gesture boundary",
+  "package": "debug signed NextN HAP",
+  "precondition": "An existing complete app-private download was retained; no account session, gallery title, page URL, or image content was recorded.",
+  "steps": [
+    "Installed the current debug-signed HAP with replace semantics.",
+    "Opened Downloads, used the complete task Read action, and confirmed the Reader counter was 1 / 55.",
+    "Injected a two-tap sequence at the Reader surface, then a vertical swipe; the counter remained 1 / 55.",
+    "Injected a second two-tap sequence to reset zoom, then the same vertical swipe; the counter advanced to 2 / 55."
+  ],
+  "result": "Passed: the Reader-surface double-tap command reaches the visible page and gates vertical scrolling only while zoomed.",
+  "limits": "This UiTest protocol exercises double-tap and the List gate. Pinch uses the official ArkUI two-finger gesture API and is covered by compile and source contract checks; this record does not claim multi-touch injection evidence."
+}

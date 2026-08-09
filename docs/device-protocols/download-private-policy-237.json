@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-private-policy-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-private-policy-protocol-20260807",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "debug-signed-20260807",
+    "page": "settings-private-download-policy",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Verify only HDS labels and numeric policy values. Do not retain gallery titles, private paths, account state, image URLs, or screenshots. Restore the conservative default 1 gallery, 3 pages, and 2 retries after any persistence exercise."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "root-anchor",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-policy-anchor.json"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-settings",
+        "uiInput": ["click", "966", "2006"],
+        "pauseAfterMs": 250,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "open-gallery-concurrency",
+        "uiInput": ["click", "700", "820"],
+        "pauseAfterMs": 250,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "policy-post-state",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-policy-post.json"]
+    }
+  ]
+}

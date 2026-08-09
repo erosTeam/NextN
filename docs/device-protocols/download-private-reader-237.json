@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-private-reader-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-private-reader-protocol-20260807",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "debug-signed-20260807",
+    "page": "download-private-reader",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "precondition": "One complete, app-private download exists. This protocol never exports its files, records gallery text, records image URLs, or retains screenshots.",
+    "notes": "From the retained root shell, select Downloads and activate the complete task's Read affordance. Postflight should show only the Reader page counter; diagnostics may assert that the local-page branch was selected without emitting paths or content."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "root-anchor",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-reader-anchor.json"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-downloads",
+        "uiInput": ["click", "812", "2006"],
+        "pauseAfterMs": 250,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "open-complete-private-reader",
+        "uiInput": ["click", "1151", "392"],
+        "pauseAfterMs": 1200,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "reader-post-state",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-reader-post.json"]
+    }
+  ]
+}

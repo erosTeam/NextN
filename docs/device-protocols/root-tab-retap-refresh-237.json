@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-root-tab-retap-refresh-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-root-tab-retap-refresh-protocol-20260807",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "debug-signed-20260807-root-refresh-registry",
+    "page": "browse-root-tab-retap-refresh",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "The app is launched at Browse. Keep the display awake for the bounded run, scroll the compact Browse list away from its first item, then tap the active Browse tab. A temporary final layout is parsed only for generic ListItem bounds and deleted locally and from the device; no gallery strings, screenshots, account state, or raw layouts are retained."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake-120-seconds",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "120000"]
+    },
+    {
+      "name": "verify-awake-override",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "launch-nextn",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"]
+    },
+    {
+      "name": "browse-precondition",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/dev/null"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "scroll-browse-away-from-top",
+        "uiInput": ["swipe", "660", "1700", "660", "500", "8000"],
+        "pauseAfterMs": 300,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "retap-active-browse-tab",
+        "uiInput": ["click", "352", "2006"],
+        "pauseAfterMs": 800,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": []
+}

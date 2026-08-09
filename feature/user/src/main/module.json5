@@ -1,0 +1,4 @@
+{
+  "module": { "name": "user", "type": "har", "deviceTypes": ["phone", "tablet", "2in1"] }
+}
+

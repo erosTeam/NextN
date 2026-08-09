@@ -1,0 +1,17 @@
+{
+  "device": "192.168.50.237:12345",
+  "feature": "NextE-style active-root-tab refresh bridge",
+  "package": "debug signed NextN",
+  "protocol": "docs/device-protocols/root-tab-retap-refresh-237.json",
+  "precondition": "NextN Browse was foregrounded with its compact native List at the top. Only component bounds were inspected; no gallery text, image, URL, account state, screenshot, or raw accessibility layout was retained.",
+  "steps": [
+    "Wake the device, launch NextN, set a bounded display-awake override, and verify the reported power state before input.",
+    "Record the first three generic Browse ListItem bounds at the top: [36,117][1284,273], [36,273][1284,628], and [36,628][1284,983].",
+    "Swipe the Browse List away from its top, then tap the already-active Browse tab at the TabBar's inspected 302..403 by 1989..2024 bound.",
+    "Record the first three generic Browse ListItem bounds again: [36,117][1284,285], [36,285][1284,640], and [36,640][1284,995]."
+  ],
+  "result": "Passed: the active Browse tab re-tap returned the list to its top. The source bridge is keyed by the root Scroller exactly as NextE is: the registered Browse action calls scrollToIndex(0) and then begins its guarded first-page refresh. The device assertion proves the visible re-tap-to-top transition; it intentionally does not claim network completion timing.",
+  "transport": "The protocol runner's Python HDC child could not enumerate the otherwise connected TCP target (Connect server failed). The same validated target was recovered with tconn and exercised through one persistent HDC shell, preventing reconnect gaps between wake, start, swipe, re-tap, and capture.",
+  "displayContinuity": "A 120000ms override later elapsed and correctly reported SLEEP, so that sample was rejected. After recovery and application launch, the device reported Current State AWAKE with Timeout=120000ms and OverrideTimeout=600000ms. The ten-minute override remains active for the continuing bounded device session.",
+  "cleanup": "All exact temporary raw layout files on the device and host were removed after extracting the generic bounds."
+}

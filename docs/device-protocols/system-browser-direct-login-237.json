@@ -1,0 +1,13 @@
+{
+  "device": "192.168.50.237:12345",
+  "feature": "direct system Browser login-page navigation",
+  "precondition": "No account fields, password, cookies, screenshots, page text, or raw accessibility tree are read or retained.",
+  "steps": [
+    "Launch the device Browser directly with the standard view-data action and the public sign-in URL.",
+    "Wait 12 seconds, then inspect only generic accessibility component counts and boolean markers.",
+    "Observe two Navigation components, one Web component, Browser-chrome marker true, Cloudflare-resource marker true, and no visible verification-marker match."
+  ],
+  "result": "The system Browser launch and Web-page load passed. This does not prove Cloudflare completion or account authentication: Browser page DOM is opaque to the accessibility tree and its cookie jar is independent from ArkWeb.",
+  "nextn_comparison": "NextN uses NextE's same controller-attached UA transformation and enables first- and third-party ArkWeb cookies before the blank-src controller loads the login URL. ArkWeb session capture remains first-party and does not import Browser cookies.",
+  "cleanup": "All temporary device and host accessibility-layout files were removed after extracting the generic evidence."
+}

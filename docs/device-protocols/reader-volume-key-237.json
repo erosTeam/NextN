@@ -1,0 +1,15 @@
+{
+  "device": "192.168.50.237:12345",
+  "feature": "ErosN-derived Reader volume-key navigation through HarmonyOS InputConsumer",
+  "package": "debug signed NextN HAP",
+  "official-api-basis": "@kit/InputKit KeyCode and inputConsumer keyPressed; the foreground subscription intentionally consumes the system volume action while enabled and off restores it.",
+  "precondition": "An existing complete app-private download was retained. The run records no account state, gallery text, page URL, image content, screenshot, or local file path.",
+  "steps": [
+    "Keep the HDS Volume keys turn pages setting off by default, then explicitly enable it and reopen the native Reader.",
+    "Record only the page counter, inject HarmonyOS key code 17, and record the counter: 1 / 55 became 2 / 55.",
+    "Inject HarmonyOS key code 16 and record the counter: 2 / 55 became 1 / 55.",
+    "Return to HDS Settings, disable the preference, reopen Reader, inject key code 17, and confirm the safe counter remains 1 / 55."
+  ],
+  "result": "Passed: the opt-in foreground consumer maps volume down to next and volume up to previous. With the setting disabled, the same volume-down code no longer navigates Reader.",
+  "cleanup": "The durable preference was returned to off. All temporary device and host accessibility-layout files were removed; the app was returned to its root route and the normal 10000 ms screen-off timeout was restored."
+}
