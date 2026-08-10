@@ -542,7 +542,7 @@ export class NhApiClient {
       scope === NhJsonReadScope.ACCOUNT_OWNED_NON_RETIRING) &&
       NhAccountSessionService.isAuthenticated() &&
       NhApiClient.isAccountOwnedIdempotentReadUrl(url)) {
-      const readToken = NhAccountSessionService.captureAuthenticatedReadToken()
+      let readToken = NhAccountSessionService.captureAuthenticatedReadToken()
       if (readToken === null) {
         throw new Error('Your account session is changing. Please try again.')
       }
@@ -561,8 +561,30 @@ export class NhApiClient {
         }
         if (replayExecuted && response.statusCode === 401 &&
           scope === NhJsonReadScope.ACCOUNT_OWNED) {
+          // The visible native re-verification route can restore a fresh
+          // access token from ArkWeb's retained first-party identity without
+          // credentials. Try the same bounded browser-owned refresh before
+          // persisting a marker that would otherwise make the user appear
+          // signed out. A newly promoted session gets one fresh idempotent
+          // replay; another 401 remains a request failure rather than a
+          // second marker decision from this old read token.
+          if (await NhArkWebSessionTransport.refreshFromRegularBrowserIdentityAfterAuthenticated401(readToken)) {
+            const refreshedReadToken = NhAccountSessionService.captureAuthenticatedReadToken()
+            if (refreshedReadToken === null) {
+              throw new Error('Your account session changed. Please try again.')
+            }
+            readToken = refreshedReadToken
+            response = await NhArkWebSessionTransport.requestJson(url, 'GET')
+            if (response.statusCode === 401) {
+              throw new Error('Your account session could not be rechecked. Please try again.')
+            }
+          }
+        }
+        if (replayExecuted && response.statusCode === 401 &&
+          scope === NhJsonReadScope.ACCOUNT_OWNED) {
           // Only an actual replay that also returns 401 can prove the account
-          // needs explicit verification. The original 401 is not enough when
+          // needs explicit verification after the retained browser identity
+          // itself could not refresh. The original 401 is not enough when
           // recovery could not issue its bounded replay.
           if (!await NhAccountSessionService.requireVisibleVerificationAfterAccountGet401(readToken)) {
             throw new Error('Your account session changed. Please try again.')

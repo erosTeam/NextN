@@ -202,6 +202,20 @@ export class NhAccountSessionService {
       token.transitionEpoch === NhAccountSessionService.sessionTransitionEpoch
   }
 
+  /**
+   * The retained ArkWeb transport may use the current ability context only
+   * while it is repairing the exact authenticated read that supplied this
+   * token. The context carries no account or browser data; it lets the
+   * already-authorized browser identity atomically re-promote a newly
+   * verified access token before a terminal 401 becomes a visible failure.
+   */
+  static authenticatedRecoveryContext(token: NhAccountAuthenticatedReadToken): common.UIAbilityContext | null {
+    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+      return null
+    }
+    return NhAccountSessionService.sessionContext
+  }
+
   /** Returns one fixed lifecycle code only; safe for redacted acceptance diagnostics. */
   static latestDiagnosticStageCode(): string {
     return NhAccountSessionService.latestDiagnosticStage
@@ -537,8 +551,45 @@ export class NhAccountSessionService {
     observedUrl: string = '',
     browserUserAgent: string = '',
   ): Promise<boolean> {
+    return await NhAccountSessionService.captureBrowserSessionCandidate(
+      context,
+      observedUrl,
+      browserUserAgent,
+      true,
+    )
+  }
+
+  /**
+   * A bounded retained-host recovery may capture only the same first-party
+   * candidate that it will immediately status-check and seal. It is distinct
+   * from the visible-login entry point: no login surface, field, credential,
+   * or user decision is involved here.
+   */
+  static async captureRegularArkWebSessionForAuthenticatedRecovery(
+    context: common.UIAbilityContext,
+    token: NhAccountAuthenticatedReadToken,
+    observedUrl: string = '',
+    browserUserAgent: string = '',
+  ): Promise<boolean> {
+    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+      return false
+    }
+    return await NhAccountSessionService.captureBrowserSessionCandidate(
+      context,
+      observedUrl,
+      browserUserAgent,
+      false,
+    )
+  }
+
+  private static async captureBrowserSessionCandidate(
+    context: common.UIAbilityContext,
+    observedUrl: string,
+    browserUserAgent: string,
+    requireExplicitVisibleAction: boolean,
+  ): Promise<boolean> {
     NhAccountSessionService.sessionContext = context
-    if (!NhAccountSessionService.canOpenVisibleLoginSession()) {
+    if (requireExplicitVisibleAction && !NhAccountSessionService.canOpenVisibleLoginSession()) {
       return false
     }
     // Flush before reading. A challenge or login redirect can have just
@@ -652,15 +703,56 @@ export class NhAccountSessionService {
       NhAccountSessionService.pendingBrowserUserAgent === verifiedBrowserUserAgent
   }
 
+  /** Same candidate-stability fence for the retained browser recovery lane. */
+  static async isPendingRegularArkWebSessionStableAfterVerification(
+    context: common.UIAbilityContext,
+    token: NhAccountAuthenticatedReadToken,
+    observedUrl: string = '',
+    browserUserAgent: string = '',
+  ): Promise<boolean> {
+    const verifiedCookieHeader: string = NhAccountSessionService.pendingCookieHeader
+    const verifiedBrowserUserAgent: string = NhAccountSessionService.pendingBrowserUserAgent
+    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token) ||
+      !NhAccountSessionService.hasLoginCookies(verifiedCookieHeader) ||
+      verifiedBrowserUserAgent.length === 0) {
+      return false
+    }
+    if (!await NhAccountSessionService.captureRegularArkWebSessionForAuthenticatedRecovery(
+      context,
+      token,
+      observedUrl,
+      browserUserAgent,
+    )) {
+      return false
+    }
+    return NhAccountSessionService.pendingCookieHeader === verifiedCookieHeader &&
+      NhAccountSessionService.pendingBrowserUserAgent === verifiedBrowserUserAgent
+  }
+
   /**
    * Promotes only a candidate that the caller has verified through the fixed
    * same-origin ArkWeb account probe. No browser value is returned here.
    */
   static async confirmPendingVisibleBrowserSession(context: common.UIAbilityContext): Promise<boolean> {
-    NhAccountSessionService.sessionContext = context
     if (!NhAccountSessionService.canOpenVisibleLoginSession()) {
       throw new Error('account_session_recovery_action_required')
     }
+    return await NhAccountSessionService.confirmPendingBrowserSession(context)
+  }
+
+  /** Commits only the candidate already checked by the retained recovery lane. */
+  static async confirmPendingRegularArkWebSessionForAuthenticatedRecovery(
+    context: common.UIAbilityContext,
+    token: NhAccountAuthenticatedReadToken,
+  ): Promise<boolean> {
+    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+      return false
+    }
+    return await NhAccountSessionService.confirmPendingBrowserSession(context)
+  }
+
+  private static async confirmPendingBrowserSession(context: common.UIAbilityContext): Promise<boolean> {
+    NhAccountSessionService.sessionContext = context
     if (!NhAccountSessionService.hasLoginCookies(NhAccountSessionService.pendingCookieHeader) ||
       NhAccountSessionService.pendingBrowserUserAgent.length === 0) {
       return false

@@ -1,5 +1,6 @@
+import { common } from '@kit.AbilityKit'
 import { webview } from '@kit.ArkWeb'
-import { NhAccountSessionService } from './NhAccountSessionService'
+import { NhAccountAuthenticatedReadToken, NhAccountSessionService } from './NhAccountSessionService'
 import { NhBrowserSessionBoundary } from './NhBrowserSessionBoundary'
 
 const API_PREFIX: string = 'https://nhentai.net/api/v2/'
@@ -56,6 +57,8 @@ export class NhArkWebSessionTransport {
   private static readyRejecter: ((error: Error) => void) | null = null
   private static readyTimeoutId: number = -1
   private static bootstrapTask: Promise<void> | null = null
+  private static browserIdentityRefreshTask: Promise<boolean> | null = null
+  private static browserIdentityRefreshEpoch: number = -1
   private static requestSequence: number = 0
 
   static attach(controller: webview.WebviewController): void {
@@ -205,6 +208,51 @@ export class NhArkWebSessionTransport {
     }
   }
 
+  /**
+   * A terminal sealed-token replay can still happen while ArkWeb retains a
+   * longer-lived first-party browser identity. The explicit native
+   * re-verification action already proves that this identity can mint a new
+   * access token without credentials. Try that same bounded, first-party
+   * browser refresh once before publishing a durable re-verification state.
+   *
+   * This never opens a visible Web surface, reads a cookie into output, or
+   * enters credentials. A failed refresh simply returns false so the caller
+   * preserves the established native re-verification boundary.
+   */
+  static async refreshFromRegularBrowserIdentityAfterAuthenticated401(
+    token: NhAccountAuthenticatedReadToken,
+  ): Promise<boolean> {
+    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+      return false
+    }
+    const activeTask: Promise<boolean> | null = NhArkWebSessionTransport.browserIdentityRefreshTask
+    if (activeTask !== null &&
+      NhArkWebSessionTransport.browserIdentityRefreshEpoch === token.sessionEpoch) {
+      try {
+        return await activeTask
+      } catch (_error) {
+        return false
+      }
+    }
+    if (activeTask !== null) {
+      try {
+        await activeTask
+      } catch (_error) {}
+      return false
+    }
+    const task: Promise<boolean> = NhArkWebSessionTransport.refreshFromRegularBrowserIdentity(token)
+    NhArkWebSessionTransport.browserIdentityRefreshTask = task
+    NhArkWebSessionTransport.browserIdentityRefreshEpoch = token.sessionEpoch
+    try {
+      return await task
+    } finally {
+      if (NhArkWebSessionTransport.browserIdentityRefreshTask === task) {
+        NhArkWebSessionTransport.browserIdentityRefreshTask = null
+        NhArkWebSessionTransport.browserIdentityRefreshEpoch = -1
+      }
+    }
+  }
+
   private static async ensureReady(): Promise<void> {
     if (NhArkWebSessionTransport.isReady) {
       return
@@ -283,6 +331,96 @@ export class NhArkWebSessionTransport {
       NhArkWebSessionTransport.failBootstrap(error as Error)
     }
     await ready
+  }
+
+  private static async refreshFromRegularBrowserIdentity(
+    token: NhAccountAuthenticatedReadToken,
+  ): Promise<boolean> {
+    const context: common.UIAbilityContext | null =
+      NhAccountSessionService.authenticatedRecoveryContext(token)
+    const controller: webview.WebviewController | null = NhArkWebSessionTransport.controller
+    if (context === null || controller === null) {
+      return false
+    }
+    try {
+      const userAgent: string = NhAccountSessionService.requestUserAgent(controller.getUserAgent())
+      if (userAgent.length === 0) {
+        return false
+      }
+      controller.setCustomUserAgent(userAgent)
+    } catch (_error) {
+      return false
+    }
+    if (!await NhArkWebSessionTransport.loadTrustedLoginPage(controller)) {
+      return false
+    }
+    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+      return false
+    }
+    let observedUrl: string = ''
+    let browserUserAgent: string = ''
+    try {
+      observedUrl = controller.getUrl()
+      browserUserAgent = NhAccountSessionService.requestUserAgent(controller.getUserAgent())
+    } catch (_error) {
+      return false
+    }
+    if (!NhBrowserSessionBoundary.isTrustedUrl(observedUrl) || browserUserAgent.length === 0) {
+      return false
+    }
+    if (!await NhAccountSessionService.captureRegularArkWebSessionForAuthenticatedRecovery(
+      context,
+      token,
+      observedUrl,
+      browserUserAgent,
+    )) {
+      return false
+    }
+    try {
+      const status: number = await NhArkWebSessionTransport.requestStatusFromCurrentDocument(
+        controller,
+        `${API_PREFIX}user`,
+      )
+      if (status < 200 || status >= 300 ||
+        !NhAccountSessionService.isAuthenticatedReadTokenCurrent(token) ||
+        !await NhAccountSessionService.isPendingRegularArkWebSessionStableAfterVerification(
+          context,
+          token,
+          observedUrl,
+          browserUserAgent,
+        )) {
+        NhAccountSessionService.discardPendingVisibleBrowserSession()
+        return false
+      }
+      const promoted: boolean =
+        await NhAccountSessionService.confirmPendingRegularArkWebSessionForAuthenticatedRecovery(context, token)
+      if (promoted) {
+        NhArkWebSessionTransport.resetForVisibleSessionCandidate()
+      }
+      return promoted
+    } catch (_error) {
+      NhAccountSessionService.discardPendingVisibleBrowserSession()
+      return false
+    }
+  }
+
+  private static async loadTrustedLoginPage(controller: webview.WebviewController): Promise<boolean> {
+    NhArkWebSessionTransport.isReady = false
+    const ready: Promise<void> = new Promise<void>((resolve: () => void, reject: (error: Error) => void): void => {
+      NhArkWebSessionTransport.readyResolver = resolve
+      NhArkWebSessionTransport.readyRejecter = reject
+      NhArkWebSessionTransport.readyTimeoutId = setTimeout((): void => {
+        NhArkWebSessionTransport.failBootstrap(new Error('Account browser refresh timed out.'))
+      }, BOOTSTRAP_TIMEOUT_MS)
+    })
+    try {
+      controller.loadUrl(NhBrowserSessionBoundary.loginUrl())
+      await ready
+      return true
+    } catch (_error) {
+      NhArkWebSessionTransport.failBootstrap(new Error('Account browser refresh failed.'))
+      return false
+    }
   }
 
   private static completeBootstrap(): void {
