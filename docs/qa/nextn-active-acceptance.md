@@ -47,9 +47,14 @@ remains continuous; do not ask for it again.
 - One normal Favorites retry returned to the same native session-recheck error
   state. This rules out a single transient render/load observation but does not
   establish a network or persistence cause.
-- Next physical action: map the Favorites authenticated-read failure path and
-  collect its fixed diagnostic stage. Do not open a login form or enter
-  credentials.
+- The recovery-order build was then installed and cold-started without data
+  clearing. Favorites moved to native sign-in-required state and Account moved
+  to its native re-verification state. This is a coherent invalid-session
+  result, not a persistence acceptance proof.
+- Next physical action: prepare one new, fully staged visible re-verification
+  epoch, then obtain native promotion and the required record-present
+  cold-start/Favorites proof. No credential has been entered in the preceding
+  timed cycle.
 
 ## Active delivery P1 — Gallery Detail / Comments
 

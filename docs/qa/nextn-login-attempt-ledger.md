@@ -331,3 +331,30 @@ substitute for measured login-cycle elapsed time.
   Account surface is signed in but Favorites cannot recheck the session. The
   normal Favorites retry returned the same error. The next action is its
   source-grounded diagnostic path; no credential action is allowed.
+
+## Active cold-start recovery cycle — 2026-08-10
+
+- trigger: the built recovery-order fix was installed with `install -r`, then
+  NextN was force-stopped and cold-started without data clearing. Favorites
+  then showed its native sign-in-required state.
+- S0 Account: pending direct native Account observation during the prepared
+  recovery route.
+- S0 Favorites: native sign-in-required state; no visible Web observed.
+- restore/401 diagnostic: diagnostic-inconclusive at this timestamp.
+- install/data boundary: install-r=true; data-clear=false; uninstall=false.
+- login-page navigation: not-entered.
+- session-loss-detected-at: 2026-08-10T12:57:07+08:00.
+- webview-opened-at: pending.
+- native-promotion-at: pending.
+- loss-to-promotion-elapsed: not-achieved.
+- last-observed-at: 2026-08-10T12:58:50+08:00.
+- elapsed-so-far: 00:01:43.
+- first blocking phase: form — the native Account route had not reached its
+  visible WebView form before the 60-second ceiling.
+- account input: not-started.
+- password input: not-started.
+- submit: not-issued.
+- conclusion: measured-overrun; no credential action occurred. This epoch is
+  closed and may not be continued in place. Its terminal native Account state
+  was re-verification-required; the paired cold-start Favorites state was
+  sign-in-required.
