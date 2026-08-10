@@ -449,6 +449,9 @@ remains continuous; do not ask for it again.
   physical action is to re-establish only
   `192.168.50.237:12345`, renew its lease, and rerun the already-known direct
   Gallery Detail terminal review.
+- 2026-08-10 11:16 +0800: a resumed preflight again returned `Connect server
+  failed`. No further device command was issued; the same P1 terminal review
+  remains the next physical action after transport recovery.
 - The selected TCP target `192.168.50.237:12345` is currently Connected and
   remains the only device used; the USB target was not used as a substitute.
 - The current lease is renewed. The latest wake gate readback is `AWAKE` with
