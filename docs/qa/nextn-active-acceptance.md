@@ -61,6 +61,27 @@ remains continuous; do not ask for it again.
 - P0 is accepted for this observed path. A future fresh native Account or
   Favorites failure immediately preempts delivery again.
 
+## Current P0 device result — fresh cycle re-accepted
+
+- 2026-08-10 19:24-19:33 +0800: a fresh native Favorites observation on the
+  selected TCP device showed the sign-in-required state, and the paired native
+  Account destination showed verification-required. This fresh evidence
+  immediately preempted the delivery lane.
+- No app data was cleared and no uninstall occurred. No credential field or
+  visible login control was written; the recovery used the explicit native
+  re-verification action, which re-promoted the existing first-party browser
+  identity without a credential epoch.
+- After one normal Favorites settlement retry, Favorites completed an
+  authenticated native read (native Grid with structural items, no Web,
+  loading, error, or sign-in surface).
+- The same session then survived a force-stop/cold start without clearing
+  data. After the restart, native Account was signed in and Favorites again
+  completed an authenticated native read with no Web or sign-in surface.
+- The repository postmortem remains at
+  `docs/postmortems/2026-08-10-account-persistence-p0.md`. P0 is accepted for
+  this observed path only; the queue remains OPEN until the user explicitly
+  requests closure, and any future fresh failure preempts delivery again.
+
 ## Active delivery P1 — Gallery Detail / Comments
 
 - The Detail-owned comments response is now passed into the full Comments

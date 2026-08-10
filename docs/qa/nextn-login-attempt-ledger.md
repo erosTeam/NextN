@@ -402,3 +402,36 @@ substitute for measured login-cycle elapsed time.
 - conclusion: current record-present cold-start path accepted. The two prior
   no-input timed overruns remain recorded above and are not erased by this
   later browser-session recovery.
+
+## Fresh browser-session recovery and S6 — 2026-08-10 19:24-19:33 +0800
+
+- trigger: a fresh native Favorites observation showed sign-in-required and
+  the paired native Account destination showed verification-required,
+  immediately preempting the delivery lane.
+- S0 Account: native verification-required state.
+- S0 Favorites: native sign-in-required state; no visible Web observed.
+- restore/401 diagnostic: native verification-required state; no secret or
+  transport detail retained.
+- install/data boundary: install-r=none-this-cycle; data-clear=false;
+  uninstall=false.
+- login-page navigation: not-entered; the explicit native re-verification
+  action promoted the existing first-party browser session without a visible
+  login WebView.
+- session-loss-detected-at: 2026-08-10T19:24:00+08:00.
+- webview-opened-at: not-applicable; no visible login WebView was opened.
+- native-promotion-at: 2026-08-10T19:27:00+08:00 (native Account signed-in
+  after the re-verification action).
+- loss-to-promotion-elapsed: 00:03:00.
+- last-observed-at: 2026-08-10T19:33:00+08:00.
+- elapsed-so-far: 00:09:00 including the one settlement retry and the
+  data-preserving cold-start verification.
+- account input: not-entered.
+- password input: not-entered.
+- submit: not-issued.
+- cold-start Account: signed-in native state after force-stop/cold start
+  without data clear.
+- cold-start Favorites: authenticated native content observed with no sign-in
+  prompt or error state.
+- conclusion: current record-present cold-start path accepted for this fresh
+  cycle. This recovery did not enter a credential epoch and does not erase
+  any prior measured overrun.
