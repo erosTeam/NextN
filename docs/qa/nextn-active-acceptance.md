@@ -153,9 +153,20 @@ remains continuous; do not ask for it again.
   `.hvigor/outputs/nexte-comments-reference-20260810T1433+0800/` and
   `.hvigor/outputs/nextn-comments-reference-compare-20260810T1433+0800/`;
   neither is in Git.
+- 2026-08-10: the signed Debug HAP containing the empty-discussion composer
+  change was installed with `install -r` only. A public read established that
+  Gallery `671786` has an empty paginated comment result, and the existing
+  direct Comments route was requested once without text input, submission,
+  account action, or preference change. The device accepted one native layout
+  dump, but the subsequent screenshot capture was rejected by the local
+  approval service before a file could be retained. This is not a visual
+  acceptance or a claim that the composer was visible; the next permitted
+  action is to preserve a fresh terminal screenshot and review that exact
+  zero-comment state.
 - Next physical action: continue the Gallery Detail / Comments reference
-  review only on new same-state counter-evidence or explicit user feedback;
-  do not change the frozen title/composer boundaries merely to match NextE.
+  zero-comment acceptance when the local approval service permits the
+  screenshot capture; do not change the frozen title/composer boundaries
+  merely to match NextE.
 
 ## Completed physical evidence
 
