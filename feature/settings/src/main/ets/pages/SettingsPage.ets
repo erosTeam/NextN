@@ -1312,16 +1312,8 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.paintpalette'),
         title: AppStrings.get('settings_layout'),
-        subtitle: AppStrings.format('settings_layout_summary', [
-          this.themeModeLabel(),
-          this.browsePresentationLabel(),
-        ]),
         selected: this.isSettingsRootSelected(SETTINGS_ROOT_LAYOUT),
-        accessibilityLabel: AppStrings.format('settings_layout_a11y', [
-          AppStrings.get('settings_layout'),
-          this.themeModeLabel(),
-          this.browsePresentationLabel(),
-        ]),
+        accessibilityLabel: AppStrings.get('settings_layout'),
         onAction: (): void => {
           if (this.onOpenLayoutSettings) {
             this.onOpenLayoutSettings()

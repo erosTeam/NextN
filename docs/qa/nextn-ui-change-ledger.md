@@ -31,6 +31,35 @@
   current NextN Detail observations are retained without a visual-parity
   claim, and no Detail UI edit is made on the basis of this limitation.
 
+## 已实施、待设备验收：设置根入口按 NextE 根列表重写
+
+- 触发依据：用户明确要求设置页删掉重写，并指出设置入口文案不知所云。设备
+  截图对照显示 NextN 根列表的“布局”行副标题为“跟随系统 · 封面网格”，把
+  主题模式混入布局摘要；账户副标题为“账户 ID …”，属重复表述；而 NextE
+  参考根列表的每行均为简洁标题行，无此类跨类拼接副标题。
+- 父树边界：`SecondaryListScaffold -> RootAccountSection + RootMainSection`。
+  仅重写设置根入口的列表行与账户副标题；布局、目录、阅读器、下载、缓存、
+  高级、关于等子页面及其能力不变。
+- 精确改动：1) 删除“布局”行的 `settings_layout_summary` 副标题与 a11y 中
+  的主题模式拼接；2) `account_profile_id` 在 zh/en/ja 中改为
+  “ID {0} / ID {0} / ID {0}”；3) 修正
+  `settings_catalog_preferences_hint` 断句，改为“浏览和搜索的默认项保存在
+  本机。”；4) 修正 `settings_reader_auto_advance_interval_hint` 中无意义的
+  “时钟操作”，改为“自动翻页”。
+- 最小性理由：根入口的问题集中在文案语义和行摘要拼接，不触碰子页面能力、
+  账户会话、布局/阅读器/下载等数据与交互逻辑；不引入参考中 NextN 不具备的
+  EH 等入口。
+- 验证计划：签名 Debug 构建并以 `install -r` 更新选定设备；打开设置根页，
+  确认“布局”行不再出现“跟随系统 · 封面网格”，账户副标题为“ID …”，并
+  对照 NextE 根列表检查行层级与文案；不修改任何账户或偏好数据。
+- 未决风险：行标题保留 NextN 真实能力命名（布局、浏览与搜索、阅读器、下载、
+  缓存、高级、关于），与 NextE 的“界面、阅读、存储”等命名存在产品命名差异；
+  该差异属于 NH 能力边界，不视为需要伪造的参考叶。
+- 被否定的旧做法：此前把“主题模式 + 封面布局”拼成根入口副标题。两个字段
+  虽然真实，却破坏了参考中根功能入口只呈现能力名称的统一层级；审查时错误地
+  逐字段判断语义，未以整组行的文案语法和视觉节奏为单位审查。该类状态摘要
+  今后只能留在对应子页的设置行，不能回填到根入口。
+
 ## 已实施、待同状态参考对照：Browse Grid 极端比例封面 letterbox 背景
 
 - 触发依据：2026-08-10 当前 Browse 设备画面中，极宽封面的固定 Grid cover 出现大块浅色空槽。NextE 的同一 `GalleryGridCard` 传入 `letterboxBackground: true`；其 `EhThumbnail` 在默认非模糊模式以封面主色渐变填充 Contain 留白，模糊只是可选替代。
