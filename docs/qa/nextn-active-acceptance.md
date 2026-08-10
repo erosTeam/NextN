@@ -68,12 +68,12 @@ remains continuous; do not ask for it again.
   evidence for this compose-control boundary only, not full page acceptance.
 - A retained direct Gallery review then covered the compact Preview, Related,
   and compact Comments rails across their visible Detail viewports. The
-  Preview kept its reference-sized image rail; Related kept a 175vp cover and
-  80vp title region; and each horizontal List owned its full viewport while
-  its first and last items owned the visible edge gap. The floating Read
-  action did not cover a card in the reviewed end states. This is a current
-  device geometry observation, not a same-data reference-parity claim; no
-  data, preference, or gallery action was changed.
+  Preview kept its reference-sized image rail; Related then rendered a 190vp
+  cover plus an 80vp title region; and each horizontal List owned its full
+  viewport while its first and last items owned the visible edge gap. The
+  floating Read action did not cover a card in the reviewed end states. This
+  is a current device geometry observation, not a same-data reference-parity
+  claim; no data, preference, or gallery action was changed.
 - The Gallery Comments timestamp footer and the Detail compact-comment
   preview were then checked after a data-preserving signed Debug update. Both
   showed the supported local date-and-time leaf without clipping the author
