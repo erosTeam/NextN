@@ -12,7 +12,7 @@
 - 验证计划：所需的当前设备和参考状态；构建或源码检查不能替代它。
 - 若被否定：错误假设、忽略的证据、实际影响和禁止复发的约束。
 
-## 计划中：Gallery Comments 的零评论首发入口
+## 已实施、已在设备观察：Gallery Comments 的零评论首发入口
 
 - 触发依据：当前用户目标要求应用可长期使用、按真实用户路径补齐未完成能力。当前 `GalleryCommentsPage` 的成功零评论分支直接渲染 `PageEmptyState`，而唯一的页面编辑器只在 `comments.length > 0` 时挂载；已登录用户因此无法发布该画廊的第一条评论。NextE 的完整 Comments 父树在空列表分支仍保留其页面编辑器；本轮已在选定设备对照已加载 Comments 页，未以该截图取代零评论状态的后续设备验收。
 - 父树边界：`HdsNavDestination -> GalleryCommentsPage -> Column`。初始加载和初始错误继续保留原全页状态；成功已加载的滚动区继续由 `PullRefreshListScaffold` 拥有；现有已评论路径维持 `滚动区 + 固定页面底部 CommentComposer`。本改动只在“成功、当前 gallery、零条可见评论”状态下，把原空态放入可伸缩内容区并保留同一个固定底部编辑器。标题栏、顶层 Compose/Refresh 动作、卡片、List inset、键盘避让、评论提交、过滤、刷新和浮动 Read 均不改。
@@ -31,7 +31,7 @@
   current NextN Detail observations are retained without a visual-parity
   claim, and no Detail UI edit is made on the basis of this limitation.
 
-## 已实施、待设备验收：设置根入口按 NextE 根列表重写
+## 已实施、已在设备观察、待同状态参考对照：设置根入口按 NextE 根列表重写
 
 - 触发依据：用户明确要求设置页删掉重写，并指出设置入口文案不知所云。设备
   截图对照显示 NextN 根列表的“布局”行副标题为“跟随系统 · 封面网格”，把
@@ -126,7 +126,7 @@
   Therefore the same-state reference comparison remains unavailable and this
   item stays OPEN; the NextN device observation above is retained as-is.
 
-## 计划中：Downloads 完成态全局动作可见性
+## 已实施、已在设备观察：Downloads 完成态全局动作可见性
 
 - 触发依据：2026-08-10 当前 NextN Downloads 完成态设备画面显示“全部暂停”和“全部恢复”两个不可用的顶部菜单动作。NextE 的同一根标题菜单树固定保留搜索、排序和回到顶部，但仅当队列存在可恢复任务时插入恢复动作、仅当存在下载中任务时插入暂停动作（`NextE/entry/src/main/ets/pages/Index.ets:1141-1171,1200-1224`）。
 - 父树边界：仅根 `Navigation -> HDS title bar -> Downloads title menu` 的菜单叶序列；下载页的 pinned group header、搜索、排序、任务卡、队列状态、批处理逻辑和滚动宿主不变。
@@ -138,7 +138,7 @@
 - 当前设备观察：已使用现成协作租约工具，仅在 `192.168.50.237:12345` 上 `install -r` 当前签名 Debug HAP。Downloads 完成态的实际 HDS 标题栏保留两个可用动作，未再出现禁用的 Pause/Resume 叶子。原始截图与原生布局保留在本地 `.hvigor/outputs/nextn-download-menu-20260810T1329+0800/`，未加入 Git。
 - 未完成验证：尚未取得同状态、同视口的 NextE 画面对照，也没有在“存在可暂停或恢复任务”的真实状态下验证条件叶子重新出现；因此不得将此记录称为完整视觉参考验收。
 
-## 计划中：Downloads 失败 bootstrap 的普通重入
+## 已实施、失败支路待真实设备观察：Downloads 失败 bootstrap 的普通重入
 
 - 触发依据：用户已明确指出普通页面切换不应自动重新加载。当前 `DownloadQueuePage.ensureQueueForAppearance()` 在 `queueBootstrapResolved=false` 时无条件调用 `bootstrapQueue()`；而失败 catch 会持续保留该 false 值，因此一次失败后的隐藏/显示会重复 durable restore。NextE 的 `DownloadQueuePage.aboutToAppear()` 只重建本地 projection，不发起 restore（`NextE/feature/download/src/main/ets/pages/DownloadQueuePage.ets:121-125`）。
 - 父树边界：仅 `Root Downloads tab -> DownloadQueuePage` 的出现生命周期与既有错误重试入口。HDS 标题、pinned header、队列 ListItemGroup、任务卡、搜索/排序、导出和队列服务均不改。
@@ -197,7 +197,7 @@
 - 对浮动 Read：中途内容从下方经过是设计语义；只检查终端内容是否仍可滚到其上方，不得因为正常中途遮挡添加边距、移动或隐藏浮动按钮。
 - **冻结：Gallery Comments 全页。** 最近一次同视口审查后，此页没有新的可见源码改动；固定页脚 composer、无重复页内计数标题、独立圆角 CommentRow 与 16vp 卡片内容 inset 均保持不动。除非 `GalleryCommentsPage` 或其共享可见宿主发生新的改动、取得同状态反证，或收到针对该全页的新明确反馈，否则不得重新截图、复查、测试或调整该页。冷启动直达路由的时序修复不属于此页的可见改动。
 
-## 计划中：Gallery Comments 固定编辑器的键盘态底部 inset
+## 已实施、已在设备观察：Gallery Comments 固定编辑器的键盘态底部 inset
 
 - 触发依据：`61f0c7b` 的零评论首发入口已在选定设备的成功空态显示固定编辑器。随后聚焦该 TextArea 的最新本地证据显示，键盘出现后编辑器与发送按钮的原始底部有 36px 落入键盘：`after-focus.layout.json` 的可见 bounds 高度为 68px、原始高度为 104px。当前 `GalleryCommentsPage.composerBottomPadding()` 在 `KeyboardAvoidMode.RESIZE` 下返回 `0`；NextE 同一方法在键盘态返回 `COMMENT_COMPOSER_OUTER_GAP`，即其 `SPACE_SM`。
 - 父树边界：`HdsNavDestination -> GalleryCommentsPage -> Column`。成功空态是一个可伸缩的 `PageEmptyState` 内容区，随后是固定、不透明的 `CommentComposer` 页面页脚；有评论时仍是 `PullRefreshListScaffold` 可滚动区加同一个固定页脚。系统键盘由窗口 `keyboardHeightChange` 发布，`KeyboardAvoidMode.RESIZE` 收缩这一根 Column 的可见高度。标题栏、评论 List、卡片、Detail Preview、Related、横向评论预览、Read 浮层、TextArea、发送动作和提交状态都不变。
@@ -207,7 +207,7 @@
 - 未决风险：系统若在不同窗口模式报告不同的键盘缩放比例，`SPACE_SM` 可能不足或过量；该风险只通过同一路径的真实键盘状态判断，不扩展为 `keyboardHeight` 全量 padding 或重组页面树。
 - 当前设备观察：签名 Debug 构建后已仅以 `install -r` 更新选定设备。零评论直达页加载完成后，空 TextArea 被聚焦一次；键盘显示时，输入框和发送控件均完整地处于键盘上方，TextArea 的 visible bounds 与 origBounds 均为完整的 104px 高度。没有输入文本、没有提交评论。该结果仅覆盖 NextN 这一个键盘态；同状态 NextE 参考画面尚未取得，因此不作为完整参考视觉对齐声明。
 
-## 计划中：修复 Gallery Comments 的冷启动直达请求时序
+## 已实施、已在设备观察：修复 Gallery Comments 的冷启动直达请求时序
 
 - 触发依据：2026-08-11 00:32 +0800，在唯一选定设备上按既有 `nextn_gallery_id` 加 `nextn_gallery_destination=comments` Want 做了一次冷启动直达。终态经前台 bundle 和根窗口确认是 NextN Browse 根页，而不是 Comments；未输入、提交、修改偏好或账户。
 - 父树边界：仅 `EntryAbility(onCreate/onWindowStageCreate/onNewWant) -> GalleryDirectLaunchState -> Index.handleGalleryDirectLaunch() -> 既有 pushComments()` 的一次性路由交接。Comments 页面、Detail 页面、横向 rail、composer、数据请求和视觉几何均不在此改动范围内。
