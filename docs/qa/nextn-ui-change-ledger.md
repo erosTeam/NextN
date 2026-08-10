@@ -85,3 +85,15 @@ authorize an edit, replace a device comparison, or define product completion.
   route/title chrome, grouped-form hierarchy, input insets, error treatment,
   and configured/unconfigured state. Retain raw captures locally; no
   source-shape or synthetic UI check is evidence.
+- Implemented source behavior: Reader settings now owns one navigation row to
+  a dedicated source destination. The destination presents the supported
+  OpenAI-compatible type and the four source leaves (name, base URL, API key,
+  model), then saves through the existing private repository, HUKS vault, and
+  manga binding. An existing key is represented only as "stored securely";
+  neither it nor any input is added to shared reactive state or diagnostics.
+- Current device observation: on the selected device, the new Reader-settings
+  row opened the native source destination and showed the unconfigured form
+  with a masked empty key field. No field was edited and no source, model,
+  account, preference, gallery, or content data was changed. Local raw
+  captures are retained outside Git. This is routing/form-render evidence,
+  not a same-state reference comparison or feature acceptance.
