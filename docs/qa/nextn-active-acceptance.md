@@ -668,6 +668,7 @@ remains continuous; do not ask for it again.
 - 2026-08-11 00:32 +0800：对既有 Comments Want 的一次冷启动直达终态经 bundle/root 边界确认是原生 Browse 根页，不是 Comments。未写入评论、账户、偏好或其他内容数据。
 - 该执行链已拒绝；不得用 Browse 滚动、旧坐标或重复截图伪造到达。下一步是仅修复冷启动请求发布顺序，构建并对同一 Want 做一次新的干净终态观察。
 - 2026-08-11：该发布时序修复已签名构建并以 `install -r` 覆盖，未清数据；对同一 Want 的一次强制停止后冷启动终态为 NextN 原生 Comments `NavDestination`，有加载完成的评论 List 和固定编辑器。未输入、发送、修改账户、偏好或内容数据。本地终态截图和 layout 保留在 `.hvigor/outputs/nextn-comments-direct-route-Pa5X9P/`，不进入 Git。该结果仅接受这条冷启动路由，不是 Comments 视觉验收。
+- 2026-08-11：为取得同状态参考而前台化已安装 NextE；其当前终态是横向分屏的 Settings 根页，NextN 则是竖向的 Comments，故该参考截图已拒绝且不用于任何页面判断或改码。随后通过既有语义 Want 把设备返回原生 NextN Comments；未发生数据写入。两份本地证据均保留在审计目录，不进入 Git。
 
 The earlier P0 cycle is retained above as historical evidence. It is not the
 current execution lane because no fresh current S0 observation has proved the
