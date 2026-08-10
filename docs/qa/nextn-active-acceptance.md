@@ -598,6 +598,14 @@ remains continuous; do not ask for it again.
   composer remain the already user-corrected, frozen differences; no new
   source-proven parent-tree or geometry defect was found in this comparison,
   so no visible UI edit was made in this lane.
+- 2026-08-10 19:23 +0800: one native Back from the direct `471768` Comments
+  destination returned to the retained Browse root with one native Grid and
+  ten structural GridItem covers; no visible loading or refresh indicator,
+  Web component, error surface, or sign-in prompt appeared in the retained
+  terminal state. No preference, account, or content mutation occurred. The
+  raw layout and screenshot are retained only in the named local audit
+  directory outside Git. This is a current ordinary-return observation for
+  this root only.
 - Raw screenshots and layouts retained for an active route or visual decision
   stay in their named local audit directory; they are never added to Git or
   deleted automatically.
