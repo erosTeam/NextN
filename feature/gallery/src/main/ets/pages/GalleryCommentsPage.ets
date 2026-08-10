@@ -31,8 +31,8 @@ const COMMENT_COMPOSER_INPUT_MAX_H: number = 148
 
 /**
  * A separate destination keeps comments from competing with the Gallery hero
- * and Read action. The HDS compose action enters the page-owned compose mode;
- * the editor is not kept over the reading surface while it is idle.
+ * and Read action. The HDS compose action focuses the page-owned bottom
+ * composer; it does not open a second full-height navigation surface.
  */
 @ComponentV2
 export struct GalleryCommentsPage {
@@ -46,7 +46,6 @@ export struct GalleryCommentsPage {
   @Local isLoading: boolean = false
   @Local errorMessage: string = ''
   @Local commentText: string = ''
-  @Local composerVisible: boolean = false
   @Local isCommentSubmitting: boolean = false
   @Local commentSubmitError: string = ''
   @Param scroller: Scroller = new Scroller()
@@ -184,10 +183,6 @@ export struct GalleryCommentsPage {
     return this.hasPublishedAccountSession() && !this.isLoading && this.loadedGalleryId === this.galleryId
   }
 
-  private composerShown(): boolean {
-    return this.composerVisible && this.composerAvailable()
-  }
-
   private requestComposerFocus(): void {
     if (this.isCommentSubmitting) {
       return
@@ -196,11 +191,7 @@ export struct GalleryCommentsPage {
       this.showCommentToast(AppStrings.get('comments_error_signin_post'))
       return
     }
-    if (!this.composerAvailable()) {
-      return
-    }
     this.commentSubmitError = ''
-    this.composerVisible = true
     setTimeout((): void => {
       this.getUIContext().getFocusController().requestFocus(COMMENT_COMPOSER_FIELD_ID)
     }, 80)
@@ -229,7 +220,6 @@ export struct GalleryCommentsPage {
         this.loadComments()
       }
       this.commentText = ''
-      this.composerVisible = false
       this.showCommentToast(AppStrings.get('comments_toast_posted'))
     } catch (_error) {
       if (generation === this.commentSubmitGeneration && galleryId === this.galleryId) {
@@ -435,7 +425,7 @@ export struct GalleryCommentsPage {
           PullRefreshListScaffold({
             scroller: this.scroller,
             listSpace: ThemeTokens.SPACE_SM,
-            bottomPadding: this.composerShown()
+            bottomPadding: this.composerAvailable()
               ? COMMENT_COMPOSER_BOTTOM_RESERVE
               : ThemeTokens.LIST_BOTTOM_PADDING,
             controller: this.refreshController,
@@ -445,7 +435,7 @@ export struct GalleryCommentsPage {
           }) {
             this.LoadedCommentsContent()
           }
-          if (this.composerShown()) {
+          if (this.composerAvailable()) {
             this.CommentComposer()
           }
         }

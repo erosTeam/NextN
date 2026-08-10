@@ -141,7 +141,7 @@
     { "name": "comments_error_load", "value": "公開コメントを読み込めません。" },
     { "name": "comments_error_post", "value": "コメントを投稿できません。アカウントセッションを確認して再試行してください。" },
     { "name": "comments_error_signin_post", "value": "コメントを投稿する前に設定からログインしてください。" },
-    { "name": "comments_placeholder", "value": "公開コメントを入力" },
+    { "name": "comments_placeholder", "value": "コメントを書く" },
     { "name": "comments_status_empty", "value": "公開コメントはありません。" },
     { "name": "comments_status_filtered_empty", "value": "ローカルフィルターに一致する公開コメントはありません。" },
     { "name": "comments_status_loading", "value": "コメントを読み込み中…" },

@@ -141,7 +141,7 @@
     { "name": "comments_error_load", "value": "Unable to load public comments." },
     { "name": "comments_error_post", "value": "Unable to post this comment. Check your account session and try again." },
     { "name": "comments_error_signin_post", "value": "Sign in from Settings before posting a comment." },
-    { "name": "comments_placeholder", "value": "Write a public comment" },
+    { "name": "comments_placeholder", "value": "Write a comment" },
     { "name": "comments_status_empty", "value": "No public comments were returned." },
     { "name": "comments_status_filtered_empty", "value": "No public comments match your local filters." },
     { "name": "comments_status_loading", "value": "Loading comments…" },
