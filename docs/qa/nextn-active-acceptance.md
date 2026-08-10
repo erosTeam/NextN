@@ -672,8 +672,12 @@ cold start, Account was natively signed in at 23:20 and Favorites again
 completed a native authenticated read at 23:22. This proves only the observed
 recovery and one subsequent cold-start path. It does not establish why the
 session became invalid, so P1 remains preempted. The next action is
-source-grounded cause isolation from this retained cycle; do not modify UI or
-create another login epoch merely to reproduce the state.
+source-grounded cause isolation from this retained cycle. The bounded retained
+browser-identity refresh change was then built, installed with `install -r`,
+and checked through one normal force-stop/cold-start Account plus Favorites
+read. That normal path remained authenticated. Its terminal-two-401 branch
+did not occur in this check and is therefore not claimed as device-proven; do
+not modify UI or create another login epoch merely to reproduce the state.
 
 ## Data and artifact boundary
 

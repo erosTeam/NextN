@@ -474,3 +474,20 @@ substitute for measured login-cycle elapsed time.
 - conclusion: this observed recovery survives one subsequent cold start, but
   the preceding fresh invalid-session cause is not established. P0 remains
   open; this result must not be described as a general persistence fix.
+
+## Retained-browser recovery deployment regression — 2026-08-10 23:25-23:35 +0800
+
+- trigger: a source change now gives the existing retained ArkWeb identity one
+  bounded refresh-and-verify opportunity after the sealed-token replay fails,
+  before a durable re-verification marker is written.
+- install/data boundary: signed Debug installed with install-r=true;
+  data-clear=false; uninstall=false.
+- persistence check: the updated app was force-stopped and cold-started.
+  Native Account was signed in and Favorites showed authenticated native
+  content without a sign-in prompt, session error, or visible Web surface.
+- account input: not-entered.
+- password input: not-entered.
+- submit: not-issued.
+- conclusion: normal-session regression path observed. No terminal 401 arose,
+  so the new automatic recovery branch remains device-unproven and P0 stays
+  open for its real failure boundary.

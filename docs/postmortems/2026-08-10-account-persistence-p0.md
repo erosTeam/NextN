@@ -18,6 +18,26 @@ This does **not** identify the historical physical cause of every earlier
 missing record. An earlier `account_restore_record_absent` observation proved
 only that no envelope was present at that observation.
 
+## Follow-up invalidation and unproven recovery branch
+
+At 23:06-23:08 +0800 a new paired native failure was observed: Favorites
+showed its sign-in prompt and Account required re-verification. The explicit
+native re-verification action restored Account without a visible form or
+credential write, and Favorites then recovered after one settlement retry.
+One later force-stop/cold-start again passed. This shows that ArkWeb retained
+an identity capable of reissuing a usable access token, but no retained
+diagnostic identifies why the preceding token pair received terminal 401s.
+
+The source previously wrote the durable re-verification marker immediately
+after the sealed-token replay also returned 401. That skips the browser-owned
+refresh that the observed native re-verification later performs without
+credentials. The follow-up source change gives that same retained first-party
+browser identity one bounded, status-verified re-promotion attempt before the
+marker is considered. Its signed Debug build passed one ordinary cold-start
+Account/Favorites regression check. No terminal 401 occurred in that check,
+so this automatic branch is implemented in source but **not yet device-proven**
+and this postmortem does not claim the recurring invalidation is solved.
+
 ## Verified causal path of the current failure
 
 The current failure was an internally inconsistent session:
