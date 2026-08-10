@@ -338,7 +338,8 @@ struct Index {
 
   /** Opens one explicit numeric Gallery route without a Browse-card detour. */
   private handleGalleryDirectLaunch(): void {
-    const galleryId: number = this.galleryDirectLaunch.consume()
+    const request = this.galleryDirectLaunch.consume()
+    const galleryId: number = request.galleryId
     if (!Number.isSafeInteger(galleryId) || galleryId <= 0) {
       return
     }
@@ -348,6 +349,10 @@ struct Index {
     }
     this.settingsNavigation.clearRootLocation()
     this.clearHomeGallerySelection()
+    if (request.openComments) {
+      this.pushComments(galleryId)
+      return
+    }
     this.pushGallery(galleryId)
   }
 

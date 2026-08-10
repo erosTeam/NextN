@@ -42,10 +42,12 @@ export default class EntryAbility extends UIAbility {
   private clipboardProbeInFlight: boolean = false
   private loginRecoveryRequestedAtLaunch: boolean = false
   private galleryDirectLaunchIdAtLaunch: number = 0
+  private galleryDirectLaunchCommentsAtLaunch: boolean = false
   private accountRestoredAtBootstrap: boolean = false
 
   onCreate(want: Want, _launchParam: AbilityConstant.LaunchParam): void {
     this.galleryDirectLaunchIdAtLaunch = this.galleryDirectLaunchId(want)
+    this.galleryDirectLaunchCommentsAtLaunch = this.galleryDirectLaunchWantsComments(want)
     const recoveryValue: Object | undefined = want.parameters?.['nextn_login_recovery']
     this.loginRecoveryRequestedAtLaunch = this.galleryDirectLaunchIdAtLaunch === 0 &&
       typeof recoveryValue === 'string' && recoveryValue === '1'
@@ -130,8 +132,9 @@ export default class EntryAbility extends UIAbility {
         requestLoginRecoveryLaunch()
       }
       if (this.galleryDirectLaunchIdAtLaunch > 0) {
-        requestGalleryDirectLaunch(this.galleryDirectLaunchIdAtLaunch)
+        requestGalleryDirectLaunch(this.galleryDirectLaunchIdAtLaunch, this.galleryDirectLaunchCommentsAtLaunch)
         this.galleryDirectLaunchIdAtLaunch = 0
+        this.galleryDirectLaunchCommentsAtLaunch = false
       }
       windowStage.loadContent(ENTRY_PAGE, (error): void => {
         if (error.code) {
@@ -210,10 +213,11 @@ export default class EntryAbility extends UIAbility {
       return
     }
     if (this.mainContentReady) {
-      requestGalleryDirectLaunch(galleryId)
+      requestGalleryDirectLaunch(galleryId, this.galleryDirectLaunchWantsComments(want))
       return
     }
     this.galleryDirectLaunchIdAtLaunch = galleryId
+    this.galleryDirectLaunchCommentsAtLaunch = this.galleryDirectLaunchWantsComments(want)
   }
 
   onBackground(): void {
@@ -223,6 +227,11 @@ export default class EntryAbility extends UIAbility {
   private galleryDirectLaunchId(want: Want): number {
     const value: Object | undefined = want.parameters?.['nextn_gallery_id']
     return typeof value === 'number' && Number.isSafeInteger(value) && value > 0 ? value : 0
+  }
+
+  private galleryDirectLaunchWantsComments(want: Want): boolean {
+    const value: Object | undefined = want.parameters?.['nextn_gallery_destination']
+    return typeof value === 'string' && value === 'comments'
   }
 
   private probeClipboardLinkIfReady(): void {
