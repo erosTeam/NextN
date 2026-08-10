@@ -634,6 +634,19 @@ remains continuous; do not ask for it again.
   account, or download mutation occurred. The raw layout and screenshot are
   retained only in the named local audit directory outside Git. This is a
   current ordinary root-entry observation only.
+- 2026-08-10 19:39-19:43 +0800: a Search ordinary enter/return chain was
+  first attempted with a stale tab coordinate. Its terminal state was
+  Favorites rather than Browse, and a later Back left the NextE reference
+  app foreground, so that chain was rejected and produced no claim. The
+  route was repaired with the current semantic anchors (Browse root tab and
+  its leftmost title-bar search action). The repaired chain reached a native
+  Search landing with recent-search content and no loading or refresh
+  indicator; one Back dismissed the keyboard and retained the Search
+  surface; a second Back returned to the retained Browse root with its
+  native Grid and no visible loading or refresh indicator. No query,
+  preference, account, or content mutation occurred. The raw captures are
+  retained only in the named local audit directory outside Git. This is a
+  current ordinary enter/return observation only.
 - Raw screenshots and layouts retained for an active route or visual decision
   stay in their named local audit directory; they are never added to Git or
   deleted automatically.
