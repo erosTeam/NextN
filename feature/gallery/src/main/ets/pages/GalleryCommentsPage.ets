@@ -366,27 +366,39 @@ export struct GalleryCommentsPage {
 
   @Builder
   private CommentCard(comment: NhComment) {
+    // Keep the NextE full-comment hierarchy: a compact head row, the body,
+    // then a separate metadata footer.  NH exposes no avatar, score, vote,
+    // reply, edit, or translation leaves, so those leaves are omitted rather
+    // than replaced by a new card design.
     Column({ space: ThemeTokens.SPACE_XS }) {
-      Text(this.authorLabel(comment))
+      Row({ space: ThemeTokens.SPACE_SM }) {
+        Text(this.authorLabel(comment))
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(ThemeTokens.TEXT_LINK)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .layoutWeight(1)
+      }
         .width('100%')
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(ThemeTokens.TEXT_LINK)
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .alignItems(VerticalAlign.Center)
       Text(comment.body.length > 0 ? comment.body : AppStrings.get('comments_empty_body'))
         .width('100%')
         .fontSize(ThemeTokens.FONT_SIZE_BODY)
         .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
         .fontColor(ThemeTokens.TEXT_PRIMARY)
       if (this.postedLabel(comment).length > 0) {
-        Text(this.postedLabel(comment))
+        Row() {
+          Text(this.postedLabel(comment))
+            .fontSize(ThemeTokens.FONT_SIZE_TINY)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(ThemeTokens.TEXT_TERTIARY)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+            .layoutWeight(1)
+        }
           .width('100%')
-          .fontSize(ThemeTokens.FONT_SIZE_TINY)
-          .fontWeight(FontWeight.Medium)
-          .fontColor(ThemeTokens.TEXT_TERTIARY)
-          .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .alignItems(VerticalAlign.Center)
       }
     }
     .width('100%')
