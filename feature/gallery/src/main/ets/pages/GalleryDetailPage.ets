@@ -51,7 +51,10 @@ import {
 import { GalleryChromeState } from '../state/GalleryChromeState'
 import { GalleryThumbnailsChromeState } from '../state/GalleryThumbnailsChromeState'
 import { GalleryThumbnailGridContent } from '../components/GalleryThumbnailGridContent'
-import { GalleryCompactPreviewTile } from '../components/GalleryCompactPreviewTile'
+import {
+  GalleryCompactPreviewTile,
+  GALLERY_COMPACT_PREVIEW_IMAGE_HEIGHT,
+} from '../components/GalleryCompactPreviewTile'
 import {
   GalleryCommentPreviewCarousel,
   GalleryRelatedCarousel,
@@ -1647,7 +1650,7 @@ export struct GalleryDetailPage {
           }, (page: NhGalleryPage, pageIndex: number): string => this.compactPreviewPageKey(page, pageIndex))
         }
         .width('100%')
-        .height(132 + ThemeTokens.FONT_SIZE_TINY + ThemeTokens.SPACE_XS)
+        .height(GALLERY_COMPACT_PREVIEW_IMAGE_HEIGHT + ThemeTokens.FONT_SIZE_TINY + ThemeTokens.SPACE_XS)
         .listDirection(Axis.Horizontal)
         .scrollBar(BarState.Off)
       }

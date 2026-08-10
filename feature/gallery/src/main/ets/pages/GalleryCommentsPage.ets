@@ -7,19 +7,20 @@ import {
   AccountSessionState,
   NhComment,
   NextNModalScaffold,
+  NextNPullRefreshController,
   PageEmptyState,
   PageErrorState,
   PageLoadingState,
-  SecondaryListScaffold,
+  PullRefreshListScaffold,
   ThemeTokens,
   connectAccountSession,
   connectContentFilters,
 } from 'shared'
 
 /**
- * A separate destination keeps public discussion from competing with the
- * Gallery hero and Read action. Posting is constrained to the existing HDS
- * modal-title action; comments never gain an in-list Material-style toolbar.
+ * A separate destination keeps comments from competing with the Gallery hero
+ * and Read action. Posting remains constrained to the existing HDS modal-title
+ * action; comments never gain an in-list Material-style toolbar.
  */
 @ComponentV2
 export struct GalleryCommentsPage {
@@ -30,7 +31,7 @@ export struct GalleryCommentsPage {
   @Local contentFilters: ContentFilterState = connectContentFilters()
   @Local accountSession: AccountSessionState = connectAccountSession()
   @Local loadedGalleryId: number = 0
-  @Local isLoading: boolean = true
+  @Local isLoading: boolean = false
   @Local errorMessage: string = ''
   @Local composerShown: boolean = false
   @Local commentText: string = ''
@@ -41,19 +42,19 @@ export struct GalleryCommentsPage {
   @Param composeVersion: number = 0
   private requestGeneration: number = 0
   private commentSubmitGeneration: number = 0
+  private refreshController: NextNPullRefreshController = new NextNPullRefreshController()
 
   aboutToAppear(): void {
-    this.loadComments()
-  }
-
-  aboutToDisappear(): void {
-    this.requestGeneration += 1
-    this.commentSubmitGeneration += 1
+    if (!this.isLoading && this.loadedGalleryId !== this.galleryId) {
+      this.loadComments()
+    }
   }
 
   @Monitor('galleryId')
   onGalleryChanged(): void {
-    this.loadComments()
+    if (!this.isLoading && this.loadedGalleryId !== this.galleryId) {
+      this.loadComments()
+    }
   }
 
   @Monitor('reloadVersion')
@@ -134,22 +135,6 @@ export struct GalleryCommentsPage {
     return `${date.getFullYear()}-${this.twoDigits(date.getMonth() + 1)}-${this.twoDigits(date.getDate())}`
   }
 
-  private summaryText(): string {
-    if (this.isLoading) {
-      return AppStrings.get('comments_status_loading_discussion')
-    }
-    if (this.comments.length === 0 && this.rawComments.length > 0) {
-      return AppStrings.get('comments_status_filtered_empty')
-    }
-    if (this.comments.length === 0) {
-      return AppStrings.get('comments_status_empty')
-    }
-    return AppStrings.format(
-      this.comments.length === 1 ? 'comments_count_singular' : 'comments_count_plural',
-      [this.comments.length.toString()],
-    )
-  }
-
   private canSubmitComment(): boolean {
     return this.hasPublishedAccountSession() && this.commentText.trim().length > 0 && !this.isCommentSubmitting
   }
@@ -210,26 +195,22 @@ export struct GalleryCommentsPage {
   }
 
   @Builder
-  private CommentsSummary() {
+  private CommentsHeader() {
     Row({ space: ThemeTokens.SPACE_XS }) {
-      Text(AppStrings.get('comments_title_public_discussion'))
+      Text(AppStrings.get('gallery_comments'))
         .fontSize(ThemeTokens.FONT_SIZE_TITLE)
         .fontWeight(FontWeight.Medium)
         .fontColor(ThemeTokens.TEXT_PRIMARY)
-      Text(this.summaryText())
+      Text(`(${this.comments.length})`)
         .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
         .fontColor(ThemeTokens.TEXT_TERTIARY)
         .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
+      Blank()
     }
     .width('100%')
     .alignItems(VerticalAlign.Center)
-    .margin({
-      left: ThemeTokens.LIST_HORIZONTAL_PADDING,
-      right: ThemeTokens.LIST_HORIZONTAL_PADDING,
-      top: ThemeTokens.SPACE_MD,
-      bottom: ThemeTokens.SPACE_SM,
-    })
+    .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD })
   }
 
   @Builder
@@ -296,8 +277,6 @@ export struct GalleryCommentsPage {
     }
     .width('100%')
     .padding({
-      left: ThemeTokens.LIST_HORIZONTAL_PADDING,
-      right: ThemeTokens.LIST_HORIZONTAL_PADDING,
       bottom: ThemeTokens.SPACE_SM,
     })
   }
@@ -305,31 +284,27 @@ export struct GalleryCommentsPage {
   @Builder
   private CommentCard(comment: NhComment) {
     Column({ space: ThemeTokens.SPACE_XS }) {
-      Row({ space: ThemeTokens.SPACE_SM }) {
-        Text(this.authorLabel(comment))
-          .layoutWeight(1)
-          .fontSize(ThemeTokens.FONT_SIZE_BODY)
-          .fontWeight(FontWeight.Medium)
-          .fontColor(ThemeTokens.TEXT_PRIMARY)
-          .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-        if (this.postedLabel(comment).length > 0) {
-          Text(this.postedLabel(comment))
-            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-            .fontColor(ThemeTokens.TEXT_TERTIARY)
-        }
-      }
-      .width('100%')
-      .alignItems(VerticalAlign.Center)
+      Text(this.authorLabel(comment))
+        .width('100%')
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontWeight(FontWeight.Medium)
+        .fontColor(ThemeTokens.TEXT_LINK)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
       Text(comment.body.length > 0 ? comment.body : AppStrings.get('comments_empty_body'))
         .width('100%')
         .fontSize(ThemeTokens.FONT_SIZE_BODY)
         .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
-      Divider()
-        .strokeWidth(1)
-        .color(ThemeTokens.DIVIDER)
-        .margin({ top: ThemeTokens.SPACE_SM })
+        .fontColor(ThemeTokens.TEXT_PRIMARY)
+      if (this.postedLabel(comment).length > 0) {
+        Text(this.postedLabel(comment))
+          .width('100%')
+          .fontSize(ThemeTokens.FONT_SIZE_TINY)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(ThemeTokens.TEXT_TERTIARY)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+      }
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)
@@ -337,74 +312,59 @@ export struct GalleryCommentsPage {
       left: ThemeTokens.SPACE_MD,
       right: ThemeTokens.SPACE_MD,
       top: ThemeTokens.SPACE_MD,
-      bottom: ThemeTokens.SPACE_XS,
+      bottom: ThemeTokens.SPACE_SM,
     })
+    .borderRadius(ThemeTokens.RADIUS_CARD)
+    .backgroundColor(ThemeTokens.CARD_BACKGROUND)
   }
 
-  /**
-   * Keep every discussion state in the destination's scroll surface.  HDS
-   * titles are immersive, so a direct Column would start beneath the title
-   * and let the summary/first comment render behind it on a real device.
-   */
   @Builder
-  private DiscussionContent() {
+  private LoadedCommentsContent() {
     ListItem() {
-      this.CommentsSummary()
+      this.CommentsHeader()
     }
-    if (this.isLoading && this.comments.length === 0) {
+    if (this.errorMessage.length > 0) {
       ListItem() {
-        PageLoadingState({ text: AppStrings.get('comments_status_loading') })
+        this.RefreshFailureNotice()
       }
-    } else if (this.errorMessage.length > 0 && this.comments.length === 0) {
+    }
+    ForEach(this.comments, (comment: NhComment): void => {
       ListItem() {
+        this.CommentCard(comment)
+      }
+    }, (comment: NhComment): string => comment.commentId.toString())
+  }
+
+  build() {
+    Column() {
+      if (this.isLoading && this.comments.length === 0) {
+        PageLoadingState({ text: AppStrings.get('comments_status_loading') })
+      } else if (this.errorMessage.length > 0 && this.comments.length === 0) {
         PageErrorState({
           message: this.errorMessage,
           onRetry: (): void => {
             this.loadComments()
           },
         })
-      }
-    } else if (this.comments.length === 0) {
-      ListItem() {
+      } else if (this.comments.length === 0) {
         PageEmptyState({
           message: this.rawComments.length > 0
             ? AppStrings.get('comments_status_filtered_empty')
             : AppStrings.get('comments_status_empty'),
         })
-      }
-    } else {
-      if (this.errorMessage.length > 0) {
-        ListItem() {
-          this.RefreshFailureNotice()
-        }
-      }
-      ForEach(this.comments, (comment: NhComment): void => {
-        ListItem() {
-          this.CommentCard(comment)
-        }
-      }, (comment: NhComment): string => comment.commentId.toString())
-    }
-  }
-
-  build() {
-    Column() {
-      Refresh({ refreshing: $$this.isLoading }) {
-        SecondaryListScaffold({
+      } else {
+        PullRefreshListScaffold({
           scroller: this.scroller,
-          listSpace: 0,
-          horizontalPadding: 0,
+          listSpace: ThemeTokens.SPACE_SM,
           bottomPadding: ThemeTokens.LIST_BOTTOM_PADDING,
-          alwaysEnableEdgeSpring: true,
+          controller: this.refreshController,
+          onRefresh: async (): Promise<void> => {
+            await this.loadComments()
+          },
         }) {
-          this.DiscussionContent()
+          this.LoadedCommentsContent()
         }
       }
-      .layoutWeight(1)
-      .width('100%')
-      .pullToRefresh(true)
-      .onRefreshing((): void => {
-        this.loadComments()
-      })
     }
     .width('100%')
     .height('100%')

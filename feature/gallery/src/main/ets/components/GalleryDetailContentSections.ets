@@ -5,21 +5,18 @@ import {
   ThemeTokens,
 } from 'shared'
 
-// These are the existing detail-rail dimensions: Related uses a 280vp strip
-// with 200vp covers and 80vp titles; Comments uses a 190vp strip of 280vp
-// preview cards.
-const RELATED_CAROUSEL_HEIGHT: number = 280
-const RELATED_COVER_HEIGHT: number = 200
+const RELATED_CAROUSEL_HEIGHT: number = 255
+const RELATED_COVER_HEIGHT: number = ThemeTokens.DETAIL_COVER_HEIGHT
 const RELATED_TITLE_HEIGHT: number = 80
-/**
- * Keep the existing fixed-height Related rail, but derive each card's width
- * from the thumbnail dimensions when the related endpoint supplies them.
- * Invalid or absent dimensions use the established 3:4 fallback; valid source
- * dimensions remain unmodified instead of being forced into a portrait slot.
- */
 const RELATED_FALLBACK_ASPECT_RATIO: number = 3 / 4
-const COMMENT_CAROUSEL_HEIGHT: number = 190
-const COMMENT_CARD_WIDTH: number = 280
+const HORIZONTAL_RAIL_EDGE_INSET: number = ThemeTokens.SPACE_MD
+const COMMENT_CAROUSEL_HEIGHT: number = 120
+const COMMENT_CARD_WIDTH: number = 240
+const COMMENT_PREVIEW_LINE_HEIGHT: number = 18
+
+function horizontalRailViewportWidth(): string {
+  return `calc(100% + ${HORIZONTAL_RAIL_EDGE_INSET * 2}vp)`
+}
 
 /**
  * The stable NH summary DTO renders as a section heading followed by one
@@ -66,7 +63,6 @@ export struct GalleryRelatedCarousel {
     .width(this.relatedCardWidth(gallery))
     .height(RELATED_COVER_HEIGHT)
     .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
-    .borderRadius(ThemeTokens.THUMB_RADIUS)
     .clip(true)
   }
 
@@ -82,11 +78,19 @@ export struct GalleryRelatedCarousel {
         .maxLines(5)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
         .textAlign(TextAlign.Start)
-        .padding({ top: ThemeTokens.SPACE_XS })
+        .padding({
+          left: ThemeTokens.SPACE_SM,
+          top: ThemeTokens.SPACE_XS,
+          right: ThemeTokens.SPACE_SM,
+          bottom: ThemeTokens.SPACE_XS,
+        })
     }
     .width(this.relatedCardWidth(gallery))
     .height(RELATED_CAROUSEL_HEIGHT)
     .alignItems(HorizontalAlign.Start)
+    .borderRadius(ThemeTokens.RADIUS_MD)
+    .clip(true)
+    .backgroundColor(ThemeTokens.CARD_BACKGROUND)
     .accessibilityText(this.relatedCardAccessibility(gallery))
     .onClick((): void => {
       if (this.onOpen) {
@@ -101,17 +105,26 @@ export struct GalleryRelatedCarousel {
         .fontSize(ThemeTokens.FONT_SIZE_TITLE)
         .fontWeight(FontWeight.Medium)
         .fontColor(ThemeTokens.TEXT_PRIMARY)
+        // The heading is not part of the horizontal viewport. It aligns with
+        // content inside the neighbouring detail cards, while the List below
+        // remains free to extend through the page gutter when scrolled.
+        .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD })
       List({ space: ThemeTokens.SPACE_SM }) {
-        ForEach(this.galleries, (gallery: NhGallerySummary): void => {
+        ForEach(this.galleries, (gallery: NhGallerySummary, index: number): void => {
           ListItem() {
             this.RelatedCard(gallery)
           }
+          .margin({
+            left: index === 0 ? HORIZONTAL_RAIL_EDGE_INSET : 0,
+            right: index === this.galleries.length - 1 ? HORIZONTAL_RAIL_EDGE_INSET : 0,
+          })
         }, (gallery: NhGallerySummary): string => `related_${gallery.id}`)
       }
-      .width('100%')
+      .width(horizontalRailViewportWidth())
       .height(RELATED_CAROUSEL_HEIGHT)
       .listDirection(Axis.Horizontal)
       .scrollBar(BarState.Off)
+      .translate({ x: -HORIZONTAL_RAIL_EDGE_INSET })
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)
@@ -185,6 +198,7 @@ export struct GalleryCommentPreviewCarousel {
     }
     .width('100%')
     .alignItems(VerticalAlign.Center)
+    .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD })
     .accessibilityText(AppStrings.get('gallery_comments_a11y'))
     .onClick((): void => {
       if (this.onOpen) {
@@ -202,14 +216,14 @@ export struct GalleryCommentPreviewCarousel {
       Row({ space: ThemeTokens.SPACE_SM }) {
         Text(this.commentAuthor(comment))
           .layoutWeight(1)
-          .fontSize(ThemeTokens.FONT_SIZE_BODY)
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
           .fontWeight(FontWeight.Medium)
           .fontColor(ThemeTokens.TEXT_PRIMARY)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
         if (this.commentPostedLabel(comment).length > 0) {
           Text(this.commentPostedLabel(comment))
-            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+            .fontSize(ThemeTokens.FONT_SIZE_TINY)
             .fontColor(ThemeTokens.TEXT_TERTIARY)
             .maxLines(1)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
@@ -219,10 +233,10 @@ export struct GalleryCommentPreviewCarousel {
       .alignItems(VerticalAlign.Center)
       Text(comment.body.length > 0 ? comment.body : AppStrings.get('comments_empty_body'))
         .width('100%')
-        .fontSize(ThemeTokens.FONT_SIZE_BODY)
-        .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .lineHeight(COMMENT_PREVIEW_LINE_HEIGHT)
         .fontColor(ThemeTokens.TEXT_SECONDARY)
-        .maxLines(4)
+        .maxLines(2)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
     }
     .width(COMMENT_CARD_WIDTH)
@@ -248,12 +262,17 @@ export struct GalleryCommentPreviewCarousel {
             ListItem() {
               this.CommentCard(comment)
             }
+            .margin({
+              left: index === 0 ? HORIZONTAL_RAIL_EDGE_INSET : 0,
+              right: index === this.comments.length - 1 ? HORIZONTAL_RAIL_EDGE_INSET : 0,
+            })
           }, (comment: NhComment, index: number): string => this.commentKey(comment, index))
         }
-        .width('100%')
+        .width(horizontalRailViewportWidth())
         .height(COMMENT_CAROUSEL_HEIGHT)
         .listDirection(Axis.Horizontal)
         .scrollBar(BarState.Off)
+        .translate({ x: -HORIZONTAL_RAIL_EDGE_INSET })
       }
     }
     .width('100%')

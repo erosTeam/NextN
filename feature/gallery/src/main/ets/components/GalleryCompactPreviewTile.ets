@@ -7,7 +7,7 @@ import {
 // This is deliberately separate from GalleryVirtualPageThumbnailTile: the
 // full Pages destination is a stable Grid, while the compact detail rail must
 // retain each source page's aspect at one shared rail height.
-const COMPACT_PREVIEW_IMAGE_HEIGHT: number = 132
+export const GALLERY_COMPACT_PREVIEW_IMAGE_HEIGHT: number = 150
 // Exact ErosN ThumbListView sanitisation: malformed or extreme source metadata
 // does not stretch the rail; normal page dimensions keep their true aspect.
 const COMPACT_PREVIEW_MIN_ASPECT: number = 0.3
@@ -52,7 +52,7 @@ export struct GalleryCompactPreviewTile {
   }
 
   private imageWidth(): number {
-    return COMPACT_PREVIEW_IMAGE_HEIGHT * this.pageAspect()
+    return GALLERY_COMPACT_PREVIEW_IMAGE_HEIGHT * this.pageAspect()
   }
 
   private pageLabel(): string {
@@ -92,7 +92,7 @@ export struct GalleryCompactPreviewTile {
         this.ThumbnailFallback()
       }
       .width(this.imageWidth())
-      .height(COMPACT_PREVIEW_IMAGE_HEIGHT)
+      .height(GALLERY_COMPACT_PREVIEW_IMAGE_HEIGHT)
       .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
       .borderRadius(ThemeTokens.THUMB_RADIUS)
       .clip(true)
