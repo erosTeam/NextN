@@ -454,3 +454,23 @@ substitute for measured login-cycle elapsed time.
 - conclusion: not-a-relogin-attempt. This paired current state activates P0;
   the next action is the explicit native re-verification route. A credential
   epoch is forbidden unless that route actually produces the visible form.
+
+## Native re-verification recovery and cold-start read — 2026-08-10 23:06-23:22 +0800
+
+- trigger: continuation of the paired ordinary-navigation invalid-session
+  observation above; no cold-start loss-to-promotion timer is invented.
+- recovery action: one explicit native re-verification action was issued. It
+  returned native Account to signed-in at 23:13 without a visible Web form,
+  credential field write, or submit.
+- immediate Favorites: the first post-promotion read reported a native
+  transition-in-progress state. One ordinary settlement retry at 23:16 then
+  showed authenticated native content.
+- persistence check: NextN was force-stopped and cold-started without data
+  clear, uninstall, or install. Native Account was signed in at 23:20 and
+  Favorites showed authenticated native content at 23:22.
+- account input: not-entered.
+- password input: not-entered.
+- submit: not-issued.
+- conclusion: this observed recovery survives one subsequent cold start, but
+  the preceding fresh invalid-session cause is not established. P0 remains
+  open; this result must not be described as a general persistence fix.

@@ -663,14 +663,17 @@ remains continuous; do not ask for it again.
 
 ## Next physical action
 
-P0 is active again: 2026-08-10 23:06-23:08 +0800 current native Favorites
-displayed its sign-in prompt and the paired native Account destination
-displayed its re-verification-required state. No application data was cleared,
-no uninstall or install was performed, and no credential or visible-login
-action was taken. This fresh paired state preempts P1. The next physical action
-is the existing explicit native re-verification action, followed by its native
-promotion observation; do not create a credential epoch unless that action
-actually reaches the visible login form.
+P0 remains open for cause isolation. A fresh 2026-08-10 23:06-23:08 +0800
+Favorites sign-in prompt and paired Account re-verification-required state
+was recovered only through the existing explicit native re-verification action.
+No visible Web form or credential action occurred. At 23:16 Favorites again
+completed a native authenticated read; after a data-preserving force-stop and
+cold start, Account was natively signed in at 23:20 and Favorites again
+completed a native authenticated read at 23:22. This proves only the observed
+recovery and one subsequent cold-start path. It does not establish why the
+session became invalid, so P1 remains preempted. The next action is
+source-grounded cause isolation from this retained cycle; do not modify UI or
+create another login epoch merely to reproduce the state.
 
 ## Data and artifact boundary
 
