@@ -663,6 +663,27 @@ remains continuous; do not ask for it again.
 
 ## Next physical action
 
+### Rejected P1 start — completed-download CBZ export
+
+- 2026-08-11: this distinct, previously unexercised path was selected instead
+  of reopening frozen Comments or any already-observed Detail/Reader surface.
+  The intended boundary is one already-complete local task -> Export CBZ ->
+  system share foreground -> cancel -> the same task remains complete.
+- The initial foreground capture was native NextN Comments. Two documented
+  Back actions then produced an `com.erosteam.nexte` Settings root, not a
+  NextN Downloads page; that branch was rejected before any download action.
+  A subsequent data-preserving NextN force-stop and explicit launch did not
+  restore a NextN foreground: the current layout root was
+  `com.ohos.sceneboard` with its no-available-opener system surface. The
+  selected TCP device remained connected; no app data was cleared.
+- No complete-task action, CBZ creation, ShareKit action, cancellation,
+  preference, account action, or content mutation occurred. The local
+  evidence is retained outside Git.
+- Next physical action: re-establish and prove a native NextN foreground via
+  the source-grounded launch path, then resume this exact export path once;
+  do not use the rejected Settings root, old coordinates, or any Comments /
+  Detail / Reader recheck as a substitute.
+
 ## Current Gallery Comments direct-route exception
 
 - 2026-08-11 00:32 +0800：对既有 Comments Want 的一次冷启动直达终态经 bundle/root 边界确认是原生 Browse 根页，不是 Comments。未写入评论、账户、偏好或其他内容数据。
