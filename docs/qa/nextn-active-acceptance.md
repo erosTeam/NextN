@@ -417,16 +417,20 @@ remains continuous; do not ask for it again.
 
 ## Next physical action
 
-No further device login action is scheduled. The required postmortem has been
-written and reviewed against the real-device evidence. Keep this queue OPEN
-until the user explicitly requests closure; do not switch to UI or other
-lanes.
+P0 remains conditional: do not create a login attempt from historical evidence,
+but immediately preempt P1 if a fresh native Account or Favorites observation
+proves the session unusable. Otherwise continue P1 using the existing direct
+Gallery route for `471768`: preserve a named local NextN Detail/Comments audit
+capture, compare only with a genuinely same-state reference, then make one
+source-proven parent-tree or geometry correction in its own commit. Keep this
+queue OPEN until the user explicitly requests closure.
 
 ## Data and artifact boundary
 
 Never place credentials, account/profile strings, cookies, tokens, raw Web
-layouts, or screenshots in this file. Delete raw temporary device and host
-artifacts after every bounded check.
+layouts, or screenshots in this file. Retain raw device and host artifacts in
+a named local audit directory when they are used for visual review; never add
+them to source control and never delete them automatically.
 
 Use `scripts/probe_arkweb_login_state.mjs` only for its fixed, read-only CDP
 summary while a visible login surface exists. UI static summary tools are not
