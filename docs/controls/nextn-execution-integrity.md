@@ -102,6 +102,22 @@ be justified by a test written to mirror the new implementation.
   remain local evidence and are never added to source commits unless the user
   explicitly asks.
 
+### 4.2 UI change rationale and freeze gate
+
+- Before any visible UI source edit, add a record to
+  `docs/qa/nextn-ui-change-ledger.md`: the user instruction or real
+  reference/device evidence, whole parent-tree boundary, exact before/after
+  values or structure, minimality rationale, visual verification plan, and
+  unresolved risk. A UI commit must include that record.
+- “Polish”, “compact”, “balanced”, or a local text/size heuristic are not a
+  rationale for a visible change.
+- Once a value or interaction has current evidence and a user decision, freeze
+  it. Do not reopen, recompute, revalidate, or alter it without new explicit
+  user feedback or same-state counter-evidence.
+- If the user identifies a prior UI change as wrong, record its faulty
+  assumption, ignored evidence, impact, and prevention rule before another
+  edit in that same region.
+
 ## 5. Scope and delegation discipline
 
 - There is one active lane. An audit may identify candidates, but it may not
