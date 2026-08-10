@@ -1,5 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import { SymbolGlyphModifier, window } from '@kit.ArkUI'
+import { fileUri } from '@kit.CoreFileKit'
 import { KeyCode } from '@kit.InputKit'
 import inputConsumer from '@ohos.multimodalInput.inputConsumer'
 import { Action, KeyEvent as InputConsumerKeyEvent } from '@ohos.multimodalInput.keyEvent'
@@ -20,6 +21,9 @@ import {
   ReaderImageCacheResult,
   ReaderImageCacheService,
   ReaderSuperResolutionService,
+  ComicTranslationReaderPageInput,
+  ComicTranslationRuntimeService,
+  ComicVisualTranslationRunResult,
   ReaderPresentationService,
   ReaderPresentationState,
   ReaderOverlayNavigationState,
@@ -170,6 +174,8 @@ struct ReaderImagePage {
   @Require @Param imageUrl: string
   @Require @Param cacheKey: string
   @Param localImageUri: string = ''
+  /** A completed private translation artifact replaces only this image leaf. */
+  @Param renderedImageUri: string = ''
   @Param enhancementEnabled: boolean = false
   @Param fillViewport: boolean = false
   @Param imageWidth: number = 0
@@ -179,6 +185,7 @@ struct ReaderImagePage {
   @Param doubleTapTargetIndex: number = -1
   @Event onZoomChange?: (zoomed: boolean) => void
   @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
+  @Event onSourceFileReady?: (pageIndex: number, localPath: string) => void
   @Event onEnhancementStateChanged?: (pageIndex: number, processing: boolean, applied: boolean) => void
   @Local hasLoadError: boolean = false
   @Local isRetrying: boolean = false
@@ -229,6 +236,11 @@ struct ReaderImagePage {
     this.loadImage()
   }
 
+  @Monitor('renderedImageUri')
+  onRenderedImageUriChanged(): void {
+    this.loadImage()
+  }
+
   @Monitor('enhancementEnabled')
   onEnhancementEnabledChanged(): void {
     this.loadImage()
@@ -255,6 +267,12 @@ struct ReaderImagePage {
   private notifyImageLoadState(loaded: boolean): void {
     if (this.onImageLoadStateChanged && this.pageIndex >= 0) {
       this.onImageLoadStateChanged(this.pageIndex, loaded)
+    }
+  }
+
+  private notifySourceFileReady(localPath: string): void {
+    if (this.onSourceFileReady && this.pageIndex >= 0 && localPath.length > 0) {
+      this.onSourceFileReady(this.pageIndex, localPath)
     }
   }
 
@@ -305,9 +323,17 @@ struct ReaderImagePage {
     this.notifyImageLoadState(false)
     this.resetZoom()
     this.notifyZoom()
+    if (this.renderedImageUri.length > 0) {
+      this.imageSource = this.renderedImageUri
+      this.isLoading = false
+      this.isRetrying = false
+      return
+    }
     if (this.localImageUri.length > 0) {
       this.imageSource = this.localImageUri
-      this.applyEnhancement(generation, readerLocalFilePath(this.localImageUri)).catch((): void => {})
+      const localPath: string = readerLocalFilePath(this.localImageUri)
+      this.notifySourceFileReady(localPath)
+      this.applyEnhancement(generation, localPath).catch((): void => {})
       this.isLoading = false
       this.isRetrying = false
       return
@@ -323,6 +349,7 @@ struct ReaderImagePage {
         return
       }
       this.imageSource = result.displayUri
+      this.notifySourceFileReady(result.localPath)
       this.applyEnhancement(generation, result.localPath).catch((): void => {})
     } catch (_error) {
       if (!this.isCurrentLoad(generation)) {
@@ -587,9 +614,11 @@ struct ReaderSpreadImageLayer {
   @Require @Param imageUrl: string
   @Require @Param cacheKey: string
   @Param localImageUri: string = ''
+  @Param renderedImageUri: string = ''
   @Param enhancementEnabled: boolean = false
   @Param pageIndex: number = -1
   @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
+  @Event onSourceFileReady?: (pageIndex: number, localPath: string) => void
   @Event onEnhancementStateChanged?: (pageIndex: number, processing: boolean, applied: boolean) => void
   @Local hasLoadError: boolean = false
   @Local isRetrying: boolean = false
@@ -621,6 +650,11 @@ struct ReaderSpreadImageLayer {
     this.loadImage()
   }
 
+  @Monitor('renderedImageUri')
+  onRenderedImageUriChanged(): void {
+    this.loadImage()
+  }
+
   @Monitor('enhancementEnabled')
   onEnhancementEnabledChanged(): void {
     this.loadImage()
@@ -633,6 +667,12 @@ struct ReaderSpreadImageLayer {
   private notifyImageLoadState(loaded: boolean): void {
     if (this.onImageLoadStateChanged && this.pageIndex >= 0) {
       this.onImageLoadStateChanged(this.pageIndex, loaded)
+    }
+  }
+
+  private notifySourceFileReady(localPath: string): void {
+    if (this.onSourceFileReady && this.pageIndex >= 0 && localPath.length > 0) {
+      this.onSourceFileReady(this.pageIndex, localPath)
     }
   }
 
@@ -681,9 +721,17 @@ struct ReaderSpreadImageLayer {
     this.imageSource = ''
     this.notifyEnhancementState(false, false)
     this.notifyImageLoadState(false)
+    if (this.renderedImageUri.length > 0) {
+      this.imageSource = this.renderedImageUri
+      this.isLoading = false
+      this.isRetrying = false
+      return
+    }
     if (this.localImageUri.length > 0) {
       this.imageSource = this.localImageUri
-      this.applyEnhancement(generation, readerLocalFilePath(this.localImageUri)).catch((): void => {})
+      const localPath: string = readerLocalFilePath(this.localImageUri)
+      this.notifySourceFileReady(localPath)
+      this.applyEnhancement(generation, localPath).catch((): void => {})
       this.isLoading = false
       this.isRetrying = false
       return
@@ -699,6 +747,7 @@ struct ReaderSpreadImageLayer {
         return
       }
       this.imageSource = result.displayUri
+      this.notifySourceFileReady(result.localPath)
       this.applyEnhancement(generation, result.localPath).catch((): void => {})
     } catch (_error) {
       if (generation !== this.loadGeneration) {
@@ -788,12 +837,15 @@ struct ReaderSpreadSurface {
   @Require @Param mediaId: string
   @Param firstLocalImageUri: string = ''
   @Param secondLocalImageUri: string = ''
+  @Param firstRenderedImageUri: string = ''
+  @Param secondRenderedImageUri: string = ''
   @Param enhancementEnabled: boolean = false
   @Param rowReversed: boolean = false
   @Param doubleTapSequence: number = 0
   @Param doubleTapTargetIndex: number = -1
   @Event onZoomChange?: (sourceIndex: number, zoomed: boolean) => void
   @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
+  @Event onSourceFileReady?: (pageIndex: number, localPath: string) => void
   @Event onEnhancementStateChanged?: (pageIndex: number, processing: boolean, applied: boolean) => void
   @Local zoomScale: number = 1
   @Local zoomOffsetX: number = 0
@@ -961,10 +1013,11 @@ struct ReaderSpreadSurface {
   }
 
   @Builder
-  private SpreadImage(item: ReaderPagedItem, localImageUri: string) {
+  private SpreadImage(item: ReaderPagedItem, localImageUri: string, renderedImageUri: string) {
     ReaderSpreadImageLayer({
       imageUrl: NhApiClient.imageUrl(this.mediaId, item.sourceIndex, item.page.extension),
       localImageUri,
+      renderedImageUri,
       enhancementEnabled: this.enhancementEnabled,
       pageIndex: item.sourceIndex,
       cacheKey: ReaderImageCacheService.cacheKey(
@@ -978,6 +1031,11 @@ struct ReaderSpreadSurface {
           this.onImageLoadStateChanged(pageIndex, loaded)
         }
       },
+      onSourceFileReady: (pageIndex: number, localPath: string): void => {
+        if (this.onSourceFileReady) {
+          this.onSourceFileReady(pageIndex, localPath)
+        }
+      },
       onEnhancementStateChanged: (pageIndex: number, processing: boolean, applied: boolean): void => {
         if (this.onEnhancementStateChanged) {
           this.onEnhancementStateChanged(pageIndex, processing, applied)
@@ -987,9 +1045,9 @@ struct ReaderSpreadSurface {
   }
 
   @Builder
-  private SpreadPane(item: ReaderPagedItem, localImageUri: string) {
+  private SpreadPane(item: ReaderPagedItem, localImageUri: string, renderedImageUri: string) {
     Column() {
-      this.SpreadImage(item, localImageUri)
+      this.SpreadImage(item, localImageUri, renderedImageUri)
     }
     .width(this.paneWidthFor(item))
     .height(this.joinedFrameHeight())
@@ -999,11 +1057,11 @@ struct ReaderSpreadSurface {
   private SpreadImages() {
     Row() {
       if (this.rowReversed && this.second !== null) {
-        this.SpreadPane(this.second, this.secondLocalImageUri)
+        this.SpreadPane(this.second, this.secondLocalImageUri, this.secondRenderedImageUri)
       }
-      this.SpreadPane(this.first, this.firstLocalImageUri)
+      this.SpreadPane(this.first, this.firstLocalImageUri, this.firstRenderedImageUri)
       if (!this.rowReversed && this.second !== null) {
-        this.SpreadPane(this.second, this.secondLocalImageUri)
+        this.SpreadPane(this.second, this.secondLocalImageUri, this.secondRenderedImageUri)
       }
     }
     .width(this.joinedFrameWidth())
@@ -1333,6 +1391,15 @@ export struct ReaderPage {
   // for the canvas and its lazy page children.
   @Local readerEnhancementEnabled: boolean = false
   @Local readerEnhancementStates: ReaderEnhancementPageState[] = []
+  // Private local source/rendered paths are retained only for this mounted Reader route.
+  @Local readerSourcePageIndexes: number[] = []
+  @Local readerSourcePagePaths: string[] = []
+  @Local readerTranslatedPageIndexes: number[] = []
+  @Local readerTranslatedPageUris: string[] = []
+  @Local readerTranslationHiddenPages: number[] = []
+  @Local readerTranslationRunning: boolean = false
+  @Local readerTranslationPageIndex: number = -1
+  @Local readerTranslationErrorCode: string = ''
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
   private lastPersistedIndex: number = -1
@@ -1354,6 +1421,7 @@ export struct ReaderPage {
   private readerPresentationReady: boolean = false
   private lastDoublePageActive: boolean = false
   private readerDoubleTapX: number = 0
+  private readerTranslationEpoch: number = 0
 
   aboutToAppear(): void {
     this.loadReaderSettings()
@@ -1617,6 +1685,15 @@ export struct ReaderPage {
     this.readerSliderPreview = -1
     this.lastPersistedIndex = -1
     this.loadedImageIndexes = []
+    this.readerSourcePageIndexes = []
+    this.readerSourcePagePaths = []
+    this.readerTranslatedPageIndexes = []
+    this.readerTranslatedPageUris = []
+    this.readerTranslationHiddenPages = []
+    this.readerTranslationRunning = false
+    this.readerTranslationPageIndex = -1
+    this.readerTranslationErrorCode = ''
+    this.readerTranslationEpoch += 1
     this.detail = new NhGalleryDetail()
     this.pageDataSource.setData([], false)
     this.spreadDataSource.setData([], false)
@@ -2056,6 +2133,11 @@ export struct ReaderPage {
         this.readerOverflowMenuShown = false
         this.openCurrentGalleryExternally()
       })
+      MenuItem({ content: this.readerTranslationActionLabel() })
+        .enabled(this.readerTranslationActionEnabled() && !this.readerTranslationRunning)
+        .onClick((): void => {
+          this.toggleOrStartCurrentReaderTranslation()
+        })
       MenuItem({
         content: AppStrings.get('settings_reader'),
         symbolStartIcon: new SymbolGlyphModifier($r('sys.symbol.gearshape')),
@@ -2074,6 +2156,169 @@ export struct ReaderPage {
       return ''
     }
     return this.localImageUri(item.second.page, item.second.sourceIndex)
+  }
+
+  private readerSourceRecordIndex(pageIndex: number): number {
+    return this.readerSourcePageIndexes.indexOf(pageIndex)
+  }
+
+  private readerSourceFilePath(pageIndex: number): string {
+    const index: number = this.readerSourceRecordIndex(pageIndex)
+    return index < 0 ? '' : this.readerSourcePagePaths[index]
+  }
+
+  private rememberReaderSourceFile(pageIndex: number, localPath: string): void {
+    if (pageIndex < 0 || pageIndex >= this.detail.pages.length || localPath.length === 0) {
+      return
+    }
+    const indexes: number[] = this.readerSourcePageIndexes.slice()
+    const paths: string[] = this.readerSourcePagePaths.slice()
+    const existing: number = indexes.indexOf(pageIndex)
+    if (existing >= 0) {
+      if (paths[existing] === localPath) {
+        return
+      }
+      paths[existing] = localPath
+    } else {
+      indexes.push(pageIndex)
+      paths.push(localPath)
+    }
+    this.readerSourcePageIndexes = indexes
+    this.readerSourcePagePaths = paths
+  }
+
+  private readerTranslatedRecordIndex(pageIndex: number): number {
+    return this.readerTranslatedPageIndexes.indexOf(pageIndex)
+  }
+
+  private readerTranslatedImageUri(pageIndex: number): string {
+    const index: number = this.readerTranslatedRecordIndex(pageIndex)
+    if (index < 0 || this.readerTranslationHiddenPages.includes(pageIndex)) {
+      return ''
+    }
+    return this.readerTranslatedPageUris[index]
+  }
+
+  private readerTranslationHasResult(pageIndex: number): boolean {
+    return this.readerTranslatedRecordIndex(pageIndex) >= 0
+  }
+
+  private rememberReaderTranslatedPage(pageIndex: number, renderedUri: string): void {
+    if (pageIndex < 0 || renderedUri.length === 0) {
+      return
+    }
+    const indexes: number[] = this.readerTranslatedPageIndexes.slice()
+    const uris: string[] = this.readerTranslatedPageUris.slice()
+    const existing: number = indexes.indexOf(pageIndex)
+    if (existing >= 0) {
+      uris[existing] = renderedUri
+    } else {
+      indexes.push(pageIndex)
+      uris.push(renderedUri)
+    }
+    const hidden: number[] = this.readerTranslationHiddenPages.filter(
+      (candidate: number): boolean => candidate !== pageIndex,
+    )
+    this.readerTranslatedPageIndexes = indexes
+    this.readerTranslatedPageUris = uris
+    this.readerTranslationHiddenPages = hidden
+  }
+
+  private setReaderTranslationVisible(pageIndex: number, visible: boolean): void {
+    const hidden: number[] = this.readerTranslationHiddenPages.filter(
+      (candidate: number): boolean => candidate !== pageIndex,
+    )
+    if (!visible) {
+      hidden.push(pageIndex)
+    }
+    this.readerTranslationHiddenPages = hidden
+  }
+
+  private currentReaderTranslationPageIndex(): number {
+    return this.readerNavigationIndex(this.visiblePageIndex)
+  }
+
+  private readerTranslationActionLabel(): string {
+    const pageIndex: number = this.currentReaderTranslationPageIndex()
+    if (!this.readerTranslationHasResult(pageIndex)) {
+      return AppStrings.get('reader_comic_translation_action')
+    }
+    return this.readerTranslatedImageUri(pageIndex).length > 0
+      ? AppStrings.get('reader_comic_translation_show_original')
+      : AppStrings.get('reader_comic_translation_show_result')
+  }
+
+  private readerTranslationActionEnabled(): boolean {
+    const pageIndex: number = this.currentReaderTranslationPageIndex()
+    return this.readerTranslationHasResult(pageIndex) ||
+      this.readerSourceFilePath(pageIndex).length > 0
+  }
+
+  private readerTranslationStatusVisible(): boolean {
+    return this.readerTranslationPageIndex === this.currentReaderTranslationPageIndex() &&
+      (this.readerTranslationRunning || this.readerTranslationErrorCode.length > 0)
+  }
+
+  private readerTranslationStatusText(): string {
+    if (this.readerTranslationRunning) {
+      return AppStrings.get('reader_comic_translation_running')
+    }
+    return this.readerTranslationErrorCode === 'image_unavailable'
+      ? AppStrings.get('reader_comic_translation_image_unavailable')
+      : AppStrings.get('reader_comic_translation_failed')
+  }
+
+  private toggleOrStartCurrentReaderTranslation(): void {
+    const pageIndex: number = this.currentReaderTranslationPageIndex()
+    if (this.readerTranslationRunning) {
+      return
+    }
+    if (this.readerTranslationHasResult(pageIndex)) {
+      this.setReaderTranslationVisible(pageIndex, this.readerTranslatedImageUri(pageIndex).length === 0)
+      return
+    }
+    const sourcePath: string = this.readerSourceFilePath(pageIndex)
+    if (sourcePath.length === 0 || pageIndex < 0 || pageIndex >= this.detail.pages.length) {
+      this.readerTranslationPageIndex = pageIndex
+      this.readerTranslationErrorCode = 'image_unavailable'
+      return
+    }
+    const page: NhGalleryPage = this.detail.pages[pageIndex]
+    const epoch: number = this.readerTranslationEpoch + 1
+    this.readerTranslationEpoch = epoch
+    const requestGeneration: number = this.requestGeneration
+    const input: ComicTranslationReaderPageInput = new ComicTranslationReaderPageInput()
+    input.projectId = `nh-reader-${this.detail.id}-zh-CN`
+    input.pageIndex = pageIndex
+    input.imageFilePath = sourcePath
+    input.imageWidth = page.width
+    input.imageHeight = page.height
+    input.sourceLanguage = 'auto'
+    input.targetLanguage = 'zh-CN'
+    this.readerTranslationRunning = true
+    this.readerTranslationPageIndex = pageIndex
+    this.readerTranslationErrorCode = ''
+    this.readerOverflowMenuShown = false
+    ComicTranslationRuntimeService.runReaderPage(this.context(), input)
+      .then((result: ComicVisualTranslationRunResult): void => {
+        if (epoch !== this.readerTranslationEpoch || requestGeneration !== this.requestGeneration ||
+          result.renderedPage.localFilePath.length === 0) {
+          return
+        }
+        this.rememberReaderTranslatedPage(
+          pageIndex,
+          fileUri.getUriFromPath(result.renderedPage.localFilePath),
+        )
+        this.readerTranslationRunning = false
+        this.readerTranslationErrorCode = ''
+      })
+      .catch((): void => {
+        if (epoch !== this.readerTranslationEpoch || requestGeneration !== this.requestGeneration) {
+          return
+        }
+        this.readerTranslationRunning = false
+        this.readerTranslationErrorCode = 'failed'
+      })
   }
 
   private onReaderImageZoomChanged(sourceIndex: number, zoomed: boolean): void {
@@ -2500,6 +2745,42 @@ export struct ReaderPage {
     }
   }
 
+  /** Reference-owned transient status: overlay-only, never a Reader canvas inset. */
+  @Builder
+  private ReaderTranslationStatusOverlay() {
+    if (this.readerTranslationStatusVisible()) {
+      Row({ space: ThemeTokens.SPACE_SM }) {
+        if (this.readerTranslationRunning) {
+          LoadingProgress()
+            .width(18)
+            .height(18)
+            .color(ThemeTokens.TEXT_ON_BRAND)
+        } else {
+          SymbolGlyph($r('sys.symbol.exclamationmark_triangle'))
+            .fontSize(18)
+            .fontColor([ThemeTokens.TEXT_ON_BRAND])
+        }
+        Text(this.readerTranslationStatusText())
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontColor(ThemeTokens.TEXT_ON_BRAND)
+          .maxLines(2)
+      }
+      .padding({
+        left: ThemeTokens.SPACE_MD,
+        right: ThemeTokens.SPACE_MD,
+        top: ThemeTokens.SPACE_SM,
+        bottom: ThemeTokens.SPACE_SM,
+      })
+      .backgroundColor(ThemeTokens.OVERLAY_SCRIM)
+      .borderRadius(ThemeTokens.RADIUS_ROUND)
+      .position({
+        x: ThemeTokens.SPACE_MD,
+        y: this.layoutSafeArea.topAvoidHeight + ThemeTokens.TITLE_BAR_HEIGHT + ThemeTokens.SPACE_MD,
+      })
+      .hitTestBehavior(HitTestMode.None)
+    }
+  }
+
   @Builder
   private ReaderHeader() {
     Stack({ alignContent: Alignment.Center }) {
@@ -2648,6 +2929,7 @@ export struct ReaderPage {
           ReaderImagePage({
             imageUrl: NhApiClient.imageUrl(this.detail.mediaId, item.sourceIndex, item.page.extension),
             localImageUri: this.localImageUri(item.page, item.sourceIndex),
+            renderedImageUri: this.readerTranslatedImageUri(item.sourceIndex),
             enhancementEnabled: this.readerEnhancementEnabled,
             imageWidth: item.page.width,
             imageHeight: item.page.height,
@@ -2659,6 +2941,9 @@ export struct ReaderPage {
             },
             onImageLoadStateChanged: (pageIndex: number, loaded: boolean): void => {
               this.onReaderImageLoadStateChanged(pageIndex, loaded)
+            },
+            onSourceFileReady: (pageIndex: number, localPath: string): void => {
+              this.rememberReaderSourceFile(pageIndex, localPath)
             },
             onEnhancementStateChanged: (pageIndex: number, processing: boolean, applied: boolean): void => {
               this.onReaderEnhancementStateChanged(pageIndex, processing, applied)
@@ -2695,6 +2980,7 @@ export struct ReaderPage {
             ReaderImagePage({
               imageUrl: NhApiClient.imageUrl(this.detail.mediaId, item.sourceIndex, item.page.extension),
               localImageUri: this.localImageUri(item.page, item.sourceIndex),
+              renderedImageUri: this.readerTranslatedImageUri(item.sourceIndex),
               enhancementEnabled: this.readerEnhancementEnabled,
               imageWidth: item.page.width,
               imageHeight: item.page.height,
@@ -2706,6 +2992,9 @@ export struct ReaderPage {
               },
               onImageLoadStateChanged: (pageIndex: number, loaded: boolean): void => {
                 this.onReaderImageLoadStateChanged(pageIndex, loaded)
+              },
+              onSourceFileReady: (pageIndex: number, localPath: string): void => {
+                this.rememberReaderSourceFile(pageIndex, localPath)
               },
               onEnhancementStateChanged: (pageIndex: number, processing: boolean, applied: boolean): void => {
                 this.onReaderEnhancementStateChanged(pageIndex, processing, applied)
@@ -2759,6 +3048,8 @@ export struct ReaderPage {
             mediaId: this.detail.mediaId,
             firstLocalImageUri: this.localImageUri(item.first.page, item.first.sourceIndex),
             secondLocalImageUri: this.localSpreadSecondImageUri(item),
+            firstRenderedImageUri: this.readerTranslatedImageUri(item.first.sourceIndex),
+            secondRenderedImageUri: item.second === null ? '' : this.readerTranslatedImageUri(item.second.sourceIndex),
             enhancementEnabled: this.readerEnhancementEnabled,
             rowReversed: this.isRightToLeftPagedMode(),
             doubleTapSequence: this.doubleTapSequence,
@@ -2768,6 +3059,9 @@ export struct ReaderPage {
             },
             onImageLoadStateChanged: (pageIndex: number, loaded: boolean): void => {
               this.onReaderImageLoadStateChanged(pageIndex, loaded)
+            },
+            onSourceFileReady: (pageIndex: number, localPath: string): void => {
+              this.rememberReaderSourceFile(pageIndex, localPath)
             },
             onEnhancementStateChanged: (pageIndex: number, processing: boolean, applied: boolean): void => {
               this.onReaderEnhancementStateChanged(pageIndex, processing, applied)
@@ -3096,6 +3390,7 @@ export struct ReaderPage {
         this.ReaderContent()
         this.ReaderTapOverlay()
         this.ReaderInlineError()
+        this.ReaderTranslationStatusOverlay()
       }
       if (!this.readerChromeVisible && this.isReaderReadyForCurrentGallery) {
         this.ReaderEnhancementPersistentStatus()

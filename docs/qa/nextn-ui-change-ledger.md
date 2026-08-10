@@ -28,12 +28,14 @@ authorize an edit, replace a device comparison, or define product completion.
   readiness projection, then route a rendered page URI back through the three
   existing image leaves. It must not alter List/Swiper/Stack ownership,
   gestures, chrome position, Reader settings, or page-progress semantics.
-- Planned visible behavior: one explicit "Translate current page" item is
+- Implemented source behavior: one explicit "Translate current page" item is
   added to the existing top More menu when the current page has a local source
-  file. Its initial run uses the existing full-canvas status-overlay role from
-  the reference; a successful render replaces only the current image leaf and
-  the same action toggles back to the original. Automatic translation is not
-  included in this first visible boundary.
+  file. Its run uses the existing full-canvas status-overlay role from the
+  reference; a successful render replaces only the current image leaf and the
+  same action toggles back to the original. The source-page local-file callback
+  and translated URI projection were added equally to vertical, paged, and
+  double-page image leaves. Automatic translation is not included in this
+  first visible boundary.
 - Before/after rationale: the runtime, local vision backend, provider bridge,
   private rendered-image cache, and private document cache now exist outside
   the Reader UI. The smallest missing connection is the existing per-page
@@ -47,4 +49,7 @@ authorize an edit, replace a device comparison, or define product completion.
   check is evidence.
 - Unresolved risk: current NextN does not expose a loaded remote page's local
   path to its parent, so the leaf callback must be implemented and observed
-  before the translation action can be enabled for non-downloaded pages.
+  before the translation action can be enabled for non-downloaded pages. The
+  callback is now implemented in source but has not been observed on device.
+  A source/provider configuration surface is also still required before an
+  ordinary user can produce a translation result.
