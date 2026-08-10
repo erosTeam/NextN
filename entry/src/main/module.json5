@@ -36,6 +36,16 @@
           {
             "entities": ["entity.system.home"],
             "actions": ["ohos.want.action.home"]
+          },
+          {
+            "actions": ["ohos.want.action.viewData"],
+            "uris": [
+              {
+                "scheme": "nextn",
+                "host": "gallery",
+                "pathRegex": "[1-9][0-9]*"
+              }
+            ]
           }
         ]
       }

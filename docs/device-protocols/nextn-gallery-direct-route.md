@@ -16,6 +16,17 @@ The EntryAbility accepts the parameters during either cold start or
 the current secondary navigation stack, and then uses the existing `pushGallery`
 or `pushComments` route. The Gallery ID is not persisted.
 
+## Supported external Deep Link
+
+- `nextn://gallery/<positive-integer>` — public Gallery Detail route only.
+
+`module.json5` declares this in a separate `ohos.want.action.viewData` skill;
+the `EntryAbility` accepts the URI only when its scheme, host, and entire path
+match exactly. It then uses the same one-shot `GalleryDirectLaunchState` as
+the internal parameter route. URI query strings, alternate hosts, zero,
+negative values, non-integers, and the Comments destination are intentionally
+not part of the public link.
+
 ## Device execution
 
 Complete the repository device gate first: resolve the user-selected Connected
@@ -34,6 +45,21 @@ For the existing native Comments route, append:
 ```bash
 --ps nextn_gallery_destination comments
 ```
+
+For a public Gallery Detail deep link, do **not** add an explicit bundle or
+ability: that would test the parser but not the system URI skill match. Use
+the selected device's `aa start` URI syntax:
+
+```bash
+hdc -t <selected-target> shell aa start \
+  -A ohos.want.action.viewData \
+  -U nextn://gallery/<positive-gallery-id>
+```
+
+For cold-start validation, force-stop only `com.erosteam.nextn` first; for
+hot-start validation, issue the same URI once while the native Detail is
+foreground. Both branches must reach native Gallery Detail without scrolling
+or interacting with Browse.
 
 After one short navigation settle, capture only the needed final native state.
 Do not insert Browse scrolling, card-coordinate discovery, preference writes,

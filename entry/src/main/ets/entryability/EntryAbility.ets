@@ -228,7 +228,21 @@ export default class EntryAbility extends UIAbility {
 
   private galleryDirectLaunchId(want: Want): number {
     const value: Object | undefined = want.parameters?.['nextn_gallery_id']
-    return typeof value === 'number' && Number.isSafeInteger(value) && value > 0 ? value : 0
+    if (typeof value === 'number' && Number.isSafeInteger(value) && value > 0) {
+      return value
+    }
+    // The public route has no query/action variants. Keep URI parsing exact so
+    // a broad custom scheme cannot become an unintended navigation surface.
+    const uri: string | undefined = want.uri
+    if (typeof uri !== 'string') {
+      return 0
+    }
+    const match: RegExpExecArray | null = /^nextn:\/\/gallery\/([1-9][0-9]*)$/.exec(uri)
+    if (match === null) {
+      return 0
+    }
+    const galleryId: number = Number(match[1])
+    return Number.isSafeInteger(galleryId) && galleryId > 0 ? galleryId : 0
   }
 
   private galleryDirectLaunchWantsComments(want: Want): boolean {

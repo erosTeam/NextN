@@ -717,6 +717,18 @@ remains continuous; do not ask for it again.
 - 2026-08-11：参考直达能力已按源码复核。NextE 仅接受含 EH `gid/token` 的 gallery URL 才能进入 Comments；当前 NextN 的数值 gallery Want 不能生成该 token。已安装 ErosN 虽有同 NH id 的内部路由，但 Harmony URI 入口不存在，唯一同 id 的 clipboard detector 处于禁用状态。未读取用户数据、未启用 detector 或修改系统剪贴板。故 P1 的下一步仍是取得一个不改变参考数据的同状态、同视口捕获；在此之前不据源码或不可比截图改动 Comments UI。
 - 2026-08-11：已复核一对先前保留的 NextE/NextN 原生 Comments capture，并用本轮当前 NextN Direct-route 终态重新确认了实现侧的 root bounds。两端 root 都是 `1320×2120`、portrait、非 split、已加载 Comments；可比较 chrome、外侧 gutter、独立圆角 CommentRow 与 composer 顶缘。NextE 的一条评论与 NextN 的多条评论不是相同内容密度，故不以这对图推导字号或卡片高度。可见的 NextN 差异——移除重复的页内“评论（数量）”标题，以及固定页脚而非浮动 composer——均为已记录的用户冻结边界；EH 的翻译/投票叶没有 NH 数据能力，未伪造。审查没有产生新的安全可见改动。
 
+## Latest completed physical evidence — Gallery external Deep Link
+
+- 2026-08-11：新增的 `nextn://gallery/<positive-integer>` 以独立 `viewData` skill
+  声明，复用既有 GalleryDirectLaunchState；冷启动和热启动均以 `471768` 完成到同一
+  原生 Gallery Detail。第一次隐式匹配失败被修复为正确的完整 URI `pathRegex` 片段，
+  不是应用数据或页面错误。
+- 冷启动的 Detail 曾被 USB 系统弹窗覆盖，热启动终态曾被系统锁屏与实际短超时覆盖；
+  两者都只按系统恢复分支消除遮挡。最终前台均为 `com.erosteam.nextn:EntryAbility` 的
+  原生 Detail。未点击 Gallery 控件，未写入评论、收藏、下载、History、账户或偏好。
+- 本地审计证据保留在 `.hvigor/outputs/nextn-gallery-uri-20260811T0232/`，不进入 Git；
+  该条只接受 URI 路由能力，不重新开启 Detail 的视觉审查。
+
 The earlier P0 cycle is retained above as historical evidence. It is not the
 current execution lane because no fresh current S0 observation has proved the
 session unusable after the accepted recovery/cold-start path. It immediately

@@ -37,6 +37,39 @@
 后续工作只进入表中因新证据而可行动的单一边界，不能把“还有未对齐页面”
 变成对已冻结页面的重复审查。
 
+## FROZEN：Gallery 外部 Deep Link 直达
+
+- 触发依据：用户明确要求后续验证可直达 Gallery（示例 `471768`），避免每次从 Browse
+  重新寻找入口。HarmonyOS 官方 Deep Linking 文档要求独立的 `viewData` skill，并在
+  `UIAbility.onCreate/onNewWant` 解析 `Want.uri`。
+- 父/路由边界：`implicit Want(uri) -> EntryAbility.onCreate/onNewWant ->
+  GalleryDirectLaunchState -> Index.handleGalleryDirectLaunch -> GalleryDetail`。现有内部
+  `nextn_gallery_id` 参数路径已处理冷启动根页就绪与热启动投递；不得另建导航栈、坐标路径、
+  Clipboard 路径或改变 Detail 可见树。
+- 精确改动：由“仅接受内部正整数 `nextn_gallery_id` 参数”扩展为额外接受严格的
+  `nextn://gallery/<positive-integer>` URI；在 `module.json5` 以独立 `viewData` skill
+  声明该 URI。Harmony 将 `pathRegex` 拼接为完整 URI 正则，故该字段只保留数字 path
+  片段；`EntryAbility` 再严格锚定完整 URI。其他 scheme、host、path、零值、负数、
+  非整数和 query 一律不路由。
+- 最小性理由：复用现有的一次性 `GalleryDirectLaunchState`，不改变 Gallery API、内容数据、
+  登录、History、Reader、Comments 或任何页面布局。
+- 验证计划：签名 Debug 构建后仅 `install -r` 到 237；对 `nextn://gallery/471768` 各执行
+  一次冷启动与热启动，确认原生 Gallery 终态。不写入评论、收藏、下载、历史或偏好；保留
+  本地审计证据。构建成功不构成路由验收。
+- 未决风险：设备上若有相同 scheme/URI 的其他应用，系统可能出现选择器；该行为不以坐标
+  或旧截图绕过，按当前终态记录。
+- 当前设备观察：2026-08-11，签名 Debug HAP 以 `install -r` 更新唯一选定设备后，
+  `nextn://gallery/471768` 的隐式 `viewData` Want 在冷启动与热启动均进入同一原生
+  Gallery Detail。首次系统拒绝被定位为 `pathRegex` 锚点位于完整 URI 中段；按官方
+  URI 拼接规则修正后，系统匹配成功。冷启动一度被 USB 系统弹窗覆盖，热启动一度被设备
+  锁屏/短超时遮蔽；各自只经系统 Back 或中性解锁恢复，最终 Detail 终态均保留在本地
+  `.hvigor/outputs/nextn-gallery-uri-20260811T0232/`，不进入 Git。没有点击 Detail
+  控件、写入评论/收藏/下载/历史，或变更账户和偏好。这只接受 URI 路由能力，不是
+  Detail 的新视觉验收。
+- 冻结条件：`EntryAbility` URI 解析、`module.json5` 的 Gallery skill、或直接路由
+  状态交接发生改动；用户给出 URI 路由的新反馈；或出现同一 URI 的真实终态反证。其余
+  情况不得再运行此深链作为“顺手验证”。
+
 ## 已观察用户路径（只保留边界，不形成重跑队列）
 
 下列条目来自当前活动设备台账的已发生观察。它们不是完整视觉验收，不能被
