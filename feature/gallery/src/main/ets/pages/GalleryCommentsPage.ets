@@ -17,6 +17,8 @@ import {
   connectContentFilters,
   connectLayoutSafeArea,
 } from 'shared'
+import { uiMaterial } from '@kit.ArkUI'
+import { deviceInfo } from '@kit.BasicServicesKit'
 
 const COMMENT_COMPOSER_BOTTOM_RESERVE: number = 136
 const COMMENT_COMPOSER_FIELD_ID: string = 'nextn-gallery-comments-composer-field'
@@ -241,7 +243,7 @@ export struct GalleryCommentsPage {
   }
 
   @Builder
-  private CommentComposerSurface() {
+  private CommentComposerFields() {
     Column({ space: COMMENT_COMPOSER_INNER_GAP }) {
       Row({ space: ThemeTokens.SPACE_SM }) {
         TextArea({ text: this.commentText, placeholder: AppStrings.get('comments_placeholder') })
@@ -275,14 +277,50 @@ export struct GalleryCommentsPage {
       }
     }
     .width('100%')
-    .padding({
-      left: COMMENT_COMPOSER_INNER_GAP,
-      right: COMMENT_COMPOSER_INNER_GAP,
-      top: COMMENT_COMPOSER_INNER_GAP,
-      bottom: COMMENT_COMPOSER_INNER_GAP,
-    })
-    .backgroundColor(ThemeTokens.CARD_BACKGROUND)
-    .borderRadius(COMMENT_COMPOSER_RADIUS)
+  }
+
+  private composerSystemMaterial() {
+    if (deviceInfo.apiAvailable('26.0.0')) {
+      return new uiMaterial.ImmersiveMaterial({
+        style: uiMaterial.ImmersiveStyle.THICK,
+        colorInvert: true,
+        applyShadow: true,
+        interactive: true,
+      })
+    }
+    return undefined
+  }
+
+  @Builder
+  private CommentComposerSurface() {
+    if (deviceInfo.apiAvailable('26.0.0')) {
+      Column() {
+        this.CommentComposerFields()
+      }
+      .width('100%')
+      .padding({
+        left: COMMENT_COMPOSER_INNER_GAP,
+        right: COMMENT_COMPOSER_INNER_GAP,
+        top: COMMENT_COMPOSER_INNER_GAP,
+        bottom: COMMENT_COMPOSER_INNER_GAP,
+      })
+      .backgroundColor(Color.Transparent)
+      .systemMaterial(this.composerSystemMaterial())
+      .borderRadius(COMMENT_COMPOSER_RADIUS)
+    } else {
+      Column() {
+        this.CommentComposerFields()
+      }
+      .width('100%')
+      .padding({
+        left: COMMENT_COMPOSER_INNER_GAP,
+        right: COMMENT_COMPOSER_INNER_GAP,
+        top: COMMENT_COMPOSER_INNER_GAP,
+        bottom: COMMENT_COMPOSER_INNER_GAP,
+      })
+      .backgroundColor(ThemeTokens.CARD_BACKGROUND)
+      .borderRadius(COMMENT_COMPOSER_RADIUS)
+    }
   }
 
   @Builder
