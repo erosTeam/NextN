@@ -70,6 +70,22 @@ export { NhTagTranslationEntry, NhTagTranslationStatus } from './model/NhTagTran
 export { NhTagSuggestion } from './model/NhTagSuggestion'
 export { NhTagQuery } from './model/NhTagQuery'
 export { NhComment } from './model/NhComment'
+export {
+  LLM_SOURCE_TYPE_OPENAI_COMPATIBLE,
+  LLM_SOURCE_TYPE_CODEX_OAUTH_EXPERIMENTAL,
+  LLM_CONSUMER_COMMENT_TRANSLATION,
+  LLM_CONSUMER_MANGA_TRANSLATION,
+  LlmSourceCapabilities,
+  LlmSourceProfile,
+  LlmConsumerBinding,
+  LlmSourceResolution,
+  supportsCommentTranslation,
+  supportsMangaTranslation,
+  generateLlmSourceProfileId,
+} from './model/LlmSourceProfile'
+export { LlmSourceProfileContract } from './services/LlmSourceProfileContract'
+export { LlmSourceProfileRepository } from './storage/LlmSourceProfileRepository'
+export { LlmSourceProfilesState, connectLlmSourceProfiles } from './state/LlmSourceProfilesState'
 export { NhApiClient } from './network/NhApiClient'
 export { ReaderImageCacheService, ReaderImageCacheResult, ReaderImageCacheStatus } from './services/ReaderImageCacheService'
 export { ReaderNativeSuperResolution, ReaderNativeSuperResolutionResult } from './services/ReaderNativeSuperResolution'

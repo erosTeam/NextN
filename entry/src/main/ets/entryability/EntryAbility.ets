@@ -14,6 +14,7 @@ import {
   LayoutSafeAreaBridge,
   AppStrings,
   LanguageSettings,
+  LlmSourceProfileRepository,
   NhAccountProfileService,
   NhAccountSessionService,
   NhClipboardLinkService,
@@ -125,6 +126,9 @@ export default class EntryAbility extends UIAbility {
       // Browse Latest and Search keep independent local defaults. Restore
       // them before either retained catalog surface can start its first GET.
       CatalogPreferencesService.restore(this.context),
+      // Metadata and consumer bindings are safe to restore before Reader
+      // routes mount; API keys remain in the separate HUKS vault.
+      LlmSourceProfileRepository.restore(this.context),
       // Resume only the durable, user-created private queue. Any process-killed
       // active task is restored as paused by the service before a user resumes it.
       DownloadQueueService.restore(this.context),
