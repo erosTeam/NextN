@@ -88,6 +88,20 @@ export { LlmSourceProfileRepository } from './storage/LlmSourceProfileRepository
 export { LlmSourceProfilesState, connectLlmSourceProfiles } from './state/LlmSourceProfilesState'
 export { LlmSourceSecretVault } from './services/LlmSourceSecretVault'
 export { LlmSourceRuntimeConfig, LlmSourceRuntimeResolver } from './services/LlmSourceRuntimeResolver'
+export { ComicTranslationDiagnosticLogger } from './services/ComicTranslationDiagnosticLogger'
+export {
+  ComicLocalVisualAnalysisRecording,
+  ComicLocalVisualAnalysisTimings,
+  ComicLocalVisualGroupingStages,
+  ComicLocalVisualRecordedColor,
+  ComicLocalVisualRecordedLayout,
+  ComicLocalVisualRecordedRect,
+  ComicLocalVisualRecordedSourceBlock,
+  ComicLocalVisualRecordingSink,
+  ComicLocalVisualRenderRecording,
+  ComicLocalVisualRenderTimings,
+} from './services/ComicLocalVisualRecording'
+export { ComicLocalVisualBackend } from './services/ComicLocalVisualBackend'
 export { CacheStat } from './services/CacheStat'
 export {
   ComicRenderedPageRepository,
