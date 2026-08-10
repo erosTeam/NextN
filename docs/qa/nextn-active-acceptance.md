@@ -455,6 +455,9 @@ remains continuous; do not ask for it again.
 - 2026-08-10 11:18 +0800: one final short-interval transport retry returned
   the same `Connect server failed` result. No device or application action
   ran; P1 remains OPEN with the unchanged next physical action.
+- 2026-08-10 11:20 +0800: a third consecutive goal-turn preflight returned
+  `Connect server failed`. This is an external transport block only; it does
+  not close P1 or establish any application state.
 - The selected TCP target `192.168.50.237:12345` is currently Connected and
   remains the only device used; the USB target was not used as a substitute.
 - The current lease is renewed. The latest wake gate readback is `AWAKE` with
