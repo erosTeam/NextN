@@ -16,6 +16,7 @@ import {
   MAX_LLM_SOURCE_NAME_CHARS,
   MAX_LLM_SOURCE_URL_CHARS,
 } from '../services/LlmSourceProfileContract'
+import { LlmSourceSecretVault } from '../services/LlmSourceSecretVault'
 import { connectLlmSourceProfiles, LlmSourceProfilesState } from '../state/LlmSourceProfilesState'
 
 const LLM_SOURCE_STORE: string = 'nextn_llm_sources'
@@ -116,6 +117,10 @@ export class LlmSourceProfileRepository {
       if (remaining.length === profiles.length) {
         return
       }
+      // Remove the encrypted key before publishing that its owning source no
+      // longer exists. The two stores cannot be made cross-store atomic, so
+      // a metadata write failure can only leave an unusable source with no key.
+      await LlmSourceSecretVault.removeApiKey(context, canonicalId)
       if (remaining.length === 0) {
         store.deleteSync(LLM_SOURCE_PROFILES_KEY)
       } else {
