@@ -41,9 +41,11 @@ remains continuous; do not ask for it again.
 - No app data was cleared, no uninstall occurred, and no credential field or
   visible login control was touched in this observation. The bounded local
   screenshot is retained outside source control.
-- Next physical action: collect the current native Account safe summary. Do
-  not open a login form or enter credentials until the paired S0 outcome and
-  the named diagnostic branch establish the permitted recovery action.
+- The paired native Account observation still showed a signed-in Account row.
+  Therefore the current failure is an inconsistent session state: native
+  Account is signed in while Favorites cannot complete its authenticated read.
+- Next physical action: invoke one normal Favorites retry and collect only its
+  terminal safe state. Do not open a login form or enter credentials.
 
 ## Active delivery P1 — Gallery Detail / Comments
 
