@@ -162,7 +162,9 @@ export struct GalleryCommentPreviewCarousel {
     }
     const month: string = `${date.getMonth() + 1}`.padStart(2, '0')
     const day: string = `${date.getDate()}`.padStart(2, '0')
-    return `${date.getFullYear()}-${month}-${day}`
+    const hour: string = `${date.getHours()}`.padStart(2, '0')
+    const minute: string = `${date.getMinutes()}`.padStart(2, '0')
+    return `${date.getFullYear()}-${month}-${day} ${hour}:${minute}`
   }
 
   private commentCountText(): string {

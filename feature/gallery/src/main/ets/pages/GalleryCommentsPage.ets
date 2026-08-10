@@ -172,7 +172,11 @@ export struct GalleryCommentsPage {
       return ''
     }
     const date: Date = new Date(comment.postDate * 1000)
-    return `${date.getFullYear()}-${this.twoDigits(date.getMonth() + 1)}-${this.twoDigits(date.getDate())}`
+    if (isNaN(date.getTime())) {
+      return ''
+    }
+    return `${date.getFullYear()}-${this.twoDigits(date.getMonth() + 1)}-${this.twoDigits(date.getDate())} ` +
+      `${this.twoDigits(date.getHours())}:${this.twoDigits(date.getMinutes())}`
   }
 
   private canSubmitComment(): boolean {
