@@ -86,6 +86,11 @@ remains continuous; do not ask for it again.
   showed the supported local date-and-time leaf without clipping the author
   or body; no comment text was entered and no mutation was sent. The bounded
   local captures are retained outside source control.
+- After the comments-composer keyboard update, the selected device opened the
+  existing direct Comments route and activated the empty native TextArea once.
+  The system keyboard appeared while the composer remained fully inside the
+  resized visible area. No text was entered, no comment was submitted, and
+  the bounded before/after captures remain local and excluded from Git.
 - Next physical action: continue the Gallery Detail / Comments reference
   review from a real same-state capture, then make only the next proven
   parent-tree or geometry correction as a separate commit.
