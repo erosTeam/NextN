@@ -33,10 +33,11 @@ export class ReaderSuperResolutionModelService {
 
   static async isInstalled(context: common.UIAbilityContext): Promise<boolean> {
     const path: string = ReaderSuperResolutionModelService.modelPath(context)
-    if (ReaderSuperResolutionModelService.fileSize(path) !== MODEL_BYTES) {
-      return false
-    }
-    return ReaderSuperResolutionModelService.sha256(path) === MODEL_SHA256
+    // The SHA-256 verification happens before the atomic .part promotion in
+    // installInternal(). This hot path runs for each eligible Reader page, so
+    // re-reading the private 1 MiB model synchronously here would stall page
+    // presentation without increasing the integrity guarantee of that write.
+    return ReaderSuperResolutionModelService.fileSize(path) === MODEL_BYTES
   }
 
   static async pathIfReady(context: common.UIAbilityContext): Promise<string | null> {
