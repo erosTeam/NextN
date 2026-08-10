@@ -7,7 +7,7 @@ const STORE_CONFIG: relationalStore.StoreConfig = {
   autoCleanDirtyData: true,
 }
 
-const SCHEMA_VERSION: number = 14
+const SCHEMA_VERSION: number = 15
 const SQL_CREATE_READING_HISTORY: string =
   'CREATE TABLE IF NOT EXISTS reading_history (' +
   'gallery_id INTEGER PRIMARY KEY, ' +
@@ -75,7 +75,12 @@ const SQL_CREATE_ACCOUNT_SESSION_VERIFICATION: string =
   'CREATE TABLE IF NOT EXISTS account_session_verification (' +
   'key TEXT PRIMARY KEY NOT NULL, ' +
   'verification_required INTEGER NOT NULL, ' +
+  'reason_code TEXT NOT NULL DEFAULT \'\', ' +
   'updated_at INTEGER NOT NULL)'
+const SQL_INSPECT_ACCOUNT_SESSION_VERIFICATION_COLUMNS: string =
+  'SELECT * FROM account_session_verification LIMIT 0'
+const SQL_ADD_ACCOUNT_SESSION_VERIFICATION_REASON_CODE: string =
+  'ALTER TABLE account_session_verification ADD COLUMN reason_code TEXT NOT NULL DEFAULT \'\''
 const SQL_CREATE_DOWNLOAD_QUEUE: string =
   'CREATE TABLE IF NOT EXISTS download_queue (' +
   'gallery_id INTEGER PRIMARY KEY, ' +
@@ -178,6 +183,7 @@ export class LocalDataStore {
       await store.executeSql(SQL_CREATE_BROWSE_PRESENTATION_SETTINGS)
       await store.executeSql(SQL_CREATE_CATALOG_PREFERENCES)
       await LocalDataStore.ensureReadingHistoryProgressColumn(store)
+      await LocalDataStore.ensureAccountVerificationReasonColumn(store)
       if (existingVersion < SCHEMA_VERSION) {
         store.version = SCHEMA_VERSION
       }
@@ -207,6 +213,23 @@ export class LocalDataStore {
       // recorded `0` both for unopened and first-page history, so inferring
       // resume state here would be semantically unsafe.
       await store.executeSql(SQL_ADD_READING_HISTORY_HAS_READ_PROGRESS)
+    }
+  }
+
+  /** Adds one finite recovery-origin code without touching the sealed envelope. */
+  private static async ensureAccountVerificationReasonColumn(store: relationalStore.RdbStore): Promise<void> {
+    let rows: relationalStore.ResultSet | null = null
+    let hasReasonCode: boolean = false
+    try {
+      rows = await store.querySql(SQL_INSPECT_ACCOUNT_SESSION_VERIFICATION_COLUMNS)
+      hasReasonCode = rows.getColumnNames().indexOf('reason_code') >= 0
+    } finally {
+      if (rows !== null) {
+        rows.close()
+      }
+    }
+    if (!hasReasonCode) {
+      await store.executeSql(SQL_ADD_ACCOUNT_SESSION_VERIFICATION_REASON_CODE)
     }
   }
 }

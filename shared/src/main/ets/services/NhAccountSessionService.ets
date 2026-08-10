@@ -7,6 +7,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit'
 import {
   AccountSessionRepository,
   AccountSessionRestoreSnapshot,
+  AccountSessionVerificationSnapshot,
   EncryptedAccountSession,
 } from '../storage/AccountSessionRepository'
 import { AccountProfileRepository } from '../storage/AccountProfileRepository'
@@ -55,6 +56,8 @@ enum AccountSessionDiagnosticStage {
   RESTORE_READY = 'account_restore_ready',
   RESTORE_HYDRATION_DEFERRED = 'account_restore_hydration_deferred',
   RESTORE_VERIFICATION_REQUIRED = 'account_restore_verification_required',
+  RESTORE_VERIFICATION_REQUIRED_AFTER_BROWSER_REFRESH_FAILURE =
+    'account_restore_verification_required_after_browser_refresh_failure',
   VERIFICATION_REQUIRED_POST_RESTORE_401 = 'account_verification_required_post_restore_401',
   VERIFICATION_REQUIRED_POST_PROMOTION_401 = 'account_verification_required_post_promotion_401',
   VERIFICATION_MARKER_PERSIST_FAILED = 'account_verification_marker_persist_failed',
@@ -515,7 +518,10 @@ export class NhAccountSessionService {
       // runtime identity or publishes its revision. Otherwise process death
       // between those two steps could make the next cold restore reuse the
       // same sealed envelope without the native verification gate.
-      await AccountSessionRepository.markVerificationRequired(context)
+      await AccountSessionRepository.markVerificationRequired(
+        context,
+        'terminal_401_browser_refresh_unsuccessful',
+      )
     } catch (_error) {
       // No runtime/session publication has happened yet. Retain the prior
       // authenticated state rather than presenting a verification-required UI
@@ -941,9 +947,9 @@ export class NhAccountSessionService {
         AccountSessionDiagnosticStage.RESTORE_VERIFICATION_REQUIRED,
       )
     }
-    let verificationRequired: boolean
+    let verificationSnapshot: AccountSessionVerificationSnapshot
     try {
-      verificationRequired = await AccountSessionRepository.isVerificationRequired(context)
+      verificationSnapshot = await AccountSessionRepository.loadVerificationSnapshot(context)
     } catch (_error) {
       NhAccountSessionService.recordDiagnosticStage(
         AccountSessionDiagnosticStage.RESTORE_RDB_READ_FAILED,
@@ -955,10 +961,13 @@ export class NhAccountSessionService {
         true,
       )
     }
+    const verificationRequired: boolean = verificationSnapshot.required
     if (verificationRequired) {
       NhAccountSessionService.verificationRequiredMarkerPresent = true
       NhAccountSessionService.recordDiagnosticStage(
-        AccountSessionDiagnosticStage.RESTORE_VERIFICATION_REQUIRED,
+        verificationSnapshot.reasonCode === 'terminal_401_browser_refresh_unsuccessful'
+          ? AccountSessionDiagnosticStage.RESTORE_VERIFICATION_REQUIRED_AFTER_BROWSER_REFRESH_FAILURE
+          : AccountSessionDiagnosticStage.RESTORE_VERIFICATION_REQUIRED,
       )
     }
     let restoreSnapshot: AccountSessionRestoreSnapshot

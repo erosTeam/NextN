@@ -11,11 +11,11 @@ const SQL_UPSERT_SESSION: string =
   'updated_at = excluded.updated_at'
 const SQL_DELETE_SESSION: string = 'DELETE FROM account_session WHERE key = ?'
 const SQL_SELECT_VERIFICATION_REQUIRED: string =
-  'SELECT verification_required FROM account_session_verification WHERE key = ? LIMIT 1'
+  'SELECT verification_required, reason_code FROM account_session_verification WHERE key = ? LIMIT 1'
 const SQL_UPSERT_VERIFICATION_REQUIRED: string =
-  'INSERT INTO account_session_verification (key, verification_required, updated_at) VALUES (?, ?, ?) ' +
+  'INSERT INTO account_session_verification (key, verification_required, reason_code, updated_at) VALUES (?, ?, ?, ?) ' +
   'ON CONFLICT(key) DO UPDATE SET verification_required = excluded.verification_required, ' +
-  'updated_at = excluded.updated_at'
+  'reason_code = excluded.reason_code, updated_at = excluded.updated_at'
 const SQL_DELETE_VERIFICATION_REQUIRED: string =
   'DELETE FROM account_session_verification WHERE key = ?'
 
@@ -33,6 +33,12 @@ export class EncryptedAccountSession {
 export class AccountSessionRestoreSnapshot {
   record: EncryptedAccountSession | null = null
   rebuiltOrRepaired: boolean = false
+}
+
+/** Durable non-secret verification state with a finite transition origin. */
+export class AccountSessionVerificationSnapshot {
+  required: boolean = false
+  reasonCode: string = ''
 }
 
 export class AccountSessionRepository {
@@ -111,10 +117,21 @@ export class AccountSessionRepository {
   }
 
   /** Persists a non-secret Account recovery gate without touching the envelope. */
-  static markVerificationRequired(context: common.UIAbilityContext): Promise<void> {
+  static markVerificationRequired(
+    context: common.UIAbilityContext,
+    reasonCode: string,
+  ): Promise<void> {
+    if (reasonCode !== 'terminal_401_browser_refresh_unsuccessful') {
+      return Promise.reject(new Error('account_verification_reason_invalid'))
+    }
     return AccountSessionRepository.enqueueWrite(async (): Promise<void> => {
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
-      await store.executeSql(SQL_UPSERT_VERIFICATION_REQUIRED, [SESSION_KEY, 1, Date.now()])
+      await store.executeSql(SQL_UPSERT_VERIFICATION_REQUIRED, [
+        SESSION_KEY,
+        1,
+        reasonCode,
+        Date.now(),
+      ])
     })
   }
 
@@ -123,17 +140,25 @@ export class AccountSessionRepository {
    * prior interrupted write left it without an envelope, Account still asks
    * for one explicit visible verification rather than silently opening Web.
    */
-  static async isVerificationRequired(context: common.UIAbilityContext): Promise<boolean> {
+  static async loadVerificationSnapshot(
+    context: common.UIAbilityContext,
+  ): Promise<AccountSessionVerificationSnapshot> {
     let rows: relationalStore.ResultSet | null = null
     try {
       await AccountSessionRepository.writeTail
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
       rows = await store.querySql(SQL_SELECT_VERIFICATION_REQUIRED, [SESSION_KEY])
+      const snapshot: AccountSessionVerificationSnapshot = new AccountSessionVerificationSnapshot()
       if (!rows.goToNextRow()) {
-        return false
+        return snapshot
       }
-      const column: number = rows.getColumnIndex('verification_required')
-      return !rows.isColumnNull(column) && rows.getLong(column) !== 0
+      const requiredColumn: number = rows.getColumnIndex('verification_required')
+      snapshot.required = !rows.isColumnNull(requiredColumn) && rows.getLong(requiredColumn) !== 0
+      const reasonColumn: number = rows.getColumnIndex('reason_code')
+      if (!rows.isColumnNull(reasonColumn)) {
+        snapshot.reasonCode = rows.getString(reasonColumn)
+      }
+      return snapshot
     } finally {
       if (rows !== null) {
         try {
@@ -141,6 +166,10 @@ export class AccountSessionRepository {
         } catch (_error) {}
       }
     }
+  }
+
+  static async isVerificationRequired(context: common.UIAbilityContext): Promise<boolean> {
+    return (await AccountSessionRepository.loadVerificationSnapshot(context)).required
   }
 
   /** Explicit sign-out is the only path that deletes the sealed envelope. */
