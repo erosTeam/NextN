@@ -1,6 +1,7 @@
 import { NhGallerySummary } from '../model/NhGallery'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { AppStrings } from '../i18n/AppStrings'
+import { CoverColorService } from '../services/CoverColorService'
 import { CoverBackgroundState, connectCoverBackground } from '../state/CoverBackgroundState'
 import {
   GalleryLanguageCornerBadge,
@@ -28,12 +29,24 @@ export struct GalleryGridCard {
   @Local isThumbnailLoading: boolean = true
   @Local hasThumbnailError: boolean = false
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
+  @Local coverBackgroundColor: number = 0
   @Event onOpen?: (galleryId: number) => void
+
+  aboutToAppear(): void {
+    this.resolveLetterboxColor()
+  }
 
   @Monitor('gallery')
   onGalleryChanged(): void {
     this.isThumbnailLoading = this.gallery.thumbnailUrl.length > 0
     this.hasThumbnailError = false
+    this.coverBackgroundColor = 0
+    this.resolveLetterboxColor()
+  }
+
+  @Monitor('coverBackground.blurLetterboxBackground')
+  onLetterboxBackgroundPreferenceChanged(): void {
+    this.resolveLetterboxColor()
   }
 
   /**
@@ -55,6 +68,35 @@ export struct GalleryGridCard {
       this.gallery.thumbnailUrl.length > 0 &&
       !this.hasThumbnailError &&
       this.useContainFit()
+  }
+
+  private shouldUseGradientLetterboxBackground(): boolean {
+    return !this.coverBackground.blurLetterboxBackground &&
+      this.gallery.thumbnailUrl.length > 0 &&
+      !this.hasThumbnailError &&
+      this.useContainFit()
+  }
+
+  private resolveLetterboxColor(): void {
+    if (!this.shouldUseGradientLetterboxBackground()) {
+      return
+    }
+    const url: string = this.gallery.thumbnailUrl
+    const cached: number = CoverColorService.getInstance().cached(url)
+    if (cached !== 0) {
+      this.coverBackgroundColor = cached
+      return
+    }
+    CoverColorService.getInstance().resolve(url).then((color: number): void => {
+      if (this.gallery.thumbnailUrl === url) {
+        this.coverBackgroundColor = color
+      }
+    })
+  }
+
+  private fadedLetterboxColor(): string {
+    const rgb: number = this.coverBackgroundColor & 0x00ffffff
+    return '#00' + rgb.toString(16).padStart(6, '0')
   }
 
   private accessibilityLabel(): string {
@@ -107,9 +149,8 @@ export struct GalleryGridCard {
   private Cover() {
     Stack({ alignContent: Alignment.TopEnd }) {
       Stack({ alignContent: Alignment.Center }) {
-        // Match the existing NextN contain-cover path: when enabled, the
-        // blurred same-image backing fills the letterbox without changing the
-        // source image's fit or the card's fixed grid geometry.
+        // NextE always fills an extreme-ratio contain gap: the default is a
+        // dominant-color fade, while this existing preference selects blur.
         if (this.shouldBlurLetterboxBackground()) {
           Image(this.gallery.thumbnailUrl)
             .width('100%')
@@ -119,6 +160,19 @@ export struct GalleryGridCard {
             .blur(20)
             .opacity(0.72)
             .renderGroup(true)
+        } else if (this.shouldUseGradientLetterboxBackground() && this.coverBackgroundColor !== 0) {
+          Column()
+            .width('100%')
+            .height('100%')
+            .borderRadius(ThemeTokens.THUMB_RADIUS)
+            .clip(true)
+            .linearGradient({
+              direction: GradientDirection.Bottom,
+              colors: [
+                [this.coverBackgroundColor, 0.0],
+                [this.fadedLetterboxColor(), 1.0],
+              ],
+            })
         }
         if (this.gallery.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
           Image(this.gallery.thumbnailUrl)

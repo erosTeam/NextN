@@ -14,6 +14,15 @@
 
 ## 回填：Gallery Detail / Comments 当前父树
 
+## 已实施、待同状态参考对照：Browse Grid 极端比例封面 letterbox 背景
+
+- 触发依据：2026-08-10 当前 Browse 设备画面中，极宽封面的固定 Grid cover 出现大块浅色空槽。NextE 的同一 `GalleryGridCard` 传入 `letterboxBackground: true`；其 `EhThumbnail` 在默认非模糊模式以封面主色渐变填充 Contain 留白，模糊只是可选替代。
+- 父树边界：仅 `GalleryCollectionBody -> GalleryGridCard -> Cover` 的极端比例 Contain 分支。固定 Grid 几何、封面原图、角标、页数、标题、列表/滚动和全局“模糊背景”偏好不改变。
+- 精确缺口：NextN 当前只在 `blurLetterboxBackground=true` 时画模糊底层；默认 `false` 时没有任何底层，露出 `COVER_PLACEHOLDER`。这把“背景样式选择”错误实现为“背景是否存在”。
+- 最小改动理由：移植 NextE 默认主色渐变背景及现有可选模糊分支，不把 Contain 改为 Cover，不改变卡片尺寸或用户偏好含义。
+- 当前设备观察：已构建、以 `install -r` 更新，并在同一 Browse Grid 的极宽封面上观察到 Contain 留白由封面主色背景层填充，不再是裸灰色；固定卡片尺寸、角标、页数和文字区域未变。原始截图保留在本地审计目录、排除在 Git 外。
+- 未完成验证：尚缺同状态、同视口 NextE 参考画面对照，因此这不是完整视觉参考对齐声明。风险是主色提取失败时必须保持安全占位而不能阻塞封面或网络。
+
 ### 6b816a2 — Detail 与 Comments 初始重组（未验收）
 
 - 改动：引入 Detail 的 Related/评论预览 rail 与全评论页的局部布局重组。
