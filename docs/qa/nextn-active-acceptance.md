@@ -91,6 +91,13 @@ remains continuous; do not ask for it again.
   inset inside its 24vp corner. No text was entered or submitted. This is a
   current-device observation only; a same-state reference comparison remains
   outstanding.
+- 2026-08-10 11:30 +0800: after restoring the selected-device HDC channel, a
+  direct Gallery Detail review preserved one local terminal capture. The Read
+  rail did not cover a visible Related or compact-comment card in that
+  viewport. A separate direct native Comments review showed the fixed composer
+  below, rather than over, the visible comment list. No text was entered or
+  submitted. These are current-device observations only; a same-state
+  reference capture remains outstanding.
 - Next physical action: continue the Gallery Detail / Comments reference
   review from a real same-state capture, then make only the next proven
   parent-tree or geometry correction as a separate commit.
