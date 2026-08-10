@@ -84,6 +84,13 @@ remains continuous; do not ask for it again.
   The system keyboard appeared while the composer remained fully inside the
   resized visible area. No text was entered, no comment was submitted, and
   the bounded before/after captures remain local and excluded from Git.
+- The current direct Comments review then moved the composer out of the
+  comment-list overlay into a fixed native page footer. At rest and with the
+  empty TextArea focused, the page footer remained above the keyboard and did
+  not cover visible comment text. Comment-card content also received a 16vp
+  inset inside its 24vp corner. No text was entered or submitted. This is a
+  current-device observation only; a same-state reference comparison remains
+  outstanding.
 - Next physical action: continue the Gallery Detail / Comments reference
   review from a real same-state capture, then make only the next proven
   parent-tree or geometry correction as a separate commit.
