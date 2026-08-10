@@ -68,6 +68,11 @@ remains continuous; do not ask for it again.
   the editor is no longer a permanent reading-surface overlay; it is not a
   full Comments-page visual-reference acceptance claim. The bounded local
   audit artifacts are retained outside source control.
+- The current signed Debug HAP was then checked again on the same direct
+  Comments route. The single persistent native editor uses the reference copy
+  for a new comment; it did not produce a modal or a second editor. No text
+  was entered and no comment mutation was sent. The retained local capture is
+  evidence for this compose-control boundary only, not full page acceptance.
 - Next physical action: continue the Gallery Detail / Comments reference
   review from a real same-state capture, then make only the next proven
   parent-tree or geometry correction as a separate commit.
