@@ -442,10 +442,11 @@ remains continuous; do not ask for it again.
 
 ## Current transport state
 
-- 2026-08-10 11:12 +0800: the local HDC client reported `Connect server failed`
-  both before and after one bounded `hdc kill` recovery. No selected-device UI,
-  application, account, preference, or data action ran in that attempt. P1
-  remains OPEN; the next physical action is to re-establish only
+- 2026-08-10 11:12-11:13 +0800: the local HDC client reported `Connect server
+  failed` before and after one bounded `hdc kill` recovery, and again after a
+  single 30-second retry. No selected-device UI, application, account,
+  preference, or data action ran in that attempt. P1 remains OPEN; the next
+  physical action is to re-establish only
   `192.168.50.237:12345`, renew its lease, and rerun the already-known direct
   Gallery Detail terminal review.
 - The selected TCP target `192.168.50.237:12345` is currently Connected and
