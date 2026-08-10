@@ -36,6 +36,7 @@ export default class EntryAbility extends UIAbility {
   private safeAreaUiContext: UIContext | null = null
   private avoidAreaChangeCallback: ((data: window.AvoidAreaOptions) => void) | null = null
   private windowSizeChangeCallback: ((size: window.Size) => void) | null = null
+  private keyboardHeightCallback: ((height: number) => void) | null = null
   private environmentCallbackId: number = -1
   private mainContentReady: boolean = false
   private abilityForeground: boolean = true
@@ -156,6 +157,7 @@ export default class EntryAbility extends UIAbility {
           this.watchMainWindowMetrics(contentWindow)
           this.refreshSafeAreaInsets(contentWindow, uiContext)
           this.watchSafeAreaInsets(contentWindow, uiContext)
+          this.watchKeyboardHeight(contentWindow, uiContext)
         } catch (_error) {
           LayoutSafeAreaBridge.publishInsets(FALLBACK_TOP_AVOID, FALLBACK_BOTTOM_AVOID)
         }
@@ -194,12 +196,16 @@ export default class EntryAbility extends UIAbility {
         if (this.windowSizeChangeCallback !== null) {
           this.mainWindow.off('windowSizeChange', this.windowSizeChangeCallback)
         }
+        if (this.keyboardHeightCallback !== null) {
+          this.mainWindow.off('keyboardHeightChange', this.keyboardHeightCallback)
+        }
       } catch (_error) {}
     }
     this.mainWindow = null
     this.safeAreaUiContext = null
     this.avoidAreaChangeCallback = null
     this.windowSizeChangeCallback = null
+    this.keyboardHeightCallback = null
   }
 
   onForeground(): void {
@@ -321,6 +327,20 @@ export default class EntryAbility extends UIAbility {
       win.on('avoidAreaChange', this.avoidAreaChangeCallback)
     } catch (_error) {
       this.avoidAreaChangeCallback = null
+    }
+  }
+
+  private watchKeyboardHeight(win: window.Window, uiContext: UIContext): void {
+    if (this.keyboardHeightCallback !== null) {
+      return
+    }
+    this.keyboardHeightCallback = (height: number): void => {
+      LayoutSafeAreaBridge.publishKeyboardHeight(uiContext.px2vp(Math.max(0, height)))
+    }
+    try {
+      win.on('keyboardHeightChange', this.keyboardHeightCallback)
+    } catch (_error) {
+      this.keyboardHeightCallback = null
     }
   }
 }

@@ -18,6 +18,7 @@ export class LayoutSafeAreaState {
   @Trace mainWindowHeightPx: number = 0
   @Trace topAvoidHeight: number = 0
   @Trace bottomAvoidHeight: number = 0
+  @Trace keyboardHeight: number = 0
   // Policy can request NavigationMode.Auto, but only HDS knows whether the
   // current root width actually resolved to Split. Destination-level layout
   // must consume this signal instead of inferring physical mode from policy.
@@ -74,6 +75,14 @@ export class LayoutSafeAreaBridge {
     }
     if (state.bottomAvoidHeight !== bottom) {
       state.bottomAvoidHeight = bottom
+    }
+  }
+
+  static publishKeyboardHeight(keyboardHeight: number): void {
+    const state: LayoutSafeAreaState = connectLayoutSafeArea()
+    const normalizedHeight: number = Math.max(0, keyboardHeight)
+    if (state.keyboardHeight !== normalizedHeight) {
+      state.keyboardHeight = normalizedHeight
     }
   }
 

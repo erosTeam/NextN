@@ -17,7 +17,7 @@ import {
   connectContentFilters,
   connectLayoutSafeArea,
 } from 'shared'
-import { uiMaterial } from '@kit.ArkUI'
+import { KeyboardAvoidMode, uiMaterial } from '@kit.ArkUI'
 import { deviceInfo } from '@kit.BasicServicesKit'
 
 const COMMENT_COMPOSER_BOTTOM_RESERVE: number = 136
@@ -60,12 +60,17 @@ export struct GalleryCommentsPage {
   private refreshController: NextNPullRefreshController = new NextNPullRefreshController()
 
   aboutToAppear(): void {
+    this.getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.RESIZE)
     if (this.hydrateDetailSnapshot()) {
       return
     }
     if (!this.isLoading && this.loadedGalleryId !== this.galleryId) {
       this.loadComments()
     }
+  }
+
+  aboutToDisappear(): void {
+    this.getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET)
   }
 
   @Monitor('galleryId')
@@ -243,6 +248,9 @@ export struct GalleryCommentsPage {
   }
 
   private composerBottomPadding(): number {
+    if (this.layoutSafeArea.keyboardHeight > 0) {
+      return COMMENT_COMPOSER_OUTER_GAP
+    }
     return this.layoutSafeArea.bottomAvoidHeight + COMMENT_COMPOSER_OUTER_GAP
   }
 
