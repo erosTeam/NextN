@@ -1,6 +1,15 @@
-# NextN parity audit — active continuation
+# NextN parity audit — historical context
 
-This is a source-grounded continuation queue, not a completion claim.
+> **调度状态（2026-08-11）：** 本文件保留历史背景，不能再作为 UI
+> 工作队列、重复设备检查清单或视觉验收依据。当前唯一的可见 UI 调度权在
+> `docs/qa/nextn-ui-change-ledger.md` 的 **FROZEN / OPEN / EVIDENCE-ONLY**
+> 登记；当前设备动作只看 `docs/qa/nextn-active-acceptance.md` 的一个
+> 明确 next action。源码合同、构建和旧截图均不能把任一条重新变成可执行
+> UI 工作。
+
+> 本文件中的“completed / evidenced”仅描述当时范围内的历史观察，绝不表示
+> 全页视觉对齐，也不授权重测或改动。没有新的用户反馈、可见源码改动或同状态
+> 反证时，必须保持对应表面不动。
 
 ## Completed or already evidenced
 
