@@ -827,11 +827,14 @@ export class NhAccountSessionService {
     restoredEpoch: number,
   ): Promise<boolean> {
     // The normal ArkWeb cookie store is the live browser identity. It persists
-    // independently of the encrypted fallback and must be consulted before an
-    // absent/failed snapshot or an old request-warning marker can pronounce a
-    // cold process signed out.
+    // independently of the encrypted fallback and remains primary when it is
+    // present. It must still load a valid sealed record as a non-destructive
+    // one-401 recovery fallback: returning here used to leave an apparently
+    // signed-in native Account with no way for Favorites to repair a stale
+    // regular ArkWeb token.
     const regularJarHeader: string = NhAccountSessionService.readRegularArkWebCookieHeader()
-    if (NhAccountSessionService.hasLoginCookies(regularJarHeader)) {
+    const regularJarReady: boolean = NhAccountSessionService.hasLoginCookies(regularJarHeader)
+    if (regularJarReady) {
       if (restoredEpoch !== NhAccountSessionService.sessionEpoch) {
         return NhAccountSessionService.isAuthenticated()
       }
@@ -840,10 +843,6 @@ export class NhAccountSessionService {
       NhAccountSessionService.sessionOrigin = AccountSessionOrigin.RESTORED
       NhAccountSessionService.verificationRequiredMarkerPresent = false
       NhAccountSessionService.discardPendingVisibleBrowserSession()
-      NhAccountSessionService.recordDiagnosticStage(
-        AccountSessionDiagnosticStage.RESTORE_ARKWEB_JAR_READY,
-      )
-      return true
     }
     if (NhAccountSessionService.verificationRequiredMarkerPresent) {
       NhAccountSessionService.recordDiagnosticStage(
@@ -857,7 +856,12 @@ export class NhAccountSessionService {
       NhAccountSessionService.recordDiagnosticStage(
         AccountSessionDiagnosticStage.RESTORE_RDB_READ_FAILED,
       )
-      return await NhAccountSessionService.publishSignedOutAfterRestoreFailure(context, restoredEpoch, true)
+      return await NhAccountSessionService.keepRegularJarOrPublishRestoreFailure(
+        context,
+        restoredEpoch,
+        regularJarReady,
+        true,
+      )
     }
     if (verificationRequired) {
       NhAccountSessionService.verificationRequiredMarkerPresent = true
@@ -872,7 +876,12 @@ export class NhAccountSessionService {
       NhAccountSessionService.recordDiagnosticStage(
         AccountSessionDiagnosticStage.RESTORE_RDB_READ_FAILED,
       )
-      return await NhAccountSessionService.publishSignedOutAfterRestoreFailure(context, restoredEpoch, true)
+      return await NhAccountSessionService.keepRegularJarOrPublishRestoreFailure(
+        context,
+        restoredEpoch,
+        regularJarReady,
+        true,
+      )
     }
     const record: EncryptedAccountSession | null = restoreSnapshot.record
     if (record === null) {
@@ -883,14 +892,20 @@ export class NhAccountSessionService {
         NhAccountSessionService.recordDiagnosticStage(
           AccountSessionDiagnosticStage.RESTORE_RDB_REBUILT_RECORD_ABSENT,
         )
-        return await NhAccountSessionService.publishSignedOutAfterRestoreFailure(context, restoredEpoch, true)
+        return await NhAccountSessionService.keepRegularJarOrPublishRestoreFailure(
+          context,
+          restoredEpoch,
+          regularJarReady,
+          true,
+        )
       }
       NhAccountSessionService.recordDiagnosticStage(
         AccountSessionDiagnosticStage.RESTORE_RECORD_ABSENT,
       )
-      return await NhAccountSessionService.publishSignedOutAfterRestoreFailure(
+      return await NhAccountSessionService.keepRegularJarOrPublishRestoreFailure(
         context,
         restoredEpoch,
+        regularJarReady,
         verificationRequired,
       )
     }
@@ -903,13 +918,23 @@ export class NhAccountSessionService {
       // Never generate a replacement key while a sealed record exists. A new
       // key cannot decrypt this envelope and used to turn a recoverable
       // unavailable-key condition into destructive ciphertext loss.
-      return await NhAccountSessionService.publishSignedOutAfterRestoreFailure(context, restoredEpoch, true)
+      return await NhAccountSessionService.keepRegularJarOrPublishRestoreFailure(
+        context,
+        restoredEpoch,
+        regularJarReady,
+        true,
+      )
     }
     if (keyPresent === null) {
       NhAccountSessionService.recordDiagnosticStage(
         AccountSessionDiagnosticStage.RESTORE_HUKS_KEY_CHECK_FAILED,
       )
-      return await NhAccountSessionService.publishSignedOutAfterRestoreFailure(context, restoredEpoch, true)
+      return await NhAccountSessionService.keepRegularJarOrPublishRestoreFailure(
+        context,
+        restoredEpoch,
+        regularJarReady,
+        true,
+      )
     }
     let restored: string
     try {
@@ -920,7 +945,12 @@ export class NhAccountSessionService {
       NhAccountSessionService.recordDiagnosticStage(
         AccountSessionDiagnosticStage.RESTORE_HUKS_DECRYPT_FAILED,
       )
-      return await NhAccountSessionService.publishSignedOutAfterRestoreFailure(context, restoredEpoch, true)
+      return await NhAccountSessionService.keepRegularJarOrPublishRestoreFailure(
+        context,
+        restoredEpoch,
+        regularJarReady,
+        true,
+      )
     }
     const payload: SealedBrowserSessionPayload = NhAccountSessionService.decodeSessionPayload(restored)
     const normalized: string = NhAccountSessionService.normalizeCookieHeader(payload.cookieHeader)
@@ -930,13 +960,30 @@ export class NhAccountSessionService {
       NhAccountSessionService.recordDiagnosticStage(
         AccountSessionDiagnosticStage.RESTORE_PAYLOAD_INVALID,
       )
-      return await NhAccountSessionService.publishSignedOutAfterRestoreFailure(context, restoredEpoch, true)
+      return await NhAccountSessionService.keepRegularJarOrPublishRestoreFailure(
+        context,
+        restoredEpoch,
+        regularJarReady,
+        true,
+      )
     }
     if (restoredEpoch !== NhAccountSessionService.sessionEpoch) {
       return NhAccountSessionService.isAuthenticated()
     }
 
     NhAccountSessionService.clearRetainedRestoreLoginGate()
+
+    if (regularJarReady) {
+      // Keep ArkWeb's live cookie and its controller-provided user agent
+      // untouched. The sealed header is only the recovery source used after a
+      // real authenticated 401; it never replaces a regular jar during
+      // bootstrap merely because it was successfully decrypted.
+      NhAccountSessionService.sealedFallbackCookieHeader = normalized
+      NhAccountSessionService.recordDiagnosticStage(
+        AccountSessionDiagnosticStage.RESTORE_ARKWEB_JAR_READY,
+      )
+      return true
+    }
 
     // Seed the sealed values before attempting the cookie-store recovery so a
     // retained ArkWeb host can retry the same operation immediately before it
@@ -970,6 +1017,34 @@ export class NhAccountSessionService {
       )
     }
     return true
+  }
+
+  /**
+   * A usable regular ArkWeb session remains valid when the encrypted fallback
+   * is unavailable. Its failure must not clear native state; only the absent-
+   * jar path enters the existing fail-closed restore boundary.
+   */
+  private static async keepRegularJarOrPublishRestoreFailure(
+    context: common.UIAbilityContext,
+    restoredEpoch: number,
+    regularJarReady: boolean,
+    requiresExplicitVisibleLogin: boolean,
+  ): Promise<boolean> {
+    if (regularJarReady) {
+      // Match the original regular-jar-first policy even when the optional
+      // fallback read reports a stale verification marker or local-store
+      // failure. That fallback must add recovery capability, never demote a
+      // live ArkWeb identity or retain an in-memory gate that the original
+      // branch would have cleared.
+      NhAccountSessionService.verificationRequiredMarkerPresent = false
+      NhAccountSessionService.clearRetainedRestoreLoginGate()
+      return NhAccountSessionService.isAuthenticated()
+    }
+    return await NhAccountSessionService.publishSignedOutAfterRestoreFailure(
+      context,
+      restoredEpoch,
+      requiresExplicitVisibleLogin,
+    )
   }
 
   /**
