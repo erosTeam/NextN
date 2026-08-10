@@ -135,6 +135,7 @@ export {
   ComicLocalTextMasker,
   ComicNcnnLocalTextMasker,
 } from './services/ComicNativeTextMasker'
+export { ComicVisualTranslationContract } from './services/ComicVisualTranslationContract'
 export { DownloadQueueRepository } from './storage/DownloadQueueRepository'
 export { DownloadSettingsRepository } from './storage/DownloadSettingsRepository'
 export { DownloadQueueState, connectDownloadQueue } from './state/DownloadQueueState'
