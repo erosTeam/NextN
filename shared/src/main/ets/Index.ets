@@ -131,6 +131,10 @@ export {
   OpenAiResponsesComicTextTranslator,
 } from './services/ComicResponsesTextTranslator'
 export {
+  ComicTranslationReaderPageInput,
+  ComicTranslationRuntimeService,
+} from './services/ComicTranslationRuntimeService'
+export {
   ComicVisualTranslationRequest,
   ComicVisualTranslationRunResult,
   ComicVisualTranslationOrchestrator,
