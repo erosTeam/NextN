@@ -101,3 +101,13 @@
 - 详情页 Preview、Related、横向评论预览和 Read 浮动按钮视为四个独立边界；任何一项反馈不得顺带改动另外三项。
 - 对可横向滚动的 rail：只允许 List 视口跨越二级容器的横向内部 inset；标题、父卡、上下间距、首尾空白不随之移除。首尾空白属于第一/最后一个 ListItem。
 - 对浮动 Read：中途内容从下方经过是设计语义；只检查终端内容是否仍可滚到其上方，不得因为正常中途遮挡添加边距、移动或隐藏浮动按钮。
+
+## 计划中：Gallery Comments 固定编辑器的键盘态底部 inset
+
+- 触发依据：`61f0c7b` 的零评论首发入口已在选定设备的成功空态显示固定编辑器。随后聚焦该 TextArea 的最新本地证据显示，键盘出现后编辑器与发送按钮的原始底部有 36px 落入键盘：`after-focus.layout.json` 的可见 bounds 高度为 68px、原始高度为 104px。当前 `GalleryCommentsPage.composerBottomPadding()` 在 `KeyboardAvoidMode.RESIZE` 下返回 `0`；NextE 同一方法在键盘态返回 `COMMENT_COMPOSER_OUTER_GAP`，即其 `SPACE_SM`。
+- 父树边界：`HdsNavDestination -> GalleryCommentsPage -> Column`。成功空态是一个可伸缩的 `PageEmptyState` 内容区，随后是固定、不透明的 `CommentComposer` 页面页脚；有评论时仍是 `PullRefreshListScaffold` 可滚动区加同一个固定页脚。系统键盘由窗口 `keyboardHeightChange` 发布，`KeyboardAvoidMode.RESIZE` 收缩这一根 Column 的可见高度。标题栏、评论 List、卡片、Detail Preview、Related、横向评论预览、Read 浮层、TextArea、发送动作和提交状态都不变。
+- 精确改动：仅将 `composerBottomPadding()` 的键盘态返回值从 `0` 改为 `ThemeTokens.SPACE_SM`；无键盘时继续返回 `bottomAvoidHeight`。不读取或套用整个 `keyboardHeight`，避免在 RESIZE 已收缩窗口时重复避让。
+- 最小性理由：36px 的实测截断与本设备 `SPACE_SM` 的物理高度相符，且与 NextE 的同一键盘态外间距一致。它只恢复固定页脚在已收缩可视区内的完整高度，不改变用户已冻结的“固定而非浮动”的 composer 树，也不改任何评论/详情几何。
+- 验证计划：签名 Debug 构建并以 `install -r` 更新选定设备后，使用既有零评论直达路由，聚焦一次空 TextArea、不输入、不发送；保留新的本地截图和脱敏 bounds，确认输入与发送控件完整位于键盘上方。构建不构成此视觉验收。
+- 未决风险：系统若在不同窗口模式报告不同的键盘缩放比例，`SPACE_SM` 可能不足或过量；该风险只通过同一路径的真实键盘状态判断，不扩展为 `keyboardHeight` 全量 padding 或重组页面树。
+- 当前设备观察：签名 Debug 构建后已仅以 `install -r` 更新选定设备。零评论直达页加载完成后，空 TextArea 被聚焦一次；键盘显示时，输入框和发送控件均完整地处于键盘上方，TextArea 的 visible bounds 与 origBounds 均为完整的 104px 高度。没有输入文本、没有提交评论。该结果仅覆盖 NextN 这一个键盘态；同状态 NextE 参考画面尚未取得，因此不作为完整参考视觉对齐声明。

@@ -558,8 +558,18 @@ remains continuous; do not ask for it again.
   change.
 - The latest Debug HAP was installed with `install -r` only; no uninstall,
   application-data clear, or broad data deletion was performed.
-- Raw temporary layouts used solely for safe structural summaries were deleted
-  from both host and device immediately after summarization.
+- 2026-08-10 15:50 +0800: the signed Debug HAP for the narrow Comments
+  keyboard-inset correction was installed with `install -r` on the selected
+  TCP target. The existing direct zero-comment route was allowed to load, then
+  its empty native TextArea was focused once. With the system keyboard visible,
+  the fixed page-footer input and disabled send control were fully above the
+  keyboard; the TextArea's visible and original heights both measured 104px.
+  No text was entered and no comment mutation was sent. This is a real-device
+  result for that keyboard state only, not a full same-state reference-parity
+  claim.
+- Raw screenshots and layouts retained for an active route or visual decision
+  stay in their named local audit directory; they are never added to Git or
+  deleted automatically.
 - UI static contract and summary tooling has been removed and is not permitted.
   Account persistence is judged only from the durable source owner, signed
   build, and real cold-start state.

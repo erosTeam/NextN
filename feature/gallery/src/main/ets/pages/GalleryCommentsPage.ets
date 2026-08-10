@@ -247,7 +247,7 @@ export struct GalleryCommentsPage {
 
   private composerBottomPadding(): number {
     if (this.layoutSafeArea.keyboardHeight > 0) {
-      return 0
+      return ThemeTokens.SPACE_SM
     }
     return this.layoutSafeArea.bottomAvoidHeight
   }
