@@ -135,6 +135,12 @@ remains continuous; do not ask for it again.
   loading placeholder. No account, preference, or content mutation occurred;
   local artifacts are retained outside Git. The reusable command protocol is
   recorded separately in `docs/device-protocols/nextn-gallery-direct-route.md`.
+- 2026-08-10: the current native Detail action opened the local Reader for the
+  same designated gallery. The terminal reader frame was a native two-page
+  canvas with chrome hidden by default, no Web component, and no loading
+  placeholder. No Reader preference, account, download, or comment mutation
+  was made; retained local artifacts are excluded from Git. This is a current
+  path observation, not a same-viewport visual reference acceptance.
 - Next physical action: continue the Gallery Detail / Comments reference
   review from a real same-state capture, then make only the next proven
   parent-tree or geometry correction as a separate commit.
