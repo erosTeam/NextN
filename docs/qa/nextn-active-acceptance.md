@@ -627,6 +627,13 @@ remains continuous; do not ask for it again.
   raw layout and screenshot are retained only in the named local audit
   directory outside Git. This is a current ordinary-return observation for
   this root only.
+- 2026-08-10 19:34 +0800: after the cold-start Account verification, a normal
+  root switch into Downloads reached the retained native Downloads surface:
+  one native List with its completed-task card and no visible loading,
+  refresh indicator, Web component, error, or sign-in state. No preference,
+  account, or download mutation occurred. The raw layout and screenshot are
+  retained only in the named local audit directory outside Git. This is a
+  current ordinary root-entry observation only.
 - Raw screenshots and layouts retained for an active route or visual decision
   stay in their named local audit directory; they are never added to Git or
   deleted automatically.
