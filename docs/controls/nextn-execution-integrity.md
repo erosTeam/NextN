@@ -77,6 +77,31 @@ be justified by a test written to mirror the new implementation.
   tree before any patch. Do not turn one reported leaf into a license to
   redesign unrelated behavior or data semantics.
 
+### 4.1 UI operation chains are continuous, not per-click investigations
+
+- Separate **route discovery** from **route execution**. Discovery may inspect
+  source, screenshots, and current UI state once to establish a semantic
+  entry, explicit decision gate, or generic direct route.
+- Once a route is known, execute its declared UI actions continuously. Do not
+  insert source reading, layout dumping, screenshot capture, coordinate
+  inference, model deliberation, or commentary between ordinary actions.
+- Repeated paths must use a generic direct intent or a proven semantic action;
+  a coordinate inferred from an old screenshot is never a reusable entry
+  anchor. Do not reconstruct a known route by scrolling and guessing a tap.
+- Screenshot or multimodal inspection is allowed only for: (1) first-time
+  route discovery, (2) an explicit visual decision gate whose result changes
+  the next action, or (3) terminal acceptance or exception evidence. It is not
+  a routine step between known actions.
+- If a terminal state differs from the declared route outcome, preserve one
+  diagnostic capture, mark that chain rejected, and repair its semantic route
+  before another run. Do not mask the failure with repeated coordinate and
+  screenshot loops.
+- When the user requests visual auditability, retain the resulting screenshots
+  in a named local audit directory and report their paths. Do not automatically
+  delete them; deletion requires a later explicit user instruction. Raw images
+  remain local evidence and are never added to source commits unless the user
+  explicitly asks.
+
 ## 5. Scope and delegation discipline
 
 - There is one active lane. An audit may identify candidates, but it may not
