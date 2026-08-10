@@ -73,6 +73,14 @@ remains continuous; do not ask for it again.
   for a new comment; it did not produce a modal or a second editor. No text
   was entered and no comment mutation was sent. The retained local capture is
   evidence for this compose-control boundary only, not full page acceptance.
+- A retained direct Gallery review then covered the compact Preview, Related,
+  and compact Comments rails across their visible Detail viewports. The
+  Preview kept its reference-sized image rail; Related kept a 175vp cover and
+  80vp title region; and each horizontal List owned its full viewport while
+  its first and last items owned the visible edge gap. The floating Read
+  action did not cover a card in the reviewed end states. This is a current
+  device geometry observation, not a same-data reference-parity claim; no
+  data, preference, or gallery action was changed.
 - Next physical action: continue the Gallery Detail / Comments reference
   review from a real same-state capture, then make only the next proven
   parent-tree or geometry correction as a separate commit.
