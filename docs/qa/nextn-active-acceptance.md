@@ -459,6 +459,12 @@ remains continuous; do not ask for it again.
   from the already-known direct Gallery Detail terminal review.
 - The selected TCP target `192.168.50.237:12345` is currently Connected and
   remains the only device used; the USB target was not used as a substitute.
+- 2026-08-10 12:48-12:55 +0800: the retained completed-download Reader path
+  was observed in its hidden-chrome canvas state. `uitest uiInput keyEvent 4`
+  did not close that overlay and is rejected for future use. After reading the
+  selected device's `uiInput` help, the literal `uitest uiInput keyEvent Back`
+  returned exactly to the retained Downloads route. No Reader preference,
+  page position, account state, or download state was changed.
 - The current lease is renewed. The latest wake gate readback is `AWAKE` with
   `OverrideTimeout=86400000ms`.
 - 2026-08-10 12:28 +0800: one direct Gallery Detail review reached Related and
