@@ -88,6 +88,13 @@ export { LlmSourceProfileRepository } from './storage/LlmSourceProfileRepository
 export { LlmSourceProfilesState, connectLlmSourceProfiles } from './state/LlmSourceProfilesState'
 export { LlmSourceSecretVault } from './services/LlmSourceSecretVault'
 export { LlmSourceRuntimeConfig, LlmSourceRuntimeResolver } from './services/LlmSourceRuntimeResolver'
+export { CacheStat } from './services/CacheStat'
+export {
+  ComicRenderedPageRepository,
+  ComicRenderedPageRepositoryContract,
+  InMemoryComicRenderedPageRepository,
+  PersistentComicRenderedPageRepository,
+} from './services/ComicRenderedPageRepository'
 export { NhApiClient } from './network/NhApiClient'
 export { ReaderImageCacheService, ReaderImageCacheResult, ReaderImageCacheStatus } from './services/ReaderImageCacheService'
 export { ReaderNativeSuperResolution, ReaderNativeSuperResolutionResult } from './services/ReaderNativeSuperResolution'
