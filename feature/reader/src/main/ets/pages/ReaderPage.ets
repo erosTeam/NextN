@@ -28,10 +28,13 @@ import {
   ReaderPresentationState,
   ReaderOverlayNavigationState,
   LayoutSafeAreaState,
+  LlmSourceProfilesState,
   ThemeTokens,
   connectLayoutSafeArea,
+  connectLlmSourceProfiles,
   connectReaderPresentation,
   connectReaderOverlayNavigation,
+  supportsMangaTranslation,
 } from 'shared'
 
 // Reader controls are drawn over a dark canvas. Keep their affordance neutral
@@ -1400,6 +1403,7 @@ export struct ReaderPage {
   @Local readerTranslationRunning: boolean = false
   @Local readerTranslationPageIndex: number = -1
   @Local readerTranslationErrorCode: string = ''
+  @Local llmSources: LlmSourceProfilesState = connectLlmSourceProfiles()
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
   private lastPersistedIndex: number = -1
@@ -2251,7 +2255,17 @@ export struct ReaderPage {
   private readerTranslationActionEnabled(): boolean {
     const pageIndex: number = this.currentReaderTranslationPageIndex()
     return this.readerTranslationHasResult(pageIndex) ||
-      this.readerSourceFilePath(pageIndex).length > 0
+      (this.readerSourceFilePath(pageIndex).length > 0 && this.readerTranslationSourceConfigured())
+  }
+
+  /** Match the Reader action's availability to the persisted manga-source binding. */
+  private readerTranslationSourceConfigured(): boolean {
+    const binding = this.llmSources.mangaBinding
+    if (!binding.configured()) {
+      return false
+    }
+    const profile = this.llmSources.findById(binding.sourceProfileId)
+    return profile !== null && supportsMangaTranslation(profile)
   }
 
   private readerTranslationStatusVisible(): boolean {
@@ -2275,6 +2289,9 @@ export struct ReaderPage {
     }
     if (this.readerTranslationHasResult(pageIndex)) {
       this.setReaderTranslationVisible(pageIndex, this.readerTranslatedImageUri(pageIndex).length === 0)
+      return
+    }
+    if (!this.readerTranslationSourceConfigured()) {
       return
     }
     const sourcePath: string = this.readerSourceFilePath(pageIndex)

@@ -36,6 +36,12 @@ authorize an edit, replace a device comparison, or define product completion.
   and translated URI projection were added equally to vertical, paged, and
   double-page image leaves. Automatic translation is not included in this
   first visible boundary.
+- Availability refinement: the existing Reader menu leaf now also requires a
+  configured manga-source binding with the responses and image-input
+  capability. A rendered result remains toggleable without rechecking source
+  configuration. This prevents the unconfigured path from presenting a
+  clickable action that can only fail; it does not move or add any Reader
+  control.
 - Before/after rationale: the runtime, local vision backend, provider bridge,
   private rendered-image cache, and private document cache now exist outside
   the Reader UI. The smallest missing connection is the existing per-page
