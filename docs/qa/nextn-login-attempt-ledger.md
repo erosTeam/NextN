@@ -491,3 +491,21 @@ substitute for measured login-cycle elapsed time.
 - conclusion: normal-session regression path observed. No terminal 401 arose,
   so the new automatic recovery branch remains device-unproven and P0 stays
   open for its real failure boundary.
+
+## Durable verification-origin deployment regression — 2026-08-10 23:45-23:55 +0800
+
+- trigger: the native verification marker now stores only the finite reason
+  `terminal_401_browser_refresh_unsuccessful`; a later cold restore maps it to
+  a fixed non-secret diagnostic stage. No account value, cookie, URL, or
+  response content is stored.
+- install/data boundary: signed Debug installed with install-r=true;
+  data-clear=false; uninstall=false.
+- persistence check: after force-stop/cold start, native Account was signed
+  in and Favorites showed authenticated native content without sign-in prompt,
+  session error, or visible Web surface.
+- account input: not-entered.
+- password input: not-entered.
+- submit: not-issued.
+- conclusion: schema migration and normal-session regression path observed.
+  The finite marker reason awaits a real terminal event; it is not treated as
+  evidence that the automatic recovery branch has succeeded or failed.

@@ -38,6 +38,14 @@ Account/Favorites regression check. No terminal 401 occurred in that check,
 so this automatic branch is implemented in source but **not yet device-proven**
 and this postmortem does not claim the recurring invalidation is solved.
 
+The marker now also retains one finite non-secret origin:
+`terminal_401_browser_refresh_unsuccessful`. It is written only after the
+bounded regular-ArkWeb refresh cannot re-promote a verified session, and a
+later cold restore maps it to a fixed diagnostic stage. The migration passed a
+normal force-stop/cold-start regression on the selected device; it has not yet
+observed a real terminal event and therefore supplies future discrimination,
+not retrospective proof.
+
 ## Verified causal path of the current failure
 
 The current failure was an internally inconsistent session:

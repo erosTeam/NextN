@@ -677,7 +677,11 @@ browser-identity refresh change was then built, installed with `install -r`,
 and checked through one normal force-stop/cold-start Account plus Favorites
 read. That normal path remained authenticated. Its terminal-two-401 branch
 did not occur in this check and is therefore not claimed as device-proven; do
-not modify UI or create another login epoch merely to reproduce the state.
+not modify UI or create another login epoch merely to reproduce the state. A
+follow-up signed build persists one finite, non-secret verification-origin
+code if that branch later exhausts; its migration and normal cold-start
+Account/Favorites path were observed without data clearing. The next action is
+to collect that real terminal event if it occurs, not to manufacture it.
 
 ## Data and artifact boundary
 
