@@ -35,7 +35,12 @@ The login executor keeps these conditions live before a loss signal arrives:
    volatile memory.  Credential retrieval is a preparation concern, never a
    branch inside a login run; a missing implementation-specific secret handle
    must not cause the coordinator to invent a new decision layer.
-3. Establish the current ArkWeb channel and semantic login-form binding.
+3. Predeclare the ArkWeb channel owner and semantic login-form binding. Once
+   S1 makes the visible form available, that owner creates the fixed local
+   forward with `webview-devtools --keep-forward`; it stays alive through the
+   read-only probe, both semantic writes, the sole CF decision, and submit.
+   The helper's default auto-cleanup mode is forbidden when S2--S4 will
+   follow. The exact forward is removed only after the terminal native result.
 4. Keep a redacted timing record ready to receive the loss signal and terminal
    native-promotion timestamp.
 
@@ -243,8 +248,10 @@ a visible WebView is not a substitute for this current gate.
 1. Navigate from the native Account action to the in-app login route.
 2. Capture a current native safe summary proving one **visible** login Web
    surface. A protected/black screenshot is not a page-state diagnosis.
-3. Run the read-only ArkWeb probe. It must report a login form with current
-   account and password fields before any credential action.
+3. Run the read-only ArkWeb probe through the prepared kept forward. It must
+   report a login form with current account and password fields before any
+   credential action. Do not invoke a discovery helper that auto-removes this
+   forward before the semantic driver runs.
 
 If the DevTools forwarding, page selection, or probe fails, preserve only its
 fixed failure code, remove that run's exact local-to-remote forwarding mapping
