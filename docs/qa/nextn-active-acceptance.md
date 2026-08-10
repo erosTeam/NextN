@@ -647,6 +647,13 @@ remains continuous; do not ask for it again.
   preference, account, or content mutation occurred. The raw captures are
   retained only in the named local audit directory outside Git. This is a
   current ordinary enter/return observation only.
+- 2026-08-10 19:45 +0800: a normal root switch into History reached the
+  retained native local-history surface: one native List with its visible
+  day-grouped rows and no visible loading, refresh indicator, Web component,
+  error, or sign-in state. No preference, account, or history mutation
+  occurred. The raw layout and screenshot are retained only in the named
+  local audit directory outside Git. This is a current ordinary root-entry
+  observation only.
 - Raw screenshots and layouts retained for an active route or visual decision
   stay in their named local audit directory; they are never added to Git or
   deleted automatically.
