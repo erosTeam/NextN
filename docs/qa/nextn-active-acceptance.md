@@ -663,13 +663,14 @@ remains continuous; do not ask for it again.
 
 ## Next physical action
 
-P0 remains conditional: do not create a login attempt from historical evidence,
-but immediately preempt P1 if a fresh native Account or Favorites observation
-proves the session unusable. Otherwise continue P1 using the existing direct
-Gallery route for `471768`: preserve a named local NextN Detail/Comments audit
-capture, compare only with a genuinely same-state reference, then make one
-source-proven parent-tree or geometry correction in its own commit. Keep this
-queue OPEN until the user explicitly requests closure.
+P0 is active again: 2026-08-10 23:06-23:08 +0800 current native Favorites
+displayed its sign-in prompt and the paired native Account destination
+displayed its re-verification-required state. No application data was cleared,
+no uninstall or install was performed, and no credential or visible-login
+action was taken. This fresh paired state preempts P1. The next physical action
+is the existing explicit native re-verification action, followed by its native
+promotion observation; do not create a credential epoch unless that action
+actually reaches the visible login form.
 
 ## Data and artifact boundary
 

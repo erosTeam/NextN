@@ -435,3 +435,22 @@ substitute for measured login-cycle elapsed time.
 - conclusion: current record-present cold-start path accepted for this fresh
   cycle. This recovery did not enter a credential epoch and does not erase
   any prior measured overrun.
+
+## Fresh paired invalid-session observation — 2026-08-10 23:06-23:08 +0800
+
+- trigger: ordinary root navigation only; this was not a cold-start timing
+  boundary and therefore starts no loss-to-promotion timer.
+- S0 Favorites: native sign-in prompt; no visible Web, loading, or error
+  surface.
+- S0 Account: native re-verification-required state.
+- restore/401 diagnostic: not yet collected in this event; no session cause is
+  inferred from the visible state.
+- install/data boundary: install-r=none-this-event; data-clear=false;
+  uninstall=false.
+- login-page navigation: not-entered.
+- account input: not-entered.
+- password input: not-entered.
+- submit: not-issued.
+- conclusion: not-a-relogin-attempt. This paired current state activates P0;
+  the next action is the explicit native re-verification route. A credential
+  epoch is forbidden unless that route actually produces the visible form.
