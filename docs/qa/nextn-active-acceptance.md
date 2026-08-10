@@ -128,6 +128,13 @@ remains continuous; do not ask for it again.
   below, rather than over, the visible comment list. No text was entered or
   submitted. These are current-device observations only; a same-state
   reference capture remains outstanding.
+- 2026-08-10: the existing explicit numeric Gallery Want was invoked directly
+  on the selected device for the designated verification gallery. It reached
+  native Gallery Detail, and the optional native Comments destination also
+  reached a loaded comment list. Neither route exposed Web or a lingering
+  loading placeholder. No account, preference, or content mutation occurred;
+  local artifacts are retained outside Git. The reusable command protocol is
+  recorded separately in `docs/device-protocols/nextn-gallery-direct-route.md`.
 - Next physical action: continue the Gallery Detail / Comments reference
   review from a real same-state capture, then make only the next proven
   parent-tree or geometry correction as a separate commit.
