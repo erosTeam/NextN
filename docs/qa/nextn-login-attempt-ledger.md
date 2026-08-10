@@ -22,6 +22,19 @@ start or terminal timestamp must be marked
 `unavailable-from-existing-evidence`; do not reconstruct or estimate their
 duration.
 
+## Current execution status
+
+As of the last recorded device result, **no credential epoch or login cycle is
+active**. The later native re-verification and cold-start records below closed
+the earlier timed entries; their historical headings and timestamps are kept
+unchanged as evidence of the overruns, not as instructions to resume them.
+
+A new cycle may begin only after a fresh current S0 observation proves native
+Account or Favorites unusable. It must append a new redacted record and never
+reuse an old “active”, “prepared”, or “pending” field as a live action. A
+source change, build, documentation change, historical login failure, or a
+desire to reconfirm the path is not a trigger.
+
 **Normal-path limit:** when the authorized credentials and submit path are
 ready and no challenge is present, `loss-to-promotion-elapsed` must be at most
 00:01:00. For every overrun, record the first blocking phase
@@ -86,7 +99,7 @@ per-cycle durations are `unavailable-from-existing-evidence`; the date-only
 records and whole-turn durations elsewhere in the workspace are not a valid
 substitute for measured login-cycle elapsed time.
 
-## Active strict-timing login cycle — 2026-08-10
+## Closed strict-timing login cycle — 2026-08-10
 
 - trigger: user-directed data-preserving cold restart after the prior cycle
   exceeded the intended navigation budget.
@@ -332,7 +345,7 @@ substitute for measured login-cycle elapsed time.
   normal Favorites retry returned the same error. The next action is its
   source-grounded diagnostic path; no credential action is allowed.
 
-## Active cold-start recovery cycle — 2026-08-10
+## Closed cold-start recovery cycle — 2026-08-10
 
 - trigger: the built recovery-order fix was installed with `install -r`, then
   NextN was force-stopped and cold-started without data clearing. Favorites
