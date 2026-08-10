@@ -23,6 +23,17 @@
 - 当前设备观察：已构建、以 `install -r` 更新，并在同一 Browse Grid 的极宽封面上观察到 Contain 留白由封面主色背景层填充，不再是裸灰色；固定卡片尺寸、角标、页数和文字区域未变。原始截图保留在本地审计目录、排除在 Git 外。
 - 未完成验证：尚缺同状态、同视口 NextE 参考画面对照，因此这不是完整视觉参考对齐声明。风险是主色提取失败时必须保持安全占位而不能阻塞封面或网络。
 
+## 计划中：Downloads 完成态全局动作可见性
+
+- 触发依据：2026-08-10 当前 NextN Downloads 完成态设备画面显示“全部暂停”和“全部恢复”两个不可用的顶部菜单动作。NextE 的同一根标题菜单树固定保留搜索、排序和回到顶部，但仅当队列存在可恢复任务时插入恢复动作、仅当存在下载中任务时插入暂停动作（`NextE/entry/src/main/ets/pages/Index.ets:1141-1171,1200-1224`）。
+- 父树边界：仅根 `Navigation -> HDS title bar -> Downloads title menu` 的菜单叶序列；下载页的 pinned group header、搜索、排序、任务卡、队列状态、批处理逻辑和滚动宿主不变。
+- 精确改动：NextN 当前无条件把 Pause/Resume 两个 menu item 放进 `downloadMenuItems`，再以 `isEnabled=false` 表示无资格。改为始终保留 Search/Sort，仅在各自的 `pausableVisibleCount` 或 `resumableVisibleCount` 大于零时插入对应叶子，匹配 NextE 的条件插入树。
+- 最小性理由：不改变可暂停/恢复的任务判定、桥接命令或可见任务过滤，只纠正无可执行操作时的标题菜单呈现；不触及下载卡片或导出入口。
+- 验证计划：构建、`install -r` 后，在当前“仅完成任务”的同一 Downloads 状态打开菜单，确认无禁用的暂停/恢复项；之后仍需同状态 NextE 画面对照，才可宣称视觉参考对齐。
+- 构建证据：2026-08-10 已完成签名 Debug 构建；构建通过不构成视觉验收。
+- 未决风险：页面尚未报告最新 eligibility 时菜单必须保守地不显示批处理叶子；需要设备操作后确认正常下载/暂停状态仍会出现各自动作。
+- 当前设备阻断：已确认仅选定 TCP 目标 `192.168.50.237:12345` 为 Connected；但仓库要求的 `device-lease` 工具既不在仓库 `scripts/` 中、也不在当前 PATH 中，因此未越过租约门槛执行安装、启动或 UI 输入。等待该工具恢复后，下一步仅为此菜单的同态设备复核。
+
 ### 6b816a2 — Detail 与 Comments 初始重组（未验收）
 
 - 改动：引入 Detail 的 Related/评论预览 rail 与全评论页的局部布局重组。

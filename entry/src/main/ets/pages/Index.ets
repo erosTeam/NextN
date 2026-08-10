@@ -1039,12 +1039,13 @@ struct Index {
       const sortMenuItem: Record<string, Object> = { 'content': sortAction }
       const pauseVisibleMenuItem: Record<string, Object> = { 'content': pauseVisibleAction }
       const resumeVisibleMenuItem: Record<string, Object> = { 'content': resumeVisibleAction }
-      const downloadMenuItems: Record<string, Object>[] = [
-        searchMenuItem,
-        sortMenuItem,
-        pauseVisibleMenuItem,
-        resumeVisibleMenuItem,
-      ]
+      const downloadMenuItems: Record<string, Object>[] = [searchMenuItem, sortMenuItem]
+      if (this.downloadQueueActions.resumableVisibleCount > 0) {
+        downloadMenuItems.push(resumeVisibleMenuItem)
+      }
+      if (this.downloadQueueActions.pausableVisibleCount > 0) {
+        downloadMenuItems.push(pauseVisibleMenuItem)
+      }
       const downloadMenu: Record<string, Object> = {
         'value': downloadMenuItems,
         'maxCount': downloadMenuItems.length,
