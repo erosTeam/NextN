@@ -28,6 +28,9 @@ const COMMENT_COMPOSER_SEND_SIZE: number = 36
 const COMMENT_COMPOSER_RADIUS: number =
   COMMENT_COMPOSER_SEND_SIZE / 2 + COMMENT_COMPOSER_INNER_GAP
 const COMMENT_COMPOSER_INPUT_MAX_H: number = 148
+// A 24vp comment-card corner needs more than the generic 12vp card inset so
+// the author and first body line do not visually enter its rounded shoulder.
+const COMMENT_CARD_CONTENT_INSET: number = ThemeTokens.SPACE_LG
 
 /**
  * A separate destination keeps comments from competing with the Gallery hero
@@ -392,10 +395,10 @@ export struct GalleryCommentsPage {
     .width('100%')
     .alignItems(HorizontalAlign.Start)
     .padding({
-      left: ThemeTokens.SPACE_MD,
-      right: ThemeTokens.SPACE_MD,
-      top: ThemeTokens.SPACE_MD,
-      bottom: ThemeTokens.SPACE_SM,
+      left: COMMENT_CARD_CONTENT_INSET,
+      right: COMMENT_CARD_CONTENT_INSET,
+      top: COMMENT_CARD_CONTENT_INSET,
+      bottom: ThemeTokens.SPACE_MD,
     })
     .borderRadius(ThemeTokens.RADIUS_CARD)
     .backgroundColor(ThemeTokens.CARD_BACKGROUND)
