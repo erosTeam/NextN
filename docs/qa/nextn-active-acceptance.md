@@ -683,6 +683,20 @@ remains continuous; do not ask for it again.
   the source-grounded launch path, then resume this exact export path once;
   do not use the rejected Settings root, old coordinates, or any Comments /
   Detail / Reader recheck as a substitute.
+- Recovery and result: ability-manager state proved that NextN was foreground
+  underneath the transient SceneBoard surface; one system Back dismissed only
+  that surface. The existing Detail route then returned once to the NextN root
+  and the current semantic Downloads tab opened the one completed task. Its
+  More menu exposed the completed-task-only Export CBZ action. The export
+  handed foreground to a system Share UIExtension; no share target, file name,
+  URI, page, or other content metadata was read or retained. System Back
+  canceled the handoff and returned to the same native Downloads page, where
+  the task still showed its complete state. The unchanged task-to-Reader path
+  was deliberately not reopened or retested.
+- Accepted boundary: this one completed local task can enter the system share
+  handoff through Export CBZ and return from cancellation without changing its
+  queue completion state. This does not claim any share-target delivery or
+  archive-content inspection.
 
 ## Current Gallery Comments direct-route exception
 
