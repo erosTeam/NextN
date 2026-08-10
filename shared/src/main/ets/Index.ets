@@ -75,6 +75,66 @@ export { ReaderImageCacheService, ReaderImageCacheResult, ReaderImageCacheStatus
 export { ReaderNativeSuperResolution, ReaderNativeSuperResolutionResult } from './services/ReaderNativeSuperResolution'
 export { ReaderSuperResolutionModelDefinition, ReaderSuperResolutionModelService } from './services/ReaderSuperResolutionModelService'
 export { ReaderSuperResolutionResult, ReaderSuperResolutionService } from './services/ReaderSuperResolutionService'
+export {
+  ComicAnalysisState,
+  ComicTranslationState,
+  ComicRenderState,
+  ComicTextKind,
+  ComicSourceOrigin,
+  ComicTranslationOrigin,
+  ComicQualitySeverity,
+  ComicGlossaryTermStatus,
+  ComicGlossaryTermProvenance,
+  ComicImagePreparationProfile,
+  ComicPoint,
+  ComicQualitySignal,
+  ComicTextBlock,
+  ComicGlossaryTerm,
+  ComicPageDocument,
+  ComicTranslationProject,
+} from './model/ComicTranslation'
+export {
+  ComicVisualTranslationRoute,
+  ComicBackendTemplate,
+  ComicBlockTranslation,
+  ComicTranslationBatch,
+  ComicRenderProfile,
+  ComicRenderedPageIdentity,
+  ComicRenderedPage,
+  ComicRegionAnalysisResult,
+} from './model/ComicVisualTranslation'
+export {
+  ComicPageAnalysisContext,
+  ComicPageAnalysisRequest,
+  ComicPageAnalyzerCapabilities,
+  ComicPageAnalysisResult,
+  ComicPageAnalyzer,
+} from './services/ComicPageAnalyzer'
+export {
+  ComicVisualPageSource,
+  ComicRegionAnalysisRequest,
+  ComicRegionRenderRequest,
+  ComicTextTranslationRequest,
+  ComicTextTranslationDiagnostics,
+  ComicTextTranslationResult,
+  ComicWholePageRenderRequest,
+  ComicRegionRenderBackend,
+  ComicTextTranslator,
+  ComicWholePageRenderBackend,
+} from './services/ComicVisualTranslationBackend'
+export {
+  ComicLocalOcrPoint,
+  ComicLocalOcrLine,
+  ComicLocalOcrResult,
+  ComicLocalOcrEngine,
+  HarmonyComicLocalOcrEngine,
+} from './services/ComicHarmonyOcrService'
+export {
+  ComicNativeTextMasker,
+  ComicNativeTextMaskResult,
+  ComicLocalTextMasker,
+  ComicNcnnLocalTextMasker,
+} from './services/ComicNativeTextMasker'
 export { DownloadQueueRepository } from './storage/DownloadQueueRepository'
 export { DownloadSettingsRepository } from './storage/DownloadSettingsRepository'
 export { DownloadQueueState, connectDownloadQueue } from './state/DownloadQueueState'
