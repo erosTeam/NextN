@@ -52,6 +52,15 @@ remains continuous; do not ask for it again.
   an opt-in clipboard detector that is currently disabled. The detector and
   system clipboard were left unchanged, so a different gallery or a mutated
   reference-app state is not being substituted as a comparison capture.
+- A fresh P1 baseline used the existing direct Gallery route and preserved a
+  named local Detail/Comments audit directory. The Detail lower viewport kept
+  the Preview, Related cover-and-title rail, and compact comment preview as
+  distinct native sections. Its unique native Comments action reached an
+  already loaded native comment list in the immediate post-action frame; no
+  pull-refresh indicator or duplicate in-page comments heading was visible.
+  This is current-device behavior evidence only, not a same-state reference
+  visual-parity claim. No account, preference, gallery, or comment data was
+  changed; the raw audit artifacts are retained locally and excluded from Git.
 - Next physical action: continue the Gallery Detail / Comments reference
   review from a real same-state capture, then make only the next proven
   parent-tree or geometry correction as a separate commit.
