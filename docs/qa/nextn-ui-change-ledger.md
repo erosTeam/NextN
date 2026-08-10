@@ -23,6 +23,14 @@
 
 ## 回填：Gallery Detail / Comments 当前父树
 
+- 2026-08-10: no same-state NextE Detail reference is retained locally, and
+  the installed reference app has no URI launch route to the same Gallery
+  ID. Reaching that state would require changing the reference app's visible
+  or data state, which is not permitted as a substitute comparison.
+  Therefore the whole-page Detail reference comparison remains unavailable;
+  current NextN Detail observations are retained without a visual-parity
+  claim, and no Detail UI edit is made on the basis of this limitation.
+
 ## 已实施、待同状态参考对照：Browse Grid 极端比例封面 letterbox 背景
 
 - 触发依据：2026-08-10 当前 Browse 设备画面中，极宽封面的固定 Grid cover 出现大块浅色空槽。NextE 的同一 `GalleryGridCard` 传入 `letterboxBackground: true`；其 `EhThumbnail` 在默认非模糊模式以封面主色渐变填充 Contain 留白，模糊只是可选替代。
