@@ -47,6 +47,11 @@ remains continuous; do not ask for it again.
 - This is a behavior observation, not full visual-reference acceptance of the
   Comments page. Local audit artifacts are retained outside source control and
   are intentionally not named here.
+- The installed ErosN reference app uses the same NH gallery-ID model, but its
+  current Harmony ability has no URI launch route. Its only same-ID route is
+  an opt-in clipboard detector that is currently disabled. The detector and
+  system clipboard were left unchanged, so a different gallery or a mutated
+  reference-app state is not being substituted as a comparison capture.
 - Next physical action: continue the Gallery Detail / Comments reference
   review from a real same-state capture, then make only the next proven
   parent-tree or geometry correction as a separate commit.
