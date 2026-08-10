@@ -1,11 +1,12 @@
 # NextN active device-acceptance queue
 
-## Active objective — account-persistence P0 remains OPEN
+## Conditional preemption — account-persistence P0
 
-Do only the account-persistence P0 on selected TCP device
-`192.168.50.237:12345`; never substitute the USB target and never clear data.
-The objective cannot be closed from source review, a build, installation, a
-no-record cold start, or a new login that masks an unresolved failure.
+On the selected TCP device `192.168.50.237:12345`, a fresh native Account or
+Favorites observation that proves the session absent or unusable immediately
+preempts every other lane. Never substitute the USB target or clear data. P0
+cannot be closed from source review, a build, installation, a no-record cold
+start, or a new login that masks an unresolved failure.
 
 Completion requires both real-device evidence that a completed login survives
 force-stop/cold start with native account authenticated and an authenticated
@@ -29,6 +30,26 @@ remains continuous; do not ask for it again.
   host and device. The repository postmortem is recorded at
   `docs/postmortems/2026-08-10-account-persistence-p0.md`. This queue remains
   OPEN until the user explicitly requests closure.
+
+## Active delivery P1 — Gallery Detail / Comments
+
+- The Detail-owned comments response is now passed into the full Comments
+  route only after a successful response for the current gallery. A direct
+  Comments route without that snapshot retains its ordinary page-load path;
+  user pull, title refresh, and post-comment reconciliation retain their
+  existing request paths.
+- The current signed Debug HAP was installed with `install -r` only on the
+  selected TCP device. A generic Gallery direct route followed by the unique
+  visible Comments action transitioned to native loaded comments within the
+  immediate 0.3-second post-action observation; no pull-refresh indicator or
+  loading placeholder was visible. No account, preference, or content data was
+  changed.
+- This is a behavior observation, not full visual-reference acceptance of the
+  Comments page. Local audit artifacts are retained outside source control and
+  are intentionally not named here.
+- Next physical action: continue the Gallery Detail / Comments reference
+  review from a real same-state capture, then make only the next proven
+  parent-tree or geometry correction as a separate commit.
 
 ## Completed physical evidence
 
