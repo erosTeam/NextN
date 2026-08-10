@@ -274,7 +274,6 @@ struct Index {
   // on every root-tab switch, as NextE does, rather than deriving a temporary
   // array value during build.
   @Local private titleScroller: Scroller = this.rootTabScrollers[0]
-  @Local private historyReloadVersion: number = 0
   @Local private historyClearVersion: number = 0
   @Local private favoritesReloadVersion: number = 0
   @Local private favoritesActions: FavoritesActionState = connectFavoritesActions()
@@ -974,15 +973,6 @@ struct Index {
       // History owns the current local-day mirror; the root owns the HDS
       // surface so it remains fixed while the ListItemGroup headers scroll.
       content['bottomBuilder'] = this.historyPinnedDayBottomBuilder()
-      const reloadAction: Record<string, Object> = {
-        'label': AppStrings.get('action_reload'),
-        'icon': $r('sys.symbol.arrow_clockwise'),
-        'isEnabled': true,
-        'action': (): void => {
-          this.historyReloadVersion += 1
-        },
-      }
-      const reloadMenuItem: Record<string, Object> = { 'content': reloadAction }
       const clearAction: Record<string, Object> = {
         'label': AppStrings.get('action_clear'),
         'icon': $r('sys.symbol.trash'),
@@ -992,8 +982,8 @@ struct Index {
         },
       }
       const clearMenuItem: Record<string, Object> = { 'content': clearAction }
-      const historyMenuItems: Record<string, Object>[] = [reloadMenuItem, clearMenuItem]
-      const historyMenu: Record<string, Object> = { 'value': historyMenuItems, 'maxCount': 2 }
+      const historyMenuItems: Record<string, Object>[] = [clearMenuItem]
+      const historyMenu: Record<string, Object> = { 'value': historyMenuItems, 'maxCount': 1 }
       content['menu'] = historyMenu
     } else if (this.activeTab === 3) {
       // Root HDS owns only command intent. DownloadQueuePage owns all local
@@ -1761,7 +1751,6 @@ struct Index {
         TabContent() {
           HistoryPage({
             scroller: this.rootTabScrollers[2],
-            reloadVersion: this.historyReloadVersion,
             clearVersion: this.historyClearVersion,
             onOpenGallery: (galleryId: number): void => {
               this.pushGallery(galleryId)

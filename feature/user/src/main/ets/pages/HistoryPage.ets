@@ -6,7 +6,6 @@ import {
   InlineRetryNotice,
   LoadingFooter,
   AppStrings,
-  LayoutSafeAreaState,
   NhReadingHistoryItem,
   PageEmptyState,
   PageErrorState,
@@ -16,10 +15,9 @@ import {
   ReadingHistoryState,
   RootRefreshRegistry,
   ThemeTokens,
-  connectLayoutSafeArea,
   connectReadingHistory,
 } from 'shared'
-import { HistoryGalleryCard } from '../components/HistoryGalleryCard'
+import { HistoryListRow } from '../components/HistoryListRow'
 import {
   HistoryPinnedDayHeaderState,
   HISTORY_PINNED_DAY_HEADER_HEIGHT,
@@ -110,15 +108,13 @@ class HistoryDayGroup {
 }
 
 /**
- * Local reading history. Search and date grouping are presentation over the
- * bounded RDB cursor: neither starts a network request nor changes stored
- * resume records.
+ * Local reading history. Date grouping is presentation over the bounded RDB
+ * cursor; it never starts a network request or changes stored resume records.
  */
 @ComponentV2
 export struct HistoryPage {
   @Local items: NhReadingHistoryItem[] = []
   @Local loadedDayGroups: HistoryDayGroup[] = []
-  @Local query: string = ''
   // Day groups keep their numeric local-calendar identity. This value is
   // refreshed at the next local midnight so relative labels never become
   // stale while the History tab remains mounted.
@@ -127,17 +123,13 @@ export struct HistoryPage {
   @Local isRefreshing: boolean = false
   @Local isLoadingMore: boolean = false
   @Local hasMore: boolean = false
-  @Local matchingCount: number = 0
-  @Local hasHistoryRecords: boolean = false
   @Local errorMessage: string = ''
   @Local loadMoreErrorMessage: string = ''
   @Param scroller: Scroller = new Scroller()
-  @Param reloadVersion: number = 0
   @Param clearVersion: number = 0
   @Event onOpenGallery?: (galleryId: number) => void
   @Event onOpenReader?: (galleryId: number, initialPageIndex: number) => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
-  private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   @Local private history: ReadingHistoryState = connectReadingHistory()
   @Local private pinnedDayHeader: HistoryPinnedDayHeaderState = connectHistoryPinnedDayHeader()
   private requestGeneration: number = 0
@@ -186,13 +178,6 @@ export struct HistoryPage {
     this.resetPinnedDayHeader()
   }
 
-  @Monitor('reloadVersion')
-  onReloadRequested(): void {
-    if (this.reloadVersion > 0) {
-      this.reload(true)
-    }
-  }
-
   @Monitor('clearVersion')
   onClearRequested(): void {
     if (this.clearVersion > 0) {
@@ -205,14 +190,6 @@ export struct HistoryPage {
     if (this.isVisible) {
       this.reloadIfHistoryChanged()
     }
-  }
-
-  @Monitor('query')
-  onHistoryQueryChanged(): void {
-    // A filter can replace the visible day groups synchronously. Do not let
-    // the prior group's label survive while ArkUI lays out the new result set.
-    this.resetPinnedDayHeader()
-    this.reload(true, true)
   }
 
   @Monitor('items', 'errorMessage')
@@ -249,24 +226,14 @@ export struct HistoryPage {
     this.reload(true)
   }
 
-  private async reload(force: boolean = false, resetRows: boolean = false): Promise<void> {
+  private async reload(force: boolean = false): Promise<void> {
     if (!force && (this.isInitialLoading || this.isRefreshing)) {
       return
     }
     const generation: number = this.requestGeneration + 1
     this.requestGeneration = generation
     const requestedHistoryRevision: number = this.history.revision
-    const requestedQuery: string = this.normalizedQuery()
     this.isLoadingMore = false
-    if (resetRows) {
-      this.items = []
-      this.loadedDayGroups = []
-      this.cursor = null
-      this.hasMore = false
-      this.matchingCount = 0
-      this.isLoadingMore = false
-      this.loadMoreErrorMessage = ''
-    }
     const keepsRows: boolean = this.items.length > 0
     this.isInitialLoading = !keepsRows
     this.isRefreshing = keepsRows
@@ -277,7 +244,6 @@ export struct HistoryPage {
         this.context(),
         HISTORY_PAGE_SIZE,
         null,
-        requestedQuery,
       )
       if (!this.isCurrentRequest(generation)) {
         return
@@ -286,10 +252,6 @@ export struct HistoryPage {
       this.resetDayGroups(page.items)
       this.cursor = page.nextCursor
       this.hasMore = page.hasMore
-      this.matchingCount = page.totalCount
-      if (requestedQuery.length === 0) {
-        this.hasHistoryRecords = page.totalCount > 0
-      }
       this.schedulePinnedDaySync()
     } catch (error) {
       if (!this.isCurrentRequest(generation)) {
@@ -322,7 +284,6 @@ export struct HistoryPage {
       return
     }
     const generation: number = this.requestGeneration
-    const requestedQuery: string = this.normalizedQuery()
     const requestedCursor: HistoryCursor = this.cursor
     this.isLoadingMore = true
     this.loadMoreErrorMessage = ''
@@ -331,9 +292,8 @@ export struct HistoryPage {
         this.context(),
         HISTORY_PAGE_SIZE,
         requestedCursor,
-        requestedQuery,
       )
-      if (!this.isCurrentRequest(generation) || requestedQuery !== this.normalizedQuery()) {
+      if (!this.isCurrentRequest(generation)) {
         return
       }
       const appended: NhReadingHistoryItem[] = this.dedupePage(page.items)
@@ -343,7 +303,6 @@ export struct HistoryPage {
       }
       this.cursor = page.nextCursor
       this.hasMore = page.hasMore
-      this.matchingCount = page.totalCount
       this.schedulePinnedDaySync()
     } catch (error) {
       if (this.isCurrentRequest(generation)) {
@@ -401,10 +360,6 @@ export struct HistoryPage {
         candidate.galleryId !== item.galleryId,
       )
       this.removeFromDayGroups(item.galleryId)
-      this.matchingCount = Math.max(0, this.matchingCount - 1)
-      if (this.normalizedQuery().length === 0) {
-        this.hasHistoryRecords = this.matchingCount > 0
-      }
       this.errorMessage = ''
       this.historyLoaded = true
       this.observedHistoryRevision = this.history.revision
@@ -435,8 +390,6 @@ export struct HistoryPage {
       this.loadedDayGroups = []
       this.cursor = null
       this.hasMore = false
-      this.matchingCount = 0
-      this.hasHistoryRecords = false
       this.errorMessage = ''
       this.loadMoreErrorMessage = ''
       this.historyLoaded = true
@@ -469,7 +422,7 @@ export struct HistoryPage {
   }
 
   private confirmClearHistory(): void {
-    if (!this.hasHistoryRecords && this.items.length === 0) {
+    if (this.items.length === 0) {
       return
     }
     this.getUIContext().showAlertDialog({
@@ -539,15 +492,9 @@ export struct HistoryPage {
     this.syncPinnedDayHeader()
   }
 
-  /**
-   * PullRefreshListScaffold retains the same one top reserve as its
-   * SecondaryListScaffold parent. History owns one search row, then an
-   * optional failure ListItem; each following day remains one ListItemGroup,
-   * which is the exact unit Scroller.getItemRect() indexes according to the
-   * official List contract.
-   */
+  /** Index 0 is the scaffold reserve; an inline retry, when present, is index 1. */
   private historyDayGroupStartIndex(): number {
-    return 2 + (this.errorMessage.length > 0 ? 1 : 0)
+    return 1 + (this.errorMessage.length > 0 && this.items.length > 0 ? 1 : 0)
   }
 
   /**
@@ -629,10 +576,6 @@ export struct HistoryPage {
     return `${year}-${month}-${day}`
   }
 
-  private normalizedQuery(): string {
-    return this.query.trim().toLowerCase()
-  }
-
   private dayGroups(): HistoryDayGroup[] {
     return this.loadedDayGroups
   }
@@ -711,13 +654,6 @@ export struct HistoryPage {
     return unique
   }
 
-  private filteredCountLabel(): string {
-    const key: string = this.normalizedQuery().length > 0
-      ? 'history_filtered_matches'
-      : 'history_local_records'
-    return AppStrings.get(key).replace('%d', `${this.matchingCount}`)
-  }
-
   @Builder
   private HistoryRefreshFailureNotice() {
     InlineRetryNotice({
@@ -729,59 +665,23 @@ export struct HistoryPage {
   }
 
   @Builder
-  private HistorySearch(insideList: boolean = false) {
-    if (this.hasHistoryRecords || this.items.length > 0 || this.normalizedQuery().length > 0) {
-      Column({ space: ThemeTokens.SPACE_XS }) {
-        Search({ value: this.query, placeholder: AppStrings.get('history_search_placeholder') })
-          .width('100%')
-          .height(ThemeTokens.SEARCH_FIELD_HEIGHT)
-          .backgroundColor(ThemeTokens.SURFACE)
-          .onChange((value: string): void => {
-            this.query = value
-          })
-        Text(this.filteredCountLabel())
-          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-          .fontColor(ThemeTokens.TEXT_SECONDARY)
-      }
-      .width('100%')
-      .padding({
-        left: insideList ? 0 : ThemeTokens.LIST_HORIZONTAL_PADDING,
-        right: insideList ? 0 : ThemeTokens.LIST_HORIZONTAL_PADDING,
-        top: ThemeTokens.SPACE_MD,
-        bottom: ThemeTokens.SPACE_SM,
-      })
-    }
-  }
-
-  @Builder
   private HistoryDayHeader(group: HistoryDayGroup) {
-    Column({ space: ThemeTokens.SPACE_XS }) {
-      Text(this.dayLabel(group.dayStart))
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
-        .width('100%')
-      Divider()
-        .strokeWidth(0.5)
-        .color(ThemeTokens.DIVIDER)
-    }
+    Text(this.dayLabel(group.dayStart))
+      .fontSize(ThemeTokens.FONT_SIZE_BODY)
+      .fontWeight(FontWeight.Bold)
+      .fontColor(ThemeTokens.BRAND)
     .width('100%')
     .padding({
-      left: ThemeTokens.SPACE_MD,
-      right: ThemeTokens.SPACE_MD,
-      top: ThemeTokens.SPACE_MD,
+      left: ThemeTokens.SPACE_SM,
+      right: ThemeTokens.SPACE_SM,
+      top: ThemeTokens.SPACE_SM,
       bottom: ThemeTokens.SPACE_XS,
     })
   }
 
-  private contentTopInset(): number {
-    return this.layoutSafeArea.topAvoidHeight + ThemeTokens.TITLE_BAR_HEIGHT +
-      HISTORY_PINNED_DAY_HEADER_HEIGHT
-  }
-
   @Builder
   private HistoryEntry(item: NhReadingHistoryItem) {
-    HistoryGalleryCard({
+    HistoryListRow({
       item: item,
       onOpenGallery: (galleryId: number): void => {
         if (this.onOpenGallery) {
@@ -868,77 +768,78 @@ export struct HistoryPage {
     })
   }
 
+  /** The reference keeps every state inside the one scroll owner. */
+  @Builder
+  private HistoryRows() {
+    if (this.isInitialLoading && this.items.length === 0) {
+      ListItem() {
+        Column() {
+          PageLoadingState({ text: AppStrings.get('history_loading') })
+        }
+        .height(240)
+        .justifyContent(FlexAlign.Center)
+      }
+    } else if (this.errorMessage.length > 0 && this.items.length === 0) {
+      ListItem() {
+        Column() {
+          PageErrorState({
+            message: this.errorMessage,
+            onRetry: (): void => {
+              this.reload(true)
+            },
+          })
+        }
+        .height(240)
+        .justifyContent(FlexAlign.Center)
+      }
+    } else if (this.items.length === 0) {
+      ListItem() {
+        PageEmptyState({ message: AppStrings.get('history_empty') })
+      }
+    } else {
+      if (this.errorMessage.length > 0) {
+        ListItem() {
+          this.HistoryRefreshFailureNotice()
+        }
+      }
+      this.HistoryDayGroups()
+      ListItem() {
+        this.HistoryLoadingFooter()
+      }
+    }
+  }
+
   build() {
     Column() {
-      if (this.isInitialLoading && this.items.length === 0) {
-        this.HistorySearch()
-        PageLoadingState({ text: AppStrings.get('history_loading') })
-      } else if (this.errorMessage.length > 0 && this.items.length === 0) {
-        this.HistorySearch()
-        PageErrorState({
-          message: this.errorMessage,
-          onRetry: (): void => {
-            this.reload(true)
-          },
-        })
-      } else if (this.items.length === 0 && this.normalizedQuery().length === 0) {
-        this.HistorySearch()
-        PageEmptyState({ message: AppStrings.get('history_empty') })
-      } else if (this.items.length === 0) {
-        this.HistorySearch()
-        PageEmptyState({ message: AppStrings.get('history_filter_empty') })
-      } else {
-        Column() {
-          PullRefreshListScaffold({
-            scroller: this.scroller,
-            listSpace: 0,
-            // The root HDS History bottomBuilder is always part of the title
-            // geometry, even while its passive label is intentionally hidden.
-            // Reserve it exactly once in the scrollable top spacer.
-            topPadding: HISTORY_PINNED_DAY_HEADER_HEIGHT,
-            bottomPadding: ThemeTokens.ROOT_FLOATING_TAB_RESERVE,
-            controller: this.refreshController,
-            onRefresh: async (): Promise<void> => {
-              await this.reload(true)
-            },
-            onReachEnd: (): void => {
-              this.loadMore()
-            },
-            onDidScroll: (offset: number, state: ScrollState): void => {
-              this.syncPinnedDayHeader()
-              if (this.onDidScroll) {
-                this.onDidScroll(offset, state)
-              }
-            },
-            onListAreaChange: (area: Area): void => {
-              this.onHistoryListArea(area)
-            },
-          }) {
-            ListItem() {
-              this.HistorySearch(true)
-            }
-            if (this.errorMessage.length > 0) {
-              ListItem() {
-                this.HistoryRefreshFailureNotice()
-              }
-            }
-            this.HistoryDayGroups()
-            ListItem() {
-              this.HistoryLoadingFooter()
-            }
+      PullRefreshListScaffold({
+        scroller: this.scroller,
+        listSpace: 0,
+        // The HDS title slot owns the passive pinned date. Reserve it once in
+        // the list so all loaded, empty, and error states share one origin.
+        topPadding: HISTORY_PINNED_DAY_HEADER_HEIGHT,
+        bottomPadding: ThemeTokens.ROOT_FLOATING_TAB_RESERVE,
+        controller: this.refreshController,
+        onRefresh: async (): Promise<void> => {
+          await this.reload(true)
+        },
+        onReachEnd: (): void => {
+          this.loadMore()
+        },
+        onDidScroll: (offset: number, state: ScrollState): void => {
+          this.syncPinnedDayHeader()
+          if (this.onDidScroll) {
+            this.onDidScroll(offset, state)
           }
-        }
-        .layoutWeight(1)
-        .width('100%')
+        },
+        onListAreaChange: (area: Area): void => {
+          this.onHistoryListArea(area)
+        },
+      }) {
+        this.HistoryRows()
       }
     }
     .width('100%')
     .height('100%')
-    .padding({
-      top: this.items.length === 0
-        ? this.contentTopInset()
-        : 0,
-    })
     .backgroundColor(ThemeTokens.SURFACE)
   }
 }

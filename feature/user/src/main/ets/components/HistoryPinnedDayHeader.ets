@@ -2,13 +2,11 @@ import { AppStorageV2 } from '@kit.ArkUI'
 import { AppStrings, ThemeTokens } from 'shared'
 
 /**
- * The HDS title bar needs the same physical height as the ordinary date row it
- * mirrors.  The root list already owns an outer 12vp inset, and the regular
- * group header adds another 12vp locally, so the pinned mirror keeps that
- * combined 24vp alignment without inventing a second page gutter.
+ * The HDS title bar needs the same physical height and text grammar as the
+ * ordinary NextE-derived day row it mirrors.
  */
 export const HISTORY_PINNED_DAY_HEADER_HEIGHT: number =
-  ThemeTokens.FONT_SIZE_CAPTION + ThemeTokens.SPACE_MD + ThemeTokens.SPACE_XS
+  ThemeTokens.FONT_SIZE_BODY + ThemeTokens.SPACE_SM + ThemeTokens.SPACE_XS
 
 const HISTORY_PINNED_DAY_HEADER_KEY: string = 'nextn_history_pinned_day_header'
 const HISTORY_DAY_BEFORE_YESTERDAY: number = 2
@@ -80,15 +78,15 @@ export struct HistoryPinnedDayHeader {
       if (this.state.visible) {
         Row() {
           Text(historyDayLabel(this.state.dayStart, this.state.currentDayStart))
-            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-            .fontWeight(FontWeight.Medium)
-            .fontColor(ThemeTokens.TEXT_SECONDARY)
+            .fontSize(ThemeTokens.FONT_SIZE_BODY)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(ThemeTokens.BRAND)
         }
         .width('100%')
         .height('100%')
         .padding({
-          left: ThemeTokens.LIST_HORIZONTAL_PADDING + ThemeTokens.SPACE_MD,
-          right: ThemeTokens.LIST_HORIZONTAL_PADDING + ThemeTokens.SPACE_MD,
+          left: ThemeTokens.SPACE_MD + ThemeTokens.SPACE_SM,
+          right: ThemeTokens.SPACE_MD + ThemeTokens.SPACE_SM,
         })
         .alignItems(VerticalAlign.Center)
       }

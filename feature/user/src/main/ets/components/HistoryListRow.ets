@@ -1,13 +1,11 @@
 import { AppStrings, NhReadingHistoryItem, ThemeTokens } from 'shared'
 
 /**
- * A compact, local-only history row in the same cover-first grammar as
- * NextE's GallerySimpleCard.  It deliberately renders only fields that the
- * persisted NextN history record can prove: cover, title, resume position,
- * and the last local open time.
+ * Local-history adaptation of NextE's GallerySimpleCard.  The parent owns
+ * date grouping and deletion; this leaf renders only durable local evidence.
  */
 @ComponentV2
-export struct HistoryGalleryCard {
+export struct HistoryListRow {
   @Require @Param item: NhReadingHistoryItem
   @Local isThumbnailLoading: boolean = true
   @Local hasThumbnailError: boolean = false
@@ -24,21 +22,16 @@ export struct HistoryGalleryCard {
     return this.item.toSummary().displayTitle()
   }
 
-  private timeLabel(): string {
+  private viewedTime(): string {
     if (this.item.lastOpenedAt <= 0) {
       return ''
     }
     const date: Date = new Date(this.item.lastOpenedAt)
-    const hour: string = `${date.getHours()}`.padStart(2, '0')
-    const minute: string = `${date.getMinutes()}`.padStart(2, '0')
-    return `${hour}:${minute}`
+    return `${date.getHours()}`.padStart(2, '0') + ':' + `${date.getMinutes()}`.padStart(2, '0')
   }
 
   private progressLabel(): string {
     const pageCount: number = Math.max(1, this.item.pageCount)
-    // Existing records from before the explicit marker are migrated as false.
-    // Do not turn their ambiguous stored zero/non-zero index into a visible
-    // claim that reading has actually started.
     const savedIndex: number = this.item.hasReadProgress ? this.item.lastReadIndex : 0
     const pageIndex: number = Math.min(Math.max(0, savedIndex), pageCount - 1)
     return AppStrings.get('history_page_progress')
@@ -46,15 +39,11 @@ export struct HistoryGalleryCard {
       .replace('%2$d', `${pageCount}`)
   }
 
-  private actionLabel(): string {
-    return this.item.hasReadProgress
-      ? AppStrings.get('history_resume')
-      : AppStrings.get('gallery_action_read')
-  }
-
   private galleryAccessibilityLabel(): string {
-    const removeHint: string = AppStrings.get('history_remove_discovery_accessibility')
-    return `${this.title()}, ${this.progressLabel()}. ${removeHint}`
+    const time: string = this.viewedTime()
+    return time.length > 0
+      ? `${this.title()}, ${time}, ${this.progressLabel()}`
+      : `${this.title()}, ${this.progressLabel()}`
   }
 
   private readerAccessibilityLabel(): string {
@@ -62,7 +51,7 @@ export struct HistoryGalleryCard {
       ? AppStrings.get('history_continue_accessibility')
         .replace('%1$s', this.title())
         .replace('%2$s', this.progressLabel())
-      : `${this.actionLabel()} ${this.title()}, ${this.progressLabel()}.`
+      : `${AppStrings.get('gallery_action_read')} ${this.title()}, ${this.progressLabel()}.`
   }
 
   private openGallery(): void {
@@ -73,14 +62,12 @@ export struct HistoryGalleryCard {
 
   private resumeReader(): void {
     if (this.onResume) {
-      // Preserve the Reader's original exact-index handoff. New records
-      // with no progress carry zero; migrated records remain non-destructive.
       this.onResume(this.item.galleryId, Math.max(0, this.item.lastReadIndex))
     }
   }
 
   @Builder
-  private ThumbnailFallback() {
+  private ThumbnailState() {
     if (this.isThumbnailLoading || this.hasThumbnailError || this.item.thumbnailUrl.length === 0) {
       Column({ space: ThemeTokens.SPACE_XS }) {
         if (this.hasThumbnailError || this.item.thumbnailUrl.length === 0) {
@@ -124,7 +111,7 @@ export struct HistoryGalleryCard {
               this.hasThumbnailError = true
             })
         }
-        this.ThumbnailFallback()
+        this.ThumbnailState()
       }
       .width(ThemeTokens.COVER_WIDTH)
       .height(ThemeTokens.COVER_HEIGHT)
@@ -137,63 +124,54 @@ export struct HistoryGalleryCard {
       })
 
       Column({ space: ThemeTokens.SPACE_XS }) {
-        Column({ space: ThemeTokens.SPACE_XS }) {
-          Text(this.title())
-            .fontSize(ThemeTokens.FONT_SIZE_META)
-            .fontWeight(FontWeight.Regular)
-            .fontColor(ThemeTokens.TEXT_PRIMARY)
-            .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
-            .maxLines(2)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-            .width('100%')
+        Text(this.title())
+          .fontSize(ThemeTokens.FONT_SIZE_META)
+          .fontWeight(FontWeight.Regular)
+          .fontColor(ThemeTokens.TEXT_PRIMARY)
+          .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
+          .maxLines(2)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .width('100%')
 
-          Blank()
+        Blank()
 
-          Row({ space: ThemeTokens.SPACE_XS }) {
-            if (this.timeLabel().length > 0) {
+        Row({ space: ThemeTokens.SPACE_XS }) {
+          if (this.viewedTime().length > 0) {
+            Row({ space: ThemeTokens.SPACE_XS }) {
               SymbolGlyph($r('sys.symbol.clock'))
                 .fontSize(ThemeTokens.FONT_SIZE_TINY)
                 .fontColor([ThemeTokens.TEXT_TERTIARY])
-              Text(this.timeLabel())
+              Text(this.viewedTime())
                 .fontSize(ThemeTokens.FONT_SIZE_TINY)
                 .fontColor(ThemeTokens.TEXT_TERTIARY)
             }
-            Blank()
+          }
+          Blank()
+          Row({ space: 2 }) {
             Text(this.progressLabel())
               .fontSize(ThemeTokens.FONT_SIZE_TINY)
               .fontColor(ThemeTokens.TEXT_SECONDARY)
+            SymbolGlyph($r('sys.symbol.chevron_right'))
+              .fontSize(ThemeTokens.FONT_SIZE_TINY)
+              .fontColor([ThemeTokens.TEXT_SECONDARY])
           }
-          .width('100%')
+          .height(ThemeTokens.MIN_TOUCH_TARGET)
           .alignItems(VerticalAlign.Center)
-        }
-        .layoutWeight(1)
-        .width('100%')
-        .alignItems(HorizontalAlign.Start)
-        .accessibilityText(this.galleryAccessibilityLabel())
-        .onClick((): void => {
-          this.openGallery()
-        })
-
-        Row({ space: ThemeTokens.SPACE_XS }) {
-          Text(this.actionLabel())
-            .fontSize(ThemeTokens.FONT_SIZE_TINY)
-            .fontColor(ThemeTokens.TEXT_LINK)
-          SymbolGlyph($r('sys.symbol.chevron_right'))
-            .fontSize(ThemeTokens.FONT_SIZE_TINY)
-            .fontColor([ThemeTokens.TEXT_LINK])
+          .accessibilityText(this.readerAccessibilityLabel())
+          .onClick((): void => {
+            this.resumeReader()
+          })
         }
         .width('100%')
-        .height(ThemeTokens.MIN_TOUCH_TARGET)
-        .justifyContent(FlexAlign.End)
         .alignItems(VerticalAlign.Center)
-        .accessibilityText(this.readerAccessibilityLabel())
-        .onClick((): void => {
-          this.resumeReader()
-        })
       }
       .layoutWeight(1)
       .height(ThemeTokens.COVER_HEIGHT)
       .alignItems(HorizontalAlign.Start)
+      .accessibilityText(this.galleryAccessibilityLabel())
+      .onClick((): void => {
+        this.openGallery()
+      })
     }
     .width('100%')
     .padding({

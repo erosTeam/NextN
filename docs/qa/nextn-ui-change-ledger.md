@@ -66,6 +66,44 @@
   不进入 Git。此观察仅覆盖根入口文案和层级；NextN 专有入口名称与 NextE 不同，
   不据此宣称整个设置子树已完成视觉验收。
 
+## 已实施、待同状态参考对照：按 NextE 简单列表重写历史根页
+
+- 触发依据：用户明确要求“历史页全删掉重写”。当前真实设备截图
+  `.hvigor/outputs/nextn-history-root-20260810T1950+0800/nextn_history_root.png`
+  显示了搜索框、本地记录计数、日期标题，以及每行独立的蓝色“继续阅读”动作；
+  这些被叠加在本应是紧凑阅读记录的根列表上，形成了不统一的多层视觉语法。
+  NextE 的 `ViewedHistoryPage.ets` 使用单一 `PullRefreshListScaffold ->
+  ListItemGroup(day) -> GallerySimpleCard` 链，日期由 HDS bottomBuilder 被动镜像，
+  每条记录没有第二套卡片或大号尾随动作。
+- 父树边界：根 `Index -> HdsNavigation -> HdsTabs(History) -> HistoryPage`；
+  HDS 保留标题、清除动作和 `HistoryPinnedDayHeader` bottomBuilder。页面内容为一个
+  `PullRefreshListScaffold`，它拥有 top reserve、加载/错误/空态、日期
+  `ListItemGroup`、行、footer 和下拉刷新。行内只拥有封面、标题、时间、进度与
+  一个紧凑的续读叶动作；长按/左滑删除仍属于对应 `ListItem`。
+- 精确改动：删除默认可见的 History 搜索框和“n 条本地记录”计数；删除当前
+  `HistoryGalleryCard` 的“详情列 + 独立蓝色继续阅读行”树，换成与 NextE
+  `GallerySimpleCard` 同样的 72×102 封面、固定信息列、标题、底部元数据和
+  hairline divider。日期普通行与 HDS 镜像改回 NextE 的 body/bold/brand 语法和
+  同一高度。标题菜单删除无参考的 Reload；下拉刷新和 root-tab re-tap 仍保留。
+- 最小性理由：本轮不改 `HistoryRepository`、RDB cursor、读取记录、进度保存、
+  删除确认、Reader 路由或 Gallery 路由。NextN 特有的续读能力作为行内小叶保留，
+  但不再把它渲染成第二个高显著性行。不会据此改动 Settings、Detail、Comments 或
+  任何其他根页。
+- 验证计划：签名 Debug 构建并以 `install -r` 更新 237；在不清本地历史、不点击
+  删除或续读的前提下，采集当前已加载多条记录的 History 根页，与 NextE 同一
+  simple-list parent-tree 和现有基线截图比较：确认无搜索/计数/大蓝动作，日组和
+  行密度一致，浮动根 tab 仍不遮挡可见行。截图保存在本地审计目录，不进入 Git。
+- 未决风险：NextN 没有 NextE 的远端 gallery metadata（评分、分类、上传者等），
+  因而不能伪造这些叶；行内只显示本地记录可证明的时间、页数与续读动作。
+- 当前设备观察：2026-08-10 21:06 +0800，签名 Debug HAP 以 `install -r`
+  覆盖到唯一选定设备后，已有本地记录的 History 根页显示单一蓝色日期标题和
+  简单行：72×102 封面、标题、时钟时间、页码和小 chevron。搜索框、记录计数、
+  Reload 菜单和独立蓝色“继续阅读”行均未出现；标题菜单只剩清除。截图保留在
+  `.hvigor/outputs/nextn-history-root-rewrite-20260810T2103+0800/history-root.png`，
+  不进入 Git。没有点击记录、Reader、删除或清除。
+- 未完成验证：当前没有同一批本地历史记录的 NextE 参考画面；因此这只证明
+  NextN 当前设备树和用户指出的可见缺陷已改变，不能替代同状态参考视觉验收。
+
 ## 已实施、待同状态参考对照：Browse Grid 极端比例封面 letterbox 背景
 
 - 触发依据：2026-08-10 当前 Browse 设备画面中，极宽封面的固定 Grid cover 出现大块浅色空槽。NextE 的同一 `GalleryGridCard` 传入 `letterboxBackground: true`；其 `EhThumbnail` 在默认非模糊模式以封面主色渐变填充 Contain 留白，模糊只是可选替代。
