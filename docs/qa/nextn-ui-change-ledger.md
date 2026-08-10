@@ -31,6 +31,15 @@
 - 最小改动理由：移植 NextE 默认主色渐变背景及现有可选模糊分支，不把 Contain 改为 Cover，不改变卡片尺寸或用户偏好含义。
 - 当前设备观察：已构建、以 `install -r` 更新，并在同一 Browse Grid 的极宽封面上观察到 Contain 留白由封面主色背景层填充，不再是裸灰色；固定卡片尺寸、角标、页数和文字区域未变。原始截图保留在本地审计目录、排除在 Git 外。
 - 未完成验证：尚缺同状态、同视口 NextE 参考画面对照，因此这不是完整视觉参考对齐声明。风险是主色提取失败时必须保持安全占位而不能阻塞封面或网络。
+- 2026-08-10 19:35-19:36 +0800: an attempt to obtain a same-state NextE
+  reference was made on the selected device. Launching the installed
+  `com.erosteam.nexte` reference resumed its last Comments page; one native
+  Back reached its Gallery category list (a different parent tree) rather
+  than the same Browse root used by the NextN letterbox observation. No
+  same-state extreme-ratio cover was obtainable without changing the
+  reference app's visible or data state, and no such change was made.
+  Therefore the same-state reference comparison remains unavailable and this
+  item stays OPEN; the NextN device observation above is retained as-is.
 
 ## 计划中：Downloads 完成态全局动作可见性
 
