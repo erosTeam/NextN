@@ -26,6 +26,7 @@
 | Detail 浮动 Read | **FROZEN RULE** | 中途遮挡内容是浮动语义；只判断尾项能否滚到其上方。 | 用户要求改变浮动交互，或尾项实际不可达的同状态证据。 |
 | Downloads 完成任务导出后取消 | **EVIDENCE-ONLY** | 已观察到系统 Share UI 前台后取消，任务仍为 Complete；不扩展为目标应用投递或其他任务状态的结论。 | 出现真实下载/暂停状态，或导出源码/Share 边界被改动。 |
 | Settings 根入口 | **EVIDENCE-ONLY** | 已观察到根行文案修正；此前参考捕获窗口状态不一致，不能比较。 | 取得不改变数据/偏好的同状态、同视口参考条件；否则不重复捕获。 |
+| Settings 根页普通重入（生命周期） | **FROZEN SOURCE ASSESSMENT** | 当前 `aboutToAppear` 只同步已发布的登录态并读取本地 Profile 快照；没有 loading 状态、行清空、网络请求或第二次会话恢复。该结论不是设备视觉验收。 | `SettingsPage` 根页生命周期、`NhAccountProfileService.restore` 的可见状态语义发生修改，或真实设备出现根页清空/刷新反证。 |
 | History 根页 | **EVIDENCE-ONLY** | 已观察到简单列表树；缺同一批本地记录的参考状态。 | 自然具备同状态参考条件，或用户给出新的根页反馈。 |
 | Detail Related rail | **OPEN** | 保持真实 related 数据能力与“封面 + 标题”叶；不得从 rail 规则推导缩窄标题、压低卡片或改动 Preview/Comments。 | 用户针对 Related 的新具体反馈，或获得同状态的有效参考/设备反证。 |
 
