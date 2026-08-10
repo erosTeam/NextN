@@ -107,6 +107,29 @@ export {
 } from './services/ComicTranslationRepository'
 export { ResponsesTextProtocol } from './services/ResponsesTextProtocol'
 export { ComicResponsesProtocol } from './services/ComicResponsesProtocol'
+export { ComicResponsesImagePayload } from './services/ComicResponsesImagePayload'
+export {
+  ComicResponsesRegionImage,
+  ComicResponsesRegionImagePayload,
+} from './services/ComicResponsesRegionImagePayload'
+export {
+  COMIC_TEXT_TRANSLATION_INPUT_MULTIMODAL,
+  COMIC_TEXT_TRANSLATION_INPUT_TEXT_ONLY,
+  ComicResponsesTextTranslationProtocol,
+} from './services/ComicResponsesTextTranslationProtocol'
+export {
+  ComicProviderHttpError,
+  ComicProviderStageError,
+  ComicResponsesCallConfig,
+  ComicResponsesClient,
+  ComicResponsesLabeledImage,
+} from './services/ComicResponsesClient'
+export {
+  COMIC_RESPONSES_TEXT_TRANSLATION_PROMPT_VERSION,
+  COMIC_RESPONSES_TEXT_ONLY_TRANSLATION_PROMPT_VERSION,
+  ComicTextTranslatorFactory,
+  OpenAiResponsesComicTextTranslator,
+} from './services/ComicResponsesTextTranslator'
 export {
   ComicVisualTranslationRequest,
   ComicVisualTranslationRunResult,

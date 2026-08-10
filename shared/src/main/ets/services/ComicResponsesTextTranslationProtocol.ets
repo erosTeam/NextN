@@ -1,0 +1,381 @@
+import { util } from '@kit.ArkTS'
+import { cryptoFramework } from '@kit.CryptoArchitectureKit'
+import {
+  ComicBlockTranslation,
+  ComicTranslationBatch,
+} from '../model/ComicVisualTranslation'
+import { ComicTextKind } from '../model/ComicTranslation'
+import {
+  ComicTextTranslationRequest,
+  ComicTextTranslationResult,
+} from './ComicVisualTranslationBackend'
+import { ComicVisualTranslationContract } from './ComicVisualTranslationContract'
+import { ComicResponsesProtocol } from './ComicResponsesProtocol'
+
+const MAX_COMIC_TEXT_TRANSLATION_PAYLOAD_CHARS: number = 2 * 1024 * 1024
+const MAX_COMIC_TEXT_TRANSLATION_PROMPT_CHARS: number = 512 * 1024
+const MAX_COMIC_TEXT_TRANSLATION_SUMMARY_CHARS: number = 4096
+const MAX_COMIC_TEXT_TRANSLATION_TEXT_CHARS: number = 8192
+const MAX_COMIC_TEXT_TRANSLATION_IDENTIFIER_CHARS: number = 160
+
+export const COMIC_TEXT_TRANSLATION_INPUT_MULTIMODAL: string = 'multimodal'
+export const COMIC_TEXT_TRANSLATION_INPUT_TEXT_ONLY: string = 'text_only'
+
+class ComicTextPromptBlock {
+  blockId: string = ''
+  readingOrder: number = 0
+  kind: string = ''
+  sourceText: string = ''
+  normalizedSourceText: string = ''
+  speakerId: string = ''
+  styleHint: string = ''
+  polygon: number[][] = []
+}
+
+class RawComicBlockTranslation {
+  blockId: string = ''
+  translatedText: string = ''
+}
+
+class RawComicTextTranslationPayload {
+  projectId: string = ''
+  pageIndex: number = -1
+  sourceImageHash: string = ''
+  targetLanguage: string = ''
+  pageSummary: string = ''
+  blocks: RawComicBlockTranslation[] = []
+}
+
+/** Prompt and strict output protocol for translating detected comic text regions. */
+export class ComicResponsesTextTranslationProtocol {
+  static buildPrompt(
+    request: ComicTextTranslationRequest,
+    inputMode: string = COMIC_TEXT_TRANSLATION_INPUT_MULTIMODAL,
+  ): string {
+    ComicVisualTranslationContract.validateTextTranslationRequest(request)
+    ComicResponsesTextTranslationProtocol.validateInputMode(inputMode)
+    const lines: string[] = []
+    lines.push('Translate the detected text regions on this comic page.')
+    if (inputMode === COMIC_TEXT_TRANSLATION_INPUT_MULTIMODAL) {
+      lines.push('Use the attached full page image to resolve speakers, tone, references, and OCR mistakes.')
+      lines.push('The supplied blockId list and region ordering are authoritative, but OCR text is evidence rather than ground truth.')
+      lines.push('Silently correct misrecognized characters from the image when translating; do not copy an OCR mistake into the translation.')
+      lines.push('After the full page image, labeled enlarged region crops may follow. Use each crop for exact transcription of its blockId; if a crop conflicts with supplied OCR text, the crop wins.')
+    } else {
+      lines.push('No comic image is attached. Translate from the supplied OCR transcript and bounded cross-page context only.')
+      lines.push('Treat every supplied blockId, sourceText, polygon, and region ordering as authoritative input.')
+      lines.push('Do not claim to visually verify or silently replace OCR characters that are absent from the supplied text.')
+    }
+    lines.push('Translate only legible text inside each supplied polygon. Never invent parenthetical narration for facial expressions, actions, scenery, or other visual content.')
+    lines.push('For blocks marked kind="sfx", copy sourceText exactly. The local reader preserves stylized sound-effect artwork instead of replacing it with typeset text.')
+    lines.push('For any other block that mixes semantic dialogue with repeated breathing, moaning, or onomatopoeia, translate all semantic dialogue but omit every non-semantic vocalization. Do not output a translated sound cue for that fragment.')
+    lines.push('Never expand OCR noise, uncertain fragments, or repeated kana into multiple target-language sounds or invented dialogue.')
+    lines.push('Do not add, remove, merge, or split blocks.')
+    lines.push('Return exactly one JSON object. Do not use Markdown fences or commentary.')
+    lines.push('Every supplied blockId must appear exactly once with a non-empty translatedText.')
+    lines.push('Follow locked glossary terms exactly and keep names, forms of address, and tone consistent with prior pages.')
+    lines.push('Set pageSummary to a concise cumulative rolling summary that retains only essential plot, identity, relationship, and naming facts.')
+    lines.push('Required JSON shape:')
+    lines.push('{"projectId":"...","pageIndex":0,"sourceImageHash":"...",' +
+      '"targetLanguage":"...","pageSummary":"...",' +
+      '"blocks":[{"blockId":"p0-r0","translatedText":"..."}]}')
+    const payloadLines: string[] = ComicResponsesTextTranslationProtocol.payloadLines(request)
+    for (let index: number = 0; index < payloadLines.length; index++) {
+      lines.push(payloadLines[index])
+    }
+    const prompt: string = lines.join('\n')
+    if (prompt.length > MAX_COMIC_TEXT_TRANSLATION_PROMPT_CHARS) {
+      throw new Error('Comic text translation prompt is too large')
+    }
+    return prompt
+  }
+
+  static contextFingerprint(
+    request: ComicTextTranslationRequest,
+    inputMode: string = COMIC_TEXT_TRANSLATION_INPUT_MULTIMODAL,
+  ): string {
+    ComicVisualTranslationContract.validateTextTranslationRequest(request)
+    ComicResponsesTextTranslationProtocol.validateInputMode(inputMode)
+    const encoded: Uint8Array = new util.TextEncoder().encodeInto(
+      JSON.stringify([
+        inputMode,
+        ComicResponsesTextTranslationProtocol.payloadLines(request),
+      ]),
+    )
+    const md = cryptoFramework.createMd('SHA256')
+    md.updateSync({ data: encoded })
+    const digest: Uint8Array = md.digestSync().data
+    const parts: string[] = []
+    for (let index: number = 0; index < digest.length; index++) {
+      parts.push(digest[index].toString(16).padStart(2, '0'))
+    }
+    return parts.join('')
+  }
+
+  static parse(
+    request: ComicTextTranslationRequest,
+    rawText: string,
+    sourceProfileId: string,
+    sourceRevision: number,
+    modelId: string,
+    promptVersion: string,
+    inputMode: string = COMIC_TEXT_TRANSLATION_INPUT_MULTIMODAL,
+  ): ComicTextTranslationResult {
+    ComicVisualTranslationContract.validateTextTranslationRequest(request)
+    ComicResponsesTextTranslationProtocol.validateInputMode(inputMode)
+    ComicResponsesTextTranslationProtocol.validateProviderIdentity(
+      sourceProfileId,
+      sourceRevision,
+      modelId,
+      promptVersion,
+    )
+    if (rawText.length <= 0 || rawText.length > MAX_COMIC_TEXT_TRANSLATION_PAYLOAD_CHARS) {
+      throw new Error('Comic text translation payload size is invalid')
+    }
+    const raw: RawComicTextTranslationPayload =
+      JSON.parse(rawText) as RawComicTextTranslationPayload
+    if (typeof raw.projectId !== 'string' || raw.projectId !== request.source.projectId ||
+      !Number.isFinite(raw.pageIndex) || Math.floor(raw.pageIndex) !== raw.pageIndex ||
+      raw.pageIndex !== request.source.pageIndex ||
+      typeof raw.sourceImageHash !== 'string' ||
+      raw.sourceImageHash !== request.source.imageHash ||
+      typeof raw.targetLanguage !== 'string' ||
+      raw.targetLanguage !== request.context.targetLanguage) {
+      throw new Error('Comic text translation output identity mismatch')
+    }
+    if (!Array.isArray(raw.blocks)) {
+      throw new Error('Comic text translation output blocks are invalid')
+    }
+
+    const translatedById: Map<string, string> = new Map<string, string>()
+    for (let index: number = 0; index < raw.blocks.length; index++) {
+      const rawBlock: RawComicBlockTranslation = raw.blocks[index]
+      const blockId: string = ComicResponsesTextTranslationProtocol.exactRequiredString(
+        rawBlock.blockId,
+        'block id',
+        MAX_COMIC_TEXT_TRANSLATION_IDENTIFIER_CHARS,
+      )
+      const translatedText: string = ComicResponsesTextTranslationProtocol.requiredString(
+        rawBlock.translatedText,
+        'translated text',
+        MAX_COMIC_TEXT_TRANSLATION_TEXT_CHARS,
+      )
+      if (translatedById.has(blockId)) {
+        throw new Error('Comic text translation output has a duplicate block')
+      }
+      translatedById.set(blockId, translatedText)
+    }
+
+    const batch: ComicTranslationBatch = new ComicTranslationBatch()
+    batch.projectId = request.source.projectId
+    batch.pageIndex = request.source.pageIndex
+    batch.sourceImageHash = request.source.imageHash
+    batch.targetLanguage = request.context.targetLanguage
+    batch.sourceProfileId = sourceProfileId
+    batch.sourceRevision = sourceRevision
+    batch.modelId = modelId
+    batch.promptVersion = promptVersion
+    batch.contextFingerprint =
+      ComicResponsesTextTranslationProtocol.contextFingerprint(request, inputMode)
+    batch.glossaryRevision = request.context.glossaryRevision
+    batch.translationRevision = request.requestedTranslationRevision
+    for (let index: number = 0; index < request.document.blocks.length; index++) {
+      const sourceBlock = request.document.blocks[index]
+      const blockId: string = sourceBlock.blockId
+      const translatedText: string | undefined = translatedById.get(blockId)
+      if (translatedText === undefined) {
+        throw new Error('Comic text translation output is missing a block')
+      }
+      const block: ComicBlockTranslation = new ComicBlockTranslation()
+      block.blockId = blockId
+      // Provider instructions are not a safety boundary. A classified sound effect remains
+      // source artwork even when a provider translates or hallucinates it, and must not leak
+      // into cross-page context as ordinary dialogue.
+      block.translatedText = ComicResponsesTextTranslationProtocol.filteredTranslation(
+        sourceBlock.kind,
+        sourceBlock.sourceText,
+        translatedText,
+        request.context.targetLanguage,
+      )
+      batch.blocks.push(block)
+    }
+    if (translatedById.size !== batch.blocks.length) {
+      throw new Error('Comic text translation output contains an unknown block')
+    }
+    ComicVisualTranslationContract.validateTranslationBatch(request.document, batch)
+
+    const result: ComicTextTranslationResult = new ComicTextTranslationResult()
+    result.batch = batch
+    result.pageSummary = ComicResponsesTextTranslationProtocol.boundedString(
+      raw.pageSummary,
+      'page summary',
+      MAX_COMIC_TEXT_TRANSLATION_SUMMARY_CHARS,
+    )
+    return result
+  }
+
+  private static payloadLines(request: ComicTextTranslationRequest): string[] {
+    const lines: string[] = []
+    lines.push('Identity fields must be copied exactly:')
+    lines.push('projectId=' + JSON.stringify(request.source.projectId))
+    lines.push('pageIndex=' + request.source.pageIndex)
+    lines.push('sourceImageHash=' + JSON.stringify(request.source.imageHash))
+    lines.push('sourceLanguage=' + JSON.stringify(request.context.sourceLanguage))
+    lines.push('targetLanguage=' + JSON.stringify(request.context.targetLanguage))
+    lines.push('Detected text regions in reading order:')
+    for (let index: number = 0; index < request.document.blocks.length; index++) {
+      const source = request.document.blocks[index]
+      const block: ComicTextPromptBlock = new ComicTextPromptBlock()
+      block.blockId = source.blockId
+      block.readingOrder = source.readingOrder
+      block.kind = source.kind
+      block.sourceText = source.sourceText
+      block.normalizedSourceText = source.normalizedSourceText
+      block.speakerId = source.speakerId
+      block.styleHint = source.styleHint
+      for (let pointIndex: number = 0; pointIndex < source.polygon.length; pointIndex++) {
+        block.polygon.push([source.polygon[pointIndex].x, source.polygon[pointIndex].y])
+      }
+      lines.push('- ' + JSON.stringify(block))
+    }
+    const contextLines: string[] = ComicResponsesProtocol.contextLines(
+      request.context,
+      request.source.pageIndex,
+    )
+    for (let index: number = 0; index < contextLines.length; index++) {
+      lines.push(contextLines[index])
+    }
+    return lines
+  }
+
+  private static validateProviderIdentity(
+    sourceProfileId: string,
+    sourceRevision: number,
+    modelId: string,
+    promptVersion: string,
+  ): void {
+    ComicResponsesTextTranslationProtocol.exactRequiredString(
+      sourceProfileId,
+      'source profile id',
+      MAX_COMIC_TEXT_TRANSLATION_IDENTIFIER_CHARS,
+    )
+    ComicResponsesTextTranslationProtocol.exactRequiredString(
+      modelId,
+      'model id',
+      MAX_COMIC_TEXT_TRANSLATION_IDENTIFIER_CHARS,
+    )
+    ComicResponsesTextTranslationProtocol.exactRequiredString(
+      promptVersion,
+      'prompt version',
+      MAX_COMIC_TEXT_TRANSLATION_IDENTIFIER_CHARS,
+    )
+    if (!Number.isFinite(sourceRevision) || sourceRevision <= 0 ||
+      Math.floor(sourceRevision) !== sourceRevision) {
+      throw new Error('Comic text translation source revision is invalid')
+    }
+  }
+
+  static validateInputMode(inputMode: string): void {
+    if (inputMode !== COMIC_TEXT_TRANSLATION_INPUT_MULTIMODAL &&
+      inputMode !== COMIC_TEXT_TRANSLATION_INPUT_TEXT_ONLY) {
+      throw new Error('Comic text translation input mode is invalid')
+    }
+  }
+
+  private static filteredTranslation(
+    kind: ComicTextKind,
+    sourceText: string,
+    translatedText: string,
+    targetLanguage: string,
+  ): string {
+    if (kind === ComicTextKind.SFX) {
+      return sourceText
+    }
+    const language: string = targetLanguage.trim().toLowerCase()
+    if (!(language === 'zh' || language.startsWith('zh-'))) {
+      return translatedText
+    }
+    const filtered: string =
+      ComicResponsesTextTranslationProtocol.stripChineseVocalizations(translatedText).trim()
+    // A provider output that consists only of translated vocalizations is not useful reading
+    // text. Returning the exact source makes the renderer preserve the artwork through its
+    // existing identity fence instead of drawing an empty or invented cue.
+    return filtered.length > 0 ? filtered : sourceText
+  }
+
+  private static stripChineseVocalizations(value: string): string {
+    const vocalizationCharacters: string = '嗯呼哼啊哈唔呜哦噢呀嘶嘿喘'
+    const boundaries: string =
+      ' \t\r\n「」『』（）()【】[]♡♥❤☆★♪…⋯!！?？~～、，,。；;：:'
+    let output: string = ''
+    let index: number = 0
+    while (index < value.length) {
+      if (vocalizationCharacters.indexOf(value[index]) < 0) {
+        output += value[index]
+        index++
+        continue
+      }
+      let end: number = index + 1
+      while (end < value.length &&
+        vocalizationCharacters.indexOf(value[end]) >= 0) {
+        end++
+      }
+      const previousIsBoundary: boolean =
+        index <= 0 || boundaries.indexOf(value[index - 1]) >= 0
+      const nextIsBoundary: boolean =
+        end >= value.length || boundaries.indexOf(value[end]) >= 0
+      const runLength: number = end - index
+      const removable: boolean =
+        (runLength >= 2 && (previousIsBoundary || nextIsBoundary)) ||
+          (runLength === 1 && previousIsBoundary && nextIsBoundary)
+      if (!removable) {
+        output += value.slice(index, end)
+        index = end
+        continue
+      }
+      // Consume only decoration immediately following the removed cue. Punctuation before a
+      // cue belongs to the semantic sentence and remains intact.
+      while (end < value.length &&
+        ' \t\r\n♡♥❤☆★♪…⋯~～'.indexOf(value[end]) >= 0) {
+        end++
+      }
+      index = end
+    }
+    return output
+      .replace(/「[\s♡♥❤☆★♪…⋯!！?？~～、，,。]*」/g, '')
+      .replace(/『[\s♡♥❤☆★♪…⋯!！?？~～、，,。]*』/g, '')
+  }
+
+  private static exactRequiredString(value: string, field: string, maxChars: number): string {
+    const normalized: string = ComicResponsesTextTranslationProtocol.requiredString(
+      value,
+      field,
+      maxChars,
+    )
+    if (normalized !== value) {
+      throw new Error('Comic text translation ' + field + ' must not contain outer whitespace')
+    }
+    return normalized
+  }
+
+  private static requiredString(value: string, field: string, maxChars: number): string {
+    if (typeof value !== 'string') {
+      throw new Error('Comic text translation ' + field + ' must be a string')
+    }
+    const normalized: string = value.trim()
+    if (normalized.length <= 0 || value.length > maxChars) {
+      throw new Error('Comic text translation ' + field + ' is invalid')
+    }
+    return normalized
+  }
+
+  private static boundedString(value: string, field: string, maxChars: number): string {
+    if (value === undefined || value === null) {
+      return ''
+    }
+    if (typeof value !== 'string' || value.length > maxChars) {
+      throw new Error('Comic text translation ' + field + ' is invalid')
+    }
+    return value.trim()
+  }
+}
