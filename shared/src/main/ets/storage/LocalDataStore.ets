@@ -7,7 +7,7 @@ const STORE_CONFIG: relationalStore.StoreConfig = {
   autoCleanDirtyData: true,
 }
 
-const SCHEMA_VERSION: number = 15
+const SCHEMA_VERSION: number = 16
 const SQL_CREATE_READING_HISTORY: string =
   'CREATE TABLE IF NOT EXISTS reading_history (' +
   'gallery_id INTEGER PRIMARY KEY, ' +
@@ -118,6 +118,24 @@ const SQL_CREATE_CATALOG_PREFERENCES: string =
   'CREATE TABLE IF NOT EXISTS catalog_preferences (' +
   'key TEXT PRIMARY KEY NOT NULL, ' +
   'value TEXT NOT NULL)'
+// Generated comic-analysis documents are app-private cache records. They are
+// deliberately separate from rendered image artifacts so a corrupt document
+// can be discarded without touching a rendered Reader page.
+const SQL_CREATE_COMIC_TRANSLATION_DOCUMENT_CACHE: string =
+  'CREATE TABLE IF NOT EXISTS comic_translation_document_cache (' +
+  'cache_key TEXT PRIMARY KEY NOT NULL, ' +
+  'scope_key TEXT NOT NULL, ' +
+  'project_id TEXT NOT NULL, ' +
+  'page_index INTEGER NOT NULL, ' +
+  'payload TEXT NOT NULL, ' +
+  'cached_at INTEGER NOT NULL, ' +
+  'accessed_at INTEGER NOT NULL)'
+const SQL_CREATE_COMIC_TRANSLATION_DOCUMENT_CACHE_SCOPE_ORDER: string =
+  'CREATE INDEX IF NOT EXISTS idx_comic_translation_document_cache_scope ' +
+  'ON comic_translation_document_cache (scope_key, page_index DESC, accessed_at DESC)'
+const SQL_CREATE_COMIC_TRANSLATION_DOCUMENT_CACHE_ACCESS_ORDER: string =
+  'CREATE INDEX IF NOT EXISTS idx_comic_translation_document_cache_access ' +
+  'ON comic_translation_document_cache (accessed_at DESC)'
 
 /**
  * Owns the small on-device schema shared by anonymous local capabilities.
@@ -182,6 +200,9 @@ export class LocalDataStore {
       await store.executeSql(SQL_CREATE_CONTENT_FILTER_RULES_ORDER)
       await store.executeSql(SQL_CREATE_BROWSE_PRESENTATION_SETTINGS)
       await store.executeSql(SQL_CREATE_CATALOG_PREFERENCES)
+      await store.executeSql(SQL_CREATE_COMIC_TRANSLATION_DOCUMENT_CACHE)
+      await store.executeSql(SQL_CREATE_COMIC_TRANSLATION_DOCUMENT_CACHE_SCOPE_ORDER)
+      await store.executeSql(SQL_CREATE_COMIC_TRANSLATION_DOCUMENT_CACHE_ACCESS_ORDER)
       await LocalDataStore.ensureReadingHistoryProgressColumn(store)
       await LocalDataStore.ensureAccountVerificationReasonColumn(store)
       if (existingVersion < SCHEMA_VERSION) {

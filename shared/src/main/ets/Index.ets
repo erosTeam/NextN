@@ -105,6 +105,10 @@ export {
   ComicTranslationRepository,
   InMemoryComicTranslationRepository,
 } from './services/ComicTranslationRepository'
+export {
+  ComicTranslationDocumentCodec,
+  RdbComicTranslationRepository,
+} from './services/ComicTranslationPersistentRepository'
 export { ResponsesTextProtocol } from './services/ResponsesTextProtocol'
 export { ComicResponsesProtocol } from './services/ComicResponsesProtocol'
 export { ComicResponsesImagePayload } from './services/ComicResponsesImagePayload'

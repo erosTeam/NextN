@@ -24,8 +24,8 @@ import {
 import { ComicTextTranslatorFactory } from './ComicResponsesTextTranslator'
 import {
   ComicTranslationRepository,
-  InMemoryComicTranslationRepository,
 } from './ComicTranslationRepository'
+import { RdbComicTranslationRepository } from './ComicTranslationPersistentRepository'
 import {
   ComicRegionRenderBackend,
   ComicTextTranslator,
@@ -110,14 +110,14 @@ export class ComicTranslationRuntimeService {
     )
     ComicTranslationRuntimeService.orchestrators.clear()
     await Promise.all([
-      ComicTranslationRuntimeService.documentRepositoryFor().clear(),
+      ComicTranslationRuntimeService.documentRepositoryFor(context).clear(),
       ComicTranslationRuntimeService.renderedRepositoryFor(context).clear(),
     ])
   }
 
   static async statGeneratedCache(context: common.UIAbilityContext): Promise<CacheStat> {
     const stats: CacheStat[] = await Promise.all([
-      ComicTranslationRuntimeService.documentRepositoryFor().stat(),
+      ComicTranslationRuntimeService.documentRepositoryFor(context).stat(),
       ComicTranslationRuntimeService.renderedRepositoryFor(context).stat(),
     ])
     const result: CacheStat = new CacheStat()
@@ -153,7 +153,7 @@ export class ComicTranslationRuntimeService {
     const created: ComicVisualTranslationOrchestrator = new ComicVisualTranslationOrchestrator(
       backend,
       translator,
-      ComicTranslationRuntimeService.documentRepositoryFor(),
+      ComicTranslationRuntimeService.documentRepositoryFor(context),
       ComicTranslationRuntimeService.renderedRepositoryFor(context),
     )
     ComicTranslationRuntimeService.orchestrators.set(runtimeKey, created)
@@ -203,13 +203,13 @@ export class ComicTranslationRuntimeService {
     )
   }
 
-  private static documentRepositoryFor(): ComicTranslationRepository {
+  private static documentRepositoryFor(context: common.UIAbilityContext): ComicTranslationRepository {
     const existing: ComicTranslationRepository | null =
       ComicTranslationRuntimeService.documentRepository
     if (existing !== null) {
       return existing
     }
-    const created: ComicTranslationRepository = new InMemoryComicTranslationRepository()
+    const created: ComicTranslationRepository = new RdbComicTranslationRepository(context)
     ComicTranslationRuntimeService.documentRepository = created
     return created
   }
