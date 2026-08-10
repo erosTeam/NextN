@@ -28,6 +28,7 @@
 | Downloads 完成任务导出后取消 | **EVIDENCE-ONLY** | 已观察到系统 Share UI 前台后取消，任务仍为 Complete；不扩展为目标应用投递或其他任务状态的结论。 | 出现真实下载/暂停状态，或导出源码/Share 边界被改动。 |
 | Settings 根入口 | **EVIDENCE-ONLY** | 已观察到根行文案修正；此前参考捕获窗口状态不一致，不能比较。 | 取得不改变数据/偏好的同状态、同视口参考条件；否则不重复捕获。 |
 | Settings 根页普通重入（生命周期） | **FROZEN SOURCE ASSESSMENT** | 当前 `aboutToAppear` 只同步已发布的登录态并读取本地 Profile 快照；没有 loading 状态、行清空、网络请求或第二次会话恢复。该结论不是设备视觉验收。 | `SettingsPage` 根页生命周期、`NhAccountProfileService.restore` 的可见状态语义发生修改，或真实设备出现根页清空/刷新反证。 |
+| Settings Layout 普通重入（生命周期） | **EVIDENCE-ONLY** | 启动期已恢复 Theme/Language/Material/Browse presentation/Home tab/Cover background/Gallery title/Read style/Tablet layout；Layout 的 `aboutToAppear` 仍会重复读取同一组本地偏好。当前未观察到 loading、行清空或错误状态，不能据源码把重复 I/O 宣称为可见缺陷，也不得再重复检查。 | 真实设备出现 Layout 内容清空、加载或错误反证；或该出现期/启动期恢复路径发生改动。 |
 | Content Filters 普通重入（生命周期） | **FROZEN** | 首次和返回后二次进入均保留原生内容，无 loading/error；已恢复规则不再重复读取 RDB。 | `ContentFiltersPage` / `ContentFilterService` 的出现期状态语义改变，用户反馈该路径，或真实设备出现加载/清空反证。 |
 | History 根页 | **EVIDENCE-ONLY** | 已观察到简单列表树；缺同一批本地记录的参考状态。 | 自然具备同状态参考条件，或用户给出新的根页反馈。 |
 | Detail Related rail | **OPEN** | 保持真实 related 数据能力与“封面 + 标题”叶；不得从 rail 规则推导缩窄标题、压低卡片或改动 Preview/Comments。 | 用户针对 Related 的新具体反馈，或获得同状态的有效参考/设备反证。 |
