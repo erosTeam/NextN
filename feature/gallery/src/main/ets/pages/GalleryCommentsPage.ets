@@ -17,16 +17,11 @@ import {
   connectContentFilters,
   connectLayoutSafeArea,
 } from 'shared'
-import { KeyboardAvoidMode, uiMaterial } from '@kit.ArkUI'
-import { deviceInfo } from '@kit.BasicServicesKit'
+import { KeyboardAvoidMode } from '@kit.ArkUI'
 
-const COMMENT_COMPOSER_BOTTOM_RESERVE: number = 136
 const COMMENT_COMPOSER_FIELD_ID: string = 'nextn-gallery-comments-composer-field'
-const COMMENT_COMPOSER_OUTER_GAP: number = ThemeTokens.SPACE_SM
 const COMMENT_COMPOSER_INNER_GAP: number = ThemeTokens.SPACE_XS
 const COMMENT_COMPOSER_SEND_SIZE: number = 36
-const COMMENT_COMPOSER_RADIUS: number =
-  COMMENT_COMPOSER_SEND_SIZE / 2 + COMMENT_COMPOSER_INNER_GAP
 const COMMENT_COMPOSER_INPUT_MAX_H: number = 148
 // A 24vp comment-card corner needs more than the generic 12vp card inset so
 // the author and first body line do not visually enter its rounded shoulder.
@@ -252,9 +247,9 @@ export struct GalleryCommentsPage {
 
   private composerBottomPadding(): number {
     if (this.layoutSafeArea.keyboardHeight > 0) {
-      return COMMENT_COMPOSER_OUTER_GAP
+      return 0
     }
-    return this.layoutSafeArea.bottomAvoidHeight + COMMENT_COMPOSER_OUTER_GAP
+    return this.layoutSafeArea.bottomAvoidHeight
   }
 
   @Builder
@@ -294,61 +289,19 @@ export struct GalleryCommentsPage {
     .width('100%')
   }
 
-  private composerSystemMaterial() {
-    if (deviceInfo.apiAvailable('26.0.0')) {
-      return new uiMaterial.ImmersiveMaterial({
-        style: uiMaterial.ImmersiveStyle.THICK,
-        colorInvert: true,
-        applyShadow: true,
-        interactive: true,
-      })
-    }
-    return undefined
-  }
-
-  @Builder
-  private CommentComposerSurface() {
-    if (deviceInfo.apiAvailable('26.0.0')) {
-      Column() {
-        this.CommentComposerFields()
-      }
-      .width('100%')
-      .padding({
-        left: COMMENT_COMPOSER_INNER_GAP,
-        right: COMMENT_COMPOSER_INNER_GAP,
-        top: COMMENT_COMPOSER_INNER_GAP,
-        bottom: COMMENT_COMPOSER_INNER_GAP,
-      })
-      .backgroundColor(Color.Transparent)
-      .systemMaterial(this.composerSystemMaterial())
-      .borderRadius(COMMENT_COMPOSER_RADIUS)
-    } else {
-      Column() {
-        this.CommentComposerFields()
-      }
-      .width('100%')
-      .padding({
-        left: COMMENT_COMPOSER_INNER_GAP,
-        right: COMMENT_COMPOSER_INNER_GAP,
-        top: COMMENT_COMPOSER_INNER_GAP,
-        bottom: COMMENT_COMPOSER_INNER_GAP,
-      })
-      .backgroundColor(ThemeTokens.CARD_BACKGROUND)
-      .borderRadius(COMMENT_COMPOSER_RADIUS)
-    }
-  }
-
   @Builder
   private CommentComposer() {
     Column() {
-      this.CommentComposerSurface()
+      this.CommentComposerFields()
     }
     .width('100%')
     .padding({
-      left: COMMENT_COMPOSER_OUTER_GAP,
-      right: COMMENT_COMPOSER_OUTER_GAP,
+      left: ThemeTokens.SPACE_LG,
+      right: ThemeTokens.SPACE_MD,
+      top: ThemeTokens.SPACE_SM,
       bottom: this.composerBottomPadding(),
     })
+    .backgroundColor(ThemeTokens.CARD_BACKGROUND)
   }
 
   @Builder
@@ -436,20 +389,22 @@ export struct GalleryCommentsPage {
             : AppStrings.get('comments_status_empty'),
         })
       } else {
-        Stack({ alignContent: Alignment.Bottom }) {
-          PullRefreshListScaffold({
-            scroller: this.scroller,
-            listSpace: ThemeTokens.SPACE_SM,
-            bottomPadding: this.composerAvailable()
-              ? COMMENT_COMPOSER_BOTTOM_RESERVE
-              : ThemeTokens.LIST_BOTTOM_PADDING,
-            controller: this.refreshController,
-            onRefresh: async (): Promise<void> => {
-              await this.loadComments()
-            },
-          }) {
-            this.LoadedCommentsContent()
+        Column() {
+          Column() {
+            PullRefreshListScaffold({
+              scroller: this.scroller,
+              listSpace: ThemeTokens.SPACE_SM,
+              bottomPadding: ThemeTokens.LIST_BOTTOM_PADDING,
+              controller: this.refreshController,
+              onRefresh: async (): Promise<void> => {
+                await this.loadComments()
+              },
+            }) {
+              this.LoadedCommentsContent()
+            }
           }
+          .width('100%')
+          .layoutWeight(1)
           if (this.composerAvailable()) {
             this.CommentComposer()
           }
