@@ -31,6 +31,20 @@ remains continuous; do not ask for it again.
   `docs/postmortems/2026-08-10-account-persistence-p0.md`. This queue remains
   OPEN until the user explicitly requests closure.
 
+## Current P0 state — fresh Favorites failure observed
+
+- After the latest signed Debug HAP was installed with `install -r` and NextN
+  was launched on the selected TCP device, native Favorites displayed its
+  session-recheck error state. This is current evidence that the account is
+  unusable; it supersedes neither the historic successful proof nor the need
+  for a new causal diagnosis.
+- No app data was cleared, no uninstall occurred, and no credential field or
+  visible login control was touched in this observation. The bounded local
+  screenshot is retained outside source control.
+- Next physical action: collect the current native Account safe summary. Do
+  not open a login form or enter credentials until the paired S0 outcome and
+  the named diagnostic branch establish the permitted recovery action.
+
 ## Active delivery P1 — Gallery Detail / Comments
 
 - The Detail-owned comments response is now passed into the full Comments

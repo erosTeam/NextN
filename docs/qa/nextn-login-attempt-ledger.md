@@ -312,3 +312,20 @@ substitute for measured login-cycle elapsed time.
 - conclusion: not-a-relogin-attempt. No credential was read, entered, cleared,
   or submitted; record-present S6 verification remains pending a future
   authorized epoch with the fixed Keychain handles available.
+
+## Current P0 S0 observation — 2026-08-10
+
+- trigger: after the latest signed Debug `install -r` and ordinary application
+  launch, native Favorites displayed a session-recheck error. This was not a
+  force-stop/cold-start timing boundary, so no loss-to-promotion timer is
+  invented from it.
+- S0 Account: pending current safe observation.
+- S0 Favorites: native session-recheck error; no visible Web observed.
+- restore/401 diagnostic: pending paired S0 and named diagnostic branch.
+- install/data boundary: install-r=true; data-clear=false; uninstall=false.
+- login-page navigation: not-entered.
+- account input: not-entered.
+- password input: not-entered.
+- submit: not-issued.
+- conclusion: not-a-relogin-attempt. Account-persistence P0 is active; the
+  next action is the current native Account safe observation.
