@@ -581,6 +581,16 @@ remains continuous; do not ask for it again.
   progress state. No page, preference, account, or content mutation occurred.
   This verifies only the Reader-to-Detail ordinary-return boundary; it does
   not generalize to other route types or cold starts.
+- 2026-08-10 19:20 +0800: after the selected TCP target reconnected and the
+  wake/timeout gate read back AWAKE with the 24-hour override, the existing
+  direct Gallery `471768` Comments route reached a native loaded comment list
+  in the retained terminal screenshot: comment cards plus the fixed
+  page-footer composer, with no Web component, loading placeholder, error
+  surface, or sign-in prompt. No text was entered, no comment mutation,
+  account action, or preference change occurred. The raw layout and
+  screenshot are retained only in the named local audit directory outside
+  Git. This is a current-device route observation, not a same-state
+  reference-parity claim.
 - Raw screenshots and layouts retained for an active route or visual decision
   stay in their named local audit directory; they are never added to Git or
   deleted automatically.
