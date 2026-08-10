@@ -35,6 +35,16 @@
 - 当前设备观察：已使用现成协作租约工具，仅在 `192.168.50.237:12345` 上 `install -r` 当前签名 Debug HAP。Downloads 完成态的实际 HDS 标题栏保留两个可用动作，未再出现禁用的 Pause/Resume 叶子。原始截图与原生布局保留在本地 `.hvigor/outputs/nextn-download-menu-20260810T1329+0800/`，未加入 Git。
 - 未完成验证：尚未取得同状态、同视口的 NextE 画面对照，也没有在“存在可暂停或恢复任务”的真实状态下验证条件叶子重新出现；因此不得将此记录称为完整视觉参考验收。
 
+## 计划中：Downloads 失败 bootstrap 的普通重入
+
+- 触发依据：用户已明确指出普通页面切换不应自动重新加载。当前 `DownloadQueuePage.ensureQueueForAppearance()` 在 `queueBootstrapResolved=false` 时无条件调用 `bootstrapQueue()`；而失败 catch 会持续保留该 false 值，因此一次失败后的隐藏/显示会重复 durable restore。NextE 的 `DownloadQueuePage.aboutToAppear()` 只重建本地 projection，不发起 restore（`NextE/feature/download/src/main/ets/pages/DownloadQueuePage.ets:121-125`）。
+- 父树边界：仅 `Root Downloads tab -> DownloadQueuePage` 的出现生命周期与既有错误重试入口。HDS 标题、pinned header、队列 ListItemGroup、任务卡、搜索/排序、导出和队列服务均不改。
+- 精确改动：在现有 `resolved/inFlight/generation` 三个 bootstrap 字段之外增加“本页已尝试 bootstrap”状态。普通 `aboutToAppear` 只在从未尝试时启动 restore；失败后保持错误状态。用户显式 Error Retry 仍调用既有 `bootstrapQueue()`，允许一次新的 durable restore 尝试。
+- 最小性理由：不改变 `DownloadQueueService.restore`、存储、任务状态或成功后的 projection；只移除普通重入对失败恢复的隐式重试。
+- 验证计划：签名构建后，在不清数据的真实设备上制造不了的 queue restore 失败不予伪造；须等待真实失败状态，再验证 Browse→Downloads 普通返回不触发 loading/restore，而 Error Retry 才重试。构建或源码检查不构成该行为验收。
+- 未决风险：当前设备有可用队列，不能安全地人为破坏持久化来覆盖失败支路；该边界在真实失败发生前保持未验收。
+- 构建证据：2026-08-10 签名 Debug 构建成功；尚未安装这一生命周期改动，避免把当前可用队列人为置入失败路径。
+
 ### 6b816a2 — Detail 与 Comments 初始重组（未验收）
 
 - 改动：引入 Detail 的 Related/评论预览 rail 与全评论页的局部布局重组。

@@ -166,6 +166,8 @@ export struct DownloadQueuePage {
    */
   private queueBootstrapResolved: boolean = false
   private queueBootstrapInFlight: boolean = false
+  /** A failed first restore stays visible until the user explicitly retries it. */
+  private queueBootstrapAttempted: boolean = false
   private queueBootstrapGeneration: number = 0
   /** Last queue publication projected into this page-local search/sort view. */
   private resolvedQueueRevision: number = -1
@@ -201,8 +203,11 @@ export struct DownloadQueuePage {
   }
 
   private ensureQueueForAppearance(): void {
-    if (!this.queueBootstrapResolved) {
+    if (!this.queueBootstrapAttempted) {
       this.bootstrapQueue()
+      return
+    }
+    if (!this.queueBootstrapResolved) {
       return
     }
     this.reconcileQueueProjection()
@@ -272,6 +277,7 @@ export struct DownloadQueuePage {
     }
     const generation: number = this.queueBootstrapGeneration + 1
     this.queueBootstrapGeneration = generation
+    this.queueBootstrapAttempted = true
     this.queueBootstrapInFlight = true
     this.isLoading = this.tasks.length === 0
     this.errorMessage = ''
