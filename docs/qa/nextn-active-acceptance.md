@@ -591,6 +591,13 @@ remains continuous; do not ask for it again.
   screenshot are retained only in the named local audit directory outside
   Git. This is a current-device route observation, not a same-state
   reference-parity claim.
+- 2026-08-10 19:22 +0800: the fresh Comments capture was compared with the
+  retained same-device loaded reference captures from the earlier comparison
+  session. The NextN captures show the same native loaded comment list and
+  fixed page-footer composer. NextE's in-page count header and floating
+  composer remain the already user-corrected, frozen differences; no new
+  source-proven parent-tree or geometry defect was found in this comparison,
+  so no visible UI edit was made in this lane.
 - Raw screenshots and layouts retained for an active route or visual decision
   stay in their named local audit directory; they are never added to Git or
   deleted automatically.
