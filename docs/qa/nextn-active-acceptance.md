@@ -669,6 +669,7 @@ remains continuous; do not ask for it again.
 - 该执行链已拒绝；不得用 Browse 滚动、旧坐标或重复截图伪造到达。下一步是仅修复冷启动请求发布顺序，构建并对同一 Want 做一次新的干净终态观察。
 - 2026-08-11：该发布时序修复已签名构建并以 `install -r` 覆盖，未清数据；对同一 Want 的一次强制停止后冷启动终态为 NextN 原生 Comments `NavDestination`，有加载完成的评论 List 和固定编辑器。未输入、发送、修改账户、偏好或内容数据。本地终态截图和 layout 保留在 `.hvigor/outputs/nextn-comments-direct-route-Pa5X9P/`，不进入 Git。该结果仅接受这条冷启动路由，不是 Comments 视觉验收。
 - 2026-08-11：为取得同状态参考而前台化已安装 NextE；其当前终态是横向分屏的 Settings 根页，NextN 则是竖向的 Comments，故该参考截图已拒绝且不用于任何页面判断或改码。随后通过既有语义 Want 把设备返回原生 NextN Comments；未发生数据写入。两份本地证据均保留在审计目录，不进入 Git。
+- 2026-08-11：参考直达能力已按源码复核。NextE 仅接受含 EH `gid/token` 的 gallery URL 才能进入 Comments；当前 NextN 的数值 gallery Want 不能生成该 token。已安装 ErosN 虽有同 NH id 的内部路由，但 Harmony URI 入口不存在，唯一同 id 的 clipboard detector 处于禁用状态。未读取用户数据、未启用 detector 或修改系统剪贴板。故 P1 的下一步仍是取得一个不改变参考数据的同状态、同视口捕获；在此之前不据源码或不可比截图改动 Comments UI。
 
 The earlier P0 cycle is retained above as historical evidence. It is not the
 current execution lane because no fresh current S0 observation has proved the
