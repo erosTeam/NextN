@@ -141,9 +141,21 @@ remains continuous; do not ask for it again.
   placeholder. No Reader preference, account, download, or comment mutation
   was made; retained local artifacts are excluded from Git. This is a current
   path observation, not a same-viewport visual reference acceptance.
+- 2026-08-10: an installed NextE public Gallery Comments route and NextN's
+  designated native Comments route were captured on the same selected device
+  viewport in loaded states. No text, comment mutation, account action, or
+  preference was performed. The NextE page exposes an in-page count header
+  and a floating composer, while the current NextN page intentionally has no
+  duplicate count header and keeps its composer in the fixed page footer.
+  Those NextN differences are already user-corrected/frozen boundaries, so
+  this observation authorizes no automatic reversion or UI edit. The retained
+  local artifacts are
+  `.hvigor/outputs/nexte-comments-reference-20260810T1433+0800/` and
+  `.hvigor/outputs/nextn-comments-reference-compare-20260810T1433+0800/`;
+  neither is in Git.
 - Next physical action: continue the Gallery Detail / Comments reference
-  review from a real same-state capture, then make only the next proven
-  parent-tree or geometry correction as a separate commit.
+  review only on new same-state counter-evidence or explicit user feedback;
+  do not change the frozen title/composer boundaries merely to match NextE.
 
 ## Completed physical evidence
 
