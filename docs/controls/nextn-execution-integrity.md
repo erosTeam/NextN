@@ -140,9 +140,14 @@ the project ledger without changing its completion status.
   causal transition. Revert or remove a speculative change once it is shown
   to be unsupported.
 
-## 8. Current objective — account persistence P0
+## 8. Conditional preemption — account persistence P0
 
-Account-persistence P0 is **OPEN and active**. Its completion requires both:
+Account-persistence P0 is **OPEN whenever current native Account or Favorites
+evidence proves that the session is absent or unusable**. It preempts every
+other lane immediately at that point; an older no-record observation, a past
+build result, or an account concern without current S0 evidence does not by
+itself stop the active delivery lane. Once triggered, its completion requires
+both:
 
 1. real-device proof on `192.168.50.237:12345`, without clearing data, that a
    completed login survives force-stop/cold start, native account remains
@@ -154,7 +159,8 @@ Account-persistence P0 is **OPEN and active**. Its completion requires both:
    recurrence.
 
 Neither a source patch, build, no-record observation, nor a new login used to
-mask an unresolved regression satisfies either condition. Do not close,
-archive, pause, or switch this objective before both conditions are met or the
-user explicitly stops it. The original device/login authorization remains
-continuous; do not request a new authorization to continue the recorded path.
+mask an unresolved regression satisfies either condition. Once P0 is
+triggered, do not close, archive, pause, or switch it before both conditions
+are met or the user explicitly stops it. The original device/login
+authorization remains continuous; do not request a new authorization to
+continue the recorded path.
