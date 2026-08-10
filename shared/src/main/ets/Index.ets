@@ -90,6 +90,29 @@ export { LlmSourceSecretVault } from './services/LlmSourceSecretVault'
 export { LlmSourceRuntimeConfig, LlmSourceRuntimeResolver } from './services/LlmSourceRuntimeResolver'
 export { ComicTranslationDiagnosticLogger } from './services/ComicTranslationDiagnosticLogger'
 export {
+  MAX_COMIC_PREVIOUS_PAGE_CONTEXT,
+  ComicPreviousPageContextPolicy,
+} from './services/ComicPreviousPageContextPolicy'
+export { ComicTranslationReviewService } from './services/ComicTranslationReviewService'
+export { ComicTranslationMemoryService } from './services/ComicTranslationMemoryService'
+export {
+  COMIC_TRANSLATION_CONSISTENCY_SIGNAL_CODE,
+  ComicTranslationConsistencyService,
+} from './services/ComicTranslationConsistencyService'
+export { ComicTranslationContextService } from './services/ComicTranslationContextService'
+export {
+  ComicTranslationRequestIdentity,
+  ComicTranslationRepository,
+  InMemoryComicTranslationRepository,
+} from './services/ComicTranslationRepository'
+export { ResponsesTextProtocol } from './services/ResponsesTextProtocol'
+export { ComicResponsesProtocol } from './services/ComicResponsesProtocol'
+export {
+  ComicVisualTranslationRequest,
+  ComicVisualTranslationRunResult,
+  ComicVisualTranslationOrchestrator,
+} from './services/ComicVisualTranslationOrchestrator'
+export {
   ComicLocalVisualAnalysisRecording,
   ComicLocalVisualAnalysisTimings,
   ComicLocalVisualGroupingStages,
