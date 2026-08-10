@@ -26,7 +26,7 @@
 | Detail 浮动 Read | **FROZEN RULE** | 中途遮挡内容是浮动语义；只判断尾项能否滚到其上方。 | 用户要求改变浮动交互，或尾项实际不可达的同状态证据。 |
 | Reader 已观察路径 | **EVIDENCE-ONLY** | 已有本地 Reader 进入、双页、缩略图、设置与返回的设备观察；这些不能拼成完整视觉验收，也不授权再跑同一 Reader 路径。 | Reader 可见源码改动、用户针对 Reader 的新明确反馈，或取得同状态同视口的有效参考条件。 |
 | Downloads 完成任务导出后取消 | **EVIDENCE-ONLY** | 已观察到系统 Share UI 前台后取消，任务仍为 Complete；不扩展为目标应用投递或其他任务状态的结论。 | 出现真实下载/暂停状态，或导出源码/Share 边界被改动。 |
-| Settings 根入口 | **EVIDENCE-ONLY** | 已观察到根行文案修正；此前参考捕获窗口状态不一致，不能比较。 | 取得不改变数据/偏好的同状态、同视口参考条件；否则不重复捕获。 |
+| Settings 根入口 | **FROZEN（当前主视口）** | 2026-08-11 同设备、同语言、1320×2120 纵向根页对照后，“界面／阅读”已与参考同级命名一致；其余能力差异不据此改动。 | 该根树有新可见改动、用户就它提出新反馈，或出现同状态反证。 |
 | Settings 根页普通重入（生命周期） | **FROZEN SOURCE ASSESSMENT** | 当前 `aboutToAppear` 只同步已发布的登录态并读取本地 Profile 快照；没有 loading 状态、行清空、网络请求或第二次会话恢复。该结论不是设备视觉验收。 | `SettingsPage` 根页生命周期、`NhAccountProfileService.restore` 的可见状态语义发生修改，或真实设备出现根页清空/刷新反证。 |
 | Settings Layout 普通重入（生命周期） | **EVIDENCE-ONLY** | 启动期已恢复 Theme/Language/Material/Browse presentation/Home tab/Cover background/Gallery title/Read style/Tablet layout；Layout 的 `aboutToAppear` 仍会重复读取同一组本地偏好。当前未观察到 loading、行清空或错误状态，不能据源码把重复 I/O 宣称为可见缺陷，也不得再重复检查。 | 真实设备出现 Layout 内容清空、加载或错误反证；或该出现期/启动期恢复路径发生改动。 |
 | Content Filters 普通重入（生命周期） | **FROZEN** | 首次和返回后二次进入均保留原生内容，无 loading/error；已恢复规则不再重复读取 RDB。 | `ContentFiltersPage` / `ContentFilterService` 的出现期状态语义改变，用户反馈该路径，或真实设备出现加载/清空反证。 |
@@ -36,6 +36,35 @@
 **执行口令：** 已确认且未发生新变更的边界不再检查。一次观察只记录一次；
 后续工作只进入表中因新证据而可行动的单一边界，不能把“还有未对齐页面”
 变成对已冻结页面的重复审查。
+
+## OPEN：Settings 根入口的同级文案收敛
+
+- 触发依据：2026-08-11 在唯一选定设备的同一竖屏根窗口（NextN 与 NextE 均为
+  `1320×2120`）取得实际设置根页。两页均为“设置 → 账户卡 → 主设置组 → 浮动根 tab”。
+  其中 NextN 显示“布局／阅读器”，NextE 在相同的调色板、阅读图标入口显示“界面／阅读”。
+  这是已由当前设备画面与四语言资源共同确定的入口命名不一致。
+- 父树边界：只限 `Settings root -> RootMainSection -> Layout row / Reader row` 的标题
+  资源；滚动宿主 `SecondaryListScaffold`、账户卡、分组容器、分隔线、图标、chevron、
+  其他行、根 tab 与所有 destination 的内容树不变。
+- 精确改动：四语言的既有资源键 `settings_layout` 从 `Layout/布局/レイアウト` 收敛为
+  `Interface/界面/インターフェース`，`settings_reader` 从 `Reader/阅读器/リーダー`
+  收敛为 `Reading/阅读/閲覧`；这些键继续被原有 root row 和 destination title 共用。
+- 最小性理由：不把 NextE 的 EH、Search、History 或 Storage 行强塞入 NextN；它们分别
+  涉及不支持的域能力或已有不同功能边界。“浏览与搜索”和“缓存”保持现值。本次不动行数、
+  尺寸、上下留白或任何相邻 UI。
+- 验证计划：签名 Debug 构建并仅 `install -r` 到同一设备；回到同一 Settings 根视口一次，
+  对照本地保留的 NextE 当前截图，确认只有这两处标题更新且根树/行序未变。构建不代替该
+  视觉复核。
+- 未决风险：资源键还用于 destination 标题；更名会同步改变该两页的标题。此为参考的
+  同级 category 语义，不是页面结构变更；如新页面标题出现语义反证，单独重开该 destination，
+  不回改根页或相邻入口。
+- 当前设备观察：签名 Debug 构建后仅以 `install -r` 更新唯一选定设备。当前
+  `com.erosteam.nextn` 前台、同一 `1320×2120` 设置根页中，两个入口已显示“界面／阅读”；
+  其余可见行、行序、卡片边界、根 tab 和账户卡未改变。当前 NextE 参考与改后 NextN 截图、
+  布局和前台证据保留在本地
+  `.hvigor/outputs/nextn-settings-root-compare-20260811T0246/`，不进入 Git。
+- 冻结条件：未出现新的根页可见源码改动、用户没有针对该根页给出新反馈且没有同状态反证时，
+  禁止再次截图、源码审查、测试、验收或改动 Settings 根入口；不以“顺便确认”重跑该路径。
 
 ## FROZEN：Gallery 外部 Deep Link 直达
 
