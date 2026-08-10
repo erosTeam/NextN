@@ -17,9 +17,7 @@ const COMMENT_CARD_WIDTH: number = 240
 const COMMENT_PREVIEW_MAX_LINES: number = 2
 const COMMENT_PREVIEW_HEADER_LINE_HEIGHT: number = 18
 const COMMENT_PREVIEW_LINE_HEIGHT: number = 18
-const COMMENT_CAROUSEL_HEIGHT: number = ThemeTokens.SPACE_MD * 2 +
-  COMMENT_PREVIEW_HEADER_LINE_HEIGHT + ThemeTokens.SPACE_XS +
-  COMMENT_PREVIEW_LINE_HEIGHT * COMMENT_PREVIEW_MAX_LINES
+const COMMENT_CAROUSEL_HEIGHT: number = 120
 
 function horizontalRailViewportWidth(): string {
   return `calc(100% + ${HORIZONTAL_RAIL_EDGE_INSET * 2}vp)`
