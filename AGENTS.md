@@ -24,6 +24,10 @@ read and apply `harmony-mandatory-preflight`. It in turn requires
 `harmony-next`; device, HDC, ArkWeb, screenshot, or UI-automation work also
 requires `harmony-run-device-diagnostics`.
 
+For every device-affecting command, use `scripts/device-lease --device <full-target>`
+as documented in `docs/device-lease.md`. The lease is an agent coordination lock,
+not a device-selection default or an authorization mechanism.
+
 Keep an active multi-step objective explicit. A user question, correction, or
 status request changes the relevant detail of that objective; it never ends or
 replaces an unfinished implementation or device-acceptance path unless the
