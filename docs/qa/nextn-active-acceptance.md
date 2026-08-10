@@ -670,6 +670,7 @@ remains continuous; do not ask for it again.
 - 2026-08-11：该发布时序修复已签名构建并以 `install -r` 覆盖，未清数据；对同一 Want 的一次强制停止后冷启动终态为 NextN 原生 Comments `NavDestination`，有加载完成的评论 List 和固定编辑器。未输入、发送、修改账户、偏好或内容数据。本地终态截图和 layout 保留在 `.hvigor/outputs/nextn-comments-direct-route-Pa5X9P/`，不进入 Git。该结果仅接受这条冷启动路由，不是 Comments 视觉验收。
 - 2026-08-11：为取得同状态参考而前台化已安装 NextE；其当前终态是横向分屏的 Settings 根页，NextN 则是竖向的 Comments，故该参考截图已拒绝且不用于任何页面判断或改码。随后通过既有语义 Want 把设备返回原生 NextN Comments；未发生数据写入。两份本地证据均保留在审计目录，不进入 Git。
 - 2026-08-11：参考直达能力已按源码复核。NextE 仅接受含 EH `gid/token` 的 gallery URL 才能进入 Comments；当前 NextN 的数值 gallery Want 不能生成该 token。已安装 ErosN 虽有同 NH id 的内部路由，但 Harmony URI 入口不存在，唯一同 id 的 clipboard detector 处于禁用状态。未读取用户数据、未启用 detector 或修改系统剪贴板。故 P1 的下一步仍是取得一个不改变参考数据的同状态、同视口捕获；在此之前不据源码或不可比截图改动 Comments UI。
+- 2026-08-11：已复核一对先前保留的 NextE/NextN 原生 Comments capture，并用本轮当前 NextN Direct-route 终态重新确认了实现侧的 root bounds。两端 root 都是 `1320×2120`、portrait、非 split、已加载 Comments；可比较 chrome、外侧 gutter、独立圆角 CommentRow 与 composer 顶缘。NextE 的一条评论与 NextN 的多条评论不是相同内容密度，故不以这对图推导字号或卡片高度。可见的 NextN 差异——移除重复的页内“评论（数量）”标题，以及固定页脚而非浮动 composer——均为已记录的用户冻结边界；EH 的翻译/投票叶没有 NH 数据能力，未伪造。审查没有产生新的安全可见改动。
 
 The earlier P0 cycle is retained above as historical evidence. It is not the
 current execution lane because no fresh current S0 observation has proved the
