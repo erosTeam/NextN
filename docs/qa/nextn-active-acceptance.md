@@ -61,6 +61,13 @@ remains continuous; do not ask for it again.
   This is current-device behavior evidence only, not a same-state reference
   visual-parity claim. No account, preference, gallery, or comment data was
   changed; the raw audit artifacts are retained locally and excluded from Git.
+- The Comments compose control was checked as a separate real-device state
+  transition. At rest, the native page exposed no editor or keyboard; one
+  existing HDS Publish action then exposed exactly one editor and the native
+  keyboard. No comment text was entered and no mutation was sent. This proves
+  the editor is no longer a permanent reading-surface overlay; it is not a
+  full Comments-page visual-reference acceptance claim. The bounded local
+  audit artifacts are retained outside source control.
 - Next physical action: continue the Gallery Detail / Comments reference
   review from a real same-state capture, then make only the next proven
   parent-tree or geometry correction as a separate commit.
