@@ -3,10 +3,10 @@ import {
   ContentFilterState,
   AppStrings,
   InlineRetryNotice,
+  LayoutSafeAreaState,
   NhApiClient,
   AccountSessionState,
   NhComment,
-  NextNModalScaffold,
   NextNPullRefreshController,
   PageEmptyState,
   PageErrorState,
@@ -15,12 +15,22 @@ import {
   ThemeTokens,
   connectAccountSession,
   connectContentFilters,
+  connectLayoutSafeArea,
 } from 'shared'
+
+const COMMENT_COMPOSER_BOTTOM_RESERVE: number = 136
+const COMMENT_COMPOSER_FIELD_ID: string = 'nextn-gallery-comments-composer-field'
+const COMMENT_COMPOSER_OUTER_GAP: number = ThemeTokens.SPACE_SM
+const COMMENT_COMPOSER_INNER_GAP: number = ThemeTokens.SPACE_XS
+const COMMENT_COMPOSER_SEND_SIZE: number = 36
+const COMMENT_COMPOSER_RADIUS: number =
+  COMMENT_COMPOSER_SEND_SIZE / 2 + COMMENT_COMPOSER_INNER_GAP
+const COMMENT_COMPOSER_INPUT_MAX_H: number = 148
 
 /**
  * A separate destination keeps comments from competing with the Gallery hero
- * and Read action. Posting remains constrained to the existing HDS modal-title
- * action; comments never gain an in-list Material-style toolbar.
+ * and Read action. The HDS compose action focuses the page-owned bottom
+ * composer; it does not open a second full-height navigation surface.
  */
 @ComponentV2
 export struct GalleryCommentsPage {
@@ -33,7 +43,6 @@ export struct GalleryCommentsPage {
   @Local loadedGalleryId: number = 0
   @Local isLoading: boolean = false
   @Local errorMessage: string = ''
-  @Local composerShown: boolean = false
   @Local commentText: string = ''
   @Local isCommentSubmitting: boolean = false
   @Local commentSubmitError: string = ''
@@ -43,6 +52,7 @@ export struct GalleryCommentsPage {
   @Param commentSnapshotAvailable: boolean = false
   @Param reloadVersion: number = 0
   @Param composeVersion: number = 0
+  private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private requestGeneration: number = 0
   private commentSubmitGeneration: number = 0
   private refreshController: NextNPullRefreshController = new NextNPullRefreshController()
@@ -76,7 +86,7 @@ export struct GalleryCommentsPage {
   @Monitor('composeVersion')
   onComposeRequested(): void {
     if (this.composeVersion > 0) {
-      this.openComposer()
+      this.requestComposerFocus()
     }
   }
 
@@ -167,7 +177,11 @@ export struct GalleryCommentsPage {
     return this.hasPublishedAccountSession() && this.commentText.trim().length > 0 && !this.isCommentSubmitting
   }
 
-  private openComposer(): void {
+  private composerAvailable(): boolean {
+    return this.hasPublishedAccountSession() && !this.isLoading && this.loadedGalleryId === this.galleryId
+  }
+
+  private requestComposerFocus(): void {
     if (this.isCommentSubmitting) {
       return
     }
@@ -175,9 +189,10 @@ export struct GalleryCommentsPage {
       this.showCommentToast(AppStrings.get('comments_error_signin_post'))
       return
     }
-    this.commentText = ''
     this.commentSubmitError = ''
-    this.composerShown = true
+    setTimeout((): void => {
+      this.getUIContext().getFocusController().requestFocus(COMMENT_COMPOSER_FIELD_ID)
+    }, 80)
   }
 
   private async submitComment(): Promise<void> {
@@ -203,7 +218,6 @@ export struct GalleryCommentsPage {
         this.loadComments()
       }
       this.commentText = ''
-      this.composerShown = false
       this.showCommentToast(AppStrings.get('comments_toast_posted'))
     } catch (_error) {
       if (generation === this.commentSubmitGeneration && galleryId === this.galleryId) {
@@ -222,56 +236,66 @@ export struct GalleryCommentsPage {
     } catch (_error) {}
   }
 
+  private composerBottomPadding(): number {
+    return this.layoutSafeArea.bottomAvoidHeight + COMMENT_COMPOSER_OUTER_GAP
+  }
+
   @Builder
-  private CommentComposerSheet() {
-    NextNModalScaffold({
-      title: AppStrings.get('comments_dialog_post_title'),
-      showConfirmAction: true,
-      confirmText: this.isCommentSubmitting
-        ? AppStrings.get('comments_action_posting')
-        : AppStrings.get('comments_action_post'),
-      confirmEnabled: this.canSubmitComment(),
-      confirmLoading: this.isCommentSubmitting,
-      onClose: (): void => {
-        if (!this.isCommentSubmitting) {
-          this.composerShown = false
-          this.commentSubmitError = ''
-        }
-      },
-      onConfirm: (): void => {
-        this.submitComment()
-      },
-    }) {
-      ListItem() {
-        Column({ space: ThemeTokens.SPACE_SM }) {
-          Text(AppStrings.get('comments_dialog_hint'))
-            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-            .fontColor(ThemeTokens.TEXT_SECONDARY)
-            .maxLines(3)
-          TextArea({ text: this.commentText, placeholder: AppStrings.get('comments_placeholder') })
-            .width('100%')
-            .minFontSize(ThemeTokens.FONT_SIZE_BODY)
-            .backgroundColor(ThemeTokens.CARD_BACKGROUND)
-            .borderRadius(ThemeTokens.RADIUS_MD)
-            .onChange((value: string): void => {
-              this.commentText = value
-              this.commentSubmitError = ''
-            })
-          if (this.commentSubmitError.length > 0) {
-            Text(this.commentSubmitError)
-              .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-              .fontColor(Color.Red)
-          }
-        }
-        .width('100%')
-        .padding({
-          left: ThemeTokens.SPACE_SM,
-          right: ThemeTokens.SPACE_SM,
-          top: ThemeTokens.SPACE_SM,
-          bottom: ThemeTokens.SPACE_SM,
-        })
+  private CommentComposerSurface() {
+    Column({ space: COMMENT_COMPOSER_INNER_GAP }) {
+      Row({ space: ThemeTokens.SPACE_SM }) {
+        TextArea({ text: this.commentText, placeholder: AppStrings.get('comments_placeholder') })
+          .id(COMMENT_COMPOSER_FIELD_ID)
+          .constraintSize({ maxHeight: COMMENT_COMPOSER_INPUT_MAX_H })
+          .maxLines(8)
+          .backgroundColor(Color.Transparent)
+          .layoutWeight(1)
+          .enabled(!this.isCommentSubmitting && this.hasPublishedAccountSession())
+          .onChange((value: string): void => {
+            this.commentText = value
+            this.commentSubmitError = ''
+          })
+        SymbolGlyph($r('sys.symbol.location_north_up_right_circle_fill'))
+          .fontSize(COMMENT_COMPOSER_SEND_SIZE)
+          .fontColor([
+            this.canSubmitComment() ? ThemeTokens.BRAND : ThemeTokens.TEXT_TERTIARY,
+          ])
+          .opacity(this.canSubmitComment() ? 1 : 0.45)
+          .onClick((): void => {
+            this.submitComment()
+          })
+      }
+      .width('100%')
+      .alignItems(VerticalAlign.Bottom)
+      if (this.commentSubmitError.length > 0) {
+        Text(this.commentSubmitError)
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontColor(Color.Red)
+          .width('100%')
       }
     }
+    .width('100%')
+    .padding({
+      left: COMMENT_COMPOSER_INNER_GAP,
+      right: COMMENT_COMPOSER_INNER_GAP,
+      top: COMMENT_COMPOSER_INNER_GAP,
+      bottom: COMMENT_COMPOSER_INNER_GAP,
+    })
+    .backgroundColor(ThemeTokens.CARD_BACKGROUND)
+    .borderRadius(COMMENT_COMPOSER_RADIUS)
+  }
+
+  @Builder
+  private CommentComposer() {
+    Column() {
+      this.CommentComposerSurface()
+    }
+    .width('100%')
+    .padding({
+      left: COMMENT_COMPOSER_OUTER_GAP,
+      right: COMMENT_COMPOSER_OUTER_GAP,
+      bottom: this.composerBottomPadding(),
+    })
   }
 
   @Builder
@@ -359,25 +383,30 @@ export struct GalleryCommentsPage {
             : AppStrings.get('comments_status_empty'),
         })
       } else {
-        PullRefreshListScaffold({
-          scroller: this.scroller,
-          listSpace: ThemeTokens.SPACE_SM,
-          bottomPadding: ThemeTokens.LIST_BOTTOM_PADDING,
-          controller: this.refreshController,
-          onRefresh: async (): Promise<void> => {
-            await this.loadComments()
-          },
-        }) {
-          this.LoadedCommentsContent()
+        Stack({ alignContent: Alignment.Bottom }) {
+          PullRefreshListScaffold({
+            scroller: this.scroller,
+            listSpace: ThemeTokens.SPACE_SM,
+            bottomPadding: this.composerAvailable()
+              ? COMMENT_COMPOSER_BOTTOM_RESERVE
+              : ThemeTokens.LIST_BOTTOM_PADDING,
+            controller: this.refreshController,
+            onRefresh: async (): Promise<void> => {
+              await this.loadComments()
+            },
+          }) {
+            this.LoadedCommentsContent()
+          }
+          if (this.composerAvailable()) {
+            this.CommentComposer()
+          }
         }
+        .width('100%')
+        .height('100%')
       }
     }
     .width('100%')
     .height('100%')
     .backgroundColor(ThemeTokens.SURFACE)
-    .bindSheet($$this.composerShown, this.CommentComposerSheet(), {
-      detents: [SheetSize.LARGE],
-      showClose: false,
-    })
   }
 }
