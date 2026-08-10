@@ -7,7 +7,9 @@ import {
 // This is deliberately separate from GalleryVirtualPageThumbnailTile: the
 // full Pages destination is a stable Grid, while the compact detail rail must
 // retain each source page's aspect at one shared rail height.
-export const GALLERY_COMPACT_PREVIEW_IMAGE_HEIGHT: number = 150
+// Keep the actual page aspect, but give Detail's compact preview enough
+// visual weight beside the adjacent cover-and-title Related rail.
+export const GALLERY_COMPACT_PREVIEW_IMAGE_HEIGHT: number = 175
 // Exact ErosN ThumbListView sanitisation: malformed or extreme source metadata
 // does not stretch the rail; normal page dimensions keep their true aspect.
 const COMPACT_PREVIEW_MIN_ASPECT: number = 0.3
