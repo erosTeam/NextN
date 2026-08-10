@@ -26,10 +26,10 @@ remains continuous; do not ask for it again.
   uninstalling, or reinstalling. After that restart, Favorites showed native
   authenticated gallery content with no sign-in prompt or WebView.
 - The cold-start native Account destination separately showed signed-in state.
-- All temporary screenshots used for these observations were deleted from the
-  host and device. The repository postmortem is recorded at
-  `docs/postmortems/2026-08-10-account-persistence-p0.md`. This queue remains
-  OPEN until the user explicitly requests closure.
+- Current-run screenshots are retained locally outside Git; they are never
+  automatically deleted or committed. The repository postmortem is recorded
+  at `docs/postmortems/2026-08-10-account-persistence-p0.md`. This queue
+  remains OPEN until the user explicitly requests closure.
 
 ## Current P0 state — fresh Favorites failure observed
 
@@ -51,10 +51,15 @@ remains continuous; do not ask for it again.
   clearing. Favorites moved to native sign-in-required state and Account moved
   to its native re-verification state. This is a coherent invalid-session
   result, not a persistence acceptance proof.
-- Next physical action: prepare one new, fully staged visible re-verification
-  epoch, then obtain native promotion and the required record-present
-  cold-start/Favorites proof. No credential has been entered in the preceding
-  timed cycle.
+- An explicit native re-verification then re-promoted the existing first-party
+  browser identity without any credential field write. After one settlement
+  retry, Favorites completed an authenticated native read.
+- Final S6 then passed on the same device: force-stop/cold-start without data
+  clearing, native Account signed in, and Favorites again completed an
+  authenticated native read. The updated P0 postmortem is at
+  `docs/postmortems/2026-08-10-account-persistence-p0.md`.
+- P0 is accepted for this observed path. A future fresh native Account or
+  Favorites failure immediately preempts delivery again.
 
 ## Active delivery P1 — Gallery Detail / Comments
 

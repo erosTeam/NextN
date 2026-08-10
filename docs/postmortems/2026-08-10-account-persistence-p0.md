@@ -1,90 +1,112 @@
-# NextN 账户持久化 P0 复盘（2026-08-10）
+# NextN account-persistence P0 postmortem — 2026-08-10
 
-## 结论与证据边界
+## Verified outcome
 
-本次已经获得真实设备证据：在 `192.168.50.237:12345` 上，完成一次可见
-ArkWeb 登录后，原生账户页显示已登录；随后未清数据地 force-stop/cold-start，
-Favorites 仍显示原生已认证内容，原生账户页仍显示已登录。该过程没有卸载、
-清应用数据或重新安装来掩盖结果。临时截图只用于现场判定，随后已从主机和设备
-删除；时间和不含敏感内容的过程记录在
-`docs/qa/nextn-login-attempt-ledger.md` 与
-`docs/qa/nextn-active-acceptance.md`。
+On the selected device, a data-preserving explicit native re-verification
+promoted the existing first-party browser session back into native state. No
+account or password field was written in this recovery. After one
+post-promotion retry, Favorites completed an authenticated native read.
 
-这证明的是本次真实的「登录 → 冷启动 → 原生账户 + Favorites」路径，不能倒推出
-历史每一次丢失登录的唯一物理删除者。此前观察到的
-`account_restore_record_absent` 只说明当时加密记录不存在；它不能证明是谁、在哪个
-版本或哪个时刻删除了记录。历史删除原因没有当时的行状态、marker、HUKS 状态和
-请求顺序证据，必须明确标为**未建立**，不能再被说成已经找到了根因。
+The app was then force-stopped and cold-started without clearing data or
+uninstalling. The native Account surface was still signed in and Favorites
+again completed an authenticated native read. This is the required current
+record-present S6 proof for this recovery path. Redacted state transitions are
+recorded in the acceptance queue and login ledger; raw local captures are
+retained outside Git and are not cited here.
 
-## 已确认的技术根因
+This does **not** identify the historical physical cause of every earlier
+missing record. An earlier `account_restore_record_absent` observation proved
+only that no envelope was present at that observation.
 
-已确认的设计错误不是“WebView 不能登录”，而是把一次账户请求的失败结果错误地
-升级成了持久认证状态：请求级 401、cookie 恢复失败或旧响应曾有机会把账户导向
-“需要重新验证”的持久分支；冷启动再把该分支当作比既有会话更高的裁决。这样会让
-仍可恢复的加密会话在用户看来表现为“冷启动后未登录”。这违反了“加密会话只有
-一个持久所有者”的规则。
+## Verified causal path of the current failure
 
-修正后的因果边界如下：
+The current failure was an internally inconsistent session:
 
-1. `EntryAbility` 是唯一的冷启动恢复调用者；页面只读
-   `AccountSessionState`，不再因出现、切 tab 或刷新而重读 RDB/HUKS、清 cookie
-   或发布登录状态。
-2. `AccountSessionRepository.saveVerified()` 在一个事务中写入加密信封并删除
-   verification marker；`clear()` 仍是唯一删除信封的显式登出路径。
-3. 冷启动 `restoreInternal()` 先检查 ArkWeb 的现有第一方 cookie jar；没有可用
-   jar 时才读取并以“已有 key”方式解密信封。RDB/HUKS/载荷失败不会生成替代 key，
-   也不会删除信封。
-4. 账户 GET 的持久验证分支只允许出现在“确实执行过一次受限恢复 replay，且该
-   replay 仍为 401”的情况下。首个 401、无法准备 replay、公共读取、mutation、
-   Profile 和详情页的 best-effort favorite-status 都不能把一次请求失败升级为持久
-   登录丢失。
-5. 每个账户读取带有 session/transition token。显式登出或新的已验证登录一旦开始，
-   旧的 401 或成功 2xx 响应都不能覆盖新的所有权状态。
+1. At cold restore, a token-shaped regular ArkWeb cookie jar caused
+   `NhAccountSessionService.restoreInternal()` to return before reading the
+   encrypted session envelope.
+2. Native Account therefore published signed-in state from the regular jar,
+   but `sealedFallbackCookieHeader` remained empty.
+3. Favorites used the account-owned GET path. Its first 401 called the bounded
+   recovery preparation; without the loaded sealed fallback that preparation
+   returned false, so no replay was issued and Favorites surfaced the fixed
+   request-level recheck error.
+4. The Account UI and Favorites then disagreed: the former looked signed in,
+   while the only authenticated product read could not be completed.
 
-这条“请求失败越权成为持久认证裁决”的路径是源码已证实并已从当前实现中隔离的
-根因；`record_absent` 的历史物理来源则仍不可从现有证据唯一归因。
+The fix is in `NhAccountSessionService.restoreInternal()`:
 
-## WebView 操作为何曾经变慢/失败
+- a live regular ArkWeb jar remains the primary runtime identity;
+- the service now non-destructively reads and decrypts a valid sealed envelope
+  into `sealedFallbackCookieHeader` before returning;
+- the regular jar is not overwritten during bootstrap;
+- an RDB/HUKS/envelope failure cannot demote an otherwise usable regular jar;
+- only a real first-401 recovery plus an actual replayed 401 can request
+  durable re-verification.
 
-ArkWeb 表单本身没有坏，CF 也不是本次阻塞点。之前已经能正常完成登录。
+The relevant boundaries are the regular-jar/fallback branch at
+`shared/src/main/ets/services/NhAccountSessionService.ets:825`, the one-replay
+Favorites gate at `shared/src/main/ets/network/NhApiClient.ets:540`, and the
+atomic verified-envelope/marker transaction at
+`shared/src/main/ets/storage/AccountSessionRepository.ets:80`.
 
-我后来额外引入了一层 stdin 包装脚本，试图把凭据输入拆成新的“阶段”。该包装层在
-真正读取私密输入前就失效，导致 CDP 填表调用没有发生；我却把这个自造的自动化
-故障误当成了需要继续分析或等待的理由。这是流程实现错误，而不是 WebView、账号
-或 Cloudflare 的问题。该包装层已删除。当前固定路径是：先在私有 Keychain/内存
-管道中准备两项值 → 语义定位账号字段 → 语义定位密码字段 → 仅在两项都写入后采集
-一次临时 CF 画面 → 绿勾即一次语义提交；中途不插入源码阅读、构建、重新路由或
-重新输入。
+After this change, the previously hidden fallback path was exercised. Its
+recovery correctly led to a native re-verification state rather than an
+inconsistent signed-in/recheck-error state. The subsequent explicit native
+re-verification re-promoted the first-party browser identity, and the final
+cold-start Account/Favorites observations passed.
 
-## 为什么此前数小时没有解决
+## What was not established
 
-1. 我把“找到一个可能的源代码分支”当成了“解决了真实设备问题”，用构建和代码
-   检查替代了必须的 record-present 冷启动验证。
-2. 我在已经缺少记录的状态上反复做恢复分支推测，没有先承认：缺少历史记录本身
-   不能还原删除原因。
-3. 我没有先固定唯一的账户状态所有者、所有写入/删除路径和请求并发顺序，就连续
-   添加局部防护。局部防护本身可能正确，却无法证明它覆盖了用户看到的路径。
-4. 我在登录计时阶段插入了准备、工具和文档步骤，又新造 stdin 包装层，违反了应当
-   连续执行的表单流程，造成了本不该出现的长时间停顿。
-5. 当前工作目录不是 Git worktree，无法用提交历史重建“记录何时由哪个旧版本删除”。
-   我没有把这项证据缺口及时说清，反而给出了过早的根因与完成表述。
+- Why the earlier regular ArkWeb token or sealed fallback token received a
+  server 401 is not established by these observations.
+- The historical origin of `account_restore_record_absent` is not established.
+  Current source has one explicit envelope deletion path: user-confirmed
+  sign-out. The observed old absence cannot be retroactively attributed to it
+  without the missing contemporaneous RDB/transition evidence.
+- The proof covers the selected device, this fresh browser-session promotion,
+  one force-stop/cold-start, and an authenticated Favorites read. It does not
+  prove every future server, cookie-rotation, HUKS, or RDB fault mode.
 
-## 以后不可违反的约束
+## Why the earlier effort failed to solve it
 
-- 账户持久化是否成立只能由真实设备的登录后冷启动和 authenticated Favorites 读取
-  判断；源码、构建、安装、截图单帧和无记录启动都只是中间证据。
-- 信封、marker、ArkWeb cookie 与页面展示必须有一个明确的所有者。页面不得把一个
-  请求失败写成持久“未登录”事实。
-- 只有显式登出能删除加密信封。请求失败必须保留记录，并以请求级错误或受限验证
-  状态呈现。
-- 每个重新登录周期必须在 ledger 中记录：发现丢失、WebView 可见、原生成功/最后
-  观察、耗时、首个阻塞阶段和累计耗时；不得用后一次重试覆盖前一次失败。
-- 进入已准备好的 WebView 表单后，除 CF 的一次可见判断外，不插入任何推理、源码
-  操作、构建、路由探索或凭据重输。一个 epoch 只允许账号一次、密码一次、提交一次。
-- 无法证明历史原因时必须写“原因未建立”，而不是用最像的分支代替事实。
+1. I repeatedly treated source patches, builds, and no-record cold starts as
+   if they resolved the user-visible path. They did not test the actual state
+   in which a regular jar survives while the encrypted fallback is skipped.
+2. I collapsed different observations into “login lost”: absent envelope,
+   first-401 recovery unavailable, terminal replayed 401, and stale response
+   transitions have different owners and allowed actions.
+3. I added defensive branches before mapping the full startup-to-Favorites
+   sequence, which obscured the early return in the regular-jar branch.
+4. I allowed account-login execution preparation to occur inside timed
+   recovery cycles. Two new cycles exceeded the 60-second ceiling without any
+   credential input: first because the route was not ready, then because the
+   generic WebView helper removed its own forward before the semantic driver
+   could use it.
+5. I previously wrote an overbroad postmortem and claimed evidence that was
+   not current. That is replaced by this account of the observed path and its
+   remaining uncertainty.
 
-## 剩余边界
+## Durable prevention constraints
 
-本次已经达到用户要求的真实冷启动保持证明。它不等价于声称所有服务器 401、所有
-cookie 轮换、所有 HUKS/RDB 故障都已经被设备枚举。那些分支仍需在自然出现且不破坏
-用户数据的前提下单独取证；它们不得触发新的清数据、卸载或猜测性重新登录。
+- Account, envelope, marker, and ArkWeb cookie ownership stay in
+  `NhAccountSessionService`; pages only project published state.
+- A regular jar must never bypass loading a valid encrypted fallback. The
+  fallback may repair exactly one idempotent account-read 401, but must never
+  overwrite a regular jar during bootstrap.
+- A first 401, an unavailable recovery, public read, mutation, profile
+  enrichment, or stale response must not become durable logout. A marker is
+  allowed only after the recovery replay was actually issued and also returned
+  401.
+- Verified promotion must atomically write the envelope and remove the marker;
+  explicit sign-out is the sole envelope deletion path.
+- Every fresh Account/Favorites failure preempts other development. Completion
+  requires the real device’s Account + Favorites cold-start evidence, not a
+  code review or build.
+- A timed login cycle starts only after device, route, credential handles, and
+  a **kept** ArkWeb forward are ready. The forward is removed only after the
+  terminal result using its exact two endpoints. A closed/overrun epoch cannot
+  be resumed or retried in place.
+- Login ledger entries retain only redacted stages and measured timestamps;
+  screenshots are kept locally when captured and are never committed or
+  automatically deleted.

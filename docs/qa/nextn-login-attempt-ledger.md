@@ -213,12 +213,12 @@ substitute for measured login-cycle elapsed time.
 
 ## Cumulative measured login-cycle time
 
-- timed cold-start-to-login cycles observed: 3.
+- timed cold-start-to-login cycles observed: 5.
 - completed native-login successes with a bounded observation duration: 1.
-- measured cumulative elapsed across timed cycles: 00:14:09.
+- measured cumulative elapsed across timed cycles: 00:17:04.
 - measured cumulative native-login-success time: 00:06:28 to the retained
   native-success observation.
-- recorded overrun count: 3.
+- recorded overrun count: 5.
 - historic-cycle total: unavailable-from-existing-evidence; the older ledger
   records do not contain matching WebView-open and native-promotion timestamps.
 
@@ -358,3 +358,47 @@ substitute for measured login-cycle elapsed time.
   closed and may not be continued in place. Its terminal native Account state
   was re-verification-required; the paired cold-start Favorites state was
   sign-in-required.
+
+## Prepared re-verification cycle — 2026-08-10
+
+- trigger: the prior no-input cycle is closed. Current Account is natively
+  re-verification-required and Favorites is natively sign-in-required after
+  a data-preserving cold start.
+- S0 Account: native re-verification-required state.
+- S0 Favorites: native sign-in-required state.
+- restore/401 diagnostic: native verification-required state after the
+  recovery-order cold-start check; no secret or transport detail retained.
+- install/data boundary: install-r=true; data-clear=false; uninstall=false.
+- preparation: selected-device lease and awake-timeout gate are current; both
+  fixed credential handles passed the presence-only check before this timer.
+- login-page navigation: not-entered.
+- session-loss-detected-at: 2026-08-10T13:02:06+08:00.
+- webview-opened-at: unavailable-from-existing-evidence; the native action
+  was issued in this cycle but the exact visible-Web timestamp was not retained.
+- native-promotion-at: pending.
+- loss-to-promotion-elapsed: not-achieved.
+- last-observed-at: 2026-08-10T13:03:18+08:00.
+- elapsed-so-far: 00:01:12.
+- first blocking phase: form — the bounded ArkWeb discovery helper cleaned
+  its forwarding before the semantic driver could use it.
+- account input: not-started.
+- password input: not-started.
+- submit: not-issued.
+- conclusion: measured-overrun; no credential action occurred. This epoch is
+  closed and may not be continued in place.
+
+## Browser-session re-verification and final S6 — 2026-08-10
+
+- trigger: after the closed no-input cycle, the explicit native
+  re-verification action promoted the existing first-party browser session.
+  No account/password field was written and no submit action was issued.
+- native Account after promotion: signed-in native state observed.
+- immediate Favorites result: a session-transition fence was observed once;
+  one post-settlement retry then completed an authenticated native read.
+- final cold-start Account: force-stop/cold-start without data clear or
+  uninstall; signed-in native Account observed.
+- final cold-start Favorites: authenticated native content observed with no
+  sign-in prompt or error state.
+- conclusion: current record-present cold-start path accepted. The two prior
+  no-input timed overruns remain recorded above and are not erased by this
+  later browser-session recovery.
