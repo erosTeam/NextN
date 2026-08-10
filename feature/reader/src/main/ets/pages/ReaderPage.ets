@@ -19,6 +19,7 @@ import {
   DownloadQueueService,
   ReaderImageCacheResult,
   ReaderImageCacheService,
+  ReaderSuperResolutionService,
   ReaderPresentationService,
   ReaderPresentationState,
   ReaderOverlayNavigationState,
@@ -162,6 +163,7 @@ struct ReaderImagePage {
   @Require @Param imageUrl: string
   @Require @Param cacheKey: string
   @Param localImageUri: string = ''
+  @Param enhancementEnabled: boolean = false
   @Param fillViewport: boolean = false
   @Param imageWidth: number = 0
   @Param imageHeight: number = 0
@@ -195,6 +197,7 @@ struct ReaderImagePage {
 
   aboutToDisappear(): void {
     this.loadGeneration += 1
+    ReaderSuperResolutionService.releaseOwner(this.enhancementOwnerKey())
     this.resetZoom()
     this.notifyZoom()
     if (this.zoomAnimationTimer > 0) {
@@ -215,6 +218,11 @@ struct ReaderImagePage {
 
   @Monitor('localImageUri')
   onLocalImageUriChanged(): void {
+    this.loadImage()
+  }
+
+  @Monitor('enhancementEnabled')
+  onEnhancementEnabledChanged(): void {
     this.loadImage()
   }
 
@@ -239,6 +247,25 @@ struct ReaderImagePage {
   private notifyImageLoadState(loaded: boolean): void {
     if (this.onImageLoadStateChanged && this.pageIndex >= 0) {
       this.onImageLoadStateChanged(this.pageIndex, loaded)
+    }
+  }
+
+  private enhancementOwnerKey(): string {
+    return `reader-image:${this.cacheKey}:${this.pageIndex}`
+  }
+
+  private async applyEnhancement(generation: number, localPath: string): Promise<void> {
+    if (!this.enhancementEnabled || localPath.length === 0) {
+      return
+    }
+    const result = await ReaderSuperResolutionService.process(
+      this.context(),
+      localPath,
+      this.enhancementOwnerKey(),
+      true,
+    )
+    if (this.isCurrentLoad(generation) && result.applied) {
+      this.imageSource = result.displayUri
     }
   }
 
@@ -269,6 +296,7 @@ struct ReaderImagePage {
         return
       }
       this.imageSource = result.displayUri
+      this.applyEnhancement(generation, result.localPath).catch((): void => {})
     } catch (_error) {
       if (!this.isCurrentLoad(generation)) {
         return
@@ -532,6 +560,7 @@ struct ReaderSpreadImageLayer {
   @Require @Param imageUrl: string
   @Require @Param cacheKey: string
   @Param localImageUri: string = ''
+  @Param enhancementEnabled: boolean = false
   @Param pageIndex: number = -1
   @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
   @Local hasLoadError: boolean = false
@@ -546,6 +575,7 @@ struct ReaderSpreadImageLayer {
 
   aboutToDisappear(): void {
     this.loadGeneration += 1
+    ReaderSuperResolutionService.releaseOwner(this.enhancementOwnerKey())
   }
 
   @Monitor('imageUrl')
@@ -563,6 +593,11 @@ struct ReaderSpreadImageLayer {
     this.loadImage()
   }
 
+  @Monitor('enhancementEnabled')
+  onEnhancementEnabledChanged(): void {
+    this.loadImage()
+  }
+
   private context(): common.UIAbilityContext {
     return this.getUIContext().getHostContext() as common.UIAbilityContext
   }
@@ -570,6 +605,25 @@ struct ReaderSpreadImageLayer {
   private notifyImageLoadState(loaded: boolean): void {
     if (this.onImageLoadStateChanged && this.pageIndex >= 0) {
       this.onImageLoadStateChanged(this.pageIndex, loaded)
+    }
+  }
+
+  private enhancementOwnerKey(): string {
+    return `reader-spread:${this.cacheKey}:${this.pageIndex}`
+  }
+
+  private async applyEnhancement(generation: number, localPath: string): Promise<void> {
+    if (!this.enhancementEnabled || localPath.length === 0) {
+      return
+    }
+    const result = await ReaderSuperResolutionService.process(
+      this.context(),
+      localPath,
+      this.enhancementOwnerKey(),
+      true,
+    )
+    if (generation === this.loadGeneration && result.applied) {
+      this.imageSource = result.displayUri
     }
   }
 
@@ -598,6 +652,7 @@ struct ReaderSpreadImageLayer {
         return
       }
       this.imageSource = result.displayUri
+      this.applyEnhancement(generation, result.localPath).catch((): void => {})
     } catch (_error) {
       if (generation !== this.loadGeneration) {
         return
@@ -686,6 +741,7 @@ struct ReaderSpreadSurface {
   @Require @Param mediaId: string
   @Param firstLocalImageUri: string = ''
   @Param secondLocalImageUri: string = ''
+  @Param enhancementEnabled: boolean = false
   @Param rowReversed: boolean = false
   @Param doubleTapSequence: number = 0
   @Param doubleTapTargetIndex: number = -1
@@ -861,6 +917,7 @@ struct ReaderSpreadSurface {
     ReaderSpreadImageLayer({
       imageUrl: NhApiClient.imageUrl(this.mediaId, item.sourceIndex, item.page.extension),
       localImageUri,
+      enhancementEnabled: this.enhancementEnabled,
       pageIndex: item.sourceIndex,
       cacheKey: ReaderImageCacheService.cacheKey(
         this.galleryId,
@@ -2401,6 +2458,7 @@ export struct ReaderPage {
           ReaderImagePage({
             imageUrl: NhApiClient.imageUrl(this.detail.mediaId, item.sourceIndex, item.page.extension),
             localImageUri: this.localImageUri(item.page, item.sourceIndex),
+            enhancementEnabled: this.readerPresentation.superResolutionEnabled,
             imageWidth: item.page.width,
             imageHeight: item.page.height,
             pageIndex: item.sourceIndex,
@@ -2444,6 +2502,7 @@ export struct ReaderPage {
             ReaderImagePage({
               imageUrl: NhApiClient.imageUrl(this.detail.mediaId, item.sourceIndex, item.page.extension),
               localImageUri: this.localImageUri(item.page, item.sourceIndex),
+              enhancementEnabled: this.readerPresentation.superResolutionEnabled,
               imageWidth: item.page.width,
               imageHeight: item.page.height,
               pageIndex: item.sourceIndex,
@@ -2504,6 +2563,7 @@ export struct ReaderPage {
             mediaId: this.detail.mediaId,
             firstLocalImageUri: this.localImageUri(item.first.page, item.first.sourceIndex),
             secondLocalImageUri: this.localSpreadSecondImageUri(item),
+            enhancementEnabled: this.readerPresentation.superResolutionEnabled,
             rowReversed: this.isRightToLeftPagedMode(),
             doubleTapSequence: this.doubleTapSequence,
             doubleTapTargetIndex: this.doubleTapTargetIndex,

@@ -26,6 +26,8 @@ class ReaderImageCacheEntry {
 /** A locally-resolved image source for the native Reader. */
 export class ReaderImageCacheResult {
   displayUri: string = ''
+  /** Private local source when caching succeeded; never populated for a remote fallback. */
+  localPath: string = ''
   bytes: number = 0
   fromCache: boolean = false
 }
@@ -286,6 +288,7 @@ export class ReaderImageCacheService {
   private static result(filePath: string, bytes: number, fromCache: boolean): ReaderImageCacheResult {
     const out: ReaderImageCacheResult = new ReaderImageCacheResult()
     out.displayUri = ReaderImageCacheService.displayUri(filePath)
+    out.localPath = filePath
     out.bytes = bytes
     out.fromCache = fromCache
     return out

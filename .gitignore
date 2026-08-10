@@ -4,6 +4,7 @@
 oh_modules/
 **/oh_modules/
 **/build/
+**/.cxx/
 **/BuildProfile.ets
 oh-package-lock.json5
 build-profile.local.json5

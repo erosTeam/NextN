@@ -124,6 +124,20 @@ export class ReaderPresentationService {
     })
   }
 
+  static setSuperResolutionEnabled(
+    context: common.UIAbilityContext,
+    enabled: boolean,
+  ): Promise<NhReaderPresentation> {
+    return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
+      presentation.superResolutionEnabled = enabled
+    }, (presentation: NhReaderPresentation): Promise<void> => {
+      return ReaderSettingsRepository.saveSuperResolutionEnabled(
+        context,
+        presentation.superResolutionEnabled,
+      )
+    })
+  }
+
   private static async restoreInternal(context: common.UIAbilityContext): Promise<void> {
     const values: [
       NhReaderMode,
@@ -135,6 +149,7 @@ export class ReaderPresentationService {
       boolean,
       NhReaderTapZoneLayout,
       NhReaderTapZoneInvert,
+      boolean,
     ] = await Promise.all([
       ReaderSettingsRepository.mode(context),
       ReaderSettingsRepository.keepScreenOn(context),
@@ -145,6 +160,7 @@ export class ReaderPresentationService {
       ReaderSettingsRepository.doublePageEnabled(context),
       ReaderSettingsRepository.tapZoneLayout(context),
       ReaderSettingsRepository.tapZoneInvert(context),
+      ReaderSettingsRepository.superResolutionEnabled(context),
     ])
     const presentation: NhReaderPresentation = new NhReaderPresentation()
     presentation.mode = values[0]
@@ -156,6 +172,7 @@ export class ReaderPresentationService {
     presentation.doublePageEnabled = values[6]
     presentation.tapZoneLayout = values[7]
     presentation.tapZoneInvert = values[8]
+    presentation.superResolutionEnabled = values[9]
     ReaderPresentationService.state().replace(presentation)
   }
 

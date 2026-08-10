@@ -17,6 +17,7 @@ const READER_VOLUME_KEY_TURN_KEY: string = 'reader_volume_key_turn'
 const READER_DOUBLE_PAGE_ENABLED_KEY: string = 'reader_double_page_enabled'
 const READER_TAP_ZONE_LAYOUT_KEY: string = 'reader_tap_zone_layout'
 const READER_TAP_ZONE_INVERT_KEY: string = 'reader_tap_zone_invert'
+const READER_SUPER_RESOLUTION_ENABLED_KEY: string = 'reader_super_resolution_enabled'
 const SQL_SELECT_MODE: string = 'SELECT value FROM reader_settings WHERE key = ? LIMIT 1'
 const SQL_UPSERT_MODE: string =
   'INSERT INTO reader_settings (key, value) VALUES (?, ?) ' +
@@ -126,6 +127,10 @@ export class ReaderSettingsRepository {
     )
   }
 
+  static async superResolutionEnabled(context: common.UIAbilityContext): Promise<boolean> {
+    return (await ReaderSettingsRepository.value(context, READER_SUPER_RESOLUTION_ENABLED_KEY)) === 'true'
+  }
+
   static saveMode(context: common.UIAbilityContext, mode: NhReaderMode): Promise<void> {
     const normalized: NhReaderMode = ReaderSettingsRepository.normalizeMode(mode)
     return ReaderSettingsRepository.saveValue(context, READER_MODE_KEY, normalized)
@@ -198,6 +203,14 @@ export class ReaderSettingsRepository {
       context,
       READER_TAP_ZONE_INVERT_KEY,
       NhReaderTapZoneResolver.normalizeInvert(invert),
+    )
+  }
+
+  static saveSuperResolutionEnabled(context: common.UIAbilityContext, enabled: boolean): Promise<void> {
+    return ReaderSettingsRepository.saveValue(
+      context,
+      READER_SUPER_RESOLUTION_ENABLED_KEY,
+      enabled ? 'true' : 'false',
     )
   }
 

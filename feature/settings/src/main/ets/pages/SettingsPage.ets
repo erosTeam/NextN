@@ -17,6 +17,7 @@ import {
   SecondaryListScaffold,
   ReaderImageCacheService,
   ReaderImageCacheStatus,
+  ReaderSuperResolutionModelService,
   ReaderPresentationService,
   ReaderPresentationState,
   DownloadQueueService,
@@ -141,6 +142,8 @@ export struct SettingsPage {
   @Local readerCacheError: string = ''
   @Local readerPresentation: ReaderPresentationState = connectReaderPresentation()
   @Local readerModeError: string = ''
+  @Local readerEnhancementModelInstalled: boolean = false
+  @Local isInstallingReaderEnhancementModel: boolean = false
   @Local browsePresentationError: string = ''
   @Local catalogPreferencesError: string = ''
   @Local readerModeMenuShown: boolean = false
@@ -447,8 +450,38 @@ export struct SettingsPage {
     this.readerModeError = ''
     try {
       await ReaderPresentationService.restore(this.context())
+      this.readerEnhancementModelInstalled = await ReaderSuperResolutionModelService.isInstalled(this.context())
     } catch (_error) {
       this.readerModeError = AppStrings.get('settings_reader_layout_unavailable')
+    }
+  }
+
+  private async installReaderEnhancementModel(): Promise<void> {
+    if (this.isInstallingReaderEnhancementModel) {
+      return
+    }
+    this.isInstallingReaderEnhancementModel = true
+    this.readerModeError = ''
+    try {
+      await ReaderSuperResolutionModelService.install(this.context())
+      this.readerEnhancementModelInstalled = true
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_enhancement_model_download_failed')
+    } finally {
+      this.isInstallingReaderEnhancementModel = false
+    }
+  }
+
+  private async saveReaderEnhancementEnabled(enabled: boolean): Promise<void> {
+    if (this.readerPresentation.superResolutionEnabled === enabled ||
+      (enabled && !this.readerEnhancementModelInstalled)) {
+      return
+    }
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setSuperResolutionEnabled(this.context(), enabled)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_enhancement_save_failed')
     }
   }
 
@@ -1746,6 +1779,42 @@ export struct SettingsPage {
         },
         onSwitchChange: (value: boolean): void => {
           this.saveReaderKeepScreenOn(value)
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.lightbulb'),
+        title: this.isInstallingReaderEnhancementModel
+          ? AppStrings.get('settings_reader_enhancement_model_downloading')
+          : AppStrings.get('settings_reader_enhancement_model'),
+        subtitle: AppStrings.get('settings_reader_enhancement_model_hint'),
+        trailingText: this.readerEnhancementModelInstalled
+          ? AppStrings.get('settings_reader_enhancement_model_ready')
+          : AppStrings.get('settings_reader_enhancement_model_download'),
+        showChevron: !this.readerEnhancementModelInstalled && !this.isInstallingReaderEnhancementModel,
+        isEnabled: !this.readerEnhancementModelInstalled && !this.isInstallingReaderEnhancementModel,
+        accessibilityLabel: AppStrings.get('settings_reader_enhancement_model_a11y'),
+        onAction: (): void => {
+          this.installReaderEnhancementModel()
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.lightbulb'),
+        title: AppStrings.get('settings_reader_enhancement'),
+        subtitle: AppStrings.get('settings_reader_enhancement_hint'),
+        hasSwitch: true,
+        checked: this.readerPresentation.superResolutionEnabled,
+        showChevron: false,
+        isEnabled: this.readerEnhancementModelInstalled,
+        accessibilityLabel: AppStrings.format('settings_reader_enhancement_a11y', [
+          this.toggleStateLabel(this.readerPresentation.superResolutionEnabled),
+        ]),
+        onAction: (): void => {
+          this.saveReaderEnhancementEnabled(!this.readerPresentation.superResolutionEnabled)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.saveReaderEnhancementEnabled(value)
         },
       })
     }

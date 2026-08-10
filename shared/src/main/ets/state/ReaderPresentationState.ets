@@ -18,6 +18,7 @@ export class ReaderPresentationState {
   @Trace doublePageEnabled: boolean = false
   @Trace tapZoneLayout: NhReaderTapZoneLayout = NhReaderTapZoneLayout.RIGHT_LEFT
   @Trace tapZoneInvert: NhReaderTapZoneInvert = NhReaderTapZoneInvert.NONE
+  @Trace superResolutionEnabled: boolean = false
 
   replace(presentation: NhReaderPresentation): void {
     this.mode = presentation.mode
@@ -29,6 +30,7 @@ export class ReaderPresentationState {
     this.doublePageEnabled = presentation.doublePageEnabled
     this.tapZoneLayout = presentation.tapZoneLayout
     this.tapZoneInvert = presentation.tapZoneInvert
+    this.superResolutionEnabled = presentation.superResolutionEnabled
   }
 
   snapshot(): NhReaderPresentation {
@@ -42,6 +44,7 @@ export class ReaderPresentationState {
     result.doublePageEnabled = this.doublePageEnabled
     result.tapZoneLayout = this.tapZoneLayout
     result.tapZoneInvert = this.tapZoneInvert
+    result.superResolutionEnabled = this.superResolutionEnabled
     return result
   }
 }

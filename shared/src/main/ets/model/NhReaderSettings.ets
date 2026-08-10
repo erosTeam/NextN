@@ -33,6 +33,8 @@ export class NhReaderPresentation {
   doublePageEnabled: boolean = false
   tapZoneLayout: NhReaderTapZoneLayout = NhReaderTapZoneLayout.RIGHT_LEFT
   tapZoneInvert: NhReaderTapZoneInvert = NhReaderTapZoneInvert.NONE
+  /** Explicit opt-in; the original Reader image always remains available. */
+  superResolutionEnabled: boolean = false
 
   copy(): NhReaderPresentation {
     const result: NhReaderPresentation = new NhReaderPresentation()
@@ -45,6 +47,7 @@ export class NhReaderPresentation {
     result.doublePageEnabled = this.doublePageEnabled
     result.tapZoneLayout = this.tapZoneLayout
     result.tapZoneInvert = this.tapZoneInvert
+    result.superResolutionEnabled = this.superResolutionEnabled
     return result
   }
 }
