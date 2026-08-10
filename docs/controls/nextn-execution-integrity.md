@@ -92,6 +92,20 @@ be justified by a test written to mirror the new implementation.
   route discovery, (2) an explicit visual decision gate whose result changes
   the next action, or (3) terminal acceptance or exception evidence. It is not
   a routine step between known actions.
+- Before a capture can be called either the reference or the implementation,
+  verify its foreground identity from the current layout root or ability state
+  and record the root window bounds. A filename, the requested `aa start`
+  command, or a prior foreground observation is not identity evidence.
+- A reference/implementation pair is valid only when each capture has its
+  expected foreground bundle and both have the same effective root viewport
+  (width, height, orientation, and split/window state) and the same reviewed
+  state. If any of those facts differ, retain the raw captures locally and
+  mark the pair rejected; do not visually compare it, infer a defect, or use
+  it to justify a source edit.
+- A failed foreground launch or unsupported window-geometry request is an
+  evidence failure, not a product finding. Diagnose or re-establish the
+  capture precondition first; never relabel the resulting artifact as a
+  reference to make a comparison appear complete.
 - If a terminal state differs from the declared route outcome, preserve one
   diagnostic capture, mark that chain rejected, and repair its semantic route
   before another run. Do not mask the failure with repeated coordinate and
