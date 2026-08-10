@@ -24,6 +24,7 @@
 | Detail compact Preview | **FROZEN** | Preview 高度 `150vp`；它不与 hero 或 Related 等高。 | Preview 本身有新明确用户指令或同状态反证。 |
 | 横向 rail 的通用边界规则 | **FROZEN RULE** | 只有横向 `List` 视口可越过二级容器横向 inset；标题、父卡、上下间距保持原位；首尾留白由第一/最后一项拥有。 | 用户改变这条规则，或出现同状态反证。单个 rail 的内容/尺寸问题不允许借此改头部、纵向间距或其他 rail。 |
 | Detail 浮动 Read | **FROZEN RULE** | 中途遮挡内容是浮动语义；只判断尾项能否滚到其上方。 | 用户要求改变浮动交互，或尾项实际不可达的同状态证据。 |
+| Reader 已观察路径 | **EVIDENCE-ONLY** | 已有本地 Reader 进入、双页、缩略图、设置与返回的设备观察；这些不能拼成完整视觉验收，也不授权再跑同一 Reader 路径。 | Reader 可见源码改动、用户针对 Reader 的新明确反馈，或取得同状态同视口的有效参考条件。 |
 | Downloads 完成任务导出后取消 | **EVIDENCE-ONLY** | 已观察到系统 Share UI 前台后取消，任务仍为 Complete；不扩展为目标应用投递或其他任务状态的结论。 | 出现真实下载/暂停状态，或导出源码/Share 边界被改动。 |
 | Settings 根入口 | **EVIDENCE-ONLY** | 已观察到根行文案修正；此前参考捕获窗口状态不一致，不能比较。 | 取得不改变数据/偏好的同状态、同视口参考条件；否则不重复捕获。 |
 | Settings 根页普通重入（生命周期） | **FROZEN SOURCE ASSESSMENT** | 当前 `aboutToAppear` 只同步已发布的登录态并读取本地 Profile 快照；没有 loading 状态、行清空、网络请求或第二次会话恢复。该结论不是设备视觉验收。 | `SettingsPage` 根页生命周期、`NhAccountProfileService.restore` 的可见状态语义发生修改，或真实设备出现根页清空/刷新反证。 |
