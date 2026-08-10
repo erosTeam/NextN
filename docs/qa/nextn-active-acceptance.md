@@ -44,8 +44,12 @@ remains continuous; do not ask for it again.
 - The paired native Account observation still showed a signed-in Account row.
   Therefore the current failure is an inconsistent session state: native
   Account is signed in while Favorites cannot complete its authenticated read.
-- Next physical action: invoke one normal Favorites retry and collect only its
-  terminal safe state. Do not open a login form or enter credentials.
+- One normal Favorites retry returned to the same native session-recheck error
+  state. This rules out a single transient render/load observation but does not
+  establish a network or persistence cause.
+- Next physical action: map the Favorites authenticated-read failure path and
+  collect its fixed diagnostic stage. Do not open a login form or enter
+  credentials.
 
 ## Active delivery P1 — Gallery Detail / Comments
 

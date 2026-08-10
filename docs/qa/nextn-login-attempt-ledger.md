@@ -329,4 +329,5 @@ substitute for measured login-cycle elapsed time.
 - submit: not-issued.
 - conclusion: not-a-relogin-attempt. Account-persistence P0 is active: the
   Account surface is signed in but Favorites cannot recheck the session. The
-  next action is one normal Favorites retry; no credential action is allowed.
+  normal Favorites retry returned the same error. The next action is its
+  source-grounded diagnostic path; no credential action is allowed.
