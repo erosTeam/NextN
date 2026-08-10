@@ -205,3 +205,13 @@
 - 验证计划：签名 Debug 构建并以 `install -r` 更新选定设备后，使用既有零评论直达路由，聚焦一次空 TextArea、不输入、不发送；保留新的本地截图和脱敏 bounds，确认输入与发送控件完整位于键盘上方。构建不构成此视觉验收。
 - 未决风险：系统若在不同窗口模式报告不同的键盘缩放比例，`SPACE_SM` 可能不足或过量；该风险只通过同一路径的真实键盘状态判断，不扩展为 `keyboardHeight` 全量 padding 或重组页面树。
 - 当前设备观察：签名 Debug 构建后已仅以 `install -r` 更新选定设备。零评论直达页加载完成后，空 TextArea 被聚焦一次；键盘显示时，输入框和发送控件均完整地处于键盘上方，TextArea 的 visible bounds 与 origBounds 均为完整的 104px 高度。没有输入文本、没有提交评论。该结果仅覆盖 NextN 这一个键盘态；同状态 NextE 参考画面尚未取得，因此不作为完整参考视觉对齐声明。
+
+## 计划中：修复 Gallery Comments 的冷启动直达请求时序
+
+- 触发依据：2026-08-11 00:32 +0800，在唯一选定设备上按既有 `nextn_gallery_id` 加 `nextn_gallery_destination=comments` Want 做了一次冷启动直达。终态经前台 bundle 和根窗口确认是 NextN Browse 根页，而不是 Comments；未输入、提交、修改偏好或账户。
+- 父树边界：仅 `EntryAbility(onCreate/onWindowStageCreate/onNewWant) -> GalleryDirectLaunchState -> Index.handleGalleryDirectLaunch() -> 既有 pushComments()` 的一次性路由交接。Comments 页面、Detail 页面、横向 rail、composer、数据请求和视觉几何均不在此改动范围内。
+- 精确改动：冷启动暂存的 Gallery Want 不再在 `windowStage.loadContent()` 之前发布；仅在 `loadContent` 成功、根页面具备接收条件后发布一次。已运行态的 `onNewWant` 立即发布分支保持不变。
+- 最小性理由：当前失败的真实终态和源码顺序共同表明冷启动请求可早于根导航注册。该改动只修复事件交接，不引入坐标回退、Browse 滚动或另一条 Comments 入口。
+- 验证计划：签名 Debug 构建、`install -r`（不清数据），强制停止后对同一 Want 只执行一次冷启动；核验其终态是否为原生 Comments。若终态仍不匹配，保留一次本地诊断证据并停止重试，继续检查 Want 生命周期。
+- 未决风险：已运行 Ability 的命令行 Want 交付语义与冷启动不同；本轮只证明或否定冷启动交接，不能据此泛化到所有运行态启动方式。
+- 当前设备观察：签名 Debug 构建成功后，已仅以 `install -r` 更新唯一选定设备；一次强制停止后的同一 Comments Want 终态为原生 Comments `NavDestination`，而非 Browse。未输入或发送评论，原始终态证据保留在本地审计目录，不进入 Git。该观察只验证路由时序，不作为 Comments 的视觉验收。

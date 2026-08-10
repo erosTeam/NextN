@@ -663,25 +663,17 @@ remains continuous; do not ask for it again.
 
 ## Next physical action
 
-P0 remains open for cause isolation. A fresh 2026-08-10 23:06-23:08 +0800
-Favorites sign-in prompt and paired Account re-verification-required state
-was recovered only through the existing explicit native re-verification action.
-No visible Web form or credential action occurred. At 23:16 Favorites again
-completed a native authenticated read; after a data-preserving force-stop and
-cold start, Account was natively signed in at 23:20 and Favorites again
-completed a native authenticated read at 23:22. This proves only the observed
-recovery and one subsequent cold-start path. It does not establish why the
-session became invalid, so P1 remains preempted. The next action is
-source-grounded cause isolation from this retained cycle. The bounded retained
-browser-identity refresh change was then built, installed with `install -r`,
-and checked through one normal force-stop/cold-start Account plus Favorites
-read. That normal path remained authenticated. Its terminal-two-401 branch
-did not occur in this check and is therefore not claimed as device-proven; do
-not modify UI or create another login epoch merely to reproduce the state. A
-follow-up signed build persists one finite, non-secret verification-origin
-code if that branch later exhausts; its migration and normal cold-start
-Account/Favorites path were observed without data clearing. The next action is
-to collect that real terminal event if it occurs, not to manufacture it.
+## Current Gallery Comments direct-route exception
+
+- 2026-08-11 00:32 +0800：对既有 Comments Want 的一次冷启动直达终态经 bundle/root 边界确认是原生 Browse 根页，不是 Comments。未写入评论、账户、偏好或其他内容数据。
+- 该执行链已拒绝；不得用 Browse 滚动、旧坐标或重复截图伪造到达。下一步是仅修复冷启动请求发布顺序，构建并对同一 Want 做一次新的干净终态观察。
+- 2026-08-11：该发布时序修复已签名构建并以 `install -r` 覆盖，未清数据；对同一 Want 的一次强制停止后冷启动终态为 NextN 原生 Comments `NavDestination`，有加载完成的评论 List 和固定编辑器。未输入、发送、修改账户、偏好或内容数据。本地终态截图和 layout 保留在 `.hvigor/outputs/nextn-comments-direct-route-Pa5X9P/`，不进入 Git。该结果仅接受这条冷启动路由，不是 Comments 视觉验收。
+
+The earlier P0 cycle is retained above as historical evidence. It is not the
+current execution lane because no fresh current S0 observation has proved the
+session unusable after the accepted recovery/cold-start path. It immediately
+preempts delivery again if such evidence appears; it must not be used to
+rewrite, re-run, or block this completed direct-route observation.
 
 ## Data and artifact boundary
 

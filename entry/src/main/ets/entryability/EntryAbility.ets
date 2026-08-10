@@ -132,11 +132,6 @@ export default class EntryAbility extends UIAbility {
       if (this.loginRecoveryRequestedAtLaunch && !this.accountRestoredAtBootstrap) {
         requestLoginRecoveryLaunch()
       }
-      if (this.galleryDirectLaunchIdAtLaunch > 0) {
-        requestGalleryDirectLaunch(this.galleryDirectLaunchIdAtLaunch, this.galleryDirectLaunchCommentsAtLaunch)
-        this.galleryDirectLaunchIdAtLaunch = 0
-        this.galleryDirectLaunchCommentsAtLaunch = false
-      }
       windowStage.loadContent(ENTRY_PAGE, (error): void => {
         if (error.code) {
           console.error(`NextN failed to load ${ENTRY_PAGE}: ${JSON.stringify(error)}`)
@@ -148,6 +143,7 @@ export default class EntryAbility extends UIAbility {
         // exception before loadContent.
         ThemeSettings.restore(this.context).catch((): void => {})
         this.mainContentReady = true
+        this.dispatchColdGalleryDirectLaunchIfPending()
         this.probeClipboardLinkIfReady()
         try {
           const contentWindow: window.Window = mainWindow ?? windowStage.getMainWindowSync()
@@ -238,6 +234,18 @@ export default class EntryAbility extends UIAbility {
   private galleryDirectLaunchWantsComments(want: Want): boolean {
     const value: Object | undefined = want.parameters?.['nextn_gallery_destination']
     return typeof value === 'string' && value === 'comments'
+  }
+
+  /** Publishes the one-shot cold Want only after the root content exists. */
+  private dispatchColdGalleryDirectLaunchIfPending(): void {
+    const galleryId: number = this.galleryDirectLaunchIdAtLaunch
+    if (galleryId <= 0) {
+      return
+    }
+    const openComments: boolean = this.galleryDirectLaunchCommentsAtLaunch
+    this.galleryDirectLaunchIdAtLaunch = 0
+    this.galleryDirectLaunchCommentsAtLaunch = false
+    requestGalleryDirectLaunch(galleryId, openComments)
   }
 
   private probeClipboardLinkIfReady(): void {
