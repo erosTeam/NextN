@@ -567,6 +567,14 @@ remains continuous; do not ask for it again.
   No text was entered and no comment mutation was sent. This is a real-device
   result for that keyboard state only, not a full same-state reference-parity
   claim.
+- 2026-08-10 16:18 +0800: the existing direct Gallery `471768` route reached
+  native Detail, then the one current visible Read action opened the Reader
+  overlay. Its terminal state was a native hidden-chrome continuous canvas
+  without an extra top or bottom content reserve. No reading setting, page
+  navigation, account state, or content mutation occurred. The local capture
+  is retained outside Git. This is a single current Reader state observation;
+  it is not a same-state reference comparison and does not authorize a Reader
+  visual change.
 - Raw screenshots and layouts retained for an active route or visual decision
   stay in their named local audit directory; they are never added to Git or
   deleted automatically.
