@@ -132,6 +132,29 @@ be justified by a test written to mirror the new implementation.
   assumption, ignored evidence, impact, and prevention rule before another
   edit in that same region.
 
+### 4.3 Frozen-surface register and no-repeat rule
+
+- `docs/qa/nextn-ui-change-ledger.md` is the current register of reviewed UI
+  surfaces. Every visible surface is either **FROZEN**, **OPEN**, or
+  **EVIDENCE-ONLY**. A label records the evidence boundary; it is not a visual
+  completion claim.
+- **FROZEN** means no screenshot, source inspection, UI test, source edit, or
+  value recomputation may be performed for that surface. It may reopen only
+  after (a) a visible source change inside the named boundary, (b) new explicit
+  user feedback about that boundary, or (c) same-state counter-evidence.
+- **OPEN** means a required decision or evidence boundary has not been reached.
+  It is not permission to repeatedly revisit the surface. Record one concrete
+  next evidence/action and leave it alone until that action becomes available
+  or one of the three reopening triggers occurs.
+- **EVIDENCE-ONLY** means a prior observation is retained but lacks a valid
+  same-state comparison or a decisive device state. Do not rerun it merely to
+  obtain another similar capture; retain it until a materially new comparison
+  precondition exists.
+- Before any UI work, select exactly one non-frozen boundary from the register
+  and write why it is newly actionable. If no boundary is newly actionable,
+  do not substitute repeated review, a UI static contract, or a synthetic
+  test for progress.
+
 ## 5. Scope and delegation discipline
 
 - There is one active lane. An audit may identify candidates, but it may not
