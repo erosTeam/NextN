@@ -10,9 +10,13 @@ const RELATED_COVER_HEIGHT: number = ThemeTokens.DETAIL_COVER_HEIGHT
 const RELATED_TITLE_HEIGHT: number = 80
 const RELATED_FALLBACK_ASPECT_RATIO: number = 3 / 4
 const HORIZONTAL_RAIL_EDGE_INSET: number = ThemeTokens.SPACE_MD
-const COMMENT_CAROUSEL_HEIGHT: number = 120
 const COMMENT_CARD_WIDTH: number = 240
+const COMMENT_PREVIEW_MAX_LINES: number = 2
+const COMMENT_PREVIEW_HEADER_LINE_HEIGHT: number = 18
 const COMMENT_PREVIEW_LINE_HEIGHT: number = 18
+const COMMENT_CAROUSEL_HEIGHT: number = ThemeTokens.SPACE_MD * 2 +
+  COMMENT_PREVIEW_HEADER_LINE_HEIGHT + ThemeTokens.SPACE_XS +
+  COMMENT_PREVIEW_LINE_HEIGHT * COMMENT_PREVIEW_MAX_LINES
 
 function horizontalRailViewportWidth(): string {
   return `calc(100% + ${HORIZONTAL_RAIL_EDGE_INSET * 2}vp)`
@@ -217,6 +221,7 @@ export struct GalleryCommentPreviewCarousel {
         Text(this.commentAuthor(comment))
           .layoutWeight(1)
           .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .lineHeight(COMMENT_PREVIEW_HEADER_LINE_HEIGHT)
           .fontWeight(FontWeight.Medium)
           .fontColor(ThemeTokens.TEXT_PRIMARY)
           .maxLines(1)
@@ -224,6 +229,7 @@ export struct GalleryCommentPreviewCarousel {
         if (this.commentPostedLabel(comment).length > 0) {
           Text(this.commentPostedLabel(comment))
             .fontSize(ThemeTokens.FONT_SIZE_TINY)
+            .lineHeight(COMMENT_PREVIEW_HEADER_LINE_HEIGHT)
             .fontColor(ThemeTokens.TEXT_TERTIARY)
             .maxLines(1)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
@@ -236,7 +242,7 @@ export struct GalleryCommentPreviewCarousel {
         .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
         .lineHeight(COMMENT_PREVIEW_LINE_HEIGHT)
         .fontColor(ThemeTokens.TEXT_SECONDARY)
-        .maxLines(2)
+        .maxLines(COMMENT_PREVIEW_MAX_LINES)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
     }
     .width(COMMENT_CARD_WIDTH)
