@@ -195,25 +195,6 @@ export struct GalleryCommentsPage {
   }
 
   @Builder
-  private CommentsHeader() {
-    Row({ space: ThemeTokens.SPACE_XS }) {
-      Text(AppStrings.get('gallery_comments'))
-        .fontSize(ThemeTokens.FONT_SIZE_TITLE)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(ThemeTokens.TEXT_PRIMARY)
-      Text(`(${this.comments.length})`)
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(ThemeTokens.TEXT_TERTIARY)
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-      Blank()
-    }
-    .width('100%')
-    .alignItems(VerticalAlign.Center)
-    .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD })
-  }
-
-  @Builder
   private CommentComposerSheet() {
     NextNModalScaffold({
       title: AppStrings.get('comments_dialog_post_title'),
@@ -320,9 +301,6 @@ export struct GalleryCommentsPage {
 
   @Builder
   private LoadedCommentsContent() {
-    ListItem() {
-      this.CommentsHeader()
-    }
     if (this.errorMessage.length > 0) {
       ListItem() {
         this.RefreshFailureNotice()
