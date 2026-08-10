@@ -82,6 +82,7 @@ import {
   connectThemeDisplay,
   NhArkWebSessionTransportHost,
   NhBrowsePresentation,
+  NhComment,
   NhDownloadTaskStatus,
   NhGalleryPage,
   ReaderOverlayNavigationState,
@@ -125,9 +126,17 @@ const STATUS_BAR_DARK_CONTENT: string = '#FF000000'
 class GalleryRouteParams {
   galleryId: number = 0
   chrome: GalleryChromeState = new GalleryChromeState()
+  commentSnapshot: NhComment[] = []
+  commentSnapshotAvailable: boolean = false
 
-  constructor(galleryId: number = 0) {
+  constructor(
+    galleryId: number = 0,
+    commentSnapshot: NhComment[] = [],
+    commentSnapshotAvailable: boolean = false,
+  ) {
     this.galleryId = galleryId
+    this.commentSnapshot = commentSnapshot
+    this.commentSnapshotAvailable = commentSnapshotAvailable
   }
 }
 
@@ -483,11 +492,18 @@ struct Index {
     this.readerOverlay.open(new ReaderRouteParams(galleryId, initialPageIndex))
   }
 
-  private pushComments(galleryId: number): void {
+  private pushComments(
+    galleryId: number,
+    commentSnapshot: NhComment[] = [],
+    commentSnapshotAvailable: boolean = false,
+  ): void {
     if (galleryId <= 0) {
       return
     }
-    this.stack.pushPathByName(ROUTE_COMMENTS, new GalleryRouteParams(galleryId))
+    this.stack.pushPathByName(
+      ROUTE_COMMENTS,
+      new GalleryRouteParams(galleryId, commentSnapshot, commentSnapshotAvailable),
+    )
   }
 
   /** Leaves a detail route for the one durable Downloads root, matching NextE's task handoff. */
@@ -1381,8 +1397,12 @@ struct Index {
         onOpenReader: (galleryId: number, initialPageIndex: number): void => {
           this.pushReader(galleryId, initialPageIndex)
         },
-        onOpenComments: (galleryId: number): void => {
-          this.pushComments(galleryId)
+        onOpenComments: (
+          galleryId: number,
+          commentSnapshot: NhComment[],
+          commentSnapshotAvailable: boolean,
+        ): void => {
+          this.pushComments(galleryId, commentSnapshot, commentSnapshotAvailable)
         },
         onOpenDownloads: (): void => {
           this.openDownloads()
@@ -1494,6 +1514,8 @@ struct Index {
       GalleryCommentsPage({
         galleryId: this.galleryParams(param).galleryId,
         scroller: this.commentsScroller,
+        commentSnapshot: this.galleryParams(param).commentSnapshot,
+        commentSnapshotAvailable: this.galleryParams(param).commentSnapshotAvailable,
         reloadVersion: this.commentsReloadVersion,
         composeVersion: this.commentsComposeVersion,
       })

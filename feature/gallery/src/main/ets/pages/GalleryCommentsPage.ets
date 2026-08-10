@@ -38,6 +38,9 @@ export struct GalleryCommentsPage {
   @Local isCommentSubmitting: boolean = false
   @Local commentSubmitError: string = ''
   @Param scroller: Scroller = new Scroller()
+  /** A Detail-owned response seeds this route only after it was successfully fetched. */
+  @Param commentSnapshot: NhComment[] = []
+  @Param commentSnapshotAvailable: boolean = false
   @Param reloadVersion: number = 0
   @Param composeVersion: number = 0
   private requestGeneration: number = 0
@@ -45,6 +48,9 @@ export struct GalleryCommentsPage {
   private refreshController: NextNPullRefreshController = new NextNPullRefreshController()
 
   aboutToAppear(): void {
+    if (this.hydrateDetailSnapshot()) {
+      return
+    }
     if (!this.isLoading && this.loadedGalleryId !== this.galleryId) {
       this.loadComments()
     }
@@ -52,6 +58,9 @@ export struct GalleryCommentsPage {
 
   @Monitor('galleryId')
   onGalleryChanged(): void {
+    if (this.hydrateDetailSnapshot()) {
+      return
+    }
     if (!this.isLoading && this.loadedGalleryId !== this.galleryId) {
       this.loadComments()
     }
@@ -78,6 +87,25 @@ export struct GalleryCommentsPage {
 
   private applyContentFilters(): void {
     this.comments = ContentFilterService.filterComments(this.rawComments)
+  }
+
+  /**
+   * A Detail-owned snapshot is authoritative for this initial route only. It
+   * is allowed to be empty: availability distinguishes an empty successful
+   * response from a request that has not completed. Subsequent explicit
+   * refreshes still use the full route request path.
+   */
+  private hydrateDetailSnapshot(): boolean {
+    if (!this.commentSnapshotAvailable || this.loadedGalleryId === this.galleryId) {
+      return false
+    }
+    this.requestGeneration += 1
+    this.rawComments = this.commentSnapshot.slice()
+    this.applyContentFilters()
+    this.loadedGalleryId = this.galleryId
+    this.errorMessage = ''
+    this.isLoading = false
+    return true
   }
 
   private hasPublishedAccountSession(): boolean {

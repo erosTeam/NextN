@@ -146,6 +146,8 @@ export struct GalleryDetailPage {
   /** The public discussion cache is filtered locally before the compact peek renders. */
   @Local commentPeek: NhComment[] = []
   @Local rawCommentPeek: NhComment[] = []
+  /** A successful response is distinguishable from an empty or still-pending peek. */
+  @Local commentPeekLoadedGalleryId: number = 0
   @Local favoriteStatusKnown: boolean = false
   @Local isFavorited: boolean = false
   @Local isFavoriteMutationInFlight: boolean = false
@@ -178,7 +180,7 @@ export struct GalleryDetailPage {
   @Event onOpenGallery?: (galleryId: number) => void
   @Event onOpenThumbnails?: (galleryId: number, pages: NhGalleryPage[]) => void
   @Event onOpenReader?: (galleryId: number, initialPageIndex: number) => void
-  @Event onOpenComments?: (galleryId: number) => void
+  @Event onOpenComments?: (galleryId: number, comments: NhComment[], snapshotAvailable: boolean) => void
   @Event onOpenDownloads?: () => void
   @Event onSearchQuery?: (query: string) => void
   @Event onChromeChanged?: () => void
@@ -397,6 +399,7 @@ export struct GalleryDetailPage {
     this.applyRelatedContentFilters()
     this.commentPeekGeneration += 1
     this.rawCommentPeek = []
+    this.commentPeekLoadedGalleryId = 0
     this.applyCommentPeekFilters()
   }
 
@@ -580,7 +583,12 @@ export struct GalleryDetailPage {
     if (!this.isDetailReadyForCurrentGallery || this.detail.id !== this.galleryId || !this.onOpenComments) {
       return
     }
-    this.onOpenComments(this.detail.id)
+    const snapshotAvailable: boolean = this.commentPeekLoadedGalleryId === this.detail.id
+    this.onOpenComments(
+      this.detail.id,
+      snapshotAvailable ? this.rawCommentPeek : [],
+      snapshotAvailable,
+    )
   }
 
   private openRelatedGallery(galleryId: number): void {
@@ -963,6 +971,7 @@ export struct GalleryDetailPage {
         return
       }
       this.rawCommentPeek = comments
+      this.commentPeekLoadedGalleryId = galleryId
       this.applyCommentPeekFilters()
     } catch (_error) {
       // The full destination retains retry/error UI. This optional response
