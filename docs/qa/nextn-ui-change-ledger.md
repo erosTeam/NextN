@@ -28,6 +28,7 @@
 | Downloads 完成任务导出后取消 | **EVIDENCE-ONLY** | 已观察到系统 Share UI 前台后取消，任务仍为 Complete；不扩展为目标应用投递或其他任务状态的结论。 | 出现真实下载/暂停状态，或导出源码/Share 边界被改动。 |
 | Settings 根入口 | **EVIDENCE-ONLY** | 已观察到根行文案修正；此前参考捕获窗口状态不一致，不能比较。 | 取得不改变数据/偏好的同状态、同视口参考条件；否则不重复捕获。 |
 | Settings 根页普通重入（生命周期） | **FROZEN SOURCE ASSESSMENT** | 当前 `aboutToAppear` 只同步已发布的登录态并读取本地 Profile 快照；没有 loading 状态、行清空、网络请求或第二次会话恢复。该结论不是设备视觉验收。 | `SettingsPage` 根页生命周期、`NhAccountProfileService.restore` 的可见状态语义发生修改，或真实设备出现根页清空/刷新反证。 |
+| Content Filters 普通重入（生命周期） | **FROZEN** | 首次和返回后二次进入均保留原生内容，无 loading/error；已恢复规则不再重复读取 RDB。 | `ContentFiltersPage` / `ContentFilterService` 的出现期状态语义改变，用户反馈该路径，或真实设备出现加载/清空反证。 |
 | History 根页 | **EVIDENCE-ONLY** | 已观察到简单列表树；缺同一批本地记录的参考状态。 | 自然具备同状态参考条件，或用户给出新的根页反馈。 |
 | Detail Related rail | **OPEN** | 保持真实 related 数据能力与“封面 + 标题”叶；不得从 rail 规则推导缩窄标题、压低卡片或改动 Preview/Comments。 | 用户针对 Related 的新具体反馈，或获得同状态的有效参考/设备反证。 |
 
@@ -52,6 +53,38 @@
 
 **重开纪律：** 这些是反复做过的动作清单，不是待办事项。新的执行必须在台账
 中写出上述三种重开触发之一；“想再确认一次”“顺便看看”或旧协议存在都不是理由。
+
+## 已实施、已在设备观察：Content Filters 普通重入不重复读取本地规则
+
+- 触发依据：用户明确要求普通页面进入/返回不得表现为重复刷新。当前源码证明
+  `EntryAbility` 已在 `loadContent` 前调用 `ContentFilterService.restore()`；成功后
+  `ContentFilterState.isRestored=true`。但 `ContentFiltersPage.aboutToAppear()` 仍无条件
+  调用同一恢复，重复读取 `content_filter_rules` 并替换当前规则数组。该问题是独立的
+  生命周期重复 I/O，不依赖或改动已冻结的 Settings 根页、Detail、Comments 或 Reader。
+- 父树边界：`Settings root -> HdsNavDestination -> ContentFiltersPage -> Column ->
+  SecondaryListScaffold -> page note + RulesGroup`。只改变该 destination 的出现期状态
+  判定；标题栏、List、滚动器、规则行、编辑器 sheet、删除确认与本地规则服务接口
+  均不改变。
+- 精确改动：原来每次 `aboutToAppear` 都令页面进入 restoring 并调用 RDB restore。
+  新行为仅在 `filters.isRestored=false` 时调用 restore；已恢复的 retained state 直接
+  保持，并将本组件的 `isRestoring` 归零。首次启动和任何先前 restore 失败时仍会
+  走原恢复路径，因此不把失败隐藏为成功。
+- 最小性理由：规则的唯一进程内写入口已经由 `ContentFilterService.save/remove/setEnabled`
+  同步更新 `ContentFilterState`；普通返回不需要再次读取 RDB。不会增加缓存层、修改
+  远端请求、合并其他 Settings 子页或改变空态/错误态的视觉树。
+- 验证计划：签名 Debug 构建并以 `install -r` 更新选定设备；在不新增、编辑、删除或
+  切换任何规则的前提下，首次进入 Content Filters 后返回 Settings 再进入一次，确认
+  已有规则/空态直接保留且不出现首次 loading 表面。若首次 RDB restore 失败，保留
+  原错误/重试语义而不伪造失败。
+- 未决风险：其他进程直接写同一 RDB 时，已恢复的常驻状态不会在普通返回时重载；当前
+  产品没有该写入者，进程重启仍会经过 EntryAbility 的首次恢复。此条只接受所述普通
+  重入边界，不泛化为所有 Settings 子页。
+- 当前设备观察：2026-08-11，签名 Debug HAP 已仅以 `install -r` 更新唯一选定设备。
+  在没有新增、编辑、删除或切换任何规则的前提下，原生 Settings → Advanced →
+  Content Filters 首次进入、一次 Back 返回、以及再次进入均稳定显示已有的页面内容，
+  没有 loading 或错误表面。本地审计截图和布局保留在命名目录、排除在 Git；远端临时
+  文件已仅删除本轮创建的副本。该结果只接受普通重入，不是所有错误/外部写入场景的
+  结论。
 
 ## 已实施、已在设备观察：Gallery Comments 的零评论首发入口
 

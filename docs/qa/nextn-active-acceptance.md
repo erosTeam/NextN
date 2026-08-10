@@ -545,6 +545,16 @@ remains continuous; do not ask for it again.
   one continuous in-place application identity; this rules out a current
   update-identity switch, but cannot reconstruct the historical deletion.
 
+## Latest completed physical evidence — Content Filters ordinary re-entry
+
+- 2026-08-11: the signed Debug HAP was installed with `install -r` on the
+  selected TCP device only. Native Settings → Advanced → Content Filters was
+  entered once, returned once with native Back, and entered again. Both
+  terminal states showed the retained native content with no loading or error
+  surface. No filter rule, account, preference, queue, or gallery data was
+  changed. The local screenshot/layout evidence is retained outside Git; only
+  this ordinary re-entry boundary is accepted.
+
 ## Current transport state
 
 - 2026-08-10 11:12-11:20 +0800: sandboxed HDC invocations returned `Connect

@@ -34,6 +34,10 @@ export struct ContentFiltersPage {
   @Param scroller: Scroller = new Scroller()
 
   aboutToAppear(): void {
+    if (this.filters.isRestored) {
+      this.isRestoring = false
+      return
+    }
     this.restore()
   }
 
