@@ -31,6 +31,7 @@ import {
   AboutPage,
   BrowseDensitySettingsPage,
   ContentFiltersPage,
+  ReaderSuperResolutionModelsPage,
   SettingsPage,
   SettingsSurface,
 } from 'settings'
@@ -112,6 +113,7 @@ const ROUTE_CATALOG_SETTINGS: string = 'catalogSettings'
 const ROUTE_BROWSE_DENSITY_SETTINGS: string = 'browseDensitySettings'
 const ROUTE_CONTENT_FILTERS: string = 'contentFilters'
 const ROUTE_READER_SETTINGS: string = 'readerSettings'
+const ROUTE_READER_SUPER_RESOLUTION_MODELS: string = 'readerSuperResolutionModels'
 const ROUTE_DOWNLOAD_SETTINGS: string = 'downloadSettings'
 const ROUTE_CACHE_SETTINGS: string = 'cacheSettings'
 const ROUTE_ADVANCED_SETTINGS: string = 'advancedSettings'
@@ -250,6 +252,7 @@ struct Index {
   private catalogSettingsScroller: Scroller = new Scroller()
   private browseDensitySettingsScroller: Scroller = new Scroller()
   private readerSettingsScroller: Scroller = new Scroller()
+  private readerSuperResolutionModelsScroller: Scroller = new Scroller()
   private downloadSettingsScroller: Scroller = new Scroller()
   private cacheSettingsScroller: Scroller = new Scroller()
   private advancedSettingsScroller: Scroller = new Scroller()
@@ -551,6 +554,10 @@ struct Index {
 
   private pushReaderSettings(): void {
     this.openSettingsRootDestination(ROUTE_READER_SETTINGS)
+  }
+
+  private pushReaderSuperResolutionModels(): void {
+    this.stack.pushPathByName(ROUTE_READER_SUPER_RESOLUTION_MODELS, '')
   }
 
   private pushDownloadSettings(): void {
@@ -1582,11 +1589,27 @@ struct Index {
   @Builder
   private readerSettingsDestination() {
     HdsNavDestination() {
-      SettingsPage({ surface: SettingsSurface.READER, scroller: this.readerSettingsScroller })
+      SettingsPage({
+        surface: SettingsSurface.READER,
+        scroller: this.readerSettingsScroller,
+        onOpenReaderEnhancementModels: (): void => {
+          this.pushReaderSuperResolutionModels()
+        },
+      })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_reader')))
     .hideBackButton(false)
     .bindToScrollable([this.readerSettingsScroller])
+  }
+
+  @Builder
+  private readerSuperResolutionModelsDestination() {
+    HdsNavDestination() {
+      ReaderSuperResolutionModelsPage({ scroller: this.readerSuperResolutionModelsScroller })
+    }
+    .titleBar(nextNHdsTitle(AppStrings.get('settings_reader_enhancement_models')))
+    .hideBackButton(false)
+    .bindToScrollable([this.readerSuperResolutionModelsScroller])
   }
 
   @Builder
@@ -1686,6 +1709,8 @@ struct Index {
       this.contentFiltersDestination()
     } else if (name === ROUTE_READER_SETTINGS) {
       this.readerSettingsDestination()
+    } else if (name === ROUTE_READER_SUPER_RESOLUTION_MODELS) {
+      this.readerSuperResolutionModelsDestination()
     } else if (name === ROUTE_DOWNLOAD_SETTINGS) {
       this.downloadSettingsDestination()
     } else if (name === ROUTE_CACHE_SETTINGS) {

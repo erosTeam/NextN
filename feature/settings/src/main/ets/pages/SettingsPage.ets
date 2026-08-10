@@ -1,5 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import { SymbolGlyphModifier } from '@kit.ArkUI'
+import { ReaderSuperResolutionModelsPage } from './ReaderSuperResolutionModelsPage'
 import {
   AppStrings,
   CatalogPreferencesService,
@@ -143,7 +144,7 @@ export struct SettingsPage {
   @Local readerPresentation: ReaderPresentationState = connectReaderPresentation()
   @Local readerModeError: string = ''
   @Local readerEnhancementModelInstalled: boolean = false
-  @Local isInstallingReaderEnhancementModel: boolean = false
+  @Local readerEnhancementModelsShown: boolean = false
   @Local browsePresentationError: string = ''
   @Local catalogPreferencesError: string = ''
   @Local readerModeMenuShown: boolean = false
@@ -194,6 +195,7 @@ export struct SettingsPage {
   @Event onOpenCatalogSettings?: () => void
   @Event onOpenBrowseDensity?: (mode: NhBrowsePresentation) => void
   @Event onOpenReaderSettings?: () => void
+  @Event onOpenReaderEnhancementModels?: () => void
   @Event onOpenDownloadSettings?: () => void
   @Event onOpenCacheSettings?: () => void
   @Event onOpenAdvancedSettings?: () => void
@@ -456,19 +458,13 @@ export struct SettingsPage {
     }
   }
 
-  private async installReaderEnhancementModel(): Promise<void> {
-    if (this.isInstallingReaderEnhancementModel) {
+  private openReaderEnhancementModels(): void {
+    if (this.sheetPresentation) {
+      this.readerEnhancementModelsShown = true
       return
     }
-    this.isInstallingReaderEnhancementModel = true
-    this.readerModeError = ''
-    try {
-      await ReaderSuperResolutionModelService.install(this.context())
-      this.readerEnhancementModelInstalled = true
-    } catch (_error) {
-      this.readerModeError = AppStrings.get('settings_reader_enhancement_model_download_failed')
-    } finally {
-      this.isInstallingReaderEnhancementModel = false
+    if (this.onOpenReaderEnhancementModels) {
+      this.onOpenReaderEnhancementModels()
     }
   }
 
@@ -1784,18 +1780,14 @@ export struct SettingsPage {
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.lightbulb'),
-        title: this.isInstallingReaderEnhancementModel
-          ? AppStrings.get('settings_reader_enhancement_model_downloading')
-          : AppStrings.get('settings_reader_enhancement_model'),
-        subtitle: AppStrings.get('settings_reader_enhancement_model_hint'),
+        title: AppStrings.get('settings_reader_enhancement_models'),
+        subtitle: AppStrings.get('settings_reader_enhancement_models_hint'),
         trailingText: this.readerEnhancementModelInstalled
           ? AppStrings.get('settings_reader_enhancement_model_ready')
           : AppStrings.get('settings_reader_enhancement_model_download'),
-        showChevron: !this.readerEnhancementModelInstalled && !this.isInstallingReaderEnhancementModel,
-        isEnabled: !this.readerEnhancementModelInstalled && !this.isInstallingReaderEnhancementModel,
-        accessibilityLabel: AppStrings.get('settings_reader_enhancement_model_a11y'),
+        accessibilityLabel: AppStrings.get('settings_reader_enhancement_models_a11y'),
         onAction: (): void => {
-          this.installReaderEnhancementModel()
+          this.openReaderEnhancementModels()
         },
       })
       this.RowDivider()
@@ -1849,6 +1841,20 @@ export struct SettingsPage {
     }) {
       this.ReaderPresentationListItems()
     }
+  }
+
+  @Builder
+  private ReaderEnhancementModelsSheet() {
+    ReaderSuperResolutionModelsPage({
+      modal: true,
+      onClose: (): void => {
+        this.readerEnhancementModelsShown = false
+        this.loadReaderPresentation()
+      },
+      onModelsChanged: (): void => {
+        this.loadReaderPresentation()
+      },
+    })
   }
 
   @Builder
@@ -2392,7 +2398,11 @@ export struct SettingsPage {
 
   build() {
     if (this.surface === SettingsSurface.READER && this.sheetPresentation) {
-      this.ReaderPresentationSheet()
+      if (this.readerEnhancementModelsShown) {
+        this.ReaderEnhancementModelsSheet()
+      } else {
+        this.ReaderPresentationSheet()
+      }
     } else {
       Column() {
         SecondaryListScaffold({
