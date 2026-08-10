@@ -383,11 +383,18 @@ export struct GalleryCommentsPage {
           },
         })
       } else if (this.comments.length === 0) {
-        PageEmptyState({
-          message: this.rawComments.length > 0
-            ? AppStrings.get('comments_status_filtered_empty')
-            : AppStrings.get('comments_status_empty'),
-        })
+        Column() {
+          PageEmptyState({
+            message: this.rawComments.length > 0
+              ? AppStrings.get('comments_status_filtered_empty')
+              : AppStrings.get('comments_status_empty'),
+          })
+        }
+        .width('100%')
+        .layoutWeight(1)
+        if (this.composerAvailable()) {
+          this.CommentComposer()
+        }
       } else {
         Column() {
           Column() {

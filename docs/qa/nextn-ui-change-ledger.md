@@ -12,6 +12,15 @@
 - 验证计划：所需的当前设备和参考状态；构建或源码检查不能替代它。
 - 若被否定：错误假设、忽略的证据、实际影响和禁止复发的约束。
 
+## 计划中：Gallery Comments 的零评论首发入口
+
+- 触发依据：当前用户目标要求应用可长期使用、按真实用户路径补齐未完成能力。当前 `GalleryCommentsPage` 的成功零评论分支直接渲染 `PageEmptyState`，而唯一的页面编辑器只在 `comments.length > 0` 时挂载；已登录用户因此无法发布该画廊的第一条评论。NextE 的完整 Comments 父树在空列表分支仍保留其页面编辑器；本轮已在选定设备对照已加载 Comments 页，未以该截图取代零评论状态的后续设备验收。
+- 父树边界：`HdsNavDestination -> GalleryCommentsPage -> Column`。初始加载和初始错误继续保留原全页状态；成功已加载的滚动区继续由 `PullRefreshListScaffold` 拥有；现有已评论路径维持 `滚动区 + 固定页面底部 CommentComposer`。本改动只在“成功、当前 gallery、零条可见评论”状态下，把原空态放入可伸缩内容区并保留同一个固定底部编辑器。标题栏、顶层 Compose/Refresh 动作、卡片、List inset、键盘避让、评论提交、过滤、刷新和浮动 Read 均不改。
+- 精确改动：原来 `comments.length === 0` 无条件进入没有 composer 的 `PageEmptyState`。改为仅在成功空态包裹 `PageEmptyState` 的可伸缩内容区后追加已有 `CommentComposer()`；首次加载或首次错误仍不显示 composer，避免在未解析当前讨论状态时提供写入入口。
+- 最小性理由：不采用 NextE 的悬浮 composer，因为当前 NextN 的固定页面底部编辑器、无重复 in-page 标题均已有用户明确修正并冻结。只复用“讨论为空仍可发第一条”的能力语义，不移动既有编辑器或重组已评论的 List/card 父树。
+- 验证计划：签名 Debug 构建后，用一个真实、已登录、成功返回零评论的 Gallery 路由验证：空态与固定编辑器同时可见，聚焦后编辑器仍位于键盘上方；不输入或提交评论。若当前设备没有该状态，不伪造响应、评论或本地数据，记录为未完成设备验收。
+- 未决风险：内容过滤可将原始评论过滤为空；该状态不能错误地宣称是“可发表首条”的远端空讨论，因此编辑器只依据已成功加载当前 Gallery 与已发布账号会话，不根据 `rawComments.length` 推断远端数量。
+
 ## 回填：Gallery Detail / Comments 当前父树
 
 ## 已实施、待同状态参考对照：Browse Grid 极端比例封面 letterbox 背景
