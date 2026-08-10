@@ -442,22 +442,14 @@ remains continuous; do not ask for it again.
 
 ## Current transport state
 
-- 2026-08-10 11:12-11:13 +0800: the local HDC client reported `Connect server
-  failed` before and after one bounded `hdc kill` recovery, and again after a
-  single 30-second retry. No selected-device UI, application, account,
-  preference, or data action ran in that attempt. P1 remains OPEN; the next
-  physical action is to re-establish only
-  `192.168.50.237:12345`, renew its lease, and rerun the already-known direct
-  Gallery Detail terminal review.
-- 2026-08-10 11:16 +0800: a resumed preflight again returned `Connect server
-  failed`. No further device command was issued; the same P1 terminal review
-  remains the next physical action after transport recovery.
-- 2026-08-10 11:18 +0800: one final short-interval transport retry returned
-  the same `Connect server failed` result. No device or application action
-  ran; P1 remains OPEN with the unchanged next physical action.
-- 2026-08-10 11:20 +0800: a third consecutive goal-turn preflight returned
-  `Connect server failed`. This is an external transport block only; it does
-  not close P1 or establish any application state.
+- 2026-08-10 11:12-11:20 +0800: sandboxed HDC invocations returned `Connect
+  server failed`; a local loopback probe then established that the sandbox,
+  not the selected device, was denying the HDC client-server connection. This
+  period establishes no device-state result.
+- 2026-08-10 11:30 +0800: the same HDC commands outside that sandbox confirmed
+  `192.168.50.237:12345` Connected and returned `ok`; the existing lease was
+  renewed and the wake/24-hour timeout gate was re-established. P1 continues
+  from the already-known direct Gallery Detail terminal review.
 - The selected TCP target `192.168.50.237:12345` is currently Connected and
   remains the only device used; the USB target was not used as a substitute.
 - The current lease is renewed. The latest wake gate readback is `AWAKE` with
