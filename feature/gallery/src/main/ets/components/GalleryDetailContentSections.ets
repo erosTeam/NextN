@@ -5,9 +5,12 @@ import {
   ThemeTokens,
 } from 'shared'
 
-const RELATED_CAROUSEL_HEIGHT: number = 255
-const RELATED_COVER_HEIGHT: number = ThemeTokens.DETAIL_COVER_HEIGHT
+// A Related item owns both a cover and a readable title region. Keep its
+// source-aspect cover above the Detail hero minimum while staying slightly
+// below ErosN's 200 + 80 reference scale.
+const RELATED_COVER_HEIGHT: number = 190
 const RELATED_TITLE_HEIGHT: number = 80
+const RELATED_CAROUSEL_HEIGHT: number = RELATED_COVER_HEIGHT + RELATED_TITLE_HEIGHT
 const RELATED_FALLBACK_ASPECT_RATIO: number = 3 / 4
 const HORIZONTAL_RAIL_EDGE_INSET: number = ThemeTokens.SPACE_MD
 const COMMENT_CARD_WIDTH: number = 240
