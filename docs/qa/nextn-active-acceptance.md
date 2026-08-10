@@ -671,6 +671,21 @@ remains continuous; do not ask for it again.
   Account persistence is judged only from the durable source owner, signed
   build, and real cold-start state.
 
+## Latest completed physical evidence — Reader image enhancement
+
+- 2026-08-11: the signed Debug HAP was installed with `install -r` only on
+  the selected TCP device. With the preinstalled private enhancement model and
+  one temporary Reader setting enablement, the established direct Gallery
+  route entered the native hidden-chrome Reader. Its settled current-page
+  bottom status leaf rendered the applied-state icon, confirming this observed
+  local-page path reached the enhancement result rather than only displaying
+  the original fallback. The temporary setting was then returned to off and
+  read back as off. No account, comment, download, or gallery data was
+  changed. Local terminal evidence remains under
+  `.hvigor/outputs/reader-enhancement-status-20260811T0555+0800/` and is not
+  added to Git. This accepts only the observed local Reader enhancement path;
+  it does not generalize to other models, page sizes, or source types.
+
 ## Next physical action
 
 ### Rejected P1 start — completed-download CBZ export

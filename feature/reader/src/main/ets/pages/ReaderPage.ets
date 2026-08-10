@@ -55,6 +55,13 @@ const READER_PROGRESS_OVERLAY_HEIGHT: number = 52
 const READER_PROGRESS_NUMBER_MIN_WIDTH: number = 38
 const READER_TAP_ZONE_SCROLL_RATIO: number = 0.75
 const READER_BOTTOM_TOOLBAR_HEIGHT: number = 44
+const READER_ENHANCEMENT_STATUS_SIZE: number = 24
+const READER_ENHANCEMENT_STATUS_BOTTOM_GAP: number = ThemeTokens.SPACE_MD
+
+/** DownloadQueueService exposes verified private pages as display-only file URIs. */
+function readerLocalFilePath(uri: string): string {
+  return uri.startsWith('file://') ? uri.substring('file://'.length) : uri
+}
 // Keep the decision local to the Reader canvas. This is deliberately not a
 // device-class or global-layout check: split windows and rotation can change
 // the same route between a single page and a spread without changing the
@@ -172,6 +179,7 @@ struct ReaderImagePage {
   @Param doubleTapTargetIndex: number = -1
   @Event onZoomChange?: (zoomed: boolean) => void
   @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
+  @Event onEnhancementStateChanged?: (pageIndex: number, processing: boolean, applied: boolean) => void
   @Local hasLoadError: boolean = false
   @Local isRetrying: boolean = false
   @Local isLoading: boolean = true
@@ -250,6 +258,12 @@ struct ReaderImagePage {
     }
   }
 
+  private notifyEnhancementState(processing: boolean, applied: boolean): void {
+    if (this.onEnhancementStateChanged && this.pageIndex >= 0) {
+      this.onEnhancementStateChanged(this.pageIndex, processing, applied)
+    }
+  }
+
   private enhancementOwnerKey(): string {
     return `reader-image:${this.cacheKey}:${this.pageIndex}`
   }
@@ -258,14 +272,25 @@ struct ReaderImagePage {
     if (!this.enhancementEnabled || localPath.length === 0) {
       return
     }
-    const result = await ReaderSuperResolutionService.process(
-      this.context(),
-      localPath,
-      this.enhancementOwnerKey(),
-      true,
-    )
-    if (this.isCurrentLoad(generation) && result.applied) {
-      this.imageSource = result.displayUri
+    this.notifyEnhancementState(true, false)
+    try {
+      const result = await ReaderSuperResolutionService.process(
+        this.context(),
+        localPath,
+        this.enhancementOwnerKey(),
+        true,
+      )
+      if (!this.isCurrentLoad(generation)) {
+        return
+      }
+      this.notifyEnhancementState(false, result.applied)
+      if (result.applied) {
+        this.imageSource = result.displayUri
+      }
+    } catch (_error) {
+      if (this.isCurrentLoad(generation)) {
+        this.notifyEnhancementState(false, false)
+      }
     }
   }
 
@@ -276,11 +301,13 @@ struct ReaderImagePage {
     this.isRetrying = forceReload
     this.isLoading = true
     this.imageSource = ''
+    this.notifyEnhancementState(false, false)
     this.notifyImageLoadState(false)
     this.resetZoom()
     this.notifyZoom()
     if (this.localImageUri.length > 0) {
       this.imageSource = this.localImageUri
+      this.applyEnhancement(generation, readerLocalFilePath(this.localImageUri)).catch((): void => {})
       this.isLoading = false
       this.isRetrying = false
       return
@@ -563,6 +590,7 @@ struct ReaderSpreadImageLayer {
   @Param enhancementEnabled: boolean = false
   @Param pageIndex: number = -1
   @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
+  @Event onEnhancementStateChanged?: (pageIndex: number, processing: boolean, applied: boolean) => void
   @Local hasLoadError: boolean = false
   @Local isRetrying: boolean = false
   @Local isLoading: boolean = true
@@ -608,6 +636,12 @@ struct ReaderSpreadImageLayer {
     }
   }
 
+  private notifyEnhancementState(processing: boolean, applied: boolean): void {
+    if (this.onEnhancementStateChanged && this.pageIndex >= 0) {
+      this.onEnhancementStateChanged(this.pageIndex, processing, applied)
+    }
+  }
+
   private enhancementOwnerKey(): string {
     return `reader-spread:${this.cacheKey}:${this.pageIndex}`
   }
@@ -616,14 +650,25 @@ struct ReaderSpreadImageLayer {
     if (!this.enhancementEnabled || localPath.length === 0) {
       return
     }
-    const result = await ReaderSuperResolutionService.process(
-      this.context(),
-      localPath,
-      this.enhancementOwnerKey(),
-      true,
-    )
-    if (generation === this.loadGeneration && result.applied) {
-      this.imageSource = result.displayUri
+    this.notifyEnhancementState(true, false)
+    try {
+      const result = await ReaderSuperResolutionService.process(
+        this.context(),
+        localPath,
+        this.enhancementOwnerKey(),
+        true,
+      )
+      if (generation !== this.loadGeneration) {
+        return
+      }
+      this.notifyEnhancementState(false, result.applied)
+      if (result.applied) {
+        this.imageSource = result.displayUri
+      }
+    } catch (_error) {
+      if (generation === this.loadGeneration) {
+        this.notifyEnhancementState(false, false)
+      }
     }
   }
 
@@ -634,9 +679,11 @@ struct ReaderSpreadImageLayer {
     this.isRetrying = forceReload
     this.isLoading = true
     this.imageSource = ''
+    this.notifyEnhancementState(false, false)
     this.notifyImageLoadState(false)
     if (this.localImageUri.length > 0) {
       this.imageSource = this.localImageUri
+      this.applyEnhancement(generation, readerLocalFilePath(this.localImageUri)).catch((): void => {})
       this.isLoading = false
       this.isRetrying = false
       return
@@ -747,6 +794,7 @@ struct ReaderSpreadSurface {
   @Param doubleTapTargetIndex: number = -1
   @Event onZoomChange?: (sourceIndex: number, zoomed: boolean) => void
   @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
+  @Event onEnhancementStateChanged?: (pageIndex: number, processing: boolean, applied: boolean) => void
   @Local zoomScale: number = 1
   @Local zoomOffsetX: number = 0
   @Local zoomOffsetY: number = 0
@@ -928,6 +976,11 @@ struct ReaderSpreadSurface {
       onImageLoadStateChanged: (pageIndex: number, loaded: boolean): void => {
         if (this.onImageLoadStateChanged) {
           this.onImageLoadStateChanged(pageIndex, loaded)
+        }
+      },
+      onEnhancementStateChanged: (pageIndex: number, processing: boolean, applied: boolean): void => {
+        if (this.onEnhancementStateChanged) {
+          this.onEnhancementStateChanged(pageIndex, processing, applied)
         }
       },
     })
@@ -1198,6 +1251,49 @@ class ReaderThumbnailDataSource implements IDataSource {
   }
 }
 
+/** One page's actual enhancement result, retained only while Reader stays mounted. */
+class ReaderEnhancementPageState {
+  pageIndex: number = -1
+  processing: boolean = false
+  applied: boolean = false
+}
+
+/** NextE's compact over-image status leaf. It never reserves Reader canvas space. */
+@ComponentV2
+struct ReaderEnhancementStatusIcon {
+  @Param processing: boolean = false
+  @Param applied: boolean = false
+
+  private label(): string {
+    if (this.processing) {
+      return AppStrings.get('reader_enhancement_processing')
+    }
+    return this.applied
+      ? AppStrings.get('reader_enhancement_applied')
+      : AppStrings.get('reader_enhancement_not_applied')
+  }
+
+  build() {
+    Stack({ alignContent: Alignment.Center }) {
+      if (this.processing) {
+        LoadingProgress()
+          .width(ThemeTokens.FONT_SIZE_CAPTION)
+          .height(ThemeTokens.FONT_SIZE_CAPTION)
+          .color(ThemeTokens.TEXT_ON_BRAND)
+      } else {
+        SymbolGlyph($r('sys.symbol.AI_hd_rectangle'))
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontColor([this.applied ? ThemeTokens.BRAND : ThemeTokens.TEXT_ON_BRAND])
+      }
+    }
+    .width(READER_ENHANCEMENT_STATUS_SIZE)
+    .height(READER_ENHANCEMENT_STATUS_SIZE)
+    .borderRadius(READER_ENHANCEMENT_STATUS_SIZE / 2)
+    .backgroundColor('#66000000')
+    .accessibilityText(this.label())
+  }
+}
+
 /** Native Reader with ErosN-derived vertical and page-at-a-time modes. */
 @ComponentV2
 export struct ReaderPage {
@@ -1233,6 +1329,10 @@ export struct ReaderPage {
   @Event onBack?: () => void
   @Event onReaderPresentationChanged?: (chromeVisible: boolean, fullscreen: boolean) => void
   @Local readerPresentation: ReaderPresentationState = connectReaderPresentation()
+  // A primitive render projection keeps nested AppStorage changes observable
+  // for the canvas and its lazy page children.
+  @Local readerEnhancementEnabled: boolean = false
+  @Local readerEnhancementStates: ReaderEnhancementPageState[] = []
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
   private lastPersistedIndex: number = -1
@@ -1324,6 +1424,14 @@ export struct ReaderPage {
   onReaderDoublePagePresentationChanged(): void {
     if (this.readerPresentationReady) {
       this.applyReaderSpreadPresentation()
+    }
+  }
+
+  @Monitor('readerPresentation.superResolutionEnabled')
+  onReaderEnhancementPresentationChanged(): void {
+    this.readerEnhancementEnabled = this.readerPresentation.superResolutionEnabled
+    if (!this.readerEnhancementEnabled) {
+      this.readerEnhancementStates = []
     }
   }
 
@@ -1448,6 +1556,7 @@ export struct ReaderPage {
       // The shared state deliberately retains its local defaults if durable
       // restoration is temporarily unavailable; Reader remains usable.
     }
+    this.readerEnhancementEnabled = this.readerPresentation.superResolutionEnabled
     this.readerPresentationReady = true
     this.syncVolumeKeyConsumer()
     this.notifyReaderPresentation()
@@ -2015,6 +2124,65 @@ export struct ReaderPage {
     }
   }
 
+  private onReaderEnhancementStateChanged(
+    pageIndex: number,
+    processing: boolean,
+    applied: boolean,
+  ): void {
+    if (pageIndex < 0) {
+      return
+    }
+    const next: ReaderEnhancementPageState[] = this.readerEnhancementStates.slice()
+    let state: ReaderEnhancementPageState | undefined = undefined
+    for (let index: number = 0; index < next.length; index++) {
+      if (next[index].pageIndex === pageIndex) {
+        state = next[index]
+        break
+      }
+    }
+    if (state === undefined) {
+      state = new ReaderEnhancementPageState()
+      state.pageIndex = pageIndex
+      next.push(state)
+    }
+    state.processing = processing
+    state.applied = applied
+    this.readerEnhancementStates = next
+  }
+
+  private enhancementStateForPage(pageIndex: number): ReaderEnhancementPageState | undefined {
+    for (let index: number = 0; index < this.readerEnhancementStates.length; index++) {
+      if (this.readerEnhancementStates[index].pageIndex === pageIndex) {
+        return this.readerEnhancementStates[index]
+      }
+    }
+    return undefined
+  }
+
+  private currentReaderEnhancementProcessing(): boolean {
+    const startIndex: number = this.readerNavigationIndex(this.visiblePageIndex)
+    const first: ReaderEnhancementPageState | undefined = this.enhancementStateForPage(startIndex)
+    const secondIndex: number = this.readerSpreadSecondIndex(startIndex)
+    const second: ReaderEnhancementPageState | undefined = secondIndex < 0
+      ? undefined
+      : this.enhancementStateForPage(secondIndex)
+    return (first !== undefined && first.processing) || (second !== undefined && second.processing)
+  }
+
+  private currentReaderEnhancementApplied(): boolean {
+    const startIndex: number = this.readerNavigationIndex(this.visiblePageIndex)
+    const first: ReaderEnhancementPageState | undefined = this.enhancementStateForPage(startIndex)
+    if (first === undefined || !first.applied) {
+      return false
+    }
+    const secondIndex: number = this.readerSpreadSecondIndex(startIndex)
+    if (secondIndex < 0) {
+      return true
+    }
+    const second: ReaderEnhancementPageState | undefined = this.enhancementStateForPage(secondIndex)
+    return second !== undefined && second.applied
+  }
+
   /**
    * An auto-read interval belongs to a rendered page, not to a prior page's
    * timer. This keeps a slow next image from consuming part of its own dwell
@@ -2311,6 +2479,28 @@ export struct ReaderPage {
   }
 
   @Builder
+  private ReaderEnhancementPersistentStatus() {
+    if (this.readerEnhancementEnabled) {
+      Stack({ alignContent: Alignment.Bottom }) {
+        Row() {
+          ReaderEnhancementStatusIcon({
+            processing: this.currentReaderEnhancementProcessing(),
+            applied: this.currentReaderEnhancementApplied(),
+          })
+        }
+        .width('100%')
+        .justifyContent(FlexAlign.Center)
+        .alignItems(VerticalAlign.Center)
+        .margin({ bottom: this.layoutSafeArea.bottomAvoidHeight + READER_ENHANCEMENT_STATUS_BOTTOM_GAP })
+        .hitTestBehavior(HitTestMode.None)
+      }
+      .width('100%')
+      .height('100%')
+      .hitTestBehavior(HitTestMode.None)
+    }
+  }
+
+  @Builder
   private ReaderHeader() {
     Stack({ alignContent: Alignment.Center }) {
       Row() {
@@ -2458,7 +2648,7 @@ export struct ReaderPage {
           ReaderImagePage({
             imageUrl: NhApiClient.imageUrl(this.detail.mediaId, item.sourceIndex, item.page.extension),
             localImageUri: this.localImageUri(item.page, item.sourceIndex),
-            enhancementEnabled: this.readerPresentation.superResolutionEnabled,
+            enhancementEnabled: this.readerEnhancementEnabled,
             imageWidth: item.page.width,
             imageHeight: item.page.height,
             pageIndex: item.sourceIndex,
@@ -2469,6 +2659,9 @@ export struct ReaderPage {
             },
             onImageLoadStateChanged: (pageIndex: number, loaded: boolean): void => {
               this.onReaderImageLoadStateChanged(pageIndex, loaded)
+            },
+            onEnhancementStateChanged: (pageIndex: number, processing: boolean, applied: boolean): void => {
+              this.onReaderEnhancementStateChanged(pageIndex, processing, applied)
             },
             cacheKey: ReaderImageCacheService.cacheKey(
               this.detail.id,
@@ -2502,7 +2695,7 @@ export struct ReaderPage {
             ReaderImagePage({
               imageUrl: NhApiClient.imageUrl(this.detail.mediaId, item.sourceIndex, item.page.extension),
               localImageUri: this.localImageUri(item.page, item.sourceIndex),
-              enhancementEnabled: this.readerPresentation.superResolutionEnabled,
+              enhancementEnabled: this.readerEnhancementEnabled,
               imageWidth: item.page.width,
               imageHeight: item.page.height,
               pageIndex: item.sourceIndex,
@@ -2513,6 +2706,9 @@ export struct ReaderPage {
               },
               onImageLoadStateChanged: (pageIndex: number, loaded: boolean): void => {
                 this.onReaderImageLoadStateChanged(pageIndex, loaded)
+              },
+              onEnhancementStateChanged: (pageIndex: number, processing: boolean, applied: boolean): void => {
+                this.onReaderEnhancementStateChanged(pageIndex, processing, applied)
               },
               cacheKey: ReaderImageCacheService.cacheKey(
                 this.detail.id,
@@ -2563,7 +2759,7 @@ export struct ReaderPage {
             mediaId: this.detail.mediaId,
             firstLocalImageUri: this.localImageUri(item.first.page, item.first.sourceIndex),
             secondLocalImageUri: this.localSpreadSecondImageUri(item),
-            enhancementEnabled: this.readerPresentation.superResolutionEnabled,
+            enhancementEnabled: this.readerEnhancementEnabled,
             rowReversed: this.isRightToLeftPagedMode(),
             doubleTapSequence: this.doubleTapSequence,
             doubleTapTargetIndex: this.doubleTapTargetIndex,
@@ -2572,6 +2768,9 @@ export struct ReaderPage {
             },
             onImageLoadStateChanged: (pageIndex: number, loaded: boolean): void => {
               this.onReaderImageLoadStateChanged(pageIndex, loaded)
+            },
+            onEnhancementStateChanged: (pageIndex: number, processing: boolean, applied: boolean): void => {
+              this.onReaderEnhancementStateChanged(pageIndex, processing, applied)
             },
           })
         },
@@ -2897,6 +3096,9 @@ export struct ReaderPage {
         this.ReaderContent()
         this.ReaderTapOverlay()
         this.ReaderInlineError()
+      }
+      if (!this.readerChromeVisible && this.isReaderReadyForCurrentGallery) {
+        this.ReaderEnhancementPersistentStatus()
       }
       // The top bar overlays the canvas. It must not permanently subtract from
       // the page viewport, which is the source of the old NextN top gutter.
