@@ -81,6 +81,11 @@ remains continuous; do not ask for it again.
   action did not cover a card in the reviewed end states. This is a current
   device geometry observation, not a same-data reference-parity claim; no
   data, preference, or gallery action was changed.
+- The Gallery Comments timestamp footer and the Detail compact-comment
+  preview were then checked after a data-preserving signed Debug update. Both
+  showed the supported local date-and-time leaf without clipping the author
+  or body; no comment text was entered and no mutation was sent. The bounded
+  local captures are retained outside source control.
 - Next physical action: continue the Gallery Detail / Comments reference
   review from a real same-state capture, then make only the next proven
   parent-tree or geometry correction as a separate commit.
