@@ -163,9 +163,20 @@ remains continuous; do not ask for it again.
   acceptance or a claim that the composer was visible; the next permitted
   action is to preserve a fresh terminal screenshot and review that exact
   zero-comment state.
+- 2026-08-10: the same real zero-comment route was repeated after the device
+  gate. Its retained terminal screenshot shows the native empty-state message
+  and the existing fixed page-footer composer in the same viewport; no text,
+  submit, account action, or preference change occurred. This observes
+  zero-comment composer visibility only, not visual reference parity. One
+  fresh-layout semantic click targeted the empty composer field. The terminal
+  keyboard screenshot was generated on device but its host receive was
+  rejected by the local approval service, so keyboard avoidance remains
+  unproven rather than inferred from command injection. The retained at-rest
+  screenshot is
+  `.hvigor/outputs/nextn-comments-empty-retry-20260810T1457+0800/nextn-comments-empty.png`.
 - Next physical action: continue the Gallery Detail / Comments reference
-  zero-comment acceptance when the local approval service permits the
-  screenshot capture; do not change the frozen title/composer boundaries
+  zero-comment keyboard-avoidance capture when the local approval service
+  permits file receipt; do not change the frozen title/composer boundaries
   merely to match NextE.
 
 ## Completed physical evidence
