@@ -575,6 +575,12 @@ remains continuous; do not ask for it again.
   is retained outside Git. This is a single current Reader state observation;
   it is not a same-state reference comparison and does not authorize a Reader
   visual change.
+- 2026-08-10 16:29 +0800: that same Reader overlay returned through the
+  documented native Back action. The retained Detail route immediately showed
+  one visible native List and its existing Read action with no visible loading
+  progress state. No page, preference, account, or content mutation occurred.
+  This verifies only the Reader-to-Detail ordinary-return boundary; it does
+  not generalize to other route types or cold starts.
 - Raw screenshots and layouts retained for an active route or visual decision
   stay in their named local audit directory; they are never added to Git or
   deleted automatically.
