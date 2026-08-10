@@ -196,6 +196,7 @@ export struct SettingsPage {
   @Event onOpenBrowseDensity?: (mode: NhBrowsePresentation) => void
   @Event onOpenReaderSettings?: () => void
   @Event onOpenReaderEnhancementModels?: () => void
+  @Event onOpenReaderComicTranslationSource?: () => void
   @Event onOpenDownloadSettings?: () => void
   @Event onOpenCacheSettings?: () => void
   @Event onOpenAdvancedSettings?: () => void
@@ -1812,11 +1813,34 @@ export struct SettingsPage {
     }
   }
 
+  /** Reader translation setup is a normal settings destination, not Reader-sheet chrome. */
+  @Builder
+  private ReaderComicTranslationGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.translate'),
+        title: AppStrings.get('settings_reader_comic_translation'),
+        subtitle: AppStrings.get('settings_reader_comic_translation_hint'),
+        accessibilityLabel: AppStrings.get('settings_reader_comic_translation_a11y'),
+        onAction: (): void => {
+          if (this.onOpenReaderComicTranslationSource) {
+            this.onOpenReaderComicTranslationSource()
+          }
+        },
+      })
+    }
+  }
+
   /** Shared content for the routed Settings surface and the Reader-owned sheet. */
   @Builder
   private ReaderPresentationListItems() {
     ListItem() {
       this.ReaderPresentationGroup()
+    }
+    if (!this.sheetPresentation && this.onOpenReaderComicTranslationSource) {
+      ListItem() {
+        this.ReaderComicTranslationGroup()
+      }
     }
     if (this.readerModeError.length > 0) {
       ListItem() {

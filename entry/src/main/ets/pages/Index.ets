@@ -30,6 +30,7 @@ import {
 import {
   AboutPage,
   BrowseDensitySettingsPage,
+  ComicTranslationSourcePage,
   ContentFiltersPage,
   ReaderSuperResolutionModelsPage,
   SettingsPage,
@@ -114,6 +115,7 @@ const ROUTE_BROWSE_DENSITY_SETTINGS: string = 'browseDensitySettings'
 const ROUTE_CONTENT_FILTERS: string = 'contentFilters'
 const ROUTE_READER_SETTINGS: string = 'readerSettings'
 const ROUTE_READER_SUPER_RESOLUTION_MODELS: string = 'readerSuperResolutionModels'
+const ROUTE_READER_COMIC_TRANSLATION_SOURCE: string = 'readerComicTranslationSource'
 const ROUTE_DOWNLOAD_SETTINGS: string = 'downloadSettings'
 const ROUTE_CACHE_SETTINGS: string = 'cacheSettings'
 const ROUTE_ADVANCED_SETTINGS: string = 'advancedSettings'
@@ -253,6 +255,7 @@ struct Index {
   private browseDensitySettingsScroller: Scroller = new Scroller()
   private readerSettingsScroller: Scroller = new Scroller()
   private readerSuperResolutionModelsScroller: Scroller = new Scroller()
+  private readerComicTranslationSourceScroller: Scroller = new Scroller()
   private downloadSettingsScroller: Scroller = new Scroller()
   private cacheSettingsScroller: Scroller = new Scroller()
   private advancedSettingsScroller: Scroller = new Scroller()
@@ -558,6 +561,10 @@ struct Index {
 
   private pushReaderSuperResolutionModels(): void {
     this.stack.pushPathByName(ROUTE_READER_SUPER_RESOLUTION_MODELS, '')
+  }
+
+  private pushReaderComicTranslationSource(): void {
+    this.stack.pushPathByName(ROUTE_READER_COMIC_TRANSLATION_SOURCE, '')
   }
 
   private pushDownloadSettings(): void {
@@ -1595,6 +1602,9 @@ struct Index {
         onOpenReaderEnhancementModels: (): void => {
           this.pushReaderSuperResolutionModels()
         },
+        onOpenReaderComicTranslationSource: (): void => {
+          this.pushReaderComicTranslationSource()
+        },
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_reader')))
@@ -1610,6 +1620,16 @@ struct Index {
     .titleBar(nextNHdsTitle(AppStrings.get('settings_reader_enhancement_models')))
     .hideBackButton(false)
     .bindToScrollable([this.readerSuperResolutionModelsScroller])
+  }
+
+  @Builder
+  private readerComicTranslationSourceDestination() {
+    HdsNavDestination() {
+      ComicTranslationSourcePage({ scroller: this.readerComicTranslationSourceScroller })
+    }
+    .titleBar(nextNHdsTitle(AppStrings.get('settings_reader_comic_translation_source')))
+    .hideBackButton(false)
+    .bindToScrollable([this.readerComicTranslationSourceScroller])
   }
 
   @Builder
@@ -1711,6 +1731,8 @@ struct Index {
       this.readerSettingsDestination()
     } else if (name === ROUTE_READER_SUPER_RESOLUTION_MODELS) {
       this.readerSuperResolutionModelsDestination()
+    } else if (name === ROUTE_READER_COMIC_TRANSLATION_SOURCE) {
+      this.readerComicTranslationSourceDestination()
     } else if (name === ROUTE_DOWNLOAD_SETTINGS) {
       this.downloadSettingsDestination()
     } else if (name === ROUTE_CACHE_SETTINGS) {

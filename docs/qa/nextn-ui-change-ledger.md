@@ -53,3 +53,35 @@ authorize an edit, replace a device comparison, or define product completion.
   callback is now implemented in source but has not been observed on device.
   A source/provider configuration surface is also still required before an
   ordinary user can produce a translation result.
+
+## OPEN — Reader comic-translation source
+
+- User outcome: make the Reader's existing per-page comic-translation action
+  configurable with one private OpenAI-compatible source and model, rather
+  than leaving the action dependent on an inaccessible stored binding.
+- Reference parent tree: NextE keeps source configuration outside Reader:
+  Settings route → `HdsNavDestination` → `SecondaryListScaffold` →
+  `ListItem` → `GroupedListSection`. Its source-detail group is ordered as a
+  read-only source-type row followed by name, base URL, and password input
+  leaves; the comic-translation settings owner binds a compatible source and
+  model separately.
+- Current NextN parent tree: the Reader settings destination already uses
+  `HdsNavDestination` → `SettingsPage(READER)` → `SecondaryListScaffold` →
+  `ListItem` → `NextNGroupedListSection` → `NextNListRow`. Shared code already
+  owns `LlmSourceProfileRepository`, `LlmSourceSecretVault`, and the manga
+  consumer binding, but no current Settings route reaches them.
+- Proven NH boundary: the current runtime supports only an
+  OpenAI-compatible Responses source. The new destination therefore exposes
+  that supported source type and its manga binding only; it does not present
+  NextE's Codex OAuth, catalog, comment-translation, Torii, or self-hosted
+  leaves as if NextN implemented them.
+- Before/after rationale: a single Reader-settings navigation row and one
+  focused destination preserve the root Settings and Reader parent trees. The
+  form writes metadata through the existing profile repository, a key only to
+  the existing HUKS vault, and the selected model through the existing manga
+  binding; it must never place a key in reactive shared state or diagnostics.
+- Visual verification plan: compare this destination against the same-state
+  NextE source-detail screen on device. Review the Reader-settings row,
+  route/title chrome, grouped-form hierarchy, input insets, error treatment,
+  and configured/unconfigured state. Retain raw captures locally; no
+  source-shape or synthetic UI check is evidence.
