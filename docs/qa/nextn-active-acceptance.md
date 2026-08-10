@@ -461,6 +461,13 @@ remains continuous; do not ask for it again.
   remains the only device used; the USB target was not used as a substitute.
 - The current lease is renewed. The latest wake gate readback is `AWAKE` with
   `OverrideTimeout=86400000ms`.
+- 2026-08-10 12:28 +0800: one direct Gallery Detail review reached Related and
+  made one horizontal mid-list swipe. The retained local capture shows the
+  list viewport extending through the section's internal horizontal boundary;
+  the partially visible side cards are scroll clipping, not parent-inset
+  clipping. This is a current-device geometry observation only, not a
+  same-state reference-parity claim and not grounds for a size or hierarchy
+  change.
 - The latest Debug HAP was installed with `install -r` only; no uninstall,
   application-data clear, or broad data deletion was performed.
 - Raw temporary layouts used solely for safe structural summaries were deleted
