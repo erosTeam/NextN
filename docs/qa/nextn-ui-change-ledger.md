@@ -31,7 +31,7 @@
 | Settings Layout 普通重入（生命周期） | **EVIDENCE-ONLY** | 启动期已恢复 Theme/Language/Material/Browse presentation/Home tab/Cover background/Gallery title/Read style/Tablet layout；Layout 的 `aboutToAppear` 仍会重复读取同一组本地偏好。当前未观察到 loading、行清空或错误状态，不能据源码把重复 I/O 宣称为可见缺陷，也不得再重复检查。 | 真实设备出现 Layout 内容清空、加载或错误反证；或该出现期/启动期恢复路径发生改动。 |
 | Content Filters 普通重入（生命周期） | **FROZEN** | 首次和返回后二次进入均保留原生内容，无 loading/error；已恢复规则不再重复读取 RDB。 | `ContentFiltersPage` / `ContentFilterService` 的出现期状态语义改变，用户反馈该路径，或真实设备出现加载/清空反证。 |
 | History 根页 | **EVIDENCE-ONLY** | 已观察到简单列表树；缺同一批本地记录的参考状态。 | 自然具备同状态参考条件，或用户给出新的根页反馈。 |
-| Detail Related rail | **OPEN** | 保持真实 related 数据能力与“封面 + 标题”叶；不得从 rail 规则推导缩窄标题、压低卡片或改动 Preview/Comments。 | 用户针对 Related 的新具体反馈，或获得同状态的有效参考/设备反证。 |
+| Detail Related rail | **EVIDENCE-ONLY** | 2026-08-11 已以 `471768` 取得当前 Detail 的 Related 终态：标题、真实比例封面、80vp 标题叶与首尾 item 留白均可见；当前画面本身没有给出可安全推导的新尺寸。 | Related 可见源码改动、用户给出新的具体目标，或取得同状态、同视口的有效参考/反证。 |
 
 **执行口令：** 已确认且未发生新变更的边界不再检查。一次观察只记录一次；
 后续工作只进入表中因新证据而可行动的单一边界，不能把“还有未对齐页面”
@@ -307,6 +307,18 @@
 - 依据与边界：用户明确要求横向 List 的中段延展感，且首尾留白归 List 首末项；标题和垂直间距不得跟随 List 扩展。
 - 未完成处：卡片高度、标题可读性与封面比例必须由用户的当前视觉反馈和同状态参考共同决定；不得把“横向延展”误扩展成缩窄标题或压低卡片。
 - 验证状态：当前设备已确认中段不被父容器内部横向 inset 裁断；完整视觉对齐仍 OPEN。
+- 2026-08-11 当前证据：使用已冻结的 `nextn://gallery/471768` 直达路径，在选定设备取得
+  当前 Detail 下半屏。Related 为页面级标题加横向 `List`，三张可见卡都保留“封面 + 标题”
+  叶，标题没有被裁成单行；Related 标题与上方 Tags 标题落在同一内容起始线。现行值仍是
+  `190vp cover + 80vp title`，而 ErosN 的当前父树为 `280` 高 rail（动态 `200` 高 cover +
+  `80` 标题）。两者和此前“标题必须可读、不得把卡片压到极小”反馈相容，却不能从这一张
+  当前 NextN 画面推出一个不同的唯一数值。没有同状态 ErosN/NextE 实机画面时，不再以
+  “看起来高/低”二次改动该 rail。
+- 防重复：本次终态截图、布局与前台证据保留在本地
+  `.hvigor/outputs/nextn-detail-related-20260811T0300/`，排除在 Git。Related 现在为
+  **EVIDENCE-ONLY**：没有新的明确视觉目标、可见源码改动或同状态反证时，不得再次直达、
+  截图、源码审查、测试或调整这一边界；Preview、Comments 和浮动 Read 仍各自冻结且不受
+  此记录影响。
 
 ### ad136cb / 03ae7f2 — Compact Preview 高度
 
