@@ -42,10 +42,12 @@ export class ComicProviderHttpError extends Error {
   readonly statusCode: number
   readonly detailCode: string
 
-  constructor(statusCode: number, responseBody: string) {
+  constructor(statusCode: number, responseBody: string, preservedDetailCode: string = '') {
     super('Comic provider request failed (HTTP ' + statusCode + ')')
     this.statusCode = statusCode
-    this.detailCode = ComicProviderHttpError.classify(responseBody)
+    this.detailCode = preservedDetailCode.length > 0
+      ? preservedDetailCode
+      : ComicProviderHttpError.classify(responseBody)
   }
 
   private static classify(responseBody: string): string {
@@ -138,7 +140,7 @@ export class ComicResponsesClient {
     } catch (error) {
       if (error instanceof ComicProviderHttpError) {
         const rejected: ComicProviderHttpError = error as ComicProviderHttpError
-        throw new ComicProviderHttpError(rejected.statusCode, '')
+        throw new ComicProviderHttpError(rejected.statusCode, '', rejected.detailCode)
       }
       if (error instanceof ComicProviderStageError) {
         const staged: ComicProviderStageError = error as ComicProviderStageError
