@@ -465,6 +465,11 @@ remains continuous; do not ask for it again.
   selected device's `uiInput` help, the literal `uitest uiInput keyEvent Back`
   returned exactly to the retained Downloads route. No Reader preference,
   page position, account state, or download state was changed.
+- 2026-08-10 13:02-13:20 +0800: one ordinary History → Browse → History root
+  transition retained the visible local-history rows and day grouping with no
+  first-page clear or refresh indicator. This covers only that normal
+  root-tab return; it is not a cold-start, mutation, search, or pagination
+  claim.
 - The current lease is renewed. The latest wake gate readback is `AWAKE` with
   `OverrideTimeout=86400000ms`.
 - 2026-08-10 12:28 +0800: one direct Gallery Detail review reached Related and
