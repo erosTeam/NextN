@@ -145,6 +145,18 @@ remains continuous; do not ask for it again.
   viewport, but its corresponding page was not reached in this run, so visual
   parity remains open. Local raw route artifacts remain outside Git.
 
+- 2026-08-12 corrected reference-route result: NextE reached its actual
+  `Settings → EH → Comic translation → Self-hosted` service form, while
+  NextN again reached its native `Settings → Reader → Comic translation →
+  Manga rendering service` form. Both terminal roots were native EntryAbility
+  foregrounds at the same `1320×2120` portrait viewport. The reference form
+  was already configured and the NextN form was unconfigured, so the pair is
+  rejected for visual comparison rather than treated as a parity result. No
+  service field, connection check, provider state, account state, content
+  data, preference, app-data clear, or uninstall occurred. The raw local
+  evidence is retained outside Git; do not rerun either route or change either
+  configuration merely to manufacture equivalence.
+
 - 2026-08-11: the signed Debug HAP was installed with `install -r` on the
   selected TCP device only. The device gate read `AWAKE` with
   `OverrideTimeout=86400000ms` before the native route.
