@@ -868,3 +868,9 @@ authorize an edit, replace a device comparison, or define product completion.
   immediately; the next one-run discriminator keeps normal detail/history/data
   loading but suppresses only visible-page and opportunistic preload image
   cache requests.
+- Result: with normal detail, history, and page-data loading retained while
+  visible-page and preload image/cache work was suppressed, native NextN
+  Reader again remained foregrounded. The failing window is therefore limited
+  to the normal image/cache/enhancement chain. This guard is removed
+  immediately; the next discriminator retains normal page images and cache
+  work but suppresses only the existing enhancement invocation.
