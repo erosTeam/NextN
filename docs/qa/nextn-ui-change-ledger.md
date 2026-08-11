@@ -140,6 +140,45 @@ authorize an edit, replace a device comparison, or define product completion.
   is observed; a same-state, same-viewport NextE reference capture is still
   absent, so this is not visual-reference acceptance and must not be reopened
   merely to repeat the same portrait selection sequence.
+- **Reopened evidence — 2026-08-12:** a current `1320×2120` portrait NextE
+  capture now provides the matching Interface-settings state with
+  `Auto-rotate` selected. The new NextN row has the correct group/order/value
+  but renders a navigation chevron, while the reference uses the standard
+  menu down-triangle. The source owner confirms the distinction:
+  `ConciseListRow.trailingDropdown` is used by every value menu in the
+  reference Layout page.
+- **Sibling boundary and exact correction:** review of the complete local
+  Layout surface found the same action mismatch only on the seven value rows
+  that open a `Menu`: theme, immersive material, language, gallery
+  presentation, Read-button style, tablet layout, and screen orientation.
+  Extend `NextNListRow` with the opt-in reference suffix and apply it to those
+  seven rows only. Switch rows and the column-width navigation row retain
+  their current owners; Reader, Advanced, and other Settings destinations are
+  out of scope. The before/after is only
+  `SuffixTextAndArrow` navigation chevron → text plus down-triangle menu
+  indicator; menu values, persistence, and actions are unchanged.
+- **Verification plan for this correction:** build and install in place,
+  capture the same `Auto-rotate` Interface state against the retained matching
+  NextE viewport, then restore `System default` before leaving the device.
+- **Final device result — 2026-08-12:** the signed Debug HAP was installed
+  in place on the selected 237 device. Current NextE and corrected NextN
+  captures both had a `1320×2120` portrait root, native Interface settings,
+  and the `Auto-rotate` value. The corrected NextN value rows now render the
+  same text-plus-down-triangle menu affordance as the reference; the real
+  NextN menu still opened and selected `Auto-rotate`. The existing value was
+  then restored through a fresh menu to `System default`, with NextN still
+  foreground. Raw captures remain local in
+  `.hvigor/outputs/screen-orientation-reference-20260812T0247/` and are not
+  committed.
+- **Independent observed gap:** NextE's Appearance group also has a theme-color
+  capability that current NextN does not expose. This correction neither
+  treats that capability as accepted nor changes it; it requires a separate
+  owner/data-path assessment before any future UI work.
+- **FROZEN — Layout menu affordance:** do not revisit, recapture, or restyle
+  these seven down-triangle menu rows without new user feedback, a source
+  change in their shared component, or same-state counter-evidence. This
+  freeze is limited to menu-vs-navigation signaling and does not imply that
+  the entire Interface page or the separate theme-color capability is closed.
 
 ## OPEN — Reader selectable Waifu2x enhancement models
 

@@ -3,6 +3,7 @@ import {
   PrefixCustomBuilder,
   PrefixImage,
   SuffixButton,
+  SuffixCustomBuilder,
   SuffixSwitch,
   SuffixText,
   SuffixTextAndArrow,
@@ -34,6 +35,8 @@ export struct NextNListRow {
   @Param trailingActionText: string = ''
   @Param trailingActionDestructive: boolean = false
   @Param showChevron: boolean = true
+  /** Use the standard down-triangle when this row opens a value menu. */
+  @Param trailingDropdown: boolean = false
   @Param hasSwitch: boolean = false
   @Param checked: boolean = false
   /** Navigational location marker, separate from a switch's checked state. */
@@ -109,6 +112,27 @@ export struct NextNListRow {
   @Builder
   private EmptyLeading() {}
 
+  @Builder
+  private DropdownSuffixContent() {
+    Text(this.trailingText)
+      .fontSize(ThemeTokens.FONT_SIZE_BODY)
+      .fontColor(ThemeTokens.TEXT_SECONDARY)
+      .maxLines(1)
+      .textOverflow({ overflow: TextOverflow.Ellipsis })
+    SymbolGlyph($r('sys.symbol.arrowtriangle_down_fill'))
+      .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+      .fontColor([ThemeTokens.TEXT_TERTIARY])
+      .padding({ left: ThemeTokens.SPACE_XS, right: ThemeTokens.SPACE_MD })
+  }
+
+  @Builder
+  private DropdownSuffix() {
+    Row({ space: ThemeTokens.SPACE_XS }) {
+      this.DropdownSuffixContent()
+    }
+    .alignItems(VerticalAlign.Center)
+  }
+
   private hasLeading(): boolean {
     return this.useCustomLeading || this.leadingIcon !== undefined || this.leadingImageUrl.length > 0
   }
@@ -142,7 +166,13 @@ export struct NextNListRow {
     })
   }
 
-  private suffixItem(): SuffixTextAndArrow | SuffixText | SuffixSwitch | SuffixButton | undefined {
+  private suffixItem():
+    | SuffixTextAndArrow
+    | SuffixText
+    | SuffixSwitch
+    | SuffixButton
+    | SuffixCustomBuilder
+    | undefined {
     if (this.hasSwitch) {
       return new SuffixSwitch({
         isCheck: this.checked,
@@ -156,6 +186,11 @@ export struct NextNListRow {
       })
     }
     if (this.trailingText.length > 0) {
+      if (this.trailingDropdown) {
+        return new SuffixCustomBuilder((): void => {
+          this.DropdownSuffix()
+        })
+      }
       if (this.showChevron) {
         return new SuffixTextAndArrow(
           { text: this.trailingText, modifier: this.trailingTextModifier() },

@@ -2393,6 +2393,7 @@ export struct SettingsPage {
         leadingIcon: $r('sys.symbol.moon'),
         title: AppStrings.get('settings_theme'),
         trailingText: this.themeModeLabel(),
+        trailingDropdown: true,
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_theme'),
           this.themeModeLabel(),
@@ -2412,6 +2413,7 @@ export struct SettingsPage {
         leadingIcon: $r('sys.symbol.picture'),
         title: AppStrings.get('immersive_material'),
         trailingText: this.immersiveMaterialLabel(),
+        trailingDropdown: true,
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('immersive_material'),
           this.immersiveMaterialLabel(),
@@ -2431,6 +2433,7 @@ export struct SettingsPage {
         leadingIcon: $r('sys.symbol.translate'),
         title: AppStrings.get('settings_language'),
         trailingText: this.languageModeLabel(),
+        trailingDropdown: true,
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_language'),
           this.languageModeLabel(),
@@ -2516,6 +2519,7 @@ export struct SettingsPage {
         title: AppStrings.get('browse_presentation'),
         subtitle: AppStrings.get('browse_presentation_hint'),
         trailingText: this.browsePresentationLabel(),
+        trailingDropdown: true,
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('browse_presentation'),
           this.browsePresentationLabel(),
@@ -2634,6 +2638,7 @@ export struct SettingsPage {
         title: AppStrings.get('settings_read_button_style'),
         subtitle: AppStrings.get('settings_read_button_style_hint'),
         trailingText: this.readButtonStyleLabel(),
+        trailingDropdown: true,
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_read_button_style'),
           this.readButtonStyleLabel(),
@@ -2658,6 +2663,7 @@ export struct SettingsPage {
         leadingIcon: $r('sys.symbol.rectangle_split_2x1'),
         title: AppStrings.get('settings_tablet_layout'),
         trailingText: this.tabletLayoutLabel(),
+        trailingDropdown: true,
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_tablet_layout'),
           this.tabletLayoutLabel(),
@@ -2682,6 +2688,7 @@ export struct SettingsPage {
         leadingIcon: $r('sys.symbol.rectangle_portrait_rotate'),
         title: AppStrings.get('settings_screen_orientation'),
         trailingText: this.screenOrientationLabel(),
+        trailingDropdown: true,
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_screen_orientation'),
           this.screenOrientationLabel(),
