@@ -91,6 +91,18 @@ export { LlmSourceProfileContract } from './services/LlmSourceProfileContract'
 export { LlmSourceProfileRepository } from './storage/LlmSourceProfileRepository'
 export { LlmSourceProfilesState, connectLlmSourceProfiles } from './state/LlmSourceProfilesState'
 export { LlmSourceSecretVault } from './services/LlmSourceSecretVault'
+export {
+  MangaRenderingServiceCredential,
+  MangaRenderingServiceSecretStore,
+} from './services/MangaRenderingServiceSecretStore'
+export {
+  MangaRenderingServiceSettings,
+  MangaRenderingServiceSettingsSnapshot,
+  MANGA_RENDERING_DETECTION_HIGH_RECALL,
+  MANGA_RENDERING_DETECTION_BALANCED,
+  MANGA_RENDERING_INPAINTING_QUALITY,
+  MANGA_RENDERING_INPAINTING_FAST,
+} from './settings/MangaRenderingServiceSettings'
 export { LlmSourceRuntimeConfig, LlmSourceRuntimeResolver } from './services/LlmSourceRuntimeResolver'
 export { ComicTranslationDiagnosticLogger } from './services/ComicTranslationDiagnosticLogger'
 export {
