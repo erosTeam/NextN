@@ -1079,3 +1079,13 @@ authorize an edit, replace a device comparison, or define product completion.
   transfer. The suppression is removed immediately; the implementation must
   now repair the enhancement decode/processing boundary rather than retain a
   feature disable.
+- Current-source retry: with no temporary Reader source change retained, one
+  fresh native Detail `继续` activation again ended with the NextE root in the
+  foreground. The local 500-line app/core warning-and-error tail contains no
+  Reader, PixelMap, ImageSource, or fatal marker that can attribute the
+  transition. This counterevidence reopens the prior enhancement-only
+  conclusion: it establishes only an un-attributed Reader-entry failure in
+  the current normal build. The raw local evidence is retained at
+  `.hvigor/outputs/reader-route-baseline-log-20260811T2123/` outside Git.
+  Do not repeat the same route; the next evidence must change one
+  non-visible execution boundary.

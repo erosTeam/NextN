@@ -916,6 +916,21 @@ remains continuous; do not ask for it again.
   claimed from this run. The retained raw evidence is
   `.hvigor/outputs/reader-hit-test-20260811T0319+0800/` and remains outside
   Git.
+- 2026-08-11 current-source retry: after the normal signed Debug HAP was
+  restored, NextN alone was force-stopped and the documented numeric Gallery
+  route was opened. A fresh native Detail layout supplied one unique `继续`
+  action; exactly one activation again left `com.erosteam.nexte` foreground
+  rather than a NextN Reader. The selected device remained awake with the
+  86400000ms timeout override, and no preference, account, content, download,
+  or application-data action occurred.
+- The one retained 500-line app/core warning-and-error tail contains no
+  Reader, PixelMap, ImageSource, or fatal marker that can attribute this
+  transition. It therefore records the foreground failure only, not a cause.
+  The raw pre/post layouts, screenshot, and bounded log are retained outside
+  Git at `.hvigor/outputs/reader-route-baseline-log-20260811T2123/` and will
+  not be deleted automatically. The next diagnostic must change one
+  non-visible execution boundary and cannot repeat this normal route merely
+  to obtain another equivalent terminal capture.
 
 ## Current device exception — Gallery full-title translation route setup
 
