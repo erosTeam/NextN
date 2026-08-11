@@ -881,3 +881,30 @@ authorize an edit, replace a device comparison, or define product completion.
   transfer. The suppression is removed immediately; the implementation must
   now repair the enhancement decode/processing boundary rather than retain a
   feature disable.
+
+## OPEN — Reader enhancement memory ownership — 2026-08-11
+
+- **Newly actionable evidence:** on the selected device, normal Reader entry
+  left NextN only when the enhancement invocation was enabled. The preceding
+  route, detail/history/data, ordinary image display, and image-cache work
+  each remained native in separate, local diagnostic runs.
+- **Affected parent/ownership boundary:** one Reader route owns visible image
+  leaves. Each mounted page leaf asks `ReaderSuperResolutionService` to turn a
+  private cached image into a private 2× derivative; this does not change the
+  Reader canvas, chrome, gestures, page order, or source/cache data owners.
+- **Source-backed before/after:** before, distinct mounted leaves start their
+  `ImageSource -> PixelMap -> RGBA -> native output` flows immediately. The
+  native inference mutex therefore arrives only after multiple decoded pixel
+  buffers can already coexist. After, the service accepts the same per-page
+  requests but executes one complete decode/processing flow at a time, with
+  owner release short-circuiting queued work before decode.
+- **Minimality:** this ports the established NextE service-level ownership
+  rule without altering models, user preferences, page presentation, input,
+  navigation, or cache format.
+- **Verification plan:** build the normal (not diagnostic) app, install in
+  place, use the existing direct Gallery route and one semantic Reader action,
+  and observe the foreground terminal. This record is not visual acceptance;
+  a successful build or source review alone cannot close the Reader path.
+- **Risk still open:** serial ownership removes concurrent decoded-image
+  pressure but does not by itself prove that a single page's native model path
+  is safe. A normal device run is required before any broader claim.

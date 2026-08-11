@@ -36,6 +36,11 @@ class InFlightEnhancement {
   requestId: number = 0
   owners: Set<string> = new Set<string>()
   promise: Promise<ReaderSuperResolutionResult> = Promise.resolve(new ReaderSuperResolutionResult())
+  sourcePath: string = ''
+  startAction: () => Promise<ReaderSuperResolutionResult> =
+    (): Promise<ReaderSuperResolutionResult> => Promise.resolve(new ReaderSuperResolutionResult())
+  resolveTask: (result: ReaderSuperResolutionResult) => void =
+    (_result: ReaderSuperResolutionResult): void => {}
 }
 
 /**
@@ -46,6 +51,14 @@ class InFlightEnhancement {
 export class ReaderSuperResolutionService {
   private static sequence: number = 0
   private static inFlight: Map<string, InFlightEnhancement> = new Map<string, InFlightEnhancement>()
+  /**
+   * PixelMap decode, RGBA copying, and native 2x output are all memory-heavy.
+   * Reader leaf mounting may request more than one page at once, so this is a
+   * process-wide single-flight queue rather than relying on the native
+   * inference mutex after several decoded pixel buffers already coexist.
+   */
+  private static pending: InFlightEnhancement[] = []
+  private static active: InFlightEnhancement | null = null
 
   static async process(
     context: common.UIAbilityContext,
@@ -84,17 +97,27 @@ export class ReaderSuperResolutionService {
     const inFlight: InFlightEnhancement = new InFlightEnhancement()
     ReaderSuperResolutionService.sequence += 1
     inFlight.requestId = ReaderSuperResolutionService.sequence
+    inFlight.sourcePath = sourcePath
     inFlight.owners.add(ownerKey)
-    const task: Promise<ReaderSuperResolutionResult> = ReaderSuperResolutionService.processNow(
-      context,
-      sourcePath,
+    const task: Promise<ReaderSuperResolutionResult> = new Promise<ReaderSuperResolutionResult>(
+      (resolve: (result: ReaderSuperResolutionResult) => void): void => {
+        inFlight.resolveTask = resolve
+      },
+    )
+    inFlight.promise = task
+    inFlight.startAction = (): Promise<ReaderSuperResolutionResult> => {
+      return ReaderSuperResolutionService.processNow(
+        context,
+        sourcePath,
         outputPath,
         modelPaths,
         nativeConfig,
         inFlight,
-    )
-    inFlight.promise = task
+      )
+    }
     ReaderSuperResolutionService.inFlight.set(outputPath, inFlight)
+    ReaderSuperResolutionService.pending.push(inFlight)
+    ReaderSuperResolutionService.startNext()
     try {
       return await task
     } finally {
@@ -122,6 +145,29 @@ export class ReaderSuperResolutionService {
     ReaderNativeSuperResolution.setInteractionPaused(paused)
   }
 
+  private static startNext(): void {
+    if (ReaderSuperResolutionService.active !== null || ReaderSuperResolutionService.pending.length === 0) {
+      return
+    }
+    const next: InFlightEnhancement = ReaderSuperResolutionService.pending.shift()!
+    ReaderSuperResolutionService.active = next
+    next.startAction().then((result: ReaderSuperResolutionResult): void => {
+      next.resolveTask(result)
+      ReaderSuperResolutionService.finish(next)
+    }).catch((): void => {
+      next.resolveTask(ReaderSuperResolutionService.original(next.sourcePath, 'processing_failed'))
+      ReaderSuperResolutionService.finish(next)
+    })
+  }
+
+  private static finish(task: InFlightEnhancement): void {
+    if (ReaderSuperResolutionService.active !== task) {
+      return
+    }
+    ReaderSuperResolutionService.active = null
+    ReaderSuperResolutionService.startNext()
+  }
+
   private static async processNow(
     context: common.UIAbilityContext,
     sourcePath: string,
@@ -138,6 +184,9 @@ export class ReaderSuperResolutionService {
     let outputFile: fileIo.File | null = null
     let promoted: boolean = false
     try {
+      if (inFlight.owners.size === 0) {
+        return ReaderSuperResolutionService.original(sourcePath, 'superseded')
+      }
       source = image.createImageSource(sourcePath)
       const info: image.ImageInfo = await source.getImageInfo()
       const width: number = info.size.width
@@ -159,6 +208,9 @@ export class ReaderSuperResolutionService {
         desiredPixelFormat: image.PixelMapFormat.RGBA_8888,
       }
       sourcePixelMap = await source.createPixelMap(options)
+      if (inFlight.owners.size === 0) {
+        return ReaderSuperResolutionService.original(sourcePath, 'superseded')
+      }
       const decoded: image.ImageInfo = await sourcePixelMap.getImageInfo()
       const pixels: ArrayBuffer = new ArrayBuffer(sourcePixelMap.getPixelBytesNumber())
       await sourcePixelMap.readPixelsToBuffer(pixels)
