@@ -90,6 +90,57 @@ authorize an edit, replace a device comparison, or define product completion.
   floating root tabs. Freeze only this title-capacity boundary; it reopens on
   new user feedback or same-state counter-evidence, not for routine review.
 
+## OPEN — System screen-orientation policy — 2026-08-12
+
+- **User outcome and source evidence:** NextN should retain the mature,
+  NH-applicable system-orientation capability already owned by NextE. Current
+  NextN exposes a separate tablet split-layout preference, but it deliberately
+  never calls the main-window orientation API, so it cannot substitute for a
+  system rotation policy.
+- **Reference parent tree:** NextE owns `LayoutSettingsPage →
+  PullRefreshListScaffold → [Appearance group, Screen-orientation group,
+  Tablet-layout group]`. The orientation leaf is one concise menu row with
+  `System default` and `Auto-rotate`; `EntryAbility` alone applies the chosen
+  policy to the existing main window.
+- **Current NextN parent tree:** `SettingsPage(LAYOUT) →
+  SecondaryListScaffold → [AppearanceGroup, TabletLayoutGroup,
+  BrowsePresentationGroup]`. `EntryAbility` already retains the main window,
+  so it is the corresponding one-owner bridge. `TabletLayoutSettings` remains
+  a geometry-only split policy and must not be repurposed to rotate the device.
+- **Exact change:** insert a new grouped orientation row between the existing
+  Appearance and Tablet-layout groups. Persist only `unspecified` or
+  `autoRotationUnspecified`, bind an EntryAbility-owned applier after the main
+  window exists, restore before content mounts, and call the official
+  `setPreferredOrientation` API through that bridge. Default is system
+  default; no reader/page-specific lock is added.
+- **Reference and platform boundary:** the official HarmonyOS window guidance
+  distinguishes startup manifest orientation from runtime
+  `setPreferredOrientation`; this is the latter. The state must remain local,
+  use no account/network/data mutation, and leave existing tablet split,
+  theme, language, Reader fullscreen, and safe-area owners intact.
+- **Verification plan:** build, install in place on the selected 237 device,
+  observe both menu choices and the restored initial choice from the native
+  Settings path, and retain raw local artifacts. Rotation may be device- and
+  posture-dependent, so only an observed orientation transition is claimed;
+  menu selection or command success alone is not treated as rotation proof.
+- **Unresolved risk:** a portrait-held device may not visibly rotate after
+  `Auto-rotate`; the value must therefore be restored even if the physical
+  transition cannot be observed in this run.
+- **Device result — 2026-08-12:** on the selected `237` device, the native
+  Settings row initially rendered `System default`; its live menu showed
+  exactly `System default` and `Auto-rotate`. Selecting `Auto-rotate` updated
+  the native row to that exact value while NextN remained foreground. The
+  captured root viewport remained `1320×2120` portrait, so the device did not
+  supply an observed physical rotation in this posture. The row was then
+  reopened through fresh live bounds and restored to `System default`, again
+  with NextN foreground. Raw captures are retained locally under
+  `.hvigor/outputs/screen-orientation-20260812T0240/` and are excluded from
+  Git.
+- **Status — EVIDENCE-ONLY:** the exact native selection and restoration path
+  is observed; a same-state, same-viewport NextE reference capture is still
+  absent, so this is not visual-reference acceptance and must not be reopened
+  merely to repeat the same portrait selection sequence.
+
 ## OPEN — Reader selectable Waifu2x enhancement models
 
 - User outcome: Reader enhancement should let the user choose between the two

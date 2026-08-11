@@ -24,6 +24,7 @@ import {
   requestGalleryDirectLaunch,
   requestLoginRecoveryLaunch,
   publishNhClipboardGalleryCandidate,
+  ScreenOrientationSettings,
   TabletLayoutSettings,
   ThemeSettings,
 } from 'shared'
@@ -94,6 +95,9 @@ export default class EntryAbility extends UIAbility {
         navigationBarColor: TRANSPARENT_COLOR,
       })
       this.mainWindow = mainWindow
+      ScreenOrientationSettings.bindWindowOrientationApplier((mode: string): void => {
+        this.applyWindowOrientation(mode)
+      })
       this.watchMainWindowMetrics(mainWindow)
     } catch (_error) {
       LayoutSafeAreaBridge.publishInsets(FALLBACK_TOP_AVOID, FALLBACK_BOTTOM_AVOID)
@@ -111,6 +115,9 @@ export default class EntryAbility extends UIAbility {
       // Restore the large-screen policy before the adaptive root HDS shell
       // mounts. HDS still resolves the physical Stack/Split mode itself.
       TabletLayoutSettings.restore(this.context),
+      // This is separate from the split-layout policy: it applies the
+      // persisted system-managed orientation to the main window.
+      ScreenOrientationSettings.restore(this.context),
       // Keep the NextE root-tab visibility preference live before the HDS
       // tabs attach, so the first scroll does not use a stale default.
       HomeTabSettings.restore(this.context),
@@ -184,6 +191,17 @@ export default class EntryAbility extends UIAbility {
     if (restored) {
       await NhAccountProfileService.restore(this.context)
     }
+  }
+
+  private applyWindowOrientation(mode: string): void {
+    if (this.mainWindow === null) {
+      return
+    }
+    const orientation: window.Orientation =
+      mode === ScreenOrientationSettings.MODE_AUTO_ROTATION_UNSPECIFIED
+        ? window.Orientation.AUTO_ROTATION_UNSPECIFIED
+        : window.Orientation.UNSPECIFIED
+    this.mainWindow.setPreferredOrientation(orientation).catch((): void => {})
   }
 
   onDestroy(): void {

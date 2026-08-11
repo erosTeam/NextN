@@ -50,6 +50,8 @@ import {
   ReadButtonStyleState,
   NhClipboardLinkSettings,
   NhClipboardLinkState,
+  ScreenOrientationSettings,
+  ScreenOrientationState,
   NhBrowsePresentation,
   NhSearchLanguage,
   NhSearchOptions,
@@ -81,6 +83,7 @@ import {
   connectNhClipboardLink,
   connectReadButtonStyle,
   connectReaderPresentation,
+  connectScreenOrientation,
   connectDownloadSettings,
   connectHomeTabAutoHide,
   connectImmersiveMaterialSettings,
@@ -171,6 +174,7 @@ export struct SettingsPage {
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
   @Local catalogPreferences: CatalogPreferencesState = connectCatalogPreferences()
   @Local tabletLayout: TabletLayoutState = connectTabletLayout()
+  @Local screenOrientation: ScreenOrientationState = connectScreenOrientation()
   @Local homeTab: HomeTabAutoHideState = connectHomeTabAutoHide()
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
   @Local galleryTitle: GalleryTitleState = connectGalleryTitle()
@@ -195,6 +199,7 @@ export struct SettingsPage {
   @Local catalogBrowseSortMenuShown: boolean = false
   @Local catalogSearchLanguageMenuShown: boolean = false
   @Local catalogSearchSortMenuShown: boolean = false
+  @Local screenOrientationMenuShown: boolean = false
   @Local tabletLayoutMenuShown: boolean = false
   @Local clipboardLinkSaving: boolean = false
   @Local readButtonStyleMenuShown: boolean = false
@@ -294,6 +299,7 @@ export struct SettingsPage {
         CoverBackgroundSettings.restore(this.context()),
         GalleryTitleSettings.restore(this.context()),
         ReadButtonStyleSettings.restore(this.context()),
+        ScreenOrientationSettings.restore(this.context()),
         TabletLayoutSettings.restore(this.context()),
       ])
     } catch (_error) {
@@ -381,6 +387,22 @@ export struct SettingsPage {
   private setTabletLayout(mode: string): void {
     this.tabletLayoutMenuShown = false
     TabletLayoutSettings.setMode(this.context(), mode).catch((): void => {})
+  }
+
+  private screenOrientationLabelFor(mode: string): string {
+    return ScreenOrientationSettings.normalizeMode(mode) ===
+      ScreenOrientationSettings.MODE_AUTO_ROTATION_UNSPECIFIED
+      ? AppStrings.get('screen_orientation_auto_rotation_unspecified')
+      : AppStrings.get('screen_orientation_unspecified')
+  }
+
+  private screenOrientationLabel(): string {
+    return this.screenOrientationLabelFor(this.screenOrientation.mode)
+  }
+
+  private setScreenOrientation(mode: string): void {
+    this.screenOrientationMenuShown = false
+    ScreenOrientationSettings.setMode(this.context(), mode).catch((): void => {})
   }
 
   private browsePresentationLabel(): string {
@@ -1193,6 +1215,32 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.setTabletLayout(TabletLayoutSettings.MODE_LANDSCAPE_ONLY)
+      })
+    }
+  }
+
+  @Builder
+  private ScreenOrientationMenu() {
+    Menu() {
+      MenuItem({
+        content: this.screenOrientationLabelFor(ScreenOrientationSettings.MODE_UNSPECIFIED),
+        symbolEndIcon: ScreenOrientationSettings.normalizeMode(this.screenOrientation.mode) ===
+          ScreenOrientationSettings.MODE_UNSPECIFIED
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.setScreenOrientation(ScreenOrientationSettings.MODE_UNSPECIFIED)
+      })
+      MenuItem({
+        content: this.screenOrientationLabelFor(
+          ScreenOrientationSettings.MODE_AUTO_ROTATION_UNSPECIFIED,
+        ),
+        symbolEndIcon: ScreenOrientationSettings.normalizeMode(this.screenOrientation.mode) ===
+          ScreenOrientationSettings.MODE_AUTO_ROTATION_UNSPECIFIED
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.setScreenOrientation(ScreenOrientationSettings.MODE_AUTO_ROTATION_UNSPECIFIED)
       })
     }
   }
@@ -2628,6 +2676,30 @@ export struct SettingsPage {
   }
 
   @Builder
+  private ScreenOrientationGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.rectangle_portrait_rotate'),
+        title: AppStrings.get('settings_screen_orientation'),
+        trailingText: this.screenOrientationLabel(),
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_screen_orientation'),
+          this.screenOrientationLabel(),
+        ]),
+        onAction: (): void => {
+          this.screenOrientationMenuShown = true
+        },
+      })
+      .bindMenu(this.screenOrientationMenuShown, this.ScreenOrientationMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.screenOrientationMenuShown = false
+        },
+      })
+    }
+  }
+
+  @Builder
   private CatalogBrowseLanguageMenu() {
     Menu() {
       ForEach(CATALOG_LANGUAGES, (language: NhSearchLanguage): void => {
@@ -2857,6 +2929,9 @@ export struct SettingsPage {
         } else if (this.surface === SettingsSurface.LAYOUT) {
           ListItem() {
             this.AppearanceGroup()
+          }
+          ListItem() {
+            this.ScreenOrientationGroup()
           }
           ListItem() {
             this.TabletLayoutGroup()

@@ -11,6 +11,12 @@ export {
   TABLET_LAYOUT_OFF,
   TABLET_LAYOUT_LANDSCAPE_ONLY,
 } from './state/TabletLayoutState'
+export {
+  ScreenOrientationState,
+  connectScreenOrientation,
+  SCREEN_ORIENTATION_UNSPECIFIED,
+  SCREEN_ORIENTATION_AUTO_ROTATION_UNSPECIFIED,
+} from './state/ScreenOrientationState'
 export { HomeTabAutoHideState, connectHomeTabAutoHide } from './state/HomeTabAutoHideState'
 export { CoverBackgroundState, connectCoverBackground } from './state/CoverBackgroundState'
 export { GalleryTitleState, connectGalleryTitle } from './state/GalleryTitleState'
@@ -346,6 +352,7 @@ export { CatalogPreferencesState, connectCatalogPreferences } from './state/Cata
 export { ThemeSettings } from './settings/ThemeSettings'
 export { LanguageSettings } from './settings/LanguageSettings'
 export { TabletLayoutSettings } from './settings/TabletLayoutSettings'
+export { ScreenOrientationSettings } from './settings/ScreenOrientationSettings'
 export { HomeTabSettings } from './settings/HomeTabSettings'
 export { CoverBackgroundSettings } from './settings/CoverBackgroundSettings'
 export { GalleryTitleSettings } from './settings/GalleryTitleSettings'
