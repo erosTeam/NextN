@@ -7,6 +7,7 @@ import { NhApiClient } from '../network/NhApiClient'
 import { DownloadQueueRepository } from '../storage/DownloadQueueRepository'
 import { DownloadQueueState, connectDownloadQueue } from '../state/DownloadQueueState'
 import { DownloadSettingsService } from './DownloadSettingsService'
+import { NhDownloadExportCacheService } from './NhDownloadExportCacheService'
 
 const DOWNLOAD_DIR_NAME: string = 'nextn-downloads'
 const MAX_PAGE_BYTES: number = 64 * 1024 * 1024
@@ -202,6 +203,7 @@ export class DownloadQueueService {
     DownloadQueueService.removeFromState(galleryId)
     try {
       DownloadQueueService.removeTaskFiles(context, task)
+      NhDownloadExportCacheService.reclaimGallery(context, galleryId)
       await DownloadQueueRepository.remove(context, galleryId)
     } catch (error) {
       DownloadQueueService.putInState(task)
@@ -309,6 +311,7 @@ export class DownloadQueueService {
     for (let index: number = 0; index < writes.length; index++) {
       await writes[index]
     }
+    NhDownloadExportCacheService.pruneExpired(context)
     DownloadQueueService.pump(context)
   }
 

@@ -5,6 +5,7 @@ import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { systemShare } from '@kit.ShareKit'
 import { NhDownloadTask } from '../model/NhDownloadTask'
 import { DownloadQueueService } from './DownloadQueueService'
+import { NhDownloadExportCacheService } from './NhDownloadExportCacheService'
 
 const EXPORT_CACHE_DIRECTORY: string = 'nextn-download-exports'
 const EXPORT_EXTENSION: string = 'cbz'
@@ -222,14 +223,11 @@ function writeCbzStoreTask(filePath: string, entriesJson: string): string {
  * HTTP operation, account operation, or queue persistence.
  */
 export class NhDownloadCbzExportService {
-  private static activeGalleryIds: Set<number> = new Set<number>()
-
   static async exportAndShare(context: common.UIAbilityContext, task: NhDownloadTask): Promise<boolean> {
     if (!task.isComplete() || task.galleryId <= 0 ||
-      NhDownloadCbzExportService.activeGalleryIds.has(task.galleryId)) {
+      !NhDownloadExportCacheService.beginUse(task.galleryId)) {
       return false
     }
-    NhDownloadCbzExportService.activeGalleryIds.add(task.galleryId)
     let filePath: string = ''
     try {
       const entries: CbzSourceEntry[] = NhDownloadCbzExportService.verifiedEntries(context, task)
@@ -252,7 +250,7 @@ export class NhDownloadCbzExportService {
       }
       return false
     } finally {
-      NhDownloadCbzExportService.activeGalleryIds.delete(task.galleryId)
+      NhDownloadExportCacheService.endUse(task.galleryId)
     }
   }
 
