@@ -931,6 +931,15 @@ remains continuous; do not ask for it again.
   not be deleted automatically. The next diagnostic must change one
   non-visible execution boundary and cannot repeat this normal route merely
   to obtain another equivalent terminal capture.
+- 2026-08-11 follow-up: a continuous app/core log was started before the
+  route, and a temporary build added only fixed Reader-stage markers at both
+  info and error severity. Each one-activation run still ended at the NextE
+  root, but neither live capture contained a stage marker or an error/fatal
+  record attributable to NextN. This proves the selected HILOG channel cannot
+  observe this control-flow boundary; it does not prove that any particular
+  stage was skipped. Both temporary variants were removed, then the normal
+  signed Debug HAP was rebuilt and installed with `install -r`. No data,
+  preference, account, or content mutation occurred.
 
 ## Current device exception — Gallery full-title translation route setup
 

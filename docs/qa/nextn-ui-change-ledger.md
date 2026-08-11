@@ -1089,3 +1089,11 @@ authorize an edit, replace a device comparison, or define product completion.
   `.hvigor/outputs/reader-route-baseline-log-20260811T2123/` outside Git.
   Do not repeat the same route; the next evidence must change one
   non-visible execution boundary.
+- Follow-up result: the non-visible boundary was changed to continuous
+  app/core logging before route activation. Temporary fixed stage calls were
+  tried at both info and error severity, yet neither live capture contained a
+  stage marker or a NextN-attributable error/fatal record while the observed
+  terminal remained NextE. This logging channel is therefore rejected as a
+  route-stage discriminator. The temporary source was removed and the normal
+  signed Debug HAP reinstalled; no visual surface, preference, account, or
+  content data changed.
