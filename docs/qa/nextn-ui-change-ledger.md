@@ -1273,6 +1273,10 @@ authorize an edit, replace a device comparison, or define product completion.
   source, or UI value was changed to manufacture equivalence. A real current
   same-state/same-viewport reference remains the sole next verification
   boundary.
+- **Restoration:** the retained NextN Reader foreground was restored after the
+  rejected reference discovery. Its root again reports the original
+  `1320×2120` viewport and Reader overlay; no preference, content, account,
+  or Reader action changed in the restoration.
 
 ## OPEN — Optional self-hosted staged manga translation
 

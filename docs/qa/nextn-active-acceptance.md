@@ -1307,6 +1307,10 @@ rewrite, re-run, or block this completed direct-route observation.
   viewport and state mismatch. Its local evidence is retained at
   `.hvigor/outputs/nexte-reader-reference-20260812T0500/`; no substitute
   comparison or source edit follows from it.
+- After that rejected discovery, the foreground was restored to the retained
+  NextN Reader. The current root again reports native NextN `EntryAbility`,
+  the original `1320×2120` viewport, and the Reader overlay. No preference,
+  page data, account state, or Reader action changed during restoration.
 
 ## Data and artifact boundary
 
