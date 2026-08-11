@@ -46,51 +46,49 @@ authorize an edit, replace a device comparison, or define product completion.
   Freeze this root boundary until new user feedback or a source-owned root
   capability changes it.
 
-## OPEN — Reading History simple-row restoration — 2026-08-11
+## FROZEN — Reading History title capacity — 2026-08-12
 
-- **User feedback and current source evidence:** History was explicitly
-  reopened by the user as a page requiring a rewrite. Its current local leaf
-  is an invented split interaction: cover/title open Gallery while a separate
-  trailing `继续阅读` control opens Reader. That creates a three-part row whose
-  title, progress, timestamp, and action no longer share the simple-list
-  rhythm.
+- **User feedback and current device evidence:** the user explicitly reopened
+  History for a full review. Current same-device captures show that its
+  grouping, single row action, local progress, viewed-time baseline, and
+  divider already form one coherent simple-list row; the remaining visible
+  mismatch is title capacity. NextN caps a local-history title at two lines,
+  even though its local record has no NextE-equivalent author/rating/category
+  leaves to use the remaining information-column space.
 - **Reference parent tree:** NextE owns `ViewedHistoryPage →
   PullRefreshListScaffold → ListItemGroup(day header) → ListItem →
-  GallerySimpleCard`. The day-group parent owns grouping, pagination, and
-  swipe deletion; each child is one compact gallery row with a 72×102 cover,
-  one fixed-height information column, one metadata baseline, and one row
-  navigation action.
+  GallerySimpleCard`. Its day-group parent owns pagination and swipe deletion.
+  ErosN's closer data-shape counterpart is `HistoryPage → CustomScrollView →
+  date group → HistoryItem`: an 84dp cover/title/time row whose title admits
+  three lines when no richer gallery summary is retained.
 - **Current NextN parent tree:** `HistoryPage → PullRefreshListScaffold →
-  ListItemGroup → ListItem → HistoryListRow`; the outer lifecycle, local RDB
-  cursor, pinned day context, confirmation deletion, and pagination already
-  correspond to the reference. Only the `HistoryListRow` leaf introduces the
-  extra Reader action and fragmented metadata layout.
-- **Exact change:** retain every page/state/parent owner above. Rewrite only
-  `HistoryListRow` to the reference simple-row grammar: cover, title, blank
-  fill, then one metadata baseline showing the durable local read position and
-  viewed time. The whole row opens Gallery; delete stays a day-list swipe or
-  long press. Remove the invented nested resume control and its route callback.
-- **NH data boundary:** local history has no uploader, rating, category, or
-  favourite fields. The local position/time replace only those unavailable
-  metadata leaves; no remote gallery request, fabricated metadata, account,
-  or history record mutation is introduced.
-- **Verification plan:** build, install in place, and compare the current
-  History viewport with the same `ViewedHistoryPage` state in NextE. Review
-  the complete page: HDS header, day header, row density, title wrapping,
-  metadata baseline, single-action ownership, footer, and floating root tabs.
-  This is OPEN until that real comparison is complete.
-- **2026-08-11 device result:** signed Debug build `43d5488` was installed on
-  the selected 237 device with `install -r`, without clearing data. The
-  current NextN History view is a native loaded list with date groups and a
-  single whole-row Gallery action; the nested Reader action is absent. A
-  same-device NextE History view confirmed the target row grammar: grouped
-  day heading, compact cover, title column, one bottom metadata baseline,
-  and row separator. The two applications contain different historical
-  records, so this is structural/geometry evidence rather than a same-content
-  pixel-parity claim. The raw current captures are retained locally under
-  `.hvigor/outputs/history-row-43d5488/` and are not tracked by Git. The
-  section remains OPEN for a future same-content comparison or further user
-  visual feedback.
+  ListItemGroup → ListItem → HistoryListRow`. Keep this whole tree, including
+  the root-tab HDS context, local RDB cursor, pinned date, pagination,
+  confirmation deletion, and the existing whole-row Gallery action.
+- **Exact change:** only change `HistoryListRow` title capacity from two lines
+  to three. Keep the fixed cover height, bottom-aligned local progress/time
+  baseline, padding, divider, and action ownership unchanged.
+- **NH data boundary:** `NhReadingHistoryItem` stores title, cover, page count,
+  local read index, and viewed time only. Do not manufacture uploader, rating,
+  category, favourite, or remote data; do not add a network request or change
+  history persistence merely to imitate unavailable NextE leaves.
+- **Verification plan:** build, install in place, and compare the complete
+  native History viewport against the retained NextE and ErosN parent-tree
+  evidence. Review title wrapping, metadata-baseline preservation, row density,
+  day heading, footer, and floating root tabs. This remains OPEN until that
+  current device review completes.
+- **2026-08-12 rebaseline:** current raw same-device portrait captures are
+  retained locally in `.hvigor/outputs/history-rebaseline-20260812T0120/` and
+  excluded from Git. Both roots were verified before review; their records are
+  different, so this evidence supports hierarchy/geometry decisions only, not
+  same-content pixel parity.
+- **2026-08-12 final result:** the signed Debug build was installed with
+  `install -r` on the selected 237 device, without clearing data. The final
+  native NextN History foreground shows a three-line long title while its
+  local progress and viewed-time baseline remain intact. The reviewed viewport
+  also preserves the root HDS context, day headings, row separators, and
+  floating root tabs. Freeze only this title-capacity boundary; it reopens on
+  new user feedback or same-state counter-evidence, not for routine review.
 
 ## OPEN — Reader selectable Waifu2x enhancement models
 

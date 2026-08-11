@@ -105,7 +105,7 @@ export struct HistoryListRow {
           .fontWeight(FontWeight.Regular)
           .fontColor(ThemeTokens.TEXT_PRIMARY)
           .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
-          .maxLines(2)
+          .maxLines(3)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .width('100%')
 
