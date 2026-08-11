@@ -1218,6 +1218,12 @@ rewrite, re-run, or block this completed direct-route observation.
   the side-channel as free of the prior event-ABI regression; it does not
   establish the pending Image-information menu leaf or image-quality result.
   Do not repeat this unchanged route solely as a control.
+- The first uncommitted Image-information menu build was installed in place,
+  but its fresh direct Gallery-to-Reader route exposed a `com.erosteam.nexte`
+  top window before Reader chrome or the new item could be reached. The menu
+  leaf and its localized copy were removed immediately. This observation does
+  not attribute the foreground switch to that uninvoked leaf; it rejects the
+  route as a validation path until its cross-app handoff is separately traced.
 
 ## Data and artifact boundary
 

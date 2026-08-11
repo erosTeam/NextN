@@ -639,7 +639,7 @@ authorize an edit, replace a device comparison, or define product completion.
   the interaction owner: the rail remains floating, its geometry and reserves
   are unchanged, and no additional hit-test or layout tuning is authorized.
 
-## IN PROGRESS — Reader image information leaf, revised state boundary
+## OPEN — Reader image information leaf, revised state boundary
 
 - The first attempt is rejected: extending the Reader image event from three
   values to four coincided with a reproducible Reader foreground regression;
@@ -665,6 +665,13 @@ authorize an edit, replace a device comparison, or define product completion.
   boundary as free of the prior foreground regression. It does not yet accept
   the visible More-menu leaf or an enhancement outcome; the unchanged route
   will not be repeated merely to reconfirm this control.
+- **2026-08-12 menu-route result:** the uncommitted menu-leaf build was
+  installed in place, but its first fresh Gallery-to-Reader route exposed an
+  actual `com.erosteam.nexte` top window before Reader chrome or the new menu
+  could be reached. The leaf and its copy were removed immediately. This is a
+  route-identity failure, not evidence that the leaf caused the switch; do not
+  recreate it or repeat this input sequence until the cross-app foreground
+  handoff is separately explained on a current NextN route.
 
 ## OPEN — Gallery comment translation
 
