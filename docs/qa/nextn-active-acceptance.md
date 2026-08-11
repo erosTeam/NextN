@@ -82,6 +82,23 @@ remains continuous; do not ask for it again.
   this observed path only; the queue remains OPEN until the user explicitly
   requests closure, and any future fresh failure preempts delivery again.
 
+## Latest device observation — private-cache settings
+
+- 2026-08-11: a signed Debug HAP was installed with `install -r` on the
+  selected TCP device only. No application data was cleared and no account,
+  Favorites, download, history, or preference action was performed.
+- Current native NextN Cache and NextE Storage were captured at the same
+  `1320×2120` portrait viewport. Both use an HDS destination, a caption-level
+  cache-usage total, and a grouped cache-card with category count/size rows,
+  a right-side clear leaf, and disabled zero-entry rows. NextN intentionally
+  omits NextE-only sync, backup, and image-owner surfaces because it has no
+  corresponding owners.
+- The final NextN recapture showed the concrete Reader-page, comment-
+  translation, comic-translation, and tag-translation cache owners plus the
+  destructive aggregate clear row. No clear action was invoked; the existing
+  local dictionary and Reader pages remain intact. Raw local comparison
+  artifacts are retained outside source control.
+
 ## Current delivery observation — collection-card tag display
 
 - 2026-08-11: the signed Debug build containing the opt-in tag leaf was

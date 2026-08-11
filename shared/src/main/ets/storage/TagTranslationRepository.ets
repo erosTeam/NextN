@@ -3,6 +3,7 @@ import { relationalStore } from '@kit.ArkData'
 import { NhTag } from '../model/NhGallery'
 import { NhTagSuggestion } from '../model/NhTagSuggestion'
 import { NhTagTranslationEntry, NhTagTranslationStatus } from '../model/NhTagTranslation'
+import { CacheStat } from '../services/CacheStat'
 import { LocalDataStore } from './LocalDataStore'
 
 const META_VERSION: string = 'version'
@@ -27,6 +28,9 @@ const SQL_SUGGEST_UNSCOPED: string =
 const SQL_TOUCH_SUGGESTION: string =
   'UPDATE tag_translations SET last_used_at = ? WHERE namespace = ? AND raw_name = ?'
 const SQL_CLEAR: string = 'DELETE FROM tag_translations'
+const SQL_STAT: string =
+  'SELECT COUNT(*) AS count, COALESCE(SUM(LENGTH(CAST(display_name AS BLOB))), 0) AS bytes ' +
+  'FROM tag_translations'
 const SQL_UPSERT_META: string =
   'INSERT INTO tag_translation_meta (key, value) VALUES (?, ?) ' +
   'ON CONFLICT(key) DO UPDATE SET value = excluded.value'
@@ -103,6 +107,28 @@ export class TagTranslationRepository {
       await TagTranslationRepository.metaValue(store, META_UPDATED_AT),
     )
     return status
+  }
+
+  /** Aggregate-only dictionary state for the private cache page. */
+  static async stat(context: common.UIAbilityContext): Promise<CacheStat> {
+    const result: CacheStat = new CacheStat()
+    const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+    const rows: relationalStore.ResultSet = await store.querySql(SQL_STAT)
+    try {
+      if (rows.goToFirstRow()) {
+        result.count = TagTranslationRepository.numberColumn(rows, 'count')
+        result.bytes = TagTranslationRepository.numberColumn(rows, 'bytes')
+      }
+    } finally {
+      rows.close()
+    }
+    return result
+  }
+
+  /** Removes only the optional local dictionary; no catalog or query state is changed. */
+  static async clear(context: common.UIAbilityContext): Promise<void> {
+    const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+    await store.executeSql(SQL_CLEAR)
   }
 
   /**

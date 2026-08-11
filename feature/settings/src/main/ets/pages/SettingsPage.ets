@@ -5,6 +5,9 @@ import {
   AppStrings,
   CatalogPreferencesService,
   CatalogPreferencesState,
+  CacheStat,
+  CommentTranslationService,
+  ComicTranslationRuntimeService,
   LanguageSettings,
   LanguageState,
   LayoutSafeAreaState,
@@ -141,9 +144,12 @@ export struct SettingsPage {
   @Local isUpdatingTagDictionary: boolean = false
   @Local tagDictionaryError: string = ''
   @Local readerCacheStatus: ReaderImageCacheStatus = new ReaderImageCacheStatus()
-  @Local isLoadingReaderCache: boolean = false
-  @Local isClearingReaderCache: boolean = false
-  @Local readerCacheError: string = ''
+  @Local isLoadingPrivateCache: boolean = false
+  @Local isClearingPrivateCache: boolean = false
+  @Local privateCacheError: string = ''
+  @Local commentTranslationCacheStatus: CacheStat = new CacheStat()
+  @Local comicTranslationCacheStatus: CacheStat = new CacheStat()
+  @Local tagDictionaryCacheStatus: CacheStat = new CacheStat()
   @Local readerPresentation: ReaderPresentationState = connectReaderPresentation()
   @Local readerModeError: string = ''
   @Local readerEnhancementModelInstalled: boolean = false
@@ -229,7 +235,7 @@ export struct SettingsPage {
       return
     }
     if (this.surface === SettingsSurface.CACHE) {
-      this.loadReaderCacheStatus()
+      this.loadPrivateCacheStatus()
       return
     }
     if (this.surface === SettingsSurface.ADVANCED) {
@@ -588,21 +594,51 @@ export struct SettingsPage {
       : AppStrings.get('settings_tag_translation_download')
   }
 
-  private async loadReaderCacheStatus(): Promise<void> {
-    if (this.isClearingReaderCache) {
+  private readerPageCacheStat(): CacheStat {
+    const result: CacheStat = new CacheStat()
+    result.count = this.readerCacheStatus.fileCount
+    result.bytes = this.readerCacheStatus.bytes
+    return result
+  }
+
+  private privateCacheStat(key: string): CacheStat {
+    if (key === 'reader') {
+      return this.readerPageCacheStat()
+    }
+    if (key === 'comment') {
+      return this.commentTranslationCacheStatus
+    }
+    if (key === 'comic') {
+      return this.comicTranslationCacheStatus
+    }
+    return this.tagDictionaryCacheStatus
+  }
+
+  private privateCacheTotalBytes(): number {
+    return this.readerPageCacheStat().bytes + this.commentTranslationCacheStatus.bytes +
+      this.comicTranslationCacheStatus.bytes + this.tagDictionaryCacheStatus.bytes
+  }
+
+  private privateCacheTotalCount(): number {
+    return this.readerPageCacheStat().count + this.commentTranslationCacheStatus.count +
+      this.comicTranslationCacheStatus.count + this.tagDictionaryCacheStatus.count
+  }
+
+  private async loadPrivateCacheStatus(): Promise<void> {
+    if (this.isClearingPrivateCache) {
       return
     }
-    this.isLoadingReaderCache = true
-    this.readerCacheError = ''
+    this.isLoadingPrivateCache = true
+    this.privateCacheError = ''
     try {
       this.readerCacheStatus = ReaderImageCacheService.status(this.context())
-    } catch (error) {
-      const message: string = (error as Error).message
-      this.readerCacheError = message.length > 0
-        ? message
-        : AppStrings.get('settings_reader_cache_status_unavailable')
+      this.commentTranslationCacheStatus = await CommentTranslationService.stat(this.context())
+      this.comicTranslationCacheStatus = await ComicTranslationRuntimeService.statGeneratedCache(this.context())
+      this.tagDictionaryCacheStatus = await TagTranslationRepository.stat(this.context())
+    } catch (_error) {
+      this.privateCacheError = AppStrings.get('settings_private_cache_status_unavailable')
     } finally {
-      this.isLoadingReaderCache = false
+      this.isLoadingPrivateCache = false
     }
   }
 
@@ -1251,29 +1287,37 @@ export struct SettingsPage {
     ])
   }
 
-  private readerCacheSubtitle(): string {
-    if (this.isLoadingReaderCache) {
-      return AppStrings.get('settings_reader_cache_calculating')
+  private privateCacheSubtitle(key: string): string {
+    if (this.isLoadingPrivateCache) {
+      return AppStrings.get('settings_private_cache_calculating')
     }
-    if (this.readerCacheStatus.fileCount === 0) {
-      return AppStrings.get('settings_reader_cache_empty')
-    }
-    const values: string[] = [
-      this.readerCacheStatus.fileCount.toString(),
-      this.cacheSizeLabel(this.readerCacheStatus.bytes),
-    ]
-    return this.readerCacheStatus.fileCount === 1
-      ? AppStrings.format('settings_reader_cache_file_one', values)
-      : AppStrings.format('settings_reader_cache_file_other', values)
+    const stat: CacheStat = this.privateCacheStat(key)
+    return AppStrings.format('settings_private_cache_summary', [
+      stat.count.toString(),
+      this.cacheSizeLabel(stat.bytes),
+    ])
   }
 
-  private clearReaderCache(): void {
-    if (this.isClearingReaderCache || this.readerCacheStatus.fileCount === 0) {
+  private privateCacheTitle(key: string): string {
+    if (key === 'reader') {
+      return AppStrings.get('settings_private_cache_reader_pages')
+    }
+    if (key === 'comment') {
+      return AppStrings.get('settings_private_cache_comment_translation')
+    }
+    if (key === 'comic') {
+      return AppStrings.get('settings_private_cache_comic_translation')
+    }
+    return AppStrings.get('settings_private_cache_tag_dictionary')
+  }
+
+  private requestPrivateCacheClear(key: string): void {
+    if (this.isClearingPrivateCache || this.privateCacheStat(key).count === 0) {
       return
     }
     this.getUIContext().showAlertDialog({
-      title: AppStrings.get('settings_reader_cache_clear_title'),
-      message: AppStrings.get('settings_reader_cache_clear_message'),
+      title: AppStrings.format('settings_private_cache_clear_title', [this.privateCacheTitle(key)]),
+      message: AppStrings.format('settings_private_cache_clear_message', [this.privateCacheTitle(key)]),
       primaryButton: {
         value: AppStrings.get('common_cancel'),
         action: (): void => {},
@@ -1282,7 +1326,28 @@ export struct SettingsPage {
         value: AppStrings.get('common_clear'),
         fontColor: Color.Red,
         action: (): void => {
-          this.performReaderCacheClear()
+          this.performPrivateCacheClear(key)
+        },
+      },
+    })
+  }
+
+  private requestAllPrivateCachesClear(): void {
+    if (this.isClearingPrivateCache || this.privateCacheTotalCount() === 0) {
+      return
+    }
+    this.getUIContext().showAlertDialog({
+      title: AppStrings.get('settings_private_cache_clear_all_title'),
+      message: AppStrings.get('settings_private_cache_clear_all_message'),
+      primaryButton: {
+        value: AppStrings.get('common_cancel'),
+        action: (): void => {},
+      },
+      secondaryButton: {
+        value: AppStrings.get('common_clear'),
+        fontColor: Color.Red,
+        action: (): void => {
+          this.performPrivateCacheClear('all')
         },
       },
     })
@@ -1453,21 +1518,32 @@ export struct SettingsPage {
     }
   }
 
-  private async performReaderCacheClear(): Promise<void> {
-    if (this.isClearingReaderCache) {
+  private async performPrivateCacheClear(key: string): Promise<void> {
+    if (this.isClearingPrivateCache) {
       return
     }
-    this.isClearingReaderCache = true
-    this.readerCacheError = ''
+    this.isClearingPrivateCache = true
+    this.privateCacheError = ''
     try {
-      this.readerCacheStatus = await ReaderImageCacheService.clear(this.context())
-    } catch (error) {
-      const message: string = (error as Error).message
-      this.readerCacheError = message.length > 0
-        ? message
-        : AppStrings.get('settings_reader_cache_clear_failed')
+      if (key === 'reader') {
+        await ReaderImageCacheService.clear(this.context())
+      } else if (key === 'comment') {
+        await CommentTranslationService.clear(this.context())
+      } else if (key === 'comic') {
+        await ComicTranslationRuntimeService.clearGeneratedCache(this.context())
+      } else if (key === 'tag') {
+        await TagTranslationRepository.clear(this.context())
+      } else if (key === 'all') {
+        await ReaderImageCacheService.clear(this.context())
+        await CommentTranslationService.clear(this.context())
+        await ComicTranslationRuntimeService.clearGeneratedCache(this.context())
+        await TagTranslationRepository.clear(this.context())
+      }
+    } catch (_error) {
+      this.privateCacheError = AppStrings.get('settings_private_cache_clear_failed')
     } finally {
-      this.isClearingReaderCache = false
+      this.isClearingPrivateCache = false
+      this.loadPrivateCacheStatus()
     }
   }
 
@@ -1544,30 +1620,100 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ReaderCacheGroup() {
+  private PrivateCacheTotalSummary() {
+    Row({ space: ThemeTokens.SPACE_XS }) {
+      Text(AppStrings.get('settings_private_cache_total'))
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontColor(ThemeTokens.TEXT_SECONDARY)
+      Text(this.isLoadingPrivateCache
+        ? AppStrings.get('settings_private_cache_calculating')
+        : this.cacheSizeLabel(this.privateCacheTotalBytes()))
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontWeight(FontWeight.Medium)
+        .fontColor(ThemeTokens.TEXT_SECONDARY)
+    }
+    .width('100%')
+    .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD })
+  }
+
+  @Builder
+  private PrivateCacheGroup() {
     NextNGroupedListSection() {
       NextNListRow({
         leadingIcon: $r('sys.symbol.folder_fill'),
-        title: AppStrings.get('settings_reader_cache_title'),
-        subtitle: this.readerCacheSubtitle(),
-        trailingText: this.isLoadingReaderCache
-          ? AppStrings.get('settings_reader_cache_checking')
-          : AppStrings.get('settings_reader_cache_private'),
+        title: this.privateCacheTitle('reader'),
+        subtitle: this.privateCacheSubtitle('reader'),
+        trailingText: this.isClearingPrivateCache ? AppStrings.get('settings_private_cache_wait') :
+          AppStrings.get('common_clear'),
         showChevron: false,
+        isEnabled: !this.isClearingPrivateCache && this.privateCacheStat('reader').count > 0,
+        accessibilityLabel: AppStrings.format('settings_private_cache_clear_a11y', [
+          this.privateCacheTitle('reader'),
+        ]),
+        onAction: (): void => {
+          this.requestPrivateCacheClear('reader')
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.translate'),
+        title: this.privateCacheTitle('comment'),
+        subtitle: this.privateCacheSubtitle('comment'),
+        trailingText: this.isClearingPrivateCache ? AppStrings.get('settings_private_cache_wait') :
+          AppStrings.get('common_clear'),
+        showChevron: false,
+        isEnabled: !this.isClearingPrivateCache && this.privateCacheStat('comment').count > 0,
+        accessibilityLabel: AppStrings.format('settings_private_cache_clear_a11y', [
+          this.privateCacheTitle('comment'),
+        ]),
+        onAction: (): void => {
+          this.requestPrivateCacheClear('comment')
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.text_bubble_left_2'),
+        title: this.privateCacheTitle('comic'),
+        subtitle: this.privateCacheSubtitle('comic'),
+        trailingText: this.isClearingPrivateCache ? AppStrings.get('settings_private_cache_wait') :
+          AppStrings.get('common_clear'),
+        showChevron: false,
+        isEnabled: !this.isClearingPrivateCache && this.privateCacheStat('comic').count > 0,
+        accessibilityLabel: AppStrings.format('settings_private_cache_clear_a11y', [
+          this.privateCacheTitle('comic'),
+        ]),
+        onAction: (): void => {
+          this.requestPrivateCacheClear('comic')
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.textformat'),
+        title: this.privateCacheTitle('tag'),
+        subtitle: this.privateCacheSubtitle('tag'),
+        trailingText: this.isClearingPrivateCache ? AppStrings.get('settings_private_cache_wait') :
+          AppStrings.get('common_clear'),
+        showChevron: false,
+        isEnabled: !this.isClearingPrivateCache && this.privateCacheStat('tag').count > 0,
+        accessibilityLabel: AppStrings.format('settings_private_cache_clear_a11y', [
+          this.privateCacheTitle('tag'),
+        ]),
+        onAction: (): void => {
+          this.requestPrivateCacheClear('tag')
+        },
       })
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.trash'),
-        title: this.isClearingReaderCache
-          ? AppStrings.get('settings_reader_cache_clearing')
-          : AppStrings.get('settings_reader_cache_clear'),
-        subtitle: AppStrings.get('settings_reader_cache_clear_hint'),
-        trailingText: this.isClearingReaderCache ? AppStrings.get('settings_reader_cache_wait') : '',
-        showChevron: !this.isClearingReaderCache,
-        isEnabled: !this.isClearingReaderCache && this.readerCacheStatus.fileCount > 0,
-        accessibilityLabel: AppStrings.get('settings_reader_cache_clear_a11y'),
+        title: AppStrings.get('settings_private_cache_clear_all'),
+        subtitle: AppStrings.get('settings_private_cache_clear_all_hint'),
+        trailingText: this.isClearingPrivateCache ? AppStrings.get('settings_private_cache_wait') : '',
+        showChevron: false,
+        destructive: true,
+        isEnabled: !this.isClearingPrivateCache && this.privateCacheTotalCount() > 0,
+        accessibilityLabel: AppStrings.get('settings_private_cache_clear_all'),
         onAction: (): void => {
-          this.clearReaderCache()
+          this.requestAllPrivateCachesClear()
         },
       })
     }
@@ -2569,11 +2715,14 @@ export struct SettingsPage {
           }
         } else if (this.surface === SettingsSurface.CACHE) {
           ListItem() {
-            this.ReaderCacheGroup()
+            this.PrivateCacheTotalSummary()
           }
-          if (this.readerCacheError.length > 0) {
+          ListItem() {
+            this.PrivateCacheGroup()
+          }
+          if (this.privateCacheError.length > 0) {
             ListItem() {
-              this.GroupNote(this.readerCacheError)
+              this.GroupNote(this.privateCacheError)
             }
           }
         } else if (this.surface === SettingsSurface.ADVANCED) {

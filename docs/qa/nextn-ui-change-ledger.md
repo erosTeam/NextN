@@ -3,6 +3,69 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## FROZEN — Unified private-cache management (category-page visual boundary)
+
+- User outcome: the existing Cache destination should let a user inspect and
+  deliberately remove every app-private, regenerable cache category without
+  exposing files, URLs, credentials, downloaded galleries, reading history, or
+  account data.
+- Reference parent tree: NextE owns this as `CacheSettingsPage →
+  HdsNavDestination → SecondaryListScaffold → ListItem → Column → total
+  summary → GroupedListSection → one cache row per category → Clear all`.
+  Every leaf uses the shared list-row grammar; individual and aggregate clears
+  require an explicit confirmation and act only on their named cache owner.
+- Current NextN parent tree: `Index cacheSettingsDestination →
+  HdsNavDestination → SettingsPage(CACHE) → SecondaryListScaffold → ListItem
+  → NextNGroupedListSection → Reader-cache status row + Reader-cache clear
+  row`. The existing private owners are `ReaderImageCacheService`,
+  `CommentTranslationService`, `ComicTranslationRuntimeService`, and
+  `TagTranslationRepository`.
+- Exact change boundary: retain the destination, HDS chrome, scroll owner,
+  surrounding Settings surfaces, Reader-cache retention policy, and every
+  cache's existing private storage boundary. Replace only the Cache surface's
+  two-row Reader-only group with one grouped private-cache section containing
+  Reader pages, comment translations, comic translations, and the optional
+  tag dictionary; each row presents aggregate count/byte state and a named,
+  confirmed clear action. Add the same confirmed aggregate clear at the end.
+  Do not include Downloads, History, Favorites, account records, source
+  credentials, remote content, backup, sync, or a fabricated image cache.
+- Rationale: this carries the reference's storage ownership to the four
+  concrete NextN cache owners already present in source. It does not invent a
+  new storage class or convert user data into cache.
+- Visual verification plan: compare the default empty/nonempty private-cache
+  page in the same native HDS viewport with NextE's cache-category group;
+  verify the category ordering, total-summary placement, row hierarchy,
+  confirmation boundary, and disabled empty-cache action. Retain local raw
+  captures outside Git. Exercise only a disposable/generated cache clear;
+  never clear the user's downloads, history, account, or preferences.
+- Unresolved risk: NextN has no reference-equivalent sync, backup, or image
+  cache owner. Those NextE groups are explicitly out of this change rather
+  than being represented by inert rows.
+- Current same-viewport evidence: on 2026-08-11, current native NextN and
+  NextE Cache/Storage destinations were captured at `1320×2120` portrait on
+  the selected device. Both show the HDS destination, a caption-level total
+  usage summary, and one grouped cache-card whose category rows carry count,
+  size, and a right-side clear leaf. NextE has sync, backup, and image-owner
+  siblings that NextN does not own; those were not copied. The first NextN
+  capture exposed only a naming mismatch: the reference calls each category a
+  cache, while three NextN labels had dropped that noun. The labels above are
+  corrected before final recapture; no geometry or clear action was changed.
+- Final device result: the signed Debug HAP was installed in place on the
+  selected device. The final NextN foreground was verified as
+  `com.erosteam.nextn:EntryAbility` at the same `1320×2120` portrait viewport
+  as the current NextE Storage capture. It showed `缓存占用`, four cache-named
+  category rows, per-row count/size summaries, disabled zero-entry actions,
+  and the destructive `清除全部缓存` row. No clear row was activated; existing
+  reader pages, dictionary entries, downloads, history, account state, and
+  preferences were preserved. The locally retained comparison artifacts are
+  `.hvigor/outputs/private-cache-settings-20260811T1705/` and are excluded
+  from Git.
+- Freeze rule: keep this category-page hierarchy, the four concrete owner
+  boundaries, row order, and labels unchanged unless new user feedback or a
+  same-state counterexample reopens it. The uninvoked confirmation dialogs
+  remain **EVIDENCE-ONLY**; do not clear an existing cache merely to repeat
+  this visual verification.
+
 ## OPEN — Gallery Detail full-title translation
 
 - User outcome: a user who has explicitly configured the existing private text

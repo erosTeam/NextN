@@ -4,6 +4,7 @@ import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { util } from '@kit.ArkTS'
 import { connectLanguageState } from '../state/AppearanceState'
 import { LocalDataStore } from '../storage/LocalDataStore'
+import { CacheStat } from './CacheStat'
 import { ComicTranslationDiagnosticLogger } from './ComicTranslationDiagnosticLogger'
 import { LlmSourceRuntimeConfig, LlmSourceRuntimeResolver } from './LlmSourceRuntimeResolver'
 import { OpenAiChatCompletionsClient, OpenAiChatCompletionsConfig } from './OpenAiChatCompletionsClient'
@@ -19,6 +20,9 @@ const SQL_UPSERT: string =
   'VALUES (?, ?, ?, ?, ?)'
 const SQL_DELETE_ALL: string = 'DELETE FROM comment_translation_cache'
 const SQL_DELETE_EXPIRED: string = 'DELETE FROM comment_translation_cache WHERE expires_at <= ?'
+const SQL_STAT: string =
+  'SELECT COUNT(*) AS c, COALESCE(SUM(LENGTH(CAST(translated AS BLOB))), 0) AS b ' +
+  'FROM comment_translation_cache WHERE expires_at > ?'
 const SQL_PRUNE: string =
   'DELETE FROM comment_translation_cache WHERE rowid NOT IN (' +
   'SELECT rowid FROM comment_translation_cache WHERE expires_at > ? ORDER BY cached_at DESC LIMIT ?' +
@@ -110,6 +114,22 @@ export class CommentTranslationService {
     } finally {
       rows.close()
     }
+  }
+
+  /** Aggregate-only private cache state for Settings; neither text nor cache keys escape this boundary. */
+  static async stat(context: common.UIAbilityContext): Promise<CacheStat> {
+    const result: CacheStat = new CacheStat()
+    const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+    const rows: relationalStore.ResultSet = await store.querySql(SQL_STAT, [Date.now()])
+    try {
+      if (rows.goToFirstRow()) {
+        result.count = rows.getDouble(rows.getColumnIndex('c'))
+        result.bytes = rows.getDouble(rows.getColumnIndex('b'))
+      }
+    } finally {
+      rows.close()
+    }
+    return result
   }
 
   private static async translateNow(
