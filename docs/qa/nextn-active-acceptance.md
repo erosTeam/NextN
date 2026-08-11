@@ -1256,6 +1256,20 @@ rewrite, re-run, or block this completed direct-route observation.
   root was `com.erosteam.nextn` with the enabled enhancement state and
   `2000px` visible again.
 
+## Current Reader baseline result — 2026-08-12
+
+- The current signed Debug HAP was installed in place on the selected TCP
+  device. With the documented numeric Gallery route, one freshly resolved
+  native Continue action entered the native Reader canvas and remained
+  `com.erosteam.nextn:EntryAbility` after an eight-second settle. No Reader
+  setting, model, account, gallery, download, or application data was
+  changed.
+- This rejects the prior premise that the unchanged Detail-to-Reader route
+  presently leaves NextN. It does not establish an enhanced derivative,
+  image-quality parity, or every Reader input branch. The raw terminal layout
+  and screenshot remain locally in
+  `.hvigor/outputs/reader-baseline-20260812T0355/` and are excluded from Git.
+
 ## Data and artifact boundary
 
 Never place credentials, account/profile strings, cookies, tokens, raw Web

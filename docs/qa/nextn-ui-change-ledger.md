@@ -1238,6 +1238,17 @@ authorize an edit, replace a device comparison, or define product completion.
   attributed to the disabled enhancement branch or local-download source
   selection. The next diagnostic must isolate Reader route mount versus its
   baseline rendered-image lifecycle; no Reader UI surface is reopened.
+- **Current baseline result — 2026-08-12:** after the temporary branches were
+  removed and the current signed Debug HAP was installed, one documented
+  numeric Gallery route and one freshly resolved native `Continue` activation
+  stayed in `com.erosteam.nextn` Reader after an eight-second settle. The
+  terminal native canvas is retained locally in
+  `.hvigor/outputs/reader-baseline-20260812T0355/`. This disproves the prior
+  claim that the unchanged Detail-to-Reader route itself currently leaves
+  NextN. No enhancement setting, model, page, account, or content data was
+  changed. It does not prove an enhanced derivative or image-quality parity;
+  without a newly reproducible failure or a result-state boundary, no further
+  enhancement-runtime patch is justified.
 
 ## OPEN — Optional self-hosted whole-page manga translation
 
