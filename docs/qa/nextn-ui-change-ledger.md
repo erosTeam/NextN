@@ -1265,6 +1265,14 @@ authorize an edit, replace a device comparison, or define product completion.
   retained locally at
   `.hvigor/outputs/reader-enhancement-result-20260812T0429/`; no Reader source
   or visible UI value changed from this observation.
+- **Reference discovery — 2026-08-12:** one current NextE foreground capture
+  was collected only to establish a valid quality-comparison precondition. It
+  is not Reader state and its root viewport is `2120×1320`, whereas the NextN
+  applied-result capture is native Reader at `1320×2120`. The pair is retained
+  locally and rejected, not compared. No setting, content state, orientation,
+  source, or UI value was changed to manufacture equivalence. A real current
+  same-state/same-viewport reference remains the sole next verification
+  boundary.
 
 ## OPEN — Optional self-hosted staged manga translation
 

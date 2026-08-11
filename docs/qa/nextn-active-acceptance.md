@@ -1300,6 +1300,13 @@ rewrite, re-run, or block this completed direct-route observation.
   result. Raw terminal evidence remains local at
   `.hvigor/outputs/reader-enhancement-result-20260812T0429/` and is excluded
   from Git.
+- A current NextE reference discovery was then performed without modifying
+  either application's settings or content state. NextE foregrounded native
+  `EntryAbility` at `2120×1320` and had no Reader overlay; the current NextN
+  result is a native Reader at `1320×2120`. The pair is rejected for both
+  viewport and state mismatch. Its local evidence is retained at
+  `.hvigor/outputs/nexte-reader-reference-20260812T0500/`; no substitute
+  comparison or source edit follows from it.
 
 ## Data and artifact boundary
 
