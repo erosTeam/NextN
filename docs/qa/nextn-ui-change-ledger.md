@@ -154,6 +154,44 @@ authorize an edit, replace a device comparison, or define product completion.
   separately in the active device queue; it does not establish a fault in the
   automatic-translation scheduler.
 
+## OPEN — Gallery Detail floating Read hit-test ownership
+
+- User outcome: the floating Read control remains an overlay and may visually
+  cover the scrolling Detail content; it must nevertheless own its own tap.
+  This change adds no bottom margin, content spacer, or change to its visible
+  position.
+- Newly actionable basis: a current fresh native Detail action point intersects
+  both the floating Read control and a lower searchable tag leaf. The outer
+  rail is `HitTestMode.Transparent`; the official ArkUI contract states that a
+  transparent top component lets lower overlapping nodes participate in touch
+  testing. The observed terminal leaves NextN, so the action chain is rejected.
+- Reference parent tree: NextE uses `Detail Stack → full-width transparent
+  Read rail → inner default-hit-test Row → Read button`. The inner Row owns the
+  button's measured activity height and prevents the transparent rail itself
+  from becoming the only parent around the action.
+- Current parent tree: NextN has `Detail Stack → full-width transparent Read
+  rail → Read button`. It omitted the neutral inner Row when it intentionally
+  removed NextE's unsupported smart-grip translation behavior.
+- Exact change boundary: restore only that inner Row with the existing
+  `readFabOuterHeight()` measurement. Keep outer rail width, padding, bottom
+  position, transparency, HDS/filled choice, activity height, scroll reserve,
+  and all Read routing callbacks unchanged.
+- Verification plan: after a data-preserving signed Debug update, use the
+  documented direct Gallery route and one fresh semantic Read action. Require
+  a NextN Reader terminal before making any Reader feature claim. If it still
+  leaves NextN, preserve the result and do not tune geometry or repeat taps.
+- Unresolved risk: the source correction establishes the reference interaction
+  boundary, but the prior terminal cannot by itself prove that hit-test
+  propagation was the sole cause.
+- Counterevidence: the source change was built, installed in place, and
+  force-stopped before the same direct route. The fresh NextN layout changed
+  as expected, but one semantic Read activation still ended outside NextN.
+  The inner Row was therefore reverted rather than retained as a speculative
+  fix. The faulty assumption was that restoring that one reference boundary
+  would determine delivery on its own; it did not. Do not alter the floating
+  geometry, reserve, or hit-test tree again without a new event-delivery
+  observation that distinguishes the actual owner.
+
 ## OPEN — Gallery comment translation
 
 - User outcome: bring the mature optional comment-translation capability to

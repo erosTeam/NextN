@@ -762,6 +762,14 @@ remains continuous; do not ask for it again.
 - The exact failure boundary remains OPEN: establish why this native Gallery
   action leaves NextN before exercising it again. Do not use additional taps,
   inferred coordinates, or a new route to make a Reader result appear.
+- 2026-08-11 follow-up: a narrow, reference-owned inner hit-test boundary was
+  built and loaded by force-stopping NextN before the same direct route. The
+  fresh implementation layout changed, but one semantic Read activation again
+  reached the same non-NextN terminal. That unsupported hypothesis has been
+  reverted; no Reader, translation, account, preference, or content action is
+  claimed from this run. The retained raw evidence is
+  `.hvigor/outputs/reader-hit-test-20260811T0319+0800/` and remains outside
+  Git.
 
 ## Latest device observation — Shared comment-translation source route
 
