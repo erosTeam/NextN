@@ -5,7 +5,7 @@
     { "name": "EntryAbility_label", "value": "NextN" },
     { "name": "settings_layout", "value": "Interface" },
     { "name": "settings_appearance", "value": "Appearance" },
-    { "name": "settings_theme", "value": "Theme" },
+    { "name": "settings_theme", "value": "Dark mode" },
     { "name": "settings_theme_color", "value": "Theme color" },
     { "name": "settings_language", "value": "Language" },
     { "name": "settings_catalog_browse_language", "value": "Browse language" },

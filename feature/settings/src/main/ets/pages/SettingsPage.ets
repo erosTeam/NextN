@@ -2383,7 +2383,7 @@ export struct SettingsPage {
       SymbolGlyph($r('sys.symbol.arrowtriangle_down_fill'))
         .fontSize(ThemeTokens.FONT_SIZE_TITLE)
         .fontColor([ThemeTokens.TEXT_TERTIARY])
-        .padding({ right: ThemeTokens.SPACE_MD })
+        .padding({ left: ThemeTokens.SPACE_XS, right: ThemeTokens.SPACE_MD })
     }
     .alignItems(VerticalAlign.Center)
   }
@@ -2470,7 +2470,7 @@ export struct SettingsPage {
       })
       this.RowDivider()
       NextNListRow({
-        leadingIcon: $r('sys.symbol.paintpalette'),
+        leadingIcon: $r('sys.symbol.paintbrush'),
         title: AppStrings.get('settings_theme_color'),
         useCustomTrailing: true,
         customTrailing: (): void => {

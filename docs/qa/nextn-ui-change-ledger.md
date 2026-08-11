@@ -232,6 +232,53 @@ authorize an edit, replace a device comparison, or define product completion.
   same-state NextE reference root, so it does not establish visual-reference
   parity; do not repeat this selection sequence merely to produce another
   implementation capture.
+- **Reopened by current same-state counter-evidence — 2026-08-12:** the
+  retained fresh `1320×2120` NextE Interface capture now matches the red
+  theme-color state. Its Appearance parent tree is the same four-row group,
+  but its first leaf is `深色模式` / `Dark mode` / `ダークモード`, and the
+  theme-color leaf has the source-owned `sys.symbol.paintbrush` prefix.
+  NextN still renders `主题` / `Theme` / `テーマ` and
+  `sys.symbol.paintpalette`. This reopens only those two reference-owned
+  leaves despite the earlier Settings copy freeze.
+- **Exact correction and limit:** replace the four `settings_theme` locale
+  values with the current NextE values and replace only the theme-color row's
+  prefix symbol with `paintbrush`. Preserve the Appearance parent tree, row
+  order, trailing color-dot/dropdown owner, color identifiers, menu, default,
+  persistence, and every other Settings string/icon. Rebuild, install in
+  place, compare the current red reference to a new red NextN capture, then
+  restore NextN to `system`.
+- **Correction fault found before acceptance — 2026-08-12:** the first icon
+  patch matched the first `paintpalette` occurrence in `SettingsPage`, which
+  belongs to the root `settings_layout` route, not the Appearance theme-color
+  row. The Interface capture therefore still showed the palette icon, while
+  the root-route icon was unintentionally changed outside the declared
+  boundary. Revert that root icon immediately and target the sibling whose
+  title is exactly `settings_theme_color`. Prevention: icon edits must include
+  their title/action context in the patch and be checked against the complete
+  occurrence list before a build or device run.
+- **Suffix alignment correction — 2026-08-12:** the current red same-viewport
+  comparison showed the corrected NextN leaf still beginning slightly farther
+  right than NextE. Source confirms the cause: the reference arrow has
+  `{ left: 4, right: 12 }` padding inside the same `Row({ space: 4 })`, while
+  NextN retained only the right padding. Add that missing 4vp left inset to
+  the existing arrow only. Do not change the row, dot size, font, menu,
+  color, persistence, or neighboring Settings leaves.
+- **Final device evidence — 2026-08-12:** the signed Debug HAP was installed
+  in place on the selected 237 device. Current NextE and NextN Interface
+  captures share the `1320×2120` portrait viewport and the reviewed two-leaf
+  state: `深色模式` with `跟随系统`, then `主题色` with Huawei red selected.
+  The corrected NextN theme-color row renders the paintbrush prefix, red dot,
+  value, and down-triangle suffix in the corresponding positions to the
+  reference. Other visible Interface preference values were not made equal
+  and are outside this two-leaf comparison. The temporary red value was
+  restored through the native menu to `跟随系统`; the final layout remains
+  native NextN. The local raw artifacts are retained outside Git in
+  `.hvigor/outputs/theme-color-reference-20260812T0325/` and
+  `.hvigor/outputs/theme-color-copy-20260812T0330/`.
+- **FROZEN — Appearance theme-mode copy and theme-color leaf:** do not
+  revisit, recapture, or alter these two leaves without new user feedback,
+  a source change in their owner path, or same-state counter-evidence. This
+  freeze does not close the rest of the Interface page or its other values.
 
 ## OPEN — Reader selectable Waifu2x enhancement models
 

@@ -5,7 +5,7 @@
     { "name": "EntryAbility_label", "value": "NextN" },
     { "name": "settings_layout", "value": "インターフェース" },
     { "name": "settings_appearance", "value": "表示" },
-    { "name": "settings_theme", "value": "テーマ" },
+    { "name": "settings_theme", "value": "ダークモード" },
     { "name": "settings_theme_color", "value": "テーマカラー" },
     { "name": "settings_language", "value": "言語" },
     { "name": "settings_catalog_browse_language", "value": "ブラウズの言語" },

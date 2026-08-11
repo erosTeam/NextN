@@ -5,7 +5,7 @@
     { "name": "EntryAbility_label", "value": "NextN" },
     { "name": "settings_layout", "value": "界面" },
     { "name": "settings_appearance", "value": "界面" },
-    { "name": "settings_theme", "value": "主题" },
+    { "name": "settings_theme", "value": "深色模式" },
     { "name": "settings_theme_color", "value": "主题色" },
     { "name": "settings_language", "value": "语言" },
     { "name": "settings_catalog_browse_language", "value": "浏览语言" },
