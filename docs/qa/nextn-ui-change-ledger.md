@@ -674,6 +674,51 @@ authorize an edit, replace a device comparison, or define product completion.
   call. Do not recreate the leaf or repeat the menu-zone input until that
   focused-window transition is separately explained.
 
+## OPEN — Reader enhancement input-height ceiling
+
+- **User outcome:** the existing on-device enhancement must expose the same
+  bounded image-size choice as NextE instead of silently fixing every request
+  to its largest decode budget.
+- **Reference parent tree:** `ReaderSettingsPage → HdsNavDestination →
+  SecondaryListScaffold → ListItem → GroupedListSection`; inside the existing
+  enhancement group, the enable switch is followed by model selection, model
+  management, then a disabled-when-off `Maximum original image height` menu row offering
+  `1000px`, `1500px`, and `2000px`.
+- **Current NextN parent tree:** `SettingsPage(READER) →
+  SecondaryListScaffold → ListItem → NextNGroupedListSection → NextNListRow`.
+  It already owns the same enable/model/model-manager sequence, while
+  `ReaderSuperResolutionService` passes a fixed `2000` maximum edge to the
+  native decoder.
+- **Exact change boundary:** persist only one normalized local choice from
+  the three reference values; pass it to the already-existing native decoder;
+  include it in the private derived-image cache identity; and insert one row
+  after model management. It must be disabled when enhancement is off and may
+  not alter model installation, Reader chrome, page navigation, source files,
+  downloads, account state, or network behavior.
+- **Verification plan:** build and install in place, compare the unchanged
+  Reader-settings enhancement group against the same NextE viewport, then
+  select no value during the initial visual review. A real altered-height
+  enhancement result remains a separate Reader-runtime acceptance path.
+- **Current same-viewport counter-evidence (2026-08-12):** the first NextN
+  build placed the new row before model management because the source reading
+  was treated as sufficient for leaf order. The current native NextE capture
+  at `1320×2120` instead shows `enable → selected model → model management →
+  maximum source height`; with enhancement off, the last row stays visible but
+  disabled. Correct only the row position to follow that observed hierarchy.
+  Preserve its copy, values, disabled predicate, menu, cache identity, and
+  every other Reader setting.
+- **Current device evidence (2026-08-12):** after the narrow reorder, a signed
+  Debug HAP was installed in place on the selected device. At the same
+  `1320×2120` portrait viewport, NextN shows model selection → model
+  management → maximum source height with the existing `2000px` value. The
+  selector menu shows only `1000px`, `1500px`, and `2000px`, with `2000px`
+  selected; no option was chosen. The current NextE capture has enhancement
+  off and therefore shows the same last row disabled. NextN's pre-existing
+  enhancement preference was on and was not changed solely to manufacture the
+  disabled branch. The row order, copy, values, and enabled-state predicate
+  are observed/source-backed; an explicit disabled-branch NextN capture is
+  still unobserved and remains OPEN.
+
 ## OPEN — Gallery comment translation
 
 - User outcome: bring the mature optional comment-translation capability to

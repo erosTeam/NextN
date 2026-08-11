@@ -1,6 +1,11 @@
 import { common } from '@kit.AbilityKit'
 import { relationalStore } from '@kit.ArkData'
-import { NhReaderMode, NhReaderSuperResolutionModel } from '../model/NhReaderSettings'
+import {
+  NhReaderMode,
+  NhReaderSuperResolutionModel,
+  READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT,
+  READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES,
+} from '../model/NhReaderSettings'
 import {
   NhReaderTapZoneInvert,
   NhReaderTapZoneLayout,
@@ -19,6 +24,7 @@ const READER_TAP_ZONE_LAYOUT_KEY: string = 'reader_tap_zone_layout'
 const READER_TAP_ZONE_INVERT_KEY: string = 'reader_tap_zone_invert'
 const READER_SUPER_RESOLUTION_ENABLED_KEY: string = 'reader_super_resolution_enabled'
 const READER_SUPER_RESOLUTION_MODEL_KEY: string = 'reader_super_resolution_model'
+const READER_SUPER_RESOLUTION_MAX_HEIGHT_KEY: string = 'reader_super_resolution_max_height'
 const SQL_SELECT_MODE: string = 'SELECT value FROM reader_settings WHERE key = ? LIMIT 1'
 const SQL_UPSERT_MODE: string =
   'INSERT INTO reader_settings (key, value) VALUES (?, ?) ' +
@@ -140,6 +146,16 @@ export class ReaderSettingsRepository {
     )
   }
 
+  static async superResolutionMaxHeight(context: common.UIAbilityContext): Promise<number> {
+    const stored: string | null = await ReaderSettingsRepository.value(
+      context,
+      READER_SUPER_RESOLUTION_MAX_HEIGHT_KEY,
+    )
+    return ReaderSettingsRepository.normalizeSuperResolutionMaxHeight(
+      stored === null ? READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT : Number(stored),
+    )
+  }
+
   static saveMode(context: common.UIAbilityContext, mode: NhReaderMode): Promise<void> {
     const normalized: NhReaderMode = ReaderSettingsRepository.normalizeMode(mode)
     return ReaderSettingsRepository.saveValue(context, READER_MODE_KEY, normalized)
@@ -234,12 +250,30 @@ export class ReaderSettingsRepository {
     )
   }
 
+  static saveSuperResolutionMaxHeight(context: common.UIAbilityContext, height: number): Promise<void> {
+    return ReaderSettingsRepository.saveValue(
+      context,
+      READER_SUPER_RESOLUTION_MAX_HEIGHT_KEY,
+      ReaderSettingsRepository.normalizeSuperResolutionMaxHeight(height).toString(),
+    )
+  }
+
   private static normalizeSuperResolutionModel(value: string): NhReaderSuperResolutionModel {
     if (value === NhReaderSuperResolutionModel.WAIFU2X_PHOTO_NOISE0_2X ||
       value === NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X) {
       return value as NhReaderSuperResolutionModel
     }
     return NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
+  }
+
+  private static normalizeSuperResolutionMaxHeight(value: number): number {
+    const normalized: number = Math.round(value)
+    for (let index: number = 0; index < READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES.length; index++) {
+      if (normalized === READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES[index]) {
+        return normalized
+      }
+    }
+    return READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT
   }
 
   private static saveValue(context: common.UIAbilityContext, key: string, value: string): Promise<void> {

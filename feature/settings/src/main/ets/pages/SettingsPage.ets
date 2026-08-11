@@ -16,6 +16,7 @@ import {
   NhTagTranslationStatus,
   NhReaderMode,
   NhReaderSuperResolutionModel,
+  READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES,
   NhReaderTapZoneInvert,
   NhReaderTapZoneLayout,
   NextNGroupedListSection,
@@ -163,6 +164,7 @@ export struct SettingsPage {
   @Local readerTapZoneMenuShown: boolean = false
   @Local readerTapZoneInvertMenuShown: boolean = false
   @Local readerEnhancementModelMenuShown: boolean = false
+  @Local readerEnhancementMaxHeightMenuShown: boolean = false
   @Local downloadSettings: DownloadSettingsState = connectDownloadSettings()
   @Local accountSession: AccountSessionState = connectAccountSession()
   @Local accountProfile: AccountProfileState = connectAccountProfile()
@@ -509,6 +511,10 @@ export struct SettingsPage {
       : AppStrings.get(definition.labelStringKey)
   }
 
+  private readerEnhancementMaxHeightLabel(): string {
+    return `${this.readerPresentation.superResolutionMaxHeight}px`
+  }
+
   /** Mirrors the reference lifecycle: an externally removed selected model
    * falls back to an installed peer, and an enabled reader has no missing-model
    * state. This is not a download path. */
@@ -563,6 +569,21 @@ export struct SettingsPage {
     this.readerModeError = ''
     try {
       await ReaderPresentationService.setSuperResolutionModel(this.context(), model)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_enhancement_save_failed')
+    }
+  }
+
+  private async setReaderEnhancementMaxHeight(height: number): Promise<void> {
+    this.readerEnhancementMaxHeightMenuShown = false
+    if (!this.readerPresentation.superResolutionEnabled ||
+      !this.selectedReaderEnhancementModelInstalled() ||
+      this.readerPresentation.superResolutionMaxHeight === height) {
+      return
+    }
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setSuperResolutionMaxHeight(this.context(), height)
     } catch (_error) {
       this.readerModeError = AppStrings.get('settings_reader_enhancement_save_failed')
     }
@@ -2082,7 +2103,6 @@ export struct SettingsPage {
           this.readerEnhancementModelMenuShown = false
         },
       })
-      this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.lightbulb'),
         title: AppStrings.get('settings_reader_enhancement_models'),
@@ -2093,6 +2113,30 @@ export struct SettingsPage {
         accessibilityLabel: AppStrings.get('settings_reader_enhancement_models_a11y'),
         onAction: (): void => {
           this.openReaderEnhancementModels()
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.lightbulb'),
+        title: AppStrings.get('settings_reader_enhancement_max_height'),
+        subtitle: AppStrings.get('settings_reader_enhancement_max_height_hint'),
+        trailingText: this.readerEnhancementMaxHeightLabel(),
+        isEnabled: this.readerPresentation.superResolutionEnabled &&
+          this.selectedReaderEnhancementModelInstalled(),
+        accessibilityLabel: AppStrings.format('settings_reader_enhancement_max_height_a11y', [
+          this.readerEnhancementMaxHeightLabel(),
+        ]),
+        onAction: (): void => {
+          if (this.readerPresentation.superResolutionEnabled &&
+            this.selectedReaderEnhancementModelInstalled()) {
+            this.readerEnhancementMaxHeightMenuShown = true
+          }
+        },
+      })
+      .bindMenu(this.readerEnhancementMaxHeightMenuShown, this.ReaderEnhancementMaxHeightMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.readerEnhancementMaxHeightMenuShown = false
         },
       })
     }
@@ -2182,6 +2226,26 @@ export struct SettingsPage {
           })
         },
         (model: NhReaderSuperResolutionModel): string => model,
+      )
+    }
+  }
+
+  @Builder
+  private ReaderEnhancementMaxHeightMenu() {
+    Menu() {
+      ForEach(
+        READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES,
+        (height: number) => {
+          MenuItem({
+            content: `${height}px`,
+            symbolEndIcon: this.readerPresentation.superResolutionMaxHeight === height
+              ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+              : undefined,
+          }).onClick((): void => {
+            this.setReaderEnhancementMaxHeight(height).catch((): void => {})
+          })
+        },
+        (height: number): string => `${height}`,
       )
     }
   }

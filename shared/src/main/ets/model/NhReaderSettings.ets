@@ -22,6 +22,10 @@ export enum NhReaderSuperResolutionModel {
   WAIFU2X_PHOTO_NOISE0_2X = 'waifu2x_photo_noise0_2x',
 }
 
+/** Bounded local decode choices shared by Settings, persistence, and Reader. */
+export const READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT: number = 2000
+export const READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES: number[] = [1000, 1500, 2000]
+
 /**
  * One local Reader presentation snapshot.  It is deliberately separate from
  * gallery data and request state: changing one of these values must preserve
@@ -46,6 +50,8 @@ export class NhReaderPresentation {
   superResolutionEnabled: boolean = false
   /** Existing installations resolve to the original art model without a migration download. */
   superResolutionModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
+  /** The largest source edge accepted for local enhancement decoding. */
+  superResolutionMaxHeight: number = READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT
 
   copy(): NhReaderPresentation {
     const result: NhReaderPresentation = new NhReaderPresentation()
@@ -60,6 +66,7 @@ export class NhReaderPresentation {
     result.tapZoneInvert = this.tapZoneInvert
     result.superResolutionEnabled = this.superResolutionEnabled
     result.superResolutionModel = this.superResolutionModel
+    result.superResolutionMaxHeight = this.superResolutionMaxHeight
     return result
   }
 }

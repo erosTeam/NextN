@@ -42,6 +42,8 @@ export {
   NhReaderMode,
   NhReaderPresentation,
   NhReaderSuperResolutionModel,
+  READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT,
+  READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES,
 } from './model/NhReaderSettings'
 export {
   NhReaderTapZoneAction,

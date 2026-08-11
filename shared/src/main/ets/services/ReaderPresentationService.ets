@@ -3,6 +3,8 @@ import {
   NhReaderMode,
   NhReaderPresentation,
   NhReaderSuperResolutionModel,
+  READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT,
+  READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES,
 } from '../model/NhReaderSettings'
 import {
   NhReaderTapZoneInvert,
@@ -156,6 +158,20 @@ export class ReaderPresentationService {
     })
   }
 
+  static setSuperResolutionMaxHeight(
+    context: common.UIAbilityContext,
+    height: number,
+  ): Promise<NhReaderPresentation> {
+    return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
+      presentation.superResolutionMaxHeight = ReaderPresentationService.normalizeSuperResolutionMaxHeight(height)
+    }, (presentation: NhReaderPresentation): Promise<void> => {
+      return ReaderSettingsRepository.saveSuperResolutionMaxHeight(
+        context,
+        presentation.superResolutionMaxHeight,
+      )
+    })
+  }
+
   private static async restoreInternal(context: common.UIAbilityContext): Promise<void> {
     const values: [
       NhReaderMode,
@@ -169,6 +185,7 @@ export class ReaderPresentationService {
       NhReaderTapZoneInvert,
       boolean,
       NhReaderSuperResolutionModel,
+      number,
     ] = await Promise.all([
       ReaderSettingsRepository.mode(context),
       ReaderSettingsRepository.keepScreenOn(context),
@@ -181,6 +198,7 @@ export class ReaderPresentationService {
       ReaderSettingsRepository.tapZoneInvert(context),
       ReaderSettingsRepository.superResolutionEnabled(context),
       ReaderSettingsRepository.superResolutionModel(context),
+      ReaderSettingsRepository.superResolutionMaxHeight(context),
     ])
     const presentation: NhReaderPresentation = new NhReaderPresentation()
     presentation.mode = values[0]
@@ -194,6 +212,7 @@ export class ReaderPresentationService {
     presentation.tapZoneInvert = values[8]
     presentation.superResolutionEnabled = values[9]
     presentation.superResolutionModel = values[10]
+    presentation.superResolutionMaxHeight = values[11]
     ReaderPresentationService.state().replace(presentation)
   }
 
@@ -233,6 +252,16 @@ export class ReaderPresentationService {
       return 3
     }
     return Math.max(1, Math.min(60, Math.round(value)))
+  }
+
+  private static normalizeSuperResolutionMaxHeight(value: number): number {
+    const normalized: number = Math.round(value)
+    for (let index: number = 0; index < READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES.length; index++) {
+      if (normalized === READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES[index]) {
+        return normalized
+      }
+    }
+    return READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT
   }
 
   private static normalizeSuperResolutionModel(value: NhReaderSuperResolutionModel): NhReaderSuperResolutionModel {

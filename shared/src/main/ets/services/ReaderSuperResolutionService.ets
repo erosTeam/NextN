@@ -3,7 +3,11 @@ import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { image } from '@kit.ImageKit'
 import { hilog } from '@kit.PerformanceAnalysisKit'
-import { NhReaderSuperResolutionModel } from '../model/NhReaderSettings'
+import {
+  NhReaderSuperResolutionModel,
+  READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT,
+  READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES,
+} from '../model/NhReaderSettings'
 import {
   ReaderNativeSuperResolution,
   ReaderNativeSuperResolutionConfig,
@@ -15,8 +19,7 @@ import {
 } from './ReaderSuperResolutionModelService'
 
 const CACHE_DIRECTORY: string = 'nextn-reader-super-resolution-cache'
-const MAX_SOURCE_HEIGHT: number = 2000
-const MAX_OUTPUT_EDGE: number = MAX_SOURCE_HEIGHT * 2
+const MAX_OUTPUT_EDGE: number = READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT * 2
 const MAX_OUTPUT_BYTES: number = MAX_OUTPUT_EDGE * MAX_OUTPUT_EDGE * 4
 const MAX_CACHE_FILES: number = 64
 const MAX_CACHE_BYTES: number = 256 * 1024 * 1024
@@ -70,6 +73,7 @@ export class ReaderSuperResolutionService {
     ownerKey: string,
     enabled: boolean,
     model: NhReaderSuperResolutionModel,
+    maxSourceHeight: number,
   ): Promise<ReaderSuperResolutionResult> {
     ReaderSuperResolutionService.clearOwnerOutcome(ownerKey)
     if (!enabled) {
@@ -94,6 +98,7 @@ export class ReaderSuperResolutionService {
         ReaderSuperResolutionService.original(sourcePath, 'model_not_installed'),
       )
     }
+    const normalizedMaxSourceHeight: number = ReaderSuperResolutionService.normalizeMaxSourceHeight(maxSourceHeight)
     const sourceKey: string = ReaderSuperResolutionService.sha256(sourcePath)
     if (sourceKey.length === 0) {
       return ReaderSuperResolutionService.rememberOwnerOutcome(
@@ -101,7 +106,12 @@ export class ReaderSuperResolutionService {
         ReaderSuperResolutionService.original(sourcePath, 'source_hash_failed'),
       )
     }
-    const outputPath: string = ReaderSuperResolutionService.outputPath(context, model, sourceKey)
+    const outputPath: string = ReaderSuperResolutionService.outputPath(
+      context,
+      model,
+      normalizedMaxSourceHeight,
+      sourceKey,
+    )
     if (ReaderSuperResolutionService.fileSize(outputPath) > 0) {
       ReaderSuperResolutionService.touch(outputPath)
       return ReaderSuperResolutionService.rememberOwnerOutcome(
@@ -121,10 +131,11 @@ export class ReaderSuperResolutionService {
     const task: Promise<ReaderSuperResolutionResult> = ReaderSuperResolutionService.processNow(
       context,
       sourcePath,
-        outputPath,
-        modelPaths,
-        nativeConfig,
-        inFlight,
+      outputPath,
+      modelPaths,
+      nativeConfig,
+      normalizedMaxSourceHeight,
+      inFlight,
     )
     inFlight.promise = task
     ReaderSuperResolutionService.inFlight.set(outputPath, inFlight)
@@ -172,6 +183,7 @@ export class ReaderSuperResolutionService {
     outputPath: string,
     modelPaths: ReaderSuperResolutionModelPaths,
     nativeConfig: ReaderNativeSuperResolutionConfig,
+    maxSourceHeight: number,
     inFlight: InFlightEnhancement,
   ): Promise<ReaderSuperResolutionResult> {
     const temporaryPath: string = `${outputPath}.part`
@@ -181,13 +193,13 @@ export class ReaderSuperResolutionService {
     let promoted: boolean = false
     let processingStage: string = 'native_decode'
     try {
-      const decoded = await ReaderNativeSuperResolution.decodeImageRgba(sourcePath, MAX_SOURCE_HEIGHT)
+      const decoded = await ReaderNativeSuperResolution.decodeImageRgba(sourcePath, maxSourceHeight)
       const width: number = decoded.width
       const height: number = decoded.height
       if (width <= 0 || height <= 0) {
         return ReaderSuperResolutionService.original(sourcePath, 'invalid_dimensions')
       }
-      if (height > MAX_SOURCE_HEIGHT || width > MAX_SOURCE_HEIGHT) {
+      if (height > maxSourceHeight || width > maxSourceHeight) {
         return ReaderSuperResolutionService.original(sourcePath, 'source_too_large')
       }
       const outputWidth: number = width * 2
@@ -309,11 +321,22 @@ export class ReaderSuperResolutionService {
   private static outputPath(
     context: common.UIAbilityContext,
     model: NhReaderSuperResolutionModel,
+    maxSourceHeight: number,
     sourceKey: string,
   ): string {
     const directory: string = ReaderSuperResolutionService.cacheDirectory(context)
     ReaderSuperResolutionService.ensureDirectory(directory)
-    return `${directory}/${model}_${sourceKey}.jpg`
+    return `${directory}/${model}_${maxSourceHeight}_${sourceKey}.jpg`
+  }
+
+  private static normalizeMaxSourceHeight(value: number): number {
+    const normalized: number = Math.round(value)
+    for (let index: number = 0; index < READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES.length; index++) {
+      if (normalized === READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES[index]) {
+        return normalized
+      }
+    }
+    return READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT
   }
 
   private static async prune(context: common.UIAbilityContext, protectedPath: string): Promise<void> {

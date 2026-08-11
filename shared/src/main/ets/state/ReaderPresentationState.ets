@@ -3,6 +3,7 @@ import {
   NhReaderMode,
   NhReaderPresentation,
   NhReaderSuperResolutionModel,
+  READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT,
 } from '../model/NhReaderSettings'
 import { NhReaderTapZoneInvert, NhReaderTapZoneLayout } from '../model/NhReaderTapZone'
 
@@ -25,6 +26,7 @@ export class ReaderPresentationState {
   @Trace superResolutionEnabled: boolean = false
   @Trace superResolutionModel: NhReaderSuperResolutionModel =
     NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
+  @Trace superResolutionMaxHeight: number = READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT
 
   replace(presentation: NhReaderPresentation): void {
     this.mode = presentation.mode
@@ -38,6 +40,7 @@ export class ReaderPresentationState {
     this.tapZoneInvert = presentation.tapZoneInvert
     this.superResolutionEnabled = presentation.superResolutionEnabled
     this.superResolutionModel = presentation.superResolutionModel
+    this.superResolutionMaxHeight = presentation.superResolutionMaxHeight
   }
 
   snapshot(): NhReaderPresentation {
@@ -53,6 +56,7 @@ export class ReaderPresentationState {
     result.tapZoneInvert = this.tapZoneInvert
     result.superResolutionEnabled = this.superResolutionEnabled
     result.superResolutionModel = this.superResolutionModel
+    result.superResolutionMaxHeight = this.superResolutionMaxHeight
     return result
   }
 }

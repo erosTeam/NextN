@@ -184,6 +184,7 @@ struct ReaderImagePage {
   @Param renderedImageUri: string = ''
   @Param enhancementEnabled: boolean = false
   @Param enhancementModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
+  @Param enhancementMaxHeight: number = 2000
   @Param fillViewport: boolean = false
   @Param imageWidth: number = 0
   @Param imageHeight: number = 0
@@ -258,6 +259,11 @@ struct ReaderImagePage {
     this.loadImage()
   }
 
+  @Monitor('enhancementMaxHeight')
+  onEnhancementMaxHeightChanged(): void {
+    this.loadImage()
+  }
+
   // NextE dispatches double taps from the Reader surface rather than asking a
   // scrolling List/Swiper child to win the recognizer race. Only the visible
   // target page consumes the sequence command.
@@ -310,6 +316,7 @@ struct ReaderImagePage {
         this.enhancementOwnerKey(),
         true,
         this.enhancementModel,
+        this.enhancementMaxHeight,
       )
       if (!this.isCurrentLoad(generation)) {
         return
@@ -631,6 +638,7 @@ struct ReaderSpreadImageLayer {
   @Param renderedImageUri: string = ''
   @Param enhancementEnabled: boolean = false
   @Param enhancementModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
+  @Param enhancementMaxHeight: number = 2000
   @Param pageIndex: number = -1
   @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
   @Event onSourceFileReady?: (pageIndex: number, localPath: string) => void
@@ -680,6 +688,11 @@ struct ReaderSpreadImageLayer {
     this.loadImage()
   }
 
+  @Monitor('enhancementMaxHeight')
+  onEnhancementMaxHeightChanged(): void {
+    this.loadImage()
+  }
+
   private context(): common.UIAbilityContext {
     return this.getUIContext().getHostContext() as common.UIAbilityContext
   }
@@ -718,6 +731,7 @@ struct ReaderSpreadImageLayer {
         this.enhancementOwnerKey(),
         true,
         this.enhancementModel,
+        this.enhancementMaxHeight,
       )
       if (generation !== this.loadGeneration) {
         return
@@ -863,6 +877,7 @@ struct ReaderSpreadSurface {
   @Param secondRenderedImageUri: string = ''
   @Param enhancementEnabled: boolean = false
   @Param enhancementModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
+  @Param enhancementMaxHeight: number = 2000
   @Param rowReversed: boolean = false
   @Param doubleTapSequence: number = 0
   @Param doubleTapTargetIndex: number = -1
@@ -1043,6 +1058,7 @@ struct ReaderSpreadSurface {
       renderedImageUri,
       enhancementEnabled: this.enhancementEnabled,
       enhancementModel: this.enhancementModel,
+      enhancementMaxHeight: this.enhancementMaxHeight,
       pageIndex: item.sourceIndex,
       cacheKey: ReaderImageCacheService.cacheKey(
         this.galleryId,
@@ -3212,6 +3228,7 @@ export struct ReaderPage {
             renderedImageUri: this.readerTranslatedImageUri(item.sourceIndex),
             enhancementEnabled: this.readerEnhancementEnabled,
             enhancementModel: this.readerPresentation.superResolutionModel,
+            enhancementMaxHeight: this.readerPresentation.superResolutionMaxHeight,
             imageWidth: item.page.width,
             imageHeight: item.page.height,
             pageIndex: item.sourceIndex,
@@ -3264,6 +3281,7 @@ export struct ReaderPage {
               renderedImageUri: this.readerTranslatedImageUri(item.sourceIndex),
               enhancementEnabled: this.readerEnhancementEnabled,
               enhancementModel: this.readerPresentation.superResolutionModel,
+              enhancementMaxHeight: this.readerPresentation.superResolutionMaxHeight,
               imageWidth: item.page.width,
               imageHeight: item.page.height,
               pageIndex: item.sourceIndex,
@@ -3334,6 +3352,7 @@ export struct ReaderPage {
             secondRenderedImageUri: item.second === null ? '' : this.readerTranslatedImageUri(item.second.sourceIndex),
             enhancementEnabled: this.readerEnhancementEnabled,
             enhancementModel: this.readerPresentation.superResolutionModel,
+            enhancementMaxHeight: this.readerPresentation.superResolutionMaxHeight,
             rowReversed: this.isRightToLeftPagedMode(),
             doubleTapSequence: this.doubleTapSequence,
             doubleTapTargetIndex: this.doubleTapTargetIndex,
