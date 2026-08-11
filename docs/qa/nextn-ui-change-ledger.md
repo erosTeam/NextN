@@ -861,3 +861,10 @@ authorize an edit, replace a device comparison, or define product completion.
   native Reader remains foregrounded, remove the temporary guard and diagnose
   only the skipped load path; otherwise diagnose the overlay/Reader mount.
 - Status: EVIDENCE-ONLY. It is not a visual acceptance or a product change.
+- Result: after the same NextN-only cold start, direct route, and one semantic
+  Read action, the terminal root remained native NextN Reader. This excludes
+  the Detail callback, overlay navigation, Reader destination, and Reader
+  component mount from the observed failure window. The mount guard is removed
+  immediately; the next one-run discriminator keeps normal detail/history/data
+  loading but suppresses only visible-page and opportunistic preload image
+  cache requests.

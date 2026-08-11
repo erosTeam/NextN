@@ -326,6 +326,13 @@ struct ReaderImagePage {
   }
 
   private async loadImage(forceReload: boolean = false): Promise<void> {
+    if (READER_IMAGE_LOAD_DIAGNOSTIC) {
+      this.hasLoadError = false
+      this.isLoading = false
+      this.isRetrying = false
+      this.notifyImageLoadState(false)
+      return
+    }
     const generation: number = this.loadGeneration + 1
     this.loadGeneration = generation
     this.hasLoadError = false
@@ -733,6 +740,13 @@ struct ReaderSpreadImageLayer {
   }
 
   private async loadImage(forceReload: boolean = false): Promise<void> {
+    if (READER_IMAGE_LOAD_DIAGNOSTIC) {
+      this.hasLoadError = false
+      this.isLoading = false
+      this.isRetrying = false
+      this.notifyImageLoadState(false)
+      return
+    }
     const generation: number = this.loadGeneration + 1
     this.loadGeneration = generation
     this.hasLoadError = false
@@ -1375,7 +1389,7 @@ struct ReaderEnhancementStatusIcon {
 }
 
 /** Native Reader with ErosN-derived vertical and page-at-a-time modes. */
-const READER_ROUTE_MOUNT_DIAGNOSTIC: boolean = true
+const READER_IMAGE_LOAD_DIAGNOSTIC: boolean = true
 
 @ComponentV2
 export struct ReaderPage {
@@ -1771,14 +1785,6 @@ export struct ReaderPage {
   }
 
   private async loadReader(): Promise<void> {
-    if (READER_ROUTE_MOUNT_DIAGNOSTIC) {
-      this.isLoading = false
-      this.isReaderReadyForCurrentGallery = false
-      this.errorMessage = 'Reader route diagnostic'
-      this.readerChromeVisible = true
-      this.notifyReaderPresentation()
-      return
-    }
     const generation: number = this.requestGeneration + 1
     this.requestGeneration = generation
     this.isLoading = true
@@ -3611,6 +3617,9 @@ export struct ReaderPage {
    * byte limits, and atomic file promotion with visible images.
    */
   private scheduleReaderPreload(sourceIndex: number): void {
+    if (READER_IMAGE_LOAD_DIAGNOSTIC) {
+      return
+    }
     const preloadPages: number = this.readerTranslationAutoEnabled
       ? Math.max(1, this.readerPresentation.preloadPages)
       : this.readerPresentation.preloadPages
