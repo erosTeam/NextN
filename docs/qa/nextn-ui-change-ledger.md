@@ -1184,3 +1184,16 @@ authorize an edit, replace a device comparison, or define product completion.
   `继续` action, and an eight-second settle, WindowManager foreground was
   `nexte0`, not NextN. The descriptor construction change is rejected and was
   removed immediately; this route will not be retried unchanged.
+
+### In-memory decoder-source boundary — 2026-08-11
+
+- Basis: the documented descriptor constructor did not alter the terminal
+  process exit, while the repository already has an `ArrayBuffer → ImageSource`
+  leaf for verified local image bytes. This isolated the third supported source
+  construction form without changing decode options, dimensions, native
+  inference, output packing, Reader behavior, or UI.
+- Result: the same single direct-Gallery Reader action again ended with
+  WindowManager foreground `nexte0`. The in-memory construction code was
+  removed immediately and the normal Debug build is being restored. With path,
+  descriptor, and in-memory inputs all rejected, the remaining boundary is
+  `createPixelMap` execution itself, not ImageSource input construction.

@@ -1146,6 +1146,12 @@ rewrite, re-run, or block this completed direct-route observation.
   resolved `继续` action, and eight-second settle, WindowManager foreground was
   `nexte0`. The change was removed immediately. This rejects descriptor-based
   source construction; it does not establish an enhancement fix.
+- The final supported source-construction split used the same private bytes as
+  an `ArrayBuffer` ImageSource. The same one-action route again ended with
+  `nexte0`; the code was removed immediately. Path, descriptor, and memory
+  source construction are therefore all rejected for this device path. The
+  normal signed Debug HAP must be restored before any later, non-construction
+  diagnostic.
 
 ## Data and artifact boundary
 
