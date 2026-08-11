@@ -10,6 +10,7 @@ import {
   LlmSourceProfileRepository,
   LlmSourceProfilesState,
   LlmSourceSecretVault,
+  MangaRenderingServiceSettings,
   NextNGroupedListSection,
   NextNListRow,
   PageEmptyState,
@@ -40,8 +41,10 @@ export struct ComicTranslationSourcePage {
   @Local bindingsConflict: boolean = false
   @Local localModelInstalled: boolean = false
   @Local localModelChanging: boolean = false
+  @Local mangaRenderingServiceEnabled: boolean = false
   @Param scroller: Scroller = new Scroller()
   @Param requestedConsumer: string = LLM_CONSUMER_MANGA_TRANSLATION
+  @Event onOpenMangaRenderingService?: () => void
   // The key is deliberately not published to AppStorage or any shared state.
   // It exists only while this mounted input is edited and is written directly
   // to the HUKS-backed vault during save.
@@ -50,6 +53,7 @@ export struct ComicTranslationSourcePage {
   aboutToAppear(): void {
     this.loadSource()
     this.refreshLocalModel()
+    this.refreshMangaRenderingService()
   }
 
   private context(): common.UIAbilityContext {
@@ -119,6 +123,14 @@ export struct ComicTranslationSourcePage {
       this.localModelInstalled = await ComicTranslationModelService.isInstalled(this.context())
     } catch (_error) {
       this.localModelInstalled = false
+    }
+  }
+
+  private async refreshMangaRenderingService(): Promise<void> {
+    try {
+      this.mangaRenderingServiceEnabled = (await MangaRenderingServiceSettings.load(this.context())).enabled
+    } catch (_error) {
+      this.mangaRenderingServiceEnabled = false
     }
   }
 
@@ -440,6 +452,27 @@ export struct ComicTranslationSourcePage {
     }
   }
 
+  /** Follows NextE: self-hosted configuration belongs inside comic translation. */
+  @Builder
+  private MangaRenderingServiceGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.cloud'),
+        title: AppStrings.get('settings_manga_rendering_service'),
+        subtitle: AppStrings.get('settings_manga_rendering_service_hint'),
+        trailingText: this.mangaRenderingServiceEnabled
+          ? AppStrings.get('settings_manga_rendering_service_enabled')
+          : AppStrings.get('settings_manga_rendering_service_not_configured'),
+        accessibilityLabel: AppStrings.get('settings_manga_rendering_service_a11y'),
+        onAction: (): void => {
+          if (this.onOpenMangaRenderingService) {
+            this.onOpenMangaRenderingService()
+          }
+        },
+      })
+    }
+  }
+
   @Builder
   private SaveGroup() {
     NextNGroupedListSection() {
@@ -475,6 +508,11 @@ export struct ComicTranslationSourcePage {
           }
           ListItem() {
             this.LocalModelGroup()
+          }
+          if (this.onOpenMangaRenderingService) {
+            ListItem() {
+              this.MangaRenderingServiceGroup()
+            }
           }
           ListItem() {
             this.SaveGroup()

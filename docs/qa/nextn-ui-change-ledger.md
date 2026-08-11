@@ -986,6 +986,23 @@ authorize an edit, replace a device comparison, or define product completion.
   device viewport. Do not treat this ledger, source similarity, or a build as
   visual acceptance.
 
+### Parent-tree correction — 2026-08-11
+
+- Faulty assumption: the initial source mapping placed `Manga rendering
+  service` as a sibling of `Comic translation` in Reader Settings. The actual
+  NextE route owner is `ComicTranslationSettingsPage`; its self-hosted row
+  opens `MangaRenderingServiceSettingsPage` from inside the comic-translation
+  destination.
+- Correction: remove the new Reader-Settings sibling row and move the one
+  service-navigation row into NextN's existing
+  `ComicTranslationSourcePage`. The configuration destination and all form
+  leaves remain unchanged. This restores `Settings → Reader → Comic
+  translation → Manga rendering service → HdsNavDestination` and avoids a
+  competing parent tree.
+- Impact: the captured direct-sibling form is retained as rejected local
+  evidence only. It is not an acceptance sample and must not justify a
+  visual claim.
+
 ## EVIDENCE-ONLY — Reader route mount/data split — 2026-08-11
 
 - New device evidence: after a data-preserving NextN-only cold start and the

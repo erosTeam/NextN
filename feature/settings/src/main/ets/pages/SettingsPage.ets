@@ -208,7 +208,6 @@ export struct SettingsPage {
   @Event onOpenReaderSettings?: () => void
   @Event onOpenReaderEnhancementModels?: () => void
   @Event onOpenTranslationSource?: (consumerId: string) => void
-  @Event onOpenMangaRenderingService?: () => void
   @Event onOpenDownloadSettings?: () => void
   @Event onOpenCacheSettings?: () => void
   @Event onOpenAdvancedSettings?: () => void
@@ -2117,24 +2116,6 @@ export struct SettingsPage {
     }
   }
 
-  /** A separate provider destination leaves the text-source form unchanged. */
-  @Builder
-  private ReaderMangaRenderingServiceGroup() {
-    NextNGroupedListSection() {
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.cloud'),
-        title: AppStrings.get('settings_manga_rendering_service'),
-        subtitle: AppStrings.get('settings_manga_rendering_service_hint'),
-        accessibilityLabel: AppStrings.get('settings_manga_rendering_service_a11y'),
-        onAction: (): void => {
-          if (this.onOpenMangaRenderingService) {
-            this.onOpenMangaRenderingService()
-          }
-        },
-      })
-    }
-  }
-
   /** Shared content for the routed Settings surface and the Reader-owned sheet. */
   @Builder
   private ReaderPresentationListItems() {
@@ -2144,11 +2125,6 @@ export struct SettingsPage {
     if (!this.sheetPresentation && this.onOpenTranslationSource) {
       ListItem() {
         this.ReaderComicTranslationGroup()
-      }
-    }
-    if (!this.sheetPresentation && this.onOpenMangaRenderingService) {
-      ListItem() {
-        this.ReaderMangaRenderingServiceGroup()
       }
     }
     if (this.readerModeError.length > 0) {

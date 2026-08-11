@@ -273,6 +273,8 @@
     { "name": "settings_manga_rendering_service_check_failed", "value": "このサービスを確認できません。" },
     { "name": "settings_manga_rendering_service_enable", "value": "セルフホストレンダラーを使用" },
     { "name": "settings_manga_rendering_service_enable_hint", "value": "確認済みのサービスを有効にするまで、リーダーはローカルレンダラーを使用します。" },
+    { "name": "settings_manga_rendering_service_enabled", "value": "有効" },
+    { "name": "settings_manga_rendering_service_not_configured", "value": "未設定" },
     { "name": "settings_manga_rendering_service_security_hint", "value": "サービスアカウントはこの端末に安全に保存され、サービストークンは保持しません。" },
     { "name": "settings_manga_rendering_service_load_failed", "value": "レンダリングサービス設定を読み込めません。" },
     { "name": "settings_manga_rendering_service_save_failed", "value": "レンダリングサービス設定を保存できません。" },

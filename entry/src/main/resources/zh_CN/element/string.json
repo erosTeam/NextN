@@ -273,6 +273,8 @@
     { "name": "settings_manga_rendering_service_check_failed", "value": "无法验证此服务。" },
     { "name": "settings_manga_rendering_service_enable", "value": "使用自托管渲染器" },
     { "name": "settings_manga_rendering_service_enable_hint", "value": "除非启用已验证的服务，否则阅读器继续使用本地渲染器。" },
+    { "name": "settings_manga_rendering_service_enabled", "value": "已启用" },
+    { "name": "settings_manga_rendering_service_not_configured", "value": "未配置" },
     { "name": "settings_manga_rendering_service_security_hint", "value": "服务账户仅安全保存在本设备上，不会保留服务令牌。" },
     { "name": "settings_manga_rendering_service_load_failed", "value": "无法加载渲染服务设置。" },
     { "name": "settings_manga_rendering_service_save_failed", "value": "无法保存渲染服务设置。" },
