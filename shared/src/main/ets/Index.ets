@@ -129,6 +129,11 @@ export {
   ComicResponsesLabeledImage,
 } from './services/ComicResponsesClient'
 export {
+  OpenAiChatCompletionsClient,
+  OpenAiChatCompletionsConfig,
+} from './services/OpenAiChatCompletionsClient'
+export { CommentTranslationService } from './services/CommentTranslationService'
+export {
   COMIC_RESPONSES_TEXT_TRANSLATION_PROMPT_VERSION,
   COMIC_RESPONSES_TEXT_ONLY_TRANSLATION_PROMPT_VERSION,
   ComicTextTranslatorFactory,

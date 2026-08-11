@@ -111,3 +111,38 @@ authorize an edit, replace a device comparison, or define product completion.
   account, preference, gallery, or content data was changed. Local raw
   captures are retained outside Git. This is routing/form-render evidence,
   not a same-state reference comparison or feature acceptance.
+
+## OPEN — Gallery comment translation
+
+- User outcome: bring the mature optional comment-translation capability to
+  NextN without reopening the already reviewed Comments layout, composer, or
+  loading lifecycle.
+- Reference parent tree: NextE owns the policy and source binding outside the
+  discussion page. Its full route is `HdsNavDestination → Stack →
+  PullRefreshListScaffold → ListItem → GalleryCommentsCard`; translation is a
+  card-local action/state leaf. It can show cached or translated text in that
+  same card, while the fixed composer remains owned by the page-level Stack.
+- Current NextN parent tree: `Index` owns the existing Comments destination;
+  `GalleryCommentsPage` owns `Column → PullRefreshListScaffold → ListItem →
+  CommentCard`, plus its existing fixed page-footer composer. It currently
+  renders the author, body, and timestamp but has no translation state or
+  action. `LlmSourceProfileRepository` already owns a separate, private
+  comment consumer binding; current Reader source configuration intentionally
+  binds only the image-capable manga consumer.
+- Proven NH boundary: comments are public NH DTO text without EH votes,
+  replies, or rich span data. The new capability may add only a card-local
+  translated-text/action leaf and an explicit private text-source binding. It
+  must not import EH voting/reply behavior, change card/list/composer parent
+  ownership, auto-submit requests, or replace the frozen Comments chrome.
+- Before/after rationale: a bounded Responses-text provider and a private
+  cache make translation optional and deterministic for one configured source.
+  An unconfigured source keeps the action unavailable and sends no request.
+- Visual verification plan: with a configured source and an existing native
+  Comments route, compare the same gallery/comment viewport to NextE only for
+  the card-local action, pending state, and translated-text expansion. Review
+  the sibling card, list inset, and fixed composer in the same frame. Retain
+  raw local captures; no source-shape or synthetic UI check is evidence.
+- Unresolved risk: the selected device currently has no configured text
+  translation source, so real provider execution and translated-card visual
+  acceptance remain unproven. No credential, comment, or source record may be
+  fabricated to obtain that state.

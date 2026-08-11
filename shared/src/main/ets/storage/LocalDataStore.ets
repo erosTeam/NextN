@@ -7,7 +7,7 @@ const STORE_CONFIG: relationalStore.StoreConfig = {
   autoCleanDirtyData: true,
 }
 
-const SCHEMA_VERSION: number = 16
+const SCHEMA_VERSION: number = 17
 const SQL_CREATE_READING_HISTORY: string =
   'CREATE TABLE IF NOT EXISTS reading_history (' +
   'gallery_id INTEGER PRIMARY KEY, ' +
@@ -136,6 +136,19 @@ const SQL_CREATE_COMIC_TRANSLATION_DOCUMENT_CACHE_SCOPE_ORDER: string =
 const SQL_CREATE_COMIC_TRANSLATION_DOCUMENT_CACHE_ACCESS_ORDER: string =
   'CREATE INDEX IF NOT EXISTS idx_comic_translation_document_cache_access ' +
   'ON comic_translation_document_cache (accessed_at DESC)'
+// Comment translations are public-comment derivatives, kept separately from
+// Reader page documents so either cache can be cleared without touching the
+// other one.
+const SQL_CREATE_COMMENT_TRANSLATION_CACHE: string =
+  'CREATE TABLE IF NOT EXISTS comment_translation_cache (' +
+  'cache_key TEXT PRIMARY KEY NOT NULL, ' +
+  'scope_key TEXT NOT NULL, ' +
+  'translated TEXT NOT NULL, ' +
+  'cached_at INTEGER NOT NULL, ' +
+  'expires_at INTEGER NOT NULL)'
+const SQL_CREATE_COMMENT_TRANSLATION_CACHE_EXPIRY_ORDER: string =
+  'CREATE INDEX IF NOT EXISTS idx_comment_translation_cache_expiry ' +
+  'ON comment_translation_cache (expires_at ASC, cached_at DESC)'
 
 /**
  * Owns the small on-device schema shared by anonymous local capabilities.
@@ -203,6 +216,8 @@ export class LocalDataStore {
       await store.executeSql(SQL_CREATE_COMIC_TRANSLATION_DOCUMENT_CACHE)
       await store.executeSql(SQL_CREATE_COMIC_TRANSLATION_DOCUMENT_CACHE_SCOPE_ORDER)
       await store.executeSql(SQL_CREATE_COMIC_TRANSLATION_DOCUMENT_CACHE_ACCESS_ORDER)
+      await store.executeSql(SQL_CREATE_COMMENT_TRANSLATION_CACHE)
+      await store.executeSql(SQL_CREATE_COMMENT_TRANSLATION_CACHE_EXPIRY_ORDER)
       await LocalDataStore.ensureReadingHistoryProgressColumn(store)
       await LocalDataStore.ensureAccountVerificationReasonColumn(store)
       if (existingVersion < SCHEMA_VERSION) {
