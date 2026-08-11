@@ -180,6 +180,44 @@ authorize an edit, replace a device comparison, or define product completion.
   freeze is limited to menu-vs-navigation signaling and does not imply that
   the entire Interface page or the separate theme-color capability is closed.
 
+## OPEN — Global theme-color presets — 2026-08-12
+
+- **User outcome and source evidence:** current same-viewport Interface
+  comparison proves that NextE exposes a theme-color row within the Appearance
+  group, while NextN has no corresponding state, preference, or visible leaf.
+  This is not merely a swatch: NextE persists the choice, restores it before
+  content mounts, and its shared brand-token getter recolors existing brand
+  consumers. ErosN independently supports a dynamic/system color default plus
+  named theme colors, so the capability is applicable to NextN rather than an
+  EH-domain feature.
+- **Reference parent tree:** `LayoutSettingsPage → Appearance group → [theme
+  mode, theme color, immersive material, language]`. The theme-color row owns
+  its color-dot suffix and one menu of named colors; selection persists and
+  all `ThemeConstants.BRAND_PRIMARY` consumers read the reactive state.
+- **Current NextN boundary:** `SettingsPage(LAYOUT) → AppearanceGroup → [theme
+  mode, immersive material, language]`; `ThemeTokens.BRAND` is a fixed system
+  resource used by existing global controls. `EntryAbility` already restores
+  appearance preferences before first content, so it is the matching startup
+  owner.
+- **Exact first change:** add one `system` value to preserve the current
+  platform accent by default, plus the seven named NextE presets. Persist only
+  the normalized color identifier in the existing `nextn_appearance` store;
+  make `ThemeTokens.BRAND` a reactive getter; insert the one reference-owned
+  color-dot/dropdown row between theme mode and immersive material. Do not
+  change any existing preference value during installation.
+- **Explicit boundary:** the reference custom-color path depends on its full
+  color-picker, favorites, and modal owner set. It is not represented as a
+  disabled or partial menu item here. It remains a separate capability
+  assessment after the preset path has real device evidence.
+- **Verification plan:** signed build, in-place install on the selected device,
+  temporary selection of the reference's Huawei-red preset to verify the row
+  and an existing native brand surface update, then restore `system` and
+  confirm the original state. Capture the matching reference/current roots;
+  never infer global recoloring from a persisted value alone.
+- **Risk:** wide reactive-brand reach is intentional but must remain confined
+  to existing `ThemeTokens.BRAND` consumers; `BRAND_CONTAINER`, tag colors,
+  favorite-category colors, and reader image overlays stay unchanged.
+
 ## OPEN — Reader selectable Waifu2x enhancement models
 
 - User outcome: Reader enhancement should let the user choose between the two
