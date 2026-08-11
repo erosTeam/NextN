@@ -1227,6 +1227,23 @@ rewrite, re-run, or block this completed direct-route observation.
   This does not attribute the switch to the uninvoked leaf. Do not repeat that
   menu-zone input until the focused-window transition is separately traced.
 
+## Latest device observation — Reader enhancement source-height preference
+
+- 2026-08-12: the signed Debug HAP was installed in place on the selected
+  TCP device only. Native NextN Reader settings showed the existing image
+  enhancement switch, model selector, model management, then the new
+  `最大原图高度` leaf with the persisted `2000px` value.
+- Opening that selector showed exactly `1000px`, `1500px`, and `2000px`; no
+  option, switch, model action, account action, content action, or data-clear
+  action was performed. The pre-existing NextN preference remains unchanged.
+- A same-device current NextE capture used the same `1320×2120` portrait
+  viewport and confirmed the corresponding row is last in its enhancement
+  group. Its enhancement switch was off, so that row was disabled; no NextN
+  preference was toggled merely to manufacture an identical state. Raw local
+  comparison evidence remains under
+  `.hvigor/outputs/reader-enhancement-height-20260812T0131/` and is excluded
+  from Git.
+
 ## Data and artifact boundary
 
 Never place credentials, account/profile strings, cookies, tokens, raw Web
