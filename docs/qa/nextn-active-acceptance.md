@@ -1139,6 +1139,13 @@ rewrite, re-run, or block this completed direct-route observation.
   migration is rejected and removed; its local terminal evidence is retained
   under `.hvigor/outputs/reader-taskpool-decode-20260811/`. The normal signed
   Debug HAP must be restored before the next source-grounded diagnostic.
+- A further one-run source-construction split replaced only the path-based
+  `ImageSource` constructor with the documented read-only file-descriptor
+  constructor for the same cached source. The signed HAP was installed with
+  `install -r`; after a NextN-only force-stop, direct Gallery route, freshly
+  resolved `继续` action, and eight-second settle, WindowManager foreground was
+  `nexte0`. The change was removed immediately. This rejects descriptor-based
+  source construction; it does not establish an enhancement fix.
 
 ## Data and artifact boundary
 

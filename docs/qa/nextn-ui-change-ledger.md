@@ -1163,3 +1163,24 @@ authorize an edit, replace a device comparison, or define product completion.
   as a corrective change; it does not prove whether the worker itself failed
   or completed before the terminal exit. The code was removed immediately and
   the normal signed Debug build is being restored before any further work.
+
+### File-descriptor decoder-source boundary — 2026-08-11
+
+- Newly actionable source basis: retaining the post-decode `ImageSource` and
+  `PixelMap` still reproduced the exit, so early release is not the cause.
+  The platform ImageSource API documents a direct file-descriptor constructor;
+  the current path-string constructor is the remaining input-construction
+  variable at the proven PixelMap boundary.
+- Exact change: open the same verified private source path read-only and pass
+  its descriptor to `image.createImageSource`; retain the descriptor until the
+  ImageSource has been released. No byte, cache, model, PixelMap option,
+  native-inference, Reader, or UI change is included.
+- Verification plan: one signed in-place run of the existing direct Gallery
+  route and one current Reader action. A native NextN Reader terminal is the
+  required corrective signal; otherwise remove the descriptor change and do
+  not retry this route unchanged.
+- Result: the signed build was installed in place. After a NextN-only
+  force-stop, the same direct Gallery route, one freshly resolved native
+  `继续` action, and an eight-second settle, WindowManager foreground was
+  `nexte0`, not NextN. The descriptor construction change is rejected and was
+  removed immediately; this route will not be retried unchanged.
