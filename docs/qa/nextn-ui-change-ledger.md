@@ -174,6 +174,14 @@ authorize an edit, replace a device comparison, or define product completion.
   row. The next edit moves only that note to the sibling leaf immediately
   following the row, preserving text, row height, trailing status, action,
   confirmation, and group order.
+- Final device/reference result: after the narrow sibling-caption correction,
+  the selected device showed the NextN uninstalled leaf as `端侧漫画模型 →
+  未安装`, followed by the complete two-line `79.0 MB` and license notice at
+  the section width. The same-device NextE capture establishes the matching
+  installed leaf grammar (`端侧漫画模型 → installed model name → the same
+  full-width notice`). This accepts the local-model row's uninstalled visual
+  state in NextN's existing translation-source parent. Model download,
+  installed-state presentation, and translation processing remain OPEN.
 
 ## OPEN — Reader comic-translation automatic session mode
 

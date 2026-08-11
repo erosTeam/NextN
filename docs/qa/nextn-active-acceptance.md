@@ -125,6 +125,13 @@ remains continuous; do not ask for it again.
   and remain excluded from Git.
 - This is current-device route and rendering evidence only. A same-state NextE
   reference comparison and model download/processing run remain OPEN.
+- 2026-08-11 follow-up: after the leaf correction, the same selected device
+  showed `端侧漫画模型` with its `未安装` state and the complete full-width
+  `79.0 MB`/license notice. The retained same-viewport NextE local-model
+  capture has the corresponding installed state with the same title and
+  full-width notice treatment. This accepts the uninstalled settings leaf;
+  model download and processing remain OPEN. No source field, secret, switch,
+  save action, model state, account state, or content data changed.
 
 ## Current delivery observation — Reader enhancement interaction yield
 
