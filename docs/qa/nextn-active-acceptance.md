@@ -1197,6 +1197,14 @@ rewrite, re-run, or block this completed direct-route observation.
   temporary device log level was raised. No failure reason is inferred from
   that absence. Further image-enhancement work must use a source-grounded
   result-state boundary, not repeat this unchanged Reader route.
+- A later, uncommitted NextE-mapped Image-information leaf propagated the
+  result reason through the Reader image callbacks and exposed it from More.
+  The selected device entered native Reader but then left NextN before that
+  new menu could be opened. The whole unverified branch, including its copy,
+  was removed rather than retained; this does not attribute the foreground
+  loss to a particular callback. No account, preference, model, page,
+  download, or other app data was changed. The signed source baseline is
+  rebuilt and reinstalled in place after this record.
 
 ## Data and artifact boundary
 
