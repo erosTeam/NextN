@@ -17,7 +17,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include <fcntl.h>
 #include <sys/mman.h>
+#include <unistd.h>
 
 #if defined(__aarch64__)
 #include <arm_neon.h>
@@ -30,6 +32,9 @@
 #include <net.h>
 #include <pipeline.h>
 #include <platform.h>
+
+#include <multimedia/image_framework/image/image_source_native.h>
+#include <multimedia/image_framework/image/pixelmap_native.h>
 
 #include <mindspore/context.h>
 #include <mindspore/model.h>
@@ -173,6 +178,18 @@ struct UpscaleTask {
     int64_t modelLoadMs = 0;
     int64_t inferenceMs = 0;
     int tileCount = 0;
+};
+
+struct NativeImageDecodeTask {
+    napi_async_work work = nullptr;
+    napi_deferred deferred = nullptr;
+    std::string sourcePath;
+    std::vector<uint8_t> pixels;
+    int maxEdge = 0;
+    int width = 0;
+    int height = 0;
+    int stride = 0;
+    std::string error;
 };
 
 struct ComicRegionDetection {
@@ -3277,6 +3294,141 @@ void ExecuteMindSporePrepare(napi_env env, void *data)
     RunMindSporePrepare(*task);
 }
 
+void RunNativeImageDecode(NativeImageDecodeTask &task)
+{
+    int fd = -1;
+    OH_ImageSourceNative *source = nullptr;
+    OH_ImageSource_Info *sourceInfo = nullptr;
+    OH_DecodingOptions *options = nullptr;
+    OH_PixelmapNative *pixelmap = nullptr;
+    OH_Pixelmap_ImageInfo *pixelmapInfo = nullptr;
+    auto fail = [&task](const char *stage, Image_ErrorCode code) {
+        task.error = std::string(stage) + " failed (" + std::to_string(static_cast<int>(code)) + ")";
+    };
+    try {
+        do {
+        fd = open(task.sourcePath.c_str(), O_RDONLY | O_CLOEXEC);
+        if (fd < 0) {
+            task.error = "reader source open failed";
+            break;
+        }
+        Image_ErrorCode code = OH_ImageSourceNative_CreateFromFd(fd, &source);
+        if (code != IMAGE_SUCCESS || source == nullptr) {
+            fail("native image source", code);
+            break;
+        }
+        code = OH_ImageSourceInfo_Create(&sourceInfo);
+        if (code != IMAGE_SUCCESS || sourceInfo == nullptr) {
+            fail("native image source info", code);
+            break;
+        }
+        code = OH_ImageSourceNative_GetImageInfo(source, 0, sourceInfo);
+        uint32_t sourceWidth = 0;
+        uint32_t sourceHeight = 0;
+        if (code != IMAGE_SUCCESS ||
+            OH_ImageSourceInfo_GetWidth(sourceInfo, &sourceWidth) != IMAGE_SUCCESS ||
+            OH_ImageSourceInfo_GetHeight(sourceInfo, &sourceHeight) != IMAGE_SUCCESS ||
+            sourceWidth == 0 || sourceHeight == 0 ||
+            sourceWidth > static_cast<uint32_t>(task.maxEdge) ||
+            sourceHeight > static_cast<uint32_t>(task.maxEdge)) {
+            task.error = "reader source dimensions are unsupported";
+            break;
+        }
+        code = OH_DecodingOptions_Create(&options);
+        if (code != IMAGE_SUCCESS || options == nullptr) {
+            fail("native decoding options", code);
+            break;
+        }
+        code = OH_DecodingOptions_SetPixelFormat(options, PIXEL_FORMAT_RGBA_8888);
+        if (code != IMAGE_SUCCESS) {
+            fail("native decoding format", code);
+            break;
+        }
+        code = OH_ImageSourceNative_CreatePixelmapUsingAllocator(
+            source, options, IMAGE_ALLOCATOR_TYPE_SHARE_MEMORY, &pixelmap);
+        if (code != IMAGE_SUCCESS || pixelmap == nullptr) {
+            pixelmap = nullptr;
+            code = OH_ImageSourceNative_CreatePixelmap(source, options, &pixelmap);
+        }
+        if (code != IMAGE_SUCCESS || pixelmap == nullptr) {
+            fail("native pixel map decode", code);
+            break;
+        }
+        code = OH_PixelmapImageInfo_Create(&pixelmapInfo);
+        if (code != IMAGE_SUCCESS || pixelmapInfo == nullptr ||
+            OH_PixelmapNative_GetImageInfo(pixelmap, pixelmapInfo) != IMAGE_SUCCESS) {
+            task.error = "native pixel map info failed";
+            break;
+        }
+        uint32_t width = 0;
+        uint32_t height = 0;
+        uint32_t rowStride = 0;
+        int32_t pixelFormat = PIXEL_FORMAT_UNKNOWN;
+        if (OH_PixelmapImageInfo_GetWidth(pixelmapInfo, &width) != IMAGE_SUCCESS ||
+            OH_PixelmapImageInfo_GetHeight(pixelmapInfo, &height) != IMAGE_SUCCESS ||
+            OH_PixelmapImageInfo_GetRowStride(pixelmapInfo, &rowStride) != IMAGE_SUCCESS ||
+            OH_PixelmapImageInfo_GetPixelFormat(pixelmapInfo, &pixelFormat) != IMAGE_SUCCESS ||
+            width != sourceWidth || height != sourceHeight ||
+            rowStride < width * 4 ||
+            (pixelFormat != PIXEL_FORMAT_RGBA_8888 && pixelFormat != PIXEL_FORMAT_BGRA_8888)) {
+            task.error = "native pixel map format is unsupported";
+            break;
+        }
+        const size_t byteCount = static_cast<size_t>(rowStride) * static_cast<size_t>(height);
+        if (byteCount == 0 || byteCount > static_cast<size_t>(task.maxEdge) *
+            static_cast<size_t>(task.maxEdge) * 4) {
+            task.error = "native pixel map allocation is unsupported";
+            break;
+        }
+        task.pixels.resize(byteCount);
+        size_t readSize = task.pixels.size();
+        code = OH_PixelmapNative_ReadPixels(pixelmap, task.pixels.data(), &readSize);
+        if (code != IMAGE_SUCCESS || readSize < byteCount) {
+            fail("native pixel map read", code);
+            break;
+        }
+        if (pixelFormat == PIXEL_FORMAT_BGRA_8888) {
+            for (uint32_t y = 0; y < height; ++y) {
+                uint8_t *row = task.pixels.data() + static_cast<size_t>(y) * rowStride;
+                for (uint32_t x = 0; x < width; ++x) {
+                    std::swap(row[x * 4], row[x * 4 + 2]);
+                }
+            }
+        }
+        task.width = static_cast<int>(width);
+        task.height = static_cast<int>(height);
+        task.stride = static_cast<int>(rowStride);
+        } while (false);
+    } catch (...) {
+        task.error = "native reader decode failed";
+    }
+    if (pixelmapInfo != nullptr) {
+        OH_PixelmapImageInfo_Release(pixelmapInfo);
+    }
+    if (pixelmap != nullptr) {
+        OH_PixelmapNative_Release(pixelmap);
+    }
+    if (options != nullptr) {
+        OH_DecodingOptions_Release(options);
+    }
+    if (sourceInfo != nullptr) {
+        OH_ImageSourceInfo_Release(sourceInfo);
+    }
+    if (source != nullptr) {
+        OH_ImageSourceNative_Release(source);
+    }
+    if (fd >= 0) {
+        close(fd);
+    }
+}
+
+void ExecuteNativeImageDecode(napi_env env, void *data)
+{
+    (void)env;
+    auto *task = static_cast<NativeImageDecodeTask *>(data);
+    RunNativeImageDecode(*task);
+}
+
 napi_value StringValue(napi_env env, const std::string &value)
 {
     napi_value result = nullptr;
@@ -3303,6 +3455,52 @@ napi_value DoubleValue(napi_env env, double value)
     napi_value result = nullptr;
     napi_create_double(env, value, &result);
     return result;
+}
+
+void FinalizeOutputBuffer(napi_env env, void *data, void *hint);
+
+void CompleteNativeImageDecode(napi_env env, napi_status status, void *data)
+{
+    auto *task = static_cast<NativeImageDecodeTask *>(data);
+    if (status == napi_ok && task->error.empty()) {
+        napi_value outputBuffer = nullptr;
+        napi_value result = nullptr;
+        auto *output = new std::vector<uint8_t>(std::move(task->pixels));
+        if (napi_create_object(env, &result) == napi_ok &&
+            napi_create_external_arraybuffer(
+                env,
+                output->data(),
+                output->size(),
+                FinalizeOutputBuffer,
+                output,
+                &outputBuffer) == napi_ok) {
+            napi_set_named_property(env, result, "pixels", outputBuffer);
+            napi_set_named_property(env, result, "width", IntValue(env, task->width));
+            napi_set_named_property(env, result, "height", IntValue(env, task->height));
+            napi_set_named_property(env, result, "stride", IntValue(env, task->stride));
+            napi_resolve_deferred(env, task->deferred, result);
+        } else {
+            delete output;
+            task->error = "failed to allocate native decoded image result";
+        }
+    }
+    if (status != napi_ok || !task->error.empty()) {
+        const std::string message = task->error.empty() ? "native reader decode task failed" : task->error;
+        OH_LOG_Print(
+            LOG_APP,
+            LOG_WARN,
+            0x0,
+            "NextNReaderEnhancement",
+            "native reader decode %{public}s",
+            message.c_str());
+        napi_value text = nullptr;
+        napi_value error = nullptr;
+        napi_create_string_utf8(env, message.c_str(), message.size(), &text);
+        napi_create_error(env, nullptr, text, &error);
+        napi_reject_deferred(env, task->deferred, error);
+    }
+    napi_delete_async_work(env, task->work);
+    delete task;
 }
 
 const char *ComicRegionClassLabel(int classId)
@@ -4090,6 +4288,47 @@ napi_value UpscaleMindSporeRgba(napi_env env, napi_callback_info info)
     return promise;
 }
 
+napi_value DecodeImageRgba(napi_env env, napi_callback_info info)
+{
+    size_t argc = 2;
+    napi_value argv[2] = {nullptr};
+    if (napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr) != napi_ok || argc < 2) {
+        napi_throw_type_error(env, nullptr, "decodeImageRgba expects a source path and maximum edge");
+        return nullptr;
+    }
+    auto *task = new NativeImageDecodeTask();
+    task->sourcePath = GetString(env, argv[0]);
+    if (!GetInt(env, argv[1], task->maxEdge) || task->sourcePath.empty() ||
+        task->maxEdge < 1 || task->maxEdge > 4096) {
+        delete task;
+        napi_throw_type_error(env, nullptr, "invalid native reader decode arguments");
+        return nullptr;
+    }
+    napi_value promise = nullptr;
+    napi_create_promise(env, &task->deferred, &promise);
+    napi_value resourceName = nullptr;
+    napi_create_string_utf8(env, "NextNReaderNativeImageDecode", NAPI_AUTO_LENGTH, &resourceName);
+    if (napi_create_async_work(
+            env,
+            nullptr,
+            resourceName,
+            ExecuteNativeImageDecode,
+            CompleteNativeImageDecode,
+            task,
+            &task->work) != napi_ok) {
+        delete task;
+        napi_throw_error(env, nullptr, "failed to create native reader decode task");
+        return nullptr;
+    }
+    if (napi_queue_async_work_with_qos(env, task->work, napi_qos_background) != napi_ok) {
+        napi_delete_async_work(env, task->work);
+        delete task;
+        napi_throw_error(env, nullptr, "failed to queue native reader decode task");
+        return nullptr;
+    }
+    return promise;
+}
+
 napi_value PrepareModel(napi_env env, napi_callback_info info)
 {
     size_t argc = 9;
@@ -4227,6 +4466,7 @@ static napi_value Init(napi_env env, napi_value exports)
 {
     napi_property_descriptor descriptors[] = {
         {"prepareModel", nullptr, PrepareModel, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"decodeImageRgba", nullptr, DecodeImageRgba, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"upscaleRgba", nullptr, UpscaleRgba, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"prepareMindSporeModel", nullptr, PrepareMindSporeModelNapi, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"upscaleMindSporeRgba", nullptr, UpscaleMindSporeRgba, nullptr, nullptr, nullptr, napi_default, nullptr},

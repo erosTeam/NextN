@@ -131,17 +131,14 @@ export class ReaderSuperResolutionService {
     inFlight: InFlightEnhancement,
   ): Promise<ReaderSuperResolutionResult> {
     const temporaryPath: string = `${outputPath}.part`
-    let source: image.ImageSource | undefined = undefined
-    let sourcePixelMap: image.PixelMap | undefined = undefined
     let outputPixelMap: image.PixelMap | undefined = undefined
     let packer: image.ImagePacker | undefined = undefined
     let outputFile: fileIo.File | null = null
     let promoted: boolean = false
     try {
-      source = image.createImageSource(sourcePath)
-      const info: image.ImageInfo = await source.getImageInfo()
-      const width: number = info.size.width
-      const height: number = info.size.height
+      const decoded = await ReaderNativeSuperResolution.decodeImageRgba(sourcePath, MAX_SOURCE_HEIGHT)
+      const width: number = decoded.width
+      const height: number = decoded.height
       if (width <= 0 || height <= 0) {
         return ReaderSuperResolutionService.original(sourcePath, 'invalid_dimensions')
       }
@@ -154,20 +151,11 @@ export class ReaderSuperResolutionService {
         outputWidth * outputHeight * 4 > MAX_OUTPUT_BYTES) {
         return ReaderSuperResolutionService.original(sourcePath, 'output_too_large')
       }
-      const options: image.DecodingOptions = {
-        editable: false,
-        desiredPixelFormat: image.PixelMapFormat.RGBA_8888,
-      }
-      sourcePixelMap = await source.createPixelMap(options)
-      const decoded: image.ImageInfo = await sourcePixelMap.getImageInfo()
-      const pixels: ArrayBuffer = new ArrayBuffer(sourcePixelMap.getPixelBytesNumber())
-      await sourcePixelMap.readPixelsToBuffer(pixels)
-      const stride: number = Math.max(Math.floor(decoded.stride), width * 4)
       const native: ReaderNativeSuperResolutionResult = await ReaderNativeSuperResolution.upscaleRgba(
-        pixels,
+        decoded.pixels,
         width,
         height,
-        stride,
+        decoded.stride,
         modelPaths.paramPath,
         modelPaths.modelPath,
         nativeConfig,
@@ -221,12 +209,6 @@ export class ReaderSuperResolutionService {
       }
       if (outputPixelMap !== undefined) {
         await outputPixelMap.release()
-      }
-      if (sourcePixelMap !== undefined) {
-        await sourcePixelMap.release()
-      }
-      if (source !== undefined) {
-        await source.release()
       }
     }
   }

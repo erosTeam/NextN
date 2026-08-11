@@ -11,7 +11,15 @@ interface NativeUpscaleResult extends NativePrepareResult {
   tileCount: number
 }
 
+interface NativeDecodedImage {
+  pixels: ArrayBuffer
+  width: number
+  height: number
+  stride: number
+}
+
 interface NativeReaderSuperResolution {
+  decodeImageRgba(sourcePath: string, maxEdge: number): Promise<NativeDecodedImage>
   prepareModel(
     paramPath: string,
     modelPath: string,
@@ -58,6 +66,13 @@ interface NativeReaderSuperResolution {
   setInteractionPaused(paused: boolean): void
 }
 
+export class ReaderNativeDecodedImage {
+  pixels: ArrayBuffer = new ArrayBuffer(0)
+  width: number = 0
+  height: number = 0
+  stride: number = 0
+}
+
 export class ReaderNativeSuperResolutionResult {
   pixels: ArrayBuffer = new ArrayBuffer(0)
   backend: string = ''
@@ -82,6 +97,16 @@ const nativeRuntime: NativeReaderSuperResolution = nativeSuperResolution as Nati
 
 /** Narrow ArkTS boundary for NextN's portable ncnn Reader-enhancement runtime. */
 export class ReaderNativeSuperResolution {
+  static async decodeImageRgba(sourcePath: string, maxEdge: number): Promise<ReaderNativeDecodedImage> {
+    const native: NativeDecodedImage = await nativeRuntime.decodeImageRgba(sourcePath, maxEdge)
+    const result: ReaderNativeDecodedImage = new ReaderNativeDecodedImage()
+    result.pixels = native.pixels
+    result.width = native.width
+    result.height = native.height
+    result.stride = native.stride
+    return result
+  }
+
   static async prepareModel(
     paramPath: string,
     modelPath: string,

@@ -1157,6 +1157,16 @@ rewrite, re-run, or block this completed direct-route observation.
   It was removed immediately. This rules out input construction and requested
   PixelMap size as the immediate trigger; any further work must use a different
   image-decoding boundary, not another ImageSource option variation.
+- The current replacement uses the documented native ImageSource/Pixelmap APIs
+  inside the existing NAPI module, returns tightly bounded RGBA to the existing
+  model path, and retains the original source on a native decode failure. On
+  the same direct Gallery route and one fresh Reader action, WindowManager
+  remained `nextn0` after the processing settle; the prior terminal jump to
+  NextE did not recur. No account, preference, Gallery data, or model content
+  was changed. The current status leaf did not yet establish an applied output,
+  so this accepts the process-exit correction only, not completed image-quality
+  verification. Local captures remain under
+  `.hvigor/outputs/reader-native-decode-20260811/` and are excluded from Git.
 
 ## Data and artifact boundary
 

@@ -19,4 +19,6 @@ target_link_libraries(
     ncnn
     libace_napi.z.so
     libhilog_ndk.z.so
+    libimage_source.so
+    libpixelmap.so
     libmindspore_lite_ndk.so)
