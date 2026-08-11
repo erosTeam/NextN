@@ -507,7 +507,7 @@ struct Index {
     if (galleryId <= 0) {
       return
     }
-    hilog.info(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=index_dispatch')
+    hilog.error(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=index_dispatch')
     this.readerOverlay.open(new ReaderRouteParams(galleryId, initialPageIndex))
   }
 
@@ -1487,7 +1487,7 @@ struct Index {
       return true
     })
     .onShown((): void => {
-      hilog.info(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=reader_shown')
+      hilog.error(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=reader_shown')
       this.readerDestinationVisible = true
       this.readerDestinationClosing = false
       // Reader restores its persisted preference asynchronously. Start from
@@ -1978,7 +1978,7 @@ struct Index {
         .height('100%')
         .backgroundColor(Color.Transparent)
         .onAppear((): void => {
-          hilog.info(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=overlay_host_appear')
+          hilog.error(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=overlay_host_appear')
           this.readerOverlay.presentPendingReader()
         })
         .id('reader-overlay-navigation')

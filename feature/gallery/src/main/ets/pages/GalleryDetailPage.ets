@@ -594,7 +594,7 @@ export struct GalleryDetailPage {
     if (initialPageIndex >= this.detail.pages.length) {
       return
     }
-    hilog.info(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=detail_dispatch')
+    hilog.error(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=detail_dispatch')
     this.readerOverlay.stageDetailSeed(this.detail)
     try {
       this.onOpenReader(this.detail.id, initialPageIndex)

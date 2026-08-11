@@ -77,7 +77,7 @@ export class ReaderOverlayNavigationState {
     this.pendingReader = routeParams
     this.closing = false
     this.visible = true
-    hilog.info(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=overlay_open')
+    hilog.error(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=overlay_open')
   }
 
   presentPendingReader(): void {
@@ -87,7 +87,7 @@ export class ReaderOverlayNavigationState {
     }
     this.pendingReader = null
     this.stack.pushPathByName('Reader', params, true)
-    hilog.info(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=overlay_present')
+    hilog.error(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=overlay_present')
   }
 
   close(): void {
