@@ -799,6 +799,15 @@ remains continuous; do not ask for it again.
   handoff through Export CBZ and return from cancellation without changing its
   queue completion state. This does not claim any share-target delivery or
   archive-content inspection.
+- 2026-08-11 cache-lifecycle follow-up: the signed Debug HAP adding private
+  CBZ handoff ownership was installed with `install -r` only. The same
+  completed task again opened the system share UIExtension through Export CBZ;
+  system Back returned to native Downloads with that task still Complete. No
+  share target, archive metadata, queue task, account state, or download file
+  was read or changed. This observes no export-hand-off regression. The new
+  per-task removal and one-day cold-start expiry reclamation paths remain
+  unobserved because this run neither deletes the user's task nor fabricates
+  cache age.
 
 ## Current Gallery Comments direct-route exception
 
