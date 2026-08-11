@@ -263,6 +263,14 @@ remains continuous; do not ask for it again.
   the observed local-download path; it does not identify a cause. The current
   local artifacts remain outside Git in
   `.hvigor/outputs/reader-enhancement-runtime-20260811T1253/`.
+- The current NextN Reader settings were then read without changing them:
+  image enhancement was disabled. A second temporary build bypassed only the
+  completed local-download URI so the Reader used its existing public Reader
+  cache source instead. The same direct Gallery `Continue` action still left
+  NextN and foregrounded NextE. That bypass was removed immediately. This
+  rules out both the disabled enhancement branch and the local-download source
+  selection for this observation; it does not establish the remaining Reader
+  route or renderer cause.
 
 ## Active delivery P1 — Gallery Detail / Comments
 

@@ -938,6 +938,14 @@ authorize an edit, replace a device comparison, or define product completion.
   settings, queueing, decode size, or source-file ordering; it must distinguish
   the remaining PixelMap input/lifetime boundary. The retained local evidence
   is outside Git at `.hvigor/outputs/reader-enhancement-runtime-20260811T1253/`.
+- Follow-up classification: the current NextN `Image enhancement` preference
+  was observed disabled without changing it. A temporary build bypassed only
+  the local completed-download URI and used the existing public Reader cache
+  source; the same direct route still terminated outside NextN. That source
+  branch was removed immediately. The open failure therefore cannot be
+  attributed to the disabled enhancement branch or local-download source
+  selection. The next diagnostic must isolate Reader route mount versus its
+  baseline rendered-image lifecycle; no Reader UI surface is reopened.
 
 ## OPEN — Optional self-hosted whole-page manga translation
 
