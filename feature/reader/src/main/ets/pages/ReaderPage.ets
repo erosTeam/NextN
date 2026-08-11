@@ -64,6 +64,8 @@ const READER_TAP_ZONE_SCROLL_RATIO: number = 0.75
 const READER_BOTTOM_TOOLBAR_HEIGHT: number = 44
 const READER_ENHANCEMENT_STATUS_SIZE: number = 24
 const READER_ENHANCEMENT_STATUS_BOTTOM_GAP: number = ThemeTokens.SPACE_MD
+const READER_ENHANCEMENT_INTERACTION_SETTLE_MS: number = 420
+const READER_ENHANCEMENT_INTERACTION_FALLBACK_MS: number = 2500
 
 /** DownloadQueueService exposes verified private pages as display-only file URIs. */
 function readerLocalFilePath(uri: string): string {
@@ -1426,12 +1428,15 @@ export struct ReaderPage {
   private lastDoublePageActive: boolean = false
   private readerDoubleTapX: number = 0
   private readerTranslationEpoch: number = 0
+  private readerEnhancementInteractionTimer: number = -1
+  private readerEnhancementInteractionActive: boolean = false
 
   aboutToAppear(): void {
     this.loadReaderSettings()
   }
 
   aboutToDisappear(): void {
+    this.resetReaderEnhancementInteractionPause()
     this.stopAutoRead()
     this.unregisterVolumeKeyConsumer()
     this.invalidateReaderRequest()
@@ -1503,6 +1508,7 @@ export struct ReaderPage {
   onReaderEnhancementPresentationChanged(): void {
     this.readerEnhancementEnabled = this.readerPresentation.superResolutionEnabled
     if (!this.readerEnhancementEnabled) {
+      this.resetReaderEnhancementInteractionPause()
       this.readerEnhancementStates = []
     }
   }
@@ -1657,6 +1663,73 @@ export struct ReaderPage {
     const generation: number = this.windowPolicyGeneration + 1
     this.windowPolicyGeneration = generation
     this.setWindowKeepScreenOn(false, generation)
+  }
+
+  /**
+   * The native enhancer already supports cooperative pausing. Keep it behind
+   * the Reader owner so a foreground drag, pinch, or settings interaction
+   * never competes with image conversion.
+   */
+  private pauseReaderEnhancementForForegroundInteraction(): void {
+    if (!this.readerEnhancementEnabled) {
+      return
+    }
+    if (!this.readerEnhancementInteractionActive) {
+      this.readerEnhancementInteractionActive = true
+      ReaderSuperResolutionService.setInteractionPaused(true)
+    }
+    if (this.readerEnhancementInteractionTimer >= 0) {
+      clearTimeout(this.readerEnhancementInteractionTimer)
+    }
+    this.readerEnhancementInteractionTimer = setTimeout((): void => {
+      this.resumeReaderEnhancementAfterForegroundInteraction()
+    }, READER_ENHANCEMENT_INTERACTION_FALLBACK_MS)
+  }
+
+  private scheduleReaderEnhancementInteractionResume(delayMs: number): void {
+    if (!this.readerEnhancementInteractionActive) {
+      return
+    }
+    if (this.readerEnhancementInteractionTimer >= 0) {
+      clearTimeout(this.readerEnhancementInteractionTimer)
+    }
+    this.readerEnhancementInteractionTimer = setTimeout((): void => {
+      this.resumeReaderEnhancementAfterForegroundInteraction()
+    }, delayMs)
+  }
+
+  private resumeReaderEnhancementAfterForegroundInteraction(): void {
+    if (this.readerEnhancementInteractionTimer >= 0) {
+      clearTimeout(this.readerEnhancementInteractionTimer)
+      this.readerEnhancementInteractionTimer = -1
+    }
+    if (!this.readerEnhancementInteractionActive) {
+      return
+    }
+    this.readerEnhancementInteractionActive = false
+    if (!this.readerSettingsSheetShown && this.isReaderReadyForCurrentGallery &&
+      this.readerEnhancementEnabled) {
+      ReaderSuperResolutionService.setInteractionPaused(false)
+    }
+  }
+
+  private resetReaderEnhancementInteractionPause(): void {
+    if (this.readerEnhancementInteractionTimer >= 0) {
+      clearTimeout(this.readerEnhancementInteractionTimer)
+      this.readerEnhancementInteractionTimer = -1
+    }
+    this.readerEnhancementInteractionActive = false
+    ReaderSuperResolutionService.setInteractionPaused(false)
+  }
+
+  private onReaderSurfaceTouch(event: TouchEvent): void {
+    if (event.type === TouchType.Down || event.type === TouchType.Move) {
+      this.pauseReaderEnhancementForForegroundInteraction()
+      return
+    }
+    if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+      this.scheduleReaderEnhancementInteractionResume(READER_ENHANCEMENT_INTERACTION_SETTLE_MS)
+    }
   }
 
   private async setWindowKeepScreenOn(enabled: boolean, generation: number): Promise<void> {
@@ -2061,10 +2134,13 @@ export struct ReaderPage {
   private openReaderSettings(): void {
     this.readerOverflowMenuShown = false
     this.readerSettingsSheetShown = true
+    this.pauseReaderEnhancementForForegroundInteraction()
   }
 
   private closeReaderSettings(): void {
     this.readerSettingsSheetShown = false
+    this.pauseReaderEnhancementForForegroundInteraction()
+    this.scheduleReaderEnhancementInteractionResume(READER_ENHANCEMENT_INTERACTION_SETTLE_MS)
   }
 
   private showReaderOverflowToast(messageKey: string): void {
@@ -3426,6 +3502,9 @@ export struct ReaderPage {
     .backgroundColor(ThemeTokens.READER_BACKGROUND)
     .onAreaChange((_old: Area, next: Area): void => {
       this.onReaderViewportChanged(next.width as number, next.height as number)
+    })
+    .onTouch((event: TouchEvent): void => {
+      this.onReaderSurfaceTouch(event)
     })
     .bindSheet(
       $$this.readerSettingsSheetShown,

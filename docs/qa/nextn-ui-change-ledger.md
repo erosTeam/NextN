@@ -248,3 +248,22 @@ authorize an edit, replace a device comparison, or define product completion.
   confirms the bounded native state and restoration path only; no
   same-gallery, same-viewport ErosN capture exists yet, so visual-reference
   parity remains OPEN.
+
+## OPEN — Reader enhancement interaction yield
+
+- User outcome: local Reader super-resolution must never compete with a
+  foreground reading gesture or the existing Reader settings sheet.
+- Reference and current parent tree: both apps keep one full Reader canvas
+  with content first, a transparent tap surface, and conditional overlay
+  chrome. NextE binds the canvas touch lifecycle to its existing
+  super-resolution service; NextN already exposes the same native pause API
+  but does not call it from the Reader owner.
+- Exact boundary: add only transient pause/resume state and timers to
+  `ReaderPage`, forwarding foreground down/move/up/cancel and Reader settings
+  open/close to the existing service. Do not alter page data sources, List or
+  Swiper ownership, image leaves, tap-zone semantics, chrome geometry,
+  settings contents, model storage, or any network request.
+- Verification plan: build first. With an installed local enhancement model,
+  compare a reader interaction and immediately subsequent settled page against
+  NextE at the same mode and viewport; retain raw captures locally. No
+  source-shape or synthetic UI check is acceptance.
