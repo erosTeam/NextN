@@ -686,6 +686,17 @@ remains continuous; do not ask for it again.
   added to Git. This accepts only the observed local Reader enhancement path;
   it does not generalize to other models, page sizes, or source types.
 
+## Latest device observation — Reader translation source gate
+
+- 2026-08-11: the latest signed Debug HAP was installed with `install -r` on
+  the selected TCP device only. The documented direct Gallery route then
+  opened native Reader and its existing overflow menu. With no configured
+  manga translation source, the native `Translate current page` item was
+  present but disabled. No translation request, source edit, account action,
+  preference change, or content mutation occurred. Local terminal evidence is
+  retained outside Git. This observes only the unconfigured availability gate;
+  it is not a configured-provider or rendered-translation acceptance.
+
 ## Next physical action
 
 ### Rejected P1 start — completed-download CBZ export
