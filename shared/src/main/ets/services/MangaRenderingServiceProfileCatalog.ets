@@ -79,6 +79,36 @@ export class MangaRenderingServiceProfileCatalog {
     }
   }
 
+  static supportsProfileId(profileId: string): boolean {
+    const sourceLanguages: string[] = ['auto', 'non-japanese']
+    const detectionProfiles: string[] = [
+      MANGA_RENDERING_DETECTION_HIGH_RECALL,
+      MANGA_RENDERING_DETECTION_BALANCED,
+    ]
+    const inpaintingProfiles: string[] = [
+      MANGA_RENDERING_INPAINTING_QUALITY,
+      MANGA_RENDERING_INPAINTING_FAST,
+    ]
+    for (let sourceIndex: number = 0; sourceIndex < sourceLanguages.length; sourceIndex++) {
+      for (let detectionIndex: number = 0;
+        detectionIndex < detectionProfiles.length;
+        detectionIndex++) {
+        for (let inpaintingIndex: number = 0;
+          inpaintingIndex < inpaintingProfiles.length;
+          inpaintingIndex++) {
+          if (profileId === MangaRenderingServiceProfileCatalog.profileId(
+            sourceLanguages[sourceIndex],
+            detectionProfiles[detectionIndex],
+            inpaintingProfiles[inpaintingIndex],
+          )) {
+            return true
+          }
+        }
+      }
+    }
+    return false
+  }
+
   private static usesJapaneseOcr(sourceLanguage: string): boolean {
     const normalized: string = sourceLanguage.trim().toLowerCase()
     return normalized === 'auto' || normalized === 'ja' || normalized === 'jp' ||

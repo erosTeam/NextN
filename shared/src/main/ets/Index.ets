@@ -107,6 +107,7 @@ export {
   MANGA_RENDERING_SERVICE_BACKEND_ID,
   MANGA_RENDERING_SERVICE_PROTOCOL_REVISION,
 } from './services/MangaRenderingServiceProfileCatalog'
+export { MangaRenderingServiceProtocol } from './services/MangaRenderingServiceProtocol'
 export {
   MangaRenderingServiceSettings,
   MangaRenderingServiceSettingsSnapshot,
