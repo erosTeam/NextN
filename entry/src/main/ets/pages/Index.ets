@@ -48,7 +48,6 @@ import {
   HideMode,
 } from '@kit.UIDesignKit'
 import { ComponentContent, window } from '@kit.ArkUI'
-import { hilog } from '@kit.PerformanceAnalysisKit'
 import {
   nextNHdsTitle,
   nextNHdsTitleBar,
@@ -125,8 +124,6 @@ const ROUTE_ADVANCED_SETTINGS: string = 'advancedSettings'
 const ROUTE_ABOUT: string = 'about'
 const STATUS_BAR_LIGHT_CONTENT: string = '#FFFFFFFF'
 const STATUS_BAR_DARK_CONTENT: string = '#FF000000'
-const READER_ROUTE_LOG_DOMAIN: number = 0x0000
-const READER_ROUTE_LOG_TAG: string = 'NextNReaderRoute'
 
 /**
  * Typed params placed on the navigation stack. Keeping the route payload in the
@@ -507,7 +504,6 @@ struct Index {
     if (galleryId <= 0) {
       return
     }
-    hilog.error(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=index_dispatch')
     this.readerOverlay.open(new ReaderRouteParams(galleryId, initialPageIndex))
   }
 
@@ -1487,7 +1483,6 @@ struct Index {
       return true
     })
     .onShown((): void => {
-      hilog.error(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=reader_shown')
       this.readerDestinationVisible = true
       this.readerDestinationClosing = false
       // Reader restores its persisted preference asynchronously. Start from
@@ -1978,7 +1973,6 @@ struct Index {
         .height('100%')
         .backgroundColor(Color.Transparent)
         .onAppear((): void => {
-          hilog.error(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=overlay_host_appear')
           this.readerOverlay.presentPendingReader()
         })
         .id('reader-overlay-navigation')

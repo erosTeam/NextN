@@ -839,3 +839,25 @@ authorize an edit, replace a device comparison, or define product completion.
   This is native processing/output-state evidence for the observed page. Raw
   content remains only in the local audit artifact and was not added to Git.
   Same-state visual-quality comparison against NextE remains OPEN.
+
+## EVIDENCE-ONLY — Reader route mount/data split — 2026-08-11
+
+- New device evidence: after a data-preserving NextN-only cold start and the
+  documented Gallery `471768` route, one semantic `继续` action moved the
+  foreground from native NextN Detail to NextE instead of NextN Reader. The
+  fixed route logs were unavailable from the device buffer, and no second
+  coordinate or alternate route was used.
+- Whole affected tree: Detail Read button → `GalleryDetailPage.openReader` →
+  `Index.pushReader` → `ReaderOverlayNavigationState` → overlay HDS
+  navigation → `ReaderPage.loadReaderSettings` → `ReaderPage.loadReader` →
+  local detail/history/data-source/image-cache leaves.
+- Exact temporary delta: before any detail, history, page-data, image-cache,
+  translation, enhancement, or network work begins, Reader will show its
+  existing native inline error canvas. This is a one-run route-mount
+  discriminator only; it does not change Reader hierarchy, geometry, actions,
+  preferences, or stored data.
+- Verification plan: install in place, force-stop only NextN, launch the same
+  numeric Gallery route, and activate the same unique Read action once. If
+  native Reader remains foregrounded, remove the temporary guard and diagnose
+  only the skipped load path; otherwise diagnose the overlay/Reader mount.
+- Status: EVIDENCE-ONLY. It is not a visual acceptance or a product change.

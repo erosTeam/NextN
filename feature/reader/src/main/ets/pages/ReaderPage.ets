@@ -1375,6 +1375,8 @@ struct ReaderEnhancementStatusIcon {
 }
 
 /** Native Reader with ErosN-derived vertical and page-at-a-time modes. */
+const READER_ROUTE_MOUNT_DIAGNOSTIC: boolean = true
+
 @ComponentV2
 export struct ReaderPage {
   @Require @Param galleryId: number
@@ -1769,6 +1771,14 @@ export struct ReaderPage {
   }
 
   private async loadReader(): Promise<void> {
+    if (READER_ROUTE_MOUNT_DIAGNOSTIC) {
+      this.isLoading = false
+      this.isReaderReadyForCurrentGallery = false
+      this.errorMessage = 'Reader route diagnostic'
+      this.readerChromeVisible = true
+      this.notifyReaderPresentation()
+      return
+    }
     const generation: number = this.requestGeneration + 1
     this.requestGeneration = generation
     this.isLoading = true

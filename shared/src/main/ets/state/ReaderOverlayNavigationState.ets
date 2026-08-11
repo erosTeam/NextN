@@ -1,10 +1,6 @@
 import { AppStorageV2 } from '@kit.ArkUI'
-import { hilog } from '@kit.PerformanceAnalysisKit'
 import { NhGalleryDetail, NhGalleryPage, NhTag } from '../model/NhGallery'
 import { ReaderRouteParams } from '../model/ReaderRouteParams'
-
-const READER_ROUTE_LOG_DOMAIN: number = 0x0000
-const READER_ROUTE_LOG_TAG: string = 'NextNReaderRoute'
 
 /**
  * Owns Reader's full-window navigation stack independently of the root HDS
@@ -77,7 +73,6 @@ export class ReaderOverlayNavigationState {
     this.pendingReader = routeParams
     this.closing = false
     this.visible = true
-    hilog.error(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=overlay_open')
   }
 
   presentPendingReader(): void {
@@ -87,7 +82,6 @@ export class ReaderOverlayNavigationState {
     }
     this.pendingReader = null
     this.stack.pushPathByName('Reader', params, true)
-    hilog.error(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=overlay_present')
   }
 
   close(): void {
