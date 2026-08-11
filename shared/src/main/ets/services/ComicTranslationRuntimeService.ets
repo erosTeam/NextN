@@ -22,6 +22,12 @@ import {
   ComicTranslationModelService,
 } from './ComicTranslationModelService'
 import { ComicTextTranslatorFactory } from './ComicResponsesTextTranslator'
+import { MangaRenderingServiceBackend } from './MangaRenderingServiceBackend'
+import { MangaRenderingServiceSecretStore } from './MangaRenderingServiceSecretStore'
+import {
+  MangaRenderingServiceSettings,
+  MangaRenderingServiceSettingsSnapshot,
+} from '../settings/MangaRenderingServiceSettings'
 import {
   ComicTranslationRepository,
 } from './ComicTranslationRepository'
@@ -81,7 +87,7 @@ export class ComicTranslationRuntimeService {
     ComicTranslationRuntimeService.validateInput(input)
     const metadata: ComicTranslationReaderFileMetadata =
       await ComicTranslationRuntimeService.fileMetadata(input.imageFilePath)
-    const backend: ComicRegionRenderBackend = ComicTranslationRuntimeService.localBackendFor(context)
+    const backend: ComicRegionRenderBackend = await ComicTranslationRuntimeService.backendFor(context, input)
     const translator: ComicTextTranslator = await ComicTextTranslatorFactory.create(context)
     const request: ComicVisualTranslationRequest = new ComicVisualTranslationRequest()
     request.source = ComicTranslationRuntimeService.visualSource(input, metadata)
@@ -200,6 +206,29 @@ export class ComicTranslationRuntimeService {
         4,
         0.3,
       ) : null,
+    )
+  }
+
+  private static async backendFor(
+    context: common.UIAbilityContext,
+    input: ComicTranslationReaderPageInput,
+  ): Promise<ComicRegionRenderBackend> {
+    const settings: MangaRenderingServiceSettingsSnapshot =
+      await MangaRenderingServiceSettings.load(context)
+    if (!settings.enabled) {
+      return ComicTranslationRuntimeService.localBackendFor(context)
+    }
+    const credential = await MangaRenderingServiceSecretStore.read(context)
+    if (!settings.configured() || !credential.configured()) {
+      throw new Error('Self-hosted manga translation service is not configured')
+    }
+    return new MangaRenderingServiceBackend(
+      context,
+      settings.baseUrl,
+      credential,
+      input.sourceLanguage,
+      settings.detectionProfile,
+      settings.inpaintingProfile,
     )
   }
 

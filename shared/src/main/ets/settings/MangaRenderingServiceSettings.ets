@@ -5,6 +5,7 @@ const RENDERING_SERVICE_STORE: string = 'nextn_manga_rendering_service'
 const BASE_URL_KEY: string = 'base_url'
 const DETECTION_PROFILE_KEY: string = 'detection_profile'
 const INPAINTING_PROFILE_KEY: string = 'inpainting_profile'
+const ENABLED_KEY: string = 'enabled'
 
 export const MANGA_RENDERING_DETECTION_HIGH_RECALL: string = 'high_recall'
 export const MANGA_RENDERING_DETECTION_BALANCED: string = 'balanced'
@@ -16,6 +17,7 @@ export class MangaRenderingServiceSettingsSnapshot {
   baseUrl: string = ''
   detectionProfile: string = MANGA_RENDERING_DETECTION_HIGH_RECALL
   inpaintingProfile: string = MANGA_RENDERING_INPAINTING_QUALITY
+  enabled: boolean = false
 
   configured(): boolean {
     return this.baseUrl.length > 0
@@ -26,6 +28,7 @@ export class MangaRenderingServiceSettingsSnapshot {
     result.baseUrl = this.baseUrl
     result.detectionProfile = this.detectionProfile
     result.inpaintingProfile = this.inpaintingProfile
+    result.enabled = this.enabled
     return result
   }
 }
@@ -63,6 +66,7 @@ export class MangaRenderingServiceSettings {
     snapshot.inpaintingProfile = MangaRenderingServiceSettings.normalizeInpaintingProfile(
       store.getSync(INPAINTING_PROFILE_KEY, MANGA_RENDERING_INPAINTING_QUALITY) as string,
     )
+    snapshot.enabled = store.getSync(ENABLED_KEY, false) as boolean
     return snapshot
   }
 
@@ -85,6 +89,7 @@ export class MangaRenderingServiceSettings {
       INPAINTING_PROFILE_KEY,
       MangaRenderingServiceSettings.normalizeInpaintingProfile(snapshot.inpaintingProfile),
     )
+    store.putSync(ENABLED_KEY, snapshot.enabled === true)
     store.flushSync()
   }
 }
