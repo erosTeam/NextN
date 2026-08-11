@@ -1244,6 +1244,17 @@ rewrite, re-run, or block this completed direct-route observation.
   `2000px` selection still present. Raw local comparison evidence remains under
   `.hvigor/outputs/reader-enhancement-height-20260812T0131/` and is excluded
   from Git.
+- Runtime boundary, same run: the temporary `1000px` selection was used for
+  one direct Gallery `471768` route and one current native Continue action.
+  After a twelve-second settle, the captured foreground root was
+  `com.erosteam.nextn`; this observes that the lower decode ceiling did not
+  break that Reader entry. It does not prove a derivative image was applied.
+  Two documented Back events then left the focused window on NextE rather than
+  the expected NextN root, so that return chain is recorded as anomalous and
+  not treated as an accepted route. NextN was explicitly reopened and the
+  temporary height was restored through the native Settings route; the final
+  root was `com.erosteam.nextn` with the enabled enhancement state and
+  `2000px` visible again.
 
 ## Data and artifact boundary
 
