@@ -128,7 +128,6 @@ export struct HistoryPage {
   @Param scroller: Scroller = new Scroller()
   @Param clearVersion: number = 0
   @Event onOpenGallery?: (galleryId: number) => void
-  @Event onOpenReader?: (galleryId: number, initialPageIndex: number) => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   @Local private history: ReadingHistoryState = connectReadingHistory()
   @Local private pinnedDayHeader: HistoryPinnedDayHeaderState = connectHistoryPinnedDayHeader()
@@ -685,13 +684,6 @@ export struct HistoryPage {
       item: item,
       onOpenGallery: (galleryId: number): void => {
         if (this.onOpenGallery) {
-          this.onOpenGallery(galleryId)
-        }
-      },
-      onResume: (galleryId: number, initialPageIndex: number): void => {
-        if (this.onOpenReader) {
-          this.onOpenReader(galleryId, initialPageIndex)
-        } else if (this.onOpenGallery) {
           this.onOpenGallery(galleryId)
         }
       },

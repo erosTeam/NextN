@@ -1827,9 +1827,6 @@ struct Index {
             onOpenGallery: (galleryId: number): void => {
               this.pushGallery(galleryId)
             },
-            onOpenReader: (galleryId: number, initialPageIndex: number): void => {
-              this.pushReader(galleryId, initialPageIndex)
-            },
             onDidScroll: (offset: number, state: ScrollState): void => {
               this.onHomeTabDidScroll(2, offset, state)
             },

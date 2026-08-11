@@ -3,6 +3,40 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Reading History simple-row restoration — 2026-08-11
+
+- **User feedback and current source evidence:** History was explicitly
+  reopened by the user as a page requiring a rewrite. Its current local leaf
+  is an invented split interaction: cover/title open Gallery while a separate
+  trailing `继续阅读` control opens Reader. That creates a three-part row whose
+  title, progress, timestamp, and action no longer share the simple-list
+  rhythm.
+- **Reference parent tree:** NextE owns `ViewedHistoryPage →
+  PullRefreshListScaffold → ListItemGroup(day header) → ListItem →
+  GallerySimpleCard`. The day-group parent owns grouping, pagination, and
+  swipe deletion; each child is one compact gallery row with a 72×102 cover,
+  one fixed-height information column, one metadata baseline, and one row
+  navigation action.
+- **Current NextN parent tree:** `HistoryPage → PullRefreshListScaffold →
+  ListItemGroup → ListItem → HistoryListRow`; the outer lifecycle, local RDB
+  cursor, pinned day context, confirmation deletion, and pagination already
+  correspond to the reference. Only the `HistoryListRow` leaf introduces the
+  extra Reader action and fragmented metadata layout.
+- **Exact change:** retain every page/state/parent owner above. Rewrite only
+  `HistoryListRow` to the reference simple-row grammar: cover, title, blank
+  fill, then one metadata baseline showing the durable local read position and
+  viewed time. The whole row opens Gallery; delete stays a day-list swipe or
+  long press. Remove the invented nested resume control and its route callback.
+- **NH data boundary:** local history has no uploader, rating, category, or
+  favourite fields. The local position/time replace only those unavailable
+  metadata leaves; no remote gallery request, fabricated metadata, account,
+  or history record mutation is introduced.
+- **Verification plan:** build, install in place, and compare the current
+  History viewport with the same `ViewedHistoryPage` state in NextE. Review
+  the complete page: HDS header, day header, row density, title wrapping,
+  metadata baseline, single-action ownership, footer, and floating root tabs.
+  This is OPEN until that real comparison is complete.
+
 ## OPEN — Reader selectable Waifu2x enhancement models
 
 - User outcome: Reader enhancement should let the user choose between the two

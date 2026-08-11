@@ -1,8 +1,9 @@
 import { AppStrings, NhReadingHistoryItem, ThemeTokens } from 'shared'
 
 /**
- * Local-history adaptation of NextE's GallerySimpleCard.  The parent owns
- * date grouping and deletion; this leaf renders only durable local evidence.
+ * The History leaf intentionally follows NextE's GallerySimpleCard grammar.
+ * Day grouping, removal, paging, and navigation ownership remain in
+ * HistoryPage; this component presents one local record as one row action.
  */
 @ComponentV2
 export struct HistoryListRow {
@@ -10,7 +11,6 @@ export struct HistoryListRow {
   @Local isThumbnailLoading: boolean = true
   @Local hasThumbnailError: boolean = false
   @Event onOpenGallery?: (galleryId: number) => void
-  @Event onResume?: (galleryId: number, initialPageIndex: number) => void
 
   @Monitor('item')
   onItemChanged(): void {
@@ -39,31 +39,11 @@ export struct HistoryListRow {
       .replace('%2$d', `${pageCount}`)
   }
 
-  private galleryAccessibilityLabel(): string {
+  private accessibilityLabel(): string {
     const time: string = this.viewedTime()
     return time.length > 0
-      ? `${this.title()}, ${time}, ${this.progressLabel()}`
+      ? `${this.title()}, ${this.progressLabel()}, ${time}`
       : `${this.title()}, ${this.progressLabel()}`
-  }
-
-  private readerAccessibilityLabel(): string {
-    return this.item.hasReadProgress
-      ? AppStrings.get('history_continue_accessibility')
-        .replace('%1$s', this.title())
-        .replace('%2$s', this.progressLabel())
-      : `${AppStrings.get('gallery_action_read')} ${this.title()}, ${this.progressLabel()}.`
-  }
-
-  private openGallery(): void {
-    if (this.onOpenGallery) {
-      this.onOpenGallery(this.item.galleryId)
-    }
-  }
-
-  private resumeReader(): void {
-    if (this.onResume) {
-      this.onResume(this.item.galleryId, Math.max(0, this.item.lastReadIndex))
-    }
   }
 
   @Builder
@@ -118,10 +98,6 @@ export struct HistoryListRow {
       .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
       .borderRadius(ThemeTokens.THUMB_RADIUS)
       .clip(true)
-      .accessibilityText(this.galleryAccessibilityLabel())
-      .onClick((): void => {
-        this.openGallery()
-      })
 
       Column({ space: ThemeTokens.SPACE_XS }) {
         Text(this.title())
@@ -136,8 +112,12 @@ export struct HistoryListRow {
         Blank()
 
         Row({ space: ThemeTokens.SPACE_XS }) {
+          Text(this.progressLabel())
+            .fontSize(ThemeTokens.FONT_SIZE_TINY)
+            .fontColor(ThemeTokens.TEXT_SECONDARY)
+          Blank()
           if (this.viewedTime().length > 0) {
-            Row({ space: ThemeTokens.SPACE_XS }) {
+            Row({ space: 2 }) {
               SymbolGlyph($r('sys.symbol.clock'))
                 .fontSize(ThemeTokens.FONT_SIZE_TINY)
                 .fontColor([ThemeTokens.TEXT_TERTIARY])
@@ -146,21 +126,6 @@ export struct HistoryListRow {
                 .fontColor(ThemeTokens.TEXT_TERTIARY)
             }
           }
-          Blank()
-          Row({ space: 2 }) {
-            Text(this.progressLabel())
-              .fontSize(ThemeTokens.FONT_SIZE_TINY)
-              .fontColor(ThemeTokens.TEXT_SECONDARY)
-            SymbolGlyph($r('sys.symbol.chevron_right'))
-              .fontSize(ThemeTokens.FONT_SIZE_TINY)
-              .fontColor([ThemeTokens.TEXT_SECONDARY])
-          }
-          .height(ThemeTokens.MIN_TOUCH_TARGET)
-          .alignItems(VerticalAlign.Center)
-          .accessibilityText(this.readerAccessibilityLabel())
-          .onClick((): void => {
-            this.resumeReader()
-          })
         }
         .width('100%')
         .alignItems(VerticalAlign.Center)
@@ -168,10 +133,6 @@ export struct HistoryListRow {
       .layoutWeight(1)
       .height(ThemeTokens.COVER_HEIGHT)
       .alignItems(HorizontalAlign.Start)
-      .accessibilityText(this.galleryAccessibilityLabel())
-      .onClick((): void => {
-        this.openGallery()
-      })
     }
     .width('100%')
     .padding({
@@ -183,5 +144,11 @@ export struct HistoryListRow {
     .alignItems(VerticalAlign.Top)
     .border({ width: { bottom: 0.5 }, color: ThemeTokens.DIVIDER })
     .backgroundColor(Color.Transparent)
+    .accessibilityText(this.accessibilityLabel())
+    .onClick((): void => {
+      if (this.onOpenGallery) {
+        this.onOpenGallery(this.item.galleryId)
+      }
+    })
   }
 }
