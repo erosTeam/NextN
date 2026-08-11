@@ -681,3 +681,10 @@ authorize an edit, replace a device comparison, or define product completion.
   failing decode path; it does not identify which historical v1 write was
   malformed, establish that a derivative was produced, or establish visual
   quality against the reference.
+- Follow-up device observation: the current Reader's existing enhancement
+  status leaf reached its applied state after the stable run. That leaf is
+  driven only by `ReaderSuperResolutionResult.applied`, which is returned only
+  after the private derivative is atomically promoted and verified non-empty.
+  This is native processing/output-state evidence for the observed page. Raw
+  content remains only in the local audit artifact and was not added to Git.
+  Same-state visual-quality comparison against NextE remains OPEN.

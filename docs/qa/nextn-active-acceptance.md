@@ -214,6 +214,11 @@ remains continuous; do not ask for it again.
   route stayed in native NextN Reader at both 10 and 30 seconds. This closes
   only the observed process-exit regression for a fresh cache source;
   enhancement output and visual-reference acceptance remain OPEN.
+- The current Reader's existing enhancement-status leaf then reached its
+  applied state. Its owner only sets that state after a non-empty private
+  derivative is atomically promoted, so this is observed native output-state
+  evidence for the current page. Same-state NextE quality comparison remains
+  OPEN; raw content is retained locally and not named here.
 
 ## Active delivery P1 — Gallery Detail / Comments
 
