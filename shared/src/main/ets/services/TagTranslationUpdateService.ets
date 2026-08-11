@@ -112,7 +112,10 @@ export class TagTranslationUpdateService {
             request?.destroy()
             return
           }
-          const count: number = fileIo.writeSync(file.fd, data, { offset: written })
+          // `offset` is relative to the current file pointer, not a cumulative
+          // stream position. Each callback buffer is complete, so append from
+          // the current pointer and retain the short-write rejection below.
+          const count: number = fileIo.writeSync(file.fd, data)
           if (count !== data.byteLength) {
             throw new Error('Unable to save the tag dictionary download.')
           }

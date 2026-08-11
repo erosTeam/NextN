@@ -966,6 +966,23 @@ remains continuous; do not ask for it again.
   unobserved because this run neither deletes the user's task nor fabricates
   cache age.
 
+## Latest device observation — tag-dictionary stream update
+
+- 2026-08-11: the signed Debug HAP containing the sequential stream-write
+  correction was installed with `install -r` on `192.168.50.237:12345` only.
+  The device gate read `AWAKE` with `OverrideTimeout=86400000ms` before the
+  native Settings route.
+- Settings → Advanced → Local tag translation showed an existing 43,568-row
+  local dictionary. One explicit Update action completed and returned to the
+  normal action state with 43,672 local tags available for gallery display.
+- No account, credential, Gallery data, History, download, Reader cache, or
+  presentation preference was changed. Local layout evidence is retained in
+  `.hvigor/outputs/tag-dictionary-update-20260811T0822/` and is excluded from
+  Git.
+- This accepts the observed dictionary-update transaction and its native
+  status refresh only. It does not claim visual-reference parity for tag
+  leaves or any unobserved network-failure branch.
+
 ## Current Gallery Comments direct-route exception
 
 - 2026-08-11 00:32 +0800：对既有 Comments Want 的一次冷启动直达终态经 bundle/root 边界确认是原生 Browse 根页，不是 Comments。未写入评论、账户、偏好或其他内容数据。
