@@ -1113,6 +1113,27 @@ session unusable after the accepted recovery/cold-start path. It immediately
 preempts delivery again if such evidence appears; it must not be used to
 rewrite, re-run, or block this completed direct-route observation.
 
+## Current Reader processing isolation — 2026-08-11
+
+- A temporary Debug build retained the normal Reader service call boundary but
+  made `ReaderSuperResolutionService.process()` return the original image
+  before model, file, image, or native processing. After `install -r`, a
+  NextN-only force-stop, the existing direct Gallery route, and one current
+  `继续` action, the foreground remained native NextN Reader.
+- The selected device's existing Image enhancement preference was observed on;
+  it was not changed. A previous lazy-import experiment therefore still ran
+  the enabled processing path and did not prevent the exit. That speculative
+  source change has been removed.
+- The temporary early return was removed immediately. A normal signed Debug
+  HAP was rebuilt successfully and reinstalled with `install -r`; no app data,
+  account state, preference, Gallery data, or Reader model was changed.
+- This proves only that the observed exit requires actual work inside
+  `process()`, not merely the service module or its call boundary. The exact
+  failing operation remains unproven. The retained local evidence is under
+  `.hvigor/outputs/reader-processing-diagnostic-20260811/` and is excluded
+  from Git. The next action is one source-grounded split inside the processing
+  body, not a repeat of this route.
+
 ## Data and artifact boundary
 
 Never place credentials, account/profile strings, cookies, tokens, raw Web

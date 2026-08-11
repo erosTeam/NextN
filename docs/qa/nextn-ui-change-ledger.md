@@ -1116,3 +1116,22 @@ authorize an edit, replace a device comparison, or define product completion.
   state. No coordinate was inferred, no Reader action was taken, and that
   revision is not a comparable Reader-route sample. Current HEAD was restored
   immediately with `install -r`.
+
+### Process-body discriminator — 2026-08-11
+
+- Newly actionable boundary: the unresolved route had already been separated
+  from the Detail callback and Reader mount, but not from service-module
+  loading versus the actual enhancement work. This one-run diagnostic changed
+  no visible geometry, hierarchy, action, preference, or stored content.
+- Exact temporary delta: retain the existing `process()` call, then return the
+  original image before model lookup, cache/file work, image decoding, PixelMap
+  work, and the native upscale invocation.
+- Observed result: with the enabled preference left unchanged, the same direct
+  Gallery route and one current `继续` action ended on native NextN Reader. The
+  temporary return was removed immediately; the signed normal Debug HAP was
+  rebuilt and reinstalled in place. A lazy-import experiment was also removed
+  because it did not prevent the enabled path from exiting.
+- Impact and prevention: the evidence narrows the fault to actual processing,
+  but it does not identify a specific operation or justify a feature disable.
+  The next diagnostic must split one source-owned processing boundary and must
+  remove its temporary code before any other Reader or UI work.
