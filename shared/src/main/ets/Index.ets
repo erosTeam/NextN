@@ -96,6 +96,11 @@ export {
   MangaRenderingServiceSecretStore,
 } from './services/MangaRenderingServiceSecretStore'
 export {
+  MangaRenderingServiceTextResponse,
+  MangaRenderingServiceTransport,
+} from './services/MangaRenderingServiceTransport'
+export { MangaRenderingServiceSession } from './services/MangaRenderingServiceSession'
+export {
   MangaRenderingServiceSettings,
   MangaRenderingServiceSettingsSnapshot,
   MANGA_RENDERING_DETECTION_HIGH_RECALL,
