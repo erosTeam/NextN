@@ -90,7 +90,9 @@ export class NhTorrentFileExportService {
             request?.destroy()
             return
           }
-          const count: number = fileIo.writeSync(file.fd, data, { offset: written })
+          // `offset` is relative to the current pointer; ordinary streamed
+          // chunks must append directly at that pointer.
+          const count: number = fileIo.writeSync(file.fd, data)
           if (count !== data.byteLength) {
             throw new Error('Torrent file write was incomplete.')
           }

@@ -396,7 +396,9 @@ export class ComicTranslationModelService {
           return
         }
         try {
-          const count: number = fileIo.writeSync(file.fd, data, { offset: written })
+          // The file pointer advances per callback. Supplying the cumulative
+          // byte count as offset would skip bytes after the first chunk.
+          const count: number = fileIo.writeSync(file.fd, data)
           if (count !== data.byteLength) {
             failed = true
             request?.destroy()

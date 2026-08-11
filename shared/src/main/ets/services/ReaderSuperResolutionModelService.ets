@@ -141,7 +141,9 @@ export class ReaderSuperResolutionModelService {
           return
         }
         try {
-          const count: number = fileIo.writeSync(file.fd, data, { offset: written })
+          // Each callback buffer appends at the current pointer; `offset`
+          // would be relative to that pointer rather than absolute.
+          const count: number = fileIo.writeSync(file.fd, data)
           if (count !== data.byteLength) {
             failed = true
             request?.destroy()

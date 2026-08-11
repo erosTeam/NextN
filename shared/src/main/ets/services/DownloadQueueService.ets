@@ -499,7 +499,10 @@ export class DownloadQueueService {
             request?.destroy()
             return
           }
-          const count: number = fileIo.writeSync(file.fd, data, { offset: written })
+          // WriteOptions.offset is relative to the current file pointer. The
+          // stream callback already advances it, so a cumulative count would
+          // create gaps after the first chunk.
+          const count: number = fileIo.writeSync(file.fd, data)
           if (count !== data.byteLength) {
             throw new Error('Unable to save gallery page.')
           }
