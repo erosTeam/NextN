@@ -1,5 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import { HdsTabsController } from '@kit.UIDesignKit'
+import { hilog } from '@kit.PerformanceAnalysisKit'
 import {
   ContentFilterService,
   ContentFilterState,
@@ -77,6 +78,8 @@ const TITLE_TRANSLATION_ACTION_SIZE: number = 30
 const TITLE_TRANSLATION_ICON_SIZE: number = 16
 const TITLE_TRANSLATION_ENGLISH: string = 'english'
 const TITLE_TRANSLATION_JAPANESE: string = 'japanese'
+const READER_ROUTE_LOG_DOMAIN: number = 0x0000
+const READER_ROUTE_LOG_TAG: string = 'NextNReaderRoute'
 /**
  * A retained Gallery destination has three materially different request
  * starts. Only a validated refresh for the same route may keep its current
@@ -591,7 +594,7 @@ export struct GalleryDetailPage {
     if (initialPageIndex >= this.detail.pages.length) {
       return
     }
-    console.info('NextNReaderRoute stage=detail_dispatch')
+    hilog.info(READER_ROUTE_LOG_DOMAIN, READER_ROUTE_LOG_TAG, 'stage=detail_dispatch')
     this.readerOverlay.stageDetailSeed(this.detail)
     try {
       this.onOpenReader(this.detail.id, initialPageIndex)
