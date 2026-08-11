@@ -10,6 +10,7 @@ const COVER_GRID_COLUMN_WIDTH_KEY: string = 'browse_presentation_cover_grid_colu
 const WATERFALL_COLUMN_WIDTH_KEY: string = 'browse_presentation_waterfall_column_width'
 const WATERFALL_COMPACT_COLUMN_WIDTH_KEY: string = 'browse_presentation_waterfall_compact_column_width'
 const COVER_WALL_COLUMN_WIDTH_KEY: string = 'browse_presentation_cover_wall_column_width'
+const SHOW_GALLERY_TAGS_KEY: string = 'browse_presentation_show_gallery_tags'
 const SQL_SELECT_PRESENTATION: string =
   'SELECT value FROM browse_presentation_settings WHERE key = ? LIMIT 1'
 const SQL_UPSERT_PRESENTATION: string =
@@ -74,6 +75,9 @@ export class BrowsePresentationRepository {
           await BrowsePresentationRepository.readValue(store, COVER_WALL_COLUMN_WIDTH_KEY),
         ),
       )
+      state.showGalleryTags = BrowsePresentationRepository.normalizeBoolean(
+        await BrowsePresentationRepository.readValue(store, SHOW_GALLERY_TAGS_KEY),
+      )
       return mode
     } catch (error) {
       throw (error as Error)
@@ -107,6 +111,14 @@ export class BrowsePresentationRepository {
     })
   }
 
+  static saveShowGalleryTags(context: common.UIAbilityContext, value: boolean): Promise<void> {
+    connectBrowsePresentation().showGalleryTags = value
+    return BrowsePresentationRepository.enqueueWrite(async (): Promise<void> => {
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      await store.executeSql(SQL_UPSERT_PRESENTATION, [SHOW_GALLERY_TAGS_KEY, value ? '1' : '0'])
+    })
+  }
+
   private static async readValue(store: relationalStore.RdbStore, key: string): Promise<string> {
     let rows: relationalStore.ResultSet | null = null
     try {
@@ -131,6 +143,10 @@ export class BrowsePresentationRepository {
       return 0
     }
     return clampGalleryColumnWidth(parsed)
+  }
+
+  private static normalizeBoolean(value: string): boolean {
+    return value === '1' || value.toLowerCase() === 'true'
   }
 
   private static columnWidthKey(mode: NhBrowsePresentation): string {

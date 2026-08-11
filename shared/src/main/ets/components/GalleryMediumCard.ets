@@ -2,6 +2,7 @@ import { NhGallerySummary } from '../model/NhGallery'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { AppStrings } from '../i18n/AppStrings'
 import { CoverBackgroundState, connectCoverBackground } from '../state/CoverBackgroundState'
+import { GalleryTagStrip } from './GalleryTagStrip'
 
 // NextE's medium list card keeps a fixed portrait-cover rhythm so a long title
 // cannot make adjacent rows jump. The available NextN summary has no uploader,
@@ -150,6 +151,8 @@ export struct GalleryMediumCard {
             .textOverflow({ overflow: TextOverflow.Ellipsis })
             .width('100%')
         }
+
+        GalleryTagStrip({ tags: this.gallery.tags, maxTags: 6 })
 
         // The medium card keeps metadata at the foot of the fixed-height
         // column, matching NextE's title/content/meta hierarchy.

@@ -169,7 +169,10 @@ export {
   PersistentComicRenderedPageRepository,
 } from './services/ComicRenderedPageRepository'
 export { NhApiClient } from './network/NhApiClient'
+export { NhTagCatalogRepository } from './storage/NhTagCatalogRepository'
+export { NhTagCatalogService } from './services/NhTagCatalogService'
 export { ReaderImageCacheService, ReaderImageCacheResult, ReaderImageCacheStatus } from './services/ReaderImageCacheService'
+export { GalleryTagStrip, GalleryTagStripLayout } from './components/GalleryTagStrip'
 export { ReaderNativeSuperResolution, ReaderNativeSuperResolutionResult } from './services/ReaderNativeSuperResolution'
 export { ReaderSuperResolutionModelDefinition, ReaderSuperResolutionModelService } from './services/ReaderSuperResolutionModelService'
 export { ReaderSuperResolutionResult, ReaderSuperResolutionService } from './services/ReaderSuperResolutionService'

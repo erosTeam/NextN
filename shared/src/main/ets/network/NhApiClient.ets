@@ -14,6 +14,7 @@ import {
 import { NhComment } from '../model/NhComment'
 import { NhAccountProfile } from '../model/NhAccountProfile'
 import { NhTagSuggestion } from '../model/NhTagSuggestion'
+import { NhTagCatalogService } from '../services/NhTagCatalogService'
 import { NhBrowserSessionVerificationOutcome } from '../model/NhBrowserSessionState'
 import { NhAccountAuthenticatedReadToken, NhAccountSessionService } from '../services/NhAccountSessionService'
 import {
@@ -71,7 +72,7 @@ export class NhApiClient {
     const root: Record<string, Object> = await NhApiClient.getJson(
       `${API_ROOT}/api/v2/galleries?page=${Math.max(1, Math.floor(page))}`,
     )
-    return NhApiClient.parseGalleryPage(root)
+    return await NhApiClient.parseGalleryPage(root)
   }
 
   static async search(query: string, page: number = 1, sort: string = ''): Promise<NhGalleryPageResult> {
@@ -81,7 +82,7 @@ export class NhApiClient {
     const root: Record<string, Object> = await NhApiClient.getJson(
       `${API_ROOT}/api/v2/search?query=${encoded}&page=${Math.max(1, Math.floor(page))}${sortPart}`,
     )
-    return NhApiClient.parseGalleryPage(root)
+    return await NhApiClient.parseGalleryPage(root)
   }
 
   /**
@@ -105,6 +106,7 @@ export class NhApiClient {
         galleries.push(gallery)
       }
     })
+    await NhApiClient.enrichGallerySummaryTags(galleries)
     return galleries
   }
 
@@ -127,7 +129,7 @@ export class NhApiClient {
       `${API_ROOT}/api/v2/favorites?page=${normalizedPage}${queryPart}`,
       NhJsonReadScope.ACCOUNT_OWNED,
     )
-    return NhApiClient.parseGalleryPage(root)
+    return await NhApiClient.parseGalleryPage(root)
   }
 
   static async detail(galleryId: number): Promise<NhGalleryDetail> {
@@ -152,7 +154,7 @@ export class NhApiClient {
     const root: Record<string, Object> = await NhApiClient.getJson(
       `${API_ROOT}/api/v2/galleries/${normalizedGalleryId}/related`,
     )
-    return NhApiClient.parseGalleryPage(root).galleries
+    return (await NhApiClient.parseGalleryPage(root)).galleries
   }
 
   /**
@@ -870,7 +872,7 @@ export class NhApiClient {
     }
   }
 
-  private static parseGalleryPage(root: Record<string, Object>): NhGalleryPageResult {
+  private static async parseGalleryPage(root: Record<string, Object>): Promise<NhGalleryPageResult> {
     const result: NhGalleryPageResult = new NhGalleryPageResult()
     const rawItems: Object[] = NhApiClient.asArray(root['result'])
     rawItems.forEach((raw: Object): void => {
@@ -881,7 +883,46 @@ export class NhApiClient {
       result.galleries.push(NhApiClient.parseGallerySummary(item))
     })
     result.totalPages = Math.max(1, NhApiClient.asNumber(root['num_pages']))
+    await NhApiClient.enrichGallerySummaryTags(result.galleries)
     return result
+  }
+
+  /**
+   * ErosN's v2 list mapper resolves tag ids in one bounded catalog batch
+   * before cards render. The cache layer treats failures as optional visual
+   * enrichment, so a name lookup can never fail a Browse/Search/Favorites
+   * page or change its request/cursor state.
+   */
+  private static async enrichGallerySummaryTags(galleries: NhGallerySummary[]): Promise<void> {
+    await NhTagCatalogService.enrich(
+      galleries,
+      async (ids: number[]): Promise<NhTag[]> => await NhApiClient.tagsByIds(ids),
+    )
+  }
+
+  private static async tagsByIds(rawIds: number[]): Promise<NhTag[]> {
+    const ids: number[] = rawIds
+      .map((value: number): number => Math.floor(value))
+      .filter((value: number): boolean => value > 0)
+    if (ids.length === 0) {
+      return []
+    }
+    const rawItems: Object[] = await NhApiClient.getBareJsonArray(
+      `${API_ROOT}/api/v2/tags/ids?ids=${encodeURIComponent(ids.join(','))}`,
+    )
+    const tags: NhTag[] = []
+    rawItems.forEach((raw: Object): void => {
+      const item: Record<string, Object> = NhApiClient.asRecord(raw)
+      const tag: NhTag = new NhTag()
+      tag.id = NhApiClient.asNumber(item['id'])
+      tag.type = NhApiClient.asString(item['type'])
+      tag.name = NhApiClient.asString(item['name'])
+      tag.count = NhApiClient.asNumber(item['count'])
+      if (tag.id > 0 && tag.name.length > 0) {
+        tags.push(tag)
+      }
+    })
+    return tags
   }
 
   private static parseGallerySummary(item: Record<string, Object>): NhGallerySummary {

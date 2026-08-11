@@ -17,6 +17,7 @@ import {
   LlmSourceProfileRepository,
   NhAccountProfileService,
   NhAccountSessionService,
+  NhTagCatalogService,
   NhClipboardLinkService,
   NhClipboardLinkSettings,
   ReadButtonStyleSettings,
@@ -54,6 +55,10 @@ export default class EntryAbility extends UIAbility {
     this.loginRecoveryRequestedAtLaunch = this.galleryDirectLaunchIdAtLaunch === 0 &&
       typeof recoveryValue === 'string' && recoveryValue === '1'
     AppStrings.init(this.context)
+    // Public tag-name enrichment needs the same app-private RDB context as
+    // the rest of the anonymous local cache. It never opens an account route
+    // or starts a network request on its own.
+    NhTagCatalogService.initialize(this.context)
     // Follow NextE's application-level ArkWeb boot order. Cookie access is
     // queried by the Account route before its visible Web component attaches,
     // so initialize the engine and configure both cookie scopes before any

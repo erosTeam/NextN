@@ -9,6 +9,8 @@ export class NhGallerySummary {
   thumbnailWidth: number = 0
   thumbnailHeight: number = 0
   tagIds: number[] = []
+  /** Resolved public catalog records for `tagIds`; absent names stay absent. */
+  tags: NhTag[] = []
 
   displayTitle(): string {
     if (this.englishTitle.length > 0) {

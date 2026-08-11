@@ -6,6 +6,7 @@ import {
   GalleryLanguageCornerBadge,
   galleryLanguageCornerBadgeText,
 } from './GalleryLanguageCornerBadge'
+import { GalleryTagStrip, GalleryTagStripLayout } from './GalleryTagStrip'
 
 /**
  * Compact WaterFlow cards keep a different overlay subtree from CoverWall and
@@ -130,6 +131,11 @@ export struct GalleryWaterfallCompactCard {
   @Builder
   private BottomOverlay() {
     Column({ space: ThemeTokens.SPACE_XS }) {
+      GalleryTagStrip({
+        tags: this.gallery.tags,
+        layout: GalleryTagStripLayout.SINGLE_LINE,
+        onDarkSurface: true,
+      })
       if (this.gallery.pageCount > 0) {
         Text(`${this.gallery.pageCount}P`)
           .fontSize(ThemeTokens.FONT_SIZE_TINY)

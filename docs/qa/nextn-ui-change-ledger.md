@@ -194,3 +194,49 @@ authorize an edit, replace a device comparison, or define product completion.
   input, save, provider request, account action, preference write, or comment
   mutation. The retained local capture is route/form evidence only; it is not
   a same-state NextE comparison or a configured-provider acceptance.
+
+## OPEN — Collection-card tag display
+
+- User outcome: gallery listings may show the tags already supplied by the NH
+  v2 list response, with the same opt-in, presentation-specific semantics as
+  ErosN; raw tag ids must never be rendered as a substitute for names.
+- Newly actionable basis: the user explicitly identified ErosN's gallery-tag
+  display as a mature NH capability to audit against NextN. Current source
+  confirms that NextN keeps each list item's `tag_ids`, but exposes only the
+  three language ids; ErosN resolves those ids in a bounded local catalog and
+  then renders up to ten resolved names.
+- Reference parent trees: ErosN's setting is an opt-in (`showTags`, default
+  off). Its regular list is `Gesture → fixed Card → Row(cover, information
+  Column(title, tag leaf))`; its regular waterfall is `Gesture → Card →
+  Column(cover, title, wrapping tag leaf)`; its compact waterfall is
+  `Gesture → cover Stack → bottom gradient → horizontal single-line tag leaf
+  → title`. Its grid card intentionally leaves the tag leaf absent.
+- Current NextN parent trees: `GalleryCollectionBody` owns the refresh
+  scaffold and selects `GalleryMediumCard` for LIST, `GalleryWaterfallCard`
+  for WATERFALL, `GalleryWaterfallCompactCard` for WATERFALL_COMPACT,
+  `GalleryGridCard` for COVER_GRID, and `GalleryCoverWallCard` for COVER_WALL.
+  Its SIMPLE_LIST owner remains the independently reviewed NextE simple-row
+  grammar. Layout Settings owns `SettingsPage(LAYOUT) →
+  SecondaryListScaffold → BrowsePresentationGroup →
+  NextNGroupedListSection → NextNListRow`.
+- Exact change boundary: add a private, bounded id-to-name catalog cache and
+  enrich only loaded `NhGallerySummary` snapshots. Add an explicit
+  default-off display switch in the existing Browse presentation group. Add a
+  tag leaf only to LIST, WATERFALL, and WATERFALL_COMPACT: wrapping tags in
+  the first two and a single horizontal line in the compact cover overlay.
+  Do not change collection scaffolds, request/cursor ownership, card routing,
+  SIMPLE_LIST, COVER_GRID, COVER_WALL, cover geometry, language badges, or
+  page-count leaves.
+- Minimality rationale: resolving one de-duplicated page batch through a
+  private local catalog prevents per-card requests and preserves valid list
+  data if the public catalog cannot supply a name. The setting remains off
+  until the user elects the denser card treatment.
+- Visual verification plan: after the feature is configured on the selected
+  device, compare the same loaded list and waterfall gallery set with ErosN
+  at the same viewport. Review the Settings row, disabled/default-off state,
+  resolved-name state, wrapping card rhythm, compact single-line overlay,
+  grid/cover-wall absence, and unchanged SIMPLE_LIST/card navigation. Retain
+  raw local captures; no source-shape or synthetic UI check is acceptance.
+- Unresolved risk: the v2 list endpoint supplies only ids. The public catalog
+  may rate-limit or omit names, so absence of resolved names must leave the
+  card's existing layout intact rather than fail, block, or retry a listing.

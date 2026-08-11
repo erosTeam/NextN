@@ -7,7 +7,7 @@ const STORE_CONFIG: relationalStore.StoreConfig = {
   autoCleanDirtyData: true,
 }
 
-const SCHEMA_VERSION: number = 17
+const SCHEMA_VERSION: number = 18
 const SQL_CREATE_READING_HISTORY: string =
   'CREATE TABLE IF NOT EXISTS reading_history (' +
   'gallery_id INTEGER PRIMARY KEY, ' +
@@ -50,6 +50,16 @@ const SQL_CREATE_TAG_TRANSLATION_META: string =
   'CREATE TABLE IF NOT EXISTS tag_translation_meta (' +
   'key TEXT PRIMARY KEY NOT NULL, ' +
   'value TEXT NOT NULL)'
+// The public v2 list payload contains only tag ids. Keep the resolved public
+// catalog separately from the optional translation dictionary so a catalog
+// refresh never replaces a user's local display dictionary.
+const SQL_CREATE_NH_TAG_CATALOG: string =
+  'CREATE TABLE IF NOT EXISTS nh_tag_catalog (' +
+  'id INTEGER PRIMARY KEY, ' +
+  'type TEXT NOT NULL, ' +
+  'name TEXT NOT NULL, ' +
+  'count INTEGER NOT NULL, ' +
+  'updated_at INTEGER NOT NULL)'
 const SQL_CREATE_READER_SETTINGS: string =
   'CREATE TABLE IF NOT EXISTS reader_settings (' +
   'key TEXT PRIMARY KEY NOT NULL, ' +
@@ -202,6 +212,7 @@ export class LocalDataStore {
       await store.executeSql(SQL_CREATE_TAG_TRANSLATIONS)
       await store.executeSql(SQL_CREATE_TAG_TRANSLATION_USAGE_ORDER)
       await store.executeSql(SQL_CREATE_TAG_TRANSLATION_META)
+      await store.executeSql(SQL_CREATE_NH_TAG_CATALOG)
       await store.executeSql(SQL_CREATE_READER_SETTINGS)
       await store.executeSql(SQL_CREATE_ACCOUNT_SESSION)
       await store.executeSql(SQL_CREATE_ACCOUNT_PROFILE)

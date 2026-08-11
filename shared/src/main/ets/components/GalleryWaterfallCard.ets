@@ -6,6 +6,7 @@ import {
   GalleryLanguageCornerBadge,
   galleryLanguageCornerBadgeText,
 } from './GalleryLanguageCornerBadge'
+import { GalleryTagStrip } from './GalleryTagStrip'
 
 const WATERFALL_MIN_COVER_RATIO: number = 0.5
 const WATERFALL_MAX_COVER_RATIO: number = 1.35
@@ -183,6 +184,7 @@ export struct GalleryWaterfallCard {
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .width('100%')
       }
+      GalleryTagStrip({ tags: this.gallery.tags })
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)

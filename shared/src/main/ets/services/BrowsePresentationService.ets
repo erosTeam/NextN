@@ -18,6 +18,10 @@ export class BrowsePresentationService {
     return BrowsePresentationRepository.save(context, mode)
   }
 
+  static setShowGalleryTags(context: common.UIAbilityContext, value: boolean): Promise<void> {
+    return BrowsePresentationRepository.saveShowGalleryTags(context, value)
+  }
+
   static setLiveColumnWidth(mode: NhBrowsePresentation, width: number): void {
     if (!supportsGalleryColumnDensity(mode)) {
       return

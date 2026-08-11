@@ -13,6 +13,8 @@ export class BrowsePresentationState {
   @Trace waterfallMinColumnWidth: number = 0
   @Trace waterfallCompactMinColumnWidth: number = 0
   @Trace coverWallMinColumnWidth: number = 0
+  /** ErosN-compatible opt-in; applicable list/waterfall cards stay unchanged by default. */
+  @Trace showGalleryTags: boolean = false
 
   columnWidthFor(mode: NhBrowsePresentation): number {
     if (mode === NhBrowsePresentation.COVER_GRID) {
