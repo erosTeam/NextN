@@ -1250,7 +1250,7 @@ authorize an edit, replace a device comparison, or define product completion.
   without a newly reproducible failure or a result-state boundary, no further
   enhancement-runtime patch is justified.
 
-## OPEN — Optional self-hosted whole-page manga translation
+## OPEN — Optional self-hosted staged manga translation
 
 - User outcome: make NextE's mature self-hosted `manga-translator-ui` rendering
   route available in NextN as an explicit, optional Reader translation provider,
@@ -1340,6 +1340,20 @@ authorize an edit, replace a device comparison, or define product completion.
   installed NextE reference was confirmed at the same root viewport, but its
   service page was not reached through its separate comic-translation owner
   in this run. The same-page visual comparison therefore remains OPEN.
+
+### Source-boundary correction — 2026-08-12
+
+- The entry's earlier “whole-page provider” premise is incorrect. NextE's
+  `MangaTranslatorUiSidecarBackend` implements the established staged
+  `ComicRegionRenderBackend`; its separate whole-page orchestrator belongs to
+  another backend family. NextN's `MangaRenderingServiceBackend` implements
+  that same staged backend interface, and
+  `ComicTranslationRuntimeService.backendFor()` already selects it only when
+  the endpoint, HUKS-backed credential, and explicit enabled state are valid.
+- No parallel whole-page route, selector, or Reader action is authorized.
+  The remaining open outcome is one explicitly configured self-hosted service
+  completing the existing staged Reader request. Until that external service
+  configuration exists, no source change or network request is justified.
 
 ## EVIDENCE-ONLY — Reader route mount/data split — 2026-08-11
 
