@@ -1282,6 +1282,25 @@ rewrite, re-run, or block this completed direct-route observation.
   and screenshot remain locally in
   `.hvigor/outputs/reader-baseline-20260812T0355/` and are excluded from Git.
 
+## Latest device observation — Reader enhancement result state
+
+- 2026-08-12: one fresh, resolved native `Continue` action from the documented
+  numeric Gallery route opened the current NextN Reader overlay. The final
+  layout retained the underlying Detail tree and its `Continue` leaf, but also
+  contained the foreground `reader-overlay-navigation` and Reader canvas; the
+  Detail leaf was therefore not evidence of a failed route.
+- The settled Reader canvas showed the existing green HD result-status glyph.
+  That observed leaf is the Reader's applied state: its owner sets `applied`
+  only after the private derivative has been atomically promoted and checked
+  non-empty. No Reader setting, model, account, gallery, download, or app data
+  was changed in this observation.
+- This accepts only the observed current-page processing/result state. A
+  same-state, same-viewport NextE quality comparison remains OPEN; this record
+  does not claim visual parity, model-wide behavior, or a general Reader-route
+  result. Raw terminal evidence remains local at
+  `.hvigor/outputs/reader-enhancement-result-20260812T0429/` and is excluded
+  from Git.
+
 ## Data and artifact boundary
 
 Never place credentials, account/profile strings, cookies, tokens, raw Web

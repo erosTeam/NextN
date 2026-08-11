@@ -1254,6 +1254,17 @@ authorize an edit, replace a device comparison, or define product completion.
   changed. It does not prove an enhanced derivative or image-quality parity;
   without a newly reproducible failure or a result-state boundary, no further
   enhancement-runtime patch is justified.
+- **Result-state correction — 2026-08-12:** a later fresh native `Continue`
+  activation was initially read as still being on Detail because the retained
+  Detail tree, including its `Continue` leaf, remains beneath the transparent
+  Reader overlay. The terminal layout also contains the foreground
+  `reader-overlay-navigation` and Reader canvas; the associated screenshot
+  shows the current Reader's green applied-state HD leaf. This is a real
+  current-page derivative result, not a route failure. It accepts neither
+  image-quality parity nor any broader model/page class. The raw capture is
+  retained locally at
+  `.hvigor/outputs/reader-enhancement-result-20260812T0429/`; no Reader source
+  or visible UI value changed from this observation.
 
 ## OPEN — Optional self-hosted staged manga translation
 
