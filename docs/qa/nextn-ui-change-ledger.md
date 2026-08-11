@@ -267,3 +267,10 @@ authorize an edit, replace a device comparison, or define product completion.
   compare a reader interaction and immediately subsequent settled page against
   NextE at the same mode and viewport; retain raw captures locally. No
   source-shape or synthetic UI check is acceptance.
+- Current device observation: the selected device reported the local model as
+  installed and enhancement as disabled. The compiled build was installed in
+  place, but the bounded direct-gallery run did not retain a stable Reader
+  terminal after the native Detail action; its terminal native state was a
+  settings surface. The enhancement switch was confirmed disabled afterward
+  and Browse was restored. This is not processing or interaction acceptance;
+  that evidence remains OPEN.

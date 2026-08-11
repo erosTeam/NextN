@@ -99,6 +99,22 @@ remains continuous; do not ask for it again.
   same-viewport ErosN comparison remains outstanding, so it is not a
   visual-reference parity acceptance.
 
+## Current delivery observation — Reader enhancement interaction yield
+
+- 2026-08-11: the signed Debug build containing the Reader interaction-yield
+  change was installed with `install -r` on the selected TCP device only. The
+  local enhancement-model manager reported an installed model while the
+  enhancement preference was disabled.
+- A bounded direct-gallery attempt did not yield a stable Reader terminal
+  frame after the native Detail action: its retained terminal state was a
+  native settings surface. Therefore no claim is made about processing,
+  touch-time pausing, or Reader visual behavior.
+- The final Reader settings observation confirmed enhancement disabled, and
+  the foreground was returned to native Browse. No model download, account
+  action, Favorites read, content mutation, data clear, or uninstall occurred.
+- The physical processing-and-interaction evidence remains OPEN; local raw
+  artifacts are retained outside source control and are not named here.
+
 ## Active delivery P1 — Gallery Detail / Comments
 
 - The Detail-owned comments response is now passed into the full Comments
