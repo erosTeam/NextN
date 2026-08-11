@@ -143,6 +143,7 @@ export {
   ComicTranslationReaderPageInput,
   ComicTranslationRuntimeService,
 } from './services/ComicTranslationRuntimeService'
+export { ComicTranslationModelService } from './services/ComicTranslationModelService'
 export {
   ComicVisualTranslationRequest,
   ComicVisualTranslationRunResult,

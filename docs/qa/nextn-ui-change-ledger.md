@@ -112,6 +112,43 @@ authorize an edit, replace a device comparison, or define product completion.
   captures are retained outside Git. This is routing/form-render evidence,
   not a same-state reference comparison or feature acceptance.
 
+## OPEN — Reader local comic-translation model pack
+
+- User outcome: expose the optional local detection, OCR, source-treatment,
+  and rendering model pack that already exists in NextN, so a user can choose
+  the mature on-device translation path instead of the current invisible
+  fallback.
+- Newly actionable basis: `ComicTranslationModelService` already owns one
+  checksum-verified, atomic model-pack installer and remover, but its only
+  current caller is the runtime's read-only readiness probe. No Settings or
+  Reader owner can start the install or disclose its optional local role.
+- Reference parent tree: NextE keeps local-model management inside its
+  translation settings route as a `SecondaryListScaffold → ListItem →
+  GroupedListSection → ConciseListRow` group. The row reports readiness, asks
+  for confirmation before a download or removal, and never downloads from the
+  Reader canvas.
+- Current parent tree: NextN's existing translation-source route is
+  `HdsNavDestination → ComicTranslationSourcePage → SecondaryListScaffold →
+  ListItem → NextNGroupedListSection → NextNListRow`. Its source form,
+  consumer bindings, and save group already own remote-provider configuration.
+- Exact change boundary: add one optional local-model group to that same
+  scaffold, after the consumer-binding group and before source save. It may
+  query, install, or remove only `ComicTranslationModelService`; it must not
+  alter source metadata, secret handling, consumer bindings, Reader canvas,
+  automatic scheduling, or fallback behavior.
+- Before/after rationale: the current runtime uses a basic local backend when
+  the pack is absent, so this is a user-controlled quality upgrade rather than
+  a prerequisite or hidden background download. The existing service validates
+  every installed asset and writes it outside the HAP.
+- Visual verification plan: on the selected device, compare the native
+  translation-source route with the same-state NextE translation settings
+  route. Review grouped-section order, row hierarchy, unavailable/installing/
+  installed treatment, confirmation wording, and error placement. Retain raw
+  local captures; no source-shape or synthetic UI check is evidence.
+- Unresolved risk: the selected device has not yet shown this new group or a
+  configured translation run. A build can establish only compilation, not
+  visual or model-download acceptance.
+
 ## OPEN — Reader comic-translation automatic session mode
 
 - User outcome: carry the existing, configured Reader comic translation from a

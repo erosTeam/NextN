@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import {
   AppStrings,
+  ComicTranslationModelService,
   LLM_CONSUMER_COMMENT_TRANSLATION,
   LLM_CONSUMER_MANGA_TRANSLATION,
   LLM_SOURCE_TYPE_OPENAI_COMPATIBLE,
@@ -37,6 +38,8 @@ export struct ComicTranslationSourcePage {
   @Local useMangaTranslation: boolean = false
   @Local useCommentTranslation: boolean = false
   @Local bindingsConflict: boolean = false
+  @Local localModelInstalled: boolean = false
+  @Local localModelChanging: boolean = false
   @Param scroller: Scroller = new Scroller()
   @Param requestedConsumer: string = LLM_CONSUMER_MANGA_TRANSLATION
   // The key is deliberately not published to AppStorage or any shared state.
@@ -46,6 +49,7 @@ export struct ComicTranslationSourcePage {
 
   aboutToAppear(): void {
     this.loadSource()
+    this.refreshLocalModel()
   }
 
   private context(): common.UIAbilityContext {
@@ -108,6 +112,87 @@ export struct ComicTranslationSourcePage {
 
   private normalizedBaseUrl(): string {
     return this.baseUrlDraft.trim().replace(/\/+$/, '')
+  }
+
+  private async refreshLocalModel(): Promise<void> {
+    try {
+      this.localModelInstalled = await ComicTranslationModelService.isInstalled(this.context())
+    } catch (_error) {
+      this.localModelInstalled = false
+    }
+  }
+
+  private confirmInstallLocalModel(): void {
+    if (this.localModelChanging || this.localModelInstalled) {
+      return
+    }
+    this.getUIContext().showAlertDialog({
+      title: AppStrings.get('settings_translation_local_model_install_title'),
+      message: AppStrings.get('settings_translation_local_model_install_message'),
+      primaryButton: {
+        value: AppStrings.get('common_cancel'),
+        action: (): void => {},
+      },
+      secondaryButton: {
+        value: AppStrings.get('settings_translation_local_model_download'),
+        action: (): void => {
+          this.installLocalModel()
+        },
+      },
+    })
+  }
+
+  private async installLocalModel(): Promise<void> {
+    if (this.localModelChanging || this.localModelInstalled) {
+      return
+    }
+    this.localModelChanging = true
+    this.errorMessage = ''
+    try {
+      await ComicTranslationModelService.install(this.context())
+      this.localModelInstalled = true
+    } catch (_error) {
+      this.errorMessage = AppStrings.get('settings_translation_local_model_download_failed')
+    } finally {
+      this.localModelChanging = false
+    }
+  }
+
+  private confirmRemoveLocalModel(): void {
+    if (this.localModelChanging || !this.localModelInstalled) {
+      return
+    }
+    this.getUIContext().showAlertDialog({
+      title: AppStrings.get('settings_translation_local_model_remove_title'),
+      message: AppStrings.get('settings_translation_local_model_remove_message'),
+      primaryButton: {
+        value: AppStrings.get('common_cancel'),
+        action: (): void => {},
+      },
+      secondaryButton: {
+        value: AppStrings.get('settings_translation_local_model_remove'),
+        fontColor: Color.Red,
+        action: (): void => {
+          this.removeLocalModel()
+        },
+      },
+    })
+  }
+
+  private removeLocalModel(): void {
+    if (this.localModelChanging || !this.localModelInstalled) {
+      return
+    }
+    this.localModelChanging = true
+    this.errorMessage = ''
+    try {
+      ComicTranslationModelService.remove(this.context())
+      this.localModelInstalled = false
+    } catch (_error) {
+      this.errorMessage = AppStrings.get('settings_translation_local_model_remove_failed')
+    } finally {
+      this.localModelChanging = false
+    }
   }
 
   private canSave(): boolean {
@@ -319,6 +404,35 @@ export struct ComicTranslationSourcePage {
   }
 
   @Builder
+  private LocalModelGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.character_viewfinder'),
+        title: AppStrings.get('settings_translation_local_model'),
+        subtitle: AppStrings.get('settings_translation_local_model_hint'),
+        trailingText: this.localModelChanging
+          ? AppStrings.get('settings_translation_local_model_downloading')
+          : this.localModelInstalled
+            ? AppStrings.get('settings_translation_local_model_ready')
+            : AppStrings.get('settings_translation_local_model_download'),
+        showChevron: false,
+        isEnabled: !this.localModelChanging,
+        destructive: this.localModelInstalled,
+        accessibilityLabel: this.localModelInstalled
+          ? AppStrings.get('settings_translation_local_model_remove_a11y')
+          : AppStrings.get('settings_translation_local_model_download_a11y'),
+        onAction: (): void => {
+          if (this.localModelInstalled) {
+            this.confirmRemoveLocalModel()
+          } else {
+            this.confirmInstallLocalModel()
+          }
+        },
+      })
+    }
+  }
+
+  @Builder
   private SaveGroup() {
     NextNGroupedListSection() {
       NextNListRow({
@@ -350,6 +464,9 @@ export struct ComicTranslationSourcePage {
           }
           ListItem() {
             this.ConsumerGroup()
+          }
+          ListItem() {
+            this.LocalModelGroup()
           }
           ListItem() {
             this.SaveGroup()
