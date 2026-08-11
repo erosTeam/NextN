@@ -187,3 +187,10 @@ authorize an edit, replace a device comparison, or define product completion.
 - Unresolved risk: the selected device has no configured text source. The
   configured request/result path remains unproven until an existing authorized
   private source can be entered without exposing its secret.
+- Current device observation: after the signed Debug update was installed in
+  place on the selected device, the native Settings → Advanced → Comment
+  Translation route reached this shared source form. Its default unconfigured
+  fields and the explicit comment-use selection rendered without any field
+  input, save, provider request, account action, preference write, or comment
+  mutation. The retained local capture is route/form evidence only; it is not
+  a same-state NextE comparison or a configured-provider acceptance.

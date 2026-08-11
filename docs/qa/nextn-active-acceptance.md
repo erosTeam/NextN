@@ -697,6 +697,28 @@ remains continuous; do not ask for it again.
   retained outside Git. This observes only the unconfigured availability gate;
   it is not a configured-provider or rendered-translation acceptance.
 
+## Latest device observation — Shared comment-translation source route
+
+- 2026-08-11 08:37-08:40 +0800: the signed Debug HAP containing the shared
+  translation-source and comment-card changes was installed with `install -r`
+  on `192.168.50.237:12345` only. The device gate read `AWAKE` with
+  `OverrideTimeout=86400000ms` before the route.
+- The documented native Gallery Comments route reached a native loaded
+  Comments destination. One native Back returned to NextN root; the unique
+  native Settings entry then led through Settings → Advanced → Comment
+  Translation to the shared source form. The terminal form showed its explicit
+  Reader and comment consumer controls without any form input or save.
+- No account, credential, provider key, source record, preference, comment,
+  gallery, or queue data was changed. Raw screenshots/layouts remain local in
+  `.hvigor/outputs/comment-translation-unconfigured-20260811T0037/`,
+  `.hvigor/outputs/comment-translation-settings-route-20260811T0040/`, and
+  `.hvigor/outputs/comment-translation-source-form-20260811T0042/`; they are
+  excluded from Git and are not automatically deleted.
+- This accepts only the installed native route and unconfigured-form
+  observation. Comment-card action visibility with a configured source,
+  provider execution, translated text, and same-state reference comparison
+  remain open.
+
 ## Next physical action
 
 ### Rejected P1 start — completed-download CBZ export
