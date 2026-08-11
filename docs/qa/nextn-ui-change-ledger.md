@@ -158,6 +158,15 @@ authorize an edit, replace a device comparison, or define product completion.
   `.hvigor/outputs/translation-local-model-pack-20260811T0344/` and excluded
   from Git. This is native route/render evidence only, not a same-state NextE
   visual comparison or local-model processing acceptance.
+- Same-device reference counterevidence: NextE was temporarily switched from
+  its prior self-hosted route to its local route, captured at the same
+  viewport, then restored to self-hosted with its own confirmation path. Its
+  model leaf uses the established `on-device manga model → install status →
+  79.0 MB/license metadata` grammar. NextN's initial `Download` trailing
+  action and generic explanatory subtitle were therefore not reference
+  faithful. The next edit is limited to that leaf's title, state text, and
+  metadata copy; its group position, click/confirmation behavior, and
+  download/remove owner remain frozen.
 
 ## OPEN — Reader comic-translation automatic session mode
 

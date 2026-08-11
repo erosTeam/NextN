@@ -409,12 +409,12 @@ export struct ComicTranslationSourcePage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.character_viewfinder'),
         title: AppStrings.get('settings_translation_local_model'),
-        subtitle: AppStrings.get('settings_translation_local_model_hint'),
+        subtitle: AppStrings.get('settings_translation_local_model_notice'),
         trailingText: this.localModelChanging
           ? AppStrings.get('settings_translation_local_model_downloading')
           : this.localModelInstalled
-            ? AppStrings.get('settings_translation_local_model_ready')
-            : AppStrings.get('settings_translation_local_model_download'),
+            ? ComicTranslationModelService.displayName()
+            : AppStrings.get('settings_translation_local_model_not_installed'),
         showChevron: false,
         isEnabled: !this.localModelChanging,
         destructive: this.localModelInstalled,
