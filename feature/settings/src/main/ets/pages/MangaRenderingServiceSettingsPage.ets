@@ -38,7 +38,6 @@ export struct MangaRenderingServiceSettingsPage {
   @Local passwordDraft: string = ''
   @Local credentialDirty: boolean = false
   @Local configurationDirty: boolean = false
-  @Local providerEnabled: boolean = false
   @Local connectionState: string = CONNECTION_IDLE
   @Local errorMessage: string = ''
   @Local detectionProfile: string = MANGA_RENDERING_DETECTION_HIGH_RECALL
@@ -68,7 +67,6 @@ export struct MangaRenderingServiceSettingsPage {
       this.passwordDraft = ''
       this.credentialDirty = false
       this.configurationDirty = false
-      this.providerEnabled = snapshot.enabled && snapshot.configured() && this.storedCredential.configured()
       this.detectionProfile = snapshot.detectionProfile
       this.inpaintingProfile = snapshot.inpaintingProfile
       this.connectionState = CONNECTION_IDLE
@@ -81,7 +79,6 @@ export struct MangaRenderingServiceSettingsPage {
 
   private markConfigurationChanged(): void {
     this.configurationDirty = true
-    this.providerEnabled = false
     this.connectionState = CONNECTION_IDLE
     this.errorMessage = ''
   }
@@ -119,7 +116,6 @@ export struct MangaRenderingServiceSettingsPage {
     }
     this.baseUrlDraft = snapshot.baseUrl
     this.configurationDirty = false
-    this.providerEnabled = false
     return credential
   }
 
@@ -133,26 +129,11 @@ export struct MangaRenderingServiceSettingsPage {
     try {
       const credential: MangaRenderingServiceCredential = await this.persistCheckedCandidate()
       await MangaRenderingServiceConnection.check(this.baseUrlDraft, credential)
+      await MangaRenderingServiceSettings.save(this.context(), this.candidate(true))
       this.connectionState = CONNECTION_OK
     } catch (_error) {
       this.connectionState = CONNECTION_FAILED
       this.errorMessage = AppStrings.get('settings_manga_rendering_service_check_failed')
-    } finally {
-      this.saving = false
-    }
-  }
-
-  private async setProviderEnabled(enabled: boolean): Promise<void> {
-    if (this.saving || enabled && (this.connectionState !== CONNECTION_OK || this.configurationDirty)) {
-      return
-    }
-    this.saving = true
-    this.errorMessage = ''
-    try {
-      await MangaRenderingServiceSettings.save(this.context(), this.candidate(enabled))
-      this.providerEnabled = enabled
-    } catch (_error) {
-      this.errorMessage = AppStrings.get('settings_manga_rendering_service_save_failed')
     } finally {
       this.saving = false
     }
@@ -181,13 +162,6 @@ export struct MangaRenderingServiceSettingsPage {
       return AppStrings.get('settings_manga_rendering_service_check_failed')
     }
     return AppStrings.get('settings_manga_rendering_service_check_hint')
-  }
-
-  private canToggleProvider(): boolean {
-    if (this.saving || this.configurationDirty) {
-      return false
-    }
-    return this.providerEnabled || this.connectionState === CONNECTION_OK
   }
 
   @Builder
@@ -368,22 +342,6 @@ export struct MangaRenderingServiceSettingsPage {
         isEnabled: !this.saving,
         onAction: (): void => {
           this.checkConnection()
-        },
-      })
-      this.RowDivider()
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.translate'),
-        title: AppStrings.get('settings_manga_rendering_service_enable'),
-        subtitle: AppStrings.get('settings_manga_rendering_service_enable_hint'),
-        hasSwitch: true,
-        checked: this.providerEnabled,
-        showChevron: false,
-        isEnabled: this.canToggleProvider(),
-        onAction: (): void => {
-          this.setProviderEnabled(!this.providerEnabled)
-        },
-        onSwitchChange: (value: boolean): void => {
-          this.setProviderEnabled(value)
         },
       })
     }

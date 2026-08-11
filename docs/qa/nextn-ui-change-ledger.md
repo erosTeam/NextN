@@ -1355,6 +1355,31 @@ authorize an edit, replace a device comparison, or define product completion.
   completing the existing staged Reader request. Until that external service
   configuration exists, no source change or network request is justified.
 
+### Connection-state correction — 2026-08-12
+
+- **New source evidence:** the complete current NextE service form ends its
+  second grouped section with `Check connection`; successful verified
+  configuration is the service-availability boundary. NextN added a second,
+  disabled `Enable` switch after that check. There is no NH-only data or
+  privacy boundary requiring that extra visible state.
+- **Exact correction:** keep NextN's private disabled candidate write before
+  the check. Only after a successful check, persist the same candidate as
+  enabled and remove the extra switch row. Failed or edited candidates remain
+  disabled. Preserve the form order, input ownership, profile menus,
+  secret-store boundary, connection action, local renderer fallback, and
+  Reader action. Build and compare the unconfigured same-viewport form with
+  NextE; do not enter a URL, account, password, or run a connection check.
+- **Build and comparison boundary — 2026-08-12:** the signed Debug build
+  succeeded and was installed in place on the selected device. The current
+  NextE route resumed a retained Interface destination; its Settings → Reader
+  surface did not expose the recorded manga-rendering entry during the
+  bounded route recovery, so no valid same-page reference pair exists. The
+  comparison is rejected rather than inferred from a different page. The
+  selected device was returned to native NextN root with no service field,
+  connection, credential, provider, account, or content change. This source
+  correction remains **EVIDENCE-ONLY** until the exact NextE form route is
+  re-established; do not repeat the same Reader-scroll chain as a substitute.
+
 ## EVIDENCE-ONLY — Reader route mount/data split — 2026-08-11
 
 - New device evidence: after a data-preserving NextN-only cold start and the
