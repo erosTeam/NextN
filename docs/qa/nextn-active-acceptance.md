@@ -949,6 +949,16 @@ remains continuous; do not ask for it again.
   change may be named as its cause. The isolated worktree, including its
   temporary local signing file, was removed; the local device evidence remains
   outside Git at `.hvigor/outputs/reader-version-boundary-20260811T2200/`.
+- 2026-08-11 deeper version boundary: an isolated `c4c1627` Debug HAP was
+  built and installed once with `install -r`. After a NextN-only force-stop,
+  the documented numeric Gallery route and one fresh, unique native Continue
+  action again left `com.erosteam.nexte` foreground. The current HEAD Debug
+  HAP was immediately reinstalled with `install -r`; no data, account,
+  preference, or content action occurred. This rules out the complete
+  `c4c1627..12aa2f8` Reader-model/settings delta as the cause of this exit.
+  It does not establish that an earlier source revision is healthy or identify
+  the cross-application transition cause. Raw pre/post evidence is retained
+  outside Git at `.hvigor/outputs/reader-version-c4-20260811T2255/`.
 
 ## Current device exception — Gallery full-title translation route setup
 

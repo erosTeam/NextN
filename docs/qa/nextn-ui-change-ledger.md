@@ -1104,3 +1104,10 @@ authorize an edit, replace a device comparison, or define product completion.
   exit, but does not establish an older code or platform cause. The temporary
   worktree and copied signing configuration were removed; local device
   evidence remains outside Git.
+- Deeper boundary result: the isolated `c4c1627` HAP also reproduced the same
+  NextE terminal after one current native Detail Continue action. Current HEAD
+  was restored immediately with `install -r`. This rules out the full
+  `c4c1627..12aa2f8` Reader-model/settings range and makes the earlier
+  temporary-isolation conclusions non-authoritative for the present device
+  state; they cannot be used to name enhancement, image cache, or route mount
+  as the cause. No data, preference, account, or content action occurred.
