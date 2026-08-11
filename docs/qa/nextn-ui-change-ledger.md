@@ -59,6 +59,14 @@ authorize an edit, replace a device comparison, or define product completion.
   callback is now implemented in source but has not been observed on device.
   A source/provider configuration surface is also still required before an
   ordinary user can produce a translation result.
+- Current device observation: after the latest signed Debug HAP was installed
+  in place on the selected device, the documented direct Gallery route opened
+  the native Reader and its existing overflow menu. With no configured manga
+  source, the native `Translate current page` menu item was present but
+  disabled. No translation was requested; no source, account, preference, or
+  content data was changed. Local terminal layout and screenshot evidence is
+  retained outside Git. This observes the unconfigured availability boundary
+  only, not a configured translation result or visual-reference acceptance.
 
 ## OPEN — Reader comic-translation source
 
