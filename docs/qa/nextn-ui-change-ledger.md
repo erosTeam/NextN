@@ -960,6 +960,32 @@ authorize an edit, replace a device comparison, or define product completion.
   service account, so this implementation must not invent one, make a network
   request, or claim rendered output during the unconfigured path.
 
+### Active implementation boundary — 2026-08-11
+
+- Newly actionable boundary: the optional provider has its non-visible
+  transport, persistence and Reader dispatch implementation, but no native
+  settings destination through which a person can review, check, and select
+  it. This is the only visible boundary being opened here.
+- Whole tree before: `Settings → Reader → Comic translation →
+  HdsNavDestination → ComicTranslationSourcePage → SecondaryListScaffold →
+  ListItem → NextNGroupedListSection`.
+- Whole tree after: retain that text-source route unchanged and add the
+  sibling `Settings → Reader → Manga rendering service → HdsNavDestination →
+  MangaRenderingServiceSettingsPage → SecondaryListScaffold → ListItem →
+  NextNGroupedListSection`. The new page follows the NextE service-form order:
+  fixed service profile, detection/inpainting choices, URL/account/password,
+  then a separate connection and provider-selection group.
+- Exact behavior boundary: editing any service field makes the in-memory
+  selection unavailable; `Check connection` stores the candidate with the
+  provider disabled and performs the pinned capability/account check; only a
+  successful current-page check enables the persisted self-hosted provider.
+  The existing local renderer and OpenAI-compatible text-source route are not
+  modified.
+- Visual verification remains OPEN: after the build, compare this
+  unconfigured destination with the same NextE service route at the same
+  device viewport. Do not treat this ledger, source similarity, or a build as
+  visual acceptance.
+
 ## EVIDENCE-ONLY — Reader route mount/data split — 2026-08-11
 
 - New device evidence: after a data-preserving NextN-only cold start and the

@@ -31,6 +31,7 @@ import {
   AboutPage,
   BrowseDensitySettingsPage,
   ComicTranslationSourcePage,
+  MangaRenderingServiceSettingsPage,
   ContentFiltersPage,
   ReaderSuperResolutionModelsPage,
   SettingsPage,
@@ -118,6 +119,7 @@ const ROUTE_CONTENT_FILTERS: string = 'contentFilters'
 const ROUTE_READER_SETTINGS: string = 'readerSettings'
 const ROUTE_READER_SUPER_RESOLUTION_MODELS: string = 'readerSuperResolutionModels'
 const ROUTE_TRANSLATION_SOURCE: string = 'translationSource'
+const ROUTE_MANGA_RENDERING_SERVICE: string = 'mangaRenderingService'
 const ROUTE_DOWNLOAD_SETTINGS: string = 'downloadSettings'
 const ROUTE_CACHE_SETTINGS: string = 'cacheSettings'
 const ROUTE_ADVANCED_SETTINGS: string = 'advancedSettings'
@@ -266,6 +268,7 @@ struct Index {
   private readerSettingsScroller: Scroller = new Scroller()
   private readerSuperResolutionModelsScroller: Scroller = new Scroller()
   private translationSourceScroller: Scroller = new Scroller()
+  private mangaRenderingServiceScroller: Scroller = new Scroller()
   private downloadSettingsScroller: Scroller = new Scroller()
   private cacheSettingsScroller: Scroller = new Scroller()
   private advancedSettingsScroller: Scroller = new Scroller()
@@ -575,6 +578,10 @@ struct Index {
 
   private pushTranslationSource(consumerId: string): void {
     this.stack.pushPathByName(ROUTE_TRANSLATION_SOURCE, new TranslationSourceRouteParams(consumerId))
+  }
+
+  private pushMangaRenderingService(): void {
+    this.stack.pushPathByName(ROUTE_MANGA_RENDERING_SERVICE, '')
   }
 
   private pushDownloadSettings(): void {
@@ -1624,6 +1631,9 @@ struct Index {
         onOpenTranslationSource: (consumerId: string): void => {
           this.pushTranslationSource(consumerId)
         },
+        onOpenMangaRenderingService: (): void => {
+          this.pushMangaRenderingService()
+        },
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_reader')))
@@ -1652,6 +1662,16 @@ struct Index {
     .titleBar(nextNHdsTitle(AppStrings.get('settings_translation_source')))
     .hideBackButton(false)
     .bindToScrollable([this.translationSourceScroller])
+  }
+
+  @Builder
+  private mangaRenderingServiceDestination() {
+    HdsNavDestination() {
+      MangaRenderingServiceSettingsPage({ scroller: this.mangaRenderingServiceScroller })
+    }
+    .titleBar(nextNHdsTitle(AppStrings.get('settings_manga_rendering_service')))
+    .hideBackButton(false)
+    .bindToScrollable([this.mangaRenderingServiceScroller])
   }
 
   @Builder
@@ -1758,6 +1778,8 @@ struct Index {
       this.readerSuperResolutionModelsDestination()
     } else if (name === ROUTE_TRANSLATION_SOURCE) {
       this.translationSourceDestination(param)
+    } else if (name === ROUTE_MANGA_RENDERING_SERVICE) {
+      this.mangaRenderingServiceDestination()
     } else if (name === ROUTE_DOWNLOAD_SETTINGS) {
       this.downloadSettingsDestination()
     } else if (name === ROUTE_CACHE_SETTINGS) {
