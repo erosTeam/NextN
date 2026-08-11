@@ -148,6 +148,16 @@ authorize an edit, replace a device comparison, or define product completion.
 - Unresolved risk: the selected device has not yet shown this new group or a
   configured translation run. A build can establish only compilation, not
   visual or model-download acceptance.
+- Current device observation: the signed Debug HAP was installed in place on
+  the selected device, then the native path `Settings → Reader → Comic
+  translation` reached the existing translation-source route. The local-model
+  group rendered between the consumer bindings and save group, with its
+  initial Download state visible. No source field, key, consumer switch,
+  save action, model download, account, or content data was changed. Raw
+  local evidence is retained in
+  `.hvigor/outputs/translation-local-model-pack-20260811T0344/` and excluded
+  from Git. This is native route/render evidence only, not a same-state NextE
+  visual comparison or local-model processing acceptance.
 
 ## OPEN — Reader comic-translation automatic session mode
 

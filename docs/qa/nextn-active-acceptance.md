@@ -110,6 +110,22 @@ remains continuous; do not ask for it again.
   gallery, preference other than those temporary presentation controls, or
   application data was changed.
 
+## Current delivery observation — local comic-translation model pack
+
+- 2026-08-11: the signed Debug HAP was installed with `install -r` on the
+  selected TCP device only. The device gate read `AWAKE` with
+  `OverrideTimeout=86400000ms` before the native route.
+- The native path `Settings → Reader → Comic translation` reached the
+  existing translation-source destination. Its new local-model group rendered
+  between the consumer bindings and save action in the uninstalled Download
+  state.
+- No source field, stored secret, consumer switch, save action, model download,
+  account action, Favorites read, or content mutation occurred. Raw captures
+  are retained locally in `.hvigor/outputs/translation-local-model-pack-20260811T0344/`
+  and remain excluded from Git.
+- This is current-device route and rendering evidence only. A same-state NextE
+  reference comparison and model download/processing run remain OPEN.
+
 ## Current delivery observation — Reader enhancement interaction yield
 
 - 2026-08-11: the signed Debug build containing the Reader interaction-yield
