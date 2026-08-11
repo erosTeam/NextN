@@ -2044,14 +2044,20 @@ export struct SettingsPage {
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.lightbulb'),
-        title: AppStrings.get('settings_reader_enhancement_models'),
-        subtitle: AppStrings.get('settings_reader_enhancement_models_hint'),
-        trailingText: this.readerEnhancementInstalledModels.length > 0
-          ? AppStrings.get('settings_reader_enhancement_model_ready')
-          : AppStrings.get('settings_reader_enhancement_model_download'),
-        accessibilityLabel: AppStrings.get('settings_reader_enhancement_models_a11y'),
+        title: AppStrings.get('settings_reader_enhancement'),
+        subtitle: AppStrings.get('settings_reader_enhancement_hint'),
+        hasSwitch: true,
+        checked: this.readerPresentation.superResolutionEnabled,
+        showChevron: false,
+        isEnabled: this.selectedReaderEnhancementModelInstalled(),
+        accessibilityLabel: AppStrings.format('settings_reader_enhancement_a11y', [
+          this.toggleStateLabel(this.readerPresentation.superResolutionEnabled),
+        ]),
         onAction: (): void => {
-          this.openReaderEnhancementModels()
+          this.saveReaderEnhancementEnabled(!this.readerPresentation.superResolutionEnabled)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.saveReaderEnhancementEnabled(value)
         },
       })
       this.RowDivider()
@@ -2079,20 +2085,14 @@ export struct SettingsPage {
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.lightbulb'),
-        title: AppStrings.get('settings_reader_enhancement'),
-        subtitle: AppStrings.get('settings_reader_enhancement_hint'),
-        hasSwitch: true,
-        checked: this.readerPresentation.superResolutionEnabled,
-        showChevron: false,
-        isEnabled: this.selectedReaderEnhancementModelInstalled(),
-        accessibilityLabel: AppStrings.format('settings_reader_enhancement_a11y', [
-          this.toggleStateLabel(this.readerPresentation.superResolutionEnabled),
-        ]),
+        title: AppStrings.get('settings_reader_enhancement_models'),
+        subtitle: AppStrings.get('settings_reader_enhancement_models_hint'),
+        trailingText: this.readerEnhancementInstalledModels.length > 0
+          ? AppStrings.get('settings_reader_enhancement_model_ready')
+          : AppStrings.get('settings_reader_enhancement_model_download'),
+        accessibilityLabel: AppStrings.get('settings_reader_enhancement_models_a11y'),
         onAction: (): void => {
-          this.saveReaderEnhancementEnabled(!this.readerPresentation.superResolutionEnabled)
-        },
-        onSwitchChange: (value: boolean): void => {
-          this.saveReaderEnhancementEnabled(value)
+          this.openReaderEnhancementModels()
         },
       })
     }

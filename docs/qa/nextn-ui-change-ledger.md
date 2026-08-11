@@ -24,14 +24,14 @@ authorize an edit, replace a device comparison, or define product completion.
   SecondaryListScaffold → ListItem → NextNGroupedListSection` owns only one
   waifu2x-art row. The Reader itself owns a full-screen canvas and must remain
   unchanged.
-- Exact change boundary: add one installed-model selection leaf between the
-  existing manager and enable leaves; make the existing model destination
-  render a concise row for Waifu2x art and Waifu2x photo; persist only a
-  normalized selected model identifier. A prior single-model installation must
-  migrate to the art model selection without download, deletion, or a changed
-  default. No Reader canvas/chrome/gesture/progress layout, automatic
-  download, background model request, account data, gallery data, or cache
-  deletion is permitted.
+- Exact change boundary: order the existing enhancement leaves as the reference
+  does: enable switch, installed-model selector, then model-manager route;
+  make the existing model destination render a concise row for Waifu2x art and
+  Waifu2x photo; persist only a normalized selected model identifier. A prior
+  single-model installation must migrate to the art model selection without
+  download, deletion, or a changed default. No Reader canvas/chrome/gesture/
+  progress layout, automatic download, background model request, account data,
+  gallery data, or cache deletion is permitted.
 - Rationale: the native NextN enhancement runtime and its existing Waifu2x
   model pair already support the corresponding art/photo definitions, but
   current settings and model storage expose only one fixed definition. This is
@@ -75,6 +75,21 @@ authorize an edit, replace a device comparison, or define product completion.
   remains under `.hvigor/outputs/reader-model-settings-20260811T1004/` and is
   excluded from Git. The photo download and Reader processing remain OPEN;
   this observation accepts only the corrected manager-row hierarchy.
+- New same-viewport counter-evidence before the next edit: the selector menu
+  correctly contained only the installed art model and no preference changed,
+  but the surrounding NextN group was ordered model manager → selector →
+  enable. Current NextE is enable → selector → model manager. The faulty
+  assumption was preserving NextN's preexisting manager-first order instead
+  of the complete reference parent-tree order. Correct only those three
+  existing leaves and their dividers; do not alter their labels, actions,
+  enabled states, model storage, or any neighboring Reader setting.
+- Device result, 2026-08-11: after an in-place signed Debug install, the
+  selected device showed the corrected order at the verified
+  `1320×2120` viewport: image enhancement switch → selected Waifu2x model →
+  model manager. The current switch state, selected art model, and installed
+  model set were observed but not changed. This accepts the three-leaf order
+  for the current settings state; photo-model download and Reader processing
+  remain OPEN.
 
 ## FROZEN — Unified private-cache management (category-page visual boundary)
 
