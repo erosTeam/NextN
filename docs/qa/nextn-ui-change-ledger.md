@@ -407,6 +407,20 @@ authorize an edit, replace a device comparison, or define product completion.
   loadable by the Harmony ncnn runtime. A build establishes only source
   integration; it does not establish a device download or image-processing
   outcome.
+- **Current device result — 2026-08-12:** the signed Debug HAP was installed
+  in place on the selected device without clearing data. At the verified
+  `1320×2120` native NextN viewport, the existing model manager retained its
+  installed Waifu2x-art remove row and uninstalled Waifu2x-photo download row;
+  the third Real-ESRGAN photo 2× row rendered as uninstalled with its own
+  explicit download action. No model action, preference, account, content, or
+  application-data mutation occurred. The current native screenshot remains
+  local in `.hvigor/outputs/reader-realesrgan-model-uninstalled-20260812T/`.
+- **Reference status:** the current NextE foreground was a different,
+  configured service form rather than its model manager, so it is rejected as
+  a comparison sample. No state was changed to manufacture a matching
+  reference. The uninstalled-model manager is therefore device-observed but
+  remains OPEN for a valid same-state NextE comparison; download and Reader
+  processing are also OPEN.
 
 ## FROZEN — Unified private-cache management (category-page visual boundary)
 
