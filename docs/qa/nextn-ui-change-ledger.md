@@ -1002,6 +1002,23 @@ authorize an edit, replace a device comparison, or define product completion.
 - Impact: the captured direct-sibling form is retained as rejected local
   evidence only. It is not an acceptance sample and must not justify a
   visual claim.
+- Device route result: the first post-correction traversal reused a
+  post-scroll coordinate and opened Reader model management rather than Comic
+  translation. The resulting native layout is retained locally as rejected
+  route evidence. No preference, model, account, service field, or provider
+  state was changed. The recovery action is to return to Reader Settings,
+  capture its current semantic entry once, and continue only from that fresh
+  route state.
+- Corrected device result: a fresh native traversal on the selected device
+  reached `Settings → Reader → Comic translation → Manga rendering service`.
+  The inner row showed `Not configured`; its destination showed the fixed
+  profile, detection/inpainting choices, URL/account/password fields,
+  connection check, and a disabled provider switch. No field, check, switch,
+  preference, service request, account, or content action was invoked.
+- Visual status: route and unconfigured state are observed in NextN. The
+  installed NextE reference was confirmed at the same root viewport, but its
+  service page was not reached through its separate comic-translation owner
+  in this run. The same-page visual comparison therefore remains OPEN.
 
 ## EVIDENCE-ONLY — Reader route mount/data split — 2026-08-11
 

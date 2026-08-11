@@ -129,6 +129,22 @@ remains continuous; do not ask for it again.
 
 ## Current delivery observation — local comic-translation model pack
 
+- 2026-08-11 manga-rendering-service route correction: the first corrected
+  NextN traversal opened native Reader model management rather than the
+  intended Comic Translation destination after a reused post-scroll
+  coordinate. No model action, service configuration, account action, or
+  application-data change occurred. The terminal layout is retained locally
+  as rejected route evidence; the next action is a fresh semantic route
+  recovery from Reader Settings.
+- Recovery result: the fresh semantic route then reached `Settings → Reader
+  → Comic translation → Manga rendering service` in native NextN. The
+  unconfigured service row and its native form were observed; the provider
+  switch was unavailable pending a connection check. No URL, account,
+  password, service call, provider selection, account state, or application
+  data was changed. The installed NextE reference root used the same portrait
+  viewport, but its corresponding page was not reached in this run, so visual
+  parity remains open. Local raw route artifacts remain outside Git.
+
 - 2026-08-11: the signed Debug HAP was installed with `install -r` on the
   selected TCP device only. The device gate read `AWAKE` with
   `OverrideTimeout=86400000ms` before the native route.
