@@ -36,6 +36,18 @@ authorize an edit, replace a device comparison, or define product completion.
   the complete page: HDS header, day header, row density, title wrapping,
   metadata baseline, single-action ownership, footer, and floating root tabs.
   This is OPEN until that real comparison is complete.
+- **2026-08-11 device result:** signed Debug build `43d5488` was installed on
+  the selected 237 device with `install -r`, without clearing data. The
+  current NextN History view is a native loaded list with date groups and a
+  single whole-row Gallery action; the nested Reader action is absent. A
+  same-device NextE History view confirmed the target row grammar: grouped
+  day heading, compact cover, title column, one bottom metadata baseline,
+  and row separator. The two applications contain different historical
+  records, so this is structural/geometry evidence rather than a same-content
+  pixel-parity claim. The raw current captures are retained locally under
+  `.hvigor/outputs/history-row-43d5488/` and are not tracked by Git. The
+  section remains OPEN for a future same-content comparison or further user
+  visual feedback.
 
 ## OPEN — Reader selectable Waifu2x enhancement models
 
