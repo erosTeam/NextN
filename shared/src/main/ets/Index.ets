@@ -116,6 +116,7 @@ export {
   MangaRenderingServiceArchive,
   MangaRenderingServiceExportFiles,
 } from './services/MangaRenderingServiceArchive'
+export { MangaRenderingServiceBackend } from './services/MangaRenderingServiceBackend'
 export {
   MangaRenderingServiceSettings,
   MangaRenderingServiceSettingsSnapshot,
