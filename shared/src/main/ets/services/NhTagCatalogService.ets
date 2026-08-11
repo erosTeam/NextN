@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import { NhGallerySummary, NhTag } from '../model/NhGallery'
 import { NhTagCatalogRepository } from '../storage/NhTagCatalogRepository'
+import { TagTranslationRepository } from '../storage/TagTranslationRepository'
 
 const FETCH_BATCH_SIZE: number = 100
 
@@ -70,9 +71,29 @@ export class NhTagCatalogService {
         }
       }
     }
+    const translations: Map<string, string> = await NhTagCatalogService.localDisplayLabels(context, catalog)
     for (let galleryIndex: number = 0; galleryIndex < galleries.length; galleryIndex++) {
       const gallery: NhGallerySummary = galleries[galleryIndex]
-      gallery.tags = NhTagCatalogService.tagsFor(gallery.tagIds, catalog)
+      gallery.tags = NhTagCatalogService.tagsFor(gallery.tagIds, catalog, translations)
+    }
+  }
+
+  /** The optional dictionary is local-only; an unavailable lookup preserves raw public names. */
+  private static async localDisplayLabels(
+    context: common.UIAbilityContext,
+    catalog: Map<number, NhTag>,
+  ): Promise<Map<string, string>> {
+    const tags: NhTag[] = []
+    catalog.forEach((tag: NhTag): void => {
+      tags.push(tag)
+    })
+    if (tags.length === 0) {
+      return new Map<string, string>()
+    }
+    try {
+      return await TagTranslationRepository.lookup(context, tags)
+    } catch (_error) {
+      return new Map<string, string>()
     }
   }
 
@@ -92,7 +113,11 @@ export class NhTagCatalogService {
     return ids
   }
 
-  private static tagsFor(ids: number[], catalog: Map<number, NhTag>): NhTag[] {
+  private static tagsFor(
+    ids: number[],
+    catalog: Map<number, NhTag>,
+    translations: Map<string, string>,
+  ): NhTag[] {
     const result: NhTag[] = []
     for (let index: number = 0; index < ids.length; index++) {
       const found: NhTag | undefined = catalog.get(ids[index])
@@ -103,6 +128,7 @@ export class NhTagCatalogService {
       tag.id = found.id
       tag.type = found.type
       tag.name = found.name
+      tag.displayName = translations.get(TagTranslationRepository.keyFor(found)) ?? found.name
       tag.count = found.count
       result.push(tag)
     }

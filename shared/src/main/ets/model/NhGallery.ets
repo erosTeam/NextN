@@ -46,6 +46,8 @@ export class NhTag {
   id: number = 0
   type: string = ''
   name: string = ''
+  /** Optional local-dictionary label; `name` stays the canonical query value. */
+  displayName: string = ''
   count: number = 0
 }
 

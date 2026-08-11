@@ -9,7 +9,8 @@ export enum GalleryTagStripLayout {
 
 /**
  * Read-only gallery tag leaf. Its owner supplies already-resolved public
- * names; this component never requests, filters, translates, or navigates.
+ * names and any optional local display label; this component never requests,
+ * filters, translates, or navigates.
  */
 @ComponentV2
 export struct GalleryTagStrip {
@@ -23,16 +24,21 @@ export struct GalleryTagStrip {
     const result: NhTag[] = []
     const limit: number = Math.max(1, Math.min(10, Math.floor(this.maxTags)))
     for (let index: number = 0; index < this.tags.length && result.length < limit; index++) {
-      if (this.tags[index].name.trim().length > 0) {
+      if (this.displayLabel(this.tags[index]).length > 0) {
         result.push(this.tags[index])
       }
     }
     return result
   }
 
+  private displayLabel(tag: NhTag): string {
+    const translated: string = tag.displayName.trim()
+    return translated.length > 0 ? translated : tag.name
+  }
+
   @Builder
   private TagChip(tag: NhTag) {
-    Text(tag.name)
+    Text(this.displayLabel(tag))
       .fontSize(ThemeTokens.FONT_SIZE_TINY)
       .fontWeight(FontWeight.Medium)
       .fontColor(this.onDarkSurface ? ThemeTokens.TEXT_ON_BRAND : ThemeTokens.TEXT_PRIMARY)

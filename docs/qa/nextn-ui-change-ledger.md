@@ -248,6 +248,17 @@ authorize an edit, replace a device comparison, or define product completion.
   confirms the bounded native state and restoration path only; no
   same-gallery, same-viewport ErosN capture exists yet, so visual-reference
   parity remains OPEN.
+- Follow-up source alignment: ErosN's existing list tag leaf selects a
+  downloaded dictionary display name when available; NextN Detail already
+  applies the same optional local-dictionary fallback, but the new collection
+  leaf always renders the raw catalog name. The exact correction is a
+  presentation-only `NhTag` display label populated from the existing local
+  dictionary during the already serialized catalog enrichment. It changes no
+  setting, request, cache schema, card geometry, tag query, or raw tag name;
+  dictionary absence continues to show the raw name. Device review must use
+  an already installed dictionary when available, otherwise this translated
+  substate remains unaccepted rather than downloading a dictionary merely for
+  validation.
 
 ## OPEN — Reader enhancement interaction yield
 
