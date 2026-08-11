@@ -368,6 +368,46 @@ authorize an edit, replace a device comparison, or define product completion.
   for the current settings state; photo-model download and Reader processing
   remain OPEN.
 
+## OPEN — Reader Real-ESRGAN x2plus model capability — 2026-08-12
+
+- **Why newly actionable:** the existing Waifu2x model boundary is frozen for
+  its reviewed rows and ordering. NextE separately exposes Real-ESRGAN x2plus
+  as a user-available private model, while current NextN already contains the
+  matching ncnn native model kind and crop path but has no durable model ID,
+  verified compatible-runtime pack, or selectable definition for it.
+- **Reference and current parent tree:** retain the existing NextN tree
+  `SettingsPage(READER) → SecondaryListScaffold → ReaderPresentationGroup →
+  NextNGroupedListSection → [enable, installed-model selector, model-manager,
+  height policy]` and the existing modal model manager
+  `ReaderSuperResolutionModelsPage → NextNModalScaffold → ListItem →
+  NextNGroupedListSection → model rows`. The new definition is one additional
+  explicit-download row in the existing manager and appears in the existing
+  selector only after installation. The Reader canvas remains outside this
+  boundary.
+- **Exact source/data change:** add only durable
+  `REAL_ESRGAN_X2PLUS` preference normalization, its native kind-1 x2
+  configuration, and the NextE-compatible private asset installer. The
+  installer verifies immutable source param/model hashes, transforms the
+  source PixelUnshuffle prelude to the Harmony ncnn-compatible Reorg graph,
+  removes only the verified 40-byte source-model prelude, verifies both
+  derived runtime hashes, and promotes only verified private files. Existing
+  Waifu2x paths, defaults, selection behavior, and cache-key model identity
+  remain unchanged.
+- **Explicit exclusions:** no Reader canvas/chrome/gesture/layout change; no
+  automatic download, background request, model removal, account action,
+  gallery mutation, cache deletion, or CUNET/other internal NextE model is in
+  scope. Download is still an explicit action on the model-manager row.
+- **Verification plan:** build and install in place, then compare the current
+  uninstalled model-manager state against the same NextE state at the same
+  native viewport. Do not download the roughly 67 MB model merely to create
+  visual evidence. A later explicit download needs separate runtime/hash and
+  Reader-processing evidence before any processing claim.
+- **Unresolved risk:** the compatibility transformation is required because
+  the original Real-ESRGAN graph uses a dynamic PixelUnshuffle prelude not
+  loadable by the Harmony ncnn runtime. A build establishes only source
+  integration; it does not establish a device download or image-processing
+  outcome.
+
 ## FROZEN — Unified private-cache management (category-page visual boundary)
 
 - User outcome: the existing Cache destination should let a user inspect and

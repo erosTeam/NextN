@@ -12,6 +12,23 @@ const LEGACY_ACCELERATED_FILE_NAME: string = 'waifu2x-art-noise0-x2-156-fp16.ms'
 const CONNECT_TIMEOUT_MS: number = 15000
 const READ_TIMEOUT_MS: number = 10 * 60 * 1000
 const HASH_CHUNK_BYTES: number = 128 * 1024
+const REAL_ESRGAN_SOURCE_PARAM_FILE_NAME: string = 'realesrgan_x2plus.param'
+const REAL_ESRGAN_MODEL_FILE_NAME: string = 'realesrgan_x2plus.bin'
+const REAL_ESRGAN_SOURCE_PARAM_BYTES: number = 292200
+const REAL_ESRGAN_RUNTIME_PARAM_BYTES: number = 288376
+const REAL_ESRGAN_SOURCE_MODEL_BYTES: number = 66814128
+const REAL_ESRGAN_RUNTIME_MODEL_BYTES: number = 66814088
+const REAL_ESRGAN_MODEL_PREFIX_BYTES: number = 40
+const REAL_ESRGAN_SOURCE_PARAM_SHA256: string =
+  '79cb4938c0465a3b7d66aa21e9dc0e595a2ab2015b453831426f37a536b925b5'
+const REAL_ESRGAN_RUNTIME_PARAM_SHA256: string =
+  'b17f57a46574e28bbe405ed1d95edc99d6fa2abc777b477a2ba8399ffa3ea4dd'
+const REAL_ESRGAN_SOURCE_MODEL_SHA256: string =
+  '119cbbcf701a976a016d03fc5c457157e52a94f5e3e929e562e9ec87596d782b'
+const REAL_ESRGAN_RUNTIME_MODEL_SHA256: string =
+  '80154ed738cd609c639fed031e9d2bc5d612f4895b91b73e623e88fa0c19f8b9'
+const REAL_ESRGAN_SOURCE_REVISION: string = '2533a62c56b4f080eb90a039250752bc21e96259'
+const REAL_ESRGAN_SOURCE_REPOSITORY: string = 'bpawnzZ/Real-ESRGAN-x2plus-NCNN'
 
 export class ReaderSuperResolutionModelDefinition {
   id: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
@@ -26,13 +43,28 @@ export class ReaderSuperResolutionModelDefinition {
   modelUrls: string[] = []
   labelStringKey: string = ''
   hintStringKey: string = ''
+  nativeModelKind: number = 0
+  tileSize: number = 142
+  prepadding: number = 7
+  threads: number = 2
+  inputName: string = 'Input1'
+  outputName: string = 'Eltwise4'
+  effectStrengthPercent: number = 100
 
   bytes(): number {
     return this.paramBytes + this.modelBytes
   }
 
   nativeConfig(): ReaderNativeSuperResolutionConfig {
-    return new ReaderNativeSuperResolutionConfig()
+    const config: ReaderNativeSuperResolutionConfig = new ReaderNativeSuperResolutionConfig()
+    config.modelKind = this.nativeModelKind
+    config.tileSize = this.tileSize
+    config.prepadding = this.prepadding
+    config.threads = this.threads
+    config.inputName = this.inputName
+    config.outputName = this.outputName
+    config.effectStrengthPercent = this.effectStrengthPercent
+    return config
   }
 }
 
@@ -80,9 +112,37 @@ function photoDefinition(): ReaderSuperResolutionModelDefinition {
   return definition
 }
 
+/**
+ * The upstream x2plus graph has a dynamic PixelUnshuffle prelude that the
+ * Harmony ncnn runtime cannot load. Its private installer below transforms
+ * only that verified prelude into the equivalent Reorg graph before promotion.
+ */
+function realEsrganDefinition(): ReaderSuperResolutionModelDefinition {
+  const definition: ReaderSuperResolutionModelDefinition = new ReaderSuperResolutionModelDefinition()
+  definition.id = NhReaderSuperResolutionModel.REAL_ESRGAN_X2PLUS
+  definition.directoryName = 'realesrgan-x2plus-ncnn-fp32-v1'
+  definition.paramFileName = 'realesrgan_x2plus.compat.param'
+  definition.modelFileName = REAL_ESRGAN_MODEL_FILE_NAME
+  definition.paramBytes = REAL_ESRGAN_RUNTIME_PARAM_BYTES
+  definition.modelBytes = REAL_ESRGAN_RUNTIME_MODEL_BYTES
+  definition.paramSha256 = REAL_ESRGAN_RUNTIME_PARAM_SHA256
+  definition.modelSha256 = REAL_ESRGAN_RUNTIME_MODEL_SHA256
+  definition.labelStringKey = 'settings_reader_enhancement_model_realesrgan_title'
+  definition.hintStringKey = 'settings_reader_enhancement_model_realesrgan_hint'
+  definition.nativeModelKind = 1
+  definition.tileSize = 128
+  definition.prepadding = 10
+  definition.threads = 4
+  definition.inputName = 'input'
+  definition.outputName = 'output'
+  definition.effectStrengthPercent = 80
+  return definition
+}
+
 const USER_SELECTABLE_DEFINITIONS: ReaderSuperResolutionModelDefinition[] = [
   artDefinition(),
   photoDefinition(),
+  realEsrganDefinition(),
 ]
 
 /**
@@ -194,6 +254,17 @@ export class ReaderSuperResolutionModelService {
     ReaderSuperResolutionModelService.removeIfExists(paths.modelPath)
     ReaderSuperResolutionModelService.removeIfExists(`${paths.paramPath}.part`)
     ReaderSuperResolutionModelService.removeIfExists(`${paths.modelPath}.part`)
+    if (model === NhReaderSuperResolutionModel.REAL_ESRGAN_X2PLUS) {
+      const directory: string = ReaderSuperResolutionModelService.definitionDirectory(context, definition)
+      ReaderSuperResolutionModelService.removeIfExists(
+        `${directory}/${REAL_ESRGAN_SOURCE_PARAM_FILE_NAME}`,
+      )
+      ReaderSuperResolutionModelService.removeIfExists(
+        `${directory}/${REAL_ESRGAN_SOURCE_PARAM_FILE_NAME}.part`,
+      )
+      ReaderSuperResolutionModelService.removeIfExists(`${paths.modelPath}.source`)
+      ReaderSuperResolutionModelService.removeIfExists(`${paths.modelPath}.source.part`)
+    }
     if (model === NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X) {
       ReaderSuperResolutionModelService.removeIfExists(
         `${ReaderSuperResolutionModelService.modelDirectory(context)}/${LEGACY_ACCELERATED_FILE_NAME}`,
@@ -209,6 +280,10 @@ export class ReaderSuperResolutionModelService {
     ReaderSuperResolutionModelService.ensureDirectory(directory)
     const paths: ReaderSuperResolutionModelPaths =
       ReaderSuperResolutionModelService.paths(context, definition)
+    if (definition.id === NhReaderSuperResolutionModel.REAL_ESRGAN_X2PLUS) {
+      await ReaderSuperResolutionModelService.installRealEsrgan(context, definition, paths)
+      return
+    }
     const param: ReaderSuperResolutionModelAsset = new ReaderSuperResolutionModelAsset()
     param.urls = definition.paramUrls
     param.finalPath = paths.paramPath
@@ -224,6 +299,178 @@ export class ReaderSuperResolutionModelService {
     if (!await ReaderSuperResolutionModelService.isInstalled(context, definition.id)) {
       throw new Error('Reader enhancement model verification failed.')
     }
+  }
+
+  /**
+   * Keep the source pair and generated runtime pair distinct until both
+   * derived artifacts have passed their immutable checksums. The final files
+   * are the only paths exposed to the Reader native runtime.
+   */
+  private static async installRealEsrgan(
+    context: common.UIAbilityContext,
+    definition: ReaderSuperResolutionModelDefinition,
+    paths: ReaderSuperResolutionModelPaths,
+  ): Promise<void> {
+    if (await ReaderSuperResolutionModelService.isInstalled(context, definition.id)) {
+      return
+    }
+    const directory: string = ReaderSuperResolutionModelService.definitionDirectory(context, definition)
+    const sourceParamPath: string = `${directory}/${REAL_ESRGAN_SOURCE_PARAM_FILE_NAME}`
+    const sourceModelPath: string = `${paths.modelPath}.source`
+    const runtimeParamPart: string = `${paths.paramPath}.part`
+    const runtimeModelPart: string = `${paths.modelPath}.part`
+    ReaderSuperResolutionModelService.removeIfExists(runtimeParamPart)
+    ReaderSuperResolutionModelService.removeIfExists(runtimeModelPart)
+    try {
+      const sourceParam: ReaderSuperResolutionModelAsset = new ReaderSuperResolutionModelAsset()
+      sourceParam.urls = ReaderSuperResolutionModelService.realEsrganAssetUrls(
+        REAL_ESRGAN_SOURCE_PARAM_FILE_NAME,
+      )
+      sourceParam.finalPath = sourceParamPath
+      sourceParam.bytes = REAL_ESRGAN_SOURCE_PARAM_BYTES
+      sourceParam.sha256 = REAL_ESRGAN_SOURCE_PARAM_SHA256
+      await ReaderSuperResolutionModelService.installAsset(sourceParam)
+
+      const sourceModel: ReaderSuperResolutionModelAsset = new ReaderSuperResolutionModelAsset()
+      sourceModel.urls = ReaderSuperResolutionModelService.realEsrganAssetUrls(
+        REAL_ESRGAN_MODEL_FILE_NAME,
+      )
+      sourceModel.finalPath = sourceModelPath
+      sourceModel.bytes = REAL_ESRGAN_SOURCE_MODEL_BYTES
+      sourceModel.sha256 = REAL_ESRGAN_SOURCE_MODEL_SHA256
+      await ReaderSuperResolutionModelService.installAsset(sourceModel)
+
+      ReaderSuperResolutionModelService.createRealEsrganRuntimeParam(
+        sourceParamPath,
+        runtimeParamPart,
+      )
+      if (!ReaderSuperResolutionModelService.validateFile(
+        runtimeParamPart,
+        definition.paramBytes,
+        definition.paramSha256,
+      )) {
+        throw new Error('Real-ESRGAN runtime param verification failed.')
+      }
+      ReaderSuperResolutionModelService.createRealEsrganRuntimeModel(
+        sourceModelPath,
+        runtimeModelPart,
+      )
+      if (!ReaderSuperResolutionModelService.validateFile(
+        runtimeModelPart,
+        definition.modelBytes,
+        definition.modelSha256,
+      )) {
+        throw new Error('Real-ESRGAN runtime model verification failed.')
+      }
+      ReaderSuperResolutionModelService.removeIfExists(paths.paramPath)
+      ReaderSuperResolutionModelService.removeIfExists(paths.modelPath)
+      fileIo.renameSync(runtimeParamPart, paths.paramPath)
+      fileIo.renameSync(runtimeModelPart, paths.modelPath)
+      ReaderSuperResolutionModelService.removeIfExists(sourceParamPath)
+      ReaderSuperResolutionModelService.removeIfExists(sourceModelPath)
+      if (!await ReaderSuperResolutionModelService.isInstalled(context, definition.id)) {
+        throw new Error('Real-ESRGAN runtime promotion failed.')
+      }
+    } catch (error) {
+      ReaderSuperResolutionModelService.removeIfExists(runtimeParamPart)
+      ReaderSuperResolutionModelService.removeIfExists(runtimeModelPart)
+      ReaderSuperResolutionModelService.removeIfExists(sourceParamPath)
+      ReaderSuperResolutionModelService.removeIfExists(sourceModelPath)
+      throw error as Error
+    }
+  }
+
+  private static createRealEsrganRuntimeParam(sourcePath: string, targetPath: string): void {
+    const source: string = fileIo.readTextSync(sourcePath)
+    const sourceLines: string[] = source.split('\n')
+    if (sourceLines.length < 3 || sourceLines[0] !== '7767517' ||
+      sourceLines[1] !== '1408 2199') {
+      throw new Error('Unsupported Real-ESRGAN source param.')
+    }
+    let convFirstIndex: number = -1
+    for (let index: number = 2; index < sourceLines.length; index++) {
+      if (sourceLines[index].startsWith('Convolution') &&
+        sourceLines[index].includes('/conv_first/Conv')) {
+        convFirstIndex = index
+        break
+      }
+    }
+    if (convFirstIndex < 0) {
+      throw new Error('Real-ESRGAN source param is incomplete.')
+    }
+    const runtimeLines: string[] = [
+      'Input            input                    0 1 input',
+      'Reorg            pixel_unshuffle          1 1 input /Reshape_1_output_0 0=2 1=0',
+    ]
+    for (let index: number = convFirstIndex; index < sourceLines.length; index++) {
+      runtimeLines.push(sourceLines[index])
+    }
+    const output: string = '7767517\n1371 2154\n' + runtimeLines.join('\n')
+    let file: fileIo.File | null = null
+    try {
+      file = fileIo.openSync(
+        targetPath,
+        fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC,
+      )
+      fileIo.writeSync(file.fd, output)
+    } finally {
+      if (file !== null) {
+        fileIo.closeSync(file)
+      }
+    }
+  }
+
+  private static createRealEsrganRuntimeModel(sourcePath: string, targetPath: string): void {
+    if (ReaderSuperResolutionModelService.fileSize(sourcePath) !== REAL_ESRGAN_SOURCE_MODEL_BYTES) {
+      throw new Error('Unexpected Real-ESRGAN source model size.')
+    }
+    let source: fileIo.File | null = null
+    let target: fileIo.File | null = null
+    let readOffset: number = REAL_ESRGAN_MODEL_PREFIX_BYTES
+    let totalWritten: number = 0
+    try {
+      source = fileIo.openSync(sourcePath, fileIo.OpenMode.READ_ONLY)
+      target = fileIo.openSync(
+        targetPath,
+        fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC,
+      )
+      while (totalWritten < REAL_ESRGAN_RUNTIME_MODEL_BYTES) {
+        const length: number = Math.min(
+          HASH_CHUNK_BYTES,
+          REAL_ESRGAN_RUNTIME_MODEL_BYTES - totalWritten,
+        )
+        const buffer: ArrayBuffer = new ArrayBuffer(length)
+        const read: number = fileIo.readSync(
+          source.fd,
+          buffer,
+          { offset: readOffset, length: length },
+        )
+        if (read !== length) {
+          throw new Error('Real-ESRGAN runtime model read failed.')
+        }
+        const written: number = fileIo.writeSync(target.fd, buffer, { length: read })
+        if (written !== read) {
+          throw new Error('Real-ESRGAN runtime model write failed.')
+        }
+        readOffset += read
+        totalWritten += written
+      }
+    } finally {
+      if (target !== null) {
+        fileIo.closeSync(target)
+      }
+      if (source !== null) {
+        fileIo.closeSync(source)
+      }
+    }
+  }
+
+  private static realEsrganAssetUrls(fileName: string): string[] {
+    return [
+      `${MODEL_PACK_RELEASE_BASE}/${fileName}`,
+      `https://huggingface.co/${REAL_ESRGAN_SOURCE_REPOSITORY}/resolve/` +
+        `${REAL_ESRGAN_SOURCE_REVISION}/${fileName}`,
+    ]
   }
 
   private static async installAsset(asset: ReaderSuperResolutionModelAsset): Promise<void> {

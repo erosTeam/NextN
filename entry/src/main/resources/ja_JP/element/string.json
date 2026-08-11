@@ -630,6 +630,8 @@
     { "name": "settings_reader_enhancement_model_art_hint", "value": "イラストページ向け · 1.1 MB" },
     { "name": "settings_reader_enhancement_model_photo_title", "value": "Waifu2x 写真 2×" },
     { "name": "settings_reader_enhancement_model_photo_hint", "value": "写真ページ向け · 1.1 MB" },
+    { "name": "settings_reader_enhancement_model_realesrgan_title", "value": "Real-ESRGAN 写真 2×" },
+    { "name": "settings_reader_enhancement_model_realesrgan_hint", "value": "写真と複雑な質感向け · 67 MB" },
     { "name": "reader_enhancement_processing", "value": "画像補正を処理中" },
     { "name": "reader_enhancement_applied", "value": "画像補正を適用済み" },
     { "name": "reader_enhancement_not_applied", "value": "このページには画像補正を適用できません" },

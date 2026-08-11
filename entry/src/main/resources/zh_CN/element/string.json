@@ -630,6 +630,8 @@
     { "name": "settings_reader_enhancement_model_art_hint", "value": "适用于插画页面 · 1.1 MB" },
     { "name": "settings_reader_enhancement_model_photo_title", "value": "Waifu2x 照片 2×" },
     { "name": "settings_reader_enhancement_model_photo_hint", "value": "适用于照片页面 · 1.1 MB" },
+    { "name": "settings_reader_enhancement_model_realesrgan_title", "value": "Real-ESRGAN 照片 2×" },
+    { "name": "settings_reader_enhancement_model_realesrgan_hint", "value": "适用于照片与复杂纹理 · 67 MB" },
     { "name": "reader_enhancement_processing", "value": "图像增强处理中" },
     { "name": "reader_enhancement_applied", "value": "图像增强已应用" },
     { "name": "reader_enhancement_not_applied", "value": "此页无法应用图像增强" },

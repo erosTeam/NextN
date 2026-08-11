@@ -630,6 +630,8 @@
     { "name": "settings_reader_enhancement_model_art_hint", "value": "For illustration pages · 1.1 MB" },
     { "name": "settings_reader_enhancement_model_photo_title", "value": "Waifu2x photo 2×" },
     { "name": "settings_reader_enhancement_model_photo_hint", "value": "For photo pages · 1.1 MB" },
+    { "name": "settings_reader_enhancement_model_realesrgan_title", "value": "Real-ESRGAN photo 2×" },
+    { "name": "settings_reader_enhancement_model_realesrgan_hint", "value": "For photos and complex textures · 67 MB" },
     { "name": "reader_enhancement_processing", "value": "Image enhancement in progress" },
     { "name": "reader_enhancement_applied", "value": "Image enhancement applied" },
     { "name": "reader_enhancement_not_applied", "value": "Image enhancement unavailable for this page" },
