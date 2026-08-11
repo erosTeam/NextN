@@ -112,6 +112,48 @@ authorize an edit, replace a device comparison, or define product completion.
   captures are retained outside Git. This is routing/form-render evidence,
   not a same-state reference comparison or feature acceptance.
 
+## OPEN — Reader comic-translation automatic session mode
+
+- User outcome: carry the existing, configured Reader comic translation from a
+  one-page manual action to NextE's explicit, session-only automatic mode,
+  without changing the Reader canvas or making an unconfigured source perform
+  any network work.
+- Newly actionable basis: the current Reader already has the same private
+  local-file callback, one in-flight translation state, rendered-page leaf
+  replacement, and More-menu owner needed by NextE. Source review now shows
+  the missing behavior is limited to session state and work scheduling.
+- Reference parent tree: NextE keeps one Reader canvas with content first,
+  transparent tap surface above it, conditional chrome, and a top More menu.
+  The More menu keeps the existing manual translation action and adds one
+  checked automatic-translation item. Enabling opens a confirmation dialog;
+  the setting lives only for the Reader session. The owner translates the
+  current ready page, then at most the next ready page, serially; its rendered
+  output replaces only the corresponding image leaf.
+- Current parent tree: NextN has the same canvas/content/tap/chrome order and
+  owns manual translation in `ReaderOverflowMenu`. Source-file readiness flows
+  from all three image-leaf families to `ReaderPage`; `ReaderPage` already
+  owns one in-flight translation and per-page rendered URI projection.
+- Exact change boundary: add a session-only checked More-menu item and its
+  confirmation dialog; add a serial current-then-next scheduler driven by
+  source-file readiness, settled page navigation, and run completion. Keep
+  the existing source binding gate, manual action, local cache, image leaves,
+  reader gestures, progress, and chrome geometry unchanged.
+- Visual verification plan: with a configured private source, compare an
+  enabled More menu, confirmation dialog, current-page render, next-page
+  serial handoff, failure behavior, and route exit against same-state NextE
+  captures at the same viewport. Retain raw local captures. An unconfigured
+  device can establish only that the new item remains disabled.
+- Unresolved risk: no private manga source is currently configured on the
+  selected device, so a real rendered translation and serial handoff remain
+  unproven after implementation.
+- Current runtime evidence: the signed Debug build was installed in place,
+  then force-stopped before the documented direct Gallery route. Its visible
+  Read/Continue action ended outside NextN, so the chain is rejected before
+  any local Reader menu or translation behavior. No source/profile/account,
+  preference, or gallery data was changed. The route failure is recorded
+  separately in the active device queue; it does not establish a fault in the
+  automatic-translation scheduler.
+
 ## OPEN — Gallery comment translation
 
 - User outcome: bring the mature optional comment-translation capability to

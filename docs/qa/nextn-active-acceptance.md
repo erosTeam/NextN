@@ -741,6 +741,28 @@ remains continuous; do not ask for it again.
   retained outside Git. This observes only the unconfigured availability gate;
   it is not a configured-provider or rendered-translation acceptance.
 
+## Current device exception — Reader entry route
+
+- 2026-08-11: the signed Debug build carrying the session-only Reader
+  automatic-translation source change was installed with `install -r` on the
+  selected TCP device, then NextN alone was force-stopped before the existing
+  direct Gallery route was started. The native Gallery action was resolved
+  once from the fresh NextN layout and activated once.
+- Its terminal root belonged to NextE rather than NextN. The source-added
+  fixed Reader-route diagnostic stages were absent from the bounded local log
+  capture; this absence does not prove whether the handler ran. The chain is
+  therefore rejected before Reader or translation behavior, rather than being
+  counted as a Reader result.
+- No account, credential, source/profile, preference, download, comment, or
+  gallery data was modified. Raw local evidence is retained in
+  `.hvigor/outputs/reader-auto-translation-route-diagnosis-20260811T1047+0800/`,
+  `.hvigor/outputs/reader-auto-translation-route-diagnosis-20260811T1051+0800/`,
+  and `.hvigor/outputs/reader-auto-translation-route-diagnosis-cold-20260811T1056+0800/`;
+  it remains outside Git and will not be deleted automatically.
+- The exact failure boundary remains OPEN: establish why this native Gallery
+  action leaves NextN before exercising it again. Do not use additional taps,
+  inferred coordinates, or a new route to make a Reader result appear.
+
 ## Latest device observation — Shared comment-translation source route
 
 - 2026-08-11 08:37-08:40 +0800: the signed Debug HAP containing the shared

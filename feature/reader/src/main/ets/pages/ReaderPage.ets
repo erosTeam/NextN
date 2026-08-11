@@ -1405,6 +1405,8 @@ export struct ReaderPage {
   @Local readerTranslationRunning: boolean = false
   @Local readerTranslationPageIndex: number = -1
   @Local readerTranslationErrorCode: string = ''
+  /** Explicit, route-scoped opt-in; it never becomes a persistent Reader setting. */
+  @Local readerTranslationAutoEnabled: boolean = false
   @Local llmSources: LlmSourceProfilesState = connectLlmSourceProfiles()
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
@@ -1428,6 +1430,8 @@ export struct ReaderPage {
   private lastDoublePageActive: boolean = false
   private readerDoubleTapX: number = 0
   private readerTranslationEpoch: number = 0
+  private readerTranslationAutoScheduleToken: number = 0
+  private readerTranslationAutoFailedPageIndexes: number[] = []
   private readerEnhancementInteractionTimer: number = -1
   private readerEnhancementInteractionActive: boolean = false
 
@@ -1437,6 +1441,7 @@ export struct ReaderPage {
 
   aboutToDisappear(): void {
     this.resetReaderEnhancementInteractionPause()
+    this.resetReaderTranslationAutoSession()
     this.stopAutoRead()
     this.unregisterVolumeKeyConsumer()
     this.invalidateReaderRequest()
@@ -1770,6 +1775,7 @@ export struct ReaderPage {
     this.readerTranslationRunning = false
     this.readerTranslationPageIndex = -1
     this.readerTranslationErrorCode = ''
+    this.resetReaderTranslationAutoSession()
     this.readerTranslationEpoch += 1
     this.detail = new NhGalleryDetail()
     this.pageDataSource.setData([], false)
@@ -2219,6 +2225,16 @@ export struct ReaderPage {
           this.toggleOrStartCurrentReaderTranslation()
         })
       MenuItem({
+        content: AppStrings.get('reader_comic_translation_auto'),
+        symbolEndIcon: this.readerTranslationAutoEnabled
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      })
+        .enabled(this.readerTranslationSourceConfigured())
+        .onClick((): void => {
+          this.toggleReaderTranslationAuto()
+        })
+      MenuItem({
         content: AppStrings.get('settings_reader'),
         symbolStartIcon: new SymbolGlyphModifier($r('sys.symbol.gearshape')),
       }).onClick((): void => {
@@ -2265,6 +2281,7 @@ export struct ReaderPage {
     }
     this.readerSourcePageIndexes = indexes
     this.readerSourcePagePaths = paths
+    this.scheduleReaderTranslationAuto()
   }
 
   private readerTranslatedRecordIndex(pageIndex: number): number {
@@ -2344,6 +2361,106 @@ export struct ReaderPage {
     return profile !== null && supportsMangaTranslation(profile)
   }
 
+  /** Auto mode follows NextE's one-session, one-translation-at-a-time policy. */
+  private resetReaderTranslationAutoSession(): void {
+    this.readerTranslationAutoScheduleToken += 1
+    this.readerTranslationAutoEnabled = false
+    this.readerTranslationAutoFailedPageIndexes = []
+  }
+
+  private readerTranslationAutoFailedForPage(pageIndex: number): boolean {
+    return this.readerTranslationAutoFailedPageIndexes.includes(pageIndex)
+  }
+
+  private setReaderTranslationAutoFailedForPage(pageIndex: number, failed: boolean): void {
+    const next: number[] = this.readerTranslationAutoFailedPageIndexes.filter(
+      (candidate: number): boolean => candidate !== pageIndex,
+    )
+    if (failed) {
+      next.push(pageIndex)
+    }
+    this.readerTranslationAutoFailedPageIndexes = next
+  }
+
+  private readerTranslationAutoPageReady(pageIndex: number): boolean {
+    return pageIndex >= 0 && pageIndex < this.detail.pages.length &&
+      this.readerSourceFilePath(pageIndex).length > 0
+  }
+
+  private readerTranslationNeedsAutoWork(pageIndex: number): boolean {
+    return this.readerTranslationAutoPageReady(pageIndex) &&
+      !this.readerTranslationAutoFailedForPage(pageIndex) &&
+      !this.readerTranslationHasResult(pageIndex)
+  }
+
+  /** Current page wins; only after it settles may the next ready page start. */
+  private readerTranslationAutoTargetPageIndex(): number {
+    const current: number = this.currentReaderTranslationPageIndex()
+    if (this.readerTranslationNeedsAutoWork(current)) {
+      return current
+    }
+    const currentSettled: boolean = this.readerTranslationAutoPageReady(current) &&
+      (this.readerTranslationAutoFailedForPage(current) || this.readerTranslationHasResult(current))
+    const next: number = current + 1
+    return currentSettled && this.readerTranslationNeedsAutoWork(next) ? next : -1
+  }
+
+  private scheduleReaderTranslationAuto(): void {
+    if (!this.readerTranslationAutoEnabled) {
+      return
+    }
+    const token: number = this.readerTranslationAutoScheduleToken + 1
+    this.readerTranslationAutoScheduleToken = token
+    setTimeout((): void => {
+      if (token === this.readerTranslationAutoScheduleToken) {
+        this.runReaderTranslationAuto()
+      }
+    }, 0)
+  }
+
+  private runReaderTranslationAuto(): void {
+    if (!this.readerTranslationAutoEnabled || this.readerTranslationRunning ||
+      !this.isReaderReadyForCurrentGallery) {
+      return
+    }
+    if (!this.readerTranslationSourceConfigured()) {
+      this.resetReaderTranslationAutoSession()
+      return
+    }
+    const pageIndex: number = this.readerTranslationAutoTargetPageIndex()
+    if (pageIndex >= 0) {
+      this.startReaderTranslationForPage(pageIndex, true)
+    }
+  }
+
+  private toggleReaderTranslationAuto(): void {
+    this.readerOverflowMenuShown = false
+    if (this.readerTranslationAutoEnabled) {
+      this.resetReaderTranslationAutoSession()
+      return
+    }
+    if (!this.readerTranslationSourceConfigured()) {
+      return
+    }
+    this.getUIContext().showAlertDialog({
+      title: AppStrings.get('reader_comic_translation_auto'),
+      message: AppStrings.get('reader_comic_translation_auto_confirm'),
+      primaryButton: {
+        value: AppStrings.get('common_cancel'),
+        action: (): void => {},
+      },
+      secondaryButton: {
+        value: AppStrings.get('common_on'),
+        action: (): void => {
+          this.readerTranslationAutoFailedPageIndexes = []
+          this.readerTranslationAutoEnabled = true
+          this.scheduleReaderPreload(this.visiblePageIndex)
+          this.scheduleReaderTranslationAuto()
+        },
+      },
+    })
+  }
+
   private readerTranslationStatusVisible(): boolean {
     return this.readerTranslationPageIndex === this.currentReaderTranslationPageIndex() &&
       (this.readerTranslationRunning || this.readerTranslationErrorCode.length > 0)
@@ -2370,10 +2487,22 @@ export struct ReaderPage {
     if (!this.readerTranslationSourceConfigured()) {
       return
     }
+    this.startReaderTranslationForPage(pageIndex, false)
+  }
+
+  /** Both explicit and automatic work preserve the same leaf-only render path. */
+  private startReaderTranslationForPage(pageIndex: number, automatic: boolean): void {
+    if (this.readerTranslationRunning || !this.readerTranslationSourceConfigured()) {
+      return
+    }
     const sourcePath: string = this.readerSourceFilePath(pageIndex)
     if (sourcePath.length === 0 || pageIndex < 0 || pageIndex >= this.detail.pages.length) {
       this.readerTranslationPageIndex = pageIndex
       this.readerTranslationErrorCode = 'image_unavailable'
+      if (automatic) {
+        this.setReaderTranslationAutoFailedForPage(pageIndex, true)
+        this.scheduleReaderTranslationAuto()
+      }
       return
     }
     const page: NhGalleryPage = this.detail.pages[pageIndex]
@@ -2398,19 +2527,33 @@ export struct ReaderPage {
           result.renderedPage.localFilePath.length === 0) {
           return
         }
+        const pageStillVisible: boolean = pageIndex === this.currentReaderTranslationPageIndex()
         this.rememberReaderTranslatedPage(
           pageIndex,
           fileUri.getUriFromPath(result.renderedPage.localFilePath),
         )
+        this.setReaderTranslationAutoFailedForPage(pageIndex, false)
         this.readerTranslationRunning = false
         this.readerTranslationErrorCode = ''
+        if (automatic && !pageStillVisible) {
+          this.readerTranslationPageIndex = -1
+        }
+        this.scheduleReaderTranslationAuto()
       })
       .catch((): void => {
         if (epoch !== this.readerTranslationEpoch || requestGeneration !== this.requestGeneration) {
           return
         }
+        const pageStillVisible: boolean = pageIndex === this.currentReaderTranslationPageIndex()
+        if (automatic || this.readerTranslationAutoEnabled) {
+          this.setReaderTranslationAutoFailedForPage(pageIndex, true)
+        }
         this.readerTranslationRunning = false
-        this.readerTranslationErrorCode = 'failed'
+        this.readerTranslationErrorCode = automatic && !pageStillVisible ? '' : 'failed'
+        if (automatic && !pageStillVisible) {
+          this.readerTranslationPageIndex = -1
+        }
+        this.scheduleReaderTranslationAuto()
       })
   }
 
@@ -3428,6 +3571,7 @@ export struct ReaderPage {
     this.scrollThumbnailStripTo(this.visiblePageIndex, true)
     this.persistProgress(this.visiblePageIndex)
     this.scheduleReaderPreload(this.visiblePageIndex)
+    this.scheduleReaderTranslationAuto()
     this.awaitAutoReadForVisiblePage()
   }
 
@@ -3437,7 +3581,10 @@ export struct ReaderPage {
    * byte limits, and atomic file promotion with visible images.
    */
   private scheduleReaderPreload(sourceIndex: number): void {
-    if (!this.isReaderReadyForCurrentGallery || this.readerPresentation.preloadPages <= 0 ||
+    const preloadPages: number = this.readerTranslationAutoEnabled
+      ? Math.max(1, this.readerPresentation.preloadPages)
+      : this.readerPresentation.preloadPages
+    if (!this.isReaderReadyForCurrentGallery || preloadPages <= 0 ||
       this.detail.id !== this.galleryId || this.detail.pages.length === 0) {
       return
     }
@@ -3446,7 +3593,7 @@ export struct ReaderPage {
     const spreadStep: number = this.readerNavigationStep()
     // In double-page mode this setting warms complete upcoming visual
     // destinations. It never preloads just one half of a spread.
-    for (let destination: number = 1; destination <= this.readerPresentation.preloadPages; destination += 1) {
+    for (let destination: number = 1; destination <= preloadPages; destination += 1) {
       const start: number = currentStart + destination * spreadStep
       if (start >= this.detail.pages.length) {
         break
@@ -3461,8 +3608,11 @@ export struct ReaderPage {
           this.context(),
           NhApiClient.imageUrl(this.detail.mediaId, index, page.extension),
           ReaderImageCacheService.cacheKey(this.detail.id, this.detail.mediaId, page.number, page.extension),
-        ).then((): void => {
-          // Completed requests are already atomically stored by ReaderImageCacheService.
+        ).then((result: ReaderImageCacheResult): void => {
+          if (this.isCurrentRequest(generation) && this.readerTranslationAutoEnabled &&
+            result.localPath.length > 0) {
+            this.rememberReaderSourceFile(index, result.localPath)
+          }
         }).catch((): void => {
           // Preloading is opportunistic; the visible page retains its own retry affordance.
           if (!this.isCurrentRequest(generation)) {
