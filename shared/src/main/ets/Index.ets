@@ -103,6 +103,11 @@ export { MangaRenderingServiceSession } from './services/MangaRenderingServiceSe
 export { MangaRenderingServiceConnection } from './services/MangaRenderingServiceConnection'
 export { MangaRenderingServiceConfig } from './services/MangaRenderingServiceConfig'
 export {
+  MangaRenderingServiceProfileCatalog,
+  MANGA_RENDERING_SERVICE_BACKEND_ID,
+  MANGA_RENDERING_SERVICE_PROTOCOL_REVISION,
+} from './services/MangaRenderingServiceProfileCatalog'
+export {
   MangaRenderingServiceSettings,
   MangaRenderingServiceSettingsSnapshot,
   MANGA_RENDERING_DETECTION_HIGH_RECALL,
