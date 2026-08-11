@@ -49,6 +49,20 @@ class InFlightEnhancement {
 export class ReaderSuperResolutionService {
   private static sequence: number = 0
   private static inFlight: Map<string, InFlightEnhancement> = new Map<string, InFlightEnhancement>()
+  /** Fixed outcome codes for mounted Reader owners; never file paths or image data. */
+  private static ownerOutcomeReasons: Map<string, string> = new Map<string, string>()
+
+  static clearOwnerOutcome(ownerKey: string): void {
+    if (ownerKey.length > 0) {
+      ReaderSuperResolutionService.ownerOutcomeReasons.delete(ownerKey)
+    }
+  }
+
+  static ownerOutcomeReason(ownerKey: string): string {
+    return ownerKey.length === 0
+      ? ''
+      : (ReaderSuperResolutionService.ownerOutcomeReasons.get(ownerKey) ?? '')
+  }
 
   static async process(
     context: common.UIAbilityContext,
@@ -57,32 +71,48 @@ export class ReaderSuperResolutionService {
     enabled: boolean,
     model: NhReaderSuperResolutionModel,
   ): Promise<ReaderSuperResolutionResult> {
+    ReaderSuperResolutionService.clearOwnerOutcome(ownerKey)
     if (!enabled) {
-      return ReaderSuperResolutionService.original(sourcePath, 'disabled')
+      return ReaderSuperResolutionService.rememberOwnerOutcome(
+        ownerKey,
+        ReaderSuperResolutionService.original(sourcePath, 'disabled'),
+      )
     }
     if (sourcePath.length === 0 || ownerKey.length === 0) {
-      return ReaderSuperResolutionService.original(sourcePath, 'source_unavailable')
+      return ReaderSuperResolutionService.rememberOwnerOutcome(
+        ownerKey,
+        ReaderSuperResolutionService.original(sourcePath, 'source_unavailable'),
+      )
     }
     const modelPaths: ReaderSuperResolutionModelPaths | null =
       await ReaderSuperResolutionModelService.pathsIfReady(context, model)
     const nativeConfig: ReaderNativeSuperResolutionConfig | null =
       ReaderSuperResolutionModelService.nativeConfig(model)
     if (modelPaths === null || nativeConfig === null) {
-      return ReaderSuperResolutionService.original(sourcePath, 'model_not_installed')
+      return ReaderSuperResolutionService.rememberOwnerOutcome(
+        ownerKey,
+        ReaderSuperResolutionService.original(sourcePath, 'model_not_installed'),
+      )
     }
     const sourceKey: string = ReaderSuperResolutionService.sha256(sourcePath)
     if (sourceKey.length === 0) {
-      return ReaderSuperResolutionService.original(sourcePath, 'source_hash_failed')
+      return ReaderSuperResolutionService.rememberOwnerOutcome(
+        ownerKey,
+        ReaderSuperResolutionService.original(sourcePath, 'source_hash_failed'),
+      )
     }
     const outputPath: string = ReaderSuperResolutionService.outputPath(context, model, sourceKey)
     if (ReaderSuperResolutionService.fileSize(outputPath) > 0) {
       ReaderSuperResolutionService.touch(outputPath)
-      return ReaderSuperResolutionService.applied(outputPath)
+      return ReaderSuperResolutionService.rememberOwnerOutcome(
+        ownerKey,
+        ReaderSuperResolutionService.applied(outputPath),
+      )
     }
     const existing: InFlightEnhancement | undefined = ReaderSuperResolutionService.inFlight.get(outputPath)
     if (existing !== undefined) {
       existing.owners.add(ownerKey)
-      return await existing.promise
+      return ReaderSuperResolutionService.rememberOwnerOutcome(ownerKey, await existing.promise)
     }
     const inFlight: InFlightEnhancement = new InFlightEnhancement()
     ReaderSuperResolutionService.sequence += 1
@@ -99,7 +129,7 @@ export class ReaderSuperResolutionService {
     inFlight.promise = task
     ReaderSuperResolutionService.inFlight.set(outputPath, inFlight)
     try {
-      return await task
+      return ReaderSuperResolutionService.rememberOwnerOutcome(ownerKey, await task)
     } finally {
       if (ReaderSuperResolutionService.inFlight.get(outputPath) === inFlight) {
         ReaderSuperResolutionService.inFlight.delete(outputPath)
@@ -111,6 +141,7 @@ export class ReaderSuperResolutionService {
     if (ownerKey.length === 0) {
       return
     }
+    ReaderSuperResolutionService.clearOwnerOutcome(ownerKey)
     for (const inFlight of ReaderSuperResolutionService.inFlight.values()) {
       if (!inFlight.owners.delete(ownerKey)) {
         continue
@@ -123,6 +154,16 @@ export class ReaderSuperResolutionService {
 
   static setInteractionPaused(paused: boolean): void {
     ReaderNativeSuperResolution.setInteractionPaused(paused)
+  }
+
+  private static rememberOwnerOutcome(
+    ownerKey: string,
+    result: ReaderSuperResolutionResult,
+  ): ReaderSuperResolutionResult {
+    if (ownerKey.length > 0) {
+      ReaderSuperResolutionService.ownerOutcomeReasons.set(ownerKey, result.reason)
+    }
+    return result
   }
 
   private static async processNow(

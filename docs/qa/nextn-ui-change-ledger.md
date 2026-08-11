@@ -639,6 +639,33 @@ authorize an edit, replace a device comparison, or define product completion.
   the interaction owner: the rail remains floating, its geometry and reserves
   are unchanged, and no additional hit-test or layout tuning is authorized.
 
+## IN PROGRESS — Reader image information leaf, revised state boundary
+
+- The first attempt is rejected: extending the Reader image event from three
+  values to four coincided with a reproducible Reader foreground regression;
+  the complete uncommitted branch was removed and the signed baseline remained
+  foreground on the matched control run.
+- Revised state boundary: keep the existing `pageIndex, processing, applied`
+  event ABI unchanged. The existing enhancement service already owns request
+  owners; it will retain only the current fixed result reason per owner, while
+  Reader derives the same owner key that it already passes into the service.
+  Reader will use that value only after its existing completion event.
+- The visible parent tree and data boundary remain the already-mapped NextE
+  `ReaderHeader → More Menu → Image information → alert` leaf. No canvas,
+  toolbar, touch-zone, page, preference, private path, URL, or image-content
+  change is allowed.
+- Device check: one new-build current Reader path must remain native NextN
+  through its existing processing settle before More is opened. Only then may
+  the new Image information leaf be invoked once and compared against the
+  reference dialog tree.
+- **2026-08-12 control result:** the side-channel build was installed in place,
+  then the already-established direct Gallery Reader action was activated once.
+  After a twelve-second settle, the ability-manager mission state remained
+  `com.erosteam.nextn` foreground. This accepts the ABI-preserving state
+  boundary as free of the prior foreground regression. It does not yet accept
+  the visible More-menu leaf or an enhancement outcome; the unchanged route
+  will not be repeated merely to reconfirm this control.
+
 ## OPEN — Gallery comment translation
 
 - User outcome: bring the mature optional comment-translation capability to

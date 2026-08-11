@@ -332,6 +332,7 @@ struct ReaderImagePage {
     this.isRetrying = forceReload
     this.isLoading = true
     this.imageSource = ''
+    ReaderSuperResolutionService.clearOwnerOutcome(this.enhancementOwnerKey())
     this.notifyEnhancementState(false, false)
     this.notifyImageLoadState(false)
     this.resetZoom()
@@ -739,6 +740,7 @@ struct ReaderSpreadImageLayer {
     this.isRetrying = forceReload
     this.isLoading = true
     this.imageSource = ''
+    ReaderSuperResolutionService.clearOwnerOutcome(this.enhancementOwnerKey())
     this.notifyEnhancementState(false, false)
     this.notifyImageLoadState(false)
     if (this.renderedImageUri.length > 0) {
@@ -1336,6 +1338,7 @@ class ReaderEnhancementPageState {
   pageIndex: number = -1
   processing: boolean = false
   applied: boolean = false
+  reason: string = 'queued'
 }
 
 /** NextE's compact over-image status leaf. It never reserves Reader canvas space. */
@@ -2645,6 +2648,7 @@ export struct ReaderPage {
     }
     state.processing = processing
     state.applied = applied
+    state.reason = processing ? 'processing' : this.readerEnhancementOutcomeReason(pageIndex)
     this.readerEnhancementStates = next
   }
 
@@ -2679,6 +2683,29 @@ export struct ReaderPage {
     }
     const second: ReaderEnhancementPageState | undefined = this.enhancementStateForPage(secondIndex)
     return second !== undefined && second.applied
+  }
+
+  private readerEnhancementOutcomeReason(pageIndex: number): string {
+    if (pageIndex < 0 || pageIndex >= this.detail.pages.length) {
+      return 'queued'
+    }
+    const page: NhGalleryPage = this.detail.pages[pageIndex]
+    const cacheKey: string = ReaderImageCacheService.cacheKey(
+      this.detail.id,
+      this.detail.mediaId,
+      page.number,
+      page.extension,
+    )
+    const imageReason: string = ReaderSuperResolutionService.ownerOutcomeReason(
+      `reader-image:${cacheKey}:${pageIndex}`,
+    )
+    const spreadReason: string = ReaderSuperResolutionService.ownerOutcomeReason(
+      `reader-spread:${cacheKey}:${pageIndex}`,
+    )
+    if (this.isDoublePageActive() && spreadReason.length > 0) {
+      return spreadReason
+    }
+    return imageReason.length > 0 ? imageReason : (spreadReason.length > 0 ? spreadReason : 'queued')
   }
 
   /**

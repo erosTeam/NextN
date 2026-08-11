@@ -1211,6 +1211,13 @@ rewrite, re-run, or block this completed direct-route observation.
   Reader regression boundary, while the restored committed baseline remains
   stable for this observed route. This control closes the repeat loop; do not
   reopen the unchanged baseline merely to obtain another equivalent capture.
+- Revised state-boundary control: an ABI-preserving service-owned outcome code
+  was installed in place and one already-established direct Gallery Reader
+  action was performed. After a twelve-second settle, the ability-manager
+  mission state again remained `com.erosteam.nextn` foreground. This accepts
+  the side-channel as free of the prior event-ABI regression; it does not
+  establish the pending Image-information menu leaf or image-quality result.
+  Do not repeat this unchanged route solely as a control.
 
 ## Data and artifact boundary
 
