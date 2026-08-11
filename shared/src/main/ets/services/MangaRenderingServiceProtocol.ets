@@ -23,6 +23,8 @@ import {
 } from './MangaRenderingServiceProfileCatalog'
 
 const TEMPLATE_MIME: string = 'application/vnd.manga-translator-ui.translation+json'
+export const MANGA_RENDERING_SERVICE_EXPORT_JSON_ENTRY: string = 'translation.json'
+export const MANGA_RENDERING_SERVICE_EXPORT_TEXT_ENTRY: string = 'original.txt'
 const MAX_EXPORT_JSON_BYTES: number = 4 * 1024 * 1024
 const MAX_EXPORT_TEXT_BYTES: number = 1024 * 1024
 const MAX_REGIONS: number = 512

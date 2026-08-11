@@ -113,6 +113,10 @@ export {
   MangaRenderingServiceBinaryResponse,
 } from './services/MangaRenderingServiceBinaryTransport'
 export {
+  MangaRenderingServiceArchive,
+  MangaRenderingServiceExportFiles,
+} from './services/MangaRenderingServiceArchive'
+export {
   MangaRenderingServiceSettings,
   MangaRenderingServiceSettingsSnapshot,
   MANGA_RENDERING_DETECTION_HIGH_RECALL,
