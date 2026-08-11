@@ -874,3 +874,10 @@ authorize an edit, replace a device comparison, or define product completion.
   to the normal image/cache/enhancement chain. This guard is removed
   immediately; the next discriminator retains normal page images and cache
   work but suppresses only the existing enhancement invocation.
+- Result: with normal page images and cache work restored but only enhancement
+  invocation suppressed, native NextN Reader remained foregrounded. The
+  current observed exit is therefore in the enhancement invocation boundary,
+  not routing, detail/history/data loading, normal image rendering, or cache
+  transfer. The suppression is removed immediately; the implementation must
+  now repair the enhancement decode/processing boundary rather than retain a
+  feature disable.

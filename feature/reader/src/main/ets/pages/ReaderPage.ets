@@ -299,9 +299,6 @@ struct ReaderImagePage {
   }
 
   private async applyEnhancement(generation: number, localPath: string): Promise<void> {
-    if (READER_ENHANCEMENT_DIAGNOSTIC) {
-      return
-    }
     if (!this.enhancementEnabled || localPath.length === 0) {
       return
     }
@@ -709,9 +706,6 @@ struct ReaderSpreadImageLayer {
   }
 
   private async applyEnhancement(generation: number, localPath: string): Promise<void> {
-    if (READER_ENHANCEMENT_DIAGNOSTIC) {
-      return
-    }
     if (!this.enhancementEnabled || localPath.length === 0) {
       return
     }
@@ -1381,8 +1375,6 @@ struct ReaderEnhancementStatusIcon {
 }
 
 /** Native Reader with ErosN-derived vertical and page-at-a-time modes. */
-const READER_ENHANCEMENT_DIAGNOSTIC: boolean = true
-
 @ComponentV2
 export struct ReaderPage {
   @Require @Param galleryId: number
