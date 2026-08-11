@@ -1133,6 +1133,12 @@ rewrite, re-run, or block this completed direct-route observation.
   `.hvigor/outputs/reader-processing-diagnostic-20260811/` and is excluded
   from Git. The next action is one source-grounded split inside the processing
   body, not a repeat of this route.
+- A follow-up signed build moved only source PixelMap decode/read into an
+  `@Concurrent` worker, using the same local ImageKit pattern already present
+  in NextE. The same one-action route still ended with NextE foreground. That
+  migration is rejected and removed; its local terminal evidence is retained
+  under `.hvigor/outputs/reader-taskpool-decode-20260811/`. The normal signed
+  Debug HAP must be restored before the next source-grounded diagnostic.
 
 ## Data and artifact boundary
 

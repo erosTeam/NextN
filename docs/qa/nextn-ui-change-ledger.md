@@ -1135,3 +1135,31 @@ authorize an edit, replace a device comparison, or define product completion.
   but it does not identify a specific operation or justify a feature disable.
   The next diagnostic must split one source-owned processing boundary and must
   remove its temporary code before any other Reader or UI work.
+
+### Decode execution repair boundary — 2026-08-11
+
+- Newly actionable source basis: current device evidence isolates the first
+  unsafe window to source PixelMap creation/release inside `processNow()`. The
+  existing NextE codebase already uses an `@Concurrent` ImageKit decode leaf
+  for private image work, and the official TaskPool guidance supports returning
+  `ArrayBuffer` to the UI runtime.
+- Exact change: preserve Reader image ownership, source file selection, model
+  readiness, cache identity, native upscale API, output packing, and all UI
+  geometry. Move only source `createPixelMap` / pixel-buffer extraction into a
+  top-level `@Concurrent` worker that reopens the same path and returns a
+  tightly packed RGBA `ArrayBuffer`; the caller keeps the already validated
+  source dimensions and invokes the existing native request unchanged.
+- Minimality and risk: this is not a decoder option or model change. It
+  removes the proven UI-runtime coexistence boundary while retaining the
+  existing fallback on worker failure. The worker must verify decoded
+  dimensions and normalize stride before returning; no unverified decoded
+  buffer may enter the native API.
+- Verification plan: signed in-place install, one existing direct Gallery
+  route and one current Reader action. Require native NextN Reader terminal
+  with normal enhancement enabled; then inspect the existing applied-state
+  leaf separately. A build or worker return alone is not acceptance.
+- Result: the signed build was installed in place and the one current Reader
+  route still ended with NextE foreground. This rejects the worker migration
+  as a corrective change; it does not prove whether the worker itself failed
+  or completed before the terminal exit. The code was removed immediately and
+  the normal signed Debug build is being restored before any further work.
