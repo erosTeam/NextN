@@ -929,6 +929,37 @@ authorize an edit, replace a device comparison, or define product completion.
   content remains only in the local audit artifact and was not added to Git.
   Same-state visual-quality comparison against NextE remains OPEN.
 
+## OPEN — Optional self-hosted whole-page manga translation
+
+- User outcome: make NextE's mature self-hosted `manga-translator-ui` rendering
+  route available in NextN as an explicit, optional Reader translation provider,
+  while retaining the existing local renderer and private OpenAI-compatible
+  text source unchanged.
+- Reference parent tree: NextE keeps the provider outside the Reader canvas:
+  `Settings → Reader → Manga rendering service → HdsNavDestination →
+  SecondaryListScaffold → ListItem → GroupedListSection`. Its form owns the
+  service URL, service account/password, detection and inpainting profiles,
+  and an explicit connection check; Reader dispatches only after a provider
+  route has been selected.
+- Current NextN tree: `Settings → Reader → Comic translation →
+  ComicTranslationSourcePage → SecondaryListScaffold → ListItem →
+  NextNGroupedListSection`. The current page owns the private text source and
+  local model pack only. `ComicWholePageRenderBackend` already exists in
+  shared code, but no provider, selection state, or whole-page orchestrator
+  reaches it.
+- Exact boundary: add the reference-owned provider configuration destination
+  and a persisted provider selection. The self-hosted route owns its own
+  non-secret endpoint/preferences and HUKS-backed service credential; it is
+  disabled until a successful explicit configuration. The Reader keeps its
+  one canvas and current action ownership; local rendering remains the default.
+- Verification plan: build first, then compare the unconfigured provider form
+  with the same NextE route at the same viewport. Provider connection, upload,
+  rendering, and result acceptance require an actual configured service and a
+  separate real Reader run; no source-shape check is visual evidence.
+- Unresolved risk: the selected device has no declared self-hosted endpoint or
+  service account, so this implementation must not invent one, make a network
+  request, or claim rendered output during the unconfigured path.
+
 ## EVIDENCE-ONLY — Reader route mount/data split — 2026-08-11
 
 - New device evidence: after a data-preserving NextN-only cold start and the
