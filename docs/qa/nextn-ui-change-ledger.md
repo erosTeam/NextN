@@ -1111,3 +1111,8 @@ authorize an edit, replace a device comparison, or define product completion.
   temporary-isolation conclusions non-authoritative for the present device
   state; they cannot be used to name enhancement, image cache, or route mount
   as the cause. No data, preference, account, or content action occurred.
+- Pre-enhancement boundary rejected: isolated `cc0c40a` reached native Gallery
+  Detail but did not surface a semantic Reader action after its current ready
+  state. No coordinate was inferred, no Reader action was taken, and that
+  revision is not a comparable Reader-route sample. Current HEAD was restored
+  immediately with `install -r`.

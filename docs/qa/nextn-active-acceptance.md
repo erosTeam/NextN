@@ -959,6 +959,14 @@ remains continuous; do not ask for it again.
   It does not establish that an earlier source revision is healthy or identify
   the cross-application transition cause. Raw pre/post evidence is retained
   outside Git at `.hvigor/outputs/reader-version-c4-20260811T2255/`.
+- 2026-08-11 pre-enhancement boundary rejected: an isolated `cc0c40a` HAP
+  opened the numeric Gallery route, but its loaded Detail state did not expose
+  a current semantic Read or Continue control. No coordinate was inferred and
+  no Reader action was invoked. That revision is therefore not comparable to
+  the current one-activation Reader scenario and cannot be used to attribute
+  or exclude the enhancement introduction. Current HEAD was restored at once
+  with `install -r`; the retained precondition evidence is outside Git at
+  `.hvigor/outputs/reader-pre-enhancement-20260811T2202/`.
 
 ## Current device exception — Gallery full-title translation route setup
 
