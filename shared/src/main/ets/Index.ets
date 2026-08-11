@@ -101,6 +101,7 @@ export {
 } from './services/MangaRenderingServiceTransport'
 export { MangaRenderingServiceSession } from './services/MangaRenderingServiceSession'
 export { MangaRenderingServiceConnection } from './services/MangaRenderingServiceConnection'
+export { MangaRenderingServiceConfig } from './services/MangaRenderingServiceConfig'
 export {
   MangaRenderingServiceSettings,
   MangaRenderingServiceSettingsSnapshot,

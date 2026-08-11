@@ -1,4 +1,5 @@
 import { http } from '@kit.NetworkKit'
+import { MangaRenderingServiceConfig } from './MangaRenderingServiceConfig'
 import { MangaRenderingServiceCredential } from './MangaRenderingServiceSecretStore'
 import { MangaRenderingServiceSession } from './MangaRenderingServiceSession'
 import { MangaRenderingServiceTextResponse, MangaRenderingServiceTransport } from './MangaRenderingServiceTransport'
@@ -27,8 +28,9 @@ class AuthCheckEnvelope {
 /** Checks the pinned self-hosted protocol before Reader may select it. */
 export class MangaRenderingServiceConnection {
   static async check(baseUrl: string, credential: MangaRenderingServiceCredential): Promise<void> {
+    const validatedBaseUrl: string = MangaRenderingServiceConfig.validatedBaseUrl(baseUrl)
     const response: MangaRenderingServiceTextResponse = await MangaRenderingServiceTransport.requestText(
-      baseUrl + OPENAPI_PATH,
+      validatedBaseUrl + OPENAPI_PATH,
       http.RequestMethod.GET,
       { 'Accept': 'application/json', 'User-Agent': 'NextN manga translation' },
       '',
@@ -40,9 +42,9 @@ export class MangaRenderingServiceConnection {
       throw new Error('Manga rendering service capability check failed')
     }
     MangaRenderingServiceConnection.requireCapabilities(response.body)
-    const token: string = await MangaRenderingServiceSession.acquire(baseUrl, credential)
+    const token: string = await MangaRenderingServiceSession.acquire(validatedBaseUrl, credential)
     const auth: MangaRenderingServiceTextResponse = await MangaRenderingServiceTransport.requestText(
-      baseUrl + AUTH_CHECK_PATH,
+      validatedBaseUrl + AUTH_CHECK_PATH,
       http.RequestMethod.GET,
       {
         'Accept': 'application/json',
@@ -55,7 +57,7 @@ export class MangaRenderingServiceConnection {
       MAX_RESPONSE_CHARS,
     )
     if (auth.statusCode === 401) {
-      MangaRenderingServiceSession.invalidate(baseUrl, credential, token)
+      MangaRenderingServiceSession.invalidate(validatedBaseUrl, credential, token)
     }
     MangaRenderingServiceConnection.requireAuthenticated(auth)
   }
