@@ -1,5 +1,9 @@
 import { AppStorageV2 } from '@kit.ArkUI'
-import { NhReaderMode, NhReaderPresentation } from '../model/NhReaderSettings'
+import {
+  NhReaderMode,
+  NhReaderPresentation,
+  NhReaderSuperResolutionModel,
+} from '../model/NhReaderSettings'
 import { NhReaderTapZoneInvert, NhReaderTapZoneLayout } from '../model/NhReaderTapZone'
 
 /**
@@ -19,6 +23,8 @@ export class ReaderPresentationState {
   @Trace tapZoneLayout: NhReaderTapZoneLayout = NhReaderTapZoneLayout.RIGHT_LEFT
   @Trace tapZoneInvert: NhReaderTapZoneInvert = NhReaderTapZoneInvert.NONE
   @Trace superResolutionEnabled: boolean = false
+  @Trace superResolutionModel: NhReaderSuperResolutionModel =
+    NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
 
   replace(presentation: NhReaderPresentation): void {
     this.mode = presentation.mode
@@ -31,6 +37,7 @@ export class ReaderPresentationState {
     this.tapZoneLayout = presentation.tapZoneLayout
     this.tapZoneInvert = presentation.tapZoneInvert
     this.superResolutionEnabled = presentation.superResolutionEnabled
+    this.superResolutionModel = presentation.superResolutionModel
   }
 
   snapshot(): NhReaderPresentation {
@@ -45,6 +52,7 @@ export class ReaderPresentationState {
     result.tapZoneLayout = this.tapZoneLayout
     result.tapZoneInvert = this.tapZoneInvert
     result.superResolutionEnabled = this.superResolutionEnabled
+    result.superResolutionModel = this.superResolutionModel
     return result
   }
 }

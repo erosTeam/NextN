@@ -2,6 +2,7 @@ import { common } from '@kit.AbilityKit'
 import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { image } from '@kit.ImageKit'
+import { NhReaderSuperResolutionModel } from '../model/NhReaderSettings'
 import {
   ReaderNativeSuperResolution,
   ReaderNativeSuperResolutionConfig,
@@ -51,6 +52,7 @@ export class ReaderSuperResolutionService {
     sourcePath: string,
     ownerKey: string,
     enabled: boolean,
+    model: NhReaderSuperResolutionModel,
   ): Promise<ReaderSuperResolutionResult> {
     if (!enabled) {
       return ReaderSuperResolutionService.original(sourcePath, 'disabled')
@@ -59,15 +61,17 @@ export class ReaderSuperResolutionService {
       return ReaderSuperResolutionService.original(sourcePath, 'source_unavailable')
     }
     const modelPaths: ReaderSuperResolutionModelPaths | null =
-      await ReaderSuperResolutionModelService.pathsIfReady(context)
-    if (modelPaths === null) {
+      await ReaderSuperResolutionModelService.pathsIfReady(context, model)
+    const nativeConfig: ReaderNativeSuperResolutionConfig | null =
+      ReaderSuperResolutionModelService.nativeConfig(model)
+    if (modelPaths === null || nativeConfig === null) {
       return ReaderSuperResolutionService.original(sourcePath, 'model_not_installed')
     }
     const sourceKey: string = ReaderSuperResolutionService.sha256(sourcePath)
     if (sourceKey.length === 0) {
       return ReaderSuperResolutionService.original(sourcePath, 'source_hash_failed')
     }
-    const outputPath: string = ReaderSuperResolutionService.outputPath(context, sourceKey)
+    const outputPath: string = ReaderSuperResolutionService.outputPath(context, model, sourceKey)
     if (ReaderSuperResolutionService.fileSize(outputPath) > 0) {
       ReaderSuperResolutionService.touch(outputPath)
       return ReaderSuperResolutionService.applied(outputPath)
@@ -84,9 +88,10 @@ export class ReaderSuperResolutionService {
     const task: Promise<ReaderSuperResolutionResult> = ReaderSuperResolutionService.processNow(
       context,
       sourcePath,
-      outputPath,
-      modelPaths,
-      inFlight,
+        outputPath,
+        modelPaths,
+        nativeConfig,
+        inFlight,
     )
     inFlight.promise = task
     ReaderSuperResolutionService.inFlight.set(outputPath, inFlight)
@@ -122,6 +127,7 @@ export class ReaderSuperResolutionService {
     sourcePath: string,
     outputPath: string,
     modelPaths: ReaderSuperResolutionModelPaths,
+    nativeConfig: ReaderNativeSuperResolutionConfig,
     inFlight: InFlightEnhancement,
   ): Promise<ReaderSuperResolutionResult> {
     const temporaryPath: string = `${outputPath}.part`
@@ -164,7 +170,7 @@ export class ReaderSuperResolutionService {
         stride,
         modelPaths.paramPath,
         modelPaths.modelPath,
-        ReaderSuperResolutionService.nativeConfig(),
+        nativeConfig,
         inFlight.requestId,
       )
       if (inFlight.owners.size === 0 || native.pixels.byteLength !== outputWidth * outputHeight * 4) {
@@ -225,10 +231,6 @@ export class ReaderSuperResolutionService {
     }
   }
 
-  private static nativeConfig(): ReaderNativeSuperResolutionConfig {
-    return new ReaderNativeSuperResolutionConfig()
-  }
-
   private static original(sourcePath: string, reason: string): ReaderSuperResolutionResult {
     const result: ReaderSuperResolutionResult = new ReaderSuperResolutionResult()
     result.displayUri = ReaderSuperResolutionService.displayUri(sourcePath)
@@ -251,10 +253,14 @@ export class ReaderSuperResolutionService {
     return `${context.cacheDir}/${CACHE_DIRECTORY}`
   }
 
-  private static outputPath(context: common.UIAbilityContext, sourceKey: string): string {
+  private static outputPath(
+    context: common.UIAbilityContext,
+    model: NhReaderSuperResolutionModel,
+    sourceKey: string,
+  ): string {
     const directory: string = ReaderSuperResolutionService.cacheDirectory(context)
     ReaderSuperResolutionService.ensureDirectory(directory)
-    return `${directory}/${sourceKey}.jpg`
+    return `${directory}/${model}_${sourceKey}.jpg`
   }
 
   private static async prune(context: common.UIAbilityContext, protectedPath: string): Promise<void> {

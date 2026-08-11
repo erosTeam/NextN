@@ -6,6 +6,8 @@ import {
   NextNModalScaffold,
   ReaderPresentationService,
   ReaderPresentationState,
+  NhReaderSuperResolutionModel,
+  ReaderSuperResolutionModelDefinition,
   ReaderSuperResolutionModelService,
   SecondaryListScaffold,
   ThemeTokens,
@@ -13,15 +15,14 @@ import {
 } from 'shared'
 
 /**
- * Owns the one user-downloadable Reader enhancement model. The Reader settings
- * surface selects whether enhancement is active; this page owns only the
- * private model file and its destructive removal confirmation.
+ * Owns explicit private Reader-model downloads. The Reader settings surface
+ * owns the selected installed model; this page only manages model files.
  */
 @ComponentV2
 export struct ReaderSuperResolutionModelsPage {
   @Local readerPresentation: ReaderPresentationState = connectReaderPresentation()
-  @Local modelInstalled: boolean = false
-  @Local modelChanging: boolean = false
+  @Local installedModels: NhReaderSuperResolutionModel[] = []
+  @Local modelChanging: string = ''
   @Local errorMessage: string = ''
   @Param modal: boolean = false
   @Param scroller: Scroller = new Scroller()
@@ -37,7 +38,29 @@ export struct ReaderSuperResolutionModelsPage {
   }
 
   private async refreshInstallState(): Promise<void> {
-    this.modelInstalled = await ReaderSuperResolutionModelService.isInstalled(this.context())
+    this.installedModels = await ReaderSuperResolutionModelService.installedModels(this.context())
+  }
+
+  private isModelInstalled(model: NhReaderSuperResolutionModel): boolean {
+    for (let index: number = 0; index < this.installedModels.length; index++) {
+      if (this.installedModels[index] === model) {
+        return true
+      }
+    }
+    return false
+  }
+
+  private modelTitle(definition: ReaderSuperResolutionModelDefinition): string {
+    return AppStrings.get(definition.labelStringKey)
+  }
+
+  private modelActionLabel(model: NhReaderSuperResolutionModel): string {
+    if (this.modelChanging === model) {
+      return AppStrings.get('settings_reader_enhancement_model_downloading')
+    }
+    return this.isModelInstalled(model)
+      ? AppStrings.get('settings_reader_enhancement_model_remove_action')
+      : AppStrings.get('settings_reader_enhancement_model_download')
   }
 
   private notifyModelsChanged(): void {
@@ -46,30 +69,32 @@ export struct ReaderSuperResolutionModelsPage {
     }
   }
 
-  private async installModel(): Promise<void> {
-    if (this.modelChanging || this.modelInstalled) {
+  private async installModel(model: NhReaderSuperResolutionModel): Promise<void> {
+    if (this.modelChanging.length > 0 || this.isModelInstalled(model)) {
       return
     }
-    this.modelChanging = true
+    this.modelChanging = model
     this.errorMessage = ''
     try {
-      await ReaderSuperResolutionModelService.install(this.context())
-      this.modelInstalled = true
+      await ReaderSuperResolutionModelService.install(this.context(), model)
+      await this.refreshInstallState()
       this.notifyModelsChanged()
     } catch (_error) {
       this.errorMessage = AppStrings.get('settings_reader_enhancement_model_download_failed')
     } finally {
-      this.modelChanging = false
+      this.modelChanging = ''
     }
   }
 
-  private confirmRemoveModel(): void {
-    if (this.modelChanging || !this.modelInstalled) {
+  private confirmRemoveModel(definition: ReaderSuperResolutionModelDefinition): void {
+    if (this.modelChanging.length > 0 || !this.isModelInstalled(definition.id)) {
       return
     }
     this.getUIContext().showAlertDialog({
       title: AppStrings.get('settings_reader_enhancement_model_remove_title'),
-      message: AppStrings.get('settings_reader_enhancement_model_remove_message'),
+      message: AppStrings.format('settings_reader_enhancement_model_remove_message', [
+        this.modelTitle(definition),
+      ]),
       primaryButton: {
         value: AppStrings.get('common_cancel'),
         action: (): void => {},
@@ -78,58 +103,80 @@ export struct ReaderSuperResolutionModelsPage {
         value: AppStrings.get('settings_reader_enhancement_model_remove_action'),
         fontColor: Color.Red,
         action: (): void => {
-          this.removeModel()
+          this.removeModel(definition.id).catch((): void => {})
         },
       },
     })
   }
 
-  private async removeModel(): Promise<void> {
-    if (this.modelChanging || !this.modelInstalled) {
+  private async removeModel(model: NhReaderSuperResolutionModel): Promise<void> {
+    if (this.modelChanging.length > 0 || !this.isModelInstalled(model)) {
       return
     }
-    this.modelChanging = true
+    this.modelChanging = model
     this.errorMessage = ''
     try {
-      if (this.readerPresentation.superResolutionEnabled) {
+      const installed: NhReaderSuperResolutionModel[] = await ReaderSuperResolutionModelService.installedModels(
+        this.context(),
+      )
+      let replacement: NhReaderSuperResolutionModel | null = null
+      for (let index: number = 0; index < installed.length; index++) {
+        if (installed[index] !== model) {
+          replacement = installed[index]
+          break
+        }
+      }
+      if (this.readerPresentation.superResolutionModel === model && replacement !== null) {
+        await ReaderPresentationService.setSuperResolutionModel(this.context(), replacement)
+      } else if (this.readerPresentation.superResolutionModel === model &&
+        this.readerPresentation.superResolutionEnabled) {
         await ReaderPresentationService.setSuperResolutionEnabled(this.context(), false)
       }
-      ReaderSuperResolutionModelService.remove(this.context())
-      this.modelInstalled = false
+      ReaderSuperResolutionModelService.remove(this.context(), model)
+      await this.refreshInstallState()
       this.notifyModelsChanged()
     } catch (_error) {
       this.errorMessage = AppStrings.get('settings_reader_enhancement_model_remove_failed')
     } finally {
-      this.modelChanging = false
+      this.modelChanging = ''
     }
   }
 
   @Builder
   private ModelGroup() {
     NextNGroupedListSection() {
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.lightbulb'),
-        title: AppStrings.get('settings_reader_enhancement_model_title'),
-        subtitle: AppStrings.get('settings_reader_enhancement_model_hint'),
-        trailingText: this.modelChanging
-          ? AppStrings.get('settings_reader_enhancement_model_downloading')
-          : this.modelInstalled
-            ? AppStrings.get('settings_reader_enhancement_model_remove_action')
-            : AppStrings.get('settings_reader_enhancement_model_download'),
-        showChevron: false,
-        isEnabled: !this.modelChanging,
-        destructive: this.modelInstalled,
-        accessibilityLabel: this.modelInstalled
-          ? AppStrings.get('settings_reader_enhancement_model_remove_a11y')
-          : AppStrings.get('settings_reader_enhancement_model_a11y'),
-        onAction: (): void => {
-          if (this.modelInstalled) {
-            this.confirmRemoveModel()
-          } else {
-            this.installModel()
+      ForEach(
+        ReaderSuperResolutionModelService.definitions(),
+        (definition: ReaderSuperResolutionModelDefinition, index: number) => {
+          NextNListRow({
+            leadingIcon: $r('sys.symbol.lightbulb'),
+            title: this.modelTitle(definition),
+            subtitle: AppStrings.get(definition.hintStringKey),
+            trailingActionText: this.modelActionLabel(definition.id),
+            showChevron: false,
+            isEnabled: this.modelChanging.length === 0,
+            trailingActionDestructive: this.isModelInstalled(definition.id),
+            accessibilityLabel: AppStrings.format('settings_reader_enhancement_model_a11y', [
+              this.modelTitle(definition),
+              this.modelActionLabel(definition.id),
+            ]),
+            onTrailingAction: (): void => {
+              if (this.isModelInstalled(definition.id)) {
+                this.confirmRemoveModel(definition)
+              } else {
+                this.installModel(definition.id).catch((): void => {})
+              }
+            },
+          })
+          if (index < ReaderSuperResolutionModelService.definitions().length - 1) {
+            Divider()
+              .strokeWidth(0.5)
+              .color(ThemeTokens.DIVIDER)
+              .margin({ left: ThemeTokens.SPACE_MD })
           }
         },
-      })
+        (definition: ReaderSuperResolutionModelDefinition): string => definition.id,
+      )
     }
   }
 

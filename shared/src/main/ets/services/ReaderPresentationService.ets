@@ -1,5 +1,9 @@
 import { common } from '@kit.AbilityKit'
-import { NhReaderMode, NhReaderPresentation } from '../model/NhReaderSettings'
+import {
+  NhReaderMode,
+  NhReaderPresentation,
+  NhReaderSuperResolutionModel,
+} from '../model/NhReaderSettings'
 import {
   NhReaderTapZoneInvert,
   NhReaderTapZoneLayout,
@@ -138,6 +142,20 @@ export class ReaderPresentationService {
     })
   }
 
+  static setSuperResolutionModel(
+    context: common.UIAbilityContext,
+    model: NhReaderSuperResolutionModel,
+  ): Promise<NhReaderPresentation> {
+    return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
+      presentation.superResolutionModel = ReaderPresentationService.normalizeSuperResolutionModel(model)
+    }, (presentation: NhReaderPresentation): Promise<void> => {
+      return ReaderSettingsRepository.saveSuperResolutionModel(
+        context,
+        presentation.superResolutionModel,
+      )
+    })
+  }
+
   private static async restoreInternal(context: common.UIAbilityContext): Promise<void> {
     const values: [
       NhReaderMode,
@@ -150,6 +168,7 @@ export class ReaderPresentationService {
       NhReaderTapZoneLayout,
       NhReaderTapZoneInvert,
       boolean,
+      NhReaderSuperResolutionModel,
     ] = await Promise.all([
       ReaderSettingsRepository.mode(context),
       ReaderSettingsRepository.keepScreenOn(context),
@@ -161,6 +180,7 @@ export class ReaderPresentationService {
       ReaderSettingsRepository.tapZoneLayout(context),
       ReaderSettingsRepository.tapZoneInvert(context),
       ReaderSettingsRepository.superResolutionEnabled(context),
+      ReaderSettingsRepository.superResolutionModel(context),
     ])
     const presentation: NhReaderPresentation = new NhReaderPresentation()
     presentation.mode = values[0]
@@ -173,6 +193,7 @@ export class ReaderPresentationService {
     presentation.tapZoneLayout = values[7]
     presentation.tapZoneInvert = values[8]
     presentation.superResolutionEnabled = values[9]
+    presentation.superResolutionModel = values[10]
     ReaderPresentationService.state().replace(presentation)
   }
 
@@ -212,5 +233,13 @@ export class ReaderPresentationService {
       return 3
     }
     return Math.max(1, Math.min(60, Math.round(value)))
+  }
+
+  private static normalizeSuperResolutionModel(value: NhReaderSuperResolutionModel): NhReaderSuperResolutionModel {
+    if (value === NhReaderSuperResolutionModel.WAIFU2X_PHOTO_NOISE0_2X ||
+      value === NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X) {
+      return value
+    }
+    return NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
   }
 }

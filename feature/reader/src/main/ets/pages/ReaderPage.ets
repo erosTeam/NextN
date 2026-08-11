@@ -13,6 +13,7 @@ import {
   NhGalleryPage,
   NhGalleryShareService,
   NhReaderMode,
+  NhReaderSuperResolutionModel,
   NhReaderTapZoneAction,
   NhReaderTapZoneInvert,
   NhReaderTapZoneLayout,
@@ -182,6 +183,7 @@ struct ReaderImagePage {
   /** A completed private translation artifact replaces only this image leaf. */
   @Param renderedImageUri: string = ''
   @Param enhancementEnabled: boolean = false
+  @Param enhancementModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
   @Param fillViewport: boolean = false
   @Param imageWidth: number = 0
   @Param imageHeight: number = 0
@@ -251,6 +253,11 @@ struct ReaderImagePage {
     this.loadImage()
   }
 
+  @Monitor('enhancementModel')
+  onEnhancementModelChanged(): void {
+    this.loadImage()
+  }
+
   // NextE dispatches double taps from the Reader surface rather than asking a
   // scrolling List/Swiper child to win the recognizer race. Only the visible
   // target page consumes the sequence command.
@@ -302,6 +309,7 @@ struct ReaderImagePage {
         localPath,
         this.enhancementOwnerKey(),
         true,
+        this.enhancementModel,
       )
       if (!this.isCurrentLoad(generation)) {
         return
@@ -621,6 +629,7 @@ struct ReaderSpreadImageLayer {
   @Param localImageUri: string = ''
   @Param renderedImageUri: string = ''
   @Param enhancementEnabled: boolean = false
+  @Param enhancementModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
   @Param pageIndex: number = -1
   @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
   @Event onSourceFileReady?: (pageIndex: number, localPath: string) => void
@@ -665,6 +674,11 @@ struct ReaderSpreadImageLayer {
     this.loadImage()
   }
 
+  @Monitor('enhancementModel')
+  onEnhancementModelChanged(): void {
+    this.loadImage()
+  }
+
   private context(): common.UIAbilityContext {
     return this.getUIContext().getHostContext() as common.UIAbilityContext
   }
@@ -702,6 +716,7 @@ struct ReaderSpreadImageLayer {
         localPath,
         this.enhancementOwnerKey(),
         true,
+        this.enhancementModel,
       )
       if (generation !== this.loadGeneration) {
         return
@@ -845,6 +860,7 @@ struct ReaderSpreadSurface {
   @Param firstRenderedImageUri: string = ''
   @Param secondRenderedImageUri: string = ''
   @Param enhancementEnabled: boolean = false
+  @Param enhancementModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
   @Param rowReversed: boolean = false
   @Param doubleTapSequence: number = 0
   @Param doubleTapTargetIndex: number = -1
@@ -1024,6 +1040,7 @@ struct ReaderSpreadSurface {
       localImageUri,
       renderedImageUri,
       enhancementEnabled: this.enhancementEnabled,
+      enhancementModel: this.enhancementModel,
       pageIndex: item.sourceIndex,
       cacheKey: ReaderImageCacheService.cacheKey(
         this.galleryId,
@@ -3167,6 +3184,7 @@ export struct ReaderPage {
             localImageUri: this.localImageUri(item.page, item.sourceIndex),
             renderedImageUri: this.readerTranslatedImageUri(item.sourceIndex),
             enhancementEnabled: this.readerEnhancementEnabled,
+            enhancementModel: this.readerPresentation.superResolutionModel,
             imageWidth: item.page.width,
             imageHeight: item.page.height,
             pageIndex: item.sourceIndex,
@@ -3218,6 +3236,7 @@ export struct ReaderPage {
               localImageUri: this.localImageUri(item.page, item.sourceIndex),
               renderedImageUri: this.readerTranslatedImageUri(item.sourceIndex),
               enhancementEnabled: this.readerEnhancementEnabled,
+              enhancementModel: this.readerPresentation.superResolutionModel,
               imageWidth: item.page.width,
               imageHeight: item.page.height,
               pageIndex: item.sourceIndex,
@@ -3287,6 +3306,7 @@ export struct ReaderPage {
             firstRenderedImageUri: this.readerTranslatedImageUri(item.first.sourceIndex),
             secondRenderedImageUri: item.second === null ? '' : this.readerTranslatedImageUri(item.second.sourceIndex),
             enhancementEnabled: this.readerEnhancementEnabled,
+            enhancementModel: this.readerPresentation.superResolutionModel,
             rowReversed: this.isRightToLeftPagedMode(),
             doubleTapSequence: this.doubleTapSequence,
             doubleTapTargetIndex: this.doubleTapTargetIndex,

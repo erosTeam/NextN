@@ -3,6 +3,79 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Reader selectable Waifu2x enhancement models
+
+- User outcome: Reader enhancement should let the user choose between the two
+  mature, same-native-contract Waifu2x models already available in NextE,
+  while preserving the current private, opt-in model-download boundary and
+  the established Reader canvas.
+- Reference parent tree: NextE owns this in `ReaderSettingsPage →
+  HdsNavDestination → SecondaryListScaffold → Reader settings
+  GroupedListSection`: enable switch, installed-model selector, model-manager
+  route leaf, then its existing height policy. Its manager is a separate
+  `HdsNavDestination → SecondaryListScaffold → ListItem → GroupedListSection`
+  with one concise row per user-selectable private model. A selector exposes
+  only locally installed models; downloads and removal remain explicit row
+  actions.
+- Current NextN parent tree: `SettingsPage(READER) →
+  SecondaryListScaffold → ListItem → ReaderPresentationGroup →
+  NextNGroupedListSection` currently has a Models manager row and an enable
+  switch, but no selected-model state. `ReaderSuperResolutionModelsPage →
+  SecondaryListScaffold → ListItem → NextNGroupedListSection` owns only one
+  waifu2x-art row. The Reader itself owns a full-screen canvas and must remain
+  unchanged.
+- Exact change boundary: add one installed-model selection leaf between the
+  existing manager and enable leaves; make the existing model destination
+  render a concise row for Waifu2x art and Waifu2x photo; persist only a
+  normalized selected model identifier. A prior single-model installation must
+  migrate to the art model selection without download, deletion, or a changed
+  default. No Reader canvas/chrome/gesture/progress layout, automatic
+  download, background model request, account data, gallery data, or cache
+  deletion is permitted.
+- Rationale: the native NextN enhancement runtime and its existing Waifu2x
+  model pair already support the corresponding art/photo definitions, but
+  current settings and model storage expose only one fixed definition. This is
+  a source-backed capability gap, not a visual restyle. The reference
+  RealESRGAN package has a different compatibility-conversion path and stays
+  out of this delivery until that path is independently ported and verified.
+- Visual verification plan: compare the same Reader-settings and
+  model-management states against the current NextE pages at the same native
+  viewport. Verify grouped ownership, row order, selected installed-model
+  menu, each explicit download/remove action, and the preserved disabled
+  enable state. Do not download a new model merely to create evidence; retain
+  raw local captures outside Git.
+- Unresolved risk: the photo model is available only through an explicit user
+  download and must never be fetched during migration, restore, or Reader
+  rendering. RealESRGAN remains deliberately unavailable here until its
+  separate compatibility conversion is verified.
+- New device counter-evidence before acceptance: on 2026-08-11, the first
+  same-viewport NextN Reader-settings capture showed both sibling leaves
+  titled `增强模型`. The initial implementation reused the old manager label
+  for the new selected-model leaf, obscuring the different actions. The
+  minimal correction is source-backed: retain `增强模型` / `Model` for the
+  selector and use NextE's `模型管理` / `Model management` for the route leaf.
+  No geometry, row order, state, or model action changes are permitted by
+  this copy correction.
+- New same-viewport reference counter-evidence before acceptance: NextN marked
+  an installed model row as `destructive`, which coloured its title and prefix
+  red. The current NextE manager keeps the model identity neutral and confines
+  the destructive affordance to its suffix trash action. The faulty assumption
+  was that a row-level danger flag represented a suffix-only delete control.
+  Correct it by adding the existing HDS `SuffixButton` capability as an
+  opt-in leaf of `NextNListRow`, then use that leaf only for model download and
+  removal. Do not alter other list rows, model files, or Reader state.
+- Device result, 2026-08-11: the signed Debug HAP was installed in place on
+  the selected device and the verified `com.erosteam.nextn` foreground reached
+  the model manager at the same `1320×2120` portrait viewport. The installed
+  Waifu2x art identity and prefix icon are neutral; only the `移除` suffix
+  button is red, while the uninstalled photo model exposes a blue `下载`
+  suffix button. This matches the relevant current NextE hierarchy: neutral
+  model identity with a suffix-only destructive affordance. Neither button,
+  the selector, nor the enhancement switch was activated. Raw local evidence
+  remains under `.hvigor/outputs/reader-model-settings-20260811T1004/` and is
+  excluded from Git. The photo download and Reader processing remain OPEN;
+  this observation accepts only the corrected manager-row hierarchy.
+
 ## FROZEN — Unified private-cache management (category-page visual boundary)
 
 - User outcome: the existing Cache destination should let a user inspect and

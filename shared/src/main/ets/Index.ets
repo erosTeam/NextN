@@ -38,7 +38,11 @@ export { NhSearchHistoryItem } from './model/NhSearchHistory'
 export { NhQuickSearchItem } from './model/NhQuickSearch'
 export { NhSearchLanguage, NhSearchOptions, NhSearchSort } from './model/NhSearchOptions'
 export { NhCatalogPreferences } from './model/NhCatalogPreferences'
-export { NhReaderMode, NhReaderPresentation } from './model/NhReaderSettings'
+export {
+  NhReaderMode,
+  NhReaderPresentation,
+  NhReaderSuperResolutionModel,
+} from './model/NhReaderSettings'
 export {
   NhReaderTapZoneAction,
   NhReaderTapZoneInvert,

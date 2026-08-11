@@ -2,6 +2,7 @@ import {
   HdsListItemCard,
   PrefixCustomBuilder,
   PrefixImage,
+  SuffixButton,
   SuffixSwitch,
   SuffixText,
   SuffixTextAndArrow,
@@ -29,6 +30,9 @@ export struct NextNListRow {
   @Param title: string = ''
   @Param subtitle: string = ''
   @Param trailingText: string = ''
+  /** An opt-in HDS suffix action. It leaves the row identity neutral. */
+  @Param trailingActionText: string = ''
+  @Param trailingActionDestructive: boolean = false
   @Param showChevron: boolean = true
   @Param hasSwitch: boolean = false
   @Param checked: boolean = false
@@ -38,6 +42,7 @@ export struct NextNListRow {
   @Param destructive: boolean = false
   @Param accessibilityLabel: string = ''
   @Event onAction?: () => void
+  @Event onTrailingAction?: () => void
   @Event onSwitchChange?: (value: boolean) => void
 
   private primaryTextModifier(): TextModifier {
@@ -75,10 +80,12 @@ export struct NextNListRow {
     if (this.subtitle.length > 0) {
       label += `, ${this.subtitle}`
     }
-    if (this.trailingText.length > 0) {
+    if (this.trailingActionText.length > 0) {
+      label += `, ${this.trailingActionText}`
+    } else if (this.trailingText.length > 0) {
       label += `, ${this.trailingText}`
     }
-    if (this.destructive) {
+    if (this.destructive || this.trailingActionDestructive) {
       label += ', destructive action'
     }
     if (!this.isEnabled) {
@@ -135,7 +142,7 @@ export struct NextNListRow {
     })
   }
 
-  private suffixItem(): SuffixTextAndArrow | SuffixText | SuffixSwitch | undefined {
+  private suffixItem(): SuffixTextAndArrow | SuffixText | SuffixSwitch | SuffixButton | undefined {
     if (this.hasSwitch) {
       return new SuffixSwitch({
         isCheck: this.checked,
@@ -156,6 +163,18 @@ export struct NextNListRow {
         )
       }
       return new SuffixText({ text: this.trailingText, modifier: this.trailingTextModifier() })
+    }
+    if (this.trailingActionText.length > 0) {
+      return new SuffixButton({
+        text: this.trailingActionText,
+        textColor: this.trailingActionDestructive ? Color.Red : ThemeTokens.BRAND,
+        enable: this.isEnabled,
+        onClick: (): void => {
+          if (this.isEnabled && this.onTrailingAction) {
+            this.onTrailingAction()
+          }
+        },
+      })
     }
     if (this.showChevron) {
       return new SuffixTextAndArrow({ text: '' }, { color: Color.Gray })

@@ -14,6 +14,15 @@ export enum NhReaderMode {
 }
 
 /**
+ * The user-selected local enhancement model. The identifiers are durable
+ * reader preferences, never model-file paths or a network selection.
+ */
+export enum NhReaderSuperResolutionModel {
+  WAIFU2X_ART_NOISE0_2X = 'waifu2x_art_noise0_2x',
+  WAIFU2X_PHOTO_NOISE0_2X = 'waifu2x_photo_noise0_2x',
+}
+
+/**
  * One local Reader presentation snapshot.  It is deliberately separate from
  * gallery data and request state: changing one of these values must preserve
  * the current Reader route, source-page index, cache, and history boundary.
@@ -35,6 +44,8 @@ export class NhReaderPresentation {
   tapZoneInvert: NhReaderTapZoneInvert = NhReaderTapZoneInvert.NONE
   /** Explicit opt-in; the original Reader image always remains available. */
   superResolutionEnabled: boolean = false
+  /** Existing installations resolve to the original art model without a migration download. */
+  superResolutionModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
 
   copy(): NhReaderPresentation {
     const result: NhReaderPresentation = new NhReaderPresentation()
@@ -48,6 +59,7 @@ export class NhReaderPresentation {
     result.tapZoneLayout = this.tapZoneLayout
     result.tapZoneInvert = this.tapZoneInvert
     result.superResolutionEnabled = this.superResolutionEnabled
+    result.superResolutionModel = this.superResolutionModel
     return result
   }
 }

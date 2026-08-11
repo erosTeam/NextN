@@ -15,6 +15,7 @@ import {
   LLM_CONSUMER_MANGA_TRANSLATION,
   NhTagTranslationStatus,
   NhReaderMode,
+  NhReaderSuperResolutionModel,
   NhReaderTapZoneInvert,
   NhReaderTapZoneLayout,
   NextNGroupedListSection,
@@ -152,7 +153,7 @@ export struct SettingsPage {
   @Local tagDictionaryCacheStatus: CacheStat = new CacheStat()
   @Local readerPresentation: ReaderPresentationState = connectReaderPresentation()
   @Local readerModeError: string = ''
-  @Local readerEnhancementModelInstalled: boolean = false
+  @Local readerEnhancementInstalledModels: NhReaderSuperResolutionModel[] = []
   @Local readerEnhancementModelsShown: boolean = false
   @Local browsePresentationError: string = ''
   @Local catalogPreferencesError: string = ''
@@ -161,6 +162,7 @@ export struct SettingsPage {
   @Local readerAutoPageMenuShown: boolean = false
   @Local readerTapZoneMenuShown: boolean = false
   @Local readerTapZoneInvertMenuShown: boolean = false
+  @Local readerEnhancementModelMenuShown: boolean = false
   @Local downloadSettings: DownloadSettingsState = connectDownloadSettings()
   @Local accountSession: AccountSessionState = connectAccountSession()
   @Local accountProfile: AccountProfileState = connectAccountProfile()
@@ -469,9 +471,63 @@ export struct SettingsPage {
     this.readerModeError = ''
     try {
       await ReaderPresentationService.restore(this.context())
-      this.readerEnhancementModelInstalled = await ReaderSuperResolutionModelService.isInstalled(this.context())
+      await this.refreshReaderEnhancementModels()
     } catch (_error) {
       this.readerModeError = AppStrings.get('settings_reader_layout_unavailable')
+    }
+  }
+
+  private hasReaderEnhancementModelInstalled(model: NhReaderSuperResolutionModel): boolean {
+    for (let index: number = 0; index < this.readerEnhancementInstalledModels.length; index++) {
+      if (this.readerEnhancementInstalledModels[index] === model) {
+        return true
+      }
+    }
+    return false
+  }
+
+  private selectedReaderEnhancementModelInstalled(): boolean {
+    return this.hasReaderEnhancementModelInstalled(this.readerPresentation.superResolutionModel)
+  }
+
+  private readerEnhancementModelLabel(): string {
+    if (!this.selectedReaderEnhancementModelInstalled()) {
+      return AppStrings.get('settings_reader_enhancement_model_none')
+    }
+    const definition = ReaderSuperResolutionModelService.definition(
+      this.readerPresentation.superResolutionModel,
+    )
+    return definition === null
+      ? AppStrings.get('settings_reader_enhancement_model_none')
+      : AppStrings.get(definition.labelStringKey)
+  }
+
+  private readerEnhancementModelTitle(model: NhReaderSuperResolutionModel): string {
+    const definition = ReaderSuperResolutionModelService.definition(model)
+    return definition === null
+      ? AppStrings.get('settings_reader_enhancement_model_none')
+      : AppStrings.get(definition.labelStringKey)
+  }
+
+  /** Mirrors the reference lifecycle: an externally removed selected model
+   * falls back to an installed peer, and an enabled reader has no missing-model
+   * state. This is not a download path. */
+  private async refreshReaderEnhancementModels(): Promise<void> {
+    this.readerEnhancementInstalledModels = await ReaderSuperResolutionModelService.installedModels(
+      this.context(),
+    )
+    if (this.selectedReaderEnhancementModelInstalled()) {
+      return
+    }
+    if (this.readerEnhancementInstalledModels.length > 0) {
+      await ReaderPresentationService.setSuperResolutionModel(
+        this.context(),
+        this.readerEnhancementInstalledModels[0],
+      )
+      return
+    }
+    if (this.readerPresentation.superResolutionEnabled) {
+      await ReaderPresentationService.setSuperResolutionEnabled(this.context(), false)
     }
   }
 
@@ -487,12 +543,26 @@ export struct SettingsPage {
 
   private async saveReaderEnhancementEnabled(enabled: boolean): Promise<void> {
     if (this.readerPresentation.superResolutionEnabled === enabled ||
-      (enabled && !this.readerEnhancementModelInstalled)) {
+      (enabled && !this.selectedReaderEnhancementModelInstalled())) {
       return
     }
     this.readerModeError = ''
     try {
       await ReaderPresentationService.setSuperResolutionEnabled(this.context(), enabled)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_enhancement_save_failed')
+    }
+  }
+
+  private async setReaderEnhancementModel(model: NhReaderSuperResolutionModel): Promise<void> {
+    this.readerEnhancementModelMenuShown = false
+    if (!this.hasReaderEnhancementModelInstalled(model) ||
+      this.readerPresentation.superResolutionModel === model) {
+      return
+    }
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setSuperResolutionModel(this.context(), model)
     } catch (_error) {
       this.readerModeError = AppStrings.get('settings_reader_enhancement_save_failed')
     }
@@ -1976,7 +2046,7 @@ export struct SettingsPage {
         leadingIcon: $r('sys.symbol.lightbulb'),
         title: AppStrings.get('settings_reader_enhancement_models'),
         subtitle: AppStrings.get('settings_reader_enhancement_models_hint'),
-        trailingText: this.readerEnhancementModelInstalled
+        trailingText: this.readerEnhancementInstalledModels.length > 0
           ? AppStrings.get('settings_reader_enhancement_model_ready')
           : AppStrings.get('settings_reader_enhancement_model_download'),
         accessibilityLabel: AppStrings.get('settings_reader_enhancement_models_a11y'),
@@ -1987,12 +2057,34 @@ export struct SettingsPage {
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.lightbulb'),
+        title: AppStrings.get('settings_reader_enhancement_model_selection'),
+        subtitle: AppStrings.get('settings_reader_enhancement_model_selection_hint'),
+        trailingText: this.readerEnhancementModelLabel(),
+        isEnabled: this.readerEnhancementInstalledModels.length > 0,
+        accessibilityLabel: AppStrings.format('settings_reader_enhancement_model_selection_a11y', [
+          this.readerEnhancementModelLabel(),
+        ]),
+        onAction: (): void => {
+          if (this.readerEnhancementInstalledModels.length > 0) {
+            this.readerEnhancementModelMenuShown = true
+          }
+        },
+      })
+      .bindMenu(this.readerEnhancementModelMenuShown, this.ReaderEnhancementModelMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.readerEnhancementModelMenuShown = false
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.lightbulb'),
         title: AppStrings.get('settings_reader_enhancement'),
         subtitle: AppStrings.get('settings_reader_enhancement_hint'),
         hasSwitch: true,
         checked: this.readerPresentation.superResolutionEnabled,
         showChevron: false,
-        isEnabled: this.readerEnhancementModelInstalled,
+        isEnabled: this.selectedReaderEnhancementModelInstalled(),
         accessibilityLabel: AppStrings.format('settings_reader_enhancement_a11y', [
           this.toggleStateLabel(this.readerPresentation.superResolutionEnabled),
         ]),
@@ -2072,6 +2164,26 @@ export struct SettingsPage {
         this.loadReaderPresentation()
       },
     })
+  }
+
+  @Builder
+  private ReaderEnhancementModelMenu() {
+    Menu() {
+      ForEach(
+        this.readerEnhancementInstalledModels,
+        (model: NhReaderSuperResolutionModel) => {
+          MenuItem({
+            content: this.readerEnhancementModelTitle(model),
+            symbolEndIcon: this.readerPresentation.superResolutionModel === model
+              ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+              : undefined,
+          }).onClick((): void => {
+            this.setReaderEnhancementModel(model).catch((): void => {})
+          })
+        },
+        (model: NhReaderSuperResolutionModel): string => model,
+      )
+    }
   }
 
   @Builder
