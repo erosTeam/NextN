@@ -24,6 +24,7 @@ import {
   ReaderPresentationService,
   ReaderPresentationState,
   DownloadQueueService,
+  DownloadNotificationService,
   DownloadSettingsService,
   DownloadSettingsState,
   HomeTabAutoHideState,
@@ -657,6 +658,24 @@ export struct SettingsPage {
       await DownloadQueueService.applySettings(this.context())
     } catch (_error) {
       this.downloadSettingsError = AppStrings.get('settings_download_retry_count_save_failed')
+    } finally {
+      this.isSavingDownloadSettings = false
+    }
+  }
+
+  private async saveCompletionNotifications(enabled: boolean): Promise<void> {
+    if (this.isSavingDownloadSettings) {
+      return
+    }
+    this.isSavingDownloadSettings = true
+    this.downloadSettingsError = ''
+    try {
+      await DownloadSettingsService.setNotifyOnComplete(this.context(), enabled)
+      if (enabled) {
+        await DownloadNotificationService.requestEnable(this.context())
+      }
+    } catch (_error) {
+      this.downloadSettingsError = AppStrings.get('settings_download_notify_complete_save_failed')
     } finally {
       this.isSavingDownloadSettings = false
     }
@@ -1614,6 +1633,25 @@ export struct SettingsPage {
         placement: Placement.BottomRight,
         onDisappear: (): void => {
           this.retryCountMenuShown = false
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.bell'),
+        title: AppStrings.get('settings_download_notify_complete'),
+        subtitle: AppStrings.get('settings_download_notify_complete_hint'),
+        hasSwitch: true,
+        checked: this.downloadSettings.notifyOnComplete,
+        showChevron: false,
+        isEnabled: !this.isSavingDownloadSettings,
+        accessibilityLabel: AppStrings.format('settings_download_notify_complete_a11y', [
+          this.toggleStateLabel(this.downloadSettings.notifyOnComplete),
+        ]),
+        onAction: (): void => {
+          this.saveCompletionNotifications(!this.downloadSettings.notifyOnComplete)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.saveCompletionNotifications(value)
         },
       })
     }

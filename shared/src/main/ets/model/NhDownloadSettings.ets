@@ -6,12 +6,14 @@ export class NhDownloadSettings {
   maxConcurrentGalleries: number = 1
   maxConcurrentPages: number = 3
   retryCount: number = 2
+  notifyOnComplete: boolean = false
 
   copy(): NhDownloadSettings {
     const result: NhDownloadSettings = new NhDownloadSettings()
     result.maxConcurrentGalleries = this.maxConcurrentGalleries
     result.maxConcurrentPages = this.maxConcurrentPages
     result.retryCount = this.retryCount
+    result.notifyOnComplete = this.notifyOnComplete
     return result
   }
 }

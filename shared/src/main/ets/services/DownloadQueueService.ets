@@ -8,6 +8,7 @@ import { DownloadQueueRepository } from '../storage/DownloadQueueRepository'
 import { DownloadQueueState, connectDownloadQueue } from '../state/DownloadQueueState'
 import { DownloadSettingsService } from './DownloadSettingsService'
 import { NhDownloadExportCacheService } from './NhDownloadExportCacheService'
+import { DownloadNotificationService } from './DownloadNotificationService'
 
 const DOWNLOAD_DIR_NAME: string = 'nextn-downloads'
 const MAX_PAGE_BYTES: number = 64 * 1024 * 1024
@@ -404,6 +405,7 @@ export class DownloadQueueService {
     if (current === null) {
       return
     }
+    const wasComplete: boolean = current.isComplete()
     current.completedPages = DownloadQueueService.completedFileCount(context, current)
     current.status = current.completedPages >= current.pageCount
       ? NhDownloadTaskStatus.COMPLETE
@@ -413,6 +415,9 @@ export class DownloadQueueService {
       : ''
     current.updatedAt = Date.now()
     await DownloadQueueService.persist(context, current)
+    if (!wasComplete && current.isComplete()) {
+      await DownloadNotificationService.publishDownloadComplete(current.title)
+    }
   }
 
   private static async downloadPage(

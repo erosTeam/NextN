@@ -133,6 +133,25 @@ remains continuous; do not ask for it again.
   model download and processing remain OPEN. No source field, secret, switch,
   save action, model state, account state, or content data changed.
 
+## Latest completed physical evidence — Download completion-notification setting
+
+- 2026-08-11: the signed Debug HAP was installed with `install -r` on the
+  selected TCP device only. Native Settings → Download showed the new default-
+  off `完成通知` row inside the existing Download policy group. A current NextE
+  Download-settings capture at the same `1320×2120` portrait viewport showed
+  the corresponding default-off bell switch row; NextE-only archive, speed,
+  and auto-retry controls were not copied into NextN.
+- Turning the NextN row on reached the real system notification permission
+  dialog. The prompt was denied to preserve the existing system permission
+  state, then the app preference was restored to off and the native Download
+  settings row was re-observed. No task was started, paused, removed,
+  exported, or fabricated; no notification was published. The default-off row
+  and permission-request transition are accepted for this path. A genuine
+  future completion notification remains unproven and stays OPEN in the UI
+  change ledger. The raw local comparison evidence is retained in
+  `.hvigor/outputs/download-notification-settings-20260811T0426/` and is not
+  in Git.
+
 ## Current delivery observation — Reader enhancement interaction yield
 
 - 2026-08-11: the signed Debug build containing the Reader interaction-yield

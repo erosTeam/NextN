@@ -6,11 +6,13 @@ export class DownloadSettingsState {
   @Trace maxConcurrentGalleries: number = 1
   @Trace maxConcurrentPages: number = 3
   @Trace retryCount: number = 2
+  @Trace notifyOnComplete: boolean = false
 
   replace(settings: NhDownloadSettings): void {
     this.maxConcurrentGalleries = settings.maxConcurrentGalleries
     this.maxConcurrentPages = settings.maxConcurrentPages
     this.retryCount = settings.retryCount
+    this.notifyOnComplete = settings.notifyOnComplete
   }
 
   snapshot(): NhDownloadSettings {
@@ -18,6 +20,7 @@ export class DownloadSettingsState {
     result.maxConcurrentGalleries = this.maxConcurrentGalleries
     result.maxConcurrentPages = this.maxConcurrentPages
     result.retryCount = this.retryCount
+    result.notifyOnComplete = this.notifyOnComplete
     return result
   }
 }

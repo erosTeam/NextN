@@ -69,6 +69,16 @@ export class DownloadSettingsService {
     return DownloadSettingsService.save(context, settings)
   }
 
+  static async setNotifyOnComplete(
+    context: common.UIAbilityContext,
+    enabled: boolean,
+  ): Promise<NhDownloadSettings> {
+    await DownloadSettingsService.restore(context)
+    const settings: NhDownloadSettings = DownloadSettingsService.snapshot()
+    settings.notifyOnComplete = enabled
+    return DownloadSettingsService.save(context, settings)
+  }
+
   static minGalleryConcurrency(): number {
     return MIN_GALLERY_CONCURRENCY
   }

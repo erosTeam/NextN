@@ -6,6 +6,7 @@ import { LocalDataStore } from './LocalDataStore'
 const GALLERY_CONCURRENCY_KEY: string = 'gallery_concurrency'
 const PAGE_CONCURRENCY_KEY: string = 'page_concurrency'
 const RETRY_COUNT_KEY: string = 'retry_count'
+const NOTIFY_ON_COMPLETE_KEY: string = 'notify_on_complete'
 const SQL_SELECT: string = 'SELECT key, value FROM download_settings'
 const SQL_UPSERT: string =
   'INSERT INTO download_settings (key, value) VALUES (?, ?) ' +
@@ -36,6 +37,8 @@ export class DownloadSettingsRepository {
           settings.maxConcurrentPages = value
         } else if (key === RETRY_COUNT_KEY) {
           settings.retryCount = value
+        } else if (key === NOTIFY_ON_COMPLETE_KEY) {
+          settings.notifyOnComplete = value === 1
         }
       }
     } catch (error) {
@@ -57,6 +60,7 @@ export class DownloadSettingsRepository {
       await store.executeSql(SQL_UPSERT, [GALLERY_CONCURRENCY_KEY, `${snapshot.maxConcurrentGalleries}`])
       await store.executeSql(SQL_UPSERT, [PAGE_CONCURRENCY_KEY, `${snapshot.maxConcurrentPages}`])
       await store.executeSql(SQL_UPSERT, [RETRY_COUNT_KEY, `${snapshot.retryCount}`])
+      await store.executeSql(SQL_UPSERT, [NOTIFY_ON_COMPLETE_KEY, snapshot.notifyOnComplete ? '1' : '0'])
     })
   }
 

@@ -287,6 +287,7 @@ export {
 export { DownloadSettingsState, connectDownloadSettings } from './state/DownloadSettingsState'
 export { DownloadBatchResult, DownloadQueueService } from './services/DownloadQueueService'
 export { DownloadSettingsService } from './services/DownloadSettingsService'
+export { DownloadNotificationService } from './services/DownloadNotificationService'
 export { ContentFilterRepository } from './storage/ContentFilterRepository'
 export { ContentFilterState, connectContentFilters } from './state/ContentFilterState'
 export { ContentFilterService } from './services/ContentFilterService'

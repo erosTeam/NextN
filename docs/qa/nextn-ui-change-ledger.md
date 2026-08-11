@@ -3,6 +3,54 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Private-download completion notifications
+
+- User outcome: a user who explicitly enables it can receive one system
+  notification when a private gallery download has durably completed; the
+  default remains silent.
+- Reference parent tree: NextE owns this setting in `DownloadSettingsPage →
+  HdsNavDestination → SecondaryListScaffold → ListItem → GroupedListSection`.
+  Inside its existing download-policy group, `Completion notifications` is a
+  concise switch row following retry policy. Enabling writes the durable
+  preference and then asks the system to enable notifications. Its queue
+  publishes one basic-text notification only after a normal gallery/archive
+  completion.
+- Current NextN parent tree: `SettingsPage(DOWNLOAD) →
+  SecondaryListScaffold → ListItem → NextNGroupedListSection → NextNListRow`.
+  The group currently owns gallery concurrency, page concurrency, and failed
+  page retries. `DownloadQueueService` owns the durable final transition from
+  `DOWNLOADING` to `COMPLETE`.
+- Exact change boundary: add one default-off switch after failed-page retries;
+  persist only its boolean in the existing `download_settings` store; request
+  system notification enable only when the user turns it on; and publish one
+  fixed-ID basic-text notification only after the final COMPLETE task write
+  succeeds. No notification path may mutate task status, queue state,
+  progress, files, network work, account state, or re-emit for restored
+  completed tasks.
+- Rationale: this ports an existing mature NextE ownership path while keeping
+  NextN's local-only queue and its user privacy boundary intact. The switch is
+  opt-in because notification content can be visible outside the app.
+- Visual verification plan: build and install in place on the selected device;
+  compare the native Download settings row with the same-state NextE row, then
+  restore the setting after the permission branch. A completion notification
+  requires a genuine future task completion; no existing task will be started,
+  paused, deleted, or fabricated merely to obtain it.
+- Unresolved risk: system-level notification permission and a genuine new
+  completion are separate device states. Until both are observed, this entry
+  remains OPEN regardless of source or build evidence.
+- Current device/reference result: the signed Debug HAP was installed in place
+  on `192.168.50.237:12345`. Both NextN and NextE were captured in the same
+  `1320×2120` portrait Download-settings state with the switch initially off.
+  The common leaf is a bell-prefixed, full-width HDS switch row with title and
+  one caption line. NextE's additional auto-retry/speed/archive settings are
+  unsupported NextN siblings and were not imitated. In NextN, turning the row
+  on reached the genuine system notification permission dialog; it was denied
+  to preserve the device's existing system permission state, then the app
+  preference was returned to off. No existing task was started, paused,
+  deleted, exported, or otherwise changed. This accepts the initial row and
+  permission-request transition only; a real future completion notification
+  remains unproven.
+
 ## OPEN — Reader per-page comic translation
 
 - User outcome: bring the mature, NH-applicable Reader comic-translation
