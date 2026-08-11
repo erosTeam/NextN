@@ -82,6 +82,23 @@ remains continuous; do not ask for it again.
   this observed path only; the queue remains OPEN until the user explicitly
   requests closure, and any future fresh failure preempts delivery again.
 
+## Current delivery observation — collection-card tag display
+
+- 2026-08-11: the signed Debug build containing the opt-in tag leaf was
+  installed with `install -r` on the selected TCP device only. The existing
+  Layout setting initially showed the tag-display control disabled.
+- With that temporary control enabled, already loaded native Gallery cards
+  rendered resolved tag names in the regular waterfall, compact waterfall,
+  and list presentations. No credential field, account action, Favorites
+  read, content mutation, or app-data clear occurred.
+- The temporary state was restored before leaving the lane: the Layout
+  control read disabled, the presentation control read Cover grid, and the
+  terminal Gallery surface returned to native Cover grid. Local raw captures
+  remain outside source control and are not named here.
+- This is device rendering and restoration evidence only. A same-gallery,
+  same-viewport ErosN comparison remains outstanding, so it is not a
+  visual-reference parity acceptance.
+
 ## Active delivery P1 — Gallery Detail / Comments
 
 - The Detail-owned comments response is now passed into the full Comments

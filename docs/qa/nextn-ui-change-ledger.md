@@ -240,3 +240,11 @@ authorize an edit, replace a device comparison, or define product completion.
 - Unresolved risk: the v2 list endpoint supplies only ids. The public catalog
   may rate-limit or omit names, so absence of resolved names must leave the
   card's existing layout intact rather than fail, block, or retry a listing.
+- Current device observation: on the selected device, the default-off control
+  was observed before the temporary validation change. Enabling it rendered
+  resolved-name leaves in the native regular-waterfall, compact-waterfall,
+  and list cards. The control was then restored to off and the presentation
+  to Cover grid, both in Settings and on the terminal Gallery surface. This
+  confirms the bounded native state and restoration path only; no
+  same-gallery, same-viewport ErosN capture exists yet, so visual-reference
+  parity remains OPEN.
