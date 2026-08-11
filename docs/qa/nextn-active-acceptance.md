@@ -1311,6 +1311,12 @@ rewrite, re-run, or block this completed direct-route observation.
   NextN Reader. The current root again reports native NextN `EntryAbility`,
   the original `1320×2120` viewport, and the Reader overlay. No preference,
   page data, account state, or Reader action changed during restoration.
+- 2026-08-12 focus-routing precondition: the selected device remained in that
+  native Reader overlay with Chrome hidden and no mounted More control. The
+  canvas menu action depends on the persisted tap-layout/inversion preference;
+  it was not guessed. No input, preference, page, account, or content change
+  occurred in this diagnostic. The retained local layout is under
+  `.hvigor/outputs/reader-focus-routing-20260812T/` and is excluded from Git.
 
 ## Data and artifact boundary
 

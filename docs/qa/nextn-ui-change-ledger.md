@@ -861,6 +861,14 @@ authorize an edit, replace a device comparison, or define product completion.
   becomes `nexte0`. The NextN single-tap source path has no external-launch
   call. Do not recreate the leaf or repeat the menu-zone input until that
   focused-window transition is separately explained.
+- **2026-08-12 focus-routing precondition:** the retained Reader was current
+  native NextN at `1320×2120`, with its overlay mounted and Chrome hidden; the
+  More control was consequently absent from the current native tree. The
+  canvas menu zone depends on the persisted tap-layout and inversion settings,
+  which were not exposed by that state. No canvas input was injected, so this
+  observation neither repeats nor attributes the prior cross-app transition.
+  The next action is a source-grounded, non-mutating observation of that
+  setting state before any menu-zone diagnostic.
 
 ## FROZEN — Reader enhancement input-height preference UI
 
