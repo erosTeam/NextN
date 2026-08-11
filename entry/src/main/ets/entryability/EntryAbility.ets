@@ -26,6 +26,7 @@ import {
   publishNhClipboardGalleryCandidate,
   ScreenOrientationSettings,
   TabletLayoutSettings,
+  ThemeColorSettings,
   ThemeSettings,
 } from 'shared'
 
@@ -108,6 +109,9 @@ export default class EntryAbility extends UIAbility {
       // mounts. The platform color-mode call itself remains below
       // `loadContent`, which is the lifecycle point required by ArkUI.
       ThemeSettings.restore(this.context, false),
+      // Accent selection changes only app tokens, so it is safe to publish
+      // before the first component mounts.
+      ThemeColorSettings.restore(this.context),
       LanguageSettings.restore(this.context),
       // Restore the HDS title and floating-tab material before either surface
       // first renders; unsupported devices still resolve ADAPTIVE at use time.

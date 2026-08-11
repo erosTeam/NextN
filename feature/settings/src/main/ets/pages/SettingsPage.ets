@@ -59,6 +59,9 @@ import {
   TagTranslationRepository,
   TagTranslationUpdateService,
   ThemeTokens,
+  ThemeColorOption,
+  ThemeColorSettings,
+  ThemeColorState,
   ThemeDisplayState,
   ThemeSettings,
   TabletLayoutSettings,
@@ -91,6 +94,7 @@ import {
   connectLayoutSafeArea,
   connectSettingsNavigation,
   connectTabletLayout,
+  connectThemeColor,
   connectThemeDisplay,
 } from 'shared'
 
@@ -181,6 +185,7 @@ export struct SettingsPage {
   @Local clipboardLink: NhClipboardLinkState = connectNhClipboardLink()
   @Local readButtonStyle: ReadButtonStyleState = connectReadButtonStyle()
   @Local immersiveMaterial: ImmersiveMaterialSettingsState = connectImmersiveMaterialSettings()
+  @Local themeColor: ThemeColorState = connectThemeColor()
   @Local themeDisplay: ThemeDisplayState = connectThemeDisplay()
   @Local language: LanguageState = connectLanguageState()
   @Local layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
@@ -192,6 +197,7 @@ export struct SettingsPage {
   @Local pageConcurrencyMenuShown: boolean = false
   @Local retryCountMenuShown: boolean = false
   @Local themeMenuShown: boolean = false
+  @Local themeColorMenuShown: boolean = false
   @Local immersiveMaterialMenuShown: boolean = false
   @Local languageMenuShown: boolean = false
   @Local browsePresentationMenuShown: boolean = false
@@ -292,6 +298,7 @@ export struct SettingsPage {
     try {
       await Promise.all([
         ThemeSettings.restore(this.context()),
+        ThemeColorSettings.restore(this.context()),
         LanguageSettings.restore(this.context()),
         ImmersiveMaterialSettings.restore(this.context()),
         BrowsePresentationService.restore(this.context()),
@@ -343,6 +350,15 @@ export struct SettingsPage {
   private setTheme(mode: string): void {
     this.themeMenuShown = false
     ThemeSettings.setMode(this.context(), mode).catch((): void => {})
+  }
+
+  private themeColorLabel(): string {
+    return AppStrings.get(ThemeColorSettings.labelKey(this.themeColor.color))
+  }
+
+  private setThemeColor(value: string): void {
+    this.themeColorMenuShown = false
+    ThemeColorSettings.setColor(this.context(), value).catch((): void => {})
   }
 
   private setImmersiveMaterial(level: string): void {
@@ -2329,6 +2345,50 @@ export struct SettingsPage {
   }
 
   @Builder
+  private ThemeColorMenu() {
+    Menu() {
+      ForEach(
+        ThemeColorSettings.options(),
+        (option: ThemeColorOption): void => {
+          MenuItem({
+            content: AppStrings.get(option.labelKey),
+            symbolStartIcon: new SymbolGlyphModifier($r('sys.symbol.paintpalette_fill'))
+              .fontSize(ThemeTokens.FONT_SIZE_BODY)
+              .fontColor([option.color]),
+            symbolEndIcon: this.themeColor.color === option.value
+              ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+              : undefined,
+          }).onClick((): void => {
+            this.setThemeColor(option.value)
+          })
+        },
+        (option: ThemeColorOption): string => option.value,
+      )
+    }
+  }
+
+  @Builder
+  private ThemeColorSuffix() {
+    Row({ space: ThemeTokens.SPACE_XS }) {
+      Stack()
+        .width(ThemeTokens.SPACE_LG)
+        .height(ThemeTokens.SPACE_LG)
+        .borderRadius(ThemeTokens.SPACE_LG / 2)
+        .backgroundColor(ThemeColorSettings.colorValue(this.themeColor.color))
+      Text(this.themeColorLabel())
+        .fontSize(ThemeTokens.FONT_SIZE_BODY)
+        .fontColor(ThemeTokens.TEXT_SECONDARY)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+      SymbolGlyph($r('sys.symbol.arrowtriangle_down_fill'))
+        .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+        .fontColor([ThemeTokens.TEXT_TERTIARY])
+        .padding({ right: ThemeTokens.SPACE_MD })
+    }
+    .alignItems(VerticalAlign.Center)
+  }
+
+  @Builder
   private ImmersiveMaterialMenu() {
     Menu() {
       ForEach(
@@ -2406,6 +2466,28 @@ export struct SettingsPage {
         placement: Placement.BottomRight,
         onDisappear: (): void => {
           this.themeMenuShown = false
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.paintpalette'),
+        title: AppStrings.get('settings_theme_color'),
+        useCustomTrailing: true,
+        customTrailing: (): void => {
+          this.ThemeColorSuffix()
+        },
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_theme_color'),
+          this.themeColorLabel(),
+        ]),
+        onAction: (): void => {
+          this.themeColorMenuShown = true
+        },
+      })
+      .bindMenu(this.themeColorMenuShown, this.ThemeColorMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.themeColorMenuShown = false
         },
       })
       this.RowDivider()

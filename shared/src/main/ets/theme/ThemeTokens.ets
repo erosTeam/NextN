@@ -1,3 +1,5 @@
+import { ThemeColorSettings } from '../settings/ThemeColorSettings'
+
 /**
  * NextN's single visual language.
  *
@@ -9,10 +11,11 @@
  */
 export class ThemeTokens {
   // Semantic colours
-  // NextE delegates emphasis to Harmony's semantic system colors instead of
-  // shipping a Material-purple product accent. This keeps HDS controls aligned
-  // with the active HarmonyOS color mode.
-  static readonly BRAND: ResourceColor = $r('sys.color.font_emphasize')
+  // The system default keeps Harmony emphasis; ThemeColorSettings can replace
+  // only this global brand token with an explicit user-selected preset.
+  static get BRAND(): ResourceColor {
+    return ThemeColorSettings.currentColor()
+  }
   static readonly BRAND_CONTAINER: ResourceColor = $r('sys.color.ohos_id_color_button_normal')
   // Keep page hosts on the system sub-background. HDS material adapts against
   // this semantic color across light/dark modes just as it does in NextE.

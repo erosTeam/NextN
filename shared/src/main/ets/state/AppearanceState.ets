@@ -17,6 +17,25 @@ export function connectThemeDisplay(): ThemeDisplayState {
   )!
 }
 
+/**
+ * App-wide accent selection. `system` retains the existing Harmony emphasis
+ * color; named presets are resolved by ThemeColorSettings.
+ */
+@ObservedV2
+export class ThemeColorState {
+  @Trace color: string = 'system'
+}
+
+const THEME_COLOR_KEY: string = 'nextn_theme_color'
+
+export function connectThemeColor(): ThemeColorState {
+  return AppStorageV2.connect(
+    ThemeColorState,
+    THEME_COLOR_KEY,
+    (): ThemeColorState => new ThemeColorState(),
+  )!
+}
+
 /** Language state makes resource-backed computed labels update without an app restart. */
 @ObservedV2
 export class LanguageState {

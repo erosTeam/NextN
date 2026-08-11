@@ -217,6 +217,21 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Risk:** wide reactive-brand reach is intentional but must remain confined
   to existing `ThemeTokens.BRAND` consumers; `BRAND_CONTAINER`, tag colors,
   favorite-category colors, and reader image overlays stay unchanged.
+- **Device result — 2026-08-12:** the signed Debug HAP was installed in place
+  on the selected 237 device. The native Interface page showed the inserted
+  theme-color row in the Appearance group, with the system color dot and
+  down-triangle suffix. Its menu showed the system option and the seven named
+  presets. Selecting Huawei red updated both the row's dot/value and the
+  existing selected root Settings tab to the same red accent. The value was
+  then restored through the same native menu to Follow system; no account,
+  Favorites, content, or other preference was touched. Raw screenshots and
+  layouts are retained locally in
+  `.hvigor/outputs/theme-color-20260812T0315/` and are excluded from Git.
+- **Status — EVIDENCE-ONLY:** the exact NextN selection, global accent update,
+  and restoration path are observed. This run did not retain a current
+  same-state NextE reference root, so it does not establish visual-reference
+  parity; do not repeat this selection sequence merely to produce another
+  implementation capture.
 
 ## OPEN — Reader selectable Waifu2x enhancement models
 

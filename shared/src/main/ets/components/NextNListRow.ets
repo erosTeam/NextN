@@ -37,6 +37,9 @@ export struct NextNListRow {
   @Param showChevron: boolean = true
   /** Use the standard down-triangle when this row opens a value menu. */
   @Param trailingDropdown: boolean = false
+  /** Use a caller-owned HDS suffix only for a reference-owned leaf shape. */
+  @Param useCustomTrailing: boolean = false
+  @BuilderParam customTrailing: () => void = this.EmptyTrailing
   @Param hasSwitch: boolean = false
   @Param checked: boolean = false
   /** Navigational location marker, separate from a switch's checked state. */
@@ -113,6 +116,9 @@ export struct NextNListRow {
   private EmptyLeading() {}
 
   @Builder
+  private EmptyTrailing() {}
+
+  @Builder
   private DropdownSuffixContent() {
     Text(this.trailingText)
       .fontSize(ThemeTokens.FONT_SIZE_BODY)
@@ -183,6 +189,11 @@ export struct NextNListRow {
             this.onSwitchChange(value)
           }
         },
+      })
+    }
+    if (this.useCustomTrailing) {
+      return new SuffixCustomBuilder((): void => {
+        this.customTrailing()
       })
     }
     if (this.trailingText.length > 0) {

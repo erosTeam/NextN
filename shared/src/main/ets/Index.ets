@@ -26,8 +26,10 @@ export {
 } from './state/ImmersiveMaterialSettingsState'
 export {
   ThemeDisplayState,
+  ThemeColorState,
   LanguageState,
   connectThemeDisplay,
+  connectThemeColor,
   connectLanguageState,
 } from './state/AppearanceState'
 export { NhAccountProfile } from './model/NhAccountProfile'
@@ -350,6 +352,7 @@ export { HomeSourcePresentationService } from './services/HomeSourcePresentation
 export { CatalogPreferencesService } from './services/CatalogPreferencesService'
 export { CatalogPreferencesState, connectCatalogPreferences } from './state/CatalogPreferencesState'
 export { ThemeSettings } from './settings/ThemeSettings'
+export { ThemeColorSettings, ThemeColorOption } from './settings/ThemeColorSettings'
 export { LanguageSettings } from './settings/LanguageSettings'
 export { TabletLayoutSettings } from './settings/TabletLayoutSettings'
 export { ScreenOrientationSettings } from './settings/ScreenOrientationSettings'
