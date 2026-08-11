@@ -940,6 +940,15 @@ remains continuous; do not ask for it again.
   stage was skipped. Both temporary variants were removed, then the normal
   signed Debug HAP was rebuilt and installed with `install -r`. No data,
   preference, account, or content mutation occurred.
+- 2026-08-11 version boundary: an isolated, reproducible `12aa2f8` baseline
+  HAP was built after restoring only its local HAR links. It was installed
+  once with `install -r` and exercised through the same current Detail action;
+  its terminal foreground was also NextE. The current HEAD HAP was immediately
+  reinstalled with `install -r`. Therefore the observed exit predates the
+  commits after `12aa2f8`; no later Reader settings or self-hosted-renderer
+  change may be named as its cause. The isolated worktree, including its
+  temporary local signing file, was removed; the local device evidence remains
+  outside Git at `.hvigor/outputs/reader-version-boundary-20260811T2200/`.
 
 ## Current device exception — Gallery full-title translation route setup
 

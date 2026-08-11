@@ -1097,3 +1097,10 @@ authorize an edit, replace a device comparison, or define product completion.
   route-stage discriminator. The temporary source was removed and the normal
   signed Debug HAP reinstalled; no visual surface, preference, account, or
   content data changed.
+- Version-boundary result: the isolated `12aa2f8` baseline HAP reproduced the
+  same NextE terminal from the same one-activation Reader route. Current HEAD
+  was reinstalled immediately afterward. This rules out the post-`12aa2f8`
+  Reader settings/self-hosted-renderer commits as the cause of this observed
+  exit, but does not establish an older code or platform cause. The temporary
+  worktree and copied signing configuration were removed; local device
+  evidence remains outside Git.
