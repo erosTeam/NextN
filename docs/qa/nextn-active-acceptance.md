@@ -813,6 +813,39 @@ remains continuous; do not ask for it again.
   `.hvigor/outputs/reader-hit-test-20260811T0319+0800/` and remains outside
   Git.
 
+## Current device exception — Gallery full-title translation route setup
+
+- 2026-08-11: after installing the Debug HAP for the full-title translation
+  leaf with `install -r`, one hot integer-Want start for Gallery `471768`
+  retained the pre-existing NextN Download settings foreground instead of the
+  declared native Gallery Detail destination. The captured root was NextN's
+  Download settings; no Detail control or title action was touched.
+- This does not establish a Gallery routing defect: the post-install ability
+  process had not first been re-established as the new build, so the run lacks
+  the required implementation-version foreground precondition. The terminal
+  screenshot and layout are retained locally in
+  `.hvigor/outputs/gallery-title-translation-20260811T0454/` and are excluded
+  from Git.
+- Next physical action: force-stop only NextN, issue the documented numeric
+  Gallery Want once, and accept only a native Gallery Detail terminal before
+  opening the full-title sheet. Do not use the rejected Download settings
+  state, old coordinates, a scroll route, or a second hot start.
+
+## Current delivery observation — Gallery full-title translation
+
+- 2026-08-11: after force-stopping only NextN and starting the same documented
+  numeric Gallery Want, the final root was native `com.erosteam.nextn` Gallery
+  Detail. One current unique title action opened the updated full-title sheet.
+- The sheet showed its stable caption, separate source-title blocks, and two
+  disabled translate leaves. No configured text source was present, so no
+  provider request, source/profile change, account action, preference write,
+  or gallery mutation occurred.
+- The terminal screenshot and layout are retained in
+  `.hvigor/outputs/gallery-title-translation-20260811T0454/` outside Git.
+  A current same-state NextE title-sheet capture cannot be reached without
+  changing reference data, so this is route/render evidence only; reference
+  parity and configured running/result/failure states remain OPEN.
+
 ## Latest device observation — Shared comment-translation source route
 
 - 2026-08-11 08:37-08:40 +0800: the signed Debug HAP containing the shared

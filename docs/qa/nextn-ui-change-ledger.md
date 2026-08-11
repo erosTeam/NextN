@@ -3,6 +3,57 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Gallery Detail full-title translation
+
+- User outcome: a user who has explicitly configured the existing private text
+  translation source can translate either source title from the existing
+  Gallery Detail full-title sheet, then toggle that translated text without
+  altering the gallery record or Detail layout outside the sheet.
+- Reference parent tree: NextE keeps the feature inside `GalleryDetailPage →
+  GalleryHeaderCard → existing full-title modal → ListItem →
+  GroupedListSection → title read block`. Each block has its source-title
+  label and text, then one compact translate leaf; its result expands directly
+  beneath that same source title. The service is a title-named boundary over
+  the existing private short-text translation/cache pipeline.
+- Current NextN parent tree: `GalleryDetailPage → GalleryHero → existing
+  FullTitleSheet → NextNModalScaffold → ListItem →
+  NextNGroupedListSection → Column(primary title, optional secondary title)`.
+  `CommentTranslationService` already provides the only supported private
+  text-source resolution, request fence, cache, and locale policy.
+- Exact change boundary: retain the Hero, title preference, sheet route,
+  scaffold, ListItem, grouped surface, and source-title text. Align the sheet
+  header to the reference's stable `Full title` caption, then split the
+  existing two title texts into corresponding read blocks; add a compact,
+  source-bound translation action and result directly beneath each block. The
+  action is disabled until the existing comment/text source is configured. It
+  may not add an automatic request, change source bindings, alter cards, the
+  floating Read overlay, related/comments, Reader, or Detail request lifecycle.
+- Rationale: this ports a mature generic translation leaf using NextN's
+  existing private provider/cache instead of creating another service or
+  altering the already reviewed Detail surface.
+- Visual verification plan: with no text source configured, compare the
+  existing full-title sheet against the same-state NextE sheet and confirm the
+  two source-title blocks and disabled action remain contained inside the
+  modal. With an authorized configured source, compare one running, completed,
+  toggled, and failed translation in the same gallery/viewport. Retain the
+  local captures and do not use source-shape checks as acceptance.
+- Unresolved risk: the selected device currently has no configured text source,
+  so only the unconfigured-sheet state can be exercised without creating or
+  exposing a provider secret.
+- Current device observation: the signed Debug HAP was installed in place on
+  the selected device. A first post-install hot Want was rejected because it
+  retained the prior Download-settings foreground; after force-stopping only
+  NextN, the same documented numeric Gallery Want reached a native NextN
+  Detail root. One fresh unique title action opened the updated full-title
+  sheet, which showed the stable sheet caption, separate source-title blocks,
+  and both disabled translation leaves. No provider request, source/profile
+  change, account action, preference write, or gallery mutation occurred.
+  The named local audit directory is
+  `.hvigor/outputs/gallery-title-translation-20260811T0454/` and is excluded
+  from Git. A current same-state NextE title-sheet capture is not available
+  without altering reference data, so visual-reference acceptance and every
+  configured translation result remain OPEN.
+
 ## OPEN — Private-download completion notifications
 
 - User outcome: a user who explicitly enables it can receive one system

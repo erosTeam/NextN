@@ -133,6 +133,7 @@ export {
   OpenAiChatCompletionsConfig,
 } from './services/OpenAiChatCompletionsClient'
 export { CommentTranslationService } from './services/CommentTranslationService'
+export { GalleryTitleTranslationService } from './services/GalleryTitleTranslationService'
 export {
   COMIC_RESPONSES_TEXT_TRANSLATION_PROMPT_VERSION,
   COMIC_RESPONSES_TEXT_ONLY_TRANSLATION_PROMPT_VERSION,
