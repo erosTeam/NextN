@@ -1152,6 +1152,11 @@ rewrite, re-run, or block this completed direct-route observation.
   source construction are therefore all rejected for this device path. The
   normal signed Debug HAP must be restored before any later, non-construction
   diagnostic.
+- A 1×1 `createPixelMap` probe that returned immediately before all pixel
+  reads, inference, output creation, and packing still ended with `nexte0`.
+  It was removed immediately. This rules out input construction and requested
+  PixelMap size as the immediate trigger; any further work must use a different
+  image-decoding boundary, not another ImageSource option variation.
 
 ## Data and artifact boundary
 

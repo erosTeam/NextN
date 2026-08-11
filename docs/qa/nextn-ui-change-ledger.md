@@ -1197,3 +1197,15 @@ authorize an edit, replace a device comparison, or define product completion.
   removed immediately and the normal Debug build is being restored. With path,
   descriptor, and in-memory inputs all rejected, the remaining boundary is
   `createPixelMap` execution itself, not ImageSource input construction.
+
+### Minimum-size PixelMap boundary — 2026-08-11
+
+- Basis: all three supported ImageSource constructors had failed, leaving the
+  decode allocation path as the last bounded ImageKit split. The diagnostic
+  requested only a 1×1 RGBA PixelMap and returned before pixel-buffer access,
+  inference, output PixelMap creation, or packing.
+- Result: the same single Reader action still ended with WindowManager
+  foreground `nexte0`. The diagnostic was removed immediately. The device
+  exit is therefore not explained by source construction, requested pixel-map
+  size, downstream pixel reads, native inference, or output packing; it occurs
+  during this ArkTS ImageSource `createPixelMap` invocation itself.
