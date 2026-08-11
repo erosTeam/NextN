@@ -2,11 +2,13 @@ import {
   ContentFilterService,
   ContentFilterState,
   AppStrings,
+  CommentTranslationService,
   InlineRetryNotice,
   LayoutSafeAreaState,
   NhApiClient,
   AccountSessionState,
   NhComment,
+  LlmSourceProfilesState,
   NextNPullRefreshController,
   PageEmptyState,
   PageErrorState,
@@ -16,7 +18,10 @@ import {
   connectAccountSession,
   connectContentFilters,
   connectLayoutSafeArea,
+  connectLlmSourceProfiles,
+  supportsCommentTranslation,
 } from 'shared'
+import { common } from '@kit.AbilityKit'
 import { KeyboardAvoidMode } from '@kit.ArkUI'
 
 const COMMENT_COMPOSER_FIELD_ID: string = 'nextn-gallery-comments-composer-field'
@@ -26,6 +31,13 @@ const COMMENT_COMPOSER_INPUT_MAX_H: number = 148
 // A 24vp comment-card corner needs more than the generic 12vp card inset so
 // the author and first body line do not visually enter its rounded shoulder.
 const COMMENT_CARD_CONTENT_INSET: number = ThemeTokens.SPACE_LG
+
+class CommentTranslationCardState {
+  commentId: number = 0
+  translated: string = ''
+  shown: boolean = false
+  loading: boolean = false
+}
 
 /**
  * A separate destination keeps comments from competing with the Gallery hero
@@ -40,12 +52,14 @@ export struct GalleryCommentsPage {
   @Local rawComments: NhComment[] = []
   @Local contentFilters: ContentFilterState = connectContentFilters()
   @Local accountSession: AccountSessionState = connectAccountSession()
+  @Local sources: LlmSourceProfilesState = connectLlmSourceProfiles()
   @Local loadedGalleryId: number = 0
   @Local isLoading: boolean = false
   @Local errorMessage: string = ''
   @Local commentText: string = ''
   @Local isCommentSubmitting: boolean = false
   @Local commentSubmitError: string = ''
+  @Local translations: CommentTranslationCardState[] = []
   @Param scroller: Scroller = new Scroller()
   /** A Detail-owned response seeds this route only after it was successfully fetched. */
   @Param commentSnapshot: NhComment[] = []
@@ -104,6 +118,10 @@ export struct GalleryCommentsPage {
     this.comments = ContentFilterService.filterComments(this.rawComments)
   }
 
+  private context(): common.UIAbilityContext {
+    return this.getUIContext().getHostContext() as common.UIAbilityContext
+  }
+
   /**
    * A Detail-owned snapshot is authoritative for this initial route only. It
    * is allowed to be empty: availability distinguishes an empty successful
@@ -115,6 +133,7 @@ export struct GalleryCommentsPage {
       return false
     }
     this.requestGeneration += 1
+    this.translations = []
     this.rawComments = this.commentSnapshot.slice()
     this.applyContentFilters()
     this.loadedGalleryId = this.galleryId
@@ -128,6 +147,100 @@ export struct GalleryCommentsPage {
       !this.accountSession.verificationRequired
   }
 
+  private commentTranslationConfigured(): boolean {
+    const binding = this.sources.commentBinding
+    if (!binding.configured()) {
+      return false
+    }
+    const profile = this.sources.findById(binding.sourceProfileId)
+    return profile !== null && supportsCommentTranslation(profile)
+  }
+
+  private translationState(commentId: number): CommentTranslationCardState | null {
+    for (let index: number = 0; index < this.translations.length; index++) {
+      if (this.translations[index].commentId === commentId) {
+        return this.translations[index]
+      }
+    }
+    return null
+  }
+
+  private ensureTranslationState(commentId: number): CommentTranslationCardState {
+    const existing: CommentTranslationCardState | null = this.translationState(commentId)
+    if (existing !== null) {
+      return existing
+    }
+    const state: CommentTranslationCardState = new CommentTranslationCardState()
+    state.commentId = commentId
+    this.translations = this.translations.concat([state])
+    return state
+  }
+
+  private publishTranslations(): void {
+    this.translations = this.translations.slice()
+  }
+
+  private canTranslate(comment: NhComment): boolean {
+    return this.commentTranslationConfigured() && comment.body.trim().length > 0
+  }
+
+  private displayedCommentBody(comment: NhComment): string {
+    const state: CommentTranslationCardState | null = this.translationState(comment.commentId)
+    if (state !== null && state.shown && state.translated.length > 0) {
+      return state.translated
+    }
+    return comment.body.length > 0 ? comment.body : AppStrings.get('comments_empty_body')
+  }
+
+  private isTranslationLoading(comment: NhComment): boolean {
+    const state: CommentTranslationCardState | null = this.translationState(comment.commentId)
+    return state !== null && state.loading
+  }
+
+  private isTranslationShown(comment: NhComment): boolean {
+    const state: CommentTranslationCardState | null = this.translationState(comment.commentId)
+    return state !== null && state.shown && state.translated.length > 0
+  }
+
+  private translationActionLabel(comment: NhComment): string {
+    const state: CommentTranslationCardState | null = this.translationState(comment.commentId)
+    return this.isTranslationShown(comment)
+      ? AppStrings.get('comments_translation_show_original')
+      : AppStrings.get('comments_translation_action')
+  }
+
+  private async toggleOrTranslate(comment: NhComment): Promise<void> {
+    if (!this.canTranslate(comment)) {
+      return
+    }
+    const state: CommentTranslationCardState = this.ensureTranslationState(comment.commentId)
+    if (state.loading) {
+      return
+    }
+    if (state.translated.length > 0) {
+      state.shown = !state.shown
+      this.publishTranslations()
+      return
+    }
+    const galleryId: number = this.galleryId
+    state.loading = true
+    this.publishTranslations()
+    try {
+      const translated: string = await CommentTranslationService.translate(this.context(), comment.body)
+      if (this.galleryId === galleryId && this.loadedGalleryId === galleryId) {
+        state.translated = translated
+        state.shown = translated.length > 0
+      }
+    } catch (_error) {
+      if (this.galleryId === galleryId) {
+        this.showCommentToast(AppStrings.get('comments_translation_failed'))
+      }
+    } finally {
+      state.loading = false
+      this.publishTranslations()
+    }
+  }
+
   private isCurrentRequest(generation: number): boolean {
     return generation === this.requestGeneration
   }
@@ -136,6 +249,7 @@ export struct GalleryCommentsPage {
     const generation: number = this.requestGeneration + 1
     this.requestGeneration = generation
     if (this.loadedGalleryId !== this.galleryId) {
+      this.translations = []
       this.rawComments = []
       this.applyContentFilters()
       this.loadedGalleryId = 0
@@ -323,14 +437,43 @@ export struct GalleryCommentsPage {
   @Builder
   private CommentCard(comment: NhComment) {
     Column({ space: ThemeTokens.SPACE_XS }) {
-      Text(this.authorLabel(comment))
-        .width('100%')
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(ThemeTokens.TEXT_LINK)
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-      Text(comment.body.length > 0 ? comment.body : AppStrings.get('comments_empty_body'))
+      Row({ space: ThemeTokens.SPACE_XS }) {
+        Text(this.authorLabel(comment))
+          .layoutWeight(1)
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(ThemeTokens.TEXT_LINK)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+        if (this.canTranslate(comment)) {
+          Button({ type: ButtonType.Circle, stateEffect: true }) {
+            if (this.isTranslationLoading(comment)) {
+              LoadingProgress()
+                .width(16)
+                .height(16)
+                .color(ThemeTokens.TEXT_TERTIARY)
+            } else {
+              SymbolGlyph($r('sys.symbol.translate'))
+                .fontSize(ThemeTokens.FONT_SIZE_BODY)
+                .fontColor([
+                  this.isTranslationShown(comment)
+                    ? ThemeTokens.BRAND
+                    : ThemeTokens.TEXT_TERTIARY,
+                ])
+            }
+          }
+          .width(32)
+          .height(32)
+          .backgroundColor(Color.Transparent)
+          .accessibilityText(this.translationActionLabel(comment))
+          .onClick((): void => {
+            this.toggleOrTranslate(comment)
+          })
+        }
+      }
+      .width('100%')
+      .alignItems(VerticalAlign.Center)
+      Text(this.displayedCommentBody(comment))
         .width('100%')
         .fontSize(ThemeTokens.FONT_SIZE_BODY)
         .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)

@@ -134,8 +134,9 @@ authorize an edit, replace a device comparison, or define product completion.
   translated-text/action leaf and an explicit private text-source binding. It
   must not import EH voting/reply behavior, change card/list/composer parent
   ownership, auto-submit requests, or replace the frozen Comments chrome.
-- Before/after rationale: a bounded Responses-text provider and a private
-  cache make translation optional and deterministic for one configured source.
+- Before/after rationale: a bounded OpenAI-compatible Chat Completions
+  provider and a private cache make translation optional and deterministic for
+  one configured source.
   An unconfigured source keeps the action unavailable and sends no request.
 - Visual verification plan: with a configured source and an existing native
   Comments route, compare the same gallery/comment viewport to NextE only for
@@ -146,3 +147,43 @@ authorize an edit, replace a device comparison, or define product completion.
   translation source, so real provider execution and translated-card visual
   acceptance remain unproven. No credential, comment, or source record may be
   fabricated to obtain that state.
+
+## OPEN — Shared translation-source configuration
+
+- User outcome: one user-controlled private OpenAI-compatible source can be
+  explicitly assigned to Reader comic translation, Gallery comment
+  translation, or both; configuring one consumer must never silently enable
+  the other.
+- Reference parent tree: NextE keeps the entry in its settings translation
+  section as a `ConciseListRow`, then owns sources through `LlmSourceManager`
+  and its detail destination: `HdsNavDestination → SecondaryListScaffold →
+  ListItem → GroupedListSection`. The detail form owns source type, name,
+  base URL, secret input, and explicit supported-consumer capability leaves;
+  consumer binding stays outside the content page.
+- Current NextN parent tree: Reader Settings owns a single navigation row to
+  `HdsNavDestination → ComicTranslationSourcePage →
+  SecondaryListScaffold → ListItem → NextNGroupedListSection`. The profile
+  repository already owns exactly two durable consumer bindings, while the
+  existing form declares only Reader's Responses/image capability.
+- Exact change boundary: retain the existing HDS route, list scaffold,
+  grouped form and private HUKS key handling. Rename that form's semantic
+  purpose to a shared translation source, add only the two explicit consumer
+  switches and their durable bindings, and add one Comment Translation row to
+  the existing Advanced Settings list that opens the same destination. The
+  card change is restricted to the existing comment header's local action
+  leaf and translated body; it must not alter the list, composer, refresh,
+  route snapshot, card geometry, or comment network request.
+- NH boundary: NextN supports only one OpenAI-compatible source type and no
+  model catalog, Codex OAuth, Google fallback, auto-translation, or display
+  mode policy. The same model string is intentionally bound only to consumers
+  the user selects in this supported single-source form.
+- Visual verification plan: with no source configured, compare Settings and
+  a comments page against their prior same-viewport state to confirm no card
+  action or layout changes are introduced. With a deliberately configured
+  private source, compare the shared source form, the configured consumer
+  rows, and a single translated-comment action/pending/result state against
+  the corresponding NextE screens. Retain raw local captures; no source-shape
+  or synthetic UI check is evidence.
+- Unresolved risk: the selected device has no configured text source. The
+  configured request/result path remains unproven until an existing authorized
+  private source can be entered without exposing its secret.

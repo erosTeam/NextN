@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import {
   AppStrings,
+  LLM_CONSUMER_COMMENT_TRANSLATION,
   LLM_CONSUMER_MANGA_TRANSLATION,
   LLM_SOURCE_TYPE_OPENAI_COMPATIBLE,
   LlmConsumerBinding,
@@ -18,9 +19,9 @@ import {
 } from 'shared'
 
 /**
- * Configures the one source currently supported by NextN's Reader comic
- * translation runtime. Metadata and consumer binding stay in the existing
- * profile repository; only the typed key is handed to the existing HUKS vault.
+ * Configures the one OpenAI-compatible source currently supported by NextN's
+ * translation features. Metadata and each explicit consumer binding stay in
+ * the existing profile repository; only the typed key is handed to HUKS.
  */
 @ComponentV2
 export struct ComicTranslationSourcePage {
@@ -33,7 +34,11 @@ export struct ComicTranslationSourcePage {
   @Local modelIdDraft: string = ''
   @Local apiKeyStored: boolean = false
   @Local errorMessage: string = ''
+  @Local useMangaTranslation: boolean = false
+  @Local useCommentTranslation: boolean = false
+  @Local bindingsConflict: boolean = false
   @Param scroller: Scroller = new Scroller()
+  @Param requestedConsumer: string = LLM_CONSUMER_MANGA_TRANSLATION
   // The key is deliberately not published to AppStorage or any shared state.
   // It exists only while this mounted input is edited and is written directly
   // to the HUKS-backed vault during save.
@@ -47,12 +52,16 @@ export struct ComicTranslationSourcePage {
     return this.getUIContext().getHostContext() as common.UIAbilityContext
   }
 
+  private profileForBinding(binding: LlmConsumerBinding): LlmSourceProfile | null {
+    return binding.configured() ? this.sources.findById(binding.sourceProfileId) : null
+  }
+
   private currentBoundProfile(): LlmSourceProfile | null {
-    const binding: LlmConsumerBinding = this.sources.mangaBinding
-    if (!binding.configured()) {
-      return null
-    }
-    return this.sources.findById(binding.sourceProfileId)
+    const manga: LlmSourceProfile | null = this.profileForBinding(this.sources.mangaBinding)
+    const comment: LlmSourceProfile | null = this.profileForBinding(this.sources.commentBinding)
+    this.bindingsConflict = manga !== null && comment !== null &&
+      manga.sourceProfileId !== comment.sourceProfileId
+    return manga === null ? comment : manga
   }
 
   private async loadSource(): Promise<void> {
@@ -64,10 +73,24 @@ export struct ComicTranslationSourcePage {
       ? generateLlmSourceProfileId()
       : existing.sourceProfileId
     this.displayNameDraft = existing === null
-      ? AppStrings.get('settings_reader_comic_translation_source_default_name')
+      ? AppStrings.get('settings_translation_source_default_name')
       : existing.displayName
     this.baseUrlDraft = existing === null ? 'https://api.openai.com' : existing.baseUrl
-    this.modelIdDraft = existing === null ? '' : this.sources.mangaBinding.modelId
+    this.useMangaTranslation = existing !== null && this.sources.mangaBinding.configured() &&
+      this.sources.mangaBinding.sourceProfileId === existing.sourceProfileId
+    this.useCommentTranslation = existing !== null && this.sources.commentBinding.configured() &&
+      this.sources.commentBinding.sourceProfileId === existing.sourceProfileId
+    if (existing === null) {
+      this.useMangaTranslation = this.requestedConsumer === LLM_CONSUMER_MANGA_TRANSLATION
+      this.useCommentTranslation = this.requestedConsumer === LLM_CONSUMER_COMMENT_TRANSLATION
+    }
+    if (this.useMangaTranslation) {
+      this.modelIdDraft = this.sources.mangaBinding.modelId
+    } else if (this.useCommentTranslation) {
+      this.modelIdDraft = this.sources.commentBinding.modelId
+    } else {
+      this.modelIdDraft = ''
+    }
     if (existing !== null) {
       try {
         this.apiKeyStored = (await LlmSourceSecretVault.readApiKey(
@@ -91,18 +114,31 @@ export struct ComicTranslationSourcePage {
     return this.displayNameDraft.trim().length > 0 &&
       this.normalizedBaseUrl().length > 0 &&
       this.modelIdDraft.trim().length > 0 &&
-      (this.apiKeyStored || this.apiKeyDraft.trim().length > 0)
+      (this.apiKeyStored || this.apiKeyDraft.trim().length > 0) &&
+      (this.useMangaTranslation || this.useCommentTranslation) && !this.bindingsConflict
   }
 
   private profileCandidate(): LlmSourceProfile {
-    const profile: LlmSourceProfile = new LlmSourceProfile()
+    const existing: LlmSourceProfile | null = this.sources.findById(this.sourceProfileId)
+    const profile: LlmSourceProfile = existing === null ? new LlmSourceProfile() : existing.copy()
     profile.sourceProfileId = this.sourceProfileId
     profile.displayName = this.displayNameDraft.trim()
     profile.sourceType = LLM_SOURCE_TYPE_OPENAI_COMPATIBLE
     profile.baseUrl = this.normalizedBaseUrl()
-    profile.capabilities.responses = true
-    profile.capabilities.imageInput = true
+    profile.capabilities.responses = this.useMangaTranslation
+    profile.capabilities.imageInput = this.useMangaTranslation
+    profile.capabilities.chatCompletions = this.useCommentTranslation
     return profile
+  }
+
+  private binding(consumerId: string, enabled: boolean): LlmConsumerBinding {
+    const binding: LlmConsumerBinding = new LlmConsumerBinding()
+    binding.consumerId = consumerId
+    if (enabled) {
+      binding.sourceProfileId = this.sourceProfileId
+      binding.modelId = this.modelIdDraft.trim()
+    }
+    return binding
   }
 
   private async saveSource(): Promise<void> {
@@ -110,7 +146,9 @@ export struct ComicTranslationSourcePage {
       return
     }
     if (!this.canSave()) {
-      this.errorMessage = AppStrings.get('settings_reader_comic_translation_source_required')
+      this.errorMessage = this.bindingsConflict
+        ? AppStrings.get('settings_translation_source_binding_conflict')
+        : AppStrings.get('settings_translation_source_required')
       return
     }
     this.saving = true
@@ -125,15 +163,18 @@ export struct ComicTranslationSourcePage {
         await LlmSourceSecretVault.saveApiKey(this.context(), profile.sourceProfileId, apiKey)
       }
       await LlmSourceProfileRepository.upsert(this.context(), profile)
-      const binding: LlmConsumerBinding = new LlmConsumerBinding()
-      binding.consumerId = LLM_CONSUMER_MANGA_TRANSLATION
-      binding.sourceProfileId = profile.sourceProfileId
-      binding.modelId = this.modelIdDraft.trim()
-      await LlmSourceProfileRepository.saveBinding(this.context(), binding)
+      await LlmSourceProfileRepository.saveBinding(
+        this.context(),
+        this.binding(LLM_CONSUMER_MANGA_TRANSLATION, this.useMangaTranslation),
+      )
+      await LlmSourceProfileRepository.saveBinding(
+        this.context(),
+        this.binding(LLM_CONSUMER_COMMENT_TRANSLATION, this.useCommentTranslation),
+      )
       this.apiKeyDraft = ''
       this.apiKeyStored = true
     } catch (_error) {
-      this.errorMessage = AppStrings.get('settings_reader_comic_translation_source_save_failed')
+      this.errorMessage = AppStrings.get('settings_translation_source_save_failed')
     } finally {
       this.saving = false
     }
@@ -182,7 +223,7 @@ export struct ComicTranslationSourcePage {
         TextInput({
           text: this.apiKeyDraft,
           placeholder: this.apiKeyStored
-            ? AppStrings.get('settings_reader_comic_translation_source_api_key_saved')
+            ? AppStrings.get('settings_translation_source_api_key_saved')
             : '',
         })
           .type(InputType.Password)
@@ -223,18 +264,57 @@ export struct ComicTranslationSourcePage {
     NextNGroupedListSection() {
       NextNListRow({
         leadingIcon: $r('sys.symbol.cloud'),
-        title: AppStrings.get('settings_reader_comic_translation_source_type'),
-        trailingText: AppStrings.get('settings_reader_comic_translation_source_type_openai'),
+        title: AppStrings.get('settings_translation_source_type'),
+        trailingText: AppStrings.get('settings_translation_source_type_openai'),
         showChevron: false,
       })
       this.RowDivider()
-      this.TextInputRow(AppStrings.get('settings_reader_comic_translation_source_name'), 'name')
+      this.TextInputRow(AppStrings.get('settings_translation_source_name'), 'name')
       this.RowDivider()
-      this.TextInputRow(AppStrings.get('settings_reader_comic_translation_source_base_url'), 'baseUrl')
+      this.TextInputRow(AppStrings.get('settings_translation_source_base_url'), 'baseUrl')
       this.RowDivider()
-      this.TextInputRow(AppStrings.get('settings_reader_comic_translation_source_api_key'), 'apiKey')
+      this.TextInputRow(AppStrings.get('settings_translation_source_api_key'), 'apiKey')
       this.RowDivider()
-      this.TextInputRow(AppStrings.get('settings_reader_comic_translation_source_model'), 'model')
+      this.TextInputRow(AppStrings.get('settings_translation_source_model'), 'model')
+    }
+  }
+
+  @Builder
+  private ConsumerGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.picture'),
+        title: AppStrings.get('settings_translation_source_reader'),
+        subtitle: AppStrings.get('settings_translation_source_reader_hint'),
+        hasSwitch: true,
+        checked: this.useMangaTranslation,
+        showChevron: false,
+        onAction: (): void => {
+          this.useMangaTranslation = !this.useMangaTranslation
+          this.errorMessage = ''
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.useMangaTranslation = value
+          this.errorMessage = ''
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.translate'),
+        title: AppStrings.get('settings_translation_source_comments'),
+        subtitle: AppStrings.get('settings_translation_source_comments_hint'),
+        hasSwitch: true,
+        checked: this.useCommentTranslation,
+        showChevron: false,
+        onAction: (): void => {
+          this.useCommentTranslation = !this.useCommentTranslation
+          this.errorMessage = ''
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.useCommentTranslation = value
+          this.errorMessage = ''
+        },
+      })
     }
   }
 
@@ -243,8 +323,8 @@ export struct ComicTranslationSourcePage {
     NextNGroupedListSection() {
       NextNListRow({
         leadingIcon: $r('sys.symbol.checkmark_circle'),
-        title: AppStrings.get('settings_reader_comic_translation_source_save'),
-        subtitle: AppStrings.get('settings_reader_comic_translation_source_save_hint'),
+        title: AppStrings.get('settings_translation_source_save'),
+        subtitle: AppStrings.get('settings_translation_source_save_hint'),
         trailingText: this.saving ? AppStrings.get('common_loading') : '',
         showChevron: false,
         isEnabled: !this.saving,
@@ -267,6 +347,9 @@ export struct ComicTranslationSourcePage {
         }) {
           ListItem() {
             this.SourceFormGroup()
+          }
+          ListItem() {
+            this.ConsumerGroup()
           }
           ListItem() {
             this.SaveGroup()

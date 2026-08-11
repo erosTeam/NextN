@@ -8,6 +8,8 @@ import {
   LanguageSettings,
   LanguageState,
   LayoutSafeAreaState,
+  LLM_CONSUMER_COMMENT_TRANSLATION,
+  LLM_CONSUMER_MANGA_TRANSLATION,
   NhTagTranslationStatus,
   NhReaderMode,
   NhReaderTapZoneInvert,
@@ -196,7 +198,7 @@ export struct SettingsPage {
   @Event onOpenBrowseDensity?: (mode: NhBrowsePresentation) => void
   @Event onOpenReaderSettings?: () => void
   @Event onOpenReaderEnhancementModels?: () => void
-  @Event onOpenReaderComicTranslationSource?: () => void
+  @Event onOpenTranslationSource?: (consumerId: string) => void
   @Event onOpenDownloadSettings?: () => void
   @Event onOpenCacheSettings?: () => void
   @Event onOpenAdvancedSettings?: () => void
@@ -1823,8 +1825,8 @@ export struct SettingsPage {
         subtitle: AppStrings.get('settings_reader_comic_translation_hint'),
         accessibilityLabel: AppStrings.get('settings_reader_comic_translation_a11y'),
         onAction: (): void => {
-          if (this.onOpenReaderComicTranslationSource) {
-            this.onOpenReaderComicTranslationSource()
+          if (this.onOpenTranslationSource) {
+            this.onOpenTranslationSource(LLM_CONSUMER_MANGA_TRANSLATION)
           }
         },
       })
@@ -1837,7 +1839,7 @@ export struct SettingsPage {
     ListItem() {
       this.ReaderPresentationGroup()
     }
-    if (!this.sheetPresentation && this.onOpenReaderComicTranslationSource) {
+    if (!this.sheetPresentation && this.onOpenTranslationSource) {
       ListItem() {
         this.ReaderComicTranslationGroup()
       }
@@ -2420,6 +2422,24 @@ export struct SettingsPage {
     }
   }
 
+  /** Comment translation uses the same private source form, not a Comments-page control. */
+  @Builder
+  private CommentTranslationGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.translate'),
+        title: AppStrings.get('settings_comment_translation'),
+        subtitle: AppStrings.get('settings_comment_translation_hint'),
+        accessibilityLabel: AppStrings.get('settings_comment_translation_a11y'),
+        onAction: (): void => {
+          if (this.onOpenTranslationSource) {
+            this.onOpenTranslationSource(LLM_CONSUMER_COMMENT_TRANSLATION)
+          }
+        },
+      })
+    }
+  }
+
   build() {
     if (this.surface === SettingsSurface.READER && this.sheetPresentation) {
       if (this.readerEnhancementModelsShown) {
@@ -2495,6 +2515,9 @@ export struct SettingsPage {
         } else if (this.surface === SettingsSurface.ADVANCED) {
           ListItem() {
             this.ClipboardLinkGroup()
+          }
+          ListItem() {
+            this.CommentTranslationGroup()
           }
           ListItem() {
             this.TagDictionaryGroup()

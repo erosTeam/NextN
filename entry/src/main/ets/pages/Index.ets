@@ -64,6 +64,8 @@ import {
   HomeSourceBridge,
   HomeSourceState,
   HomeTabAutoHideState,
+  LLM_CONSUMER_COMMENT_TRANSLATION,
+  LLM_CONSUMER_MANGA_TRANSLATION,
   ImmersiveMaterialSettings,
   ImmersiveMaterialSettingsState,
   HOME_SOURCE_LATEST,
@@ -115,7 +117,7 @@ const ROUTE_BROWSE_DENSITY_SETTINGS: string = 'browseDensitySettings'
 const ROUTE_CONTENT_FILTERS: string = 'contentFilters'
 const ROUTE_READER_SETTINGS: string = 'readerSettings'
 const ROUTE_READER_SUPER_RESOLUTION_MODELS: string = 'readerSuperResolutionModels'
-const ROUTE_READER_COMIC_TRANSLATION_SOURCE: string = 'readerComicTranslationSource'
+const ROUTE_TRANSLATION_SOURCE: string = 'translationSource'
 const ROUTE_DOWNLOAD_SETTINGS: string = 'downloadSettings'
 const ROUTE_CACHE_SETTINGS: string = 'cacheSettings'
 const ROUTE_ADVANCED_SETTINGS: string = 'advancedSettings'
@@ -141,6 +143,14 @@ class GalleryRouteParams {
     this.galleryId = galleryId
     this.commentSnapshot = commentSnapshot
     this.commentSnapshotAvailable = commentSnapshotAvailable
+  }
+}
+
+class TranslationSourceRouteParams {
+  consumerId: string = LLM_CONSUMER_MANGA_TRANSLATION
+
+  constructor(consumerId: string = LLM_CONSUMER_MANGA_TRANSLATION) {
+    this.consumerId = consumerId
   }
 }
 
@@ -255,7 +265,7 @@ struct Index {
   private browseDensitySettingsScroller: Scroller = new Scroller()
   private readerSettingsScroller: Scroller = new Scroller()
   private readerSuperResolutionModelsScroller: Scroller = new Scroller()
-  private readerComicTranslationSourceScroller: Scroller = new Scroller()
+  private translationSourceScroller: Scroller = new Scroller()
   private downloadSettingsScroller: Scroller = new Scroller()
   private cacheSettingsScroller: Scroller = new Scroller()
   private advancedSettingsScroller: Scroller = new Scroller()
@@ -563,8 +573,8 @@ struct Index {
     this.stack.pushPathByName(ROUTE_READER_SUPER_RESOLUTION_MODELS, '')
   }
 
-  private pushReaderComicTranslationSource(): void {
-    this.stack.pushPathByName(ROUTE_READER_COMIC_TRANSLATION_SOURCE, '')
+  private pushTranslationSource(consumerId: string): void {
+    this.stack.pushPathByName(ROUTE_TRANSLATION_SOURCE, new TranslationSourceRouteParams(consumerId))
   }
 
   private pushDownloadSettings(): void {
@@ -1334,6 +1344,15 @@ struct Index {
     return new ReaderRouteParams()
   }
 
+  private translationSourceParams(param: Object): TranslationSourceRouteParams {
+    if (param instanceof TranslationSourceRouteParams &&
+      (param.consumerId === LLM_CONSUMER_MANGA_TRANSLATION ||
+        param.consumerId === LLM_CONSUMER_COMMENT_TRANSLATION)) {
+      return param
+    }
+    return new TranslationSourceRouteParams()
+  }
+
   private thumbnailParams(param: Object): ThumbnailRouteParams {
     if (param instanceof ThumbnailRouteParams && param.galleryId > 0) {
       return param
@@ -1602,8 +1621,8 @@ struct Index {
         onOpenReaderEnhancementModels: (): void => {
           this.pushReaderSuperResolutionModels()
         },
-        onOpenReaderComicTranslationSource: (): void => {
-          this.pushReaderComicTranslationSource()
+        onOpenTranslationSource: (consumerId: string): void => {
+          this.pushTranslationSource(consumerId)
         },
       })
     }
@@ -1623,13 +1642,16 @@ struct Index {
   }
 
   @Builder
-  private readerComicTranslationSourceDestination() {
+  private translationSourceDestination(param: Object) {
     HdsNavDestination() {
-      ComicTranslationSourcePage({ scroller: this.readerComicTranslationSourceScroller })
+      ComicTranslationSourcePage({
+        scroller: this.translationSourceScroller,
+        requestedConsumer: this.translationSourceParams(param).consumerId,
+      })
     }
-    .titleBar(nextNHdsTitle(AppStrings.get('settings_reader_comic_translation_source')))
+    .titleBar(nextNHdsTitle(AppStrings.get('settings_translation_source')))
     .hideBackButton(false)
-    .bindToScrollable([this.readerComicTranslationSourceScroller])
+    .bindToScrollable([this.translationSourceScroller])
   }
 
   @Builder
@@ -1660,6 +1682,9 @@ struct Index {
         scroller: this.advancedSettingsScroller,
         onOpenContentFilters: (): void => {
           this.pushContentFilters()
+        },
+        onOpenTranslationSource: (consumerId: string): void => {
+          this.pushTranslationSource(consumerId)
         },
       })
     }
@@ -1731,8 +1756,8 @@ struct Index {
       this.readerSettingsDestination()
     } else if (name === ROUTE_READER_SUPER_RESOLUTION_MODELS) {
       this.readerSuperResolutionModelsDestination()
-    } else if (name === ROUTE_READER_COMIC_TRANSLATION_SOURCE) {
-      this.readerComicTranslationSourceDestination()
+    } else if (name === ROUTE_TRANSLATION_SOURCE) {
+      this.translationSourceDestination(param)
     } else if (name === ROUTE_DOWNLOAD_SETTINGS) {
       this.downloadSettingsDestination()
     } else if (name === ROUTE_CACHE_SETTINGS) {
