@@ -1218,12 +1218,14 @@ rewrite, re-run, or block this completed direct-route observation.
   the side-channel as free of the prior event-ABI regression; it does not
   establish the pending Image-information menu leaf or image-quality result.
   Do not repeat this unchanged route solely as a control.
-- The first uncommitted Image-information menu build was installed in place,
-  but its fresh direct Gallery-to-Reader route exposed a `com.erosteam.nexte`
-  top window before Reader chrome or the new item could be reached. The menu
-  leaf and its localized copy were removed immediately. This observation does
-  not attribute the foreground switch to that uninvoked leaf; it rejects the
-  route as a validation path until its cross-app handoff is separately traced.
+- The first uncommitted Image-information menu build and its localized copy
+  were removed after no new item could be reached. A focused follow-up proved
+  that `NextN root → direct Gallery → Continue/Reader` remains `nextn0` in
+  WindowManager. The actual cross-app handoff occurs only after the Reader
+  menu-zone single tap, which changes the focused window to `nexte0`; the
+  corresponding NextN single-tap source path has no external-launch call.
+  This does not attribute the switch to the uninvoked leaf. Do not repeat that
+  menu-zone input until the focused-window transition is separately traced.
 
 ## Data and artifact boundary
 

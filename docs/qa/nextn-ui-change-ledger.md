@@ -665,13 +665,14 @@ authorize an edit, replace a device comparison, or define product completion.
   boundary as free of the prior foreground regression. It does not yet accept
   the visible More-menu leaf or an enhancement outcome; the unchanged route
   will not be repeated merely to reconfirm this control.
-- **2026-08-12 menu-route result:** the uncommitted menu-leaf build was
-  installed in place, but its first fresh Gallery-to-Reader route exposed an
-  actual `com.erosteam.nexte` top window before Reader chrome or the new menu
-  could be reached. The leaf and its copy were removed immediately. This is a
-  route-identity failure, not evidence that the leaf caused the switch; do not
-  recreate it or repeat this input sequence until the cross-app foreground
-  handoff is separately explained on a current NextN route.
+- **2026-08-12 menu-route result:** the uncommitted menu leaf and its copy
+  were removed after no Image-information action could be reached. A later
+  focused boundary run established that `NextN root → direct Gallery →
+  Continue/Reader` remains `nextn0` in WindowManager; the cross-app transition
+  occurs only after the Reader menu-zone single tap, when the actual focus
+  becomes `nexte0`. The NextN single-tap source path has no external-launch
+  call. Do not recreate the leaf or repeat the menu-zone input until that
+  focused-window transition is separately explained.
 
 ## OPEN — Gallery comment translation
 
