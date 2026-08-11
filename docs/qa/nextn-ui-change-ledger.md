@@ -1380,6 +1380,24 @@ authorize an edit, replace a device comparison, or define product completion.
   correction remains **EVIDENCE-ONLY** until the exact NextE form route is
   re-established; do not repeat the same Reader-scroll chain as a substitute.
 
+### Corrected reference-route result — 2026-08-12
+
+- The exact reference route was then established once: `Settings → EH →
+  Comic translation → Self-hosted`. Its terminal native service form and the
+  NextN terminal native form both had foreground identity proved and the same
+  `1320×2120` portrait root viewport. The local raw evidence remains outside
+  Git in `.hvigor/outputs/manga-rendering-form-20260812T0414-reference-retry/`.
+- The pair is **rejected for visual comparison**: the existing NextE service
+  was configured, while the current NextN service was unconfigured. No
+  field, connection check, provider state, account state, content data, or
+  application data was changed to manufacture equivalence. The NextN form was
+  only observed to contain its profile fields and the connection-check group;
+  this is not a visual-parity acceptance.
+- Status remains **EVIDENCE-ONLY**. Do not repeat either route or alter either
+  service configuration merely to create a comparison. A future same-state
+  reference precondition is required before this narrow form surface can be
+  visually accepted.
+
 ## EVIDENCE-ONLY — Reader route mount/data split — 2026-08-11
 
 - New device evidence: after a data-preserving NextN-only cold start and the
