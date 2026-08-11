@@ -43,7 +43,8 @@ export class MangaRenderingServiceSession {
     if (cached !== undefined && cached.credentialHash === credentialHash) {
       return cached.token
     }
-    const existing: Promise<string> | undefined = MangaRenderingServiceSession.inFlight.get(cacheKey)
+    const flightKey: string = cacheKey + ':' + credentialHash
+    const existing: Promise<string> | undefined = MangaRenderingServiceSession.inFlight.get(flightKey)
     if (existing !== undefined) {
       return await existing
     }
@@ -53,12 +54,12 @@ export class MangaRenderingServiceSession {
       credentialHash,
       cacheKey,
     )
-    MangaRenderingServiceSession.inFlight.set(cacheKey, pending)
+    MangaRenderingServiceSession.inFlight.set(flightKey, pending)
     try {
       return await pending
     } finally {
-      if (MangaRenderingServiceSession.inFlight.get(cacheKey) === pending) {
-        MangaRenderingServiceSession.inFlight.delete(cacheKey)
+      if (MangaRenderingServiceSession.inFlight.get(flightKey) === pending) {
+        MangaRenderingServiceSession.inFlight.delete(flightKey)
       }
     }
   }
