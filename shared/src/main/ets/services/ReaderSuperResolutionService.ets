@@ -2,6 +2,7 @@ import { common } from '@kit.AbilityKit'
 import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { image } from '@kit.ImageKit'
+import { hilog } from '@kit.PerformanceAnalysisKit'
 import { NhReaderSuperResolutionModel } from '../model/NhReaderSettings'
 import {
   ReaderNativeSuperResolution,
@@ -19,6 +20,8 @@ const MAX_OUTPUT_EDGE: number = MAX_SOURCE_HEIGHT * 2
 const MAX_OUTPUT_BYTES: number = MAX_OUTPUT_EDGE * MAX_OUTPUT_EDGE * 4
 const MAX_CACHE_FILES: number = 64
 const MAX_CACHE_BYTES: number = 256 * 1024 * 1024
+const READER_ENHANCEMENT_LOG_DOMAIN: number = 0x0000
+const READER_ENHANCEMENT_LOG_TAG: string = 'NextNReaderEnhancement'
 
 export class ReaderSuperResolutionResult {
   displayUri: string = ''
@@ -135,6 +138,7 @@ export class ReaderSuperResolutionService {
     let packer: image.ImagePacker | undefined = undefined
     let outputFile: fileIo.File | null = null
     let promoted: boolean = false
+    let processingStage: string = 'native_decode'
     try {
       const decoded = await ReaderNativeSuperResolution.decodeImageRgba(sourcePath, MAX_SOURCE_HEIGHT)
       const width: number = decoded.width
@@ -151,6 +155,7 @@ export class ReaderSuperResolutionService {
         outputWidth * outputHeight * 4 > MAX_OUTPUT_BYTES) {
         return ReaderSuperResolutionService.original(sourcePath, 'output_too_large')
       }
+      processingStage = 'native_upscale'
       const native: ReaderNativeSuperResolutionResult = await ReaderNativeSuperResolution.upscaleRgba(
         decoded.pixels,
         width,
@@ -170,20 +175,24 @@ export class ReaderSuperResolutionService {
         pixelFormat: image.PixelMapFormat.RGBA_8888,
         editable: false,
       }
+      processingStage = 'output_pixel_map'
       outputPixelMap = await image.createPixelMap(native.pixels, initialization)
       ReaderSuperResolutionService.ensureDirectory(ReaderSuperResolutionService.cacheDirectory(context))
       ReaderSuperResolutionService.removeIfExists(temporaryPath)
+      processingStage = 'output_file'
       outputFile = fileIo.openSync(
         temporaryPath,
         fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC,
       )
       packer = image.createImagePacker()
+      processingStage = 'output_pack'
       await packer.packToFile(outputPixelMap, outputFile.fd, { format: 'image/jpeg', quality: 98 })
       fileIo.closeSync(outputFile)
       outputFile = null
       if (inFlight.owners.size === 0) {
         return ReaderSuperResolutionService.original(sourcePath, 'superseded')
       }
+      processingStage = 'output_promote'
       ReaderSuperResolutionService.removeIfExists(outputPath)
       fileIo.renameSync(temporaryPath, outputPath)
       if (ReaderSuperResolutionService.fileSize(outputPath) <= 0) {
@@ -194,6 +203,7 @@ export class ReaderSuperResolutionService {
       await ReaderSuperResolutionService.prune(context, outputPath)
       return ReaderSuperResolutionService.applied(outputPath)
     } catch (_error) {
+      ReaderSuperResolutionService.recordProcessingFailure(processingStage)
       return ReaderSuperResolutionService.original(sourcePath, 'processing_failed')
     } finally {
       if (outputFile !== null) {
@@ -205,12 +215,32 @@ export class ReaderSuperResolutionService {
         ReaderSuperResolutionService.removeIfExists(temporaryPath)
       }
       if (packer !== undefined) {
-        await packer.release()
+        try {
+          await packer.release()
+        } catch (_error) {
+          ReaderSuperResolutionService.recordProcessingFailure('output_packer_release')
+        }
       }
       if (outputPixelMap !== undefined) {
-        await outputPixelMap.release()
+        try {
+          await outputPixelMap.release()
+        } catch (_error) {
+          ReaderSuperResolutionService.recordProcessingFailure('output_pixel_map_release')
+        }
       }
     }
+  }
+
+  /** Emits a fixed stage only; image paths, page bytes, and model data never enter logs. */
+  private static recordProcessingFailure(stage: string): void {
+    try {
+      hilog.warn(
+        READER_ENHANCEMENT_LOG_DOMAIN,
+        READER_ENHANCEMENT_LOG_TAG,
+        'reader enhancement failed at stage=%{public}s',
+        stage,
+      )
+    } catch (_error) {}
   }
 
   private static original(sourcePath: string, reason: string): ReaderSuperResolutionResult {

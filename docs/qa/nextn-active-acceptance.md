@@ -1168,6 +1168,23 @@ rewrite, re-run, or block this completed direct-route observation.
   verification. Local captures remain under
   `.hvigor/outputs/reader-native-decode-20260811/` and are excluded from Git.
 
+## Current Reader stage-observation route — 2026-08-12
+
+- The selected device was connected under the active Reader lease and passed the
+  wake/timeout gate (`AWAKE`, `OverrideTimeout=86400000ms`). Reader Settings
+  showed image enhancement enabled, an installed model, and the selected
+  Waifu2x art 2× model. No preference or model action was invoked.
+- The current signed Debug HAP adding fixed non-content failure-stage logging
+  was installed with `install -r` only. The one direct-Gallery attempt reached
+  native Gallery Detail and its freshly resolved Continue action was injected
+  once, but the terminal layout remained Gallery Detail rather than Reader.
+  No Reader processing or enhancement result was observed. This route is
+  rejected for stage diagnosis; do not repeat its coordinate action. Repair the
+  semantic Reader entry route before any further stage observation.
+- The retained layouts are local-only under
+  `.hvigor/outputs/reader-native-stage-20260812/`; they are not source inputs,
+  UI acceptance evidence, or Git artifacts.
+
 ## Data and artifact boundary
 
 Never place credentials, account/profile strings, cookies, tokens, raw Web
