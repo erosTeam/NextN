@@ -591,6 +591,7 @@ export struct GalleryDetailPage {
     if (initialPageIndex >= this.detail.pages.length) {
       return
     }
+    console.info('NextNReaderRoute stage=detail_dispatch')
     this.readerOverlay.stageDetailSeed(this.detail)
     try {
       this.onOpenReader(this.detail.id, initialPageIndex)

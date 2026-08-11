@@ -73,6 +73,7 @@ export class ReaderOverlayNavigationState {
     this.pendingReader = routeParams
     this.closing = false
     this.visible = true
+    console.info('NextNReaderRoute stage=overlay_open')
   }
 
   presentPendingReader(): void {
@@ -82,6 +83,7 @@ export class ReaderOverlayNavigationState {
     }
     this.pendingReader = null
     this.stack.pushPathByName('Reader', params, true)
+    console.info('NextNReaderRoute stage=overlay_present')
   }
 
   close(): void {

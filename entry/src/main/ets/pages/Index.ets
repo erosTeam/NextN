@@ -504,6 +504,7 @@ struct Index {
     if (galleryId <= 0) {
       return
     }
+    console.info('NextNReaderRoute stage=index_dispatch')
     this.readerOverlay.open(new ReaderRouteParams(galleryId, initialPageIndex))
   }
 
@@ -1483,6 +1484,7 @@ struct Index {
       return true
     })
     .onShown((): void => {
+      console.info('NextNReaderRoute stage=reader_shown')
       this.readerDestinationVisible = true
       this.readerDestinationClosing = false
       // Reader restores its persisted preference asynchronously. Start from
@@ -1973,6 +1975,7 @@ struct Index {
         .height('100%')
         .backgroundColor(Color.Transparent)
         .onAppear((): void => {
+          console.info('NextNReaderRoute stage=overlay_host_appear')
           this.readerOverlay.presentPendingReader()
         })
         .id('reader-overlay-navigation')
