@@ -1205,6 +1205,12 @@ rewrite, re-run, or block this completed direct-route observation.
   loss to a particular callback. No account, preference, model, page,
   download, or other app data was changed. The signed source baseline is
   rebuilt and reinstalled in place after this record.
+- Baseline control: after that reinstall, one fresh direct Gallery Reader
+  action settled for twelve seconds with `com.erosteam.nextn` foreground in
+  the ability-manager mission state. The rejected branch is therefore a real
+  Reader regression boundary, while the restored committed baseline remains
+  stable for this observed route. This control closes the repeat loop; do not
+  reopen the unchanged baseline merely to obtain another equivalent capture.
 
 ## Data and artifact boundary
 
