@@ -167,6 +167,53 @@ remains continuous; do not ask for it again.
   action, Favorites read, content mutation, data clear, or uninstall occurred.
 - The physical processing-and-interaction evidence remains OPEN; local raw
   artifacts are retained outside source control and are not named here.
+- 2026-08-11 follow-up: a subsequent signed Debug HAP replaced the legacy
+  MindSpore-only leaf with the NextE waifu2x ncnn runtime pair. The existing
+  model page explicitly downloaded that pair into NextN private storage and
+  entered its installed/remove state. The enhancement preference remained on,
+  but the same fresh native Detail action again exited NextN; terminal layout
+  foreground was NextE, not Reader. A single 20-second PID- and native-tag-
+  filtered live-log capture produced no module line. This observes an
+  unresolved actual-native-request failure only; it is not processing
+  acceptance. The CPU-only experiment that avoided Vulkan initialization
+  reached the same NextE terminal foreground, so it was rejected and removed;
+  GPU initialization is not established as the cause.
+- 2026-08-11 further isolation: a `prepareModel()`-only ncnn branch stayed in
+  native NextN. A second branch, returning before `upscaleRgba` only after
+  model-ready/cache preflight and source-pixel read, instead reached NextE.
+  The result narrows the post-prepare window but does not establish decoding
+  as the cause because more than one operation was included. Both diagnostic
+  branches were removed after one execution; the unresolved processing path
+  remains OPEN and local raw layouts stay outside source control.
+- The next one-operation result returned after the model-ready/hash/cache
+  preflight and also remained in native NextN. The failure window is now only
+  `processNow()` image-source processing or later; that temporary branch was
+  removed immediately and does not establish a root cause.
+- A return immediately after `image.createImageSource()` also stayed in NextN;
+  only image-info, pixel-map creation, and pixel read remain in the current
+  pre-native window. That temporary branch was removed after one run.
+- A return immediately after `getImageInfo()` also stayed in NextN; only
+  PixelMap creation and pixel read remain in the current pre-native window.
+  That temporary branch was removed after one run.
+- The PixelMap-creation-only branch reached NextE. On this device, the first
+  observed unsafe operation is `source.createPixelMap()`; all preceding model
+  and image-source operations remained native NextN. The temporary branch was
+  removed after its one-run result. The next implementation must avoid or
+  bound this ArkTS pixel-decoding path; processing acceptance remains OPEN.
+- A reference-derived serialized enhancement queue was then built and run
+  without any temporary early return. The same Reader route still reached
+  NextE, so that queue was immediately removed. It is not retained as a
+  speculative fix; the processing path remains OPEN.
+- A 256×256 `desiredSize` PixelMap branch also reached NextE before pixel read
+  or ncnn. That temporary branch was removed. The failure is not explained by
+  the tested decode size or queue; it narrowed the then-active investigation
+  to image decoding and its input bytes.
+- Repair result: NextN's stream cache now rejects a short NetworkKit chunk
+  write and uses a v2 identity for newly fetched Reader bytes; old entries
+  were not deleted. After the signed data-preserving update, the same direct
+  route stayed in native NextN Reader at both 10 and 30 seconds. This closes
+  only the observed process-exit regression for a fresh cache source;
+  enhancement output and visual-reference acceptance remain OPEN.
 
 ## Active delivery P1 — Gallery Detail / Comments
 

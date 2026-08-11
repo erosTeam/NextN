@@ -58,7 +58,7 @@ export class ReaderImageCacheService {
   private static maintenanceBytesSincePrune: number = 0
 
   static cacheKey(galleryId: number, mediaId: string, pageNumber: number, extension: string): string {
-    return `reader:v1:${galleryId}:${mediaId}:${pageNumber}:${ReaderImageCacheService.normalizedExtension(extension)}`
+    return `reader:v2:${galleryId}:${mediaId}:${pageNumber}:${ReaderImageCacheService.normalizedExtension(extension)}`
   }
 
   static async load(
@@ -191,8 +191,8 @@ export class ReaderImageCacheService {
             request?.destroy()
             return
           }
-          const count: number = fileIo.writeSync(file.fd, data, { offset: written })
-          if (count <= 0) {
+          const count: number = fileIo.writeSync(file.fd, data)
+          if (count !== data.byteLength) {
             throw new Error('Unable to save Reader image.')
           }
           written += count

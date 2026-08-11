@@ -2,8 +2,15 @@ import { common } from '@kit.AbilityKit'
 import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { image } from '@kit.ImageKit'
-import { ReaderNativeSuperResolution, ReaderNativeSuperResolutionResult } from './ReaderNativeSuperResolution'
-import { ReaderSuperResolutionModelService } from './ReaderSuperResolutionModelService'
+import {
+  ReaderNativeSuperResolution,
+  ReaderNativeSuperResolutionConfig,
+  ReaderNativeSuperResolutionResult,
+} from './ReaderNativeSuperResolution'
+import {
+  ReaderSuperResolutionModelPaths,
+  ReaderSuperResolutionModelService,
+} from './ReaderSuperResolutionModelService'
 
 const CACHE_DIRECTORY: string = 'nextn-reader-super-resolution-cache'
 const MAX_SOURCE_HEIGHT: number = 2000
@@ -51,8 +58,9 @@ export class ReaderSuperResolutionService {
     if (sourcePath.length === 0 || ownerKey.length === 0) {
       return ReaderSuperResolutionService.original(sourcePath, 'source_unavailable')
     }
-    const modelPath: string | null = await ReaderSuperResolutionModelService.pathIfReady(context)
-    if (modelPath === null) {
+    const modelPaths: ReaderSuperResolutionModelPaths | null =
+      await ReaderSuperResolutionModelService.pathsIfReady(context)
+    if (modelPaths === null) {
       return ReaderSuperResolutionService.original(sourcePath, 'model_not_installed')
     }
     const sourceKey: string = ReaderSuperResolutionService.sha256(sourcePath)
@@ -77,7 +85,7 @@ export class ReaderSuperResolutionService {
       context,
       sourcePath,
       outputPath,
-      modelPath,
+      modelPaths,
       inFlight,
     )
     inFlight.promise = task
@@ -113,7 +121,7 @@ export class ReaderSuperResolutionService {
     context: common.UIAbilityContext,
     sourcePath: string,
     outputPath: string,
-    modelPath: string,
+    modelPaths: ReaderSuperResolutionModelPaths,
     inFlight: InFlightEnhancement,
   ): Promise<ReaderSuperResolutionResult> {
     const temporaryPath: string = `${outputPath}.part`
@@ -154,7 +162,9 @@ export class ReaderSuperResolutionService {
         width,
         height,
         stride,
-        modelPath,
+        modelPaths.paramPath,
+        modelPaths.modelPath,
+        ReaderSuperResolutionService.nativeConfig(),
         inFlight.requestId,
       )
       if (inFlight.owners.size === 0 || native.pixels.byteLength !== outputWidth * outputHeight * 4) {
@@ -213,6 +223,10 @@ export class ReaderSuperResolutionService {
         await source.release()
       }
     }
+  }
+
+  private static nativeConfig(): ReaderNativeSuperResolutionConfig {
+    return new ReaderNativeSuperResolutionConfig()
   }
 
   private static original(sourcePath: string, reason: string): ReaderSuperResolutionResult {

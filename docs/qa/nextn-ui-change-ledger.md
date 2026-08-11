@@ -361,6 +361,25 @@ authorize an edit, replace a device comparison, or define product completion.
   would determine delivery on its own; it did not. Do not alter the floating
   geometry, reserve, or hit-test tree again without a new event-delivery
   observation that distinguishes the actual owner.
+- New current evidence: on 2026-08-11 the direct Gallery Want was
+  force-stopped into a verified native NextN Detail root. Its one current
+  HDS-material `继续` action, resolved from fresh bounds, again terminated on
+  native Download settings rather than Reader. This removes the earlier
+  foreground ambiguity but does not prove which receiver won the event. The
+  current source still differs from the complete NextE parent tree: its
+  transparent full-width rail mounts the HDS capsule directly, while NextE
+  inserts one default-hit-test inner Row with the exact capsule activity
+  height. The newly actionable correction is only that missing inner Row. It
+  preserves the existing floating position, visible capsule, outer transparent
+  rail, activity dimensions, and scroll reserve. The prior mistake was
+  treating a rejected route with ambiguous foreground as enough to discard the
+  reference-owned event boundary; this run establishes the route precondition
+  before the same failure. The exact inner-owner correction was then built,
+  installed, and exercised once through that same fresh NextN Detail route;
+  it still ended on Download settings, so it was immediately removed rather
+  than left as an unproven UI change. The next evidence is fixed route-stage
+  logging at the platform's visible diagnostic level, not another geometry or
+  hit-test change.
 
 ## OPEN — Gallery comment translation
 
@@ -545,3 +564,120 @@ authorize an edit, replace a device comparison, or define product completion.
   settings surface. The enhancement switch was confirmed disabled afterward
   and Browse was restored. This is not processing or interaction acceptance;
   that evidence remains OPEN.
+
+## OPEN — Reader enhancement runtime migration
+
+- User outcome: an enabled, installed Reader enhancement must preserve the
+  native Reader route and produce a local derivative without terminating the
+  application.
+- Current evidence: with the enhancement preference enabled and the legacy
+  MindSpore asset present, one fresh direct Gallery action exited NextN.
+  The same route remained in the NextN Reader when the actual NNRT upscale
+  request alone was bypassed; a direct no-op native pause call also remained
+  safe. This isolates the current failing boundary to the MindSpore upscale
+  request, not Reader routing, the floating Read action, or native module
+  loading. Raw device evidence is retained locally outside Git.
+- Reference boundary: NextE owns one user-installed model definition with an
+  ncnn param/bin runtime pair and an optional MindSpore accelerator asset.
+  Its service attempts the accelerator only as an optimization and retains
+  the ncnn pair as the portable runtime. NextN currently treats its optional
+  `.ms` asset as the sole runtime, which is the unsupported substitution.
+- Exact change: retain the existing Reader settings route, model-management
+  page, toggle, local storage root, and explicit install/remove actions.
+  Replace only the model asset contract and processing leaf so the verified
+  ncnn pair is required for installed state and is used for image processing.
+  A legacy `.ms` file is retained untouched but is not treated as executable
+  runtime state; no Reader route, chrome, image geometry, setting layout, or
+  automatic network fetch may change.
+- Verification plan: after a signed data-preserving update, the pre-existing
+  legacy asset must leave the Reader stable but unenhanced. A separately
+  explicit model-install action may fetch and verify the ncnn pair, after
+  which the same direct Reader route must remain native NextN and show an
+  accepted processed-page result. Compare the settings leaf and Reader state
+  to the same reference state; no source-shape or synthetic UI check is
+  acceptance.
+- Unresolved risk: the affected device has not yet run the ncnn pair, so this
+  record does not claim model-processing acceptance.
+- New device evidence: the explicit ncnn-pair download completed and the
+  model page entered its installed/remove state. With the existing enhancement
+  preference still enabled, the same fresh native Detail action again exited
+  NextN; the terminal foreground root was NextE rather than Reader. A
+  20-second PID- and native-tag-filtered log capture produced no module line,
+  so it does not establish a GPU, model-load, or output-encoding cause. The
+  next single-variable runtime experiment was CPU-only invocation that did
+  not initialize Vulkan; its terminal foreground was still NextE. That
+  disproves Vulkan initialization as the isolated cause, so the CPU override
+  was removed rather than retained. No Reader layout or setting geometry was
+  changed.
+- 2026-08-11 runtime isolation: an ncnn `prepareModel()`-only temporary
+  branch remained in native NextN. A separate branch that continued through
+  model-ready/cache preflight and source pixel read, but returned before
+  `upscaleRgba`, still reached NextE. This does not attribute the exit to
+  decoding: the latter branch covers multiple post-prepare operations. Both
+  temporary branches were removed immediately after their one-run result; raw
+  layouts remain in the local Reader-enhancement audit directory. The next
+  diagnostic must isolate one remaining operation rather than promote either
+  observation into a root-cause claim.
+- Follow-up: a return immediately after model-ready/hash/cache preflight also
+  remained in native NextN. Therefore the observed exit begins only after
+  `processNow()` enters image-source handling; that temporary branch was also
+  removed after its one-run result.
+- A return immediately after `image.createImageSource()` also remained in
+  native NextN. The remaining untested image operations are `getImageInfo`,
+  pixel-map creation, and pixel read; the temporary source-creation branch
+  was removed after its one-run result.
+- A return immediately after `getImageInfo()` also remained in native NextN.
+  The remaining image operations are now PixelMap creation and pixel read;
+  the temporary image-info branch was removed after its one-run result.
+- A return immediately after `source.createPixelMap()` reached NextE. The
+  exact first unsafe operation in this device path is therefore ArkTS PixelMap
+  creation, not ncnn model preparation, cache preflight, ImageSource creation,
+  or source image-info lookup. The temporary PixelMap branch was removed after
+  one run. This is a causal device observation for the current implementation,
+  not a claim about the platform API in general; the remediation must move or
+  bound pixel decoding instead of retrying this call.
+- Reference reconciliation before the next edit: NextE owns one serialized
+  enhancement queue (`pendingTasks`/`activeTask`) before it enters the same
+  PixelMap API. NextN's current per-output in-flight map starts every page's
+  `processNow()` immediately, so multiple Reader-mounted pages may decode at
+  once. Exact change boundary: retain NextN's model, cache, owner and native
+  leaves, but introduce one service-owned serialized processing chain plus
+  an owner check before queued decoding. Do not change Reader geometry,
+  settings, source size, model choice, download behavior, or page routing.
+- Verification plan: one signed, data-preserving build; same direct Gallery
+  route and one native Reader entry; then require a native NextN terminal
+  without using an early-return diagnostic. A stable terminal alone does not
+  accept output quality; derivative display and same-state Reader review stay
+  required afterward.
+- Rejected by the resulting device run: the serialized chain still reached
+  NextE on the same real Reader path. It did not fix the proven PixelMap
+  boundary, so the queue and pre-decode owner guard were removed rather than
+  retained. The remaining root-cause inquiry must target the decode strategy
+  or this Reader's image-lifetime boundary, not concurrency alone.
+- Next diagnostic boundary: use the platform-supported `desiredSize` only for
+  one temporary 256×256 PixelMap decode, then return the original image before
+  pixel read or ncnn. It differentiates the current full-resolution decode
+  resource budget from an ImageSource/PixelMap lifetime failure; it does not
+  alter any accepted image output or Reader presentation.
+- Rejected by the resulting device run: the 256×256 PixelMap branch still
+  reached NextE. Pixel dimensions and the earlier queue hypothesis are not
+  sufficient explanations. The temporary size constraint and early return
+  were removed; the next investigation is limited to the native module / image
+  decoder linkage boundary.
+- Newly actionable source basis: `ReaderImageCacheService` accepted any
+  positive stream-write count, so a short write could promote incomplete image
+  bytes without a full-file integrity check. Header lookup can still succeed
+  on such a file while full PixelMap decode enters the system image failure
+  path. Exact change boundary: write each received chunk sequentially at the
+  active file pointer and reject a short write. Move only new Reader cache
+  identities from `v1` to `v2` so a corrected build obtains clean bytes
+  without deleting existing private cache entries. Do not alter network
+  request policy, Reader layout, model settings, account, or user content.
+- Device result: the signed v2-cache build was installed with `install -r` on
+  the selected device. The same direct Gallery route entered native Reader and
+  remained foregrounded by NextN at both 10-second and 30-second observations;
+  the prior immediate process exit did not recur. This accepts the crash-path
+  repair only. The evidence proves that a fresh v2 source survived the prior
+  failing decode path; it does not identify which historical v1 write was
+  malformed, establish that a derivative was produced, or establish visual
+  quality against the reference.
