@@ -928,6 +928,16 @@ authorize an edit, replace a device comparison, or define product completion.
   This is native processing/output-state evidence for the observed page. Raw
   content remains only in the local audit artifact and was not added to Git.
   Same-state visual-quality comparison against NextE remains OPEN.
+- New device counterevidence, 2026-08-11: the current signed build entered
+  native NextN Detail through the existing numeric Gallery direct route, then
+  its one current `Continue` action left no NextN Reader foreground; the
+  terminal foreground was NextE. A source-limited experiment deferred
+  enhancement until the original Image `onComplete`, but the same route still
+  terminated outside NextN. That uncommitted experiment was removed
+  immediately. The next diagnosis must not revisit Reader chrome, layout,
+  settings, queueing, decode size, or source-file ordering; it must distinguish
+  the remaining PixelMap input/lifetime boundary. The retained local evidence
+  is outside Git at `.hvigor/outputs/reader-enhancement-runtime-20260811T1253/`.
 
 ## OPEN — Optional self-hosted whole-page manga translation
 

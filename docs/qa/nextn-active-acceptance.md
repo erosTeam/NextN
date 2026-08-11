@@ -252,6 +252,17 @@ remains continuous; do not ask for it again.
   derivative is atomically promoted, so this is observed native output-state
   evidence for the current page. Same-state NextE quality comparison remains
   OPEN; raw content is retained locally and not named here.
+- 2026-08-11 follow-up: the current signed Debug HAP was installed in place,
+  then the existing numeric Gallery direct route reached native NextN Detail
+  and its one current `Continue` Reader action was invoked. The terminal
+  foreground was `com.erosteam.nexte`, not NextN Reader. No account,
+  preference, model, content, download, or application-data action occurred.
+  A bounded attempt to defer NextN enhancement until the original Image
+  `onComplete` produced the same terminal result, so that uncommitted change
+  was reverted immediately. This disproves that decode-order hypothesis for
+  the observed local-download path; it does not identify a cause. The current
+  local artifacts remain outside Git in
+  `.hvigor/outputs/reader-enhancement-runtime-20260811T1253/`.
 
 ## Active delivery P1 — Gallery Detail / Comments
 
