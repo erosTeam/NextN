@@ -1238,9 +1238,10 @@ rewrite, re-run, or block this completed direct-route observation.
   action was performed. The pre-existing NextN preference remains unchanged.
 - A same-device current NextE capture used the same `1320×2120` portrait
   viewport and confirmed the corresponding row is last in its enhancement
-  group. Its enhancement switch was off, so that row was disabled; no NextN
-  preference was toggled merely to manufacture an identical state. Raw local
-  comparison evidence remains under
+  group. Its enhancement switch was off, so that row was disabled. NextN was
+  then temporarily switched off once, which showed the same disabled retained
+  row; it was immediately restored to its original enabled state with the
+  `2000px` selection still present. Raw local comparison evidence remains under
   `.hvigor/outputs/reader-enhancement-height-20260812T0131/` and is excluded
   from Git.
 

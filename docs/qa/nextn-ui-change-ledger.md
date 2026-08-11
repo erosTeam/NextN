@@ -674,7 +674,7 @@ authorize an edit, replace a device comparison, or define product completion.
   call. Do not recreate the leaf or repeat the menu-zone input until that
   focused-window transition is separately explained.
 
-## OPEN — Reader enhancement input-height ceiling
+## FROZEN — Reader enhancement input-height preference UI
 
 - **User outcome:** the existing on-device enhancement must expose the same
   bounded image-size choice as NextE instead of silently fixing every request
@@ -714,10 +714,16 @@ authorize an edit, replace a device comparison, or define product completion.
   selector menu shows only `1000px`, `1500px`, and `2000px`, with `2000px`
   selected; no option was chosen. The current NextE capture has enhancement
   off and therefore shows the same last row disabled. NextN's pre-existing
-  enhancement preference was on and was not changed solely to manufacture the
-  disabled branch. The row order, copy, values, and enabled-state predicate
-  are observed/source-backed; an explicit disabled-branch NextN capture is
-  still unobserved and remains OPEN.
+  enhancement preference was then temporarily disabled once: the row stayed
+  in place and became disabled at the same value, then the original enabled
+  state and `2000px` value were restored and independently captured. The
+  input-height row's visible hierarchy, copy, values, disabled state, and
+  restoration are accepted for this observed settings path. A processed
+  altered-height image remains a separate Reader-runtime boundary.
+- **Freeze rule:** do not revisit this settings group, re-open its menu, or
+  change its geometry/order/copy without new user feedback, a source change in
+  this boundary, or same-state counter-evidence. The separate enhancement
+  processing path is not permission to modify this frozen settings surface.
 
 ## OPEN — Gallery comment translation
 
