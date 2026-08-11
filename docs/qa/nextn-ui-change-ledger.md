@@ -1078,13 +1078,16 @@ authorize an edit, replace a device comparison, or define product completion.
 - Reference and current parent tree: both apps keep one full Reader canvas
   with content first, a transparent tap surface, and conditional overlay
   chrome. NextE binds the canvas touch lifecycle to its existing
-  super-resolution service; NextN already exposes the same native pause API
-  but does not call it from the Reader owner.
-- Exact boundary: add only transient pause/resume state and timers to
-  `ReaderPage`, forwarding foreground down/move/up/cancel and Reader settings
-  open/close to the existing service. Do not alter page data sources, List or
-  Swiper ownership, image leaves, tap-zone semantics, chrome geometry,
-  settings contents, model storage, or any network request.
+  super-resolution service. NextN now does the equivalent through its Reader
+  owner.
+- Implemented source boundary: `ReaderPage` owns transient pause/resume state
+  and timers, forwards foreground down/move/up/cancel plus settings
+  open/close to `ReaderSuperResolutionService.setInteractionPaused`, and the
+  service forwards to the existing native pause owner. The implementation is
+  recorded in `02bd60a`; do not duplicate it with a second interaction path.
+  Page data sources, List/Swiper ownership, image leaves, tap-zone semantics,
+  chrome geometry, settings contents, model storage, and network behavior are
+  unchanged.
 - Verification plan: build first. With an installed local enhancement model,
   compare a reader interaction and immediately subsequent settled page against
   NextE at the same mode and viewport; retain raw captures locally. No
@@ -1095,7 +1098,9 @@ authorize an edit, replace a device comparison, or define product completion.
   terminal after the native Detail action; its terminal native state was a
   settings surface. The enhancement switch was confirmed disabled afterward
   and Browse was restored. This is not processing or interaction acceptance;
-  that evidence remains OPEN.
+  that evidence remains OPEN. The source reconciliation above is not a reason
+  to repeat this unchanged device route; reopen it only for a new enabled,
+  stable Reader interaction state.
 
 ## OPEN — Reader enhancement runtime migration
 
