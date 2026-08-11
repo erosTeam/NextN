@@ -109,6 +109,10 @@ export {
 } from './services/MangaRenderingServiceProfileCatalog'
 export { MangaRenderingServiceProtocol } from './services/MangaRenderingServiceProtocol'
 export {
+  MangaRenderingServiceBinaryTransport,
+  MangaRenderingServiceBinaryResponse,
+} from './services/MangaRenderingServiceBinaryTransport'
+export {
   MangaRenderingServiceSettings,
   MangaRenderingServiceSettingsSnapshot,
   MANGA_RENDERING_DETECTION_HIGH_RECALL,
