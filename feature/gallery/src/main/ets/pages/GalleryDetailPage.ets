@@ -1986,7 +1986,15 @@ export struct GalleryDetailPage {
   private ReadFabRail() {
     if (this.canOpenReader()) {
       Row() {
-        this.ReadFab()
+        // The outer rail stays transparent so its unused horizontal space
+        // remains an overlay. This inner owner is deliberately default-hit:
+        // it prevents an overlapped Detail leaf from receiving a Read tap.
+        Row() {
+          this.ReadFab()
+        }
+        .width('100%')
+        .height(this.readFabOuterHeight())
+        .hitTestBehavior(HitTestMode.Default)
       }
       .width('100%')
       .height(this.readFabOuterHeight())

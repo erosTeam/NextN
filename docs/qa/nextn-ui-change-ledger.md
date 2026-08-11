@@ -620,6 +620,24 @@ authorize an edit, replace a device comparison, or define product completion.
   than left as an unproven UI change. The next evidence is fixed route-stage
   logging at the platform's visible diagnostic level, not another geometry or
   hit-test change.
+- Reopened on 2026-08-12 by materially different current evidence: the fresh
+  native Detail layout at the current Read-action point contains both the
+  floating Button and an underlying clickable tag leaf. The observed injected
+  action remained on Detail, rather than taking the prior unrelated Settings
+  terminal. Official ArkUI guidance confirms that `Transparent` allows masked
+  siblings to participate in hit testing. Exact delta: restore only the
+  already-mapped default-hit inner Row at `readFabOuterHeight()` under the
+  transparent rail; leave the floating position, overlay geometry, reserve,
+  HDS/filled choice, and callbacks untouched. The next evidence is one fresh
+  same route/action after a data-preserving install; if it does not reach
+  Reader, retain that result and remove this correction rather than retuning
+  the floating surface.
+- Result, 2026-08-12: the first injected point was above the actual button
+  bounds, so it is recorded as a non-action rather than evidence against this
+  change. A new current native layout then established the Button bounds and
+  one center activation entered the NextN Reader overlay. This accepts only
+  the interaction owner: the rail remains floating, its geometry and reserves
+  are unchanged, and no additional hit-test or layout tuning is authorized.
 
 ## OPEN — Gallery comment translation
 

@@ -1184,6 +1184,19 @@ rewrite, re-run, or block this completed direct-route observation.
 - The retained layouts are local-only under
   `.hvigor/outputs/reader-native-stage-20260812/`; they are not source inputs,
   UI acceptance evidence, or Git artifacts.
+- Correction, later on 2026-08-12: the rejected first action had landed above
+  the actual Button bounds and therefore was not a Reader-action result. A
+  new Debug HAP with the reference-owned Read hit-test owner was installed
+  with `install -r`, no app data or Reader preference was changed, and the
+  current native Button bounds were read before one center activation. That
+  activation reached the native NextN Reader overlay after its settle. This
+  accepts the Detail-to-Reader interaction boundary for this route only; it
+  does not establish an enhanced output.
+- The settled status glyph alone is insufficient to classify the image result,
+  and the fixed Reader diagnostic tag produced no stage record even after its
+  temporary device log level was raised. No failure reason is inferred from
+  that absence. Further image-enhancement work must use a source-grounded
+  result-state boundary, not repeat this unchanged Reader route.
 
 ## Data and artifact boundary
 
