@@ -409,7 +409,6 @@ export struct ComicTranslationSourcePage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.character_viewfinder'),
         title: AppStrings.get('settings_translation_local_model'),
-        subtitle: AppStrings.get('settings_translation_local_model_notice'),
         trailingText: this.localModelChanging
           ? AppStrings.get('settings_translation_local_model_downloading')
           : this.localModelInstalled
@@ -429,6 +428,15 @@ export struct ComicTranslationSourcePage {
           }
         },
       })
+      Text(AppStrings.get('settings_translation_local_model_notice'))
+        .width('100%')
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontColor(ThemeTokens.TEXT_SECONDARY)
+        .padding({
+          left: ThemeTokens.SPACE_MD,
+          right: ThemeTokens.SPACE_MD,
+          bottom: ThemeTokens.SPACE_SM,
+        })
     }
   }
 

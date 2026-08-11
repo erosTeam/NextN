@@ -167,6 +167,13 @@ authorize an edit, replace a device comparison, or define product completion.
   faithful. The next edit is limited to that leaf's title, state text, and
   metadata copy; its group position, click/confirmation behavior, and
   download/remove owner remain frozen.
+- Current NextN recheck counterevidence: the revised metadata was placed in
+  `NextNListRow.subtitle`, so the trailing install status constrained it to a
+  narrower column and produced an earlier wrap than the same-viewport NextE
+  capture. NextE owns this metadata as a full-width caption *after* its model
+  row. The next edit moves only that note to the sibling leaf immediately
+  following the row, preserving text, row height, trailing status, action,
+  confirmation, and group order.
 
 ## OPEN — Reader comic-translation automatic session mode
 
