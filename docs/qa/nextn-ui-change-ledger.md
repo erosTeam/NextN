@@ -3,6 +3,49 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## FROZEN — Settings-root taxonomy and copy review — 2026-08-11
+
+- **Why newly actionable:** the user explicitly reported that the Settings
+  entry copy and hierarchy read as arbitrary despite an available NextE
+  reference. History has now been isolated as a separate completed source
+  change; this review covers the Settings root only and does not reopen that
+  page or any frozen Settings destination.
+- **Reference parent tree:** NextE owns `SettingsPage →
+  SecondaryListScaffold → [Account ListItem, Main ListItem] →
+  GroupedListSection → ConciseListRow`. Its root taxonomy is account, then
+  EH (where supported), Layout, Reader, Download, Search, History, Cache,
+  Advanced, and About; each row has one icon, title, and root-destination
+  action.
+- **Current NextN parent tree:** `SettingsPage(ROOT) →
+  SecondaryListScaffold → [RootAccountSection ListItem, RootMainSection
+  ListItem] → NextNGroupedListSection → NextNListRow`. Its explicit NH
+  differences are no EH source, a root floating History tab rather than a
+  duplicate Settings route, and a `Catalog` destination that combines the
+  available NH browse/search preferences.
+- **Review boundary:** verify, at one same-size portrait viewport, title
+  hierarchy, row order, terminology, grouping, icon/action alignment, and
+  the account-to-main-section transition. Preserve the existing source-owned
+  NH boundaries unless current reference/device evidence proves a particular
+  title, ordering, or grouping is wrong. No destination form or setting
+  value is in scope.
+- **Verification plan:** capture current native NextN and NextE Settings
+  roots at the same root window dimensions, verify foreground identity for
+  each, compare the whole root tree, and record either a concrete minimal
+  correction or a no-change result. Raw captures stay local outside Git.
+- **2026-08-11 device result:** both roots were captured as native
+  `EntryAbility` foregrounds with the same `[0,117][1320,2120]` portrait root
+  bounds. They share the HDS title, standalone account card, one grouped main
+  card, icon/title/chevron row grammar, dividers, and floating root tabs.
+  The NextN labels map directly to its actual owners: `浏览与搜索` covers its
+  merged NH browse/search preferences; `历史记录` is already a root tab rather
+  than a duplicate Settings destination; `缓存` represents NextN's private
+  cache owner; and no EH row is rendered because NextN has no EH settings
+  owner. No current reference/device evidence supports a copy, ordering, or
+  grouping edit. The reference/implementation captures are retained locally
+  in `.hvigor/outputs/settings-root-review-20260811/` and excluded from Git.
+  Freeze this root boundary until new user feedback or a source-owned root
+  capability changes it.
+
 ## OPEN — Reading History simple-row restoration — 2026-08-11
 
 - **User feedback and current source evidence:** History was explicitly
