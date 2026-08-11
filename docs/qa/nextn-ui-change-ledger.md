@@ -259,6 +259,16 @@ authorize an edit, replace a device comparison, or define product completion.
   an already installed dictionary when available, otherwise this translated
   substate remains unaccepted rather than downloading a dictionary merely for
   validation.
+- Current device observation for that follow-up: the installed build was
+  exercised with the existing local data only. Latest initially retained an
+  independent Cover-grid source override, so changing the global Setting to
+  List alone did not change its renderer; after its existing source menu was
+  set to Follow global, the native List showed its tag leaves. The displayed
+  values were the raw-fallback form; no local dictionary substitution was
+  observable in this run. Global presentation, Latest override, and the tag
+  control were restored to their pre-run Cover-grid, Cover-grid, and off
+  values. This is raw-fallback and restoration evidence only; the optional
+  translated-label state and same-state ErosN visual comparison remain OPEN.
 
 ## OPEN — Reader enhancement interaction yield
 

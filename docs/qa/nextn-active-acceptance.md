@@ -98,6 +98,17 @@ remains continuous; do not ask for it again.
 - This is device rendering and restoration evidence only. A same-gallery,
   same-viewport ErosN comparison remains outstanding, so it is not a
   visual-reference parity acceptance.
+- 2026-08-11 follow-up: the signed Debug HAP carrying the optional local
+  dictionary display-label enrichment was installed with `install -r` only.
+  The Settings global presentation was temporarily set to List, but Latest
+  retained its own existing Cover-grid source override; selecting Follow
+  global for Latest then produced the native List and its tag leaves. The
+  observed leaves used their raw fallback values; this run did not expose a
+  preinstalled dictionary substitution, so translated-label rendering remains
+  unaccepted. The global presentation, Latest source override, and tag switch
+  were restored to Cover grid, Cover grid, and off respectively. No account,
+  gallery, preference other than those temporary presentation controls, or
+  application data was changed.
 
 ## Current delivery observation — Reader enhancement interaction yield
 
