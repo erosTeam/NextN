@@ -1317,6 +1317,9 @@ rewrite, re-run, or block this completed direct-route observation.
   it was not guessed. No input, preference, page, account, or content change
   occurred in this diagnostic. The retained local layout is under
   `.hvigor/outputs/reader-focus-routing-20260812T/` and is excluded from Git.
+- The subsequent selected-device shell check could not access the private
+  Reader settings RDB, so it did not reveal or modify the tap preference. That
+  channel is rejected for this diagnostic; no menu-zone input followed.
 
 ## Data and artifact boundary
 

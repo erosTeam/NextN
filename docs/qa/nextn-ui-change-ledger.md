@@ -867,8 +867,11 @@ authorize an edit, replace a device comparison, or define product completion.
   canvas menu zone depends on the persisted tap-layout and inversion settings,
   which were not exposed by that state. No canvas input was injected, so this
   observation neither repeats nor attributes the prior cross-app transition.
-  The next action is a source-grounded, non-mutating observation of that
-  setting state before any menu-zone diagnostic.
+  A selected-device shell query then confirmed that the package-private reader
+  settings RDB is not accessible through the device shell, so that is not a
+  valid replacement for a native semantic setting read. No canvas input,
+  preference, page, or content action occurred. Leave this leaf OPEN; select
+  a different non-frozen boundary rather than trial menu-zone input.
 
 ## FROZEN — Reader enhancement input-height preference UI
 
