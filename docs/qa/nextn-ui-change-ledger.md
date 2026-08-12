@@ -1236,6 +1236,14 @@ authorize an edit, replace a device comparison, or define product completion.
   selected device's `uiInput keyEvent Back` is delivered as a single Reader
   destination event at all; only an event-delivery observation may reopen a
   code correction.
+- **Baseline restoration — 2026-08-12:** commit `e19b3eb` removes the rejected
+  ownership migration in full and restores the previously observed title-isolation
+  structure. After the selected `.237` device was re-resolved as Connected,
+  leased, woken, and read back as `AWAKE` with
+  `OverrideTimeout=86400000ms`, its signed Debug HAP was installed in place
+  with `-r`. This records only installation of the restored baseline; no
+  Reader route, Back event, account, preference, content, or data-clear action
+  followed. The independent event-delivery question remains OPEN.
 
 ## FROZEN — Reader enhancement input-height preference UI
 

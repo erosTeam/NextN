@@ -171,6 +171,13 @@ remains continuous; do not ask for it again.
   or data-clear action occurred. Do not use another Back retry as an acceptance
   substitute. The next permitted Reader return action requires an independent
   event-delivery observation.
+- The rejected ownership migration was then removed in commit `e19b3eb`. Its
+  already-built signed Debug HAP was installed in place with `-r` after a new
+  Connected-resolution, lease renewal, and `AWAKE` /
+  `OverrideTimeout=86400000ms` readback on the same `.237` target. No Reader
+  route, Back input, account, Favorites, preference, content, or data-clear
+  action was performed during that restoration. This is installation evidence
+  only; Reader return remains unproven and OPEN.
 
 ## Latest device observation — private-cache settings
 
