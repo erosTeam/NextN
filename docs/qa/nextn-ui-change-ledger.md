@@ -1244,6 +1244,19 @@ authorize an edit, replace a device comparison, or define product completion.
   with `-r`. This records only installation of the restored baseline; no
   Reader route, Back event, account, preference, content, or data-clear action
   followed. The independent event-delivery question remains OPEN.
+- **Independent menu-delivery observation — 2026-08-12:** the current Reader
+  settings path was traversed without writing any value and read
+  `left / menu / right` with `no inversion`. A fresh direct `471768` route
+  then reached native NextN Reader with its private overlay navigation. The
+  resulting center-zone action was therefore a source-defined MENU action,
+  not a guessed page turn. Its terminal layout nevertheless foregrounded
+  `com.huawei.hmsapp.books:MainAbility`. This reproduces the cross-app focus
+  transition after the root-title isolation correction, but establishes no
+  causal receiver inside NextN. The route is rejected after this one result:
+  do not retry a canvas/menu/back input, alter Reader geometry, or recreate
+  the Image-information leaf from it. The local evidence is retained under
+  `.hvigor/outputs/reader-more-owner-20260812T2220/`; a future action needs a
+  distinct platform event-delivery observation rather than another tap.
 
 ## FROZEN — Reader enhancement input-height preference UI
 

@@ -178,6 +178,15 @@ remains continuous; do not ask for it again.
   route, Back input, account, Favorites, preference, content, or data-clear
   action was performed during that restoration. This is installation evidence
   only; Reader return remains unproven and OPEN.
+- A separate current device path read the existing Reader tap-zone values
+  through native Settings without changing them: `left / menu / right` and
+  `no inversion`. A fresh direct `471768` route then reached native NextN
+  Reader. Its one center MENU-zone action again produced a terminal layout
+  rooted at `com.huawei.hmsapp.books:MainAbility`, rather than NextN. The
+  raw local layout is retained under
+  `.hvigor/outputs/reader-more-owner-20260812T2220/`. This rejects the input
+  chain and does not identify a NextN receiver; no further Reader canvas,
+  More, Back, account, preference, content, or data-clear action was taken.
 
 ## Latest device observation — private-cache settings
 
