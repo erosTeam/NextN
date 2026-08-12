@@ -1523,6 +1523,21 @@ authorize an edit, replace a device comparison, or define product completion.
   It neither proves nor disproves the no-snapshot request timing path. Do not
   repeat this unchanged route to manufacture a transient frame. Reopen only
   after a source change to the route/request owner or new current feedback.
+- **Reopened card-inset correction — 2026-08-13:** new user feedback and the
+  current native `471768` Comments capture both show that the full-page
+  cards' author/body/date stack sits too close to the 24vp rounded corners.
+  The preceding host/overlay correction remains intact: the defect is only
+  the vertical leaf inset inside each supported NH card. The faulty
+  assumption was carrying the generic 12vp top and 8vp bottom values into a
+  visibly taller full-comments card. Change only the vertical inset to
+  16vp top and 12vp bottom. Keep the existing 12vp horizontal inset, 24vp
+  radius, body font/line height, translation action, composer, list spacing,
+  loading, filtering, and posting owners unchanged. Build, install in place,
+  and review the same direct native route once; no UI static contract. The
+  2026-08-13 build and in-place install succeeded. The direct route was
+  started, but its one terminal capture was rejected by the host execution
+  policy before a device result could be recorded; this correction remains
+  OPEN and unaccepted.
   Local evidence is retained at
   `.hvigor/outputs/gallery-comments-initial-load-20260812T2041/`.
 

@@ -32,6 +32,8 @@ const COMMENT_COMPOSER_SEND_SIZE: number = 36
 const COMMENT_COMPOSER_RADIUS: number = COMMENT_COMPOSER_SEND_SIZE / 2 + COMMENT_COMPOSER_INNER_GAP
 const COMMENT_COMPOSER_INPUT_MAX_H: number = 148
 const COMMENT_CARD_CONTENT_INSET: number = ThemeTokens.SPACE_MD
+const COMMENT_CARD_TOP_INSET: number = ThemeTokens.SPACE_LG
+const COMMENT_CARD_BOTTOM_INSET: number = ThemeTokens.SPACE_MD
 
 class CommentTranslationCardState {
   commentId: number = 0
@@ -496,8 +498,8 @@ export struct GalleryCommentsPage {
     .padding({
       left: COMMENT_CARD_CONTENT_INSET,
       right: COMMENT_CARD_CONTENT_INSET,
-      top: COMMENT_CARD_CONTENT_INSET,
-      bottom: ThemeTokens.SPACE_SM,
+      top: COMMENT_CARD_TOP_INSET,
+      bottom: COMMENT_CARD_BOTTOM_INSET,
     })
     .borderRadius(ThemeTokens.RADIUS_CARD)
     .backgroundColor(ThemeTokens.CARD_BACKGROUND)
