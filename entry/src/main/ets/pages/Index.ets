@@ -1449,6 +1449,10 @@ struct Index {
     // Gallery's semantic title lives in its header first, then hands off to
     // HDS after the header scrolls away.
     .titleBar(this.galleryTitleBar(this.galleryParams(param)))
+    // The retained Gallery destination owns the root title-bar instance. Hide
+    // it only while the private Reader overlay is visible so its HDS menu
+    // leaves cannot receive top-chrome input behind Reader.
+    .hideTitleBar(this.readerOverlay.visible)
     .hideBackButton(false)
     .bindToScrollable([this.galleryScroller])
   }
@@ -1964,10 +1968,6 @@ struct Index {
       .enableDragBar(true)
       .titleBar(this.rootTitleBar())
       .titleMode(HdsNavigationTitleMode.MINI)
-      // The Reader mounts a private full-window HDS stack above this retained
-      // root stack. Hide the root title bar for that exact interval so its
-      // menu leaves cannot compete with Reader's own top-chrome input owner.
-      .hideTitleBar(this.readerOverlay.visible)
       .hideBackButton(true)
       .dynamicHideTitleBar({
         hideTitleArea: true,

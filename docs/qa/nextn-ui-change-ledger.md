@@ -1179,6 +1179,19 @@ authorize an edit, replace a device comparison, or define product completion.
   scroll binding. The patch must be removed rather than widened if the root
   title fails to return after Reader close or if the Reader route no longer
   remains native NextN.
+- **Counter-evidence and correction — 2026-08-12:** the first built,
+  installed run retained native NextN Reader at `1320×2120`, but its current
+  layout still contained the root `hdsNavigationMoreButton`. This disproves
+  the faulty assumption that `HdsNavigation.hideTitleBar` controls an already
+  mounted destination title bar. The actual owner is the retained Gallery
+  `HdsNavDestination`, whose HDS title bar contains that button. The root
+  binding is removed; the same boolean is bound only to
+  `galleryDestination(...).hideTitleBar(readerOverlay.visible)`. No Reader
+  canvas, overlay structure, floating action, menu, scroll binding, or
+  unrelated destination is changed. The next device check is the same one
+  direct route after installation; it must show the overlay with neither the
+  Gallery title bar nor its More button, and must show the title again after
+  Reader closes.
 
 ## FROZEN — Reader enhancement input-height preference UI
 
