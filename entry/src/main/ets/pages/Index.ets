@@ -1646,6 +1646,7 @@ struct Index {
     .titleBar(nextNHdsTitle(AppStrings.get('settings_reader_enhancement_models')))
     .hideBackButton(false)
     .bindToScrollable([this.readerSuperResolutionModelsScroller])
+    .backgroundColor(ThemeTokens.SURFACE)
   }
 
   @Builder

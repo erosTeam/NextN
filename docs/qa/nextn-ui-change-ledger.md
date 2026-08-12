@@ -491,6 +491,18 @@ authorize an edit, replace a device comparison, or define product completion.
   card. This changes neither the row hierarchy nor any model action, state,
   copy, geometry, or other modal; verification remains one fresh current
   model-manager capture beside the retained reference.
+- **Host correction after route evidence:** that second correction targeted
+  the wrong presentation. The current device route was the normal Settings
+  destination, where `ReaderSuperResolutionModelsPage.modal` is false; the
+  API-26 opt-in affects only the separate Reader-overlay sheet branch and
+  therefore cannot change this capture. Remove that unsupported opt-in. The
+  normal NextE page owns `HdsNavDestination → SecondaryListScaffold` and sets
+  the semantic sub-background on the destination. NextN's corresponding
+  owner is `Index.readerSuperResolutionModelsDestination`; add the same
+  `ThemeTokens.SURFACE` there. The model page, list, rows, data, actions and
+  the Reader-overlay sheet stay otherwise untouched. Rebuild, install in
+  place and repeat only the already-established normal destination route for
+  one fresh visual comparison.
 
 ## FROZEN — Unified private-cache management (category-page visual boundary)
 
