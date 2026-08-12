@@ -1289,6 +1289,16 @@ authorize an edit, replace a device comparison, or define product completion.
   Local evidence is retained at
   `.hvigor/outputs/gallery-comments-471768-20260812T2039/` and is excluded
   from Git.
+- **Initial-load observation — 2026-08-12:** one data-preserving force-stop
+  followed by the same direct Comments Want intentionally omitted a Detail
+  snapshot. At the first captured native terminal state the page was already
+  loaded, with the same HDS-only heading, card list, and composer overlay;
+  this one run did not reproduce a pull-style or non-centred loading state.
+  It neither proves nor disproves the no-snapshot request timing path. Do not
+  repeat this unchanged route to manufacture a transient frame. Reopen only
+  after a source change to the route/request owner or new current feedback.
+  Local evidence is retained at
+  `.hvigor/outputs/gallery-comments-initial-load-20260812T2041/`.
 
 ## OPEN — Gallery comment translation
 

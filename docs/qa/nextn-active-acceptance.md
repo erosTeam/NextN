@@ -126,6 +126,13 @@ remains continuous; do not ask for it again.
   duplicate-heading correction result; the Comments page remains OPEN for its
   separate card/type/spacing review. The retained local evidence is
   `.hvigor/outputs/gallery-comments-471768-20260812T2039/`.
+- One later data-preserving force-stop and identical direct Want intentionally
+  omitted a Detail comment snapshot. Its first captured native state was
+  already loaded, so it did not reproduce a loading-placement defect. This is
+  one non-reproduction, not acceptance of the asynchronous no-snapshot path;
+  the raw local evidence is
+  `.hvigor/outputs/gallery-comments-initial-load-20260812T2041/`. Do not
+  repeat this unchanged route without a new source change or current feedback.
 
 ## Latest device observation — private-cache settings
 
