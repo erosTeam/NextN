@@ -93,6 +93,11 @@ remains continuous; do not ask for it again.
 - This accepts the record-present cold-start Account plus authenticated
   Favorites path for the observed ArkWeb resource-error regression. It does
   not attribute earlier record-absent or terminal-401 events to this cause.
+- The next signed build additionally records only the finite diagnostic
+  `account_arkweb_transport_main_frame_load_failed` if the retained host
+  receives a future classified main-frame load failure. It does not log or
+  retain URL, error code, response, cookie, or account data. That diagnostic
+  awaits a real failure event; it is not asserted from this successful run.
 
 ## Current P0 device result — proof and postmortem recorded
 

@@ -59,6 +59,14 @@ source-level false-failure transition and its removal on the observed device
 path; it does not falsely claim direct observation that the earlier callback
 was a particular subresource.
 
+The next build also records a single fixed diagnostic code,
+`account_arkweb_transport_main_frame_load_failed`, only after the host has
+already classified an ArkWeb error as main-frame. It retains no request URL,
+error code, response, cookie, account data, or browser payload. A future
+recurrence can therefore distinguish a true main-document failure from an
+ignored subresource callback without changing session state merely to collect
+evidence.
+
 ### Ruled-out and still-unproven explanations
 
 - In the preceding build, the retained host was changed from `CacheMode.None`

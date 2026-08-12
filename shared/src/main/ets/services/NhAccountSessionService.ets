@@ -61,6 +61,7 @@ enum AccountSessionDiagnosticStage {
   VERIFICATION_REQUIRED_POST_RESTORE_401 = 'account_verification_required_post_restore_401',
   VERIFICATION_REQUIRED_POST_PROMOTION_401 = 'account_verification_required_post_promotion_401',
   VERIFICATION_MARKER_PERSIST_FAILED = 'account_verification_marker_persist_failed',
+  ARKWEB_TRANSPORT_MAIN_FRAME_LOAD_FAILED = 'account_arkweb_transport_main_frame_load_failed',
 }
 
 /** Distinguishes a cold restore from a visible browser promotion for a later 401. */
@@ -222,6 +223,18 @@ export class NhAccountSessionService {
   /** Returns one fixed lifecycle code only; safe for redacted acceptance diagnostics. */
   static latestDiagnosticStageCode(): string {
     return NhAccountSessionService.latestDiagnosticStage
+  }
+
+  /**
+   * The retained ArkWeb host has already classified an error as main-frame
+   * only. Preserve that finite fact for the next account-persistence evidence
+   * run without carrying a request URL, error code, response, cookie, or
+   * browser payload across the service boundary.
+   */
+  static recordArkWebTransportMainFrameLoadFailure(): void {
+    NhAccountSessionService.recordDiagnosticStage(
+      AccountSessionDiagnosticStage.ARKWEB_TRANSPORT_MAIN_FRAME_LOAD_FAILED,
+    )
   }
 
   /** True only while a retained sealed record needs an explicit replacement decision. */

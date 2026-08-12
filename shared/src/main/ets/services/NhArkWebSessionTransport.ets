@@ -85,6 +85,7 @@ export class NhArkWebSessionTransport {
 
   static observeLoadError(): void {
     NhArkWebSessionTransport.isReady = false
+    NhAccountSessionService.recordArkWebTransportMainFrameLoadFailure()
     NhArkWebSessionTransport.failBootstrap(new Error('The ArkWeb account transport could not load.'))
   }
 
