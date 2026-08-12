@@ -1964,6 +1964,10 @@ struct Index {
       .enableDragBar(true)
       .titleBar(this.rootTitleBar())
       .titleMode(HdsNavigationTitleMode.MINI)
+      // The Reader mounts a private full-window HDS stack above this retained
+      // root stack. Hide the root title bar for that exact interval so its
+      // menu leaves cannot compete with Reader's own top-chrome input owner.
+      .hideTitleBar(this.readerOverlay.visible)
       .hideBackButton(true)
       .dynamicHideTitleBar({
         hideTitleArea: true,

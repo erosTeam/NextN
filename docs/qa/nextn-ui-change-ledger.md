@@ -1144,6 +1144,42 @@ authorize an edit, replace a device comparison, or define product completion.
   preference, page, or content action occurred. Leave this leaf OPEN; select
   a different non-frozen boundary rather than trial menu-zone input.
 
+## OPEN — Reader overlay root-title isolation — 2026-08-12
+
+- **Why newly actionable:** a retained current NextN layout from
+  `.hvigor/outputs/reader-image-info-20260812/reader-before-menu.json` proves
+  two sibling navigation trees in the same `1320×2120` root. The Reader
+  overlay navigation is mounted, but the underlying root `Navigation →
+  NavDestination → TitleBar → HdsTitleBar → HdsMenuNode →
+  hdsNavigationMoreButton` remains visible and clickable at the top right.
+  The earlier menu-zone result therefore cannot be attributed to Reader's own
+  More control and is not usable evidence for the Image-information leaf.
+- **Whole tree before:** root `Stack → HdsNavigation(root stack, title bar,
+  root destination)`, followed by `HdsNavigation(reader overlay stack,
+  hideNavBar, Reader HdsNavDestination)`. The root title bar remains an
+  independently hit-testable platform layer while the private Reader
+  navigation is visible.
+- **Exact minimal after:** retain both stacks, Reader destination, Reader
+  canvas, Reader chrome, root route, and every action. Bind only the existing
+  root HDS `hideTitleBar` property to `readerOverlay.visible`, so the root
+  title/menu leaves leave the visible and hit-test tree for the exact lifetime
+  of the Reader overlay and return automatically on close.
+- **Reference/API basis:** the NextE parent tree also preserves a root stack
+  below a private Reader overlay; it does not authorize a structural rewrite.
+  HarmonyOS HDS documents `hideTitleBar(boolean, animated?)` as the supported
+  title-bar visibility control. The NextN-only additional binding is required
+  by the observed concurrently clickable root title leaf.
+- **Verification plan:** signed in-place install on the selected device; one
+  existing direct Detail-to-Reader route; retain one Reader layout and require
+  the overlay navigation plus absence of the root HDS title/menu button before
+  any Reader More action. Compare only after foreground identity and viewport
+  are current. The retained older cross-app artifacts remain rejected and are
+  not deleted.
+- **Unresolved risk:** HDS dynamic title hiding may interact with the root
+  scroll binding. The patch must be removed rather than widened if the root
+  title fails to return after Reader close or if the Reader route no longer
+  remains native NextN.
+
 ## FROZEN — Reader enhancement input-height preference UI
 
 - **User outcome:** the existing on-device enhancement must expose the same
