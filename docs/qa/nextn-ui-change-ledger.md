@@ -322,6 +322,12 @@ authorize an edit, replace a device comparison, or define product completion.
   common menu context.
 - **Unresolved risk:** picker geometry, system-sheet behavior, preview reach,
   and preference restore are unproven until that exact device sequence.
+- **Implementation evidence — 2026-08-12:** the complete reference-shaped
+  picker/state boundary is implemented in source and signed Debug build
+  succeeded. Commit `0321bbb` contains only this capability and its required
+  ledger record. The selected target was absent before installation, so no
+  alternate device, app install, screenshot, preference write, or visual
+  claim was made. The verification plan above remains the next action.
 
 ## OPEN — Reader selectable Waifu2x enhancement models
 
