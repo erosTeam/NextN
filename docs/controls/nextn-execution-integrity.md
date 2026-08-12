@@ -147,6 +147,10 @@ be justified by a test written to mirror the new implementation.
   unresolved risk. A UI commit must include that record.
 - “Polish”, “compact”, “balanced”, or a local text/size heuristic are not a
   rationale for a visible change.
+- Settings copy defaults to title plus selected value or switch state. A
+  subtitle is allowed only when omitting it would change the operation's
+  meaning or outcome; it must not explain routine behavior, storage scope, or
+  implementation detail.
 - Once a value or interaction has current evidence and a user decision, freeze
   it. Do not reopen, recompute, revalidate, or alter it without new explicit
   user feedback or same-state counter-evidence.
