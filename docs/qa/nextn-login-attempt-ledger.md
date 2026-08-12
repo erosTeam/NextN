@@ -601,3 +601,26 @@ substitute for measured login-cycle elapsed time.
 - conclusion: the observed record-present cold-start path is accepted for the
   specific retained-host resource-error regression. It does not erase or
   rename prior failure observations.
+
+## Diagnostic-build cold-start regression — 2026-08-12 23:31-23:37 +0800
+
+- trigger: data-preserving `install -r` of the signed build that adds the
+  finite retained-host main-frame diagnostic, followed by force-stop/cold
+  start on the selected device.
+- install/data boundary: install-r=true; data-clear=false; uninstall=false.
+- cold-start Favorites: native authenticated collection state after one
+  observed loading settlement; no sign-in prompt, visible Web, or ArkWeb
+  transport error.
+- cold-start Account: native signed-in state with the native sign-out action;
+  no verification-required state, visible Web, or transport error.
+- account input: not-entered.
+- password input: not-entered.
+- submit: not-issued.
+- diagnostic stage: not-observed; the new stage is intentionally emitted only
+  on a classified main-frame transport failure.
+- classification correction: a broad `登录` text match included the signed-in
+  screen's sign-out action and was rejected. It did not represent a sign-in
+  prompt.
+- conclusion: current record-present cold-start Account plus authenticated
+  Favorites path observed for this build. P0 remains OPEN for a future fresh
+  Account/Favorites failure and its causal evidence.

@@ -99,6 +99,26 @@ remains continuous; do not ask for it again.
   retain URL, error code, response, cookie, or account data. That diagnostic
   awaits a real failure event; it is not asserted from this successful run.
 
+## Current P0 diagnostic-build regression — 2026-08-12 23:31-23:37 +0800
+
+- The signed Debug build containing the finite main-frame-load diagnostic was
+  installed in place on the selected TCP device. NextN was then force-stopped
+  and cold-started without data clear, uninstall, credential entry, visible
+  login action, preference change, or content mutation.
+- Cold-start Favorites first showed its native loading state and then settled
+  to native authenticated collection content. No sign-in-required surface,
+  visible Web surface, or ArkWeb transport-error surface was observed.
+- The paired native Account destination showed the signed-in state and its
+  sign-out action, with no verification-required state, visible Web surface,
+  or transport-error surface.
+- An earlier broad text classifier matched the Chinese substring in the
+  signed-in screen's sign-out action. That classifier result was discarded;
+  it is not evidence of a login prompt or a mixed account state.
+- The new main-frame diagnostic did not fire in this successful path. It
+  remains a future-failure discriminator only. This observation does not
+  establish the historical origin of any earlier record-absent or session-loss
+  event, so P0 remains OPEN for any new current failure.
+
 ## Current P0 device result — proof and postmortem recorded
 
 - On the selected TCP device, the visible login form was filled exactly once
