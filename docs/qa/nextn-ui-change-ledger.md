@@ -31,8 +31,18 @@ authorize an edit, replace a device comparison, or define product completion.
   once to the native Reader Settings page, and retain a current same-viewport
   capture for whole-page review. No UI static contract will be used.
 - **Build result — 2026-08-13:** the signed Debug build succeeded. Device
-  review remains pending: the selected `192.168.50.237:12345` target was not
-  present in the live HDC list, and no alternate target was used.
+  review initially remained pending because the selected `192.168.50.237:12345`
+  target was absent; no alternate target was used. It was then reconnected,
+  woken with the required 24-hour timeout, and received the signed HAP in
+  place without clearing data.
+- **Current device observation — 2026-08-13:** the native `1320×2120` Reader
+  Settings foreground displays one scanable line per row: title plus the
+  active value, switch, or destination. The visible layout/control/cache and
+  enhancement rows have no explanatory subtitle. The retained final layout
+  and screenshot are in `.hvigor/outputs/reader-settings-copy-20260813/` and
+  are excluded from Git. This is a same-app device observation; a matched
+  reference capture has not been made in this run, so it does not assert
+  whole-page reference parity.
 
 ## OPEN — Settings root browse/search ownership split — 2026-08-12
 
