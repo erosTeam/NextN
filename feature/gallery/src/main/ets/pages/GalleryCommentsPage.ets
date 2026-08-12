@@ -439,7 +439,7 @@ export struct GalleryCommentsPage {
   }
 
   private canSubmitComment(): boolean {
-    return this.hasPublishedAccountSession() && this.hasCommentMessage() && !this.isCommentSubmitting
+    return this.composerInteractionAvailable() && this.hasCommentMessage() && !this.isCommentSubmitting
   }
 
   private hasCommentMessage(): boolean {
@@ -449,8 +449,14 @@ export struct GalleryCommentsPage {
     return this.commentText.split('\n').slice(2).join('\n').trim().length > 0
   }
 
-  private composerAvailable(): boolean {
+  /** The composer stays mounted; this gate controls only mutation interaction. */
+  private composerInteractionAvailable(): boolean {
     return this.hasPublishedAccountSession() && !this.isLoading && this.loadedGalleryId === this.galleryId
+  }
+
+  /** A successful empty snapshot is resolved; only a missing route result is initial. */
+  private initialCommentsResolutionPending(): boolean {
+    return this.loadedGalleryId !== this.galleryId
   }
 
   private requestComposerFocus(): void {
@@ -571,7 +577,7 @@ export struct GalleryCommentsPage {
           .maxLines(8)
           .backgroundColor(Color.Transparent)
           .layoutWeight(1)
-          .enabled(!this.isCommentSubmitting && this.hasPublishedAccountSession())
+          .enabled(!this.isCommentSubmitting && this.composerInteractionAvailable())
           .onChange((value: string): void => {
             this.commentText = value
             this.commentSubmitError = ''
@@ -809,25 +815,52 @@ export struct GalleryCommentsPage {
 
   @Builder
   private SettledCommentsContent() {
-    if (this.errorMessage.length > 0) {
-      ListItem() {
-        this.RefreshFailureNotice()
-      }
-    }
-    if (this.comments.length === 0) {
-      ListItem() {
-        PageEmptyState({
-          message: this.rawComments.length > 0
-            ? AppStrings.get('comments_status_filtered_empty')
-            : AppStrings.get('comments_status_empty'),
-        })
+    if (this.initialCommentsResolutionPending()) {
+      if (this.errorMessage.length > 0) {
+        ListItem() {
+          Column() {
+            PageErrorState({
+              message: this.errorMessage,
+              onRetry: (): void => {
+                this.loadComments()
+              },
+            })
+          }
+          .width('100%')
+          .height(240)
+          .justifyContent(FlexAlign.Center)
+        }
+      } else {
+        ListItem() {
+          Column() {
+            PageLoadingState({ text: AppStrings.get('comments_status_loading') })
+          }
+          .width('100%')
+          .height(240)
+          .justifyContent(FlexAlign.Center)
+        }
       }
     } else {
-      ForEach(this.comments, (comment: NhComment): void => {
+      if (this.errorMessage.length > 0) {
         ListItem() {
-          this.CommentCard(comment)
+          this.RefreshFailureNotice()
         }
-      }, (comment: NhComment): string => comment.commentId.toString())
+      }
+      if (this.comments.length === 0) {
+        ListItem() {
+          PageEmptyState({
+            message: this.rawComments.length > 0
+              ? AppStrings.get('comments_status_filtered_empty')
+              : AppStrings.get('comments_status_empty'),
+          })
+        }
+      } else {
+        ForEach(this.comments, (comment: NhComment): void => {
+          ListItem() {
+            this.CommentCard(comment)
+          }
+        }, (comment: NhComment): string => comment.commentId.toString())
+      }
     }
   }
 
@@ -839,15 +872,14 @@ export struct GalleryCommentsPage {
         listSpace: ThemeTokens.SPACE_SM - 2,
         bottomPadding: COMMENT_COMPOSER_BOTTOM_RESERVE,
         controller: this.refreshController,
+        refreshEnabled: !this.initialCommentsResolutionPending() && !this.isLoading,
         onRefresh: async (): Promise<void> => {
           await this.loadComments()
         },
       }) {
         this.SettledCommentsContent()
       }
-      if (this.composerAvailable()) {
-        this.CommentComposer()
-      }
+      this.CommentComposer()
     }
     .width('100%')
     .height('100%')
@@ -855,18 +887,7 @@ export struct GalleryCommentsPage {
 
   build() {
     HdsNavDestination() {
-      if (this.isLoading && this.comments.length === 0) {
-        PageLoadingState({ text: AppStrings.get('comments_status_loading') })
-      } else if (this.errorMessage.length > 0 && this.comments.length === 0) {
-        PageErrorState({
-          message: this.errorMessage,
-          onRetry: (): void => {
-            this.loadComments()
-          },
-        })
-      } else {
-        this.SettledCommentsPage()
-      }
+      this.SettledCommentsPage()
     }
     .titleBar(nextNHdsTitle(AppStrings.get('title_comments')))
     .hideBackButton(false)

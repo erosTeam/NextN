@@ -1567,6 +1567,25 @@ rewrite, re-run, or block this completed direct-route observation.
   data clear, uninstall, or content mutation occurred. This is one runtime
   result-state observation; it is not a quality-parity claim.
 
+## Current delivery observation — Gallery Comments no-snapshot initial owner
+
+- 2026-08-13: after an in-place signed Debug install on the selected `.237`
+  device and its awake / 24-hour-timeout gate, NextN alone was force-stopped
+  and started through the existing direct `471768` Comments Want. No data
+  clear, account, preference, comment, or content action occurred.
+- The immediate native NextN capture had one Comments `NavDestination`, one
+  scrollable List, a centered in-list loading leaf, and a mounted disabled
+  composer. The subsequent settled capture retained the same List and
+  composer and showed loaded comments with the composer enabled. This accepts
+  the observed owner transition only: no full-page loading replacement or
+  automatic controller pull was observed in NextN.
+- A same-device NextE deep-link attempt resolved to the system browser rather
+  than native NextE; its artifacts are retained as a rejected reference pair.
+  Local raw artifacts are under
+  `.hvigor/outputs/gallery-comments-initial-owner-20260813T0525/` and are
+  excluded from Git. The next delivery action is exact-diff review and a
+  narrow commit; the no-snapshot owner state is frozen absent new evidence.
+
 ## Data and artifact boundary
 
 ## Current delivery observation — Gallery Comments full-page composition

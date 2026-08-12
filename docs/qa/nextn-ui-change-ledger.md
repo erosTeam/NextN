@@ -2466,3 +2466,54 @@ authorize an edit, replace a device comparison, or define product completion.
   same-state counter-evidence. The causal correction remains limited to
   restoring the reference destination/overlay ownership; no compensatory
   padding was introduced.
+
+## OPEN — Gallery Comments initial no-snapshot state owner — 2026-08-13
+
+- **Why newly actionable:** the user reports that entering the Comments page
+  visibly becomes a loading/refresh state. When a direct Comments route has
+  no Detail snapshot, `aboutToAppear()` starts `loadComments()`, which sets
+  `isLoading=true`. Current `build()` then replaces the entire destination
+  child with `PageLoadingState` (and similarly replaces it with
+  `PageErrorState` on the first failure), unmounting both the List refresh
+  owner and the persistent composer.
+- **Reference parent tree and exact boundary:** NextE keeps
+  `HdsNavDestination -> Stack(bottom) -> PullRefreshListScaffold +
+  CommentComposer` mounted for initial empty, loaded, and refresh-failure
+  states; only the List content changes. This correction concerns the direct
+  no-snapshot initial-load and first-failure branches only. It excludes the
+  FROZEN reply/IME state, comment-card geometry, title, translation, posting,
+  Detail, and any request/API behavior.
+- **Exact correction:** keep `SettledCommentsPage()` as the destination child
+  for every request state. Render initial loading and initial error as a
+  single content row within its existing `PullRefreshListScaffold`, using the
+  existing page-state leaves and retry callback. Keep the composer mounted as
+  the reference-shaped Stack sibling, but retain its disabled leaf state until
+  the route is resolved. Disable top-pull interaction while that same initial
+  request is in flight; ordinary pull refresh remains the only explicit
+  refresh path after it settles. No programmatic pull is added.
+- **Device observation — 2026-08-13 04:46–04:47 +0800:** the signed Debug HAP
+  was installed in place on the selected `.237` device with `install -r`, then
+  NextN alone was force-stopped and cold-started through the existing direct
+  `471768` Comments Want. No app data was cleared and no account, preference,
+  comment, or content action occurred. The immediate native NextN root was
+  `EntryAbility / pages/Index` at `1320×2120`; it retained one
+  `NavDestination`, one scrollable `List`, three `ListItem`s, one centered
+  loading leaf, and one mounted-but-disabled composer `TextArea`. The later
+  settled capture retained the same one destination, one List, and one
+  composer; the loading leaf was replaced by comments and the composer became
+  enabled. The initial layout is decisive for the owner boundary, while its
+  separately collected screenshot crossed the network completion and is
+  retained as a settled-state artifact rather than mislabeled as an initial
+  screenshot.
+- **Reference boundary and remaining evidence limit:** NextE source keeps the
+  same destination/Stack/List/composer ownership for a no-snapshot route, but
+  its own controller intentionally animates a programmatic top pull. NextN
+  intentionally retains caller-owned initial state rather than importing that
+  animation. A system `viewData` attempt on the selected device routed the
+  public EH URL to the system browser instead of native NextE; its raw
+  artifacts are retained and rejected as a reference pair. Therefore this is
+  accepted only for NextN's observed no-snapshot owner transition, not a
+  same-viewport visual-parity claim for the reference animation. No UI static
+  contract was created or used.
+- **Freeze:** this no-snapshot loading-owner correction is FROZEN. Do not
+  revisit it without new user feedback or same-state counter-evidence.
