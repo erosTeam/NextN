@@ -453,6 +453,29 @@ authorize an edit, replace a device comparison, or define product completion.
   the parent tree but is not a same-state acceptance sample. Do not download
   or remove a model to force a matching state.
 
+### Observed surface correction — 2026-08-12
+
+- **New current evidence and missed parent owner:** the committed current NextN
+  manager was observed on the selected device at `1320×2120`, then reviewed
+  beside the retained same-viewport NextE manager. The detailed rows and
+  circular suffix actions now match the intended hierarchy, but NextN renders
+  its modal content on the same white surface as `NextNGroupedListSection`.
+  The group therefore loses its visible rounded boundary. NextE keeps the
+  modal content on the semantic sub-background and its white grouped surface
+  is visibly distinct. The earlier correction changed row leaves but failed
+  to carry the reference's page-surface owner through the complete parent
+  tree.
+- **Exact correction:** add an opt-in `contentBackgroundColor` parameter to
+  `NextNModalScaffold`, retaining its current default for every existing
+  caller. `ReaderSuperResolutionModelsPage` alone supplies the existing
+  app-level `surface` resource, while `NextNGroupedListSection` continues to
+  own the white rounded group. No row geometry, copy, model state, action,
+  runtime, or other modal is changed.
+- **Verification plan:** rebuild, install in place, and recapture only this
+  same model-manager state. Compare the visible page/background-to-group
+  separation against the retained NextE capture; do not alter model files or
+  settings to create a matching installed state.
+
 ## FROZEN — Unified private-cache management (category-page visual boundary)
 
 - User outcome: the existing Cache destination should let a user inspect and

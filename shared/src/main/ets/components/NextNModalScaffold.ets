@@ -12,6 +12,8 @@ export struct NextNModalScaffold {
   @BuilderParam content: () => void
   @Param title: ResourceStr = ''
   @Param enableComponentSafeArea: boolean = true
+  /** Kept opt-in so existing modal surfaces retain their established host colour. */
+  @Param contentBackgroundColor: ResourceColor = ThemeTokens.SURFACE
   @Param contentHorizontalPadding: number = ThemeTokens.SPACE_MD
   @Param footerReserveHeight: number = 0
   @Param scroller: Scroller = new Scroller()
@@ -89,7 +91,7 @@ export struct NextNModalScaffold {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(ThemeTokens.SURFACE)
+    .backgroundColor(this.contentBackgroundColor)
   }
 
   private menuItems(): Record<string, Object>[] {
