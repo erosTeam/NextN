@@ -585,3 +585,19 @@ substitute for measured login-cycle elapsed time.
   to start a credential epoch. The source correction is limited to filtering
   ArkWeb resource-error callbacks by main-frame status; device verification of
   that correction remains the next physical action.
+
+## Cold-start authenticated-read recovery — 2026-08-12 23:15-23:16 +0800
+
+- trigger: installed the committed main-frame-error correction with `install
+  -r`, then force-stopped and cold-started NextN without data clear or
+  uninstall.
+- cold-start Account: native signed-in state; no visible Web, verification
+  requirement, or native error.
+- cold-start Favorites: authenticated native gallery collection; no sign-in
+  prompt, visible Web, loading, or ArkWeb transport error.
+- account input: not-entered.
+- password input: not-entered.
+- submit: not-issued.
+- conclusion: the observed record-present cold-start path is accepted for the
+  specific retained-host resource-error regression. It does not erase or
+  rename prior failure observations.

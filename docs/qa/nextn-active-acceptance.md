@@ -80,6 +80,20 @@ remains continuous; do not ask for it again.
   only a main-frame error. The updated HAP is built but has not yet been
   installed or device-verified.
 
+## Current P0 cold-start recovery — 2026-08-12 23:15-23:16 +0800
+
+- The committed main-frame-error correction was installed in place on the
+  selected TCP device only, then NextN alone was force-stopped and cold-started
+  without clearing data or uninstalling.
+- Cold-start Favorites settled to authenticated native gallery collection
+  content. It showed no sign-in prompt, visible Web surface, loading state, or
+  ArkWeb transport-error state.
+- The paired native Account destination remained signed in, with no visible
+  Web surface, verification-required state, or native error.
+- This accepts the record-present cold-start Account plus authenticated
+  Favorites path for the observed ArkWeb resource-error regression. It does
+  not attribute earlier record-absent or terminal-401 events to this cause.
+
 ## Current P0 device result — proof and postmortem recorded
 
 - On the selected TCP device, the visible login form was filled exactly once
