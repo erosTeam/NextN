@@ -555,3 +555,17 @@ substitute for measured login-cycle elapsed time.
 - next action: data-preserving force-stop/cold start, then paired native
   Account and Favorites summaries. This recovery observation is not a
   persistence acceptance claim.
+
+## Current re-verification cold-start result — 2026-08-12 22:44-22:49 +0800
+
+- persistence check: NextN alone was force-stopped and cold-started without
+  data clear, uninstall, or reinstall on the selected device.
+- cold-start Account: native signed-in state; no visible Web surface.
+- cold-start Favorites: native authenticated collection state with no sign-in
+  prompt, loading, error, or visible Web surface.
+- account input: not-entered.
+- password input: not-entered.
+- submit: not-issued.
+- conclusion: this current recovery path survived one cold start, but it does
+  not establish why the preceding fresh native session became
+  verification-required. P0 remains OPEN; no new credential epoch occurred.

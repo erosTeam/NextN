@@ -54,6 +54,15 @@ remains continuous; do not ask for it again.
   content mutation occurred. This is a recovery observation only. The next
   required action is a data-preserving force-stop/cold start followed by
   paired native Account and Favorites summaries.
+- The required data-preserving force-stop/cold start then completed on the
+  same selected device. Cold-start Account remained natively signed in, and
+  cold-start Favorites settled to native collection content with no sign-in
+  prompt, loading, error, or Web surface. No credential field, submit,
+  preference, content mutation, uninstall, or data clear occurred.
+- This is an observed recovery-and-cold-start path, not a root-cause claim:
+  the preceding fresh transition to verification-required remains unexplained,
+  so account-persistence P0 stays OPEN for causal diagnosis and recurrence
+  prevention.
 
 ## Current P0 device result — proof and postmortem recorded
 
