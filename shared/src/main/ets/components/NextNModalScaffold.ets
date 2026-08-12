@@ -51,6 +51,7 @@ export struct NextNModalScaffold {
         }
         .height('100%')
         .width('100%')
+        .backgroundColor(this.contentBackgroundColor)
         .padding({ left: this.contentHorizontalPadding, right: this.contentHorizontalPadding })
         .scrollBar(BarState.Off)
         .edgeEffect(EdgeEffect.None)

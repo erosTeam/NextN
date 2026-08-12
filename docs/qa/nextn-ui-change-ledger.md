@@ -475,6 +475,12 @@ authorize an edit, replace a device comparison, or define product completion.
   same model-manager state. Compare the visible page/background-to-group
   separation against the retained NextE capture; do not alter model files or
   settings to create a matching installed state.
+- **First-result correction:** the first rebuild was installed and the same
+  state was recaptured, but the visible result remained white. The new capture
+  disproves the assumption that the outer `Stack` is the painted content
+  owner: `HdsNavigation` contains a full-height `List` that remains above it.
+  The next delta applies the already-scoped `contentBackgroundColor` to that
+  inner List; no value, model row, action, or other page changes.
 
 ## FROZEN — Unified private-cache management (category-page visual boundary)
 
