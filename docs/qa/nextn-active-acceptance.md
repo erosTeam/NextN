@@ -1,5 +1,13 @@
 # NextN active device-acceptance queue
 
+## Transport observation — 2026-08-12
+
+- The user-selected TCP target `192.168.50.237:12345` was not present in the
+  current `hdc list targets -v` result. No alternate TCP or USB target was
+  selected, leased, started, inspected, or modified.
+- The pending `nextn://gallery/471768` direct-route observation therefore
+  remains unperformed and will be retried only against that exact target.
+
 ## Conditional preemption — account-persistence P0
 
 On the selected TCP device `192.168.50.237:12345`, a fresh native Account or
