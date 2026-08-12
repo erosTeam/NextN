@@ -2,7 +2,8 @@ import { AppStorageV2 } from '@kit.ArkUI'
 
 export const SETTINGS_ROOT_BROWSER_SESSION: string = 'browserSession'
 export const SETTINGS_ROOT_LAYOUT: string = 'layoutSettings'
-export const SETTINGS_ROOT_CATALOG: string = 'catalogSettings'
+export const SETTINGS_ROOT_BROWSE: string = 'browseSettings'
+export const SETTINGS_ROOT_SEARCH: string = 'searchSettings'
 export const SETTINGS_ROOT_READER: string = 'readerSettings'
 export const SETTINGS_ROOT_DOWNLOAD: string = 'downloadSettings'
 export const SETTINGS_ROOT_CACHE: string = 'cacheSettings'
@@ -12,7 +13,8 @@ export const SETTINGS_ROOT_ABOUT: string = 'about'
 const SETTINGS_ROOT_ROUTES: string[] = [
   SETTINGS_ROOT_BROWSER_SESSION,
   SETTINGS_ROOT_LAYOUT,
-  SETTINGS_ROOT_CATALOG,
+  SETTINGS_ROOT_BROWSE,
+  SETTINGS_ROOT_SEARCH,
   SETTINGS_ROOT_READER,
   SETTINGS_ROOT_DOWNLOAD,
   SETTINGS_ROOT_CACHE,

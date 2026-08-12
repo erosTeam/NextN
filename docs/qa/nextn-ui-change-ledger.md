@@ -3,7 +3,59 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
-## FROZEN — Settings-root taxonomy and copy review — 2026-08-11
+## OPEN — Settings root browse/search ownership split — 2026-08-12
+
+- **User evidence:** the user reopened the Settings root after reporting that
+  its wording was arbitrary and unaligned. Current native NextN and NextE
+  screenshots were captured on the selected device at the same `1320×2120`
+  portrait root viewport and retained locally in
+  `.hvigor/outputs/settings-root-audit-20260812T2338/`.
+- **Whole reference tree:** `NextE Settings root → account card → one grouped
+  main list → EH (site-specific) → Interface → Reading → Download → Search →
+  History → Storage → Advanced → About`. Search is a distinct navigation
+  owner, not text inside a combined catalog row.
+- **Current NextN tree before:** `NextN Settings root → account card → one
+  grouped main list → Interface → Browse & Search → Reading → Download → Cache
+  → Advanced → About`. Its existing `catalogSettings` destination already
+  owns four semantically separate local defaults: Browse language/order and
+  Search language/order.
+- **Exact, bounded change:** replace the one root `Browse & Search` entry and
+  `catalogSettings` destination with adjacent existing-capability entries
+  `Browse` and `Search`. Each owns one normal HDS destination, one existing
+  pair of local defaults, its own root-selection state, and its own title.
+  Preserve preference keys, menus, stored values, request behavior, cache,
+  account state, reader/download/cache/advanced/about rows, and the root card
+  grammar. Do not add EH, a duplicate History settings page, a storage/backup
+  feature, or any new data source.
+- **Minimality rationale:** this restores the actual Browse/Search ownership
+  already present in NextN and removes the ambiguous combined label observed
+  on the root. It does not use the reference's unavailable EH/history/storage
+  leaves to fill visual space.
+- **Verification plan:** build, install in place without clearing data, route
+  once to the native Settings root, and review the whole root against the
+  retained same-viewport NextE screenshot. Then open each new destination to
+  verify that only its existing local controls are present. Keep the raw
+  screenshots locally; do not use a UI static contract.
+- **Unresolved risk:** the root card becomes one row taller. Acceptance depends
+  on the actual floating-tab clearance and whole-page hierarchy, not on source
+  shape or a synthetic layout match.
+- **Device result — 2026-08-12:** the signed Debug HAP was installed in place
+  on the selected device with no data clear. The native `1320×2120` Settings
+  root now renders `Interface → Browse → Search → Reading → Download → Cache
+  → Advanced → About`; its final row remains wholly above the floating root
+  tab. The separate native Browse destination rendered only Browse language
+  and Browse order; the separate Search destination rendered only Search
+  language and Search order. No menu value, account, content, or cache action
+  was invoked.
+- **Reference boundary retained:** NextE still has EH, History, and Storage
+  root owners that are not interchangeable with NextN's existing product
+  surface. This change does not claim those capabilities or full Settings
+  parity.
+- **Status — FROZEN:** freeze this root Browse/Search ownership boundary. Do
+  not re-audit or alter it without new user feedback or same-state
+  counter-evidence.
+
+## SUPERSEDED — Settings-root taxonomy and copy review — 2026-08-11
 
 - **Why newly actionable:** the user explicitly reported that the Settings
   entry copy and hierarchy read as arbitrary despite an available NextE
@@ -43,8 +95,10 @@ authorize an edit, replace a device comparison, or define product completion.
   owner. No current reference/device evidence supports a copy, ordering, or
   grouping edit. The reference/implementation captures are retained locally
   in `.hvigor/outputs/settings-root-review-20260811/` and excluded from Git.
-  Freeze this root boundary until new user feedback or a source-owned root
-  capability changes it.
+  That no-change conclusion is superseded by the user's later feedback and the
+  2026-08-12 same-viewport evidence above: the combined Browse/Search owner
+  concealed two already-separate NextN settings surfaces. It must not be used
+  to reopen or revert the current split.
 
 ## FROZEN — Reading History title capacity — 2026-08-12
 

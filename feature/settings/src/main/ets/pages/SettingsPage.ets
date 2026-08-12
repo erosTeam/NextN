@@ -71,7 +71,8 @@ import {
   SettingsNavigationState,
   SETTINGS_ROOT_BROWSER_SESSION,
   SETTINGS_ROOT_LAYOUT,
-  SETTINGS_ROOT_CATALOG,
+  SETTINGS_ROOT_BROWSE,
+  SETTINGS_ROOT_SEARCH,
   SETTINGS_ROOT_READER,
   SETTINGS_ROOT_DOWNLOAD,
   SETTINGS_ROOT_CACHE,
@@ -126,7 +127,8 @@ const CATALOG_SORTS: NhSearchSort[] = [
 export enum SettingsSurface {
   ROOT,
   LAYOUT,
-  CATALOG,
+  BROWSE,
+  SEARCH,
   READER,
   DOWNLOAD,
   CACHE,
@@ -168,7 +170,8 @@ export struct SettingsPage {
   @Local readerEnhancementInstalledModels: NhReaderSuperResolutionModel[] = []
   @Local readerEnhancementModelsShown: boolean = false
   @Local browsePresentationError: string = ''
-  @Local catalogPreferencesError: string = ''
+  @Local browsePreferencesError: string = ''
+  @Local searchPreferencesError: string = ''
   @Local readerModeMenuShown: boolean = false
   @Local readerPreloadMenuShown: boolean = false
   @Local readerAutoPageMenuShown: boolean = false
@@ -224,7 +227,8 @@ export struct SettingsPage {
   @Event onClose?: () => void
   @Event onOpenBrowserSession?: () => void
   @Event onOpenLayoutSettings?: () => void
-  @Event onOpenCatalogSettings?: () => void
+  @Event onOpenBrowseSettings?: () => void
+  @Event onOpenSearchSettings?: () => void
   @Event onOpenBrowseDensity?: (mode: NhBrowsePresentation) => void
   @Event onOpenReaderSettings?: () => void
   @Event onOpenReaderEnhancementModels?: () => void
@@ -245,8 +249,8 @@ export struct SettingsPage {
       this.loadLayoutSettings()
       return
     }
-    if (this.surface === SettingsSurface.CATALOG) {
-      this.loadCatalogSettings()
+    if (this.surface === SettingsSurface.BROWSE || this.surface === SettingsSurface.SEARCH) {
+      this.loadCatalogPreferences()
       return
     }
     if (this.surface === SettingsSurface.READER) {
@@ -329,13 +333,15 @@ export struct SettingsPage {
     }
   }
 
-  /** Browse and Search request defaults belong to their own root destination. */
-  private async loadCatalogSettings(): Promise<void> {
-    this.catalogPreferencesError = ''
+  /** Browse and Search retain one store but have separate Settings owners. */
+  private async loadCatalogPreferences(): Promise<void> {
+    this.browsePreferencesError = ''
+    this.searchPreferencesError = ''
     try {
       await CatalogPreferencesService.restore(this.context())
     } catch (_error) {
-      this.catalogPreferencesError = AppStrings.get('settings_catalog_preferences_unavailable')
+      this.browsePreferencesError = AppStrings.get('settings_browse_preferences_unavailable')
+      this.searchPreferencesError = AppStrings.get('settings_search_preferences_unavailable')
     }
   }
 
@@ -503,33 +509,33 @@ export struct SettingsPage {
 
   private setCatalogBrowseLanguage(language: NhSearchLanguage): void {
     this.catalogBrowseLanguageMenuShown = false
-    this.catalogPreferencesError = ''
+    this.browsePreferencesError = ''
     CatalogPreferencesService.setBrowseLanguage(this.context(), language).catch((): void => {
-      this.catalogPreferencesError = AppStrings.get('settings_catalog_preferences_save_failed')
+      this.browsePreferencesError = AppStrings.get('settings_browse_preferences_save_failed')
     })
   }
 
   private setCatalogBrowseSort(sort: NhSearchSort): void {
     this.catalogBrowseSortMenuShown = false
-    this.catalogPreferencesError = ''
+    this.browsePreferencesError = ''
     CatalogPreferencesService.setBrowseSort(this.context(), sort).catch((): void => {
-      this.catalogPreferencesError = AppStrings.get('settings_catalog_preferences_save_failed')
+      this.browsePreferencesError = AppStrings.get('settings_browse_preferences_save_failed')
     })
   }
 
   private setCatalogSearchLanguage(language: NhSearchLanguage): void {
     this.catalogSearchLanguageMenuShown = false
-    this.catalogPreferencesError = ''
+    this.searchPreferencesError = ''
     CatalogPreferencesService.setSearchLanguage(this.context(), language).catch((): void => {
-      this.catalogPreferencesError = AppStrings.get('settings_catalog_preferences_save_failed')
+      this.searchPreferencesError = AppStrings.get('settings_search_preferences_save_failed')
     })
   }
 
   private setCatalogSearchSort(sort: NhSearchSort): void {
     this.catalogSearchSortMenuShown = false
-    this.catalogPreferencesError = ''
+    this.searchPreferencesError = ''
     CatalogPreferencesService.setSearchSort(this.context(), sort).catch((): void => {
-      this.catalogPreferencesError = AppStrings.get('settings_catalog_preferences_save_failed')
+      this.searchPreferencesError = AppStrings.get('settings_search_preferences_save_failed')
     })
   }
 
@@ -1638,13 +1644,25 @@ export struct SettingsPage {
       })
       this.RowDivider()
       NextNListRow({
-        leadingIcon: $r('sys.symbol.magnifyingglass'),
-        title: AppStrings.get('settings_catalog'),
-        selected: this.isSettingsRootSelected(SETTINGS_ROOT_CATALOG),
-        accessibilityLabel: AppStrings.get('settings_catalog'),
+        leadingIcon: $r('sys.symbol.square_grid_2x2'),
+        title: AppStrings.get('settings_browse'),
+        selected: this.isSettingsRootSelected(SETTINGS_ROOT_BROWSE),
+        accessibilityLabel: AppStrings.get('settings_browse'),
         onAction: (): void => {
-          if (this.onOpenCatalogSettings) {
-            this.onOpenCatalogSettings()
+          if (this.onOpenBrowseSettings) {
+            this.onOpenBrowseSettings()
+          }
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.magnifyingglass'),
+        title: AppStrings.get('settings_search'),
+        selected: this.isSettingsRootSelected(SETTINGS_ROOT_SEARCH),
+        accessibilityLabel: AppStrings.get('settings_search'),
+        onAction: (): void => {
+          if (this.onOpenSearchSettings) {
+            this.onOpenSearchSettings()
           }
         },
       })
@@ -2939,14 +2957,14 @@ export struct SettingsPage {
     }
   }
 
-  /** Separate Browse and Search defaults mirror their independent public request contexts. */
+  /** Browse defaults mirror their independent public request context. */
   @Builder
-  private CatalogPreferencesGroup() {
+  private BrowsePreferencesGroup() {
     NextNGroupedListSection() {
       NextNListRow({
         leadingIcon: $r('sys.symbol.translate'),
         title: AppStrings.get('settings_catalog_browse_language'),
-        subtitle: AppStrings.get('settings_catalog_preferences_hint'),
+        subtitle: AppStrings.get('settings_browse_preferences_hint'),
         trailingText: this.catalogLanguageLabel(this.catalogPreferences.browseLanguage),
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_catalog_browse_language'),
@@ -2981,10 +2999,17 @@ export struct SettingsPage {
           this.catalogBrowseSortMenuShown = false
         },
       })
-      this.RowDivider()
+    }
+  }
+
+  /** Search defaults mirror their independent public request context. */
+  @Builder
+  private SearchPreferencesGroup() {
+    NextNGroupedListSection() {
       NextNListRow({
         leadingIcon: $r('sys.symbol.magnifyingglass'),
         title: AppStrings.get('settings_catalog_search_language'),
+        subtitle: AppStrings.get('settings_search_preferences_hint'),
         trailingText: this.catalogLanguageLabel(this.catalogPreferences.searchLanguage),
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_catalog_search_language'),
@@ -3120,13 +3145,22 @@ export struct SettingsPage {
               this.GroupNote(this.browsePresentationError)
             }
           }
-        } else if (this.surface === SettingsSurface.CATALOG) {
+        } else if (this.surface === SettingsSurface.BROWSE) {
           ListItem() {
-            this.CatalogPreferencesGroup()
+            this.BrowsePreferencesGroup()
           }
-          if (this.catalogPreferencesError.length > 0) {
+          if (this.browsePreferencesError.length > 0) {
             ListItem() {
-              this.GroupNote(this.catalogPreferencesError)
+              this.GroupNote(this.browsePreferencesError)
+            }
+          }
+        } else if (this.surface === SettingsSurface.SEARCH) {
+          ListItem() {
+            this.SearchPreferencesGroup()
+          }
+          if (this.searchPreferencesError.length > 0) {
+            ListItem() {
+              this.GroupNote(this.searchPreferencesError)
             }
           }
         } else if (this.surface === SettingsSurface.READER) {

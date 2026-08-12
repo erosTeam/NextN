@@ -113,7 +113,8 @@ const ROUTE_READER: string = 'Reader'
 const ROUTE_READER_OVERLAY_BACKDROP: string = 'ReaderOverlayBackdrop'
 const ROUTE_BROWSER_SESSION: string = 'browserSession'
 const ROUTE_LAYOUT_SETTINGS: string = 'layoutSettings'
-const ROUTE_CATALOG_SETTINGS: string = 'catalogSettings'
+const ROUTE_BROWSE_SETTINGS: string = 'browseSettings'
+const ROUTE_SEARCH_SETTINGS: string = 'searchSettings'
 const ROUTE_BROWSE_DENSITY_SETTINGS: string = 'browseDensitySettings'
 const ROUTE_CONTENT_FILTERS: string = 'contentFilters'
 const ROUTE_READER_SETTINGS: string = 'readerSettings'
@@ -263,7 +264,8 @@ struct Index {
   private commentsScroller: Scroller = new Scroller()
   private contentFiltersScroller: Scroller = new Scroller()
   private layoutSettingsScroller: Scroller = new Scroller()
-  private catalogSettingsScroller: Scroller = new Scroller()
+  private browseSettingsScroller: Scroller = new Scroller()
+  private searchSettingsScroller: Scroller = new Scroller()
   private browseDensitySettingsScroller: Scroller = new Scroller()
   private readerSettingsScroller: Scroller = new Scroller()
   private readerSuperResolutionModelsScroller: Scroller = new Scroller()
@@ -556,8 +558,12 @@ struct Index {
     this.openSettingsRootDestination(ROUTE_LAYOUT_SETTINGS)
   }
 
-  private pushCatalogSettings(): void {
-    this.openSettingsRootDestination(ROUTE_CATALOG_SETTINGS)
+  private pushBrowseSettings(): void {
+    this.openSettingsRootDestination(ROUTE_BROWSE_SETTINGS)
+  }
+
+  private pushSearchSettings(): void {
+    this.openSettingsRootDestination(ROUTE_SEARCH_SETTINGS)
   }
 
   private pushBrowseDensitySettings(mode: NhBrowsePresentation): void {
@@ -604,7 +610,8 @@ struct Index {
   private isSettingsRoute(name: string): boolean {
     return name === ROUTE_BROWSER_SESSION ||
       name === ROUTE_LAYOUT_SETTINGS ||
-      name === ROUTE_CATALOG_SETTINGS ||
+      name === ROUTE_BROWSE_SETTINGS ||
+      name === ROUTE_SEARCH_SETTINGS ||
       name === ROUTE_BROWSE_DENSITY_SETTINGS ||
       name === ROUTE_READER_SETTINGS ||
       name === ROUTE_DOWNLOAD_SETTINGS ||
@@ -1598,16 +1605,29 @@ struct Index {
   }
 
   @Builder
-  private catalogSettingsDestination() {
+  private browseSettingsDestination() {
     HdsNavDestination() {
       SettingsPage({
-        surface: SettingsSurface.CATALOG,
-        scroller: this.catalogSettingsScroller,
+        surface: SettingsSurface.BROWSE,
+        scroller: this.browseSettingsScroller,
       })
     }
-    .titleBar(nextNHdsTitle(AppStrings.get('settings_catalog')))
+    .titleBar(nextNHdsTitle(AppStrings.get('settings_browse')))
     .hideBackButton(false)
-    .bindToScrollable([this.catalogSettingsScroller])
+    .bindToScrollable([this.browseSettingsScroller])
+  }
+
+  @Builder
+  private searchSettingsDestination() {
+    HdsNavDestination() {
+      SettingsPage({
+        surface: SettingsSurface.SEARCH,
+        scroller: this.searchSettingsScroller,
+      })
+    }
+    .titleBar(nextNHdsTitle(AppStrings.get('settings_search')))
+    .hideBackButton(false)
+    .bindToScrollable([this.searchSettingsScroller])
   }
 
   @Builder
@@ -1771,8 +1791,10 @@ struct Index {
       this.browserSessionDestination(param)
     } else if (name === ROUTE_LAYOUT_SETTINGS) {
       this.layoutSettingsDestination()
-    } else if (name === ROUTE_CATALOG_SETTINGS) {
-      this.catalogSettingsDestination()
+    } else if (name === ROUTE_BROWSE_SETTINGS) {
+      this.browseSettingsDestination()
+    } else if (name === ROUTE_SEARCH_SETTINGS) {
+      this.searchSettingsDestination()
     } else if (name === ROUTE_BROWSE_DENSITY_SETTINGS) {
       this.browseDensitySettingsDestination(param)
     } else if (name === ROUTE_CONTENT_FILTERS) {
@@ -1884,8 +1906,11 @@ struct Index {
             onOpenLayoutSettings: (): void => {
               this.pushLayoutSettings()
             },
-            onOpenCatalogSettings: (): void => {
-              this.pushCatalogSettings()
+            onOpenBrowseSettings: (): void => {
+              this.pushBrowseSettings()
+            },
+            onOpenSearchSettings: (): void => {
+              this.pushSearchSettings()
             },
             onOpenReaderSettings: (): void => {
               this.pushReaderSettings()

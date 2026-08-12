@@ -1558,6 +1558,21 @@ rewrite, re-run, or block this completed direct-route observation.
 
 ## Data and artifact boundary
 
+## Current delivery observation — Settings Browse/Search ownership
+
+- 2026-08-12: after the account cold-start regression remained healthy, the
+  signed Debug HAP splitting the existing combined Settings defaults was
+  installed in place on the selected TCP device. No application data was
+  cleared and no preference value was changed.
+- At the native `1320×2120` Settings root, the one combined Browse/Search row
+  became adjacent Browse and Search entries. The final About row remained
+  fully above the floating root tab. Each destination then rendered only its
+  pre-existing pair of local defaults: language and order.
+- The current same-viewport NextE Settings screenshot is retained locally with
+  the NextN evidence under `.hvigor/outputs/settings-root-audit-20260812T2338/`.
+  EH, History, and Storage remain explicit product-boundary differences; this
+  does not claim full Settings parity.
+
 Never place credentials, account/profile strings, cookies, tokens, raw Web
 layouts, or screenshots in this file. Retain raw device and host artifacts in
 a named local audit directory when they are used for visual review; never add
