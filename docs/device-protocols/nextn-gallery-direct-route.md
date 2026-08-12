@@ -73,3 +73,14 @@ was launched through the integer Want on the selected device. The final state
 was a native Gallery `NavDestination` with no Web component and no loading
 placeholder. This establishes the route only; it does not establish visual
 parity for the destination.
+
+On 2026-08-12, the existing public URI path was re-observed once on the same
+selected TCP device after the required awake/timeout gate. The system
+`viewData` launch for `nextn://gallery/471768` settled on native
+`com.erosteam.nextn:EntryAbility`, `pages/Index`, with one Gallery
+`NavDestination` at the `1320×2120` portrait root viewport and loaded Detail
+content. No Browse navigation, account, credential, preference, download,
+comment, or content mutation was performed. Local final-state evidence is
+retained in `.hvigor/outputs/gallery-direct-link-20260812T1045/` and is not
+committed. This confirms only the existing public Deep Link path; it does not
+reopen Gallery Detail visual review.
