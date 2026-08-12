@@ -1,5 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import { SymbolGlyphModifier, window } from '@kit.ArkUI'
+import { HdsNavDestination } from '@kit.UIDesignKit'
 import { fileUri } from '@kit.CoreFileKit'
 import { KeyCode } from '@kit.InputKit'
 import inputConsumer from '@ohos.multimodalInput.inputConsumer'
@@ -1427,6 +1428,10 @@ export struct ReaderPage {
   @Local readerViewportHeight: number = 0
   @Event onBack?: () => void
   @Event onReaderPresentationChanged?: (chromeVisible: boolean, fullscreen: boolean) => void
+  /** Index retains the overlay/state-bar owner; Reader owns the destination lifecycle. */
+  @Event onDestinationShown?: () => void
+  @Event onDestinationWillHide?: () => void
+  @Event onDestinationDisappeared?: () => void
   @Local readerPresentation: ReaderPresentationState = connectReaderPresentation()
   // A primitive render projection keeps nested AppStorage changes observable
   // for the canvas and its lazy page children.
@@ -3690,7 +3695,8 @@ export struct ReaderPage {
   }
 
   build() {
-    Stack({ alignContent: Alignment.Center }) {
+    HdsNavDestination() {
+      Stack({ alignContent: Alignment.Center }) {
       if (this.isLoading && this.detail.id === 0) {
         this.ReaderLoadingState()
       } else if (this.errorMessage.length > 0 && this.detail.id === 0) {
@@ -3712,29 +3718,54 @@ export struct ReaderPage {
           this.ReaderBottomBar()
         }
       }
-    }
-    .width('100%')
-    .height('100%')
-    .backgroundColor(ThemeTokens.READER_BACKGROUND)
-    .onAreaChange((_old: Area, next: Area): void => {
-      this.onReaderViewportChanged(next.width as number, next.height as number)
-    })
-    .onTouch((event: TouchEvent): void => {
-      this.onReaderSurfaceTouch(event)
-    })
-    .bindSheet(
-      $$this.readerSettingsSheetShown,
-      this.settingsSheetContent((): void => {
-        this.closeReaderSettings()
-      }),
-      {
-        detents: [SheetSize.MEDIUM, SheetSize.LARGE],
-        showClose: false,
-        onDisappear: (): void => {
+      }
+      .width('100%')
+      .height('100%')
+      .backgroundColor(ThemeTokens.READER_BACKGROUND)
+      .onAreaChange((_old: Area, next: Area): void => {
+        this.onReaderViewportChanged(next.width as number, next.height as number)
+      })
+      .onTouch((event: TouchEvent): void => {
+        this.onReaderSurfaceTouch(event)
+      })
+      .bindSheet(
+        $$this.readerSettingsSheetShown,
+        this.settingsSheetContent((): void => {
           this.closeReaderSettings()
+        }),
+        {
+          detents: [SheetSize.MEDIUM, SheetSize.LARGE],
+          showClose: false,
+          onDisappear: (): void => {
+            this.closeReaderSettings()
+          },
         },
-      },
-    )
+      )
+    }
+    .hideTitleBar(true)
+    .backgroundColor(ThemeTokens.READER_BACKGROUND)
+    .onBackPressed((): boolean => {
+      this.invalidateReaderRequest()
+      if (this.onBack) {
+        this.onBack()
+      }
+      return true
+    })
+    .onShown((): void => {
+      if (this.onDestinationShown) {
+        this.onDestinationShown()
+      }
+    })
+    .onWillHide((): void => {
+      if (this.onDestinationWillHide) {
+        this.onDestinationWillHide()
+      }
+    })
+    .onDisAppear((): void => {
+      if (this.onDestinationDisappeared) {
+        this.onDestinationDisappeared()
+      }
+    })
   }
 
   private persistProgress(pageIndex: number): void {

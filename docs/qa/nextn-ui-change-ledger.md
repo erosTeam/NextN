@@ -1206,6 +1206,24 @@ authorize an edit, replace a device comparison, or define product completion.
   change title geometry from this result. The next boundary is source-backed
   Reader back-dispatch ownership, followed by a single state-specific return
   route only if that owner is corrected or independently proven.
+- **Return-owner correction boundary — 2026-08-12:** the source comparison now
+  isolates a complete parent-tree difference. NextE has
+  `readerOverlayRouterMap → ReaderPage → HdsNavDestination → Reader canvas`
+  and the page's own destination handles system Back before calling the shared
+  overlay close. NextN currently has
+  `readerOverlayRouterMap → Index.readerDestination → HdsNavDestination →
+  ReaderPage → Reader canvas`; the canvas has no destination-level Back owner.
+  The minimal correction moves this one existing `HdsNavDestination` wrapper,
+  its `hideTitleBar`, shown/will-hide/disappear forwarding, and its existing
+  Back callback into `ReaderPage`. Index continues to own the private overlay
+  stack and its status-bar/close callback; Reader continues to invoke that
+  callback and owns no root route or external launch. The canvas Stack,
+  header, toolbar, touch zones, floating controls, page layout, preferences,
+  and data paths are unchanged. Build, install in place, then make one new
+  direct Reader run and one established Back only if the terminal Reader
+  foreground is current. The required result is native NextN Detail with the
+  Gallery title/menu restored; otherwise retain evidence and remove rather
+  than widen this hierarchy correction.
 
 ## FROZEN — Reader enhancement input-height preference UI
 
