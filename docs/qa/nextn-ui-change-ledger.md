@@ -351,13 +351,21 @@ authorize an edit, replace a device comparison, or define product completion.
   pre-run `跟随系统` value; Custom was then selected from the current menu's
   explicit item bounds. This was a route-coordinate mistake, not a picker
   result, and it did not leave a temporary preference at the end of the run.
-- **Reference boundary:** a current same-viewport NextE Appearance/picker
-  capture was not available. NextE started in an unrelated configured service
-  form; its native return did not leave a NextE Appearance foreground. That
-  pair is rejected, not treated as a visual comparison. Status remains
-  **EVIDENCE-ONLY** until the same-state reference precondition exists; do
-  not rerun or alter this NextN surface without that materially new
-  precondition or new user feedback.
+- **Valid reference pair — 2026-08-12:** after rejecting the initial unrelated
+  NextE service-form foreground, a clean NextE restart reached its native
+  Settings → Interface → Theme Color → Custom picker at the same `1320×2120`
+  portrait viewport. It was compared with the retained current NextN Custom
+  picker at the same root bounds. The HDS modal chrome, sheet inset, preview
+  swatch, Grid/Sliders selector, color-grid bounds, Hex row, and favorites
+  grid match. NextE's existing red selection and NextN's original system-blue
+  seed are intentionally different values, not geometry or hierarchy
+  differences. The NextE picker was closed without selecting or confirming a
+  value, so its existing red theme remained unchanged.
+- **FROZEN — Appearance custom theme color:** do not recapture, restyle,
+  recompute, or alter this menu/picker/preview/persistence boundary without
+  new user feedback, a source change inside its owner path, or same-state
+  counter-evidence. The frozen boundary does not cover unrelated Appearance
+  rows or a future new color-model capability.
 
 ## OPEN — Reader selectable Waifu2x enhancement models
 
