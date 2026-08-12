@@ -1195,6 +1195,81 @@ authorize an edit, replace a device comparison, or define product completion.
   this boundary, or same-state counter-evidence. The separate enhancement
   processing path is not permission to modify this frozen settings surface.
 
+## EVIDENCE-ONLY — Gallery Comments full-page hierarchy — 2026-08-12
+
+- **Why newly actionable:** the user explicitly reopened the full Comments
+  destination after observing that its current cards, bottom input area, and
+  loading/scroll ownership are visually incoherent. A fresh selected-device
+  observation reached native NextN Comments through the established
+  `nextn_gallery_id=471768` + `nextn_gallery_destination=comments` route at
+  `1320×2120`; the foreground was `com.erosteam.nextn`. The retained image
+  shows full-width oversized cards and a flat footer composer rather than one
+  page-level scroll/overlay composition. This is new device evidence for this
+  boundary, not a reason to alter Gallery Detail, its comment peek, Related,
+  or any other page.
+- **Faulty prior assumption and impact:** the previous implementation treated
+  `Column → list → footer composer` as equivalent to the reference page and
+  tuned individual card padding inside that incorrect parent. It also omitted
+  the reference-owned list header. That made the input surface a permanent
+  page subdivision instead of a floating page child, distorted the visible
+  card rhythm, and left the list tail without the compositor reserve. Do not
+  repair this with isolated padding literals or another card-height heuristic.
+- **Reference parent tree:** NextE owns `HdsNavDestination → Stack(bottom) →
+  PullRefreshListScaffold(top reserve → CommentsHeader → one ListItem per
+  GalleryCommentsCard → bottom reserve)`, with `CommentComposer` as the
+  fixed sibling overlay. `CommentsHeader` is a page-content heading with the
+  visible count; it is distinct from the HDS destination title. Each card is
+  author header, body, and compact date/action footer with the same rounded
+  card grammar. The reference's votes, replies, editing, scores, formatted
+  spans, and inline-image leaves are not assumed available in NH.
+- **Current NextN parent tree:** `Index.commentsDestination` already owns the
+  HDS destination/title and `GalleryCommentsPage` currently owns
+  `Column → state branch → PullRefreshListScaffold → CommentCard`, followed
+  by a sibling footer composer. The page already has a snapshot-first route,
+  one explicit reload action, pull refresh, content filtering, optional
+  translation, and authenticated posting. Preserve those owners and their
+  request/mutation semantics.
+- **Exact correction boundary:** replace only the loaded Comments page host
+  with the reference-shaped `Stack(bottom)` relationship. The list gets the
+  page heading and a composer-height bottom reserve; the composer becomes a
+  rounded overlay with symmetric outer/inner spacing. Rebase the existing NH
+  comment card to the reference's supported author/body/date grammar and its
+  ordinary card inset. Keep the existing empty/error state owners unchanged.
+  Do not add EH actions or fields, change the HDS title/menu, alter Gallery
+  Detail, change the comment request lifecycle, or submit a comment during
+  review.
+- **Verification plan:** build, install in place on the selected `.237`, and
+  return through the same direct 471768 Comments route. Inspect the loaded
+  native page alongside the retained `1320×2120` NextE Comments reference:
+  heading/card hierarchy, body padding, list tail under the composer, overlay
+  geometry, and the preserved direct-route loaded state. Retain raw local
+  captures outside Git. This remains OPEN until that current comparison is
+  recorded.
+- **Prevention rule:** a visible parent-tree mismatch must be corrected at its
+  scroll/overlay owner before any leaf geometry is changed. A user-reported
+  Comments page defect never authorizes edits to Detail preview, Related,
+  comment data, or an unrelated page.
+- **Build and device result — 2026-08-12:** signed Debug build succeeded and
+  was installed in place on the selected `.237` device without clearing data.
+  The same direct Comments route for gallery `471768` foregrounded native
+  `com.erosteam.nextn` at `1320×2120`. In its loaded state the HDS title is
+  followed by the page-level `评论 (11)` header, each supported NH
+  author/body/date record is its own rounded card, and the disabled composer
+  is a rounded overlay rather than a full-width footer subdivision. One
+  current-list upward swipe reached the final `nfsnowball` card; it remained
+  fully above the overlay, with the list's terminal reserve below it. The
+  floating HDS continued to cover transient scrolled content as intended and
+  was not changed. Local evidence is retained at
+  `.hvigor/outputs/gallery-comments-471768-20260812T1750/`.
+- **Reference review — EVIDENCE-ONLY:** the retained NextE loaded Comments
+  capture has the same `1320×2120` portrait viewport and confirms the page
+  heading, individual-card, and bottom-overlay parent grammar. Its single
+  EH record and action leaves differ from the current NH 11-record,
+  signed-out surface, so this establishes the corrected hierarchy and tail
+  behavior only; it does not claim content-level parity or invent EH action
+  leaves. Reopen only for new user feedback, an actual change inside this
+  boundary, or a current same-state counter-evidence.
+
 ## OPEN — Gallery comment translation
 
 - User outcome: bring the mature optional comment-translation capability to

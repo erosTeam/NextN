@@ -25,12 +25,13 @@ import { common } from '@kit.AbilityKit'
 import { KeyboardAvoidMode } from '@kit.ArkUI'
 
 const COMMENT_COMPOSER_FIELD_ID: string = 'nextn-gallery-comments-composer-field'
+const COMMENT_COMPOSER_BOTTOM_RESERVE: number = 136
+const COMMENT_COMPOSER_OUTER_GAP: number = ThemeTokens.SPACE_SM
 const COMMENT_COMPOSER_INNER_GAP: number = ThemeTokens.SPACE_XS
 const COMMENT_COMPOSER_SEND_SIZE: number = 36
+const COMMENT_COMPOSER_RADIUS: number = COMMENT_COMPOSER_SEND_SIZE / 2 + COMMENT_COMPOSER_INNER_GAP
 const COMMENT_COMPOSER_INPUT_MAX_H: number = 148
-// A 24vp comment-card corner needs more than the generic 12vp card inset so
-// the author and first body line do not visually enter its rounded shoulder.
-const COMMENT_CARD_CONTENT_INSET: number = ThemeTokens.SPACE_LG
+const COMMENT_CARD_CONTENT_INSET: number = ThemeTokens.SPACE_MD
 
 class CommentTranslationCardState {
   commentId: number = 0
@@ -410,12 +411,14 @@ export struct GalleryCommentsPage {
     }
     .width('100%')
     .padding({
-      left: ThemeTokens.SPACE_LG,
-      right: ThemeTokens.SPACE_MD,
-      top: ThemeTokens.SPACE_SM,
-      bottom: this.composerBottomPadding(),
+      left: COMMENT_COMPOSER_INNER_GAP,
+      right: COMMENT_COMPOSER_INNER_GAP,
+      top: COMMENT_COMPOSER_INNER_GAP,
+      bottom: COMMENT_COMPOSER_INNER_GAP,
     })
     .backgroundColor(ThemeTokens.CARD_BACKGROUND)
+    .borderRadius(COMMENT_COMPOSER_RADIUS)
+    .shadow(ShadowStyle.OUTER_DEFAULT_MD)
   }
 
   @Builder
@@ -494,7 +497,7 @@ export struct GalleryCommentsPage {
       left: COMMENT_CARD_CONTENT_INSET,
       right: COMMENT_CARD_CONTENT_INSET,
       top: COMMENT_CARD_CONTENT_INSET,
-      bottom: ThemeTokens.SPACE_MD,
+      bottom: ThemeTokens.SPACE_SM,
     })
     .borderRadius(ThemeTokens.RADIUS_CARD)
     .backgroundColor(ThemeTokens.CARD_BACKGROUND)
@@ -512,6 +515,55 @@ export struct GalleryCommentsPage {
         this.CommentCard(comment)
       }
     }, (comment: NhComment): string => comment.commentId.toString())
+  }
+
+  @Builder
+  private CommentsHeader() {
+    Row({ space: ThemeTokens.SPACE_XS }) {
+      Text(AppStrings.get('title_comments'))
+        .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+        .fontWeight(FontWeight.Medium)
+        .fontColor(ThemeTokens.TEXT_PRIMARY)
+      Text(`(${this.comments.length})`)
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontColor(ThemeTokens.TEXT_TERTIARY)
+      Blank()
+    }
+    .width('100%')
+    .alignItems(VerticalAlign.Center)
+  }
+
+  @Builder
+  private LoadedCommentsPage() {
+    Stack({ alignContent: Alignment.Bottom }) {
+      PullRefreshListScaffold({
+        scroller: this.scroller,
+        listSpace: ThemeTokens.SPACE_SM - 2,
+        bottomPadding: COMMENT_COMPOSER_BOTTOM_RESERVE,
+        controller: this.refreshController,
+        onRefresh: async (): Promise<void> => {
+          await this.loadComments()
+        },
+      }) {
+        ListItem() {
+          this.CommentsHeader()
+        }
+        this.LoadedCommentsContent()
+      }
+      if (this.composerAvailable()) {
+        Column() {
+          this.CommentComposer()
+        }
+        .width('100%')
+        .padding({
+          left: COMMENT_COMPOSER_OUTER_GAP,
+          right: COMMENT_COMPOSER_OUTER_GAP,
+          bottom: this.composerBottomPadding(),
+        })
+      }
+    }
+    .width('100%')
+    .height('100%')
   }
 
   build() {
@@ -539,28 +591,7 @@ export struct GalleryCommentsPage {
           this.CommentComposer()
         }
       } else {
-        Column() {
-          Column() {
-            PullRefreshListScaffold({
-              scroller: this.scroller,
-              listSpace: ThemeTokens.SPACE_SM,
-              bottomPadding: ThemeTokens.LIST_BOTTOM_PADDING,
-              controller: this.refreshController,
-              onRefresh: async (): Promise<void> => {
-                await this.loadComments()
-              },
-            }) {
-              this.LoadedCommentsContent()
-            }
-          }
-          .width('100%')
-          .layoutWeight(1)
-          if (this.composerAvailable()) {
-            this.CommentComposer()
-          }
-        }
-        .width('100%')
-        .height('100%')
+        this.LoadedCommentsPage()
       }
     }
     .width('100%')

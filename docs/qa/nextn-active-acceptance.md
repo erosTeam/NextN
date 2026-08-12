@@ -97,6 +97,28 @@ remains continuous; do not ask for it again.
 - The native custom picker rendered its Grid/Sliders switch, color grid, Hex field, favorites, preview swatch, close action, and confirm action at `1320×2120`. One unconfirmed grid selection changed the live draft; closing restored the original `跟随系统` theme. One separately confirmed custom selection survived a force-stop/cold start without data clearing; the original `跟随系统` theme was then restored and re-observed before leaving the route.
 - The initial NextE capture was rejected because it began in an unrelated configured service form. A clean NextE restart then reached native Settings → Interface → Theme Color → Custom at the same `1320×2120` portrait viewport. Its existing red theme value was left unchanged. The valid pair matches the modal hierarchy and geometry: HDS close/title/confirm strip, preview swatch, Grid/Sliders selector, color grid, Hex field, and favorites grid. The different swatch/Hex values are each app's pre-existing selection and are not a visual mismatch. Raw captures remain locally at `.hvigor/outputs/theme-color-custom-20260812T1645/` and are excluded from Git.
 
+## Current delivery observation — Gallery Comments full-page hierarchy
+
+- 2026-08-12: the selected target `192.168.50.237:12345` was proactively
+  reconnected after its earlier absent transport observation, then was leased,
+  woken, and read back as `AWAKE` with `OverrideTimeout=86400000ms`. No other
+  TCP or USB target was selected.
+- The signed Debug HAP was installed in place with `install -r`, without data
+  clearing. The established `nextn_gallery_id=471768` +
+  `nextn_gallery_destination=comments` route foregrounded native
+  `com.erosteam.nextn` at `1320×2120`; no credential, Account, Favorites,
+  content-filter, preference, or comment-posting action occurred.
+- The loaded route now shows a page-level comments-count heading, separate
+  rounded author/body/date cards, and a rounded floating composer. One
+  current-layout-derived upward list swipe reached the terminal visible
+  comment state; the final card remained above the composer and its reserve.
+  The HDS remained a floating overlay and was deliberately not converted into
+  a fixed content inset. Local raw evidence is retained at
+  `.hvigor/outputs/gallery-comments-471768-20260812T1750/` and is excluded
+  from Git. This is a device hierarchy/tail observation only; the retained
+  NextE reference has different loaded content and action availability, so
+  content-level visual parity remains evidence-only.
+
 ## Latest device observation — private-cache settings
 
 - 2026-08-11: a signed Debug HAP was installed with `install -r` on the
