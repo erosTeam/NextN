@@ -3,6 +3,50 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Reader Settings parent-tree and icon correction — 2026-08-13
+
+- **Why newly actionable:** the user reported that the current Reader Settings
+  screen has repeated identical icons, one undifferentiated run of switches,
+  and a missing divider. This reopens the earlier copy-only correction: removing
+  explanatory subtitles did not restore the reference parent tree.
+- **Faulty prior assumption:** commit `90cd161` treated the problem as prose
+  density only. It preserved one `ReaderPresentationGroup` card and its
+  invented leading icons, so it left page-turning, tap zones, display,
+  enhancement, controls, and loading visually indistinguishable.
+- **Whole reference tree:** `NextE ReaderSettingsPage →
+  SecondaryListScaffold → [ListItem → Column(space XS) → SectionHeader →
+  GroupedListSection]` repeated for `Layout`, `Tap zones`, `Display & screen`,
+  `Image enhancement`, `Reading controls`, and `Loading`. Ordinary reference
+  rows are title/value/switch rows; they do not add leading icons.
+- **Current NextN tree before:** `SettingsPage(READER) →
+  SecondaryListScaffold → one ListItem → one NextNGroupedListSection → every
+  ReaderPresentation row`. The same local `rectangle_split_2x1` and
+  `lightbulb` icons are repeated across unrelated rows; the enhancement-model
+  selection and model-management rows lack their intervening divider.
+- **Exact change:** introduce the matching NextN section-header leaf, split
+  only the existing Reader rows into the six reference-owned grouped sections,
+  remove their invented leading icons, and restore the one missing enhancement
+  divider. Restore the reference down-arrow affordance on existing value-menu
+  rows only; preserve every existing title, current value, menu, switch,
+  enabled gate, persistence call, Reader-sheet owner, and the separate
+  comic-translation destination.
+- **Minimality and risk:** no setting is added, removed, or reinterpreted.
+  The change affects only grouping and row prefix/divider leaves. The
+  same-page device review must check all six groups, row ordering, values,
+  disabled enhancement states, and the separate comic-translation entry.
+- **Verification plan:** inspect the exact diff, build the signed Debug HAP,
+  install in place without clearing data, then perform one current native
+  Reader Settings review on the selected device. Preserve raw artifacts and
+  do not use a UI static contract.
+- **Build result — 2026-08-13:** the signed Debug HAP builds successfully with
+  the new section-header leaf and the six-group Reader Settings tree. This is
+  compilation evidence only; the native layout review remains pending.
+- **Pre-commit source review — 2026-08-13:** the seven existing value-menu
+  rows still exposed generic navigation chevrons. The reference marks the
+  same controls as dropdowns. This is an inherited leaf mismatch within the
+  declared boundary, so the correction is limited to `trailingDropdown: true`
+  on those rows; it changes no menu owner, value, or action.
+
 ## OPEN — Reader Settings scan-first copy — 2026-08-13
 
 - **Why newly actionable:** the user explicitly reported that the current

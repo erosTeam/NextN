@@ -22,6 +22,7 @@ import {
   NhReaderTapZoneLayout,
   NextNGroupedListSection,
   NextNListRow,
+  NextNSectionHeader,
   NextNModalScaffold,
   SecondaryListScaffold,
   ReaderImageCacheService,
@@ -2015,237 +2016,272 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ReaderPresentationGroup() {
-    NextNGroupedListSection() {
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.rectangle_split_2x1'),
-        title: AppStrings.get('settings_reader_layout'),
-        trailingText: this.readerModeLabel(),
-        accessibilityLabel: AppStrings.format('settings_reader_layout_a11y', [this.readerModeLabel()]),
-        onAction: (): void => {
-          this.readerModeMenuShown = true
-        },
-      })
-      .bindMenu(this.readerModeMenuShown, this.ReaderModeMenu, {
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.readerModeMenuShown = false
-        },
-      })
-      this.RowDivider()
-      // This is intentionally a durable request instead of a device-class
-      // switch. ReaderPage applies it only on a wide horizontal paged canvas
-      // and restores the same choice when that local viewport becomes wide.
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.rectangle_split_2x1'),
-        title: AppStrings.get('settings_reader_double_page'),
-        hasSwitch: true,
-        checked: this.readerPresentation.doublePageEnabled,
-        showChevron: false,
-        accessibilityLabel: AppStrings.format('settings_reader_double_page_a11y', [
-          this.toggleStateLabel(this.readerPresentation.doublePageEnabled),
-        ]),
-        onAction: (): void => {
-          this.saveReaderDoublePageEnabled(!this.readerPresentation.doublePageEnabled)
-        },
-        onSwitchChange: (value: boolean): void => {
-          this.saveReaderDoublePageEnabled(value)
-        },
-      })
-      this.RowDivider()
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.rectangle_split_2x1'),
-        title: AppStrings.get('settings_reader_tap_zones'),
-        trailingText: this.readerTapZoneLayoutLabel(),
-        accessibilityLabel: AppStrings.format('settings_reader_tap_zones_a11y', [
-          this.readerTapZoneLayoutLabel(),
-        ]),
-        onAction: (): void => {
-          this.readerTapZoneMenuShown = true
-        },
-      })
-      .bindMenu(this.readerTapZoneMenuShown, this.ReaderTapZoneMenu, {
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.readerTapZoneMenuShown = false
-        },
-      })
-      this.RowDivider()
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.arrow_left_and_square'),
-        title: AppStrings.get('settings_reader_tap_zone_invert'),
-        trailingText: this.readerTapZoneInvertLabel(),
-        accessibilityLabel: AppStrings.format('settings_reader_tap_zone_invert_a11y', [
-          this.readerTapZoneInvertLabel(),
-        ]),
-        onAction: (): void => {
-          this.readerTapZoneInvertMenuShown = true
-        },
-      })
-      .bindMenu(this.readerTapZoneInvertMenuShown, this.ReaderTapZoneInvertMenu, {
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.readerTapZoneInvertMenuShown = false
-        },
-      })
-      this.RowDivider()
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.fullscreen'),
-        title: AppStrings.get('settings_reader_fullscreen'),
-        hasSwitch: true,
-        checked: this.readerPresentation.fullscreen,
-        showChevron: false,
-        accessibilityLabel: AppStrings.format('settings_reader_fullscreen_a11y', [
-          this.toggleStateLabel(this.readerPresentation.fullscreen),
-        ]),
-        onAction: (): void => {
-          this.saveReaderFullscreen(!this.readerPresentation.fullscreen)
-        },
-        onSwitchChange: (value: boolean): void => {
-          this.saveReaderFullscreen(value)
-        },
-      })
-      this.RowDivider()
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.clock'),
-        title: AppStrings.get('settings_reader_auto_advance_interval'),
-        trailingText: this.readerAutoPageLabel(),
-        accessibilityLabel: AppStrings.format('settings_reader_auto_advance_interval_a11y', [
-          this.readerAutoPageLabel(),
-        ]),
-        onAction: (): void => {
-          this.readerAutoPageMenuShown = true
-        },
-      })
-      .bindMenu(this.readerAutoPageMenuShown, this.ReaderAutoPageMenu, {
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.readerAutoPageMenuShown = false
-        },
-      })
-      this.RowDivider()
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.speaker_wave_2'),
-        title: AppStrings.get('settings_reader_volume_keys_turn_pages'),
-        hasSwitch: true,
-        checked: this.readerPresentation.volumeKeyTurn,
-        showChevron: false,
-        accessibilityLabel: AppStrings.format('settings_reader_volume_keys_turn_pages_a11y', [
-          this.toggleStateLabel(this.readerPresentation.volumeKeyTurn),
-        ]),
-        onAction: (): void => {
-          this.saveReaderVolumeKeyTurn(!this.readerPresentation.volumeKeyTurn)
-        },
-        onSwitchChange: (value: boolean): void => {
-          this.saveReaderVolumeKeyTurn(value)
-        },
-      })
-      this.RowDivider()
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.rectangle_stack'),
-        title: AppStrings.get('settings_reader_preload_pages'),
-        trailingText: this.readerPreloadLabel(),
-        accessibilityLabel: AppStrings.format('settings_reader_preload_pages_a11y', [this.readerPreloadLabel()]),
-        onAction: (): void => {
-          this.readerPreloadMenuShown = true
-        },
-      })
-      .bindMenu(this.readerPreloadMenuShown, this.ReaderPreloadMenu, {
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.readerPreloadMenuShown = false
-        },
-      })
-      this.RowDivider()
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.lightbulb'),
-        title: AppStrings.get('settings_reader_keep_screen_on'),
-        hasSwitch: true,
-        checked: this.readerPresentation.keepScreenOn,
-        showChevron: false,
-        accessibilityLabel: AppStrings.format('settings_reader_keep_screen_on_a11y', [
-          this.toggleStateLabel(this.readerPresentation.keepScreenOn),
-        ]),
-        onAction: (): void => {
-          this.saveReaderKeepScreenOn(!this.readerPresentation.keepScreenOn)
-        },
-        onSwitchChange: (value: boolean): void => {
-          this.saveReaderKeepScreenOn(value)
-        },
-      })
-      this.RowDivider()
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.lightbulb'),
-        title: AppStrings.get('settings_reader_enhancement'),
-        hasSwitch: true,
-        checked: this.readerPresentation.superResolutionEnabled,
-        showChevron: false,
-        isEnabled: this.selectedReaderEnhancementModelInstalled(),
-        accessibilityLabel: AppStrings.format('settings_reader_enhancement_a11y', [
-          this.toggleStateLabel(this.readerPresentation.superResolutionEnabled),
-        ]),
-        onAction: (): void => {
-          this.saveReaderEnhancementEnabled(!this.readerPresentation.superResolutionEnabled)
-        },
-        onSwitchChange: (value: boolean): void => {
-          this.saveReaderEnhancementEnabled(value)
-        },
-      })
-      this.RowDivider()
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.lightbulb'),
-        title: AppStrings.get('settings_reader_enhancement_model_selection'),
-        trailingText: this.readerEnhancementModelLabel(),
-        isEnabled: this.readerEnhancementInstalledModels.length > 0,
-        accessibilityLabel: AppStrings.format('settings_reader_enhancement_model_selection_a11y', [
-          this.readerEnhancementModelLabel(),
-        ]),
-        onAction: (): void => {
-          if (this.readerEnhancementInstalledModels.length > 0) {
-            this.readerEnhancementModelMenuShown = true
-          }
-        },
-      })
-      .bindMenu(this.readerEnhancementModelMenuShown, this.ReaderEnhancementModelMenu, {
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.readerEnhancementModelMenuShown = false
-        },
-      })
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.lightbulb'),
-        title: AppStrings.get('settings_reader_enhancement_models'),
-        trailingText: this.readerEnhancementInstalledModels.length > 0
-          ? AppStrings.get('settings_reader_enhancement_model_ready')
-          : AppStrings.get('settings_reader_enhancement_model_download'),
-        accessibilityLabel: AppStrings.get('settings_reader_enhancement_models_a11y'),
-        onAction: (): void => {
-          this.openReaderEnhancementModels()
-        },
-      })
-      this.RowDivider()
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.lightbulb'),
-        title: AppStrings.get('settings_reader_enhancement_max_height'),
-        trailingText: this.readerEnhancementMaxHeightLabel(),
-        isEnabled: this.readerPresentation.superResolutionEnabled &&
-          this.selectedReaderEnhancementModelInstalled(),
-        accessibilityLabel: AppStrings.format('settings_reader_enhancement_max_height_a11y', [
-          this.readerEnhancementMaxHeightLabel(),
-        ]),
-        onAction: (): void => {
-          if (this.readerPresentation.superResolutionEnabled &&
-            this.selectedReaderEnhancementModelInstalled()) {
-            this.readerEnhancementMaxHeightMenuShown = true
-          }
-        },
-      })
-      .bindMenu(this.readerEnhancementMaxHeightMenuShown, this.ReaderEnhancementMaxHeightMenu, {
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.readerEnhancementMaxHeightMenuShown = false
-        },
-      })
+  private ReaderLayoutGroup() {
+    Column({ space: ThemeTokens.SPACE_XS }) {
+      NextNSectionHeader({ title: AppStrings.get('settings_reader_group_layout') })
+      NextNGroupedListSection() {
+        NextNListRow({
+          title: AppStrings.get('settings_reader_layout'),
+          trailingText: this.readerModeLabel(),
+          trailingDropdown: true,
+          accessibilityLabel: AppStrings.format('settings_reader_layout_a11y', [this.readerModeLabel()]),
+          onAction: (): void => {
+            this.readerModeMenuShown = true
+          },
+        })
+        .bindMenu(this.readerModeMenuShown, this.ReaderModeMenu, {
+          placement: Placement.BottomRight,
+          onDisappear: (): void => {
+            this.readerModeMenuShown = false
+          },
+        })
+        this.RowDivider()
+        NextNListRow({
+          title: AppStrings.get('settings_reader_double_page'),
+          hasSwitch: true,
+          checked: this.readerPresentation.doublePageEnabled,
+          showChevron: false,
+          accessibilityLabel: AppStrings.format('settings_reader_double_page_a11y', [
+            this.toggleStateLabel(this.readerPresentation.doublePageEnabled),
+          ]),
+          onAction: (): void => {
+            this.saveReaderDoublePageEnabled(!this.readerPresentation.doublePageEnabled)
+          },
+          onSwitchChange: (value: boolean): void => {
+            this.saveReaderDoublePageEnabled(value)
+          },
+        })
+      }
+    }
+  }
+
+  @Builder
+  private ReaderTapZonesGroup() {
+    Column({ space: ThemeTokens.SPACE_XS }) {
+      NextNSectionHeader({ title: AppStrings.get('settings_reader_group_tap_zones') })
+      NextNGroupedListSection() {
+        NextNListRow({
+          title: AppStrings.get('settings_reader_tap_zones'),
+          trailingText: this.readerTapZoneLayoutLabel(),
+          trailingDropdown: true,
+          accessibilityLabel: AppStrings.format('settings_reader_tap_zones_a11y', [
+            this.readerTapZoneLayoutLabel(),
+          ]),
+          onAction: (): void => {
+            this.readerTapZoneMenuShown = true
+          },
+        })
+        .bindMenu(this.readerTapZoneMenuShown, this.ReaderTapZoneMenu, {
+          placement: Placement.BottomRight,
+          onDisappear: (): void => {
+            this.readerTapZoneMenuShown = false
+          },
+        })
+        this.RowDivider()
+        NextNListRow({
+          title: AppStrings.get('settings_reader_tap_zone_invert'),
+          trailingText: this.readerTapZoneInvertLabel(),
+          trailingDropdown: true,
+          accessibilityLabel: AppStrings.format('settings_reader_tap_zone_invert_a11y', [
+            this.readerTapZoneInvertLabel(),
+          ]),
+          onAction: (): void => {
+            this.readerTapZoneInvertMenuShown = true
+          },
+        })
+        .bindMenu(this.readerTapZoneInvertMenuShown, this.ReaderTapZoneInvertMenu, {
+          placement: Placement.BottomRight,
+          onDisappear: (): void => {
+            this.readerTapZoneInvertMenuShown = false
+          },
+        })
+      }
+    }
+  }
+
+  @Builder
+  private ReaderDisplayGroup() {
+    Column({ space: ThemeTokens.SPACE_XS }) {
+      NextNSectionHeader({ title: AppStrings.get('settings_reader_group_display') })
+      NextNGroupedListSection() {
+        NextNListRow({
+          title: AppStrings.get('settings_reader_fullscreen'),
+          hasSwitch: true,
+          checked: this.readerPresentation.fullscreen,
+          showChevron: false,
+          accessibilityLabel: AppStrings.format('settings_reader_fullscreen_a11y', [
+            this.toggleStateLabel(this.readerPresentation.fullscreen),
+          ]),
+          onAction: (): void => {
+            this.saveReaderFullscreen(!this.readerPresentation.fullscreen)
+          },
+          onSwitchChange: (value: boolean): void => {
+            this.saveReaderFullscreen(value)
+          },
+        })
+        this.RowDivider()
+        NextNListRow({
+          title: AppStrings.get('settings_reader_keep_screen_on'),
+          hasSwitch: true,
+          checked: this.readerPresentation.keepScreenOn,
+          showChevron: false,
+          accessibilityLabel: AppStrings.format('settings_reader_keep_screen_on_a11y', [
+            this.toggleStateLabel(this.readerPresentation.keepScreenOn),
+          ]),
+          onAction: (): void => {
+            this.saveReaderKeepScreenOn(!this.readerPresentation.keepScreenOn)
+          },
+          onSwitchChange: (value: boolean): void => {
+            this.saveReaderKeepScreenOn(value)
+          },
+        })
+      }
+    }
+  }
+
+  @Builder
+  private ReaderEnhancementGroup() {
+    Column({ space: ThemeTokens.SPACE_XS }) {
+      NextNSectionHeader({ title: AppStrings.get('settings_reader_group_image_enhancement') })
+      NextNGroupedListSection() {
+        NextNListRow({
+          title: AppStrings.get('settings_reader_enhancement'),
+          hasSwitch: true,
+          checked: this.readerPresentation.superResolutionEnabled,
+          showChevron: false,
+          isEnabled: this.selectedReaderEnhancementModelInstalled(),
+          accessibilityLabel: AppStrings.format('settings_reader_enhancement_a11y', [
+            this.toggleStateLabel(this.readerPresentation.superResolutionEnabled),
+          ]),
+          onAction: (): void => {
+            this.saveReaderEnhancementEnabled(!this.readerPresentation.superResolutionEnabled)
+          },
+          onSwitchChange: (value: boolean): void => {
+            this.saveReaderEnhancementEnabled(value)
+          },
+        })
+        this.RowDivider()
+        NextNListRow({
+          title: AppStrings.get('settings_reader_enhancement_model_selection'),
+          trailingText: this.readerEnhancementModelLabel(),
+          trailingDropdown: true,
+          isEnabled: this.readerEnhancementInstalledModels.length > 0,
+          accessibilityLabel: AppStrings.format('settings_reader_enhancement_model_selection_a11y', [
+            this.readerEnhancementModelLabel(),
+          ]),
+          onAction: (): void => {
+            if (this.readerEnhancementInstalledModels.length > 0) {
+              this.readerEnhancementModelMenuShown = true
+            }
+          },
+        })
+        .bindMenu(this.readerEnhancementModelMenuShown, this.ReaderEnhancementModelMenu, {
+          placement: Placement.BottomRight,
+          onDisappear: (): void => {
+            this.readerEnhancementModelMenuShown = false
+          },
+        })
+        this.RowDivider()
+        NextNListRow({
+          title: AppStrings.get('settings_reader_enhancement_models'),
+          trailingText: this.readerEnhancementInstalledModels.length > 0
+            ? AppStrings.get('settings_reader_enhancement_model_ready')
+            : AppStrings.get('settings_reader_enhancement_model_download'),
+          accessibilityLabel: AppStrings.get('settings_reader_enhancement_models_a11y'),
+          onAction: (): void => {
+            this.openReaderEnhancementModels()
+          },
+        })
+        this.RowDivider()
+        NextNListRow({
+          title: AppStrings.get('settings_reader_enhancement_max_height'),
+          trailingText: this.readerEnhancementMaxHeightLabel(),
+          trailingDropdown: true,
+          isEnabled: this.readerPresentation.superResolutionEnabled &&
+            this.selectedReaderEnhancementModelInstalled(),
+          accessibilityLabel: AppStrings.format('settings_reader_enhancement_max_height_a11y', [
+            this.readerEnhancementMaxHeightLabel(),
+          ]),
+          onAction: (): void => {
+            if (this.readerPresentation.superResolutionEnabled &&
+              this.selectedReaderEnhancementModelInstalled()) {
+              this.readerEnhancementMaxHeightMenuShown = true
+            }
+          },
+        })
+        .bindMenu(this.readerEnhancementMaxHeightMenuShown, this.ReaderEnhancementMaxHeightMenu, {
+          placement: Placement.BottomRight,
+          onDisappear: (): void => {
+            this.readerEnhancementMaxHeightMenuShown = false
+          },
+        })
+      }
+    }
+  }
+
+  @Builder
+  private ReaderControlsGroup() {
+    Column({ space: ThemeTokens.SPACE_XS }) {
+      NextNSectionHeader({ title: AppStrings.get('settings_reader_group_controls') })
+      NextNGroupedListSection() {
+        NextNListRow({
+          title: AppStrings.get('settings_reader_auto_advance_interval'),
+          trailingText: this.readerAutoPageLabel(),
+          trailingDropdown: true,
+          accessibilityLabel: AppStrings.format('settings_reader_auto_advance_interval_a11y', [
+            this.readerAutoPageLabel(),
+          ]),
+          onAction: (): void => {
+            this.readerAutoPageMenuShown = true
+          },
+        })
+        .bindMenu(this.readerAutoPageMenuShown, this.ReaderAutoPageMenu, {
+          placement: Placement.BottomRight,
+          onDisappear: (): void => {
+            this.readerAutoPageMenuShown = false
+          },
+        })
+        this.RowDivider()
+        NextNListRow({
+          title: AppStrings.get('settings_reader_volume_keys_turn_pages'),
+          hasSwitch: true,
+          checked: this.readerPresentation.volumeKeyTurn,
+          showChevron: false,
+          accessibilityLabel: AppStrings.format('settings_reader_volume_keys_turn_pages_a11y', [
+            this.toggleStateLabel(this.readerPresentation.volumeKeyTurn),
+          ]),
+          onAction: (): void => {
+            this.saveReaderVolumeKeyTurn(!this.readerPresentation.volumeKeyTurn)
+          },
+          onSwitchChange: (value: boolean): void => {
+            this.saveReaderVolumeKeyTurn(value)
+          },
+        })
+      }
+    }
+  }
+
+  @Builder
+  private ReaderLoadingGroup() {
+    Column({ space: ThemeTokens.SPACE_XS }) {
+      NextNSectionHeader({ title: AppStrings.get('settings_reader_group_loading') })
+      NextNGroupedListSection() {
+        NextNListRow({
+          title: AppStrings.get('settings_reader_preload_pages'),
+          trailingText: this.readerPreloadLabel(),
+          trailingDropdown: true,
+          accessibilityLabel: AppStrings.format('settings_reader_preload_pages_a11y', [this.readerPreloadLabel()]),
+          onAction: (): void => {
+            this.readerPreloadMenuShown = true
+          },
+        })
+        .bindMenu(this.readerPreloadMenuShown, this.ReaderPreloadMenu, {
+          placement: Placement.BottomRight,
+          onDisappear: (): void => {
+            this.readerPreloadMenuShown = false
+          },
+        })
+      }
     }
   }
 
@@ -2270,7 +2306,22 @@ export struct SettingsPage {
   @Builder
   private ReaderPresentationListItems() {
     ListItem() {
-      this.ReaderPresentationGroup()
+      this.ReaderLayoutGroup()
+    }
+    ListItem() {
+      this.ReaderTapZonesGroup()
+    }
+    ListItem() {
+      this.ReaderDisplayGroup()
+    }
+    ListItem() {
+      this.ReaderEnhancementGroup()
+    }
+    ListItem() {
+      this.ReaderControlsGroup()
+    }
+    ListItem() {
+      this.ReaderLoadingGroup()
     }
     if (!this.sheetPresentation && this.onOpenTranslationSource) {
       ListItem() {

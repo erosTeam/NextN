@@ -416,6 +416,7 @@ export { nextNHdsTitle, nextNHdsTitleBar } from './components/NextNHdsTitleBar'
 export { AppSearchField } from './components/AppSearchField'
 export { NextNListRow } from './components/NextNListRow'
 export { NextNGroupedListSection } from './components/NextNGroupedListSection'
+export { NextNSectionHeader } from './components/NextNSectionHeader'
 export { SecondaryListScaffold } from './components/SecondaryListScaffold'
 export {
   NextNPullRefresh,
