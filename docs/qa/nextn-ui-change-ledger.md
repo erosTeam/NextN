@@ -328,6 +328,15 @@ authorize an edit, replace a device comparison, or define product completion.
   ledger record. The selected target was absent before installation, so no
   alternate device, app install, screenshot, preference write, or visual
   claim was made. The verification plan above remains the next action.
+- **Pre-device lifecycle correction — 2026-08-12:** the first source version
+  used the sheet binding boolean to decide whether `onDisappear` should
+  restore the prior accent. A swipe dismissal can clear that binding before
+  the callback, leaving a live draft applied. The sheet now owns a distinct
+  in-memory preview flag: all non-confirm close paths restore the captured
+  original value exactly once; confirmation clears that flag before it writes
+  the chosen custom value. This changes no picker geometry, menu item,
+  persisted preset, or neighboring Appearance leaf. Signed build succeeded;
+  the same selected-device rollback observation remains required.
 
 ## OPEN — Reader selectable Waifu2x enhancement models
 

@@ -205,6 +205,7 @@ export struct SettingsPage {
   @Local themeColorPickerShown: boolean = false
   @Local draftCustomThemeColor: string = '#0958F7'
   private themeColorBeforePicker: string = ThemeColorSettings.COLOR_SYSTEM
+  private themeColorPreviewActive: boolean = false
   @Local immersiveMaterialMenuShown: boolean = false
   @Local languageMenuShown: boolean = false
   @Local browsePresentationMenuShown: boolean = false
@@ -380,15 +381,20 @@ export struct SettingsPage {
     this.themeColorMenuShown = false
     this.themeColorBeforePicker = this.themeColor.color
     this.draftCustomThemeColor = ThemeColorSettings.customSeed(this.themeColorBeforePicker)
+    this.themeColorPreviewActive = true
     this.themeColorPickerShown = true
   }
 
   private closeThemeColorPicker(): void {
-    ThemeColorSettings.apply(this.themeColorBeforePicker)
+    if (this.themeColorPreviewActive) {
+      ThemeColorSettings.apply(this.themeColorBeforePicker)
+      this.themeColorPreviewActive = false
+    }
     this.themeColorPickerShown = false
   }
 
   private confirmThemeColorPicker(): void {
+    this.themeColorPreviewActive = false
     ThemeColorSettings.setColor(this.context(), this.draftCustomThemeColor).catch((): void => {})
     this.themeColorPickerShown = false
   }
@@ -2568,9 +2574,7 @@ export struct SettingsPage {
         detents: [SheetSize.LARGE],
         showClose: false,
         onDisappear: (): void => {
-          if (this.themeColorPickerShown) {
-            this.closeThemeColorPicker()
-          }
+          this.closeThemeColorPicker()
         },
       })
       this.RowDivider()
