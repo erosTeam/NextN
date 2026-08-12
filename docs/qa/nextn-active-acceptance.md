@@ -1569,6 +1569,29 @@ rewrite, re-run, or block this completed direct-route observation.
 
 ## Data and artifact boundary
 
+## Current delivery observation — Gallery Comments full-page composition
+
+- 2026-08-13: the signed Debug HAP was installed in place on the selected TCP
+  device without a data clear. The direct numeric Gallery `471768` Comments
+  destination foregrounded native NextN at `1320×2120`. Its HDS showed one
+  `评论` title and no duplicate compose or reload command.
+- One semantic composer-focus action was performed from the current field
+  bounds. With the IME present, the field moved from
+  `[36,1920][1151,2024]` to `[36,1038][1151,1142]`, and remained visible,
+  focused, and above the resized app window. No text, comment, account,
+  preference, or content state was changed.
+- This is limited to the loaded Comments state. Reply-context rendering,
+  configured translation, and empty/filtered-empty keyboard state remain
+  unobserved. The raw local evidence remains under
+  `.hvigor/outputs/gallery-comments-full-page-20260813T030124/` and is
+  excluded from Git.
+- The later source-aligned comment-card rhythm values were rebuilt and
+  installed in place, then the same direct Comments route was launched. The
+  follow-up local layout/screenshot receive operation was rejected by the
+  current execution policy before running. No earlier capture is treated as
+  evidence for the changed values; the exact same-route capture remains the
+  next unverified action.
+
 ## Current delivery observation — Settings Browse/Search ownership
 
 - 2026-08-12: after the account cold-start regression remained healthy, the

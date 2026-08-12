@@ -22,18 +22,26 @@ import {
   supportsCommentTranslation,
 } from 'shared'
 import { common } from '@kit.AbilityKit'
-import { KeyboardAvoidMode } from '@kit.ArkUI'
+import { KeyboardAvoidMode, uiMaterial } from '@kit.ArkUI'
+import { deviceInfo } from '@kit.BasicServicesKit'
 
 const COMMENT_COMPOSER_FIELD_ID: string = 'nextn-gallery-comments-composer-field'
 const COMMENT_COMPOSER_BOTTOM_RESERVE: number = 136
 const COMMENT_COMPOSER_OUTER_GAP: number = ThemeTokens.SPACE_SM
 const COMMENT_COMPOSER_INNER_GAP: number = ThemeTokens.SPACE_XS
 const COMMENT_COMPOSER_SEND_SIZE: number = 36
+const COMMENT_COMPOSER_CLOSE_ICON_SIZE: number =
+  COMMENT_COMPOSER_SEND_SIZE - COMMENT_COMPOSER_INNER_GAP * 2
 const COMMENT_COMPOSER_RADIUS: number = COMMENT_COMPOSER_SEND_SIZE / 2 + COMMENT_COMPOSER_INNER_GAP
 const COMMENT_COMPOSER_INPUT_MAX_H: number = 148
+const COMMENT_COMPOSER_QUOTE_LINE_WIDTH: number = 4
+const COMMENT_COMPOSER_QUOTE_LINE_HEIGHT: number = 48
 const COMMENT_CARD_CONTENT_INSET: number = ThemeTokens.SPACE_MD
-const COMMENT_CARD_TOP_INSET: number = ThemeTokens.SPACE_LG
-const COMMENT_CARD_BOTTOM_INSET: number = ThemeTokens.SPACE_MD
+const COMMENT_CARD_TOP_INSET: number = ThemeTokens.SPACE_MD
+const COMMENT_CARD_BOTTOM_INSET: number = ThemeTokens.SPACE_SM
+const COMMENT_ACTION_SIZE: number = 30
+const COMMENT_ACTION_ICON_SIZE: number = 16
+const COMMENT_QUOTE_RADIUS: number = ThemeTokens.RADIUS_SM + ThemeTokens.SPACE_XS
 
 class CommentTranslationCardState {
   commentId: number = 0
@@ -44,8 +52,8 @@ class CommentTranslationCardState {
 
 /**
  * A separate destination keeps comments from competing with the Gallery hero
- * and Read action. The HDS compose action focuses the page-owned bottom
- * composer; it does not open a second full-height navigation surface.
+ * and Read action. The HDS owns the destination title while this page owns
+ * one pull-to-refresh list and its persistent bottom composer.
  */
 @ComponentV2
 export struct GalleryCommentsPage {
@@ -60,6 +68,9 @@ export struct GalleryCommentsPage {
   @Local isLoading: boolean = false
   @Local errorMessage: string = ''
   @Local commentText: string = ''
+  @Local replyTargetId: number = 0
+  @Local replyTargetAuthor: string = ''
+  @Local replyTargetPreview: string = ''
   @Local isCommentSubmitting: boolean = false
   @Local commentSubmitError: string = ''
   @Local translations: CommentTranslationCardState[] = []
@@ -67,8 +78,6 @@ export struct GalleryCommentsPage {
   /** A Detail-owned response seeds this route only after it was successfully fetched. */
   @Param commentSnapshot: NhComment[] = []
   @Param commentSnapshotAvailable: boolean = false
-  @Param reloadVersion: number = 0
-  @Param composeVersion: number = 0
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private requestGeneration: number = 0
   private commentSubmitGeneration: number = 0
@@ -95,20 +104,6 @@ export struct GalleryCommentsPage {
     }
     if (!this.isLoading && this.loadedGalleryId !== this.galleryId) {
       this.loadComments()
-    }
-  }
-
-  @Monitor('reloadVersion')
-  onReloadRequested(): void {
-    if (this.reloadVersion > 0) {
-      this.loadComments()
-    }
-  }
-
-  @Monitor('composeVersion')
-  onComposeRequested(): void {
-    if (this.composeVersion > 0) {
-      this.requestComposerFocus()
     }
   }
 
@@ -184,7 +179,7 @@ export struct GalleryCommentsPage {
   }
 
   private canTranslate(comment: NhComment): boolean {
-    return this.commentTranslationConfigured() && comment.body.trim().length > 0
+    return this.commentTranslationConfigured() && this.replyBody(comment).trim().length > 0
   }
 
   private displayedCommentBody(comment: NhComment): string {
@@ -192,7 +187,8 @@ export struct GalleryCommentsPage {
     if (state !== null && state.shown && state.translated.length > 0) {
       return state.translated
     }
-    return comment.body.length > 0 ? comment.body : AppStrings.get('comments_empty_body')
+    const body: string = this.replyBody(comment)
+    return body.length > 0 ? body : AppStrings.get('comments_empty_body')
   }
 
   private isTranslationLoading(comment: NhComment): boolean {
@@ -206,7 +202,6 @@ export struct GalleryCommentsPage {
   }
 
   private translationActionLabel(comment: NhComment): string {
-    const state: CommentTranslationCardState | null = this.translationState(comment.commentId)
     return this.isTranslationShown(comment)
       ? AppStrings.get('comments_translation_show_original')
       : AppStrings.get('comments_translation_action')
@@ -229,7 +224,7 @@ export struct GalleryCommentsPage {
     state.loading = true
     this.publishTranslations()
     try {
-      const translated: string = await CommentTranslationService.translate(this.context(), comment.body)
+      const translated: string = await CommentTranslationService.translate(this.context(), this.replyBody(comment))
       if (this.galleryId === galleryId && this.loadedGalleryId === galleryId) {
         state.translated = translated
         state.shown = translated.length > 0
@@ -299,8 +294,157 @@ export struct GalleryCommentsPage {
       `${this.twoDigits(date.getHours())}:${this.twoDigits(date.getMinutes())}`
   }
 
+  private replyCodeForDigit(digit: string): string {
+    if (digit === '0') return '····'
+    if (digit === '1') return '···-'
+    if (digit === '2') return '··-·'
+    if (digit === '3') return '··--'
+    if (digit === '4') return '·-··'
+    if (digit === '5') return '·-·-'
+    if (digit === '6') return '·--·'
+    if (digit === '7') return '·---'
+    if (digit === '8') return '-···'
+    if (digit === '9') return '-··-'
+    return ''
+  }
+
+  private replyDigitForCode(code: string): string {
+    if (code === '····') return '0'
+    if (code === '···-') return '1'
+    if (code === '··-·') return '2'
+    if (code === '··--') return '3'
+    if (code === '·-··') return '4'
+    if (code === '·-·-') return '5'
+    if (code === '·--·') return '6'
+    if (code === '·---') return '7'
+    if (code === '-···') return '8'
+    if (code === '-··-') return '9'
+    return ''
+  }
+
+  private encodeReplyId(commentId: number): string {
+    const id: string = commentId.toString()
+    let encoded: string = ''
+    for (let index: number = 0; index < id.length; index += 1) {
+      const code: string = this.replyCodeForDigit(id.charAt(index))
+      if (code.length === 0) {
+        return ''
+      }
+      encoded += code
+    }
+    return encoded
+  }
+
+  private decodeReplyId(line: string): number {
+    let normalized: string = ''
+    for (let index: number = 0; index < line.length; index += 1) {
+      const character: string = line.charAt(index)
+      if (character === '·' || character === '.') {
+        normalized += '·'
+      } else if (character === '-') {
+        normalized += '-'
+      }
+    }
+    if (normalized.length === 0 || normalized.length % 4 !== 0) {
+      return 0
+    }
+    let decoded: string = ''
+    for (let index: number = 0; index < normalized.length; index += 4) {
+      const digit: string = this.replyDigitForCode(normalized.substring(index, index + 4))
+      if (digit.length === 0) {
+        return 0
+      }
+      decoded += digit
+    }
+    const value: number = Number.parseInt(decoded, 10)
+    return Number.isNaN(value) || value <= 0 ? 0 : value
+  }
+
+  private replyTarget(comment: NhComment): NhComment | null {
+    const lines: string[] = comment.body.split('\n')
+    if (lines.length < 2 || !lines[0].trim().startsWith('@')) {
+      return null
+    }
+    const targetId: number = this.decodeReplyId(lines[1])
+    if (targetId <= 0 || targetId === comment.commentId) {
+      return null
+    }
+    for (let index: number = 0; index < this.rawComments.length; index += 1) {
+      const candidate: NhComment = this.rawComments[index]
+      if (candidate.commentId === targetId) {
+        return candidate
+      }
+    }
+    return null
+  }
+
+  private replyBody(comment: NhComment): string {
+    if (this.replyTarget(comment) === null) {
+      return comment.body
+    }
+    return comment.body.split('\n').slice(2).join('\n').trim()
+  }
+
+  private hasReplyReference(comment: NhComment): boolean {
+    return this.replyTarget(comment) !== null
+  }
+
+  private replyReferenceOrFallback(comment: NhComment): NhComment {
+    const target: NhComment | null = this.replyTarget(comment)
+    return target !== null ? target : comment
+  }
+
+  private replyPlaceholder(): string {
+    return this.replyTargetId > 0
+      ? AppStrings.get('comments_reply_placeholder')
+      : AppStrings.get('comments_placeholder')
+  }
+
+  private hasReplyContext(): boolean {
+    return this.replyTargetId > 0 && this.replyTargetAuthor.length > 0
+  }
+
+  private replyContextTitle(): string {
+    return AppStrings.format('comments_replying_to', [this.replyTargetAuthor])
+  }
+
+  private openReply(comment: NhComment): void {
+    if (this.isCommentSubmitting) {
+      return
+    }
+    if (!this.hasPublishedAccountSession()) {
+      this.showCommentToast(AppStrings.get('comments_error_signin_post'))
+      return
+    }
+    const prefix: string = this.encodeReplyId(comment.commentId)
+    if (prefix.length === 0) {
+      return
+    }
+    this.replyTargetId = comment.commentId
+    this.replyTargetAuthor = this.authorLabel(comment)
+    this.replyTargetPreview = this.replyBody(comment)
+    this.commentText = `@${this.replyTargetAuthor}\n${prefix}\n`
+    this.commentSubmitError = ''
+    this.requestComposerFocus()
+  }
+
+  private clearReplyContext(): void {
+    this.replyTargetId = 0
+    this.replyTargetAuthor = ''
+    this.replyTargetPreview = ''
+    this.commentText = ''
+    this.commentSubmitError = ''
+  }
+
   private canSubmitComment(): boolean {
-    return this.hasPublishedAccountSession() && this.commentText.trim().length > 0 && !this.isCommentSubmitting
+    return this.hasPublishedAccountSession() && this.hasCommentMessage() && !this.isCommentSubmitting
+  }
+
+  private hasCommentMessage(): boolean {
+    if (!this.hasReplyContext()) {
+      return this.commentText.trim().length > 0
+    }
+    return this.commentText.split('\n').slice(2).join('\n').trim().length > 0
   }
 
   private composerAvailable(): boolean {
@@ -343,7 +487,7 @@ export struct GalleryCommentsPage {
         // safe here and avoids guessing the created record or replaying POST.
         this.loadComments()
       }
-      this.commentText = ''
+      this.clearReplyContext()
       this.showCommentToast(AppStrings.get('comments_toast_posted'))
     } catch (_error) {
       if (generation === this.commentSubmitGeneration && galleryId === this.galleryId) {
@@ -372,8 +516,54 @@ export struct GalleryCommentsPage {
   @Builder
   private CommentComposerFields() {
     Column({ space: COMMENT_COMPOSER_INNER_GAP }) {
+      if (this.hasReplyContext()) {
+        Row({ space: ThemeTokens.SPACE_SM }) {
+          Blank()
+            .width(COMMENT_COMPOSER_QUOTE_LINE_WIDTH)
+            .height(COMMENT_COMPOSER_QUOTE_LINE_HEIGHT)
+            .backgroundColor(ThemeTokens.BRAND)
+            .borderRadius(COMMENT_COMPOSER_QUOTE_LINE_WIDTH / 2)
+          Column({ space: ThemeTokens.SPACE_XS }) {
+            Text(this.replyContextTitle())
+              .width('100%')
+              .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+              .fontWeight(FontWeight.Medium)
+              .fontColor(ThemeTokens.TEXT_LINK)
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+            Text(this.replyTargetPreview)
+              .width('100%')
+              .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+              .fontColor(ThemeTokens.TEXT_SECONDARY)
+              .maxLines(2)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+          }
+          .alignItems(HorizontalAlign.Start)
+          .layoutWeight(1)
+          Button({ type: ButtonType.Circle, stateEffect: true }) {
+            SymbolGlyph($r('sys.symbol.xmark'))
+              .fontSize(COMMENT_COMPOSER_CLOSE_ICON_SIZE)
+              .fontColor([ThemeTokens.TEXT_SECONDARY])
+          }
+          .width(COMMENT_COMPOSER_SEND_SIZE)
+          .height(COMMENT_COMPOSER_SEND_SIZE)
+          .buttonStyle(ButtonStyleMode.NORMAL)
+          .backgroundColor(Color.Transparent)
+          .accessibilityText(AppStrings.get('common_cancel'))
+          .onClick((): void => {
+            this.clearReplyContext()
+          })
+        }
+        .width('100%')
+        .alignItems(VerticalAlign.Center)
+        .padding({
+          left: COMMENT_COMPOSER_RADIUS - COMMENT_COMPOSER_INNER_GAP - COMMENT_COMPOSER_QUOTE_LINE_WIDTH / 2,
+          right: COMMENT_COMPOSER_INNER_GAP,
+          top: COMMENT_COMPOSER_INNER_GAP,
+        })
+      }
       Row({ space: ThemeTokens.SPACE_SM }) {
-        TextArea({ text: this.commentText, placeholder: AppStrings.get('comments_placeholder') })
+        TextArea({ text: this.commentText, placeholder: this.replyPlaceholder() })
           .id(COMMENT_COMPOSER_FIELD_ID)
           .constraintSize({ maxHeight: COMMENT_COMPOSER_INPUT_MAX_H })
           .maxLines(8)
@@ -407,8 +597,29 @@ export struct GalleryCommentsPage {
   }
 
   @Builder
-  private CommentComposer() {
-    Column() {
+  private MaterialCommentComposerSurface() {
+    if (deviceInfo.apiAvailable('26.0.0')) {
+      Column({ space: COMMENT_COMPOSER_INNER_GAP }) {
+        this.CommentComposerFields()
+      }
+      .width('100%')
+      .padding({
+        left: COMMENT_COMPOSER_INNER_GAP,
+        right: COMMENT_COMPOSER_INNER_GAP,
+        top: COMMENT_COMPOSER_INNER_GAP,
+        bottom: COMMENT_COMPOSER_INNER_GAP,
+      })
+      .backgroundColor(Color.Transparent)
+      .systemMaterial(this.composerSystemMaterial())
+      .borderRadius(COMMENT_COMPOSER_RADIUS)
+    } else {
+      this.FallbackCommentComposerSurface()
+    }
+  }
+
+  @Builder
+  private FallbackCommentComposerSurface() {
+    Column({ space: COMMENT_COMPOSER_INNER_GAP }) {
       this.CommentComposerFields()
     }
     .width('100%')
@@ -421,6 +632,35 @@ export struct GalleryCommentsPage {
     .backgroundColor(ThemeTokens.CARD_BACKGROUND)
     .borderRadius(COMMENT_COMPOSER_RADIUS)
     .shadow(ShadowStyle.OUTER_DEFAULT_MD)
+  }
+
+  private composerSystemMaterial() {
+    if (deviceInfo.apiAvailable('26.0.0')) {
+      return new uiMaterial.ImmersiveMaterial({
+        style: uiMaterial.ImmersiveStyle.THICK,
+        colorInvert: true,
+        applyShadow: true,
+        interactive: true,
+      })
+    }
+    return undefined
+  }
+
+  @Builder
+  private CommentComposer() {
+    Column() {
+      if (deviceInfo.apiAvailable('26.0.0')) {
+        this.MaterialCommentComposerSurface()
+      } else {
+        this.FallbackCommentComposerSurface()
+      }
+    }
+    .width('100%')
+    .padding({
+      left: COMMENT_COMPOSER_OUTER_GAP,
+      right: COMMENT_COMPOSER_OUTER_GAP,
+      bottom: this.composerBottomPadding(),
+    })
   }
 
   @Builder
@@ -440,9 +680,67 @@ export struct GalleryCommentsPage {
   }
 
   @Builder
+  private ReplyQuote(comment: NhComment) {
+    Column({ space: ThemeTokens.SPACE_XS }) {
+      Text(this.authorLabel(comment))
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontWeight(FontWeight.Medium)
+        .fontColor(ThemeTokens.TEXT_LINK)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+      Text(this.replyBody(comment).length > 0 ? this.replyBody(comment) : AppStrings.get('comments_empty_body'))
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontColor(ThemeTokens.TEXT_SECONDARY)
+        .maxLines(3)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+    }
+    .width('100%')
+    .alignItems(HorizontalAlign.Start)
+    .padding(ThemeTokens.SPACE_SM)
+    .borderRadius(COMMENT_QUOTE_RADIUS)
+    .backgroundColor(ThemeTokens.SURFACE_SUB)
+  }
+
+  @Builder
+  private CommentFooterAction(
+    icon: Resource,
+    label: string,
+    disabled: boolean,
+    active: boolean,
+    action: () => void,
+  ) {
+    Button({ type: ButtonType.Circle, stateEffect: true }) {
+      if (disabled) {
+        LoadingProgress()
+          .width(COMMENT_ACTION_ICON_SIZE)
+          .height(COMMENT_ACTION_ICON_SIZE)
+          .color(ThemeTokens.TEXT_TERTIARY)
+      } else {
+        SymbolGlyph(icon)
+          .fontSize(COMMENT_ACTION_ICON_SIZE)
+          .fontColor([active ? ThemeTokens.BRAND : ThemeTokens.TEXT_TERTIARY])
+      }
+    }
+    .width(COMMENT_ACTION_SIZE)
+    .height(COMMENT_ACTION_SIZE)
+    .buttonStyle(ButtonStyleMode.NORMAL)
+    .backgroundColor(Color.Transparent)
+    .accessibilityText(label)
+    .enabled(!disabled)
+    .onClick(action)
+  }
+
+  @Builder
+  private ReplyReferences(comment: NhComment) {
+    if (this.hasReplyReference(comment)) {
+      this.ReplyQuote(this.replyReferenceOrFallback(comment))
+    }
+  }
+
+  @Builder
   private CommentCard(comment: NhComment) {
     Column({ space: ThemeTokens.SPACE_XS }) {
-      Row({ space: ThemeTokens.SPACE_XS }) {
+      Row() {
         Text(this.authorLabel(comment))
           .layoutWeight(1)
           .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
@@ -451,47 +749,49 @@ export struct GalleryCommentsPage {
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
         if (this.canTranslate(comment)) {
-          Button({ type: ButtonType.Circle, stateEffect: true }) {
-            if (this.isTranslationLoading(comment)) {
-              LoadingProgress()
-                .width(16)
-                .height(16)
-                .color(ThemeTokens.TEXT_TERTIARY)
-            } else {
-              SymbolGlyph($r('sys.symbol.translate'))
-                .fontSize(ThemeTokens.FONT_SIZE_BODY)
-                .fontColor([
-                  this.isTranslationShown(comment)
-                    ? ThemeTokens.BRAND
-                    : ThemeTokens.TEXT_TERTIARY,
-                ])
-            }
-          }
-          .width(32)
-          .height(32)
-          .backgroundColor(Color.Transparent)
-          .accessibilityText(this.translationActionLabel(comment))
-          .onClick((): void => {
-            this.toggleOrTranslate(comment)
-          })
+          this.CommentFooterAction(
+            $r('sys.symbol.translate'),
+            this.translationActionLabel(comment),
+            this.isTranslationLoading(comment),
+            this.isTranslationShown(comment),
+            (): void => {
+              this.toggleOrTranslate(comment)
+            },
+          )
         }
       }
       .width('100%')
       .alignItems(VerticalAlign.Center)
+      this.ReplyReferences(comment)
       Text(this.displayedCommentBody(comment))
         .width('100%')
         .fontSize(ThemeTokens.FONT_SIZE_BODY)
         .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
         .fontColor(ThemeTokens.TEXT_PRIMARY)
-      if (this.postedLabel(comment).length > 0) {
-        Text(this.postedLabel(comment))
-          .width('100%')
-          .fontSize(ThemeTokens.FONT_SIZE_TINY)
-          .fontWeight(FontWeight.Medium)
-          .fontColor(ThemeTokens.TEXT_TERTIARY)
-          .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
+      Row() {
+        if (this.postedLabel(comment).length > 0) {
+          Text(this.postedLabel(comment))
+            .layoutWeight(1)
+            .fontSize(ThemeTokens.FONT_SIZE_TINY)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(ThemeTokens.TEXT_TERTIARY)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+        } else {
+          Blank().layoutWeight(1)
+        }
+        this.CommentFooterAction(
+          $r('sys.symbol.ellipsis_message'),
+          AppStrings.get('comments_action_reply'),
+          false,
+          false,
+          (): void => {
+            this.openReply(comment)
+          },
+        )
       }
+      .width('100%')
+      .alignItems(VerticalAlign.Center)
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)
@@ -506,21 +806,31 @@ export struct GalleryCommentsPage {
   }
 
   @Builder
-  private LoadedCommentsContent() {
+  private SettledCommentsContent() {
     if (this.errorMessage.length > 0) {
       ListItem() {
         this.RefreshFailureNotice()
       }
     }
-    ForEach(this.comments, (comment: NhComment): void => {
+    if (this.comments.length === 0) {
       ListItem() {
-        this.CommentCard(comment)
+        PageEmptyState({
+          message: this.rawComments.length > 0
+            ? AppStrings.get('comments_status_filtered_empty')
+            : AppStrings.get('comments_status_empty'),
+        })
       }
-    }, (comment: NhComment): string => comment.commentId.toString())
+    } else {
+      ForEach(this.comments, (comment: NhComment): void => {
+        ListItem() {
+          this.CommentCard(comment)
+        }
+      }, (comment: NhComment): string => comment.commentId.toString())
+    }
   }
 
   @Builder
-  private LoadedCommentsPage() {
+  private SettledCommentsPage() {
     Stack({ alignContent: Alignment.Bottom }) {
       PullRefreshListScaffold({
         scroller: this.scroller,
@@ -531,18 +841,10 @@ export struct GalleryCommentsPage {
           await this.loadComments()
         },
       }) {
-        this.LoadedCommentsContent()
+        this.SettledCommentsContent()
       }
       if (this.composerAvailable()) {
-        Column() {
-          this.CommentComposer()
-        }
-        .width('100%')
-        .padding({
-          left: COMMENT_COMPOSER_OUTER_GAP,
-          right: COMMENT_COMPOSER_OUTER_GAP,
-          bottom: this.composerBottomPadding(),
-        })
+        this.CommentComposer()
       }
     }
     .width('100%')
@@ -560,21 +862,8 @@ export struct GalleryCommentsPage {
             this.loadComments()
           },
         })
-      } else if (this.comments.length === 0) {
-        Column() {
-          PageEmptyState({
-            message: this.rawComments.length > 0
-              ? AppStrings.get('comments_status_filtered_empty')
-              : AppStrings.get('comments_status_empty'),
-          })
-        }
-        .width('100%')
-        .layoutWeight(1)
-        if (this.composerAvailable()) {
-          this.CommentComposer()
-        }
       } else {
-        this.LoadedCommentsPage()
+        this.SettledCommentsPage()
       }
     }
     .width('100%')

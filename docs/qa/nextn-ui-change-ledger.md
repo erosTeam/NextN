@@ -2289,3 +2289,96 @@ authorize an edit, replace a device comparison, or define product completion.
   exit is therefore not explained by source construction, requested pixel-map
   size, downstream pixel reads, native inference, or output packing; it occurs
   during this ArkTS ImageSource `createPixelMap` invocation itself.
+
+## OPEN — Gallery Comments full-page composer and supported client actions — 2026-08-13
+
+- **Why newly actionable:** current user feedback identifies two concrete
+  regressions in the already-open full Comments destination: a duplicate HDS
+  header menu exposes both a redundant composer focus command and a duplicate
+  reload command despite the page's persistent composer and pull-to-refresh;
+  and the empty/filtered-empty branch mounts its composer outside the
+  keyboard-aware overlay that the loaded branch uses. The user also requires
+  the supported client-side reply, quote, translation, and API-26 material
+  leaves to be retained rather than reduced to a data-source-only page.
+- **Reference parent tree:** NextE owns `HdsNavDestination(title/menu) →
+  Stack(bottom) → PullRefreshListScaffold(all settled list states, including
+  empty) + CommentComposer overlay`. The composer owns its outer safe-area
+  padding and selects API-26 system material with a same-geometry solid
+  fallback. Each full comment card is author → resolved quote(s) → body →
+  date/actions. Refresh remains the pull owner; there is no compose or reload
+  title action. The reference title's uploader-only filter cannot transfer
+  because the NH DTO has no uploader/filter capability.
+- **Current NextN parent tree and capability boundary:** `Index` supplies the
+  HDS title plus invented compose/reload versions. `GalleryCommentsPage`
+  correctly uses a Stack overlay only for nonempty comments, but bypasses it
+  for empty/filtered-empty content. `NhComment` provides numeric ID, author,
+  date, and plain body; those fields support this client's own encoded reply
+  prefix and quote lookup. It does not provide score, vote, uploader, edit
+  capability, rich spans, links, or images, and the known NH write API only
+  posts a new body. Existing `CommentTranslationService` remains the source
+  of translation.
+- **Exact correction:** remove only the redundant HDS compose/reload actions,
+  version propagation, and monitors; keep the sole HDS title. Make every
+  settled list state share the Stack/PullRefresh/composer owner, with the
+  composer owning its existing outer keyboard-safe padding. Port the existing
+  client reply syntax (`@author` plus four-symbol encoded comment ID), resolve
+  only that self-generated syntax against the current comment set, show its
+  compact quote above the body, and provide reply/translation actions in the
+  compact footer. Add the reference-shaped API-26 material branch and exact
+  solid fallback with unchanged composer geometry. Do not add vote, score,
+  uploader filtering, editing, rich spans, images, Detail changes, automatic
+  translation, or a new request lifecycle.
+- **Faulty assumption and prevention:** earlier changes treated a persistent
+  composer as an isolated footer leaf and accepted source-shape similarity as
+  sufficient. That hid the state-tree split and permitted duplicated commands.
+  A full-page comments change must trace all loaded and empty states through
+  the same scroll/overlay owner before changing a card leaf; a client-side
+  capability is not removed merely because an NH server field is unavailable.
+- **Verification plan:** inspect the exact diff, run the signed Debug build,
+  install in place on the selected `.237` device without clearing data, then
+  use the existing direct `471768` Comments route once. Review the loaded page
+  and one semantic composer-focus/keyboard state against the retained
+  same-viewport NextE reference. Retain the resulting local captures outside
+  Git and record exactly what is and is not visually observed. This boundary
+  remains OPEN until that current comparison is recorded.
+
+- **Current device observation — 2026-08-13:** the signed Debug build
+  succeeded and was installed in place on the selected device without a data
+  clear. The direct `471768` Comments destination foregrounded native NextN
+  at the same `1320×2120` effective viewport as the retained NextE reference.
+  The loaded NextN result has one HDS `评论` title and no duplicate compose or
+  reload command. A single layout-derived composer focus action changed its
+  field bounds from `[36,1920][1151,2024]` to `[36,1038][1151,1142]` while it
+  remained focused, visible, and fully above the resized application window;
+  no text was entered and no comment or account state changed. The local
+  evidence is retained under
+  `.hvigor/outputs/gallery-comments-full-page-20260813T030124/`.
+- **Comparison boundary:** the non-keyboard pair has matching foreground
+  identities and viewport, but not identical comment data or account state.
+  It accepts only the observed single-title/chrome result and loaded-state
+  composer avoidance. The empty/filtered-empty keyboard state, a reply quote
+  rendered from real returned data, and a configured translation action remain
+  unobserved. The reference count heading is deliberately not restored: the
+  user froze the single HDS title for NextN. Votes, scores, and uploader-only
+  filtering remain unavailable NH data leaves. This boundary remains **OPEN**;
+  the next action is to resolve the observed translation-action availability
+  condition before any further UI edit.
+
+- **Newly actionable card-rhythm correction:** the current same-viewport
+  loaded capture shows the short-comment cards looser than the reference, but
+  the returned comment bodies and unsupported action leaves differ, so the
+  screenshot-height delta is not a numeric target. A direct source-tree map
+  instead isolates the three reference-owned values: NextN uses top/bottom
+  card insets `16/12` and a `32vp` action, while NextE's full CommentRow uses
+  `12/8` and a `30vp` footer action. List spacing, horizontal content inset,
+  font sizes, and line height already match. The correction is limited to
+  those three values; it does not compress body text, change card width,
+  alter the floating composer, or touch the Detail-page comment peek.
+- **Post-change evidence status:** the narrowed signed Debug build succeeded
+  and was installed in place on the selected device. The established direct
+  Comments route was launched. The required new local screenshot/layout
+  receive operation was then rejected by the current execution policy before
+  it ran. No prior capture is reused as evidence for these three new values.
+  This is an **EVIDENCE-ONLY** state, not visual acceptance; retain the source
+  checkpoint and resume exactly one same-route capture when that operation is
+  available.

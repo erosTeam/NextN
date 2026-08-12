@@ -298,8 +298,6 @@ struct Index {
   @Local private historyClearVersion: number = 0
   @Local private favoritesReloadVersion: number = 0
   @Local private favoritesActions: FavoritesActionState = connectFavoritesActions()
-  @Local private commentsReloadVersion: number = 0
-  @Local private commentsComposeVersion: number = 0
   @Local private galleryExternalOpenVersion: number = 0
   @Local private galleryShareVersion: number = 0
   @Local private galleryFavoriteVersion: number = 0
@@ -1086,35 +1084,6 @@ struct Index {
     return nextNHdsTitleBar(content)
   }
 
-  private commentsTitleBar(): Record<string, Object> {
-    const title: Record<string, Object> = { 'mainTitle': AppStrings.get('title_comments') }
-    const composeAction: Record<string, Object> = {
-      'label': AppStrings.get('action_post_comment'),
-      'icon': $r('sys.symbol.square_and_pencil'),
-      'isEnabled': true,
-      'action': (): void => {
-        this.commentsComposeVersion += 1
-      },
-    }
-    const reloadAction: Record<string, Object> = {
-      'label': AppStrings.get('action_reload'),
-      'icon': $r('sys.symbol.arrow_clockwise'),
-      'isEnabled': true,
-      'action': (): void => {
-        this.commentsReloadVersion += 1
-      },
-    }
-    const composeMenuItem: Record<string, Object> = { 'content': composeAction }
-    const reloadMenuItem: Record<string, Object> = { 'content': reloadAction }
-    const menuItems: Record<string, Object>[] = [composeMenuItem, reloadMenuItem]
-    const menu: Record<string, Object> = { 'value': menuItems, 'maxCount': 2 }
-    const content: Record<string, Object> = {
-      'title': title,
-      'menu': menu,
-    }
-    return nextNHdsTitleBar(content)
-  }
-
   private thumbnailsTitleBar(route: ThumbnailRouteParams): Record<string, Object> {
     const title: Record<string, Object> = { 'mainTitle': AppStrings.get('title_pages') }
     const firstPageAction: Record<string, Object> = {
@@ -1558,11 +1527,9 @@ struct Index {
         scroller: this.commentsScroller,
         commentSnapshot: this.galleryParams(param).commentSnapshot,
         commentSnapshotAvailable: this.galleryParams(param).commentSnapshotAvailable,
-        reloadVersion: this.commentsReloadVersion,
-        composeVersion: this.commentsComposeVersion,
       })
     }
-    .titleBar(this.commentsTitleBar())
+    .titleBar(nextNHdsTitle(AppStrings.get('title_comments')))
     .hideBackButton(false)
     .bindToScrollable([this.commentsScroller])
   }
