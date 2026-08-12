@@ -23,7 +23,14 @@ export struct NhArkWebSessionTransportHost {
       .position({ x: -1, y: -1 })
       .darkMode(WebDarkMode.Off)
       .backgroundColor(Color.Transparent)
-      .cacheMode(CacheMode.None)
+      // This host owns the automatic first-party identity refresh after an
+      // authenticated 401. It must execute the same fresh login navigation as
+      // the visible native re-verification route: `None` prefers even expired
+      // cached resources, which can leave the retained host probing an old
+      // login document and then falsely persist a verification-required
+      // boundary. `Online` keeps the regular CookieManager jar intact while
+      // requiring the login navigation to reach the origin.
+      .cacheMode(CacheMode.Online)
       .javaScriptAccess(true)
       .domStorageAccess(true)
       .onlineImageAccess(true)
