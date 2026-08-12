@@ -543,3 +543,15 @@ substitute for measured login-cycle elapsed time.
 - next action: issue the current explicit native re-verification action. A
   credential epoch remains forbidden unless that action yields the visible
   current login form and the S1--S4 protocol gates all pass.
+
+## Native re-verification result — 2026-08-12 22:44 +0800
+
+- recovery action: the single explicit native re-verification action was
+  issued from the paired verification-required Account state.
+- native Account after action: signed-in native state; no visible Web surface.
+- account input: not-entered.
+- password input: not-entered.
+- submit: not-issued.
+- next action: data-preserving force-stop/cold start, then paired native
+  Account and Favorites summaries. This recovery observation is not a
+  persistence acceptance claim.

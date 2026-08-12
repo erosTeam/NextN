@@ -49,6 +49,11 @@ remains continuous; do not ask for it again.
 - The next physical action is the current Account page's explicit native
   re-verification action. The pair establishes the state boundary only; it
   does not establish a persistence or transport cause.
+- That one action returned the native Account surface to signed-in state; no
+  visible Web, credential field write, submit, data clear, uninstall, or
+  content mutation occurred. This is a recovery observation only. The next
+  required action is a data-preserving force-stop/cold start followed by
+  paired native Account and Favorites summaries.
 
 ## Current P0 device result — proof and postmortem recorded
 
