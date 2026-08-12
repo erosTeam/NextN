@@ -1472,37 +1472,44 @@ struct Index {
 
   @Builder
   private readerDestination(param: Object) {
-    ReaderPage({
-      galleryId: this.readerParams(param).galleryId,
-      initialPageIndex: this.readerParams(param).initialPageIndex,
-      readerRouteEpoch: this.readerParams(param).routeEpoch,
-      settingsSheetContent: (dismiss: () => void): void => {
-        this.ReaderSettingsSheet(dismiss)
-      },
-      onBack: (): void => {
-        this.closeReaderDestination()
-      },
-      onReaderPresentationChanged: (chromeVisible: boolean, fullscreen: boolean): void => {
-        this.applyReaderPresentation(chromeVisible, fullscreen)
-      },
-      onDestinationShown: (): void => {
-        this.readerDestinationVisible = true
-        this.readerDestinationClosing = false
-        // Reader restores its persisted preference asynchronously. Start from
-        // the documented NextE default so a slow local read cannot leave a
-        // transient system bar over an immersive canvas.
-        this.applyReaderPresentation(false, true)
-      },
-      onDestinationWillHide: (): void => {
-        this.readerDestinationVisible = false
-        if (!this.readerDestinationClosing) {
-          this.restoreAppStatusBar()
-        }
-      },
-      onDestinationDisappeared: (): void => {
-        this.readerDestinationVisible = false
-        this.readerOverlay.finishClose()
-      },
+    HdsNavDestination() {
+      ReaderPage({
+        galleryId: this.readerParams(param).galleryId,
+        initialPageIndex: this.readerParams(param).initialPageIndex,
+        readerRouteEpoch: this.readerParams(param).routeEpoch,
+        settingsSheetContent: (dismiss: () => void): void => {
+          this.ReaderSettingsSheet(dismiss)
+        },
+        onBack: (): void => {
+          this.closeReaderDestination()
+        },
+        onReaderPresentationChanged: (chromeVisible: boolean, fullscreen: boolean): void => {
+          this.applyReaderPresentation(chromeVisible, fullscreen)
+        },
+      })
+    }
+    .hideTitleBar(true)
+    .onBackPressed((): boolean => {
+      this.closeReaderDestination()
+      return true
+    })
+    .onShown((): void => {
+      this.readerDestinationVisible = true
+      this.readerDestinationClosing = false
+      // Reader restores its persisted preference asynchronously. Start from
+      // the documented NextE default so a slow local read cannot leave a
+      // transient system bar over an immersive canvas.
+      this.applyReaderPresentation(false, true)
+    })
+    .onWillHide((): void => {
+      this.readerDestinationVisible = false
+      if (!this.readerDestinationClosing) {
+        this.restoreAppStatusBar()
+      }
+    })
+    .onDisAppear((): void => {
+      this.readerDestinationVisible = false
+      this.readerOverlay.finishClose()
     })
   }
 

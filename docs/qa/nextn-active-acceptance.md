@@ -163,6 +163,14 @@ remains continuous; do not ask for it again.
   retained under `.hvigor/outputs/reader-overlay-root-title-20260812T2204/`;
   do not repeat that Back action before its Reader return-dispatch owner is
   source-mapped.
+- A subsequent built attempt moved the HDS destination wrapper from Index into
+  Reader, matching the NextE ownership shape. It again reached native NextN
+  Reader but the one established Back event foregrounded the same system Books
+  application. That hypothesis is rejected and the source was restored before
+  further device work; no account, Favorites, credential, preference, content,
+  or data-clear action occurred. Do not use another Back retry as an acceptance
+  substitute. The next permitted Reader return action requires an independent
+  event-delivery observation.
 
 ## Latest device observation — private-cache settings
 

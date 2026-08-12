@@ -1224,6 +1224,18 @@ authorize an edit, replace a device comparison, or define product completion.
   foreground is current. The required result is native NextN Detail with the
   Gallery title/menu restored; otherwise retain evidence and remove rather
   than widen this hierarchy correction.
+- **Rejected correction result — 2026-08-12:** the built ownership migration
+  reached native NextN Reader on the same direct route, but its one established
+  Back event again foregrounded `com.huawei.hmsapp.books` rather than NextN
+  Detail. It therefore does not establish destination ownership as the cause
+  and is removed in full: `ReaderPage` returns to a canvas component and
+  `Index.readerDestination` again owns the existing HDS destination, lifecycle,
+  and close callback. The earlier verified Gallery-title isolation remains;
+  this rejected hierarchy experiment authorizes no further Reader geometry,
+  menu, canvas, or Back retries. The next source-only question is whether the
+  selected device's `uiInput keyEvent Back` is delivered as a single Reader
+  destination event at all; only an event-delivery observation may reopen a
+  code correction.
 
 ## FROZEN — Reader enhancement input-height preference UI
 
