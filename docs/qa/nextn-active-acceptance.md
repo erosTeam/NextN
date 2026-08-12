@@ -1556,6 +1556,17 @@ rewrite, re-run, or block this completed direct-route observation.
   `.hvigor/outputs/realesrgan-selector-projection-20260812T1125/` and is
   excluded from Git.
 
+## Latest device observation — Real-ESRGAN applied Reader run
+
+- 2026-08-13: the selected TCP device's already-installed enhancement-model
+  selector was changed from Waifu2x-art to Real-ESRGAN photo 2×. One direct
+  native `471768` Gallery route then opened the Reader overlay; its retained
+  terminal layout and screenshot showed the existing applied HD status.
+- The selector was restored immediately to Waifu2x-art through the same
+  native settings route. No model file download/removal, account operation,
+  data clear, uninstall, or content mutation occurred. This is one runtime
+  result-state observation; it is not a quality-parity claim.
+
 ## Data and artifact boundary
 
 ## Current delivery observation — Settings Browse/Search ownership

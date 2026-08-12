@@ -595,6 +595,15 @@ authorize an edit, replace a device comparison, or define product completion.
   manager's files, Reader processing path, account, gallery data, and all
   other preferences were untouched. Freeze this projection boundary; model
   processing is a separate OPEN boundary.
+- **Runtime observation — 2026-08-13:** on the selected device, the existing
+  installed-model selector was changed from Waifu2x-art to Real-ESRGAN photo
+  2×. The documented direct Gallery `471768` route then entered the native
+  Reader overlay; its terminal overlay layout and locally retained screenshot
+  showed the existing applied HD state. That state is emitted only after a
+  nonempty private derivative has been promoted. The selector was restored to
+  Waifu2x-art immediately afterward; no model file, account, gallery data, or
+  other setting changed. This verifies one applied Real-ESRGAN run, not
+  image-quality parity for other pages or a same-state reference comparison.
 
 - **Why newly actionable:** the existing Waifu2x model boundary is frozen for
   its reviewed rows and ordering. NextE separately exposes Real-ESRGAN x2plus
