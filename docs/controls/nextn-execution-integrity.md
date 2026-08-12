@@ -28,6 +28,28 @@ scope change, agent delegation, and task handoff in this repository.
 - A heartbeat is a scheduling mechanism. It must never be used to imply that
   a task was completed, paused, abandoned, or handed back to the user.
 
+### 1.1 No autonomous termination or abandonment
+
+- While an outcome is `OPEN`, the agent must not mark a Goal complete or
+  blocked, send a completion/final handoff, delete its continuity record, or
+  switch to an unrelated lane merely because a source patch, build, test,
+  device command, capture, retry, or explanation has finished.
+- A failed command is an observation, never a task terminal. Record its exact
+  operation and result, preserve the active outcome, and perform the next
+  safe recovery or retry in the same continued run. Only a concrete external
+  condition that prevents that next action may be reported as a block.
+- A user question, criticism, or request for an explanation is a route
+  correction. Answer the question precisely, then recover the active outcome
+  and execute its next safe action; it is not permission to end, park, or
+  silently replace the work.
+- A status report may describe only work already observed and the next action
+  that remains. It must not use an intermediate result as a substitute for
+  that action or imply that the user must re-authorize an already authorized
+  continuation.
+- Material source or control changes are not durable until their exact diff is
+  reviewed and they are committed in a scoped Git commit. A commit records a
+  checkpoint; it never closes the user outcome by itself.
+
 ## 2. Claim vocabulary is fixed
 
 Use only the narrowest true statement.
