@@ -90,6 +90,13 @@ remains continuous; do not ask for it again.
   this observed path only; the queue remains OPEN until the user explicitly
   requests closure, and any future fresh failure preempts delivery again.
 
+## Current delivery observation — Appearance custom theme color
+
+- 2026-08-12: the signed Debug HAP was installed with `install -r` on the selected TCP device only after the device was awake with its 24-hour timeout override. Native NextN foregrounded Browse, then the established Settings → Appearance route reached the existing theme-color menu and its new `自定义` item.
+- An initial menu-coordinate error temporarily selected the existing `青草绿` preset rather than Custom. It was immediately restored to the original `跟随系统` selection before the Custom route was retried from a fresh current menu layout; no account, content, download, or data-clear action occurred.
+- The native custom picker rendered its Grid/Sliders switch, color grid, Hex field, favorites, preview swatch, close action, and confirm action at `1320×2120`. One unconfirmed grid selection changed the live draft; closing restored the original `跟随系统` theme. One separately confirmed custom selection survived a force-stop/cold start without data clearing; the original `跟随系统` theme was then restored and re-observed before leaving the route.
+- This is device evidence for the NextN menu, picker, preview rollback, persistence, and restoration paths only. A same-state NextE Appearance/picker capture was not obtained: the current NextE foreground began in an unrelated configured service form, and its return action did not yield a retained NextE Appearance root. That comparison is rejected rather than substituted. Raw captures remain locally at `.hvigor/outputs/theme-color-custom-20260812T1645/` and are excluded from Git.
+
 ## Latest device observation — private-cache settings
 
 - 2026-08-11: a signed Debug HAP was installed with `install -r` on the

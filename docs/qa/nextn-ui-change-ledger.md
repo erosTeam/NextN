@@ -337,6 +337,27 @@ authorize an edit, replace a device comparison, or define product completion.
   the chosen custom value. This changes no picker geometry, menu item,
   persisted preset, or neighboring Appearance leaf. Signed build succeeded;
   the same selected-device rollback observation remains required.
+- **Selected-device evidence — 2026-08-12:** on `192.168.50.237:12345`, the
+  installed signed Debug build rendered the Custom menu item and the complete
+  picker at `1320×2120`. One unconfirmed grid draft visibly changed the
+  picker preview and its Hex value; the sheet close restored the original
+  system theme. One confirmed custom value survived a force-stop/cold start
+  without data clearing, after which the original system theme was restored
+  and re-observed. No account, Favorites, gallery, download, or content
+  mutation occurred. Local raw evidence is retained at
+  `.hvigor/outputs/theme-color-custom-20260812T1645/` outside Git.
+- **Route correction:** the first Custom navigation click selected the
+  neighbouring existing `青草绿` preset. It was immediately reset to the
+  pre-run `跟随系统` value; Custom was then selected from the current menu's
+  explicit item bounds. This was a route-coordinate mistake, not a picker
+  result, and it did not leave a temporary preference at the end of the run.
+- **Reference boundary:** a current same-viewport NextE Appearance/picker
+  capture was not available. NextE started in an unrelated configured service
+  form; its native return did not leave a NextE Appearance foreground. That
+  pair is rejected, not treated as a visual comparison. Status remains
+  **EVIDENCE-ONLY** until the same-state reference precondition exists; do
+  not rerun or alter this NextN surface without that materially new
+  precondition or new user feedback.
 
 ## OPEN — Reader selectable Waifu2x enhancement models
 
