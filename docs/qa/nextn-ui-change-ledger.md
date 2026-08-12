@@ -481,6 +481,16 @@ authorize an edit, replace a device comparison, or define product completion.
   owner: `HdsNavigation` contains a full-height `List` that remains above it.
   The next delta applies the already-scoped `contentBackgroundColor` to that
   inner List; no value, model row, action, or other page changes.
+- **Second-result correction and exact owner:** the List-level color remains
+  opaque because the model manager still supplies the app `surface` resource.
+  The same NextE modal scaffold resolves its content background to transparent
+  on API 26 so the system sheet material remains the page surface, while
+  retaining the supplied solid fallback on older API levels. Add that exact
+  behavior as an explicit opt-in on `NextNModalScaffold`, then enable it only
+  for this manager. The grouped section continues to own the white rounded
+  card. This changes neither the row hierarchy nor any model action, state,
+  copy, geometry, or other modal; verification remains one fresh current
+  model-manager capture beside the retained reference.
 
 ## FROZEN — Unified private-cache management (category-page visual boundary)
 

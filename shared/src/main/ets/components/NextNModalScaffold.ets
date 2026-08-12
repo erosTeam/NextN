@@ -1,4 +1,5 @@
 import { HdsNavigation, HdsNavigationTitleMode, IconStyleMode } from '@kit.UIDesignKit'
+import { deviceInfo } from '@kit.BasicServicesKit'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { connectLayoutSafeArea, LayoutSafeAreaState } from '../state/LayoutSafeAreaState'
 
@@ -14,6 +15,12 @@ export struct NextNModalScaffold {
   @Param enableComponentSafeArea: boolean = true
   /** Kept opt-in so existing modal surfaces retain their established host colour. */
   @Param contentBackgroundColor: ResourceColor = ThemeTokens.SURFACE
+  /**
+   * API-26 sheets may supply their page surface through native system material.
+   * This is opt-in: callers that do not own a sheet-material surface keep their
+   * existing explicit content background on every platform.
+   */
+  @Param useSystemModalSurface: boolean = false
   @Param contentHorizontalPadding: number = ThemeTokens.SPACE_MD
   @Param footerReserveHeight: number = 0
   @Param scroller: Scroller = new Scroller()
@@ -51,7 +58,7 @@ export struct NextNModalScaffold {
         }
         .height('100%')
         .width('100%')
-        .backgroundColor(this.contentBackgroundColor)
+        .backgroundColor(this.resolvedContentBackground())
         .padding({ left: this.contentHorizontalPadding, right: this.contentHorizontalPadding })
         .scrollBar(BarState.Off)
         .edgeEffect(EdgeEffect.None)
@@ -92,7 +99,18 @@ export struct NextNModalScaffold {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.contentBackgroundColor)
+    .backgroundColor(this.resolvedContentBackground())
+  }
+
+  private resolvedContentBackground(): ResourceColor {
+    // Keep the direct positive guard used by the existing API-26 material
+    // components so older compatible SDK paths retain the caller's fallback.
+    if (this.useSystemModalSurface) {
+      if (deviceInfo.apiAvailable('26.0.0')) {
+        return Color.Transparent
+      }
+    }
+    return this.contentBackgroundColor
   }
 
   private menuItems(): Record<string, Object>[] {

@@ -258,6 +258,7 @@ export struct ReaderSuperResolutionModelsPage {
       NextNModalScaffold({
         title: AppStrings.get('settings_reader_enhancement_models'),
         contentBackgroundColor: $r('app.color.surface'),
+        useSystemModalSurface: true,
         onClose: (): void => {
           if (this.onClose) {
             this.onClose()
