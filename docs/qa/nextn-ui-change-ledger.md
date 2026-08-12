@@ -1192,6 +1192,20 @@ authorize an edit, replace a device comparison, or define product completion.
   direct route after installation; it must show the overlay with neither the
   Gallery title bar nor its More button, and must show the title again after
   Reader closes.
+- **Corrected device result — 2026-08-12:** after the corrected build was
+  installed in place, the same direct `471768` Detail route and one current
+  Read action produced native NextN at `1320×2120` with the Reader overlay
+  navigation present and no Gallery `TitleBar`, `HdsTitleBar`, or
+  `hdsNavigationMoreButton` in the current layout. This observes the intended
+  isolation during the overlay, not the Image-information menu itself. One
+  established `uiInput keyEvent Back` then foregrounded
+  `com.huawei.hmsapp.books` rather than retained NextN Detail. That terminal
+  layout is retained at
+  `.hvigor/outputs/reader-overlay-root-title-20260812T2204/nextn-detail-return.json`;
+  it rejects the title-restoration half of this chain. Do not repeat Back or
+  change title geometry from this result. The next boundary is source-backed
+  Reader back-dispatch ownership, followed by a single state-specific return
+  route only if that owner is corrected or independently proven.
 
 ## FROZEN — Reader enhancement input-height preference UI
 

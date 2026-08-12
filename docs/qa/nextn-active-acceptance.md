@@ -147,6 +147,23 @@ remains continuous; do not ask for it again.
   `.hvigor/outputs/gallery-comments-initial-load-20260812T2041/`. Do not
   repeat this unchanged route without a new source change or current feedback.
 
+## Current delivery observation — Reader overlay root-title isolation
+
+- 2026-08-12: after the selected `.237` target was leased, awake with the
+  24-hour override, and given an in-place signed Debug installation, the
+  established direct `471768` Detail route and one fresh-layout-derived Read
+  activation reached native `com.erosteam.nextn` Reader at `1320×2120`.
+  Current layout evidence retained the private `reader-overlay-navigation`
+  while omitting the underlying Gallery `TitleBar`, `HdsTitleBar`, and
+  `hdsNavigationMoreButton`; no account, Favorites, credential, preference,
+  content, or data-clear action occurred.
+- The one established Back event used to test return instead foregrounded
+  `com.huawei.hmsapp.books`, not retained NextN Detail. This rejects the
+  title-restoration portion of the validation. The local layout artifacts are
+  retained under `.hvigor/outputs/reader-overlay-root-title-20260812T2204/`;
+  do not repeat that Back action before its Reader return-dispatch owner is
+  source-mapped.
+
 ## Latest device observation — private-cache settings
 
 - 2026-08-11: a signed Debug HAP was installed with `install -r` on the
