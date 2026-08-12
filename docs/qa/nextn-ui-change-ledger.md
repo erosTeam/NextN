@@ -2382,3 +2382,87 @@ authorize an edit, replace a device comparison, or define product completion.
   This is an **EVIDENCE-ONLY** state, not visual acceptance; retain the source
   checkpoint and resume exactly one same-route capture when that operation is
   available.
+- **Post-change device result — 2026-08-13:** the pending exact same-route
+  capture subsequently completed on the selected device. Its native root is
+  `com.erosteam.nextn:EntryAbility`, `pages/Index`, with effective viewport
+  `[0,117][1320,2120]`, matching the retained NextE portrait viewport. The
+  first short-comment card now measures `[36,303][1284,579]` (276px), versus
+  the prior current capture's 306px. The visible result retains the same card
+  width, 6px list gap, body typography, floating composer, and single HDS
+  title; its 12/8/30 source correction therefore moved only the intended
+  vertical rhythm. The NextE reference contains different content and
+  server-owned vote/score leaves, so it is not used as a pixel-height target.
+  The retained local pair is
+  `.hvigor/outputs/gallery-comments-card-rhythm-20260813T0314/` and is not
+  committed. This accepts the loaded-card rhythm correction for that current
+  route. The page remains **OPEN** only for the separately unobserved
+  configured-translation, real reply-context, and empty/filtered keyboard
+  states; do not retest the unchanged loaded rhythm.
+
+- **Reopened reply-with-keyboard correction — 2026-08-13:** current user
+  feedback and the retained raw native reply capture reopen only the
+  composer/IME state. In
+  `.hvigor/outputs/gallery-comments-reply-context-20260813T0320/post.png`,
+  the lower edge of the reply composer and the send control are visibly cut
+  at the keyboard boundary. Its layout records the actual app root ending at
+  `y=1178`, while the reply `TextArea` and send row have original bounds to
+  `y=1190` and visible bounds cut at `y=1178`. This is a real crop, not a
+  `visible`-flag success. The earlier ordinary-focus observation only covered
+  a one-line composer (`[36,1038][1151,1142]`); treating it as evidence for
+  the reply-prefilled multiline state was the faulty inference.
+- **Reference and whole-parent boundary:** retained NextE reply-plus-keyboard
+  evidence keeps its entire composer—including context, input, and send
+  action—inside its resized destination. Its source owner is
+  `GalleryCommentsPage: HdsNavDestination -> Stack(bottom) ->
+  PullRefreshListScaffold + CommentComposer`. Current NextN instead keeps
+  `HdsNavDestination` in `Index` and renders
+  `GalleryCommentsPage: Column -> Stack(bottom)`. The accumulated local
+  reconstruction began when the original modal was replaced (`85ff833`), was
+  changed into a docked footer (`f5826ed`), then partly reconstructed
+  (`5f95310`/`95a730d`). `95a730d` added the reply context and prefilled
+  multiline state without device evidence for that state. The extra ownership
+  split is a source-proven reference divergence; it is not claimed to be the
+  sole cause until the corrected route is observed.
+- **Exact correction and limits:** move the existing Comments HDS destination
+  owner from `Index` into `GalleryCommentsPage`, where the reference owns it,
+  and remove the page's otherwise unnecessary outer `Column` so the settled
+  list/composer `Stack` is the direct destination child. Preserve the one HDS
+  title, existing snapshot/loading/request semantics, pull refresh, floating
+  composer, reply protocol, all card geometry accepted for the loaded route,
+  and all unsupported NH leaves. Do not add a compensating arbitrary bottom
+  padding or alter Detail, Related, translation configuration, or posting.
+- **Verification plan and prevention:** build, install in place without data
+  clearing, use the established direct `471768` Comments route, invoke one
+  existing reply action without submitting, and retain one raw post-reply
+  keyboard screen/layout. Review the complete reply composer against the
+  actual resized root, including the send control. Future visible composer,
+  overlay, or IME edits must list ordinary focus and every changed contextual
+  focus state separately in this ledger; `visible=true` or an unchanged-state
+  screenshot cannot accept another state. No UI static contract is used.
+
+- **Post-change device result — 2026-08-13 04:20 +0800:** the signed Debug
+  HAP was installed in place on the selected `.237` device after its awake /
+  `86400000ms` timeout gate, with no data clear. The documented direct
+  `471768` Comments route reached native `com.erosteam.nextn:EntryAbility`.
+  One current-layout-derived reply action was invoked; no text was entered
+  and no comment was posted. With the IME open, the actual application root
+  ended at `y=1178`. The reply composer outer surface was
+  `[0,746][1320,1178]`, its material surface was `[24,746][1296,1154]`, the
+  prefixed reply `TextArea` was `[36,926][1151,1142]`, and the send control
+  was `[1175,1034][1284,1142]`. Each of those composer bounds equals its
+  original bound and stays inside the resized root. The raw screen also shows
+  the complete reply context, editor, and send control above the keyboard.
+- **Same-state reference check:** the retained NextE reply-plus-IME capture
+  has the same `1320×2120` portrait root and the same effective resized
+  application bottom. Its reply `TextArea` and send control occupy the same
+  `[36,926][1151,1142]` and `[1175,1034][1284,1142]` bounds, respectively,
+  with matching original bounds. This accepts only the prior reply-composer
+  crop correction; it does not reopen the frozen loaded-card rhythm or make a
+  whole-page parity claim. Raw local evidence is retained at
+  `.hvigor/outputs/gallery-comments-reply-ime-owner-20260813T0417/` and is
+  excluded from Git.
+- **Freeze:** the `reply + prefilled multiline + IME` state is now FROZEN.
+  It must not be revisited, recomputed, or altered without new feedback or
+  same-state counter-evidence. The causal correction remains limited to
+  restoring the reference destination/overlay ownership; no compensatory
+  padding was introduced.

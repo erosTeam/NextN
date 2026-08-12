@@ -158,6 +158,24 @@ be justified by a test written to mirror the new implementation.
   assumption, ignored evidence, impact, and prevention rule before another
   edit in that same region.
 
+### 4.2.1 Stateful overlay and IME guard
+
+- For any visible change to a scroll owner, fixed/overlaid control, composer,
+  sheet, or keyboard-aware surface, the pre-change ledger record must name
+  every newly affected user-visible state. A successful ordinary-focus state
+  never accepts a reply, prefilled, expanded, error, empty, or keyboard-open
+  state that was not observed separately.
+- A reference-derived page must preserve the reference's destination and
+  parent ownership before adapting an NH data/action leaf. Missing server data
+  or unsupported actions do not justify locally reassembling the route,
+  scroll/overlay relationship, or keyboard owner.
+- In a resized-keyboard state, `visible=true`, a successful input injection,
+  or a source-level size calculation is not evidence that a control is usable.
+  Review the raw current screen and ensure every affected interactive leaf's
+  original bounds remain within the actual resized application window. If the
+  screen and layout disagree, the screen is counter-evidence and the state
+  remains OPEN.
+
 ### 4.3 Frozen-surface register and no-repeat rule
 
 - `docs/qa/nextn-ui-change-ledger.md` is the current register of reviewed UI

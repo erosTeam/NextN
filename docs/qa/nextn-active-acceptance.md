@@ -1591,6 +1591,13 @@ rewrite, re-run, or block this completed direct-route observation.
   current execution policy before running. No earlier capture is treated as
   evidence for the changed values; the exact same-route capture remains the
   next unverified action.
+- That same-route capture later completed on the selected device. The native
+  NextN root remained `EntryAbility` at `1320×2120`; the first short-comment
+  card measured 276px, down from the prior current 306px, while card width,
+  list gap, body text, HDS title, and floating composer remained present.
+  The local screenshot/layout pair is retained under
+  `.hvigor/outputs/gallery-comments-card-rhythm-20260813T0314/` and remains
+  excluded from Git. This is the loaded-card rhythm observation only.
 
 ## Current delivery observation — Settings Browse/Search ownership
 
@@ -1615,3 +1622,24 @@ them to source control and never delete them automatically.
 Use `scripts/probe_arkweb_login_state.mjs` only for its fixed, read-only CDP
 summary while a visible login surface exists. UI static summary tools are not
 permitted in this repository.
+
+## Current delivery result — Gallery Comments reply/IME ownership
+
+- 2026-08-13 04:20 +0800: after the selected `.237` device passed the wake
+  gate (`AWAKE`, `OverrideTimeout=86400000ms`), the signed Debug HAP was
+  installed with `install -r` only. The established direct `471768` Comments
+  route foregrounded native NextN. One existing reply action was invoked from
+  current layout bounds; no text was entered and no comment was submitted.
+- In the resulting reply-with-keyboard state, the app root ended at `y=1178`.
+  The complete composer stayed inside it: outer surface
+  `[0,746][1320,1178]`, material surface `[24,746][1296,1154]`, editor
+  `[36,926][1151,1142]`, and send control `[1175,1034][1284,1142]`; every
+  listed original bound matched its visible bound. The raw screenshot shows
+  no crop at the keyboard boundary.
+- The retained same-viewport NextE reply capture has the same complete editor
+  and send bounds. This is an exact reply/IME result only, not a broader
+  Comments-page or account-state claim. The raw local artifacts are retained
+  at `.hvigor/outputs/gallery-comments-reply-ime-owner-20260813T0417/` and
+  excluded from Git. The next pending delivery action is review and commit of
+  this narrow owner correction; do not retest the frozen reply/IME state
+  absent new evidence.

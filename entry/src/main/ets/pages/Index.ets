@@ -1521,17 +1521,12 @@ struct Index {
 
   @Builder
   private commentsDestination(param: Object) {
-    HdsNavDestination() {
-      GalleryCommentsPage({
-        galleryId: this.galleryParams(param).galleryId,
-        scroller: this.commentsScroller,
-        commentSnapshot: this.galleryParams(param).commentSnapshot,
-        commentSnapshotAvailable: this.galleryParams(param).commentSnapshotAvailable,
-      })
-    }
-    .titleBar(nextNHdsTitle(AppStrings.get('title_comments')))
-    .hideBackButton(false)
-    .bindToScrollable([this.commentsScroller])
+    GalleryCommentsPage({
+      galleryId: this.galleryParams(param).galleryId,
+      scroller: this.commentsScroller,
+      commentSnapshot: this.galleryParams(param).commentSnapshot,
+      commentSnapshotAvailable: this.galleryParams(param).commentSnapshotAvailable,
+    })
   }
 
   @Builder

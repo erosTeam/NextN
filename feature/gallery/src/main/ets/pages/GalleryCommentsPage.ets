@@ -19,11 +19,13 @@ import {
   connectContentFilters,
   connectLayoutSafeArea,
   connectLlmSourceProfiles,
+  nextNHdsTitle,
   supportsCommentTranslation,
 } from 'shared'
 import { common } from '@kit.AbilityKit'
 import { KeyboardAvoidMode, uiMaterial } from '@kit.ArkUI'
 import { deviceInfo } from '@kit.BasicServicesKit'
+import { HdsNavDestination } from '@kit.UIDesignKit'
 
 const COMMENT_COMPOSER_FIELD_ID: string = 'nextn-gallery-comments-composer-field'
 const COMMENT_COMPOSER_BOTTOM_RESERVE: number = 136
@@ -852,7 +854,7 @@ export struct GalleryCommentsPage {
   }
 
   build() {
-    Column() {
+    HdsNavDestination() {
       if (this.isLoading && this.comments.length === 0) {
         PageLoadingState({ text: AppStrings.get('comments_status_loading') })
       } else if (this.errorMessage.length > 0 && this.comments.length === 0) {
@@ -866,8 +868,9 @@ export struct GalleryCommentsPage {
         this.SettledCommentsPage()
       }
     }
-    .width('100%')
-    .height('100%')
+    .titleBar(nextNHdsTitle(AppStrings.get('title_comments')))
+    .hideBackButton(false)
+    .bindToScrollable([this.scroller])
     .backgroundColor(ThemeTokens.SURFACE)
   }
 }
