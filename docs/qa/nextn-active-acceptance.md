@@ -1,12 +1,25 @@
 # NextN active device-acceptance queue
 
-## Transport observation — 2026-08-12
+## Historical transport observation — 2026-08-12
 
-- The user-selected TCP target `192.168.50.237:12345` was not present in the
-  current `hdc list targets -v` result. No alternate TCP or USB target was
-  selected, leased, started, inspected, or modified.
-- The pending `nextn://gallery/471768` direct-route observation therefore
-  remains unperformed and will be retried only against that exact target.
+- At the time of this historical observation, the user-selected TCP target
+  `192.168.50.237:12345` was absent from `hdc list targets -v`. No alternate
+  TCP or USB target was selected, leased, started, inspected, or modified.
+- This is not a current transport state and must not be used to pause a later
+  delivery lane. The current state is established only by a new live target
+  resolution for the same exact target.
+
+## Current transport observation — 2026-08-12 21:07 +0800
+
+- `192.168.50.237:12345` was present as TCP `Connected` in the live target
+  list. The existing repository lease `20260812-123907-a380091f` was renewed
+  for that exact target; no alternate TCP or USB device was selected.
+- The device was woken and read back as `AWAKE` with
+  `OverrideTimeout=86400000ms`. The latest signed Debug HAP was installed in
+  place, without clearing data, and the direct `471768` Gallery route was
+  observed in native NextN. This record supersedes the historical absence only
+  for current transport; it does not assert any login, persistence, or visual
+  acceptance outcome.
 
 ## Conditional preemption — account-persistence P0
 
