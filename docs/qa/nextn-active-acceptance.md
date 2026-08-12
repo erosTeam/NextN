@@ -64,6 +64,22 @@ remains continuous; do not ask for it again.
   so account-persistence P0 stays OPEN for causal diagnosis and recurrence
   prevention.
 
+## Current P0 cold-start regression — 2026-08-12 23:09-23:12 +0800
+
+- The selected TCP device alone received the current signed Debug HAP with
+  `install -r`; no data clear, uninstall, credential entry, visible login
+  action, or content mutation occurred.
+- A data-preserving force-stop/cold start left native Account in its signed-in
+  state, but Favorites settled to its native transport-error state rather than
+  an authenticated collection. No visible Web surface was present.
+- The observed fixed error was `The ArkWeb account transport could not load.`
+  This is a failed P0 verification, not a session-acceptance result.
+- Source mapping established that the retained ArkWeb host treated every
+  `onErrorReceive` callback as a main-document bootstrap failure. ArkWeb
+  reports that callback for both main and subresources; the host now rejects
+  only a main-frame error. The updated HAP is built but has not yet been
+  installed or device-verified.
+
 ## Current P0 device result — proof and postmortem recorded
 
 - On the selected TCP device, the visible login form was filled exactly once

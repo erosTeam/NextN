@@ -569,3 +569,19 @@ substitute for measured login-cycle elapsed time.
 - conclusion: this current recovery path survived one cold start, but it does
   not establish why the preceding fresh native session became
   verification-required. P0 remains OPEN; no new credential epoch occurred.
+
+## Cold-start authenticated-read regression — 2026-08-12 23:09-23:12 +0800
+
+- trigger: a data-preserving force-stop/cold start following a signed Debug
+  `install -r`; no data clear or uninstall occurred.
+- cold-start Account: native signed-in state; no visible Web surface.
+- cold-start Favorites: native transport error rather than authenticated
+  collection; no sign-in prompt, visible Web, or credential action.
+- fixed observed failure: `The ArkWeb account transport could not load.`
+- account input: not-entered.
+- password input: not-entered.
+- submit: not-issued.
+- conclusion: this is a failed authenticated-read verification, not a reason
+  to start a credential epoch. The source correction is limited to filtering
+  ArkWeb resource-error callbacks by main-frame status; device verification of
+  that correction remains the next physical action.

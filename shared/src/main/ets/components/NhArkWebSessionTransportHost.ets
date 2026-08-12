@@ -41,8 +41,14 @@ export struct NhArkWebSessionTransportHost {
       .onPageEnd((event: OnPageEndEvent): void => {
         NhArkWebSessionTransport.observePageEnd(event.url)
       })
-      .onErrorReceive((): void => {
-        NhArkWebSessionTransport.observeLoadError()
+      .onErrorReceive((event: OnErrorReceiveEvent): void => {
+        // ArkWeb invokes this callback for both the main document and its
+        // subresources. Only a main-frame failure can reject the pending
+        // trusted-origin bootstrap; a failed asset must not turn a valid
+        // authenticated browser identity into a Favorites transport failure.
+        if (event.request.isMainFrame()) {
+          NhArkWebSessionTransport.observeLoadError()
+        }
       })
   }
 }
