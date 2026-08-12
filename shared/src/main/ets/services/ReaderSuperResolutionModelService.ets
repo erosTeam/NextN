@@ -43,6 +43,10 @@ export class ReaderSuperResolutionModelDefinition {
   modelUrls: string[] = []
   labelStringKey: string = ''
   hintStringKey: string = ''
+  managerTitleStringKey: string = ''
+  managerScopeStringKey: string = ''
+  managerPerformanceStringKey: string = ''
+  managerDetailsStringKey: string = ''
   nativeModelKind: number = 0
   tileSize: number = 142
   prepadding: number = 7
@@ -94,6 +98,10 @@ function artDefinition(): ReaderSuperResolutionModelDefinition {
   definition.modelUrls = [`${MODEL_PACK_RELEASE_BASE}/waifu2x-art-noise0-2x.bin`]
   definition.labelStringKey = 'settings_reader_enhancement_model_art_title'
   definition.hintStringKey = 'settings_reader_enhancement_model_art_hint'
+  definition.managerTitleStringKey = 'settings_reader_enhancement_model_art_manager_title'
+  definition.managerScopeStringKey = 'settings_reader_enhancement_model_scope_comics_illustrations'
+  definition.managerPerformanceStringKey = 'settings_reader_enhancement_model_performance_seconds'
+  definition.managerDetailsStringKey = 'settings_reader_enhancement_model_art_details'
   return definition
 }
 
@@ -109,6 +117,10 @@ function photoDefinition(): ReaderSuperResolutionModelDefinition {
   definition.modelUrls = [`${MODEL_PACK_RELEASE_BASE}/waifu2x-photo-noise0-2x.bin`]
   definition.labelStringKey = 'settings_reader_enhancement_model_photo_title'
   definition.hintStringKey = 'settings_reader_enhancement_model_photo_hint'
+  definition.managerTitleStringKey = 'settings_reader_enhancement_model_photo_manager_title'
+  definition.managerScopeStringKey = 'settings_reader_enhancement_model_scope_scans_photos'
+  definition.managerPerformanceStringKey = 'settings_reader_enhancement_model_performance_seconds'
+  definition.managerDetailsStringKey = 'settings_reader_enhancement_model_photo_details'
   return definition
 }
 
@@ -129,6 +141,11 @@ function realEsrganDefinition(): ReaderSuperResolutionModelDefinition {
   definition.modelSha256 = REAL_ESRGAN_RUNTIME_MODEL_SHA256
   definition.labelStringKey = 'settings_reader_enhancement_model_realesrgan_title'
   definition.hintStringKey = 'settings_reader_enhancement_model_realesrgan_hint'
+  definition.managerTitleStringKey = 'settings_reader_enhancement_model_realesrgan_manager_title'
+  definition.managerScopeStringKey = 'settings_reader_enhancement_model_scope_photos_textures'
+  definition.managerPerformanceStringKey =
+    'settings_reader_enhancement_model_performance_device_dependent'
+  definition.managerDetailsStringKey = 'settings_reader_enhancement_model_realesrgan_details'
   definition.nativeModelKind = 1
   definition.tileSize = 128
   definition.prepadding = 10

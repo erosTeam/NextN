@@ -54,6 +54,25 @@ export struct ReaderSuperResolutionModelsPage {
     return AppStrings.get(definition.labelStringKey)
   }
 
+  private managerTitle(definition: ReaderSuperResolutionModelDefinition): string {
+    return AppStrings.get(definition.managerTitleStringKey)
+  }
+
+  private modelDownloadSize(definition: ReaderSuperResolutionModelDefinition): string {
+    const bytes: number = definition.bytes()
+    if (bytes < 10 * 1000 * 1000) {
+      return `${Math.round(bytes / 100000) / 10} MB`
+    }
+    return `${Math.round(bytes / 1000000)} MB`
+  }
+
+  private modelSubtitle(definition: ReaderSuperResolutionModelDefinition): string {
+    const scope: string = AppStrings.get(definition.managerScopeStringKey)
+    const performance: string = AppStrings.get(definition.managerPerformanceStringKey)
+    const details: string = AppStrings.get(definition.managerDetailsStringKey)
+    return `${scope} · ${performance} · ${this.modelDownloadSize(definition)}\n${details}`
+  }
+
   private modelActionLabel(model: NhReaderSuperResolutionModel): string {
     if (this.modelChanging === model) {
       return AppStrings.get('settings_reader_enhancement_model_downloading')
@@ -93,7 +112,7 @@ export struct ReaderSuperResolutionModelsPage {
     this.getUIContext().showAlertDialog({
       title: AppStrings.get('settings_reader_enhancement_model_remove_title'),
       message: AppStrings.format('settings_reader_enhancement_model_remove_message', [
-        this.modelTitle(definition),
+        this.managerTitle(definition),
       ]),
       primaryButton: {
         value: AppStrings.get('common_cancel'),
@@ -143,29 +162,58 @@ export struct ReaderSuperResolutionModelsPage {
   }
 
   @Builder
+  private ModelAction(definition: ReaderSuperResolutionModelDefinition) {
+    Button({ type: ButtonType.Circle, stateEffect: true }) {
+      if (this.modelChanging === definition.id) {
+        LoadingProgress()
+          .width(ThemeTokens.FONT_SIZE_HEADING)
+          .height(ThemeTokens.FONT_SIZE_HEADING)
+          .color(ThemeTokens.BRAND)
+      } else {
+        SymbolGlyph(this.isModelInstalled(definition.id)
+          ? $r('sys.symbol.trash')
+          : $r('sys.symbol.arrow_down_to_line'))
+          .fontSize(ThemeTokens.FONT_SIZE_HEADING)
+          .fontColor([this.isModelInstalled(definition.id) ? Color.Red : ThemeTokens.BRAND])
+      }
+    }
+    .buttonStyle(ButtonStyleMode.NORMAL)
+    .width(ThemeTokens.MIN_TOUCH_TARGET)
+    .height(ThemeTokens.MIN_TOUCH_TARGET)
+    .backgroundColor(Color.Transparent)
+    .enabled(this.modelChanging.length === 0)
+    .accessibilityText(AppStrings.format('settings_reader_enhancement_model_a11y', [
+      this.managerTitle(definition),
+      this.modelActionLabel(definition.id),
+    ]))
+    .onClick((): void => {
+      if (this.isModelInstalled(definition.id)) {
+        this.confirmRemoveModel(definition)
+      } else {
+        this.installModel(definition.id).catch((): void => {})
+      }
+    })
+  }
+
+  @Builder
   private ModelGroup() {
     NextNGroupedListSection() {
       ForEach(
         ReaderSuperResolutionModelService.definitions(),
         (definition: ReaderSuperResolutionModelDefinition, index: number) => {
           NextNListRow({
-            leadingIcon: $r('sys.symbol.lightbulb'),
-            title: this.modelTitle(definition),
-            subtitle: AppStrings.get(definition.hintStringKey),
-            trailingActionText: this.modelActionLabel(definition.id),
+            title: this.managerTitle(definition),
+            subtitle: this.modelSubtitle(definition),
+            titleMaxLines: 1,
+            subtitleMaxLines: 6,
             showChevron: false,
-            isEnabled: this.modelChanging.length === 0,
-            trailingActionDestructive: this.isModelInstalled(definition.id),
+            useCustomTrailing: true,
             accessibilityLabel: AppStrings.format('settings_reader_enhancement_model_a11y', [
-              this.modelTitle(definition),
+              this.managerTitle(definition),
               this.modelActionLabel(definition.id),
             ]),
-            onTrailingAction: (): void => {
-              if (this.isModelInstalled(definition.id)) {
-                this.confirmRemoveModel(definition)
-              } else {
-                this.installModel(definition.id).catch((): void => {})
-              }
+            customTrailing: (): void => {
+              this.ModelAction(definition)
             },
           })
           if (index < ReaderSuperResolutionModelService.definitions().length - 1) {
@@ -183,7 +231,16 @@ export struct ReaderSuperResolutionModelsPage {
   @Builder
   private ModelListItems() {
     ListItem() {
-      this.ModelGroup()
+      Column({ space: ThemeTokens.SPACE_SM }) {
+        this.ModelGroup()
+        Text(AppStrings.get('settings_reader_enhancement_model_tiling_notice'))
+          .width('100%')
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontColor(ThemeTokens.TEXT_TERTIARY)
+          .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD })
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Start)
     }
     if (this.errorMessage.length > 0) {
       ListItem() {

@@ -422,6 +422,37 @@ authorize an edit, replace a device comparison, or define product completion.
   remains OPEN for a valid same-state NextE comparison; download and Reader
   processing are also OPEN.
 
+### Parent-tree correction — 2026-08-12
+
+- **Counter-evidence and faulty assumption:** a retained current NextE
+  model-manager capture exposes the complete reference tree: one rounded
+  grouped surface of detailed model rows, each with a neutral identity,
+  scope/performance/size line, multi-line traits text, and a suffix-only
+  circular download or delete affordance; a separate caption warns about
+  tiling limits. The prior NextN implementation treated “three rows with an
+  explicit action” as sufficient and used icon-prefixed, two-line generic
+  rows with text actions. That ignored the reference's information hierarchy
+  and made the large Real-ESRGAN capability appear like a small settings
+  toggle rather than a locally managed model.
+- **Exact correction:** preserve `ReaderSuperResolutionModelsPage →
+  NextNModalScaffold/SecondaryListScaffold → ListItem →
+  NextNGroupedListSection` and all install/remove/selection semantics. Within
+  that existing parent, render the three model rows without the invented
+  lightbulb prefix, with the reference-derived title/scope/performance/actual
+  private-download size/traits hierarchy, up to six subtitle lines, and a
+  custom circular suffix icon. Keep the risk text outside the grouped surface.
+  The exact NextN ncnn-only file sizes remain authoritative rather than
+  copying NextE's optional accelerator-inclusive totals.
+- **Explicit exclusions:** do not change the frozen Reader settings leaf
+  order, selector copy/state, model URLs, install/remove side effects, native
+  runtime, Reader canvas, or download policy. This is the existing manager
+  surface only.
+- **Verification plan:** build and install in place, then obtain a fresh
+  NextE model-manager foreground at the same viewport before comparing the
+  matching installed/uninstalled rows. The retained NextE capture establishes
+  the parent tree but is not a same-state acceptance sample. Do not download
+  or remove a model to force a matching state.
+
 ## FROZEN — Unified private-cache management (category-page visual boundary)
 
 - User outcome: the existing Cache destination should let a user inspect and

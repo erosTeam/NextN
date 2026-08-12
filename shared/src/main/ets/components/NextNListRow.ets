@@ -30,6 +30,9 @@ export struct NextNListRow {
   @BuilderParam customLeading: () => void = this.EmptyLeading
   @Param title: string = ''
   @Param subtitle: string = ''
+  /** Reference-owned rows may expose a longer descriptive leaf. */
+  @Param titleMaxLines: number = 1
+  @Param subtitleMaxLines: number = 2
   @Param trailingText: string = ''
   /** An opt-in HDS suffix action. It leaves the row identity neutral. */
   @Param trailingActionText: string = ''
@@ -57,7 +60,7 @@ export struct NextNListRow {
       .fontSize(ThemeTokens.FONT_SIZE_LIST_ITEM)
       .fontWeight(FontWeight.Regular)
       .fontColor(this.destructive ? Color.Red : ThemeTokens.TEXT_PRIMARY)
-      .maxLines(1)
+      .maxLines(this.titleMaxLines)
       .textOverflow({ overflow: TextOverflow.Ellipsis })
   }
 
@@ -66,7 +69,7 @@ export struct NextNListRow {
       .padding({ left: this.hasLeading() ? 0 : ThemeTokens.LIST_ROW_TEXT_INDENT })
       .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
       .fontColor(ThemeTokens.TEXT_SECONDARY)
-      .maxLines(2)
+      .maxLines(this.subtitleMaxLines)
       .textOverflow({ overflow: TextOverflow.Ellipsis })
   }
 
