@@ -70,9 +70,17 @@ export class ThemeColorSettings {
     ]
   }
 
+  static isCustom(value: string): boolean {
+    return /^#[0-9a-fA-F]{6}$/.test(value.trim())
+  }
+
   static normalize(value: string): string {
+    const candidate: string = value.trim()
+    if (ThemeColorSettings.isCustom(candidate)) {
+      return candidate.toUpperCase()
+    }
     for (const option of ThemeColorSettings.options()) {
-      if (option.value === value) {
+      if (option.value === candidate) {
         return option.value
       }
     }
@@ -81,6 +89,9 @@ export class ThemeColorSettings {
 
   static labelKey(value: string): string {
     const normalized: string = ThemeColorSettings.normalize(value)
+    if (ThemeColorSettings.isCustom(normalized)) {
+      return 'theme_color_custom'
+    }
     for (const option of ThemeColorSettings.options()) {
       if (option.value === normalized) {
         return option.labelKey
@@ -91,12 +102,36 @@ export class ThemeColorSettings {
 
   static colorValue(value: string): ResourceColor {
     const normalized: string = ThemeColorSettings.normalize(value)
+    if (ThemeColorSettings.isCustom(normalized)) {
+      return normalized
+    }
     for (const option of ThemeColorSettings.options()) {
       if (option.value === normalized) {
         return option.color
       }
     }
     return $r('sys.color.font_emphasize')
+  }
+
+  /**
+   * A system resource cannot be losslessly converted back to a hexadecimal
+   * value. The picker therefore starts with the reference default when the
+   * active choice is `system`, without changing that choice until confirmation.
+   */
+  static customSeed(value: string): string {
+    const normalized: string = ThemeColorSettings.normalize(value)
+    if (ThemeColorSettings.isCustom(normalized)) {
+      return normalized
+    }
+    if (normalized === ThemeColorSettings.COLOR_SYSTEM) {
+      return '#0958F7'
+    }
+    for (const option of ThemeColorSettings.options()) {
+      if (option.value === normalized && typeof option.color === 'string') {
+        return option.color
+      }
+    }
+    return '#0958F7'
   }
 
   static currentColor(): ResourceColor {

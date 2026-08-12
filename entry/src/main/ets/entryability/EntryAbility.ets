@@ -27,6 +27,7 @@ import {
   ScreenOrientationSettings,
   TabletLayoutSettings,
   ThemeColorSettings,
+  AppColorFavoritesSettings,
   ThemeSettings,
 } from 'shared'
 
@@ -112,6 +113,9 @@ export default class EntryAbility extends UIAbility {
       // Accent selection changes only app tokens, so it is safe to publish
       // before the first component mounts.
       ThemeColorSettings.restore(this.context),
+      // Favorites are independent picker data; restoring them never changes
+      // the active accent or any system/default selection.
+      AppColorFavoritesSettings.restore(this.context),
       LanguageSettings.restore(this.context),
       // Restore the HDS title and floating-tab material before either surface
       // first renders; unsupported devices still resolve ADAPTIVE at use time.

@@ -278,7 +278,50 @@ authorize an edit, replace a device comparison, or define product completion.
 - **FROZEN — Appearance theme-mode copy and theme-color leaf:** do not
   revisit, recapture, or alter these two leaves without new user feedback,
   a source change in their owner path, or same-state counter-evidence. This
-  freeze does not close the rest of the Interface page or its other values.
+  freeze covers the existing system/preset menu, color-dot suffix, and
+  row-owned dropdown behavior only; it does not close a separately scoped
+  custom-color capability.
+
+## OPEN — Appearance custom theme color — 2026-08-12
+
+- **Newly actionable evidence:** the frozen NextN theme-color leaf currently
+  supports the system accent and seven named colors only. The complete NextE
+  reference has one additional capability in the same menu: `Custom` opens a
+  large modal color picker. Its picker owns grid, sliders, hexadecimal input,
+  and persisted favorites; edits preview the accent live, closing reverts the
+  prior accent, and confirmation is the only persistence point. This is a
+  mature general appearance capability, not an EH-domain feature.
+- **Whole reference tree:** `LayoutSettingsPage → Appearance grouped section
+  → theme-color row → existing color menu → Custom item → large Sheet →
+  AppModalScaffold → ListItem → AppColorPicker`. The picker is a contained
+  card with its preview swatch, Grid/Sliders switch, color-grid or HSB
+  sliders, Hex input, and favorites grid. The HDS modal title owns close and
+  confirm actions.
+- **Whole NextN tree before / after:** retain `SettingsPage(LAYOUT) →
+  SecondaryListScaffold → AppearanceGroup → NextNGroupedListSection →
+  NextNListRow(theme color) → Menu` and every existing system/preset item.
+  Add only the final `Custom` menu item and the reference-shaped large sheet
+  on that row. The sheet uses existing `NextNModalScaffold`; the new shared
+  picker, favorite-color state, and persistence are its leaf owners.
+- **Exact state boundary:** `ThemeColorSettings` accepts one normalized
+  `#RRGGBB` custom value in addition to the frozen existing identifiers. A
+  custom draft updates the reactive brand token without writing preferences;
+  close restores the captured prior identifier; confirm writes the normalized
+  custom value. Favorites persist separately and never alter the active
+  accent merely by being restored.
+- **Minimality:** no theme-mode, preset option, Appearance row order,
+  color-dot suffix, default `system` behavior, or global brand consumer is
+  changed. No new navigation destination, account, network, content, or
+  download state is involved.
+- **Verification plan:** build, install in place on the selected device, and
+  compare the Custom menu item and picker at the same portrait viewport with
+  NextE. Exercise one reversible draft preview and close to prove rollback,
+  then one custom confirmation and app restart to prove restoration; finally
+  restore the pre-run theme value. Retain raw captures locally outside Git.
+  The frozen preset leaf is not recaptured or recomputed beyond the necessary
+  common menu context.
+- **Unresolved risk:** picker geometry, system-sheet behavior, preview reach,
+  and preference restore are unproven until that exact device sequence.
 
 ## OPEN — Reader selectable Waifu2x enhancement models
 

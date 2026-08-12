@@ -32,6 +32,10 @@ export {
   connectThemeColor,
   connectLanguageState,
 } from './state/AppearanceState'
+export {
+  AppColorFavoritesState,
+  connectAppColorFavorites,
+} from './state/AppColorFavoritesState'
 export { NhAccountProfile } from './model/NhAccountProfile'
 export {
   NhGallerySummary,
@@ -182,6 +186,7 @@ export {
 } from './services/OpenAiChatCompletionsClient'
 export { CommentTranslationService } from './services/CommentTranslationService'
 export { GalleryTitleTranslationService } from './services/GalleryTitleTranslationService'
+export { AppColorFavoritesSettings } from './settings/AppColorFavoritesSettings'
 export {
   COMIC_RESPONSES_TEXT_TRANSLATION_PROMPT_VERSION,
   COMIC_RESPONSES_TEXT_ONLY_TRANSLATION_PROMPT_VERSION,
@@ -421,6 +426,7 @@ export {
   nextNHdsCapsuleActivityHeight,
 } from './components/NextNHdsCapsuleBarButton'
 export { NextNModalScaffold } from './components/NextNModalScaffold'
+export { AppColorPicker } from './components/AppColorPicker'
 export { InlineRetryNotice } from './components/InlineRetryNotice'
 export { LoadingFooter } from './components/LoadingFooter'
 export { GalleryListItem } from './components/GalleryListItem'

@@ -3,6 +3,7 @@ import { SymbolGlyphModifier } from '@kit.ArkUI'
 import { ReaderSuperResolutionModelsPage } from './ReaderSuperResolutionModelsPage'
 import {
   AppStrings,
+  AppColorPicker,
   CatalogPreferencesService,
   CatalogPreferencesState,
   CacheStat,
@@ -201,6 +202,9 @@ export struct SettingsPage {
   @Local retryCountMenuShown: boolean = false
   @Local themeMenuShown: boolean = false
   @Local themeColorMenuShown: boolean = false
+  @Local themeColorPickerShown: boolean = false
+  @Local draftCustomThemeColor: string = '#0958F7'
+  private themeColorBeforePicker: string = ThemeColorSettings.COLOR_SYSTEM
   @Local immersiveMaterialMenuShown: boolean = false
   @Local languageMenuShown: boolean = false
   @Local browsePresentationMenuShown: boolean = false
@@ -369,6 +373,24 @@ export struct SettingsPage {
   private setThemeColor(value: string): void {
     this.themeColorMenuShown = false
     ThemeColorSettings.setColor(this.context(), value).catch((): void => {})
+  }
+
+  /** Opens the custom picker without persisting or replacing the current accent. */
+  private openThemeColorPicker(): void {
+    this.themeColorMenuShown = false
+    this.themeColorBeforePicker = this.themeColor.color
+    this.draftCustomThemeColor = ThemeColorSettings.customSeed(this.themeColorBeforePicker)
+    this.themeColorPickerShown = true
+  }
+
+  private closeThemeColorPicker(): void {
+    ThemeColorSettings.apply(this.themeColorBeforePicker)
+    this.themeColorPickerShown = false
+  }
+
+  private confirmThemeColorPicker(): void {
+    ThemeColorSettings.setColor(this.context(), this.draftCustomThemeColor).catch((): void => {})
+    this.themeColorPickerShown = false
   }
 
   private setImmersiveMaterial(level: string): void {
@@ -2374,6 +2396,48 @@ export struct SettingsPage {
         },
         (option: ThemeColorOption): string => option.value,
       )
+      MenuItem({
+        content: AppStrings.get('theme_color_custom'),
+        symbolStartIcon: new SymbolGlyphModifier($r('sys.symbol.paintpalette_fill'))
+          .fontSize(ThemeTokens.FONT_SIZE_BODY)
+          .fontColor([
+            ThemeColorSettings.isCustom(this.themeColor.color)
+              ? ThemeColorSettings.currentColor()
+              : ThemeTokens.TEXT_TERTIARY,
+          ]),
+        symbolEndIcon: ThemeColorSettings.isCustom(this.themeColor.color)
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.openThemeColorPicker()
+      })
+    }
+  }
+
+  @Builder
+  private ThemeColorPickerSheet() {
+    NextNModalScaffold({
+      title: AppStrings.get('theme_color_custom'),
+      showConfirmAction: true,
+      confirmText: AppStrings.get('common_ok'),
+      onClose: (): void => {
+        this.closeThemeColorPicker()
+      },
+      onConfirm: (): void => {
+        this.confirmThemeColorPicker()
+      },
+    }) {
+      ListItem() {
+        AppColorPicker({
+          title: AppStrings.get('settings_theme_color'),
+          color: this.draftCustomThemeColor,
+          colorChange: (value: string): void => {
+            this.draftCustomThemeColor = value
+            ThemeColorSettings.apply(value)
+          },
+        })
+        .width('100%')
+      }
     }
   }
 
@@ -2498,6 +2562,15 @@ export struct SettingsPage {
         placement: Placement.BottomRight,
         onDisappear: (): void => {
           this.themeColorMenuShown = false
+        },
+      })
+      .bindSheet($$this.themeColorPickerShown, this.ThemeColorPickerSheet(), {
+        detents: [SheetSize.LARGE],
+        showClose: false,
+        onDisappear: (): void => {
+          if (this.themeColorPickerShown) {
+            this.closeThemeColorPicker()
+          }
         },
       })
       this.RowDivider()
