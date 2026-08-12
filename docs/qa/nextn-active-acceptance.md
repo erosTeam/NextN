@@ -1583,8 +1583,8 @@ rewrite, re-run, or block this completed direct-route observation.
   than native NextE; its artifacts are retained as a rejected reference pair.
   Local raw artifacts are under
   `.hvigor/outputs/gallery-comments-initial-owner-20260813T0525/` and are
-  excluded from Git. The next delivery action is exact-diff review and a
-  narrow commit; the no-snapshot owner state is frozen absent new evidence.
+  excluded from Git. Commit `6cda70c` records the narrow owner correction;
+  the no-snapshot owner state is frozen absent new evidence.
 
 ## Data and artifact boundary
 

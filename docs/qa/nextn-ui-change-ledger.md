@@ -2467,7 +2467,7 @@ authorize an edit, replace a device comparison, or define product completion.
   restoring the reference destination/overlay ownership; no compensatory
   padding was introduced.
 
-## OPEN — Gallery Comments initial no-snapshot state owner — 2026-08-13
+## FROZEN — Gallery Comments initial no-snapshot successful-load owner — 2026-08-13
 
 - **Why newly actionable:** the user reports that entering the Comments page
   visibly becomes a loading/refresh state. When a direct Comments route has
@@ -2517,3 +2517,6 @@ authorize an edit, replace a device comparison, or define product completion.
   contract was created or used.
 - **Freeze:** this no-snapshot loading-owner correction is FROZEN. Do not
   revisit it without new user feedback or same-state counter-evidence.
+  The first-request error row is implemented in source under the same owner,
+  but was not induced on the device and is therefore EVIDENCE-ONLY rather
+  than visually accepted; do not manufacture a failure solely to retest it.
