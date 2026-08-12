@@ -522,3 +522,23 @@ substitute for measured login-cycle elapsed time.
 - conclusion: schema migration and normal-session regression path observed.
   The finite marker reason awaits a real terminal event; it is not treated as
   evidence that the automatic recovery branch has succeeded or failed.
+
+## Fresh S0 Favorites invalid-session observation — 2026-08-12 22:40 +0800
+
+- trigger: current native Favorites root was opened on the selected device
+  after a data-preserving signed Debug build; this was ordinary root navigation,
+  not a force-stop/cold-start boundary, so no loss-to-promotion timer is
+  invented.
+- S0 Favorites: native sign-in-required surface; no visible Web, loading, or
+  authenticated gallery surface observed.
+- S0 Account: pending the next same-run native Account observation.
+- restore/401 diagnostic: not yet collected in this event; no cause is
+  inferred from the Favorites surface.
+- install/data boundary: signed Debug installed with install-r=true;
+  data-clear=false; uninstall=false.
+- login-page navigation: not-entered.
+- account input: not-entered.
+- password input: not-entered.
+- submit: not-issued.
+- next action: collect the paired native Account summary, then follow the
+  existing S0 branch without changing data or repeating a login attempt.

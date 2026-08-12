@@ -36,6 +36,15 @@ the prior multi-hour failure to solve it, incorrect assumptions/claims, missing
 evidence, and durable prevention rules. Original login/device authorization
 remains continuous; do not ask for it again.
 
+## Current P0 observation — 2026-08-12 22:40 +0800
+
+- On the selected TCP device only, the current native Favorites root showed
+  its native sign-in-required surface. No visible Web, credential input,
+  Account action, data clear, uninstall, or content mutation occurred.
+- This is fresh current evidence of an unusable session and immediately
+  preempts the delivery lane. The paired native Account summary is the next
+  unverified physical action; no cause is inferred yet.
+
 ## Current P0 device result — proof and postmortem recorded
 
 - On the selected TCP device, the visible login form was filled exactly once
