@@ -2020,7 +2020,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.rectangle_split_2x1'),
         title: AppStrings.get('settings_reader_layout'),
-        subtitle: AppStrings.get('settings_reader_layout_hint'),
         trailingText: this.readerModeLabel(),
         accessibilityLabel: AppStrings.format('settings_reader_layout_a11y', [this.readerModeLabel()]),
         onAction: (): void => {
@@ -2040,7 +2039,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.rectangle_split_2x1'),
         title: AppStrings.get('settings_reader_double_page'),
-        subtitle: AppStrings.get('settings_reader_double_page_hint'),
         hasSwitch: true,
         checked: this.readerPresentation.doublePageEnabled,
         showChevron: false,
@@ -2058,7 +2056,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.rectangle_split_2x1'),
         title: AppStrings.get('settings_reader_tap_zones'),
-        subtitle: AppStrings.get('settings_reader_tap_zones_hint'),
         trailingText: this.readerTapZoneLayoutLabel(),
         accessibilityLabel: AppStrings.format('settings_reader_tap_zones_a11y', [
           this.readerTapZoneLayoutLabel(),
@@ -2077,7 +2074,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.arrow_left_and_square'),
         title: AppStrings.get('settings_reader_tap_zone_invert'),
-        subtitle: AppStrings.get('settings_reader_tap_zone_invert_hint'),
         trailingText: this.readerTapZoneInvertLabel(),
         accessibilityLabel: AppStrings.format('settings_reader_tap_zone_invert_a11y', [
           this.readerTapZoneInvertLabel(),
@@ -2096,7 +2092,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.fullscreen'),
         title: AppStrings.get('settings_reader_fullscreen'),
-        subtitle: AppStrings.get('settings_reader_fullscreen_hint'),
         hasSwitch: true,
         checked: this.readerPresentation.fullscreen,
         showChevron: false,
@@ -2114,7 +2109,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.clock'),
         title: AppStrings.get('settings_reader_auto_advance_interval'),
-        subtitle: AppStrings.get('settings_reader_auto_advance_interval_hint'),
         trailingText: this.readerAutoPageLabel(),
         accessibilityLabel: AppStrings.format('settings_reader_auto_advance_interval_a11y', [
           this.readerAutoPageLabel(),
@@ -2133,7 +2127,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.speaker_wave_2'),
         title: AppStrings.get('settings_reader_volume_keys_turn_pages'),
-        subtitle: AppStrings.get('settings_reader_volume_keys_turn_pages_hint'),
         hasSwitch: true,
         checked: this.readerPresentation.volumeKeyTurn,
         showChevron: false,
@@ -2151,7 +2144,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.rectangle_stack'),
         title: AppStrings.get('settings_reader_preload_pages'),
-        subtitle: AppStrings.get('settings_reader_preload_pages_hint'),
         trailingText: this.readerPreloadLabel(),
         accessibilityLabel: AppStrings.format('settings_reader_preload_pages_a11y', [this.readerPreloadLabel()]),
         onAction: (): void => {
@@ -2168,7 +2160,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.lightbulb'),
         title: AppStrings.get('settings_reader_keep_screen_on'),
-        subtitle: AppStrings.get('settings_reader_keep_screen_on_hint'),
         hasSwitch: true,
         checked: this.readerPresentation.keepScreenOn,
         showChevron: false,
@@ -2186,7 +2177,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.lightbulb'),
         title: AppStrings.get('settings_reader_enhancement'),
-        subtitle: AppStrings.get('settings_reader_enhancement_hint'),
         hasSwitch: true,
         checked: this.readerPresentation.superResolutionEnabled,
         showChevron: false,
@@ -2205,7 +2195,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.lightbulb'),
         title: AppStrings.get('settings_reader_enhancement_model_selection'),
-        subtitle: AppStrings.get('settings_reader_enhancement_model_selection_hint'),
         trailingText: this.readerEnhancementModelLabel(),
         isEnabled: this.readerEnhancementInstalledModels.length > 0,
         accessibilityLabel: AppStrings.format('settings_reader_enhancement_model_selection_a11y', [
@@ -2226,7 +2215,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.lightbulb'),
         title: AppStrings.get('settings_reader_enhancement_models'),
-        subtitle: AppStrings.get('settings_reader_enhancement_models_hint'),
         trailingText: this.readerEnhancementInstalledModels.length > 0
           ? AppStrings.get('settings_reader_enhancement_model_ready')
           : AppStrings.get('settings_reader_enhancement_model_download'),
@@ -2239,7 +2227,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.lightbulb'),
         title: AppStrings.get('settings_reader_enhancement_max_height'),
-        subtitle: AppStrings.get('settings_reader_enhancement_max_height_hint'),
         trailingText: this.readerEnhancementMaxHeightLabel(),
         isEnabled: this.readerPresentation.superResolutionEnabled &&
           this.selectedReaderEnhancementModelInstalled(),
@@ -2269,7 +2256,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.translate'),
         title: AppStrings.get('settings_reader_comic_translation'),
-        subtitle: AppStrings.get('settings_reader_comic_translation_hint'),
         accessibilityLabel: AppStrings.get('settings_reader_comic_translation_a11y'),
         onAction: (): void => {
           if (this.onOpenTranslationSource) {

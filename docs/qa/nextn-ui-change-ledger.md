@@ -3,6 +3,37 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Reader Settings scan-first copy — 2026-08-13
+
+- **Why newly actionable:** the user explicitly reported that the current
+  Reader Settings page treats ordinary choices as if each requires a teaching
+  paragraph. The current native page shows a subtitle below every visible
+  layout, control, cache, display, enhancement, and translation row.
+- **Whole parent-tree boundary:** `SettingsPage(READER) →
+  SecondaryListScaffold → ReaderPresentationListItems →
+  [ReaderPresentationGroup, ReaderComicTranslationGroup] →
+  NextNGroupedListSection → NextNListRow`. This change leaves the scaffold,
+  section ownership, ordering, icons, menus, switches, accessibility labels,
+  persistence, and destination actions unchanged.
+- **Reference basis:** the corresponding NextE `ReaderSettingsPage` keeps its
+  settings rows scan-first: title plus switch or current trailing value. Its
+  optional subtitles are exceptional capability detail, not a paragraph under
+  every ordinary row.
+- **Exact change:** remove the explanatory `subtitle` from the Reader Settings
+  rows. Each item continues to expose its selected value, switch state, or
+  destination affordance. No setting value, feature behavior, model state,
+  or translation configuration changes.
+- **Minimality and risk:** this is a copy-density correction only. Removing a
+  subtitle makes the list shorter; the post-build device check must confirm
+  that rows remain individually legible and that no action or state label was
+  lost.
+- **Verification plan:** build, install in place without data clearing, route
+  once to the native Reader Settings page, and retain a current same-viewport
+  capture for whole-page review. No UI static contract will be used.
+- **Build result — 2026-08-13:** the signed Debug build succeeded. Device
+  review remains pending: the selected `192.168.50.237:12345` target was not
+  present in the live HDC list, and no alternate target was used.
+
 ## OPEN — Settings root browse/search ownership split — 2026-08-12
 
 - **User evidence:** the user reopened the Settings root after reporting that
