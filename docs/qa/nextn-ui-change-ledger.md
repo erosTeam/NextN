@@ -1277,10 +1277,18 @@ authorize an edit, replace a device comparison, or define product completion.
   only the duplicate page header; retain the list, card, overlay-composer,
   and tail-reserve ownership. The count is not moved elsewhere and does not
   justify a new title treatment.
-- **Build state — 2026-08-12:** the narrow removal compiles in the signed
-  Debug HAP. The required in-place install and same direct-route capture have
-  not yet run in this correction epoch, so this boundary remains OPEN rather
-  than inheriting the earlier device observation.
+- **Correction device result — 2026-08-12:** commit `dd842d5` was installed
+  in place on the selected `.237` device with `install -r`, after the device
+  gate read `AWAKE` and `OverrideTimeout=86400000ms`; no data was cleared.
+  The same direct `471768` Comments route foregrounded native
+  `com.erosteam.nextn` at `1320×2120`. The HDS now supplies the sole visible
+  `评论` heading: the first rounded author/body/date card begins below it and
+  no page-level `评论 (11)` header is present. The rounded composer remains a
+  sibling overlay. This verifies only removal of the duplicate heading; the
+  remaining page-level card, type, spacing, and composer review remains OPEN.
+  Local evidence is retained at
+  `.hvigor/outputs/gallery-comments-471768-20260812T2039/` and is excluded
+  from Git.
 
 ## OPEN — Gallery comment translation
 

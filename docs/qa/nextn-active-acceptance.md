@@ -118,6 +118,14 @@ remains continuous; do not ask for it again.
   from Git. This is a device hierarchy/tail observation only; the retained
   NextE reference has different loaded content and action availability, so
   content-level visual parity remains evidence-only.
+- Correction result, 2026-08-12: after commit `dd842d5` was installed in
+  place without clearing data, the same direct route foregrounded native
+  `com.erosteam.nextn` at `1320×2120`. The HDS now supplies the sole visible
+  `评论` heading; the former duplicate page-level `评论 (11)` heading is absent.
+  Rounded cards and the composer overlay remain present. This is only the
+  duplicate-heading correction result; the Comments page remains OPEN for its
+  separate card/type/spacing review. The retained local evidence is
+  `.hvigor/outputs/gallery-comments-471768-20260812T2039/`.
 
 ## Latest device observation — private-cache settings
 
