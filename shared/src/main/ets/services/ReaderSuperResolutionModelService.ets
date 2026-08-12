@@ -3,6 +3,7 @@ import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { http } from '@kit.NetworkKit'
 import { NhReaderSuperResolutionModel } from '../model/NhReaderSettings'
+import { connectReaderEnhancementModels } from '../state/ReaderEnhancementModelsState'
 import { ReaderNativeSuperResolutionConfig } from './ReaderNativeSuperResolution'
 
 const MODEL_DIRECTORY: string = 'nextn-reader-super-resolution-models'
@@ -252,6 +253,7 @@ export class ReaderSuperResolutionModelService {
     ReaderSuperResolutionModelService.installTasks.set(model, task)
     try {
       await task
+      connectReaderEnhancementModels().publishMutation()
     } finally {
       if (ReaderSuperResolutionModelService.installTasks.get(model) === task) {
         ReaderSuperResolutionModelService.installTasks.delete(model)
@@ -287,6 +289,7 @@ export class ReaderSuperResolutionModelService {
         `${ReaderSuperResolutionModelService.modelDirectory(context)}/${LEGACY_ACCELERATED_FILE_NAME}`,
       )
     }
+    connectReaderEnhancementModels().publishMutation()
   }
 
   private static async installInternal(

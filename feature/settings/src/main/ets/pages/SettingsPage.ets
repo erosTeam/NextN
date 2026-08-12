@@ -26,6 +26,7 @@ import {
   ReaderImageCacheService,
   ReaderImageCacheStatus,
   ReaderSuperResolutionModelService,
+  ReaderEnhancementModelsState,
   ReaderPresentationService,
   ReaderPresentationState,
   DownloadQueueService,
@@ -85,6 +86,7 @@ import {
   connectGalleryTitle,
   connectNhClipboardLink,
   connectReadButtonStyle,
+  connectReaderEnhancementModels,
   connectReaderPresentation,
   connectScreenOrientation,
   connectDownloadSettings,
@@ -160,6 +162,7 @@ export struct SettingsPage {
   @Local comicTranslationCacheStatus: CacheStat = new CacheStat()
   @Local tagDictionaryCacheStatus: CacheStat = new CacheStat()
   @Local readerPresentation: ReaderPresentationState = connectReaderPresentation()
+  @Local readerEnhancementModels: ReaderEnhancementModelsState = connectReaderEnhancementModels()
   @Local readerModeError: string = ''
   @Local readerEnhancementInstalledModels: NhReaderSuperResolutionModel[] = []
   @Local readerEnhancementModelsShown: boolean = false
@@ -266,6 +269,13 @@ export struct SettingsPage {
   onAccountSessionChanged(): void {
     if (this.surface === SettingsSurface.ROOT) {
       this.refreshAccountSession()
+    }
+  }
+
+  @Monitor('readerEnhancementModels.revision')
+  onReaderEnhancementModelsChanged(): void {
+    if (this.surface === SettingsSurface.READER) {
+      this.refreshReaderEnhancementModels().catch((): void => {})
     }
   }
 

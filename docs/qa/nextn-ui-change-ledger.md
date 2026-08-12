@@ -370,6 +370,42 @@ authorize an edit, replace a device comparison, or define product completion.
 
 ## OPEN — Reader Real-ESRGAN x2plus model capability — 2026-08-12
 
+### Installed-model selector projection repair — 2026-08-12
+
+- **Why newly actionable:** current selected-device evidence disproved the
+  existing state handoff: after the user-visible Real-ESRGAN download reached
+  the installed/remove state in the normal model-manager destination, the
+  existing Reader-settings model selector still rendered only the prior
+  Waifu2x-art choice. This is a functional state mismatch, not a visual
+  restyle or a request to revisit the frozen model-manager surface.
+- **Parent-tree boundary:** preserve `SettingsPage(READER) →
+  SecondaryListScaffold → ReaderPresentationGroup → NextNGroupedListSection
+  → [enable, installed-model selector, model-manager, height policy]` and
+  `Index → HdsNavDestination → ReaderSuperResolutionModelsPage →
+  SecondaryListScaffold → NextNGroupedListSection → model rows`. The manager
+  remains the exclusive owner of explicit downloads/removals; the selector
+  remains the exclusive owner of choosing from already-installed models.
+- **Exact before/after:** before, only the manager's local install list was
+  refreshed after a successful file mutation, while the retained Settings
+  destination held its previous installed-model array. After, a non-sensitive
+  shared revision is published only after a successful install or completed
+  removal; the Reader settings destination observes that revision and reloads
+  its installed-model projection. No row order, label, geometry, menu shape,
+  download policy, model preference, native runtime, or Reader canvas changes.
+- **Risk and verification:** the existing selection fallback remains untouched:
+  it applies only if the selected model is no longer installed. Build and
+  install in place, then observe the existing normal route: the selector must
+  list the installed Real-ESRGAN model, selecting it must update the existing
+  selected-model row, and a later Reader run must remain a separately observed
+  processing path. Raw evidence remains local and is not committed.
+- **Device result — 2026-08-12:** after a signed in-place Debug install on the
+  selected device, the existing native selector showed both installed choices.
+  Selecting Real-ESRGAN updated the existing selected-model row, and the
+  original Waifu2x-art value was restored through the same selector. The
+  manager's files, Reader processing path, account, gallery data, and all
+  other preferences were untouched. Freeze this projection boundary; model
+  processing is a separate OPEN boundary.
+
 - **Why newly actionable:** the existing Waifu2x model boundary is frozen for
   its reviewed rows and ordering. NextE separately exposes Real-ESRGAN x2plus
   as a user-available private model, while current NextN already contains the

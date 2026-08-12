@@ -330,6 +330,10 @@ export {
 export { BrowsePresentationState, connectBrowsePresentation } from './state/BrowsePresentationState'
 export { ReaderPresentationState, connectReaderPresentation } from './state/ReaderPresentationState'
 export {
+  ReaderEnhancementModelsState,
+  connectReaderEnhancementModels,
+} from './state/ReaderEnhancementModelsState'
+export {
   ReaderOverlayNavigationState,
   connectReaderOverlayNavigation,
 } from './state/ReaderOverlayNavigationState'

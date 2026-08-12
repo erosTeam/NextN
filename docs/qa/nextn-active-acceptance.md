@@ -1321,6 +1321,19 @@ rewrite, re-run, or block this completed direct-route observation.
   Reader settings RDB, so it did not reveal or modify the tap preference. That
   channel is rejected for this diagnostic; no menu-zone input followed.
 
+## Latest device observation — Reader installed-model selector projection
+
+- 2026-08-12: after an in-place signed Debug install on the selected TCP
+  device, the native Reader settings selector listed both the pre-existing
+  Waifu2x-art model and the already-installed Real-ESRGAN model. Selecting
+  Real-ESRGAN updated the existing selected-model row, then the prior Waifu2x
+  selection was restored through the same native selector. No model file was
+  downloaded or removed; no Reader processing, account, content, or data-clear
+  action was performed. This accepts only the installed-model projection and
+  selection/writeback path. Raw local evidence is retained in
+  `.hvigor/outputs/realesrgan-selector-projection-20260812T1125/` and is
+  excluded from Git.
+
 ## Data and artifact boundary
 
 Never place credentials, account/profile strings, cookies, tokens, raw Web
