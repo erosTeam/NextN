@@ -1195,7 +1195,7 @@ authorize an edit, replace a device comparison, or define product completion.
   this boundary, or same-state counter-evidence. The separate enhancement
   processing path is not permission to modify this frozen settings surface.
 
-## EVIDENCE-ONLY — Gallery Comments full-page hierarchy — 2026-08-12
+## OPEN — Gallery Comments full-page hierarchy — 2026-08-12
 
 - **Why newly actionable:** the user explicitly reopened the full Comments
   destination after observing that its current cards, bottom input area, and
@@ -1269,6 +1269,18 @@ authorize an edit, replace a device comparison, or define product completion.
   behavior only; it does not claim content-level parity or invent EH action
   leaves. Reopen only for new user feedback, an actual change inside this
   boundary, or a current same-state counter-evidence.
+- **Reopened correction — 2026-08-12:** the current loaded NextN device
+  capture exposed an already-rejected duplication: HDS owns `评论` and the
+  added page header rendered `评论 (11)` immediately below it. The faulty
+  assumption was treating the NextE page-header leaf as transferable even
+  though NextN's HDS title already supplies the same semantic heading. Remove
+  only the duplicate page header; retain the list, card, overlay-composer,
+  and tail-reserve ownership. The count is not moved elsewhere and does not
+  justify a new title treatment.
+- **Build state — 2026-08-12:** the narrow removal compiles in the signed
+  Debug HAP. The required in-place install and same direct-route capture have
+  not yet run in this correction epoch, so this boundary remains OPEN rather
+  than inheriting the earlier device observation.
 
 ## OPEN — Gallery comment translation
 

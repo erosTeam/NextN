@@ -518,22 +518,6 @@ export struct GalleryCommentsPage {
   }
 
   @Builder
-  private CommentsHeader() {
-    Row({ space: ThemeTokens.SPACE_XS }) {
-      Text(AppStrings.get('title_comments'))
-        .fontSize(ThemeTokens.FONT_SIZE_TITLE)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(ThemeTokens.TEXT_PRIMARY)
-      Text(`(${this.comments.length})`)
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(ThemeTokens.TEXT_TERTIARY)
-      Blank()
-    }
-    .width('100%')
-    .alignItems(VerticalAlign.Center)
-  }
-
-  @Builder
   private LoadedCommentsPage() {
     Stack({ alignContent: Alignment.Bottom }) {
       PullRefreshListScaffold({
@@ -545,9 +529,6 @@ export struct GalleryCommentsPage {
           await this.loadComments()
         },
       }) {
-        ListItem() {
-          this.CommentsHeader()
-        }
         this.LoadedCommentsContent()
       }
       if (this.composerAvailable()) {
