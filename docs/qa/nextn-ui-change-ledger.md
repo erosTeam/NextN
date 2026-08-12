@@ -503,6 +503,18 @@ authorize an edit, replace a device comparison, or define product completion.
   the Reader-overlay sheet stay otherwise untouched. Rebuild, install in
   place and repeat only the already-established normal destination route for
   one fresh visual comparison.
+- **Device result — 2026-08-12:** `9313044` was built and installed in place
+  on the selected 237 device. The verified native NextN `EntryAbility` model
+  manager route and retained NextE manager both used the same `1320×2120`
+  portrait viewport. The revised NextN page background samples at the exposed
+  left and lower content surface are `(241,243,245)`, exactly matching the
+  retained NextE samples; the group remains a separate white surface. This
+  accepts only the destination/background-to-group ownership correction. The
+  reference and implementation have different installed-model states, so row
+  content is not claimed as same-state visual parity and is not to be recaptured
+  without a materially matching state or new feedback. Freeze this surface
+  boundary; model download/removal and Reader processing remain separate OPEN
+  capabilities.
 
 ## FROZEN — Unified private-cache management (category-page visual boundary)
 
