@@ -1818,6 +1818,17 @@ authorize an edit, replace a device comparison, or define product completion.
   rejected reference discovery. Its root again reports the original
   `1320×2120` viewport and Reader overlay; no preference, content, account,
   or Reader action changed in the restoration.
+- **Runtime-owner reconciliation — 2026-08-12:** the former ArkTS
+  `ImageSource → PixelMap` path is no longer current: `bae0e94` moved decode
+  to `ReaderNativeSuperResolution.decodeImageRgba`, where every async task
+  owns its fd, native image source, native pixel map, and releases them before
+  completion. The native inference bridge already serializes its shared ncnn
+  state with `gInferenceMutex`. The earlier ArkTS-wide queue was built and
+  rejected before this replacement; restoring it now would repeat an
+  inapplicable fix without evidence of a shared native-image resource. The
+  current applied-result observation remains the only accepted runtime result;
+  the sole remaining enhancement boundary is a valid same-state/same-viewport
+  quality comparison, not another decode, queue, or Reader-route rewrite.
 
 ## OPEN — Optional self-hosted staged manga translation
 
