@@ -20,10 +20,18 @@ const SQL_DELETE_ALL: string = 'DELETE FROM search_history'
 
 /** Local anonymous search history, deliberately separate from reading progress. */
 export class SearchHistoryRepository {
+  /**
+   * Search submit, item removal, and clear may arrive from adjacent retained
+   * Search states. Keep their durable order so an older write cannot finish
+   * after a later local deletion.
+   */
+  private static writeTail: Promise<void> = Promise.resolve()
+
   static async load(context: common.UIAbilityContext): Promise<NhSearchHistoryItem[]> {
     const items: NhSearchHistoryItem[] = []
     let rows: relationalStore.ResultSet | null = null
     try {
+      await SearchHistoryRepository.writeTail
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
       rows = await store.querySql(SQL_SELECT_ALL, [MAX_HISTORY_ITEMS])
       while (rows.goToNextRow()) {
@@ -54,13 +62,11 @@ export class SearchHistoryRepository {
     if (normalized.length === 0) {
       return
     }
-    try {
+    await SearchHistoryRepository.enqueueWrite(async (): Promise<void> => {
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
       await store.executeSql(SQL_UPSERT, [normalized.toLowerCase(), normalized, Date.now()])
       await store.executeSql(SQL_TRIM, [MAX_HISTORY_ITEMS])
-    } catch (error) {
-      throw (error as Error)
-    }
+    })
   }
 
   static async remove(context: common.UIAbilityContext, query: string): Promise<void> {
@@ -68,21 +74,27 @@ export class SearchHistoryRepository {
     if (normalized.length === 0) {
       return
     }
-    try {
+    await SearchHistoryRepository.enqueueWrite(async (): Promise<void> => {
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
       await store.executeSql(SQL_DELETE_ONE, [normalized.toLowerCase()])
-    } catch (error) {
-      throw (error as Error)
-    }
+    })
   }
 
   static async clear(context: common.UIAbilityContext): Promise<void> {
-    try {
+    await SearchHistoryRepository.enqueueWrite(async (): Promise<void> => {
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
       await store.executeSql(SQL_DELETE_ALL)
-    } catch (error) {
-      throw (error as Error)
-    }
+    })
+  }
+
+  /** A failed mutation must not block a later explicit local operation. */
+  private static enqueueWrite(operation: () => Promise<void>): Promise<void> {
+    const queued: Promise<void> = SearchHistoryRepository.writeTail.then(
+      (): Promise<void> => operation(),
+      (): Promise<void> => operation(),
+    )
+    SearchHistoryRepository.writeTail = queued.catch((): void => {})
+    return queued
   }
 
   private static normalizedQuery(query: string): string {

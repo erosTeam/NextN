@@ -23,10 +23,14 @@ const SQL_DELETE_ONE: string = 'DELETE FROM search_quick WHERE normalized_query 
  * not share search_history, so clearing recents never deletes a quick search.
  */
 export class QuickSearchRepository {
+  /** Keep pin/remove persistence ordered across retained Search interactions. */
+  private static writeTail: Promise<void> = Promise.resolve()
+
   static async load(context: common.UIAbilityContext): Promise<NhQuickSearchItem[]> {
     const items: NhQuickSearchItem[] = []
     let rows: relationalStore.ResultSet | null = null
     try {
+      await QuickSearchRepository.writeTail
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
       rows = await store.querySql(SQL_SELECT_ALL, [MAX_QUICK_SEARCH_ITEMS])
       while (rows.goToNextRow()) {
@@ -57,13 +61,11 @@ export class QuickSearchRepository {
     if (normalized.length === 0) {
       return
     }
-    try {
+    await QuickSearchRepository.enqueueWrite(async (): Promise<void> => {
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
       await store.executeSql(SQL_UPSERT, [normalized.toLowerCase(), normalized, Date.now()])
       await store.executeSql(SQL_TRIM, [MAX_QUICK_SEARCH_ITEMS])
-    } catch (error) {
-      throw (error as Error)
-    }
+    })
   }
 
   static async remove(context: common.UIAbilityContext, query: string): Promise<void> {
@@ -71,12 +73,20 @@ export class QuickSearchRepository {
     if (normalized.length === 0) {
       return
     }
-    try {
+    await QuickSearchRepository.enqueueWrite(async (): Promise<void> => {
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
       await store.executeSql(SQL_DELETE_ONE, [normalized.toLowerCase()])
-    } catch (error) {
-      throw (error as Error)
-    }
+    })
+  }
+
+  /** A failed mutation must not poison the following explicit local action. */
+  private static enqueueWrite(operation: () => Promise<void>): Promise<void> {
+    const queued: Promise<void> = QuickSearchRepository.writeTail.then(
+      (): Promise<void> => operation(),
+      (): Promise<void> => operation(),
+    )
+    QuickSearchRepository.writeTail = queued.catch((): void => {})
+    return queued
   }
 
   private static normalizedQuery(query: string): string {
