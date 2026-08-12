@@ -4,9 +4,9 @@ const HISTORY_THUMB_WIDTH: number = 60
 const HISTORY_THUMB_HEIGHT: number = 84
 
 /**
- * The page keeps NextE's grouped simple-list ownership. This leaf follows
- * ErosN's compact local-history record rather than reserving a rich-gallery
- * information column for fields that NhReadingHistoryItem does not own.
+ * The page keeps NextE's grouped simple-list ownership. This local-data leaf
+ * keeps ErosN's 60×84 cover frame, but its progress/time footer is anchored
+ * to the frame bottom so short titles do not leave a detached empty tail.
  */
 @ComponentV2
 export struct HistoryListRow {
@@ -102,6 +102,10 @@ export struct HistoryListRow {
       .borderRadius(ThemeTokens.THUMB_RADIUS)
       .clip(true)
 
+      // The title can legitimately occupy one to three lines. Keep the local
+      // progress/time pair on the same fixed baseline in every case, matching
+      // the simple-list information-column rhythm rather than stacking it
+      // immediately below a short title.
       Column({ space: ThemeTokens.SPACE_XS }) {
         Text(this.title())
           .fontSize(ThemeTokens.FONT_SIZE_META)
@@ -111,6 +115,8 @@ export struct HistoryListRow {
           .maxLines(3)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .width('100%')
+
+        Blank()
 
         Row({ space: ThemeTokens.SPACE_XS }) {
           Text(this.progressLabel())

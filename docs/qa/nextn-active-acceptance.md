@@ -1662,3 +1662,18 @@ permitted in this repository.
   excluded from Git. The next pending delivery action is review and commit of
   this narrow owner correction; do not retest the frozen reply/IME state
   absent new evidence.
+
+## Current delivery observation — Reading History fixed-row metadata baseline
+
+- 2026-08-13: the selected TCP device passed the awake / 24-hour-timeout gate.
+  The signed Debug HAP was installed in place only; no data clear, uninstall,
+  account action, preference write, or content mutation occurred.
+- The established root History tab route foregrounded native NextN at
+  `1320×2120`. Its short-title row now places the local progress/time footer
+  on the cover's bottom baseline; visible multi-line rows retain the same
+  fixed-row footer relationship. HDS, date grouping, dividers, and floating
+  root navigation remained in their prior owners.
+- Raw screenshot/layout evidence is retained locally at
+  `.hvigor/outputs/history-fixed-baseline-20260813T0530/` and excluded from
+  Git. This is only a current leaf-geometry observation, not a full-page
+  reference-parity claim.
