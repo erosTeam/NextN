@@ -1159,6 +1159,39 @@ remains continuous; do not ask for it again.
 - 2026-08-11：参考直达能力已按源码复核。NextE 仅接受含 EH `gid/token` 的 gallery URL 才能进入 Comments；当前 NextN 的数值 gallery Want 不能生成该 token。已安装 ErosN 虽有同 NH id 的内部路由，但 Harmony URI 入口不存在，唯一同 id 的 clipboard detector 处于禁用状态。未读取用户数据、未启用 detector 或修改系统剪贴板。故 P1 的下一步仍是取得一个不改变参考数据的同状态、同视口捕获；在此之前不据源码或不可比截图改动 Comments UI。
 - 2026-08-11：已复核一对先前保留的 NextE/NextN 原生 Comments capture，并用本轮当前 NextN Direct-route 终态重新确认了实现侧的 root bounds。两端 root 都是 `1320×2120`、portrait、非 split、已加载 Comments；可比较 chrome、外侧 gutter、独立圆角 CommentRow 与 composer 顶缘。NextE 的一条评论与 NextN 的多条评论不是相同内容密度，故不以这对图推导字号或卡片高度。可见的 NextN 差异——移除重复的页内“评论（数量）”标题，以及固定页脚而非浮动 composer——均为已记录的用户冻结边界；EH 的翻译/投票叶没有 NH 数据能力，未伪造。审查没有产生新的安全可见改动。
 
+## Rejected Gallery Detail lower-review continuation — 2026-08-12
+
+- The numeric `471768` Detail route first reached native NextN Detail and one
+  current-layout-derived upward swipe reached the Preview and Related sections.
+  A second declared upward swipe then ended at native NextN Settings root,
+  rather than the expected lower Detail comment-preview region. No content,
+  Account, Favorite, setting, or floating Read action was invoked.
+- The Settings terminal screenshot is retained locally with the Detail audit
+  under `.hvigor/outputs/gallery-detail-471768-20260812T2051/`. This chain is
+  rejected for further Detail visual conclusions. Do not repeat its old swipe
+  or infer a Detail defect from this unexpected terminal state; re-establish a
+  semantic Detail lower-section route before any future review.
+
+## Current delivery observation — Gallery Detail compact rail proportions
+
+- 2026-08-12: the signed Debug HAP containing the narrow Related/comment
+  proportion change was installed in place on the selected TCP device only.
+  The device was read back as `AWAKE` with its `86400000ms` timeout override;
+  no data clear, credential, Account, Favorites, preference, or floating Read
+  action occurred.
+- The existing numeric `471768` Detail route foregrounded native NextN at
+  `1320×2120`; its established first upward list swipe reached the current
+  Preview, Related, and external comment-preview composition. Preview remains
+  a shorter page-image rail. Related has a 175vp cover tier plus a distinct
+  80vp readable title region. The external comments show their 280×190
+  author/date/body cards rather than the prior compressed preview scale.
+- The raw NextN layout and screenshot remain locally at
+  `.hvigor/outputs/gallery-detail-rail-proportions-20260812T2107/` and are
+  excluded from Git. This is an installed-device observation only: no current
+  same-gallery loaded NextE/ErosN reference capture exists, so visual-reference
+  parity remains OPEN. The rejected second-swipe Settings chain above remains
+  rejected and was not repeated.
+
 ## Latest completed physical evidence — Gallery external Deep Link
 
 - 2026-08-11：新增的 `nextn://gallery/<positive-integer>` 以独立 `viewData` skill

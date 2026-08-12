@@ -1300,6 +1300,59 @@ authorize an edit, replace a device comparison, or define product completion.
   Local evidence is retained at
   `.hvigor/outputs/gallery-comments-initial-load-20260812T2041/`.
 
+## OPEN — Gallery Detail compact rail proportion repair — 2026-08-12
+
+- **New user feedback and current evidence:** the user reopened the compact
+  Detail rails because their proportions had drifted through unrelated-looking
+  one-value adjustments. The retained current native `471768` lower Detail
+  capture shows three independent leaves: 150vp page previews, Related cards
+  with 190vp covers plus 80vp titles, and 240×120 comment-preview cards.
+  The current Related cards remain readable but their total visual weight is
+  disproportionate to the compact preview; the comment cards are compressed
+  below their supported author/date/body presentation.
+- **Reference and NH boundary:** ErosN's compact Detail owns distinct leaves:
+  `ThumbListView` is a 200-high page rail, `MoreLikeListView` is 280 high with
+  an aspect cover and 80-high title, and `CommentsListView` is a 190-high rail
+  of 280-wide padded cards. NextN's compact preview has a different,
+  user-reviewed 150vp page-rail role and remains frozen at that height. Its
+  Related endpoint and NH comment DTO retain the corresponding cover/title and
+  author/body/date leaves; no EH avatar, vote, reply, or network behavior is
+  added.
+- **Exact minimal correction:** leave the compact preview's 150vp height,
+  header, all-pages action, tile aspect, and head/tail rail margins unchanged.
+  Set the Related cover exactly to the existing 175vp Detail-hero cover height
+  while retaining its 80vp title, and restore the external comment preview to
+  280×190 with the existing 12vp padding and current type values. Preserve
+  the full-bleed horizontal viewport, headings, routing callbacks, list order,
+  and floating Read overlay.
+- **Faulty assumption and prevention:** prior edits treated these three
+  independent leaves as one "compactness" knob: preview was raised then
+  reverted, Related cover was assigned an arbitrary 190vp value, and comment
+  cards were reduced from their complete-card scale to 120vp. Never couple
+  their geometry again. A future change must identify which leaf, its data
+  affordance, and its reference parent owns the requested adjustment.
+- **Verification plan:** build and install in place on the selected `.237`,
+  launch only the existing numeric Detail route, and review the three rails in
+  one current native Detail path. Retain raw captures locally. The prior
+  second-swipe terminal reached Settings rather than the Detail comment rail;
+  that route is rejected and must not be reused as a layout sample.
+- **Current device observation (not visual-reference acceptance):** the signed
+  Debug HAP was installed in place on `192.168.50.237:12345` after the device
+  gate read `AWAKE` with `OverrideTimeout=86400000ms`. The current native
+  `471768` Detail route reached Preview, Related, and the external comment
+  preview after the one established upward list swipe. The captured result
+  keeps the short page-preview rail distinct from Related; Related exposes a
+  cover plus its separate multi-line title leaf; comment-preview cards now
+  show author/date/body at the intended complete-card scale. The floating Read
+  overlay was not changed. Evidence is retained locally at
+  `.hvigor/outputs/gallery-detail-rail-proportions-20260812T2107/`.
+- **Unresolved boundary:** no current same-state, same-viewport reference
+  capture exists for this exact gallery and loaded Related/comment content.
+  This observation therefore verifies only the installed NextN result, not
+  full visual-reference parity. Do not reopen the frozen 150vp Preview geometry
+  or change these three leaf values without new user feedback or a valid
+  counter-evidence pair.
+
 ## OPEN — Gallery comment translation
 
 - User outcome: bring the mature optional comment-translation capability to
