@@ -40,9 +40,11 @@ authorize an edit, replace a device comparison, or define product completion.
   active value, switch, or destination. The visible layout/control/cache and
   enhancement rows have no explanatory subtitle. The retained final layout
   and screenshot are in `.hvigor/outputs/reader-settings-copy-20260813/` and
-  are excluded from Git. This is a same-app device observation; a matched
-  reference capture has not been made in this run, so it does not assert
-  whole-page reference parity.
+  are excluded from Git. The attempted same-viewport NextE route reached its
+  Download page rather than Reader Settings, so that capture pair is rejected
+  and retained locally; it is not used for a comparison or claim. This
+  remains a same-app device observation rather than whole-page reference
+  parity.
 
 ## OPEN — Settings root browse/search ownership split — 2026-08-12
 
