@@ -100,49 +100,55 @@ authorize an edit, replace a device comparison, or define product completion.
   concealed two already-separate NextN settings surfaces. It must not be used
   to reopen or revert the current split.
 
-## FROZEN — Reading History title capacity — 2026-08-12
+## OPEN — Reading History compact local-row correction — 2026-08-13
 
-- **User feedback and current device evidence:** the user explicitly reopened
-  History for a full review. Current same-device captures show that its
-  grouping, single row action, local progress, viewed-time baseline, and
-  divider already form one coherent simple-list row; the remaining visible
-  mismatch is title capacity. NextN caps a local-history title at two lines,
-  even though its local record has no NextE-equivalent author/rating/category
-  leaves to use the remaining information-column space.
-- **Reference parent tree:** NextE owns `ViewedHistoryPage →
+- **Why this boundary is newly actionable:** the user explicitly reopened the
+  whole History surface after the earlier title-only change. The current
+  native capture retained at
+  `.hvigor/outputs/history-audit-20260813T0010/nextn-history.png` shows the
+  local row still using a 102vp gallery-cover frame while only title, progress,
+  and viewed-time data exist. That leaves a conspicuous unused vertical field
+  in each row. The prior title-capacity freeze is superseded only for this
+  row-density boundary.
+- **Whole reference tree:** NextE owns `ViewedHistoryPage →
   PullRefreshListScaffold → ListItemGroup(day header) → ListItem →
-  GallerySimpleCard`. Its day-group parent owns pagination and swipe deletion.
-  ErosN's closer data-shape counterpart is `HistoryPage → CustomScrollView →
-  date group → HistoryItem`: an 84dp cover/title/time row whose title admits
-  three lines when no richer gallery summary is retained.
-- **Current NextN parent tree:** `HistoryPage → PullRefreshListScaffold →
-  ListItemGroup → ListItem → HistoryListRow`. Keep this whole tree, including
-  the root-tab HDS context, local RDB cursor, pinned date, pagination,
-  confirmation deletion, and the existing whole-row Gallery action.
-- **Exact change:** only change `HistoryListRow` title capacity from two lines
-  to three. Keep the fixed cover height, bottom-aligned local progress/time
-  baseline, padding, divider, and action ownership unchanged.
-- **NH data boundary:** `NhReadingHistoryItem` stores title, cover, page count,
-  local read index, and viewed time only. Do not manufacture uploader, rating,
-  category, favourite, or remote data; do not add a network request or change
-  history persistence merely to imitate unavailable NextE leaves.
-- **Verification plan:** build, install in place, and compare the complete
-  native History viewport against the retained NextE and ErosN parent-tree
-  evidence. Review title wrapping, metadata-baseline preservation, row density,
-  day heading, footer, and floating root tabs. This remains OPEN until that
-  current device review completes.
-- **2026-08-12 rebaseline:** current raw same-device portrait captures are
-  retained locally in `.hvigor/outputs/history-rebaseline-20260812T0120/` and
-  excluded from Git. Both roots were verified before review; their records are
-  different, so this evidence supports hierarchy/geometry decisions only, not
-  same-content pixel parity.
-- **2026-08-12 final result:** the signed Debug build was installed with
-  `install -r` on the selected 237 device, without clearing data. The final
-  native NextN History foreground shows a three-line long title while its
-  local progress and viewed-time baseline remain intact. The reviewed viewport
-  also preserves the root HDS context, day headings, row separators, and
-  floating root tabs. Freeze only this title-capacity boundary; it reopens on
-  new user feedback or same-state counter-evidence, not for routine review.
+  GallerySimpleCard`; it owns grouping, pagination, and swipe deletion at the
+  page/group level. ErosN supplies the closer local-data leaf:
+  `HistoryPage → date group → HistoryItem`, an 84dp cover/title/time row with
+  a three-line title and no fabricated remote-gallery fields.
+- **Current NextN tree:** `HistoryPage → PullRefreshListScaffold →
+  ListItemGroup → ListItem → HistoryListRow`. The page retains its root HDS
+  pinned-day owner, local RDB cursor, pull refresh, pagination, confirmation
+  deletion, and whole-row Gallery action.
+- **Exact change:** only `HistoryListRow` changes from the inherited 72×102
+  cover plus expanding title column to the ErosN-derived 60×84 compact local
+  record row. The title remains three lines; the existing local page-progress
+  and viewed-time row follows it directly instead of being forced to the far
+  bottom of a rich-gallery frame. Day headers, divider, actions, persistence,
+  and loading lifecycle do not change.
+- **NH data boundary:** `NhReadingHistoryItem` has title, cover, page count,
+  local read index, and viewed time. No uploader, rating, category, favourite,
+  network read, or new stored field will be added to simulate unavailable
+  NextE leaves.
+- **Verification plan:** build, install in place without clearing data, then
+  capture the current native History foreground and a same-viewport reference
+  route. Review the entire affected viewport: HDS, day headings, compact row
+  density, title wrapping, metadata legibility, tail reserve, and floating
+  root tabs. Retain raw local captures; do not reopen unrelated frozen Detail
+  or Settings surfaces.
+- **Unresolved risk:** reference and NextN histories contain different user
+  records, so the device comparison can establish hierarchy and geometry but
+  not text-for-text equality.
+- **Current device observation — 2026-08-13:** the signed Debug HAP was
+  installed in place on the selected `237` device without clearing data. The
+  native History foreground showed the compact local rows at `1320×2120`:
+  60×84 covers, up to three title lines, then adjacent page-progress and
+  viewed-time leaves, with no reserved rich-gallery information gap. The HDS,
+  day groups, dividers, and floating root navigation remained in their prior
+  owners. The retained raw captures are in
+  `.hvigor/outputs/history-compact-20260813T0040/` and are excluded from Git.
+  This is a current device observation; different reference records still
+  prevent text-for-text visual parity from being claimed.
 
 ## OPEN — System screen-orientation policy — 2026-08-12
 

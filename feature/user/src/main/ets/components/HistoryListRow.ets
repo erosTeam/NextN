@@ -1,9 +1,12 @@
 import { AppStrings, NhReadingHistoryItem, ThemeTokens } from 'shared'
 
+const HISTORY_THUMB_WIDTH: number = 60
+const HISTORY_THUMB_HEIGHT: number = 84
+
 /**
- * The History leaf intentionally follows NextE's GallerySimpleCard grammar.
- * Day grouping, removal, paging, and navigation ownership remain in
- * HistoryPage; this component presents one local record as one row action.
+ * The page keeps NextE's grouped simple-list ownership. This leaf follows
+ * ErosN's compact local-history record rather than reserving a rich-gallery
+ * information column for fields that NhReadingHistoryItem does not own.
  */
 @ComponentV2
 export struct HistoryListRow {
@@ -93,8 +96,8 @@ export struct HistoryListRow {
         }
         this.ThumbnailState()
       }
-      .width(ThemeTokens.COVER_WIDTH)
-      .height(ThemeTokens.COVER_HEIGHT)
+      .width(HISTORY_THUMB_WIDTH)
+      .height(HISTORY_THUMB_HEIGHT)
       .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
       .borderRadius(ThemeTokens.THUMB_RADIUS)
       .clip(true)
@@ -108,8 +111,6 @@ export struct HistoryListRow {
           .maxLines(3)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .width('100%')
-
-        Blank()
 
         Row({ space: ThemeTokens.SPACE_XS }) {
           Text(this.progressLabel())
@@ -131,7 +132,7 @@ export struct HistoryListRow {
         .alignItems(VerticalAlign.Center)
       }
       .layoutWeight(1)
-      .height(ThemeTokens.COVER_HEIGHT)
+      .height(HISTORY_THUMB_HEIGHT)
       .alignItems(HorizontalAlign.Start)
     }
     .width('100%')
