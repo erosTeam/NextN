@@ -531,14 +531,15 @@ substitute for measured login-cycle elapsed time.
   invented.
 - S0 Favorites: native sign-in-required surface; no visible Web, loading, or
   authenticated gallery surface observed.
-- S0 Account: pending the next same-run native Account observation.
-- restore/401 diagnostic: not yet collected in this event; no cause is
-  inferred from the Favorites surface.
+- S0 Account: native verification-required state; no visible Web surface.
+- restore/401 diagnostic: native verification-required state; no cause is
+  inferred from the paired native surfaces.
 - install/data boundary: signed Debug installed with install-r=true;
   data-clear=false; uninstall=false.
 - login-page navigation: not-entered.
 - account input: not-entered.
 - password input: not-entered.
 - submit: not-issued.
-- next action: collect the paired native Account summary, then follow the
-  existing S0 branch without changing data or repeating a login attempt.
+- next action: issue the current explicit native re-verification action. A
+  credential epoch remains forbidden unless that action yields the visible
+  current login form and the S1--S4 protocol gates all pass.

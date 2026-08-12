@@ -42,8 +42,13 @@ remains continuous; do not ask for it again.
   its native sign-in-required surface. No visible Web, credential input,
   Account action, data clear, uninstall, or content mutation occurred.
 - This is fresh current evidence of an unusable session and immediately
-  preempts the delivery lane. The paired native Account summary is the next
-  unverified physical action; no cause is inferred yet.
+  preempts the delivery lane.
+- The paired native Account destination showed its native verification-required
+  state. No visible Web, credential input, re-verification action, data clear,
+  uninstall, or content mutation occurred during this paired observation.
+- The next physical action is the current Account page's explicit native
+  re-verification action. The pair establishes the state boundary only; it
+  does not establish a persistence or transport cause.
 
 ## Current P0 device result — proof and postmortem recorded
 
