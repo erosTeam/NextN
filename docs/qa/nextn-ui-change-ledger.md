@@ -141,7 +141,7 @@ authorize an edit, replace a device comparison, or define product completion.
   follow-operation, or preference-restoration checks without a source change
   or new user feedback.
 
-## OPEN — Gallery Detail Japanese-title preference copy scope — 2026-08-13
+## FROZEN — Gallery Detail Japanese-title preference copy scope — 2026-08-13
 
 - **Why newly actionable:** the user asked whether the `优先使用日文标题`
   setting is supported by NH and observed that its displayed scope is unclear.
@@ -159,11 +159,21 @@ authorize an edit, replace a device comparison, or define product completion.
   Detail title ordering, collection-card title leaves, History schema, and
   all network DTOs. Do not add a list-wide title preference or alter card
   geometry under cover of a copy correction.
-- **Verification plan:** inspect the four-resource diff, build the signed
-  Debug HAP, install in place without clearing data, and observe the native
-  Layout row plus one Detail with both source titles. Confirm the copy names
-  Detail only and the existing switch still changes only that header's title
-  ordering. Retain raw artifacts locally; do not use a UI static contract.
+- **Verification result — 2026-08-13:** commit `6965ae9` passed the four
+  resource-JSON checks and signed Debug build, then was installed in place on
+  only `192.168.50.237:12345`; no data clear, uninstall, account action, or
+  login action occurred. The native `1320×2120` Layout row displayed the
+  corrected Detail-only title and hint. Its original switch value was `off`.
+  It was enabled only for this check; the current native Detail for the
+  existing public route rendered the Japanese source title as primary and the
+  English title as secondary, then the switch was restored and re-read as
+  `off`. Raw local artifacts remain under
+  `.hvigor/outputs/japanese-title-scope-20260813T0938/` and are excluded from
+  source control.
+- **Frozen boundary:** this accepts the copy scope and existing Detail-header
+  behavior only. It does not claim a list-wide title preference, a History
+  schema migration, or a collection-card title redesign; do not reopen those
+  unrelated leaves without a new user direction or source change.
 
 ## OPEN — Reader Settings parent-tree and icon correction — 2026-08-13
 

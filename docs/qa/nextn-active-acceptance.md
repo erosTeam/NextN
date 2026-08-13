@@ -40,6 +40,21 @@
   `.hvigor/outputs/reader-settings-current-20260813T0912/` and excluded from
   source control.
 
+## Current delivery observation — Gallery Detail Japanese-title preference scope — 2026-08-13
+
+- Commit `6965ae9` was built as the signed Debug HAP and installed in place on
+  only `192.168.50.237:12345`; no app data clear, uninstall, account action,
+  or login action occurred. The native `1320×2120` Layout row displayed the
+  corrected Detail-only setting title and hint.
+- The original setting value was `off`. It was enabled only to verify one
+  current native Detail route with both source title forms: the Japanese title
+  was primary and the English title secondary. The setting was then restored
+  and re-read as `off`.
+- This is a bounded title-display verification, not a collection-card or
+  History-title migration. Raw local artifacts are retained under
+  `.hvigor/outputs/japanese-title-scope-20260813T0938/` and are excluded from
+  source control.
+
 ## Current delivery observation — Gallery Detail smart-grip Read-action alignment — 2026-08-13
 
 - Commit `bee5a59` was built as the signed Debug HAP and installed in place on
