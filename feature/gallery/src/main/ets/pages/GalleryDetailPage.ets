@@ -35,6 +35,7 @@ import {
   NextNModalScaffold,
   PullRefreshListScaffold,
   TagTranslationRepository,
+  TagTranslationState,
   PageErrorState,
   PageLoadingState,
   ReadButtonStyleSettings,
@@ -49,6 +50,7 @@ import {
   connectLlmSourceProfiles,
   connectReaderOverlayNavigation,
   connectReadButtonStyle,
+  connectTagTranslations,
   ReaderOverlayNavigationState,
   supportsCommentTranslation,
 } from 'shared'
@@ -157,6 +159,7 @@ export struct GalleryDetailPage {
   @Local fullTitleSheetShown: boolean = false
   @Local coverFailedUrl: string = ''
   @Local tagTranslationLabels: string[] = []
+  @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local relatedGalleries: NhGallerySummary[] = []
   /** Related rows use the same local title-rule view as every other gallery list. */
   @Local rawRelatedGalleries: NhGallerySummary[] = []
@@ -207,6 +210,7 @@ export struct GalleryDetailPage {
   private relatedRequestGeneration: number = 0
   private commentPeekGeneration: number = 0
   private titleTranslationEpoch: number = 0
+  private tagTranslationEpoch: number = 0
   private favoriteStatusGeneration: number = 0
   private handledDownloadRequestVersion: number = 0
   private readFabController: HdsTabsController = new HdsTabsController()
@@ -254,6 +258,13 @@ export struct GalleryDetailPage {
   onContentFiltersChanged(): void {
     this.applyRelatedContentFilters()
     this.applyCommentPeekFilters()
+  }
+
+  @Monitor('tagTranslations.revision')
+  onTagTranslationsChanged(): void {
+    if (this.isDetailReadyForCurrentGallery && this.detail.id === this.galleryId) {
+      this.requestTagTranslations(this.requestGeneration, this.detail.id, this.detail.tags)
+    }
   }
 
   /** The route-local HDS command reuses the same generation-fenced loader. */
@@ -406,6 +417,7 @@ export struct GalleryDetailPage {
     this.fullTitleSheetShown = false
     this.coverFailedUrl = ''
     this.tagTranslationLabels = []
+    this.tagTranslationEpoch += 1
     this.titleTranslationEpoch += 1
     this.titleTranslations = []
     this.favoriteStatusGeneration += 1
@@ -936,7 +948,7 @@ export struct GalleryDetailPage {
       this.publishDownloadChrome()
       this.publishWideThumbnailActionAvailability()
       this.updateNavigationChromeForScroll()
-      this.loadTagTranslations(generation, detail.tags)
+      this.requestTagTranslations(generation, detail.id, detail.tags)
       this.loadRelatedGalleries(detail.id)
       this.loadCommentPeek(generation, detail.id)
       this.loadFavoriteStatus(generation, detail.id)
@@ -1151,10 +1163,22 @@ export struct GalleryDetailPage {
     }
   }
 
-  private async loadTagTranslations(generation: number, tags: NhTag[]): Promise<void> {
+  private requestTagTranslations(generation: number, galleryId: number, tags: NhTag[]): void {
+    const epoch: number = this.tagTranslationEpoch + 1
+    this.tagTranslationEpoch = epoch
+    this.loadTagTranslations(generation, galleryId, tags, epoch)
+  }
+
+  private async loadTagTranslations(
+    generation: number,
+    galleryId: number,
+    tags: NhTag[],
+    epoch: number,
+  ): Promise<void> {
     try {
       const translations: Map<string, string> = await TagTranslationRepository.lookup(this.context(), tags)
-      if (!this.isCurrentRequest(generation)) {
+      if (!this.isCurrentRequest(generation) || epoch !== this.tagTranslationEpoch ||
+        this.galleryId !== galleryId || this.detail.id !== galleryId) {
         return
       }
       const labels: string[] = []

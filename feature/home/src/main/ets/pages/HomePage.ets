@@ -23,6 +23,7 @@ import {
   NhBrowsePresentation,
   NhGalleryPageResult,
   NhGallerySummary,
+  NhTagCatalogService,
   NhSearchLanguage,
   NhSearchOptions,
   NhSearchSort,
@@ -38,6 +39,8 @@ import {
   connectHomeSource,
   connectHomeSourceVisualIndex,
   connectSubtabTransition,
+  connectTagTranslations,
+  TagTranslationState,
 } from 'shared'
 import { PopularPage } from './PopularPage'
 
@@ -68,6 +71,7 @@ export struct LatestSourcePage {
   /** The response snapshot stays intact so a local rule change never needs another GET. */
   @Local rawGalleries: NhGallerySummary[] = []
   @Local contentFilters: ContentFilterState = connectContentFilters()
+  @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local catalogPreferences: CatalogPreferencesState = connectCatalogPreferences()
   @Local isInitialLoading: boolean = false
   @Local isRefreshing: boolean = false
@@ -91,6 +95,7 @@ export struct LatestSourcePage {
   private loadedOnce: boolean = false
   /** A stable synthetic negative clause is held for this request generation only. */
   private activeBrowseQuery: string = ''
+  private tagTranslationRefreshEpoch: number = 0
   private browseOptionsScroller: Scroller = new Scroller()
   private refreshController: NextNPullRefreshController = new NextNPullRefreshController()
 
@@ -153,6 +158,11 @@ export struct LatestSourcePage {
     this.applyContentFilters()
   }
 
+  @Monitor('tagTranslations.revision')
+  onTagTranslationsChanged(): void {
+    this.refreshTagTranslationLabels()
+  }
+
   @Monitor('catalogPreferences.browseRevision')
   onBrowseCatalogPreferencesChanged(): void {
     this.reloadForCatalogPreferences()
@@ -160,6 +170,19 @@ export struct LatestSourcePage {
 
   private applyContentFilters(): void {
     this.galleries = ContentFilterService.filterGalleries(this.rawGalleries)
+  }
+
+  /** Re-label the retained snapshot locally after a committed dictionary change. */
+  private async refreshTagTranslationLabels(): Promise<void> {
+    const epoch: number = this.tagTranslationRefreshEpoch + 1
+    this.tagTranslationRefreshEpoch = epoch
+    const snapshot: NhGallerySummary[] = this.rawGalleries
+    const relabeled: NhGallerySummary[] = await NhTagCatalogService.refreshLocalDisplayLabels(snapshot)
+    if (epoch !== this.tagTranslationRefreshEpoch || snapshot !== this.rawGalleries) {
+      return
+    }
+    this.rawGalleries = relabeled
+    this.applyContentFilters()
   }
 
   private isCurrentRequest(generation: number): boolean {

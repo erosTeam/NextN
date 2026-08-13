@@ -1833,6 +1833,48 @@ authorize an edit, replace a device comparison, or define product completion.
   values. This is raw-fallback and restoration evidence only; the optional
   translated-label state and same-state ErosN visual comparison remain OPEN.
 
+### Reactivity and catalog-resilience correction — 2026-08-13
+
+- **Why newly actionable:** the user reported that enabling the existing tag
+  display can appear intermittent and that an updated tag dictionary does not
+  change tags already visible in a Gallery or collection. Source tracing
+  establishes two independent data-projection failures inside the already
+  accepted tag-leaf boundary.
+- **Causal boundary:** all public collection endpoints return only `tag_ids`.
+  `NhTagCatalogService` resolves names before the page receives its snapshot,
+  but previously discarded successfully fetched names when private catalog
+  persistence or its subsequent cache read failed. Separately,
+  `TagTranslationRepository.replace` and `clear` change the dictionary RDB
+  without publishing a display revision; collection cards retain their old
+  `NhTag.displayName`, and Gallery Detail retains its one-time local
+  `tagTranslationLabels` projection.
+- **Whole parent tree preserved:** `GalleryCollectionBody` remains the sole
+  collection/scaffold owner and keeps the existing Medium/List, Waterfall, and
+  Compact Waterfall tag leaves. Gallery Detail retains its existing grouped
+  metadata tag owner. SIMPLE_LIST, COVER_GRID, COVER_WALL, related-gallery
+  cards, card geometry, filters, routes, API pagination, and the existing
+  default-off display switch remain outside this correction.
+- **Exact change:** retain a fetched public tag in the current in-memory
+  catalog even if its optional durable-cache write or reread fails. Publish a
+  non-sensitive dictionary display revision only after a successful committed
+  replacement or clear. Existing mounted collections re-label only their
+  already-resolved nested tags from the local dictionary and reapply their
+  existing filter projection; Gallery Detail re-labels only its current raw
+  tags. These paths make no gallery/detail request, no `/tags/ids` request,
+  no raw-ID fallback, and no change to tag ordering or card layout.
+- **Verification plan:** inspect the exact diff, build the signed Debug HAP,
+  install in place without clearing data, and review one current native tag
+  presentation through the existing opt-in route while restoring its prior
+  presentation preference afterward. A real dictionary replacement/clear is a
+  user-data mutation and is not manufactured solely for visual evidence; that
+  particular revision transition remains explicitly unaccepted until it is
+  observed through an ordinary permitted update or cache-clear action.
+- **Unresolved risk:** a list that originally has no resolved names because
+  every catalog request failed cannot invent them from a dictionary revision;
+  it remains unchanged until its ordinary next list request. This correction
+  removes the proven loss of names already returned by the public endpoint and
+  the proven stale-label path only.
+
 ## OPEN — Reader enhancement interaction yield
 
 - User outcome: local Reader super-resolution must never compete with a

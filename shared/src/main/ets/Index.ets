@@ -20,6 +20,7 @@ export {
 export { HomeTabAutoHideState, connectHomeTabAutoHide } from './state/HomeTabAutoHideState'
 export { CoverBackgroundState, connectCoverBackground } from './state/CoverBackgroundState'
 export { GalleryTitleState, connectGalleryTitle } from './state/GalleryTitleState'
+export { TagTranslationState, connectTagTranslations } from './state/TagTranslationState'
 export {
   ImmersiveMaterialSettingsState,
   connectImmersiveMaterialSettings,

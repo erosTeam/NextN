@@ -11,6 +11,7 @@ import {
   NhApiClient,
   NhGalleryPageResult,
   NhGallerySummary,
+  NhTagCatalogService,
   PageEmptyState,
   PageErrorState,
   PageLoadingState,
@@ -22,7 +23,9 @@ import {
   connectFavoritesActions,
   connectAccountSession,
   connectLayoutSafeArea,
+  connectTagTranslations,
   LayoutSafeAreaState,
+  TagTranslationState,
 } from 'shared'
 
 /**
@@ -36,6 +39,7 @@ export struct FavoritesPage {
   /** Keep the authenticated GET snapshot separate from local presentation rules. */
   @Local rawGalleries: NhGallerySummary[] = []
   @Local contentFilters: ContentFilterState = connectContentFilters()
+  @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local accountSession: AccountSessionState = connectAccountSession()
   @Local favoriteMutations: FavoriteMutationState = connectFavoriteMutations()
   @Local titleActions: FavoritesActionState = connectFavoritesActions()
@@ -57,6 +61,7 @@ export struct FavoritesPage {
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private requestGeneration: number = 0
+  private tagTranslationRefreshEpoch: number = 0
   private sessionProjectionGeneration: number = 0
   private isVisible: boolean = false
   private pendingFavoriteMutationRefresh: boolean = false
@@ -105,6 +110,11 @@ export struct FavoritesPage {
   @Monitor('contentFilters.revision')
   onContentFiltersChanged(): void {
     this.applyContentFilters()
+  }
+
+  @Monitor('tagTranslations.revision')
+  onTagTranslationsChanged(): void {
+    this.refreshTagTranslationLabels()
   }
 
   @Monitor('accountSession.revision')
@@ -228,6 +238,19 @@ export struct FavoritesPage {
 
   private applyContentFilters(): void {
     this.galleries = ContentFilterService.filterGalleries(this.rawGalleries)
+  }
+
+  /** Re-label the retained authenticated snapshot without repeating its account GET. */
+  private async refreshTagTranslationLabels(): Promise<void> {
+    const epoch: number = this.tagTranslationRefreshEpoch + 1
+    this.tagTranslationRefreshEpoch = epoch
+    const snapshot: NhGallerySummary[] = this.rawGalleries
+    const relabeled: NhGallerySummary[] = await NhTagCatalogService.refreshLocalDisplayLabels(snapshot)
+    if (epoch !== this.tagTranslationRefreshEpoch || snapshot !== this.rawGalleries) {
+      return
+    }
+    this.rawGalleries = relabeled
+    this.applyContentFilters()
   }
 
   /**

@@ -15,6 +15,7 @@ import {
   NhBrowsePresentation,
   NhGalleryPageResult,
   NhGallerySummary,
+  NhTagCatalogService,
   NhSearchLanguage,
   NhSearchOptions,
   NhSearchSort,
@@ -36,7 +37,9 @@ import {
   connectCatalogPreferences,
   connectContentFilters,
   connectLayoutSafeArea,
+  connectTagTranslations,
   nextNHdsTitleBar,
+  TagTranslationState,
 } from 'shared'
 import { ComponentContent, KeyboardAvoidMode } from '@kit.ArkUI'
 import { BottomBuilderShowType, HdsNavDestination, HideMode } from '@kit.UIDesignKit'
@@ -80,6 +83,7 @@ export struct SearchPage {
   /** Retains search responses so display-rule edits do not restart a search. */
   @Local rawGalleries: NhGallerySummary[] = []
   @Local contentFilters: ContentFilterState = connectContentFilters()
+  @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
   @Local catalogPreferences: CatalogPreferencesState = connectCatalogPreferences()
   @Local isInitialLoading: boolean = false
@@ -103,6 +107,7 @@ export struct SearchPage {
   @Event onOpenGallery?: (galleryId: number) => void
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private requestGeneration: number = 0
+  private tagTranslationRefreshEpoch: number = 0
   private tagSuggestionEpoch: number = 0
   private tagSuggestionTimer: number = -1
   /** Local landing tables are read on initial entry and only after this page writes them. */
@@ -169,6 +174,11 @@ export struct SearchPage {
     this.applyContentFilters()
   }
 
+  @Monitor('tagTranslations.revision')
+  onTagTranslationsChanged(): void {
+    this.refreshTagTranslationLabels()
+  }
+
   @Monitor('catalogPreferences.searchRevision')
   onSearchCatalogPreferencesChanged(): void {
     if (this.isVisible) {
@@ -178,6 +188,19 @@ export struct SearchPage {
 
   private applyContentFilters(): void {
     this.galleries = ContentFilterService.filterGalleries(this.rawGalleries)
+  }
+
+  /** Re-label the retained search snapshot without repeating its public query. */
+  private async refreshTagTranslationLabels(): Promise<void> {
+    const epoch: number = this.tagTranslationRefreshEpoch + 1
+    this.tagTranslationRefreshEpoch = epoch
+    const snapshot: NhGallerySummary[] = this.rawGalleries
+    const relabeled: NhGallerySummary[] = await NhTagCatalogService.refreshLocalDisplayLabels(snapshot)
+    if (epoch !== this.tagTranslationRefreshEpoch || snapshot !== this.rawGalleries) {
+      return
+    }
+    this.rawGalleries = relabeled
+    this.applyContentFilters()
   }
 
   aboutToDisappear(): void {

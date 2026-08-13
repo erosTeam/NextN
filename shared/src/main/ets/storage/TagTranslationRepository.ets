@@ -4,6 +4,7 @@ import { NhTag } from '../model/NhGallery'
 import { NhTagSuggestion } from '../model/NhTagSuggestion'
 import { NhTagTranslationEntry, NhTagTranslationStatus } from '../model/NhTagTranslation'
 import { CacheStat } from '../services/CacheStat'
+import { connectTagTranslations } from '../state/TagTranslationState'
 import { LocalDataStore } from './LocalDataStore'
 
 const META_VERSION: string = 'version'
@@ -129,6 +130,7 @@ export class TagTranslationRepository {
   static async clear(context: common.UIAbilityContext): Promise<void> {
     const store: relationalStore.RdbStore = await LocalDataStore.open(context)
     await store.executeSql(SQL_CLEAR)
+    connectTagTranslations().publishMutation()
   }
 
   /**
@@ -268,6 +270,7 @@ export class TagTranslationRepository {
       await store.executeSql(SQL_UPSERT_META, [META_UPDATED_AT, `${Date.now()}`])
       store.commit()
       transactionOpen = false
+      connectTagTranslations().publishMutation()
     } catch (error) {
       if (transactionOpen) {
         store.rollBack()

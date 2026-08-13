@@ -9,12 +9,15 @@ import {
   NextNPullRefreshController,
   NhApiClient,
   NhGallerySummary,
+  NhTagCatalogService,
   RootRefreshRegistry,
+  TagTranslationState,
   ThemeTokens,
   HOME_SOURCE_SELECTOR_HEIGHT,
   connectContentFilters,
   connectHomeGallerySelection,
   connectHomeSource,
+  connectTagTranslations,
 } from 'shared'
 
 /**
@@ -34,6 +37,7 @@ export struct PopularPage {
   /** Preserve the successful response while local display rules are toggled. */
   @Local rawGalleries: NhGallerySummary[] = []
   @Local contentFilters: ContentFilterState = connectContentFilters()
+  @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local homeGallerySelection: HomeGallerySelectionState = connectHomeGallerySelection()
   @Local homeSource: HomeSourceState = connectHomeSource()
   @Local isInitialLoading: boolean = false
@@ -42,6 +46,7 @@ export struct PopularPage {
   @Param scroller: Scroller = new Scroller()
   private refreshController: NextNPullRefreshController = new NextNPullRefreshController()
   private requestGeneration: number = 0
+  private tagTranslationRefreshEpoch: number = 0
   /** A successful empty response is still a completed retained first load. */
   private loadedOnce: boolean = false
 
@@ -105,8 +110,26 @@ export struct PopularPage {
     this.applyContentFilters()
   }
 
+  @Monitor('tagTranslations.revision')
+  onTagTranslationsChanged(): void {
+    this.refreshTagTranslationLabels()
+  }
+
   private applyContentFilters(): void {
     this.galleries = ContentFilterService.filterGalleries(this.rawGalleries)
+  }
+
+  /** Re-label the retained snapshot locally after a committed dictionary change. */
+  private async refreshTagTranslationLabels(): Promise<void> {
+    const epoch: number = this.tagTranslationRefreshEpoch + 1
+    this.tagTranslationRefreshEpoch = epoch
+    const snapshot: NhGallerySummary[] = this.rawGalleries
+    const relabeled: NhGallerySummary[] = await NhTagCatalogService.refreshLocalDisplayLabels(snapshot)
+    if (epoch !== this.tagTranslationRefreshEpoch || snapshot !== this.rawGalleries) {
+      return
+    }
+    this.rawGalleries = relabeled
+    this.applyContentFilters()
   }
 
   private async loadPopular(): Promise<void> {

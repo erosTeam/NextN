@@ -7,8 +7,9 @@ const FETCH_BATCH_SIZE: number = 100
 
 /**
  * Enriches a loaded public list in one serialized, deduplicated catalog pass.
- * A catalog miss is non-fatal: the original gallery list stays usable and its
- * cards simply retain their no-tag leaves until a later successful load.
+ * A catalog miss is non-fatal: the original gallery list stays usable, while
+ * any names returned by this request remain available even if the optional
+ * durable cache is temporarily unavailable.
  */
 export class NhTagCatalogService {
   private static context: common.UIAbilityContext | null = null
@@ -33,6 +34,32 @@ export class NhTagCatalogService {
     return queued
   }
 
+  /**
+   * Re-labels already resolved gallery tags after a committed local-dictionary
+   * change. This path is strictly local: it never reads the tag catalog or
+   * starts an API request, and unresolved tag ids stay unresolved.
+   */
+  static async refreshLocalDisplayLabels(galleries: NhGallerySummary[]): Promise<NhGallerySummary[]> {
+    const context: common.UIAbilityContext | null = NhTagCatalogService.context
+    if (galleries.length === 0 || context === null) {
+      return galleries.slice()
+    }
+    const tags: NhTag[] = NhTagCatalogService.collectResolvedTags(galleries)
+    if (tags.length === 0) {
+      return galleries.slice()
+    }
+    let translations: Map<string, string>
+    try {
+      translations = await TagTranslationRepository.lookup(context, tags)
+    } catch (_error) {
+      // Do not replace an existing displayed label with a raw fallback when
+      // the optional dictionary itself cannot be read.
+      return galleries.slice()
+    }
+    return galleries.map((gallery: NhGallerySummary): NhGallerySummary =>
+      NhTagCatalogService.copyGalleryWithDisplayLabels(gallery, translations))
+  }
+
   private static async enrichInternal(
     galleries: NhGallerySummary[],
     fetchTags: (ids: number[]) => Promise<NhTag[]>,
@@ -45,11 +72,12 @@ export class NhTagCatalogService {
     if (ids.length === 0) {
       return
     }
-    let catalog: Map<number, NhTag>
+    let catalog: Map<number, NhTag> = new Map<number, NhTag>()
     try {
       catalog = await NhTagCatalogRepository.findByIds(context, ids)
     } catch (_error) {
-      return
+      // A private catalog read is optional. Continue with a transient catalog
+      // so a successful current public response can still reach this page.
     }
     const missing: number[] = ids.filter((id: number): boolean => !catalog.has(id))
     if (missing.length > 0) {
@@ -63,11 +91,12 @@ export class NhTagCatalogService {
         }
       }
       if (fetched.length > 0) {
+        NhTagCatalogService.mergeCatalog(catalog, fetched)
         try {
           await NhTagCatalogRepository.upsert(context, fetched)
-          catalog = await NhTagCatalogRepository.findByIds(context, ids)
         } catch (_error) {
-          // Keep the already-loaded gallery list if cache persistence fails.
+          // The current response remains enough for this page; persistence is
+          // an optimization and must not discard names we already received.
         }
       }
     }
@@ -111,6 +140,63 @@ export class NhTagCatalogService {
       }
     }
     return ids
+  }
+
+  private static collectResolvedTags(galleries: NhGallerySummary[]): NhTag[] {
+    const tags: NhTag[] = []
+    const seen: Set<number> = new Set<number>()
+    for (let galleryIndex: number = 0; galleryIndex < galleries.length; galleryIndex++) {
+      const galleryTags: NhTag[] = galleries[galleryIndex].tags
+      for (let tagIndex: number = 0; tagIndex < galleryTags.length; tagIndex++) {
+        const tag: NhTag = galleryTags[tagIndex]
+        if (tag.id > 0 && tag.name.trim().length > 0 && !seen.has(tag.id)) {
+          seen.add(tag.id)
+          tags.push(tag)
+        }
+      }
+    }
+    return tags
+  }
+
+  private static mergeCatalog(catalog: Map<number, NhTag>, tags: NhTag[]): void {
+    for (let index: number = 0; index < tags.length; index++) {
+      const source: NhTag = tags[index]
+      if (source.id <= 0 || source.name.trim().length === 0) {
+        continue
+      }
+      const tag: NhTag = new NhTag()
+      tag.id = source.id
+      tag.type = source.type
+      tag.name = source.name
+      tag.count = source.count
+      catalog.set(tag.id, tag)
+    }
+  }
+
+  private static copyGalleryWithDisplayLabels(
+    source: NhGallerySummary,
+    translations: Map<string, string>,
+  ): NhGallerySummary {
+    const gallery: NhGallerySummary = new NhGallerySummary()
+    gallery.id = source.id
+    gallery.mediaId = source.mediaId
+    gallery.englishTitle = source.englishTitle
+    gallery.japaneseTitle = source.japaneseTitle
+    gallery.thumbnailUrl = source.thumbnailUrl
+    gallery.pageCount = source.pageCount
+    gallery.thumbnailWidth = source.thumbnailWidth
+    gallery.thumbnailHeight = source.thumbnailHeight
+    gallery.tagIds = source.tagIds.slice()
+    gallery.tags = source.tags.map((sourceTag: NhTag): NhTag => {
+      const tag: NhTag = new NhTag()
+      tag.id = sourceTag.id
+      tag.type = sourceTag.type
+      tag.name = sourceTag.name
+      tag.displayName = translations.get(TagTranslationRepository.keyFor(sourceTag)) ?? sourceTag.name
+      tag.count = sourceTag.count
+      return tag
+    })
+    return gallery
   }
 
   private static tagsFor(
