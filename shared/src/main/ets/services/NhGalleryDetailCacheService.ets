@@ -1,4 +1,5 @@
 import { common } from '@kit.AbilityKit'
+import { hilog } from '@kit.PerformanceAnalysisKit'
 import { NhGalleryDetail, NhGalleryPage, NhTag } from '../model/NhGallery'
 import {
   NhGalleryDetailCachePayload,
@@ -9,6 +10,8 @@ const DETAIL_CACHE_RECORD_VERSION: number = 1
 const MAX_DETAIL_CACHE_PAYLOAD_CHARS: number = 4 * 1024 * 1024
 const MAX_RECENT_DETAIL_ENTRIES: number = 8
 const DETAIL_CACHE_TTL_MS: number = 6 * 60 * 60 * 1000
+const DETAIL_CACHE_LOG_DOMAIN: number = 0x0000
+const DETAIL_CACHE_LOG_TAG: string = 'NextNDetailCache'
 
 class NhGalleryDetailCacheRecord {
   version: number = DETAIL_CACHE_RECORD_VERSION
@@ -44,7 +47,7 @@ export class NhGalleryDetailCacheService {
       NhGalleryDetailCacheService.recent.set(normalizedGalleryId, refreshed)
       // Keep runtime proof finite and non-sensitive: no gallery identity or
       // payload fields leave the process with this cache event.
-      console.info('NextNGalleryDetailCache hit=memory')
+      hilog.info(DETAIL_CACHE_LOG_DOMAIN, DETAIL_CACHE_LOG_TAG, 'event=%{public}s', 'hit=memory')
       return copy.copy()
     } catch (_error) {
       NhGalleryDetailCacheService.recent.delete(normalizedGalleryId)
@@ -77,7 +80,7 @@ export class NhGalleryDetailCacheService {
       NhGalleryDetailCacheService.remember(detail, payload.expiresAt)
       // The persisted event distinguishes an RDB-backed cold entry from a
       // merely fast network response without exposing the cached payload.
-      console.info('NextNGalleryDetailCache hit=persisted')
+      hilog.info(DETAIL_CACHE_LOG_DOMAIN, DETAIL_CACHE_LOG_TAG, 'event=%{public}s', 'hit=persisted')
       return detail.copy()
     } catch (_error) {
       try {
@@ -103,7 +106,7 @@ export class NhGalleryDetailCacheService {
     try {
       await NhGalleryDetailCacheService.enqueuePersist(context, snapshot.id, payload)
       // This fixed event records only completion of the local write boundary.
-      console.info('NextNGalleryDetailCache stored')
+      hilog.info(DETAIL_CACHE_LOG_DOMAIN, DETAIL_CACHE_LOG_TAG, 'event=%{public}s', 'stored')
       return true
     } catch (_error) {
       // Cache persistence never invalidates a verified public network response.

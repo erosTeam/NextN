@@ -1,4 +1,5 @@
 import { common } from '@kit.AbilityKit'
+import { hilog } from '@kit.PerformanceAnalysisKit'
 import { HdsTabsController } from '@kit.UIDesignKit'
 import {
   ContentFilterService,
@@ -80,6 +81,8 @@ const TITLE_TRANSLATION_ACTION_SIZE: number = 30
 const TITLE_TRANSLATION_ICON_SIZE: number = 16
 const TITLE_TRANSLATION_ENGLISH: string = 'english'
 const TITLE_TRANSLATION_JAPANESE: string = 'japanese'
+const DETAIL_CACHE_LOG_DOMAIN: number = 0x0000
+const DETAIL_CACHE_LOG_TAG: string = 'NextNDetailCache'
 /**
  * A retained Gallery destination has three materially different request
  * starts. Only a validated refresh for the same route may keep its current
@@ -997,7 +1000,7 @@ export struct GalleryDetailPage {
         // Explicit user refreshes deliberately bypass both app-owned snapshots
         // and the Detail endpoint's NetworkKit cache. Keep this observable
         // without logging a gallery identity or response data.
-        console.info('NextNGalleryDetailCache bypass=explicit-refresh')
+        hilog.info(DETAIL_CACHE_LOG_DOMAIN, DETAIL_CACHE_LOG_TAG, 'event=%{public}s', 'bypass=explicit-refresh')
       }
       if (!forceNetwork) {
         const recent: NhGalleryDetail | null = NhGalleryDetailCacheService.getRecent(requestedGalleryId)
