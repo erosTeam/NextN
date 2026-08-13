@@ -104,6 +104,30 @@ authorize an edit, replace a device comparison, or define product completion.
   static contract or manufacture sensor support. An unsupported-device result
   may accept only the documented follow-operation degradation, not smart-grip
   sensing itself.
+- **Runtime device evidence — 2026-08-13:** commit `bee5a59` was built as a
+  signed Debug HAP and installed in place on only
+  `192.168.50.237:12345`; no data clear, uninstall, account action, or login
+  action occurred. The original `智感握姿` selection was observed before the
+  temporary fixed-edge and follow-operation checks. All retained captures are
+  foreground-confirmed native NextN `EntryAbility/pages/Index` at the
+  `1320×2120` root viewport. `固定左侧` moved the default-hit Read action to
+  the left edge, `固定右侧` restored it to the right edge, and the transparent
+  full-width rail remained an overlay in both states. In `跟随操作`, one
+  vertically deliberate scroll beginning on the left side of the metadata
+  List moved the action left; a subsequent right-side vertical scroll moved it
+  right. The original `智感握姿` selection was restored, NextN alone was
+  force-stopped, and the cold-started Layout row still reported `智感握姿`.
+  Raw local evidence is retained under
+  `.hvigor/outputs/smart-grip-alignment-20260813T0830/` and is excluded from
+  Git.
+- **Unaccepted boundary:** the device exposed the `智感握姿` menu option, but
+  this run did not induce or observe a real `holdingHandChanged` event. The
+  only retained NextE smart-grip captures are `1080×2444`, not this run's
+  `1320×2120` viewport, so they are rejected as a visual comparison pair.
+  Keep this record OPEN only for an actual sensor-event observation or a valid
+  same-viewport reference pair; do not re-run the already evidenced fixed,
+  follow-operation, or preference-restoration checks without a source change
+  or new user feedback.
 
 ## OPEN — Reader Settings parent-tree and icon correction — 2026-08-13
 

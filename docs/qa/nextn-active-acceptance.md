@@ -1,5 +1,30 @@
 # NextN active device-acceptance queue
 
+## Current delivery observation — Gallery Detail smart-grip Read-action alignment — 2026-08-13
+
+- Commit `bee5a59` was built as the signed Debug HAP and installed in place on
+  only `192.168.50.237:12345`; no app data clear, uninstall, account action,
+  or login action occurred. The selected device was live-resolved, leased,
+  woken, and read back as `AWAKE` with `OverrideTimeout=86400000ms` before the
+  sequence.
+- The original `智感握姿` setting was observed before testing. The native Layout
+  menu exposed `智感握姿`, `跟随操作`, `固定左侧`, and `固定右侧`. Fixed-left and
+  fixed-right each placed the existing default-hit floating Read action on the
+  selected edge while preserving its full-width transparent overlay rail.
+- In `跟随操作`, a deliberate vertical scroll on the native Detail metadata List
+  starting at the left side moved the action left; a later right-side vertical
+  scroll moved it right. The action was not used as the touch observer.
+- The original `智感握姿` selection was restored. NextN alone was force-stopped,
+  then its existing Gallery Detail route was cold-started; a fresh native
+  Layout observation still displayed `智感握姿`. All current captures are
+  foreground-confirmed NextN `EntryAbility/pages/Index` at `1320×2120`.
+- This does not assert real holding-hand sensing: no `holdingHandChanged`
+  event was induced or observed. The only retained NextE smart-grip capture is
+  `1080×2444`, so it is not a valid visual comparison to the `1320×2120`
+  NextN result. Raw local artifacts are retained under
+  `.hvigor/outputs/smart-grip-alignment-20260813T0830/` and are excluded from
+  source control.
+
 ## Current delivery result — Gallery Detail public DTO cache — 2026-08-13
 
 - Commits `c4693d2`, `e209278`, and `a588c52` were built as the signed Debug
