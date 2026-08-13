@@ -127,6 +127,11 @@ authorize an edit, replace a device comparison, or define product completion.
   evidence-only and open; the fixed-edge, follow-operation, and preference
   restoration branches stay accepted and must not be re-proved without a new
   source change or user request.
+- **State mapping clarification — 2026-08-13:** the adjacent
+  `doc_plaintext` alignment icon and `paintbrush` style icon are same-level
+  reference leaves with different semantics, not a signal to merge, reorder,
+  or hide one of them. The accepted boundary here is the action-alignment
+  leaf plus the button-style leaf remaining side by side in the Layout group.
 - **Unaccepted boundary:** the device exposed the `智感握姿` menu option, but
   this run did not induce or observe a real `holdingHandChanged` event. The
   only retained NextE smart-grip captures are `1080×2444`, not this run's

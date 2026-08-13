@@ -1,5 +1,26 @@
 # NextN active device-acceptance queue
 
+## Current delivery observation — Gallery Detail smart-grip evidence closure — 2026-08-13
+
+- The signed Debug build for the smart-grip/alignment lane was installed in
+  place on only `192.168.50.237:12345`; no app data clear or uninstall
+  occurred. The selected device was woken and read back as `AWAKE` with
+  `OverrideTimeout=86400000ms` before the sequence.
+- The current native Layout row still reported `智感握姿` after a
+  data-preserving NextN-only force-stop and cold start. That is the retained
+  preference-restoration evidence for this lane.
+- Fixed-left and fixed-right moved the current default-hit Read action to the
+  selected edge while preserving the full-width transparent rail. In follow
+  operation, a deliberate vertical scroll on the metadata List moved the
+  action left; a later right-side vertical scroll moved it right.
+- The retained NextE smart-grip capture remains a different viewport and is
+  rejected as a same-state visual pair for this run. The real
+  `holdingHandChanged` event was not induced or observed here, so that
+  sensor branch stays open and must not be claimed as completed.
+- Raw local artifacts are retained under
+  `.hvigor/outputs/smart-grip-alignment-20260813T0830/` and are excluded
+  from source control.
+
 ## Current delivery observation — Reader Settings grouped rows — 2026-08-13
 
 - The installed signed Debug build was reviewed in place on only
