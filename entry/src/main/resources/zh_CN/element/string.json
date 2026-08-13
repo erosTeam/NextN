@@ -186,6 +186,7 @@
     { "name": "gallery_action_cancel", "value": "取消" },
     { "name": "gallery_action_comments", "value": "评论" },
     { "name": "gallery_action_continue", "value": "继续" },
+    { "name": "gallery_action_continue_page", "value": "继续 P{0}" },
     { "name": "gallery_action_open", "value": "打开" },
     { "name": "gallery_action_pages", "value": "页面" },
     { "name": "gallery_action_read", "value": "阅读" },

@@ -1073,23 +1073,25 @@ export struct GalleryDetailPage {
       (this.readFabUsesHdsMaterial() ? 0 : ThemeTokens.SPACE_LG)
   }
 
-  private readActionLabel(): string {
-    return AppStrings.get(this.hasReadProgress ? 'gallery_action_continue' : 'gallery_action_read')
+  private readFabMaterialBarWidth(): number {
+    if (!this.hasReadProgress) {
+      return 86
+    }
+    const pageIndex: number = this.clampResumePageIndex(this.resumePageIndex)
+    return Math.min(172, 104 + (pageIndex + 1).toString().length * 8)
   }
 
-  /** A marker-backed, one-based local resume label; never infer it from index zero alone. */
-  private resumePageContext(): string {
+  private readActionLabel(): string {
     if (!this.hasReadProgress) {
-      return ''
+      return AppStrings.get('gallery_action_read')
     }
     const pageCount: number = this.localResumePageCount()
     if (pageCount <= 0) {
-      return ''
+      return AppStrings.get('gallery_action_continue')
     }
     const pageIndex: number = this.clampResumePageIndex(this.resumePageIndex)
-    return AppStrings.format('gallery_resume_page_context', [
+    return AppStrings.format('gallery_action_continue_page', [
       (pageIndex + 1).toString(),
-      pageCount.toString(),
     ])
   }
 
@@ -1125,9 +1127,7 @@ export struct GalleryDetailPage {
     const count: number = this.favoriteCountFromSession >= 0
       ? this.favoriteCountFromSession
       : this.detail.favoriteCount
-    return count > 0
-      ? AppStrings.format('gallery_meta_favourites', [count.toString()])
-      : ''
+    return count > 0 ? count.toString() : ''
   }
 
   /** The v2 detail has no separate language field; its language tag is authoritative. */
@@ -1399,9 +1399,6 @@ export struct GalleryDetailPage {
           }
           if (this.galleryPageCountText().length > 0) {
             this.GalleryMetaItem($r('sys.symbol.picture'), this.galleryPageCountText())
-          }
-          if (this.resumePageContext().length > 0) {
-            this.GalleryMetaFullRow($r('sys.symbol.doc_plaintext'), this.resumePageContext())
           }
           if (this.detail.scanlator.length > 0) {
             this.GalleryMetaFullRow($r('sys.symbol.person'), this.detail.scanlator)
@@ -1975,7 +1972,7 @@ export struct GalleryDetailPage {
   private ReadFabHds() {
     NextNHdsCapsuleBarButton({
       controller: this.readFabController,
-      barWidth: 120,
+      barWidth: this.readFabMaterialBarWidth(),
       barHeight: ThemeTokens.ACTION_HEIGHT,
       activityPadding: ThemeTokens.SPACE_LG,
       barBottomMargin: ThemeTokens.SPACE_LG,
@@ -2016,7 +2013,6 @@ export struct GalleryDetailPage {
         Row() {
           this.ReadFab()
         }
-        .width('100%')
         .height(this.readFabOuterHeight())
         .hitTestBehavior(HitTestMode.Default)
       }

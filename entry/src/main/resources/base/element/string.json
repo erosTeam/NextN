@@ -186,6 +186,7 @@
     { "name": "gallery_action_cancel", "value": "Cancel" },
     { "name": "gallery_action_comments", "value": "Comments" },
     { "name": "gallery_action_continue", "value": "Continue" },
+    { "name": "gallery_action_continue_page", "value": "Continue P{0}" },
     { "name": "gallery_action_open", "value": "Open" },
     { "name": "gallery_action_pages", "value": "Pages" },
     { "name": "gallery_action_read", "value": "Read" },

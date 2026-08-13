@@ -186,6 +186,7 @@
     { "name": "gallery_action_cancel", "value": "キャンセル" },
     { "name": "gallery_action_comments", "value": "コメント" },
     { "name": "gallery_action_continue", "value": "続行" },
+    { "name": "gallery_action_continue_page", "value": "続行 P{0}" },
     { "name": "gallery_action_open", "value": "開く" },
     { "name": "gallery_action_pages", "value": "ページ" },
     { "name": "gallery_action_read", "value": "読む" },

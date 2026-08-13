@@ -2728,3 +2728,37 @@ authorize an edit, replace a device comparison, or define product completion.
   The first-request error row is implemented in source under the same owner,
   but was not induced on the device and is therefore EVIDENCE-ONLY rather
   than visually accepted; do not manufacture a failure solely to retest it.
+
+## OPEN — Gallery Detail primary Read action ownership and metadata copy — 2026-08-13
+
+- **Why newly actionable:** the user reports that the floating Read action is
+  visibly left-aligned, that an existing resume page value is duplicated in
+  metadata instead of being part of the Continue action, and that a heart
+  metadata cell redundantly says “favourites” after its heart icon.
+- **Whole affected tree:** `GalleryDetailPage -> DetailWorkspace(Stack) ->
+  DetailMetadataList(PullRefreshListScaffold) + ReadFabRail(transparent
+  overlay) -> ReadFab(Filled/HDS)`. `GalleryInformation` remains the existing
+  metadata `NextNGroupedListSection -> Flex` owner. This boundary excludes
+  Detail list spacing, preview/related/comment rails, scroll reserve, FAB
+  floating behavior, Reader restore semantics, favourite mutation, and all
+  other metadata cells.
+- **Source/reference evidence:** NextE keeps an intrinsic-width Read button
+  inside a full-width transparent rail and gives a saved page to the Read
+  action label (`Resume P<n>`), rather than adding a resume metadata row.
+  NextN commit `7d78e45` inserted a full-width inner `Row` between its rail
+  and `ReadFab`; the outer End alignment can no longer position the actual
+  action. Its retained reader marker already distinguishes page zero from no
+  progress, so only presentation changes are needed.
+- **Exact correction:** remove only that inner row's full width; retain its
+  transparent rail, hit-test owner, overlay position, and existing tail
+  reserve. Change the existing Continue label to include the marker-backed
+  one-based page; remove only the duplicate metadata row.
+  Keep the heart icon and render its count directly, without a redundant
+  semantic label. Both Filled and HDS Read leaves consume the same label; HDS
+  width becomes the smallest bounded content width necessary for that label.
+- **Verification plan and limit:** inspect the exact diff and build the signed
+  Debug HAP. A same-state Detail capture must then confirm right-aligned
+  intrinsic FAB geometry and readable saved-progress label without changing
+  any preference, content, account, favourite state, or Reader marker. The
+  visual result remains OPEN until that device comparison; no UI static
+  contract is used.
