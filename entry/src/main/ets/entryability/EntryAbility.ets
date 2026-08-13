@@ -15,6 +15,7 @@ import {
   AppStrings,
   LanguageSettings,
   LlmSourceProfileRepository,
+  MangaRenderingServiceSettings,
   NhAccountProfileService,
   NhAccountSessionService,
   NhTagCatalogService,
@@ -152,6 +153,9 @@ export default class EntryAbility extends UIAbility {
       // Metadata and consumer bindings are safe to restore before Reader
       // routes mount; API keys remain in the separate HUKS vault.
       LlmSourceProfileRepository.restore(this.context),
+      // Keep the optional self-hosted renderer's non-secret invalidation state
+      // live before a retained Reader can project a translated page.
+      MangaRenderingServiceSettings.restore(this.context),
       // Resume only the durable, user-created private queue. Any process-killed
       // active task is restored as paused by the service before a user resumes it.
       // Keep the final startup outcome available to the retained Downloads

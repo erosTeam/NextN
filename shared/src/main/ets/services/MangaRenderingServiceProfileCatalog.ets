@@ -4,6 +4,9 @@ import {
   MANGA_RENDERING_INPAINTING_FAST,
   MANGA_RENDERING_INPAINTING_QUALITY,
 } from '../settings/MangaRenderingServiceSettings'
+import { MangaRenderingServiceConfig } from './MangaRenderingServiceConfig'
+import { cryptoFramework } from '@kit.CryptoArchitectureKit'
+import { util } from '@kit.ArkTS'
 
 export const MANGA_RENDERING_SERVICE_BACKEND_ID: string = 'manga-translator-ui'
 export const MANGA_RENDERING_SERVICE_PROTOCOL_REVISION: number = 5
@@ -70,6 +73,34 @@ export class MangaRenderingServiceProfileCatalog {
     return result
   }
 
+  /**
+   * A durable profile identity for the local cache only. It encodes the
+   * canonical endpoint and fixed sidecar JSON as a SHA-256 suffix; neither
+   * raw endpoint nor credentials leave this process through persisted DTOs.
+   */
+  static runtimeProfileId(
+    baseUrl: string,
+    sourceLanguage: string,
+    detectionProfile: string = MANGA_RENDERING_DETECTION_HIGH_RECALL,
+    inpaintingProfile: string = MANGA_RENDERING_INPAINTING_QUALITY,
+  ): string {
+    const baseProfileId: string = MangaRenderingServiceProfileCatalog.profileId(
+      sourceLanguage,
+      detectionProfile,
+      inpaintingProfile,
+    )
+    const fingerprint: string = MangaRenderingServiceProfileCatalog.digest(JSON.stringify([
+      MangaRenderingServiceConfig.validatedBaseUrl(baseUrl),
+      MangaRenderingServiceProfileCatalog.configJson(
+        sourceLanguage,
+        detectionProfile,
+        inpaintingProfile,
+      ),
+      `manga-rendering-service-protocol-v${MANGA_RENDERING_SERVICE_PROTOCOL_REVISION}`,
+    ]))
+    return baseProfileId + '@' + fingerprint
+  }
+
   static assertOptions(detectionProfile: string, inpaintingProfile: string): void {
     if ((detectionProfile !== MANGA_RENDERING_DETECTION_HIGH_RECALL &&
       detectionProfile !== MANGA_RENDERING_DETECTION_BALANCED) ||
@@ -80,6 +111,14 @@ export class MangaRenderingServiceProfileCatalog {
   }
 
   static supportsProfileId(profileId: string): boolean {
+    const separator: number = profileId.lastIndexOf('@')
+    let baseProfileId: string = profileId
+    if (separator >= 0) {
+      if (separator <= 0 || !/^[a-f0-9]{64}$/.test(profileId.substring(separator + 1))) {
+        return false
+      }
+      baseProfileId = profileId.substring(0, separator)
+    }
     const sourceLanguages: string[] = ['auto', 'non-japanese']
     const detectionProfiles: string[] = [
       MANGA_RENDERING_DETECTION_HIGH_RECALL,
@@ -96,7 +135,7 @@ export class MangaRenderingServiceProfileCatalog {
         for (let inpaintingIndex: number = 0;
           inpaintingIndex < inpaintingProfiles.length;
           inpaintingIndex++) {
-          if (profileId === MangaRenderingServiceProfileCatalog.profileId(
+          if (baseProfileId === MangaRenderingServiceProfileCatalog.profileId(
             sourceLanguages[sourceIndex],
             detectionProfiles[detectionIndex],
             inpaintingProfiles[inpaintingIndex],
@@ -107,6 +146,17 @@ export class MangaRenderingServiceProfileCatalog {
       }
     }
     return false
+  }
+
+  private static digest(value: string): string {
+    const md = cryptoFramework.createMd('SHA256')
+    md.updateSync({ data: new util.TextEncoder().encodeInto(value) })
+    const bytes: Uint8Array = md.digestSync().data
+    const parts: string[] = []
+    for (let index: number = 0; index < bytes.length; index++) {
+      parts.push(bytes[index].toString(16).padStart(2, '0'))
+    }
+    return parts.join('')
   }
 
   private static usesJapaneseOcr(sourceLanguage: string): boolean {

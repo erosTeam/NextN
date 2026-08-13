@@ -55,6 +55,7 @@ export class MangaRenderingServiceBackend implements ComicRegionRenderBackend {
   private readonly sourceLanguage: string
   private readonly detectionProfile: string
   private readonly inpaintingProfile: string
+  private readonly runtimeProfileId: string
 
   constructor(
     context: common.UIAbilityContext,
@@ -63,6 +64,7 @@ export class MangaRenderingServiceBackend implements ComicRegionRenderBackend {
     sourceLanguage: string,
     detectionProfile: string,
     inpaintingProfile: string,
+    credentialRevision: number,
   ) {
     this.context = context
     this.baseUrl = MangaRenderingServiceConfig.validatedBaseUrl(baseUrl)
@@ -71,6 +73,17 @@ export class MangaRenderingServiceBackend implements ComicRegionRenderBackend {
     MangaRenderingServiceProfileCatalog.assertOptions(detectionProfile, inpaintingProfile)
     this.detectionProfile = detectionProfile
     this.inpaintingProfile = inpaintingProfile
+    if (!Number.isFinite(credentialRevision) || credentialRevision <= 0 ||
+      Math.floor(credentialRevision) !== credentialRevision ||
+      credentialRevision > Number.MAX_SAFE_INTEGER) {
+      throw new Error('Manga rendering service credential revision is invalid')
+    }
+    this.runtimeProfileId = MangaRenderingServiceProfileCatalog.runtimeProfileId(
+      this.baseUrl,
+      this.sourceLanguage,
+      this.detectionProfile,
+      this.inpaintingProfile,
+    )
   }
 
   backendId(): string {
@@ -78,11 +91,7 @@ export class MangaRenderingServiceBackend implements ComicRegionRenderBackend {
   }
 
   profileId(): string {
-    return MangaRenderingServiceProfileCatalog.profileId(
-      this.sourceLanguage,
-      this.detectionProfile,
-      this.inpaintingProfile,
-    )
+    return this.runtimeProfileId
   }
 
   protocolRevision(): number {

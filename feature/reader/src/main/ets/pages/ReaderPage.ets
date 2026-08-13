@@ -32,10 +32,12 @@ import {
   LayoutSafeAreaState,
   LanguageState,
   LlmSourceProfilesState,
+  MangaRenderingServiceState,
   ThemeTokens,
   connectLanguageState,
   connectLayoutSafeArea,
   connectLlmSourceProfiles,
+  connectMangaRenderingService,
   connectReaderPresentation,
   connectReaderOverlayNavigation,
   supportsMangaTranslation,
@@ -1452,6 +1454,7 @@ export struct ReaderPage {
   @Local readerTranslationAutoEnabled: boolean = false
   @Local language: LanguageState = connectLanguageState()
   @Local llmSources: LlmSourceProfilesState = connectLlmSourceProfiles()
+  @Local mangaRenderingService: MangaRenderingServiceState = connectMangaRenderingService()
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
   private lastPersistedIndex: number = -1
@@ -1564,7 +1567,12 @@ export struct ReaderPage {
   }
 
   /** A source/language change hides stale results; auto mode then schedules only the new identity. */
-  @Monitor('language.effectiveLocale', 'llmSources.mangaBinding', 'llmSources.profiles')
+  @Monitor(
+    'language.effectiveLocale',
+    'llmSources.mangaBinding',
+    'llmSources.profiles',
+    'mangaRenderingService.selectionEpoch',
+  )
   onReaderTranslationRuntimeChanged(): void {
     if (this.readerTranslationAutoEnabled) {
       this.scheduleReaderTranslationAuto()
@@ -2343,18 +2351,34 @@ export struct ReaderPage {
     return this.readerTranslatedPageIndexes.indexOf(pageIndex)
   }
 
-  /** This contains only public source metadata, never a credential or endpoint. */
+  /** This contains only non-secret runtime metadata, never a credential or endpoint. */
   private readerTranslationRuntimeKey(
     targetLanguage: string,
     sourceProfileId: string,
     sourceRevision: number,
     modelId: string,
+    sidecarSelectionEpoch: number,
   ): string {
     if (targetLanguage.length === 0 || sourceProfileId.length === 0 || modelId.length === 0 ||
-      !Number.isFinite(sourceRevision) || sourceRevision <= 0 || Math.floor(sourceRevision) !== sourceRevision) {
+      !Number.isFinite(sourceRevision) || sourceRevision <= 0 || Math.floor(sourceRevision) !== sourceRevision ||
+      !Number.isFinite(sidecarSelectionEpoch) || sidecarSelectionEpoch < 0 ||
+      Math.floor(sidecarSelectionEpoch) !== sidecarSelectionEpoch) {
       return ''
     }
-    return JSON.stringify([targetLanguage, sourceProfileId, sourceRevision, modelId])
+    return JSON.stringify([
+      targetLanguage,
+      sourceProfileId,
+      sourceRevision,
+      modelId,
+      sidecarSelectionEpoch,
+    ])
+  }
+
+  /** Disabled sidecar drafts do not invalidate an active local-render result. */
+  private readerTranslationSidecarSelectionEpoch(): number {
+    return this.mangaRenderingService.enabled
+      ? this.mangaRenderingService.selectionEpoch
+      : 0
   }
 
   /** Read the local state here so image-leaf projection rerenders when language changes. */
@@ -2381,6 +2405,7 @@ export struct ReaderPage {
       `llm-source:${profile.sourceProfileId}:r${profile.sourceRevision}`,
       profile.sourceRevision,
       binding.modelId,
+      this.readerTranslationSidecarSelectionEpoch(),
     )
   }
 
@@ -2391,6 +2416,7 @@ export struct ReaderPage {
       identity.translationSourceProfileId,
       identity.translationSourceRevision,
       identity.translationModelId,
+      this.readerTranslationSidecarSelectionEpoch(),
     )
   }
 
@@ -2477,7 +2503,8 @@ export struct ReaderPage {
 
   /** Match the Reader action's availability to the persisted manga-source binding. */
   private readerTranslationSourceConfigured(): boolean {
-    return this.readerTranslationCurrentRuntimeKey().length > 0
+    return this.mangaRenderingService.initialized &&
+      this.readerTranslationCurrentRuntimeKey().length > 0
   }
 
   /** Auto mode follows NextE's one-session, one-translation-at-a-time policy. */

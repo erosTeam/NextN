@@ -105,6 +105,7 @@ export {
 export { LlmSourceProfileContract } from './services/LlmSourceProfileContract'
 export { LlmSourceProfileRepository } from './storage/LlmSourceProfileRepository'
 export { LlmSourceProfilesState, connectLlmSourceProfiles } from './state/LlmSourceProfilesState'
+export { MangaRenderingServiceState, connectMangaRenderingService } from './state/MangaRenderingServiceState'
 export { LlmSourceSecretVault } from './services/LlmSourceSecretVault'
 export {
   MangaRenderingServiceCredential,

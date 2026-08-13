@@ -23,11 +23,12 @@ import {
 } from './ComicTranslationModelService'
 import { ComicTextTranslatorFactory } from './ComicResponsesTextTranslator'
 import { MangaRenderingServiceBackend } from './MangaRenderingServiceBackend'
-import { MangaRenderingServiceSecretStore } from './MangaRenderingServiceSecretStore'
+import { MangaRenderingServiceCredential, MangaRenderingServiceSecretStore } from './MangaRenderingServiceSecretStore'
 import {
   MangaRenderingServiceSettings,
   MangaRenderingServiceSettingsSnapshot,
 } from '../settings/MangaRenderingServiceSettings'
+import { MangaRenderingServiceState, connectMangaRenderingService } from '../state/MangaRenderingServiceState'
 import {
   ComicTranslationRepository,
 } from './ComicTranslationRepository'
@@ -48,6 +49,12 @@ const COMIC_READER_HASH_CHUNK_BYTES: number = 256 * 1024
 const COMIC_READER_RENDER_PROFILE_ID: string = 'reader-local-bubble-layout-v45'
 const COMIC_READER_SOURCE_TREATMENT_PROFILE_ID: string = 'local-ctd-aot-inpaint-v30'
 const COMIC_READER_LAYOUT_PROFILE_ID: string = 'local-bubble-typography-v39'
+const COMIC_READER_SELF_HOSTED_RENDER_PROFILE_ID: string =
+  'reader-manga-rendering-service-render-v1'
+const COMIC_READER_SELF_HOSTED_SOURCE_TREATMENT_PROFILE_ID: string =
+  'manga-rendering-service-v1.9.9-source-treatment-v1'
+const COMIC_READER_SELF_HOSTED_LAYOUT_PROFILE_ID: string =
+  'manga-rendering-service-v1.9.9-layout-v1'
 const MAX_RUNTIME_ORCHESTRATORS: number = 4
 const MAX_COMIC_READER_IDENTIFIER_CHARS: number = 160
 const MAX_COMIC_READER_IMAGE_PATH_CHARS: number = 4096
@@ -57,6 +64,29 @@ class ComicTranslationReaderFileMetadata {
   imageHash: string = ''
   imageWidth: number = 0
   imageHeight: number = 0
+}
+
+/**
+ * Carries route-private runtime identity separately from durable render
+ * identity. Credential material never leaves the process-local map key.
+ */
+class ComicTranslationRuntimeBackend {
+  backend: ComicRegionRenderBackend
+  regionRevision: number
+  renderProfile: ComicRenderProfile
+  runtimeFingerprint: string
+
+  constructor(
+    backend: ComicRegionRenderBackend,
+    regionRevision: number,
+    renderProfile: ComicRenderProfile,
+    runtimeFingerprint: string = '',
+  ) {
+    this.backend = backend
+    this.regionRevision = regionRevision
+    this.renderProfile = renderProfile
+    this.runtimeFingerprint = runtimeFingerprint
+  }
 }
 
 /** Immutable per-page reader input. The image path must resolve to an app-private cached page. */
@@ -87,7 +117,9 @@ export class ComicTranslationRuntimeService {
     ComicTranslationRuntimeService.validateInput(input)
     const metadata: ComicTranslationReaderFileMetadata =
       await ComicTranslationRuntimeService.fileMetadata(input.imageFilePath)
-    const backend: ComicRegionRenderBackend = await ComicTranslationRuntimeService.backendFor(context, input)
+    const runtimeBackend: ComicTranslationRuntimeBackend =
+      await ComicTranslationRuntimeService.backendFor(context, input)
+    const backend: ComicRegionRenderBackend = runtimeBackend.backend
     const translator: ComicTextTranslator = await ComicTextTranslatorFactory.create(context)
     const request: ComicVisualTranslationRequest = new ComicVisualTranslationRequest()
     request.source = ComicTranslationRuntimeService.visualSource(input, metadata)
@@ -98,11 +130,17 @@ export class ComicTranslationRuntimeService {
     request.context.glossaryRevision = 0
     request.context.styleGuideRevision = 2
     request.context.contextRevision = 1
-    request.renderProfile = ComicTranslationRuntimeService.renderProfile()
-    request.requestedRegionRevision = backend.protocolRevision()
+    request.renderProfile = runtimeBackend.renderProfile.copy()
+    request.requestedRegionRevision = runtimeBackend.regionRevision
     request.requestedDocumentRevision = 1
     request.requestedTranslationRevision = 1
-    return ComicTranslationRuntimeService.orchestrator(context, backend, translator).run(
+    return ComicTranslationRuntimeService.orchestrator(
+      context,
+      backend,
+      translator,
+      runtimeBackend.regionRevision,
+      runtimeBackend.runtimeFingerprint,
+    ).run(
       request,
       forceRefresh,
     )
@@ -138,11 +176,15 @@ export class ComicTranslationRuntimeService {
     context: common.UIAbilityContext,
     backend: ComicRegionRenderBackend,
     translator: ComicTextTranslator,
+    regionRevision: number,
+    runtimeFingerprint: string,
   ): ComicVisualTranslationOrchestrator {
     const runtimeKey: string = ComicTranslationRuntimeService.digest(JSON.stringify([
       backend.backendId(),
       backend.profileId(),
       `${backend.protocolRevision()}`,
+      `${regionRevision}`,
+      runtimeFingerprint,
       translator.sourceProfileId(),
       `${translator.sourceRevision()}`,
       translator.modelId(),
@@ -212,23 +254,50 @@ export class ComicTranslationRuntimeService {
   private static async backendFor(
     context: common.UIAbilityContext,
     input: ComicTranslationReaderPageInput,
-  ): Promise<ComicRegionRenderBackend> {
+  ): Promise<ComicTranslationRuntimeBackend> {
+    const selection: MangaRenderingServiceState = connectMangaRenderingService()
+    const selectionEpoch: number = selection.selectionEpoch
+    if (!selection.initialized || !selection.enabled) {
+      return ComicTranslationRuntimeService.localRuntimeBackendFor(context)
+    }
     const settings: MangaRenderingServiceSettingsSnapshot =
       await MangaRenderingServiceSettings.load(context)
     if (!settings.enabled) {
-      return ComicTranslationRuntimeService.localBackendFor(context)
+      throw new Error('Self-hosted manga translation service selection changed')
     }
-    const credential = await MangaRenderingServiceSecretStore.read(context)
-    if (!settings.configured() || !credential.configured()) {
-      throw new Error('Self-hosted manga translation service is not configured')
+    const credential: MangaRenderingServiceCredential =
+      await MangaRenderingServiceSecretStore.read(context)
+    const currentSelection: MangaRenderingServiceState = connectMangaRenderingService()
+    if (!currentSelection.initialized || !currentSelection.enabled ||
+      currentSelection.selectionEpoch !== selectionEpoch || !settings.configured() || !credential.configured() ||
+      credential.revision !== selection.credentialRevision) {
+      throw new Error('Self-hosted manga translation service selection changed')
     }
-    return new MangaRenderingServiceBackend(
+    const backend: MangaRenderingServiceBackend = new MangaRenderingServiceBackend(
       context,
       settings.baseUrl,
       credential,
       input.sourceLanguage,
       settings.detectionProfile,
       settings.inpaintingProfile,
+      credential.revision,
+    )
+    return new ComicTranslationRuntimeBackend(
+      backend,
+      credential.revision,
+      ComicTranslationRuntimeService.selfHostedRenderProfile(),
+      ComicTranslationRuntimeService.credentialRuntimeFingerprint(credential),
+    )
+  }
+
+  private static localRuntimeBackendFor(
+    context: common.UIAbilityContext,
+  ): ComicTranslationRuntimeBackend {
+    const backend: ComicRegionRenderBackend = ComicTranslationRuntimeService.localBackendFor(context)
+    return new ComicTranslationRuntimeBackend(
+      backend,
+      backend.protocolRevision(),
+      ComicTranslationRuntimeService.renderProfile(),
     )
   }
 
@@ -265,6 +334,25 @@ export class ComicTranslationRuntimeService {
     profile.targetMimeType = 'image/png'
     profile.revision = 37
     return profile
+  }
+
+  private static selfHostedRenderProfile(): ComicRenderProfile {
+    const profile: ComicRenderProfile = new ComicRenderProfile()
+    profile.profileId = COMIC_READER_SELF_HOSTED_RENDER_PROFILE_ID
+    profile.sourceTreatmentProfileId = COMIC_READER_SELF_HOSTED_SOURCE_TREATMENT_PROFILE_ID
+    profile.layoutProfileId = COMIC_READER_SELF_HOSTED_LAYOUT_PROFILE_ID
+    profile.targetMimeType = 'image/png'
+    profile.revision = 1
+    return profile
+  }
+
+  private static credentialRuntimeFingerprint(
+    credential: MangaRenderingServiceCredential,
+  ): string {
+    return ComicTranslationRuntimeService.digest(JSON.stringify([
+      credential.username,
+      credential.password,
+    ]))
   }
 
   private static visualSource(

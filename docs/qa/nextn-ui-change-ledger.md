@@ -1308,6 +1308,26 @@ authorize an edit, replace a device comparison, or define product completion.
   build the signed HAP. A real source/language change during a configured
   translation remains EVIDENCE-ONLY until it can be observed without changing
   private source credentials or the established Reader canvas/chrome state.
+- **Source-only self-hosted identity correction — 2026-08-13:** the optional
+  manga-rendering-service route previously keyed its long-lived orchestrator
+  only by fixed protocol/profile plus the text source. Changing the selected
+  endpoint, detection/inpainting JSON, or account could therefore retain an
+  old backend; its durable rendered/document identities also kept the fixed
+  protocol revision and described the result with the local renderer profile.
+  Keep the existing Reader action, canvas, status overlay, source binding, and
+  settings form unchanged. Give the allowed sidecar profile a full SHA-256
+  suffix derived from the canonical endpoint and pinned sidecar JSON, so the
+  existing document and rendered identities change without storing that raw
+  configuration. Store only a monotonic credential generation alongside the
+  protected credential record and use it as the existing durable region
+  revision; credentials and their hashes remain process-local only. Select a
+  dedicated self-hosted render profile, restore one canonical non-secret state
+  before Reader actions are enabled, and use its local selection epoch solely
+  to invalidate a mounted Reader's transient result. No endpoint, account,
+  password, token, or credential fingerprint enters reactive UI state,
+  persistent cache metadata, diagnostics, or the source tree. Exact diff
+  review and a signed build are the source boundary; a configured sidecar run
+  after changing its settings remains EVIDENCE-ONLY.
 - Before/after rationale: the runtime, local vision backend, provider bridge,
   private rendered-image cache, and private document cache now exist outside
   the Reader UI. The smallest missing connection is the existing per-page

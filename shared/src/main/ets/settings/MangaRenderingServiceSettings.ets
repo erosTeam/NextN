@@ -1,5 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import { preferences } from '@kit.ArkData'
+import { MangaRenderingServiceSecretStore } from '../services/MangaRenderingServiceSecretStore'
+import { connectMangaRenderingService } from '../state/MangaRenderingServiceState'
 
 const RENDERING_SERVICE_STORE: string = 'nextn_manga_rendering_service'
 const BASE_URL_KEY: string = 'base_url'
@@ -70,6 +72,11 @@ export class MangaRenderingServiceSettings {
     return snapshot
   }
 
+  /** Restore the canonical sidecar selection before Reader routes can start work. */
+  static async restore(context: common.UIAbilityContext): Promise<void> {
+    await MangaRenderingServiceSettings.publishRuntimeState(context)
+  }
+
   static async save(
     context: common.UIAbilityContext,
     snapshot: MangaRenderingServiceSettingsSnapshot,
@@ -91,5 +98,25 @@ export class MangaRenderingServiceSettings {
     )
     store.putSync(ENABLED_KEY, snapshot.enabled === true)
     store.flushSync()
+    await MangaRenderingServiceSettings.publishRuntimeState(context)
+  }
+
+  /**
+   * HUKS owns credential generation. If either durable store cannot be read,
+   * keep the optional route unavailable rather than projecting a stale
+   * sidecar selection into a mounted Reader.
+   */
+  private static async publishRuntimeState(context: common.UIAbilityContext): Promise<void> {
+    try {
+      const snapshot: MangaRenderingServiceSettingsSnapshot =
+        await MangaRenderingServiceSettings.load(context)
+      const credential = await MangaRenderingServiceSecretStore.read(context)
+      connectMangaRenderingService().publishSnapshot(
+        snapshot.enabled && snapshot.configured() && credential.configured(),
+        credential.revision,
+      )
+    } catch (_error) {
+      connectMangaRenderingService().publishSnapshot(false, 1)
+    }
   }
 }

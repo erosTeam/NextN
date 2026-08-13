@@ -84,6 +84,9 @@ export struct MangaRenderingServiceSettingsPage {
   }
 
   private draftCredential(): MangaRenderingServiceCredential {
+    // This is input validation only. `persistCheckedCandidate` assigns the
+    // durable generation after the disabled settings snapshot has committed;
+    // passing an absent record's revision 0 here would reject first setup.
     return MangaRenderingServiceCredential.account(this.usernameDraft, this.passwordDraft)
   }
 
@@ -102,14 +105,28 @@ export struct MangaRenderingServiceSettingsPage {
 
   /** Persist a candidate disabled before network verification can make it selectable. */
   private async persistCheckedCandidate(): Promise<MangaRenderingServiceCredential> {
-    const credential: MangaRenderingServiceCredential = this.effectiveCredential()
+    let credential: MangaRenderingServiceCredential = this.effectiveCredential()
     if (!credential.configured()) {
       throw new Error('credential-required')
     }
     const snapshot: MangaRenderingServiceSettingsSnapshot = this.candidate(false)
     await MangaRenderingServiceSettings.save(this.context(), snapshot)
     if (this.credentialDirty) {
-      await MangaRenderingServiceSecretStore.save(this.context(), credential)
+      // A first credential has generation 1; a retained cleared record is
+      // advanced as well, so neither path can reuse prior sidecar output.
+      const nextRevision: number = MangaRenderingServiceCredential.nextRevision(
+        this.storedCredential.revision,
+      )
+      credential = MangaRenderingServiceCredential.withRevision(
+        credential,
+        nextRevision,
+      )
+      credential = await MangaRenderingServiceSecretStore.save(this.context(), credential)
+      // HUKS now owns the newer cache generation. Re-publish the canonical
+      // selection while the sidecar remains disabled; if this Preferences
+      // write fails, the disabled first write above still prevents a later
+      // stale sidecar selection.
+      await MangaRenderingServiceSettings.save(this.context(), snapshot)
       this.storedCredential = credential.copy()
       this.passwordDraft = ''
       this.credentialDirty = false
