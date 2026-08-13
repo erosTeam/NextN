@@ -22,10 +22,9 @@
 ## Current delivery observation — Gallery Detail smart-grip Read-action alignment — 2026-08-13
 
 - Commit `bee5a59` was built as the signed Debug HAP and installed in place on
-  only `192.168.50.237:12345`; no app data clear, uninstall, account action,
-  or login action occurred. The selected device was live-resolved, leased,
-  woken, and read back as `AWAKE` with `OverrideTimeout=86400000ms` before the
-  sequence.
+  only `192.168.50.237:12345`; no data clear, uninstall, account action, or
+  login action occurred. The device was live-resolved, leased, woken, and read
+  back as `AWAKE` with `OverrideTimeout=86400000ms` before the sequence.
 - The original `智感握姿` setting was observed before testing. The native Layout
   menu exposed `智感握姿`, `跟随操作`, `固定左侧`, and `固定右侧`. Fixed-left and
   fixed-right each placed the existing default-hit floating Read action on the

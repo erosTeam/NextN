@@ -120,6 +120,13 @@ authorize an edit, replace a device comparison, or define product completion.
   Raw local evidence is retained under
   `.hvigor/outputs/smart-grip-alignment-20260813T0830/` and is excluded from
   Git.
+- **Current device follow-up — 2026-08-13:** after the above result, the
+  same selected device still shows the restored `智感握姿` layout row on
+  cold-started Layout. This run did not induce or observe a real
+  `holdingHandChanged` callback, so the sensor-triggered branch remains
+  evidence-only and open; the fixed-edge, follow-operation, and preference
+  restoration branches stay accepted and must not be re-proved without a new
+  source change or user request.
 - **Unaccepted boundary:** the device exposed the `智感握姿` menu option, but
   this run did not induce or observe a real `holdingHandChanged` event. The
   only retained NextE smart-grip captures are `1080×2444`, not this run's
