@@ -25,12 +25,15 @@ import {
   ComicTranslationReaderPageInput,
   ComicTranslationRuntimeService,
   ComicVisualTranslationRunResult,
+  CommentTranslationService,
   ReaderPresentationService,
   ReaderPresentationState,
   ReaderOverlayNavigationState,
   LayoutSafeAreaState,
+  LanguageState,
   LlmSourceProfilesState,
   ThemeTokens,
+  connectLanguageState,
   connectLayoutSafeArea,
   connectLlmSourceProfiles,
   connectReaderPresentation,
@@ -1437,12 +1440,17 @@ export struct ReaderPage {
   @Local readerSourcePagePaths: string[] = []
   @Local readerTranslatedPageIndexes: number[] = []
   @Local readerTranslatedPageUris: string[] = []
+  /** Runtime identity beside every mounted rendered URI; private artifacts stay in their cache. */
+  @Local readerTranslatedPageRuntimeKeys: string[] = []
   @Local readerTranslationHiddenPages: number[] = []
   @Local readerTranslationRunning: boolean = false
   @Local readerTranslationPageIndex: number = -1
+  /** The active request is hidden as soon as its language/source snapshot is no longer current. */
+  @Local readerTranslationRunRuntimeKey: string = ''
   @Local readerTranslationErrorCode: string = ''
   /** Explicit, route-scoped opt-in; it never becomes a persistent Reader setting. */
   @Local readerTranslationAutoEnabled: boolean = false
+  @Local language: LanguageState = connectLanguageState()
   @Local llmSources: LlmSourceProfilesState = connectLlmSourceProfiles()
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
@@ -1468,6 +1476,7 @@ export struct ReaderPage {
   private readerTranslationEpoch: number = 0
   private readerTranslationAutoScheduleToken: number = 0
   private readerTranslationAutoFailedPageIndexes: number[] = []
+  private readerTranslationAutoFailedRuntimeKeys: string[] = []
   private readerEnhancementInteractionTimer: number = -1
   private readerEnhancementInteractionActive: boolean = false
 
@@ -1551,6 +1560,14 @@ export struct ReaderPage {
     if (!this.readerEnhancementEnabled) {
       this.resetReaderEnhancementInteractionPause()
       this.readerEnhancementStates = []
+    }
+  }
+
+  /** A source/language change hides stale results; auto mode then schedules only the new identity. */
+  @Monitor('language.effectiveLocale', 'llmSources.mangaBinding', 'llmSources.profiles')
+  onReaderTranslationRuntimeChanged(): void {
+    if (this.readerTranslationAutoEnabled) {
+      this.scheduleReaderTranslationAuto()
     }
   }
 
@@ -1807,9 +1824,11 @@ export struct ReaderPage {
     this.readerSourcePagePaths = []
     this.readerTranslatedPageIndexes = []
     this.readerTranslatedPageUris = []
+    this.readerTranslatedPageRuntimeKeys = []
     this.readerTranslationHiddenPages = []
     this.readerTranslationRunning = false
     this.readerTranslationPageIndex = -1
+    this.readerTranslationRunRuntimeKey = ''
     this.readerTranslationErrorCode = ''
     this.resetReaderTranslationAutoSession()
     this.readerTranslationEpoch += 1
@@ -2324,36 +2343,105 @@ export struct ReaderPage {
     return this.readerTranslatedPageIndexes.indexOf(pageIndex)
   }
 
-  private readerTranslatedImageUri(pageIndex: number): string {
-    const index: number = this.readerTranslatedRecordIndex(pageIndex)
-    if (index < 0 || this.readerTranslationHiddenPages.includes(pageIndex)) {
+  /** This contains only public source metadata, never a credential or endpoint. */
+  private readerTranslationRuntimeKey(
+    targetLanguage: string,
+    sourceProfileId: string,
+    sourceRevision: number,
+    modelId: string,
+  ): string {
+    if (targetLanguage.length === 0 || sourceProfileId.length === 0 || modelId.length === 0 ||
+      !Number.isFinite(sourceRevision) || sourceRevision <= 0 || Math.floor(sourceRevision) !== sourceRevision) {
       return ''
     }
-    return this.readerTranslatedPageUris[index]
+    return JSON.stringify([targetLanguage, sourceProfileId, sourceRevision, modelId])
   }
 
-  private readerTranslationHasResult(pageIndex: number): boolean {
-    return this.readerTranslatedRecordIndex(pageIndex) >= 0
+  /** Read the local state here so image-leaf projection rerenders when language changes. */
+  private readerTranslationTargetLanguage(): string {
+    const locale: string = this.language.effectiveLocale
+    if (locale.length < 0) {
+      return 'zh-CN'
+    }
+    return CommentTranslationService.targetLanguage()
   }
 
-  private rememberReaderTranslatedPage(pageIndex: number, renderedUri: string): void {
-    if (pageIndex < 0 || renderedUri.length === 0) {
+  /** Matches the identity that the runtime writes into ComicRenderedPage.identity. */
+  private readerTranslationCurrentRuntimeKey(): string {
+    const binding = this.llmSources.mangaBinding
+    if (!binding.configured()) {
+      return ''
+    }
+    const profile = this.llmSources.findById(binding.sourceProfileId)
+    if (profile === null || !supportsMangaTranslation(profile)) {
+      return ''
+    }
+    return this.readerTranslationRuntimeKey(
+      this.readerTranslationTargetLanguage(),
+      `llm-source:${profile.sourceProfileId}:r${profile.sourceRevision}`,
+      profile.sourceRevision,
+      binding.modelId,
+    )
+  }
+
+  private readerTranslationResultRuntimeKey(result: ComicVisualTranslationRunResult): string {
+    const identity = result.renderedPage.identity
+    return this.readerTranslationRuntimeKey(
+      identity.targetLanguage,
+      identity.translationSourceProfileId,
+      identity.translationSourceRevision,
+      identity.translationModelId,
+    )
+  }
+
+  private readerTranslatedRuntimeKey(pageIndex: number): string {
+    const index: number = this.readerTranslatedRecordIndex(pageIndex)
+    return index < 0 ? '' : this.readerTranslatedPageRuntimeKeys[index]
+  }
+
+  private readerTranslationHasCurrentResult(pageIndex: number): boolean {
+    const index: number = this.readerTranslatedRecordIndex(pageIndex)
+    const currentKey: string = this.readerTranslationCurrentRuntimeKey()
+    return index >= 0 && currentKey.length > 0 &&
+      this.readerTranslatedPageUris[index].length > 0 &&
+      this.readerTranslatedRuntimeKey(pageIndex) === currentKey
+  }
+
+  private readerTranslatedImageUri(pageIndex: number): string {
+    if (!this.readerTranslationHasCurrentResult(pageIndex) ||
+      this.readerTranslationHiddenPages.includes(pageIndex)) {
+      return ''
+    }
+    const index: number = this.readerTranslatedRecordIndex(pageIndex)
+    return index < 0 ? '' : this.readerTranslatedPageUris[index]
+  }
+
+  private rememberReaderTranslatedPage(
+    pageIndex: number,
+    renderedUri: string,
+    runtimeKey: string,
+  ): void {
+    if (pageIndex < 0 || renderedUri.length === 0 || runtimeKey.length === 0) {
       return
     }
     const indexes: number[] = this.readerTranslatedPageIndexes.slice()
     const uris: string[] = this.readerTranslatedPageUris.slice()
+    const runtimeKeys: string[] = this.readerTranslatedPageRuntimeKeys.slice()
     const existing: number = indexes.indexOf(pageIndex)
     if (existing >= 0) {
       uris[existing] = renderedUri
+      runtimeKeys[existing] = runtimeKey
     } else {
       indexes.push(pageIndex)
       uris.push(renderedUri)
+      runtimeKeys.push(runtimeKey)
     }
     const hidden: number[] = this.readerTranslationHiddenPages.filter(
       (candidate: number): boolean => candidate !== pageIndex,
     )
     this.readerTranslatedPageIndexes = indexes
     this.readerTranslatedPageUris = uris
+    this.readerTranslatedPageRuntimeKeys = runtimeKeys
     this.readerTranslationHiddenPages = hidden
   }
 
@@ -2373,7 +2461,7 @@ export struct ReaderPage {
 
   private readerTranslationActionLabel(): string {
     const pageIndex: number = this.currentReaderTranslationPageIndex()
-    if (!this.readerTranslationHasResult(pageIndex)) {
+    if (!this.readerTranslationHasCurrentResult(pageIndex)) {
       return AppStrings.get('reader_comic_translation_action')
     }
     return this.readerTranslatedImageUri(pageIndex).length > 0
@@ -2383,18 +2471,13 @@ export struct ReaderPage {
 
   private readerTranslationActionEnabled(): boolean {
     const pageIndex: number = this.currentReaderTranslationPageIndex()
-    return this.readerTranslationHasResult(pageIndex) ||
+    return this.readerTranslationHasCurrentResult(pageIndex) ||
       (this.readerSourceFilePath(pageIndex).length > 0 && this.readerTranslationSourceConfigured())
   }
 
   /** Match the Reader action's availability to the persisted manga-source binding. */
   private readerTranslationSourceConfigured(): boolean {
-    const binding = this.llmSources.mangaBinding
-    if (!binding.configured()) {
-      return false
-    }
-    const profile = this.llmSources.findById(binding.sourceProfileId)
-    return profile !== null && supportsMangaTranslation(profile)
+    return this.readerTranslationCurrentRuntimeKey().length > 0
   }
 
   /** Auto mode follows NextE's one-session, one-translation-at-a-time policy. */
@@ -2402,20 +2485,49 @@ export struct ReaderPage {
     this.readerTranslationAutoScheduleToken += 1
     this.readerTranslationAutoEnabled = false
     this.readerTranslationAutoFailedPageIndexes = []
+    this.readerTranslationAutoFailedRuntimeKeys = []
   }
 
   private readerTranslationAutoFailedForPage(pageIndex: number): boolean {
-    return this.readerTranslationAutoFailedPageIndexes.includes(pageIndex)
+    const runtimeKey: string = this.readerTranslationCurrentRuntimeKey()
+    return this.readerTranslationAutoFailedRecordIndex(pageIndex, runtimeKey) >= 0
   }
 
-  private setReaderTranslationAutoFailedForPage(pageIndex: number, failed: boolean): void {
-    const next: number[] = this.readerTranslationAutoFailedPageIndexes.filter(
-      (candidate: number): boolean => candidate !== pageIndex,
-    )
-    if (failed) {
-      next.push(pageIndex)
+  private readerTranslationAutoFailedRecordIndex(pageIndex: number, runtimeKey: string): number {
+    if (runtimeKey.length === 0) {
+      return -1
     }
-    this.readerTranslationAutoFailedPageIndexes = next
+    for (let index: number = 0; index < this.readerTranslationAutoFailedPageIndexes.length; index++) {
+      if (this.readerTranslationAutoFailedPageIndexes[index] === pageIndex &&
+        this.readerTranslationAutoFailedRuntimeKeys[index] === runtimeKey) {
+        return index
+      }
+    }
+    return -1
+  }
+
+  private setReaderTranslationAutoFailedForPage(
+    pageIndex: number,
+    runtimeKey: string,
+    failed: boolean,
+  ): void {
+    if (pageIndex < 0 || runtimeKey.length === 0) {
+      return
+    }
+    const indexes: number[] = this.readerTranslationAutoFailedPageIndexes.slice()
+    const runtimeKeys: string[] = this.readerTranslationAutoFailedRuntimeKeys.slice()
+    const existing: number = this.readerTranslationAutoFailedRecordIndex(pageIndex, runtimeKey)
+    if (failed && existing < 0) {
+      indexes.push(pageIndex)
+      runtimeKeys.push(runtimeKey)
+    } else if (!failed && existing >= 0) {
+      indexes.splice(existing, 1)
+      runtimeKeys.splice(existing, 1)
+    } else {
+      return
+    }
+    this.readerTranslationAutoFailedPageIndexes = indexes
+    this.readerTranslationAutoFailedRuntimeKeys = runtimeKeys
   }
 
   private readerTranslationAutoPageReady(pageIndex: number): boolean {
@@ -2426,7 +2538,7 @@ export struct ReaderPage {
   private readerTranslationNeedsAutoWork(pageIndex: number): boolean {
     return this.readerTranslationAutoPageReady(pageIndex) &&
       !this.readerTranslationAutoFailedForPage(pageIndex) &&
-      !this.readerTranslationHasResult(pageIndex)
+      !this.readerTranslationHasCurrentResult(pageIndex)
   }
 
   /** Current page wins; only after it settles may the next ready page start. */
@@ -2436,7 +2548,7 @@ export struct ReaderPage {
       return current
     }
     const currentSettled: boolean = this.readerTranslationAutoPageReady(current) &&
-      (this.readerTranslationAutoFailedForPage(current) || this.readerTranslationHasResult(current))
+      (this.readerTranslationAutoFailedForPage(current) || this.readerTranslationHasCurrentResult(current))
     const next: number = current + 1
     return currentSettled && this.readerTranslationNeedsAutoWork(next) ? next : -1
   }
@@ -2489,6 +2601,7 @@ export struct ReaderPage {
         value: AppStrings.get('common_on'),
         action: (): void => {
           this.readerTranslationAutoFailedPageIndexes = []
+          this.readerTranslationAutoFailedRuntimeKeys = []
           this.readerTranslationAutoEnabled = true
           this.scheduleReaderPreload(this.visiblePageIndex)
           this.scheduleReaderTranslationAuto()
@@ -2498,7 +2611,9 @@ export struct ReaderPage {
   }
 
   private readerTranslationStatusVisible(): boolean {
-    return this.readerTranslationPageIndex === this.currentReaderTranslationPageIndex() &&
+    return this.readerTranslationRunRuntimeKey.length > 0 &&
+      this.readerTranslationRunRuntimeKey === this.readerTranslationCurrentRuntimeKey() &&
+      this.readerTranslationPageIndex === this.currentReaderTranslationPageIndex() &&
       (this.readerTranslationRunning || this.readerTranslationErrorCode.length > 0)
   }
 
@@ -2516,7 +2631,7 @@ export struct ReaderPage {
     if (this.readerTranslationRunning) {
       return
     }
-    if (this.readerTranslationHasResult(pageIndex)) {
+    if (this.readerTranslationHasCurrentResult(pageIndex)) {
       this.setReaderTranslationVisible(pageIndex, this.readerTranslatedImageUri(pageIndex).length === 0)
       return
     }
@@ -2528,15 +2643,18 @@ export struct ReaderPage {
 
   /** Both explicit and automatic work preserve the same leaf-only render path. */
   private startReaderTranslationForPage(pageIndex: number, automatic: boolean): void {
-    if (this.readerTranslationRunning || !this.readerTranslationSourceConfigured()) {
+    const targetLanguage: string = this.readerTranslationTargetLanguage()
+    const runtimeKey: string = this.readerTranslationCurrentRuntimeKey()
+    if (this.readerTranslationRunning || targetLanguage.length === 0 || runtimeKey.length === 0) {
       return
     }
     const sourcePath: string = this.readerSourceFilePath(pageIndex)
     if (sourcePath.length === 0 || pageIndex < 0 || pageIndex >= this.detail.pages.length) {
       this.readerTranslationPageIndex = pageIndex
+      this.readerTranslationRunRuntimeKey = runtimeKey
       this.readerTranslationErrorCode = 'image_unavailable'
       if (automatic) {
-        this.setReaderTranslationAutoFailedForPage(pageIndex, true)
+        this.setReaderTranslationAutoFailedForPage(pageIndex, runtimeKey, true)
         this.scheduleReaderTranslationAuto()
       }
       return
@@ -2546,31 +2664,52 @@ export struct ReaderPage {
     this.readerTranslationEpoch = epoch
     const requestGeneration: number = this.requestGeneration
     const input: ComicTranslationReaderPageInput = new ComicTranslationReaderPageInput()
-    input.projectId = `nh-reader-${this.detail.id}-zh-CN`
+    input.projectId = `nh-reader-${this.detail.id}-${targetLanguage}`
     input.pageIndex = pageIndex
     input.imageFilePath = sourcePath
     input.imageWidth = page.width
     input.imageHeight = page.height
     input.sourceLanguage = 'auto'
-    input.targetLanguage = 'zh-CN'
+    input.targetLanguage = targetLanguage
     this.readerTranslationRunning = true
     this.readerTranslationPageIndex = pageIndex
+    this.readerTranslationRunRuntimeKey = runtimeKey
     this.readerTranslationErrorCode = ''
     this.readerOverflowMenuShown = false
     ComicTranslationRuntimeService.runReaderPage(this.context(), input)
       .then((result: ComicVisualTranslationRunResult): void => {
-        if (epoch !== this.readerTranslationEpoch || requestGeneration !== this.requestGeneration ||
-          result.renderedPage.localFilePath.length === 0) {
+        if (epoch !== this.readerTranslationEpoch || requestGeneration !== this.requestGeneration) {
           return
         }
         const pageStillVisible: boolean = pageIndex === this.currentReaderTranslationPageIndex()
+        this.readerTranslationRunning = false
+        const resultRuntimeKey: string = this.readerTranslationResultRuntimeKey(result)
+        const resultStillCurrent: boolean = result.renderedPage.localFilePath.length > 0 &&
+          resultRuntimeKey.length > 0 && resultRuntimeKey === runtimeKey &&
+          runtimeKey === this.readerTranslationCurrentRuntimeKey()
+        if (!resultStillCurrent) {
+          const runtimeStillCurrent: boolean = runtimeKey === this.readerTranslationCurrentRuntimeKey()
+          this.readerTranslationRunRuntimeKey = runtimeStillCurrent ? runtimeKey : ''
+          if (runtimeStillCurrent && (automatic || this.readerTranslationAutoEnabled)) {
+            this.setReaderTranslationAutoFailedForPage(pageIndex, runtimeKey, true)
+          }
+          this.readerTranslationErrorCode = runtimeStillCurrent && (automatic || pageStillVisible)
+            ? 'failed'
+            : ''
+          if (automatic && !pageStillVisible) {
+            this.readerTranslationPageIndex = -1
+          }
+          this.scheduleReaderTranslationAuto()
+          return
+        }
+        this.readerTranslationRunRuntimeKey = ''
+        this.readerTranslationErrorCode = ''
         this.rememberReaderTranslatedPage(
           pageIndex,
           fileUri.getUriFromPath(result.renderedPage.localFilePath),
+          resultRuntimeKey,
         )
-        this.setReaderTranslationAutoFailedForPage(pageIndex, false)
-        this.readerTranslationRunning = false
-        this.readerTranslationErrorCode = ''
+        this.setReaderTranslationAutoFailedForPage(pageIndex, runtimeKey, false)
         if (automatic && !pageStillVisible) {
           this.readerTranslationPageIndex = -1
         }
@@ -2581,10 +2720,20 @@ export struct ReaderPage {
           return
         }
         const pageStillVisible: boolean = pageIndex === this.currentReaderTranslationPageIndex()
-        if (automatic || this.readerTranslationAutoEnabled) {
-          this.setReaderTranslationAutoFailedForPage(pageIndex, true)
-        }
         this.readerTranslationRunning = false
+        if (runtimeKey !== this.readerTranslationCurrentRuntimeKey()) {
+          this.readerTranslationRunRuntimeKey = ''
+          this.readerTranslationErrorCode = ''
+          if (automatic && !pageStillVisible) {
+            this.readerTranslationPageIndex = -1
+          }
+          this.scheduleReaderTranslationAuto()
+          return
+        }
+        this.readerTranslationRunRuntimeKey = runtimeKey
+        if (automatic || this.readerTranslationAutoEnabled) {
+          this.setReaderTranslationAutoFailedForPage(pageIndex, runtimeKey, true)
+        }
         this.readerTranslationErrorCode = automatic && !pageStillVisible ? '' : 'failed'
         if (automatic && !pageStillVisible) {
           this.readerTranslationPageIndex = -1

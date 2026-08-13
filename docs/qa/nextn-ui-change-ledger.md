@@ -1256,6 +1256,22 @@ authorize an edit, replace a device comparison, or define product completion.
   configuration. This prevents the unconfigured path from presenting a
   clickable action that can only fail; it does not move or add any Reader
   control.
+- Newly actionable runtime-identity correction: the persistent comic-render
+  pipeline already keys a rendered artifact by target language, bound source
+  revision, and model, but this mounted Reader currently retains only
+  `pageIndex → URI` and starts every request with `zh-CN`. Keep the same three
+  existing image leaves, More-menu action, status overlay, and session auto
+  scheduler; record a non-secret target/source-revision/model key beside each
+  mounted URI instead. A URI, toggle, auto-settled result, failure marker, or
+  status overlay is current only when that key still matches the active
+  language and manga binding. A late request whose snapshot no longer matches
+  must clear its running state without publishing an old result or poisoning
+  the new runtime's automatic retry state. This does not clear private
+  artifacts, alter the persistent cache protocol, or add a Reader setting.
+- Verification boundary for that correction: inspect the exact source diff and
+  build the signed HAP. A real source/language change during a configured
+  translation remains EVIDENCE-ONLY until it can be observed without changing
+  private source credentials or the established Reader canvas/chrome state.
 - Before/after rationale: the runtime, local vision backend, provider bridge,
   private rendered-image cache, and private document cache now exist outside
   the Reader UI. The smallest missing connection is the existing per-page
