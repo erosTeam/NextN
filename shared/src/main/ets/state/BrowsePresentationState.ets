@@ -15,6 +15,8 @@ export class BrowsePresentationState {
   @Trace coverWallMinColumnWidth: number = 0
   /** ErosN-compatible opt-in; applicable list/waterfall cards stay unchanged by default. */
   @Trace showGalleryTags: boolean = false
+  /** Keep raw tag query values separate from the optional translated display label. */
+  @Trace showTranslatedTagLabels: boolean = true
 
   columnWidthFor(mode: NhBrowsePresentation): number {
     if (mode === NhBrowsePresentation.COVER_GRID) {

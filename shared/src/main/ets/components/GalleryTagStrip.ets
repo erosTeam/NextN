@@ -33,7 +33,9 @@ export struct GalleryTagStrip {
 
   private displayLabel(tag: NhTag): string {
     const translated: string = tag.displayName.trim()
-    return translated.length > 0 ? translated : tag.name
+    return this.browsePresentation.showTranslatedTagLabels && translated.length > 0
+      ? translated
+      : tag.name
   }
 
   @Builder

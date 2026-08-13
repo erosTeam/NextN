@@ -4,6 +4,7 @@ import { HdsTabsController } from '@kit.UIDesignKit'
 import {
   ContentFilterService,
   ContentFilterState,
+  BrowsePresentationState,
   GalleryTitleState,
   GalleryTitleTranslationService,
   DownloadQueueService,
@@ -21,6 +22,7 @@ import {
   ActionHandEdgeState,
   MotionHandStateService,
   connectActionHandEdge,
+  connectBrowsePresentation,
   AppStrings,
   NhComment,
   NhGalleryDetail,
@@ -171,6 +173,7 @@ export struct GalleryDetailPage {
   @Local coverFailedUrl: string = ''
   @Local tagTranslationLabels: string[] = []
   @Local tagTranslations: TagTranslationState = connectTagTranslations()
+  @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
   @Local relatedGalleries: NhGallerySummary[] = []
   /** Related rows use the same local title-rule view as every other gallery list. */
   @Local rawRelatedGalleries: NhGallerySummary[] = []
@@ -1453,7 +1456,9 @@ export struct GalleryDetailPage {
   }
 
   private tagMemberLabel(item: GalleryTagVisualItem): string {
-    return item.translatedName.length > 0 ? item.translatedName : item.tag.name
+    return this.browsePresentation.showTranslatedTagLabels && item.translatedName.length > 0
+      ? item.translatedName
+      : item.tag.name
   }
 
   /** Mirrors ErosN's localized namespace header without changing raw tag members. */

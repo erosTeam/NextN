@@ -11,6 +11,7 @@ const WATERFALL_COLUMN_WIDTH_KEY: string = 'browse_presentation_waterfall_column
 const WATERFALL_COMPACT_COLUMN_WIDTH_KEY: string = 'browse_presentation_waterfall_compact_column_width'
 const COVER_WALL_COLUMN_WIDTH_KEY: string = 'browse_presentation_cover_wall_column_width'
 const SHOW_GALLERY_TAGS_KEY: string = 'browse_presentation_show_gallery_tags'
+const SHOW_TRANSLATED_TAG_LABELS_KEY: string = 'browse_presentation_show_translated_tag_labels'
 const SQL_SELECT_PRESENTATION: string =
   'SELECT value FROM browse_presentation_settings WHERE key = ? LIMIT 1'
 const SQL_UPSERT_PRESENTATION: string =
@@ -78,6 +79,13 @@ export class BrowsePresentationRepository {
       state.showGalleryTags = BrowsePresentationRepository.normalizeBoolean(
         await BrowsePresentationRepository.readValue(store, SHOW_GALLERY_TAGS_KEY),
       )
+      // Earlier NextN builds always used a resolved dictionary label when one
+      // existed. An absent key therefore retains that visible behavior for an
+      // installed user, while an explicit saved choice always wins.
+      state.showTranslatedTagLabels = BrowsePresentationRepository.normalizeBoolean(
+        await BrowsePresentationRepository.readValue(store, SHOW_TRANSLATED_TAG_LABELS_KEY),
+        true,
+      )
       return mode
     } catch (error) {
       throw (error as Error)
@@ -119,6 +127,14 @@ export class BrowsePresentationRepository {
     })
   }
 
+  static saveShowTranslatedTagLabels(context: common.UIAbilityContext, value: boolean): Promise<void> {
+    connectBrowsePresentation().showTranslatedTagLabels = value
+    return BrowsePresentationRepository.enqueueWrite(async (): Promise<void> => {
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      await store.executeSql(SQL_UPSERT_PRESENTATION, [SHOW_TRANSLATED_TAG_LABELS_KEY, value ? '1' : '0'])
+    })
+  }
+
   private static async readValue(store: relationalStore.RdbStore, key: string): Promise<string> {
     let rows: relationalStore.ResultSet | null = null
     try {
@@ -145,8 +161,15 @@ export class BrowsePresentationRepository {
     return clampGalleryColumnWidth(parsed)
   }
 
-  private static normalizeBoolean(value: string): boolean {
-    return value === '1' || value.toLowerCase() === 'true'
+  private static normalizeBoolean(value: string, fallback: boolean = false): boolean {
+    const normalized: string = value.trim().toLowerCase()
+    if (normalized === '1' || normalized === 'true') {
+      return true
+    }
+    if (normalized === '0' || normalized === 'false') {
+      return false
+    }
+    return fallback
   }
 
   private static columnWidthKey(mode: NhBrowsePresentation): string {

@@ -2056,6 +2056,54 @@ authorize an edit, replace a device comparison, or define product completion.
   values. This is raw-fallback and restoration evidence only; the optional
   translated-label state and same-state ErosN visual comparison remain OPEN.
 
+### Raw-versus-translated label preference correction — 2026-08-13
+
+- **Why newly actionable:** the user reported that tag translation appears
+  ineffective. Source review establishes that NextN currently conflates two
+  separate choices: whether supported collection cards render tags at all and
+  whether a resolved tag uses its canonical raw name or its optional local
+  dictionary label. ErosN exposes the latter as an independent persisted
+  display preference; NextN's existing dictionary display is already separate
+  from its Advanced dictionary download/status owner.
+- **Reference and current parent boundary:** ErosN keeps `showTags`, tag
+  layout, and `isTagTranslate` as adjacent List Style leaves; its tag chips
+  and Detail chips select translated text only while that preference is on.
+  NextN retains `SettingsPage(LAYOUT) -> SecondaryListScaffold ->
+  BrowsePresentationGroup -> NextNGroupedListSection`. Its existing
+  `showGalleryTags` leaf controls only the three existing `GalleryTagStrip`
+  card leaves, while Gallery Detail owns its already-grouped metadata tags.
+- **Exact change:** add one persisted Browse-presentation boolean for showing
+  translated tag labels. Place its title-plus-switch row directly after
+  `显示画廊标签`; it changes only `GalleryTagStrip` text and Gallery Detail
+  tag-member text between existing raw names and already-resolved dictionary
+  labels. No card/detail parent tree, tag visibility rule, catalog/API request,
+  local dictionary update, cache write, search query, routing, or tag ordering
+  changes.
+- **Compatibility rule:** ErosN initially defaults its independent display
+  preference off, but existing NextN already displays dictionary labels when
+  available. An absent key must therefore restore as on so an installed user
+  does not silently lose the current translated-label presentation on upgrade;
+  an explicit saved choice always wins.
+- **Verification plan:** inspect the exact diff, build the signed Debug HAP,
+  install it in place without clearing data, and use a current Detail tag set
+  that has a dictionary label distinct from its raw name to observe the two
+  label states while restoring the original preference. The collection card
+  leaf remains separately open for a same-state ErosN comparison; no
+  dictionary update or tag-data mutation is manufactured for this preference
+  check.
+- **Current evidence:** signed Debug build succeeded and was installed in
+  place. On the selected device the new Layout row restored on by default,
+  switched off, and was restored on. The initial Detail sample contained only
+  raw-fallback/equal labels despite the existing local dictionary being ready,
+  so it was not used to claim a substitution. Current Browse captures taken
+  after the off state and after restoration show matching visible card
+  identities with their affected chips respectively using canonical raw labels
+  and existing local dictionary labels. This establishes the persisted
+  collection-card display choice after route return; it does not claim an
+  in-place, no-navigation repaint of one mounted list. No dictionary update or
+  tag-data mutation was used. A same-state ErosN visual comparison and an
+  in-place reactivity capture remain separately OPEN.
+
 ### Reactivity and catalog-resilience correction — 2026-08-13
 
 - **Why newly actionable:** the user reported that enabling the existing tag

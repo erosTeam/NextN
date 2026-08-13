@@ -22,6 +22,10 @@ export class BrowsePresentationService {
     return BrowsePresentationRepository.saveShowGalleryTags(context, value)
   }
 
+  static setShowTranslatedTagLabels(context: common.UIAbilityContext, value: boolean): Promise<void> {
+    return BrowsePresentationRepository.saveShowTranslatedTagLabels(context, value)
+  }
+
   static setLiveColumnWidth(mode: NhBrowsePresentation, width: number): void {
     if (!supportsGalleryColumnDensity(mode)) {
       return

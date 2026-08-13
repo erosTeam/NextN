@@ -512,6 +512,13 @@ export struct SettingsPage {
     })
   }
 
+  private setShowTranslatedTagLabels(value: boolean): void {
+    this.browsePresentationError = ''
+    BrowsePresentationService.setShowTranslatedTagLabels(this.context(), value).catch((): void => {
+      this.browsePresentationError = AppStrings.get('settings_browse_presentation_save_failed')
+    })
+  }
+
   private catalogLanguageLabel(language: NhSearchLanguage): string {
     return NhSearchOptions.languageLabel(language)
   }
@@ -2851,6 +2858,24 @@ export struct SettingsPage {
         },
         onSwitchChange: (value: boolean): void => {
           this.setShowGalleryTags(value)
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.textformat'),
+        title: AppStrings.get('settings_gallery_tag_translations'),
+        hasSwitch: true,
+        checked: this.browsePresentation.showTranslatedTagLabels,
+        showChevron: false,
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_gallery_tag_translations'),
+          this.toggleStateLabel(this.browsePresentation.showTranslatedTagLabels),
+        ]),
+        onAction: (): void => {
+          this.setShowTranslatedTagLabels(!this.browsePresentation.showTranslatedTagLabels)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.setShowTranslatedTagLabels(value)
         },
       })
       if (supportsGalleryColumnDensity(this.browsePresentation.mode)) {
