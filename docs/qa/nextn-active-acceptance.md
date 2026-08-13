@@ -1,6 +1,6 @@
 # NextN active device-acceptance queue
 
-## Current delivery — Reader Settings grouped-tree validation — 2026-08-13
+## EVIDENCE-ONLY — Reader Settings / Advanced translation parent ownership — 2026-08-13
 
 - Commit `e88bca5` was built as the signed Debug HAP and installed in place on
   the selected `192.168.50.237:12345` device with `install -r`; no app data
@@ -8,15 +8,20 @@
 - The device was live-resolved, leased, woken, and read back as `AWAKE` with
   `OverrideTimeout=86400000ms` before installation. This is installation and
   display-state evidence only, not a Reader Settings visual result.
-- The next action remains one retained native Reader Settings review of the
-  six groups and existing comic-translation entry. Its local layout/screenshot
-  receive was rejected by the execution environment before the command began;
-  no UI route, setting, account, or content state changed in that attempt.
-- A subsequent narrow retry acquired a fresh lease and completed the native
-  `Settings → Reader` route with one final local layout and screenshot under
-  `.hvigor/outputs/reader-settings-groups-20260813T0620/`. No setting, account,
-  content, data-clear, or uninstall action occurred. Visual review remains
-  pending; this entry does not treat the capture itself as acceptance.
+- The original Reader capture under
+  `.hvigor/outputs/reader-settings-groups-20260813T0620/` exposed a misplaced
+  comic-translation entry. Commit `3b6f806` moved that capability to the
+  Advanced translation group, was built as a signed Debug HAP, and was installed
+  in place with no data clear or uninstall.
+- The current native `1320×2120` Advanced screen is retained under
+  `.hvigor/outputs/advanced-translation-capabilities-20260813T0940/`. It shows
+  one continuous translation-capabilities card containing comment translation,
+  comic translation, local tag translation/update, and translation source. A
+  single Reader-tail observation in the same run shows no translation entry.
+  The current NextN root and retained NextE `EH` root are both foreground-verified
+  at `[0,117][1320,2120]`; the reference shows the corresponding continuous
+  comment/comic/tag/source card. This is bounded evidence for parent ownership
+  and card continuity only; it is not a whole-Settings acceptance.
 
 ## Historical transport observation — 2026-08-12
 

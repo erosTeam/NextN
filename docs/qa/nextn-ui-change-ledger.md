@@ -65,9 +65,20 @@ authorize an edit, replace a device comparison, or define product completion.
   existing tag-dictionary status/update leaves, and the existing shared
   translation-source destination in one translation-capabilities group. No
   translation source, model, dictionary, or persistence behavior changes.
-  The Advanced page now needs one native review after its own build/install;
-  the already captured Reader page remains evidence-only for this corrected
-  boundary.
+- **Build result — 2026-08-13:** signed Debug compilation succeeded for commit
+  `3b6f806`; this is compilation evidence only.
+- **Current device/reference observation — 2026-08-13:** after an in-place
+  install on the selected device, the native `1320×2120` Advanced page showed
+  one continuous translation card in the order `评论翻译 → 漫画翻译 → 本地标签翻译
+  → 更新 → 翻译来源`, with the expected capability icons and internal dividers.
+  The current Reader tail showed only its Reader-specific Display, Image
+  enhancement, Controls, and Loading groups—no translation entry. The retained
+  same-viewport NextE `EH` reference at
+  `.hvigor/outputs/translation-local-model-pack-20260811T0344/nexte-route-eh/`
+  shows its corresponding continuous `评论翻译 → 漫画翻译 → 标签翻译 → LLM 源` card.
+  The extra NextN `更新` row is the existing NH local-dictionary update leaf;
+  it does not split the translation capability parent. These artifacts support
+  this exact parent-owner correction only, not a whole-Settings acceptance.
 
 ## OPEN — Reader Settings scan-first copy — 2026-08-13
 
