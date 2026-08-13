@@ -1890,6 +1890,19 @@ authorize an edit, replace a device comparison, or define product completion.
   the query, or change any collection/card parent tree. This closes the
   source-proven arrival race while preserving the existing unresolved-name and
   no-manufactured-dictionary-mutation limits above.
+- **Build and current-device observation — 2026-08-13:** commits `73e504f`
+  and `b9efa27` built as the signed Debug HAP and were installed in place on
+  the selected `.237` device after the awake / `86400000ms` gate. The
+  documented native numeric Detail route for the existing verification gallery
+  settled to `com.erosteam.nextn:EntryAbility`, `pages/Index`, at the
+  `1320×2120` root viewport. Its existing grouped Detail tag leaf remained
+  mounted with resolved-name chips; no dictionary replace/clear, tag update,
+  account action, gallery mutation, or preference write was performed. The
+  retained terminal layout/screen are
+  `.hvigor/outputs/tag-reactivity-20260813T1100/` and are excluded from Git.
+  This is installation/current-leaf evidence only. It does not accept the
+  deliberately uninduced dictionary-revision transition, or broaden the
+  frozen presentation scope.
 
 ## OPEN — Reader enhancement interaction yield
 

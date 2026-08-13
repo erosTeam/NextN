@@ -339,6 +339,22 @@ remains continuous; do not ask for it again.
   gallery, preference other than those temporary presentation controls, or
   application data was changed.
 
+## Current delivery observation — tag-dictionary reactivity
+
+- 2026-08-13: signed Debug commits `73e504f` and `b9efa27` were installed in
+  place on the selected `.237` device after the awake / 24-hour timeout gate;
+  no data clear or uninstall occurred. The documented numeric Detail route
+  for the existing verification gallery settled on native NextN at the
+  `1320×2120` root viewport and retained its existing grouped resolved-tag
+  leaf.
+- No dictionary replacement, clear, update, preference write, account action,
+  or gallery mutation was induced. Therefore this confirms only the installed
+  current Detail-tag state. The source-corrected replacement/clear reactivity
+  remains EVIDENCE-ONLY until it occurs through an ordinary permitted
+  dictionary action; do not manufacture that action solely to obtain an
+  acceptance sample. Retained local artifacts are
+  `.hvigor/outputs/tag-reactivity-20260813T1100/` and are excluded from Git.
+
 ## Current delivery observation — local comic-translation model pack
 
 - 2026-08-11 manga-rendering-service route correction: the first corrected
