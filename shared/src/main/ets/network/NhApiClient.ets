@@ -529,8 +529,15 @@ export class NhApiClient {
   }
 
   /** Popular has no compatibility envelopes; only its documented bare array is valid. */
-  private static async getBareJsonArray(url: string): Promise<Object[]> {
-    const value: Object = await NhApiClient.getJsonValue(url)
+  private static async getBareJsonArray(
+    url: string,
+    allowTransportCache: boolean = true,
+  ): Promise<Object[]> {
+    const value: Object = await NhApiClient.getJsonValue(
+      url,
+      NhJsonReadScope.PUBLIC,
+      allowTransportCache,
+    )
     if (!Array.isArray(value)) {
       throw new Error('Expected an array response.')
     }
@@ -915,6 +922,7 @@ export class NhApiClient {
     }
     const rawItems: Object[] = await NhApiClient.getBareJsonArray(
       `${API_ROOT}/api/v2/tags/ids?ids=${encodeURIComponent(ids.join(','))}`,
+      false,
     )
     const tags: NhTag[] = []
     rawItems.forEach((raw: Object): void => {

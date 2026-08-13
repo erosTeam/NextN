@@ -2306,6 +2306,31 @@ authorize an edit, replace a device comparison, or define product completion.
   requires an ordinary same-device Detail → collection sequence; no network
   failure or tag-data mutation is manufactured for this correction.
 
+### Tag-catalog transport-cache freshness correction — 2026-08-14
+
+- **Why newly actionable:** the fallback provenance correction makes a later
+  collection ask `/api/v2/tags/ids` again, but that endpoint still inherited
+  NetworkKit's process-local transport cache. A cached response could
+  therefore be promoted to an ordinary catalog record and receive a new local
+  `updated_at` value without a fresh transport observation.
+- **Exact data boundary:** only the existing `tagsByIds` call now passes
+  `allowTransportCache=false` through the existing bare-array JSON helper.
+  Popular and every other bare-array endpoint retain their existing cache
+  policy. The change starts no extra request, changes no batch size, and
+  preserves the existing serialized catalog read → request → merge → upsert
+  owner, fallback names, partial-response behavior, and non-fatal failure
+  handling.
+- **Preserved unresolved boundary:** this establishes only that an already
+  needed catalog request bypasses this process's transport cache. It does not
+  choose a TTL, periodically revalidate ordinary catalog rows, bypass an
+  upstream cache, add retry/status UI, or alter a card/detail tree. The policy
+  for when a normal positive-timestamp catalog row should be rechecked remains
+  OPEN pending separate evidence.
+- **Verification limit:** exact diff review and a signed build can establish
+  the request option path. A live network inspection is required to observe a
+  particular request; no tag mutation, rate-limit condition, or failure is
+  manufactured for this narrow correction.
+
 ### Dictionary update-source fallback — 2026-08-13
 
 - **Why newly actionable:** the existing explicit local-dictionary update
