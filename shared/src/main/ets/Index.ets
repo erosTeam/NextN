@@ -393,7 +393,11 @@ export {
 export { SearchHistoryRepository } from './storage/SearchHistoryRepository'
 export { QuickSearchRepository } from './storage/QuickSearchRepository'
 export { TagTranslationRepository } from './storage/TagTranslationRepository'
-export { TagTranslationUpdateService } from './services/TagTranslationUpdateService'
+export {
+  TagDictionaryUpdateAttempt,
+  TagDictionaryUpdateFailure,
+  TagTranslationUpdateService,
+} from './services/TagTranslationUpdateService'
 export { RootRefreshRegistry } from './utils/RootRefreshRegistry'
 export {
   galleryBaseMinColumnWidth,

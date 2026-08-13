@@ -60,6 +60,8 @@ import {
   NhSearchOptions,
   NhSearchSort,
   TagTranslationRepository,
+  TagDictionaryUpdateAttempt,
+  TagDictionaryUpdateFailure,
   TagTranslationUpdateService,
   ThemeTokens,
   ThemeColorOption,
@@ -144,7 +146,9 @@ export enum SettingsSurface {
  * text as localized copy.
  */
 class TagDictionaryUiErrorCode {
-  static readonly UPDATE_FAILED: string = 'tag_dictionary_update_failed'
+  static readonly DICTIONARY_ASSET: string = 'dictionary_asset'
+  static readonly CONTENT_VALIDATION: string = 'content_validation'
+  static readonly LOCAL_STORAGE: string = 'local_storage'
 }
 
 /**
@@ -731,20 +735,72 @@ export struct SettingsPage {
     this.tagDictionaryError = ''
     try {
       this.applyTagDictionaryStatus(await TagTranslationUpdateService.updateFromPublicRelease(this.context()))
-    } catch (_error) {
-      this.tagDictionaryError = this.tagDictionaryErrorMessage(TagDictionaryUiErrorCode.UPDATE_FAILED)
+    } catch (error) {
+      this.tagDictionaryError = this.tagDictionaryErrorMessage(error as Error)
     } finally {
       this.isUpdatingTagDictionary = false
     }
   }
 
-  private tagDictionaryErrorMessage(errorCode: string): string {
-    switch (errorCode) {
-      case TagDictionaryUiErrorCode.UPDATE_FAILED:
-        return AppStrings.get('settings_tag_translation_error_update')
-      default:
-        return AppStrings.get('settings_tag_translation_error_update')
+  private tagDictionaryErrorMessage(error: Error): string {
+    if (!(error instanceof TagDictionaryUpdateFailure)) {
+      return AppStrings.get('settings_tag_translation_error_update')
     }
+    const failure: TagDictionaryUpdateFailure = error as TagDictionaryUpdateFailure
+    const phase: string = this.tagDictionaryPhaseLabel(failure.phase)
+    const attempts: string = this.tagDictionaryAttemptsLabel(failure.attempts)
+    const retained: string = failure.dictionaryRetained
+      ? AppStrings.get('settings_tag_translation_error_retained')
+      : ''
+    if (attempts.length === 0) {
+      return AppStrings.format('settings_tag_translation_error_details_without_attempts', [phase, retained]).trim()
+    }
+    return AppStrings.format('settings_tag_translation_error_details', [phase, attempts, retained]).trim()
+  }
+
+  private tagDictionaryPhaseLabel(phase: string): string {
+    switch (phase) {
+      case TagDictionaryUiErrorCode.DICTIONARY_ASSET:
+        return AppStrings.get('settings_tag_translation_error_phase_asset')
+      case TagDictionaryUiErrorCode.CONTENT_VALIDATION:
+        return AppStrings.get('settings_tag_translation_error_phase_content')
+      case TagDictionaryUiErrorCode.LOCAL_STORAGE:
+        return AppStrings.get('settings_tag_translation_error_phase_local')
+      default:
+        return AppStrings.get('settings_tag_translation_error_phase_update')
+    }
+  }
+
+  private tagDictionaryAttemptsLabel(attempts: TagDictionaryUpdateAttempt[]): string {
+    const labels: string[] = []
+    for (let index: number = 0; index < attempts.length; index++) {
+      const label: string = this.tagDictionaryAttemptLabel(attempts[index])
+      if (label.length > 0 && labels.indexOf(label) < 0) {
+        labels.push(label)
+      }
+    }
+    return labels.join(AppStrings.get('settings_tag_translation_error_separator'))
+  }
+
+  private tagDictionaryAttemptLabel(attempt: TagDictionaryUpdateAttempt): string {
+    const source: string = attempt.source === 'direct'
+      ? AppStrings.get('settings_tag_translation_error_source_direct')
+      : attempt.source === 'mirror'
+        ? AppStrings.get('settings_tag_translation_error_source_mirror')
+        : ''
+    if (attempt.outcome === 'http' && attempt.httpStatus > 0) {
+      return source.length > 0
+        ? AppStrings.format('settings_tag_translation_error_http', [source, attempt.httpStatus.toString()])
+        : AppStrings.format('settings_tag_translation_error_http_unknown', [attempt.httpStatus.toString()])
+    }
+    if (attempt.outcome === 'transport') {
+      return source.length > 0
+        ? AppStrings.format('settings_tag_translation_error_transport', [source])
+        : AppStrings.get('settings_tag_translation_error_transport_unknown')
+    }
+    return source.length > 0
+      ? AppStrings.format('settings_tag_translation_error_invalid', [source])
+      : AppStrings.get('settings_tag_translation_error_invalid_unknown')
   }
 
   private applyTagDictionaryStatus(status: NhTagTranslationStatus): void {

@@ -17,6 +17,26 @@ class PublicDictionarySource {
   }
 }
 
+export class TagDictionaryUpdateAttempt {
+  phase: string = ''
+  source: string = ''
+  outcome: string = ''
+  httpStatus: number = 0
+}
+
+export class TagDictionaryUpdateFailure extends Error {
+  readonly phase: string
+  readonly attempts: TagDictionaryUpdateAttempt[]
+  readonly dictionaryRetained: boolean
+
+  constructor(phase: string, attempts: TagDictionaryUpdateAttempt[], dictionaryRetained: boolean) {
+    super(`Tag dictionary ${phase} update failed.`)
+    this.phase = phase
+    this.attempts = attempts
+    this.dictionaryRetained = dictionaryRetained
+  }
+}
+
 const PUBLIC_DICTIONARY_DIRECT_URL: string =
   'https://github.com/EhTagTranslation/Database/releases/latest/download/db.raw.json.gz'
 const PUBLIC_DICTIONARY_MIRROR_URL: string =
@@ -49,6 +69,12 @@ const RELEASE_METADATA_READ_TIMEOUT_MS: number = 5000
 const MAX_RELEASE_METADATA_CHARS: number = 64 * 1024
 const MAX_RELEASE_METADATA_FIELD_LENGTH: number = 256
 const RELEASE_ASSET_NAME: string = 'db.raw.json.gz'
+const UPDATE_PHASE_DICTIONARY_ASSET: string = 'dictionary_asset'
+const UPDATE_PHASE_CONTENT_VALIDATION: string = 'content_validation'
+const UPDATE_PHASE_LOCAL_STORAGE: string = 'local_storage'
+const UPDATE_OUTCOME_HTTP: string = 'http'
+const UPDATE_OUTCOME_TRANSPORT: string = 'transport'
+const UPDATE_OUTCOME_INVALID: string = 'invalid'
 
 class DownloadArtifact {
   path: string = ''
@@ -92,7 +118,13 @@ export class TagTranslationUpdateService {
     context: common.UIAbilityContext,
     force: boolean,
   ): Promise<NhTagTranslationStatus> {
-    const previous: NhTagTranslationStatus = await TagTranslationRepository.status(context)
+    let previous: NhTagTranslationStatus
+    try {
+      previous = await TagTranslationRepository.status(context)
+    } catch (_error) {
+      throw new TagDictionaryUpdateFailure(UPDATE_PHASE_LOCAL_STORAGE, [], false)
+    }
+    const dictionaryRetained: boolean = previous.rowCount > 0
     const previousRelease: ReleaseDescriptor | null =
       TagTranslationUpdateService.storedReleaseDescriptor(previous.version)
     const release: ReleaseDescriptor | null = await TagTranslationUpdateService.tryFetchReleaseDescriptor()
@@ -109,6 +141,7 @@ export class TagTranslationUpdateService {
         context,
         release,
         release === null && previous.rowCount > 0 && previousRelease !== null ? previousRelease.sha256 : '',
+        dictionaryRetained,
       )
       let storedVersion: string = artifact.version
       if (release !== null) {
@@ -122,10 +155,29 @@ export class TagTranslationUpdateService {
       if (!force && previous.rowCount > 0 && previous.version === storedVersion) {
         return previous
       }
-      const rawJson: string = await TagTranslationUpdateService.readGzipText(artifact.path)
-      const entries: NhTagTranslationEntry[] = TagTranslationUpdateService.parseDictionary(rawJson)
-      await TagTranslationRepository.replace(context, entries, storedVersion, PROVIDER_LABEL)
-      return await TagTranslationRepository.status(context)
+      let entries: NhTagTranslationEntry[]
+      try {
+        const rawJson: string = await TagTranslationUpdateService.readGzipText(artifact.path)
+        entries = TagTranslationUpdateService.parseDictionary(rawJson)
+      } catch (error) {
+        throw TagTranslationUpdateService.updateFailure(
+          error as Error,
+          UPDATE_PHASE_CONTENT_VALIDATION,
+          '',
+          dictionaryRetained,
+        )
+      }
+      try {
+        await TagTranslationRepository.replace(context, entries, storedVersion, PROVIDER_LABEL)
+        return TagTranslationUpdateService.updatedDictionaryStatus(entries.length, storedVersion)
+      } catch (error) {
+        throw TagTranslationUpdateService.updateFailure(
+          error as Error,
+          UPDATE_PHASE_LOCAL_STORAGE,
+          '',
+          dictionaryRetained,
+        )
+      }
     } finally {
       if (artifact !== null && artifact.path.length > 0) {
         TagTranslationUpdateService.removeIfExists(artifact.path)
@@ -142,7 +194,7 @@ export class TagTranslationUpdateService {
   private static async tryFetchReleaseDescriptor(): Promise<ReleaseDescriptor | null> {
     for (let index: number = 0; index < PUBLIC_RELEASE_SOURCES.length; index++) {
       const source: PublicDictionarySource = PUBLIC_RELEASE_SOURCES[index]
-      const descriptor: ReleaseDescriptor | null = await TagTranslationUpdateService.fetchReleaseDescriptor(source.url)
+      const descriptor: ReleaseDescriptor | null = await TagTranslationUpdateService.fetchReleaseDescriptor(source)
       if (descriptor !== null) {
         return descriptor
       }
@@ -150,11 +202,13 @@ export class TagTranslationUpdateService {
     return null
   }
 
-  private static async fetchReleaseDescriptor(url: string): Promise<ReleaseDescriptor | null> {
+  private static async fetchReleaseDescriptor(
+    source: PublicDictionarySource,
+  ): Promise<ReleaseDescriptor | null> {
     let request: http.HttpRequest | null = null
     try {
       request = http.createHttp()
-      const response: http.HttpResponse = await request.request(url, {
+      const response: http.HttpResponse = await request.request(source.url, {
         method: http.RequestMethod.GET,
         expectDataType: http.HttpDataType.STRING,
         usingCache: false,
@@ -172,7 +226,8 @@ export class TagTranslationUpdateService {
       if (rawMetadata.length === 0 || rawMetadata.length > MAX_RELEASE_METADATA_CHARS) {
         return null
       }
-      return TagTranslationUpdateService.releaseDescriptorFromMetadata(rawMetadata)
+      const descriptor: ReleaseDescriptor | null = TagTranslationUpdateService.releaseDescriptorFromMetadata(rawMetadata)
+      return descriptor
     } catch (_error) {
       return null
     } finally {
@@ -247,8 +302,9 @@ export class TagTranslationUpdateService {
     context: common.UIAbilityContext,
     expectedRelease: ReleaseDescriptor | null,
     requiredExistingSha256: string,
+    dictionaryRetained: boolean,
   ): Promise<DownloadArtifact> {
-    const failedSources: string[] = []
+    const attempts: TagDictionaryUpdateAttempt[] = []
     for (let index: number = 0; index < PUBLIC_DICTIONARY_SOURCES.length; index++) {
       const source: PublicDictionarySource = PUBLIC_DICTIONARY_SOURCES[index]
       try {
@@ -258,12 +314,18 @@ export class TagTranslationUpdateService {
           expectedRelease,
           requiredExistingSha256,
         )
-      } catch (_error) {
-        failedSources.push(source.label)
+      } catch (error) {
+        if (error instanceof TagDictionaryUpdateFailure &&
+          (error as TagDictionaryUpdateFailure).phase === UPDATE_PHASE_LOCAL_STORAGE) {
+          throw new TagDictionaryUpdateFailure(UPDATE_PHASE_LOCAL_STORAGE, [], dictionaryRetained)
+        }
+        attempts.push(TagTranslationUpdateService.dictionaryAttempt(source.label, error as Error))
       }
     }
-    throw new Error(
-      `The tag dictionary download failed from every configured public source (${failedSources.join(', ')}).`,
+    throw new TagDictionaryUpdateFailure(
+      TagTranslationUpdateService.failurePhase(attempts),
+      attempts,
+      dictionaryRetained,
     )
   }
 
@@ -276,21 +338,29 @@ export class TagTranslationUpdateService {
     const directory: string = TagTranslationUpdateService.cacheDirectory(context)
     const partPath: string = TagTranslationUpdateService.downloadPartPath(context)
     const finalPath: string = `${directory}/${DOWNLOAD_NAME}`
-    TagTranslationUpdateService.ensureDirectory(directory)
-    TagTranslationUpdateService.removeIfExists(partPath)
+    try {
+      TagTranslationUpdateService.ensureDirectory(directory)
+      TagTranslationUpdateService.removeIfExists(partPath)
+    } catch (_error) {
+      throw TagTranslationUpdateService.localStorageFailure()
+    }
     let file: fileIo.File | null = null
     let request: http.HttpRequest | null = null
     let written: number = 0
     let fingerprint: number = 2166136261
     let tooLarge: boolean = false
-    let writeFailure: string = ''
+    let localWriteFailure: boolean = false
     let completed: boolean = false
     const sha256 = cryptoFramework.createMd('SHA256')
     try {
-      file = fileIo.openSync(
-        partPath,
-        fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC,
-      )
+      try {
+        file = fileIo.openSync(
+          partPath,
+          fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC,
+        )
+      } catch (_error) {
+        throw TagTranslationUpdateService.localStorageFailure()
+      }
       request = http.createHttp()
       request.on('dataReceiveProgress', (progress: http.DataReceiveProgressInfo): void => {
         if (progress.totalSize > DOWNLOAD_LIMIT_BYTES) {
@@ -299,7 +369,7 @@ export class TagTranslationUpdateService {
         }
       })
       request.on('dataReceive', (data: ArrayBuffer): void => {
-        if (file === null || tooLarge || writeFailure.length > 0) {
+        if (file === null || tooLarge || localWriteFailure) {
           return
         }
         try {
@@ -319,8 +389,7 @@ export class TagTranslationUpdateService {
           sha256.updateSync({ data: new Uint8Array(data) })
           written += count
         } catch (error) {
-          const failure: Error = error as Error
-          writeFailure = failure.message.length > 0 ? failure.message : 'Unable to save the tag dictionary download.'
+          localWriteFailure = true
           request?.destroy()
         }
       })
@@ -335,33 +404,51 @@ export class TagTranslationUpdateService {
         },
       })
       if (tooLarge) {
-        throw new Error('The tag dictionary download exceeded its private-storage limit.')
+        throw TagTranslationUpdateService.contentValidationFailure()
       }
-      if (writeFailure.length > 0) {
-        throw new Error(writeFailure)
+      if (localWriteFailure) {
+        throw TagTranslationUpdateService.localStorageFailure()
       }
       if (status < 200 || status >= 300) {
-        throw new Error(`The tag dictionary download failed (${status}).`)
+        throw new TagDictionaryUpdateFailure(
+          UPDATE_PHASE_DICTIONARY_ASSET,
+          [TagTranslationUpdateService.updateAttempt(
+            UPDATE_PHASE_DICTIONARY_ASSET,
+            '',
+            UPDATE_OUTCOME_HTTP,
+            status,
+          )],
+          false,
+        )
       }
       if (written <= 0) {
-        throw new Error('The tag dictionary download was empty.')
+        throw TagTranslationUpdateService.contentValidationFailure()
       }
-      const actualSha256: string = TagTranslationUpdateService.toHex(sha256.digestSync().data)
+      let actualSha256: string
+      try {
+        actualSha256 = TagTranslationUpdateService.toHex(sha256.digestSync().data)
+      } catch (_error) {
+        throw TagTranslationUpdateService.localStorageFailure()
+      }
       const matchesExpectedRelease: boolean = expectedRelease !== null &&
         written === expectedRelease.bytes && actualSha256 === expectedRelease.sha256
       if (expectedRelease !== null && !matchesExpectedRelease) {
-        throw new Error('The tag dictionary asset did not match the fixed Release metadata.')
+        throw TagTranslationUpdateService.contentValidationFailure()
       }
       if (expectedRelease === null && requiredExistingSha256.length > 0 &&
         actualSha256 !== requiredExistingSha256) {
-        throw new Error('The tag dictionary asset could not be verified without current Release metadata.')
+        throw TagTranslationUpdateService.contentValidationFailure()
       }
       request.destroy()
       request = null
-      fileIo.closeSync(file)
-      file = null
-      TagTranslationUpdateService.removeIfExists(finalPath)
-      fileIo.renameSync(partPath, finalPath)
+      try {
+        fileIo.closeSync(file)
+        file = null
+        TagTranslationUpdateService.removeIfExists(finalPath)
+        fileIo.renameSync(partPath, finalPath)
+      } catch (_error) {
+        throw TagTranslationUpdateService.localStorageFailure()
+      }
       completed = true
       const artifact: DownloadArtifact = new DownloadArtifact()
       artifact.path = finalPath
@@ -372,7 +459,7 @@ export class TagTranslationUpdateService {
         request.destroy()
       }
       if (file !== null) {
-        fileIo.closeSync(file)
+        TagTranslationUpdateService.closeFileQuietly(file)
       }
       if (!completed) {
         TagTranslationUpdateService.removeIfExists(partPath)
@@ -520,6 +607,84 @@ export class TagTranslationUpdateService {
     return parts.join('')
   }
 
+  private static updateAttempt(
+    phase: string,
+    source: string,
+    outcome: string,
+    httpStatus: number = 0,
+  ): TagDictionaryUpdateAttempt {
+    const attempt: TagDictionaryUpdateAttempt = new TagDictionaryUpdateAttempt()
+    attempt.phase = phase
+    attempt.source = source
+    attempt.outcome = outcome
+    attempt.httpStatus = httpStatus
+    return attempt
+  }
+
+  private static localStorageFailure(): TagDictionaryUpdateFailure {
+    return new TagDictionaryUpdateFailure(UPDATE_PHASE_LOCAL_STORAGE, [], false)
+  }
+
+  private static contentValidationFailure(): TagDictionaryUpdateFailure {
+    return new TagDictionaryUpdateFailure(UPDATE_PHASE_CONTENT_VALIDATION, [], false)
+  }
+
+  private static dictionaryAttempt(source: string, error: Error): TagDictionaryUpdateAttempt {
+    if (error instanceof TagDictionaryUpdateFailure) {
+      const failure: TagDictionaryUpdateFailure = error as TagDictionaryUpdateFailure
+      if (failure.attempts.length > 0) {
+        const original: TagDictionaryUpdateAttempt = failure.attempts[0]
+        return TagTranslationUpdateService.updateAttempt(
+          original.phase,
+          source,
+          original.outcome,
+          original.httpStatus,
+        )
+      }
+      return TagTranslationUpdateService.updateAttempt(failure.phase, source, UPDATE_OUTCOME_INVALID)
+    }
+    return TagTranslationUpdateService.updateAttempt(
+      UPDATE_PHASE_DICTIONARY_ASSET,
+      source,
+      UPDATE_OUTCOME_TRANSPORT,
+    )
+  }
+
+  private static updateFailure(
+    error: Error,
+    fallbackPhase: string,
+    source: string,
+    dictionaryRetained: boolean,
+  ): TagDictionaryUpdateFailure {
+    if (error instanceof TagDictionaryUpdateFailure) {
+      const failure: TagDictionaryUpdateFailure = error as TagDictionaryUpdateFailure
+      return new TagDictionaryUpdateFailure(
+        failure.phase,
+        failure.attempts,
+        dictionaryRetained,
+      )
+    }
+    if (source.length === 0) {
+      return new TagDictionaryUpdateFailure(fallbackPhase, [], dictionaryRetained)
+    }
+    return new TagDictionaryUpdateFailure(
+      fallbackPhase,
+      [
+        TagTranslationUpdateService.dictionaryAttempt(source, error),
+      ],
+      dictionaryRetained,
+    )
+  }
+
+  private static failurePhase(attempts: TagDictionaryUpdateAttempt[]): string {
+    for (let index: number = 0; index < attempts.length; index++) {
+      if (attempts[index].phase === UPDATE_PHASE_CONTENT_VALIDATION) {
+        return UPDATE_PHASE_CONTENT_VALIDATION
+      }
+    }
+    return UPDATE_PHASE_DICTIONARY_ASSET
+  }
+
   private static storedReleaseDescriptor(value: string): ReleaseDescriptor | null {
     const parts: string[] = value.split('\u001f')
     const tagName: string = parts.length > 0 && parts[0].startsWith('release:')
@@ -565,6 +730,21 @@ export class TagTranslationUpdateService {
   private static removeIfExists(path: string): void {
     try {
       fileIo.unlinkSync(path)
+    } catch (_error) {}
+  }
+
+  private static updatedDictionaryStatus(rowCount: number, version: string): NhTagTranslationStatus {
+    const status: NhTagTranslationStatus = new NhTagTranslationStatus()
+    status.rowCount = rowCount
+    status.version = version
+    status.source = PROVIDER_LABEL
+    status.updatedAt = Date.now()
+    return status
+  }
+
+  private static closeFileQuietly(file: fileIo.File): void {
+    try {
+      fileIo.closeSync(file)
     } catch (_error) {}
   }
 }

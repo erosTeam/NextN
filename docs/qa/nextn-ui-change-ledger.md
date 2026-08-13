@@ -1943,6 +1943,22 @@ authorize an edit, replace a device comparison, or define product completion.
   successful legacy import still downloads once before later same-Release
   updates can skip. This changes no Settings surface, automatic scheduling,
   dictionary data, or card rendering.
+- **Failure-explanation boundary — 2026-08-13:** a bounded public metadata
+  probe observed direct GitHub `403` rate limiting and mirror `403` rejection;
+  current Settings discards terminal dictionary-update phase/source/status and
+  renders the same generic failure note for every outcome. Metadata failure is
+  deliberately not terminal because the fixed dictionary asset may still
+  succeed. Preserve the existing Advanced translation-capabilities card and
+  its existing `GroupNote` error position. Replace only a terminal failure's
+  error text with a localized, bounded phase/source/status summary derived from
+  a structured service failure; no URL, response body, raw exception, new row,
+  action, automatic update, or layout change is allowed. Build and exact-diff
+  review verify the source boundary. The rendered failure note remains
+  EVIDENCE-ONLY until an ordinary explicit update naturally reaches a terminal
+  error state; no dictionary mutation is manufactured for it.
+  A private file-system failure is terminal for this action and must not consume
+  the mirror retry; after a successful dictionary transaction, return the
+  known committed status instead of performing a second fallible status read.
 
 ## OPEN — Reader enhancement interaction yield
 
