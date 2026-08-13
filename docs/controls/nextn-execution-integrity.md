@@ -50,6 +50,36 @@ scope change, agent delegation, and task handoff in this repository.
   reviewed and they are committed in a scoped Git commit. A commit records a
   checkpoint; it never closes the user outcome by itself.
 
+### 1.2 Recoverable tool refusals are not user decision points
+
+- A sandbox, index-lock, lease-lock, or execution-policy refusal is an
+  observation about one command form. It is never a reason to yield, end a
+  status with the refusal, request a fresh authorization, or treat the active
+  lane as blocked when the user has already authorized the underlying work.
+- When an ordinary command cannot write a Git index, repository lease, or
+  local evidence artifact, immediately retry in the same run using the
+  smallest applicable permitted form: one operation, exact staged paths or
+  exact selected device, and no unrelated chained work. Do not first ask the
+  user to approve the retry merely because the tool chose a stricter command
+  mode.
+- If a compound elevated command is refused, decompose it before reporting
+  anything: for example, stage the exact files, inspect the staged diff, then
+  commit; or acquire/renew the exact lease, then run the one device command.
+  A policy decision on the compound command says nothing about those smaller
+  operations. Continue the sequence automatically.
+- A user report is permitted only after the exact minimal operation has itself
+  been refused and no materially narrower in-scope operation remains. That
+  report must name the one failed operation, preserve the active outcome as
+  `OPEN`, and state the next automatic retry or the precise additional
+  authority required. It must never be the turn's terminal message while a
+  safe retry remains.
+- Git checkpoints are part of ordinary requested implementation. After an
+  exact diff review, stage only the declared paths and commit automatically.
+  Do not turn an index-write mode change into a request that the user repeat
+  an existing instruction to commit. If a user interruption occurs between
+  staging and commit, first inspect the index and resume that same commit
+  before changing lanes.
+
 ## 2. Claim vocabulary is fixed
 
 Use only the narrowest true statement.

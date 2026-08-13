@@ -1,5 +1,23 @@
 # NextN active device-acceptance queue
 
+## Current delivery — Reader Settings grouped-tree validation — 2026-08-13
+
+- Commit `e88bca5` was built as the signed Debug HAP and installed in place on
+  the selected `192.168.50.237:12345` device with `install -r`; no app data
+  clear or uninstall occurred.
+- The device was live-resolved, leased, woken, and read back as `AWAKE` with
+  `OverrideTimeout=86400000ms` before installation. This is installation and
+  display-state evidence only, not a Reader Settings visual result.
+- The next action remains one retained native Reader Settings review of the
+  six groups and existing comic-translation entry. Its local layout/screenshot
+  receive was rejected by the execution environment before the command began;
+  no UI route, setting, account, or content state changed in that attempt.
+- A subsequent narrow retry acquired a fresh lease and completed the native
+  `Settings → Reader` route with one final local layout and screenshot under
+  `.hvigor/outputs/reader-settings-groups-20260813T0620/`. No setting, account,
+  content, data-clear, or uninstall action occurred. Visual review remains
+  pending; this entry does not treat the capture itself as acceptance.
+
 ## Historical transport observation — 2026-08-12
 
 - At the time of this historical observation, the user-selected TCP target
