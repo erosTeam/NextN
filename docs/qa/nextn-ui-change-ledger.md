@@ -3,6 +3,36 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Gallery Detail public cache boundary — 2026-08-13
+
+- **Why newly actionable:** the user reported that opening a Gallery Detail
+  repeatedly feels like a full reload and asked for a durable detail cache
+  that does not turn account, favorite, comment, related, or read-progress
+  state into a single blob.
+- **Root cause under audit:** `GalleryDetailPage.loadDetail()` still goes
+  straight to `NhApiClient.detail()`, and `NhApiClient.detail()` always
+  uses the default public NetworkKit GET path. That leaves no app-owned cache
+  for the public detail DTO itself.
+- **Whole affected tree:** `shared/network/NhApiClient.detail →
+  feature/gallery/GalleryDetailPage.loadDetail/requestDetailRefresh →
+  shared/model/NhGalleryDetail + LocalDataStore`.
+- **Exact change:** add a narrow app-private cache for the public detail DTO
+  only, with a bounded in-memory entry and an RDB row keyed by gallery id.
+  Initial route loads may satisfy from cache; explicit refresh paths must
+  bypass the HTTP cache and revalidate the current gallery directly. Public
+  related/comment endpoints, favorite/account state, read progress, tag
+  translations, and Settings UI stay on their existing owners.
+- **Minimality and risk:** no visible hierarchy or copy change is intended.
+  The page still owns its own load state; only the detail payload source is
+  allowed to change. The only visible effect should be that reopening an
+  already-seen gallery detail can reuse the stored DTO instead of painting a
+  fresh network-only reload.
+- **Verification plan:** build the signed Debug HAP, install in place without
+  clearing data, open the same gallery detail twice on the selected device,
+  and confirm the second entry uses the cache boundary while the explicit
+  refresh path still bypasses it. Preserve raw device artifacts locally and do
+  not use a UI static contract.
+
 ## OPEN — Reader Settings parent-tree and icon correction — 2026-08-13
 
 - **Why newly actionable:** the user reported that the current Reader Settings

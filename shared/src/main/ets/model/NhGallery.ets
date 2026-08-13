@@ -49,6 +49,16 @@ export class NhTag {
   /** Optional local-dictionary label; `name` stays the canonical query value. */
   displayName: string = ''
   count: number = 0
+
+  copy(): NhTag {
+    const result: NhTag = new NhTag()
+    result.id = this.id
+    result.type = this.type
+    result.name = this.name
+    result.displayName = this.displayName
+    result.count = this.count
+    return result
+  }
 }
 
 export class NhGalleryPage {
@@ -57,6 +67,16 @@ export class NhGalleryPage {
   width: number = 0
   height: number = 0
   thumbnailUrl: string = ''
+
+  copy(): NhGalleryPage {
+    const result: NhGalleryPage = new NhGalleryPage()
+    result.number = this.number
+    result.extension = this.extension
+    result.width = this.width
+    result.height = this.height
+    result.thumbnailUrl = this.thumbnailUrl
+    return result
+  }
 }
 
 export class NhGalleryDetail {
@@ -73,6 +93,24 @@ export class NhGalleryDetail {
   uploadDate: number = 0
   tags: NhTag[] = []
   pages: NhGalleryPage[] = []
+
+  copy(): NhGalleryDetail {
+    const result: NhGalleryDetail = new NhGalleryDetail()
+    result.id = this.id
+    result.mediaId = this.mediaId
+    result.title = this.title
+    result.japaneseTitle = this.japaneseTitle
+    result.prettyTitle = this.prettyTitle
+    result.coverUrl = this.coverUrl
+    result.thumbnailUrl = this.thumbnailUrl
+    result.pageCount = this.pageCount
+    result.favoriteCount = this.favoriteCount
+    result.scanlator = this.scanlator
+    result.uploadDate = this.uploadDate
+    result.tags = this.tags.map((tag: NhTag): NhTag => tag.copy())
+    result.pages = this.pages.map((page: NhGalleryPage): NhGalleryPage => page.copy())
+    return result
+  }
 
   displayTitle(): string {
     if (this.prettyTitle.length > 0) {

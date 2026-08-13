@@ -7,7 +7,7 @@ const STORE_CONFIG: relationalStore.StoreConfig = {
   autoCleanDirtyData: true,
 }
 
-const SCHEMA_VERSION: number = 18
+const SCHEMA_VERSION: number = 19
 const SQL_CREATE_READING_HISTORY: string =
   'CREATE TABLE IF NOT EXISTS reading_history (' +
   'gallery_id INTEGER PRIMARY KEY, ' +
@@ -60,6 +60,15 @@ const SQL_CREATE_NH_TAG_CATALOG: string =
   'name TEXT NOT NULL, ' +
   'count INTEGER NOT NULL, ' +
   'updated_at INTEGER NOT NULL)'
+const SQL_CREATE_NH_GALLERY_DETAIL_CACHE: string =
+  'CREATE TABLE IF NOT EXISTS nh_gallery_detail_cache (' +
+  'gallery_id INTEGER PRIMARY KEY, ' +
+  'payload TEXT NOT NULL, ' +
+  'cached_at INTEGER NOT NULL, ' +
+  'expires_at INTEGER NOT NULL, ' +
+  'accessed_at INTEGER NOT NULL)'
+const SQL_CREATE_NH_GALLERY_DETAIL_CACHE_ACCESS_ORDER: string =
+  'CREATE INDEX IF NOT EXISTS idx_nh_gallery_detail_cache_access ON nh_gallery_detail_cache (accessed_at DESC)'
 const SQL_CREATE_READER_SETTINGS: string =
   'CREATE TABLE IF NOT EXISTS reader_settings (' +
   'key TEXT PRIMARY KEY NOT NULL, ' +
@@ -213,6 +222,8 @@ export class LocalDataStore {
       await store.executeSql(SQL_CREATE_TAG_TRANSLATION_USAGE_ORDER)
       await store.executeSql(SQL_CREATE_TAG_TRANSLATION_META)
       await store.executeSql(SQL_CREATE_NH_TAG_CATALOG)
+      await store.executeSql(SQL_CREATE_NH_GALLERY_DETAIL_CACHE)
+      await store.executeSql(SQL_CREATE_NH_GALLERY_DETAIL_CACHE_ACCESS_ORDER)
       await store.executeSql(SQL_CREATE_READER_SETTINGS)
       await store.executeSql(SQL_CREATE_ACCOUNT_SESSION)
       await store.executeSql(SQL_CREATE_ACCOUNT_PROFILE)

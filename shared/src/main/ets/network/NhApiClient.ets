@@ -132,9 +132,11 @@ export class NhApiClient {
     return await NhApiClient.parseGalleryPage(root)
   }
 
-  static async detail(galleryId: number): Promise<NhGalleryDetail> {
+  static async detail(galleryId: number, bypassTransportCache: boolean = false): Promise<NhGalleryDetail> {
     const root: Record<string, Object> = await NhApiClient.getJson(
       `${API_ROOT}/api/v2/galleries/${Math.max(0, Math.floor(galleryId))}`,
+      NhJsonReadScope.PUBLIC,
+      !bypassTransportCache,
     )
     return NhApiClient.parseGalleryDetail(root)
   }
@@ -493,8 +495,9 @@ export class NhApiClient {
   private static async getJson(
     url: string,
     scope: NhJsonReadScope = NhJsonReadScope.PUBLIC,
+    allowTransportCache: boolean = true,
   ): Promise<Record<string, Object>> {
-    const value: Object = await NhApiClient.getJsonValue(url, scope)
+    const value: Object = await NhApiClient.getJsonValue(url, scope, allowTransportCache)
     if (Array.isArray(value) || typeof value !== 'object' || value === null) {
       throw new Error('Expected an object response.')
     }
@@ -535,6 +538,7 @@ export class NhApiClient {
   private static async getJsonValue(
     url: string,
     scope: NhJsonReadScope = NhJsonReadScope.PUBLIC,
+    allowTransportCache: boolean = true,
   ): Promise<Object> {
     // ArkWeb authority and the two-401 retirement boundary belong only to
     // explicit account reads. Public Browse/Search/Popular/Detail/Related/
@@ -623,7 +627,7 @@ export class NhApiClient {
         const response: http.HttpResponse = await request.request(url, {
           method: http.RequestMethod.GET,
           expectDataType: http.HttpDataType.STRING,
-          usingCache: true,
+          usingCache: allowTransportCache,
           connectTimeout: CONNECT_TIMEOUT_MS,
           readTimeout: READ_TIMEOUT_MS,
           // Native catalog reads are always anonymous. The exact account

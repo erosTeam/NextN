@@ -18,6 +18,7 @@ import {
   AppStrings,
   NhComment,
   NhGalleryDetail,
+  NhGalleryDetailCacheService,
   NhGalleryFavoriteStatus,
   NhGalleryExternalOpenService,
   NhGalleryPage,
@@ -211,6 +212,7 @@ export struct GalleryDetailPage {
   private commentPeekGeneration: number = 0
   private titleTranslationEpoch: number = 0
   private tagTranslationEpoch: number = 0
+  private readProgressRequestGeneration: number = 0
   private favoriteStatusGeneration: number = 0
   private handledDownloadRequestVersion: number = 0
   private readFabController: HdsTabsController = new HdsTabsController()
@@ -237,6 +239,12 @@ export struct GalleryDetailPage {
     // stack.  Cancel an in-flight response, but do not revoke the already
     // verified detail: returning from Reader must leave its Read action ready.
     this.requestGeneration += 1
+    this.readProgressRequestGeneration += 1
+    // A cache hit may still be revalidating in the background. That request
+    // belongs to the departed route, not to the retained Detail workspace.
+    // Clear only its transient ownership; the verified snapshot stays ready.
+    this.isLoading = false
+    this.publishRefreshChrome(false)
     // Related galleries are supplemental. Do not let an old background
     // response mutate this retained destination while another route is shown.
     this.relatedRequestGeneration += 1
@@ -418,6 +426,7 @@ export struct GalleryDetailPage {
     this.coverFailedUrl = ''
     this.tagTranslationLabels = []
     this.tagTranslationEpoch += 1
+    this.readProgressRequestGeneration += 1
     this.titleTranslationEpoch += 1
     this.titleTranslations = []
     this.favoriteStatusGeneration += 1
@@ -524,7 +533,7 @@ export struct GalleryDetailPage {
     }
     // There is no mounted interactive host while initial/route replacement
     // error content is on screen, so retry that unresolved state directly.
-    this.loadDetail()
+    this.loadDetail(true)
   }
 
   /** Called only by the shared top-pull/programmatic refresh host. */
@@ -532,7 +541,7 @@ export struct GalleryDetailPage {
     if (this.isLoading || !this.isDetailReadyForCurrentGallery || this.detail.id !== this.galleryId) {
       return
     }
-    await this.loadDetail()
+    await this.loadDetail(true)
   }
 
   private isDownloadActionReady(): boolean {
@@ -784,8 +793,13 @@ export struct GalleryDetailPage {
   }
 
   /** True only while this retained destination still owns the local read result. */
-  private isCurrentReadProgressRequest(detailGeneration: number, galleryId: number): boolean {
-    return this.isCurrentRequest(detailGeneration) &&
+  private isCurrentReadProgressRequest(
+    detailGeneration: number,
+    galleryId: number,
+    readProgressGeneration: number,
+  ): boolean {
+    return readProgressGeneration === this.readProgressRequestGeneration &&
+      this.isCurrentRequest(detailGeneration) &&
       this.isDetailReadyForCurrentGallery &&
       this.galleryId === galleryId &&
       this.detail.id === galleryId
@@ -812,26 +826,28 @@ export struct GalleryDetailPage {
    * not evidence that this Gallery has never been read.
    */
   private async loadReadProgress(detailGeneration: number, galleryId: number): Promise<void> {
+    const readProgressGeneration: number = this.readProgressRequestGeneration + 1
+    this.readProgressRequestGeneration = readProgressGeneration
     try {
       const hasProgress: boolean = await HistoryRepository.hasReadProgress(this.context(), galleryId)
-      if (!this.isCurrentReadProgressRequest(detailGeneration, galleryId)) {
+      if (!this.isCurrentReadProgressRequest(detailGeneration, galleryId, readProgressGeneration)) {
         return
       }
       let resumePageIndex: number = 0
       if (hasProgress) {
         const persistedPageIndex: number = await HistoryRepository.progress(this.context(), galleryId)
-        if (!this.isCurrentReadProgressRequest(detailGeneration, galleryId)) {
+        if (!this.isCurrentReadProgressRequest(detailGeneration, galleryId, readProgressGeneration)) {
           return
         }
         resumePageIndex = this.clampResumePageIndex(persistedPageIndex)
       }
-      if (!this.isCurrentReadProgressRequest(detailGeneration, galleryId)) {
+      if (!this.isCurrentReadProgressRequest(detailGeneration, galleryId, readProgressGeneration)) {
         return
       }
       this.hasReadProgress = hasProgress
       this.resumePageIndex = resumePageIndex
     } catch (error) {
-      if (this.isCurrentRequest(detailGeneration)) {
+      if (this.isCurrentReadProgressRequest(detailGeneration, galleryId, readProgressGeneration)) {
         console.warn(`Unable to load local reading progress: ${(error as Error).message}`)
       }
     }
@@ -933,33 +949,102 @@ export struct GalleryDetailPage {
     }
   }
 
-  private async loadDetail(): Promise<void> {
-    const generation: number = this.beginDetailLoad()
+  private applyVerifiedDetailSnapshot(generation: number, detail: NhGalleryDetail): boolean {
+    if (!this.isCurrentRequest(generation) || detail.id <= 0 || detail.id !== this.galleryId) {
+      return false
+    }
+    this.detail = detail
+    this.isDetailReadyForCurrentGallery = true
+    this.publishDownloadChrome()
+    this.publishWideThumbnailActionAvailability()
+    this.updateNavigationChromeForScroll()
+    this.requestTagTranslations(generation, detail.id, detail.tags)
+    return true
+  }
+
+  private startDetailSupplementalLoads(generation: number, detail: NhGalleryDetail): void {
+    this.loadRelatedGalleries(detail.id)
+    this.loadCommentPeek(generation, detail.id)
+    this.loadFavoriteStatus(generation, detail.id)
+  }
+
+  /** A cache snapshot is sufficient for the local read marker, but never for history metadata. */
+  private loadCachedDetailReadProgress(generation: number, galleryId: number): void {
+    this.loadReadProgress(generation, galleryId).catch((error: Error): void => {
+      if (this.isCurrentRequest(generation)) {
+        console.warn(`Unable to load cached local reading progress: ${error.message}`)
+      }
+    })
+  }
+
+  private async recordDetailOpenAndLoadProgress(generation: number, detail: NhGalleryDetail): Promise<void> {
     try {
-      const detail: NhGalleryDetail = await NhApiClient.detail(this.galleryId)
+      await HistoryRepository.recordOpen(this.context(), detail)
+    } catch (error) {
+      if (this.isCurrentRequest(generation)) {
+        console.warn(`Unable to record local reading history: ${(error as Error).message}`)
+      }
+    }
+    await this.loadReadProgress(generation, detail.id)
+  }
+
+  private async loadDetail(forceNetwork: boolean = false): Promise<void> {
+    const requestedGalleryId: number = this.galleryId
+    const generation: number = this.beginDetailLoad()
+    let cacheApplied: boolean = false
+    try {
+      if (!forceNetwork) {
+        const recent: NhGalleryDetail | null = NhGalleryDetailCacheService.getRecent(requestedGalleryId)
+        if (recent !== null && this.applyVerifiedDetailSnapshot(generation, recent)) {
+          cacheApplied = true
+          // The current workspace is ready; background revalidation must not
+          // impersonate the user's explicit refresh affordance.
+          this.isLoading = false
+          this.publishRefreshChrome(false)
+          this.startDetailSupplementalLoads(generation, recent)
+          this.loadCachedDetailReadProgress(generation, recent.id)
+        }
+        if (!cacheApplied) {
+          const persisted: NhGalleryDetail | null = await NhGalleryDetailCacheService.loadPersisted(
+            this.context(),
+            requestedGalleryId,
+          )
+          if (!this.isCurrentRequest(generation)) {
+            return
+          }
+          if (persisted !== null && this.applyVerifiedDetailSnapshot(generation, persisted)) {
+            cacheApplied = true
+            this.isLoading = false
+            this.publishRefreshChrome(false)
+            this.startDetailSupplementalLoads(generation, persisted)
+            this.loadCachedDetailReadProgress(generation, persisted.id)
+          }
+        }
+      }
+      const detail: NhGalleryDetail = await NhApiClient.detail(requestedGalleryId, forceNetwork)
       if (!this.isCurrentRequest(generation)) {
         return
       }
-      if (detail.id <= 0 || detail.id !== this.galleryId) {
+      if (detail.id <= 0 || detail.id !== requestedGalleryId || detail.id !== this.galleryId) {
         throw new Error('Gallery response did not match the requested gallery.')
       }
-      this.detail = detail
-      this.isDetailReadyForCurrentGallery = true
-      this.publishDownloadChrome()
-      this.publishWideThumbnailActionAvailability()
-      this.updateNavigationChromeForScroll()
-      this.requestTagTranslations(generation, detail.id, detail.tags)
-      this.loadRelatedGalleries(detail.id)
-      this.loadCommentPeek(generation, detail.id)
-      this.loadFavoriteStatus(generation, detail.id)
-      try {
-        await HistoryRepository.recordOpen(this.context(), detail)
-      } catch (error) {
-        if (this.isCurrentRequest(generation)) {
-          console.warn(`Unable to record local reading history: ${(error as Error).message}`)
-        }
+      if (!this.applyVerifiedDetailSnapshot(generation, detail)) {
+        return
       }
-      await this.loadReadProgress(generation, detail.id)
+      // The verified response is now renderable. Cache persistence is awaited
+      // only for ordering/device-proof purposes; it never owns page loading.
+      this.isLoading = false
+      this.publishRefreshChrome(false)
+      await NhGalleryDetailCacheService.save(this.context(), detail)
+      if (!this.isCurrentRequest(generation)) {
+        return
+      }
+      if (!cacheApplied) {
+        this.startDetailSupplementalLoads(generation, detail)
+      }
+      // The fresh page list may change the valid persisted-resume clamp and
+      // remains the canonical source for the local History projection.
+      await this.recordDetailOpenAndLoadProgress(generation, detail)
     } catch (error) {
       if (!this.isCurrentRequest(generation)) {
         return

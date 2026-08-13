@@ -227,6 +227,8 @@ export {
 export { NhApiClient } from './network/NhApiClient'
 export { NhTagCatalogRepository } from './storage/NhTagCatalogRepository'
 export { NhTagCatalogService } from './services/NhTagCatalogService'
+export { NhGalleryDetailCacheRepository } from './storage/NhGalleryDetailCacheRepository'
+export { NhGalleryDetailCacheService } from './services/NhGalleryDetailCacheService'
 export { ReaderImageCacheService, ReaderImageCacheResult, ReaderImageCacheStatus } from './services/ReaderImageCacheService'
 export { GalleryTagStrip, GalleryTagStripLayout } from './components/GalleryTagStrip'
 export { ReaderNativeSuperResolution, ReaderNativeSuperResolutionResult } from './services/ReaderNativeSuperResolution'
