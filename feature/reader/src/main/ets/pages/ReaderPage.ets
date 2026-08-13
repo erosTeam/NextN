@@ -11,6 +11,7 @@ import {
   NhGalleryExternalOpenService,
   NhGalleryDetail,
   NhGalleryPage,
+  NhTag,
   NhGalleryShareService,
   NhReaderMode,
   NhReaderSuperResolutionModel,
@@ -2390,6 +2391,24 @@ export struct ReaderPage {
     return CommentTranslationService.targetLanguage()
   }
 
+  /**
+   * Detail tags are the public NH authority for the source work's language.
+   * Keep their raw canonical value for the pipeline; a translated display
+   * label is only a UI projection and must never select an OCR profile.
+   */
+  private readerTranslationSourceLanguage(): string {
+    for (let index: number = 0; index < this.detail.tags.length; index++) {
+      const tag: NhTag = this.detail.tags[index]
+      const namespace: string = tag.type.trim().toLowerCase()
+      const language: string = tag.name.trim()
+      if ((namespace === 'language' || namespace === 'languages') &&
+        language.length > 0 && language.toLowerCase() !== 'translated') {
+        return language
+      }
+    }
+    return 'auto'
+  }
+
   /** Matches the identity that the runtime writes into ComicRenderedPage.identity. */
   private readerTranslationCurrentRuntimeKey(): string {
     const binding = this.llmSources.mangaBinding
@@ -2696,7 +2715,7 @@ export struct ReaderPage {
     input.imageFilePath = sourcePath
     input.imageWidth = page.width
     input.imageHeight = page.height
-    input.sourceLanguage = 'auto'
+    input.sourceLanguage = this.readerTranslationSourceLanguage()
     input.targetLanguage = targetLanguage
     this.readerTranslationRunning = true
     this.readerTranslationPageIndex = pageIndex

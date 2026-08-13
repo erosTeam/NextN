@@ -1308,6 +1308,19 @@ authorize an edit, replace a device comparison, or define product completion.
   build the signed HAP. A real source/language change during a configured
   translation remains EVIDENCE-ONLY until it can be observed without changing
   private source credentials or the established Reader canvas/chrome state.
+- **Source-language correction — 2026-08-13:** the NH detail response already
+  retains each canonical `language` tag, but Reader requests had unconditionally
+  sent `auto`. This made a non-Japanese source select the wrong OCR/profile
+  branch and record that incorrect source language in the existing document
+  and rendered identities. Keep the same Reader canvas, More-menu action,
+  image leaves, source binding, cache owners, and request timing. At the sole
+  Reader request call site, choose the first raw `language`/`languages` tag
+  whose value is neither empty nor `translated`; otherwise retain `auto`.
+  Do not use translated display labels or extend Download/History persistence:
+  a downloaded local detail without raw tags remains safely on the existing
+  `auto` fallback. This changes no visible layout or copy. Build and exact
+  diff review are the source boundary; an enabled Reader translation remains
+  EVIDENCE-ONLY until a real configured source produces an output.
 - **Source-only self-hosted identity correction — 2026-08-13:** the optional
   manga-rendering-service route previously keyed its long-lived orchestrator
   only by fixed protocol/profile plus the text source. Changing the selected
