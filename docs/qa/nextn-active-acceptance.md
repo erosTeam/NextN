@@ -1,5 +1,29 @@
 # NextN active device-acceptance queue
 
+## Current Reader presentation-lifecycle smoke — rejected close terminal — 2026-08-14
+
+- The signed Debug HAP containing `e77a532` was installed in place on only
+  `192.168.50.237:12345`; no app data clear, uninstall, account action,
+  download action, or preference mutation occurred. The selected device was
+  live-resolved, leased, woken, and read back as `AWAKE` with
+  `OverrideTimeout=86400000ms` before the sequence.
+- A cold native Gallery direct route reached foreground-confirmed NextN Detail,
+  and its current visible `继续 P1` action entered foreground-confirmed native
+  Reader with the restored black canvas layers. This observes only the basic
+  post-install Reader entry path.
+- One system Back input was then issued from that Reader. Its retained terminal
+  layout had `com.ohos.sceneboard` rather than the expected foreground NextN
+  Gallery Detail identity. This chain is rejected: it neither proves a Reader
+  lifecycle failure nor accepts the lifecycle correction. Do not retry the
+  close action by coordinate or treat the terminal system layout as app
+  evidence.
+- The next safe action is source/diagnostic review of the existing Reader
+  overlay close route before another device close attempt. The specific
+  restore-before-onShown and late-callback races remain uninduced and OPEN.
+  Raw local artifacts are retained under
+  `.hvigor/outputs/reader-lifecycle-20260814T/` and are excluded from source
+  control.
+
 ## Current Reader background preference — bounded device result — 2026-08-14
 
 - The signed Debug HAP containing `14f4a74` was installed in place on only
