@@ -1,5 +1,32 @@
 # NextN active device-acceptance queue
 
+## Current delivery result — Gallery Detail public DTO cache — 2026-08-13
+
+- Commits `c4693d2`, `e209278`, and `a588c52` were built as the signed Debug
+  HAP and installed in place on the selected `192.168.50.237:12345` device;
+  no app data clear or uninstall occurred. The device was live-resolved,
+  leased, woken, and read back as `AWAKE` with
+  `OverrideTimeout=86400000ms` before the acceptance sequence.
+- NextN alone was force-stopped, then the existing public Gallery Detail route
+  was cold-started. The bounded `NextNDetailCache` app log recorded
+  `event=hit=persisted`, followed by `event=stored`; those fixed events carry
+  no gallery identity, title, URL, payload, account, or user-content field.
+  The terminal layout was native `com.erosteam.nextn:EntryAbility`,
+  `pages/Index`, one Gallery `NavDestination`, and its loaded Detail List at
+  the `1320×2120` portrait root viewport.
+- From that current native Detail, the existing HDS overflow action was opened
+  by its current semantic resource ID, then the current semantic `重新加载`
+  menu item was invoked. The bounded cache log recorded
+  `event=bypass=explicit-refresh`, then `event=stored`; the terminal layout
+  remained the same native loaded Detail owner.
+- This accepts only the public primary-DTO cache's observed cold-start
+  persisted-hit and explicit-refresh-bypass paths. Related galleries,
+  comments, favorite/account state, tag display labels, read progress, and
+  Settings cache presentation remain on their independent owners and are not
+  asserted as cached. Raw local artifacts are retained under
+  `.hvigor/outputs/gallery-detail-cache-20260813T0645/` and are excluded from
+  source control.
+
 ## EVIDENCE-ONLY — Reader Settings / Advanced translation parent ownership — 2026-08-13
 
 - Commit `e88bca5` was built as the signed Debug HAP and installed in place on
