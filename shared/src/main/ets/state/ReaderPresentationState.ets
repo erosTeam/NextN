@@ -24,6 +24,7 @@ export class ReaderPresentationState {
   @Trace autoPageSeconds: number = 3
   @Trace volumeKeyTurn: boolean = false
   @Trace doublePageEnabled: boolean = false
+  @Trace pageTurnAnimation: boolean = true
   @Trace tapZoneLayout: NhReaderTapZoneLayout = NhReaderTapZoneLayout.RIGHT_LEFT
   @Trace tapZoneInvert: NhReaderTapZoneInvert = NhReaderTapZoneInvert.NONE
   @Trace superResolutionEnabled: boolean = false
@@ -41,6 +42,7 @@ export class ReaderPresentationState {
     this.autoPageSeconds = presentation.autoPageSeconds
     this.volumeKeyTurn = presentation.volumeKeyTurn
     this.doublePageEnabled = presentation.doublePageEnabled
+    this.pageTurnAnimation = presentation.pageTurnAnimation
     this.tapZoneLayout = presentation.tapZoneLayout
     this.tapZoneInvert = presentation.tapZoneInvert
     this.superResolutionEnabled = presentation.superResolutionEnabled
@@ -59,6 +61,7 @@ export class ReaderPresentationState {
     result.autoPageSeconds = this.autoPageSeconds
     result.volumeKeyTurn = this.volumeKeyTurn
     result.doublePageEnabled = this.doublePageEnabled
+    result.pageTurnAnimation = this.pageTurnAnimation
     result.tapZoneLayout = this.tapZoneLayout
     result.tapZoneInvert = this.tapZoneInvert
     result.superResolutionEnabled = this.superResolutionEnabled

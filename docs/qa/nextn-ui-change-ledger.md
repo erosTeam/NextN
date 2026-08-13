@@ -3,6 +3,52 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Reader page-turn animation preference — 2026-08-14
+
+- **Why newly actionable:** the current NextE Reader has a default-on local
+  page-turn-animation preference, while NextN has no equivalent preference and
+  unconditionally asks its Swiper controller to animate every programmatic
+  paged move. This is a Reader presentation capability; it does not affect
+  gallery data, downloads, cache, translation, enhancement, or history.
+- **Whole reference tree:** `ReaderSettingsPage → Layout
+  GroupedListSection → page-turn animation switch → ReadMode state/settings →
+  ReaderPage.shouldAnimateAdjacentTurn → SwiperController.changeIndex`. The
+  reference animates only an adjacent Pager destination in a non-continuous
+  mode. Its slider and thumbnail routes deliberately use their non-animated
+  jump path; direct Swiper gestures retain their component-owned motion.
+- **Current NextN tree:** `SettingsPage(READER) → SecondaryListScaffold →
+  ReaderPresentationListItems → ReaderLayoutGroup`, while `ReaderPage` owns
+  the shared `turnToReaderPage()` controller route for tap zones, volume keys,
+  auto-read, Slider commits, and thumbnails. Before this change, it passed
+  `true` to `SwiperController.changeIndex` for every paged route.
+- **Exact change boundary:** add the default-on, device-local
+  `pageTurnAnimation` preference through `NhReaderPresentation →
+  ReaderPresentationState → ReaderSettingsRepository →
+  ReaderPresentationService`; insert one no-prefix, no-subtitle switch after
+  `双页模式` in the existing Layout group. `ReaderPresentationListItems` is
+  already shared by the routed Settings page and the Reader-owned sheet, so
+  the same row appears in both existing entry points without changing either
+  parent tree or sheet interaction. Centralize the decision at the existing
+  Reader turn entry: a non-continuous paged target may animate only when the
+  preference is on and its displayed Pager index is adjacent to the current
+  one. This uses existing source-to-display mapping so RTL and double-page
+  spreads retain their current canonical navigation behavior.
+- **Explicit exclusions:** continuous vertical scrolling remains unchanged;
+  user Swipe motion remains owned by Swiper; Slider commits and thumbnail
+  selection remain explicit non-animated jumps; no Reader mode, spread-layout,
+  tap overlay, zoom, page/progress persistence, cache, Reader-sheet parent
+  tree or interaction, image scaling, page-number, background, translation,
+  enhancement, or frozen settings-group behavior may change.
+- **Verification plan:** inspect the scoped diff and build the signed Debug
+  HAP. Then, without clearing data, use one loaded multi-page Reader in a
+  paged mode to verify on/off behavior for an adjacent tap or volume/auto
+  transition, a non-animated Slider/thumbnail jump, the existing vertical
+  behavior, persistence after reopening, and the shared row in both existing
+  Settings entry points. Preserve the current source of truth for visible
+  index/progress and do not use the known-exception menu zone. A same-state,
+  same-viewport NextE capture remains required before any visual-parity claim;
+  no UI static contract is permitted.
+
 ## OPEN — Reader image-scaling quality preference — 2026-08-14
 
 - **Why newly actionable:** static mapping after the user reopened Reader

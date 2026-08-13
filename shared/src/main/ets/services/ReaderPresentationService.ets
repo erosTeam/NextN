@@ -122,6 +122,14 @@ export class ReaderPresentationService {
     })
   }
 
+  static setPageTurnAnimation(context: common.UIAbilityContext, enabled: boolean): Promise<NhReaderPresentation> {
+    return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
+      presentation.pageTurnAnimation = enabled
+    }, (presentation: NhReaderPresentation): Promise<void> => {
+      return ReaderSettingsRepository.savePageTurnAnimation(context, presentation.pageTurnAnimation)
+    })
+  }
+
   static setTapZoneLayout(
     context: common.UIAbilityContext,
     layout: NhReaderTapZoneLayout,
@@ -203,6 +211,7 @@ export class ReaderPresentationService {
       number,
       boolean,
       boolean,
+      boolean,
       NhReaderTapZoneLayout,
       NhReaderTapZoneInvert,
       boolean,
@@ -218,6 +227,7 @@ export class ReaderPresentationService {
       ReaderSettingsRepository.autoPageSeconds(context),
       ReaderSettingsRepository.volumeKeyTurn(context),
       ReaderSettingsRepository.doublePageEnabled(context),
+      ReaderSettingsRepository.pageTurnAnimation(context),
       ReaderSettingsRepository.tapZoneLayout(context),
       ReaderSettingsRepository.tapZoneInvert(context),
       ReaderSettingsRepository.superResolutionEnabled(context),
@@ -234,11 +244,12 @@ export class ReaderPresentationService {
     presentation.autoPageSeconds = values[6]
     presentation.volumeKeyTurn = values[7]
     presentation.doublePageEnabled = values[8]
-    presentation.tapZoneLayout = values[9]
-    presentation.tapZoneInvert = values[10]
-    presentation.superResolutionEnabled = values[11]
-    presentation.superResolutionModel = values[12]
-    presentation.superResolutionMaxHeight = values[13]
+    presentation.pageTurnAnimation = values[9]
+    presentation.tapZoneLayout = values[10]
+    presentation.tapZoneInvert = values[11]
+    presentation.superResolutionEnabled = values[12]
+    presentation.superResolutionModel = values[13]
+    presentation.superResolutionMaxHeight = values[14]
     ReaderPresentationService.state().replace(presentation)
   }
 

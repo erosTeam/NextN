@@ -1,5 +1,32 @@
 # NextN active device-acceptance queue
 
+## Current Reader page-turn-animation preference — bounded device result — 2026-08-14
+
+- The signed Debug HAP containing the new local `pageTurnAnimation` preference
+  was installed in place on only `192.168.50.237:12345`; no data clear,
+  uninstall, account action, download action, or content mutation occurred.
+  The selected device was live-resolved, leased, woken, and read back as
+  `AWAKE` with `OverrideTimeout=86400000ms` before the sequence.
+- The current native `1320×2120` Reader Settings page placed `翻页动画`
+  immediately after `双页模式` in `翻页与布局`. Its new Toggle was initially
+  enabled. One reversible toggle changed it to disabled; a NextN-only
+  force-stop/cold start then restored the disabled value in the native Reader
+  Settings tree. The Toggle was restored to its original enabled value before
+  the sequence ended.
+- The original Reader layout (`连续垂直滚动`) was not changed. The temporary
+  `音量键翻页` setup considered for a safe paged transition was restored to its
+  observed original disabled value before leaving the device. The rejected
+  Reader center-menu zone was never used.
+- This accepts only the observed Settings row, initial value, writeback,
+  cold-start restoration, and cleanup. It does **not** accept animated versus
+  non-animated motion: the available device tooling records single PNG frames
+  only, with no previously verified continuous-frame or recording path. The
+  adjacent paged-turn behavior, Slider/thumbnail jump behavior, vertical/RTL/
+  double-page behavior, and same-state NextE visual comparison remain open.
+  Raw local artifacts are retained under
+  `.hvigor/outputs/reader-page-turn-animation-20260814T/` and are excluded
+  from source control.
+
 ## Current Reader display-preference validation — route exception — 2026-08-14
 
 - The signed Debug HAP containing `0692116` (hidden page number) and

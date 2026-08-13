@@ -56,6 +56,8 @@ export class NhReaderPresentation {
    * preference, so rotating or moving to a wide window can restore spreads.
    */
   doublePageEnabled: boolean = false
+  /** Animate only adjacent programmatic Pager moves; direct Swipe stays component-owned. */
+  pageTurnAnimation: boolean = true
   tapZoneLayout: NhReaderTapZoneLayout = NhReaderTapZoneLayout.RIGHT_LEFT
   tapZoneInvert: NhReaderTapZoneInvert = NhReaderTapZoneInvert.NONE
   /** Explicit opt-in; the original Reader image always remains available. */
@@ -76,6 +78,7 @@ export class NhReaderPresentation {
     result.autoPageSeconds = this.autoPageSeconds
     result.volumeKeyTurn = this.volumeKeyTurn
     result.doublePageEnabled = this.doublePageEnabled
+    result.pageTurnAnimation = this.pageTurnAnimation
     result.tapZoneLayout = this.tapZoneLayout
     result.tapZoneInvert = this.tapZoneInvert
     result.superResolutionEnabled = this.superResolutionEnabled

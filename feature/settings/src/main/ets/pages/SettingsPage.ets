@@ -1608,6 +1608,18 @@ export struct SettingsPage {
     }
   }
 
+  private async saveReaderPageTurnAnimation(enabled: boolean): Promise<void> {
+    if (this.readerPresentation.pageTurnAnimation === enabled) {
+      return
+    }
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setPageTurnAnimation(this.context(), enabled)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_page_turn_animation_save_failed')
+    }
+  }
+
   private async saveReaderTapZoneLayout(layout: NhReaderTapZoneLayout): Promise<void> {
     if (this.readerPresentation.tapZoneLayout === layout) {
       return
@@ -2222,6 +2234,22 @@ export struct SettingsPage {
           },
           onSwitchChange: (value: boolean): void => {
             this.saveReaderDoublePageEnabled(value)
+          },
+        })
+        this.RowDivider()
+        NextNListRow({
+          title: AppStrings.get('settings_reader_page_turn_animation'),
+          hasSwitch: true,
+          checked: this.readerPresentation.pageTurnAnimation,
+          showChevron: false,
+          accessibilityLabel: AppStrings.format('settings_reader_page_turn_animation_a11y', [
+            this.toggleStateLabel(this.readerPresentation.pageTurnAnimation),
+          ]),
+          onAction: (): void => {
+            this.saveReaderPageTurnAnimation(!this.readerPresentation.pageTurnAnimation)
+          },
+          onSwitchChange: (value: boolean): void => {
+            this.saveReaderPageTurnAnimation(value)
           },
         })
       }

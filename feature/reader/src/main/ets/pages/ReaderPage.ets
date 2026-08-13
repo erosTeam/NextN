@@ -2066,7 +2066,7 @@ export struct ReaderPage {
     // Do not assign visiblePageIndex or call persistProgress here. Paged and
     // vertical flows both confirm the physical transition through their
     // existing source-index callback, which is the one persistence boundary.
-    this.turnToReaderPage(target)
+    this.turnToReaderPage(target, false)
     this.scrollThumbnailStripTo(target, true)
   }
 
@@ -2175,7 +2175,7 @@ export struct ReaderPage {
     if (this.autoReadActive) {
       this.autoReadWaitingIndex = target
     }
-    this.turnToReaderPage(target)
+    this.turnToReaderPage(target, true)
     this.scrollThumbnailStripTo(target, true)
   }
 
@@ -3006,11 +3006,29 @@ export struct ReaderPage {
     return this.readerNavigationIndex(this.visiblePageIndex) + this.readerNavigationStep()
   }
 
-  private turnToReaderPage(index: number): void {
+  /**
+   * Only a requested, adjacent Pager move receives the local animation. This
+   * preserves direct Slider/thumbnail jumps and keeps continuous List scrolling
+   * on its existing owner.
+   */
+  private shouldAnimateReaderPageTurn(target: number, requested: boolean): boolean {
+    if (!requested || !this.readerPresentation.pageTurnAnimation || !this.isPagedMode()) {
+      return false
+    }
+    const current: number = this.readerNavigationIndex(this.visiblePageIndex)
+    const currentDisplayIndex: number = this.pagedDisplayIndexForSourceIndex(current)
+    const targetDisplayIndex: number = this.pagedDisplayIndexForSourceIndex(target)
+    return Math.abs(targetDisplayIndex - currentDisplayIndex) === 1
+  }
+
+  private turnToReaderPage(index: number, requestAnimation: boolean = false): void {
     const target: number = this.readerNavigationIndex(index)
     if (this.isPagedMode()) {
       try {
-        this.pagedReaderController.changeIndex(this.pagedDisplayIndexForSourceIndex(target), true)
+        this.pagedReaderController.changeIndex(
+          this.pagedDisplayIndexForSourceIndex(target),
+          this.shouldAnimateReaderPageTurn(target, requestAnimation),
+        )
       } catch (error) {
         console.warn(`Unable to advance Reader page: ${(error as Error).message}`)
       }
@@ -3042,7 +3060,7 @@ export struct ReaderPage {
     if (this.autoReadActive) {
       this.autoReadWaitingIndex = target
     }
-    this.turnToReaderPage(target)
+    this.turnToReaderPage(target, false)
     this.scrollThumbnailStripTo(target, true)
   }
 
@@ -3098,7 +3116,7 @@ export struct ReaderPage {
     if (this.autoReadActive) {
       this.autoReadWaitingIndex = target
     }
-    this.turnToReaderPage(target)
+    this.turnToReaderPage(target, true)
     this.scrollThumbnailStripTo(target, true)
   }
 
@@ -3211,7 +3229,7 @@ export struct ReaderPage {
     }
     this.autoReadWaitingIndex = target
     this.clearAutoReadTimer()
-    this.turnToReaderPage(target)
+    this.turnToReaderPage(target, true)
   }
 
   private onReaderDoubleTap(): void {

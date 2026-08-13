@@ -23,6 +23,7 @@ const READER_FULLSCREEN_KEY: string = 'reader_fullscreen'
 const READER_AUTO_PAGE_SECONDS_KEY: string = 'reader_auto_page_seconds'
 const READER_VOLUME_KEY_TURN_KEY: string = 'reader_volume_key_turn'
 const READER_DOUBLE_PAGE_ENABLED_KEY: string = 'reader_double_page_enabled'
+const READER_PAGE_TURN_ANIMATION_KEY: string = 'reader_page_turn_animation'
 const READER_TAP_ZONE_LAYOUT_KEY: string = 'reader_tap_zone_layout'
 const READER_TAP_ZONE_INVERT_KEY: string = 'reader_tap_zone_invert'
 const READER_SUPER_RESOLUTION_ENABLED_KEY: string = 'reader_super_resolution_enabled'
@@ -143,6 +144,11 @@ export class ReaderSettingsRepository {
     return (await ReaderSettingsRepository.value(context, READER_DOUBLE_PAGE_ENABLED_KEY)) === 'true'
   }
 
+  /** Preserve the existing animated adjacent-turn behavior for installations without this key. */
+  static async pageTurnAnimation(context: common.UIAbilityContext): Promise<boolean> {
+    return (await ReaderSettingsRepository.value(context, READER_PAGE_TURN_ANIMATION_KEY)) !== 'false'
+  }
+
   static async tapZoneLayout(context: common.UIAbilityContext): Promise<NhReaderTapZoneLayout> {
     return NhReaderTapZoneResolver.normalizeLayout(
       (await ReaderSettingsRepository.value(context, READER_TAP_ZONE_LAYOUT_KEY)) ?? '',
@@ -245,6 +251,14 @@ export class ReaderSettingsRepository {
     return ReaderSettingsRepository.saveValue(
       context,
       READER_DOUBLE_PAGE_ENABLED_KEY,
+      enabled ? 'true' : 'false',
+    )
+  }
+
+  static savePageTurnAnimation(context: common.UIAbilityContext, enabled: boolean): Promise<void> {
+    return ReaderSettingsRepository.saveValue(
+      context,
+      READER_PAGE_TURN_ANIMATION_KEY,
       enabled ? 'true' : 'false',
     )
   }
