@@ -1904,6 +1904,31 @@ authorize an edit, replace a device comparison, or define product completion.
   deliberately uninduced dictionary-revision transition, or broaden the
   frozen presentation scope.
 
+### Dictionary update-source fallback — 2026-08-13
+
+- **Why newly actionable:** the existing explicit local-dictionary update
+  requested exactly one GitHub release asset. A direct transport, redirect,
+  rate-limit, or availability failure ended the operation before parsing or
+  the already-transactional replacement path, leaving the user with the prior
+  dictionary and one generic update error.
+- **Exact bounded change:** retain the existing direct GitHub asset as the
+  first source and retry the identical public release asset through the
+  existing NextE mirror only when that direct download fails. Each attempt
+  retains the current streaming size limits, private `.part` cleanup, strict
+  gzip/JSON parsing, and all-or-nothing RDB replacement. No settings row,
+  copy, automatic update, catalog request, card/layout, dictionary contents,
+  or displayed-tag preference changes.
+- **Source and data boundary:** the mirror is an availability fallback, not a
+  new authority for dictionary semantics. The committed dictionary remains
+  untouched until the selected artifact passes the existing parser and RDB
+  transaction. If both sources fail, the previous dictionary remains active;
+  the user-visible Settings error remains the current generic safe message and
+  does not expose URLs, server bodies, or response details.
+- **Verification limit:** build and exact-diff review can verify the new
+  fallback path compiles. A real direct-source failure followed by mirror
+  success is not manufactured solely for evidence; that branch remains
+  EVIDENCE-ONLY until an ordinary explicit dictionary update reaches it.
+
 ## OPEN — Reader enhancement interaction yield
 
 - User outcome: local Reader super-resolution must never compete with a

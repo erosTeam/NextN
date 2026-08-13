@@ -6,8 +6,24 @@ import util from '@ohos.util'
 import { NhTagTranslationEntry, NhTagTranslationStatus } from '../model/NhTagTranslation'
 import { TagTranslationRepository } from '../storage/TagTranslationRepository'
 
-const PUBLIC_DICTIONARY_URL: string =
+class PublicDictionarySource {
+  label: string = ''
+  url: string = ''
+
+  constructor(label: string, url: string) {
+    this.label = label
+    this.url = url
+  }
+}
+
+const PUBLIC_DICTIONARY_DIRECT_URL: string =
   'https://github.com/EhTagTranslation/Database/releases/latest/download/db.raw.json.gz'
+const PUBLIC_DICTIONARY_MIRROR_URL: string =
+  'https://ghproxy.homeboyc.cn/https://github.com/EhTagTranslation/Database/releases/latest/download/db.raw.json.gz'
+const PUBLIC_DICTIONARY_SOURCES: PublicDictionarySource[] = [
+  new PublicDictionarySource('direct', PUBLIC_DICTIONARY_DIRECT_URL),
+  new PublicDictionarySource('mirror', PUBLIC_DICTIONARY_MIRROR_URL),
+]
 const PROVIDER_LABEL: string = 'EhTagTranslation/Database'
 const CACHE_DIRECTORY_NAME: string = 'nextn-tag-translation'
 const DOWNLOAD_PART_NAME: string = 'dictionary.gz.part'
@@ -58,7 +74,7 @@ export class TagTranslationUpdateService {
     const previous: NhTagTranslationStatus = await TagTranslationRepository.status(context)
     let artifact: DownloadArtifact | null = null
     try {
-      artifact = await TagTranslationUpdateService.downloadToPrivateFile(context, PUBLIC_DICTIONARY_URL)
+      artifact = await TagTranslationUpdateService.downloadFromPublicSources(context)
       if (!force && previous.rowCount > 0 && previous.version === artifact.version) {
         return previous
       }
@@ -72,6 +88,29 @@ export class TagTranslationUpdateService {
       }
       TagTranslationUpdateService.removeIfExists(TagTranslationUpdateService.downloadPartPath(context))
     }
+  }
+
+  /**
+   * The optional update keeps its current direct GitHub path first, then retries
+   * the same public release through the reference app's configured mirror. Each
+   * source attempt keeps its existing best-effort temporary-file cleanup; the
+   * committed dictionary remains untouched until parsing and replacement commit.
+   */
+  private static async downloadFromPublicSources(
+    context: common.UIAbilityContext,
+  ): Promise<DownloadArtifact> {
+    const failedSources: string[] = []
+    for (let index: number = 0; index < PUBLIC_DICTIONARY_SOURCES.length; index++) {
+      const source: PublicDictionarySource = PUBLIC_DICTIONARY_SOURCES[index]
+      try {
+        return await TagTranslationUpdateService.downloadToPrivateFile(context, source.url)
+      } catch (_error) {
+        failedSources.push(source.label)
+      }
+    }
+    throw new Error(
+      `The tag dictionary download failed from every configured public source (${failedSources.join(', ')}).`,
+    )
   }
 
   private static async downloadToPrivateFile(
