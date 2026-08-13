@@ -1928,6 +1928,21 @@ authorize an edit, replace a device comparison, or define product completion.
   fallback path compiles. A real direct-source failure followed by mirror
   success is not manufactured solely for evidence; that branch remains
   EVIDENCE-ONLY until an ordinary explicit dictionary update reaches it.
+- **Follow-up version boundary — 2026-08-13:** before a non-forced update,
+  read only the fixed direct-or-mirror Release metadata. Its bounded
+  `tag_name`, `published_at`, and SHA-256 key can skip gzip only when the
+  preceding import matched that metadata's fixed `db.raw.json.gz` byte count
+  and SHA-256. If a metadata source or fixed asset lags a persisted verified
+  nonempty Release, NextN retains the known dictionary rather than replacing it
+  with an unverifiable or older payload; a metadata/asset mismatch is not
+  saved as a verified Release version.
+  Metadata never supplies an asset URL; a mismatched fixed asset tries the
+  next source and never changes the committed RDB. When metadata is unavailable,
+  legacy `bytes-*` state still uses the fixed-asset fallback; a persisted
+  verified Release accepts only an asset with its existing SHA-256. The first
+  successful legacy import still downloads once before later same-Release
+  updates can skip. This changes no Settings surface, automatic scheduling,
+  dictionary data, or card rendering.
 
 ## OPEN — Reader enhancement interaction yield
 

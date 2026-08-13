@@ -1,6 +1,6 @@
 # Optional tag dictionary
 
-NextN does not bundle tag-translation data. A user may explicitly choose **Download** or **Update** in Settings to retrieve the current compressed dictionary from the public [EhTagTranslation/Database](https://github.com/EhTagTranslation/Database) release asset. If the direct HTTPS download fails, the same fixed asset is retried through the configured HTTPS mirror; no cookies or credentials are sent to either source.
+NextN does not bundle tag-translation data. A user may explicitly choose **Download** or **Update** in Settings to retrieve the current compressed dictionary from the public [EhTagTranslation/Database](https://github.com/EhTagTranslation/Database) release asset. The optional update first checks fixed public Release metadata through the direct source and then the configured HTTPS mirror. An unchanged Release can skip the compressed transfer only after a prior fixed-asset download matched the metadata's declared byte count and SHA-256. If metadata is unavailable, legacy data still uses the fixed-asset direct-to-mirror retry; an existing verified Release accepts only an asset with its recorded SHA-256. No cookies or credentials are sent to either source.
 
 - The request is a public HTTPS `GET`; NextN sends no account credential, cookie, token, or upload.
 - The file is held only in app-private temporary storage during validation and import. A successful parse replaces the encrypted local RDB dictionary in one transaction; a failed update keeps the previous dictionary.

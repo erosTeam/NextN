@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import { zlib } from '@kit.BasicServicesKit'
 import { fileIo } from '@kit.CoreFileKit'
+import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { http } from '@kit.NetworkKit'
 import util from '@ohos.util'
 import { NhTagTranslationEntry, NhTagTranslationStatus } from '../model/NhTagTranslation'
@@ -24,6 +25,14 @@ const PUBLIC_DICTIONARY_SOURCES: PublicDictionarySource[] = [
   new PublicDictionarySource('direct', PUBLIC_DICTIONARY_DIRECT_URL),
   new PublicDictionarySource('mirror', PUBLIC_DICTIONARY_MIRROR_URL),
 ]
+const PUBLIC_RELEASE_DIRECT_URL: string =
+  'https://api.github.com/repos/EhTagTranslation/Database/releases/latest'
+const PUBLIC_RELEASE_MIRROR_URL: string =
+  'https://ghproxy.homeboyc.cn/https://api.github.com/repos/EhTagTranslation/Database/releases/latest'
+const PUBLIC_RELEASE_SOURCES: PublicDictionarySource[] = [
+  new PublicDictionarySource('direct', PUBLIC_RELEASE_DIRECT_URL),
+  new PublicDictionarySource('mirror', PUBLIC_RELEASE_MIRROR_URL),
+]
 const PROVIDER_LABEL: string = 'EhTagTranslation/Database'
 const CACHE_DIRECTORY_NAME: string = 'nextn-tag-translation'
 const DOWNLOAD_PART_NAME: string = 'dictionary.gz.part'
@@ -35,10 +44,22 @@ const MAX_IMPORT_ROWS: number = 500000
 const MAX_FIELD_LENGTH: number = 1024
 const CONNECT_TIMEOUT_MS: number = 15000
 const READ_TIMEOUT_MS: number = 30000
+const RELEASE_METADATA_CONNECT_TIMEOUT_MS: number = 5000
+const RELEASE_METADATA_READ_TIMEOUT_MS: number = 5000
+const MAX_RELEASE_METADATA_CHARS: number = 64 * 1024
+const MAX_RELEASE_METADATA_FIELD_LENGTH: number = 256
+const RELEASE_ASSET_NAME: string = 'db.raw.json.gz'
 
 class DownloadArtifact {
   path: string = ''
   version: string = ''
+}
+
+class ReleaseDescriptor {
+  version: string = ''
+  publishedAt: string = ''
+  bytes: number = 0
+  sha256: string = ''
 }
 
 /**
@@ -72,15 +93,38 @@ export class TagTranslationUpdateService {
     force: boolean,
   ): Promise<NhTagTranslationStatus> {
     const previous: NhTagTranslationStatus = await TagTranslationRepository.status(context)
+    const previousRelease: ReleaseDescriptor | null =
+      TagTranslationUpdateService.storedReleaseDescriptor(previous.version)
+    const release: ReleaseDescriptor | null = await TagTranslationUpdateService.tryFetchReleaseDescriptor()
+    if (!force && previous.rowCount > 0 && release !== null && previous.version === release.version) {
+      return previous
+    }
+    if (previous.rowCount > 0 && release !== null && previousRelease !== null && release.version !== previous.version &&
+      release.publishedAt <= previousRelease.publishedAt) {
+      return previous
+    }
     let artifact: DownloadArtifact | null = null
     try {
-      artifact = await TagTranslationUpdateService.downloadFromPublicSources(context)
-      if (!force && previous.rowCount > 0 && previous.version === artifact.version) {
+      artifact = await TagTranslationUpdateService.downloadFromPublicSources(
+        context,
+        release,
+        release === null && previous.rowCount > 0 && previousRelease !== null ? previousRelease.sha256 : '',
+      )
+      let storedVersion: string = artifact.version
+      if (release !== null) {
+        storedVersion = release.version
+      } else if (previous.rowCount > 0 && previousRelease !== null) {
+        storedVersion = previous.version
+        if (!force && previous.rowCount > 0) {
+          return previous
+        }
+      }
+      if (!force && previous.rowCount > 0 && previous.version === storedVersion) {
         return previous
       }
       const rawJson: string = await TagTranslationUpdateService.readGzipText(artifact.path)
       const entries: NhTagTranslationEntry[] = TagTranslationUpdateService.parseDictionary(rawJson)
-      await TagTranslationRepository.replace(context, entries, artifact.version, PROVIDER_LABEL)
+      await TagTranslationRepository.replace(context, entries, storedVersion, PROVIDER_LABEL)
       return await TagTranslationRepository.status(context)
     } finally {
       if (artifact !== null && artifact.path.length > 0) {
@@ -91,6 +135,109 @@ export class TagTranslationUpdateService {
   }
 
   /**
+   * Metadata describes the fixed asset's expected identity; it never supplies a
+   * download URL. If it is unavailable, legacy imports retain the fixed-asset
+   * path while an existing verified Release accepts only its known SHA-256.
+   */
+  private static async tryFetchReleaseDescriptor(): Promise<ReleaseDescriptor | null> {
+    for (let index: number = 0; index < PUBLIC_RELEASE_SOURCES.length; index++) {
+      const source: PublicDictionarySource = PUBLIC_RELEASE_SOURCES[index]
+      const descriptor: ReleaseDescriptor | null = await TagTranslationUpdateService.fetchReleaseDescriptor(source.url)
+      if (descriptor !== null) {
+        return descriptor
+      }
+    }
+    return null
+  }
+
+  private static async fetchReleaseDescriptor(url: string): Promise<ReleaseDescriptor | null> {
+    let request: http.HttpRequest | null = null
+    try {
+      request = http.createHttp()
+      const response: http.HttpResponse = await request.request(url, {
+        method: http.RequestMethod.GET,
+        expectDataType: http.HttpDataType.STRING,
+        usingCache: false,
+        connectTimeout: RELEASE_METADATA_CONNECT_TIMEOUT_MS,
+        readTimeout: RELEASE_METADATA_READ_TIMEOUT_MS,
+        header: {
+          Accept: 'application/vnd.github+json, application/json',
+          'User-Agent': 'NextN/1.0.0',
+        },
+      })
+      if (response.responseCode < 200 || response.responseCode >= 300) {
+        return null
+      }
+      const rawMetadata: string = typeof response.result === 'string' ? response.result : ''
+      if (rawMetadata.length === 0 || rawMetadata.length > MAX_RELEASE_METADATA_CHARS) {
+        return null
+      }
+      return TagTranslationUpdateService.releaseDescriptorFromMetadata(rawMetadata)
+    } catch (_error) {
+      return null
+    } finally {
+      if (request !== null) {
+        request.destroy()
+      }
+    }
+  }
+
+  private static releaseDescriptorFromMetadata(rawMetadata: string): ReleaseDescriptor | null {
+    let parsed: Object
+    try {
+      parsed = JSON.parse(rawMetadata) as Object
+    } catch (_error) {
+      return null
+    }
+    const metadata: Record<string, Object> = TagTranslationUpdateService.asRecord(parsed)
+    const tagName: string = TagTranslationUpdateService.releaseMetadataField(metadata['tag_name'])
+    const publishedAt: string = TagTranslationUpdateService.releaseMetadataField(metadata['published_at'])
+    if (tagName.length === 0 || !TagTranslationUpdateService.isGithubReleaseTimestamp(publishedAt)) {
+      return null
+    }
+    const assets: Object[] = TagTranslationUpdateService.asArray(metadata['assets'])
+    for (let index: number = 0; index < assets.length; index++) {
+      const asset: Record<string, Object> = TagTranslationUpdateService.asRecord(assets[index])
+      if (TagTranslationUpdateService.safeString(asset['name']) !== RELEASE_ASSET_NAME) {
+        continue
+      }
+      const bytes: number = TagTranslationUpdateService.releaseAssetBytes(asset['size'])
+      const sha256: string = TagTranslationUpdateService.releaseAssetSha256(asset['digest'])
+      if (bytes <= 0 || sha256.length === 0) {
+        continue
+      }
+      const descriptor: ReleaseDescriptor = new ReleaseDescriptor()
+      descriptor.version = `release:${tagName}\u001f${publishedAt}\u001f${sha256}`
+      descriptor.publishedAt = publishedAt
+      descriptor.bytes = bytes
+      descriptor.sha256 = sha256
+      return descriptor
+    }
+    return null
+  }
+
+  private static releaseMetadataField(value: Object): string {
+    const field: string = TagTranslationUpdateService.safeString(value)
+    return field.length <= MAX_RELEASE_METADATA_FIELD_LENGTH && field.indexOf('\u001f') < 0 ? field : ''
+  }
+
+  private static releaseAssetBytes(value: Object): number {
+    if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0 || value > DOWNLOAD_LIMIT_BYTES) {
+      return 0
+    }
+    return value
+  }
+
+  private static releaseAssetSha256(value: Object): string {
+    const digest: string = TagTranslationUpdateService.safeString(value).toLowerCase()
+    if (!digest.startsWith('sha256:')) {
+      return ''
+    }
+    const hash: string = digest.slice('sha256:'.length)
+    return hash.length === 64 && /^[0-9a-f]+$/.test(hash) ? hash : ''
+  }
+
+  /**
    * The optional update keeps its current direct GitHub path first, then retries
    * the same public release through the reference app's configured mirror. Each
    * source attempt keeps its existing best-effort temporary-file cleanup; the
@@ -98,12 +245,19 @@ export class TagTranslationUpdateService {
    */
   private static async downloadFromPublicSources(
     context: common.UIAbilityContext,
+    expectedRelease: ReleaseDescriptor | null,
+    requiredExistingSha256: string,
   ): Promise<DownloadArtifact> {
     const failedSources: string[] = []
     for (let index: number = 0; index < PUBLIC_DICTIONARY_SOURCES.length; index++) {
       const source: PublicDictionarySource = PUBLIC_DICTIONARY_SOURCES[index]
       try {
-        return await TagTranslationUpdateService.downloadToPrivateFile(context, source.url)
+        return await TagTranslationUpdateService.downloadToPrivateFile(
+          context,
+          source.url,
+          expectedRelease,
+          requiredExistingSha256,
+        )
       } catch (_error) {
         failedSources.push(source.label)
       }
@@ -116,6 +270,8 @@ export class TagTranslationUpdateService {
   private static async downloadToPrivateFile(
     context: common.UIAbilityContext,
     url: string,
+    expectedRelease: ReleaseDescriptor | null,
+    requiredExistingSha256: string,
   ): Promise<DownloadArtifact> {
     const directory: string = TagTranslationUpdateService.cacheDirectory(context)
     const partPath: string = TagTranslationUpdateService.downloadPartPath(context)
@@ -129,6 +285,7 @@ export class TagTranslationUpdateService {
     let tooLarge: boolean = false
     let writeFailure: string = ''
     let completed: boolean = false
+    const sha256 = cryptoFramework.createMd('SHA256')
     try {
       file = fileIo.openSync(
         partPath,
@@ -159,6 +316,7 @@ export class TagTranslationUpdateService {
             throw new Error('Unable to save the tag dictionary download.')
           }
           fingerprint = TagTranslationUpdateService.fingerprintBytes(fingerprint, data)
+          sha256.updateSync({ data: new Uint8Array(data) })
           written += count
         } catch (error) {
           const failure: Error = error as Error
@@ -187,6 +345,16 @@ export class TagTranslationUpdateService {
       }
       if (written <= 0) {
         throw new Error('The tag dictionary download was empty.')
+      }
+      const actualSha256: string = TagTranslationUpdateService.toHex(sha256.digestSync().data)
+      const matchesExpectedRelease: boolean = expectedRelease !== null &&
+        written === expectedRelease.bytes && actualSha256 === expectedRelease.sha256
+      if (expectedRelease !== null && !matchesExpectedRelease) {
+        throw new Error('The tag dictionary asset did not match the fixed Release metadata.')
+      }
+      if (expectedRelease === null && requiredExistingSha256.length > 0 &&
+        actualSha256 !== requiredExistingSha256) {
+        throw new Error('The tag dictionary asset could not be verified without current Release metadata.')
       }
       request.destroy()
       request = null
@@ -342,6 +510,38 @@ export class TagTranslationUpdateService {
       value = Math.imul(value, 16777619) >>> 0
     }
     return value
+  }
+
+  private static toHex(bytes: Uint8Array): string {
+    const parts: string[] = []
+    for (let index: number = 0; index < bytes.length; index++) {
+      parts.push(bytes[index].toString(16).padStart(2, '0'))
+    }
+    return parts.join('')
+  }
+
+  private static storedReleaseDescriptor(value: string): ReleaseDescriptor | null {
+    const parts: string[] = value.split('\u001f')
+    const tagName: string = parts.length > 0 && parts[0].startsWith('release:')
+      ? parts[0].slice('release:'.length)
+      : ''
+    if (parts.length !== 3 || tagName.length === 0 || tagName.length > MAX_RELEASE_METADATA_FIELD_LENGTH ||
+      tagName.indexOf('\u001f') >= 0) {
+      return null
+    }
+    if (!TagTranslationUpdateService.isGithubReleaseTimestamp(parts[1]) ||
+      !/^[0-9a-f]{64}$/.test(parts[2])) {
+      return null
+    }
+    const descriptor: ReleaseDescriptor = new ReleaseDescriptor()
+    descriptor.version = value
+    descriptor.publishedAt = parts[1]
+    descriptor.sha256 = parts[2]
+    return descriptor
+  }
+
+  private static isGithubReleaseTimestamp(value: string): boolean {
+    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(value)
   }
 
   private static cacheDirectory(context: common.UIAbilityContext): string {
