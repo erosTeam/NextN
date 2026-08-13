@@ -2756,9 +2756,29 @@ authorize an edit, replace a device comparison, or define product completion.
   Keep the heart icon and render its count directly, without a redundant
   semantic label. Both Filled and HDS Read leaves consume the same label; HDS
   width becomes the smallest bounded content width necessary for that label.
-- **Verification plan and limit:** inspect the exact diff and build the signed
-  Debug HAP. A same-state Detail capture must then confirm right-aligned
-  intrinsic FAB geometry and readable saved-progress label without changing
-  any preference, content, account, favourite state, or Reader marker. The
-  visual result remains OPEN until that device comparison; no UI static
-  contract is used.
+- **Device comparison — 2026-08-13 13:15 +0800:** commit `1e555be` was built
+  as the signed Debug HAP, then installed on the selected
+  `192.168.50.237:12345` target using `install -r` after the live-target,
+  lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms` gate. No data clear,
+  uninstall, account, preference, favourite, Reader-marker, or content action
+  occurred. The established `nextn://gallery/471768` route settled to native
+  NextN `EntryAbility / pages/Index` at `[0,117][1320,2120]`. Its visible
+  saved-progress action is `继续 P1` at `[1078,1979][1224,2028]`; its visible
+  and original bounds match, and it is fully in the right-side floating rail.
+  The detail information card now has the heart icon plus direct numeric count
+  only, without a separate resume metadata row.
+- **Comparable reference:** retained native NextE Detail evidence at the same
+  `[0,117][1320,2120]` viewport is
+  `/Users/honjow/git/NextE/.hvigor/outputs/reader-thumbnail-ratio-fix/237/detail/screen.png`
+  with `layout.json`: foreground `com.erosteam.nexte:EntryAbility`,
+  `gallery-detail-pane`, and saved-progress action `继续 P6` at
+  `[1070,1979][1216,2028]`. The reference content is a different Gallery, so
+  only the shared action rail, saved-progress copy, and metadata-cell grammar
+  were compared. Both actions share the same vertical bounds and right-side
+  floating placement. Raw NextN evidence is retained locally at
+  `.hvigor/outputs/gallery-detail-read-action-20260813T0515/` and is excluded
+  from Git.
+- **Freeze:** the corrected Read-action ownership, saved-progress label, and
+  heart-count presentation are FROZEN. Do not reopen them without new user
+  feedback or same-state counter-evidence. No UI static contract was created
+  or used.
