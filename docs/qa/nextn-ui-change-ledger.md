@@ -172,6 +172,24 @@ authorize an edit, replace a device comparison, or define product completion.
   same controls as dropdowns. This is an inherited leaf mismatch within the
   declared boundary, so the correction is limited to `trailingDropdown: true`
   on those rows; it changes no menu owner, value, or action.
+- **Current-device whole-page observation — 2026-08-13:** the current signed
+  Debug build was reviewed in place on only `192.168.50.237:12345`, without a
+  data clear, uninstall, account action, or Reader-preference mutation. The
+  native `1320×2120` Reader Settings page showed separate `翻页与布局`,
+  `点击区域`, `显示与屏幕`, and `图像增强` surfaces on the first viewport, then
+  the separate `阅读控制` and `加载` surfaces after one ordinary vertical scroll.
+  Ordinary rows had no leading icon; value selectors showed a down-arrow,
+  switches had no navigation arrow, and every adjacent pair inside the image
+  enhancement group retained its divider. The raw local artifacts are under
+  `.hvigor/outputs/reader-settings-current-20260813T0912/` and are excluded
+  from Git.
+- **Reference limit:** the retained NextE Reader Settings artifact that shares
+  the `1320×2120` viewport is actually a Download page, so it is rejected as a
+  same-state comparison. This current observation accepts the repaired NextN
+  parent tree and its visible sibling regions; it does not claim pixel-level
+  NextE visual parity. Do not reopen the six Reader groups or their no-prefix
+  row rule without a source change, new user feedback, or a valid same-state
+  reference pair.
 
 ### Parent-owner correction — 2026-08-13
 

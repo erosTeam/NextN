@@ -1,5 +1,24 @@
 # NextN active device-acceptance queue
 
+## Current delivery observation — Reader Settings grouped rows — 2026-08-13
+
+- The installed signed Debug build was reviewed in place on only
+  `192.168.50.237:12345`, following a live target, lease, wake, and
+  `AWAKE` / `OverrideTimeout=86400000ms` gate. No app data clear, uninstall,
+  account action, or Reader-preference mutation occurred.
+- The native `1320×2120` Reader Settings page displayed the six separate
+  surfaces `翻页与布局`, `点击区域`, `显示与屏幕`, `图像增强`, `阅读控制`, and
+  `加载` across the initial viewport and one ordinary vertical scroll. Normal
+  rows had no leading icon; selectors used down-arrow affordances, switches
+  had no navigation arrow, and the image-enhancement rows retained all
+  internal dividers.
+- The retained NextE `1320×2120` artifact that was initially proposed for
+  comparison is a Download page rather than Reader Settings, so it is rejected
+  as a same-state pair. This is current NextN whole-page evidence, not a
+  pixel-parity claim. Raw local artifacts are retained under
+  `.hvigor/outputs/reader-settings-current-20260813T0912/` and excluded from
+  source control.
+
 ## Current delivery observation — Gallery Detail smart-grip Read-action alignment — 2026-08-13
 
 - Commit `bee5a59` was built as the signed Debug HAP and installed in place on
