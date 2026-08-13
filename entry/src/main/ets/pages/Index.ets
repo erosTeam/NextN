@@ -699,12 +699,16 @@ struct Index {
     return this.requestReaderStatusBar(true, !this.appUsesDarkIcons())
   }
 
-  private applyReaderPresentation(chromeVisible: boolean, fullscreen: boolean): void {
+  private applyReaderPresentation(
+    chromeVisible: boolean,
+    fullscreen: boolean,
+    canvasDark: boolean = true,
+  ): void {
     if (!this.readerDestinationVisible) {
       return
     }
     const visible: boolean = !fullscreen || chromeVisible
-    this.requestReaderStatusBar(visible, chromeVisible)
+    this.requestReaderStatusBar(visible, chromeVisible || canvasDark)
   }
 
   private closeReaderDestination(): void {
@@ -1459,8 +1463,8 @@ struct Index {
         onBack: (): void => {
           this.closeReaderDestination()
         },
-        onReaderPresentationChanged: (chromeVisible: boolean, fullscreen: boolean): void => {
-          this.applyReaderPresentation(chromeVisible, fullscreen)
+        onReaderPresentationChanged: (chromeVisible: boolean, fullscreen: boolean, canvasDark: boolean): void => {
+          this.applyReaderPresentation(chromeVisible, fullscreen, canvasDark)
         },
       })
     }
@@ -1475,7 +1479,7 @@ struct Index {
       // Reader restores its persisted preference asynchronously. Start from
       // the documented NextE default so a slow local read cannot leave a
       // transient system bar over an immersive canvas.
-      this.applyReaderPresentation(false, true)
+      this.applyReaderPresentation(false, true, true)
     })
     .onWillHide((): void => {
       this.readerDestinationVisible = false

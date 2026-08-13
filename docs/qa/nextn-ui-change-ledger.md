@@ -3,6 +3,53 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Reader background preference — 2026-08-14
+
+- **Why newly actionable:** current NextE has a local Reader background mode
+  (`Black`, `Gray`, `White`, `Automatic`) as the first leaf of its existing
+  Display group. NextN currently hard-codes one Reader canvas color and has
+  no equivalent presentation preference. This is a bounded Reader capability
+  gap, separate from the already-open image-scaling and page-number leaves.
+- **Whole reference tree:** `ReaderSettingsPage → Display
+  GroupedListSection → background value menu → image-scaling-quality value
+  menu → page-number switch → fullscreen switch → keep-screen-on switch →
+  ReadMode settings/state → ReaderPage canvas/loading/failure surfaces →
+  Reader status-bar policy`. The reference resolves `Automatic` from the
+  effective app theme, keeps Reader chrome as its dark overlay, and uses the
+  resolved canvas darkness for hidden-chrome status-bar icon contrast.
+- **Current NextN tree:** `SettingsPage(READER) → SecondaryListScaffold →
+  ReaderPresentationListItems → ReaderDisplayGroup`, shared unchanged by the
+  routed Settings page and Reader-owned sheet. `ReaderPage` owns the vertical,
+  paged, and spread canvas leaves, while `Index` retains the private Reader
+  overlay and is the only Window/status-bar owner. The current fixed canvas
+  color is repeated by every image, letterbox, loading, and recovery leaf.
+- **Exact change boundary:** add the device-local default-`Black` preference
+  through `NhReaderPresentation → ReaderPresentationState →
+  ReaderSettingsRepository → ReaderPresentationService`; insert one
+  no-prefix, no-subtitle value row before image scaling in the existing Display
+  group; and use one resolved background/foreground palette only for Reader
+  canvases and their loading/error/retry affordances. `Gray` is `#303030`,
+  `White` is `#FFFFFF`, and `Automatic` resolves to black for an effective dark
+  app theme and white otherwise. Reader keeps its existing dark chrome,
+  thumbnail rail, translation status, and gesture layers. The Reader callback
+  supplies the resolved canvas-dark value to `Index`; the existing serialized
+  Window owner uses `chromeVisible || canvasDark` for status-bar icon contrast.
+- **Explicit exclusions:** do not change the Reader sheet parent tree, section
+  ownership/order other than this first Display leaf, leading-icon policy,
+  image scaling, page number, fullscreen semantics, Reader modes, spread
+  pairing/geometry, page-turn animation, tap overlay, zoom, progress/history,
+  cache/download, translation, enhancement pipeline, global app theme, gallery
+  cover letterbox setting, or screen-orientation policy.
+- **Verification plan:** inspect the scoped diff and build the signed Debug
+  HAP. On one foreground-confirmed Reader route, verify the new row and all
+  four values in both existing Settings entry points; observe black/gray/white
+  canvas and contain letterboxes, persistence after a NextN-only cold start,
+  and `Automatic` under each effective app theme. Also verify a non-fullscreen,
+  hidden-chrome Reader state uses dark status icons over white and light icons
+  over black/gray, plus readable loading/retry/failure leaves where each can be
+  safely reached. A current same-state, same-viewport NextE capture remains
+  required before any visual-parity claim; no UI static contract is permitted.
+
 ## OPEN — Reader double-page layout preference — 2026-08-14
 
 - **Why newly actionable:** the current NextE Reader keeps the existing

@@ -26,6 +26,14 @@ export enum NhReaderImageScalingQuality {
   HIGH = 'high',
 }
 
+/** Local Reader canvas palette; Auto follows the effective app theme. */
+export enum NhReaderBackgroundMode {
+  BLACK = 'black',
+  GRAY = 'gray',
+  WHITE = 'white',
+  AUTO = 'auto',
+}
+
 /**
  * The user-selected local enhancement model. The identifiers are durable
  * reader preferences, never model-file paths or a network selection.
@@ -51,6 +59,8 @@ export class NhReaderPresentation {
   preloadPages: number = 2
   /** Keep the canonical page range visible while Reader chrome is hidden. */
   showPageNumber: boolean = true
+  /** Preserve the existing black Reader canvas for installations without this key. */
+  backgroundMode: NhReaderBackgroundMode = NhReaderBackgroundMode.BLACK
   /** Explicitly use Mipmap instead of ArkUI Image's default low sampling. */
   imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
   fullscreen: boolean = true
@@ -81,6 +91,7 @@ export class NhReaderPresentation {
     result.keepScreenOn = this.keepScreenOn
     result.preloadPages = this.preloadPages
     result.showPageNumber = this.showPageNumber
+    result.backgroundMode = this.backgroundMode
     result.imageScalingQuality = this.imageScalingQuality
     result.fullscreen = this.fullscreen
     result.autoPageSeconds = this.autoPageSeconds

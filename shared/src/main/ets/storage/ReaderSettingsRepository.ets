@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import { relationalStore } from '@kit.ArkData'
 import {
+  NhReaderBackgroundMode,
   NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderSpreadLayout,
@@ -19,6 +20,7 @@ const READER_MODE_KEY: string = 'reader_mode'
 const READER_KEEP_SCREEN_ON_KEY: string = 'reader_keep_screen_on'
 const READER_PRELOAD_PAGES_KEY: string = 'reader_preload_pages'
 const READER_SHOW_PAGE_NUMBER_KEY: string = 'reader_show_page_number'
+const READER_BACKGROUND_MODE_KEY: string = 'reader_background_mode'
 const READER_IMAGE_SCALING_QUALITY_KEY: string = 'reader_image_scaling_quality'
 const READER_FULLSCREEN_KEY: string = 'reader_fullscreen'
 const READER_AUTO_PAGE_SECONDS_KEY: string = 'reader_auto_page_seconds'
@@ -70,6 +72,15 @@ export class ReaderSettingsRepository {
     return NhReaderImageScalingQuality.MEDIUM
   }
 
+  private static normalizeBackgroundMode(value: string): NhReaderBackgroundMode {
+    if (value === NhReaderBackgroundMode.GRAY ||
+      value === NhReaderBackgroundMode.WHITE ||
+      value === NhReaderBackgroundMode.AUTO) {
+      return value as NhReaderBackgroundMode
+    }
+    return NhReaderBackgroundMode.BLACK
+  }
+
   private static normalizeSpreadLayout(value: string): NhReaderSpreadLayout {
     if (value === NhReaderSpreadLayout.SPLIT) {
       return NhReaderSpreadLayout.SPLIT
@@ -118,6 +129,13 @@ export class ReaderSettingsRepository {
   /** Match the existing Reader page-number default for installations without this key. */
   static async showPageNumber(context: common.UIAbilityContext): Promise<boolean> {
     return (await ReaderSettingsRepository.value(context, READER_SHOW_PAGE_NUMBER_KEY)) !== 'false'
+  }
+
+  /** Missing or malformed values preserve NextN's established black Reader canvas. */
+  static async backgroundMode(context: common.UIAbilityContext): Promise<NhReaderBackgroundMode> {
+    return ReaderSettingsRepository.normalizeBackgroundMode(
+      (await ReaderSettingsRepository.value(context, READER_BACKGROUND_MODE_KEY)) ?? '',
+    )
   }
 
   static async imageScalingQuality(context: common.UIAbilityContext): Promise<NhReaderImageScalingQuality> {
@@ -225,6 +243,14 @@ export class ReaderSettingsRepository {
       context,
       READER_SHOW_PAGE_NUMBER_KEY,
       enabled ? 'true' : 'false',
+    )
+  }
+
+  static saveBackgroundMode(context: common.UIAbilityContext, mode: NhReaderBackgroundMode): Promise<void> {
+    return ReaderSettingsRepository.saveValue(
+      context,
+      READER_BACKGROUND_MODE_KEY,
+      ReaderSettingsRepository.normalizeBackgroundMode(mode),
     )
   }
 

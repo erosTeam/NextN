@@ -13,6 +13,7 @@ import {
   NhGalleryPage,
   NhTag,
   NhGalleryShareService,
+  NhReaderBackgroundMode,
   NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderSpreadLayout,
@@ -36,7 +37,9 @@ import {
   LanguageState,
   LlmSourceProfilesState,
   MangaRenderingServiceState,
+  ThemeDisplayState,
   ThemeTokens,
+  connectThemeDisplay,
   connectLanguageState,
   connectLayoutSafeArea,
   connectLlmSourceProfiles,
@@ -46,9 +49,18 @@ import {
   supportsMangaTranslation,
 } from 'shared'
 
-// Reader controls are drawn over a dark canvas. Keep their affordance neutral
-// so a recovery action does not read like a primary app-level CTA.
+// Reader chrome remains a dark overlay. Canvas-recovery colors resolve from
+// the Reader's local background choice instead of changing chrome affordance.
 const READER_CONTROL_TINT: ResourceColor = '#26FFFFFF'
+const READER_BACKGROUND_BLACK: ResourceColor = '#FF000000'
+const READER_BACKGROUND_GRAY: ResourceColor = '#FF303030'
+const READER_BACKGROUND_WHITE: ResourceColor = '#FFFFFFFF'
+const READER_FOREGROUND_DARK_CANVAS: ResourceColor = '#FFFFFFFF'
+const READER_FOREGROUND_LIGHT_CANVAS: ResourceColor = '#FF000000'
+const READER_SECONDARY_FOREGROUND_DARK_CANVAS: ResourceColor = '#CCFFFFFF'
+const READER_SECONDARY_FOREGROUND_LIGHT_CANVAS: ResourceColor = '#B3000000'
+const READER_CONTROL_TINT_DARK_CANVAS: ResourceColor = '#26FFFFFF'
+const READER_CONTROL_TINT_LIGHT_CANVAS: ResourceColor = '#26000000'
 const READER_MAX_ZOOM_SCALE: number = 4
 const READER_ZOOM_EPSILON: number = 1.01
 const READER_ZOOM_ANIMATION_MS: number = 180
@@ -99,6 +111,39 @@ function readerImageInterpolation(quality: NhReaderImageScalingQuality): ImageIn
     return ImageInterpolation.High
   }
   return ImageInterpolation.Medium
+}
+
+function readerBackgroundIsDark(mode: NhReaderBackgroundMode, effectiveDark: boolean): boolean {
+  if (mode === NhReaderBackgroundMode.WHITE) {
+    return false
+  }
+  if (mode === NhReaderBackgroundMode.AUTO) {
+    return effectiveDark
+  }
+  return true
+}
+
+function readerBackgroundColor(mode: NhReaderBackgroundMode, effectiveDark: boolean): ResourceColor {
+  if (mode === NhReaderBackgroundMode.GRAY) {
+    return READER_BACKGROUND_GRAY
+  }
+  if (mode === NhReaderBackgroundMode.WHITE ||
+    (mode === NhReaderBackgroundMode.AUTO && !effectiveDark)) {
+    return READER_BACKGROUND_WHITE
+  }
+  return READER_BACKGROUND_BLACK
+}
+
+function resolveReaderCanvasForegroundColor(canvasDark: boolean): ResourceColor {
+  return canvasDark ? READER_FOREGROUND_DARK_CANVAS : READER_FOREGROUND_LIGHT_CANVAS
+}
+
+function resolveReaderCanvasSecondaryForegroundColor(canvasDark: boolean): ResourceColor {
+  return canvasDark ? READER_SECONDARY_FOREGROUND_DARK_CANVAS : READER_SECONDARY_FOREGROUND_LIGHT_CANVAS
+}
+
+function resolveReaderCanvasControlTint(canvasDark: boolean): ResourceColor {
+  return canvasDark ? READER_CONTROL_TINT_DARK_CANVAS : READER_CONTROL_TINT_LIGHT_CANVAS
 }
 
 /** Small NextE-derived zoom boundary for one rendered Reader page. */
@@ -208,6 +253,10 @@ struct ReaderImagePage {
   @Param enhancementModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
   @Param enhancementMaxHeight: number = 2000
   @Param imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
+  @Param canvasColor: ResourceColor = READER_BACKGROUND_BLACK
+  @Param canvasContentColor: ResourceColor = READER_FOREGROUND_DARK_CANVAS
+  @Param canvasSecondaryContentColor: ResourceColor = READER_SECONDARY_FOREGROUND_DARK_CANVAS
+  @Param controlTint: ResourceColor = READER_CONTROL_TINT_DARK_CANVAS
   @Param fillViewport: boolean = false
   @Param imageWidth: number = 0
   @Param imageHeight: number = 0
@@ -503,32 +552,32 @@ struct ReaderImagePage {
           LoadingProgress()
             .width(24)
             .height(24)
-            .color(ThemeTokens.TEXT_ON_BRAND)
+            .color(this.canvasContentColor)
           Text(this.isRetrying
             ? AppStrings.get('reader_status_retrying_image')
             : AppStrings.get('reader_status_loading_image'))
             .fontSize(ThemeTokens.FONT_SIZE_META)
-            .fontColor(ThemeTokens.TEXT_ON_BRAND)
+            .fontColor(this.canvasContentColor)
             .opacity(0.82)
         } else {
           SymbolGlyph($r('sys.symbol.exclamationmark_triangle'))
             .fontSize(32)
-            .fontColor([ThemeTokens.TEXT_ON_BRAND])
+            .fontColor([this.canvasContentColor])
             .opacity(0.84)
           Text(AppStrings.get('reader_error_image_unavailable'))
             .fontSize(ThemeTokens.FONT_SIZE_BODY)
             .fontWeight(FontWeight.Medium)
-            .fontColor(ThemeTokens.TEXT_ON_BRAND)
+            .fontColor(this.canvasContentColor)
           Text(AppStrings.get('reader_retry_connection'))
             .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-            .fontColor(ThemeTokens.TEXT_ON_BRAND)
+            .fontColor(this.canvasSecondaryContentColor)
             .opacity(0.76)
             .textAlign(TextAlign.Center)
           Button(AppStrings.get('reader_action_retry'))
             .type(ButtonType.Capsule)
             .height(ThemeTokens.MIN_TOUCH_TARGET)
-            .backgroundColor(READER_CONTROL_TINT)
-            .fontColor(ThemeTokens.TEXT_ON_BRAND)
+            .backgroundColor(this.controlTint)
+            .fontColor(this.canvasContentColor)
             .onClick((): void => {
               this.retry()
             })
@@ -548,7 +597,7 @@ struct ReaderImagePage {
         .height(this.fillViewport ? '100%' : 'auto')
         .objectFit(ImageFit.Contain)
         .interpolation(readerImageInterpolation(this.imageScalingQuality))
-        .backgroundColor(ThemeTokens.READER_BACKGROUND)
+        .backgroundColor(this.canvasColor)
         .onComplete((): void => {
           this.hasLoadError = false
           this.notifyImageLoadState(true)
@@ -574,7 +623,7 @@ struct ReaderImagePage {
     }
     .width('100%')
     .height(this.fillViewport ? '100%' : 'auto')
-    .backgroundColor(ThemeTokens.READER_BACKGROUND)
+    .backgroundColor(this.canvasColor)
     .clip(true)
     .onAreaChange((_previous: Area, current: Area): void => {
       this.viewportWidth = current.width as number
@@ -664,6 +713,9 @@ struct ReaderSpreadImageLayer {
   @Param enhancementModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
   @Param enhancementMaxHeight: number = 2000
   @Param imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
+  @Param canvasColor: ResourceColor = READER_BACKGROUND_BLACK
+  @Param canvasContentColor: ResourceColor = READER_FOREGROUND_DARK_CANVAS
+  @Param controlTint: ResourceColor = READER_CONTROL_TINT_DARK_CANVAS
   @Param pageIndex: number = -1
   @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
   @Event onSourceFileReady?: (pageIndex: number, localPath: string) => void
@@ -831,21 +883,21 @@ struct ReaderSpreadImageLayer {
           LoadingProgress()
             .width(24)
             .height(24)
-            .color(ThemeTokens.TEXT_ON_BRAND)
+            .color(this.canvasContentColor)
         } else {
           SymbolGlyph($r('sys.symbol.exclamationmark_triangle'))
             .fontSize(28)
-            .fontColor([ThemeTokens.TEXT_ON_BRAND])
+            .fontColor([this.canvasContentColor])
             .opacity(0.84)
           Text(AppStrings.get('reader_error_image_unavailable'))
             .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-            .fontColor(ThemeTokens.TEXT_ON_BRAND)
+            .fontColor(this.canvasContentColor)
             .textAlign(TextAlign.Center)
           Button(AppStrings.get('reader_action_retry'))
             .type(ButtonType.Capsule)
             .height(ThemeTokens.MIN_TOUCH_TARGET)
-            .backgroundColor(READER_CONTROL_TINT)
-            .fontColor(ThemeTokens.TEXT_ON_BRAND)
+            .backgroundColor(this.controlTint)
+            .fontColor(this.canvasContentColor)
             .onClick((): void => {
               this.loadImage(this.localImageUri.length === 0)
             })
@@ -865,7 +917,7 @@ struct ReaderSpreadImageLayer {
           .height('100%')
           .objectFit(ImageFit.Contain)
           .interpolation(readerImageInterpolation(this.imageScalingQuality))
-          .backgroundColor(ThemeTokens.READER_BACKGROUND)
+          .backgroundColor(this.canvasColor)
           .onComplete((): void => {
             this.hasLoadError = false
             this.notifyImageLoadState(true)
@@ -880,7 +932,7 @@ struct ReaderSpreadImageLayer {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(ThemeTokens.READER_BACKGROUND)
+    .backgroundColor(this.canvasColor)
     .clip(true)
   }
 }
@@ -905,6 +957,9 @@ struct ReaderSpreadSurface {
   @Param enhancementModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
   @Param enhancementMaxHeight: number = 2000
   @Param imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
+  @Param canvasColor: ResourceColor = READER_BACKGROUND_BLACK
+  @Param canvasContentColor: ResourceColor = READER_FOREGROUND_DARK_CANVAS
+  @Param controlTint: ResourceColor = READER_CONTROL_TINT_DARK_CANVAS
   @Param spreadLayoutMode: NhReaderSpreadLayout = NhReaderSpreadLayout.JOINED
   @Param rowReversed: boolean = false
   @Param doubleTapSequence: number = 0
@@ -1142,6 +1197,9 @@ struct ReaderSpreadSurface {
       enhancementModel: this.enhancementModel,
       enhancementMaxHeight: this.enhancementMaxHeight,
       imageScalingQuality: this.imageScalingQuality,
+      canvasColor: this.canvasColor,
+      canvasContentColor: this.canvasContentColor,
+      controlTint: this.controlTint,
       pageIndex: item.sourceIndex,
       cacheKey: ReaderImageCacheService.cacheKey(
         this.galleryId,
@@ -1203,7 +1261,7 @@ struct ReaderSpreadSurface {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(ThemeTokens.READER_BACKGROUND)
+    .backgroundColor(this.canvasColor)
     .clip(true)
     .onAreaChange((_previous: Area, current: Area): void => {
       this.viewportWidth = current.width as number
@@ -1551,8 +1609,9 @@ export struct ReaderPage {
   @Local readerViewportWidth: number = 0
   @Local readerViewportHeight: number = 0
   @Event onBack?: () => void
-  @Event onReaderPresentationChanged?: (chromeVisible: boolean, fullscreen: boolean) => void
+  @Event onReaderPresentationChanged?: (chromeVisible: boolean, fullscreen: boolean, canvasDark: boolean) => void
   @Local readerPresentation: ReaderPresentationState = connectReaderPresentation()
+  @Local themeDisplay: ThemeDisplayState = connectThemeDisplay()
   // A primitive render projection keeps nested AppStorage changes observable
   // for the canvas and its lazy page children.
   @Local readerEnhancementEnabled: boolean = false
@@ -1650,6 +1709,20 @@ export struct ReaderPage {
 
   @Monitor('readerPresentation.fullscreen')
   onReaderFullscreenPresentationChanged(): void {
+    if (this.readerPresentationReady) {
+      this.notifyReaderPresentation()
+    }
+  }
+
+  @Monitor('readerPresentation.backgroundMode')
+  onReaderBackgroundModePresentationChanged(): void {
+    if (this.readerPresentationReady) {
+      this.notifyReaderPresentation()
+    }
+  }
+
+  @Monitor('themeDisplay.effectiveDark')
+  onReaderBackgroundThemeChanged(): void {
     if (this.readerPresentationReady) {
       this.notifyReaderPresentation()
     }
@@ -1830,8 +1903,32 @@ export struct ReaderPage {
 
   private notifyReaderPresentation(): void {
     if (this.onReaderPresentationChanged) {
-      this.onReaderPresentationChanged(this.readerChromeVisible, this.readerPresentation.fullscreen)
+      this.onReaderPresentationChanged(
+        this.readerChromeVisible,
+        this.readerPresentation.fullscreen,
+        this.readerCanvasIsDark(),
+      )
     }
+  }
+
+  private readerCanvasIsDark(): boolean {
+    return readerBackgroundIsDark(this.readerPresentation.backgroundMode, this.themeDisplay.effectiveDark)
+  }
+
+  private readerCanvasColor(): ResourceColor {
+    return readerBackgroundColor(this.readerPresentation.backgroundMode, this.themeDisplay.effectiveDark)
+  }
+
+  private readerCanvasForegroundColor(): ResourceColor {
+    return resolveReaderCanvasForegroundColor(this.readerCanvasIsDark())
+  }
+
+  private readerCanvasSecondaryForegroundColor(): ResourceColor {
+    return resolveReaderCanvasSecondaryForegroundColor(this.readerCanvasIsDark())
+  }
+
+  private readerCanvasControlTint(): ResourceColor {
+    return resolveReaderCanvasControlTint(this.readerCanvasIsDark())
   }
 
   /**
@@ -3485,10 +3582,10 @@ export struct ReaderPage {
       LoadingProgress()
         .width(28)
         .height(28)
-        .color(ThemeTokens.TEXT_ON_BRAND)
+        .color(this.readerCanvasForegroundColor())
       Text(AppStrings.get('reader_status_preparing_reader'))
         .fontSize(ThemeTokens.FONT_SIZE_BODY)
-        .fontColor(ThemeTokens.TEXT_ON_BRAND)
+        .fontColor(this.readerCanvasForegroundColor())
         .opacity(0.72)
     }
     .width('100%')
@@ -3502,19 +3599,19 @@ export struct ReaderPage {
     Column({ space: ThemeTokens.SPACE_MD }) {
       SymbolGlyph($r('sys.symbol.exclamationmark_triangle'))
         .fontSize(36)
-        .fontColor([ThemeTokens.TEXT_ON_BRAND])
+        .fontColor([this.readerCanvasForegroundColor()])
         .opacity(0.84)
       Text(this.errorMessage)
         .fontSize(ThemeTokens.FONT_SIZE_BODY)
-        .fontColor(ThemeTokens.TEXT_ON_BRAND)
+        .fontColor(this.readerCanvasForegroundColor())
         .opacity(0.78)
         .textAlign(TextAlign.Center)
         .maxLines(3)
       Button(AppStrings.get('reader_action_retry'))
         .type(ButtonType.Capsule)
         .height(ThemeTokens.ACTION_HEIGHT)
-        .backgroundColor(READER_CONTROL_TINT)
-        .fontColor(ThemeTokens.TEXT_ON_BRAND)
+        .backgroundColor(this.readerCanvasControlTint())
+        .fontColor(this.readerCanvasForegroundColor())
         .onClick((): void => {
           this.loadReader()
         })
@@ -3533,22 +3630,22 @@ export struct ReaderPage {
         Text(this.errorMessage)
           .layoutWeight(1)
           .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-          .fontColor(ThemeTokens.TEXT_ON_BRAND)
+          .fontColor(this.readerCanvasForegroundColor())
           .opacity(0.74)
           .maxLines(2)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
         Button(AppStrings.get('reader_action_retry'))
           .type(ButtonType.Capsule)
           .height(32)
-          .backgroundColor(READER_CONTROL_TINT)
-          .fontColor(ThemeTokens.TEXT_ON_BRAND)
+          .backgroundColor(this.readerCanvasControlTint())
+          .fontColor(this.readerCanvasForegroundColor())
           .onClick((): void => {
             this.loadReader()
           })
       }
       .width('100%')
       .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD, bottom: ThemeTokens.SPACE_MD })
-      .backgroundColor(ThemeTokens.READER_BACKGROUND)
+      .backgroundColor(this.readerCanvasColor())
       .alignItems(VerticalAlign.Center)
       .align(Alignment.Bottom)
     }
@@ -3569,6 +3666,10 @@ export struct ReaderPage {
             enhancementModel: this.readerPresentation.superResolutionModel,
             enhancementMaxHeight: this.readerPresentation.superResolutionMaxHeight,
             imageScalingQuality: this.readerPresentation.imageScalingQuality,
+            canvasColor: this.readerCanvasColor(),
+            canvasContentColor: this.readerCanvasForegroundColor(),
+            canvasSecondaryContentColor: this.readerCanvasSecondaryForegroundColor(),
+            controlTint: this.readerCanvasControlTint(),
             imageWidth: item.page.width,
             imageHeight: item.page.height,
             pageIndex: item.sourceIndex,
@@ -3600,7 +3701,7 @@ export struct ReaderPage {
     }
     .height('100%')
     .width('100%')
-    .backgroundColor(ThemeTokens.READER_BACKGROUND)
+    .backgroundColor(this.readerCanvasColor())
     .cachedCount(3)
     .enableScrollInteraction(this.zoomedPageIndex < 0)
     .onScrollIndex((start: number, _end: number): void => {
@@ -3623,6 +3724,10 @@ export struct ReaderPage {
               enhancementModel: this.readerPresentation.superResolutionModel,
               enhancementMaxHeight: this.readerPresentation.superResolutionMaxHeight,
               imageScalingQuality: this.readerPresentation.imageScalingQuality,
+              canvasColor: this.readerCanvasColor(),
+              canvasContentColor: this.readerCanvasForegroundColor(),
+              canvasSecondaryContentColor: this.readerCanvasSecondaryForegroundColor(),
+              controlTint: this.readerCanvasControlTint(),
               imageWidth: item.page.width,
               imageHeight: item.page.height,
               pageIndex: item.sourceIndex,
@@ -3664,7 +3769,7 @@ export struct ReaderPage {
     .cachedCount(1)
     .vertical(this.isVerticallyPagedMode())
     .disableSwipe(this.zoomedPageIndex >= 0)
-    .backgroundColor(ThemeTokens.READER_BACKGROUND)
+    .backgroundColor(this.readerCanvasColor())
     .onChange((index: number): void => {
       this.zoomedPageIndex = -1
       this.onReaderPagedIndexChanged(index)
@@ -3695,6 +3800,9 @@ export struct ReaderPage {
             enhancementModel: this.readerPresentation.superResolutionModel,
             enhancementMaxHeight: this.readerPresentation.superResolutionMaxHeight,
             imageScalingQuality: this.readerPresentation.imageScalingQuality,
+            canvasColor: this.readerCanvasColor(),
+            canvasContentColor: this.readerCanvasForegroundColor(),
+            controlTint: this.readerCanvasControlTint(),
             spreadLayoutMode: this.readerPresentation.spreadLayoutMode,
             rowReversed: this.isRightToLeftPagedMode(),
             doubleTapSequence: this.doubleTapSequence,
@@ -3725,7 +3833,7 @@ export struct ReaderPage {
     .cachedCount(1)
     .vertical(false)
     .disableSwipe(this.zoomedPageIndex >= 0)
-    .backgroundColor(ThemeTokens.READER_BACKGROUND)
+    .backgroundColor(this.readerCanvasColor())
     .onChange((index: number): void => {
       this.zoomedPageIndex = -1
       this.onReaderPagedIndexChanged(index)
@@ -3964,7 +4072,7 @@ export struct ReaderPage {
 
   private notifyReaderPresentationFor(chromeVisible: boolean): void {
     if (this.onReaderPresentationChanged) {
-      this.onReaderPresentationChanged(chromeVisible, this.readerPresentation.fullscreen)
+      this.onReaderPresentationChanged(chromeVisible, this.readerPresentation.fullscreen, this.readerCanvasIsDark())
     }
   }
 
@@ -4058,7 +4166,7 @@ export struct ReaderPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(ThemeTokens.READER_BACKGROUND)
+    .backgroundColor(this.readerCanvasColor())
     .onAreaChange((_old: Area, next: Area): void => {
       this.onReaderViewportChanged(next.width as number, next.height as number)
     })

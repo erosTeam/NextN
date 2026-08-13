@@ -15,6 +15,7 @@ import {
   LLM_CONSUMER_COMMENT_TRANSLATION,
   LLM_CONSUMER_MANGA_TRANSLATION,
   NhTagTranslationStatus,
+  NhReaderBackgroundMode,
   NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderSpreadLayout,
@@ -186,6 +187,7 @@ export struct SettingsPage {
   @Local searchPreferencesError: string = ''
   @Local readerModeMenuShown: boolean = false
   @Local readerSpreadLayoutMenuShown: boolean = false
+  @Local readerBackgroundMenuShown: boolean = false
   @Local readerImageScalingQualityMenuShown: boolean = false
   @Local readerPreloadMenuShown: boolean = false
   @Local readerAutoPageMenuShown: boolean = false
@@ -1023,6 +1025,10 @@ export struct SettingsPage {
     return AppStrings.get('settings_reader_image_scaling_quality_optimized')
   }
 
+  private readerBackgroundModeLabel(): string {
+    return this.readerBackgroundModeLabelFor(this.readerPresentation.backgroundMode)
+  }
+
   private readerSpreadLayoutLabel(): string {
     return this.readerPresentation.spreadLayoutMode === NhReaderSpreadLayout.SPLIT
       ? AppStrings.get('settings_reader_spread_layout_split')
@@ -1285,6 +1291,42 @@ export struct SettingsPage {
       return AppStrings.get('settings_reader_image_scaling_quality_high')
     }
     return AppStrings.get('settings_reader_image_scaling_quality_optimized')
+  }
+
+  private readerBackgroundModeLabelFor(mode: NhReaderBackgroundMode): string {
+    if (mode === NhReaderBackgroundMode.GRAY) {
+      return AppStrings.get('settings_reader_background_gray')
+    }
+    if (mode === NhReaderBackgroundMode.WHITE) {
+      return AppStrings.get('settings_reader_background_white')
+    }
+    if (mode === NhReaderBackgroundMode.AUTO) {
+      return AppStrings.get('settings_reader_background_auto')
+    }
+    return AppStrings.get('settings_reader_background_black')
+  }
+
+  @Builder
+  private ReaderBackgroundModeMenuItem(mode: NhReaderBackgroundMode) {
+    MenuItem({
+      content: this.readerBackgroundModeLabelFor(mode),
+      symbolEndIcon: this.readerPresentation.backgroundMode === mode
+        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+        : undefined,
+    }).onClick((): void => {
+      this.saveReaderBackgroundMode(mode)
+      this.readerBackgroundMenuShown = false
+    })
+  }
+
+  @Builder
+  private ReaderBackgroundModeMenu() {
+    Menu() {
+      this.ReaderBackgroundModeMenuItem(NhReaderBackgroundMode.BLACK)
+      this.ReaderBackgroundModeMenuItem(NhReaderBackgroundMode.GRAY)
+      this.ReaderBackgroundModeMenuItem(NhReaderBackgroundMode.WHITE)
+      this.ReaderBackgroundModeMenuItem(NhReaderBackgroundMode.AUTO)
+    }
   }
 
   @Builder
@@ -1601,6 +1643,18 @@ export struct SettingsPage {
       await ReaderPresentationService.setImageScalingQuality(this.context(), quality)
     } catch (_error) {
       this.readerModeError = AppStrings.get('settings_reader_image_scaling_quality_save_failed')
+    }
+  }
+
+  private async saveReaderBackgroundMode(mode: NhReaderBackgroundMode): Promise<void> {
+    if (this.readerPresentation.backgroundMode === mode) {
+      return
+    }
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setBackgroundMode(this.context(), mode)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_background_save_failed')
     }
   }
 
@@ -2383,6 +2437,24 @@ export struct SettingsPage {
     Column({ space: ThemeTokens.SPACE_XS }) {
       NextNSectionHeader({ title: AppStrings.get('settings_reader_group_display') })
       NextNGroupedListSection() {
+        NextNListRow({
+          title: AppStrings.get('settings_reader_background'),
+          trailingText: this.readerBackgroundModeLabel(),
+          trailingDropdown: true,
+          accessibilityLabel: AppStrings.format('settings_reader_background_a11y', [
+            this.readerBackgroundModeLabel(),
+          ]),
+          onAction: (): void => {
+            this.readerBackgroundMenuShown = true
+          },
+        })
+        .bindMenu(this.readerBackgroundMenuShown, this.ReaderBackgroundModeMenu, {
+          placement: Placement.BottomRight,
+          onDisappear: (): void => {
+            this.readerBackgroundMenuShown = false
+          },
+        })
+        this.RowDivider()
         NextNListRow({
           title: AppStrings.get('settings_reader_image_scaling_quality'),
           trailingText: this.readerImageScalingQualityLabel(),

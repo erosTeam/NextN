@@ -1,5 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import {
+  NhReaderBackgroundMode,
   NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderPresentation,
@@ -88,6 +89,17 @@ export class ReaderPresentationService {
       presentation.imageScalingQuality = ReaderPresentationService.normalizeImageScalingQuality(quality)
     }, (presentation: NhReaderPresentation): Promise<void> => {
       return ReaderSettingsRepository.saveImageScalingQuality(context, presentation.imageScalingQuality)
+    })
+  }
+
+  static setBackgroundMode(
+    context: common.UIAbilityContext,
+    mode: NhReaderBackgroundMode,
+  ): Promise<NhReaderPresentation> {
+    return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
+      presentation.backgroundMode = ReaderPresentationService.normalizeBackgroundMode(mode)
+    }, (presentation: NhReaderPresentation): Promise<void> => {
+      return ReaderSettingsRepository.saveBackgroundMode(context, presentation.backgroundMode)
     })
   }
 
@@ -218,6 +230,7 @@ export class ReaderPresentationService {
       boolean,
       number,
       boolean,
+      NhReaderBackgroundMode,
       NhReaderImageScalingQuality,
       boolean,
       number,
@@ -235,6 +248,7 @@ export class ReaderPresentationService {
       ReaderSettingsRepository.keepScreenOn(context),
       ReaderSettingsRepository.preloadPages(context),
       ReaderSettingsRepository.showPageNumber(context),
+      ReaderSettingsRepository.backgroundMode(context),
       ReaderSettingsRepository.imageScalingQuality(context),
       ReaderSettingsRepository.fullscreen(context),
       ReaderSettingsRepository.autoPageSeconds(context),
@@ -253,18 +267,19 @@ export class ReaderPresentationService {
     presentation.keepScreenOn = values[1]
     presentation.preloadPages = values[2]
     presentation.showPageNumber = values[3]
-    presentation.imageScalingQuality = values[4]
-    presentation.fullscreen = values[5]
-    presentation.autoPageSeconds = values[6]
-    presentation.volumeKeyTurn = values[7]
-    presentation.doublePageEnabled = values[8]
-    presentation.spreadLayoutMode = values[9]
-    presentation.pageTurnAnimation = values[10]
-    presentation.tapZoneLayout = values[11]
-    presentation.tapZoneInvert = values[12]
-    presentation.superResolutionEnabled = values[13]
-    presentation.superResolutionModel = values[14]
-    presentation.superResolutionMaxHeight = values[15]
+    presentation.backgroundMode = values[4]
+    presentation.imageScalingQuality = values[5]
+    presentation.fullscreen = values[6]
+    presentation.autoPageSeconds = values[7]
+    presentation.volumeKeyTurn = values[8]
+    presentation.doublePageEnabled = values[9]
+    presentation.spreadLayoutMode = values[10]
+    presentation.pageTurnAnimation = values[11]
+    presentation.tapZoneLayout = values[12]
+    presentation.tapZoneInvert = values[13]
+    presentation.superResolutionEnabled = values[14]
+    presentation.superResolutionModel = values[15]
+    presentation.superResolutionMaxHeight = values[16]
     ReaderPresentationService.state().replace(presentation)
   }
 
@@ -304,6 +319,15 @@ export class ReaderPresentationService {
       return value
     }
     return NhReaderImageScalingQuality.MEDIUM
+  }
+
+  private static normalizeBackgroundMode(value: NhReaderBackgroundMode): NhReaderBackgroundMode {
+    if (value === NhReaderBackgroundMode.GRAY ||
+      value === NhReaderBackgroundMode.WHITE ||
+      value === NhReaderBackgroundMode.AUTO) {
+      return value
+    }
+    return NhReaderBackgroundMode.BLACK
   }
 
   private static normalizeSpreadLayout(value: NhReaderSpreadLayout): NhReaderSpreadLayout {
