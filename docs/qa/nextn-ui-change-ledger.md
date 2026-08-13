@@ -32,6 +32,11 @@ authorize an edit, replace a device comparison, or define product completion.
   and confirm the second entry uses the cache boundary while the explicit
   refresh path still bypasses it. Preserve raw device artifacts locally and do
   not use a UI static contract.
+- **Runtime evidence boundary:** fixed diagnostics may report only
+  `stored`, `hit=memory`, `hit=persisted`, or `bypass=explicit-refresh`.
+  They never include gallery identity, titles, URLs, payload values, account
+  state, or user content; the persisted-hit event is required for the
+  cold-start proof instead of inferring cache use from timing.
 
 ## OPEN — Reader Settings parent-tree and icon correction — 2026-08-13
 

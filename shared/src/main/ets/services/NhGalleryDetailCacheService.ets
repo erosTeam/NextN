@@ -42,6 +42,9 @@ export class NhGalleryDetailCacheService {
       refreshed.expiresAt = cached.expiresAt
       NhGalleryDetailCacheService.recent.delete(normalizedGalleryId)
       NhGalleryDetailCacheService.recent.set(normalizedGalleryId, refreshed)
+      // Keep runtime proof finite and non-sensitive: no gallery identity or
+      // payload fields leave the process with this cache event.
+      console.info('NextNGalleryDetailCache hit=memory')
       return copy.copy()
     } catch (_error) {
       NhGalleryDetailCacheService.recent.delete(normalizedGalleryId)
@@ -72,6 +75,9 @@ export class NhGalleryDetailCacheService {
     try {
       const detail: NhGalleryDetail = NhGalleryDetailCacheService.decode(payload.payload, normalizedGalleryId)
       NhGalleryDetailCacheService.remember(detail, payload.expiresAt)
+      // The persisted event distinguishes an RDB-backed cold entry from a
+      // merely fast network response without exposing the cached payload.
+      console.info('NextNGalleryDetailCache hit=persisted')
       return detail.copy()
     } catch (_error) {
       try {
@@ -96,6 +102,8 @@ export class NhGalleryDetailCacheService {
     NhGalleryDetailCacheService.remember(snapshot, Date.now() + DETAIL_CACHE_TTL_MS)
     try {
       await NhGalleryDetailCacheService.enqueuePersist(context, snapshot.id, payload)
+      // This fixed event records only completion of the local write boundary.
+      console.info('NextNGalleryDetailCache stored')
       return true
     } catch (_error) {
       // Cache persistence never invalidates a verified public network response.

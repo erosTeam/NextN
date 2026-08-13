@@ -993,6 +993,12 @@ export struct GalleryDetailPage {
     const generation: number = this.beginDetailLoad()
     let cacheApplied: boolean = false
     try {
+      if (forceNetwork) {
+        // Explicit user refreshes deliberately bypass both app-owned snapshots
+        // and the Detail endpoint's NetworkKit cache. Keep this observable
+        // without logging a gallery identity or response data.
+        console.info('NextNGalleryDetailCache bypass=explicit-refresh')
+      }
       if (!forceNetwork) {
         const recent: NhGalleryDetail | null = NhGalleryDetailCacheService.getRecent(requestedGalleryId)
         if (recent !== null && this.applyVerifiedDetailSnapshot(generation, recent)) {
