@@ -2278,6 +2278,34 @@ authorize an edit, replace a device comparison, or define product completion.
   deliberately uninduced dictionary-revision transition, or broaden the
   frozen presentation scope.
 
+### Passive Detail tag-catalog learning — 2026-08-14
+
+- **Why newly actionable:** an NH v2 collection provides only `tag_ids`, while
+  a successfully parsed Detail response already provides the complete public
+  canonical tag records. NextN previously discarded that Detail-side catalog knowledge,
+  so a later collection still depended on another `/tags/ids` response and
+  could omit the same tags during a transient lookup failure. ErosN passively
+  learns verified Detail tags into its local NH catalog on this exact boundary.
+- **Exact data boundary:** after `NhApiClient.detail` has successfully parsed a
+  public Detail DTO, queue a best-effort copy of only its `id/type/name/count`
+  tags through the existing serialized `NhTagCatalogService` and a private
+  fallback-only catalog insert. An allowed transport-cached Detail response
+  must never overwrite a catalog item already learned from a later collection
+  response. The next collection keeps a Detail fallback renderable but treats
+  it as unresolved and may promote only an actual `/tags/ids` result to an
+  ordinary catalog record. Do not await it from Detail, start a request,
+  change the Detail/cache/collection parent tree, re-render the current
+  collection, alter a tag preference, or persist display translations. A
+  catalog write failure leaves the parsed Detail response unchanged.
+- **Preserved unresolved boundary:** this does not invent a retry/status UI,
+  turn a missing current list tag into a raw id, or select a TTL/forced
+  revalidation policy for an already cached canonical tag. Those are separate
+  data-policy decisions and remain OPEN until independently evidenced.
+- **Verification limit:** exact diff review and a signed build establish only
+  the source path. Proving a later list uses an earlier Detail-learned tag
+  requires an ordinary same-device Detail → collection sequence; no network
+  failure or tag-data mutation is manufactured for this correction.
+
 ### Dictionary update-source fallback — 2026-08-13
 
 - **Why newly actionable:** the existing explicit local-dictionary update

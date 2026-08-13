@@ -5,11 +5,19 @@ import { LocalDataStore } from './LocalDataStore'
 
 const LOOKUP_BATCH_SIZE: number = 200
 const SQL_SELECT_PREFIX: string =
-  'SELECT id, type, name, count FROM nh_tag_catalog WHERE id IN ('
+  'SELECT id, type, name, count, updated_at FROM nh_tag_catalog WHERE id IN ('
 const SQL_UPSERT: string =
   'INSERT INTO nh_tag_catalog (id, type, name, count, updated_at) VALUES (?, ?, ?, ?, ?) ' +
   'ON CONFLICT(id) DO UPDATE SET type = excluded.type, name = excluded.name, ' +
   'count = excluded.count, updated_at = excluded.updated_at'
+const SQL_INSERT_DETAIL_FALLBACK: string =
+  'INSERT INTO nh_tag_catalog (id, type, name, count, updated_at) VALUES (?, ?, ?, ?, 0) ' +
+  'ON CONFLICT(id) DO NOTHING'
+
+export class NhTagCatalogResolution {
+  tags: Map<number, NhTag> = new Map<number, NhTag>()
+  detailFallbackIds: Set<number> = new Set<number>()
+}
 
 /**
  * Private durable cache for public NH tag records. It never owns a gallery
@@ -20,8 +28,19 @@ export class NhTagCatalogRepository {
     context: common.UIAbilityContext,
     rawIds: number[],
   ): Promise<Map<number, NhTag>> {
+    return (await NhTagCatalogRepository.resolveByIds(context, rawIds)).tags
+  }
+
+  /**
+   * Detail-supplied fallback names stay renderable, but the next id-only list
+   * may replace them with an ordinary catalog response.
+   */
+  static async resolveByIds(
+    context: common.UIAbilityContext,
+    rawIds: number[],
+  ): Promise<NhTagCatalogResolution> {
     const ids: number[] = NhTagCatalogRepository.uniqueIds(rawIds)
-    const result: Map<number, NhTag> = new Map<number, NhTag>()
+    const result: NhTagCatalogResolution = new NhTagCatalogResolution()
     if (ids.length === 0) {
       return result
     }
@@ -61,10 +80,41 @@ export class NhTagCatalogRepository {
     }
   }
 
+  /**
+   * Learns records supplied by an optional cached Detail response as fallback
+   * names, without replacing a catalog item learned from a collection request.
+   */
+  static async insertDetailFallbacks(
+    context: common.UIAbilityContext,
+    rawTags: NhTag[],
+  ): Promise<void> {
+    const tags: NhTag[] = NhTagCatalogRepository.usableTags(rawTags)
+    if (tags.length === 0) {
+      return
+    }
+    const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+    let transactionOpen: boolean = false
+    try {
+      store.beginTransaction()
+      transactionOpen = true
+      for (let index: number = 0; index < tags.length; index++) {
+        const tag: NhTag = tags[index]
+        await store.executeSql(SQL_INSERT_DETAIL_FALLBACK, [tag.id, tag.type, tag.name, tag.count])
+      }
+      store.commit()
+      transactionOpen = false
+    } catch (error) {
+      if (transactionOpen) {
+        store.rollBack()
+      }
+      throw error as Error
+    }
+  }
+
   private static async lookupBatch(
     store: relationalStore.RdbStore,
     ids: number[],
-    result: Map<number, NhTag>,
+    result: NhTagCatalogResolution,
   ): Promise<void> {
     if (ids.length === 0) {
       return
@@ -85,7 +135,10 @@ export class NhTagCatalogRepository {
         tag.name = NhTagCatalogRepository.stringColumn(rows, 'name')
         tag.count = NhTagCatalogRepository.numberColumn(rows, 'count')
         if (tag.id > 0 && tag.name.length > 0) {
-          result.set(tag.id, tag)
+          result.tags.set(tag.id, tag)
+          if (NhTagCatalogRepository.numberColumn(rows, 'updated_at') <= 0) {
+            result.detailFallbackIds.add(tag.id)
+          }
         }
       }
     } finally {

@@ -138,7 +138,9 @@ export class NhApiClient {
       NhJsonReadScope.PUBLIC,
       !bypassTransportCache,
     )
-    return NhApiClient.parseGalleryDetail(root)
+    const detail: NhGalleryDetail = NhApiClient.parseGalleryDetail(root)
+    NhTagCatalogService.rememberDetailTags(detail.tags)
+    return detail
   }
 
   /**

@@ -1,6 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import { NhGallerySummary, NhTag } from '../model/NhGallery'
-import { NhTagCatalogRepository } from '../storage/NhTagCatalogRepository'
+import { NhTagCatalogRepository, NhTagCatalogResolution } from '../storage/NhTagCatalogRepository'
 import { TagTranslationRepository } from '../storage/TagTranslationRepository'
 
 const FETCH_BATCH_SIZE: number = 100
@@ -32,6 +32,25 @@ export class NhTagCatalogService {
     )
     NhTagCatalogService.resolutionTail = queued.catch((): void => {})
     return queued
+  }
+
+  /**
+   * A successfully parsed Detail response already carries canonical public
+   * tag records.
+   * Learn those records for a later tag-id-only collection without delaying
+   * the Detail response or adding another network request.
+   */
+  static rememberDetailTags(tags: NhTag[]): void {
+    const context: common.UIAbilityContext | null = NhTagCatalogService.context
+    const snapshot: NhTag[] = NhTagCatalogService.catalogSnapshot(tags)
+    if (context === null || snapshot.length === 0) {
+      return
+    }
+    const queued: Promise<void> = NhTagCatalogService.resolutionTail.then(
+      (): Promise<void> => NhTagCatalogService.rememberInternal(context, snapshot),
+      (): Promise<void> => NhTagCatalogService.rememberInternal(context, snapshot),
+    )
+    NhTagCatalogService.resolutionTail = queued.catch((): void => {})
   }
 
   /**
@@ -72,14 +91,16 @@ export class NhTagCatalogService {
     if (ids.length === 0) {
       return
     }
-    let catalog: Map<number, NhTag> = new Map<number, NhTag>()
+    let resolution: NhTagCatalogResolution = new NhTagCatalogResolution()
     try {
-      catalog = await NhTagCatalogRepository.findByIds(context, ids)
+      resolution = await NhTagCatalogRepository.resolveByIds(context, ids)
     } catch (_error) {
       // A private catalog read is optional. Continue with a transient catalog
       // so a successful current public response can still reach this page.
     }
-    const missing: number[] = ids.filter((id: number): boolean => !catalog.has(id))
+    const catalog: Map<number, NhTag> = resolution.tags
+    const missing: number[] = ids.filter((id: number): boolean =>
+      !catalog.has(id) || resolution.detailFallbackIds.has(id))
     if (missing.length > 0) {
       const fetched: NhTag[] = []
       for (let start: number = 0; start < missing.length; start += FETCH_BATCH_SIZE) {
@@ -104,6 +125,17 @@ export class NhTagCatalogService {
     for (let galleryIndex: number = 0; galleryIndex < galleries.length; galleryIndex++) {
       const gallery: NhGallerySummary = galleries[galleryIndex]
       gallery.tags = NhTagCatalogService.tagsFor(gallery.tagIds, catalog, translations)
+    }
+  }
+
+  private static async rememberInternal(
+    context: common.UIAbilityContext,
+    tags: NhTag[],
+  ): Promise<void> {
+    try {
+      await NhTagCatalogRepository.insertDetailFallbacks(context, tags)
+    } catch (_error) {
+      // Detail data remains valid if the optional local catalog is unavailable.
     }
   }
 
@@ -156,6 +188,20 @@ export class NhTagCatalogService {
       }
     }
     return tags
+  }
+
+  private static catalogSnapshot(rawTags: NhTag[]): NhTag[] {
+    const result: NhTag[] = []
+    for (let index: number = 0; index < rawTags.length; index++) {
+      const source: NhTag = rawTags[index]
+      const tag: NhTag = new NhTag()
+      tag.id = source.id
+      tag.type = source.type
+      tag.name = source.name
+      tag.count = source.count
+      result.push(tag)
+    }
+    return result
   }
 
   private static mergeCatalog(catalog: Map<number, NhTag>, tags: NhTag[]): void {
