@@ -36,6 +36,8 @@ export class NhReaderPresentation {
   mode: NhReaderMode = NhReaderMode.VERTICAL
   keepScreenOn: boolean = true
   preloadPages: number = 2
+  /** Keep the canonical page range visible while Reader chrome is hidden. */
+  showPageNumber: boolean = true
   fullscreen: boolean = true
   autoPageSeconds: number = 3
   volumeKeyTurn: boolean = false
@@ -59,6 +61,7 @@ export class NhReaderPresentation {
     result.mode = this.mode
     result.keepScreenOn = this.keepScreenOn
     result.preloadPages = this.preloadPages
+    result.showPageNumber = this.showPageNumber
     result.fullscreen = this.fullscreen
     result.autoPageSeconds = this.autoPageSeconds
     result.volumeKeyTurn = this.volumeKeyTurn

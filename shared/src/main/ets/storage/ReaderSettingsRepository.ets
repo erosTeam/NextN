@@ -16,6 +16,7 @@ import { LocalDataStore } from './LocalDataStore'
 const READER_MODE_KEY: string = 'reader_mode'
 const READER_KEEP_SCREEN_ON_KEY: string = 'reader_keep_screen_on'
 const READER_PRELOAD_PAGES_KEY: string = 'reader_preload_pages'
+const READER_SHOW_PAGE_NUMBER_KEY: string = 'reader_show_page_number'
 const READER_FULLSCREEN_KEY: string = 'reader_fullscreen'
 const READER_AUTO_PAGE_SECONDS_KEY: string = 'reader_auto_page_seconds'
 const READER_VOLUME_KEY_TURN_KEY: string = 'reader_volume_key_turn'
@@ -93,6 +94,11 @@ export class ReaderSettingsRepository {
   static async preloadPages(context: common.UIAbilityContext): Promise<number> {
     const stored: string | null = await ReaderSettingsRepository.value(context, READER_PRELOAD_PAGES_KEY)
     return ReaderSettingsRepository.normalizePreloadPages(stored === null ? 2 : Number(stored))
+  }
+
+  /** Match the existing Reader page-number default for installations without this key. */
+  static async showPageNumber(context: common.UIAbilityContext): Promise<boolean> {
+    return (await ReaderSettingsRepository.value(context, READER_SHOW_PAGE_NUMBER_KEY)) !== 'false'
   }
 
   /** Matches NextE: Reader starts as an immersive canvas unless the user opts out locally. */
@@ -174,6 +180,14 @@ export class ReaderSettingsRepository {
       context,
       READER_PRELOAD_PAGES_KEY,
       ReaderSettingsRepository.normalizePreloadPages(pages).toString(),
+    )
+  }
+
+  static saveShowPageNumber(context: common.UIAbilityContext, enabled: boolean): Promise<void> {
+    return ReaderSettingsRepository.saveValue(
+      context,
+      READER_SHOW_PAGE_NUMBER_KEY,
+      enabled ? 'true' : 'false',
     )
   }
 

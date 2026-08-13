@@ -70,6 +70,14 @@ export class ReaderPresentationService {
     })
   }
 
+  static setShowPageNumber(context: common.UIAbilityContext, enabled: boolean): Promise<NhReaderPresentation> {
+    return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
+      presentation.showPageNumber = enabled
+    }, (presentation: NhReaderPresentation): Promise<void> => {
+      return ReaderSettingsRepository.saveShowPageNumber(context, presentation.showPageNumber)
+    })
+  }
+
   static setFullscreen(context: common.UIAbilityContext, enabled: boolean): Promise<NhReaderPresentation> {
     return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
       presentation.fullscreen = enabled
@@ -178,6 +186,7 @@ export class ReaderPresentationService {
       boolean,
       number,
       boolean,
+      boolean,
       number,
       boolean,
       boolean,
@@ -190,6 +199,7 @@ export class ReaderPresentationService {
       ReaderSettingsRepository.mode(context),
       ReaderSettingsRepository.keepScreenOn(context),
       ReaderSettingsRepository.preloadPages(context),
+      ReaderSettingsRepository.showPageNumber(context),
       ReaderSettingsRepository.fullscreen(context),
       ReaderSettingsRepository.autoPageSeconds(context),
       ReaderSettingsRepository.volumeKeyTurn(context),
@@ -204,15 +214,16 @@ export class ReaderPresentationService {
     presentation.mode = values[0]
     presentation.keepScreenOn = values[1]
     presentation.preloadPages = values[2]
-    presentation.fullscreen = values[3]
-    presentation.autoPageSeconds = values[4]
-    presentation.volumeKeyTurn = values[5]
-    presentation.doublePageEnabled = values[6]
-    presentation.tapZoneLayout = values[7]
-    presentation.tapZoneInvert = values[8]
-    presentation.superResolutionEnabled = values[9]
-    presentation.superResolutionModel = values[10]
-    presentation.superResolutionMaxHeight = values[11]
+    presentation.showPageNumber = values[3]
+    presentation.fullscreen = values[4]
+    presentation.autoPageSeconds = values[5]
+    presentation.volumeKeyTurn = values[6]
+    presentation.doublePageEnabled = values[7]
+    presentation.tapZoneLayout = values[8]
+    presentation.tapZoneInvert = values[9]
+    presentation.superResolutionEnabled = values[10]
+    presentation.superResolutionModel = values[11]
+    presentation.superResolutionMaxHeight = values[12]
     ReaderPresentationService.state().replace(presentation)
   }
 

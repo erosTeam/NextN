@@ -17,6 +17,7 @@ export class ReaderPresentationState {
   @Trace mode: NhReaderMode = NhReaderMode.VERTICAL
   @Trace keepScreenOn: boolean = true
   @Trace preloadPages: number = 2
+  @Trace showPageNumber: boolean = true
   @Trace fullscreen: boolean = true
   @Trace autoPageSeconds: number = 3
   @Trace volumeKeyTurn: boolean = false
@@ -32,6 +33,7 @@ export class ReaderPresentationState {
     this.mode = presentation.mode
     this.keepScreenOn = presentation.keepScreenOn
     this.preloadPages = presentation.preloadPages
+    this.showPageNumber = presentation.showPageNumber
     this.fullscreen = presentation.fullscreen
     this.autoPageSeconds = presentation.autoPageSeconds
     this.volumeKeyTurn = presentation.volumeKeyTurn
@@ -48,6 +50,7 @@ export class ReaderPresentationState {
     result.mode = this.mode
     result.keepScreenOn = this.keepScreenOn
     result.preloadPages = this.preloadPages
+    result.showPageNumber = this.showPageNumber
     result.fullscreen = this.fullscreen
     result.autoPageSeconds = this.autoPageSeconds
     result.volumeKeyTurn = this.volumeKeyTurn

@@ -3,6 +3,46 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Reader hidden-chrome page-number preference — 2026-08-14
+
+- **Why newly actionable:** after the user reopened the Reader Settings page
+  for its missing and under-designed behavior, source mapping found that NextN
+  already computes the canonical single-page and double-page range, but drops
+  it whenever Reader chrome is hidden. NextE keeps this as an independent,
+  default-on local display preference; it is not an NH website capability.
+- **Whole reference tree:** `ReaderSettingsPage → Display & screen
+  GroupedListSection → Show page number switch → ReadMode state/settings →
+  ReaderPage(Stack) → hidden-chrome ReaderPageStatusOverlay`. The same overlay
+  combines the optional page text with the existing enhancement status, is
+  bottom-safe-area anchored, and has no hit-test ownership.
+- **Current NextN tree:** `SettingsPage(READER) → SecondaryListScaffold →
+  ReaderPresentationListItems → ReaderDisplayGroup`, while `ReaderPage` owns
+  `visiblePageText()` and a hidden-chrome, enhancement-only persistent status
+  overlay. There is no page-number preference, durable key, or hidden-chrome
+  page-text leaf. Chrome-visible ReaderHeader already owns its existing page
+  text and must remain unchanged.
+- **Exact change boundary:** add one default-on, device-local
+  `showPageNumber` preference through `NhReaderPresentation →
+  ReaderPresentationState → ReaderSettingsRepository →
+  ReaderPresentationService`; insert one no-prefix, no-subtitle switch before
+  the existing fullscreen row; and turn the existing enhancement-only status
+  overlay into one non-hit-test page-status overlay. It must reuse
+  `visiblePageText()` so RTL and double-page ranges stay canonical, retain the
+  existing bottom safe-area anchor and enhancement glyph, and render no second
+  page label while chrome is visible.
+- **Explicit exclusions:** do not change the six Reader settings groups,
+  row-prefix rule, menus, Reader sheet owner, tap overlay, Reader canvas,
+  progress persistence, cache, translation, page-turn behavior, or the frozen
+  enhancement-height leaf. Do not add image scaling, background, animation,
+  or spread-layout controls under this change.
+- **Verification plan:** inspect the scoped diff and build the signed Debug
+  HAP. Then, without clearing data, review the native Reader Settings switch
+  and a loaded Reader with chrome hidden at the selected viewport; verify a
+  single/single-page or double-page range is visible when on, absent when off,
+  enhancement status still remains noninteractive, and the original setting
+  is restored. A same-state NextE Reader capture is still required before any
+  pixel-parity claim; no UI static contract is permitted.
+
 ## FROZEN — Gallery Detail public cache boundary — 2026-08-13
 
 - **Why newly actionable:** the user reported that opening a Gallery Detail

@@ -1,5 +1,5 @@
 import { common } from '@kit.AbilityKit'
-import { SymbolGlyphModifier, window } from '@kit.ArkUI'
+import { LengthMetrics, SymbolGlyphModifier, window } from '@kit.ArkUI'
 import { fileUri } from '@kit.CoreFileKit'
 import { KeyCode } from '@kit.InputKit'
 import inputConsumer from '@ohos.multimodalInput.inputConsumer'
@@ -71,6 +71,9 @@ const READER_TAP_ZONE_SCROLL_RATIO: number = 0.75
 const READER_BOTTOM_TOOLBAR_HEIGHT: number = 44
 const READER_ENHANCEMENT_STATUS_SIZE: number = 24
 const READER_ENHANCEMENT_STATUS_BOTTOM_GAP: number = ThemeTokens.SPACE_MD
+const READER_PAGE_NUMBER_TEXT: ResourceColor = '#99FFFFFF'
+const READER_PAGE_NUMBER_OUTLINE: ResourceColor = '#80000000'
+const READER_PAGE_NUMBER_STROKE_WIDTH: number = 2.5
 const READER_ENHANCEMENT_INTERACTION_SETTLE_MS: number = 420
 const READER_ENHANCEMENT_INTERACTION_FALLBACK_MS: number = 2500
 
@@ -1396,6 +1399,48 @@ struct ReaderEnhancementStatusIcon {
     .borderRadius(READER_ENHANCEMENT_STATUS_SIZE / 2)
     .backgroundColor('#66000000')
     .accessibilityText(this.label())
+  }
+}
+
+/** Readable page range that overlays the image without taking Reader tap ownership. */
+@ComponentV2
+struct ReaderPageNumberStatus {
+  @Require @Param value: string
+  private controller: TextController = new TextController()
+
+  @Monitor('value')
+  onValueChanged(): void {
+    this.updateStyledText()
+  }
+
+  private styledText(): MutableStyledString {
+    const styled: MutableStyledString = new MutableStyledString(this.value, [])
+    styled.setStyle({
+      start: 0,
+      length: this.value.length,
+      styledKey: StyledStringKey.FONT,
+      styledValue: new TextStyle({
+        fontColor: READER_PAGE_NUMBER_TEXT,
+        fontSize: LengthMetrics.vp(ThemeTokens.FONT_SIZE_BODY),
+        fontWeight: FontWeight.Medium,
+        strokeWidth: LengthMetrics.vp(-READER_PAGE_NUMBER_STROKE_WIDTH),
+        strokeColor: READER_PAGE_NUMBER_OUTLINE,
+      }),
+    })
+    return styled
+  }
+
+  private updateStyledText(): void {
+    this.controller.setStyledString(this.styledText())
+  }
+
+  build() {
+    Text(undefined, { controller: this.controller })
+      .textAlign(TextAlign.Center)
+      .maxLines(1)
+      .onAppear((): void => {
+        this.updateStyledText()
+      })
   }
 }
 
@@ -3215,14 +3260,21 @@ export struct ReaderPage {
   }
 
   @Builder
-  private ReaderEnhancementPersistentStatus() {
-    if (this.readerEnhancementEnabled) {
+  private ReaderPersistentPageStatus() {
+    if (this.readerPresentation.showPageNumber || this.readerEnhancementEnabled) {
       Stack({ alignContent: Alignment.Bottom }) {
-        Row() {
-          ReaderEnhancementStatusIcon({
-            processing: this.currentReaderEnhancementProcessing(),
-            applied: this.currentReaderEnhancementApplied(),
-          })
+        Row({ space: ThemeTokens.SPACE_XS }) {
+          if (this.readerPresentation.showPageNumber) {
+            ReaderPageNumberStatus({
+              value: this.visiblePageText(),
+            })
+          }
+          if (this.readerEnhancementEnabled) {
+            ReaderEnhancementStatusIcon({
+              processing: this.currentReaderEnhancementProcessing(),
+              applied: this.currentReaderEnhancementApplied(),
+            })
+          }
         }
         .width('100%')
         .justifyContent(FlexAlign.Center)
@@ -3897,7 +3949,7 @@ export struct ReaderPage {
         this.ReaderTranslationStatusOverlay()
       }
       if (!this.readerChromeVisible && this.isReaderReadyForCurrentGallery) {
-        this.ReaderEnhancementPersistentStatus()
+        this.ReaderPersistentPageStatus()
       }
       // The top bar overlays the canvas. It must not permanently subtract from
       // the page viewport, which is the source of the old NextN top gutter.

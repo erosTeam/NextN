@@ -1495,6 +1495,18 @@ export struct SettingsPage {
     }
   }
 
+  private async saveReaderShowPageNumber(enabled: boolean): Promise<void> {
+    if (this.readerPresentation.showPageNumber === enabled) {
+      return
+    }
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setShowPageNumber(this.context(), enabled)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_show_page_number_save_failed')
+    }
+  }
+
   private async saveReaderFullscreen(enabled: boolean): Promise<void> {
     if (this.readerPresentation.fullscreen === enabled) {
       return
@@ -2209,6 +2221,22 @@ export struct SettingsPage {
     Column({ space: ThemeTokens.SPACE_XS }) {
       NextNSectionHeader({ title: AppStrings.get('settings_reader_group_display') })
       NextNGroupedListSection() {
+        NextNListRow({
+          title: AppStrings.get('settings_reader_show_page_number'),
+          hasSwitch: true,
+          checked: this.readerPresentation.showPageNumber,
+          showChevron: false,
+          accessibilityLabel: AppStrings.format('settings_reader_show_page_number_a11y', [
+            this.toggleStateLabel(this.readerPresentation.showPageNumber),
+          ]),
+          onAction: (): void => {
+            this.saveReaderShowPageNumber(!this.readerPresentation.showPageNumber)
+          },
+          onSwitchChange: (value: boolean): void => {
+            this.saveReaderShowPageNumber(value)
+          },
+        })
+        this.RowDivider()
         NextNListRow({
           title: AppStrings.get('settings_reader_fullscreen'),
           hasSwitch: true,
