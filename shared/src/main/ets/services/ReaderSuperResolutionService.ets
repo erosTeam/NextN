@@ -1,4 +1,5 @@
 import { common } from '@kit.AbilityKit'
+import { util } from '@kit.ArkTS'
 import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { image } from '@kit.ImageKit'
@@ -25,6 +26,9 @@ const MAX_CACHE_FILES: number = 64
 const MAX_CACHE_BYTES: number = 256 * 1024 * 1024
 const READER_ENHANCEMENT_LOG_DOMAIN: number = 0x0000
 const READER_ENHANCEMENT_LOG_TAG: string = 'NextNReaderEnhancement'
+// Bump only when native decode/upscale/output semantics change. Model asset
+// and native-config changes are included separately by the model service.
+const DERIVATIVE_OUTPUT_PIPELINE_VERSION: string = 'native-rgba-jpeg-v1'
 
 export class ReaderSuperResolutionResult {
   displayUri: string = ''
@@ -108,9 +112,11 @@ export class ReaderSuperResolutionService {
     }
     const outputPath: string = ReaderSuperResolutionService.outputPath(
       context,
-      model,
-      normalizedMaxSourceHeight,
-      sourceKey,
+      ReaderSuperResolutionService.derivativeCacheIdentity(
+        model,
+        normalizedMaxSourceHeight,
+        sourceKey,
+      ),
     )
     if (ReaderSuperResolutionService.fileSize(outputPath) > 0) {
       ReaderSuperResolutionService.touch(outputPath)
@@ -318,15 +324,23 @@ export class ReaderSuperResolutionService {
     return `${context.cacheDir}/${CACHE_DIRECTORY}`
   }
 
-  private static outputPath(
-    context: common.UIAbilityContext,
+  private static derivativeCacheIdentity(
     model: NhReaderSuperResolutionModel,
     maxSourceHeight: number,
     sourceKey: string,
   ): string {
+    return JSON.stringify([
+      DERIVATIVE_OUTPUT_PIPELINE_VERSION,
+      ReaderSuperResolutionModelService.derivativeCacheIdentity(model),
+      `${maxSourceHeight}`,
+      sourceKey,
+    ])
+  }
+
+  private static outputPath(context: common.UIAbilityContext, identity: string): string {
     const directory: string = ReaderSuperResolutionService.cacheDirectory(context)
     ReaderSuperResolutionService.ensureDirectory(directory)
-    return `${directory}/${model}_${maxSourceHeight}_${sourceKey}.jpg`
+    return `${directory}/${ReaderSuperResolutionService.hashText(identity)}.jpg`
   }
 
   private static normalizeMaxSourceHeight(value: number): number {
@@ -443,5 +457,16 @@ export class ReaderSuperResolutionService {
         fileIo.closeSync(file)
       }
     }
+  }
+
+  private static hashText(value: string): string {
+    const digest = cryptoFramework.createMd('SHA256')
+    digest.updateSync({ data: new util.TextEncoder().encodeInto(value) })
+    const bytes: Uint8Array = new Uint8Array(digest.digestSync().data)
+    let output: string = ''
+    for (let index: number = 0; index < bytes.length; index++) {
+      output += bytes[index].toString(16).padStart(2, '0')
+    }
+    return output
   }
 }

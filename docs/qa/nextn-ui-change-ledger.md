@@ -2464,6 +2464,16 @@ authorize an edit, replace a device comparison, or define product completion.
   current applied-result observation remains the only accepted runtime result;
   the sole remaining enhancement boundary is a valid same-state/same-viewport
   quality comparison, not another decode, queue, or Reader-route rewrite.
+- **Source-only derivative-cache identity correction — 2026-08-13:** the
+  current private derivative name uses only model id, source-height policy,
+  and source bytes. A future model asset/config or native output-pipeline
+  change could therefore reuse an old rendered image. Include the existing
+  immutable model contract and one output-pipeline revision in a hashed cache
+  identity only. Do not delete or migrate existing files, add a setting/model,
+  alter the Reader canvas, or change download policy; old derivatives simply
+  stop matching and age out under the existing cache limit. Exact-diff review
+  and signed build establish this source boundary; a future enabled Reader run
+  is required for runtime evidence.
 
 ## OPEN — Optional self-hosted staged manga translation
 

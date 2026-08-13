@@ -71,6 +71,28 @@ export class ReaderSuperResolutionModelDefinition {
     config.effectStrengthPercent = this.effectStrengthPercent
     return config
   }
+
+  /**
+   * Immutable pieces that affect a rendered derivative. Keep this separate
+   * from file paths so a model-contract change naturally receives a new
+   * private derivative cache key without touching existing cache files.
+   */
+  derivativeCacheIdentity(): string {
+    const nativeConfig: ReaderNativeSuperResolutionConfig = this.nativeConfig()
+    return JSON.stringify([
+      this.id,
+      this.paramSha256,
+      this.modelSha256,
+      `${nativeConfig.modelKind}`,
+      `${nativeConfig.backendPreference}`,
+      `${nativeConfig.tileSize}`,
+      `${nativeConfig.prepadding}`,
+      `${nativeConfig.threads}`,
+      nativeConfig.inputName,
+      nativeConfig.outputName,
+      `${nativeConfig.effectStrengthPercent}`,
+    ])
+  }
 }
 
 export class ReaderSuperResolutionModelPaths {
@@ -233,6 +255,13 @@ export class ReaderSuperResolutionModelService {
     const definition: ReaderSuperResolutionModelDefinition | null =
       ReaderSuperResolutionModelService.definition(model)
     return definition === null ? null : definition.nativeConfig()
+  }
+
+  /** The service-owned contract portion of a private rendered-image cache key. */
+  static derivativeCacheIdentity(model: NhReaderSuperResolutionModel): string {
+    const definition: ReaderSuperResolutionModelDefinition | null =
+      ReaderSuperResolutionModelService.definition(model)
+    return definition === null ? '' : definition.derivativeCacheIdentity()
   }
 
   static async install(context: common.UIAbilityContext, model: NhReaderSuperResolutionModel): Promise<void> {
