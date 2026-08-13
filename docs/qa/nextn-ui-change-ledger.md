@@ -3,6 +3,46 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Reader image-scaling quality preference — 2026-08-14
+
+- **Why newly actionable:** static mapping after the user reopened Reader
+  Settings found that NextN always relies on ArkUI Image's default sampling,
+  while the current NextE Reader exposes a local low/medium/high sampling
+  preference. This is a Reader rendering capability, not an NH API, download,
+  cache, translation, or super-resolution capability.
+- **Whole reference tree:** `ReaderSettingsPage → Display & screen
+  GroupedListSection → Image scaling quality value-menu → ReadMode
+  state/settings → ReaderPage → ReaderInterpolatedImage → ArkUI
+  Image.interpolation`. The one final-image leaf is shared by the vertical,
+  single-page, and double-page Reader render paths; navigation thumbnails are
+  outside that tree.
+- **Current NextN tree:** `SettingsPage(READER) → SecondaryListScaffold →
+  ReaderPresentationListItems → ReaderDisplayGroup`, while `ReaderPage` owns
+  two final-image leaves: `ReaderImagePage` for vertical/single-page modes and
+  `ReaderSpreadImageLayer` below `ReaderSpreadSurface` for a two-page spread.
+  Both currently call `Image(this.imageSource)` without an interpolation
+  preference. The existing thumbnail rail is a separate navigation owner.
+- **Exact change boundary:** add the default-medium local preference through
+  `NhReaderPresentation → ReaderPresentationState →
+  ReaderSettingsRepository → ReaderPresentationService`; add one no-prefix,
+  no-subtitle value-menu before `显示页码`; and pass that value only to the two
+  final-image leaves so each applies the same ArkUI interpolation mapping.
+  It must preserve the existing source URI, local image cache, translated
+  image artifact, super-resolution result, zoom state, gestures, spread
+  pairing, and thumbnail rendering.
+- **Explicit exclusions:** do not add the NextE explanatory subtitle; the
+  user-directed NextN Reader settings rule is title plus current value only.
+  Do not alter Reader groups, sheet ownership, pagination, page-turn animation,
+  background color, spread layout, source/download/cache keys, translation,
+  super-resolution, thumbnails, or frozen enhancement-height behavior.
+- **Verification plan:** inspect the scoped diff and build the signed Debug
+  HAP. Then, without clearing data, use one loaded static Reader page in
+  vertical/single-page and wide double-page states to switch all three values;
+  verify the preference restores after reopening, changes neither page index
+  nor zoom/gesture ownership, and leaves the thumbnail rail untouched. A
+  same-state, same-viewport NextE capture remains required before any visual
+  parity claim; no UI static contract is permitted.
+
 ## OPEN — Reader hidden-chrome page-number preference — 2026-08-14
 
 - **Why newly actionable:** after the user reopened the Reader Settings page

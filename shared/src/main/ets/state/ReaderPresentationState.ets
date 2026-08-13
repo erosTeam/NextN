@@ -1,5 +1,6 @@
 import { AppStorageV2 } from '@kit.ArkUI'
 import {
+  NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderPresentation,
   NhReaderSuperResolutionModel,
@@ -18,6 +19,7 @@ export class ReaderPresentationState {
   @Trace keepScreenOn: boolean = true
   @Trace preloadPages: number = 2
   @Trace showPageNumber: boolean = true
+  @Trace imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
   @Trace fullscreen: boolean = true
   @Trace autoPageSeconds: number = 3
   @Trace volumeKeyTurn: boolean = false
@@ -34,6 +36,7 @@ export class ReaderPresentationState {
     this.keepScreenOn = presentation.keepScreenOn
     this.preloadPages = presentation.preloadPages
     this.showPageNumber = presentation.showPageNumber
+    this.imageScalingQuality = presentation.imageScalingQuality
     this.fullscreen = presentation.fullscreen
     this.autoPageSeconds = presentation.autoPageSeconds
     this.volumeKeyTurn = presentation.volumeKeyTurn
@@ -51,6 +54,7 @@ export class ReaderPresentationState {
     result.keepScreenOn = this.keepScreenOn
     result.preloadPages = this.preloadPages
     result.showPageNumber = this.showPageNumber
+    result.imageScalingQuality = this.imageScalingQuality
     result.fullscreen = this.fullscreen
     result.autoPageSeconds = this.autoPageSeconds
     result.volumeKeyTurn = this.volumeKeyTurn

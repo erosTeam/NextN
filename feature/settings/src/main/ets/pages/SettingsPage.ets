@@ -15,6 +15,7 @@ import {
   LLM_CONSUMER_COMMENT_TRANSLATION,
   LLM_CONSUMER_MANGA_TRANSLATION,
   NhTagTranslationStatus,
+  NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderSuperResolutionModel,
   READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES,
@@ -183,6 +184,7 @@ export struct SettingsPage {
   @Local browsePreferencesError: string = ''
   @Local searchPreferencesError: string = ''
   @Local readerModeMenuShown: boolean = false
+  @Local readerImageScalingQualityMenuShown: boolean = false
   @Local readerPreloadMenuShown: boolean = false
   @Local readerAutoPageMenuShown: boolean = false
   @Local readerTapZoneMenuShown: boolean = false
@@ -1009,6 +1011,16 @@ export struct SettingsPage {
     return AppStrings.get('settings_reader_mode_vertical')
   }
 
+  private readerImageScalingQualityLabel(): string {
+    if (this.readerPresentation.imageScalingQuality === NhReaderImageScalingQuality.LOW) {
+      return AppStrings.get('settings_reader_image_scaling_quality_standard')
+    }
+    if (this.readerPresentation.imageScalingQuality === NhReaderImageScalingQuality.HIGH) {
+      return AppStrings.get('settings_reader_image_scaling_quality_high')
+    }
+    return AppStrings.get('settings_reader_image_scaling_quality_optimized')
+  }
+
   private readerModeIcon(mode: NhReaderMode): Resource {
     if (mode === NhReaderMode.PAGED_RTL) {
       return $r('sys.symbol.arrow_left_and_square')
@@ -1235,6 +1247,38 @@ export struct SettingsPage {
         this.saveReaderMode(NhReaderMode.VERTICAL)
         this.readerModeMenuShown = false
       })
+    }
+  }
+
+  @Builder
+  private ReaderImageScalingQualityMenuItem(quality: NhReaderImageScalingQuality) {
+    MenuItem({
+      content: this.readerImageScalingQualityLabelFor(quality),
+      symbolEndIcon: this.readerPresentation.imageScalingQuality === quality
+        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+        : undefined,
+    }).onClick((): void => {
+      this.saveReaderImageScalingQuality(quality)
+      this.readerImageScalingQualityMenuShown = false
+    })
+  }
+
+  private readerImageScalingQualityLabelFor(quality: NhReaderImageScalingQuality): string {
+    if (quality === NhReaderImageScalingQuality.LOW) {
+      return AppStrings.get('settings_reader_image_scaling_quality_standard')
+    }
+    if (quality === NhReaderImageScalingQuality.HIGH) {
+      return AppStrings.get('settings_reader_image_scaling_quality_high')
+    }
+    return AppStrings.get('settings_reader_image_scaling_quality_optimized')
+  }
+
+  @Builder
+  private ReaderImageScalingQualityMenu() {
+    Menu() {
+      this.ReaderImageScalingQualityMenuItem(NhReaderImageScalingQuality.LOW)
+      this.ReaderImageScalingQualityMenuItem(NhReaderImageScalingQuality.MEDIUM)
+      this.ReaderImageScalingQualityMenuItem(NhReaderImageScalingQuality.HIGH)
     }
   }
 
@@ -1504,6 +1548,18 @@ export struct SettingsPage {
       await ReaderPresentationService.setShowPageNumber(this.context(), enabled)
     } catch (_error) {
       this.readerModeError = AppStrings.get('settings_reader_show_page_number_save_failed')
+    }
+  }
+
+  private async saveReaderImageScalingQuality(quality: NhReaderImageScalingQuality): Promise<void> {
+    if (this.readerPresentation.imageScalingQuality === quality) {
+      return
+    }
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setImageScalingQuality(this.context(), quality)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_image_scaling_quality_save_failed')
     }
   }
 
@@ -2221,6 +2277,24 @@ export struct SettingsPage {
     Column({ space: ThemeTokens.SPACE_XS }) {
       NextNSectionHeader({ title: AppStrings.get('settings_reader_group_display') })
       NextNGroupedListSection() {
+        NextNListRow({
+          title: AppStrings.get('settings_reader_image_scaling_quality'),
+          trailingText: this.readerImageScalingQualityLabel(),
+          trailingDropdown: true,
+          accessibilityLabel: AppStrings.format('settings_reader_image_scaling_quality_a11y', [
+            this.readerImageScalingQualityLabel(),
+          ]),
+          onAction: (): void => {
+            this.readerImageScalingQualityMenuShown = true
+          },
+        })
+        .bindMenu(this.readerImageScalingQualityMenuShown, this.ReaderImageScalingQualityMenu, {
+          placement: Placement.BottomRight,
+          onDisappear: (): void => {
+            this.readerImageScalingQualityMenuShown = false
+          },
+        })
+        this.RowDivider()
         NextNListRow({
           title: AppStrings.get('settings_reader_show_page_number'),
           hasSwitch: true,

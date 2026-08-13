@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import { relationalStore } from '@kit.ArkData'
 import {
+  NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderSuperResolutionModel,
   READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT,
@@ -17,6 +18,7 @@ const READER_MODE_KEY: string = 'reader_mode'
 const READER_KEEP_SCREEN_ON_KEY: string = 'reader_keep_screen_on'
 const READER_PRELOAD_PAGES_KEY: string = 'reader_preload_pages'
 const READER_SHOW_PAGE_NUMBER_KEY: string = 'reader_show_page_number'
+const READER_IMAGE_SCALING_QUALITY_KEY: string = 'reader_image_scaling_quality'
 const READER_FULLSCREEN_KEY: string = 'reader_fullscreen'
 const READER_AUTO_PAGE_SECONDS_KEY: string = 'reader_auto_page_seconds'
 const READER_VOLUME_KEY_TURN_KEY: string = 'reader_volume_key_turn'
@@ -56,6 +58,13 @@ export class ReaderSettingsRepository {
       return 3
     }
     return Math.max(1, Math.min(60, Math.round(value)))
+  }
+
+  private static normalizeImageScalingQuality(value: string): NhReaderImageScalingQuality {
+    if (value === NhReaderImageScalingQuality.LOW || value === NhReaderImageScalingQuality.HIGH) {
+      return value as NhReaderImageScalingQuality
+    }
+    return NhReaderImageScalingQuality.MEDIUM
   }
 
   private static async value(context: common.UIAbilityContext, key: string): Promise<string | null> {
@@ -99,6 +108,12 @@ export class ReaderSettingsRepository {
   /** Match the existing Reader page-number default for installations without this key. */
   static async showPageNumber(context: common.UIAbilityContext): Promise<boolean> {
     return (await ReaderSettingsRepository.value(context, READER_SHOW_PAGE_NUMBER_KEY)) !== 'false'
+  }
+
+  static async imageScalingQuality(context: common.UIAbilityContext): Promise<NhReaderImageScalingQuality> {
+    return ReaderSettingsRepository.normalizeImageScalingQuality(
+      (await ReaderSettingsRepository.value(context, READER_IMAGE_SCALING_QUALITY_KEY)) ?? '',
+    )
   }
 
   /** Matches NextE: Reader starts as an immersive canvas unless the user opts out locally. */
@@ -188,6 +203,17 @@ export class ReaderSettingsRepository {
       context,
       READER_SHOW_PAGE_NUMBER_KEY,
       enabled ? 'true' : 'false',
+    )
+  }
+
+  static saveImageScalingQuality(
+    context: common.UIAbilityContext,
+    quality: NhReaderImageScalingQuality,
+  ): Promise<void> {
+    return ReaderSettingsRepository.saveValue(
+      context,
+      READER_IMAGE_SCALING_QUALITY_KEY,
+      ReaderSettingsRepository.normalizeImageScalingQuality(quality),
     )
   }
 

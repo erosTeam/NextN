@@ -13,6 +13,13 @@ export enum NhReaderMode {
   PAGED_VERTICAL = 'paged_vertical',
 }
 
+/** Final Reader image sampling only; it never changes source or cache identity. */
+export enum NhReaderImageScalingQuality {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+}
+
 /**
  * The user-selected local enhancement model. The identifiers are durable
  * reader preferences, never model-file paths or a network selection.
@@ -38,6 +45,8 @@ export class NhReaderPresentation {
   preloadPages: number = 2
   /** Keep the canonical page range visible while Reader chrome is hidden. */
   showPageNumber: boolean = true
+  /** Explicitly use Mipmap instead of ArkUI Image's default low sampling. */
+  imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
   fullscreen: boolean = true
   autoPageSeconds: number = 3
   volumeKeyTurn: boolean = false
@@ -62,6 +71,7 @@ export class NhReaderPresentation {
     result.keepScreenOn = this.keepScreenOn
     result.preloadPages = this.preloadPages
     result.showPageNumber = this.showPageNumber
+    result.imageScalingQuality = this.imageScalingQuality
     result.fullscreen = this.fullscreen
     result.autoPageSeconds = this.autoPageSeconds
     result.volumeKeyTurn = this.volumeKeyTurn

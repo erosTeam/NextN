@@ -13,6 +13,7 @@ import {
   NhGalleryPage,
   NhTag,
   NhGalleryShareService,
+  NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderSuperResolutionModel,
   NhReaderTapZoneAction,
@@ -87,6 +88,17 @@ function readerLocalFilePath(uri: string): string {
 // persisted user request.
 const READER_DOUBLE_PAGE_MIN_VIEWPORT_WIDTH: number = 720
 const READER_DOUBLE_PAGE_MIN_WIDE_ASPECT: number = 1.15
+
+/** Matches the three durable sampling choices without changing a source URI. */
+function readerImageInterpolation(quality: NhReaderImageScalingQuality): ImageInterpolation {
+  if (quality === NhReaderImageScalingQuality.LOW) {
+    return ImageInterpolation.Low
+  }
+  if (quality === NhReaderImageScalingQuality.HIGH) {
+    return ImageInterpolation.High
+  }
+  return ImageInterpolation.Medium
+}
 
 /** Small NextE-derived zoom boundary for one rendered Reader page. */
 class ReaderPageZoom {
@@ -194,6 +206,7 @@ struct ReaderImagePage {
   @Param enhancementEnabled: boolean = false
   @Param enhancementModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
   @Param enhancementMaxHeight: number = 2000
+  @Param imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
   @Param fillViewport: boolean = false
   @Param imageWidth: number = 0
   @Param imageHeight: number = 0
@@ -533,6 +546,7 @@ struct ReaderImagePage {
         .width('100%')
         .height(this.fillViewport ? '100%' : 'auto')
         .objectFit(ImageFit.Contain)
+        .interpolation(readerImageInterpolation(this.imageScalingQuality))
         .backgroundColor(ThemeTokens.READER_BACKGROUND)
         .onComplete((): void => {
           this.hasLoadError = false
@@ -648,6 +662,7 @@ struct ReaderSpreadImageLayer {
   @Param enhancementEnabled: boolean = false
   @Param enhancementModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
   @Param enhancementMaxHeight: number = 2000
+  @Param imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
   @Param pageIndex: number = -1
   @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
   @Event onSourceFileReady?: (pageIndex: number, localPath: string) => void
@@ -848,6 +863,7 @@ struct ReaderSpreadImageLayer {
           .width('100%')
           .height('100%')
           .objectFit(ImageFit.Contain)
+          .interpolation(readerImageInterpolation(this.imageScalingQuality))
           .backgroundColor(ThemeTokens.READER_BACKGROUND)
           .onComplete((): void => {
             this.hasLoadError = false
@@ -887,6 +903,7 @@ struct ReaderSpreadSurface {
   @Param enhancementEnabled: boolean = false
   @Param enhancementModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
   @Param enhancementMaxHeight: number = 2000
+  @Param imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
   @Param rowReversed: boolean = false
   @Param doubleTapSequence: number = 0
   @Param doubleTapTargetIndex: number = -1
@@ -1068,6 +1085,7 @@ struct ReaderSpreadSurface {
       enhancementEnabled: this.enhancementEnabled,
       enhancementModel: this.enhancementModel,
       enhancementMaxHeight: this.enhancementMaxHeight,
+      imageScalingQuality: this.imageScalingQuality,
       pageIndex: item.sourceIndex,
       cacheKey: ReaderImageCacheService.cacheKey(
         this.galleryId,
@@ -3476,6 +3494,7 @@ export struct ReaderPage {
             enhancementEnabled: this.readerEnhancementEnabled,
             enhancementModel: this.readerPresentation.superResolutionModel,
             enhancementMaxHeight: this.readerPresentation.superResolutionMaxHeight,
+            imageScalingQuality: this.readerPresentation.imageScalingQuality,
             imageWidth: item.page.width,
             imageHeight: item.page.height,
             pageIndex: item.sourceIndex,
@@ -3529,6 +3548,7 @@ export struct ReaderPage {
               enhancementEnabled: this.readerEnhancementEnabled,
               enhancementModel: this.readerPresentation.superResolutionModel,
               enhancementMaxHeight: this.readerPresentation.superResolutionMaxHeight,
+              imageScalingQuality: this.readerPresentation.imageScalingQuality,
               imageWidth: item.page.width,
               imageHeight: item.page.height,
               pageIndex: item.sourceIndex,
@@ -3600,6 +3620,7 @@ export struct ReaderPage {
             enhancementEnabled: this.readerEnhancementEnabled,
             enhancementModel: this.readerPresentation.superResolutionModel,
             enhancementMaxHeight: this.readerPresentation.superResolutionMaxHeight,
+            imageScalingQuality: this.readerPresentation.imageScalingQuality,
             rowReversed: this.isRightToLeftPagedMode(),
             doubleTapSequence: this.doubleTapSequence,
             doubleTapTargetIndex: this.doubleTapTargetIndex,

@@ -1,5 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import {
+  NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderPresentation,
   NhReaderSuperResolutionModel,
@@ -75,6 +76,17 @@ export class ReaderPresentationService {
       presentation.showPageNumber = enabled
     }, (presentation: NhReaderPresentation): Promise<void> => {
       return ReaderSettingsRepository.saveShowPageNumber(context, presentation.showPageNumber)
+    })
+  }
+
+  static setImageScalingQuality(
+    context: common.UIAbilityContext,
+    quality: NhReaderImageScalingQuality,
+  ): Promise<NhReaderPresentation> {
+    return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
+      presentation.imageScalingQuality = ReaderPresentationService.normalizeImageScalingQuality(quality)
+    }, (presentation: NhReaderPresentation): Promise<void> => {
+      return ReaderSettingsRepository.saveImageScalingQuality(context, presentation.imageScalingQuality)
     })
   }
 
@@ -186,6 +198,7 @@ export class ReaderPresentationService {
       boolean,
       number,
       boolean,
+      NhReaderImageScalingQuality,
       boolean,
       number,
       boolean,
@@ -200,6 +213,7 @@ export class ReaderPresentationService {
       ReaderSettingsRepository.keepScreenOn(context),
       ReaderSettingsRepository.preloadPages(context),
       ReaderSettingsRepository.showPageNumber(context),
+      ReaderSettingsRepository.imageScalingQuality(context),
       ReaderSettingsRepository.fullscreen(context),
       ReaderSettingsRepository.autoPageSeconds(context),
       ReaderSettingsRepository.volumeKeyTurn(context),
@@ -215,15 +229,16 @@ export class ReaderPresentationService {
     presentation.keepScreenOn = values[1]
     presentation.preloadPages = values[2]
     presentation.showPageNumber = values[3]
-    presentation.fullscreen = values[4]
-    presentation.autoPageSeconds = values[5]
-    presentation.volumeKeyTurn = values[6]
-    presentation.doublePageEnabled = values[7]
-    presentation.tapZoneLayout = values[8]
-    presentation.tapZoneInvert = values[9]
-    presentation.superResolutionEnabled = values[10]
-    presentation.superResolutionModel = values[11]
-    presentation.superResolutionMaxHeight = values[12]
+    presentation.imageScalingQuality = values[4]
+    presentation.fullscreen = values[5]
+    presentation.autoPageSeconds = values[6]
+    presentation.volumeKeyTurn = values[7]
+    presentation.doublePageEnabled = values[8]
+    presentation.tapZoneLayout = values[9]
+    presentation.tapZoneInvert = values[10]
+    presentation.superResolutionEnabled = values[11]
+    presentation.superResolutionModel = values[12]
+    presentation.superResolutionMaxHeight = values[13]
     ReaderPresentationService.state().replace(presentation)
   }
 
@@ -256,6 +271,13 @@ export class ReaderPresentationService {
       return 2
     }
     return Math.max(0, Math.min(5, Math.round(value)))
+  }
+
+  private static normalizeImageScalingQuality(value: NhReaderImageScalingQuality): NhReaderImageScalingQuality {
+    if (value === NhReaderImageScalingQuality.LOW || value === NhReaderImageScalingQuality.HIGH) {
+      return value
+    }
+    return NhReaderImageScalingQuality.MEDIUM
   }
 
   private static normalizeAutoPageSeconds(value: number): number {

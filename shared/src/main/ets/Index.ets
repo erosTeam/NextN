@@ -52,6 +52,7 @@ export { NhQuickSearchItem } from './model/NhQuickSearch'
 export { NhSearchLanguage, NhSearchOptions, NhSearchSort } from './model/NhSearchOptions'
 export { NhCatalogPreferences } from './model/NhCatalogPreferences'
 export {
+  NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderPresentation,
   NhReaderSuperResolutionModel,
