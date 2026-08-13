@@ -2331,6 +2331,35 @@ authorize an edit, replace a device comparison, or define product completion.
   particular request; no tag mutation, rate-limit condition, or failure is
   manufactured for this narrow correction.
 
+### Accepted explicit-Detail tag-catalog promotion — 2026-08-14
+
+- **Why newly actionable:** a Detail request made by the existing title reload
+  or top-pull path already bypasses both the app Detail snapshot and
+  NetworkKit's process-local transport cache. It returns complete public tag
+  records, but NextN previously kept every Detail result at fallback-only
+  provenance, even after the page had accepted that explicit refresh.
+- **Exact data boundary:** ordinary Detail requests still queue only the
+  fallback `INSERT ... DO NOTHING` path. Once `GalleryDetailPage` has passed
+  its current generation and gallery-ID checks for a `forceNetwork` response,
+  it queues that response's copied public tags through the existing serialized
+  catalog owner for its normal upsert. The promotion remains best-effort and
+  cannot delay, replace, or fail the Detail UI. A stale route response can at
+  most leave its existing non-overwriting fallback; it cannot promote.
+- **Reference boundary:** ErosN's Detail refresh bypasses its HTTP cache and
+  then uses the same passive catalog-learning path as its ordinary Detail.
+  NextN retains the stronger local route-acceptance gate because its network
+  client otherwise receives a Detail result before the page can reject an old
+  generation.
+- **Preserved unresolved boundary:** this establishes only an accepted Detail
+  response that bypassed this process's transport cache as a normal catalog
+  observation. It does not assert server/CDN freshness, pick a TTL, revalidate
+  arbitrary existing catalog rows, add a list request, retry/status UI, or
+  change a Detail/card parent tree.
+- **Verification limit:** exact diff review and a signed build establish the
+  gated source path. Observing an actual title reload or top-pull response and
+  a later ordinary collection is required to accept the runtime data outcome;
+  no tag-data mutation or forced failure is manufactured for that evidence.
+
 ### Dictionary update-source fallback — 2026-08-13
 
 - **Why newly actionable:** the existing explicit local-dictionary update

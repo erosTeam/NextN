@@ -54,6 +54,25 @@ export class NhTagCatalogService {
   }
 
   /**
+   * A Detail response accepted after an explicit page refresh did not use the
+   * current process's NetworkKit transport cache. Promote its complete public
+   * tags only after the page has verified that the response still belongs to
+   * its current Gallery route.
+   */
+  static promoteAcceptedFreshDetailTags(tags: NhTag[]): void {
+    const context: common.UIAbilityContext | null = NhTagCatalogService.context
+    const snapshot: NhTag[] = NhTagCatalogService.catalogSnapshot(tags)
+    if (context === null || snapshot.length === 0) {
+      return
+    }
+    const queued: Promise<void> = NhTagCatalogService.resolutionTail.then(
+      (): Promise<void> => NhTagCatalogService.promoteInternal(context, snapshot),
+      (): Promise<void> => NhTagCatalogService.promoteInternal(context, snapshot),
+    )
+    NhTagCatalogService.resolutionTail = queued.catch((): void => {})
+  }
+
+  /**
    * Re-labels already resolved gallery tags after a committed local-dictionary
    * change. This path is strictly local: it never reads the tag catalog or
    * starts an API request, and unresolved tag ids stay unresolved.
@@ -136,6 +155,18 @@ export class NhTagCatalogService {
       await NhTagCatalogRepository.insertDetailFallbacks(context, tags)
     } catch (_error) {
       // Detail data remains valid if the optional local catalog is unavailable.
+    }
+  }
+
+  private static async promoteInternal(
+    context: common.UIAbilityContext,
+    tags: NhTag[],
+  ): Promise<void> {
+    try {
+      await NhTagCatalogRepository.upsert(context, tags)
+    } catch (_error) {
+      // The accepted Detail response remains valid if this optional catalog
+      // promotion cannot be persisted.
     }
   }
 

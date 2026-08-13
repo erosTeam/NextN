@@ -16,6 +16,7 @@ import {
   LayoutSafeAreaState,
   LlmSourceProfilesState,
   NhApiClient,
+  NhTagCatalogService,
   AccountSessionState,
   ActionFollowTouchState,
   ActionFollowTouchTracker,
@@ -1072,6 +1073,13 @@ export struct GalleryDetailPage {
       }
       if (!this.applyVerifiedDetailSnapshot(generation, detail)) {
         return
+      }
+      if (forceNetwork) {
+        // The page has accepted this user-triggered, transport-cache-bypassed
+        // response for the current route. Queue the catalog promotion only
+        // here, rather than in the network client, so an old route response
+        // can never overwrite a newer ordinary catalog record.
+        NhTagCatalogService.promoteAcceptedFreshDetailTags(detail.tags)
       }
       // The verified response is now renderable. Cache persistence is awaited
       // only for ordering/device-proof purposes; it never owns page loading.
