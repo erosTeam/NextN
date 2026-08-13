@@ -141,6 +141,30 @@ authorize an edit, replace a device comparison, or define product completion.
   follow-operation, or preference-restoration checks without a source change
   or new user feedback.
 
+## OPEN — Gallery Detail Japanese-title preference copy scope — 2026-08-13
+
+- **Why newly actionable:** the user asked whether the `优先使用日文标题`
+  setting is supported by NH and observed that its displayed scope is unclear.
+  NH v2 already supplies both list `japanese_title` and Detail
+  `title.japanese`; this is a local display preference, not a website write.
+- **Reference/current scope:** NextE calls the matching preference
+  `详情页优先显示日文标题` and applies it only to the Detail header's existing
+  primary/secondary-title leaves. NextN does the same in
+  `GalleryDetailPage`; collection cards deliberately retain their existing
+  English-primary plus optional Japanese-secondary grammar. The current NextN
+  copy instead says `画廊页`, which overstates that detail-only scope.
+- **Exact change:** change only the four localized title/hint pairs to say
+  `Gallery Detail` / `详情页` (and localized equivalents). Preserve the
+  existing settings row, icon, switch, persistence key, startup restore,
+  Detail title ordering, collection-card title leaves, History schema, and
+  all network DTOs. Do not add a list-wide title preference or alter card
+  geometry under cover of a copy correction.
+- **Verification plan:** inspect the four-resource diff, build the signed
+  Debug HAP, install in place without clearing data, and observe the native
+  Layout row plus one Detail with both source titles. Confirm the copy names
+  Detail only and the existing switch still changes only that header's title
+  ordering. Retain raw artifacts locally; do not use a UI static contract.
+
 ## OPEN — Reader Settings parent-tree and icon correction — 2026-08-13
 
 - **Why newly actionable:** the user reported that the current Reader Settings
