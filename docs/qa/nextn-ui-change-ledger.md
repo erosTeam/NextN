@@ -1874,6 +1874,22 @@ authorize an edit, replace a device comparison, or define product completion.
   it remains unchanged until its ordinary next list request. This correction
   removes the proven loss of names already returned by the public endpoint and
   the proven stale-label path only.
+- **Response and suggestion race correction:** review of the first source
+  change found two remaining stale-display paths. A collection request can
+  begin under one dictionary revision, receive already-enriched cards, then
+  land after a committed replacement while the revision monitor is still
+  re-labeling its former snapshot. Each accepted page-one or appended response
+  now compares its request-start revision to the current revision and invokes
+  the same strictly local re-label projection only when they differ. Search
+  also clears and epochs-fences visible tag suggestions on a committed
+  revision. This is necessary because dictionary replacement can change a
+  suggestion's membership and ranking, not merely its label; retaining it and
+  rewriting its text would still show removed or stale candidates. The next
+  ordinary edit repopulates suggestions through the established flow. The
+  correction does not restart a gallery request, call tag autocomplete, change
+  the query, or change any collection/card parent tree. This closes the
+  source-proven arrival race while preserving the existing unresolved-name and
+  no-manufactured-dictionary-mutation limits above.
 
 ## OPEN — Reader enhancement interaction yield
 

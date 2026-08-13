@@ -143,12 +143,16 @@ export struct PopularPage {
     this.isRefreshing = keepsContent
     this.errorMessage = ''
     try {
+      const tagTranslationRevision: number = this.tagTranslations.revision
       const galleries: NhGallerySummary[] = await NhApiClient.popular()
       if (!this.isCurrentRequest(generation)) {
         return
       }
       this.rawGalleries = galleries
       this.applyContentFilters()
+      if (tagTranslationRevision !== this.tagTranslations.revision) {
+        this.refreshTagTranslationLabels()
+      }
     } catch (error) {
       if (!this.isCurrentRequest(generation)) {
         return

@@ -177,6 +177,10 @@ export struct SearchPage {
   @Monitor('tagTranslations.revision')
   onTagTranslationsChanged(): void {
     this.refreshTagTranslationLabels()
+    // A replacement can change membership and ranking, not only the displayed
+    // label. Clear and fence the transient candidates rather than preserving a
+    // stale local/remote mixture or issuing an automatic suggestion request.
+    this.cancelTagSuggestions()
   }
 
   @Monitor('catalogPreferences.searchRevision')
@@ -765,6 +769,7 @@ export struct SearchPage {
     this.errorMessage = ''
     this.loadMoreErrorMessage = ''
     try {
+      const tagTranslationRevision: number = this.tagTranslations.revision
       const result: NhGalleryPageResult = await this.requestSearch(
         query,
         1,
@@ -776,6 +781,9 @@ export struct SearchPage {
       }
       this.rawGalleries = result.galleries
       this.applyContentFilters()
+      if (tagTranslationRevision !== this.tagTranslations.revision) {
+        this.refreshTagTranslationLabels()
+      }
       this.currentPage = 1
       this.totalPages = Math.max(1, result.totalPages)
     } catch (error) {
@@ -809,6 +817,7 @@ export struct SearchPage {
       this.isInitialLoading = true
     }
     try {
+      const tagTranslationRevision: number = this.tagTranslations.revision
       const result: NhGalleryPageResult = await this.requestSearch(
         this.activeQuery,
         1,
@@ -820,6 +829,9 @@ export struct SearchPage {
       }
       this.rawGalleries = result.galleries
       this.applyContentFilters()
+      if (tagTranslationRevision !== this.tagTranslations.revision) {
+        this.refreshTagTranslationLabels()
+      }
       this.currentPage = 1
       this.totalPages = Math.max(1, result.totalPages)
     } catch (error) {
@@ -844,6 +856,7 @@ export struct SearchPage {
     this.isLoadingMore = true
     this.loadMoreErrorMessage = ''
     try {
+      const tagTranslationRevision: number = this.tagTranslations.revision
       const result: NhGalleryPageResult = await this.requestSearch(
         this.activeQuery,
         nextPage,
@@ -854,6 +867,9 @@ export struct SearchPage {
         return
       }
       this.appendUnique(result.galleries)
+      if (tagTranslationRevision !== this.tagTranslations.revision) {
+        this.refreshTagTranslationLabels()
+      }
       this.currentPage = nextPage
       this.totalPages = Math.max(nextPage, result.totalPages)
     } catch (error) {

@@ -347,12 +347,16 @@ export struct FavoritesPage {
       this.totalPages = 1
     }
     try {
+      const tagTranslationRevision: number = this.tagTranslations.revision
       const result: NhGalleryPageResult = await NhApiClient.favorites(1, querySnapshot)
       if (generation !== this.requestGeneration || querySnapshot !== this.activeQuery) {
         return
       }
       this.rawGalleries = result.galleries
       this.applyContentFilters()
+      if (tagTranslationRevision !== this.tagTranslations.revision) {
+        this.refreshTagTranslationLabels()
+      }
       this.currentPage = 1
       this.totalPages = Math.max(1, result.totalPages)
     } catch (error) {
@@ -392,11 +396,15 @@ export struct FavoritesPage {
     this.isLoadingMore = true
     this.loadMoreErrorMessage = ''
     try {
+      const tagTranslationRevision: number = this.tagTranslations.revision
       const result: NhGalleryPageResult = await NhApiClient.favorites(nextPage, querySnapshot)
       if (generation !== this.requestGeneration || querySnapshot !== this.activeQuery) {
         return
       }
       this.appendUnique(result.galleries)
+      if (tagTranslationRevision !== this.tagTranslations.revision) {
+        this.refreshTagTranslationLabels()
+      }
       this.currentPage = nextPage
       this.totalPages = Math.max(nextPage, result.totalPages)
     } catch (error) {
