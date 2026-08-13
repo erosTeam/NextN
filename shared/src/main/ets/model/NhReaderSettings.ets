@@ -13,6 +13,12 @@ export enum NhReaderMode {
   PAGED_VERTICAL = 'paged_vertical',
 }
 
+/** Geometry of an eligible two-page Reader spread; page pairing remains separate. */
+export enum NhReaderSpreadLayout {
+  JOINED = 'joined',
+  SPLIT = 'split',
+}
+
 /** Final Reader image sampling only; it never changes source or cache identity. */
 export enum NhReaderImageScalingQuality {
   LOW = 'low',
@@ -54,8 +60,10 @@ export class NhReaderPresentation {
    * This remains a request rather than an effective-layout flag.  A narrow
    * Reader canvas falls back to one page without overwriting the user's
    * preference, so rotating or moving to a wide window can restore spreads.
-   */
+  */
   doublePageEnabled: boolean = false
+  /** Preserve existing ratio-sized spreads unless the user explicitly chooses equal panes. */
+  spreadLayoutMode: NhReaderSpreadLayout = NhReaderSpreadLayout.JOINED
   /** Animate only adjacent programmatic Pager moves; direct Swipe stays component-owned. */
   pageTurnAnimation: boolean = true
   tapZoneLayout: NhReaderTapZoneLayout = NhReaderTapZoneLayout.RIGHT_LEFT
@@ -78,6 +86,7 @@ export class NhReaderPresentation {
     result.autoPageSeconds = this.autoPageSeconds
     result.volumeKeyTurn = this.volumeKeyTurn
     result.doublePageEnabled = this.doublePageEnabled
+    result.spreadLayoutMode = this.spreadLayoutMode
     result.pageTurnAnimation = this.pageTurnAnimation
     result.tapZoneLayout = this.tapZoneLayout
     result.tapZoneInvert = this.tapZoneInvert

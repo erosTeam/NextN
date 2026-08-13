@@ -3,6 +3,7 @@ import { relationalStore } from '@kit.ArkData'
 import {
   NhReaderImageScalingQuality,
   NhReaderMode,
+  NhReaderSpreadLayout,
   NhReaderSuperResolutionModel,
   READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT,
   READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES,
@@ -23,6 +24,7 @@ const READER_FULLSCREEN_KEY: string = 'reader_fullscreen'
 const READER_AUTO_PAGE_SECONDS_KEY: string = 'reader_auto_page_seconds'
 const READER_VOLUME_KEY_TURN_KEY: string = 'reader_volume_key_turn'
 const READER_DOUBLE_PAGE_ENABLED_KEY: string = 'reader_double_page_enabled'
+const READER_SPREAD_LAYOUT_KEY: string = 'reader_spread_layout'
 const READER_PAGE_TURN_ANIMATION_KEY: string = 'reader_page_turn_animation'
 const READER_TAP_ZONE_LAYOUT_KEY: string = 'reader_tap_zone_layout'
 const READER_TAP_ZONE_INVERT_KEY: string = 'reader_tap_zone_invert'
@@ -66,6 +68,13 @@ export class ReaderSettingsRepository {
       return value as NhReaderImageScalingQuality
     }
     return NhReaderImageScalingQuality.MEDIUM
+  }
+
+  private static normalizeSpreadLayout(value: string): NhReaderSpreadLayout {
+    if (value === NhReaderSpreadLayout.SPLIT) {
+      return NhReaderSpreadLayout.SPLIT
+    }
+    return NhReaderSpreadLayout.JOINED
   }
 
   private static async value(context: common.UIAbilityContext, key: string): Promise<string | null> {
@@ -142,6 +151,13 @@ export class ReaderSettingsRepository {
    */
   static async doublePageEnabled(context: common.UIAbilityContext): Promise<boolean> {
     return (await ReaderSettingsRepository.value(context, READER_DOUBLE_PAGE_ENABLED_KEY)) === 'true'
+  }
+
+  /** Missing or malformed values retain NextN's existing ratio-sized spread geometry. */
+  static async spreadLayout(context: common.UIAbilityContext): Promise<NhReaderSpreadLayout> {
+    return ReaderSettingsRepository.normalizeSpreadLayout(
+      (await ReaderSettingsRepository.value(context, READER_SPREAD_LAYOUT_KEY)) ?? '',
+    )
   }
 
   /** Preserve the existing animated adjacent-turn behavior for installations without this key. */
@@ -252,6 +268,14 @@ export class ReaderSettingsRepository {
       context,
       READER_DOUBLE_PAGE_ENABLED_KEY,
       enabled ? 'true' : 'false',
+    )
+  }
+
+  static saveSpreadLayout(context: common.UIAbilityContext, layout: NhReaderSpreadLayout): Promise<void> {
+    return ReaderSettingsRepository.saveValue(
+      context,
+      READER_SPREAD_LAYOUT_KEY,
+      ReaderSettingsRepository.normalizeSpreadLayout(layout),
     )
   }
 

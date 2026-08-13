@@ -3,6 +3,7 @@ import {
   NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderPresentation,
+  NhReaderSpreadLayout,
   NhReaderSuperResolutionModel,
   READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT,
 } from '../model/NhReaderSettings'
@@ -24,6 +25,7 @@ export class ReaderPresentationState {
   @Trace autoPageSeconds: number = 3
   @Trace volumeKeyTurn: boolean = false
   @Trace doublePageEnabled: boolean = false
+  @Trace spreadLayoutMode: NhReaderSpreadLayout = NhReaderSpreadLayout.JOINED
   @Trace pageTurnAnimation: boolean = true
   @Trace tapZoneLayout: NhReaderTapZoneLayout = NhReaderTapZoneLayout.RIGHT_LEFT
   @Trace tapZoneInvert: NhReaderTapZoneInvert = NhReaderTapZoneInvert.NONE
@@ -42,6 +44,7 @@ export class ReaderPresentationState {
     this.autoPageSeconds = presentation.autoPageSeconds
     this.volumeKeyTurn = presentation.volumeKeyTurn
     this.doublePageEnabled = presentation.doublePageEnabled
+    this.spreadLayoutMode = presentation.spreadLayoutMode
     this.pageTurnAnimation = presentation.pageTurnAnimation
     this.tapZoneLayout = presentation.tapZoneLayout
     this.tapZoneInvert = presentation.tapZoneInvert
@@ -61,6 +64,7 @@ export class ReaderPresentationState {
     result.autoPageSeconds = this.autoPageSeconds
     result.volumeKeyTurn = this.volumeKeyTurn
     result.doublePageEnabled = this.doublePageEnabled
+    result.spreadLayoutMode = this.spreadLayoutMode
     result.pageTurnAnimation = this.pageTurnAnimation
     result.tapZoneLayout = this.tapZoneLayout
     result.tapZoneInvert = this.tapZoneInvert

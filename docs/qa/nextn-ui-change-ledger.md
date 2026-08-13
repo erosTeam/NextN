@@ -3,6 +3,54 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Reader double-page layout preference — 2026-08-14
+
+- **Why newly actionable:** the current NextE Reader keeps the existing
+  double-page request separate from a local `Joined`/`Split` geometry choice.
+  NextN already renders a joined two-page surface but offers no durable way to
+  choose equal-width panes. The default must remain `Joined`, so existing
+  NextN reader presentation is unchanged until the user explicitly selects
+  `Split`.
+- **Whole reference tree:** `ReaderSettingsPage → Layout
+  GroupedListSection → double-page switch → double-page-layout value menu →
+  page-turn-animation switch → ReadMode settings/state → ReaderPage →
+  ReaderSpreadSurface`. The reference uses the same paired pages and visual
+  order for both choices: joined sizes panes by their image ratios, while split
+  gives a two-page spread two equal-width full-height panes.
+- **Current NextN tree:** `SettingsPage(READER) → SecondaryListScaffold →
+  ReaderPresentationListItems → ReaderLayoutGroup`, shared unchanged by the
+  routed Settings page and Reader-owned sheet. Its `ReaderDoublePagedFlow →
+  ReaderSpreadSurface` already owns one transform/gesture surface around the
+  paired pages, but always uses ratio-sized joined geometry.
+- **Exact change boundary:** add the local default-joined preference through
+  `NhReaderPresentation → ReaderPresentationState →
+  ReaderSettingsRepository → ReaderPresentationService`; insert one
+  no-prefix, no-subtitle value row between `双页模式` and `翻页动画` in the
+  existing Layout group; and pass it only to `ReaderSpreadSurface`. `Split`
+  may affect a currently active two-page spread only: it uses two equal-width
+  full-height panes with the existing `ImageFit.Contain`; a final singleton
+  keeps its current one-page geometry. Changing between joined and split
+  resets that spread's existing local zoom/pan state rather than retaining an
+  offset calculated for a different frame. Split pan bounds follow the two
+  contained image extents rather than their letterboxed pane rectangles.
+- **Explicit exclusions:** do not change the existing double-page switch,
+  mode eligibility, wide-canvas fallback, `ReaderSpreadResolver`, fixed
+  `[0,1] [2,3]` pairing, RTL row order, source/display mapping, progress,
+  thumbnail, Slider, auto-read, volume keys, page-turn animation, prefetch,
+  caches, download, translation, enhancement, or Reader-sheet parent tree.
+  NextE's gallery-specific odd/even pairing and page-focused zoom/hit-testing
+  are known separate differences. In particular, NextN retains its current
+  whole-spread zoom and 50%-canvas double-tap target rule; this selector does
+  not claim to make those behaviors equivalent.
+- **Verification plan:** inspect the scoped diff and build the signed Debug
+  HAP. On a real wide Reader canvas, verify the row appears in both existing
+  Settings entry points; switch joined/split in LTR and RTL with differently
+  proportioned pages; verify source index/progress, visual order, final
+  singleton behavior, and cold-reopen persistence; then confirm a layout
+  change while zoomed resets only the current spread transform. A same-state,
+  same-viewport NextE capture remains required before any visual-parity claim;
+  no UI static contract is permitted.
+
 ## OPEN — Reader page-turn animation preference — 2026-08-14
 
 - **Why newly actionable:** the current NextE Reader has a default-on local

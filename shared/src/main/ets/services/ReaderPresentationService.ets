@@ -3,6 +3,7 @@ import {
   NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderPresentation,
+  NhReaderSpreadLayout,
   NhReaderSuperResolutionModel,
   READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT,
   READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES,
@@ -122,6 +123,17 @@ export class ReaderPresentationService {
     })
   }
 
+  static setSpreadLayout(
+    context: common.UIAbilityContext,
+    layout: NhReaderSpreadLayout,
+  ): Promise<NhReaderPresentation> {
+    return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
+      presentation.spreadLayoutMode = ReaderPresentationService.normalizeSpreadLayout(layout)
+    }, (presentation: NhReaderPresentation): Promise<void> => {
+      return ReaderSettingsRepository.saveSpreadLayout(context, presentation.spreadLayoutMode)
+    })
+  }
+
   static setPageTurnAnimation(context: common.UIAbilityContext, enabled: boolean): Promise<NhReaderPresentation> {
     return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
       presentation.pageTurnAnimation = enabled
@@ -211,6 +223,7 @@ export class ReaderPresentationService {
       number,
       boolean,
       boolean,
+      NhReaderSpreadLayout,
       boolean,
       NhReaderTapZoneLayout,
       NhReaderTapZoneInvert,
@@ -227,6 +240,7 @@ export class ReaderPresentationService {
       ReaderSettingsRepository.autoPageSeconds(context),
       ReaderSettingsRepository.volumeKeyTurn(context),
       ReaderSettingsRepository.doublePageEnabled(context),
+      ReaderSettingsRepository.spreadLayout(context),
       ReaderSettingsRepository.pageTurnAnimation(context),
       ReaderSettingsRepository.tapZoneLayout(context),
       ReaderSettingsRepository.tapZoneInvert(context),
@@ -244,12 +258,13 @@ export class ReaderPresentationService {
     presentation.autoPageSeconds = values[6]
     presentation.volumeKeyTurn = values[7]
     presentation.doublePageEnabled = values[8]
-    presentation.pageTurnAnimation = values[9]
-    presentation.tapZoneLayout = values[10]
-    presentation.tapZoneInvert = values[11]
-    presentation.superResolutionEnabled = values[12]
-    presentation.superResolutionModel = values[13]
-    presentation.superResolutionMaxHeight = values[14]
+    presentation.spreadLayoutMode = values[9]
+    presentation.pageTurnAnimation = values[10]
+    presentation.tapZoneLayout = values[11]
+    presentation.tapZoneInvert = values[12]
+    presentation.superResolutionEnabled = values[13]
+    presentation.superResolutionModel = values[14]
+    presentation.superResolutionMaxHeight = values[15]
     ReaderPresentationService.state().replace(presentation)
   }
 
@@ -289,6 +304,10 @@ export class ReaderPresentationService {
       return value
     }
     return NhReaderImageScalingQuality.MEDIUM
+  }
+
+  private static normalizeSpreadLayout(value: NhReaderSpreadLayout): NhReaderSpreadLayout {
+    return value === NhReaderSpreadLayout.SPLIT ? NhReaderSpreadLayout.SPLIT : NhReaderSpreadLayout.JOINED
   }
 
   private static normalizeAutoPageSeconds(value: number): number {

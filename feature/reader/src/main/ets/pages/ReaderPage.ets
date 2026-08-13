@@ -15,6 +15,7 @@ import {
   NhGalleryShareService,
   NhReaderImageScalingQuality,
   NhReaderMode,
+  NhReaderSpreadLayout,
   NhReaderSuperResolutionModel,
   NhReaderTapZoneAction,
   NhReaderTapZoneInvert,
@@ -904,6 +905,7 @@ struct ReaderSpreadSurface {
   @Param enhancementModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
   @Param enhancementMaxHeight: number = 2000
   @Param imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
+  @Param spreadLayoutMode: NhReaderSpreadLayout = NhReaderSpreadLayout.JOINED
   @Param rowReversed: boolean = false
   @Param doubleTapSequence: number = 0
   @Param doubleTapTargetIndex: number = -1
@@ -956,6 +958,12 @@ struct ReaderSpreadSurface {
     this.resetZoomForSpreadChange()
   }
 
+  /** A different frame invalidates the local pan extent; do not retain a stale transform. */
+  @Monitor('spreadLayoutMode')
+  onSpreadLayoutChanged(): void {
+    this.resetZoomForSpreadChange()
+  }
+
   private resetZoomForSpreadChange(): void {
     if (this.zoomAnimationTimer > 0) {
       clearTimeout(this.zoomAnimationTimer)
@@ -971,11 +979,7 @@ struct ReaderSpreadSurface {
       (this.second !== null && sourceIndex === this.second.sourceIndex)
   }
 
-  /**
-   * A two-page spread is one joined frame, not two equal half viewports.
-   * Page DTO dimensions are already loaded by the Reader; use their ratio to
-   * fit both leaves together inside the actual canvas.
-   */
+  /** Page DTO dimensions are already loaded by the Reader for joined geometry. */
   private pageAspect(item: ReaderPagedItem): number {
     if (item.page.width > 0 && item.page.height > 0) {
       const ratio: number = item.page.width / item.page.height
@@ -990,6 +994,11 @@ struct ReaderSpreadSurface {
     return this.pageAspect(this.first) + (this.second === null ? 0 : this.pageAspect(this.second))
   }
 
+  private usesJoinedLayout(): boolean {
+    // A terminal singleton keeps its established one-page fit and pan extent.
+    return this.second === null || this.spreadLayoutMode === NhReaderSpreadLayout.JOINED
+  }
+
   private joinedFrameHeight(): number {
     if (this.viewportWidth <= 0 || this.viewportHeight <= 0) {
       return 0
@@ -1001,20 +1010,67 @@ struct ReaderSpreadSurface {
     return Math.min(this.viewportHeight, this.viewportWidth / aspect)
   }
 
+  private spreadFrameHeight(): number {
+    return this.usesJoinedLayout() ? this.joinedFrameHeight() : this.viewportHeight
+  }
+
   private joinedFrameWidth(): number {
     return this.joinedFrameHeight() * this.joinedAspect()
   }
 
+  private spreadFrameWidth(): number {
+    return this.usesJoinedLayout() ? this.joinedFrameWidth() : this.viewportWidth
+  }
+
   private paneWidthFor(item: ReaderPagedItem): number {
-    return this.joinedFrameHeight() * this.pageAspect(item)
+    if (this.usesJoinedLayout()) {
+      return this.joinedFrameHeight() * this.pageAspect(item)
+    }
+    return this.second === null ? this.viewportWidth : this.viewportWidth / 2
+  }
+
+  /**
+   * Split panes retain their equal layout slots, but pan bounds must follow
+   * the contained images rather than the blank letterbox around them.
+   */
+  private splitContainedWidth(item: ReaderPagedItem): number {
+    const paneWidth: number = this.viewportWidth / 2
+    const paneHeight: number = this.viewportHeight
+    const aspect: number = this.pageAspect(item)
+    if (paneWidth <= 0 || paneHeight <= 0 || aspect <= 0) {
+      return 0
+    }
+    return Math.min(paneWidth, paneHeight * aspect)
+  }
+
+  private splitContainedHeight(item: ReaderPagedItem): number {
+    const paneWidth: number = this.viewportWidth / 2
+    const paneHeight: number = this.viewportHeight
+    const aspect: number = this.pageAspect(item)
+    if (paneWidth <= 0 || paneHeight <= 0 || aspect <= 0) {
+      return 0
+    }
+    return Math.min(paneHeight, paneWidth / aspect)
   }
 
   private fittedSpreadWidth(): number {
-    return this.joinedFrameWidth()
+    if (this.usesJoinedLayout()) {
+      return this.joinedFrameWidth()
+    }
+    const firstWidth: number = this.splitContainedWidth(this.first)
+    const secondWidth: number = this.second === null ? 0 : this.splitContainedWidth(this.second)
+    const total: number = firstWidth + secondWidth
+    return total > 0 ? total : this.viewportWidth
   }
 
   private fittedSpreadHeight(): number {
-    return this.joinedFrameHeight()
+    if (this.usesJoinedLayout()) {
+      return this.joinedFrameHeight()
+    }
+    const firstHeight: number = this.splitContainedHeight(this.first)
+    const secondHeight: number = this.second === null ? 0 : this.splitContainedHeight(this.second)
+    const maximum: number = Math.max(firstHeight, secondHeight)
+    return maximum > 0 ? maximum : this.viewportHeight
   }
 
   private clampZoomOffsetX(value: number): number {
@@ -1117,7 +1173,7 @@ struct ReaderSpreadSurface {
       this.SpreadImage(item, localImageUri, renderedImageUri)
     }
     .width(this.paneWidthFor(item))
-    .height(this.joinedFrameHeight())
+    .height(this.spreadFrameHeight())
   }
 
   @Builder
@@ -1131,8 +1187,8 @@ struct ReaderSpreadSurface {
         this.SpreadPane(this.second, this.secondLocalImageUri, this.secondRenderedImageUri)
       }
     }
-    .width(this.joinedFrameWidth())
-    .height(this.joinedFrameHeight())
+    .width(this.spreadFrameWidth())
+    .height(this.spreadFrameHeight())
     .scale({ x: this.zoomScale, y: this.zoomScale })
     .translate({ x: this.zoomOffsetX, y: this.zoomOffsetY })
     .animation({
@@ -3639,6 +3695,7 @@ export struct ReaderPage {
             enhancementModel: this.readerPresentation.superResolutionModel,
             enhancementMaxHeight: this.readerPresentation.superResolutionMaxHeight,
             imageScalingQuality: this.readerPresentation.imageScalingQuality,
+            spreadLayoutMode: this.readerPresentation.spreadLayoutMode,
             rowReversed: this.isRightToLeftPagedMode(),
             doubleTapSequence: this.doubleTapSequence,
             doubleTapTargetIndex: this.doubleTapTargetIndex,

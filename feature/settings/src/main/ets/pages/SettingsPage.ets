@@ -17,6 +17,7 @@ import {
   NhTagTranslationStatus,
   NhReaderImageScalingQuality,
   NhReaderMode,
+  NhReaderSpreadLayout,
   NhReaderSuperResolutionModel,
   READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES,
   NhReaderTapZoneInvert,
@@ -184,6 +185,7 @@ export struct SettingsPage {
   @Local browsePreferencesError: string = ''
   @Local searchPreferencesError: string = ''
   @Local readerModeMenuShown: boolean = false
+  @Local readerSpreadLayoutMenuShown: boolean = false
   @Local readerImageScalingQualityMenuShown: boolean = false
   @Local readerPreloadMenuShown: boolean = false
   @Local readerAutoPageMenuShown: boolean = false
@@ -1021,6 +1023,18 @@ export struct SettingsPage {
     return AppStrings.get('settings_reader_image_scaling_quality_optimized')
   }
 
+  private readerSpreadLayoutLabel(): string {
+    return this.readerPresentation.spreadLayoutMode === NhReaderSpreadLayout.SPLIT
+      ? AppStrings.get('settings_reader_spread_layout_split')
+      : AppStrings.get('settings_reader_spread_layout_joined')
+  }
+
+  /** Spreads exist only in the horizontal LTR/RTL Pager modes. */
+  private supportsReaderSpreadLayout(): boolean {
+    return this.readerPresentation.mode === NhReaderMode.PAGED ||
+      this.readerPresentation.mode === NhReaderMode.PAGED_RTL
+  }
+
   private readerModeIcon(mode: NhReaderMode): Resource {
     if (mode === NhReaderMode.PAGED_RTL) {
       return $r('sys.symbol.arrow_left_and_square')
@@ -1279,6 +1293,33 @@ export struct SettingsPage {
       this.ReaderImageScalingQualityMenuItem(NhReaderImageScalingQuality.LOW)
       this.ReaderImageScalingQualityMenuItem(NhReaderImageScalingQuality.MEDIUM)
       this.ReaderImageScalingQualityMenuItem(NhReaderImageScalingQuality.HIGH)
+    }
+  }
+
+  @Builder
+  private ReaderSpreadLayoutMenuItem(layout: NhReaderSpreadLayout) {
+    MenuItem({
+      content: this.readerSpreadLayoutLabelFor(layout),
+      symbolEndIcon: this.readerPresentation.spreadLayoutMode === layout
+        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+        : undefined,
+    }).onClick((): void => {
+      this.saveReaderSpreadLayout(layout)
+      this.readerSpreadLayoutMenuShown = false
+    })
+  }
+
+  private readerSpreadLayoutLabelFor(layout: NhReaderSpreadLayout): string {
+    return layout === NhReaderSpreadLayout.SPLIT
+      ? AppStrings.get('settings_reader_spread_layout_split')
+      : AppStrings.get('settings_reader_spread_layout_joined')
+  }
+
+  @Builder
+  private ReaderSpreadLayoutMenu() {
+    Menu() {
+      this.ReaderSpreadLayoutMenuItem(NhReaderSpreadLayout.JOINED)
+      this.ReaderSpreadLayoutMenuItem(NhReaderSpreadLayout.SPLIT)
     }
   }
 
@@ -1605,6 +1646,21 @@ export struct SettingsPage {
       await ReaderPresentationService.setDoublePageEnabled(this.context(), enabled)
     } catch (_error) {
       this.readerModeError = AppStrings.get('settings_reader_double_page_save_failed')
+    }
+  }
+
+  private async saveReaderSpreadLayout(layout: NhReaderSpreadLayout): Promise<void> {
+    if (!this.supportsReaderSpreadLayout()) {
+      return
+    }
+    if (this.readerPresentation.spreadLayoutMode === layout) {
+      return
+    }
+    this.readerModeError = ''
+    try {
+      await ReaderPresentationService.setSpreadLayout(this.context(), layout)
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_spread_layout_save_failed')
     }
   }
 
@@ -2234,6 +2290,28 @@ export struct SettingsPage {
           },
           onSwitchChange: (value: boolean): void => {
             this.saveReaderDoublePageEnabled(value)
+          },
+        })
+        this.RowDivider()
+        NextNListRow({
+          title: AppStrings.get('settings_reader_spread_layout'),
+          trailingText: this.readerSpreadLayoutLabel(),
+          trailingDropdown: true,
+          isEnabled: this.supportsReaderSpreadLayout(),
+          accessibilityLabel: AppStrings.format('settings_reader_spread_layout_a11y', [
+            this.readerSpreadLayoutLabel(),
+          ]),
+          onAction: (): void => {
+            if (!this.supportsReaderSpreadLayout()) {
+              return
+            }
+            this.readerSpreadLayoutMenuShown = true
+          },
+        })
+        .bindMenu(this.readerSpreadLayoutMenuShown, this.ReaderSpreadLayoutMenu, {
+          placement: Placement.BottomRight,
+          onDisappear: (): void => {
+            this.readerSpreadLayoutMenuShown = false
           },
         })
         this.RowDivider()

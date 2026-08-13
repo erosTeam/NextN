@@ -55,6 +55,7 @@ export {
   NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderPresentation,
+  NhReaderSpreadLayout,
   NhReaderSuperResolutionModel,
   READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT,
   READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES,
