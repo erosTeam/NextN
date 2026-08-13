@@ -2013,6 +2013,23 @@ authorize an edit, replace a device comparison, or define product completion.
   the Image-information leaf from it. The local evidence is retained under
   `.hvigor/outputs/reader-more-owner-20260812T2220/`; a future action needs a
   distinct platform event-delivery observation rather than another tap.
+- **Read-only source/history forensic boundary — 2026-08-14:** the latest
+  lifecycle-smoke Reader was foreground-confirmed native NextN, but one
+  literal system Back ended with a `com.ohos.sceneboard` root. Current source
+  maps a complete local close chain: `HdsNavDestination.onBackPressed →
+  Index.closeReaderDestination → ReaderOverlayNavigationState.close → private
+  stack pop → onWillHide/onDisAppear → finishClose`; neither that chain nor
+  Reader exposes an external Want or link launch. Cause is therefore not
+  established, and neither the previous destination-owner experiment nor a
+  new close-semantic change is authorized. Do not retry Back, canvas input, or
+  the Reader device route from this boundary. A future platform-level
+  observation would need to prove that its capture mechanism can represent the
+  relevant input/window transition before one bounded direct Reader route and
+  one literal Back could be considered. Unsupported categories, a failed
+  capture, or an absent record are inconclusive rather than evidence that Back
+  was not delivered, because the earlier app-HiLog route-marker channel was
+  itself rejected for missing markers. Retain this as OPEN until a distinct,
+  independently proven platform observation is available.
 
 ## FROZEN — Reader enhancement input-height preference UI
 
