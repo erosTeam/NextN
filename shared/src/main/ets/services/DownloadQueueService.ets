@@ -50,8 +50,59 @@ export class DownloadBatchResult {
 export class DownloadQueueService {
   private static restoreTask: Promise<void> | null = null
   private static restored: boolean = false
+  /**
+   * EntryAbility is the sole cold-start owner. This retains only whether its
+   * one durable restore failed, so a root tab never silently retries storage
+   * merely because it mounted after that failure.
+   */
+  private static bootstrapRestoreAttempted: boolean = false
+  private static bootstrapRestoreFailed: boolean = false
+  private static bootstrapRestorePending: boolean = false
+  private static bootstrapRestoreTask: Promise<void> | null = null
   private static activeGalleryIds: Set<number> = new Set<number>()
   private static executionTokens: Map<number, number> = new Map<number, number>()
+
+  /**
+   * Preserve the original startup rejection for EntryAbility diagnostics while
+   * publishing a non-sensitive result that retained pages can consume.
+   */
+  static restoreAtBootstrap(context: common.UIAbilityContext): Promise<void> {
+    const task: Promise<void> = DownloadQueueService.restoreAtBootstrapInternal(context)
+    DownloadQueueService.bootstrapRestoreTask = task
+    return task
+  }
+
+  private static async restoreAtBootstrapInternal(context: common.UIAbilityContext): Promise<void> {
+    DownloadQueueService.bootstrapRestoreAttempted = true
+    DownloadQueueService.bootstrapRestoreFailed = false
+    DownloadQueueService.bootstrapRestorePending = true
+    try {
+      await DownloadQueueService.restore(context)
+    } catch (error) {
+      DownloadQueueService.bootstrapRestoreFailed = true
+      throw error as Error
+    } finally {
+      DownloadQueueService.bootstrapRestorePending = false
+    }
+  }
+
+  static isRestored(): boolean {
+    return DownloadQueueService.restored
+  }
+
+  static hasFailedBootstrapRestore(): boolean {
+    return DownloadQueueService.bootstrapRestoreAttempted &&
+      DownloadQueueService.bootstrapRestoreFailed &&
+      !DownloadQueueService.restored
+  }
+
+  static isBootstrapRestorePending(): boolean {
+    return DownloadQueueService.bootstrapRestoreAttempted && DownloadQueueService.bootstrapRestorePending
+  }
+
+  static currentBootstrapRestoreTask(): Promise<void> | null {
+    return DownloadQueueService.bootstrapRestoreTask
+  }
 
   static async restore(context: common.UIAbilityContext): Promise<void> {
     await DownloadSettingsService.restore(context)

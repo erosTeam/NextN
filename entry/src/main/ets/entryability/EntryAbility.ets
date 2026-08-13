@@ -154,7 +154,10 @@ export default class EntryAbility extends UIAbility {
       LlmSourceProfileRepository.restore(this.context),
       // Resume only the durable, user-created private queue. Any process-killed
       // active task is restored as paused by the service before a user resumes it.
-      DownloadQueueService.restore(this.context),
+      // Keep the final startup outcome available to the retained Downloads
+      // tab. A failed bootstrap still rejects this Promise as before; the page
+      // merely must not turn its first appearance into a hidden second retry.
+      DownloadQueueService.restoreAtBootstrap(this.context),
     ]).finally((): void => {
       // Resolve the persisted Read-action alignment before the first Detail
       // destination can mount. Unsupported sensing falls back inside the

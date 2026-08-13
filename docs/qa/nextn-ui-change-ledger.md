@@ -1169,6 +1169,33 @@ authorize an edit, replace a device comparison, or define product completion.
   without altering reference data, so visual-reference acceptance and every
   configured translation result remain OPEN.
 
+## OPEN — Downloads startup-restore failure ownership — 2026-08-13
+
+- Why newly actionable: source mapping found that `EntryAbility` performs the
+  first durable queue restore, but its `Promise.all(...).finally(...)` still
+  mounts the root when that restore rejects. The first `DownloadQueuePage`
+  appearance then previously treated itself as uninitialized and invoked a
+  second durable restore. Commit `422b533` prevents further retries after a
+  page-owned failure, but does not cover this startup-owner-to-page handoff.
+- Parent-tree boundary: `EntryAbility -> retained HdsTabs ->
+  DownloadQueuePage -> existing PageLoadingState/PageErrorState or queue
+  List`. This correction does not change the tab, HDS chrome, list owner,
+  page-state tree, geometry, or any visible copy.
+- Exact correction: `DownloadQueueService` retains only non-sensitive
+  bootstrap attempted/pending/failed state while rethrowing the original
+  startup error. A page observes a pending startup task without invoking its
+  own restore, projects an already-restored queue, renders its existing
+  `LOAD_FAILED` state for a known startup failure without another storage
+  read, and retains its local bootstrap only where no startup result exists.
+  The existing error Retry remains the sole durable retry. After a successful
+  retry, this page resolves immediately; a later page appearance or recreated
+  page projects the restored queue instead of preserving the old bootstrap
+  error.
+- Minimality and risk: no queue records, task/file state, worker scheduling,
+  notification behavior, settings, or user-visible strings are changed. The
+  special local-storage failure transition has not been induced on a device;
+  source/build evidence alone must not be presented as runtime acceptance.
+
 ## OPEN — Private-download completion notifications
 
 - User outcome: a user who explicitly enables it can receive one system

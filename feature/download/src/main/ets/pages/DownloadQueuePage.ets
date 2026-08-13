@@ -160,9 +160,10 @@ export struct DownloadQueuePage {
   @Local private pinnedGroupHeader: DownloadPinnedGroupHeaderState = connectDownloadPinnedGroupHeader()
   /**
    * EntryAbility restores the durable queue before the root tabs mount. The
-   * page still needs one local bootstrap in case that startup work is not
-   * settled yet, but a retained Downloads tab must never turn reappearance
-   * into another restore/loading cycle.
+   * page keeps a fallback only when no startup result exists. It observes an
+   * in-flight startup restore without becoming a second storage owner. A
+   * known startup failure remains in the existing error state until the user
+   * explicitly retries it; mounting or re-entering this tab never retries.
    */
   private queueBootstrapResolved: boolean = false
   private queueBootstrapInFlight: boolean = false
@@ -199,11 +200,27 @@ export struct DownloadQueuePage {
   onQueueChanged(): void {
     // Queue changes already have a durable publisher. A retained page only
     // needs to rebuild its local projection; it must not re-read storage.
+    if (!this.queueBootstrapResolved && DownloadQueueService.isRestored()) {
+      this.adoptRestoredQueue()
+      return
+    }
     this.projectQueueSnapshot()
   }
 
   private ensureQueueForAppearance(): void {
+    if (!this.queueBootstrapResolved && DownloadQueueService.isRestored()) {
+      this.adoptRestoredQueue()
+      return
+    }
     if (!this.queueBootstrapAttempted) {
+      if (DownloadQueueService.isBootstrapRestorePending()) {
+        this.observeBootstrapRestore()
+        return
+      }
+      if (DownloadQueueService.hasFailedBootstrapRestore()) {
+        this.adoptFailedBootstrapRestore()
+        return
+      }
       this.bootstrapQueue()
       return
     }
@@ -214,6 +231,58 @@ export struct DownloadQueuePage {
     // aboutToDisappear clears the HDS mirror. Re-arm the existing geometry
     // sync without rebuilding cards or changing the ListItemGroup indexes.
     this.schedulePinnedGroupSync()
+  }
+
+  private observeBootstrapRestore(): void {
+    if (this.queueBootstrapAttempted || this.queueBootstrapInFlight) {
+      return
+    }
+    const task: Promise<void> | null = DownloadQueueService.currentBootstrapRestoreTask()
+    if (task === null) {
+      this.bootstrapQueue()
+      return
+    }
+    const generation: number = this.queueBootstrapGeneration + 1
+    this.queueBootstrapGeneration = generation
+    this.queueBootstrapAttempted = true
+    this.queueBootstrapInFlight = true
+    this.isLoading = this.tasks.length === 0
+    this.errorMessage = ''
+    task.then(
+      (): void => {
+        if (generation !== this.queueBootstrapGeneration) {
+          return
+        }
+        if (DownloadQueueService.isRestored()) {
+          this.adoptRestoredQueue()
+          return
+        }
+        this.adoptFailedBootstrapRestore()
+      },
+      (): void => {
+        if (generation === this.queueBootstrapGeneration) {
+          this.adoptFailedBootstrapRestore()
+        }
+      },
+    )
+  }
+
+  private adoptRestoredQueue(): void {
+    this.queueBootstrapAttempted = true
+    this.queueBootstrapResolved = true
+    this.queueBootstrapInFlight = false
+    this.isLoading = false
+    this.errorMessage = ''
+    this.projectQueueSnapshot()
+  }
+
+  private adoptFailedBootstrapRestore(): void {
+    this.queueBootstrapAttempted = true
+    this.queueBootstrapResolved = false
+    this.queueBootstrapInFlight = false
+    this.isLoading = false
+    this.resolvedQueueRevision = -1
+    this.errorMessage = this.queueErrorMessage(DownloadQueueUiErrorCode.LOAD_FAILED)
   }
 
   private reconcileQueueProjection(): void {
