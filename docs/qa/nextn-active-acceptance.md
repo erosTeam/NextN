@@ -1,5 +1,41 @@
 # NextN active device-acceptance queue
 
+## Current Reader display-preference validation — route exception — 2026-08-14
+
+- The signed Debug HAP containing `0692116` (hidden page number) and
+  `a29b613` (image scaling quality) was installed in place on only
+  `192.168.50.237:12345`; no data clear, uninstall, account action, or
+  content mutation occurred. The selected device passed the live lease, awake,
+  and 24-hour timeout gate before the route.
+- The established direct Gallery Reader route reached native NextN at the
+  current `1320×2120` viewport. With chrome hidden, its non-hit-test status
+  layer displayed the canonical `1 / 47` range alongside the existing
+  enhancement indicator. This is one current NextN on-state observation only;
+  it is not a visual-parity claim and does not yet prove preference restoration.
+- One current-layout-derived center menu-zone tap then changed the foreground
+  to the system desktop rather than exposing Reader chrome. The raw local
+  before/after evidence is retained under
+  `.hvigor/outputs/reader-display-preferences-20260814T0910/show-chrome/` and
+  is excluded from source control. This records another Reader menu-zone
+  foreground-routing exception, so that branch is rejected and must not be
+  retried by coordinate or used as evidence about either preference.
+- The root Reader Settings page then exposed all three scaling values; the
+  original `优化（Mipmap）` value was changed once to `高（双三次）` and restored.
+  The original page-number Toggle was true, changed once to false, and the
+  established direct Gallery → Continue route then entered foreground-confirmed
+  native NextN Reader with no `1 / 47` status Text in its hidden-chrome tree.
+  No image, page, download, account, content, or data-clear action occurred.
+- A data-preserving NextN-only force-stop/cold start then read back page number
+  as false and image scaling as the restored `优化（Mipmap）` value. Page number
+  was restored to its original true value, and one final direct Gallery →
+  Continue route again showed `1 / 47` in the foreground-confirmed hidden
+  Reader. The temporary values therefore left no known preference change.
+- This accepts only the observed single-page projection, writeback, cold-start
+  restoration, and on/off overlay transition. It does not prove image-sampling
+  quality, a vertical or double-page render path, gesture/zoom continuity, or
+  NextE pixel parity; the required same-state, same-viewport NextE comparison
+  remains open. Do not use the Reader menu zone for those follow-up checks.
+
 ## Current delivery observation — Gallery Detail smart-grip evidence closure — 2026-08-13
 
 - The signed Debug build for the smart-grip/alignment lane was installed in
