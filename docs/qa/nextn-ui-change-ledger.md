@@ -1321,6 +1321,24 @@ authorize an edit, replace a device comparison, or define product completion.
   `auto` fallback. This changes no visible layout or copy. Build and exact
   diff review are the source boundary; an enabled Reader translation remains
   EVIDENCE-ONLY until a real configured source produces an output.
+- **Source-only API-key identity correction — 2026-08-14:** replacing an
+  OpenAI-compatible key previously wrote the HUKS value first while leaving
+  the profile request identity unchanged. The comment cache, comic document/
+  rendered cache, and process-local comic translator all key from the existing
+  source revision, so a replacement could reuse old output and an in-memory
+  translator that still held the old key. Keep the source form, consumer
+  bindings, Reader canvas, comments UI, cache owners, and all diagnostics
+  unchanged. Store only the SHA-256 of the vault-canonical key in the existing
+  non-secret `accountIdentityHash` field before writing the replacement key;
+  the existing repository then advances source revision. The resolver must
+  re-resolve the binding after its vault read and reject a changed resolution
+  or a key/hash mismatch. Thus a metadata-first interruption is fail-closed,
+  while a completed replacement has a new revision and cannot address an old
+  comment/comic cache or translator. Legacy empty hashes remain usable only
+  for existing pre-identity records; a new typed key always records a hash.
+  This changes no visible layout or copy. Exact diff review and a signed build
+  are the source boundary; a real configured key replacement remains
+  EVIDENCE-ONLY because no private source is configured on the selected device.
 - **Source-only self-hosted identity correction — 2026-08-13:** the optional
   manga-rendering-service route previously keyed its long-lived orchestrator
   only by fixed protocol/profile plus the text source. Changing the selected

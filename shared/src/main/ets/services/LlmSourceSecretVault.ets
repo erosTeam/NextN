@@ -62,6 +62,26 @@ export class LlmSourceSecretVault {
     })
   }
 
+  /**
+   * A non-secret source identity for cache invalidation. The API key itself
+   * remains only inside this vault and request-local runtime configs.
+   */
+  static apiKeyIdentityHash(apiKey: string): string {
+    const canonical: string = LlmSourceSecretVault.apiKey(apiKey)
+    const digest = cryptoFramework.createMd('SHA256')
+    digest.updateSync({ data: new util.TextEncoder().encodeInto(canonical) })
+    return LlmSourceSecretVault.hex(digest.digestSync().data)
+  }
+
+  /** Empty hashes are retained only for pre-identity legacy source records. */
+  static apiKeyMatchesIdentity(apiKey: string, identityHash: string): boolean {
+    if (identityHash.length === 0) {
+      return true
+    }
+    return /^[a-f0-9]{64}$/.test(identityHash) &&
+      LlmSourceSecretVault.apiKeyIdentityHash(apiKey) === identityHash
+  }
+
   static removeApiKey(
     context: common.UIAbilityContext,
     sourceProfileId: string,
@@ -181,6 +201,14 @@ export class LlmSourceSecretVault {
       }
     }
     return canonical
+  }
+
+  private static hex(bytes: Uint8Array): string {
+    const output: string[] = []
+    for (let index: number = 0; index < bytes.length; index++) {
+      output.push(bytes[index].toString(16).padStart(2, '0'))
+    }
+    return output.join('')
   }
 
   private static async encrypt(plaintext: string): Promise<LlmSecretEnvelope> {

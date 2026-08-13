@@ -93,6 +93,55 @@ export class LlmSourceProfileRepository {
   }
 
   /**
+   * Persists the one supported OpenAI-compatible source and both consumer
+   * bindings as one metadata snapshot. A replacement key is deliberately
+   * written only after the new non-secret identity has been published: a
+   * crash or vault failure can then only leave this source fail-closed.
+   */
+  static saveConfiguredOpenAiSource(
+    context: common.UIAbilityContext,
+    candidate: LlmSourceProfile,
+    replacementApiKey: string,
+    mangaBinding: LlmConsumerBinding,
+    commentBinding: LlmConsumerBinding,
+  ): Promise<void> {
+    const isolated: LlmSourceProfile = candidate.copy()
+    const nextMangaBinding: LlmConsumerBinding = mangaBinding.copy()
+    const nextCommentBinding: LlmConsumerBinding = commentBinding.copy()
+    const hasReplacement: boolean = replacementApiKey.trim().length > 0
+    if (hasReplacement) {
+      isolated.accountIdentityHash = LlmSourceSecretVault.apiKeyIdentityHash(replacementApiKey)
+    }
+    return LlmSourceProfileRepository.enqueue(async (): Promise<void> => {
+      const store: preferences.Preferences =
+        await preferences.getPreferences(context, LLM_SOURCE_STORE)
+      const profiles: LlmSourceProfile[] = LlmSourceProfileRepository.readProfiles(store)
+      const index: number = LlmSourceProfileRepository.indexOf(profiles, isolated.sourceProfileId)
+      const existing: LlmSourceProfile | null = index < 0 ? null : profiles[index]
+      const next: LlmSourceProfile = LlmSourceProfileRepository.prepareForUpsert(
+        existing,
+        isolated,
+        Date.now(),
+      )
+      if (index < 0) {
+        profiles.push(next)
+      } else {
+        profiles[index] = next
+      }
+      LlmSourceProfileRepository.validateBindingForProfiles(profiles, nextMangaBinding)
+      LlmSourceProfileRepository.validateBindingForProfiles(profiles, nextCommentBinding)
+      store.putSync(LLM_SOURCE_PROFILES_KEY, LlmSourceProfileCodec.encode(profiles))
+      LlmSourceProfileRepository.writeBinding(store, nextMangaBinding)
+      LlmSourceProfileRepository.writeBinding(store, nextCommentBinding)
+      store.flushSync()
+      LlmSourceProfileRepository.applyState(profiles, nextCommentBinding, nextMangaBinding)
+      if (hasReplacement) {
+        await LlmSourceSecretVault.saveApiKey(context, next.sourceProfileId, replacementApiKey)
+      }
+    })
+  }
+
+  /**
    * Bindings intentionally survive removal and resolve as unconfigured until
    * their owning caller explicitly selects a replacement source.
    */
@@ -136,23 +185,12 @@ export class LlmSourceProfileRepository {
     candidate: LlmConsumerBinding,
   ): Promise<void> {
     const binding: LlmConsumerBinding = candidate.copy()
-    LlmSourceProfileContract.validateBinding(binding)
     return LlmSourceProfileRepository.enqueue(async (): Promise<void> => {
       const store: preferences.Preferences =
         await preferences.getPreferences(context, LLM_SOURCE_STORE)
       const profiles: LlmSourceProfile[] = LlmSourceProfileRepository.readProfiles(store)
-      if (binding.configured() &&
-        LlmSourceProfileRepository.indexOf(profiles, binding.sourceProfileId) < 0) {
-        throw new Error('LLM source binding references a missing profile')
-      }
-      const keys: string[] = LlmSourceProfileRepository.bindingKeys(binding.consumerId)
-      if (binding.configured()) {
-        store.putSync(keys[0], binding.sourceProfileId)
-        store.putSync(keys[1], binding.modelId)
-      } else {
-        store.deleteSync(keys[0])
-        store.deleteSync(keys[1])
-      }
+      LlmSourceProfileRepository.validateBindingForProfiles(profiles, binding)
+      LlmSourceProfileRepository.writeBinding(store, binding)
       store.flushSync()
       LlmSourceProfileRepository.applyBinding(binding)
     })
@@ -272,6 +310,28 @@ export class LlmSourceProfileRepository {
       return [MANGA_SOURCE_KEY, MANGA_MODEL_KEY]
     }
     throw new Error('Unknown LLM consumer')
+  }
+
+  private static validateBindingForProfiles(
+    profiles: LlmSourceProfile[],
+    binding: LlmConsumerBinding,
+  ): void {
+    LlmSourceProfileContract.validateBinding(binding)
+    if (binding.configured() &&
+      LlmSourceProfileRepository.indexOf(profiles, binding.sourceProfileId) < 0) {
+      throw new Error('LLM source binding references a missing profile')
+    }
+  }
+
+  private static writeBinding(store: preferences.Preferences, binding: LlmConsumerBinding): void {
+    const keys: string[] = LlmSourceProfileRepository.bindingKeys(binding.consumerId)
+    if (binding.configured()) {
+      store.putSync(keys[0], binding.sourceProfileId)
+      store.putSync(keys[1], binding.modelId)
+      return
+    }
+    store.deleteSync(keys[0])
+    store.deleteSync(keys[1])
   }
 
   private static indexOf(profiles: LlmSourceProfile[], sourceProfileId: string): number {

@@ -100,14 +100,7 @@ export struct ComicTranslationSourcePage {
       this.modelIdDraft = ''
     }
     if (existing !== null) {
-      try {
-        this.apiKeyStored = (await LlmSourceSecretVault.readApiKey(
-          this.context(),
-          existing.sourceProfileId,
-        )).length > 0
-      } catch (_error) {
-        this.apiKeyStored = false
-      }
+      this.apiKeyStored = await this.hasMatchingStoredApiKey(existing)
     } else {
       this.apiKeyStored = false
     }
@@ -116,6 +109,19 @@ export struct ComicTranslationSourcePage {
 
   private normalizedBaseUrl(): string {
     return this.baseUrlDraft.trim().replace(/\/+$/, '')
+  }
+
+  private async hasMatchingStoredApiKey(profile: LlmSourceProfile): Promise<boolean> {
+    try {
+      const apiKey: string = await LlmSourceSecretVault.readApiKey(
+        this.context(),
+        profile.sourceProfileId,
+      )
+      return apiKey.length > 0 &&
+        LlmSourceSecretVault.apiKeyMatchesIdentity(apiKey, profile.accountIdentityHash)
+    } catch (_error) {
+      return false
+    }
   }
 
   private async refreshLocalModel(): Promise<void> {
@@ -253,24 +259,22 @@ export struct ComicTranslationSourcePage {
     try {
       const profile: LlmSourceProfile = this.profileCandidate()
       const apiKey: string = this.apiKeyDraft.trim()
-      // Saving a replacement key first can at worst leave an unreachable HUKS
-      // value if metadata persistence fails; it cannot publish a source whose
-      // selected secret was never written.
-      if (apiKey.length > 0) {
-        await LlmSourceSecretVault.saveApiKey(this.context(), profile.sourceProfileId, apiKey)
-      }
-      await LlmSourceProfileRepository.upsert(this.context(), profile)
-      await LlmSourceProfileRepository.saveBinding(
+      await LlmSourceProfileRepository.saveConfiguredOpenAiSource(
         this.context(),
+        profile,
+        apiKey,
         this.binding(LLM_CONSUMER_MANGA_TRANSLATION, this.useMangaTranslation),
-      )
-      await LlmSourceProfileRepository.saveBinding(
-        this.context(),
         this.binding(LLM_CONSUMER_COMMENT_TRANSLATION, this.useCommentTranslation),
       )
       this.apiKeyDraft = ''
       this.apiKeyStored = true
     } catch (_error) {
+      const current: LlmSourceProfile | null = this.sources.findById(this.sourceProfileId)
+      if (current === null) {
+        this.apiKeyStored = false
+      } else {
+        this.apiKeyStored = await this.hasMatchingStoredApiKey(current)
+      }
       this.errorMessage = AppStrings.get('settings_translation_source_save_failed')
     } finally {
       this.saving = false

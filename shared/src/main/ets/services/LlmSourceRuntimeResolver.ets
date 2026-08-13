@@ -39,31 +39,22 @@ export class LlmSourceRuntimeResolver {
   static async resolveComment(
     context: common.UIAbilityContext,
   ): Promise<LlmSourceRuntimeConfig> {
-    const config: LlmSourceRuntimeConfig = await LlmSourceRuntimeResolver.resolveConsumer(
+    return LlmSourceRuntimeResolver.resolveConsumer(
       context,
       LLM_CONSUMER_COMMENT_TRANSLATION,
+      (profile: LlmSourceProfile): boolean => supportsCommentTranslation(profile),
     )
-    if (!supportsCommentTranslation(LlmSourceRuntimeResolver.profile(config.sourceProfileId))) {
-      throw new Error('Selected LLM source does not support comment translation')
-    }
-    return config
   }
 
   static async resolveManga(
     context: common.UIAbilityContext,
     requireImageInput: boolean = true,
   ): Promise<LlmSourceRuntimeConfig> {
-    const config: LlmSourceRuntimeConfig = await LlmSourceRuntimeResolver.resolveConsumer(
+    return LlmSourceRuntimeResolver.resolveConsumer(
       context,
       LLM_CONSUMER_MANGA_TRANSLATION,
+      (profile: LlmSourceProfile): boolean => supportsMangaTranslation(profile, requireImageInput),
     )
-    if (!supportsMangaTranslation(
-      LlmSourceRuntimeResolver.profile(config.sourceProfileId),
-      requireImageInput,
-    )) {
-      throw new Error('Selected LLM source does not support manga translation')
-    }
-    return config
   }
 
   static profile(sourceProfileId: string): LlmSourceProfile {
@@ -79,30 +70,59 @@ export class LlmSourceRuntimeResolver {
   private static async resolveConsumer(
     context: common.UIAbilityContext,
     consumerId: string,
+    supports: (profile: LlmSourceProfile) => boolean,
   ): Promise<LlmSourceRuntimeConfig> {
+    const resolution: LlmSourceResolution = LlmSourceRuntimeResolver.currentResolution(consumerId)
+    if (!supports(resolution.profile)) {
+      throw new Error('Selected LLM source does not support this translation')
+    }
+    const apiKey: string = await LlmSourceSecretVault.readApiKey(
+      context,
+      resolution.profile.sourceProfileId,
+    )
+    if (apiKey.length === 0) {
+      throw new Error('Selected LLM source API key is missing')
+    }
+    const current: LlmSourceResolution = LlmSourceRuntimeResolver.currentResolution(consumerId)
+    if (!LlmSourceRuntimeResolver.sameResolution(resolution, current)) {
+      throw new Error('Selected LLM source changed while resolving')
+    }
+    if (!supports(current.profile)) {
+      throw new Error('Selected LLM source does not support this translation')
+    }
+    if (!LlmSourceSecretVault.apiKeyMatchesIdentity(apiKey, current.profile.accountIdentityHash)) {
+      throw new Error('Selected LLM source API key does not match its stored identity')
+    }
+    return LlmSourceRuntimeResolver.runtimeConfig(current.profile, current.modelId, apiKey)
+  }
+
+  private static currentResolution(consumerId: string): LlmSourceResolution {
     const profiles: LlmSourceProfile[] = LlmSourceProfileRepository.currentProfiles()
     const binding: LlmConsumerBinding = LlmSourceProfileRepository.currentBinding(consumerId)
-    const resolution: LlmSourceResolution | null = LlmSourceProfileRepository.resolve(
-      profiles,
-      binding,
-    )
+    const resolution: LlmSourceResolution | null = LlmSourceProfileRepository.resolve(profiles, binding)
     if (resolution === null) {
       throw new Error('LLM source is not configured')
     }
-    return LlmSourceRuntimeResolver.runtimeConfig(context, resolution.profile, resolution.modelId)
+    return resolution
   }
 
-  private static async runtimeConfig(
-    context: common.UIAbilityContext,
+  private static sameResolution(
+    first: LlmSourceResolution,
+    second: LlmSourceResolution,
+  ): boolean {
+    return first.profile.sourceProfileId === second.profile.sourceProfileId &&
+      first.profile.sourceRevision === second.profile.sourceRevision &&
+      first.profile.requestIdentity() === second.profile.requestIdentity() &&
+      first.modelId === second.modelId
+  }
+
+  private static runtimeConfig(
     profile: LlmSourceProfile,
     modelId: string,
-  ): Promise<LlmSourceRuntimeConfig> {
+    apiKey: string,
+  ): LlmSourceRuntimeConfig {
     if (profile.sourceType !== LLM_SOURCE_TYPE_OPENAI_COMPATIBLE) {
       throw new Error('Selected LLM source type is not available')
-    }
-    const apiKey: string = await LlmSourceSecretVault.readApiKey(context, profile.sourceProfileId)
-    if (apiKey.length === 0) {
-      throw new Error('Selected LLM source API key is missing')
     }
     const config: LlmSourceRuntimeConfig = new LlmSourceRuntimeConfig()
     config.sourceProfileId = profile.sourceProfileId
