@@ -1638,6 +1638,8 @@ export struct ReaderPage {
   private readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
   private lastPersistedIndex: number = -1
   private requestGeneration: number = 0
+  /** Prevent an async settings restore from publishing window policy after this route leaves. */
+  private readerLifecycleGeneration: number = 0
   private windowPolicyGeneration: number = 0
   private verticalReaderScroller: Scroller = new Scroller()
   private pagedReaderController: SwiperController = new SwiperController()
@@ -1663,10 +1665,15 @@ export struct ReaderPage {
   private readerEnhancementInteractionActive: boolean = false
 
   aboutToAppear(): void {
-    this.loadReaderSettings()
+    const generation: number = this.readerLifecycleGeneration + 1
+    this.readerLifecycleGeneration = generation
+    this.readerPresentationReady = false
+    this.loadReaderSettings(generation)
   }
 
   aboutToDisappear(): void {
+    this.readerLifecycleGeneration += 1
+    this.readerPresentationReady = false
     this.resetReaderEnhancementInteractionPause()
     this.resetReaderTranslationAutoSession()
     this.stopAutoRead()
@@ -1886,12 +1893,15 @@ export struct ReaderPage {
     this.applyReaderSpreadPresentation()
   }
 
-  private async loadReaderSettings(): Promise<void> {
+  private async loadReaderSettings(generation: number): Promise<void> {
     try {
       await ReaderPresentationService.restore(this.context())
     } catch (_error) {
       // The shared state deliberately retains its local defaults if durable
       // restoration is temporarily unavailable; Reader remains usable.
+    }
+    if (generation !== this.readerLifecycleGeneration) {
+      return
     }
     this.readerEnhancementEnabled = this.readerPresentation.superResolutionEnabled
     this.readerPresentationReady = true

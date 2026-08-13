@@ -5,6 +5,22 @@ authorize an edit, replace a device comparison, or define product completion.
 
 ## OPEN — Reader background preference — 2026-08-14
 
+- **Lifecycle-correction boundary — 2026-08-14:** the initial implementation
+  allowed an asynchronously restored Reader presentation to reach `Index`
+  before its private Reader destination was shown, then unconditionally
+  overwrote that state with the default dark/fullscreen policy. A late Reader
+  callback during route close could likewise enqueue a status-bar request
+  after the host had restored the app policy; an already-disappeared Reader
+  could finish restoring and re-enable its keep-screen-on policy. Retain the
+  same Reader/Index ownership and all visible UI. Cache only the latest child
+  presentation while the host is not yet shown, replay it once the destination
+  is visible, ignore child presentation after close begins, and give the
+  Reader's async settings restore a route-lifetime generation. This does not
+  change settings values, canvas palette, Chrome, system-bar API ownership,
+  route structure, gestures, or copy. Source review and a signed build are
+  static verification checkpoints only; the existing device observations do
+  not prove this lifecycle race or its correction, which remains OPEN for a
+  safe future runtime observation.
 - **Why newly actionable:** current NextE has a local Reader background mode
   (`Black`, `Gray`, `White`, `Automatic`) as the first leaf of its existing
   Display group. NextN currently hard-codes one Reader canvas color and has

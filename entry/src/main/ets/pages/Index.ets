@@ -305,6 +305,14 @@ struct Index {
   @Local private galleryChromeVersion: number = 0
   private readerDestinationVisible: boolean = false
   private readerDestinationClosing: boolean = false
+  /** Route identity keeps a late closing Reader callback from becoming the next Reader's pending state. */
+  private readerDestinationRouteEpoch: number = 0
+  /** Reader settings can restore before this HDS destination reaches onShown. */
+  private readerPresentationPending: boolean = false
+  private readerPresentationRouteEpoch: number = 0
+  private readerPresentationChromeVisible: boolean = false
+  private readerPresentationFullscreen: boolean = true
+  private readerPresentationCanvasDark: boolean = true
   private readerSystemBarGeneration: number = 0
   private readerSystemBarWork: Promise<void> = Promise.resolve()
   private lastHandledClipboardCandidateRevision: number = 0
@@ -699,16 +707,50 @@ struct Index {
     return this.requestReaderStatusBar(true, !this.appUsesDarkIcons())
   }
 
-  private applyReaderPresentation(
+  /**
+   * Reader owns its restored presentation state, while Index alone owns Window
+   * calls. Retain a pre-onShown state and replay it once the destination is
+   * actually visible instead of replacing it with a default.
+   */
+  private recordReaderPresentation(
+    routeEpoch: number,
     chromeVisible: boolean,
     fullscreen: boolean,
     canvasDark: boolean = true,
   ): void {
+    if (this.readerDestinationClosing && routeEpoch === this.readerDestinationRouteEpoch) {
+      return
+    }
+    if (this.readerDestinationVisible && routeEpoch !== this.readerDestinationRouteEpoch) {
+      return
+    }
+    this.readerPresentationPending = true
+    this.readerPresentationRouteEpoch = routeEpoch
+    this.readerPresentationChromeVisible = chromeVisible
+    this.readerPresentationFullscreen = fullscreen
+    this.readerPresentationCanvasDark = canvasDark
     if (!this.readerDestinationVisible) {
       return
     }
-    const visible: boolean = !fullscreen || chromeVisible
-    this.requestReaderStatusBar(visible, chromeVisible || canvasDark)
+    this.applyRecordedReaderPresentation()
+  }
+
+  private applyRecordedReaderPresentation(): void {
+    if (!this.readerPresentationPending ||
+      this.readerPresentationRouteEpoch !== this.readerDestinationRouteEpoch ||
+      !this.readerDestinationVisible || this.readerDestinationClosing) {
+      return
+    }
+    const visible: boolean = !this.readerPresentationFullscreen || this.readerPresentationChromeVisible
+    this.requestReaderStatusBar(visible, this.readerPresentationChromeVisible || this.readerPresentationCanvasDark)
+  }
+
+  private clearRecordedReaderPresentation(): void {
+    this.readerPresentationPending = false
+    this.readerPresentationRouteEpoch = 0
+    this.readerPresentationChromeVisible = false
+    this.readerPresentationFullscreen = true
+    this.readerPresentationCanvasDark = true
   }
 
   private closeReaderDestination(): void {
@@ -716,6 +758,7 @@ struct Index {
       return
     }
     this.readerDestinationClosing = true
+    this.clearRecordedReaderPresentation()
     this.restoreAppStatusBar().then((): void => {
       if (this.readerDestinationClosing) {
         this.readerOverlay.close()
@@ -1464,7 +1507,12 @@ struct Index {
           this.closeReaderDestination()
         },
         onReaderPresentationChanged: (chromeVisible: boolean, fullscreen: boolean, canvasDark: boolean): void => {
-          this.applyReaderPresentation(chromeVisible, fullscreen, canvasDark)
+          this.recordReaderPresentation(
+            this.readerParams(param).routeEpoch,
+            chromeVisible,
+            fullscreen,
+            canvasDark,
+          )
         },
       })
     }
@@ -1476,19 +1524,26 @@ struct Index {
     .onShown((): void => {
       this.readerDestinationVisible = true
       this.readerDestinationClosing = false
-      // Reader restores its persisted preference asynchronously. Start from
-      // the documented NextE default so a slow local read cannot leave a
-      // transient system bar over an immersive canvas.
-      this.applyReaderPresentation(false, true, true)
+      this.readerDestinationRouteEpoch = this.readerParams(param).routeEpoch
+      if (this.readerPresentationPending &&
+        this.readerPresentationRouteEpoch === this.readerDestinationRouteEpoch) {
+        this.applyRecordedReaderPresentation()
+        return
+      }
+      this.clearRecordedReaderPresentation()
+      // Reader restores its persisted preference asynchronously. Use the
+      // documented default only until the current route publishes its state.
+      this.requestReaderStatusBar(false, true)
     })
     .onWillHide((): void => {
       this.readerDestinationVisible = false
-      if (!this.readerDestinationClosing) {
-        this.restoreAppStatusBar()
-      }
+      this.readerDestinationClosing = true
+      this.clearRecordedReaderPresentation()
+      this.restoreAppStatusBar()
     })
     .onDisAppear((): void => {
       this.readerDestinationVisible = false
+      this.clearRecordedReaderPresentation()
       this.readerOverlay.finishClose()
     })
   }
