@@ -1782,29 +1782,27 @@ export struct SettingsPage {
   }
 
   @Builder
-  private TagDictionaryGroup() {
-    NextNGroupedListSection() {
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.doc_plaintext'),
-        title: AppStrings.get('settings_tag_translation_local_title'),
-        subtitle: this.tagDictionarySubtitle(),
-        trailingText: this.tagDictionaryRowCount > 0
-          ? AppStrings.get('settings_tag_translation_ready')
-          : AppStrings.get('settings_tag_translation_optional'),
-        showChevron: false,
-      })
-      this.RowDivider()
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.arrow_clockwise'),
-        title: this.tagDictionaryActionLabel(),
-        showChevron: !this.isUpdatingTagDictionary,
-        isEnabled: !this.isUpdatingTagDictionary,
-        accessibilityLabel: AppStrings.get('settings_tag_translation_update_a11y'),
-        onAction: () => {
-          this.updateTagDictionary()
-        },
-      })
-    }
+  private TagDictionaryRows() {
+    NextNListRow({
+      leadingIcon: $r('sys.symbol.textformat'),
+      title: AppStrings.get('settings_tag_translation_local_title'),
+      subtitle: this.tagDictionarySubtitle(),
+      trailingText: this.tagDictionaryRowCount > 0
+        ? AppStrings.get('settings_tag_translation_ready')
+        : AppStrings.get('settings_tag_translation_optional'),
+      showChevron: false,
+    })
+    this.RowDivider()
+    NextNListRow({
+      leadingIcon: $r('sys.symbol.arrow_clockwise'),
+      title: this.tagDictionaryActionLabel(),
+      showChevron: !this.isUpdatingTagDictionary,
+      isEnabled: !this.isUpdatingTagDictionary,
+      accessibilityLabel: AppStrings.get('settings_tag_translation_update_a11y'),
+      onAction: () => {
+        this.updateTagDictionary()
+      },
+    })
   }
 
   @Builder
@@ -2285,23 +2283,6 @@ export struct SettingsPage {
     }
   }
 
-  /** Reader translation setup is a normal settings destination, not Reader-sheet chrome. */
-  @Builder
-  private ReaderComicTranslationGroup() {
-    NextNGroupedListSection() {
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.translate'),
-        title: AppStrings.get('settings_reader_comic_translation'),
-        accessibilityLabel: AppStrings.get('settings_reader_comic_translation_a11y'),
-        onAction: (): void => {
-          if (this.onOpenTranslationSource) {
-            this.onOpenTranslationSource(LLM_CONSUMER_MANGA_TRANSLATION)
-          }
-        },
-      })
-    }
-  }
-
   /** Shared content for the routed Settings surface and the Reader-owned sheet. */
   @Builder
   private ReaderPresentationListItems() {
@@ -2322,11 +2303,6 @@ export struct SettingsPage {
     }
     ListItem() {
       this.ReaderLoadingGroup()
-    }
-    if (!this.sheetPresentation && this.onOpenTranslationSource) {
-      ListItem() {
-        this.ReaderComicTranslationGroup()
-      }
     }
     if (this.readerModeError.length > 0) {
       ListItem() {
@@ -3118,9 +3094,9 @@ export struct SettingsPage {
     }
   }
 
-  /** Comment translation uses the same private source form, not a Comments-page control. */
+  /** Translation capabilities share one reference-owned Advanced Settings surface. */
   @Builder
-  private CommentTranslationGroup() {
+  private TranslationCapabilitiesGroup() {
     NextNGroupedListSection() {
       NextNListRow({
         leadingIcon: $r('sys.symbol.translate'),
@@ -3130,6 +3106,30 @@ export struct SettingsPage {
         onAction: (): void => {
           if (this.onOpenTranslationSource) {
             this.onOpenTranslationSource(LLM_CONSUMER_COMMENT_TRANSLATION)
+          }
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.picture'),
+        title: AppStrings.get('settings_reader_comic_translation'),
+        subtitle: AppStrings.get('settings_reader_comic_translation_hint'),
+        accessibilityLabel: AppStrings.get('settings_reader_comic_translation_a11y'),
+        onAction: (): void => {
+          if (this.onOpenTranslationSource) {
+            this.onOpenTranslationSource(LLM_CONSUMER_MANGA_TRANSLATION)
+          }
+        },
+      })
+      this.RowDivider()
+      this.TagDictionaryRows()
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.cloud'),
+        title: AppStrings.get('settings_translation_source'),
+        onAction: (): void => {
+          if (this.onOpenTranslationSource) {
+            this.onOpenTranslationSource(LLM_CONSUMER_MANGA_TRANSLATION)
           }
         },
       })
@@ -3228,10 +3228,7 @@ export struct SettingsPage {
             this.ClipboardLinkGroup()
           }
           ListItem() {
-            this.CommentTranslationGroup()
-          }
-          ListItem() {
-            this.TagDictionaryGroup()
+            this.TranslationCapabilitiesGroup()
           }
           if (this.tagDictionaryError.length > 0) {
             ListItem() {

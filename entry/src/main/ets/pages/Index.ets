@@ -1614,9 +1614,6 @@ struct Index {
         onOpenReaderEnhancementModels: (): void => {
           this.pushReaderSuperResolutionModels()
         },
-        onOpenTranslationSource: (consumerId: string): void => {
-          this.pushTranslationSource(consumerId)
-        },
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_reader')))

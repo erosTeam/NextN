@@ -28,12 +28,12 @@ authorize an edit, replace a device comparison, or define product completion.
   remove their invented leading icons, and restore the one missing enhancement
   divider. Restore the reference down-arrow affordance on existing value-menu
   rows only; preserve every existing title, current value, menu, switch,
-  enabled gate, persistence call, Reader-sheet owner, and the separate
-  comic-translation destination.
-- **Minimality and risk:** no setting is added, removed, or reinterpreted.
+  enabled gate, persistence call, and Reader-sheet owner. The former separate
+  comic-translation entry is superseded by the parent-owner correction below.
+- **Minimality and risk:** no Reader setting is added, removed, or reinterpreted.
   The change affects only grouping and row prefix/divider leaves. The
   same-page device review must check all six groups, row ordering, values,
-  disabled enhancement states, and the separate comic-translation entry.
+  disabled enhancement states, and absence of a translation-capability entry.
 - **Verification plan:** inspect the exact diff, build the signed Debug HAP,
   install in place without clearing data, then perform one current native
   Reader Settings review on the selected device. Preserve raw artifacts and
@@ -47,16 +47,40 @@ authorize an edit, replace a device comparison, or define product completion.
   declared boundary, so the correction is limited to `trailingDropdown: true`
   on those rows; it changes no menu owner, value, or action.
 
+### Parent-owner correction — 2026-08-13
+
+- **New user evidence:** after the grouped Reader page was rendered, the user
+  identified the remaining icon-bearing `漫画翻译` card as visually inconsistent
+  with the six no-prefix Reader setting groups.
+- **Faulty inference:** the earlier change treated a separate configuration
+  destination as sufficient reason for it to remain at the end of Reader
+  Settings. That conflated route destination with parent ownership.
+- **Reference parent tree:** NextE keeps Reader Settings to Reader-specific
+  groups. It places comment translation, comic translation, tag translation,
+  and source management together in one translation-capabilities group under
+  its site/advanced settings owner; comic translation uses the `picture` leaf,
+  not the ordinary Reader-row grammar.
+- **Exact correction:** remove the comic-translation ListItem from the Reader
+  surface. In Advanced, place comment translation, comic translation, the
+  existing tag-dictionary status/update leaves, and the existing shared
+  translation-source destination in one translation-capabilities group. No
+  translation source, model, dictionary, or persistence behavior changes.
+  The Advanced page now needs one native review after its own build/install;
+  the already captured Reader page remains evidence-only for this corrected
+  boundary.
+
 ## OPEN — Reader Settings scan-first copy — 2026-08-13
 
 - **Why newly actionable:** the user explicitly reported that the current
   Reader Settings page treats ordinary choices as if each requires a teaching
   paragraph. The current native page shows a subtitle below every visible
   layout, control, cache, display, enhancement, and translation row.
-- **Whole parent-tree boundary:** `SettingsPage(READER) →
+- **Historical pre-correction tree:** `SettingsPage(READER) →
   SecondaryListScaffold → ReaderPresentationListItems →
   [ReaderPresentationGroup, ReaderComicTranslationGroup] →
-  NextNGroupedListSection → NextNListRow`. This change leaves the scaffold,
+  NextNGroupedListSection → NextNListRow`. The later parent-owner correction
+  removes `ReaderComicTranslationGroup`; this copy-density record now applies
+  only to the Reader-specific rows. It leaves the scaffold,
   section ownership, ordering, icons, menus, switches, accessibility labels,
   persistence, and destination actions unchanged.
 - **Reference basis:** the corresponding NextE `ReaderSettingsPage` keeps its
