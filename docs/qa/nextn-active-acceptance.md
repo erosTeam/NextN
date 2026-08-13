@@ -1,5 +1,36 @@
 # NextN active device-acceptance queue
 
+## Current Reader background preference — bounded device result — 2026-08-14
+
+- The signed Debug HAP containing `14f4a74` was installed in place on only
+  `192.168.50.237:12345`; no app data clear, uninstall, account action, or
+  download action occurred. The selected device was live-resolved, leased,
+  woken, and read back as `AWAKE` with `OverrideTimeout=86400000ms` before the
+  sequence.
+- The native `1320×2120` root Reader Settings page displayed `阅读背景` as the
+  first row of `显示与屏幕`, before the existing image-scaling, page-number,
+  fullscreen, and keep-screen-on leaves. Its initial value was `黑色`. The
+  menu exposed exactly `黑色`, `灰色`, `白色`, and `自动`; selecting `白色`
+  updated the rendered Settings value.
+- A NextN-only force-stop/cold start then returned to the root Reader Settings
+  page with `白色` still selected. The existing native Gallery → `继续 P1`
+  route entered foreground-confirmed NextN Reader without using the rejected
+  canvas menu zone; its current layout reported the Reader canvas/root layers
+  as `#FFFFFFFF`. This is a current NextN white-canvas observation, not a
+  reference-parity claim.
+- The temporary value was restored to the observed original `黑色`. A second
+  NextN-only force-stop/cold start read back `黑色` in the native root Reader
+  Settings tree, so the device was left with its original background choice.
+- This accepts only the observed root Settings placement/menu/writeback,
+  cold-start persistence, white canvas state, and restoration. The Reader-owned
+  Settings sheet was not exercised because its only current source route first
+  requires the rejected Reader canvas menu-zone input. Gray/Auto behavior,
+  vertical/double-page/loading/failure contrast, non-fullscreen hidden-chrome
+  status-bar polarity, and same-state/same-viewport NextE visual comparison
+  remain OPEN rather than inferred. Raw local artifacts are retained under
+  `.hvigor/outputs/reader-background-20260814T/` and are excluded from source
+  control.
+
 ## Current Reader double-page-layout preference — bounded device result — 2026-08-14
 
 - The signed Debug HAP from `acf2fd6` was installed in place on only
