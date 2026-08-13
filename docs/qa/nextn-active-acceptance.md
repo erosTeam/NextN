@@ -1,5 +1,33 @@
 # NextN active device-acceptance queue
 
+## Current Reader double-page-layout preference — bounded device result — 2026-08-14
+
+- The signed Debug HAP from `acf2fd6` was installed in place on only
+  `192.168.50.237:12345`; no app data clear, uninstall, account action,
+  download action, or content mutation occurred. The selected device was
+  live-resolved, leased, woken, and read back as `AWAKE` with
+  `OverrideTimeout=86400000ms` before the sequence.
+- The current native `1320×2120` Reader Settings page showed `双页布局`
+  immediately after `双页模式` and before `翻页动画` in `翻页与布局`. In its
+  original `连续垂直滚动` mode the row was visibly unavailable and retained
+  its default `拼合` value. No attempt was made to operate that unavailable
+  row.
+- The existing Reader layout menu was temporarily changed to `从左至右翻页`.
+  In that eligible mode, the `双页布局` menu exposed exactly `拼合` and `均分`;
+  selecting `均分` updated the rendered Settings value. A NextN-only
+  force-stop/cold start then read back `从左至右翻页` and `均分` from the native
+  Settings tree. The temporary values were restored to the observed originals:
+  `拼合` and `连续垂直滚动`.
+- This accepts only the observed row placement/availability, value menu,
+  writeback, cold-start restoration, and cleanup for this device path. The
+  device remained a portrait `1320×2120` viewport, so no wide two-page Reader
+  canvas, joined/split rendering geometry, RTL order, terminal singleton,
+  zoom-reset behavior, or same-state/same-viewport NextE comparison was
+  observed. Those remain OPEN rather than inferred from the setting result.
+  Raw local artifacts are retained under
+  `.hvigor/outputs/reader-double-page-layout-20260814T/` and are excluded from
+  source control.
+
 ## Current Reader page-turn-animation preference — bounded device result — 2026-08-14
 
 - The signed Debug HAP containing the new local `pageTurnAnimation` preference
