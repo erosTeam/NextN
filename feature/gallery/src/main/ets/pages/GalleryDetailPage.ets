@@ -16,6 +16,11 @@ import {
   LlmSourceProfilesState,
   NhApiClient,
   AccountSessionState,
+  ActionFollowTouchState,
+  ActionFollowTouchTracker,
+  ActionHandEdgeState,
+  MotionHandStateService,
+  connectActionHandEdge,
   AppStrings,
   NhComment,
   NhGalleryDetail,
@@ -81,6 +86,8 @@ const TITLE_TRANSLATION_ACTION_SIZE: number = 30
 const TITLE_TRANSLATION_ICON_SIZE: number = 16
 const TITLE_TRANSLATION_ENGLISH: string = 'english'
 const TITLE_TRANSLATION_JAPANESE: string = 'japanese'
+const FOLLOW_OPERATION_VERTICAL_SCROLL_THRESHOLD: number = 12
+const FOLLOW_OPERATION_VERTICAL_DOMINANCE_RATIO: number = 1.2
 const DETAIL_CACHE_LOG_DOMAIN: number = 0x0000
 const DETAIL_CACHE_LOG_TAG: string = 'NextNDetailCache'
 /**
@@ -191,6 +198,15 @@ export struct GalleryDetailPage {
   @Local galleryTitle: GalleryTitleState = connectGalleryTitle()
   @Local llmSources: LlmSourceProfilesState = connectLlmSourceProfiles()
   @Local readButtonStyle: ReadButtonStyleState = connectReadButtonStyle()
+  @Local actionHandEdge: ActionHandEdgeState = connectActionHandEdge()
+  // The service resolves the persisted alignment before this page mounts. Keep
+  // a local target solely so the existing floating Read rail can animate.
+  @Local visualActionHandEdge: string = connectActionHandEdge().edge
+  @Local detailWorkspaceWidth: number = 0
+  @Local detailWorkspaceGlobalX: number = 0
+  @Local readFabWidth: number = 0
+  @Local readFabLayoutReady: boolean = false
+  @Local readFabShouldAnimate: boolean = false
   @Local downloadQueue: DownloadQueueState = connectDownloadQueue()
   @Local titleTranslations: GalleryTitleTranslationState[] = []
   // This is not navigation ownership. Gallery only stages its already
@@ -219,6 +235,7 @@ export struct GalleryDetailPage {
   private favoriteStatusGeneration: number = 0
   private handledDownloadRequestVersion: number = 0
   private readFabController: HdsTabsController = new HdsTabsController()
+  private followTouchState: ActionFollowTouchState = ActionFollowTouchTracker.initialState()
   /** Shared refresh host; it never represents this page's initial-load state. */
   private detailRefreshController: NextNPullRefreshController = new NextNPullRefreshController()
   // This owner intentionally never aliases the metadata List scroller: the
@@ -294,6 +311,19 @@ export struct GalleryDetailPage {
       this.layoutSafeArea.rootNavigationSplit,
     )
     this.publishWideThumbnailActionAvailability()
+  }
+
+  @Monitor('actionHandEdge.edge')
+  onActionHandEdgeChanged(): void {
+    this.readFabShouldAnimate = this.readFabLayoutReady
+    this.visualActionHandEdge = this.actionHandEdge.edge
+  }
+
+  @Monitor('readButtonStyle.style')
+  onReadButtonStyleChanged(): void {
+    this.readFabWidth = 0
+    this.readFabLayoutReady = false
+    this.readFabShouldAnimate = false
   }
 
   @Monitor('accountSession.revision')
@@ -1140,6 +1170,66 @@ export struct GalleryDetailPage {
 
   private readFabUsesHdsMaterial(): boolean {
     return this.readButtonStyle.style === ReadButtonStyleSettings.STYLE_HDS
+  }
+
+  private readFabAvailableWidth(): number {
+    return this.detailWorkspaceWidth > 0 ? this.detailWorkspaceWidth : this.detailRootWidth
+  }
+
+  private numberFromLength(value: Length | undefined): number {
+    if (typeof value === 'number') {
+      return value
+    }
+    if (typeof value === 'string') {
+      const parsed: number = Number.parseFloat(value)
+      return Number.isNaN(parsed) ? 0 : parsed
+    }
+    return 0
+  }
+
+  private readFabVisualX(): number {
+    if (this.visualActionHandEdge === 'left') {
+      return 0
+    }
+    const innerWidth: number = this.readFabAvailableWidth() - this.readFabRailSideInset() * 2
+    return Math.max(0, innerWidth - this.readFabWidth)
+  }
+
+  private readFabAnimationDuration(): number {
+    return this.readFabShouldAnimate ? ThemeTokens.REFRESH_ANIMATION_DURATION : 0
+  }
+
+  private updateReadFabLayoutReady(): void {
+    if (this.readFabAvailableWidth() > 0 && this.readFabWidth > 0) {
+      this.readFabLayoutReady = true
+    }
+  }
+
+  private handleFollowTouch(event: TouchEvent): void {
+    if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+      this.followTouchState = ActionFollowTouchTracker.initialState()
+      return
+    }
+    // The selected side belongs to one ordinary scroll gesture only. A second
+    // finger or an incomplete touch sequence must not borrow another finger's
+    // coordinates and move the floating Read action.
+    if (event.touches.length !== 1) {
+      this.followTouchState = ActionFollowTouchTracker.initialState()
+      return
+    }
+    const touch: TouchObject = event.touches[0]
+    const update = ActionFollowTouchTracker.update(
+      this.followTouchState,
+      event.type,
+      touch.windowX - this.detailWorkspaceGlobalX,
+      touch.y,
+      FOLLOW_OPERATION_VERTICAL_SCROLL_THRESHOLD,
+      FOLLOW_OPERATION_VERTICAL_DOMINANCE_RATIO,
+    )
+    this.followTouchState = update.state
+    if (update.shouldReport) {
+      MotionHandStateService.reportFollowOperationX(update.reportX, this.readFabAvailableWidth())
+    }
   }
 
   /** NextE rail geometry: HDS owns its activity padding; Filled owns its inset. */
@@ -2109,6 +2199,13 @@ export struct GalleryDetailPage {
         }
         .height(this.readFabOuterHeight())
         .hitTestBehavior(HitTestMode.Default)
+        .translate({ x: this.readFabVisualX() })
+        .opacity(this.readFabLayoutReady ? 1 : 0)
+        .animation({ duration: this.readFabAnimationDuration(), curve: Curve.EaseOut })
+        .onAreaChange((_oldArea: Area, area: Area): void => {
+          this.readFabWidth = area.width as number
+          this.updateReadFabLayoutReady()
+        })
       }
       .width('100%')
       .height(this.readFabOuterHeight())
@@ -2116,7 +2213,7 @@ export struct GalleryDetailPage {
         left: this.readFabRailSideInset(),
         right: this.readFabRailSideInset(),
       })
-      .justifyContent(FlexAlign.End)
+      .justifyContent(FlexAlign.Start)
       .hitTestBehavior(HitTestMode.Transparent)
       .position({ left: 0, bottom: this.readFabRailBottomInset() })
     }
@@ -2139,6 +2236,9 @@ export struct GalleryDetailPage {
       },
       onDidScroll: (_offset: number, _state: ScrollState): void => {
         this.updateNavigationChromeForScroll()
+      },
+      onScrollTouch: (event: TouchEvent): void => {
+        this.handleFollowTouch(event)
       },
     }) {
       ListItem() {
@@ -2203,6 +2303,9 @@ export struct GalleryDetailPage {
       chrome: this.widePreviewChrome,
       scroller: this.widePreviewScroller,
       bottomPadding: this.readFabContentReserve(),
+      onScrollTouch: (event: TouchEvent): void => {
+        this.handleFollowTouch(event)
+      },
       onOpenPage: (pageIndex: number): void => {
         this.openReader(pageIndex)
       },
@@ -2244,6 +2347,12 @@ export struct GalleryDetailPage {
     }
     .layoutWeight(1)
     .width('100%')
+    .height('100%')
+    .onAreaChange((_oldArea: Area, area: Area): void => {
+      this.detailWorkspaceWidth = area.width as number
+      this.detailWorkspaceGlobalX = this.numberFromLength(area.globalPosition?.x)
+      this.updateReadFabLayoutReady()
+    })
   }
 
   build() {

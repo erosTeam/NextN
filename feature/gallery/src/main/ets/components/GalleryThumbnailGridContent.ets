@@ -25,6 +25,8 @@ export struct GalleryThumbnailGridContent {
   @Param scroller: Scroller = new Scroller()
   @Param bottomPadding: number = ThemeTokens.SPACE_XL
   @Event onOpenPage?: (pageIndex: number) => void
+  /** Detail's wide pane may observe only its actual Grid scroll surface. */
+  @Event onScrollTouch?: (event: TouchEvent) => void
   @Local itemCount: number = 0
   @Local jumpSheetShown: boolean = false
   @Local jumpPageText: string = ''
@@ -214,6 +216,11 @@ export struct GalleryThumbnailGridContent {
         bottomPadding: this.bottomPadding,
         contentItemCount: this.itemCount,
         refreshEnabled: false,
+        onScrollTouch: (event: TouchEvent): void => {
+          if (this.onScrollTouch) {
+            this.onScrollTouch(event)
+          }
+        },
       }) {
         LazyForEach(
           this.dataSource,

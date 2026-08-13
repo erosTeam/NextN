@@ -373,8 +373,14 @@ export { HomeTabSettings } from './settings/HomeTabSettings'
 export { CoverBackgroundSettings } from './settings/CoverBackgroundSettings'
 export { GalleryTitleSettings } from './settings/GalleryTitleSettings'
 export { ReadButtonStyleSettings } from './settings/ReadButtonStyleSettings'
+export {
+  ActionAlignmentSettings,
+  ActionAlignmentMode,
+  ActionAlignmentOption,
+} from './settings/ActionAlignmentSettings'
 export { NhClipboardLinkSettings } from './settings/NhClipboardLinkSettings'
 export { NhClipboardLinkService } from './services/NhClipboardLinkService'
+export { MotionHandStateService, MotionHandEdge } from './services/MotionHandStateService'
 export {
   NhClipboardLinkState,
   connectNhClipboardLink,
@@ -387,6 +393,13 @@ export {
   READ_BUTTON_STYLE_FILLED,
   READ_BUTTON_STYLE_HDS,
 } from './state/ReadButtonStyleState'
+export { ActionAlignmentState, connectActionAlignment } from './state/ActionAlignmentState'
+export { ActionHandEdgeState, connectActionHandEdge } from './state/ActionHandEdgeState'
+export {
+  ActionFollowTouchTracker,
+  ActionFollowTouchState,
+  ActionFollowTouchUpdate,
+} from './utils/ActionFollowTouchTracker'
 export {
   ImmersiveMaterialSettings,
   ImmersiveMaterialOption,

@@ -732,6 +732,11 @@
     { "name": "settings_read_button_style", "value": "読むボタンのスタイル" },
     { "name": "settings_read_button_style_hint", "value": "ギャラリーの主な「読む」操作の見た目を選択します" },
     { "name": "read_button_style_filled", "value": "塗りつぶし" },
-    { "name": "read_button_style_hds", "value": "HDS マテリアル" }
+    { "name": "read_button_style_hds", "value": "HDS マテリアル" },
+    { "name": "settings_action_alignment", "value": "読むボタンの配置" },
+    { "name": "smart_grip", "value": "スマートグリップ" },
+    { "name": "follow_operation", "value": "操作に追従" },
+    { "name": "fixed_left", "value": "左に固定" },
+    { "name": "fixed_right", "value": "右に固定" }
   ]
 }

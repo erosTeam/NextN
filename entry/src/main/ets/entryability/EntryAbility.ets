@@ -20,6 +20,8 @@ import {
   NhTagCatalogService,
   NhClipboardLinkService,
   NhClipboardLinkSettings,
+  ActionAlignmentSettings,
+  MotionHandStateService,
   ReadButtonStyleSettings,
   requestGalleryDirectLaunch,
   requestLoginRecoveryLaunch,
@@ -136,6 +138,7 @@ export default class EntryAbility extends UIAbility {
       // render. It only reorders fields already included in the v2 response.
       GalleryTitleSettings.restore(this.context),
       ReadButtonStyleSettings.restore(this.context),
+      ActionAlignmentSettings.restore(this.context),
       NhClipboardLinkSettings.restore(this.context),
       this.restoreAccountIdentity(),
       ContentFilterService.restore(this.context),
@@ -153,6 +156,12 @@ export default class EntryAbility extends UIAbility {
       // active task is restored as paused by the service before a user resumes it.
       DownloadQueueService.restore(this.context),
     ]).finally((): void => {
+      // Resolve the persisted Read-action alignment before the first Detail
+      // destination can mount. Unsupported sensing falls back inside the
+      // service; it never blocks app startup or Reader routing.
+      if (this.abilityForeground) {
+        MotionHandStateService.start()
+      }
       if (this.loginRecoveryRequestedAtLaunch && !this.accountRestoredAtBootstrap) {
         requestLoginRecoveryLaunch()
       }
@@ -213,6 +222,7 @@ export default class EntryAbility extends UIAbility {
   }
 
   onDestroy(): void {
+    MotionHandStateService.stop()
     if (this.environmentCallbackId >= 0) {
       try {
         this.context.getApplicationContext().off('environment', this.environmentCallbackId).catch((): void => {})
@@ -241,6 +251,9 @@ export default class EntryAbility extends UIAbility {
 
   onForeground(): void {
     this.abilityForeground = true
+    if (this.mainContentReady) {
+      MotionHandStateService.start()
+    }
     this.probeClipboardLinkIfReady()
   }
 
@@ -259,6 +272,7 @@ export default class EntryAbility extends UIAbility {
 
   onBackground(): void {
     this.abilityForeground = false
+    MotionHandStateService.stop()
   }
 
   private galleryDirectLaunchId(want: Want): number {

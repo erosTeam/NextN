@@ -49,6 +49,62 @@ authorize an edit, replace a device comparison, or define product completion.
   `.hvigor/outputs/gallery-detail-cache-20260813T0645/`; do not revisit this
   boundary without new user feedback or a source change inside it.
 
+## OPEN — Gallery Detail smart-grip Read-action alignment — 2026-08-13
+
+- **Why newly actionable:** the user explicitly identified that NextN still
+  lacks the existing NextE `智感握姿` capability. Current NextN keeps the
+  Detail Read action fixed on the right; this is an omitted client capability,
+  not an NH API or website limitation.
+- **Whole reference tree:** `DETECT_GESTURE manifest declaration → EntryAbility
+  restores the persisted alignment mode → MotionHandStateService is the sole
+  resolver of a reactive left/right edge → Gallery Detail's existing full-width
+  transparent floating Read rail`. The Layout settings row writes only the
+  user-selected mode. Detail content reports only a verified scroll-like touch
+  start to the resolver; the rail measures the existing intrinsic Read button
+  and translates that one default-hit child between the two existing edges.
+- **Current NextN tree:** `SettingsPage(LAYOUT) → BrowsePresentationGroup →
+  Read-button-style row`; `GalleryDetailPage → DetailWorkspace(Stack) →
+  transparent ReadFabRail → default-hit inner Row → existing Filled/HDS
+  ReadFab`. The current rail is right-aligned and has no alignment state,
+  sensor subscription, follow-operation touch owner, or unavailable-device
+  branch.
+- **Exact change:** preserve the current Detail stack, floating overlay,
+  default-hit inner Row, HDS/Filled buttons, Reader route, right-side default,
+  bottom reserve, compact/wide workspace, and frozen Read/Continue copy.
+  Add only the reference-owned shared mode/state/resolver chain, its manifest
+  declaration, a title-plus-current-value Layout row immediately before the
+  existing Read-button-style row, and the measured Start-anchored rail
+  translation. The setting does not add explanatory subtitle copy, a new
+  grouping, or a runtime permission prompt. The adjacent `doc_plaintext`
+  alignment icon and `paintbrush` style icon remain distinct reference leaves:
+  they are same-level settings with different capability semantics, not a
+  reason to split or normalize the group.
+- **Mode and degradation boundary:** supported hardware offers `智感握姿`,
+  `跟随操作`, `固定左侧`, and `固定右侧`. A failed holding-hand subscription
+  keeps the existing right edge, hides `智感握姿`, and treats a previously
+  stored smart-grip choice as `跟随操作`; it never blocks opening Reader.
+  Follow-operation changes sides only once for a clearly vertical drag whose
+  start lies outside the center safe zone. Its observation is attached only to
+  the actual metadata List and wide-preview Grid, never to the floating rail
+  or a workspace wrapper; it resets on lift/cancel or multi-touch. Fixed modes
+  take effect immediately. Holding-hand subscription is active only while the
+  UIAbility is foregrounded and is stopped with any pending debounce on
+  background.
+- **Affected visible states:** Layout row/menu before and after selecting a
+  fixed edge; Detail's compact and wide workspace with the existing Filled and
+  HDS buttons; a follow-operation left/right vertical scroll; cold-start
+  restoration; and, only if the selected device actually supports the API, the
+  delayed left/right holding-hand result. The existing right-side action state
+  remains the control state, not a reason to re-audit the frozen Read copy.
+- **Verification plan:** inspect the exact scoped diff, build a signed Debug
+  HAP, install it in place on only `192.168.50.237:12345`, and retain raw local
+  artifacts. Record the original alignment preference before any selection and
+  restore it after verification. Compare the native NextN setting/rail against
+  a same-viewport, same-mode NextE capture where available; do not use a UI
+  static contract or manufacture sensor support. An unsupported-device result
+  may accept only the documented follow-operation degradation, not smart-grip
+  sensing itself.
+
 ## OPEN — Reader Settings parent-tree and icon correction — 2026-08-13
 
 - **Why newly actionable:** the user reported that the current Reader Settings

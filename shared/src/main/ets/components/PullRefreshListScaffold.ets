@@ -41,6 +41,8 @@ export struct PullRefreshListScaffold {
   @Event onListAreaChange?: (area: Area) => void
   @Event onContentWidth?: (contentWidth: number) => void
   @Event onScrollIndex?: (start: number, end: number, center: number) => void
+  /** Optional observational hook for a caller that owns a scroll-derived action. */
+  @Event onScrollTouch?: (event: TouchEvent) => void
 
   build() {
     NextNPullRefresh({
@@ -118,6 +120,11 @@ export struct PullRefreshListScaffold {
       })
       .onReachEnd((): void => {
         this.notifyReachEnd()
+      })
+      .onTouch((event: TouchEvent): void => {
+        if (this.onScrollTouch) {
+          this.onScrollTouch(event)
+        }
       })
       .onAreaChange((_oldValue: Area, newValue: Area): void => {
         this.measuredWidth = Number.parseFloat(`${newValue.width}`)

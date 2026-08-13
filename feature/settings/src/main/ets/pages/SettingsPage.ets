@@ -47,6 +47,9 @@ import {
   BrowsePresentationState,
   CoverBackgroundSettings,
   CoverBackgroundState,
+  ActionAlignmentSettings,
+  ActionAlignmentState,
+  ActionAlignmentOption,
   GalleryTitleSettings,
   GalleryTitleState,
   ReadButtonStyleSettings,
@@ -71,6 +74,7 @@ import {
   ThemeSettings,
   TabletLayoutSettings,
   TabletLayoutState,
+  MotionHandStateService,
   SettingsNavigationState,
   SETTINGS_ROOT_BROWSER_SESSION,
   SETTINGS_ROOT_LAYOUT,
@@ -88,6 +92,7 @@ import {
   connectBrowsePresentation,
   connectCatalogPreferences,
   connectCoverBackground,
+  connectActionAlignment,
   connectGalleryTitle,
   connectNhClipboardLink,
   connectReadButtonStyle,
@@ -193,6 +198,7 @@ export struct SettingsPage {
   @Local screenOrientation: ScreenOrientationState = connectScreenOrientation()
   @Local homeTab: HomeTabAutoHideState = connectHomeTabAutoHide()
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
+  @Local actionAlignment: ActionAlignmentState = connectActionAlignment()
   @Local galleryTitle: GalleryTitleState = connectGalleryTitle()
   @Local clipboardLink: NhClipboardLinkState = connectNhClipboardLink()
   @Local readButtonStyle: ReadButtonStyleState = connectReadButtonStyle()
@@ -225,6 +231,7 @@ export struct SettingsPage {
   @Local tabletLayoutMenuShown: boolean = false
   @Local clipboardLinkSaving: boolean = false
   @Local readButtonStyleMenuShown: boolean = false
+  @Local actionAlignmentMenuShown: boolean = false
   @Param scroller: Scroller = new Scroller()
   @Param surface: SettingsSurface = SettingsSurface.ROOT
   /** Reader mounts this same semantic surface inside its private sheet. */
@@ -330,6 +337,7 @@ export struct SettingsPage {
         CoverBackgroundSettings.restore(this.context()),
         GalleryTitleSettings.restore(this.context()),
         ReadButtonStyleSettings.restore(this.context()),
+        ActionAlignmentSettings.restore(this.context()),
         ScreenOrientationSettings.restore(this.context()),
         TabletLayoutSettings.restore(this.context()),
       ])
@@ -680,6 +688,19 @@ export struct SettingsPage {
     return this.readButtonStyle.style === ReadButtonStyleSettings.STYLE_HDS
       ? AppStrings.get('read_button_style_hds')
       : AppStrings.get('read_button_style_filled')
+  }
+
+  private actionAlignmentLabel(): string {
+    return ActionAlignmentSettings.modeLabel(
+      this.actionAlignment.alignmentMode,
+      this.actionAlignment.holdingHandSupported,
+    )
+  }
+
+  private setActionAlignmentMode(mode: string): void {
+    ActionAlignmentSettings.save(this.context(), mode).catch((): void => {})
+    MotionHandStateService.applyAlignmentMode(mode)
+    this.actionAlignmentMenuShown = false
   }
 
   private setReadButtonStyle(style: string): void {
@@ -1303,6 +1324,29 @@ export struct SettingsPage {
         this.setReadButtonStyle(ReadButtonStyleSettings.STYLE_HDS)
         this.readButtonStyleMenuShown = false
       })
+    }
+  }
+
+  @Builder
+  private ActionAlignmentMenu() {
+    Menu() {
+      ForEach(
+        ActionAlignmentSettings.availableOptions(this.actionAlignment.holdingHandSupported),
+        (option: ActionAlignmentOption): void => {
+          MenuItem({
+            content: option.label,
+            symbolEndIcon: ActionAlignmentSettings.effectiveMode(
+              this.actionAlignment.alignmentMode,
+              this.actionAlignment.holdingHandSupported,
+            ) === option.mode
+              ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+              : undefined,
+          }).onClick((): void => {
+            this.setActionAlignmentMode(option.mode)
+          })
+        },
+        (option: ActionAlignmentOption): string => option.mode,
+      )
     }
   }
 
@@ -2886,6 +2930,26 @@ export struct SettingsPage {
         },
         onSwitchChange: (value: boolean): void => {
           this.setHomeTabAutoHide(value)
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.doc_plaintext'),
+        title: AppStrings.get('settings_action_alignment'),
+        trailingText: this.actionAlignmentLabel(),
+        trailingDropdown: true,
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_action_alignment'),
+          this.actionAlignmentLabel(),
+        ]),
+        onAction: (): void => {
+          this.actionAlignmentMenuShown = true
+        },
+      })
+      .bindMenu(this.actionAlignmentMenuShown, this.ActionAlignmentMenu, {
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.actionAlignmentMenuShown = false
         },
       })
       this.RowDivider()

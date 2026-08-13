@@ -732,6 +732,11 @@
     { "name": "settings_read_button_style", "value": "Read button style" },
     { "name": "settings_read_button_style_hint", "value": "Choose the visual style of Gallery's primary Read action" },
     { "name": "read_button_style_filled", "value": "Filled" },
-    { "name": "read_button_style_hds", "value": "HDS material" }
+    { "name": "read_button_style_hds", "value": "HDS material" },
+    { "name": "settings_action_alignment", "value": "Read button alignment" },
+    { "name": "smart_grip", "value": "Smart grip" },
+    { "name": "follow_operation", "value": "Follow operation" },
+    { "name": "fixed_left", "value": "Fixed left" },
+    { "name": "fixed_right", "value": "Fixed right" }
   ]
 }

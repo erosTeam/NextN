@@ -58,6 +58,8 @@ export struct PullRefreshGridScaffold {
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   @Event onUserScroll?: () => void
   @Event onScrollIndex?: (start: number, end: number) => void
+  /** Optional observational hook for a caller that owns a scroll-derived action. */
+  @Event onScrollTouch?: (event: TouchEvent) => void
 
   build() {
     NextNPullRefresh({
@@ -135,6 +137,11 @@ export struct PullRefreshGridScaffold {
       })
       .onReachEnd((): void => {
         this.notifyReachEnd()
+      })
+      .onTouch((event: TouchEvent): void => {
+        if (this.onScrollTouch) {
+          this.onScrollTouch(event)
+        }
       })
     }
   }

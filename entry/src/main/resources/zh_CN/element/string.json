@@ -732,6 +732,11 @@
     { "name": "settings_read_button_style", "value": "阅读按钮样式" },
     { "name": "settings_read_button_style_hint", "value": "选择画廊主阅读操作的视觉样式" },
     { "name": "read_button_style_filled", "value": "实色" },
-    { "name": "read_button_style_hds", "value": "HDS 材质" }
+    { "name": "read_button_style_hds", "value": "HDS 材质" },
+    { "name": "settings_action_alignment", "value": "阅读按钮对齐" },
+    { "name": "smart_grip", "value": "智感握姿" },
+    { "name": "follow_operation", "value": "跟随操作" },
+    { "name": "fixed_left", "value": "固定左侧" },
+    { "name": "fixed_right", "value": "固定右侧" }
   ]
 }
