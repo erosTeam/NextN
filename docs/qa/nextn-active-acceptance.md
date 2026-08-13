@@ -16,15 +16,16 @@
   page with `白色` still selected. The existing native Gallery → `继续 P1`
   route entered foreground-confirmed NextN Reader without using the rejected
   canvas menu zone; its current layout reported the Reader canvas/root layers
-  as `#FFFFFFFF`. This is a current NextN white-canvas observation, not a
-  reference-parity claim.
+  as `#FFFFFFFF`. A later reversible `灰色` selection reached the same Reader
+  route with its canvas/root layers reported as `#FF303030`. These are current
+  NextN canvas observations, not reference-parity claims.
 - The temporary value was restored to the observed original `黑色`. A second
   NextN-only force-stop/cold start read back `黑色` in the native root Reader
   Settings tree, so the device was left with its original background choice.
 - This accepts only the observed root Settings placement/menu/writeback,
   cold-start persistence, white canvas state, and restoration. The Reader-owned
   Settings sheet was not exercised because its only current source route first
-  requires the rejected Reader canvas menu-zone input. Gray/Auto behavior,
+  requires the rejected Reader canvas menu-zone input. Automatic behavior,
   vertical/double-page/loading/failure contrast, non-fullscreen hidden-chrome
   status-bar polarity, and same-state/same-viewport NextE visual comparison
   remain OPEN rather than inferred. Raw local artifacts are retained under
