@@ -138,6 +138,7 @@ export class DownloadQueueService {
     if (task === null || task.isComplete()) {
       return
     }
+    const wasComplete: boolean = task.isComplete()
     task.completedPages = DownloadQueueService.completedFileCount(context, task)
     task.status = task.completedPages >= task.pageCount
       ? NhDownloadTaskStatus.COMPLETE
@@ -146,6 +147,9 @@ export class DownloadQueueService {
     task.updatedAt = Date.now()
     DownloadQueueService.putInState(task)
     await DownloadQueueRepository.save(context, task)
+    if (!wasComplete && task.isComplete()) {
+      await DownloadNotificationService.publishDownloadComplete(task.title)
+    }
     if (!task.isComplete()) {
       DownloadQueueService.pump(context)
     }
@@ -580,6 +584,7 @@ export class DownloadQueueService {
     if (task === null) {
       return
     }
+    const wasComplete: boolean = task.isComplete()
     const previousCompletedPages: number = task.completedPages
     const previousStatus: string = task.status
     const previousErrorMessage: string = task.errorMessage
@@ -591,6 +596,9 @@ export class DownloadQueueService {
     }
     task.updatedAt = Date.now()
     await DownloadQueueService.persist(context, task)
+    if (!wasComplete && task.isComplete()) {
+      await DownloadNotificationService.publishDownloadComplete(task.title)
+    }
   }
 
   private static state(): DownloadQueueState {

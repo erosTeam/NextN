@@ -1193,6 +1193,15 @@ authorize an edit, replace a device comparison, or define product completion.
   succeeds. No notification path may mutate task status, queue state,
   progress, files, network work, account state, or re-emit for restored
   completed tasks.
+- **Source-proven recovery-completion correction — 2026-08-13:** the ordinary
+  worker already publishes after its durable `COMPLETE` write, but `resume()`
+  and the paused-worker reconciliation can independently discover that the
+  already-promoted private file set is complete. Both persist that same new
+  completion without publishing. Reuse the existing notification service only
+  after each successful recovery write and only for a non-complete-to-complete
+  transition. Keep cold-start `restoreInternal()` silent so retained completed
+  tasks never re-emit, and do not change the settings tree, permission flow,
+  notification content, task/file state, or network behavior.
 - Rationale: this ports an existing mature NextE ownership path while keeping
   NextN's local-only queue and its user privacy boundary intact. The switch is
   opt-in because notification content can be visible outside the app.
