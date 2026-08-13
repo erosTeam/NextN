@@ -3,7 +3,7 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
-## OPEN — Gallery Detail public cache boundary — 2026-08-13
+## FROZEN — Gallery Detail public cache boundary — 2026-08-13
 
 - **Why newly actionable:** the user reported that opening a Gallery Detail
   repeatedly feels like a full reload and asked for a durable detail cache
@@ -37,6 +37,17 @@ authorize an edit, replace a device comparison, or define product completion.
   They never include gallery identity, titles, URLs, payload values, account
   state, or user content; the persisted-hit event is required for the
   cold-start proof instead of inferring cache use from timing.
+- **Accepted device result — 2026-08-13:** after an in-place signed Debug
+  install, a data-preserving NextN-only force-stop and cold start of the
+  existing Detail route emitted `hit=persisted`, then settled to native loaded
+  Gallery Detail at the `1320×2120` root viewport. The current semantic
+  overflow `重新加载` action emitted `bypass=explicit-refresh`, then returned to
+  the same native loaded Detail owner. These accept only public primary-DTO
+  cache reuse and explicit-refresh bypass; they do not assert cache behavior
+  for related galleries, comments, favorite/account state, tag labels, or
+  read progress. Preserve the retained local evidence at
+  `.hvigor/outputs/gallery-detail-cache-20260813T0645/`; do not revisit this
+  boundary without new user feedback or a source change inside it.
 
 ## OPEN — Reader Settings parent-tree and icon correction — 2026-08-13
 
