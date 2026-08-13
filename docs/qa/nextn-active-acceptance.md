@@ -55,6 +55,19 @@
   `.hvigor/outputs/japanese-title-scope-20260813T0938/` and are excluded from
   source control.
 
+## Current delivery observation — Cache and History icon leaves — 2026-08-13
+
+- The signed Debug build containing only the Reader-cache icon and History-tab
+  icon leaves was installed in place on `192.168.50.237:12345`; no data clear,
+  uninstall, account action, cache-clear action, or content mutation occurred.
+- The native `1320×2120` Cache page displayed the Reader-page-cache row with a
+  document icon. After a NextN-only data-preserving cold start, the root tab
+  strip displayed the local-History clock at the same filled visual weight as
+  its sibling tabs.
+- Raw local artifacts are retained under
+  `.hvigor/outputs/icon-leaves-20260813T0958/` and are excluded from source
+  control.
+
 ## Current delivery observation — Gallery Detail smart-grip Read-action alignment — 2026-08-13
 
 - Commit `bee5a59` was built as the signed Debug HAP and installed in place on

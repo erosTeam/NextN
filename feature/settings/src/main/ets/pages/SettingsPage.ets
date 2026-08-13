@@ -1950,7 +1950,7 @@ export struct SettingsPage {
   private PrivateCacheGroup() {
     NextNGroupedListSection() {
       NextNListRow({
-        leadingIcon: $r('sys.symbol.folder_fill'),
+        leadingIcon: $r('sys.symbol.doc_text'),
         title: this.privateCacheTitle('reader'),
         subtitle: this.privateCacheSubtitle('reader'),
         trailingText: this.isClearingPrivateCache ? AppStrings.get('settings_private_cache_wait') :

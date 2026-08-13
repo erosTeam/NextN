@@ -175,6 +175,39 @@ authorize an edit, replace a device comparison, or define product completion.
   schema migration, or a collection-card title redesign; do not reopen those
   unrelated leaves without a new user direction or source change.
 
+## FROZEN — Cache and History tab icon visual-weight correction — 2026-08-13
+
+- **Why newly actionable:** the user identified two current icon inconsistencies:
+  the Reader-page-cache row used a solid folder while the corresponding cache
+  leaf is a document, and the History root tab used an outline clock while the
+  other root tabs use filled symbols.
+- **Whole-parent boundary:** preserve `SettingsPage(CACHE) →
+  SecondaryListScaffold → PrivateCacheGroup → NextNListRow` and the root
+  `HdsTabs → MainTabIcon` owner exactly. These are leaf resource substitutions;
+  no cache action, title, subtitle, state, route, tab order, padding, or icon
+  geometry changes.
+- **Reference/source evidence:** NextE's Page-cache `CacheRow` uses
+  `sys.symbol.doc_text`. NextN's History tab has local-history rather than
+  NextE's ranking semantics, so it retains a clock rather than copying NextE's
+  ranked-list glyph; the local SDK confirms `sys.symbol.clock_fill` exists and
+  restores the filled weight shared by the other four NextN tabs.
+- **Exact change:** Reader-page-cache `folder_fill → doc_text`; History-tab
+  `clock → clock_fill`. Build the signed Debug HAP, install in place without
+  clearing data, and inspect only the cache row and root tab strip at the same
+  native viewport. Retain raw local artifacts; do not use a UI static contract.
+- **Verification result — 2026-08-13:** the signed Debug HAP built successfully
+  and was installed in place on only `192.168.50.237:12345`; no data clear,
+  uninstall, account action, cache-clear action, or content mutation occurred.
+  The native `1320×2120` Cache page showed the Reader-page-cache document leaf
+  inside its unchanged group. After a NextN-only data-preserving cold start,
+  the root tab strip showed the History clock at the same filled visual weight
+  as its sibling root tabs. Raw artifacts are retained under
+  `.hvigor/outputs/icon-leaves-20260813T0958/` and are excluded from source
+  control.
+- **Frozen boundary:** no cache group, tab owner, title, action, preference,
+  data, or layout behavior was changed. Do not treat either leaf correction as
+  authorization to redesign Settings or the root tab bar.
+
 ## OPEN — Reader Settings parent-tree and icon correction — 2026-08-13
 
 - **Why newly actionable:** the user reported that the current Reader Settings
