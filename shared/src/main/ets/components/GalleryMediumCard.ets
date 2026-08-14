@@ -182,7 +182,7 @@ export struct GalleryMediumCard {
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .width('100%')
 
-        if (this.gallery.japaneseTitle.length > 0 && this.gallery.japaneseTitle !== this.gallery.englishTitle) {
+        if (this.gallery.japaneseTitle.length > 0 && this.gallery.japaneseTitle !== this.gallery.displayTitle()) {
           Text(this.gallery.japaneseTitle)
             .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
             .fontColor(ThemeTokens.TEXT_SECONDARY)
@@ -193,13 +193,20 @@ export struct GalleryMediumCard {
         }
 
         if (this.usesFixedHeight()) {
-          GalleryTagStrip({ tags: this.gallery.tags, maxTags: 6 })
-          // Fixed rows retain the existing foot-anchored metadata rhythm.
-          Blank()
+          // The fixed 204vp card needs a bounded middle region: tags may
+          // wrap, but they must never displace the foot-anchored metadata or
+          // escape the clipped card on a narrow pane.
+          Column() {
+            GalleryTagStrip({ tags: this.gallery.tags, maxTags: 8 })
+          }
+          .width('100%')
+          .layoutWeight(1)
+          .clip(true)
+          .alignItems(HorizontalAlign.Start)
         } else {
           // Adaptive rows follow the title → tags → metadata content flow.
           // `Blank()` would consume a List's unconstrained vertical offer.
-          GalleryTagStrip({ tags: this.gallery.tags, maxTags: 6 })
+          GalleryTagStrip({ tags: this.gallery.tags, maxTags: 8 })
         }
         Row({ space: ThemeTokens.SPACE_XS }) {
           if (this.gallery.languageCode().length > 0) {

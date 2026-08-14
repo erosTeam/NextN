@@ -3151,7 +3151,7 @@ export struct SettingsPage {
       })
       this.RowDivider()
       NextNListRow({
-        leadingIcon: $r('sys.symbol.textformat'),
+        leadingIcon: $r('sys.symbol.translate'),
         title: AppStrings.get('settings_gallery_tag_translations'),
         hasSwitch: true,
         checked: this.browsePresentation.showTranslatedTagLabels,

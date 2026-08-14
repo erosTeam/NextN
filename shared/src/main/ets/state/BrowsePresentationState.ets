@@ -13,8 +13,12 @@ export class BrowsePresentationState {
   @Trace waterfallMinColumnWidth: number = 0
   @Trace waterfallCompactMinColumnWidth: number = 0
   @Trace coverWallMinColumnWidth: number = 0
-  /** ErosN-compatible opt-in; applicable list/waterfall cards stay unchanged by default. */
-  @Trace showGalleryTags: boolean = false
+  /**
+   * Keep resolved labels visible by default. An explicit saved false still lets
+   * the user hide tags, but an absent legacy key must not suppress the only
+   * list surface that can show translated labels.
+   */
+  @Trace showGalleryTags: boolean = true
   /** Keep raw tag query values separate from the optional translated display label. */
   @Trace showTranslatedTagLabels: boolean = true
   /** Preserve the current fixed LIST row height by default; the user can opt into adaptive height globally. */

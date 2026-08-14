@@ -1,37 +1,39 @@
-import { NhGallerySummary } from '../model/NhGallery'
+import { NhGallerySummary, NhTag } from '../model/NhGallery'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { AppStrings } from '../i18n/AppStrings'
 import { CoverBackgroundState, connectCoverBackground } from '../state/CoverBackgroundState'
+import { BrowsePresentationState, connectBrowsePresentation } from '../state/BrowsePresentationState'
 import {
   GalleryLanguageCornerBadge,
   galleryLanguageCornerBadgeText,
 } from './GalleryLanguageCornerBadge'
-import { GalleryTagStrip, GalleryTagStripLayout } from './GalleryTagStrip'
+const WATERFALL_TAG_LIMIT: number = 8
+const WATERFALL_COMPACT_TAG_STRIP_HEIGHT: number = 24
 
 /**
  * Compact WaterFlow cards keep a different overlay subtree from CoverWall and
  * must not reuse each other's cached component instances.
  *
- * The current v2 summary can prove a thumbnail, title, page count and the
- * three derived language signals.  It intentionally does not turn tag ids
- * into a per-card network request merely to imitate NextE's rich tag strip.
+ * The current v2 summary already carries names resolved by the collection
+ * catalog. This component renders them only in its compact, one-line overlay
+ * grammar; it never issues per-card tag requests.
  */
 export function galleryWaterfallCompactReuseId(gallery: NhGallerySummary): string {
   const imageShape: string = gallery.thumbnailUrl.length > 0 ? 'image' : 'no_image'
+  const tagShape: string = gallery.tags.length > 0 ? 'tags' : 'no_tags'
   const languageShape: string = galleryLanguageCornerBadgeText(gallery.languageCode()).length > 0
     ? 'language'
     : 'plain'
-  const pageShape: string = gallery.pageCount > 0 ? 'pages' : 'no_pages'
-  return `waterfall_compact_${imageShape}_${languageShape}_${pageShape}`
+  return `waterfall_compact_${imageShape}_${tagShape}_${languageShape}`
 }
 
 /**
  * Reduced-data counterpart of NextE's `GalleryWaterfallCard(compact: true)`.
  *
  * Like NextE, the card uses the source cover ratio as its WaterFlow height and
- * keeps title metadata directly on an image-gradient overlay.  Missing
- * summary fields (tag names/colours, category, rating and user metadata) are
- * deliberately absent instead of being guessed or fetched from a card.
+ * keeps title metadata directly on an image-gradient overlay. Missing summary
+ * fields (tag colours, category, rating and user metadata) remain absent
+ * instead of being guessed or fetched from a card.
  */
 @ReusableV2
 @ComponentV2
@@ -41,12 +43,18 @@ export struct GalleryWaterfallCompactCard {
   @Local isThumbnailLoading: boolean = true
   @Local hasThumbnailError: boolean = false
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
+  @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
+  private tagScroller: Scroller = new Scroller()
   @Event onOpen?: (galleryId: number) => void
 
   @Monitor('gallery')
   onGalleryChanged(): void {
     this.isThumbnailLoading = this.gallery.thumbnailUrl.length > 0
     this.hasThumbnailError = false
+    try {
+      this.tagScroller.scrollTo({ xOffset: 0, yOffset: 0 })
+    } catch (_error) {
+    }
   }
 
   private coverRatio(): number {
@@ -69,6 +77,72 @@ export struct GalleryWaterfallCompactCard {
     return this.coverBackground.blurLetterboxBackground &&
       this.gallery.thumbnailUrl.length > 0 &&
       !this.hasThumbnailError
+  }
+
+  private displayLabel(tag: NhTag): string {
+    const translated: string = tag.displayName.trim()
+    return this.browsePresentation.showTranslatedTagLabels && translated.length > 0
+      ? translated
+      : tag.name
+  }
+
+  private tagAt(index: number): NhTag | undefined {
+    if (
+      !this.browsePresentation.showGalleryTags ||
+      index < 0 ||
+      index >= WATERFALL_TAG_LIMIT ||
+      index >= this.gallery.tags.length
+    ) {
+      return undefined
+    }
+    const tag: NhTag = this.gallery.tags[index]
+    return this.displayLabel(tag).trim().length > 0 ? tag : undefined
+  }
+
+  private tagLabelAt(index: number): string {
+    const tag: NhTag | undefined = this.tagAt(index)
+    return tag === undefined ? '' : this.displayLabel(tag)
+  }
+
+  @Builder
+  private CompactTagTextAt(index: number) {
+    if (this.tagAt(index) !== undefined) {
+      Text(this.tagLabelAt(index))
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontColor(ThemeTokens.TEXT_ON_BRAND)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .constraintSize({ maxWidth: 150 })
+    }
+  }
+
+  @Builder
+  private CompactTags() {
+    if (this.browsePresentation.showGalleryTags && this.gallery.tags.length > 0) {
+      Scroll(this.tagScroller) {
+        Row({ space: ThemeTokens.SPACE_XS }) {
+          this.CompactTagTextAt(0)
+          this.CompactTagTextAt(1)
+          this.CompactTagTextAt(2)
+          this.CompactTagTextAt(3)
+          this.CompactTagTextAt(4)
+          this.CompactTagTextAt(5)
+          this.CompactTagTextAt(6)
+          this.CompactTagTextAt(7)
+        }
+        .alignItems(VerticalAlign.Center)
+      }
+      .scrollable(ScrollDirection.Horizontal)
+      .nestedScroll({
+        scrollForward: NestedScrollMode.SELF_FIRST,
+        scrollBackward: NestedScrollMode.SELF_FIRST,
+      })
+      .scrollBar(BarState.Off)
+      .align(Alignment.Start)
+      .width('100%')
+      .height(WATERFALL_COMPACT_TAG_STRIP_HEIGHT)
+      .renderGroup(true)
+    }
   }
 
   @Builder
@@ -131,18 +205,7 @@ export struct GalleryWaterfallCompactCard {
   @Builder
   private BottomOverlay() {
     Column({ space: ThemeTokens.SPACE_XS }) {
-      GalleryTagStrip({
-        tags: this.gallery.tags,
-        layout: GalleryTagStripLayout.SINGLE_LINE,
-        onDarkSurface: true,
-      })
-      if (this.gallery.pageCount > 0) {
-        Text(`${this.gallery.pageCount}P`)
-          .fontSize(ThemeTokens.FONT_SIZE_TINY)
-          .fontWeight(FontWeight.Medium)
-          .fontColor(ThemeTokens.TEXT_ON_BRAND)
-          .maxLines(1)
-      }
+      this.CompactTags()
       Text(this.gallery.displayTitle())
         .fontSize(ThemeTokens.FONT_SIZE_BODY)
         .fontColor(ThemeTokens.TEXT_ON_BRAND)

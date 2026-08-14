@@ -2775,6 +2775,68 @@ authorize an edit, replace a device comparison, or define product completion.
   tag-data mutation was used. A same-state ErosN visual comparison and an
   in-place reactivity capture remain separately OPEN.
 
+### Global tag presentation and effective dictionary lookup correction — 2026-08-15
+
+- **Why reopened and corrected again:** the user reported that the prior tag
+  treatment was still ineffective and then identified a concrete visual
+  regression: the attempted correction put a generic, wrapping tag strip into
+  every SIMPLE_LIST row and exposed a global wrap/single-line setting. That
+  was an unsupported generalization. It treated four different reference card
+  trees as one leaf, enlarged a compact fixed-height row, and used a 24vp
+  detail-style chip where the corresponding NextE list chip is not 24vp.
+  The first device sample therefore is **rejected**, not acceptance evidence:
+  it showed the over-tall SIMPLE_LIST tags; original Browse presentation was
+  restored and the raw layout artifacts were deleted.
+- **Prevention rule:** before changing a tag leaf, map the complete parent
+  tree for every active card mode. A shared data lookup may be reused, but a
+  shared visual strip must not be introduced unless each reference tree uses
+  the same scroll owner, line budget, chip geometry, and clipping contract.
+  A user-wide visibility preference does not imply that every card grammar
+  gains a tag leaf.
+- **Proven cause:** public NH collapses common attributes to `tag` and some
+  classifications to `category`, while the installed dictionary retains
+  `female/male/mixed/other` and `reclass`; exact `type` lookup therefore
+  misses those labels and silently falls back to raw text. A cross-namespace
+  result may be ambiguous, so it must not choose a gender-specific translation
+  by row order.
+- **Corrected reference boundary:** keep `GalleryCollectionBody` and every
+  collection scaffold unchanged. The exact card trees are distinct:
+  `SIMPLE_LIST → GalleryListItem → Row(72×102 cover, fixed 102vp information
+  column, metadata)` stays tag-free, matching NextE's compact simple row;
+  `LIST → GalleryMediumCard → fixed/adaptive information column → bounded,
+  eight-item tag middle region` retains its leaf; `WATERFALL →
+  GalleryWaterfallCard → metadata → title → optional NH secondary title →
+  horizontal two-row tag scroll` gets its own fixed 48vp / eight-item leaf;
+  and `WATERFALL_COMPACT → GalleryWaterfallCompactCard → clipped cover Stack →
+  bottom gradient → one-row tag scroll → title` gets its own fixed 24vp /
+  eight-item text leaf. `COVER_GRID` and `COVER_WALL` remain tag-free.
+  There is no global tag-layout setting. An absent tag-visibility preference
+  defaults to visible for the supported tag-bearing modes, while an explicit
+  saved off choice still wins.
+- **Geometry contract:** normal LIST tags use NextE's neutral filled caption
+  chip geometry (12vp, horizontal 6vp, vertical 3vp, radius 6vp, max width
+  160vp) inside the existing bounded region. Regular Waterfall uses the same
+  neutral NH fallback but max width 150vp and two 4vp-spaced rows. Compact
+  Waterfall uses bare 12vp normal white text, no chip padding/background,
+  max width 150vp, 4vp gaps and no extra strip inset. It contains no compact
+  page-count line, preserving the reference overlay budget. NH has no safe
+  per-tag colour/action data, so neutral light chips and plain compact text
+  are the only justified leaf substitutions.
+- **Dictionary rule:** exact namespace wins. Only unresolved `tag` checks
+  `female/male/mixed/other`, and only unresolved `category` checks `reclass`.
+  A fallback is accepted only if every found candidate has one identical
+  display label; otherwise the raw public name remains visible. This changes
+  no query, remote request, catalog policy, cache schema, or Detail namespace
+  group.
+- **Verification status:** only the lookup rule and the rejected bad sample
+  have been observed so far. After the corrected implementation is reviewed
+  and built, device acceptance remains OPEN for a current same-viewport
+  NextN/NextE comparison of LIST, regular Waterfall, and compact Waterfall,
+  plus one existing dictionary label whose raw and translated forms differ.
+  SIMPLE_LIST must instead be checked for its unchanged fixed 102vp/no-tag
+  grammar. Dictionary download remains user-triggered; no automatic startup
+  fetch or fabricated data mutation is permitted.
+
 ### Reactivity and catalog-resilience correction — 2026-08-13
 
 - **Why newly actionable:** the user reported that enabling the existing tag

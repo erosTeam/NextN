@@ -63,6 +63,11 @@ export class ThemeTokens {
   static readonly RADIUS_ROUND: number = 999
   static readonly DETAIL_COVER_RADIUS: number = 16
   static readonly THUMB_RADIUS: number = 8
+  // Dense collection-card tags are deliberately smaller than the detail-chip
+  // family: these mirror NextE's 6vp radius and 3vp vertical padding.
+  static readonly LIST_TAG_RADIUS: number = 6
+  static readonly LIST_TAG_PADDING_VERTICAL: number = 3
+  // Detail tags retain their larger, more comfortable geometry.
   static readonly TAG_RADIUS: number = 8
   // Direct counterparts of NextE's chip rhythm. Keep the visual height in
   // tokens so detail tags cannot drift into a second, hand-tuned chip style.

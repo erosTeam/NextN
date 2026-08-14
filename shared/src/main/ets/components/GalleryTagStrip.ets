@@ -2,22 +2,16 @@ import { NhTag } from '../model/NhGallery'
 import { BrowsePresentationState, connectBrowsePresentation } from '../state/BrowsePresentationState'
 import { ThemeTokens } from '../theme/ThemeTokens'
 
-export enum GalleryTagStripLayout {
-  WRAP = 0,
-  SINGLE_LINE = 1,
-}
-
 /**
- * Read-only gallery tag leaf. Its owner supplies already-resolved public
- * names and any optional local display label; this component never requests,
- * filters, translates, or navigates.
+ * Normal LIST's wrapping tag leaf. Its fixed-height parent confines it to a
+ * bounded middle region; the adaptive parent deliberately grows with content.
+ * Waterfall cards own separate strip trees because their line budgets and
+ * scroll owners are different.
  */
 @ComponentV2
 export struct GalleryTagStrip {
   @Require @Param tags: NhTag[]
-  @Param layout: GalleryTagStripLayout = GalleryTagStripLayout.WRAP
   @Param maxTags: number = 10
-  @Param onDarkSurface: boolean = false
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
 
   private visibleTags(): NhTag[] {
@@ -39,48 +33,35 @@ export struct GalleryTagStrip {
   }
 
   @Builder
-  private TagChip(tag: NhTag) {
+  private LightTagChip(tag: NhTag) {
     Text(this.displayLabel(tag))
-      .fontSize(ThemeTokens.FONT_SIZE_TINY)
-      .fontWeight(FontWeight.Medium)
-      .fontColor(this.onDarkSurface ? ThemeTokens.TEXT_ON_BRAND : ThemeTokens.TEXT_PRIMARY)
+      .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+      .fontColor(ThemeTokens.TEXT_SECONDARY)
       .maxLines(1)
       .textOverflow({ overflow: TextOverflow.Ellipsis })
-      .border({
-        width: this.onDarkSurface ? 0 : 1,
-        color: this.onDarkSurface ? Color.Transparent : ThemeTokens.DIVIDER,
+      .backgroundColor(ThemeTokens.BRAND_CONTAINER)
+      .borderRadius(ThemeTokens.LIST_TAG_RADIUS)
+      .padding({
+        left: 6,
+        right: 6,
+        top: ThemeTokens.LIST_TAG_PADDING_VERTICAL,
+        bottom: ThemeTokens.LIST_TAG_PADDING_VERTICAL,
       })
-      .borderRadius(ThemeTokens.RADIUS_MD)
-      .padding({ left: 4, right: 4, top: 1, bottom: 1 })
+      .constraintSize({ maxWidth: 160 })
   }
 
   build() {
     Column() {
       if (this.browsePresentation.showGalleryTags && this.visibleTags().length > 0) {
-        if (this.layout === GalleryTagStripLayout.SINGLE_LINE) {
-          List({ space: ThemeTokens.SPACE_XS }) {
-            ForEach(this.visibleTags(), (tag: NhTag): void => {
-              ListItem() {
-                this.TagChip(tag)
-              }
-            }, (tag: NhTag): string => tag.id.toString())
-          }
-          .listDirection(Axis.Horizontal)
-          .scrollBar(BarState.Off)
-          .width('100%')
-          .height(20)
-          .padding({ left: ThemeTokens.SPACE_XS, right: ThemeTokens.SPACE_XS })
-        } else {
-          Flex({ wrap: FlexWrap.Wrap }) {
-            ForEach(this.visibleTags(), (tag: NhTag): void => {
-              Column() {
-                this.TagChip(tag)
-              }
-              .margin({ right: ThemeTokens.SPACE_XS, bottom: ThemeTokens.SPACE_XS })
-            }, (tag: NhTag): string => tag.id.toString())
-          }
-          .width('100%')
+        Flex({ wrap: FlexWrap.Wrap }) {
+          ForEach(this.visibleTags(), (tag: NhTag): void => {
+            Column() {
+              this.LightTagChip(tag)
+            }
+            .margin({ right: ThemeTokens.SPACE_XS, bottom: ThemeTokens.SPACE_XS })
+          }, (tag: NhTag): string => tag.id.toString())
         }
+        .width('100%')
       }
     }
     .width('100%')

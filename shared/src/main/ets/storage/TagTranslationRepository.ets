@@ -14,6 +14,8 @@ const MAX_LOOKUP_KEYS_PER_QUERY: number = 200
 const INSERT_BATCH_SIZE: number = 500
 const MAX_SUGGESTIONS: number = 12
 const MAX_SUGGESTION_PREFIX_LENGTH: number = 128
+const TAG_FALLBACK_NAMESPACES: string[] = ['female', 'male', 'mixed', 'other']
+const CATEGORY_FALLBACK_NAMESPACES: string[] = ['reclass']
 const SQL_COUNT: string = 'SELECT COUNT(*) AS count FROM tag_translations'
 const SQL_SELECT_META: string = 'SELECT value FROM tag_translation_meta WHERE key = ? LIMIT 1'
 const SQL_LOOKUP_PREFIX: string =
@@ -37,6 +39,18 @@ const SQL_UPSERT_META: string =
   'ON CONFLICT(key) DO UPDATE SET value = excluded.value'
 
 /**
+ * NH's public API reports common attributes as the broad `tag` type and
+ * reclassifications as `category`, while the local dictionary retains its
+ * finer source namespaces. Keep the original output key so callers never
+ * need to know about this storage-only fallback.
+ */
+class TagTranslationLookupPlan {
+  outputKey: string = ''
+  rawName: string = ''
+  fallbackNamespaces: string[] = []
+}
+
+/**
  * Storage boundary for the optional local tag dictionary. Keys are always the
  * exact normalized namespace plus raw tag name; the dictionary never changes
  * the query sent to the anonymous API.
@@ -55,6 +69,7 @@ export class TagTranslationRepository {
   ): Promise<Map<string, string>> {
     const translations: Map<string, string> = new Map<string, string>()
     const keysByNamespace: Map<string, string[]> = new Map<string, string[]>()
+    const fallbackPlans: Map<string, TagTranslationLookupPlan> = new Map<string, TagTranslationLookupPlan>()
     for (let index: number = 0; index < tags.length; index++) {
       const namespace: string = TagTranslationRepository.normalizedNamespace(tags[index].type)
       const rawName: string = TagTranslationRepository.normalizedRawName(tags[index].name)
@@ -66,6 +81,15 @@ export class TagTranslationRepository {
         keysByNamespace.set(namespace, [rawName])
       } else if (existing.indexOf(rawName) < 0) {
         existing.push(rawName)
+      }
+      const fallbackNamespaces: string[] = TagTranslationRepository.fallbackNamespaces(namespace)
+      const outputKey: string = TagTranslationRepository.makeKey(namespace, rawName)
+      if (fallbackNamespaces.length > 0 && outputKey.length > 0 && !fallbackPlans.has(outputKey)) {
+        const plan: TagTranslationLookupPlan = new TagTranslationLookupPlan()
+        plan.outputKey = outputKey
+        plan.rawName = rawName
+        plan.fallbackNamespaces = fallbackNamespaces
+        fallbackPlans.set(outputKey, plan)
       }
     }
     if (keysByNamespace.size === 0) {
@@ -85,6 +109,7 @@ export class TagTranslationRepository {
         await TagTranslationRepository.lookupBatch(store, namespace, rawNames.slice(start, end), translations)
       }
     }
+    await TagTranslationRepository.lookupFallbacks(store, fallbackPlans, translations)
     return translations
   }
 
@@ -311,6 +336,76 @@ export class TagTranslationRepository {
     }
   }
 
+  /**
+   * The dictionary has no `tag` or `category` rows for public NH attributes.
+   * Exact matches above always win. For the few aliases whose source type was
+   * intentionally collapsed by NH, accept a fallback only when every matching
+   * alias supplies the same visible label; differing gender/category labels
+   * remain raw rather than being guessed from insertion order.
+   */
+  private static async lookupFallbacks(
+    store: relationalStore.RdbStore,
+    plans: Map<string, TagTranslationLookupPlan>,
+    translations: Map<string, string>,
+  ): Promise<void> {
+    if (plans.size === 0) {
+      return
+    }
+    const namesByNamespace: Map<string, string[]> = new Map<string, string[]>()
+    plans.forEach((plan: TagTranslationLookupPlan): void => {
+      if (translations.has(plan.outputKey)) {
+        return
+      }
+      for (let namespaceIndex: number = 0; namespaceIndex < plan.fallbackNamespaces.length; namespaceIndex++) {
+        const namespace: string = plan.fallbackNamespaces[namespaceIndex]
+        const names: string[] | undefined = namesByNamespace.get(namespace)
+        if (names === undefined) {
+          namesByNamespace.set(namespace, [plan.rawName])
+        } else if (names.indexOf(plan.rawName) < 0) {
+          names.push(plan.rawName)
+        }
+      }
+    })
+    if (namesByNamespace.size === 0) {
+      return
+    }
+    const fallbackRows: Map<string, string> = new Map<string, string>()
+    const namespaces: string[] = Array.from(namesByNamespace.keys())
+    for (let namespaceIndex: number = 0; namespaceIndex < namespaces.length; namespaceIndex++) {
+      const namespace: string = namespaces[namespaceIndex]
+      const rawNames: string[] | undefined = namesByNamespace.get(namespace)
+      if (rawNames === undefined) {
+        continue
+      }
+      for (let start: number = 0; start < rawNames.length; start += MAX_LOOKUP_KEYS_PER_QUERY) {
+        const end: number = Math.min(rawNames.length, start + MAX_LOOKUP_KEYS_PER_QUERY)
+        await TagTranslationRepository.lookupBatch(store, namespace, rawNames.slice(start, end), fallbackRows)
+      }
+    }
+    plans.forEach((plan: TagTranslationLookupPlan): void => {
+      if (translations.has(plan.outputKey)) {
+        return
+      }
+      const labels: Set<string> = new Set<string>()
+      for (let namespaceIndex: number = 0; namespaceIndex < plan.fallbackNamespaces.length; namespaceIndex++) {
+        const key: string = TagTranslationRepository.makeKey(
+          plan.fallbackNamespaces[namespaceIndex],
+          plan.rawName,
+        )
+        const label: string | undefined = fallbackRows.get(key)
+        if (label !== undefined && label.length > 0) {
+          labels.add(label)
+        }
+      }
+      if (labels.size === 1) {
+        const label: string | undefined = Array.from(labels.values())[0]
+        if (label !== undefined) {
+          translations.set(plan.outputKey, label)
+        }
+      }
+    })
+  }
+
   private static async metaValue(store: relationalStore.RdbStore, key: string): Promise<string> {
     let rows: relationalStore.ResultSet | null = null
     try {
@@ -360,6 +455,16 @@ export class TagTranslationRepository {
 
   private static normalizedRawName(name: string): string {
     return name.trim().toLowerCase()
+  }
+
+  private static fallbackNamespaces(namespace: string): string[] {
+    if (namespace === 'tag') {
+      return TAG_FALLBACK_NAMESPACES.slice()
+    }
+    if (namespace === 'category') {
+      return CATEGORY_FALLBACK_NAMESPACES.slice()
+    }
+    return []
   }
 
   private static containsCjk(value: string): boolean {

@@ -79,6 +79,7 @@ export class BrowsePresentationRepository {
       )
       state.showGalleryTags = BrowsePresentationRepository.normalizeBoolean(
         await BrowsePresentationRepository.readValue(store, SHOW_GALLERY_TAGS_KEY),
+        true,
       )
       // Earlier NextN builds always used a resolved dictionary label when one
       // existed. An absent key therefore retains that visible behavior for an

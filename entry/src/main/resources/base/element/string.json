@@ -777,7 +777,7 @@
     { "name": "settings_cover_background_blur", "value": "Blur cover background" },
     { "name": "settings_cover_background_blur_hint", "value": "Fill letterbox gaps around contained gallery covers with a blurred cover" },
     { "name": "settings_gallery_card_tags", "value": "Show gallery tags" },
-    { "name": "settings_gallery_card_tags_hint", "value": "Show resolved tags on list and waterfall gallery cards" },
+    { "name": "settings_gallery_card_tags_hint", "value": "Show resolved tags in list and waterfall gallery cards" },
     { "name": "settings_gallery_tag_translations", "value": "Show translated tag labels" },
     { "name": "settings_gallery_japanese_title_primary", "value": "Japanese title in gallery detail" },
     { "name": "settings_gallery_japanese_title_primary_hint", "value": "Use the original Japanese title as the primary title on Gallery Detail when available" },

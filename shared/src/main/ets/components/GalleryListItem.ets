@@ -53,9 +53,8 @@ export struct GalleryListItem {
   }
 
   build() {
-    // This is the NextE GallerySimpleCard grammar adapted only to the fields
-    // available in the ErosN summary DTO: a 72×102 cover, fixed-height info
-    // column, internal spacer, and a hairline divider—not a filled card.
+    // Keep NextE's compact simple-row grammar fixed at 72×102: tags belong to
+    // the distinct LIST and Waterfall contracts, not this metadata row.
     Row({ space: ThemeTokens.SPACE_SM }) {
       if (this.gallery.thumbnailUrl.length > 0) {
         Stack({ alignContent: Alignment.Center }) {
@@ -100,7 +99,7 @@ export struct GalleryListItem {
           .maxLines(2)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .width('100%')
-        if (this.gallery.japaneseTitle.length > 0 && this.gallery.japaneseTitle !== this.gallery.englishTitle) {
+        if (this.gallery.japaneseTitle.length > 0 && this.gallery.japaneseTitle !== this.gallery.displayTitle()) {
           Text(this.gallery.japaneseTitle)
             .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
             .fontColor(ThemeTokens.TEXT_SECONDARY)
