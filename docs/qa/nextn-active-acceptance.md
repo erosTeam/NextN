@@ -30,6 +30,14 @@
   authenticated state. This records the current S0 healthy-session observation
   only. No S1/S2 login route, credential epoch, or
   login-cycle timing record is active.
+- **Favorites collection-state parser regression — 2026-08-14:** the
+  host-side S0 reader containing `e837a4e` ran once against the same selected
+  device with no data clear, uninstall, credential entry, or account mutation.
+  It returned the same fixed healthy S0 booleans: native signed-in Account with
+  no verification/save failure, and native authenticated Favorites with no
+  sign-in prompt/loading/error. This is a normal collection-path non-regression
+  only; inline/footer retry feedback was not induced, so that narrow branch
+  remains source-validated rather than device-accepted.
 
 ## Current Reader presentation-lifecycle smoke — rejected close terminal — 2026-08-14
 
