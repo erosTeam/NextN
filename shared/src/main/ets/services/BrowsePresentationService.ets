@@ -26,6 +26,10 @@ export class BrowsePresentationService {
     return BrowsePresentationRepository.saveShowTranslatedTagLabels(context, value)
   }
 
+  static setListCardFixedHeight(context: common.UIAbilityContext, value: boolean): Promise<void> {
+    return BrowsePresentationRepository.saveListCardFixedHeight(context, value)
+  }
+
   static setLiveColumnWidth(mode: NhBrowsePresentation, width: number): void {
     if (!supportsGalleryColumnDensity(mode)) {
       return

@@ -72,6 +72,7 @@
     { "name": "browse_waterfall", "value": "Waterfall" },
     { "name": "browse_waterfall_compact", "value": "Compact waterfall" },
     { "name": "browse_presentation_hint", "value": "Choose the native Browse arrangement. This changes only loaded local rows and never changes a request." },
+    { "name": "settings_browse_list_fixed_height", "value": "Fixed list row height" },
     { "name": "common_loading", "value": "Loading…" },
     { "name": "common_unable_to_load_page", "value": "Unable to load this page." },
     { "name": "common_refresh_failed", "value": "Refresh failed. Please try again." },

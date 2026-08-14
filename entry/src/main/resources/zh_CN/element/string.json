@@ -72,6 +72,7 @@
     { "name": "browse_waterfall", "value": "瀑布流" },
     { "name": "browse_waterfall_compact", "value": "紧凑瀑布流" },
     { "name": "browse_presentation_hint", "value": "选择原生浏览排布方式。此设置仅改变已加载的本地条目，不会发起新的请求。" },
+    { "name": "settings_browse_list_fixed_height", "value": "固定列表行高" },
     { "name": "common_loading", "value": "加载中…" },
     { "name": "common_unable_to_load_page", "value": "无法加载此页面。" },
     { "name": "common_refresh_failed", "value": "刷新失败，请重试。" },

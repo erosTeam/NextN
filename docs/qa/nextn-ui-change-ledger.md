@@ -506,9 +506,10 @@ authorize an edit, replace a device comparison, or define product completion.
   home-tab switch → Read-button alignment selector → Read-button style
   selector`. View/browse mode, conditional column width, cover background,
   Japanese title, home-tab behavior, alignment, and style are the seven
-  semantically shared leaves. NextN additionally owns two tag-display leaves;
-  NextE has a fixed-height switch without a current NextN equivalent. Those
-  capability differences remain untouched. After those differing leaves, the
+  semantically shared leaves. NextN additionally owns two tag-display leaves.
+  At the time of this icon correction, NextE's fixed-height switch had no
+  NextN equivalent; the later global LIST-height record below owns that
+  separate capability. After those differing leaves, the
   five target rows—cover, Japanese title, home tab, alignment, and style—keep
   their shared relative order, switches/selectors, divider owner, and actions.
   Before this correction, only the Japanese-title row differed by using
@@ -535,6 +536,85 @@ authorize an edit, replace a device comparison, or define product completion.
   so visual parity remains OPEN. Raw local artifacts are retained under
   `.hvigor/outputs/japanese-title-icon-20260814T.Hytu2E/` and excluded from
   source control.
+
+## OPEN — Global LIST fixed-height toggle — 2026-08-14
+
+- **Why newly actionable:** the user explicitly chose “全局生效”. The active
+  Browse layout now needs one global LIST-height preference, not another
+  source-specific override.
+- **Whole reference tree:** `NextE LayoutSettingsPage → SecondaryListScaffold
+  → ListItem → GroupedListSection → view selector → conditional column-width
+  leaf → fixed-list-row-height switch → cover-background switch →
+  Japanese-title switch → home-tab switch → Read-button alignment selector →
+  Read-button style selector`. The reference keeps the height switch visible
+  even when the selected view is not LIST; it is an orthogonal LIST-only
+  preference.
+- **Whole current tree:** `SettingsPage(LAYOUT) → SecondaryListScaffold →
+  ListItem → BrowsePresentationGroup → NextNGroupedListSection → browse-mode
+  selector → gallery-tag switch → translated-label switch → conditional
+  column-width leaf → fixed-list-row-height switch → cover-background switch
+  → Japanese-title switch → home-tab switch → Read-button alignment selector
+  → Read-button style selector`. The two tag leaves remain NextN-specific;
+  the new switch belongs after the conditional column-width leaf and before
+  cover background. Its consumer tree is `GalleryCollectionBody →
+  GalleryMediumCard`, shared by Home, Popular, Search, and Favorites whenever
+  their effective presentation is `LIST`.
+- **Current NextN state:** the LIST renderer is still the fixed
+  `143×204` medium card by default. Home keeps its independent per-source
+  presentation override, but that override only chooses the renderer and must
+  not own this global height preference. Search, Popular, and Favorites all
+  reach the same LIST card path through `GalleryCollectionBody`.
+- **Exact change:** add one persisted global Browse-presentation boolean that
+  defaults to the current fixed `143×204` behavior, surface the reference
+  `rectangle_grid_1x2` switch with a title and state only (no explanatory
+  subtitle), and make `GalleryMediumCard` choose a fixed or adaptive branch.
+  Fixed mode preserves the current dimensions. Adaptive mode obtains the list
+  content width from the existing list scaffold, gives the text column a
+  cover-ratio minimum height, lets wrapped tags grow that column, and matches
+  the cover slot to the settled content height before recalculating
+  contain/cover fit.
+  The setting is global across every LIST consumer but has no renderer effect
+  on Simple List, grid, waterfall, compact waterfall, or cover wall.
+- **Minimality rationale:** this is the narrowest change that makes the user
+  choice global without touching source selection, non-LIST presentations, or
+  request paths. It keeps existing installs visually unchanged until the user
+  opts out of fixed height. Do not fold in the pre-existing cover corner-radius
+  or cover-to-text-spacing differences from NextE; they are separate leaves.
+- **Verification plan:** build the signed HAP, install in place without
+  clearing data, first preserve the current Browse presentation values, then
+  inspect the Settings switch and a loaded LIST card with tags disabled and
+  with wrapped tags enabled. Toggle fixed → adaptive → fixed in the same
+  loaded collection; cold-start and read back the saved value; then restore
+  the prior presentation values. Cover Home, independent Popular, Search, and
+  Favorites only when their effective renderer is LIST. A same-state,
+  same-viewport reference capture is still required before any visual-parity
+  claim.
+- **Unresolved risk:** adaptive LIST height may change title wrapping and tag
+  growth enough to expose layout edge cases on long titles or dense tag sets.
+  Tags-disabled, Home/Search/Favorites effective-LIST, cover-loading, failed,
+  absent, contained-extreme-ratio, and selected states remain OPEN.
+- **Current device observation — 2026-08-14:** the signed Debug HAP was
+  installed in place on only `192.168.50.237:12345` after the live target,
+  lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms` gate. No data clear,
+  uninstall, account action, download action, or content mutation occurred.
+  Native Layout Settings placed `固定列表行高` after the conditional width leaf
+  and before the cover-background leaf. The observed original values were
+  enabled fixed height and `封面网格`; both were restored after the run.
+- In a loaded native Popular collection temporarily switched to global LIST,
+  fixed rows measured `612px` (`204vp` at this device density). With the
+  switch off, the first two fully visible rows—including wrapped-tag content—
+  each settled at `593px` with matching visible/original bounds; their cover
+  slots stayed aligned with the content columns and did not reproduce the
+  earlier viewport-height overflow. A NextN-only cold start read back the
+  disabled value. The original fixed-height and cover-grid values were then
+  restored, and a second NextN-only cold start read both back again.
+- This accepts only the observed Settings placement/writeback/cold-start path.
+  The Popular fixed/adaptive geometry is a current device observation; the
+  visible LIST surface remains OPEN pending a valid same-state,
+  same-viewport NextE comparison. Other global consumers, tags-disabled, and
+  failure/cover edge cases also remain unaccepted. Raw local artifacts remain
+  in `.hvigor/outputs/global-list-height-20260814T.postfix.lXkEmm/` and are
+  excluded from source control.
 
 ## FROZEN — Cache and History tab icon visual-weight correction — 2026-08-13
 

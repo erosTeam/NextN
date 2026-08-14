@@ -72,6 +72,7 @@
     { "name": "browse_waterfall", "value": "ウォーターフォール" },
     { "name": "browse_waterfall_compact", "value": "コンパクトウォーターフォール" },
     { "name": "browse_presentation_hint", "value": "ネイティブのブラウズ配置を選択します。読み込み済みのローカル行だけが変わり、リクエストは変更されません。" },
+    { "name": "settings_browse_list_fixed_height", "value": "リスト行の高さを固定" },
     { "name": "common_loading", "value": "読み込み中…" },
     { "name": "common_unable_to_load_page", "value": "ページを読み込めません。" },
     { "name": "common_refresh_failed", "value": "更新に失敗しました。もう一度お試しください。" },

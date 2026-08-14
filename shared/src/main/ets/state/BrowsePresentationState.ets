@@ -17,6 +17,8 @@ export class BrowsePresentationState {
   @Trace showGalleryTags: boolean = false
   /** Keep raw tag query values separate from the optional translated display label. */
   @Trace showTranslatedTagLabels: boolean = true
+  /** Preserve the current fixed LIST row height by default; the user can opt into adaptive height globally. */
+  @Trace listCardFixedHeight: boolean = true
 
   columnWidthFor(mode: NhBrowsePresentation): number {
     if (mode === NhBrowsePresentation.COVER_GRID) {

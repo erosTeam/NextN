@@ -71,6 +71,8 @@ export struct GalleryCollectionBody {
   @Event onOpenGallery?: (galleryId: number) => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   @Event onUserScroll?: () => void
+  /** Supplied only by the shared List host for adaptive medium-card cover sizing. */
+  @Local listContentWidth: number = 0
   browsePresentation: BrowsePresentationState = connectBrowsePresentation()
 
   private effectivePresentation(): NhBrowsePresentation {
@@ -201,6 +203,7 @@ export struct GalleryCollectionBody {
           GalleryMediumCard({
             gallery: gallery,
             selected: this.isGallerySelected(gallery),
+            listContentWidth: this.listContentWidth,
             onOpen: (galleryId: number): void => {
               this.openGallery(galleryId)
             },
@@ -469,6 +472,9 @@ export struct GalleryCollectionBody {
         },
         onScrollIndex: (_start: number, end: number, _center: number): void => {
           this.onListVisibleRange(end)
+        },
+        onContentWidth: (contentWidth: number): void => {
+          this.listContentWidth = contentWidth
         },
         onDidScroll: (offset: number, state: ScrollState): void => {
           if (this.onDidScroll) {

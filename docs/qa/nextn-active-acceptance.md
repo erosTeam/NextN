@@ -39,6 +39,28 @@
   only; inline/footer retry feedback was not induced, so that narrow branch
   remains source-validated rather than device-accepted.
 
+## Current global LIST-height preference — bounded device result — 2026-08-14
+
+- The signed Debug HAP was installed in place on only
+  `192.168.50.237:12345` after the live target, lease, wake, and `AWAKE` /
+  `OverrideTimeout=86400000ms` gate. No data clear, uninstall, account action,
+  download action, or content mutation occurred.
+- Native Layout Settings placed `固定列表行高` after the conditional width leaf
+  and before cover background. The original observed values were enabled fixed
+  height and `封面网格`. In a loaded Popular collection temporarily switched to
+  global LIST, fixed rows measured `612px`; disabling the switch produced
+  `593px` fully-visible adaptive rows with wrapped tags and matching visible /
+  original bounds, without the previously observed viewport-height overflow.
+- A NextN-only cold start read back the disabled value. The original fixed
+  height and cover-grid values were restored, and a second NextN-only cold
+  start read both back. This accepts only the Settings/writeback/cold-start
+  path. Current Popular fixed/adaptive geometry is observed, while the visible
+  LIST surface remains OPEN pending a valid same-state, same-viewport NextE
+  comparison; other global consumers, tags-disabled and failure/cover states
+  remain unobserved. Raw local artifacts are retained under
+  `.hvigor/outputs/global-list-height-20260814T.postfix.lXkEmm/` and excluded
+  from source control.
+
 ## Current Reader presentation-lifecycle smoke — rejected close terminal — 2026-08-14
 
 - The signed Debug HAP containing `e77a532` was installed in place on only

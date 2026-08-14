@@ -12,6 +12,7 @@ const WATERFALL_COMPACT_COLUMN_WIDTH_KEY: string = 'browse_presentation_waterfal
 const COVER_WALL_COLUMN_WIDTH_KEY: string = 'browse_presentation_cover_wall_column_width'
 const SHOW_GALLERY_TAGS_KEY: string = 'browse_presentation_show_gallery_tags'
 const SHOW_TRANSLATED_TAG_LABELS_KEY: string = 'browse_presentation_show_translated_tag_labels'
+const LIST_CARD_FIXED_HEIGHT_KEY: string = 'browse_presentation_list_card_fixed_height'
 const SQL_SELECT_PRESENTATION: string =
   'SELECT value FROM browse_presentation_settings WHERE key = ? LIMIT 1'
 const SQL_UPSERT_PRESENTATION: string =
@@ -86,6 +87,10 @@ export class BrowsePresentationRepository {
         await BrowsePresentationRepository.readValue(store, SHOW_TRANSLATED_TAG_LABELS_KEY),
         true,
       )
+      state.listCardFixedHeight = BrowsePresentationRepository.normalizeBoolean(
+        await BrowsePresentationRepository.readValue(store, LIST_CARD_FIXED_HEIGHT_KEY),
+        true,
+      )
       return mode
     } catch (error) {
       throw (error as Error)
@@ -132,6 +137,14 @@ export class BrowsePresentationRepository {
     return BrowsePresentationRepository.enqueueWrite(async (): Promise<void> => {
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
       await store.executeSql(SQL_UPSERT_PRESENTATION, [SHOW_TRANSLATED_TAG_LABELS_KEY, value ? '1' : '0'])
+    })
+  }
+
+  static saveListCardFixedHeight(context: common.UIAbilityContext, value: boolean): Promise<void> {
+    connectBrowsePresentation().listCardFixedHeight = value
+    return BrowsePresentationRepository.enqueueWrite(async (): Promise<void> => {
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      await store.executeSql(SQL_UPSERT_PRESENTATION, [LIST_CARD_FIXED_HEIGHT_KEY, value ? '1' : '0'])
     })
   }
 

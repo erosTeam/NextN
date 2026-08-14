@@ -525,6 +525,13 @@ export struct SettingsPage {
     })
   }
 
+  private setListCardFixedHeight(value: boolean): void {
+    this.browsePresentationError = ''
+    BrowsePresentationService.setListCardFixedHeight(this.context(), value).catch((): void => {
+      this.browsePresentationError = AppStrings.get('settings_browse_presentation_save_failed')
+    })
+  }
+
   private catalogLanguageLabel(language: NhSearchLanguage): string {
     return NhSearchOptions.languageLabel(language)
   }
@@ -3182,6 +3189,24 @@ export struct SettingsPage {
           },
         })
       }
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.rectangle_grid_1x2'),
+        title: AppStrings.get('settings_browse_list_fixed_height'),
+        hasSwitch: true,
+        checked: this.browsePresentation.listCardFixedHeight,
+        showChevron: false,
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_browse_list_fixed_height'),
+          this.toggleStateLabel(this.browsePresentation.listCardFixedHeight),
+        ]),
+        onAction: (): void => {
+          this.setListCardFixedHeight(!this.browsePresentation.listCardFixedHeight)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.setListCardFixedHeight(value)
+        },
+      })
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.picture'),
