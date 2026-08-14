@@ -2030,6 +2030,19 @@ authorize an edit, replace a device comparison, or define product completion.
   was not delivered, because the earlier app-HiLog route-marker channel was
   itself rejected for missing markers. Retain this as OPEN until a distinct,
   independently proven platform observation is available.
+- **Trace-control precondition — 2026-08-14:** the selected `.237` device's
+  read-only `hitrace --list_categories` probe currently lists the official
+  `multimodalinput`, `window`, and `ability` categories. Category availability
+  does not establish that a trace will carry a usable input or foreground
+  transition. Before the rejected Reader path can be considered, one
+  non-Reader control may use an already foreground-confirmed native Gallery
+  Detail with no Reader overlay, one bounded trace containing exactly those
+  categories, and one literal Back. Its sole purpose is to determine whether
+  this device/trace path can positively retain the ordinary system input and
+  window/ability transition. It changes no application source, preference,
+  account, content, Reader route, or canvas input. If that control lacks a
+  positive relevant sequence, it is inconclusive and the Reader Back route
+  remains prohibited; do not substitute a second control or a Reader retry.
 
 ## FROZEN — Reader enhancement input-height preference UI
 
