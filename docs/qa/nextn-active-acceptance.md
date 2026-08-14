@@ -20,6 +20,16 @@
   summary. The exceptional durable-marker state was not induced; this is a
   healthy-session non-regression observation, not runtime acceptance of the
   marker branch.
+- **Native Account anchor validation — 2026-08-14:** the signed HAP containing
+  `77cd8b0` was installed in place with `-r`; no data clear, uninstall,
+  credential entry, or account mutation occurred. One privacy-bounded native
+  S0 reader then returned its fixed successful summary using the new native
+  Account root marker: visible login Web absent, native section present,
+  signed in, not signed out, no verification requirement, and no save failure;
+  Favorites remained native with no sign-in prompt/loading/error and an
+  authenticated state. This records the current S0 healthy-session observation
+  only. No S1/S2 login route, credential epoch, or
+  login-cycle timing record is active.
 
 ## Current Reader presentation-lifecycle smoke — rejected close terminal — 2026-08-14
 
