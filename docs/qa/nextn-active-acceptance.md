@@ -1,5 +1,25 @@
 # NextN active device-acceptance queue
 
+## Current Settings wording correction — bounded device observation — 2026-08-15
+
+- The signed HAP built from `39fba26` was installed in place with `-r` on the
+  selected `.237` device after the live target, lease, wake, and `AWAKE` /
+  `OverrideTimeout=86400000ms` gate. No data clear, uninstall, account action,
+  content action, or preference value change occurred.
+- On a foreground-confirmed native `Settings → 界面` route, the visible Browse
+  rows read `列表视图` with `网格`, `显示标签` with the factual List/Waterfall
+  scope, and `标签翻译`; the former opaque labels did not appear. The rows were
+  fully within the current viewport without observed clipping.
+- The current `阅读按钮样式` row displayed the reference-backed description
+  `切换画廊详情页悬浮阅读按钮外观`; opening and dismissing its value menu without
+  selection showed `实心主色` and `光感材质`. This is a wording and menu-presence
+  observation only; it does not accept button rendering behavior.
+- This does not accept the remaining Settings copy audit or any visual-parity
+  claim. A current same-state, same-viewport NextE capture remains required
+  for that boundary. Raw local artifacts are retained under
+  `.hvigor/outputs/settings-copy-reference-20260815T1850/` and are excluded
+  from source control.
+
 ## Current native Account/Favorites S0 — accepted existing session — 2026-08-14
 
 - Only `192.168.50.237:12345` was live-resolved, leased, and read back as

@@ -50,6 +50,14 @@ authorize an edit, replace a device comparison, or define product completion.
   value. A same-state, same-viewport NextE comparison is still required before
   any visual-parity claim; source wording and a build alone do not accept this
   visible lane.
+- **Observed 2026-08-15:** `39fba26` passed the signed build and was installed
+  in place on the selected `.237` device. A foreground-confirmed native
+  `Settings → 界面` observation showed `列表视图 / 网格`, `显示标签` with its
+  factual List/Waterfall scope, and `标签翻译`; no former opaque label appeared.
+  The `阅读按钮样式` row and its non-mutating menu observation showed the exact
+  reference-backed description plus `实心主色` and `光感材质`. This is bounded
+  NextN wording evidence only; the broader audit and same-state NextE visual
+  comparison remain OPEN.
 
 ## OPEN — Search structured advanced conditions — 2026-08-14
 
