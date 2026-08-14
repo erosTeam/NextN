@@ -124,6 +124,27 @@
   remain OPEN rather than inferred. Raw local artifacts are retained under
   `.hvigor/outputs/reader-background-20260814T/` and are excluded from source
   control.
+- **Additional bounded observation — 2026-08-14:** the current signed HAP was
+  installed in place on the same selected device. Starting from the observed
+  `黑色` background and enabled Reader-fullscreen values, only `自动` and
+  fullscreen-off were selected in the root Reader Settings page. A subsequent
+  NextN-only force-stop/start without a data clear or uninstall in this run
+  returned to Settings with both temporary values rendered. The existing direct Gallery → `继续 P1`
+  route then reached a foreground-confirmed native Reader overlay without any
+  Reader canvas, menu, or Back input. Its initial hidden-chrome capture kept a
+  visible system status bar whose recorded icon styling was dark.
+- The original fullscreen-on and black-background values were restored, then a
+  final NextN-only force-stop/start without a data clear or uninstall read both
+  originals back.
+  Raw local evidence is retained under
+  `.hvigor/outputs/reader-background-auto-statusbar-20260814T0210/` and is
+  excluded from source control. That directory intentionally retains layouts
+  and one terminal screenshot but no protocol-runner command ledger, so this
+  is a bounded current-run observation rather than an independently replayable
+  cold-start acceptance. It does not prove the other Automatic-theme branch,
+  chrome-visible/fullscreen-on status-bar behavior, loading/failure or
+  vertical/double-page contrast, Reader-owned Settings-sheet behavior, or
+  same-state NextE visual parity.
 
 ## Current Reader double-page-layout preference — bounded device result — 2026-08-14
 

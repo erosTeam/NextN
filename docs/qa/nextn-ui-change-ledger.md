@@ -102,6 +102,21 @@ authorize an edit, replace a device comparison, or define product completion.
   over black/gray, plus readable loading/retry/failure leaves where each can be
   safely reached. A current same-state, same-viewport NextE capture remains
   required before any visual-parity claim; no UI static contract is permitted.
+- **Additional bounded device observation — 2026-08-14:** in the routed root
+  Settings entry, `自动` plus fullscreen-off were rendered again after one
+  NextN-only force-stop/start without a data clear or uninstall. The
+  documented direct Gallery route then reached a foreground Reader overlay
+  with initial chrome hidden;
+  the system status bar remained visible and its retained icon styling was
+  dark for that one current Automatic state. Both temporary values were
+  restored to their observed originals (`黑色`, fullscreen on) and read back
+  after another NextN-only force-stop/start without a data clear or uninstall.
+  The local artifact directory retains layouts and a terminal screenshot but no
+  protocol-runner command ledger, so
+  this is evidence of one bounded current run, not independently replayable
+  cold-start acceptance. Automatic under the other effective theme, all
+  chrome/fullscreen combinations, Reader-sheet entry, other canvas states, and
+  reference parity remain OPEN.
 
 ## OPEN — Reader double-page layout preference — 2026-08-14
 
