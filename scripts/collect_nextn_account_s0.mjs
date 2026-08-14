@@ -22,6 +22,7 @@ const HDC = '/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/to
 const NEXTN_BUNDLE = 'com.erosteam.nextn'
 const ENTRY_ABILITY = 'EntryAbility'
 const ACCOUNT_ENTRY_ID = 'nextn-settings-root-account'
+const ACCOUNT_NATIVE_ROOT_ID = 'nextn-account-native-root'
 const FAVORITES_ROOT_ID = 'nextn-favorites-root'
 const AUTHORIZED_TARGET = '192.168.50.237:12345'
 const RESOURCE_LOCALES = ['base', 'en_US', 'zh_CN', 'ja_JP']
@@ -386,12 +387,13 @@ async function waitForAnchorableLayout(target, lease, hostTempDirectory, label, 
 }
 
 function accountSummary(root, labels) {
-  const visibleLoginWeb = hasType(root, new Set(['Web', 'WebComponent']))
-  const signedIn = hasLabel(root, labels.accountSignedIn)
-  const signedOut = hasLabel(root, labels.accountSignedOut)
-  const verificationRequired = hasLabel(root, labels.accountVerificationRequired)
-  const saveFailed = hasLabel(root, labels.accountSaveFailed)
-  const nativeSection = !visibleLoginWeb && hasLabel(root, labels.accountNative) && hasLabel(root, labels.accountAction)
+  const accountRoot = uniqueVisibleMarker(root, ACCOUNT_NATIVE_ROOT_ID, 'account_summary_incomplete', 'account_summary_incomplete')
+  const visibleLoginWeb = hasType(accountRoot, new Set(['Web', 'WebComponent']))
+  const signedIn = hasLabel(accountRoot, labels.accountSignedIn)
+  const signedOut = hasLabel(accountRoot, labels.accountSignedOut)
+  const verificationRequired = hasLabel(accountRoot, labels.accountVerificationRequired)
+  const saveFailed = hasLabel(accountRoot, labels.accountSaveFailed)
+  const nativeSection = !visibleLoginWeb
   return { visibleLoginWeb, nativeSection, signedIn, signedOut, verificationRequired, saveFailed }
 }
 
@@ -458,12 +460,10 @@ async function main() {
     const [
       tabSettings,
       tabFavorites,
-      accountNative,
       accountSignedIn,
       accountSignedOut,
       accountVerificationRequired,
       accountSaveFailed,
-      accountAction,
       favoritesNative,
       favoritesSignInPrompt,
       favoritesLoading,
@@ -472,12 +472,10 @@ async function main() {
     ] = await Promise.all([
       loadLabels(new Set(['tab_settings'])),
       loadLabels(new Set(['tab_favorites'])),
-      loadLabels(new Set(['account_title'])),
       loadLabels(new Set(['account_status_signed_in'])),
       loadLabels(new Set(['account_status_not_signed_in'])),
       loadLabels(new Set(['account_status_verification_required'])),
       loadLabels(new Set(['account_save_failed'])),
-      loadLabels(new Set(['account_open_browser', 'account_sign_in', 'account_verify_sign_in'])),
       loadLabels(new Set(['tab_favorites'])),
       loadLabels(new Set(['favorites_sign_in_settings'])),
       loadLabels(new Set(['favorites_checking_session', 'favorites_loading'])),
@@ -488,12 +486,10 @@ async function main() {
       tabSettings,
       tabFavorites,
       accountEntry: new Set([ACCOUNT_ENTRY_ID]),
-      accountNative,
       accountSignedIn,
       accountSignedOut,
       accountVerificationRequired,
       accountSaveFailed,
-      accountAction,
       favoritesNative,
       favoritesSignInPrompt,
       favoritesLoading,

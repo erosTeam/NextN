@@ -530,7 +530,7 @@ export struct BrowserSessionPage {
    */
   @Builder
   private AccountSection() {
-    NextNGroupedListSection() {
+    NextNGroupedListSection({ accessibilityId: 'nextn-account-native-root' }) {
       if (this.sessionStatus.phase === NhBrowserSessionPhase.AUTHENTICATED && this.accountProfile.hasSnapshot) {
         NextNListRow({
           leadingImageUrl: this.accountProfile.avatarUrl,

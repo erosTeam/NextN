@@ -12,6 +12,7 @@ export struct NextNGroupedListSection {
   @BuilderParam content: () => void
   @Param inset: number = ThemeTokens.SPACE_XS
   @Param radius: number = ThemeTokens.RADIUS_CARD
+  @Param accessibilityId: string = ''
 
   build() {
     Column() {
@@ -23,5 +24,6 @@ export struct NextNGroupedListSection {
     .clip(true)
     .padding(this.inset)
     .backgroundColor(ThemeTokens.CARD_BACKGROUND)
+    .id(this.accessibilityId)
   }
 }
