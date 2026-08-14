@@ -24,6 +24,29 @@
   `.hvigor/outputs/reader-lifecycle-20260814T/` and are excluded from source
   control.
 
+## Current Reader Back platform-trace control — bounded positive control — 2026-08-14
+
+- The selected `.237` device's read-only `hitrace --list_categories` probe
+  exposed `multimodalinput`, `window`, and `ability`. A single bounded control
+  then began those categories on a foreground-confirmed native NextN Gallery
+  Detail with no Reader overlay, injected exactly one literal system Back, and
+  finished/received its trace through the manifest-owned cleanup path. The
+  pre- and post-control layouts both retained native
+  `com.erosteam.nextn:EntryAbility` at the same `1320×2120` root viewport.
+- The retained local trace positively contains the injected key event, its
+  system dispatch, NextN consumption, and subsequent Window/Ability activity.
+  This establishes only that the selected device and bounded trace path can
+  observe an ordinary Back delivery; it does not establish Reader close
+  semantics or explain the rejected SceneBoard terminal.
+- No Reader action, canvas input, account, preference, content, data clear,
+  or uninstall occurred in the control. The raw local manifest, layouts, and
+  trace are retained under
+  `.hvigor/outputs/reader-back-platform-control-20260814T0800.PJc2b1/` and
+  are excluded from source control.
+- This control authorizes at most one same-category Reader trace after a fresh
+  native Reader precondition. Any missing/ambiguous trace record remains
+  inconclusive and permits no second Reader Back injection.
+
 ## Current Reader background preference — bounded device result — 2026-08-14
 
 - The signed Debug HAP containing `14f4a74` was installed in place on only

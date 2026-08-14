@@ -2043,6 +2043,16 @@ authorize an edit, replace a device comparison, or define product completion.
   account, content, Reader route, or canvas input. If that control lacks a
   positive relevant sequence, it is inconclusive and the Reader Back route
   remains prohibited; do not substitute a second control or a Reader retry.
+- **Trace-control result — 2026-08-14:** the one bounded ordinary native
+  Gallery Detail control retained a positive system sequence: the literal Back
+  was injected, dispatched, consumed by NextN, and followed by Window/Ability
+  activity, while the before/after roots remained native NextN. This proves
+  only that this device/trace combination can represent one ordinary Back
+  delivery; it does not prove a Reader close semantic or attribute the
+  rejected SceneBoard terminal. It permits exactly one same-category Reader
+  trace after a fresh native Reader precondition, with one literal Back and no
+  other input. An absent or ambiguous Reader record remains inconclusive and
+  permits no second Reader trace or source change.
 
 ## FROZEN — Reader enhancement input-height preference UI
 
