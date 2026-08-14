@@ -400,13 +400,16 @@ function accountSummary(root, labels) {
 function favoritesSummary(root, labels) {
   const favoritesRoot = uniqueVisibleMarker(root, FAVORITES_ROOT_ID, 'favorites_root_marker_missing', 'favorites_root_marker_ambiguous')
   const nativeStructure = isForegroundNextn(root) && hasSelectedLabel(root, labels.favoritesNative)
-  const signInPrompt = hasLabel(favoritesRoot, labels.favoritesSignInPrompt)
-  const loading = hasLabel(favoritesRoot, labels.favoritesLoading)
-  const error = hasLabel(favoritesRoot, labels.favoritesError)
-  const empty = hasLabel(favoritesRoot, labels.favoritesEmpty)
   const collection = hasType(favoritesRoot, new Set(['List', 'Grid', 'WaterFlow']))
-  const settledPositive = !signInPrompt && !loading && !error && (empty !== collection)
-  const authenticated = nativeStructure && settledPositive
+  // This cold-start S0 reader has no persisted gallery snapshot: a collection
+  // mounts only after this process's page-one Favorites request succeeds. Its
+  // inline/footer feedback is not a full-page session state.
+  const primaryState = !collection
+  const signInPrompt = primaryState && hasLabel(favoritesRoot, labels.favoritesSignInPrompt)
+  const loading = primaryState && hasLabel(favoritesRoot, labels.favoritesLoading)
+  const error = primaryState && hasLabel(favoritesRoot, labels.favoritesError)
+  const empty = primaryState && hasLabel(favoritesRoot, labels.favoritesEmpty)
+  const authenticated = nativeStructure && (collection || (!signInPrompt && !loading && !error && empty))
   return { nativeStructure, signInPrompt, loading, error, authenticated }
 }
 
@@ -479,7 +482,7 @@ async function main() {
       loadLabels(new Set(['tab_favorites'])),
       loadLabels(new Set(['favorites_sign_in_settings'])),
       loadLabels(new Set(['favorites_checking_session', 'favorites_loading'])),
-      loadLabels(new Set(['favorites_load_failed', 'favorites_retry_loading', 'common_retry'])),
+      loadLabels(new Set(['common_retry'])),
       loadLabels(new Set(['favorites_empty', 'favorites_search_empty']))
     ])
     const labels = {
