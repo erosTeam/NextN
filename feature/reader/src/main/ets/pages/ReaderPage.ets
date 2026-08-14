@@ -2,7 +2,6 @@ import { common } from '@kit.AbilityKit'
 import { LengthMetrics, SymbolGlyphModifier, window } from '@kit.ArkUI'
 import { fileUri } from '@kit.CoreFileKit'
 import { KeyCode } from '@kit.InputKit'
-import { hilog } from '@kit.PerformanceAnalysisKit'
 import inputConsumer from '@ohos.multimodalInput.inputConsumer'
 import { Action, KeyEvent as InputConsumerKeyEvent } from '@ohos.multimodalInput.keyEvent'
 import {
@@ -62,8 +61,6 @@ const READER_SECONDARY_FOREGROUND_DARK_CANVAS: ResourceColor = '#CCFFFFFF'
 const READER_SECONDARY_FOREGROUND_LIGHT_CANVAS: ResourceColor = '#B3000000'
 const READER_CONTROL_TINT_DARK_CANVAS: ResourceColor = '#26FFFFFF'
 const READER_CONTROL_TINT_LIGHT_CANVAS: ResourceColor = '#26000000'
-const READER_TURN_DIAGNOSTIC_LOG_DOMAIN: number = 0x0000
-const READER_TURN_DIAGNOSTIC_LOG_TAG: string = 'NextNReaderTurnDiag'
 const READER_MAX_ZOOM_SCALE: number = 4
 const READER_ZOOM_EPSILON: number = 1.01
 const READER_ZOOM_ANIMATION_MS: number = 180
@@ -1649,13 +1646,6 @@ export struct ReaderPage {
   private thumbnailScroller: Scroller = new Scroller()
   private autoReadTimerId: number = -1
   private autoReadWaitingIndex: number = -1
-  /** One-shot, non-rendered diagnostic state for the bounded volume-key run. */
-  private readerTurnDiagnosticActive: boolean = false
-  private readerTurnDiagnosticExpectedDisplayIndex: number = -1
-  private readerTurnDiagnosticExpectedAnimation: boolean = false
-  private readerTurnDiagnosticSawAnimationStart: boolean = false
-  private readerTurnDiagnosticSawAnimationEnd: boolean = false
-  private readerTurnDiagnosticSawChange: boolean = false
   private loadedImageIndexes: number[] = []
   private volumeDownConsumer: ((event: InputConsumerKeyEvent) => void) | null = null
   private volumeUpConsumer: ((event: InputConsumerKeyEvent) => void) | null = null
@@ -1687,7 +1677,6 @@ export struct ReaderPage {
     this.resetReaderEnhancementInteractionPause()
     this.resetReaderTranslationAutoSession()
     this.stopAutoRead()
-    this.clearReaderTurnDiagnostic()
     this.unregisterVolumeKeyConsumer()
     this.invalidateReaderRequest()
     this.restoreWindowPolicy()
@@ -1857,7 +1846,6 @@ export struct ReaderPage {
    * order while slider/progress still interpret single-page display indexes.
    */
   private rebuildReaderPageDataSources(sourceIndex: number): void {
-    this.clearReaderTurnDiagnostic()
     const currentIndex: number = this.readerNavigationIndex(sourceIndex)
     this.pageDataSource.setData(this.detail.pages, this.isRightToLeftPagedMode())
     this.spreadDataSource.setData(this.detail.pages, this.isRightToLeftPagedMode())
@@ -2052,7 +2040,6 @@ export struct ReaderPage {
   }
 
   private async loadReader(): Promise<void> {
-    this.clearReaderTurnDiagnostic()
     const generation: number = this.requestGeneration + 1
     this.requestGeneration = generation
     this.isLoading = true
@@ -3197,97 +3184,15 @@ export struct ReaderPage {
     return Math.abs(targetDisplayIndex - currentDisplayIndex) === 1
   }
 
-  /**
-   * This temporary hook records only fixed component stages for one
-   * volume-key turn. It never participates in Reader state or persistence.
-   */
-  private recordReaderTurnDiagnostic(event: string): void {
-    try {
-      hilog.info(
-        READER_TURN_DIAGNOSTIC_LOG_DOMAIN,
-        READER_TURN_DIAGNOSTIC_LOG_TAG,
-        'event=%{public}s',
-        event,
-      )
-    } catch (_error) {}
-  }
-
-  private clearReaderTurnDiagnostic(): void {
-    this.readerTurnDiagnosticActive = false
-    this.readerTurnDiagnosticExpectedDisplayIndex = -1
-    this.readerTurnDiagnosticExpectedAnimation = false
-    this.readerTurnDiagnosticSawAnimationStart = false
-    this.readerTurnDiagnosticSawAnimationEnd = false
-    this.readerTurnDiagnosticSawChange = false
-  }
-
-  private armReaderTurnDiagnostic(targetDisplayIndex: number, animated: boolean): void {
-    this.clearReaderTurnDiagnostic()
-    this.readerTurnDiagnosticActive = true
-    this.readerTurnDiagnosticExpectedDisplayIndex = targetDisplayIndex
-    this.readerTurnDiagnosticExpectedAnimation = animated
-    this.recordReaderTurnDiagnostic(animated ? 'volume_turn_request_animated' : 'volume_turn_request_instant')
-  }
-
-  private settleReaderTurnDiagnosticIfReady(): void {
-    if (!this.readerTurnDiagnosticActive || !this.readerTurnDiagnosticSawChange) {
-      return
-    }
-    const requiresAnimationEnd: boolean = this.readerTurnDiagnosticExpectedAnimation ||
-      this.readerTurnDiagnosticSawAnimationStart
-    if (!requiresAnimationEnd || this.readerTurnDiagnosticSawAnimationEnd) {
-      this.clearReaderTurnDiagnostic()
-    }
-  }
-
-  private onReaderPagedAnimationStart(targetDisplayIndex: number): void {
-    if (!this.readerTurnDiagnosticActive || targetDisplayIndex !== this.readerTurnDiagnosticExpectedDisplayIndex) {
-      return
-    }
-    this.readerTurnDiagnosticSawAnimationStart = true
-    this.recordReaderTurnDiagnostic('volume_turn_animation_start')
-  }
-
-  private onReaderPagedAnimationEnd(displayIndex: number): void {
-    if (!this.readerTurnDiagnosticActive || displayIndex !== this.readerTurnDiagnosticExpectedDisplayIndex) {
-      return
-    }
-    this.readerTurnDiagnosticSawAnimationEnd = true
-    this.recordReaderTurnDiagnostic('volume_turn_animation_end')
-    this.settleReaderTurnDiagnosticIfReady()
-  }
-
-  private onReaderPagedDiagnosticChange(displayIndex: number): void {
-    if (!this.readerTurnDiagnosticActive || displayIndex !== this.readerTurnDiagnosticExpectedDisplayIndex) {
-      return
-    }
-    this.readerTurnDiagnosticSawChange = true
-    this.recordReaderTurnDiagnostic('volume_turn_change')
-    this.settleReaderTurnDiagnosticIfReady()
-  }
-
-  private turnToReaderPage(
-    index: number,
-    requestAnimation: boolean = false,
-    diagnoseVolumeTurn: boolean = false,
-  ): void {
+  private turnToReaderPage(index: number, requestAnimation: boolean = false): void {
     const target: number = this.readerNavigationIndex(index)
     if (this.isPagedMode()) {
-      const targetDisplayIndex: number = this.pagedDisplayIndexForSourceIndex(target)
-      const animated: boolean = this.shouldAnimateReaderPageTurn(target, requestAnimation)
-      if (diagnoseVolumeTurn) {
-        this.armReaderTurnDiagnostic(targetDisplayIndex, animated)
-      }
       try {
         this.pagedReaderController.changeIndex(
-          targetDisplayIndex,
-          animated,
+          this.pagedDisplayIndexForSourceIndex(target),
+          this.shouldAnimateReaderPageTurn(target, requestAnimation),
         )
       } catch (error) {
-        if (diagnoseVolumeTurn) {
-          this.recordReaderTurnDiagnostic('volume_turn_controller_error')
-          this.clearReaderTurnDiagnostic()
-        }
         console.warn(`Unable to advance Reader page: ${(error as Error).message}`)
       }
       return
@@ -3374,7 +3279,7 @@ export struct ReaderPage {
     if (this.autoReadActive) {
       this.autoReadWaitingIndex = target
     }
-    this.turnToReaderPage(target, true, true)
+    this.turnToReaderPage(target, true)
     this.scrollThumbnailStripTo(target, true)
   }
 
@@ -3875,12 +3780,6 @@ export struct ReaderPage {
     .vertical(this.isVerticallyPagedMode())
     .disableSwipe(this.zoomedPageIndex >= 0)
     .backgroundColor(this.readerCanvasColor())
-    .onAnimationStart((_index: number, targetIndex: number, _extraInfo: SwiperAnimationEvent): void => {
-      this.onReaderPagedAnimationStart(targetIndex)
-    })
-    .onAnimationEnd((index: number, _extraInfo: SwiperAnimationEvent): void => {
-      this.onReaderPagedAnimationEnd(index)
-    })
     .onChange((index: number): void => {
       this.zoomedPageIndex = -1
       this.onReaderPagedIndexChanged(index)
@@ -3945,12 +3844,6 @@ export struct ReaderPage {
     .vertical(false)
     .disableSwipe(this.zoomedPageIndex >= 0)
     .backgroundColor(this.readerCanvasColor())
-    .onAnimationStart((_index: number, targetIndex: number, _extraInfo: SwiperAnimationEvent): void => {
-      this.onReaderPagedAnimationStart(targetIndex)
-    })
-    .onAnimationEnd((index: number, _extraInfo: SwiperAnimationEvent): void => {
-      this.onReaderPagedAnimationEnd(index)
-    })
     .onChange((index: number): void => {
       this.zoomedPageIndex = -1
       this.onReaderPagedIndexChanged(index)
@@ -4194,7 +4087,6 @@ export struct ReaderPage {
   }
 
   private onReaderPagedIndexChanged(displayIndex: number): void {
-    this.onReaderPagedDiagnosticChange(displayIndex)
     this.onReaderSourceIndexChanged(this.sourceIndexForPagedDisplayIndex(displayIndex))
   }
 

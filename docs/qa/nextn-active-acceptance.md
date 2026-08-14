@@ -219,6 +219,44 @@
   `.hvigor/outputs/reader-page-turn-animation-20260814T/` and are excluded
   from source control.
 
+### Adjacent volume-key component diagnostic — bounded device observation — 2026-08-14
+
+- The signed Debug HAP containing a temporary, non-visible Reader diagnostic
+  was installed in place on only `192.168.50.237:12345`. The live target was
+  leased, woken, and read back as `AWAKE` with
+  `OverrideTimeout=86400000ms`; no data clear, uninstall, account action, or
+  download action occurred. The diagnostic tag contained fixed event names
+  only, and its manifest filtered that tag rather than collecting general
+  device logs.
+- Starting from the current original Reader values—continuous vertical mode,
+  enabled page-turn animation, and disabled volume-key turning—the temporary
+  setup used paged LTR plus volume-key turning. A foreground-confirmed native
+  Reader with a valid adjacent next page received exactly one manifest-owned
+  volume-down key event. Its filtered log ordered
+  `volume_turn_request_animated`, `volume_turn_animation_start`,
+  `volume_turn_change`, and `volume_turn_animation_end`; its Reader page
+  counter advanced once.
+- The animation preference was then disabled, the app was force-stopped and
+  the same direct Gallery route resumed the next page, and exactly one
+  manifest-owned volume-up event returned to the initial page. Its filtered
+  log contained `volume_turn_request_instant` followed by
+  `volume_turn_change`, with no diagnostic animation-lifecycle event in the
+  bounded capture. These were normal Reader transitions, so the ordinary
+  local page-progress owner ran; the final page was restored rather than this
+  being a mutation-free probe.
+- The original continuous-vertical mode, enabled animation setting, and
+  disabled volume-key setting were restored and re-read after a final
+  NextN-only force-stop/cold start. The temporary source hook was removed, a
+  clean signed HAP was rebuilt and reinstalled in place, and no further Reader
+  input was sent. This accepts only the real-device component-event distinction
+  for the adjacent volume-key path. It does not establish rendered motion
+  quality, direct Swiper-swipe, tap/auto-read behavior, Slider or thumbnail
+  jumps, Reader-progress persistence after this run, vertical/RTL/double-page
+  paths, Reader-sheet behavior, or same-state NextE visual parity. Raw local
+  evidence is retained under
+  `.hvigor/outputs/reader-page-turn-diagnostic-20260814T.Hbtya0/` and is
+  excluded from source control.
+
 ## Current Reader display-preference validation — route exception — 2026-08-14
 
 - The signed Debug HAP containing `0692116` (hidden page number) and

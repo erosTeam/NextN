@@ -202,28 +202,32 @@ authorize an edit, replace a device comparison, or define product completion.
   tap overlay, zoom, page/progress persistence, cache, Reader-sheet parent
   tree or interaction, image scaling, page-number, background, translation,
   enhancement, or frozen settings-group behavior may change.
-- **Temporary diagnostic boundary — 2026-08-14:** single-frame capture cannot
-  distinguish a `changeIndex(..., true)` transition from an instant one. One
-  temporary, non-visible Reader-only Hilog hook may therefore arm only for a
-  volume-key request, record fixed `request`, `animation_start`,
-  `animation_end`, and `change` stages from the existing two paged Swipers,
-  and match them only to that in-memory target. It records no gallery, page,
-  title, URL, image, exception, or account data; it neither renders nor
-  persists state, and it leaves the existing index-to-progress write path
-  untouched. One foreground-confirmed paged volume-key on/off observation may
-  use the ordinary local progress path and return to its initial page; it is a
-  subset diagnostic, not visual or full feature acceptance. Remove the hook
-  immediately after that bounded run. No Reader canvas/menu/Back input is
-  permitted.
-- **Verification plan:** inspect the scoped diff and build the signed Debug
-  HAP. Then, without clearing data, use one loaded multi-page Reader in a
-  paged mode to verify on/off behavior for an adjacent tap or volume/auto
-  transition, a non-animated Slider/thumbnail jump, the existing vertical
-  behavior, persistence after reopening, and the shared row in both existing
-  Settings entry points. Preserve the current source of truth for visible
-  index/progress and do not use the known-exception menu zone. A same-state,
-  same-viewport NextE capture remains required before any visual-parity claim;
-  no UI static contract is permitted.
+- **Bounded component observation — 2026-08-14:** a temporary, non-visible
+  Reader-only Hilog hook was armed only for the volume-key route, then removed
+  from source after one foreground-confirmed paged LTR on/off run. A clean
+  signed HAP was rebuilt and reinstalled in place without further Reader input.
+  Its tag carried only
+  fixed request/lifecycle stages, not gallery, page, title, URL, image,
+  exception, or account data. With the preference enabled, one volume-down
+  request recorded `request_animated → animation_start → change →
+  animation_end`; with it disabled, one volume-up request recorded
+  `request_instant → change` in its bounded filtered-log window. Both actions
+  settled through the ordinary source-index/progress owner and the initial
+  page was restored. The original continuous-vertical mode, enabled animation
+  preference, and disabled volume-key preference were re-read after a
+  NextN-only force-stop/cold start. This is component-event evidence for the
+  adjacent volume-key subset only, not a visual-motion or full feature
+  acceptance; no Reader canvas/menu/Back input was used.
+- **Remaining verification:** the scoped diff and clean signed build are
+  complete. The controlled component observation covers only the adjacent
+  volume-key path. Without clearing data, a loaded multi-page Reader still
+  needs on/off evidence for an adjacent tap or auto transition, a
+  non-animated Slider/thumbnail jump, existing vertical and direct
+  Swiper-swipe behavior, persistence after reopening, and the shared row in
+  both existing Settings entry points. Preserve the current source of truth
+  for visible index/progress and do not use the known-exception menu zone. A
+  same-state, same-viewport NextE capture remains required before any
+  visual-parity claim; no UI static contract is permitted.
 
 ## OPEN — Reader image-scaling quality preference — 2026-08-14
 
