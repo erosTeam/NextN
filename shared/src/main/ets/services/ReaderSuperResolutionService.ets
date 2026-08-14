@@ -137,6 +137,7 @@ export class ReaderSuperResolutionService {
     const task: Promise<ReaderSuperResolutionResult> = ReaderSuperResolutionService.processNow(
       context,
       sourcePath,
+      sourceKey,
       outputPath,
       modelPaths,
       nativeConfig,
@@ -186,6 +187,7 @@ export class ReaderSuperResolutionService {
   private static async processNow(
     context: common.UIAbilityContext,
     sourcePath: string,
+    sourceKey: string,
     outputPath: string,
     modelPaths: ReaderSuperResolutionModelPaths,
     nativeConfig: ReaderNativeSuperResolutionConfig,
@@ -200,6 +202,15 @@ export class ReaderSuperResolutionService {
     let processingStage: string = 'native_decode'
     try {
       const decoded = await ReaderNativeSuperResolution.decodeImageRgba(sourcePath, maxSourceHeight)
+      // A forced Reader retry can atomically replace this path while native
+      // decode is pending; never promote decoded bytes under the earlier key.
+      const decodedSourceKey: string = ReaderSuperResolutionService.sha256(sourcePath)
+      if (decodedSourceKey.length === 0) {
+        return ReaderSuperResolutionService.original(sourcePath, 'source_hash_failed')
+      }
+      if (decodedSourceKey !== sourceKey) {
+        return ReaderSuperResolutionService.original(sourcePath, 'source_changed')
+      }
       const width: number = decoded.width
       const height: number = decoded.height
       if (width <= 0 || height <= 0) {
@@ -361,7 +372,10 @@ export class ReaderSuperResolutionService {
       for (let index: number = 0; index < names.length; index++) {
         const path: string = `${directory}/${names[index]}`
         if (names[index].endsWith('.part')) {
-          ReaderSuperResolutionService.removeIfExists(path)
+          const finalPath: string = path.substring(0, path.length - '.part'.length)
+          if (!ReaderSuperResolutionService.inFlight.has(finalPath)) {
+            ReaderSuperResolutionService.removeIfExists(path)
+          }
           continue
         }
         if (!names[index].endsWith('.jpg')) {

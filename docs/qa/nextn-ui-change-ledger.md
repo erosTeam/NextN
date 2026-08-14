@@ -2974,6 +2974,19 @@ authorize an edit, replace a device comparison, or define product completion.
   stop matching and age out under the existing cache limit. Exact-diff review
   and signed build establish this source boundary; a future enabled Reader run
   is required for runtime evidence.
+- **Source-only derivative-file race correction — 2026-08-14:** a forced
+  Reader source retry can atomically replace its private source file after the
+  enhancement service derives the content-addressed output key but before
+  native decode completes. Recheck the source hash immediately after decode;
+  a mismatch or failed recheck falls back to the original rather than
+  promoting decoded bytes under an earlier key. Also preserve a `.part` file
+  whenever its exact final derivative path still has an in-flight owner, so
+  one completed derivative's cache prune cannot unlink another task's output
+  while it packs or promotes. This changes only private service failure and
+  cleanup behavior: no Reader UI, source/cache identity, model, download,
+  route, setting, or cache-retention policy changes. Exact-diff review and a
+  signed build establish this source boundary; a real forced-retry plus
+  concurrent-enhancement observation remains OPEN.
 
 ## OPEN — Optional self-hosted staged manga translation
 
