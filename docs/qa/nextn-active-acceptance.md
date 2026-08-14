@@ -17,10 +17,11 @@
   lifecycle failure nor accepts the lifecycle correction. Do not retry the
   close action by coordinate or treat the terminal system layout as app
   evidence.
-- The next safe action is source/diagnostic review of the existing Reader
-  overlay close route before another device close attempt. The specific
-  restore-before-onShown and late-callback races remain uninduced and OPEN.
-  Raw local artifacts are retained under
+- The source/diagnostic review and its one permitted Reader platform trace are
+  recorded below. They establish temporal delivery evidence only, not a
+  Reader-close callback or SceneBoard-causation result; the one Back allowance
+  is consumed. The specific restore-before-onShown and late-callback races
+  remain uninduced and OPEN. Raw local artifacts are retained under
   `.hvigor/outputs/reader-lifecycle-20260814T/` and are excluded from source
   control.
 
