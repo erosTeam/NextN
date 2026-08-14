@@ -202,6 +202,19 @@ authorize an edit, replace a device comparison, or define product completion.
   tap overlay, zoom, page/progress persistence, cache, Reader-sheet parent
   tree or interaction, image scaling, page-number, background, translation,
   enhancement, or frozen settings-group behavior may change.
+- **Temporary diagnostic boundary — 2026-08-14:** single-frame capture cannot
+  distinguish a `changeIndex(..., true)` transition from an instant one. One
+  temporary, non-visible Reader-only Hilog hook may therefore arm only for a
+  volume-key request, record fixed `request`, `animation_start`,
+  `animation_end`, and `change` stages from the existing two paged Swipers,
+  and match them only to that in-memory target. It records no gallery, page,
+  title, URL, image, exception, or account data; it neither renders nor
+  persists state, and it leaves the existing index-to-progress write path
+  untouched. One foreground-confirmed paged volume-key on/off observation may
+  use the ordinary local progress path and return to its initial page; it is a
+  subset diagnostic, not visual or full feature acceptance. Remove the hook
+  immediately after that bounded run. No Reader canvas/menu/Back input is
+  permitted.
 - **Verification plan:** inspect the scoped diff and build the signed Debug
   HAP. Then, without clearing data, use one loaded multi-page Reader in a
   paged mode to verify on/off behavior for an adjacent tap or volume/auto
