@@ -73,6 +73,12 @@ authorize an edit, replace a device comparison, or define product completion.
   Japanese-title explanations, all within the observed viewport. No preference
   value changed. This remains bounded NextN wording evidence only; the broader
   audit and same-state NextE visual comparison remain OPEN.
+- **Download leaf observation:** `d366aac` passed the signed build and was
+  installed in place on the selected `.237` device. The foreground-confirmed
+  native Download Settings page displayed `重试次数` together with its current
+  value inside the viewport; no setting or other user state changed. This is
+  bounded rendered-wording evidence only, not a download-behavior or
+  visual-parity acceptance.
 
 ## OPEN — Search structured advanced conditions — 2026-08-14
 

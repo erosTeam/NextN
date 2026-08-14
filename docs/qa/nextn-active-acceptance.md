@@ -31,6 +31,15 @@
   only, not a visual-parity or behavior acceptance. Raw local artifacts are
   retained under `.hvigor/outputs/settings-copy-reference-20260815T1915/` and
   are excluded from source control.
+- **Download leaf observation:** the signed HAP built from `d366aac` was
+  installed in place with `-r` on the same selected device after a fresh live
+  target, lease, wake, and power-state gate. Native `Settings → 下载` displayed
+  `重试次数` and its current value fully within the viewport. No download value,
+  account state, content, or other preference changed. This accepts only the
+  bounded rendered wording; it does not accept download behavior or visual
+  parity. Raw local artifacts are retained under
+  `.hvigor/outputs/settings-copy-reference-20260815T1930/` and are excluded
+  from source control.
 
 ## Current native Account/Favorites S0 — accepted existing session — 2026-08-14
 
