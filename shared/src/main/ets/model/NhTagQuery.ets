@@ -16,8 +16,43 @@ export class NhTagQuery {
    * This keeps `female`, `male`, `mixed`, and `other` distinct from generic
    * tags while preserving the existing gallery-tag compatibility mapping.
    */
-  static formatExact(namespace: string, rawName: string): string {
-    return NhTagQuery.formatParts(NhTagQuery.exactNamespace(namespace), rawName)
+  static formatExact(namespace: string, rawName: string, excluded: boolean = false): string {
+    const query: string = NhTagQuery.formatParts(NhTagQuery.exactNamespace(namespace), rawName)
+    return excluded && query.length > 0 ? `-${query}` : query
+  }
+
+  /**
+   * Limits autocomplete to the aliases currently mapped by `NhApiClient`'s
+   * anonymous suggestion path. Range operators such as `pages:` are therefore
+   * not misclassified as a tag namespace and never fan out into remote probes.
+   */
+  static isAutocompleteNamespace(rawNamespace: string): boolean {
+    const namespace: string = rawNamespace.trim().toLowerCase()
+    switch (namespace) {
+      case 'tag':
+      case 'tags':
+      case 'female':
+      case 'male':
+      case 'mixed':
+      case 'other':
+      case 'parody':
+      case 'parodies':
+      case 'character':
+      case 'characters':
+      case 'artist':
+      case 'artists':
+      case 'cosplayer':
+      case 'group':
+      case 'groups':
+      case 'language':
+      case 'languages':
+      case 'category':
+      case 'categories':
+      case 'reclass':
+        return true
+      default:
+        return false
+    }
   }
 
   private static formatParts(type: string, rawName: string): string {

@@ -50,6 +50,11 @@ export {
 export { NhSearchHistoryItem } from './model/NhSearchHistory'
 export { NhQuickSearchItem } from './model/NhQuickSearch'
 export { NhSearchLanguage, NhSearchOptions, NhSearchSort } from './model/NhSearchOptions'
+export {
+  NhSearchQuery,
+  NhSearchRangeRelation,
+  NhSearchUploadedUnit,
+} from './model/NhSearchQuery'
 export { NhCatalogPreferences } from './model/NhCatalogPreferences'
 export {
   NhReaderBackgroundMode,

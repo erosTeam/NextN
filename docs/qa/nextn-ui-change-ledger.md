@@ -3,6 +3,76 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Search structured advanced conditions — 2026-08-14
+
+- **Why newly actionable:** the user asked to adopt the useful search
+  capabilities found in NClientV3 rather than limit discovery to tag
+  autocomplete. A bounded anonymous contract probe against the same public
+  v2 search family returned the ordinary pagination envelope for typed tag
+  inclusion/exclusion, page-count comparisons, and uploaded-age comparisons;
+  page and tag controls also produced distinct aggregate result counts. This
+  establishes a current transport/behavior candidate, not a permanent or
+  officially documented upstream grammar guarantee.
+- **Whole parent-tree boundary:** `Index.pushSearch → SearchRouteParams /
+  route-local SearchChromeState → HdsNavDestination(SearchPage) → HDS title
+  menu plus cached bottom SearchTitleField → one state-selecting Column →
+  root-hosted LARGE SearchOptionsSheet → NextNModalScaffold → one
+  searchOptionsScroller → ListItem → SearchOptionsPanel`. The existing
+  panel owns saved Language and Order defaults; the advanced condition leaf
+  must precede those two sections without adding another route, sheet,
+  scroller, title input, or result-list wrapper.
+- **Reference boundary:** the closest NextE tree is its pushed gallery Search
+  page with a root-owned filter sheet and one sheet scroll owner. Its
+  category/rating/torrent filter state is EH-specific and persistent, so only
+  the parent ownership and sheet relationship transfer to NextN; NextN's
+  conditions remain route-local raw-query edits.
+- **Exact change:** add a short-lived condition composer for typed
+  `tag/parody/character/artist/group/category` include-or-exclude terms plus
+  page-count and uploaded-age lower/upper comparisons. Applying a valid
+  condition appends its canonical token to the existing editable query and
+  synchronizes the existing HDS field; it does not submit automatically.
+  The raw query remains the only history, quick-search, submit, and paging
+  value. Existing saved Language and Order controls retain their owners and
+  are not emitted again by the composer.
+- **Input correctness boundary:** tag autocomplete must recognize only known
+  tag namespaces, preserve a leading exclusion marker for `-tag:`, and not
+  probe tag suggestions for `pages:` or `uploaded:` operators. The composer
+  does not parse, reorder, de-duplicate, delete, or claim ownership of user
+  text; users edit existing generated conditions in the HDS field itself.
+- **Explicit exclusions:** do not change Index routing, HDS chrome, direct
+  gallery-link recognition, suggestion/result/landing branch order,
+  `GalleryCollectionBody`, Search result summaries, Quick Search/History
+  persistence, Browse/Search Settings ownership, account scope, cache,
+  filters, or the global LIST surface. Do not add a static tag corpus, full
+  tag-directory page, random gallery entry, or any automatic search request.
+- **Verification plan:** inspect the scoped diff, JSON resources, and signed
+  build. On a foreground-confirmed Search route, observe the existing filter
+  menu, prefilled query, empty draft, valid tag inclusion/exclusion,
+  page/upload range insertion, manual field edit after insertion, submitted
+  results, suggestion behavior for `-tag:` versus `pages:`/`uploaded:`, and
+  keyboard-open sheet state. Restore any temporary query/defaults. A current
+  same-state, same-viewport NextE comparison is still required before any
+  visual-parity claim; source/build checks do not accept this visible lane.
+- **Current NextN device observation — 2026-08-15:** the signed HAP was
+  installed in place on only `192.168.50.237:12345`, following the live
+  target, lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms` gate. No
+  data clear, uninstall, account action, preference change, or search submit
+  occurred. A foreground-confirmed native `1320×2120` Search options sheet
+  showed the new panel before the existing saved defaults. One typed tag
+  condition appended to the HDS field; an empty page attempt showed its
+  scoped inline error; equal page bounds compiled as one exact token; the
+  complete five-unit upload menu was visible; equal upload bounds compiled
+  as one exact token; and an exclusion-mode tag condition preserved its
+  leading minus marker. A keyboard screenshot is retained, but its paired
+  layout export was empty, so it cannot establish foreground identity,
+  resized-window bounds, or keyboard usability; that state remains OPEN.
+  This is a bounded NextN interaction observation only: manual HDS-field
+  edits after composition, result/refresh behavior, suggestion results for
+  raw `-tag:`/operator input, every error branch, and a same-state NextE
+  visual comparison remain OPEN. Local raw artifacts are retained under
+  `.hvigor/outputs/advanced-search-20260814T1540/` and are excluded from
+  source control.
+
 ## OPEN — Account verification-marker cold-restore gate — 2026-08-14
 
 - **Why newly actionable:** a terminal authenticated Favorites double-401

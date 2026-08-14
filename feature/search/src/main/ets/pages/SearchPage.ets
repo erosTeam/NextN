@@ -18,7 +18,10 @@ import {
   NhTagCatalogService,
   NhSearchLanguage,
   NhSearchOptions,
+  NhSearchQuery,
+  NhSearchRangeRelation,
   NhSearchSort,
+  NhSearchUploadedUnit,
   NhSearchHistoryItem,
   NhQuickSearchItem,
   NhTagQuery,
@@ -41,7 +44,7 @@ import {
   nextNHdsTitleBar,
   TagTranslationState,
 } from 'shared'
-import { ComponentContent, KeyboardAvoidMode } from '@kit.ArkUI'
+import { ComponentContent, KeyboardAvoidMode, SymbolGlyphModifier } from '@kit.ArkUI'
 import { BottomBuilderShowType, HdsNavDestination, HideMode } from '@kit.UIDesignKit'
 import { SearchChromeState } from '../state/SearchChromeState'
 import { SEARCH_TITLE_FIELD_BOTTOM_HEIGHT, SearchTitleFieldCCBuilder } from '../components/SearchTitleField'
@@ -71,6 +74,7 @@ class LocalTagSuggestionInput {
   tokenStart: number = 0
   namespace: string = ''
   rawPrefix: string = ''
+  isExcluded: boolean = false
 }
 
 @ComponentV2
@@ -101,6 +105,19 @@ export struct SearchPage {
   @Local activeLanguageFilter: NhSearchLanguage = NhSearchLanguage.ALL
   @Local activeSearchSort: NhSearchSort = NhSearchSort.RECENT
   @Local showSearchOptions: boolean = false
+  @Local advancedTagNamespace: string = 'tag'
+  @Local advancedTagExcluded: boolean = false
+  @Local advancedTagText: string = ''
+  @Local advancedPageMinimumText: string = ''
+  @Local advancedPageMaximumText: string = ''
+  @Local advancedUploadedMinimumText: string = ''
+  @Local advancedUploadedMaximumText: string = ''
+  @Local advancedUploadedUnit: NhSearchUploadedUnit = NhSearchUploadedUnit.DAY
+  @Local advancedConditionError: string = ''
+  @Local advancedConditionErrorScope: string = ''
+  @Local advancedTagNamespaceMenuShown: boolean = false
+  @Local advancedTagModeMenuShown: boolean = false
+  @Local advancedUploadedUnitMenuShown: boolean = false
   @Local tagSuggestions: NhTagSuggestion[] = []
   @Local isSuggestingTags: boolean = false
   @Param scroller: Scroller = new Scroller()
@@ -443,6 +460,179 @@ export struct SearchPage {
     return value === ' ' || value === '\n' || value === '\r' || value === '\t'
   }
 
+  private hasUnclosedQueryQuote(value: string): boolean {
+    let quoteOpen: boolean = false
+    for (let index: number = 0; index < value.length; index++) {
+      if (value.charAt(index) === '"') {
+        quoteOpen = !quoteOpen
+      }
+    }
+    return quoteOpen
+  }
+
+  private advancedTagNamespaceLabel(namespace: string): string {
+    switch (namespace) {
+      case 'parody':
+        return AppStrings.get('search_advanced_type_parody')
+      case 'character':
+        return AppStrings.get('search_advanced_type_character')
+      case 'artist':
+        return AppStrings.get('search_advanced_type_artist')
+      case 'group':
+        return AppStrings.get('search_advanced_type_group')
+      case 'category':
+        return AppStrings.get('search_advanced_type_category')
+      default:
+        return AppStrings.get('search_advanced_type_tag')
+    }
+  }
+
+  private advancedTagModeLabel(excluded: boolean): string {
+    return excluded
+      ? AppStrings.get('search_advanced_exclude')
+      : AppStrings.get('search_advanced_include')
+  }
+
+  private advancedUploadedUnitLabel(unit: NhSearchUploadedUnit): string {
+    switch (unit) {
+      case NhSearchUploadedUnit.HOUR:
+        return AppStrings.get('search_advanced_unit_hour')
+      case NhSearchUploadedUnit.WEEK:
+        return AppStrings.get('search_advanced_unit_week')
+      case NhSearchUploadedUnit.MONTH:
+        return AppStrings.get('search_advanced_unit_month')
+      case NhSearchUploadedUnit.YEAR:
+        return AppStrings.get('search_advanced_unit_year')
+      default:
+        return AppStrings.get('search_advanced_unit_day')
+    }
+  }
+
+  private parseAdvancedPositiveInteger(value: string): number {
+    const trimmed: string = value.trim()
+    if (!/^[0-9]+$/.test(trimmed)) {
+      return 0
+    }
+    const parsed: number = Number.parseInt(trimmed, 10)
+    return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : 0
+  }
+
+  private setAdvancedConditionError(scope: string, message: string): void {
+    this.advancedConditionErrorScope = scope
+    this.advancedConditionError = message
+  }
+
+  private clearAdvancedConditionError(scope: string): void {
+    if (this.advancedConditionErrorScope !== scope) {
+      return
+    }
+    this.advancedConditionErrorScope = ''
+    this.advancedConditionError = ''
+  }
+
+  private appendAdvancedFragments(fragments: string[], scope: string): boolean {
+    if (NhClipboardLinkService.canonicalGalleryId(this.query) > 0) {
+      this.setAdvancedConditionError(scope, AppStrings.get('search_advanced_gallery_link'))
+      return false
+    }
+    if (this.hasUnclosedQueryQuote(this.query)) {
+      this.setAdvancedConditionError(scope, AppStrings.get('search_advanced_unclosed_quote'))
+      return false
+    }
+    let next: string = this.query
+    fragments.forEach((fragment: string): void => {
+      next = NhSearchQuery.append(next, fragment)
+    })
+    if (next === this.query) {
+      return false
+    }
+    this.preserveResultSnapshotForDraftChange()
+    this.query = next
+    this.chrome.keyword = next
+    this.clearAdvancedConditionError(scope)
+    this.cancelTagSuggestions()
+    return true
+  }
+
+  private appendAdvancedTagCondition(): void {
+    const fragment: string = NhTagQuery.formatExact(
+      this.advancedTagNamespace,
+      this.advancedTagText,
+      this.advancedTagExcluded,
+    )
+    if (fragment.length === 0) {
+      this.setAdvancedConditionError('tag', AppStrings.get('search_advanced_tag_invalid'))
+      return
+    }
+    if (this.appendAdvancedFragments([fragment], 'tag')) {
+      this.advancedTagText = ''
+    }
+  }
+
+  private appendAdvancedPageConditions(): void {
+    const minimum: number = this.parseAdvancedPositiveInteger(this.advancedPageMinimumText)
+    const maximum: number = this.parseAdvancedPositiveInteger(this.advancedPageMaximumText)
+    if (minimum <= 0 && maximum <= 0) {
+      this.setAdvancedConditionError('pages', AppStrings.get('search_advanced_range_required'))
+      return
+    }
+    if (minimum > 0 && maximum > 0 && minimum > maximum) {
+      this.setAdvancedConditionError('pages', AppStrings.get('search_advanced_range_order'))
+      return
+    }
+    const fragments: string[] = []
+    if (minimum > 0 && minimum === maximum) {
+      fragments.push(NhSearchQuery.pages(minimum, NhSearchRangeRelation.EXACT))
+    } else if (minimum > 0) {
+      fragments.push(NhSearchQuery.pages(minimum, NhSearchRangeRelation.MINIMUM))
+    }
+    if (maximum > 0 && minimum !== maximum) {
+      fragments.push(NhSearchQuery.pages(maximum, NhSearchRangeRelation.MAXIMUM))
+    }
+    if (this.appendAdvancedFragments(fragments, 'pages')) {
+      this.advancedPageMinimumText = ''
+      this.advancedPageMaximumText = ''
+    }
+  }
+
+  private appendAdvancedUploadedConditions(): void {
+    const minimum: number = this.parseAdvancedPositiveInteger(this.advancedUploadedMinimumText)
+    const maximum: number = this.parseAdvancedPositiveInteger(this.advancedUploadedMaximumText)
+    if (minimum <= 0 && maximum <= 0) {
+      this.setAdvancedConditionError('uploaded', AppStrings.get('search_advanced_range_required'))
+      return
+    }
+    if (minimum > 0 && maximum > 0 && minimum > maximum) {
+      this.setAdvancedConditionError('uploaded', AppStrings.get('search_advanced_range_order'))
+      return
+    }
+    const fragments: string[] = []
+    if (minimum > 0 && minimum === maximum) {
+      fragments.push(NhSearchQuery.uploaded(
+        minimum,
+        this.advancedUploadedUnit,
+        NhSearchRangeRelation.EXACT,
+      ))
+    } else if (minimum > 0) {
+      fragments.push(NhSearchQuery.uploaded(
+        minimum,
+        this.advancedUploadedUnit,
+        NhSearchRangeRelation.MINIMUM,
+      ))
+    }
+    if (maximum > 0 && minimum !== maximum) {
+      fragments.push(NhSearchQuery.uploaded(
+        maximum,
+        this.advancedUploadedUnit,
+        NhSearchRangeRelation.MAXIMUM,
+      ))
+    }
+    if (this.appendAdvancedFragments(fragments, 'uploaded')) {
+      this.advancedUploadedMinimumText = ''
+      this.advancedUploadedMaximumText = ''
+    }
+  }
+
   /**
    * Accepts the final namespace:prefix token or an ordinary unquoted token.
    * An unfinished quoted name remains one token so suggestions can safely
@@ -459,12 +649,17 @@ export struct SearchPage {
         tokenStart = index + 1
       }
     }
-    const token: string = value.substring(tokenStart)
+    let token: string = value.substring(tokenStart)
+    let isExcluded: boolean = false
+    if (token.startsWith('-')) {
+      isExcluded = true
+      token = token.substring(1)
+    }
     const separator: number = token.indexOf(':')
     let namespace: string = ''
     let rawPrefix: string = ''
     if (separator < 0) {
-      if (quoteOpen || token.includes('"')) {
+      if (isExcluded || quoteOpen || token.includes('"')) {
         return null
       }
       rawPrefix = token
@@ -473,7 +668,7 @@ export struct SearchPage {
         return null
       }
       namespace = token.substring(0, separator).trim().toLowerCase()
-      if (!/^[a-z][a-z0-9_-]{0,31}$/.test(namespace)) {
+      if (!NhTagQuery.isAutocompleteNamespace(namespace)) {
         return null
       }
       rawPrefix = token.substring(separator + 1)
@@ -494,6 +689,7 @@ export struct SearchPage {
     input.tokenStart = tokenStart
     input.namespace = namespace
     input.rawPrefix = rawPrefix
+    input.isExcluded = isExcluded
     return input
   }
 
@@ -502,7 +698,8 @@ export struct SearchPage {
     return current !== null &&
       current.tokenStart === input.tokenStart &&
       current.namespace === input.namespace &&
-      current.rawPrefix === input.rawPrefix
+      current.rawPrefix === input.rawPrefix &&
+      current.isExcluded === input.isExcluded
   }
 
   private scheduleTagSuggestions(value: string): void {
@@ -635,8 +832,16 @@ export struct SearchPage {
 
   private acceptTagSuggestion(suggestion: NhTagSuggestion): void {
     const input: LocalTagSuggestionInput | null = this.activeTagSuggestionInput(this.query)
-    const replacement: string = NhTagQuery.formatExact(suggestion.namespace, suggestion.rawName)
-    if (input === null || replacement.length === 0) {
+    if (input === null) {
+      this.cancelTagSuggestions()
+      return
+    }
+    const replacement: string = NhTagQuery.formatExact(
+      suggestion.namespace,
+      suggestion.rawName,
+      input.isExcluded,
+    )
+    if (replacement.length === 0) {
       this.cancelTagSuggestions()
       return
     }
@@ -1091,8 +1296,349 @@ export struct SearchPage {
   }
 
   @Builder
+  private AdvancedTagNamespaceMenu() {
+    Menu() {
+      this.AdvancedTagNamespaceMenuItem('tag')
+      this.AdvancedTagNamespaceMenuItem('parody')
+      this.AdvancedTagNamespaceMenuItem('character')
+      this.AdvancedTagNamespaceMenuItem('artist')
+      this.AdvancedTagNamespaceMenuItem('group')
+      this.AdvancedTagNamespaceMenuItem('category')
+    }
+  }
+
+  @Builder
+  private AdvancedTagNamespaceMenuItem(namespace: string) {
+    MenuItem({
+      content: this.advancedTagNamespaceLabel(namespace),
+      symbolEndIcon: this.advancedTagNamespace === namespace
+        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+        : undefined,
+    }).onClick((): void => {
+      this.advancedTagNamespace = namespace
+      this.advancedTagNamespaceMenuShown = false
+    })
+  }
+
+  @Builder
+  private AdvancedTagModeMenu() {
+    Menu() {
+      this.AdvancedTagModeMenuItem(false)
+      this.AdvancedTagModeMenuItem(true)
+    }
+  }
+
+  @Builder
+  private AdvancedTagModeMenuItem(excluded: boolean) {
+    MenuItem({
+      content: this.advancedTagModeLabel(excluded),
+      symbolEndIcon: this.advancedTagExcluded === excluded
+        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+        : undefined,
+    }).onClick((): void => {
+      this.advancedTagExcluded = excluded
+      this.advancedTagModeMenuShown = false
+    })
+  }
+
+  @Builder
+  private AdvancedUploadedUnitMenu() {
+    Menu() {
+      this.AdvancedUploadedUnitMenuItem(NhSearchUploadedUnit.HOUR)
+      this.AdvancedUploadedUnitMenuItem(NhSearchUploadedUnit.DAY)
+      this.AdvancedUploadedUnitMenuItem(NhSearchUploadedUnit.WEEK)
+      this.AdvancedUploadedUnitMenuItem(NhSearchUploadedUnit.MONTH)
+      this.AdvancedUploadedUnitMenuItem(NhSearchUploadedUnit.YEAR)
+    }
+  }
+
+  @Builder
+  private AdvancedUploadedUnitMenuItem(unit: NhSearchUploadedUnit) {
+    MenuItem({
+      content: this.advancedUploadedUnitLabel(unit),
+      symbolEndIcon: this.advancedUploadedUnit === unit
+        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+        : undefined,
+    }).onClick((): void => {
+      this.advancedUploadedUnit = unit
+      this.advancedUploadedUnitMenuShown = false
+    })
+  }
+
+  @Builder
+  private AdvancedConditionError(scope: string) {
+    if (this.advancedConditionErrorScope === scope && this.advancedConditionError.length > 0) {
+      Text(this.advancedConditionError)
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontColor(Color.Red)
+        .width('100%')
+    }
+  }
+
+  @Builder
+  private SearchAdvancedConditionsPanel() {
+    Column({ space: ThemeTokens.SPACE_MD }) {
+      Text(AppStrings.get('search_advanced_conditions'))
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontWeight(FontWeight.Medium)
+        .fontColor(ThemeTokens.TEXT_SECONDARY)
+      Text(AppStrings.get('search_advanced_hint'))
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontColor(ThemeTokens.TEXT_SECONDARY)
+        .maxLines(3)
+        .width('100%')
+      NextNGroupedListSection() {
+        NextNListRow({
+          title: AppStrings.get('search_advanced_type'),
+          trailingText: this.advancedTagNamespaceLabel(this.advancedTagNamespace),
+          trailingDropdown: true,
+          accessibilityLabel: AppStrings.get('search_advanced_type'),
+          onAction: (): void => {
+            this.advancedTagNamespaceMenuShown = true
+          },
+        })
+          .bindMenu(this.advancedTagNamespaceMenuShown, this.AdvancedTagNamespaceMenu, {
+            placement: Placement.BottomRight,
+            onDisappear: (): void => {
+              this.advancedTagNamespaceMenuShown = false
+            },
+          })
+        this.SearchOptionDivider()
+        NextNListRow({
+          title: AppStrings.get('search_advanced_match'),
+          trailingText: this.advancedTagModeLabel(this.advancedTagExcluded),
+          trailingDropdown: true,
+          accessibilityLabel: AppStrings.get('search_advanced_match'),
+          onAction: (): void => {
+            this.advancedTagModeMenuShown = true
+          },
+        })
+          .bindMenu(this.advancedTagModeMenuShown, this.AdvancedTagModeMenu, {
+            placement: Placement.BottomRight,
+            onDisappear: (): void => {
+              this.advancedTagModeMenuShown = false
+            },
+          })
+        this.SearchOptionDivider()
+        Column({ space: ThemeTokens.SPACE_XS }) {
+          Text(AppStrings.get('search_advanced_tag_name'))
+            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+            .fontColor(ThemeTokens.TEXT_SECONDARY)
+          TextInput({
+            text: this.advancedTagText,
+            placeholder: AppStrings.get('search_advanced_tag_placeholder'),
+          })
+            .width('100%')
+            .height(44)
+            .fontSize(ThemeTokens.FONT_SIZE_BODY)
+            .backgroundColor(ThemeTokens.CARD_BACKGROUND)
+            .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
+            .onChange((value: string): void => {
+              this.advancedTagText = value
+              this.clearAdvancedConditionError('tag')
+            })
+            .onSubmit((): void => {
+              this.appendAdvancedTagCondition()
+            })
+        }
+        .width('100%')
+        .padding({
+          left: ThemeTokens.SPACE_MD,
+          right: ThemeTokens.SPACE_MD,
+          top: ThemeTokens.SPACE_SM,
+          bottom: ThemeTokens.SPACE_SM,
+        })
+        this.SearchOptionDivider()
+        NextNListRow({
+          title: AppStrings.get('search_advanced_add_tag'),
+          trailingActionText: AppStrings.get('search_advanced_add'),
+          showChevron: false,
+          accessibilityLabel: AppStrings.get('search_advanced_add_tag'),
+          onAction: (): void => {
+            this.appendAdvancedTagCondition()
+          },
+          onTrailingAction: (): void => {
+            this.appendAdvancedTagCondition()
+          },
+        })
+      }
+      this.AdvancedConditionError('tag')
+
+      Text(AppStrings.get('search_advanced_pages'))
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontWeight(FontWeight.Medium)
+        .fontColor(ThemeTokens.TEXT_SECONDARY)
+      NextNGroupedListSection() {
+        Column({ space: ThemeTokens.SPACE_XS }) {
+          Text(AppStrings.get('search_advanced_pages_minimum'))
+            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+            .fontColor(ThemeTokens.TEXT_SECONDARY)
+          TextInput({
+            text: this.advancedPageMinimumText,
+            placeholder: AppStrings.get('search_advanced_positive_integer'),
+          })
+            .type(InputType.Number)
+            .inputFilter('^[0-9]*$')
+            .width('100%')
+            .height(44)
+            .fontSize(ThemeTokens.FONT_SIZE_BODY)
+            .backgroundColor(ThemeTokens.CARD_BACKGROUND)
+            .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
+            .onChange((value: string): void => {
+              this.advancedPageMinimumText = value
+              this.clearAdvancedConditionError('pages')
+            })
+        }
+        .width('100%')
+        .padding({
+          left: ThemeTokens.SPACE_MD,
+          right: ThemeTokens.SPACE_MD,
+          top: ThemeTokens.SPACE_SM,
+          bottom: ThemeTokens.SPACE_SM,
+        })
+        this.SearchOptionDivider()
+        Column({ space: ThemeTokens.SPACE_XS }) {
+          Text(AppStrings.get('search_advanced_pages_maximum'))
+            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+            .fontColor(ThemeTokens.TEXT_SECONDARY)
+          TextInput({
+            text: this.advancedPageMaximumText,
+            placeholder: AppStrings.get('search_advanced_positive_integer'),
+          })
+            .type(InputType.Number)
+            .inputFilter('^[0-9]*$')
+            .width('100%')
+            .height(44)
+            .fontSize(ThemeTokens.FONT_SIZE_BODY)
+            .backgroundColor(ThemeTokens.CARD_BACKGROUND)
+            .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
+            .onChange((value: string): void => {
+              this.advancedPageMaximumText = value
+              this.clearAdvancedConditionError('pages')
+            })
+        }
+        .width('100%')
+        .padding({
+          left: ThemeTokens.SPACE_MD,
+          right: ThemeTokens.SPACE_MD,
+          top: ThemeTokens.SPACE_SM,
+          bottom: ThemeTokens.SPACE_SM,
+        })
+        this.SearchOptionDivider()
+        NextNListRow({
+          title: AppStrings.get('search_advanced_add_pages'),
+          trailingActionText: AppStrings.get('search_advanced_add'),
+          showChevron: false,
+          accessibilityLabel: AppStrings.get('search_advanced_add_pages'),
+          onAction: (): void => {
+            this.appendAdvancedPageConditions()
+          },
+          onTrailingAction: (): void => {
+            this.appendAdvancedPageConditions()
+          },
+        })
+      }
+      this.AdvancedConditionError('pages')
+
+      Text(AppStrings.get('search_advanced_uploaded'))
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontWeight(FontWeight.Medium)
+        .fontColor(ThemeTokens.TEXT_SECONDARY)
+      NextNGroupedListSection() {
+        NextNListRow({
+          title: AppStrings.get('search_advanced_unit'),
+          trailingText: this.advancedUploadedUnitLabel(this.advancedUploadedUnit),
+          trailingDropdown: true,
+          accessibilityLabel: AppStrings.get('search_advanced_unit'),
+          onAction: (): void => {
+            this.advancedUploadedUnitMenuShown = true
+          },
+        })
+          .bindMenu(this.advancedUploadedUnitMenuShown, this.AdvancedUploadedUnitMenu, {
+            placement: Placement.BottomRight,
+            onDisappear: (): void => {
+              this.advancedUploadedUnitMenuShown = false
+            },
+          })
+        this.SearchOptionDivider()
+        Column({ space: ThemeTokens.SPACE_XS }) {
+          Text(AppStrings.get('search_advanced_uploaded_minimum'))
+            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+            .fontColor(ThemeTokens.TEXT_SECONDARY)
+          TextInput({
+            text: this.advancedUploadedMinimumText,
+            placeholder: AppStrings.get('search_advanced_positive_integer'),
+          })
+            .type(InputType.Number)
+            .inputFilter('^[0-9]*$')
+            .width('100%')
+            .height(44)
+            .fontSize(ThemeTokens.FONT_SIZE_BODY)
+            .backgroundColor(ThemeTokens.CARD_BACKGROUND)
+            .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
+            .onChange((value: string): void => {
+              this.advancedUploadedMinimumText = value
+              this.clearAdvancedConditionError('uploaded')
+            })
+        }
+        .width('100%')
+        .padding({
+          left: ThemeTokens.SPACE_MD,
+          right: ThemeTokens.SPACE_MD,
+          top: ThemeTokens.SPACE_SM,
+          bottom: ThemeTokens.SPACE_SM,
+        })
+        this.SearchOptionDivider()
+        Column({ space: ThemeTokens.SPACE_XS }) {
+          Text(AppStrings.get('search_advanced_uploaded_maximum'))
+            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+            .fontColor(ThemeTokens.TEXT_SECONDARY)
+          TextInput({
+            text: this.advancedUploadedMaximumText,
+            placeholder: AppStrings.get('search_advanced_positive_integer'),
+          })
+            .type(InputType.Number)
+            .inputFilter('^[0-9]*$')
+            .width('100%')
+            .height(44)
+            .fontSize(ThemeTokens.FONT_SIZE_BODY)
+            .backgroundColor(ThemeTokens.CARD_BACKGROUND)
+            .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
+            .onChange((value: string): void => {
+              this.advancedUploadedMaximumText = value
+              this.clearAdvancedConditionError('uploaded')
+            })
+        }
+        .width('100%')
+        .padding({
+          left: ThemeTokens.SPACE_MD,
+          right: ThemeTokens.SPACE_MD,
+          top: ThemeTokens.SPACE_SM,
+          bottom: ThemeTokens.SPACE_SM,
+        })
+        this.SearchOptionDivider()
+        NextNListRow({
+          title: AppStrings.get('search_advanced_add_uploaded'),
+          trailingActionText: AppStrings.get('search_advanced_add'),
+          showChevron: false,
+          accessibilityLabel: AppStrings.get('search_advanced_add_uploaded'),
+          onAction: (): void => {
+            this.appendAdvancedUploadedConditions()
+          },
+          onTrailingAction: (): void => {
+            this.appendAdvancedUploadedConditions()
+          },
+        })
+      }
+      this.AdvancedConditionError('uploaded')
+    }
+    .width('100%')
+  }
+
+  @Builder
   private SearchOptionsPanel() {
     Column({ space: ThemeTokens.SPACE_MD }) {
+      this.SearchAdvancedConditionsPanel()
       Text(AppStrings.get('browse_section_language'))
         .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
         .fontWeight(FontWeight.Medium)
