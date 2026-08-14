@@ -3,6 +3,54 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Settings wording reference correction — 2026-08-15
+
+- **Why newly actionable:** the user identified opaque, self-authored Chinese
+  copy in Settings, including `图库展示方式`, `显示标签译名`, and `HDS 材质`,
+  plus explanatory subtitles that expose implementation detail instead of a
+  setting's operation. The faulty assumption was that a locally paraphrased
+  term was acceptable when a same-function reference already supplied user
+  copy. It was not: the wording changed the meaning and made ordinary controls
+  difficult to understand.
+- **Whole parent-tree boundary:** preserve the existing Settings root and all
+  route, sheet, section, row, menu, and state owners. The directly affected
+  leaves are `Settings → Layout → BrowsePresentationGroup` (view, card tags,
+  tag translation, and Read-button-style rows) and the shared Reader
+  presentation rows used by both the routed page and Reader sheet. No list,
+  reader, download, search, account, or settings navigation tree is rebuilt.
+- **Reference boundary:** use current NextE wording verbatim where its
+  function and choice semantics match: `List view`, `Compact`, `Grid`,
+  `Filled accent`, `HDS material`, and the equivalent Reader vocabulary.
+  For the NH card-tag visibility switch, use ErosN's direct `Show Tags`
+  wording and retain a short, factual statement of the NextN card modes it
+  affects. The user explicitly rejected the invented noun `translated label`;
+  `Tag Translation` is a wording correction for the existing separate
+  display-label switch, not a claim that it has ErosN's download-on-enable
+  behavior. This changes no dictionary state, search grammar, or request.
+- **Exact change:** replace only reference-backed or explicitly user-directed
+  labels and values; remove the routine subtitle for view selection because
+  title plus selected value already communicates the operation. Preserve the reference-backed
+  Read-button subtitle because it identifies the Gallery Detail floating
+  control whose appearance changes. Replace the card-tag subtitle's internal
+  `resolved` terminology with only its actual List/Waterfall display scope.
+  Do not introduce an implementation explanation.
+- **Explicit exclusions:** do not rename the Advanced dictionary-management
+  row into a second ambiguous `Tag Translation` control; do not change the
+  relationship between dictionary availability and the existing display
+  switch; do not rewrite the grid-density `vp` summary, download policy,
+  technical translation-source, cache-status, or other behaviorally
+  non-equivalent rows until each has an exact source or a separate user
+  decision. No persistent setting, request, cache, tag lookup, route,
+  interaction, or visual geometry is changed except the natural row height
+  after removal of the view-selection subtitle.
+- **Verification plan:** inspect the scoped resource and Settings diff, parse
+  all four locale JSON files, and build the exact commit. Then install in
+  place, observe the current Layout rows and menus on a foreground-confirmed
+  native Settings route, and restore any temporary preference used to expose a
+  value. A same-state, same-viewport NextE comparison is still required before
+  any visual-parity claim; source wording and a build alone do not accept this
+  visible lane.
+
 ## OPEN — Search structured advanced conditions — 2026-08-14
 
 - **Why newly actionable:** the user asked to adopt the useful search

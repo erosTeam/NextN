@@ -3113,7 +3113,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.square_grid_2x2'),
         title: AppStrings.get('browse_presentation'),
-        subtitle: AppStrings.get('browse_presentation_hint'),
         trailingText: this.browsePresentationLabel(),
         trailingDropdown: true,
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
