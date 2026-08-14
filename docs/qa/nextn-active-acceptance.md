@@ -47,6 +47,30 @@
   native Reader precondition. Any missing/ambiguous trace record remains
   inconclusive and permits no second Reader Back injection.
 
+## Current Reader Back platform trace — bounded delivery observation — 2026-08-14
+
+- After a fresh foreground-confirmed native NextN Reader precondition (with
+  `reader-overlay-navigation` present), the one permitted manifest-owned trace
+  injected exactly one literal system Back and completed its trace cleanup and
+  local receive path. No canvas, menu, account, preference, content, data
+  clear, or uninstall action occurred.
+- Within that one-action trace, the retained markers are temporally ordered as
+  synthesized input, system dispatch, and an abbreviated NextN process-tag
+  `eventConsume`, followed by Window/Ability activity. The synthesis and
+  dispatch records do not expose a stable event identity, so this establishes
+  temporal delivery evidence only, not an event-identity-correlated callback
+  trace.
+- The no-input postflight layout retained only `com.ohos.sceneboard` windows;
+  it did not retain a foreground NextN root or Reader overlay. This rules out
+  the simple explanation that the injected Back never reached NextN, but it
+  does not prove which Reader/HDS close callback ran or why SceneBoard became
+  foreground. No source correction is accepted from this observation.
+- The one Reader trace allowance is consumed. The raw local manifest, trace,
+  and pre/post layouts remain under
+  `.hvigor/outputs/reader-back-platform-trace-20260814T0820.yCoWqs/` and are
+  excluded from source control; do not inject a second Reader Back from this
+  boundary.
+
 ## Current Reader background preference — bounded device result — 2026-08-14
 
 - The signed Debug HAP containing `14f4a74` was installed in place on only

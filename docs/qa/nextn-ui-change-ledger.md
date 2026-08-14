@@ -2053,6 +2053,23 @@ authorize an edit, replace a device comparison, or define product completion.
   trace after a fresh native Reader precondition, with one literal Back and no
   other input. An absent or ambiguous Reader record remains inconclusive and
   permits no second Reader trace or source change.
+- **Bounded Reader trace result — 2026-08-14:** the one permitted trace began
+  only after a fresh native Reader precondition retained
+  `reader-overlay-navigation`; it injected exactly one literal Back and
+  completed manifest-owned trace cleanup/receive. Its local markers are
+  temporally ordered as synthesized input, system dispatch, and an abbreviated
+  NextN process-tag `eventConsume`, followed by Window/Ability activity. The
+  synthetic and dispatch records carry no stable shared event identity, so the
+  trace establishes temporal delivery evidence rather than a specific
+  callback trace. The no-input postflight layout retained only
+  `com.ohos.sceneboard` windows, not a foreground NextN root or Reader overlay.
+  This rules out only the simple "Back never reached NextN" explanation; it
+  neither proves which Reader/HDS close stage ran nor attributes why SceneBoard
+  became foreground. The one Reader trace allowance is consumed: retain the
+  raw ignored artifacts under
+  `.hvigor/outputs/reader-back-platform-trace-20260814T0820.yCoWqs/`, make no
+  source correction from this result, and do not inject a second Reader Back
+  from this boundary.
 
 ## FROZEN — Reader enhancement input-height preference UI
 
