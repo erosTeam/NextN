@@ -481,6 +481,61 @@ authorize an edit, replace a device comparison, or define product completion.
   schema migration, or a collection-card title redesign; do not reopen those
   unrelated leaves without a new user direction or source change.
 
+## OPEN — Browse Presentation Japanese-title icon distinction — 2026-08-14
+
+- **Why newly actionable:** the user questioned whether repeated leading
+  prefixes should be removed or split into different levels. Before this
+  correction, the Browse Presentation tree had one semantic collision for
+  review: the Detail-only Japanese-title switch and the Read-button alignment
+  selector both used `sys.symbol.doc_plaintext`, despite different semantics.
+  Other repeated symbols retain their separate leaf contexts and are outside
+  this boundary. This reopens only the Japanese-title row's icon under the new
+  user feedback; it does not reopen the frozen copy or behavior boundary above.
+- **Whole reference tree:** `NextE LayoutSettingsPage → ListItem →
+  GroupedListSection → view selector → conditional column-width leaf →
+  fixed-height switch → cover-background switch → Japanese-title switch →
+  home-tab switch → Read-button alignment selector → Read-button style
+  selector`. The reference keeps every row in this section as a sibling with
+  its existing divider and leading icon. Its Japanese-title row uses
+  `sys.symbol.textformat`; Read-button alignment retains `doc_plaintext` and
+  Read-button style retains `paintbrush`.
+- **Current NextN tree:** `SettingsPage(LAYOUT) → SecondaryListScaffold →
+  ListItem → BrowsePresentationGroup → NextNGroupedListSection → browse-mode
+  selector → gallery-tag switch → translated-label switch → conditional
+  column-width leaf → cover-background switch → Japanese-title switch →
+  home-tab switch → Read-button alignment selector → Read-button style
+  selector`. View/browse mode, conditional column width, cover background,
+  Japanese title, home-tab behavior, alignment, and style are the seven
+  semantically shared leaves. NextN additionally owns two tag-display leaves;
+  NextE has a fixed-height switch without a current NextN equivalent. Those
+  capability differences remain untouched. After those differing leaves, the
+  five target rows—cover, Japanese title, home tab, alignment, and style—keep
+  their shared relative order, switches/selectors, divider owner, and actions.
+  Before this correction, only the Japanese-title row differed by using
+  `doc_plaintext`.
+- **Exact change:** replace only that row's leading symbol with the existing
+  `sys.symbol.textformat` resource. Preserve its title, hint, switch,
+  persistence key, Detail-only behavior, row order, divider, and all other
+  Browse Presentation icons. Do not remove leading icons or split the sibling
+  settings into new groups: icon presence is not hierarchy.
+- **Verification plan:** inspect the one-leaf diff, build the signed Debug
+  HAP, install it in place without clearing data, and inspect the native
+  Layout/Browse Presentation group at its current viewport. A valid
+  same-state, same-viewport NextE capture remains required before any visual
+  parity claim; no UI static contract is permitted.
+- **Current device observation — 2026-08-14:** the signed Debug HAP was
+  installed in place on only `192.168.50.237:12345` after the live target,
+  lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms` gate. No data clear,
+  uninstall, account action, download action, or preference write occurred.
+  The native `1320×2120` Layout/Browse Presentation group showed the
+  Detail-only Japanese-title switch with the `Aa` text-format symbol; the
+  Read-button alignment selector remained a document symbol and the
+  Read-button style selector remained a paintbrush. This observes the one-leaf
+  icon distinction only. A current same-state NextE capture was not obtained,
+  so visual parity remains OPEN. Raw local artifacts are retained under
+  `.hvigor/outputs/japanese-title-icon-20260814T.Hytu2E/` and excluded from
+  source control.
+
 ## FROZEN — Cache and History tab icon visual-weight correction — 2026-08-13
 
 - **Why newly actionable:** the user identified two current icon inconsistencies:

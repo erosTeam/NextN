@@ -3203,7 +3203,7 @@ export struct SettingsPage {
       })
       this.RowDivider()
       NextNListRow({
-        leadingIcon: $r('sys.symbol.doc_plaintext'),
+        leadingIcon: $r('sys.symbol.textformat'),
         title: AppStrings.get('settings_gallery_japanese_title_primary'),
         subtitle: AppStrings.get('settings_gallery_japanese_title_primary_hint'),
         hasSwitch: true,
