@@ -50,6 +50,8 @@ export struct NextNListRow {
   @Param isEnabled: boolean = true
   @Param destructive: boolean = false
   @Param accessibilityLabel: string = ''
+  /** Optional stable selector for a caller-owned native row; no spoken output. */
+  @Param accessibilityId: string = ''
   @Event onAction?: () => void
   @Event onTrailingAction?: () => void
   @Event onSwitchChange?: (value: boolean) => void
@@ -262,6 +264,7 @@ export struct NextNListRow {
     }
     .width('100%')
     .opacity(this.isEnabled ? 1.0 : 0.4)
+    .id(this.accessibilityId)
     .accessibilityText(this.resolvedAccessibilityLabel())
   }
 }

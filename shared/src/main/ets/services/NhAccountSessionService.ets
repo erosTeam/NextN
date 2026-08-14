@@ -982,6 +982,15 @@ export class NhAccountSessionService {
           ? AccountSessionDiagnosticStage.RESTORE_VERIFICATION_REQUIRED_AFTER_BROWSER_REFRESH_FAILURE
           : AccountSessionDiagnosticStage.RESTORE_VERIFICATION_REQUIRED,
       )
+      // A durable terminal-401 marker is an explicit native verification
+      // boundary. Retain both recovery materials for the existing visible
+      // Account action, but never hydrate either one into a signed-in native
+      // projection until a verified promotion atomically clears the marker.
+      return await NhAccountSessionService.publishSignedOutAfterRestoreFailure(
+        context,
+        restoredEpoch,
+        true,
+      )
     }
     let restoreSnapshot: AccountSessionRestoreSnapshot
     try {

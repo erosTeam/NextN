@@ -1,5 +1,26 @@
 # NextN active device-acceptance queue
 
+## Current native Account/Favorites S0 — accepted existing session — 2026-08-14
+
+- Only `192.168.50.237:12345` was live-resolved, leased, and read back as
+  `AWAKE` with `OverrideTimeout=86400000ms`. The current signed Debug HAP was
+  installed in place with `-r`; no data clear, uninstall, credential entry,
+  or account mutation occurred.
+- A privacy-bounded cold-start S0 reader used current native markers only and
+  deleted every temporary host/device layout before returning its fixed
+  summary. Account reported: visible login Web absent, native section present,
+  signed in, not signed out, no verification requirement, and no save failure.
+  Favorites reported: native selected surface, no sign-in prompt/loading/error,
+  and an authenticated collection state.
+- This accepts the existing session for the current device. No S1/S2 login
+  route, credential epoch, or login-cycle timing record is active. This does
+  not itself accept the separate source-only verification-marker restore fix.
+- The subsequent signed build containing that owner-only restore correction
+  was also installed with `-r` and passed the same NextN-only cold-start S0
+  summary. The exceptional durable-marker state was not induced; this is a
+  healthy-session non-regression observation, not runtime acceptance of the
+  marker branch.
+
 ## Current Reader presentation-lifecycle smoke — rejected close terminal — 2026-08-14
 
 - The signed Debug HAP containing `e77a532` was installed in place on only

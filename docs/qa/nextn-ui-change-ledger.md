@@ -3,6 +3,43 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Account verification-marker cold-restore gate — 2026-08-14
+
+- **Why newly actionable:** a terminal authenticated Favorites double-401
+  persists the explicit verification marker while deliberately retaining the
+  sealed session and ordinary ArkWeb cookies. Current cold restore can then
+  hydrate those old materials after reading the marker and publish the
+  impossible combination `signedIn=true` plus `verificationRequired=true`.
+  Account and Favorites prioritize the signed-in branch, so the native visible
+  state can mask the durable verification requirement.
+- **Whole owner tree:** `NhApiClient authenticated GET terminal replay 401 →
+  NhAccountSessionService.requireVisibleVerificationAfterAccountGet401 →
+  AccountSessionRepository verification marker → EntryAbility account restore
+  → NhAccountSessionService.restoreInternal → AccountSessionState →
+  Settings RootAccountSection / BrowserSessionPage / FavoritesPage`. The
+  Account service is the sole owner of this projection; pages must not add
+  separate defensive checks.
+- **Exact change boundary:** immediately after restore loads a required marker,
+  retain the sealed envelope and ArkWeb cookie jar but use the existing
+  signed-out/verification projection and stop before every regular-jar or
+  sealed-envelope hydration branch. Only the existing atomically verified
+  promotion may replace the envelope and clear the marker. This changes the
+  affected Account state to its existing native verification-required leaf and
+  Favorites to its existing sign-in prompt; it creates no WebView, login,
+  copy, route, or geometry branch.
+- **Explicit exclusions:** do not delete cookies/session records, change
+  account transport/retry policy, modify Account/Favorites parent trees,
+  create a new login UI, touch credentials, alter any authenticated mutation,
+  or infer that a current healthy session has failed. The current safe S0
+  observation is accepted separately and does not prove this exceptional
+  marker state.
+- **Verification plan:** inspect the owner-only diff, run the signed build,
+  and retain current native S0 only as a non-regression check. Do not induce a
+  terminal 401 or re-login merely to manufacture evidence. A future naturally
+  occurring marker state must show the existing verification-required Account
+  and signed-out Favorites leaves after a NextN-only cold start before runtime
+  acceptance can be claimed.
+
 ## OPEN — Reader background preference — 2026-08-14
 
 - **Lifecycle-correction boundary — 2026-08-14:** the initial implementation
