@@ -19,6 +19,18 @@
   for that boundary. Raw local artifacts are retained under
   `.hvigor/outputs/settings-copy-reference-20260815T1850/` and are excluded
   from source control.
+- **Supplemental direct-reference observation:** the signed HAP built from
+  `50cfac0` was installed in place with `-r` on the same selected device after
+  a fresh live target, lease, wake, and power-state gate. No data clear,
+  uninstall, account action, content action, or preference value change
+  occurred. Native Reader Settings showed `连续纵向`, and its opened-and-
+  dismissed direction menu showed `从左到右 / 从右到左 / 从上到下 / 连续纵向`.
+  Native Interface Settings showed `封面背景模糊` with the source-backed
+  description and the source-backed Japanese-title explanation; all observed
+  rows were inside the current viewport. This is a bounded wording observation
+  only, not a visual-parity or behavior acceptance. Raw local artifacts are
+  retained under `.hvigor/outputs/settings-copy-reference-20260815T1915/` and
+  are excluded from source control.
 
 ## Current native Account/Favorites S0 — accepted existing session — 2026-08-14
 

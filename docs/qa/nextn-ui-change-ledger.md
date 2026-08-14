@@ -65,6 +65,13 @@ authorize an edit, replace a device comparison, or define product completion.
   reference-backed description plus `实心主色` and `光感材质`. This is bounded
   NextN wording evidence only; the broader audit and same-state NextE visual
   comparison remain OPEN.
+- **Supplemental observation:** `50cfac0` also passed the signed build and was
+  installed in place on the selected `.237` device. The foreground-confirmed
+  Reader direction menu showed `从左到右 / 从右到左 / 从上到下 / 连续纵向`; the
+  Interface tail showed the direct-reference cover-background and
+  Japanese-title explanations, all within the observed viewport. No preference
+  value changed. This remains bounded NextN wording evidence only; the broader
+  audit and same-state NextE visual comparison remain OPEN.
 
 ## OPEN — Search structured advanced conditions — 2026-08-14
 
