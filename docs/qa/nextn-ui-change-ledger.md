@@ -37,10 +37,11 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Supplemental direct-reference audit:** the same parent-tree review found
   exact NextE counterparts for the cover-background-blur title and behavior
   description, Japanese-title explanation, Reader direction values, `Auto
-  page interval`, and `Volume key page turn`. These leaf values may be copied
-  without a behavior or hierarchy change. Point-zone action labels, double-page
-  availability/status, grid-width terminology, and any new explanatory line
-  remain excluded until their distinct behavior has a separate decision.
+  page interval`, `Volume key page turn`, and Download's `Retry count`. These
+  leaf values may be copied without a behavior or hierarchy change. Point-zone
+  action labels, double-page availability/status, grid-width terminology, and
+  any new explanatory line remain excluded until their distinct behavior has a
+  separate decision.
 - **Explicit exclusions:** do not rename the Advanced dictionary-management
   row into a second ambiguous `Tag Translation` control; do not change the
   relationship between dictionary availability and the existing display
