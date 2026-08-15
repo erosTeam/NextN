@@ -26,8 +26,30 @@ authorize an edit, replace a device comparison, or define product completion.
   浏览选项 direct, and 随机画廊 plus 列表样式 reachable from the overflow
   menu, then repeat on a non-Latest source. Same-state, same-viewport NextE
   comparison remains required before any visual-parity claim.
-- **Current status:** source applied; signed build and device observation
-  pending.
+- **Current bounded device observation — 2026-08-16:** the signed Debug HAP
+  (SHA-256 `1740ce215992125b3e27ce252a0ccd10c9a9fbf1f6b306053fe735f29b355b47`)
+  was installed in place with `-r` on only `192.168.50.237:12345` after a
+  fresh live target, lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms`
+  gate. No data clear, uninstall, account action, or preference write
+  occurred; the random-gallery action itself was invoked at the end as part
+  of this acceptance. After force-stop/cold start at `1320×2120`,
+  foreground-confirmed `com.erosteam.nextn` / `pages/Index` Browse root
+  (Latest) rendered an HDS title-bar menu with exactly two direct circular
+  buttons (`[864,141][984,261]` and `[1008,141][1128,261]`) plus the system
+  more button `hdsNavigationMoreButton` (`[1152,141][1272,261]`). The first
+  button opened the Search page (title 搜索, search field, 最近搜索); the
+  second opened the 浏览选项 surface with 语言 (不限语言/日语/中文/英语/已翻译)
+  and 排序 (最新/今日热门/本周热门/本月热门/全时热门). The more menu contained
+  exactly two items: 列表视图 (`[612,297][1260,441]`) and 随机画廊
+  (`[612,441][1260,586]`). Selecting 随机画廊 opened a foreground-confirmed
+  Gallery Detail for a random gallery (Watashi Mo Imouto Ga Hoshino!, with
+  标签/分类/语言/原作/角色/作者 and the 阅读 action). This accepts the Latest
+  menu collapse, both direct actions, and the two overflow entries on this
+  device; the non-Latest order remains source-verified but not
+  device-observed, and same-state NextE visual parity is still OPEN. Raw
+  local artifacts are retained under
+  `.hvigor/outputs/nextn-menu-settings-verify-20260816T0001/` and are
+  excluded from source control.
 
 
 ## OPEN — App icon layered-image resource — 2026-08-15
@@ -133,9 +155,24 @@ authorize an edit, replace a device comparison, or define product completion.
   subpage rows and copy, back returning to Advanced, and 界面 no longer
   containing a 标签翻译 switch. Same-state, same-viewport NextE comparison is
   still required before any visual-parity claim.
-- **Unresolved risk:** source/build cannot prove the routed destination,
-  every locale, dictionary status/update states, error copy, or full visual
-  parity. Device observation remains pending.
+- **Current bounded device observation — 2026-08-16:** on the same signed
+  Debug HAP (SHA-256
+  `1740ce215992125b3e27ce252a0ccd10c9a9fbf1f6b306053fe735f29b355b47`)
+  installed in place with `-r` on only `192.168.50.237:12345`, the
+  foreground-confirmed 我的 root listed account/history/界面/浏览/搜索/阅读/
+  下载/缓存/高级/关于. 高级 displayed 检测剪贴板链接, then the continuous
+  translation card 评论翻译 → 漫画翻译 → 标签翻译 (trailing 开) → 翻译来源,
+  followed by 内容过滤; no flattened 翻译数据库/立即更新 rows remained.
+  Tapping 标签翻译 opened the dedicated destination: title 标签翻译 with
+  启用标签翻译 (switch plus 显示中文/本地化标签名，并在搜索候选中匹配。),
+  翻译数据库 trailing `43766`, and 立即更新 (检查最新标签翻译，并保存到本地。).
+  The title-bar back action returned to 高级, not the root 我的. 界面 showed
+  深色模式/主题色(猫咪蓝)/沉浸光感材质/语言/屏幕方向/平板布局/列表视图(网格)/
+  显示标签/网格密度/固定列表行高/封面背景模糊 with no 标签翻译 switch. This
+  accepts the routed hierarchy, Advanced group order, subpage rows, back
+  path, and removed 界面 switch on this device only.
+- **Unresolved risk:** dictionary update/error states, every locale, and full
+  same-state NextE visual parity remain unaccepted.
 
 ## OPEN — Signed build profile persistence for DevEco — 2026-08-15
 

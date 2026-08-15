@@ -1,5 +1,26 @@
 # NextN active device-acceptance queue
 
+## Current Settings hierarchy and Browse title menu — bounded device observation — 2026-08-16
+
+- Signed Debug HAP from HEAD `2b46870` (SHA-256
+  `1740ce215992125b3e27ce252a0ccd10c9a9fbf1f6b306053fe735f29b355b47`)
+  installed in place with `-r` on only `192.168.50.237:12345` after a fresh
+  live target, lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms` gate.
+  No data clear, uninstall, account action, or preference write occurred.
+- After force-stop/cold start at `1320×2120`, foreground-confirmed
+  `com.erosteam.nextn` / `pages/Index` Browse root (Latest) showed exactly
+  two direct title-bar buttons plus the system more button; the more menu
+  contained 列表视图 and 随机画廊. Direct button 1 opened Search; direct
+  button 2 opened 浏览选项 (语言/排序). 随机画廊 from the overflow opened a
+  Gallery Detail. 我的 → 高级 showed 评论翻译/漫画翻译/标签翻译(开)/翻译来源
+  with no flattened dictionary rows; 标签翻译 opened its destination
+  (启用标签翻译 / 翻译数据库 43766 / 立即更新) and back returned to 高级.
+  界面 had no 标签翻译 switch.
+- Raw local artifacts are retained under
+  `.hvigor/outputs/nextn-menu-settings-verify-20260816T0001/` and are
+  excluded from source control.
+
+
 ## Current Gallery detail tag translation — bounded device observation — 2026-08-15
 
 - The signed HAP built from the tag-translation fix worktree (SHA-256
