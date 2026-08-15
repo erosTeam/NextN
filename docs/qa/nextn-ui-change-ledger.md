@@ -211,6 +211,16 @@ authorize an edit, replace a device comparison, or define product completion.
   Language and Order groups remain available and no policy caption remains.
   A same-state, same-viewport reference comparison remains required before a
   visual-parity claim.
+- **Bounded device observation:** the signed HAP from `0e0840e` was installed
+  in place on only `192.168.50.237:12345` after the live target, lease, wake,
+  and power-state gate. Browse options retained Language and Order without its
+  trailing caption. Search options retained its existing condition controls,
+  Language, and (after one non-selecting scroll) Order without its trailing
+  caption. No selection, query submission, history write, data clear,
+  uninstall, account action, or preference change occurred. This is not a
+  same-state reference comparison; visual parity and unobserved sheet states
+  remain OPEN. Raw artifacts are local-only under
+  `.hvigor/outputs/option-policy-footnotes-20260815T0900/`.
 
 ## OPEN — Search recent-history presentation — 2026-08-15
 

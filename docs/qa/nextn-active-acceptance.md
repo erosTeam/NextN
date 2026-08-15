@@ -1,5 +1,24 @@
 # NextN active device-acceptance queue
 
+## Current Browse/Search option-policy-footnote correction — bounded device observation — 2026-08-15
+
+- The signed HAP built from `0e0840e` was installed in place with `-r` on only
+  `192.168.50.237:12345` after a fresh lease, wake, and `AWAKE` /
+  `OverrideTimeout=86400000ms` gate. No data clear, uninstall, account action,
+  preference value change, query submission, history mutation, or condition
+  addition occurred.
+- In foreground-confirmed native Browse options, the Language and Order groups
+  remained present and no trailing public-GET / local-storage policy caption
+  was visible. In foreground-confirmed native Search options, the existing
+  condition controls, Language group, and after one non-selecting sheet scroll
+  the Order group remained present; neither observed viewport contained the
+  anonymous-search / typed-query policy caption.
+- This observes only the two caption-removal states and control continuity. It
+  does not accept option persistence, condition behavior, keyboard usability,
+  every scroll position, or visual parity. Raw local artifacts are retained
+  under `.hvigor/outputs/option-policy-footnotes-20260815T0900/` and are
+  excluded from source control.
+
 ## Current Search range-control correction — bounded device observation — 2026-08-15
 
 - The signed HAP from `882c381` was installed in place with `-r` on only
