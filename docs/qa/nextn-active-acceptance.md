@@ -1,5 +1,27 @@
 # NextN active device-acceptance queue
 
+## Current History/Downloads title-to-list blank reserve — bounded device observation — 2026-08-15
+
+- The signed HAP built from `f82f437` (SHA-256
+  `9d02a0aca4d52515edf6137fc7c484ea1eb304e8740eae2890102575bc94c56d`)
+  was installed in place with `-r` on only `192.168.50.237:12345` after a
+  fresh live target, lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms`
+  gate. No data clear, uninstall, account action, content action, or setting
+  value change occurred.
+- After force-stop/cold start at `1320×2120`, foreground-confirmed Downloads
+  at rest showed the first Blank ending at the bottom-builder top (y=285)
+  with the first `已完成` header beginning at y=306; with the Downloads
+  search overlay active, the field occupied y 375–495 and the first group
+  header began at y=540; foreground-confirmed History showed the first Blank
+  ending at y=285 with `今天` beginning at y=285, matching the NextE
+  reference Blank `[36,117][1284,285]` / `Today` at y=285.
+- This observes only the at-rest and Downloads-search-active first-row
+  geometry. It does not accept every locale, pinned-header scroll
+  transitions, search filtering behavior, or full visual parity. Raw local
+  artifacts are retained under
+  `.hvigor/outputs/nextn-history-downloads-gap-20260815T2110/` and are
+  excluded from source control.
+
 ## Current Reader enhancement Japanese label — bounded device observation — 2026-08-15
 
 - The signed HAP built from `ba23872` (SHA-256

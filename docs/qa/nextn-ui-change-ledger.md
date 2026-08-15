@@ -42,6 +42,25 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Unresolved risk:** source/build cannot prove visual parity; a current
   same-state, same-viewport device comparison against NextE is still
   required before this surface can be marked accepted.
+- **Current bounded device observation — 2026-08-15:** the signed HAP built
+  from `f82f437` (SHA-256
+  `9d02a0aca4d52515edf6137fc7c484ea1eb304e8740eae2890102575bc94c56d`) was
+  installed in place with `-r` on only `192.168.50.237:12345` after a fresh
+  live target, lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms` gate.
+  No data clear, uninstall, account action, content action, or setting change
+  occurred. After force-stop/cold start at `1320×2120`,
+  foreground-confirmed Downloads at rest showed the first Blank
+  `[36,117][1284,285]` with the first `已完成` header beginning at y=306;
+  with the Downloads search overlay active, the field occupied y 375–495 and
+  the first group header began at y=540 (below the field);
+  foreground-confirmed History showed the first Blank `[36,117][1284,285]`
+  with `今天` beginning at y=285, matching the NextE reference Blank
+  `[36,117][1284,285]` and `Today` at y=285. This observes only the at-rest
+  and Downloads-search-active first-row geometry; it does not accept every
+  locale, pinned-header scroll transitions, search filtering behavior, or
+  full visual parity. Raw local artifacts are retained under
+  `.hvigor/outputs/nextn-history-downloads-gap-20260815T2110/` and are
+  excluded from source control.
 
 ## OPEN — Reader tap-zone default-label restoration — 2026-08-15
 
