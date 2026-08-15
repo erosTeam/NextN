@@ -1,5 +1,23 @@
 # NextN active device-acceptance queue
 
+## Current tag-translation dictionary wording — bounded device observation — 2026-08-15
+
+- The signed HAP built from `ade31bf` was installed in place with `-r` on only
+  `192.168.50.237:12345` after a fresh lease, wake, and `AWAKE` /
+  `OverrideTimeout=86400000ms` gate. No data clear, uninstall, account action,
+  preference write, query, or dictionary update action occurred.
+- On the foreground-confirmed native `Settings → 高级` route at the current
+  `1320×2120` root viewport, the existing translation-capabilities group
+  displayed `翻译数据库` with the installed dictionary's current count `43672`.
+  Its following direct action displayed `立即更新` and `检查最新标签翻译，并保存到本地。`
+  without a navigation chevron. The update action was not invoked.
+- This observes only the installed-dictionary wording and direct-action state.
+  It does not accept dictionary-update behavior, status-read failure,
+  uninstalled/updating/error states, persistence, or same-state visual parity.
+  Raw local artifacts are retained under
+  `.hvigor/outputs/tag-dictionary-copy-20260815T1625/` and are excluded from
+  source control.
+
 ## Current Content-filter settings subtitle — bounded device observation — 2026-08-15
 
 - The signed HAP built from `d8eb826` was installed in place with `-r` on only
