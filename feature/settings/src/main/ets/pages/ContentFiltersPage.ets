@@ -127,9 +127,8 @@ export struct ContentFiltersPage {
     try {
       await ContentFilterService.save(this.context(), rule)
       this.editorShown = false
-    } catch (error) {
-      const message: string = (error as Error).message
-      this.errorMessage = message.length > 0 ? message : AppStrings.get('content_filter_save_failed')
+    } catch (_error) {
+      this.errorMessage = AppStrings.get('content_filter_save_failed')
     }
   }
 

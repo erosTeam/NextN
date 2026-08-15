@@ -293,6 +293,35 @@ authorize an edit, replace a device comparison, or define product completion.
   same-viewport reference comparison remains required before a visual-parity
   claim.
 
+## OPEN — Content-filter save-error localization — 2026-08-15
+
+- **Why newly actionable:** the user explicitly rejected internal and
+  non-user-facing wording in Settings. Source review shows that the existing
+  save catch renders any service or RDB `Error.message` verbatim, including
+  English validation strings and possible storage internals, while the other
+  Content-filter error paths already use localized resources.
+- **Whole parent-tree boundary:** `SettingsPage(ADVANCED) →
+  ContentFiltersGroup → Index contentFilters destination →
+  ContentFiltersPage → SecondaryListScaffold → RulesGroup → existing red
+  error Text`. The existing editor remains
+  `ContentFiltersPage.bindSheet → NextNModalScaffold → RulesEditorSheet →
+  saveDraft`; it owns the same `errorMessage` state but no sheet or control
+  hierarchy changes.
+- **Reference boundary:** NextE `LocalBlockSettingsPage` keeps its local
+  validation message in localized UI and does not present service exception
+  text. NextN already has distinct localized validation, regex-invalid, and
+  generic-save-failed resources; this change uses only the existing generic
+  save failure for the catch-all persistence/service branch.
+- **Exact change:** replace only the save catch's raw `Error.message`
+  assignment with `content_filter_save_failed`. Keep pre-save validation,
+  inline regex feedback, rule normalization, storage write ordering, editor
+  state, error placement, route, rule operations, and every other failure
+  branch unchanged.
+- **Verification plan:** inspect the one-line source diff and signed build.
+  Do not induce storage failures or save a rule on a real device merely to
+  force this error state. The source-proven raw-message branch and all runtime
+  persistence/error states remain OPEN until a safe isolated condition exists.
+
 ## OPEN — Tag-translation dictionary status and update labels — 2026-08-15
 
 - **Why newly actionable:** the user explicitly rejected the Advanced row's
