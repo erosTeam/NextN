@@ -9,6 +9,8 @@ oh_modules/
 oh-package-lock.json5
 build-profile.local.json5
 .nextn-test-account.local.json5
+__pycache__/
+*.pyc
 *.p12
 *.p7b
 *.cer

@@ -3,6 +3,28 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — App icon layered-image resource — 2026-08-15
+
+- **Why newly actionable:** the user required the NextE app-icon mechanism
+  instead of a PNG/single-layer SVG: a `layered-image` resource with separate
+  background and foreground, plus the ErosN icon geometry (pink wings and
+  white N) on the NextE midnight background.
+- **Whole parent-tree boundary:** app launcher icon chain only:
+  `AppScope/app.json5` `icon`, `entry/src/main/module.json5` `icon` and
+  `startWindowIcon`, and the three new media resources under
+  `AppScope/resources/base/media/`. No page, tab, route, or behavior changes.
+- **Exact change:** add `app_icon_background.svg` (NextE midnight gradient),
+  `app_icon_foreground.svg` (ErosN-derived wing + N paths, no background
+  fill), and `app_icon_layered.json`; switch `app.json5` to
+  `$media:app_icon_layered`, `module.json5` icon to the layered media and
+  `startWindowIcon` to `$media:app_icon_foreground`.
+- **Verification plan:** parse the layered JSON and both SVGs, run a signed
+  build, then observe the launcher icon on the selected device. Same-state
+  device observation against the intended ErosN/NextE reference remains
+  required before any visual-parity claim.
+- **Current status:** media resources and entry wiring are applied in source;
+  signed build and device observation are pending.
+
 ## OPEN — Root 我的 tab and History destination — 2026-08-15
 
 - **Why newly actionable:** the user chose 方案 B: rename the root Settings
