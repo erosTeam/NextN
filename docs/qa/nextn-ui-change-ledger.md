@@ -116,6 +116,15 @@ authorize an edit, replace a device comparison, or define product completion.
   range, and a compact upload-age range, each with its existing explicit add
   action. Remove the invented preamble and do not introduce another route,
   sheet, scroller, or explanatory copy.
+- **Copy correction — 2026-08-15:** the user also rejected the range-field
+  placeholder `正整数` / `Positive whole number`. That was an internal input
+  validation rule incorrectly exposed as user-facing copy, not a reference
+  term. Empty range fields mean no bound, so use NextE's exact `filter_any`
+  wording (`不限` / `Any` / `指定なし`). Keep `InputType.Number` and its existing
+  digit-only filter, but disable each Add row until either bound parses as a
+  positive value; remove the visible `range_required` error instead of adding
+  instructional prose. Range-order feedback remains a separate, unchanged
+  validation boundary.
 - **Exact change:** add a short-lived condition composer for typed
   `tag/parody/character/artist/group/category` include-or-exclude terms plus
   page-count and uploaded-age lower/upper comparisons. Applying a valid

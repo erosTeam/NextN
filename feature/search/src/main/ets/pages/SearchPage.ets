@@ -673,6 +673,11 @@ export struct SearchPage {
     return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : 0
   }
 
+  private hasAdvancedPositiveRange(minimumText: string, maximumText: string): boolean {
+    return this.parseAdvancedPositiveInteger(minimumText) > 0 ||
+      this.parseAdvancedPositiveInteger(maximumText) > 0
+  }
+
   private setAdvancedConditionError(scope: string, message: string): void {
     this.advancedConditionErrorScope = scope
     this.advancedConditionError = message
@@ -729,7 +734,6 @@ export struct SearchPage {
     const minimum: number = this.parseAdvancedPositiveInteger(this.advancedPageMinimumText)
     const maximum: number = this.parseAdvancedPositiveInteger(this.advancedPageMaximumText)
     if (minimum <= 0 && maximum <= 0) {
-      this.setAdvancedConditionError('pages', AppStrings.get('search_advanced_range_required'))
       return
     }
     if (minimum > 0 && maximum > 0 && minimum > maximum) {
@@ -755,7 +759,6 @@ export struct SearchPage {
     const minimum: number = this.parseAdvancedPositiveInteger(this.advancedUploadedMinimumText)
     const maximum: number = this.parseAdvancedPositiveInteger(this.advancedUploadedMaximumText)
     if (minimum <= 0 && maximum <= 0) {
-      this.setAdvancedConditionError('uploaded', AppStrings.get('search_advanced_range_required'))
       return
     }
     if (minimum > 0 && maximum > 0 && minimum > maximum) {
@@ -1568,7 +1571,7 @@ export struct SearchPage {
   private AdvancedRangeInput(value: string, accessibilityLabel: string, onChange: (value: string) => void) {
     TextInput({
       text: value,
-      placeholder: AppStrings.get('search_advanced_positive_integer'),
+      placeholder: AppStrings.get('filter_any'),
     })
       .type(InputType.Number)
       .inputFilter('^[0-9]*$')
@@ -1692,6 +1695,10 @@ export struct SearchPage {
           title: AppStrings.get('search_advanced_add_pages'),
           trailingActionText: AppStrings.get('search_advanced_add'),
           showChevron: false,
+          isEnabled: this.hasAdvancedPositiveRange(
+            this.advancedPageMinimumText,
+            this.advancedPageMaximumText,
+          ),
           accessibilityLabel: AppStrings.get('search_advanced_add_pages'),
           onAction: (): void => {
             this.appendAdvancedPageConditions()
@@ -1734,6 +1741,10 @@ export struct SearchPage {
           title: AppStrings.get('search_advanced_add_uploaded'),
           trailingActionText: AppStrings.get('search_advanced_add'),
           showChevron: false,
+          isEnabled: this.hasAdvancedPositiveRange(
+            this.advancedUploadedMinimumText,
+            this.advancedUploadedMaximumText,
+          ),
           accessibilityLabel: AppStrings.get('search_advanced_add_uploaded'),
           onAction: (): void => {
             this.appendAdvancedUploadedConditions()
