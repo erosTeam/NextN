@@ -640,7 +640,7 @@
     { "name": "settings_reader_tap_zones", "value": "Tap zones" },
     { "name": "settings_reader_tap_zones_hint", "value": "Choose the Reader tap-zone layout. The menu zone shows or hides Reader controls." },
     { "name": "settings_reader_tap_zones_a11y", "value": "Tap zones, {0}" },
-    { "name": "settings_reader_tap_zone_right_left", "value": "Left / menu / right" },
+    { "name": "settings_reader_tap_zone_right_left", "value": "Right and left" },
     { "name": "settings_reader_tap_zone_l_shaped", "value": "L-shaped" },
     { "name": "settings_reader_tap_zone_kindle", "value": "Kindle" },
     { "name": "settings_reader_tap_zone_edge", "value": "Edge" },

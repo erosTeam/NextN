@@ -3,6 +3,42 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Reader tap-zone default-label restoration — 2026-08-15
+
+- **Why newly actionable:** the user identified that the default Tap zones
+  menu entry had been turned into the internal region trace `左侧 / 菜单 /
+  右侧`. That wording is neither a user-facing capability name nor current
+  NextE copy; it exposed the resolver's three physical regions as if they
+  were an option label.
+- **Whole parent-tree boundary:** retain
+  `SettingsPage(surface=READER) → SecondaryListScaffold →
+  ReaderPresentationListItems → ListItem → ReaderTapZonesGroup →
+  NextNSectionHeader + NextNGroupedListSection → NextNListRow → existing
+  ReaderTapZoneMenu`. The shared sheet host remains
+  `ReaderPage → Index.ReaderSettingsSheet → SettingsPage(surface=READER,
+  sheetPresentation=true) → ReaderPresentationSheet → NextNModalScaffold →
+  ReaderPresentationListItems → ListItem → ReaderTapZonesGroup`. The four
+  menu entries, their order, checkmark selection, resolver, inversion row,
+  persistence, and input behavior remain unchanged.
+- **Reference boundary:** current NextE labels the same default
+  `RIGHT_LEFT` layout `Right and left` in base/en and `左右` in Chinese and
+  Japanese, followed by its unchanged `L 形 / Kindle / 两侧` leaves.
+- **Exact change:** replace only the four-locale
+  `settings_reader_tap_zone_right_left` value with that exact current NextE
+  text. No internal-region explanation or substitute wording is added.
+- **Impact and prevention:** the previous local wording made a normalized
+  implementation layout look like a user setting. A value label must name the
+  selectable presentation layout, not enumerate implementation regions;
+  future Reader labels must be compared against the complete current NextE
+  option set before being introduced.
+- **Verification plan:** inspect the scoped resource/ledger diff, parse all
+  locale catalogs, and build the exact commit. On the selected device, open
+  the native Reader Settings menu without selecting a value and observe the
+  default label plus all four entries. Reader tap input and persistence remain
+  outside this copy-only observation.
+- **Unresolved risk:** source/build cannot prove the Reader-owned sheet,
+  tap-action behavior, persistence, every locale, or full visual parity.
+
 ## OPEN — Reader reference subtitles restoration — 2026-08-15
 
 - **Why newly actionable:** the same thorough Settings review found the

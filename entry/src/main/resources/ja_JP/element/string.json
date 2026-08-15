@@ -640,7 +640,7 @@
     { "name": "settings_reader_tap_zones", "value": "タップ領域" },
     { "name": "settings_reader_tap_zones_hint", "value": "Readerのタップゾーン配置を選択します。メニューゾーンでReaderコントロールを表示または非表示にします。" },
     { "name": "settings_reader_tap_zones_a11y", "value": "タップ領域、{0}" },
-    { "name": "settings_reader_tap_zone_right_left", "value": "左 / メニュー / 右" },
+    { "name": "settings_reader_tap_zone_right_left", "value": "左右" },
     { "name": "settings_reader_tap_zone_l_shaped", "value": "L字型" },
     { "name": "settings_reader_tap_zone_kindle", "value": "Kindle" },
     { "name": "settings_reader_tap_zone_edge", "value": "両端" },

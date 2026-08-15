@@ -640,7 +640,7 @@
     { "name": "settings_reader_tap_zones", "value": "点按区域" },
     { "name": "settings_reader_tap_zones_hint", "value": "选择阅读器轻点分区布局。菜单分区用于显示或隐藏阅读器控件。" },
     { "name": "settings_reader_tap_zones_a11y", "value": "点按区域，{0}" },
-    { "name": "settings_reader_tap_zone_right_left", "value": "左侧 / 菜单 / 右侧" },
+    { "name": "settings_reader_tap_zone_right_left", "value": "左右" },
     { "name": "settings_reader_tap_zone_l_shaped", "value": "L 形" },
     { "name": "settings_reader_tap_zone_kindle", "value": "Kindle" },
     { "name": "settings_reader_tap_zone_edge", "value": "两侧" },
