@@ -32,7 +32,8 @@ import {
   BrowseDensitySettingsPage,
   CommentTranslationSettingsPage,
   ComicTranslationSettingsPage,
-  ComicTranslationSourcePage,
+  LlmSourceDetailPage,
+  LlmSourceManagerPage,
   MangaRenderingServiceSettingsPage,
   ContentFiltersPage,
   ReaderSuperResolutionModelsPage,
@@ -72,6 +73,8 @@ import {
   LLM_CONSUMER_MANGA_TRANSLATION,
   ImmersiveMaterialSettings,
   ImmersiveMaterialSettingsState,
+  LlmConsumerBinding,
+  LlmSourceProfilesState,
   HOME_SOURCE_LATEST,
   HOME_SOURCE_SELECTOR_HEIGHT,
   TabletLayoutSettings,
@@ -86,6 +89,7 @@ import {
   connectHomeSource,
   connectHomeTabAutoHide,
   connectImmersiveMaterialSettings,
+  connectLlmSourceProfiles,
   connectTabletLayout,
   connectThemeDisplay,
   NhArkWebSessionTransportHost,
@@ -125,7 +129,8 @@ const ROUTE_CONTENT_FILTERS: string = 'contentFilters'
 const ROUTE_HISTORY: string = 'history'
 const ROUTE_READER_SETTINGS: string = 'readerSettings'
 const ROUTE_READER_SUPER_RESOLUTION_MODELS: string = 'readerSuperResolutionModels'
-const ROUTE_TRANSLATION_SOURCE: string = 'translationSource'
+const ROUTE_LLM_SOURCE_MANAGER: string = 'llmSourceManager'
+const ROUTE_LLM_SOURCE_DETAIL: string = 'llmSourceDetail'
 const ROUTE_MANGA_RENDERING_SERVICE: string = 'mangaRenderingService'
 const ROUTE_DOWNLOAD_SETTINGS: string = 'downloadSettings'
 const ROUTE_CACHE_SETTINGS: string = 'cacheSettings'
@@ -162,10 +167,23 @@ class GalleryRouteParams {
   }
 }
 
-class TranslationSourceRouteParams {
+class LlmSourceManagerRouteParams {
   consumerId: string = LLM_CONSUMER_MANGA_TRANSLATION
 
   constructor(consumerId: string = LLM_CONSUMER_MANGA_TRANSLATION) {
+    this.consumerId = consumerId
+  }
+}
+
+class LlmSourceDetailRouteParams {
+  sourceProfileId: string = ''
+  consumerId: string = LLM_CONSUMER_MANGA_TRANSLATION
+
+  constructor(
+    sourceProfileId: string = '',
+    consumerId: string = LLM_CONSUMER_MANGA_TRANSLATION,
+  ) {
+    this.sourceProfileId = sourceProfileId
     this.consumerId = consumerId
   }
 }
@@ -686,8 +704,27 @@ struct Index {
     this.stack.pushPathByName(ROUTE_READER_SUPER_RESOLUTION_MODELS, '')
   }
 
-  private pushTranslationSource(consumerId: string = LLM_CONSUMER_MANGA_TRANSLATION): void {
-    this.stack.pushPathByName(ROUTE_TRANSLATION_SOURCE, new TranslationSourceRouteParams(consumerId))
+  private pushLlmSourceManager(consumerId: string = LLM_CONSUMER_MANGA_TRANSLATION): void {
+    this.stack.pushPathByName(ROUTE_LLM_SOURCE_MANAGER, new LlmSourceManagerRouteParams(consumerId))
+  }
+
+  private pushLlmSourceDetail(sourceProfileId: string, consumerId: string): void {
+    this.stack.pushPathByName(
+      ROUTE_LLM_SOURCE_DETAIL,
+      new LlmSourceDetailRouteParams(sourceProfileId, consumerId),
+    )
+  }
+
+  private openTranslationModelEditor(consumerId: string): void {
+    const sources: LlmSourceProfilesState = connectLlmSourceProfiles()
+    const binding: LlmConsumerBinding = consumerId === LLM_CONSUMER_COMMENT_TRANSLATION
+      ? sources.commentBinding
+      : sources.mangaBinding
+    if (binding.configured()) {
+      this.pushLlmSourceDetail(binding.sourceProfileId, consumerId)
+    } else {
+      this.pushLlmSourceManager(consumerId)
+    }
   }
 
   private pushTagTranslationSettings(): void {
@@ -1496,13 +1533,23 @@ struct Index {
     return new ReaderRouteParams()
   }
 
-  private translationSourceParams(param: Object): TranslationSourceRouteParams {
-    if (param instanceof TranslationSourceRouteParams &&
+  private llmSourceManagerParams(param: Object): LlmSourceManagerRouteParams {
+    if (param instanceof LlmSourceManagerRouteParams &&
       (param.consumerId === LLM_CONSUMER_MANGA_TRANSLATION ||
         param.consumerId === LLM_CONSUMER_COMMENT_TRANSLATION)) {
       return param
     }
-    return new TranslationSourceRouteParams()
+    return new LlmSourceManagerRouteParams()
+  }
+
+  private llmSourceDetailParams(param: Object): LlmSourceDetailRouteParams {
+    if (param instanceof LlmSourceDetailRouteParams) {
+      const consumerId: string = param.consumerId === LLM_CONSUMER_COMMENT_TRANSLATION
+        ? LLM_CONSUMER_COMMENT_TRANSLATION
+        : LLM_CONSUMER_MANGA_TRANSLATION
+      return new LlmSourceDetailRouteParams(param.sourceProfileId, consumerId)
+    }
+    return new LlmSourceDetailRouteParams()
   }
 
   private thumbnailParams(param: Object): ThumbnailRouteParams {
@@ -1815,14 +1862,34 @@ struct Index {
   }
 
   @Builder
-  private translationSourceDestination(param: Object) {
+  private llmSourceManagerDestination(param: Object) {
     HdsNavDestination() {
-      ComicTranslationSourcePage({
+      LlmSourceManagerPage({
         scroller: this.translationSourceScroller,
-        requestedConsumer: this.translationSourceParams(param).consumerId,
+        requestedConsumer: this.llmSourceManagerParams(param).consumerId,
+        onOpenSource: (sourceProfileId: string, consumerId: string): void => {
+          this.pushLlmSourceDetail(sourceProfileId, consumerId)
+        },
       })
     }
-    .titleBar(nextNHdsTitle(AppStrings.get('settings_translation_source')))
+    .titleBar(nextNHdsTitle(AppStrings.get('llm_sources_title')))
+    .hideBackButton(false)
+    .bindToScrollable([this.translationSourceScroller])
+  }
+
+  @Builder
+  private llmSourceDetailDestination(param: Object) {
+    HdsNavDestination() {
+      LlmSourceDetailPage({
+        scroller: this.translationSourceScroller,
+        requestedSourceProfileId: this.llmSourceDetailParams(param).sourceProfileId,
+        requestedConsumer: this.llmSourceDetailParams(param).consumerId,
+        onDeleted: (): void => {
+          this.stack.pop()
+        },
+      })
+    }
+    .titleBar(nextNHdsTitle(AppStrings.get('llm_source_detail_title')))
     .hideBackButton(false)
     .bindToScrollable([this.translationSourceScroller])
   }
@@ -1876,7 +1943,7 @@ struct Index {
           this.pushContentFilters()
         },
         onOpenTranslationSource: (): void => {
-          this.pushTranslationSource()
+          this.pushLlmSourceManager()
         },
       })
     }
@@ -1901,7 +1968,10 @@ struct Index {
       CommentTranslationSettingsPage({
         scroller: this.commentTranslationSettingsScroller,
         onOpenTranslationSource: (consumerId: string): void => {
-          this.pushTranslationSource(consumerId)
+          this.pushLlmSourceManager(consumerId)
+        },
+        onEditTranslationModel: (consumerId: string): void => {
+          this.openTranslationModelEditor(consumerId)
         },
       })
     }
@@ -1916,7 +1986,10 @@ struct Index {
       ComicTranslationSettingsPage({
         scroller: this.comicTranslationSettingsScroller,
         onOpenTranslationSource: (consumerId: string): void => {
-          this.pushTranslationSource(consumerId)
+          this.pushLlmSourceManager(consumerId)
+        },
+        onEditTranslationModel: (consumerId: string): void => {
+          this.openTranslationModelEditor(consumerId)
         },
         onOpenMangaRenderingService: (): void => {
           this.pushMangaRenderingService()
@@ -2010,8 +2083,10 @@ struct Index {
       this.readerSettingsDestination()
     } else if (name === ROUTE_READER_SUPER_RESOLUTION_MODELS) {
       this.readerSuperResolutionModelsDestination()
-    } else if (name === ROUTE_TRANSLATION_SOURCE) {
-      this.translationSourceDestination(param)
+    } else if (name === ROUTE_LLM_SOURCE_MANAGER) {
+      this.llmSourceManagerDestination(param)
+    } else if (name === ROUTE_LLM_SOURCE_DETAIL) {
+      this.llmSourceDetailDestination(param)
     } else if (name === ROUTE_MANGA_RENDERING_SERVICE) {
       this.mangaRenderingServiceDestination()
     } else if (name === ROUTE_DOWNLOAD_SETTINGS) {

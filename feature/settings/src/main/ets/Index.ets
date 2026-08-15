@@ -1,6 +1,7 @@
 export { SettingsPage, SettingsSurface } from './pages/SettingsPage'
 export { ReaderSuperResolutionModelsPage } from './pages/ReaderSuperResolutionModelsPage'
-export { ComicTranslationSourcePage } from './pages/ComicTranslationSourcePage'
+export { LlmSourceManagerPage } from './pages/LlmSourceManagerPage'
+export { LlmSourceDetailPage } from './pages/LlmSourceDetailPage'
 export { MangaRenderingServiceSettingsPage } from './pages/MangaRenderingServiceSettingsPage'
 export { BrowseDensitySettingsPage } from './pages/BrowseDensitySettingsPage'
 export { ContentFiltersPage } from './pages/ContentFiltersPage'

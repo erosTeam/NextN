@@ -110,6 +110,7 @@ import {
   connectTagTranslationSettings,
   connectThemeColor,
   connectThemeDisplay,
+  releaseTagTranslationVersionLabel,
 } from 'shared'
 import { appMenuOptions } from 'shared'
 import { appSheetOptions } from 'shared'
@@ -362,6 +363,13 @@ export struct SettingsPage {
       return AppStrings.get('theme_dark')
     }
     return AppStrings.get('appearance_follow_system')
+  }
+
+  private tagTranslationVersionText(): string {
+    const label: string = releaseTagTranslationVersionLabel(this.tagTranslationSettings.version)
+    return label.length > 0
+      ? label
+      : AppStrings.get('settings_tag_translation_no_version')
   }
 
   private languageModeLabel(): string {
@@ -3412,9 +3420,7 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.textformat'),
         title: AppStrings.get('settings_tag_translation_title'),
-        subtitle: this.tagTranslationSettings.version.length > 0
-          ? this.tagTranslationSettings.version
-          : AppStrings.get('settings_tag_translation_not_installed'),
+        subtitle: this.tagTranslationVersionText(),
         trailingText: this.toggleStateLabel(this.browsePresentation.showTranslatedTagLabels),
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_tag_translation_title'),
@@ -3429,7 +3435,7 @@ export struct SettingsPage {
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.cloud'),
-        title: AppStrings.get('settings_translation_source'),
+        title: AppStrings.get('llm_sources_title'),
         accessibilityLabel: AppStrings.get('settings_translation_source_a11y'),
         onAction: (): void => {
           if (this.onOpenTranslationSource) {

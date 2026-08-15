@@ -295,3 +295,65 @@
 2. 移植 NextE 页面时按行逐项对照：有状态/服务支撑的行照搬，没有支撑的行必须
    在台账中登记“不支持叶子”，不允许无声砍掉。
 3. 数据库/词典类状态行必须同时展示身份信息（版本）与数量，禁止只露裸数字。
++
+---
+
+## INC-2026-08-16-009：翻译来源被精简为单一表单，无法添加多个源；标签翻译页把内部文件指纹当版本号展示；删除按钮显示原始资源键名 common_delete
+
+- 状态：源码已修复，构建成功，已在 192.168.50.237:12345 真机完成增删多源与文案验收（观察记录），页面级 NextE 同视口对照与用户终验仍 OPEN
+- 用户反馈：翻译来源页只有单一 OpenAI 兼容源表单，“我怎么添加别的翻译源”；标签翻译版本号是一串 `bytes-1789474-fnv1a-a899a102` 的“狗屎版本号”。
+
+### 根因（源码证据）
+
+1. 单源表单：
+   - feature/settings/.../ComicTranslationSourcePage.ets 的 loadSource() 只从
+     mangaBinding/commentBinding 反推“当前已绑定源”，页面没有任何 profiles
+     列表或“添加源”入口；数据层 LlmSourceProfilesState.profiles 数组与
+     LlmSourceProfileRepository.upsert/remove 早已支持多源，是页面层把多源
+     能力砍成单源表单。
+2. 版本指纹泄漏：
+   - shared/src/main/ets/services/TagTranslationUpdateService.ets:489 在拿不到
+     GitHub release 元数据时生成内部指纹
+     `bytes-<written>-fnv1a-<fingerprint>`；
+   - TagTranslationSettingsPage.ets versionText() 此前直接返回该字符串，
+     把文件字节数+FNV-1a 内容哈希当作“版本”展示给用户。NextE 的 version
+     是 release 标签+发布时间（TagTranslationService.releaseVersion），
+     NextN release 元数据版本为
+     `release:<tag>\u001f<publishedAt>\u001f<sha256>`。
+3. common_delete 资源缺失：
+   - 四个语言包 string.json 均无 `common_delete`，但删除确认框引用它，
+     界面直接显示原始键名；这是预存缺陷（评论缓存清除确认框同样引用），
+     本次 LLM 源删除页首次在真机暴露。
+
+### 修复
+
+1. 新增 LlmSourceManagerPage（空态/源列表/添加 LLM 源）与 LlmSourceDetailPage
+   （源类型/名称/基础 URL/API Key/模型/用于评论翻译/用于漫画翻译/保存/删除），
+   删除 ComicTranslationSourcePage；entry 路由改为 llmSourceManager 与
+   llmSourceDetail；设置根行与评论/漫画页来源行统一为 NextE 文案“LLM 源”，
+   模型行“模型”。
+2. 评论翻译/漫画翻译页：来源行打开 LLM 源管理页；模型行直接打开当前已绑定源
+   详情（未绑定时进管理页）。
+3. 标签翻译页版本副标题只展示 release 标签+发布时间；legacy 内部指纹一律显示
+   “暂无本地版本”，不再泄漏到界面。
+4. 补齐 common_delete 四语言资源（删除/Delete/削除）。
+
+### 真机观察（2026-08-16 07:07–07:23 +0800，237 设备，install -r 未清数据）
+
+- 高级设置显示 评论翻译/漫画翻译/标签翻译/LLM 源 四行；
+- LLM 源管理页：空态“暂无 LLM 源”+“添加 LLM 源”；
+- 添加→详情页字段齐全（源类型/名称/基础 URL/API Key/模型/两个用途开关/保存）；
+- 填写模型与 API Key 后保存，列表出现“我的翻译来源”；再次添加后列表出现两个
+  同名源（多源持久化成立）；删除确认框按钮显示“删除”（修复前显示 common_delete）；
+- 删除两个源后回到空态；
+- 评论翻译页显示 LLM 源/模型 行，点击 LLM 源进入管理页；
+- 标签翻译页显示“翻译数据库 / 暂无本地版本 / 43774”，不再出现 bytes-*/fnv1a。
+
+### 防止复发
+
+1. 移植 NextE 设置页必须同时核对“入口→列表→详情→删除→被引用确认”整条链路，
+   数据层已有能力不能因页面只做单表单而裁掉。
+2. 用户可见“版本”只能来自有语义的 release 标识；内部指纹、哈希、字节数不得
+   进入设置副标题。
+3. 新界面引用的每个字符串 key 必须先在四个语言包中存在，真机验收时检查
+   对话框按钮是否显示原始键名。

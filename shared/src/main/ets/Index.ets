@@ -105,7 +105,11 @@ export {
 export { AccountProfileRepository } from './storage/AccountProfileRepository'
 export { NhAccountSessionService } from './services/NhAccountSessionService'
 export { NhAccountProfileService } from './services/NhAccountProfileService'
-export { NhTagTranslationEntry, NhTagTranslationStatus } from './model/NhTagTranslation'
+export {
+  NhTagTranslationEntry,
+  NhTagTranslationStatus,
+  releaseTagTranslationVersionLabel,
+} from './model/NhTagTranslation'
 export { NhTagSuggestion } from './model/NhTagSuggestion'
 export { NhTagQuery } from './model/NhTagQuery'
 export { NhComment } from './model/NhComment'

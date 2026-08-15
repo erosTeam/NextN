@@ -5761,3 +5761,36 @@ authorize an edit, replace a device comparison, or define product completion.
 - 未决风险：评论翻译“启用”首次恢复默认开启，保留现有“配好源即可翻译”的行为；
   用户显式关闭后持久化。启动时自动更新为新增网络行为，仅在用户主动选择
   “启动 App 时更新”后生效。
++
+## OPEN — LLM 源多源管理页 + 标签翻译版本显示修复 — 2026-08-16
+
+- 用户指令：翻译来源不能再是单源表单，要能添加/管理多个源；标签翻译页的
+  “版本号”是内部指纹（bytes-*/fnv1a），必须移除；删除按钮显示 common_delete
+  原始键名需修复。
+- 涉及父树边界：SettingsPage(ADVANCED) 翻译区最后一行（LLM 源）→ entry 路由
+  llmSourceManager/llmSourceDetail → LlmSourceManagerPage（列表/空态/添加）→
+  LlmSourceDetailPage（表单/用途开关/保存/删除）；Comment/ComicTranslation
+  SettingsPage 的来源行与模型行目的地；TagTranslationSettingsPage 数据库行副标题。
+- 修改前：翻译来源 → ComicTranslationSourcePage 单源表单（三入口同页问题已由
+  INC-008 拆开，但该页本身仍只有单源）；标签翻译副标题直接显示
+  `bytes-1789474-fnv1a-a899a102`；删除确认框按钮显示 `common_delete`。
+- 修改后：
+  1. LLM 源 → LlmSourceManagerPage：空态“暂无 LLM 源”、源列表（名称+OpenAI
+     兼容 API）、添加 LLM 源；
+  2. 点击源/添加源 → LlmSourceDetailPage：源类型/名称/基础 URL/API Key/模型/
+     用于评论翻译/用于漫画翻译/保存翻译来源/删除 LLM 源（含被引用确认文案）；
+  3. 评论翻译与漫画翻译页：来源行文案改为 NextE 的“LLM 源”，点击进管理页；
+     模型行文案“模型”，点击直接编辑当前已绑定源（未绑定则进管理页）；
+  4. 标签翻译数据库行：仅展示 release 标签+发布时间；legacy 指纹显示
+     “暂无本地版本”，43774 行数尾值保留；
+  5. 补齐 common_delete（删除/Delete/削除）。
+- 最小性理由：只新增/替换来源管理链路与版本显示边界；未新增 Codex OAuth、
+  模型目录在线查询等 NextN 无服务支撑的叶子；多源绑定保存只改写指向当前源的
+  消费者绑定，不触碰其他源的绑定。
+- 真机证据（2026-08-16 07:07–07:23 +0800，237 设备，install -r 未清数据）：
+  空态→添加→保存→列表出现 1 个源→再次添加→列表出现 2 个同名源→详情删除
+  （确认按钮为“删除”）→回到空态；评论翻译页 LLM 源行进入管理页；标签翻译页
+  显示“暂无本地版本+43774”，无 bytes-*/fnv1a。截图存于
+  .hvigor/outputs/llm-source-manager/llm-manager-two-sources.png。
+- 未决：NextE 同视口逐页对照与用户终验仍 OPEN；模型保留在来源详情页（NextN
+  无模型目录服务，不引入空菜单）的边界需要用户确认可接受。

@@ -34,6 +34,7 @@ export struct CommentTranslationSettingsPage {
   @Local clearingCache: boolean = false
   @Param scroller: Scroller = new Scroller()
   @Event onOpenTranslationSource?: (consumerId: string) => void
+  @Event onEditTranslationModel?: (consumerId: string) => void
 
   aboutToAppear(): void {
     this.refreshCacheCount()
@@ -245,7 +246,7 @@ export struct CommentTranslationSettingsPage {
           NextNGroupedListSection() {
             NextNListRow({
               leadingIcon: $r('sys.symbol.externaldrive'),
-              title: AppStrings.get('settings_translation_source'),
+              title: AppStrings.get('llm_binding_source'),
               trailingText: this.selectedSourceText(),
               isEnabled: this.settings.enabled,
               accessibilityLabel: AppStrings.get('comment_translation_source_a11y'),
@@ -258,13 +259,13 @@ export struct CommentTranslationSettingsPage {
             this.RowDivider()
             NextNListRow({
               leadingIcon: $r('sys.symbol.arrow_down_circle'),
-              title: AppStrings.get('settings_translation_source_model'),
+              title: AppStrings.get('llm_binding_model'),
               trailingText: this.selectedModelText(),
               isEnabled: this.settings.enabled,
               accessibilityLabel: AppStrings.get('comment_translation_model_a11y'),
               onAction: (): void => {
-                if (this.settings.enabled && this.onOpenTranslationSource) {
-                  this.onOpenTranslationSource(LLM_CONSUMER_COMMENT_TRANSLATION)
+                if (this.settings.enabled && this.onEditTranslationModel) {
+                  this.onEditTranslationModel(LLM_CONSUMER_COMMENT_TRANSLATION)
                 }
               },
             })

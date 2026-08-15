@@ -28,6 +28,7 @@ export struct ComicTranslationSettingsPage {
   @Local mangaRenderingServiceEnabled: boolean = false
   @Param scroller: Scroller = new Scroller()
   @Event onOpenTranslationSource?: (consumerId: string) => void
+  @Event onEditTranslationModel?: (consumerId: string) => void
   @Event onOpenMangaRenderingService?: () => void
 
   aboutToAppear(): void {
@@ -176,7 +177,7 @@ export struct ComicTranslationSettingsPage {
           NextNGroupedListSection() {
             NextNListRow({
               leadingIcon: $r('sys.symbol.cloud'),
-              title: AppStrings.get('settings_translation_source'),
+              title: AppStrings.get('llm_binding_source'),
               trailingText: this.selectedSourceText(),
               accessibilityLabel: AppStrings.get('comic_translation_source_a11y'),
               onAction: (): void => {
@@ -188,12 +189,12 @@ export struct ComicTranslationSettingsPage {
             this.RowDivider()
             NextNListRow({
               leadingIcon: $r('sys.symbol.arrow_down_circle'),
-              title: AppStrings.get('settings_translation_source_model'),
+              title: AppStrings.get('llm_binding_model'),
               trailingText: this.selectedModelText(),
               accessibilityLabel: AppStrings.get('comic_translation_model_a11y'),
               onAction: (): void => {
-                if (this.onOpenTranslationSource) {
-                  this.onOpenTranslationSource(LLM_CONSUMER_MANGA_TRANSLATION)
+                if (this.onEditTranslationModel) {
+                  this.onEditTranslationModel(LLM_CONSUMER_MANGA_TRANSLATION)
                 }
               },
             })

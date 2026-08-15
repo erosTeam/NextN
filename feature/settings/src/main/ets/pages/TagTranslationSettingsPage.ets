@@ -18,6 +18,7 @@ import {
   ThemeTokens,
   connectBrowsePresentation,
   connectTagTranslationSettings,
+  releaseTagTranslationVersionLabel,
 } from 'shared'
 import { appMenuOptions } from 'shared'
 
@@ -162,8 +163,9 @@ export struct TagTranslationSettingsPage {
   }
 
   private versionText(): string {
-    return this.tagSettings.version.length > 0
-      ? this.tagSettings.version
+    const display: string = releaseTagTranslationVersionLabel(this.tagSettings.version)
+    return display.length > 0
+      ? display
       : AppStrings.get('settings_tag_translation_no_version')
   }
 
