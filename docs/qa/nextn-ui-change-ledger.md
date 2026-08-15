@@ -52,6 +52,20 @@ authorize an edit, replace a device comparison, or define product completion.
   menu, the legacy restore write, or the Custom-picker rollback path. The
   prior device evidence for the now-invalid `system` selection is retained as
   historical evidence only and does not accept this corrected surface.
+- **Bounded selected-device observation — 2026-08-15:** signed HAP from
+  `8e41736` (SHA-256
+  `713ee5cda3654fd29aa33ff4293400d42471b8415d896fb11bcce7dae9e980b3`)
+  was installed in place with `-r` on only `192.168.50.237:12345` after a
+  live target, lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms` gate.
+  After cold start, foreground-confirmed native `Settings → 界面 → 主题色` at
+  `1320×2120` showed the existing valid `猫咪蓝` selection preserved. Its menu
+  contained `银河蓝 / 橘黄黄 / 猫咪蓝 / 华为红 / 优雅紫 / 哔哩粉 / 小草绿 / 自定义`
+  and no Theme-color `跟随系统` menu item. The unrelated dark-mode and language
+  rows still displayed their real `跟随系统` values. No menu value was selected.
+  The current device did not contain the legacy `system` value, so migration
+  persistence, Custom rollback, and same-viewport NextE parity remain OPEN.
+  Raw local artifacts are retained under
+  `.hvigor/outputs/theme-color-system-removal-20260815T1812/` outside Git.
 
 ## OPEN — Settings wording reference correction — 2026-08-15
 

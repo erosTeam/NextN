@@ -1,5 +1,25 @@
 # NextN active device-acceptance queue
 
+## Current Theme-color false-system-option removal — bounded device observation — 2026-08-15
+
+- The signed HAP built from `8e41736` (SHA-256
+  `713ee5cda3654fd29aa33ff4293400d42471b8415d896fb11bcce7dae9e980b3`)
+  was installed in place with `-r` on only `192.168.50.237:12345` after a
+  fresh live target, lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms`
+  gate. No data clear, uninstall, account action, content action, or menu
+  selection occurred.
+- After force-stop/cold start, foreground-confirmed native `Settings → 界面 →
+  主题色` at `1320×2120` preserved the device's existing valid `猫咪蓝` value.
+  The opened menu listed `银河蓝 / 橘黄黄 / 猫咪蓝 / 华为红 / 优雅紫 / 哔哩粉 / 小草绿 /
+  自定义`; it contained no Theme-color `跟随系统` item. The separately owned
+  深色模式 and 语言 rows still displayed their actual `跟随系统` values.
+- This observes only the corrected menu and current valid-preset preservation.
+  The device did not hold the legacy `system` value, so its durable migration,
+  Custom-picker rollback, full preset behavior, and same-state NextE visual
+  parity remain OPEN. Raw local artifacts are retained under
+  `.hvigor/outputs/theme-color-system-removal-20260815T1812/` and are excluded
+  from source control.
+
 ## Current Grid-density copy and visible-unit removal — bounded device observation — 2026-08-15
 
 - The signed HAP built from `6b465d0` (SHA-256
