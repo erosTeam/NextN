@@ -271,7 +271,7 @@ authorize an edit, replace a device comparison, or define product completion.
   retained under `.hvigor/outputs/nextn-me-history-20260815T2124/` and are
   excluded from source control.
 
-## OPEN — Gallery detail tag translations stay raw — 2026-08-15
+## FIXED — Gallery detail tag translations stay raw (cold-start first open) — 2026-08-15/16
 
 - **Why newly actionable:** the user reports that with the 标签翻译 toggle
   ON, opening a gallery still shows untranslated tags. Current device
@@ -327,6 +327,41 @@ authorize an edit, replace a device comparison, or define product completion.
   diagnostic text was present. Raw local artifacts are retained under
   `.hvigor/outputs/nextn-tag-translation-fix-20260815T2158/` and are excluded
   from source control. The toggle ON→OFF relabel re-check remains unobserved.
+- **Regression follow-up — cold-start first-detail path — 2026-08-16:** the
+  user reported the same detail still renders raw tags on the first detail
+  opened after a cold start. Diagnostic device evidence on
+  `192.168.50.237:12345` (signed diagnostic HAP, no data clear, random
+  gallery opened from the Browse overflow immediately after a cold start)
+  showed `TTDIAG:done:38` with every tag row raw: the lookup resolved and
+  `tagTranslationLabels` was assigned, but the rendered group rows still held
+  the pre-lookup objects. Source inspection proved the remaining gap: the
+  first cold-start render already ran with `tagTranslationEpoch = N` and
+  empty labels, and resolving the labels did not advance the epoch, so the
+  515af1e group/member reuse keys were unchanged and ArkUI reused the
+  empty-label builders.
+- **Refined exact change:** after assigning `this.tagTranslationLabels`, bump
+  `this.tagTranslationEpoch += 1` in `loadTagTranslations`, so the resolved
+  labels change the ForEach reuse keys and the tag rows rebuild. No data,
+  state, layout, or tag-search semantics change.
+- **Current bounded device observation — 2026-08-16 (diagnostic fix):**
+  cold-start first random gallery `45731` showed trace
+  `|R|A1:45731|Q2|D11|B3` and the tag rows rendered translated labels
+  (翻译/英语, 漫画, 爆肛/中出/正太/男同/纯男性/异性装/和服, 水上兰丸).
+- **Current bounded device observation — 2026-08-16 (final clean build):**
+  after removing all temporary diagnostics, the signed Debug HAP was
+  installed in place with `-r` on only `192.168.50.237:12345` after
+  force-stop/cold start at `1320×2120`. The first random gallery from the
+  Browse overflow opened native Gallery Detail with no
+  `TTDIAG`/`TTTRACE` text and fully translated tag groups (同人志 / 日语 /
+  单女主 / 中出 / 萝莉 / 口交 / 双重插入 / 接吻 / 催眠 / 出汗 / 异瞳 / 手套 /
+  舔阴 / 睡觉 / 假面 / のりパチ / ジャックとニコルソン / 星光闪亮☆光之美少女 /
+  羽衣拉拉 (银河天使)); raw values remained only in metadata cells whose
+  owner intentionally shows the raw language name. This accepts the
+  cold-start first-detail path on this device. Toggle ON→OFF relabel, every
+  dictionary state, every locale, and full visual parity remain OPEN. Raw
+  local artifacts are retained under
+  `.hvigor/outputs/nextn-tagdiag-coldstart-20260816T0043/` and are excluded
+  from source control.
 
 ## OPEN — History/Downloads title-to-list blank reserve — 2026-08-15
 

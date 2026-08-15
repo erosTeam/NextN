@@ -1,5 +1,35 @@
 # NextN active device-acceptance queue
 
+## Current Gallery detail tag translation — cold-start first open — 2026-08-16
+
+- The signed Debug HAP from the refined fix worktree (SHA-256
+  `34ff2af8d94a7c485185fbfab0e76fba4e03ee19e111cf111be81186978b4cd7`)
+  was installed in place with `-r` on only `192.168.50.237:12345` after a
+  fresh live target, lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms`
+  gate. No data clear, uninstall, account action, or preference write
+  occurred.
+- After force-stop/cold start at `1320×2120`, foreground-confirmed
+  `com.erosteam.nextn` / `pages/Index` Browse root (Latest) opened, and the
+  first gallery opened through the overflow 随机画廊 action rendered native
+  Gallery Detail with no diagnostic text and fully translated tag
+  groups: 同人志 / 日语 / 单女主 / 中出 / 萝莉 / 口交 / 双重插入 / 接吻 / 催眠 /
+  出汗 / 异瞳 / 手套 / 舔阴 / 睡觉 / 假面 / のりパチ / ジャックとニコルソン /
+  星光闪亮☆光之美少女 / 羽衣拉拉 (银河天使). Raw values remained only in
+  metadata cells whose owner intentionally shows the raw language name.
+- Root cause accepted for this path: the previous `515af1e` fix left the
+  ForEach reuse epoch unchanged between the empty-labels render and the
+  resolved-labels render on the first cold-start detail; the refined fix
+  advances `tagTranslationEpoch` when labels resolve, forcing the tag rows
+  to rebuild. Diagnostic builds on the same device showed lookup completing
+  (`TTDIAG:done:38` / trace `|R|A1:45731|Q2|D11|B3`) while the final clean
+  build renders translated chips.
+- This observes only the cold-start first-detail tag render path for the
+  random-gallery entry on this device. It does not accept the toggle ON→OFF
+  relabel path, every dictionary state, every locale, or full visual parity.
+  Raw local artifacts are retained under
+  `.hvigor/outputs/nextn-tagdiag-coldstart-20260816T0043/` and are excluded
+  from source control.
+
 ## Current Settings hierarchy and Browse title menu — bounded device observation — 2026-08-16
 
 - Signed Debug HAP from HEAD `2b46870` (SHA-256

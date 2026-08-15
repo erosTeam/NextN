@@ -1387,6 +1387,11 @@ export struct GalleryDetailPage {
         labels.push(label)
       }
       this.tagTranslationLabels = labels
+      // The first cold-start render of a gallery already ran with epoch N and
+      // empty labels, so group/member ForEach keys are unchanged when the
+      // async lookup completes. Advance the epoch with the resolved labels so
+      // ArkUI rebuilds the rows instead of reusing the empty-label objects.
+      this.tagTranslationEpoch += 1
       console.info(`NextNTagDictionary galleryMatched=${translatedCount} galleryTags=${tags.length}`)
     } catch (_error) {
       // The optional local dictionary must never delay Gallery metadata or
