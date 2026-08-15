@@ -54,6 +54,8 @@ export struct PullRefreshGridScaffold {
   @Param refreshEnabled: boolean = true
   @Local scrollEnabled: boolean = true
   @Event onRefresh?: () => Promise<void>
+  @Event onBottomRefresh?: () => Promise<void>
+  @Event canStartBottomRefresh?: () => boolean
   @Event onReachEnd?: () => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   @Event onUserScroll?: () => void
@@ -68,10 +70,22 @@ export struct PullRefreshGridScaffold {
       refreshEnabled: this.refreshEnabled,
       indicatorTop:
         this.layout.topAvoidHeight + ThemeTokens.TITLE_BAR_HEIGHT / 2 + this.topPadding,
+      bottomIndicatorBottom: this.layout.bottomAvoidHeight + this.bottomPadding,
       onRefresh: async (): Promise<void> => {
         if (this.onRefresh) {
           await this.onRefresh()
         }
+      },
+      onBottomRefresh: async (): Promise<void> => {
+        if (this.onBottomRefresh) {
+          await this.onBottomRefresh()
+        }
+      },
+      canStartBottomRefresh: (): boolean => {
+        if (this.canStartBottomRefresh) {
+          return this.canStartBottomRefresh()
+        }
+        return false
       },
       onScrollEnableChange: (enabled: boolean): void => {
         this.scrollEnabled = enabled

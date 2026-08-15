@@ -3,6 +3,73 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## Gallery Detail tag rows: stable identity + reserved slots (refresh collapse fix) — 2026-08-16
+
+- **Why newly actionable:** the user reports that every pull-refresh still
+  removes the whole tag card for one frame and the preview card jumps to the
+  middle; the previous epoch-only key change was device-tested by the user
+  with "no change". INC-007 records the static chain: pending-filtered
+  members plus an item-count/index key force ArkUI to unload and re-add the
+  row.
+- **Whole parent-tree boundary:** the tag card is one ListItem inside
+  `DetailMetadataList` (stable); this change only stabilizes the data source
+  and ForEach identity of its rows/chips: `tagVisualGroups` no longer drops
+  unresolved members, `tagGroupKey` is namespace-only, `tagMemberKey` is
+  id/type/name/translatedName, and unresolved chips reserve their slot with
+  `Visibility.Hidden` while a translation lookup is pending.
+- **Exact before/after:** before — every refresh sets
+  `tagTranslationPending=true`; groups shrink (or disappear) while lookup
+  runs, item-count key changes, row unloads/reloads, card height collapses
+  one frame. after — member set and group keys never change with pending
+  state; chips swap label in place; geometry is constant.
+- **Verification plan:** one signed build + install; the user's own
+  pull-refresh test is the acceptance gate. Frame-accurate capture, if ever
+  needed, uses `displaySync.on('frame')` / screen recording decoded
+  per-frame — never the ~3-4 fps `snapshot_display` loop.
+- **Unresolved risk:** cold-start galleries whose seed labels are still empty
+  rely on the INC-001 cache/hydration fix; the hidden slot prevents the
+  English→Chinese swap from changing layout, but the underlying empty-label
+  data path must stay fixed at the source.
+
+## PullRefresh wrapper fidelity restore (haptics / bottom refresh / indicator) — 2026-08-16
+
+- **Why newly actionable:** the user reports the ported NextE `PullRefresh`
+  wrapper was privately simplified: pull-to-refresh has no vibration feedback
+  and the indicator position/centering behavior is off. The user demands the
+  NextE reference component be copied with only minor adaptation.
+- **Whole parent-tree boundary:** shared `PullRefresh` host (Stack content
+  offset, edge touch state machine, indicator mount/opacity/position,
+  haptic, top+bottom refresh) and the three scaffolds'
+  (`PullRefreshListScaffold`/`PullRefreshGridScaffold`/
+  `PullRefreshWaterFlowScaffold`) wrapper pass-throughs
+  (`bottomIndicatorBottom`, `onBottomRefresh`, `canStartBottomRefresh`).
+  Page-level initial-load, pagination, BrowsePresentation density, and
+  caller-owned tail contracts are unchanged.
+- **Source/reference evidence:** `NextE/shared/src/main/ets/components/
+  PullRefresh.ets` (current worktree, unmodified) contains `vibrator`
+  HD/fallback haptics, bottom pull-up refresh with the `isAtEnd` gate,
+  `indicatorOpacity(gap, indicatorSize)`, `bottomIndicatorY()`, container
+  `onAreaChange`, and content offset `pullOffset - bottomPullOffset`; the
+  NextN baseline port removed all of them.
+- **Exact correction:** restore NextE's component behavior line-for-line,
+  mapping theme constants to `ThemeTokens` (`REFRESH_INDICATOR_SIZE=28`,
+  new `REFRESH_BOTTOM_INDICATOR_SIZE=24`, `SPACE_SM`/`SPACE_XL`), while
+  keeping the NextN-only additive gate `refreshEnabled` and the controller
+  `set/clearProgrammaticTopRefreshAction`/`requestRefresh` aliases. Add the
+  missing bottom-refresh pass-through params to the three scaffolds so the
+  wrapper receives `bottomIndicatorBottom` and the bottom callbacks exactly
+  like NextE.
+- **Minimality rationale:** direct port; no redesign, no re-layout, no copy
+  changes. Defaults are no-op (`canStartBottomRefresh=false`), so no current
+  page changes behavior until a caller opts in.
+- **Visual verification plan:** build signed HAP, install on the selected
+  device, pull past threshold on a list page: verify haptic fires once, the
+  indicator is vertically centered on the gap, rebound unmounts after the
+  animation, and programmatic refresh (root tab re-tap) also vibrates.
+- **Unresolved risk:** bottom pull-up refresh is restored in the shared
+  component but no NextN page currently provides `onBottomRefresh`; it stays
+  inert until a caller wires it, matching the reference's opt-in contract.
+
 ## Tag translation cold-start/cache fix + Detail cover atomic swap — 2026-08-16
 
 - **Why newly actionable:** the user reports, repeatedly, that cold-start
@@ -115,6 +182,29 @@ authorize an edit, replace a device comparison, or define product completion.
   synchronously before the first painted frame for cached galleries; the
   fixed shell heights and empty/comments states are device-observed, while
   the uncached-network loading frames remain source-verified only.
+
+## Gallery Detail action chips: availability from real data, not readiness flag — 2026-08-16
+
+- **Why newly actionable:** the user reports the download and torrent chips
+  stay disabled when opening older galleries. Regression cause: the previous
+  loading-state-machine change made both chips' enabled state depend on
+  `isDetailReadyForCurrentGallery`; when a fresh verified detail fails or is
+  still pending, an already-downloaded old gallery now shows a disabled
+  `下载` instead of the durable `已下载` state, and the torrent chip (which
+  only needs the gallery id) is disabled too.
+- **Exact change:** chip availability now derives from real data. Download is
+  enabled when a durable `DownloadQueue` task exists for the current gallery
+  id (status/title then reflect 已下载/下载中/已暂停/错误 and the click opens
+  the queue or resumes) OR fresh pages are ready for enqueue. Torrent is
+  enabled whenever the current gallery id is known (`detail.id === galleryId`)
+  because `issueTorrentLink` needs only the id; its sign-in guard stays.
+  `publishDownloadChrome` mirrors the same combined availability for the HDS
+  title action. The retry notice remains the feedback path when a fresh
+  detail fetch fails.
+- **Verification plan:** signed build; install -r; open a gallery with an
+  existing download task and one without; confirm the chip shows the durable
+  state/action even if revalidation is pending, and torrent is tappable from
+  the seed frame; capture layout on 237.
 
 ## Shared gallery-list top gap (single spacing contract) — 2026-08-16
 

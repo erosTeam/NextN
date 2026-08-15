@@ -155,3 +155,89 @@
      显示层回调。
   3. UI 首帧、过渡、图片换源问题必须同态真机对照验收后才可标 CLOSED。
   4. 同一页面同一轮内只允许一个 owner 复查整页，禁止子组件单独“修复”后跳过整页复查。
+
+---
+
+## INC-2026-08-16-006：PullRefresh 封装组件移植被私有精简（震动缺失、底部刷新与指示器语义被删）
+
+- 状态：`OPEN`（源码恢复已完成，待真机震动/居中对照验证后 CLOSED）
+- 用户反馈：下拉刷新用起来不对劲——震动功能没有了，指示器位置居中计算也有问题；
+  要求直接移植 NextE 的完整封装组件，而不是再“精简”。
+- 引入点：NextN baseline `cc0c40a` 中的
+  `shared/src/main/ets/components/PullRefresh.ets`。NextE 原组件包含：
+  `vibrator` HD/fallback 震动、底部上拉刷新（`isAtEnd` 门控）、
+  `indicatorOpacity(gap, indicatorSize)`、`bottomIndicatorY()`、容器高度
+  `onAreaChange`、内容 `offset(pullOffset - bottomPullOffset)` 与完整的
+  挂载/卸载生命周期。NextN 移植版全部删掉，只保留顶部下拉的简化路径；
+  代码注释还写着 “It owns visual feedback, haptics, duplicate guards...”，
+  但实现里没有任何震动调用。
+- 当时的理由：NextN 注释称 “deliberately exposes no initial-load or
+  bottom-paging state”，把“不接管页面初始加载/分页”错误地扩大成了
+  “可以删除组件的震动与底部手动刷新”。
+- 为什么这个理由不成立：NextE 的 `PullRefresh` 是自包含交互状态机，
+  震动和底部上拉属于组件自身行为，不属于页面加载/分页；注释声称的
+  haptics 在实现中不存在，说明移植时写了与实现不符的说明，而不是先
+  逐行对照参考。
+- 修复：按 NextE 当前文件逐行恢复（主题常量映射到 `ThemeTokens`），
+  保留 NextN 的 `refreshEnabled` 增量开关与控制器别名；三个 scaffold
+  补回 `bottomIndicatorBottom`/`onBottomRefresh`/`canStartBottomRefresh`
+  通道。
+- 防止复发：移植参考组件时必须先 `git diff --no-index` 逐行对照；禁止以
+  “页面不需要”为由删除参考组件自身的行为；组件行为差异必须真机同态对照
+  后才能合入。
+
+---
+
+## INC-2026-08-16-007：详情页刷新时标签行整组卸载重装（标签卡塌一帧、预览卡/封面闪到中间）
+
+- 状态：`OPEN`（本轮源码修复已落盘，未构建、未装机、未经用户验收）
+- 用户反馈：只要下拉刷新，标签卡就会消失一帧再出现，预览卡（第一张即封面）被顶到
+  屏幕中间；上一轮“删掉 epoch”的修复装机后用户实测“完全没变化”。
+
+### 引入点（本会话源码证据）
+
+- `GalleryDetailPage.tagVisualGroups(labels, onlyTranslated)`：翻译查询期间
+  （`tagTranslationPending=true`）把**译名为空的成员从数据源里剔除**（`continue`），
+  整个 namespace 组可能直接消失。这是 NextE 没有的“私造逻辑”（NextE 在
+  ViewModel 里先译好再入帧，不存在该 pending 过滤）。
+- `tagGroupKey` 包含 `index` 与 `group.items.length`：pending 过滤只要改变成员数，
+  key 就变，ArkUI 卸载整行再重挂。
+- `tagMemberKey` 包含 `originalIndex` 与 `tagTranslationEpoch`：位置/请求代际参与
+  组件身份，标签顺序或 epoch 变化即整组重建。
+
+### 为什么前一轮“删 epoch”没有效果
+
+- 前一轮只把 `tagTranslationEpoch` 从两个 key 里移除；但 pending 过滤仍在、
+  `items.length`/索引仍在 key 里。每次刷新 `requestTagTranslations` 置
+  pending=true，只要存在译名为空的标签，成员数就变化 → group key 变化 →
+  整行卸载重装。所以用户实测“完全没变化”与代码完全一致。
+
+### 本轮修复（稳定身份 + 保留几何槽位）
+
+1. `tagVisualGroups(labels)` 不再剔除成员，数据源始终包含全部标签。
+2. `tagGroupKey = namespace`（稳定身份，去掉 index 与 items.length）。
+3. `tagMemberKey = id/type/name/translatedName`（去掉 originalIndex/epoch；
+   译名真正变化时只重建该 chip，不重建整行）。
+4. pending 期间译名为空的成员用 `Visibility.Hidden` 保留布局槽位：不画英文、
+   不塌高度；查询完成后原位显示。
+
+### 验证方法事故（本会话教训，已写入防止复发规则）
+
+- 曾用 `snapshot_display` 循环“抓帧”宣称无闪帧：单张约 200-300ms，屏幕 120Hz
+  下约为 3-4fps，**不可能证明 8.3ms 单帧不存在**；且先执行手势、再启动抓帧，
+  刷新早已结束。该证据无效，已作废。
+- 真机逐帧证明只能走：官方 `displaySync.on('frame')`（逐帧回调，API 11+）、
+  `UIContext.postFrameCallback`（API 12+）、`AVScreenCaptureRecorder`
+  录屏后逐帧解码，或 DevEco Profiler 帧时间线；在这些证据到手前，一律不声称
+  “无闪帧”。
+
+### 防止复发（并入 developer-guide）
+
+1. ForEach key 只允许“稳定身份 + 实际渲染内容”；禁止 epoch/revision/位置索引/
+   成员数/时间戳进 key。
+2. 数据源不得因“等待中”状态剔除成员或整组；需要隐藏时用 `Visibility.Hidden`
+   保留几何槽位，禁止改变数组结构与 key。
+3. 任何“避免 X 闪烁”的 UI 措施，必须先证明不会引入高度/几何跳变；不得用一个
+   显示问题掩盖另一个。
+4. 禁止以“安装→滑动→截图→比对”循环作为开发与验收方法；静态先证明组件树
+   稳定，再决定是否构建。

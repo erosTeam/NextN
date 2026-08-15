@@ -35,6 +35,9 @@ export struct PullRefreshListScaffold {
   @Local scrollEnabled: boolean = true
   @Local measuredWidth: number = 0
   @Event onRefresh?: () => Promise<void>
+  @Event onBottomRefresh?: () => Promise<void>
+  @Event canStartBottomRefresh?: () => boolean
+  @Event onScrollEnableChange?: (enabled: boolean) => void
   @Event onReachEnd?: () => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   @Event onUserScroll?: () => void
@@ -50,13 +53,28 @@ export struct PullRefreshListScaffold {
       controller: this.controller,
       refreshEnabled: this.refreshEnabled,
       indicatorTop: this.resolvedIndicatorTop(),
+      bottomIndicatorBottom: this.layout.bottomAvoidHeight + this.bottomPadding,
       onRefresh: async (): Promise<void> => {
         if (this.onRefresh) {
           await this.onRefresh()
         }
       },
+      onBottomRefresh: async (): Promise<void> => {
+        if (this.onBottomRefresh) {
+          await this.onBottomRefresh()
+        }
+      },
+      canStartBottomRefresh: (): boolean => {
+        if (this.canStartBottomRefresh) {
+          return this.canStartBottomRefresh()
+        }
+        return false
+      },
       onScrollEnableChange: (enabled: boolean): void => {
         this.scrollEnabled = enabled
+        if (this.onScrollEnableChange) {
+          this.onScrollEnableChange(enabled)
+        }
       },
     }) {
       List({ space: this.listSpace, scroller: this.scroller }) {

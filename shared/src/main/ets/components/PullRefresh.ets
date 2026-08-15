@@ -1,37 +1,41 @@
+import { vibrator } from '@kit.SensorServiceKit'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { RefreshFeedback } from '../utils/RefreshFeedback'
 
 const PULL_START_DRAG_VP: number = 4
+// A pull only ARMS (and disables the inner Scroll) after a deliberate, vertical-dominant drag past this
+// many vp — far enough that a tap's small finger jitter can never arm it. Arming disables the Scroll
+// (onScrollEnableChange(false)), which otherwise swallows the tapped child's onClick (the "tap does
+// nothing, multi-tap works" bug on the Discover node chips). The pull OFFSET still anchors at the smaller
+// PULL_START_DRAG_VP so the indicator starts from where the finger first crossed.
 const PULL_ARM_VP: number = 10
 const PULL_RESISTANCE_FACTOR: number = 0.8
 const DEFAULT_PULL_REFRESH_THRESHOLD: number = 80
 const REFRESH_HOLD_OFFSET: number = 56
+const HAPTIC_HD_INTENSITY: number = 80
+const HAPTIC_FALLBACK_DURATION: number = 30
 const DIRECTION_LOCK_VP: number = 6
 const PROGRAMMATIC_PULL_ANIM_DURATION: number = 300
 
-/**
- * A route retains this controller beside its Scroller and may register
- * `requestRefresh` with RootRefreshRegistry. It controls only an interactive
- * refresh: initial loading stays entirely in the page's own state machine.
- */
 export class NextNPullRefreshController {
-  private programmaticTopRefreshAction: (() => void) | null = null
+  private topRefreshAction: () => void = () => {}
+
+  setTopRefreshAction(action: () => void): void {
+    this.topRefreshAction = action
+  }
 
   setProgrammaticTopRefreshAction(action: () => void): void {
-    this.programmaticTopRefreshAction = action
+    this.topRefreshAction = action
   }
 
   clearProgrammaticTopRefreshAction(action: () => void): void {
-    if (this.programmaticTopRefreshAction === action) {
-      this.programmaticTopRefreshAction = null
+    if (this.topRefreshAction === action) {
+      this.topRefreshAction = () => {}
     }
   }
 
-  /** Compatibility name for a root-tab re-tap action. */
   triggerTopRefresh(): void {
-    if (this.programmaticTopRefreshAction !== null) {
-      this.programmaticTopRefreshAction()
-    }
+    this.topRefreshAction()
   }
 
   /** Explicit caller API for a root re-tap or another programmatic refresh. */
@@ -40,33 +44,42 @@ export class NextNPullRefreshController {
   }
 }
 
-/**
- * Shared NextE-derived top edge-pull host.
- *
- * It owns visual feedback, haptics, duplicate guards and temporary child
- * scroll locking. It deliberately exposes no initial-load or bottom-paging
- * state: callers retain those separate page and pagination lifecycles.
- */
 @ComponentV2
 export struct NextNPullRefresh {
   @BuilderParam content: () => void
   @Param scroller: Scroller = new Scroller()
   @Param controller: NextNPullRefreshController = new NextNPullRefreshController()
-  /** Disabling interaction never changes caller-owned initial-load state. */
+  /** NextN additive gate; caller-owned initial-load state is never touched. */
   @Param refreshEnabled: boolean = true
   @Event onRefresh: () => Promise<void> = async (): Promise<void> => {}
+  @Event onBottomRefresh: () => Promise<void> = async (): Promise<void> => {}
+  @Param canStartBottomRefresh: () => boolean = (): boolean => false
   @Event onScrollEnableChange: (enabled: boolean) => void = (_enabled: boolean): void => {}
   @Param indicatorTop: number = 0
   @Param threshold: number = DEFAULT_PULL_REFRESH_THRESHOLD
+  @Param bottomIndicatorBottom: number = ThemeTokens.SPACE_XL
 
   @Local pullOffset: number = 0
+  @Local bottomPullOffset: number = 0
   @Local refreshState: number = 0
+  @Local bottomRefreshState: number = 0
+  @Local containerHeight: number = 0
+  // Indicator MOUNT is intentionally decoupled from pullOffset's instantaneous logical value and from
+  // refreshState (the load lifecycle). It turns true the moment a gap opens and only turns false once the
+  // rebound animation has fully settled, so the indicator's opacity/position (pure functions of the gap)
+  // can fade with the collapsing gap instead of popping out the frame pullOffset logically reaches 0.
+  // At rest both are false, so nothing is mounted over the content top to swallow taps.
   @Local topIndicatorMounted: boolean = false
+  @Local bottomIndicatorMounted: boolean = false
+  private hapticFired: boolean = false
   private touchStartX: number = 0
   private touchStartY: number = 0
   private touchStartPullOffset: number = 0
+  private touchStartBottomPullOffset: number = 0
   private topEdgeDragStartY: number = 0
+  private bottomEdgeDragStartY: number = 0
   private isTracking: boolean = false
+  private isBottomTracking: boolean = false
   private isHorizontalGesture: boolean = false
   private controllerAction: (() => void) | null = null
 
@@ -75,7 +88,7 @@ export struct NextNPullRefresh {
       this.triggerProgrammaticTopRefresh()
     }
     this.controllerAction = action
-    this.controller.setProgrammaticTopRefreshAction(action)
+    this.controller.setTopRefreshAction(action)
   }
 
   aboutToDisappear(): void {
@@ -89,6 +102,19 @@ export struct NextNPullRefresh {
     return this.scroller.currentOffset().yOffset <= 0
   }
 
+  // Pixel-true bottom check for MANUAL pull-up (force refresh) gesture only.
+  // Auto pagination uses List.onReachEnd/onScrollIndex which fire when the
+  // last item enters the viewport — that signal is intentionally looser and
+  // must NOT gate the manual pull-up indicator, otherwise the user sees the
+  // bottom indicator flash while the list is still mid-scroll.
+  private isListAtBottom(): boolean {
+    try {
+      return this.scroller.isAtEnd()
+    } catch (_e) {
+      return false
+    }
+  }
+
   private bounceBack(target: number = 0): void {
     this.onScrollEnableChange(true)
     this.getUIContext().animateTo(
@@ -98,10 +124,33 @@ export struct NextNPullRefresh {
       },
     )
     if (target === 0) {
+      // Unmount AFTER the rebound finishes (ANIM_STATE_RESET_MS > ANIM_DURATION) so the indicator stays in
+      // the tree for the whole collapse and fades out with the gap. Guard on pullOffset so a fresh pull that
+      // started during the timeout window isn't torn down out from under the user.
       setTimeout((): void => {
         if (this.pullOffset <= 0) {
           this.refreshState = 0
+          this.hapticFired = false
           this.topIndicatorMounted = false
+        }
+      }, ThemeTokens.REFRESH_STATE_RESET_MS)
+    }
+  }
+
+  private bounceBottomBack(target: number = 0): void {
+    this.onScrollEnableChange(true)
+    this.getUIContext().animateTo(
+      { duration: ThemeTokens.REFRESH_ANIMATION_DURATION, curve: Curve.EaseOut },
+      (): void => {
+        this.bottomPullOffset = target
+      },
+    )
+    if (target === 0) {
+      setTimeout((): void => {
+        if (this.bottomPullOffset <= 0) {
+          this.bottomRefreshState = 0
+          this.hapticFired = false
+          this.bottomIndicatorMounted = false
         }
       }, ThemeTokens.REFRESH_STATE_RESET_MS)
     }
@@ -123,8 +172,24 @@ export struct NextNPullRefresh {
     }
   }
 
+  private onBottomPullEnd(): void {
+    if (this.bottomPullOffset >= this.threshold && this.bottomRefreshState !== 2) {
+      this.onScrollEnableChange(true)
+      this.getUIContext().animateTo(
+        { duration: ThemeTokens.REFRESH_ANIMATION_DURATION, curve: Curve.EaseOut },
+        (): void => {
+          this.bottomPullOffset = REFRESH_HOLD_OFFSET
+        },
+      )
+      this.bottomRefreshState = 2
+      this.doBottomRefresh()
+    } else if (this.bottomPullOffset > 0) {
+      this.bounceBottomBack(0)
+    }
+  }
+
   private triggerProgrammaticTopRefresh(): void {
-    if (!this.refreshEnabled || this.refreshState >= 2 || this.topIndicatorMounted || this.pullOffset > 0) {
+    if (!this.refreshEnabled || this.refreshState >= 2 || this.topIndicatorMounted || this.pullOffset > 0 || this.bottomPullOffset > 0) {
       return
     }
     try {
@@ -142,11 +207,14 @@ export struct NextNPullRefresh {
     )
     setTimeout((): void => {
       this.refreshState = 1
+      this.triggerHaptic()
       this.onPullEnd()
     }, PROGRAMMATIC_PULL_ANIM_DURATION)
   }
 
   private async doRefresh(): Promise<void> {
+    // Centralized pull-to-refresh failure feedback: a rejecting onRefresh means an interactive refresh
+    // failed, so surface one toast — and still finish the indicator animation either way.
     try {
       await this.onRefresh()
     } catch (_error) {
@@ -159,18 +227,87 @@ export struct NextNPullRefresh {
     }
   }
 
-  private resetTouchState(): void {
-    this.isTracking = false
-    this.isHorizontalGesture = false
-    this.topEdgeDragStartY = 0
+  private async doBottomRefresh(): Promise<void> {
+    try {
+      await this.onBottomRefresh()
+    } catch (_error) {
+      try {
+        RefreshFeedback.notifyRefreshFailed()
+      } catch (_feedbackError) {}
+    } finally {
+      this.bottomRefreshState = 3
+      setTimeout((): void => this.bounceBottomBack(0), ThemeTokens.REFRESH_DONE_DELAY_MS)
+    }
   }
 
-  private indicatorOpacity(gap: number): number {
-    const range: number = REFRESH_HOLD_OFFSET - ThemeTokens.REFRESH_INDICATOR_SIZE
-    if (range <= 0) {
-      return gap >= ThemeTokens.REFRESH_INDICATOR_SIZE ? 1 : 0
+  private triggerHaptic(): void {
+    if (this.hapticFired) return
+    this.hapticFired = true
+    try {
+      if (vibrator.isHdHapticSupported()) {
+        vibrator.startVibration(
+          {
+            type: 'preset',
+            effectId: 'haptic.effect.soft',
+            count: 1,
+            intensity: HAPTIC_HD_INTENSITY,
+          },
+          { usage: 'physicalFeedback' },
+        )
+      } else {
+        vibrator.startVibration(
+          {
+            type: 'time',
+            duration: HAPTIC_FALLBACK_DURATION,
+          },
+          { usage: 'physicalFeedback' },
+        )
+      }
+    } catch (e) {}
+  }
+
+  private resetTouchState(): void {
+    this.isTracking = false
+    this.isBottomTracking = false
+    this.isHorizontalGesture = false
+    this.topEdgeDragStartY = 0
+    this.bottomEdgeDragStartY = 0
+  }
+
+  private areaLength(value: Length | undefined): number {
+    if (typeof value === 'number') {
+      return value
     }
-    return Math.min(Math.max((gap - ThemeTokens.REFRESH_INDICATOR_SIZE) / range, 0), 1)
+    if (typeof value === 'string') {
+      const parsed: number = Number.parseFloat(value)
+      return Number.isNaN(parsed) ? 0 : parsed
+    }
+    return 0
+  }
+
+  // Opacity is a pure function of the GAP so the indicator fades in/out with the blank, never with the load
+  // lifecycle. It stays 0 until the gap exceeds the spinner's own diameter (so a half-shown spinner can never
+  // overlap the adjacent content row) and ramps to 1 at the refresh hold offset.
+  private indicatorOpacity(gap: number, indicatorSize: number): number {
+    const range: number = REFRESH_HOLD_OFFSET - indicatorSize
+    if (range <= 0) {
+      return gap >= indicatorSize ? 1 : 0
+    }
+    return Math.min(Math.max((gap - indicatorSize) / range, 0), 1)
+  }
+
+  private bottomIndicatorY(): number {
+    // Mirror the top refresh indicator: keep the node mounted and derive its
+    // absolute position from the current pull offset so drag and rebound share
+    // one coordinate formula.
+    return Math.max(
+      0,
+      this.containerHeight -
+        this.bottomIndicatorBottom -
+        this.bottomPullOffset / 2 -
+        REFRESH_HOLD_OFFSET / 2 +
+        ThemeTokens.SPACE_SM,
+    )
   }
 
   build() {
@@ -178,11 +315,121 @@ export struct NextNPullRefresh {
       Column() {
         this.content()
       }
-      .offset({ y: this.pullOffset })
+      .offset({ y: this.pullOffset - this.bottomPullOffset })
       .onTouch((event: TouchEvent): void => {
-        this.handleTouch(event)
-      })
+        if (!this.refreshEnabled) {
+          if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+            this.onScrollEnableChange(true)
+            this.resetTouchState()
+            this.topIndicatorMounted = false
+            this.bottomIndicatorMounted = false
+          }
+          return
+        }
+        if (this.refreshState >= 2 || this.bottomRefreshState >= 2) return
 
+        if (event.type === TouchType.Down) {
+          this.touchStartX = event.touches[0].x
+          this.touchStartY = event.touches[0].y
+          this.touchStartPullOffset = this.pullOffset
+          this.touchStartBottomPullOffset = this.bottomPullOffset
+          this.resetTouchState()
+          return
+        }
+
+        if (event.type === TouchType.Move) {
+          const deltaX: number = event.touches[0].x - this.touchStartX
+          const deltaY: number = event.touches[0].y - this.touchStartY
+          if (this.isHorizontalGesture) {
+            return
+          }
+          if (!this.isTracking && !this.isBottomTracking) {
+            if (Math.abs(deltaX) > DIRECTION_LOCK_VP && Math.abs(deltaX) > Math.abs(deltaY)) {
+              this.isHorizontalGesture = true
+              return
+            }
+            // Only arm a pull on a deliberate, vertical-dominant drag past PULL_ARM_VP. A tap's small
+            // (often slightly diagonal) finger jitter must not arm it, because arming disables the inner
+            // Scroll (onScrollEnableChange(false)) and that swallows the tapped child's onClick.
+            const verticalDominant: boolean = Math.abs(deltaY) > Math.abs(deltaX) * 1.5
+            if (verticalDominant && deltaY > PULL_ARM_VP && this.isListAtTop()) {
+              this.isTracking = true
+              this.topEdgeDragStartY = event.touches[0].y - PULL_START_DRAG_VP
+              this.touchStartPullOffset = 0
+              this.onScrollEnableChange(false)
+            } else if (
+              verticalDominant &&
+              deltaY < -PULL_ARM_VP &&
+              this.isListAtBottom() &&
+              this.canStartBottomRefresh()
+            ) {
+              this.isBottomTracking = true
+              this.bottomEdgeDragStartY = event.touches[0].y + PULL_START_DRAG_VP
+              this.touchStartBottomPullOffset = 0
+              this.onScrollEnableChange(false)
+            } else {
+              return
+            }
+          }
+          if (this.isTracking) {
+            const topPullDelta: number = event.touches[0].y - this.topEdgeDragStartY
+            this.pullOffset = Math.max(
+              0,
+              this.touchStartPullOffset + topPullDelta * PULL_RESISTANCE_FACTOR,
+            )
+            if (this.pullOffset > 0) {
+              this.topIndicatorMounted = true
+            }
+            if (this.pullOffset >= this.threshold) {
+              this.refreshState = 1
+              this.triggerHaptic()
+            } else {
+              this.refreshState = 0
+            }
+          } else if (this.isBottomTracking) {
+            const bottomPullDelta: number = this.bottomEdgeDragStartY - event.touches[0].y
+            this.bottomPullOffset = Math.max(
+              0,
+              this.touchStartBottomPullOffset + bottomPullDelta * PULL_RESISTANCE_FACTOR,
+            )
+            if (this.bottomPullOffset > 0) {
+              this.bottomIndicatorMounted = true
+            }
+            if (this.bottomPullOffset >= this.threshold) {
+              this.bottomRefreshState = 1
+              this.triggerHaptic()
+            } else {
+              this.bottomRefreshState = 0
+            }
+          }
+        }
+
+        if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+          if (this.isTracking && this.pullOffset > 0) {
+            this.onPullEnd()
+          } else if (this.isBottomTracking && this.bottomPullOffset > 0) {
+            this.onBottomPullEnd()
+          } else {
+            // Pulled the indicator out then pushed it back to a zero gap (or never opened one): there is no
+            // rebound to ride, so unmount now — otherwise an opacity-0 indicator stays mounted at the content
+            // top and swallows taps on the first row (the Discover node-chip dead-top-half bug).
+            this.topIndicatorMounted = false
+            this.bottomIndicatorMounted = false
+          }
+          // Always re-enable the inner Scroll on touch end so a momentarily-disabled scroll can never
+          // stick into the next tap and swallow its onClick. onPullEnd/onBottomPullEnd already re-enable
+          // it when they start a refresh; this is the catch-all for every other release path.
+          this.onScrollEnableChange(true)
+          this.resetTouchState()
+        }
+      })
+      // Mount/position/opacity are all derived from the GAP (pullOffset), never from refreshState (the load
+      // lifecycle), so the indicator dissolves with the shrinking blank on every release — whether or not a
+      // refresh fired. The spinner (diameter INDICATOR_SIZE) is centered on the gap, so its bottom edge only
+      // clears the content top once pullOffset >= INDICATOR_SIZE; below that it would overlap the first row,
+      // so opacity is pinned to 0 there (see indicatorOpacity). It reaches 1 at the refresh hold offset.
+      // topIndicatorMounted keeps the node alive through the rebound and is cleared only
+      // after it settles (see bounceBack); at rest it is false so nothing overlays the content top.
       if (this.topIndicatorMounted) {
         Column() {
           Row() {
@@ -193,84 +440,35 @@ export struct NextNPullRefresh {
           .width('100%')
           .height(REFRESH_HOLD_OFFSET)
           .justifyContent(FlexAlign.Center)
-          .opacity(this.indicatorOpacity(this.pullOffset))
+          .opacity(this.indicatorOpacity(this.pullOffset, ThemeTokens.REFRESH_INDICATOR_SIZE))
         }
         .position({ y: this.indicatorTop + this.pullOffset / 2 })
+        .hitTestBehavior(HitTestMode.None)
+      }
+      // Bottom pull-up indicator mirrors the top one: opacity is a pure function of its gap, pinned to 0 until
+      // the gap clears the spinner's own diameter (LOADING_SIZE_SMALL) so it never overlaps the last row, and
+      // the mount flag rides the rebound — so it fades with the collapsing gap instead of staying pinned by
+      // bottomRefreshState until the list snaps home.
+      if (this.bottomIndicatorMounted) {
+        Row({ space: ThemeTokens.SPACE_SM }) {
+          LoadingProgress()
+            .width(ThemeTokens.REFRESH_BOTTOM_INDICATOR_SIZE)
+            .height(ThemeTokens.REFRESH_BOTTOM_INDICATOR_SIZE)
+            .color($r('sys.color.font_secondary'))
+        }
+        .width('100%')
+        .height(REFRESH_HOLD_OFFSET)
+        .justifyContent(FlexAlign.Center)
+        .opacity(this.indicatorOpacity(this.bottomPullOffset, ThemeTokens.REFRESH_BOTTOM_INDICATOR_SIZE))
+        .position({ y: this.bottomIndicatorY() })
         .hitTestBehavior(HitTestMode.None)
       }
     }
     .width('100%')
     .height('100%')
     .clip(false)
-  }
-
-  private handleTouch(event: TouchEvent): void {
-    if (!this.refreshEnabled) {
-      if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
-        this.onScrollEnableChange(true)
-        this.resetTouchState()
-        this.topIndicatorMounted = false
-      }
-      return
-    }
-    if (this.refreshState >= 2) {
-      return
-    }
-
-    if (event.type === TouchType.Down) {
-      this.touchStartX = event.touches[0].x
-      this.touchStartY = event.touches[0].y
-      this.touchStartPullOffset = this.pullOffset
-      this.resetTouchState()
-      return
-    }
-
-    if (event.type === TouchType.Move) {
-      this.handleTouchMove(event)
-      return
-    }
-
-    if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
-      if (this.isTracking && this.pullOffset > 0) {
-        this.onPullEnd()
-      } else {
-        this.topIndicatorMounted = false
-      }
-      this.onScrollEnableChange(true)
-      this.resetTouchState()
-    }
-  }
-
-  private handleTouchMove(event: TouchEvent): void {
-    const deltaX: number = event.touches[0].x - this.touchStartX
-    const deltaY: number = event.touches[0].y - this.touchStartY
-    if (this.isHorizontalGesture) {
-      return
-    }
-    if (!this.isTracking) {
-      if (Math.abs(deltaX) > DIRECTION_LOCK_VP && Math.abs(deltaX) > Math.abs(deltaY)) {
-        this.isHorizontalGesture = true
-        return
-      }
-      const verticalDominant: boolean = Math.abs(deltaY) > Math.abs(deltaX) * 1.5
-      if (!verticalDominant || deltaY <= PULL_ARM_VP || !this.isListAtTop()) {
-        return
-      }
-      this.isTracking = true
-      this.topEdgeDragStartY = event.touches[0].y - PULL_START_DRAG_VP
-      this.touchStartPullOffset = 0
-      this.onScrollEnableChange(false)
-    }
-
-    const pullDelta: number = event.touches[0].y - this.topEdgeDragStartY
-    this.pullOffset = Math.max(0, this.touchStartPullOffset + pullDelta * PULL_RESISTANCE_FACTOR)
-    if (this.pullOffset > 0) {
-      this.topIndicatorMounted = true
-    }
-    if (this.pullOffset >= this.threshold) {
-      this.refreshState = 1
-    } else {
-      this.refreshState = 0
-    }
+    .onAreaChange((_oldValue: Area, newValue: Area): void => {
+      this.containerHeight = this.areaLength(newValue.height)
+    })
   }
 }

@@ -604,8 +604,25 @@ export struct GalleryDetailPage {
       this.detail.pages.length > 0
   }
 
+  /** A durable task for the current gallery id, independent of the fresh
+   *  verified response, so an already-downloaded old gallery keeps an
+   *  actionable chip even when revalidation is pending or fails. */
+  private hasKnownDownloadTask(): boolean {
+    if (this.detail.id !== this.galleryId) {
+      return false
+    }
+    return this.downloadQueue.tasks.some(
+      (candidate: NhDownloadTask): boolean => candidate.galleryId === this.detail.id,
+    )
+  }
+
+  /** The chip is actionable when a durable task exists or fresh pages are ready. */
+  private downloadChipEnabled(): boolean {
+    return this.hasKnownDownloadTask() || this.isDownloadActionReady()
+  }
+
   private currentDownloadTask(): NhDownloadTask | null {
-    if (!this.isDownloadActionReady()) {
+    if (this.detail.id !== this.galleryId) {
       return null
     }
     const task: NhDownloadTask | undefined = this.downloadQueue.tasks.find(
@@ -637,7 +654,7 @@ export struct GalleryDetailPage {
   }
 
   private publishDownloadChrome(): void {
-    const ready: boolean = this.isDownloadActionReady()
+    const ready: boolean = this.downloadChipEnabled()
     const task: NhDownloadTask | null = this.currentDownloadTask()
     const status: string = task === null ? '' : task.status
     const pageCount: number = task === null ? 0 : Math.max(0, task.pageCount)
@@ -760,7 +777,7 @@ export struct GalleryDetailPage {
   }
 
   private async handleDownloadAction(): Promise<void> {
-    if (!this.isDownloadActionReady()) {
+    if (!this.hasKnownDownloadTask() && !this.isDownloadActionReady()) {
       return
     }
     const existing: NhDownloadTask | null = this.currentDownloadTask()
@@ -802,7 +819,7 @@ export struct GalleryDetailPage {
   }
 
   private requestTorrentFileExport(): void {
-    if (!this.isDetailReadyForCurrentGallery || this.detail.id !== this.galleryId || this.isTorrentExportInFlight) {
+    if (this.detail.id !== this.galleryId || this.isTorrentExportInFlight) {
       return
     }
     if (!this.hasPublishedAccountSession()) {
@@ -813,7 +830,7 @@ export struct GalleryDetailPage {
   }
 
   private async exportTorrentFile(): Promise<void> {
-    if (this.isTorrentExportInFlight || !this.isDetailReadyForCurrentGallery ||
+    if (this.isTorrentExportInFlight ||
       this.detail.id !== this.galleryId || !this.hasPublishedAccountSession()) {
       return
     }
@@ -1395,14 +1412,14 @@ export struct GalleryDetailPage {
   }
 
   private readActionLabel(): string {
-    if (!this.hasReadProgress) {
+    const pageCount: number = this.localResumePageCount()
+    const pageIndex: number = this.clampResumePageIndex(this.resumePageIndex)
+    // A saved marker at page zero means the reader was opened but never
+    // advanced: resuming there is the same as starting from the beginning,
+    // so the label stays 阅读/Read instead of an impossible 继续 P1.
+    if (!this.hasReadProgress || pageCount <= 0 || pageIndex <= 0) {
       return AppStrings.get('gallery_action_read')
     }
-    const pageCount: number = this.localResumePageCount()
-    if (pageCount <= 0) {
-      return AppStrings.get('gallery_action_continue')
-    }
-    const pageIndex: number = this.clampResumePageIndex(this.resumePageIndex)
     return AppStrings.format('gallery_action_continue_page', [
       (pageIndex + 1).toString(),
     ])
@@ -1572,7 +1589,7 @@ export struct GalleryDetailPage {
     return NhTagQuery.format(tag).length > 0
   }
 
-  private tagVisualGroups(labels: string[], onlyTranslated: boolean = false): GalleryTagVisualGroup[] {
+  private tagVisualGroups(labels: string[]): GalleryTagVisualGroup[] {
     const groups: GalleryTagVisualGroup[] = []
     for (let index: number = 0; index < this.detail.tags.length; index++) {
       const tag: NhTag = this.detail.tags[index]
@@ -1580,12 +1597,6 @@ export struct GalleryDetailPage {
       const translatedName: string = index < labels.length
         ? labels[index]
         : ''
-      // While a lookup is pending, never paint a raw English chip that is
-      // about to be replaced: hide only unresolved members instead of
-      // flashing the wrong language, then they appear once resolved.
-      if (onlyTranslated && translatedName.length === 0) {
-        continue
-      }
       let group: GalleryTagVisualGroup | null = null
       for (let groupIndex: number = 0; groupIndex < groups.length; groupIndex++) {
         if (groups[groupIndex].namespace === namespace) {
@@ -1667,12 +1678,18 @@ export struct GalleryDetailPage {
     return new GalleryTagNamespacePresentation(label, ThemeTokens.TEXT_PRIMARY, ThemeTokens.SURFACE_SUB)
   }
 
-  private tagGroupKey(group: GalleryTagVisualGroup, index: number): string {
-    return `${index}_${group.namespace}_${this.tagTranslationEpoch}_${group.items.length}`
+  private tagGroupKey(group: GalleryTagVisualGroup): string {
+    // Stable identity only. Index and item-count in the key made any pending
+    // translation resolution change the key, so ArkUI tore down and re-added
+    // the whole row (one-frame card collapse, preview sliding up into the
+    // middle). Translation content changes rebuild members, never the row.
+    return group.namespace
   }
 
   private tagMemberKey(item: GalleryTagVisualItem): string {
-    return `${item.originalIndex}_${item.tag.id}_${item.tag.type}_${item.tag.name}_${this.tagTranslationEpoch}_${item.translatedName}`
+    // Stable identity + rendered label. originalIndex is positional and must
+    // not participate in component identity.
+    return `${item.tag.id}_${item.tag.type}_${item.tag.name}_${item.translatedName}`
   }
 
   private tagNamespaceLabel(namespace: string): string {
@@ -1808,7 +1825,7 @@ export struct GalleryDetailPage {
           this.GalleryActionChip(
             $r('sys.symbol.arrow_down_to_line'),
             this.downloadActionTitle(),
-            this.isDownloadActionReady(),
+            this.downloadChipEnabled(),
             (): void => {
               this.handleDownloadAction()
             },
@@ -1816,7 +1833,7 @@ export struct GalleryDetailPage {
           this.GalleryActionChip(
             $r('sys.symbol.link'),
             AppStrings.get('action_torrent'),
-            this.isDetailReadyForCurrentGallery && this.detail.id === this.galleryId,
+            this.detail.id === this.galleryId,
             (): void => {
               this.requestTorrentFileExport()
             },
@@ -2269,6 +2286,17 @@ export struct GalleryDetailPage {
       .margin({ right: ThemeTokens.SPACE_XS, bottom: ThemeTokens.SPACE_XS })
       .maxLines(1)
       .textOverflow({ overflow: TextOverflow.Ellipsis })
+      // While a translation lookup is pending, an unresolved member keeps its
+      // layout slot but stays invisible instead of painting raw English that
+      // is about to be replaced. Visibility.Hidden preserves geometry, so the
+      // row never collapses and the preview below never jumps.
+      .visibility(
+        this.tagTranslationPending &&
+          this.browsePresentation.showTranslatedTagLabels &&
+          item.translatedName.length === 0
+          ? Visibility.Hidden
+          : Visibility.Visible
+      )
       .constraintSize({ maxWidth: 180 })
       .accessibilityText(this.isSearchableTag(item.tag)
         ? AppStrings.format('gallery_tag_search_a11y', [this.tagSearchLabel(item.tag)])
@@ -2319,9 +2347,9 @@ export struct GalleryDetailPage {
         // without this read an async dictionary result never re-renders the
         // tag rows even though the state is populated.
         if (this.tagTranslationLabels.length >= 0) {
-          ForEach(this.tagVisualGroups(this.tagTranslationLabels, this.tagTranslationPending), (group: GalleryTagVisualGroup, index: number): void => {
+          ForEach(this.tagVisualGroups(this.tagTranslationLabels), (group: GalleryTagVisualGroup): void => {
             this.TagGroupRow(group)
-          }, (group: GalleryTagVisualGroup, index: number): string => this.tagGroupKey(group, index))
+          }, (group: GalleryTagVisualGroup): string => this.tagGroupKey(group))
         }
       }
       .width('100%')

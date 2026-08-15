@@ -178,6 +178,7 @@ export class ThemeTokens {
   // caller-owned initial-load state. These are shared component tokens rather
   // than page literals so List, Grid and WaterFlow settle identically.
   static readonly REFRESH_INDICATOR_SIZE: number = 28
+  static readonly REFRESH_BOTTOM_INDICATOR_SIZE: number = 24
   static readonly REFRESH_ANIMATION_DURATION: number = 400
   static readonly REFRESH_STATE_RESET_MS: number = 420
   static readonly REFRESH_DONE_DELAY_MS: number = 200
