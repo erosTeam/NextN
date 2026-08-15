@@ -1,5 +1,28 @@
 # NextN active device-acceptance queue
 
+## Current Search recent-history geometry — bounded reference observation — 2026-08-15
+
+- The signed HAP containing the scoped Search landing change was installed in
+  place with `-r` on only `192.168.50.237:12345` after a fresh lease, wake,
+  and `OverrideTimeout=86400000ms` gate. No data clear, uninstall, account
+  action, content action, history mutation, or preference change occurred.
+- In the keyboard-open native Search landing, the current NextN field and
+  recent-history heading were observed at the same bounds as the current
+  NextE Search landing on that device: field `[48,309][1272,429]`, heading
+  `[48,531][217,580]`. This accepts the narrow top-anchor relationship only:
+  no pixel offset was added; the complete safe-area/title/field token formula
+  remains in place and the short-history Scroll child has a minimum, not fixed,
+  height.
+- The scoped source tree was rebuilt independently in a clean temporary
+  worktree, then its signed HAP was installed in place and the same
+  keyboard-open bounds were observed again. The first clean build needed one
+  local package-resolution pass; the subsequent signed build succeeded.
+- This does not accept long-history overflow/scrolling, chip re-search or
+  deletion, translation refresh, empty/error landing states, or the complete
+  history-chip visual surface. Those remain OPEN. Raw local artifacts are
+  retained under `.hvigor/outputs/recent-search-history-rebuild-20260815T0510/`
+  and are excluded from source control.
+
 ## Current Settings wording correction — bounded device observation — 2026-08-15
 
 - The signed HAP built from `39fba26` was installed in place with `-r` on the

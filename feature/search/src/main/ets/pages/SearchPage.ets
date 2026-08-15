@@ -1898,6 +1898,23 @@ export struct SearchPage {
   }
 
   @Builder
+  private RecentSearchesClearButton() {
+    Button({ type: ButtonType.Circle, stateEffect: true }) {
+      SymbolGlyph($r('sys.symbol.trash'))
+        .fontSize(18)
+        .fontColor([ThemeTokens.TEXT_LINK])
+    }
+    .width(28)
+    .height(28)
+    .backgroundColor(Color.Transparent)
+    .padding(0)
+    .accessibilityText(AppStrings.get('search_clear_recent_a11y'))
+    .onClick((): void => {
+      this.confirmClearRecentSearches()
+    })
+  }
+
+  @Builder
   private RecentSearchesPanel() {
     if (this.isSearchHistoryLoaded && this.recentSearches.length > 0) {
       Column() {
@@ -1906,19 +1923,7 @@ export struct SearchPage {
             .fontSize(ThemeTokens.FONT_SIZE_BODY)
             .fontColor(ThemeTokens.TEXT_SECONDARY)
           Blank()
-          Button({ type: ButtonType.Circle, stateEffect: true }) {
-            SymbolGlyph($r('sys.symbol.trash'))
-              .fontSize(ThemeTokens.SECTION_ICON_SIZE)
-              .fontColor([ThemeTokens.TEXT_SECONDARY])
-          }
-          .width(ThemeTokens.MIN_TOUCH_TARGET)
-          .height(ThemeTokens.MIN_TOUCH_TARGET)
-          .backgroundColor(Color.Transparent)
-          .padding(0)
-          .accessibilityText(AppStrings.get('search_clear_recent_a11y'))
-          .onClick((): void => {
-            this.confirmClearRecentSearches()
-          })
+          this.RecentSearchesClearButton()
         }
         .width('100%')
         .alignItems(VerticalAlign.Center)
@@ -1976,7 +1981,7 @@ export struct SearchPage {
       // Keep pinned Quick searches before recents in one scroll-backed landing
       // surface rather than allowing either list to squeeze below HDS chrome.
       Scroll(this.historyScroller) {
-        Column({ space: ThemeTokens.SPACE_SM }) {
+        Column() {
           if (this.errorMessage.length > 0) {
             Column({ space: ThemeTokens.SPACE_SM }) {
               Text(this.errorMessage)
@@ -1992,11 +1997,20 @@ export struct SearchPage {
             }
             .width('100%')
             .padding({ bottom: ThemeTokens.SPACE_XL })
+            if (this.hasSearchLandingContent()) {
+              Blank().height(ThemeTokens.SPACE_SM)
+            }
           }
-          this.QuickSearchesPanel()
+          if (this.isQuickSearchesLoaded && this.quickSearches.length > 0) {
+            this.QuickSearchesPanel()
+            if (this.isSearchHistoryLoaded && this.recentSearches.length > 0) {
+              Blank().height(ThemeTokens.SPACE_SM)
+            }
+          }
           this.RecentSearchesPanel()
         }
         .width('100%')
+        .constraintSize({ minHeight: '100%' })
         .alignItems(HorizontalAlign.Start)
         // Search has its own pinned title-bar field. Unlike a root Browse
         // full-pane state, its landing/history content must begin below the
@@ -2004,14 +2018,14 @@ export struct SearchPage {
         // SearchHistoryView geometry and prevents history or guidance from
         // rendering underneath HDS chrome.
         .padding({
-          left: ThemeTokens.SPACE_XL,
-          right: ThemeTokens.SPACE_XL,
+          left: ThemeTokens.SPACE_LG,
+          right: ThemeTokens.SPACE_LG,
           top: this.searchGuideTopPadding(),
-          bottom: this.layoutSafeArea.bottomAvoidHeight + ThemeTokens.SPACE_XL,
+          bottom: this.layoutSafeArea.bottomAvoidHeight + ThemeTokens.SPACE_LG,
         })
       }
       .width('100%')
-      .layoutWeight(1)
+      .height('100%')
       .scrollBar(BarState.Off)
       .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
     } else {
@@ -2028,13 +2042,13 @@ export struct SearchPage {
           .maxLines(3)
       }
       .width('100%')
-      .layoutWeight(1)
+      .height('100%')
       .justifyContent(FlexAlign.Center)
       .padding({
-        left: ThemeTokens.SPACE_XL,
-        right: ThemeTokens.SPACE_XL,
+        left: ThemeTokens.SPACE_LG,
+        right: ThemeTokens.SPACE_LG,
         top: this.searchGuideTopPadding(),
-        bottom: this.layoutSafeArea.bottomAvoidHeight + ThemeTokens.SPACE_XL,
+        bottom: ThemeTokens.SPACE_LG,
       })
     }
   }
@@ -2152,68 +2166,72 @@ export struct SearchPage {
 
   build() {
     HdsNavDestination() {
-      Column() {
-      if (this.isInitialLoading && this.galleries.length === 0) {
-        PageLoadingState({ text: AppStrings.get('search_loading') })
-      } else if (this.directGalleryId() > 0) {
-        this.DirectGalleryLinkView()
-      } else if (this.hasTagSuggestionSurface()) {
-        this.SearchSuggestionsView()
-      } else if (this.activeQuery.length === 0) {
-        this.SearchGuide()
-      } else if (this.errorMessage.length > 0 && this.galleries.length === 0) {
-        PageErrorState({
-          message: this.errorMessage,
-          onRetry: (): void => {
-            this.runSearch()
-          },
-        })
-      } else if (this.galleries.length === 0) {
-        PageEmptyState({ message: AppStrings.get('search_empty') })
-      } else {
-        GalleryCollectionBody({
-          galleries: this.galleries,
-          isInitialLoading: this.isInitialLoading,
-          isRefreshing: this.isRefreshing,
-          isLoadingMore: this.isLoadingMore,
-          canLoadMore: this.canLoadMore(),
-          errorMessage: this.errorMessage,
-          loadMoreErrorMessage: this.loadMoreErrorMessage,
-          loadingMessage: AppStrings.get('search_loading'),
-          emptyMessage: AppStrings.get('search_empty'),
-          footerLoadingText: AppStrings.get('search_footer_loading'),
-          footerAvailableText: AppStrings.get('search_footer_available'),
-          footerCompleteText: AppStrings.get('search_footer_complete'),
-          footerIdleText: this.currentPage > 0
-            ? AppStrings.format('common_page_of', [this.currentPage.toString(), this.totalPages.toString()])
-            : '',
-          footerRetryLabel: AppStrings.get('common_try_loading_again'),
-          topPadding: SEARCH_TITLE_FIELD_BOTTOM_HEIGHT,
-          bottomPadding: ThemeTokens.LIST_BOTTOM_PADDING,
-          leadingItemCount: this.hasActiveSearchOptions() ? 1 : 0,
-          scroller: this.scroller,
-          controller: this.refreshController,
-          refreshEnabled: !this.isInitialLoading && !this.isRefreshing,
-          backToTop: true,
-          onRefresh: async (): Promise<void> => {
-            await this.refresh()
-          },
-          onRetry: (): void => {
-            this.refresh()
-          },
-          onLoadMore: (): void => {
-            this.loadMore()
-          },
-          onRetryLoadMore: (): void => {
-            this.retryLoadMore()
-          },
-          onOpenGallery: (galleryId: number): void => {
-            this.openGallery(galleryId)
-          },
-        }) {
-          this.SearchCollectionLeadingContent()
+      Stack() {
+        Column() {
+          if (this.isInitialLoading && this.galleries.length === 0) {
+            PageLoadingState({ text: AppStrings.get('search_loading') })
+          } else if (this.directGalleryId() > 0) {
+            this.DirectGalleryLinkView()
+          } else if (this.hasTagSuggestionSurface()) {
+            this.SearchSuggestionsView()
+          } else if (this.activeQuery.length === 0) {
+            this.SearchGuide()
+          } else if (this.errorMessage.length > 0 && this.galleries.length === 0) {
+            PageErrorState({
+              message: this.errorMessage,
+              onRetry: (): void => {
+                this.runSearch()
+              },
+            })
+          } else if (this.galleries.length === 0) {
+            PageEmptyState({ message: AppStrings.get('search_empty') })
+          } else {
+            GalleryCollectionBody({
+              galleries: this.galleries,
+              isInitialLoading: this.isInitialLoading,
+              isRefreshing: this.isRefreshing,
+              isLoadingMore: this.isLoadingMore,
+              canLoadMore: this.canLoadMore(),
+              errorMessage: this.errorMessage,
+              loadMoreErrorMessage: this.loadMoreErrorMessage,
+              loadingMessage: AppStrings.get('search_loading'),
+              emptyMessage: AppStrings.get('search_empty'),
+              footerLoadingText: AppStrings.get('search_footer_loading'),
+              footerAvailableText: AppStrings.get('search_footer_available'),
+              footerCompleteText: AppStrings.get('search_footer_complete'),
+              footerIdleText: this.currentPage > 0
+                ? AppStrings.format('common_page_of', [this.currentPage.toString(), this.totalPages.toString()])
+                : '',
+              footerRetryLabel: AppStrings.get('common_try_loading_again'),
+              topPadding: SEARCH_TITLE_FIELD_BOTTOM_HEIGHT,
+              bottomPadding: ThemeTokens.LIST_BOTTOM_PADDING,
+              leadingItemCount: this.hasActiveSearchOptions() ? 1 : 0,
+              scroller: this.scroller,
+              controller: this.refreshController,
+              refreshEnabled: !this.isInitialLoading && !this.isRefreshing,
+              backToTop: true,
+              onRefresh: async (): Promise<void> => {
+                await this.refresh()
+              },
+              onRetry: (): void => {
+                this.refresh()
+              },
+              onLoadMore: (): void => {
+                this.loadMore()
+              },
+              onRetryLoadMore: (): void => {
+                this.retryLoadMore()
+              },
+              onOpenGallery: (galleryId: number): void => {
+                this.openGallery(galleryId)
+              },
+            }) {
+              this.SearchCollectionLeadingContent()
+            }
+          }
         }
-      }
+        .width('100%')
+        .height('100%')
       }
       .width('100%')
       .height('100%')

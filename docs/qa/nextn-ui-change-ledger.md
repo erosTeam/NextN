@@ -188,6 +188,23 @@ authorize an edit, replace a device comparison, or define product completion.
   primary and unchanged; only recognized tag clauses may add a display line.
   Operators such as `pages:` and `uploaded:` remain raw and are never
   rewritten, submitted, or persisted differently.
+- **Correction — landing calculation and parent tree:** the earlier hypothesis
+  that `layoutSafeArea.topAvoidHeight` was an extra inset was wrong and is
+  rejected. Keep the complete NextE calculation, with no measured-pixel
+  offset: `layoutSafeArea.topAvoidHeight + TITLE_BAR_HEIGHT +
+  SEARCH_TITLE_FIELD_BOTTOM_HEIGHT + SPACE_MD`. Match the relevant hierarchy:
+  `HdsNavDestination → Stack → full-height Column → Scroll(height: 100%) →
+  content Column → Quick Search / Recent Search`. The Scroll child has no
+  fixed or maximum height. Use the minimum-height portion of NextE's existing
+  scroll-page pattern: short local history gets the same top origin while long
+  history can still expand beyond the viewport and scroll.
+- **Header-flow correction:** use the reference `SPACE_LG` horizontal inset
+  and compact `28vp` clear action, not the unrelated `48vp` list-row target.
+  Render `SPACE_SM` between Quick Search and Recent Search only when both
+  actually render, while retaining the existing error-to-content rhythm.
+  An empty Quick Search builder must not create a phantom gap above Recent
+  Search. Match the reference bottom equations too: history uses
+  `bottomAvoidHeight + SPACE_LG`; the empty guide uses `SPACE_LG`.
 - **Explicit exclusions:** do not add a new history preference, change
   history retention/deduplication, change quick-search chips, alter click to
   append-only behavior, change Search routing, search requests, suggestions,
