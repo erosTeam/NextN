@@ -11,8 +11,6 @@
     { "name": "settings_catalog_browse_language", "value": "Browse language" },
     { "name": "settings_browse", "value": "Browse" },
     { "name": "settings_search", "value": "Search" },
-    { "name": "settings_browse_preferences_hint", "value": "Browse defaults are saved on this device." },
-    { "name": "settings_search_preferences_hint", "value": "Search defaults are saved on this device." },
     { "name": "settings_browse_preferences_unavailable", "value": "Browse defaults are unavailable." },
     { "name": "settings_search_preferences_unavailable", "value": "Search defaults are unavailable." },
     { "name": "settings_browse_preferences_save_failed", "value": "Unable to save Browse defaults." },

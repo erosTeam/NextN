@@ -11,8 +11,6 @@
     { "name": "settings_catalog_browse_language", "value": "ブラウズの言語" },
     { "name": "settings_browse", "value": "ブラウズ" },
     { "name": "settings_search", "value": "検索" },
-    { "name": "settings_browse_preferences_hint", "value": "ブラウズの既定値はこの端末に保存されます。" },
-    { "name": "settings_search_preferences_hint", "value": "検索の既定値はこの端末に保存されます。" },
     { "name": "settings_browse_preferences_unavailable", "value": "ブラウズの既定値を読み込めません。" },
     { "name": "settings_search_preferences_unavailable", "value": "検索の既定値を読み込めません。" },
     { "name": "settings_browse_preferences_save_failed", "value": "ブラウズの既定値を保存できません。" },

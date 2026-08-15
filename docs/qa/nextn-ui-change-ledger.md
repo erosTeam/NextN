@@ -3,6 +3,36 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Browse/Search stored-default caption removal — 2026-08-15
+
+- **Why newly actionable:** the user asked for a thorough removal of
+  self-authored Settings prose that exposes implementation policy instead of
+  the setting's operation. The same parent-tree audit found that the first
+  language row in both Browse and Search says only that its defaults are saved
+  locally. That statement does not change the language or order operation and
+  repeats storage implementation in normal UI.
+- **Whole parent-tree boundary:** retain `Settings root → Browse or Search →
+  HdsNavDestination → SettingsPage(BROWSE/SEARCH) → SecondaryListScaffold →
+  ListItem → Browse/SearchPreferencesGroup → language row → existing menu`.
+  The sibling order, current value, menu, saved-default owner
+  `CatalogPreferencesService`, and error group remain unchanged.
+- **Reference boundary:** the corresponding current NextE Search Settings
+  surface presents its controls and values without a local-storage policy
+  caption. This transfers only the title/value row relationship; it does not
+  change any catalog preference behavior.
+- **Exact change:** remove the two language-row subtitles and the four-locale
+  `settings_browse_preferences_hint` / `settings_search_preferences_hint`
+  resources. No substitute copy is added.
+- **Minimality and exclusions:** do not alter Browse/Search language or order
+  defaults, requests, history, options sheets, persistence, failure states,
+  row geometry beyond the natural subtitle removal, or any result surface.
+- **Verification plan:** inspect the scoped diff, parse every locale catalog,
+  and build the exact commit. On the selected device, observe both native
+  Settings destinations and their language rows without opening/selecting a
+  menu. Same-state NextE visual parity remains OPEN.
+- **Unresolved risk:** source/build evidence cannot prove menu behavior,
+  persistent defaults, error states, or full page visual parity.
+
 ## OPEN — Appearance theme-color system-option removal — 2026-08-15
 
 - **Why newly actionable:** the user identified that the first Theme color

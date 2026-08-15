@@ -3404,7 +3404,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.translate'),
         title: AppStrings.get('settings_catalog_browse_language'),
-        subtitle: AppStrings.get('settings_browse_preferences_hint'),
         trailingText: this.catalogLanguageLabel(this.catalogPreferences.browseLanguage),
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_catalog_browse_language'),
@@ -3449,7 +3448,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.magnifyingglass'),
         title: AppStrings.get('settings_catalog_search_language'),
-        subtitle: AppStrings.get('settings_search_preferences_hint'),
         trailingText: this.catalogLanguageLabel(this.catalogPreferences.searchLanguage),
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_catalog_search_language'),

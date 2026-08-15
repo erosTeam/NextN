@@ -11,8 +11,6 @@
     { "name": "settings_catalog_browse_language", "value": "浏览语言" },
     { "name": "settings_browse", "value": "浏览" },
     { "name": "settings_search", "value": "搜索" },
-    { "name": "settings_browse_preferences_hint", "value": "浏览默认项保存在本机。" },
-    { "name": "settings_search_preferences_hint", "value": "搜索默认项保存在本机。" },
     { "name": "settings_browse_preferences_unavailable", "value": "无法读取浏览默认项。" },
     { "name": "settings_search_preferences_unavailable", "value": "无法读取搜索默认项。" },
     { "name": "settings_browse_preferences_save_failed", "value": "无法保存浏览默认项。" },
