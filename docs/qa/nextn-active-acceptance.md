@@ -1,5 +1,27 @@
 # NextN active device-acceptance queue
 
+## Current Reader enhancement Japanese label — bounded device observation — 2026-08-15
+
+- The signed HAP built from `ba23872` (SHA-256
+  `ccc0f027a8a0221c674d02353a4befeb23a7dc1e867648b311b203c82ce0ad44`)
+  was installed in place with `-r` on only `192.168.50.237:12345`. The
+  foreground-verified NextN run used a fresh live target and lease; its awake
+  gate reported `AWAKE` with `OverrideTimeout=86400000ms`. No data clear,
+  uninstall, account action, content action, Reader preference selection, or
+  Reader canvas action occurred.
+- The foreground-confirmed NextN `Settings → 界面` language value was first
+  read as `跟随系统`, then temporarily changed to Japanese solely for this
+  check. In foreground-confirmed root `Settings → 閲覧` at `1320×2120`, the
+  existing enhancement group displayed the corrected visible switch title
+  `画像強調`. The original `跟随系统` value was restored; a NextN
+  force-stop/cold start settled on foreground-confirmed Chinese Home.
+- This observes the bounded Japanese visible-label state and reversible
+  language restoration only. It does not accept screen-reader output,
+  Reader-owned Settings sheet, enhancement/model behavior, every locale, or
+  full visual parity. Raw local artifacts are retained under
+  `.hvigor/outputs/reader-ja-label-nextn-20260815T2010/` and are excluded from
+  source control.
+
 ## Current Advanced translation-entry copy — bounded device observation — 2026-08-15
 
 - The signed HAP built from `b2b1b6f` (SHA-256

@@ -176,6 +176,31 @@ authorize an edit, replace a device comparison, or define product completion.
   Japanese catalog, and build the exact commit. If a reversible Japanese app
   language observation is safe, confirm the routed Reader Settings row then
   restore the original language. Full visual parity remains unaccepted.
+- **Rejected device evidence — 2026-08-15:** an attempted temporary
+  Japanese-language observation was rejected during artifact review: every
+  Japanese Settings layout in that route had foreground bundle
+  `com.erosteam.nexte`, not NextN. It is not used as acceptance evidence for
+  this item. The separate cold layout foreground-confirms only Chinese NextN
+  Home; it does not prove this row or NextN language restoration. Retain the
+  raw local artifacts only as rejected evidence under
+  `.hvigor/outputs/reader-ja-label-20260815T2001/`; they are excluded from
+  source control. A foreground-confirmed NextN route is still required.
+- **Current bounded device observation — 2026-08-15:** a separate fresh
+  foreground-verified NextN route observed original `Settings → 界面 → 语言`
+  value `跟随系统`, temporarily selected Japanese, and then reached root
+  `Settings → 閲覧` at `1320×2120` with foreground bundle
+  `com.erosteam.nextn`. The existing enhancement group displayed
+  `画像強調`. `跟随系统` was restored through foreground-confirmed NextN
+  Settings; a NextN force-stop/cold start settled on Chinese Home. The signed
+  HAP was built from `ba23872` (SHA-256
+  `ccc0f027a8a0221c674d02353a4befeb23a7dc1e867648b311b203c82ce0ad44`)
+  and installed with `-r` only. No data clear, uninstall, account/content
+  action, Reader preference selection, or Reader canvas action occurred. This
+  observes only the bounded visible label and restoration, not screen-reader
+  output, Reader-sheet presentation, enhancement behavior, every locale, or
+  full visual parity. Raw local artifacts are retained under
+  `.hvigor/outputs/reader-ja-label-nextn-20260815T2010/` and are excluded from
+  source control.
 - **Unresolved risk:** source/build cannot prove Japanese screen-reader output,
   reader-sheet presentation, every Reader state, or full visual parity.
 
