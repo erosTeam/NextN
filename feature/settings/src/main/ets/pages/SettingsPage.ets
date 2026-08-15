@@ -987,17 +987,6 @@ export struct SettingsPage {
     }
   }
 
-  private downloadPolicySubtitle(): string {
-    const total: number = this.downloadSettings.maxConcurrentGalleries * this.downloadSettings.maxConcurrentPages
-    if (total > 8) {
-      return AppStrings.format('settings_download_parallel_requests', [total.toString()])
-    }
-    return AppStrings.format('settings_download_worker_slots', [
-      this.downloadSettings.maxConcurrentGalleries.toString(),
-      this.downloadSettings.maxConcurrentPages.toString(),
-    ])
-  }
-
   private retryCountLabelFor(count: number): string {
     return count === 1
       ? AppStrings.format('settings_download_retry_one', [count.toString()])
@@ -2237,7 +2226,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.rectangle_stack'),
         title: AppStrings.get('settings_download_gallery_concurrency'),
-        subtitle: this.downloadPolicySubtitle(),
         trailingText: `${this.downloadSettings.maxConcurrentGalleries}`,
         isEnabled: !this.isSavingDownloadSettings,
         accessibilityLabel: AppStrings.format('settings_download_gallery_concurrency_a11y', [
@@ -2257,7 +2245,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.square_grid_2x2'),
         title: AppStrings.get('settings_download_page_concurrency'),
-        subtitle: AppStrings.get('settings_download_page_concurrency_hint'),
         trailingText: `${this.downloadSettings.maxConcurrentPages}`,
         isEnabled: !this.isSavingDownloadSettings,
         accessibilityLabel: AppStrings.format('settings_download_page_concurrency_a11y', [
@@ -2277,7 +2264,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.arrow_clockwise'),
         title: AppStrings.get('settings_download_failed_page_retries'),
-        subtitle: AppStrings.get('settings_download_failed_page_retries_hint'),
         trailingText: this.retryCountLabel(),
         isEnabled: !this.isSavingDownloadSettings,
         accessibilityLabel: AppStrings.format('settings_download_failed_page_retries_a11y', [

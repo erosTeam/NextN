@@ -2059,6 +2059,37 @@ authorize an edit, replace a device comparison, or define product completion.
   supported mode, pinch, keyboard, and same-state visual parity OPEN unless
   separately observed.
 
+## OPEN — Download-policy control copy cleanup — 2026-08-15
+
+- **Why newly actionable:** the user explicitly rejected implementation
+  terminology and explanatory policy prose in Settings. The current Download
+  group describes worker slots, CDN behavior, private-file retention, and
+  bounded delays below three existing controls even though none changes the
+  available selection or its effect.
+- **Whole parent-tree boundary:** `Settings root → Index downloadSettings
+  destination → HdsNavDestination → SettingsPage(DOWNLOAD) →
+  SecondaryListScaffold → ListItem(DownloadPolicyGroup) →
+  NextNGroupedListSection → gallery limit → page limit → retry count →
+  completion notifications`. Existing menus write the same persisted gallery
+  limit, page limit, and retry count before reapplying the existing queue.
+- **Reference boundary:** ErosN has the same independent gallery/page
+  concurrency controls and supplies the direct four-locale titles, without
+  routine implementation subtitles. NextE supplies the already-existing
+  retry-count title; its image-specific retry explanation is not copied because
+  NextN's persisted unit is a queued page rather than a reference image leaf.
+- **Exact change:** use ErosN's direct titles for the two concurrency controls
+  and their matching accessibility labels; remove only the gallery execution
+  summary, page reliability caption, and retry implementation caption, along
+  with their now-unused helpers/resources. Keep current numeric values, menus,
+  icons, row order, retry title, completion-notification row, save-error copy,
+  persistence, queue reapply calls, bounds, and download behavior unchanged.
+- **Verification plan:** inspect the scoped source/resource diff and signed
+  build. On the foreground-confirmed Download settings route, observe the
+  three existing controls with their current values and no removed captions;
+  do not select a value, invoke a menu, start a download, or alter a download
+  preference. All behavior, persistence, notification, error, and same-state
+  visual-parity evidence remains OPEN.
+
 ## OPEN — Gallery Detail full-title translation
 
 - User outcome: a user who has explicitly configured the existing private text
