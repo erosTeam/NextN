@@ -1,4 +1,5 @@
 import { HdsNavigation, HdsNavigationTitleMode, IconStyleMode } from '@kit.UIDesignKit'
+import { AppPrompt } from '../utils/AppPrompt'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { connectLayoutSafeArea, LayoutSafeAreaState } from '../state/LayoutSafeAreaState'
 
@@ -51,7 +52,7 @@ export struct NextNModalScaffold {
         }
         .height('100%')
         .width('100%')
-        .backgroundColor(this.contentBackgroundColor)
+        .backgroundColor(AppPrompt.modalContentBackgroundColor(this.contentBackgroundColor))
         .padding({ left: this.contentHorizontalPadding, right: this.contentHorizontalPadding })
         .scrollBar(BarState.Off)
         .edgeEffect(EdgeEffect.None)
@@ -92,7 +93,7 @@ export struct NextNModalScaffold {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.contentBackgroundColor)
+    .backgroundColor(AppPrompt.modalContentBackgroundColor(this.contentBackgroundColor))
   }
 
   private menuItems(): Record<string, Object>[] {

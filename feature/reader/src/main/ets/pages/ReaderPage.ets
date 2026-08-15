@@ -48,6 +48,8 @@ import {
   connectReaderOverlayNavigation,
   supportsMangaTranslation,
 } from 'shared'
+import { appMenuOptions } from 'shared'
+import { appSheetOptions } from 'shared'
 
 // Reader chrome remains a dark overlay. Canvas-recovery colors resolve from
 // the Reader's local background choice instead of changing chrome affordance.
@@ -3556,12 +3558,12 @@ export struct ReaderPage {
         .onClick((): void => {
           this.readerOverflowMenuShown = true
         })
-        .bindMenu(this.readerOverflowMenuShown, this.ReaderOverflowMenu, {
+        .bindMenu(this.readerOverflowMenuShown, this.ReaderOverflowMenu, appMenuOptions({
           placement: Placement.BottomRight,
           onDisappear: (): void => {
             this.readerOverflowMenuShown = false
           },
-        })
+        }))
       }
       .width('100%')
       .height(ThemeTokens.TITLE_BAR_HEIGHT)
@@ -3965,12 +3967,12 @@ export struct ReaderPage {
       .onClick((): void => {
         this.readerModeMenuShown = true
       })
-      .bindMenu(this.readerModeMenuShown, this.ReaderModeMenu, {
+      .bindMenu(this.readerModeMenuShown, this.ReaderModeMenu, appMenuOptions({
         placement: Placement.TopRight,
         onDisappear: (): void => {
           this.readerModeMenuShown = false
         },
-      })
+      }))
       Button({ type: ButtonType.Circle }) {
         SymbolGlyph($r('sys.symbol.rectangle_grid_2x1'))
           .fontSize(22)
@@ -4188,13 +4190,13 @@ export struct ReaderPage {
       this.settingsSheetContent((): void => {
         this.closeReaderSettings()
       }),
-      {
+      appSheetOptions({
         detents: [SheetSize.MEDIUM, SheetSize.LARGE],
         showClose: false,
         onDisappear: (): void => {
           this.closeReaderSettings()
         },
-      },
+      }),
     )
   }
 

@@ -70,11 +70,35 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Reference boundary:** NextE's API 26 material implementation for the
   same menu/components must be read before any edit; no inferred redesign is
   allowed.
-- **Exact change:** none yet. Next safe action is a read-only source audit of
-  NextE's API 26 material handling and NextN's current menu/component
-  material usage, then a scoped implementation plan for user confirmation.
+- **Exact change (2026-08-16):** mirror NextE's shared API 26 material path.
+  Added `shared/src/main/ets/utils/AppPrompt.ets` (semantic
+  search/surface/modal/composer materials + modal-content transparency, all
+  gated by `deviceInfo.apiAvailable('26.0.0')`) and
+  `shared/src/main/ets/components/AppMenuOptions.ets` /
+  `AppSheetOptions.ets` (`MenuOptions.systemMaterial = surfaceSystemMaterial()`,
+  `SheetOptions.systemMaterial = modalSystemMaterial()` plus NextE's modal
+  sheet flags). Added `ImmersiveMaterialSettings.systemMaterial()` /
+  `systemMaterialStyle()` and wrapped all 37 `bindMenu` and 7 `bindSheet`
+  call sites across Settings/Search/Home/Download/Reader/ContentFilters/
+  Gallery. `NextNModalScaffold` now applies
+  `AppPrompt.modalContentBackgroundColor(...)` so API 26 sheet content stays
+  transparent under the system material with the pre-26 solid fallback. The
+  HDS title-bar menus already inherited `systemMaterialEffect` from
+  `nextNHdsTitleBar`, so no title-bar code changed.
 - **Verification plan:** signed build and same-state, same-viewport device
   comparison against NextE after implementation.
+- **Current bounded device observation — 2026-08-16:** signed Debug HAP
+  SHA-256 `59fb382b0d131c53a4858f63d725343366dfeca9b6483c635ec5abe56aa1bc86`
+  installed with `-r` on only `192.168.50.237:12345` after fresh lease, wake,
+  and `AWAKE` / `OverrideTimeout=86400000ms` gate. No data clear, uninstall,
+  account, preference, or selection change occurred. After cold start at
+  `1320×2120`, native `com.erosteam.nextn` 我的 → 界面 → 语言 opened the
+  wrapped bindMenu with items 跟随系统 / 简体中文 / English / 日本語 (Menu
+  `[720,920][1272,1520]`); no selection was made. Browse root → 浏览选项
+  opened the wrapped bindSheet with 语言 options and no crash. Screenshots
+  are retained under `.hvigor/outputs/nextn-api26-20260816T/`. Same-state
+  NextE visual parity for the material rendering and every menu/sheet site
+  remain OPEN; this record does not claim visual acceptance.
 
 ## OPEN — Browse title-bar menu collapse (search/browse options direct) — 2026-08-15
 

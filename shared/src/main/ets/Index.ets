@@ -444,6 +444,8 @@ export { NhDownloadCbzExportService } from './services/NhDownloadCbzExportServic
 export { PageLoadingState, PageErrorState, PageEmptyState } from './components/PageStates'
 export { nextNHdsTitle, nextNHdsTitleBar } from './components/NextNHdsTitleBar'
 export { AppSearchField } from './components/AppSearchField'
+export { appMenuOptions } from './components/AppMenuOptions'
+export { appSheetOptions } from './components/AppSheetOptions'
 export { NextNListRow } from './components/NextNListRow'
 export { NextNGroupedListSection } from './components/NextNGroupedListSection'
 export { NextNSectionHeader } from './components/NextNSectionHeader'

@@ -6,6 +6,7 @@ import {
   PullRefreshGridScaffold,
   ThemeTokens,
 } from 'shared'
+import { appSheetOptions } from 'shared'
 import {
   GalleryVirtualPageThumbnailDataSource,
   GalleryVirtualPageThumbnailTile,
@@ -254,9 +255,9 @@ export struct GalleryThumbnailGridContent {
     .width('100%')
     .height('100%')
     .backgroundColor(ThemeTokens.SURFACE)
-    .bindSheet($$this.jumpSheetShown, this.JumpSheet(), {
+    .bindSheet($$this.jumpSheetShown, this.JumpSheet(), appSheetOptions({
       detents: [SheetSize.MEDIUM],
       showClose: false,
-    })
+    }))
   }
 }

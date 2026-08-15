@@ -45,6 +45,8 @@ import {
   nextNHdsTitleBar,
   TagTranslationState,
 } from 'shared'
+import { appMenuOptions } from 'shared'
+import { appSheetOptions } from 'shared'
 import { ComponentContent, KeyboardAvoidMode, SymbolGlyphModifier } from '@kit.ArkUI'
 import { BottomBuilderShowType, HdsNavDestination, HideMode } from '@kit.UIDesignKit'
 import { SearchChromeState } from '../state/SearchChromeState'
@@ -1644,12 +1646,12 @@ export struct SearchPage {
             this.advancedTagNamespaceMenuShown = true
           },
         })
-          .bindMenu(this.advancedTagNamespaceMenuShown, this.AdvancedTagNamespaceMenu, {
+          .bindMenu(this.advancedTagNamespaceMenuShown, this.AdvancedTagNamespaceMenu, appMenuOptions({
             placement: Placement.BottomRight,
             onDisappear: (): void => {
               this.advancedTagNamespaceMenuShown = false
             },
-          })
+          }))
         this.SearchOptionDivider()
         NextNListRow({
           title: AppStrings.get('search_advanced_match'),
@@ -1660,12 +1662,12 @@ export struct SearchPage {
             this.advancedTagModeMenuShown = true
           },
         })
-          .bindMenu(this.advancedTagModeMenuShown, this.AdvancedTagModeMenu, {
+          .bindMenu(this.advancedTagModeMenuShown, this.AdvancedTagModeMenu, appMenuOptions({
             placement: Placement.BottomRight,
             onDisappear: (): void => {
               this.advancedTagModeMenuShown = false
             },
-          })
+          }))
         this.SearchOptionDivider()
         this.AdvancedTagNameInput()
         this.SearchOptionDivider()
@@ -1724,12 +1726,12 @@ export struct SearchPage {
             this.advancedUploadedUnitMenuShown = true
           },
         })
-          .bindMenu(this.advancedUploadedUnitMenuShown, this.AdvancedUploadedUnitMenu, {
+          .bindMenu(this.advancedUploadedUnitMenuShown, this.AdvancedUploadedUnitMenu, appMenuOptions({
             placement: Placement.BottomRight,
             onDisappear: (): void => {
               this.advancedUploadedUnitMenuShown = false
             },
-          })
+          }))
         this.SearchOptionDivider()
         NextNListRow({
           title: AppStrings.get('search_advanced_uploaded'),
@@ -2245,10 +2247,10 @@ export struct SearchPage {
       .width('100%')
       .height('100%')
       .backgroundColor(ThemeTokens.SURFACE)
-      .bindSheet($$this.showSearchOptions, this.SearchOptionsSheet(), {
+      .bindSheet($$this.showSearchOptions, this.SearchOptionsSheet(), appSheetOptions({
         detents: [SheetSize.LARGE],
         showClose: false,
-      })
+      }))
     }
     .titleBar(this.searchTitleBar())
     .dynamicHideTitleBar({

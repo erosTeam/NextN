@@ -42,6 +42,8 @@ import {
   connectTagTranslations,
   TagTranslationState,
 } from 'shared'
+import { appMenuOptions } from 'shared'
+import { appSheetOptions } from 'shared'
 import { PopularPage } from './PopularPage'
 
 const BROWSE_LANGUAGES: NhSearchLanguage[] = [
@@ -513,10 +515,10 @@ export struct LatestSourcePage {
       },
     })
     .backgroundColor(ThemeTokens.SURFACE)
-    .bindSheet($$this.showBrowseOptions, this.BrowseOptionsSheet(), {
+    .bindSheet($$this.showBrowseOptions, this.BrowseOptionsSheet(), appSheetOptions({
       detents: [SheetSize.LARGE],
       showClose: false,
-    })
+    }))
   }
 }
 
@@ -669,12 +671,12 @@ export struct HomePage {
         .width(1)
         .height(1)
         .hitTestBehavior(HitTestMode.None)
-        .bindMenu(this.layoutMenuShown, this.LayoutMenu, {
+        .bindMenu(this.layoutMenuShown, this.LayoutMenu, appMenuOptions({
           placement: Placement.BottomRight,
           onDisappear: (): void => {
             this.layoutMenuShown = false
           },
-        })
+        }))
     }
       .width('100%')
       .height('100%')

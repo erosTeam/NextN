@@ -23,6 +23,7 @@ import {
   connectDownloadQueue,
   connectLayoutSafeArea,
 } from 'shared'
+import { appMenuOptions } from 'shared'
 import {
   DownloadPinnedGroupHeaderState,
   DOWNLOAD_PINNED_GROUP_HEADER_HEIGHT,
@@ -899,14 +900,14 @@ export struct DownloadQueuePage {
       .onClick((): void => {
         this.taskActionMenuGalleryId = task.galleryId
       })
-      .bindMenu(this.taskActionMenuGalleryId === task.galleryId, this.TaskActionMenu, {
+      .bindMenu(this.taskActionMenuGalleryId === task.galleryId, this.TaskActionMenu, appMenuOptions({
         placement: Placement.BottomRight,
         onDisappear: (): void => {
           if (this.taskActionMenuGalleryId === task.galleryId) {
             this.closeTaskActionMenu()
           }
         },
-      })
+      }))
   }
 
   @Builder
@@ -1171,12 +1172,12 @@ export struct DownloadQueuePage {
         .height(1)
         .hitTestBehavior(HitTestMode.None)
         .align(Alignment.TopEnd)
-        .bindMenu(this.sortMenuShown, this.SortMenu, {
+        .bindMenu(this.sortMenuShown, this.SortMenu, appMenuOptions({
           placement: Placement.BottomRight,
           onDisappear: (): void => {
             this.sortMenuShown = false
           },
-        })
+        }))
     }
     .width('100%')
     .height('100%')

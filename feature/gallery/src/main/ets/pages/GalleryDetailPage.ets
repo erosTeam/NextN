@@ -64,6 +64,7 @@ import {
   ReaderOverlayNavigationState,
   supportsCommentTranslation,
 } from 'shared'
+import { appSheetOptions } from 'shared'
 import { GalleryChromeState } from '../state/GalleryChromeState'
 import { GalleryThumbnailsChromeState } from '../state/GalleryThumbnailsChromeState'
 import { GalleryThumbnailGridContent } from '../components/GalleryThumbnailGridContent'
@@ -1754,10 +1755,10 @@ export struct GalleryDetailPage {
         .height(ThemeTokens.DETAIL_COVER_HEIGHT)
         .clip(true)
         .alignItems(HorizontalAlign.Start)
-        .bindSheet($$this.fullTitleSheetShown, this.FullTitleSheet(), {
+        .bindSheet($$this.fullTitleSheetShown, this.FullTitleSheet(), appSheetOptions({
           detents: [SheetSize.LARGE],
           showClose: false,
-        })
+        }))
       }
       .width('100%')
       .alignItems(VerticalAlign.Top)

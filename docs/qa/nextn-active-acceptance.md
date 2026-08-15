@@ -1,5 +1,23 @@
 # NextN active device-acceptance queue
 
+## Current API 26 menu/sheet material support — bounded device observation — 2026-08-16
+
+- The signed Debug HAP (SHA-256
+  `59fb382b0d131c53a4858f63d725343366dfeca9b6483c635ec5abe56aa1bc86`) was
+  installed in place with `-r` on only `192.168.50.237:12345` after fresh
+  lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms` gate. No data
+  clear, uninstall, account action, preference write, or selection change
+  occurred.
+- After cold start at `1320×2120`, foreground-confirmed native
+  `com.erosteam.nextn` 我的 → 界面 → 语言 opened the wrapped `bindMenu`
+  (`appMenuOptions`) with 跟随系统 / 简体中文 / English / 日本語 and no crash;
+  the menu was dismissed without selecting a value. Browse root → 浏览选项
+  opened the wrapped `bindSheet` (`appSheetOptions`) with 语言 options and no
+  crash. This observes route/render survival only; it does not accept visual
+  material parity, every menu/sheet site, theme-change refresh, or
+  same-state NextE comparison. Raw local screenshots/layouts are retained
+  under `.hvigor/outputs/nextn-api26-20260816T/` and excluded from Git.
+
 ## Current Gallery detail seed reuse — cold-start first Browse card — 2026-08-16
 
 * The signed Debug HAP from the seed-reuse worktree (SHA-256

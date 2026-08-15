@@ -14,6 +14,8 @@ import {
   SecondaryListScaffold,
   ThemeTokens,
 } from 'shared'
+import { appMenuOptions } from 'shared'
+import { appSheetOptions } from 'shared'
 
 /**
  * Direct HDS settings destination for ErosN-derived local display rules.
@@ -273,12 +275,12 @@ export struct ContentFiltersPage {
               this.typeMenuShown = true
             },
           })
-            .bindMenu(this.typeMenuShown, this.FilterTypeMenu, {
+            .bindMenu(this.typeMenuShown, this.FilterTypeMenu, appMenuOptions({
               placement: Placement.BottomRight,
               onDisappear: (): void => {
                 this.typeMenuShown = false
               },
-            })
+            }))
             this.RowDivider()
             NextNListRow({
             leadingIcon: $r('sys.symbol.checkmark_circle'),
@@ -370,9 +372,9 @@ export struct ContentFiltersPage {
     .width('100%')
     .height('100%')
     .backgroundColor(ThemeTokens.SURFACE_SUB)
-    .bindSheet($$this.editorShown, this.RulesEditorSheet(), {
+    .bindSheet($$this.editorShown, this.RulesEditorSheet(), appSheetOptions({
       detents: [SheetSize.LARGE],
       showClose: false,
-    })
+    }))
   }
 }

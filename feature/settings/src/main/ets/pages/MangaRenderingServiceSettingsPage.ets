@@ -18,6 +18,7 @@ import {
   SecondaryListScaffold,
   ThemeTokens,
 } from 'shared'
+import { appMenuOptions } from 'shared'
 
 const CONNECTION_IDLE: string = 'idle'
 const CONNECTION_RUNNING: string = 'running'
@@ -325,7 +326,7 @@ export struct MangaRenderingServiceSettingsPage {
           },
         })
       }
-      .bindMenu(this.detectionMenuShown, this.DetectionProfileMenu)
+      .bindMenu(this.detectionMenuShown, this.DetectionProfileMenu, appMenuOptions({}))
       this.RowDivider()
       Column() {
         NextNListRow({
@@ -337,7 +338,7 @@ export struct MangaRenderingServiceSettingsPage {
           },
         })
       }
-      .bindMenu(this.inpaintingMenuShown, this.InpaintingProfileMenu)
+      .bindMenu(this.inpaintingMenuShown, this.InpaintingProfileMenu, appMenuOptions({}))
       this.RowDivider()
       this.TextInputRow(AppStrings.get('settings_manga_rendering_service_url'), 'baseUrl')
       this.RowDivider()
