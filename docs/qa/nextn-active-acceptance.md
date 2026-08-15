@@ -1,5 +1,22 @@
 # NextN active device-acceptance queue
 
+## Current Cache clear-all caption removal — bounded device observation — 2026-08-15
+
+- The signed HAP built from `46f7471` was installed in place with `-r` on only
+  `192.168.50.237:12345` after a fresh live target, lease, wake, and `AWAKE` /
+  `OverrideTimeout=86400000ms` gate. No data clear, uninstall, account action,
+  cache clear, confirmation-dialog action, or preference value change occurred.
+- On the foreground-confirmed native `Settings → 缓存` route at the current
+  `1320×2120` root viewport, the four existing category-cache rows remained
+  visible and the destructive final row displayed `清除全部缓存` without the
+  former policy subtitle. The action and its confirmation dialog were not
+  invoked.
+- This observes only the replacement row state. It does not accept
+  confirmation, clearing, disabled/clearing states, cache persistence, or
+  same-state visual parity. Raw local artifacts are retained under
+  `.hvigor/outputs/cache-clear-copy-20260815T1704/` and are excluded from
+  source control.
+
 ## Current Content-filter policy-note removal — bounded device observation — 2026-08-15
 
 - The signed HAP built from `4afd1f9` was installed in place with `-r` on only
