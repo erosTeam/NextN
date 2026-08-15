@@ -2219,7 +2219,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.trash'),
         title: AppStrings.get('settings_private_cache_clear_all'),
-        subtitle: AppStrings.get('settings_private_cache_clear_all_hint'),
         trailingText: this.isClearingPrivateCache ? AppStrings.get('settings_private_cache_wait') : '',
         showChevron: false,
         destructive: true,

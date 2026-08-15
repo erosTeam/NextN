@@ -587,7 +587,6 @@
     { "name": "settings_private_cache_clear_all_title", "value": "Clear all private caches?" },
     { "name": "settings_private_cache_clear_all_message", "value": "This removes only regenerated private cache data. Downloads, history, account data, and preferences are kept." },
     { "name": "settings_private_cache_clear_all", "value": "Clear all caches" },
-    { "name": "settings_private_cache_clear_all_hint", "value": "Remove all regenerated private cache data." },
     { "name": "settings_private_cache_wait", "value": "Please wait" },
     { "name": "settings_private_cache_clear_a11y", "value": "Clear {0} cache" },
     { "name": "settings_private_cache_clear_failed", "value": "Unable to clear private cache." },

@@ -1971,6 +1971,33 @@ authorize an edit, replace a device comparison, or define product completion.
   remain **EVIDENCE-ONLY**; do not clear an existing cache merely to repeat
   this visual verification.
 
+## OPEN — Cache clear-all policy-caption removal — 2026-08-15
+
+- **Why newly actionable:** the user explicitly rejected technical and policy
+  explanations embedded below routine setting actions. This feedback reopens
+  only the final clear-all row's subtitle inside the frozen private-cache
+  boundary; it does not reopen the cache hierarchy, ordering, owners, or clear
+  operations.
+- **Whole parent-tree boundary:** `Index cacheSettingsDestination →
+  HdsNavDestination → SettingsPage(CACHE) → SecondaryListScaffold →
+  ListItem(缓存占用) → ListItem(PrivateCacheGroup) →
+  NextNGroupedListSection → four category-cache rows → destructive
+  clear-all row`. The existing clear action continues to its current
+  confirmation dialog.
+- **Reference boundary:** NextE `CacheSettingsPage → SecondaryListScaffold →
+  GroupedListSection` ends with the equivalent destructive `清除全部缓存` row
+  without a subtitle; the confirmation action owns the destructive scope.
+- **Exact change:** remove only the clear-all row's `subtitle` and the unused
+  `settings_private_cache_clear_all_hint` resource from the four catalogs.
+  Keep title, icon, destructive styling, availability, clearing state,
+  accessibility label, confirmation title/message/actions, all cache rows,
+  cache owners, service calls, and storage behavior unchanged.
+- **Verification plan:** inspect the scoped source/resource diff and signed
+  build. On the foreground-confirmed Cache route, observe the existing four
+  category rows and destructive clear-all title without the subtitle; do not
+  activate the action or confirmation dialog. Same-state visual parity and all
+  confirmation/clearing states remain OPEN.
+
 ## OPEN — Gallery Detail full-title translation
 
 - User outcome: a user who has explicitly configured the existing private text

@@ -587,7 +587,6 @@
     { "name": "settings_private_cache_clear_all_title", "value": "清除所有私有缓存？" },
     { "name": "settings_private_cache_clear_all_message", "value": "这只会移除可再生成的私有缓存数据。下载、历史、账号数据和偏好设置会保留。" },
     { "name": "settings_private_cache_clear_all", "value": "清除全部缓存" },
-    { "name": "settings_private_cache_clear_all_hint", "value": "移除全部可再生成的私有缓存数据。" },
     { "name": "settings_private_cache_wait", "value": "请稍候" },
     { "name": "settings_private_cache_clear_a11y", "value": "清除“{0}”缓存" },
     { "name": "settings_private_cache_clear_failed", "value": "无法清除私有缓存。" },

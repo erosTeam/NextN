@@ -587,7 +587,6 @@
     { "name": "settings_private_cache_clear_all_title", "value": "すべてのプライベートキャッシュを消去しますか？" },
     { "name": "settings_private_cache_clear_all_message", "value": "再生成可能なプライベートキャッシュだけを削除します。ダウンロード、履歴、アカウントデータ、設定は保持されます。" },
     { "name": "settings_private_cache_clear_all", "value": "すべてのキャッシュを消去" },
-    { "name": "settings_private_cache_clear_all_hint", "value": "再生成可能なプライベートキャッシュをすべて削除します。" },
     { "name": "settings_private_cache_wait", "value": "お待ちください" },
     { "name": "settings_private_cache_clear_a11y", "value": "{0} のキャッシュを消去" },
     { "name": "settings_private_cache_clear_failed", "value": "プライベートキャッシュを消去できません。" },
