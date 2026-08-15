@@ -73,15 +73,24 @@
 - `240b2cd`：详情页从“全屏加载态”改为**首帧直接画点击行的封面快照**（seed）。
 - `f68cbb7`：封面按真实宽高比在固定 124×175 槽内绘制（`heroCoverFittedWidth/Height`）。
 
-### 退化链路（源码证据）
+### 退化链路（源码证据 + 已确认的因果链）
 
-1. seed 首帧：`applySeedSnapshot()` 用 `seed.thumbnailUrl`（列表缩略图）立即铺 Hero。
-2. 验证响应到达：`applyVerifiedDetailSnapshot()` 把 `detail.coverUrl`（详情原图）整体替换
-   进 Hero 的 `Image()`，URL 变了 → 旧位图被丢弃、新位图未就绪。
-3. `f68cbb7` 之后，sourceWidth/sourceHeight 从“未知”变为“已知”，图片从
-   `Contain 铺满槽` 切换为 `Fill 按真实比例`，同一帧内图片渲染尺寸也会变化。
-4. 首帧合成发生在新页面过渡（NavDestination push）期间，Hero 卡片位置随过渡帧移动；
-   一旦图片重载与过渡重叠，就会出现“封面卡片在下半部/中间闪一帧”的观感。
+1. **引入点是 `240b2cd`（详情页首帧改为点击行快照），不是封面加载本身。**
+   该提交之前，详情首帧是全屏 `PageLoadingState`，验证数据到达后 Hero 才一次性出现，
+   没有第二次突变，因此没有闪跳。
+2. seed 首帧：`applySeedSnapshot()` 用 `seed.thumbnailUrl`（列表缩略图）立即铺 Hero。
+3. 验证响应到达：`applyVerifiedDetailSnapshot()` 在**同一个状态提交**里同时发生：
+   a. `detail` 被整体替换，`GalleryHero` 直接读 `detail.coverUrl`，URL 从缩略图换成
+      详情原图 → Image 卸载旧位图、加载新位图（重载窗口）；
+   b. `heroCoverHasSourceSize()` 从种子尺寸切到验证尺寸（`f68cbb7` 之后图片从
+      `Contain 铺满槽` 切换为 `Fill 按真实比例`）；
+   c. `isDetailReadyForCurrentGallery` 变 true，`GalleryInformation`、预览等区块
+      在同一帧插入 List。
+4. 当前修复（`displayedCoverUrl` + `pendingCoverUrl` 原子换图）拆掉了 a：验证帧不再
+   重载位图，因此闪窗消失。这解释了“现在已经没有这个问题了”。
+5. **未实证部分**：上述突变表现为“整张卡片在页面下半部闪一帧”的具体几何，源码
+   无法直接推出；需要临时恢复旧渲染逻辑做 bisect 构建 + 逐帧抓图才能实证。
+   在获得该帧前，下半部几何保持 `OPEN`，不许声称已完全解释。
 
 ### 为什么 NextE 不出现
 
