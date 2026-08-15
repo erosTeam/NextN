@@ -5,3 +5,4 @@ export { MangaRenderingServiceSettingsPage } from './pages/MangaRenderingService
 export { BrowseDensitySettingsPage } from './pages/BrowseDensitySettingsPage'
 export { ContentFiltersPage } from './pages/ContentFiltersPage'
 export { AboutPage } from './pages/AboutPage'
+export { TagTranslationSettingsPage } from './pages/TagTranslationSettingsPage'

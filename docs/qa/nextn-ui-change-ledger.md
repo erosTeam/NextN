@@ -3,6 +3,33 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Browse title-bar menu collapse (search/browse options direct) — 2026-08-15
+
+- **Why newly actionable:** the user reports that adding the random-gallery
+  action grew the Browse title-bar menu to four items (搜索 / 浏览选项 /
+  随机画廊 / 列表样式). The intended HDS title-bar shape is `maxCount=3`:
+  the two highest-frequency commands stay direct and the system automatically
+  folds the trailing items into the overflow menu.
+- **Whole parent-tree boundary:** `Index.rootTitleBar() → content['menu']`
+  for `activeTab === 0` only. No navigation, route, action handler, other tab
+  menu, or Browse behavior changes.
+- **Reference boundary:** NextE `Index.searchMenu()` uses the same
+  `value[]+maxCount` HDS menu shape with `maxCount: 3` and Search first; the
+  HDS title bar auto-collapses trailing items into the overflow menu.
+- **Exact change:** reorder the Latest menu to
+  `[搜索, 浏览选项, 列表样式, 随机画廊]` and non-Latest to
+  `[搜索, 列表样式, 随机画廊]`; set `maxCount: 3` (was
+  `browseMenuItems.length`, which exposed every item). The trailing layout
+  and random-gallery entries are the items that collapse into the overflow.
+- **Verification plan:** inspect the exact diff and build the signed Debug
+  HAP; on the selected device observe the Browse title bar with 搜索 and
+  浏览选项 direct, and 随机画廊 plus 列表样式 reachable from the overflow
+  menu, then repeat on a non-Latest source. Same-state, same-viewport NextE
+  comparison remains required before any visual-parity claim.
+- **Current status:** source applied; signed build and device observation
+  pending.
+
+
 ## OPEN — App icon layered-image resource — 2026-08-15
 
 - **Why newly actionable:** the user required the NextE app-icon mechanism
@@ -24,6 +51,128 @@ authorize an edit, replace a device comparison, or define product completion.
   required before any visual-parity claim.
 - **Current status:** media resources and entry wiring are applied in source;
   signed build and device observation are pending.
+
+## OPEN — Settings residual NextE copy alignment — 2026-08-15
+
+- **Why newly actionable:** the user required a complete Settings-copy audit
+  with NextE wording verbatim. A full four-locale comparison of the common
+  string catalogs found five Settings-surface keys still diverging from
+  NextE: the Account destination title, the root Download row, the root
+  About row (ja), and two Reader Settings labels (ja). All five are
+  function-identical controls with a direct NextE counterpart.
+- **Whole parent-tree boundary:** only string leaf values change.
+  `Index` account/download/about destination title bars and
+  `SettingsPage(ROOT) → MainSection` rows share
+  `settings_account`/`settings_download`/`settings_about`;
+  `SettingsPage(READER) → ReaderPresentationListItems → 表示と画面 group`
+  owns `settings_reader_double_page` (+ its direct accessibility mirror) and
+  `SettingsPage(READER) → タップ領域 group` owns
+  `settings_reader_tap_zone_l_shaped`. No grouping, order, route, behavior,
+  persistence, or geometry changes.
+- **Reference boundary and exact change:** NextE values copied verbatim:
+  zh_CN `settings_account` `账户 → 账号`; base/en_US `settings_download`
+  `Download → Downloads`; ja_JP `settings_about` `情報 → バージョン情報`;
+  ja_JP `settings_reader_double_page` `見開き表示 → 両ページモード` with its
+  direct accessibility mirror `見開き表示、{0} → 両ページモード、{0}`; ja_JP
+  `settings_reader_tap_zone_l_shaped` `L字型 → L 字型`. The mirrored a11y key
+  has no NextE counterpart and follows its visible label per the
+  Reader-enhancement Japanese-label precedent.
+- **Explicit exclusions:** `settings_cache` remains INTENTIONAL (NextN
+  private-cache owner, ledger-recorded); `tab_history` 历史记录 remains
+  user-directed. Download queue/search/status/notification labels, History
+  page empty and day labels, `common_refresh_failed`, `about_tagline`,
+  `search_open_gallery_link`, and `reader_comic_translation_failed` are
+  outside the SettingsPage tree and are flagged for a separate decision, not
+  changed here.
+- **Verification plan:** parse all four locale catalogs, run a signed build,
+  then on the selected device observe the root 我的 rows (账号/下载/关于), the
+  Account destination title, and the routed Reader Settings Japanese labels
+  without selecting values. Same-state, same-viewport NextE comparison
+  remains required before any visual-parity claim.
+- **Current status:** the five leaf values are applied in source; the signed
+  build and device observation are pending.
+
+## OPEN — Tag translation settings destination hierarchy — 2026-08-15
+
+- **Why newly actionable:** the user required the real NextE hierarchy instead
+  of the flattened Advanced layout: 我的 → 高级 → 标签翻译 (entry row) →
+  dedicated 标签翻译 destination containing 启用标签翻译 / 翻译数据库 /
+  立即更新. The old surface flattened the dictionary rows into Advanced beside
+  unrelated translation consumers and hid the enable switch under 界面.
+- **Whole parent-tree boundary:** `Index settings navigation →
+  SettingsPage(ROOT) → Advanced destination → SettingsPage(surface=ADVANCED)
+  → SecondaryListScaffold → TranslationCapabilitiesGroup`; the new leaf
+  `Index → HdsNavDestination(tagTranslationSettings) →
+  TagTranslationSettingsPage → SecondaryListScaffold → one
+  NextNGroupedListSection (启用标签翻译 switch → 翻译数据库 status row →
+  立即更新 action row)` plus one optional error `ListItem`. The 界面
+  `BrowsePresentationGroup` loses only its old 标签翻译 switch. No list,
+  account, reader, download, search, or dictionary behavior changes.
+- **Reference boundary:** current NextE `EhSettingsPage →
+  TagTranslationSettingsPage` keeps the capability under its own 标签翻译
+  destination with the enable switch, installed-dictionary status, and
+  immediate-update action on one surface. All user-visible copy is taken
+  verbatim from NextE in base/zh_CN/en_US/ja_JP.
+- **Exact change:** add `TagTranslationSettingsPage.ets` (enable switch bound
+  to `BrowsePresentationService.showTranslatedTagLabels`, 翻译数据库 trailing
+  row count/未安装 via `TagTranslationRepository.status`, 立即更新 via
+  `TagTranslationUpdateService.updateFromPublicRelease`); remove the old
+  Advanced `TagDictionaryRows` (翻译数据库/立即更新) and all dictionary
+  status/update state and handlers from `SettingsPage`; remove the 界面
+  `settings_gallery_tag_translations` switch row and its four locale keys;
+  insert a 标签翻译 entry row (textformat icon, trailing 开/关) between
+  漫画翻译 and 翻译来源 in `TranslationCapabilitiesGroup`; wire
+  `ROUTE_TAG_TRANSLATION_SETTINGS`, `pushTagTranslationSettings()`,
+  `tagTranslationSettingsDestination()`, and `onOpenTagTranslation` in
+  `feature/settings/src/main/ets/Index.ets`. The route is deliberately not
+  added to `isSettingsRoute()` so its back action returns to Advanced rather
+  than being replaced as a root settings route.
+- **Verification plan:** inspect the scoped Settings/resource/ledger diff,
+  parse all four locale catalogs, run a signed build, then on the selected
+  device observe 我的 → 高级 → 标签翻译 entry with its trailing state, the
+  subpage rows and copy, back returning to Advanced, and 界面 no longer
+  containing a 标签翻译 switch. Same-state, same-viewport NextE comparison is
+  still required before any visual-parity claim.
+- **Unresolved risk:** source/build cannot prove the routed destination,
+  every locale, dictionary status/update states, error copy, or full visual
+  parity. Device observation remains pending.
+
+## OPEN — Signed build profile persistence for DevEco — 2026-08-15
+
+- **Why newly actionable:** the user reported that the signing configuration
+  had disappeared and builds no longer worked, then demanded the NextE build
+  mechanism. Root cause: the old `scripts/build-hvigor-signed.sh` overwrote
+  the public `build-profile.json5` with `build-profile.local.json5` before
+  every build and restored an unsigned template afterwards, so DevEco opened
+  the project without any signing config unless the user manually re-ran a
+  script.
+- **Whole parent-tree boundary:** repository build tooling only:
+  `build-profile.json5`, `build-profile.local.json5`, `scripts/`
+  (`build-hvigor-signed.sh`, `setup-local-build-profile.sh`,
+  `check-public-build-profile.sh`), `.githooks/pre-commit` + `pre-push`, and
+  `git config core.hooksPath`. No product UI, routing, data, or runtime
+  behavior changes.
+- **Reference boundary:** NextE's `scripts/setup-local-build-profile.sh`,
+  `scripts/check-public-build-profile.sh`, and `.githooks` mechanism: install
+  the local signed profile once, mark `build-profile.json5` as
+  `skip-worktree`, and let both DevEco and CLI builds read the same persistent
+  file.
+- **Exact change:** `build-hvigor-signed.sh` now only verifies that
+  `build-profile.json5` contains `signingConfigs` and then runs `hvigorw`
+  (no overwrite, no restore). `setup-local-build-profile.sh` copies
+  `build-profile.local.json5` into `build-profile.json5`, sets
+  `skip-worktree`, and installs the git hooks path; the public profile guards
+  block staging/pushing local signing material.
+- **Verification plan and current status:** `git ls-files -v
+  build-profile.json5` reports `S` (skip-worktree); the worktree file contains
+  both signing configs; `scripts/build-hvigor-signed.sh debug` built
+  successfully and the signing config remained in place afterwards; HEAD still
+  holds the public unsigned template and `check-public-build-profile.sh
+  --head` passes. A fresh clone needs one `setup-local-build-profile.sh` run,
+  after which DevEco and CLI builds use the same persistent file with no
+  manual per-build handling.
+- **Unresolved risk:** an actual DevEco Studio GUI build was not launched or
+  observed; the file-persistence contract is source-verified only.
 
 ## OPEN — Root 我的 tab and History destination — 2026-08-15
 

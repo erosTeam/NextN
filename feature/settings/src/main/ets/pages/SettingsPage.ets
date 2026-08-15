@@ -14,7 +14,6 @@ import {
   LayoutSafeAreaState,
   LLM_CONSUMER_COMMENT_TRANSLATION,
   LLM_CONSUMER_MANGA_TRANSLATION,
-  NhTagTranslationStatus,
   NhReaderBackgroundMode,
   NhReaderImageScalingQuality,
   NhReaderMode,
@@ -66,9 +65,6 @@ import {
   NhSearchOptions,
   NhSearchSort,
   TagTranslationRepository,
-  TagDictionaryUpdateAttempt,
-  TagDictionaryUpdateFailure,
-  TagTranslationUpdateService,
   ThemeTokens,
   ThemeColorOption,
   ThemeColorSettings,
@@ -149,29 +145,12 @@ export enum SettingsSurface {
 }
 
 /**
- * Presentation-only failure codes. TagTranslationUpdateService deliberately
- * keeps its transport and parsing failures raw for diagnostics; Settings
- * maps the user-visible result at this boundary instead of treating protocol
- * text as localized copy.
- */
-class TagDictionaryUiErrorCode {
-  static readonly DICTIONARY_ASSET: string = 'dictionary_asset'
-  static readonly CONTENT_VALIDATION: string = 'content_validation'
-  static readonly LOCAL_STORAGE: string = 'local_storage'
-}
-
-/**
  * Settings keeps NextE's grouped native-list grammar: HDS rows carry the
  * hierarchy and actions, while the surrounding sections only explain the
  * capability boundary. No setting here implies an unavailable remote action.
  */
 @ComponentV2
 export struct SettingsPage {
-  @Local tagDictionaryStatus: NhTagTranslationStatus = new NhTagTranslationStatus()
-  @Local tagDictionaryRowCount: number = 0
-  @Local tagDictionaryStatusKnown: boolean = false
-  @Local isUpdatingTagDictionary: boolean = false
-  @Local tagDictionaryError: string = ''
   @Local readerCacheStatus: ReaderImageCacheStatus = new ReaderImageCacheStatus()
   @Local isLoadingPrivateCache: boolean = false
   @Local isClearingPrivateCache: boolean = false
@@ -259,6 +238,7 @@ export struct SettingsPage {
   @Event onOpenAbout?: () => void
   @Event onOpenHistory?: () => void
   @Event onOpenContentFilters?: () => void
+  @Event onOpenTagTranslation?: () => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
 
   aboutToAppear(): void {
@@ -520,13 +500,6 @@ export struct SettingsPage {
     })
   }
 
-  private setShowTranslatedTagLabels(value: boolean): void {
-    this.browsePresentationError = ''
-    BrowsePresentationService.setShowTranslatedTagLabels(this.context(), value).catch((): void => {
-      this.browsePresentationError = AppStrings.get('settings_browse_presentation_save_failed')
-    })
-  }
-
   private setListCardFixedHeight(value: boolean): void {
     this.browsePresentationError = ''
     BrowsePresentationService.setListCardFixedHeight(this.context(), value).catch((): void => {
@@ -755,114 +728,8 @@ export struct SettingsPage {
     return override > 0 ? override : galleryBaseMinColumnWidth(mode)
   }
 
-  private async loadTagDictionaryStatus(): Promise<void> {
-    this.tagDictionaryStatusKnown = false
-    try {
-      this.applyTagDictionaryStatus(await TagTranslationRepository.status(this.context()))
-    } catch (_error) {
-      this.tagDictionaryError = AppStrings.get('settings_tag_translation_status_unavailable')
-    }
-  }
-
   private async loadAdvancedSettings(): Promise<void> {
-    await Promise.all([
-      this.loadTagDictionaryStatus(),
-      NhClipboardLinkSettings.restore(this.context()),
-    ])
-  }
-
-  private async updateTagDictionary(): Promise<void> {
-    if (this.isUpdatingTagDictionary) {
-      return
-    }
-    this.isUpdatingTagDictionary = true
-    this.tagDictionaryError = ''
-    try {
-      this.applyTagDictionaryStatus(await TagTranslationUpdateService.updateFromPublicRelease(this.context()))
-    } catch (error) {
-      this.tagDictionaryError = this.tagDictionaryErrorMessage(error as Error)
-    } finally {
-      this.isUpdatingTagDictionary = false
-    }
-  }
-
-  private tagDictionaryErrorMessage(error: Error): string {
-    if (!(error instanceof TagDictionaryUpdateFailure)) {
-      return AppStrings.get('settings_tag_translation_error_update')
-    }
-    const failure: TagDictionaryUpdateFailure = error as TagDictionaryUpdateFailure
-    const phase: string = this.tagDictionaryPhaseLabel(failure.phase)
-    const attempts: string = this.tagDictionaryAttemptsLabel(failure.attempts)
-    const retained: string = failure.dictionaryRetained
-      ? AppStrings.get('settings_tag_translation_error_retained')
-      : ''
-    if (attempts.length === 0) {
-      return AppStrings.format('settings_tag_translation_error_details_without_attempts', [phase, retained]).trim()
-    }
-    return AppStrings.format('settings_tag_translation_error_details', [phase, attempts, retained]).trim()
-  }
-
-  private tagDictionaryPhaseLabel(phase: string): string {
-    switch (phase) {
-      case TagDictionaryUiErrorCode.DICTIONARY_ASSET:
-        return AppStrings.get('settings_tag_translation_error_phase_asset')
-      case TagDictionaryUiErrorCode.CONTENT_VALIDATION:
-        return AppStrings.get('settings_tag_translation_error_phase_content')
-      case TagDictionaryUiErrorCode.LOCAL_STORAGE:
-        return AppStrings.get('settings_tag_translation_error_phase_local')
-      default:
-        return AppStrings.get('settings_tag_translation_error_phase_update')
-    }
-  }
-
-  private tagDictionaryAttemptsLabel(attempts: TagDictionaryUpdateAttempt[]): string {
-    const labels: string[] = []
-    for (let index: number = 0; index < attempts.length; index++) {
-      const label: string = this.tagDictionaryAttemptLabel(attempts[index])
-      if (label.length > 0 && labels.indexOf(label) < 0) {
-        labels.push(label)
-      }
-    }
-    return labels.join(AppStrings.get('settings_tag_translation_error_separator'))
-  }
-
-  private tagDictionaryAttemptLabel(attempt: TagDictionaryUpdateAttempt): string {
-    const source: string = attempt.source === 'direct'
-      ? AppStrings.get('settings_tag_translation_error_source_direct')
-      : attempt.source === 'mirror'
-        ? AppStrings.get('settings_tag_translation_error_source_mirror')
-        : ''
-    if (attempt.outcome === 'http' && attempt.httpStatus > 0) {
-      return source.length > 0
-        ? AppStrings.format('settings_tag_translation_error_http', [source, attempt.httpStatus.toString()])
-        : AppStrings.format('settings_tag_translation_error_http_unknown', [attempt.httpStatus.toString()])
-    }
-    if (attempt.outcome === 'transport') {
-      return source.length > 0
-        ? AppStrings.format('settings_tag_translation_error_transport', [source])
-        : AppStrings.get('settings_tag_translation_error_transport_unknown')
-    }
-    return source.length > 0
-      ? AppStrings.format('settings_tag_translation_error_invalid', [source])
-      : AppStrings.get('settings_tag_translation_error_invalid_unknown')
-  }
-
-  private applyTagDictionaryStatus(status: NhTagTranslationStatus): void {
-    this.tagDictionaryStatus = status
-    this.tagDictionaryRowCount = status.rowCount
-    this.tagDictionaryStatusKnown = true
-  }
-
-  private tagDictionaryStatusText(): string {
-    if (this.isUpdatingTagDictionary) {
-      return AppStrings.get('settings_tag_translation_updating')
-    }
-    if (!this.tagDictionaryStatusKnown) {
-      return ''
-    }
-    return this.tagDictionaryRowCount > 0
-      ? this.tagDictionaryRowCount.toString()
-      : AppStrings.get('settings_tag_translation_not_installed')
+    await NhClipboardLinkSettings.restore(this.context())
   }
 
   private readerPageCacheStat(): CacheStat {
@@ -2095,28 +1962,6 @@ export struct SettingsPage {
   }
 
   @Builder
-  private TagDictionaryRows() {
-    NextNListRow({
-      leadingIcon: $r('sys.symbol.textformat'),
-      title: AppStrings.get('settings_tag_translation_local_title'),
-      trailingText: this.tagDictionaryStatusText(),
-      showChevron: false,
-    })
-    this.RowDivider()
-    NextNListRow({
-      leadingIcon: $r('sys.symbol.arrow_clockwise'),
-      title: AppStrings.get('settings_tag_translation_update'),
-      subtitle: AppStrings.get('settings_tag_translation_update_hint'),
-      trailingText: this.isUpdatingTagDictionary ? AppStrings.get('settings_tag_translation_updating') : '',
-      showChevron: false,
-      isEnabled: !this.isUpdatingTagDictionary,
-      onAction: () => {
-        this.updateTagDictionary()
-      },
-    })
-  }
-
-  @Builder
   private ClipboardLinkGroup() {
     NextNGroupedListSection() {
       NextNListRow({
@@ -3155,24 +3000,6 @@ export struct SettingsPage {
           this.setShowGalleryTags(value)
         },
       })
-      this.RowDivider()
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.translate'),
-        title: AppStrings.get('settings_gallery_tag_translations'),
-        hasSwitch: true,
-        checked: this.browsePresentation.showTranslatedTagLabels,
-        showChevron: false,
-        accessibilityLabel: AppStrings.format('settings_row_a11y', [
-          AppStrings.get('settings_gallery_tag_translations'),
-          this.toggleStateLabel(this.browsePresentation.showTranslatedTagLabels),
-        ]),
-        onAction: (): void => {
-          this.setShowTranslatedTagLabels(!this.browsePresentation.showTranslatedTagLabels)
-        },
-        onSwitchChange: (value: boolean): void => {
-          this.setShowTranslatedTagLabels(value)
-        },
-      })
       if (supportsGalleryColumnDensity(this.browsePresentation.mode)) {
         this.RowDivider()
         NextNListRow({
@@ -3571,7 +3398,20 @@ export struct SettingsPage {
         },
       })
       this.RowDivider()
-      this.TagDictionaryRows()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.textformat'),
+        title: AppStrings.get('settings_tag_translation_title'),
+        trailingText: this.toggleStateLabel(this.browsePresentation.showTranslatedTagLabels),
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_tag_translation_title'),
+          this.toggleStateLabel(this.browsePresentation.showTranslatedTagLabels),
+        ]),
+        onAction: (): void => {
+          if (this.onOpenTagTranslation) {
+            this.onOpenTagTranslation()
+          }
+        },
+      })
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.cloud'),
@@ -3681,11 +3521,6 @@ export struct SettingsPage {
           }
           ListItem() {
             this.TranslationCapabilitiesGroup()
-          }
-          if (this.tagDictionaryError.length > 0) {
-            ListItem() {
-              this.GroupNote(this.tagDictionaryError)
-            }
           }
           ListItem() {
             this.ContentFiltersGroup()

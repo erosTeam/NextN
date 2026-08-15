@@ -18,10 +18,10 @@ esac
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 project_root="$(cd "$script_dir/.." && pwd)"
 public_profile="$project_root/build-profile.json5"
-local_profile="$project_root/build-profile.local.json5"
 
-if [[ ! -f "$local_profile" ]] || ! grep -q '"signingConfigs"' "$local_profile"; then
-  echo "ERROR: missing local signing configuration: build-profile.local.json5" >&2
+if [[ ! -f "$public_profile" ]] || ! grep -q '"signingConfigs"' "$public_profile"; then
+  echo "ERROR: build-profile.json5 has no signingConfigs." >&2
+  echo "Install the local signing profile with scripts/setup-local-build-profile.sh before signed builds." >&2
   exit 2
 fi
 
@@ -46,16 +46,6 @@ if ! command -v hvigorw >/dev/null 2>&1; then
   echo "ERROR: hvigorw not found. Install DevEco command-line tools or set DEVECO_STUDIO_APP." >&2
   exit 127
 fi
-
-backup_profile="$(mktemp "${TMPDIR:-/tmp}/nextn-build-profile.XXXXXX")"
-cleanup() {
-  cp "$backup_profile" "$public_profile"
-  rm -f "$backup_profile"
-}
-trap cleanup EXIT
-
-cp "$public_profile" "$backup_profile"
-cp "$local_profile" "$public_profile"
 
 cd "$project_root"
 hvigorw assembleHap --mode module -p product="$product" -p buildMode="$build_mode" --no-daemon
