@@ -745,7 +745,7 @@
     { "name": "reader_enhancement_applied", "value": "图像增强已应用" },
     { "name": "reader_enhancement_not_applied", "value": "此页无法应用图像增强" },
     { "name": "settings_content_filters", "value": "内容过滤" },
-    { "name": "settings_content_filters_subtitle", "value": "在不修改请求的情况下，仅本地隐藏匹配的图库标题或公开评论。" },
+    { "name": "settings_content_filters_subtitle", "value": "在本机隐藏命中的画廊和评论。" },
     { "name": "settings_content_filters_a11y", "value": "打开本地内容过滤" },
     { "name": "settings_appearance_summary", "value": "{0} · {1}" },
     { "name": "settings_appearance_a11y", "value": "{0}，{1}，{2}" },

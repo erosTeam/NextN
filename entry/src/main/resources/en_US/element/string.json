@@ -745,7 +745,7 @@
     { "name": "reader_enhancement_applied", "value": "Image enhancement applied" },
     { "name": "reader_enhancement_not_applied", "value": "Image enhancement unavailable for this page" },
     { "name": "settings_content_filters", "value": "Content filters" },
-    { "name": "settings_content_filters_subtitle", "value": "Locally hide matching gallery titles or public comments without changing requests." },
+    { "name": "settings_content_filters_subtitle", "value": "Hide matched galleries and comments on this device." },
     { "name": "settings_content_filters_a11y", "value": "Open local content filters" },
     { "name": "settings_appearance_summary", "value": "{0} · {1}" },
     { "name": "settings_appearance_a11y", "value": "{0}, {1}, {2}" },

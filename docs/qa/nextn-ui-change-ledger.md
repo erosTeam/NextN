@@ -222,6 +222,33 @@ authorize an edit, replace a device comparison, or define product completion.
   remain OPEN. Raw artifacts are local-only under
   `.hvigor/outputs/option-policy-footnotes-20260815T0900/`.
 
+## OPEN — Content-filter settings subtitle — 2026-08-15
+
+- **Why newly actionable:** the user explicitly rejected implementation-policy
+  prose in routine settings. The current subtitle also says that only a gallery
+  title is hidden, while the actual local filter removes matching gallery and
+  comment entries from their displayed result collections.
+- **Whole parent-tree boundary:** `Index Settings tab → SettingsPage(ROOT) →
+  Advanced HdsNavDestination(SettingsSurface.ADVANCED) → Column →
+  SecondaryListScaffold → ListItem(ContentFiltersGroup) →
+  NextNGroupedListSection → NextNListRow`. Its action continues to the
+  existing independent `ContentFiltersPage`; neither route nor its page-level
+  explanatory note is changed.
+- **Reference boundary:** the closest NextE `EhSettingsPage` local-block row
+  uses the same settings-list relationship and directly supplies the four
+  locale subtitle values. NextE-only block criteria and the title terminology
+  are not transferred.
+- **Exact change:** replace only `settings_content_filters_subtitle` in the
+  four existing resource catalogs with the direct reference wording: matching
+  galleries and comments are hidden on this device. Keep the NextN title,
+  icon, action, accessibility text, rule model, request behavior, persistence,
+  and independent content-filter page unchanged.
+- **Verification plan:** inspect the exact resource-only diff and signed
+  build. On the foreground-confirmed Settings → Advanced route, observe the
+  row title and its replacement subtitle without opening, adding, editing, or
+  deleting a rule. A same-state, same-viewport reference comparison remains
+  required before a visual-parity claim.
+
 ## OPEN — Search recent-history presentation — 2026-08-15
 
 - **Why newly actionable:** the user repeated an earlier, unresolved objection
