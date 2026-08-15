@@ -2,7 +2,9 @@ import {
   ContentFilterService,
   ContentFilterState,
   AppStrings,
+  COMMENT_TRANSLATION_DISPLAY_BILINGUAL,
   CommentTranslationService,
+  CommentTranslationSettingsState,
   InlineRetryNotice,
   LayoutSafeAreaState,
   NhApiClient,
@@ -16,6 +18,7 @@ import {
   PullRefreshListScaffold,
   ThemeTokens,
   connectAccountSession,
+  connectCommentTranslationSettings,
   connectContentFilters,
   connectLayoutSafeArea,
   connectLlmSourceProfiles,
@@ -66,6 +69,7 @@ export struct GalleryCommentsPage {
   @Local contentFilters: ContentFilterState = connectContentFilters()
   @Local accountSession: AccountSessionState = connectAccountSession()
   @Local sources: LlmSourceProfilesState = connectLlmSourceProfiles()
+  @Local commentTranslationSettings: CommentTranslationSettingsState = connectCommentTranslationSettings()
   @Local loadedGalleryId: number = 0
   @Local isLoading: boolean = false
   @Local errorMessage: string = ''
@@ -139,6 +143,7 @@ export struct GalleryCommentsPage {
     this.loadedGalleryId = this.galleryId
     this.errorMessage = ''
     this.isLoading = false
+    this.scheduleAutoTranslate()
     return true
   }
 
@@ -181,12 +186,15 @@ export struct GalleryCommentsPage {
   }
 
   private canTranslate(comment: NhComment): boolean {
-    return this.commentTranslationConfigured() && this.replyBody(comment).trim().length > 0
+    return this.commentTranslationSettings.enabled &&
+      this.commentTranslationConfigured() &&
+      this.replyBody(comment).trim().length > 0
   }
 
   private displayedCommentBody(comment: NhComment): string {
     const state: CommentTranslationCardState | null = this.translationState(comment.commentId)
-    if (state !== null && state.shown && state.translated.length > 0) {
+    if (state !== null && state.shown && this.commentTranslationSettings.enabled &&
+      state.translated.length > 0) {
       return state.translated
     }
     const body: string = this.replyBody(comment)
@@ -200,7 +208,43 @@ export struct GalleryCommentsPage {
 
   private isTranslationShown(comment: NhComment): boolean {
     const state: CommentTranslationCardState | null = this.translationState(comment.commentId)
-    return state !== null && state.shown && state.translated.length > 0
+    return state !== null && state.shown && this.commentTranslationSettings.enabled &&
+      state.translated.length > 0
+  }
+
+  private translatedBody(comment: NhComment): string {
+    const state: CommentTranslationCardState | null = this.translationState(comment.commentId)
+    return state !== null && state.translated.length > 0
+      ? state.translated
+      : this.replyBody(comment)
+  }
+
+  private isBilingualShown(comment: NhComment): boolean {
+    return this.isTranslationShown(comment) &&
+      this.commentTranslationSettings.displayMode === COMMENT_TRANSLATION_DISPLAY_BILINGUAL
+  }
+
+  private scheduleAutoTranslate(): void {
+    if (!this.commentTranslationSettings.enabled || !this.commentTranslationSettings.autoTranslate) {
+      return
+    }
+    setTimeout((): void => {
+      this.autoTranslateComments()
+    }, 0)
+  }
+
+  private async autoTranslateComments(): Promise<void> {
+    const galleryId: number = this.galleryId
+    for (let index: number = 0; index < this.comments.length; index++) {
+      if (this.galleryId !== galleryId || this.loadedGalleryId !== galleryId) {
+        return
+      }
+      const comment: NhComment = this.comments[index]
+      if (this.isTranslationShown(comment) || this.isTranslationLoading(comment)) {
+        continue
+      }
+      await this.toggleOrTranslate(comment)
+    }
   }
 
   private translationActionLabel(comment: NhComment): string {
@@ -264,6 +308,7 @@ export struct GalleryCommentsPage {
       this.rawComments = comments
       this.applyContentFilters()
       this.loadedGalleryId = this.galleryId
+      this.scheduleAutoTranslate()
     } catch (error) {
       if (!this.isCurrentRequest(generation)) {
         return
@@ -771,11 +816,28 @@ export struct GalleryCommentsPage {
       .width('100%')
       .alignItems(VerticalAlign.Center)
       this.ReplyReferences(comment)
-      Text(this.displayedCommentBody(comment))
+      if (this.isBilingualShown(comment)) {
+        Column({ space: ThemeTokens.SPACE_XS }) {
+          Text(this.replyBody(comment))
+            .width('100%')
+            .fontSize(ThemeTokens.FONT_SIZE_BODY)
+            .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
+            .fontColor(ThemeTokens.TEXT_PRIMARY)
+          Text(this.translatedBody(comment))
+            .width('100%')
+            .fontSize(ThemeTokens.FONT_SIZE_BODY)
+            .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
+            .fontColor(ThemeTokens.TEXT_PRIMARY)
+        }
         .width('100%')
-        .fontSize(ThemeTokens.FONT_SIZE_BODY)
-        .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
-        .fontColor(ThemeTokens.TEXT_PRIMARY)
+        .alignItems(HorizontalAlign.Start)
+      } else {
+        Text(this.displayedCommentBody(comment))
+          .width('100%')
+          .fontSize(ThemeTokens.FONT_SIZE_BODY)
+          .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
+          .fontColor(ThemeTokens.TEXT_PRIMARY)
+      }
       Row() {
         if (this.postedLabel(comment).length > 0) {
           Text(this.postedLabel(comment))

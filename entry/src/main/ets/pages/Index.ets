@@ -30,6 +30,8 @@ import {
 import {
   AboutPage,
   BrowseDensitySettingsPage,
+  CommentTranslationSettingsPage,
+  ComicTranslationSettingsPage,
   ComicTranslationSourcePage,
   MangaRenderingServiceSettingsPage,
   ContentFiltersPage,
@@ -129,6 +131,8 @@ const ROUTE_DOWNLOAD_SETTINGS: string = 'downloadSettings'
 const ROUTE_CACHE_SETTINGS: string = 'cacheSettings'
 const ROUTE_ADVANCED_SETTINGS: string = 'advancedSettings'
 const ROUTE_TAG_TRANSLATION_SETTINGS: string = 'tagTranslationSettings'
+const ROUTE_COMMENT_TRANSLATION_SETTINGS: string = 'commentTranslationSettings'
+const ROUTE_COMIC_TRANSLATION_SETTINGS: string = 'comicTranslationSettings'
 const ROUTE_ABOUT: string = 'about'
 const STATUS_BAR_LIGHT_CONTENT: string = '#FFFFFFFF'
 const STATUS_BAR_DARK_CONTENT: string = '#FF000000'
@@ -284,6 +288,8 @@ struct Index {
   private cacheSettingsScroller: Scroller = new Scroller()
   private advancedSettingsScroller: Scroller = new Scroller()
   private tagTranslationSettingsScroller: Scroller = new Scroller()
+  private commentTranslationSettingsScroller: Scroller = new Scroller()
+  private comicTranslationSettingsScroller: Scroller = new Scroller()
   private aboutScroller: Scroller = new Scroller()
   private historyScroller: Scroller = new Scroller()
   @Local private activeTab: number = 0
@@ -680,12 +686,20 @@ struct Index {
     this.stack.pushPathByName(ROUTE_READER_SUPER_RESOLUTION_MODELS, '')
   }
 
-  private pushTranslationSource(consumerId: string): void {
+  private pushTranslationSource(consumerId: string = LLM_CONSUMER_MANGA_TRANSLATION): void {
     this.stack.pushPathByName(ROUTE_TRANSLATION_SOURCE, new TranslationSourceRouteParams(consumerId))
   }
 
   private pushTagTranslationSettings(): void {
     this.stack.pushPathByName(ROUTE_TAG_TRANSLATION_SETTINGS, '')
+  }
+
+  private pushCommentTranslationSettings(): void {
+    this.stack.pushPathByName(ROUTE_COMMENT_TRANSLATION_SETTINGS, '')
+  }
+
+  private pushComicTranslationSettings(): void {
+    this.stack.pushPathByName(ROUTE_COMIC_TRANSLATION_SETTINGS, '')
   }
 
   private pushMangaRenderingService(): void {
@@ -1852,14 +1866,20 @@ struct Index {
       SettingsPage({
         surface: SettingsSurface.ADVANCED,
         scroller: this.advancedSettingsScroller,
+        onOpenCommentTranslation: (): void => {
+          this.pushCommentTranslationSettings()
+        },
+        onOpenComicTranslation: (): void => {
+          this.pushComicTranslationSettings()
+        },
         onOpenTagTranslation: (): void => {
           this.pushTagTranslationSettings()
         },
         onOpenContentFilters: (): void => {
           this.pushContentFilters()
         },
-        onOpenTranslationSource: (consumerId: string): void => {
-          this.pushTranslationSource(consumerId)
+        onOpenTranslationSource: (): void => {
+          this.pushTranslationSource()
         },
       })
     }
@@ -1876,6 +1896,39 @@ struct Index {
     .titleBar(nextNHdsTitle(AppStrings.get('settings_tag_translation_title')))
     .hideBackButton(false)
     .bindToScrollable([this.tagTranslationSettingsScroller])
+  }
+
+  @Builder
+  private commentTranslationSettingsDestination() {
+    HdsNavDestination() {
+      CommentTranslationSettingsPage({
+        scroller: this.commentTranslationSettingsScroller,
+        onOpenTranslationSource: (consumerId: string): void => {
+          this.pushTranslationSource(consumerId)
+        },
+      })
+    }
+    .titleBar(nextNHdsTitle(AppStrings.get('settings_comment_translation')))
+    .hideBackButton(false)
+    .bindToScrollable([this.commentTranslationSettingsScroller])
+  }
+
+  @Builder
+  private comicTranslationSettingsDestination() {
+    HdsNavDestination() {
+      ComicTranslationSettingsPage({
+        scroller: this.comicTranslationSettingsScroller,
+        onOpenTranslationSource: (consumerId: string): void => {
+          this.pushTranslationSource(consumerId)
+        },
+        onOpenMangaRenderingService: (): void => {
+          this.pushMangaRenderingService()
+        },
+      })
+    }
+    .titleBar(nextNHdsTitle(AppStrings.get('settings_reader_comic_translation')))
+    .hideBackButton(false)
+    .bindToScrollable([this.comicTranslationSettingsScroller])
   }
 
   @Builder
@@ -1972,6 +2025,10 @@ struct Index {
       this.advancedSettingsDestination()
     } else if (name === ROUTE_TAG_TRANSLATION_SETTINGS) {
       this.tagTranslationSettingsDestination()
+    } else if (name === ROUTE_COMMENT_TRANSLATION_SETTINGS) {
+      this.commentTranslationSettingsDestination()
+    } else if (name === ROUTE_COMIC_TRANSLATION_SETTINGS) {
+      this.comicTranslationSettingsDestination()
     } else if (name === ROUTE_HISTORY) {
       this.historyDestination()
     } else if (name === ROUTE_ABOUT) {

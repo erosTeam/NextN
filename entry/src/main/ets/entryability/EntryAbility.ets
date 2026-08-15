@@ -13,6 +13,7 @@ import {
   ImmersiveMaterialSettings,
   LayoutSafeAreaBridge,
   AppStrings,
+  CommentTranslationSettings,
   LanguageSettings,
   LlmSourceProfileRepository,
   MangaRenderingServiceSettings,
@@ -28,6 +29,7 @@ import {
   requestLoginRecoveryLaunch,
   publishNhClipboardGalleryCandidate,
   ScreenOrientationSettings,
+  TagTranslationSettings,
   TabletLayoutSettings,
   ThemeColorSettings,
   AppColorFavoritesSettings,
@@ -156,6 +158,10 @@ export default class EntryAbility extends UIAbility {
       // Keep the optional self-hosted renderer's non-secret invalidation state
       // live before a retained Reader can project a translated page.
       MangaRenderingServiceSettings.restore(this.context),
+      // Restore the comment-translation policy and the tag-dictionary
+      // preference/status summary before their settings surfaces mount.
+      CommentTranslationSettings.restore(this.context),
+      TagTranslationSettings.restore(this.context),
       // Resume only the durable, user-created private queue. Any process-killed
       // active task is restored as paused by the service before a user resumes it.
       // Keep the final startup outcome available to the retained Downloads

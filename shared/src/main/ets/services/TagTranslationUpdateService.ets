@@ -99,11 +99,13 @@ export class TagTranslationUpdateService {
   static async updateFromPublicRelease(
     context: common.UIAbilityContext,
     force: boolean = false,
+    preferMirror: boolean = false,
   ): Promise<NhTagTranslationStatus> {
     if (TagTranslationUpdateService.updateTask !== null) {
       return await TagTranslationUpdateService.updateTask
     }
-    const task: Promise<NhTagTranslationStatus> = TagTranslationUpdateService.updateInternal(context, force)
+    const task: Promise<NhTagTranslationStatus> =
+      TagTranslationUpdateService.updateInternal(context, force, preferMirror)
     TagTranslationUpdateService.updateTask = task
     try {
       return await task
@@ -117,6 +119,7 @@ export class TagTranslationUpdateService {
   private static async updateInternal(
     context: common.UIAbilityContext,
     force: boolean,
+    preferMirror: boolean,
   ): Promise<NhTagTranslationStatus> {
     let previous: NhTagTranslationStatus
     try {
@@ -127,7 +130,8 @@ export class TagTranslationUpdateService {
     const dictionaryRetained: boolean = previous.rowCount > 0
     const previousRelease: ReleaseDescriptor | null =
       TagTranslationUpdateService.storedReleaseDescriptor(previous.version)
-    const release: ReleaseDescriptor | null = await TagTranslationUpdateService.tryFetchReleaseDescriptor()
+    const release: ReleaseDescriptor | null =
+      await TagTranslationUpdateService.tryFetchReleaseDescriptor(preferMirror)
     if (!force && previous.rowCount > 0 && release !== null && previous.version === release.version) {
       return previous
     }
@@ -142,6 +146,7 @@ export class TagTranslationUpdateService {
         release,
         release === null && previous.rowCount > 0 && previousRelease !== null ? previousRelease.sha256 : '',
         dictionaryRetained,
+        preferMirror,
       )
       let storedVersion: string = artifact.version
       if (release !== null) {
@@ -191,9 +196,13 @@ export class TagTranslationUpdateService {
    * download URL. If it is unavailable, legacy imports retain the fixed-asset
    * path while an existing verified Release accepts only its known SHA-256.
    */
-  private static async tryFetchReleaseDescriptor(): Promise<ReleaseDescriptor | null> {
-    for (let index: number = 0; index < PUBLIC_RELEASE_SOURCES.length; index++) {
-      const source: PublicDictionarySource = PUBLIC_RELEASE_SOURCES[index]
+  private static async tryFetchReleaseDescriptor(
+    preferMirror: boolean,
+  ): Promise<ReleaseDescriptor | null> {
+    const sources: PublicDictionarySource[] =
+      TagTranslationUpdateService.orderedSources(PUBLIC_RELEASE_SOURCES, preferMirror)
+    for (let index: number = 0; index < sources.length; index++) {
+      const source: PublicDictionarySource = sources[index]
       const descriptor: ReleaseDescriptor | null = await TagTranslationUpdateService.fetchReleaseDescriptor(source)
       if (descriptor !== null) {
         return descriptor
@@ -303,10 +312,13 @@ export class TagTranslationUpdateService {
     expectedRelease: ReleaseDescriptor | null,
     requiredExistingSha256: string,
     dictionaryRetained: boolean,
+    preferMirror: boolean,
   ): Promise<DownloadArtifact> {
     const attempts: TagDictionaryUpdateAttempt[] = []
-    for (let index: number = 0; index < PUBLIC_DICTIONARY_SOURCES.length; index++) {
-      const source: PublicDictionarySource = PUBLIC_DICTIONARY_SOURCES[index]
+    const sources: PublicDictionarySource[] =
+      TagTranslationUpdateService.orderedSources(PUBLIC_DICTIONARY_SOURCES, preferMirror)
+    for (let index: number = 0; index < sources.length; index++) {
+      const source: PublicDictionarySource = sources[index]
       try {
         return await TagTranslationUpdateService.downloadToPrivateFile(
           context,
@@ -327,6 +339,28 @@ export class TagTranslationUpdateService {
       attempts,
       dictionaryRetained,
     )
+  }
+
+  /** Mirror-first when the user enables the mirror preference; otherwise direct-first. */
+  private static orderedSources(
+    sources: PublicDictionarySource[],
+    preferMirror: boolean,
+  ): PublicDictionarySource[] {
+    if (!preferMirror || sources.length < 2) {
+      return sources
+    }
+    const ordered: PublicDictionarySource[] = []
+    for (let index: number = 0; index < sources.length; index++) {
+      if (sources[index].label === 'mirror') {
+        ordered.push(sources[index])
+      }
+    }
+    for (let index: number = 0; index < sources.length; index++) {
+      if (sources[index].label !== 'mirror') {
+        ordered.push(sources[index])
+      }
+    }
+    return ordered
   }
 
   private static async downloadToPrivateFile(

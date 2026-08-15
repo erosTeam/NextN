@@ -1,4 +1,5 @@
 import { common } from '@kit.AbilityKit'
+import { SymbolGlyphModifier } from '@kit.ArkUI'
 import {
   AppStrings,
   BrowsePresentationService,
@@ -7,13 +8,18 @@ import {
   NextNListRow,
   NhTagTranslationStatus,
   SecondaryListScaffold,
+  TAG_TRANSLATION_UPDATE_EVERY_START,
+  TAG_TRANSLATION_UPDATE_MANUAL,
+  TagTranslationSettings,
+  TagTranslationSettingsState,
   TagDictionaryUpdateAttempt,
   TagDictionaryUpdateFailure,
   TagTranslationRepository,
-  TagTranslationUpdateService,
   ThemeTokens,
   connectBrowsePresentation,
+  connectTagTranslationSettings,
 } from 'shared'
+import { appMenuOptions } from 'shared'
 
 /**
  * Presentation-only failure codes. TagTranslationUpdateService deliberately
@@ -40,6 +46,8 @@ export struct TagTranslationSettingsPage {
   @Local tagDictionaryStatusKnown: boolean = false
   @Local isUpdatingTagDictionary: boolean = false
   @Local tagDictionaryError: string = ''
+  @Local tagSettings: TagTranslationSettingsState = connectTagTranslationSettings()
+  @Local updateModeMenuShown: boolean = false
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
   @Param scroller: Scroller = new Scroller()
 
@@ -75,7 +83,9 @@ export struct TagTranslationSettingsPage {
     this.isUpdatingTagDictionary = true
     this.tagDictionaryError = ''
     try {
-      this.applyTagDictionaryStatus(await TagTranslationUpdateService.updateFromPublicRelease(this.context()))
+      const count: number = await TagTranslationSettings.updateNow(this.context())
+      this.tagDictionaryRowCount = count
+      this.tagDictionaryStatusKnown = true
     } catch (error) {
       this.tagDictionaryError = this.tagDictionaryErrorMessage(error as Error)
     } finally {
@@ -147,7 +157,29 @@ export struct TagTranslationSettingsPage {
   private applyTagDictionaryStatus(status: NhTagTranslationStatus): void {
     this.tagDictionaryStatus = status
     this.tagDictionaryRowCount = status.rowCount
+    this.tagSettings.version = status.version
     this.tagDictionaryStatusKnown = true
+  }
+
+  private versionText(): string {
+    return this.tagSettings.version.length > 0
+      ? this.tagSettings.version
+      : AppStrings.get('settings_tag_translation_no_version')
+  }
+
+  private updateModeText(): string {
+    return this.tagSettings.updateMode === TAG_TRANSLATION_UPDATE_EVERY_START
+      ? AppStrings.get('settings_tag_translation_update_every_start')
+      : AppStrings.get('settings_tag_translation_update_manual')
+  }
+
+  private setUseCdn(value: boolean): void {
+    TagTranslationSettings.setUseCdn(this.context(), value).catch((): void => {})
+  }
+
+  private setUpdateMode(mode: string): void {
+    TagTranslationSettings.setUpdateMode(this.context(), mode).catch((): void => {})
+    this.updateModeMenuShown = false
   }
 
   private tagDictionaryStatusText(): string {
@@ -168,6 +200,28 @@ export struct TagTranslationSettingsPage {
       .strokeWidth(0.5)
       .color(ThemeTokens.DIVIDER)
       .margin({ left: ThemeTokens.SPACE_MD })
+  }
+
+  @Builder
+  private UpdateModeMenu() {
+    Menu() {
+      MenuItem({
+        content: AppStrings.get('settings_tag_translation_update_manual'),
+        symbolEndIcon: this.tagSettings.updateMode === TAG_TRANSLATION_UPDATE_MANUAL
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.setUpdateMode(TAG_TRANSLATION_UPDATE_MANUAL)
+      })
+      MenuItem({
+        content: AppStrings.get('settings_tag_translation_update_every_start'),
+        symbolEndIcon: this.tagSettings.updateMode === TAG_TRANSLATION_UPDATE_EVERY_START
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.setUpdateMode(TAG_TRANSLATION_UPDATE_EVERY_START)
+      })
+    }
   }
 
   build() {
@@ -201,6 +255,7 @@ export struct TagTranslationSettingsPage {
             NextNListRow({
               leadingIcon: $r('sys.symbol.externaldrive'),
               title: AppStrings.get('settings_tag_translation_local_title'),
+              subtitle: this.versionText(),
               trailingText: this.tagDictionaryStatusText(),
               showChevron: false,
             })
@@ -216,6 +271,50 @@ export struct TagTranslationSettingsPage {
                 this.updateTagDictionary()
               },
             })
+          }
+        }
+        ListItem() {
+          NextNGroupedListSection() {
+            NextNListRow({
+              leadingIcon: $r('sys.symbol.cloud'),
+              title: AppStrings.get('settings_tag_translation_cdn'),
+              subtitle: AppStrings.get('settings_tag_translation_cdn_hint'),
+              hasSwitch: true,
+              checked: this.tagSettings.useCdn,
+              showChevron: false,
+              accessibilityLabel: AppStrings.format('settings_row_a11y', [
+                AppStrings.get('settings_tag_translation_cdn'),
+                this.toggleStateLabel(this.tagSettings.useCdn),
+              ]),
+              onAction: (): void => {
+                this.setUseCdn(!this.tagSettings.useCdn)
+              },
+              onSwitchChange: (value: boolean): void => {
+                this.setUseCdn(value)
+              },
+            })
+            this.RowDivider()
+            Column() {
+              NextNListRow({
+                leadingIcon: $r('sys.symbol.clock'),
+                title: AppStrings.get('settings_tag_translation_update_mode'),
+                trailingText: this.updateModeText(),
+                trailingDropdown: true,
+                accessibilityLabel: AppStrings.format('settings_row_a11y', [
+                  AppStrings.get('settings_tag_translation_update_mode'),
+                  this.updateModeText(),
+                ]),
+                onAction: (): void => {
+                  this.updateModeMenuShown = true
+                },
+              })
+            }
+            .bindMenu(this.updateModeMenuShown, this.UpdateModeMenu, appMenuOptions({
+              placement: Placement.BottomRight,
+              onDisappear: (): void => {
+                this.updateModeMenuShown = false
+              },
+            }))
           }
         }
         if (this.tagDictionaryError.length > 0) {

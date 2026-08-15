@@ -8,12 +8,11 @@ import {
   CatalogPreferencesState,
   CacheStat,
   CommentTranslationService,
+  CommentTranslationSettingsState,
   ComicTranslationRuntimeService,
   LanguageSettings,
   LanguageState,
   LayoutSafeAreaState,
-  LLM_CONSUMER_COMMENT_TRANSLATION,
-  LLM_CONSUMER_MANGA_TRANSLATION,
   NhReaderBackgroundMode,
   NhReaderImageScalingQuality,
   NhReaderMode,
@@ -65,6 +64,7 @@ import {
   NhSearchOptions,
   NhSearchSort,
   TagTranslationRepository,
+  TagTranslationSettingsState,
   ThemeTokens,
   ThemeColorOption,
   ThemeColorSettings,
@@ -91,6 +91,7 @@ import {
   connectAccountProfile,
   connectBrowsePresentation,
   connectCatalogPreferences,
+  connectCommentTranslationSettings,
   connectCoverBackground,
   connectActionAlignment,
   connectGalleryTitle,
@@ -106,6 +107,7 @@ import {
   connectLayoutSafeArea,
   connectSettingsNavigation,
   connectTabletLayout,
+  connectTagTranslationSettings,
   connectThemeColor,
   connectThemeDisplay,
 } from 'shared'
@@ -179,6 +181,8 @@ export struct SettingsPage {
   @Local readerEnhancementModelMenuShown: boolean = false
   @Local readerEnhancementMaxHeightMenuShown: boolean = false
   @Local downloadSettings: DownloadSettingsState = connectDownloadSettings()
+  @Local commentTranslationSettings: CommentTranslationSettingsState = connectCommentTranslationSettings()
+  @Local tagTranslationSettings: TagTranslationSettingsState = connectTagTranslationSettings()
   @Local accountSession: AccountSessionState = connectAccountSession()
   @Local accountProfile: AccountProfileState = connectAccountProfile()
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
@@ -233,7 +237,9 @@ export struct SettingsPage {
   @Event onOpenBrowseDensity?: (mode: NhBrowsePresentation) => void
   @Event onOpenReaderSettings?: () => void
   @Event onOpenReaderEnhancementModels?: () => void
-  @Event onOpenTranslationSource?: (consumerId: string) => void
+  @Event onOpenCommentTranslation?: () => void
+  @Event onOpenComicTranslation?: () => void
+  @Event onOpenTranslationSource?: () => void
   @Event onOpenDownloadSettings?: () => void
   @Event onOpenCacheSettings?: () => void
   @Event onOpenAdvancedSettings?: () => void
@@ -3374,17 +3380,19 @@ export struct SettingsPage {
     }
   }
 
-  /** Translation capabilities share one reference-owned Advanced Settings surface. */
+  /** NextE keeps four sibling translation entries with their own destinations. */
   @Builder
   private TranslationCapabilitiesGroup() {
     NextNGroupedListSection() {
       NextNListRow({
         leadingIcon: $r('sys.symbol.translate'),
         title: AppStrings.get('settings_comment_translation'),
+        subtitle: AppStrings.get('settings_comment_translation_hint'),
+        trailingText: this.toggleStateLabel(this.commentTranslationSettings.enabled),
         accessibilityLabel: AppStrings.get('settings_comment_translation_a11y'),
         onAction: (): void => {
-          if (this.onOpenTranslationSource) {
-            this.onOpenTranslationSource(LLM_CONSUMER_COMMENT_TRANSLATION)
+          if (this.onOpenCommentTranslation) {
+            this.onOpenCommentTranslation()
           }
         },
       })
@@ -3392,10 +3400,11 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.picture'),
         title: AppStrings.get('settings_reader_comic_translation'),
+        subtitle: AppStrings.get('settings_reader_comic_translation_hint'),
         accessibilityLabel: AppStrings.get('settings_reader_comic_translation_a11y'),
         onAction: (): void => {
-          if (this.onOpenTranslationSource) {
-            this.onOpenTranslationSource(LLM_CONSUMER_MANGA_TRANSLATION)
+          if (this.onOpenComicTranslation) {
+            this.onOpenComicTranslation()
           }
         },
       })
@@ -3403,6 +3412,9 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.textformat'),
         title: AppStrings.get('settings_tag_translation_title'),
+        subtitle: this.tagTranslationSettings.version.length > 0
+          ? this.tagTranslationSettings.version
+          : AppStrings.get('settings_tag_translation_not_installed'),
         trailingText: this.toggleStateLabel(this.browsePresentation.showTranslatedTagLabels),
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_tag_translation_title'),
@@ -3418,9 +3430,10 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.cloud'),
         title: AppStrings.get('settings_translation_source'),
+        accessibilityLabel: AppStrings.get('settings_translation_source_a11y'),
         onAction: (): void => {
           if (this.onOpenTranslationSource) {
-            this.onOpenTranslationSource(LLM_CONSUMER_MANGA_TRANSLATION)
+            this.onOpenTranslationSource()
           }
         },
       })

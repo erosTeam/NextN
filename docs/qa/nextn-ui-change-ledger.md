@@ -5730,3 +5730,33 @@ authorize an edit, replace a device comparison, or define product completion.
   heart-count presentation are FROZEN. Do not reopen them without new user
   feedback or same-state counter-evidence. No UI static contract was created
   or used.
+
+## OPEN — Advanced 翻译区四入口拆分与标签翻译页恢复 — 2026-08-16
+
+- 用户指令：评论翻译/漫画翻译/翻译来源三个入口各自要有独立目的地；标签翻译页
+  恢复 NextE 的“翻译数据库（版本+行数）/立即更新/镜像/更新策略”结构；禁止
+  三入口共用一个来源表单页。
+- 涉及父树边界：SettingsPage(ADVANCED) 的 TranslationCapabilitiesGroup 四行
+  → entry Index 路由表新增 commentTranslationSettings /
+  comicTranslationSettings 两个目的地；TagTranslationSettingsPage 整页；
+  GalleryCommentsPage 的评论翻译启用/自动/双语显示消费；EntryAbility 启动恢复链。
+- 修改前：评论翻译/漫画翻译/翻译来源都 push ROUTE_TRANSLATION_SOURCE，标题都是
+  “翻译来源”；标签翻译页三行且数据库行只有行数尾值。
+- 修改后：
+  1. 评论翻译 → CommentTranslationSettingsPage（启用/自动/显示方式/来源/模型/
+     清除缓存），标题“评论翻译”；
+  2. 漫画翻译 → ComicTranslationSettingsPage（来源/模型/本地检测模型/自托管渲染
+     服务），标题“漫画翻译”；
+  3. 标签翻译行副标题=数据版本（无版本时“暂无本地版本”），尾值=开关状态；
+     页面新增“使用镜像源下载”开关与“自动更新策略（手动/启动时更新）”菜单；
+  4. 翻译来源 → 保留现有单一 OpenAI 兼容源表单页，标题“翻译来源”。
+- 最小性理由：只改路由目的地、入口文案尾值与标签页缺失行；评论页新增的启用/
+  自动/双语是 NextE 页面的对应叶子，且都接入了真实持久化与评论页消费，不是空控件。
+- 明确不支持的叶子（NextN 无对应能力，未造控件）：Google 翻译兜底、Torii 通道、
+  模型目录在线查询、标签简介图片级别、翻译实时评测。
+- 视觉验证计划：构建签名 HAP 安装到 237 设备后，同一视口分别对照 NextE 的
+  评论翻译页、漫画翻译页、标签翻译页与 NextN 对应页；至少验证四个入口各自
+  打开正确标题的页面、标签翻译页数据库行显示版本+行数、镜像开关与更新策略菜单可操作。
+- 未决风险：评论翻译“启用”首次恢复默认开启，保留现有“配好源即可翻译”的行为；
+  用户显式关闭后持久化。启动时自动更新为新增网络行为，仅在用户主动选择
+  “启动 App 时更新”后生效。

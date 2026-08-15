@@ -22,6 +22,18 @@ export { CoverBackgroundState, connectCoverBackground } from './state/CoverBackg
 export { GalleryTitleState, connectGalleryTitle } from './state/GalleryTitleState'
 export { TagTranslationState, connectTagTranslations } from './state/TagTranslationState'
 export {
+  CommentTranslationSettingsState,
+  COMMENT_TRANSLATION_DISPLAY_BILINGUAL,
+  COMMENT_TRANSLATION_DISPLAY_REPLACE,
+  connectCommentTranslationSettings,
+} from './state/CommentTranslationSettingsState'
+export {
+  TagTranslationSettingsState,
+  TAG_TRANSLATION_UPDATE_EVERY_START,
+  TAG_TRANSLATION_UPDATE_MANUAL,
+  connectTagTranslationSettings,
+} from './state/TagTranslationSettingsState'
+export {
   ImmersiveMaterialSettingsState,
   connectImmersiveMaterialSettings,
 } from './state/ImmersiveMaterialSettingsState'
@@ -195,6 +207,8 @@ export {
   OpenAiChatCompletionsConfig,
 } from './services/OpenAiChatCompletionsClient'
 export { CommentTranslationService } from './services/CommentTranslationService'
+export { CommentTranslationSettings } from './settings/CommentTranslationSettings'
+export { TagTranslationSettings } from './settings/TagTranslationSettings'
 export { GalleryTitleTranslationService } from './services/GalleryTitleTranslationService'
 export { AppColorFavoritesSettings } from './settings/AppColorFavoritesSettings'
 export {
