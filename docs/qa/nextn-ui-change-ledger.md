@@ -3,6 +3,107 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## Detail metadata card split with right-side download/seed actions + comments empty copy — 2026-08-16
+
+- **Why newly actionable:** the user directed the operation-area evaluation:
+  NH detail metadata is sparse (usually at most four cells), leaving the
+  metadata card empty, while Download and Seed are buried in the title
+  overflow menu. They also rejected the comments empty copy
+  "未返回公开评论" and asked for a centered neutral empty state.
+- **Whole parent-tree boundary:** GalleryDetailPage.GalleryInformation
+  card only (the metadata section inside DetailMetadataList); the
+  PullRefreshListScaffold list, hero card, tags, preview, related rows,
+  comments peek, Read FAB, HDS title menu, and wide workspace are unchanged.
+  The comments change is the leaf comments_status_empty string used by
+  GalleryCommentsPage.PageEmptyState; no list owner or layout changes.
+- **Reference boundary:** NextE owns a separate GalleryInfoBar card and a
+  relationsRow action-strip card with capsule chips on
+  ohos_id_color_sub_background. The user rejected the first in-card split
+  as redundant and directed a compact metadata card with a separate right
+  action card; Download stays a plain "下载" button (the Read FAB owns
+  reading), Seed stays the two-character "种子"/"Torrent" label without
+  any explanatory copy. The user also caught the Downloads
+  sort menu anchoring to the left edge.
+- **Exact change:** GalleryInformation becomes one Row of two cards: the
+  original metadata card shrinks to layoutWeight(1) and keeps the Flex
+  meta grid; a fixed 112vp right card (same NextNGroupedListSection family)
+  stacks the two capsule buttons (arrow_down_to_line + action_download,
+  disabled until isDownloadActionReady(), invoking handleDownloadAction();
+  link + action_torrent, invoking requestTorrentFileExport()). The comments strings become
+  "No comments." / "无评论". DownloadQueuePage's hidden 1x1 sort-menu anchor
+  is restored to NextE's shape: root Stack alignContent TopEnd and the
+  anchor Row as a direct child without .align(), so the menu opens under
+  the right title-bar button instead of the left edge.
+- **Static size audit (closed form, final):** H(common two-row
+  metadata card) ~= 72.7vp; chip capsule height h, radius r=h/2; card
+  radius R; padding p; stack gap g. Constraints: concentric R=p+r;
+  fit 2h+g+2p<=H; even distribution g~=p; small R-r. Chosen solution
+  h=26 (close to NextE 28), R=20, p=R-13=7, g=6:
+  2*26+6+2*7=72<=72.7, so equal card heights hold via
+  alignSelf(ItemAlign.Stretch); at the real 72.7vp height the middle gap
+  becomes ~6.7vp, giving 7 / 6.7 / 7 vertical rhythm (even), R-r=7, and
+  exact concentric chip/card corner centers (7+13=20). Width 112vp
+  leaves 98vp chips and 78vp for icon + gap + text (fits through 2.67x
+  font scale). Disabled chip colors follow NextE DetailActionChip (brand
+  when enabled, font_secondary when disabled).
+- **User correction (round 2):** true concentric corners would need
+  10vp padding, but that raises the card minimum to 80vp and makes the
+  action card taller than the common two-row metadata card (~73vp).
+  Equal card heights plus equal margins are preferred, so the card
+  tracks the metadata height with SpaceBetween at 4vp padding instead.
+- **User correction (round 3):** the torrent confirm dialog is removed;
+  Seed exports directly. The dialog copy (private temporary storage,
+  system share sheet) is deleted from both locales; the button action is
+  requestTorrentFileExport() -> exportTorrentFile().
+- **User correction (round 4):** the seed icon was questioned
+  (arrow_up_circle reads as a circled up-arrow, not a torrent). NextE's own
+  torrent affordance was not accepted as-is; per user direction the icon is
+  selected from the SDK symbol list: `sys.symbol.link` (chain / magnet-link
+  semantics), unused on this page and visually distinct from the download
+  chip's arrow_down_to_line.
+- **User correction (round 5):** the icon-to-text gap inside the two action
+  chips is raised from 2vp to 4vp. NextE's chip gap is 2vp, but the link
+  glyph's narrower visual mass makes the seed label appear too close; both
+  chips share DETAIL_ACTION_CHIP_GAP so the download chip moves in lockstep.
+  The 98vp chip content budget (78vp at 12vp padding) still holds through
+  2.67x font scale because the label already has maxLines(1) + ellipsis.
+- **User correction (round 6, fatal):** the download chip must never open the
+  Reader for an already-completed task. NextE's chip opens its
+  download-variant menu whenever any gallery task exists and only enqueues
+  when none exists; NextN has no original/regular variant, so every existing
+  task (complete, paused, error, active) routes to the durable downloads
+  queue instead. The completed-task `openReader()` branch is removed;
+  reading stays exclusively on the Read action.
+- **User correction (round 7):** the chip title is stateful like NextE's
+  downloadTitle(): no task shows "下载" (action_download); queued /
+  downloading / paused / error reuse the existing download_status_queued /
+  downloading / paused / error strings; complete shows the user-directed
+  "已下载" (new action_downloaded in all four locales). The chip icon stays
+  arrow_down_to_line for every state, matching NextE's DownloadActionChip,
+  and the click contract from round 6 is unchanged (never Reader).
+- **Device-found correction (round 8):** tapping the download chip on the
+  completed gallery verified the round-6 route, but Index.openDownloads()
+  targeted root tab 3 ("我的") while DownloadQueuePage lives at tab 2.
+  The target is corrected to 2 so the download chip lands on the durable
+  Downloads root, matching NextE's task handoff; the earlier tab-3 landing
+  was a pre-existing wrong target exposed by this lane.
+- **Verification plan:** signed build; install -r; cold-start
+  nextn://gallery/471768; capture the detail metadata card layout/screenshot
+  and confirm the two chips, tap Download (downloads state) and Seed
+  (direct export, no confirm dialog) from current bounds; comments empty state stays
+  EVIDENCE-ONLY until a gallery with zero comments is opened.
+- **Device observation — 2026-08-16 04:00–04:06 +0800:** on the selected
+  `.237` target (AWAKE + 86400000ms override, `install -r` only), the cold
+  detail route kept the action card at `[948,954][1284,1172]`; the completed
+  gallery chip reads "已下载" (`[1080,993][1189,1035]`, 4vp icon-text gap),
+  the seed chip shows the link glyph plus "种子", and the Read FAB remains
+  the only reader entry. Tapping "已下载" landed on the Downloads root
+  (tab 2, `Kanojo Saimin2` present), not the Reader and not "我的"; the
+  Downloads sort menu opened top-right at `[720,117][1272,717]`. Tail hilog
+  had no jscrash / setInteractionPaused / libomp markers. Raw evidence:
+  `.hvigor/outputs/nextn-detail-actions-20260816T/` (verify-a/b/c.json,
+  state-final.json, hilog-final.txt), excluded from Git.
+
 ## Intermittent JS TypeError crashes — libomp packaging + interaction pause state machine — 2026-08-16
 
 - **Why newly actionable:** ten jscrash records showed `setInteractionPaused

@@ -2711,3 +2711,26 @@ permitted in this repository.
   `.hvigor/outputs/history-fixed-baseline-20260813T0530/` and excluded from
   Git. This is only a current leaf-geometry observation, not a full-page
   reference-parity claim.
+
+## Current delivery observation — Detail metadata action card + download-only chip
+
+- 2026-08-16 04:00–04:06 +0800: the selected `.237` TCP target passed the wake
+  gate (`AWAKE`, `OverrideTimeout=86400000ms`). The signed Debug HAP was
+  installed with `install -r` only; no data clear, uninstall, account,
+  preference, or content mutation occurred.
+- Cold start via the established `nextn://gallery/471768` route: the right
+  action card stayed at `[948,954][1284,1172]`; the download chip shows
+  "已下载" (`[1080,993][1189,1035]`) with a 12px (4vp) icon-to-text gap, and
+  the seed chip shows the link glyph with "种子" (`[1098,1091][1171,1133]`).
+  The Read FAB ("继续 P1") remains the only reader entry.
+- Tapping "已下载" routed to the durable Downloads root (tab index 2, title
+  "下载", `Kanojo Saimin2` task present) — not the Reader and not the "我的"
+  tab. `Index.openDownloads()` target was corrected from 3 to 2 after the
+  first tap was observed landing on "我的".
+- The DownloadQueuePage sort menu opens top-right at
+  `[720,117][1272,717]` with its four sort items.
+- The tail log contains no jscrash / setInteractionPaused / libomp markers
+  and the app process remained alive. Raw layout and log artifacts are
+  retained under `.hvigor/outputs/nextn-detail-actions-20260816T/`
+  (`state-final.json`, `verify-a/b/c.json`, `hilog-final.txt`) and are
+  excluded from Git.

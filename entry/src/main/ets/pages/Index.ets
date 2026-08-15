@@ -627,7 +627,7 @@ struct Index {
 
   /** Leaves a detail route for the one durable Downloads root, matching NextE's task handoff. */
   private openDownloads(): void {
-    const target: number = 3
+    const target: number = 2
     if (this.activeTab === target) {
       this.triggerRootRefresh(target)
       return

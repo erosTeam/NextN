@@ -98,6 +98,34 @@ export class ThemeTokens {
   static readonly MIN_TOUCH_TARGET: number = 48
   static readonly ACTION_HEIGHT: number = 46
   static readonly SECONDARY_ACTION_HEIGHT: number = 40
+  // Detail action chips: 26vp capsule (radius 13, close to NextE's 28)
+  // with a 4vp icon/text gap (user-raised from NextE's 2vp for the link
+  // glyph's visual mass). Closed form for the action card:
+  //   H(common metadata card) ~= 72.7vp
+  //   concentric: R = p + h/2
+  //   fit:        2h + g + 2p <= H
+  //   even:       g ~= p
+  // h=26, R=20 -> p=7, g=6 -> 52+6+14 = 72 <= 72.7; at real H the middle
+  // gap becomes ~6.7, giving 7 / 6.7 / 7 (even), R-r = 7 (small), and
+  // equal card heights.
+  static readonly DETAIL_ACTION_CHIP_HEIGHT: number = 26
+  static readonly DETAIL_ACTION_CHIP_GAP: number = 4
+  static readonly DETAIL_ACTION_CARD_RADIUS: number = 20
+  static readonly DETAIL_ACTION_CHIP_STACK_GAP: number = 6
+  // The action card stretches (alignSelf Stretch) to the metadata card's
+  // height, so the two cards always align with no measured or hand-tuned
+  // height; MIN_HEIGHT is only the intrinsic content floor (two 26vp chips
+  // + 6vp gap + 2*7vp padding = 72vp). Chips are distributed with
+  // SpaceBetween so all four card margins stay equal at 7vp and the middle
+  // gap stays ~6.7vp. Width 112vp leaves 98vp for the chips and 78vp for
+  // icon + gap + text, so the two-character labels fit through the 2.67x
+  // font scale before ellipsizing.
+  static readonly DETAIL_ACTION_CARD_WIDTH: number = 112
+  static readonly DETAIL_ACTION_CARD_PADDING: number =
+    ThemeTokens.DETAIL_ACTION_CARD_RADIUS - ThemeTokens.DETAIL_ACTION_CHIP_HEIGHT / 2
+  static readonly DETAIL_ACTION_CARD_MIN_HEIGHT: number =
+    ThemeTokens.DETAIL_ACTION_CHIP_HEIGHT * 2 + ThemeTokens.DETAIL_ACTION_CHIP_STACK_GAP +
+    ThemeTokens.DETAIL_ACTION_CARD_PADDING * 2
   static readonly SEARCH_FIELD_HEIGHT: number = 40
   static readonly LIST_HORIZONTAL_PADDING: number = 12
   static readonly LIST_BOTTOM_PADDING: number = 24

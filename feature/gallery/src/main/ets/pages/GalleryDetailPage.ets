@@ -426,7 +426,7 @@ export struct GalleryDetailPage {
   @Monitor('torrentShareVersion')
   onTorrentShareRequested(): void {
     if (this.torrentShareVersion > 0) {
-      this.confirmTorrentFileExport()
+      this.requestTorrentFileExport()
     }
   }
 
@@ -602,6 +602,28 @@ export struct GalleryDetailPage {
     return task ?? null
   }
 
+  /** Download chip title mirrors NextE's stateful chip: task-less shows the
+   *  action, existing tasks show their durable status. */
+  private downloadActionTitle(): string {
+    const task: NhDownloadTask | null = this.currentDownloadTask()
+    if (task === null) {
+      return AppStrings.get('action_download')
+    }
+    if (task.isComplete()) {
+      return AppStrings.get('action_downloaded')
+    }
+    if (task.status === NhDownloadTaskStatus.DOWNLOADING) {
+      return AppStrings.get('download_status_downloading')
+    }
+    if (task.status === NhDownloadTaskStatus.PAUSED) {
+      return AppStrings.get('download_status_paused')
+    }
+    if (task.status === NhDownloadTaskStatus.ERROR) {
+      return AppStrings.get('download_status_error')
+    }
+    return AppStrings.get('download_status_queued')
+  }
+
   private publishDownloadChrome(): void {
     const ready: boolean = this.isDownloadActionReady()
     const task: NhDownloadTask | null = this.currentDownloadTask()
@@ -734,10 +756,6 @@ export struct GalleryDetailPage {
       await this.enqueueDownload()
       return
     }
-    if (existing.isComplete()) {
-      this.openReader()
-      return
-    }
     if (existing.status === NhDownloadTaskStatus.PAUSED || existing.status === NhDownloadTaskStatus.ERROR) {
       try {
         await DownloadQueueService.resume(this.context(), existing.galleryId)
@@ -746,8 +764,10 @@ export struct GalleryDetailPage {
         return
       }
     }
-    // Active downloads belong to the durable queue screen; do not enqueue a
-    // duplicate or pretend that a paused/error task is newly added.
+    // The chip is download-only: NextE opens its download-variant menu for
+    // existing tasks, and NextN's NH queue has no original/regular variant, so
+    // the durable queue screen is the equivalent surface. Reading belongs
+    // exclusively to the Read action, never to this button.
     this.openDownloads()
   }
 
@@ -769,7 +789,7 @@ export struct GalleryDetailPage {
     } catch (_error) {}
   }
 
-  private confirmTorrentFileExport(): void {
+  private requestTorrentFileExport(): void {
     if (!this.isDetailReadyForCurrentGallery || this.detail.id !== this.galleryId || this.isTorrentExportInFlight) {
       return
     }
@@ -777,20 +797,7 @@ export struct GalleryDetailPage {
       this.showTorrentToast(AppStrings.get('gallery_error_signin_export_torrent'))
       return
     }
-    this.getUIContext().showAlertDialog({
-      title: AppStrings.get('gallery_dialog_export_torrent_title'),
-      message: AppStrings.get('gallery_dialog_export_torrent_message'),
-      primaryButton: {
-        value: AppStrings.get('gallery_action_cancel'),
-        action: (): void => {},
-      },
-      secondaryButton: {
-        value: AppStrings.get('gallery_action_continue'),
-        action: (): void => {
-          this.exportTorrentFile()
-        },
-      },
-    })
+    this.exportTorrentFile()
   }
 
   private async exportTorrentFile(): Promise<void> {
@@ -1684,30 +1691,92 @@ export struct GalleryDetailPage {
     .alignItems(VerticalAlign.Center)
   }
 
+  /** Compact in-card action chip, matching NextE's sub-background capsule family. */
+  @Builder
+  private GalleryActionChip(icon: Resource, label: string, enabled: boolean, action: () => void) {
+    Button({ type: ButtonType.Capsule }) {
+      Row({ space: ThemeTokens.DETAIL_ACTION_CHIP_GAP }) {
+        SymbolGlyph(icon)
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontColor([enabled ? ThemeTokens.BRAND : ThemeTokens.TEXT_SECONDARY])
+        Text(label)
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(enabled ? ThemeTokens.BRAND : ThemeTokens.TEXT_SECONDARY)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+      }
+      .width('100%')
+      .height(ThemeTokens.DETAIL_ACTION_CHIP_HEIGHT)
+      .justifyContent(FlexAlign.Center)
+      .alignItems(VerticalAlign.Center)
+      .padding({ left: ThemeTokens.SPACE_SM, right: ThemeTokens.SPACE_MD })
+    }
+    .width('100%')
+    .height(ThemeTokens.DETAIL_ACTION_CHIP_HEIGHT)
+    .backgroundColor(ThemeTokens.SURFACE_SUB)
+    .enabled(enabled)
+    .onClick(action)
+  }
+
   /** Detail metadata is a peer information block, not hero-card decoration. */
   @Builder
   private GalleryInformation() {
     if (this.isDetailReadyForCurrentGallery && this.detail.id === this.galleryId) {
-      NextNGroupedListSection({ inset: ThemeTokens.SPACE_MD }) {
-        Flex({ wrap: FlexWrap.Wrap }) {
-          if (this.galleryLanguageText().length > 0) {
-            this.GalleryMetaItem($r('sys.symbol.translate'), this.galleryLanguageText())
-          }
-          if (this.galleryPageCountText().length > 0) {
-            this.GalleryMetaItem($r('sys.symbol.picture'), this.galleryPageCountText())
-          }
-          if (this.detail.scanlator.length > 0) {
-            this.GalleryMetaFullRow($r('sys.symbol.person'), this.detail.scanlator)
-          }
-          if (this.galleryFavoriteCountText().length > 0) {
-            this.GalleryMetaItem($r('sys.symbol.heart'), this.galleryFavoriteCountText())
-          }
-          if (this.galleryUploadDateText().length > 0) {
-            this.GalleryMetaItem($r('sys.symbol.clock'), this.galleryUploadDateText())
+      Row({ space: ThemeTokens.SPACE_MD }) {
+        Column() {
+          NextNGroupedListSection({ inset: ThemeTokens.SPACE_MD }) {
+            Flex({ wrap: FlexWrap.Wrap }) {
+              if (this.galleryLanguageText().length > 0) {
+                this.GalleryMetaItem($r('sys.symbol.translate'), this.galleryLanguageText())
+              }
+              if (this.galleryPageCountText().length > 0) {
+                this.GalleryMetaItem($r('sys.symbol.picture'), this.galleryPageCountText())
+              }
+              if (this.detail.scanlator.length > 0) {
+                this.GalleryMetaFullRow($r('sys.symbol.person'), this.detail.scanlator)
+              }
+              if (this.galleryFavoriteCountText().length > 0) {
+                this.GalleryMetaItem($r('sys.symbol.heart'), this.galleryFavoriteCountText())
+              }
+              if (this.galleryUploadDateText().length > 0) {
+                this.GalleryMetaItem($r('sys.symbol.clock'), this.galleryUploadDateText())
+              }
+            }
+            .width('100%')
           }
         }
-        .width('100%')
+        .layoutWeight(1)
+
+        Column({ space: ThemeTokens.DETAIL_ACTION_CHIP_STACK_GAP }) {
+          this.GalleryActionChip(
+            $r('sys.symbol.arrow_down_to_line'),
+            this.downloadActionTitle(),
+            this.isDownloadActionReady(),
+            (): void => {
+              this.handleDownloadAction()
+            },
+          )
+          this.GalleryActionChip(
+            $r('sys.symbol.link'),
+            AppStrings.get('action_torrent'),
+            true,
+            (): void => {
+              this.requestTorrentFileExport()
+            },
+          )
+        }
+        .width(ThemeTokens.DETAIL_ACTION_CARD_WIDTH)
+        .constraintSize({ minHeight: ThemeTokens.DETAIL_ACTION_CARD_MIN_HEIGHT })
+        .alignSelf(ItemAlign.Stretch)
+        .justifyContent(FlexAlign.SpaceBetween)
+        .padding(ThemeTokens.DETAIL_ACTION_CARD_PADDING)
+        .backgroundColor(ThemeTokens.CARD_BACKGROUND)
+        .borderRadius(ThemeTokens.DETAIL_ACTION_CARD_RADIUS)
+        .clip(true)
       }
+      .width('100%')
+      .alignItems(VerticalAlign.Center)
     }
   }
 

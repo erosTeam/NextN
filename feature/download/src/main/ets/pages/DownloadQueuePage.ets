@@ -1139,7 +1139,7 @@ export struct DownloadQueuePage {
   }
 
   build() {
-    Stack({ alignContent: Alignment.TopStart }) {
+    Stack({ alignContent: Alignment.TopEnd }) {
       Column() {
         if (this.isLoading && this.tasks.length === 0) {
           PageLoadingState({ text: AppStrings.get('download_loading') })
@@ -1171,7 +1171,6 @@ export struct DownloadQueuePage {
         .width(1)
         .height(1)
         .hitTestBehavior(HitTestMode.None)
-        .align(Alignment.TopEnd)
         .bindMenu(this.sortMenuShown, this.SortMenu, appMenuOptions({
           placement: Placement.BottomRight,
           onDisappear: (): void => {
