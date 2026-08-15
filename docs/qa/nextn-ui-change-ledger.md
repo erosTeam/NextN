@@ -3,6 +3,24 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — API 26 material support across feature components — 2026-08-16
+
+- **Why newly actionable:** the user reports that the app menus (starting
+  with the Browse title-bar menu) appear to have no API 26 material support,
+  and asks to queue this after the current tag-translation fix.
+- **Whole parent-tree boundary:** to be confirmed during investigation.
+  Candidate first owner is `Index.rootTitleBar() → content['menu']`
+  (`BrowsePresentation` menus and any sibling HDS menu), then every feature
+  component the audit finds without API 26 material support.
+- **Reference boundary:** NextE's API 26 material implementation for the
+  same menu/components must be read before any edit; no inferred redesign is
+  allowed.
+- **Exact change:** none yet. Next safe action is a read-only source audit of
+  NextE's API 26 material handling and NextN's current menu/component
+  material usage, then a scoped implementation plan for user confirmation.
+- **Verification plan:** signed build and same-state, same-viewport device
+  comparison against NextE after implementation.
+
 ## OPEN — Browse title-bar menu collapse (search/browse options direct) — 2026-08-15
 
 - **Why newly actionable:** the user reports that adding the random-gallery
