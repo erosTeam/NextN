@@ -2447,6 +2447,8 @@ export struct SettingsPage {
         this.RowDivider()
         NextNListRow({
           title: AppStrings.get('settings_reader_image_scaling_quality'),
+          subtitle: AppStrings.get('settings_reader_image_scaling_quality_hint'),
+          subtitleMaxLines: 3,
           trailingText: this.readerImageScalingQualityLabel(),
           trailingDropdown: true,
           accessibilityLabel: AppStrings.format('settings_reader_image_scaling_quality_a11y', [
@@ -2570,6 +2572,8 @@ export struct SettingsPage {
         this.RowDivider()
         NextNListRow({
           title: AppStrings.get('settings_reader_enhancement_max_height'),
+          subtitle: AppStrings.get('settings_reader_enhancement_max_height_hint'),
+          subtitleMaxLines: 3,
           trailingText: this.readerEnhancementMaxHeightLabel(),
           trailingDropdown: true,
           isEnabled: this.readerPresentation.superResolutionEnabled &&
@@ -2619,6 +2623,8 @@ export struct SettingsPage {
         this.RowDivider()
         NextNListRow({
           title: AppStrings.get('settings_reader_volume_keys_turn_pages'),
+          subtitle: AppStrings.get('settings_reader_volume_keys_turn_pages_hint'),
+          subtitleMaxLines: 3,
           hasSwitch: true,
           checked: this.readerPresentation.volumeKeyTurn,
           showChevron: false,

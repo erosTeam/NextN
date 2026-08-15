@@ -3,6 +3,43 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Reader reference subtitles restoration — 2026-08-15
+
+- **Why newly actionable:** the same thorough Settings review found the
+  opposite error in Reader Settings: three functional subtitles that current
+  NextE actually renders were omitted from NextN's shared Reader row tree.
+  The faulty assumption was that removing all technical context was safer than
+  preserving the reference; it erased operational meaning on exactly three
+  controls while unrelated unused hint resources remained dormant.
+- **Whole parent-tree boundary:** retain `Settings → Reader →
+  SecondaryListScaffold → ReaderPresentationListItems` and the identical
+  `ReaderPage → ReaderSettingsSheet → NextNModalScaffold →
+  ReaderPresentationListItems` host. Preserve all six groups and their
+  fifteen-row order; only the existing Image scaling quality, Maximum source
+  height, and Volume key page turn rows receive their current-reference
+  subtitles.
+- **Reference boundary:** current NextE renders these three specific lines
+  with subtitles: image downscaling/Mipmap behavior, the maximum original
+  image height eligible for enhancement, and the volume-down/up page mapping.
+  It does not add subtitles to the other Reader rows, so no other dormant
+  NextN hint is mounted.
+- **Exact change:** add the exact NextE four-locale image-scaling hint; attach
+  the existing exact NextE maximum-height hint; replace the unused long
+  volume-key explanation with NextE's short four-locale wording and attach it.
+  Set only these three rows' `subtitleMaxLines` to `3`.
+- **Minimality and exclusions:** do not alter Reader mode, spread/tap-zone
+  behavior, image-enhancement models, model-management sheet ownership,
+  available-state gates, volume-key implementation, persistence, menus,
+  layout order, or any other subtitle/hint resource.
+- **Verification plan:** inspect the scoped source/resource diff, parse every
+  locale catalog, and build the exact commit. On the selected device, observe
+  the routed Reader Settings state and, only if a safe non-canvas entry becomes
+  available, the same shared sheet state. No setting is changed. Same-state
+  NextE visual comparison remains required before a parity claim.
+- **Unresolved risk:** source/build cannot prove long-text wrapping, disabled
+  enhancement state, Reader-sheet presentation, or Reader interaction/persist
+  behavior.
+
 ## OPEN — Browse/Search stored-default caption removal — 2026-08-15
 
 - **Why newly actionable:** the user asked for a thorough removal of
