@@ -1,5 +1,24 @@
 # NextN active device-acceptance queue
 
+## Current Content-filter policy-note removal — bounded device observation — 2026-08-15
+
+- The signed HAP built from `4afd1f9` was installed in place with `-r` on only
+  `192.168.50.237:12345` after a fresh live target, lease, wake, and `AWAKE` /
+  `OverrideTimeout=86400000ms` gate. No data clear, uninstall, account action,
+  rule save, rule delete, or preference value change occurred.
+- On the foreground-confirmed native `Settings → 高级 → 内容过滤器` route at the
+  current `1320×2120` root viewport, the existing `添加本地过滤器` control was
+  the first page content; the former leading policy note was absent. Opening
+  and dismissing the existing new-rule editor without saving showed its target,
+  switch, regular-expression, and text-input controls without the former
+  trailing policy note.
+- This observes only the two removed-note states and the unchanged ability to
+  open and dismiss the new-rule editor. It does not accept rule persistence,
+  editing/deletion, restore/error, keyboard-open, every list state, or
+  same-state visual parity. Raw local artifacts are retained under
+  `.hvigor/outputs/content-filter-notes-20260815T1650/` and are excluded from
+  source control.
+
 ## Current Clipboard-link wording — bounded device observation — 2026-08-15
 
 - The signed HAP built from `fd44230` was installed in place with `-r` on only
