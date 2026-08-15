@@ -1,5 +1,21 @@
 # NextN active device-acceptance queue
 
+## Current Clipboard-link wording — bounded device observation — 2026-08-15
+
+- The signed HAP built from `fd44230` was installed in place with `-r` on only
+  `192.168.50.237:12345` after a fresh live target, lease, wake, and `AWAKE` /
+  `OverrideTimeout=86400000ms` gate. No data clear, uninstall, account action,
+  clipboard read, permission request, or preference value change occurred.
+- On the foreground-confirmed native `Settings → 高级` route at the current
+  `1320×2120` root viewport, the off switch displayed `检测剪贴板链接` and
+  `剪贴板中有受支持的画廊链接时提示打开`. The existing switch remained off;
+  no detector, system permission, or open prompt was invoked.
+- This observes only the replacement wording and existing off-switch state. It
+  does not accept permission handling, clipboard detection, the open prompt,
+  persistence, or same-state visual parity. Raw local artifacts are retained
+  under `.hvigor/outputs/clipboard-copy-20260815T1648/` and are excluded from
+  source control.
+
 ## Current tag-translation dictionary wording — bounded device observation — 2026-08-15
 
 - The signed HAP built from `ade31bf` was installed in place with `-r` on only
