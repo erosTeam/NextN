@@ -7,6 +7,7 @@ import {
   ContentFilterService,
   ContentFilterState,
   GalleryCollectionBody,
+  GalleryListCacheRepository,
   ActiveKeyState,
   HomeGallerySelectionState,
   HomeSourceBridge,
@@ -135,10 +136,39 @@ export struct LatestSourcePage {
     }
     if (!this.loadedOnce) {
       this.loadedOnce = true
-      this.loadFirstPage(false)
+      this.loadOnceWithCachedRows()
       return
     }
     this.reloadForCatalogPreferences()
+  }
+
+  /** Cold-start first paint comes from the durable snapshot; the live page
+   *  read then replaces it in place without blanking the grid. */
+  private async loadOnceWithCachedRows(): Promise<void> {
+    const cacheKey: string = this.homeCacheKey()
+    try {
+      const cached: NhGallerySummary[] | null = await GalleryListCacheRepository.load(
+        this.context(),
+        cacheKey,
+      )
+      if (this.loadedOnce && this.rawGalleries.length === 0 &&
+        this.homeCacheKey() === cacheKey && cached !== null && cached.length > 0) {
+        const labeled: NhGallerySummary[] = await NhTagCatalogService.refreshLocalDisplayLabels(cached)
+        if (this.loadedOnce && this.rawGalleries.length === 0 &&
+          this.homeCacheKey() === cacheKey) {
+          this.rawGalleries = labeled
+          this.applyContentFilters()
+          this.currentPage = 1
+          this.totalPages = 1
+        }
+      }
+    } catch (_error) {
+    }
+    await this.loadFirstPage(this.rawGalleries.length > 0)
+  }
+
+  private homeCacheKey(): string {
+    return `home:v1:${this.sourceKey}:${this.catalogPreferences.browseLanguage}:${this.catalogPreferences.browseSort}`
   }
 
   @Monitor('active.activeKey')
@@ -276,6 +306,8 @@ export struct LatestSourcePage {
       }
       this.currentPage = 1
       this.totalPages = Math.max(1, result.totalPages)
+      GalleryListCacheRepository.save(this.context(), this.homeCacheKey(), result.galleries)
+        .catch((): void => {})
     } catch (error) {
       if (!this.isCurrentRequest(generation)) {
         return

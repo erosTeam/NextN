@@ -974,6 +974,8 @@ export class NhApiClient {
     gallery.englishTitle = NhApiClient.asString(item['english_title'])
     gallery.japaneseTitle = NhApiClient.asString(item['japanese_title'])
     gallery.pageCount = NhApiClient.asNumber(item['num_pages'])
+    gallery.uploadDate = NhApiClient.asNumber(item['upload_date'])
+    gallery.favoriteCount = NhApiClient.asNumber(item['num_favorites'])
     gallery.thumbnailWidth = NhApiClient.asNumber(item['thumbnail_width'])
     gallery.thumbnailHeight = NhApiClient.asNumber(item['thumbnail_height'])
     gallery.thumbnailUrl = NhApiClient.cdnUrl(NhApiClient.asString(item['thumbnail']), THUMB_ROOT)

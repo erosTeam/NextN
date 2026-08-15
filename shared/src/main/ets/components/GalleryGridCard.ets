@@ -106,6 +106,35 @@ export struct GalleryGridCard {
     ])
   }
 
+  private static pad2(value: number): string {
+    return value < 10 ? `0${value}` : `${value}`
+  }
+
+  private static formatDate(value: number): string {
+    const date: Date = new Date(value * 1000)
+    const month: number = date.getMonth() + 1
+    return `${date.getFullYear()}-${GalleryGridCard.pad2(month)}-${GalleryGridCard.pad2(date.getDate())}`
+  }
+
+  /**
+   * Mirrors NextE GalleryGridCard.metaText(): upload date first. The
+   * page count already lives in the cover overlay, so it is never
+   * repeated here; the favourite count is the list's other real metadata.
+   */
+  private metaText(): string {
+    if (this.gallery.uploadDate > 0) {
+      return GalleryGridCard.formatDate(this.gallery.uploadDate)
+    }
+    if (this.gallery.favoriteCount > 0) {
+      return `${this.gallery.favoriteCount}`
+    }
+    return ''
+  }
+
+  private hasFavoriteMeta(): boolean {
+    return this.gallery.uploadDate <= 0 && this.gallery.favoriteCount > 0
+  }
+
   @Builder
   private ThumbnailState() {
     if (this.isThumbnailLoading || this.hasThumbnailError || this.gallery.thumbnailUrl.length === 0) {
@@ -217,13 +246,20 @@ export struct GalleryGridCard {
         .textOverflow({ overflow: TextOverflow.Ellipsis })
         .height(ThemeTokens.GALLERY_GRID_TITLE_HEIGHT)
         .width('100%')
-      Text(`#${this.gallery.id}`)
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-        .height(ThemeTokens.GALLERY_GRID_META_HEIGHT)
-        .width('100%')
+      Row({ space: 2 }) {
+        if (this.hasFavoriteMeta()) {
+          SymbolGlyph($r('sys.symbol.heart'))
+            .fontSize(12)
+            .fontColor([ThemeTokens.TEXT_SECONDARY])
+        }
+        Text(this.metaText())
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontColor(ThemeTokens.TEXT_SECONDARY)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+      }
+      .height(ThemeTokens.GALLERY_GRID_META_HEIGHT)
+      .width('100%')
     }
     .width('100%')
     .height(ThemeTokens.GALLERY_GRID_INFO_HEIGHT)

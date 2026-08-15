@@ -3,6 +3,7 @@ import { AppStorageV2 } from '@kit.ArkUI'
 /** Commands emitted by the root HDS title bar into the retained Favorites page. */
 export class FavoritesAction {
   static readonly TOGGLE_SEARCH: string = 'toggle_search'
+  static readonly OPEN_LAYOUT_MENU: string = 'open_layout_menu'
 }
 
 /**
@@ -38,6 +39,15 @@ export class FavoritesActionBridge {
       return
     }
     state.command = FavoritesAction.TOGGLE_SEARCH
+    state.commandSeq = state.commandSeq + 1
+  }
+
+  static requestLayoutMenu(): void {
+    const state: FavoritesActionState = connectFavoritesActions()
+    if (!state.actionsAvailable) {
+      return
+    }
+    state.command = FavoritesAction.OPEN_LAYOUT_MENU
     state.commandSeq = state.commandSeq + 1
   }
 

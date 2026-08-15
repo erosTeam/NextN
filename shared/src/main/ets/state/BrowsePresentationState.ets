@@ -3,9 +3,10 @@ import { NhBrowsePresentation } from '../model/NhBrowsePresentation'
 
 @ObservedV2
 export class BrowsePresentationState {
-  // Keep the existing compact-row default for already-installed users. LIST is
-  // an opt-in medium-list presentation and is not a migration of simple_list.
-  @Trace mode: NhBrowsePresentation = NhBrowsePresentation.SIMPLE_LIST
+  // Waterfall is the out-of-box view: it is the only list surface that can
+  // show translated tags next to covers. Installed users keep their saved
+  // mode; this default applies only to fresh or unknown persisted values.
+  @Trace mode: NhBrowsePresentation = NhBrowsePresentation.WATERFALL
   // Grid-like presentations store a minimum comfortable column width rather
   // than a fixed count. A zero preserves the corresponding NextE base token
   // so rotation, folding, and split width always derive a fresh column count.

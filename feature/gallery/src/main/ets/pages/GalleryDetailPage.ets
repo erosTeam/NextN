@@ -175,6 +175,10 @@ export struct GalleryDetailPage {
    */
   @Local fullTitleSheetShown: boolean = false
   @Local coverFailedUrl: string = ''
+  /** The cover bitmap currently on screen; a verified cover replaces it only after loading. */
+  @Local displayedCoverUrl: string = ''
+  /** Verified cover waiting to replace the seed thumbnail without a visible flash. */
+  @Local pendingCoverUrl: string = ''
   @Local tagTranslationLabels: string[] = []
   @Local tagTranslationPending: boolean = false
   @Local tagTranslations: TagTranslationState = connectTagTranslations()
@@ -465,6 +469,8 @@ export struct GalleryDetailPage {
     this.resumePageIndex = 0
     this.fullTitleSheetShown = false
     this.coverFailedUrl = ''
+    this.displayedCoverUrl = ''
+    this.pendingCoverUrl = ''
     this.tagTranslationLabels = []
     this.tagTranslationPending = false
     this.tagTranslationEpoch += 1
@@ -1019,6 +1025,11 @@ export struct GalleryDetailPage {
       this.detail.coverWidth = this.seed.thumbnailWidth
       this.detail.coverHeight = this.seed.thumbnailHeight
     }
+    // Swap the visible cover only after the verified cover bitmap has
+    // loaded, so the seed thumbnail never blanks or jumps in the hero slot.
+    if (this.detail.coverUrl.length > 0 && this.detail.coverUrl !== this.displayedCoverUrl) {
+      this.pendingCoverUrl = this.detail.coverUrl
+    }
     this.isDetailReadyForCurrentGallery = true
     this.publishDownloadChrome()
     this.publishWideThumbnailActionAvailability()
@@ -1097,6 +1108,8 @@ export struct GalleryDetailPage {
     seeded.pageCount = seed.pageCount
     seeded.tags = seed.tags.map((tag: NhTag): NhTag => tag.copy())
     this.detail = seeded
+    this.displayedCoverUrl = seed.thumbnailUrl
+    this.pendingCoverUrl = ''
     this.seedTagTranslations(seeded.tags)
     this.publishDownloadChrome()
     this.publishWideThumbnailActionAvailability()
@@ -1818,30 +1831,48 @@ export struct GalleryDetailPage {
     NextNGroupedListSection({ inset: ThemeTokens.SPACE_MD }) {
       Row({ space: ThemeTokens.SPACE_MD }) {
         Stack({ alignContent: Alignment.Center }) {
-          if (this.detail.coverUrl.length > 0 && this.coverFailedUrl !== this.detail.coverUrl) {
+          if (this.displayedCoverUrl.length > 0 && this.coverFailedUrl !== this.displayedCoverUrl) {
             if (this.heroCoverHasSourceSize()) {
-              Image(this.detail.coverUrl)
+              Image(this.displayedCoverUrl)
                 .width(this.heroCoverFittedWidth())
                 .height(this.heroCoverFittedHeight())
                 .objectFit(ImageFit.Fill)
                 .borderRadius(ThemeTokens.DETAIL_COVER_RADIUS)
                 .clip(true)
                 .onError((): void => {
-                  this.coverFailedUrl = this.detail.coverUrl
+                  this.coverFailedUrl = this.displayedCoverUrl
                 })
             } else {
-              Image(this.detail.coverUrl)
+              Image(this.displayedCoverUrl)
                 .width('100%')
                 .height('100%')
                 .objectFit(ImageFit.Contain)
                 .onError((): void => {
-                  this.coverFailedUrl = this.detail.coverUrl
+                  this.coverFailedUrl = this.displayedCoverUrl
                 })
             }
           } else {
             SymbolGlyph($r('sys.symbol.picture'))
               .fontSize(32)
               .fontColor([ThemeTokens.TEXT_TERTIARY])
+          }
+          if (this.pendingCoverUrl.length > 0 && this.pendingCoverUrl !== this.displayedCoverUrl) {
+            Image(this.pendingCoverUrl)
+              .width(1)
+              .height(1)
+              .opacity(0)
+              .onComplete((): void => {
+                const ready: string = this.pendingCoverUrl
+                if (ready.length > 0 && ready !== this.displayedCoverUrl) {
+                  this.displayedCoverUrl = ready
+                  this.pendingCoverUrl = ''
+                }
+              })
+              .onError((): void => {
+                // Keep the seed thumbnail; a failed verified cover is
+                // retried by the normal error path on a later route.
+                this.pendingCoverUrl = ''
+              })
           }
         }
         .width(ThemeTokens.DETAIL_COVER_WIDTH)

@@ -39,9 +39,10 @@ export class BrowsePresentationRepository {
     if (value === NhBrowsePresentation.COVER_WALL) {
       return NhBrowsePresentation.COVER_WALL
     }
-    // `simple_list` is the pre-LIST persisted value. Unknown and empty values
-    // retain the old safe fallback instead of introducing a new preference.
-    return NhBrowsePresentation.SIMPLE_LIST
+    // Waterfall is the out-of-box view for fresh/unknown persisted values.
+    // Every saved mode still resolves above; an installed user's saved
+    // preference is never migrated.
+    return NhBrowsePresentation.WATERFALL
   }
 
   static async restore(context: common.UIAbilityContext): Promise<NhBrowsePresentation> {

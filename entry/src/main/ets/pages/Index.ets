@@ -307,7 +307,6 @@ struct Index {
   // array value during build.
   @Local private titleScroller: Scroller = this.rootTabScrollers[0]
   @Local private historyClearVersion: number = 0
-  @Local private favoritesReloadVersion: number = 0
   @Local private favoritesActions: FavoritesActionState = connectFavoritesActions()
   @Local private galleryExternalOpenVersion: number = 0
   @Local private galleryShareVersion: number = 0
@@ -1161,20 +1160,17 @@ struct Index {
             FavoritesActionBridge.requestToggleSearch()
           },
         }
-        const reloadAction: Record<string, Object> = {
-          'label': AppStrings.get('action_reload'),
-          'icon': $r('sys.symbol.arrow_clockwise'),
+        const layoutAction: Record<string, Object> = {
+          'label': AppStrings.get('browse_presentation'),
+          'icon': $r('sys.symbol.square_grid_2x2'),
           'isEnabled': this.favoritesActions.actionsAvailable,
           'action': (): void => {
-            if (!this.favoritesActions.actionsAvailable) {
-              return
-            }
-            this.favoritesReloadVersion += 1
+            FavoritesActionBridge.requestLayoutMenu()
           },
         }
         const searchMenuItem: Record<string, Object> = { 'content': searchAction }
-        const reloadMenuItem: Record<string, Object> = { 'content': reloadAction }
-        const favoritesMenuItems: Record<string, Object>[] = [searchMenuItem, reloadMenuItem]
+        const layoutMenuItem: Record<string, Object> = { 'content': layoutAction }
+        const favoritesMenuItems: Record<string, Object>[] = [searchMenuItem, layoutMenuItem]
         const favoritesMenu: Record<string, Object> = { 'value': favoritesMenuItems, 'maxCount': 2 }
         content['menu'] = favoritesMenu
       } else {
@@ -2024,7 +2020,6 @@ struct Index {
         TabContent() {
           FavoritesPage({
             scroller: this.rootTabScrollers[1],
-            reloadVersion: this.favoritesReloadVersion,
             onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
               this.pushGallery(galleryId, seed)
             },

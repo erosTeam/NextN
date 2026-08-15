@@ -1,3 +1,8 @@
+## Home/Favorites page-one cache — cold-start observation — 2026-08-16
+
+- After force-stop/cold start on 192.168.50.237:12345 (fresh lease, wake, AWAKE + OverrideTimeout=86400000ms gate, no data clear), foreground-confirmed `com.erosteam.nextn` cold started into Browse and painted the waterfall list with cached rows (tag chips visible). A semantic tap on the 收藏 tab then foregrounded the Favorites root and painted the cover-grid snapshot (GridItems with title/`#id`) without any full-page "正在检查账户会话" state.
+- The device RDB (`browse_presentation_settings`) read-only copy shows `browse_presentation=cover_grid`, `home_source_latest_presentation=waterfall`, `browse_presentation_show_gallery_tags=1`; `nh_gallery_list_cache` holds `home:v1:latest:all:recent` and `favorites:v1:default` snapshots, both 25/25 galleries with tagIds and resolved tags. This explains the favorites page showing no tag text: it is rendering the cover-grid card, which has no tag leaf (same as NextE GalleryGridCard), not missing tag data.
+- This observes the cache cold-start path only; it does not accept tag translation timing, every layout density, sign-out cache clearing, or the pending developer-guide maintenance contract. Raw layout copies retained under `.hvigor/outputs/nextn-cache-tags-20260816T/` and excluded from Git.
 # NextN active device-acceptance queue
 
 ## Current Intermittent JS TypeError crash fix — bounded device observation — 2026-08-16

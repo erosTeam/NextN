@@ -1,4 +1,8 @@
+import { common } from '@kit.AbilityKit'
+import { SymbolGlyphModifier } from '@kit.ArkUI'
 import {
+  BrowsePresentationService,
+  BrowsePresentationState,
   ContentFilterService,
   ContentFilterState,
   FavoriteMutationState,
@@ -6,9 +10,11 @@ import {
   FavoritesActionBridge,
   FavoritesActionState,
   GalleryCollectionBody,
+  GalleryListCacheRepository,
   AccountSessionState,
   AppStrings,
   NhApiClient,
+  NhBrowsePresentation,
   NhGalleryPageResult,
   NhGallerySummary,
   NhTagCatalogService,
@@ -18,6 +24,7 @@ import {
   NextNPullRefreshController,
   RootRefreshRegistry,
   ThemeTokens,
+  connectBrowsePresentation,
   connectContentFilters,
   connectFavoriteMutations,
   connectFavoritesActions,
@@ -27,6 +34,7 @@ import {
   LayoutSafeAreaState,
   TagTranslationState,
 } from 'shared'
+import { appMenuOptions } from 'shared'
 
 /**
  * Read-only favourites root. This follows NextE's cover-grid shell but keeps
@@ -43,6 +51,8 @@ export struct FavoritesPage {
   @Local accountSession: AccountSessionState = connectAccountSession()
   @Local favoriteMutations: FavoriteMutationState = connectFavoriteMutations()
   @Local titleActions: FavoritesActionState = connectFavoritesActions()
+  @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
+  @Local layoutMenuShown: boolean = false
   @Local searchActive: boolean = false
   @Local searchQuery: string = ''
   @Local activeQuery: string = ''
@@ -56,7 +66,6 @@ export struct FavoritesPage {
   @Local currentPage: number = 0
   @Local totalPages: number = 1
   @Param scroller: Scroller = new Scroller()
-  @Param reloadVersion: number = 0
   @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
@@ -72,6 +81,15 @@ export struct FavoritesPage {
   private appliedAccountSessionRevision: number = -1
   /** One retained interactive-refresh owner across every Favorites density branch. */
   private refreshController: NextNPullRefreshController = new NextNPullRefreshController()
+
+  private context(): common.UIAbilityContext {
+    return this.getUIContext().getHostContext() as common.UIAbilityContext
+  }
+
+  /** Single-user device key; cleared on sign-out so another account cannot reuse it. */
+  private favoritesCacheKey(): string {
+    return 'favorites:v1:default'
+  }
 
   aboutToAppear(): void {
     this.isVisible = true
@@ -100,12 +118,6 @@ export struct FavoritesPage {
     RootRefreshRegistry.unregister(this.scroller)
   }
 
-  @Monitor('reloadVersion')
-  onReloadRequested(): void {
-    if (this.reloadVersion > 0) {
-      this.refresh()
-    }
-  }
 
   @Monitor('contentFilters.revision')
   onContentFiltersChanged(): void {
@@ -167,6 +179,10 @@ export struct FavoritesPage {
     this.handledTitleActionSeq = this.titleActions.commandSeq
     if (this.titleActions.command === FavoritesAction.TOGGLE_SEARCH && this.canUseTitleActions()) {
       this.toggleSearch()
+      return
+    }
+    if (this.titleActions.command === FavoritesAction.OPEN_LAYOUT_MENU && this.canUseTitleActions()) {
+      this.layoutMenuShown = true
     }
   }
 
@@ -186,6 +202,39 @@ export struct FavoritesPage {
       }
     }
     this.reportTitleActions()
+  }
+
+  /** Favorites is a direct global-Browse consumer; the menu writes the shared mode. */
+  private setBrowsePresentation(mode: NhBrowsePresentation): void {
+    this.layoutMenuShown = false
+    if (this.browsePresentation.mode === mode) {
+      return
+    }
+    BrowsePresentationService.setMode(this.context(), mode).catch((): void => {})
+  }
+
+  @Builder
+  private LayoutMenu() {
+    Menu() {
+      this.LayoutMenuItem(AppStrings.get('browse_list'), NhBrowsePresentation.LIST)
+      this.LayoutMenuItem(AppStrings.get('browse_simple_list'), NhBrowsePresentation.SIMPLE_LIST)
+      this.LayoutMenuItem(AppStrings.get('browse_cover_grid'), NhBrowsePresentation.COVER_GRID)
+      this.LayoutMenuItem(AppStrings.get('browse_waterfall'), NhBrowsePresentation.WATERFALL)
+      this.LayoutMenuItem(AppStrings.get('browse_waterfall_compact'), NhBrowsePresentation.WATERFALL_COMPACT)
+      this.LayoutMenuItem(AppStrings.get('browse_cover_wall'), NhBrowsePresentation.COVER_WALL)
+    }
+  }
+
+  @Builder
+  private LayoutMenuItem(label: string, mode: NhBrowsePresentation) {
+    MenuItem({
+      content: label,
+      symbolEndIcon: this.browsePresentation.mode === mode
+        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+        : undefined,
+    }).onClick((): void => {
+      this.setBrowsePresentation(mode)
+    })
   }
 
   /** HDS actions exist only after Entry's published session state has settled. */
@@ -264,7 +313,7 @@ export struct FavoritesPage {
     }
     const generation: number = this.sessionProjectionGeneration + 1
     this.sessionProjectionGeneration = generation
-    this.isResolvingSessionState = true
+    this.isResolvingSessionState = !this.accountSession.initialized
     this.reportTitleActions()
     if (!this.accountSession.initialized) {
       this.sessionStateApplied = false
@@ -286,18 +335,46 @@ export struct FavoritesPage {
   }
 
   private async loadPublishedAccountPage(generation: number): Promise<void> {
+    this.isResolvingSessionState = false
+    this.reportTitleActions()
+    await this.hydrateCachedFavorites(generation)
+    if (generation !== this.sessionProjectionGeneration) {
+      return
+    }
     try {
-      await this.loadFirstPage(false)
+      await this.loadFirstPage(this.rawGalleries.length > 0)
     } finally {
       if (generation === this.sessionProjectionGeneration) {
-        this.isResolvingSessionState = false
         this.reportTitleActions()
         this.refreshForFavoriteMutationIfVisible()
       }
     }
   }
 
+  private async hydrateCachedFavorites(generation: number): Promise<void> {
+    try {
+      const cached: NhGallerySummary[] | null = await GalleryListCacheRepository.load(
+        this.context(),
+        this.favoritesCacheKey(),
+      )
+      if (generation !== this.sessionProjectionGeneration ||
+        cached === null || cached.length === 0) {
+        return
+      }
+      const labeled: NhGallerySummary[] = await NhTagCatalogService.refreshLocalDisplayLabels(cached)
+      if (generation !== this.sessionProjectionGeneration) {
+        return
+      }
+      this.rawGalleries = labeled
+      this.applyContentFilters()
+      this.currentPage = 1
+      this.totalPages = 1
+    } catch (_error) {
+    }
+  }
+
   private resetForSignedOut(): void {
+    GalleryListCacheRepository.clearPrefix(this.context(), 'favorites:v1:').catch((): void => {})
     this.requestGeneration += 1
     this.searchActive = false
     this.searchQuery = ''
@@ -359,6 +436,10 @@ export struct FavoritesPage {
       }
       this.currentPage = 1
       this.totalPages = Math.max(1, result.totalPages)
+      if (querySnapshot.length === 0) {
+        GalleryListCacheRepository.save(this.context(), this.favoritesCacheKey(), result.galleries)
+          .catch((): void => {})
+      }
     } catch (error) {
       if (generation === this.requestGeneration) {
         this.errorMessage = (error as Error).message || AppStrings.get('favorites_load_failed')
@@ -477,7 +558,7 @@ export struct FavoritesPage {
   }
 
   build() {
-    Stack({ alignContent: Alignment.TopStart }) {
+    Stack({ alignContent: Alignment.TopEnd }) {
       Column() {
         if (this.isResolvingSessionState) {
           PageLoadingState({ text: AppStrings.get('favorites_checking_session') })
@@ -554,6 +635,18 @@ export struct FavoritesPage {
         .width('100%')
         .align(Alignment.TopStart)
       }
+      // HDS title actions cannot anchor a Menu; the retained Favorites host
+      // owns the same invisible anchor as NextE FavoritesPage/FavcatPage.
+      Row()
+        .width(1)
+        .height(1)
+        .hitTestBehavior(HitTestMode.None)
+        .bindMenu(this.layoutMenuShown, this.LayoutMenu, appMenuOptions({
+          placement: Placement.BottomRight,
+          onDisappear: (): void => {
+            this.layoutMenuShown = false
+          },
+        }))
     }
     .width('100%')
     .height('100%')

@@ -3,6 +3,149 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## Tag translation cold-start/cache fix + Detail cover atomic swap — 2026-08-16
+
+- **Why newly actionable:** the user reports, repeatedly, that cold-start
+  Browse/Favorites lists show raw English tags and that the Detail page shows
+  English tags first, then Chinese; and that the Detail hero cover flashes
+  for a frame. The incident chain is recorded in
+  `docs/qa/nextn-incident-register.md` (INC-001/002): the new
+  `GalleryListCacheRepository` decode cleared `displayName` (its rationale
+  was written in `docs/developer-guide.md` as “displayName 一律置空，网络刷新后由
+  enrich 重新应用”), Home/Favorites hydrated that cache without re-applying
+  the local dictionary, and the Detail seed (`240b2cd`) then reused the
+  cleared labels. Previous “fixes” (`515af1e`, `2e17ee1`) only rebuilt tag
+  chips when a dictionary revision arrived, so cold start regressed every
+  time.
+- **Whole parent-tree boundary:** (1) tag label pipeline only —
+  `GalleryListCacheRepository.decode()` must keep `source.displayName`;
+  Home `loadOnceWithCachedRows()` and Favorites `hydrateCachedFavorites()`
+  must call `NhTagCatalogService.refreshLocalDisplayLabels(cached)` before
+  painting; Detail seed labels reuse seed `displayName` by tag identity.
+  (2) Detail hero cover swap only — `GalleryHero` renders
+  `displayedCoverUrl`; the verified `coverUrl` enters `pendingCoverUrl`
+  (1×1/opacity-0 preload) and replaces the visible URL only on `onComplete`,
+  so the seed thumbnail never blanks or jumps. `resetDetailForReplacementRoute`
+  clears both.
+- **Exact before/after:** before — cold start waterfall showed
+  `original/sole male/doujinshi` and detail showed English then Chinese;
+  hero cover switched URLs directly on the verified response. after — cold
+  start shows 原创/单男主/同人志 and detail tags are Chinese from the seed;
+  the hero bitmap changes atomically after the verified cover finishes
+  loading.
+- **Device evidence — 2026-08-16 05:0x +0800:** signed Debug HAP built and
+  `install -r` on the selected `192.168.50.237:12345` after the
+  live-target/lease/wake/AWAKE+OverrideTimeout gate. No data clear or
+  uninstall. Cold start #1: Browse waterfall tags are Chinese
+  (`原创/单男主/同人志`, `乳头刺激/乳房缩小/长刘海`). Favorites tab: cached
+  rows paint immediately with Chinese tags (`牛女孩/大根/多毛/巨乳`,
+  `口交/开洞装/中出/项圈`), and no “正在检查账户会话” text is present. Detail
+  open: settled layout has the hero card at the top (`[36,321][1284,918]`)
+  and tag rows all Chinese (`同人志/单男主/乱交/中出/萝莉/口交/双马尾`,
+  `蔚蓝档案/老师/小鸟游星野/橘希望`). Cold start #2 (force-stop + relaunch,
+  persisted cache): Browse again shows `原创/单男主/同人志/乳头刺激`. Evidence
+  retained under `.hvigor/outputs/nextn-tag-fix-20260816T/` and excluded
+  from Git.
+- **Remaining evidence limit (INC-002 OPEN):** the “hero card one frame in
+  the lower half” during the push transition was not reproduced in the rapid
+  `snapshot_display` bursts against this build (settled hero is at top, no
+  cover URL swap remains). The atomic cover swap removes the source-proven
+  reload/jump; the exact one-frame transition position remains open until
+  the user's repro path is captured or explicitly accepted.
+
+## NextN 事故登记簿 established — 2026-08-16
+
+- `docs/qa/nextn-incident-register.md` is created as the durable register
+  for regressions: every report answers which commit/design decision
+  introduced it, the stated rationale, why it was wrong, the evidence, the
+  fix, and the prevention rule. INC-001 (tag translation cache decode) is
+  closed by the device evidence above; INC-002 (Detail hero flash) remains
+  OPEN pending the transition-frame capture; INC-003 (Favorites cold-start
+  session gate) has cache hydration evidence; INC-004 (repeat single-point
+  patches) is closed with process rules.
+
+## Shared gallery-list top gap (single spacing contract) — 2026-08-16
+
+- **Why newly actionable:** the user reports the first gallery card nearly
+  touches the title-bar buttons on surfaces without pinned chrome. Device
+  evidence on 237: Favorites waterfall first FlowItem starts at y=285 while
+  the HDS title buttons end at y=261 (8vp), and the grid first item starts at
+  y=303; the only separation is the computed `TopSpacer` reserve
+  (topAvoid + TITLE_BAR_HEIGHT + caller topPadding), with no real list gap.
+  NextE surfaces always pass a pinned selector/search-field reserve; NextN's
+  Favorites has no pinned header, so its cards landed directly below the
+  buttons.
+- **Whole parent-tree boundary:** `GalleryCollectionBody` only (the shared
+  gallery-list parent for Home/Popular/Search/Favorites). A new shared token
+  `ThemeTokens.GALLERY_LIST_TOP_GAP` (12vp) is added by
+  `GalleryCollectionBody.effectiveTopPadding()` to all five scaffold
+  branches. Caller `topPadding` keeps its meaning: pinned-chrome reserve
+  only (source selector, search field). No page hand-tunes a list top inset;
+  all four collection surfaces inherit the same rhythm from this one place.
+  Other scaffolds/pages are untouched.
+- **Exact before/after:** before — Favorites waterfall first card at 8vp
+  below the buttons, grid at 14vp. after — every collection gains the same
+  12vp resting gap on top of its own pinned reserve (Favorites waterfall
+  becomes 20vp below the buttons; Home keeps its pinned selector reserve
+  plus the same 12vp).
+- **Minimality rationale:** the shared parent is the single owner of list
+  geometry; the change is one token plus one method, replacing implicit
+  per-caller spacing assumptions instead of adding another page-local
+  value.
+- **Verification plan:** signed build; install -r; cold start; dump Favorites
+  waterfall and grid first-card bounds on 237 and confirm the 12vp increase;
+  dump Home and Search to confirm they keep their pinned reserves and gain
+  the same 12vp; record the layouts under
+  `.hvigor/outputs/nextn-fav-layout-20260816T/`.
+## Browse default = Waterfall; Favorites layout command; Grid meta without #id — 2026-08-16
+
+- **Why newly actionable:** the user asks why Favorites has no quick layout
+  switch and why the grid card shows a meaningless `#id` under the title, then
+  explicitly directs the default view to Waterfall and asks that the
+  default-opened list carry tags.
+- **Whole parent-tree boundary:** (1) global `BrowsePresentationState` /
+  `BrowsePresentationRepository` default only (fresh/unknown persisted
+  values); no installed preference is migrated. (2) Favorites root title-bar
+  menu: `Index.rootTitleBar` activeTab 1 menu becomes search+layout; the
+  pre-existing standalone reload action is removed as redundant because
+  Favorites already refreshes by pull and by re-tapping the active tab, and
+  NextE's Favorites has no reload title action. `FavoritesPage` gains the
+  same invisible 1vp anchored `bindMenu` as NextE
+  `FavoritesPage`/`FavcatPage`, with the SettingsPage browse-presentation
+  item list (列表/简洁/网格/瀑布流/紧凑瀑布流/封面墙) writing the global
+  Browse mode via `BrowsePresentationService.setMode`. No scroll owner,
+  list, session gate, or search field changes. (3) `GalleryGridCard.Info`
+  meta line only: `#id` replaced by NextE `metaText()` semantics
+  (upload date first; otherwise the favourite count). The page count is
+  never repeated in the meta line because the cover overlay already owns
+  it. `NhGallerySummary.uploadDate`/`favoriteCount` are parsed from the
+  optional `upload_date`/`num_favorites` list fields and survive the
+  cache round-trip. Cover, title, language badge, page-count overlay and
+  all other cards are untouched.
+- **Source/reference evidence:** NextE `GalleryGridCard.metaText()` shows
+  `postTime`, then `fileCount+"P"`, then category — never `#id`. NextE
+  Favorites pages consume the global `ListModeState` and use a title-bar
+  command plus an invisible anchored menu; NextN's Favorites previously had
+  no layout command at all. Live `nhentai.net/api/v2/galleries` list JSON
+  contains `num_favorites` but no `upload_date`; the detail JSON does contain
+  `upload_date`, so the field is optional at parse time.
+- **Exact before/after:** before — `browsePresentation` fallback
+  `simple_list`, grid meta shows the gallery id, Favorites menu
+  [search,reload] maxCount 2. after — fallback `waterfall`,
+  `metaText()` date-or-favourite-count (heart glyph), Favorites menu
+  [search,layout] maxCount 2 (reload removed).
+- **Minimality rationale:** each change is the leaf the user named; the
+  default switch affects only absent/unknown persisted values so an existing
+  saved view is never overwritten.
+- **Verification plan:** signed Debug build; install -r; cold start; open
+  Favorites with a signed-in session, activate 列表视图, choose 瀑布流 and
+  confirm the grid switches in place; check the grid meta line shows a
+  date or a favourite count (never the gallery id and never a repeated
+  page count); confirm the Browse root layout menu is unchanged. The
+  fresh-install default is verified from the source fallback only because
+  clearing the device's app data is not authorized.
+
+
 ## Shared NextNSectionHeader for Browse/Search option panels — 2026-08-16
 
 - **Why newly actionable:** the user reports the Home Browse options sheet
@@ -24,6 +167,33 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Verification plan:** signed build; install -r; open Home Browse options
   sheet and Search options sheet; compare title bounds/text alignment against
   the card edge and the SettingsPage header style.
+
+## Durable Home/Favorites page-one cache + non-blocking session gate — 2026-08-16
+
+- **Why newly actionable:** the user reports (asked repeatedly) that cold
+  starting into Favorites shows a full-page "正在检查账户会话…" and that
+  Home/Favorites have no cache at all. Source audit confirms both:
+  FavoritesPage set `isResolvingSessionState=true` for every published
+  session revision and kept it true until the first network favorites GET
+  settled, and neither page persisted any gallery list.
+- **Exact change:** add `nh_gallery_list_cache` (schema v20) and
+  `GalleryListCacheRepository` for durable, display-only page-one snapshots.
+  FavoritesPage shows the session-check page only while the session is
+  genuinely uninitialized; once signed in it hydrates the cached snapshot
+  immediately, clears the session gate, and refreshes page one in place
+  (keepUsableRows). Successful page-one favorites reads (no active search)
+  persist the snapshot; sign-out clears the favorites prefix. HomePage
+  hydrates the cached snapshot for the active source/language/sort on cold
+  start before the live page read replaces it, and persists each successful
+  page-one result under `home:v1:<source>:<language>:<sort>`.
+- **Boundary:** page-one display and refresh only; pagination, search
+  queries, mutations, and all other pages are unchanged. Cache rows never
+  replace live reads; they only remove the cold-start blank/session gate.
+- **Verification plan:** signed build; install -r without clearing data;
+  cold start into Favorites with a previously cached snapshot and confirm
+  the grid paints immediately without the session-check page, then confirm
+  the live refresh replaces it; repeat for Home Browse; verify sign-out
+  clears the favorites cache.
 
 ## Detail metadata card split with right-side download/seed actions + comments empty copy — 2026-08-16
 

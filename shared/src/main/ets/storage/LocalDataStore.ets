@@ -7,7 +7,7 @@ const STORE_CONFIG: relationalStore.StoreConfig = {
   autoCleanDirtyData: true,
 }
 
-const SCHEMA_VERSION: number = 19
+const SCHEMA_VERSION: number = 20
 const SQL_CREATE_READING_HISTORY: string =
   'CREATE TABLE IF NOT EXISTS reading_history (' +
   'gallery_id INTEGER PRIMARY KEY, ' +
@@ -168,6 +168,11 @@ const SQL_CREATE_COMMENT_TRANSLATION_CACHE: string =
 const SQL_CREATE_COMMENT_TRANSLATION_CACHE_EXPIRY_ORDER: string =
   'CREATE INDEX IF NOT EXISTS idx_comment_translation_cache_expiry ' +
   'ON comment_translation_cache (expires_at ASC, cached_at DESC)'
+const SQL_CREATE_NH_GALLERY_LIST_CACHE: string =
+  'CREATE TABLE IF NOT EXISTS nh_gallery_list_cache (' +
+  'cache_key TEXT PRIMARY KEY NOT NULL, ' +
+  'payload TEXT NOT NULL, ' +
+  'cached_at INTEGER NOT NULL)'
 
 /**
  * Owns the small on-device schema shared by anonymous local capabilities.
@@ -240,6 +245,7 @@ export class LocalDataStore {
       await store.executeSql(SQL_CREATE_COMIC_TRANSLATION_DOCUMENT_CACHE_ACCESS_ORDER)
       await store.executeSql(SQL_CREATE_COMMENT_TRANSLATION_CACHE)
       await store.executeSql(SQL_CREATE_COMMENT_TRANSLATION_CACHE_EXPIRY_ORDER)
+      await store.executeSql(SQL_CREATE_NH_GALLERY_LIST_CACHE)
       await LocalDataStore.ensureReadingHistoryProgressColumn(store)
       await LocalDataStore.ensureAccountVerificationReasonColumn(store)
       if (existingVersion < SCHEMA_VERSION) {

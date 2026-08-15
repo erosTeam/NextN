@@ -40,6 +40,12 @@ export class ThemeTokens {
   static readonly SPACE_LG: number = 16
   static readonly SPACE_XL: number = 24
   static readonly SPACE_XXL: number = 32
+  /**
+   * One shared resting gap between the top chrome (title bar / pinned
+   * selector / search field) and the first gallery card. GalleryCollectionBody
+   * adds it to every caller's pinned reserve, so no page hand-tunes it.
+   */
+  static readonly GALLERY_LIST_TOP_GAP: number = 12
 
   // Type scale
   static readonly FONT_SIZE_TINY: number = 10

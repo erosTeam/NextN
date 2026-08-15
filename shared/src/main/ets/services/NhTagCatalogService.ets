@@ -261,6 +261,8 @@ export class NhTagCatalogService {
     gallery.japaneseTitle = source.japaneseTitle
     gallery.thumbnailUrl = source.thumbnailUrl
     gallery.pageCount = source.pageCount
+    gallery.uploadDate = source.uploadDate
+    gallery.favoriteCount = source.favoriteCount
     gallery.thumbnailWidth = source.thumbnailWidth
     gallery.thumbnailHeight = source.thumbnailHeight
     gallery.tagIds = source.tagIds.slice()

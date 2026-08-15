@@ -6,6 +6,10 @@ export class NhGallerySummary {
   japaneseTitle: string = ''
   thumbnailUrl: string = ''
   pageCount: number = 0
+  /** Optional list-provided epoch seconds; 0 when the list endpoint omits it. */
+  uploadDate: number = 0
+  /** List-provided favourite count; 0 when the list endpoint omits it. */
+  favoriteCount: number = 0
   thumbnailWidth: number = 0
   thumbnailHeight: number = 0
   tagIds: number[] = []

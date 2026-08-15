@@ -79,6 +79,16 @@ export struct GalleryCollectionBody {
     return this.presentationOverride === null ? this.browsePresentation.mode : this.presentationOverride
   }
 
+  /**
+   * One shared top-inset contract: the caller's topPadding reserves only its
+   * pinned chrome (source selector, search field), and the shared list gap is
+   * added here so every collection surface keeps the same card-to-chrome
+   * rhythm without per-page spacing values.
+   */
+  private effectiveTopPadding(): number {
+    return this.topPadding + ThemeTokens.GALLERY_LIST_TOP_GAP
+  }
+
   private hasInlineError(): boolean {
     return this.errorMessage.length > 0 && this.galleries.length > 0
   }
@@ -303,7 +313,7 @@ export struct GalleryCollectionBody {
         densityEnabled: true,
         gap: ThemeTokens.GALLERY_GRID_GAP,
         horizontalPadding: ThemeTokens.GALLERY_GRID_GAP,
-        topPadding: this.topPadding,
+        topPadding: this.effectiveTopPadding(),
         bottomPadding: this.bottomPadding,
         contentItemCount: this.contentItemCount(),
         fullRowContentIndexes: this.fullRowContentIndexes(),
@@ -342,7 +352,7 @@ export struct GalleryCollectionBody {
         densityEnabled: true,
         gap: ThemeTokens.GALLERY_GRID_GAP,
         horizontalPadding: ThemeTokens.GALLERY_GRID_GAP,
-        topPadding: this.topPadding,
+        topPadding: this.effectiveTopPadding(),
         bottomPadding: this.bottomPadding,
         contentItemCount: this.contentItemCount(),
         fullRowContentIndexes: this.fullRowContentIndexes(),
@@ -381,7 +391,7 @@ export struct GalleryCollectionBody {
         densityEnabled: true,
         gap: ThemeTokens.GALLERY_GRID_GAP,
         horizontalPadding: ThemeTokens.GALLERY_GRID_GAP,
-        topPadding: this.topPadding,
+        topPadding: this.effectiveTopPadding(),
         bottomPadding: this.bottomPadding,
         contentItemCount: this.contentItemCount(),
         fullRowContentIndexes: this.fullRowContentIndexes(),
@@ -420,7 +430,7 @@ export struct GalleryCollectionBody {
         densityEnabled: true,
         gap: ThemeTokens.GALLERY_GRID_GAP,
         horizontalPadding: ThemeTokens.GALLERY_GRID_GAP,
-        topPadding: this.topPadding,
+        topPadding: this.effectiveTopPadding(),
         bottomPadding: this.bottomPadding,
         contentItemCount: this.contentItemCount(),
         fullRowContentIndexes: this.fullRowContentIndexes(),
@@ -457,7 +467,7 @@ export struct GalleryCollectionBody {
         listSpace: this.effectivePresentation() === NhBrowsePresentation.LIST
           ? ThemeTokens.SPACE_SM
           : 0,
-        topPadding: this.topPadding,
+        topPadding: this.effectiveTopPadding(),
         bottomPadding: this.bottomPadding,
         itemCount: this.contentItemCount(),
         normalizeContentIndexes: true,
