@@ -31,7 +31,7 @@ export struct PopularPage {
   @Param sourceTab: boolean = false
   @Param sourceKey: string = ''
   @Param active: ActiveKeyState = new ActiveKeyState()
-  @Event onOpenGallery?: (galleryId: number) => void
+  @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   @Local galleries: NhGallerySummary[] = []
   /** Preserve the successful response while local display rules are toggled. */
@@ -205,9 +205,9 @@ export struct PopularPage {
       onRetry: (): void => {
         this.refresh()
       },
-      onOpenGallery: (galleryId: number): void => {
+      onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
         if (this.onOpenGallery) {
-          this.onOpenGallery(galleryId)
+          this.onOpenGallery(galleryId, seed)
         }
       },
       onDidScroll: (offset: number, state: ScrollState): void => {

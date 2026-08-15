@@ -155,6 +155,8 @@ class GalleryTitleTranslationState {
 @ComponentV2
 export struct GalleryDetailPage {
   @Require @Param galleryId: number
+  /** Optional tapped-row snapshot; its fields paint immediately and are upgraded by the verified detail. */
+  @Param seed?: NhGallerySummary | null = null
   @Local detail: NhGalleryDetail = new NhGalleryDetail()
   @Local isLoading: boolean = true
   @Local errorMessage: string = ''
@@ -173,6 +175,7 @@ export struct GalleryDetailPage {
   @Local fullTitleSheetShown: boolean = false
   @Local coverFailedUrl: string = ''
   @Local tagTranslationLabels: string[] = []
+  @Local tagTranslationPending: boolean = false
   @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
   @Local relatedGalleries: NhGallerySummary[] = []
@@ -223,7 +226,7 @@ export struct GalleryDetailPage {
   @Param shareVersion: number = 0
   @Param favoriteVersion: number = 0
   @Param torrentShareVersion: number = 0
-  @Event onOpenGallery?: (galleryId: number) => void
+  @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
   @Event onOpenThumbnails?: (galleryId: number, pages: NhGalleryPage[]) => void
   @Event onOpenReader?: (galleryId: number, initialPageIndex: number) => void
   @Event onOpenComments?: (galleryId: number, comments: NhComment[], snapshotAvailable: boolean) => void
@@ -462,6 +465,7 @@ export struct GalleryDetailPage {
     this.fullTitleSheetShown = false
     this.coverFailedUrl = ''
     this.tagTranslationLabels = []
+    this.tagTranslationPending = false
     this.tagTranslationEpoch += 1
     this.readProgressRequestGeneration += 1
     this.titleTranslationEpoch += 1
@@ -676,7 +680,14 @@ export struct GalleryDetailPage {
     if (galleryId <= 0 || galleryId === this.galleryId || !this.onOpenGallery) {
       return
     }
-    this.onOpenGallery(galleryId)
+    let seed: NhGallerySummary | null = null
+    for (let index: number = 0; index < this.relatedGalleries.length; index++) {
+      if (this.relatedGalleries[index].id === galleryId) {
+        seed = this.relatedGalleries[index]
+        break
+      }
+    }
+    this.onOpenGallery(galleryId, seed === null ? undefined : seed)
   }
 
   private openThumbnails(): void {
@@ -995,8 +1006,33 @@ export struct GalleryDetailPage {
     this.publishDownloadChrome()
     this.publishWideThumbnailActionAvailability()
     this.updateNavigationChromeForScroll()
+    // The verified detail may reorder or extend the tapped-row snapshot, so
+    // reuse its labels by tag identity, never by array index.
+    this.tagTranslationLabels = this.pendingLabelsForDetail(detail)
     this.requestTagTranslations(generation, detail.id, detail.tags)
     return true
+  }
+
+  /** Seed labels reused for a verified detail, matched by stable tag identity. */
+  private pendingLabelsForDetail(detail: NhGalleryDetail): string[] {
+    const labels: string[] = []
+    for (let index: number = 0; index < detail.tags.length; index++) {
+      labels.push(this.seedLabelForTag(detail.tags[index]))
+    }
+    return labels
+  }
+
+  private seedLabelForTag(tag: NhTag): string {
+    if (this.seed === null || this.seed === undefined || this.seed.id !== this.galleryId) {
+      return ''
+    }
+    for (let index: number = 0; index < this.seed.tags.length; index++) {
+      const candidate: NhTag = this.seed.tags[index]
+      if (candidate.id === tag.id && candidate.type === tag.type && candidate.name === tag.name) {
+        return candidate.displayName.trim()
+      }
+    }
+    return ''
   }
 
   private startDetailSupplementalLoads(generation: number, detail: NhGalleryDetail): void {
@@ -1025,9 +1061,46 @@ export struct GalleryDetailPage {
     await this.loadReadProgress(generation, detail.id)
   }
 
+  /** Paint the tapped-row snapshot immediately; the verified response upgrades it. */
+  private applySeedSnapshot(generation: number, seed: NhGallerySummary): void {
+    if (!this.isCurrentRequest(generation) || seed.id <= 0 || seed.id !== this.galleryId ||
+      this.detail.id !== 0) {
+      return
+    }
+    const seeded: NhGalleryDetail = new NhGalleryDetail()
+    seeded.id = seed.id
+    seeded.mediaId = seed.mediaId
+    seeded.title = seed.englishTitle
+    seeded.japaneseTitle = seed.japaneseTitle
+    seeded.prettyTitle = seed.displayTitle()
+    seeded.coverUrl = seed.thumbnailUrl
+    seeded.thumbnailUrl = seed.thumbnailUrl
+    seeded.pageCount = seed.pageCount
+    seeded.tags = seed.tags.map((tag: NhTag): NhTag => tag.copy())
+    this.detail = seeded
+    this.seedTagTranslations(seeded.tags)
+    this.publishDownloadChrome()
+    this.publishWideThumbnailActionAvailability()
+  }
+
+  /** Seed labels come from the tapped row's already-resolved local dictionary. */
+  private seedTagTranslations(tags: NhTag[]): void {
+    const labels: string[] = []
+    for (let index: number = 0; index < tags.length; index++) {
+      labels.push(tags[index].displayName.trim())
+    }
+    this.tagTranslationLabels = labels
+    this.tagTranslationPending = false
+    this.tagTranslationEpoch += 1
+  }
+
   private async loadDetail(forceNetwork: boolean = false): Promise<void> {
     const requestedGalleryId: number = this.galleryId
     const generation: number = this.beginDetailLoad()
+    if (!forceNetwork && this.seed !== null && this.seed !== undefined &&
+      this.seed.id === requestedGalleryId) {
+      this.applySeedSnapshot(generation, this.seed)
+    }
     let cacheApplied: boolean = false
     try {
       if (forceNetwork) {
@@ -1361,6 +1434,7 @@ export struct GalleryDetailPage {
   private requestTagTranslations(generation: number, galleryId: number, tags: NhTag[]): void {
     const epoch: number = this.tagTranslationEpoch + 1
     this.tagTranslationEpoch = epoch
+    this.tagTranslationPending = true
     this.loadTagTranslations(generation, galleryId, tags, epoch)
   }
 
@@ -1392,10 +1466,12 @@ export struct GalleryDetailPage {
       // async lookup completes. Advance the epoch with the resolved labels so
       // ArkUI rebuilds the rows instead of reusing the empty-label objects.
       this.tagTranslationEpoch += 1
+      this.tagTranslationPending = false
       console.info(`NextNTagDictionary galleryMatched=${translatedCount} galleryTags=${tags.length}`)
     } catch (_error) {
       // The optional local dictionary must never delay Gallery metadata or
       // replace the raw tag with an error when it is absent or unavailable.
+      this.tagTranslationPending = false
     }
   }
 
@@ -1444,11 +1520,20 @@ export struct GalleryDetailPage {
     return NhTagQuery.format(tag).length > 0
   }
 
-  private tagVisualGroups(labels: string[]): GalleryTagVisualGroup[] {
+  private tagVisualGroups(labels: string[], onlyTranslated: boolean = false): GalleryTagVisualGroup[] {
     const groups: GalleryTagVisualGroup[] = []
     for (let index: number = 0; index < this.detail.tags.length; index++) {
       const tag: NhTag = this.detail.tags[index]
       const namespace: string = tag.type.trim().length > 0 ? tag.type.trim() : AppStrings.get('gallery_tag_fallback')
+      const translatedName: string = index < labels.length
+        ? labels[index]
+        : ''
+      // While a lookup is pending, never paint a raw English chip that is
+      // about to be replaced: hide only unresolved members instead of
+      // flashing the wrong language, then they appear once resolved.
+      if (onlyTranslated && translatedName.length === 0) {
+        continue
+      }
       let group: GalleryTagVisualGroup | null = null
       for (let groupIndex: number = 0; groupIndex < groups.length; groupIndex++) {
         if (groups[groupIndex].namespace === namespace) {
@@ -1460,9 +1545,6 @@ export struct GalleryDetailPage {
         group = new GalleryTagVisualGroup(namespace)
         groups.push(group)
       }
-      const translatedName: string = index < labels.length
-        ? labels[index]
-        : ''
       group.items.push(new GalleryTagVisualItem(tag, index, translatedName))
     }
     return groups
@@ -2037,7 +2119,7 @@ export struct GalleryDetailPage {
         // without this read an async dictionary result never re-renders the
         // tag rows even though the state is populated.
         if (this.tagTranslationLabels.length >= 0) {
-          ForEach(this.tagVisualGroups(this.tagTranslationLabels), (group: GalleryTagVisualGroup, index: number): void => {
+          ForEach(this.tagVisualGroups(this.tagTranslationLabels, this.tagTranslationPending), (group: GalleryTagVisualGroup, index: number): void => {
             this.TagGroupRow(group)
           }, (group: GalleryTagVisualGroup, index: number): string => this.tagGroupKey(group, index))
         }

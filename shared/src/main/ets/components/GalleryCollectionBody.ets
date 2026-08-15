@@ -68,7 +68,7 @@ export struct GalleryCollectionBody {
   @Event onLoadMore?: () => void
   /** Separate footer retry preserves callers that gate tail reach-end after an error. */
   @Event onRetryLoadMore?: () => void
-  @Event onOpenGallery?: (galleryId: number) => void
+  @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   @Event onUserScroll?: () => void
   /** Supplied only by the shared List host for adaptive medium-card cover sizing. */
@@ -127,9 +127,9 @@ export struct GalleryCollectionBody {
     this.requestLoadMore()
   }
 
-  private openGallery(galleryId: number): void {
+  private openGallery(galleryId: number, seed?: NhGallerySummary): void {
     if (galleryId > 0 && this.onOpenGallery) {
-      this.onOpenGallery(galleryId)
+      this.onOpenGallery(galleryId, seed)
     }
   }
 
@@ -205,7 +205,7 @@ export struct GalleryCollectionBody {
             selected: this.isGallerySelected(gallery),
             listContentWidth: this.listContentWidth,
             onOpen: (galleryId: number): void => {
-              this.openGallery(galleryId)
+              this.openGallery(gallery.id, gallery)
             },
           })
         } else {
@@ -213,7 +213,7 @@ export struct GalleryCollectionBody {
             gallery: gallery,
             selected: this.isGallerySelected(gallery),
             onOpen: (galleryId: number): void => {
-              this.openGallery(galleryId)
+              this.openGallery(gallery.id, gallery)
             },
           })
         }
@@ -238,7 +238,7 @@ export struct GalleryCollectionBody {
           gallery: gallery,
           selected: this.isGallerySelected(gallery),
           onOpen: (galleryId: number): void => {
-            this.openGallery(galleryId)
+            this.openGallery(gallery.id, gallery)
           },
         })
       }
@@ -263,7 +263,7 @@ export struct GalleryCollectionBody {
             gallery: gallery,
             selected: this.isGallerySelected(gallery),
             onOpen: (galleryId: number): void => {
-              this.openGallery(galleryId)
+              this.openGallery(gallery.id, gallery)
             },
           }).reuse({ reuseId: () => galleryWaterfallReuseId(gallery) })
         } else if (mode === NhBrowsePresentation.WATERFALL_COMPACT) {
@@ -271,7 +271,7 @@ export struct GalleryCollectionBody {
             gallery: gallery,
             selected: this.isGallerySelected(gallery),
             onOpen: (galleryId: number): void => {
-              this.openGallery(galleryId)
+              this.openGallery(gallery.id, gallery)
             },
           }).reuse({ reuseId: () => galleryWaterfallCompactReuseId(gallery) })
         } else {
@@ -279,7 +279,7 @@ export struct GalleryCollectionBody {
             gallery: gallery,
             selected: this.isGallerySelected(gallery),
             onOpen: (galleryId: number): void => {
-              this.openGallery(galleryId)
+              this.openGallery(gallery.id, gallery)
             },
           }).reuse({ reuseId: () => galleryCoverWallReuseId(gallery) })
         }

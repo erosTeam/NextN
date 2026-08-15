@@ -1,5 +1,30 @@
 # NextN active device-acceptance queue
 
+## Current Gallery detail seed reuse — cold-start first Browse card — 2026-08-16
+
+* The signed Debug HAP from the seed-reuse worktree (SHA-256
+  `8e91e315b4240e9e01adcce732a2169f471ed4690b993925cb4ac284f474839e`) was
+  installed in place with `-r` on only `192.168.50.237:12345` after a fresh
+  live target, lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms` gate.
+  No data clear, uninstall, account action, preference write, or content
+  action occurred.
+* After force-stop/cold start at `1320×2120`, the foreground-confirmed
+  `com.erosteam.nextn` Browse root rendered the gallery card
+  `[conya (koppe)] Candeliere Notte` (`FlowItem [452,399][868,1433]`). One
+  tap from its current layout bounds opened native Gallery Detail; the early
+  and settled layouts both foregrounded the detail with the seeded title,
+  cover, page count, no loading leaf, and the same tag rows: 同人志 / 男同 /
+  纯男性⚣ / 黑塔利亚 Axis Powers translated, while `spain` / `romano` /
+  `conya` stayed raw (installed dictionary has no rows for those names). No
+  English-to-Chinese tag transition was observed; the pending label merge
+  reuses seed labels by tag identity while the detail lookup runs.
+* This observes the cold-start first-open Browse-card path only. It does not
+  accept Search/Favorites/related-entry seed paths, every dictionary state,
+  same-state NextE visual parity, or full lifecycle coverage. Raw local
+  artifacts are retained under
+  `.hvigor/outputs/nextn-seed-detail-20260816T/` (seed3-*) and are excluded
+  from source control.
+
 ## Current Gallery detail tag translation — cold-start first open — 2026-08-16
 
 - The signed Debug HAP from the refined fix worktree (SHA-256

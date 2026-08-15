@@ -86,7 +86,7 @@ export struct LatestSourcePage {
   @Param sourceKey: string = HOME_SOURCE_LATEST
   @Param active: ActiveKeyState = new ActiveKeyState()
   @Param scroller: Scroller = new Scroller()
-  @Event onOpenGallery?: (galleryId: number) => void
+  @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   @Local homeSource: HomeSourceState = connectHomeSource()
   @Local homeGallerySelection: HomeGallerySelectionState = connectHomeGallerySelection()
@@ -384,9 +384,9 @@ export struct LatestSourcePage {
     CatalogPreferencesService.setBrowseSort(this.context(), option).catch((): void => {})
   }
 
-  private openGallery(galleryId: number): void {
+  private openGallery(galleryId: number, seed?: NhGallerySummary): void {
     if (galleryId > 0 && this.onOpenGallery) {
-      this.onOpenGallery(galleryId)
+      this.onOpenGallery(galleryId, seed)
     }
   }
 
@@ -503,8 +503,8 @@ export struct LatestSourcePage {
       onRetryLoadMore: (): void => {
         this.retryLoadMore()
       },
-      onOpenGallery: (galleryId: number): void => {
-        this.openGallery(galleryId)
+      onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
+        this.openGallery(galleryId, seed)
       },
       onDidScroll: (offset: number, state: ScrollState): void => {
         if (this.onDidScroll) {
@@ -531,7 +531,7 @@ function homeSourcePageBuilder(
   active: ActiveKeyState,
   scroller: Scroller,
   onDidScroll: (offset: number, state: ScrollState) => void,
-  onOpenGallery: (galleryId: number) => void,
+  onOpenGallery: (galleryId: number, seed?: NhGallerySummary) => void,
 ) {
   if (key === HOME_SOURCE_POPULAR) {
     PopularPage({
@@ -563,7 +563,7 @@ export struct HomePage {
   @Local visual: HomeSourceVisualIndexState = connectHomeSourceVisualIndex()
   @Local subtabTransition: SubtabTransitionState = connectSubtabTransition()
   @Local layoutMenuShown: boolean = false
-  @Event onOpenGallery?: (galleryId: number) => void
+  @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
   @Event onScrollerReady?: (scroller: Scroller) => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
 
@@ -645,9 +645,9 @@ export struct HomePage {
         onVisualIndex: (value: number): void => {
           this.visual.value = value
         },
-        onOpenGallery: (galleryId: number): void => {
+        onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
           if (this.onOpenGallery) {
-            this.onOpenGallery(galleryId)
+            this.onOpenGallery(galleryId, seed)
           }
         },
         onScrollerReady: (scroller: Scroller): void => {

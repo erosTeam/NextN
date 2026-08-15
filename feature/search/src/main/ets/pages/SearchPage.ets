@@ -133,7 +133,7 @@ export struct SearchPage {
   @Local tagSuggestions: NhTagSuggestion[] = []
   @Local isSuggestingTags: boolean = false
   @Param scroller: Scroller = new Scroller()
-  @Event onOpenGallery?: (galleryId: number) => void
+  @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private requestGeneration: number = 0
   private tagTranslationRefreshEpoch: number = 0
@@ -580,7 +580,7 @@ export struct SearchPage {
     if (galleryId > 0) {
       // A full public gallery URL is navigation intent, not a catalog term.
       // Do not write it into local search history or send it to /api/v2/search.
-      this.openGallery(galleryId, true)
+      this.openGallery(galleryId, undefined, true)
       return
     }
     await this.rememberSearch(query)
@@ -1051,13 +1051,17 @@ export struct SearchPage {
    * request epoch. A direct gallery URL replaces the editor's search intent,
    * so that explicit route does invalidate outstanding catalog work.
    */
-  private openGallery(galleryId: number, replacesSearchIntent: boolean = false): void {
+  private openGallery(
+    galleryId: number,
+    seed?: NhGallerySummary,
+    replacesSearchIntent: boolean = false,
+  ): void {
     if (replacesSearchIntent) {
       this.cancelPendingSearch()
     }
     this.cancelTagSuggestions()
     if (this.onOpenGallery) {
-      this.onOpenGallery(galleryId)
+      this.onOpenGallery(galleryId, seed)
     }
   }
 
@@ -1073,7 +1077,7 @@ export struct SearchPage {
     if (galleryId > 0) {
       // Keep the visible field intact for a Back navigation, while opening the
       // resolved Gallery directly without creating a public search request.
-      this.openGallery(galleryId, true)
+      this.openGallery(galleryId, undefined, true)
       return
     }
     await this.rememberSearch(normalized)
@@ -1331,7 +1335,7 @@ export struct SearchPage {
     if (galleryId > 0) {
       // Recognition is navigation-only: do not record the URL as search
       // history and do not send it to the public catalog endpoint.
-      this.openGallery(galleryId, true)
+      this.openGallery(galleryId, undefined, true)
     }
   }
 
@@ -2227,8 +2231,8 @@ export struct SearchPage {
               onRetryLoadMore: (): void => {
                 this.retryLoadMore()
               },
-              onOpenGallery: (galleryId: number): void => {
-                this.openGallery(galleryId)
+              onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
+                this.openGallery(galleryId, seed)
               },
             }) {
               this.SearchCollectionLeadingContent()

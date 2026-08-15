@@ -92,6 +92,7 @@ import {
   NhDownloadTaskStatus,
   NhApiClient,
   NhGalleryPage,
+  NhGallerySummary,
   ReaderOverlayNavigationState,
   SettingsNavigationState,
   ReaderRouteParams,
@@ -138,16 +139,20 @@ const STATUS_BAR_DARK_CONTENT: string = '#FF000000'
  */
 class GalleryRouteParams {
   galleryId: number = 0
+  /** Optional tapped-row snapshot; the detail paints it immediately before the verified response. */
+  seed: NhGallerySummary | null = null
   chrome: GalleryChromeState = new GalleryChromeState()
   commentSnapshot: NhComment[] = []
   commentSnapshotAvailable: boolean = false
 
   constructor(
     galleryId: number = 0,
+    seed: NhGallerySummary | null = null,
     commentSnapshot: NhComment[] = [],
     commentSnapshotAvailable: boolean = false,
   ) {
     this.galleryId = galleryId
+    this.seed = seed
     this.commentSnapshot = commentSnapshot
     this.commentSnapshotAvailable = commentSnapshotAvailable
   }
@@ -463,11 +468,11 @@ struct Index {
     this.stack.pushPathByName(ROUTE_POPULAR, '')
   }
 
-  private pushGallery(galleryId: number): void {
+  private pushGallery(galleryId: number, seed?: NhGallerySummary): void {
     if (galleryId <= 0) {
       return
     }
-    this.stack.pushPathByName(ROUTE_GALLERY, new GalleryRouteParams(galleryId))
+    this.stack.pushPathByName(ROUTE_GALLERY, new GalleryRouteParams(galleryId, seed ?? null))
   }
 
   private cancelRandomGalleryRequest(): void {
@@ -544,12 +549,12 @@ struct Index {
    * the visible peer Detail is replaced, a different visible route is left in
    * its real back stack, and a same-gallery selection is a no-op.
    */
-  private selectHomeGalleryDetail(galleryId: number): void {
+  private selectHomeGalleryDetail(galleryId: number, seed?: NhGallerySummary): void {
     if (galleryId <= 0) {
       return
     }
     if (this.activeTab !== 0 || !this.layoutSafeArea.rootNavigationSplit) {
-      this.pushGallery(galleryId)
+      this.pushGallery(galleryId, seed)
       return
     }
     const pathNames: string[] = this.stack.getAllPathName()
@@ -559,10 +564,10 @@ struct Index {
       if (current !== null && current.galleryId === galleryId) {
         return
       }
-      this.stack.replacePathByName(ROUTE_GALLERY, new GalleryRouteParams(galleryId), true)
+      this.stack.replacePathByName(ROUTE_GALLERY, new GalleryRouteParams(galleryId, seed ?? null), true)
       return
     }
-    this.stack.pushPathByName(ROUTE_GALLERY, new GalleryRouteParams(galleryId))
+    this.stack.pushPathByName(ROUTE_GALLERY, new GalleryRouteParams(galleryId, seed ?? null))
   }
 
   /** The selected card follows the secondary branch entry, not a nested leaf. */
@@ -616,7 +621,7 @@ struct Index {
     }
     this.stack.pushPathByName(
       ROUTE_COMMENTS,
-      new GalleryRouteParams(galleryId, commentSnapshot, commentSnapshotAvailable),
+      new GalleryRouteParams(galleryId, null, commentSnapshot, commentSnapshotAvailable),
     )
   }
 
@@ -1517,8 +1522,8 @@ struct Index {
       initialQuery: this.searchParams(param).initialQuery,
       chrome: this.searchParams(param).chrome,
       scroller: this.searchScroller,
-      onOpenGallery: (galleryId: number): void => {
-        this.pushGallery(galleryId)
+      onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
+        this.pushGallery(galleryId, seed)
       },
     })
   }
@@ -1528,8 +1533,8 @@ struct Index {
     HdsNavDestination() {
       PopularPage({
         scroller: this.popularScroller,
-        onOpenGallery: (galleryId: number): void => {
-          this.pushGallery(galleryId)
+        onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
+          this.pushGallery(galleryId, seed)
         },
       })
     }
@@ -1543,14 +1548,15 @@ struct Index {
     HdsNavDestination() {
       GalleryDetailPage({
         galleryId: this.galleryParams(param).galleryId,
+        seed: this.galleryParams(param).seed,
         chrome: this.galleryParams(param).chrome,
         scroller: this.galleryScroller,
         externalOpenVersion: this.galleryExternalOpenVersion,
         shareVersion: this.galleryShareVersion,
         favoriteVersion: this.galleryFavoriteVersion,
         torrentShareVersion: this.galleryTorrentShareVersion,
-        onOpenGallery: (galleryId: number): void => {
-          this.pushGallery(galleryId)
+        onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
+          this.pushGallery(galleryId, seed)
         },
         onOpenThumbnails: (galleryId: number, pages: NhGalleryPage[]): void => {
           this.pushThumbnails(galleryId, pages)
@@ -1892,8 +1898,8 @@ struct Index {
       HistoryPage({
         scroller: this.historyScroller,
         clearVersion: this.historyClearVersion,
-        onOpenGallery: (galleryId: number): void => {
-          this.pushGallery(galleryId)
+        onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
+          this.pushGallery(galleryId, seed)
         },
       })
     }
@@ -2003,8 +2009,8 @@ struct Index {
       HdsTabs({ controller: this.tabsController }) {
         TabContent() {
           HomePage({
-            onOpenGallery: (galleryId: number): void => {
-              this.selectHomeGalleryDetail(galleryId)
+            onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
+              this.selectHomeGalleryDetail(galleryId, seed)
             },
             onScrollerReady: (scroller: Scroller): void => {
               this.onHomeSourceScrollerReady(scroller)
@@ -2019,8 +2025,8 @@ struct Index {
           FavoritesPage({
             scroller: this.rootTabScrollers[1],
             reloadVersion: this.favoritesReloadVersion,
-            onOpenGallery: (galleryId: number): void => {
-              this.pushGallery(galleryId)
+            onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
+              this.pushGallery(galleryId, seed)
             },
             onDidScroll: (offset: number, state: ScrollState): void => {
               this.onHomeTabDidScroll(1, offset, state)
@@ -2031,8 +2037,8 @@ struct Index {
         TabContent() {
           DownloadQueuePage({
             scroller: this.rootTabScrollers[2],
-            onOpenGallery: (galleryId: number): void => {
-              this.pushGallery(galleryId)
+            onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
+              this.pushGallery(galleryId, seed)
             },
             onOpenReader: (galleryId: number): void => {
               this.pushReader(galleryId)

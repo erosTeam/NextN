@@ -1,3 +1,4 @@
+import { NhGallerySummary } from '../model/NhGallery'
 import { SubtabTransitionState } from '../state/SubtabTransitionState'
 
 // Kept equal to NextE's retained-source settle duration. It is intentionally
@@ -27,11 +28,12 @@ export struct RetainedSubtabHost {
   @Param transitionScope: string = ''
   @BuilderParam pageBuilder:
     (key: string, active: ActiveKeyState, scroller: Scroller, onDidScroll: (offset: number, state: ScrollState) => void,
-      onOpenGallery: (galleryId: number) => void) => void
+      onOpenGallery: (galleryId: number, seed?: NhGallerySummary) => void) => void
   @Event onSelectKey: (key: string) => void = (_key: string): void => {}
   @Event onVisualIndex: (value: number) => void = (_value: number): void => {}
   /** Explicit page-to-shell navigation handoff; the global page builder has no component `this`. */
-  @Event onOpenGallery: (galleryId: number) => void = (_galleryId: number): void => {}
+  @Event onOpenGallery: (galleryId: number, seed?: NhGallerySummary) => void =
+    (_galleryId: number, _seed?: NhGallerySummary): void => {}
   @Event onScrollerReady?: (scroller: Scroller) => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   @Local swiperIndex: number = 0

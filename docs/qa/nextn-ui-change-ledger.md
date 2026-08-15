@@ -3,6 +3,61 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## Gallery detail seed reuse (no full-screen blank, no tag language flash) — 2026-08-16
+
+- **Why newly actionable:** the user asked why entering Gallery Detail shows a
+  full-screen blank loading surface instead of reusing already-present list
+  elements, and separately reported that detail tags first paint English and
+  then jump to Chinese. The same tapped card already carries a resolved
+  `NhGallerySummary` (title, cover, page count, tags with dictionary labels),
+  so the detail can paint that snapshot synchronously and upgrade it from the
+  verified detail response.
+- **Whole parent-tree boundary:** `Index` Browse/Search/Favorites/History
+  gallery route params (`GalleryRouteParams.galleryId` + new `seed`),
+  `GalleryCollectionBody` card open callbacks, `RetainedSubtabHost` /
+  `HomePage` / `LatestSourcePage` / `PopularPage` / `SearchPage` /
+  `FavoritesPage` `onOpenGallery(galleryId, seed?)` chain, and
+  `GalleryDetailPage` initial paint (`detail`, `tagTranslationLabels`,
+  `tagTranslationPending`, tag group render). Related-gallery navigation
+  passes the tapped related row as seed. No navigation chrome, action, scroll
+  owner, or settings behavior changes.
+- **Reference boundary:** NextE paints `GalleryDetailViewModel.seed(gallery)`
+  before the verified response and renders `tag.translat`; this seed change
+  mirrors that ownership inside NextN’s existing DTOs (`NhGallerySummary` /
+  `NhGalleryDetail`) instead of introducing a new reference composite.
+- **Exact change:** add optional `seed` param to the gallery route and all
+  open-gallery callbacks; `applySeedSnapshot` builds a temporary
+  `NhGalleryDetail` from the tapped row and `seedTagTranslations` copies the
+  row’s dictionary-resolved `displayName` labels into the pending label
+  array. When a verified detail (memory cache, persisted cache, or network)
+  replaces the seed, `pendingLabelsForDetail` reuses seed labels by
+  `id+type+name` identity (never array index) while the async dictionary
+  lookup runs; `tagTranslationPending` hides only labels with no reused value
+  until lookup completes, so translated members never paint raw English first
+  and untranslated members stay raw.
+- **Verification plan:** signed build; cold-start force-stop/start on the
+  selected device, tap a Browse card, capture early + settled layout/screenshot,
+  confirm native `com.erosteam.nextn` Gallery Detail with no loading leaf and
+  stable translated/raw tag labels, then repeat from Search/Favorites/related
+  entries.
+- **Current bounded device observation — 2026-08-16:** signed Debug HAP
+  SHA-256 `8e91e315b4240e9e01adcce732a2169f471ed4690b993925cb4ac284f474839e`
+  installed with `-r` on only `192.168.50.237:12345` after fresh lease,
+  wake, and `AWAKE` / `OverrideTimeout=86400000ms` gate. No data clear,
+  uninstall, account, preference, or content action occurred. After
+  force-stop/cold start at `1320×2120`, the Browse root card
+  `[conya (koppe)] Candeliere Notte` (`FlowItem [452,399][868,1433]`) was
+  tapped from its current layout bounds. The early and settled layouts both
+  foreground `com.erosteam.nextn` Gallery Detail with the seeded title/cover/
+  page count, no loading leaf, and identical tag rows: 同人志 / 男同 /
+  纯男性⚣ / 黑塔利亚 Axis Powers translated, while `spain` / `romano` /
+  `conya` stayed raw (installed dictionary has no rows for those names). No
+  English-to-Chinese tag transition was captured. Raw local artifacts are
+  retained under `.hvigor/outputs/nextn-seed-detail-20260816T/` (seed3-*)
+  and excluded from Git. Search/Favorites/related-entry seed paths and
+  same-state NextE visual parity remain unobserved; this record does not
+  claim them.
+
 ## OPEN — API 26 material support across feature components — 2026-08-16
 
 - **Why newly actionable:** the user reports that the app menus (starting

@@ -57,7 +57,7 @@ export struct FavoritesPage {
   @Local totalPages: number = 1
   @Param scroller: Scroller = new Scroller()
   @Param reloadVersion: number = 0
-  @Event onOpenGallery?: (galleryId: number) => void
+  @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private requestGeneration: number = 0
@@ -439,9 +439,9 @@ export struct FavoritesPage {
     this.applyContentFilters()
   }
 
-  private openGallery(galleryId: number): void {
+  private openGallery(galleryId: number, seed?: NhGallerySummary): void {
     if (galleryId > 0 && this.onOpenGallery) {
-      this.onOpenGallery(galleryId)
+      this.onOpenGallery(galleryId, seed)
     }
   }
 
@@ -534,8 +534,8 @@ export struct FavoritesPage {
             onRetryLoadMore: (): void => {
               this.retryLoadMore()
             },
-            onOpenGallery: (galleryId: number): void => {
-              this.openGallery(galleryId)
+            onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
+              this.openGallery(galleryId, seed)
             },
             onDidScroll: (offset: number, state: ScrollState): void => {
               if (this.onDidScroll) {
