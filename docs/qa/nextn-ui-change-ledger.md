@@ -103,6 +103,37 @@ authorize an edit, replace a device comparison, or define product completion.
   margin, width reservation, or leaf restructuring is authorized without an
   explicit user decision.
 
+## OPEN — Advanced translation-entry internal-copy removal — 2026-08-15
+
+- **Why newly actionable:** the user required a full Settings-copy audit after
+  repeated local wording turned implementation concepts into visible text. The
+  normal Advanced entries for comment and comic translation currently say
+  `私有来源`; that is neither a selectable option nor an operation outcome.
+- **Whole parent-tree boundary:** retain `Settings root → Advanced →
+  Index.advancedSettingsDestination → HdsNavDestination →
+  SettingsPage(surface=ADVANCED) → SecondaryListScaffold → ListItem →
+  TranslationCapabilitiesGroup → NextNGroupedListSection`. Preserve the
+  existing order `评论翻译 → 漫画翻译 → 翻译数据库 → 翻译来源`, their icons,
+  dividers, route callbacks, requested consumer IDs, and destination owner.
+- **Reference boundary:** current NextE has function-specific translation-entry
+  subtitles, but its destination structures are not function-equivalent to
+  NextN's single source form; ErosN is not available as a source for this
+  comparison. The user explicitly rejected exposing implementation terms such
+  as `private source`, so no substitute subtitle is copied or authored. A
+  title and its existing navigation action fully express these two entries.
+- **Exact change:** remove only the two `subtitle` arguments and their four
+  now-unused locale keys. Do not rename `翻译来源`, change its route target,
+  change source/model/form behavior, dictionary management, content filters,
+  service configuration, account state, or translation behavior.
+- **Verification plan:** inspect the exact Settings/resource/ledger diff, parse
+  all locale catalogs, and build the exact commit. On the selected device,
+  observe the foreground-confirmed Advanced group without opening or changing
+  a translation source. Same-state visual parity and source-form behavior
+  remain unaccepted.
+- **Unresolved risk:** source/build cannot prove every locale, source-form
+  behavior, route state, errors, account/provider configuration, or full
+  visual parity.
+
 ## OPEN — Browse/Search stored-default caption removal — 2026-08-15
 
 - **Why newly actionable:** the user asked for a thorough removal of

@@ -3532,7 +3532,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.translate'),
         title: AppStrings.get('settings_comment_translation'),
-        subtitle: AppStrings.get('settings_comment_translation_hint'),
         accessibilityLabel: AppStrings.get('settings_comment_translation_a11y'),
         onAction: (): void => {
           if (this.onOpenTranslationSource) {
@@ -3544,7 +3543,6 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.picture'),
         title: AppStrings.get('settings_reader_comic_translation'),
-        subtitle: AppStrings.get('settings_reader_comic_translation_hint'),
         accessibilityLabel: AppStrings.get('settings_reader_comic_translation_a11y'),
         onAction: (): void => {
           if (this.onOpenTranslationSource) {
