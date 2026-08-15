@@ -1,7 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import {
   AppStrings,
-  ComicTranslationModelService,
   LLM_CONSUMER_COMMENT_TRANSLATION,
   LLM_CONSUMER_MANGA_TRANSLATION,
   LLM_SOURCE_TYPE_OPENAI_COMPATIBLE,
@@ -10,7 +9,6 @@ import {
   LlmSourceProfileRepository,
   LlmSourceProfilesState,
   LlmSourceSecretVault,
-  MangaRenderingServiceSettings,
   NextNGroupedListSection,
   NextNListRow,
   PageEmptyState,
@@ -39,12 +37,8 @@ export struct ComicTranslationSourcePage {
   @Local useMangaTranslation: boolean = false
   @Local useCommentTranslation: boolean = false
   @Local bindingsConflict: boolean = false
-  @Local localModelInstalled: boolean = false
-  @Local localModelChanging: boolean = false
-  @Local mangaRenderingServiceEnabled: boolean = false
   @Param scroller: Scroller = new Scroller()
   @Param requestedConsumer: string = LLM_CONSUMER_MANGA_TRANSLATION
-  @Event onOpenMangaRenderingService?: () => void
   // The key is deliberately not published to AppStorage or any shared state.
   // It exists only while this mounted input is edited and is written directly
   // to the HUKS-backed vault during save.
@@ -52,8 +46,6 @@ export struct ComicTranslationSourcePage {
 
   aboutToAppear(): void {
     this.loadSource()
-    this.refreshLocalModel()
-    this.refreshMangaRenderingService()
   }
 
   private context(): common.UIAbilityContext {
@@ -121,95 +113,6 @@ export struct ComicTranslationSourcePage {
         LlmSourceSecretVault.apiKeyMatchesIdentity(apiKey, profile.accountIdentityHash)
     } catch (_error) {
       return false
-    }
-  }
-
-  private async refreshLocalModel(): Promise<void> {
-    try {
-      this.localModelInstalled = await ComicTranslationModelService.isInstalled(this.context())
-    } catch (_error) {
-      this.localModelInstalled = false
-    }
-  }
-
-  private async refreshMangaRenderingService(): Promise<void> {
-    try {
-      this.mangaRenderingServiceEnabled = (await MangaRenderingServiceSettings.load(this.context())).enabled
-    } catch (_error) {
-      this.mangaRenderingServiceEnabled = false
-    }
-  }
-
-  private confirmInstallLocalModel(): void {
-    if (this.localModelChanging || this.localModelInstalled) {
-      return
-    }
-    this.getUIContext().showAlertDialog({
-      title: AppStrings.get('settings_translation_local_model_install_title'),
-      message: AppStrings.get('settings_translation_local_model_install_message'),
-      primaryButton: {
-        value: AppStrings.get('common_cancel'),
-        action: (): void => {},
-      },
-      secondaryButton: {
-        value: AppStrings.get('settings_translation_local_model_download'),
-        action: (): void => {
-          this.installLocalModel()
-        },
-      },
-    })
-  }
-
-  private async installLocalModel(): Promise<void> {
-    if (this.localModelChanging || this.localModelInstalled) {
-      return
-    }
-    this.localModelChanging = true
-    this.errorMessage = ''
-    try {
-      await ComicTranslationModelService.install(this.context())
-      this.localModelInstalled = true
-    } catch (_error) {
-      this.errorMessage = AppStrings.get('settings_translation_local_model_download_failed')
-    } finally {
-      this.localModelChanging = false
-    }
-  }
-
-  private confirmRemoveLocalModel(): void {
-    if (this.localModelChanging || !this.localModelInstalled) {
-      return
-    }
-    this.getUIContext().showAlertDialog({
-      title: AppStrings.get('settings_translation_local_model_remove_title'),
-      message: AppStrings.get('settings_translation_local_model_remove_message'),
-      primaryButton: {
-        value: AppStrings.get('common_cancel'),
-        action: (): void => {},
-      },
-      secondaryButton: {
-        value: AppStrings.get('settings_translation_local_model_remove'),
-        fontColor: Color.Red,
-        action: (): void => {
-          this.removeLocalModel()
-        },
-      },
-    })
-  }
-
-  private removeLocalModel(): void {
-    if (this.localModelChanging || !this.localModelInstalled) {
-      return
-    }
-    this.localModelChanging = true
-    this.errorMessage = ''
-    try {
-      ComicTranslationModelService.remove(this.context())
-      this.localModelInstalled = false
-    } catch (_error) {
-      this.errorMessage = AppStrings.get('settings_translation_local_model_remove_failed')
-    } finally {
-      this.localModelChanging = false
     }
   }
 
@@ -420,64 +323,6 @@ export struct ComicTranslationSourcePage {
   }
 
   @Builder
-  private LocalModelGroup() {
-    NextNGroupedListSection() {
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.character_viewfinder'),
-        title: AppStrings.get('settings_translation_local_model'),
-        trailingText: this.localModelChanging
-          ? AppStrings.get('settings_translation_local_model_downloading')
-          : this.localModelInstalled
-            ? ComicTranslationModelService.displayName()
-            : AppStrings.get('settings_translation_local_model_not_installed'),
-        showChevron: false,
-        isEnabled: !this.localModelChanging,
-        destructive: this.localModelInstalled,
-        accessibilityLabel: this.localModelInstalled
-          ? AppStrings.get('settings_translation_local_model_remove_a11y')
-          : AppStrings.get('settings_translation_local_model_download_a11y'),
-        onAction: (): void => {
-          if (this.localModelInstalled) {
-            this.confirmRemoveLocalModel()
-          } else {
-            this.confirmInstallLocalModel()
-          }
-        },
-      })
-      Text(AppStrings.get('settings_translation_local_model_notice'))
-        .width('100%')
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
-        .padding({
-          left: ThemeTokens.SPACE_MD,
-          right: ThemeTokens.SPACE_MD,
-          bottom: ThemeTokens.SPACE_SM,
-        })
-    }
-  }
-
-  /** Follows NextE: self-hosted configuration belongs inside comic translation. */
-  @Builder
-  private MangaRenderingServiceGroup() {
-    NextNGroupedListSection() {
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.cloud'),
-        title: AppStrings.get('settings_manga_rendering_service'),
-        subtitle: AppStrings.get('settings_manga_rendering_service_hint'),
-        trailingText: this.mangaRenderingServiceEnabled
-          ? AppStrings.get('settings_manga_rendering_service_enabled')
-          : AppStrings.get('settings_manga_rendering_service_not_configured'),
-        accessibilityLabel: AppStrings.get('settings_manga_rendering_service_a11y'),
-        onAction: (): void => {
-          if (this.onOpenMangaRenderingService) {
-            this.onOpenMangaRenderingService()
-          }
-        },
-      })
-    }
-  }
-
-  @Builder
   private SaveGroup() {
     NextNGroupedListSection() {
       NextNListRow({
@@ -509,14 +354,6 @@ export struct ComicTranslationSourcePage {
           }
           ListItem() {
             this.ConsumerGroup()
-          }
-          ListItem() {
-            this.LocalModelGroup()
-          }
-          if (this.onOpenMangaRenderingService) {
-            ListItem() {
-              this.MangaRenderingServiceGroup()
-            }
           }
           ListItem() {
             this.SaveGroup()

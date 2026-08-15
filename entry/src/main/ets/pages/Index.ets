@@ -1820,9 +1820,6 @@ struct Index {
       ComicTranslationSourcePage({
         scroller: this.translationSourceScroller,
         requestedConsumer: this.translationSourceParams(param).consumerId,
-        onOpenMangaRenderingService: (): void => {
-          this.pushMangaRenderingService()
-        },
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_translation_source')))
