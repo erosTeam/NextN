@@ -149,6 +149,36 @@ authorize an edit, replace a device comparison, or define product completion.
   `.hvigor/outputs/advanced-translation-entry-copy-20260815T1933/` and are
   excluded from source control.
 
+## OPEN — Reader enhancement Japanese-label restoration — 2026-08-15
+
+- **Why newly actionable:** the Settings-copy audit found a direct current
+  NextE Japanese-label drift: NextN names the visible Reader enhancement
+  switch `画像補正`, while the same feature is `画像強調` in NextE. Leaving the
+  explicit accessibility label at the old term would make the one row disagree
+  between visual and spoken presentation.
+- **Whole parent-tree boundary:** retain
+  `Index.readerSettingsDestination → HdsNavDestination →
+  SettingsPage(surface=READER) → SecondaryListScaffold →
+  ReaderPresentationListItems → ListItem → ReaderEnhancementGroup →
+  NextNSectionHeader + NextNGroupedListSection → NextNListRow`; the Reader
+  sheet continues to reuse `ReaderPresentationListItems` inside
+  `NextNModalScaffold`. Preserve the enhancement switch state/gate/actions,
+  model selection, model-management row, maximum-height row, and all order.
+- **Reference boundary:** despite model/backend capability differences, the
+  local model-gated 2× enhancement switch has the same user-facing purpose as
+  current NextE `settings_reader_super_resolution`; its exact current ja_JP
+  value is `画像強調`.
+- **Exact change:** replace only ja_JP `settings_reader_enhancement` and its
+  direct accessibility mirror with `画像強調`. Do not alter any other locale,
+  model behavior, model-management trailing status, persistence, menu, route,
+  or Reader rendering.
+- **Verification plan:** inspect the scoped resource/ledger diff, parse the
+  Japanese catalog, and build the exact commit. If a reversible Japanese app
+  language observation is safe, confirm the routed Reader Settings row then
+  restore the original language. Full visual parity remains unaccepted.
+- **Unresolved risk:** source/build cannot prove Japanese screen-reader output,
+  reader-sheet presentation, every Reader state, or full visual parity.
+
 ## OPEN — Browse/Search stored-default caption removal — 2026-08-15
 
 - **Why newly actionable:** the user asked for a thorough removal of
