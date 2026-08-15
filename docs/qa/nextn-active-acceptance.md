@@ -1,5 +1,23 @@
 # NextN active device-acceptance queue
 
+## Current Detail hero wide-cover contain fit — bounded device observation — 2026-08-16
+
+- The signed Debug HAP (SHA-256
+  `3601f18039585770c1b3f22ee7511d8b9e1cb2d80cf4ef64668f09b5f4176315`) was
+  installed in place with `-r` on only `192.168.50.237:12345` after fresh
+  lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms` gate. No data
+  clear, uninstall, account action, preference write, or selection change
+  occurred.
+- Direct route `nextn_gallery_id 672957` (detail cover 350×249, ratio 1.41)
+  foregrounded native `com.erosteam.nextn` Gallery Detail. The hero Image
+  node measured `[72,487][444,752]` (372×265px, ratio 1.40), vertically
+  centered inside the fixed 124×175vp slot (`[72,357][444,882]`), so the wide
+  cover no longer fills the slot with grey letterbox bars. This observes the
+  API-parsed-dimension direct-route path only; the tapped-card seed path and
+  same-state NextE visual parity remain unobserved. Raw local artifacts are
+  retained under `.hvigor/outputs/nextn-cover-aspect-20260816T/` and excluded
+  from Git.
+
 ## Current API 26 menu/sheet material support — bounded device observation — 2026-08-16
 
 - The signed Debug HAP (SHA-256

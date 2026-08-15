@@ -183,6 +183,12 @@ export class NhGalleryDetailCacheService {
     detail.prettyTitle = NhGalleryDetailCacheService.text(source.prettyTitle)
     detail.coverUrl = NhGalleryDetailCacheService.text(source.coverUrl)
     detail.thumbnailUrl = NhGalleryDetailCacheService.text(source.thumbnailUrl)
+    detail.coverWidth = NhGalleryDetailCacheService.isNonNegativeInteger(source.coverWidth)
+      ? source.coverWidth
+      : 0
+    detail.coverHeight = NhGalleryDetailCacheService.isNonNegativeInteger(source.coverHeight)
+      ? source.coverHeight
+      : 0
     detail.pageCount = source.pageCount
     detail.favoriteCount = source.favoriteCount
     detail.scanlator = NhGalleryDetailCacheService.text(source.scanlator)

@@ -58,6 +58,52 @@ authorize an edit, replace a device comparison, or define product completion.
   same-state NextE visual parity remain unobserved; this record does not
   claim them.
 
+## Detail hero wide-cover contain fit (no grey letterbox) — 2026-08-16
+
+- **Why newly actionable:** the user reports that a wide cover at the top of
+  Gallery Detail is handled differently from NextE and shows long grey
+  padding above/below the image. NextN's hero previously forced every cover
+  into the fixed 124×175vp slot with `ImageFit.Contain` on a grey
+  `COVER_PLACEHOLDER` background, so a wide cover letterboxed inside grey
+  bars. NextE's `EhThumbnail` `containFit` branch keeps the fixed slot as a
+  transparent layout frame and sizes the visible image to the real source
+  proportion.
+- **Whole parent-tree boundary:** `GalleryDetailPage.GalleryHero` cover
+  Stack only; the right title column, fixed slot geometry (124×175vp),
+  radius, and all other detail sections are unchanged. The cover source size
+  now flows through `NhGalleryDetail.coverWidth/coverHeight` (parsed from the
+  v2 detail `cover.width/height` with root/thumbnail fallbacks), the detail
+  cache codec, the seed snapshot (`NhGallerySummary.thumbnailWidth/Height`),
+  and `applyVerifiedDetailSnapshot`'s seed fallback.
+- **Reference boundary:** NextE `GalleryHeaderCard` → `EhThumbnail`
+  `containFit: true` with `sourceWidth/sourceHeight`: transparent slot,
+  image sized by `fittedWidth()/fittedHeight()` (`objectFit Fill`), own
+  rounded clip. NextN mirrors those formulas exactly.
+- **Exact change:** add cover dimension fields to `NhGalleryDetail`; parse
+  them in `NhApiClient.parseGalleryDetail`; carry them through
+  `NhGalleryDetailCacheService.copyDetail`; seed them from the tapped row;
+  fall back to seed dims when a verified detail lacks them; in
+  `GalleryHero`, when source size is known, render the image at
+  `heroCoverFittedWidth()/Height()` with `ImageFit.Fill`, own radius, and a
+  transparent slot (grey placeholder only for the unknown-size fallback).
+- **Verification plan:** signed build; direct-route a gallery whose detail
+  cover is genuinely wide; dump the hero Image bounds and confirm they equal
+  the source-proportioned size inside the 124×175vp slot; then verify the
+  tapped-card seed path renders the same way.
+- **Current bounded device observation — 2026-08-16:** signed Debug HAP
+  SHA-256 `3601f18039585770c1b3f22ee7511d8b9e1cb2d80cf4ef64668f09b5f4176315`
+  installed with `-r` on only `192.168.50.237:12345` after fresh lease, wake,
+  and `AWAKE` / `OverrideTimeout=86400000ms` gate. No data clear, uninstall,
+  account, preference, or selection change occurred. Direct route
+  `nextn_gallery_id 672957` (cover 350×249, ratio 1.41) foregrounded native
+  `com.erosteam.nextn` Gallery Detail; the hero Image node measured
+  `[72,487][444,752]` (372×265px, ratio 1.40), vertically centered in the
+  124×175vp slot (`[72,357][444,882]`), instead of filling the 525px slot.
+  Screenshot retained at
+  `.hvigor/outputs/nextn-cover-aspect-20260816T/wide.png`. Same-state NextE
+  visual parity and the tapped-card seed path remain unobserved; this record
+  does not claim them.
+
 ## OPEN — API 26 material support across feature components — 2026-08-16
 
 - **Why newly actionable:** the user reports that the app menus (starting

@@ -1001,6 +1001,12 @@ export class NhApiClient {
     detail.coverUrl = NhApiClient.cdnUrl(NhApiClient.asString(cover['path']), THUMB_ROOT)
     const thumbnail: Record<string, Object> = NhApiClient.asRecord(root['thumbnail'])
     detail.thumbnailUrl = NhApiClient.cdnUrl(NhApiClient.asString(thumbnail['path']), THUMB_ROOT)
+    const coverWidth: number = NhApiClient.asNumber(root['thumbnail_width']) ||
+      NhApiClient.asNumber(cover['width']) || NhApiClient.asNumber(thumbnail['width'])
+    const coverHeight: number = NhApiClient.asNumber(root['thumbnail_height']) ||
+      NhApiClient.asNumber(cover['height']) || NhApiClient.asNumber(thumbnail['height'])
+    detail.coverWidth = Math.floor(coverWidth)
+    detail.coverHeight = Math.floor(coverHeight)
 
     const rawTags: Object[] = NhApiClient.asArray(root['tags'])
     rawTags.forEach((raw: Object): void => {

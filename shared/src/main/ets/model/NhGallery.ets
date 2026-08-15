@@ -87,6 +87,9 @@ export class NhGalleryDetail {
   prettyTitle: string = ''
   coverUrl: string = ''
   thumbnailUrl: string = ''
+  /** Source cover dimensions; the hero sizes the visible image to the real proportion. */
+  coverWidth: number = 0
+  coverHeight: number = 0
   pageCount: number = 0
   favoriteCount: number = 0
   scanlator: string = ''
@@ -103,6 +106,8 @@ export class NhGalleryDetail {
     result.prettyTitle = this.prettyTitle
     result.coverUrl = this.coverUrl
     result.thumbnailUrl = this.thumbnailUrl
+    result.coverWidth = this.coverWidth
+    result.coverHeight = this.coverHeight
     result.pageCount = this.pageCount
     result.favoriteCount = this.favoriteCount
     result.scanlator = this.scanlator

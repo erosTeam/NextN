@@ -1003,6 +1003,15 @@ export struct GalleryDetailPage {
       return false
     }
     this.detail = detail
+    // The verified response normally carries cover dimensions; a legacy or
+    // direct-route detail without them falls back to the tapped row's known
+    // source size (same gallery, same cover) exactly like NextE's imgWidth/
+    // imgHeight seed fallback.
+    if ((this.detail.coverWidth <= 0 || this.detail.coverHeight <= 0) &&
+      this.seed !== null && this.seed !== undefined && this.seed.id === this.galleryId) {
+      this.detail.coverWidth = this.seed.thumbnailWidth
+      this.detail.coverHeight = this.seed.thumbnailHeight
+    }
     this.isDetailReadyForCurrentGallery = true
     this.publishDownloadChrome()
     this.publishWideThumbnailActionAvailability()
@@ -1076,6 +1085,8 @@ export struct GalleryDetailPage {
     seeded.prettyTitle = seed.displayTitle()
     seeded.coverUrl = seed.thumbnailUrl
     seeded.thumbnailUrl = seed.thumbnailUrl
+    seeded.coverWidth = seed.thumbnailWidth
+    seeded.coverHeight = seed.thumbnailHeight
     seeded.pageCount = seed.pageCount
     seeded.tags = seed.tags.map((tag: NhTag): NhTag => tag.copy())
     this.detail = seeded
@@ -1700,21 +1711,64 @@ export struct GalleryDetailPage {
     }
   }
 
+  /** Mirrors NextE's EhThumbnail containFit slot: real cover proportion, no grey letterbox. */
+  private heroCoverHasSourceSize(): boolean {
+    return this.detail.coverWidth > 0 && this.detail.coverHeight > 0
+  }
+
+  private heroCoverFitByHeight(): boolean {
+    if (!this.heroCoverHasSourceSize()) {
+      return false
+    }
+    return this.detail.coverHeight / this.detail.coverWidth >
+      ThemeTokens.DETAIL_COVER_HEIGHT / ThemeTokens.DETAIL_COVER_WIDTH
+  }
+
+  private heroCoverFittedWidth(): number {
+    if (!this.heroCoverHasSourceSize()) {
+      return ThemeTokens.DETAIL_COVER_WIDTH
+    }
+    if (this.heroCoverFitByHeight()) {
+      return (ThemeTokens.DETAIL_COVER_HEIGHT * this.detail.coverWidth) / this.detail.coverHeight
+    }
+    return ThemeTokens.DETAIL_COVER_WIDTH
+  }
+
+  private heroCoverFittedHeight(): number {
+    if (!this.heroCoverHasSourceSize()) {
+      return ThemeTokens.DETAIL_COVER_HEIGHT
+    }
+    if (this.heroCoverFitByHeight()) {
+      return ThemeTokens.DETAIL_COVER_HEIGHT
+    }
+    return (ThemeTokens.DETAIL_COVER_WIDTH * this.detail.coverHeight) / this.detail.coverWidth
+  }
+
   @Builder
   private GalleryHero() {
     NextNGroupedListSection({ inset: ThemeTokens.SPACE_MD }) {
       Row({ space: ThemeTokens.SPACE_MD }) {
         Stack({ alignContent: Alignment.Center }) {
           if (this.detail.coverUrl.length > 0 && this.coverFailedUrl !== this.detail.coverUrl) {
-            Image(this.detail.coverUrl)
-              .width('100%')
-              .height('100%')
-              .objectFit(ImageFit.Contain)
-              .onError((): void => {
-                // A cover is presentation-only. Keep the detail and its Read
-                // action usable when the remote thumbnail cannot be displayed.
-                this.coverFailedUrl = this.detail.coverUrl
-              })
+            if (this.heroCoverHasSourceSize()) {
+              Image(this.detail.coverUrl)
+                .width(this.heroCoverFittedWidth())
+                .height(this.heroCoverFittedHeight())
+                .objectFit(ImageFit.Fill)
+                .borderRadius(ThemeTokens.DETAIL_COVER_RADIUS)
+                .clip(true)
+                .onError((): void => {
+                  this.coverFailedUrl = this.detail.coverUrl
+                })
+            } else {
+              Image(this.detail.coverUrl)
+                .width('100%')
+                .height('100%')
+                .objectFit(ImageFit.Contain)
+                .onError((): void => {
+                  this.coverFailedUrl = this.detail.coverUrl
+                })
+            }
           } else {
             SymbolGlyph($r('sys.symbol.picture'))
               .fontSize(32)
@@ -1723,7 +1777,9 @@ export struct GalleryDetailPage {
         }
         .width(ThemeTokens.DETAIL_COVER_WIDTH)
         .height(ThemeTokens.DETAIL_COVER_HEIGHT)
-        .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
+        .backgroundColor(
+          this.heroCoverHasSourceSize() ? Color.Transparent : ThemeTokens.COVER_PLACEHOLDER,
+        )
         .borderRadius(ThemeTokens.DETAIL_COVER_RADIUS)
         .clip(true)
         Column({ space: ThemeTokens.SPACE_XS }) {

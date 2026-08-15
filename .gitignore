@@ -14,3 +14,7 @@ __pycache__/
 *.p12
 *.p7b
 *.cer
+
+# Local clang tooling configs (not part of the build)
+.clang-tidy
+.clangd
