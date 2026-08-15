@@ -1,5 +1,24 @@
 # NextN active device-acceptance queue
 
+## Current Reader tap-zone label — bounded device observation — 2026-08-15
+
+- The signed HAP built from `6e3fc4e` (SHA-256
+  `e5a1cf89d0a29d769a688a4e0baaa36e11968ae7057848409f290ceb8a2475be`)
+  was installed in place with `-r` on only `192.168.50.237:12345` after a
+  fresh live target, lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms`
+  gate. No data clear, uninstall, account action, content action, or setting
+  value selection occurred.
+- After force-stop/cold start, foreground-confirmed native `Settings → 阅读`
+  at `1320×2120` displayed `左右` as the current Point-zones value. Its
+  opened-and-dismissed menu showed checked `左右`, then `L 形`, `Kindle`, and
+  `两侧`; no menu item was selected.
+- This observes only the corrected root-Settings label and existing menu
+  order/selection presentation. It does not accept the Reader-owned sheet,
+  tap-action behavior, persistence, every locale, or full visual parity. Raw
+  local artifacts are retained under
+  `.hvigor/outputs/reader-tap-zone-label-20260815T1908/` and are excluded
+  from source control.
+
 ## Current Browse/Search stored-default caption removal — bounded device observation — 2026-08-15
 
 - The signed HAP built from `0ed57b1` (SHA-256

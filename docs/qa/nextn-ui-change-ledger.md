@@ -38,6 +38,20 @@ authorize an edit, replace a device comparison, or define product completion.
   outside this copy-only observation.
 - **Unresolved risk:** source/build cannot prove the Reader-owned sheet,
   tap-action behavior, persistence, every locale, or full visual parity.
+- **Current bounded device observation — 2026-08-15:** the signed HAP built
+  from `6e3fc4e` (SHA-256
+  `e5a1cf89d0a29d769a688a4e0baaa36e11968ae7057848409f290ceb8a2475be`)
+  was installed in place with `-r` on only `192.168.50.237:12345` after a
+  fresh live target, lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms`
+  gate. After force-stop/cold start, foreground-confirmed native
+  `Settings → 阅读` at `1320×2120` displayed the current row value `左右`.
+  Its opened-and-dismissed menu showed checked `左右`, followed by `L 形`,
+  `Kindle`, and `两侧`; no option was selected and no preference was changed.
+  This is only the corrected root-Settings wording/menu observation. It does
+  not accept the Reader-owned sheet, tap actions, persistence, every locale,
+  or full visual parity. Raw local artifacts are retained under
+  `.hvigor/outputs/reader-tap-zone-label-20260815T1908/` and are excluded
+  from source control.
 
 ## OPEN — Reader reference subtitles restoration — 2026-08-15
 
