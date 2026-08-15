@@ -17,13 +17,10 @@ export function connectThemeDisplay(): ThemeDisplayState {
   )!
 }
 
-/**
- * App-wide accent selection. `system` retains the existing Harmony emphasis
- * color; named presets are resolved by ThemeColorSettings.
- */
+/** App-wide accent selection. Presets and Custom values are resolved by ThemeColorSettings. */
 @ObservedV2
 export class ThemeColorState {
-  @Trace color: string = 'system'
+  @Trace color: string = 'galaxyBlue'
 }
 
 const THEME_COLOR_KEY: string = 'nextn_theme_color'

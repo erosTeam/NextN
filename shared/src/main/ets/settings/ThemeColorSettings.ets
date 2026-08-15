@@ -11,12 +11,8 @@ export interface ThemeColorOption {
   color: ResourceColor
 }
 
-/**
- * The global accent owner. The system value is intentionally the default so
- * adding this capability preserves the app's existing Harmony appearance.
- */
+/** Global accent owner for the explicit NextE-aligned preset and Custom values. */
 export class ThemeColorSettings {
-  static readonly COLOR_SYSTEM: string = 'system'
   static readonly COLOR_GALAXY_BLUE: string = 'galaxyBlue'
   static readonly COLOR_ORANGE_YELLOW: string = 'orangeYellow'
   static readonly COLOR_CAT_BLUE: string = 'catBlue'
@@ -27,11 +23,6 @@ export class ThemeColorSettings {
 
   static options(): ThemeColorOption[] {
     return [
-      {
-        value: ThemeColorSettings.COLOR_SYSTEM,
-        labelKey: 'appearance_follow_system',
-        color: $r('sys.color.font_emphasize'),
-      },
       {
         value: ThemeColorSettings.COLOR_GALAXY_BLUE,
         labelKey: 'theme_color_galaxy_blue',
@@ -84,7 +75,7 @@ export class ThemeColorSettings {
         return option.value
       }
     }
-    return ThemeColorSettings.COLOR_SYSTEM
+    return ThemeColorSettings.COLOR_GALAXY_BLUE
   }
 
   static labelKey(value: string): string {
@@ -97,7 +88,7 @@ export class ThemeColorSettings {
         return option.labelKey
       }
     }
-    return 'appearance_follow_system'
+    return 'theme_color_galaxy_blue'
   }
 
   static colorValue(value: string): ResourceColor {
@@ -110,21 +101,14 @@ export class ThemeColorSettings {
         return option.color
       }
     }
-    return $r('sys.color.font_emphasize')
+    return '#0958F7'
   }
 
-  /**
-   * A system resource cannot be losslessly converted back to a hexadecimal
-   * value. The picker therefore starts with the reference default when the
-   * active choice is `system`, without changing that choice until confirmation.
-   */
+  /** Uses the active explicit accent as the Custom picker seed. */
   static customSeed(value: string): string {
     const normalized: string = ThemeColorSettings.normalize(value)
     if (ThemeColorSettings.isCustom(normalized)) {
       return normalized
-    }
-    if (normalized === ThemeColorSettings.COLOR_SYSTEM) {
-      return '#0958F7'
     }
     for (const option of ThemeColorSettings.options()) {
       if (option.value === normalized && typeof option.color === 'string') {
@@ -143,10 +127,18 @@ export class ThemeColorSettings {
   }
 
   static async restore(context: common.UIAbilityContext): Promise<void> {
-    let color: string = ThemeColorSettings.COLOR_SYSTEM
+    let color: string = ThemeColorSettings.COLOR_GALAXY_BLUE
     try {
       const store: preferences.Preferences = await preferences.getPreferences(context, APPEARANCE_STORE)
-      color = store.getSync(THEME_COLOR_KEY, ThemeColorSettings.COLOR_SYSTEM) as string
+      const storedColor: string = store.getSync(
+        THEME_COLOR_KEY,
+        ThemeColorSettings.COLOR_GALAXY_BLUE,
+      ) as string
+      color = ThemeColorSettings.normalize(storedColor)
+      if (color !== storedColor) {
+        store.putSync(THEME_COLOR_KEY, color)
+        store.flushSync()
+      }
     } catch (_error) {}
     ThemeColorSettings.apply(color)
   }

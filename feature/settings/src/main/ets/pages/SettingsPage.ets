@@ -225,7 +225,7 @@ export struct SettingsPage {
   @Local themeColorMenuShown: boolean = false
   @Local themeColorPickerShown: boolean = false
   @Local draftCustomThemeColor: string = '#0958F7'
-  private themeColorBeforePicker: string = ThemeColorSettings.COLOR_SYSTEM
+  private themeColorBeforePicker: string = ThemeColorSettings.COLOR_GALAXY_BLUE
   private themeColorPreviewActive: boolean = false
   @Local immersiveMaterialMenuShown: boolean = false
   @Local languageMenuShown: boolean = false
@@ -336,7 +336,6 @@ export struct SettingsPage {
     try {
       await Promise.all([
         ThemeSettings.restore(this.context()),
-        ThemeColorSettings.restore(this.context()),
         LanguageSettings.restore(this.context()),
         ImmersiveMaterialSettings.restore(this.context()),
         BrowsePresentationService.restore(this.context()),

@@ -3,6 +3,56 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Appearance theme-color system-option removal — 2026-08-15
+
+- **Why newly actionable:** the user identified that the first Theme color
+  menu item, `Follow system`, has no corresponding HarmonyOS system accent
+  setting and no official API-backed behavior. The faulty assumption was that
+  the semantic resource `sys.color.font_emphasize` could be presented as a
+  user-selected system theme color. It cannot. Current NextE has no such
+  option and defaults to `Galaxy blue`.
+- **Whole parent-tree boundary:** preserve `Settings root → Layout →
+  SecondaryListScaffold → first ListItem → AppearanceGroup →
+  NextNGroupedListSection`, including the existing order `Dark mode → Theme
+  color → Immersive material → Language`, the row-owned menu, color-dot
+  suffix, and existing Custom picker sheet. Only the Theme color menu's
+  invalid first option and its persistent state normalization are in scope.
+- **Reference boundary:** NextE's corresponding menu contains `Galaxy blue`,
+  the seven named preset values, and `Custom`; it has no `Follow system`
+  value. Its default is `galaxyBlue` (`#0958F7`). The NextN dark-mode and
+  language menus retain their distinct, real `Follow system` behaviors and
+  continue to use the shared string resource.
+- **Exact change:** remove the `system` color option and its semantic-resource
+  fallback. Set the in-memory/default restore value to `galaxyBlue`; normalize
+  missing, invalid, and legacy persisted `theme_color=system` values to that
+  value, and write a changed legacy/invalid stored value back during restore.
+  Keep `EntryAbility` as the only startup restore/migration owner; remove the
+  Settings Layout route's duplicate asynchronous restore so it cannot later
+  overwrite a user-selected preset or Custom value.
+  In the same menu, replace the four divergent Chinese preset labels with the
+  current NextE text: `星河蓝 → 银河蓝`, `橙黄 → 橘黄黄`, `猫眼蓝 → 猫咪蓝`, and
+  `青草绿 → 小草绿`.
+- **Impact and prevention:** the former menu falsely advertised a nonexistent
+  system capability and stored that false choice as the default. Future
+  `Follow system` values may be added only when the owner actually reads or
+  applies the corresponding system state, after comparing the complete NextE
+  option set and the official API boundary.
+- **Minimality and exclusions:** do not alter dark-mode or language settings,
+  `appearance_follow_system`, any other preset RGB value, Custom picker
+  behavior/favorites, the Theme color row's geometry, app color consumers, or
+  navigation. This is not an attempt to infer a wallpaper/dynamic-color API.
+- **Verification plan:** inspect the exact state/resource diff, parse all four
+  locale JSON catalogs, and run a signed build. On the selected device,
+  observe the native Layout Theme color menu and suffix after in-place install
+  without changing a preference. A persistence migration observation requires
+  a separately safe legacy-state setup; do not rewrite a user's stored value
+  merely to manufacture that state. Same-state, same-viewport NextE visual
+  comparison remains required before any parity claim.
+- **Unresolved risk:** source/build evidence alone cannot prove the rendered
+  menu, the legacy restore write, or the Custom-picker rollback path. The
+  prior device evidence for the now-invalid `system` selection is retained as
+  historical evidence only and does not accept this corrected surface.
+
 ## OPEN — Settings wording reference correction — 2026-08-15
 
 - **Why newly actionable:** the user identified opaque, self-authored Chinese

@@ -11,8 +11,8 @@ import { ThemeColorSettings } from '../settings/ThemeColorSettings'
  */
 export class ThemeTokens {
   // Semantic colours
-  // The system default keeps Harmony emphasis; ThemeColorSettings can replace
-  // only this global brand token with an explicit user-selected preset.
+  // ThemeColorSettings owns this global brand token through explicit presets
+  // or a user-selected Custom value.
   static get BRAND(): ResourceColor {
     return ThemeColorSettings.currentColor()
   }
