@@ -30,6 +30,7 @@ import {
   NextNGroupedListSection,
   NextNListRow,
   NextNModalScaffold,
+  NextNSectionHeader,
   PageEmptyState,
   PageErrorState,
   PageLoadingState,
@@ -1770,10 +1771,7 @@ export struct SearchPage {
   private SearchOptionsPanel() {
     Column({ space: ThemeTokens.SPACE_MD }) {
       this.SearchAdvancedConditionsPanel()
-      Text(AppStrings.get('browse_section_language'))
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
+      NextNSectionHeader({ title: AppStrings.get('browse_section_language') })
       NextNGroupedListSection() {
         ForEach(SEARCH_LANGUAGES, (option: NhSearchLanguage): void => {
           NextNListRow({
@@ -1790,10 +1788,7 @@ export struct SearchPage {
           }
         }, (option: NhSearchLanguage): string => option)
       }
-      Text(AppStrings.get('browse_section_order'))
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
+      NextNSectionHeader({ title: AppStrings.get('browse_section_order') })
       NextNGroupedListSection() {
         ForEach(SEARCH_SORTS, (option: NhSearchSort): void => {
           NextNListRow({

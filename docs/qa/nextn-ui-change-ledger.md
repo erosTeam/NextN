@@ -3,6 +3,28 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## Shared NextNSectionHeader for Browse/Search option panels — 2026-08-16
+
+- **Why newly actionable:** the user reports the Home Browse options sheet
+  still centers its 语言/排序 section titles while the Search options sheet
+  shows them left-aligned. Root cause is structural, not a one-off typo:
+  `NextNSectionHeader` already exists and is used by SettingsPage, but the
+  Browse/Search option panels predate it and each hand-wrote the caption
+  title. SearchPage's parent Column happened to set
+  `alignItems(HorizontalAlign.Start)`; HomePage's parent omitted it, so the
+  same copied block drifted to centered.
+- **Exact change:** delete the never-exported duplicate title component and
+  migrate both panels to the existing shared `NextNSectionHeader`
+  (HomePage.BrowseOptionsPanel and SearchPage.SearchOptionsPanel, four call
+  sites). `NextNSectionHeader` now also sets `textAlign(TextAlign.Start)`
+  explicitly so a missing parent alignment can never re-center it. No page
+  hand-writes the section-title Text style for these panels any more.
+- **Boundary:** only the two option panels' 语言/排序 titles; card rows,
+  dividers, sheet chrome, and all other pages are untouched.
+- **Verification plan:** signed build; install -r; open Home Browse options
+  sheet and Search options sheet; compare title bounds/text alignment against
+  the card edge and the SettingsPage header style.
+
 ## Detail metadata card split with right-side download/seed actions + comments empty copy — 2026-08-16
 
 - **Why newly actionable:** the user directed the operation-area evaluation:

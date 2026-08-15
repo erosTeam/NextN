@@ -23,5 +23,6 @@ export struct NextNSectionHeader {
         bottom: ThemeTokens.SPACE_XS,
       })
       .width('100%')
+      .textAlign(TextAlign.Start)
   }
 }

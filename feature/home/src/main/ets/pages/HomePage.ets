@@ -19,6 +19,7 @@ import {
   NextNGroupedListSection,
   NextNListRow,
   NextNPullRefreshController,
+  NextNSectionHeader,
   NhApiClient,
   NhBrowsePresentation,
   NhGalleryPageResult,
@@ -395,10 +396,7 @@ export struct LatestSourcePage {
   @Builder
   private BrowseOptionsPanel() {
     Column({ space: ThemeTokens.SPACE_MD }) {
-      Text(AppStrings.get('browse_section_language'))
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
+      NextNSectionHeader({ title: AppStrings.get('browse_section_language') })
       NextNGroupedListSection() {
         ForEach(BROWSE_LANGUAGES, (option: NhSearchLanguage): void => {
           NextNListRow({
@@ -415,10 +413,7 @@ export struct LatestSourcePage {
           }
         }, (option: NhSearchLanguage): string => option)
       }
-      Text(AppStrings.get('browse_section_order'))
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
+      NextNSectionHeader({ title: AppStrings.get('browse_section_order') })
       NextNGroupedListSection() {
         ForEach(BROWSE_SORTS, (option: NhSearchSort): void => {
           NextNListRow({
