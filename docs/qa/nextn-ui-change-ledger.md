@@ -248,6 +248,15 @@ authorize an edit, replace a device comparison, or define product completion.
   row title and its replacement subtitle without opening, adding, editing, or
   deleting a rule. A same-state, same-viewport reference comparison remains
   required before a visual-parity claim.
+- **Bounded device observation:** the signed HAP from `d8eb826` was installed
+  in place on only `192.168.50.237:12345` after the live target, lease, wake,
+  and power-state gate. On the foreground-confirmed `Settings → 高级` route,
+  the existing `内容过滤` row retained its title and action affordance and read
+  `在本机隐藏命中的画廊和评论。` No rule page was opened and no rule, preference,
+  query, account, content, uninstall, or data-clear action occurred. This is
+  not a same-state reference comparison; visual parity and unobserved Settings
+  states remain OPEN. Raw artifacts are local-only under
+  `.hvigor/outputs/content-filter-copy-20260815T0930/`.
 
 ## OPEN — Search recent-history presentation — 2026-08-15
 

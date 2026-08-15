@@ -1,5 +1,20 @@
 # NextN active device-acceptance queue
 
+## Current Content-filter settings subtitle — bounded device observation — 2026-08-15
+
+- The signed HAP built from `d8eb826` was installed in place with `-r` on only
+  `192.168.50.237:12345` after a fresh lease, wake, and `AWAKE` /
+  `OverrideTimeout=86400000ms` gate. No data clear, uninstall, account action,
+  query, preference value change, or content-filter rule action occurred.
+- On the foreground-confirmed native `Settings → 高级` route, the existing
+  `内容过滤` row retained its title and action affordance while its subtitle
+  read `在本机隐藏命中的画廊和评论。` The independent rule page was not opened.
+- This observes only the replacement wording in its existing row. It does not
+  accept filtering behavior, rule editing, persistence, every Settings state,
+  or visual parity. Raw local artifacts are retained under
+  `.hvigor/outputs/content-filter-copy-20260815T0930/` and are excluded from
+  source control.
+
 ## Current Browse/Search option-policy-footnote correction — bounded device observation — 2026-08-15
 
 - The signed HAP built from `0e0840e` was installed in place with `-r` on only
