@@ -113,8 +113,9 @@ authorize an edit, replace a device comparison, or define product completion.
   Index.advancedSettingsDestination → HdsNavDestination →
   SettingsPage(surface=ADVANCED) → SecondaryListScaffold → ListItem →
   TranslationCapabilitiesGroup → NextNGroupedListSection`. Preserve the
-  existing order `评论翻译 → 漫画翻译 → 翻译数据库 → 翻译来源`, their icons,
-  dividers, route callbacks, requested consumer IDs, and destination owner.
+  existing order `评论翻译 → 漫画翻译 → 翻译数据库 → 立即更新 → 翻译来源`, their
+  icons, dividers, route callbacks, requested consumer IDs, and destination
+  owner.
 - **Reference boundary:** current NextE has function-specific translation-entry
   subtitles, but its destination structures are not function-equivalent to
   NextN's single source form; ErosN is not available as a source for this
@@ -133,6 +134,20 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Unresolved risk:** source/build cannot prove every locale, source-form
   behavior, route state, errors, account/provider configuration, or full
   visual parity.
+- **Current bounded device observation — 2026-08-15:** the signed HAP built
+  from `b2b1b6f` (SHA-256
+  `67fe40c936baa0e1669aacfe03ccefea2b459fd82794bf388d4ee56557c0444a`)
+  was installed in place with `-r` on only `192.168.50.237:12345` after a
+  fresh live target, lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms`
+  gate. After force-stop/cold start, foreground-confirmed native
+  `Settings → 高级` at `1320×2120` displayed title-only `评论翻译` and
+  `漫画翻译` rows with their existing arrows. `翻译数据库`, `立即更新`, and
+  `翻译来源` remained in their existing order; no entry was opened and no
+  setting changed. This is only the bounded rendered-copy observation. It
+  does not accept source-form behavior, provider/account states, every locale,
+  or full visual parity. Raw local artifacts are retained under
+  `.hvigor/outputs/advanced-translation-entry-copy-20260815T1933/` and are
+  excluded from source control.
 
 ## OPEN — Browse/Search stored-default caption removal — 2026-08-15
 

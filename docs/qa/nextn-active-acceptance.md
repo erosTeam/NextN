@@ -1,5 +1,23 @@
 # NextN active device-acceptance queue
 
+## Current Advanced translation-entry copy — bounded device observation — 2026-08-15
+
+- The signed HAP built from `b2b1b6f` (SHA-256
+  `67fe40c936baa0e1669aacfe03ccefea2b459fd82794bf388d4ee56557c0444a`)
+  was installed in place with `-r` on only `192.168.50.237:12345` after a
+  fresh live target, lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms`
+  gate. No data clear, uninstall, account action, source-form action, or
+  setting value change occurred.
+- After force-stop/cold start, foreground-confirmed native `Settings → 高级`
+  at `1320×2120` displayed title-only `评论翻译` and `漫画翻译` rows with their
+  existing arrows. The following `翻译数据库`, `立即更新`, and `翻译来源` rows
+  remained present and ordered; no entry was opened.
+- This observes only the bounded rendered-copy state. It does not accept
+  translation-source behavior, provider/account states, every locale, route
+  states, or full visual parity. Raw local artifacts are retained under
+  `.hvigor/outputs/advanced-translation-entry-copy-20260815T1933/` and are
+  excluded from source control.
+
 ## Current Reader reference-subtitle relationship — bounded observation — 2026-08-15
 
 - The signed HAP built from `081cd3c` (SHA-256
