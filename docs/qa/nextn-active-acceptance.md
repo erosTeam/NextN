@@ -1,5 +1,25 @@
 # NextN active device-acceptance queue
 
+## Current Reader reference-subtitle relationship — bounded observation — 2026-08-15
+
+- The signed HAP built from `081cd3c` (SHA-256
+  `44e6451ed9c9d4e8d315e1c45ab6d19bb71541f0f3d822bef54292a201566b11`)
+  was installed in place with `-r` on only `192.168.50.237:12345`; no data
+  clear, uninstall, account action, Reader setting selection, or Reader canvas
+  action occurred.
+- In foreground-confirmed native `Settings → 阅读` at `1320×2120`, the Image
+  scaling quality row displayed its current NextE subtitle and
+  `优化（Mipmap）` trailing value. A separately foreground-confirmed current
+  NextE Reader Settings capture on the same device and viewport showed that
+  same `优化（Mipmap）` row/value state and the same HDS
+  secondary-text/trailing-value vertical relationship.
+- This is an exact row-relationship observation only. It does not accept the
+  whole Reader page, maximum-height disabled state, volume-key row,
+  Reader-owned Settings sheet, behavior, or a non-reference geometry change.
+  Raw local artifacts are retained under
+  `.hvigor/outputs/reader-reference-subtitles-20260815T1845/` and are excluded
+  from source control.
+
 ## Current Reader tap-zone label — bounded device observation — 2026-08-15
 
 - The signed HAP built from `6e3fc4e` (SHA-256

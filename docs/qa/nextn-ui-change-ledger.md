@@ -89,6 +89,19 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Unresolved risk:** source/build cannot prove long-text wrapping, disabled
   enhancement state, Reader-sheet presentation, or Reader interaction/persist
   behavior.
+- **Observed same-reference relationship — 2026-08-15:** the first signed-build
+  NextN capture at the current `1320×2120` viewport showed Image scaling
+  quality's `优化（Mipmap）` trailing value in the same vertical band and tight
+  horizontal gap as the first wrapped subtitle line. A current same-device,
+  same-viewport NextE capture of that same `优化（Mipmap）` row/value state
+  showed the same HDS secondary-text/suffix relationship. Current NextE places
+  each subtitle-plus-dropdown Reader row inside a `Column` before it binds the
+  row menu, but review established that this changes the menu anchor, not the HDS
+  card's internal subtitle/suffix geometry. The tentative matching wrapper was
+  withdrawn before a build rather than treated as a fix. This observation
+  validates neither the entire Reader page nor a non-reference redesign; no
+  margin, width reservation, or leaf restructuring is authorized without an
+  explicit user decision.
 
 ## OPEN — Browse/Search stored-default caption removal — 2026-08-15
 
