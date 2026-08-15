@@ -1,5 +1,22 @@
 # NextN active device-acceptance queue
 
+## Current Search range-control correction — bounded device observation — 2026-08-15
+
+- The signed HAP from `882c381` was installed in place with `-r` on only
+  `192.168.50.237:12345` after a fresh lease, wake, and `AWAKE` /
+  `OverrideTimeout=86400000ms` gate. No data clear, uninstall, account action,
+  preference change, search submission, history write, or Add action occurred.
+- In the foreground-confirmed native Search options sheet, empty page and
+  upload ranges displayed `不限`; both corresponding Add rows were visibly
+  unavailable. Entering an unsubmitted page lower bound of `1` made only the
+  page Add row available. The app was force-stopped afterward, discarding that
+  route-local draft without clearing data.
+- This observes only the empty and one-positive-bound rendering states. It
+  does not accept range ordering, condition submission, keyboard usability,
+  accessibility announcement, or visual parity. Raw local artifacts are under
+  `.hvigor/outputs/search-range-control-20260815T0708/` and are excluded from
+  source control.
+
 ## Current Search recent-history geometry — bounded reference observation — 2026-08-15
 
 - The signed HAP containing the scoped Search landing change was installed in

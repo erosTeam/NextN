@@ -171,6 +171,20 @@ authorize an edit, replace a device comparison, or define product completion.
   visual comparison remain OPEN. Local raw artifacts are retained under
   `.hvigor/outputs/advanced-search-20260814T1540/` and are excluded from
   source control.
+- **Range-control correction — 2026-08-15:** the prior empty-range inline
+  error was a visible exposure of an internal parser rule. The signed HAP
+  from `882c381` was installed in place on the same selected device after a
+  fresh lease, wake, and power-state gate. In the foreground-confirmed native
+  Search options sheet, empty page and upload ranges rendered `不限` and both
+  Add rows were visibly unavailable; entering an unsubmitted page lower bound
+  of `1` made only the page Add row available. No Add action, query submit,
+  history write, preference change, account action, data clear, or uninstall
+  occurred, and force-stopping NextN discarded the route-local draft. This
+  observes only these two current NextN states; range ordering, submission,
+  keyboard usability, accessibility announcement, and visual parity remain
+  OPEN. Local raw artifacts are retained under
+  `.hvigor/outputs/search-range-control-20260815T0708/` and are excluded from
+  source control.
 
 ## OPEN — Search recent-history presentation — 2026-08-15
 
