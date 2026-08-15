@@ -15,6 +15,7 @@ import {
   NhBrowsePresentation,
   NhGalleryPageResult,
   NhGallerySummary,
+  NhTag,
   NhTagCatalogService,
   NhSearchLanguage,
   NhSearchOptions,
@@ -79,6 +80,14 @@ class LocalTagSuggestionInput {
   isExcluded: boolean = false
 }
 
+/** One raw history token with an optional dictionary-backed display tag. */
+class SearchHistoryQueryToken {
+  raw: string = ''
+  displayPrefix: string = ''
+  tag: NhTag = new NhTag()
+  isKnownTag: boolean = false
+}
+
 @ComponentV2
 export struct SearchPage {
   @Param initialQuery: string = ''
@@ -103,6 +112,7 @@ export struct SearchPage {
   @Local isQuickSearchesLoaded: boolean = false
   @Local isQuickSearchMutation: boolean = false
   @Local recentSearches: NhSearchHistoryItem[] = []
+  @Local recentSearchTranslations: Map<string, string> = new Map<string, string>()
   @Local isSearchHistoryLoaded: boolean = false
   @Local activeLanguageFilter: NhSearchLanguage = NhSearchLanguage.ALL
   @Local activeSearchSort: NhSearchSort = NhSearchSort.RECENT
@@ -127,6 +137,7 @@ export struct SearchPage {
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private requestGeneration: number = 0
   private tagTranslationRefreshEpoch: number = 0
+  private recentSearchTranslationRefreshEpoch: number = 0
   private tagSuggestionEpoch: number = 0
   private tagSuggestionTimer: number = -1
   /** Local landing tables are read on initial entry and only after this page writes them. */
@@ -156,6 +167,7 @@ export struct SearchPage {
     this.chrome.focusOnAppear = this.initialQuery.trim().length === 0
     this.loadQuickSearchesIfNeeded()
     this.loadRecentSearchesIfNeeded()
+    this.refreshRecentSearchTranslations()
     this.consumeInitialQuery()
     // A retained Search destination may return after its local defaults were
     // changed elsewhere. Defer its one scoped reload until it is visible.
@@ -196,6 +208,7 @@ export struct SearchPage {
   @Monitor('tagTranslations.revision')
   onTagTranslationsChanged(): void {
     this.refreshTagTranslationLabels()
+    this.refreshRecentSearchTranslations()
     // A replacement can change membership and ranking, not only the displayed
     // label. Clear and fence the transient candidates rather than preserving a
     // stale local/remote mixture or issuing an automatic suggestion request.
@@ -226,8 +239,148 @@ export struct SearchPage {
     this.applyContentFilters()
   }
 
+  /**
+   * Keeps the stored query untouched while deriving a short-lived display-only
+   * translation for recognized tag clauses in the recent-history surface.
+   */
+  private historyQueryTokens(query: string): SearchHistoryQueryToken[] {
+    const rawTokens: string[] = []
+    let current: string = ''
+    let quoteOpen: boolean = false
+    for (let index: number = 0; index < query.length; index++) {
+      const character: string = query.charAt(index)
+      if (character === '"') {
+        quoteOpen = !quoteOpen
+        current = `${current}${character}`
+      } else if (character === ' ' && !quoteOpen) {
+        if (current.length > 0) {
+          rawTokens.push(current)
+          current = ''
+        }
+      } else {
+        current = `${current}${character}`
+      }
+    }
+    if (current.length > 0) {
+      rawTokens.push(current)
+    }
+
+    return rawTokens.map((raw: string): SearchHistoryQueryToken => {
+      const token: SearchHistoryQueryToken = new SearchHistoryQueryToken()
+      token.raw = raw
+      let content: string = raw
+      let relationPrefix: string = ''
+      if (content.startsWith('-') || content.startsWith('~')) {
+        relationPrefix = content.substring(0, 1)
+        content = content.substring(1)
+      }
+      const colon: number = content.indexOf(':')
+      if (colon <= 0) {
+        return token
+      }
+      const namespace: string = content.substring(0, colon).trim()
+      if (!NhTagQuery.isAutocompleteNamespace(namespace)) {
+        return token
+      }
+      let rawName: string = content.substring(colon + 1).trim()
+      if (rawName.length >= 2 && rawName.startsWith('"') && rawName.endsWith('"')) {
+        rawName = rawName.substring(1, rawName.length - 1).trim()
+      } else if (rawName.includes('"')) {
+        return token
+      }
+      if (rawName.length === 0) {
+        return token
+      }
+      token.tag.type = namespace
+      token.tag.name = rawName
+      token.displayPrefix = `${relationPrefix}${content.substring(0, colon)}:`
+      token.isKnownTag = true
+      return token
+    })
+  }
+
+  private async refreshRecentSearchTranslations(): Promise<void> {
+    const run: number = this.recentSearchTranslationRefreshEpoch + 1
+    this.recentSearchTranslationRefreshEpoch = run
+    if (!this.isVisible) {
+      return
+    }
+    const historyRevision: number = this.recentSearchesRevision
+    const items: NhSearchHistoryItem[] = this.recentSearches.slice()
+    const tokensByQuery: Map<string, SearchHistoryQueryToken[]> = new Map<string, SearchHistoryQueryToken[]>()
+    const tags: NhTag[] = []
+    const seenTags: Set<string> = new Set<string>()
+    items.forEach((item: NhSearchHistoryItem): void => {
+      const tokens: SearchHistoryQueryToken[] = this.historyQueryTokens(item.query)
+      tokensByQuery.set(item.query, tokens)
+      tokens.forEach((token: SearchHistoryQueryToken): void => {
+        if (!token.isKnownTag) {
+          return
+        }
+        const key: string = TagTranslationRepository.keyFor(token.tag)
+        if (key.length > 0 && !seenTags.has(key)) {
+          seenTags.add(key)
+          tags.push(token.tag)
+        }
+      })
+    })
+
+    let translatedTags: Map<string, string> = new Map<string, string>()
+    if (tags.length > 0) {
+      try {
+        translatedTags = await TagTranslationRepository.lookup(this.context(), tags)
+      } catch (_error) {
+        if (
+          run === this.recentSearchTranslationRefreshEpoch &&
+          this.isVisible &&
+          historyRevision === this.recentSearchesRevision
+        ) {
+          this.recentSearchTranslations = new Map<string, string>()
+        }
+        return
+      }
+    }
+    if (
+      run !== this.recentSearchTranslationRefreshEpoch ||
+      !this.isVisible ||
+      historyRevision !== this.recentSearchesRevision
+    ) {
+      return
+    }
+
+    const next: Map<string, string> = new Map<string, string>()
+    items.forEach((item: NhSearchHistoryItem): void => {
+      const tokens: SearchHistoryQueryToken[] | undefined = tokensByQuery.get(item.query)
+      if (tokens === undefined || tokens.length === 0) {
+        return
+      }
+      let changed: boolean = false
+      const translatedParts: string[] = tokens.map((token: SearchHistoryQueryToken): string => {
+        if (!token.isKnownTag) {
+          return token.raw
+        }
+        const translated: string | undefined = translatedTags.get(TagTranslationRepository.keyFor(token.tag))
+        if (translated === undefined || translated.length === 0 || translated === token.tag.name) {
+          return token.raw
+        }
+        changed = true
+        return `${token.displayPrefix}${translated}`
+      })
+      if (changed) {
+        next.set(item.query, translatedParts.join(' '))
+      }
+    })
+    this.recentSearchTranslations = next
+  }
+
+  private recentSearchTranslation(query: string): string {
+    const translated: string | undefined = this.recentSearchTranslations.get(query)
+    return translated !== undefined ? translated : ''
+  }
+
   aboutToDisappear(): void {
     this.isVisible = false
+    this.recentSearchTranslationRefreshEpoch += 1
     // A Gallery opened from a committed result only pushes over this
     // destination. Keep the request epoch intact so a first-page or paging
     // response can populate the retained Search page before Back returns.
@@ -266,6 +419,7 @@ export struct SearchPage {
       const history: NhSearchHistoryItem[] = await SearchHistoryRepository.load(this.context())
       if (this.isVisible && revision === this.recentSearchesRevision) {
         this.recentSearches = history
+        this.refreshRecentSearchTranslations()
       }
     } catch (error) {
       console.warn(`Unable to load local search history: ${(error as Error).message}`)
@@ -1771,40 +1925,36 @@ export struct SearchPage {
         .padding({ bottom: ThemeTokens.SPACE_SM })
         Flex({ wrap: FlexWrap.Wrap }) {
           ForEach(this.recentSearches, (item: NhSearchHistoryItem): void => {
-            Row({ space: ThemeTokens.SPACE_XS }) {
+            Column({ space: ThemeTokens.SPACE_XS }) {
               Text(item.query)
                 .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
                 .fontColor(ThemeTokens.TEXT_PRIMARY)
-                .maxLines(1)
-                .textOverflow({ overflow: TextOverflow.Ellipsis })
-                .layoutWeight(1)
-                .accessibilityText(AppStrings.format('search_recent_item_a11y', [item.query]))
-                .onClick((): void => {
-                  this.openRecentSearch(item.query)
-                })
-              Button({ type: ButtonType.Circle, stateEffect: true }) {
-                SymbolGlyph($r('sys.symbol.xmark'))
+                .constraintSize({ maxWidth: '100%' })
+              if (
+                this.browsePresentation.showTranslatedTagLabels &&
+                this.recentSearchTranslation(item.query).length > 0
+              ) {
+                Text(this.recentSearchTranslation(item.query))
                   .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-                  .fontColor([ThemeTokens.TEXT_SECONDARY])
+                  .fontColor(ThemeTokens.TEXT_SECONDARY)
+                  .constraintSize({ maxWidth: '100%' })
               }
-              .width(28)
-              .height(28)
-              .backgroundColor(Color.Transparent)
-              .padding(0)
-              .accessibilityText(AppStrings.format('search_remove_recent_item_a11y', [item.query]))
-              .onClick((): void => {
-                this.removeRecentSearch(item)
-              })
             }
-              .height(28)
+              .alignItems(HorizontalAlign.Start)
               .constraintSize({ maxWidth: '90%' })
               .backgroundColor(ThemeTokens.CARD_BACKGROUND)
               .borderRadius(ThemeTokens.RADIUS_ROUND)
               .padding({
                 left: ThemeTokens.SPACE_MD,
-                right: ThemeTokens.SPACE_XS,
+                right: ThemeTokens.SPACE_MD,
+                top: ThemeTokens.SPACE_XS,
+                bottom: ThemeTokens.SPACE_XS,
               })
               .margin({ right: ThemeTokens.SPACE_SM, bottom: ThemeTokens.SPACE_SM })
+              .accessibilityText(AppStrings.format('search_recent_item_a11y', [item.query]))
+              .onClick((): void => {
+                this.openRecentSearch(item.query)
+              })
               .gesture(
                 LongPressGesture({ repeat: false, duration: 500 })
                   .onAction((): void => {

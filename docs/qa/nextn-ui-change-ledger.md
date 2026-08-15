@@ -163,6 +163,42 @@ authorize an edit, replace a device comparison, or define product completion.
   `.hvigor/outputs/advanced-search-20260814T1540/` and are excluded from
   source control.
 
+## OPEN — Search recent-history presentation — 2026-08-15
+
+- **Why newly actionable:** the user repeated an earlier, unresolved objection
+  to the Search landing's recent-history design. The existing leaf had not
+  been visually reworked since the baseline; later history work only
+  serialized RDB writes. Treat the prior omission as a correction, not as a
+  new feature request.
+- **Whole parent-tree boundary:** `SearchPage → HdsNavDestination + cached
+  title-field → active query empty → SearchGuide → Scroll(historyScroller) →
+  QuickSearchesPanel / RecentSearchesPanel → wrapping history chips`. Keep the
+  HDS, landing-branch order, one scroll owner, Quick Search section,
+  `SearchHistoryRepository`, raw submitted query, and result flow unchanged.
+- **Reference boundary:** NextE uses the same history header then wrapping
+  chip relationship: raw query, optional local display translation below it,
+  whole-chip re-search, and long-press single-item deletion. Its separate
+  history-translation preference is a broader product decision. NextN must
+  not copy that new preference or write translated text into its history RDB.
+- **Exact change:** rebuild only the history-chip leaf: remove the permanent
+  per-chip `x` button and its forced single-line height; retain the existing
+  direct re-search action and long-press deletion. Add a short-lived local
+  query-to-display-translation cache driven by existing dictionary revision
+  and the existing global tag-display choice. Original query syntax remains
+  primary and unchanged; only recognized tag clauses may add a display line.
+  Operators such as `pages:` and `uploaded:` remain raw and are never
+  rewritten, submitted, or persisted differently.
+- **Explicit exclusions:** do not add a new history preference, change
+  history retention/deduplication, change quick-search chips, alter click to
+  append-only behavior, change Search routing, search requests, suggestions,
+  content filters, result presentation, or the new advanced-condition sheet.
+- **Verification plan:** inspect the scoped diff and signed build; then on a
+  foreground-confirmed native Search landing with a current same-viewport
+  reference, observe short and long raw queries, a raw-versus-localized tag
+  query, whole-chip re-search, long-press removal, clear-all, dictionary
+  revision refresh, and a cold reopen. Do not claim parity from source/build
+  alone.
+
 ## OPEN — Account verification-marker cold-restore gate — 2026-08-14
 
 - **Why newly actionable:** a terminal authenticated Favorites double-401
