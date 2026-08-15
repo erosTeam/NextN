@@ -294,6 +294,39 @@ authorize an edit, replace a device comparison, or define product completion.
   The uninstalled/updating/error states, dictionary behavior, and same-state
   visual parity remain OPEN.
 
+## OPEN — Clipboard-link wording correction — 2026-08-15
+
+- **Why newly actionable:** the user asked for a complete Settings-copy audit
+  after identifying repeated self-authored, implementation-facing language.
+  The first concrete sibling finding is the clipboard switch's opaque
+  `打开已复制的画廊链接` title and `NextN / 前台 / 新复制` process explanation.
+  The control detects a copied supported gallery link and shows an explicit
+  open action; it does not automatically open content.
+- **Whole parent-tree boundary:** `SettingsPage(ADVANCED) →
+  SecondaryListScaffold → ListItem(ClipboardLinkGroup) →
+  NextNGroupedListSection → NextNListRow(switch)`. The same copy leaf includes
+  the existing system-permission reason and root-owned confirmation dialog.
+  `SettingsPage → NhClipboardLinkSettings` continues to own the switch and
+  permission request; `EntryAbility → NhClipboardLinkService → Index` owns
+  foreground probing, candidate publication, and the open action.
+- **Reference boundary:** NextE `EhSettingsPage → ListItem →
+  GroupedListSection → ConciseListRow(clipboard switch)` uses `检测剪贴板链接`
+  and a result-based description; ErosN uses the same direct clipboard-detection
+  noun. NextN preserves its existing Advanced parent because site-specific
+  Settings ownership differs. The reference's `EH link` data leaf becomes
+  `受支持的画廊链接`, because NextN only accepts its own gallery URLs.
+- **Exact change:** replace only the four corresponding resource leaves:
+  permission reason, switch title, switch description, and confirmation text.
+  State the visible result—detect a supported copied gallery link and offer an
+  open action—without exposing foreground lifecycle, app-name, or change-count
+  mechanics. Do not change the switch, permission request, URL matcher,
+  clipboard retention, prompt buttons, navigation, or parent hierarchy.
+- **Verification plan:** inspect the four-locale resource-only diff and build
+  the exact commit. Observe the off switch and its replacement title and
+  description on a foreground-confirmed Advanced route without toggling it or
+  reading clipboard data. Permission, enabled, detected-link, dialog, and
+  navigation states remain OPEN; same-state visual parity also remains OPEN.
+
 ## OPEN — Search recent-history presentation — 2026-08-15
 
 - **Why newly actionable:** the user repeated an earlier, unresolved objection
