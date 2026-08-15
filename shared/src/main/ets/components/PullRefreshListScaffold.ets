@@ -104,7 +104,7 @@ export struct PullRefreshListScaffold {
       })
       .onDidScroll((_scrollOffset: number, scrollState: ScrollState): void => {
         if (this.onDidScroll) {
-          this.onDidScroll(this.scroller.currentOffset().yOffset, scrollState)
+          this.onDidScroll(_scrollOffset, scrollState)
         }
       })
       .onScrollIndex((start: number, end: number, center: number): void => {
@@ -115,7 +115,7 @@ export struct PullRefreshListScaffold {
           this.onScrollIndex(adjustedStart, adjustedEnd, adjustedCenter)
         }
         if (this.onDidScroll) {
-          this.onDidScroll(this.scroller.currentOffset().yOffset, ScrollState.Scroll)
+          this.onDidScroll(this.scrolledOffset(), ScrollState.Scroll)
         }
       })
       .onReachEnd((): void => {
@@ -137,6 +137,10 @@ export struct PullRefreshListScaffold {
         }
       })
     }
+  }
+
+  private scrolledOffset(): number {
+    return this.scroller.currentOffset()?.yOffset ?? 0
   }
 
   private resolvedIndicatorTop(): number {

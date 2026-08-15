@@ -11,6 +11,7 @@ import {
 } from '../model/NhReaderSettings'
 import {
   ReaderNativeSuperResolution,
+  ReaderNativeSuperResolutionCapabilities,
   ReaderNativeSuperResolutionConfig,
   ReaderNativeSuperResolutionResult,
 } from './ReaderNativeSuperResolution'
@@ -29,6 +30,8 @@ const READER_ENHANCEMENT_LOG_TAG: string = 'NextNReaderEnhancement'
 // Bump only when native decode/upscale/output semantics change. Model asset
 // and native-config changes are included separately by the model service.
 const DERIVATIVE_OUTPUT_PIPELINE_VERSION: string = 'native-rgba-jpeg-v1'
+// Vulkan 1.3 is the conservative interaction-safety boundary used by NextE.
+const INTERACTION_SAFE_VULKAN_API_VERSION: number = 0x00403000
 
 export class ReaderSuperResolutionResult {
   displayUri: string = ''
@@ -58,6 +61,9 @@ export class ReaderSuperResolutionService {
   private static inFlight: Map<string, InFlightEnhancement> = new Map<string, InFlightEnhancement>()
   /** Fixed outcome codes for mounted Reader owners; never file paths or image data. */
   private static ownerOutcomeReasons: Map<string, string> = new Map<string, string>()
+  private static interactionPauseRequested: boolean = false
+  private static interactionPaused: boolean = false
+  private static interactionProtectionRequired: boolean = true
 
   static clearOwnerOutcome(ownerKey: string): void {
     if (ownerKey.length > 0) {
@@ -171,7 +177,48 @@ export class ReaderSuperResolutionService {
   }
 
   static setInteractionPaused(paused: boolean): void {
-    ReaderNativeSuperResolution.setInteractionPaused(paused)
+    ReaderSuperResolutionService.interactionPauseRequested = paused
+    ReaderSuperResolutionService.applyInteractionPause()
+  }
+
+  private static configureInteractionProtection(backend: string): void {
+    let gpuName: string = ''
+    let vulkanApiVersion: number = 0
+    try {
+      const capabilities: ReaderNativeSuperResolutionCapabilities =
+        ReaderNativeSuperResolution.capabilities()
+      gpuName = capabilities.gpuName.trim()
+      vulkanApiVersion = capabilities.vulkanApiVersion
+    } catch (_error) {
+      gpuName = ''
+      vulkanApiVersion = 0
+    }
+    const supportsConcurrentVulkanInteraction: boolean = backend === 'vulkan' &&
+      vulkanApiVersion >= INTERACTION_SAFE_VULKAN_API_VERSION
+    ReaderSuperResolutionService.setInteractionProtectionRequired(!supportsConcurrentVulkanInteraction)
+    hilog.info(
+      READER_ENHANCEMENT_LOG_DOMAIN,
+      READER_ENHANCEMENT_LOG_TAG,
+      'interaction_policy backend=%{public}s gpu=%{public}s pauseDuringInteraction=%{public}s',
+      backend,
+      gpuName.length > 0 ? gpuName : 'unknown',
+      String(!supportsConcurrentVulkanInteraction),
+    )
+  }
+
+  private static setInteractionProtectionRequired(required: boolean): void {
+    ReaderSuperResolutionService.interactionProtectionRequired = required
+    ReaderSuperResolutionService.applyInteractionPause()
+  }
+
+  private static applyInteractionPause(): void {
+    const effectivePaused: boolean = ReaderSuperResolutionService.interactionPauseRequested &&
+      ReaderSuperResolutionService.interactionProtectionRequired
+    if (ReaderSuperResolutionService.interactionPaused === effectivePaused) {
+      return
+    }
+    ReaderSuperResolutionService.interactionPaused = effectivePaused
+    ReaderNativeSuperResolution.setInteractionPaused(effectivePaused)
   }
 
   private static rememberOwnerOutcome(
@@ -239,6 +286,7 @@ export class ReaderSuperResolutionService {
       if (inFlight.owners.size === 0 || native.pixels.byteLength !== outputWidth * outputHeight * 4) {
         return ReaderSuperResolutionService.original(sourcePath, 'superseded')
       }
+      ReaderSuperResolutionService.configureInteractionProtection(native.backend)
       const initialization: image.InitializationOptions = {
         size: { width: outputWidth, height: outputHeight },
         srcPixelFormat: image.PixelMapFormat.RGBA_8888,

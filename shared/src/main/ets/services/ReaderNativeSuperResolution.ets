@@ -18,6 +18,14 @@ interface NativeDecodedImage {
   stride: number
 }
 
+interface NativeReaderSuperResolutionCapabilities {
+  vulkanAvailable: boolean
+  gpuCount: number
+  vulkanApiVersion: number
+  gpuName: string
+  ncnnVersion: string
+}
+
 interface NativeReaderSuperResolution {
   decodeImageRgba(sourcePath: string, maxEdge: number): Promise<NativeDecodedImage>
   prepareModel(
@@ -64,6 +72,7 @@ interface NativeReaderSuperResolution {
   ): Promise<NativeUpscaleResult>
   setRequestActive(requestId: number, active: boolean): void
   setInteractionPaused(paused: boolean): void
+  getCapabilities(): NativeReaderSuperResolutionCapabilities
 }
 
 export class ReaderNativeDecodedImage {
@@ -79,6 +88,14 @@ export class ReaderNativeSuperResolutionResult {
   modelLoadMs: number = 0
   inferenceMs: number = 0
   tileCount: number = 0
+}
+
+export class ReaderNativeSuperResolutionCapabilities {
+  vulkanAvailable: boolean = false
+  gpuCount: number = 0
+  vulkanApiVersion: number = 0
+  gpuName: string = ''
+  ncnnVersion: string = ''
 }
 
 /** Fixed portable waifu2x ncnn runtime contract shared with the model store. */
@@ -97,6 +114,17 @@ const nativeRuntime: NativeReaderSuperResolution = nativeSuperResolution as Nati
 
 /** Narrow ArkTS boundary for NextN's portable ncnn Reader-enhancement runtime. */
 export class ReaderNativeSuperResolution {
+  static capabilities(): ReaderNativeSuperResolutionCapabilities {
+    const native: NativeReaderSuperResolutionCapabilities = nativeRuntime.getCapabilities()
+    const result: ReaderNativeSuperResolutionCapabilities = new ReaderNativeSuperResolutionCapabilities()
+    result.vulkanAvailable = native.vulkanAvailable
+    result.gpuCount = native.gpuCount
+    result.vulkanApiVersion = native.vulkanApiVersion
+    result.gpuName = native.gpuName
+    result.ncnnVersion = native.ncnnVersion
+    return result
+  }
+
   static async decodeImageRgba(sourcePath: string, maxEdge: number): Promise<ReaderNativeDecodedImage> {
     const native: NativeDecodedImage = await nativeRuntime.decodeImageRgba(sourcePath, maxEdge)
     const result: ReaderNativeDecodedImage = new ReaderNativeDecodedImage()

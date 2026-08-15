@@ -3,6 +3,42 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## Intermittent JS TypeError crashes — libomp packaging + interaction pause state machine — 2026-08-16
+
+- **Why newly actionable:** ten jscrash records showed `setInteractionPaused
+  of undefined` / list-scroll errors; live hilog after reinstall proved the
+  loader failure: `Error loading shared library libomp.so (needed by
+  libnextn_super_resolution.so)`. `nativeRuntime` was undefined, so every
+  unguarded native call threw.
+- **Boundary:** no visible tree changed. The fix covers
+  `ReaderSuperResolutionService` interaction-pause state, the native
+  `getCapabilities()` contract, `PullRefreshListScaffold` scroll callbacks,
+  and HAP packaging (`shared/libs/arm64-v8a/libomp.so`).
+- **Reference boundary:** NextE ships `shared/libs/arm64-v8a/libomp.so` and
+  owns the three-state pause machine plus `INTERACTION_SAFE_VULKAN_API_VERSION
+  = 0x00403000`; NextN had dropped the library and collapsed the state machine.
+- **Exact change:** copy NextE's exact `libomp.so` (SHA-256 identical,
+  `47de7355c4ab159d5f311d24044b9c297a9669e7e601df7243fa82393f9052a0`);
+  restore the NextE pause state machine and capability probe; scroll callbacks
+  use `_scrollOffset` / `scrolledOffset()` (`currentOffset()?.yOffset ?? 0`).
+- **Verification plan:** signed build, `install -r`, cold-start
+  `nextn://gallery/471768`, native `继续 P1` into Reader, swipe, back to
+  Detail, back to root, fling both directions; require same PID foreground,
+  no new jscrash, hilog shows ncnn Vulkan init without libomp/TypeError.
+- **Current bounded device observation — 2026-08-16:** HAP SHA-256
+  `e5df3c21f396afda02a97d7b8929790ea228b2ddc7a906b32a1b4cbca617c1e9`
+  installed with `-r` on only `192.168.50.237:12345` after `AWAKE` /
+  `OverrideTimeout=86400000ms`; no data clear, uninstall, account, preference,
+  or content action. Cold-start deep link → `继续 P1` mounted
+  `reader-overlay-navigation`; PID `60188` survived Reader entry (`ncnn
+  Vulkan init result=0 gpu=Maleoon 920`, `interaction_policy
+  backend=vulkan pauseDuringInteraction=false`), a canvas swipe, back to
+  Detail, back to root, and up/down flings. No `setInteractionPaused`,
+  libomp, or TypeError in bounded hilog. `reader enhancement failed at
+  stage=native_upscale` remains for this gallery, so derivative output
+  acceptance stays OPEN. Raw artifacts under
+  `.hvigor/outputs/nextn-crash-fix-20260816T/` are excluded from Git.
+
 ## Gallery detail seed reuse (no full-screen blank, no tag language flash) — 2026-08-16
 
 - **Why newly actionable:** the user asked why entering Gallery Detail shows a

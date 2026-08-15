@@ -1,5 +1,37 @@
 # NextN active device-acceptance queue
 
+## Current Intermittent JS TypeError crash fix — bounded device observation — 2026-08-16
+
+- Root-cause chain observed: NextN's HAP was missing
+  `libs/arm64-v8a/libomp.so`, so `libnextn_super_resolution.so` failed to
+  load (`Error loading shared library libomp.so` in live hilog) and the JS
+  `nativeRuntime` was undefined; every unguarded native call threw
+  (`setInteractionPaused of undefined`), which matches the ten retained
+  jscrash records. The signed Debug HAP from the fix worktree (SHA-256
+  `e5df3c21f396afda02a97d7b8929790ea228b2ddc7a906b32a1b4cbca617c1e9`) now
+  contains `libomp.so` (byte-identical to NextE's
+  `shared/libs/arm64-v8a/libomp.so`) and restores NextE's three-state
+  interaction-pause guard plus the `PullRefreshListScaffold` scroll
+  callbacks.
+- Installed with `install -r` on only `192.168.50.237:12345` after fresh
+  lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms` gate. No data
+  clear, uninstall, account action, preference write, or content mutation
+  occurred.
+- After force-stop/cold start, `nextn://gallery/471768` foregrounded native
+  `com.erosteam.nextn` Gallery Detail. A freshly resolved `继续 P1`
+  activation mounted `reader-overlay-navigation` and the same PID `60188`
+  remained foreground; hilog showed `ncnn Vulkan init result=0
+  gpu=Maleoon 920` and `interaction_policy backend=vulkan
+  pauseDuringInteraction=false` with no `setInteractionPaused`, libomp, or
+  TypeError. A canvas swipe, Reader chrome reveal, back to Detail, back to
+  root, and up/down list flings all kept PID `60188` foreground with no new
+  jscrash in bounded hilog.
+- This observes the crash-path repair only: `reader enhancement failed at
+  stage=native_upscale` for this gallery, so derivative output/quality
+  acceptance, every interaction branch, and every list surface remain OPEN.
+  Raw local artifacts are retained under
+  `.hvigor/outputs/nextn-crash-fix-20260816T/` and excluded from Git.
+
 ## Current Detail hero wide-cover contain fit — bounded device observation — 2026-08-16
 
 - The signed Debug HAP (SHA-256
