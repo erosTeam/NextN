@@ -191,6 +191,10 @@ export struct GalleryDetailPage {
   @Local rawCommentPeek: NhComment[] = []
   /** A successful response is distinguishable from an empty or still-pending peek. */
   @Local commentPeekLoadedGalleryId: number = 0
+  /** Related peek settled (rows or empty); false while the optional request runs. */
+  @Local relatedLoaded: boolean = false
+  /** Public comment peek settled; false while the optional request runs. */
+  @Local commentPeekLoaded: boolean = false
   @Local favoriteStatusKnown: boolean = false
   @Local isFavorited: boolean = false
   @Local isFavoriteMutationInFlight: boolean = false
@@ -488,10 +492,12 @@ export struct GalleryDetailPage {
     this.publishWideThumbnailActionAvailability()
     this.relatedRequestGeneration += 1
     this.rawRelatedGalleries = []
+    this.relatedLoaded = false
     this.applyRelatedContentFilters()
     this.commentPeekGeneration += 1
     this.rawCommentPeek = []
     this.commentPeekLoadedGalleryId = 0
+    this.commentPeekLoaded = false
     this.applyCommentPeekFilters()
   }
 
@@ -1247,8 +1253,15 @@ export struct GalleryDetailPage {
       }
       this.rawCommentPeek = comments
       this.commentPeekLoadedGalleryId = galleryId
+      this.commentPeekLoaded = true
       this.applyCommentPeekFilters()
     } catch (_error) {
+      if (generation === this.commentPeekGeneration &&
+        this.isDetailReadyForCurrentGallery &&
+        this.galleryId === galleryId &&
+        this.detail.id === galleryId) {
+        this.commentPeekLoaded = true
+      }
       // The full destination retains retry/error UI. This optional response
       // stays empty on failure, while the already-available Comments route
       // remains visible and never competes with the ready detail surface.
@@ -1408,13 +1421,18 @@ export struct GalleryDetailPage {
 
   /** The full Comments route is useful even while its optional peek is empty. */
   private shouldShowCommentPreview(): boolean {
-    return this.canOpenComments()
+    return this.detail.id === this.galleryId
   }
 
   private shouldShowRelatedGalleries(): boolean {
     return this.isDetailReadyForCurrentGallery &&
       this.detail.id === this.galleryId &&
       this.relatedGalleries.length > 0
+  }
+
+  /** Reserve the related rail while its optional request is still pending. */
+  private shouldShowRelatedGalleriesLoading(): boolean {
+    return this.detail.id === this.galleryId && !this.relatedLoaded
   }
 
   private galleryPageCountText(): string {
@@ -1524,9 +1542,11 @@ export struct GalleryDetailPage {
         return
       }
       this.rawRelatedGalleries = this.uniqueRelatedGalleries(related, galleryId)
+      this.relatedLoaded = true
       this.applyRelatedContentFilters()
     } catch (error) {
       if (this.isCurrentRelatedRequest(generation)) {
+        this.relatedLoaded = true
         console.warn(`Unable to load related galleries: ${(error as Error).message}`)
       }
     }
@@ -1704,6 +1724,26 @@ export struct GalleryDetailPage {
     .alignItems(VerticalAlign.Center)
   }
 
+  /** Same-geometry metadata row used only while the verified detail is pending. */
+  @Builder
+  private GalleryMetaLoadingRow() {
+    Row({ space: ThemeTokens.SPACE_XS }) {
+      LoadingProgress()
+        .width(ThemeTokens.FONT_SIZE_CAPTION)
+        .height(ThemeTokens.FONT_SIZE_CAPTION)
+        .color(ThemeTokens.BRAND)
+      Text(AppStrings.get('common_loading'))
+        .fontSize(ThemeTokens.FONT_SIZE_BODY)
+        .fontColor(ThemeTokens.TEXT_SECONDARY)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .layoutWeight(1)
+    }
+    .width('100%')
+    .padding({ top: ThemeTokens.SPACE_XS, bottom: ThemeTokens.SPACE_XS })
+    .alignItems(VerticalAlign.Center)
+  }
+
   /** Compact in-card action chip, matching NextE's sub-background capsule family. */
   @Builder
   private GalleryActionChip(icon: Resource, label: string, enabled: boolean, action: () => void) {
@@ -1735,7 +1775,7 @@ export struct GalleryDetailPage {
   /** Detail metadata is a peer information block, not hero-card decoration. */
   @Builder
   private GalleryInformation() {
-    if (this.isDetailReadyForCurrentGallery && this.detail.id === this.galleryId) {
+    if (this.detail.id === this.galleryId) {
       Row({ space: ThemeTokens.SPACE_MD }) {
         Column() {
           NextNGroupedListSection({ inset: ThemeTokens.SPACE_MD }) {
@@ -1751,6 +1791,9 @@ export struct GalleryDetailPage {
               }
               if (this.galleryFavoriteCountText().length > 0) {
                 this.GalleryMetaItem($r('sys.symbol.heart'), this.galleryFavoriteCountText())
+              }
+              if (!this.isDetailReadyForCurrentGallery) {
+                this.GalleryMetaLoadingRow()
               }
               if (this.galleryUploadDateText().length > 0) {
                 this.GalleryMetaItem($r('sys.symbol.clock'), this.galleryUploadDateText())
@@ -1773,7 +1816,7 @@ export struct GalleryDetailPage {
           this.GalleryActionChip(
             $r('sys.symbol.link'),
             AppStrings.get('action_torrent'),
-            true,
+            this.isDetailReadyForCurrentGallery && this.detail.id === this.galleryId,
             (): void => {
               this.requestTorrentFileExport()
             },
@@ -2295,6 +2338,13 @@ export struct GalleryDetailPage {
     return !this.usesWideDetailWorkspace() && this.canOpenThumbnails()
   }
 
+  /** The preview slot keeps its height while page metadata is still pending. */
+  private shouldShowCompactPreviewLoading(): boolean {
+    return !this.usesWideDetailWorkspace() &&
+      this.detail.id === this.galleryId &&
+      this.detail.pages.length === 0
+  }
+
   private compactPreviewPages(): NhGalleryPage[] {
     return this.detail.pages.slice(0, GALLERY_COMPACT_PREVIEW_LIMIT)
   }
@@ -2358,6 +2408,48 @@ export struct GalleryDetailPage {
         .height(GALLERY_COMPACT_PREVIEW_IMAGE_HEIGHT + ThemeTokens.FONT_SIZE_TINY + ThemeTokens.SPACE_XS)
         .listDirection(Axis.Horizontal)
         .scrollBar(BarState.Off)
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Start)
+      .padding({ bottom: ThemeTokens.SPACE_MD })
+    }
+  }
+
+  @Builder
+  private CompactPreviewLoading() {
+    NextNGroupedListSection({ inset: 0 }) {
+      Column({ space: ThemeTokens.SPACE_SM }) {
+        Row({ space: ThemeTokens.SPACE_XS }) {
+          SymbolGlyph($r('sys.symbol.square_fill_grid_2x2'))
+            .fontSize(ThemeTokens.FONT_SIZE_BODY)
+            .fontColor([ThemeTokens.TEXT_SECONDARY])
+          Text(AppStrings.get('gallery_preview'))
+            .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(ThemeTokens.TEXT_PRIMARY)
+          Blank()
+          LoadingProgress()
+            .width(ThemeTokens.FONT_SIZE_BODY)
+            .height(ThemeTokens.FONT_SIZE_BODY)
+            .color(ThemeTokens.BRAND)
+        }
+        .width('100%')
+        .padding({
+          left: ThemeTokens.SPACE_MD,
+          top: ThemeTokens.SPACE_MD,
+          right: ThemeTokens.SPACE_MD,
+        })
+        .alignItems(VerticalAlign.Center)
+        Column() {
+          LoadingProgress()
+            .width(ThemeTokens.STATE_INDICATOR_SIZE)
+            .height(ThemeTokens.STATE_INDICATOR_SIZE)
+            .color(ThemeTokens.BRAND)
+        }
+        .width('100%')
+        .height(GALLERY_COMPACT_PREVIEW_IMAGE_HEIGHT + ThemeTokens.FONT_SIZE_TINY + ThemeTokens.SPACE_XS)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
       }
       .width('100%')
       .alignItems(HorizontalAlign.Start)
@@ -2524,11 +2616,26 @@ export struct GalleryDetailPage {
         ListItem() {
           this.CompactPreviewPeek()
         }
+      } else if (this.shouldShowCompactPreviewLoading()) {
+        ListItem() {
+          this.CompactPreviewLoading()
+        }
       }
       if (this.shouldShowRelatedGalleries()) {
         ListItem() {
           GalleryRelatedCarousel({
             galleries: this.relatedGalleries,
+            loading: false,
+            onOpen: (galleryId: number): void => {
+              this.openRelatedGallery(galleryId)
+            },
+          })
+        }
+      } else if (this.shouldShowRelatedGalleriesLoading()) {
+        ListItem() {
+          GalleryRelatedCarousel({
+            galleries: [],
+            loading: true,
             onOpen: (galleryId: number): void => {
               this.openRelatedGallery(galleryId)
             },
@@ -2539,6 +2646,8 @@ export struct GalleryDetailPage {
         ListItem() {
           GalleryCommentPreviewCarousel({
             comments: this.commentPreviewItems(),
+            loading: !this.commentPeekLoaded,
+            emptyText: this.commentPeekLoaded ? AppStrings.get('comments_status_empty') : '',
             onOpen: (): void => {
               this.openComments()
             },

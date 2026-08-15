@@ -64,6 +64,58 @@ authorize an edit, replace a device comparison, or define product completion.
   session gate) has cache hydration evidence; INC-004 (repeat single-point
   patches) is closed with process rules.
 
+## Gallery Detail stable loading state machine (no section pop-in) — 2026-08-16
+
+- **Why newly actionable:** the user reports that after the seed change the
+  Detail page has no loading state machine: the metadata card and the
+  download/seed action card are absent until the verified detail arrives and
+  then pop in; the compact preview, related, and comments sections are empty
+  with no loading indicator while their requests run; the page therefore
+  jumps violently when data lands. The user directs that avoiding layout
+  jumps be the governing principle and asks why NextE's loading design was
+  not followed.
+- **Reference boundary:** NextE `GalleryDetailPage.DetailMetadataPane`
+  keeps the header/info sections present from the seeded row and, in the
+  preview slot, mounts a full-width `LoadingProgress` row while
+  `vm.loading && !vm.cachedDetailApplied` (exact NextE pattern at
+  `GalleryDetailPage.ets`). NextN currently hides `GalleryInformation`
+  entirely until `isDetailReadyForCurrentGallery`, hides related until its
+  rows arrive, and renders an empty comments rail without any in-flight cue.
+- **Whole parent-tree boundary:** only the five section leaves inside
+  `GalleryDetailPage.DetailMetadataList` (hero stays seed-painted; metadata
+  card, action card, compact preview, related, comments). No navigation,
+  scroll owner, HDS chrome, pull-refresh, or wide-workspace changes.
+- **Exact change:** (1) `GalleryInformation` always renders the metadata
+  card + action card; while not ready it shows a same-geometry loading row
+  inside the metadata card and disables both action chips; (2) compact
+  preview reserves its section height with a centered `LoadingProgress`
+  until pages arrive; (3) `GalleryRelatedCarousel` and
+  `GalleryCommentPreviewCarousel` gain a `loading` state that reserves the
+  exact rail height (255vp/190vp) with a centered indicator; comments
+  loaded-but-empty shows the existing `无评论` string in the same rail so the
+  section never collapses; (4) related/comments loading flags reset on
+  route replacement and remain stable across same-gallery refresh.
+- **Verification plan:** signed build; install -r; cold start; tap a Browse
+  card; capture early + settled layout/screenshot; confirm the metadata/action
+  card is present from the first frame, preview/related/comments show loading
+  indicators and fill in place without section pop-in, and the settled
+  layout retains the same section order.
+- **Device observation — 2026-08-16:** signed Debug HAP built and installed
+  with `-r` on `192.168.50.237:12345` (lease/wake/AWAKE+OverrideTimeout gate,
+  no data clear). Settled Detail for `Yakin Sensei...`: hero + metadata card
+  (`chinese/58 页/16/2026-08-16`) + action card (`下载/种子`) are present in
+  one stable list; scrolled state shows 预览 (header + 58 + 查看全部 + page
+  tiles), 相关画廊 (fixed 255vp rail with 4 cards), and 评论 (header + count +
+  centered `无评论` inside the same 190vp rail). The metadata/action card is
+  no longer gated on `isDetailReadyForCurrentGallery`; preview/related/
+  comments render their loading shells from the seed frame
+  (`detail.id === galleryId`), so no section goes absent→pop. Evidence limit:
+  the transient `LoadingProgress` frames were not conclusively captured in
+  the `snapshot_display` burst because the in-memory detail cache applies
+  synchronously before the first painted frame for cached galleries; the
+  fixed shell heights and empty/comments states are device-observed, while
+  the uncached-network loading frames remain source-verified only.
+
 ## Shared gallery-list top gap (single spacing contract) — 2026-08-16
 
 - **Why newly actionable:** the user reports the first gallery card nearly

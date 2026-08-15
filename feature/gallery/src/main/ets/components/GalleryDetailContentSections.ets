@@ -30,6 +30,8 @@ function horizontalRailViewportWidth(): string {
 @ComponentV2
 export struct GalleryRelatedCarousel {
   @Require @Param galleries: NhGallerySummary[]
+  /** Reserve the rail height with a centered indicator until rows settle. */
+  @Param loading: boolean = false
   @Event onOpen?: (galleryId: number) => void
 
   private relatedCardAccessibility(gallery: NhGallerySummary): string {
@@ -113,7 +115,19 @@ export struct GalleryRelatedCarousel {
         // content inside the neighbouring detail cards, while the List below
         // remains free to extend through the page gutter when scrolled.
         .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD })
-      List({ space: ThemeTokens.SPACE_SM }) {
+      if (this.loading) {
+        Column() {
+          LoadingProgress()
+            .width(28)
+            .height(28)
+            .color(ThemeTokens.BRAND)
+        }
+        .width('100%')
+        .height(RELATED_CAROUSEL_HEIGHT)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+      } else {
+        List({ space: ThemeTokens.SPACE_SM }) {
         ForEach(this.galleries, (gallery: NhGallerySummary, index: number): void => {
           ListItem() {
             this.RelatedCard(gallery)
@@ -129,6 +143,7 @@ export struct GalleryRelatedCarousel {
       .listDirection(Axis.Horizontal)
       .scrollBar(BarState.Off)
       .translate({ x: -HORIZONTAL_RAIL_EDGE_INSET })
+      }
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)
@@ -144,6 +159,10 @@ export struct GalleryRelatedCarousel {
 @ComponentV2
 export struct GalleryCommentPreviewCarousel {
   @Require @Param comments: NhComment[]
+  /** Reserve the rail height with a centered indicator until the peek settles. */
+  @Param loading: boolean = false
+  /** Loaded-empty copy rendered inside the same fixed rail height. */
+  @Param emptyText: string = ''
   @Event onOpen?: () => void
 
   private commentAuthor(comment: NhComment): string {
@@ -189,11 +208,18 @@ export struct GalleryCommentPreviewCarousel {
         .fontSize(ThemeTokens.FONT_SIZE_TITLE)
         .fontWeight(FontWeight.Medium)
         .fontColor(ThemeTokens.TEXT_PRIMARY)
-      Text(this.commentCountText())
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(ThemeTokens.TEXT_TERTIARY)
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
+      if (this.loading) {
+        LoadingProgress()
+          .width(ThemeTokens.FONT_SIZE_CAPTION)
+          .height(ThemeTokens.FONT_SIZE_CAPTION)
+          .color(ThemeTokens.BRAND)
+      } else {
+        Text(this.commentCountText())
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontColor(ThemeTokens.TEXT_TERTIARY)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+      }
       Blank()
       Text(AppStrings.get('detail_view_all'))
         .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
@@ -264,7 +290,28 @@ export struct GalleryCommentPreviewCarousel {
   build() {
     Column({ space: ThemeTokens.SPACE_SM }) {
       this.CommentsHeader()
-      if (this.comments.length > 0) {
+      if (this.loading) {
+        Column() {
+          LoadingProgress()
+            .width(28)
+            .height(28)
+            .color(ThemeTokens.BRAND)
+        }
+        .width('100%')
+        .height(COMMENT_CAROUSEL_HEIGHT)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+      } else if (this.comments.length === 0 && this.emptyText.length > 0) {
+        Column() {
+          Text(this.emptyText)
+            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+            .fontColor(ThemeTokens.TEXT_SECONDARY)
+        }
+        .width('100%')
+        .height(COMMENT_CAROUSEL_HEIGHT)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+      } else if (this.comments.length > 0) {
         List({ space: ThemeTokens.SPACE_SM }) {
           ForEach(this.comments, (comment: NhComment, index: number): void => {
             ListItem() {
