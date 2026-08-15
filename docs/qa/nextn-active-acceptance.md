@@ -1,5 +1,25 @@
 # NextN active device-acceptance queue
 
+## Current Browse/Search stored-default caption removal — bounded device observation — 2026-08-15
+
+- The signed HAP built from `0ed57b1` (SHA-256
+  `dbac90faf9e8e5d270c3ee036ead45786800d26bda48bd0057998f29ffe2cb2e`)
+  was installed in place with `-r` on only `192.168.50.237:12345` after a
+  fresh live target, lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms`
+  gate. No data clear, uninstall, account action, query, menu opening, or
+  language/order selection occurred.
+- At the foreground-confirmed native `1320×2120` Browse Settings route, the
+  language and order rows displayed only `浏览语言 / 不限语言` and `浏览排序 /
+  最新`. After normal return to the root and semantic entry into Search
+  Settings, its corresponding rows displayed only `搜索语言 / 不限语言` and
+  `搜索排序 / 最新`. Neither viewport contained the removed local-storage
+  caption.
+- This observes only the two title/value row states. It does not accept menus,
+  persistent defaults, errors, requests, every locale, or same-state NextE
+  visual parity. Raw local artifacts are retained under
+  `.hvigor/outputs/catalog-caption-removal-20260815T1832/` and are excluded
+  from source control.
+
 ## Current Theme-color false-system-option removal — bounded device observation — 2026-08-15
 
 - The signed HAP built from `8e41736` (SHA-256

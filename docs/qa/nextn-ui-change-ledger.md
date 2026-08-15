@@ -32,6 +32,18 @@ authorize an edit, replace a device comparison, or define product completion.
   menu. Same-state NextE visual parity remains OPEN.
 - **Unresolved risk:** source/build evidence cannot prove menu behavior,
   persistent defaults, error states, or full page visual parity.
+- **Bounded selected-device observation — 2026-08-15:** signed HAP from
+  `0ed57b1` (SHA-256
+  `dbac90faf9e8e5d270c3ee036ead45786800d26bda48bd0057998f29ffe2cb2e`)
+  was installed in place with `-r` on only `192.168.50.237:12345` after a
+  live target, lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms` gate.
+  At the current `1320×2120` viewport, foreground-confirmed native Browse
+  Settings showed only `浏览语言 / 不限语言` then `浏览排序 / 最新`, and native
+  Search Settings showed only `搜索语言 / 不限语言` then `搜索排序 / 最新`; no
+  removed local-storage captions appeared and no menu was opened. Preference
+  behavior, menus, and same-state NextE parity remain OPEN. Raw local
+  artifacts are retained under
+  `.hvigor/outputs/catalog-caption-removal-20260815T1832/` outside Git.
 
 ## OPEN — Appearance theme-color system-option removal — 2026-08-15
 
