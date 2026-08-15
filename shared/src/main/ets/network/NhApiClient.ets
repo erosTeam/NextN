@@ -144,6 +144,27 @@ export class NhApiClient {
   }
 
   /**
+   * Returns one anonymous public random-gallery identifier. The endpoint's
+   * current minimal object response is intentionally validated here, while the
+   * existing Gallery destination remains the only detail/cache owner.
+   */
+  static async randomGalleryId(): Promise<number> {
+    const value: Object = await NhApiClient.getJsonValue(
+      `${API_V2_PREFIX}galleries/random`,
+      NhJsonReadScope.PUBLIC,
+      false,
+      true,
+      true,
+    )
+    const root: Record<string, Object> = NhApiClient.asRecord(value)
+    const galleryId: Object | undefined = root['id']
+    if (typeof galleryId !== 'number' || !Number.isSafeInteger(galleryId) || galleryId <= 0) {
+      throw new Error('Random gallery service returned an invalid identifier.')
+    }
+    return galleryId
+  }
+
+  /**
    * Related galleries are an optional anonymous supplement to a verified
    * detail. They use the same page envelope and blacklist filter as Browse
    * and Search. That filter is an intentional NextN read-only safety policy,
@@ -548,6 +569,8 @@ export class NhApiClient {
     url: string,
     scope: NhJsonReadScope = NhJsonReadScope.PUBLIC,
     allowTransportCache: boolean = true,
+    denyRedirects: boolean = false,
+    singleAttempt: boolean = false,
   ): Promise<Object> {
     // ArkWeb authority and the two-401 retirement boundary belong only to
     // explicit account reads. Public Browse/Search/Popular/Detail/Related/
@@ -630,7 +653,8 @@ export class NhApiClient {
       return browserValue
     }
     let lastError: Error = new Error('Network request failed')
-    for (let attempt: number = 0; attempt < 2; attempt++) {
+    const attemptLimit: number = singleAttempt ? 1 : 2
+    for (let attempt: number = 0; attempt < attemptLimit; attempt++) {
       const request: http.HttpRequest = http.createHttp()
       try {
         const response: http.HttpResponse = await request.request(url, {
@@ -639,6 +663,10 @@ export class NhApiClient {
           usingCache: allowTransportCache,
           connectTimeout: CONNECT_TIMEOUT_MS,
           readTimeout: READ_TIMEOUT_MS,
+          // Public browse reads preserve NetworkKit's documented default.
+          // The fixed first-party random-ID leaf denies all redirects so it
+          // cannot silently follow an unexpected cross-origin Location.
+          maxRedirects: denyRedirects ? 0 : 30,
           // Native catalog reads are always anonymous. The exact account
           // endpoints above stay in ArkWeb; no other GET may replay browser
           // authority through NetworkKit or retire the sealed session.
@@ -654,7 +682,7 @@ export class NhApiClient {
         return value
       } catch (error) {
         lastError = error as Error
-        if (attempt === 0) {
+        if (attempt + 1 < attemptLimit) {
           await NhApiClient.delay(400)
         }
       } finally {

@@ -36,6 +36,7 @@ import {
   ReaderSuperResolutionModelsPage,
   SettingsPage,
   SettingsSurface,
+  TagTranslationSettingsPage,
 } from 'settings'
 import { common } from '@kit.AbilityKit'
 import {
@@ -89,6 +90,7 @@ import {
   NhBrowsePresentation,
   NhComment,
   NhDownloadTaskStatus,
+  NhApiClient,
   NhGalleryPage,
   ReaderOverlayNavigationState,
   SettingsNavigationState,
@@ -125,6 +127,7 @@ const ROUTE_MANGA_RENDERING_SERVICE: string = 'mangaRenderingService'
 const ROUTE_DOWNLOAD_SETTINGS: string = 'downloadSettings'
 const ROUTE_CACHE_SETTINGS: string = 'cacheSettings'
 const ROUTE_ADVANCED_SETTINGS: string = 'advancedSettings'
+const ROUTE_TAG_TRANSLATION_SETTINGS: string = 'tagTranslationSettings'
 const ROUTE_ABOUT: string = 'about'
 const STATUS_BAR_LIGHT_CONTENT: string = '#FFFFFFFF'
 const STATUS_BAR_DARK_CONTENT: string = '#FF000000'
@@ -275,6 +278,7 @@ struct Index {
   private downloadSettingsScroller: Scroller = new Scroller()
   private cacheSettingsScroller: Scroller = new Scroller()
   private advancedSettingsScroller: Scroller = new Scroller()
+  private tagTranslationSettingsScroller: Scroller = new Scroller()
   private aboutScroller: Scroller = new Scroller()
   private historyScroller: Scroller = new Scroller()
   @Local private activeTab: number = 0
@@ -318,6 +322,9 @@ struct Index {
   private readerSystemBarGeneration: number = 0
   private readerSystemBarWork: Promise<void> = Promise.resolve()
   private lastHandledClipboardCandidateRevision: number = 0
+  @Local private randomGalleryBusy: boolean = false
+  private randomGalleryActionEpoch: number = 0
+  private rootNavigationEpoch: number = 0
 
   aboutToAppear(): void {
     this.installRootNavigationStateTracking()
@@ -335,7 +342,11 @@ struct Index {
     this.settingsNavigation.syncSecondaryBranch(this.stack)
     this.syncHomeGallerySelection(this.stack)
     this.stack.setInterception({
+      willShow: (_from, _to, _operation, _animated): void => {
+        this.cancelRandomGalleryRequest()
+      },
       didShow: (_from, to, _operation, _animated): void => {
+        this.rootNavigationEpoch += 1
         const secondaryBranch: NavPathStack | null = typeof to === 'string' ? null : to.pathStack
         this.settingsNavigation.syncSecondaryBranch(secondaryBranch)
         this.syncHomeGallerySelection(secondaryBranch)
@@ -344,6 +355,7 @@ struct Index {
   }
 
   aboutToDisappear(): void {
+    this.cancelRandomGalleryRequest()
     this.clearHomeTabAnimationGuardTimer()
   }
 
@@ -356,6 +368,11 @@ struct Index {
   @Monitor('layoutSafeArea.rootNavigationSplit')
   onRootNavigationSplitChanged(): void {
     this.syncHomeGallerySelection(this.stack)
+  }
+
+  @Monitor('homeSource.selectedKey')
+  onHomeSourceSelectionChanged(): void {
+    this.cancelRandomGalleryRequest()
   }
 
   @Monitor('clipboardLink.candidateRevision', 'readerOverlay.visible')
@@ -451,6 +468,75 @@ struct Index {
       return
     }
     this.stack.pushPathByName(ROUTE_GALLERY, new GalleryRouteParams(galleryId))
+  }
+
+  private cancelRandomGalleryRequest(): void {
+    this.randomGalleryActionEpoch += 1
+    this.randomGalleryBusy = false
+  }
+
+  private rootRouteSignature(): string {
+    return this.stack.getAllPathName().join('\u001f')
+  }
+
+  private isRandomGalleryRequestCurrent(
+    actionEpoch: number,
+    navigationEpoch: number,
+    sourceKey: string,
+    routeSignature: string,
+  ): boolean {
+    return actionEpoch === this.randomGalleryActionEpoch &&
+      navigationEpoch === this.rootNavigationEpoch &&
+      this.activeTab === 0 &&
+      this.homeSource.selectedKey === sourceKey &&
+      routeSignature === this.rootRouteSignature() &&
+      !this.readerOverlay.visible
+  }
+
+  private async requestRandomGallery(): Promise<void> {
+    if (this.randomGalleryBusy || this.activeTab !== 0) {
+      return
+    }
+    const actionEpoch: number = this.randomGalleryActionEpoch + 1
+    this.randomGalleryActionEpoch = actionEpoch
+    const navigationEpoch: number = this.rootNavigationEpoch
+    const sourceKey: string = this.homeSource.selectedKey
+    const routeSignature: string = this.rootRouteSignature()
+    this.randomGalleryBusy = true
+    try {
+      const galleryId: number = await NhApiClient.randomGalleryId()
+      if (!this.isRandomGalleryRequestCurrent(actionEpoch, navigationEpoch, sourceKey, routeSignature)) {
+        return
+      }
+      this.selectHomeGalleryDetail(galleryId)
+    } catch (_error) {
+      if (this.isRandomGalleryRequestCurrent(actionEpoch, navigationEpoch, sourceKey, routeSignature)) {
+        this.showRandomGalleryFailureDialog()
+      }
+    } finally {
+      if (actionEpoch === this.randomGalleryActionEpoch) {
+        this.randomGalleryBusy = false
+      }
+    }
+  }
+
+  private showRandomGalleryFailureDialog(): void {
+    try {
+      this.getUIContext().showAlertDialog({
+        title: AppStrings.get('random_gallery_error_title'),
+        message: AppStrings.get('random_gallery_error_message'),
+        primaryButton: {
+          value: AppStrings.get('common_cancel'),
+          action: (): void => {},
+        },
+        secondaryButton: {
+          value: AppStrings.get('common_retry'),
+          action: (): void => {
+            this.requestRandomGallery()
+          },
+        },
+      })
+    } catch (_error) {}
   }
 
   /**
@@ -592,6 +678,10 @@ struct Index {
 
   private pushTranslationSource(consumerId: string): void {
     this.stack.pushPathByName(ROUTE_TRANSLATION_SOURCE, new TranslationSourceRouteParams(consumerId))
+  }
+
+  private pushTagTranslationSettings(): void {
+    this.stack.pushPathByName(ROUTE_TAG_TRANSLATION_SETTINGS, '')
   }
 
   private pushMangaRenderingService(): void {
@@ -1016,6 +1106,15 @@ struct Index {
         },
       }
       const searchMenuItem: Record<string, Object> = { 'content': searchAction }
+      const randomGalleryAction: Record<string, Object> = {
+        'label': AppStrings.get('action_random_gallery'),
+        'icon': $r('sys.symbol.shuffle'),
+        'isEnabled': !this.randomGalleryBusy,
+        'action': (): void => {
+          this.requestRandomGallery()
+        },
+      }
+      const randomGalleryMenuItem: Record<string, Object> = { 'content': randomGalleryAction }
       const browseOptionsAction: Record<string, Object> = {
         'label': AppStrings.get('action_browse_options'),
         'icon': $r('sys.symbol.slider_horizontal_2'),
@@ -1039,9 +1138,9 @@ struct Index {
       // Query controls belong only to Latest; the shared layout switcher is
       // intentionally available from either source.
       const browseMenuItems: Record<string, Object>[] = this.homeSource.selectedKey === HOME_SOURCE_LATEST
-        ? [searchMenuItem, browseOptionsMenuItem, layoutMenuItem]
-        : [searchMenuItem, layoutMenuItem]
-      const searchMenu: Record<string, Object> = { 'value': browseMenuItems, 'maxCount': browseMenuItems.length }
+        ? [searchMenuItem, browseOptionsMenuItem, layoutMenuItem, randomGalleryMenuItem]
+        : [searchMenuItem, layoutMenuItem, randomGalleryMenuItem]
+      const searchMenu: Record<string, Object> = { 'value': browseMenuItems, 'maxCount': 3 }
       content['menu'] = searchMenu
     } else if (this.activeTab === 1) {
       if (this.favoritesActions.actionsAvailable) {
@@ -1751,6 +1850,9 @@ struct Index {
       SettingsPage({
         surface: SettingsSurface.ADVANCED,
         scroller: this.advancedSettingsScroller,
+        onOpenTagTranslation: (): void => {
+          this.pushTagTranslationSettings()
+        },
         onOpenContentFilters: (): void => {
           this.pushContentFilters()
         },
@@ -1762,6 +1864,16 @@ struct Index {
     .titleBar(nextNHdsTitle(AppStrings.get('settings_advanced')))
     .hideBackButton(false)
     .bindToScrollable([this.advancedSettingsScroller])
+  }
+
+  @Builder
+  private tagTranslationSettingsDestination() {
+    HdsNavDestination() {
+      TagTranslationSettingsPage({ scroller: this.tagTranslationSettingsScroller })
+    }
+    .titleBar(nextNHdsTitle(AppStrings.get('settings_tag_translation_title')))
+    .hideBackButton(false)
+    .bindToScrollable([this.tagTranslationSettingsScroller])
   }
 
   @Builder
@@ -1856,6 +1968,8 @@ struct Index {
       this.cacheSettingsDestination()
     } else if (name === ROUTE_ADVANCED_SETTINGS) {
       this.advancedSettingsDestination()
+    } else if (name === ROUTE_TAG_TRANSLATION_SETTINGS) {
+      this.tagTranslationSettingsDestination()
     } else if (name === ROUTE_HISTORY) {
       this.historyDestination()
     } else if (name === ROUTE_ABOUT) {
@@ -1993,6 +2107,7 @@ struct Index {
         // page behind unrelated tab content.
         const changed: boolean = index !== this.activeTab
         if (changed) {
+          this.cancelRandomGalleryRequest()
           if (this.stack.getAllPathName().length > 0) {
             this.stack.clear(false)
           }
