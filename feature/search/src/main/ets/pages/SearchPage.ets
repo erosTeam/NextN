@@ -68,6 +68,8 @@ const SEARCH_SORTS: NhSearchSort[] = [
 const TAG_SUGGEST_DELAY_MS: number = 180
 const TAG_SUGGESTION_LIMIT: number = 8
 const MAX_TAG_SUGGESTION_PREFIX_LENGTH: number = 128
+const ADVANCED_RANGE_INPUT_WIDTH: number = 84
+const ADVANCED_RANGE_INPUT_HEIGHT: number = 36
 
 /** The final editable catalog token, kept separate from remote-search state. */
 class LocalTagSuggestionInput {
@@ -1376,17 +1378,101 @@ export struct SearchPage {
   }
 
   @Builder
+  private AdvancedTagNameInput() {
+    Column({ space: ThemeTokens.SPACE_XS }) {
+      Text(AppStrings.get('search_advanced_tag_name'))
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontColor(ThemeTokens.TEXT_SECONDARY)
+      TextInput({
+        text: this.advancedTagText,
+        placeholder: AppStrings.get('search_advanced_tag_placeholder'),
+      })
+        .width('100%')
+        .height(44)
+        .fontSize(ThemeTokens.FONT_SIZE_BODY)
+        .backgroundColor(ThemeTokens.CARD_BACKGROUND)
+        .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
+        .onChange((value: string): void => {
+          this.advancedTagText = value
+          this.clearAdvancedConditionError('tag')
+        })
+        .onSubmit((): void => {
+          this.appendAdvancedTagCondition()
+        })
+    }
+    .width('100%')
+    .alignItems(HorizontalAlign.Start)
+    .padding({
+      left: ThemeTokens.SPACE_MD,
+      right: ThemeTokens.SPACE_MD,
+      top: ThemeTokens.SPACE_SM,
+      bottom: ThemeTokens.SPACE_SM,
+    })
+  }
+
+  @Builder
+  private AdvancedRangeInput(value: string, accessibilityLabel: string, onChange: (value: string) => void) {
+    TextInput({
+      text: value,
+      placeholder: AppStrings.get('search_advanced_positive_integer'),
+    })
+      .type(InputType.Number)
+      .inputFilter('^[0-9]*$')
+      .textAlign(TextAlign.Center)
+      .width(ADVANCED_RANGE_INPUT_WIDTH)
+      .height(ADVANCED_RANGE_INPUT_HEIGHT)
+      .fontSize(ThemeTokens.FONT_SIZE_BODY)
+      .backgroundColor(ThemeTokens.SURFACE_SUB)
+      .borderRadius(ThemeTokens.RADIUS_MD)
+      .accessibilityDescription(accessibilityLabel)
+      .onChange(onChange)
+  }
+
+  @Builder
+  private AdvancedPageRangeSuffix() {
+    Row({ space: ThemeTokens.SPACE_SM }) {
+      this.AdvancedRangeInput(this.advancedPageMinimumText, AppStrings.get('search_advanced_pages_minimum'),
+        (value: string): void => {
+        this.advancedPageMinimumText = value
+        this.clearAdvancedConditionError('pages')
+      })
+      Text('-')
+        .fontSize(ThemeTokens.FONT_SIZE_BODY)
+        .fontColor(ThemeTokens.TEXT_TERTIARY)
+      this.AdvancedRangeInput(this.advancedPageMaximumText, AppStrings.get('search_advanced_pages_maximum'),
+        (value: string): void => {
+        this.advancedPageMaximumText = value
+        this.clearAdvancedConditionError('pages')
+      })
+    }
+    .alignItems(VerticalAlign.Center)
+    .padding({ left: ThemeTokens.SPACE_SM, right: ThemeTokens.SPACE_MD })
+  }
+
+  @Builder
+  private AdvancedUploadedRangeSuffix() {
+    Row({ space: ThemeTokens.SPACE_SM }) {
+      this.AdvancedRangeInput(this.advancedUploadedMinimumText, AppStrings.get('search_advanced_uploaded_minimum'),
+        (value: string): void => {
+        this.advancedUploadedMinimumText = value
+        this.clearAdvancedConditionError('uploaded')
+      })
+      Text('-')
+        .fontSize(ThemeTokens.FONT_SIZE_BODY)
+        .fontColor(ThemeTokens.TEXT_TERTIARY)
+      this.AdvancedRangeInput(this.advancedUploadedMaximumText, AppStrings.get('search_advanced_uploaded_maximum'),
+        (value: string): void => {
+        this.advancedUploadedMaximumText = value
+        this.clearAdvancedConditionError('uploaded')
+      })
+    }
+    .alignItems(VerticalAlign.Center)
+    .padding({ left: ThemeTokens.SPACE_SM, right: ThemeTokens.SPACE_MD })
+  }
+
+  @Builder
   private SearchAdvancedConditionsPanel() {
     Column({ space: ThemeTokens.SPACE_MD }) {
-      Text(AppStrings.get('search_advanced_conditions'))
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
-      Text(AppStrings.get('search_advanced_hint'))
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
-        .maxLines(3)
-        .width('100%')
       NextNGroupedListSection() {
         NextNListRow({
           title: AppStrings.get('search_advanced_type'),
@@ -1420,34 +1506,7 @@ export struct SearchPage {
             },
           })
         this.SearchOptionDivider()
-        Column({ space: ThemeTokens.SPACE_XS }) {
-          Text(AppStrings.get('search_advanced_tag_name'))
-            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-            .fontColor(ThemeTokens.TEXT_SECONDARY)
-          TextInput({
-            text: this.advancedTagText,
-            placeholder: AppStrings.get('search_advanced_tag_placeholder'),
-          })
-            .width('100%')
-            .height(44)
-            .fontSize(ThemeTokens.FONT_SIZE_BODY)
-            .backgroundColor(ThemeTokens.CARD_BACKGROUND)
-            .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
-            .onChange((value: string): void => {
-              this.advancedTagText = value
-              this.clearAdvancedConditionError('tag')
-            })
-            .onSubmit((): void => {
-              this.appendAdvancedTagCondition()
-            })
-        }
-        .width('100%')
-        .padding({
-          left: ThemeTokens.SPACE_MD,
-          right: ThemeTokens.SPACE_MD,
-          top: ThemeTokens.SPACE_SM,
-          bottom: ThemeTokens.SPACE_SM,
-        })
+        this.AdvancedTagNameInput()
         this.SearchOptionDivider()
         NextNListRow({
           title: AppStrings.get('search_advanced_add_tag'),
@@ -1464,65 +1523,15 @@ export struct SearchPage {
       }
       this.AdvancedConditionError('tag')
 
-      Text(AppStrings.get('search_advanced_pages'))
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
       NextNGroupedListSection() {
-        Column({ space: ThemeTokens.SPACE_XS }) {
-          Text(AppStrings.get('search_advanced_pages_minimum'))
-            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-            .fontColor(ThemeTokens.TEXT_SECONDARY)
-          TextInput({
-            text: this.advancedPageMinimumText,
-            placeholder: AppStrings.get('search_advanced_positive_integer'),
-          })
-            .type(InputType.Number)
-            .inputFilter('^[0-9]*$')
-            .width('100%')
-            .height(44)
-            .fontSize(ThemeTokens.FONT_SIZE_BODY)
-            .backgroundColor(ThemeTokens.CARD_BACKGROUND)
-            .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
-            .onChange((value: string): void => {
-              this.advancedPageMinimumText = value
-              this.clearAdvancedConditionError('pages')
-            })
-        }
-        .width('100%')
-        .padding({
-          left: ThemeTokens.SPACE_MD,
-          right: ThemeTokens.SPACE_MD,
-          top: ThemeTokens.SPACE_SM,
-          bottom: ThemeTokens.SPACE_SM,
-        })
-        this.SearchOptionDivider()
-        Column({ space: ThemeTokens.SPACE_XS }) {
-          Text(AppStrings.get('search_advanced_pages_maximum'))
-            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-            .fontColor(ThemeTokens.TEXT_SECONDARY)
-          TextInput({
-            text: this.advancedPageMaximumText,
-            placeholder: AppStrings.get('search_advanced_positive_integer'),
-          })
-            .type(InputType.Number)
-            .inputFilter('^[0-9]*$')
-            .width('100%')
-            .height(44)
-            .fontSize(ThemeTokens.FONT_SIZE_BODY)
-            .backgroundColor(ThemeTokens.CARD_BACKGROUND)
-            .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
-            .onChange((value: string): void => {
-              this.advancedPageMaximumText = value
-              this.clearAdvancedConditionError('pages')
-            })
-        }
-        .width('100%')
-        .padding({
-          left: ThemeTokens.SPACE_MD,
-          right: ThemeTokens.SPACE_MD,
-          top: ThemeTokens.SPACE_SM,
-          bottom: ThemeTokens.SPACE_SM,
+        NextNListRow({
+          title: AppStrings.get('search_advanced_pages'),
+          showChevron: false,
+          useCustomTrailing: true,
+          customTrailing: (): void => {
+            this.AdvancedPageRangeSuffix()
+          },
+          accessibilityLabel: AppStrings.get('search_advanced_pages'),
         })
         this.SearchOptionDivider()
         NextNListRow({
@@ -1540,10 +1549,6 @@ export struct SearchPage {
       }
       this.AdvancedConditionError('pages')
 
-      Text(AppStrings.get('search_advanced_uploaded'))
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
       NextNGroupedListSection() {
         NextNListRow({
           title: AppStrings.get('search_advanced_unit'),
@@ -1561,60 +1566,14 @@ export struct SearchPage {
             },
           })
         this.SearchOptionDivider()
-        Column({ space: ThemeTokens.SPACE_XS }) {
-          Text(AppStrings.get('search_advanced_uploaded_minimum'))
-            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-            .fontColor(ThemeTokens.TEXT_SECONDARY)
-          TextInput({
-            text: this.advancedUploadedMinimumText,
-            placeholder: AppStrings.get('search_advanced_positive_integer'),
-          })
-            .type(InputType.Number)
-            .inputFilter('^[0-9]*$')
-            .width('100%')
-            .height(44)
-            .fontSize(ThemeTokens.FONT_SIZE_BODY)
-            .backgroundColor(ThemeTokens.CARD_BACKGROUND)
-            .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
-            .onChange((value: string): void => {
-              this.advancedUploadedMinimumText = value
-              this.clearAdvancedConditionError('uploaded')
-            })
-        }
-        .width('100%')
-        .padding({
-          left: ThemeTokens.SPACE_MD,
-          right: ThemeTokens.SPACE_MD,
-          top: ThemeTokens.SPACE_SM,
-          bottom: ThemeTokens.SPACE_SM,
-        })
-        this.SearchOptionDivider()
-        Column({ space: ThemeTokens.SPACE_XS }) {
-          Text(AppStrings.get('search_advanced_uploaded_maximum'))
-            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-            .fontColor(ThemeTokens.TEXT_SECONDARY)
-          TextInput({
-            text: this.advancedUploadedMaximumText,
-            placeholder: AppStrings.get('search_advanced_positive_integer'),
-          })
-            .type(InputType.Number)
-            .inputFilter('^[0-9]*$')
-            .width('100%')
-            .height(44)
-            .fontSize(ThemeTokens.FONT_SIZE_BODY)
-            .backgroundColor(ThemeTokens.CARD_BACKGROUND)
-            .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
-            .onChange((value: string): void => {
-              this.advancedUploadedMaximumText = value
-              this.clearAdvancedConditionError('uploaded')
-            })
-        }
-        .width('100%')
-        .padding({
-          left: ThemeTokens.SPACE_MD,
-          right: ThemeTokens.SPACE_MD,
-          top: ThemeTokens.SPACE_SM,
-          bottom: ThemeTokens.SPACE_SM,
+        NextNListRow({
+          title: AppStrings.get('search_advanced_uploaded'),
+          showChevron: false,
+          useCustomTrailing: true,
+          customTrailing: (): void => {
+            this.AdvancedUploadedRangeSuffix()
+          },
+          accessibilityLabel: AppStrings.get('search_advanced_uploaded'),
         })
         this.SearchOptionDivider()
         NextNListRow({
@@ -1633,6 +1592,7 @@ export struct SearchPage {
       this.AdvancedConditionError('uploaded')
     }
     .width('100%')
+    .alignItems(HorizontalAlign.Start)
   }
 
   @Builder
@@ -1687,6 +1647,7 @@ export struct SearchPage {
         .width('100%')
     }
     .width('100%')
+    .alignItems(HorizontalAlign.Start)
     .padding({
       left: ThemeTokens.SPACE_SM,
       right: ThemeTokens.SPACE_SM,

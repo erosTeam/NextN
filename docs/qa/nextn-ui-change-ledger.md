@@ -103,6 +103,19 @@ authorize an edit, replace a device comparison, or define product completion.
   category/rating/torrent filter state is EH-specific and persistent, so only
   the parent ownership and sheet relationship transfer to NextN; NextN's
   conditions remain route-local raw-query edits.
+- **Visual correction — 2026-08-15:** the user rejected the first composer
+  presentation. Its faulty assumption was that a centered `高级条件` caption,
+  explanatory sentence, and further centered `页数` / `上传时长` captions could
+  create hierarchy inside the modal. They were locally authored, not in the
+  reference tree, and the default centered `Column` alignment made the
+  title-to-control gap conspicuous. The previous NextN-only panel capture is
+  rejected as visual evidence. Keep the shared
+  `NextNModalScaffold → HdsNavigation(MODAL) → List` owner intact: it matches
+  NextE and has no local top padding. Rebuild only the panel leaf as direct,
+  left-aligned HDS grouped condition controls: tag fields, a compact page
+  range, and a compact upload-age range, each with its existing explicit add
+  action. Remove the invented preamble and do not introduce another route,
+  sheet, scroller, or explanatory copy.
 - **Exact change:** add a short-lived condition composer for typed
   `tag/parody/character/artist/group/category` include-or-exclude terms plus
   page-count and uploaded-age lower/upper comparisons. Applying a valid
