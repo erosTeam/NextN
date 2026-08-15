@@ -1998,6 +1998,38 @@ authorize an edit, replace a device comparison, or define product completion.
   activate the action or confirmation dialog. Same-state visual parity and all
   confirmation/clearing states remain OPEN.
 
+## OPEN — Grid-density copy and internal-unit removal — 2026-08-15
+
+- **Why newly actionable:** the user explicitly rejected self-authored
+  “comfortable” wording and the ArkUI `vp` unit in visible Settings copy. The
+  existing reference already supplies the user-facing density relationship,
+  so this is a direct copy correction rather than a new presentation model.
+- **Whole parent-tree boundary:** `SettingsPage(LAYOUT) →
+  SecondaryListScaffold → ListItem(BrowsePresentationGroup) →
+  NextNGroupedListSection → view mode → conditional grid-density row → fixed
+  list-height → cover blur …`; its action continues to the existing
+  `Index → BrowseDensitySettingsPage → SecondaryListScaffold → ListItem →
+  preview + hint + Slider + density summary`. All existing grid/waterfall
+  mode selection, slider, preview, pinch owner, and persisted width state stay
+  in their current tree.
+- **Reference boundary:** NextE `LayoutSettingsPage` uses `网格密度` with the
+  direct instruction `双指缩放列表或拖动滑块调整每行数量`; its
+  `ColumnDensityPage` presents preview, instruction, and Slider without a
+  `vp` or width/count summary. The reference applies this same leaf to its
+  grid-like modes.
+- **Exact change:** replace only the title and shared instruction with the
+  four direct reference locale values; remove the Settings-row `vp` trailing
+  value and the density-page `列 · vp` summary. Keep the existing distinct
+  Slider accessibility owner/resource, native Slider semantics, value range,
+  persistence/write timing, preview, mode routing, pinch gesture, all
+  column-width calculations, and every rendering consumer unchanged.
+- **Verification plan:** inspect the scoped diff, all four catalogs, and a
+  signed build. On foreground-confirmed Layout and the existing density page,
+  observe the title/instruction and absence of `vp`/width-count text without
+  changing the slider. Keep slider accessibility, value persistence, every
+  supported mode, pinch, keyboard, and same-state visual parity OPEN unless
+  separately observed.
+
 ## OPEN — Gallery Detail full-title translation
 
 - User outcome: a user who has explicitly configured the existing private text

@@ -3167,12 +3167,7 @@ export struct SettingsPage {
         NextNListRow({
           leadingIcon: $r('sys.symbol.arrowtriangle_2_inward_square'),
           title: AppStrings.get('settings_browse_column_width'),
-          subtitle: AppStrings.format('settings_browse_column_width_hint', [
-            this.browsePresentationLabel(),
-          ]),
-          trailingText: AppStrings.format('settings_browse_column_width_value', [
-            this.browseColumnWidth().toString(),
-          ]),
+          subtitle: AppStrings.get('settings_browse_column_width_hint'),
           accessibilityLabel: AppStrings.format('settings_browse_column_width_a11y', [
             this.browsePresentationLabel(),
             this.browseColumnWidth().toString(),

@@ -65,12 +65,6 @@ export struct BrowseDensitySettingsPage {
     )
   }
 
-  private columnWidthValue(): string {
-    return AppStrings.format('settings_browse_column_width_value', [
-      this.effectiveColumnWidth().toString(),
-    ])
-  }
-
   private gridPreviewTemplate(): string {
     return `repeat(auto-fit, ${this.effectiveColumnWidth()}vp)`
   }
@@ -191,7 +185,7 @@ export struct BrowseDensitySettingsPage {
         Column({ space: ThemeTokens.SPACE_MD }) {
           this.Preview()
           Column({ space: ThemeTokens.SPACE_SM }) {
-            Text(AppStrings.format('settings_browse_column_width_hint', [this.presentationLabel()]))
+            Text(AppStrings.get('settings_browse_column_width_hint'))
               .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
               .fontColor(ThemeTokens.TEXT_SECONDARY)
               .width('100%')
@@ -211,14 +205,6 @@ export struct BrowseDensitySettingsPage {
               .onChange((value: number, mode: SliderChangeMode): void => {
                 this.updateWidth(value, mode)
               })
-            Text(AppStrings.format('settings_browse_column_count_value', [
-              this.currentColumns().toString(),
-              this.columnWidthValue(),
-            ]))
-              .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-              .fontColor(ThemeTokens.TEXT_SECONDARY)
-              .width('100%')
-              .textAlign(TextAlign.End)
           }
           .width('100%')
           .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD })
