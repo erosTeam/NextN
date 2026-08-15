@@ -37,6 +37,31 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Unresolved risk:** no NextE visual parity exists for the 我的 tab
   label/icon or the separate History card; full visual acceptance needs the
   device observation above.
+- **Current bounded device observation — 2026-08-15:** the signed HAP built
+  from `cc7b1f3` (SHA-256
+  `a8d5e298e5569acad7ba1737d1775f2f8bce96132cc8e8767dcb9da5a9ab64b0`) was
+  installed in place with `-r` on only `192.168.50.237:12345`; no data
+  clear, uninstall, account action, setting change, or history clear
+  occurred (the clear dialog was opened and dismissed with 取消). After
+  force-stop/cold start at `1320×2120`, foreground-confirmed root 我的
+  showed exactly four root tabs 浏览/收藏/下载/我的 (TabBar
+  `[240,1880][1080,2048]`, 我的 icon glyph `[915,1917][981,1983]`, label
+  `[918,1989][978,2024]`) and card order account (`honjow` / `ID 5623474`)
+  → `历史记录` (text `[192,593][385,649]`) → settings rows (`界面` at
+  `[192,779][289,835]` onward). Tapping 历史记录 opened the
+  foreground-confirmed History destination: title `历史记录`
+  `[192,166][432,236]`, back button `[48,141][168,261]`, trash clear button
+  `[1152,141][1272,261]`, no floating root tab bar, rest pinned day header
+  `今天` `[36,285][1284,370]` with the first row at y=394. The clear button
+  opened `清除阅读历史？` with `取消`/`清除`; 取消 closed it without a data
+  change. After one swipe, the pinned mirror updated to `前天` inside the
+  title region (`[60,300][145,349]`, TitleBar `[0,117][1320,363]`) while
+  list rows scrolled beneath it. This observes the four-tab root, card
+  order, destination chrome, clear menu, and pinned-day mirror only; it does
+  not accept every locale, split/tablet layout, gallery row behavior,
+  clear-history persistence, or full visual parity. Raw local artifacts are
+  retained under `.hvigor/outputs/nextn-me-history-20260815T2124/` and are
+  excluded from source control.
 
 ## OPEN — History/Downloads title-to-list blank reserve — 2026-08-15
 
