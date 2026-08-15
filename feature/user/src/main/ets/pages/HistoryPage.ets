@@ -20,7 +20,6 @@ import {
 import { HistoryListRow } from '../components/HistoryListRow'
 import {
   HistoryPinnedDayHeaderState,
-  HISTORY_PINNED_DAY_HEADER_HEIGHT,
   connectHistoryPinnedDayHeader,
 } from '../components/HistoryPinnedDayHeader'
 
@@ -806,9 +805,6 @@ export struct HistoryPage {
       PullRefreshListScaffold({
         scroller: this.scroller,
         listSpace: 0,
-        // The HDS title slot owns the passive pinned date. Reserve it once in
-        // the list so all loaded, empty, and error states share one origin.
-        topPadding: HISTORY_PINNED_DAY_HEADER_HEIGHT,
         bottomPadding: ThemeTokens.ROOT_FLOATING_TAB_RESERVE,
         controller: this.refreshController,
         onRefresh: async (): Promise<void> => {

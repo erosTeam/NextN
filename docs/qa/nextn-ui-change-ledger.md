@@ -3,6 +3,46 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — History/Downloads title-to-list blank reserve — 2026-08-15
+
+- **Why newly actionable:** the user reported a large blank between the HDS
+  title and the first row in both History and Downloads. Current device
+  layouts show the first list spacer ends below the HDS bottom builder
+  (NextN history Blank `[36,117][1284,369]` vs NextE `[36,117][1284,285]`;
+  NextN downloads Blank `[36,117][1284,375]`), while the pinned day/group
+  mirror already lives in the HDS title `bottomBuilder`.
+- **Whole parent-tree boundary:** History:
+  `Index.rootTitleBar() → historyPinnedDayBottomBuilder + NavBarContent →
+  HistoryPage → PullRefreshListScaffold`; Downloads:
+  `Index.rootTitleBar() → downloadPinnedGroupBottomBuilder + NavBarContent →
+  DownloadQueuePage → SecondaryListScaffold`. The scaffold top reserve, the
+  HDS bottom-builder mirrors, pinned-header sync indices, and the search
+  overlay remain unchanged.
+- **Reference boundary:** NextE history leaves `topPadding` unset (0) and its
+  `SecondaryListScaffold` has no `topPadding` parameter; the scrolling day
+  header starts directly at the bottom-builder top (`Today` at y=285).
+- **Exact change:** HistoryPage removes `topPadding:
+  HISTORY_PINNED_DAY_HEADER_HEIGHT` from the `PullRefreshListScaffold` call
+  and its now-unused import. DownloadQueuePage changes `topPadding:
+  DOWNLOAD_PINNED_GROUP_HEADER_HEIGHT + this.searchFieldReserve()` to
+  `topPadding: this.searchActive ? DOWNLOAD_PINNED_GROUP_HEADER_HEIGHT +
+  this.searchFieldReserve() : 0`, keeping the full overlay reserve only while
+  the search field is active. No scaffold, sync, or row geometry change.
+- **Impact and prevention:** the removed reserve duplicated the HDS
+  bottom-builder height, leaving an empty strip at rest and pushing the first
+  row below the pinned-mirror region. The pinned mirror stays owned by the
+  title bottom builder; the list reserve covers only the immersive title bar
+  plus any actual overlaid control.
+- **Verification plan:** inspect the scoped diff, build the signed HAP,
+  install it on the selected device without clearing data, and capture
+  same-viewport History and Downloads layouts at rest and with the Downloads
+  search overlay active: at rest the first group header must start at the
+  bottom-builder top with no visible empty strip, matching the NextE state,
+  and with search active it must start below the overlay's own bottom edge.
+- **Unresolved risk:** source/build cannot prove visual parity; a current
+  same-state, same-viewport device comparison against NextE is still
+  required before this surface can be marked accepted.
+
 ## OPEN — Reader tap-zone default-label restoration — 2026-08-15
 
 - **Why newly actionable:** the user identified that the default Tap zones

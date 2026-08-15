@@ -1029,7 +1029,9 @@ export struct DownloadQueuePage {
     SecondaryListScaffold({
       scroller: this.scroller,
       listSpace: 0,
-      topPadding: DOWNLOAD_PINNED_GROUP_HEADER_HEIGHT + this.searchFieldReserve(),
+      topPadding: this.searchActive
+        ? DOWNLOAD_PINNED_GROUP_HEADER_HEIGHT + this.searchFieldReserve()
+        : 0,
       bottomPadding: ThemeTokens.ROOT_FLOATING_TAB_RESERVE,
       onDidScroll: (offset: number, state: ScrollState): void => {
         this.syncPinnedGroupHeader()
