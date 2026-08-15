@@ -20,6 +20,27 @@
   `.hvigor/outputs/theme-color-system-removal-20260815T1812/` and are excluded
   from source control.
 
+## Current Download-policy control copy cleanup — bounded device observation — 2026-08-15
+
+- The signed HAP built from `36ac5fb` (SHA-256
+  `ae10aba9ff2100857133171edb5491cd34100b60882bcbec023ba7de6eb7502a`)
+  was installed in place with `-r` on only `192.168.50.237:12345` after a
+  fresh live target, lease, wake, and `AWAKE` / `OverrideTimeout=86400000ms`
+  gate. No data clear, uninstall, account action, download action, or setting
+  value change occurred.
+- On the foreground-confirmed native `Settings → 下载` route at `1320×2120`,
+  the existing controls displayed `同时下载的画廊数量` (current value `1`),
+  `每画廊同时下载的页数` (`3`), and `重试次数` (`2 次重试`) as title/value
+  rows without the removed worker, slot, CDN, delay, or private-file policy
+  captions. The separate `完成通知` row and its existing behavior-specific
+  subtitle remained untouched. No menu was opened.
+- This observes only the bounded rendered copy and unchanged row presence. It
+  does not accept download scheduling, menus, persistence, retry behavior,
+  notification behavior, error states, or same-state NextE visual parity. Raw
+  local artifacts are retained under
+  `.hvigor/outputs/download-copy-20260815T1754/` and are excluded from source
+  control.
+
 ## Current Grid-density copy and visible-unit removal — bounded device observation — 2026-08-15
 
 - The signed HAP built from `6b465d0` (SHA-256
