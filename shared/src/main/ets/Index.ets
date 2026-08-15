@@ -344,6 +344,7 @@ export {
   SETTINGS_ROOT_CACHE,
   SETTINGS_ROOT_ADVANCED,
   SETTINGS_ROOT_ABOUT,
+  SETTINGS_ROOT_HISTORY,
 } from './state/SettingsNavigationState'
 export { BrowsePresentationState, connectBrowsePresentation } from './state/BrowsePresentationState'
 export { ReaderPresentationState, connectReaderPresentation } from './state/ReaderPresentationState'

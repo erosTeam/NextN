@@ -48,6 +48,7 @@
     { "name": "tab_history", "value": "History" },
     { "name": "tab_downloads", "value": "Downloads" },
     { "name": "tab_settings", "value": "Settings" },
+    { "name": "tab_me", "value": "Me" },
     { "name": "action_search", "value": "Search" },
     { "name": "action_popular", "value": "Popular" },
     { "name": "action_browse_options", "value": "Browse options" },

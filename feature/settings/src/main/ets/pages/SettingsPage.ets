@@ -88,6 +88,7 @@ import {
   SETTINGS_ROOT_CACHE,
   SETTINGS_ROOT_ADVANCED,
   SETTINGS_ROOT_ABOUT,
+  SETTINGS_ROOT_HISTORY,
   galleryBaseMinColumnWidth,
   supportsGalleryColumnDensity,
   connectAccountSession,
@@ -256,6 +257,7 @@ export struct SettingsPage {
   @Event onOpenCacheSettings?: () => void
   @Event onOpenAdvancedSettings?: () => void
   @Event onOpenAbout?: () => void
+  @Event onOpenHistory?: () => void
   @Event onOpenContentFilters?: () => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
 
@@ -1882,6 +1884,24 @@ export struct SettingsPage {
           },
         })
       }
+    }
+  }
+
+  /** User-directed: History is its own card between the account and settings groups. */
+  @Builder
+  private RootHistorySection() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.clock'),
+        title: AppStrings.get('tab_history'),
+        selected: this.isSettingsRootSelected(SETTINGS_ROOT_HISTORY),
+        accessibilityLabel: AppStrings.get('tab_history'),
+        onAction: (): void => {
+          if (this.onOpenHistory) {
+            this.onOpenHistory()
+          }
+        },
+      })
     }
   }
 
@@ -3589,6 +3609,9 @@ export struct SettingsPage {
         if (this.surface === SettingsSurface.ROOT) {
           ListItem() {
             this.RootAccountSection()
+          }
+          ListItem() {
+            this.RootHistorySection()
           }
           ListItem() {
             this.RootMainSection()

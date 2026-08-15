@@ -132,7 +132,7 @@ export struct HistoryPage {
   @Local private pinnedDayHeader: HistoryPinnedDayHeaderState = connectHistoryPinnedDayHeader()
   private requestGeneration: number = 0
   private cursor: HistoryCursor | null = null
-  /** A retained History tab reloads only for its first activation or a local write. */
+  /** A History destination reloads on its first appear or a local write. */
   private historyLoaded: boolean = false
   private observedHistoryRevision: number = -1
   private isVisible: boolean = false
@@ -805,7 +805,7 @@ export struct HistoryPage {
       PullRefreshListScaffold({
         scroller: this.scroller,
         listSpace: 0,
-        bottomPadding: ThemeTokens.ROOT_FLOATING_TAB_RESERVE,
+        bottomPadding: ThemeTokens.LIST_BOTTOM_PADDING,
         controller: this.refreshController,
         onRefresh: async (): Promise<void> => {
           await this.reload(true)

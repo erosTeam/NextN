@@ -48,6 +48,7 @@
     { "name": "tab_history", "value": "履歴" },
     { "name": "tab_downloads", "value": "ダウンロード" },
     { "name": "tab_settings", "value": "設定" },
+    { "name": "tab_me", "value": "マイ" },
     { "name": "action_search", "value": "検索" },
     { "name": "action_popular", "value": "人気" },
     { "name": "action_browse_options", "value": "ブラウズ設定" },

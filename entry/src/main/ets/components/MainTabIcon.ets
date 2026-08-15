@@ -25,14 +25,10 @@ export struct MainTabIcon {
       return $r('sys.symbol.heart_fill')
     }
     if (glyphIndex === 2) {
-      // NextN's third root is local reading history. Keep its clock semantic
-      // while matching the filled visual weight of the other root tabs.
-      return $r('sys.symbol.clock_fill')
-    }
-    if (glyphIndex === 3) {
       return $r('sys.symbol.arrow_down_to_line_circle_fill')
     }
-    return $r('sys.symbol.gearshape_fill')
+    // The user-directed fourth root is the personal 我的 tab.
+    return $r('sys.symbol.person_fill')
   }
 
   build() {

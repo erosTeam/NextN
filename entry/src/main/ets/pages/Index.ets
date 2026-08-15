@@ -117,6 +117,7 @@ const ROUTE_BROWSE_SETTINGS: string = 'browseSettings'
 const ROUTE_SEARCH_SETTINGS: string = 'searchSettings'
 const ROUTE_BROWSE_DENSITY_SETTINGS: string = 'browseDensitySettings'
 const ROUTE_CONTENT_FILTERS: string = 'contentFilters'
+const ROUTE_HISTORY: string = 'history'
 const ROUTE_READER_SETTINGS: string = 'readerSettings'
 const ROUTE_READER_SUPER_RESOLUTION_MODELS: string = 'readerSuperResolutionModels'
 const ROUTE_TRANSLATION_SOURCE: string = 'translationSource'
@@ -249,12 +250,12 @@ struct Index {
   private homeSourceBarContent: ComponentContent<Object> | null = null
   private historyPinnedDayHeaderContent: ComponentContent<HistoryPinnedDayHeaderState> | null = null
   private downloadPinnedGroupHeaderContent: ComponentContent<DownloadPinnedGroupHeaderState> | null = null
-  private rootTabScrollers: Scroller[] = [new Scroller(), new Scroller(), new Scroller(), new Scroller(), new Scroller()]
+  private rootTabScrollers: Scroller[] = [new Scroller(), new Scroller(), new Scroller(), new Scroller()]
   // Retained Home sources own stable scrollers; this fallback is only used
   // before RetainedSubtabHost publishes its initial active source.
   private homeActiveScroller: Scroller = this.rootTabScrollers[0]
-  private homeTabLastScrollOffsets: number[] = [0, 0, 0, 0, 0]
-  private homeTabDirectionTravel: number[] = [0, 0, 0, 0, 0]
+  private homeTabLastScrollOffsets: number[] = [0, 0, 0, 0]
+  private homeTabDirectionTravel: number[] = [0, 0, 0, 0]
   private homeTabAnimationGuardTimerId: number = -1
   private homeTabVisibleByScroll: boolean = true
   private searchScroller: Scroller = new Scroller()
@@ -275,6 +276,7 @@ struct Index {
   private cacheSettingsScroller: Scroller = new Scroller()
   private advancedSettingsScroller: Scroller = new Scroller()
   private aboutScroller: Scroller = new Scroller()
+  private historyScroller: Scroller = new Scroller()
   @Local private activeTab: number = 0
   @Local private themeDisplay: ThemeDisplayState = connectThemeDisplay()
   @Local private tabletLayout: TabletLayoutState = connectTabletLayout()
@@ -612,6 +614,10 @@ struct Index {
     this.openSettingsRootDestination(ROUTE_ABOUT)
   }
 
+  private pushHistory(): void {
+    this.openSettingsRootDestination(ROUTE_HISTORY)
+  }
+
   /** Root Settings choices are siblings, unlike their real nested subpages. */
   private isSettingsRoute(name: string): boolean {
     return name === ROUTE_BROWSER_SESSION ||
@@ -624,6 +630,7 @@ struct Index {
       name === ROUTE_CACHE_SETTINGS ||
       name === ROUTE_ADVANCED_SETTINGS ||
       name === ROUTE_CONTENT_FILTERS ||
+      name === ROUTE_HISTORY ||
       name === ROUTE_ABOUT
   }
 
@@ -776,13 +783,10 @@ struct Index {
       return AppStrings.get('tab_favorites')
     }
     if (this.activeTab === 2) {
-      return AppStrings.get('tab_history')
-    }
-    if (this.activeTab === 3) {
       return AppStrings.get('tab_downloads')
     }
-    if (this.activeTab === 4) {
-      return AppStrings.get('tab_settings')
+    if (this.activeTab === 3) {
+      return AppStrings.get('tab_me')
     }
     return AppStrings.get('tab_browse')
   }
@@ -821,6 +825,26 @@ struct Index {
       'height': HISTORY_PINNED_DAY_HEADER_HEIGHT,
       'showType': BottomBuilderShowType.DIRECTLY_SHOW,
     }
+  }
+
+  /** Destination title for the History page moved out of the root tab bar. */
+  private historyDestinationTitleBar(): Record<string, Object> {
+    const title: Record<string, Object> = { 'mainTitle': AppStrings.get('tab_history') }
+    const clearAction: Record<string, Object> = {
+      'label': AppStrings.get('action_clear'),
+      'icon': $r('sys.symbol.trash'),
+      'isEnabled': true,
+      'action': (): void => {
+        this.historyClearVersion += 1
+      },
+    }
+    const clearMenuItem: Record<string, Object> = { 'content': clearAction }
+    const historyMenu: Record<string, Object> = { 'value': [clearMenuItem], 'maxCount': 1 }
+    return nextNHdsTitleBar({
+      'title': title,
+      'menu': historyMenu,
+      'bottomBuilder': this.historyPinnedDayBottomBuilder(),
+    })
   }
 
   /** Cached HDS mirror for the lifecycle group currently under the title. */
@@ -1053,22 +1077,6 @@ struct Index {
         content['menu'] = this.emptyHdsMenu()
       }
     } else if (this.activeTab === 2) {
-      // History owns the current local-day mirror; the root owns the HDS
-      // surface so it remains fixed while the ListItemGroup headers scroll.
-      content['bottomBuilder'] = this.historyPinnedDayBottomBuilder()
-      const clearAction: Record<string, Object> = {
-        'label': AppStrings.get('action_clear'),
-        'icon': $r('sys.symbol.trash'),
-        'isEnabled': true,
-        'action': (): void => {
-          this.historyClearVersion += 1
-        },
-      }
-      const clearMenuItem: Record<string, Object> = { 'content': clearAction }
-      const historyMenuItems: Record<string, Object>[] = [clearMenuItem]
-      const historyMenu: Record<string, Object> = { 'value': historyMenuItems, 'maxCount': 1 }
-      content['menu'] = historyMenu
-    } else if (this.activeTab === 3) {
       // Root HDS owns only command intent. DownloadQueuePage owns all local
       // query, ordering, and menu state through the narrow action bridge.
       content['bottomBuilder'] = this.downloadPinnedGroupBottomBuilder()
@@ -1125,7 +1133,7 @@ struct Index {
       }
       content['menu'] = downloadMenu
     }
-    if (this.activeTab === 4) {
+    if (this.activeTab === 3) {
       content['menu'] = this.emptyHdsMenu()
     }
     return nextNHdsTitleBar(content)
@@ -1766,6 +1774,23 @@ struct Index {
     .bindToScrollable([this.aboutScroller])
   }
 
+  @Builder
+  private historyDestination() {
+    HdsNavDestination() {
+      HistoryPage({
+        scroller: this.historyScroller,
+        clearVersion: this.historyClearVersion,
+        onOpenGallery: (galleryId: number): void => {
+          this.pushGallery(galleryId)
+        },
+      })
+    }
+    .titleBar(this.historyDestinationTitleBar())
+    .hideBackButton(false)
+    .bindToScrollable([this.historyScroller])
+    .backgroundColor(ThemeTokens.SURFACE)
+  }
+
   private splitPlaceholder(): ComponentContent<Object> {
     if (this.splitPlaceholderContent === null) {
       this.splitPlaceholderContent = new ComponentContent<Object>(
@@ -1831,6 +1856,8 @@ struct Index {
       this.cacheSettingsDestination()
     } else if (name === ROUTE_ADVANCED_SETTINGS) {
       this.advancedSettingsDestination()
+    } else if (name === ROUTE_HISTORY) {
+      this.historyDestination()
     } else if (name === ROUTE_ABOUT) {
       this.aboutDestination()
     } else {
@@ -1888,21 +1915,8 @@ struct Index {
         }
         .tabBar(this.tabBar(AppStrings.get('tab_favorites'), 1))
         TabContent() {
-          HistoryPage({
-            scroller: this.rootTabScrollers[2],
-            clearVersion: this.historyClearVersion,
-            onOpenGallery: (galleryId: number): void => {
-              this.pushGallery(galleryId)
-            },
-            onDidScroll: (offset: number, state: ScrollState): void => {
-              this.onHomeTabDidScroll(2, offset, state)
-            },
-          })
-        }
-        .tabBar(this.tabBar(AppStrings.get('tab_history'), 2))
-        TabContent() {
           DownloadQueuePage({
-            scroller: this.rootTabScrollers[3],
+            scroller: this.rootTabScrollers[2],
             onOpenGallery: (galleryId: number): void => {
               this.pushGallery(galleryId)
             },
@@ -1910,14 +1924,17 @@ struct Index {
               this.pushReader(galleryId)
             },
             onDidScroll: (offset: number, state: ScrollState): void => {
-              this.onHomeTabDidScroll(3, offset, state)
+              this.onHomeTabDidScroll(2, offset, state)
             },
           })
         }
-        .tabBar(this.tabBar(AppStrings.get('tab_downloads'), 3))
+        .tabBar(this.tabBar(AppStrings.get('tab_downloads'), 2))
         TabContent() {
           SettingsPage({
-            scroller: this.rootTabScrollers[4],
+            scroller: this.rootTabScrollers[3],
+            onOpenHistory: (): void => {
+              this.pushHistory()
+            },
             onOpenBrowserSession: (): void => {
               this.pushBrowserSession()
             },
@@ -1949,11 +1966,11 @@ struct Index {
               this.pushContentFilters()
             },
             onDidScroll: (offset: number, state: ScrollState): void => {
-              this.onHomeTabDidScroll(4, offset, state)
+              this.onHomeTabDidScroll(3, offset, state)
             },
           })
         }
-        .tabBar(this.tabBar(AppStrings.get('tab_settings'), 4))
+        .tabBar(this.tabBar(AppStrings.get('tab_me'), 3))
       }
       .width('100%')
       .height('100%')

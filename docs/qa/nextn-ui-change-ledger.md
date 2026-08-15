@@ -3,6 +3,41 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Root 我的 tab and History destination — 2026-08-15
+
+- **Why newly actionable:** the user chose 方案 B: rename the root Settings
+  tab to 我的 with a person icon, and move History out of the root tab bar
+  into the Settings page as its own card group between the account (user)
+  group and the settings group.
+- **Whole parent-tree boundary:** `Index Stack → HdsNavigation → HdsTabs`
+  with four roots (Browse/Favorites/Downloads/我的) and `Index.rootTitleBar()`;
+  `SettingsPage(ROOT) → SecondaryListScaffold → RootAccountSection /
+  RootHistorySection / RootMainSection`; new History settings-root
+  destination `HdsNavDestination → HistoryPage` with its own title bar,
+  pinned day mirror, and clear menu; `MainTabIcon` glyph map.
+- **Reference boundary:** NextE keeps History as a row inside its Settings
+  root (clock icon) and pushes it to a `HdsNavDestination`; NextE also
+  carries an unused `tab_me` string (我的/Me/マイ). The user explicitly
+  directed the 我的 tab label, person icon, and the separate History card
+  between user and settings groups; those three choices diverge from NextE's
+  current tab label and row placement and are recorded as user-directed.
+- **Exact change:** add `tab_me` (我的/Me/マイ) and use it for the fourth
+  root tab; change its glyph to `person_fill`; remove the History root tab
+  (5→4); add a `history` settings-root route/destination (HistoryPage in
+  HdsNavDestination with 历史记录 title, trash clear menu, pinned day
+  bottomBuilder, back button); insert `RootHistorySection` (clock,
+  历史记录) between the account and settings cards; switch HistoryPage
+  bottom padding from the floating-tab reserve to the normal list tail;
+  keep `tab_settings` for the account S0 label script.
+- **Verification plan:** inspect the scoped diff and signed build; on device
+  observe the four-tab bar (我的 + person icon), Settings root card order
+  account → history → settings, History destination entry/back, pinned day
+  header sync while scrolling, and clear-history action; compare tab
+  geometry with the previous five-tab capture.
+- **Unresolved risk:** no NextE visual parity exists for the 我的 tab
+  label/icon or the separate History card; full visual acceptance needs the
+  device observation above.
+
 ## OPEN — History/Downloads title-to-list blank reserve — 2026-08-15
 
 - **Why newly actionable:** the user reported a large blank between the HDS

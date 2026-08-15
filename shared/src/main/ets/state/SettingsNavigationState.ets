@@ -9,6 +9,7 @@ export const SETTINGS_ROOT_DOWNLOAD: string = 'downloadSettings'
 export const SETTINGS_ROOT_CACHE: string = 'cacheSettings'
 export const SETTINGS_ROOT_ADVANCED: string = 'advancedSettings'
 export const SETTINGS_ROOT_ABOUT: string = 'about'
+export const SETTINGS_ROOT_HISTORY: string = 'history'
 
 const SETTINGS_ROOT_ROUTES: string[] = [
   SETTINGS_ROOT_BROWSER_SESSION,
@@ -20,6 +21,7 @@ const SETTINGS_ROOT_ROUTES: string[] = [
   SETTINGS_ROOT_CACHE,
   SETTINGS_ROOT_ADVANCED,
   SETTINGS_ROOT_ABOUT,
+  SETTINGS_ROOT_HISTORY,
 ]
 
 /**
