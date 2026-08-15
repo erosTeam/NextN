@@ -1,5 +1,26 @@
 # NextN active device-acceptance queue
 
+## Current Grid-density copy and visible-unit removal — bounded device observation — 2026-08-15
+
+- The signed HAP built from `6b465d0` (SHA-256
+  `87cb1e43df5194d70ca1d0a8203c90d4f9b79ff7a815ecd11f80d2844520cd13`)
+  was installed in place with `-r` on only `192.168.50.237:12345` after a
+  fresh live target, lease, wake, and `AWAKE` /
+  `OverrideTimeout=86400000ms` gate. No data clear, uninstall, account action,
+  query, content action, or preference value change occurred.
+- On the foreground-confirmed native `Settings → 界面` route at the current
+  `1320×2120` root viewport, the existing density row displayed `网格密度` and
+  `双指缩放列表或拖动滑块调整每行数量`, with no visible `vp` trailing value.
+  Opening the existing density page without moving its Slider displayed only
+  its preview, the same instruction, and the Slider; no visible
+  width/count-`vp` summary was present.
+- This observes only the bounded copy and visible-unit-removal states. It does
+  not accept Slider accessibility, slider/pinch behavior, persistence, every
+  supported presentation mode, preview loading, keyboard, or same-state visual
+  parity. Raw local artifacts are retained under
+  `.hvigor/outputs/grid-density-copy-20260815T1729/` and are excluded from
+  source control.
+
 ## Current Cache clear-all caption removal — bounded device observation — 2026-08-15
 
 - The signed HAP built from `46f7471` was installed in place with `-r` on only
