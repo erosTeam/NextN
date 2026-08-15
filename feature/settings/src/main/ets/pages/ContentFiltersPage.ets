@@ -331,10 +331,6 @@ export struct ContentFiltersPage {
             }
           }
           .width('100%')
-          Text(AppStrings.get('content_filter_editor_note'))
-            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-            .fontColor(ThemeTokens.TEXT_SECONDARY)
-            .maxLines(3)
         }
         .width('100%')
         .padding({
@@ -357,14 +353,6 @@ export struct ContentFiltersPage {
           bottomPadding: ThemeTokens.LIST_BOTTOM_PADDING,
           alwaysEnableEdgeSpring: true,
         }) {
-          ListItem() {
-            Text(AppStrings.get('content_filters_page_note'))
-              .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-              .fontColor(ThemeTokens.TEXT_SECONDARY)
-              .maxLines(3)
-              .width('100%')
-              .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD })
-          }
           ListItem() {
             this.RulesGroup()
           }

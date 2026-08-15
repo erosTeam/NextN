@@ -258,6 +258,41 @@ authorize an edit, replace a device comparison, or define product completion.
   states remain OPEN. Raw artifacts are local-only under
   `.hvigor/outputs/content-filter-copy-20260815T0930/`.
 
+## OPEN — Content-filter policy-note removal — 2026-08-15
+
+- **Why newly actionable:** the user explicitly rejected policy and
+  implementation explanations embedded in routine controls. The current
+  Content-filter destination adds one such paragraph above its rules, and its
+  rule editor adds another below the text input, despite neither changing what
+  the user can select or save.
+- **Whole parent-tree boundary:** `Index Settings tab → SettingsPage(ROOT) →
+  Advanced HdsNavDestination(SettingsSurface.ADVANCED) →
+  ContentFiltersPage → SecondaryListScaffold → ListItem(page note) +
+  ListItem(RulesGroup)`. Its existing editor is
+  `ContentFiltersPage.bindSheet → NextNModalScaffold → ListItem → Column →
+  NextNGroupedListSection + text-input Column + editor note`. The existing
+  route, scaffold, rules group, sheet owner, list owner, controls, and error
+  leaf remain in place.
+- **Reference boundary:** NextE `LocalBlockSettingsPage` begins its rule
+  surface with actual controls, and its `RuleSheet → AppModalScaffold` ends
+  after the text-input group; neither tree adds an explanatory policy leaf.
+  NextE-only score, display, uploader, and comment criteria are not
+  transferred.
+- **Exact change:** remove only the two NextN `Text` leaves using
+  `content_filters_page_note` and `content_filter_editor_note`, then remove
+  only those unused resource keys from the four catalogs. Do not change
+  title, icon, destination, rule model, validation, request behavior,
+  persistence, confirm/remove flow, empty/error/loading states, sheet detent,
+  spacing of surviving controls, or any content-filter operation.
+- **Verification plan:** inspect the scoped source/resource diff and signed
+  build. On a foreground-confirmed Content-filter page, observe the normal
+  rules surface without the leading note; open and dismiss the existing new
+  rule editor without saving to observe the text-input surface without the
+  trailing note. Keep empty/nonempty, restore/error, keyboard-open, edit and
+  delete states OPEN unless separately observed. A same-state,
+  same-viewport reference comparison remains required before a visual-parity
+  claim.
+
 ## OPEN — Tag-translation dictionary status and update labels — 2026-08-15
 
 - **Why newly actionable:** the user explicitly rejected the Advanced row's
