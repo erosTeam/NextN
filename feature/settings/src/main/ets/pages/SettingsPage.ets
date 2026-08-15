@@ -168,6 +168,7 @@ class TagDictionaryUiErrorCode {
 export struct SettingsPage {
   @Local tagDictionaryStatus: NhTagTranslationStatus = new NhTagTranslationStatus()
   @Local tagDictionaryRowCount: number = 0
+  @Local tagDictionaryStatusKnown: boolean = false
   @Local isUpdatingTagDictionary: boolean = false
   @Local tagDictionaryError: string = ''
   @Local readerCacheStatus: ReaderImageCacheStatus = new ReaderImageCacheStatus()
@@ -754,6 +755,7 @@ export struct SettingsPage {
   }
 
   private async loadTagDictionaryStatus(): Promise<void> {
+    this.tagDictionaryStatusKnown = false
     try {
       this.applyTagDictionaryStatus(await TagTranslationRepository.status(this.context()))
     } catch (_error) {
@@ -847,22 +849,19 @@ export struct SettingsPage {
   private applyTagDictionaryStatus(status: NhTagTranslationStatus): void {
     this.tagDictionaryStatus = status
     this.tagDictionaryRowCount = status.rowCount
+    this.tagDictionaryStatusKnown = true
   }
 
-  private tagDictionarySubtitle(): string {
-    if (this.tagDictionaryRowCount > 0) {
-      return AppStrings.format('settings_tag_translation_available', [this.tagDictionaryRowCount.toString()])
-    }
-    return AppStrings.get('settings_tag_translation_hint')
-  }
-
-  private tagDictionaryActionLabel(): string {
+  private tagDictionaryStatusText(): string {
     if (this.isUpdatingTagDictionary) {
       return AppStrings.get('settings_tag_translation_updating')
     }
+    if (!this.tagDictionaryStatusKnown) {
+      return ''
+    }
     return this.tagDictionaryRowCount > 0
-      ? AppStrings.get('settings_tag_translation_update')
-      : AppStrings.get('settings_tag_translation_download')
+      ? this.tagDictionaryRowCount.toString()
+      : AppStrings.get('settings_tag_translation_not_installed')
   }
 
   private readerPageCacheStat(): CacheStat {
@@ -2092,19 +2091,17 @@ export struct SettingsPage {
     NextNListRow({
       leadingIcon: $r('sys.symbol.textformat'),
       title: AppStrings.get('settings_tag_translation_local_title'),
-      subtitle: this.tagDictionarySubtitle(),
-      trailingText: this.tagDictionaryRowCount > 0
-        ? AppStrings.get('settings_tag_translation_ready')
-        : AppStrings.get('settings_tag_translation_optional'),
+      trailingText: this.tagDictionaryStatusText(),
       showChevron: false,
     })
     this.RowDivider()
     NextNListRow({
       leadingIcon: $r('sys.symbol.arrow_clockwise'),
-      title: this.tagDictionaryActionLabel(),
-      showChevron: !this.isUpdatingTagDictionary,
+      title: AppStrings.get('settings_tag_translation_update'),
+      subtitle: AppStrings.get('settings_tag_translation_update_hint'),
+      trailingText: this.isUpdatingTagDictionary ? AppStrings.get('settings_tag_translation_updating') : '',
+      showChevron: false,
       isEnabled: !this.isUpdatingTagDictionary,
-      accessibilityLabel: AppStrings.get('settings_tag_translation_update_a11y'),
       onAction: () => {
         this.updateTagDictionary()
       },

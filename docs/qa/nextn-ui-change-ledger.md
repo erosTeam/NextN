@@ -258,6 +258,42 @@ authorize an edit, replace a device comparison, or define product completion.
   states remain OPEN. Raw artifacts are local-only under
   `.hvigor/outputs/content-filter-copy-20260815T0930/`.
 
+## OPEN — Tag-translation dictionary status and update labels — 2026-08-15
+
+- **Why newly actionable:** the user explicitly rejected the Advanced row's
+  opaque `本地标签翻译` label and its implementation-policy status sentence.
+  Current source confirms that this row manages the installed dictionary while
+  the separate Layout `标签翻译` switch only chooses whether existing resolved
+  labels are displayed.
+- **Whole parent-tree boundary:** `SettingsPage(ADVANCED) →
+  SecondaryListScaffold → ListItem(TranslationCapabilitiesGroup) →
+  NextNGroupedListSection → TagDictionaryRows`: existing status row followed
+  by existing update action row. The separate `SettingsPage(LAYOUT) →
+  BrowsePresentationGroup → 标签翻译` switch remains outside this boundary.
+- **Reference boundary:** NextE `EhSettingsPage → TagTranslationSettingsPage`
+  keeps the use switch distinct from `翻译数据库` status and `立即更新` action.
+  NextN keeps its current parent group and operations, transferring only the
+  directly corresponding database status / manual-update leaves; it does not
+  import auto-update, mirrors, search-candidate behavior, or another route.
+- **Exact change:** rename the existing dictionary-status row to
+  `翻译数据库`, show its positive row count or `未安装` as trailing status, and
+  remove its explanatory policy sentence. NextN's stored version is an
+  internal release/verification value, so it deliberately does not transfer
+  NextE's user-readable version subtitle. If the status cannot be read, leave
+  the trailing value empty and retain the existing scoped error note; while an
+  update is active, both rows state `更新中`. Rename the existing
+  download/update action to `立即更新`, keep it visibly a direct action (no
+  navigation chevron), and give it the direct-reference action description
+  `检查最新标签翻译，并保存到本地。` Keep the existing tag-display switch,
+  dictionary update service, state, persistence, request, error path, icons,
+  action order, and group hierarchy unchanged.
+- **Verification plan:** inspect the scoped code/resource diff, parse all four
+  resource catalogs, and build the exact commit. On a foreground-confirmed
+  Settings → Advanced route with an installed dictionary, observe the current
+  count status, `翻译数据库`, and `立即更新` without triggering an update.
+  The uninstalled/updating/error states, dictionary behavior, and same-state
+  visual parity remain OPEN.
+
 ## OPEN — Search recent-history presentation — 2026-08-15
 
 - **Why newly actionable:** the user repeated an earlier, unresolved objection
