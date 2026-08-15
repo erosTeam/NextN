@@ -63,6 +63,63 @@ authorize an edit, replace a device comparison, or define product completion.
   retained under `.hvigor/outputs/nextn-me-history-20260815T2124/` and are
   excluded from source control.
 
+## OPEN — Gallery detail tag translations stay raw — 2026-08-15
+
+- **Why newly actionable:** the user reports that with the 标签翻译 toggle
+  ON, opening a gallery still shows untranslated tags. Current device
+  evidence at `1320×2120`: the 界面 setting toggle 标签翻译 is checked
+  (`Toggle [1140,1691][1248,1751] checked=true`); the same gallery's Browse
+  list card shows resolved labels (电锯人 / 玛奇玛 / 同人志), while its
+  detail 标签 / 语言 / 分类 / 原作 / 角色 sections render raw names
+  (`sole female`, `blowjob`, `doujinshi`, `makima`, `chainsaw man`,
+  `translated`, `chinese`, `manga`); hilog emits
+  `NextNTagDictionary galleryMatched=12 galleryTags=13`, proving the detail
+  lookup resolves labels that never appear in the UI.
+- **Whole parent-tree boundary:** `GalleryDetailPage GalleryTags() →
+  NextNGroupedListSection → ForEach(tagVisualGroups) → TagGroupRow →
+  ForEach(group.items) → TagMember`; `@Local tagTranslationLabels` is
+  populated by `loadTagTranslations` on every accepted detail snapshot;
+  `tagMemberLabel` gates on `showTranslatedTagLabels && translatedName`.
+- **Root cause (source-proven):** `GalleryTagVisualItem` / `GalleryTagVisualGroup`
+  are plain classes, and the ForEach reuse keys (`tagMemberKey` =
+  originalIndex/tag.id/type/name; `tagGroupKey` = index/namespace) omit the
+  translation label. Chips render once with raw names before the async
+  lookup resolves; when `tagTranslationLabels` updates later, the unchanged
+  ForEach keys make the framework reuse the existing chip builders, so the
+  resolved `translatedName` never reaches the `Text`.
+- **Exact change:** make the resolved-label array a real UI dependency of the
+  tag section (the builder body reads `this.tagTranslationLabels` inside an
+  `if` so an async update re-runs `ForEach`), pass the array into
+  `tagVisualGroups(labels)` instead of reading the member state inside a
+  non-tracked data-source expression, and include `tagTranslationEpoch` in
+  both `tagMemberKey` and `tagGroupKey` so a completed lookup rebuilds the
+  tag chips with the resolved labels. No data, state, layout, or tag-search
+  semantics change.
+- **Verification plan:** signed build; install with `-r`; cold start; open a
+  not-previously-opened gallery from Browse without tapping reload; dump the
+  detail layout early and after a settle and confirm the tag chips show
+  translated labels (e.g., 单女主 / 口交 / 电锯人 / 玛奇玛 / 漫画) while raw
+  values remain only where the installed dictionary has no row.
+- **Current bounded device observation — 2026-08-15:** the signed HAP built
+  from the worktree of the tag-translation fix (SHA-256
+  `23895a6314a88983ef17d0e311c7fa96a8b74368c60055a40addf029f7316298`) was
+  installed in place with `-r` on only `192.168.50.237:12345` after a fresh
+  lease and an `AWAKE` / `OverrideTimeout=86400000ms` gate. No data clear,
+  uninstall, account action, preference write, or reload action occurred.
+  After force-stop/cold start at `1320×2120`, foreground-confirmed
+  `com.erosteam.nextn` / `pages/Index` Browse root showed a
+  not-previously-opened 玛奇玛 gallery card
+  `[886,399][1302,1426]` (【せいのまもの (せーま)】玛奇玛小姐 VS 催眠大叔
+  (电锯人)); one tap opened native Gallery Detail without any reload. Both
+  the early layout (~3 s) and the settled layout (~8 s) rendered the detail
+  tag section as translated labels (巨乳 / 单女主 / 单男主 / 中出 / 口交 /
+  大根 / 熟男 / 接吻 / 胖男人 / 大屁股 / 催眠 / 渣翻 / 秃顶 / 西装 / 阴垢 /
+  漫画 / 电锯人 / 玛奇玛), with `doujinshi` remaining raw because the
+  installed dictionary has no tag-namespace row for it. No `DBG labels`
+  diagnostic text was present. Raw local artifacts are retained under
+  `.hvigor/outputs/nextn-tag-translation-fix-20260815T2158/` and are excluded
+  from source control. The toggle ON→OFF relabel re-check remains unobserved.
+
 ## OPEN — History/Downloads title-to-list blank reserve — 2026-08-15
 
 - **Why newly actionable:** the user reported a large blank between the HDS
@@ -869,6 +926,44 @@ authorize an edit, replace a device comparison, or define product completion.
   query, whole-chip re-search, long-press removal, clear-all, dictionary
   revision refresh, and a cold reopen. Do not claim parity from source/build
   alone.
+
+## OPEN — Browse random-gallery action — 2026-08-15
+
+- **Why newly actionable:** the user asked to evaluate and adopt useful
+  NH-client capabilities beyond tag search. NClientV3 exposes a random-gallery
+  capability, and a current anonymous read of the same public v2 endpoint
+  returned one positive integer ID. This is an observed current transport
+  contract, not an official or permanent upstream guarantee.
+- **Whole parent-tree boundary:** `Index Stack → root HdsNavigation +
+  HdsTabs → Browse TabContent → HomePage → RetainedSubtabHost → Latest /
+  Popular GalleryCollectionBody`. `Index.rootTitleBar()` owns the fixed Browse
+  HDS menu and the only root NavPathStack; the existing Gallery destination
+  owns detail loading, retry, cache, history, and its own chrome.
+- **Reference boundary:** NClientV3 proves the capability boundary but uses a
+  separate random preview activity, shuffle UI, preview-specific actions, and
+  prefetch/retry behavior. NextE has no comparable random-gallery page. The
+  transferable relationship is only a one-shot random selection; no preview
+  route or hierarchy is imported into NextN.
+- **Exact change:** add one `Random gallery` leaf to the Browse HDS menu for
+  both retained sources. While one request is active, that leaf is disabled.
+  It performs one anonymous, uncached, no-redirect public random-ID request;
+  a validated ID immediately uses the existing root Gallery routing path.
+  A current root-tab/source/navigation epoch is required before opening the
+  detail. A current failure shows one root-owned fixed-message retry dialog;
+  retry is a new explicit user action.
+- **Explicit exclusions:** do not add a Home source, Search condition,
+  random-preview page, second detail loader, prefetch queue, automatic retry,
+  persistent random history/cache, account/favorite random endpoint, filter
+  bypass policy, or change the Home selector, Gallery parent tree, detail
+  cache, or existing content-filter behavior for direct gallery routes.
+- **Verification plan:** inspect the anonymous request boundary, the scoped
+  diff, resources, and signed build. On a foreground-confirmed Browse route,
+  inspect both Latest and Popular title menus, request-busy state, successful
+  existing-detail entry, root-tab/source change during a request, and failure
+  followed by explicit retry without a repeated automatic request. Verify the
+  normal phone return and existing wide split behavior when available. A
+  same-state NextE visual comparison does not exist, so no visual-parity claim
+  is permitted.
 
 ## OPEN — Account verification-marker cold-restore gate — 2026-08-14
 

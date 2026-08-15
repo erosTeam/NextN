@@ -1439,7 +1439,7 @@ export struct GalleryDetailPage {
     return NhTagQuery.format(tag).length > 0
   }
 
-  private tagVisualGroups(): GalleryTagVisualGroup[] {
+  private tagVisualGroups(labels: string[]): GalleryTagVisualGroup[] {
     const groups: GalleryTagVisualGroup[] = []
     for (let index: number = 0; index < this.detail.tags.length; index++) {
       const tag: NhTag = this.detail.tags[index]
@@ -1455,8 +1455,8 @@ export struct GalleryDetailPage {
         group = new GalleryTagVisualGroup(namespace)
         groups.push(group)
       }
-      const translatedName: string = index < this.tagTranslationLabels.length
-        ? this.tagTranslationLabels[index]
+      const translatedName: string = index < labels.length
+        ? labels[index]
         : ''
       group.items.push(new GalleryTagVisualItem(tag, index, translatedName))
     }
@@ -1529,11 +1529,11 @@ export struct GalleryDetailPage {
   }
 
   private tagGroupKey(group: GalleryTagVisualGroup, index: number): string {
-    return `${index}_${group.namespace}`
+    return `${index}_${group.namespace}_${this.tagTranslationEpoch}_${group.items.length}`
   }
 
   private tagMemberKey(item: GalleryTagVisualItem): string {
-    return `${item.originalIndex}_${item.tag.id}_${item.tag.type}_${item.tag.name}`
+    return `${item.originalIndex}_${item.tag.id}_${item.tag.type}_${item.tag.name}_${this.tagTranslationEpoch}_${item.translatedName}`
   }
 
   private tagNamespaceLabel(namespace: string): string {
@@ -2027,9 +2027,15 @@ export struct GalleryDetailPage {
           .fontSize(ThemeTokens.FONT_SIZE_TITLE)
           .fontWeight(FontWeight.Medium)
           .fontColor(ThemeTokens.TEXT_PRIMARY)
-        ForEach(this.tagVisualGroups(), (group: GalleryTagVisualGroup, index: number): void => {
-          this.TagGroupRow(group)
-        }, (group: GalleryTagVisualGroup, index: number): string => this.tagGroupKey(group, index))
+        // Read the label array directly in the builder body: ForEach data
+        // source expressions are not tracked as UI dependencies in ArkUI, so
+        // without this read an async dictionary result never re-renders the
+        // tag rows even though the state is populated.
+        if (this.tagTranslationLabels.length >= 0) {
+          ForEach(this.tagVisualGroups(this.tagTranslationLabels), (group: GalleryTagVisualGroup, index: number): void => {
+            this.TagGroupRow(group)
+          }, (group: GalleryTagVisualGroup, index: number): string => this.tagGroupKey(group, index))
+        }
       }
       .width('100%')
       .alignItems(HorizontalAlign.Start)

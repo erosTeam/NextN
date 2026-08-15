@@ -1,5 +1,26 @@
 # NextN active device-acceptance queue
 
+## Current Gallery detail tag translation — bounded device observation — 2026-08-15
+
+- The signed HAP built from the tag-translation fix worktree (SHA-256
+  `23895a6314a88983ef17d0e311c7fa96a8b74368c60055a40addf029f7316298`) was
+  installed in place with `-r` on only `192.168.50.237:12345` after a fresh
+  lease and an `AWAKE` / `OverrideTimeout=86400000ms` gate. No data clear,
+  uninstall, account action, preference write, or reload action occurred.
+- After force-stop/cold start at `1320×2120`, foreground-confirmed
+  `com.erosteam.nextn` / `pages/Index` Browse root showed a
+  not-previously-opened 玛奇玛 gallery card `[886,399][1302,1426]`. One tap
+  opened native Gallery Detail without any reload; the early layout (~3 s)
+  and settled layout (~8 s) both rendered the tag section with translated
+  labels (巨乳 / 单女主 / 口交 / 电锯人 / 玛奇玛 / 漫画 etc.). `doujinshi`
+  stayed raw because the installed dictionary has no tag-namespace row for
+  it. No `DBG labels` diagnostic text was present.
+- This observes only the cold-start detail tag render path for this gallery.
+  It does not accept the toggle ON→OFF relabel path, every dictionary state,
+  every locale, or full visual parity. Raw local artifacts are retained under
+  `.hvigor/outputs/nextn-tag-translation-fix-20260815T2158/` and are excluded
+  from source control.
+
 ## Current Root 我的 tab and History destination — bounded device observation — 2026-08-15
 
 - The signed HAP built from `cc7b1f3` (SHA-256
