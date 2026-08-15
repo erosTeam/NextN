@@ -433,12 +433,6 @@ export struct LatestSourcePage {
           }
         }, (option: NhSearchSort): string => option)
       }
-      Text(AppStrings.get('browse_options_hint'))
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
-        .maxLines(2)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-        .width('100%')
     }
     .width('100%')
     .padding({

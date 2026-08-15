@@ -186,6 +186,32 @@ authorize an edit, replace a device comparison, or define product completion.
   `.hvigor/outputs/search-range-control-20260815T0708/` and are excluded from
   source control.
 
+## OPEN — Browse/Search option-policy footnotes — 2026-08-15
+
+- **Why newly actionable:** the user explicitly rejected implementation and
+  storage-policy prose being placed beneath routine controls. Both current
+  option panels append a trailing caption about local storage, public GET, or
+  anonymous search after their actual Language and Order choices. The captions
+  do not change either control's action or outcome.
+- **Whole parent-tree boundary:** Browse is `Index root HDS menu → HomePage →
+  GalleryCollectionBody → LARGE BrowseOptionsSheet → NextNModalScaffold → one
+  scroller → ListItem → BrowseOptionsPanel`; Search is `Index.pushSearch →
+  HdsNavDestination(SearchPage) → LARGE SearchOptionsSheet →
+  NextNModalScaffold → one scroller → ListItem → SearchOptionsPanel`. Each
+  panel's language and order groups remain in their current order and retain
+  their current state owners.
+- **Reference boundary:** the closest NextE search filter sheet retains the
+  same HDS modal/scroller ownership and ends with controls, not a policy
+  caption. No NH data or action requires an extra explanatory leaf here.
+- **Exact change:** remove only the two trailing caption leaves and their four
+  locale resource keys. Do not alter any row, selection, persistence,
+  request, query, Quick Search/History, sheet detent, title, or padding.
+- **Verification plan:** inspect the scoped diff, resources, and signed build.
+  On foreground-confirmed Browse and Search option sheets, observe that the
+  Language and Order groups remain available and no policy caption remains.
+  A same-state, same-viewport reference comparison remains required before a
+  visual-parity claim.
+
 ## OPEN — Search recent-history presentation — 2026-08-15
 
 - **Why newly actionable:** the user repeated an earlier, unresolved objection

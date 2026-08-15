@@ -1804,12 +1804,6 @@ export struct SearchPage {
           }
         }, (option: NhSearchSort): string => option)
       }
-      Text(AppStrings.get('search_options_hint'))
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
-        .maxLines(2)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-        .width('100%')
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)
