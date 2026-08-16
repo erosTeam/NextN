@@ -1925,7 +1925,13 @@ struct Index {
   @Builder
   private cacheSettingsDestination() {
     HdsNavDestination() {
-      SettingsPage({ surface: SettingsSurface.CACHE, scroller: this.cacheSettingsScroller })
+      SettingsPage({
+        surface: SettingsSurface.CACHE,
+        scroller: this.cacheSettingsScroller,
+        onOpenSyncSettings: (): void => {
+          this.pushSyncSettings()
+        },
+      })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_cache')))
     .hideBackButton(false)

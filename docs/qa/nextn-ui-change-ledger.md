@@ -5954,3 +5954,17 @@ authorize an edit, replace a device comparison, or define product completion.
 - entry 四个语言文件（base/zh_CN/en_US/ja_JP）新增全部 sync_*、backup_*、settings_add_account、account_switch_failed 键，并校验 JSON 合法。
 - feature/settings Index.ets 导出三个新页面；shared Index.ets 导出 BackupTypes 全部接口与 DiagnosticLogger。
 - 本批次源码轮未做设备视觉验收；以上页面的视觉边界保持 OPEN，待 Phase 5 真机同态对照。
+
+## Phase 4 UI 真机验收（2026-08-17，设备 56T0225315001128）
+
+- **Why newly actionable:** 用户明确要求安装与真机测试，设备掉线时要求重连。hdc server 曾因残留 pid/坏进程无法握手，重建 server 后恢复 USB Connected。
+- **Device evidence（同构建 fceffb2 后追加修复构建，install -r 保留数据，无清除）：**
+  - 设置根页账号行（honjow）→ 账号管理页：标题“账号”、添加账户行、退出登录行正常渲染（保存账号列表为空——当前账号为旧登录，recordActive 需真实登录链路触发）。
+  - 设置 → 缓存：顶部“同步 / 导出 / 导入”组与原有缓存组（缓存占用 99.7 MB、四项缓存、清除全部缓存）同时渲染，顺序正确。
+  - 同步总览页：WebDAV 同步行（未启用）+ 六个数据集开关（阅读进度/浏览历史/搜索历史/快捷搜索/屏蔽规则/应用设置）全部渲染。
+  - WebDAV 详情页：WebDAV 同步开关（副标题“通过 WebDAV 目录同步选中的数据”）、同步到 WebDAV、WebDAV 目录/用户名/密码输入行全部渲染。
+  - 导出 Sheet：包含敏感数据开关 + “登录态、已存账户与 API Key——用密码加密”；确认后系统保存选择器弹出，默认文件名 `NextN-backup-<stamp>.nextn-backup.json` 正确；取消后 Sheet 保持打开（NextE 语义），关闭按钮可关闭。
+  - 退出登录确认框：标题“退出登录？”+ 说明文案；点击取消未执行登出，账号保持登录。
+  - 截图证据：`.hvigor/outputs/phase4-ui-acceptance/01-account-page.png`、`02-cache-sync-backup.png`、`03-sync-overview.png`、`04-webdav-detail.png`（未入 Git）。
+- **Device-found defect fixed:** 第一轮安装后点击缓存面的“同步”行无跳转——根因是 `cacheSettingsDestination` 创建的 SettingsPage CACHE 实例未传 `onOpenSyncSettings`（只在根 Tab 实例绑定）。修复：给 CACHE destination 补传 `onOpenSyncSettings: () => this.pushSyncSettings()`；重建安装后点击正常进入同步总览页。
+- **Remaining OPEN:** 保存账号列表的真实填充（recordActive 登录钩子）需下一次真实登录端到端验证；WebDAV 实际同步/备份文件读写依赖真实目录与系统 picker 的完整保存/选择流程；与 NextE 的同态同视口截图对比仍需用户/视觉模型验收。
