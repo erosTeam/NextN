@@ -525,7 +525,7 @@
     { "name": "content_filter_match_contains", "value": "包含文本" },
     { "name": "content_filter_match_regex", "value": "正则表达式" },
     { "name": "content_filter_regex_invalid", "value": "正则表达式无效。" },
-    { "name": "content_filter_regex_subtitle", "value": "关闭时使用不区分大小写的文本匹配。" },
+    { "name": "content_filter_regex_subtitle", "value": "按 JavaScript 正则表达式匹配。" },
     { "name": "content_filter_regex_title", "value": "使用正则表达式" },
     { "name": "content_filter_remove_action", "value": "移除" },
     { "name": "content_filter_remove_failed", "value": "无法移除本地过滤器。" },

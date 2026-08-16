@@ -263,9 +263,8 @@ export struct ContentFiltersPage {
       },
     }) {
       ListItem() {
-        Column({ space: ThemeTokens.SPACE_MD }) {
-          NextNGroupedListSection() {
-            NextNListRow({
+        NextNGroupedListSection({ inset: 0 }) {
+          NextNListRow({
             leadingIcon: this.typeIcon(this.draftType),
             title: AppStrings.get('content_filter_target_title'),
             trailingText: this.typeLabel(this.draftType),
@@ -275,14 +274,14 @@ export struct ContentFiltersPage {
               this.typeMenuShown = true
             },
           })
-            .bindMenu(this.typeMenuShown, this.FilterTypeMenu, appMenuOptions({
-              placement: Placement.BottomRight,
-              onDisappear: (): void => {
-                this.typeMenuShown = false
-              },
-            }))
-            this.RowDivider()
-            NextNListRow({
+          .bindMenu(this.typeMenuShown, this.FilterTypeMenu, appMenuOptions({
+            placement: Placement.BottomRight,
+            onDisappear: (): void => {
+              this.typeMenuShown = false
+            },
+          }))
+          this.RowDivider()
+          NextNListRow({
             leadingIcon: $r('sys.symbol.checkmark_circle'),
             title: AppStrings.get('content_filter_enabled_title'),
             accessibilityLabel: AppStrings.get('content_filter_enabled_title'),
@@ -295,9 +294,9 @@ export struct ContentFiltersPage {
             onSwitchChange: (value: boolean): void => {
               this.draftEnabled = value
             },
-            })
-            this.RowDivider()
-            NextNListRow({
+          })
+          this.RowDivider()
+          NextNListRow({
             leadingIcon: $r('sys.symbol.textformat'),
             title: AppStrings.get('content_filter_regex_title'),
             subtitle: AppStrings.get('content_filter_regex_subtitle'),
@@ -311,17 +310,19 @@ export struct ContentFiltersPage {
             onSwitchChange: (value: boolean): void => {
               this.draftRegex = value
             },
-            })
-          }
+          })
+        }
+      }
+      ListItem() {
+        NextNGroupedListSection({ inset: 0 }) {
           Column({ space: ThemeTokens.SPACE_SM }) {
             Text(AppStrings.get('content_filter_text_label'))
               .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
               .fontColor(ThemeTokens.TEXT_SECONDARY)
+              .width('100%')
             TextArea({ text: this.draftText, placeholder: AppStrings.get('content_filter_text_placeholder') })
               .width('100%')
-              .minFontSize(ThemeTokens.FONT_SIZE_BODY)
-              .backgroundColor(ThemeTokens.CARD_BACKGROUND)
-              .borderRadius(ThemeTokens.RADIUS_MD)
+              .backgroundColor(Color.Transparent)
               .onChange((value: string): void => {
                 this.draftText = value
               })
@@ -329,17 +330,12 @@ export struct ContentFiltersPage {
               Text(AppStrings.get('content_filter_regex_invalid'))
                 .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
                 .fontColor(Color.Red)
+                .width('100%')
             }
           }
+          .padding(ThemeTokens.SPACE_MD)
           .width('100%')
         }
-        .width('100%')
-        .padding({
-          left: ThemeTokens.SPACE_SM,
-          right: ThemeTokens.SPACE_SM,
-          top: ThemeTokens.SPACE_SM,
-          bottom: ThemeTokens.SPACE_SM,
-        })
       }
     }
   }

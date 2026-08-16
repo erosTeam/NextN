@@ -5837,3 +5837,64 @@ authorize an edit, replace a device comparison, or define product completion.
   已删除临时源并关闭标签翻译，设备恢复验证前状态。
 - 未决风险：模型菜单完整选择链路需真实 API Key 才可端侧验证（当前仅验证来源
   下拉与查询入口）；NextE 同视口逐页对照与用户终验仍 OPEN。
+
+
+## OPEN - content filter label alignment and regex subtitle restore - 2026-08-16
+
+- **Why newly actionable:** user reports the content-filter form label
+  renders centered, and the regex row subtitle is self-authored filler;
+  the prior audit claimed coverage but missed this page. User demands a
+  full-repo scan of the same defect class, not a one-point patch.
+- **Whole parent-tree boundary:** ContentFiltersPage rule editor section:
+  target/enabled/regex NextNListRow group to rule-text input group (label +
+  TextArea + inline validation). Only the label/inline-error Text width and
+  the regex row subtitle copy change; list scaffold, switch semantics, and
+  persistence are untouched. Search advanced form labels are in the same
+  defect class and reviewed in the same pass.
+- **Reference evidence:** NextE LocalBlockSettingsPage regex row subtitle
+  uses local_block_regex_hint ("按 JavaScript 正则表达式匹配。"), and both
+  the rule-text label and regex-invalid error Text carry .width('100%').
+- **Exact before/after:**
+  1. Rule editor sheet restructured to NextE's two-ListItem shape: rows live
+     in ListItem > NextNGroupedListSection({ inset: 0 }); the rule-text
+     label/TextArea/error live in their own ListItem >
+     NextNGroupedListSection({ inset: 0 }) > Column with
+     .padding(SPACE_MD).width('100%'). The previous bare Column wrapper and
+     its extra SPACE_SM outer padding were removed;
+  2. label/error Texts gain .width('100%'); TextArea drops the invented
+     card background/radius and uses NextE's Color.Transparent;
+  3. content_filter_regex_subtitle copy changes from the invented
+     "关闭时使用不区分大小写的文本匹配。" to NextE's
+     "按 JavaScript 正则表达式匹配。" in all four language packs;
+  4. search advanced tag-name label gains .width('100%') (same defect
+     class); full-repo scans of input-bearing columns and centered text
+     found no other centered form labels. Intentional centered/placeholder
+     UI is not altered.
+- **Minimality rationale:** width and copy only; no data/behavior change.
+  Subtitles that merely describe the switch-off state are replaced with the
+  reference hint, per the settings-copy default rule.
+- **Visual verification plan:** signed build + 237-device dumpLayout of the
+  content-filter rule editor: label and error text bounds left-aligned to the
+  TextArea, regex row subtitle equals the new reference copy; same-class
+  search advanced form checked on the same device pass.
+- **Unresolved risk:** full-repo heuristic scan can only propose candidates;
+  each confirmed item is patched only when it is a form-label/input-copy
+  defect of the same class. Intentional centered UI is left untouched and
+  recorded as reviewed.
+- **Audit-method correction:** prior audits were subtree/key scans and
+  missed parent-structure drift (bare Column vs GroupedListSection sheet
+  section). This run rebuilds the audit as a tree-outline diff: component
+  composition by indentation is extracted for each paired settings page and
+  compared (artifacts /private/tmp/nextn-tree-audit/*.outline). It confirms
+  ContentFilters now matches NextE's sheet parent tree; other settings pairs
+  differ only by the documented component-name mapping plus a few extra
+  Column wrappers/menus that must be reviewed per page before any change.
+- **Device evidence (2026-08-16, 237 device, install -r without data
+  clear):** signed HAP installed; 我的 > 高级 > 内容过滤 > 添加本地过滤器
+  opened. Layout dump cf_step4: "使用正则表达式" row subtitle reads
+  "按 JavaScript 正则表达式匹配。" at [180,726][778,775]; "匹配文本"
+  label at [72,876][1248,918] and its TextArea at [72,942][1248,1046] share
+  the same left/right edges (full-width left-aligned). Search page >
+  搜索选项 sheet: "标签名称" label [108,684][1212,726] and its TextInput
+  [108,738][1212,870] share the same edges. Screenshots and dumps retained
+  at .hvigor/outputs/content-filter-verify/.

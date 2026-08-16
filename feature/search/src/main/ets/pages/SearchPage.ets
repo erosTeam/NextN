@@ -1547,6 +1547,7 @@ export struct SearchPage {
       Text(AppStrings.get('search_advanced_tag_name'))
         .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
         .fontColor(ThemeTokens.TEXT_SECONDARY)
+        .width('100%')
       TextInput({
         text: this.advancedTagText,
         placeholder: AppStrings.get('search_advanced_tag_placeholder'),

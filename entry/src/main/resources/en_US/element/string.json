@@ -524,7 +524,7 @@
     { "name": "content_filter_match_contains", "value": "Contains text" },
     { "name": "content_filter_match_regex", "value": "Regular expression" },
     { "name": "content_filter_regex_invalid", "value": "The regular expression is invalid." },
-    { "name": "content_filter_regex_subtitle", "value": "Off uses case-insensitive text matching." },
+    { "name": "content_filter_regex_subtitle", "value": "Use as a JavaScript regular expression." },
     { "name": "content_filter_regex_title", "value": "Use regular expression" },
     { "name": "content_filter_remove_action", "value": "Remove" },
     { "name": "content_filter_remove_failed", "value": "Unable to remove this local filter." },

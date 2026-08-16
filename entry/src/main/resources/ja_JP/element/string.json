@@ -524,7 +524,7 @@
     { "name": "content_filter_match_contains", "value": "テキストを含む" },
     { "name": "content_filter_match_regex", "value": "正規表現" },
     { "name": "content_filter_regex_invalid", "value": "正規表現が無効です。" },
-    { "name": "content_filter_regex_subtitle", "value": "オフの場合、大文字と小文字を区別しない文字列一致を使用します。" },
+    { "name": "content_filter_regex_subtitle", "value": "JavaScript 正規表現として使用します。" },
     { "name": "content_filter_regex_title", "value": "正規表現を使用" },
     { "name": "content_filter_remove_action", "value": "削除" },
     { "name": "content_filter_remove_failed", "value": "このローカルフィルターを削除できません。" },
