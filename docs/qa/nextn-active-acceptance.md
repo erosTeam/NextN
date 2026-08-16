@@ -2751,3 +2751,9 @@ permitted in this repository.
   retained under `.hvigor/outputs/nextn-detail-actions-20260816T/`
   (`state-final.json`, `verify-a/b/c.json`, `hilog-final.txt`) and are
   excluded from Git.
+
+## Current delivery observation — Detail Read button reflects reader progress
+
+- 2026-08-17 +0800: USB target 56T0225315001128 passed the wake gate (`AWAKE`, `OverrideTimeout=86400000ms`). The signed Debug HAP was installed with `install -r` only; no data clear, uninstall, account, preference, or content mutation occurred.
+- Gallery `Mujintou Sounan Harem 3`: opened the Reader from detail and turned to page 5 (reader overlay layout shows `5 / 104` at [551,1940][685,1989]); Back returned to the detail page, where the Read FAB now shows `继续 P5` [1070,1979][1216,2028] with no reader-overlay node remaining. Foreground bundle observed as `com.erosteam.nextn`.
+- Raw layout and screenshot evidence is retained locally at `.hvigor/outputs/nextn-read-progress-20260817T/` (`reader-current.json`, `reader-page5.png`, `detail-after-back.json`, `detail-after-back.png`) and excluded from Git. This is a current same-session observation, not a cold-start or reference-parity claim.

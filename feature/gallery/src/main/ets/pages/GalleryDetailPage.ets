@@ -62,6 +62,8 @@ import {
   connectReadButtonStyle,
   connectTagTranslations,
   ReaderOverlayNavigationState,
+  NhReadProgressState,
+  connectNhReadProgress,
   supportsCommentTranslation,
 } from 'shared'
 import { appSheetOptions } from 'shared'
@@ -169,6 +171,10 @@ export struct GalleryDetailPage {
    * while `hasReadProgress` is true, because page zero is a real resume page.
    */
   @Local resumePageIndex: number = 0
+  // In-memory reactive marker written by Reader page turns. Build-time readers
+  // of has()/index() subscribe to its revision, so returning from Reader
+  // refreshes the Read action without another storage query.
+  @Local readProgress: NhReadProgressState = connectNhReadProgress()
   /**
    * The full-title sheet is strictly presentational. It is two-way bound to
    * the native sheet so drag/back dismissal cannot leave stale local state.
@@ -931,6 +937,11 @@ export struct GalleryDetailPage {
       }
       this.hasReadProgress = hasProgress
       this.resumePageIndex = resumePageIndex
+      if (hasProgress) {
+        // Keep the durable seed in the in-memory holder so a later Reader
+        // turn always has a reactive baseline even before any new write.
+        this.readProgress.seed(galleryId, resumePageIndex)
+      }
     } catch (error) {
       if (this.isCurrentReadProgressRequest(detailGeneration, galleryId, readProgressGeneration)) {
         console.warn(`Unable to load local reading progress: ${(error as Error).message}`)
@@ -1403,21 +1414,33 @@ export struct GalleryDetailPage {
       (this.readFabUsesHdsMaterial() ? 0 : ThemeTokens.SPACE_LG)
   }
 
+  /** The reactive in-memory marker wins over the once-loaded RDB snapshot. */
+  private liveHasReadProgress(): boolean {
+    return this.readProgress.has(this.galleryId) || this.hasReadProgress
+  }
+
+  private liveResumePageIndex(): number {
+    if (this.readProgress.has(this.galleryId)) {
+      return this.clampResumePageIndex(this.readProgress.index(this.galleryId))
+    }
+    return this.clampResumePageIndex(this.resumePageIndex)
+  }
+
   private readFabMaterialBarWidth(): number {
-    if (!this.hasReadProgress) {
+    if (!this.liveHasReadProgress()) {
       return 86
     }
-    const pageIndex: number = this.clampResumePageIndex(this.resumePageIndex)
+    const pageIndex: number = this.liveResumePageIndex()
     return Math.min(172, 104 + (pageIndex + 1).toString().length * 8)
   }
 
   private readActionLabel(): string {
     const pageCount: number = this.localResumePageCount()
-    const pageIndex: number = this.clampResumePageIndex(this.resumePageIndex)
+    const pageIndex: number = this.liveResumePageIndex()
     // A saved marker at page zero means the reader was opened but never
     // advanced: resuming there is the same as starting from the beginning,
     // so the label stays 阅读/Read instead of an impossible 继续 P1.
-    if (!this.hasReadProgress || pageCount <= 0 || pageIndex <= 0) {
+    if (!this.liveHasReadProgress() || pageCount <= 0 || pageIndex <= 0) {
       return AppStrings.get('gallery_action_read')
     }
     return AppStrings.format('gallery_action_continue_page', [

@@ -6056,3 +6056,14 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Minimality rationale:** 官方文档规则的直修，NextE 参考已有同构零参数先例；不引入新组件、新状态、新几何。
 - **Visual verification plan:** 构建 + `install -r` + 237 真机：冷启动首进（2s/12s 两次 layout）下载 chip `enabled=true`；退出重进仍 `enabled=true`；HDS 菜单下载项 enabled；点击 chip 正常入队。
 - **Unresolved risk:** `GalleryMetaItem` 同为多按值参数 `@Builder`，收藏数等"进入后变化"字段存在同类冻结风险；当前无用户反馈且首帧值正确，不在本轮改动范围，另行观察。
+
+## 详情页阅读按钮返回后不更新进度：NhReadProgressState 内存响应式标记（2026-08-17，用户反馈）
+
+- **用户反馈:** 详情页点进阅读后翻页，返回详情页，阅读按钮仍是"阅读"，没有显示读到的页数。
+- **根因（source evidence）:** 详情页阅读按钮只读取 `hasReadProgress/resumePageIndex` 两个来自 RDB 查询的一次性种子值；Reader 翻页时仅 debounce 写 RDB，返回详情时页面收不到任何"进度已变化"的可观测信号，按钮文案停留在进入前的旧值。NextE 用 GalleryReadProgressState 做内存优先/磁盘 debounce 双层，页面读取内存持有者即可响应。
+- **Whole parent-tree boundary:** 仅详情页右下 Read FAB（文案 + 进度条宽度）与 ReaderPage.persistProgress 写入点；不动导航、RDB 表、历史记录、其他按钮。
+- **Exact change:** 新增 shared/src/main/ets/state/NhReadProgressState.ets（AppStorageV2 @ObservedV2，@Trace revision + per-gallery index Map；has/index 建立响应式依赖，set 立即写内存，seed 从 RDB 种子且不覆盖更新的内存值）；ReaderPage.persistProgress 在 RDB flush 前同步 set；GalleryDetailPage 增加 @Local readProgress 持有者，RDB 有标记时 seed，读按钮文案/宽度改读 liveHasReadProgress/liveResumePageIndex。
+- **Minimality rationale:** 镜像 NextE GalleryReadProgressState 双层设计，只补响应式内存通道，RDB 仍为持久源；无新页面、无新文案、无几何改动。
+- **Visual verification plan:** 签名构建 + install -r + USB 真机 56T0225315001128：详情页点"阅读"→ 阅读器翻到 5/104 → Back 返回 → 详情按钮显示"继续 P5"。
+- **Device evidence:** 构建通过（debug，BUILD SUCCESSFUL）；真机阅读器底部布局含 `5 / 104`（reader-overlay-navigation, [551,1940][685,1989]），Back 后前台 bundle com.erosteam.nextn 详情页按钮 `继续 P5` [1070,1979][1216,2028]，无 reader-overlay 残留。截图 .hvigor/outputs/nextn-read-progress-20260817T/{reader-page5.png,detail-after-back.png}（不入 Git）。
+- **Unresolved risk:** 冷启动 RDB 种子路径此前已工作（本次未单独冷启动验证）；内存持有者为全局 AppStorageV2，跨进程/多实例语义与 NextE 同构。

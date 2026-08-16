@@ -387,6 +387,7 @@ export { ContentFilterState, connectContentFilters } from './state/ContentFilter
 export { ContentFilterService } from './services/ContentFilterService'
 export { HistoryCursor, HistoryPageResult, HistoryRepository } from './storage/HistoryRepository'
 export { ReadingHistoryState, connectReadingHistory } from './state/ReadingHistoryState'
+export { NhReadProgressState, connectNhReadProgress } from './state/NhReadProgressState'
 export { ReaderSettingsRepository } from './storage/ReaderSettingsRepository'
 export { ReaderPresentationService } from './services/ReaderPresentationService'
 export { BrowsePresentationRepository } from './storage/BrowsePresentationRepository'

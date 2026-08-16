@@ -32,6 +32,7 @@ import {
   CommentTranslationService,
   ReaderPresentationService,
   ReaderPresentationState,
+  connectNhReadProgress,
   ReaderOverlayNavigationState,
   LayoutSafeAreaState,
   LanguageState,
@@ -4206,6 +4207,8 @@ export struct ReaderPage {
     }
     const generation: number = this.requestGeneration
     this.lastPersistedIndex = pageIndex
+    // Detail subscribes to this in-memory marker so returning from Reader refreshes the Read button.
+    connectNhReadProgress().set(this.detail.id, pageIndex)
     HistoryRepository.saveProgress(this.context(), this.detail, pageIndex).catch((error: Error): void => {
       if (!this.isCurrentRequest(generation)) {
         return
