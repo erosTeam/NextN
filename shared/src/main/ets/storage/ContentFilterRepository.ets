@@ -91,4 +91,29 @@ export class ContentFilterRepository {
     const index: number = result.getColumnIndex(column)
     return result.isColumnNull(index) ? 0 : Math.floor(result.getDouble(index))
   }
+
+  /** Backup export: durable filter rules in display order. */
+  static async exportForBackup(context: common.UIAbilityContext): Promise<NhContentFilterRule[]> {
+    return ContentFilterRepository.load(context)
+  }
+
+  /** Backup restore: authoritative replacement of the filter-rule table. */
+  static async restoreBackup(context: common.UIAbilityContext, rules: NhContentFilterRule[]): Promise<void> {
+    const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+    await store.executeSql('DELETE FROM content_filter_rules')
+    for (let i: number = 0; i < rules.length; i++) {
+      const rule: NhContentFilterRule = rules[i]
+      if (rule.id.length === 0 || rule.text.trim().length === 0) {
+        continue
+      }
+      await store.executeSql(SQL_UPSERT_RULE, [
+        rule.id,
+        rule.type,
+        rule.text,
+        rule.enabled ? 1 : 0,
+        rule.isRegex ? 1 : 0,
+        i,
+      ])
+    }
+  }
 }

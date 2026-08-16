@@ -77,6 +77,14 @@ export class CatalogPreferencesService {
     return CatalogPreferencesService.saveAfterRestore(context, preferences)
   }
 
+  static async restoreFromBackup(context: common.UIAbilityContext): Promise<void> {
+    if (CatalogPreferencesService.restoreTask !== null) {
+      await CatalogPreferencesService.restoreTask
+    }
+    CatalogPreferencesService.restored = false
+    await CatalogPreferencesService.restore(context)
+  }
+
   private static async restoreInternal(context: common.UIAbilityContext): Promise<void> {
     CatalogPreferencesService.state().replace(await CatalogPreferencesRepository.load(context))
   }

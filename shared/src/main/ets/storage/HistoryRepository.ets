@@ -372,4 +372,44 @@ export class HistoryRepository {
       throw (error as Error)
     }
   }
+
+  /** Backup export: all durable history rows (opened and resumed). */
+  static async exportForBackup(context: common.UIAbilityContext): Promise<NhReadingHistoryItem[]> {
+    return HistoryRepository.loadAll(context)
+  }
+
+  /** Backup restore: authoritative replacement of the whole reading-history table. */
+  static async restoreBackup(context: common.UIAbilityContext, items: NhReadingHistoryItem[]): Promise<void> {
+    await HistoryRepository.enqueueWrite(async (): Promise<void> => {
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      await store.executeSql(SQL_DELETE_ALL)
+      for (let i: number = 0; i < items.length; i++) {
+        const item: NhReadingHistoryItem = items[i]
+        if (item.galleryId <= 0) {
+          continue
+        }
+        if (item.hasReadProgress) {
+          await store.executeSql(SQL_UPSERT_PROGRESS, [
+            item.galleryId,
+            item.mediaId,
+            item.title,
+            item.thumbnailUrl,
+            item.pageCount,
+            item.lastReadIndex,
+            item.lastOpenedAt,
+          ])
+        } else {
+          await store.executeSql(SQL_UPSERT_OPEN, [
+            item.galleryId,
+            item.mediaId,
+            item.title,
+            item.thumbnailUrl,
+            item.pageCount,
+            item.lastOpenedAt,
+          ])
+        }
+      }
+    })
+    HistoryRepository.publishMutation()
+  }
 }

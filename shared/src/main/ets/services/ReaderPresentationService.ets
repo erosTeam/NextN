@@ -224,6 +224,14 @@ export class ReaderPresentationService {
     })
   }
 
+  static async restoreFromBackup(context: common.UIAbilityContext): Promise<void> {
+    if (ReaderPresentationService.restoreTask !== null) {
+      await ReaderPresentationService.restoreTask
+    }
+    ReaderPresentationService.restored = false
+    await ReaderPresentationService.restore(context)
+  }
+
   private static async restoreInternal(context: common.UIAbilityContext): Promise<void> {
     const values: [
       NhReaderMode,

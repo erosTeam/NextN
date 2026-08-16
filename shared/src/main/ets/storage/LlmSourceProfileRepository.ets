@@ -255,6 +255,14 @@ export class LlmSourceProfileRepository {
     return next
   }
 
+  static async restoreFromBackup(context: common.UIAbilityContext): Promise<void> {
+    if (LlmSourceProfileRepository.restoreTask !== null) {
+      await LlmSourceProfileRepository.restoreTask
+    }
+    LlmSourceProfileRepository.restored = false
+    await LlmSourceProfileRepository.restore(context)
+  }
+
   private static async restoreInternal(context: common.UIAbilityContext): Promise<void> {
     try {
       const store: preferences.Preferences =

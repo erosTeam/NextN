@@ -532,3 +532,30 @@ export {
 } from './state/SubtabTransitionState'
 export { ActiveKeyState, RetainedSubtabHost } from './components/RetainedSubtabHost'
 export { SubTabBar } from './components/SubTabBar'
+export {
+  BACKUP_MAGIC,
+  BACKUP_APP_ID,
+  BACKUP_SCHEMA_VERSION,
+  BACKUP_MIN_SUPPORTED_SCHEMA_VERSION,
+  BACKUP_FILE_SUFFIX,
+  BACKUP_CHECKSUM_ALGORITHM,
+  MAX_BACKUP_BYTES,
+  BACKUP_SECTION_NAMES,
+  BACKUP_ENCRYPTED_ONLY_SECTION_NAMES,
+  BACKUP_CIPHER_ALGORITHM,
+  BACKUP_KDF_ALGORITHM,
+  BACKUP_KDF_ITERATIONS,
+  BACKUP_KDF_KEY_SIZE,
+  BACKUP_CIPHER_SALT_BYTES,
+  BACKUP_CIPHER_IV_BYTES,
+  BACKUP_CIPHER_TAG_BYTES,
+} from './backup/BackupTypes'
+export { BackupCrypto, BackupSealResult } from './backup/BackupCrypto'
+export { BackupChecksum } from './backup/BackupChecksum'
+export { BackupSecretDenylist } from './backup/BackupSecretDenylist'
+export {
+  BackupWebDavCredentialGroup,
+  BackupPreferencesAdapter,
+} from './backup/BackupPreferencesAdapter'
+export { BackupLocalDataAdapter } from './backup/BackupLocalDataAdapter'
+export { BackupService } from './backup/BackupService'

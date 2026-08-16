@@ -211,4 +211,41 @@ export class BrowsePresentationRepository {
     BrowsePresentationRepository.writeTail = queued.catch((): void => {})
     return queued
   }
+
+  /** Backup export: whole browse_presentation_settings key-value table. */
+  static async exportForBackup(context: common.UIAbilityContext): Promise<Record<string, string>> {
+    const out: Record<string, string> = {}
+    let rows: relationalStore.ResultSet | null = null
+    try {
+      await BrowsePresentationRepository.writeTail
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      rows = await store.querySql('SELECT key, value FROM browse_presentation_settings')
+      while (rows.goToNextRow()) {
+        const keyColumn: number = rows.getColumnIndex('key')
+        const valueColumn: number = rows.getColumnIndex('value')
+        if (!rows.isColumnNull(keyColumn) && !rows.isColumnNull(valueColumn)) {
+          out[rows.getString(keyColumn)] = rows.getString(valueColumn)
+        }
+      }
+    } finally {
+      if (rows !== null) {
+        try {
+          rows.close()
+        } catch (_error) {}
+      }
+    }
+    return out
+  }
+
+  /** Backup restore: authoritative replacement of the browse_presentation_settings table. */
+  static async restoreBackup(context: common.UIAbilityContext, values: Record<string, string>): Promise<void> {
+    await BrowsePresentationRepository.enqueueWrite(async (): Promise<void> => {
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      await store.executeSql('DELETE FROM browse_presentation_settings')
+      const keys: string[] = Object.keys(values)
+      for (let i: number = 0; i < keys.length; i++) {
+        await store.executeSql(SQL_UPSERT_PRESENTATION, [keys[i], values[keys[i]]])
+      }
+    })
+  }
 }

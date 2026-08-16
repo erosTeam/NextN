@@ -17,6 +17,7 @@ const SQL_TRIM: string =
   'SELECT normalized_query FROM search_quick ' +
   'ORDER BY pinned_at DESC, normalized_query ASC LIMIT ?)'
 const SQL_DELETE_ONE: string = 'DELETE FROM search_quick WHERE normalized_query = ?'
+const SQL_DELETE_ALL: string = 'DELETE FROM search_quick'
 
 /**
  * Local-only user pins for repeatable public searches. This deliberately does
@@ -109,5 +110,33 @@ export class QuickSearchRepository {
     } catch (error) {
       throw (error as Error)
     }
+  }
+
+  /** Backup export: all pinned quick searches in pin order. */
+  static async exportForBackup(context: common.UIAbilityContext): Promise<NhQuickSearchItem[]> {
+    return QuickSearchRepository.load(context)
+  }
+
+  /** Backup restore: authoritative replacement of the quick-search table. */
+  static async restoreBackup(context: common.UIAbilityContext, items: NhQuickSearchItem[]): Promise<void> {
+    await QuickSearchRepository.enqueueWrite(async (): Promise<void> => {
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      await store.executeSql(SQL_DELETE_ALL)
+      const seen: Set<string> = new Set<string>()
+      const now: number = Date.now()
+      for (let i: number = 0; i < items.length; i++) {
+        const item: NhQuickSearchItem = items[i]
+        const query: string = item.query.trim()
+        if (query.length === 0) {
+          continue
+        }
+        const normalized: string = query.toLowerCase()
+        if (seen.has(normalized)) {
+          continue
+        }
+        seen.add(normalized)
+        await store.executeSql(SQL_UPSERT, [normalized, query, item.pinnedAt > 0 ? item.pinnedAt : now - i])
+      }
+    })
   }
 }

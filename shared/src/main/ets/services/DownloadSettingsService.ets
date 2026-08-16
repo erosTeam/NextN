@@ -103,6 +103,14 @@ export class DownloadSettingsService {
     return MAX_RETRY_COUNT
   }
 
+  static async restoreFromBackup(context: common.UIAbilityContext): Promise<void> {
+    if (DownloadSettingsService.restoreTask !== null) {
+      await DownloadSettingsService.restoreTask
+    }
+    DownloadSettingsService.restored = false
+    await DownloadSettingsService.restore(context)
+  }
+
   private static async restoreInternal(context: common.UIAbilityContext): Promise<void> {
     DownloadSettingsService.state().replace(
       DownloadSettingsService.normalize(await DownloadSettingsRepository.load(context)),

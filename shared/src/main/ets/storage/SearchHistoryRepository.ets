@@ -118,4 +118,39 @@ export class SearchHistoryRepository {
       throw (error as Error)
     }
   }
+
+  /** Backup export: durable search queries in recency order. */
+  static async exportForBackup(context: common.UIAbilityContext): Promise<string[]> {
+    const source: NhSearchHistoryItem[] = await SearchHistoryRepository.load(context)
+    const out: string[] = []
+    for (let i: number = 0; i < source.length; i++) {
+      const query: string = source[i].query.trim()
+      if (query.length > 0 && out.indexOf(query) < 0) {
+        out.push(query)
+      }
+    }
+    return out
+  }
+
+  /** Backup restore: authoritative replacement of the search-history table. */
+  static async restoreBackup(context: common.UIAbilityContext, queries: string[]): Promise<void> {
+    await SearchHistoryRepository.enqueueWrite(async (): Promise<void> => {
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      await store.executeSql(SQL_DELETE_ALL)
+      const seen: Set<string> = new Set<string>()
+      const now: number = Date.now()
+      for (let i: number = 0; i < queries.length; i++) {
+        const query: string = queries[i].trim()
+        if (query.length === 0) {
+          continue
+        }
+        const normalized: string = query.toLowerCase()
+        if (seen.has(normalized)) {
+          continue
+        }
+        seen.add(normalized)
+        await store.executeSql(SQL_UPSERT, [normalized, query, now - i])
+      }
+    })
+  }
 }
