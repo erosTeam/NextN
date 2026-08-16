@@ -5898,3 +5898,23 @@ authorize an edit, replace a device comparison, or define product completion.
   搜索选项 sheet: "标签名称" label [108,684][1212,726] and its TextInput
   [108,738][1212,870] share the same edges. Screenshots and dumps retained
   at .hvigor/outputs/content-filter-verify/.
+- **Repeat verification pass (user requested repeated checks):**
+  1. Four-language JSON parse: all content_filter_regex_subtitle values are
+     the NextE copy; rg finds zero stale "Off uses case-insensitive" /
+     "关闭时使用不区分大小写" / Japanese stale strings outside the ledger's
+     historical note.
+  2. Form-label scan method 1 (block-based): ContentFiltersPage and Search
+     advanced no longer flagged; remaining hits are intentional (Reader
+     slider row, quick-search chips, AppColorPicker which is NextE-parity).
+  3. Form-label scan method 2 (window-based, independent algorithm): only
+     AppColorPicker (NextE-parity) remains.
+  4. Fresh tree-outline diff of LocalBlockSettingsPage.RuleSheet vs
+     ContentFiltersPage.RulesEditorSheet: both are ListItem >
+     GroupedListSection(inset:0) rows, then ListItem > GroupedListSection
+     (inset:0) > Column(Text/TextArea/Text); only the documented
+     component-name mapping differs.
+  5. Second device pass (fresh signed build, install -r, force-stop/cold
+     start): content-filter sheet shows the same subtitle and identical
+     label/TextArea bounds; search options sheet shows the same
+     label/TextInput bounds. Evidence: rp2_cf_step4.* and rp2_sr4.* under
+     .hvigor/outputs/content-filter-verify/.
