@@ -6046,3 +6046,13 @@ authorize an edit, replace a device comparison, or define product completion.
 - **关键机制发现:** ohpm file: 安装进 oh_modules 的 HAR 不执行其 CMake（首构建 HAP 缺 .so 证实）；HAR 的 externalNativeOptions 仅在项目内源码模块形态（根 modules 注册）下编译——这正是 submodule 路线的形态，submodule URL 支持本地路径（GIT_ALLOW_PROTOCOL=file）。
 - **Evidence:** 清缓存后完整构建通过（19s）；HAP 含 libreader_enhancement.so（8,767,648 字节）+ libc++_shared.so + libomp.so；真机 install -r 启动无崩溃，进入阅读器后 hilog 打出 ReaderEnhancement 标签的 ncnn Vulkan init result=0 gpuCount=1 gpu=Maleoon 920（新库加载与 GPU 推理链路工作的直接证据）；截图 12-reader-lib-swap.png。
 - **Remaining:** 远端仓库创建与 .gitmodules URL 切换（本轮）；NextE 侧同法接入（下一轮）；漫画翻译 native 服务的功能级回归（本轮证据为库加载+Vulkan 初始化，非每个 NAPI 入口的逐一回放）。
+
+## 详情页下载 chip 首进不可点：@Builder 多按值参数不触发重建（2026-08-17，用户反馈）
+
+- **用户指示:** "为什么详情页的下载按钮，第一次进入页面的时候，不能正常的更新成可以点按的状态？然后我关掉再重新进入，就是可以点击的状态"；"反正就是用237设备验证"。
+- **根因（source + 真机复现）:** `GalleryActionChip` 是 4 个按值参数的 `@Builder`（GalleryDetailPage.ets）。ArkUI 规则（arkts-builder：两个及以上参数且非按回调传递时不触发动态渲染 UI；混用按值/按引用亦不触发）决定参数变化不会重建该构建函数子组件。首进：seed 快照帧出生即 disabled（`isDetailReadyForCurrentGallery=false`）→ 网络详情到达后数据就绪，但 chip 的 enabled/label 冻结在首帧值；同页 HDS 标题菜单下载项（同一 `downloadChipEnabled()` 算出的 `chrome.downloadActionReady`）、元数据收藏数/日期（seed 无这些字段，只可能来自已验证详情）、预览页数全部就绪，证明数据层正确、仅 chip UI 更新通道失效。重进：内存详情缓存同步命中（hilog `hit=memory`），首帧即 true，表现"重进可点"。USB 真机复现：首进 2s/12s/下拉刷新/滚动回收后 Button 恒为 `enabled=false`；退出重进 2s 即 `enabled=true`。
+- **Whole parent-tree boundary:** `GalleryDetailPage.GalleryInformation` 动作卡右列下载 chip 仅此一处；元数据卡、标签、预览、Read FAB、HDS 标题菜单、其余页面不动。
+- **Exact change:** 新增零参数 `@Builder DownloadActionChip()`（与 NextE `DownloadActionChip` 同构：构建体内直接读 `this.downloadChipEnabled()`/`this.downloadActionTitle()`），替换按值参数调用。种子 chip 保持 `GalleryActionChip`：其 enabled 只依赖挂载条件 `detail.id === galleryId`，挂载期内恒定、无 false→true 转变，不受此规则影响。
+- **Minimality rationale:** 官方文档规则的直修，NextE 参考已有同构零参数先例；不引入新组件、新状态、新几何。
+- **Visual verification plan:** 构建 + `install -r` + 237 真机：冷启动首进（2s/12s 两次 layout）下载 chip `enabled=true`；退出重进仍 `enabled=true`；HDS 菜单下载项 enabled；点击 chip 正常入队。
+- **Unresolved risk:** `GalleryMetaItem` 同为多按值参数 `@Builder`，收藏数等"进入后变化"字段存在同类冻结风险；当前无用户反馈且首帧值正确，不在本轮改动范围，另行观察。

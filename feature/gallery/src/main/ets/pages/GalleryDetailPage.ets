@@ -1789,6 +1789,42 @@ export struct GalleryDetailPage {
     .onClick(action)
   }
 
+  /**
+   * Stateful download chip mirrors NextE's zero-argument DownloadActionChip:
+   * a multi-argument @Builder freezes by-value parameters at first render
+   * (ArkUI does not rebuild multi-argument builder calls), which left the
+   * seed-frame disabled state stuck after the verified detail arrived.
+   * Reading page state inside this builder keeps enabled/label live.
+   */
+  @Builder
+  private DownloadActionChip() {
+    Button({ type: ButtonType.Capsule }) {
+      Row({ space: ThemeTokens.DETAIL_ACTION_CHIP_GAP }) {
+        SymbolGlyph($r('sys.symbol.arrow_down_to_line'))
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontColor([this.downloadChipEnabled() ? ThemeTokens.BRAND : ThemeTokens.TEXT_SECONDARY])
+        Text(this.downloadActionTitle())
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(this.downloadChipEnabled() ? ThemeTokens.BRAND : ThemeTokens.TEXT_SECONDARY)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+      }
+      .width('100%')
+      .height(ThemeTokens.DETAIL_ACTION_CHIP_HEIGHT)
+      .justifyContent(FlexAlign.Center)
+      .alignItems(VerticalAlign.Center)
+      .padding({ left: ThemeTokens.SPACE_SM, right: ThemeTokens.SPACE_MD })
+    }
+    .width('100%')
+    .height(ThemeTokens.DETAIL_ACTION_CHIP_HEIGHT)
+    .backgroundColor(ThemeTokens.SURFACE_SUB)
+    .enabled(this.downloadChipEnabled())
+    .onClick((): void => {
+      this.handleDownloadAction()
+    })
+  }
+
   /** Detail metadata is a peer information block, not hero-card decoration. */
   @Builder
   private GalleryInformation() {
@@ -1822,14 +1858,7 @@ export struct GalleryDetailPage {
         .layoutWeight(1)
 
         Column({ space: ThemeTokens.DETAIL_ACTION_CHIP_STACK_GAP }) {
-          this.GalleryActionChip(
-            $r('sys.symbol.arrow_down_to_line'),
-            this.downloadActionTitle(),
-            this.downloadChipEnabled(),
-            (): void => {
-              this.handleDownloadAction()
-            },
-          )
+          this.DownloadActionChip()
           this.GalleryActionChip(
             $r('sys.symbol.link'),
             AppStrings.get('action_torrent'),
