@@ -5,6 +5,7 @@ import { BackupCrypto, BackupSealResult } from './BackupCrypto'
 import { BackupLocalDataAdapter } from './BackupLocalDataAdapter'
 import { BackupPreferencesAdapter } from './BackupPreferencesAdapter'
 import { BackupSecretsAdapter } from './BackupSecretsAdapter'
+import { SyncScheduler } from '../sync/SyncScheduler'
 import {
   BackupAppMetadata,
   BackupCipherMeta,
@@ -261,6 +262,7 @@ export class BackupService {
       }
     }
     const fromEncrypted: boolean = envelope.sections.indexOf('secrets') >= 0
+    SyncScheduler.suspendAutomaticSync()
     try {
       const rollbackPreferences: SettingsMap = await BackupPreferencesAdapter.exportPreferences(context)
       const rollbackLocalData: BackupLocalDataSection = await BackupLocalDataAdapter.exportSection(context)
@@ -323,6 +325,8 @@ export class BackupService {
         failedSections: ['preferences'],
         message: 'backup rollback snapshot failed',
       }
+    } finally {
+      SyncScheduler.resumeAutomaticSync()
     }
   }
 }

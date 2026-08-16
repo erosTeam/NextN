@@ -17,6 +17,7 @@ import { ScreenOrientationSettings } from '../settings/ScreenOrientationSettings
 import { TabletLayoutSettings } from '../settings/TabletLayoutSettings'
 import { TagTranslationSettings } from '../settings/TagTranslationSettings'
 import { ThemeColorSettings } from '../settings/ThemeColorSettings'
+import { SyncSettings } from '../settings/SyncSettings'
 import { ThemeSettings } from '../settings/ThemeSettings'
 import { BrowsePresentationService } from '../services/BrowsePresentationService'
 import { CatalogPreferencesService } from '../services/CatalogPreferencesService'
@@ -66,6 +67,10 @@ export class BackupPreferencesAdapter {
   // either on another device could bypass that device's explicit opt-in flow
   // or suppress a fresh clipboard value.
   private static readonly VOLATILE_EXCLUDED_KEYS: string[] = [
+    // Sync run status is runtime-only and refreshed from the provider.
+    'nextn_settings.sync.last_run_at',
+    'nextn_settings.sync.last_status',
+    'nextn_settings.sync.last_detail',
     'nextn_layout.clipboard_link_enabled',
     'nextn_layout.clipboard_link_change_count',
   ]
@@ -339,6 +344,7 @@ export class BackupPreferencesAdapter {
     await MangaRenderingServiceSettings.restore(context)
     await CommentTranslationSettings.restore(context)
     await TagTranslationSettings.restore(context)
+    await SyncSettings.restore(context)
   }
 
   static count(map: SettingsMap): number {

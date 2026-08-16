@@ -560,3 +560,40 @@ export {
 export { BackupLocalDataAdapter } from './backup/BackupLocalDataAdapter'
 export { BackupSecretsAdapter } from './backup/BackupSecretsAdapter'
 export { BackupService } from './backup/BackupService'
+export {
+  SYNC_MAGIC,
+  SYNC_APP_ID,
+  SYNC_SCHEMA_VERSION,
+  SYNC_MIN_SUPPORTED_SCHEMA_VERSION,
+  SYNC_FILE_NAME,
+  SYNC_WEBDAV_ROOT_DIR,
+  SYNC_WEBDAV_MANIFEST_FILE,
+  SyncReadProgressRecord,
+  SyncViewedHistoryRecord,
+  SyncSearchHistoryRecord,
+  SyncQuickSearchRecord,
+  SyncLocalBlockSettingsRecord,
+  SyncLocalBlockRuleRecord,
+  SyncSettingsTableRecord,
+  SyncDatasets,
+  SyncManifestShard,
+  SyncManifestDataset,
+  SyncManifestV1,
+  SyncDatasetSelection,
+  SyncEnvelopeV1,
+} from './sync/SyncTypes'
+export { CloudSyncFeatureTables, WEBDAV_SYNC_TABLES, webDavSyncTablesForSelection } from './sync/CloudSyncFeatures'
+export { SyncScheduler } from './sync/SyncScheduler'
+export { SyncService } from './sync/SyncService'
+export { SyncLocalDataAdapter } from './sync/SyncLocalDataAdapter'
+export { WebDavManifestWriteGuard, WebDavRemoteText, WebDavManifestWritePrecondition } from './sync/WebDavManifestWriteGuard'
+export { WebDavSyncConfig, WebDavSyncService } from './sync/WebDavSyncService'
+export { WebDavSyncScheduler } from './sync/WebDavSyncScheduler'
+export {
+  SYNC_STATUS_IDLE,
+  SYNC_STATUS_OK,
+  SYNC_STATUS_FAILED,
+  SyncSettingsState,
+  connectSyncSettings,
+} from './state/SyncSettingsState'
+export { SyncSettings, SyncSettingsSnapshot, WebDavConfigPersistScheduler } from './settings/SyncSettings'

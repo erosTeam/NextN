@@ -29,6 +29,8 @@ import {
   requestLoginRecoveryLaunch,
   publishNhClipboardGalleryCandidate,
   ScreenOrientationSettings,
+  SyncScheduler,
+  SyncSettings,
   TagTranslationSettings,
   TabletLayoutSettings,
   ThemeColorSettings,
@@ -63,6 +65,7 @@ export default class EntryAbility extends UIAbility {
     this.loginRecoveryRequestedAtLaunch = this.galleryDirectLaunchIdAtLaunch === 0 &&
       typeof recoveryValue === 'string' && recoveryValue === '1'
     AppStrings.init(this.context)
+    SyncScheduler.rememberContext(this.context)
     // Public tag-name enrichment needs the same app-private RDB context as
     // the rest of the anonymous local cache. It never opens an account route
     // or starts a network request on its own.
@@ -162,6 +165,7 @@ export default class EntryAbility extends UIAbility {
       // preference/status summary before their settings surfaces mount.
       CommentTranslationSettings.restore(this.context),
       TagTranslationSettings.restore(this.context),
+      SyncSettings.restore(this.context),
       // Resume only the durable, user-created private queue. Any process-killed
       // active task is restored as paused by the service before a user resumes it.
       // Keep the final startup outcome available to the retained Downloads
@@ -172,6 +176,8 @@ export default class EntryAbility extends UIAbility {
       // Resolve the persisted Read-action alignment before the first Detail
       // destination can mount. Unsupported sensing falls back inside the
       // service; it never blocks app startup or Reader routing.
+      SyncScheduler.rememberContext(this.context)
+      SyncScheduler.requestAfterForeground(this.context, 'startup')
       if (this.abilityForeground) {
         MotionHandStateService.start()
       }
@@ -264,6 +270,8 @@ export default class EntryAbility extends UIAbility {
 
   onForeground(): void {
     this.abilityForeground = true
+    SyncScheduler.rememberContext(this.context)
+    SyncScheduler.requestAfterForeground(this.context, 'foreground')
     if (this.mainContentReady) {
       MotionHandStateService.start()
     }
