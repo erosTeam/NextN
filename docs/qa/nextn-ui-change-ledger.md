@@ -6037,3 +6037,12 @@ authorize an edit, replace a device comparison, or define product completion.
 - **公构剪贴板合规（照 NextE 移植）:** 新增 ClipboardLinkBuildFlag + prepare_public_clipboard_build.py；CI 公构翻转 flag 为 false 并从 module.json5 移除 READ_PASTEBOARD 权限块；EntryAbility probe 调用与设置页剪贴板开关组均按 flag 门控（与 NextE 消费点一致）。已在临时目录完整演练 prepare 脚本：权限块移除、flag 翻转均验证。
 - **MIT 协议:** 新增 LICENSE（MIT, Copyright 2026 erosTeam，与 NextE 同文）；oh-package.json5 license 字段 UNLICENSED→MIT。
 - **验证:** 本地签名构建通过（12s）；workflow 结构断言通过；test_settings_backup_contract + check-public-build-profile --head 通过。CI 实跑结果待推送后回填。
+
+## reader-enhancement 原生库抽取（2026-08-17，用户决策路线一）
+
+- **用户决策:** C++（约 47.6% 行数、17MB ncnn）与 NextE ~98% 同源，抽为独立仓库；ohpm 无 git 依赖（实测 ohpm 26.0.0.410：install 仅认 包名@版本/文件夹/.har，CLI 无任何 git URL 处理），采用 git submodule + file: 依赖（路线一）；先本地构建验证，再分别接入 NextN/NextE。
+- **库仓库（本地 /Users/honjow/git/reader-enhancement）:** HAR 模块（module.json5 type=har + hvigorfile + externalNativeOptions），napi.cpp 以 NextN 版为基准（含 NextE 没有的 native RGBA decode 超集），品牌全中性化：kModuleName/so 名 reader_enhancement、日志标签 ReaderEnhancement、comic/mindspore 资源名去 NextE/NextN 前缀（顺带修正 NextN 源码里 7 处遗留的 NextE* 资源名）。ncnn（BSD-3）/WAIFU2X(MIT)/llvm-openmp NOTICE/libomp 全部随库。
+- **NextN 接入:** third_party/reader-enhancement submodule（本地 URL 验证，远端就绪后切换）；根 build-profile modules 注册 reader_enhancement 源码模块；shared 依赖 file:../third_party/reader-enhancement；7 个 TS 服务 import 改 libreader_enhancement.so；删除 shared/src/main/cpp（17MB）与 shared/libs（libomp 随库）。
+- **关键机制发现:** ohpm file: 安装进 oh_modules 的 HAR 不执行其 CMake（首构建 HAP 缺 .so 证实）；HAR 的 externalNativeOptions 仅在项目内源码模块形态（根 modules 注册）下编译——这正是 submodule 路线的形态，submodule URL 支持本地路径（GIT_ALLOW_PROTOCOL=file）。
+- **Evidence:** 清缓存后完整构建通过（19s）；HAP 含 libreader_enhancement.so（8,767,648 字节）+ libc++_shared.so + libomp.so；真机 install -r 启动无崩溃，进入阅读器后 hilog 打出 ReaderEnhancement 标签的 ncnn Vulkan init result=0 gpuCount=1 gpu=Maleoon 920（新库加载与 GPU 推理链路工作的直接证据）；截图 12-reader-lib-swap.png。
+- **Remaining:** 远端仓库创建与 .gitmodules URL 切换（本轮）；NextE 侧同法接入（下一轮）；漫画翻译 native 服务的功能级回归（本轮证据为库加载+Vulkan 初始化，非每个 NAPI 入口的逐一回放）。

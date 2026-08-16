@@ -1,4 +1,4 @@
-import nativeSuperResolution from 'libnextn_super_resolution.so'
+import nativeSuperResolution from 'libreader_enhancement.so'
 
 interface NativePrepareResult {
   backend: string

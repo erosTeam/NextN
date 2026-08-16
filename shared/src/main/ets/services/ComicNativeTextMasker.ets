@@ -1,4 +1,4 @@
-import nativeVision from 'libnextn_super_resolution.so'
+import nativeVision from 'libreader_enhancement.so'
 import { image } from '@kit.ImageKit'
 
 const COMIC_TEXT_MASK_TILE_EDGE: number = 2048
