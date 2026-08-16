@@ -558,4 +558,5 @@ export {
   BackupPreferencesAdapter,
 } from './backup/BackupPreferencesAdapter'
 export { BackupLocalDataAdapter } from './backup/BackupLocalDataAdapter'
+export { BackupSecretsAdapter } from './backup/BackupSecretsAdapter'
 export { BackupService } from './backup/BackupService'

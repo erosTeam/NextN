@@ -4,6 +4,7 @@ import { BackupChecksum } from './BackupChecksum'
 import { BackupCrypto, BackupSealResult } from './BackupCrypto'
 import { BackupLocalDataAdapter } from './BackupLocalDataAdapter'
 import { BackupPreferencesAdapter } from './BackupPreferencesAdapter'
+import { BackupSecretsAdapter } from './BackupSecretsAdapter'
 import {
   BackupAppMetadata,
   BackupCipherMeta,
@@ -96,7 +97,7 @@ export class BackupService {
       data: data,
     }
     if (options.includeSecrets) {
-      const secrets: SettingsMap = await BackupPreferencesAdapter.exportSecrets(context)
+      const secrets: SettingsMap = await BackupSecretsAdapter.exportSecrets(context)
       data.secrets = secrets
       envelope.sections = ['preferences', 'localData', 'secrets']
       envelope.counts.secrets = BackupPreferencesAdapter.count(secrets)
@@ -263,7 +264,7 @@ export class BackupService {
     try {
       const rollbackPreferences: SettingsMap = await BackupPreferencesAdapter.exportPreferences(context)
       const rollbackLocalData: BackupLocalDataSection = await BackupLocalDataAdapter.exportSection(context)
-      const rollbackSecrets: SettingsMap = await BackupPreferencesAdapter.exportSecrets(context)
+      const rollbackSecrets: SettingsMap = await BackupSecretsAdapter.exportSecrets(context)
       let failedSection: BackupSectionName = 'preferences'
       try {
         if (envelope.data.preferences !== undefined) {
@@ -280,7 +281,7 @@ export class BackupService {
         }
         if (fromEncrypted && envelope.data.secrets !== undefined) {
           failedSection = 'secrets'
-          await BackupPreferencesAdapter.restore(context, envelope.data.secrets, true)
+          await BackupSecretsAdapter.restoreSecrets(context, envelope.data.secrets, false)
         }
         await BackupPreferencesAdapter.restoreWebDavCredentialGroup(
           context,
@@ -290,13 +291,15 @@ export class BackupService {
         )
         // Re-hydrate live state from the freshly written stores.
         await BackupPreferencesAdapter.reapply(context)
+        await BackupSecretsAdapter.reapply(context)
       } catch (error) {
         let message: string = (error as Error).message
         try {
           await BackupPreferencesAdapter.replace(context, rollbackPreferences, false)
           await BackupLocalDataAdapter.restoreSection(context, rollbackLocalData)
-          await BackupPreferencesAdapter.replace(context, rollbackSecrets, true)
+          await BackupSecretsAdapter.restoreSecrets(context, rollbackSecrets, true)
           await BackupPreferencesAdapter.reapply(context)
+          await BackupSecretsAdapter.reapply(context)
         } catch (rollbackError) {
           message = `${message}; rollback failed: ${(rollbackError as Error).message}`
         }

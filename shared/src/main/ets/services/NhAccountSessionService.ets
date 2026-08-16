@@ -933,6 +933,47 @@ export class NhAccountSessionService {
     NhAccountSessionService.deferredCandidateNavigationEpoch = 0
   }
 
+  /** Backup export: decrypts the sealed account session to the backup container. */
+  static async exportSealedForBackup(context: common.UIAbilityContext): Promise<string | null> {
+    const snapshot: AccountSessionRestoreSnapshot = await AccountSessionRepository.loadForRestore(context)
+    const record: EncryptedAccountSession | null = snapshot.record
+    if (record === null) {
+      return null
+    }
+    return await NhAccountSessionService.decryptWithExistingKey(record)
+  }
+
+  /** Backup restore: re-wraps a backed-up plaintext session with the target device HUKS key. */
+  static async restoreSealedFromBackup(context: common.UIAbilityContext, plaintext: string): Promise<void> {
+    if (plaintext.length === 0) {
+      throw new Error('account_session_backup_payload_invalid')
+    }
+    const payload: SealedBrowserSessionPayload = NhAccountSessionService.decodeSessionPayload(plaintext)
+    const normalized: string = NhAccountSessionService.normalizeCookieHeader(payload.cookieHeader)
+    const normalizedUserAgent: string = NhAccountSessionService.normalizeUserAgent(payload.browserUserAgent)
+    if (!payload.isEnvelopeValid || !NhAccountSessionService.hasLoginCookies(normalized) ||
+      normalizedUserAgent.length === 0) {
+      throw new Error('account_session_backup_payload_invalid')
+    }
+    const record: EncryptedAccountSession = await NhAccountSessionService.encrypt(plaintext)
+    await AccountSessionRepository.saveVerified(context, record)
+  }
+
+  /** Backup rollback: deletes the sealed account record (explicit rollback only). */
+  static async clearSealedForBackup(context: common.UIAbilityContext): Promise<void> {
+    await AccountSessionRepository.clear(context)
+  }
+
+  /** Backup restore reapply: re-reads the freshly written sealed record into runtime state. */
+  static async restoreAfterBackup(context: common.UIAbilityContext): Promise<boolean> {
+    NhAccountSessionService.sessionContext = context
+    if (NhAccountSessionService.restoreTask !== null) {
+      await NhAccountSessionService.restoreTask
+    }
+    const restoredEpoch: number = NhAccountSessionService.sessionEpoch
+    return await NhAccountSessionService.restoreInternal(context, restoredEpoch)
+  }
+
   private static async restoreInternal(
     context: common.UIAbilityContext,
     restoredEpoch: number,

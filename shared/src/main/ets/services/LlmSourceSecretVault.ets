@@ -96,6 +96,30 @@ export class LlmSourceSecretVault {
     })
   }
 
+  /** Backup export: returns the plaintext key map (sourceProfileId -> API key). */
+  static async exportPlaintextForBackup(context: common.UIAbilityContext): Promise<Record<string, string>> {
+    await LlmSourceSecretVault.writeTail
+    const values: Map<string, string> = await LlmSourceSecretVault.readValues(context)
+    const out: Record<string, string> = {}
+    values.forEach((value: string, key: string): void => {
+      out[key] = value
+    })
+    return out
+  }
+
+  /** Backup restore: writes the plaintext key map; an empty map clears the vault. */
+  static restorePlaintextFromBackup(context: common.UIAbilityContext, values: Record<string, string>): Promise<void> {
+    return LlmSourceSecretVault.enqueue(async (): Promise<void> => {
+      const map: Map<string, string> = new Map<string, string>()
+      const keys: string[] = Object.keys(values)
+      for (let i: number = 0; i < keys.length; i++) {
+        const sourceId: string = LlmSourceSecretVault.sourceId(keys[i])
+        map.set(sourceId, LlmSourceSecretVault.apiKey(values[keys[i]]))
+      }
+      await LlmSourceSecretVault.writeValues(context, map)
+    })
+  }
+
   private static async readValues(context: common.UIAbilityContext): Promise<Map<string, string>> {
     const store: preferences.Preferences =
       await preferences.getPreferences(context, SECRET_STORE)
