@@ -1,8 +1,12 @@
-import { common } from '@kit.AbilityKit'
-import { SymbolGlyphModifier } from '@kit.ArkUI'
+import { common, bundleManager } from '@kit.AbilityKit'
+import { CustomContentDialog, SymbolGlyphModifier } from '@kit.ArkUI'
 import { ReaderSuperResolutionModelsPage } from './ReaderSuperResolutionModelsPage'
 import {
   AppStrings,
+  BackupService,
+  BackupAppMetadata,
+  BackupParseResult,
+  BackupPreview,
   AppColorPicker,
   CatalogPreferencesService,
   CatalogPreferencesState,
@@ -114,6 +118,10 @@ import {
 } from 'shared'
 import { appMenuOptions } from 'shared'
 import { appSheetOptions } from 'shared'
+import {
+  BackupFilePickerCoordinator,
+  BackupImportSelection,
+} from '../model/BackupFilePickerCoordinator'
 
 const CATALOG_LANGUAGES: NhSearchLanguage[] = [
   NhSearchLanguage.ALL,
@@ -160,6 +168,47 @@ export struct SettingsPage {
   @Local isLoadingPrivateCache: boolean = false
   @Local isClearingPrivateCache: boolean = false
   @Local privateCacheError: string = ''
+  // Backup/restore state (ported from NextE CacheSettingsPage).
+  @Local includeSecrets: boolean = false
+  @Local exportPwd: string = ''
+  @Local exportPwd2: string = ''
+  @Local exportSheetShown: boolean = false
+  @Local importPwd: string = ''
+  @Local busy: boolean = false
+  private pendingImportRaw: string = ''
+  private appVersion: string = ''
+  private appVersionCode: number = 0
+  private importPasswordDialogController: CustomDialogController = new CustomDialogController({
+    builder: CustomContentDialog({
+      primaryTitle: AppStrings.get('backup_encrypted_title'),
+      contentBuilder: () => {
+        this.ImportPasswordDialogContent()
+      },
+      buttons: [
+        {
+          value: AppStrings.get('common_cancel'),
+          buttonStyle: ButtonStyleMode.TEXTUAL,
+          action: () => {
+            this.closeImportPasswordDialog()
+          },
+        },
+        {
+          value: AppStrings.get('backup_import'),
+          buttonStyle: ButtonStyleMode.TEXTUAL,
+          action: () => {
+            this.confirmDecryptImport()
+          },
+        },
+      ],
+    }),
+    autoCancel: true,
+    onWillDismiss: (_action: DismissDialogAction) => {
+      this.importPwd = ''
+      this.pendingImportRaw = ''
+    },
+    alignment: DialogAlignment.Center,
+    customStyle: false,
+  });
   @Local commentTranslationCacheStatus: CacheStat = new CacheStat()
   @Local comicTranslationCacheStatus: CacheStat = new CacheStat()
   @Local tagDictionaryCacheStatus: CacheStat = new CacheStat()
@@ -232,6 +281,7 @@ export struct SettingsPage {
   @Param sheetPresentation: boolean = false
   @Event onClose?: () => void
   @Event onOpenBrowserSession?: () => void
+  @Event onOpenAccount?: () => void
   @Event onOpenLayoutSettings?: () => void
   @Event onOpenBrowseSettings?: () => void
   @Event onOpenSearchSettings?: () => void
@@ -248,6 +298,7 @@ export struct SettingsPage {
   @Event onOpenHistory?: () => void
   @Event onOpenContentFilters?: () => void
   @Event onOpenTagTranslation?: () => void
+  @Event onOpenSyncSettings?: () => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
 
   aboutToAppear(): void {
@@ -272,6 +323,7 @@ export struct SettingsPage {
       return
     }
     if (this.surface === SettingsSurface.CACHE) {
+      this.loadAppVersion()
       this.loadPrivateCacheStatus()
       return
     }
@@ -1744,7 +1796,9 @@ export struct SettingsPage {
           accessibilityLabel: AppStrings.get('account_open_page_a11y'),
           accessibilityId: 'nextn-settings-root-account',
           onAction: (): void => {
-            if (this.onOpenBrowserSession) {
+            if (this.onOpenAccount) {
+              this.onOpenAccount()
+            } else if (this.onOpenBrowserSession) {
               this.onOpenBrowserSession()
             }
           },
@@ -1761,7 +1815,9 @@ export struct SettingsPage {
           accessibilityLabel: AppStrings.get('account_open_page_a11y'),
           accessibilityId: 'nextn-settings-root-account',
           onAction: (): void => {
-            if (this.onOpenBrowserSession) {
+            if (this.isAccountSignedIn && this.onOpenAccount) {
+              this.onOpenAccount()
+            } else if (this.onOpenBrowserSession) {
               this.onOpenBrowserSession()
             }
           },
@@ -1999,6 +2055,351 @@ export struct SettingsPage {
         },
       })
     }
+  }
+
+  // ── Backup/restore (ported from NextE CacheSettingsPage) ─────────────────
+  private loadAppVersion(): void {
+    try {
+      const info = bundleManager.getBundleInfoForSelfSync(
+        bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION,
+      )
+      this.appVersion = info.versionName
+      this.appVersionCode = info.versionCode
+    } catch (_error) {
+      this.appVersion = '0'
+      this.appVersionCode = 0
+    }
+  }
+
+  private toast(message: ResourceStr): void {
+    this.getUIContext().getPromptAction().showToast({ message: message })
+  }
+
+  private metadata(): BackupAppMetadata {
+    return { appVersion: this.appVersion, appVersionCode: this.appVersionCode }
+  }
+
+  private importFailureText(result: BackupParseResult): ResourceStr {
+    if (result.code === 'too_large') {
+      return AppStrings.get('backup_import_too_large')
+    }
+    if (result.code === 'not_json') {
+      return AppStrings.get('backup_import_not_json')
+    }
+    if (result.code === 'foreign_backup') {
+      return AppStrings.get('backup_import_foreign')
+    }
+    if (result.code === 'unsupported_version') {
+      return AppStrings.get('backup_import_unsupported')
+    }
+    if (result.code === 'bad_checksum') {
+      return AppStrings.get('backup_import_bad_checksum')
+    }
+    if (result.code === 'malformed') {
+      return AppStrings.get('backup_import_malformed')
+    }
+    return AppStrings.get('backup_import_invalid')
+  }
+
+  private localDataCount(preview: BackupPreview): number {
+    const counts = preview.counts.localData
+    if (counts === undefined) {
+      return 0
+    }
+    return counts.readProgress + counts.viewedHistory + counts.searchHistory +
+      counts.quickSearches + counts.localBlockRules + counts.settingsTableGroups
+  }
+
+  private restorePreviewMessage(preview: BackupPreview): string {
+    const lines: string[] = [
+      AppStrings.get('backup_restore_confirm_message'),
+      '',
+      `${AppStrings.get('backup_restore_preview_version')}: ${preview.appVersion} (${preview.appVersionCode})`,
+      `${AppStrings.get('backup_restore_preview_type')}: ${preview.hasSecrets ?
+        AppStrings.get('backup_restore_preview_encrypted') :
+        AppStrings.get('backup_restore_preview_plain')}`,
+      `${AppStrings.get('backup_restore_preview_preferences')}: ${preview.counts.preferences}`,
+      `${AppStrings.get('backup_restore_preview_local_data')}: ${this.localDataCount(preview)}`,
+    ]
+    if (preview.hasSecrets) {
+      const secretCount: number = preview.counts.secrets === undefined ? 0 : preview.counts.secrets
+      lines.push(`${AppStrings.get('backup_restore_preview_secrets')}: ${secretCount}`)
+    }
+    return lines.join('\n')
+  }
+
+  private timeStamp(): string {
+    const d: Date = new Date()
+    const p = (n: number): string => (n < 10 ? `0${n}` : `${n}`)
+    return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}${p(d.getHours())}${p(d.getMinutes())}`
+  }
+
+  private openExport(): void {
+    this.includeSecrets = false
+    this.exportPwd = ''
+    this.exportPwd2 = ''
+    this.exportSheetShown = true
+  }
+
+  private confirmExport(): void {
+    if (this.busy) {
+      return
+    }
+    if (this.includeSecrets) {
+      if (this.exportPwd.length === 0) {
+        this.toast(AppStrings.get('backup_password_required'))
+        return
+      }
+      if (this.exportPwd !== this.exportPwd2) {
+        this.toast(AppStrings.get('backup_password_mismatch'))
+        return
+      }
+    }
+    this.busy = true
+    BackupFilePickerCoordinator.exportBackup(
+      this.context(),
+      this.metadata(),
+      { includeSecrets: this.includeSecrets, password: this.exportPwd },
+      this.timeStamp(),
+    )
+      .then(() => {
+        this.exportSheetShown = false
+        this.exportPwd = ''
+        this.exportPwd2 = ''
+        this.toast(AppStrings.get('backup_export_done'))
+      })
+      .catch((error: Error) => {
+        if (error.message !== 'save cancelled') {
+          this.toast(AppStrings.get('backup_export_failed'))
+        }
+      })
+      .finally(() => {
+        this.busy = false
+      })
+  }
+
+  private startImport(): void {
+    if (this.busy) {
+      return
+    }
+    this.busy = true
+    BackupFilePickerCoordinator.selectImport(this.context())
+      .then((selection: BackupImportSelection) => {
+        const result: BackupParseResult = selection.parseResult
+        if (result.encrypted === true) {
+          this.pendingImportRaw = selection.raw
+          this.importPwd = ''
+          this.importPasswordDialogController.open()
+          return
+        }
+        if (!result.ok || result.envelope === undefined) {
+          this.toast(this.importFailureText(result))
+          return
+        }
+        this.confirmRestore(result)
+      })
+      .catch((error: Error) => {
+        if (error.message === 'backup file is too large') {
+          this.toast(AppStrings.get('backup_import_too_large'))
+        } else if (error.message !== 'open cancelled') {
+          this.toast(AppStrings.get('backup_import_invalid'))
+        }
+      })
+      .finally(() => {
+        this.busy = false
+      })
+  }
+
+  private confirmDecryptImport(): void {
+    if (this.busy || this.importPwd.length === 0) {
+      return
+    }
+    this.busy = true
+    BackupFilePickerCoordinator.decryptSelected(this.pendingImportRaw, this.importPwd)
+      .then((result: BackupParseResult) => {
+        if (!result.ok || result.envelope === undefined) {
+          this.toast(
+            result.code === 'bad_password'
+              ? AppStrings.get('backup_bad_password')
+              : this.importFailureText(result),
+          )
+          return
+        }
+        this.closeImportPasswordDialog()
+        this.importPwd = ''
+        this.pendingImportRaw = ''
+        this.confirmRestore(result)
+      })
+      .finally(() => {
+        this.busy = false
+      })
+  }
+
+  private closeImportPasswordDialog(): void {
+    try {
+      this.importPasswordDialogController.close()
+    } catch (_error) {
+      // Dialog may already be dismissed by tapping outside.
+    }
+    this.importPwd = ''
+    this.pendingImportRaw = ''
+  }
+
+  // Restore overwrites the current settings, so confirm first.
+  private confirmRestore(result: BackupParseResult): void {
+    const envelope = result.envelope
+    if (envelope === undefined) {
+      return
+    }
+    const preview: BackupPreview = BackupService.preview(envelope)
+    this.getUIContext().showAlertDialog({
+      title: AppStrings.get('backup_restore_confirm_title'),
+      message: this.restorePreviewMessage(preview),
+      primaryButton: { value: AppStrings.get('common_cancel'), action: () => {} },
+      secondaryButton: {
+        value: AppStrings.get('backup_restore_apply'),
+        action: () => {
+          this.busy = true
+          BackupFilePickerCoordinator.restoreSelected(this.context(), envelope)
+            .then(() => {
+              this.toast(AppStrings.get('backup_import_done'))
+            })
+            .catch(() => {
+              this.toast(AppStrings.get('backup_import_invalid'))
+            })
+            .finally(() => {
+              this.busy = false
+            })
+        },
+      },
+    })
+  }
+
+  @Builder
+  private SyncBackupGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.cloud'),
+        title: AppStrings.get('settings_sync'),
+        subtitle: AppStrings.get('settings_sync_hint'),
+        onAction: (): void => {
+          if (this.onOpenSyncSettings) {
+            this.onOpenSyncSettings()
+          }
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.cloud_and_arrow_up'),
+        title: AppStrings.get('backup_export'),
+        subtitle: AppStrings.get('backup_export_subtitle'),
+        showChevron: false,
+        isEnabled: !this.busy,
+        onAction: (): void => {
+          this.openExport()
+        },
+      })
+        .bindSheet($$this.exportSheetShown, this.ExportSheet(), appSheetOptions({
+          detents: [SheetSize.LARGE],
+          showClose: false,
+        }))
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.doc_plaintext'),
+        title: AppStrings.get('backup_import'),
+        subtitle: AppStrings.get('backup_import_subtitle'),
+        showChevron: false,
+        isEnabled: !this.busy,
+        onAction: (): void => {
+          this.startImport()
+        },
+      })
+    }
+  }
+
+  @Builder
+  private ExportSheet() {
+    NextNModalScaffold({
+      title: AppStrings.get('backup_export'),
+      confirmIcon: $r('sys.symbol.cloud_and_arrow_up'),
+      confirmText: AppStrings.get('backup_export'),
+      showConfirmAction: true,
+      confirmEnabled: !this.busy,
+      confirmLoading: this.busy,
+      onClose: () => {
+        this.exportSheetShown = false
+      },
+      onConfirm: () => {
+        this.confirmExport()
+      },
+    }) {
+      ListItem() {
+        Column({ space: ThemeTokens.SPACE_MD }) {
+          Row({ space: ThemeTokens.SPACE_SM }) {
+            Column({ space: ThemeTokens.SPACE_XS }) {
+              Text(AppStrings.get('backup_include_secrets'))
+                .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+                .fontWeight(FontWeight.Medium)
+                .fontColor(ThemeTokens.TEXT_PRIMARY)
+                .width('100%')
+              Text(AppStrings.get('backup_include_secrets_hint'))
+                .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+                .fontColor(ThemeTokens.TEXT_SECONDARY)
+                .width('100%')
+            }
+            .layoutWeight(1)
+            .alignItems(HorizontalAlign.Start)
+            Toggle({ type: ToggleType.Switch, isOn: this.includeSecrets })
+              .selectedColor(ThemeTokens.BRAND)
+              .onChange((value: boolean) => {
+                this.includeSecrets = value
+              })
+          }
+          .width('100%')
+          .alignItems(VerticalAlign.Center)
+          if (this.includeSecrets) {
+            this.PasswordField(this.exportPwd, AppStrings.get('backup_password'), (value: string) => {
+              this.exportPwd = value
+            })
+            this.PasswordField(this.exportPwd2, AppStrings.get('backup_password_repeat'), (value: string) => {
+              this.exportPwd2 = value
+            })
+          }
+        }
+        .width('100%')
+        .alignItems(HorizontalAlign.Start)
+        .padding({ top: ThemeTokens.SPACE_SM, bottom: ThemeTokens.SPACE_SM })
+      }
+    }
+  }
+
+  @Builder
+  private ImportPasswordDialogContent() {
+    Column({ space: ThemeTokens.SPACE_MD }) {
+      Text(AppStrings.get('backup_encrypted_hint'))
+        .fontSize(ThemeTokens.FONT_SIZE_BODY)
+        .fontColor(ThemeTokens.TEXT_SECONDARY)
+        .width('100%')
+      TextInput({ text: this.importPwd, placeholder: AppStrings.get('backup_password') })
+        .type(InputType.Password)
+        .defaultFocus(true)
+        .width('100%')
+        .onChange((value: string) => {
+          this.importPwd = value
+        })
+    }
+    .width('100%')
+    .alignItems(HorizontalAlign.Start)
+  }
+
+  @Builder
+  private PasswordField(text: string, placeholder: ResourceStr, onChange: (value: string) => void) {
+    TextInput({ text: text, placeholder: placeholder })
+      .type(InputType.Password)
+      .width('100%')
+      .onChange((value: string) => {
+        onChange(value)
+      })
   }
 
   @Builder
@@ -3526,6 +3927,9 @@ export struct SettingsPage {
             }
           }
         } else if (this.surface === SettingsSurface.CACHE) {
+          ListItem() {
+            this.SyncBackupGroup()
+          }
           ListItem() {
             this.PrivateCacheTotalSummary()
           }

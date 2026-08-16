@@ -549,10 +549,30 @@ export {
   BACKUP_CIPHER_SALT_BYTES,
   BACKUP_CIPHER_IV_BYTES,
   BACKUP_CIPHER_TAG_BYTES,
+  BackupSectionName,
+  BackupSettingsValue,
+  BackupChecksumInfo,
+  BackupCounts,
+  BackupLocalDataCounts,
+  BackupReadProgressEntry,
+  BackupViewedHistoryEntry,
+  BackupQuickSearchEntry,
+  BackupLocalBlockRuleEntry,
+  BackupLocalBlockSection,
+  BackupLocalDataSection,
+  BackupData,
+  BackupEnvelopeV1,
+  BackupAppMetadata,
+  BackupExportOptions,
+  BackupPreview,
+  BackupValidationResult,
+  BackupParseResult,
+  BackupRestoreResult,
 } from './backup/BackupTypes'
 export { BackupCrypto, BackupSealResult } from './backup/BackupCrypto'
 export { BackupChecksum } from './backup/BackupChecksum'
 export { BackupSecretDenylist } from './backup/BackupSecretDenylist'
+export { DiagnosticLogger } from './diagnostics/DiagnosticLogger'
 export {
   BackupWebDavCredentialGroup,
   BackupPreferencesAdapter,

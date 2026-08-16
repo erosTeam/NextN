@@ -2,6 +2,7 @@ import { common } from '@kit.AbilityKit'
 import { webview } from '@kit.ArkWeb'
 import { hilog } from '@kit.PerformanceAnalysisKit'
 import {
+  AccountListSettings,
   NhAccountSessionService,
   NhAccountProfileService,
   NhArkWebSessionTransport,
@@ -359,6 +360,7 @@ export struct BrowserSessionPage {
         this.isControllerAttached = false
         this.stopSessionCaptureTimer()
         this.refreshAccountProfile()
+        AccountListSettings.recordActive(this.hostContext()).catch((): void => {})
       }
     } catch (error) {
       // Session data never reaches logs. The small stable stage code is

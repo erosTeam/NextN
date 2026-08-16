@@ -5918,3 +5918,39 @@ authorize an edit, replace a device comparison, or define product completion.
      label/TextArea bounds; search options sheet shows the same
      label/TextInput bounds. Evidence: rp2_cf_step4.* and rp2_sr4.* under
      .hvigor/outputs/content-filter-verify/.
+
+## WebDAV 同步设置页（SyncSettingsPage / WebDavSyncSettingsPage）— 2026-08-17
+
+- **Why newly actionable:** 用户要求的数据导入导出 / 多账号 / WebDAV 同步计划的 Phase 4 UI（docs/plans/active/data-transfer-multiaccount-webdav.md §2.2/§8/§9）；shared 同步链已落地，但两个设置页不存在。
+- **Whole parent-tree boundary:** 仅两个新二级设置页（feature/settings/src/main/ets/pages/SyncSettingsPage.ets、WebDavSyncSettingsPage.ets），页面自身不拥有标题栏；entry 层新增 ROUTE_SYNC_SETTINGS / ROUTE_WEBDAV_SYNC_SETTINGS、destination、scroller 与根设置页 onOpenSyncSettings 事件绑定。未改动任何既有页面结构。
+- **Exact before/after:** before — 无同步设置入口与页面。after — 存储页顶部新增“同步”行；同步总览页含 WebDAV 行与六个数据集开关（阅读进度/浏览历史/搜索历史/快捷搜索/屏蔽规则/应用设置）；详情页含开关、立即同步（同步中 LoadingProgress 后缀）、URL/用户名/密码输入、键盘 RESIZE/OFFSET、退出时 flush 配置、手动同步 markRun 状态。华为云部分按用户范围整体省略（计划 §2.2/§9）。
+- **Minimality rationale:** 直接移植 NextE 参考页，组件/主题映射为 NextNListRow / NextNGroupedListSection / ThemeTokens；数据集按 NextN SyncSettingsSnapshot 六字段映射；文案键全部按 NextE 原文落地（NextN 应用身份叶子：示例 URL 改为 …/user/NextN；新增 quickSearches/settingsTables 键）。DiagnosticLogger 已从 shared 导出并接回手动同步日志。
+- **Visual verification plan:** 签名构建 + 真机安装后，与 NextE 同步设置页做同态同视口对照（开关状态、状态文案、同步中后缀、输入行、键盘展开布局）。本源码轮未做设备对照。
+- **Unresolved risk:** 无设备视觉证据；WebDAV 实际同步成败依赖真实 WebDAV 目录，属于 Phase 5 验收范围。
+
+## 设置-存储面同步 + 备份导入导出组（SettingsSurface.CACHE）— 2026-08-17
+
+- **Why newly actionable:** 用户要求的数据导入导出 Phase 4 UI；NextE CacheSettingsPage 内联备份 UI 对应 NextN 的存储/缓存设置面（计划 §2.1）。
+- **Whole parent-tree boundary:** SettingsPage 的 CACHE 分支顶部新增一个 NextNGroupedListSection（同步行 + 导出行 + 导入行）；现有 PrivateCacheTotalSummary / PrivateCacheGroup / GroupNote 及顺序未动。新增 feature/settings/src/main/ets/model/BackupFilePickerCoordinator.ets 桥接系统文件选择器与 BackupService。
+- **Exact before/after:** before — CACHE 只有缓存统计/清理。after — 顶部新增同步入口与备份导出/导入（含敏感数据开关 + 密码 Sheet、加密导入密码对话框、恢复前预览确认）；文件名 NextN-backup-<stamp>.nextn-backup.json；导入后缀 .json；10 MB 上限与取消语义与 NextE 一致。BackupTypes 接口已由 shared Index.ets 导出，coordinator 不再保留本地类型镜像。
+- **Minimality rationale:** NextE CacheSettingsPage 备份节的直接移植，仅应用身份叶子与组件映射；无重排、无文案发挥。
+- **Visual verification plan:** 签名构建 + 真机对照 NextE 存储页：三行渲染、busy 禁用态、导出 Sheet（secrets 开关 + 密码对）、加密导入密码对话框、恢复预览对话框、取消路径。本源码轮未做设备对照。
+- **Unresolved risk:** 无设备视觉证据；备份文件读写依赖系统 picker 的真实交互验收。
+
+## 多账号管理页（AccountPage）与根入口/登录接线 — 2026-08-17
+
+- **Why newly actionable:** 用户要求的多账号 Phase 3/4 UI（计划 §2.3/§6）；shared 多账号保存/切换服务已落地，但缺少管理页面与登录后自动保存挂接。
+- **Whole parent-tree boundary:** 新增 feature/settings/src/main/ets/pages/AccountPage.ets（内容页，标题栏归 entry）；entry 新增 ROUTE_ACCOUNT destination；设置根页账号行行为变化：已登录 → AccountPage，未登录 → BrowserSessionPage；BrowserSessionPage 登录提升成功后新增 AccountListSettings.recordActive 自动保存账号。HistoryPage 的 ListItem.swipeAction 为左滑删除先例。
+- **Exact before/after:** before — 设置根账号行总是打开 BrowserSessionPage；登录成功后账号不会进入保存列表。after — 已登录打开账号管理页（保存账号列表 + 选中态 + 点行切换 + 左滑删除 + 顶部添加/登录 + 底部退出确认）；登录成功自动记录保存账号。
+- **选中态:** NextNListRow.selected（HDS 选中语义），不用自造 Radio 几何。
+- **删除语义:** 左滑删除无确认（NextE 一致）；删除活动账号时切换到剩余第一个，无剩余则清除会话。
+- **退出语义:** 与 NextE 一致：移除当前账号并删除保存关系，若还有其他保存账号立即切换过去，否则清除活动会话（BrowserSessionPage 同款 NhAccountSessionService.clear 链）。
+- **Minimality rationale:** 直接移植 NextE AccountPage 的多账号管理语义；EH dashboard 等 NH 无数据源部分省略（计划 §2.3）；入口位置由标题栏按钮改为页面内容行（NextN 页面不拥有标题栏，触发行为一致）。
+- **Visual verification plan:** 签名构建 + 真机对照 NextE 账号页：账号列表/选中态/切换/左滑删除/添加入口/退出确认/未登录态。本源码轮未做设备对照。
+- **Unresolved risk:** 无设备视觉证据；recordActive 在真实登录链路中的成功/失败分支需 Phase 5 验收。
+
+## 集成说明（字符串 / 路由 / 导出）
+
+- entry 四个语言文件（base/zh_CN/en_US/ja_JP）新增全部 sync_*、backup_*、settings_add_account、account_switch_failed 键，并校验 JSON 合法。
+- feature/settings Index.ets 导出三个新页面；shared Index.ets 导出 BackupTypes 全部接口与 DiagnosticLogger。
+- 本批次源码轮未做设备视觉验收；以上页面的视觉边界保持 OPEN，待 Phase 5 真机同态对照。

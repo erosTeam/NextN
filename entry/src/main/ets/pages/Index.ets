@@ -29,6 +29,7 @@ import {
 } from 'download'
 import {
   AboutPage,
+  AccountPage,
   BrowseDensitySettingsPage,
   CommentTranslationSettingsPage,
   ComicTranslationSettingsPage,
@@ -39,7 +40,9 @@ import {
   ReaderSuperResolutionModelsPage,
   SettingsPage,
   SettingsSurface,
+  SyncSettingsPage,
   TagTranslationSettingsPage,
+  WebDavSyncSettingsPage,
 } from 'settings'
 import { common } from '@kit.AbilityKit'
 import {
@@ -121,6 +124,9 @@ const ROUTE_COMMENTS: string = 'comments'
 const ROUTE_READER: string = 'Reader'
 const ROUTE_READER_OVERLAY_BACKDROP: string = 'ReaderOverlayBackdrop'
 const ROUTE_BROWSER_SESSION: string = 'browserSession'
+const ROUTE_ACCOUNT: string = 'account'
+const ROUTE_SYNC_SETTINGS: string = 'syncSettings'
+const ROUTE_WEBDAV_SYNC_SETTINGS: string = 'webDavSyncSettings'
 const ROUTE_LAYOUT_SETTINGS: string = 'layoutSettings'
 const ROUTE_BROWSE_SETTINGS: string = 'browseSettings'
 const ROUTE_SEARCH_SETTINGS: string = 'searchSettings'
@@ -300,6 +306,9 @@ struct Index {
   private comicTranslationSettingsScroller: Scroller = new Scroller()
   private aboutScroller: Scroller = new Scroller()
   private historyScroller: Scroller = new Scroller()
+  private syncSettingsScroller: Scroller = new Scroller()
+  private webDavSyncSettingsScroller: Scroller = new Scroller()
+  private accountScroller: Scroller = new Scroller()
   @Local private activeTab: number = 0
   @Local private themeDisplay: ThemeDisplayState = connectThemeDisplay()
   @Local private tabletLayout: TabletLayoutState = connectTabletLayout()
@@ -741,9 +750,24 @@ struct Index {
     this.openSettingsRootDestination(ROUTE_HISTORY)
   }
 
+  private pushAccount(): void {
+    this.stack.pushPathByName(ROUTE_ACCOUNT, '')
+  }
+
+  private pushSyncSettings(): void {
+    this.stack.pushPathByName(ROUTE_SYNC_SETTINGS, '')
+  }
+
+  private pushWebDavSyncSettings(): void {
+    this.stack.pushPathByName(ROUTE_WEBDAV_SYNC_SETTINGS, '')
+  }
+
   /** Root Settings choices are siblings, unlike their real nested subpages. */
   private isSettingsRoute(name: string): boolean {
     return name === ROUTE_BROWSER_SESSION ||
+      name === ROUTE_ACCOUNT ||
+      name === ROUTE_SYNC_SETTINGS ||
+      name === ROUTE_WEBDAV_SYNC_SETTINGS ||
       name === ROUTE_LAYOUT_SETTINGS ||
       name === ROUTE_BROWSE_SETTINGS ||
       name === ROUTE_SEARCH_SETTINGS ||
@@ -1743,6 +1767,19 @@ struct Index {
   }
 
   @Builder
+  private accountDestination() {
+    HdsNavDestination() {
+      AccountPage({
+        onOpenBrowserSession: (): void => {
+          this.pushBrowserSession()
+        },
+      })
+    }
+    .titleBar(nextNHdsTitle(AppStrings.get('settings_account')))
+    .hideBackButton(false)
+  }
+
+  @Builder
   private contentFiltersDestination() {
     HdsNavDestination() {
       ContentFiltersPage({ scroller: this.contentFiltersScroller })
@@ -1896,6 +1933,31 @@ struct Index {
   }
 
   @Builder
+  private syncSettingsDestination() {
+    HdsNavDestination() {
+      SyncSettingsPage({
+        scroller: this.syncSettingsScroller,
+        onOpenWebDavSyncSettings: (): void => {
+          this.pushWebDavSyncSettings()
+        },
+      })
+    }
+    .titleBar(nextNHdsTitle(AppStrings.get('settings_sync')))
+    .hideBackButton(false)
+    .bindToScrollable([this.syncSettingsScroller])
+  }
+
+  @Builder
+  private webDavSyncSettingsDestination() {
+    HdsNavDestination() {
+      WebDavSyncSettingsPage({ scroller: this.webDavSyncSettingsScroller })
+    }
+    .titleBar(nextNHdsTitle(AppStrings.get('sync_webdav')))
+    .hideBackButton(false)
+    .bindToScrollable([this.webDavSyncSettingsScroller])
+  }
+
+  @Builder
   private advancedSettingsDestination() {
     HdsNavDestination() {
       SettingsPage({
@@ -2034,6 +2096,12 @@ struct Index {
       this.commentsDestination(param)
     } else if (name === ROUTE_BROWSER_SESSION) {
       this.browserSessionDestination(param)
+    } else if (name === ROUTE_ACCOUNT) {
+      this.accountDestination()
+    } else if (name === ROUTE_SYNC_SETTINGS) {
+      this.syncSettingsDestination()
+    } else if (name === ROUTE_WEBDAV_SYNC_SETTINGS) {
+      this.webDavSyncSettingsDestination()
     } else if (name === ROUTE_LAYOUT_SETTINGS) {
       this.layoutSettingsDestination()
     } else if (name === ROUTE_BROWSE_SETTINGS) {
@@ -2147,6 +2215,9 @@ struct Index {
             onOpenBrowserSession: (): void => {
               this.pushBrowserSession()
             },
+            onOpenAccount: (): void => {
+              this.pushAccount()
+            },
             onOpenLayoutSettings: (): void => {
               this.pushLayoutSettings()
             },
@@ -2164,6 +2235,9 @@ struct Index {
             },
             onOpenCacheSettings: (): void => {
               this.pushCacheSettings()
+            },
+            onOpenSyncSettings: (): void => {
+              this.pushSyncSettings()
             },
             onOpenAdvancedSettings: (): void => {
               this.pushAdvancedSettings()

@@ -1,4 +1,7 @@
 export { SettingsPage, SettingsSurface } from './pages/SettingsPage'
+export { SyncSettingsPage } from './pages/SyncSettingsPage'
+export { WebDavSyncSettingsPage } from './pages/WebDavSyncSettingsPage'
+export { AccountPage } from './pages/AccountPage'
 export { ReaderSuperResolutionModelsPage } from './pages/ReaderSuperResolutionModelsPage'
 export { LlmSourceManagerPage } from './pages/LlmSourceManagerPage'
 export { LlmSourceDetailPage } from './pages/LlmSourceDetailPage'
