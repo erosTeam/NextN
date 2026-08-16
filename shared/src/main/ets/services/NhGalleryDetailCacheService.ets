@@ -28,6 +28,11 @@ export class NhGalleryDetailCacheService {
   private static recent: Map<number, RecentDetailEntry> = new Map<number, RecentDetailEntry>()
   private static persistTail: Promise<void> = Promise.resolve()
 
+  /** Settings cache-clear hook: drop expired-at-read memory entries without touching persisted rows. */
+  static clearRecentMemory(): void {
+    NhGalleryDetailCacheService.recent.clear()
+  }
+
   static getRecent(galleryId: number): NhGalleryDetail | null {
     const normalizedGalleryId: number = NhGalleryDetailCacheService.galleryId(galleryId)
     if (normalizedGalleryId <= 0) {

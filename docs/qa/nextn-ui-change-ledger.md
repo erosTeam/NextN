@@ -6016,3 +6016,15 @@ authorize an edit, replace a device comparison, or define product completion.
 - **决策:** 导出行为 cloud_and_arrow_up，导入改为同族成对的 cloud_and_arrow_down——一对上下箭头语义（导出上传/导入取回）清晰且与导出行视觉对称。注：NextE 参照本身导入也是 doc_plaintext，本项为用户显式指令优先于参照默认。
 - **Exact change:** 仅 BackupGroup 导入行 leadingIcon 单点替换，无其他改动。
 - **Visual verification plan:** 构建通过（资源存在性由资源编译证明）+ install -r + 真机存储页截图确认新图标渲染。
+
+## 存储页缓存体系对齐：补页面缓存行、改阅读器行名、上限可调（2026-08-17，用户指示）
+
+- **用户指示:** "页面缓存哪去了？为什么没统计出来？"；"阅读器页面缓存这名字要改掉"；"硬编码的上限也要改"。
+- **根因（source evidence）:** 页面缓存（nh_gallery_list_cache + nh_gallery_detail_cache 两表）功能存在但从未进入设置页统计/清除清单——NextE 缓存卡首行"页面缓存"在移植时被丢；"阅读器页面缓存"实际是 Reader 图片文件缓存，命名与网页数据缓存混淆；ReaderImageCacheService 上限硬编码 128MB/512 文件（NextE 为可调 256MB–2GB、默认 1GB、纯字节 LRU）。
+- **Exact changes:**
+  1. 新增 NhPageCacheService：stat = 两表 COUNT + SUM(LENGTH(payload))（detail 按 expires_at>now）；clearAll = DELETE 两表 + 清详情内存热缓存。存储页缓存卡首行补"页面缓存"（icon doc_text，NextE 同位同标）。
+  2. settings_private_cache_reader_pages 四语值改为 阅读器图片缓存/Reader image cache/リーダー画像キャッシュ；行 icon 改 picture（NextE 图片行同标）。
+  3. 新增 ReaderImageCacheSettings（key reader.image_cache_limit_mb，nextn_settings，默认 1024MB，256–2048 归一化，NextE 同构）；ReaderImageCacheService 全部 CACHE_LIMIT_BYTES 使用点改动态 limitBytes()；文件上限按 limit 派生 max(512, limitBytes/256KB)（保留防御性文件帽，同时字节预算可真实生效）；BackupGroup 与总用量之间新增"阅读器图片缓存上限"卡（trailingDropdown + 256MB/512MB/1GB/2GB 菜单，NextE 同构同位）。
+  4. 清除全部纳入页面缓存（NextE clearEverything 语义）；EntryAbility 启动与备份 reapply 均恢复上限设置。
+- **Minimality rationale:** 全部为对齐 NextE 既有结构/文案/交互；无新设计语言，无 NextN 特有精简。
+- **Visual verification plan:** 构建通过 + install -r + 真机：缓存卡行序 页面缓存→阅读器图片缓存→评论→漫画→标签；上限卡菜单位置与选中态；页面缓存统计 >0；清页面缓存后计数归零。

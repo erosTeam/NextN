@@ -16,6 +16,7 @@ import { ReadButtonStyleSettings } from '../settings/ReadButtonStyleSettings'
 import { ScreenOrientationSettings } from '../settings/ScreenOrientationSettings'
 import { TabletLayoutSettings } from '../settings/TabletLayoutSettings'
 import { TagTranslationSettings } from '../settings/TagTranslationSettings'
+import { ReaderImageCacheSettings } from '../settings/ReaderImageCacheSettings'
 import { ThemeColorSettings } from '../settings/ThemeColorSettings'
 import { SyncSettings } from '../settings/SyncSettings'
 import { ThemeSettings } from '../settings/ThemeSettings'
@@ -344,6 +345,7 @@ export class BackupPreferencesAdapter {
     await MangaRenderingServiceSettings.restore(context)
     await CommentTranslationSettings.restore(context)
     await TagTranslationSettings.restore(context)
+    await ReaderImageCacheSettings.restore(context)
     await SyncSettings.restore(context)
   }
 

@@ -33,6 +33,7 @@ import {
   SyncScheduler,
   SyncSettings,
   TagTranslationSettings,
+  ReaderImageCacheSettings,
   TabletLayoutSettings,
   ThemeColorSettings,
   AppColorFavoritesSettings,
@@ -166,6 +167,7 @@ export default class EntryAbility extends UIAbility {
       // preference/status summary before their settings surfaces mount.
       CommentTranslationSettings.restore(this.context),
       TagTranslationSettings.restore(this.context),
+      ReaderImageCacheSettings.restore(this.context),
       SyncSettings.restore(this.context),
       AccountListSettings.load(this.context),
       // Resume only the durable, user-created private queue. Any process-killed

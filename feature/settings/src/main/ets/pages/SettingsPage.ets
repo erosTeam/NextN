@@ -30,7 +30,9 @@ import {
   NextNSectionHeader,
   NextNModalScaffold,
   SecondaryListScaffold,
+  NhPageCacheService,
   ReaderImageCacheService,
+  ReaderImageCacheSettings,
   ReaderImageCacheStatus,
   ReaderSuperResolutionModelService,
   ReaderEnhancementModelsState,
@@ -165,6 +167,9 @@ export enum SettingsSurface {
 @ComponentV2
 export struct SettingsPage {
   @Local readerCacheStatus: ReaderImageCacheStatus = new ReaderImageCacheStatus()
+  @Local pageCacheStat: CacheStat = new CacheStat()
+  @Local readerCacheLimitMb: number = 1024
+  @Local readerCacheLimitMenuShown: boolean = false
   @Local isLoadingPrivateCache: boolean = false
   @Local isClearingPrivateCache: boolean = false
   @Local privateCacheError: string = ''
@@ -838,6 +843,9 @@ export struct SettingsPage {
   }
 
   private privateCacheStat(key: string): CacheStat {
+    if (key === 'page') {
+      return this.pageCacheStat
+    }
     if (key === 'reader') {
       return this.readerPageCacheStat()
     }
@@ -851,12 +859,12 @@ export struct SettingsPage {
   }
 
   private privateCacheTotalBytes(): number {
-    return this.readerPageCacheStat().bytes + this.commentTranslationCacheStatus.bytes +
+    return this.pageCacheStat.bytes + this.readerPageCacheStat().bytes + this.commentTranslationCacheStatus.bytes +
       this.comicTranslationCacheStatus.bytes + this.tagDictionaryCacheStatus.bytes
   }
 
   private privateCacheTotalCount(): number {
-    return this.readerPageCacheStat().count + this.commentTranslationCacheStatus.count +
+    return this.pageCacheStat.count + this.readerPageCacheStat().count + this.commentTranslationCacheStatus.count +
       this.comicTranslationCacheStatus.count + this.tagDictionaryCacheStatus.count
   }
 
@@ -867,7 +875,9 @@ export struct SettingsPage {
     this.isLoadingPrivateCache = true
     this.privateCacheError = ''
     try {
+      this.pageCacheStat = await NhPageCacheService.stat(this.context())
       this.readerCacheStatus = ReaderImageCacheService.status(this.context())
+      this.readerCacheLimitMb = ReaderImageCacheSettings.limitMb()
       this.commentTranslationCacheStatus = await CommentTranslationService.stat(this.context())
       this.comicTranslationCacheStatus = await ComicTranslationRuntimeService.statGeneratedCache(this.context())
       this.tagDictionaryCacheStatus = await TagTranslationRepository.stat(this.context())
@@ -1757,6 +1767,9 @@ export struct SettingsPage {
   }
 
   private privateCacheTitle(key: string): string {
+    if (key === 'page') {
+      return AppStrings.get('settings_private_cache_pages')
+    }
     if (key === 'reader') {
       return AppStrings.get('settings_private_cache_reader_pages')
     }
@@ -1809,6 +1822,65 @@ export struct SettingsPage {
         },
       },
     })
+  }
+
+  private readerCacheLimitLabel(): string {
+    if (this.readerCacheLimitMb >= 1024) {
+      return `${this.readerCacheLimitMb / 1024} GB`
+    }
+    return `${this.readerCacheLimitMb} MB`
+  }
+
+  private setReaderCacheLimit(limitMb: number): void {
+    this.readerCacheLimitMb = limitMb
+    ReaderImageCacheSettings.setLimitMb(this.context(), limitMb).catch((): void => {})
+  }
+
+  @Builder
+  private ReaderCacheLimitMenuItem(limitMb: number, label: string) {
+    MenuItem({
+      content: label,
+      symbolEndIcon: this.readerCacheLimitMb === limitMb
+        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+        : undefined,
+    }).onClick((): void => {
+      this.setReaderCacheLimit(limitMb)
+      this.readerCacheLimitMenuShown = false
+    })
+  }
+
+  @Builder
+  private ReaderCacheLimitMenu() {
+    Menu() {
+      this.ReaderCacheLimitMenuItem(256, '256 MB')
+      this.ReaderCacheLimitMenuItem(512, '512 MB')
+      this.ReaderCacheLimitMenuItem(1024, '1 GB')
+      this.ReaderCacheLimitMenuItem(2048, '2 GB')
+    }
+  }
+
+  @Builder
+  private ReaderCacheLimitGroup() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.externaldrive'),
+        title: AppStrings.get('settings_reader_image_cache_limit'),
+        trailingText: this.readerCacheLimitLabel(),
+        trailingDropdown: true,
+        accessibilityLabel: AppStrings.format('settings_reader_image_cache_limit_a11y', [
+          this.readerCacheLimitLabel(),
+        ]),
+        onAction: (): void => {
+          this.readerCacheLimitMenuShown = true
+        },
+      })
+        .bindMenu(this.readerCacheLimitMenuShown, this.ReaderCacheLimitMenu, appMenuOptions({
+          placement: Placement.BottomRight,
+          onDisappear: (): void => {
+            this.readerCacheLimitMenuShown = false
+          },
+        }))
+    }
   }
 
   @Builder
@@ -2021,6 +2093,8 @@ export struct SettingsPage {
     try {
       if (key === 'reader') {
         await ReaderImageCacheService.clear(this.context())
+      } else if (key === 'page') {
+        await NhPageCacheService.clearAll(this.context())
       } else if (key === 'comment') {
         await CommentTranslationService.clear(this.context())
       } else if (key === 'comic') {
@@ -2028,6 +2102,7 @@ export struct SettingsPage {
       } else if (key === 'tag') {
         await TagTranslationRepository.clear(this.context())
       } else if (key === 'all') {
+        await NhPageCacheService.clearAll(this.context())
         await ReaderImageCacheService.clear(this.context())
         await CommentTranslationService.clear(this.context())
         await ComicTranslationRuntimeService.clearGeneratedCache(this.context())
@@ -2463,6 +2538,21 @@ export struct SettingsPage {
     NextNGroupedListSection() {
       NextNListRow({
         leadingIcon: $r('sys.symbol.doc_text'),
+        title: this.privateCacheTitle('page'),
+        subtitle: this.privateCacheSubtitle('page'),
+        showChevron: false,
+        useCustomTrailing: true,
+        suffixPaddingRight: 0,
+        customTrailing: (): void => {
+          this.CacheClearSuffix('page')
+        },
+        accessibilityLabel: AppStrings.format('settings_private_cache_clear_a11y', [
+          this.privateCacheTitle('page'),
+        ]),
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.picture'),
         title: this.privateCacheTitle('reader'),
         subtitle: this.privateCacheSubtitle('reader'),
         showChevron: false,
@@ -3965,6 +4055,7 @@ export struct SettingsPage {
             Column({ space: ThemeTokens.SPACE_MD }) {
               this.SyncGroup()
               this.BackupGroup()
+              this.ReaderCacheLimitGroup()
               this.PrivateCacheTotalSummary()
               this.PrivateCacheGroup()
             }

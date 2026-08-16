@@ -1,15 +1,19 @@
 import { common } from '@kit.AbilityKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { http } from '@kit.NetworkKit'
+import { ReaderImageCacheSettings } from '../settings/ReaderImageCacheSettings'
 
 const CACHE_DIR_NAME: string = 'nextn-reader-image-cache'
 const CACHE_FILE_EXTENSION: string = 'img'
-const CACHE_LIMIT_BYTES: number = 128 * 1024 * 1024
-const CACHE_LIMIT_FILES: number = 512
 const CACHE_MAINTENANCE_WRITE_INTERVAL: number = 16
 const CACHE_MAINTENANCE_BYTES_INTERVAL: number = 16 * 1024 * 1024
 const CONNECT_TIMEOUT_MS: number = 10000
 const READ_TIMEOUT_MS: number = 30000
+// Defensive file-count cap derived from the byte budget (assumes >=256KB per
+// page). It keeps LRU scans bounded while the user-selected byte limit stays
+// the real eviction budget, mirroring NextE's byte-only reader cache policy.
+const CACHE_FILE_AVG_BYTES: number = 256 * 1024
+const CACHE_LIMIT_FILES_MIN: number = 512
 
 class ReaderImageCacheEntry {
   path: string = ''
@@ -168,6 +172,7 @@ export class ReaderImageCacheService {
     let writeFailureMessage: string = ''
     let bypassCache: boolean = false
     let completed: boolean = false
+    const limitBytes: number = ReaderImageCacheSettings.limitBytes()
     try {
       ReaderImageCacheService.ensureDir(ReaderImageCacheService.cacheDir(context))
       file = fileIo.openSync(
@@ -176,7 +181,7 @@ export class ReaderImageCacheService {
       )
       request = http.createHttp()
       request.on('dataReceiveProgress', (info: http.DataReceiveProgressInfo): void => {
-        if (info.totalSize > CACHE_LIMIT_BYTES) {
+        if (info.totalSize > limitBytes) {
           bypassCache = true
           request?.destroy()
         }
@@ -186,7 +191,7 @@ export class ReaderImageCacheService {
           return
         }
         try {
-          if (written + data.byteLength > CACHE_LIMIT_BYTES) {
+          if (written + data.byteLength > limitBytes) {
             bypassCache = true
             request?.destroy()
             return
@@ -244,7 +249,7 @@ export class ReaderImageCacheService {
       // discard its partial bytes and let ArkUI make the normal direct image
       // request rather than turning a cache policy into a reader failure.
       if (bypassCache) {
-        console.info(`NextNReaderCache bypass limit=${CACHE_LIMIT_BYTES}`)
+        console.info(`NextNReaderCache bypass limit=${limitBytes}`)
         return ReaderImageCacheService.remoteResult(url)
       }
       throw error as Error
@@ -325,17 +330,22 @@ export class ReaderImageCacheService {
 
   private static pruneNow(context: common.UIAbilityContext): void {
     const entries: ReaderImageCacheEntry[] = ReaderImageCacheService.entries(context)
+    const limitBytes: number = ReaderImageCacheSettings.limitBytes()
+    const limitFiles: number = Math.max(
+      CACHE_LIMIT_FILES_MIN,
+      Math.ceil(limitBytes / CACHE_FILE_AVG_BYTES),
+    )
     let totalBytes: number = 0
     for (let i: number = 0; i < entries.length; i++) {
       totalBytes += entries[i].bytes
     }
-    if (totalBytes <= CACHE_LIMIT_BYTES && entries.length <= CACHE_LIMIT_FILES) {
+    if (totalBytes <= limitBytes && entries.length <= limitFiles) {
       return
     }
     entries.sort((left: ReaderImageCacheEntry, right: ReaderImageCacheEntry): number => left.mtime - right.mtime)
     let remaining: number = entries.length
     for (let i: number = 0; i < entries.length; i++) {
-      if ((totalBytes <= CACHE_LIMIT_BYTES && remaining <= CACHE_LIMIT_FILES) || remaining <= 1) {
+      if ((totalBytes <= limitBytes && remaining <= limitFiles) || remaining <= 1) {
         break
       }
       ReaderImageCacheService.removeIfExists(entries[i].path)
