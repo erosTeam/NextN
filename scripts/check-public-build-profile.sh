@@ -2,7 +2,14 @@
 set -euo pipefail
 
 mode="${1:---worktree}"
-repo="$(git rev-parse --show-toplevel)"
+repo="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [[ -z "$repo" ]]; then
+  # Container checkouts (different uid than the workspace owner) fail the
+  # ownership probe before --show-toplevel can answer; trust the workflow
+  # root instead of silently skipping the guard.
+  repo="$(pwd)"
+  git config --global --add safe.directory "$repo" 2>/dev/null || true
+fi
 cd "$repo"
 
 tmp="$(mktemp)"
