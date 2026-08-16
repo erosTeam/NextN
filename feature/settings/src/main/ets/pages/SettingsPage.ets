@@ -172,7 +172,6 @@ export struct SettingsPage {
   @Local includeSecrets: boolean = false
   @Local exportPwd: string = ''
   @Local exportPwd2: string = ''
-  @Local exportSheetShown: boolean = false
   @Local importPwd: string = ''
   @Local busy: boolean = false
   private pendingImportRaw: string = ''
@@ -205,6 +204,37 @@ export struct SettingsPage {
     onWillDismiss: (_action: DismissDialogAction) => {
       this.importPwd = ''
       this.pendingImportRaw = ''
+    },
+    alignment: DialogAlignment.Center,
+    customStyle: false,
+  });
+  private exportDialogController: CustomDialogController = new CustomDialogController({
+    builder: CustomContentDialog({
+      primaryTitle: AppStrings.get('backup_export'),
+      contentBuilder: () => {
+        this.ExportDialogContent()
+      },
+      buttons: [
+        {
+          value: AppStrings.get('common_cancel'),
+          buttonStyle: ButtonStyleMode.TEXTUAL,
+          action: () => {
+            this.closeExportDialog()
+          },
+        },
+        {
+          value: AppStrings.get('backup_export'),
+          buttonStyle: ButtonStyleMode.TEXTUAL,
+          action: () => {
+            this.confirmExport()
+          },
+        },
+      ],
+    }),
+    autoCancel: true,
+    onWillDismiss: (_action: DismissDialogAction) => {
+      this.exportPwd = ''
+      this.exportPwd2 = ''
     },
     alignment: DialogAlignment.Center,
     customStyle: false,
@@ -2138,7 +2168,17 @@ export struct SettingsPage {
     this.includeSecrets = false
     this.exportPwd = ''
     this.exportPwd2 = ''
-    this.exportSheetShown = true
+    this.exportDialogController.open()
+  }
+
+  private closeExportDialog(): void {
+    try {
+      this.exportDialogController.close()
+    } catch (_error) {
+      // Dialog may already be dismissed by tapping outside.
+    }
+    this.exportPwd = ''
+    this.exportPwd2 = ''
   }
 
   private confirmExport(): void {
@@ -2163,9 +2203,7 @@ export struct SettingsPage {
       this.timeStamp(),
     )
       .then(() => {
-        this.exportSheetShown = false
-        this.exportPwd = ''
-        this.exportPwd2 = ''
+        this.closeExportDialog()
         this.toast(AppStrings.get('backup_export_done'))
       })
       .catch((error: Error) => {
@@ -2304,14 +2342,10 @@ export struct SettingsPage {
           this.openExport()
         },
       })
-        .bindSheet($$this.exportSheetShown, this.ExportSheet(), appSheetOptions({
-          detents: [SheetSize.LARGE],
-          showClose: false,
-        }))
       this.RowDivider()
       NextNListRow({
-        leadingIcon: $r('sys.symbol.doc_plaintext'),
         title: AppStrings.get('backup_import'),
+        leadingIcon: $r('sys.symbol.cloud_and_arrow_down'),
         subtitle: AppStrings.get('backup_import_subtitle'),
         showChevron: false,
         isEnabled: !this.busy,
@@ -2323,59 +2357,41 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ExportSheet() {
-    NextNModalScaffold({
-      title: AppStrings.get('backup_export'),
-      confirmIcon: $r('sys.symbol.cloud_and_arrow_up'),
-      confirmText: AppStrings.get('backup_export'),
-      showConfirmAction: true,
-      confirmEnabled: !this.busy,
-      confirmLoading: this.busy,
-      onClose: () => {
-        this.exportSheetShown = false
-      },
-      onConfirm: () => {
-        this.confirmExport()
-      },
-    }) {
-      ListItem() {
-        Column({ space: ThemeTokens.SPACE_MD }) {
-          Row({ space: ThemeTokens.SPACE_SM }) {
-            Column({ space: ThemeTokens.SPACE_XS }) {
-              Text(AppStrings.get('backup_include_secrets'))
-                .fontSize(ThemeTokens.FONT_SIZE_TITLE)
-                .fontWeight(FontWeight.Medium)
-                .fontColor(ThemeTokens.TEXT_PRIMARY)
-                .width('100%')
-              Text(AppStrings.get('backup_include_secrets_hint'))
-                .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-                .fontColor(ThemeTokens.TEXT_SECONDARY)
-                .width('100%')
-            }
-            .layoutWeight(1)
-            .alignItems(HorizontalAlign.Start)
-            Toggle({ type: ToggleType.Switch, isOn: this.includeSecrets })
-              .selectedColor(ThemeTokens.BRAND)
-              .onChange((value: boolean) => {
-                this.includeSecrets = value
-              })
-          }
-          .width('100%')
-          .alignItems(VerticalAlign.Center)
-          if (this.includeSecrets) {
-            this.PasswordField(this.exportPwd, AppStrings.get('backup_password'), (value: string) => {
-              this.exportPwd = value
-            })
-            this.PasswordField(this.exportPwd2, AppStrings.get('backup_password_repeat'), (value: string) => {
-              this.exportPwd2 = value
-            })
-          }
+  private ExportDialogContent() {
+    Column({ space: ThemeTokens.SPACE_MD }) {
+      Row({ space: ThemeTokens.SPACE_SM }) {
+        Column({ space: ThemeTokens.SPACE_XS }) {
+          Text(AppStrings.get('backup_include_secrets'))
+            .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(ThemeTokens.TEXT_PRIMARY)
+            .width('100%')
+          Text(AppStrings.get('backup_include_secrets_hint'))
+            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+            .fontColor(ThemeTokens.TEXT_SECONDARY)
+            .width('100%')
         }
-        .width('100%')
+        .layoutWeight(1)
         .alignItems(HorizontalAlign.Start)
-        .padding({ top: ThemeTokens.SPACE_SM, bottom: ThemeTokens.SPACE_SM })
+        Toggle({ type: ToggleType.Switch, isOn: this.includeSecrets })
+          .selectedColor(ThemeTokens.BRAND)
+          .onChange((value: boolean) => {
+            this.includeSecrets = value
+          })
+      }
+      .width('100%')
+      .alignItems(VerticalAlign.Center)
+      if (this.includeSecrets) {
+        this.PasswordField(this.exportPwd, AppStrings.get('backup_password'), (value: string) => {
+          this.exportPwd = value
+        })
+        this.PasswordField(this.exportPwd2, AppStrings.get('backup_password_repeat'), (value: string) => {
+          this.exportPwd2 = value
+        })
       }
     }
+    .width('100%')
+    .alignItems(HorizontalAlign.Start)
   }
 
   @Builder

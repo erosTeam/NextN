@@ -6001,3 +6001,18 @@ authorize an edit, replace a device comparison, or define product completion.
 - **MED-1（需用户确认）:** 数据集行集与 NextE 不同（quickSearches/settingsTables 替代 localFavorites/customProfiles/imageBlock 等）——与 NextN 自身同步引擎数据面一致，属计划内 leaf 适配。
 - **MED-2（已修）:** NextNListRow 增加 NextE 的 WrappedSuffixBuilder 等价实现：customTrailing 统一包 Row（padding left 8 / right suffixPaddingRight，默认 12），新增 suffixPaddingRight 参数；缓存行传 0 并保留按钮自带 padding（与 NextE CacheRow+ClearSuffix 精确一致）。构建通过、装机后四个清除按钮右缘 1272 不变（槽宽向左扩展），截图已更新。
 - **LOW（计划内）:** 华为云链路移除；entry 宿主多 bindToScrollable；屏蔽规则 hint 为 NH 数据面改写。静态结构结论不替代同态同视口视觉比对。
+
+## 导出入口从半模态改为 Dialog（2026-08-17，用户指示）
+
+- **用户指示:** "把导出也按照导入的形式改成 Dialog 的形式"——导出不再用半模态。
+- **Exact change:** 删除导出行 bindSheet + ExportSheet（NextNModalScaffold 包装）；新增 exportDialogController，结构与导入密码 Dialog 完全一致（CustomContentDialog：primaryTitle=导出、contentBuilder 承载原开关+条件密码框、buttons=取消/导出 TEXTUAL、autoCancel、Center、customStyle false）；openExport 改为重置状态后 open；导出成功后 closeExportDialog；onWillDismiss 清理密码。内容控件、文案、导出链路（confirmExport/picker/写入）零改动。
+- **Minimality rationale:** 用户明确指令优先于 NextE 参考默认（NextE 导出为 AppModalScaffold）；仅换容器，不动任何业务与控件语义。
+- **Visual verification plan:** 签名构建 + install -r + 真机：点导出 → 居中 Dialog（开关默认关、无密码框）→ 取消可关；重开 → 开开关出现密码框 → 确认走保存 picker。
+- **Unresolved risk:** 无；加密分支 UI 流程依旧 OPEN（本轮只换容器）。
+
+## 备份导入行图标更换（2026-08-17，用户指示）
+
+- **用户指示:** 导入设置项图标（现为 doc_plaintext，看起来像文档/文件）换成更合适的。
+- **决策:** 导出行为 cloud_and_arrow_up，导入改为同族成对的 cloud_and_arrow_down——一对上下箭头语义（导出上传/导入取回）清晰且与导出行视觉对称。注：NextE 参照本身导入也是 doc_plaintext，本项为用户显式指令优先于参照默认。
+- **Exact change:** 仅 BackupGroup 导入行 leadingIcon 单点替换，无其他改动。
+- **Visual verification plan:** 构建通过（资源存在性由资源编译证明）+ install -r + 真机存储页截图确认新图标渲染。
