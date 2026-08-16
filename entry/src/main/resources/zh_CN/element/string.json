@@ -63,7 +63,7 @@
     { "name": "settings_browse_layout", "value": "浏览布局" },
     { "name": "settings_reader", "value": "阅读" },
     { "name": "settings_download", "value": "下载" },
-    { "name": "settings_cache", "value": "缓存" },
+    { "name": "settings_cache", "value": "存储" },
     { "name": "settings_advanced", "value": "高级" },
     { "name": "settings_about", "value": "关于" },
     { "name": "browse_presentation", "value": "列表视图" },

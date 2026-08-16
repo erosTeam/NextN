@@ -5968,3 +5968,36 @@ authorize an edit, replace a device comparison, or define product completion.
   - 截图证据：`.hvigor/outputs/phase4-ui-acceptance/01-account-page.png`、`02-cache-sync-backup.png`、`03-sync-overview.png`、`04-webdav-detail.png`（未入 Git）。
 - **Device-found defect fixed:** 第一轮安装后点击缓存面的“同步”行无跳转——根因是 `cacheSettingsDestination` 创建的 SettingsPage CACHE 实例未传 `onOpenSyncSettings`（只在根 Tab 实例绑定）。修复：给 CACHE destination 补传 `onOpenSyncSettings: () => this.pushSyncSettings()`；重建安装后点击正常进入同步总览页。
 - **Remaining OPEN:** 保存账号列表的真实填充（recordActive 登录钩子）需下一次真实登录端到端验证；WebDAV 实际同步/备份文件读写依赖真实目录与系统 picker 的完整保存/选择流程；与 NextE 的同态同视口截图对比仍需用户/视觉模型验收。
+
+## 设置根页“缓存”入口文案修复（2026-08-17，用户反馈结构错误）
+
+- **用户反馈:** “你把导入导出放在缓存入口里面，你把同步也放在缓存入口里面……你是要同步缓存，你是要导入导出缓存？”——入口语义错误。
+- **根因（source evidence）:** NextE 设置根页该入口的 `settings_cache` 中文为“存储”（base/en `Storage`，ja `ストレージ`），页内按 NextE 设计本就包含同步 + 备份导出/导入 + 缓存管理；NextN 移植时把入口文案错误地沿用了 NextN 旧的“缓存”，导致“缓存”入口下出现同步与导入导出，语义完全错乱。
+- **Exact correction:** `entry/.../{base,zh_CN,en_US,ja_JP}/element/string.json` 的 `settings_cache` 分别改为 `Storage / 存储 / Storage / ストレージ`（单行改动，与 NextE 一致）；页面结构（存储页内含同步/备份/缓存）保持不变。
+- **Minimality rationale:** 直接对齐 NextE 入口语义；不改路由、不改页面结构、不改其他文案。
+- **Visual verification plan:** 签名构建 + install -r + 冷启动，确认设置根页入口显示“存储”，进入后同步/导出/导入/缓存同页正常。
+- **Unresolved risk:** 无；本项为纯文案语义修复，需真机确认显示。
+
+## 存储页卡片分组重构与缓存清除交互对齐（2026-08-17，用户反馈分组错误 + 全量结构审查）
+
+- **用户反馈:** 只改名不够——同步、导出/导入被塞进同一卡片，缓存前面无独立表头结构；要求参照 NextE 细心对齐并全量审查。
+- **Structure change:** CACHE surface 改为单个 ListItem > Column(space SPACE_MD)：SyncGroup()（独立卡，仅 WebDAV 行）、BackupGroup()（导出 + divider + 导入，独立卡）、PrivateCacheTotalSummary()（总用量行）、PrivateCacheGroup()（缓存卡）；错误提示保持独立 ListItem。对齐 NextE 存储页“同步卡 / 备份卡 / 总用量 / 缓存卡”四区域结构。
+- **Interaction change (audit_cache HIGH):** 四条缓存行的清除操作从整行可点改为行内独立“清除”按钮（NextE 语义）：按钮 NORMAL 样式、红色/tertiary、padding left 8/right 12、enabled = count>0 && !clearing，行本身不再响应点击；清空全部 isEnabled 仅看 !clearing（与 NextE 一致，不再要求 totalCount>0）。
+- **Evidence:** 签名构建通过（18s）；install -r 后布局树四区域独立（同步卡 303-535、备份卡 571-981、总用量 1017-1059、缓存卡 1095-2037）；截图 .hvigor/outputs/phase4-ui-acceptance/06-storage-final-structure.png。
+- **Remaining OPEN（需用户决策）:** ① 无 readerCacheLimit（阅读器图片缓存上限）卡；② page/image 缓存合并为单行“阅读器页面缓存”；③ 无 SafeMode；④ 同步副标题文案与 NextE 存在差异。均为 NextN 当前数据面/范围差异，未擅自增删。
+
+## 备份导入导出：数据结构守护与真机回放验证（2026-08-17，用户质询“验证了没有”）
+
+- **缺口确认:** Phase 4 仅验证过 UI 入口与导出 Sheet；NextE 的三个备份数据结构守护测试与 Node 契约脚本此前完全未移植，导出文件内容、导入回放均未验证。
+- **补齐:** ① 移植 scripts/test_settings_backup_contract.mjs（适配 NH 六数据集、HUKS secrets、字面量 key，node 执行通过）；② 新建 entry/src/ohosTest（module.json5/build target/List.test.ets + BackupCipherMetadataGuard / BackupLocalDataStructureGuard / BackupWebDavCredentialGroup 三测试，适配 NEXTN_BACKUP/nextn 容器与 readProgress/viewedHistory/searchHistory/quickSearches/localBlock/settingsTables 形状）；③ entry@ohosTest 签名构建 + 与主包一起 install -r。
+- **Device tests:** aa test 结果 Tests run: 8, Failure: 0, Error: 0, Pass: 8（KDF 元数据拒收、六数据集完整/残缺/类型错误/拓扑错误拒绝、WebDAV 凭据组明文/不完整 inert）。
+- **UI 全链路（设备 56T0225315001128）:** 导出 Sheet（默认明文）→ 系统保存 picker（Download）→ 文件 NextN-backup-202608170316.nextn-backup.json（53.37 KB）存在 → 导入 picker 选同一文件 → 解析预览（版本 0.1.0 (1)、普通备份、设置项 10、本地数据 154）→ 恢复成功。
+- **字节级回放证据:** 基线偏好库拉取后，将备份内键 tag_translation_enabled 由 false 突变为 true → 重新导入恢复 → 偏好文件回到 value="false" 且 UI 开关实时回退（reapply 生效）；备份外键（sync.dataset.* 等）按 NextE 加性语义原样保留。测试副作用已还原（sync.dataset.search_history 恢复为 true，六个数据集开关全开）。
+- **Remaining OPEN:** ① 加密容器 + 密码导出/导入的 UI 路径未走（解析与密码边界已由设备测试覆盖，seal/open UI 流程待后续）；② Download 目录对 hdc 只读受限，导出文件未拉回宿主机做逐字节 jq 检查，以设备端解析计数 + 53.37 KB 实体存在为替代证据。
+
+## 同步页结构审查结论（audit_sync_pages_structure，2026-08-17）
+
+- **结论:** 同步总览页与 WebDAV 详情页宿主/行集/输入几何/键盘避让/手动同步链路/状态文案与 NextE 结构等价；未发现 HIGH 差异。
+- **MED-1（需用户确认）:** 数据集行集与 NextE 不同（quickSearches/settingsTables 替代 localFavorites/customProfiles/imageBlock 等）——与 NextN 自身同步引擎数据面一致，属计划内 leaf 适配。
+- **MED-2（已修）:** NextNListRow 增加 NextE 的 WrappedSuffixBuilder 等价实现：customTrailing 统一包 Row（padding left 8 / right suffixPaddingRight，默认 12），新增 suffixPaddingRight 参数；缓存行传 0 并保留按钮自带 padding（与 NextE CacheRow+ClearSuffix 精确一致）。构建通过、装机后四个清除按钮右缘 1272 不变（槽宽向左扩展），截图已更新。
+- **LOW（计划内）:** 华为云链路移除；entry 宿主多 bindToScrollable；屏蔽规则 hint 为 NH 数据面改写。静态结构结论不替代同态同视口视觉比对。

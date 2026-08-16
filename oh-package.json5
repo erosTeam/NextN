@@ -5,5 +5,7 @@
   "description": "NextN native HarmonyOS NEXT client",
   "license": "UNLICENSED",
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "@ohos/hypium": "1.0.18"
+  }
 }

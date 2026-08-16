@@ -63,7 +63,7 @@
     { "name": "settings_browse_layout", "value": "Browse layout" },
     { "name": "settings_reader", "value": "Reading" },
     { "name": "settings_download", "value": "Downloads" },
-    { "name": "settings_cache", "value": "Cache" },
+    { "name": "settings_cache", "value": "Storage" },
     { "name": "settings_advanced", "value": "Advanced" },
     { "name": "settings_about", "value": "About" },
     { "name": "browse_presentation", "value": "List view" },

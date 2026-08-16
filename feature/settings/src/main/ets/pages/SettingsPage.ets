@@ -2276,7 +2276,7 @@ export struct SettingsPage {
   }
 
   @Builder
-  private SyncBackupGroup() {
+  private SyncGroup() {
     NextNGroupedListSection() {
       NextNListRow({
         leadingIcon: $r('sys.symbol.cloud'),
@@ -2288,7 +2288,12 @@ export struct SettingsPage {
           }
         },
       })
-      this.RowDivider()
+    }
+  }
+
+  @Builder
+  private BackupGroup() {
+    NextNGroupedListSection() {
       NextNListRow({
         leadingIcon: $r('sys.symbol.cloud_and_arrow_up'),
         title: AppStrings.get('backup_export'),
@@ -2420,79 +2425,92 @@ export struct SettingsPage {
   }
 
   @Builder
+  private CacheClearSuffix(key: string) {
+    Button(AppStrings.get('common_clear'))
+      .buttonStyle(ButtonStyleMode.NORMAL)
+      .backgroundColor(Color.Transparent)
+      .fontSize(ThemeTokens.FONT_SIZE_BODY)
+      .fontColor(
+        this.privateCacheStat(key).count > 0 && !this.isClearingPrivateCache
+          ? Color.Red
+          : ThemeTokens.TEXT_TERTIARY,
+      )
+      .enabled(this.privateCacheStat(key).count > 0 && !this.isClearingPrivateCache)
+      .padding({ left: ThemeTokens.SPACE_SM, right: ThemeTokens.SPACE_MD })
+      .onClick(() => {
+        this.requestPrivateCacheClear(key)
+      })
+  }
+
+  @Builder
   private PrivateCacheGroup() {
     NextNGroupedListSection() {
       NextNListRow({
         leadingIcon: $r('sys.symbol.doc_text'),
         title: this.privateCacheTitle('reader'),
         subtitle: this.privateCacheSubtitle('reader'),
-        trailingText: this.isClearingPrivateCache ? AppStrings.get('settings_private_cache_wait') :
-          AppStrings.get('common_clear'),
         showChevron: false,
-        isEnabled: !this.isClearingPrivateCache && this.privateCacheStat('reader').count > 0,
+        useCustomTrailing: true,
+        suffixPaddingRight: 0,
+        customTrailing: (): void => {
+          this.CacheClearSuffix('reader')
+        },
         accessibilityLabel: AppStrings.format('settings_private_cache_clear_a11y', [
           this.privateCacheTitle('reader'),
         ]),
-        onAction: (): void => {
-          this.requestPrivateCacheClear('reader')
-        },
       })
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.translate'),
         title: this.privateCacheTitle('comment'),
         subtitle: this.privateCacheSubtitle('comment'),
-        trailingText: this.isClearingPrivateCache ? AppStrings.get('settings_private_cache_wait') :
-          AppStrings.get('common_clear'),
         showChevron: false,
-        isEnabled: !this.isClearingPrivateCache && this.privateCacheStat('comment').count > 0,
+        useCustomTrailing: true,
+        suffixPaddingRight: 0,
+        customTrailing: (): void => {
+          this.CacheClearSuffix('comment')
+        },
         accessibilityLabel: AppStrings.format('settings_private_cache_clear_a11y', [
           this.privateCacheTitle('comment'),
         ]),
-        onAction: (): void => {
-          this.requestPrivateCacheClear('comment')
-        },
       })
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.text_bubble_left_2'),
         title: this.privateCacheTitle('comic'),
         subtitle: this.privateCacheSubtitle('comic'),
-        trailingText: this.isClearingPrivateCache ? AppStrings.get('settings_private_cache_wait') :
-          AppStrings.get('common_clear'),
         showChevron: false,
-        isEnabled: !this.isClearingPrivateCache && this.privateCacheStat('comic').count > 0,
+        useCustomTrailing: true,
+        suffixPaddingRight: 0,
+        customTrailing: (): void => {
+          this.CacheClearSuffix('comic')
+        },
         accessibilityLabel: AppStrings.format('settings_private_cache_clear_a11y', [
           this.privateCacheTitle('comic'),
         ]),
-        onAction: (): void => {
-          this.requestPrivateCacheClear('comic')
-        },
       })
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.textformat'),
         title: this.privateCacheTitle('tag'),
         subtitle: this.privateCacheSubtitle('tag'),
-        trailingText: this.isClearingPrivateCache ? AppStrings.get('settings_private_cache_wait') :
-          AppStrings.get('common_clear'),
         showChevron: false,
-        isEnabled: !this.isClearingPrivateCache && this.privateCacheStat('tag').count > 0,
+        useCustomTrailing: true,
+        suffixPaddingRight: 0,
+        customTrailing: (): void => {
+          this.CacheClearSuffix('tag')
+        },
         accessibilityLabel: AppStrings.format('settings_private_cache_clear_a11y', [
           this.privateCacheTitle('tag'),
         ]),
-        onAction: (): void => {
-          this.requestPrivateCacheClear('tag')
-        },
       })
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.trash'),
         title: AppStrings.get('settings_private_cache_clear_all'),
-        trailingText: this.isClearingPrivateCache ? AppStrings.get('settings_private_cache_wait') : '',
         showChevron: false,
         destructive: true,
-        isEnabled: !this.isClearingPrivateCache && this.privateCacheTotalCount() > 0,
+        isEnabled: !this.isClearingPrivateCache,
         accessibilityLabel: AppStrings.get('settings_private_cache_clear_all'),
         onAction: (): void => {
           this.requestAllPrivateCachesClear()
@@ -3928,13 +3946,13 @@ export struct SettingsPage {
           }
         } else if (this.surface === SettingsSurface.CACHE) {
           ListItem() {
-            this.SyncBackupGroup()
-          }
-          ListItem() {
-            this.PrivateCacheTotalSummary()
-          }
-          ListItem() {
-            this.PrivateCacheGroup()
+            Column({ space: ThemeTokens.SPACE_MD }) {
+              this.SyncGroup()
+              this.BackupGroup()
+              this.PrivateCacheTotalSummary()
+              this.PrivateCacheGroup()
+            }
+            .width('100%')
           }
           if (this.privateCacheError.length > 0) {
             ListItem() {

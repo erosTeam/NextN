@@ -43,6 +43,8 @@ export struct NextNListRow {
   /** Use a caller-owned HDS suffix only for a reference-owned leaf shape. */
   @Param useCustomTrailing: boolean = false
   @BuilderParam customTrailing: () => void = this.EmptyTrailing
+  /** Right inset of the wrapped custom suffix; rows may zero it when the suffix owns its padding. */
+  @Param suffixPaddingRight: Length = ThemeTokens.SPACE_MD
   @Param hasSwitch: boolean = false
   @Param checked: boolean = false
   /** Navigational location marker, separate from a switch's checked state. */
@@ -198,7 +200,7 @@ export struct NextNListRow {
     }
     if (this.useCustomTrailing) {
       return new SuffixCustomBuilder((): void => {
-        this.customTrailing()
+        this.WrappedSuffixBuilder()
       })
     }
     if (this.trailingText.length > 0) {
@@ -231,6 +233,17 @@ export struct NextNListRow {
       return new SuffixTextAndArrow({ text: '' }, { color: Color.Gray })
     }
     return undefined
+  }
+
+  // NextE wraps every custom suffix in a Row with a fixed left inset and a
+  // per-row right inset (suffixPaddingRight); suffix content never touches the
+  // row edge directly.
+  @Builder
+  private WrappedSuffixBuilder() {
+    Row() {
+      this.customTrailing()
+    }
+    .padding({ left: ThemeTokens.SPACE_SM, right: this.suffixPaddingRight })
   }
 
   build() {

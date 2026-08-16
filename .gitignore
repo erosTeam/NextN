@@ -4,6 +4,7 @@
 oh_modules/
 **/oh_modules/
 **/build/
+entry/.test/
 **/.cxx/
 **/BuildProfile.ets
 oh-package-lock.json5

@@ -63,7 +63,7 @@
     { "name": "settings_browse_layout", "value": "ブラウズレイアウト" },
     { "name": "settings_reader", "value": "閲覧" },
     { "name": "settings_download", "value": "ダウンロード" },
-    { "name": "settings_cache", "value": "キャッシュ" },
+    { "name": "settings_cache", "value": "ストレージ" },
     { "name": "settings_advanced", "value": "詳細" },
     { "name": "settings_about", "value": "バージョン情報" },
     { "name": "browse_presentation", "value": "表示形式" },
