@@ -29,6 +29,7 @@ import {
   requestLoginRecoveryLaunch,
   publishNhClipboardGalleryCandidate,
   ScreenOrientationSettings,
+  AccountListSettings,
   SyncScheduler,
   SyncSettings,
   TagTranslationSettings,
@@ -166,6 +167,7 @@ export default class EntryAbility extends UIAbility {
       CommentTranslationSettings.restore(this.context),
       TagTranslationSettings.restore(this.context),
       SyncSettings.restore(this.context),
+      AccountListSettings.load(this.context),
       // Resume only the durable, user-created private queue. Any process-killed
       // active task is restored as paused by the service before a user resumes it.
       // Keep the final startup outcome available to the retained Downloads

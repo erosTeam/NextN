@@ -15,6 +15,23 @@ export class NhAccountProfileService {
   private static restoreTask: Promise<boolean> | null = null
   private static refreshTask: Promise<boolean> | null = null
 
+  /** Stable non-secret identity of the active account; '' when unknown. */
+  static activeAccountId(): string {
+    return connectAccountProfile().snapshot().userId
+  }
+
+  /** Restores the target account's display snapshot after a session switch. */
+  static async switchTo(context: common.UIAbilityContext, accountId: string): Promise<boolean> {
+    try {
+      const profile: NhAccountProfile | null = await AccountProfileRepository.loadByKey(context, accountId)
+      if (profile !== null && NhAccountSessionService.isAuthenticated()) {
+        connectAccountProfile().replace(profile)
+        return true
+      }
+    } catch (_error) {}
+    return NhAccountProfileService.refresh(context)
+  }
+
   static async restore(context: common.UIAbilityContext): Promise<boolean> {
     if (!NhAccountSessionService.isAuthenticated()) {
       connectAccountProfile().clear()

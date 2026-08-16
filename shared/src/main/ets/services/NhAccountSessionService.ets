@@ -964,6 +964,101 @@ export class NhAccountSessionService {
     await AccountSessionRepository.clear(context)
   }
 
+  /** Saves the active sealed envelope under a stable non-secret account id. */
+  static async saveActiveAsSaved(context: common.UIAbilityContext, accountId: string): Promise<boolean> {
+    if (accountId.length === 0) {
+      return false
+    }
+    try {
+      const active: EncryptedAccountSession | null = await AccountSessionRepository.load(context)
+      if (active === null) {
+        return false
+      }
+      await AccountSessionRepository.saveVerifiedByKey(context, accountId, active)
+      return true
+    } catch (_error) {
+      return false
+    }
+  }
+
+  /** Removes one saved account's sealed envelope; never touches the active row. */
+  static async removeSaved(context: common.UIAbilityContext, accountId: string): Promise<void> {
+    if (accountId.length === 0) {
+      return
+    }
+    await AccountSessionRepository.deleteByKey(context, accountId)
+    await AccountProfileRepository.deleteByKey(context, accountId)
+  }
+
+  /**
+   * Switches the active session to a saved account (NextE CookieJarSettings
+   * switch semantics). The saved HUKS envelope is moved into the 'primary'
+   * active row and the runtime + ArkWeb jar are re-seeded under one durable
+   * transition, so a stale GET cannot enqueue a verification marker behind it.
+   */
+  static async switchToSaved(context: common.UIAbilityContext, accountId: string): Promise<boolean> {
+    if (accountId.length === 0) {
+      return false
+    }
+    NhAccountSessionService.sessionContext = context
+    let record: EncryptedAccountSession | null = null
+    try {
+      record = await AccountSessionRepository.loadByKey(context, accountId)
+    } catch (_error) {
+      return false
+    }
+    if (record === null) {
+      return false
+    }
+    let plaintext: string
+    try {
+      plaintext = await NhAccountSessionService.decryptWithExistingKey(record)
+    } catch (_error) {
+      return false
+    }
+    const payload: SealedBrowserSessionPayload = NhAccountSessionService.decodeSessionPayload(plaintext)
+    const normalized: string = NhAccountSessionService.normalizeCookieHeader(payload.cookieHeader)
+    const normalizedUserAgent: string = NhAccountSessionService.normalizeUserAgent(payload.browserUserAgent)
+    if (!payload.isEnvelopeValid || !NhAccountSessionService.hasLoginCookies(normalized) ||
+      normalizedUserAgent.length === 0) {
+      return false
+    }
+    if (NhAccountSessionService.sessionTransitionInFlight) {
+      return false
+    }
+    const transitionEpoch: number = NhAccountSessionService.beginDurableSessionTransition()
+    try {
+      await AccountSessionRepository.saveVerified(context, record)
+      if (!NhAccountSessionService.isDurableSessionTransitionCurrent(transitionEpoch)) {
+        return false
+      }
+      NhAccountSessionService.advanceSessionEpoch()
+      NhAccountSessionService.cookieHeader = normalized
+      NhAccountSessionService.sealedFallbackCookieHeader = normalized
+      NhAccountSessionService.browserUserAgent = normalizedUserAgent
+      NhAccountSessionService.sessionOrigin = AccountSessionOrigin.RESTORED
+      NhAccountSessionService.verificationRequiredMarkerPresent = false
+      NhAccountSessionService.clearRetainedRestoreLoginGate()
+      NhAccountSessionService.discardPendingVisibleBrowserSession()
+      NhAccountSessionService.resetRejectedVisibleBrowserSessionCandidate()
+      NhAccountSessionService.expireVisibleBrowserIdentityCookies()
+      const profileClearTask: Promise<void> =
+        NhAccountSessionService.clearAccountProfileSnapshot(context)
+      NhAccountSessionService.publishSessionChange()
+      try {
+        await profileClearTask
+      } catch (_error) {}
+      try {
+        await NhAccountSessionService.ensureRegularArkWebCookieJar()
+      } catch (_error) {}
+      return true
+    } catch (_error) {
+      return false
+    } finally {
+      NhAccountSessionService.finishDurableSessionTransition(transitionEpoch)
+    }
+  }
+
   /** Backup restore reapply: re-reads the freshly written sealed record into runtime state. */
   static async restoreAfterBackup(context: common.UIAbilityContext): Promise<boolean> {
     NhAccountSessionService.sessionContext = context

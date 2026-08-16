@@ -45,8 +45,35 @@ export class AccountSessionRepository {
   private static writeTail: Promise<void> = Promise.resolve()
 
   static async load(context: common.UIAbilityContext): Promise<EncryptedAccountSession | null> {
-    const snapshot: AccountSessionRestoreSnapshot = await AccountSessionRepository.loadForRestore(context)
-    return snapshot.record
+    return AccountSessionRepository.loadByKey(context, SESSION_KEY)
+  }
+
+  /** Reads one saved account's sealed envelope by its non-secret account id. */
+  static async loadByKey(context: common.UIAbilityContext, key: string): Promise<EncryptedAccountSession | null> {
+    let rows: relationalStore.ResultSet | null = null
+    try {
+      await AccountSessionRepository.writeTail
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      rows = await store.querySql(SQL_SELECT_SESSION, [key])
+      if (!rows.goToNextRow()) {
+        return null
+      }
+      const ciphertextColumn: number = rows.getColumnIndex('ciphertext')
+      const nonceColumn: number = rows.getColumnIndex('nonce')
+      if (rows.isColumnNull(ciphertextColumn) || rows.isColumnNull(nonceColumn)) {
+        return null
+      }
+      const record: EncryptedAccountSession = new EncryptedAccountSession()
+      record.ciphertext = rows.getString(ciphertextColumn)
+      record.nonce = rows.getString(nonceColumn)
+      return record
+    } finally {
+      if (rows !== null) {
+        try {
+          rows.close()
+        } catch (_error) {}
+      }
+    }
   }
 
   /**
@@ -173,6 +200,31 @@ export class AccountSessionRepository {
   }
 
   /** Explicit sign-out is the only path that deletes the sealed envelope. */
+  /** Writes one saved account's sealed envelope under its account id. */
+  static saveVerifiedByKey(
+    context: common.UIAbilityContext,
+    key: string,
+    record: EncryptedAccountSession,
+  ): Promise<void> {
+    return AccountSessionRepository.enqueueWrite(async (): Promise<void> => {
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      await store.executeSql(SQL_UPSERT_SESSION, [
+        key,
+        record.ciphertext,
+        record.nonce,
+        Date.now(),
+      ])
+    })
+  }
+
+  /** Removes one saved account's sealed envelope; never touches the active row. */
+  static deleteByKey(context: common.UIAbilityContext, key: string): Promise<void> {
+    return AccountSessionRepository.enqueueWrite(async (): Promise<void> => {
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      await store.executeSql(SQL_DELETE_SESSION, [key])
+    })
+  }
+
   static clear(context: common.UIAbilityContext): Promise<void> {
     return AccountSessionRepository.enqueueWrite(async (): Promise<void> => {
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)

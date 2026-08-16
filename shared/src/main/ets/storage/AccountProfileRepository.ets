@@ -13,19 +13,26 @@ const SQL_UPSERT_PROFILE: string =
 const SQL_DELETE_PROFILE: string = 'DELETE FROM account_profile WHERE key = ?'
 
 /**
- * One display-only snapshot for NextN's deliberately single-account session.
- * It has its own table so profile data can never be confused with the HUKS
- * encrypted credential envelope.
+ * One display-only snapshot per account. The active account's snapshot lives
+ * under the 'primary' key; saved accounts keep their own non-secret account-id
+ * rows so a switch can restore the right display identity without network
+ * round-trips. Profile data can never be confused with the HUKS encrypted
+ * credential envelope.
  */
 export class AccountProfileRepository {
   private static writeTail: Promise<void> = Promise.resolve()
 
   static async load(context: common.UIAbilityContext): Promise<NhAccountProfile | null> {
+    return AccountProfileRepository.loadByKey(context, PROFILE_KEY)
+  }
+
+  /** Reads one account's display profile by its non-secret account id. */
+  static async loadByKey(context: common.UIAbilityContext, key: string): Promise<NhAccountProfile | null> {
     let rows: relationalStore.ResultSet | null = null
     try {
       await AccountProfileRepository.writeTail
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
-      rows = await store.querySql(SQL_SELECT_PROFILE, [PROFILE_KEY])
+      rows = await store.querySql(SQL_SELECT_PROFILE, [key])
       if (!rows.goToNextRow()) {
         return null
       }
@@ -72,6 +79,37 @@ export class AccountProfileRepository {
         Date.now(),
       ])
       return isCurrent()
+    })
+  }
+
+  /** Writes one account's display profile under its account id. */
+  static saveByKey(
+    context: common.UIAbilityContext,
+    key: string,
+    profile: NhAccountProfile,
+  ): Promise<void> {
+    const snapshot: NhAccountProfile = profile.copy()
+    return AccountProfileRepository.enqueueWrite(async (): Promise<void> => {
+      if (!snapshot.hasIdentity()) {
+        return
+      }
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      await store.executeSql(SQL_UPSERT_PROFILE, [
+        key,
+        snapshot.username,
+        snapshot.userUrl,
+        snapshot.userId,
+        snapshot.avatarUrl,
+        Date.now(),
+      ])
+    })
+  }
+
+  /** Removes one account's display profile; never touches the active row. */
+  static deleteByKey(context: common.UIAbilityContext, key: string): Promise<void> {
+    return AccountProfileRepository.enqueueWrite(async (): Promise<void> => {
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      await store.executeSql(SQL_DELETE_PROFILE, [key])
     })
   }
 
