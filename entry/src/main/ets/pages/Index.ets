@@ -168,23 +168,13 @@ class GalleryRouteParams {
 }
 
 class LlmSourceManagerRouteParams {
-  consumerId: string = LLM_CONSUMER_MANGA_TRANSLATION
-
-  constructor(consumerId: string = LLM_CONSUMER_MANGA_TRANSLATION) {
-    this.consumerId = consumerId
-  }
 }
 
 class LlmSourceDetailRouteParams {
   sourceProfileId: string = ''
-  consumerId: string = LLM_CONSUMER_MANGA_TRANSLATION
 
-  constructor(
-    sourceProfileId: string = '',
-    consumerId: string = LLM_CONSUMER_MANGA_TRANSLATION,
-  ) {
+  constructor(sourceProfileId: string = '') {
     this.sourceProfileId = sourceProfileId
-    this.consumerId = consumerId
   }
 }
 
@@ -704,27 +694,15 @@ struct Index {
     this.stack.pushPathByName(ROUTE_READER_SUPER_RESOLUTION_MODELS, '')
   }
 
-  private pushLlmSourceManager(consumerId: string = LLM_CONSUMER_MANGA_TRANSLATION): void {
-    this.stack.pushPathByName(ROUTE_LLM_SOURCE_MANAGER, new LlmSourceManagerRouteParams(consumerId))
+  private pushLlmSourceManager(): void {
+    this.stack.pushPathByName(ROUTE_LLM_SOURCE_MANAGER, new LlmSourceManagerRouteParams())
   }
 
-  private pushLlmSourceDetail(sourceProfileId: string, consumerId: string): void {
+  private pushLlmSourceDetail(sourceProfileId: string): void {
     this.stack.pushPathByName(
       ROUTE_LLM_SOURCE_DETAIL,
-      new LlmSourceDetailRouteParams(sourceProfileId, consumerId),
+      new LlmSourceDetailRouteParams(sourceProfileId),
     )
-  }
-
-  private openTranslationModelEditor(consumerId: string): void {
-    const sources: LlmSourceProfilesState = connectLlmSourceProfiles()
-    const binding: LlmConsumerBinding = consumerId === LLM_CONSUMER_COMMENT_TRANSLATION
-      ? sources.commentBinding
-      : sources.mangaBinding
-    if (binding.configured()) {
-      this.pushLlmSourceDetail(binding.sourceProfileId, consumerId)
-    } else {
-      this.pushLlmSourceManager(consumerId)
-    }
   }
 
   private pushTagTranslationSettings(): void {
@@ -1534,9 +1512,7 @@ struct Index {
   }
 
   private llmSourceManagerParams(param: Object): LlmSourceManagerRouteParams {
-    if (param instanceof LlmSourceManagerRouteParams &&
-      (param.consumerId === LLM_CONSUMER_MANGA_TRANSLATION ||
-        param.consumerId === LLM_CONSUMER_COMMENT_TRANSLATION)) {
+    if (param instanceof LlmSourceManagerRouteParams) {
       return param
     }
     return new LlmSourceManagerRouteParams()
@@ -1544,10 +1520,7 @@ struct Index {
 
   private llmSourceDetailParams(param: Object): LlmSourceDetailRouteParams {
     if (param instanceof LlmSourceDetailRouteParams) {
-      const consumerId: string = param.consumerId === LLM_CONSUMER_COMMENT_TRANSLATION
-        ? LLM_CONSUMER_COMMENT_TRANSLATION
-        : LLM_CONSUMER_MANGA_TRANSLATION
-      return new LlmSourceDetailRouteParams(param.sourceProfileId, consumerId)
+      return new LlmSourceDetailRouteParams(param.sourceProfileId)
     }
     return new LlmSourceDetailRouteParams()
   }
@@ -1866,9 +1839,8 @@ struct Index {
     HdsNavDestination() {
       LlmSourceManagerPage({
         scroller: this.translationSourceScroller,
-        requestedConsumer: this.llmSourceManagerParams(param).consumerId,
-        onOpenSource: (sourceProfileId: string, consumerId: string): void => {
-          this.pushLlmSourceDetail(sourceProfileId, consumerId)
+        onOpenSource: (sourceProfileId: string): void => {
+          this.pushLlmSourceDetail(sourceProfileId)
         },
       })
     }
@@ -1883,7 +1855,6 @@ struct Index {
       LlmSourceDetailPage({
         scroller: this.translationSourceScroller,
         requestedSourceProfileId: this.llmSourceDetailParams(param).sourceProfileId,
-        requestedConsumer: this.llmSourceDetailParams(param).consumerId,
         onDeleted: (): void => {
           this.stack.pop()
         },
@@ -1968,10 +1939,7 @@ struct Index {
       CommentTranslationSettingsPage({
         scroller: this.commentTranslationSettingsScroller,
         onOpenTranslationSource: (consumerId: string): void => {
-          this.pushLlmSourceManager(consumerId)
-        },
-        onEditTranslationModel: (consumerId: string): void => {
-          this.openTranslationModelEditor(consumerId)
+          this.pushLlmSourceManager()
         },
       })
     }
@@ -1986,10 +1954,7 @@ struct Index {
       ComicTranslationSettingsPage({
         scroller: this.comicTranslationSettingsScroller,
         onOpenTranslationSource: (consumerId: string): void => {
-          this.pushLlmSourceManager(consumerId)
-        },
-        onEditTranslationModel: (consumerId: string): void => {
-          this.openTranslationModelEditor(consumerId)
+          this.pushLlmSourceManager()
         },
         onOpenMangaRenderingService: (): void => {
           this.pushMangaRenderingService()

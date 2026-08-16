@@ -1,9 +1,10 @@
 import { common } from '@kit.AbilityKit'
 import {
   AppStrings,
+  ComicTranslationDiagnosticLogger,
+  ComicTranslationModelCatalogService,
   LLM_CONSUMER_COMMENT_TRANSLATION,
   LLM_CONSUMER_MANGA_TRANSLATION,
-  LLM_SOURCE_TYPE_OPENAI_COMPATIBLE,
   LlmConsumerBinding,
   LlmSourceProfile,
   LlmSourceProfileRepository,
@@ -15,80 +16,59 @@ import {
   SecondaryListScaffold,
   ThemeTokens,
   connectLlmSourceProfiles,
-  generateLlmSourceProfileId,
+  supportsMangaTranslation,
 } from 'shared'
 
 /**
- * NextE's LlmSourceDetailPage adapted to NextN. The source fields, capability
- * switches, and delete flow follow the reference; a model field is retained
- * as a NextN leaf because there is no model-catalog service to populate the
- * reference's model menu.
+ * NextE's LlmSourceDetailPage adapted to NextN. Drafts persist automatically
+ * on disappear (no explicit save button), the model is selected on the
+ * consumer pages from a catalog fetched through this source, and the delete
+ * flow keeps referenced bindings unconfigured instead of silently rewiring
+ * them. The Codex account/catalog branch is absent because NextN has no
+ * Codex OAuth service.
  */
 @ComponentV2
 export struct LlmSourceDetailPage {
   @Local sources: LlmSourceProfilesState = connectLlmSourceProfiles()
   @Local loading: boolean = true
-  @Local saving: boolean = false
   @Local deleting: boolean = false
   @Local sourceProfileId: string = ''
-  @Local isNewSource: boolean = true
   @Local displayNameDraft: string = ''
   @Local baseUrlDraft: string = ''
-  @Local modelIdDraft: string = ''
-  @Local apiKeyStored: boolean = false
-  @Local errorMessage: string = ''
-  @Local useMangaTranslation: boolean = false
-  @Local useCommentTranslation: boolean = false
+  @Local supportsComments: boolean = false
+  @Local supportsManga: boolean = false
+  @Local supportsCatalog: boolean = false
+  @Local modelCatalogLoading: boolean = false
+  @Local modelCatalogCount: number = 0
+  @Local secretLoaded: boolean = false
   @Param scroller: Scroller = new Scroller()
   @Param requestedSourceProfileId: string = ''
-  @Param requestedConsumer: string = LLM_CONSUMER_MANGA_TRANSLATION
   @Event onDeleted?: () => void
-  // The key is deliberately not published to AppStorage or any shared state.
-  // It exists only while this mounted input is edited and is written directly
-  // to the HUKS-backed vault during save.
+  // The key exists only while this mounted input is edited and is written
+  // directly to the HUKS-backed vault during save.
   private apiKeyDraft: string = ''
 
   aboutToAppear(): void {
     this.loadSource()
   }
 
+  aboutToDisappear(): void {
+    if (!this.deleting) {
+      this.persistDrafts(false)
+    }
+  }
+
   private context(): common.UIAbilityContext {
     return this.getUIContext().getHostContext() as common.UIAbilityContext
   }
 
-  private binding(consumerId: string): LlmConsumerBinding {
-    return consumerId === LLM_CONSUMER_COMMENT_TRANSLATION
-      ? this.sources.commentBinding
-      : this.sources.mangaBinding
-  }
-
-  private bindingModelId(consumerId: string): string {
-    return this.binding(consumerId).modelId
-  }
-
-  private isBoundTo(consumerId: string, sourceProfileId: string): boolean {
-    const current: LlmConsumerBinding = this.binding(consumerId)
-    return current.configured() && current.sourceProfileId === sourceProfileId
+  private profile(): LlmSourceProfile | null {
+    return this.sources.findById(this.sourceProfileId)
   }
 
   private async loadSource(): Promise<void> {
     this.loading = true
-    this.errorMessage = ''
-    this.apiKeyDraft = ''
-    this.sourceProfileId = this.requestedSourceProfileId
-    this.isNewSource = this.sourceProfileId.length === 0
-    if (this.isNewSource) {
-      this.sourceProfileId = generateLlmSourceProfileId()
-      this.displayNameDraft = AppStrings.get('settings_translation_source_default_name')
-      this.baseUrlDraft = 'https://api.openai.com'
-      this.useMangaTranslation = this.requestedConsumer === LLM_CONSUMER_MANGA_TRANSLATION
-      this.useCommentTranslation = this.requestedConsumer === LLM_CONSUMER_COMMENT_TRANSLATION
-      this.modelIdDraft = this.bindingModelId(this.requestedConsumer)
-      this.apiKeyStored = false
-      this.loading = false
-      return
-    }
-    const existing: LlmSourceProfile | null = this.sources.findById(this.sourceProfileId)
+    const existing: LlmSourceProfile | null = this.sources.findById(this.requestedSourceProfileId)
     if (existing === null) {
       this.loading = false
       this.getUIContext().getPromptAction().showToast({
@@ -99,21 +79,14 @@ export struct LlmSourceDetailPage {
       }
       return
     }
+    this.sourceProfileId = this.requestedSourceProfileId
     this.displayNameDraft = existing.displayName
     this.baseUrlDraft = existing.baseUrl
-    this.useMangaTranslation = this.isBoundTo(LLM_CONSUMER_MANGA_TRANSLATION, existing.sourceProfileId)
-    this.useCommentTranslation = this.isBoundTo(
-      LLM_CONSUMER_COMMENT_TRANSLATION,
-      existing.sourceProfileId,
-    )
-    if (this.useMangaTranslation) {
-      this.modelIdDraft = this.sources.mangaBinding.modelId
-    } else if (this.useCommentTranslation) {
-      this.modelIdDraft = this.sources.commentBinding.modelId
-    } else {
-      this.modelIdDraft = ''
-    }
-    this.apiKeyStored = await this.hasMatchingStoredApiKey(existing)
+    this.supportsComments = existing.capabilities.chatCompletions
+    this.supportsManga = supportsMangaTranslation(existing)
+    this.supportsCatalog = existing.capabilities.modelCatalog
+    this.apiKeyDraft = await LlmSourceSecretVault.readApiKey(this.context(), existing.sourceProfileId)
+    this.secretLoaded = true
     this.loading = false
   }
 
@@ -121,98 +94,110 @@ export struct LlmSourceDetailPage {
     return this.baseUrlDraft.trim().replace(/\/+$/, '')
   }
 
-  private async hasMatchingStoredApiKey(profile: LlmSourceProfile): Promise<boolean> {
-    try {
-      const apiKey: string = await LlmSourceSecretVault.readApiKey(
-        this.context(),
-        profile.sourceProfileId,
-      )
-      return apiKey.length > 0 &&
-        LlmSourceSecretVault.apiKeyMatchesIdentity(apiKey, profile.accountIdentityHash)
-    } catch (_error) {
-      return false
-    }
-  }
-
-  private canSave(): boolean {
-    return this.displayNameDraft.trim().length > 0 &&
-      this.normalizedBaseUrl().length > 0 &&
-      this.modelIdDraft.trim().length > 0 &&
-      (this.apiKeyStored || this.apiKeyDraft.trim().length > 0) &&
-      (this.useMangaTranslation || this.useCommentTranslation)
-  }
-
-  private profileCandidate(): LlmSourceProfile {
-    const existing: LlmSourceProfile | null = this.sources.findById(this.sourceProfileId)
-    const profile: LlmSourceProfile = existing === null ? new LlmSourceProfile() : existing.copy()
-    profile.sourceProfileId = this.sourceProfileId
-    profile.displayName = this.displayNameDraft.trim()
-    profile.sourceType = LLM_SOURCE_TYPE_OPENAI_COMPATIBLE
-    profile.baseUrl = this.normalizedBaseUrl()
-    profile.capabilities.responses = this.useMangaTranslation
-    profile.capabilities.imageInput = this.useMangaTranslation
-    profile.capabilities.chatCompletions = this.useCommentTranslation
-    return profile
+  private apiKeyStateText(): string {
+    return this.apiKeyDraft.trim().length > 0
+      ? AppStrings.get('llm_source_api_key_saved')
+      : AppStrings.get('llm_source_api_key_empty')
   }
 
   /**
-   * Only the consumer binding owned by this source is rewritten. A binding
-   * that currently points elsewhere stays untouched, so editing one source
-   * never clobbers another source's assignment.
+   * Captures every draft synchronously so the write can finish even after
+   * this component has disappeared.
    */
-  private nextBinding(consumerId: string, enabled: boolean): LlmConsumerBinding {
-    const current: LlmConsumerBinding = this.binding(consumerId)
-    if (enabled) {
-      const binding: LlmConsumerBinding = new LlmConsumerBinding()
-      binding.consumerId = consumerId
-      binding.sourceProfileId = this.sourceProfileId
-      binding.modelId = this.modelIdDraft.trim()
-      return binding
+  private persistDrafts(showFailureToast: boolean): Promise<boolean> {
+    const current: LlmSourceProfile | null = this.profile()
+    if (!this.secretLoaded || current === null) {
+      return Promise.resolve(false)
     }
-    if (current.sourceProfileId === this.sourceProfileId) {
-      const binding: LlmConsumerBinding = new LlmConsumerBinding()
-      binding.consumerId = consumerId
-      return binding
+    const candidate: LlmSourceProfile = current.copy()
+    candidate.displayName = this.displayNameDraft.trim()
+    candidate.baseUrl = this.normalizedBaseUrl()
+    candidate.capabilities.chatCompletions = this.supportsComments
+    candidate.capabilities.responses = this.supportsManga
+    candidate.capabilities.imageInput = this.supportsManga
+    candidate.capabilities.modelCatalog = this.supportsCatalog
+    candidate.capabilities.usage = false
+    const apiKey: string = this.apiKeyDraft.trim()
+    const sourceProfileId: string = this.sourceProfileId
+    const secretLoaded: boolean = this.secretLoaded
+    const context: common.UIAbilityContext = this.context()
+    if (apiKey.length > 0) {
+      candidate.accountIdentityHash = LlmSourceSecretVault.apiKeyIdentityHash(apiKey)
     }
-    return current.copy()
+    return LlmSourceProfileRepository.upsert(context, candidate)
+      .then(async (): Promise<void> => {
+        if (secretLoaded && apiKey.length > 0) {
+          await LlmSourceSecretVault.saveApiKey(context, sourceProfileId, apiKey)
+        }
+      })
+      .then((): boolean => {
+        return true
+      })
+      .catch((error: Error): boolean => {
+        ComicTranslationDiagnosticLogger.warn(
+          'llm-source',
+          'profile_save_failed',
+          error.message,
+        )
+        if (showFailureToast) {
+          this.getUIContext().getPromptAction().showToast({
+            message: AppStrings.format('llm_source_save_failed', [error.message]),
+          })
+        }
+        return false
+      })
   }
 
-  private async saveSource(): Promise<void> {
-    if (this.saving) {
+  private catalogSubtitle(): string {
+    if (this.modelCatalogLoading) {
+      return AppStrings.get('comment_translation_fetch_models_loading')
+    }
+    if (this.modelCatalogCount > 0) {
+      return AppStrings.format('llm_source_catalog_count', [this.modelCatalogCount.toString()])
+    }
+    return AppStrings.get('llm_source_catalog_hint')
+  }
+
+  private fetchModels(): void {
+    if (this.modelCatalogLoading) {
       return
     }
-    if (!this.canSave()) {
-      this.errorMessage = AppStrings.get('settings_translation_source_required')
-      return
-    }
-    this.saving = true
-    this.errorMessage = ''
-    try {
-      const profile: LlmSourceProfile = this.profileCandidate()
-      const apiKey: string = this.apiKeyDraft.trim()
-      if (apiKey.length > 0) {
-        profile.accountIdentityHash = LlmSourceSecretVault.apiKeyIdentityHash(apiKey)
+    this.persistDrafts(true).then((saved: boolean): void => {
+      if (!saved) {
+        return
       }
-      await LlmSourceProfileRepository.upsert(this.context(), profile)
-      await LlmSourceProfileRepository.saveBinding(
-        this.context(),
-        this.nextBinding(LLM_CONSUMER_MANGA_TRANSLATION, this.useMangaTranslation),
-      )
-      await LlmSourceProfileRepository.saveBinding(
-        this.context(),
-        this.nextBinding(LLM_CONSUMER_COMMENT_TRANSLATION, this.useCommentTranslation),
-      )
-      if (apiKey.length > 0) {
-        await LlmSourceSecretVault.saveApiKey(this.context(), this.sourceProfileId, apiKey)
-      }
-      this.apiKeyDraft = ''
-      this.apiKeyStored = true
-      this.isNewSource = false
-    } catch (_error) {
-      this.errorMessage = AppStrings.get('settings_translation_source_save_failed')
-    } finally {
-      this.saving = false
-    }
+      const sourceProfileId: string = this.sourceProfileId
+      this.modelCatalogLoading = true
+      ComicTranslationModelCatalogService.fetchSource(this.context(), sourceProfileId)
+        .then((models: string[]): void => {
+          this.modelCatalogCount = models.length
+          this.getUIContext().getPromptAction().showToast({
+            message: models.length > 0
+              ? AppStrings.format('llm_source_catalog_count', [models.length.toString()])
+              : AppStrings.get('comment_translation_models_empty'),
+          })
+        })
+        .catch((error: Error): void => {
+          ComicTranslationDiagnosticLogger.warn(
+            'llm-source',
+            'model_catalog_failed',
+            error.message,
+          )
+          this.getUIContext().getPromptAction().showToast({
+            message: AppStrings.format('comment_translation_models_failed', [error.message]),
+          })
+        })
+        .finally((): void => {
+          this.modelCatalogLoading = false
+        })
+    })
+  }
+
+  private isBoundTo(consumerId: string, sourceProfileId: string): boolean {
+    const binding: LlmConsumerBinding = consumerId === LLM_CONSUMER_COMMENT_TRANSLATION
+      ? this.sources.commentBinding
+      : this.sources.mangaBinding
+    return binding.configured() && binding.sourceProfileId === sourceProfileId
   }
 
   private referencedConsumerNames(): string {
@@ -250,6 +235,9 @@ export struct LlmSourceDetailPage {
   }
 
   private deleteSource(): void {
+    if (this.deleting) {
+      return
+    }
     this.deleting = true
     LlmSourceProfileRepository.remove(this.context(), this.sourceProfileId)
       .then((): void => {
@@ -290,7 +278,6 @@ export struct LlmSourceDetailPage {
           .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
           .onChange((value: string): void => {
             this.displayNameDraft = value
-            this.errorMessage = ''
           })
       } else if (field === 'baseUrl') {
         TextInput({ text: this.baseUrlDraft, placeholder: 'https://api.openai.com' })
@@ -302,14 +289,11 @@ export struct LlmSourceDetailPage {
           .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
           .onChange((value: string): void => {
             this.baseUrlDraft = value
-            this.errorMessage = ''
           })
-      } else if (field === 'apiKey') {
+      } else {
         TextInput({
           text: this.apiKeyDraft,
-          placeholder: this.apiKeyStored
-            ? AppStrings.get('settings_translation_source_api_key_saved')
-            : '',
+          placeholder: this.apiKeyStateText(),
         })
           .type(InputType.Password)
           .width('100%')
@@ -319,19 +303,6 @@ export struct LlmSourceDetailPage {
           .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
           .onChange((value: string): void => {
             this.apiKeyDraft = value
-            this.errorMessage = ''
-          })
-      } else {
-        TextInput({ text: this.modelIdDraft, placeholder: 'gpt-4.1-mini' })
-          .type(InputType.Normal)
-          .width('100%')
-          .height(48)
-          .fontSize(ThemeTokens.FONT_SIZE_BODY)
-          .backgroundColor(ThemeTokens.SURFACE_SUB)
-          .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
-          .onChange((value: string): void => {
-            this.modelIdDraft = value
-            this.errorMessage = ''
           })
       }
     }
@@ -350,7 +321,7 @@ export struct LlmSourceDetailPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.cloud'),
         title: AppStrings.get('llm_source_type'),
-        trailingText: AppStrings.get('settings_translation_source_type_openai'),
+        trailingText: AppStrings.get('llm_source_type_api'),
         showChevron: false,
       })
       this.RowDivider()
@@ -359,28 +330,30 @@ export struct LlmSourceDetailPage {
       this.TextInputRow(AppStrings.get('llm_source_base_url'), 'baseUrl')
       this.RowDivider()
       this.TextInputRow(AppStrings.get('llm_source_api_key'), 'apiKey')
-      this.RowDivider()
-      this.TextInputRow(AppStrings.get('settings_translation_source_model'), 'model')
     }
   }
 
   @Builder
   private ConsumerGroup() {
-    Column({ space: ThemeTokens.SPACE_XS }) {
+    Column({ space: ThemeTokens.SPACE_SM }) {
       NextNGroupedListSection() {
         NextNListRow({
           leadingIcon: $r('sys.symbol.translate'),
           title: AppStrings.get('llm_source_support_comments'),
           hasSwitch: true,
-          checked: this.useCommentTranslation,
+          checked: this.supportsComments,
           showChevron: false,
           onAction: (): void => {
-            this.useCommentTranslation = !this.useCommentTranslation
-            this.errorMessage = ''
+            if (!this.supportsComments && !this.supportsManga) {
+              return
+            }
+            this.supportsComments = !this.supportsComments
           },
           onSwitchChange: (value: boolean): void => {
-            this.useCommentTranslation = value
-            this.errorMessage = ''
+            if (!value && !this.supportsManga) {
+              return
+            }
+            this.supportsComments = value
           },
         })
         this.RowDivider()
@@ -388,15 +361,33 @@ export struct LlmSourceDetailPage {
           leadingIcon: $r('sys.symbol.picture'),
           title: AppStrings.get('llm_source_support_manga'),
           hasSwitch: true,
-          checked: this.useMangaTranslation,
+          checked: this.supportsManga,
           showChevron: false,
           onAction: (): void => {
-            this.useMangaTranslation = !this.useMangaTranslation
-            this.errorMessage = ''
+            if (!this.supportsManga && !this.supportsComments) {
+              return
+            }
+            this.supportsManga = !this.supportsManga
           },
           onSwitchChange: (value: boolean): void => {
-            this.useMangaTranslation = value
-            this.errorMessage = ''
+            if (!value && !this.supportsComments) {
+              return
+            }
+            this.supportsManga = value
+          },
+        })
+        this.RowDivider()
+        NextNListRow({
+          leadingIcon: $r('sys.symbol.arrow_down_circle'),
+          title: AppStrings.get('llm_source_support_catalog'),
+          hasSwitch: true,
+          checked: this.supportsCatalog,
+          showChevron: false,
+          onAction: (): void => {
+            this.supportsCatalog = !this.supportsCatalog
+          },
+          onSwitchChange: (value: boolean): void => {
+            this.supportsCatalog = value
           },
         })
       }
@@ -404,24 +395,28 @@ export struct LlmSourceDetailPage {
         .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
         .fontColor(ThemeTokens.TEXT_TERTIARY)
         .width('100%')
-        .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD })
+        .padding({
+          left: ThemeTokens.SPACE_MD,
+          right: ThemeTokens.SPACE_MD,
+        })
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)
   }
 
   @Builder
-  private SaveGroup() {
+  private CatalogGroup() {
     NextNGroupedListSection() {
       NextNListRow({
-        leadingIcon: $r('sys.symbol.checkmark_circle'),
-        title: AppStrings.get('settings_translation_source_save'),
-        subtitle: AppStrings.get('settings_translation_source_save_hint'),
-        trailingText: this.saving ? AppStrings.get('common_loading') : '',
-        showChevron: false,
-        isEnabled: !this.saving,
+        leadingIcon: $r('sys.symbol.arrow_down_circle'),
+        title: AppStrings.get('llm_source_catalog'),
+        subtitle: this.catalogSubtitle(),
+        trailingText: this.modelCatalogCount > 0 ? this.modelCatalogCount.toString() : '',
+        showChevron: true,
+        isEnabled: !this.modelCatalogLoading && this.supportsCatalog &&
+          this.apiKeyDraft.trim().length > 0,
         onAction: (): void => {
-          this.saveSource()
+          this.fetchModels()
         },
       })
     }
@@ -461,21 +456,10 @@ export struct LlmSourceDetailPage {
             this.ConsumerGroup()
           }
           ListItem() {
-            this.SaveGroup()
+            this.CatalogGroup()
           }
-          if (!this.isNewSource) {
-            ListItem() {
-              this.DeleteGroup()
-            }
-          }
-          if (this.errorMessage.length > 0) {
-            ListItem() {
-              Text(this.errorMessage)
-                .width('100%')
-                .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-                .fontColor(Color.Red)
-                .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD })
-            }
+          ListItem() {
+            this.DeleteGroup()
           }
         }
       }

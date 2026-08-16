@@ -5794,3 +5794,46 @@ authorize an edit, replace a device comparison, or define product completion.
   .hvigor/outputs/llm-source-manager/llm-manager-two-sources.png。
 - 未决：NextE 同视口逐页对照与用户终验仍 OPEN；模型保留在来源详情页（NextN
   无模型目录服务，不引入空菜单）的边界需要用户确认可接受。
+
+## OPEN — LLM 源详情页对齐 NextE 自动保存 + 消费页行内源/模型选择 + 标签翻译启用语义 — 2026-08-16
+
+- 用户指令：审计报告 P1/P2 差异直接按 NextE 修复，“保持和 nexte 一样，不要问太多”；
+  审计结论见 /private/tmp/audit-translation-settings.md。
+- 涉及父树边界：SettingsPage(ADVANCED) 的 TranslationCapabilitiesGroup（LLM 源行
+  副标题、标签翻译行尾值）→ entry 路由 llmSourceManager/llmSourceDetail →
+  LlmSourceDetailPage（自动保存/能力开关/查询模型/删除）；Comment/Comic
+  TranslationSettingsPage 的来源/模型两行（行内下拉+模型目录）；TagTranslation
+  SettingsPage 的启用开关与启动更新门控。
+- 修改前：
+  1. 详情页有显式“保存翻译来源”按钮、模型手填行，返回会静默丢弃编辑；
+  2. 评论/漫画页来源行点击进管理页，模型行点击进详情页手填；
+  3. 标签翻译页启用开关绑定浏览偏好 showTranslatedTagLabels，开启不触发下载，
+     启动自动更新不检查启用状态；设置根页该行尾值同样绑定浏览偏好。
+- 修改后：
+  1. 详情页无保存按钮/模型字段；aboutToDisappear 自动持久化草稿，删除/被引用
+     确认保留；新增“模型列表”能力开关与“查询可用模型”行（OpenAI 兼容
+     /models 目录，移植自 NextE ComicTranslationModelCatalogService）；
+  2. 评论/漫画页来源行为行内下拉（无兼容源时显示
+     llm_binding_no_compatible_source 并进管理页），选择来源后自动查询该源
+     模型目录并弹出模型菜单，选中即 saveBinding；
+  3. 标签翻译页启用开关改为 tagSettings.enabled：开启且本地为空自动立即更新，
+     启动自动更新仅在 enabled 且策略为“启动 App 时更新”时执行；设置根页尾值
+     同步改为 enabled；
+  4. 补齐 llm_* 与模型目录文案（四语言），删除迁移遗留死键
+     settings_reader_comic_translation_source_* / settings_translation_source_*。
+- 最小性理由：只替换审计点名的三个差异面；Codex OAuth/用量等无服务叶子保持缺失，
+  不新增空控件；“查询可用模型”行仅在有 modelCatalog 能力且已保存 Key 时可点。
+- 视觉验证计划：构建签名 HAP 安装到 237 设备后，验证详情页编辑后返回自动保存、
+  删除后回列表、评论/漫画页来源与模型下拉、标签翻译启用开关空库自动下载、
+  设置根页标签翻译行尾值；同视口对照 NextE 对应页仍 OPEN。
+- 真机证据（2026-08-16 19:50–20:03 +0800，237 设备，install -r 未清数据）：
+  构建签名 HAP 安装后，高级页显示 LLM 源副标题“统一管理可复用的 API 连接”、
+  标签翻译行尾值“关”；LLM 源详情页含 源类型/名称/基础 URL/API Key/三个能力
+  开关/查询可用模型/删除，无保存按钮与模型字段；关闭“用于评论翻译”后返回再
+  重进，该开关保持关闭（自动保存生效）；评论翻译页 LLM 源/模型行显示
+  “选择一条可复用连接”“查询该源并选择模型”，来源下拉菜单列出 OpenAI 兼容
+  API 并可选中；标签翻译启用开关置开后，设置根页尾值变为“开”，force-stop
+  冷启动后仍为“开”；删除流程确认按钮显示“删除”，删除后回管理器空态。验证后
+  已删除临时源并关闭标签翻译，设备恢复验证前状态。
+- 未决风险：模型菜单完整选择链路需真实 API Key 才可端侧验证（当前仅验证来源
+  下拉与查询入口）；NextE 同视口逐页对照与用户终验仍 OPEN。

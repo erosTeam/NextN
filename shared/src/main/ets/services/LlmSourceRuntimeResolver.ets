@@ -67,6 +67,25 @@ export class LlmSourceRuntimeResolver {
     throw new Error('Selected LLM source is missing')
   }
 
+  static async resolveCatalogSource(
+    context: common.UIAbilityContext,
+    sourceProfileId: string,
+  ): Promise<LlmSourceRuntimeConfig> {
+    const profile: LlmSourceProfile = LlmSourceRuntimeResolver.profile(sourceProfileId)
+    if (profile.sourceType !== LLM_SOURCE_TYPE_OPENAI_COMPATIBLE ||
+      !profile.capabilities.modelCatalog) {
+      throw new Error('Selected LLM source does not support model catalog')
+    }
+    const apiKey: string = await LlmSourceSecretVault.readApiKey(context, sourceProfileId)
+    if (apiKey.length === 0) {
+      throw new Error('Selected LLM source API key is missing')
+    }
+    if (!LlmSourceSecretVault.apiKeyMatchesIdentity(apiKey, profile.accountIdentityHash)) {
+      throw new Error('Selected LLM source API key does not match its stored identity')
+    }
+    return LlmSourceRuntimeResolver.runtimeConfig(profile, '', apiKey)
+  }
+
   private static async resolveConsumer(
     context: common.UIAbilityContext,
     consumerId: string,

@@ -4,11 +4,15 @@ import {
   AppStrings,
   COMMENT_TRANSLATION_DISPLAY_BILINGUAL,
   COMMENT_TRANSLATION_DISPLAY_REPLACE,
+  ComicTranslationDiagnosticLogger,
+  ComicTranslationModelCatalogService,
   CommentTranslationService,
   CommentTranslationSettings,
   CommentTranslationSettingsState,
   LLM_CONSUMER_COMMENT_TRANSLATION,
+  LlmConsumerBinding,
   LlmSourceProfile,
+  LlmSourceProfileRepository,
   LlmSourceProfilesState,
   NextNGroupedListSection,
   NextNListRow,
@@ -23,20 +27,27 @@ import { appMenuOptions } from 'shared'
 /**
  * Dedicated comment-translation destination, matching NextE's
  * CommentTranslationSettingsPage: enable, auto-translate, display mode, the
- * comment consumer binding, and the translation cache.
+ * comment consumer binding with an inline source/model selector, and the
+ * translation cache.
  */
 @ComponentV2
 export struct CommentTranslationSettingsPage {
   @Local settings: CommentTranslationSettingsState = connectCommentTranslationSettings()
   @Local sources: LlmSourceProfilesState = connectLlmSourceProfiles()
   @Local displayMenuShown: boolean = false
+  @Local sourceMenuShown: boolean = false
+  @Local modelMenuShown: boolean = false
+  @Local fetchingModels: boolean = false
+  @Local modelOptions: string[] = []
+  @Local selectedSourceId: string = ''
+  @Local selectedModelId: string = ''
   @Local cacheCount: number = 0
   @Local clearingCache: boolean = false
   @Param scroller: Scroller = new Scroller()
   @Event onOpenTranslationSource?: (consumerId: string) => void
-  @Event onEditTranslationModel?: (consumerId: string) => void
 
   aboutToAppear(): void {
+    this.restoreBinding()
     this.refreshCacheCount()
   }
 
@@ -67,27 +78,109 @@ export struct CommentTranslationSettingsPage {
       : AppStrings.get('comment_translation_display_replace')
   }
 
-  private commentSource(): LlmSourceProfile | null {
-    const binding = this.sources.commentBinding
-    if (!binding.configured()) {
-      return null
+  private compatibleSources(): LlmSourceProfile[] {
+    const profiles: LlmSourceProfile[] = []
+    for (let index: number = 0; index < this.sources.profiles.length; index++) {
+      const profile: LlmSourceProfile = this.sources.profiles[index]
+      if (supportsCommentTranslation(profile)) {
+        profiles.push(profile)
+      }
     }
+    return profiles
+  }
+
+  private restoreBinding(): void {
+    const binding: LlmConsumerBinding = this.sources.commentBinding
     const profile: LlmSourceProfile | null = this.sources.findById(binding.sourceProfileId)
-    return profile !== null && supportsCommentTranslation(profile) ? profile : null
+    if (profile === null || !supportsCommentTranslation(profile) || !binding.configured()) {
+      this.selectedSourceId = ''
+      this.selectedModelId = ''
+      return
+    }
+    this.selectedSourceId = binding.sourceProfileId
+    this.selectedModelId = binding.modelId
   }
 
   private selectedSourceText(): string {
-    const profile: LlmSourceProfile | null = this.commentSource()
+    const profile: LlmSourceProfile | null = this.sources.findById(this.selectedSourceId)
     return profile === null
-      ? AppStrings.get('settings_translation_source_not_configured')
+      ? AppStrings.get('llm_binding_not_configured')
       : profile.displayName
   }
 
   private selectedModelText(): string {
-    const binding = this.sources.commentBinding
-    return binding.configured() && binding.modelId.length > 0
-      ? binding.modelId
-      : AppStrings.get('settings_translation_source_not_configured')
+    return this.selectedModelId.length > 0
+      ? this.selectedModelId
+      : AppStrings.get('llm_binding_not_configured')
+  }
+
+  private openSourceSelector(): void {
+    if (this.compatibleSources().length === 0) {
+      if (this.onOpenTranslationSource) {
+        this.onOpenTranslationSource(LLM_CONSUMER_COMMENT_TRANSLATION)
+      }
+      return
+    }
+    this.sourceMenuShown = true
+  }
+
+  private selectSource(sourceProfileId: string): void {
+    this.sourceMenuShown = false
+    if (sourceProfileId === this.selectedSourceId) {
+      return
+    }
+    this.selectedSourceId = sourceProfileId
+    this.selectedModelId = ''
+    this.modelOptions = []
+    this.fetchModels()
+  }
+
+  private fetchModels(): void {
+    if (this.fetchingModels || this.selectedSourceId.length === 0) {
+      return
+    }
+    this.fetchingModels = true
+    ComicTranslationModelCatalogService.fetchSource(this.context(), this.selectedSourceId)
+      .then((models: string[]): void => {
+        this.modelOptions = models
+        if (models.length === 0) {
+          this.getUIContext().getPromptAction().showToast({
+            message: AppStrings.get('comment_translation_models_empty'),
+          })
+          return
+        }
+        this.modelMenuShown = true
+      })
+      .catch((error: Error): void => {
+        ComicTranslationDiagnosticLogger.warn(
+          'comment-translation',
+          'model_catalog_failed',
+          error.message,
+        )
+        this.getUIContext().getPromptAction().showToast({
+          message: AppStrings.format('comment_translation_models_failed', [error.message]),
+        })
+      })
+      .finally((): void => {
+        this.fetchingModels = false
+      })
+  }
+
+  private selectModel(modelId: string): void {
+    const binding: LlmConsumerBinding = new LlmConsumerBinding()
+    binding.consumerId = LLM_CONSUMER_COMMENT_TRANSLATION
+    binding.sourceProfileId = this.selectedSourceId
+    binding.modelId = modelId
+    LlmSourceProfileRepository.saveBinding(this.context(), binding)
+      .then((): void => {
+        this.selectedModelId = modelId
+        this.modelMenuShown = false
+      })
+      .catch((error: Error): void => {
+        this.getUIContext().getPromptAction().showToast({
+          message: AppStrings.format('llm_binding_save_failed', [error.message]),
+        })
+      })
   }
 
   private async refreshCacheCount(): Promise<void> {
@@ -168,6 +261,46 @@ export struct CommentTranslationSettingsPage {
     }
   }
 
+  @Builder
+  private SourceMenu() {
+    Menu() {
+      ForEach(
+        this.compatibleSources(),
+        (profile: LlmSourceProfile): void => {
+          MenuItem({
+            content: profile.displayName,
+            symbolEndIcon: this.selectedSourceId === profile.sourceProfileId
+              ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+              : undefined,
+          }).onClick((): void => {
+            this.selectSource(profile.sourceProfileId)
+          })
+        },
+        (profile: LlmSourceProfile) => profile.sourceProfileId,
+      )
+    }
+  }
+
+  @Builder
+  private ModelMenu() {
+    Menu() {
+      ForEach(
+        this.modelOptions,
+        (model: string): void => {
+          MenuItem({
+            content: model,
+            symbolEndIcon: this.selectedModelId === model
+              ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+              : undefined,
+          }).onClick((): void => {
+            this.selectModel(model)
+          })
+        },
+        (model: string) => model,
+      )
+    }
+  }
+
   build() {
     Column() {
       SecondaryListScaffold({
@@ -244,31 +377,57 @@ export struct CommentTranslationSettingsPage {
         }
         ListItem() {
           NextNGroupedListSection() {
-            NextNListRow({
-              leadingIcon: $r('sys.symbol.externaldrive'),
-              title: AppStrings.get('llm_binding_source'),
-              trailingText: this.selectedSourceText(),
-              isEnabled: this.settings.enabled,
-              accessibilityLabel: AppStrings.get('comment_translation_source_a11y'),
-              onAction: (): void => {
-                if (this.settings.enabled && this.onOpenTranslationSource) {
-                  this.onOpenTranslationSource(LLM_CONSUMER_COMMENT_TRANSLATION)
-                }
+            Column() {
+              NextNListRow({
+                leadingIcon: $r('sys.symbol.externaldrive'),
+                title: AppStrings.get('llm_binding_source'),
+                subtitle: this.compatibleSources().length === 0
+                  ? AppStrings.get('llm_binding_no_compatible_source')
+                  : AppStrings.get('llm_binding_source_hint'),
+                trailingText: this.selectedSourceText(),
+                trailingDropdown: this.compatibleSources().length > 0,
+                showChevron: this.compatibleSources().length === 0,
+                isEnabled: this.settings.enabled,
+                accessibilityLabel: AppStrings.get('comment_translation_source_a11y'),
+                onAction: (): void => {
+                  if (this.settings.enabled) {
+                    this.openSourceSelector()
+                  }
+                },
+              })
+            }
+            .bindMenu(this.sourceMenuShown, this.SourceMenu, appMenuOptions({
+              placement: Placement.BottomRight,
+              onDisappear: (): void => {
+                this.sourceMenuShown = false
               },
-            })
+            }))
             this.RowDivider()
-            NextNListRow({
-              leadingIcon: $r('sys.symbol.arrow_down_circle'),
-              title: AppStrings.get('llm_binding_model'),
-              trailingText: this.selectedModelText(),
-              isEnabled: this.settings.enabled,
-              accessibilityLabel: AppStrings.get('comment_translation_model_a11y'),
-              onAction: (): void => {
-                if (this.settings.enabled && this.onEditTranslationModel) {
-                  this.onEditTranslationModel(LLM_CONSUMER_COMMENT_TRANSLATION)
-                }
+            Column() {
+              NextNListRow({
+                leadingIcon: $r('sys.symbol.arrow_down_circle'),
+                title: AppStrings.get('llm_binding_model'),
+                subtitle: this.fetchingModels
+                  ? AppStrings.get('comment_translation_fetch_models_loading')
+                  : AppStrings.get('llm_binding_model_hint'),
+                trailingText: this.selectedModelText(),
+                trailingDropdown: true,
+                isEnabled: this.settings.enabled &&
+                  this.selectedSourceId.length > 0 && !this.fetchingModels,
+                accessibilityLabel: AppStrings.get('comment_translation_model_a11y'),
+                onAction: (): void => {
+                  if (this.settings.enabled) {
+                    this.fetchModels()
+                  }
+                },
+              })
+            }
+            .bindMenu(this.modelMenuShown, this.ModelMenu, appMenuOptions({
+              placement: Placement.BottomRight,
+              onDisappear: (): void => {
+                this.modelMenuShown = false
               },
-            })
+            }))
           }
         }
         ListItem() {

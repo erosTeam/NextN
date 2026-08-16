@@ -166,6 +166,7 @@ export {
   MANGA_RENDERING_INPAINTING_FAST,
 } from './settings/MangaRenderingServiceSettings'
 export { LlmSourceRuntimeConfig, LlmSourceRuntimeResolver } from './services/LlmSourceRuntimeResolver'
+export { ComicTranslationModelCatalogService } from './services/ComicTranslationModelCatalogService'
 export { ComicTranslationDiagnosticLogger } from './services/ComicTranslationDiagnosticLogger'
 export {
   MAX_COMIC_PREVIOUS_PAGE_CONTEXT,

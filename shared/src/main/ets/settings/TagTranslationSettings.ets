@@ -11,6 +11,7 @@ import {
 } from '../state/TagTranslationSettingsState'
 
 const SETTINGS_STORE: string = 'nextn_settings'
+const KEY_ENABLED: string = 'tag_translation_enabled'
 const KEY_USE_CDN: string = 'tag_translation_use_cdn'
 const KEY_UPDATE_MODE: string = 'tag_translation_update_mode'
 const STARTUP_UPDATE_DELAY_MS: number = 10000
@@ -23,6 +24,8 @@ export class TagTranslationSettings {
     try {
       const store: preferences.Preferences =
         await preferences.getPreferences(context, SETTINGS_STORE)
+      connectTagTranslationSettings().enabled =
+        store.getSync(KEY_ENABLED, false) as boolean
       connectTagTranslationSettings().useCdn =
         store.getSync(KEY_USE_CDN, false) as boolean
       connectTagTranslationSettings().updateMode = TagTranslationSettings.normalizeMode(
@@ -42,6 +45,11 @@ export class TagTranslationSettings {
   static async setUseCdn(context: common.UIAbilityContext, useCdn: boolean): Promise<void> {
     connectTagTranslationSettings().useCdn = useCdn
     await TagTranslationSettings.saveBoolean(context, KEY_USE_CDN, useCdn)
+  }
+
+  static async setEnabled(context: common.UIAbilityContext, enabled: boolean): Promise<void> {
+    connectTagTranslationSettings().enabled = enabled
+    await TagTranslationSettings.saveBoolean(context, KEY_ENABLED, enabled)
   }
 
   static async setUpdateMode(context: common.UIAbilityContext, mode: string): Promise<void> {
@@ -94,7 +102,7 @@ export class TagTranslationSettings {
 
   static scheduleStartupUpdate(context: common.UIAbilityContext): void {
     const state = connectTagTranslationSettings()
-    if (state.updateMode !== TAG_TRANSLATION_UPDATE_EVERY_START) {
+    if (!state.enabled || state.updateMode !== TAG_TRANSLATION_UPDATE_EVERY_START) {
       return
     }
     setTimeout((): void => {

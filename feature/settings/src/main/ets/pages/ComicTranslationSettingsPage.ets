@@ -1,9 +1,14 @@
 import { common } from '@kit.AbilityKit'
+import { SymbolGlyphModifier } from '@kit.ArkUI'
 import {
   AppStrings,
+  ComicTranslationDiagnosticLogger,
+  ComicTranslationModelCatalogService,
   ComicTranslationModelService,
   LLM_CONSUMER_MANGA_TRANSLATION,
+  LlmConsumerBinding,
   LlmSourceProfile,
+  LlmSourceProfileRepository,
   LlmSourceProfilesState,
   MangaRenderingServiceSettings,
   NextNGroupedListSection,
@@ -13,25 +18,33 @@ import {
   connectLlmSourceProfiles,
   supportsMangaTranslation,
 } from 'shared'
+import { appMenuOptions } from 'shared'
 
 /**
  * Dedicated comic-translation destination, matching NextE's
- * ComicTranslationSettingsPage. NextN supports the local detector, the
- * self-hosted rendering service, and the manga consumer binding; torii and
- * live evaluation are unsupported leaves and stay absent.
+ * ComicTranslationSettingsPage. NextN supports the manga consumer binding
+ * with an inline source/model selector, the local detector, and the
+ * self-hosted rendering service; torii and live evaluation are unsupported
+ * leaves and stay absent.
  */
 @ComponentV2
 export struct ComicTranslationSettingsPage {
   @Local sources: LlmSourceProfilesState = connectLlmSourceProfiles()
+  @Local sourceMenuShown: boolean = false
+  @Local modelMenuShown: boolean = false
+  @Local fetchingModels: boolean = false
+  @Local modelOptions: string[] = []
+  @Local selectedSourceId: string = ''
+  @Local selectedModelId: string = ''
   @Local localModelInstalled: boolean = false
   @Local localModelChanging: boolean = false
   @Local mangaRenderingServiceEnabled: boolean = false
   @Param scroller: Scroller = new Scroller()
   @Event onOpenTranslationSource?: (consumerId: string) => void
-  @Event onEditTranslationModel?: (consumerId: string) => void
   @Event onOpenMangaRenderingService?: () => void
 
   aboutToAppear(): void {
+    this.restoreBinding()
     this.refreshLocalModel()
     this.refreshMangaRenderingService()
   }
@@ -40,27 +53,109 @@ export struct ComicTranslationSettingsPage {
     return this.getUIContext().getHostContext() as common.UIAbilityContext
   }
 
-  private mangaSource(): LlmSourceProfile | null {
-    const binding = this.sources.mangaBinding
-    if (!binding.configured()) {
-      return null
+  private compatibleSources(): LlmSourceProfile[] {
+    const profiles: LlmSourceProfile[] = []
+    for (let index: number = 0; index < this.sources.profiles.length; index++) {
+      const profile: LlmSourceProfile = this.sources.profiles[index]
+      if (supportsMangaTranslation(profile)) {
+        profiles.push(profile)
+      }
     }
+    return profiles
+  }
+
+  private restoreBinding(): void {
+    const binding: LlmConsumerBinding = this.sources.mangaBinding
     const profile: LlmSourceProfile | null = this.sources.findById(binding.sourceProfileId)
-    return profile !== null && supportsMangaTranslation(profile) ? profile : null
+    if (profile === null || !supportsMangaTranslation(profile) || !binding.configured()) {
+      this.selectedSourceId = ''
+      this.selectedModelId = ''
+      return
+    }
+    this.selectedSourceId = binding.sourceProfileId
+    this.selectedModelId = binding.modelId
   }
 
   private selectedSourceText(): string {
-    const profile: LlmSourceProfile | null = this.mangaSource()
+    const profile: LlmSourceProfile | null = this.sources.findById(this.selectedSourceId)
     return profile === null
-      ? AppStrings.get('settings_translation_source_not_configured')
+      ? AppStrings.get('llm_binding_not_configured')
       : profile.displayName
   }
 
   private selectedModelText(): string {
-    const binding = this.sources.mangaBinding
-    return binding.configured() && binding.modelId.length > 0
-      ? binding.modelId
-      : AppStrings.get('settings_translation_source_not_configured')
+    return this.selectedModelId.length > 0
+      ? this.selectedModelId
+      : AppStrings.get('llm_binding_not_configured')
+  }
+
+  private openSourceSelector(): void {
+    if (this.compatibleSources().length === 0) {
+      if (this.onOpenTranslationSource) {
+        this.onOpenTranslationSource(LLM_CONSUMER_MANGA_TRANSLATION)
+      }
+      return
+    }
+    this.sourceMenuShown = true
+  }
+
+  private selectSource(sourceProfileId: string): void {
+    this.sourceMenuShown = false
+    if (sourceProfileId === this.selectedSourceId) {
+      return
+    }
+    this.selectedSourceId = sourceProfileId
+    this.selectedModelId = ''
+    this.modelOptions = []
+    this.fetchModels()
+  }
+
+  private fetchModels(): void {
+    if (this.fetchingModels || this.selectedSourceId.length === 0) {
+      return
+    }
+    this.fetchingModels = true
+    ComicTranslationModelCatalogService.fetchSource(this.context(), this.selectedSourceId)
+      .then((models: string[]): void => {
+        this.modelOptions = models
+        if (models.length === 0) {
+          this.getUIContext().getPromptAction().showToast({
+            message: AppStrings.get('comment_translation_models_empty'),
+          })
+          return
+        }
+        this.modelMenuShown = true
+      })
+      .catch((error: Error): void => {
+        ComicTranslationDiagnosticLogger.warn(
+          'comic-translation',
+          'model_catalog_failed',
+          error.message,
+        )
+        this.getUIContext().getPromptAction().showToast({
+          message: AppStrings.format('comment_translation_models_failed', [error.message]),
+        })
+      })
+      .finally((): void => {
+        this.fetchingModels = false
+      })
+  }
+
+  private selectModel(modelId: string): void {
+    const binding: LlmConsumerBinding = new LlmConsumerBinding()
+    binding.consumerId = LLM_CONSUMER_MANGA_TRANSLATION
+    binding.sourceProfileId = this.selectedSourceId
+    binding.modelId = modelId
+    LlmSourceProfileRepository.saveBinding(this.context(), binding)
+      .then((): void => {
+        this.selectedModelId = modelId
+        this.modelMenuShown = false
+      })
+      .catch((error: Error): void => {
+        this.getUIContext().getPromptAction().showToast({
+          message: AppStrings.format('llm_binding_save_failed', [error.message]),
+        })
+      })
   }
 
   private async refreshLocalModel(): Promise<void> {
@@ -166,6 +261,46 @@ export struct ComicTranslationSettingsPage {
       .margin({ left: ThemeTokens.SPACE_MD })
   }
 
+  @Builder
+  private SourceMenu() {
+    Menu() {
+      ForEach(
+        this.compatibleSources(),
+        (profile: LlmSourceProfile): void => {
+          MenuItem({
+            content: profile.displayName,
+            symbolEndIcon: this.selectedSourceId === profile.sourceProfileId
+              ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+              : undefined,
+          }).onClick((): void => {
+            this.selectSource(profile.sourceProfileId)
+          })
+        },
+        (profile: LlmSourceProfile) => profile.sourceProfileId,
+      )
+    }
+  }
+
+  @Builder
+  private ModelMenu() {
+    Menu() {
+      ForEach(
+        this.modelOptions,
+        (model: string): void => {
+          MenuItem({
+            content: model,
+            symbolEndIcon: this.selectedModelId === model
+              ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+              : undefined,
+          }).onClick((): void => {
+            this.selectModel(model)
+          })
+        },
+        (model: string) => model,
+      )
+    }
+  }
+
   build() {
     Column() {
       SecondaryListScaffold({
@@ -175,29 +310,51 @@ export struct ComicTranslationSettingsPage {
       }) {
         ListItem() {
           NextNGroupedListSection() {
-            NextNListRow({
-              leadingIcon: $r('sys.symbol.cloud'),
-              title: AppStrings.get('llm_binding_source'),
-              trailingText: this.selectedSourceText(),
-              accessibilityLabel: AppStrings.get('comic_translation_source_a11y'),
-              onAction: (): void => {
-                if (this.onOpenTranslationSource) {
-                  this.onOpenTranslationSource(LLM_CONSUMER_MANGA_TRANSLATION)
-                }
+            Column() {
+              NextNListRow({
+                leadingIcon: $r('sys.symbol.externaldrive'),
+                title: AppStrings.get('llm_binding_source'),
+                subtitle: this.compatibleSources().length === 0
+                  ? AppStrings.get('llm_binding_no_compatible_source')
+                  : AppStrings.get('llm_binding_source_hint'),
+                trailingText: this.selectedSourceText(),
+                trailingDropdown: this.compatibleSources().length > 0,
+                showChevron: this.compatibleSources().length === 0,
+                accessibilityLabel: AppStrings.get('comic_translation_source_a11y'),
+                onAction: (): void => {
+                  this.openSourceSelector()
+                },
+              })
+            }
+            .bindMenu(this.sourceMenuShown, this.SourceMenu, appMenuOptions({
+              placement: Placement.BottomRight,
+              onDisappear: (): void => {
+                this.sourceMenuShown = false
               },
-            })
+            }))
             this.RowDivider()
-            NextNListRow({
-              leadingIcon: $r('sys.symbol.arrow_down_circle'),
-              title: AppStrings.get('llm_binding_model'),
-              trailingText: this.selectedModelText(),
-              accessibilityLabel: AppStrings.get('comic_translation_model_a11y'),
-              onAction: (): void => {
-                if (this.onEditTranslationModel) {
-                  this.onEditTranslationModel(LLM_CONSUMER_MANGA_TRANSLATION)
-                }
+            Column() {
+              NextNListRow({
+                leadingIcon: $r('sys.symbol.arrow_down_circle'),
+                title: AppStrings.get('llm_binding_model'),
+                subtitle: this.fetchingModels
+                  ? AppStrings.get('comment_translation_fetch_models_loading')
+                  : AppStrings.get('llm_binding_model_hint'),
+                trailingText: this.selectedModelText(),
+                trailingDropdown: true,
+                isEnabled: this.selectedSourceId.length > 0 && !this.fetchingModels,
+                accessibilityLabel: AppStrings.get('comic_translation_model_a11y'),
+                onAction: (): void => {
+                  this.fetchModels()
+                },
+              })
+            }
+            .bindMenu(this.modelMenuShown, this.ModelMenu, appMenuOptions({
+              placement: Placement.BottomRight,
+              onDisappear: (): void => {
+                this.modelMenuShown = false
               },
-            })
+            }))
           }
         }
         ListItem() {

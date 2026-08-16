@@ -3421,10 +3421,10 @@ export struct SettingsPage {
         leadingIcon: $r('sys.symbol.textformat'),
         title: AppStrings.get('settings_tag_translation_title'),
         subtitle: this.tagTranslationVersionText(),
-        trailingText: this.toggleStateLabel(this.browsePresentation.showTranslatedTagLabels),
+        trailingText: this.toggleStateLabel(this.tagTranslationSettings.enabled),
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_tag_translation_title'),
-          this.toggleStateLabel(this.browsePresentation.showTranslatedTagLabels),
+          this.toggleStateLabel(this.tagTranslationSettings.enabled),
         ]),
         onAction: (): void => {
           if (this.onOpenTagTranslation) {
@@ -3436,6 +3436,7 @@ export struct SettingsPage {
       NextNListRow({
         leadingIcon: $r('sys.symbol.cloud'),
         title: AppStrings.get('llm_sources_title'),
+        subtitle: AppStrings.get('llm_sources_hint'),
         accessibilityLabel: AppStrings.get('settings_translation_source_a11y'),
         onAction: (): void => {
           if (this.onOpenTranslationSource) {

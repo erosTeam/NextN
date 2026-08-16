@@ -1,7 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import {
   AppStrings,
-  LLM_CONSUMER_MANGA_TRANSLATION,
   LLM_SOURCE_TYPE_OPENAI_COMPATIBLE,
   LlmSourceProfile,
   LlmSourceProfileRepository,
@@ -24,15 +23,14 @@ export struct LlmSourceManagerPage {
   @Local sources: LlmSourceProfilesState = connectLlmSourceProfiles()
   @Local creating: boolean = false
   @Param scroller: Scroller = new Scroller()
-  @Param requestedConsumer: string = LLM_CONSUMER_MANGA_TRANSLATION
-  @Event onOpenSource?: (sourceProfileId: string, requestedConsumer: string) => void
+  @Event onOpenSource?: (sourceProfileId: string) => void
 
   private context(): common.UIAbilityContext {
     return this.getUIContext().getHostContext() as common.UIAbilityContext
   }
 
   private sourceTypeText(): string {
-    return AppStrings.get('settings_translation_source_type_openai')
+    return AppStrings.get('llm_source_type_api')
   }
 
   private sourceDisplayName(sourceProfileId: string): string {
@@ -42,7 +40,7 @@ export struct LlmSourceManagerPage {
 
   private openSource(sourceProfileId: string): void {
     if (this.onOpenSource) {
-      this.onOpenSource(sourceProfileId, this.requestedConsumer)
+      this.onOpenSource(sourceProfileId)
     }
   }
 
@@ -54,11 +52,12 @@ export struct LlmSourceManagerPage {
     const profile: LlmSourceProfile = new LlmSourceProfile()
     profile.sourceProfileId = generateLlmSourceProfileId()
     profile.sourceType = LLM_SOURCE_TYPE_OPENAI_COMPATIBLE
-    profile.displayName = AppStrings.get('settings_translation_source_default_name')
+    profile.displayName = AppStrings.get('llm_source_type_api')
     profile.baseUrl = 'https://api.openai.com'
     profile.capabilities.chatCompletions = true
     profile.capabilities.responses = true
     profile.capabilities.imageInput = true
+    profile.capabilities.modelCatalog = true
     LlmSourceProfileRepository.upsert(this.context(), profile)
       .then((): void => {
         this.openSource(profile.sourceProfileId)

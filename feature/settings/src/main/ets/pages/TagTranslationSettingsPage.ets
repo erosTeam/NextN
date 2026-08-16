@@ -2,8 +2,6 @@ import { common } from '@kit.AbilityKit'
 import { SymbolGlyphModifier } from '@kit.ArkUI'
 import {
   AppStrings,
-  BrowsePresentationService,
-  BrowsePresentationState,
   NextNGroupedListSection,
   NextNListRow,
   NhTagTranslationStatus,
@@ -16,7 +14,6 @@ import {
   TagDictionaryUpdateFailure,
   TagTranslationRepository,
   ThemeTokens,
-  connectBrowsePresentation,
   connectTagTranslationSettings,
   releaseTagTranslationVersionLabel,
 } from 'shared'
@@ -49,7 +46,6 @@ export struct TagTranslationSettingsPage {
   @Local tagDictionaryError: string = ''
   @Local tagSettings: TagTranslationSettingsState = connectTagTranslationSettings()
   @Local updateModeMenuShown: boolean = false
-  @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
   @Param scroller: Scroller = new Scroller()
 
   aboutToAppear(): void {
@@ -64,8 +60,14 @@ export struct TagTranslationSettingsPage {
     return AppStrings.get(enabled ? 'settings_toggle_on' : 'settings_toggle_off')
   }
 
-  private setShowTranslatedTagLabels(value: boolean): void {
-    BrowsePresentationService.setShowTranslatedTagLabels(this.context(), value).catch((): void => {})
+  private setEnabled(value: boolean): void {
+    TagTranslationSettings.setEnabled(this.context(), value)
+      .then((): void => {
+        if (value && this.tagDictionaryRowCount <= 0) {
+          this.updateTagDictionary()
+        }
+      })
+      .catch((): void => {})
   }
 
   private async loadTagDictionaryStatus(): Promise<void> {
@@ -240,17 +242,17 @@ export struct TagTranslationSettingsPage {
               title: AppStrings.get('settings_tag_translation_enable'),
               subtitle: AppStrings.get('settings_tag_translation_enable_hint'),
               hasSwitch: true,
-              checked: this.browsePresentation.showTranslatedTagLabels,
+              checked: this.tagSettings.enabled,
               showChevron: false,
               accessibilityLabel: AppStrings.format('settings_row_a11y', [
                 AppStrings.get('settings_tag_translation_enable'),
-                this.toggleStateLabel(this.browsePresentation.showTranslatedTagLabels),
+                this.toggleStateLabel(this.tagSettings.enabled),
               ]),
               onAction: (): void => {
-                this.setShowTranslatedTagLabels(!this.browsePresentation.showTranslatedTagLabels)
+                this.setEnabled(!this.tagSettings.enabled)
               },
               onSwitchChange: (value: boolean): void => {
-                this.setShowTranslatedTagLabels(value)
+                this.setEnabled(value)
               },
             })
             this.RowDivider()
