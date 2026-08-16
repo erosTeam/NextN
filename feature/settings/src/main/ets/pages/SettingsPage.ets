@@ -30,6 +30,7 @@ import {
   NextNSectionHeader,
   NextNModalScaffold,
   SecondaryListScaffold,
+  ClipboardLinkBuildFlag,
   NhPageCacheService,
   ReaderImageCacheService,
   ReaderImageCacheSettings,
@@ -2140,25 +2141,27 @@ export struct SettingsPage {
 
   @Builder
   private ClipboardLinkGroup() {
-    NextNGroupedListSection() {
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.link'),
-        title: AppStrings.get('settings_clipboard_link'),
-        subtitle: AppStrings.get('settings_clipboard_link_hint'),
-        hasSwitch: true,
-        checked: this.clipboardLink.enabled,
-        showChevron: false,
-        accessibilityLabel: AppStrings.format('settings_row_a11y', [
-          AppStrings.get('settings_clipboard_link'),
-          this.toggleStateLabel(this.clipboardLink.enabled),
-        ]),
-        onAction: (): void => {
-          this.setClipboardLinkEnabled(!this.clipboardLink.enabled)
-        },
-        onSwitchChange: (value: boolean): void => {
-          this.setClipboardLinkEnabled(value)
-        },
-      })
+    if (ClipboardLinkBuildFlag.CLIPBOARD_LINK_BUILD_ENABLED) {
+      NextNGroupedListSection() {
+        NextNListRow({
+          leadingIcon: $r('sys.symbol.link'),
+          title: AppStrings.get('settings_clipboard_link'),
+          subtitle: AppStrings.get('settings_clipboard_link_hint'),
+          hasSwitch: true,
+          checked: this.clipboardLink.enabled,
+          showChevron: false,
+          accessibilityLabel: AppStrings.format('settings_row_a11y', [
+            AppStrings.get('settings_clipboard_link'),
+            this.toggleStateLabel(this.clipboardLink.enabled),
+          ]),
+          onAction: (): void => {
+            this.setClipboardLinkEnabled(!this.clipboardLink.enabled)
+          },
+          onSwitchChange: (value: boolean): void => {
+            this.setClipboardLinkEnabled(value)
+          },
+        })
+      }
     }
   }
 

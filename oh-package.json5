@@ -3,7 +3,7 @@
   "name": "nextn",
   "version": "1.0.0",
   "description": "NextN native HarmonyOS NEXT client",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "dependencies": {},
   "devDependencies": {
     "@ohos/hypium": "1.0.18"

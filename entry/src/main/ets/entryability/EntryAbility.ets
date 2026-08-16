@@ -21,6 +21,7 @@ import {
   NhAccountSessionService,
   NhTagCatalogService,
   NhClipboardLinkService,
+  ClipboardLinkBuildFlag,
   NhClipboardLinkSettings,
   ActionAlignmentSettings,
   MotionHandStateService,
@@ -337,6 +338,9 @@ export default class EntryAbility extends UIAbility {
   }
 
   private probeClipboardLinkIfReady(): void {
+    if (!ClipboardLinkBuildFlag.CLIPBOARD_LINK_BUILD_ENABLED) {
+      return
+    }
     if (!this.mainContentReady || !this.abilityForeground || this.clipboardProbeInFlight) {
       return
     }

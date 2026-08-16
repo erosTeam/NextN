@@ -412,6 +412,7 @@ export {
 } from './settings/ActionAlignmentSettings'
 export { NhClipboardLinkSettings } from './settings/NhClipboardLinkSettings'
 export { NhClipboardLinkService } from './services/NhClipboardLinkService'
+export { ClipboardLinkBuildFlag } from './services/ClipboardLinkBuildFlag'
 export { MotionHandStateService, MotionHandEdge } from './services/MotionHandStateService'
 export {
   NhClipboardLinkState,

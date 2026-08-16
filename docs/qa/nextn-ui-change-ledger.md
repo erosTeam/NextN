@@ -6028,3 +6028,12 @@ authorize an edit, replace a device comparison, or define product completion.
   4. 清除全部纳入页面缓存（NextE clearEverything 语义）；EntryAbility 启动与备份 reapply 均恢复上限设置。
 - **Minimality rationale:** 全部为对齐 NextE 既有结构/文案/交互；无新设计语言，无 NextN 特有精简。
 - **Visual verification plan:** 构建通过 + install -r + 真机：缓存卡行序 页面缓存→阅读器图片缓存→评论→漫画→标签；上限卡菜单位置与选中态；页面缓存统计 >0；清页面缓存后计数归零。
+
+## CI 构建流水线移植与 MIT 协议（2026-08-17，用户指示）
+
+- **用户指示:** 检查 GitHub Actions 自动构建配置；添加 MIT 协议；确认签名方式与 NextE 一致；推送远端验证构建。
+- **签名方式核实（与 NextE 一致）:** NextE 提交版 build-profile.json5 不含 signingConfigs，CI 只构建未签名 HAP；本地签名配置靠 check-public-build-profile.sh（--staged/--head/--worktree 三态拦截密码/绝对路径/p12/p7b）防止误提交。NextN 已是同构：提交版 profile 干净、本地签名文件不入库、同款守护脚本已在。结论：一致，无需改动。
+- **新增 .github/workflows/build.yml（照 NextE 适配）:** 同款容器 ghcr.io/honjow/harmonyos-build-env:26.0-api26、同触发（push main/PR/tag v*）、同并发组、debug(分支)/release(tag) 双模式未签名构建、HAP 产物名 NextN_版本_ohos-*-unsigned、inspect 步骤、artifact 上传、tag 发布 job（含 changelog/v版本.md 强制校验 + GitHub Release）。适配点：移除 NextE 的华为云禁用步骤（NextN 无该功能）；预检改为 NextN 已有的守护（public-profile 守护 + settings backup contract）。
+- **公构剪贴板合规（照 NextE 移植）:** 新增 ClipboardLinkBuildFlag + prepare_public_clipboard_build.py；CI 公构翻转 flag 为 false 并从 module.json5 移除 READ_PASTEBOARD 权限块；EntryAbility probe 调用与设置页剪贴板开关组均按 flag 门控（与 NextE 消费点一致）。已在临时目录完整演练 prepare 脚本：权限块移除、flag 翻转均验证。
+- **MIT 协议:** 新增 LICENSE（MIT, Copyright 2026 erosTeam，与 NextE 同文）；oh-package.json5 license 字段 UNLICENSED→MIT。
+- **验证:** 本地签名构建通过（12s）；workflow 结构断言通过；test_settings_backup_contract + check-public-build-profile --head 通过。CI 实跑结果待推送后回填。
