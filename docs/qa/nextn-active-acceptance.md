@@ -2683,6 +2683,18 @@ permitted in this repository.
 
 ## Current delivery result — Gallery Comments reply/IME ownership
 
+## Current delivery result — LLM 源详情自动保存 + 消费页来源/模型选择 + 标签翻译启用语义
+
+- 2026-08-16 19:50–20:03 +0800：237 设备通过唤醒门禁（AWAKE,
+  OverrideTimeout=86400000ms），签名 HAP 以 install -r 安装，未清数据。
+- 观察到：LLM 源详情页无保存按钮与模型字段；关闭“用于评论翻译”后返回再重进
+  仍为关闭（自动保存）；评论翻译页 LLM 源/模型行显示 NextE hint 文案，来源
+  下拉菜单列出并可选中源；标签翻译启用开关置开后设置根页尾值“开”，force-stop
+  冷启动后仍为“开”；删除确认按钮“删除”，删除后回管理器空态。验证后已删除
+  临时源并关闭标签翻译。
+- 未验证：模型菜单完整选择链路需真实 API Key；NextE 同视口逐页对照与用户
+  终验仍 OPEN。下一步 pending：用户终验与同视口对照。
+
 - 2026-08-13 04:20 +0800: after the selected `.237` device passed the wake
   gate (`AWAKE`, `OverrideTimeout=86400000ms`), the signed Debug HAP was
   installed with `install -r` only. The established direct `471768` Comments
