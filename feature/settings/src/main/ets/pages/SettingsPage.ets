@@ -14,6 +14,7 @@ import {
   CommentTranslationService,
   CommentTranslationSettingsState,
   ComicTranslationRuntimeService,
+  ImagePipelineService,
   LanguageSettings,
   LanguageState,
   LayoutSafeAreaState,
@@ -169,6 +170,7 @@ export enum SettingsSurface {
 export struct SettingsPage {
   @Local readerCacheStatus: ReaderImageCacheStatus = new ReaderImageCacheStatus()
   @Local pageCacheStat: CacheStat = new CacheStat()
+  @Local imageCacheStat: CacheStat = new CacheStat()
   @Local readerCacheLimitMb: number = 1024
   @Local readerCacheLimitMenuShown: boolean = false
   @Local isLoadingPrivateCache: boolean = false
@@ -846,6 +848,9 @@ export struct SettingsPage {
     if (key === 'page') {
       return this.pageCacheStat
     }
+    if (key === 'image') {
+      return this.imageCacheStat
+    }
     if (key === 'reader') {
       return this.readerPageCacheStat()
     }
@@ -859,12 +864,12 @@ export struct SettingsPage {
   }
 
   private privateCacheTotalBytes(): number {
-    return this.pageCacheStat.bytes + this.readerPageCacheStat().bytes + this.commentTranslationCacheStatus.bytes +
+    return this.pageCacheStat.bytes + this.imageCacheStat.bytes + this.readerPageCacheStat().bytes + this.commentTranslationCacheStatus.bytes +
       this.comicTranslationCacheStatus.bytes
   }
 
   private privateCacheTotalCount(): number {
-    return this.pageCacheStat.count + this.readerPageCacheStat().count + this.commentTranslationCacheStatus.count +
+    return this.pageCacheStat.count + this.imageCacheStat.count + this.readerPageCacheStat().count + this.commentTranslationCacheStatus.count +
       this.comicTranslationCacheStatus.count
   }
 
@@ -876,6 +881,7 @@ export struct SettingsPage {
     this.privateCacheError = ''
     try {
       this.pageCacheStat = await NhPageCacheService.stat(this.context())
+      this.imageCacheStat = ImagePipelineService.stat()
       this.readerCacheStatus = ReaderImageCacheService.status(this.context())
       this.readerCacheLimitMb = ReaderImageCacheSettings.limitMb()
       this.commentTranslationCacheStatus = await CommentTranslationService.stat(this.context())
@@ -1769,6 +1775,9 @@ export struct SettingsPage {
     if (key === 'page') {
       return AppStrings.get('settings_private_cache_pages')
     }
+    if (key === 'image') {
+      return AppStrings.get('settings_private_cache_image')
+    }
     if (key === 'reader') {
       return AppStrings.get('settings_private_cache_reader_pages')
     }
@@ -2096,12 +2105,15 @@ export struct SettingsPage {
         await ReaderImageCacheService.clear(this.context())
       } else if (key === 'page') {
         await NhPageCacheService.clearAll(this.context())
+      } else if (key === 'image') {
+        await ImagePipelineService.clearCache()
       } else if (key === 'comment') {
         await CommentTranslationService.clear(this.context())
       } else if (key === 'comic') {
         await ComicTranslationRuntimeService.clearGeneratedCache(this.context())
       } else if (key === 'all') {
         await NhPageCacheService.clearAll(this.context())
+        await ImagePipelineService.clearCache()
         await ReaderImageCacheService.clear(this.context())
         await CommentTranslationService.clear(this.context())
         await ComicTranslationRuntimeService.clearGeneratedCache(this.context())
@@ -2548,6 +2560,21 @@ export struct SettingsPage {
         },
         accessibilityLabel: AppStrings.format('settings_private_cache_clear_a11y', [
           this.privateCacheTitle('page'),
+        ]),
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.picture'),
+        title: this.privateCacheTitle('image'),
+        subtitle: this.privateCacheSubtitle('image'),
+        showChevron: false,
+        useCustomTrailing: true,
+        suffixPaddingRight: 0,
+        customTrailing: (): void => {
+          this.CacheClearSuffix('image')
+        },
+        accessibilityLabel: AppStrings.format('settings_private_cache_clear_a11y', [
+          this.privateCacheTitle('image'),
         ]),
       })
       this.RowDivider()

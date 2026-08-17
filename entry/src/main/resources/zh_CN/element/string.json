@@ -617,6 +617,7 @@
     { "name": "settings_private_cache_calculating", "value": "正在计算私有缓存占用…" },
     { "name": "settings_private_cache_total", "value": "缓存占用" },
     { "name": "settings_private_cache_reader_pages", "value": "阅读器图片缓存" },
+    { "name": "settings_private_cache_image", "value": "图片缓存" },
     { "name": "settings_private_cache_pages", "value": "页面缓存" },
     { "name": "settings_reader_image_cache_limit", "value": "阅读器图片缓存上限" },
     { "name": "settings_reader_image_cache_limit_a11y", "value": "阅读器图片缓存上限，{0}" },

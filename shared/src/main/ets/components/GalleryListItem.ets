@@ -1,6 +1,12 @@
 import { NhGallerySummary } from '../model/NhGallery'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { AppStrings } from '../i18n/AppStrings'
+import { EhImageKnifeImage } from './EhImageKnifeImage'
+import {
+  EH_IMAGE_PRIORITY_LOW,
+  EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
+  EH_THUMBNAIL_READ_TIMEOUT_MS,
+} from '../services/ImagePipelineTypes'
 
 @ComponentV2
 export struct GalleryListItem {
@@ -58,19 +64,24 @@ export struct GalleryListItem {
     Row({ space: ThemeTokens.SPACE_SM }) {
       if (this.gallery.thumbnailUrl.length > 0) {
         Stack({ alignContent: Alignment.Center }) {
-          Image(this.gallery.thumbnailUrl)
-            .width('100%')
-            .height('100%')
-            .objectFit(ImageFit.Cover)
-            .borderRadius(ThemeTokens.THUMB_RADIUS)
-            .onComplete((): void => {
+          EhImageKnifeImage({
+            src: this.gallery.thumbnailUrl,
+            widthValue: '100%',
+            heightValue: '100%',
+            objectFit: ImageFit.Cover,
+            radius: ThemeTokens.THUMB_RADIUS,
+            priority: EH_IMAGE_PRIORITY_LOW,
+            connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
+            readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
+            onComplete: (): void => {
               this.isThumbnailLoading = false
               this.hasThumbnailError = false
-            })
-            .onError((): void => {
+            },
+            onError: (): void => {
               this.isThumbnailLoading = false
               this.hasThumbnailError = true
-            })
+            },
+          })
           this.ThumbnailState()
         }
           .width(ThemeTokens.COVER_WIDTH)

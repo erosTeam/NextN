@@ -3,6 +3,12 @@ import { ThemeTokens } from '../theme/ThemeTokens'
 import { AppStrings } from '../i18n/AppStrings'
 import { CoverBackgroundState, connectCoverBackground } from '../state/CoverBackgroundState'
 import { BrowsePresentationState, connectBrowsePresentation } from '../state/BrowsePresentationState'
+import { EhImageKnifeImage } from './EhImageKnifeImage'
+import {
+  EH_IMAGE_PRIORITY_LOW,
+  EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
+  EH_THUMBNAIL_READ_TIMEOUT_MS,
+} from '../services/ImagePipelineTypes'
 import {
   GalleryLanguageCornerBadge,
   galleryLanguageCornerBadgeText,
@@ -171,28 +177,38 @@ export struct GalleryWaterfallCompactCard {
   private Cover() {
     Stack({ alignContent: Alignment.Center }) {
       if (this.shouldBlurLetterboxBackground()) {
-        Image(this.gallery.thumbnailUrl)
-          .width('100%')
-          .height('100%')
-          .objectFit(ImageFit.Cover)
+        EhImageKnifeImage({
+          src: this.gallery.thumbnailUrl,
+          widthValue: '100%',
+          heightValue: '100%',
+          objectFit: ImageFit.Cover,
+          priority: EH_IMAGE_PRIORITY_LOW,
+          connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
+          readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
+        })
           .scale({ x: 1.08, y: 1.08 })
           .blur(20)
           .opacity(0.72)
           .renderGroup(true)
       }
       if (this.gallery.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
-        Image(this.gallery.thumbnailUrl)
-          .width('100%')
-          .height('100%')
-          .objectFit(ImageFit.Contain)
-          .onComplete((): void => {
+        EhImageKnifeImage({
+          src: this.gallery.thumbnailUrl,
+          widthValue: '100%',
+          heightValue: '100%',
+          objectFit: ImageFit.Contain,
+          priority: EH_IMAGE_PRIORITY_LOW,
+          connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
+          readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
+          onComplete: (): void => {
             this.isThumbnailLoading = false
             this.hasThumbnailError = false
-          })
-          .onError((): void => {
+          },
+          onError: (): void => {
             this.isThumbnailLoading = false
             this.hasThumbnailError = true
-          })
+          },
+        })
       }
       this.CoverState()
     }

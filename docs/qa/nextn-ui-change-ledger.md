@@ -3,6 +3,34 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## Settings storage page: cover image cache row (ImageKnifePro) — 2026-08-17
+
+- **Why newly actionable:** the user asked to separate app-level cover image
+  cache from the reader image cache, to make the cover-thumbnail pipeline
+  (ImageKnifePro) accountable in the storage page, and to keep the image
+  cache independently clearable; the tag-translation line was previously
+  removed from this group per the user instruction.
+- **Whole parent-tree boundary:** the `PrivateCacheGroup` list inside the
+  Settings storage page (`feature/settings/.../SettingsPage.ets`). The row
+  set is now page, cover image, reader pages, comment translation, comic
+  translation, then clear-all. Scroll owner, section card, row divider,
+  clear-suffix button, and total-sum labels are unchanged.
+- **Exact before/after:** before — no cover image cache line; totals summed
+  page/reader/comment/comic only. after — a `图片缓存` row (base/en_US
+  "Cover image cache", ja_JP "カバー画像キャッシュ") shows ImageKnifePro FILE
+  cache count/size, its `清除` routes to `ImagePipelineService.clearCache()`
+  (memory + file), and `缓存占用`/clear-all include the same source.
+- **Minimality rationale:** one leaf row + stat source, following the
+  existing rows' exact structure; no copy, icon, order, or parent-tree
+  change beyond the required leaf.
+- **Visual verification plan:** signed build + `install -r`; storage page
+  shows the row with nonzero stats after browsing; scrolling the browse list
+  grows the count; force-stop/cold start preserves the count; individual
+  clear drops only this row and the total; other rows unchanged.
+- **Unresolved risk:** cover-file cache is a new local cache surface; memory
+  cache metrics are not surfaced (only FILE cache is shown), matching the
+  service's stat contract.
+
 ## Gallery Detail tag rows: stable identity + reserved slots (refresh collapse fix) — 2026-08-16
 
 - **Why newly actionable:** the user reports that every pull-refresh still

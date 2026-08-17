@@ -1,0 +1,65 @@
+import { ContentTransitionType } from '@ohos/imageknifepro'
+import { ImageKnifeProImageAdapter } from '../services/ImageKnifeProImageAdapter'
+import {
+  EH_IMAGE_DOWNSAMPLING_DEFAULT,
+  EH_IMAGE_PRIORITY_MEDIUM,
+} from '../services/ImagePipelineTypes'
+
+export { EH_IMAGE_PRIORITY_HIGH, EH_IMAGE_PRIORITY_LOW, EH_IMAGE_PRIORITY_MEDIUM } from '../services/ImagePipelineTypes'
+
+@ComponentV2
+export struct EhImageKnifeImage {
+  @Param src: string = '';
+  @Param objectFit: ImageFit = ImageFit.Cover;
+  @Param radius: number = 0;
+  @Param contentTransition: ContentTransitionType = ContentTransitionType.IDENTITY;
+  @Param widthValue: Length = '100%';
+  @Param heightValue: Length = '100%';
+  @Param enableCache: boolean = true;
+  @Param memoryOnly: boolean = false;
+  @Param fileCacheName: string = '';
+  @Param signature: string = '';
+  @Param priority: number = EH_IMAGE_PRIORITY_MEDIUM;
+  @Param downSampling: number = EH_IMAGE_DOWNSAMPLING_DEFAULT;
+  @Param desiredWidth: number = 0;
+  @Param desiredHeight: number = 0;
+  @Param maxRetries: number = 0;
+  @Param retryDelayMs: number = 0;
+  @Param settleTimeoutMs: number = 0;
+  @Param connectTimeoutMs: number = 0;
+  @Param readTimeoutMs: number = 0;
+  @Param reloadToken: number = 0;
+  @Event onComplete: () => void = () => {};
+  @Event onImageInfo: (width: number, height: number) => void = (_width: number, _height: number) => {};
+  @Event onError: () => void = () => {};
+  @Event onProgress: (progress: number) => void = (_progress: number) => {};
+
+  build() {
+    ImageKnifeProImageAdapter({
+      src: this.src,
+      objectFit: this.objectFit,
+      radius: this.radius,
+      contentTransition: this.contentTransition,
+      widthValue: this.widthValue,
+      heightValue: this.heightValue,
+      enableCache: this.enableCache,
+      memoryOnly: this.memoryOnly,
+      fileCacheName: this.fileCacheName,
+      signature: this.signature,
+      priority: this.priority,
+      downSampling: this.downSampling,
+      desiredWidth: this.desiredWidth,
+      desiredHeight: this.desiredHeight,
+      maxRetries: this.maxRetries,
+      retryDelayMs: this.retryDelayMs,
+      settleTimeoutMs: this.settleTimeoutMs,
+      connectTimeoutMs: this.connectTimeoutMs,
+      readTimeoutMs: this.readTimeoutMs,
+      reloadToken: this.reloadToken,
+      onComplete: this.onComplete,
+      onImageInfo: this.onImageInfo,
+      onError: this.onError,
+      onProgress: this.onProgress,
+    })
+  }
+}

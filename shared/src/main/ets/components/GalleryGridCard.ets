@@ -3,6 +3,12 @@ import { ThemeTokens } from '../theme/ThemeTokens'
 import { AppStrings } from '../i18n/AppStrings'
 import { CoverColorService } from '../services/CoverColorService'
 import { CoverBackgroundState, connectCoverBackground } from '../state/CoverBackgroundState'
+import { EhImageKnifeImage } from './EhImageKnifeImage'
+import {
+  EH_IMAGE_PRIORITY_LOW,
+  EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
+  EH_THUMBNAIL_READ_TIMEOUT_MS,
+} from '../services/ImagePipelineTypes'
 import {
   GalleryLanguageCornerBadge,
   LANGUAGE_BADGE_COMPACT_TEXT_CENTER_X_RATIO,
@@ -181,10 +187,15 @@ export struct GalleryGridCard {
         // NextE always fills an extreme-ratio contain gap: the default is a
         // dominant-color fade, while this existing preference selects blur.
         if (this.shouldBlurLetterboxBackground()) {
-          Image(this.gallery.thumbnailUrl)
-            .width('100%')
-            .height('100%')
-            .objectFit(ImageFit.Cover)
+          EhImageKnifeImage({
+            src: this.gallery.thumbnailUrl,
+            widthValue: '100%',
+            heightValue: '100%',
+            objectFit: ImageFit.Cover,
+            priority: EH_IMAGE_PRIORITY_LOW,
+            connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
+            readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
+          })
             .scale({ x: 1.08, y: 1.08 })
             .blur(20)
             .opacity(0.72)
@@ -204,19 +215,24 @@ export struct GalleryGridCard {
             })
         }
         if (this.gallery.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
-          Image(this.gallery.thumbnailUrl)
-            .width('100%')
-            .height('100%')
-            .objectFit(this.useContainFit() ? ImageFit.Contain : ImageFit.Cover)
-            .borderRadius(ThemeTokens.THUMB_RADIUS)
-            .onComplete((): void => {
+          EhImageKnifeImage({
+            src: this.gallery.thumbnailUrl,
+            widthValue: '100%',
+            heightValue: '100%',
+            objectFit: this.useContainFit() ? ImageFit.Contain : ImageFit.Cover,
+            radius: ThemeTokens.THUMB_RADIUS,
+            priority: EH_IMAGE_PRIORITY_LOW,
+            connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
+            readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
+            onComplete: (): void => {
               this.isThumbnailLoading = false
               this.hasThumbnailError = false
-            })
-            .onError((): void => {
+            },
+            onError: (): void => {
               this.isThumbnailLoading = false
               this.hasThumbnailError = true
-            })
+            },
+          })
         }
         this.ThumbnailState()
       }

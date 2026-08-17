@@ -35,6 +35,7 @@ import {
   SyncSettings,
   TagTranslationSettings,
   ReaderImageCacheSettings,
+  ImagePipelineService,
   TabletLayoutSettings,
   ThemeColorSettings,
   AppColorFavoritesSettings,
@@ -68,6 +69,7 @@ export default class EntryAbility extends UIAbility {
     this.loginRecoveryRequestedAtLaunch = this.galleryDirectLaunchIdAtLaunch === 0 &&
       typeof recoveryValue === 'string' && recoveryValue === '1'
     AppStrings.init(this.context)
+    ImagePipelineService.initialize(this.context)
     SyncScheduler.rememberContext(this.context)
     // Public tag-name enrichment needs the same app-private RDB context as
     // the rest of the anonymous local cache. It never opens an account route
@@ -275,6 +277,7 @@ export default class EntryAbility extends UIAbility {
 
   onForeground(): void {
     this.abilityForeground = true
+    ImagePipelineService.reloadOnForeground()
     SyncScheduler.rememberContext(this.context)
     SyncScheduler.requestAfterForeground(this.context, 'foreground')
     if (this.mainContentReady) {
@@ -298,6 +301,7 @@ export default class EntryAbility extends UIAbility {
 
   onBackground(): void {
     this.abilityForeground = false
+    ImagePipelineService.clearOnBackground()
     MotionHandStateService.stop()
   }
 

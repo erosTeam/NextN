@@ -5,6 +5,32 @@
 - This observes the cache cold-start path only; it does not accept tag translation timing, every layout density, sign-out cache clearing, or the pending developer-guide maintenance contract. Raw layout copies retained under `.hvigor/outputs/nextn-cache-tags-20260816T/` and excluded from Git.
 # NextN active device-acceptance queue
 
+## Cover image cache row + ImageKnifePro pipeline — 2026-08-17
+
+- Signed Debug HAP installed with `install -r` on USB
+  `56T0225315001128` (lease `20260817-005021-a220946a`, wake gate
+  `AWAKE` / `OverrideTimeout=86400000ms`, no data clear). Foreground
+  confirmed `com.erosteam.nextn:EntryAbility`.
+- Storage page after navigation (我的 → 存储) shows the new `图片缓存` row:
+  6 项 · 101 KB while the browse page had loaded the first viewport
+  (`缓存占用` 142.4 MB = 页面 389 KB + 图片 101 KB + 阅读器 141.9 MB).
+- Two real browse-list swipes loaded new covers; after navigation the row
+  read 10 项 · 159 KB (6 → 10), total 142.5 MB, consistent with the page
+  row also growing (389 → 392 KB).
+- Force-stop + cold start without data clear: the row still read
+  10 项 · 159 KB, proving the FILE cache persisted across process restart
+  and that `install -r` preserved reader/page caches (431 项 · 141.9 MB).
+- Individual `图片缓存` clear: confirmation dialog
+  `清除“图片缓存”缓存？…`, tap `清除` → row became 0 项 · 0 B and total
+  dropped 142.5 → 142.3 MB; page (31 项 · 392 KB) and reader
+  (431 项 · 141.9 MB) rows were unchanged.
+- This accepts only the storage-page row, its growth, cold-start
+  persistence, and single-row clear on this device. The clear-all branch
+  (source-reviewed to include `ImagePipelineService.clearCache()`) and
+  tablet split-layout paths remain unobserved on device. Raw layout
+  artifacts retained under `.hvigor/outputs/image-cache-verify-20260817T1011/`
+  and excluded from Git.
+
 ## Current Intermittent JS TypeError crash fix — bounded device observation — 2026-08-16
 
 - Root-cause chain observed: NextN's HAP was missing

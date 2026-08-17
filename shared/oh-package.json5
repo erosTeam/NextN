@@ -5,6 +5,7 @@
   "main": "src/main/ets/Index.ets",
   "dependencies": {
     "reader-enhancement": "file:../third_party/reader-enhancement",
-    "@ohos/axios": "2.2.12"
+    "@ohos/axios": "2.2.12",
+    "@ohos/imageknifepro": "1.0.16"
   }
 }

@@ -246,6 +246,28 @@ export {
 } from './services/ComicLocalVisualRecording'
 export { ComicLocalVisualBackend } from './services/ComicLocalVisualBackend'
 export { CacheStat } from './services/CacheStat'
+export { ImagePipelineService } from './services/ImagePipelineService'
+export {
+  EH_IMAGE_DOWNSAMPLING_AT_LEAST,
+  EH_IMAGE_DOWNSAMPLING_AT_MOST,
+  EH_IMAGE_DOWNSAMPLING_CENTER_INSIDE_MEMORY,
+  EH_IMAGE_DOWNSAMPLING_CENTER_INSIDE_QUALITY,
+  EH_IMAGE_DOWNSAMPLING_DEFAULT,
+  EH_IMAGE_DOWNSAMPLING_DESIRED_SIZE_ASPECT_FILL,
+  EH_IMAGE_DOWNSAMPLING_DESIRED_SIZE_ASPECT_FIT,
+  EH_IMAGE_DOWNSAMPLING_DESIRED_SIZE_FILL,
+  EH_IMAGE_DOWNSAMPLING_FIT_CENTER_MEMORY,
+  EH_IMAGE_DOWNSAMPLING_FIT_CENTER_QUALITY,
+  EH_IMAGE_DOWNSAMPLING_NONE,
+  EH_IMAGE_PRIORITY_HIGH,
+  EH_IMAGE_PRIORITY_LOW,
+  EH_IMAGE_PRIORITY_MEDIUM,
+  EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
+  EH_THUMBNAIL_READ_TIMEOUT_MS,
+} from './services/ImagePipelineTypes'
+export { ImageKnifeProImageAdapter } from './services/ImageKnifeProImageAdapter'
+export { EhImageKnifeImage } from './components/EhImageKnifeImage'
+export { BasicDataSource } from './utils/BasicDataSource'
 export {
   ComicRenderedPageRepository,
   ComicRenderedPageRepositoryContract,
