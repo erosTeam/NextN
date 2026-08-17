@@ -35,4 +35,4 @@ NextN 是独立开发的非官方客户端，与 nhentai 及其运营方没有�
 
 ## 许可
 
-项目未声明开源许可（UNLICENSED，保留所有权利）；参考来源说明见 [NOTICE.md](NOTICE.md)。
+本项目基于 [MIT License](LICENSE) 开源；参考来源说明见 [NOTICE.md](NOTICE.md)。
