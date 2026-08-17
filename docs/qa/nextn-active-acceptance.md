@@ -5,6 +5,23 @@
 - This observes the cache cold-start path only; it does not accept tag translation timing, every layout density, sign-out cache clearing, or the pending developer-guide maintenance contract. Raw layout copies retained under `.hvigor/outputs/nextn-cache-tags-20260816T/` and excluded from Git.
 # NextN active device-acceptance queue
 
+## Gallery Detail overflow menu cleanup — 2026-08-17
+
+- Signed Debug HAP installed with `install -r` on USB
+  `56T0225315001128` (new lease `20260817-030258-92d50518`, wake gate,
+  no data clear). Foreground-confirmed `com.erosteam.nextn` Gallery Detail
+  for the tapped gallery card.
+- Detail action card still shows 下载 `[969,975][1263,1053]` and 种子
+  `[969,1073][1263,1151]`. Opening the overflow menu at
+  `[1152,141][1272,261]` renders exactly two items: 使用外部浏览器打开
+  `[648,321][1201,417]` and 重新加载 `[648,465][1201,561]` — no 下载 and no
+  导出种子文件 entries, and the external-open copy is the new browser
+  wording.
+- Accepted for the phone-path overflow on this gallery; reader-page
+  overflow also shares the `action_open_externally` string and now shows
+  the same browser wording (not separately observed). Raw layouts retained
+  under `.hvigor/outputs/detail-menu-cleanup-20260817T/`.
+
 ## Download queue empty-state copy — 2026-08-17 (accepted on LAN device)
 
 - Signed Debug HAP installed with `install -r` on USB

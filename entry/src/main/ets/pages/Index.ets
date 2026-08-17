@@ -334,7 +334,6 @@ struct Index {
   @Local private galleryExternalOpenVersion: number = 0
   @Local private galleryShareVersion: number = 0
   @Local private galleryFavoriteVersion: number = 0
-  @Local private galleryTorrentShareVersion: number = 0
   @Local private galleryChromeVersion: number = 0
   private readerDestinationVisible: boolean = false
   private readerDestinationClosing: boolean = false
@@ -1333,34 +1332,6 @@ struct Index {
     return nextNHdsTitleBar({ 'title': title, 'menu': menu })
   }
 
-  /**
-   * HDS receives only bounded local queue counters from Gallery chrome. Keep
-   * status and page-count wording localized here, while task metadata and all
-   * queue operations remain owned by the retained Gallery destination.
-   */
-  private galleryDownloadProgressLabel(status: string, completedPages: number, pageCount: number): string {
-    const safePageCount: number = Math.max(0, pageCount)
-    if (safePageCount === 0) {
-      return ''
-    }
-    const safeCompletedPages: number = Math.min(safePageCount, Math.max(0, completedPages))
-    const statusLabel: string = status === NhDownloadTaskStatus.QUEUED
-      ? AppStrings.get('download_status_queued')
-      : (status === NhDownloadTaskStatus.DOWNLOADING
-        ? AppStrings.get('download_status_downloading')
-        : (status === NhDownloadTaskStatus.PAUSED
-          ? AppStrings.get('download_status_paused')
-          : ''))
-    if (statusLabel.length === 0) {
-      return ''
-    }
-    const progress: string = AppStrings.format(
-      'gallery_meta_pages',
-      [`${safeCompletedPages} / ${safePageCount}`],
-    )
-    return `${statusLabel} · ${progress}`
-  }
-
   private galleryTitleBar(route: GalleryRouteParams): Record<string, Object> {
     // The version is advanced by the page only when the header/title handoff
     // changes, so HDS can re-evaluate this route-local title without a
@@ -1379,41 +1350,6 @@ struct Index {
       'isEnabled': !route.chrome.favoriteBusy,
       'action': (): void => {
         this.galleryFavoriteVersion += 1
-      },
-    }
-    const downloadStatus: string = route.chrome.downloadStatus
-    const downloadCompleted: boolean = downloadStatus === NhDownloadTaskStatus.COMPLETE
-    const downloadNeedsResume: boolean = downloadStatus === NhDownloadTaskStatus.PAUSED ||
-      downloadStatus === NhDownloadTaskStatus.ERROR
-    const downloadActive: boolean = downloadStatus === NhDownloadTaskStatus.QUEUED ||
-      downloadStatus === NhDownloadTaskStatus.DOWNLOADING
-    const downloadShowsProgress: boolean = downloadActive ||
-      downloadStatus === NhDownloadTaskStatus.PAUSED
-    const downloadProgressLabel: string = downloadShowsProgress
-      ? this.galleryDownloadProgressLabel(
-        downloadStatus,
-        route.chrome.downloadCompletedPages,
-        route.chrome.downloadPageCount,
-      )
-      : ''
-    const downloadAction: Record<string, Object> = {
-      'label': downloadCompleted
-        ? AppStrings.get('download_action_read')
-        : (downloadProgressLabel.length > 0
-          ? downloadProgressLabel
-          : (downloadNeedsResume
-            ? AppStrings.get('download_action_resume')
-            : (downloadActive ? AppStrings.get('tab_downloads') : AppStrings.get('action_download')))),
-      'icon': downloadCompleted
-        ? $r('sys.symbol.doc_plaintext_fill')
-        : (downloadNeedsResume
-          ? $r('sys.symbol.arrow_clockwise')
-          : (downloadActive ? $r('sys.symbol.rectangle_stack') : $r('sys.symbol.arrow_down_to_line'))),
-      'isEnabled': route.chrome.downloadActionReady,
-      'action': (): void => {
-        if (route.chrome.downloadActionReady) {
-          route.chrome.downloadRequestVersion += 1
-        }
       },
     }
     const externalOpenAction: Record<string, Object> = {
@@ -1460,25 +1396,14 @@ struct Index {
         }
       },
     }
-    const torrentShareAction: Record<string, Object> = {
-      'label': AppStrings.get('action_export_torrent'),
-      'icon': $r('sys.symbol.arrow_up_circle'),
-      'isEnabled': true,
-      'action': (): void => {
-        this.galleryTorrentShareVersion += 1
-      },
-    }
     const favoriteMenuItem: Record<string, Object> = { 'content': favoriteAction }
-    const downloadMenuItem: Record<string, Object> = { 'content': downloadAction }
     const externalOpenMenuItem: Record<string, Object> = { 'content': externalOpenAction }
     const shareMenuItem: Record<string, Object> = { 'content': shareAction }
     const reloadMenuItem: Record<string, Object> = { 'content': reloadAction }
-    const torrentShareMenuItem: Record<string, Object> = { 'content': torrentShareAction }
     const menuItems: Record<string, Object>[] = [
       favoriteMenuItem,
       shareMenuItem,
       externalOpenMenuItem,
-      downloadMenuItem,
       reloadMenuItem,
     ]
     if (route.chrome.wideThumbnailActionsAvailable) {
@@ -1490,7 +1415,6 @@ struct Index {
         { 'content': wideThumbnailJumpPageAction },
       )
     }
-    menuItems.push(torrentShareMenuItem)
     const menu: Record<string, Object> = {
       // Same NextE hierarchy: the title refresh is a secondary HDS command;
       // the page-local Read capsule remains the primary detail action.
@@ -1623,7 +1547,6 @@ struct Index {
         externalOpenVersion: this.galleryExternalOpenVersion,
         shareVersion: this.galleryShareVersion,
         favoriteVersion: this.galleryFavoriteVersion,
-        torrentShareVersion: this.galleryTorrentShareVersion,
         onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
           this.pushGallery(galleryId, seed)
         },

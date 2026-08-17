@@ -18,9 +18,6 @@ export class GalleryChromeState {
   @Trace favoriteKnown: boolean = false
   @Trace isFavorited: boolean = false
   @Trace favoriteBusy: boolean = false
-  // Download commands belong to this pushed Gallery route. A per-route epoch
-  // prevents one retained destination from receiving another route's HDS tap.
-  @Trace downloadRequestVersion: number = 0
   // The same title-bar action represents a local download lifecycle. This is
   // deliberately a status plus bounded page counters, not a task payload:
   // the page remains the sole owner of queue operations and the shell merely

@@ -3,6 +3,32 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## Gallery Detail overflow menu cleanup — 2026-08-17
+
+- **Why newly actionable:** user asks to remove 下载 and 导出种子文件 from
+  the Detail-page menu and to fix the 在外部打开 copy. Download and torrent
+  actions already live in the Detail action card (DownloadActionChip +
+  GalleryActionChip), so the overflow duplicates them; the external-open
+  copy should say it opens the browser.
+- **Whole parent-tree boundary:** the gallery Detail HDS title-bar menu in
+  `entry/.../Index.ets` (`galleryTitleBar`); the action-card chips in
+  `GalleryDetailPage` are unchanged. Menu is now favorite, share, open in
+  external browser, reload (plus contextual thumbnail commands).
+- **Exact before/after:** menu had favorite/share/open-externally/download/
+  reload/torrent-export; after, download and torrent-export entries are
+  removed along with their version-epoch plumbing
+  (`galleryTorrentShareVersion`, `chrome.downloadRequestVersion`,
+  `torrentShareVersion` param/monitor). Copy: 在外部打开 →
+  使用外部浏览器打开 / Open in external browser / 外部ブラウザで開く.
+- **Minimality rationale:** remove duplicate menu leaves and their now-dead
+  trigger chain only; the Detail action card keeps both operations.
+- **Visual verification plan:** signed build + install; open a gallery
+  Detail, open the overflow: it shows 使用外部浏览器打开 and 重新加载 only,
+  and the action card still shows 下载/种子.
+- **Unresolved risk:** `downloadActionReady` remains published from the page
+  into gallery chrome with no menu reader left; it is retained to keep the
+  chrome status contract stable.
+
 ## Download queue empty-state copy — 2026-08-17
 
 - **Why newly actionable:** user reports the empty download-queue copy is

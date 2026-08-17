@@ -240,7 +240,6 @@ export struct GalleryDetailPage {
   @Param externalOpenVersion: number = 0
   @Param shareVersion: number = 0
   @Param favoriteVersion: number = 0
-  @Param torrentShareVersion: number = 0
   @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
   @Event onOpenThumbnails?: (galleryId: number, pages: NhGalleryPage[]) => void
   @Event onOpenReader?: (galleryId: number, initialPageIndex: number) => void
@@ -255,7 +254,6 @@ export struct GalleryDetailPage {
   private tagTranslationEpoch: number = 0
   private readProgressRequestGeneration: number = 0
   private favoriteStatusGeneration: number = 0
-  private handledDownloadRequestVersion: number = 0
   private readFabController: HdsTabsController = new HdsTabsController()
   private followTouchState: ActionFollowTouchState = ActionFollowTouchTracker.initialState()
   /** Shared refresh host; it never represents this page's initial-load state. */
@@ -410,21 +408,6 @@ export struct GalleryDetailPage {
     }
   }
 
-  @Monitor('chrome.downloadRequestVersion')
-  onDownloadRequested(): void {
-    const requestVersion: number = this.chrome.downloadRequestVersion
-    if (requestVersion <= this.handledDownloadRequestVersion) {
-      return
-    }
-    // Record the epoch before checking readiness: a stale request must never
-    // replay after a route replacement finishes loading.
-    this.handledDownloadRequestVersion = requestVersion
-    if (!this.isDownloadActionReady()) {
-      return
-    }
-    this.handleDownloadAction()
-  }
-
   @Monitor('downloadQueue.revision')
   onDownloadQueueChanged(): void {
     this.publishDownloadChrome()
@@ -434,13 +417,6 @@ export struct GalleryDetailPage {
   onFavoriteRequested(): void {
     if (this.favoriteVersion > 0) {
       this.requestFavoriteToggle()
-    }
-  }
-
-  @Monitor('torrentShareVersion')
-  onTorrentShareRequested(): void {
-    if (this.torrentShareVersion > 0) {
-      this.requestTorrentFileExport()
     }
   }
 
