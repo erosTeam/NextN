@@ -2,6 +2,7 @@ import { AppStrings } from '../i18n/AppStrings'
 import { NhBrowsePresentation } from '../model/NhBrowsePresentation'
 import { NhGallerySummary } from '../model/NhGallery'
 import { BrowsePresentationState, connectBrowsePresentation } from '../state/BrowsePresentationState'
+import { GalleryCoverPrefetcher } from '../services/GalleryCoverPrefetcher'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { galleryCoverWallReuseId, GalleryCoverWallCard } from './GalleryCoverWallCard'
 import { GalleryGridCard } from './GalleryGridCard'
@@ -73,6 +74,7 @@ export struct GalleryCollectionBody {
   @Event onUserScroll?: () => void
   /** Supplied only by the shared List host for adaptive medium-card cover sizing. */
   @Local listContentWidth: number = 0
+  private coverPrefetcher: GalleryCoverPrefetcher = new GalleryCoverPrefetcher()
   browsePresentation: BrowsePresentationState = connectBrowsePresentation()
 
   private effectivePresentation(): NhBrowsePresentation {
@@ -158,6 +160,18 @@ export struct GalleryCollectionBody {
       return
     }
     this.requestLoadMore()
+  }
+
+  /** List indexes are already normalized by PullRefreshListScaffold. */
+  private onListPrefetchRange(start: number, end: number): void {
+    const leading: number = this.normalizedLeadingItemCount()
+    this.coverPrefetcher.schedule(this.galleries, start - leading, end - leading)
+  }
+
+  /** Grid/WaterFlow indexes include their shared top-reserve item at index zero. */
+  private onSurfacePrefetchRange(start: number, end: number): void {
+    const leading: number = this.normalizedLeadingItemCount()
+    this.coverPrefetcher.schedule(this.galleries, start - 1 - leading, end - 1 - leading)
   }
 
   @Builder
@@ -326,8 +340,9 @@ export struct GalleryCollectionBody {
         onReachEnd: (): void => {
           this.requestLoadMore()
         },
-        onScrollIndex: (_start: number, end: number): void => {
+        onScrollIndex: (start: number, end: number): void => {
           this.onSurfaceVisibleRange(end)
+          this.onSurfacePrefetchRange(start, end)
         },
         onDidScroll: (offset: number, state: ScrollState): void => {
           if (this.onDidScroll) {
@@ -365,8 +380,9 @@ export struct GalleryCollectionBody {
         onReachEnd: (): void => {
           this.requestLoadMore()
         },
-        onScrollIndex: (_start: number, end: number): void => {
+        onScrollIndex: (start: number, end: number): void => {
           this.onSurfaceVisibleRange(end)
+          this.onSurfacePrefetchRange(start, end)
         },
         onDidScroll: (offset: number, state: ScrollState): void => {
           if (this.onDidScroll) {
@@ -404,8 +420,9 @@ export struct GalleryCollectionBody {
         onReachEnd: (): void => {
           this.requestLoadMore()
         },
-        onScrollIndex: (_start: number, end: number): void => {
+        onScrollIndex: (start: number, end: number): void => {
           this.onSurfaceVisibleRange(end)
+          this.onSurfacePrefetchRange(start, end)
         },
         onDidScroll: (offset: number, state: ScrollState): void => {
           if (this.onDidScroll) {
@@ -443,8 +460,9 @@ export struct GalleryCollectionBody {
         onReachEnd: (): void => {
           this.requestLoadMore()
         },
-        onScrollIndex: (_start: number, end: number): void => {
+        onScrollIndex: (start: number, end: number): void => {
           this.onSurfaceVisibleRange(end)
+          this.onSurfacePrefetchRange(start, end)
         },
         onDidScroll: (offset: number, state: ScrollState): void => {
           if (this.onDidScroll) {
@@ -480,8 +498,9 @@ export struct GalleryCollectionBody {
         onReachEnd: (): void => {
           this.requestLoadMore()
         },
-        onScrollIndex: (_start: number, end: number, _center: number): void => {
+        onScrollIndex: (start: number, end: number, _center: number): void => {
           this.onListVisibleRange(end)
+          this.onListPrefetchRange(start, end)
         },
         onContentWidth: (contentWidth: number): void => {
           this.listContentWidth = contentWidth
@@ -521,5 +540,9 @@ export struct GalleryCollectionBody {
     }
     .width('100%')
     .height('100%')
+  }
+
+  aboutToDisappear(): void {
+    this.coverPrefetcher.cancelAll()
   }
 }

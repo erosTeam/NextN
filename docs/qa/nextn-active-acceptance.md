@@ -5,6 +5,31 @@
 - This observes the cache cold-start path only; it does not accept tag translation timing, every layout density, sign-out cache clearing, or the pending developer-guide maintenance contract. Raw layout copies retained under `.hvigor/outputs/nextn-cache-tags-20260816T/` and excluded from Git.
 # NextN active device-acceptance queue
 
+## Cover prefetch (visible-area offscreen preload) — 2026-08-17
+
+- Same HAP family as the row above; added after commit `ddee0e2`:
+  `GalleryCoverPrefetcher` schedules low-priority FILE-only preloads for the
+  ten covers past the visible range from the shared `GalleryCollectionBody`
+  `onScrollIndex` boundary (List and Grid/WaterFlow normalization branches).
+  NextE's `BasicPrefetcher` lives on its LazyForEach data sources; NextN's
+  four collection callers share a ForEach-backed body, so the same
+  visible-area contract is applied at that shared scroll boundary instead of
+  restructuring the parent tree.
+- Isolation evidence on USB `56T0225315001128` (same lease, gate, `install -r`):
+  cleared 图片缓存 to 0 → force-stop → cold start with zero scrolling → 6s
+  settle → navigate 我的 → 存储 without touching the browse list → row reads
+  14 项 · 207 KB (6 visible covers + 8 prefetched from a 10-slot window).
+  No scroll input occurred between cold start and the readback.
+- Scroll-growth of the same FILE cache was already accepted on the preceding
+  build (6 → 10 items after real list swipes); the prefetch only adds
+  offscreen FILE-only requests and does not alter card or scroll code.
+  A post-scroll readback on this build was not captured because the floating
+  tab bar loses hit-testing to gallery cards while the browse list is
+  scrolled; this is a navigation limitation, not a product finding.
+- This accepts only the zero-scroll prefetch populating the FILE cache on
+  this device; Favorites/Search/Popular surfaces share the same body and were
+  not separately exercised.
+
 ## Cover image cache row + ImageKnifePro pipeline — 2026-08-17
 
 - Signed Debug HAP installed with `install -r` on USB
