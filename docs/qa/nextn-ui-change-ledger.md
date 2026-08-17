@@ -3,6 +3,37 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## Gallery Detail hero cover reuse ImageKnifePro cache — 2026-08-17
+
+- **Why newly actionable:** after the cover ImageKnife cache landed, the user
+  reports that entering Gallery Detail from a list shows the hero cover
+  blank first, then loads. Source evidence: list cards render
+  `EhImageKnifeImage(thumbnailUrl)` into the ImageKnifePro file cache, while
+  `GalleryDetailPage.GalleryHero` still rendered the same seed
+  `thumbnailUrl` through plain ArkUI `Image`, which cannot read the
+  ImageKnifePro cache — so the identical URL is fetched from the network
+  again. NextE's detail header uses `EhThumbnail` (internally
+  `EhImageKnifeImage`) for the same reason.
+- **Whole parent-tree boundary:** only the two `Image` leaves inside
+  `GalleryHero` (visible displayed cover + hidden pending preload). The
+  seed→verified atomic swap, error fallback, fitted geometry, radius/clip,
+  and the hero card parent are unchanged.
+- **Exact before/after:** before — `Image(displayedCoverUrl)` and
+  `Image(pendingCoverUrl)` with network-only loading. after — both use
+  `EhImageKnifeImage` (low priority, same connect/read contract) so the seed
+  thumbnail hits the list's file cache and the pending verified cover lands
+  in the same cache before swap; `.borderRadius` becomes the component's
+  `radius` param, `.clip(true)` stays as a chain attribute.
+- **Minimality rationale:** one leaf component swap matching NextE's detail
+  cover path; no layout, state-machine, or data change.
+- **Visual verification plan:** signed build + install; after list covers are
+  cached, enter Detail and confirm the hero slot is non-blank from the first
+  observed frame (screen captures at entry).
+- **Unresolved risk:** the pending `cover.{ext}` URL differs from the list
+  `thumb.{ext}` URL, so its first visit still performs one network fetch
+  (hidden); only subsequent visits reuse the file cache. The blank-at-entry
+  regression is caused by the seed thumbnail path, which is now cache-backed.
+
 ## Gallery Detail overflow menu cleanup — 2026-08-17
 
 - **Why newly actionable:** user asks to remove 下载 and 导出种子文件 from

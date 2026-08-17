@@ -66,7 +66,7 @@ import {
   connectNhReadProgress,
   supportsCommentTranslation,
 } from 'shared'
-import { appSheetOptions } from 'shared'
+import { appSheetOptions, EhImageKnifeImage, EH_IMAGE_PRIORITY_LOW } from 'shared'
 import { GalleryChromeState } from '../state/GalleryChromeState'
 import { GalleryThumbnailsChromeState } from '../state/GalleryThumbnailsChromeState'
 import { GalleryThumbnailGridContent } from '../components/GalleryThumbnailGridContent'
@@ -1967,23 +1967,29 @@ export struct GalleryDetailPage {
         Stack({ alignContent: Alignment.Center }) {
           if (this.displayedCoverUrl.length > 0 && this.coverFailedUrl !== this.displayedCoverUrl) {
             if (this.heroCoverHasSourceSize()) {
-              Image(this.displayedCoverUrl)
-                .width(this.heroCoverFittedWidth())
-                .height(this.heroCoverFittedHeight())
-                .objectFit(ImageFit.Fill)
-                .borderRadius(ThemeTokens.DETAIL_COVER_RADIUS)
+              EhImageKnifeImage({
+                src: this.displayedCoverUrl,
+                widthValue: this.heroCoverFittedWidth(),
+                heightValue: this.heroCoverFittedHeight(),
+                objectFit: ImageFit.Fill,
+                radius: ThemeTokens.DETAIL_COVER_RADIUS,
+                priority: EH_IMAGE_PRIORITY_LOW,
+                onError: (): void => {
+                  this.coverFailedUrl = this.displayedCoverUrl
+                },
+              })
                 .clip(true)
-                .onError((): void => {
-                  this.coverFailedUrl = this.displayedCoverUrl
-                })
             } else {
-              Image(this.displayedCoverUrl)
-                .width('100%')
-                .height('100%')
-                .objectFit(ImageFit.Contain)
-                .onError((): void => {
+              EhImageKnifeImage({
+                src: this.displayedCoverUrl,
+                widthValue: '100%',
+                heightValue: '100%',
+                objectFit: ImageFit.Contain,
+                priority: EH_IMAGE_PRIORITY_LOW,
+                onError: (): void => {
                   this.coverFailedUrl = this.displayedCoverUrl
-                })
+                },
+              })
             }
           } else {
             SymbolGlyph($r('sys.symbol.picture'))
@@ -1991,22 +1997,28 @@ export struct GalleryDetailPage {
               .fontColor([ThemeTokens.TEXT_TERTIARY])
           }
           if (this.pendingCoverUrl.length > 0 && this.pendingCoverUrl !== this.displayedCoverUrl) {
-            Image(this.pendingCoverUrl)
-              .width(1)
-              .height(1)
-              .opacity(0)
-              .onComplete((): void => {
+            EhImageKnifeImage({
+              src: this.pendingCoverUrl,
+              widthValue: 1,
+              heightValue: 1,
+              objectFit: ImageFit.Fill,
+              priority: EH_IMAGE_PRIORITY_LOW,
+              onComplete: (): void => {
                 const ready: string = this.pendingCoverUrl
                 if (ready.length > 0 && ready !== this.displayedCoverUrl) {
                   this.displayedCoverUrl = ready
                   this.pendingCoverUrl = ''
                 }
-              })
-              .onError((): void => {
+              },
+              onError: (): void => {
                 // Keep the seed thumbnail; a failed verified cover is
                 // retried by the normal error path on a later route.
                 this.pendingCoverUrl = ''
-              })
+              },
+            })
+              .width(1)
+              .height(1)
+              .opacity(0)
           }
         }
         .width(ThemeTokens.DETAIL_COVER_WIDTH)

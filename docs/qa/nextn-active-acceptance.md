@@ -5,6 +5,24 @@
 - This observes the cache cold-start path only; it does not accept tag translation timing, every layout density, sign-out cache clearing, or the pending developer-guide maintenance contract. Raw layout copies retained under `.hvigor/outputs/nextn-cache-tags-20260816T/` and excluded from Git.
 # NextN active device-acceptance queue
 
+## Gallery Detail hero cover cache reuse — 2026-08-17 (device acceptance OPEN)
+
+- Signed Debug HAP with the hero `EhImageKnifeImage` swap built successfully
+  and was installed with `install -r` on USB `56T0225315001128` (lease
+  `20260817-132833-109955aa`, wake gate `AWAKE` /
+  `OverrideTimeout=86400000ms`). The app was force-stopped and cold-started,
+  and the browse list had settled for 6s so visible covers were in the
+  ImageKnifePro file cache.
+- Before the Detail-entry screenshot could be taken, the USB target went
+  `Offline`; `hdc kill`/`start` and re-list did not re-enumerate it, and
+  `192.168.50.197:12345` was not used because it is not an authorized
+  validation target. Acceptance remains OPEN: first-frame hero non-blank
+  after a cached list cover was not observed.
+- Next action when USB `56T0225315001128` is reconnected: cold start,
+  settle browse, tap the first gallery card, capture the hero slot
+  immediately and again shortly after; accept only if the first capture
+  already shows cover pixels (not the placeholder symbol or blank card).
+
 ## Gallery Detail overflow menu cleanup — 2026-08-17
 
 - Signed Debug HAP installed with `install -r` on USB
