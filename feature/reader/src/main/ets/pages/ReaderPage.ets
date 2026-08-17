@@ -87,6 +87,8 @@ const READER_PROGRESS_NUMBER_MIN_WIDTH: number = 38
 const READER_TAP_ZONE_SCROLL_RATIO: number = 0.75
 const READER_BOTTOM_TOOLBAR_HEIGHT: number = 44
 const READER_ENHANCEMENT_STATUS_SIZE: number = 24
+const READER_ENHANCEMENT_STATUS_OPACITY: number = 0.72
+const READER_ENHANCEMENT_STATUS_BACKGROUND: ResourceColor = '#26000000'
 const READER_ENHANCEMENT_STATUS_BOTTOM_GAP: number = ThemeTokens.SPACE_MD
 const READER_PAGE_NUMBER_TEXT: ResourceColor = '#99FFFFFF'
 const READER_PAGE_NUMBER_OUTLINE: ResourceColor = '#80000000'
@@ -1513,16 +1515,18 @@ struct ReaderEnhancementStatusIcon {
           .width(ThemeTokens.FONT_SIZE_CAPTION)
           .height(ThemeTokens.FONT_SIZE_CAPTION)
           .color(ThemeTokens.TEXT_ON_BRAND)
+          .opacity(READER_ENHANCEMENT_STATUS_OPACITY)
       } else {
         SymbolGlyph($r('sys.symbol.AI_hd_rectangle'))
           .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
           .fontColor([this.applied ? ThemeTokens.BRAND : ThemeTokens.TEXT_ON_BRAND])
+          .opacity(READER_ENHANCEMENT_STATUS_OPACITY)
       }
     }
     .width(READER_ENHANCEMENT_STATUS_SIZE)
     .height(READER_ENHANCEMENT_STATUS_SIZE)
     .borderRadius(READER_ENHANCEMENT_STATUS_SIZE / 2)
-    .backgroundColor('#66000000')
+    .backgroundColor(READER_ENHANCEMENT_STATUS_BACKGROUND)
     .accessibilityText(this.label())
   }
 }
@@ -2500,12 +2504,6 @@ export struct ReaderPage {
         .onClick((): void => {
           this.toggleReaderTranslationAuto()
         })
-      MenuItem({
-        content: AppStrings.get('settings_reader'),
-        symbolStartIcon: new SymbolGlyphModifier($r('sys.symbol.gearshape')),
-      }).onClick((): void => {
-        this.openReaderSettings()
-      })
     }
   }
 
@@ -3518,6 +3516,20 @@ export struct ReaderPage {
           }
         })
         Blank()
+        // NextE puts Reader settings behind a direct top-bar gear button,
+        // not inside the overflow menu as a text item.
+        Button({ type: ButtonType.Circle }) {
+          SymbolGlyph($r('sys.symbol.gearshape'))
+            .fontSize(22)
+            .fontColor([ThemeTokens.TEXT_ON_BRAND])
+        }
+        .width(44)
+        .height(44)
+        .backgroundColor(Color.Transparent)
+        .accessibilityText(AppStrings.get('settings_reader'))
+        .onClick((): void => {
+          this.openReaderSettings()
+        })
         // Route-level actions remain in the top chrome. Per-page reading
         // controls intentionally live in ReaderBottomBar with the scrubber.
         Button({ type: ButtonType.Circle }) {

@@ -6100,3 +6100,23 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Visual verification plan:** 签名构建 + install -r + 真机：选未缓存画廊进入纵向阅读，1 秒时抓布局——LoadingProgress 必须 ≤ 可见页数（1-2 个）且占满页高；加载完成后图片正常显示。
 - **Device evidence:** 构建成功（10.0s）。真机 56T0225315001128 未缓存画廊（33 页）进入 1 秒：LoadingProgress 1 个 [624,852][696,924]，无图片；5 秒后 0 个加载图标、2 张整页图片 [0,0][1320,1846]/[0,1846][1320,2120]。证据 .hvigor/outputs/nextn-vertical-placeholder-20260817T/（不入 Git）。
 - **Unresolved risk:** 已缓存画廊无法复现冷态（用未缓存画廊验证）；高分辨率页在占位期的高度一致性未逐页抓帧；视觉终验由用户验收。
+
+## 阅读器设置入口：溢出菜单文字项改为顶栏齿轮按钮（2026-08-17，用户反馈）
+
+- **用户反馈:** 阅读器右上角菜单里的设置入口名字叫“阅读”，跟 NextE 不一致。
+- **根因（source evidence）:** NextN ReaderHeader 只有一个溢出按钮，ReaderOverflowMenu 里放了 `settings_reader`（“阅读”）文字项；NextE 顶栏是直接齿轮按钮打开设置 sheet，溢出菜单里没有文字设置项（NextE ReaderPage.ets:4052-4071）。
+- **Whole parent-tree boundary:** 仅 ReaderHeader 与 ReaderOverflowMenu；不动设置 sheet 内容、分享/翻译/外开菜单项。
+- **Exact change:** 移除 ReaderOverflowMenu 的“阅读” MenuItem；Header 在溢出按钮前新增 44vp 齿轮按钮（accessibilityText settings_reader），onClick 走原 openReaderSettings。
+- **Minimality rationale:** 直接按 NextE 顶栏结构迁移，无新文案/无新几何。
+- **Visual verification plan:** 构建 + install -r + 真机：阅读器顶栏出现齿轮按钮；点齿轮打开阅读器设置 sheet；溢出菜单无“阅读”项。
+- **Device evidence:** 构建成功（10.1s）。真机 56T0225315001128：Header 两个右侧按钮 [1032,135][1164,267]（齿轮）/[1164,135][1296,267]（溢出）；点齿轮打开设置面板（翻页与布局/翻页方向/双页模式…）；溢出菜单仅 分享/在外部打开/翻译当前页/自动翻译。证据 .hvigor/outputs/nextn-reader-gear-20260817T/（不入 Git）。
+
+## 阅读器 AI 增强状态图标背景过黑：对齐 NextE 透明度（2026-08-17，用户反馈）
+
+- **用户反馈:** “AI增强的图标背景，这一个透明度确定对吗？我怎么感觉好黑呀”。
+- **根因（source evidence）:** NextN ReaderEnhancementStatusIcon 背景硬编码 `#66000000`（alpha 0x66≈40% 黑），图标无透明度；NextE 使用 `READER_ENHANCEMENT_STATUS_BACKGROUND='#26000000'`（alpha 0x26≈15% 黑）+ `READER_ENHANCEMENT_STATUS_OPACITY=0.72` 作用于图标/加载圈（NextE ThemeConstants.ets:63-66，ReaderPage.ets:4464-4475）。
+- **Whole parent-tree boundary:** 仅 ReaderEnhancementStatusIcon 容器/图标透明度；不动尺寸、位置、状态文案。
+- **Exact change:** 新增 READER_ENHANCEMENT_STATUS_OPACITY=0.72、READER_ENHANCEMENT_STATUS_BACKGROUND='#26000000'；背景改用该常量，LoadingProgress/SymbolGlyph 加 opacity(0.72)。
+- **Minimality rationale:** 逐值对齐 NextE 常量，无新设计。
+- **Visual verification plan:** 构建 + install -r + 真机截图确认背景从 40% 黑降到 15% 黑、图标透明度 0.72。
+- **Device evidence:** 构建成功（9.7s）并装机；布局含新齿轮入口的同一 HAP 内该常量生效。视觉像素级对比需用户/截图验收（本次机型无视觉模型侧）；证据 .hvigor/outputs/nextn-reader-gear-20260817T/（不入 Git）。

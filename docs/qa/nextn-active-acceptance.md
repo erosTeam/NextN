@@ -2773,3 +2773,8 @@ permitted in this repository.
 
 - 2026-08-17 +0800: USB 56T0225315001128, signed HAP installed with `install -r`. An uncached 33-page gallery opened in vertical Reader: 1 second after entry the layout contained exactly one LoadingProgress ([624,852][696,924]) and zero Images; after settle it contained 0 LoadingProgress and two full-width page Images ([0,0][1320,1846], [0,1846][1320,2120]). No data clear/uninstall/account action occurred.
 - Raw artifacts: `.hvigor/outputs/nextn-vertical-placeholder-20260817T/` (excluded from Git).
+
+## Current delivery observation — Reader gear settings entry + enhancement status opacity
+
+- 2026-08-17 +0800: USB 56T0225315001128, signed HAP installed with `install -r`. Reader chrome showed a direct gear button ([1032,135][1164,267]) beside the overflow button; tapping gear opened the Reader settings sheet (翻页与布局/翻页方向/双页模式/双页布局…); the overflow menu contained only 分享/在外部打开/翻译当前页/自动翻译, with no 阅读 text item. Enhancement status icon background/opacity source values now match NextE (#26000000, 0.72).
+- Raw artifacts: `.hvigor/outputs/nextn-reader-gear-20260817T/` (excluded from Git).
