@@ -2967,3 +2967,9 @@ permitted in this repository.
 - Tapping 更新与日志 opened the release-notes dialog: primary title 更新日志, version rail v1.0.0 centered, Markdown body rendered (新增 heading with bullet items 首个正式版本，提供完整的 nhentai 原生浏览体验 / 支持首页热门、收藏、搜索、历史与随机画廊浏览 / … / 关于页支持检查更新与浏览历史版本更新日志, then 改进 heading with 优化画廊列表、详情页与阅读器的加载与缓存), and bottom buttons 取消 / 打开发布页.
 - Tapping 打开发布页 closed the dialog and launched the system browser; com.huawei.hmos.browser moved FOREGROUND and the browser layout showed erosTeam / NextN / Releases / v1.0.0 / Tag v1.0.0 / github.com — i.e. the GitHub Release v1.0.0 page.
 - Raw artifacts: .hvigor/outputs/nextn-about-release-20260818T/release-notes-dialog.jpeg and /tmp/nextn-retry-1.json /tmp/nextn-browser.json (layouts; jpeg excluded from Git).
+
+## Current delivery observation — v1.0.0 release body corrected to first-release-only content
+
+- 2026-08-18 +0800: user feedback: a first release must not contain 改进/修复 sections. Removed both sections from changelog/v1.0.0.md (commit 424716c), pushed main.
+- The v1.0.0 tag originally pointed at 3378771 (pre-correction changelog), so the first re-publish still used the old body; moved the annotated tag to 424716c and re-pushed. Build OHOS run 32045144317 completed successfully and the GitHub Release body now contains only the 新增 heading with the 8 first-release bullets; the release asset was replaced (new SHA256 8ddeef34996bca30a50efa6bac484bf05aa966d8da937948a27375461e1992a3).
+- Device re-verification (197, wake gate AWAKE, force-stop/cold start, no data clear): after GitHub anonymous API rate-limit reset, About background refresh logged [app-release] refresh_completed releases=1; opening 更新与日志 showed 更新日志 / v1.0.0 / 新增 with the 8 items and no 改进 or 修复 heading, with 取消 / 打开发布页 buttons. Layout evidence /tmp/nextn-about-dialog-final2.json.
