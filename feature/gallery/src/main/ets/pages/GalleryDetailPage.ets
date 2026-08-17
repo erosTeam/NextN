@@ -1612,9 +1612,55 @@ export struct GalleryDetailPage {
     return NhTagQuery.format(tag).length > 0
   }
 
+  private tagIdentityKey(tag: NhTag): string {
+    return tag.id + '_' + tag.type + '_' + tag.name
+  }
+
+  /**
+   * Detail tags keep the tapped-row seed order when a same-gallery seed
+   * exists. The list endpoint's tag_ids order differs from the detail
+   * response's tags order, so without this the verified detail re-sorts the
+   * visible tag groups the moment it replaces the seed frame. Detail-only
+   * tags append at the end in their API order; direct routes without a seed
+   * keep the detail order unchanged.
+   */
+  private presentationTagIndices(): number[] {
+    const indices: number[] = []
+    for (let index: number = 0; index < this.detail.tags.length; index++) {
+      indices.push(index)
+    }
+    const seedOrder: Map<string, number> = new Map()
+    if (this.seed !== null && this.seed !== undefined && this.seed.id === this.galleryId) {
+      for (let index: number = 0; index < this.seed.tags.length; index++) {
+        const key: string = this.tagIdentityKey(this.seed.tags[index])
+        if (!seedOrder.has(key)) {
+          seedOrder.set(key, index)
+        }
+      }
+    }
+    if (seedOrder.size === 0) {
+      return indices
+    }
+    indices.sort((left: number, right: number): number => {
+      const leftKey: string = this.tagIdentityKey(this.detail.tags[left])
+      const rightKey: string = this.tagIdentityKey(this.detail.tags[right])
+      const leftOrder: number | undefined = seedOrder.get(leftKey)
+      const rightOrder: number | undefined = seedOrder.get(rightKey)
+      const leftRank: number = leftOrder === undefined ? Number.MAX_SAFE_INTEGER : leftOrder
+      const rightRank: number = rightOrder === undefined ? Number.MAX_SAFE_INTEGER : rightOrder
+      if (leftRank !== rightRank) {
+        return leftRank - rightRank
+      }
+      return left - right
+    })
+    return indices
+  }
+
   private tagVisualGroups(labels: string[]): GalleryTagVisualGroup[] {
     const groups: GalleryTagVisualGroup[] = []
-    for (let index: number = 0; index < this.detail.tags.length; index++) {
+    const presentationIndices: number[] = this.presentationTagIndices()
+    for (let position: number = 0; position < presentationIndices.length; position++) {
+      const index: number = presentationIndices[position]
       const tag: NhTag = this.detail.tags[index]
       const namespace: string = tag.type.trim().length > 0 ? tag.type.trim() : AppStrings.get('gallery_tag_fallback')
       const translatedName: string = index < labels.length

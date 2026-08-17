@@ -2784,3 +2784,9 @@ permitted in this repository.
 - 2026-08-17 +0800: USB 56T0225315001128, signed HAP installed with `install -r`; no data clear/uninstall/account action occurred. Foreground bundle `com.erosteam.nextn`.
 - From Browse, title-bar search opened the Search page; the funnel title action opened the 搜索选项 sheet. Tapping the 页数下限 input made it `focused=true` and the sheet layout moved up (keyboard expanded). Injecting a real number key (`uiInput keyEvent 8`) left the input `focused=true` with keyboard still expanded and value `5` retained. The 标签名称 input behaved the same after a key injection (`focused=true`). `uiInput text` closes the IME by injection design and was not used as acceptance.
 - Raw artifacts: `.hvigor/outputs/nextn-search-focus-20260817T/` (excluded from Git).
+
+## Current delivery observation — Detail tag groups keep the list order
+
+- 2026-08-17 +0800: USB 56T0225315001128, signed HAP installed with `install -r`; no data clear/uninstall/account action occurred. Foreground bundle `com.erosteam.nextn`.
+- Browse card 淑魎/Monster Hunter showed list tags in seed order (ibuki shione → mizutsune → 可伸缩阴茎 → zinogre → 泄殖腔插入 → 同人志 → 男同). Opening its detail page rendered tag groups as 作者(ibuki shione) → 角色(zinogre, mizutsune) → 标签(泄殖腔插入, 可伸缩阴茎, 男同, 纯男性, 中出, 龙) → 分类(同人志) → 语言(汉语, 翻译) → 原作(怪物猎人), matching the list seed group order instead of the detail API order (分类→语言→标签→原作→角色→作者).
+- Raw artifacts: `.hvigor/outputs/nextn-tag-order-20260817T/` (excluded from Git).

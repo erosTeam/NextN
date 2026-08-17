@@ -6131,3 +6131,14 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Visual verification plan:** 签名构建 + install -r + 真机：搜索页打开选项，点页数最小输入框输入“5”，布局确认 TextInput 保持 focused=true 且键盘不收起；标签输入同理。
 - **Unresolved risk:** 子组件与宿主的错误提示/菜单状态同步需真机复核；本项不改搜索条件语法。
 - **Device evidence:** 构建成功（10.1s）。真机 56T0225315001128：搜索页标题栏过滤按钮打开选项 sheet；点击页数下限输入框后 focused=true 且布局上移（键盘展开）；用真实按键注入数字后 TextInput 仍 focused=true、键盘保持，输入值“5”保留；标签名称输入框同样在按键后保持 focused=true。uiInput text 注入法本身会收起键盘，不作为验收手段。证据 .hvigor/outputs/nextn-search-focus-20260817T/（不入 Git）。
+
+## 详情页标签进入后重排：列表/详情 API 标签顺序不一致（2026-08-17，用户反馈）
+
+- **用户反馈:** “为什么点进画廊之后，标签会跳着重新排一下呢？”
+- **根因（source evidence + API 数据）:** 列表 seed 快照的标签按 tag_ids 顺序渲染，验证详情到达后 tagVisualGroups() 改为按详情 tags 数组顺序重新分组。实际 API 数据（gallery 673343）中两者顺序完全不同：列表 tag_ids=[154236,152525,152524,144525,141546,33172,29963,23895,21712,17249,13720,8119,4369]，详情 tags 为 [33172(category),17249(language),29963(language),13720(tag),23895(tag),21712(tag),4369(parody),8119(tag),141546(tag),144525(tag),152525(character),152524(character),154236(artist)]，因此详情填入瞬间标签组顺序翻转，出现“跳着重新排”。NextE 无 seed 标签预渲染，详情首帧即最终顺序，故无此跳变。
+- **Whole parent-tree boundary:** 仅详情页标签卡 GalleryDetailPage.tagVisualGroups() 的展示顺序；不动标签数据、翻译、搜索、其他卡片。
+- **Exact change:** 新增 tagIdentityKey() 与 presentationTagIndices()：存在同画廊 seed 时，按 seed 标签顺序为详情标签排序（相同标签保持 seed 位次，详情新增标签按详情顺序追加在末尾）；tagVisualGroups() 改为按该展示顺序构建分组。seed 首帧与详情帧的组/成员顺序因此保持一致。
+- **Minimality rationale:** 只稳定展示顺序这一个维度，不改标签集合、翻译、缓存与 DTO；无 seed 的直接路由保持原详情顺序。
+- **Visual verification plan:** 签名构建 + install -r + 真机：从 Browse 点进画廊，详情页标签组顺序与列表卡片标签顺序一致（组顺序与列表一致），进入过程中不再翻转为详情顺序；离开重进顺序不变。
+- **Unresolved risk:** 翻译异步完成的成员文本替换仍可能造成芯片原位重绘；本项只修顺序跳变，若用户仍见原位闪烁再单独处理成员 key。
+- **Device evidence:** 构建成功（10.2s）。真机 56T0225315001128：Browse 第二张卡片（淑魎/Monster Hunter，列表标签显示顺序 ibuki shione → mizutsune → 可伸缩阴茎 → zinogre → 泄殖腔插入 → 同人志 → 男同）点击进入详情后，标签组顺序为 作者(ibuki shione) → 角色(zinogre, mizutsune) → 标签(泄殖腔插入, 可伸缩阴茎, 男同, 纯男性, 中出, 龙) → 分类(同人志) → 语言(汉语, 翻译) → 原作(怪物猎人)，与列表 seed 组顺序一致，不再按详情 API 顺序（分类→语言→标签→原作→角色→作者）翻转。证据 .hvigor/outputs/nextn-tag-order-20260817T/（不入 Git）。
