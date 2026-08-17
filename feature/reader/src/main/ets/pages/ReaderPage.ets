@@ -3974,34 +3974,56 @@ export struct ReaderPage {
   }
 
   private readerBottomBarHeight(): number {
-    const thumbnailHeight: number = this.showThumbnailStrip
-      ? READER_THUMB_STRIP_HEIGHT + ThemeTokens.SPACE_SM
+    const stripHeight: number = this.showThumbnailStrip
+      ? READER_THUMB_STRIP_HEIGHT + ThemeTokens.SPACE_SM * 2
       : 0
-    return thumbnailHeight + READER_PROGRESS_OVERLAY_HEIGHT + READER_BOTTOM_TOOLBAR_HEIGHT +
+    return this.readerBottomControlsHeight() + stripHeight
+  }
+
+  /** Fixed bottom chrome: progress + toolbar stay anchored while the strip overlays above. */
+  private readerBottomControlsHeight(): number {
+    return READER_PROGRESS_OVERLAY_HEIGHT + READER_BOTTOM_TOOLBAR_HEIGHT +
       this.layoutSafeArea.bottomAvoidHeight + ThemeTokens.SPACE_SM * 2 + ThemeTokens.SPACE_XS
   }
 
-  /** One NextE-shaped bottom chrome: optional strip, scrubber, then controls. */
+  /** NextE-shaped bottom chrome: the strip is an overlay layer above a fixed progress/toolbar stack. */
   @Builder
   private ReaderBottomBar() {
-    Column({ space: ThemeTokens.SPACE_XS }) {
-      if (this.showThumbnailStrip) {
+    Stack({ alignContent: Alignment.Bottom }) {
+      Column() {
         this.ReaderThumbnailStrip()
       }
-      this.ReaderProgressRow()
-      this.ReaderBottomToolbar()
+      .width('100%')
+      .height(this.showThumbnailStrip ? READER_THUMB_STRIP_HEIGHT + ThemeTokens.SPACE_SM * 2 : 0)
+      .padding({
+        top: this.showThumbnailStrip ? ThemeTokens.SPACE_SM : 0,
+        bottom: this.showThumbnailStrip ? ThemeTokens.SPACE_SM : 0,
+      })
+      .margin({
+        bottom: this.readerBottomControlsHeight(),
+      })
+      .backgroundColor(ThemeTokens.OVERLAY_SCRIM)
+      .clip(true)
+      .hitTestBehavior(this.showThumbnailStrip ? HitTestMode.Default : HitTestMode.None)
+
+      Column({ space: ThemeTokens.SPACE_XS }) {
+        this.ReaderProgressRow()
+        this.ReaderBottomToolbar()
+      }
+      .width('100%')
+      .height(this.readerBottomControlsHeight())
+      .padding({
+        left: ThemeTokens.SPACE_MD,
+        right: ThemeTokens.SPACE_MD,
+        top: ThemeTokens.SPACE_SM,
+        bottom: this.layoutSafeArea.bottomAvoidHeight + ThemeTokens.SPACE_SM,
+      })
+      .backgroundColor(ThemeTokens.OVERLAY_SCRIM)
     }
     .width('100%')
     .height(this.readerBottomBarHeight())
-    .padding({
-      left: ThemeTokens.SPACE_MD,
-      right: ThemeTokens.SPACE_MD,
-      top: ThemeTokens.SPACE_SM,
-      bottom: this.layoutSafeArea.bottomAvoidHeight + ThemeTokens.SPACE_SM,
-    })
-    .backgroundColor(ThemeTokens.OVERLAY_SCRIM)
-    .clip(true)
     .layoutGravity(LocalizedAlignment.BOTTOM)
+    .hitTestBehavior(HitTestMode.Default)
   }
 
   @Builder

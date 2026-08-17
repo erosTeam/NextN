@@ -6078,3 +6078,14 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Visual verification plan:** 签名构建 + install -r + 真机：连续纵向下双页开关 masked off 且点击无效；切“从左到右”→开关可开；进入阅读器显示两页并排（状态 1–2 / N）。
 - **Device evidence:** 构建成功（11.7s）。真机 56T0225315001128：连续纵向时开关 checked=false 且点击后仍 false；切“从左到右”后开关 checked=true；进入阅读器状态 `1–2 / 134`，画布并排 Image [0,737][862,1384] + [862,737][1320,1384]；验证后恢复 连续纵向 + 双页关闭。证据 .hvigor/outputs/nextn-double-page-20260817T/（不入 Git）。
 - **Unresolved risk:** 竖屏下双页画布更窄（NextE 同语义）；本次无同视口 NextE 截图对照，视觉终验仍由用户验收。
+
+## 阅读器底部栏：缩略图展开/收起导致按钮与滑动条位移（2026-08-17，用户反馈）
+
+- **用户反馈:** 阅读器里展开和收起缩略图，下面按钮以及滑动条本身位置会发生变化。
+- **根因（source evidence）:** NextN ReaderBottomBar 是单个动态高度 Column：`if(showThumbnailStrip) strip → progress → toolbar`，缩略图高度参与同一列布局，展开时把滑动条和按钮整体往下推。NextE ReaderBottomBar 是 Stack：缩略图作为独立叠层（margin-bottom = 固定控制区高度），进度+工具栏是固定高度、锚定底部的第二层（NextE ReaderPage.ets:4131-4339）。
+- **Whole parent-tree boundary:** 仅 ReaderPage.ReaderBottomBar/readerBottomBarHeight；不动缩略图 List 内容、滑动条、工具栏按钮、header。
+- **Exact change:** ReaderBottomBar 改为 Stack：缩略图层（显示时 THUMB+2×SM 高、padding SM、margin-bottom=控制区高、hitTest 随显示切换）+ 固定控制层（Progress+Toolbar，高度=控制区高、padding 不变）；外层 Stack 高度=控制区+缩略图，layoutGravity BOTTOM；新增 readerBottomControlsHeight()。
+- **Minimality rationale:** 直接移植 NextE 底部 Stack 结构，保持原控件与间距常量。
+- **Visual verification plan:** 签名构建 + install -r + 真机：进入阅读器显示控制栏，抓收起态与展开态布局，对比 Slider/工具栏按钮坐标必须不变，缩略图 List 位于控制区上方。
+- **Device evidence:** 构建成功（9.9s）。真机 56T0225315001128：收起态 Slider [210,1730][1110,1850]、按钮 [36,1880][168,2012]/[192,1880][324,2012]/[348,1880][480,2012]；展开后同一组坐标完全不变，缩略图 List [0,1244][1320,1664] 位于控制区上方。证据 .hvigor/outputs/nextn-bottom-bar-20260817T/（不入 Git）。
+- **Unresolved risk:** 竖屏/横屏、双页模式下同一结构未逐一抓帧；视觉终验由用户验收。

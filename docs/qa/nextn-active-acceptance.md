@@ -2763,3 +2763,8 @@ permitted in this repository.
 - 2026-08-17 +0800: USB 56T0225315001128 passed the wake gate (AWAKE, OverrideTimeout=86400000ms); signed Debug HAP from the double-page alignment worktree installed with `install -r` only; no data clear/uninstall/account action occurred. Reader settings were temporarily changed for verification and restored afterwards.
 - In 连续纵向 mode the 双页模式 switch displayed off (checked=false) and an attempted toggle left it unchanged; after switching 翻页方向 to 从左到右 the switch became usable and was set on (checked=true). Opening the Reader for a 134-page gallery rendered the spread status `1–2 / 134` with two side-by-side canvas Images at [0,737][862,1384] and [862,737][1320,1384] on the portrait phone. Settings were restored to 连续纵向 with 双页模式 off.
 - This observes mode+switch spread semantics and one portrait double-page render only; it does not claim NextE visual parity, RTL spread, or every mode transition. Raw artifacts: `.hvigor/outputs/nextn-double-page-20260817T/` (excluded from Git).
+
+## Current delivery observation — Reader bottom bar fixed anchor
+
+- 2026-08-17 +0800: USB 56T0225315001128, signed HAP installed with `install -r`; reader opened from the first Browse gallery (33 pages). With chrome shown, strip-hidden layout measured Slider [210,1730][1110,1850] and toolbar buttons [36,1880][168,2012]/[192,1880][324,2012]/[348,1880][480,2012]; after toggling thumbnails on, the strip List appeared at [0,1244][1320,1664] while Slider and toolbar button bounds stayed identical. No data clear/uninstall/account action occurred.
+- Raw artifacts: `.hvigor/outputs/nextn-bottom-bar-20260817T/` (excluded from Git).
