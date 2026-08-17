@@ -489,7 +489,7 @@
     { "name": "download_action_resume_all", "value": "すべて再開" },
     { "name": "download_batch_failed", "value": "ダウンロードを更新できませんでした（%1$d 件失敗）。" },
     { "name": "download_batch_partial", "value": "%2$d 件中 %1$d 件を更新しました。%3$d 件は失敗しました。" },
-    { "name": "download_empty", "value": "このデバイスに保存するにはギャラリー詳細ページからダウンロードしてください。" },
+    { "name": "download_empty", "value": "ギャラリーダウンロードはありません" },
     { "name": "download_export_accessibility", "value": "{0} を CBZ ファイルとして書き出す" },
     { "name": "download_group_failed", "value": "失敗" },
     { "name": "download_search_close", "value": "検索を閉じる" },

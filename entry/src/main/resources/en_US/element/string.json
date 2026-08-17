@@ -489,7 +489,7 @@
     { "name": "download_action_resume_all", "value": "Resume all" },
     { "name": "download_batch_failed", "value": "No downloads were updated. %1$d failed." },
     { "name": "download_batch_partial", "value": "Updated %1$d of %2$d downloads. %3$d failed." },
-    { "name": "download_empty", "value": "Download a gallery from its detail page to keep it on this device." },
+    { "name": "download_empty", "value": "No gallery downloads yet" },
     { "name": "download_export_accessibility", "value": "Export {0} as a CBZ file" },
     { "name": "download_group_failed", "value": "Failed" },
     { "name": "download_search_close", "value": "Close search" },

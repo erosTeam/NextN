@@ -5,6 +5,23 @@
 - This observes the cache cold-start path only; it does not accept tag translation timing, every layout density, sign-out cache clearing, or the pending developer-guide maintenance contract. Raw layout copies retained under `.hvigor/outputs/nextn-cache-tags-20260816T/` and excluded from Git.
 # NextN active device-acceptance queue
 
+## Download queue empty-state copy — 2026-08-17 (observation OPEN)
+
+- Signed Debug HAP installed with `install -r` on USB
+  `56T0225315001128` (same lease and wake gate). Foreground-confirmed
+  `com.erosteam.nextn` Downloads tab renders the queue with 3 completed
+  tasks (`已完成 3`, rows 26/26, 47/47, 55/55), so the empty-queue branch
+  (`tasks.length === 0` → `PageEmptyState(download_empty)`) is not reachable
+  on this device state without deleting user data.
+- The `download_empty` resource now carries NextE's exact values in all four
+  locales (`暂无画廊下载` / `No gallery downloads yet` /
+  `ギャラリーダウンロードはありません`) and is referenced only by the
+  empty-queue branch; build succeeded.
+- Acceptance remains OPEN: the visible empty state itself has not been
+  observed. Next action when an empty queue is available (fresh install,
+  cleared test data, or a different test device): open Downloads and record
+  the centered empty copy.
+
 ## Image-cache aggregation alignment (NextE row shape) — 2026-08-17
 
 - Signed Debug HAP installed with `install -r` on USB

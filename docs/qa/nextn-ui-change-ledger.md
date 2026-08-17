@@ -3,6 +3,28 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## Download queue empty-state copy — 2026-08-17
+
+- **Why newly actionable:** user reports the empty download-queue copy is
+  unsuitable. NextN rendered a long instructional sentence ("请从图库详情页
+  下载图库，以将其保存在此设备上。"); NextE's gallery empty state is the
+  short neutral "暂无画廊下载" / "No gallery downloads yet" /
+  "ギャラリーダウンロードはありません".
+- **Whole parent-tree boundary:** one string resource consumed by
+  `PageEmptyState` in `DownloadQueuePage` when `tasks.length === 0`; no
+  layout, icon, or search-empty copy changes.
+- **Exact before/after:** `download_empty` changed from the instructional
+  sentence to NextE's exact gallery-empty value in all four locales; the
+  search-empty string is untouched.
+- **Minimality rationale:** reference copy port; no structural change.
+- **Visual verification plan:** signed build + `install -r`; with an empty
+  queue the downloads tab renders "暂无画廊下载".
+- **Unresolved risk:** the selected device currently holds 3 completed
+  downloads, so the empty state was not directly observable this run; the
+  copy is byte-identical to NextE's strings and the resource path is unique
+  to the empty-queue branch. Observation remains OPEN until an empty queue
+  is available.
+
 ## Settings storage page: merge reader image cache into one image-cache row — 2026-08-17
 
 - **Why newly actionable:** the user asked why NextE does not split image

@@ -490,7 +490,7 @@
     { "name": "download_action_resume_all", "value": "全部继续" },
     { "name": "download_batch_failed", "value": "没有下载项更新成功，%1$d 个失败。" },
     { "name": "download_batch_partial", "value": "已更新 %1$d/%2$d 个下载项，%3$d 个失败。" },
-    { "name": "download_empty", "value": "请从图库详情页下载图库，以将其保存在此设备上。" },
+    { "name": "download_empty", "value": "暂无画廊下载" },
     { "name": "download_export_accessibility", "value": "将 {0} 导出为 CBZ 文件" },
     { "name": "download_group_failed", "value": "失败" },
     { "name": "download_search_close", "value": "关闭搜索" },
