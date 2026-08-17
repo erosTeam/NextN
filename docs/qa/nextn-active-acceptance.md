@@ -5,23 +5,27 @@
 - This observes the cache cold-start path only; it does not accept tag translation timing, every layout density, sign-out cache clearing, or the pending developer-guide maintenance contract. Raw layout copies retained under `.hvigor/outputs/nextn-cache-tags-20260816T/` and excluded from Git.
 # NextN active device-acceptance queue
 
-## Gallery Detail hero cover cache reuse — 2026-08-17 (device acceptance OPEN)
+## Gallery Detail hero cover cache reuse — 2026-08-17 (accepted on 197)
 
-- Signed Debug HAP with the hero `EhImageKnifeImage` swap built successfully
-  and was installed with `install -r` on USB `56T0225315001128` (lease
-  `20260817-132833-109955aa`, wake gate `AWAKE` /
-  `OverrideTimeout=86400000ms`). The app was force-stopped and cold-started,
-  and the browse list had settled for 6s so visible covers were in the
-  ImageKnifePro file cache.
-- Before the Detail-entry screenshot could be taken, the USB target went
-  `Offline`; `hdc kill`/`start` and re-list did not re-enumerate it, and
-  `192.168.50.197:12345` was not used because it is not an authorized
-  validation target. Acceptance remains OPEN: first-frame hero non-blank
-  after a cached list cover was not observed.
-- Next action when USB `56T0225315001128` is reconnected: cold start,
-  settle browse, tap the first gallery card, capture the hero slot
-  immediately and again shortly after; accept only if the first capture
-  already shows cover pixels (not the placeholder symbol or blank card).
+- Signed Debug HAP with the hero `EhImageKnifeImage` swap was installed with
+  `install -r` on `192.168.50.197:12345` (ALN-AL80 / HUAWEI Mate 60 Pro,
+  user-authorized target, lease `20260817-133153-893edc22`, wake gate
+  `AWAKE` / `OverrideTimeout=86400000ms`). Force-stop/cold start, browse
+  list settled with visible covers.
+- Tapped the first gallery card and captured the first observable detail
+  screenshot (~0.4-1s after the tap); the hero slot crop (40,300)-(500,950)
+  contains 83915 unique colors, luminance range 0-255, std 71.52 — rendered
+  cover content, not the placeholder symbol or a blank card. Returned to the
+  list, tapped the same card again and repeated: identical non-blank result.
+- Source chain: the tapped row's `thumbnailUrl` and the hero's displayed
+  seed URL are the same string, and both now route through ImageKnifePro's
+  FILE cache, so the second render reads the file cache instead of starting
+  a fresh network load. The hidden pending verified-cover preload also uses
+  `EhImageKnifeImage`.
+- Accepted for the observable entry path on 197 only; strict first-frame
+  (8ms-class) capture is not claimed because `uitest screenCap` cannot
+  synchronize to the exact frame. Raw captures retained under
+  `.hvigor/outputs/detail-cover-cache-20260817T/`.
 
 ## Gallery Detail overflow menu cleanup — 2026-08-17
 
