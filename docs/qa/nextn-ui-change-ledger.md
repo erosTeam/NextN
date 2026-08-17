@@ -6067,3 +6067,14 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Visual verification plan:** 签名构建 + install -r + USB 真机 56T0225315001128：详情页点"阅读"→ 阅读器翻到 5/104 → Back 返回 → 详情按钮显示"继续 P5"。
 - **Device evidence:** 构建通过（debug，BUILD SUCCESSFUL）；真机阅读器底部布局含 `5 / 104`（reader-overlay-navigation, [551,1940][685,1989]），Back 后前台 bundle com.erosteam.nextn 详情页按钮 `继续 P5` [1070,1979][1216,2028]，无 reader-overlay 残留。截图 .hvigor/outputs/nextn-read-progress-20260817T/{reader-page5.png,detail-after-back.png}（不入 Git）。
 - **Unresolved risk:** 冷启动 RDB 种子路径此前已工作（本次未单独冷启动验证）；内存持有者为全局 AppStorageV2，跨进程/多实例语义与 NextE 同构。
+
+## 阅读器双页模式实际无效：移除自创宽画布门，对齐 NextE mode+开关（2026-08-17，用户反馈）
+
+- **用户反馈:** “双页模式也他妈是假的，根本就没有做”——开关开了进阅读器仍是单页。
+- **根因（source evidence）:** NextN `ReaderSpreadResolver.isDoublePage` 在 NextE 的 `(mode===LTR||mode===RTL) && enabled` 之外，额外要求 `isWideViewport`（宽度≥720vp 且 宽≥高×1.15，ReaderPage.ets 原 105-106/203-216）。竖屏手机/平板（如 1320×2120 设备，画布宽约 440vp）恒为 false，所以开关永远不生效。NextE ReaderSpreadResolver.isDoublePage 只有模式+开关（NextE ReaderPage.ets:175），无画布宽度门。
+- **Whole parent-tree boundary:** 仅 ReaderPage 的 spread 判定/视口回调、SettingsPage 阅读器布局组的双页开关；不动翻页、进度、预加载、缩略图、设置路由。
+- **Exact change:** ① 删除 `READER_DOUBLE_PAGE_MIN_*` 常量与 `isWideViewport`，`isDoublePage(mode, requested) = requested && supports(mode)`；② `onReaderViewportChanged` 只记录画布尺寸供拼合几何使用，删除“窄画布回退单页”的 `lastDoublePageActive` 状态机；③ 设置页镜像 NextE `doublePageAvailable()`：双页开关 `checked = available && enabled`、`isEnabled = available`、动作/切换加守卫，双页布局行沿用同一可用性；④ 删除自创且从未使用的 `settings_reader_double_page_hint` 四语文案（描述的就是被移除的宽画布行为）。
+- **Minimality rationale:** 全部为 NextE 既有语义/结构的直接对齐，无新设计；删除的仅是该错误行为对应的死状态与死文案。
+- **Visual verification plan:** 签名构建 + install -r + 真机：连续纵向下双页开关 masked off 且点击无效；切“从左到右”→开关可开；进入阅读器显示两页并排（状态 1–2 / N）。
+- **Device evidence:** 构建成功（11.7s）。真机 56T0225315001128：连续纵向时开关 checked=false 且点击后仍 false；切“从左到右”后开关 checked=true；进入阅读器状态 `1–2 / 134`，画布并排 Image [0,737][862,1384] + [862,737][1320,1384]；验证后恢复 连续纵向 + 双页关闭。证据 .hvigor/outputs/nextn-double-page-20260817T/（不入 Git）。
+- **Unresolved risk:** 竖屏下双页画布更窄（NextE 同语义）；本次无同视口 NextE 截图对照，视觉终验仍由用户验收。

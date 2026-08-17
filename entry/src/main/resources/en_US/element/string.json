@@ -671,7 +671,6 @@
     { "name": "settings_reader_layout_hint", "value": "Choose the native page direction or continuous flow. The choice is stored only on this device." },
     { "name": "settings_reader_layout_a11y", "value": "Page direction, {0}" },
     { "name": "settings_reader_double_page", "value": "Double page" },
-    { "name": "settings_reader_double_page_hint", "value": "Show paired pages in horizontal paged Reader when its current canvas is wide. This choice stays on for a later wide canvas." },
     { "name": "settings_reader_double_page_a11y", "value": "Double page, {0}" },
     { "name": "settings_reader_double_page_save_failed", "value": "Unable to save the double-page Reader preference." },
     { "name": "settings_reader_spread_layout", "value": "Double-page layout" },

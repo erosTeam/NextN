@@ -672,7 +672,6 @@
     { "name": "settings_reader_layout_hint", "value": "选择原生翻页方向或连续流。此选择仅保存在本设备上。" },
     { "name": "settings_reader_layout_a11y", "value": "翻页方向，{0}" },
     { "name": "settings_reader_double_page", "value": "双页模式" },
-    { "name": "settings_reader_double_page_hint", "value": "仅在当前阅读器画布足够宽且使用水平翻页时成对显示页面。切换到较窄画布后仍会保留此选择。" },
     { "name": "settings_reader_double_page_a11y", "value": "双页模式，{0}" },
     { "name": "settings_reader_double_page_save_failed", "value": "无法保存阅读器双页模式偏好。" },
     { "name": "settings_reader_spread_layout", "value": "双页布局" },

@@ -98,13 +98,6 @@ const READER_ENHANCEMENT_INTERACTION_FALLBACK_MS: number = 2500
 function readerLocalFilePath(uri: string): string {
   return uri.startsWith('file://') ? uri.substring('file://'.length) : uri
 }
-// Keep the decision local to the Reader canvas. This is deliberately not a
-// device-class or global-layout check: split windows and rotation can change
-// the same route between a single page and a spread without changing the
-// persisted user request.
-const READER_DOUBLE_PAGE_MIN_VIEWPORT_WIDTH: number = 720
-const READER_DOUBLE_PAGE_MIN_WIDE_ASPECT: number = 1.15
-
 /** Matches the three durable sampling choices without changing a source URI. */
 function readerImageInterpolation(quality: NhReaderImageScalingQuality): ImageInterpolation {
   if (quality === NhReaderImageScalingQuality.LOW) {
@@ -200,20 +193,8 @@ class ReaderSpreadResolver {
     return mode === NhReaderMode.PAGED || mode === NhReaderMode.PAGED_RTL
   }
 
-  static isWideViewport(width: number, height: number): boolean {
-    return Number.isFinite(width) && Number.isFinite(height) &&
-      width >= READER_DOUBLE_PAGE_MIN_VIEWPORT_WIDTH &&
-      width >= height * READER_DOUBLE_PAGE_MIN_WIDE_ASPECT
-  }
-
-  static isDoublePage(
-    mode: NhReaderMode,
-    requested: boolean,
-    viewportWidth: number,
-    viewportHeight: number,
-  ): boolean {
-    return requested && ReaderSpreadResolver.supports(mode) &&
-      ReaderSpreadResolver.isWideViewport(viewportWidth, viewportHeight)
+  static isDoublePage(mode: NhReaderMode, requested: boolean): boolean {
+    return requested && ReaderSpreadResolver.supports(mode)
   }
 
   static startForSourceIndex(sourceIndex: number, pageCount: number): number {
@@ -1658,7 +1639,6 @@ export struct ReaderPage {
   private readerTapViewportWidth: number = 0
   private readerTapViewportHeight: number = 0
   private readerPresentationReady: boolean = false
-  private lastDoublePageActive: boolean = false
   private readerDoubleTapX: number = 0
   private readerTranslationEpoch: number = 0
   private readerTranslationAutoScheduleToken: number = 0
@@ -1802,13 +1782,11 @@ export struct ReaderPage {
     return Math.min(Math.max(0, Math.floor(pageIndex)), Math.max(0, pageCount - 1))
   }
 
-  /** Effective spread mode is a live Reader-canvas decision, never a global device flag. */
+  /** Effective spread mode mirrors NextE: horizontal paged mode plus the persisted switch. */
   private isDoublePageActive(): boolean {
     return ReaderSpreadResolver.isDoublePage(
       this.readerPresentation.mode,
       this.readerPresentation.doublePageEnabled,
-      this.readerViewportWidth,
-      this.readerViewportHeight,
     )
   }
 
@@ -1856,7 +1834,6 @@ export struct ReaderPage {
     this.visiblePageIndex = currentIndex
     this.readerSliderPreview = -1
     this.readerSliderValue = currentIndex + 1
-    this.lastDoublePageActive = this.isDoublePageActive()
   }
 
   /** Keep an active auto-read session coherent across a spread topology change. */
@@ -1877,23 +1854,10 @@ export struct ReaderPage {
     }
   }
 
-  /**
-   * A narrow fallback changes only the current renderer. The persisted switch
-   * is intentionally untouched, so returning to a wide local canvas restores
-   * the exact paired spread model without another user action.
-   */
+  /** The canvas geometry feeds joined-frame fitting; spread mode itself only follows mode + switch. */
   private onReaderViewportChanged(width: number, height: number): void {
     this.readerViewportWidth = Math.max(0, width)
     this.readerViewportHeight = Math.max(0, height)
-    const nextDoublePageActive: boolean = this.isDoublePageActive()
-    if (nextDoublePageActive === this.lastDoublePageActive) {
-      return
-    }
-    if (!this.isReaderReadyForCurrentGallery) {
-      this.lastDoublePageActive = nextDoublePageActive
-      return
-    }
-    this.applyReaderSpreadPresentation()
   }
 
   private async loadReaderSettings(generation: number): Promise<void> {

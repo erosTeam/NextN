@@ -1007,8 +1007,8 @@ export struct SettingsPage {
       : AppStrings.get('settings_reader_spread_layout_joined')
   }
 
-  /** Spreads exist only in the horizontal LTR/RTL Pager modes. */
-  private supportsReaderSpreadLayout(): boolean {
+  /** Double page and spread layout exist only in the horizontal LTR/RTL Pager modes (NextE doublePageAvailable). */
+  private doublePageAvailable(): boolean {
     return this.readerPresentation.mode === NhReaderMode.PAGED ||
       this.readerPresentation.mode === NhReaderMode.PAGED_RTL
   }
@@ -1676,7 +1676,7 @@ export struct SettingsPage {
   }
 
   private async saveReaderSpreadLayout(layout: NhReaderSpreadLayout): Promise<void> {
-    if (!this.supportsReaderSpreadLayout()) {
+    if (!this.doublePageAvailable()) {
       return
     }
     if (this.readerPresentation.spreadLayoutMode === layout) {
@@ -2733,16 +2733,21 @@ export struct SettingsPage {
         NextNListRow({
           title: AppStrings.get('settings_reader_double_page'),
           hasSwitch: true,
-          checked: this.readerPresentation.doublePageEnabled,
+          checked: this.doublePageAvailable() && this.readerPresentation.doublePageEnabled,
+          isEnabled: this.doublePageAvailable(),
           showChevron: false,
           accessibilityLabel: AppStrings.format('settings_reader_double_page_a11y', [
-            this.toggleStateLabel(this.readerPresentation.doublePageEnabled),
+            this.toggleStateLabel(this.doublePageAvailable() && this.readerPresentation.doublePageEnabled),
           ]),
           onAction: (): void => {
-            this.saveReaderDoublePageEnabled(!this.readerPresentation.doublePageEnabled)
+            if (this.doublePageAvailable()) {
+              this.saveReaderDoublePageEnabled(!this.readerPresentation.doublePageEnabled)
+            }
           },
           onSwitchChange: (value: boolean): void => {
-            this.saveReaderDoublePageEnabled(value)
+            if (this.doublePageAvailable()) {
+              this.saveReaderDoublePageEnabled(value)
+            }
           },
         })
         this.RowDivider()
@@ -2750,12 +2755,12 @@ export struct SettingsPage {
           title: AppStrings.get('settings_reader_spread_layout'),
           trailingText: this.readerSpreadLayoutLabel(),
           trailingDropdown: true,
-          isEnabled: this.supportsReaderSpreadLayout(),
+          isEnabled: this.doublePageAvailable(),
           accessibilityLabel: AppStrings.format('settings_reader_spread_layout_a11y', [
             this.readerSpreadLayoutLabel(),
           ]),
           onAction: (): void => {
-            if (!this.supportsReaderSpreadLayout()) {
+            if (!this.doublePageAvailable()) {
               return
             }
             this.readerSpreadLayoutMenuShown = true

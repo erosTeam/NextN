@@ -671,7 +671,6 @@
     { "name": "settings_reader_layout_hint", "value": "ネイティブのページ送り方向または連続フローを選択します。この選択はこのデバイスにのみ保存されます。" },
     { "name": "settings_reader_layout_a11y", "value": "ページめくり方向、{0}" },
     { "name": "settings_reader_double_page", "value": "両ページモード" },
-    { "name": "settings_reader_double_page_hint", "value": "現在のReaderキャンバスが十分に広い横方向ページ送りで、ページを見開きで表示します。狭いキャンバスでも選択は保持されます。" },
     { "name": "settings_reader_double_page_a11y", "value": "両ページモード、{0}" },
     { "name": "settings_reader_double_page_save_failed", "value": "Readerの見開き表示設定を保存できません。" },
     { "name": "settings_reader_spread_layout", "value": "両ページレイアウト" },
