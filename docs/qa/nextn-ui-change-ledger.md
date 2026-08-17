@@ -3,6 +3,34 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## Settings storage page: merge reader image cache into one image-cache row — 2026-08-17
+
+- **Why newly actionable:** the user asked why NextE does not split image
+  caches. Source evidence: NextE `CacheSettingsPage` renders exactly one
+  `cache_image` row, and `ImagePipelineService.stat()` aggregates cover
+  (ImageKnifePro) plus reader file/super-resolution/preview caches; its
+  per-row clear calls the same aggregate `clearCache()`. The previous
+  split into 图片缓存 + 阅读器图片缓存 was a NextN-only deviation.
+- **Whole parent-tree boundary:** the `PrivateCacheGroup` list inside the
+  Settings storage page only; scroll owner, section card, dividers,
+  clear-suffix, total labels and the reader cache limit row are unchanged.
+- **Exact before/after:** before — rows were page, cover image, reader
+  pages, comment, comic; totals summed cover + reader separately; clearing
+  image left the reader cache intact. after — rows are page, image
+  (aggregated cover + reader files), comment, comic, clear-all;
+  `ImagePipelineService.stat(context)` / `clearCache(context)` follow the
+  NextE aggregate shape, and the old reader row/stat/clear branches and
+  `settings_private_cache_reader_pages` strings were removed.
+- **Minimality rationale:** align with the NextE reference row set and
+  aggregate service shape; no parent-tree or other-surface change.
+- **Visual verification plan:** signed build + `install -r`; storage page
+  shows one 图片缓存 row whose count/size equals cover + reader totals;
+  clearing it empties both and drops the total; reader limit row remains.
+- **Unresolved risk:** NextN has no exposed super-resolution/preview cache
+  stats (its ReaderSuperResolutionService has no stat/clear surface), so the
+  aggregate covers the two caches NextN actually reports; if those surfaces
+  are added later they should join the same row like NextE.
+
 ## Settings storage page: cover image cache row (ImageKnifePro) — 2026-08-17
 
 - **Why newly actionable:** the user asked to separate app-level cover image

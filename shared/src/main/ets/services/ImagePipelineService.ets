@@ -2,6 +2,7 @@ import { common } from '@kit.AbilityKit'
 import { ImageKnifeRequest } from '@ohos/imageknifepro'
 import { CacheStat } from './CacheStat'
 import { ImageKnifePreloadCallbacks, ImageKnifeProRuntime } from './ImageKnifeProRuntime'
+import { ReaderImageCacheService } from './ReaderImageCacheService'
 import { EH_IMAGE_PRIORITY_LOW } from './ImagePipelineTypes'
 
 /**
@@ -35,11 +36,21 @@ export class ImagePipelineService {
     ImageKnifeProRuntime.cancelPreload(request)
   }
 
-  static stat(): CacheStat {
-    return ImageKnifeProRuntime.stat()
+  /**
+   * NextE-shaped image-cache aggregate: gallery cover thumbnails
+   * (ImageKnifePro) plus reader page files (ReaderImageCacheService) are one
+   * clearable/stats row in the storage page, matching NextE's ImagePipelineService.
+   */
+  static stat(context: common.UIAbilityContext): CacheStat {
+    const out: CacheStat = ImageKnifeProRuntime.stat()
+    const reader = ReaderImageCacheService.status(context)
+    out.count += reader.fileCount
+    out.bytes += reader.bytes
+    return out
   }
 
-  static async clearCache(): Promise<void> {
+  static async clearCache(context: common.UIAbilityContext): Promise<void> {
     await ImageKnifeProRuntime.clearCache()
+    await ReaderImageCacheService.clear(context)
   }
 }

@@ -33,9 +33,7 @@ import {
   SecondaryListScaffold,
   ClipboardLinkBuildFlag,
   NhPageCacheService,
-  ReaderImageCacheService,
   ReaderImageCacheSettings,
-  ReaderImageCacheStatus,
   ReaderSuperResolutionModelService,
   ReaderEnhancementModelsState,
   ReaderPresentationService,
@@ -168,7 +166,6 @@ export enum SettingsSurface {
  */
 @ComponentV2
 export struct SettingsPage {
-  @Local readerCacheStatus: ReaderImageCacheStatus = new ReaderImageCacheStatus()
   @Local pageCacheStat: CacheStat = new CacheStat()
   @Local imageCacheStat: CacheStat = new CacheStat()
   @Local readerCacheLimitMb: number = 1024
@@ -837,22 +834,12 @@ export struct SettingsPage {
     await NhClipboardLinkSettings.restore(this.context())
   }
 
-  private readerPageCacheStat(): CacheStat {
-    const result: CacheStat = new CacheStat()
-    result.count = this.readerCacheStatus.fileCount
-    result.bytes = this.readerCacheStatus.bytes
-    return result
-  }
-
   private privateCacheStat(key: string): CacheStat {
     if (key === 'page') {
       return this.pageCacheStat
     }
     if (key === 'image') {
       return this.imageCacheStat
-    }
-    if (key === 'reader') {
-      return this.readerPageCacheStat()
     }
     if (key === 'comment') {
       return this.commentTranslationCacheStatus
@@ -864,12 +851,12 @@ export struct SettingsPage {
   }
 
   private privateCacheTotalBytes(): number {
-    return this.pageCacheStat.bytes + this.imageCacheStat.bytes + this.readerPageCacheStat().bytes + this.commentTranslationCacheStatus.bytes +
+    return this.pageCacheStat.bytes + this.imageCacheStat.bytes + this.commentTranslationCacheStatus.bytes +
       this.comicTranslationCacheStatus.bytes
   }
 
   private privateCacheTotalCount(): number {
-    return this.pageCacheStat.count + this.imageCacheStat.count + this.readerPageCacheStat().count + this.commentTranslationCacheStatus.count +
+    return this.pageCacheStat.count + this.imageCacheStat.count + this.commentTranslationCacheStatus.count +
       this.comicTranslationCacheStatus.count
   }
 
@@ -881,8 +868,7 @@ export struct SettingsPage {
     this.privateCacheError = ''
     try {
       this.pageCacheStat = await NhPageCacheService.stat(this.context())
-      this.imageCacheStat = ImagePipelineService.stat()
-      this.readerCacheStatus = ReaderImageCacheService.status(this.context())
+      this.imageCacheStat = ImagePipelineService.stat(this.context())
       this.readerCacheLimitMb = ReaderImageCacheSettings.limitMb()
       this.commentTranslationCacheStatus = await CommentTranslationService.stat(this.context())
       this.comicTranslationCacheStatus = await ComicTranslationRuntimeService.statGeneratedCache(this.context())
@@ -1778,9 +1764,6 @@ export struct SettingsPage {
     if (key === 'image') {
       return AppStrings.get('settings_private_cache_image')
     }
-    if (key === 'reader') {
-      return AppStrings.get('settings_private_cache_reader_pages')
-    }
     if (key === 'comment') {
       return AppStrings.get('settings_private_cache_comment_translation')
     }
@@ -2101,20 +2084,17 @@ export struct SettingsPage {
     this.isClearingPrivateCache = true
     this.privateCacheError = ''
     try {
-      if (key === 'reader') {
-        await ReaderImageCacheService.clear(this.context())
-      } else if (key === 'page') {
+      if (key === 'page') {
         await NhPageCacheService.clearAll(this.context())
       } else if (key === 'image') {
-        await ImagePipelineService.clearCache()
+        await ImagePipelineService.clearCache(this.context())
       } else if (key === 'comment') {
         await CommentTranslationService.clear(this.context())
       } else if (key === 'comic') {
         await ComicTranslationRuntimeService.clearGeneratedCache(this.context())
       } else if (key === 'all') {
         await NhPageCacheService.clearAll(this.context())
-        await ImagePipelineService.clearCache()
-        await ReaderImageCacheService.clear(this.context())
+        await ImagePipelineService.clearCache(this.context())
         await CommentTranslationService.clear(this.context())
         await ComicTranslationRuntimeService.clearGeneratedCache(this.context())
       }
@@ -2575,21 +2555,6 @@ export struct SettingsPage {
         },
         accessibilityLabel: AppStrings.format('settings_private_cache_clear_a11y', [
           this.privateCacheTitle('image'),
-        ]),
-      })
-      this.RowDivider()
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.picture'),
-        title: this.privateCacheTitle('reader'),
-        subtitle: this.privateCacheSubtitle('reader'),
-        showChevron: false,
-        useCustomTrailing: true,
-        suffixPaddingRight: 0,
-        customTrailing: (): void => {
-          this.CacheClearSuffix('reader')
-        },
-        accessibilityLabel: AppStrings.format('settings_private_cache_clear_a11y', [
-          this.privateCacheTitle('reader'),
         ]),
       })
       this.RowDivider()

@@ -5,6 +5,25 @@
 - This observes the cache cold-start path only; it does not accept tag translation timing, every layout density, sign-out cache clearing, or the pending developer-guide maintenance contract. Raw layout copies retained under `.hvigor/outputs/nextn-cache-tags-20260816T/` and excluded from Git.
 # NextN active device-acceptance queue
 
+## Image-cache aggregation alignment (NextE row shape) — 2026-08-17
+
+- Signed Debug HAP installed with `install -r` on USB
+  `56T0225315001128` (same lease and wake gate, no data clear), then
+  force-stop/cold start. Foreground confirmed `com.erosteam.nextn`.
+- Storage page now renders one `图片缓存` row only: 449 项 · 142.2 MB
+  (= cover ImageKnife FILE cache 18 项 plus reader file cache 431 项 ·
+  141.9 MB), with `页面缓存` 32 项 · 398 KB above and comment/comic rows
+  below; total 142.6 MB matches the row sum. The old standalone
+  `阅读器图片缓存` row is gone; `阅读器图片缓存上限 2 GB` remains as a
+  limit setting, same as NextE's `cache_reader_image_limit` row.
+- Clearing the row: confirmation dialog shown, then 图片缓存 went
+  449 项 · 142.2 MB → 0 项 · 0 B and total dropped 142.6 MB → 398 KB
+  (page cache untouched), proving the aggregate clear removes cover and
+  reader files together like NextE.
+- This accepts only the merged row display and aggregate clear on this
+  device; the reader-limit menu path and clear-all were not separately
+  exercised this run (clear-all source-reviewed to call the same aggregate).
+
 ## Cover prefetch (visible-area offscreen preload) — 2026-08-17
 
 - Same HAP family as the row above; added after commit `ddee0e2`:
