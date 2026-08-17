@@ -2796,3 +2796,11 @@ permitted in this repository.
 - 2026-08-17 +0800: USB 56T0225315001128, signed HAP installed with `install -r`; no data clear/uninstall/account action occurred. Foreground bundle `com.erosteam.nextn`.
 - On the Search landing page, recent-search translated rows rendered `标签:人类饲养` (tag:"human cattle"), `语言:翻译` (language:translated), `作者:のりパチ` (artist:noripachi), and `角色:爱丽丝·玛格特洛依德` (character:"alice margatroid") — namespace prefixes are now localized instead of left in English.
 - Raw artifacts: `.hvigor/outputs/nextn-recent-ns-20260817T/` (excluded from Git).
+
+## Current delivery observation — Tag translation library ownership moved out of cache management
+
+- 2026-08-17 +0800: USB 56T0225315001128 passed the wake gate (AWAKE, OverrideTimeout=86400000ms). The signed Debug HAP from the tag-cache-ownership worktree was installed earlier with `install -r` only; no data clear/uninstall/account action occurred in this observation. Foreground bundle `com.erosteam.nextn`.
+- 存储缓存页复核：同步/导出/导入 → 阅读器图片缓存上限 2 GB → 缓存占用 142.3 MB → 页面缓存(30 项·388 KB) → 阅读器图片缓存(431 项·141.9 MB) → 评论翻译缓存(0) → 漫画翻译缓存(0)，无“标签翻译”行。
+- 标签翻译设置页：删除前 翻译数据库 v7.27340.1 2026-08-16T11:41:40Z / 43804，“删除已下载翻译库”行可点；点击后 AlertDialog 文案为「删除翻译库？/ 删除后需重新下载才能继续使用标签翻译。」，按钮 取消/删除；确认后页面显示 暂无本地版本 / 未安装，删除行容器 enabled=false、clickable=false。
+- 验收后通过该页“立即更新”恢复翻译库（v7.27379.1 2026-08-16T20:12:06Z / 43813），删除行恢复可点。删除期间临时清除了翻译库，属本验收路径的预期操作，已恢复。
+- Raw artifacts: `.hvigor/outputs/nextn-tag-cache-ownership-20260817T/` (excluded from Git).

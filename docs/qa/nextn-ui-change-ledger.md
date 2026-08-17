@@ -6153,3 +6153,14 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Visual verification plan:** 签名构建 + install -r + 真机：搜索页最近搜索翻译行显示 角色:爱丽丝·玛格特洛依德、artist:のりパチ 等，前缀不再保留英文 namespace。
 - **Unresolved risk:** 未翻译的原始查询行仍显示原文（与 NextE 相同）；其他语言文案按 NextE 值补齐。
 - **Device evidence:** 构建成功（9.3s）。真机 56T0225315001128 搜索页最近搜索翻译行实测：tag:"human cattle" → 标签:人类饲养；language:translated → 语言:翻译；artist:noripachi → 作者:のりパチ；character:"alice margatroid" → 角色:爱丽丝·玛格特洛依德。证据 .hvigor/outputs/nextn-recent-ns-20260817T/（不入 Git）。
+
+## 标签翻译库移出缓存管理：翻译库删除收口到标签翻译设置页（2026-08-17，用户指示）
+
+- **用户指示:** “把标签翻译行从缓存管理移除，翻译库的完整管理收口到「标签翻译设置」页——那里目前只有‘立即更新’，需要补一个‘删除已下载翻译库’入口。”
+- **根因（source evidence）:** SettingsPage.performPrivateCacheClear 的 tag/all 分支会 DELETE FROM tag_translations，用户指出翻译库是下载的数据资产，清一次需重新下载，不应混在可再生成缓存中。
+- **Whole parent-tree boundary:** 仅设置根页缓存卡与标签翻译设置页的翻译库操作区；不动 TagTranslationRepository 存储、更新链路、搜索/画廊消费。
+- **Exact change:** ① SettingsPage 移除缓存卡 tag 行、performPrivateCacheClear 的 tag/all 分支、tagDictionaryCacheStatus 统计与相关 import；② TagTranslationSettingsPage 在“立即更新”行后新增“删除已下载翻译库”destructive 行，确认对话框后调 TagTranslationRepository.clear 并刷新状态（版本/条目归零）。
+- **Minimality rationale:** 完全按用户指令重排管理归属；除新增删除入口与四语文案外无其他行为改动。
+- **Visual verification plan:** 签名构建 + install -r + 真机：缓存卡不再含标签翻译行且总量不含词典；标签翻译设置页出现删除行；有库时点击确认后条目/版本清空，搜索页标签翻译立即失效；删除后可从该页重新立即更新。
+- **Device evidence:** 构建成功（11s 826ms）。真机 56T0225315001128（唤醒门禁 AWAKE + OverrideTimeout=86400000ms，install -r 保留数据）：① 存储缓存页为 同步/导出/导入 → 阅读器图片缓存上限 2 GB → 缓存占用 142.3 MB → 页面缓存(30 项·388 KB) → 阅读器图片缓存(431 项·141.9 MB) → 评论翻译缓存(0) → 漫画翻译缓存(0)，无“标签翻译”行；② 标签翻译设置页删除前 翻译数据库 v7.27340.1 2026-08-16T11:41:40Z / 43804，“删除已下载翻译库”行存在且可点；③ 点击删除行弹出 AlertDialog「删除翻译库？/ 删除后需重新下载才能继续使用标签翻译。」，按钮 取消/删除；④ 确认删除后该页变为 暂无本地版本 / 未安装，删除行容器 enabled=false、clickable=false；⑤ 返回存储缓存页复核仍无标签翻译行；⑥ 在设置页点“立即更新”恢复翻译库，实测 v7.27379.1 2026-08-16T20:12:06Z / 43813，删除行恢复可点。证据 .hvigor/outputs/nextn-tag-cache-ownership-20260817T/（不入 Git）。
+- **Unresolved risk:** 删除后版本元数据仍留在 RDB（页面状态显式归零）；若后续重新下载，更新会正常覆盖。

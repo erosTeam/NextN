@@ -31,6 +31,7 @@ const SQL_SUGGEST_UNSCOPED: string =
 const SQL_TOUCH_SUGGESTION: string =
   'UPDATE tag_translations SET last_used_at = ? WHERE namespace = ? AND raw_name = ?'
 const SQL_CLEAR: string = 'DELETE FROM tag_translations'
+const SQL_CLEAR_META: string = 'DELETE FROM tag_translation_meta'
 const SQL_STAT: string =
   'SELECT COUNT(*) AS count, COALESCE(SUM(LENGTH(CAST(display_name AS BLOB))), 0) AS bytes ' +
   'FROM tag_translations'
@@ -151,10 +152,16 @@ export class TagTranslationRepository {
     return result
   }
 
-  /** Removes only the optional local dictionary; no catalog or query state is changed. */
+  /**
+   * Removes the optional local dictionary and its download metadata. This is
+   * a destructive data-ownership action (the user must download the library
+   * again), so it lives on the tag-translation settings page rather than the
+   * regenerable-cache surface. No catalog or query state is changed.
+   */
   static async clear(context: common.UIAbilityContext): Promise<void> {
     const store: relationalStore.RdbStore = await LocalDataStore.open(context)
     await store.executeSql(SQL_CLEAR)
+    await store.executeSql(SQL_CLEAR_META)
     connectTagTranslations().publishMutation()
   }
 

@@ -43,6 +43,7 @@ export struct TagTranslationSettingsPage {
   @Local tagDictionaryRowCount: number = 0
   @Local tagDictionaryStatusKnown: boolean = false
   @Local isUpdatingTagDictionary: boolean = false
+  @Local isDeletingTagDictionary: boolean = false
   @Local tagDictionaryError: string = ''
   @Local tagSettings: TagTranslationSettingsState = connectTagTranslationSettings()
   @Local updateModeMenuShown: boolean = false
@@ -93,6 +94,43 @@ export struct TagTranslationSettingsPage {
       this.tagDictionaryError = this.tagDictionaryErrorMessage(error as Error)
     } finally {
       this.isUpdatingTagDictionary = false
+    }
+  }
+
+  private requestDeleteTagDictionary(): void {
+    if (this.isDeletingTagDictionary || this.isUpdatingTagDictionary || this.tagDictionaryRowCount <= 0) {
+      return
+    }
+    this.getUIContext().showAlertDialog({
+      title: AppStrings.get('settings_tag_translation_delete_confirm_title'),
+      message: AppStrings.get('settings_tag_translation_delete_confirm_message'),
+      primaryButton: {
+        value: AppStrings.get('common_cancel'),
+        action: (): void => {},
+      },
+      secondaryButton: {
+        value: AppStrings.get('common_delete'),
+        fontColor: Color.Red,
+        action: (): void => {
+          this.deleteTagDictionary()
+        },
+      },
+    })
+  }
+
+  private async deleteTagDictionary(): Promise<void> {
+    if (this.isDeletingTagDictionary) {
+      return
+    }
+    this.isDeletingTagDictionary = true
+    this.tagDictionaryError = ''
+    try {
+      await TagTranslationRepository.clear(this.context())
+      await this.loadTagDictionaryStatus()
+    } catch (_error) {
+      this.tagDictionaryError = AppStrings.get('settings_tag_translation_error_update')
+    } finally {
+      this.isDeletingTagDictionary = false
     }
   }
 
@@ -273,6 +311,20 @@ export struct TagTranslationSettingsPage {
               isEnabled: !this.isUpdatingTagDictionary,
               onAction: (): void => {
                 this.updateTagDictionary()
+              },
+            })
+            this.RowDivider()
+            NextNListRow({
+              leadingIcon: $r('sys.symbol.trash'),
+              title: AppStrings.get('settings_tag_translation_delete'),
+              subtitle: AppStrings.get('settings_tag_translation_delete_hint'),
+              showChevron: false,
+              destructive: true,
+              isEnabled: !this.isDeletingTagDictionary &&
+                !this.isUpdatingTagDictionary &&
+                this.tagDictionaryRowCount > 0,
+              onAction: (): void => {
+                this.requestDeleteTagDictionary()
               },
             })
           }

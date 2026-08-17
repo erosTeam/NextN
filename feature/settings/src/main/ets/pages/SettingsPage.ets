@@ -70,7 +70,6 @@ import {
   NhSearchLanguage,
   NhSearchOptions,
   NhSearchSort,
-  TagTranslationRepository,
   TagTranslationSettingsState,
   ThemeTokens,
   ThemeColorOption,
@@ -247,7 +246,6 @@ export struct SettingsPage {
   });
   @Local commentTranslationCacheStatus: CacheStat = new CacheStat()
   @Local comicTranslationCacheStatus: CacheStat = new CacheStat()
-  @Local tagDictionaryCacheStatus: CacheStat = new CacheStat()
   @Local readerPresentation: ReaderPresentationState = connectReaderPresentation()
   @Local readerEnhancementModels: ReaderEnhancementModelsState = connectReaderEnhancementModels()
   @Local readerModeError: string = ''
@@ -856,17 +854,17 @@ export struct SettingsPage {
     if (key === 'comic') {
       return this.comicTranslationCacheStatus
     }
-    return this.tagDictionaryCacheStatus
+    return new CacheStat()
   }
 
   private privateCacheTotalBytes(): number {
     return this.pageCacheStat.bytes + this.readerPageCacheStat().bytes + this.commentTranslationCacheStatus.bytes +
-      this.comicTranslationCacheStatus.bytes + this.tagDictionaryCacheStatus.bytes
+      this.comicTranslationCacheStatus.bytes
   }
 
   private privateCacheTotalCount(): number {
     return this.pageCacheStat.count + this.readerPageCacheStat().count + this.commentTranslationCacheStatus.count +
-      this.comicTranslationCacheStatus.count + this.tagDictionaryCacheStatus.count
+      this.comicTranslationCacheStatus.count
   }
 
   private async loadPrivateCacheStatus(): Promise<void> {
@@ -881,7 +879,6 @@ export struct SettingsPage {
       this.readerCacheLimitMb = ReaderImageCacheSettings.limitMb()
       this.commentTranslationCacheStatus = await CommentTranslationService.stat(this.context())
       this.comicTranslationCacheStatus = await ComicTranslationRuntimeService.statGeneratedCache(this.context())
-      this.tagDictionaryCacheStatus = await TagTranslationRepository.stat(this.context())
     } catch (_error) {
       this.privateCacheError = AppStrings.get('settings_private_cache_status_unavailable')
     } finally {
@@ -1780,7 +1777,7 @@ export struct SettingsPage {
     if (key === 'comic') {
       return AppStrings.get('settings_private_cache_comic_translation')
     }
-    return AppStrings.get('settings_private_cache_tag_dictionary')
+    return AppStrings.get('settings_private_cache_comic_translation')
   }
 
   private requestPrivateCacheClear(key: string): void {
@@ -2100,14 +2097,11 @@ export struct SettingsPage {
         await CommentTranslationService.clear(this.context())
       } else if (key === 'comic') {
         await ComicTranslationRuntimeService.clearGeneratedCache(this.context())
-      } else if (key === 'tag') {
-        await TagTranslationRepository.clear(this.context())
       } else if (key === 'all') {
         await NhPageCacheService.clearAll(this.context())
         await ReaderImageCacheService.clear(this.context())
         await CommentTranslationService.clear(this.context())
         await ComicTranslationRuntimeService.clearGeneratedCache(this.context())
-        await TagTranslationRepository.clear(this.context())
       }
     } catch (_error) {
       this.privateCacheError = AppStrings.get('settings_private_cache_clear_failed')
@@ -2596,21 +2590,6 @@ export struct SettingsPage {
         },
         accessibilityLabel: AppStrings.format('settings_private_cache_clear_a11y', [
           this.privateCacheTitle('comic'),
-        ]),
-      })
-      this.RowDivider()
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.textformat'),
-        title: this.privateCacheTitle('tag'),
-        subtitle: this.privateCacheSubtitle('tag'),
-        showChevron: false,
-        useCustomTrailing: true,
-        suffixPaddingRight: 0,
-        customTrailing: (): void => {
-          this.CacheClearSuffix('tag')
-        },
-        accessibilityLabel: AppStrings.format('settings_private_cache_clear_a11y', [
-          this.privateCacheTitle('tag'),
         ]),
       })
       this.RowDivider()
