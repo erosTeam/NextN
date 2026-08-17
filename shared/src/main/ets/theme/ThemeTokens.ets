@@ -55,9 +55,14 @@ export class ThemeTokens {
   static readonly FONT_SIZE_LIST_ITEM: number = 13
   static readonly FONT_SIZE_TITLE: number = 16
   static readonly FONT_SIZE_HEADING: number = 18
+  // Matches NextE ThemeConstants.FONT_SIZE_H2: the release-notes version track
+  // and other emphasis typography share this level.
+  static readonly FONT_SIZE_H2: number = 22
   static readonly FONT_SIZE_H1: number = 24
   static readonly LINE_HEIGHT_BODY: number = 20
   static readonly LINE_HEIGHT_TITLE: number = 22
+  /** Matches NextE ThemeConstants.ANIM_DURATION for shared transition rhythm. */
+  static readonly ANIM_DURATION: number = 400
 
   // Shape scale
   static readonly RADIUS_XS: number = 4

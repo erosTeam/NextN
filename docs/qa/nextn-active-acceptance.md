@@ -2944,3 +2944,11 @@ permitted in this repository.
 - 账号页：从“我的”→账号行进入，标题栏右上角 person_badge_plus 已挂载（SymbolGlyph [1176,165][1249,237]），页面显示“账号”标题与“退出登录”行；本机 saved-accounts 列表为空，因此 Radio 账号卡片未渲染。已按 NextE 结构调整为标题栏加号 + Radio 卡片 + 移除列表首行添加入口。
 - 设置根行选中已改为 account 路由；点击设置选项时立即 publishRootLocation，不再等待 didShow；所有设置类 destination 的返回按钮改为 split 且为首个 secondary 时隐藏。
 - 未验证：平板/宽屏 split 下返回按钮隐藏与选中即时高亮（当前手机真机无 split）；有 saved account 时 Radio 卡片渲染。Raw artifacts: `.hvigor/outputs/settings-diff-20260817T/` (excluded from Git).
+
+## Current delivery observation — About page, update check and release-notes entry (1.0.0)
+
+- 2026-08-17 +0800: TCP target 192.168.50.197:12345 passed the wake gate (AWAKE, OverrideTimeout=86400000ms). Signed Debug HAP from the about-page worktree installed with `install -r`; no data clear/uninstall/account action occurred. Foreground bundle `com.erosteam.nextn`.
+- 我的 → 关于 rendered: header NextN / 原生 HarmonyOS NEXT 客户端 / 1.0.0; 应用信息 rows 名称 NextN、版本 1.0.0、更新与日志（副标题 后台检查更新并加载日志）、平台 HarmonyOS NEXT; 许可 rows 源码许可 MIT + 两条非官方声明。布局 dump bounds recorded in `.hvigor/outputs/nextn-about-20260817T/about-after-tap.json` (excluded from Git).
+- GitHub release check reached the network: the first fetch persisted an ETag (second background refresh observed [settings] about_release_refresh_failed | release cache missing after HTTP 304, i.e. the GitHub API responded 304 to the cached ETag). Host-side GitHub API for erosTeam/NextN returns HTTP 200 with an empty release array ([]), so the release-notes dialog cannot render content yet.
+- Tapping 更新与日志 in the zero-release state shows a transient failure toast (AceOverlay pop toast enter / toast remove from root observed in hilog at 22:53:58), matching NextE's behavior when no release history exists; the page stays intact with no dialog/crash.
+- Not yet verified: release-notes dialog with a real release (version ribbon + Markdown body), opening the release page, and in-note link handoff. These require publishing at least one GitHub release (e.g. tag v1.0.0 with body from changelog/v1.0.0.md), which is a remote mutation not performed in this run.

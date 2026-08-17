@@ -488,6 +488,7 @@ export { NhGalleryExternalOpenService } from './services/NhGalleryExternalOpenSe
 export { NhGalleryShareService } from './services/NhGalleryShareService'
 export { NhTorrentFileExportService } from './services/NhTorrentFileExportService'
 export { NhDownloadCbzExportService } from './services/NhDownloadCbzExportService'
+export { AppReleaseService } from './services/AppReleaseService'
 export { PageLoadingState, PageErrorState, PageEmptyState } from './components/PageStates'
 export { nextNHdsTitle, nextNHdsTitleBar } from './components/NextNHdsTitleBar'
 export { AppSearchField } from './components/AppSearchField'
@@ -536,6 +537,21 @@ export { PullRefreshWaterFlowScaffold } from './components/PullRefreshWaterFlowS
 export { NhArkWebSessionTransportHost } from './components/NhArkWebSessionTransportHost'
 export { AppStrings } from './i18n/AppStrings'
 export { TabItem } from './model/TabItem'
+export { AppRelease, AppReleaseCacheSnapshot } from './model/AppRelease'
+export {
+  MarkdownDocument,
+  MarkdownBlock,
+  MarkdownInline,
+  MARKDOWN_BLOCK_PARAGRAPH,
+  MARKDOWN_BLOCK_HEADING,
+  MARKDOWN_BLOCK_BULLET,
+  MARKDOWN_BLOCK_ORDERED,
+  MARKDOWN_BLOCK_QUOTE,
+  MARKDOWN_BLOCK_CODE,
+  MARKDOWN_BLOCK_DIVIDER,
+} from './parser/MarkdownDocument'
+export { MarkdownContent } from './components/MarkdownContent'
+export { ReleaseNotesPager } from './components/ReleaseNotesPager'
 export {
   HOME_SOURCE_LATEST,
   HOME_SOURCE_POPULAR,
