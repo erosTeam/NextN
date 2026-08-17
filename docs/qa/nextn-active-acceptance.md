@@ -2778,3 +2778,9 @@ permitted in this repository.
 
 - 2026-08-17 +0800: USB 56T0225315001128, signed HAP installed with `install -r`. Reader chrome showed a direct gear button ([1032,135][1164,267]) beside the overflow button; tapping gear opened the Reader settings sheet (翻页与布局/翻页方向/双页模式/双页布局…); the overflow menu contained only 分享/在外部打开/翻译当前页/自动翻译, with no 阅读 text item. Enhancement status icon background/opacity source values now match NextE (#26000000, 0.72).
 - Raw artifacts: `.hvigor/outputs/nextn-reader-gear-20260817T/` (excluded from Git).
+
+## Current delivery observation — Search advanced inputs keep focus while typing
+
+- 2026-08-17 +0800: USB 56T0225315001128, signed HAP installed with `install -r`; no data clear/uninstall/account action occurred. Foreground bundle `com.erosteam.nextn`.
+- From Browse, title-bar search opened the Search page; the funnel title action opened the 搜索选项 sheet. Tapping the 页数下限 input made it `focused=true` and the sheet layout moved up (keyboard expanded). Injecting a real number key (`uiInput keyEvent 8`) left the input `focused=true` with keyboard still expanded and value `5` retained. The 标签名称 input behaved the same after a key injection (`focused=true`). `uiInput text` closes the IME by injection design and was not used as acceptance.
+- Raw artifacts: `.hvigor/outputs/nextn-search-focus-20260817T/` (excluded from Git).

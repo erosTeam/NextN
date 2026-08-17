@@ -52,6 +52,7 @@ import { ComponentContent, KeyboardAvoidMode, SymbolGlyphModifier } from '@kit.A
 import { BottomBuilderShowType, HdsNavDestination, HideMode } from '@kit.UIDesignKit'
 import { SearchChromeState } from '../state/SearchChromeState'
 import { SEARCH_TITLE_FIELD_BOTTOM_HEIGHT, SearchTitleFieldCCBuilder } from '../components/SearchTitleField'
+import { SearchAdvancedConditionInputs } from '../components/SearchAdvancedConditionInputs'
 
 const SEARCH_LANGUAGES: NhSearchLanguage[] = [
   NhSearchLanguage.ALL,
@@ -122,17 +123,9 @@ export struct SearchPage {
   @Local showSearchOptions: boolean = false
   @Local advancedTagNamespace: string = 'tag'
   @Local advancedTagExcluded: boolean = false
-  @Local advancedTagText: string = ''
-  @Local advancedPageMinimumText: string = ''
-  @Local advancedPageMaximumText: string = ''
-  @Local advancedUploadedMinimumText: string = ''
-  @Local advancedUploadedMaximumText: string = ''
   @Local advancedUploadedUnit: NhSearchUploadedUnit = NhSearchUploadedUnit.DAY
   @Local advancedConditionError: string = ''
   @Local advancedConditionErrorScope: string = ''
-  @Local advancedTagNamespaceMenuShown: boolean = false
-  @Local advancedTagModeMenuShown: boolean = false
-  @Local advancedUploadedUnitMenuShown: boolean = false
   @Local tagSuggestions: NhTagSuggestion[] = []
   @Local isSuggestingTags: boolean = false
   @Param scroller: Scroller = new Scroller()
@@ -629,44 +622,6 @@ export struct SearchPage {
     return quoteOpen
   }
 
-  private advancedTagNamespaceLabel(namespace: string): string {
-    switch (namespace) {
-      case 'parody':
-        return AppStrings.get('search_advanced_type_parody')
-      case 'character':
-        return AppStrings.get('search_advanced_type_character')
-      case 'artist':
-        return AppStrings.get('search_advanced_type_artist')
-      case 'group':
-        return AppStrings.get('search_advanced_type_group')
-      case 'category':
-        return AppStrings.get('search_advanced_type_category')
-      default:
-        return AppStrings.get('search_advanced_type_tag')
-    }
-  }
-
-  private advancedTagModeLabel(excluded: boolean): string {
-    return excluded
-      ? AppStrings.get('search_advanced_exclude')
-      : AppStrings.get('search_advanced_include')
-  }
-
-  private advancedUploadedUnitLabel(unit: NhSearchUploadedUnit): string {
-    switch (unit) {
-      case NhSearchUploadedUnit.HOUR:
-        return AppStrings.get('search_advanced_unit_hour')
-      case NhSearchUploadedUnit.WEEK:
-        return AppStrings.get('search_advanced_unit_week')
-      case NhSearchUploadedUnit.MONTH:
-        return AppStrings.get('search_advanced_unit_month')
-      case NhSearchUploadedUnit.YEAR:
-        return AppStrings.get('search_advanced_unit_year')
-      default:
-        return AppStrings.get('search_advanced_unit_day')
-    }
-  }
-
   private parseAdvancedPositiveInteger(value: string): number {
     const trimmed: string = value.trim()
     if (!/^[0-9]+$/.test(trimmed)) {
@@ -674,11 +629,6 @@ export struct SearchPage {
     }
     const parsed: number = Number.parseInt(trimmed, 10)
     return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : 0
-  }
-
-  private hasAdvancedPositiveRange(minimumText: string, maximumText: string): boolean {
-    return this.parseAdvancedPositiveInteger(minimumText) > 0 ||
-      this.parseAdvancedPositiveInteger(maximumText) > 0
   }
 
   private setAdvancedConditionError(scope: string, message: string): void {
@@ -718,30 +668,28 @@ export struct SearchPage {
     return true
   }
 
-  private appendAdvancedTagCondition(): void {
+  private appendAdvancedTagCondition(text: string): boolean {
     const fragment: string = NhTagQuery.formatExact(
       this.advancedTagNamespace,
-      this.advancedTagText,
+      text,
       this.advancedTagExcluded,
     )
     if (fragment.length === 0) {
       this.setAdvancedConditionError('tag', AppStrings.get('search_advanced_tag_invalid'))
-      return
+      return false
     }
-    if (this.appendAdvancedFragments([fragment], 'tag')) {
-      this.advancedTagText = ''
-    }
+    return this.appendAdvancedFragments([fragment], 'tag')
   }
 
-  private appendAdvancedPageConditions(): void {
-    const minimum: number = this.parseAdvancedPositiveInteger(this.advancedPageMinimumText)
-    const maximum: number = this.parseAdvancedPositiveInteger(this.advancedPageMaximumText)
+  private appendAdvancedPageConditions(minimumText: string, maximumText: string): boolean {
+    const minimum: number = this.parseAdvancedPositiveInteger(minimumText)
+    const maximum: number = this.parseAdvancedPositiveInteger(maximumText)
     if (minimum <= 0 && maximum <= 0) {
-      return
+      return false
     }
     if (minimum > 0 && maximum > 0 && minimum > maximum) {
       this.setAdvancedConditionError('pages', AppStrings.get('search_advanced_range_order'))
-      return
+      return false
     }
     const fragments: string[] = []
     if (minimum > 0 && minimum === maximum) {
@@ -752,21 +700,18 @@ export struct SearchPage {
     if (maximum > 0 && minimum !== maximum) {
       fragments.push(NhSearchQuery.pages(maximum, NhSearchRangeRelation.MAXIMUM))
     }
-    if (this.appendAdvancedFragments(fragments, 'pages')) {
-      this.advancedPageMinimumText = ''
-      this.advancedPageMaximumText = ''
-    }
+    return this.appendAdvancedFragments(fragments, 'pages')
   }
 
-  private appendAdvancedUploadedConditions(): void {
-    const minimum: number = this.parseAdvancedPositiveInteger(this.advancedUploadedMinimumText)
-    const maximum: number = this.parseAdvancedPositiveInteger(this.advancedUploadedMaximumText)
+  private appendAdvancedUploadedConditions(minimumText: string, maximumText: string): boolean {
+    const minimum: number = this.parseAdvancedPositiveInteger(minimumText)
+    const maximum: number = this.parseAdvancedPositiveInteger(maximumText)
     if (minimum <= 0 && maximum <= 0) {
-      return
+      return false
     }
     if (minimum > 0 && maximum > 0 && minimum > maximum) {
       this.setAdvancedConditionError('uploaded', AppStrings.get('search_advanced_range_order'))
-      return
+      return false
     }
     const fragments: string[] = []
     if (minimum > 0 && minimum === maximum) {
@@ -789,10 +734,7 @@ export struct SearchPage {
         NhSearchRangeRelation.MAXIMUM,
       ))
     }
-    if (this.appendAdvancedFragments(fragments, 'uploaded')) {
-      this.advancedUploadedMinimumText = ''
-      this.advancedUploadedMaximumText = ''
-    }
+    return this.appendAdvancedFragments(fragments, 'uploaded')
   }
 
   /**
@@ -1462,310 +1404,35 @@ export struct SearchPage {
   }
 
   @Builder
-  private AdvancedTagNamespaceMenu() {
-    Menu() {
-      this.AdvancedTagNamespaceMenuItem('tag')
-      this.AdvancedTagNamespaceMenuItem('parody')
-      this.AdvancedTagNamespaceMenuItem('character')
-      this.AdvancedTagNamespaceMenuItem('artist')
-      this.AdvancedTagNamespaceMenuItem('group')
-      this.AdvancedTagNamespaceMenuItem('category')
-    }
-  }
-
-  @Builder
-  private AdvancedTagNamespaceMenuItem(namespace: string) {
-    MenuItem({
-      content: this.advancedTagNamespaceLabel(namespace),
-      symbolEndIcon: this.advancedTagNamespace === namespace
-        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
-        : undefined,
-    }).onClick((): void => {
-      this.advancedTagNamespace = namespace
-      this.advancedTagNamespaceMenuShown = false
-    })
-  }
-
-  @Builder
-  private AdvancedTagModeMenu() {
-    Menu() {
-      this.AdvancedTagModeMenuItem(false)
-      this.AdvancedTagModeMenuItem(true)
-    }
-  }
-
-  @Builder
-  private AdvancedTagModeMenuItem(excluded: boolean) {
-    MenuItem({
-      content: this.advancedTagModeLabel(excluded),
-      symbolEndIcon: this.advancedTagExcluded === excluded
-        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
-        : undefined,
-    }).onClick((): void => {
-      this.advancedTagExcluded = excluded
-      this.advancedTagModeMenuShown = false
-    })
-  }
-
-  @Builder
-  private AdvancedUploadedUnitMenu() {
-    Menu() {
-      this.AdvancedUploadedUnitMenuItem(NhSearchUploadedUnit.HOUR)
-      this.AdvancedUploadedUnitMenuItem(NhSearchUploadedUnit.DAY)
-      this.AdvancedUploadedUnitMenuItem(NhSearchUploadedUnit.WEEK)
-      this.AdvancedUploadedUnitMenuItem(NhSearchUploadedUnit.MONTH)
-      this.AdvancedUploadedUnitMenuItem(NhSearchUploadedUnit.YEAR)
-    }
-  }
-
-  @Builder
-  private AdvancedUploadedUnitMenuItem(unit: NhSearchUploadedUnit) {
-    MenuItem({
-      content: this.advancedUploadedUnitLabel(unit),
-      symbolEndIcon: this.advancedUploadedUnit === unit
-        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
-        : undefined,
-    }).onClick((): void => {
-      this.advancedUploadedUnit = unit
-      this.advancedUploadedUnitMenuShown = false
-    })
-  }
-
-  @Builder
-  private AdvancedConditionError(scope: string) {
-    if (this.advancedConditionErrorScope === scope && this.advancedConditionError.length > 0) {
-      Text(this.advancedConditionError)
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(Color.Red)
-        .width('100%')
-    }
-  }
-
-  @Builder
-  private AdvancedTagNameInput() {
-    Column({ space: ThemeTokens.SPACE_XS }) {
-      Text(AppStrings.get('search_advanced_tag_name'))
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
-        .width('100%')
-      TextInput({
-        text: this.advancedTagText,
-        placeholder: AppStrings.get('search_advanced_tag_placeholder'),
-      })
-        .width('100%')
-        .height(44)
-        .fontSize(ThemeTokens.FONT_SIZE_BODY)
-        .backgroundColor(ThemeTokens.CARD_BACKGROUND)
-        .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
-        .onChange((value: string): void => {
-          this.advancedTagText = value
-          this.clearAdvancedConditionError('tag')
-        })
-        .onSubmit((): void => {
-          this.appendAdvancedTagCondition()
-        })
-    }
-    .width('100%')
-    .alignItems(HorizontalAlign.Start)
-    .padding({
-      left: ThemeTokens.SPACE_MD,
-      right: ThemeTokens.SPACE_MD,
-      top: ThemeTokens.SPACE_SM,
-      bottom: ThemeTokens.SPACE_SM,
-    })
-  }
-
-  @Builder
-  private AdvancedRangeInput(value: string, accessibilityLabel: string, onChange: (value: string) => void) {
-    TextInput({
-      text: value,
-      placeholder: AppStrings.get('filter_any'),
-    })
-      .type(InputType.Number)
-      .inputFilter('^[0-9]*$')
-      .textAlign(TextAlign.Center)
-      .width(ADVANCED_RANGE_INPUT_WIDTH)
-      .height(ADVANCED_RANGE_INPUT_HEIGHT)
-      .fontSize(ThemeTokens.FONT_SIZE_BODY)
-      .backgroundColor(ThemeTokens.SURFACE_SUB)
-      .borderRadius(ThemeTokens.RADIUS_MD)
-      .accessibilityDescription(accessibilityLabel)
-      .onChange(onChange)
-  }
-
-  @Builder
-  private AdvancedPageRangeSuffix() {
-    Row({ space: ThemeTokens.SPACE_SM }) {
-      this.AdvancedRangeInput(this.advancedPageMinimumText, AppStrings.get('search_advanced_pages_minimum'),
-        (value: string): void => {
-        this.advancedPageMinimumText = value
-        this.clearAdvancedConditionError('pages')
-      })
-      Text('-')
-        .fontSize(ThemeTokens.FONT_SIZE_BODY)
-        .fontColor(ThemeTokens.TEXT_TERTIARY)
-      this.AdvancedRangeInput(this.advancedPageMaximumText, AppStrings.get('search_advanced_pages_maximum'),
-        (value: string): void => {
-        this.advancedPageMaximumText = value
-        this.clearAdvancedConditionError('pages')
-      })
-    }
-    .alignItems(VerticalAlign.Center)
-    .padding({ left: ThemeTokens.SPACE_SM, right: ThemeTokens.SPACE_MD })
-  }
-
-  @Builder
-  private AdvancedUploadedRangeSuffix() {
-    Row({ space: ThemeTokens.SPACE_SM }) {
-      this.AdvancedRangeInput(this.advancedUploadedMinimumText, AppStrings.get('search_advanced_uploaded_minimum'),
-        (value: string): void => {
-        this.advancedUploadedMinimumText = value
-        this.clearAdvancedConditionError('uploaded')
-      })
-      Text('-')
-        .fontSize(ThemeTokens.FONT_SIZE_BODY)
-        .fontColor(ThemeTokens.TEXT_TERTIARY)
-      this.AdvancedRangeInput(this.advancedUploadedMaximumText, AppStrings.get('search_advanced_uploaded_maximum'),
-        (value: string): void => {
-        this.advancedUploadedMaximumText = value
-        this.clearAdvancedConditionError('uploaded')
-      })
-    }
-    .alignItems(VerticalAlign.Center)
-    .padding({ left: ThemeTokens.SPACE_SM, right: ThemeTokens.SPACE_MD })
-  }
-
-  @Builder
   private SearchAdvancedConditionsPanel() {
-    Column({ space: ThemeTokens.SPACE_MD }) {
-      NextNGroupedListSection() {
-        NextNListRow({
-          title: AppStrings.get('search_advanced_type'),
-          trailingText: this.advancedTagNamespaceLabel(this.advancedTagNamespace),
-          trailingDropdown: true,
-          accessibilityLabel: AppStrings.get('search_advanced_type'),
-          onAction: (): void => {
-            this.advancedTagNamespaceMenuShown = true
-          },
-        })
-          .bindMenu(this.advancedTagNamespaceMenuShown, this.AdvancedTagNamespaceMenu, appMenuOptions({
-            placement: Placement.BottomRight,
-            onDisappear: (): void => {
-              this.advancedTagNamespaceMenuShown = false
-            },
-          }))
-        this.SearchOptionDivider()
-        NextNListRow({
-          title: AppStrings.get('search_advanced_match'),
-          trailingText: this.advancedTagModeLabel(this.advancedTagExcluded),
-          trailingDropdown: true,
-          accessibilityLabel: AppStrings.get('search_advanced_match'),
-          onAction: (): void => {
-            this.advancedTagModeMenuShown = true
-          },
-        })
-          .bindMenu(this.advancedTagModeMenuShown, this.AdvancedTagModeMenu, appMenuOptions({
-            placement: Placement.BottomRight,
-            onDisappear: (): void => {
-              this.advancedTagModeMenuShown = false
-            },
-          }))
-        this.SearchOptionDivider()
-        this.AdvancedTagNameInput()
-        this.SearchOptionDivider()
-        NextNListRow({
-          title: AppStrings.get('search_advanced_add_tag'),
-          trailingActionText: AppStrings.get('search_advanced_add'),
-          showChevron: false,
-          accessibilityLabel: AppStrings.get('search_advanced_add_tag'),
-          onAction: (): void => {
-            this.appendAdvancedTagCondition()
-          },
-          onTrailingAction: (): void => {
-            this.appendAdvancedTagCondition()
-          },
-        })
-      }
-      this.AdvancedConditionError('tag')
-
-      NextNGroupedListSection() {
-        NextNListRow({
-          title: AppStrings.get('search_advanced_pages'),
-          showChevron: false,
-          useCustomTrailing: true,
-          customTrailing: (): void => {
-            this.AdvancedPageRangeSuffix()
-          },
-          accessibilityLabel: AppStrings.get('search_advanced_pages'),
-        })
-        this.SearchOptionDivider()
-        NextNListRow({
-          title: AppStrings.get('search_advanced_add_pages'),
-          trailingActionText: AppStrings.get('search_advanced_add'),
-          showChevron: false,
-          isEnabled: this.hasAdvancedPositiveRange(
-            this.advancedPageMinimumText,
-            this.advancedPageMaximumText,
-          ),
-          accessibilityLabel: AppStrings.get('search_advanced_add_pages'),
-          onAction: (): void => {
-            this.appendAdvancedPageConditions()
-          },
-          onTrailingAction: (): void => {
-            this.appendAdvancedPageConditions()
-          },
-        })
-      }
-      this.AdvancedConditionError('pages')
-
-      NextNGroupedListSection() {
-        NextNListRow({
-          title: AppStrings.get('search_advanced_unit'),
-          trailingText: this.advancedUploadedUnitLabel(this.advancedUploadedUnit),
-          trailingDropdown: true,
-          accessibilityLabel: AppStrings.get('search_advanced_unit'),
-          onAction: (): void => {
-            this.advancedUploadedUnitMenuShown = true
-          },
-        })
-          .bindMenu(this.advancedUploadedUnitMenuShown, this.AdvancedUploadedUnitMenu, appMenuOptions({
-            placement: Placement.BottomRight,
-            onDisappear: (): void => {
-              this.advancedUploadedUnitMenuShown = false
-            },
-          }))
-        this.SearchOptionDivider()
-        NextNListRow({
-          title: AppStrings.get('search_advanced_uploaded'),
-          showChevron: false,
-          useCustomTrailing: true,
-          customTrailing: (): void => {
-            this.AdvancedUploadedRangeSuffix()
-          },
-          accessibilityLabel: AppStrings.get('search_advanced_uploaded'),
-        })
-        this.SearchOptionDivider()
-        NextNListRow({
-          title: AppStrings.get('search_advanced_add_uploaded'),
-          trailingActionText: AppStrings.get('search_advanced_add'),
-          showChevron: false,
-          isEnabled: this.hasAdvancedPositiveRange(
-            this.advancedUploadedMinimumText,
-            this.advancedUploadedMaximumText,
-          ),
-          accessibilityLabel: AppStrings.get('search_advanced_add_uploaded'),
-          onAction: (): void => {
-            this.appendAdvancedUploadedConditions()
-          },
-          onTrailingAction: (): void => {
-            this.appendAdvancedUploadedConditions()
-          },
-        })
-      }
-      this.AdvancedConditionError('uploaded')
-    }
-    .width('100%')
-    .alignItems(HorizontalAlign.Start)
+    SearchAdvancedConditionInputs({
+      tagNamespace: this.advancedTagNamespace,
+      tagExcluded: this.advancedTagExcluded,
+      uploadedUnit: this.advancedUploadedUnit,
+      errorScope: this.advancedConditionErrorScope,
+      errorMessage: this.advancedConditionError,
+      onNamespaceChange: (namespace: string): void => {
+        this.advancedTagNamespace = namespace
+      },
+      onExcludedChange: (excluded: boolean): void => {
+        this.advancedTagExcluded = excluded
+      },
+      onUnitChange: (unit: NhSearchUploadedUnit): void => {
+        this.advancedUploadedUnit = unit
+      },
+      onTagAdd: (text: string): boolean => {
+        return this.appendAdvancedTagCondition(text)
+      },
+      onPagesAdd: (minimumText: string, maximumText: string): boolean => {
+        return this.appendAdvancedPageConditions(minimumText, maximumText)
+      },
+      onUploadedAdd: (minimumText: string, maximumText: string): boolean => {
+        return this.appendAdvancedUploadedConditions(minimumText, maximumText)
+      },
+      onClearError: (scope: string): void => {
+        this.clearAdvancedConditionError(scope)
+      },
+    })
   }
 
   @Builder

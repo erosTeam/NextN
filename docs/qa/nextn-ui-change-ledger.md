@@ -6120,3 +6120,14 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Minimality rationale:** 逐值对齐 NextE 常量，无新设计。
 - **Visual verification plan:** 构建 + install -r + 真机截图确认背景从 40% 黑降到 15% 黑、图标透明度 0.72。
 - **Device evidence:** 构建成功（9.7s）并装机；布局含新齿轮入口的同一 HAP 内该常量生效。视觉像素级对比需用户/截图验收（本次机型无视觉模型侧）；证据 .hvigor/outputs/nextn-reader-gear-20260817T/（不入 Git）。
+
+## 搜索高级选项输入框失焦：独立组件持有草稿状态（2026-08-17，用户反馈）
+
+- **用户指示:** “搜索选项里面的页数之类的文本框，我只要输入一下子，键盘就会收起来……每次内容变化就重构组件是吧？”
+- **根因（source + 真机复现）:** SearchPage 把高级搜索全部草稿（标签文本、页数/上传区间、菜单展开标志）放在页面级 @Local，输入框 onChange 更新 @Local 会触发整页/整个搜索选项 sheet 重建，TextInput 焦点随重建丢失、键盘收起。NextE 参照 AdvancedSearchControls.ets 是独立 @ComponentV2，输入只更新组件局部草稿，宿主不重建。
+- **Whole parent-tree boundary:** 仅 SearchPage 高级选项面板的输入与菜单草稿状态；不动查询拼接、结果列表、语言/排序选项、最近搜索等其余区域。
+- **Exact change:** 新增 feature/search/src/main/ets/components/SearchAdvancedConditionInputs.ets（独立 @ComponentV2，tagText/pageMinimumText/pageMaximumText/uploadedMinimumText/uploadedMaximumText 与三个菜单标志均为组件内 @Local）；SearchPage 删除对应页面级 @Local 与旧 @Builder 菜单/输入区块，SearchAdvancedConditionsPanel 改为挂载子组件；追加动作改为返回 boolean 回调，子组件仅成功追加后才清空本地草稿。结构与文案保持原样。
+- **Minimality rationale:** 直接采用 NextE 的独立组件隔离结构，输入只触发子组件重建；无新设计、无文案改动。
+- **Visual verification plan:** 签名构建 + install -r + 真机：搜索页打开选项，点页数最小输入框输入“5”，布局确认 TextInput 保持 focused=true 且键盘不收起；标签输入同理。
+- **Unresolved risk:** 子组件与宿主的错误提示/菜单状态同步需真机复核；本项不改搜索条件语法。
+- **Device evidence:** 构建成功（10.1s）。真机 56T0225315001128：搜索页标题栏过滤按钮打开选项 sheet；点击页数下限输入框后 focused=true 且布局上移（键盘展开）；用真实按键注入数字后 TextInput 仍 focused=true、键盘保持，输入值“5”保留；标签名称输入框同样在按键后保持 focused=true。uiInput text 注入法本身会收起键盘，不作为验收手段。证据 .hvigor/outputs/nextn-search-focus-20260817T/（不入 Git）。
