@@ -2790,3 +2790,9 @@ permitted in this repository.
 - 2026-08-17 +0800: USB 56T0225315001128, signed HAP installed with `install -r`; no data clear/uninstall/account action occurred. Foreground bundle `com.erosteam.nextn`.
 - Browse card 淑魎/Monster Hunter showed list tags in seed order (ibuki shione → mizutsune → 可伸缩阴茎 → zinogre → 泄殖腔插入 → 同人志 → 男同). Opening its detail page rendered tag groups as 作者(ibuki shione) → 角色(zinogre, mizutsune) → 标签(泄殖腔插入, 可伸缩阴茎, 男同, 纯男性, 中出, 龙) → 分类(同人志) → 语言(汉语, 翻译) → 原作(怪物猎人), matching the list seed group order instead of the detail API order (分类→语言→标签→原作→角色→作者).
 - Raw artifacts: `.hvigor/outputs/nextn-tag-order-20260817T/` (excluded from Git).
+
+## Current delivery observation — Recent-search translation localizes namespace prefix
+
+- 2026-08-17 +0800: USB 56T0225315001128, signed HAP installed with `install -r`; no data clear/uninstall/account action occurred. Foreground bundle `com.erosteam.nextn`.
+- On the Search landing page, recent-search translated rows rendered `标签:人类饲养` (tag:"human cattle"), `语言:翻译` (language:translated), `作者:のりパチ` (artist:noripachi), and `角色:爱丽丝·玛格特洛依德` (character:"alice margatroid") — namespace prefixes are now localized instead of left in English.
+- Raw artifacts: `.hvigor/outputs/nextn-recent-ns-20260817T/` (excluded from Git).

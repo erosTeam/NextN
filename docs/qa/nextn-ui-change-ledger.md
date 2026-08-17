@@ -6142,3 +6142,14 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Visual verification plan:** 签名构建 + install -r + 真机：从 Browse 点进画廊，详情页标签组顺序与列表卡片标签顺序一致（组顺序与列表一致），进入过程中不再翻转为详情顺序；离开重进顺序不变。
 - **Unresolved risk:** 翻译异步完成的成员文本替换仍可能造成芯片原位重绘；本项只修顺序跳变，若用户仍见原位闪烁再单独处理成员 key。
 - **Device evidence:** 构建成功（10.2s）。真机 56T0225315001128：Browse 第二张卡片（淑魎/Monster Hunter，列表标签显示顺序 ibuki shione → mizutsune → 可伸缩阴茎 → zinogre → 泄殖腔插入 → 同人志 → 男同）点击进入详情后，标签组顺序为 作者(ibuki shione) → 角色(zinogre, mizutsune) → 标签(泄殖腔插入, 可伸缩阴茎, 男同, 纯男性, 中出, 龙) → 分类(同人志) → 语言(汉语, 翻译) → 原作(怪物猎人)，与列表 seed 组顺序一致，不再按详情 API 顺序（分类→语言→标签→原作→角色→作者）翻转。证据 .hvigor/outputs/nextn-tag-order-20260817T/（不入 Git）。
+
+## 最近搜索翻译前缀保留英文 namespace（2026-08-17，用户反馈）
+
+- **用户反馈:** “最近搜索里面的翻译，不翻译前缀？”
+- **根因（source evidence）:** SearchPage.historyQueryTokens 的 displayPrefix 原样保留英文 namespace（character: 等），翻译流程只替换 tag 名，所以最近搜索翻译行显示 “character:爱丽丝·玛格特洛依德”。NextE GallerySearchPage.historyTranslatedPart 用 EhTagSuggestionDisplay.namespaceLabel 把 namespace 一并本地化（NextE 15 个 tag_ns_* 键）。
+- **Whole parent-tree boundary:** 仅最近搜索翻译行的显示前缀；不动查询原文、快捷搜索、搜索结果、详情页标签。
+- **Exact change:** SearchPage 新增 historyNamespaceLabel()：artist/character/group/language/parody/tag/category 复用现有 gallery_tag_namespace_*（作者/角色/社团/语言/原作/标签/分类），female/male/mixed/other/cosplayer 新增 tag_ns_female/male/mixed/other/cosplayer 四语言资源（值照 NextE）；displayPrefix 改为 relationPrefix 加本地化前缀加冒号。
+- **Minimality rationale:** 直接对齐 NextE 的 namespaceLabel 语义；复用 NextN 已有详情页命名空间文案，避免重复定义同义键。
+- **Visual verification plan:** 签名构建 + install -r + 真机：搜索页最近搜索翻译行显示 角色:爱丽丝·玛格特洛依德、artist:のりパチ 等，前缀不再保留英文 namespace。
+- **Unresolved risk:** 未翻译的原始查询行仍显示原文（与 NextE 相同）；其他语言文案按 NextE 值补齐。
+- **Device evidence:** 构建成功（9.3s）。真机 56T0225315001128 搜索页最近搜索翻译行实测：tag:"human cattle" → 标签:人类饲养；language:translated → 语言:翻译；artist:noripachi → 作者:のりパチ；character:"alice margatroid" → 角色:爱丽丝·玛格特洛依德。证据 .hvigor/outputs/nextn-recent-ns-20260817T/（不入 Git）。

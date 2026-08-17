@@ -289,10 +289,46 @@ export struct SearchPage {
       }
       token.tag.type = namespace
       token.tag.name = rawName
-      token.displayPrefix = `${relationPrefix}${content.substring(0, colon)}:`
+      token.displayPrefix = relationPrefix + this.historyNamespaceLabel(namespace) + ':'
       token.isKnownTag = true
       return token
     })
+  }
+
+  private historyNamespaceLabel(namespace: string): string {
+    const normalized: string = namespace.trim().toLowerCase()
+    switch (normalized) {
+      case 'parody':
+      case 'parodies':
+        return AppStrings.get('gallery_tag_namespace_parodies')
+      case 'character':
+      case 'characters':
+        return AppStrings.get('gallery_tag_namespace_characters')
+      case 'artist':
+      case 'artists':
+        return AppStrings.get('gallery_tag_namespace_artists')
+      case 'group':
+        return AppStrings.get('gallery_tag_namespace_groups')
+      case 'language':
+        return AppStrings.get('gallery_tag_namespace_languages')
+      case 'category':
+        return AppStrings.get('gallery_tag_namespace_categories')
+      case 'tag':
+      case 'tags':
+        return AppStrings.get('gallery_tag_namespace_tags')
+      case 'female':
+        return AppStrings.get('tag_ns_female')
+      case 'male':
+        return AppStrings.get('tag_ns_male')
+      case 'mixed':
+        return AppStrings.get('tag_ns_mixed')
+      case 'other':
+        return AppStrings.get('tag_ns_other')
+      case 'cosplayer':
+        return AppStrings.get('tag_ns_cosplayer')
+      default:
+        return namespace
+    }
   }
 
   private async refreshRecentSearchTranslations(): Promise<void> {
