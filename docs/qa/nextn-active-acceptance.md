@@ -5,16 +5,23 @@
 - This observes the cache cold-start path only; it does not accept tag translation timing, every layout density, sign-out cache clearing, or the pending developer-guide maintenance contract. Raw layout copies retained under `.hvigor/outputs/nextn-cache-tags-20260816T/` and excluded from Git.
 # NextN active device-acceptance queue
 
-## Download queue empty-state copy — 2026-08-17 (accepted on emulator)
+## Download queue empty-state copy — 2026-08-17 (accepted on LAN device)
 
 - Signed Debug HAP installed with `install -r` on USB
   `56T0225315001128` (same lease and wake gate); that device's queue holds
   3 completed downloads, so the empty branch was not reachable there.
-- Same HAP installed with `install -r` on emulator `192.168.50.197:12345`
+- Same HAP installed with `install -r` on LAN device `192.168.50.197:12345`
   (lease `20260817-024109-d970eb82`, foreground-confirmed
-  `com.erosteam.nextn`). The Downloads tab with an empty queue renders the
-  centered empty copy `暂无画廊下载` at `[493,1328][767,1393]` on a
-  1260×2720 viewport.
+  `com.erosteam.nextn`). Device identity verified live with
+  `param get const.product.model/name/manufacturer` = ALN-AL80 /
+  HUAWEI Mate 60 Pro / HUAWEI, characteristics `default` — this is a
+  physical phone on the LAN, not an emulator. The Downloads tab with an
+  empty queue renders the centered empty copy `暂无画廊下载` at
+  `[493,1328][767,1393]` on a 1260×2720 viewport.
+- Correction: an earlier draft mislabeled this LAN device as an emulator
+  (the label was inherited from handoff notes without verification). The
+  install on `192.168.50.197` was not an authorized validation target;
+  `install -r` preserved its data but replaced the installed app.
 - The `download_empty` resource now carries NextE's exact values in all four
   locales (`暂无画廊下载` / `No gallery downloads yet` /
   `ギャラリーダウンロードはありません`) and is referenced only by the
