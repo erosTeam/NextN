@@ -488,6 +488,14 @@ struct ReaderImagePage {
     this.zoomOffsetY = 0
   }
 
+  /** Reserve the fitted aspect ratio while loading so vertical lazy lists do not collapse into dozens of spinners. */
+  private imageAspectRatio(): number {
+    if (this.imageWidth > 0 && this.imageHeight > 0) {
+      return this.imageWidth / this.imageHeight
+    }
+    return 1
+  }
+
   private notifyZoom(): void {
     const zoomed: boolean = ReaderPageZoom.isZoomed(this.zoomScale)
     if (zoomed !== this.lastZoomed) {
@@ -607,6 +615,7 @@ struct ReaderImagePage {
     }
     .width('100%')
     .height(this.fillViewport ? '100%' : 'auto')
+    .aspectRatio(this.imageAspectRatio())
     .backgroundColor(this.canvasColor)
     .clip(true)
     .onAreaChange((_previous: Area, current: Area): void => {

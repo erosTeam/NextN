@@ -6089,3 +6089,14 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Visual verification plan:** 签名构建 + install -r + 真机：进入阅读器显示控制栏，抓收起态与展开态布局，对比 Slider/工具栏按钮坐标必须不变，缩略图 List 位于控制区上方。
 - **Device evidence:** 构建成功（9.9s）。真机 56T0225315001128：收起态 Slider [210,1730][1110,1850]、按钮 [36,1880][168,2012]/[192,1880][324,2012]/[348,1880][480,2012]；展开后同一组坐标完全不变，缩略图 List [0,1244][1320,1664] 位于控制区上方。证据 .hvigor/outputs/nextn-bottom-bar-20260817T/（不入 Git）。
 - **Unresolved risk:** 竖屏/横屏、双页模式下同一结构未逐一抓帧；视觉终验由用户验收。
+
+## 纵向阅读器冷启动排满加载图标、图片逐个跳出（2026-08-17，用户反馈）
+
+- **用户反馈:** 纵向阅读点进来，屏幕排了几十个加载图标，然后图片一张一张跳出来。
+- **根因（source evidence）:** ReaderImagePage 加载中只有 24vp 转圈+文字（高度塌缩），纵向 List 的 LazyForEach 为了填满视口会一次性挂载大量 ListItem（每个都触发网络加载），图片到达后高度再逐个撑开，造成几十个加载图标和连续跳动。NextE 纵向使用 ReaderVerticalImage 按已知尺寸占位 + ReaderPendingPage 全页加载阶段，挂载前就知道每页最终高度。
+- **Whole parent-tree boundary:** 仅 ReaderImagePage 容器几何；不动加载链路、缓存、增强、缩放、列表逻辑。
+- **Exact change:** ReaderImagePage 增加 imageAspectRatio()（按 page 宽高比，未知时 1），容器在非 fillViewport 时始终 aspectRatio 占位——加载/错误/成功态都保留最终图片高度，视口只挂载可见页。
+- **Minimality rationale:** 这是 NextE 占位几何语义的最小等价实现，不引入预览状态机/新组件。
+- **Visual verification plan:** 签名构建 + install -r + 真机：选未缓存画廊进入纵向阅读，1 秒时抓布局——LoadingProgress 必须 ≤ 可见页数（1-2 个）且占满页高；加载完成后图片正常显示。
+- **Device evidence:** 构建成功（10.0s）。真机 56T0225315001128 未缓存画廊（33 页）进入 1 秒：LoadingProgress 1 个 [624,852][696,924]，无图片；5 秒后 0 个加载图标、2 张整页图片 [0,0][1320,1846]/[0,1846][1320,2120]。证据 .hvigor/outputs/nextn-vertical-placeholder-20260817T/（不入 Git）。
+- **Unresolved risk:** 已缓存画廊无法复现冷态（用未缓存画廊验证）；高分辨率页在占位期的高度一致性未逐页抓帧；视觉终验由用户验收。

@@ -2768,3 +2768,8 @@ permitted in this repository.
 
 - 2026-08-17 +0800: USB 56T0225315001128, signed HAP installed with `install -r`; reader opened from the first Browse gallery (33 pages). With chrome shown, strip-hidden layout measured Slider [210,1730][1110,1850] and toolbar buttons [36,1880][168,2012]/[192,1880][324,2012]/[348,1880][480,2012]; after toggling thumbnails on, the strip List appeared at [0,1244][1320,1664] while Slider and toolbar button bounds stayed identical. No data clear/uninstall/account action occurred.
 - Raw artifacts: `.hvigor/outputs/nextn-bottom-bar-20260817T/` (excluded from Git).
+
+## Current delivery observation — Vertical reader bounded loading placeholders
+
+- 2026-08-17 +0800: USB 56T0225315001128, signed HAP installed with `install -r`. An uncached 33-page gallery opened in vertical Reader: 1 second after entry the layout contained exactly one LoadingProgress ([624,852][696,924]) and zero Images; after settle it contained 0 LoadingProgress and two full-width page Images ([0,0][1320,1846], [0,1846][1320,2120]). No data clear/uninstall/account action occurred.
+- Raw artifacts: `.hvigor/outputs/nextn-vertical-placeholder-20260817T/` (excluded from Git).
