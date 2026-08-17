@@ -6164,3 +6164,14 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Visual verification plan:** 签名构建 + install -r + 真机：缓存卡不再含标签翻译行且总量不含词典；标签翻译设置页出现删除行；有库时点击确认后条目/版本清空，搜索页标签翻译立即失效；删除后可从该页重新立即更新。
 - **Device evidence:** 构建成功（11s 826ms）。真机 56T0225315001128（唤醒门禁 AWAKE + OverrideTimeout=86400000ms，install -r 保留数据）：① 存储缓存页为 同步/导出/导入 → 阅读器图片缓存上限 2 GB → 缓存占用 142.3 MB → 页面缓存(30 项·388 KB) → 阅读器图片缓存(431 项·141.9 MB) → 评论翻译缓存(0) → 漫画翻译缓存(0)，无“标签翻译”行；② 标签翻译设置页删除前 翻译数据库 v7.27340.1 2026-08-16T11:41:40Z / 43804，“删除已下载翻译库”行存在且可点；③ 点击删除行弹出 AlertDialog「删除翻译库？/ 删除后需重新下载才能继续使用标签翻译。」，按钮 取消/删除；④ 确认删除后该页变为 暂无本地版本 / 未安装，删除行容器 enabled=false、clickable=false；⑤ 返回存储缓存页复核仍无标签翻译行；⑥ 在设置页点“立即更新”恢复翻译库，实测 v7.27379.1 2026-08-16T20:12:06Z / 43813，删除行恢复可点。证据 .hvigor/outputs/nextn-tag-cache-ownership-20260817T/（不入 Git）。
 - **Unresolved risk:** 删除后版本元数据仍留在 RDB（页面状态显式归零）；若后续重新下载，更新会正常覆盖。
+
+## 设置/账号页面平板差异对齐（2026-08-17，用户反馈）
+
+- **用户反馈:** ① 账号管理页设计与 NextE 不一致；② 平板模式下点界面选项和其他选项的选中状态更新时序不一致、会延后；③ 用户选项无法进入选中状态；④ 右侧无上级路由时返回按钮未去掉。
+- **根因（source evidence）:** ① NextE AccountPage 用标题栏右上角 person_badge_plus 添加入口 + Radio 选中账号卡片（NextE AccountPage.ets:587-601/715-741），NextN 把添加放在列表首行、用整行高亮选中；② NextN 选中状态只在 HDS didShow 后同步（Index.ets installRootNavigationStateTracking），点击到高亮之间有转场空窗；③ SETTINGS_ROOT_ROUTES 缺少 'account'，而账号行绑定 browserSession，实际路由 account 永远匹配不上；④ NextN 所有设置类 destination 硬编码 hideBackButton(false)，NextE 是 isSplitMode && isFirstSecondaryDestination（NextE NavStackHolder.ets + 各设置页 .hideBackButton(this.navStackHolder.isSplitMode && this.isFirstSecondaryDestination)）。
+- **Whole parent-tree boundary:** 设置根页路由选择状态、Index 的设置类 HdsNavDestination 标题栏/返回按钮、AccountPage 账号卡片与添加入口；不动账号登录/切换/删除数据链路。
+- **Exact change:** ① SettingsNavigationState 新增 SETTINGS_ROOT_ACCOUNT 并入 routes、publishRootLocation()、isFirstSecondaryDestination()；② SettingsPage 账号行选中改绑 SETTINGS_ROOT_ACCOUNT（未登录仍绑 browserSession）；③ Index openSettingsRootDestination 在各 push/replace 后立即 publishRootLocation，避免等待 didShow；④ Index 所有设置类 destination 的 hideBackButton 改为 settingsBackButtonHidden(route)，即 split 且为首个 secondary 时隐藏；⑤ AccountPage 移除列表首行 AddAccountRow，账号卡片改为头像+标题+ID+Radio 选中结构，AddAccount 入口移到标题栏 person_badge_plus。
+- **Minimality rationale:** 逐项对齐 NextE 的结构与生命周期；不触碰账号登录/切换/删除逻辑。
+- **Visual verification plan:** 签名构建 + install -r + 真机：账号页标题栏右上角有加号、账号卡片 Radio 选中；点击设置根选项立即高亮；split 布局首个设置页无返回按钮、子级有返回按钮。
+- **Device evidence:** 构建成功（10.4s）。真机 56T0225315001128：安装后从“我的”→账号行进入账号页，标题栏右上角 person_badge_plus 已挂载（SymbolGlyph [1176,165][1249,237]），页面显示“账号”标题与“退出登录”行；本机 saved-accounts 列表为空（honjow 登录态未写入 AccountListSettings），因此账号卡片未渲染，Radio 结构待有 saved account 后复核。split 布局/返回按钮隐藏未能在该手机真机复现（无平板/宽屏设备），代码已按 NextE 规则实现，待用户平板验收。证据 .hvigor/outputs/settings-diff-20260817T/（不入 Git）。
+- **Unresolved risk:** 平板 split 下返回按钮隐藏与选中即时高亮未真机验收；账号列表空态下 Radio 卡片未观察。

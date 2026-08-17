@@ -2804,3 +2804,10 @@ permitted in this repository.
 - 标签翻译设置页：删除前 翻译数据库 v7.27340.1 2026-08-16T11:41:40Z / 43804，“删除已下载翻译库”行可点；点击后 AlertDialog 文案为「删除翻译库？/ 删除后需重新下载才能继续使用标签翻译。」，按钮 取消/删除；确认后页面显示 暂无本地版本 / 未安装，删除行容器 enabled=false、clickable=false。
 - 验收后通过该页“立即更新”恢复翻译库（v7.27379.1 2026-08-16T20:12:06Z / 43813），删除行恢复可点。删除期间临时清除了翻译库，属本验收路径的预期操作，已恢复。
 - Raw artifacts: `.hvigor/outputs/nextn-tag-cache-ownership-20260817T/` (excluded from Git).
+
+## Current delivery observation — Settings/account split-layout differences
+
+- 2026-08-17 +0800: USB 56T0225315001128 passed the wake gate (AWAKE, OverrideTimeout=86400000ms). Signed Debug HAP installed with `install -r`; no data clear/uninstall/account action occurred.
+- 账号页：从“我的”→账号行进入，标题栏右上角 person_badge_plus 已挂载（SymbolGlyph [1176,165][1249,237]），页面显示“账号”标题与“退出登录”行；本机 saved-accounts 列表为空，因此 Radio 账号卡片未渲染。已按 NextE 结构调整为标题栏加号 + Radio 卡片 + 移除列表首行添加入口。
+- 设置根行选中已改为 account 路由；点击设置选项时立即 publishRootLocation，不再等待 didShow；所有设置类 destination 的返回按钮改为 split 且为首个 secondary 时隐藏。
+- 未验证：平板/宽屏 split 下返回按钮隐藏与选中即时高亮（当前手机真机无 split）；有 saved account 时 Radio 卡片渲染。Raw artifacts: `.hvigor/outputs/settings-diff-20260817T/` (excluded from Git).

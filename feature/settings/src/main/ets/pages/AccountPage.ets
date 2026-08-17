@@ -300,31 +300,39 @@ export struct AccountPage {
     .backgroundColor(ThemeTokens.BRAND)
   }
 
-  @Builder
-  private AccountAvatarPrefix(accountId: string) {
-    Row() {
-      this.AccountAvatar(accountId)
-      Blank().width(ThemeTokens.ACCOUNT_AVATAR_PREFIX_TEXT_GAP)
-    }
-    .padding({ left: ThemeTokens.ACCOUNT_AVATAR_PREFIX_LEFT_INSET })
-  }
-
+  /** One saved account as a card row; the active one is selected via Radio (NextE parity). */
   @Builder
   private AccountRow(accountId: string) {
-    NextNListRow({
-      useCustomLeading: true,
-      customLeading: (): void => {
-        this.AccountAvatarPrefix(accountId)
-      },
-      title: this.accountTitle(accountId),
-      subtitle: this.accountSubtitle(accountId),
-      selected: accountId === this.accountList.activeAccountId,
-      showChevron: false,
-      isEnabled: !this.isMutatingAccount,
-      accessibilityLabel: this.accountRowAccessibilityLabel(accountId),
-      onAction: (): void => {
-        this.switchAccount(accountId)
-      },
+    Row({ space: ThemeTokens.SPACE_MD }) {
+      this.AccountAvatar(accountId)
+      Column({ space: ThemeTokens.SPACE_XS }) {
+        Text(this.accountTitle(accountId))
+          .fontSize(ThemeTokens.FONT_SIZE_BODY)
+          .fontColor(ThemeTokens.TEXT_PRIMARY)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+        if (this.accountSubtitle(accountId).length > 0) {
+          Text(this.accountSubtitle(accountId))
+            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+            .fontColor(ThemeTokens.TEXT_SECONDARY)
+        }
+      }
+      .alignItems(HorizontalAlign.Start)
+      .layoutWeight(1)
+      Radio({ value: accountId, group: 'nextn_accounts' })
+        .checked(accountId === this.accountList.activeAccountId)
+        .radioStyle({ checkedBackgroundColor: ThemeTokens.BRAND })
+        .hitTestBehavior(HitTestMode.None)
+    }
+    .width('100%')
+    .padding(ThemeTokens.SPACE_MD)
+    .borderRadius(ThemeTokens.RADIUS_CARD)
+    .backgroundColor(ThemeTokens.CARD_BACKGROUND)
+    .alignItems(VerticalAlign.Center)
+    .opacity(this.isMutatingAccount ? 0.6 : 1)
+    .accessibilityText(this.accountRowAccessibilityLabel(accountId))
+    .onClick((): void => {
+      this.switchAccount(accountId)
     })
   }
 
@@ -350,25 +358,6 @@ export struct AccountPage {
     .justifyContent(FlexAlign.Center)
   }
 
-  /** Top entry: add another account (signed in) or sign in (signed out). */
-  @Builder
-  private AddAccountRow() {
-    NextNListRow({
-      leadingIcon: this.accountSession.signedIn
-        ? $r('sys.symbol.person_badge_plus')
-        : $r('sys.symbol.person'),
-      title: this.addAccountTitle(),
-      subtitle: this.addAccountSubtitle(),
-      showChevron: true,
-      accessibilityLabel: this.addAccountAccessibilityLabel(),
-      onAction: (): void => {
-        if (this.onOpenBrowserSession) {
-          this.onOpenBrowserSession()
-        }
-      },
-    })
-  }
-
   build() {
     Column() {
       SecondaryListScaffold({
@@ -376,18 +365,11 @@ export struct AccountPage {
         bottomPadding: ThemeTokens.LIST_BOTTOM_PADDING,
         alwaysEnableEdgeSpring: true,
       }) {
-        ListItem() {
-          NextNGroupedListSection() {
-            this.AddAccountRow()
-          }
-        }
         ForEach(
           this.accountList.accounts,
           (accountId: string): void => {
             ListItem() {
-              NextNGroupedListSection() {
-                this.AccountRow(accountId)
-              }
+              this.AccountRow(accountId)
             }
             .swipeAction({
               end: (): void => {

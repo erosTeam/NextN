@@ -82,6 +82,7 @@ import {
   MotionHandStateService,
   SettingsNavigationState,
   SETTINGS_ROOT_BROWSER_SESSION,
+  SETTINGS_ROOT_ACCOUNT,
   SETTINGS_ROOT_LAYOUT,
   SETTINGS_ROOT_BROWSE,
   SETTINGS_ROOT_SEARCH,
@@ -1892,7 +1893,7 @@ export struct SettingsPage {
           },
           title: this.accountProfile.username,
           subtitle: AppStrings.format('account_profile_id', [this.accountProfile.userId]),
-          selected: this.isSettingsRootSelected(SETTINGS_ROOT_BROWSER_SESSION),
+          selected: this.isSettingsRootSelected(SETTINGS_ROOT_ACCOUNT),
           accessibilityLabel: AppStrings.get('account_open_page_a11y'),
           accessibilityId: 'nextn-settings-root-account',
           onAction: (): void => {
@@ -1911,7 +1912,9 @@ export struct SettingsPage {
             ? AppStrings.get('account_subtitle_signed_in_device')
             : AppStrings.get('account_subtitle_sign_in'),
           trailingText: this.isAccountSignedIn ? AppStrings.get('account_status_signed_in') : '',
-          selected: this.isSettingsRootSelected(SETTINGS_ROOT_BROWSER_SESSION),
+          selected: this.isAccountSignedIn
+            ? this.isSettingsRootSelected(SETTINGS_ROOT_ACCOUNT)
+            : this.isSettingsRootSelected(SETTINGS_ROOT_BROWSER_SESSION),
           accessibilityLabel: AppStrings.get('account_open_page_a11y'),
           accessibilityId: 'nextn-settings-root-account',
           onAction: (): void => {

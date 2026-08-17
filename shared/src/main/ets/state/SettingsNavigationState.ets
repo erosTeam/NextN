@@ -1,6 +1,7 @@
 import { AppStorageV2 } from '@kit.ArkUI'
 
 export const SETTINGS_ROOT_BROWSER_SESSION: string = 'browserSession'
+export const SETTINGS_ROOT_ACCOUNT: string = 'account'
 export const SETTINGS_ROOT_LAYOUT: string = 'layoutSettings'
 export const SETTINGS_ROOT_BROWSE: string = 'browseSettings'
 export const SETTINGS_ROOT_SEARCH: string = 'searchSettings'
@@ -13,6 +14,7 @@ export const SETTINGS_ROOT_HISTORY: string = 'history'
 
 const SETTINGS_ROOT_ROUTES: string[] = [
   SETTINGS_ROOT_BROWSER_SESSION,
+  SETTINGS_ROOT_ACCOUNT,
   SETTINGS_ROOT_LAYOUT,
   SETTINGS_ROOT_BROWSE,
   SETTINGS_ROOT_SEARCH,
@@ -52,10 +54,25 @@ export class SettingsNavigationState {
     }
   }
 
+  /** Publish a root destination before its route transition settles. */
+  publishRootLocation(name: string): void {
+    if (this.selectedRootRoute !== name) {
+      this.selectedRootRoute = name
+    }
+  }
+
   clearRootLocation(): void {
     if (this.selectedRootRoute.length > 0) {
       this.selectedRootRoute = ''
     }
+  }
+
+  isFirstSecondaryDestination(name: string, pathStack: NavPathStack | null): boolean {
+    if (pathStack === null) {
+      return false
+    }
+    const pathNames: string[] = pathStack.getAllPathName()
+    return pathNames.length === 1 && pathNames[0] === name
   }
 
   isRootSelected(name: string, isSplitMode: boolean): boolean {
