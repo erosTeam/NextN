@@ -1677,8 +1677,16 @@ export struct GalleryDetailPage {
   }
 
   private tagMemberLabel(item: GalleryTagVisualItem): string {
-    return this.browsePresentation.showTranslatedTagLabels && item.translatedName.length > 0
-      ? item.translatedName
+    // Read the live label array instead of the ForEach-captured item: the
+    // outer group key is deliberately stable (namespace only), so an async
+    // dictionary result never re-invokes the group row builder and the
+    // captured translatedName stays empty forever on history-origin routes
+    // (no seed labels). A reactive read here updates the Text in place.
+    const liveLabel: string = item.originalIndex < this.tagTranslationLabels.length
+      ? this.tagTranslationLabels[item.originalIndex]
+      : item.translatedName
+    return this.browsePresentation.showTranslatedTagLabels && liveLabel.length > 0
+      ? liveLabel
       : item.tag.name
   }
 
@@ -2397,7 +2405,7 @@ export struct GalleryDetailPage {
       .visibility(
         this.tagTranslationPending &&
           this.browsePresentation.showTranslatedTagLabels &&
-          item.translatedName.length === 0
+          this.tagMemberLabel(item).length === 0
           ? Visibility.Hidden
           : Visibility.Visible
       )
