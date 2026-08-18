@@ -47,6 +47,11 @@ const DEFAULT_AUTOCOMPLETE_TYPES: string[] = ['tag', 'parody', 'character', 'art
  */
 enum NhJsonReadScope {
   PUBLIC,
+  // Browse/Search/Popular/Related prefer the authenticated ArkWeb transport
+  // so the NH server can apply the account's cloud tag blacklist. Any auth
+  // failure silently falls back to the anonymous native request; browsing
+  // must never break or retire the account because a list read went stale.
+  ACCOUNT_PREFERRED,
   ACCOUNT_OWNED,
   // Gallery-detail favourite enrichment may use the authenticated browser
   // transport, but an unknown best-effort leaf must never retire the global
@@ -71,6 +76,7 @@ export class NhApiClient {
   static async latest(page: number = 1): Promise<NhGalleryPageResult> {
     const root: Record<string, Object> = await NhApiClient.getJson(
       `${API_ROOT}/api/v2/galleries?page=${Math.max(1, Math.floor(page))}`,
+      NhJsonReadScope.ACCOUNT_PREFERRED,
     )
     return await NhApiClient.parseGalleryPage(root)
   }
@@ -81,6 +87,7 @@ export class NhApiClient {
     const sortPart: string = normalizedSort.length > 0 ? `&sort=${encodeURIComponent(normalizedSort)}` : ''
     const root: Record<string, Object> = await NhApiClient.getJson(
       `${API_ROOT}/api/v2/search?query=${encoded}&page=${Math.max(1, Math.floor(page))}${sortPart}`,
+      NhJsonReadScope.ACCOUNT_PREFERRED,
     )
     return await NhApiClient.parseGalleryPage(root)
   }
@@ -94,6 +101,7 @@ export class NhApiClient {
   static async popular(): Promise<NhGallerySummary[]> {
     const rawItems: Object[] = await NhApiClient.getBareJsonArray(
       `${API_ROOT}/api/v2/galleries/popular`,
+      NhJsonReadScope.ACCOUNT_PREFERRED,
     )
     const galleries: NhGallerySummary[] = []
     rawItems.forEach((raw: Object): void => {
@@ -178,6 +186,7 @@ export class NhApiClient {
     }
     const root: Record<string, Object> = await NhApiClient.getJson(
       `${API_ROOT}/api/v2/galleries/${normalizedGalleryId}/related`,
+      NhJsonReadScope.ACCOUNT_PREFERRED,
     )
     return (await NhApiClient.parseGalleryPage(root)).galleries
   }
@@ -552,11 +561,12 @@ export class NhApiClient {
   /** Popular has no compatibility envelopes; only its documented bare array is valid. */
   private static async getBareJsonArray(
     url: string,
+    scope: NhJsonReadScope = NhJsonReadScope.PUBLIC,
     allowTransportCache: boolean = true,
   ): Promise<Object[]> {
     const value: Object = await NhApiClient.getJsonValue(
       url,
-      NhJsonReadScope.PUBLIC,
+      scope,
       allowTransportCache,
     )
     if (!Array.isArray(value)) {
@@ -572,10 +582,31 @@ export class NhApiClient {
     denyRedirects: boolean = false,
     singleAttempt: boolean = false,
   ): Promise<Object> {
+    // Cloud-blacklist list reads prefer the authenticated browser transport
+    // (ErosN semantics: the NH server marks blacklisted galleries only when
+    // it knows the account). Any failure falls back to the anonymous native
+    // request below, so a stale session degrades to an unfiltered list
+    // instead of an error or an account retirement.
+    if (scope === NhJsonReadScope.ACCOUNT_PREFERRED &&
+      NhAccountSessionService.isAuthenticated() &&
+      NhApiClient.isAccountPreferredListReadUrl(url)) {
+      try {
+        const preferredResponse: NhArkWebSessionResponse =
+          await NhArkWebSessionTransport.requestJson(url, 'GET')
+        if (preferredResponse.statusCode >= 200 && preferredResponse.statusCode < 300) {
+          const preferredValue: Object = JSON.parse(preferredResponse.body) as Object
+          if (preferredValue !== null) {
+            return preferredValue
+          }
+        }
+      } catch (_error) {
+        // Best-effort only: the anonymous path below remains the fallback.
+      }
+    }
     // ArkWeb authority and the two-401 retirement boundary belong only to
-    // explicit account reads. Public Browse/Search/Popular/Detail/Related/
-    // Comments/PoW traffic must remain anonymous even while an account is
-    // signed in: a public endpoint cannot prove that the account is stale.
+    // explicit account reads. Public Detail/Comments/PoW traffic remains
+    // anonymous even while an account is signed in: a public endpoint
+    // cannot prove that the account is stale.
     if ((scope === NhJsonReadScope.ACCOUNT_OWNED ||
       scope === NhJsonReadScope.ACCOUNT_OWNED_NON_RETIRING) &&
       NhAccountSessionService.isAuthenticated() &&
@@ -863,6 +894,32 @@ export class NhApiClient {
     return /^[1-9][0-9]*$/.test(galleryId)
   }
 
+  /**
+   * List surfaces where the NH server applies the account's cloud tag
+   * blacklist once the request carries the browser session. Exact endpoints
+   * only: detail, comments, and random keep their anonymous contracts.
+   */
+  private static isAccountPreferredListReadUrl(url: string): boolean {
+    if (url.startsWith(`${API_V2_PREFIX}galleries?page=`)) {
+      return true
+    }
+    if (url.startsWith(`${API_V2_PREFIX}search?`)) {
+      return true
+    }
+    if (url === `${API_V2_PREFIX}galleries/popular`) {
+      return true
+    }
+    const relatedPrefix: string = `${API_V2_PREFIX}galleries/`
+    if (!url.startsWith(relatedPrefix) || !url.endsWith('/related')) {
+      return false
+    }
+    const relatedId: string = url.slice(
+      relatedPrefix.length,
+      url.length - '/related'.length,
+    )
+    return /^[1-9][0-9]*$/.test(relatedId)
+  }
+
   private static autocompleteType(value: string): string {
     const normalized: string = value.trim().toLowerCase()
     switch (normalized) {
@@ -950,6 +1007,7 @@ export class NhApiClient {
     }
     const rawItems: Object[] = await NhApiClient.getBareJsonArray(
       `${API_ROOT}/api/v2/tags/ids?ids=${encodeURIComponent(ids.join(','))}`,
+      NhJsonReadScope.PUBLIC,
       false,
     )
     const tags: NhTag[] = []
