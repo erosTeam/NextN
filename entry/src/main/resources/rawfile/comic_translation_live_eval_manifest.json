@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "fixtureSetId": "nexte-original-manga-live-eval-v1",
+  "projectId": "nexte-original-manga-live-eval-v1:zh-CN",
+  "sourceLanguage": "ja",
+  "targetLanguage": "zh-CN",
+  "provenance": "Original synthetic pages generated for NextE on 2026-07-20; no third-party manga pages or characters were used.",
+  "pages": [
+    {
+      "pageIndex": 0,
+      "rawFile": "comic_translation_live_eval_page_01.jpg",
+      "sha256": "eede03d3c797c9278bc9b8f316998fdbb712c1ff9e5b9da0ac1972173bfe7388",
+      "mimeType": "image/jpeg",
+      "width": 1024,
+      "height": 1536,
+      "blocks": [
+        {
+          "sourceVariants": ["午後七時、雨。"],
+          "requiredTranslationTerms": []
+        },
+        {
+          "sourceVariants": ["月影駅 東口", "月影駅東口"],
+          "requiredTranslationTerms": []
+        },
+        {
+          "sourceVariants": ["ザアア…", "ザアア・・・", "ザアア..."],
+          "requiredTranslationTerms": []
+        },
+        {
+          "sourceVariants": ["優、遅かったね。", "優（ゆう）、遅かったね。", "優(ゆう)、遅かったね。"],
+          "requiredTranslationTerms": ["优"]
+        },
+        {
+          "sourceVariants": ["ごめん。駅で迷った。"],
+          "requiredTranslationTerms": []
+        }
+      ]
+    },
+    {
+      "pageIndex": 1,
+      "rawFile": "comic_translation_live_eval_page_02.jpg",
+      "sha256": "4223bca41e70b722708c480d4d1fd4dec2d5a6f6a42b77c084346050f7374751",
+      "mimeType": "image/jpeg",
+      "width": 1024,
+      "height": 1536,
+      "blocks": [
+        {
+          "sourceVariants": ["その夜。"],
+          "requiredTranslationTerms": []
+        },
+        {
+          "sourceVariants": ["月影駅 東口", "月影駅東口"],
+          "requiredTranslationTerms": []
+        },
+        {
+          "sourceVariants": ["優、これを見て。", "優（ゆう）、これを見て。", "優(ゆう)、これを見て。"],
+          "requiredTranslationTerms": ["优"]
+        },
+        {
+          "sourceVariants": ["兄さんの手紙？", "兄さんの手紙?"],
+          "requiredTranslationTerms": []
+        },
+        {
+          "sourceVariants": ["パラ…", "パラ・・・", "パラ..."],
+          "requiredTranslationTerms": []
+        },
+        {
+          "sourceVariants": ["七月二十日"],
+          "requiredTranslationTerms": []
+        }
+      ]
+    }
+  ]
+}

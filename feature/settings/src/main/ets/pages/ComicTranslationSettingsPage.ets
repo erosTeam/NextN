@@ -1,5 +1,5 @@
 import { common } from '@kit.AbilityKit'
-import { SymbolGlyphModifier } from '@kit.ArkUI'
+import { KeyboardAvoidMode, SymbolGlyphModifier } from '@kit.ArkUI'
 import {
   AppStrings,
   COMIC_VISUAL_ROUTE_LOCAL,
@@ -23,8 +23,9 @@ import {
   ToriiFontOption,
   ToriiTranslatorModel,
   ToriiTranslatorModelCatalog,
-  TORII_MODEL_CATALOG_REVIEWED_AT,
   ToriiWholePageCredential,
+  ToriiWholePageLiveEvaluationReport,
+  ToriiWholePageLiveEvaluationService,
   ToriiWholePageSecretStore,
   NextNGroupedListSection,
   NextNListRow,
@@ -55,6 +56,9 @@ export struct ComicTranslationSettingsPage {
   @Local toriiApiKeyDraft: string = ''
   @Local toriiCredits: ToriiCreditsSnapshot | null = null
   @Local toriiCreditsRefreshing: boolean = false
+  @Local toriiLiveEvaluationRunning: boolean = false
+  @Local toriiLiveEvaluationReport: ToriiWholePageLiveEvaluationReport | null = null
+  private toriiCreditsRefreshTimer: number = -1
   @Local sources: LlmSourceProfilesState = connectLlmSourceProfiles()
   @Local sourceMenuShown: boolean = false
   @Local modelMenuShown: boolean = false
@@ -68,8 +72,21 @@ export struct ComicTranslationSettingsPage {
   @Param scroller: Scroller = new Scroller()
   @Event onOpenTranslationSource?: (consumerId: string) => void
   @Event onOpenMangaRenderingService?: () => void
+  @Event onOpenToriiLiveEvaluation?: (report: ToriiWholePageLiveEvaluationReport) => void
 
   aboutToAppear(): void {
+    this.getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.RESIZE)
+    try {
+      const credential: ToriiWholePageCredential = ToriiWholePageSecretStore.readSync(
+        this.context(),
+      )
+      this.toriiApiKeyDraft = credential.toriiApiKey
+      this.toriiCredits = ToriiCreditsService.cachedSync(
+        this.context(),
+        credential.toriiApiKey,
+      )
+    } catch (_error) {
+    }
     this.loadVisualSettings()
     this.restoreBinding()
     this.refreshLocalModel()
@@ -80,6 +97,11 @@ export struct ComicTranslationSettingsPage {
     if (this.visualSettingsLoaded) {
       this.persistVisualSettings(false)
     }
+    if (this.toriiCreditsRefreshTimer >= 0) {
+      clearTimeout(this.toriiCreditsRefreshTimer)
+      this.toriiCreditsRefreshTimer = -1
+    }
+    this.getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET)
   }
 
   private context(): common.UIAbilityContext {
@@ -100,12 +122,13 @@ export struct ComicTranslationSettingsPage {
         CommentTranslationService.targetLanguage(),
       )
       this.toriiApiKeyDraft = credential.toriiApiKey
-      this.toriiCredits = await ToriiCreditsService.cached(
+      this.toriiCredits = ToriiCreditsService.cachedSync(
         this.context(),
         credential.toriiApiKey,
       )
       this.visualSettingsLoaded = true
-      if (snapshot.route === COMIC_VISUAL_ROUTE_TORII) {
+      if (snapshot.route === COMIC_VISUAL_ROUTE_TORII &&
+        ToriiCreditsService.isStale(this.toriiCredits)) {
         this.refreshToriiCredits()
       }
     } catch (error) {
@@ -117,7 +140,7 @@ export struct ComicTranslationSettingsPage {
     }
   }
 
-  private async persistVisualSettings(saveCredential: boolean): Promise<boolean> {
+  private async persistVisualSettings(showFailureToast: boolean = true): Promise<boolean> {
     const snapshot: ComicVisualProviderSettingsSnapshot =
       new ComicVisualProviderSettingsSnapshot()
     snapshot.route = this.visualRoute
@@ -127,16 +150,17 @@ export struct ComicTranslationSettingsPage {
       this.toriiFontId,
       CommentTranslationService.targetLanguage(),
     )
+    const credential: ToriiWholePageCredential = new ToriiWholePageCredential()
+    credential.toriiApiKey = this.toriiApiKeyDraft.trim()
     try {
       await ComicVisualProviderSettings.save(this.context(), snapshot)
-      if (saveCredential) {
-        const credential: ToriiWholePageCredential = new ToriiWholePageCredential()
-        credential.toriiApiKey = this.toriiApiKeyDraft.trim()
-        await ToriiWholePageSecretStore.save(this.context(), credential)
-      }
+      await ToriiWholePageSecretStore.save(this.context(), credential)
+      this.toriiApiKeyDraft = credential.toriiApiKey
       return true
     } catch (error) {
-      this.showToriiSaveFailedToast((error as Error).message)
+      if (showFailureToast) {
+        this.showToriiSaveFailedToast((error as Error).message)
+      }
       return false
     }
   }
@@ -273,6 +297,116 @@ export struct ComicTranslationSettingsPage {
       return ''
     }
     return this.toriiCredits.credits.toFixed(2).replace(/\.00$/, '')
+  }
+
+  private toriiModels(): ToriiTranslatorModel[] {
+    return ToriiTranslatorModelCatalog.all()
+  }
+
+  private toriiReady(): boolean {
+    return this.toriiApiKeyDraft.trim().length > 0
+  }
+
+  private toriiLiveEvaluationTrailingText(): string {
+    if (this.toriiLiveEvaluationRunning) {
+      return AppStrings.get('comic_torii_live_evaluation_running_short')
+    }
+    if (this.toriiLiveEvaluationReport === null) {
+      return AppStrings.get('comic_torii_live_evaluation_pages')
+    }
+    return this.toriiLiveEvaluationReport.passed()
+      ? AppStrings.get('comic_torii_live_evaluation_view')
+      : AppStrings.get('comic_torii_live_evaluation_failed_short')
+  }
+
+  private toriiLiveEvaluationFailureMessage(
+    report: ToriiWholePageLiveEvaluationReport,
+  ): string {
+    const page: string = report.failedPageIndex >= 0
+      ? `P${report.failedPageIndex + 1}`
+      : 'setup'
+    const detail: string = report.errorDetail.length > 0
+      ? `\n${report.errorDetail}`
+      : ''
+    return `${page} · ${report.errorCode || 'failed'}${detail}`
+  }
+
+  private openToriiLiveEvaluation(): void {
+    if (this.toriiLiveEvaluationRunning) {
+      return
+    }
+    if (this.toriiLiveEvaluationReport !== null) {
+      if (!this.toriiLiveEvaluationReport.passed()) {
+        this.showToriiLiveEvaluationFailure(this.toriiLiveEvaluationReport)
+        return
+      }
+      if (this.onOpenToriiLiveEvaluation) {
+        this.onOpenToriiLiveEvaluation(this.toriiLiveEvaluationReport)
+      }
+      return
+    }
+    this.getUIContext().showAlertDialog({
+      title: AppStrings.get('comic_translation_live_evaluation_title'),
+      message: AppStrings.get('comic_translation_live_evaluation_confirm'),
+      primaryButton: {
+        value: AppStrings.get('common_cancel'),
+        action: (): void => {},
+      },
+      secondaryButton: {
+        value: AppStrings.get('comic_translation_live_evaluation_start'),
+        action: (): void => {
+          this.runToriiLiveEvaluation()
+        },
+      },
+    })
+  }
+
+  private async runToriiLiveEvaluation(): Promise<void> {
+    if (this.toriiLiveEvaluationRunning || !this.toriiReady()) {
+      return
+    }
+    this.toriiLiveEvaluationRunning = true
+    this.toriiLiveEvaluationReport = null
+    try {
+      if (!await this.persistVisualSettings(true)) {
+        return
+      }
+      const report: ToriiWholePageLiveEvaluationReport =
+        await ToriiWholePageLiveEvaluationService.run(this.context())
+      this.toriiLiveEvaluationReport = report
+      this.refreshToriiCredits()
+      if (report.passed()) {
+        if (this.onOpenToriiLiveEvaluation) {
+          this.onOpenToriiLiveEvaluation(report)
+        }
+      } else {
+        this.showToriiLiveEvaluationFailure(report)
+      }
+    } catch (error) {
+      ComicTranslationDiagnosticLogger.warn(
+        'comic-translation',
+        'torii_live_evaluation_failed',
+        (error as Error).message,
+      )
+      this.getUIContext().getPromptAction().showToast({
+        message: AppStrings.get('comic_translation_live_evaluation_not_passed'),
+      })
+    } finally {
+      this.toriiLiveEvaluationRunning = false
+    }
+  }
+
+  private showToriiLiveEvaluationFailure(
+    report: ToriiWholePageLiveEvaluationReport,
+  ): void {
+    this.getUIContext().showAlertDialog({
+      title: AppStrings.get('comic_torii_live_evaluation_failed_short'),
+      message: this.toriiLiveEvaluationFailureMessage(report),
+      primaryButton: {
+        value: AppStrings.get('common_ok'),
+        action: (): void => {},
+      },
+    })
   }
 
   private compatibleSources(): LlmSourceProfile[] {
@@ -517,7 +651,7 @@ export struct ComicTranslationSettingsPage {
   private ToriiModelMenu() {
     Menu() {
       ForEach(
-        ToriiTranslatorModelCatalog.all(),
+        this.toriiModels(),
         (model: ToriiTranslatorModel): void => {
           MenuItem({
             content: `${model.displayName} · ${model.baseCredits}+`,
@@ -554,26 +688,29 @@ export struct ComicTranslationSettingsPage {
   }
 
   @Builder
-  private ToriiSecretRow() {
+  private ToriiSecretRow(label: string, placeholder: string) {
     Column({ space: ThemeTokens.SPACE_XS }) {
-      Text(AppStrings.get('comic_torii_api_key'))
+      Text(label)
         .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
         .fontColor(ThemeTokens.TEXT_SECONDARY)
         .width('100%')
-      TextInput({ text: this.toriiApiKeyDraft, placeholder: AppStrings.get('comic_torii_api_key_hint') })
+      TextInput({ text: $$this.toriiApiKeyDraft, placeholder: placeholder })
         .type(InputType.Password)
         .width('100%')
         .height(48)
         .fontSize(ThemeTokens.FONT_SIZE_BODY)
-        .backgroundColor(ThemeTokens.SURFACE_CONTAINER)
-        .borderRadius(ThemeTokens.RADIUS_SM)
-        .onChange((value: string): void => {
-          this.toriiApiKeyDraft = value
+        .backgroundColor($r('sys.color.ohos_id_color_button_normal'))
+        .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
+        .onChange((): void => {
           this.toriiCredits = null
-        })
-        .onSubmit((): void => {
-          this.persistVisualSettings(true)
-          this.refreshToriiCredits()
+          if (this.toriiCreditsRefreshTimer >= 0) {
+            clearTimeout(this.toriiCreditsRefreshTimer)
+            this.toriiCreditsRefreshTimer = -1
+          }
+          this.toriiCreditsRefreshTimer = setTimeout((): void => {
+            this.toriiCreditsRefreshTimer = -1
+            this.refreshToriiCredits()
+          }, 600)
         })
     }
     .width('100%')
@@ -638,7 +775,6 @@ export struct ComicTranslationSettingsPage {
               NextNListRow({
                 leadingIcon: $r('sys.symbol.picture'),
                 title: AppStrings.get('comic_visual_route'),
-                subtitle: AppStrings.get('comic_visual_route_hint'),
                 trailingText: this.visualRouteText(),
                 trailingDropdown: true,
                 accessibilityLabel: AppStrings.get('comic_visual_route'),
@@ -793,7 +929,6 @@ export struct ComicTranslationSettingsPage {
                 NextNListRow({
                   leadingIcon: $r('sys.symbol.translate'),
                   title: AppStrings.get('comic_torii_model'),
-                  subtitle: AppStrings.format('comic_torii_model_hint', [TORII_MODEL_CATALOG_REVIEWED_AT]),
                   trailingText: this.toriiModelText(),
                   trailingDropdown: true,
                   accessibilityLabel: AppStrings.get('comic_torii_model'),
@@ -828,7 +963,10 @@ export struct ComicTranslationSettingsPage {
                 },
               }))
               this.RowDivider()
-              this.ToriiSecretRow()
+              this.ToriiSecretRow(
+                AppStrings.get('comic_torii_api_key'),
+                AppStrings.get('comic_torii_api_key_hint'),
+              )
               if (this.toriiCredits !== null) {
                 this.RowDivider()
                 NextNListRow({
@@ -836,6 +974,20 @@ export struct ComicTranslationSettingsPage {
                   title: AppStrings.get('comic_torii_available_credits'),
                   trailingText: this.toriiCreditsText(),
                   showChevron: false,
+                })
+              }
+              if (this.toriiReady()) {
+                this.RowDivider()
+                NextNListRow({
+                  leadingIcon: $r('sys.symbol.checkmark_circle'),
+                  title: AppStrings.get('comic_translation_live_evaluation_title'),
+                  trailingText: this.toriiLiveEvaluationTrailingText(),
+                  showChevron: this.toriiLiveEvaluationReport !== null &&
+                    this.toriiLiveEvaluationReport.passed(),
+                  isEnabled: !this.toriiLiveEvaluationRunning,
+                  onAction: (): void => {
+                    this.openToriiLiveEvaluation()
+                  },
                 })
               }
             }

@@ -268,6 +268,21 @@ export class NhAccountSessionService {
       NhAccountSessionService.explicitVisibleLoginActionRegistered
   }
 
+  /**
+   * Starts a visible login for ADDING another account (NextE parity: a
+   * newly-added account must not inherit the previous account's browser
+   * identity cookies). The caller persists the current account first; this
+   * method only clears the first-party identity cookies from the ArkWeb jar
+   * and drops every stale candidate. The active runtime session and its
+   * sealed fallback stay untouched, so abandoning the flow keeps the current
+   * account signed in; the next authenticated read rehydrates the jar.
+   */
+  static beginAddAccountVisibleLogin(): void {
+    NhAccountSessionService.discardPendingVisibleBrowserSession()
+    NhAccountSessionService.resetRejectedVisibleBrowserSessionCandidate()
+    NhAccountSessionService.expireVisibleBrowserIdentityCookies()
+  }
+
   /** Produces the one ArkWeb-compatible UA shape for visible and retained hosts. */
   static nextECompatibleUserAgent(nativeUserAgent: string): string {
     const normalizedNativeUserAgent: string = NhAccountSessionService.normalizeUserAgent(nativeUserAgent)

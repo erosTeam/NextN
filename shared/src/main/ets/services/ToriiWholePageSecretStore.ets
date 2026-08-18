@@ -97,6 +97,17 @@ export class ToriiWholePageSecretStore {
     )
   }
 
+  /** Synchronous credential read for first-frame settings display. */
+  static readSync(context: common.UIAbilityContext): ToriiWholePageCredential {
+    const store: preferences.Preferences = preferences.getPreferencesSync(
+      context,
+      { name: TORII_STORE },
+    )
+    return ToriiWholePageCredential.parse(
+      store.getSync(TORII_CREDENTIAL_KEY, '') as string,
+    )
+  }
+
   static async save(
     context: common.UIAbilityContext,
     value: ToriiWholePageCredential,
@@ -114,4 +125,3 @@ export class ToriiWholePageSecretStore {
     store.flushSync()
   }
 }
-

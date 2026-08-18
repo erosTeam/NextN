@@ -36,6 +36,10 @@ const ACCOUNT_LOG_TAG: string = 'NextNAccount'
 export struct BrowserSessionPage {
   /** One-shot internal cold-start recovery route; ordinary Account visits stay native. */
   @Param autoOpenVisibleLogin: boolean = false
+  /** Adding another account keeps the current one saved and opens a clean form. */
+  @Param addAccountMode: boolean = false
+  /** Entry-owned NextE closeLoginFlowToAccount handoff after a promotion. */
+  @Event onVisibleLoginPromoted?: () => void
   @Local sessionStatus: NhBrowserSessionStatus = new NhBrowserSessionStatus()
   @Local isBrowserRequested: boolean = false
   @Local isControllerAttached: boolean = false
@@ -56,6 +60,7 @@ export struct BrowserSessionPage {
   private browserSessionUserAgent: string = ''
   private appliedAccountSessionRevision: number = -1
   private autoOpenVisibleLoginConsumed: boolean = false
+  private addAccountPromotionCompleted: boolean = false
   private scroller: Scroller = new Scroller()
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private controller: webview.WebviewController = new webview.WebviewController()
@@ -88,6 +93,13 @@ export struct BrowserSessionPage {
     // candidate UA; an existing sealed account will bootstrap its own UA on
     // the next fixed-origin request.
     NhArkWebSessionTransport.resetForVisibleSessionCandidate()
+    if (this.addAccountMode && !this.addAccountPromotionCompleted &&
+      NhAccountSessionService.isAuthenticated()) {
+      // The abandoned add-account form cleared the jar's identity cookies.
+      // Restore the still-active account so the retained transport keeps its
+      // session without waiting for the next authenticated read to repair it.
+      NhAccountSessionService.ensureRegularArkWebCookieJar().catch((): void => {})
+    }
   }
 
   private hostContext(): common.UIAbilityContext {
@@ -116,6 +128,12 @@ export struct BrowserSessionPage {
       this.isBrowserRequested = false
       this.isControllerAttached = false
       this.isPageLoading = false
+      if (this.addAccountMode && !this.addAccountPromotionCompleted) {
+        // An add-account route stays a login surface: show the explicit
+        // add action instead of collapsing into the current session view.
+        this.sessionStatus = NhBrowserSessionBoundary.preflight()
+        return
+      }
       this.sessionStatus = NhBrowserSessionBoundary.authenticated()
       this.restorePublishedAccountProfile()
       return
@@ -173,6 +191,25 @@ export struct BrowserSessionPage {
     }
     NhAccountSessionService.registerExplicitVisibleLoginAction()
     this.openBrowserSession()
+  }
+
+  /** NextE add-account semantics: save the current account, then open a clean form. */
+  private requestAddAccountSession(): void {
+    if (!this.accountSession.initialized) {
+      this.sessionStatus = NhBrowserSessionBoundary.blockedNavigation()
+      return
+    }
+    this.accountActionError = ''
+    NhAccountSessionService.registerExplicitVisibleLoginAction()
+    AccountListSettings.recordActive(this.hostContext())
+      .then((): void => {
+        NhAccountSessionService.beginAddAccountVisibleLogin()
+        this.openBrowserSession()
+      })
+      .catch((): void => {
+        NhAccountSessionService.beginAddAccountVisibleLogin()
+        this.openBrowserSession()
+      })
   }
 
   /** The recovery route supplies the same explicit action the native row uses. */
@@ -361,6 +398,7 @@ export struct BrowserSessionPage {
         this.stopSessionCaptureTimer()
         this.refreshAccountProfile()
         AccountListSettings.recordActive(this.hostContext()).catch((): void => {})
+        this.announceVisibleLoginPromotion()
       }
     } catch (error) {
       // Session data never reaches logs. The small stable stage code is
@@ -373,6 +411,17 @@ export struct BrowserSessionPage {
         'visible login promotion failed stage=%{public}s', stage)
       this.accountActionError = AppStrings.get('account_save_failed')
       this.closeBrowserAfterPromotionFailure()
+    }
+  }
+
+  private announceVisibleLoginPromotion(): void {
+    if (this.addAccountPromotionCompleted) {
+      return
+    }
+    this.addAccountPromotionCompleted = true
+    this.getUIContext().getPromptAction().showToast({ message: AppStrings.get('login_success') })
+    if (this.onVisibleLoginPromoted) {
+      this.onVisibleLoginPromoted()
     }
   }
 
@@ -502,6 +551,9 @@ export struct BrowserSessionPage {
   }
 
   private accountBrowserActionTitle(): string {
+    if (this.addAccountMode && !this.addAccountPromotionCompleted) {
+      return AppStrings.get('account_web_login')
+    }
     if (this.sessionStatus.phase === NhBrowserSessionPhase.AUTHENTICATED) {
       return AppStrings.get('account_open_browser')
     }
@@ -512,6 +564,9 @@ export struct BrowserSessionPage {
   }
 
   private accountBrowserActionSubtitle(): string {
+    if (this.addAccountMode && !this.addAccountPromotionCompleted) {
+      return ''
+    }
     if (this.sessionStatus.phase === NhBrowserSessionPhase.AUTHENTICATED) {
       return AppStrings.get('account_open_browser_subtitle')
     }
@@ -522,6 +577,10 @@ export struct BrowserSessionPage {
   }
 
   private accountBrowserActionAccessibilityLabel(): string {
+    const subtitle: string = this.accountBrowserActionSubtitle()
+    if (subtitle.length === 0) {
+      return this.accountBrowserActionTitle()
+    }
     return `${this.accountBrowserActionTitle()}. ${this.accountBrowserActionSubtitle()}`
   }
 
@@ -533,29 +592,33 @@ export struct BrowserSessionPage {
   @Builder
   private AccountSection() {
     NextNGroupedListSection({ accessibilityId: 'nextn-account-native-root' }) {
-      if (this.sessionStatus.phase === NhBrowserSessionPhase.AUTHENTICATED && this.accountProfile.hasSnapshot) {
-        NextNListRow({
-          leadingImageUrl: this.accountProfile.avatarUrl,
-          leadingIcon: this.accountProfile.avatarUrl.length > 0 ? undefined : $r('sys.symbol.person_fill'),
-          title: this.accountProfile.username,
-          subtitle: AppStrings.format('account_profile_id', [this.accountProfile.userId]),
-          trailingText: this.statusLabel(),
-          showChevron: false,
-          accessibilityLabel: `${this.accountProfile.username}, ${AppStrings.format('account_profile_id', [this.accountProfile.userId])}. ${this.statusLabel()}`,
-        })
-      } else {
-        NextNListRow({
-          leadingIcon: $r('sys.symbol.security_shield'),
-          title: AppStrings.get('account_title'),
-          subtitle: this.statusSubtitle(),
-          trailingText: this.statusLabel(),
-          showChevron: false,
-          accessibilityLabel: `${AppStrings.get('account_title')}, ${this.statusLabel()}. ${this.statusSubtitle()}`,
-        })
+      if (!this.addAccountMode || this.addAccountPromotionCompleted) {
+        if (this.sessionStatus.phase === NhBrowserSessionPhase.AUTHENTICATED && this.accountProfile.hasSnapshot) {
+          NextNListRow({
+            leadingImageUrl: this.accountProfile.avatarUrl,
+            leadingIcon: this.accountProfile.avatarUrl.length > 0 ? undefined : $r('sys.symbol.person_fill'),
+            title: this.accountProfile.username,
+            subtitle: AppStrings.format('account_profile_id', [this.accountProfile.userId]),
+            trailingText: this.statusLabel(),
+            showChevron: false,
+            accessibilityLabel: `${this.accountProfile.username}, ${AppStrings.format('account_profile_id', [this.accountProfile.userId])}. ${this.statusLabel()}`,
+          })
+        } else {
+          NextNListRow({
+            leadingIcon: $r('sys.symbol.security_shield'),
+            title: AppStrings.get('account_title'),
+            subtitle: this.statusSubtitle(),
+            trailingText: this.statusLabel(),
+            showChevron: false,
+            accessibilityLabel: `${AppStrings.get('account_title')}, ${this.statusLabel()}. ${this.statusSubtitle()}`,
+          })
+        }
+        this.RowDivider()
       }
-      this.RowDivider()
       NextNListRow({
-        leadingIcon: $r('sys.symbol.worldclock'),
+        leadingIcon: this.addAccountMode && !this.addAccountPromotionCompleted
+          ? $r('sys.symbol.person_badge_plus')
+          : $r('sys.symbol.worldclock'),
         title: this.accountBrowserActionTitle(),
         subtitle: this.accountBrowserActionSubtitle(),
         trailingText: this.sessionStatus.canOpenBrowserSession() ? '' : AppStrings.get('account_status_unavailable'),
@@ -563,6 +626,10 @@ export struct BrowserSessionPage {
         isEnabled: this.sessionStatus.canOpenBrowserSession(),
         accessibilityLabel: this.accountBrowserActionAccessibilityLabel(),
         onAction: (): void => {
+          if (this.addAccountMode && !this.addAccountPromotionCompleted) {
+            this.requestAddAccountSession()
+            return
+          }
           this.requestExplicitBrowserSession()
         },
       })

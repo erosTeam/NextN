@@ -194,6 +194,12 @@ export {
 } from './services/ToriiCreditsService'
 export { ComicTranslationModelCatalogService } from './services/ComicTranslationModelCatalogService'
 export { ComicTranslationDiagnosticLogger } from './services/ComicTranslationDiagnosticLogger'
+export { ComicTranslationErrorClassifier } from './services/ComicTranslationErrorClassifier'
+export {
+  ToriiWholePageLiveEvaluationPageReport,
+  ToriiWholePageLiveEvaluationReport,
+  ToriiWholePageLiveEvaluationService,
+} from './services/ToriiWholePageLiveEvaluationService'
 export {
   MAX_COMIC_PREVIOUS_PAGE_CONTEXT,
   ComicPreviousPageContextPolicy,

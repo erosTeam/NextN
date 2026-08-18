@@ -88,7 +88,7 @@ export struct GalleryCollectionBody {
    * rhythm without per-page spacing values.
    */
   private effectiveTopPadding(): number {
-    return this.topPadding + ThemeTokens.GALLERY_LIST_TOP_GAP
+    return this.topPadding
   }
 
   private hasInlineError(): boolean {

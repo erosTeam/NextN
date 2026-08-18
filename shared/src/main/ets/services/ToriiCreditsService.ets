@@ -112,6 +112,32 @@ export class ToriiCreditsService {
     )
   }
 
+  /** Synchronous cache read for first-frame display; stale values still show. */
+  static cachedSync(
+    context: common.UIAbilityContext,
+    apiKey: string,
+  ): ToriiCreditsSnapshot | null {
+    if (apiKey.length === 0) {
+      return null
+    }
+    const store: preferences.Preferences = preferences.getPreferencesSync(
+      context,
+      { name: TORII_STORE },
+    )
+    return ToriiCreditsService.parseCachedIgnoringAge(
+      store.getSync(TORII_CREDITS_CACHE_KEY, '') as string,
+      apiKey,
+    )
+  }
+
+  /** True when no cached balance exists or the cached balance is too old. */
+  static isStale(snapshot: ToriiCreditsSnapshot | null): boolean {
+    if (snapshot === null) {
+      return true
+    }
+    return Date.now() - snapshot.fetchedAtMs > TORII_CREDITS_CACHE_MAX_AGE_MS
+  }
+
   static async saveCached(
     context: common.UIAbilityContext,
     apiKey: string,
@@ -143,6 +169,21 @@ export class ToriiCreditsService {
   }
 
   static parseCached(rawText: string, apiKey: string): ToriiCreditsSnapshot | null {
+    return ToriiCreditsService.parseCachedWithAge(rawText, apiKey, true)
+  }
+
+  static parseCachedIgnoringAge(
+    rawText: string,
+    apiKey: string,
+  ): ToriiCreditsSnapshot | null {
+    return ToriiCreditsService.parseCachedWithAge(rawText, apiKey, false)
+  }
+
+  private static parseCachedWithAge(
+    rawText: string,
+    apiKey: string,
+    rejectExpired: boolean,
+  ): ToriiCreditsSnapshot | null {
     if (rawText.length <= 0 || rawText.length > TORII_CREDITS_CACHE_MAX_CHARS ||
       apiKey.length === 0) {
       return null
@@ -160,7 +201,8 @@ export class ToriiCreditsService {
       snapshot.credits = raw.credits
       snapshot.fetchedAtMs = raw.fetchedAtMs
       ToriiCreditsService.validateSnapshot(snapshot)
-      if (Date.now() - snapshot.fetchedAtMs > TORII_CREDITS_CACHE_MAX_AGE_MS) {
+      if (rejectExpired &&
+        Date.now() - snapshot.fetchedAtMs > TORII_CREDITS_CACHE_MAX_AGE_MS) {
         return null
       }
       return snapshot

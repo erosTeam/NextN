@@ -122,7 +122,7 @@ export struct PullRefreshListScaffold {
       })
       .onDidScroll((_scrollOffset: number, scrollState: ScrollState): void => {
         if (this.onDidScroll) {
-          this.onDidScroll(_scrollOffset, scrollState)
+          this.onDidScroll(this.scroller.currentOffset().yOffset, scrollState)
         }
       })
       .onScrollIndex((start: number, end: number, center: number): void => {
@@ -181,6 +181,9 @@ export struct PullRefreshListScaffold {
   }
 
   private maybeNotifyReachEnd(): void {
+    if (this.canStartBottomRefresh && !this.canStartBottomRefresh()) {
+      return
+    }
     this.notifyReachEnd()
   }
 

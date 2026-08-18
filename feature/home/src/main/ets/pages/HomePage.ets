@@ -661,7 +661,7 @@ export struct HomePage {
   }
 
   build() {
-    Stack() {
+    Stack({ alignContent: Alignment.TopEnd }) {
       RetainedSubtabHost({
         keys: this.sourceKeys(),
         selectedKey: this.selectedKey(),

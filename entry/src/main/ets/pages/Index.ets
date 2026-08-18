@@ -42,6 +42,8 @@ import {
   SettingsSurface,
   SyncSettingsPage,
   TagTranslationSettingsPage,
+  ToriiWholePageLiveEvaluationPage,
+  ToriiWholePageLiveEvaluationRouteParams,
   WebDavSyncSettingsPage,
 } from 'settings'
 import { common } from '@kit.AbilityKit'
@@ -83,6 +85,7 @@ import {
   TabletLayoutSettings,
   TabletLayoutState,
   ThemeDisplayState,
+  ToriiWholePageLiveEvaluationReport,
   connectGalleryDirectLaunch,
   connectLayoutSafeArea,
   connectLoginRecoveryLaunch,
@@ -147,6 +150,7 @@ const ROUTE_ADVANCED_SETTINGS: string = 'advancedSettings'
 const ROUTE_TAG_TRANSLATION_SETTINGS: string = 'tagTranslationSettings'
 const ROUTE_COMMENT_TRANSLATION_SETTINGS: string = 'commentTranslationSettings'
 const ROUTE_COMIC_TRANSLATION_SETTINGS: string = 'comicTranslationSettings'
+const ROUTE_TORII_WHOLE_PAGE_LIVE_EVALUATION: string = 'toriiWholePageLiveEvaluation'
 const ROUTE_ABOUT: string = 'about'
 const STATUS_BAR_LIGHT_CONTENT: string = '#FFFFFFFF'
 const STATUS_BAR_DARK_CONTENT: string = '#FF000000'
@@ -228,9 +232,11 @@ class BrowseDensityRouteParams {
 /** One-shot internal recovery route; never persisted or exposed in Settings. */
 class BrowserSessionRouteParams {
   autoOpenVisibleLogin: boolean = false
+  addAccountMode: boolean = false
 
-  constructor(autoOpenVisibleLogin: boolean = false) {
+  constructor(autoOpenVisibleLogin: boolean = false, addAccountMode: boolean = false) {
     this.autoOpenVisibleLogin = autoOpenVisibleLogin
+    this.addAccountMode = addAccountMode
   }
 }
 
@@ -294,7 +300,6 @@ struct Index {
   // before RetainedSubtabHost publishes its initial active source.
   private homeActiveScroller: Scroller = this.rootTabScrollers[0]
   private homeTabLastScrollOffsets: number[] = [0, 0, 0, 0]
-  private homeTabDirectionTravel: number[] = [0, 0, 0, 0]
   private homeTabAnimationGuardTimerId: number = -1
   private homeTabVisibleByScroll: boolean = true
   private searchScroller: Scroller = new Scroller()
@@ -705,8 +710,25 @@ struct Index {
     }, 0)
   }
 
-  private pushBrowserSession(): void {
-    this.openSettingsRootDestination(ROUTE_BROWSER_SESSION, new BrowserSessionRouteParams())
+  private pushBrowserSession(addAccountMode: boolean = false): void {
+    this.stack.pushPathByName(ROUTE_BROWSER_SESSION, new BrowserSessionRouteParams(false, addAccountMode))
+  }
+
+  /**
+   * NextE closeLoginFlowToAccount parity: after a promoted visible login,
+   * leave the login route and land on the Account page unless it is already
+   * directly underneath (Account + add-account flow).
+   */
+  private closeBrowserSessionToAccount(): void {
+    const pathNames: string[] = this.stack.getAllPathName()
+    if (pathNames.length > 0 && pathNames[pathNames.length - 1] === ROUTE_BROWSER_SESSION) {
+      this.stack.pop()
+    }
+    const updated: string[] = this.stack.getAllPathName()
+    if (updated.length === 0 || updated[updated.length - 1] !== ROUTE_ACCOUNT) {
+      this.pushAccount()
+      this.settingsNavigation.publishRootLocation(ROUTE_ACCOUNT)
+    }
   }
 
   private pushLayoutSettings(): void {
@@ -1134,47 +1156,28 @@ struct Index {
     this.startHomeTabAnimationGuardTimer()
   }
 
-  /**
-   * Grid, List, and WaterFlow report a positive vertical offset while their
-   * content moves up. Clamp only top-edge overscroll so root-tab direction
-   * detection remains in physical content-distance space.
-   */
-  private homeTabScrollDistance(offset: number): number {
-    return Math.max(0, offset)
-  }
-
   private onHomeTabDidScroll(index: number, offset: number, state: ScrollState): void {
-    const distance: number = this.homeTabScrollDistance(offset)
     if (index !== this.activeTab || !this.homeTab.autoHide) {
-      this.homeTabLastScrollOffsets[index] = distance
-      this.homeTabDirectionTravel[index] = 0
+      this.homeTabLastScrollOffsets[index] = offset
       return
     }
-    if (distance <= this.HOME_TAB_SCROLL_DELTA_PX) {
-      this.homeTabLastScrollOffsets[index] = distance
-      this.homeTabDirectionTravel[index] = 0
+    if (offset <= this.HOME_TAB_SCROLL_DELTA_PX) {
+      this.homeTabLastScrollOffsets[index] = offset
       this.restoreHomeTabIfHidden()
       return
     }
-    const lastOffset: number = this.homeTabLastScrollOffsets[index]
-    this.homeTabLastScrollOffsets[index] = distance
-    const delta: number = distance - lastOffset
-    if (Math.abs(delta) < 0.01) {
+    if (state === ScrollState.Idle) {
+      this.homeTabLastScrollOffsets[index] = offset
       return
     }
-    const priorTravel: number = this.homeTabDirectionTravel[index]
-    const continuesDirection: boolean = priorTravel === 0 ||
-      (priorTravel > 0 && delta > 0) ||
-      (priorTravel < 0 && delta < 0)
-    const directionTravel: number = continuesDirection ? priorTravel + delta : delta
-    this.homeTabDirectionTravel[index] = directionTravel
-    if (directionTravel < -this.HOME_TAB_SCROLL_DELTA_PX) {
-      this.homeTabDirectionTravel[index] = 0
+    const lastOffset: number = this.homeTabLastScrollOffsets[index]
+    this.homeTabLastScrollOffsets[index] = offset
+    const delta: number = offset - lastOffset
+    if (delta < -this.HOME_TAB_SCROLL_DELTA_PX) {
       this.applyHomeTabScrollAnimation(true)
       return
     }
-    if (directionTravel > this.HOME_TAB_SCROLL_DELTA_PX) {
-      this.homeTabDirectionTravel[index] = 0
+    if (delta > this.HOME_TAB_SCROLL_DELTA_PX) {
       this.applyHomeTabScrollAnimation(false)
     }
   }
@@ -1752,6 +1755,10 @@ struct Index {
     HdsNavDestination() {
       BrowserSessionPage({
         autoOpenVisibleLogin: this.browserSessionParams(param).autoOpenVisibleLogin,
+        addAccountMode: this.browserSessionParams(param).addAccountMode,
+        onVisibleLoginPromoted: (): void => {
+          this.closeBrowserSessionToAccount()
+        },
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_account')))
@@ -1782,7 +1789,7 @@ struct Index {
       'icon': $r('sys.symbol.person_badge_plus'),
       'isEnabled': true,
       'action': (): void => {
-        this.pushBrowserSession()
+        this.pushBrowserSession(true)
       },
     }
     const menuItems: Record<string, Object>[] = [{ 'content': addAccountAction }]
@@ -2042,11 +2049,22 @@ struct Index {
         onOpenMangaRenderingService: (): void => {
           this.pushMangaRenderingService()
         },
+        onOpenToriiLiveEvaluation: (report: ToriiWholePageLiveEvaluationReport): void => {
+          const params: ToriiWholePageLiveEvaluationRouteParams =
+            new ToriiWholePageLiveEvaluationRouteParams()
+          params.report = report
+          this.stack.pushPathByName(ROUTE_TORII_WHOLE_PAGE_LIVE_EVALUATION, params)
+        },
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_reader_comic_translation')))
     .hideBackButton(this.settingsBackButtonHidden(ROUTE_COMIC_TRANSLATION_SETTINGS))
     .bindToScrollable([this.comicTranslationSettingsScroller])
+  }
+
+  @Builder
+  private toriiWholePageLiveEvaluationDestination(_param: Object) {
+    ToriiWholePageLiveEvaluationPage()
   }
 
   @Builder
@@ -2157,6 +2175,8 @@ struct Index {
       this.commentTranslationSettingsDestination()
     } else if (name === ROUTE_COMIC_TRANSLATION_SETTINGS) {
       this.comicTranslationSettingsDestination()
+    } else if (name === ROUTE_TORII_WHOLE_PAGE_LIVE_EVALUATION) {
+      this.toriiWholePageLiveEvaluationDestination(param)
     } else if (name === ROUTE_HISTORY) {
       this.historyDestination()
     } else if (name === ROUTE_ABOUT) {
