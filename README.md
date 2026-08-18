@@ -4,11 +4,21 @@
   NextN
 </h1>
 
-原生 HarmonyOS NEXT 的 nhentai（NH）非官方客户端。
+原生 HarmonyOS NEXT 的 nhentai（NH）非官方客户端；界面与交互参考自 [NextE](https://github.com/erosTeam/NextE)，参考来源说明见 [NOTICE.md](NOTICE.md)。
 
-## 项目状态
+## 截图
 
-0.1.0 早期版本，功能以实际实现为准。
+| 首页 | 画廊详情 | 搜索 |
+| --- | --- | --- |
+| ![首页](docs/images/nextn-readme-list.png) | ![画廊详情](docs/images/nextn-readme-gallery.png) | ![搜索](docs/images/nextn-readme-search.png) |
+
+| 阅读器 | 下载 | 我的 |
+| --- | --- | --- |
+| ![阅读器](docs/images/nextn-readme-reader.png) | ![下载](docs/images/nextn-readme-downloads.png) | ![我的](docs/images/nextn-readme-profile.png) |
+
+## 获取
+
+从 [GitHub Releases](https://github.com/erosTeam/NextN/releases) 下载安装包。
 
 ## 功能
 
