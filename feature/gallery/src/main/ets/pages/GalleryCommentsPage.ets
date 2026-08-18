@@ -29,6 +29,7 @@ import { common } from '@kit.AbilityKit'
 import { KeyboardAvoidMode, uiMaterial } from '@kit.ArkUI'
 import { deviceInfo } from '@kit.BasicServicesKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
+import { GalleryCommentCard } from '../components/GalleryCommentCard'
 
 const COMMENT_COMPOSER_FIELD_ID: string = 'nextn-gallery-comments-composer-field'
 const COMMENT_COMPOSER_BOTTOM_RESERVE: number = 136
@@ -41,12 +42,6 @@ const COMMENT_COMPOSER_RADIUS: number = COMMENT_COMPOSER_SEND_SIZE / 2 + COMMENT
 const COMMENT_COMPOSER_INPUT_MAX_H: number = 148
 const COMMENT_COMPOSER_QUOTE_LINE_WIDTH: number = 4
 const COMMENT_COMPOSER_QUOTE_LINE_HEIGHT: number = 48
-const COMMENT_CARD_CONTENT_INSET: number = ThemeTokens.SPACE_MD
-const COMMENT_CARD_TOP_INSET: number = ThemeTokens.SPACE_MD
-const COMMENT_CARD_BOTTOM_INSET: number = ThemeTokens.SPACE_SM
-const COMMENT_ACTION_SIZE: number = 30
-const COMMENT_ACTION_ICON_SIZE: number = 16
-const COMMENT_QUOTE_RADIUS: number = ThemeTokens.RADIUS_SM + ThemeTokens.SPACE_XS
 
 class CommentTranslationCardState {
   commentId: number = 0
@@ -191,13 +186,14 @@ export struct GalleryCommentsPage {
       this.replyBody(comment).trim().length > 0
   }
 
-  private displayedCommentBody(comment: NhComment): string {
+  private translationText(comment: NhComment): string {
     const state: CommentTranslationCardState | null = this.translationState(comment.commentId)
-    if (state !== null && state.shown && this.commentTranslationSettings.enabled &&
-      state.translated.length > 0) {
-      return state.translated
-    }
-    const body: string = this.replyBody(comment)
+    return state !== null ? state.translated : ''
+  }
+
+  private replyQuoteBodyFor(comment: NhComment): string {
+    const reference: NhComment = this.replyReferenceOrFallback(comment)
+    const body: string = this.replyBody(reference)
     return body.length > 0 ? body : AppStrings.get('comments_empty_body')
   }
 
@@ -210,18 +206,6 @@ export struct GalleryCommentsPage {
     const state: CommentTranslationCardState | null = this.translationState(comment.commentId)
     return state !== null && state.shown && this.commentTranslationSettings.enabled &&
       state.translated.length > 0
-  }
-
-  private translatedBody(comment: NhComment): string {
-    const state: CommentTranslationCardState | null = this.translationState(comment.commentId)
-    return state !== null && state.translated.length > 0
-      ? state.translated
-      : this.replyBody(comment)
-  }
-
-  private isBilingualShown(comment: NhComment): boolean {
-    return this.isTranslationShown(comment) &&
-      this.commentTranslationSettings.displayMode === COMMENT_TRANSLATION_DISPLAY_BILINGUAL
   }
 
   private scheduleAutoTranslate(): void {
@@ -733,149 +717,6 @@ export struct GalleryCommentsPage {
   }
 
   @Builder
-  private ReplyQuote(comment: NhComment) {
-    Column({ space: ThemeTokens.SPACE_XS }) {
-      Text(this.authorLabel(comment))
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(ThemeTokens.TEXT_LINK)
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-      Text(this.replyBody(comment).length > 0 ? this.replyBody(comment) : AppStrings.get('comments_empty_body'))
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
-        .maxLines(3)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-    }
-    .width('100%')
-    .alignItems(HorizontalAlign.Start)
-    .padding(ThemeTokens.SPACE_SM)
-    .borderRadius(COMMENT_QUOTE_RADIUS)
-    .backgroundColor(ThemeTokens.SURFACE_SUB)
-  }
-
-  @Builder
-  private CommentFooterAction(
-    icon: Resource,
-    label: string,
-    disabled: boolean,
-    active: boolean,
-    action: () => void,
-  ) {
-    Button({ type: ButtonType.Circle, stateEffect: true }) {
-      if (disabled) {
-        LoadingProgress()
-          .width(COMMENT_ACTION_ICON_SIZE)
-          .height(COMMENT_ACTION_ICON_SIZE)
-          .color(ThemeTokens.TEXT_TERTIARY)
-      } else {
-        SymbolGlyph(icon)
-          .fontSize(COMMENT_ACTION_ICON_SIZE)
-          .fontColor([active ? ThemeTokens.BRAND : ThemeTokens.TEXT_TERTIARY])
-      }
-    }
-    .width(COMMENT_ACTION_SIZE)
-    .height(COMMENT_ACTION_SIZE)
-    .buttonStyle(ButtonStyleMode.NORMAL)
-    .backgroundColor(Color.Transparent)
-    .accessibilityText(label)
-    .enabled(!disabled)
-    .onClick(action)
-  }
-
-  @Builder
-  private ReplyReferences(comment: NhComment) {
-    if (this.hasReplyReference(comment)) {
-      this.ReplyQuote(this.replyReferenceOrFallback(comment))
-    }
-  }
-
-  @Builder
-  private CommentCard(comment: NhComment) {
-    Column({ space: ThemeTokens.SPACE_XS }) {
-      Row() {
-        Text(this.authorLabel(comment))
-          .layoutWeight(1)
-          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-          .fontWeight(FontWeight.Medium)
-          .fontColor(ThemeTokens.TEXT_LINK)
-          .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-        if (this.canTranslate(comment)) {
-          this.CommentFooterAction(
-            $r('sys.symbol.translate'),
-            this.translationActionLabel(comment),
-            this.isTranslationLoading(comment),
-            this.isTranslationShown(comment),
-            (): void => {
-              this.toggleOrTranslate(comment)
-            },
-          )
-        }
-      }
-      .width('100%')
-      .alignItems(VerticalAlign.Center)
-      this.ReplyReferences(comment)
-      if (this.isBilingualShown(comment)) {
-        Column({ space: ThemeTokens.SPACE_XS }) {
-          Text(this.replyBody(comment))
-            .width('100%')
-            .fontSize(ThemeTokens.FONT_SIZE_BODY)
-            .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
-            .fontColor(ThemeTokens.TEXT_PRIMARY)
-          Text(this.translatedBody(comment))
-            .width('100%')
-            .fontSize(ThemeTokens.FONT_SIZE_BODY)
-            .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
-            .fontColor(ThemeTokens.TEXT_PRIMARY)
-        }
-        .width('100%')
-        .alignItems(HorizontalAlign.Start)
-      } else {
-        Text(this.displayedCommentBody(comment))
-          .width('100%')
-          .fontSize(ThemeTokens.FONT_SIZE_BODY)
-          .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
-          .fontColor(ThemeTokens.TEXT_PRIMARY)
-      }
-      Row() {
-        if (this.postedLabel(comment).length > 0) {
-          Text(this.postedLabel(comment))
-            .layoutWeight(1)
-            .fontSize(ThemeTokens.FONT_SIZE_TINY)
-            .fontWeight(FontWeight.Medium)
-            .fontColor(ThemeTokens.TEXT_TERTIARY)
-            .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-        } else {
-          Blank().layoutWeight(1)
-        }
-        this.CommentFooterAction(
-          $r('sys.symbol.ellipsis_message'),
-          AppStrings.get('comments_action_reply'),
-          false,
-          false,
-          (): void => {
-            this.openReply(comment)
-          },
-        )
-      }
-      .width('100%')
-      .alignItems(VerticalAlign.Center)
-    }
-    .width('100%')
-    .alignItems(HorizontalAlign.Start)
-    .padding({
-      left: COMMENT_CARD_CONTENT_INSET,
-      right: COMMENT_CARD_CONTENT_INSET,
-      top: COMMENT_CARD_TOP_INSET,
-      bottom: COMMENT_CARD_BOTTOM_INSET,
-    })
-    .borderRadius(ThemeTokens.RADIUS_CARD)
-    .backgroundColor(ThemeTokens.CARD_BACKGROUND)
-  }
-
-  @Builder
   private SettledCommentsContent() {
     if (this.initialCommentsResolutionPending()) {
       if (this.errorMessage.length > 0) {
@@ -919,7 +760,28 @@ export struct GalleryCommentsPage {
       } else {
         ForEach(this.comments, (comment: NhComment): void => {
           ListItem() {
-            this.CommentCard(comment)
+            GalleryCommentCard({
+              comment: comment,
+              body: this.replyBody(comment),
+              translated: this.translationText(comment),
+              shown: this.isTranslationShown(comment),
+              loading: this.isTranslationLoading(comment),
+              canTranslate: this.canTranslate(comment),
+              bilingual: this.commentTranslationSettings.displayMode ===
+                COMMENT_TRANSLATION_DISPLAY_BILINGUAL,
+              replyQuoteBody: this.hasReplyReference(comment)
+                ? this.replyQuoteBodyFor(comment)
+                : '',
+              replyQuoteAuthor: this.hasReplyReference(comment)
+                ? this.authorLabel(this.replyReferenceOrFallback(comment))
+                : '',
+              onToggleTranslate: (): void => {
+                this.toggleOrTranslate(comment)
+              },
+              onReply: (): void => {
+                this.openReply(comment)
+              },
+            })
           }
         }, (comment: NhComment): string => comment.commentId.toString())
       }
