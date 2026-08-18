@@ -936,7 +936,10 @@ export struct GalleryDetailPage {
     }
     if (!this.favoriteStatusKnown) {
       this.loadFavoriteStatus(this.requestGeneration, this.detail.id)
-      this.showFavoriteToast(AppStrings.get('gallery_error_favourite_status'))
+      // Optimistic toggle: an unknown status is treated as not-favourited.
+      // The user intent executes immediately; the POST response is the
+      // authoritative confirmation and a failure rolls the UI back below.
+      this.saveFavorite(true)
       return
     }
     if (this.isFavorited) {
@@ -971,6 +974,16 @@ export struct GalleryDetailPage {
     }
     this.isFavoriteMutationInFlight = true
     this.favoriteStatusGeneration += 1
+    // Optimistic snapshot: flip the visible state immediately; roll back to
+    // exactly these values if the mutation fails.
+    const previousKnown: boolean = this.favoriteStatusKnown
+    const previousFavorited: boolean = this.isFavorited
+    const previousCount: number = this.favoriteCountFromSession
+    this.favoriteStatusKnown = true
+    this.isFavorited = shouldFavorite
+    this.favoriteCountFromSession = shouldFavorite
+      ? Math.max(0, this.favoriteCountFromSession + 1)
+      : Math.max(0, this.favoriteCountFromSession - 1)
     this.publishFavoriteChrome(this.favoriteStatusKnown, this.isFavorited, true)
     const galleryId: number = this.detail.id
     try {
@@ -989,6 +1002,11 @@ export struct GalleryDetailPage {
         ? AppStrings.get('gallery_toast_favourite_added')
         : AppStrings.get('gallery_toast_favourite_removed'))
     } catch (error) {
+      // Failed mutation: restore the pre-toggle snapshot so the UI never
+      // keeps an optimistic state the server rejected.
+      this.favoriteStatusKnown = previousKnown
+      this.isFavorited = previousFavorited
+      this.favoriteCountFromSession = previousCount
       const message: string = (error as Error).message || AppStrings.get('gallery_error_update_favourites')
       this.showFavoriteToast(message)
     } finally {
