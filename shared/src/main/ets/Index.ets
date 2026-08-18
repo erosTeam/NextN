@@ -166,6 +166,32 @@ export {
   MANGA_RENDERING_INPAINTING_FAST,
 } from './settings/MangaRenderingServiceSettings'
 export { LlmSourceRuntimeConfig, LlmSourceRuntimeResolver } from './services/LlmSourceRuntimeResolver'
+export {
+  COMIC_VISUAL_ROUTE_LOCAL,
+  COMIC_VISUAL_ROUTE_SELF_HOSTED,
+  COMIC_VISUAL_ROUTE_TORII,
+  TORII_DEFAULT_MODEL_ID,
+  TORII_FONT_NOTO,
+  TORII_MODEL_CATALOG_REVIEWED_AT,
+  ComicVisualProviderSettings,
+  ComicVisualProviderSettingsSnapshot,
+  ToriiFontCatalog,
+  ToriiFontOption,
+  ToriiTranslatorModel,
+  ToriiTranslatorModelCatalog,
+} from './settings/ComicVisualProviderSettings'
+export { ToriiWholePageCredential, ToriiWholePageSecretStore } from './services/ToriiWholePageSecretStore'
+export {
+  TORII_WHOLE_PAGE_ENDPOINT,
+  ToriiWholePageConfig,
+  ToriiWholePageRenderBackend,
+} from './services/ToriiWholePageRenderBackend'
+export { ToriiWholePageContextStore } from './services/ToriiWholePageContextStore'
+export {
+  TORII_CREDITS_ENDPOINT,
+  ToriiCreditsService,
+  ToriiCreditsSnapshot,
+} from './services/ToriiCreditsService'
 export { ComicTranslationModelCatalogService } from './services/ComicTranslationModelCatalogService'
 export { ComicTranslationDiagnosticLogger } from './services/ComicTranslationDiagnosticLogger'
 export {

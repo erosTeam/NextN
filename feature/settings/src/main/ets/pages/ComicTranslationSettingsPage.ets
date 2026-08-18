@@ -2,15 +2,30 @@ import { common } from '@kit.AbilityKit'
 import { SymbolGlyphModifier } from '@kit.ArkUI'
 import {
   AppStrings,
+  COMIC_VISUAL_ROUTE_LOCAL,
+  COMIC_VISUAL_ROUTE_SELF_HOSTED,
+  COMIC_VISUAL_ROUTE_TORII,
   ComicTranslationDiagnosticLogger,
+  ComicVisualProviderSettings,
+  ComicVisualProviderSettingsSnapshot,
   ComicTranslationModelCatalogService,
   ComicTranslationModelService,
+  CommentTranslationService,
   LLM_CONSUMER_MANGA_TRANSLATION,
   LlmConsumerBinding,
   LlmSourceProfile,
   LlmSourceProfileRepository,
   LlmSourceProfilesState,
   MangaRenderingServiceSettings,
+  ToriiCreditsService,
+  ToriiCreditsSnapshot,
+  ToriiFontCatalog,
+  ToriiFontOption,
+  ToriiTranslatorModel,
+  ToriiTranslatorModelCatalog,
+  TORII_MODEL_CATALOG_REVIEWED_AT,
+  ToriiWholePageCredential,
+  ToriiWholePageSecretStore,
   NextNGroupedListSection,
   NextNListRow,
   SecondaryListScaffold,
@@ -22,13 +37,24 @@ import { appMenuOptions } from 'shared'
 
 /**
  * Dedicated comic-translation destination, matching NextE's
- * ComicTranslationSettingsPage. NextN supports the manga consumer binding
- * with an inline source/model selector, the local detector, and the
- * self-hosted rendering service; torii and live evaluation are unsupported
- * leaves and stay absent.
+ * ComicTranslationSettingsPage: a route selector (on-device, self-hosted,
+ * Torii cloud whole-page) drives conditional groups. The manga consumer
+ * binding and local detector serve the staged routes; the Torii group
+ * manages the cloud whole-page model, font, API key, and credits.
  */
 @ComponentV2
 export struct ComicTranslationSettingsPage {
+  @Local visualRoute: string = COMIC_VISUAL_ROUTE_LOCAL
+  @Local visualRouteMenuShown: boolean = false
+  @Local visualSettingsLoaded: boolean = false
+  @Local multimodalTranslationEnabled: boolean = true
+  @Local toriiModelMenuShown: boolean = false
+  @Local toriiFontMenuShown: boolean = false
+  @Local toriiModelId: string = ''
+  @Local toriiFontId: string = 'noto'
+  @Local toriiApiKeyDraft: string = ''
+  @Local toriiCredits: ToriiCreditsSnapshot | null = null
+  @Local toriiCreditsRefreshing: boolean = false
   @Local sources: LlmSourceProfilesState = connectLlmSourceProfiles()
   @Local sourceMenuShown: boolean = false
   @Local modelMenuShown: boolean = false
@@ -44,13 +70,209 @@ export struct ComicTranslationSettingsPage {
   @Event onOpenMangaRenderingService?: () => void
 
   aboutToAppear(): void {
+    this.loadVisualSettings()
     this.restoreBinding()
     this.refreshLocalModel()
     this.refreshMangaRenderingService()
   }
 
+  aboutToDisappear(): void {
+    if (this.visualSettingsLoaded) {
+      this.persistVisualSettings(false)
+    }
+  }
+
   private context(): common.UIAbilityContext {
     return this.getUIContext().getHostContext() as common.UIAbilityContext
+  }
+
+  private async loadVisualSettings(): Promise<void> {
+    try {
+      const snapshot: ComicVisualProviderSettingsSnapshot =
+        await ComicVisualProviderSettings.load(this.context())
+      const credential: ToriiWholePageCredential =
+        await ToriiWholePageSecretStore.read(this.context())
+      this.visualRoute = snapshot.route
+      this.multimodalTranslationEnabled = snapshot.multimodalTranslationEnabled
+      this.toriiModelId = snapshot.toriiModelId
+      this.toriiFontId = ToriiFontCatalog.effectiveFontId(
+        snapshot.toriiFontId,
+        CommentTranslationService.targetLanguage(),
+      )
+      this.toriiApiKeyDraft = credential.toriiApiKey
+      this.toriiCredits = await ToriiCreditsService.cached(
+        this.context(),
+        credential.toriiApiKey,
+      )
+      this.visualSettingsLoaded = true
+      if (snapshot.route === COMIC_VISUAL_ROUTE_TORII) {
+        this.refreshToriiCredits()
+      }
+    } catch (error) {
+      ComicTranslationDiagnosticLogger.warn(
+        'comic-translation',
+        'visual_settings_load_failed',
+        (error as Error).message,
+      )
+    }
+  }
+
+  private async persistVisualSettings(saveCredential: boolean): Promise<boolean> {
+    const snapshot: ComicVisualProviderSettingsSnapshot =
+      new ComicVisualProviderSettingsSnapshot()
+    snapshot.route = this.visualRoute
+    snapshot.multimodalTranslationEnabled = this.multimodalTranslationEnabled
+    snapshot.toriiModelId = this.toriiModelId
+    snapshot.toriiFontId = ToriiFontCatalog.effectiveFontId(
+      this.toriiFontId,
+      CommentTranslationService.targetLanguage(),
+    )
+    try {
+      await ComicVisualProviderSettings.save(this.context(), snapshot)
+      if (saveCredential) {
+        const credential: ToriiWholePageCredential = new ToriiWholePageCredential()
+        credential.toriiApiKey = this.toriiApiKeyDraft.trim()
+        await ToriiWholePageSecretStore.save(this.context(), credential)
+      }
+      return true
+    } catch (error) {
+      this.showToriiSaveFailedToast((error as Error).message)
+      return false
+    }
+  }
+
+  private showToriiSaveFailedToast(detail: string): void {
+    try {
+      this.getUIContext().getPromptAction().showToast({
+        message: AppStrings.format('comic_torii_save_failed', [detail]),
+      })
+    } catch (_error) {}
+  }
+
+  private visualRouteText(): string {
+    if (this.visualRoute === COMIC_VISUAL_ROUTE_TORII) {
+      return AppStrings.get('comic_visual_route_torii')
+    }
+    if (this.visualRoute === COMIC_VISUAL_ROUTE_SELF_HOSTED) {
+      return AppStrings.get('comic_visual_route_self_hosted')
+    }
+    return AppStrings.get('comic_visual_route_local')
+  }
+
+  private selectVisualRoute(route: string): void {
+    this.visualRouteMenuShown = false
+    if (route === this.visualRoute) {
+      return
+    }
+    if (route === COMIC_VISUAL_ROUTE_TORII) {
+      this.getUIContext().showAlertDialog({
+        title: AppStrings.get('comic_visual_route_torii_confirm_title'),
+        message: AppStrings.get('comic_visual_route_torii_confirm'),
+        primaryButton: {
+          value: AppStrings.get('common_cancel'),
+          action: (): void => {},
+        },
+        secondaryButton: {
+          value: AppStrings.get('common_ok'),
+          action: (): void => {
+            this.visualRoute = COMIC_VISUAL_ROUTE_TORII
+            this.persistVisualSettings(true)
+            this.refreshToriiCredits()
+          },
+        },
+      })
+      return
+    }
+    if (route === COMIC_VISUAL_ROUTE_SELF_HOSTED) {
+      this.getUIContext().showAlertDialog({
+        title: AppStrings.get('comic_visual_route_self_hosted_confirm_title'),
+        message: AppStrings.get('comic_visual_route_self_hosted_confirm'),
+        primaryButton: {
+          value: AppStrings.get('common_cancel'),
+          action: (): void => {},
+        },
+        secondaryButton: {
+          value: AppStrings.get('common_ok'),
+          action: (): void => {
+            this.visualRoute = COMIC_VISUAL_ROUTE_SELF_HOSTED
+            this.persistVisualSettings(true)
+          },
+        },
+      })
+      return
+    }
+    this.visualRoute = COMIC_VISUAL_ROUTE_LOCAL
+    this.persistVisualSettings(true)
+  }
+
+  private toriiModelText(): string {
+    const model: ToriiTranslatorModel | null =
+      ToriiTranslatorModelCatalog.find(this.toriiModelId)
+    if (model === null) {
+      return this.toriiModelId
+    }
+    return `${model.displayName} · ${model.baseCredits}+`
+  }
+
+  private selectToriiModel(modelId: string): void {
+    this.toriiModelId = modelId
+    this.toriiModelMenuShown = false
+    this.persistVisualSettings(true)
+  }
+
+  private toriiFontText(): string {
+    return ToriiFontCatalog.displayName(this.toriiFontId)
+  }
+
+  private toriiFonts(): ToriiFontOption[] {
+    return ToriiFontCatalog.forTargetLanguage(
+      CommentTranslationService.targetLanguage(),
+    )
+  }
+
+  private selectToriiFont(fontId: string): void {
+    if (!ToriiFontCatalog.supports(
+      fontId,
+      CommentTranslationService.targetLanguage(),
+    )) {
+      return
+    }
+    this.toriiFontId = fontId
+    this.toriiFontMenuShown = false
+    this.persistVisualSettings(true)
+  }
+
+  private refreshToriiCredits(): void {
+    const apiKey: string = this.toriiApiKeyDraft.trim()
+    if (apiKey.length === 0 || this.toriiCreditsRefreshing) {
+      return
+    }
+    this.toriiCreditsRefreshing = true
+    ToriiCreditsService.fetch(apiKey)
+      .then((snapshot: ToriiCreditsSnapshot): Promise<void> => {
+        if (this.toriiApiKeyDraft.trim() !== apiKey) {
+          return Promise.resolve()
+        }
+        this.toriiCredits = snapshot
+        return ToriiCreditsService.saveCached(this.context(), apiKey, snapshot)
+      })
+      .catch((error: Error): void => {
+        ComicTranslationDiagnosticLogger.warn(
+          'comic-translation',
+          'torii_credits_background_failed',
+          error.message,
+        )
+      })
+      .finally((): void => {
+        this.toriiCreditsRefreshing = false
+      })
+  }
+
+  private toriiCreditsText(): string {
+    if (this.toriiCredits === null) {
+      return ''
+    }
+    return this.toriiCredits.credits.toFixed(2).replace(/\.00$/, '')
   }
 
   private compatibleSources(): LlmSourceProfile[] {
@@ -262,6 +484,108 @@ export struct ComicTranslationSettingsPage {
   }
 
   @Builder
+  private VisualRouteMenu() {
+    Menu() {
+      MenuItem({
+        content: AppStrings.get('comic_visual_route_local'),
+        symbolEndIcon: this.visualRoute === COMIC_VISUAL_ROUTE_LOCAL
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.selectVisualRoute(COMIC_VISUAL_ROUTE_LOCAL)
+      })
+      MenuItem({
+        content: AppStrings.get('comic_visual_route_self_hosted'),
+        symbolEndIcon: this.visualRoute === COMIC_VISUAL_ROUTE_SELF_HOSTED
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.selectVisualRoute(COMIC_VISUAL_ROUTE_SELF_HOSTED)
+      })
+      MenuItem({
+        content: AppStrings.get('comic_visual_route_torii'),
+        symbolEndIcon: this.visualRoute === COMIC_VISUAL_ROUTE_TORII
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.selectVisualRoute(COMIC_VISUAL_ROUTE_TORII)
+      })
+    }
+  }
+
+  @Builder
+  private ToriiModelMenu() {
+    Menu() {
+      ForEach(
+        ToriiTranslatorModelCatalog.all(),
+        (model: ToriiTranslatorModel): void => {
+          MenuItem({
+            content: `${model.displayName} · ${model.baseCredits}+`,
+            symbolEndIcon: this.toriiModelId === model.modelId
+              ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+              : undefined,
+          }).onClick((): void => {
+            this.selectToriiModel(model.modelId)
+          })
+        },
+        (model: ToriiTranslatorModel): string => model.modelId,
+      )
+    }
+  }
+
+  @Builder
+  private ToriiFontMenu() {
+    Menu() {
+      ForEach(
+        this.toriiFonts(),
+        (font: ToriiFontOption): void => {
+          MenuItem({
+            content: font.displayName,
+            symbolEndIcon: this.toriiFontId === font.fontId
+              ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+              : undefined,
+          }).onClick((): void => {
+            this.selectToriiFont(font.fontId)
+          })
+        },
+        (font: ToriiFontOption): string => font.fontId,
+      )
+    }
+  }
+
+  @Builder
+  private ToriiSecretRow() {
+    Column({ space: ThemeTokens.SPACE_XS }) {
+      Text(AppStrings.get('comic_torii_api_key'))
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontColor(ThemeTokens.TEXT_SECONDARY)
+        .width('100%')
+      TextInput({ text: this.toriiApiKeyDraft, placeholder: AppStrings.get('comic_torii_api_key_hint') })
+        .type(InputType.Password)
+        .width('100%')
+        .height(48)
+        .fontSize(ThemeTokens.FONT_SIZE_BODY)
+        .backgroundColor(ThemeTokens.SURFACE_CONTAINER)
+        .borderRadius(ThemeTokens.RADIUS_SM)
+        .onChange((value: string): void => {
+          this.toriiApiKeyDraft = value
+          this.toriiCredits = null
+        })
+        .onSubmit((): void => {
+          this.persistVisualSettings(true)
+          this.refreshToriiCredits()
+        })
+    }
+    .width('100%')
+    .padding({
+      left: ThemeTokens.SPACE_MD,
+      right: ThemeTokens.SPACE_MD,
+      top: ThemeTokens.SPACE_SM,
+      bottom: ThemeTokens.SPACE_SM,
+    })
+  }
+
+  @Builder
   private SourceMenu() {
     Menu() {
       ForEach(
@@ -312,87 +636,64 @@ export struct ComicTranslationSettingsPage {
           NextNGroupedListSection() {
             Column() {
               NextNListRow({
-                leadingIcon: $r('sys.symbol.externaldrive'),
-                title: AppStrings.get('llm_binding_source'),
-                subtitle: this.compatibleSources().length === 0
-                  ? AppStrings.get('llm_binding_no_compatible_source')
-                  : AppStrings.get('llm_binding_source_hint'),
-                trailingText: this.selectedSourceText(),
-                trailingDropdown: this.compatibleSources().length > 0,
-                showChevron: this.compatibleSources().length === 0,
-                accessibilityLabel: AppStrings.get('comic_translation_source_a11y'),
-                onAction: (): void => {
-                  this.openSourceSelector()
-                },
-              })
-            }
-            .bindMenu(this.sourceMenuShown, this.SourceMenu, appMenuOptions({
-              placement: Placement.BottomRight,
-              onDisappear: (): void => {
-                this.sourceMenuShown = false
-              },
-            }))
-            this.RowDivider()
-            Column() {
-              NextNListRow({
-                leadingIcon: $r('sys.symbol.arrow_down_circle'),
-                title: AppStrings.get('llm_binding_model'),
-                subtitle: this.fetchingModels
-                  ? AppStrings.get('comment_translation_fetch_models_loading')
-                  : AppStrings.get('llm_binding_model_hint'),
-                trailingText: this.selectedModelText(),
+                leadingIcon: $r('sys.symbol.picture'),
+                title: AppStrings.get('comic_visual_route'),
+                subtitle: AppStrings.get('comic_visual_route_hint'),
+                trailingText: this.visualRouteText(),
                 trailingDropdown: true,
-                isEnabled: this.selectedSourceId.length > 0 && !this.fetchingModels,
-                accessibilityLabel: AppStrings.get('comic_translation_model_a11y'),
+                accessibilityLabel: AppStrings.get('comic_visual_route'),
                 onAction: (): void => {
-                  this.fetchModels()
+                  this.visualRouteMenuShown = true
                 },
               })
             }
-            .bindMenu(this.modelMenuShown, this.ModelMenu, appMenuOptions({
+            .bindMenu(this.visualRouteMenuShown, this.VisualRouteMenu, appMenuOptions({
               placement: Placement.BottomRight,
               onDisappear: (): void => {
-                this.modelMenuShown = false
+                this.visualRouteMenuShown = false
               },
             }))
           }
         }
-        ListItem() {
-          NextNGroupedListSection() {
-            NextNListRow({
-              leadingIcon: $r('sys.symbol.character_viewfinder'),
-              title: AppStrings.get('settings_translation_local_model'),
-              trailingText: this.localModelChanging
-                ? AppStrings.get('settings_translation_local_model_downloading')
-                : this.localModelInstalled
-                  ? ComicTranslationModelService.displayName()
-                  : AppStrings.get('settings_translation_local_model_not_installed'),
-              showChevron: false,
-              isEnabled: !this.localModelChanging,
-              destructive: this.localModelInstalled,
-              accessibilityLabel: this.localModelInstalled
-                ? AppStrings.get('settings_translation_local_model_remove_a11y')
-                : AppStrings.get('settings_translation_local_model_download_a11y'),
-              onAction: (): void => {
-                if (this.localModelInstalled) {
-                  this.confirmRemoveLocalModel()
-                } else {
-                  this.confirmInstallLocalModel()
-                }
-              },
-            })
-            Text(AppStrings.get('settings_translation_local_model_notice'))
-              .width('100%')
-              .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-              .fontColor(ThemeTokens.TEXT_SECONDARY)
-              .padding({
-                left: ThemeTokens.SPACE_MD,
-                right: ThemeTokens.SPACE_MD,
-                bottom: ThemeTokens.SPACE_SM,
+        if (this.visualRoute === COMIC_VISUAL_ROUTE_LOCAL) {
+          ListItem() {
+            NextNGroupedListSection() {
+              NextNListRow({
+                leadingIcon: $r('sys.symbol.character_viewfinder'),
+                title: AppStrings.get('settings_translation_local_model'),
+                trailingText: this.localModelChanging
+                  ? AppStrings.get('settings_translation_local_model_downloading')
+                  : this.localModelInstalled
+                    ? ComicTranslationModelService.displayName()
+                    : AppStrings.get('settings_translation_local_model_not_installed'),
+                showChevron: false,
+                isEnabled: !this.localModelChanging,
+                destructive: this.localModelInstalled,
+                accessibilityLabel: this.localModelInstalled
+                  ? AppStrings.get('settings_translation_local_model_remove_a11y')
+                  : AppStrings.get('settings_translation_local_model_download_a11y'),
+                onAction: (): void => {
+                  if (this.localModelInstalled) {
+                    this.confirmRemoveLocalModel()
+                  } else {
+                    this.confirmInstallLocalModel()
+                  }
+                },
               })
+              Text(AppStrings.get('settings_translation_local_model_notice'))
+                .width('100%')
+                .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+                .fontColor(ThemeTokens.TEXT_SECONDARY)
+                .padding({
+                  left: ThemeTokens.SPACE_MD,
+                  right: ThemeTokens.SPACE_MD,
+                  bottom: ThemeTokens.SPACE_SM,
+                })
+            }
           }
         }
-        if (this.onOpenMangaRenderingService) {
+        if (this.visualRoute === COMIC_VISUAL_ROUTE_SELF_HOSTED &&
+          this.onOpenMangaRenderingService) {
           ListItem() {
             NextNGroupedListSection() {
               NextNListRow({
@@ -410,6 +711,144 @@ export struct ComicTranslationSettingsPage {
                 },
               })
             }
+          }
+        }
+        if (this.visualRoute === COMIC_VISUAL_ROUTE_LOCAL ||
+          this.visualRoute === COMIC_VISUAL_ROUTE_SELF_HOSTED) {
+          ListItem() {
+            NextNGroupedListSection() {
+              Column() {
+                NextNListRow({
+                  leadingIcon: $r('sys.symbol.externaldrive'),
+                  title: AppStrings.get('llm_binding_source'),
+                  subtitle: this.compatibleSources().length === 0
+                    ? AppStrings.get('llm_binding_no_compatible_source')
+                    : AppStrings.get('llm_binding_source_hint'),
+                  trailingText: this.selectedSourceText(),
+                  trailingDropdown: this.compatibleSources().length > 0,
+                  showChevron: this.compatibleSources().length === 0,
+                  accessibilityLabel: AppStrings.get('comic_translation_source_a11y'),
+                  onAction: (): void => {
+                    this.openSourceSelector()
+                  },
+                })
+              }
+              .bindMenu(this.sourceMenuShown, this.SourceMenu, appMenuOptions({
+                placement: Placement.BottomRight,
+                onDisappear: (): void => {
+                  this.sourceMenuShown = false
+                },
+              }))
+              this.RowDivider()
+              Column() {
+                NextNListRow({
+                  leadingIcon: $r('sys.symbol.arrow_down_circle'),
+                  title: AppStrings.get('llm_binding_model'),
+                  subtitle: this.fetchingModels
+                    ? AppStrings.get('comment_translation_fetch_models_loading')
+                    : AppStrings.get('llm_binding_model_hint'),
+                  trailingText: this.selectedModelText(),
+                  trailingDropdown: true,
+                  isEnabled: this.selectedSourceId.length > 0 && !this.fetchingModels,
+                  accessibilityLabel: AppStrings.get('comic_translation_model_a11y'),
+                  onAction: (): void => {
+                    this.fetchModels()
+                  },
+                })
+              }
+              .bindMenu(this.modelMenuShown, this.ModelMenu, appMenuOptions({
+                placement: Placement.BottomRight,
+                onDisappear: (): void => {
+                  this.modelMenuShown = false
+                },
+              }))
+              this.RowDivider()
+              NextNListRow({
+                leadingIcon: $r('sys.symbol.picture'),
+                title: AppStrings.get('comic_translation_multimodal_assist'),
+                hasSwitch: true,
+                checked: this.multimodalTranslationEnabled,
+                showChevron: false,
+                onSwitchChange: (value: boolean): void => {
+                  this.multimodalTranslationEnabled = value
+                  this.persistVisualSettings(true)
+                },
+              })
+              Text(AppStrings.get('comic_translation_multimodal_assist_notice'))
+                .width('100%')
+                .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+                .fontColor(ThemeTokens.TEXT_SECONDARY)
+                .padding({
+                  left: ThemeTokens.SPACE_MD,
+                  right: ThemeTokens.SPACE_MD,
+                  bottom: ThemeTokens.SPACE_SM,
+                })
+            }
+          }
+        }
+        if (this.visualRoute === COMIC_VISUAL_ROUTE_TORII) {
+          ListItem() {
+            NextNGroupedListSection() {
+              Column() {
+                NextNListRow({
+                  leadingIcon: $r('sys.symbol.translate'),
+                  title: AppStrings.get('comic_torii_model'),
+                  subtitle: AppStrings.format('comic_torii_model_hint', [TORII_MODEL_CATALOG_REVIEWED_AT]),
+                  trailingText: this.toriiModelText(),
+                  trailingDropdown: true,
+                  accessibilityLabel: AppStrings.get('comic_torii_model'),
+                  onAction: (): void => {
+                    this.toriiModelMenuShown = true
+                  },
+                })
+              }
+              .bindMenu(this.toriiModelMenuShown, this.ToriiModelMenu, appMenuOptions({
+                placement: Placement.BottomRight,
+                onDisappear: (): void => {
+                  this.toriiModelMenuShown = false
+                },
+              }))
+              this.RowDivider()
+              Column() {
+                NextNListRow({
+                  leadingIcon: $r('sys.symbol.textformat'),
+                  title: AppStrings.get('comic_torii_font'),
+                  trailingText: this.toriiFontText(),
+                  trailingDropdown: true,
+                  accessibilityLabel: AppStrings.get('comic_torii_font'),
+                  onAction: (): void => {
+                    this.toriiFontMenuShown = true
+                  },
+                })
+              }
+              .bindMenu(this.toriiFontMenuShown, this.ToriiFontMenu, appMenuOptions({
+                placement: Placement.BottomRight,
+                onDisappear: (): void => {
+                  this.toriiFontMenuShown = false
+                },
+              }))
+              this.RowDivider()
+              this.ToriiSecretRow()
+              if (this.toriiCredits !== null) {
+                this.RowDivider()
+                NextNListRow({
+                  leadingIcon: $r('sys.symbol.creditcard'),
+                  title: AppStrings.get('comic_torii_available_credits'),
+                  trailingText: this.toriiCreditsText(),
+                  showChevron: false,
+                })
+              }
+            }
+          }
+          ListItem() {
+            Text(AppStrings.get('comic_torii_notice_managed'))
+              .width('100%')
+              .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+              .fontColor(ThemeTokens.TEXT_SECONDARY)
+              .padding({
+                left: ThemeTokens.SPACE_MD,
+                right: ThemeTokens.SPACE_MD,
+              })
           }
         }
       }
