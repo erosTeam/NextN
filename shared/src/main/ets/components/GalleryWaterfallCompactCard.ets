@@ -85,6 +85,7 @@ export struct GalleryWaterfallCompactCard {
       !this.hasThumbnailError
   }
 
+
   private displayLabel(tag: NhTag): string {
     const translated: string = tag.displayName.trim()
     return this.browsePresentation.showTranslatedTagLabels && translated.length > 0
@@ -186,9 +187,7 @@ export struct GalleryWaterfallCompactCard {
           connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
           readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
         })
-          .scale({ x: 1.08, y: 1.08 })
-          .blur(20)
-          .opacity(0.72)
+          .blur(ThemeTokens.COVER_BG_BLUR_RADIUS)
           .renderGroup(true)
       }
       if (this.gallery.thumbnailUrl.length > 0 && !this.hasThumbnailError) {

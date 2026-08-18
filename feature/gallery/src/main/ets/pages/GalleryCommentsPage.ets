@@ -43,11 +43,18 @@ const COMMENT_COMPOSER_INPUT_MAX_H: number = 148
 const COMMENT_COMPOSER_QUOTE_LINE_WIDTH: number = 4
 const COMMENT_COMPOSER_QUOTE_LINE_HEIGHT: number = 48
 
-class CommentTranslationCardState {
-  commentId: number = 0
-  translated: string = ''
-  shown: boolean = false
-  loading: boolean = false
+/**
+ * The single source of truth for one comment's reactive translation fields
+ * (NextE GalleryCommentRenderState parity, NH field subset): a @Trace write
+ * re-renders exactly the one card holding this state. The page never
+ * publishes array snapshots — the @ObservedV2 object IS the update channel.
+ */
+@ObservedV2
+export class CommentTranslationRenderState {
+  @Trace commentId: number = 0
+  @Trace translated: string = ''
+  @Trace shown: boolean = false
+  @Trace loading: boolean = false
 }
 
 /**
@@ -74,7 +81,8 @@ export struct GalleryCommentsPage {
   @Local replyTargetPreview: string = ''
   @Local isCommentSubmitting: boolean = false
   @Local commentSubmitError: string = ''
-  @Local translations: CommentTranslationCardState[] = []
+  /** Per-comment render states (NextE renderStateMap parity). */
+  private renderStateMap: Map<number, CommentTranslationRenderState> = new Map()
   @Param scroller: Scroller = new Scroller()
   /** A Detail-owned response seeds this route only after it was successfully fetched. */
   @Param commentSnapshot: NhComment[] = []
@@ -132,8 +140,8 @@ export struct GalleryCommentsPage {
       return false
     }
     this.requestGeneration += 1
-    this.translations = []
     this.rawComments = this.commentSnapshot.slice()
+    this.rebuildRenderStates(true)
     this.applyContentFilters()
     this.loadedGalleryId = this.galleryId
     this.errorMessage = ''
@@ -156,28 +164,67 @@ export struct GalleryCommentsPage {
     return profile !== null && supportsCommentTranslation(profile)
   }
 
-  private translationState(commentId: number): CommentTranslationCardState | null {
-    for (let index: number = 0; index < this.translations.length; index++) {
-      if (this.translations[index].commentId === commentId) {
-        return this.translations[index]
+  /**
+   * Rebuilds render states from the current raw comments (NextE
+   * rebuildCommentList parity): resetStates keeps nothing (fresh route /
+   * refresh); otherwise existing states survive so in-flight translations and
+   * shown-toggles are never discarded by a filter change.
+   */
+  private rebuildRenderStates(resetStates: boolean): void {
+    const next: Map<number, CommentTranslationRenderState> = new Map()
+    for (let index: number = 0; index < this.rawComments.length; index++) {
+      const comment: NhComment = this.rawComments[index]
+      const existing: CommentTranslationRenderState | undefined = resetStates
+        ? undefined
+        : this.renderStateMap.get(comment.commentId)
+      if (existing !== undefined) {
+        next.set(comment.commentId, existing)
+      } else {
+        const state: CommentTranslationRenderState = new CommentTranslationRenderState()
+        state.commentId = comment.commentId
+        next.set(comment.commentId, state)
       }
     }
-    return null
+    this.renderStateMap = next
   }
 
-  private ensureTranslationState(commentId: number): CommentTranslationCardState {
-    const existing: CommentTranslationCardState | null = this.translationState(commentId)
-    if (existing !== null) {
+  /** List builder lookup; the map is rebuilt before the list renders. */
+  private renderStateFor(comment: NhComment): CommentTranslationRenderState {
+    const existing: CommentTranslationRenderState | undefined = this.renderStateMap.get(comment.commentId)
+    if (existing !== undefined) {
       return existing
     }
-    const state: CommentTranslationCardState = new CommentTranslationCardState()
-    state.commentId = commentId
-    this.translations = this.translations.concat([state])
+    const state: CommentTranslationRenderState = new CommentTranslationRenderState()
+    state.commentId = comment.commentId
+    this.renderStateMap.set(comment.commentId, state)
     return state
   }
 
-  private publishTranslations(): void {
-    this.translations = this.translations.slice()
+  /**
+   * All reactive translation mutations go through this one writer (NextE
+   * applyCommentTranslationState parity): fields are written SYNCHRONOUSLY
+   * onto the per-comment @ObservedV2 state; the @Trace write re-renders that
+   * one card. No array slice, no global version bump.
+   */
+  private applyCommentTranslationState(
+    commentId: number,
+    translated: string | undefined,
+    shown: boolean | undefined,
+    loading: boolean | undefined,
+  ): void {
+    const state: CommentTranslationRenderState | undefined = this.renderStateMap.get(commentId)
+    if (state === undefined) {
+      return
+    }
+    if (translated !== undefined) {
+      state.translated = translated
+    }
+    if (shown !== undefined) {
+      state.shown = shown
+    }
+    if (loading !== undefined) {
+      state.loading = loading
+    }
   }
 
   private canTranslate(comment: NhComment): boolean {
@@ -186,26 +233,21 @@ export struct GalleryCommentsPage {
       this.replyBody(comment).trim().length > 0
   }
 
-  private translationText(comment: NhComment): string {
-    const state: CommentTranslationCardState | null = this.translationState(comment.commentId)
-    return state !== null ? state.translated : ''
-  }
-
   private replyQuoteBodyFor(comment: NhComment): string {
     const reference: NhComment = this.replyReferenceOrFallback(comment)
     const body: string = this.replyBody(reference)
     return body.length > 0 ? body : AppStrings.get('comments_empty_body')
   }
 
-  private isTranslationLoading(comment: NhComment): boolean {
-    const state: CommentTranslationCardState | null = this.translationState(comment.commentId)
-    return state !== null && state.loading
+  private isTranslationShown(comment: NhComment): boolean {
+    const state: CommentTranslationRenderState | undefined = this.renderStateMap.get(comment.commentId)
+    return state !== undefined && state.shown && this.commentTranslationSettings.enabled &&
+      state.translated.length > 0
   }
 
-  private isTranslationShown(comment: NhComment): boolean {
-    const state: CommentTranslationCardState | null = this.translationState(comment.commentId)
-    return state !== null && state.shown && this.commentTranslationSettings.enabled &&
-      state.translated.length > 0
+  private isTranslationLoading(comment: NhComment): boolean {
+    const state: CommentTranslationRenderState | undefined = this.renderStateMap.get(comment.commentId)
+    return state !== undefined && state.loading
   }
 
   private scheduleAutoTranslate(): void {
@@ -227,6 +269,10 @@ export struct GalleryCommentsPage {
       if (this.isTranslationShown(comment) || this.isTranslationLoading(comment)) {
         continue
       }
+      const source: string = this.replyBody(comment)
+      if (source.trim().length === 0 || !CommentTranslationService.needsTranslation(source)) {
+        continue
+      }
       await this.toggleOrTranslate(comment)
     }
   }
@@ -241,31 +287,28 @@ export struct GalleryCommentsPage {
     if (!this.canTranslate(comment)) {
       return
     }
-    const state: CommentTranslationCardState = this.ensureTranslationState(comment.commentId)
+    const state: CommentTranslationRenderState = this.renderStateFor(comment)
     if (state.loading) {
       return
     }
     if (state.translated.length > 0) {
-      state.shown = !state.shown
-      this.publishTranslations()
+      this.applyCommentTranslationState(comment.commentId, undefined, !state.shown, undefined)
       return
     }
     const galleryId: number = this.galleryId
-    state.loading = true
-    this.publishTranslations()
+    this.applyCommentTranslationState(comment.commentId, undefined, undefined, true)
     try {
       const translated: string = await CommentTranslationService.translate(this.context(), this.replyBody(comment))
       if (this.galleryId === galleryId && this.loadedGalleryId === galleryId) {
-        state.translated = translated
-        state.shown = translated.length > 0
+        this.applyCommentTranslationState(comment.commentId, translated, translated.length > 0, false)
+      } else {
+        this.applyCommentTranslationState(comment.commentId, undefined, undefined, false)
       }
     } catch (_error) {
       if (this.galleryId === galleryId) {
         this.showCommentToast(AppStrings.get('comments_translation_failed'))
       }
-    } finally {
-      state.loading = false
-      this.publishTranslations()
+      this.applyCommentTranslationState(comment.commentId, undefined, undefined, false)
     }
   }
 
@@ -277,8 +320,8 @@ export struct GalleryCommentsPage {
     const generation: number = this.requestGeneration + 1
     this.requestGeneration = generation
     if (this.loadedGalleryId !== this.galleryId) {
-      this.translations = []
       this.rawComments = []
+      this.rebuildRenderStates(true)
       this.applyContentFilters()
       this.loadedGalleryId = 0
     }
@@ -763,9 +806,7 @@ export struct GalleryCommentsPage {
             GalleryCommentCard({
               comment: comment,
               body: this.replyBody(comment),
-              translated: this.translationText(comment),
-              shown: this.isTranslationShown(comment),
-              loading: this.isTranslationLoading(comment),
+              renderState: this.renderStateFor(comment),
               canTranslate: this.canTranslate(comment),
               bilingual: this.commentTranslationSettings.displayMode ===
                 COMMENT_TRANSLATION_DISPLAY_BILINGUAL,

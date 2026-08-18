@@ -1,6 +1,8 @@
 import { NhGallerySummary } from '../model/NhGallery'
+import { LengthMetrics } from '@kit.ArkUI'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { AppStrings } from '../i18n/AppStrings'
+import { CoverColorService } from '../services/CoverColorService'
 import { CoverBackgroundState, connectCoverBackground } from '../state/CoverBackgroundState'
 import { BrowsePresentationState, connectBrowsePresentation } from '../state/BrowsePresentationState'
 import { EhImageKnifeImage } from './EhImageKnifeImage'
@@ -34,16 +36,28 @@ export struct GalleryMediumCard {
   @Local isThumbnailLoading: boolean = true
   @Local hasThumbnailError: boolean = false
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
+  @Local coverBackgroundColor: number = 0
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
   /** The content-measured adaptive cover slot; zero retains the ratio-based initial floor. */
   @Local adaptiveCoverSlotHeight: number = 0
   @Event onOpen?: (galleryId: number) => void
+
+  aboutToAppear(): void {
+    this.resolveLetterboxColor()
+  }
 
   @Monitor('gallery')
   onGalleryChanged(): void {
     this.isThumbnailLoading = this.gallery.thumbnailUrl.length > 0
     this.hasThumbnailError = false
     this.adaptiveCoverSlotHeight = 0
+    this.coverBackgroundColor = 0
+    this.resolveLetterboxColor()
+  }
+
+  @Monitor('coverBackground.blurLetterboxBackground')
+  onLetterboxBackgroundPreferenceChanged(): void {
+    this.resolveLetterboxColor()
   }
 
   @Monitor('browsePresentation.listCardFixedHeight')
@@ -80,6 +94,16 @@ export struct GalleryMediumCard {
     return this.usesFixedHeight() ? MEDIUM_COVER_HEIGHT : this.minimumAdaptiveHeight()
   }
 
+  /**
+   * The cover slot's own height (NextE parity): fixed rows pin 204; adaptive
+   * rows use the measured stretch height, floored by the responsive minimum.
+   * NextE never compresses a card below that floor for a short cover — an
+   * off-ratio cover letterboxes inside the slot with the gradient/blur fill.
+   */
+  private coverSlotHeight(): number {
+    return this.activeCoverHeight()
+  }
+
   /** Close source/frame ratios receive a light crop; far ratios keep the whole cover visible. */
   private coverFillsSlot(): boolean {
     if (this.gallery.thumbnailWidth <= 0 || this.gallery.thumbnailHeight <= 0) {
@@ -102,11 +126,47 @@ export struct GalleryMediumCard {
       this.useContainFit()
   }
 
+  private shouldUseGradientLetterboxBackground(): boolean {
+    return !this.coverBackground.blurLetterboxBackground &&
+      this.gallery.thumbnailUrl.length > 0 &&
+      !this.hasThumbnailError &&
+      this.useContainFit()
+  }
+
+  private resolveLetterboxColor(): void {
+    if (!this.shouldUseGradientLetterboxBackground()) {
+      return
+    }
+    const url: string = this.gallery.thumbnailUrl
+    const cached: number = CoverColorService.getInstance().cached(url)
+    if (cached !== 0) {
+      this.coverBackgroundColor = cached
+      return
+    }
+    CoverColorService.getInstance().resolve(url).then((color: number): void => {
+      if (this.gallery.thumbnailUrl === url) {
+        this.coverBackgroundColor = color
+      }
+    })
+  }
+
+  private fadedLetterboxColor(): string {
+    const rgb: number = this.coverBackgroundColor & 0x00ffffff
+    return '#00' + rgb.toString(16).padStart(6, '0')
+  }
+
   private accessibilityLabel(): string {
     return AppStrings.format('gallery_card_a11y', [
       this.gallery.displayTitle(),
       AppStrings.format('gallery_meta_pages', [this.gallery.pageCount.toString()]),
     ])
+  }
+
+  private favoriteLabel(): string {
+    if (this.gallery.favoriteCount <= 0) {
+      return ''
+    }
+    return this.gallery.favoriteCount.toString()
   }
 
   @Builder
@@ -138,8 +198,8 @@ export struct GalleryMediumCard {
 
   @Builder
   private CoverContents() {
-    // Existing NextN cover-background preference stays scoped to contained
-    // extreme ratios; only the containing slot becomes adaptive.
+    // NextE letterbox fill: dominant-color gradient by default, blurred cover
+    // copy when the preference is enabled. Scoped to contained extreme ratios.
     if (this.shouldBlurLetterboxBackground()) {
       EhImageKnifeImage({
         src: this.gallery.thumbnailUrl,
@@ -150,10 +210,19 @@ export struct GalleryMediumCard {
         connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
         readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
       })
-        .scale({ x: 1.08, y: 1.08 })
-        .blur(20)
-        .opacity(0.72)
+        .blur(ThemeTokens.COVER_BG_BLUR_RADIUS)
         .renderGroup(true)
+    } else if (this.shouldUseGradientLetterboxBackground() && this.coverBackgroundColor !== 0) {
+      Column()
+        .width('100%')
+        .height('100%')
+        .linearGradient({
+          direction: GradientDirection.Bottom,
+          colors: [
+            [this.coverBackgroundColor, 0.0],
+            [this.fadedLetterboxColor(), 1.0],
+          ],
+        })
     }
     if (this.gallery.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
       EhImageKnifeImage({
@@ -161,7 +230,9 @@ export struct GalleryMediumCard {
         widthValue: '100%',
         heightValue: '100%',
         objectFit: this.useContainFit() ? ImageFit.Contain : ImageFit.Cover,
-        radius: ThemeTokens.THUMB_RADIUS,
+        // NextE list covers carry no radius (EhThumbnail radius: 0): the
+        // image itself is the visible surface in adaptive/contain rows.
+        radius: 0,
         priority: EH_IMAGE_PRIORITY_LOW,
         connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
         readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
@@ -179,15 +250,30 @@ export struct GalleryMediumCard {
   }
 
   build() {
-    Row({ space: ThemeTokens.SPACE_SM }) {
+    // Flex with ItemAlign.Stretch (NextE parity): the text column defines the
+    // row height in adaptive mode and the cover slot stretches to it; in fixed
+    // mode the pinned 204vp constraint defines it. An explicit cover height
+    // would feed back into the row and lock every card to the cover estimate.
+    Flex({
+      direction: FlexDirection.Row,
+      space: { main: LengthMetrics.vp(ThemeTokens.SPACE_SM) },
+      alignItems: ItemAlign.Stretch,
+    }) {
       Stack({ alignContent: Alignment.Center }) {
         this.CoverContents()
       }
       .width(this.coverWidth())
-      .height(this.activeCoverHeight())
+      .height(this.coverSlotHeight())
       .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
-      .borderRadius(ThemeTokens.THUMB_RADIUS)
-      .clip(true)
+      .onAreaChange((_oldArea: Area, area: Area): void => {
+        if (this.usesFixedHeight()) {
+          return
+        }
+        const height: number = Number.parseFloat(`${area.height}`)
+        if (height > 0 && Math.abs(height - this.adaptiveCoverSlotHeight) > 0.5) {
+          this.adaptiveCoverSlotHeight = height
+        }
+      })
 
       Column({ space: ThemeTokens.SPACE_XS }) {
         Text(this.gallery.displayTitle())
@@ -220,9 +306,11 @@ export struct GalleryMediumCard {
           .clip(true)
           .alignItems(HorizontalAlign.Start)
         } else {
-          // Adaptive rows follow the title → tags → metadata content flow.
-          // `Blank()` would consume a List's unconstrained vertical offer.
+          // NextE adaptive flow: the tags float centered between two springs
+          // and the card grows to fit every wrapped row.
+          Blank()
           GalleryTagStrip({ tags: this.gallery.tags, maxTags: 8 })
+          Blank()
         }
         Row({ space: ThemeTokens.SPACE_XS }) {
           if (this.gallery.languageCode().length > 0) {
@@ -231,6 +319,17 @@ export struct GalleryMediumCard {
               .fontColor(ThemeTokens.TEXT_TERTIARY)
           }
           Blank()
+          if (this.favoriteLabel().length > 0) {
+            Row({ space: 2 }) {
+              SymbolGlyph($r('sys.symbol.heart_fill'))
+                .fontSize(ThemeTokens.FONT_SIZE_TINY)
+                .fontColor([ThemeTokens.BRAND])
+              Text(this.favoriteLabel())
+                .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+                .fontColor(ThemeTokens.TEXT_TERTIARY)
+            }
+            .alignItems(VerticalAlign.Center)
+          }
           Text(`${this.gallery.pageCount}P`)
             .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
             .fontColor(ThemeTokens.TEXT_SECONDARY)
@@ -251,15 +350,6 @@ export struct GalleryMediumCard {
           ? { minHeight: MEDIUM_COVER_HEIGHT, maxHeight: MEDIUM_COVER_HEIGHT }
           : { minHeight: this.minimumAdaptiveHeight() },
       )
-      .onAreaChange((_oldArea: Area, area: Area): void => {
-        if (this.usesFixedHeight()) {
-          return
-        }
-        const nextHeight: number = Number.parseFloat(`${area.height}`)
-        if (nextHeight > 0 && Math.abs(nextHeight - this.adaptiveCoverSlotHeight) > 0.5) {
-          this.adaptiveCoverSlotHeight = nextHeight
-        }
-      })
     }
     .width('100%')
     .borderRadius(ThemeTokens.RADIUS_MD)

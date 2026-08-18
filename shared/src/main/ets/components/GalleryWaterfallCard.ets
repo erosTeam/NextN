@@ -1,6 +1,7 @@
 import { NhGallerySummary, NhTag } from '../model/NhGallery'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { AppStrings } from '../i18n/AppStrings'
+import { CoverColorService } from '../services/CoverColorService'
 import { CoverBackgroundState, connectCoverBackground } from '../state/CoverBackgroundState'
 import { BrowsePresentationState, connectBrowsePresentation } from '../state/BrowsePresentationState'
 import { EhImageKnifeImage } from './EhImageKnifeImage'
@@ -56,9 +57,14 @@ export struct GalleryWaterfallCard {
   @Local isThumbnailLoading: boolean = true
   @Local hasThumbnailError: boolean = false
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
+  @Local coverBackgroundColor: number = 0
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
   private tagScroller: Scroller = new Scroller()
   @Event onOpen?: (galleryId: number) => void
+
+  aboutToAppear(): void {
+    this.resolveLetterboxColor()
+  }
 
   @Monitor('gallery')
   onGalleryChanged(): void {
@@ -70,6 +76,13 @@ export struct GalleryWaterfallCard {
       this.tagScroller.scrollTo({ xOffset: 0, yOffset: 0 })
     } catch (_error) {
     }
+    this.coverBackgroundColor = 0
+    this.resolveLetterboxColor()
+  }
+
+  @Monitor('coverBackground.blurLetterboxBackground')
+  onLetterboxBackgroundPreferenceChanged(): void {
+    this.resolveLetterboxColor()
   }
 
   private sourceCoverRatio(): number {
@@ -93,6 +106,35 @@ export struct GalleryWaterfallCard {
       this.gallery.thumbnailUrl.length > 0 &&
       !this.hasThumbnailError &&
       this.imageFit() === ImageFit.Contain
+  }
+
+  private shouldUseGradientLetterboxBackground(): boolean {
+    return !this.coverBackground.blurLetterboxBackground &&
+      this.gallery.thumbnailUrl.length > 0 &&
+      !this.hasThumbnailError &&
+      this.imageFit() === ImageFit.Contain
+  }
+
+  private resolveLetterboxColor(): void {
+    if (!this.shouldUseGradientLetterboxBackground()) {
+      return
+    }
+    const url: string = this.gallery.thumbnailUrl
+    const cached: number = CoverColorService.getInstance().cached(url)
+    if (cached !== 0) {
+      this.coverBackgroundColor = cached
+      return
+    }
+    CoverColorService.getInstance().resolve(url).then((color: number): void => {
+      if (this.gallery.thumbnailUrl === url) {
+        this.coverBackgroundColor = color
+      }
+    })
+  }
+
+  private fadedLetterboxColor(): string {
+    const rgb: number = this.coverBackgroundColor & 0x00ffffff
+    return '#00' + rgb.toString(16).padStart(6, '0')
   }
 
   private accessibilityLabel(): string {
@@ -231,10 +273,19 @@ export struct GalleryWaterfallCard {
             connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
             readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
           })
-            .scale({ x: 1.08, y: 1.08 })
-            .blur(20)
-            .opacity(0.72)
+            .blur(ThemeTokens.COVER_BG_BLUR_RADIUS)
             .renderGroup(true)
+        } else if (this.shouldUseGradientLetterboxBackground() && this.coverBackgroundColor !== 0) {
+          Column()
+            .width('100%')
+            .height('100%')
+            .linearGradient({
+              direction: GradientDirection.Bottom,
+              colors: [
+                [this.coverBackgroundColor, 0.0],
+                [this.fadedLetterboxColor(), 1.0],
+              ],
+            })
         }
         if (this.gallery.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
           EhImageKnifeImage({

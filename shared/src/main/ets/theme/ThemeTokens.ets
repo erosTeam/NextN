@@ -40,6 +40,8 @@ export class ThemeTokens {
   static readonly SPACE_LG: number = 16
   static readonly SPACE_XL: number = 24
   static readonly SPACE_XXL: number = 32
+  /** Blurred letterbox-fill radius behind an off-aspect cover (NextE parity). */
+  static readonly COVER_BG_BLUR_RADIUS: number = 40
   // Type scale
   static readonly FONT_SIZE_TINY: number = 10
   static readonly FONT_SIZE_CAPTION: number = 12

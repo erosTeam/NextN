@@ -1,4 +1,5 @@
 import { AppStrings, NhComment, ThemeTokens } from 'shared'
+import { CommentTranslationRenderState } from '../pages/GalleryCommentsPage'
 
 const COMMENT_ACTION_SIZE: number = 30
 const COMMENT_ACTION_ICON_SIZE: number = 16
@@ -22,12 +23,8 @@ export struct GalleryCommentCard {
   @Require @Param comment: NhComment
   /** Pre-processed reply body (reply prefix already stripped by the page). */
   @Require @Param body: string
-  /** Page-managed translation result for this comment. */
-  @Param translated: string = ''
-  /** Page-managed show-translation state. */
-  @Param shown: boolean = false
-  /** Page-managed in-flight translation state. */
-  @Param loading: boolean = false
+  /** Live page-managed translation state (NextE renderState parity). */
+  @Require @Param renderState: CommentTranslationRenderState
   @Param canTranslate: boolean = false
   @Param bilingual: boolean = false
   @Param replyQuoteBody: string = ''
@@ -57,16 +54,19 @@ export struct GalleryCommentCard {
   aboutToAppear(): void {
     // Seed the mirror without animation: the page state may already carry a
     // cached translation, which must appear instantly, not animate in.
-    this.localTranslated = this.translated
-    this.localShown = this.shown
-    this.localLoading = this.loading
+    this.localTranslated = this.renderState.translated
+    this.localShown = this.renderState.shown
+    this.localLoading = this.renderState.loading
   }
 
-  @Monitor('translated', 'shown', 'loading')
+  @Monitor('renderState.translated', 'renderState.shown', 'renderState.loading')
   onParamsChanged(): void {
-    this.localLoading = this.loading
-    const wantTranslation: boolean = this.shown && this.translated.length > 0
-    const hasNewText: boolean = this.translated.length > 0 && this.localTranslated !== this.translated
+    // NextE parity: the spinner flag always follows the render state
+    // immediately — no manual-arm gating on the loading mirror.
+    this.localLoading = this.renderState.loading
+    const wantTranslation: boolean = this.renderState.shown && this.renderState.translated.length > 0
+    const hasNewText: boolean = this.renderState.translated.length > 0 &&
+      this.localTranslated !== this.renderState.translated
     const needShow: boolean = wantTranslation && (!this.localShown || hasNewText)
     const needHide: boolean = !wantTranslation && this.localShown
     if (!needShow && !needHide) {
@@ -76,7 +76,7 @@ export struct GalleryCommentCard {
     // the final render; the visible body still shows the original until the
     // animation flips it.
     if (hasNewText) {
-      this.localTranslated = this.translated
+      this.localTranslated = this.renderState.translated
     }
     if (this.manualTranslateArmed) {
       this.manualTranslateArmed = false
@@ -165,12 +165,33 @@ export struct GalleryCommentCard {
       `${this.twoDigits(date.getHours())}:${this.twoDigits(date.getMinutes())}`
   }
 
+  /** NextE TranslationAction parity: three explicit branches over mirror state. */
+  @Builder
+  private TranslationAction() {
+    if (this.localLoading) {
+      this.FooterAction($r('sys.symbol.translate'), ThemeTokens.TEXT_TERTIARY, true, this.translationActionLabel(), (): void => {
+        this.manualTranslateArmed = true
+        this.onToggleTranslate()
+      })
+    } else if (this.localShown && this.localTranslated.length > 0) {
+      this.FooterAction($r('sys.symbol.translate'), ThemeTokens.BRAND, false, this.translationActionLabel(), (): void => {
+        this.manualTranslateArmed = true
+        this.onToggleTranslate()
+      })
+    } else {
+      this.FooterAction($r('sys.symbol.translate'), ThemeTokens.TEXT_TERTIARY, false, this.translationActionLabel(), (): void => {
+        this.manualTranslateArmed = true
+        this.onToggleTranslate()
+      })
+    }
+  }
+
   @Builder
   private FooterAction(
     icon: Resource,
-    label: string,
+    color: ResourceColor,
     disabled: boolean,
-    active: boolean,
+    label: string,
     action: () => void,
   ) {
     Button({ type: ButtonType.Circle, stateEffect: true }) {
@@ -182,7 +203,7 @@ export struct GalleryCommentCard {
       } else {
         SymbolGlyph(icon)
           .fontSize(COMMENT_ACTION_ICON_SIZE)
-          .fontColor([active ? ThemeTokens.BRAND : ThemeTokens.TEXT_TERTIARY])
+          .fontColor([color])
       }
     }
     .width(COMMENT_ACTION_SIZE)
@@ -314,16 +335,7 @@ export struct GalleryCommentCard {
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
         if (this.canTranslate) {
-          this.FooterAction(
-            $r('sys.symbol.translate'),
-            this.translationActionLabel(),
-            this.localLoading,
-            this.localShown,
-            (): void => {
-              this.manualTranslateArmed = true
-              this.onToggleTranslate()
-            },
-          )
+          this.TranslationAction()
         }
       }
       .width('100%')
@@ -344,9 +356,9 @@ export struct GalleryCommentCard {
         }
         this.FooterAction(
           $r('sys.symbol.ellipsis_message'),
+          ThemeTokens.TEXT_TERTIARY,
+          false,
           AppStrings.get('comments_action_reply'),
-          false,
-          false,
           (): void => {
             this.onReply()
           },

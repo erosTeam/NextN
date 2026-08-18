@@ -59,6 +59,150 @@ export class CommentTranslationService {
     return locale.length >= 2 ? locale.substring(0, 2) : 'zh-CN'
   }
 
+  /**
+   * Local, network-free language pre-check (NextE parity): a comment needs
+   * translation only when its dominant script differs from the current UI
+   * language's. Cheap heuristic — it cannot tell apart latin-script languages
+   * or kana-less Japanese, so it errs toward translating when unsure. Used to
+   * skip AUTO-translating comments the user can already read; the manual
+   * translate button is unaffected.
+   */
+  static needsTranslation(text: string): boolean {
+    const t: string = text.trim()
+    if (t.length === 0) {
+      return false
+    }
+    if (!CommentTranslationService.hasLanguageSignal(t)) {
+      return false
+    }
+    const script: string = CommentTranslationService.detectScript(t)
+    if (script === 'unknown') {
+      return true
+    }
+    return script !== CommentTranslationService.targetScriptFamily()
+  }
+
+  private static targetScriptFamily(): string {
+    const target: string = CommentTranslationService.targetLanguage()
+    if (target.startsWith('zh')) {
+      // Simplified and Traditional are the same spoken language: a Chinese
+      // reader can read either, so a Chinese comment never auto-translates.
+      return 'zh'
+    }
+    if (target === 'ja') {
+      return 'ja'
+    }
+    if (target === 'ko') {
+      return 'ko'
+    }
+    return 'latin'
+  }
+
+  private static hasLanguageSignal(text: string): boolean {
+    let cjk: number = 0
+    let other: number = 0
+    let latinRun: number = 0
+    let latinWordCount: number = 0
+    let latinHasVowel: boolean = false
+    for (let i: number = 0; i < text.length; i++) {
+      const code: number = text.charCodeAt(i)
+      if (CommentTranslationService.isLatinLetter(code)) {
+        latinRun++
+        const ch: string = text.charAt(i).toLowerCase()
+        if (ch === 'a' || ch === 'e' || ch === 'i' || ch === 'o' || ch === 'u') {
+          latinHasVowel = true
+        }
+        continue
+      }
+      if (latinRun >= 4 && latinHasVowel) {
+        latinWordCount++
+      }
+      latinRun = 0
+      latinHasVowel = false
+      if (
+        (code >= 0x3040 && code <= 0x30ff) ||
+        (code >= 0x3400 && code <= 0x9fff) ||
+        (code >= 0xac00 && code <= 0xd7a3)
+      ) {
+        cjk++
+      } else if (CommentTranslationService.isOtherLetter(code)) {
+        other++
+      }
+    }
+    if (latinRun >= 4 && latinHasVowel) {
+      latinWordCount++
+    }
+    return cjk >= 2 || other >= 2 || latinWordCount > 0
+  }
+
+  private static isLatinLetter(code: number): boolean {
+    return (
+      (code >= 0x41 && code <= 0x5a) ||
+      (code >= 0x61 && code <= 0x7a) ||
+      (code >= 0xc0 && code <= 0x24f)
+    )
+  }
+
+  private static isOtherLetter(code: number): boolean {
+    return (
+      (code >= 0x0370 && code <= 0x03ff) ||
+      (code >= 0x0400 && code <= 0x052f) ||
+      (code >= 0x0590 && code <= 0x05ff) ||
+      (code >= 0x0600 && code <= 0x06ff) ||
+      (code >= 0x0900 && code <= 0x097f) ||
+      (code >= 0x0e00 && code <= 0x0e7f)
+    )
+  }
+
+  // Dominant-script classifier over the BMP: kana ⇒ Japanese, Hangul ⇒ Korean,
+  // Han (no kana) ⇒ Chinese, else Latin letters ⇒ latin. Returns 'unknown'
+  // when none are present (digits/punctuation/emoji only).
+  private static detectScript(text: string): string {
+    let han: number = 0
+    let kana: number = 0
+    let hangul: number = 0
+    let latin: number = 0
+    let other: number = 0
+    for (let i: number = 0; i < text.length; i++) {
+      const code: number = text.charCodeAt(i)
+      if ((code >= 0x3040 && code <= 0x309f) || (code >= 0x30a0 && code <= 0x30ff)) {
+        kana++
+      } else if (
+        (code >= 0xac00 && code <= 0xd7a3) ||
+        (code >= 0x1100 && code <= 0x11ff) ||
+        (code >= 0x3130 && code <= 0x318f)
+      ) {
+        hangul++
+      } else if (
+        (code >= 0x4e00 && code <= 0x9fff) ||
+        (code >= 0x3400 && code <= 0x4dbf) ||
+        (code >= 0xf900 && code <= 0xfaff)
+      ) {
+        han++
+      } else if (CommentTranslationService.isLatinLetter(code)) {
+        latin++
+      } else if (CommentTranslationService.isOtherLetter(code)) {
+        other++
+      }
+    }
+    if (kana > 0) {
+      return 'ja'
+    }
+    if (hangul > 0) {
+      return 'ko'
+    }
+    if (han > 0) {
+      return 'zh'
+    }
+    if (latin > 0) {
+      return 'latin'
+    }
+    if (other > 0) {
+      return 'other'
+    }
+    return 'unknown'
+  }
+
   static async translate(context: common.UIAbilityContext, text: string): Promise<string> {
     const source: string = text.trim()
     if (source.length === 0) {

@@ -196,9 +196,7 @@ export struct GalleryGridCard {
             connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
             readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
           })
-            .scale({ x: 1.08, y: 1.08 })
-            .blur(20)
-            .opacity(0.72)
+            .blur(ThemeTokens.COVER_BG_BLUR_RADIUS)
             .renderGroup(true)
         } else if (this.shouldUseGradientLetterboxBackground() && this.coverBackgroundColor !== 0) {
           Column()

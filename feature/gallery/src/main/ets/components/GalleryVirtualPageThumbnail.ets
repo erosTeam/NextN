@@ -57,6 +57,7 @@ export struct GalleryVirtualPageThumbnailTile {
   @Event onOpen?: (pageIndex: number) => void
   @Local isThumbnailLoading: boolean = true
   @Local hasThumbnailError: boolean = false
+  @Local measuredWidth: number = 0
 
   aboutToAppear(): void {
     this.resetThumbnailState()
@@ -74,6 +75,45 @@ export struct GalleryVirtualPageThumbnailTile {
 
   private pageLabel(): string {
     return AppStrings.format('thumbnails_page_label', [(this.pageIndex + 1).toString()])
+  }
+
+  private hasSourceSize(): boolean {
+    return this.page.width > 0 && this.page.height > 0
+  }
+
+  private sourceAspect(): number {
+    if (!this.hasSourceSize()) {
+      return 0
+    }
+    return this.page.height / this.page.width
+  }
+
+  /** Contain: fit by height when taller than the frame, else by width. */
+  private fitByHeight(): boolean {
+    const aspect: number = this.sourceAspect()
+    return aspect > 0 && aspect > PREVIEW_FRAME_ASPECT
+  }
+
+  private frameWidth(): number {
+    return this.measuredWidth > 0 ? this.measuredWidth : 112
+  }
+
+  private frameHeight(): number {
+    return this.frameWidth() * PREVIEW_FRAME_ASPECT
+  }
+
+  private fittedWidth(): number {
+    if (!this.hasSourceSize() || !this.fitByHeight()) {
+      return this.frameWidth()
+    }
+    return (this.frameHeight() * this.page.width) / this.page.height
+  }
+
+  private fittedHeight(): number {
+    if (!this.hasSourceSize() || this.fitByHeight()) {
+      return this.frameHeight()
+    }
+    return (this.frameWidth() * this.page.height) / this.page.width
   }
 
   @Builder
@@ -95,9 +135,14 @@ export struct GalleryVirtualPageThumbnailTile {
       Stack({ alignContent: Alignment.Center }) {
         if (this.page.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
           Image(this.page.thumbnailUrl)
-            .width('100%')
-            .height('100%')
-            .objectFit(ImageFit.Contain)
+            // Real aspect + own rounded clip (NextE parity): the frame is a
+            // transparent layout slot, so a loaded thumb never sits inside a
+            // grey rounded container.
+            .width(this.fittedWidth())
+            .height(this.fittedHeight())
+            .objectFit(ImageFit.Fill)
+            .borderRadius(ThemeTokens.THUMB_RADIUS)
+            .clip(true)
             .onComplete((): void => {
               this.isThumbnailLoading = false
             })
@@ -110,8 +155,6 @@ export struct GalleryVirtualPageThumbnailTile {
       }
       .width('100%')
       .aspectRatio(1 / PREVIEW_FRAME_ASPECT)
-      .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
-      .borderRadius(ThemeTokens.THUMB_RADIUS)
       .clip(true)
       Text(`${this.pageIndex + 1}`)
         .fontSize(ThemeTokens.FONT_SIZE_TINY)
@@ -120,6 +163,12 @@ export struct GalleryVirtualPageThumbnailTile {
     }
     .width('100%')
     .alignItems(HorizontalAlign.Center)
+    .onAreaChange((_oldValue: Area, newValue: Area): void => {
+      const parsed: number = Number.parseFloat(`${newValue.width}`)
+      if (parsed > 0) {
+        this.measuredWidth = parsed
+      }
+    })
     .accessibilityText(AppStrings.format('thumbnails_open_reader_a11y', [this.pageLabel()]))
     .onClick((): void => {
       if (this.onOpen) {
