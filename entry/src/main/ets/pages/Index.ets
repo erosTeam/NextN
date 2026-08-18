@@ -96,6 +96,7 @@ import {
   connectTabletLayout,
   connectThemeDisplay,
   NhArkWebSessionTransportHost,
+  NhBrowserSessionBoundary,
   NhBrowsePresentation,
   NhComment,
   NhDownloadTaskStatus,
@@ -115,10 +116,12 @@ import {
 } from 'shared'
 import { HomeSourceBarCCBuilder } from '../components/HomeSourceBar'
 import { MainTabIcon } from '../components/MainTabIcon'
+import { GalleryWebPage } from './GalleryWebPage'
 
 const ROUTE_SEARCH: string = 'search'
 const ROUTE_POPULAR: string = 'popular'
 const ROUTE_GALLERY: string = 'gallery'
+const ROUTE_GALLERY_WEB: string = 'GalleryWeb'
 const ROUTE_THUMBNAILS: string = 'thumbnails'
 const ROUTE_COMMENTS: string = 'comments'
 const ROUTE_READER: string = 'Reader'
@@ -170,6 +173,16 @@ class GalleryRouteParams {
     this.seed = seed
     this.commentSnapshot = commentSnapshot
     this.commentSnapshotAvailable = commentSnapshotAvailable
+  }
+}
+
+class GalleryWebRouteParams {
+  url: string = ''
+  title: string = ''
+
+  constructor(url: string = '', title: string = '') {
+    this.url = url
+    this.title = title
   }
 }
 
@@ -503,6 +516,19 @@ struct Index {
       return
     }
     this.stack.pushPathByName(ROUTE_GALLERY, new GalleryRouteParams(galleryId, seed ?? null))
+  }
+
+  private pushGalleryWeb(route: GalleryRouteParams): void {
+    if (route.galleryId <= 0) {
+      return
+    }
+    this.stack.pushPathByName(
+      ROUTE_GALLERY_WEB,
+      new GalleryWebRouteParams(
+        NhBrowserSessionBoundary.canonicalGalleryUrl(route.galleryId),
+        route.chrome.title,
+      ),
+    )
   }
 
   private cancelRandomGalleryRequest(): void {
@@ -1360,6 +1386,14 @@ struct Index {
         this.galleryExternalOpenVersion += 1
       },
     }
+    const internalWebAction: Record<string, Object> = {
+      'label': AppStrings.get('action_open_internal_web'),
+      'icon': $r('sys.symbol.house_fill'),
+      'isEnabled': true,
+      'action': (): void => {
+        this.pushGalleryWeb(route)
+      },
+    }
     const shareAction: Record<string, Object> = {
       'label': AppStrings.get('action_share'),
       'icon': $r('sys.symbol.share'),
@@ -1398,12 +1432,14 @@ struct Index {
     }
     const favoriteMenuItem: Record<string, Object> = { 'content': favoriteAction }
     const externalOpenMenuItem: Record<string, Object> = { 'content': externalOpenAction }
+    const internalWebMenuItem: Record<string, Object> = { 'content': internalWebAction }
     const shareMenuItem: Record<string, Object> = { 'content': shareAction }
     const reloadMenuItem: Record<string, Object> = { 'content': reloadAction }
     const menuItems: Record<string, Object>[] = [
       favoriteMenuItem,
       shareMenuItem,
       externalOpenMenuItem,
+      internalWebMenuItem,
       reloadMenuItem,
     ]
     if (route.chrome.wideThumbnailActionsAvailable) {
@@ -1458,6 +1494,13 @@ struct Index {
       return param
     }
     return new GalleryRouteParams()
+  }
+
+  private galleryWebParams(param: Object): GalleryWebRouteParams {
+    if (param instanceof GalleryWebRouteParams) {
+      return param
+    }
+    return new GalleryWebRouteParams()
   }
 
   private searchParams(param: Object): SearchRouteParams {
@@ -1583,6 +1626,17 @@ struct Index {
     .hideTitleBar(this.readerOverlay.visible)
     .hideBackButton(false)
     .bindToScrollable([this.galleryScroller])
+  }
+
+  @Builder
+  private galleryWebDestination(param: Object) {
+    // The destination's title bar lives inside GalleryWebPage (NextE
+    // GalleryWebPage parity): it carries the live page title plus the
+    // back/forward/refresh menu, so the shell must not wrap a second bar.
+    GalleryWebPage({
+      url: this.galleryWebParams(param).url,
+      title: this.galleryWebParams(param).title,
+    })
   }
 
   @Builder
@@ -2057,6 +2111,8 @@ struct Index {
       this.popularDestination()
     } else if (name === ROUTE_GALLERY) {
       this.galleryDestination(param)
+    } else if (name === ROUTE_GALLERY_WEB) {
+      this.galleryWebDestination(param)
     } else if (name === ROUTE_THUMBNAILS) {
       this.thumbnailsDestination(param)
     } else if (name === ROUTE_COMMENTS) {

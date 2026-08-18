@@ -490,6 +490,7 @@ export { NhTorrentFileExportService } from './services/NhTorrentFileExportServic
 export { NhDownloadCbzExportService } from './services/NhDownloadCbzExportService'
 export { AppReleaseService } from './services/AppReleaseService'
 export { PageLoadingState, PageErrorState, PageEmptyState } from './components/PageStates'
+export { EhWebView } from './components/EhWebView'
 export { nextNHdsTitle, nextNHdsTitleBar } from './components/NextNHdsTitleBar'
 export { AppSearchField } from './components/AppSearchField'
 export { appMenuOptions } from './components/AppMenuOptions'

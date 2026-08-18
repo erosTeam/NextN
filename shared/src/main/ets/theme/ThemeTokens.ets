@@ -63,6 +63,8 @@ export class ThemeTokens {
   static readonly LINE_HEIGHT_TITLE: number = 22
   /** Matches NextE ThemeConstants.ANIM_DURATION for shared transition rhythm. */
   static readonly ANIM_DURATION: number = 400
+  /** Matches NextE ThemeConstants.LOADING_SIZE for centered page loading indicators. */
+  static readonly LOADING_SIZE: number = 32
 
   // Shape scale
   static readonly RADIUS_XS: number = 4
