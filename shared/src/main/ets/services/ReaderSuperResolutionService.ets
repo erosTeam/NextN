@@ -19,17 +19,23 @@ import {
   ReaderSuperResolutionModelPaths,
   ReaderSuperResolutionModelService,
 } from './ReaderSuperResolutionModelService'
+import { ReaderSystemSuperResolutionService } from './ReaderSystemSuperResolutionService'
 
 const CACHE_DIRECTORY: string = 'nextn-reader-super-resolution-cache'
 const MAX_OUTPUT_EDGE: number = READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT * 2
 const MAX_OUTPUT_BYTES: number = MAX_OUTPUT_EDGE * MAX_OUTPUT_EDGE * 4
 const MAX_CACHE_FILES: number = 64
 const MAX_CACHE_BYTES: number = 256 * 1024 * 1024
+// Core Vision owns its output scale (observed up to 4x on device), so the
+// system backend must not reuse the local models' 2x success boundary.
+const SYSTEM_MAX_OUTPUT_EDGE: number = READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT * 4
+const SYSTEM_MAX_OUTPUT_BYTES: number = SYSTEM_MAX_OUTPUT_EDGE * SYSTEM_MAX_OUTPUT_EDGE * 4
 const READER_ENHANCEMENT_LOG_DOMAIN: number = 0x0000
 const READER_ENHANCEMENT_LOG_TAG: string = 'NextNReaderEnhancement'
 // Bump only when native decode/upscale/output semantics change. Model asset
 // and native-config changes are included separately by the model service.
 const DERIVATIVE_OUTPUT_PIPELINE_VERSION: string = 'native-rgba-jpeg-v1'
+const SYSTEM_DERIVATIVE_OUTPUT_PIPELINE_VERSION: string = 'system-core-vision-jpeg-v1'
 // Vulkan 1.3 is the conservative interaction-safety boundary used by NextE.
 const INTERACTION_SAFE_VULKAN_API_VERSION: number = 0x00403000
 
@@ -52,8 +58,8 @@ class InFlightEnhancement {
 }
 
 /**
- * Converts a verified private Reader page into a private 2× derivative only
- * when the user has enabled enhancement and installed the model. The original
+ * Converts a verified private Reader page into a private enhanced derivative
+ * only when the user has enabled enhancement and the backend is ready. The original
  * local page remains the immediate display and the failure fallback.
  */
 export class ReaderSuperResolutionService {
@@ -64,6 +70,10 @@ export class ReaderSuperResolutionService {
   private static interactionPauseRequested: boolean = false
   private static interactionPaused: boolean = false
   private static interactionProtectionRequired: boolean = true
+
+  private static describeError(error: Object): string {
+    return error instanceof Error ? error.name + ': ' + error.message : JSON.stringify(error)
+  }
 
   static clearOwnerOutcome(ownerKey: string): void {
     if (ownerKey.length > 0) {
@@ -99,14 +109,27 @@ export class ReaderSuperResolutionService {
       )
     }
     const modelPaths: ReaderSuperResolutionModelPaths | null =
-      await ReaderSuperResolutionModelService.pathsIfReady(context, model)
+      model === NhReaderSuperResolutionModel.SYSTEM_CORE_VISION
+        ? null
+        : await ReaderSuperResolutionModelService.pathsIfReady(context, model)
     const nativeConfig: ReaderNativeSuperResolutionConfig | null =
-      ReaderSuperResolutionModelService.nativeConfig(model)
-    if (modelPaths === null || nativeConfig === null) {
-      return ReaderSuperResolutionService.rememberOwnerOutcome(
-        ownerKey,
-        ReaderSuperResolutionService.original(sourcePath, 'model_not_installed'),
-      )
+      model === NhReaderSuperResolutionModel.SYSTEM_CORE_VISION
+        ? null
+        : ReaderSuperResolutionModelService.nativeConfig(model)
+    if (model === NhReaderSuperResolutionModel.SYSTEM_CORE_VISION) {
+      if (!ReaderSuperResolutionModelService.systemSuperResolutionSupported()) {
+        return ReaderSuperResolutionService.rememberOwnerOutcome(
+          ownerKey,
+          ReaderSuperResolutionService.original(sourcePath, 'model_not_installed'),
+        )
+      }
+    } else {
+      if (modelPaths === null || nativeConfig === null) {
+        return ReaderSuperResolutionService.rememberOwnerOutcome(
+          ownerKey,
+          ReaderSuperResolutionService.original(sourcePath, 'model_not_installed'),
+        )
+      }
     }
     const normalizedMaxSourceHeight: number = ReaderSuperResolutionService.normalizeMaxSourceHeight(maxSourceHeight)
     const sourceKey: string = ReaderSuperResolutionService.sha256(sourcePath)
@@ -140,16 +163,25 @@ export class ReaderSuperResolutionService {
     ReaderSuperResolutionService.sequence += 1
     inFlight.requestId = ReaderSuperResolutionService.sequence
     inFlight.owners.add(ownerKey)
-    const task: Promise<ReaderSuperResolutionResult> = ReaderSuperResolutionService.processNow(
-      context,
-      sourcePath,
-      sourceKey,
-      outputPath,
-      modelPaths,
-      nativeConfig,
-      normalizedMaxSourceHeight,
-      inFlight,
-    )
+    const task: Promise<ReaderSuperResolutionResult> = model === NhReaderSuperResolutionModel.SYSTEM_CORE_VISION
+      ? ReaderSuperResolutionService.processNowSystem(
+        context,
+        sourcePath,
+        sourceKey,
+        outputPath,
+        normalizedMaxSourceHeight,
+        inFlight,
+      )
+      : ReaderSuperResolutionService.processNow(
+        context,
+        sourcePath,
+        sourceKey,
+        outputPath,
+        modelPaths as ReaderSuperResolutionModelPaths,
+        nativeConfig as ReaderNativeSuperResolutionConfig,
+        normalizedMaxSourceHeight,
+        inFlight,
+      )
     inFlight.promise = task
     ReaderSuperResolutionService.inFlight.set(outputPath, inFlight)
     try {
@@ -229,6 +261,130 @@ export class ReaderSuperResolutionService {
       ReaderSuperResolutionService.ownerOutcomeReasons.set(ownerKey, result.reason)
     }
     return result
+  }
+
+  private static async processNowSystem(
+    context: common.UIAbilityContext,
+    sourcePath: string,
+    sourceKey: string,
+    outputPath: string,
+    maxSourceHeight: number,
+    inFlight: InFlightEnhancement,
+  ): Promise<ReaderSuperResolutionResult> {
+    const temporaryPath: string = `${outputPath}.part`
+    let outputPixelMap: image.PixelMap | undefined = undefined
+    let packer: image.ImagePacker | undefined = undefined
+    let outputFile: fileIo.File | null = null
+    let promoted: boolean = false
+    let processingStage: string = 'system_decode'
+    try {
+      const decodedSourceKey: string = ReaderSuperResolutionService.sha256(sourcePath)
+      if (decodedSourceKey.length === 0) {
+        return ReaderSuperResolutionService.original(sourcePath, 'source_hash_failed')
+      }
+      if (decodedSourceKey !== sourceKey) {
+        return ReaderSuperResolutionService.original(sourcePath, 'source_changed')
+      }
+      processingStage = 'system_process'
+      outputPixelMap = await ReaderSystemSuperResolutionService.process(sourcePath, maxSourceHeight)
+      if (outputPixelMap === undefined) {
+        return ReaderSuperResolutionService.original(sourcePath, 'processing_failed')
+      }
+      const imageInfo: image.ImageInfo = await outputPixelMap.getImageInfo()
+      const outputWidth: number = imageInfo.size.width
+      const outputHeight: number = imageInfo.size.height
+      if (outputWidth <= 0 || outputHeight <= 0) {
+        return ReaderSuperResolutionService.original(sourcePath, 'invalid_dimensions')
+      }
+      if (outputWidth > SYSTEM_MAX_OUTPUT_EDGE || outputHeight > SYSTEM_MAX_OUTPUT_EDGE ||
+        outputWidth * outputHeight * 4 > SYSTEM_MAX_OUTPUT_BYTES) {
+        return ReaderSuperResolutionService.original(sourcePath, 'output_too_large')
+      }
+      // The ISP result uses an internal hardware layout ImagePacker cannot
+      // encode directly; normalize it through a plain RGBA buffer first.
+      processingStage = 'system_normalize'
+      const normalizedBytes: number = outputWidth * outputHeight * 4
+      const normalizedBuffer: ArrayBuffer = new ArrayBuffer(normalizedBytes)
+      await outputPixelMap.readPixelsToBuffer(normalizedBuffer)
+      const normalizedInit: image.InitializationOptions = {
+        size: { width: outputWidth, height: outputHeight },
+        srcPixelFormat: image.PixelMapFormat.RGBA_8888,
+        pixelFormat: image.PixelMapFormat.RGBA_8888,
+        editable: false,
+      }
+      const normalizedPixelMap: image.PixelMap = await image.createPixelMap(normalizedBuffer, normalizedInit)
+      try {
+        if (inFlight.owners.size === 0) {
+          return ReaderSuperResolutionService.original(sourcePath, 'superseded')
+        }
+        ReaderSuperResolutionService.ensureDirectory(ReaderSuperResolutionService.cacheDirectory(context))
+        ReaderSuperResolutionService.removeIfExists(temporaryPath)
+        processingStage = 'output_file'
+        outputFile = fileIo.openSync(
+          temporaryPath,
+          fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC,
+        )
+        packer = image.createImagePacker()
+        processingStage = 'output_pack'
+        await packer.packToFile(normalizedPixelMap, outputFile.fd, { format: 'image/jpeg', quality: 98 })
+      } finally {
+        try {
+          await normalizedPixelMap.release()
+        } catch (_normalizeReleaseError) {}
+      }
+      fileIo.closeSync(outputFile)
+      outputFile = null
+      if (inFlight.owners.size === 0) {
+        return ReaderSuperResolutionService.original(sourcePath, 'superseded')
+      }
+      processingStage = 'output_promote'
+      ReaderSuperResolutionService.removeIfExists(outputPath)
+      fileIo.renameSync(temporaryPath, outputPath)
+      if (ReaderSuperResolutionService.fileSize(outputPath) <= 0) {
+        ReaderSuperResolutionService.removeIfExists(outputPath)
+        return ReaderSuperResolutionService.original(sourcePath, 'output_empty')
+      }
+      promoted = true
+      await ReaderSuperResolutionService.prune(context, outputPath)
+      return ReaderSuperResolutionService.applied(outputPath)
+    } catch (error) {
+      ReaderSuperResolutionService.recordProcessingFailure(processingStage)
+      if (processingStage.startsWith('system_') || processingStage.startsWith('output_')) {
+        try {
+          hilog.warn(
+            READER_ENHANCEMENT_LOG_DOMAIN,
+            READER_ENHANCEMENT_LOG_TAG,
+            'reader enhancement detail stage=%{public}s error=%{public}s',
+            processingStage,
+            ReaderSuperResolutionService.describeError(error),
+          )
+        } catch (_logError) {}
+      }
+      return ReaderSuperResolutionService.original(sourcePath, 'processing_failed')
+    } finally {
+      if (outputFile !== null) {
+        try {
+          fileIo.closeSync(outputFile)
+        } catch (_error) {}
+      }
+      if (!promoted) {
+        ReaderSuperResolutionService.removeIfExists(temporaryPath)
+      }
+      if (packer !== undefined) {
+        try {
+          await packer.release()
+        } catch (_error) {
+          ReaderSuperResolutionService.recordProcessingFailure('output_packer_release')
+        }
+      }
+      if (outputPixelMap !== undefined) {
+        try {
+          await outputPixelMap.release()
+        } catch (_error) {
+          ReaderSuperResolutionService.recordProcessingFailure('output_pixel_map_release')
+        }
+      }
+    }
   }
 
   private static async processNow(
@@ -388,8 +544,11 @@ export class ReaderSuperResolutionService {
     maxSourceHeight: number,
     sourceKey: string,
   ): string {
+    const pipelineVersion: string = model === NhReaderSuperResolutionModel.SYSTEM_CORE_VISION
+      ? SYSTEM_DERIVATIVE_OUTPUT_PIPELINE_VERSION
+      : DERIVATIVE_OUTPUT_PIPELINE_VERSION
     return JSON.stringify([
-      DERIVATIVE_OUTPUT_PIPELINE_VERSION,
+      pipelineVersion,
       ReaderSuperResolutionModelService.derivativeCacheIdentity(model),
       `${maxSourceHeight}`,
       sourceKey,

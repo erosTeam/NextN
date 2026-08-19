@@ -42,6 +42,7 @@ export enum NhReaderSuperResolutionModel {
   WAIFU2X_ART_NOISE0_2X = 'waifu2x_art_noise0_2x',
   WAIFU2X_PHOTO_NOISE0_2X = 'waifu2x_photo_noise0_2x',
   REAL_ESRGAN_X2PLUS = 'realesrgan_x2plus',
+  SYSTEM_CORE_VISION = 'system_core_vision',
 }
 
 /** Bounded local decode choices shared by Settings, persistence, and Reader. */

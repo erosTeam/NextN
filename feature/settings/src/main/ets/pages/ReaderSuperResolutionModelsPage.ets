@@ -58,7 +58,14 @@ export struct ReaderSuperResolutionModelsPage {
     return AppStrings.get(definition.managerTitleStringKey)
   }
 
+  private isSystemModel(definition: ReaderSuperResolutionModelDefinition): boolean {
+    return definition.systemModel
+  }
+
   private modelDownloadSize(definition: ReaderSuperResolutionModelDefinition): string {
+    if (this.isSystemModel(definition)) {
+      return AppStrings.get('settings_reader_enhancement_model_system_ready')
+    }
     const bytes: number = definition.bytes()
     if (bytes < 10 * 1000 * 1000) {
       return `${Math.round(bytes / 100000) / 10} MB`
@@ -74,6 +81,9 @@ export struct ReaderSuperResolutionModelsPage {
   }
 
   private modelActionLabel(model: NhReaderSuperResolutionModel): string {
+    if (model === NhReaderSuperResolutionModel.SYSTEM_CORE_VISION) {
+      return AppStrings.get('settings_reader_enhancement_model_system_ready')
+    }
     if (this.modelChanging === model) {
       return AppStrings.get('settings_reader_enhancement_model_downloading')
     }
@@ -89,7 +99,8 @@ export struct ReaderSuperResolutionModelsPage {
   }
 
   private async installModel(model: NhReaderSuperResolutionModel): Promise<void> {
-    if (this.modelChanging.length > 0 || this.isModelInstalled(model)) {
+    if (this.modelChanging.length > 0 || this.isModelInstalled(model) ||
+      model === NhReaderSuperResolutionModel.SYSTEM_CORE_VISION) {
       return
     }
     this.modelChanging = model
@@ -106,7 +117,8 @@ export struct ReaderSuperResolutionModelsPage {
   }
 
   private confirmRemoveModel(definition: ReaderSuperResolutionModelDefinition): void {
-    if (this.modelChanging.length > 0 || !this.isModelInstalled(definition.id)) {
+    if (this.modelChanging.length > 0 || !this.isModelInstalled(definition.id) ||
+      this.isSystemModel(definition)) {
       return
     }
     this.getUIContext().showAlertDialog({
@@ -129,7 +141,8 @@ export struct ReaderSuperResolutionModelsPage {
   }
 
   private async removeModel(model: NhReaderSuperResolutionModel): Promise<void> {
-    if (this.modelChanging.length > 0 || !this.isModelInstalled(model)) {
+    if (this.modelChanging.length > 0 || !this.isModelInstalled(model) ||
+      model === NhReaderSuperResolutionModel.SYSTEM_CORE_VISION) {
       return
     }
     this.modelChanging = model
@@ -163,36 +176,46 @@ export struct ReaderSuperResolutionModelsPage {
 
   @Builder
   private ModelAction(definition: ReaderSuperResolutionModelDefinition) {
-    Button({ type: ButtonType.Circle, stateEffect: true }) {
-      if (this.modelChanging === definition.id) {
-        LoadingProgress()
-          .width(ThemeTokens.FONT_SIZE_HEADING)
-          .height(ThemeTokens.FONT_SIZE_HEADING)
-          .color(ThemeTokens.BRAND)
-      } else {
-        SymbolGlyph(this.isModelInstalled(definition.id)
-          ? $r('sys.symbol.trash')
-          : $r('sys.symbol.arrow_down_to_line'))
-          .fontSize(ThemeTokens.FONT_SIZE_HEADING)
-          .fontColor([this.isModelInstalled(definition.id) ? Color.Red : ThemeTokens.BRAND])
+    if (this.isSystemModel(definition)) {
+      Text(this.modelActionLabel(definition.id))
+        .fontSize(ThemeTokens.FONT_SIZE_BODY)
+        .fontColor(ThemeTokens.TEXT_SECONDARY)
+        .accessibilityText(AppStrings.format('settings_reader_enhancement_model_a11y', [
+          this.managerTitle(definition),
+          this.modelActionLabel(definition.id),
+        ]))
+    } else {
+      Button({ type: ButtonType.Circle, stateEffect: true }) {
+        if (this.modelChanging === definition.id) {
+          LoadingProgress()
+            .width(ThemeTokens.FONT_SIZE_HEADING)
+            .height(ThemeTokens.FONT_SIZE_HEADING)
+            .color(ThemeTokens.BRAND)
+        } else {
+          SymbolGlyph(this.isModelInstalled(definition.id)
+            ? $r('sys.symbol.trash')
+            : $r('sys.symbol.arrow_down_to_line'))
+            .fontSize(ThemeTokens.FONT_SIZE_HEADING)
+            .fontColor([this.isModelInstalled(definition.id) ? Color.Red : ThemeTokens.BRAND])
+        }
       }
+      .buttonStyle(ButtonStyleMode.NORMAL)
+      .width(ThemeTokens.MIN_TOUCH_TARGET)
+      .height(ThemeTokens.MIN_TOUCH_TARGET)
+      .backgroundColor(Color.Transparent)
+      .enabled(this.modelChanging.length === 0)
+      .accessibilityText(AppStrings.format('settings_reader_enhancement_model_a11y', [
+        this.managerTitle(definition),
+        this.modelActionLabel(definition.id),
+      ]))
+      .onClick((): void => {
+        if (this.isModelInstalled(definition.id)) {
+          this.confirmRemoveModel(definition)
+        } else {
+          this.installModel(definition.id).catch((): void => {})
+        }
+      })
     }
-    .buttonStyle(ButtonStyleMode.NORMAL)
-    .width(ThemeTokens.MIN_TOUCH_TARGET)
-    .height(ThemeTokens.MIN_TOUCH_TARGET)
-    .backgroundColor(Color.Transparent)
-    .enabled(this.modelChanging.length === 0)
-    .accessibilityText(AppStrings.format('settings_reader_enhancement_model_a11y', [
-      this.managerTitle(definition),
-      this.modelActionLabel(definition.id),
-    ]))
-    .onClick((): void => {
-      if (this.isModelInstalled(definition.id)) {
-        this.confirmRemoveModel(definition)
-      } else {
-        this.installModel(definition.id).catch((): void => {})
-      }
-    })
   }
 
   @Builder

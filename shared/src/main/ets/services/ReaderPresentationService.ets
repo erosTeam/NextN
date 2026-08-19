@@ -362,7 +362,8 @@ export class ReaderPresentationService {
   private static normalizeSuperResolutionModel(value: NhReaderSuperResolutionModel): NhReaderSuperResolutionModel {
     if (value === NhReaderSuperResolutionModel.WAIFU2X_PHOTO_NOISE0_2X ||
       value === NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X ||
-      value === NhReaderSuperResolutionModel.REAL_ESRGAN_X2PLUS) {
+      value === NhReaderSuperResolutionModel.REAL_ESRGAN_X2PLUS ||
+      value === NhReaderSuperResolutionModel.SYSTEM_CORE_VISION) {
       return value
     }
     return NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X

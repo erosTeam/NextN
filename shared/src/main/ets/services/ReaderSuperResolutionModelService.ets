@@ -1,4 +1,5 @@
 import { common } from '@kit.AbilityKit'
+import { deviceInfo } from '@kit.BasicServicesKit'
 import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { http } from '@kit.NetworkKit'
@@ -55,6 +56,7 @@ export class ReaderSuperResolutionModelDefinition {
   inputName: string = 'Input1'
   outputName: string = 'Eltwise4'
   effectStrengthPercent: number = 100
+  systemModel: boolean = false
 
   bytes(): number {
     return this.paramBytes + this.modelBytes
@@ -179,6 +181,20 @@ function realEsrganDefinition(): ReaderSuperResolutionModelDefinition {
   return definition
 }
 
+function systemDefinition(): ReaderSuperResolutionModelDefinition {
+  const definition: ReaderSuperResolutionModelDefinition = new ReaderSuperResolutionModelDefinition()
+  definition.id = NhReaderSuperResolutionModel.SYSTEM_CORE_VISION
+  definition.systemModel = true
+  definition.directoryName = 'system-core-vision'
+  definition.labelStringKey = 'settings_reader_enhancement_model_system_title'
+  definition.hintStringKey = 'settings_reader_enhancement_model_system_hint'
+  definition.managerTitleStringKey = 'settings_reader_enhancement_model_system_manager_title'
+  definition.managerScopeStringKey = 'settings_reader_enhancement_model_scope_system'
+  definition.managerPerformanceStringKey = 'settings_reader_enhancement_model_performance_system'
+  definition.managerDetailsStringKey = 'settings_reader_enhancement_model_system_details'
+  return definition
+}
+
 const USER_SELECTABLE_DEFINITIONS: ReaderSuperResolutionModelDefinition[] = [
   artDefinition(),
   photoDefinition(),
@@ -194,13 +210,21 @@ export class ReaderSuperResolutionModelService {
   private static installTasks: Map<string, Promise<void>> = new Map<string, Promise<void>>()
 
   static definitions(): ReaderSuperResolutionModelDefinition[] {
-    return USER_SELECTABLE_DEFINITIONS
+    const definitions: ReaderSuperResolutionModelDefinition[] = []
+    if (ReaderSuperResolutionModelService.systemSuperResolutionSupported()) {
+      definitions.push(systemDefinition())
+    }
+    for (let index: number = 0; index < USER_SELECTABLE_DEFINITIONS.length; index++) {
+      definitions.push(USER_SELECTABLE_DEFINITIONS[index])
+    }
+    return definitions
   }
 
   static definition(model: NhReaderSuperResolutionModel): ReaderSuperResolutionModelDefinition | null {
-    for (let index: number = 0; index < USER_SELECTABLE_DEFINITIONS.length; index++) {
-      if (USER_SELECTABLE_DEFINITIONS[index].id === model) {
-        return USER_SELECTABLE_DEFINITIONS[index]
+    const definitions: ReaderSuperResolutionModelDefinition[] = ReaderSuperResolutionModelService.definitions()
+    for (let index: number = 0; index < definitions.length; index++) {
+      if (definitions[index].id === model) {
+        return definitions[index]
       }
     }
     return null
@@ -214,6 +238,9 @@ export class ReaderSuperResolutionModelService {
       ReaderSuperResolutionModelService.definition(model)
     if (definition === null) {
       return false
+    }
+    if (definition.systemModel) {
+      return ReaderSuperResolutionModelService.systemSuperResolutionSupported()
     }
     const paths: ReaderSuperResolutionModelPaths =
       ReaderSuperResolutionModelService.paths(context, definition)
@@ -243,6 +270,9 @@ export class ReaderSuperResolutionModelService {
     context: common.UIAbilityContext,
     model: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X,
   ): Promise<ReaderSuperResolutionModelPaths | null> {
+    if (model === NhReaderSuperResolutionModel.SYSTEM_CORE_VISION) {
+      return null
+    }
     const definition: ReaderSuperResolutionModelDefinition | null =
       ReaderSuperResolutionModelService.definition(model)
     if (definition === null || !await ReaderSuperResolutionModelService.isInstalled(context, model)) {
@@ -254,14 +284,27 @@ export class ReaderSuperResolutionModelService {
   static nativeConfig(model: NhReaderSuperResolutionModel): ReaderNativeSuperResolutionConfig | null {
     const definition: ReaderSuperResolutionModelDefinition | null =
       ReaderSuperResolutionModelService.definition(model)
-    return definition === null ? null : definition.nativeConfig()
+    if (definition === null || definition.systemModel) {
+      return null
+    }
+    return definition.nativeConfig()
   }
 
   /** The service-owned contract portion of a private rendered-image cache key. */
   static derivativeCacheIdentity(model: NhReaderSuperResolutionModel): string {
     const definition: ReaderSuperResolutionModelDefinition | null =
       ReaderSuperResolutionModelService.definition(model)
-    return definition === null ? '' : definition.derivativeCacheIdentity()
+    if (definition === null) {
+      return ''
+    }
+    if (definition.systemModel) {
+      return JSON.stringify([definition.id, 'system-core-vision-jpeg-v1'])
+    }
+    return definition.derivativeCacheIdentity()
+  }
+
+  static systemSuperResolutionSupported(): boolean {
+    return deviceInfo.apiAvailable('26.0.0') && canIUse('SystemCapability.AI.Vision.VisionBase')
   }
 
   static async install(context: common.UIAbilityContext, model: NhReaderSuperResolutionModel): Promise<void> {
@@ -269,6 +312,9 @@ export class ReaderSuperResolutionModelService {
       ReaderSuperResolutionModelService.definition(model)
     if (definition === null) {
       throw new Error('Selected Reader enhancement model is unavailable')
+    }
+    if (definition.systemModel) {
+      return
     }
     if (await ReaderSuperResolutionModelService.isInstalled(context, model)) {
       return
@@ -293,7 +339,7 @@ export class ReaderSuperResolutionModelService {
   static remove(context: common.UIAbilityContext, model: NhReaderSuperResolutionModel): void {
     const definition: ReaderSuperResolutionModelDefinition | null =
       ReaderSuperResolutionModelService.definition(model)
-    if (definition === null) {
+    if (definition === null || definition.systemModel) {
       return
     }
     const paths: ReaderSuperResolutionModelPaths =
