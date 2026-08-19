@@ -959,6 +959,10 @@
     { "name": "reader_tap_zone_action_next", "value": "Next page" },
     { "name": "reader_tap_zone_action_menu", "value": "Menu" },
     { "name": "reader_tap_zone_action_left", "value": "Move left" },
-    { "name": "reader_tap_zone_action_right", "value": "Move right" }
+    { "name": "reader_tap_zone_action_right", "value": "Move right" },
+    { "name": "comic_torii_credits_refreshing", "value": "Refreshing…" },
+    { "name": "reader_loading_resolving", "value": "Resolving image" },
+    { "name": "reader_loading_image", "value": "Loading image" },
+    { "name": "reader_loading_decoding", "value": "Preparing image" }
   ]
 }

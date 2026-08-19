@@ -960,6 +960,10 @@
     { "name": "reader_tap_zone_action_next", "value": "下一页" },
     { "name": "reader_tap_zone_action_menu", "value": "菜单" },
     { "name": "reader_tap_zone_action_left", "value": "往左" },
-    { "name": "reader_tap_zone_action_right", "value": "往右" }
+    { "name": "reader_tap_zone_action_right", "value": "往右" },
+    { "name": "comic_torii_credits_refreshing", "value": "刷新中…" },
+    { "name": "reader_loading_resolving", "value": "正在解析图片" },
+    { "name": "reader_loading_image", "value": "正在加载图片" },
+    { "name": "reader_loading_decoding", "value": "正在准备图片" }
   ]
 }

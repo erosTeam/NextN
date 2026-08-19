@@ -959,6 +959,10 @@
     { "name": "reader_tap_zone_action_next", "value": "次のページ" },
     { "name": "reader_tap_zone_action_menu", "value": "メニュー" },
     { "name": "reader_tap_zone_action_left", "value": "左へ" },
-    { "name": "reader_tap_zone_action_right", "value": "右へ" }
+    { "name": "reader_tap_zone_action_right", "value": "右へ" },
+    { "name": "comic_torii_credits_refreshing", "value": "更新中…" },
+    { "name": "reader_loading_resolving", "value": "画像を解析中" },
+    { "name": "reader_loading_image", "value": "画像を読み込み中" },
+    { "name": "reader_loading_decoding", "value": "画像を準備中" }
   ]
 }

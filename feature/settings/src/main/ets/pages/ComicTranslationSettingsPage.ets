@@ -294,7 +294,9 @@ export struct ComicTranslationSettingsPage {
 
   private toriiCreditsText(): string {
     if (this.toriiCredits === null) {
-      return ''
+      return this.toriiCreditsRefreshing
+        ? AppStrings.get('comic_torii_credits_refreshing')
+        : '—'
     }
     return this.toriiCredits.credits.toFixed(2).replace(/\.00$/, '')
   }
@@ -967,7 +969,7 @@ export struct ComicTranslationSettingsPage {
                 AppStrings.get('comic_torii_api_key'),
                 AppStrings.get('comic_torii_api_key_hint'),
               )
-              if (this.toriiCredits !== null) {
+              if (this.toriiReady() || this.toriiCredits !== null) {
                 this.RowDivider()
                 NextNListRow({
                   leadingIcon: $r('sys.symbol.creditcard'),

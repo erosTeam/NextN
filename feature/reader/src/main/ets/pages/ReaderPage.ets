@@ -106,6 +106,16 @@ const READER_ENHANCEMENT_INTERACTION_SETTLE_MS: number = 420
 const READER_ENHANCEMENT_INTERACTION_FALLBACK_MS: number = 2500
 const READER_VERTICAL_TAP_MAX_DISTANCE: number = 8
 const READER_TOUCH_TAP_SUPPRESS_MS: number = 350
+const READER_LOADING_PROGRESS_ANIM_DURATION: number = 220
+const READER_LOADING_INDETERMINATE_ANIM_DURATION: number = 900
+const READER_LOADING_BAR_HEIGHT: number = 4
+const READER_LOADING_BAR_WIDTH_PERCENT: string = '80%'
+const READER_LOADING_BAR_MAX_WIDTH: number = 180
+const READER_LOADING_SLIDER_WIDTH_RATIO: number = 0.3
+const READER_LOADING_BAR_RADIUS: number = 2
+const READER_LOADING_BAR_BG: ResourceColor = '#33FFFFFF'
+const READER_LOADING_BAR_LIGHT_BG: ResourceColor = '#33000000'
+const READER_LOADING_BAR_FG: ResourceColor = Color.White
 
 /** DownloadQueueService exposes verified private pages as display-only file URIs. */
 function readerLocalFilePath(uri: string): string {
@@ -115,6 +125,176 @@ function readerLocalFilePath(uri: string): string {
 // Structural subset of Image.onComplete (NextE parity). Intrinsic bitmap size
 // arrives in px and is converted to vp so contain-fit pan bounds stay in the
 // same coordinate space as gestures.
+/** NextE ReaderLoadingBar port: indeterminate sliding or determinate progress bar. */
+@ComponentV2
+struct ReaderLoadingBar {
+  @Param determinate: boolean = false
+  @Param ratio: number = 0
+  @Param barFillColor: ResourceColor = READER_LOADING_BAR_FG
+  @Param barTrackColor: ResourceColor = READER_LOADING_BAR_BG
+  @Local indeterminatePosition: number = 0
+  @Local trackWidth: number = 0
+
+  private indeterminateStartTimer: number = -1
+  private indeterminateTimer: number = -1
+
+  aboutToAppear(): void {
+    this.syncIndeterminateAnimation()
+  }
+
+  aboutToDisappear(): void {
+    this.stopIndeterminateAnimation()
+  }
+
+  @Monitor('determinate')
+  private onDeterminateChanged(): void {
+    this.syncIndeterminateAnimation()
+  }
+
+  private syncIndeterminateAnimation(): void {
+    if (this.determinate) {
+      this.stopIndeterminateAnimation()
+      this.indeterminatePosition = 0
+      return
+    }
+    this.startIndeterminateAnimation()
+  }
+
+  private startIndeterminateAnimation(): void {
+    if (this.trackWidth <= 0 || this.indeterminateStartTimer >= 0 || this.indeterminateTimer >= 0) {
+      return
+    }
+    this.indeterminatePosition = 0
+    this.indeterminateStartTimer = setTimeout((): void => {
+      this.indeterminateStartTimer = -1
+      if (this.determinate) {
+        return
+      }
+      this.moveIndeterminateSlider()
+      this.indeterminateTimer = setInterval((): void => {
+        this.moveIndeterminateSlider()
+      }, READER_LOADING_INDETERMINATE_ANIM_DURATION)
+    }, 0)
+  }
+
+  private stopIndeterminateAnimation(): void {
+    if (this.indeterminateStartTimer >= 0) {
+      clearTimeout(this.indeterminateStartTimer)
+      this.indeterminateStartTimer = -1
+    }
+    if (this.indeterminateTimer >= 0) {
+      clearInterval(this.indeterminateTimer)
+      this.indeterminateTimer = -1
+    }
+  }
+
+  private moveIndeterminateSlider(): void {
+    this.indeterminatePosition = this.indeterminatePosition > 0 ? 0 : 1
+  }
+
+  private barWidth(): number {
+    return this.trackWidth > 0 ? this.trackWidth : READER_LOADING_BAR_MAX_WIDTH
+  }
+
+  private sliderWidth(): number {
+    return this.barWidth() * READER_LOADING_SLIDER_WIDTH_RATIO
+  }
+
+  private clampedRatio(): number {
+    return Math.min(1, Math.max(0, this.ratio))
+  }
+
+  private fillWidth(): number {
+    return this.determinate ? this.barWidth() * this.clampedRatio() : this.sliderWidth()
+  }
+
+  private sliderX(): number {
+    return this.determinate ? 0 : (this.barWidth() - this.sliderWidth()) * this.indeterminatePosition
+  }
+
+  build() {
+    Stack({ alignContent: Alignment.Start }) {
+      if (this.determinate) {
+        Row()
+          .width(this.fillWidth())
+          .height(READER_LOADING_BAR_HEIGHT)
+          .backgroundColor(this.barFillColor)
+          .borderRadius(READER_LOADING_BAR_RADIUS)
+          .animation({ duration: READER_LOADING_PROGRESS_ANIM_DURATION, curve: Curve.EaseOut })
+      } else {
+        Row()
+          .width(this.sliderWidth())
+          .height(READER_LOADING_BAR_HEIGHT)
+          .backgroundColor(this.barFillColor)
+          .borderRadius(READER_LOADING_BAR_RADIUS)
+          .translate({ x: this.sliderX() })
+          .animation({
+            duration: READER_LOADING_INDETERMINATE_ANIM_DURATION,
+            curve: Curve.EaseInOut,
+          })
+      }
+    }
+    .width(READER_LOADING_BAR_WIDTH_PERCENT)
+    .constraintSize({ maxWidth: READER_LOADING_BAR_MAX_WIDTH })
+    .height(READER_LOADING_BAR_HEIGHT)
+    .backgroundColor(this.barTrackColor)
+    .borderRadius(READER_LOADING_BAR_RADIUS)
+    .clip(true)
+    .onAreaChange((_oldArea: Area, area: Area): void => {
+      this.trackWidth = area.width as number
+      this.syncIndeterminateAnimation()
+    })
+  }
+}
+
+/** NextE ReaderLoadingStage port: staged loading with progress-aware bar and label. */
+@ComponentV2
+struct ReaderLoadingStage {
+  @Param label: ResourceStr = ''
+  @Param loaded: number = 0
+  @Param total: number = 0
+  @Param contentColor: ResourceColor = READER_FOREGROUND_DARK_CANVAS
+  @Param secondaryColor: ResourceColor = READER_SECONDARY_FOREGROUND_DARK_CANVAS
+  @Param trackColor: ResourceColor = READER_LOADING_BAR_BG
+
+  private hasProgress(): boolean {
+    return this.total > 0
+  }
+
+  private progressRatio(): number {
+    return this.hasProgress() ? Math.min(1, Math.max(0, this.loaded / this.total)) : 0
+  }
+
+  private progressPercent(): string {
+    return `${Math.round(this.progressRatio() * 100)}%`
+  }
+
+  build() {
+    Column({ space: ThemeTokens.SPACE_SM }) {
+      ReaderLoadingBar({
+        determinate: this.hasProgress(),
+        ratio: this.progressRatio(),
+        barFillColor: this.contentColor,
+        barTrackColor: this.trackColor,
+      })
+      Text(this.label)
+        .fontSize(ThemeTokens.FONT_SIZE_BODY)
+        .fontColor(this.contentColor)
+        .textAlign(TextAlign.Center)
+      Text(this.hasProgress() ? this.progressPercent() : '0%')
+        .fontSize(ThemeTokens.FONT_SIZE_META)
+        .fontColor(this.secondaryColor)
+        .textAlign(TextAlign.Center)
+        .opacity(this.hasProgress() ? 1 : 0)
+    }
+    .width('100%')
+    .height('100%')
+    .justifyContent(FlexAlign.Center)
+    .alignItems(HorizontalAlign.Center)
+    .padding(ThemeTokens.SPACE_XL)
+  }
+}
+
 interface ReaderImageLoadEvent {
   loadingStatus: number
   width?: number
@@ -756,16 +936,14 @@ struct ReaderImagePage {
     if (this.hasLoadError || this.isRetrying || this.isLoading) {
       Column({ space: ThemeTokens.SPACE_SM }) {
         if (this.isRetrying || this.isLoading) {
-          LoadingProgress()
-            .width(24)
-            .height(24)
-            .color(this.canvasContentColor)
-          Text(this.isRetrying
-            ? AppStrings.get('reader_status_retrying_image')
-            : AppStrings.get('reader_status_loading_image'))
-            .fontSize(ThemeTokens.FONT_SIZE_META)
-            .fontColor(this.canvasContentColor)
-            .opacity(0.82)
+          ReaderLoadingStage({
+            label: AppStrings.get(this.isRetrying
+              ? 'reader_status_retrying_image'
+              : 'reader_loading_image'),
+            contentColor: this.canvasContentColor,
+            secondaryColor: this.canvasSecondaryContentColor,
+            trackColor: READER_LOADING_BAR_BG,
+          })
         } else {
           SymbolGlyph($r('sys.symbol.exclamationmark_triangle'))
             .fontSize(32)

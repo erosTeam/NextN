@@ -940,6 +940,7 @@
     { "name": "comic_torii_api_key", "value": "Torii API key" },
     { "name": "comic_torii_api_key_hint", "value": "Required for Torii image translation" },
     { "name": "comic_torii_available_credits", "value": "Available credits" },
+    { "name": "comic_torii_credits_refreshing", "value": "Refreshing…" },
     { "name": "comic_torii_notice_managed", "value": "The selected model uses Torii credits. Images and context are sent only for cloud whole-page translation." },
     { "name": "comic_translation_live_evaluation_title", "value": "Provider evaluation" },
     { "name": "comic_translation_live_evaluation_confirm", "value": "Evaluate 2 bundled original pages with the current provider? This may consume quota; no gallery pages are used." },
@@ -960,6 +961,9 @@
     { "name": "reader_tap_zone_action_next", "value": "Next page" },
     { "name": "reader_tap_zone_action_menu", "value": "Menu" },
     { "name": "reader_tap_zone_action_left", "value": "Move left" },
-    { "name": "reader_tap_zone_action_right", "value": "Move right" }
-  ]
+    { "name": "reader_tap_zone_action_right", "value": "Move right" },
+    { "name": "reader_loading_resolving", "value": "Resolving image" },
+    { "name": "reader_loading_image", "value": "Loading image" },
+    { "name": "reader_loading_decoding", "value": "Preparing image" }
+]
 }
