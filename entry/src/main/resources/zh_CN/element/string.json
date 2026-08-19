@@ -199,7 +199,7 @@
     { "name": "web_nav_refresh", "value": "刷新" },
     { "name": "action_share", "value": "分享" },
     { "name": "title_popular", "value": "热门" },
-    { "name": "title_pages", "value": "缩略图" },
+    { "name": "title_pages", "value": "预览" },
     { "name": "title_content_filters", "value": "内容过滤器" },
     { "name": "comments_action_post", "value": "发布评论" },
     { "name": "comments_action_posting", "value": "发布中…" },

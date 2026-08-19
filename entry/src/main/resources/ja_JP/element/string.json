@@ -198,7 +198,7 @@
     { "name": "web_nav_refresh", "value": "更新" },
     { "name": "action_share", "value": "共有" },
     { "name": "title_popular", "value": "人気" },
-    { "name": "title_pages", "value": "サムネイル" },
+    { "name": "title_pages", "value": "プレビュー" },
     { "name": "title_content_filters", "value": "コンテンツフィルター" },
     { "name": "comments_action_post", "value": "コメントを投稿" },
     { "name": "comments_action_posting", "value": "投稿中…" },

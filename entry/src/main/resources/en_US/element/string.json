@@ -198,7 +198,7 @@
     { "name": "web_nav_refresh", "value": "Refresh" },
     { "name": "action_share", "value": "Share" },
     { "name": "title_popular", "value": "Popular" },
-    { "name": "title_pages", "value": "Thumbnails" },
+    { "name": "title_pages", "value": "Preview" },
     { "name": "title_content_filters", "value": "Content filters" },
     { "name": "comments_action_post", "value": "Post comment" },
     { "name": "comments_action_posting", "value": "Posting…" },
