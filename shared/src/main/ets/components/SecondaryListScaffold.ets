@@ -1,6 +1,6 @@
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { connectLayoutSafeArea, LayoutSafeAreaState } from '../state/LayoutSafeAreaState'
-import { isUserScrollSource } from '../utils/ScrollUserInput'
+import { currentScrollOffsetY, isUserScrollSource } from '../utils/ScrollUserInput'
 
 /**
  * Shared routed/root list host, kept structurally aligned with NextE.
@@ -61,7 +61,7 @@ export struct SecondaryListScaffold {
     })
     .onDidScroll((_scrollOffset: number, scrollState: ScrollState): void => {
       if (this.onDidScroll) {
-        this.onDidScroll(this.scroller.currentOffset().yOffset, scrollState)
+        this.onDidScroll(currentScrollOffsetY(this.scroller), scrollState)
       }
     })
     .onWillScroll((_scrollOffset: number, _scrollState: ScrollState, source: ScrollSource): void => {
@@ -74,7 +74,7 @@ export struct SecondaryListScaffold {
         this.onScrollIndex(start, end, center)
       }
       if (this.onDidScroll) {
-        this.onDidScroll(this.scroller.currentOffset().yOffset, ScrollState.Scroll)
+        this.onDidScroll(currentScrollOffsetY(this.scroller), ScrollState.Scroll)
       }
     })
     .onAreaChange((_oldValue: Area, newValue: Area): void => {

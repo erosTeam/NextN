@@ -309,6 +309,7 @@ export { ImageKnifeProImageAdapter } from './services/ImageKnifeProImageAdapter'
 export { EhImageKnifeImage } from './components/EhImageKnifeImage'
 export { ContentTransitionType } from '@ohos/imageknifepro'
 export { BasicDataSource } from './utils/BasicDataSource'
+export { currentScrollOffsetX, currentScrollOffsetY } from './utils/ScrollUserInput'
 export {
   ComicRenderedPageRepository,
   ComicRenderedPageRepositoryContract,

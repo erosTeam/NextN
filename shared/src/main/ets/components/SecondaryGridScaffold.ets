@@ -10,7 +10,7 @@ import {
   galleryColumnCount,
   supportsGalleryColumnDensity,
 } from '../utils/GalleryColumns'
-import { isUserScrollSource } from '../utils/ScrollUserInput'
+import { currentScrollOffsetY, isUserScrollSource } from '../utils/ScrollUserInput'
 
 /**
  * Grid counterpart to SecondaryListScaffold.
@@ -95,7 +95,7 @@ export struct SecondaryGridScaffold {
     })
     .onDidScroll((_scrollOffset: number, scrollState: ScrollState): void => {
       if (this.onDidScroll) {
-        this.onDidScroll(this.scroller.currentOffset().yOffset, scrollState)
+        this.onDidScroll(currentScrollOffsetY(this.scroller), scrollState)
       }
     })
     .onWillScroll((_scrollOffset: number, _scrollState: ScrollState, source: ScrollSource): void => {
@@ -108,7 +108,7 @@ export struct SecondaryGridScaffold {
         this.onScrollIndex(start, end)
       }
       if (this.onDidScroll) {
-        this.onDidScroll(this.scroller.currentOffset().yOffset, ScrollState.Scroll)
+        this.onDidScroll(currentScrollOffsetY(this.scroller), ScrollState.Scroll)
       }
     })
     .onReachEnd((): void => {

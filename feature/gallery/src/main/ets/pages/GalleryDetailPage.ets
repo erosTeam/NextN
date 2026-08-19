@@ -25,6 +25,7 @@ import {
   connectActionHandEdge,
   connectBrowsePresentation,
   AppStrings,
+  currentScrollOffsetY,
   NhComment,
   NhGalleryDetail,
   NhGalleryDetailCacheService,
@@ -678,12 +679,9 @@ export struct GalleryDetailPage {
       this.publishNavigationChrome('', false)
       return
     }
-    // Detail data can arrive before its metadata List has attached the
-    // Scroller. ArkUI then returns undefined here; treating that first frame
-    // as the collapsed title state avoids surfacing a raw runtime error.
-    const currentOffset = this.scroller.currentOffset()
-    const revealTitle: boolean = currentOffset !== undefined &&
-      currentOffset.yOffset > DETAIL_TITLE_REVEAL_OFFSET
+    // The shared helper treats the not-yet-attached Scroller frame as 0,
+    // which resolves to the collapsed title state.
+    const revealTitle: boolean = currentScrollOffsetY(this.scroller) > DETAIL_TITLE_REVEAL_OFFSET
     this.publishNavigationChrome(this.galleryHeroPrimaryTitle(), revealTitle)
   }
 

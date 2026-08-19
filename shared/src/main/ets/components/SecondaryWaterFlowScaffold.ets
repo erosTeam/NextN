@@ -10,7 +10,7 @@ import {
   galleryColumnCount,
   supportsGalleryColumnDensity,
 } from '../utils/GalleryColumns'
-import { isUserScrollSource } from '../utils/ScrollUserInput'
+import { currentScrollOffsetY, isUserScrollSource } from '../utils/ScrollUserInput'
 
 const WATER_FLOW_CACHE_ROWS: number = 2
 const WATER_FLOW_MAX_CACHE_ITEMS: number = 8
@@ -108,7 +108,7 @@ export struct SecondaryWaterFlowScaffold {
     })
     .onDidScroll((_scrollOffset: number, scrollState: ScrollState): void => {
       if (this.onDidScroll) {
-        this.onDidScroll(this.scroller.currentOffset().yOffset, scrollState)
+        this.onDidScroll(currentScrollOffsetY(this.scroller), scrollState)
       }
     })
     .onWillScroll((_scrollOffset: number, _scrollState: ScrollState, source: ScrollSource): void => {
@@ -121,7 +121,7 @@ export struct SecondaryWaterFlowScaffold {
         this.onScrollIndex(start, end)
       }
       if (this.onDidScroll) {
-        this.onDidScroll(this.scroller.currentOffset().yOffset, ScrollState.Scroll)
+        this.onDidScroll(currentScrollOffsetY(this.scroller), ScrollState.Scroll)
       }
       this.maybeNotifyNearEnd(end)
     })

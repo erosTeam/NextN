@@ -1,7 +1,7 @@
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { NextNPullRefresh, NextNPullRefreshController } from './PullRefresh'
 import { connectLayoutSafeArea, LayoutSafeAreaState } from '../state/LayoutSafeAreaState'
-import { isUserScrollSource } from '../utils/ScrollUserInput'
+import { currentScrollOffsetY, isUserScrollSource } from '../utils/ScrollUserInput'
 
 /**
  * Interactive-refresh List host derived from NextE's PullRefreshListScaffold.
@@ -122,7 +122,7 @@ export struct PullRefreshListScaffold {
       })
       .onDidScroll((_scrollOffset: number, scrollState: ScrollState): void => {
         if (this.onDidScroll) {
-          this.onDidScroll(this.scroller.currentOffset().yOffset, scrollState)
+          this.onDidScroll(currentScrollOffsetY(this.scroller), scrollState)
         }
       })
       .onScrollIndex((start: number, end: number, center: number): void => {
@@ -133,7 +133,7 @@ export struct PullRefreshListScaffold {
           this.onScrollIndex(adjustedStart, adjustedEnd, adjustedCenter)
         }
         if (this.onDidScroll) {
-          this.onDidScroll(this.scrolledOffset(), ScrollState.Scroll)
+          this.onDidScroll(currentScrollOffsetY(this.scroller), ScrollState.Scroll)
         }
       })
       .onReachEnd((): void => {
@@ -155,10 +155,6 @@ export struct PullRefreshListScaffold {
         }
       })
     }
-  }
-
-  private scrolledOffset(): number {
-    return this.scroller.currentOffset()?.yOffset ?? 0
   }
 
   private resolvedIndicatorTop(): number {

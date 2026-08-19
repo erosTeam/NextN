@@ -1,6 +1,7 @@
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { HOME_SOURCE_SELECTOR_HEIGHT } from '../state/HomeSourceState'
 import { TabItem } from '../model/TabItem'
+import { currentScrollOffsetX } from '../utils/ScrollUserInput'
 import {
   connectLanguageState,
   connectThemeDisplay,
@@ -96,7 +97,7 @@ export struct SubTabBar {
   }
 
   private currentScrollOffsetX(): number {
-    const offset: number = this.scroller.currentOffset().xOffset
+    const offset: number = currentScrollOffsetX(this.scroller)
     return offset > 0 && !Number.isNaN(offset) ? offset : 0
   }
 

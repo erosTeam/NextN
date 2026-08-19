@@ -1,6 +1,7 @@
 import { vibrator } from '@kit.SensorServiceKit'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { RefreshFeedback } from '../utils/RefreshFeedback'
+import { currentScrollOffsetY } from '../utils/ScrollUserInput'
 
 const PULL_START_DRAG_VP: number = 4
 // A pull only ARMS (and disables the inner Scroll) after a deliberate, vertical-dominant drag past this
@@ -99,7 +100,7 @@ export struct NextNPullRefresh {
   }
 
   private isListAtTop(): boolean {
-    return this.scroller.currentOffset().yOffset <= 0
+    return currentScrollOffsetY(this.scroller) <= 0
   }
 
   // Pixel-true bottom check for MANUAL pull-up (force refresh) gesture only.

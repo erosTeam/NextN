@@ -1,6 +1,7 @@
 import { AppRelease } from '../model/AppRelease'
 import { TabItem } from '../model/TabItem'
 import { ThemeTokens } from '../theme/ThemeTokens'
+import { currentScrollOffsetX } from '../utils/ScrollUserInput'
 import { MarkdownContent } from './MarkdownContent'
 
 const RELEASE_NOTES_DIALOG_CONTENT_MAX_HEIGHT: string = '60%'
@@ -143,7 +144,7 @@ struct ReleaseNotesVersionTrack {
   }
 
   private currentScrollOffsetX(): number {
-    const offset: number = this.scroller.currentOffset().xOffset
+    const offset: number = currentScrollOffsetX(this.scroller)
     return offset > 0 && !Number.isNaN(offset) ? offset : 0
   }
 
