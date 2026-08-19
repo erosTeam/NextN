@@ -349,9 +349,6 @@ struct Index {
   @Local private titleScroller: Scroller = this.rootTabScrollers[0]
   @Local private historyClearVersion: number = 0
   @Local private favoritesActions: FavoritesActionState = connectFavoritesActions()
-  @Local private galleryExternalOpenVersion: number = 0
-  @Local private galleryShareVersion: number = 0
-  @Local private galleryFavoriteVersion: number = 0
   @Local private galleryChromeVersion: number = 0
   private readerDestinationVisible: boolean = false
   private readerDestinationClosing: boolean = false
@@ -1396,7 +1393,7 @@ struct Index {
         : $r('sys.symbol.heart'),
       'isEnabled': !route.chrome.favoriteBusy,
       'action': (): void => {
-        this.galleryFavoriteVersion += 1
+        route.chrome.favoriteRequestVersion += 1
       },
     }
     const externalOpenAction: Record<string, Object> = {
@@ -1404,7 +1401,7 @@ struct Index {
       'icon': $r('sys.symbol.link'),
       'isEnabled': true,
       'action': (): void => {
-        this.galleryExternalOpenVersion += 1
+        route.chrome.externalOpenRequestVersion += 1
       },
     }
     const internalWebAction: Record<string, Object> = {
@@ -1420,7 +1417,7 @@ struct Index {
       'icon': $r('sys.symbol.share'),
       'isEnabled': true,
       'action': (): void => {
-        this.galleryShareVersion += 1
+        route.chrome.shareRequestVersion += 1
       },
     }
     const reloadAction: Record<string, Object> = {
@@ -1608,9 +1605,6 @@ struct Index {
         seed: this.galleryParams(param).seed,
         chrome: this.galleryParams(param).chrome,
         scroller: this.galleryScroller,
-        externalOpenVersion: this.galleryExternalOpenVersion,
-        shareVersion: this.galleryShareVersion,
-        favoriteVersion: this.galleryFavoriteVersion,
         onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
           this.pushGallery(galleryId, seed)
         },

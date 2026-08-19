@@ -11,6 +11,12 @@ export class GalleryChromeState {
   // request. Keeping this counter on the route chrome prevents a refresh in
   // one stacked Gallery route from reaching another retained detail.
   @Trace reloadVersion: number = 0
+  // Title-bar one-shot command intents share the same route-local rule as
+  // reloadVersion: a command from one stacked Gallery route must never
+  // reach another retained detail.
+  @Trace favoriteRequestVersion: number = 0
+  @Trace shareRequestVersion: number = 0
+  @Trace externalOpenRequestVersion: number = 0
   @Trace refreshInFlight: boolean = false
   // The title-bar favourite action is owned by the Detail route, but HDS is
   // rendered by the entry shell. Keep that cross-layer state explicit rather

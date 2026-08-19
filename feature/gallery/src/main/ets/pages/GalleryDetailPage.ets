@@ -246,9 +246,6 @@ export struct GalleryDetailPage {
   private readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
   @Param scroller: Scroller = new Scroller()
   @Param chrome: GalleryChromeState = new GalleryChromeState()
-  @Param externalOpenVersion: number = 0
-  @Param shareVersion: number = 0
-  @Param favoriteVersion: number = 0
   @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
   @Event onOpenThumbnails?: (galleryId: number, pages: NhGalleryPage[]) => void
   @Event onOpenReader?: (galleryId: number, initialPageIndex: number) => void
@@ -403,16 +400,16 @@ export struct GalleryDetailPage {
     this.commentPeek = ContentFilterService.filterComments(this.rawCommentPeek)
   }
 
-  @Monitor('shareVersion')
+  @Monitor('chrome.shareRequestVersion')
   onShareRequested(): void {
-    if (this.shareVersion > 0) {
+    if (this.chrome.shareRequestVersion > 0) {
       this.shareCurrentGallery()
     }
   }
 
-  @Monitor('externalOpenVersion')
+  @Monitor('chrome.externalOpenRequestVersion')
   onExternalOpenRequested(): void {
-    if (this.externalOpenVersion > 0) {
+    if (this.chrome.externalOpenRequestVersion > 0) {
       this.openCurrentGalleryExternally()
     }
   }
@@ -422,9 +419,9 @@ export struct GalleryDetailPage {
     this.publishDownloadChrome()
   }
 
-  @Monitor('favoriteVersion')
+  @Monitor('chrome.favoriteRequestVersion')
   onFavoriteRequested(): void {
-    if (this.favoriteVersion > 0) {
+    if (this.chrome.favoriteRequestVersion > 0) {
       this.requestFavoriteToggle()
     }
   }

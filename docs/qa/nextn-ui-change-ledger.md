@@ -6779,3 +6779,93 @@ authorize an edit, replace a device comparison, or define product completion.
   isFavorited=false). Toast PNGs archived under /tmp/nextn-copy-period/; the
   session's visual quota was unavailable, so PNGs are retained as raw
   evidence, not as visually-read proof.
+
+## OPEN — Reader system image super-resolution entry — 2026-08-20
+
+- **Why newly actionable:** the user selected the official
+  `@hms.ai.vision.imageSuperResolution` (Core Vision Kit, API 26) route and
+  decided the enhancement model list should gain a "系统图像超分" entry so
+  users can freely choose the system capability or a third-party model. This
+  is a new backend alongside Waifu2x / Real-ESRGAN, not a replacement.
+- **Whole parent-tree boundary:** the existing Reader enhancement settings
+  group keeps its row order, gating, and sheet ownership. Only these leaves
+  change: the model selector menu and model-management sheet each gain one
+  conditional row (system entry, shown only when
+  `deviceInfo.apiAvailable('26.0.0') && canIUse('SystemCapability.AI.Vision.VisionBase')`),
+  and the enhancement pipeline routes the system model to a serial
+  Core Vision backend with its own cache identity and output limits.
+- **Exact before/after:** before — the selector and management page only
+  listed the three downloadable ncnn models, and the service only had the
+  native 2x path. After — a system row appears first when the capability
+  exists, is always ready, has no download/remove action, and processing
+  reuses one ImageSRAnalyzer with serialized requests, aspect-preserving
+  bounded decode, and full PixelMap release; derivatives cache under a
+  system-specific key and accept Core Vision's own output scale (observed
+  up to 4x) instead of the local models' 2x edge limit.
+- **Minimality rationale:** existing rows, geometry, gating, and all three
+  downloadable models are unchanged; the system entry is additive and
+  disappears entirely on unsupported devices.
+- **Visual verification plan:** signed build; on API 26 device 197 open the
+  Reader enhancement settings and the model-management sheet: system row is
+  first, shows 已就绪 with no download/delete control; selector lists it and
+  switching updates the trailing label; on a pre-26 device the row is absent.
+  Reader acceptance with enhancement enabled on the system model remains a
+  separate device step.
+- **Unresolved risk:** system output scale is device-decided; a runtime that
+  exceeds the 4x guard falls back to the original page rather than promoting
+  an oversized derivative.
+
+### Verification observed 2026-08-20 (56T0225315001128, API 26; 197, API 24)
+
+- Build: scripts/build-hvigor-signed.sh → BUILD SUCCESSFUL (three cycles
+  during debugging; final build clean).
+- Root-cause fixes during device bring-up, all evidenced by hilog:
+  1. `class … extends visionBase.Request` broke module loading
+     (TypeError: parent class is not constructor, exit 254) — replaced with
+     the official typed-literal request pattern from the objectDetection
+     sample (objectDetection.md line 278).
+  2. `new visionBase.Request()` is not runtime-constructible
+     (TypeError: Constructor is false) — same literal fix.
+  3. The ISP result PixelMap cannot be JPEG-packed directly
+     (Failed to encode the image) — added an RGBA normalize stage
+     (readPixelsToBuffer → createPixelMap) before packing.
+- Runtime chain on USB API 26 device: app cold-launches; selector menu lists
+  系统图像超分 first; switching updates the trailing label; model-management
+  sheet shows the system row as 已就绪 with no download/delete control;
+  enabling enhancement and opening a gallery reader connected
+  ImageSRServiceAbility (init complete code:0) and produced two promoted
+  system-derivative cache files (6.98 MB / 1.15 MB JPEG, content-addressed
+  under the system pipeline key) with zero failure logs.
+- API 24 device 197: the system row is absent everywhere (gate correctly
+  false); the three local models and prior selection behavior unchanged.
+- Device state restored afterward: enhancement OFF, model back to
+  Waifu2x 插画 2×. Raw layout JSONs under .hvigor/outputs/system-sr-197/;
+  the reader screenshot is retained as raw evidence only (visual quota
+  unavailable this session).
+
+## FIXED — Stacked Gallery title-bar commands cross-firing — 2026-08-20
+
+- **User report:** from a favourited gallery detail, tapping a tag jumps to
+  Search, then opening another gallery and tapping the title-bar favourite
+  produced a double action — the new gallery favourited while a
+  remove-favourite dialog appeared at the same time — and the same flow
+  usually crashed after cancelling or re-favouriting.
+- **Root cause (source evidence):** the HDS title-bar actions for
+  favourite/share/external-open incremented Index-level counters
+  (`galleryFavoriteVersion` / `galleryShareVersion` /
+  `galleryExternalOpenVersion`) passed as `@Param` to **every** stacked
+  GalleryDetailPage, so one tap fired `@Monitor` in all retained details:
+  the favourited background page opened its remove-confirm dialog while the
+  foreground page favourited. `chrome.reloadVersion` already solved this
+  exact class of bug route-locally; these three were missed.
+- **Exact change:** moved all three intents onto per-route
+  `GalleryChromeState` (`favoriteRequestVersion`, `shareRequestVersion`,
+  `externalOpenRequestVersion`), title-bar closures now increment
+  `route.chrome.*`, and the page monitors follow `chrome.*RequestVersion`
+  exactly like the existing `chrome.reloadVersion` pattern. The three
+  Index-level counters and params were removed.
+- **Verification observed (56T0225315001128, 2026-08-20):** favourited
+  gallery → tag 单女主 → Search → opened unfavourited gallery → one
+  favourite tap favourited only that gallery (server count 4→10, no dialog);
+  second tap opened exactly one remove-confirm dialog; confirming remove
+  completed with the process alive and a clean crash scan in hilog.
