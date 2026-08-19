@@ -283,6 +283,7 @@
     { "name": "reader_comic_translation_running", "value": "現在のページを文字起こしして翻訳中…" },
     { "name": "reader_comic_translation_image_unavailable", "value": "現在の画像はまだ準備できていません" },
     { "name": "reader_comic_translation_failed", "value": "翻訳に失敗しました" },
+    { "name": "reader_comic_translation_provider_unavailable", "value": "先に設定で漫画翻訳プロバイダーとモデルを構成してください" },
     { "name": "reader_comic_translation_auto", "value": "自動翻訳" },
     { "name": "reader_comic_translation_auto_confirm", "value": "この閲覧中のみページを自動翻訳します。クレジット消費や画像アップロードが発生する場合があります。Readerを閉じるとオフになります。" },
     { "name": "settings_reader_comic_translation", "value": "漫画翻訳" },

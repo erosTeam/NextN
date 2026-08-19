@@ -283,6 +283,7 @@
     { "name": "reader_comic_translation_running", "value": "Transcribing and translating the current page…" },
     { "name": "reader_comic_translation_image_unavailable", "value": "The current image is not ready yet" },
     { "name": "reader_comic_translation_failed", "value": "Translation failed" },
+    { "name": "reader_comic_translation_provider_unavailable", "value": "Configure a comic translation provider and model in Settings first" },
     { "name": "reader_comic_translation_auto", "value": "Auto translate" },
     { "name": "reader_comic_translation_auto_confirm", "value": "Auto-translate pages in this reading session. This may use credits and upload images. It turns off when you leave the reader." },
     { "name": "settings_reader_comic_translation", "value": "Comic translation" },

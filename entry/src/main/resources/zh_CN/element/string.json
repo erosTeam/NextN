@@ -284,6 +284,7 @@
     { "name": "reader_comic_translation_running", "value": "正在转录并翻译当前页…" },
     { "name": "reader_comic_translation_image_unavailable", "value": "当前图片尚未准备好" },
     { "name": "reader_comic_translation_failed", "value": "翻译失败" },
+    { "name": "reader_comic_translation_provider_unavailable", "value": "请先在设置中配置漫画翻译提供方和模型" },
     { "name": "reader_comic_translation_auto", "value": "自动翻译" },
     { "name": "reader_comic_translation_auto_confirm", "value": "本次阅读中自动翻译页面，可能消耗额度并上传图片；退出 Reader 后关闭。" },
     { "name": "settings_reader_comic_translation", "value": "漫画翻译" },

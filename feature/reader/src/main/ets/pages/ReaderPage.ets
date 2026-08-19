@@ -30,6 +30,15 @@ import {
   ComicTranslationReaderPageInput,
   ComicTranslationRuntimeService,
   ComicVisualTranslationRunResult,
+  COMIC_VISUAL_ROUTE_LOCAL,
+  COMIC_VISUAL_ROUTE_SELF_HOSTED,
+  COMIC_VISUAL_ROUTE_TORII,
+  ComicVisualProviderSettings,
+  ComicVisualProviderSettingsSnapshot,
+  ToriiFontCatalog,
+  ToriiWholePageConfig,
+  ToriiWholePageSecretStore,
+  TORII_WHOLE_PAGE_SOURCE_REVISION,
   CommentTranslationService,
   ReaderPresentationService,
   ReaderPresentationState,
@@ -2123,6 +2132,11 @@ export struct ReaderPage {
   @Local readerTranslationErrorCode: string = ''
   /** Explicit, route-scoped opt-in; it never becomes a persistent Reader setting. */
   @Local readerTranslationAutoEnabled: boolean = false
+  /** Comic visual route snapshot loaded at Reader start (NextE settingsRevision parity). */
+  @Local comicVisualRoute: string = COMIC_VISUAL_ROUTE_LOCAL
+  /** Torii route identity resolved from the persisted key/model/font at Reader start. */
+  @Local toriiRuntimeProfileId: string = ''
+  @Local toriiRuntimeModelId: string = ''
   private readerTapStartX: number = 0
   private readerTapStartY: number = 0
   private readerTapSuppressUntilMs: number = 0
@@ -2573,6 +2587,7 @@ export struct ReaderPage {
     this.readerTranslationErrorCode = ''
     this.resetReaderTranslationAutoSession()
     this.readerTranslationEpoch += 1
+    this.restoreComicVisualRouteIdentity()
     this.detail = new NhGalleryDetail()
     this.pageDataSource.setData([], false)
     this.spreadDataSource.setData([], false)
@@ -3151,6 +3166,22 @@ export struct ReaderPage {
 
   /** Matches the identity that the runtime writes into ComicRenderedPage.identity. */
   private readerTranslationCurrentRuntimeKey(): string {
+    const targetLanguage: string = this.readerTranslationTargetLanguage()
+    if (targetLanguage.length === 0) {
+      return ''
+    }
+    if (this.comicVisualRoute === COMIC_VISUAL_ROUTE_TORII) {
+      if (this.toriiRuntimeProfileId.length === 0 || this.toriiRuntimeModelId.length === 0) {
+        return ''
+      }
+      return this.readerTranslationRuntimeKey(
+        targetLanguage,
+        this.toriiRuntimeProfileId,
+        TORII_WHOLE_PAGE_SOURCE_REVISION,
+        this.toriiRuntimeModelId,
+        0,
+      )
+    }
     const binding = this.llmSources.mangaBinding
     if (!binding.configured()) {
       return ''
@@ -3262,8 +3293,52 @@ export struct ReaderPage {
 
   /** Match the Reader action's availability to the persisted manga-source binding. */
   private readerTranslationSourceConfigured(): boolean {
-    return this.mangaRenderingService.initialized &&
-      this.readerTranslationCurrentRuntimeKey().length > 0
+    if (this.comicVisualRoute === COMIC_VISUAL_ROUTE_TORII) {
+      return this.toriiRuntimeProfileId.length > 0
+    }
+    if (this.comicVisualRoute === COMIC_VISUAL_ROUTE_SELF_HOSTED) {
+      return this.mangaRenderingService.initialized &&
+        this.mangaRenderingService.enabled
+    }
+    return this.readerTranslationCurrentRuntimeKey().length > 0
+  }
+
+  /**
+   * Loads the persisted visual route and its Torii identity once per Reader
+   * route. The runtime backend (ComicTranslationRuntimeService.runReaderPage)
+   * switches on ComicVisualProviderSettings.route, so availability must
+   * follow the same route instead of only the LLM manga binding.
+   */
+  private restoreComicVisualRouteIdentity(): void {
+    ComicVisualProviderSettings.load(this.context())
+      .then((snapshot: ComicVisualProviderSettingsSnapshot): void => {
+        if (this.requestGeneration <= 0) {
+          return
+        }
+        this.comicVisualRoute = snapshot.route
+        if (snapshot.route !== COMIC_VISUAL_ROUTE_TORII) {
+          this.toriiRuntimeProfileId = ''
+          this.toriiRuntimeModelId = ''
+          return
+        }
+        const credential = ToriiWholePageSecretStore.readSync(this.context())
+        const config: ToriiWholePageConfig = new ToriiWholePageConfig()
+        config.toriiApiKey = credential.toriiApiKey
+        config.modelId = snapshot.toriiModelId
+        config.fontId = ToriiFontCatalog.effectiveFontId(
+          snapshot.toriiFontId,
+          this.readerTranslationTargetLanguage(),
+        )
+        try {
+          config.assertValid()
+          this.toriiRuntimeProfileId = config.sourceProfileId()
+          this.toriiRuntimeModelId = config.modelId
+        } catch (_error) {
+          this.toriiRuntimeProfileId = ''
+          this.toriiRuntimeModelId = ''
+        }
+      })
+      .catch((): void => {})
   }
 
   /** Auto mode follows NextE's one-session, one-translation-at-a-time policy. */
@@ -3422,6 +3497,7 @@ export struct ReaderPage {
       return
     }
     if (!this.readerTranslationSourceConfigured()) {
+      this.showReaderOverflowToast('reader_comic_translation_provider_unavailable')
       return
     }
     this.startReaderTranslationForPage(pageIndex, false)

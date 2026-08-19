@@ -199,6 +199,18 @@ export class AccountSessionRepository {
     return (await AccountSessionRepository.loadVerificationSnapshot(context)).required
   }
 
+  /**
+   * Clears a stale durable verification marker. Used only when a live regular
+   * ArkWeb cookie jar has already proven the browser identity, so a previous
+   * terminal-401 record must not force a fake "tap to reverify" step.
+   */
+  static clearVerificationRequired(context: common.UIAbilityContext): Promise<void> {
+    return AccountSessionRepository.enqueueWrite(async (): Promise<void> => {
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      await store.executeSql(SQL_DELETE_VERIFICATION_REQUIRED, [SESSION_KEY])
+    })
+  }
+
   /** Explicit sign-out is the only path that deletes the sealed envelope. */
   /** Writes one saved account's sealed envelope under its account id. */
   static saveVerifiedByKey(

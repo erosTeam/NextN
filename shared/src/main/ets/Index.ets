@@ -185,6 +185,7 @@ export {
 export { ToriiWholePageCredential, ToriiWholePageSecretStore } from './services/ToriiWholePageSecretStore'
 export {
   TORII_WHOLE_PAGE_ENDPOINT,
+  TORII_WHOLE_PAGE_SOURCE_REVISION,
   ToriiWholePageConfig,
   ToriiWholePageRenderBackend,
 } from './services/ToriiWholePageRenderBackend'
