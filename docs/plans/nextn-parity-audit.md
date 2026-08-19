@@ -52,3 +52,22 @@
 - 翻译按钮不可点（自作主张 enabled 门控）[已修]
 - 点按区域指示器缺失 [已补]
 
+
+## 审计进展（2026-08-19 第二批）
+
+### Gallery 审计结论
+NextE 独有组件多为 EH 特有：ArchiverPage（EH 归档）、TorrentsPage（NH 已在操作卡）、AddTagsSheet（EH 标签投票）、InfoPage（EH 元数据页）。NH 评论 API 无内联图片（GalleryCommentInlineImage 不适用）。NH 相关面（详情/评论/缩略图）全部存在且已修复（头像/翻译/缩略图比例/预览卡）。
+
+### Settings 审计结论
+NextE 28 页 vs NextN 15 页。独有页面分类：
+- EH 特有（N/A）：EhSettings、EhProfileSettings、AccountCookiePage、AccountLoginPage（NH 用 BrowserSessionPage）
+- 已合并进 SettingsPage：Reader、Download、Cache、Search、Layout 设置（rg 验证：reader 3 处、download 66 处、reader settings strings 118 处）
+- 等价改名：ColumnDensityPage → BrowseDensitySettingsPage、LocalBlock+ImageBlock → ContentFiltersPage
+- 开发者工具：SystemSymbolBrowserPage（暂缓）
+
+### Reader 第二批修复（已提交）
+- ReaderZoomCoordinator 完整移植（动态上限/锚点/三段双击/回弹）
+- ReaderLoadingBar/ReaderLoadingStage（分阶段加载条）
+- Torii 余额行常显（API Key 配置即显示，占位替代从无到有）
+- 搜索建议命名空间前缀——代码验证已有（displayPrefix 含 ns:）
+
