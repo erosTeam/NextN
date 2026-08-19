@@ -6542,3 +6542,184 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Unresolved risk:** the placeholder branch (no avatar_url) and an
   unloaded-cover frame remain observed only through resource/build
   evidence, not a dedicated unloaded screenshot.
+
+## 2026-08-19 — Related-cover slot deepened to cover_placeholder_strong (detail page)
+
+- **Instruction/evidence:** the user reported that related-gallery covers
+  before loading sit on a background almost identical to the Detail page
+  surface ("分不出来，看着就像一开始没有封面一样"), and later asked whether the
+  fade-in starts from a color equal to the page background, finding the
+  appearance jarring. The prior #E6E8EB placeholder (page background
+  ≈ (253,254,254) in the accepted capture) leaves only a ~6% luminance gap;
+  at related-cover size with the OPACITY content transition this reads as
+  an empty page region rather than an occupied image slot.
+- **Whole parent-tree boundary:** only the RelatedCover Stack inside
+  GalleryRelatedCarousel (GalleryDetailContentSections.ets). The Detail List
+  order, card geometry, radii, CARD_BACKGROUND card, title strip, rail
+  insets, and the section heading are untouched. Sibling review: the comment
+  preview avatar slot uses SURFACE_SUB inside its white card and was not
+  reported; the Detail hero uses the blurred letterbox fill and only falls
+  back to COVER_PLACEHOLDER when source size is unknown — neither sibling
+  changes.
+- **Exact before/after:** RelatedCover.backgroundColor
+  ThemeTokens.COVER_PLACEHOLDER → ThemeTokens.COVER_PLACEHOLDER_STRONG; new
+  app.color.cover_placeholder_strong = #DCE0E6 light (≈21-unit gap from the
+  sub-background page, 36 from the white card) / #383A3F dark (lighter than
+  the page, elevation-style occupied slot). COVER_PLACEHOLDER itself is
+  unchanged for every other cover surface (NextE parity preserved).
+- **Minimality rationale:** one new semantic token + one consumer; no
+  one-off hex at the call site, no global placeholder change that would
+  alter fifteen accepted list surfaces.
+- **Visual verification plan:** same-state Detail page capture with related
+  covers unloaded (fresh install or cleared image cache) comparing the slot
+  block against the page background; then loaded-state fade-in review.
+- **Unresolved risk:** dark-mode perceived depth not yet device-reviewed;
+  if #383A3F still reads weak, only the dark resource value changes.
+
+## 2026-08-19 — Page jump dialog ported from NextE Toplist (Browse/Search/Favorites)
+
+- **Instruction/evidence:** user instruction (recorded in the autonomous
+  queue): NH supports server-side page numbers on paginated search/browse,
+  so port NextE's toplist jump UI and logic verbatim ("照搬 NextE 的翻页
+  逻辑，也就是排行榜那边的翻页逻辑以及 UI"). Full reference map in
+  docs/plans/active/jump-page-reference.md (ToplistPeriodPage L54-272,
+  FavcatPage L331-445, CustomContentDialog V1 form, 50ms scrollToIndex).
+- **Whole parent-tree boundary:** root HDS title-bar menus (Browse Latest
+  branch, Favorites branch) and SearchPage's own title-bar menu gain one
+  jump action each; each page gains a centered CustomContentDialog
+  (primaryTitle + help Text + Number TextInput + optional error Text +
+  cancel/confirm TEXTUAL buttons, autoCancel, Center, customStyle:false,
+  onWillDismiss clears input). List bodies, footers, pagination state
+  ownership, and generation-based stale-commit guards are unchanged.
+- **Exact before/after:** before, no jump entry existed; after: browse menu
+  Latest branch [search, browseOptions, layout, jump, random] (maxCount 3 →
+  jump lands in the overflow section with random, preserving the user's
+  frozen pinning decision), favorites menu [search, layout, jump] maxCount
+  2, search menu gains jump only with a submitted query and loaded first
+  page. Jump execution replaces the first page (never appendUnique),
+  validates NaN/<=0/>totalPages, pre-fills the current page, reuses
+  request-generation stale guards, and scrolls to index 0 after 50ms.
+- **Minimality rationale:** structure copied from NextE's accepted dialog;
+  no new dialog framework, no sheet variant, no invented copy. Strings
+  added in four locales (跳转/Jump/移動 etc.); zh-TW falls back to base
+  exactly as NextE does.
+- **Visual verification plan:** device: open each surface's jump dialog
+  (menu entry), verify keyboard-open state keeps both buttons visible,
+  valid jump lands on page N with footer page indicator updated and scroll
+  at top, invalid input shows the red error line, cancel/autoCancel clears
+  state on reopen.
+- **Unresolved risk:** favorites jump while signed-out is gated by
+  actionsAvailable (menu hidden) and signedIn validation; unauthenticated
+  API throw path reuses favorites_load_failed copy.
+
+### Correction 2026-08-20 — menu label 跳转 → 跳转页面
+
+- **Faulty assumption:** the port copied NextE's 2-char zh_CN label (跳转)
+  without checking NextN's own sibling menu-item lengths. In NextN's browse
+  overflow the neighbours are 列表视图 / 随机画廊 (4 chars), so the 2-char
+  entry visibly breaks the menu's rhythm — evidence the device capture
+  already contained but was not acted on.
+- **User decision:** the label must be four characters for alignment.
+- **Fix:** action_jump_page zh_CN 跳转页面; dialog/menu English "Jump to
+  page"; ja_JP ページ移動. The in-dialog confirm button keeps NextE's
+  compact 跳转 via a new jump_page_confirm key, so the dialog action copy
+  remains reference-identical while only the menu label aligns.
+- **Prevention:** when porting a reference label into an existing NextN
+  menu, compare it against the sibling items' rendered lengths in the
+  target menu before accepting the reference string verbatim.
+
+## 2026-08-20 — Search options: favorites qualifier + tag autocomplete
+
+- **Instruction/evidence:** user report that the search-options sheet is
+  missing practical conditions such as favourite count, and that the
+  advanced tag-name input is pure manual typing with no NH matching API or
+  tag-translation matching. Verified NH contract before editing:
+  `GET /api/v2/search?query=favorites%3A%3E%3D1000` filters server-side
+  (first page min num_favorites=1010, 9928 pages), and
+  `POST /api/v2/tags/search` returns id/type/name/slug/url/count with both
+  `query` and `type` filters (limit 1..50).
+- **Whole parent-tree boundary:** the advanced-conditions section of
+  SearchPage's options sheet (SearchAdvancedConditionInputs). The sheet
+  scaffold, language/sort sections, and the main search-field suggestion
+  surface are untouched. Sibling review: the pages/uploaded range rows
+  already follow one card + add-row rhythm; the favorites row copies it
+  exactly rather than inventing a new control.
+- **Exact before/after:** before, the tag input accepted any text and the
+  qualifiers were tag/pages/uploaded only; after: (1) new favourites range
+  row + add action appending `favorites:>=N` / `<=N` / `:N` fragments via
+  NhSearchQuery.favorites; (2) the tag-name input gains an inline
+  autocomplete list (up to 8 rows) driven by NH's /tags/search API with the
+  selected namespace as type filter, each row showing the translated label
+  (tag dictionary when available) + raw name + usage count, and tapping a
+  row fills the exact tag name into the input.
+- **Minimality rationale:** both features use NH's own documented
+  qualifiers/API; no new settings surface, no query-language invention.
+- **Visual verification plan:** device: open search options → type a tag
+  prefix → suggestions appear with translations and counts → tap one → name
+  filled; enter favourites range and add → query gains favorites:>=N → run
+  search → results all satisfy the bound.
+- **Unresolved risk:** autocomplete requests are debounced and
+  best-effort; a failed request keeps the input usable as plain text.
+
+### Correction 2026-08-20 — advanced tag input reworked (user rejection)
+
+- **Faulty assumptions:** (1) the tag-name input was built as a free-standing
+  caption+TextInput block outside the card rhythm — NextE's
+  AdvancedSearchControls builds every control from list rows inside grouped
+  cards, never labeled blocks; (2) tapping a suggestion only filled the
+  input and immediately dismissed the list ("点一下就删掉"), leaving the user
+  to find the add row — the suggestion row itself should complete the
+  action; (3) remote /tags/search suggestions kept displayName=rawName, so
+  rows never matched the on-device tag-translation dictionary.
+- **User feedback:** 标签翻译库未匹配、点击即消失、文本框 UI 全都不对。
+- **Fix:** tag input becomes a row inside the grouped card (placeholder
+  affordance, no external caption); suggestion rows render inside the same
+  card between the input and the add row; tapping a suggestion appends the
+  tag condition to the query directly via the existing onTagAdd path;
+  local TagTranslationRepository.suggest runs first (translated entries),
+  remote fills the remainder, and a batch lookup fills any missing
+  displayName so every row shows the dictionary translation when present.
+- **Prevention:** for reference-derived surfaces, mirror the reference's
+  row-construction discipline (everything from list rows in grouped cards);
+  a suggestion list is an action surface, not a fill-and-dismiss helper.
+
+### Correction 2026-08-20 (2) — tag input affordance and non-destructive suggestions
+
+- **User feedback:** after typing, nothing indicates which region is the
+  input, what each region does, and an accidental tap on a suggestion row
+  immediately destroyed the draft (commit-and-clear).
+- **Faulty assumption:** treating "card rhythm" as transparency — the
+  input used Color.Transparent with no radius, so it had zero input
+  affordance while the sibling range inputs use SURFACE_SUB + RADIUS_MD;
+  and tap-to-commit made every suggestion row a destructive action with no
+  recoverability.
+- **Fix:** the tag input adopts the exact range-input visual language
+  (SURFACE_SUB background, RADIUS_MD, centered in the card with the same
+  height) so it reads as an input; tapping a suggestion only fills the
+  input with the exact tag name (list stays, text stays editable) — the
+  single commit remains the 添加标签条件 row. Accidental taps are now
+  recoverable by retyping instead of mutating the query.
+- **Prevention:** an input affordance must match the sibling input styling,
+  not the row styling; list rows that mutate durable state need an explicit
+  confirm step unless the row itself is the declared action control.
+
+### Correction 2026-08-20 (3) — IME loss audited repo-wide
+
+- **User feedback:** the same input-rebuild bug has now appeared repeatedly
+  (main search field, sheet-level rebuild, sheet-internal range inputs);
+  "每一次写新的界面都会犯一样的错" — fixing only the reported instance is
+  no longer acceptable.
+- **Audit:** `rg -n -B8 "TextInput\\(" | grep "@Builder"` over
+  feature/shared/entry found every @Builder-hosted TextInput and classified
+  each: most read component-owned `@Local` (node-stable, safe); exactly one
+  live instance of the parameter-passing anti-pattern remained —
+  SettingsPage.PasswordField(text, placeholder, onChange), used by the
+  backup export password pair.
+- **Fix:** PasswordField replaced by ExportPasswordField(isRepeat), which
+   reads `this.exportPwd` / `this.exportPwd2` directly and branches on a
+   stable boolean; no text value crosses a builder parameter anywhere in the
+   repo now.
+- **Prevention:** developer-guide.md §0 gains rule 9 — TextInput must be
+   component-owned state, never a builder argument; mandatory repo-wide
+   rg self-check before adding any input, and device verification requires
+   typing two consecutive characters with focus retained.

@@ -1,4 +1,5 @@
 import { common } from '@kit.AbilityKit'
+import { CustomContentDialog } from '@kit.ArkUI'
 import {
   AppStrings,
   CatalogPreferencesService,
@@ -103,6 +104,40 @@ export struct SearchPage {
   @Param chrome: SearchChromeState = new SearchChromeState()
   @Local query: string = ''
   @Local activeQuery: string = ''
+  @Local jumpPageText: string = ''
+  @Local jumpPageError: string = ''
+  private jumpSubmitting: boolean = false
+  private jumpDialogController: CustomDialogController = new CustomDialogController({
+    builder: CustomContentDialog({
+      primaryTitle: AppStrings.get('jump_page_confirm'),
+      contentBuilder: (): void => {
+        this.JumpDialogContent()
+      },
+      buttons: [
+        {
+          value: AppStrings.get('common_cancel'),
+          buttonStyle: ButtonStyleMode.TEXTUAL,
+          action: (): void => {
+            this.closeJumpDialog()
+          },
+        },
+        {
+          value: AppStrings.get('jump_page_confirm'),
+          buttonStyle: ButtonStyleMode.TEXTUAL,
+          action: (): void => {
+            this.confirmJumpDialog()
+          },
+        },
+      ],
+    }),
+    autoCancel: true,
+    onWillDismiss: (_action: DismissDialogAction) => {
+      this.jumpPageText = ''
+      this.jumpPageError = ''
+    },
+    alignment: DialogAlignment.Center,
+    customStyle: false,
+  });
   @Local galleries: NhGallerySummary[] = []
   /** Retains search responses so display-rule edits do not restart a search. */
   @Local rawGalleries: NhGallerySummary[] = []
@@ -125,8 +160,12 @@ export struct SearchPage {
   @Local recentSearchTranslations: Map<string, string> = new Map<string, string>()
   @Local quickSearchTranslations: Map<string, string> = new Map<string, string>()
   @Local isSearchHistoryLoaded: boolean = false
-  @Local activeLanguageFilter: NhSearchLanguage = NhSearchLanguage.ALL
-  @Local activeSearchSort: NhSearchSort = NhSearchSort.RECENT
+  // Seed the active snapshot from the durable preference at construction so
+  // the frozen funnel icon branch (which reads these two values) reflects a
+  // persisted non-default filter on first entry and after cold start. This
+  // is the state-write point; the icon's read branch must stay untouched.
+  @Local activeLanguageFilter: NhSearchLanguage = this.catalogPreferences.searchLanguage
+  @Local activeSearchSort: NhSearchSort = this.catalogPreferences.searchSort
   @Local showSearchOptions: boolean = false
   @Local advancedTagNamespace: string = 'tag'
   @Local advancedTagExcluded: boolean = false
@@ -203,6 +242,7 @@ export struct SearchPage {
     }
   }
 
+
   @Monitor('contentFilters.revision')
   onContentFiltersChanged(): void {
     this.applyContentFilters()
@@ -225,6 +265,12 @@ export struct SearchPage {
 
   @Monitor('catalogPreferences.searchRevision')
   onSearchCatalogPreferencesChanged(): void {
+    // Sync the funnel's snapshot the moment a language/sort preference
+    // changes (either direction). Without this, reverting to defaults keeps
+    // the stale active values and the tint never clears until another
+    // submit; the icon's read branch stays untouched by design.
+    this.activeLanguageFilter = this.catalogPreferences.searchLanguage
+    this.activeSearchSort = this.catalogPreferences.searchSort
     if (this.isVisible) {
       this.reapplySearchOptions()
     }
@@ -806,6 +852,28 @@ export struct SearchPage {
     return this.appendAdvancedFragments(fragments, 'pages')
   }
 
+  private appendAdvancedFavoriteConditions(minimumText: string, maximumText: string): boolean {
+    const minimum: number = this.parseAdvancedPositiveInteger(minimumText)
+    const maximum: number = this.parseAdvancedPositiveInteger(maximumText)
+    if (minimum <= 0 && maximum <= 0) {
+      return false
+    }
+    if (minimum > 0 && maximum > 0 && minimum > maximum) {
+      this.setAdvancedConditionError('favorites', AppStrings.get('search_advanced_range_order'))
+      return false
+    }
+    const fragments: string[] = []
+    if (minimum > 0 && minimum === maximum) {
+      fragments.push(NhSearchQuery.favorites(minimum, NhSearchRangeRelation.EXACT))
+    } else if (minimum > 0) {
+      fragments.push(NhSearchQuery.favorites(minimum, NhSearchRangeRelation.MINIMUM))
+    }
+    if (maximum > 0 && minimum !== maximum) {
+      fragments.push(NhSearchQuery.favorites(maximum, NhSearchRangeRelation.MAXIMUM))
+    }
+    return this.appendAdvancedFragments(fragments, 'favorites')
+  }
+
   private appendAdvancedUploadedConditions(minimumText: string, maximumText: string): boolean {
     const minimum: number = this.parseAdvancedPositiveInteger(minimumText)
     const maximum: number = this.parseAdvancedPositiveInteger(maximumText)
@@ -1263,6 +1331,132 @@ export struct SearchPage {
     }
   }
 
+  /** NextE ToplistPeriodPage parity: digits only, empty value collapses to ''. */
+  private normalizeJumpInput(value: string): string {
+    return (value || '').replace(/[^0-9]/g, '')
+  }
+
+  private jumpHelpText(): string {
+    const help: string = AppStrings.get('jump_page_help')
+    if (this.totalPages <= 0) {
+      return help
+    }
+    return `${help} 1 - ${this.totalPages}`
+  }
+
+  private openJumpDialog(): void {
+    this.jumpPageText = `${Math.max(1, this.currentPage)}`
+    this.jumpPageError = ''
+    try {
+      this.jumpDialogController.open()
+    } catch (_error) {}
+  }
+
+  private closeJumpDialog(): void {
+    try {
+      this.jumpDialogController.close()
+    } catch (_error) {}
+  }
+
+  /** Replaces the submitted search result's first page with the target page. */
+  private async jumpToPage(page: number): Promise<boolean> {
+    if (this.activeQuery.length === 0) {
+      return false
+    }
+    const generation: number = this.requestGeneration + 1
+    this.requestGeneration = generation
+    this.activeLanguageFilter = this.catalogPreferences.searchLanguage
+    this.activeSearchSort = this.catalogPreferences.searchSort
+    this.isInitialLoading = true
+    this.isRefreshing = false
+    this.isLoadingMore = false
+    this.rawGalleries = []
+    this.applyContentFilters()
+    this.currentPage = 0
+    this.totalPages = 1
+    this.errorMessage = ''
+    this.loadMoreErrorMessage = ''
+    try {
+      const result: NhGalleryPageResult = await this.requestSearch(
+        this.activeQuery,
+        page,
+        this.activeLanguageFilter,
+        this.activeSearchSort,
+      )
+      if (!this.isCurrentRequest(generation)) {
+        return false
+      }
+      this.rawGalleries = result.galleries
+      this.applyContentFilters()
+      this.currentPage = page
+      this.totalPages = Math.max(1, result.totalPages)
+      return true
+    } catch (error) {
+      if (!this.isCurrentRequest(generation)) {
+        return false
+      }
+      this.errorMessage = (error as Error).message || AppStrings.get('search_failed')
+      return false
+    } finally {
+      if (this.isCurrentRequest(generation)) {
+        this.isInitialLoading = false
+      }
+    }
+  }
+
+  private confirmJumpDialog(): void {
+    if (this.jumpSubmitting) {
+      return
+    }
+    const page: number = Number.parseInt(this.jumpPageText, 10)
+    if (this.activeQuery.length === 0 || Number.isNaN(page) || page <= 0 ||
+      (this.totalPages > 0 && page > this.totalPages)) {
+      this.jumpPageError = AppStrings.get('jump_page_invalid')
+      return
+    }
+    this.jumpSubmitting = true
+    this.jumpToPage(page).then((ok: boolean): void => {
+      if (ok) {
+        this.closeJumpDialog()
+        setTimeout((): void => {
+          this.scroller.scrollToIndex(0)
+        }, 50)
+      } else {
+        this.jumpPageError = AppStrings.get('common_load_failed')
+      }
+    }).catch((): void => {
+      this.jumpPageError = AppStrings.get('common_load_failed')
+    }).finally((): void => {
+      this.jumpSubmitting = false
+    })
+  }
+
+  @Builder
+  private JumpDialogContent() {
+    Column({ space: ThemeTokens.SPACE_SM }) {
+      Text(this.jumpHelpText())
+        .fontSize(ThemeTokens.FONT_SIZE_BODY)
+        .fontColor($r('sys.color.font_secondary'))
+        .width('100%')
+      TextInput({ text: this.jumpPageText, placeholder: AppStrings.get('jump_page_placeholder') })
+        .type(InputType.Number)
+        .inputFilter('^[0-9]*$')
+        .defaultFocus(true)
+        .width('100%')
+        .onChange((value: string): void => {
+          this.jumpPageText = this.normalizeJumpInput(value)
+          this.jumpPageError = ''
+        })
+      if (this.jumpPageError.length > 0) {
+        Text(this.jumpPageError)
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontColor(Color.Red)
+          .width('100%')
+      }
+    }
+    .width('100%')
+  }
+
   private async loadMore(): Promise<void> {
     if (!this.canLoadMore()) {
       return
@@ -1343,6 +1537,7 @@ export struct SearchPage {
     if (this.catalogPreferences.searchLanguage === option) {
       return
     }
+    this.activeLanguageFilter = option
     CatalogPreferencesService.setSearchLanguage(this.context(), option).catch((): void => {})
   }
 
@@ -1350,6 +1545,7 @@ export struct SearchPage {
     if (this.catalogPreferences.searchSort === option) {
       return
     }
+    this.activeSearchSort = option
     CatalogPreferencesService.setSearchSort(this.context(), option).catch((): void => {})
   }
 
@@ -1514,6 +1710,7 @@ export struct SearchPage {
   @Builder
   private SearchAdvancedConditionsPanel() {
     SearchAdvancedConditionInputs({
+      activeQuery: this.query,
       tagNamespace: this.advancedTagNamespace,
       tagExcluded: this.advancedTagExcluded,
       uploadedUnit: this.advancedUploadedUnit,
@@ -1534,13 +1731,38 @@ export struct SearchPage {
       onPagesAdd: (minimumText: string, maximumText: string): boolean => {
         return this.appendAdvancedPageConditions(minimumText, maximumText)
       },
+      onFavoritesAdd: (minimumText: string, maximumText: string): boolean => {
+        return this.appendAdvancedFavoriteConditions(minimumText, maximumText)
+      },
       onUploadedAdd: (minimumText: string, maximumText: string): boolean => {
         return this.appendAdvancedUploadedConditions(minimumText, maximumText)
       },
       onClearError: (scope: string): void => {
         this.clearAdvancedConditionError(scope)
       },
+      onRemoveCondition: (token: string): void => {
+        this.removeAdvancedCondition(token)
+      },
     })
+  }
+
+  private removeAdvancedCondition(token: string): void {
+    if (token.length === 0 || this.hasUnclosedQueryQuote(this.query)) {
+      return
+    }
+    const next: string = this.query
+      .split(' ')
+      .filter((candidate: string): boolean => candidate !== token)
+      .join(' ')
+    if (next === this.query) {
+      return
+    }
+    this.preserveResultSnapshotForDraftChange()
+    this.query = next
+    this.chrome.keyword = next
+    if (next.trim().length === 0) {
+      this.clearSubmittedSearchState()
+    }
   }
 
   @Builder
@@ -1883,8 +2105,14 @@ export struct SearchPage {
     // filter is shown by tinting the outline funnel with the brand color.
     const hasActiveFilters: boolean = this.activeLanguageFilter !== NhSearchLanguage.ALL ||
       this.activeSearchSort !== NhSearchSort.RECENT
+    // The tinted branch must render at the same title-bar icon size as the
+    // plain resource branch. Without an explicit fontSize the modifier path
+    // falls back to a smaller intrinsic default (measured 40px ink vs 66px
+    // for sibling icons); 24vp matches the other 120px-button icons' ink.
     const filterIcon: SymbolGlyphModifier | Resource = hasActiveFilters
-      ? new SymbolGlyphModifier($r('sys.symbol.funnel')).fontColor([ThemeTokens.BRAND])
+      ? new SymbolGlyphModifier($r('sys.symbol.funnel'))
+        .fontSize(24)
+        .fontColor([ThemeTokens.BRAND])
       : $r('sys.symbol.funnel')
     const filterAction: Record<string, Object> = {
       'label': AppStrings.get('title_search_options'),
@@ -1895,7 +2123,21 @@ export struct SearchPage {
       },
     }
     const filterMenuItem: Record<string, Object> = { 'content': filterAction }
-    const menuItems: Record<string, Object>[] = [filterMenuItem]
+    // Jump is always the second exposed action; only its enabled state
+    // depends on a submitted query with a loaded first page.
+    const jumpAction: Record<string, Object> = {
+      'label': AppStrings.get('action_jump_page'),
+      'icon': $r('sys.symbol.chevron_right_circle'),
+      // HDS menus omit disabled items entirely, which would hide the pinned
+      // second slot before a first search. Keep it visible; the dialog's
+      // own validation is the guard when no query is active.
+      'isEnabled': true,
+      'action': (): void => {
+        this.openJumpDialog()
+      },
+    }
+    const jumpMenuItem: Record<string, Object> = { 'content': jumpAction }
+    const menuItems: Record<string, Object>[] = [filterMenuItem, jumpMenuItem]
     const quickSearchQuery: string = this.quickSearchableActiveQuery()
     if (this.isQuickSearchesLoaded && quickSearchQuery.length > 0) {
       const isPinned: boolean = this.isActiveQuickSearchPinned()
@@ -1913,7 +2155,7 @@ export struct SearchPage {
       }
       menuItems.push({ 'content': quickSearchAction })
     }
-    const menu: Record<string, Object> = { 'value': menuItems, 'maxCount': menuItems.length }
+    const menu: Record<string, Object> = { 'value': menuItems, 'maxCount': 3 }
     const bottomBuilder: Record<string, Object> = {
       'builderComponent': this.ensureSearchFieldContent(),
       'height': SEARCH_TITLE_FIELD_BOTTOM_HEIGHT,

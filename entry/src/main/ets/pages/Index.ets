@@ -1233,12 +1233,21 @@ struct Index {
         },
       }
       const layoutMenuItem: Record<string, Object> = { 'content': layoutAction }
+      const jumpAction: Record<string, Object> = {
+        'label': AppStrings.get('action_jump_page'),
+        'icon': $r('sys.symbol.chevron_right_circle'),
+        'isEnabled': true,
+        'action': (): void => {
+          HomeSourceBridge.requestJumpDialog()
+        },
+      }
+      const jumpMenuItem: Record<string, Object> = { 'content': jumpAction }
       // Popular is already a retained Browse source. Keep its old route only
       // for compatibility, but never present a duplicate title-bar entry.
       // Query controls belong only to Latest; the shared layout switcher is
       // intentionally available from either source.
       const browseMenuItems: Record<string, Object>[] = this.homeSource.selectedKey === HOME_SOURCE_LATEST
-        ? [searchMenuItem, browseOptionsMenuItem, layoutMenuItem, randomGalleryMenuItem]
+        ? [searchMenuItem, browseOptionsMenuItem, layoutMenuItem, jumpMenuItem, randomGalleryMenuItem]
         : [searchMenuItem, layoutMenuItem, randomGalleryMenuItem]
       const searchMenu: Record<string, Object> = { 'value': browseMenuItems, 'maxCount': 3 }
       content['menu'] = searchMenu
@@ -1266,7 +1275,16 @@ struct Index {
         }
         const searchMenuItem: Record<string, Object> = { 'content': searchAction }
         const layoutMenuItem: Record<string, Object> = { 'content': layoutAction }
-        const favoritesMenuItems: Record<string, Object>[] = [searchMenuItem, layoutMenuItem]
+        const jumpAction: Record<string, Object> = {
+          'label': AppStrings.get('action_jump_page'),
+          'icon': $r('sys.symbol.chevron_right_circle'),
+          'isEnabled': this.favoritesActions.actionsAvailable,
+          'action': (): void => {
+            FavoritesActionBridge.requestJumpDialog()
+          },
+        }
+        const jumpMenuItem: Record<string, Object> = { 'content': jumpAction }
+        const favoritesMenuItems: Record<string, Object>[] = [searchMenuItem, layoutMenuItem, jumpMenuItem]
         const favoritesMenu: Record<string, Object> = { 'value': favoritesMenuItems, 'maxCount': 2 }
         content['menu'] = favoritesMenu
       } else {

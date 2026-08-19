@@ -26,6 +26,9 @@ export class HomeSourceState {
   // The title-bar action is outside the retained page tree. A sequence keeps
   // repeated requests observable without making it part of source selection.
   @Trace browseOptionsRequestSeq: number = 0
+  // Latest supports server-side page numbers; the title-bar jump action is
+  // delivered into the retained page exactly like browse options.
+  @Trace jumpDialogRequestSeq: number = 0
   // The layout action is likewise owned by the HDS title bar, while its Menu
   // must be anchored inside the retained Home host. Keep it independent from
   // the selected source: layout is a shared presentation preference, not a
@@ -108,6 +111,11 @@ export class HomeSourceBridge {
   static requestBrowseOptions(): void {
     const state: HomeSourceState = connectHomeSource()
     state.browseOptionsRequestSeq = state.browseOptionsRequestSeq + 1
+  }
+
+  static requestJumpDialog(): void {
+    const state: HomeSourceState = connectHomeSource()
+    state.jumpDialogRequestSeq = state.jumpDialogRequestSeq + 1
   }
 
   static requestLayoutMenu(): void {

@@ -4,6 +4,7 @@ import { AppStorageV2 } from '@kit.ArkUI'
 export class FavoritesAction {
   static readonly TOGGLE_SEARCH: string = 'toggle_search'
   static readonly OPEN_LAYOUT_MENU: string = 'open_layout_menu'
+  static readonly OPEN_JUMP_DIALOG: string = 'open_jump_dialog'
 }
 
 /**
@@ -48,6 +49,15 @@ export class FavoritesActionBridge {
       return
     }
     state.command = FavoritesAction.OPEN_LAYOUT_MENU
+    state.commandSeq = state.commandSeq + 1
+  }
+
+  static requestJumpDialog(): void {
+    const state: FavoritesActionState = connectFavoritesActions()
+    if (!state.actionsAvailable) {
+      return
+    }
+    state.command = FavoritesAction.OPEN_JUMP_DIALOG
     state.commandSeq = state.commandSeq + 1
   }
 

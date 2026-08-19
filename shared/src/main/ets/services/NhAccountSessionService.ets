@@ -56,6 +56,9 @@ enum AccountSessionDiagnosticStage {
   RESTORE_ARKWEB_JAR_READY = 'account_restore_arkweb_jar_ready',
   RESTORE_READY = 'account_restore_ready',
   RESTORE_HYDRATION_DEFERRED = 'account_restore_hydration_deferred',
+  RESTORE_SAVED_ENVELOPE_USED = 'account_restore_saved_envelope_used',
+  RESTORE_SAVED_ENVELOPE_EXHAUSTED = 'account_restore_saved_envelope_exhausted',
+  RESTORE_COOKIE_STORE_RETRY = 'account_restore_cookie_store_retry',
   RESTORE_VERIFICATION_REQUIRED = 'account_restore_verification_required',
   RESTORE_VERIFICATION_REQUIRED_AFTER_BROWSER_REFRESH_FAILURE =
     'account_restore_verification_required_after_browser_refresh_failure',
@@ -155,6 +158,12 @@ export class NhAccountSessionService {
   // retry from the retained transport Web component without deleting a valid
   // encrypted record just because the Web engine was not ready yet.
   private static cookieJarHydrationTask: Promise<boolean> | null = null
+  // Cold start can read an empty regular jar before any Web component exists.
+  // A sealed primary/saved envelope still in RDB must be retried once the
+  // retained host attaches, instead of immediately showing "re-verify".
+  private static cookieStoreRestoreRetryPending: boolean = false
+  private static cookieStoreRestoreRetryConsumed: boolean = false
+  private static cookieStoreRestoreRetryTask: Promise<void> | null = null
   private static cookieJarHydrationHeader: string = ''
   private static cookieJarHydrationEpoch: number = -1
   // Initial transport bootstrap deliberately preserves an ArkWeb token that
@@ -358,6 +367,45 @@ export class NhAccountSessionService {
    */
   static publishBootstrapState(): void {
     NhAccountSessionService.publishCurrentSessionState()
+  }
+
+  /**
+   * The retained ArkWeb host attaches only after the root page builds, while
+   * the cold-start restore runs in EntryAbility before any Web component
+   * exists. A restore that read an empty cookie store at that point may have
+   * misclassified a still-present browser identity as absent. Re-run the
+   * single-flight restore exactly once per process when the store becomes
+   * reachable, so the user never sees a fake "re-verify" gate that would
+   * succeed silently anyway.
+   */
+  static noteArkWebCookieStoreAvailable(): void {
+    if (!NhAccountSessionService.cookieStoreRestoreRetryPending ||
+      NhAccountSessionService.cookieStoreRestoreRetryConsumed ||
+      NhAccountSessionService.cookieStoreRestoreRetryTask !== null) {
+      return
+    }
+    const context: common.UIAbilityContext | null = NhAccountSessionService.sessionContext
+    if (context === null) {
+      return
+    }
+    NhAccountSessionService.cookieStoreRestoreRetryConsumed = true
+    NhAccountSessionService.cookieStoreRestoreRetryPending = false
+    NhAccountSessionService.recordDiagnosticStage(
+      AccountSessionDiagnosticStage.RESTORE_COOKIE_STORE_RETRY,
+    )
+    const retryTask: Promise<void> = NhAccountSessionService.restoreAtBootstrap(context)
+      .then((restored: boolean): void => {
+        if (restored) {
+          NhAccountSessionService.publishSessionChange()
+        }
+      })
+      .catch((): void => {})
+      .finally((): void => {
+        if (NhAccountSessionService.cookieStoreRestoreRetryTask === retryTask) {
+          NhAccountSessionService.cookieStoreRestoreRetryTask = null
+        }
+      })
+    NhAccountSessionService.cookieStoreRestoreRetryTask = retryTask
   }
 
   /**
@@ -1285,7 +1333,12 @@ export class NhAccountSessionService {
       )
     }
     const record: EncryptedAccountSession | null = restoreSnapshot.record
+    const savedRecords: EncryptedAccountSession[] = restoreSnapshot.savedRecords
+    let failureRequiresExplicitVisibleLogin: boolean = verificationRequired
     if (record === null) {
+      NhAccountSessionService.recordDiagnosticStage(
+        AccountSessionDiagnosticStage.RESTORE_RECORD_ABSENT,
+      )
       if (restoreSnapshot.rebuiltOrRepaired) {
         // The platform reported a rebuilt/repaired RDB and the sealed row is
         // absent. Do not misclassify this as a fresh install and implicitly
@@ -1293,22 +1346,16 @@ export class NhAccountSessionService {
         NhAccountSessionService.recordDiagnosticStage(
           AccountSessionDiagnosticStage.RESTORE_RDB_REBUILT_RECORD_ABSENT,
         )
+        failureRequiresExplicitVisibleLogin = true
+      }
+      if (savedRecords.length === 0) {
         return await NhAccountSessionService.keepRegularJarOrPublishRestoreFailure(
           context,
           restoredEpoch,
           regularJarReady,
-          true,
+          failureRequiresExplicitVisibleLogin,
         )
       }
-      NhAccountSessionService.recordDiagnosticStage(
-        AccountSessionDiagnosticStage.RESTORE_RECORD_ABSENT,
-      )
-      return await NhAccountSessionService.keepRegularJarOrPublishRestoreFailure(
-        context,
-        restoredEpoch,
-        regularJarReady,
-        verificationRequired,
-      )
     }
 
     const keyPresent: boolean | null = await NhAccountSessionService.sealedKeyPresentForRestore()
@@ -1337,37 +1384,67 @@ export class NhAccountSessionService {
         true,
       )
     }
-    let restored: string
-    try {
-      // Restore is intentionally non-generative. Key creation belongs only to
-      // a newly verified visible-login promotion through `encrypt`.
-      restored = await NhAccountSessionService.decryptWithExistingKey(record)
-    } catch (_error) {
+    let restoredPayload: SealedBrowserSessionPayload | null = null
+    if (record !== null) {
+      let restored: string = ''
+      try {
+        // Restore is intentionally non-generative. Key creation belongs only to
+        // a newly verified visible-login promotion through `encrypt`.
+        restored = await NhAccountSessionService.decryptWithExistingKey(record)
+      } catch (_error) {
+        NhAccountSessionService.recordDiagnosticStage(
+          AccountSessionDiagnosticStage.RESTORE_HUKS_DECRYPT_FAILED,
+        )
+      }
+      if (restored.length > 0) {
+        const payload: SealedBrowserSessionPayload = NhAccountSessionService.decodeSessionPayload(restored)
+        const payloadNormalized: string = NhAccountSessionService.normalizeCookieHeader(payload.cookieHeader)
+        const payloadUserAgent: string =
+          NhAccountSessionService.normalizeUserAgent(payload.browserUserAgent)
+        if (!payload.isEnvelopeValid || !NhAccountSessionService.hasLoginCookies(payloadNormalized) ||
+          payloadUserAgent.length === 0) {
+          NhAccountSessionService.recordDiagnosticStage(
+            AccountSessionDiagnosticStage.RESTORE_PAYLOAD_INVALID,
+          )
+        } else {
+          restoredPayload = payload
+        }
+      }
+    }
+    if (restoredPayload === null && savedRecords.length > 0 && !regularJarReady) {
+      // Multi-account envelopes are sealed with the same non-exportable HUKS
+      // key. When the primary row is absent or unreadable, one saved envelope
+      // can still restore the session instead of publishing a destructive
+      // "re-verify" gate over recoverable ciphertext.
+      for (let index: number = 0; index < savedRecords.length; index += 1) {
+        const candidatePayload: SealedBrowserSessionPayload | null =
+          await NhAccountSessionService.decryptRestoreCandidate(savedRecords[index])
+        if (candidatePayload !== null) {
+          restoredPayload = candidatePayload
+          NhAccountSessionService.recordDiagnosticStage(
+            AccountSessionDiagnosticStage.RESTORE_SAVED_ENVELOPE_USED,
+          )
+          break
+        }
+      }
+    }
+    if (restoredPayload === null) {
       NhAccountSessionService.recordDiagnosticStage(
-        AccountSessionDiagnosticStage.RESTORE_HUKS_DECRYPT_FAILED,
+        record === null
+          ? AccountSessionDiagnosticStage.RESTORE_SAVED_ENVELOPE_EXHAUSTED
+          : AccountSessionDiagnosticStage.RESTORE_PAYLOAD_INVALID,
       )
       return await NhAccountSessionService.keepRegularJarOrPublishRestoreFailure(
         context,
         restoredEpoch,
         regularJarReady,
-        true,
+        record === null ? failureRequiresExplicitVisibleLogin : true,
       )
     }
-    const payload: SealedBrowserSessionPayload = NhAccountSessionService.decodeSessionPayload(restored)
-    const normalized: string = NhAccountSessionService.normalizeCookieHeader(payload.cookieHeader)
-    const normalizedUserAgent: string = NhAccountSessionService.normalizeUserAgent(payload.browserUserAgent)
-    if (!payload.isEnvelopeValid || !NhAccountSessionService.hasLoginCookies(normalized) ||
-      normalizedUserAgent.length === 0) {
-      NhAccountSessionService.recordDiagnosticStage(
-        AccountSessionDiagnosticStage.RESTORE_PAYLOAD_INVALID,
-      )
-      return await NhAccountSessionService.keepRegularJarOrPublishRestoreFailure(
-        context,
-        restoredEpoch,
-        regularJarReady,
-        true,
-      )
-    }
+    const normalized: string =
+      NhAccountSessionService.normalizeCookieHeader(restoredPayload.cookieHeader)
+    const normalizedUserAgent: string =
+      NhAccountSessionService.normalizeUserAgent(restoredPayload.browserUserAgent)
     if (restoredEpoch !== NhAccountSessionService.sessionEpoch) {
       return NhAccountSessionService.isAuthenticated()
     }
@@ -1421,6 +1498,30 @@ export class NhAccountSessionService {
   }
 
   /**
+   * Tries one saved multi-account envelope with the same non-exportable HUKS
+   * key. It never generates a key and never mutates durable state; a null
+   * return simply means this candidate cannot restore the session.
+   */
+  private static async decryptRestoreCandidate(
+    candidate: EncryptedAccountSession,
+  ): Promise<SealedBrowserSessionPayload | null> {
+    let plaintext: string = ''
+    try {
+      plaintext = await NhAccountSessionService.decryptWithExistingKey(candidate)
+    } catch (_error) {
+      return null
+    }
+    const payload: SealedBrowserSessionPayload = NhAccountSessionService.decodeSessionPayload(plaintext)
+    const normalized: string = NhAccountSessionService.normalizeCookieHeader(payload.cookieHeader)
+    const normalizedUserAgent: string = NhAccountSessionService.normalizeUserAgent(payload.browserUserAgent)
+    if (!payload.isEnvelopeValid || !NhAccountSessionService.hasLoginCookies(normalized) ||
+      normalizedUserAgent.length === 0) {
+      return null
+    }
+    return payload
+  }
+
+  /**
    * A usable regular ArkWeb session remains valid when the encrypted fallback
    * is unavailable. Its failure must not clear native state; only the absent-
    * jar path enters the existing fail-closed restore boundary.
@@ -1441,6 +1542,11 @@ export class NhAccountSessionService {
       NhAccountSessionService.clearRetainedRestoreLoginGate()
       return NhAccountSessionService.isAuthenticated()
     }
+    // The regular jar was read while no Web component existed; the persisted
+    // ArkWeb store may still hold the identity and only become readable after
+    // the retained host attaches. Keep exactly one cookie-store restore retry
+    // before this signed-out publication becomes user-visible.
+    NhAccountSessionService.cookieStoreRestoreRetryPending = true
     return await NhAccountSessionService.publishSignedOutAfterRestoreFailure(
       context,
       restoredEpoch,

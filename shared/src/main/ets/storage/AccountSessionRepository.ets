@@ -5,6 +5,8 @@ import { LocalDataStore } from './LocalDataStore'
 const SESSION_KEY: string = 'primary'
 const SQL_SELECT_SESSION: string =
   'SELECT ciphertext, nonce FROM account_session WHERE key = ? LIMIT 1'
+const SQL_SELECT_SAVED_SESSIONS: string =
+  'SELECT key, ciphertext, nonce FROM account_session WHERE key != ?'
 const SQL_UPSERT_SESSION: string =
   'INSERT INTO account_session (key, ciphertext, nonce, updated_at) VALUES (?, ?, ?, ?) ' +
   'ON CONFLICT(key) DO UPDATE SET ciphertext = excluded.ciphertext, nonce = excluded.nonce, ' +
@@ -33,6 +35,8 @@ export class EncryptedAccountSession {
 export class AccountSessionRestoreSnapshot {
   record: EncryptedAccountSession | null = null
   rebuiltOrRepaired: boolean = false
+  savedRecords: EncryptedAccountSession[] = []
+  savedKeys: string[] = []
 }
 
 /** Durable non-secret verification state with a finite transition origin. */
@@ -88,18 +92,40 @@ export class AccountSessionRepository {
       const snapshot: AccountSessionRestoreSnapshot = new AccountSessionRestoreSnapshot()
       snapshot.rebuiltOrRepaired = store.rebuilt !== relationalStore.RebuildType.NONE
       rows = await store.querySql(SQL_SELECT_SESSION, [SESSION_KEY])
-      if (!rows.goToNextRow()) {
-        return snapshot
+      if (rows.goToNextRow()) {
+        const ciphertextColumn: number = rows.getColumnIndex('ciphertext')
+        const nonceColumn: number = rows.getColumnIndex('nonce')
+        if (!rows.isColumnNull(ciphertextColumn) && !rows.isColumnNull(nonceColumn)) {
+          const record: EncryptedAccountSession = new EncryptedAccountSession()
+          record.ciphertext = rows.getString(ciphertextColumn)
+          record.nonce = rows.getString(nonceColumn)
+          snapshot.record = record
+        }
       }
-      const ciphertextColumn: number = rows.getColumnIndex('ciphertext')
-      const nonceColumn: number = rows.getColumnIndex('nonce')
-      if (rows.isColumnNull(ciphertextColumn) || rows.isColumnNull(nonceColumn)) {
-        return snapshot
+      try {
+        rows.close()
+      } catch (_error) {}
+      rows = null
+      rows = await store.querySql(SQL_SELECT_SAVED_SESSIONS, [SESSION_KEY])
+      while (rows.goToNextRow()) {
+        const savedKeyColumn: number = rows.getColumnIndex('key')
+        const savedCiphertextColumn: number = rows.getColumnIndex('ciphertext')
+        const savedNonceColumn: number = rows.getColumnIndex('nonce')
+        if (rows.isColumnNull(savedKeyColumn) ||
+          rows.isColumnNull(savedCiphertextColumn) ||
+          rows.isColumnNull(savedNonceColumn)) {
+          continue
+        }
+        const savedKey: string = rows.getString(savedKeyColumn).trim()
+        if (savedKey.length === 0 || savedKey === SESSION_KEY) {
+          continue
+        }
+        const savedRecord: EncryptedAccountSession = new EncryptedAccountSession()
+        savedRecord.ciphertext = rows.getString(savedCiphertextColumn)
+        savedRecord.nonce = rows.getString(savedNonceColumn)
+        snapshot.savedKeys.push(savedKey)
+        snapshot.savedRecords.push(savedRecord)
       }
-      const record: EncryptedAccountSession = new EncryptedAccountSession()
-      record.ciphertext = rows.getString(ciphertextColumn)
-      record.nonce = rows.getString(nonceColumn)
-      snapshot.record = record
       return snapshot
     } finally {
       if (rows !== null) {

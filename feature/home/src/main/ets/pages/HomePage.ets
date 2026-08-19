@@ -1,5 +1,5 @@
 import { common } from '@kit.AbilityKit'
-import { SymbolGlyphModifier } from '@kit.ArkUI'
+import { CustomContentDialog, SymbolGlyphModifier } from '@kit.ArkUI'
 import {
   AppStrings,
   CatalogPreferencesService,
@@ -102,6 +102,40 @@ export struct LatestSourcePage {
   private tagTranslationRefreshEpoch: number = 0
   private browseOptionsScroller: Scroller = new Scroller()
   private refreshController: NextNPullRefreshController = new NextNPullRefreshController()
+  @Local jumpPageText: string = ''
+  @Local jumpPageError: string = ''
+  private jumpSubmitting: boolean = false
+  private jumpDialogController: CustomDialogController = new CustomDialogController({
+    builder: CustomContentDialog({
+      primaryTitle: AppStrings.get('jump_page_confirm'),
+      contentBuilder: (): void => {
+        this.JumpDialogContent()
+      },
+      buttons: [
+        {
+          value: AppStrings.get('common_cancel'),
+          buttonStyle: ButtonStyleMode.TEXTUAL,
+          action: (): void => {
+            this.closeJumpDialog()
+          },
+        },
+        {
+          value: AppStrings.get('jump_page_confirm'),
+          buttonStyle: ButtonStyleMode.TEXTUAL,
+          action: (): void => {
+            this.confirmJumpDialog()
+          },
+        },
+      ],
+    }),
+    autoCancel: true,
+    onWillDismiss: (_action: DismissDialogAction) => {
+      this.jumpPageText = ''
+      this.jumpPageError = ''
+    },
+    alignment: DialogAlignment.Center,
+    customStyle: false,
+  });
 
   aboutToAppear(): void {
     this.registerRootRefresh()
@@ -183,6 +217,13 @@ export struct LatestSourcePage {
   onBrowseOptionsRequested(): void {
     if (this.isActive() && this.homeSource.browseOptionsRequestSeq > 0) {
       this.showBrowseOptions = true
+    }
+  }
+
+  @Monitor('homeSource.jumpDialogRequestSeq')
+  onJumpDialogRequested(): void {
+    if (this.isActive() && this.homeSource.jumpDialogRequestSeq > 0) {
+      this.openJumpDialog()
     }
   }
 
@@ -327,6 +368,135 @@ export struct LatestSourcePage {
       return
     }
     await this.loadFirstPage(this.rawGalleries.length > 0)
+  }
+
+  /** NextE ToplistPeriodPage parity: digits only, empty value collapses to ''. */
+  private normalizeJumpInput(value: string): string {
+    return (value || '').replace(/[^0-9]/g, '')
+  }
+
+  private jumpHelpText(): string {
+    const help: string = AppStrings.get('jump_page_help')
+    if (this.totalPages <= 0) {
+      return help
+    }
+    return `${help} 1 - ${this.totalPages}`
+  }
+
+  private openJumpDialog(): void {
+    this.jumpPageText = `${Math.max(1, this.currentPage)}`
+    this.jumpPageError = ''
+    try {
+      this.jumpDialogController.open()
+    } catch (_error) {}
+  }
+
+  private closeJumpDialog(): void {
+    try {
+      this.jumpDialogController.close()
+    } catch (_error) {}
+  }
+
+  /**
+   * Replaces the first page with the requested server-side page. Mirrors
+   * NextE's jumpToToplistPage run-token semantics through the existing
+   * request generation; the jump destination is never appended.
+   */
+  private async jumpToPage(page: number): Promise<boolean> {
+    const generation: number = this.requestGeneration + 1
+    this.requestGeneration = generation
+    this.activeLanguageFilter = this.catalogPreferences.browseLanguage
+    this.activeBrowseSort = this.catalogPreferences.browseSort
+    this.activeBrowseQuery = this.browseQueryForGeneration(generation)
+    this.isLoadingMore = false
+    this.errorMessage = ''
+    this.loadMoreErrorMessage = ''
+    this.isInitialLoading = true
+    this.isRefreshing = false
+    this.rawGalleries = []
+    this.applyContentFilters()
+    this.currentPage = 0
+    this.totalPages = 1
+    try {
+      const result: NhGalleryPageResult = await this.requestBrowse(
+        page,
+        this.activeBrowseQuery,
+        this.activeLanguageFilter,
+        this.activeBrowseSort,
+      )
+      if (!this.isCurrentRequest(generation)) {
+        return false
+      }
+      this.rawGalleries = result.galleries
+      this.applyContentFilters()
+      this.currentPage = page
+      this.totalPages = Math.max(1, result.totalPages)
+      return true
+    } catch (error) {
+      if (!this.isCurrentRequest(generation)) {
+        return false
+      }
+      this.errorMessage = (error as Error).message || AppStrings.get('browse_load_failed')
+      return false
+    } finally {
+      if (this.isCurrentRequest(generation)) {
+        this.isInitialLoading = false
+        this.isRefreshing = false
+      }
+    }
+  }
+
+  private confirmJumpDialog(): void {
+    if (this.jumpSubmitting) {
+      return
+    }
+    const page: number = Number.parseInt(this.jumpPageText, 10)
+    if (Number.isNaN(page) || page <= 0 ||
+      (this.totalPages > 0 && page > this.totalPages)) {
+      this.jumpPageError = AppStrings.get('jump_page_invalid')
+      return
+    }
+    this.jumpSubmitting = true
+    this.jumpToPage(page).then((ok: boolean): void => {
+      if (ok) {
+        this.closeJumpDialog()
+        setTimeout((): void => {
+          this.scroller.scrollToIndex(0)
+        }, 50)
+      } else {
+        this.jumpPageError = AppStrings.get('common_load_failed')
+      }
+    }).catch((): void => {
+      this.jumpPageError = AppStrings.get('common_load_failed')
+    }).finally((): void => {
+      this.jumpSubmitting = false
+    })
+  }
+
+  @Builder
+  private JumpDialogContent() {
+    Column({ space: ThemeTokens.SPACE_SM }) {
+      Text(this.jumpHelpText())
+        .fontSize(ThemeTokens.FONT_SIZE_BODY)
+        .fontColor($r('sys.color.font_secondary'))
+        .width('100%')
+      TextInput({ text: this.jumpPageText, placeholder: AppStrings.get('jump_page_placeholder') })
+        .type(InputType.Number)
+        .inputFilter('^[0-9]*$')
+        .defaultFocus(true)
+        .width('100%')
+        .onChange((value: string): void => {
+          this.jumpPageText = this.normalizeJumpInput(value)
+          this.jumpPageError = ''
+        })
+      if (this.jumpPageError.length > 0) {
+        Text(this.jumpPageError)
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontColor(Color.Red)
+          .width('100%')
+      }
+    }
+    .width('100%')
   }
 
   private async loadMore(): Promise<void> {

@@ -1,5 +1,5 @@
 import { common } from '@kit.AbilityKit'
-import { SymbolGlyphModifier } from '@kit.ArkUI'
+import { CustomContentDialog, SymbolGlyphModifier } from '@kit.ArkUI'
 import {
   BrowsePresentationService,
   BrowsePresentationState,
@@ -81,6 +81,40 @@ export struct FavoritesPage {
   private appliedAccountSessionRevision: number = -1
   /** One retained interactive-refresh owner across every Favorites density branch. */
   private refreshController: NextNPullRefreshController = new NextNPullRefreshController()
+  @Local jumpPageText: string = ''
+  @Local jumpPageError: string = ''
+  private jumpSubmitting: boolean = false
+  private jumpDialogController: CustomDialogController = new CustomDialogController({
+    builder: CustomContentDialog({
+      primaryTitle: AppStrings.get('jump_page_confirm'),
+      contentBuilder: (): void => {
+        this.JumpDialogContent()
+      },
+      buttons: [
+        {
+          value: AppStrings.get('common_cancel'),
+          buttonStyle: ButtonStyleMode.TEXTUAL,
+          action: (): void => {
+            this.closeJumpDialog()
+          },
+        },
+        {
+          value: AppStrings.get('jump_page_confirm'),
+          buttonStyle: ButtonStyleMode.TEXTUAL,
+          action: (): void => {
+            this.confirmJumpDialog()
+          },
+        },
+      ],
+    }),
+    autoCancel: true,
+    onWillDismiss: (_action: DismissDialogAction) => {
+      this.jumpPageText = ''
+      this.jumpPageError = ''
+    },
+    alignment: DialogAlignment.Center,
+    customStyle: false,
+  });
 
   private context(): common.UIAbilityContext {
     return this.getUIContext().getHostContext() as common.UIAbilityContext
@@ -183,6 +217,9 @@ export struct FavoritesPage {
     }
     if (this.titleActions.command === FavoritesAction.OPEN_LAYOUT_MENU && this.canUseTitleActions()) {
       this.layoutMenuShown = true
+    }
+    if (this.titleActions.command === FavoritesAction.OPEN_JUMP_DIALOG && this.canUseTitleActions()) {
+      this.openJumpDialog()
     }
   }
 
@@ -400,6 +437,126 @@ export struct FavoritesPage {
   private canRetryLoadMore(): boolean {
     return this.signedIn && this.currentPage > 0 && this.currentPage < this.totalPages &&
       !this.isInitialLoading && !this.isRefreshing && !this.isLoadingMore
+  }
+
+  /** NextE ToplistPeriodPage parity: digits only, empty value collapses to ''. */
+  private normalizeJumpInput(value: string): string {
+    return (value || '').replace(/[^0-9]/g, '')
+  }
+
+  private jumpHelpText(): string {
+    const help: string = AppStrings.get('jump_page_help')
+    if (this.totalPages <= 0) {
+      return help
+    }
+    return `${help} 1 - ${this.totalPages}`
+  }
+
+  private openJumpDialog(): void {
+    this.jumpPageText = `${Math.max(1, this.currentPage)}`
+    this.jumpPageError = ''
+    try {
+      this.jumpDialogController.open()
+    } catch (_error) {}
+  }
+
+  private closeJumpDialog(): void {
+    try {
+      this.jumpDialogController.close()
+    } catch (_error) {}
+  }
+
+  /** Replaces the favourites first page with the requested server page. */
+  private async jumpToPage(page: number): Promise<boolean> {
+    if (!this.signedIn) {
+      return false
+    }
+    const generation: number = this.requestGeneration + 1
+    this.requestGeneration = generation
+    const querySnapshot: string = this.activeQuery
+    this.errorMessage = ''
+    this.loadMoreErrorMessage = ''
+    this.isLoadingMore = false
+    this.isInitialLoading = true
+    this.isRefreshing = false
+    this.rawGalleries = []
+    this.applyContentFilters()
+    this.currentPage = 0
+    this.totalPages = 1
+    try {
+      const result: NhGalleryPageResult = await NhApiClient.favorites(page, querySnapshot)
+      if (generation !== this.requestGeneration || querySnapshot !== this.activeQuery) {
+        return false
+      }
+      this.rawGalleries = result.galleries
+      this.applyContentFilters()
+      this.currentPage = page
+      this.totalPages = Math.max(1, result.totalPages)
+      return true
+    } catch (error) {
+      if (generation === this.requestGeneration) {
+        this.errorMessage = (error as Error).message || AppStrings.get('favorites_load_failed')
+      }
+      return false
+    } finally {
+      if (generation === this.requestGeneration) {
+        this.isInitialLoading = false
+        this.isRefreshing = false
+      }
+    }
+  }
+
+  private confirmJumpDialog(): void {
+    if (this.jumpSubmitting) {
+      return
+    }
+    const page: number = Number.parseInt(this.jumpPageText, 10)
+    if (!this.signedIn || Number.isNaN(page) || page <= 0 ||
+      (this.totalPages > 0 && page > this.totalPages)) {
+      this.jumpPageError = AppStrings.get('jump_page_invalid')
+      return
+    }
+    this.jumpSubmitting = true
+    this.jumpToPage(page).then((ok: boolean): void => {
+      if (ok) {
+        this.closeJumpDialog()
+        setTimeout((): void => {
+          this.scroller.scrollToIndex(0)
+        }, 50)
+      } else {
+        this.jumpPageError = AppStrings.get('common_load_failed')
+      }
+    }).catch((): void => {
+      this.jumpPageError = AppStrings.get('common_load_failed')
+    }).finally((): void => {
+      this.jumpSubmitting = false
+    })
+  }
+
+  @Builder
+  private JumpDialogContent() {
+    Column({ space: ThemeTokens.SPACE_SM }) {
+      Text(this.jumpHelpText())
+        .fontSize(ThemeTokens.FONT_SIZE_BODY)
+        .fontColor($r('sys.color.font_secondary'))
+        .width('100%')
+      TextInput({ text: this.jumpPageText, placeholder: AppStrings.get('jump_page_placeholder') })
+        .type(InputType.Number)
+        .inputFilter('^[0-9]*$')
+        .defaultFocus(true)
+        .width('100%')
+        .onChange((value: string): void => {
+          this.jumpPageText = this.normalizeJumpInput(value)
+          this.jumpPageError = ''
+        })
+      if (this.jumpPageError.length > 0) {
+        Text(this.jumpPageError)
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontColor(Color.Red)
+          .width('100%')
+      }
+    }
+    .width('100%')
   }
 
   private async loadFirstPage(keepUsableRows: boolean): Promise<void> {

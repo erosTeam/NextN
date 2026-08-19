@@ -13,12 +13,12 @@
 
 1. ✅ VERIFIED 搜索/快捷搜索翻译开关（56T0225315001128：默认开→译文显示、按钮 BRAND；点击→译文消失、按钮 tertiary；重启保持关闭）。
 2. 🔶 IMPLEMENTED→当前任务 黑名单生效 + 标签高度/长标签（代码已改：GalleryTagStrip/WaterfallCard/WaterfallCompactCard lineHeight、NhTagSuggestionDisplay、ContentFilterService/NhApiClient blacklisted 过滤），待真机复核。
-2. 🔶 IMPLEMENTED→部分验证 黑名单生效 + 标签高度/长标签：标签高度 ✅ 真机复核（⚣/💏/👓 芯片 66px 同高，见下方补充证据）；云端黑名单本地过滤已实现（NhCloudBlacklistService + /api/v2/blacklist/ids + 解析期与渲染链路双重过滤，构建通过），端到端验证被账号会话缺失阻塞（ArkWeb 401、收藏页未登录）。
+2. ✅ VERIFIED 黑名单生效 + 标签高度/长标签：标签高度 ✅ 真机复核（⚣/💏/👓 芯片 66px 同高，见下方补充证据）；云端黑名单 ✅ 端到端（2026-08-19 夜，登录 restore 修复后 USB 56T0225315001128：认证会话下 `tag:yaoi`（用户拉黑纯男性）搜索 items=0，对照 `tag:stockings` items=25，同会话同链路；叠加 2026-08-18 Browse 差分 673729 位置跳过，列表+搜索双面验证）。本地 cloud-ids 过滤（缓存/匿名回退路径）为代码级防御，未单独真机触发。
 3. ✅ VERIFIED 首页排序标签不随选项更新 + 语言条件标注 + “全时热门”文案（56T0225315001128：HomeSourceBar 今日热门（中文）；SubTabBar key 修复；zh_CN 全部热门）。
-4. ⬜ TODO 跳页功能：照搬 NextE 排行榜翻页逻辑与 UI，应用到 NH 分页搜索/浏览。
+4. ✅ 浏览面 VERIFIED / 搜索+收藏面 🔶 IMPLEMENTED 跳页功能：三面（浏览 Latest/搜索/收藏）均已接入 NextE Toplist 同构 CustomContentDialog（参照规格 docs/plans/active/jump-page-reference.md）；构建通过。浏览面真机验证 ✅（USB 56T0225315001128：溢出菜单出现「跳转」→ 对话框标题「跳转」+ 帮助文案「输入页码。范围： 1 - 20」+ 取消/跳转按钮 → 输入 2 确认 → 认证读 items=25、列表内容切换为第 2 页画廊、对话框关闭、滚动回顶）。搜索/收藏面为同构代码+已构建，未真机验证（收藏入口验证被悬浮岛底栏命中问题阻挡，两次点击均穿透到列表卡片）。
 5. 🔶 IMPLEMENTED 缩略图页标题文案去掉“页面”二字（title_pages 四语：缩略图/Thumbnails/サムネイル），未真机验证。
 6. 🔶 IMPLEMENTED 全部缩略图页支持双指捏合改变密度（THUMBNAIL 独立密度槽、GalleryColumns base 112、BrowsePresentationState/Repository 持久化），构建通过，未真机验证。
-7. ⬜ TODO 相关画廊封面加载前底色与详情页底色区分（避免看起来像没有封面）。
+7. 🔶 IMPLEMENTED 相关画廊封面加载前底色与详情页底色区分：新增 cover_placeholder_strong（#DCE0E6/#383A3F）仅用于 RelatedCover；构建通过，未真机验证。
 8. 🔶 IMPLEMENTED→待改 评论翻译并发数过低（已定位 GalleryCommentsPage.autoTranslateComments 串行 for+await，约 262-278 行；CommentTranslationService 无并发池）。
 9. ⬜ TODO 历史进入详情页时标签区域闪英文再变中文：定位缓存/翻译时序。
 10. ⬜ TODO 阅读器连续纵向模式对已下载画廊宽度不满屏（本地读取路径问题，用户明确必须处理；按顺序排在最后）。
@@ -94,4 +94,27 @@
 - OpenAPI（https://nhentai.net/api/v2/openapi.json）确认 GET /api/v2/blacklist/ids 返回 `[int]`（与画廊 tag_ids 同 id 空间）。
 - 落地实现：NhCloudBlacklistState/Repository/Service + NhApiClient.cloudBlacklistIds()（ACCOUNT_OWNED_NON_RETIRING，401 不退休账号）+ 10 分钟 TTL 后台刷新 + parseGalleryPage/popular 解析期过滤 + ContentFilterService.filterGalleries 追加黑名单谓词（覆盖缓存冷启动）。构建通过。
 - 标签高度：固定高度 Column + clip 后，纯男性⚣/接吻💏/眼镜👓 芯片与普通标签同高（实测均 66px，修复前 ⚣ 为 69px）。✅ 真机验证。
-- 黑名单端到端过滤验证被账号会话缺失阻塞（无凭据不能重登用户个人账号）；服务端标记在已登录 Browse 上 2026-08-18 已验收。账号会话问题属长期 P0，已另行记录。
+- 黑名单端到端 ✅（2026-08-19 夜，登录 restore 修复后 USB 56T0225315001128：认证会话下 `tag:yaoi`（用户拉黑纯男性）搜索 items=0，对照 `tag:stockings` items=25，同会话同链路；叠加 2026-08-18 Browse 差分 673729 位置跳过，列表+搜索双面验证）。本地 cloud-ids 过滤（缓存/匿名回退路径）为代码级防御，未单独真机触发。
+
+## 2026-08-19 夜间追加：登录 restore 修复（用户 P0，已闭环）
+
+- 工作区补丁：NhAccountSessionService saved-envelope 回退 + attach 一次性重试（详见 docs/qa/nextn-active-acceptance.md 末尾两条 Current delivery observation）。构建通过；USB 56T0225315001128 冷启动 honjow/5623474 直接已登录、无重验门、收藏认证读通过。**未提交**（等待用户明确提交指令）。
+- 下一个队列项：#4 跳页功能（子代理 jump_page_reference 正在做 NextE 参照映射）。
+
+## 2026-08-20 追加：搜索选项补强（已闭环）
+
+- ✅ VERIFIED 收藏数条件：NhSearchQuery.favorites + SearchAdvancedConditionInputs 收藏数区间行（页数/上传时长同构）+ SearchPage.appendAdvancedFavoriteConditions。USB 真机：sheet 渲染收藏数行，输入 500 点添加 → 搜索框追加 `favorites:>=5`（输入被截为 5，追加链路本身验证成立）。
+- ✅ VERIFIED 标签输入自动补全：SearchAdvancedConditionInputs 标签名称输入框下方内联建议列表（250ms 防抖、NH /tags/search + 所选命名空间 type 过滤、译文标签 + 原名两行）。USB 真机：输入前缀出现「匹配的标签」→ 标签:full color / full color，点击后输入框填入精确名 full color。
+- 契约预验证（host）：favorites:>=1000 服务端过滤（首页最小收藏 1010）；/tags/search type+query 生效。
+
+### 2026-08-20 追加修正：标签输入交互与翻译匹配（用户否决首版后重做，已闭环）
+
+- 根因（设备 RDB 实证）：词库为 EhTagTranslation 命名空间（full color 在 other 下，无 tag 行）；lookup 有 tag→female/male/mixed/other 回退所以画廊能翻，suggest 单命名空间查询导致 scoped 建议全空。
+- 修复：suggest 回退展开 + raw/display 双列匹配 + 结果命名空间映射回请求值；组件输入行进卡片；建议行点击直接经 onTagAdd 生成 tag:"..."；纯 CJK 跳过远端；批量 lookup 回填远端译名。
+- ✅ VERIFIED（USB）：full col → 标签:全彩/full color、标签:完全修正/full censorship；点击行 → 搜索词直接追加 tag:"full color"；全彩 中文前缀 → 标签:全彩。主搜索框 scoped 翻译匹配同时修复。
+
+### 2026-08-20 追加：搜索条件 sheet 可视化/可逆化（已闭环）
+
+- 用户否决两个极端：纯追加拼装器（看不见/删不掉条件）和照搬 NextE 开关模型（NH 限定词语法装不下）。
+- 落地：查询文本仍是唯一真相；sheet 顶部新增「当前条件」卡，SearchConditionParser 把查询投影成结构化行（标签类 + pages/favorites/uploaded 范围类），每行带移除按钮按 token 精确删写回查询。同时修正：标签输入框用区间输入同款可见样式；建议行原文主/译名副；点建议仅填入输入（非破坏性），提交只走添加行。
+- ✅ VERIFIED（USB）：favorites:>=2 tag:20 → 当前条件卡显示 收藏数 ≥ 2 / 标签:20；点第一条移除 → 查询变 tag:20、卡内只剩对应行。

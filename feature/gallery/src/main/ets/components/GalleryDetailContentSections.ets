@@ -81,7 +81,7 @@ export struct GalleryRelatedCarousel {
     }
     .width(this.relatedCardWidth(gallery))
     .height(RELATED_COVER_HEIGHT)
-    .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
+    .backgroundColor(ThemeTokens.COVER_PLACEHOLDER_STRONG)
     .clip(true)
   }
 

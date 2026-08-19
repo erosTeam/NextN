@@ -2449,12 +2449,8 @@ export struct SettingsPage {
       .width('100%')
       .alignItems(VerticalAlign.Center)
       if (this.includeSecrets) {
-        this.PasswordField(this.exportPwd, AppStrings.get('backup_password'), (value: string) => {
-          this.exportPwd = value
-        })
-        this.PasswordField(this.exportPwd2, AppStrings.get('backup_password_repeat'), (value: string) => {
-          this.exportPwd2 = value
-        })
+        this.ExportPasswordField(false)
+        this.ExportPasswordField(true)
       }
     }
     .width('100%')
@@ -2481,12 +2477,16 @@ export struct SettingsPage {
   }
 
   @Builder
-  private PasswordField(text: string, placeholder: ResourceStr, onChange: (value: string) => void) {
-    TextInput({ text: text, placeholder: placeholder })
+  private ExportPasswordField(isRepeat: boolean) {
+    TextInput({ text: isRepeat ? this.exportPwd2 : this.exportPwd, placeholder: isRepeat ? AppStrings.get('backup_password_repeat') : AppStrings.get('backup_password') })
       .type(InputType.Password)
       .width('100%')
       .onChange((value: string) => {
-        onChange(value)
+        if (isRepeat) {
+          this.exportPwd2 = value
+        } else {
+          this.exportPwd = value
+        }
       })
   }
 

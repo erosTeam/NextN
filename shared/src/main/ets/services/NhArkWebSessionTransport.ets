@@ -64,6 +64,11 @@ export class NhArkWebSessionTransport {
   static attach(controller: webview.WebviewController): void {
     NhArkWebSessionTransport.controller = controller
     NhArkWebSessionTransport.isReady = false
+    // The ArkWeb cookie store only becomes readable once a Web component
+    // attaches. A cold-start restore that ran before this point may have
+    // misclassified an empty store read as a missing session; give it the one
+    // recorded retry instead of surfacing a fake re-verification gate.
+    NhAccountSessionService.noteArkWebCookieStoreAvailable()
   }
 
   static detach(controller: webview.WebviewController): void {

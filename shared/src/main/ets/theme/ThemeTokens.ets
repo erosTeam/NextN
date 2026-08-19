@@ -25,6 +25,8 @@ export class ThemeTokens {
   static readonly CARD_BACKGROUND: ResourceColor = $r('app.color.surface_container')
   /** NextE cover_placeholder: a dedicated grey distinct from the page surface. */
   static readonly COVER_PLACEHOLDER: ResourceColor = $r('app.color.cover_placeholder')
+  /** Occupied-slot grey for small cover slots on sub-background pages. */
+  static readonly COVER_PLACEHOLDER_STRONG: ResourceColor = $r('app.color.cover_placeholder_strong')
   static readonly READER_BACKGROUND: ResourceColor = $r('app.color.reader_background')
   static readonly TEXT_PRIMARY: ResourceColor = $r('sys.color.font_primary')
   static readonly TEXT_SECONDARY: ResourceColor = $r('sys.color.font_secondary')

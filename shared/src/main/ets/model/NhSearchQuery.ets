@@ -37,6 +37,11 @@ export class NhSearchQuery {
     return normalized > 0 ? `pages:${relation}${normalized}` : ''
   }
 
+  static favorites(value: number, relation: NhSearchRangeRelation): string {
+    const normalized: number = NhSearchQuery.positiveInteger(value)
+    return normalized > 0 ? `favorites:${relation}${normalized}` : ''
+  }
+
   static uploaded(
     value: number,
     unit: NhSearchUploadedUnit,
@@ -51,7 +56,7 @@ export class NhSearchQuery {
 
   static isOperatorNamespace(namespace: string): boolean {
     const normalized: string = namespace.trim().toLowerCase()
-    return normalized === 'pages' || normalized === 'uploaded'
+    return normalized === 'pages' || normalized === 'uploaded' || normalized === 'favorites'
   }
 
   private static positiveInteger(value: number): number {

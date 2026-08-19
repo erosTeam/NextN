@@ -20,10 +20,6 @@ const SQL_COUNT: string = 'SELECT COUNT(*) AS count FROM tag_translations'
 const SQL_SELECT_META: string = 'SELECT value FROM tag_translation_meta WHERE key = ? LIMIT 1'
 const SQL_LOOKUP_PREFIX: string =
   'SELECT raw_name, display_name FROM tag_translations WHERE namespace = ? AND raw_name IN ('
-const SQL_SUGGEST: string =
-  "SELECT namespace, raw_name, display_name FROM tag_translations " +
-  "WHERE namespace = ? AND raw_name LIKE ? ESCAPE '\\' " +
-  'ORDER BY last_used_at DESC, raw_name ASC LIMIT ?'
 const SQL_SUGGEST_UNSCOPED: string =
   "SELECT namespace, raw_name, display_name FROM tag_translations " +
   "WHERE raw_name LIKE ? ESCAPE '\\' OR display_name LIKE ? ESCAPE '\\' " +
@@ -188,13 +184,35 @@ export class TagTranslationRepository {
     const boundedLimit: number = TagTranslationRepository.boundedSuggestionLimit(limit)
     const store: relationalStore.RdbStore = await LocalDataStore.open(context)
     const like: string = `${TagTranslationRepository.escapeLike(normalizedPrefix)}%`
+    // The on-device dictionary stores EhTagTranslation namespaces: a NH
+    // "tag" lives across female/male/mixed/other, and "category" under
+    // reclass. Lookup already expands these fallbacks; suggestion must use
+    // the same expansion or every scoped prefix silently misses.
+    const namespaces: string[] = [normalizedNamespace]
+    TagTranslationRepository.fallbackNamespaces(normalizedNamespace)
+      .forEach((fallback: string): void => {
+        if (namespaces.indexOf(fallback) < 0) {
+          namespaces.push(fallback)
+        }
+      })
+    const namespaceSlots: string = namespaces.map((): string => '?').join(', ')
+    const suggestSql: string =
+      'SELECT namespace, raw_name, display_name FROM tag_translations ' +
+      `WHERE namespace IN (${namespaceSlots}) ` +
+      "AND (raw_name LIKE ? ESCAPE '\\' OR display_name LIKE ? ESCAPE '\\') " +
+      'ORDER BY last_used_at DESC, raw_name ASC LIMIT ?'
     const suggestions: NhTagSuggestion[] = []
     let rows: relationalStore.ResultSet | null = null
     try {
-      rows = await store.querySql(SQL_SUGGEST, [normalizedNamespace, like, boundedLimit])
+      const suggestParams: Array<relationalStore.ValueType> = namespaces
+      suggestParams.push(like, like, boundedLimit)
+      rows = await store.querySql(suggestSql, suggestParams)
       while (rows.goToNextRow()) {
         const suggestion: NhTagSuggestion = new NhTagSuggestion()
-        suggestion.namespace = TagTranslationRepository.stringColumn(rows, 'namespace')
+        // Present the row under the requested NH namespace: the dictionary
+        // stores the EhTagTranslation namespace (female/male/mixed/other),
+        // but the caller's query grammar and menu selection are NH-scoped.
+        suggestion.namespace = normalizedNamespace
         suggestion.rawName = TagTranslationRepository.stringColumn(rows, 'raw_name')
         suggestion.displayName = TagTranslationRepository.stringColumn(rows, 'display_name')
         if (
