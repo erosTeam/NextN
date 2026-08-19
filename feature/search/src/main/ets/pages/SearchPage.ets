@@ -5,6 +5,7 @@ import {
   CatalogPreferencesState,
   ContentFilterService,
   ContentFilterState,
+  DiagnosticLogger,
   BrowsePresentationState,
   GalleryCollectionBody,
   SecondaryListScaffold,
@@ -12,7 +13,6 @@ import {
   NextNPullRefreshController,
   NhApiClient,
   NhClipboardLinkService,
-  NhBrowsePresentation,
   NhGalleryPageResult,
   NhGallerySummary,
   NhTag,
@@ -27,6 +27,7 @@ import {
   NhQuickSearchItem,
   NhTagQuery,
   NhTagSuggestion,
+  NhTagSuggestionDisplay,
   NextNGroupedListSection,
   NextNListRow,
   NextNModalScaffold,
@@ -36,12 +37,15 @@ import {
   PageLoadingState,
   QuickSearchRepository,
   SearchHistoryRepository,
+  SearchTranslationSettings,
+  SearchTranslationState,
   TagTranslationRepository,
   ThemeTokens,
   connectBrowsePresentation,
   connectCatalogPreferences,
   connectContentFilters,
   connectLayoutSafeArea,
+  connectSearchTranslation,
   connectTagTranslations,
   nextNHdsTitleBar,
   TagTranslationState,
@@ -75,6 +79,7 @@ const TAG_SUGGESTION_LIMIT: number = 8
 const MAX_TAG_SUGGESTION_PREFIX_LENGTH: number = 128
 const ADVANCED_RANGE_INPUT_WIDTH: number = 84
 const ADVANCED_RANGE_INPUT_HEIGHT: number = 36
+const SEARCH_HISTORY_CHIP_ANIM_DURATION: number = 180
 
 /** The final editable catalog token, kept separate from remote-search state. */
 class LocalTagSuggestionInput {
@@ -105,6 +110,7 @@ export struct SearchPage {
   @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
   @Local catalogPreferences: CatalogPreferencesState = connectCatalogPreferences()
+  @Local searchTranslation: SearchTranslationState = connectSearchTranslation()
   @Local isInitialLoading: boolean = false
   @Local isRefreshing: boolean = false
   @Local isLoadingMore: boolean = false
@@ -117,6 +123,7 @@ export struct SearchPage {
   @Local isQuickSearchMutation: boolean = false
   @Local recentSearches: NhSearchHistoryItem[] = []
   @Local recentSearchTranslations: Map<string, string> = new Map<string, string>()
+  @Local quickSearchTranslations: Map<string, string> = new Map<string, string>()
   @Local isSearchHistoryLoaded: boolean = false
   @Local activeLanguageFilter: NhSearchLanguage = NhSearchLanguage.ALL
   @Local activeSearchSort: NhSearchSort = NhSearchSort.RECENT
@@ -163,7 +170,7 @@ export struct SearchPage {
     this.chrome.focusOnAppear = this.initialQuery.trim().length === 0
     this.loadQuickSearchesIfNeeded()
     this.loadRecentSearchesIfNeeded()
-    this.refreshRecentSearchTranslations()
+    this.refreshSearchTranslations()
     this.consumeInitialQuery()
     // A retained Search destination may return after its local defaults were
     // changed elsewhere. Defer its one scoped reload until it is visible.
@@ -204,11 +211,16 @@ export struct SearchPage {
   @Monitor('tagTranslations.revision')
   onTagTranslationsChanged(): void {
     this.refreshTagTranslationLabels()
-    this.refreshRecentSearchTranslations()
+    this.refreshSearchTranslations()
     // A replacement can change membership and ranking, not only the displayed
     // label. Clear and fence the transient candidates rather than preserving a
     // stale local/remote mixture or issuing an automatic suggestion request.
     this.cancelTagSuggestions()
+  }
+
+  @Monitor('searchTranslation.translateEnabled')
+  onSearchTranslationChanged(): void {
+    this.refreshSearchTranslations()
   }
 
   @Monitor('catalogPreferences.searchRevision')
@@ -296,65 +308,30 @@ export struct SearchPage {
   }
 
   private historyNamespaceLabel(namespace: string): string {
-    const normalized: string = namespace.trim().toLowerCase()
-    switch (normalized) {
-      case 'parody':
-      case 'parodies':
-        return AppStrings.get('gallery_tag_namespace_parodies')
-      case 'character':
-      case 'characters':
-        return AppStrings.get('gallery_tag_namespace_characters')
-      case 'artist':
-      case 'artists':
-        return AppStrings.get('gallery_tag_namespace_artists')
-      case 'group':
-        return AppStrings.get('gallery_tag_namespace_groups')
-      case 'language':
-        return AppStrings.get('gallery_tag_namespace_languages')
-      case 'category':
-        return AppStrings.get('gallery_tag_namespace_categories')
-      case 'tag':
-      case 'tags':
-        return AppStrings.get('gallery_tag_namespace_tags')
-      case 'female':
-        return AppStrings.get('tag_ns_female')
-      case 'male':
-        return AppStrings.get('tag_ns_male')
-      case 'mixed':
-        return AppStrings.get('tag_ns_mixed')
-      case 'other':
-        return AppStrings.get('tag_ns_other')
-      case 'cosplayer':
-        return AppStrings.get('tag_ns_cosplayer')
-      default:
-        return namespace
-    }
+    return NhTagSuggestionDisplay.namespaceLabel(namespace)
   }
 
-  private async refreshRecentSearchTranslations(): Promise<void> {
+  private async refreshSearchTranslations(): Promise<void> {
     const run: number = this.recentSearchTranslationRefreshEpoch + 1
     this.recentSearchTranslationRefreshEpoch = run
     if (!this.isVisible) {
       return
     }
     const historyRevision: number = this.recentSearchesRevision
+    const quickRevision: number = this.quickSearchesRevision
     const items: NhSearchHistoryItem[] = this.recentSearches.slice()
-    const tokensByQuery: Map<string, SearchHistoryQueryToken[]> = new Map<string, SearchHistoryQueryToken[]>()
+    const quickItems: NhQuickSearchItem[] = this.quickSearches.slice()
+    const tokensByQuery: Map<string, SearchHistoryQueryToken[]> =
+      new Map<string, SearchHistoryQueryToken[]>()
+    const quickTokensByQuery: Map<string, SearchHistoryQueryToken[]> =
+      new Map<string, SearchHistoryQueryToken[]>()
     const tags: NhTag[] = []
     const seenTags: Set<string> = new Set<string>()
     items.forEach((item: NhSearchHistoryItem): void => {
-      const tokens: SearchHistoryQueryToken[] = this.historyQueryTokens(item.query)
-      tokensByQuery.set(item.query, tokens)
-      tokens.forEach((token: SearchHistoryQueryToken): void => {
-        if (!token.isKnownTag) {
-          return
-        }
-        const key: string = TagTranslationRepository.keyFor(token.tag)
-        if (key.length > 0 && !seenTags.has(key)) {
-          seenTags.add(key)
-          tags.push(token.tag)
-        }
-      })
+      this.collectSearchTranslationTokens(item.query, tokensByQuery, tags, seenTags)
+    })
+    quickItems.forEach((item: NhQuickSearchItem): void => {
+      this.collectSearchTranslationTokens(item.query, quickTokensByQuery, tags, seenTags)
     })
 
     let translatedTags: Map<string, string> = new Map<string, string>()
@@ -365,9 +342,11 @@ export struct SearchPage {
         if (
           run === this.recentSearchTranslationRefreshEpoch &&
           this.isVisible &&
-          historyRevision === this.recentSearchesRevision
+          historyRevision === this.recentSearchesRevision &&
+          quickRevision === this.quickSearchesRevision
         ) {
           this.recentSearchTranslations = new Map<string, string>()
+          this.quickSearchTranslations = new Map<string, string>()
         }
         return
       }
@@ -375,12 +354,13 @@ export struct SearchPage {
     if (
       run !== this.recentSearchTranslationRefreshEpoch ||
       !this.isVisible ||
-      historyRevision !== this.recentSearchesRevision
+      historyRevision !== this.recentSearchesRevision ||
+      quickRevision !== this.quickSearchesRevision
     ) {
       return
     }
 
-    const next: Map<string, string> = new Map<string, string>()
+    const recentNext: Map<string, string> = new Map<string, string>()
     items.forEach((item: NhSearchHistoryItem): void => {
       const tokens: SearchHistoryQueryToken[] | undefined = tokensByQuery.get(item.query)
       if (tokens === undefined || tokens.length === 0) {
@@ -391,7 +371,8 @@ export struct SearchPage {
         if (!token.isKnownTag) {
           return token.raw
         }
-        const translated: string | undefined = translatedTags.get(TagTranslationRepository.keyFor(token.tag))
+        const translated: string | undefined =
+          translatedTags.get(TagTranslationRepository.keyFor(token.tag))
         if (translated === undefined || translated.length === 0 || translated === token.tag.name) {
           return token.raw
         }
@@ -399,15 +380,100 @@ export struct SearchPage {
         return `${token.displayPrefix}${translated}`
       })
       if (changed) {
-        next.set(item.query, translatedParts.join(' '))
+        recentNext.set(item.query, translatedParts.join(' '))
       }
     })
-    this.recentSearchTranslations = next
+    const quickNext: Map<string, string> = new Map<string, string>()
+    quickItems.forEach((item: NhQuickSearchItem): void => {
+      const tokens: SearchHistoryQueryToken[] | undefined = quickTokensByQuery.get(item.query)
+      if (tokens === undefined || tokens.length === 0) {
+        return
+      }
+      let changed: boolean = false
+      const translatedParts: string[] = tokens.map((token: SearchHistoryQueryToken): string => {
+        if (!token.isKnownTag) {
+          return token.raw
+        }
+        const translated: string | undefined =
+          translatedTags.get(TagTranslationRepository.keyFor(token.tag))
+        if (translated === undefined || translated.length === 0 || translated === token.tag.name) {
+          return token.raw
+        }
+        changed = true
+        return `${token.displayPrefix}${translated}`
+      })
+      if (changed) {
+        quickNext.set(item.query, translatedParts.join(' '))
+      }
+    })
+    this.recentSearchTranslations = recentNext
+    this.quickSearchTranslations = quickNext
+  }
+
+  private collectSearchTranslationTokens(
+    query: string,
+    sink: Map<string, SearchHistoryQueryToken[]>,
+    tags: NhTag[],
+    seenTags: Set<string>,
+  ): void {
+    const tokens: SearchHistoryQueryToken[] = this.historyQueryTokens(query)
+    sink.set(query, tokens)
+    tokens.forEach((token: SearchHistoryQueryToken): void => {
+      if (!token.isKnownTag) {
+        return
+      }
+      const key: string = TagTranslationRepository.keyFor(token.tag)
+      if (key.length > 0 && !seenTags.has(key)) {
+        seenTags.add(key)
+        tags.push(token.tag)
+      }
+    })
   }
 
   private recentSearchTranslation(query: string): string {
     const translated: string | undefined = this.recentSearchTranslations.get(query)
     return translated !== undefined ? translated : ''
+  }
+
+  private quickSearchTranslation(query: string): string {
+    const translated: string | undefined = this.quickSearchTranslations.get(query)
+    return translated !== undefined ? translated : ''
+  }
+
+  private toggleSearchTranslation(): void {
+    const nextEnabled: boolean = !this.searchTranslation.translateEnabled
+    DiagnosticLogger.info(
+      'search',
+      'search_translation_toggle',
+      `from=${this.searchTranslation.translateEnabled ? 'on' : 'off'} to=${nextEnabled ? 'on' : 'off'}`,
+    )
+    this.getUIContext().animateTo(
+      { duration: SEARCH_HISTORY_CHIP_ANIM_DURATION, curve: Curve.EaseOut },
+      (): void => {
+        SearchTranslationSettings.setTranslateEnabled(this.context(), nextEnabled)
+      },
+    )
+  }
+
+  @Builder
+  private SearchTranslationButton() {
+    Button({ type: ButtonType.Circle, stateEffect: true }) {
+      SymbolGlyph($r('sys.symbol.translate'))
+        .fontSize(18)
+        .fontColor([
+          this.searchTranslation.translateEnabled
+            ? ThemeTokens.BRAND
+            : ThemeTokens.TEXT_TERTIARY,
+        ])
+    }
+    .onClick((): void => {
+      this.toggleSearchTranslation()
+    })
+    .width(28)
+    .height(28)
+    .backgroundColor(Color.Transparent)
+    .padding(0)
+    .accessibilityText(AppStrings.get('settings_tag_translation_title'))
   }
 
   aboutToDisappear(): void {
@@ -451,7 +517,7 @@ export struct SearchPage {
       const history: NhSearchHistoryItem[] = await SearchHistoryRepository.load(this.context())
       if (this.isVisible && revision === this.recentSearchesRevision) {
         this.recentSearches = history
-        this.refreshRecentSearchTranslations()
+        this.refreshSearchTranslations()
       }
     } catch (error) {
       console.warn(`Unable to load local search history: ${(error as Error).message}`)
@@ -473,6 +539,7 @@ export struct SearchPage {
       const quickSearches: NhQuickSearchItem[] = await QuickSearchRepository.load(this.context())
       if (this.isVisible && revision === this.quickSearchesRevision) {
         this.quickSearches = quickSearches
+        this.refreshSearchTranslations()
       }
     } catch (error) {
       console.warn(`Unable to load local quick searches: ${(error as Error).message}`)
@@ -1307,6 +1374,11 @@ export struct SearchPage {
     return this.isSuggestingTags || this.tagSuggestions.length > 0
   }
 
+  private suggestionTitle(suggestion: NhTagSuggestion): string {
+    const localized: string = NhTagSuggestionDisplay.localizedTitle(suggestion)
+    return localized.length > 0 ? localized : NhTagQuery.formatExact(suggestion.namespace, suggestion.rawName)
+  }
+
   private directGalleryId(): number {
     return NhClipboardLinkService.canonicalGalleryId(this.query)
   }
@@ -1410,8 +1482,8 @@ export struct SearchPage {
         ListItem() {
           NextNListRow({
             leadingIcon: $r('sys.symbol.magnifyingglass'),
-            title: suggestion.displayName,
-            subtitle: `${suggestion.namespace}: ${suggestion.rawName}`,
+            title: this.suggestionTitle(suggestion),
+            subtitle: NhTagQuery.formatExact(suggestion.namespace, suggestion.rawName),
             showChevron: false,
             accessibilityLabel: AppStrings.get('search_use_tag_suggestion'),
             onAction: (): void => {
@@ -1554,33 +1626,47 @@ export struct SearchPage {
           .padding({ bottom: ThemeTokens.SPACE_SM })
         Flex({ wrap: FlexWrap.Wrap }) {
           ForEach(this.quickSearches, (item: NhQuickSearchItem): void => {
-            Row({ space: ThemeTokens.SPACE_XS }) {
-              Text(item.query)
-                .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-                .fontColor(ThemeTokens.TEXT_PRIMARY)
-                .maxLines(1)
-                .textOverflow({ overflow: TextOverflow.Ellipsis })
-                .layoutWeight(1)
-                .accessibilityText(AppStrings.format('search_quick_item_a11y', [item.query]))
-                .onClick((): void => {
-                  this.openQuickSearch(item.query)
-                })
-              Button({ type: ButtonType.Circle, stateEffect: true }) {
-                SymbolGlyph($r('sys.symbol.xmark'))
+            Column({ space: ThemeTokens.SPACE_XS }) {
+              Row({ space: ThemeTokens.SPACE_XS }) {
+                Text(item.query)
                   .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-                  .fontColor([ThemeTokens.TEXT_SECONDARY])
+                  .fontColor(ThemeTokens.TEXT_PRIMARY)
+                  .lineHeight(ThemeTokens.TAG_LINE_HEIGHT)
+                  .maxLines(1)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
+                  .accessibilityText(AppStrings.format('search_quick_item_a11y', [item.query]))
+                  .onClick((): void => {
+                    this.openQuickSearch(item.query)
+                  })
+                Button({ type: ButtonType.Circle, stateEffect: true }) {
+                  SymbolGlyph($r('sys.symbol.xmark'))
+                    .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+                    .fontColor([ThemeTokens.TEXT_SECONDARY])
+                }
+                .width(28)
+                .height(28)
+                .backgroundColor(Color.Transparent)
+                .padding(0)
+                .accessibilityText(AppStrings.format('search_remove_quick_item_a11y', [item.query]))
+                .onClick((): void => {
+                  this.removeQuickSearch(item)
+                })
               }
-              .width(28)
-              .height(28)
-              .backgroundColor(Color.Transparent)
-              .padding(0)
-              .accessibilityText(AppStrings.format('search_remove_quick_item_a11y', [item.query]))
-              .onClick((): void => {
-                this.removeQuickSearch(item)
-              })
+                .height(28)
+              if (
+                this.searchTranslation.translateEnabled &&
+                this.quickSearchTranslation(item.query).length > 0
+              ) {
+                Text(this.quickSearchTranslation(item.query))
+                  .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+                  .fontColor(ThemeTokens.TEXT_SECONDARY)
+                  .lineHeight(ThemeTokens.TAG_LINE_HEIGHT)
+                  .maxLines(1)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
+                  .constraintSize({ maxWidth: '100%' })
+              }
             }
-              .height(28)
-              .constraintSize({ maxWidth: '90%' })
+              .alignItems(HorizontalAlign.Start)
               .backgroundColor(ThemeTokens.CARD_BACKGROUND)
               .borderRadius(ThemeTokens.RADIUS_ROUND)
               .padding({
@@ -1633,6 +1719,7 @@ export struct SearchPage {
             .fontSize(ThemeTokens.FONT_SIZE_BODY)
             .fontColor(ThemeTokens.TEXT_SECONDARY)
           Blank()
+          this.SearchTranslationButton()
           this.RecentSearchesClearButton()
         }
         .width('100%')
@@ -1644,14 +1731,16 @@ export struct SearchPage {
               Text(item.query)
                 .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
                 .fontColor(ThemeTokens.TEXT_PRIMARY)
+                .lineHeight(ThemeTokens.TAG_LINE_HEIGHT)
                 .constraintSize({ maxWidth: '100%' })
               if (
-                this.browsePresentation.showTranslatedTagLabels &&
+                this.searchTranslation.translateEnabled &&
                 this.recentSearchTranslation(item.query).length > 0
               ) {
                 Text(this.recentSearchTranslation(item.query))
                   .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
                   .fontColor(ThemeTokens.TEXT_SECONDARY)
+                  .lineHeight(ThemeTokens.TAG_LINE_HEIGHT)
                   .constraintSize({ maxWidth: '100%' })
               }
             }
@@ -1770,59 +1859,6 @@ export struct SearchPage {
       ThemeTokens.SPACE_MD
   }
 
-  /**
-   * Result pagination and its summary share the active request snapshot,
-   * rather than live editor values which may be waiting for a replacement.
-   */
-  private hasActiveSearchOptions(): boolean {
-    return this.activeLanguageFilter !== NhSearchLanguage.ALL ||
-      this.activeSearchSort !== NhSearchSort.RECENT
-  }
-
-  @Builder
-  private SearchResultOptionsSummary() {
-    NextNGroupedListSection() {
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.funnel'),
-        title: NhSearchOptions.languageLabel(this.activeLanguageFilter),
-        subtitle: NhSearchOptions.sortLabel(this.activeSearchSort),
-        accessibilityLabel: AppStrings.get('title_search_options'),
-        onAction: (): void => {
-          this.showSearchOptions = true
-        },
-      })
-    }
-  }
-
-  /**
-   * The single shared collection parent owns its four collection renderers.
-   * Search contributes only its committed options snapshot, wrapped in the
-   * primitive required by the active renderer so the common parent can keep
-   * the row index and full-row accounting correct.
-   */
-  @Builder
-  private SearchCollectionLeadingContent() {
-    if (this.hasActiveSearchOptions()) {
-      if (this.browsePresentation.mode === NhBrowsePresentation.COVER_GRID) {
-        GridItem() {
-          this.SearchResultOptionsSummary()
-        }
-      } else if (
-        this.browsePresentation.mode === NhBrowsePresentation.WATERFALL ||
-        this.browsePresentation.mode === NhBrowsePresentation.WATERFALL_COMPACT ||
-        this.browsePresentation.mode === NhBrowsePresentation.COVER_WALL
-      ) {
-        FlowItem() {
-          this.SearchResultOptionsSummary()
-        }
-      } else {
-        ListItem() {
-          this.SearchResultOptionsSummary()
-        }
-      }
-    }
-  }
-
   private ensureSearchFieldContent(): ComponentContent<SearchChromeState> {
     let content: ComponentContent<SearchChromeState> | null = this.searchFieldContent
     if (content === null) {
@@ -1915,7 +1951,6 @@ export struct SearchPage {
               footerRetryLabel: AppStrings.get('common_try_loading_again'),
               topPadding: SEARCH_TITLE_FIELD_BOTTOM_HEIGHT,
               bottomPadding: ThemeTokens.LIST_BOTTOM_PADDING,
-              leadingItemCount: this.hasActiveSearchOptions() ? 1 : 0,
               scroller: this.scroller,
               controller: this.refreshController,
               refreshEnabled: !this.isInitialLoading && !this.isRefreshing,
@@ -1935,9 +1970,7 @@ export struct SearchPage {
               onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
                 this.openGallery(galleryId, seed)
               },
-            }) {
-              this.SearchCollectionLeadingContent()
-            }
+            })
           }
         }
         .width('100%')

@@ -1,14 +1,18 @@
 import {
   AppStrings,
+  CatalogPreferencesState,
   HomeSourceState,
   HomeSourceVisualIndexState,
   HOME_SOURCE_LATEST,
   HOME_SOURCE_POPULAR,
   HomeSourceBridge,
+  NhSearchLanguage,
+  NhSearchOptions,
   SubTabBar,
   SubtabTransitionBridge,
   SUBTAB_TRANSITION_SCOPE_HOME,
   TabItem,
+  connectCatalogPreferences,
   connectHomeSource,
   connectHomeSourceVisualIndex,
 } from 'shared'
@@ -22,10 +26,20 @@ import {
 export struct HomeSourceBar {
   @Local homeSource: HomeSourceState = connectHomeSource()
   @Local visual: HomeSourceVisualIndexState = connectHomeSourceVisualIndex()
+  @Local catalogPreferences: CatalogPreferencesState = connectCatalogPreferences()
+
+  private latestTabTitle(): string {
+    const sort: string = NhSearchOptions.sortLabel(this.catalogPreferences.browseSort)
+    if (this.catalogPreferences.browseLanguage === NhSearchLanguage.ALL) {
+      return sort
+    }
+    const language: string = NhSearchOptions.languageLabel(this.catalogPreferences.browseLanguage)
+    return `${sort}（${language}）`
+  }
 
   private tabs(): TabItem[] {
     return [
-      new TabItem(HOME_SOURCE_LATEST, AppStrings.get('home_source_latest')),
+      new TabItem(HOME_SOURCE_LATEST, this.latestTabTitle()),
       new TabItem(HOME_SOURCE_POPULAR, AppStrings.get('home_source_popular')),
     ]
   }

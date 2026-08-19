@@ -254,9 +254,29 @@ export class NhArkWebSessionTransport {
     }
   }
 
+  /** True while a retained-browser refresh owns the shared Webview controller. */
+  static isBrowserIdentityRefreshActive(): boolean {
+    return NhArkWebSessionTransport.browserIdentityRefreshTask !== null
+  }
+
   private static async ensureReady(): Promise<void> {
     if (NhArkWebSessionTransport.isReady) {
       return
+    }
+    // A retained-browser refresh owns the same Webview controller and the
+    // same single-slot ready signal as a bootstrap. If a refresh is in
+    // flight, wait for it instead of starting a second navigation: a
+    // concurrent loadUrl would overwrite the ready resolver and leave the
+    // refresh promise permanently pending (and this caller would bootstrap
+    // from a document that the refresh is about to replace).
+    const refreshTask: Promise<boolean> | null = NhArkWebSessionTransport.browserIdentityRefreshTask
+    if (refreshTask !== null) {
+      try {
+        await refreshTask
+      } catch (_error) {}
+      if (NhArkWebSessionTransport.isReady) {
+        return
+      }
     }
     if (NhArkWebSessionTransport.bootstrapTask !== null) {
       await NhArkWebSessionTransport.bootstrapTask
@@ -369,36 +389,61 @@ export class NhArkWebSessionTransport {
     if (!NhBrowserSessionBoundary.isTrustedUrl(observedUrl) || browserUserAgent.length === 0) {
       return false
     }
-    if (!await NhAccountSessionService.captureRegularArkWebSessionForAuthenticatedRecovery(
-      context,
-      token,
-      observedUrl,
-      browserUserAgent,
-    )) {
-      return false
-    }
     try {
       const status: number = await NhArkWebSessionTransport.requestStatusFromCurrentDocument(
         controller,
         `${API_PREFIX}user`,
       )
-      if (status < 200 || status >= 300 ||
-        !NhAccountSessionService.isAuthenticatedReadTokenCurrent(token) ||
-        !await NhAccountSessionService.isPendingRegularArkWebSessionStableAfterVerification(
+      if (status < 200 || status >= 300) {
+        NhAccountSessionService.discardPendingVisibleBrowserSession()
+        return false
+      }
+      if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+        return false
+      }
+      // Prefer sealing the newest readable token when the rotation produced
+      // one; the stability fence keeps the exact probed snapshot.
+      const captured: boolean =
+        await NhAccountSessionService.captureRegularArkWebSessionForAuthenticatedRecovery(
+          context,
+          token,
+          observedUrl,
+          browserUserAgent,
+        )
+      if (captured &&
+        NhAccountSessionService.isAuthenticatedReadTokenCurrent(token) &&
+        await NhAccountSessionService.isPendingRegularArkWebSessionStableAfterVerification(
           context,
           token,
           observedUrl,
           browserUserAgent,
         )) {
-        NhAccountSessionService.discardPendingVisibleBrowserSession()
-        return false
+        const promoted: boolean =
+          await NhAccountSessionService.confirmPendingRegularArkWebSessionForAuthenticatedRecovery(
+            context,
+            token,
+          )
+        if (promoted) {
+          NhAccountSessionService.markBrowserIdentityVerified()
+          NhArkWebSessionTransport.resetForVisibleSessionCandidate()
+        }
+        return promoted
       }
-      const promoted: boolean =
-        await NhAccountSessionService.confirmPendingRegularArkWebSessionForAuthenticatedRecovery(context, token)
-      if (promoted) {
-        NhArkWebSessionTransport.resetForVisibleSessionCandidate()
+      // No readable token (HttpOnly rotation) but the probe succeeded: keep
+      // the browser identity verified and the prior readable envelope intact
+      // for the cold-start fallback.
+      NhAccountSessionService.discardPendingVisibleBrowserSession()
+     if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+       return false
       }
-      return promoted
+      NhAccountSessionService.markBrowserIdentityVerified()
+      // The probe succeeded on the current trusted document, so keep it as
+      // the ready transport. Do not reset to false here: a false value would
+      // make the caller's replay trigger a bootstrap, whose hydration would
+      // write the stale sealed token back over the server's newly rotated
+      // (possibly HttpOnly) jar cookie.
+      NhArkWebSessionTransport.isReady = true
+      return true
     } catch (_error) {
       NhAccountSessionService.discardPendingVisibleBrowserSession()
       return false

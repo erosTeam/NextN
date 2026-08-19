@@ -19,4 +19,6 @@ export enum NhBrowsePresentation {
   WATERFALL_COMPACT = 'waterfall_compact',
   /** Cover-first WaterFlow wall; persisted independently from the grid. */
   COVER_WALL = 'cover_wall',
+  /** Full-thumbnail overview density, kept separate from gallery Browse modes. */
+  THUMBNAIL = 'thumbnail',
 }

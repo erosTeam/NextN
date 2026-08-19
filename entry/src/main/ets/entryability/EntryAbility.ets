@@ -20,6 +20,7 @@ import {
   NhAccountProfileService,
   NhAccountSessionService,
   NhTagCatalogService,
+  NhCloudBlacklistService,
   NhClipboardLinkService,
   ClipboardLinkBuildFlag,
   NhClipboardLinkSettings,
@@ -31,6 +32,7 @@ import {
   publishNhClipboardGalleryCandidate,
   ScreenOrientationSettings,
   AccountListSettings,
+  SearchTranslationSettings,
   SyncScheduler,
   SyncSettings,
   TagTranslationSettings,
@@ -153,6 +155,7 @@ export default class EntryAbility extends UIAbility {
       NhClipboardLinkSettings.restore(this.context),
       this.restoreAccountIdentity(),
       ContentFilterService.restore(this.context),
+      NhCloudBlacklistService.restore(this.context),
       BrowsePresentationService.restore(this.context),
       // Latest and Popular match NextE's active-profile semantics: each may
       // pin a local renderer or explicitly fall back to the global Browse mode.
@@ -170,6 +173,7 @@ export default class EntryAbility extends UIAbility {
       // preference/status summary before their settings surfaces mount.
       CommentTranslationSettings.restore(this.context),
       TagTranslationSettings.restore(this.context),
+      SearchTranslationSettings.restore(this.context),
       ReaderImageCacheSettings.restore(this.context),
       SyncSettings.restore(this.context),
       AccountListSettings.load(this.context),

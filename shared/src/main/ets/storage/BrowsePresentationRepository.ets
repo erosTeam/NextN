@@ -10,6 +10,7 @@ const COVER_GRID_COLUMN_WIDTH_KEY: string = 'browse_presentation_cover_grid_colu
 const WATERFALL_COLUMN_WIDTH_KEY: string = 'browse_presentation_waterfall_column_width'
 const WATERFALL_COMPACT_COLUMN_WIDTH_KEY: string = 'browse_presentation_waterfall_compact_column_width'
 const COVER_WALL_COLUMN_WIDTH_KEY: string = 'browse_presentation_cover_wall_column_width'
+const THUMBNAIL_COLUMN_WIDTH_KEY: string = 'browse_presentation_thumbnail_column_width'
 const SHOW_GALLERY_TAGS_KEY: string = 'browse_presentation_show_gallery_tags'
 const SHOW_TRANSLATED_TAG_LABELS_KEY: string = 'browse_presentation_show_translated_tag_labels'
 const LIST_CARD_FIXED_HEIGHT_KEY: string = 'browse_presentation_list_card_fixed_height'
@@ -76,6 +77,12 @@ export class BrowsePresentationRepository {
         NhBrowsePresentation.COVER_WALL,
         BrowsePresentationRepository.normalizeColumnWidth(
           await BrowsePresentationRepository.readValue(store, COVER_WALL_COLUMN_WIDTH_KEY),
+        ),
+      )
+      state.setColumnWidthFor(
+        NhBrowsePresentation.THUMBNAIL,
+        BrowsePresentationRepository.normalizeColumnWidth(
+          await BrowsePresentationRepository.readValue(store, THUMBNAIL_COLUMN_WIDTH_KEY),
         ),
       )
       state.showGalleryTags = BrowsePresentationRepository.normalizeBoolean(
@@ -199,6 +206,9 @@ export class BrowsePresentationRepository {
     }
     if (mode === NhBrowsePresentation.COVER_WALL) {
       return COVER_WALL_COLUMN_WIDTH_KEY
+    }
+    if (mode === NhBrowsePresentation.THUMBNAIL) {
+      return THUMBNAIL_COLUMN_WIDTH_KEY
     }
     return ''
   }

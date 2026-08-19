@@ -1,6 +1,7 @@
 import {
   AppStrings,
   NextNModalScaffold,
+  NhBrowsePresentation,
   NhGalleryPage,
   PageEmptyState,
   PullRefreshGridScaffold,
@@ -210,7 +211,8 @@ export struct GalleryThumbnailGridContent {
       PullRefreshGridScaffold({
         scroller: this.scroller,
         minColumnWidth: 112,
-        densityEnabled: false,
+        densityMode: NhBrowsePresentation.THUMBNAIL,
+        densityEnabled: true,
         gap: ThemeTokens.SPACE_SM,
         rowGap: ThemeTokens.SPACE_MD,
         horizontalPadding: ThemeTokens.SPACE_MD,

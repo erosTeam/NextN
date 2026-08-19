@@ -34,20 +34,25 @@ export struct GalleryTagStrip {
 
   @Builder
   private LightTagChip(tag: NhTag) {
-    Text(this.displayLabel(tag))
-      .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-      .fontColor(ThemeTokens.TEXT_SECONDARY)
-      .maxLines(1)
-      .textOverflow({ overflow: TextOverflow.Ellipsis })
-      .backgroundColor(ThemeTokens.BRAND_CONTAINER)
-      .borderRadius(ThemeTokens.LIST_TAG_RADIUS)
-      .padding({
-        left: 6,
-        right: 6,
-        top: ThemeTokens.LIST_TAG_PADDING_VERTICAL,
-        bottom: ThemeTokens.LIST_TAG_PADDING_VERTICAL,
-      })
-      .constraintSize({ maxWidth: 160 })
+    Column() {
+      Text(this.displayLabel(tag))
+        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+        .fontColor(ThemeTokens.TEXT_SECONDARY)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .backgroundColor(ThemeTokens.BRAND_CONTAINER)
+        .borderRadius(ThemeTokens.LIST_TAG_RADIUS)
+        .padding({
+          left: 6,
+          right: 6,
+          top: ThemeTokens.LIST_TAG_PADDING_VERTICAL,
+          bottom: ThemeTokens.LIST_TAG_PADDING_VERTICAL,
+        })
+        .lineHeight(ThemeTokens.TAG_LINE_HEIGHT)
+    }
+    .height(ThemeTokens.TAG_LINE_HEIGHT + 2 * ThemeTokens.LIST_TAG_PADDING_VERTICAL)
+    .justifyContent(FlexAlign.Center)
+    .clip(true)
   }
 
   build() {

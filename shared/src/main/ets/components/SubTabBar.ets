@@ -258,7 +258,8 @@ export struct SubTabBar {
               this.updateTabLayout(index, newValue)
             })
           }
-        }, (tab: TabItem, index: number): string => `${index}_${tab.key}_${tab.count}_${tab.selectedColor}`)
+        }, (tab: TabItem, index: number): string =>
+          `${index}_${tab.key}_${tab.count}_${tab.selectedColor}_${tab.label}`)
       }
       .listDirection(Axis.Horizontal)
       .onDidScroll((_scrollOffset: number, _scrollState: ScrollState): void => {

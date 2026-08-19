@@ -6,7 +6,8 @@ export function supportsGalleryColumnDensity(mode: NhBrowsePresentation): boolea
   return mode === NhBrowsePresentation.COVER_GRID ||
     mode === NhBrowsePresentation.WATERFALL ||
     mode === NhBrowsePresentation.WATERFALL_COMPACT ||
-    mode === NhBrowsePresentation.COVER_WALL
+    mode === NhBrowsePresentation.COVER_WALL ||
+    mode === NhBrowsePresentation.THUMBNAIL
 }
 
 /** Built-in comfortable minimum width for each native gallery arrangement. */
@@ -19,6 +20,9 @@ export function galleryBaseMinColumnWidth(mode: NhBrowsePresentation): number {
   }
   if (mode === NhBrowsePresentation.WATERFALL) {
     return ThemeTokens.GALLERY_WATERFALL_MIN_WIDTH
+  }
+  if (mode === NhBrowsePresentation.THUMBNAIL) {
+    return 112
   }
   return ThemeTokens.GALLERY_COVER_WALL_MIN_WIDTH
 }

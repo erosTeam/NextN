@@ -624,3 +624,60 @@ substitute for measured login-cycle elapsed time.
 - conclusion: current record-present cold-start Account plus authenticated
   Favorites path observed for this build. P0 remains OPEN for a future fresh
   Account/Favorites failure and its causal evidence.
+
+## S0 冷启动会话缺失观察 — 2026-08-19 06:12-06:19 +0800（56T0225315001128）
+
+- local timestamp (S0 loss boundary): 2026-08-19 06:12:09 +0800（install -r 日志域修复构建后 force-stop/cold start）。
+- concrete reason session absent: 冷启动后 account-preferred 列表读返回 200（公开 JSON），但 ArkWeb 会话（https://nhentai.net/ 页面，socket @webview_devtools_remote_34086）对 /api/v2/user 与 /api/v2/blacklist/ids 均返回 401；收藏页显示“请在设置中登录以查看收藏。”（06:19 观察）。
+- prior cycle terminal outcome: 2026-08-18 该设备冷启动已接受（收藏乐观切换、历史标签翻译等验收均以有效会话通过）；本次未保留上一周期结束到本次 S0 损失边界之间的确切时长，标记 unavailable-from-existing-evidence。
+- data boundary: install-r=true；data-clear=false；uninstall=false。
+- account input / password input / submit: not-entered / not-entered / not-issued（无凭据，未进入 S2）。
+- ArkWeb-visible timestamp: 06:19（/api/v2/user 401 探测）。
+- native-success timestamp: none；terminal observation 06:19（收藏未登录）。
+- elapsed time: 未完成 native promotion；从 S0 损失边界到终端观察约 7 分钟（06:12→06:19）。
+- conclusion: 会话缺失复现；与长期账号持久化 P0 同链。客户端云端黑名单端到端验证因此阻塞；无凭据不得重登用户个人账号。
+
+## 用户授权的凭据文件登录尝试 — 2026-08-19 10:42 +0800（192.168.50.197:12345）
+
+- trigger: 用户明确指示使用保留的登录信息文件（.nextn-test-account.local.json5）进行登录，并完成账号持久化 P0 的真机验收；本次 S0 前未清除数据、未卸载、未重装（仅 install -r 新构建 HAP）。
+- S0 Account: native Account 卡片显示“登录以使用账户功能。”；无可见登录 Web。
+- S0 Favorites: native 收藏根显示“请在设置中登录以查看收藏。”；无 sign-in prompt 之外的其他状态。
+- restore/401 diagnostic: 当前安装包含会话修复（浏览器导航刷新优先、HttpOnly 感知、密封信封跟随 Set-Cookie）；S0 未观测到 restore 阶段日志（旧会话已缺失）。
+- install/data boundary: install-r=true（新构建）；data-clear=false；uninstall=false。
+- login-page entry: not-yet.
+- account input: not-yet.
+- password input: not-yet.
+- submit: not-yet.
+- native promotion: not-yet.
+- cold-start Account: not-yet.
+- cold-start Favorites: not-yet.
+- credential source: 用户保留的 .nextn-test-account.local.json5（volatile staging，不落输出/日志/提交）。
+- conclusion: S0 证明会话缺失，进入 S1；凭据 epoch 将在 S1 表单就绪后执行。
+
+## USB 设备登录 epoch — 2026-08-19 11:13 +0800（56T0225315001128）
+
+- S0: 安装会话修复构建（install -r），账户页显示“需要重新验证”，收藏页未登录；无可见 Web。
+- S1: 点击重新验证打开 nhentai 登录页（可见 Web，无活动 CF iframe）。
+- S2: 语义账号聚焦 + 填入成功（账号字段 filled=true）。
+- S3: 语义密码聚焦 + 填入成功（密码 masked=true）。
+- S4: 提交一次（submitIssued=true）；页面出现“Please complete the CAPTCHA”。
+- CF 挑战：Turnstile iframe 内容为空（CF 反自动化，无法渲染交互控件）；尝试语义点击未找到控件；等待 6-10s 后仍空白。
+- 重试提交后出现“CAPTCHA solution has expired”，验证码需人工完成。
+- 结论：凭据流程（聚焦/填充/提交）已验证通过；CAPTCHA 为外部反自动化挑战，无法自动完成。登录未完成；待用户手动完成 Turnstile 或提供通过挑战的会话。
+
+## CF Turnstile 阻塞终态 — 2026-08-19 11:16 +0800（56T0225315001128）
+
+- 登录表单已正确填入（账号/密码），提交已发出。
+- CF Turnstile 挑战：初次点击后显示“成功！”（token 已生成），但提交报 “CAPTCHA solution has expired”；重试提交仍过期。
+- Turnstile iframe 内容空白（CF 反自动化检测到 CDP 调试器，拒绝渲染交互控件）；断开 CDP 后状态未恢复。
+- 自动化穷尽：语义点击（CDP iframe 内）、设备坐标点击、等待重载、断开调试器——均无法获取新 token。
+- 结论：外部 CF Turnstile 反自动化阻塞，无法程序绕过；需要真人完成验证码或提供已通过挑战的会话。表单数据保留在设备（未提交，未清除）。
+
+## 登录成功 + 冷启动持久化验收通过 — 2026-08-19 11:21 +0800（56T0225315001128）
+
+- 重新打开登录页（全新 Turnstile）后重新填表提交，原生提升成功：账户页显示 honjow / ID 5623474 / 退出登录。
+- S6 持久化验证：force-stop + 冷启动（未清数据），账户页直接显示已登录（honjow / ID 5623474），无登录提示、无重新验证、无检查会话过程。
+- 收藏页冷启动后直接显示认证画廊内容（多个条目、中文标签正常），无“请登录”提示、无加载错误。
+- 会话修复构建验证通过：密封信封跟随 Set-Cookie 轮换、冷启动自愈路径工作正常。
+- 凭据：用户保留的 .nextn-test-account.local.json5（全程内存 staging，未落任何输出/日志/提交）。
+- 遗留：197 设备 TCP 瞬断未用于登录；Turnstile 首次自动化失败后通过重开登录页解决。

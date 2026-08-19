@@ -114,12 +114,17 @@ export struct GalleryWaterfallCompactCard {
   @Builder
   private CompactTagTextAt(index: number) {
     if (this.tagAt(index) !== undefined) {
-      Text(this.tagLabelAt(index))
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(ThemeTokens.TEXT_ON_BRAND)
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-        .constraintSize({ maxWidth: 150 })
+      Column() {
+        Text(this.tagLabelAt(index))
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontColor(ThemeTokens.TEXT_ON_BRAND)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .lineHeight(ThemeTokens.TAG_LINE_HEIGHT)
+      }
+      .height(ThemeTokens.TAG_LINE_HEIGHT)
+      .justifyContent(FlexAlign.Center)
+      .clip(true)
     }
   }
 

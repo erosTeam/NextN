@@ -20,6 +20,7 @@ export {
 export { HomeTabAutoHideState, connectHomeTabAutoHide } from './state/HomeTabAutoHideState'
 export { CoverBackgroundState, connectCoverBackground } from './state/CoverBackgroundState'
 export { GalleryTitleState, connectGalleryTitle } from './state/GalleryTitleState'
+export { SearchTranslationState, connectSearchTranslation } from './state/SearchTranslationState'
 export { TagTranslationState, connectTagTranslations } from './state/TagTranslationState'
 export {
   CommentTranslationSettingsState,
@@ -112,6 +113,7 @@ export {
 } from './model/NhTagTranslation'
 export { NhTagSuggestion } from './model/NhTagSuggestion'
 export { NhTagQuery } from './model/NhTagQuery'
+export { NhTagSuggestionDisplay } from './utils/NhTagSuggestionDisplay'
 export { NhComment } from './model/NhComment'
 export {
   LLM_SOURCE_TYPE_OPENAI_COMPATIBLE,
@@ -245,6 +247,7 @@ export {
 } from './services/OpenAiChatCompletionsClient'
 export { CommentTranslationService } from './services/CommentTranslationService'
 export { CommentTranslationSettings } from './settings/CommentTranslationSettings'
+export { SearchTranslationSettings } from './settings/SearchTranslationSettings'
 export { TagTranslationSettings } from './settings/TagTranslationSettings'
 export { GalleryTitleTranslationService } from './services/GalleryTitleTranslationService'
 export { AppColorFavoritesSettings } from './settings/AppColorFavoritesSettings'
@@ -299,6 +302,7 @@ export {
 } from './services/ImagePipelineTypes'
 export { ImageKnifeProImageAdapter } from './services/ImageKnifeProImageAdapter'
 export { EhImageKnifeImage } from './components/EhImageKnifeImage'
+export { ContentTransitionType } from '@ohos/imageknifepro'
 export { BasicDataSource } from './utils/BasicDataSource'
 export {
   ComicRenderedPageRepository,
@@ -440,6 +444,9 @@ export { DownloadNotificationService } from './services/DownloadNotificationServ
 export { ContentFilterRepository } from './storage/ContentFilterRepository'
 export { ContentFilterState, connectContentFilters } from './state/ContentFilterState'
 export { ContentFilterService } from './services/ContentFilterService'
+export { NhCloudBlacklistState, connectCloudBlacklist } from './state/NhCloudBlacklistState'
+export { NhCloudBlacklistRepository } from './storage/NhCloudBlacklistRepository'
+export { NhCloudBlacklistService } from './services/NhCloudBlacklistService'
 export { HistoryCursor, HistoryPageResult, HistoryRepository } from './storage/HistoryRepository'
 export { ReadingHistoryState, connectReadingHistory } from './state/ReadingHistoryState'
 export { NhReadProgressState, connectNhReadProgress } from './state/NhReadProgressState'

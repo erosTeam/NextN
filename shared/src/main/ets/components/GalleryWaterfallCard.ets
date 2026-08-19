@@ -172,15 +172,20 @@ export struct GalleryWaterfallCard {
   @Builder
   private TagChipAt(index: number) {
     if (this.tagAt(index) !== undefined) {
-      Text(this.tagLabelAt(index))
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
-        .backgroundColor(ThemeTokens.BRAND_CONTAINER)
-        .borderRadius(ThemeTokens.LIST_TAG_RADIUS)
-        .padding({ left: 6, right: 6, top: ThemeTokens.LIST_TAG_PADDING_VERTICAL, bottom: ThemeTokens.LIST_TAG_PADDING_VERTICAL })
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-        .constraintSize({ maxWidth: 150 })
+      Column() {
+        Text(this.tagLabelAt(index))
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontColor(ThemeTokens.TEXT_SECONDARY)
+          .backgroundColor(ThemeTokens.BRAND_CONTAINER)
+          .borderRadius(ThemeTokens.LIST_TAG_RADIUS)
+          .padding({ left: 6, right: 6, top: ThemeTokens.LIST_TAG_PADDING_VERTICAL, bottom: ThemeTokens.LIST_TAG_PADDING_VERTICAL })
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .lineHeight(ThemeTokens.TAG_LINE_HEIGHT)
+      }
+      .height(ThemeTokens.TAG_LINE_HEIGHT + 2 * ThemeTokens.LIST_TAG_PADDING_VERTICAL)
+      .justifyContent(FlexAlign.Center)
+      .clip(true)
     }
   }
 

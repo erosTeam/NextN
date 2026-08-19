@@ -1,8 +1,13 @@
 import {
   AppStrings,
+  EhImageKnifeImage,
   NhComment,
   NhGallerySummary,
   ThemeTokens,
+  EH_IMAGE_PRIORITY_LOW,
+  EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
+  EH_THUMBNAIL_READ_TIMEOUT_MS,
+  ContentTransitionType,
 } from 'shared'
 
 // Related uses the same cover-height tier as the Detail hero; its separate
@@ -56,10 +61,16 @@ export struct GalleryRelatedCarousel {
   private RelatedCover(gallery: NhGallerySummary) {
     Stack({ alignContent: Alignment.Center }) {
       if (gallery.thumbnailUrl.length > 0) {
-        Image(gallery.thumbnailUrl)
-          .width('100%')
-          .height('100%')
-          .objectFit(ImageFit.Cover)
+        EhImageKnifeImage({
+          src: gallery.thumbnailUrl,
+          widthValue: '100%',
+          heightValue: '100%',
+          objectFit: ImageFit.Cover,
+          contentTransition: ContentTransitionType.OPACITY,
+          priority: EH_IMAGE_PRIORITY_LOW,
+          connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
+          readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
+        })
       } else {
         SymbolGlyph($r('sys.symbol.picture'))
           .fontSize(28)

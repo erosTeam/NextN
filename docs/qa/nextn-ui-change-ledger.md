@@ -6389,4 +6389,72 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Exact change（全部 NextE 原样结构，零发明）:** ① 评论翻译状态层整体重写：CommentTranslationRenderState(@ObservedV2/@Trace) 单一状态源、renderStateMap 重建保留、applyCommentTranslationState 单写入器、卡片 TranslationAction 三分支 if/else + FooterAction(icon,color,disabled,label,action) 颜色参数化、@Monitor 无条件同步 loading 镜像；② 缩略图 tile 改透明槽+fittedWidth/Height 真实比例+图片本体圆角；③ 四卡（Grid/Medium/Waterfall/WaterfallCompact）blur 统一 blur(40) 去 scale/opacity 篡改，Medium/Waterfall 补齐 CoverColorService 渐变层；④ 列表封面 radius 0、槽不裁剪、渐变层不圆角；⑤ 行高恢复 NextE 语义（minHeight 地板+Flex Stretch 文本列定义行高+自适应标签 Blank 弹簧），删除自创压缩；⑥ 完整移植 needsTranslation/detectScript/hasLanguageSignal/isLatinLetter/isOtherLetter/targetScriptFamily，自动翻译入口跳过母语评论（手动按钮不受限，NextE 同语义）。
 - **Device evidence:** ① 评论翻译图标像素级验证：译文显示时图标 (0,138,138) BRAND 青色，点回原文后 (153,153,153) 灰色，正文同步中英切换（w_active/w_inactive 截图）；② 缩略图页：第1格 1.818 宽图 Contain 真实比例、第7/8格 0.774/0.776 各自不同源比例，页码行等高（np 系列布局）；③ 列表卡：前两卡 612px 等高（204vp 地板语义），无自创压缩；④ 语种识别：本画廊 1 EN + 1 CN，自动翻译只译 EN 行（CN 行跳过）。
 - **Unresolved risk:** loading 转圈态未单独截图（本画廊两条评论均有缓存，重译即时返回）；其结构与 NextE TranslationAction loading 分支逐行一致，由构造保证。
+
+## 相关画廊封面接入公共图片管线（2026-08-19，用户反馈“没走公共过渡加载组件，从空白加载”）
+
+- **用户反馈:** “详情页里面的相关画廊的封面图片加载的时候，没有走公共的过渡加载组件，而是从空白加载出来”。
+- **根因（source evidence）:** GalleryDetailContentSections.RelatedCover 用裸 Image(url) 渲染——绕过了 ImageKnifePro 公共管线：无 ContentTransitionType.OPACITY 渐显过渡、无共享内存/文件缓存（列表已看过的封面在相关栏要整图重新加载）、无缩略图超时/优先级策略，因此表现为空白占位到图片突然弹出。NextE 无相关画廊区（EH 站点差异），参照系为本仓所有浏览封面卡片的公共调用契约（GalleryGridCard 等：EhImageKnifeImage + OPACITY + LOW 优先级 + 缩略图超时）。
+- **Exact change:** RelatedCover 改用 EhImageKnifeImage（src、widthValue/heightValue 100%、ImageFit.Cover、contentTransition OPACITY、priority LOW、缩略图档 connect/read 超时）；shared Index.ets 补导出 ContentTransitionType（feature 模块不直接依赖 imageknifepro，与 EhImageKnifeImage 同一出口）。
+- **Device evidence:** 构建成功。真机 56T0225315001128（install -r，唤醒门禁 AWAKE + OverrideTimeout=86400000ms）：详情页滚动至相关画廊区，封面带渲染 101,020 distinct colors（真实图片内容而非纯灰占位），布局树 Image 节点 opacity 1.0 完成态可见；管线节点经 ImageKnifeProImageAdapter 渲染。证据 /tmp/rel3.json、/tmp/rel_c.png（不入 Git）。
 - **Unresolved risk:** 真实第二账号登录的端到端验证需要用户提供第二个 NH 账号凭据；模拟验证只能覆盖“干净表单出现 + 中途返回 + 状态不被降级”。
+
+## 列表标签宽度/行高、搜索建议前缀、快捷搜索样式与结果条件入口（2026-08-19，用户反馈）
+
+- **用户反馈:** ① 标签名过长被截断（“为什么名字比较长的标签要限制长度呢？不对呀”），且明确“NextE 也有同样的情况，不要参考 NextE，解决后同步把 NextE 也解决”；② “显示纯男性或者纯女性，后面这种带一个标志的标签，在列表页会撑高这一个标签容器，导致布局出问题”，同样两个软件都有；③ “搜索建议里面显示的标签翻译没有带上命名空间前缀”；④ “很久之前说过这一个快捷搜索的样式问题”——快捷搜索是拉满屏幕宽度的长胶囊条；⑤ “带搜索条件的情况下，列表顶部硬塞了一个搜索条件入口，跟列表项完全挨在一起，不知道意义何在，很愚蠢很奇怪”。
+- **根因（source evidence）:** 上游 eros_fe TagItem（lib/pages/item/gallery_item.dart:539-569）对标签 Text **无任何 maxWidth 上限**，用 TextStyle(height:1) + StrutStyle(height:1) 固定行高；NextE 移植时私自加了 constraintSize maxWidth 160/150 且未设 lineHeight（GalleryCard.ets:163、GalleryWaterfallCard.ets:281/296），NextN 照抄了这两处（GalleryTagStrip.ets:50、GalleryWaterfallCard.ets:183、GalleryWaterfallCompactCard.ets:122）。字典翻译文本含 ⚣/⚢ 等宽行高符号（实测“纯男性⚣”），行高不固定时芯片/两行瀑布流条（48vp）被撑高。搜索建议：NextE EhTagSuggestionDisplay.localizedTitle = namespaceLabel + 冒号 + displayName（shared/utils/EhTagSuggestionDisplay.ets:28-32），NextN SearchSuggestionsView 直接显示 displayName 无前缀。结果条件入口：NextE GallerySearchPage 无此结构（只有标题栏 funnel 菜单），NextN 自创 SearchCollectionLeadingContent + leadingItemCount 把语言/排序摘要硬塞进列表首行。快捷搜索：QuickSearchesPanel 的 Row 有 layoutWeight(1) + constraintSize maxWidth 90%，每个项都被撑成长胶囊。
+- **Whole parent-tree boundary:** ① 列表卡标签芯片（GalleryTagStrip / GalleryWaterfallCard / GalleryWaterfallCompactCard）Text 几何；② 搜索页 SearchSuggestionsView 建议行与最近搜索翻译前缀的公共命名空间映射；③ 搜索页 QuickSearchesPanel 芯片几何；④ 搜索结果 GalleryCollectionBody leading 区域（整体移除）。不动搜索查询语义、快捷搜索/历史存储、详情页标签、收藏/主页列表。
+- **Exact change:** ① 三个标签 Text 组件删除 maxWidth 160/150 上限并补 .lineHeight(ThemeTokens.TAG_LINE_HEIGHT)（16，与详情标签同源，对齐 eros_fe 固定行高语义）；② 新增 shared/utils/NhTagSuggestionDisplay.ets（namespaceLabel 复用现有 gallery_tag_namespace_*/tag_ns_* 四语键，含单复数别名；localizedTitle 照 NextE），SearchPage 的 historyNamespaceLabel 与建议行统一改用它；建议行 title = namespaceLabel:displayName（无翻译时回退 canonical query），subtitle = NhTagQuery.formatExact(...)；③ QuickSearchesPanel 删除 layoutWeight(1) 与 maxWidth 90%，芯片按内容收缩；④ 删除 SearchCollectionLeadingContent / SearchResultOptionsSummary / hasActiveSearchOptions 与 build() 中 leadingItemCount 传参和 leading builder（用户判定无意义；NextE 无此结构）。
+- **Minimality rationale:** ① 对齐上游 eros_fe 已验证结构（宽度不截断 + 行高固定），同时同步修 NextE 同源问题；② 照 NextE 建议行结构，复用 NextN 已有文案键，不新增文案；③④ 按用户明确反馈移除自创样式与自创入口；不重构搜索状态机、不动数据层。
+- **Visual verification plan:** 签名构建 + install -r + 真机：长标签完整显示并自然换行；含 ⚣/⚢ 的芯片行高与其他标签一致，瀑布流固定 48vp/24vp 条不溢出；搜索建议行显示“角色:xxx”等前缀；快捷搜索项为内容宽度短胶囊；带语言/排序条件时列表顶部不再出现条件卡片。
+- **Unresolved risk:** ⚣/⚢ 字形在 16vp 行高内可能被视觉裁切（与 NextE 详情芯片同语义），需真机复核；快捷搜索删除 90% 宽上限后超长查询项会占满整行（内容本身决定的宽度，属预期）。
+
+## 搜索翻译开关与快捷搜索译文（2026-08-19，用户反馈“翻译不能切换、没有完整移植 NextE 的切换”）
+
+- **用户反馈:** “还有就是这个翻译不能切换的吗？默认是翻译的吗？没有完整的移植NextE的切换”；同一批反馈中的“快捷搜索也匹配一下翻译功能”仍在待办。
+- **根因（source evidence）:** NextE SearchHistoryState.translateEnabled（默认 true）、SearchHistorySettings.restore/setTranslateEnabled、GallerySearchPage.HistoryTranslateButton（28×28 圆形、sys.symbol.translate、启用 BRAND/禁用 font_tertiary、历史 chip 译文行以 history.translateEnabled && historyTranslation(q).length>0 显隐）从未移植；NextN 最近搜索译文行错误地挂在 browsePresentation.showTranslatedTagLabels（浏览展示开关）下且无切换按钮，快捷搜索芯片完全没有译文。
+- **Whole parent-tree boundary:** 仅 SearchPage 落地页两个面板——RecentSearchesPanel 头部动作与 chip 副行条件、QuickSearchesPanel chip 副行；新增共享 SearchTranslationState/Settings 并在 EntryAbility 启动恢复列表注册。不动搜索提交、存储、结果列表与浏览标签展示开关。
+- **Exact change:** 新增 shared/state/SearchTranslationState.ets（translateEnabled 默认 true）+ shared/settings/SearchTranslationSettings.ets（nextn_settings 键 search_history_translate，restore 默认 true、setTranslateEnabled 写盘）；SearchPage 增加 @Local searchTranslation、@Monitor('searchTranslation.translateEnabled')、SearchTranslationButton()（照 NextE HistoryTranslateButton）、toggleSearchTranslation()（animateTo 180ms EaseOut 内写入）；刷新方法扩展为同时翻译最近与快捷查询；最近搜索 chip 副行条件改 searchTranslation.translateEnabled && translation.length>0；快捷搜索 chip 同条件显示译文副行（复用同一开关，不另设第二个按钮）；头部按钮顺序照 NextE：翻译 → 清空。
+- **Minimality rationale:** 直接移植 NextE 开关结构与显隐语义；快捷搜索是 NH 扩展面，仅跟随同一开关状态，不新增控制、不新增文案（a11y 复用 settings_tag_translation_title）。
+- **Visual verification plan:** 签名构建 + install -r + 真机：搜索落地页最近搜索头部出现翻译圆形按钮（默认 BRAND 高亮）；最近与快捷 chip 默认显示译文行；点击后按钮转 font_tertiary 且两类 chip 译文行同步消失；重启后保持用户选择。
+- **Unresolved risk:** 若最近搜索为空而快捷搜索存在，NextE 参考结构只在历史头部暴露开关，此时切换入口不可见（快捷搜索译文仍随已保存开关显隐）；待用户确认是否需要额外入口。
+
+## 最近/快捷搜索 chip 带符号译文撑高容器（2026-08-19）
+
+- 用户反馈：最近搜索里的翻译，带符号的纯女性文本，依然会把 chip 容器撑高。
+- 根因：SearchPage 的 RecentSearchesPanel/QuickSearchesPanel 中 chip 的原文与译文 Text 没有固定 lineHeight；列表标签已有 TAG_LINE_HEIGHT=16 修复，搜索 chip 漏掉。
+- 边界：仅 SearchPage 最近搜索与快捷搜索两个 chip 内的 Text 几何；面板结构、开关逻辑不动。
+- 修改：原文与译文 Text 统一补 .lineHeight(ThemeTokens.TAG_LINE_HEIGHT)。
+- 验证：构建 + install -r + 真机复核 chip 高度与普通项一致。
+
+## 缩略图页标题文案（2026-08-19 夜间新反馈）
+
+- 用户反馈：缩略图页标题写了“页面”两个字，很怪。
+- 根因：Index.thumbnailsTitleBar 使用 title_pages；NextE 对应标题为“缩略图 / Thumbnails”。
+- 修改：title_pages 四语改为 缩略图 / Thumbnails / サムネイル（base 同步）。
+
+## 缩略图页双指捏合密度（2026-08-19 夜间新反馈）
+
+- 用户反馈：全部缩略图页不支持通过双指捏合改变大小密度。
+- 根因：NextN PullRefreshGridScaffold 已实现双指密度，但 GalleryThumbnailGridContent 传 densityEnabled=false；NextE 对应 GalleryAllThumbnailsPage 使用 ListMode.THUMBNAIL_GRID 独立缩略图密度。
+- 修改：新增 NhBrowsePresentation.THUMBNAIL 独立密度槽（不进入浏览布局菜单），supportsGalleryColumnDensity/columnWidthFor/setColumnWidthFor/BrowsePresentationRepository 支持并持久化缩略图列宽；缩略图 Grid 改 densityEnabled=true、densityMode=THUMBNAIL、minColumnWidth=112。
+- 验证：构建 + install -r + 真机在缩略图页双指缩放，列数按相邻档位变化并持久化。
+
+## 首页标签随排序/语言更新 + 全时热门文案（2026-08-19 夜间新反馈）
+
+- **用户反馈:** 在首页调整排序为今日热门或其他非最新后，标签仍显示最新；要求标签体现排序与语言条件，不限语言不显示，其他语言括号显示；全时热门文案拗口。
+- **根因（source evidence）:** HomeSourceBar.tabs()（entry/src/main/ets/components/HomeSourceBar.ets:26-31）固定使用 home_source_latest/home_source_popular 两个静态文案；首页最新源实际通过 CatalogPreferencesState.browseSort/browseLanguage 决定请求（HomePage.LatestSourcePage.requestBrowse），但标签从不读取这两项。search_sort_popular_all_time zh_CN 文案为全时热门。
+- **Whole parent-tree boundary:** 仅 HomeSourceBar 的 tab 标题计算与 zh_CN 一个字符串值；SubTabBar 布局、Home 页面请求逻辑、其他来源标签均不动。
+- **Exact change:** HomeSourceBar 接入 CatalogPreferencesState；LATEST tab 标题 = NhSearchOptions.sortLabel(browseSort)（RECENT 时仍为最新），若 browseLanguage 不等于 ALL 追加（语言标签）；POPULAR tab 保持热门。zh_CN search_sort_popular_all_time 由全时热门改为全部热门（en/ja 原有文案已自然，不改）。
+- **Minimality rationale:** 用户明确要求的可见状态反馈；只改标题数据源与一个文案，不动交互与布局。
+- **Visual verification plan:** 签名构建 + install -r + 真机：首页浏览选项改为今日热门/中文后，子页标签显示今日热门（中文）；改回最新且不限语言后显示最新；搜索选项里的全部热门文案同步生效。
+- **Unresolved risk:** 若用户更喜欢其他叫法，文案可再微调；不影响结构。
+
+## 列表标签 ⚣/⚢ 撑高收口 + 云端黑名单本地过滤（2026-08-19 夜间队列第 2 项）
+
+- **用户反馈:** ① 带 ⚣/⚢ 的标签在列表页会撑高标签容器（前一条 ledger 记录为 unresolved risk）；② 客户端未实现 NH 云端黑名单 tag 屏蔽（首页仍见纯男性画廊）。
+- **根因（source evidence）:** ① 上一版仅补 lineHeight(16)，但 ⚣/⚢ emoji 字形的行盒仍比正文多约 1vp（真机实测纯男性⚣ 芯片 69px vs 普通 66px，density 3.0）；② 真机冷启动后 ArkWeb 会话对 /api/v2/user 与 /api/v2/blacklist/ids 均返回 401（收藏页显示未登录），服务端既不给画廊打 blacklisted 标记，客户端也取不到云端黑名单；OpenAPI（nhentai.net/api/v2/openapi.json）确认存在 GET /api/v2/blacklist/ids（返回 [int]，与画廊 tag_ids 同 id 空间）；ErosN 的 HTML 路径用 blacklisted_tags + data-tags 本地过滤，NextN 应采用等价本地过滤。
+- **Whole parent-tree boundary:** ① 三个标签芯片构建器（GalleryTagStrip.LightTagChip / GalleryWaterfallCard.TagChipAt / GalleryWaterfallCompactCard.CompactTagTextAt）的 Text 几何；② 新增云端黑名单状态/存储/服务 + NhApiClient 拉取与解析期过滤 + ContentFilterService.filterGalleries 追加黑名单谓词（覆盖 Home 缓存/最新、热门、搜索、收藏、相关画廊全部列表渲染面）。不动查询语义、账号会话状态机、详情页标签。
+- **Exact change:** ① 三个芯片外层包固定高度 Column（普通/瀑布流芯片 22vp = TAG_LINE_HEIGHT 16 + 上下 padding 3+3；紧凑芯片 16vp）并 clip(true)，emoji 行盒溢出被裁切，芯片高度与普通项一致；② 新增 NhCloudBlacklistState（AppStorageV2）/ NhCloudBlacklistRepository（nextn_settings 键 cloud_blacklist_ids_v1）/ NhCloudBlacklistService（restore/applyFreshIds/isGalleryCloudBlacklisted）；NhApiClient.cloudBlacklistIds() 走 ACCOUNT_OWNED_NON_RETIRING（401 不退休账号）拉 /api/v2/blacklist/ids，maybeRefreshCloudBlacklist() 10 分钟 TTL 后台刷新，parseGalleryPage/popular 解析期按 tag_ids 交集跳过；ContentFilterService.filterGalleries 追加云端黑名单谓词（缓存快照冷启动也过滤）；EntryAbility 启动恢复注册；日志域 0x0000（系统保留）改为 0xE001 使 NextNAccount 日志可观测（此前全部静默丢弃）。
+- **Minimality rationale:** ① 只固定芯片高度，不动换行/圆角/文案；② 对齐 ErosN 本地过滤语义，复用既有列表过滤链路，不新增设置页，不改变服务端标记读取。
+- **Visual verification plan:** 签名构建 + install -r + 真机 56T0225315001128：纯男性⚣/接吻💏/眼镜👓 等符号标签芯片与普通标签同高（实测均为 66px，之前 ⚣ 为 69px）；列表正常渲染、无崩溃。
+- **Unresolved risk:** 云端黑名单端到端过滤验证依赖有效账号会话；当前设备会话缺失（401），已记录至账号会话 P0 链路。服务端 blacklisted 标记在已登录 Browse 上此前已验收（2026-08-18），搜索/热门端点是否打标记待会话恢复后复核。

@@ -36,8 +36,9 @@ const TRANSIENT_CANDIDATE_RETRY_DELAY_MS: number = 5000
 // five-second poll. A changed cookie+UA, explicit new login, or trusted
 // redirect is a new candidate phase and can start this small budget again.
 const MAX_TRANSIENT_CANDIDATE_RETRIES: number = 1
-const ACCOUNT_LOG_DOMAIN: number = 0x0000
+const ACCOUNT_LOG_DOMAIN: number = 0xE001
 const ACCOUNT_LOG_TAG: string = 'NextNAccount'
+const SEALED_RESYNC_MIN_INTERVAL_MS: number = 30000
 
 /**
  * Account diagnostics deliberately carry a fixed lifecycle code only. They
@@ -107,6 +108,16 @@ export class NhAccountSessionService {
   private static cookieHeader: string = ''
   private static sealedFallbackCookieHeader: string = ''
   private static browserUserAgent: string = ''
+  // A retained browser identity that has just passed the fixed same-origin
+  // account probe is authenticated even when the server rotated its access
+  // token to HttpOnly, which the ArkTS WebCookieManager cannot read. This
+  // signal is process-local and never persisted; a cold start always restores
+  // through the sealed readable envelope and self-heals on the first probe.
+  private static browserIdentityVerified: boolean = false
+  // Minimum interval between sealed-envelope re-seals after a successful
+  // response. The server can rotate access_token on every request; a full
+  // HUKS encrypt + RDB write per page would be needless write amplification.
+  private static lastSealedResyncAtMs: number = 0
   // Candidate values remain only in memory until a same-origin account probe
   // succeeds. They are deliberately separate from the active sealed session
   // so a managed-challenge 403 cannot replace a working account marker.
@@ -183,7 +194,8 @@ export class NhAccountSessionService {
     new Set<AccountSessionDiagnosticStage>()
 
   static isAuthenticated(): boolean {
-    return NhAccountSessionService.hasLoginCookies(NhAccountSessionService.cookieHeader)
+    return NhAccountSessionService.hasLoginCookies(NhAccountSessionService.cookieHeader) ||
+      NhAccountSessionService.browserIdentityVerified
   }
 
   /** Captured synchronously before an authenticated ArkWeb GET is issued. */
@@ -473,6 +485,95 @@ export class NhAccountSessionService {
   }
 
   /**
+   * A successful same-origin account probe proves the retained browser
+   * identity is valid even when the server rotated access_token to HttpOnly
+   * (unreadable through the ArkTS WebCookieManager). This runtime signal
+   * keeps the native UI signed in and lets the bridge authenticate through
+   * the browser cookie jar instead of the readable Authorization header.
+   */
+  static markBrowserIdentityVerified(): void {
+    if (NhAccountSessionService.verificationRequiredMarkerPresent) {
+      return
+    }
+    NhAccountSessionService.browserIdentityVerified = true
+  }
+
+  /**
+   * Follows the browser's own Set-Cookie rotation after a successful
+   * authenticated response. Reads the current regular ArkWeb jar and, when a
+   * readable access_token is present, re-seals the envelope so a cold start
+   * restores the newest token instead of the login-time snapshot. When the
+   * rotated token is HttpOnly and therefore unreadable, the successful probe
+   * already kept the browser identity verified; the prior readable envelope
+   * is retained as the cold-start fallback. Best-effort and never throws.
+   */
+  static async syncSealedSessionFromRegularJar(
+    context: common.UIAbilityContext | null = null,
+  ): Promise<void> {
+    if (!NhAccountSessionService.isAuthenticated() ||
+      NhAccountSessionService.sessionTransitionInFlight ||
+      NhAccountSessionService.verificationRequiredMarkerPresent) {
+      return
+    }
+    const activeContext: common.UIAbilityContext | null =
+      context !== null ? context : NhAccountSessionService.sessionContext
+    if (activeContext === null) {
+      return
+    }
+    let jarHeader: string = ''
+    try {
+      jarHeader = NhAccountSessionService.readRegularArkWebCookieHeader()
+    } catch (_error) {
+      return
+    }
+    const sealedToken: string = NhAccountSessionService.cookieValue(
+      NhAccountSessionService.sealedFallbackCookieHeader,
+      'access_token',
+    )
+   const jarToken: string = NhAccountSessionService.cookieValue(jarHeader, 'access_token')
+    if (jarToken.length > 0 && jarToken !== sealedToken) {
+      // The browser jar holds a newer readable token after a server
+      // Set-Cookie rotation. Promote it into the in-memory session and
+      // re-seal so a cold start can restore the newest token.
+      const now: number = Date.now()
+      if (now - NhAccountSessionService.lastSealedResyncAtMs < SEALED_RESYNC_MIN_INTERVAL_MS) {
+        // Still within the throttled window: keep the in-memory jar view
+        // fresh but defer the durable re-seal to the next window.
+        NhAccountSessionService.cookieHeader = jarHeader
+        NhAccountSessionService.browserIdentityVerified = true
+        return
+      }
+      NhAccountSessionService.lastSealedResyncAtMs = now
+      const transitionEpoch: number = NhAccountSessionService.beginDurableSessionTransition()
+      try {
+        const record: EncryptedAccountSession = await NhAccountSessionService.encrypt(
+          NhAccountSessionService.serializeSessionPayload(
+            jarHeader,
+            NhAccountSessionService.browserUserAgent,
+          ),
+        )
+        await AccountSessionRepository.saveVerified(activeContext, record)
+        if (!NhAccountSessionService.isDurableSessionTransitionCurrent(transitionEpoch)) {
+          return
+        }
+        NhAccountSessionService.cookieHeader = jarHeader
+        NhAccountSessionService.sealedFallbackCookieHeader = jarHeader
+        NhAccountSessionService.browserIdentityVerified = true
+        NhAccountSessionService.publishSessionChange()
+      } catch (_error) {
+        return
+      } finally {
+        NhAccountSessionService.finishDurableSessionTransition(transitionEpoch)
+      }
+    } else if (jarToken.length === 0) {
+      // The readable token is absent (e.g. HttpOnly rotation), but the
+      // successful response already proves the browser identity. Keep the
+      // prior readable envelope for the cold-start fallback.
+      NhAccountSessionService.browserIdentityVerified = true
+    }
+  }
+
+  /**
    * Clears the native sealed session and only first-party identity cookies
    * from this app's regular ArkWeb store. Cloudflare challenge state is not
    * identity state and is deliberately retained, matching NextE's logout
@@ -481,7 +582,22 @@ export class NhAccountSessionService {
    */
   static async clear(context: common.UIAbilityContext): Promise<void> {
     NhAccountSessionService.sessionContext = context
-    const transitionEpoch: number = NhAccountSessionService.beginDurableSessionTransition()
+    NhAccountSessionService.browserIdentityVerified = false
+    // A durable clear must not interleave with a verified promotion or a
+    // sealed-envelope re-seal that is already writing RDB. Otherwise the
+    // older writer can commit a record after this clear's DELETE, and a
+    // cold start would restore a session the user just signed out of.
+    // Wait for any in-flight transition to finish (bounded), then own the
+    // durable boundary exclusively.
+    let transitionWaitMs: number = 0
+    while (NhAccountSessionService.sessionTransitionInFlight) {
+     if (transitionWaitMs >= 500) {
+       throw new Error('account_session_clear_busy')
+     }
+      await NhAccountSessionService.delay(100)
+      transitionWaitMs += 100
+    }
+   const transitionEpoch: number = NhAccountSessionService.beginDurableSessionTransition()
     try {
       await AccountSessionRepository.clear(context)
     } catch (error) {
@@ -568,6 +684,7 @@ export class NhAccountSessionService {
     NhAccountSessionService.verificationRequiredMarkerPresent = true
     NhAccountSessionService.updateRetainedRestoreLoginGate(true)
     NhAccountSessionService.advanceSessionEpoch()
+    NhAccountSessionService.browserIdentityVerified = false
     NhAccountSessionService.cookieHeader = ''
     NhAccountSessionService.browserUserAgent = ''
     NhAccountSessionService.sessionOrigin = AccountSessionOrigin.NONE
@@ -1694,6 +1811,14 @@ export class NhAccountSessionService {
     record.ciphertext = new util.Base64Helper().encodeToStringSync(sealed)
     record.nonce = new util.Base64Helper().encodeToStringSync(nonce)
     return record
+  }
+
+  private static async delay(milliseconds: number): Promise<void> {
+    return new Promise<void>((resolve: () => void): void => {
+      setTimeout((): void => {
+        resolve()
+      }, milliseconds)
+    })
   }
 
   /**

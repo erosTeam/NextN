@@ -14,6 +14,7 @@ export class BrowsePresentationState {
   @Trace waterfallMinColumnWidth: number = 0
   @Trace waterfallCompactMinColumnWidth: number = 0
   @Trace coverWallMinColumnWidth: number = 0
+  @Trace thumbnailMinColumnWidth: number = 0
   /**
    * Keep resolved labels visible by default. An explicit saved false still lets
    * the user hide tags, but an absent legacy key must not suppress the only
@@ -38,6 +39,9 @@ export class BrowsePresentationState {
     if (mode === NhBrowsePresentation.COVER_WALL) {
       return this.coverWallMinColumnWidth
     }
+    if (mode === NhBrowsePresentation.THUMBNAIL) {
+      return this.thumbnailMinColumnWidth
+    }
     return 0
   }
 
@@ -56,6 +60,11 @@ export class BrowsePresentationState {
     }
     if (mode === NhBrowsePresentation.COVER_WALL) {
       this.coverWallMinColumnWidth = width
+      return
+    }
+    if (mode === NhBrowsePresentation.THUMBNAIL) {
+      this.thumbnailMinColumnWidth = width
+      return
     }
   }
 }

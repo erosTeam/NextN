@@ -15,6 +15,7 @@ import { NhComment } from '../model/NhComment'
 import { NhAccountProfile } from '../model/NhAccountProfile'
 import { NhTagSuggestion } from '../model/NhTagSuggestion'
 import { NhTagCatalogService } from '../services/NhTagCatalogService'
+import { NhCloudBlacklistService } from '../services/NhCloudBlacklistService'
 import { NhBrowserSessionVerificationOutcome } from '../model/NhBrowserSessionState'
 import { NhAccountAuthenticatedReadToken, NhAccountSessionService } from '../services/NhAccountSessionService'
 import {
@@ -30,8 +31,9 @@ const IMAGE_ROOT: string = 'https://i.nhentai.net'
 const CONNECT_TIMEOUT_MS: number = 10000
 const READ_TIMEOUT_MS: number = 20000
 const MAX_COMMENT_POW_DIFFICULTY: number = 24
-const ACCOUNT_LOG_DOMAIN: number = 0x0000
+const ACCOUNT_LOG_DOMAIN: number = 0xE001
 const ACCOUNT_LOG_TAG: string = 'NextNAccount'
+const CLOUD_BLACKLIST_REFRESH_TTL_MS: number = 10 * 60 * 1000
 const MAX_COMMENT_POW_ATTEMPTS: number = 2000000
 const COMMENT_POW_YIELD_INTERVAL: number = 2048
 // ErosN's unscoped search autocomplete probes these catalog namespaces in
@@ -73,6 +75,7 @@ class NhCommentProofOfWork {
  * one-shot operations reached solely from an explicit native action.
  */
 export class NhApiClient {
+  private static lastCloudBlacklistRefreshAt: number = 0
   static async latest(page: number = 1): Promise<NhGalleryPageResult> {
     const root: Record<string, Object> = await NhApiClient.getJson(
       `${API_ROOT}/api/v2/galleries?page=${Math.max(1, Math.floor(page))}`,
@@ -99,21 +102,28 @@ export class NhApiClient {
    * from being mistaken for an empty gallery list.
    */
   static async popular(): Promise<NhGallerySummary[]> {
+    NhApiClient.maybeRefreshCloudBlacklist()
     const rawItems: Object[] = await NhApiClient.getBareJsonArray(
       `${API_ROOT}/api/v2/galleries/popular`,
       NhJsonReadScope.ACCOUNT_PREFERRED,
     )
     const galleries: NhGallerySummary[] = []
+    let diagBlacklisted: number = 0
     rawItems.forEach((raw: Object): void => {
       const item: Record<string, Object> = NhApiClient.asRecord(raw)
-      if (NhApiClient.asBoolean(item['blacklisted'])) {
+      const gallery: NhGallerySummary = NhApiClient.parseGallerySummary(item)
+      if (NhApiClient.asBoolean(item['blacklisted']) ||
+        NhCloudBlacklistService.isGalleryCloudBlacklisted(gallery)) {
+        diagBlacklisted += 1
         return
       }
-      const gallery: NhGallerySummary = NhApiClient.parseGallerySummary(item)
       if (gallery.id > 0) {
         galleries.push(gallery)
       }
     })
+    hilog.info(ACCOUNT_LOG_DOMAIN, ACCOUNT_LOG_TAG,
+      'popular parsed items=%{public}d blacklisted_skipped=%{public}d',
+      rawItems.length, diagBlacklisted)
     await NhApiClient.enrichGallerySummaryTags(galleries)
     return galleries
   }
@@ -481,6 +491,9 @@ export class NhApiClient {
     if (!profile.hasIdentity()) {
       throw new Error('Account profile did not contain a valid identity.')
     }
+    // Follow the browser's Set-Cookie rotation after a successful profile
+    // read so the sealed envelope tracks the newest token.
+    await NhAccountSessionService.syncSealedSessionFromRegularJar()
     return profile
   }
 
@@ -589,17 +602,27 @@ export class NhApiClient {
     // instead of an error or an account retirement.
     if (scope === NhJsonReadScope.ACCOUNT_PREFERRED &&
       NhAccountSessionService.isAuthenticated() &&
-      NhApiClient.isAccountPreferredListReadUrl(url)) {
+     NhApiClient.isAccountPreferredListReadUrl(url)) {
       try {
         const preferredResponse: NhArkWebSessionResponse =
           await NhArkWebSessionTransport.requestJson(url, 'GET')
         if (preferredResponse.statusCode >= 200 && preferredResponse.statusCode < 300) {
           const preferredValue: Object = JSON.parse(preferredResponse.body) as Object
           if (preferredValue !== null) {
+            hilog.info(ACCOUNT_LOG_DOMAIN, ACCOUNT_LOG_TAG,
+              'account-preferred list read ok status=%{public}d', preferredResponse.statusCode)
+            // Follow the browser's Set-Cookie rotation: after a successful
+            // authenticated read, re-seal the newest jar token so a cold
+            // start restores it instead of the login-time snapshot.
+            await NhAccountSessionService.syncSealedSessionFromRegularJar()
             return preferredValue
           }
         }
-      } catch (_error) {
+      } catch (error) {
+        hilog.warn(ACCOUNT_LOG_DOMAIN, ACCOUNT_LOG_TAG,
+          'account-preferred list read failed stage=%{public}s',
+          error instanceof Error && error.message.startsWith('account_')
+            ? error.message : 'account_transport_unexpected')
         // Best-effort only: the anonymous path below remains the fallback.
       }
     }
@@ -617,36 +640,30 @@ export class NhApiClient {
       }
       let response: NhArkWebSessionResponse = await NhArkWebSessionTransport.requestJson(url, 'GET')
       if (response.statusCode === 401) {
-        // The browser may have rotated its access token while the retained
-        // root document was idle. This is an idempotent GET, so a single
-        // sealed-token fallback and one replay are safe. Mutation methods do
-        // not call this branch because repeating a write can duplicate a user
-        // action.
-        const recoveryPrepared: boolean = await NhApiClient.prepareIdempotentAuthenticatedReadRetryAfter401(readToken)
+        // The browser is the Set-Cookie authority: a trusted navigation
+        // lets the server rotate access_token through Set-Cookie while
+        // ArkWeb keeps its HttpOnly identity. Try that real refresh before
+        // touching the sealed fallback so a rotated-but-unreadable token is
+        // never overwritten by the stale login-time snapshot. Mutation
+        // methods do not reach this branch because repeating a write can
+        // duplicate a user action.
         let replayExecuted: boolean = false
-        if (recoveryPrepared && NhAccountSessionService.isAuthenticatedReadTokenCurrent(readToken)) {
-          response = await NhArkWebSessionTransport.requestJson(url, 'GET')
-          replayExecuted = true
-        }
-        if (replayExecuted && response.statusCode === 401 &&
-          scope === NhJsonReadScope.ACCOUNT_OWNED) {
-          // The visible native re-verification route can restore a fresh
-          // access token from ArkWeb's retained first-party identity without
-          // credentials. Try the same bounded browser-owned refresh before
-          // persisting a marker that would otherwise make the user appear
-          // signed out. A newly promoted session gets one fresh idempotent
-          // replay; another 401 remains a request failure rather than a
-          // second marker decision from this old read token.
-          if (await NhArkWebSessionTransport.refreshFromRegularBrowserIdentityAfterAuthenticated401(readToken)) {
-            const refreshedReadToken = NhAccountSessionService.captureAuthenticatedReadToken()
-            if (refreshedReadToken === null) {
-              throw new Error('Your account session changed. Please try again.')
-            }
+        if (scope === NhJsonReadScope.ACCOUNT_OWNED &&
+          await NhArkWebSessionTransport.refreshFromRegularBrowserIdentityAfterAuthenticated401(readToken)) {
+          const refreshedReadToken = NhAccountSessionService.captureAuthenticatedReadToken()
+          if (refreshedReadToken !== null) {
             readToken = refreshedReadToken
             response = await NhArkWebSessionTransport.requestJson(url, 'GET')
-            if (response.statusCode === 401) {
-              throw new Error('Your account session could not be rechecked. Please try again.')
-            }
+            replayExecuted = true
+          }
+        }
+        if (!replayExecuted) {
+          // The bounded sealed-token fallback remains as a second candidate
+          // only after the browser refresh could not promote a session.
+          const recoveryPrepared: boolean = await NhApiClient.prepareIdempotentAuthenticatedReadRetryAfter401(readToken)
+          if (recoveryPrepared && NhAccountSessionService.isAuthenticatedReadTokenCurrent(readToken)) {
+            response = await NhArkWebSessionTransport.requestJson(url, 'GET')
+            replayExecuted = true
           }
         }
         if (replayExecuted && response.statusCode === 401 &&
@@ -681,6 +698,9 @@ export class NhApiClient {
       if (browserValue === null) {
         throw new Error('Received an empty JSON response.')
       }
+      // Follow the browser's Set-Cookie rotation after a successful
+      // authenticated read so the sealed envelope tracks the newest token.
+      await NhAccountSessionService.syncSealedSessionFromRegularJar()
       return browserValue
     }
     let lastError: Error = new Error('Network request failed')
@@ -733,6 +753,14 @@ export class NhApiClient {
   private static async prepareIdempotentAuthenticatedReadRetryAfter401(
     readToken: NhAccountAuthenticatedReadToken,
   ): Promise<boolean> {
+    // Never race a retained-browser refresh with a stale sealed-token
+    // overwrite: the server may have just rotated access_token through
+    // Set-Cookie on the refresh navigation, and writing the old sealed
+    // value back would destroy the newer HttpOnly token. When a refresh is
+    // in flight, leave this replay unexecuted; the refresh owns the jar.
+    if (NhArkWebSessionTransport.isBrowserIdentityRefreshActive()) {
+      return false
+    }
     if (!await NhAccountSessionService.recoverRegularArkWebCookieJarAfterAuthenticated401(readToken)) {
       return false
     }
@@ -785,6 +813,9 @@ export class NhApiClient {
     if (Array.isArray(value) || value === null || typeof value !== 'object') {
       throw new Error(`${rejectedMessage} The server response was invalid.`)
     }
+    // Follow the browser's Set-Cookie rotation after a successful account
+    // write so the sealed envelope tracks the newest token.
+    await NhAccountSessionService.syncSealedSessionFromRegularJar()
     return value as Record<string, Object>
   }
 
@@ -876,10 +907,13 @@ export class NhApiClient {
   /**
    * This is deliberately an allowlist, not a first-party prefix test. These
    * two GETs are the only generic JSON reads that expose account-specific
-   * state; profile uses its separate fixed `/info/` bridge.
+  * state; profile uses its separate fixed `/info/` bridge.
    */
   private static isAccountOwnedIdempotentReadUrl(url: string): boolean {
     if (url.startsWith(`${API_V2_PREFIX}favorites?`)) {
+      return true
+    }
+    if (url === `${API_V2_PREFIX}blacklist/ids`) {
       return true
     }
     const galleryFavoritePrefix: string = `${API_V2_PREFIX}galleries/`
@@ -971,15 +1005,23 @@ export class NhApiClient {
   }
 
   private static async parseGalleryPage(root: Record<string, Object>): Promise<NhGalleryPageResult> {
+    NhApiClient.maybeRefreshCloudBlacklist()
     const result: NhGalleryPageResult = new NhGalleryPageResult()
     const rawItems: Object[] = NhApiClient.asArray(root['result'])
+    let blacklistSkipped: number = 0
     rawItems.forEach((raw: Object): void => {
       const item: Record<string, Object> = NhApiClient.asRecord(raw)
-      if (NhApiClient.asBoolean(item['blacklisted'])) {
+      const gallery: NhGallerySummary = NhApiClient.parseGallerySummary(item)
+      if (NhApiClient.asBoolean(item['blacklisted']) ||
+        NhCloudBlacklistService.isGalleryCloudBlacklisted(gallery)) {
+        blacklistSkipped += 1
         return
       }
-      result.galleries.push(NhApiClient.parseGallerySummary(item))
+      result.galleries.push(gallery)
     })
+    hilog.info(ACCOUNT_LOG_DOMAIN, ACCOUNT_LOG_TAG,
+      'list page parsed items=%{public}d blacklisted_skipped=%{public}d',
+      rawItems.length, blacklistSkipped)
     result.totalPages = Math.max(1, NhApiClient.asNumber(root['num_pages']))
     await NhApiClient.enrichGallerySummaryTags(result.galleries)
     return result
@@ -1023,6 +1065,54 @@ export class NhApiClient {
       }
     })
     return tags
+  }
+
+  /**
+   * The account's cloud tag-blacklist ids (NH v2). The ids share the
+   * catalog id space with gallery `tag_ids`, so the client can enforce the
+   * site's own blacklist locally exactly like ErosN's HTML
+   * `blacklisted_tags` + `data-tags` filtering. Best-effort: a 401 or
+   * transport failure keeps the last persisted snapshot.
+   */
+  static async cloudBlacklistIds(): Promise<number[]> {
+    const rawItems: Object[] = await NhApiClient.getBareJsonArray(
+      `${API_ROOT}/api/v2/blacklist/ids`,
+      NhJsonReadScope.ACCOUNT_OWNED_NON_RETIRING,
+      false,
+    )
+    const ids: number[] = []
+    rawItems.forEach((raw: Object): void => {
+      const id: number = NhApiClient.asNumber(raw)
+      if (id > 0 && ids.indexOf(id) < 0) {
+        ids.push(id)
+      }
+    })
+    return ids
+  }
+
+  /**
+   * Best-effort background refresh of the account's cloud tag-blacklist
+   * ids. TTL-guarded so repeated page reads do not multiply requests; an
+   * unauthenticated session or a failed fetch silently keeps the persisted
+   * snapshot and never fails or blocks a list read.
+   */
+  private static maybeRefreshCloudBlacklist(): void {
+    if (!NhAccountSessionService.isAuthenticated()) {
+      return
+    }
+    const now: number = Date.now()
+    if (now - NhApiClient.lastCloudBlacklistRefreshAt < CLOUD_BLACKLIST_REFRESH_TTL_MS) {
+      return
+    }
+    NhApiClient.lastCloudBlacklistRefreshAt = now
+    NhApiClient.cloudBlacklistIds().then((ids: number[]): void => {
+      NhCloudBlacklistService.applyFreshIds(ids)
+    }).catch((error: Error): void => {
+      hilog.warn(ACCOUNT_LOG_DOMAIN, ACCOUNT_LOG_TAG,
+        'cloud blacklist refresh failed stage=%{public}s',
+        error instanceof Error && error.message.startsWith('account_')
+          ? error.message : 'cloud_blacklist_transport_unexpected')
+    })
   }
 
   private static parseGallerySummary(item: Record<string, Object>): NhGallerySummary {
