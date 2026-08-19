@@ -1206,6 +1206,10 @@ export class NhApiClient {
     const poster: Record<string, Object> = NhApiClient.asRecord(item['poster'])
     comment.posterId = NhApiClient.asNumber(poster['id'])
     comment.posterName = NhApiClient.asString(poster['username'])
+    comment.posterAvatarUrl = NhApiClient.cdnUrl(
+      NhApiClient.asString(poster['avatar_url']),
+      IMAGE_ROOT,
+    )
     // A stable List key is required by ArkUI; incomplete server records
     // cannot be displayed safely or attributed to a gallery.
     return comment.commentId > 0 ? comment : null

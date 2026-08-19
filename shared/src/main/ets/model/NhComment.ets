@@ -1,8 +1,8 @@
 /**
  * Public comment fields exposed by the anonymous v2 endpoint.
  *
- * This DTO deliberately excludes avatars, moderation state, and every write
- * capability.  Those concerns need their own authenticated/session design.
+ * This DTO deliberately excludes moderation state and every write
+ * capability. Those concerns need their own authenticated/session design.
  */
 export class NhComment {
   commentId: number = 0
@@ -11,4 +11,5 @@ export class NhComment {
   body: string = ''
   posterId: number = 0
   posterName: string = ''
+  posterAvatarUrl: string = ''
 }

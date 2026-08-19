@@ -1,8 +1,16 @@
-import { AppStrings, NhComment, ThemeTokens } from 'shared'
+import {
+  AppStrings,
+  EH_IMAGE_PRIORITY_LOW,
+  EhImageKnifeImage,
+  NhComment,
+  ThemeTokens,
+} from 'shared'
 import { CommentTranslationRenderState } from '../pages/GalleryCommentsPage'
 
 const COMMENT_ACTION_SIZE: number = 30
 const COMMENT_ACTION_ICON_SIZE: number = 16
+// Next2V ReplyCardHeader avatar diameter (AVATAR_SIZE_REPLY).
+const COMMENT_AVATAR_SIZE: number = 32
 const COMMENT_ANIM_DONE_DELAY_MS: number = 200
 const COMMENT_QUOTE_RADIUS: number = ThemeTokens.RADIUS_SM + ThemeTokens.SPACE_XS
 
@@ -149,6 +157,14 @@ export struct GalleryCommentCard {
       : AppStrings.get('comments_author_anonymous')
   }
 
+  private avatarPlaceholderInitial(): string {
+    const name: string = this.comment.posterName.trim()
+    if (name.length === 0) {
+      return '•'
+    }
+    return name.substring(0, 1).toUpperCase()
+  }
+
   private twoDigits(value: number): string {
     return value < 10 ? `0${value}` : value.toString()
   }
@@ -241,6 +257,37 @@ export struct GalleryCommentCard {
     }
   }
 
+  /**
+   * Next2V Avatar parity: a circular identity mark beside the author name.
+   * The avatar URL is resolved from the API poster.avatar_url at parse time;
+   * without a URL the card keeps the same diameter with the author's initial
+   * on the sub-surface background instead of collapsing the row.
+   */
+  @Builder
+  private CommentAvatar() {
+    Stack({ alignContent: Alignment.Center }) {
+      if (this.comment.posterAvatarUrl.length > 0) {
+        EhImageKnifeImage({
+          src: this.comment.posterAvatarUrl,
+          objectFit: ImageFit.Cover,
+          radius: COMMENT_AVATAR_SIZE / 2,
+          widthValue: COMMENT_AVATAR_SIZE,
+          heightValue: COMMENT_AVATAR_SIZE,
+          priority: EH_IMAGE_PRIORITY_LOW,
+        })
+      } else {
+        Text(this.avatarPlaceholderInitial())
+          .fontSize(Math.max(11, COMMENT_AVATAR_SIZE / 3))
+          .fontWeight(FontWeight.Medium)
+          .fontColor(ThemeTokens.TEXT_SECONDARY)
+      }
+    }
+    .width(COMMENT_AVATAR_SIZE)
+    .height(COMMENT_AVATAR_SIZE)
+    .borderRadius(COMMENT_AVATAR_SIZE / 2)
+    .backgroundColor(ThemeTokens.SURFACE_SUB)
+  }
+
   @Builder
   private BodyText(value: string, color: ResourceColor) {
     Text(value)
@@ -326,7 +373,8 @@ export struct GalleryCommentCard {
 
   build() {
     Column({ space: ThemeTokens.SPACE_XS }) {
-      Row() {
+      Row({ space: ThemeTokens.SPACE_SM }) {
+        this.CommentAvatar()
         Text(this.authorLabel())
           .layoutWeight(1)
           .fontSize(ThemeTokens.FONT_SIZE_CAPTION)

@@ -3,6 +3,52 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## Gallery comments: show commenter avatars — 2026-08-19
+
+- **Why newly actionable:** the user asks to display comment-user avatars;
+  NextE does not implement them because of its upstream CF constraint, and the
+  UI reference is Next2V (local /Users/honjow/git/V2Next). Source evidence:
+  ErosN's CommentPoster model reads the v2 API `poster.avatar_url` and
+  renders `https://i.nhentai.net/<avatar_url>` (48vp round avatar), while
+  NextN's `NhApiClient.parseComment` previously dropped that field and
+  `GalleryCommentCard` rendered no identity mark. Next2V's `Avatar`
+  component and `ReplyCardHeader` place a circular avatar beside the author
+  name (32vp reply size).
+- **Whole parent-tree boundary:** only the author row inside
+  `GalleryCommentCard` (full comments route); the comment body, translation
+  animation machinery, reply quote, footer, list scaffold, and the compact
+  detail-page preview carousel are unchanged.
+- **Exact before/after:** before — `NhComment` had no avatar field,
+  `parseComment` ignored `poster.avatar_url`, and the card's header row
+  began with the author name. after — `NhComment.posterAvatarUrl` is parsed
+  through `cdnUrl(..., IMAGE_ROOT)`, and the header row gains a 32vp round
+  avatar (ImageKnifePro, low priority) with the author initial on the
+  sub-surface background as the no-URL placeholder, matching Next2V's Avatar
+  fallback.
+- **Minimality rationale:** one data leaf + one header-row leaf; no parent
+  tree, geometry of other rows, click behavior, or strings changed.
+- **Visual verification plan:** signed build + install; open a gallery's
+  comments route and capture the comment cards with real avatars and with the
+  placeholder branch; confirm the author row height and text alignment remain
+  consistent.
+- **Verification observed (197, 2026-08-19):** signed debug build installed
+  with install -r; the comments route for a gallery with one comment renders
+  an avatar Image node at [78,364][182,468] (32vp) left of the author row;
+  author text starts at x=208 (avatar edge 182 + 8vp gap = 26px), and avatar
+  and author vertical centers are both 416px. Screenshot pixel analysis of
+  the avatar region shows 523 distinct colors, stdev 50.0 — a real loaded
+  bitmap, not a flat placeholder. The no-avatar placeholder branch was not
+  observed this run (this commenter has an avatar).
+  A second gallery with 50 comments was then observed on the same build:
+  two scrolled layout dumps show 13 consecutive comment cards each with one
+  avatar Image node at x=78, width 104px (32vp), aligned with its author row;
+  screenshot pixel analysis of six visible avatars shows 355-951 distinct
+  colors each (stdev 50.0-94.9), i.e. real per-user bitmaps, not repeated
+  placeholder fills.
+- **Unresolved risk:** some commenters have no avatar_url, and a failed image
+  load shows the placeholder background rather than a retry; no avatar click
+  navigation was added because the user did not request it.
+
 ## Gallery Detail hero cover reuse ImageKnifePro cache — 2026-08-17
 
 - **Why newly actionable:** after the cover ImageKnife cache landed, the user
