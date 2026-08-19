@@ -94,7 +94,7 @@ export class NhTorrentFileExportService {
           // chunks must append directly at that pointer.
           const count: number = fileIo.writeSync(file.fd, data)
           if (count !== data.byteLength) {
-            throw new Error('Torrent file write was incomplete.')
+            throw new Error('Torrent file write was incomplete')
           }
           written += count
         } catch (_error) {
@@ -113,13 +113,13 @@ export class NhTorrentFileExportService {
         usingCache: false,
       })
       if (tooLarge) {
-        throw new Error('Torrent file exceeds the private export limit.')
+        throw new Error('Torrent file exceeds the private export limit')
       }
       if (writeFailure) {
-        throw new Error('Unable to save torrent file.')
+        throw new Error('Unable to save torrent file')
       }
       if (status < 200 || status >= 300 || written <= 0) {
-        throw new Error('Torrent download was unavailable.')
+        throw new Error('Torrent download was unavailable')
       }
       request.destroy()
       request = null
@@ -129,7 +129,7 @@ export class NhTorrentFileExportService {
       fileIo.renameSync(temporaryPath, filePath)
       if (NhTorrentFileExportService.fileSize(filePath) !== written) {
         NhTorrentFileExportService.removeIfExists(filePath)
-        throw new Error('Torrent file verification failed.')
+        throw new Error('Torrent file verification failed')
       }
       promoted = true
       return filePath
@@ -148,7 +148,7 @@ export class NhTorrentFileExportService {
 
   private static exportDirectory(context: common.UIAbilityContext): string {
     if (context.cacheDir.length === 0) {
-      throw new Error('Private export storage is unavailable.')
+      throw new Error('Private export storage is unavailable')
     }
     return `${context.cacheDir}/${TORRENT_EXPORT_DIRECTORY}`
   }

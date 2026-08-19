@@ -2613,7 +2613,7 @@ export struct ReaderPage {
         return
       }
       if (detail.id <= 0 || detail.id !== this.galleryId) {
-        throw new Error('Reader response did not match the requested gallery.')
+        throw new Error('Reader response did not match the requested gallery')
       }
       let restoredIndex: number = 0
       let persistedResume: boolean = false

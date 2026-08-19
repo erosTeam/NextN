@@ -75,7 +75,7 @@ export class NhArkWebSessionTransport {
     if (NhArkWebSessionTransport.controller !== controller) {
       return
     }
-    NhArkWebSessionTransport.failBootstrap(new Error('The ArkWeb account transport was detached.'))
+    NhArkWebSessionTransport.failBootstrap(new Error('The ArkWeb account transport was detached'))
     NhArkWebSessionTransport.controller = null
     NhArkWebSessionTransport.isReady = false
   }
@@ -91,7 +91,7 @@ export class NhArkWebSessionTransport {
   static observeLoadError(): void {
     NhArkWebSessionTransport.isReady = false
     NhAccountSessionService.recordArkWebTransportMainFrameLoadFailure()
-    NhArkWebSessionTransport.failBootstrap(new Error('The ArkWeb account transport could not load.'))
+    NhArkWebSessionTransport.failBootstrap(new Error('The ArkWeb account transport could not load'))
   }
 
   /**
@@ -120,18 +120,18 @@ export class NhArkWebSessionTransport {
   static async requestJson(url: string, method: string, body: string = ''): Promise<NhArkWebSessionResponse> {
     const normalizedMethod: string = method.toUpperCase()
     if (!NhArkWebSessionTransport.isFirstPartyApiUrl(url)) {
-      throw new Error('Account transport is restricted to the first-party API.')
+      throw new Error('Account transport is restricted to the first-party API')
     }
     if (normalizedMethod !== 'GET' && normalizedMethod !== 'POST' && normalizedMethod !== 'DELETE') {
-      throw new Error('Account transport received an unsupported method.')
+      throw new Error('Account transport received an unsupported method')
     }
     if (body.length > MAX_REQUEST_BODY_CHARS) {
-      throw new Error('Account request body is too large.')
+      throw new Error('Account request body is too large')
     }
     await NhArkWebSessionTransport.ensureReady()
     const controller: webview.WebviewController | null = NhArkWebSessionTransport.controller
     if (controller === null) {
-      throw new Error('Account browser transport is unavailable.')
+      throw new Error('Account browser transport is unavailable')
     }
     const requestKey: string = NhArkWebSessionTransport.nextRequestKey()
     try {
@@ -163,12 +163,12 @@ export class NhArkWebSessionTransport {
    */
   static async requestStatus(url: string): Promise<number> {
     if (!NhArkWebSessionTransport.isFirstPartyApiUrl(url)) {
-      throw new Error('Account transport is restricted to the first-party API.')
+      throw new Error('Account transport is restricted to the first-party API')
     }
     await NhArkWebSessionTransport.ensureReady()
     const controller: webview.WebviewController | null = NhArkWebSessionTransport.controller
     if (controller === null) {
-      throw new Error('Account browser transport is unavailable.')
+      throw new Error('Account browser transport is unavailable')
     }
     return NhArkWebSessionTransport.requestStatusFromCurrentDocument(controller, url)
   }
@@ -184,14 +184,14 @@ export class NhArkWebSessionTransport {
     url: string,
   ): Promise<number> {
     if (!NhArkWebSessionTransport.isFirstPartyApiUrl(url)) {
-      throw new Error('Account transport is restricted to the first-party API.')
+      throw new Error('Account transport is restricted to the first-party API')
     }
     // The visible login surface can temporarily make a Cloudflare challenge
     // its main document. Do not let the relative API path resolve from that
     // foreign origin. The injected script repeats this check because a
     // navigation can race between getUrl() and runJavaScript().
     if (!NhArkWebSessionTransport.isCurrentDocumentTrusted(controller)) {
-      throw new Error('Account browser status requires a first-party document.')
+      throw new Error('Account browser status requires a first-party document')
     }
     const requestKey: string = NhArkWebSessionTransport.nextRequestKey()
     try {
@@ -289,7 +289,7 @@ export class NhArkWebSessionTransport {
     }
     const controller: webview.WebviewController | null = NhArkWebSessionTransport.controller
     if (controller === null) {
-      throw new Error('Account browser transport is not attached.')
+      throw new Error('Account browser transport is not attached')
     }
     const task: Promise<void> = NhArkWebSessionTransport.bootstrap(controller)
     NhArkWebSessionTransport.bootstrapTask = task
@@ -312,7 +312,7 @@ export class NhArkWebSessionTransport {
     await NhArkWebSessionTransport.ensureReady()
     const controller: webview.WebviewController | null = NhArkWebSessionTransport.controller
     if (controller === null) {
-      throw new Error('Account browser transport is unavailable.')
+      throw new Error('Account browser transport is unavailable')
     }
     const requestKey: string = NhArkWebSessionTransport.nextRequestKey()
     try {
@@ -334,7 +334,7 @@ export class NhArkWebSessionTransport {
     // fixed-origin navigation, and fail closed rather than issuing a request
     // that would incorrectly retire an otherwise valid encrypted session.
     if (!await NhAccountSessionService.ensureRegularArkWebCookieJar()) {
-      throw new Error('Account browser cookies could not be restored.')
+      throw new Error('Account browser cookies could not be restored')
     }
     try {
       // Apply the UA captured from the visible login Web component before the
@@ -348,7 +348,7 @@ export class NhArkWebSessionTransport {
       NhArkWebSessionTransport.readyResolver = resolve
       NhArkWebSessionTransport.readyRejecter = reject
       NhArkWebSessionTransport.readyTimeoutId = setTimeout((): void => {
-        NhArkWebSessionTransport.failBootstrap(new Error('Account browser transport timed out.'))
+        NhArkWebSessionTransport.failBootstrap(new Error('Account browser transport timed out'))
       }, BOOTSTRAP_TIMEOUT_MS)
     })
     try {
@@ -461,7 +461,7 @@ export class NhArkWebSessionTransport {
       NhArkWebSessionTransport.readyResolver = resolve
       NhArkWebSessionTransport.readyRejecter = reject
       NhArkWebSessionTransport.readyTimeoutId = setTimeout((): void => {
-        NhArkWebSessionTransport.failBootstrap(new Error('Account browser refresh timed out.'))
+        NhArkWebSessionTransport.failBootstrap(new Error('Account browser refresh timed out'))
       }, BOOTSTRAP_TIMEOUT_MS)
     })
     try {
@@ -469,7 +469,7 @@ export class NhArkWebSessionTransport {
       await ready
       return true
     } catch (_error) {
-      NhArkWebSessionTransport.failBootstrap(new Error('Account browser refresh failed.'))
+      NhArkWebSessionTransport.failBootstrap(new Error('Account browser refresh failed'))
       return false
     }
   }
@@ -735,7 +735,7 @@ export class NhArkWebSessionTransport {
         return rawResult
       }
     }
-    throw new Error('Account browser request timed out.')
+    throw new Error('Account browser request timed out')
   }
 
   private static waitForRequestPoll(): Promise<void> {
@@ -784,21 +784,21 @@ export class NhArkWebSessionTransport {
       parsed = JSON.parse(parsed as string) as Object
     }
     if (parsed === null || Array.isArray(parsed) || typeof parsed !== 'object') {
-      throw new Error('Account browser transport returned an invalid response.')
+      throw new Error('Account browser transport returned an invalid response')
     }
     const record: Record<string, Object> = parsed as Record<string, Object>
     if (record['done'] !== true) {
-      throw new Error('Account browser transport returned an incomplete response.')
+      throw new Error('Account browser transport returned an incomplete response')
     }
     const status: Object | undefined = record['status']
     const body: Object | undefined = record['body']
     const oversized: Object | undefined = record['oversized']
     if (oversized === true) {
-      throw new Error('Account browser response was too large.')
+      throw new Error('Account browser response was too large')
     }
     if (typeof status !== 'number' || !Number.isFinite(status) ||
       typeof body !== 'string' || body.length > MAX_RESPONSE_BODY_CHARS) {
-      throw new Error('Account browser transport returned an invalid response.')
+      throw new Error('Account browser transport returned an invalid response')
     }
     const response: NhArkWebSessionResponse = new NhArkWebSessionResponse()
     response.statusCode = Math.floor(status)
@@ -812,12 +812,12 @@ export class NhArkWebSessionTransport {
       parsed = JSON.parse(parsed as string) as Object
     }
     if (parsed === null || Array.isArray(parsed) || typeof parsed !== 'object') {
-      throw new Error('Account profile transport returned an invalid response.')
+      throw new Error('Account profile transport returned an invalid response')
     }
     const record: Record<string, Object> = parsed as Record<string, Object>
     if (record['done'] !== true || typeof record['status'] !== 'number' ||
       !Number.isFinite(record['status'] as number)) {
-      throw new Error('Account profile transport returned an incomplete response.')
+      throw new Error('Account profile transport returned an incomplete response')
     }
     const response: NhArkWebAccountProfileResponse = new NhArkWebAccountProfileResponse()
     response.statusCode = Math.floor(record['status'] as number)
@@ -841,7 +841,7 @@ export class NhArkWebSessionTransport {
       !NhArkWebSessionTransport.isSafeProfileUserUrl(response.userUrl) ||
       !/^[0-9]{1,64}$/.test(response.userId) ||
       (response.avatarUrl.length > 0 && !NhArkWebSessionTransport.isSafeProfileAvatarUrl(response.avatarUrl))) {
-      throw new Error('Account profile transport returned an invalid profile.')
+      throw new Error('Account profile transport returned an invalid profile')
     }
     return response
   }

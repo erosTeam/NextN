@@ -149,7 +149,7 @@ function writeCbzStoreTask(filePath: string, entriesJson: string): string {
         byteSize += read
       }
       if (byteSize <= 0) {
-        throw new Error('A local gallery page is empty.')
+        throw new Error('A local gallery page is empty')
       }
       return [(crc ^ 0xffffffff) >>> 0, byteSize]
     } finally {
@@ -172,12 +172,12 @@ function writeCbzStoreTask(filePath: string, entriesJson: string): string {
         }
         const written: number = fileIo.writeSync(output.fd, buffer, { length: read })
         if (written !== read) {
-          throw new Error('The CBZ archive could not write a complete page.')
+          throw new Error('The CBZ archive could not write a complete page')
         }
         copied += written
       }
       if (copied !== expectedSize) {
-        throw new Error('A local gallery page changed during export.')
+        throw new Error('A local gallery page changed during export')
       }
     } finally {
       if (source !== null) {
@@ -257,22 +257,22 @@ export class NhDownloadCbzExportService {
   private static verifiedEntries(context: common.UIAbilityContext, task: NhDownloadTask): CbzSourceEntry[] {
     if (task.pageCount <= 0 || task.pageCount > MAX_ZIP_ENTRY_COUNT ||
       task.pageExtensions.length !== task.pageCount) {
-      throw new Error('This local download cannot be exported.')
+      throw new Error('This local download cannot be exported')
     }
     const paths: string[] = DownloadQueueService.completeLocalPagePaths(context, task)
     if (paths.length !== task.pageCount) {
-      throw new Error('The complete local page set is unavailable.')
+      throw new Error('The complete local page set is unavailable')
     }
     let totalBytes: number = ZIP_MIN_BYTES
     const entries: CbzSourceEntry[] = []
     for (let index: number = 0; index < paths.length; index += 1) {
       const extension: string = task.pageExtensions[index].toLowerCase().trim()
       if (!/^[a-z0-9]{1,8}$/.test(extension)) {
-        throw new Error('A local gallery page format is unavailable.')
+        throw new Error('A local gallery page format is unavailable')
       }
       const byteSize: number = NhDownloadCbzExportService.fileSize(paths[index])
       if (byteSize <= 0 || byteSize > MAX_PAGE_BYTES) {
-        throw new Error('A local gallery page is unavailable.')
+        throw new Error('A local gallery page is unavailable')
       }
       const entry: CbzSourceEntry = new CbzSourceEntry()
       entry.entryName = `page-${(index + 1).toString().padStart(4, '0')}.${extension}`
@@ -280,7 +280,7 @@ export class NhDownloadCbzExportService {
       entry.byteSize = byteSize
       totalBytes += byteSize + 76 + (entry.entryName.length * 2)
       if (totalBytes > MAX_ARCHIVE_BYTES) {
-        throw new Error('The local gallery is too large to export.')
+        throw new Error('The local gallery is too large to export')
       }
       entries.push(entry)
     }
@@ -310,12 +310,12 @@ export class NhDownloadCbzExportService {
       await taskpool.execute<[string, string], string>(writeCbzStoreTask, temporaryPath, payload)
       const expectedSize: number = NhDownloadCbzExportService.expectedArchiveBytes(entries)
       if (NhDownloadCbzExportService.fileSize(temporaryPath) !== expectedSize) {
-        throw new Error('The local CBZ archive did not verify.')
+        throw new Error('The local CBZ archive did not verify')
       }
       fileIo.renameSync(temporaryPath, filePath)
       if (NhDownloadCbzExportService.fileSize(filePath) !== expectedSize) {
         NhDownloadCbzExportService.removeIfExists(filePath)
-        throw new Error('The local CBZ archive did not promote.')
+        throw new Error('The local CBZ archive did not promote')
       }
       promoted = true
       return filePath
@@ -336,7 +336,7 @@ export class NhDownloadCbzExportService {
 
   private static exportDirectory(context: common.UIAbilityContext): string {
     if (context.cacheDir.length === 0) {
-      throw new Error('Private export storage is unavailable.')
+      throw new Error('Private export storage is unavailable')
     }
     return `${context.cacheDir}/${EXPORT_CACHE_DIRECTORY}`
   }

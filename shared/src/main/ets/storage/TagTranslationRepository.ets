@@ -296,7 +296,7 @@ export class TagTranslationRepository {
     source: string,
   ): Promise<void> {
     if (entries.length === 0) {
-      throw new Error('The tag dictionary contained no usable entries.')
+      throw new Error('The tag dictionary contained no usable entries')
     }
     const store: relationalStore.RdbStore = await LocalDataStore.open(context)
     let transactionOpen: boolean = false

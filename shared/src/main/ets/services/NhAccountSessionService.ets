@@ -1945,7 +1945,7 @@ export class NhAccountSessionService {
     const sealed: Uint8Array = new util.Base64Helper().decodeSync(record.ciphertext)
     const nonce: Uint8Array = new util.Base64Helper().decodeSync(record.nonce)
     if (nonce.length !== NONCE_BYTES || sealed.length <= AUTH_TAG_BYTES) {
-      throw new Error('The stored account session is invalid.')
+      throw new Error('The stored account session is invalid')
     }
     const body: Uint8Array = sealed.slice(0, sealed.length - AUTH_TAG_BYTES)
     const tag: Uint8Array = sealed.slice(sealed.length - AUTH_TAG_BYTES)

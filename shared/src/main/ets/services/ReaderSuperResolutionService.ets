@@ -378,7 +378,7 @@ export class ReaderSuperResolutionService {
 
   private static cacheDirectory(context: common.UIAbilityContext): string {
     if (context.cacheDir.length === 0) {
-      throw new Error('Private enhancement cache is unavailable.')
+      throw new Error('Private enhancement cache is unavailable')
     }
     return `${context.cacheDir}/${CACHE_DIRECTORY}`
   }

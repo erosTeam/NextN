@@ -417,7 +417,7 @@ export class TagTranslationUpdateService {
           // the current pointer and retain the short-write rejection below.
           const count: number = fileIo.writeSync(file.fd, data)
           if (count !== data.byteLength) {
-            throw new Error('Unable to save the tag dictionary download.')
+            throw new Error('Unable to save the tag dictionary download')
           }
           fingerprint = TagTranslationUpdateService.fingerprintBytes(fingerprint, data)
           sha256.updateSync({ data: new Uint8Array(data) })
@@ -516,7 +516,7 @@ export class TagTranslationUpdateService {
         }
         decodedBytes += count
         if (decodedBytes > UNCOMPRESSED_LIMIT_BYTES) {
-          throw new Error('The tag dictionary exceeded its decompression limit.')
+          throw new Error('The tag dictionary exceeded its decompression limit')
         }
         output += decoder.decodeToString(new Uint8Array(buffer, 0, count), { stream: true })
       }
@@ -532,12 +532,12 @@ export class TagTranslationUpdateService {
     try {
       parsed = JSON.parse(rawJson) as Object
     } catch (_error) {
-      throw new Error('The tag dictionary was not valid JSON.')
+      throw new Error('The tag dictionary was not valid JSON')
     }
     const root: Record<string, Object> = TagTranslationUpdateService.asRecord(parsed)
     const groups: Object[] = TagTranslationUpdateService.asArray(root['data'])
     if (groups.length === 0) {
-      throw new Error('The tag dictionary had an unsupported structure.')
+      throw new Error('The tag dictionary had an unsupported structure')
     }
     const entries: NhTagTranslationEntry[] = []
     const seen: Set<string> = new Set<string>()
@@ -564,12 +564,12 @@ export class TagTranslationUpdateService {
         entries.push(entry)
         seen.add(key)
         if (entries.length > MAX_IMPORT_ROWS) {
-          throw new Error('The tag dictionary contained too many entries.')
+          throw new Error('The tag dictionary contained too many entries')
         }
       }
     }
     if (entries.length === 0) {
-      throw new Error('The tag dictionary contained no usable entries.')
+      throw new Error('The tag dictionary contained no usable entries')
     }
     return entries
   }

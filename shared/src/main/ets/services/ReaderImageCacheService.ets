@@ -72,7 +72,7 @@ export class ReaderImageCacheService {
     forceReload: boolean = false,
   ): Promise<ReaderImageCacheResult> {
     if (url.length === 0 || cacheKey.length === 0) {
-      throw new Error('Reader image is unavailable.')
+      throw new Error('Reader image is unavailable')
     }
 
     const filePath: string = ReaderImageCacheService.filePath(context, cacheKey)
@@ -198,12 +198,12 @@ export class ReaderImageCacheService {
           }
           const count: number = fileIo.writeSync(file.fd, data)
           if (count !== data.byteLength) {
-            throw new Error('Unable to save Reader image.')
+            throw new Error('Unable to save Reader image')
           }
           written += count
         } catch (error) {
           const failure: Error = error as Error
-          writeFailureMessage = failure.message.length > 0 ? failure.message : 'Unable to save Reader image.'
+          writeFailureMessage = failure.message.length > 0 ? failure.message : 'Unable to save Reader image'
           request?.destroy()
         }
       })
@@ -227,7 +227,7 @@ export class ReaderImageCacheService {
         throw new Error(`Reader image request failed (${status}).`)
       }
       if (written <= 0) {
-        throw new Error('Reader image response was empty.')
+        throw new Error('Reader image response was empty')
       }
       request.destroy()
       request = null
@@ -238,7 +238,7 @@ export class ReaderImageCacheService {
       const bytes: number = ReaderImageCacheService.fileSize(filePath)
       if (bytes <= 0) {
         ReaderImageCacheService.removeIfExists(filePath)
-        throw new Error('Reader image cache file was empty.')
+        throw new Error('Reader image cache file was empty')
       }
       completed = true
       console.info(`NextNReaderCache stored bytes=${bytes}`)

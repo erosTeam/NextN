@@ -61,7 +61,7 @@ export class DownloadQueueRepository {
   static save(context: common.UIAbilityContext, task: NhDownloadTask): Promise<void> {
     if (task.galleryId <= 0 || task.mediaId.length === 0 || task.pageCount <= 0 ||
       task.pageExtensions.length !== task.pageCount) {
-      return Promise.reject(new Error('Download task is incomplete.'))
+      return Promise.reject(new Error('Download task is incomplete'))
     }
     const snapshot: NhDownloadTask = task.copy()
     return DownloadQueueRepository.enqueueWrite(async (): Promise<void> => {

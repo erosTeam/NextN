@@ -1214,7 +1214,7 @@ export struct GalleryDetailPage {
         return
       }
       if (detail.id <= 0 || detail.id !== requestedGalleryId || detail.id !== this.galleryId) {
-        throw new Error('Gallery response did not match the requested gallery.')
+        throw new Error('Gallery response did not match the requested gallery')
       }
       if (!this.applyVerifiedDetailSnapshot(generation, detail)) {
         return

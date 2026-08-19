@@ -196,6 +196,17 @@ NhApiClient.parseGalleryPage
 6. 可见 UI 改动前先在 `docs/qa/nextn-ui-change-ledger.md` 记录
    用户指令/参考证据、父树边界、改动前后与验证计划；改完必须真机
    同态对比 NextE 参考，构建成功不等于验收。
+7. UI 短文案不加末尾句号。Toast、设置项标题/副标题、提示、错误、
+   空态、按钮、标签等**单句**短文案，四语 value 一律不得以句号
+   （`。`／`．`／`.`）结尾；只有多句段落（确认对话框正文、About
+   声明、模型详情等）保留句末标点，`*_accessibility` 朗读串不算
+  可见 UI、按语音处理。新增或修改文案后必须自查：
+  `rg -n --pcre2 '"value"\s*:\s*"[^"]*[。．]\s*"' entry/src/main/resources --glob string.json`，
+  每个命中都要能归类为"多句段落"或"无障碍朗读串"，否则就是违规。
+  .ets 中会显示给用户的硬编码错误串（`throw new Error(...)`、
+  `failureMessage` 回退）同样适用；自查命令
+  `rg -n --pcre2 "[\"'][^\"'\n]*[a-zA-Z]\\.[\"']" -g '*.ets'`，
+  命中需归类为 LLM 提示词、日志、存储前缀或多句段落，否则违规。
 
 ## 5. 维护约定
 

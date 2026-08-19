@@ -127,7 +127,7 @@ export class DownloadQueueService {
   static async enqueue(context: common.UIAbilityContext, detail: NhGalleryDetail): Promise<NhDownloadTask> {
     await DownloadQueueService.restore(context)
     if (detail.id <= 0 || detail.mediaId.length === 0 || detail.pages.length === 0) {
-      throw new Error('Gallery pages are unavailable for download.')
+      throw new Error('Gallery pages are unavailable for download')
     }
     const existing: NhDownloadTask | null = DownloadQueueService.task(detail.id)
     if (existing !== null) {
@@ -140,7 +140,7 @@ export class DownloadQueueService {
     for (let index: number = 0; index < detail.pages.length; index++) {
       const extension: string = DownloadQueueService.normalizedExtension(detail.pages[index].extension)
       if (extension.length === 0) {
-        throw new Error('Gallery page format is unsupported.')
+        throw new Error('Gallery page format is unsupported')
       }
       extensions.push(extension)
     }
@@ -466,7 +466,7 @@ export class DownloadQueueService {
       ? NhDownloadTaskStatus.COMPLETE
       : NhDownloadTaskStatus.ERROR
     current.errorMessage = current.status === NhDownloadTaskStatus.ERROR
-      ? (failureMessage.length > 0 ? failureMessage : 'One or more pages could not be saved.')
+      ? (failureMessage.length > 0 ? failureMessage : 'One or more pages could not be saved')
       : ''
     current.updatedAt = Date.now()
     await DownloadQueueService.persist(context, current)
@@ -506,7 +506,7 @@ export class DownloadQueueService {
         }
         return outcome
       } catch (error) {
-        lastFailure = (error as Error).message || 'Page download failed.'
+        lastFailure = (error as Error).message || 'Page download failed'
         if (attempt + 1 < attempts && DownloadQueueService.isExecutionActive(task.galleryId, token)) {
           await DownloadQueueService.delay((attempt + 1) * 700)
         }
@@ -539,7 +539,7 @@ export class DownloadQueueService {
       request = http.createHttp()
       request.on('dataReceiveProgress', (info: http.DataReceiveProgressInfo): void => {
         if (info.totalSize > MAX_PAGE_BYTES) {
-          writeFailure = 'A gallery page exceeds the private download limit.'
+          writeFailure = 'A gallery page exceeds the private download limit'
           request?.destroy()
         }
       })
@@ -550,7 +550,7 @@ export class DownloadQueueService {
         }
         try {
           if (written + data.byteLength > MAX_PAGE_BYTES) {
-            writeFailure = 'A gallery page exceeds the private download limit.'
+            writeFailure = 'A gallery page exceeds the private download limit'
             request?.destroy()
             return
           }
@@ -559,11 +559,11 @@ export class DownloadQueueService {
           // create gaps after the first chunk.
           const count: number = fileIo.writeSync(file.fd, data)
           if (count !== data.byteLength) {
-            throw new Error('Unable to save gallery page.')
+            throw new Error('Unable to save gallery page')
           }
           written += count
         } catch (error) {
-          writeFailure = (error as Error).message || 'Unable to save gallery page.'
+          writeFailure = (error as Error).message || 'Unable to save gallery page'
           request?.destroy()
         }
       })
@@ -590,7 +590,7 @@ export class DownloadQueueService {
         throw new Error(`Gallery page request failed (${status}).`)
       }
       if (written <= 0) {
-        throw new Error('Gallery page response was empty.')
+        throw new Error('Gallery page response was empty')
       }
       request.destroy()
       request = null
@@ -600,7 +600,7 @@ export class DownloadQueueService {
       fileIo.renameSync(temporaryPath, finalPath)
       if (DownloadQueueService.fileSize(finalPath) !== written) {
         DownloadQueueService.removeIfExists(finalPath)
-        throw new Error('Saved gallery page did not verify.')
+        throw new Error('Saved gallery page did not verify')
       }
       promoted = true
     } finally {

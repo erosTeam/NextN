@@ -136,7 +136,7 @@ export class NhApiClient {
    */
   static async favorites(page: number = 1, query: string = ''): Promise<NhGalleryPageResult> {
     if (!NhAccountSessionService.isAuthenticated()) {
-      throw new Error('A signed-in account session is required to load favourites.')
+      throw new Error('A signed-in account session is required to load favourites')
     }
     const normalizedPage: number = Math.max(1, Math.floor(page))
     const normalizedQuery: string = query.trim()
@@ -177,7 +177,7 @@ export class NhApiClient {
     const root: Record<string, Object> = NhApiClient.asRecord(value)
     const galleryId: Object | undefined = root['id']
     if (typeof galleryId !== 'number' || !Number.isSafeInteger(galleryId) || galleryId <= 0) {
-      throw new Error('Random gallery service returned an invalid identifier.')
+      throw new Error('Random gallery service returned an invalid identifier')
     }
     return galleryId
   }
@@ -192,7 +192,7 @@ export class NhApiClient {
   static async related(galleryId: number): Promise<NhGallerySummary[]> {
     const normalizedGalleryId: number = Math.max(0, Math.floor(galleryId))
     if (normalizedGalleryId <= 0) {
-      throw new Error('A gallery id is required to load related galleries.')
+      throw new Error('A gallery id is required to load related galleries')
     }
     const root: Record<string, Object> = await NhApiClient.getJson(
       `${API_ROOT}/api/v2/galleries/${normalizedGalleryId}/related`,
@@ -209,7 +209,7 @@ export class NhApiClient {
   static async comments(galleryId: number): Promise<NhComment[]> {
     const normalizedGalleryId: number = Math.max(0, Math.floor(galleryId))
     if (normalizedGalleryId <= 0) {
-      throw new Error('A gallery id is required to load comments.')
+      throw new Error('A gallery id is required to load comments')
     }
     const rawComments: Object[] = await NhApiClient.getJsonArray(
       `${API_ROOT}/api/v2/galleries/${normalizedGalleryId}/comments`,
@@ -280,13 +280,13 @@ export class NhApiClient {
     const normalizedGalleryId: number = Math.max(0, Math.floor(galleryId))
     const body: string = commentBody.trim()
     if (normalizedGalleryId <= 0) {
-      throw new Error('A gallery id is required to post a comment.')
+      throw new Error('A gallery id is required to post a comment')
     }
     if (body.length === 0) {
-      throw new Error('Write a comment before posting.')
+      throw new Error('Write a comment before posting')
     }
     if (!NhAccountSessionService.isAuthenticated()) {
-      throw new Error('Sign in from Settings before posting a comment.')
+      throw new Error('Sign in from Settings before posting a comment')
     }
     const proof: NhCommentProofOfWork = await NhApiClient.solveCommentProofOfWork()
     const payload: string = JSON.stringify({
@@ -298,7 +298,7 @@ export class NhApiClient {
       `${API_ROOT}/api/v2/galleries/${normalizedGalleryId}/comments`,
       http.RequestMethod.POST,
       payload,
-      'Comment service rejected this post.',
+      'Comment service rejected this post',
     )
     const candidate: Record<string, Object> = root['comment'] !== undefined
       ? NhApiClient.asRecord(root['comment'])
@@ -313,7 +313,7 @@ export class NhApiClient {
     if (root['ok'] === true) {
       return null
     }
-    throw new Error('Comment service did not confirm this post.')
+    throw new Error('Comment service did not confirm this post')
   }
 
   /**
@@ -355,20 +355,20 @@ export class NhApiClient {
   static async setFavorite(galleryId: number, shouldFavorite: boolean): Promise<NhGalleryFavoriteStatus> {
     const normalizedGalleryId: number = Math.max(0, Math.floor(galleryId))
     if (normalizedGalleryId <= 0) {
-      throw new Error('A gallery id is required to change favourites.')
+      throw new Error('A gallery id is required to change favourites')
     }
     if (!NhAccountSessionService.isAuthenticated()) {
-      throw new Error('Sign in from Settings before changing favourites.')
+      throw new Error('Sign in from Settings before changing favourites')
     }
     const url: string = `${API_ROOT}/api/v2/galleries/${normalizedGalleryId}/favorite`
     const root: Record<string, Object> = await NhApiClient.requestJsonMutation(
       url,
       shouldFavorite ? http.RequestMethod.POST : http.RequestMethod.DELETE,
       '',
-      'Favourite service rejected this request.',
+      'Favourite service rejected this request',
     )
     if (typeof root['favorited'] !== 'boolean') {
-      throw new Error('Favourite service did not confirm the saved state.')
+      throw new Error('Favourite service did not confirm the saved state')
     }
     const status: NhGalleryFavoriteStatus = new NhGalleryFavoriteStatus()
     status.known = true
@@ -388,20 +388,20 @@ export class NhApiClient {
   static async issueTorrentLink(galleryId: number): Promise<string> {
     const normalizedGalleryId: number = Math.max(0, Math.floor(galleryId))
     if (normalizedGalleryId <= 0) {
-      throw new Error('A gallery id is required to request a torrent link.')
+      throw new Error('A gallery id is required to request a torrent link')
     }
     if (!NhAccountSessionService.isAuthenticated()) {
-      throw new Error('Sign in from Settings before requesting a torrent link.')
+      throw new Error('Sign in from Settings before requesting a torrent link')
     }
     const root: Record<string, Object> = await NhApiClient.requestJsonMutation(
       `${API_V2_PREFIX}galleries/${normalizedGalleryId}/download?format=torrent`,
       http.RequestMethod.POST,
       '',
-      'Torrent service rejected this request.',
+      'Torrent service rejected this request',
     )
     const url: string = NhApiClient.asString(root['url'])
     if (!NhApiClient.isSafeIssuedTorrentUrl(url)) {
-      throw new Error('Torrent service did not return a safe download link.')
+      throw new Error('Torrent service did not return a safe download link')
     }
     return url
   }
@@ -448,7 +448,7 @@ export class NhApiClient {
    */
   static async accountProfile(): Promise<NhAccountProfile> {
     if (!NhAccountSessionService.isAuthenticated()) {
-      throw new Error('A signed-in account session is required to load the profile.')
+      throw new Error('A signed-in account session is required to load the profile')
     }
     const readToken = NhAccountSessionService.captureAuthenticatedReadToken()
     if (readToken === null) {
@@ -472,7 +472,7 @@ export class NhApiClient {
       }
     }
     if (response.statusCode === 403) {
-      throw new Error('Your account session needs to be refreshed in Settings.')
+      throw new Error('Your account session needs to be refreshed in Settings')
     }
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw new Error(`HTTP ${response.statusCode}`)
@@ -489,7 +489,7 @@ export class NhApiClient {
     profile.userId = response.userId
     profile.avatarUrl = response.avatarUrl
     if (!profile.hasIdentity()) {
-      throw new Error('Account profile did not contain a valid identity.')
+      throw new Error('Account profile did not contain a valid identity')
     }
     // Follow the browser's Set-Cookie rotation after a successful profile
     // read so the sealed envelope tracks the newest token.
@@ -544,7 +544,7 @@ export class NhApiClient {
   ): Promise<Record<string, Object>> {
     const value: Object = await NhApiClient.getJsonValue(url, scope, allowTransportCache)
     if (Array.isArray(value) || typeof value !== 'object' || value === null) {
-      throw new Error('Expected an object response.')
+      throw new Error('Expected an object response')
     }
     return value as Record<string, Object>
   }
@@ -566,9 +566,9 @@ export class NhApiClient {
       return root['comments'] as Object[]
     }
     if (root['error'] !== undefined || root['message'] !== undefined) {
-      throw new Error('Comment service rejected the anonymous request.')
+      throw new Error('Comment service rejected the anonymous request')
     }
-    throw new Error('Comment service returned an unsupported response.')
+    throw new Error('Comment service returned an unsupported response')
   }
 
   /** Popular has no compatibility envelopes; only its documented bare array is valid. */
@@ -583,7 +583,7 @@ export class NhApiClient {
       allowTransportCache,
     )
     if (!Array.isArray(value)) {
-      throw new Error('Expected an array response.')
+      throw new Error('Expected an array response')
     }
     return value as Object[]
   }
@@ -675,14 +675,14 @@ export class NhApiClient {
           if (!await NhAccountSessionService.requireVisibleVerificationAfterAccountGet401(readToken)) {
             throw new Error('Your account session changed. Please try again.')
           }
-          throw new Error('Your account session needs to be refreshed in Settings.')
+          throw new Error('Your account session needs to be refreshed in Settings')
         }
         if (response.statusCode === 401) {
           throw new Error('Your account session could not be rechecked. Please try again.')
         }
       }
       if (response.statusCode === 403) {
-        throw new Error('Your account session needs to be refreshed in Settings.')
+        throw new Error('Your account session needs to be refreshed in Settings')
       }
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw new Error(`HTTP ${response.statusCode}`)
@@ -696,7 +696,7 @@ export class NhApiClient {
       }
       const browserValue: Object = JSON.parse(response.body) as Object
       if (browserValue === null) {
-        throw new Error('Received an empty JSON response.')
+        throw new Error('Received an empty JSON response')
       }
       // Follow the browser's Set-Cookie rotation after a successful
       // authenticated read so the sealed envelope tracks the newest token.
@@ -728,7 +728,7 @@ export class NhApiClient {
         }
         const value: Object = JSON.parse(response.result as string) as Object
         if (value === null) {
-          throw new Error('Received an empty JSON response.')
+          throw new Error('Received an empty JSON response')
         }
         return value
       } catch (error) {
@@ -780,13 +780,13 @@ export class NhApiClient {
     rejectedMessage: string,
   ): Promise<Record<string, Object>> {
     if (!NhApiClient.isFirstPartyApiV2Url(url)) {
-      throw new Error('This account action is restricted to the first-party API.')
+      throw new Error('This account action is restricted to the first-party API')
     }
     if (method !== http.RequestMethod.POST && method !== http.RequestMethod.DELETE) {
-      throw new Error('This account action uses an unsupported request method.')
+      throw new Error('This account action uses an unsupported request method')
     }
     if (!NhAccountSessionService.isAuthenticated()) {
-      throw new Error('Sign in from Settings before changing account data.')
+      throw new Error('Sign in from Settings before changing account data')
     }
     const browserMethod: string = method === http.RequestMethod.POST ? 'POST' : 'DELETE'
     const response: NhArkWebSessionResponse = await NhArkWebSessionTransport.requestJson(
@@ -801,10 +801,10 @@ export class NhApiClient {
       // fallback that will recover on the next idempotent read. Preserve the
       // sealed record here; only explicit sign-out or a real replayed GET
       // followed by 401 may delete it.
-      throw new Error('Your account session needs to be refreshed in Settings.')
+      throw new Error('Your account session needs to be refreshed in Settings')
     }
     if (response.statusCode === 403) {
-      throw new Error('Your account session needs to be refreshed in Settings.')
+      throw new Error('Your account session needs to be refreshed in Settings')
     }
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw new Error(`${rejectedMessage} (HTTP ${response.statusCode}).`)
@@ -853,7 +853,7 @@ export class NhApiClient {
     const difficulty: number = NhApiClient.asNumber(root['difficulty'])
     if (!/^[0-9a-fA-F]{16,256}$/.test(challenge) || difficulty <= 0 ||
       difficulty > MAX_COMMENT_POW_DIFFICULTY) {
-      throw new Error('Comment service returned an unsupported proof-of-work challenge.')
+      throw new Error('Comment service returned an unsupported proof-of-work challenge')
     }
     const proof: NhCommentProofOfWork = new NhCommentProofOfWork()
     proof.challenge = challenge
@@ -867,7 +867,7 @@ export class NhApiClient {
         await NhApiClient.delay(0)
       }
     }
-    throw new Error('Comment proof-of-work could not be completed safely.')
+    throw new Error('Comment proof-of-work could not be completed safely')
   }
 
   private static sha256(value: string): Uint8Array {

@@ -25,10 +25,10 @@ export class ContentFilterService {
   static async save(context: common.UIAbilityContext, draft: NhContentFilterRule): Promise<void> {
     const rule: NhContentFilterRule = ContentFilterService.normalizedRule(draft)
     if (rule.text.length === 0) {
-      throw new Error('Enter text to match.')
+      throw new Error('Enter text to match')
     }
     if (rule.isRegex && !ContentFilterService.isRegexValid(rule.text)) {
-      throw new Error('The regular expression is invalid.')
+      throw new Error('The regular expression is invalid')
     }
     if (rule.id.length === 0) {
       ContentFilterService.idSequence += 1

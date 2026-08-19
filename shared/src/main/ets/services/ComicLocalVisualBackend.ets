@@ -3119,20 +3119,20 @@ export class ComicLocalVisualBackend implements ComicRegionRenderBackend {
         preserveSignal.severity = ComicQualitySeverity.WARNING
         preserveSignal.blockId = block.blockId
         preserveSignal.message =
-          'The detected source text lacks reliable replacement evidence and remains unchanged.'
+          'The detected source text lacks reliable replacement evidence and remains unchanged'
         document.qualitySignals.push(preserveSignal)
       }
     }
     const signal: ComicQualitySignal = new ComicQualitySignal()
     signal.code = 'local_system_ocr_requires_visual_review'
     signal.severity = ComicQualitySeverity.WARNING
-    signal.message = 'System OCR can miss stylized text; local output requires visual review.'
+    signal.message = 'System OCR can miss stylized text; local output requires visual review'
     document.qualitySignals.push(signal)
     if (detectorUsed) {
       const detectorSignal: ComicQualitySignal = new ComicQualitySignal()
       detectorSignal.code = 'local_manga_region_detector_active'
       detectorSignal.severity = ComicQualitySeverity.INFO
-      detectorSignal.message = 'Manga region detection grouped OCR lines before translation.'
+      detectorSignal.message = 'Manga region detection grouped OCR lines before translation'
       document.qualitySignals.push(detectorSignal)
     }
     if (supplementalCount > 0) {

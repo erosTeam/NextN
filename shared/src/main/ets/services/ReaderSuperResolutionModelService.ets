@@ -268,7 +268,7 @@ export class ReaderSuperResolutionModelService {
     const definition: ReaderSuperResolutionModelDefinition | null =
       ReaderSuperResolutionModelService.definition(model)
     if (definition === null) {
-      throw new Error('Selected Reader enhancement model is unavailable.')
+      throw new Error('Selected Reader enhancement model is unavailable')
     }
     if (await ReaderSuperResolutionModelService.isInstalled(context, model)) {
       return
@@ -346,7 +346,7 @@ export class ReaderSuperResolutionModelService {
     await ReaderSuperResolutionModelService.installAsset(param)
     await ReaderSuperResolutionModelService.installAsset(model)
     if (!await ReaderSuperResolutionModelService.isInstalled(context, definition.id)) {
-      throw new Error('Reader enhancement model verification failed.')
+      throw new Error('Reader enhancement model verification failed')
     }
   }
 
@@ -398,7 +398,7 @@ export class ReaderSuperResolutionModelService {
         definition.paramBytes,
         definition.paramSha256,
       )) {
-        throw new Error('Real-ESRGAN runtime param verification failed.')
+        throw new Error('Real-ESRGAN runtime param verification failed')
       }
       ReaderSuperResolutionModelService.createRealEsrganRuntimeModel(
         sourceModelPath,
@@ -409,7 +409,7 @@ export class ReaderSuperResolutionModelService {
         definition.modelBytes,
         definition.modelSha256,
       )) {
-        throw new Error('Real-ESRGAN runtime model verification failed.')
+        throw new Error('Real-ESRGAN runtime model verification failed')
       }
       ReaderSuperResolutionModelService.removeIfExists(paths.paramPath)
       ReaderSuperResolutionModelService.removeIfExists(paths.modelPath)
@@ -418,7 +418,7 @@ export class ReaderSuperResolutionModelService {
       ReaderSuperResolutionModelService.removeIfExists(sourceParamPath)
       ReaderSuperResolutionModelService.removeIfExists(sourceModelPath)
       if (!await ReaderSuperResolutionModelService.isInstalled(context, definition.id)) {
-        throw new Error('Real-ESRGAN runtime promotion failed.')
+        throw new Error('Real-ESRGAN runtime promotion failed')
       }
     } catch (error) {
       ReaderSuperResolutionModelService.removeIfExists(runtimeParamPart)
@@ -434,7 +434,7 @@ export class ReaderSuperResolutionModelService {
     const sourceLines: string[] = source.split('\n')
     if (sourceLines.length < 3 || sourceLines[0] !== '7767517' ||
       sourceLines[1] !== '1408 2199') {
-      throw new Error('Unsupported Real-ESRGAN source param.')
+      throw new Error('Unsupported Real-ESRGAN source param')
     }
     let convFirstIndex: number = -1
     for (let index: number = 2; index < sourceLines.length; index++) {
@@ -445,7 +445,7 @@ export class ReaderSuperResolutionModelService {
       }
     }
     if (convFirstIndex < 0) {
-      throw new Error('Real-ESRGAN source param is incomplete.')
+      throw new Error('Real-ESRGAN source param is incomplete')
     }
     const runtimeLines: string[] = [
       'Input            input                    0 1 input',
@@ -471,7 +471,7 @@ export class ReaderSuperResolutionModelService {
 
   private static createRealEsrganRuntimeModel(sourcePath: string, targetPath: string): void {
     if (ReaderSuperResolutionModelService.fileSize(sourcePath) !== REAL_ESRGAN_SOURCE_MODEL_BYTES) {
-      throw new Error('Unexpected Real-ESRGAN source model size.')
+      throw new Error('Unexpected Real-ESRGAN source model size')
     }
     let source: fileIo.File | null = null
     let target: fileIo.File | null = null
@@ -495,11 +495,11 @@ export class ReaderSuperResolutionModelService {
           { offset: readOffset, length: length },
         )
         if (read !== length) {
-          throw new Error('Real-ESRGAN runtime model read failed.')
+          throw new Error('Real-ESRGAN runtime model read failed')
         }
         const written: number = fileIo.writeSync(target.fd, buffer, { length: read })
         if (written !== read) {
-          throw new Error('Real-ESRGAN runtime model write failed.')
+          throw new Error('Real-ESRGAN runtime model write failed')
         }
         readOffset += read
         totalWritten += written
@@ -577,14 +577,14 @@ export class ReaderSuperResolutionModelService {
           },
         })
         if (failed || status < 200 || status >= 300 || written !== asset.bytes) {
-          throw new Error('Reader enhancement model download failed.')
+          throw new Error('Reader enhancement model download failed')
         }
         request.destroy()
         request = null
         fileIo.closeSync(file)
         file = null
         if (!ReaderSuperResolutionModelService.validateFile(temporaryPath, asset.bytes, asset.sha256)) {
-          throw new Error('Reader enhancement model verification failed.')
+          throw new Error('Reader enhancement model verification failed')
         }
         ReaderSuperResolutionModelService.removeIfExists(asset.finalPath)
         fileIo.renameSync(temporaryPath, asset.finalPath)
@@ -604,7 +604,7 @@ export class ReaderSuperResolutionModelService {
         }
       }
     }
-    throw lastError === null ? new Error('Reader enhancement model download failed.') : lastError
+    throw lastError === null ? new Error('Reader enhancement model download failed') : lastError
   }
 
   private static paths(
@@ -628,7 +628,7 @@ export class ReaderSuperResolutionModelService {
 
   private static modelDirectory(context: common.UIAbilityContext): string {
     if (context.filesDir.length === 0) {
-      throw new Error('Private model storage is unavailable.')
+      throw new Error('Private model storage is unavailable')
     }
     return `${context.filesDir}/${MODEL_DIRECTORY}`
   }

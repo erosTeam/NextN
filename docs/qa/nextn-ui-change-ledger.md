@@ -6723,3 +6723,59 @@ authorize an edit, replace a device comparison, or define product completion.
    component-owned state, never a builder argument; mandatory repo-wide
    rg self-check before adding any input, and device verification requires
    typing two consecutive characters with focus retained.
+
+## 2026-08-20 — Copy convention: no trailing periods on short UI strings
+
+- **Instruction/evidence:** user report that the toast shown after adding a
+  favourite ends with a full-width sentence period, and that many other short
+  UI strings (setting subtitles and similar) carry unnecessary trailing
+  periods. User convention: short interface text — toasts, subtitles, hints,
+  errors, empty states, labels — must not end with a sentence period; only
+  longer paragraphs keep final punctuation.
+- **Whole parent-tree boundary:** text values only, in
+  entry/src/main/resources/{base,en_US,ja_JP,zh_CN}/element/string.json.
+  No layout, structure, key set, or source-code change. Audited and clean:
+  hard-coded .ets UI literals (no trailing-period hits), AppScope string
+  resources, module/build json5.
+- **Exact before/after:** before: 195 keys (about 780 locale values) ended
+  with 。 / ． / ".". After: every single-sentence short-UI value loses its
+  final period in all four locales. Retained unchanged: multi-sentence
+  values (final period is sentence punctuation, not decoration),
+  *_accessibility announcement strings (invisible TTS text), About-page
+  notices, comic-translation/route confirmation paragraphs, reader
+  enhancement model details/tiling notices, and the account sign-out
+  message.
+- **Minimality rationale:** punctuation-only diff. The classification is
+  deterministic: per-value sentence count plus a fixed paragraph-key skip
+  list, applied identically across locales.
+- **Visual verification plan:** (1) rg re-scan — remaining trailing-period
+  hits must be exactly the retained set; (2) JSON parse check on all four
+  files; (3) hvigor build; (4) device spot-check of the favourite-added
+  toast and one settings subtitle.
+- **Unresolved risk:** none to layout or interaction; Japanese follows the
+  same rule for cross-locale consistency.
+
+### Verification observed 2026-08-20 (56T0225315001128)
+
+- Build: scripts/build-hvigor-signed.sh → BUILD SUCCESSFUL (resources
+  recompiled, HAP signed).
+- Static: post-edit re-scan 0 single-sentence trailing-period values in all
+  four files; JSON parse passed; independent git-diff cross-check over the
+  exact patch reported 0 violations and 172 changed keys; a second
+  read-only sub-agent audit (copy_period_audit2) found one real miss —
+  sync_status_running had its ellipsis shortened by the mechanical pass —
+  which was restored in all four locales, and a broader .ets error-string
+  class: 123 single-sentence throw/fallback strings that reach the UI via
+  error.message now have no trailing period (LLM prompts, console logs,
+  storage prefixes, and two-sentence strings are untouched). A per-line
+  diff verifier also caught four code literals ('.' used for extension
+  parsing / a character case) that the first mechanical pass had wrongly
+  altered; they were restored. Final per-line diff verification:
+  123/123 pairs differ only by the removed final period.
+- Runtime: remove-favourite confirmation dialog rendered
+  「这会从已登录账户中移除此画廊」(no trailing 。) and the remove-favourite
+  toast was captured by uitest dumpLayout as 「已从收藏移除」(no trailing 。).
+  Favourite state restored to original (add → confirm remove, server-confirmed
+  isFavorited=false). Toast PNGs archived under /tmp/nextn-copy-period/; the
+  session's visual quota was unavailable, so PNGs are retained as raw
+  evidence, not as visually-read proof.

@@ -55,7 +55,7 @@ export class NhBrowserSessionBoundary {
    */
   static canonicalGalleryUrl(galleryId: number): string {
     if (!Number.isFinite(galleryId) || galleryId <= 0 || Math.floor(galleryId) !== galleryId) {
-      throw new Error('A positive gallery id is required to create a public link.')
+      throw new Error('A positive gallery id is required to create a public link')
     }
     return `${TRUSTED_ORIGIN}/g/${galleryId}/`
   }

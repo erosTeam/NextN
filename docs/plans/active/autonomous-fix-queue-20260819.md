@@ -118,3 +118,23 @@
 - 用户否决两个极端：纯追加拼装器（看不见/删不掉条件）和照搬 NextE 开关模型（NH 限定词语法装不下）。
 - 落地：查询文本仍是唯一真相；sheet 顶部新增「当前条件」卡，SearchConditionParser 把查询投影成结构化行（标签类 + pages/favorites/uploaded 范围类），每行带移除按钮按 token 精确删写回查询。同时修正：标签输入框用区间输入同款可见样式；建议行原文主/译名副；点建议仅填入输入（非破坏性），提交只走添加行。
 - ✅ VERIFIED（USB）：favorites:>=2 tag:20 → 当前条件卡显示 收藏数 ≥ 2 / 标签:20；点第一条移除 → 查询变 tag:20、卡内只剩对应行。
+
+## 2026-08-20 追加：v1.0.3 版本线（v1.0.2 已封版，后续改动不再叠加进去）
+
+11. ✅ VERIFIED UI 短文案去末尾句号（用户新规约，2026-08-20）：
+    单句短文案（Toast/设置副标题/提示/错误/空态）四语一律去掉末尾句号；
+    多句段落、`*_accessibility` 朗读串、About 声明、漫画翻译/路由确认长文、
+    增强模型详情/平铺说明、退出登录说明保留原标点。entry 四语
+    string.json 共处理 642 处（172 个 key；sync_status_running 的
+    省略号误伤已恢复），.ets 硬编码错误串另处理 123 处
+    （17 文件，全部为 throw/fallback 单句串；LLM 提示词、日志、
+    存储前缀、多句串保留）；复扫 0 违规、四文件 JSON 解析通过、
+    git-diff 逐行反向核验 0 违规、签名构建 BUILD SUCCESSFUL。
+    台账：docs/qa/nextn-ui-change-ledger.md 2026-08-20 条目；
+    规约：docs/developer-guide.md §4 第 7 条。
+    真机抽验 ✅（56T0225315001128，2026-08-20）：移除收藏确认框渲染
+    「这会从已登录账户中移除此画廊」（无句号）；移除 Toast 由
+    dumpLayout 直接抓到「已从收藏移除」（无句号）；「我的」页渲染文本
+    0 句号；收藏状态已还原（添加→确认移除，服务端确认 isFavorited=false）。
+    Toast 截图存档 /tmp/nextn-copy-period/cp_toast_*.png（本轮视觉配额
+    不可用，截图未人工读图，文本证据以 dumpLayout 为准）。
