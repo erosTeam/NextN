@@ -28,6 +28,236 @@ const SQL_PRUNE: string =
   'SELECT rowid FROM comment_translation_cache WHERE expires_at > ? ORDER BY cached_at DESC LIMIT ?' +
   ')'
 
+export const COMMENT_TRANSLATION_PRIORITY_INTERACTIVE: number = 0
+export const COMMENT_TRANSLATION_PRIORITY_AUTO: number = 1
+const MAX_CONCURRENT_COMMENT_TRANSLATIONS: number = 2
+export const MAX_PENDING_COMMENT_TRANSLATIONS: number = 32
+const COMMENT_TRANSLATION_QUEUE_EVICTED_ERROR: string = 'comment_translation_queue_evicted'
+const COMMENT_TRANSLATION_QUEUE_FULL_ERROR: string = 'comment_translation_queue_full'
+
+/** A small FIFO scheduler that bounds both concurrent and waiting remote comment translations. */
+export class CommentTranslationQueueTask {
+  key: string = ''
+  priority: number = COMMENT_TRANSLATION_PRIORITY_AUTO
+  started: boolean = false
+  active: boolean = false
+  discarded: boolean = false
+  private startAction: () => void = () => {}
+  private discardAction: (error: Error) => void = (_error: Error): void => {}
+
+  constructor(
+    key: string,
+    priority: number,
+    startAction: () => void,
+    discardAction: (error: Error) => void = (_error: Error): void => {},
+  ) {
+    this.key = key
+    this.priority = priority
+    this.startAction = startAction
+    this.discardAction = discardAction
+  }
+
+  start(): void {
+    this.startAction()
+  }
+
+  discard(error: Error): void {
+    if (this.started || this.discarded) {
+      return
+    }
+    this.discarded = true
+    this.discardAction(error)
+  }
+}
+
+/**
+ * Bounds distinct remote translations while preserving priority/FIFO order (NextE parity).
+ * Cache reads and same-key joins stay outside this scheduler; only the eventual provider
+ * call occupies a slot. When the waiting budget is full, stale automatic work yields to
+ * the newest visible automatic request or to an interactive request; running work is
+ * never cancelled.
+ */
+export class CommentTranslationQueueScheduler {
+  private queue: CommentTranslationQueueTask[] = []
+  private running: number = 0
+
+  schedule(task: CommentTranslationQueueTask): void {
+    if (task.started || task.discarded) {
+      return
+    }
+    if (!this.makeRoom(task)) {
+      return
+    }
+    this.enqueue(task)
+    this.drain()
+  }
+
+  /** A user-visible request can move an already-queued auto translation ahead of background work. */
+  promote(task: CommentTranslationQueueTask, priority: number): void {
+    if (task.discarded || priority >= task.priority) {
+      return
+    }
+    task.priority = priority
+    if (task.started || !this.removeQueued(task)) {
+      return
+    }
+    this.enqueue(task)
+    this.drain()
+  }
+
+  complete(task: CommentTranslationQueueTask): void {
+    if (!task.active) {
+      return
+    }
+    task.active = false
+    if (this.running > 0) {
+      this.running--
+    }
+    this.drain()
+  }
+
+  pendingCount(): number {
+    return this.queue.length
+  }
+
+  private drain(): void {
+    while (this.running < MAX_CONCURRENT_COMMENT_TRANSLATIONS && this.queue.length > 0) {
+      const next: CommentTranslationQueueTask | undefined = this.queue.shift()
+      if (next === undefined || next.started || next.discarded) {
+        continue
+      }
+      next.started = true
+      next.active = true
+      this.running++
+      next.start()
+    }
+  }
+
+  private enqueue(task: CommentTranslationQueueTask): void {
+    for (let i: number = 0; i < this.queue.length; i++) {
+      if (task.priority < this.queue[i].priority) {
+        this.queue.splice(i, 0, task)
+        return
+      }
+    }
+    this.queue.push(task)
+  }
+
+  private makeRoom(task: CommentTranslationQueueTask): boolean {
+    if (this.queue.length < MAX_PENDING_COMMENT_TRANSLATIONS) {
+      return true
+    }
+    const discarded: CommentTranslationQueueTask | undefined = this.discardOldestAuto()
+    if (discarded !== undefined) {
+      discarded.discard(new Error(COMMENT_TRANSLATION_QUEUE_EVICTED_ERROR))
+      return true
+    }
+    task.discard(new Error(COMMENT_TRANSLATION_QUEUE_FULL_ERROR))
+    return false
+  }
+
+  private discardOldestAuto(): CommentTranslationQueueTask | undefined {
+    for (let i: number = 0; i < this.queue.length; i++) {
+      if (this.queue[i].priority === COMMENT_TRANSLATION_PRIORITY_AUTO) {
+        return this.queue.splice(i, 1)[0]
+      }
+    }
+    return undefined
+  }
+
+  private removeQueued(task: CommentTranslationQueueTask): boolean {
+    for (let i: number = 0; i < this.queue.length; i++) {
+      if (this.queue[i] === task) {
+        this.queue.splice(i, 1)
+        return true
+      }
+    }
+    return false
+  }
+}
+
+class CommentTranslationNetworkTask {
+  queueTask: CommentTranslationQueueTask
+  private readonly work: () => Promise<string>
+  private readonly scheduler: CommentTranslationQueueScheduler
+  private completion: Promise<string> = Promise.resolve('')
+  private resolveCompletion: (result: string) => void = (_result: string): void => {}
+  private rejectCompletion: (error: Error) => void = (_error: Error): void => {}
+  private settled: boolean = false
+  private discardCleanup: () => void = () => {}
+
+  constructor(
+    key: string,
+    priority: number,
+    work: () => Promise<string>,
+    scheduler: CommentTranslationQueueScheduler,
+  ) {
+    this.work = work
+    this.scheduler = scheduler
+    this.queueTask = new CommentTranslationQueueTask(
+      key,
+      priority,
+      (): void => this.start(),
+      (error: Error): void => this.rejectBeforeStart(error),
+    )
+    this.completion = new Promise<string>((resolve: (result: string) => void, reject: (error: Error) => void): void => {
+      this.resolveCompletion = resolve
+      this.rejectCompletion = reject
+    })
+  }
+
+  wait(): Promise<string> {
+    return this.completion
+  }
+
+  isSettled(): boolean {
+    return this.settled
+  }
+
+  setDiscardCleanup(cleanup: () => void): void {
+    this.discardCleanup = cleanup
+  }
+
+  private start(): void {
+    try {
+      this.work().then(
+        (result: string): void => {
+          this.resolve(result)
+          this.scheduler.complete(this.queueTask)
+        },
+        (error: Error): void => {
+          this.reject(error)
+          this.scheduler.complete(this.queueTask)
+        },
+      )
+    } catch (error) {
+      this.reject(error as Error)
+      this.scheduler.complete(this.queueTask)
+    }
+  }
+
+  private rejectBeforeStart(error: Error): void {
+    this.discardCleanup()
+    this.reject(error)
+  }
+
+  private resolve(result: string): void {
+    if (this.settled) {
+      return
+    }
+    this.settled = true
+    this.resolveCompletion(result)
+  }
+
+  private reject(error: Error): void {
+    if (this.settled) {
+      return
+    }
+    this.settled = true
+    this.rejectCompletion(error)
+  }
+}
+
 class MemoryEntry {
   translated: string = ''
   expiresAt: number = 0
@@ -40,7 +270,8 @@ class MemoryEntry {
  */
 export class CommentTranslationService {
   private static memory: Map<string, MemoryEntry> = new Map()
-  private static inflight: Map<string, Promise<string>> = new Map()
+  private static inflight: Map<string, CommentTranslationNetworkTask> = new Map()
+  private static readonly scheduler: CommentTranslationQueueScheduler = new CommentTranslationQueueScheduler()
 
   static targetLanguage(): string {
     const locale: string = connectLanguageState().effectiveLocale.toLowerCase()
@@ -203,7 +434,16 @@ export class CommentTranslationService {
     return 'unknown'
   }
 
-  static async translate(context: common.UIAbilityContext, text: string): Promise<string> {
+  static isQueueCapacityError(error: Error): boolean {
+    return error.message === COMMENT_TRANSLATION_QUEUE_EVICTED_ERROR ||
+      error.message === COMMENT_TRANSLATION_QUEUE_FULL_ERROR
+  }
+
+  static async translate(
+    context: common.UIAbilityContext,
+    text: string,
+    priority: number = COMMENT_TRANSLATION_PRIORITY_INTERACTIVE,
+  ): Promise<string> {
     const source: string = text.trim()
     if (source.length === 0) {
       return ''
@@ -219,23 +459,41 @@ export class CommentTranslationService {
     if (cached.length > 0) {
       return cached
     }
-    const active: Promise<string> | undefined = CommentTranslationService.inflight.get(key)
-    if (active !== undefined) {
-      return await active
+    const inFlight: CommentTranslationNetworkTask | undefined = CommentTranslationService.inflight.get(key)
+    if (inFlight !== undefined && !inFlight.isSettled()) {
+      CommentTranslationService.scheduler.promote(inFlight.queueTask, priority)
+      return inFlight.wait()
     }
-    const task: Promise<string> = CommentTranslationService.translateNow(
-      context,
-      source,
-      targetLanguage,
-      scope,
+    if (inFlight !== undefined) {
+      CommentTranslationService.inflight.delete(key)
+    }
+    const queuedTask: CommentTranslationNetworkTask = new CommentTranslationNetworkTask(
       key,
-      runtime,
+      priority,
+      (): Promise<string> => CommentTranslationService.translateNow(
+        context,
+        source,
+        targetLanguage,
+        scope,
+        key,
+        runtime,
+      ),
+      CommentTranslationService.scheduler,
     )
-    CommentTranslationService.inflight.set(key, task)
+    const task: Promise<string> = queuedTask.wait()
+    queuedTask.setDiscardCleanup((): void => {
+      const active: CommentTranslationNetworkTask | undefined = CommentTranslationService.inflight.get(key)
+      if (active === queuedTask) {
+        CommentTranslationService.inflight.delete(key)
+      }
+    })
+    CommentTranslationService.inflight.set(key, queuedTask)
+    CommentTranslationService.scheduler.schedule(queuedTask.queueTask)
     try {
       return await task
     } finally {
-      if (CommentTranslationService.inflight.get(key) === task) {
+      const active: CommentTranslationNetworkTask | undefined = CommentTranslationService.inflight.get(key)
+      if (active === queuedTask) {
         CommentTranslationService.inflight.delete(key)
       }
     }

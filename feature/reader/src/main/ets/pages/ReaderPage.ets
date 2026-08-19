@@ -21,6 +21,7 @@ import {
   NhReaderTapZoneAction,
   NhReaderTapZoneInvert,
   NhReaderTapZoneLayout,
+  NhReaderTapZoneRegion,
   NhReaderTapZoneResolver,
   DownloadQueueService,
   ReaderImageCacheResult,
@@ -95,10 +96,23 @@ const READER_PAGE_NUMBER_OUTLINE: ResourceColor = '#80000000'
 const READER_PAGE_NUMBER_STROKE_WIDTH: number = 2.5
 const READER_ENHANCEMENT_INTERACTION_SETTLE_MS: number = 420
 const READER_ENHANCEMENT_INTERACTION_FALLBACK_MS: number = 2500
+const READER_VERTICAL_TAP_MAX_DISTANCE: number = 8
+const READER_TOUCH_TAP_SUPPRESS_MS: number = 350
 
 /** DownloadQueueService exposes verified private pages as display-only file URIs. */
 function readerLocalFilePath(uri: string): string {
   return uri.startsWith('file://') ? uri.substring('file://'.length) : uri
+}
+
+// Structural subset of Image.onComplete (NextE parity). Intrinsic bitmap size
+// arrives in px and is converted to vp so contain-fit pan bounds stay in the
+// same coordinate space as gestures.
+interface ReaderImageLoadEvent {
+  loadingStatus: number
+  width?: number
+  height?: number
+  componentWidth?: number
+  componentHeight?: number
 }
 /** Matches the three durable sampling choices without changing a source URI. */
 function readerImageInterpolation(quality: NhReaderImageScalingQuality): ImageInterpolation {
@@ -263,6 +277,9 @@ struct ReaderImagePage {
   @Local zoomAnimating: boolean = false
   @Local viewportWidth: number = 0
   @Local viewportHeight: number = 0
+  /** Measured intrinsic size from the decoded image (NextE onImageDecoded parity). */
+  @Local intrinsicWidth: number = 0
+  @Local intrinsicHeight: number = 0
   private loadGeneration: number = 0
   private pinchStartScale: number = 1
   private panStartOffsetX: number = 0
@@ -461,8 +478,8 @@ struct ReaderImagePage {
       ReaderPageZoom.fittedExtent(
         this.viewportWidth,
         this.viewportHeight,
-        this.imageWidth,
-        this.imageHeight,
+        this.effectiveImageWidth(),
+        this.effectiveImageHeight(),
         true,
       ),
       this.zoomScale,
@@ -476,8 +493,8 @@ struct ReaderImagePage {
       ReaderPageZoom.fittedExtent(
         this.viewportWidth,
         this.viewportHeight,
-        this.imageWidth,
-        this.imageHeight,
+        this.effectiveImageWidth(),
+        this.effectiveImageHeight(),
         false,
       ),
       this.zoomScale,
@@ -492,10 +509,20 @@ struct ReaderImagePage {
 
   /** Reserve the fitted aspect ratio while loading so vertical lazy lists do not collapse into dozens of spinners. */
   private imageAspectRatio(): number {
-    if (this.imageWidth > 0 && this.imageHeight > 0) {
-      return this.imageWidth / this.imageHeight
+    const width: number = this.effectiveImageWidth()
+    const height: number = this.effectiveImageHeight()
+    if (width > 0 && height > 0) {
+      return width / height
     }
     return 1
+  }
+
+  private effectiveImageWidth(): number {
+    return this.intrinsicWidth > 0 ? this.intrinsicWidth : this.imageWidth
+  }
+
+  private effectiveImageHeight(): number {
+    return this.intrinsicHeight > 0 ? this.intrinsicHeight : this.imageHeight
   }
 
   private notifyZoom(): void {
@@ -592,7 +619,17 @@ struct ReaderImagePage {
         .objectFit(ImageFit.Contain)
         .interpolation(readerImageInterpolation(this.imageScalingQuality))
         .backgroundColor(this.canvasColor)
-        .onComplete((): void => {
+        .onComplete((event?: ReaderImageLoadEvent): void => {
+          // NextE onImageDecoded parity: measure the real bitmap instead of
+          // trusting API metadata, which downloaded/local galleries lack.
+          const bitmapWidth: number | undefined = event ? event.width : undefined
+          const bitmapHeight: number | undefined = event ? event.height : undefined
+          if (bitmapWidth !== undefined && bitmapHeight !== undefined &&
+            bitmapWidth > 0 && bitmapHeight > 0) {
+            this.intrinsicWidth = this.getUIContext().px2vp(bitmapWidth)
+            this.intrinsicHeight = this.getUIContext().px2vp(bitmapHeight)
+            this.clampZoomOffset()
+          }
           this.hasLoadError = false
           this.notifyImageLoadState(true)
         })
@@ -1600,6 +1637,8 @@ export struct ReaderPage {
   @Local readerSliderPreview: number = -1
   @Local autoReadActive: boolean = false
   @Local showThumbnailStrip: boolean = false
+  /** Shows the tap-zone layout overlay after a settings change (NextE parity). */
+  @Local tapZonePreviewVisible: boolean = false
   @Local zoomedPageIndex: number = -1
   @Local doubleTapSequence: number = 0
   @Local doubleTapTargetIndex: number = -1
@@ -1628,6 +1667,9 @@ export struct ReaderPage {
   @Local readerTranslationErrorCode: string = ''
   /** Explicit, route-scoped opt-in; it never becomes a persistent Reader setting. */
   @Local readerTranslationAutoEnabled: boolean = false
+  private readerTapStartX: number = 0
+  private readerTapStartY: number = 0
+  private readerTapSuppressUntilMs: number = 0
   @Local language: LanguageState = connectLanguageState()
   @Local llmSources: LlmSourceProfilesState = connectLlmSourceProfiles()
   @Local mangaRenderingService: MangaRenderingServiceState = connectMangaRenderingService()
@@ -1996,6 +2038,25 @@ export struct ReaderPage {
   }
 
   private onReaderSurfaceTouch(event: TouchEvent): void {
+    const touch: TouchObject | null = event.changedTouches.length > 0
+      ? event.changedTouches[0]
+      : null
+    if (touch !== null) {
+      if (event.touches.length > 1 || event.changedTouches.length > 1) {
+        this.suppressReaderTapGesture()
+      } else if (event.type === TouchType.Down) {
+        this.readerTapStartX = touch.x
+        this.readerTapStartY = touch.y
+      } else if (event.type === TouchType.Move) {
+        const dx: number = touch.x - this.readerTapStartX
+        const dy: number = touch.y - this.readerTapStartY
+        if ((dx * dx + dy * dy) > (READER_VERTICAL_TAP_MAX_DISTANCE * READER_VERTICAL_TAP_MAX_DISTANCE)) {
+          this.suppressReaderTapGesture()
+        }
+      } else if (event.type === TouchType.Cancel) {
+        this.suppressReaderTapGesture()
+      }
+    }
     if (event.type === TouchType.Down || event.type === TouchType.Move) {
       this.pauseReaderEnhancementForForegroundInteraction()
       return
@@ -2003,6 +2064,14 @@ export struct ReaderPage {
     if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
       this.scheduleReaderEnhancementInteractionResume(READER_ENHANCEMENT_INTERACTION_SETTLE_MS)
     }
+  }
+
+  private suppressReaderTapGesture(): void {
+    this.readerTapSuppressUntilMs = Date.now() + READER_TOUCH_TAP_SUPPRESS_MS
+  }
+
+  private consumeReaderTapSuppressed(): boolean {
+    return Date.now() <= this.readerTapSuppressUntilMs
   }
 
   private async setWindowKeepScreenOn(enabled: boolean, generation: number): Promise<void> {
@@ -2244,6 +2313,13 @@ export struct ReaderPage {
    * or closes chrome.
    */
   private onReaderSingleTap(event?: GestureEvent): void {
+    if (this.consumeReaderTapSuppressed()) {
+      return
+    }
+    if (this.tapZonePreviewVisible) {
+      this.tapZonePreviewVisible = false
+      return
+    }
     const location = event ? event.tapLocation : undefined
     const tapX: number = location ? (location.x as number) : this.readerTapViewportWidth / 2
     const tapY: number = location ? (location.y as number) : this.readerTapViewportHeight / 2
@@ -2260,6 +2336,13 @@ export struct ReaderPage {
       return
     }
     this.performReaderTapZoneAction(action)
+  }
+
+  @Monitor('readerPresentation.tapZoneLayout', 'readerPresentation.tapZoneInvert')
+  onTapZoneSettingsChanged(): void {
+    if (this.isReaderReadyForCurrentGallery) {
+      this.tapZonePreviewVisible = true
+    }
   }
 
   private performVerticalReaderTapZoneAction(action: NhReaderTapZoneAction): void {
@@ -2490,7 +2573,7 @@ export struct ReaderPage {
         this.openCurrentGalleryExternally()
       })
       MenuItem({ content: this.readerTranslationActionLabel() })
-        .enabled(this.readerTranslationActionEnabled() && !this.readerTranslationRunning)
+        .enabled(!this.readerTranslationRunning)
         .onClick((): void => {
           this.toggleOrStartCurrentReaderTranslation()
         })
@@ -2500,7 +2583,7 @@ export struct ReaderPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       })
-        .enabled(this.readerTranslationSourceConfigured())
+        .enabled(true)
         .onClick((): void => {
           this.toggleReaderTranslationAuto()
         })
@@ -4076,6 +4159,88 @@ export struct ReaderPage {
       )
   }
 
+  private tapZonePreviewRegions(): NhReaderTapZoneRegion[] {
+    return NhReaderTapZoneResolver.regions(
+      this.readerPresentation.tapZoneLayout,
+      this.readerPresentation.tapZoneInvert,
+    )
+  }
+
+  private tapZonePercent(value: number): string {
+    return `${value * 100}%`
+  }
+
+  private tapZoneActionColor(action: NhReaderTapZoneAction): ResourceColor {
+    if (action === NhReaderTapZoneAction.PREVIOUS) {
+      return $r('app.color.reader_tap_zone_previous')
+    }
+    if (action === NhReaderTapZoneAction.NEXT) {
+      return $r('app.color.reader_tap_zone_next')
+    }
+    if (action === NhReaderTapZoneAction.LEFT) {
+      return $r('app.color.reader_tap_zone_left')
+    }
+    if (action === NhReaderTapZoneAction.RIGHT) {
+      return $r('app.color.reader_tap_zone_right')
+    }
+    return $r('app.color.reader_tap_zone_menu')
+  }
+
+  private tapZoneActionLabel(action: NhReaderTapZoneAction): ResourceStr {
+    if (action === NhReaderTapZoneAction.PREVIOUS) {
+      return AppStrings.get('reader_tap_zone_action_previous')
+    }
+    if (action === NhReaderTapZoneAction.NEXT) {
+      return AppStrings.get('reader_tap_zone_action_next')
+    }
+    if (action === NhReaderTapZoneAction.LEFT) {
+      return AppStrings.get('reader_tap_zone_action_left')
+    }
+    if (action === NhReaderTapZoneAction.RIGHT) {
+      return AppStrings.get('reader_tap_zone_action_right')
+    }
+    return AppStrings.get('reader_tap_zone_action_menu')
+  }
+
+  @Builder
+  private ReaderTapZonePreview() {
+    Stack() {
+      ForEach(
+        this.tapZonePreviewRegions(),
+        (region: NhReaderTapZoneRegion): void => {
+          Stack({ alignContent: Alignment.Center }) {
+            Text(this.tapZoneActionLabel(region.action))
+              .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+              .fontWeight(FontWeight.Medium)
+              .fontColor(Color.White)
+              .padding({
+                left: ThemeTokens.SPACE_MD,
+                right: ThemeTokens.SPACE_MD,
+                top: ThemeTokens.SPACE_XS,
+                bottom: ThemeTokens.SPACE_XS,
+              })
+              .backgroundColor(ThemeTokens.OVERLAY_SCRIM)
+              .borderRadius(ThemeTokens.RADIUS_ROUND)
+          }
+          .width(this.tapZonePercent(region.right - region.left))
+          .height(this.tapZonePercent(region.bottom - region.top))
+          .position({
+            x: this.tapZonePercent(region.left),
+            y: this.tapZonePercent(region.top),
+          })
+          .backgroundColor(this.tapZoneActionColor(region.action))
+        },
+        (region: NhReaderTapZoneRegion): string => region.key,
+      )
+    }
+    .width('100%')
+    .height('100%')
+    .hitTestBehavior(HitTestMode.Block)
+    .onClick((): void => {
+      this.tapZonePreviewVisible = false
+    })
+  }
+
   /** Uses NextE's exclusive single/double-tap arbitration on one Reader surface. */
   private toggleReaderChrome(): void {
     const nextVisible: boolean = !this.readerChromeVisible
@@ -4097,6 +4262,7 @@ export struct ReaderPage {
   }
 
   private onReaderPagedIndexChanged(displayIndex: number): void {
+    this.resumeIndex = this.readerNavigationIndex(this.sourceIndexForPagedDisplayIndex(displayIndex))
     this.onReaderSourceIndexChanged(this.sourceIndexForPagedDisplayIndex(displayIndex))
   }
 
@@ -4169,6 +4335,9 @@ export struct ReaderPage {
       } else {
         this.ReaderContent()
         this.ReaderTapOverlay()
+        if (this.isReaderReadyForCurrentGallery && this.tapZonePreviewVisible) {
+          this.ReaderTapZonePreview()
+        }
         this.ReaderInlineError()
         this.ReaderTranslationStatusOverlay()
       }

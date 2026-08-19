@@ -955,6 +955,11 @@
     { "name": "comic_torii_live_evaluation_original", "value": "Original" },
     { "name": "comic_torii_live_evaluation_translated", "value": "Translated" },
     { "name": "comic_torii_save_failed", "value": "Could not save Torii settings: {0}" },
-    { "name": "account_switch_failed", "value": "Unable to switch to this account. Try again." }
+    { "name": "account_switch_failed", "value": "Unable to switch to this account. Try again." },
+    { "name": "reader_tap_zone_action_previous", "value": "Previous page" },
+    { "name": "reader_tap_zone_action_next", "value": "Next page" },
+    { "name": "reader_tap_zone_action_menu", "value": "Menu" },
+    { "name": "reader_tap_zone_action_left", "value": "Move left" },
+    { "name": "reader_tap_zone_action_right", "value": "Move right" }
   ]
 }

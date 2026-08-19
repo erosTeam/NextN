@@ -3,6 +3,8 @@ import {
   ContentFilterState,
   AppStrings,
   COMMENT_TRANSLATION_DISPLAY_BILINGUAL,
+  COMMENT_TRANSLATION_PRIORITY_AUTO,
+  COMMENT_TRANSLATION_PRIORITY_INTERACTIVE,
   CommentTranslationService,
   CommentTranslationSettingsState,
   InlineRetryNotice,
@@ -273,7 +275,10 @@ export struct GalleryCommentsPage {
       if (source.trim().length === 0 || !CommentTranslationService.needsTranslation(source)) {
         continue
       }
-      await this.toggleOrTranslate(comment)
+      // Fire every visible comment into the service scheduler (NextE parity):
+      // the queue bounds remote concurrency and evicts stale AUTO work, so the
+      // page never serializes one translation behind another's response.
+      this.toggleOrTranslate(comment, COMMENT_TRANSLATION_PRIORITY_AUTO)
     }
   }
 
@@ -283,7 +288,10 @@ export struct GalleryCommentsPage {
       : AppStrings.get('comments_translation_action')
   }
 
-  private async toggleOrTranslate(comment: NhComment): Promise<void> {
+  private async toggleOrTranslate(
+    comment: NhComment,
+    priority: number = COMMENT_TRANSLATION_PRIORITY_INTERACTIVE,
+  ): Promise<void> {
     if (!this.canTranslate(comment)) {
       return
     }
@@ -298,13 +306,23 @@ export struct GalleryCommentsPage {
     const galleryId: number = this.galleryId
     this.applyCommentTranslationState(comment.commentId, undefined, undefined, true)
     try {
-      const translated: string = await CommentTranslationService.translate(this.context(), this.replyBody(comment))
+      const translated: string = await CommentTranslationService.translate(
+        this.context(),
+        this.replyBody(comment),
+        priority,
+      )
       if (this.galleryId === galleryId && this.loadedGalleryId === galleryId) {
         this.applyCommentTranslationState(comment.commentId, translated, translated.length > 0, false)
       } else {
         this.applyCommentTranslationState(comment.commentId, undefined, undefined, false)
       }
     } catch (_error) {
+      const error: Error = _error as Error
+      if (priority === COMMENT_TRANSLATION_PRIORITY_AUTO && CommentTranslationService.isQueueCapacityError(error)) {
+        // Queue-evicted background work stays untranslated without a toast (NextE parity).
+        this.applyCommentTranslationState(comment.commentId, undefined, undefined, false)
+        return
+      }
       if (this.galleryId === galleryId) {
         this.showCommentToast(AppStrings.get('comments_translation_failed'))
       }

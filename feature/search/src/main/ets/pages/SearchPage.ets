@@ -1626,6 +1626,9 @@ export struct SearchPage {
           .padding({ bottom: ThemeTokens.SPACE_SM })
         Flex({ wrap: FlexWrap.Wrap }) {
           ForEach(this.quickSearches, (item: NhQuickSearchItem): void => {
+            // Same capsule shell as RecentSearchesPanel (padding, radius,
+            // background) with an inline trailing remove control on the
+            // query row; the optional translation line follows it.
             Column({ space: ThemeTokens.SPACE_XS }) {
               Row({ space: ThemeTokens.SPACE_XS }) {
                 Text(item.query)
@@ -1634,17 +1637,14 @@ export struct SearchPage {
                   .lineHeight(ThemeTokens.TAG_LINE_HEIGHT)
                   .maxLines(1)
                   .textOverflow({ overflow: TextOverflow.Ellipsis })
-                  .accessibilityText(AppStrings.format('search_quick_item_a11y', [item.query]))
-                  .onClick((): void => {
-                    this.openQuickSearch(item.query)
-                  })
+                  .constraintSize({ maxWidth: '100%' })
                 Button({ type: ButtonType.Circle, stateEffect: true }) {
                   SymbolGlyph($r('sys.symbol.xmark'))
                     .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
                     .fontColor([ThemeTokens.TEXT_SECONDARY])
                 }
-                .width(28)
-                .height(28)
+                .width(20)
+                .height(20)
                 .backgroundColor(Color.Transparent)
                 .padding(0)
                 .accessibilityText(AppStrings.format('search_remove_quick_item_a11y', [item.query]))
@@ -1652,7 +1652,7 @@ export struct SearchPage {
                   this.removeQuickSearch(item)
                 })
               }
-                .height(28)
+              .alignItems(VerticalAlign.Center)
               if (
                 this.searchTranslation.translateEnabled &&
                 this.quickSearchTranslation(item.query).length > 0
@@ -1661,19 +1661,24 @@ export struct SearchPage {
                   .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
                   .fontColor(ThemeTokens.TEXT_SECONDARY)
                   .lineHeight(ThemeTokens.TAG_LINE_HEIGHT)
-                  .maxLines(1)
-                  .textOverflow({ overflow: TextOverflow.Ellipsis })
                   .constraintSize({ maxWidth: '100%' })
               }
             }
               .alignItems(HorizontalAlign.Start)
+              .constraintSize({ maxWidth: '90%' })
               .backgroundColor(ThemeTokens.CARD_BACKGROUND)
               .borderRadius(ThemeTokens.RADIUS_ROUND)
               .padding({
                 left: ThemeTokens.SPACE_MD,
-                right: ThemeTokens.SPACE_XS,
+                right: ThemeTokens.SPACE_SM,
+                top: ThemeTokens.SPACE_XS,
+                bottom: ThemeTokens.SPACE_XS,
               })
               .margin({ right: ThemeTokens.SPACE_SM, bottom: ThemeTokens.SPACE_SM })
+              .accessibilityText(AppStrings.format('search_quick_item_a11y', [item.query]))
+              .onClick((): void => {
+                this.openQuickSearch(item.query)
+              })
               .gesture(
                 LongPressGesture({ repeat: false, duration: 500 })
                   .onAction((): void => {
@@ -1874,9 +1879,16 @@ export struct SearchPage {
 
   private searchTitleBar(): Record<string, Object> {
     const title: Record<string, Object> = { 'mainTitle': AppStrings.get('title_search') }
+    // sys.symbol has no funnel_fill variant (compile-verified), so an active
+    // filter is shown by tinting the outline funnel with the brand color.
+    const hasActiveFilters: boolean = this.activeLanguageFilter !== NhSearchLanguage.ALL ||
+      this.activeSearchSort !== NhSearchSort.RECENT
+    const filterIcon: SymbolGlyphModifier | Resource = hasActiveFilters
+      ? new SymbolGlyphModifier($r('sys.symbol.funnel')).fontColor([ThemeTokens.BRAND])
+      : $r('sys.symbol.funnel')
     const filterAction: Record<string, Object> = {
       'label': AppStrings.get('title_search_options'),
-      'icon': $r('sys.symbol.funnel'),
+      'icon': filterIcon,
       'isEnabled': true,
       'action': (): void => {
         this.chrome.filterVersion += 1

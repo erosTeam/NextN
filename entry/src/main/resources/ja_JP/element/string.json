@@ -954,6 +954,11 @@
     { "name": "comic_torii_live_evaluation_original", "value": "原画像" },
     { "name": "comic_torii_live_evaluation_translated", "value": "翻訳画像" },
     { "name": "comic_torii_save_failed", "value": "Torii 設定を保存できませんでした: {0}" },
-    { "name": "account_switch_failed", "value": "このアカウントに切り替えられません。もう一度お試しください。" }
+    { "name": "account_switch_failed", "value": "このアカウントに切り替えられません。もう一度お試しください。" },
+    { "name": "reader_tap_zone_action_previous", "value": "前のページ" },
+    { "name": "reader_tap_zone_action_next", "value": "次のページ" },
+    { "name": "reader_tap_zone_action_menu", "value": "メニュー" },
+    { "name": "reader_tap_zone_action_left", "value": "左へ" },
+    { "name": "reader_tap_zone_action_right", "value": "右へ" }
   ]
 }

@@ -245,7 +245,11 @@ export {
   OpenAiChatCompletionsClient,
   OpenAiChatCompletionsConfig,
 } from './services/OpenAiChatCompletionsClient'
-export { CommentTranslationService } from './services/CommentTranslationService'
+export {
+  CommentTranslationService,
+  COMMENT_TRANSLATION_PRIORITY_AUTO,
+  COMMENT_TRANSLATION_PRIORITY_INTERACTIVE,
+} from './services/CommentTranslationService'
 export { CommentTranslationSettings } from './settings/CommentTranslationSettings'
 export { SearchTranslationSettings } from './settings/SearchTranslationSettings'
 export { TagTranslationSettings } from './settings/TagTranslationSettings'

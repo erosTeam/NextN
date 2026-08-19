@@ -955,6 +955,11 @@
     { "name": "comic_torii_live_evaluation_original", "value": "原图" },
     { "name": "comic_torii_live_evaluation_translated", "value": "译图" },
     { "name": "comic_torii_save_failed", "value": "保存 Torii 设置失败：{0}" },
-    { "name": "account_switch_failed", "value": "无法切换到该账户，请重试。" }
+    { "name": "account_switch_failed", "value": "无法切换到该账户，请重试。" },
+    { "name": "reader_tap_zone_action_previous", "value": "上一页" },
+    { "name": "reader_tap_zone_action_next", "value": "下一页" },
+    { "name": "reader_tap_zone_action_menu", "value": "菜单" },
+    { "name": "reader_tap_zone_action_left", "value": "往左" },
+    { "name": "reader_tap_zone_action_right", "value": "往右" }
   ]
 }

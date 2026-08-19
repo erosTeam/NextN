@@ -186,6 +186,15 @@ export struct GalleryDetailPage {
   /** Verified cover waiting to replace the seed thumbnail without a visible flash. */
   @Local pendingCoverUrl: string = ''
   @Local tagTranslationLabels: string[] = []
+  /**
+   * Identity-keyed translation labels. The positional label array changes
+   * basis between the seed snapshot (list order) and the verified detail
+   * (API order), while stable group ForEach keys reuse group components that
+   * captured old items — a positional live read then shows one tag's
+   * translation under another. Members resolve their own label by tag
+   * identity instead, which is invariant to any reorder or component reuse.
+   */
+  @Local tagTranslationLabelMap: Map<string, string> = new Map()
   @Local tagTranslationPending: boolean = false
   @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
@@ -458,6 +467,7 @@ export struct GalleryDetailPage {
     this.displayedCoverUrl = ''
     this.pendingCoverUrl = ''
     this.tagTranslationLabels = []
+    this.tagTranslationLabelMap = new Map()
     this.tagTranslationPending = false
     this.tagTranslationEpoch += 1
     this.readProgressRequestGeneration += 1
@@ -1065,6 +1075,7 @@ export struct GalleryDetailPage {
     // The verified detail may reorder or extend the tapped-row snapshot, so
     // reuse its labels by tag identity, never by array index.
     this.tagTranslationLabels = this.pendingLabelsForDetail(detail)
+    this.rebuildTagTranslationLabelMap(detail.tags, this.tagTranslationLabels)
     this.requestTagTranslations(generation, detail.id, detail.tags)
     return true
   }
@@ -1150,6 +1161,7 @@ export struct GalleryDetailPage {
       labels.push(tags[index].displayName.trim())
     }
     this.tagTranslationLabels = labels
+    this.rebuildTagTranslationLabelMap(tags, labels)
     this.tagTranslationPending = false
     this.tagTranslationEpoch += 1
   }
@@ -1545,6 +1557,7 @@ export struct GalleryDetailPage {
         labels.push(label)
       }
       this.tagTranslationLabels = labels
+      this.rebuildTagTranslationLabelMap(tags, labels)
       // The first cold-start render of a gallery already ran with epoch N and
       // empty labels, so group/member ForEach keys are unchanged when the
       // async lookup completes. Advance the epoch with the resolved labels so
@@ -1677,17 +1690,26 @@ export struct GalleryDetailPage {
   }
 
   private tagMemberLabel(item: GalleryTagVisualItem): string {
-    // Read the live label array instead of the ForEach-captured item: the
-    // outer group key is deliberately stable (namespace only), so an async
-    // dictionary result never re-invokes the group row builder and the
-    // captured translatedName stays empty forever on history-origin routes
-    // (no seed labels). A reactive read here updates the Text in place.
-    const liveLabel: string = item.originalIndex < this.tagTranslationLabels.length
-      ? this.tagTranslationLabels[item.originalIndex]
-      : item.translatedName
+    // Resolve by tag identity, never by array position: the label array
+    // changes basis between seed (list order) and verified detail (API
+    // order), and stable group keys intentionally reuse group components
+    // whose captured items still carry the previous basis' originalIndex.
+    // Identity lookup returns each chip its own translation under every
+    // reorder, re-seed, and async dictionary arrival.
+    const liveLabel: string = this.tagTranslationLabelMap.get(this.tagIdentityKey(item.tag)) ??
+      item.translatedName
     return this.browsePresentation.showTranslatedTagLabels && liveLabel.length > 0
       ? liveLabel
       : item.tag.name
+  }
+
+  private rebuildTagTranslationLabelMap(tags: NhTag[], labels: string[]): void {
+    const map: Map<string, string> = new Map()
+    const count: number = Math.min(tags.length, labels.length)
+    for (let index: number = 0; index < count; index++) {
+      map.set(this.tagIdentityKey(tags[index]), labels[index])
+    }
+    this.tagTranslationLabelMap = map
   }
 
   /** Mirrors ErosN's localized namespace header without changing raw tag members. */
