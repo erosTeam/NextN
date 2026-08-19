@@ -4,6 +4,7 @@
     { "name": "surface", "value": "#121212" },
     { "name": "surface_container", "value": "#191919" },
     { "name": "navigation_item_selected", "value": "#2E2E30" },
+    { "name": "cover_placeholder", "value": "#2E2E30" },
     { "name": "reader_background", "value": "#000000" },
     { "name": "tagns_artist", "value": "#5E544E" },
     { "name": "tagns_parody", "value": "#487068" },

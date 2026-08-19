@@ -23,7 +23,8 @@ export class ThemeTokens {
   static readonly SURFACE_CONTAINER: ResourceColor = $r('app.color.surface_container')
   static readonly SURFACE_SUB: ResourceColor = $r('sys.color.ohos_id_color_sub_background')
   static readonly CARD_BACKGROUND: ResourceColor = $r('app.color.surface_container')
-  static readonly COVER_PLACEHOLDER: ResourceColor = $r('sys.color.ohos_id_color_button_normal')
+  /** NextE cover_placeholder: a dedicated grey distinct from the page surface. */
+  static readonly COVER_PLACEHOLDER: ResourceColor = $r('app.color.cover_placeholder')
   static readonly READER_BACKGROUND: ResourceColor = $r('app.color.reader_background')
   static readonly TEXT_PRIMARY: ResourceColor = $r('sys.color.font_primary')
   static readonly TEXT_SECONDARY: ResourceColor = $r('sys.color.font_secondary')

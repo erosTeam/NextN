@@ -17,7 +17,11 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Whole parent-tree boundary:** only the author row inside
   `GalleryCommentCard` (full comments route); the comment body, translation
   animation machinery, reply quote, footer, list scaffold, and the compact
-  detail-page preview carousel are unchanged.
+  detail-page preview carousel header row was initially unchanged, then the
+  user reported the preview card missing the avatar; a follow-up edit added
+  the same 32vp avatar to `GalleryCommentPreviewCarousel.CommentCard`'s
+  header row (same builder semantics, name/time leaves unchanged) after the
+  v1.0.2 release commit, requiring a tag overwrite.
 - **Exact before/after:** before — `NhComment` had no avatar field,
   `parseComment` ignored `poster.avatar_url`, and the card's header row
   began with the author name. after — `NhComment.posterAvatarUrl` is parsed
@@ -6504,3 +6508,37 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Minimality rationale:** ① 只固定芯片高度，不动换行/圆角/文案；② 对齐 ErosN 本地过滤语义，复用既有列表过滤链路，不新增设置页，不改变服务端标记读取。
 - **Visual verification plan:** 签名构建 + install -r + 真机 56T0225315001128：纯男性⚣/接吻💏/眼镜👓 等符号标签芯片与普通标签同高（实测均为 66px，之前 ⚣ 为 69px）；列表正常渲染、无崩溃。
 - **Unresolved risk:** 云端黑名单端到端过滤验证依赖有效账号会话；当前设备会话缺失（401），已记录至账号会话 P0 链路。服务端 blacklisted 标记在已登录 Browse 上此前已验收（2026-08-18），搜索/热门端点是否打标记待会话恢复后复核。
+
+## Detail comment preview + cover placeholder color — 2026-08-19
+
+- **Why newly actionable:** the user reported the Detail page's exposed
+  comment preview cards missing avatars after the full-route avatar work,
+  and asked whether related-gallery covers fade in from the page background
+  or from transparency. Source evidence: NextE uses a dedicated
+  cover_placeholder color resource (#E6E8EB light / #2E2E30 dark) while
+  NextN used sys.color.ohos_id_color_button_normal, which is visually
+  near-identical to the Detail page surface in light mode.
+- **Whole parent-tree boundary:** the header Row inside
+  GalleryCommentPreviewCarousel.CommentCard, and the single
+  ThemeTokens.COVER_PLACEHOLDER token consumed by every gallery card cover
+  slot (list, grid, waterfall, compact, medium, cover wall, related).
+- **Exact before/after:** before, the preview header row began with the
+  author name and COVER_PLACEHOLDER mapped to the system button-normal
+  color; after, the preview header gains the same 32vp round avatar with
+  initial fallback as GalleryCommentCard, and a new app.color.cover_placeholder
+  (#E6E8EB / #2E2E30) resource replaces the system color in the token.
+- **Minimality rationale:** completes the same identity-mark feature on the
+  sibling surface; the placeholder change is a one-token resource swap
+  matching NextE.
+- **Verification observed (197, 2026-08-19):** signed debug build installed
+  with install -r; the Detail page of the 50-comment gallery shows two
+  preview cards each with an avatar Image node (104px = 32vp) at x=78,
+  author text at x=208 (avatar edge + 8vp gap), vertical centers aligned;
+  pixel analysis shows 648/603 distinct colors (stdev 94.9/72.4) — real
+  bitmaps. Page background samples at (253,254,254) vs the new placeholder
+  resource value #E6E8EB establish a clear luminance gap; covers were
+  already cached in this capture, so an unloaded placeholder frame itself
+  was not photographed.
+- **Unresolved risk:** the placeholder branch (no avatar_url) and an
+  unloaded-cover frame remain observed only through resource/build
+  evidence, not a dedicated unloaded screenshot.

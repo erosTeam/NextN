@@ -18,6 +18,8 @@ const RELATED_CAROUSEL_HEIGHT: number = RELATED_COVER_HEIGHT + RELATED_TITLE_HEI
 const RELATED_FALLBACK_ASPECT_RATIO: number = 3 / 4
 const HORIZONTAL_RAIL_EDGE_INSET: number = ThemeTokens.SPACE_MD
 const COMMENT_CARD_WIDTH: number = 280
+// Same identity mark as GalleryCommentCard (Next2V reply avatar diameter).
+const COMMENT_AVATAR_SIZE: number = 32
 const COMMENT_PREVIEW_MAX_LINES: number = 2
 const COMMENT_PREVIEW_HEADER_LINE_HEIGHT: number = 18
 const COMMENT_PREVIEW_LINE_HEIGHT: number = 18
@@ -162,10 +164,9 @@ export struct GalleryRelatedCarousel {
 }
 
 /**
- * The public NH DTO contains only author, body, and post-date leaves, so this
- * preview intentionally keeps a compact text header instead of inventing an
- * avatar request; the existing full comments route remains the sole action
- * target.
+ * A compact peek of the discussion on the Detail page. It mirrors the full
+ * comments route's avatar identity mark while the full route remains the sole
+ * action target.
  */
 @ComponentV2
 export struct GalleryCommentPreviewCarousel {
@@ -180,6 +181,14 @@ export struct GalleryCommentPreviewCarousel {
     return comment.posterName.length > 0
       ? comment.posterName
       : AppStrings.get('comments_author_anonymous')
+  }
+
+  private commentAvatarInitial(comment: NhComment): string {
+    const name: string = comment.posterName.trim()
+    if (name.length === 0) {
+      return '•'
+    }
+    return name.substring(0, 1).toUpperCase()
   }
 
   private commentPostedLabel(comment: NhComment): string {
@@ -257,6 +266,27 @@ export struct GalleryCommentPreviewCarousel {
     // the remaining card height and visually sink below a large inner void.
     Column({ space: ThemeTokens.SPACE_XS }) {
       Row({ space: ThemeTokens.SPACE_SM }) {
+        Stack({ alignContent: Alignment.Center }) {
+          if (comment.posterAvatarUrl.length > 0) {
+            EhImageKnifeImage({
+              src: comment.posterAvatarUrl,
+              objectFit: ImageFit.Cover,
+              radius: COMMENT_AVATAR_SIZE / 2,
+              widthValue: COMMENT_AVATAR_SIZE,
+              heightValue: COMMENT_AVATAR_SIZE,
+              priority: EH_IMAGE_PRIORITY_LOW,
+            })
+          } else {
+            Text(this.commentAvatarInitial(comment))
+              .fontSize(Math.max(11, COMMENT_AVATAR_SIZE / 3))
+              .fontWeight(FontWeight.Medium)
+              .fontColor(ThemeTokens.TEXT_SECONDARY)
+          }
+        }
+        .width(COMMENT_AVATAR_SIZE)
+        .height(COMMENT_AVATAR_SIZE)
+        .borderRadius(COMMENT_AVATAR_SIZE / 2)
+        .backgroundColor(ThemeTokens.SURFACE_SUB)
         Text(this.commentAuthor(comment))
           .layoutWeight(1)
           .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
