@@ -4,6 +4,7 @@ import { HdsTabsController } from '@kit.UIDesignKit'
 import {
   ContentFilterService,
   ContentFilterState,
+  DiagnosticLogger,
   BrowsePresentationState,
   GalleryTitleState,
   GalleryTitleTranslationService,
@@ -795,6 +796,7 @@ export struct GalleryDetailPage {
       await DownloadQueueService.enqueue(this.context(), this.detail)
       this.showDownloadToast(AppStrings.get('gallery_toast_added_downloads'))
     } catch (_error) {
+      DiagnosticLogger.warn('download', 'gallery_enqueue_failed', '')
       this.showDownloadToast(AppStrings.get('gallery_error_add_download'))
     }
   }
@@ -833,6 +835,7 @@ export struct GalleryDetailPage {
         this.showTorrentToast(AppStrings.get('gallery_error_export_torrent_retry'))
       }
     } catch (_error) {
+      DiagnosticLogger.warn('download', 'gallery_torrent_export_failed', '')
       this.showTorrentToast(AppStrings.get('gallery_error_export_torrent_session'))
     } finally {
       this.isTorrentExportInFlight = false

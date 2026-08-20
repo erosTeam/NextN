@@ -64,6 +64,9 @@ raw runtime error / first frame）逐条验证两点：注释宣称的防御是�
    静默吞掉资料恢复/收藏缓存水合失败，本批分别补入固定的
    `profile_switch_restore_failed`、`cache_hydrate_failed` 事件，不记录账号、Cookie、URL 或
    原始异常文本。
+4. 详情页下载入队和种子文件导出失败原先只显示错误提示；本批补入固定的
+   `gallery_enqueue_failed`、`gallery_torrent_export_failed` 事件，仍不记录画廊 ID、URL 或
+   原始异常文本。
 
 剩余修复批次仍保持 OPEN：
 
