@@ -881,7 +881,7 @@
     { "name": "sync_provider_disabled", "value": "未启用" },
     { "name": "sync_webdav_now", "value": "同步到 WebDAV" },
     { "name": "sync_webdav_url", "value": "WebDAV 目录" },
-    { "name": "sync_webdav_url_hint", "value": "https://example.com/remote.php/dav/files/user/NextN" },
+    { "name": "sync_webdav_url_hint", "value": "请输入地址" },
     { "name": "sync_webdav_username", "value": "用户名" },
     { "name": "sync_webdav_username_hint", "value": "可选" },
     { "name": "sync_webdav_password", "value": "密码" },

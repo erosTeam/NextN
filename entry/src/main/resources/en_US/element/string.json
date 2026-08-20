@@ -880,7 +880,7 @@
     { "name": "sync_provider_disabled", "value": "Disabled" },
     { "name": "sync_webdav_now", "value": "Sync with WebDAV" },
     { "name": "sync_webdav_url", "value": "WebDAV directory" },
-    { "name": "sync_webdav_url_hint", "value": "https://example.com/remote.php/dav/files/user/NextN" },
+    { "name": "sync_webdav_url_hint", "value": "Enter URL" },
     { "name": "sync_webdav_username", "value": "Username" },
     { "name": "sync_webdav_username_hint", "value": "Optional" },
     { "name": "sync_webdav_password", "value": "Password" },

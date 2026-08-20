@@ -3170,3 +3170,30 @@ permitted in this repository.
   no further physical action is required for these visible deltas. A live
   WebDAV transport round trip becomes actionable only when an endpoint is
   actually configured.
+
+### Follow-up — Live WebDAV transport and Custom Home Tabs closed
+
+- 2026-08-20 +0800: the user supplied a real WebDAV configuration and
+  authorized USB acceptance. Target `56T0225315001128` was leased, woken and
+  read back as `AWAKE` with `OverrideTimeout=86400000ms`; the current signed
+  HAP was installed with `install -r`. No uninstall, data clear, account
+  action, or remote deletion occurred.
+- The corrected empty address field rendered the short `请输入地址` hint at
+  `[84,821][1236,965]` on the 1320×2120 device. Only this localized placeholder
+  leaf changed; the WebDAV detail parent tree and input geometry stayed intact.
+- A read-only host control returned OPTIONS 200 and manifest GET 200. An
+  initial USB GET 401 was traced to the IME-shifted password field after stale
+  coordinates, then corrected by reacquiring field bounds between inputs. The
+  next USB manual sync returned OPTIONS 200, fetched the existing manifest,
+  completed all seven selected datasets and ended in success.
+- `home-subtabs` completed as seven shards in the device diagnostics. A
+  read-only remote-manifest check independently reported seven shards and seven
+  records for that dataset, closing the prior condition-blocked transport
+  item without a destructive local or remote mutation.
+- Force-stop/cold start preserved the WebDAV configuration and success status;
+  the Sync overview showed `上次成功：2026-08-20 18:03` and seven checked
+  dataset toggles, including `自定义首页标签`. No credential-bearing layout or
+  screenshot remains; device temporary dumps were removed after bounded status
+  extraction.
+- Active objective is delivery closure. No login or WebDAV physical action is
+  pending for this request.

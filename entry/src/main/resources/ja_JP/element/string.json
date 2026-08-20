@@ -880,7 +880,7 @@
     { "name": "sync_provider_disabled", "value": "無効" },
     { "name": "sync_webdav_now", "value": "WebDAVと同期" },
     { "name": "sync_webdav_url", "value": "WebDAVディレクトリ" },
-    { "name": "sync_webdav_url_hint", "value": "https://example.com/remote.php/dav/files/user/NextN" },
+    { "name": "sync_webdav_url_hint", "value": "URLを入力" },
     { "name": "sync_webdav_username", "value": "ユーザー名" },
     { "name": "sync_webdav_username_hint", "value": "任意" },
     { "name": "sync_webdav_password", "value": "パスワード" },

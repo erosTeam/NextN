@@ -7073,3 +7073,70 @@ authorize an edit, replace a device comparison, or define product completion.
   favourite tap favourited only that gallery (server count 4→10, no dialog);
   second tap opened exactly one remove-confirm dialog; confirming remove
   completed with the process alive and a clean crash scan in hilog.
+
+## FIXED — WebDAV address empty-state clarity and live USB sync — 2026-08-20
+
+- **Why newly actionable:** the user reported that the WebDAV address field's
+  long example URL looks like persisted configuration when the draft is
+  actually empty, and supplied a real WebDAV endpoint for USB-device
+  acceptance.
+- **Whole parent-tree boundary:** preserve
+  `WebDavSyncSettingsPage > SecondaryListScaffold > ListItem >
+  NextNGroupedListSection > TextInputRow > TextInput`, including the existing
+  WebDAV enable/sync card, input group ordering, geometry, keyboard ownership,
+  draft persistence, and manual-sync state transitions. Only the localized
+  empty placeholder leaf changes; configured address rendering remains the
+  bound draft value. The transport acceptance exercises the existing
+  `WebDavSyncService` and selected datasets without changing its protocol.
+- **Exact before/after:** before — an empty address field renders the full
+  example URL `https://example.com/remote.php/dav/files/user/NextN`, which is
+  long and can be mistaken for saved data. After — it renders a short action
+  prompt (`请输入地址` / `Enter URL` / `URLを入力`) with no scheme, host, path,
+  or account-like sample. Non-empty values are unchanged.
+- **Minimality rationale:** one existing resource value per locale; no new
+  component, row, card, style, route, state, or transport branch.
+- **Visual verification plan:** on the same USB device and viewport, first
+  capture the empty WebDAV detail page and confirm the short prompt remains
+  visually distinguishable from content; then enter the user-supplied
+  configuration without retaining credential-bearing screenshots/layouts,
+  enable WebDAV, execute manual sync, and verify success plus configuration
+  persistence after force-stop/cold start. Confirm the default-enabled custom
+  home-tab dataset participates in the remote manifest/shard flow.
+- **Unresolved risk:** the supplied remote directory may already contain data;
+  the live test must use the product's non-destructive merge path and must not
+  reset or delete remote content.
+
+### Verification observed 2026-08-20 (USB 56T0225315001128)
+
+- Signed Debug build completed (`BUILD SUCCESSFUL in 8 s 424 ms`) and was
+  installed with `install -r` after the `AWAKE` /
+  `OverrideTimeout=86400000ms` gate; no uninstall, data clear, account action,
+  or remote deletion occurred.
+- At 1320×2120, the unconfigured detail page exposed an empty TextInput with
+  `hint=请输入地址` and bounds `[84,821][1236,965]`. Direct visual inspection
+  confirmed the short grey action prompt is distinct from configured content;
+  the surrounding WebDAV card, sync row, labels, dividers and three input-row
+  geometry remained unchanged. The installed NextE has an already-configured
+  WebDAV state, so its empty hint was not manufactured by clearing user data;
+  the parent tree remains the previously ported NextE tree and this one leaf is
+  the user-directed divergence.
+- A read-only host control returned HTTP 200 for both OPTIONS and manifest GET.
+  The first device attempt reached the server but returned GET 401 because IME
+  resize left the password input outside the stale coordinate. Reacquiring the
+  field bounds after each input proved the password field focused at
+  `[84,799][1236,943]`; the corrected device attempt then completed.
+- The successful USB run recorded: OPTIONS 200 in 921 ms; existing manifest
+  fetched on attempt 1; all seven selected datasets completed; the
+  `home-subtabs` dataset completed with seven shards; manual sync ran from
+  18:01:33 to 18:02:27 and ended in `manual_webdav_sync_success`. The detail
+  status rendered `上次成功：2026-08-20 18:02`.
+- A read-only fetch of the committed remote manifest independently found
+  `home-subtabs` with seven shards and seven records. After force-stop/cold
+  start, the Sync overview still rendered WebDAV success and all seven dataset
+  toggles checked, including `自定义首页标签`; the restored status advanced to
+  `上次成功：2026-08-20 18:03`. No credential-bearing layout or screenshot
+  remains; device-side temporary dumps were deleted after privacy-bounded
+  status extraction.
+- Resource JSON parsing passed for base/en_US/zh_CN/ja_JP; Home SubTab and
+  settings-backup contracts passed. The real remote USB path exercised
+  OPTIONS, GET, manifest/shard merge and PUT.
