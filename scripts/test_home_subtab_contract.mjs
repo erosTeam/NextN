@@ -71,6 +71,25 @@ ok('stale responses are rejected by both generation and content revision',
   /generation === this\.requestGeneration && revision === this\.profileRevision\(\)/.test(retained) &&
     /if \(!this\.isCurrent\(generation, profile\.contentRevision\(\)\)\)/.test(retained))
 
+const conditionParser = read('feature/search/src/main/ets/model/SearchConditionChip.ets')
+const conditionInputs = read('feature/search/src/main/ets/components/SearchAdvancedConditionInputs.ets')
+const subtabEditor = read('feature/search/src/main/ets/pages/HomeSubtabEditPage.ets')
+ok('advanced range tokens hydrate direct fields and can be replaced without duplicate chips',
+  /static range\(query: string, namespace: string\)/.test(conditionParser) &&
+    /static removeNamespace\(query: string, namespace: string\)/.test(conditionParser) &&
+    /SearchConditionParser\.range\(this\.activeQuery, 'favorites'\)/.test(conditionInputs) &&
+    /SearchConditionParser\.isRangeToken\(chip\.rawToken\)/.test(conditionInputs))
+ok('range inputs keep a local draft and commit only on submit or blur',
+  /struct AdvancedRangeInput[\s\S]*@Local text: string = ''/.test(conditionInputs) &&
+    /\.onChange\(\(value: string\): void => \{\s*this\.text = value\s*\}\)/.test(conditionInputs) &&
+    /\.onSubmit\(\(\): void => \{\s*this\.commit\(\)/.test(conditionInputs) &&
+    /\.onBlur\(\(\): void => \{\s*this\.commit\(\)/.test(conditionInputs))
+ok('SubTab editor exposes a keyword leaf and reuses the direct range editor',
+  /SearchConditionParser\.plainText\(profile\.query\)/.test(subtabEditor) &&
+    /SearchConditionParser\.replacePlainText\(this\.query, value\)/.test(subtabEditor) &&
+    /hidePlainConditions: true/.test(subtabEditor) &&
+    /onFavoritesChange:[\s\S]*this\.replaceRange\('favorites'/.test(subtabEditor))
+
 const backupTypes = read('shared/src/main/ets/backup/BackupTypes.ets')
 const backupAdapter = read('shared/src/main/ets/backup/BackupLocalDataAdapter.ets')
 ok('old backup compatibility treats a missing Home SubTab field as supported empty input',

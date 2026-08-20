@@ -59,6 +59,7 @@ import { BottomBuilderShowType, HdsNavDestination, HideMode } from '@kit.UIDesig
 import { SearchChromeState } from '../state/SearchChromeState'
 import { SEARCH_TITLE_FIELD_BOTTOM_HEIGHT, SearchTitleFieldCCBuilder } from '../components/SearchTitleField'
 import { SearchAdvancedConditionInputs } from '../components/SearchAdvancedConditionInputs'
+import { SearchConditionParser } from '../model/SearchConditionChip'
 
 const SEARCH_LANGUAGES: NhSearchLanguage[] = [
   NhSearchLanguage.ALL,
@@ -832,82 +833,64 @@ export struct SearchPage {
     return this.appendAdvancedFragments([fragment], 'tag')
   }
 
-  private appendAdvancedPageConditions(minimumText: string, maximumText: string): boolean {
+  private replaceAdvancedRange(
+    namespace: string,
+    minimumText: string,
+    maximumText: string,
+    unit: NhSearchUploadedUnit = NhSearchUploadedUnit.DAY,
+  ): void {
     const minimum: number = this.parseAdvancedPositiveInteger(minimumText)
     const maximum: number = this.parseAdvancedPositiveInteger(maximumText)
-    if (minimum <= 0 && maximum <= 0) {
-      return false
+    if (NhClipboardLinkService.canonicalGalleryId(this.query) > 0) {
+      this.setAdvancedConditionError(namespace, AppStrings.get('search_advanced_gallery_link'))
+      return
+    }
+    if (this.hasUnclosedQueryQuote(this.query)) {
+      this.setAdvancedConditionError(namespace, AppStrings.get('search_advanced_unclosed_quote'))
+      return
     }
     if (minimum > 0 && maximum > 0 && minimum > maximum) {
-      this.setAdvancedConditionError('pages', AppStrings.get('search_advanced_range_order'))
-      return false
+      this.setAdvancedConditionError(namespace, AppStrings.get('search_advanced_range_order'))
+      return
     }
     const fragments: string[] = []
     if (minimum > 0 && minimum === maximum) {
-      fragments.push(NhSearchQuery.pages(minimum, NhSearchRangeRelation.EXACT))
+      fragments.push(this.advancedRangeFragment(namespace, minimum, NhSearchRangeRelation.EXACT, unit))
     } else if (minimum > 0) {
-      fragments.push(NhSearchQuery.pages(minimum, NhSearchRangeRelation.MINIMUM))
+      fragments.push(this.advancedRangeFragment(namespace, minimum, NhSearchRangeRelation.MINIMUM, unit))
     }
     if (maximum > 0 && minimum !== maximum) {
-      fragments.push(NhSearchQuery.pages(maximum, NhSearchRangeRelation.MAXIMUM))
+      fragments.push(this.advancedRangeFragment(namespace, maximum, NhSearchRangeRelation.MAXIMUM, unit))
     }
-    return this.appendAdvancedFragments(fragments, 'pages')
+    let next: string = SearchConditionParser.removeNamespace(this.query, namespace)
+    fragments.forEach((fragment: string): void => {
+      next = NhSearchQuery.append(next, fragment)
+    })
+    if (next !== this.query) {
+      this.preserveResultSnapshotForDraftChange()
+      this.query = next
+      this.chrome.keyword = next
+      this.cancelTagSuggestions()
+      if (next.trim().length === 0) {
+        this.clearSubmittedSearchState()
+      }
+    }
+    this.clearAdvancedConditionError(namespace)
   }
 
-  private appendAdvancedFavoriteConditions(minimumText: string, maximumText: string): boolean {
-    const minimum: number = this.parseAdvancedPositiveInteger(minimumText)
-    const maximum: number = this.parseAdvancedPositiveInteger(maximumText)
-    if (minimum <= 0 && maximum <= 0) {
-      return false
+  private advancedRangeFragment(
+    namespace: string,
+    value: number,
+    relation: NhSearchRangeRelation,
+    unit: NhSearchUploadedUnit,
+  ): string {
+    if (namespace === 'pages') {
+      return NhSearchQuery.pages(value, relation)
     }
-    if (minimum > 0 && maximum > 0 && minimum > maximum) {
-      this.setAdvancedConditionError('favorites', AppStrings.get('search_advanced_range_order'))
-      return false
+    if (namespace === 'favorites') {
+      return NhSearchQuery.favorites(value, relation)
     }
-    const fragments: string[] = []
-    if (minimum > 0 && minimum === maximum) {
-      fragments.push(NhSearchQuery.favorites(minimum, NhSearchRangeRelation.EXACT))
-    } else if (minimum > 0) {
-      fragments.push(NhSearchQuery.favorites(minimum, NhSearchRangeRelation.MINIMUM))
-    }
-    if (maximum > 0 && minimum !== maximum) {
-      fragments.push(NhSearchQuery.favorites(maximum, NhSearchRangeRelation.MAXIMUM))
-    }
-    return this.appendAdvancedFragments(fragments, 'favorites')
-  }
-
-  private appendAdvancedUploadedConditions(minimumText: string, maximumText: string): boolean {
-    const minimum: number = this.parseAdvancedPositiveInteger(minimumText)
-    const maximum: number = this.parseAdvancedPositiveInteger(maximumText)
-    if (minimum <= 0 && maximum <= 0) {
-      return false
-    }
-    if (minimum > 0 && maximum > 0 && minimum > maximum) {
-      this.setAdvancedConditionError('uploaded', AppStrings.get('search_advanced_range_order'))
-      return false
-    }
-    const fragments: string[] = []
-    if (minimum > 0 && minimum === maximum) {
-      fragments.push(NhSearchQuery.uploaded(
-        minimum,
-        this.advancedUploadedUnit,
-        NhSearchRangeRelation.EXACT,
-      ))
-    } else if (minimum > 0) {
-      fragments.push(NhSearchQuery.uploaded(
-        minimum,
-        this.advancedUploadedUnit,
-        NhSearchRangeRelation.MINIMUM,
-      ))
-    }
-    if (maximum > 0 && minimum !== maximum) {
-      fragments.push(NhSearchQuery.uploaded(
-        maximum,
-        this.advancedUploadedUnit,
-        NhSearchRangeRelation.MAXIMUM,
-      ))
-    }
-    return this.appendAdvancedFragments(fragments, 'uploaded')
+    return NhSearchQuery.uploaded(value, unit, relation)
   }
 
   /**
@@ -1730,14 +1713,18 @@ export struct SearchPage {
       onTagAdd: (text: string): boolean => {
         return this.appendAdvancedTagCondition(text)
       },
-      onPagesAdd: (minimumText: string, maximumText: string): boolean => {
-        return this.appendAdvancedPageConditions(minimumText, maximumText)
+      onPagesChange: (minimumText: string, maximumText: string): void => {
+        this.replaceAdvancedRange('pages', minimumText, maximumText)
       },
-      onFavoritesAdd: (minimumText: string, maximumText: string): boolean => {
-        return this.appendAdvancedFavoriteConditions(minimumText, maximumText)
+      onFavoritesChange: (minimumText: string, maximumText: string): void => {
+        this.replaceAdvancedRange('favorites', minimumText, maximumText)
       },
-      onUploadedAdd: (minimumText: string, maximumText: string): boolean => {
-        return this.appendAdvancedUploadedConditions(minimumText, maximumText)
+      onUploadedChange: (
+        minimumText: string,
+        maximumText: string,
+        unit: NhSearchUploadedUnit,
+      ): void => {
+        this.replaceAdvancedRange('uploaded', minimumText, maximumText, unit)
       },
       onClearError: (scope: string): void => {
         this.clearAdvancedConditionError(scope)

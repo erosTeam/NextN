@@ -11,7 +11,11 @@ import {
   ThemeTokens,
   TagTranslationRepository,
 } from 'shared'
-import { SearchConditionChip, SearchConditionParser } from '../model/SearchConditionChip'
+import {
+  SearchConditionChip,
+  SearchConditionParser,
+  SearchConditionRange,
+} from '../model/SearchConditionChip'
 import { appMenuOptions } from 'shared'
 import { SymbolGlyphModifier } from '@kit.ArkUI'
 
@@ -29,10 +33,28 @@ const ADVANCED_INPUT_HEIGHT: number = 36
  */
 @ComponentV2
 struct AdvancedRangeInput {
+  @Param value: string = ''
   @Param placeholder: string = ''
   @Param accessibilityLabel: string = ''
-  @Event onValueChanged: (value: string) => void = (_value: string) => {}
+  @Event onValueCommitted: (value: string) => void = (_value: string) => {}
   @Local text: string = ''
+
+  aboutToAppear(): void {
+    this.text = this.value
+  }
+
+  @Monitor('value')
+  onExternalValueChanged(): void {
+    if (this.value !== this.text) {
+      this.text = this.value
+    }
+  }
+
+  private commit(): void {
+    if (this.text !== this.value) {
+      this.onValueCommitted(this.text)
+    }
+  }
 
   build() {
     TextInput({
@@ -50,7 +72,12 @@ struct AdvancedRangeInput {
       .accessibilityDescription(this.accessibilityLabel)
       .onChange((value: string): void => {
         this.text = value
-        this.onValueChanged(value)
+      })
+      .onSubmit((): void => {
+        this.commit()
+      })
+      .onBlur((): void => {
+        this.commit()
       })
   }
 }
@@ -63,23 +90,42 @@ struct AdvancedTagInput {
   @Local text: string = ''
 
   build() {
-    TextInput({
-      text: this.text,
-      placeholder: this.placeholder,
-    })
-      .width('100%')
-      .height(44)
-      .fontSize(ThemeTokens.FONT_SIZE_BODY)
-      .backgroundColor(ThemeTokens.SURFACE_SUB)
-      .borderRadius(ThemeTokens.RADIUS_MD)
-      .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD, top: 0, bottom: 0 })
-      .onChange((value: string): void => {
-        this.text = value
-        this.onValueChanged(value)
+    Row({ space: ThemeTokens.SPACE_SM }) {
+      TextInput({
+        text: this.text,
+        placeholder: this.placeholder,
       })
-      .onSubmit((): void => {
+        .layoutWeight(1)
+        .height(44)
+        .fontSize(ThemeTokens.FONT_SIZE_BODY)
+        .backgroundColor(ThemeTokens.SURFACE_SUB)
+        .borderRadius(ThemeTokens.RADIUS_MD)
+        .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD, top: 0, bottom: 0 })
+        .onChange((value: string): void => {
+          this.text = value
+          this.onValueChanged(value)
+        })
+        .onSubmit((): void => {
+          if (this.text.trim().length > 0) {
+            this.onSubmitted()
+          }
+        })
+      Button({ type: ButtonType.Circle, stateEffect: true }) {
+        SymbolGlyph($r('sys.symbol.plus'))
+          .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+          .fontColor([this.text.trim().length > 0 ? ThemeTokens.BRAND : ThemeTokens.TEXT_TERTIARY])
+      }
+      .width(44)
+      .height(44)
+      .enabled(this.text.trim().length > 0)
+      .backgroundColor(ThemeTokens.SURFACE_SUB)
+      .accessibilityText(AppStrings.get('search_advanced_add_tag'))
+      .onClick((): void => {
         this.onSubmitted()
       })
+    }
+    .width('100%')
+    .alignItems(VerticalAlign.Center)
   }
 }
 
@@ -98,13 +144,18 @@ export struct SearchAdvancedConditionInputs {
   @Param uploadedUnit: NhSearchUploadedUnit = NhSearchUploadedUnit.DAY
   @Param errorScope: string = ''
   @Param errorMessage: string = ''
+  @Param hidePlainConditions: boolean = false
   @Event onNamespaceChange?: (namespace: string) => void
   @Event onExcludedChange?: (excluded: boolean) => void
   @Event onUnitChange?: (unit: NhSearchUploadedUnit) => void
   @Event onTagAdd?: (text: string) => boolean
-  @Event onPagesAdd?: (minimumText: string, maximumText: string) => boolean
-  @Event onFavoritesAdd?: (minimumText: string, maximumText: string) => boolean
-  @Event onUploadedAdd?: (minimumText: string, maximumText: string) => boolean
+  @Event onPagesChange?: (minimumText: string, maximumText: string) => void
+  @Event onFavoritesChange?: (minimumText: string, maximumText: string) => void
+  @Event onUploadedChange?: (
+    minimumText: string,
+    maximumText: string,
+    unit: NhSearchUploadedUnit,
+  ) => void
   @Event onClearError?: (scope: string) => void
   @Event onRemoveCondition?: (token: string) => void
   @Local tagText: string = ''
@@ -121,6 +172,15 @@ export struct SearchAdvancedConditionInputs {
   @Local isMatchingTags: boolean = false
   private tagMatchTimer: number = -1
   private tagMatchEpoch: number = 0
+
+  aboutToAppear(): void {
+    this.syncRangeDrafts()
+  }
+
+  @Monitor('activeQuery')
+  onActiveQueryChanged(): void {
+    this.syncRangeDrafts()
+  }
 
   aboutToDisappear(): void {
     this.cancelTagMatches()
@@ -164,19 +224,6 @@ export struct SearchAdvancedConditionInputs {
     }
   }
 
-  private parsePositive(value: string): number {
-    const trimmed: string = value.trim()
-    if (!/^[0-9]+$/.test(trimmed)) {
-      return 0
-    }
-    const parsed: number = Number.parseInt(trimmed, 10)
-    return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : 0
-  }
-
-  private hasRange(minimumText: string, maximumText: string): boolean {
-    return this.parsePositive(minimumText) > 0 || this.parsePositive(maximumText) > 0
-  }
-
   private clearError(scope: string): void {
     if (this.errorScope === scope && this.errorMessage.length > 0 && this.onClearError) {
       this.onClearError(scope)
@@ -186,20 +233,6 @@ export struct SearchAdvancedConditionInputs {
   private addTag(): void {
     if (this.onTagAdd && this.onTagAdd(this.tagText)) {
       this.tagText = ''
-    }
-  }
-
-  private addPages(): void {
-    if (this.onPagesAdd && this.onPagesAdd(this.pageMinimumText, this.pageMaximumText)) {
-      this.pageMinimumText = ''
-      this.pageMaximumText = ''
-    }
-  }
-
-  private addFavorites(): void {
-    if (this.onFavoritesAdd && this.onFavoritesAdd(this.favoriteMinimumText, this.favoriteMaximumText)) {
-      this.favoriteMinimumText = ''
-      this.favoriteMaximumText = ''
     }
   }
 
@@ -222,11 +255,59 @@ export struct SearchAdvancedConditionInputs {
     }
   }
 
-  private addUploaded(): void {
-    if (this.onUploadedAdd && this.onUploadedAdd(this.uploadedMinimumText, this.uploadedMaximumText)) {
-      this.uploadedMinimumText = ''
-      this.uploadedMaximumText = ''
+  private syncRangeDrafts(): void {
+    const pages: SearchConditionRange = SearchConditionParser.range(this.activeQuery, 'pages')
+    const favorites: SearchConditionRange = SearchConditionParser.range(this.activeQuery, 'favorites')
+    const uploaded: SearchConditionRange = SearchConditionParser.range(this.activeQuery, 'uploaded')
+    this.pageMinimumText = pages.minimumText
+    this.pageMaximumText = pages.maximumText
+    this.favoriteMinimumText = favorites.minimumText
+    this.favoriteMaximumText = favorites.maximumText
+    this.uploadedMinimumText = uploaded.minimumText
+    this.uploadedMaximumText = uploaded.maximumText
+    const parsedUnit: NhSearchUploadedUnit | null = this.uploadedUnitFromSuffix(uploaded.unit)
+    if (parsedUnit !== null && parsedUnit !== this.uploadedUnit && this.onUnitChange) {
+      this.onUnitChange(parsedUnit)
     }
+  }
+
+  private uploadedUnitFromSuffix(value: string): NhSearchUploadedUnit | null {
+    if (value === NhSearchUploadedUnit.HOUR) return NhSearchUploadedUnit.HOUR
+    if (value === NhSearchUploadedUnit.DAY) return NhSearchUploadedUnit.DAY
+    if (value === NhSearchUploadedUnit.WEEK) return NhSearchUploadedUnit.WEEK
+    if (value === NhSearchUploadedUnit.MONTH) return NhSearchUploadedUnit.MONTH
+    if (value === NhSearchUploadedUnit.YEAR) return NhSearchUploadedUnit.YEAR
+    return null
+  }
+
+  private notifyPagesChanged(): void {
+    if (this.onPagesChange) {
+      this.onPagesChange(this.pageMinimumText, this.pageMaximumText)
+    }
+  }
+
+  private notifyFavoritesChanged(): void {
+    if (this.onFavoritesChange) {
+      this.onFavoritesChange(this.favoriteMinimumText, this.favoriteMaximumText)
+    }
+  }
+
+  private notifyUploadedChanged(unit: NhSearchUploadedUnit = this.uploadedUnit): void {
+    if (this.onUploadedChange) {
+      this.onUploadedChange(this.uploadedMinimumText, this.uploadedMaximumText, unit)
+    }
+  }
+
+  private visibleConditionChips(): SearchConditionChip[] {
+    return SearchConditionParser.chips(
+      this.activeQuery,
+      (namespace: string): string => this.operatorLabel(namespace),
+    ).filter((chip: SearchConditionChip): boolean => {
+      if (SearchConditionParser.isRangeToken(chip.rawToken)) {
+        return false
+      }
+      return !this.hidePlainConditions || !SearchConditionParser.isPlainToken(chip.rawToken)
+    })
   }
 
   @Builder
@@ -377,18 +458,20 @@ export struct SearchAdvancedConditionInputs {
   @Builder
   private FavoriteRangeSuffix() {
     Row({ space: ThemeTokens.SPACE_SM }) {
-      this.RangeInput(AppStrings.get('search_advanced_favorites_minimum'),
+      this.RangeInput(this.favoriteMinimumText, AppStrings.get('search_advanced_favorites_minimum'),
         (value: string): void => {
           this.favoriteMinimumText = value
           this.clearError('favorites')
+          this.notifyFavoritesChanged()
         })
       Text('-')
         .fontSize(ThemeTokens.FONT_SIZE_BODY)
         .fontColor(ThemeTokens.TEXT_TERTIARY)
-      this.RangeInput(AppStrings.get('search_advanced_favorites_maximum'),
+      this.RangeInput(this.favoriteMaximumText, AppStrings.get('search_advanced_favorites_maximum'),
         (value: string): void => {
           this.favoriteMaximumText = value
           this.clearError('favorites')
+          this.notifyFavoritesChanged()
         })
     }
     .alignItems(VerticalAlign.Center)
@@ -431,29 +514,32 @@ export struct SearchAdvancedConditionInputs {
   }
 
   @Builder
-  private RangeInput(accessibilityLabel: string, onValueChanged: (value: string) => void) {
+  private RangeInput(value: string, accessibilityLabel: string, onValueCommitted: (value: string) => void) {
     AdvancedRangeInput({
+      value: value,
       placeholder: AppStrings.get('filter_any'),
       accessibilityLabel: accessibilityLabel,
-      onValueChanged: onValueChanged,
+      onValueCommitted: onValueCommitted,
     })
   }
 
   @Builder
   private PageRangeSuffix() {
     Row({ space: ThemeTokens.SPACE_SM }) {
-      this.RangeInput(AppStrings.get('search_advanced_pages_minimum'),
+      this.RangeInput(this.pageMinimumText, AppStrings.get('search_advanced_pages_minimum'),
         (value: string): void => {
           this.pageMinimumText = value
           this.clearError('pages')
+          this.notifyPagesChanged()
         })
       Text('-')
         .fontSize(ThemeTokens.FONT_SIZE_BODY)
         .fontColor(ThemeTokens.TEXT_TERTIARY)
-      this.RangeInput(AppStrings.get('search_advanced_pages_maximum'),
+      this.RangeInput(this.pageMaximumText, AppStrings.get('search_advanced_pages_maximum'),
         (value: string): void => {
           this.pageMaximumText = value
           this.clearError('pages')
+          this.notifyPagesChanged()
         })
     }
     .alignItems(VerticalAlign.Center)
@@ -463,18 +549,20 @@ export struct SearchAdvancedConditionInputs {
   @Builder
   private UploadedRangeSuffix() {
     Row({ space: ThemeTokens.SPACE_SM }) {
-      this.RangeInput(AppStrings.get('search_advanced_uploaded_minimum'),
+      this.RangeInput(this.uploadedMinimumText, AppStrings.get('search_advanced_uploaded_minimum'),
         (value: string): void => {
           this.uploadedMinimumText = value
           this.clearError('uploaded')
+          this.notifyUploadedChanged()
         })
       Text('-')
         .fontSize(ThemeTokens.FONT_SIZE_BODY)
         .fontColor(ThemeTokens.TEXT_TERTIARY)
-      this.RangeInput(AppStrings.get('search_advanced_uploaded_maximum'),
+      this.RangeInput(this.uploadedMaximumText, AppStrings.get('search_advanced_uploaded_maximum'),
         (value: string): void => {
           this.uploadedMaximumText = value
           this.clearError('uploaded')
+          this.notifyUploadedChanged()
         })
     }
     .alignItems(VerticalAlign.Center)
@@ -542,6 +630,7 @@ export struct SearchAdvancedConditionInputs {
       if (this.onUnitChange) {
         this.onUnitChange(unit)
       }
+      this.notifyUploadedChanged(unit)
       this.uploadedUnitMenuShown = false
     })
   }
@@ -559,7 +648,7 @@ export struct SearchAdvancedConditionInputs {
 
   build() {
     Column({ space: ThemeTokens.SPACE_MD }) {
-      if (SearchConditionParser.chips(this.activeQuery, (namespace: string): string => this.operatorLabel(namespace)).length > 0) {
+      if (this.visibleConditionChips().length > 0) {
         NextNGroupedListSection() {
           Text(AppStrings.get('search_conditions_active'))
             .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
@@ -567,7 +656,7 @@ export struct SearchAdvancedConditionInputs {
             .width('100%')
             .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD, top: ThemeTokens.SPACE_SM })
           ForEach(
-            SearchConditionParser.chips(this.activeQuery, (namespace: string): string => this.operatorLabel(namespace)),
+            this.visibleConditionChips(),
             (chip: SearchConditionChip): void => {
               NextNListRow({
                 title: chip.label,
@@ -621,19 +710,6 @@ export struct SearchAdvancedConditionInputs {
         this.SearchOptionDivider()
         this.TagNameInputRow()
         this.TagMatchList()
-        this.SearchOptionDivider()
-        NextNListRow({
-          title: AppStrings.get('search_advanced_add_tag'),
-          trailingActionText: AppStrings.get('search_advanced_add'),
-          showChevron: false,
-          accessibilityLabel: AppStrings.get('search_advanced_add_tag'),
-          onAction: (): void => {
-            this.addTag()
-          },
-          onTrailingAction: (): void => {
-            this.addTag()
-          },
-        })
       }
       this.ConditionError('tag')
 
@@ -647,20 +723,6 @@ export struct SearchAdvancedConditionInputs {
           },
           accessibilityLabel: AppStrings.get('search_advanced_pages'),
         })
-        this.SearchOptionDivider()
-        NextNListRow({
-          title: AppStrings.get('search_advanced_add_pages'),
-          trailingActionText: AppStrings.get('search_advanced_add'),
-          showChevron: false,
-          isEnabled: this.hasRange(this.pageMinimumText, this.pageMaximumText),
-          accessibilityLabel: AppStrings.get('search_advanced_add_pages'),
-          onAction: (): void => {
-            this.addPages()
-          },
-          onTrailingAction: (): void => {
-            this.addPages()
-          },
-        })
       }
       this.ConditionError('pages')
 
@@ -673,20 +735,6 @@ export struct SearchAdvancedConditionInputs {
             this.FavoriteRangeSuffix()
           },
           accessibilityLabel: AppStrings.get('search_advanced_favorites'),
-        })
-        this.SearchOptionDivider()
-        NextNListRow({
-          title: AppStrings.get('search_advanced_add_favorites'),
-          trailingActionText: AppStrings.get('search_advanced_add'),
-          showChevron: false,
-          isEnabled: this.hasRange(this.favoriteMinimumText, this.favoriteMaximumText),
-          accessibilityLabel: AppStrings.get('search_advanced_add_favorites'),
-          onAction: (): void => {
-            this.addFavorites()
-          },
-          onTrailingAction: (): void => {
-            this.addFavorites()
-          },
         })
       }
       this.ConditionError('favorites')
@@ -716,20 +764,6 @@ export struct SearchAdvancedConditionInputs {
             this.UploadedRangeSuffix()
           },
           accessibilityLabel: AppStrings.get('search_advanced_uploaded'),
-        })
-        this.SearchOptionDivider()
-        NextNListRow({
-          title: AppStrings.get('search_advanced_add_uploaded'),
-          trailingActionText: AppStrings.get('search_advanced_add'),
-          showChevron: false,
-          isEnabled: this.hasRange(this.uploadedMinimumText, this.uploadedMaximumText),
-          accessibilityLabel: AppStrings.get('search_advanced_add_uploaded'),
-          onAction: (): void => {
-            this.addUploaded()
-          },
-          onTrailingAction: (): void => {
-            this.addUploaded()
-          },
         })
       }
       this.ConditionError('uploaded')

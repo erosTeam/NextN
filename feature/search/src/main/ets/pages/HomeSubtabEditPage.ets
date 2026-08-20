@@ -60,6 +60,7 @@ export struct HomeSubtabEditPage {
   @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
   @Local name: string = ''
   @Local query: string = ''
+  @Local keyword: string = ''
   @Local language: NhSearchLanguage = NhSearchLanguage.ALL
   @Local sort: NhSearchSort = NhSearchSort.RECENT
   @Local presentation: string = HOME_SUBTAB_PRESENTATION_GLOBAL
@@ -105,12 +106,14 @@ export struct HomeSubtabEditPage {
       this.name = profile.name
       this.nameDraft = profile.name
       this.query = profile.query
+      this.keyword = SearchConditionParser.plainText(profile.query)
       this.language = profile.language
       this.sort = profile.sort
       this.presentation = profile.presentation
       return
     }
     this.query = this.edit.seedQuery
+    this.keyword = SearchConditionParser.plainText(this.edit.seedQuery)
     this.language = this.edit.seedLanguage
     this.sort = this.edit.seedSort
   }
@@ -211,20 +214,17 @@ export struct HomeSubtabEditPage {
     return this.appendFragments([fragment], 'tag')
   }
 
-  private appendRange(
+  private replaceRange(
     namespace: string,
     minimumText: string,
     maximumText: string,
     unit: NhSearchUploadedUnit = NhSearchUploadedUnit.DAY,
-  ): boolean {
+  ): void {
     const minimum: number = this.parsePositive(minimumText)
     const maximum: number = this.parsePositive(maximumText)
-    if (minimum <= 0 && maximum <= 0) {
-      return false
-    }
     if (minimum > 0 && maximum > 0 && minimum > maximum) {
       this.setConditionError(namespace, AppStrings.get('search_advanced_range_order'))
-      return false
+      return
     }
     const fragments: string[] = []
     if (minimum > 0) {
@@ -234,7 +234,12 @@ export struct HomeSubtabEditPage {
     if (maximum > 0 && minimum !== maximum) {
       fragments.push(this.rangeFragment(namespace, maximum, NhSearchRangeRelation.MAXIMUM, unit))
     }
-    return this.appendFragments(fragments, namespace)
+    let next: string = SearchConditionParser.removeNamespace(this.query, namespace)
+    fragments.forEach((fragment: string): void => {
+      next = NhSearchQuery.append(next, fragment)
+    })
+    this.query = next
+    this.clearConditionError(namespace)
   }
 
   private rangeFragment(
@@ -375,14 +380,15 @@ export struct HomeSubtabEditPage {
   @Builder
   private QuerySection() {
     NextNGroupedListSection() {
-      TextArea({ text: this.query, placeholder: AppStrings.get('home_subtab_query_placeholder') })
-        .height(88)
-        .fontSize(ThemeTokens.FONT_SIZE_BODY)
-        .backgroundColor(Color.Transparent)
-        .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD, top: ThemeTokens.SPACE_SM })
-        .onChange((value: string): void => {
-          this.query = value
-        })
+      HomeSubtabInlineEditRow({
+        title: AppStrings.get('home_subtab_query'),
+        value: this.keyword,
+        placeholder: AppStrings.get('home_subtab_query_placeholder'),
+        onChange: (value: string): void => {
+          this.keyword = value
+          this.query = SearchConditionParser.replacePlainText(this.query, value)
+        },
+      })
     }
   }
 
@@ -430,6 +436,7 @@ export struct HomeSubtabEditPage {
       uploadedUnit: this.uploadedUnit,
       errorScope: this.conditionErrorScope,
       errorMessage: this.conditionError,
+      hidePlainConditions: true,
       onNamespaceChange: (value: string): void => {
         this.tagNamespace = value
       },
@@ -440,12 +447,15 @@ export struct HomeSubtabEditPage {
         this.uploadedUnit = value
       },
       onTagAdd: (text: string): boolean => this.appendTag(text),
-      onPagesAdd: (minimum: string, maximum: string): boolean =>
-        this.appendRange('pages', minimum, maximum),
-      onFavoritesAdd: (minimum: string, maximum: string): boolean =>
-        this.appendRange('favorites', minimum, maximum),
-      onUploadedAdd: (minimum: string, maximum: string): boolean =>
-        this.appendRange('uploaded', minimum, maximum, this.uploadedUnit),
+      onPagesChange: (minimum: string, maximum: string): void =>
+        this.replaceRange('pages', minimum, maximum),
+      onFavoritesChange: (minimum: string, maximum: string): void =>
+        this.replaceRange('favorites', minimum, maximum),
+      onUploadedChange: (
+        minimum: string,
+        maximum: string,
+        unit: NhSearchUploadedUnit,
+      ): void => this.replaceRange('uploaded', minimum, maximum, unit),
       onClearError: (scope: string): void => this.clearConditionError(scope),
       onRemoveCondition: (token: string): void => this.removeCondition(token),
     })
@@ -468,8 +478,12 @@ export struct HomeSubtabEditPage {
         ListItem() {
           Column() {
             NextNSectionHeader({ title: AppStrings.get('home_subtab_search_section') })
-            this.QuerySection()
-            this.AdvancedConditions()
+            Column({ space: ThemeTokens.SPACE_MD }) {
+              this.QuerySection()
+              this.AdvancedConditions()
+            }
+            .width('100%')
+            .alignItems(HorizontalAlign.Start)
           }
           .alignItems(HorizontalAlign.Start)
         }

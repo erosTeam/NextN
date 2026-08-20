@@ -81,6 +81,56 @@ authorize an edit, replace a device comparison, or define product completion.
   enabled by default; merge/old-payload behavior is covered by repository and
   backup/sync contracts, while live WebDAV transport remains condition-blocked
   on an actually configured endpoint.
+- **User-rejected editor/filter correction (2026-08-20):** the earlier visual
+  acceptance compared row bounds but ignored composition and meaning. In the
+  editor, a large unlabeled-looking `TextArea` exposed the raw NH query beside
+  a second condition editor; the two became competing visual truths. The
+  advanced editor also put a full disabled “add” row below every empty range,
+  while an existing token such as `favorites:>=1000` stayed in a separate
+  current-condition card instead of populating the Favorites minimum field.
+  Adjacent `GroupedListSection` roots were additionally placed in a zero-space
+  parent Column, making cards appear stuck together. The faulty assumption was
+  that matching individual HDS row bounds established the whole editor page.
+- **Corrected boundary before editing:** keep the reference routed scaffold,
+  basic group, section order and HDS row primitives. Replace the raw TextArea
+  with a clearly labelled keyword row. The shared search-condition editor must
+  parse range tokens back into the Pages/Favorites/Uploaded fields and update
+  those tokens directly as fields change; range cards have no separate add
+  row. The tag commit action stays inside its input row. Recognized ranges must
+  not also render as independent current-condition rows. Card separation is
+  owned by an explicit spaced parent. This correction applies both to the Home
+  SubTab editor and to the existing Search options sheet; language/order and
+  all request semantics remain unchanged.
+- **Re-verification required:** current same-state USB captures of Search
+  options plus the custom editor for (a) empty query, (b)
+  `favorites:>=1000`, and (c) one tag condition. Acceptance requires visible
+  card separation, no empty add rows, Favorites minimum=`1000`, no duplicate
+  Favorites condition card, and usable keyboard-open inputs. Prior captures no
+  longer accept this boundary.
+- **Corrected USB verification (56T0225315001128, 1320×2120):** the manager
+  renders four separated profile cards. Opening Highly favorited renders a
+  labelled Keywords row instead of the raw-query TextArea, no standalone range
+  add rows, an inline disabled tag-plus affordance, explicit gaps between the
+  tag/pages/favorites/uploaded cards, and Favorites minimum=`1000`; the
+  recognized `favorites:>=1000` token does not appear in a duplicate current-
+  condition card. The lower editor viewport preserves the Uploaded and
+  Language/Sort groups with the same spacing. The shared Search options sheet
+  renders the same direct-edit structure and its lower Language/Sort groups.
+  Evidence is local-only under
+  `.hvigor/outputs/home-subtab-editor-correction-20260820T0841/`.
+- **IME correction found during whole-page review:** the first direct range
+  edit still propagated the page query on every keystroke, rebuilding the
+  builder-owned input and losing focus before a second digit. Range inputs now
+  keep their draft entirely inside their stable component and commit on submit
+  or blur. On the editor, two separate injected digits changed `1000` to
+  `100024` with `focused=true`, then blur retained `100024`; returning without
+  save kept the durable profile at `favorites:>=1000`. On Search options, two
+  input calls produced `123` with `focused=true`; blur and close projected the
+  result into the main SearchField as `favorites:>=123`.
+- **Validation:** Home SubTab data contract, settings-backup contract, locale
+  JSON parse and `git diff --check` pass; the final signed build completed with
+  `BUILD SUCCESSFUL in 8 s 765 ms`. The prior row-bounds-only visual acceptance
+  remains recorded as rejected and is not used as evidence for this result.
 
 ## Gallery comments: show commenter avatars — 2026-08-19
 

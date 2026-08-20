@@ -3092,7 +3092,7 @@ permitted in this repository.
 - Evidence: `.hvigor/outputs/latent-hazard-audit-20260820-usb/followup-top.json`, `followup-after.json`, `followup-after-hilog.txt` (local-only).
 - Follow-up handling: refresh/reach-end cannot be tested under the current build/diagnostic conditions. It is not counted as a regression or a success; reopening requires a stable runtime marker or an explicitly authorized diagnostic-instrumentation change.
 
-## Current delivery observation — NextE-style custom Home SubTabs accepted
+## Current delivery observation — NextE-style custom Home SubTabs accepted after editor correction
 
 - 2026-08-20 +0800: USB `56T0225315001128` passed the wake gate (AWAKE,
   `OverrideTimeout=86400000ms`). The signed HAP was installed with `install -r`;
@@ -3120,3 +3120,23 @@ permitted in this repository.
   the next unverified physical action would be a WebDAV round trip only after a
   real endpoint is configured. This run did not perform or authorize credential
   entry for that external service.
+- 2026-08-20 correction: the earlier editor/filter visual conclusion was
+  withdrawn after the user identified stuck-together cards, a raw “NH search
+  query” TextArea, empty standalone add rows, and failure to hydrate
+  `favorites:>=1000`. The corrected signed HAP was installed with `install -r`
+  on USB `56T0225315001128` without data clear or account action. The editor now
+  uses a labelled Keywords row, inline tag plus, direct Pages/Favorites/Uploaded
+  range fields, and spaced card roots; Highly favorited hydrates Favorites
+  minimum=`1000` with no duplicate condition row. The shared Search options
+  sheet uses the same structure.
+- The whole-page USB review also found and fixed a remaining IME ownership
+  fault: range query propagation is deferred until submit/blur while the input
+  owns its local draft. Editor continuous input produced `100024` from `1000`
+  and Search-options continuous input produced `123`, both still focused after
+  the second command; blur committed the latter as SearchField
+  `favorites:>=123`. The editor test was dismissed without save and the durable
+  profile remained `favorites:>=1000`. Evidence:
+  `.hvigor/outputs/home-subtab-editor-correction-20260820T0841/` (local-only).
+- Active objective is feature delivery closure. No login action is pending.
+  Live WebDAV transport remains the only condition-blocked item and requires a
+  configured endpoint; it is not represented as passed.
