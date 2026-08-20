@@ -11,24 +11,42 @@
 ## 摸底数据（2026-08-20，rg 全仓 shared/feature/entry）
 
 - TODO/FIXME/HACK：0 处
-- ArkUI 可空 API 裸链访问：0 处（2dcaf41 清零）
-- 空 catch 体：164 处（未分级）
+- ArkUI 可空 API 裸链访问：0 处（2dcaf41 清零；B 的自动检查此前尚未落盘）
+- 空 catch 体：当前约 165 处（未分级；初始摸底为 164，需以 C 车道重新分类）
 - Scaffold/PullRefresh 组件族：8 文件 2181 行
-- 注释自认坑：关键词噪声多，精确关键词复核约 5-10 处（车道 A 负责核准）
+- 注释自认坑：当前源代码精确命中 1 处 `first frame`；历史 scroller 注释已移入公共 helper（A 已核对）
 
-## 车道 A（P0）：注释自认坑核对 AUDITED
+## 车道 A（P0）：注释自认坑核对 VERIFIED（源码边界）
 
 查法：rg 精确关键词（undefined here / returns undefined / not yet attached /
 raw runtime error / first frame）逐条验证两点：注释宣称的防御是否真的存在；
 同模式调用点在其他文件是否共享该防御。
 验收：每条给结论（已防御/防御缺失/防御存在但未传播），缺失项转修复。
 
-## 车道 B（P0）：可空访问防回归机检 IMPLEMENTED
+核对记录（2026-08-20）：
 
-2dcaf41 已清零，缺防回归。新增 scripts/test_scroll_offset_contract.mjs：
+- `GalleryDetailPage.ets` 的 `first frame before its own area measurement runs` 注释对应
+  `LayoutSafeAreaState.rememberedGalleryDetailContentWidth(rootNavigationSplit)`；Stack/Split
+  宽度分别缓存，根模式变化由 `@Monitor` 重取，区域测量后由 `publishGalleryDetailContentWidth`
+  更新。结论：已防御；没有发现同模式的未缓存裸宽度读取。
+- scroller 未挂载时 `currentOffset()` 可能返回 `undefined` 的历史注释已由
+  `ScrollUserInput.currentScrollOffsetY/X` 统一处理，所有 scaffold、SubTabBar、ReleaseNotesPager
+  和详情标题栏均通过 helper 读取。结论：已防御且已传播；未发现 helper 之外的裸属性访问。
+- `returns undefined`、`not yet attached`、`raw runtime error`、`undefined here` 在当前源代码中无额外命中。
+- `getImageInfo()` 与 `getRectangle()` 未发现直接链式属性访问；前者均先接收为 `ImageInfo` 再读取字段，后者当前无调用。
+
+状态边界：A 的源码核对已完成；尚未将这些结论扩展为设备验收或对其他 API 的运行时行为断言。
+
+## 车道 B（P0）：可空访问防回归机检 VERIFIED
+
+2dcaf41 已清零，原计划脚本此前不存在；本批补齐 `scripts/test_scroll_offset_contract.mjs`：
 全仓禁止 .currentOffset(). 直读（白名单仅 utils/ScrollUserInput.ets），
 模式复用 test_settings_backup_contract.mjs。顺手扩查 getImageInfo()/getRectangle()
 等返回可空对象的 ArkUI API 直读。
+
+验证记录（2026-08-20）：`node scripts/test_scroll_offset_contract.mjs` 扫描 345 个 ArkTS
+文件通过；`scripts/build-hvigor-signed.sh` 完成 signed HAP 构建。构建日志仍有既存
+`reader-enhancement` 本地模块信息/SemVer 警告，但没有失败。
 
 ## 车道 C（P1）：164 处空 catch 分级 TODO
 
