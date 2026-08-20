@@ -1094,6 +1094,14 @@ export struct GalleryDetailPage {
     if (!this.isCurrentRequest(generation) || detail.id <= 0 || detail.id !== this.galleryId) {
       return false
     }
+    // A cache snapshot intentionally contains only raw tag names. Prepare the
+    // presentation owner before publishing the reactive Detail DTO; otherwise
+    // a seed-less cache hit can render one raw-English frame before the pending
+    // gate and asynchronous local-dictionary result arrive.
+    this.tagTranslationPending = true
+    const pendingTagLabels: string[] = this.pendingLabelsForDetail(detail)
+    this.tagTranslationLabels = pendingTagLabels
+    this.rebuildTagTranslationLabelMap(detail.tags, pendingTagLabels)
     this.detail = detail
     // The verified response normally carries cover dimensions; a legacy or
     // direct-route detail without them falls back to the tapped row's known
@@ -1113,10 +1121,6 @@ export struct GalleryDetailPage {
     this.publishDownloadChrome()
     this.publishWideThumbnailActionAvailability()
     this.updateNavigationChromeForScroll()
-    // The verified detail may reorder or extend the tapped-row snapshot, so
-    // reuse its labels by tag identity, never by array index.
-    this.tagTranslationLabels = this.pendingLabelsForDetail(detail)
-    this.rebuildTagTranslationLabelMap(detail.tags, this.tagTranslationLabels)
     this.requestTagTranslations(generation, detail.id, detail.tags)
     return true
   }
@@ -1125,7 +1129,9 @@ export struct GalleryDetailPage {
   private pendingLabelsForDetail(detail: NhGalleryDetail): string[] {
     const labels: string[] = []
     for (let index: number = 0; index < detail.tags.length; index++) {
-      labels.push(this.seedLabelForTag(detail.tags[index]))
+      const tag: NhTag = detail.tags[index]
+      const retainedLabel: string = this.tagTranslationLabelMap.get(this.tagIdentityKey(tag)) ?? ''
+      labels.push(retainedLabel.trim().length > 0 ? retainedLabel.trim() : this.seedLabelForTag(tag))
     }
     return labels
   }
@@ -1753,6 +1759,11 @@ export struct GalleryDetailPage {
     return this.browsePresentation.showTranslatedTagLabels && liveLabel.length > 0
       ? liveLabel
       : item.tag.name
+  }
+
+  /** Pending visibility must inspect translation availability, not the display fallback to raw English. */
+  private tagMemberTranslatedLabel(item: GalleryTagVisualItem): string {
+    return this.tagTranslationLabelMap.get(this.tagIdentityKey(item.tag)) ?? item.translatedName
   }
 
   private rebuildTagTranslationLabelMap(tags: NhTag[], labels: string[]): void {
@@ -2497,7 +2508,7 @@ export struct GalleryDetailPage {
       .visibility(
         this.tagTranslationPending &&
           this.browsePresentation.showTranslatedTagLabels &&
-          this.tagMemberLabel(item).length === 0
+          this.tagMemberTranslatedLabel(item).length === 0
           ? Visibility.Hidden
           : Visibility.Visible
       )

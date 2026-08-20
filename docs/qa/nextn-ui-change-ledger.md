@@ -7913,3 +7913,42 @@ authorize an edit, replace a device comparison, or define product completion.
   counter-evidence and reopens only the WebView/session leaf. The current menu,
   title-id and Account grouping are FROZEN until source changes or same-state
   counter-evidence appears.
+
+## OPEN — Cached seed-less Detail must not publish raw tags before translation — 2026-08-21
+
+- **Why newly actionable:** the user reported a stable one-frame transition
+  from raw English tag bodies to translated bodies when a cached Gallery
+  Detail is opened without route tag data, including Download-to-source and
+  History entry paths. A list route carrying translated tag data does not
+  reproduce it.
+- **Source-proven cause:** `NhGalleryDetailCacheService` deliberately clears
+  `NhTag.displayName` because the local tag dictionary is the current
+  presentation owner. `GalleryDetailPage.applyVerifiedDetailSnapshot()` then
+  publishes that raw cached DTO through reactive `detail` before it publishes
+  the empty-label pending state and starts the asynchronous dictionary lookup.
+  The pending visibility guard also checks `tagMemberLabel()`, whose deliberate
+  fallback to `item.tag.name` makes the value non-empty even when no translation
+  exists. The first detail render can therefore select `item.tag.name`, and the
+  guard cannot hide it; a route seed avoids the transition only because its
+  translated labels already exist when `detail` changes.
+- **Whole parent-tree and sibling boundary:** preserve
+  `GalleryDetailPage -> DetailMetadataList -> GalleryTags -> TagGroupRow ->
+  TagMember`, namespace/member ordering, stable ForEach identities, reserved
+  `Visibility.Hidden` geometry, tag-search actions, cache format, dictionary
+  storage, and fresh-network loading behavior. Change only the ordering of the
+  route-local tag presentation state relative to publishing a verified detail
+  snapshot.
+- **Exact before/after:** before, a seed-less cached detail becomes renderable
+  while `tagTranslationPending=false` and its identity label map is empty;
+  raw English is eligible for one frame. After, the pending gate is raised,
+  retained/seed labels and the identity map are prepared, and only then is the
+  verified detail assigned. Pending visibility checks the translated label
+  itself rather than the raw-fallback display label. Missing translated
+  members retain their existing hidden geometry until lookup settles; routes
+  with translated seed labels continue to paint those labels immediately.
+- **Verification boundary:** review the exact state-write ordering and run a
+  signed ArkTS build plus existing non-UI regression tests. Per the user's
+  instruction, do not use screenshots or runtime frame capture as proof for
+  this sub-frame defect. The remaining visual claim is limited to the removed
+  source transition; a later observed raw-tag frame is counter-evidence and
+  reopens the state owner.
