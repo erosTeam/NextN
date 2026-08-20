@@ -987,9 +987,9 @@
     { "name": "reader_loading_decoding", "value": "正在准备图片" },
     { "name": "home_subtab_starter_chinese", "value": "中文" },
     { "name": "home_subtab_starter_favorited", "value": "高收藏" },
-    { "name": "home_subtabs_manage_title", "value": "管理 SubTab" },
-    { "name": "home_subtab_create_title", "value": "创建 SubTab" },
-    { "name": "home_subtab_edit_title", "value": "编辑 SubTab" },
+    { "name": "home_subtabs_manage_title", "value": "首页标签管理" },
+    { "name": "home_subtab_create_title", "value": "新建首页标签" },
+    { "name": "home_subtab_edit_title", "value": "编辑首页标签" },
     { "name": "home_subtab_builtin_badge", "value": "内置" },
     { "name": "home_subtab_type_latest", "value": "最新" },
     { "name": "home_subtab_type_popular", "value": "热门" },
@@ -1006,12 +1006,12 @@
     { "name": "home_subtab_options_section", "value": "选项" },
     { "name": "home_subtab_save", "value": "保存" },
     { "name": "home_subtab_validation", "value": "请输入名称，并至少设置查询、语言或排序中的一项" },
-    { "name": "home_subtab_last_visible", "value": "至少保留一个可见 SubTab" },
-    { "name": "home_subtab_delete_title", "value": "删除这个 SubTab？" },
+    { "name": "home_subtab_last_visible", "value": "至少保留一个可见的首页标签" },
+    { "name": "home_subtab_delete_title", "value": "删除这个首页标签？" },
     { "name": "home_subtab_delete_message", "value": "将移除其本地配置" },
-    { "name": "action_edit_home_subtab", "value": "编辑当前 SubTab" },
-    { "name": "action_create_home_subtab", "value": "创建 SubTab" },
-    { "name": "sync_dataset_home_subtabs", "value": "自定义 SubTab" },
-    { "name": "sync_dataset_home_subtabs_hint", "value": "同步顺序、可见性、查询条件与首页选中项" }
+    { "name": "action_edit_home_subtab", "value": "编辑当前首页标签" },
+    { "name": "action_create_home_subtab", "value": "新建首页标签" },
+    { "name": "sync_dataset_home_subtabs", "value": "自定义首页标签" },
+    { "name": "sync_dataset_home_subtabs_hint", "value": "同步顺序、可见性、查询条件与当前首页标签" }
   ]
 }

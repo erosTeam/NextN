@@ -3140,3 +3140,33 @@ permitted in this repository.
 - Active objective is feature delivery closure. No login action is pending.
   Live WebDAV transport remains the only condition-blocked item and requires a
   configured endpoint; it is not represented as passed.
+
+### Follow-up — Home-tab wording, compact Search options and editor Delete row
+
+- 2026-08-20 +0800: signed build installed with `install -r` on USB
+  `56T0225315001128` under lease `20260820-091459-50a3653a`; wake gate passed
+  twice across the run (`AWAKE`, `OverrideTimeout=86400000ms`). No uninstall,
+  data clear, account action or WebDAV write occurred.
+- NextN's existing Highly favorited editor and installed NextE 1.3.0 were
+  captured at the same 1320×2120 viewport. Both destructive Delete labels have
+  bounds `[192,1834][289,1890]`; NextN keeps the separate bottom card and the
+  create editor does not render it. The localized confirmation displayed
+  `删除这个首页标签？` / `将移除其本地配置` / `取消` / `删除`.
+- Cancel left Highly favorited unchanged. A disposable `delete-test` profile
+  was created, reopened and confirmed through the bottom Delete action; the
+  manager then contained only Latest, Popular, Chinese and Highly favorited.
+  A force-stop/cold start rendered the same four profiles, with no disposable
+  residue.
+- The Search-options modal now shows one `选项` group below the advanced
+  condition cards, containing only Language and Order dropdown rows. Its
+  Language menu listed All/Japanese/Chinese/English/Translated; selecting
+  Chinese updated the row and the original All-languages value was restored.
+- Sync settings displayed the localized `自定义首页标签` row, its order/
+  visibility/query/current-selection hint, and a checked Toggle. WebDAV remains
+  `未启用`; repository/contract evidence covers export, selection, LWW
+  tombstones, apply and shard/manifest participation, while a live remote round
+  trip remains condition-blocked rather than passed.
+- Active objective is feature delivery closure. No login action is pending;
+  no further physical action is required for these visible deltas. A live
+  WebDAV transport round trip becomes actionable only when an endpoint is
+  actually configured.

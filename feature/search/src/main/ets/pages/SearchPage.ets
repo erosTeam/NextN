@@ -169,6 +169,8 @@ export struct SearchPage {
   @Local activeLanguageFilter: NhSearchLanguage = this.catalogPreferences.searchLanguage
   @Local activeSearchSort: NhSearchSort = this.catalogPreferences.searchSort
   @Local showSearchOptions: boolean = false
+  @Local searchLanguageMenuShown: boolean = false
+  @Local searchSortMenuShown: boolean = false
   @Local advancedTagNamespace: string = 'tag'
   @Local advancedTagExcluded: boolean = false
   @Local advancedUploadedUnit: NhSearchUploadedUnit = NhSearchUploadedUnit.DAY
@@ -1755,43 +1757,98 @@ export struct SearchPage {
   }
 
   @Builder
+  private SearchLanguageMenuItem(option: NhSearchLanguage) {
+    MenuItem({
+      content: NhSearchOptions.languageLabel(option),
+      symbolEndIcon: this.catalogPreferences.searchLanguage === option
+        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+        : undefined,
+    }).onClick((): void => {
+      this.selectLanguage(option)
+      this.searchLanguageMenuShown = false
+    })
+  }
+
+  @Builder
+  private SearchLanguageMenu() {
+    Menu() {
+      ForEach(SEARCH_LANGUAGES, (option: NhSearchLanguage): void => this.SearchLanguageMenuItem(option),
+        (option: NhSearchLanguage): string => option)
+    }
+  }
+
+  @Builder
+  private SearchSortMenuItem(option: NhSearchSort) {
+    MenuItem({
+      content: NhSearchOptions.sortLabel(option),
+      symbolEndIcon: this.catalogPreferences.searchSort === option
+        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+        : undefined,
+    }).onClick((): void => {
+      this.selectSort(option)
+      this.searchSortMenuShown = false
+    })
+  }
+
+  @Builder
+  private SearchSortMenu() {
+    Menu() {
+      ForEach(SEARCH_SORTS, (option: NhSearchSort): void => this.SearchSortMenuItem(option),
+        (option: NhSearchSort): string => option)
+    }
+  }
+
+  @Builder
+  private SearchPreferenceOptionsSection() {
+    NextNGroupedListSection() {
+      NextNListRow({
+        title: AppStrings.get('browse_section_language'),
+        trailingText: NhSearchOptions.languageLabel(this.catalogPreferences.searchLanguage),
+        trailingDropdown: true,
+        accessibilityLabel: AppStrings.format('browse_select_language', [
+          NhSearchOptions.languageLabel(this.catalogPreferences.searchLanguage),
+        ]),
+        onAction: (): void => {
+          this.searchLanguageMenuShown = true
+        },
+      })
+        .bindMenu(this.searchLanguageMenuShown, this.SearchLanguageMenu, appMenuOptions({
+          placement: Placement.BottomRight,
+          onDisappear: (): void => {
+            this.searchLanguageMenuShown = false
+          },
+        }))
+      this.SearchOptionDivider()
+      NextNListRow({
+        title: AppStrings.get('browse_section_order'),
+        trailingText: NhSearchOptions.sortLabel(this.catalogPreferences.searchSort),
+        trailingDropdown: true,
+        accessibilityLabel: AppStrings.format('browse_select_order', [
+          NhSearchOptions.sortLabel(this.catalogPreferences.searchSort),
+        ]),
+        onAction: (): void => {
+          this.searchSortMenuShown = true
+        },
+      })
+        .bindMenu(this.searchSortMenuShown, this.SearchSortMenu, appMenuOptions({
+          placement: Placement.BottomRight,
+          onDisappear: (): void => {
+            this.searchSortMenuShown = false
+          },
+        }))
+    }
+  }
+
+  @Builder
   private SearchOptionsPanel() {
     Column({ space: ThemeTokens.SPACE_MD }) {
       this.SearchAdvancedConditionsPanel()
-      NextNSectionHeader({ title: AppStrings.get('browse_section_language') })
-      NextNGroupedListSection() {
-        ForEach(SEARCH_LANGUAGES, (option: NhSearchLanguage): void => {
-          NextNListRow({
-            title: NhSearchOptions.languageLabel(option),
-            trailingText: this.catalogPreferences.searchLanguage === option ? AppStrings.get('common_selected') : '',
-            showChevron: false,
-            accessibilityLabel: AppStrings.format('browse_select_language', [NhSearchOptions.languageLabel(option)]),
-            onAction: (): void => {
-              this.selectLanguage(option)
-            },
-          })
-          if (option !== SEARCH_LANGUAGES[SEARCH_LANGUAGES.length - 1]) {
-            this.SearchOptionDivider()
-          }
-        }, (option: NhSearchLanguage): string => option)
+      Column() {
+        NextNSectionHeader({ title: AppStrings.get('home_subtab_options_section') })
+        this.SearchPreferenceOptionsSection()
       }
-      NextNSectionHeader({ title: AppStrings.get('browse_section_order') })
-      NextNGroupedListSection() {
-        ForEach(SEARCH_SORTS, (option: NhSearchSort): void => {
-          NextNListRow({
-            title: NhSearchOptions.sortLabel(option),
-            trailingText: this.catalogPreferences.searchSort === option ? AppStrings.get('common_selected') : '',
-            showChevron: false,
-            accessibilityLabel: AppStrings.format('browse_select_order', [NhSearchOptions.sortLabel(option)]),
-            onAction: (): void => {
-              this.selectSort(option)
-            },
-          })
-          if (option !== SEARCH_SORTS[SEARCH_SORTS.length - 1]) {
-            this.SearchOptionDivider()
-          }
-        }, (option: NhSearchSort): string => option)
-      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Start)
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)

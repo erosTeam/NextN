@@ -3,6 +3,81 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## ACCEPTED — Home-tab editor and Search-options usability follow-up — 2026-08-20
+
+- **Latest user instruction:** replace Search options' expanded Language and
+  Order cards with the same compact dropdown-row structure used by the Home
+  profile editor; remove user-visible `SubTab` jargon through localization; and
+  add NextE's explicit bottom Delete row to an existing custom-profile editor so
+  deletion is discoverable without knowing the manager's swipe gesture.
+- **Reference and complete parent trees:** preserve Search's
+  `HdsNavDestination -> NextNModalScaffold -> SecondaryListScaffold -> List ->
+  SearchOptionsPanel` ownership. The advanced-condition cards stay unchanged;
+  only the following preference leaf changes from two expanded option lists to
+  `section header -> one grouped section -> Language dropdown row -> divider ->
+  Order dropdown row`, matching `HomeSubtabEditPage.OptionsSection`. Preserve
+  the editor's `HdsNavDestination -> SecondaryListScaffold -> List` and append
+  NextE `TabEditPage`'s existing-profile-only
+  `ListItem -> GroupedListSection -> destructive concise row` after all editable
+  sections. Navigation, scrolling, keyboard resize, title actions and manager
+  swipe deletion remain owned by their existing parents.
+- **Exact before/after:** before — Search renders every language and order as a
+  separate full row; visible copy exposes the implementation term `SubTab`; and
+  editor deletion is only discoverable in the manager by swiping. after — one
+  Options card exposes current Language and Order values through checked menus;
+  Chinese calls the concept `首页标签`, English `Home tab`, and Japanese
+  `ホームタブ`; an existing ordinary profile ends with a separated red trash
+  row. Create and built-in editor states never show that row. Tapping it opens
+  the existing localized confirmation; cancel is inert, confirm removes through
+  `HomeSubtabSettings`, and the last-visible guard remains authoritative.
+- **Sibling-state review:** verify the full Search options sheet above and below
+  the changed group, editor create/edit and keyboard-open states, delete dialog,
+  manager fallback after deletion, Home tab selection, and Sync's localized
+  dataset row. Renaming copy must not rename persisted keys, database tables,
+  dataset IDs or model types.
+- **Sync evidence boundary:** current source includes profiles, selected UUID,
+  ordering, visibility, query fields, timestamps and tombstones in the
+  default-enabled `home-subtabs` WebDAV dataset; old payload normalization is
+  covered by contract tests. A device with WebDAV disabled cannot establish a
+  live remote round trip and must remain recorded as condition-blocked.
+- **Visual verification plan:** signed build and `install -r` on the selected
+  USB device, then compare current same-viewport NextN editor bottom/delete
+  dialog against installed NextE and review the complete Search options sheet.
+  Exercise cancel plus actual deletion of a disposable profile, create-page
+  absence, selected fallback, localized manager/menu/sync copy and cold start.
+  Source inspection and static contracts do not accept these visible states.
+- **Same-device visual result:** on USB `56T0225315001128` at 1320×2120,
+  NextN's existing-profile editor renders the destructive Delete row at text
+  bounds `[192,1834][289,1890]`; installed NextE 1.3.0 renders its reference
+  row at the exact same bounds. NextN keeps a full-card gap above that row and
+  retains the spaced Favorites, Uploaded and Options cards; Highly favorited
+  still hydrates Favorites minimum=`1000` without a duplicate condition chip.
+  The create page ends at the Options card and has no Delete row.
+- **Interaction result:** tapping Delete shows the localized
+  `删除这个首页标签？` confirmation with Cancel/Delete actions. Cancel preserved
+  Highly favorited. A disposable `delete-test` profile was then created,
+  reopened, deleted through this bottom action and confirmed absent from the
+  manager; the manager returned to the original four profiles. Cold start also
+  rendered only Latest, Popular, Chinese and Highly favorited.
+- **Search-options result:** the complete modal renders the existing advanced
+  condition cards followed by one `选项` group containing Language and Order
+  rows. Opening Language shows the five checked-menu choices; selecting Chinese
+  updated the row immediately, after which the original All-languages value was
+  restored. Card spacing, modal chrome and scroll ownership remained intact.
+- **Localization and sync result:** manager/editor/create/delete/menu copy now
+  uses `首页标签`; the Sync page renders `自定义首页标签` with the hint covering
+  order, visibility, query conditions and current selection. Its device Toggle
+  is checked. Source and executable contracts confirm that the default-enabled
+  `home-subtabs` dataset exports profiles plus selection, performs LWW/tombstone
+  merge, applies selected data and participates in WebDAV shards/manifests. The
+  device still reports WebDAV `未启用`, so a live remote transport round trip
+  remains condition-blocked and is not claimed.
+- **Validation:** Home-tab data contract, settings-backup contract, four-locale
+  JSON parse and `git diff --check` pass. Signed Hvigor build completed with
+  `BUILD SUCCESSFUL in 10 s 812 ms`; installation used `install -r` with no
+  uninstall, data clear or account action. Evidence is local-only under
+  `.hvigor/outputs/home-tab-followup-20260820T0915/`.
+
 ## ACCEPTED — NextE-style custom Home SubTabs backed by NH search — 2026-08-20
 
 - **Why newly actionable:** the user explicitly requested implementation of the

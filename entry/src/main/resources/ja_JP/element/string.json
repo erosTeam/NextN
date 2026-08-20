@@ -986,9 +986,9 @@
     { "name": "reader_loading_decoding", "value": "画像を準備中" },
     { "name": "home_subtab_starter_chinese", "value": "中国語" },
     { "name": "home_subtab_starter_favorited", "value": "高お気に入り" },
-    { "name": "home_subtabs_manage_title", "value": "SubTabを管理" },
-    { "name": "home_subtab_create_title", "value": "SubTabを作成" },
-    { "name": "home_subtab_edit_title", "value": "SubTabを編集" },
+    { "name": "home_subtabs_manage_title", "value": "ホームタブを管理" },
+    { "name": "home_subtab_create_title", "value": "ホームタブを作成" },
+    { "name": "home_subtab_edit_title", "value": "ホームタブを編集" },
     { "name": "home_subtab_builtin_badge", "value": "内蔵" },
     { "name": "home_subtab_type_latest", "value": "新着" },
     { "name": "home_subtab_type_popular", "value": "人気" },
@@ -1005,12 +1005,12 @@
     { "name": "home_subtab_options_section", "value": "オプション" },
     { "name": "home_subtab_save", "value": "保存" },
     { "name": "home_subtab_validation", "value": "名前と、クエリ・言語・並び順のいずれかを設定してください" },
-    { "name": "home_subtab_last_visible", "value": "少なくとも1つのSubTabを表示してください" },
-    { "name": "home_subtab_delete_title", "value": "このSubTabを削除しますか？" },
+    { "name": "home_subtab_last_visible", "value": "少なくとも1つのホームタブを表示してください" },
+    { "name": "home_subtab_delete_title", "value": "このホームタブを削除しますか？" },
     { "name": "home_subtab_delete_message", "value": "ローカル設定が削除されます" },
-    { "name": "action_edit_home_subtab", "value": "現在のSubTabを編集" },
-    { "name": "action_create_home_subtab", "value": "SubTabを作成" },
-    { "name": "sync_dataset_home_subtabs", "value": "カスタムSubTab" },
-    { "name": "sync_dataset_home_subtabs_hint", "value": "順序、表示、検索条件、選択中のHome SubTab" }
+    { "name": "action_edit_home_subtab", "value": "現在のホームタブを編集" },
+    { "name": "action_create_home_subtab", "value": "ホームタブを作成" },
+    { "name": "sync_dataset_home_subtabs", "value": "カスタムホームタブ" },
+    { "name": "sync_dataset_home_subtabs_hint", "value": "順序、表示、検索条件、選択中のホームタブ" }
   ]
 }

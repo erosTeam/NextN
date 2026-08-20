@@ -986,9 +986,9 @@
     { "name": "reader_loading_decoding", "value": "Preparing image" },
     { "name": "home_subtab_starter_chinese", "value": "Chinese" },
     { "name": "home_subtab_starter_favorited", "value": "Highly favorited" },
-    { "name": "home_subtabs_manage_title", "value": "Manage SubTabs" },
-    { "name": "home_subtab_create_title", "value": "Create SubTab" },
-    { "name": "home_subtab_edit_title", "value": "Edit SubTab" },
+    { "name": "home_subtabs_manage_title", "value": "Manage home tabs" },
+    { "name": "home_subtab_create_title", "value": "Create home tab" },
+    { "name": "home_subtab_edit_title", "value": "Edit home tab" },
     { "name": "home_subtab_builtin_badge", "value": "Built-in" },
     { "name": "home_subtab_type_latest", "value": "Latest" },
     { "name": "home_subtab_type_popular", "value": "Popular" },
@@ -1005,12 +1005,12 @@
     { "name": "home_subtab_options_section", "value": "Options" },
     { "name": "home_subtab_save", "value": "Save" },
     { "name": "home_subtab_validation", "value": "Enter a name and at least one query, language, or order condition" },
-    { "name": "home_subtab_last_visible", "value": "Keep at least one SubTab visible" },
-    { "name": "home_subtab_delete_title", "value": "Delete this SubTab?" },
+    { "name": "home_subtab_last_visible", "value": "Keep at least one home tab visible" },
+    { "name": "home_subtab_delete_title", "value": "Delete this home tab?" },
     { "name": "home_subtab_delete_message", "value": "Its local configuration will be removed" },
-    { "name": "action_edit_home_subtab", "value": "Edit current SubTab" },
-    { "name": "action_create_home_subtab", "value": "Create SubTab" },
-    { "name": "sync_dataset_home_subtabs", "value": "Custom SubTabs" },
-    { "name": "sync_dataset_home_subtabs_hint", "value": "Order, visibility, queries, and selected Home SubTab" }
+    { "name": "action_edit_home_subtab", "value": "Edit current home tab" },
+    { "name": "action_create_home_subtab", "value": "Create home tab" },
+    { "name": "sync_dataset_home_subtabs", "value": "Custom home tabs" },
+    { "name": "sync_dataset_home_subtabs_hint", "value": "Order, visibility, queries, and selected home tab" }
   ]
 }

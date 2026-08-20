@@ -169,6 +169,37 @@ export struct HomeSubtabEditPage {
     })
   }
 
+  private confirmDelete(): void {
+    if (this.original === null || this.original.isBuiltin()) {
+      return
+    }
+    const profileUuid: string = this.original.uuid
+    this.getUIContext().showAlertDialog({
+      title: $r('app.string.home_subtab_delete_title'),
+      message: $r('app.string.home_subtab_delete_message'),
+      primaryButton: { value: $r('app.string.common_cancel'), action: (): void => {} },
+      secondaryButton: {
+        value: $r('app.string.common_delete'),
+        fontColor: Color.Red,
+        action: (): void => {
+          HomeSubtabSettings.remove(this.context(), profileUuid)
+            .then((removed: boolean): void => {
+              if (removed) {
+                if (this.onDone) {
+                  this.onDone()
+                }
+                return
+              }
+              this.getUIContext().getPromptAction().showToast({
+                message: AppStrings.get('home_subtab_last_visible'),
+              })
+            })
+            .catch((): void => {})
+        },
+      },
+    })
+  }
+
   private parsePositive(value: string): number {
     const trimmed: string = value.trim()
     if (!/^[0-9]+$/.test(trimmed)) {
@@ -493,6 +524,22 @@ export struct HomeSubtabEditPage {
             this.OptionsSection()
           }
           .alignItems(HorizontalAlign.Start)
+        }
+        if (!this.isCreate()) {
+          ListItem() {
+            NextNGroupedListSection() {
+              NextNListRow({
+                title: AppStrings.get('common_delete'),
+                leadingIcon: $r('sys.symbol.trash'),
+                destructive: true,
+                showChevron: false,
+                onAction: (): void => {
+                  this.confirmDelete()
+                },
+              })
+            }
+          }
+          .margin({ top: ThemeTokens.SPACE_LG })
         }
       }
     }
