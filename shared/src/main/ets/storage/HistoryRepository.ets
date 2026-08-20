@@ -97,8 +97,8 @@ export class HistoryRepository {
       Math.max(0, Math.floor(pageIndex)),
       Math.max(0, detail.pages.length - 1),
     )
-    // Keep the retained Detail action on the same last-call-wins position as
-    // every durable write, including an explicit initial Reader page.
+    // Publish every canonical Reader position immediately. Retained Detail
+    // snapshots this state and controls when the final value becomes visible.
     connectNhReadProgress().set(detail.id, clamped)
     await HistoryRepository.enqueueWrite((): Promise<void> =>
       HistoryRepository.executeWrite(context, SQL_UPSERT_PROGRESS, HistoryRepository.values(detail, clamped)),

@@ -6,11 +6,11 @@ const NH_READ_PROGRESS_STATE_KEY: string = 'nextn_read_progress'
  * In-memory per-gallery reading position with a reactive revision signal.
  *
  * HistoryRepository publishes every saved Reader position here immediately,
- * then serializes the same position to RDB. The gallery detail page reads
- * `has`/`index` inside build(), so returning from the Reader refreshes the Read
- * button without re-querying storage. The RDB remains the durable source and
- * seeds this holder on first detail load. The in-memory page follows NextE's
- * last-call-wins contract; NextN's durable writes are serialized, not debounced.
+ * then serializes the same position to RDB. Gallery Detail freezes a display
+ * snapshot while Reader covers it and reveals the final value when Reader
+ * starts closing. The RDB remains the durable source and seeds this holder on
+ * first detail load. The in-memory page follows NextE's last-call-wins
+ * contract; NextN's durable writes are serialized, not debounced.
  */
 @ObservedV2
 export class NhReadProgressState {

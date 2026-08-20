@@ -3,6 +3,52 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Reader progress persists live but Detail reveals it on exit — 2026-08-20
+
+- **Latest user instruction and counter-evidence:** sync NextE's latest Read
+  progress optimization. In NextN, selecting a Reader thumbnail currently
+  mutates the retained Gallery Detail Read label and capsule width at the tap
+  instant, even though Reader still fully covers Detail. The premature covered
+  mutation makes the eventual return state feel disconnected from the exit
+  transition.
+- **Source-proven cause and faulty assumption:** commit `a00781d` correctly made
+  Reader progress last-call-wins and durable, but also made
+  `HistoryRepository.saveProgress` publish every page directly to the reactive
+  state consumed by Detail build. That assumed persistence timing should own
+  the covered page's display timing. NextE commit `e57c771f` explicitly
+  separates those responsibilities: Reader persists every settled page while
+  Detail holds a frozen display snapshot until overlay close starts.
+- **Whole parent tree:** preserve root `Stack -> retained Gallery
+  HdsNavDestination -> GalleryDetailPage -> DetailWorkspace(Stack) -> detail
+  content + ReadFabRail -> ReadFab(Filled/HDS)`, covered by the independent
+  full-window `HdsNavigation(readerOverlay.stack) -> backdrop -> Reader
+  HdsNavDestination -> ReaderPage`. The Reader remains the canonical page owner;
+  local RDB remains the durable owner; only the retained Detail presentation is
+  snapshotted.
+- **Exact before/after:** before — `NhReadProgressState.revision` invalidates the
+  covered Detail on every Reader page selection, so label and width consume the
+  new index immediately. after — Detail snapshots both marker and index before
+  Reader opens, ignores live revision updates while `readerOverlay.visible`,
+  then refreshes the snapshot when `readerOverlay.closing` becomes true before
+  the animated pop. When no Reader is visible, ordinary durable hydration or
+  external progress changes continue to refresh Detail immediately.
+- **Sibling-state review and minimality:** verify no-record `阅读`, P2
+  `继续 P2`, P2 -> thumbnail P1, P1 -> thumbnail P2, scroll-driven page changes,
+  Filled and HDS styles, explicit-thumbnail entry, resume-button entry, and
+  repeated close attempts. Reader navigation, page persistence, RDB schema,
+  history timestamps, sync/backup formats, button copy/geometry, status-bar
+  timing and overlay animation remain unchanged.
+- **Verification plan and unresolved risk:** build the signed HAP, install in
+  place on the explicitly selected current device, then capture the same
+  Detail/Reader path around thumbnail tap and Reader exit. Acceptance requires
+  the covered Detail action not to reveal the new page during Reader activity,
+  the exit transition to reveal the final page, and re-entry to resume that
+  same durable page. Source and build evidence cannot accept the transition.
+- **Source/build result:** `git diff --check` passes and the signed build
+  succeeds (`BUILD SUCCESSFUL in 13 s 795 ms`). The default signed HAP has
+  SHA-256 `5363e9e118762b874d6eca4e08f2e07fd55a1c5e67d498184a58e3c2dd30aadf`.
+  This establishes compile-time validity only; the runtime path remains OPEN.
+
 ## OPEN — Reader overlay must not toggle retained Detail chrome — 2026-08-20
 
 - **User counter-evidence:** entering and leaving Reader visibly makes the

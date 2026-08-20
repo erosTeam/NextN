@@ -11,8 +11,10 @@ import { ReaderRouteParams } from '../model/ReaderRouteParams'
 export class ReaderOverlayNavigationState {
   @Trace visible: boolean = false
   @Trace stack: NavPathStack = new NavPathStack()
+  // Detail observes the start of the exit transition so it can reveal the
+  // already-persisted final progress without reacting to live Reader writes.
+  @Trace closing: boolean = false
   private pendingReader: ReaderRouteParams | null = null
-  private closing: boolean = false
   private nextRouteEpoch: number = 0
   // A Gallery stages this only immediately before its own Reader intent.
   // `open` either attaches it to that exact next route or discards it.
