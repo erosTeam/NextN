@@ -3084,3 +3084,10 @@ permitted in this repository.
 - OPEN — active Browse-tab re-tap: the tested coordinate did not hit a visible active tab because the auto-hiding bottom bar was not present at that moment; the list therefore did not reset. This is an unmeasured precondition, not a failed implementation claim. Evidence: `.hvigor/outputs/latent-hazard-audit-20260820-usb/retap.json` (local-only).
 - OPEN — Grid/WaterFlow pinch-density and shared-parent NextE geometry/interaction comparisons were not repeated in this batch. The available `uitest uiInput` command on this device exposes click/swipe/fling but no pinch operation; prior accepted records remain the source of truth for scenarios already closed. No new PASS is claimed for these items.
 - Next physical action: add one diagnostic-backed refresh/reach-end observation (or an explicit state marker) and run only the still-open shared-parent route comparisons. Do not repeat the scroll PASS above.
+
+### Follow-up correction — one-shot post-gesture diagnostic capture (2026-08-20)
+
+- The planned one-shot follow-up was completed on the same USB lease after returning the WaterFlow to its top state: one downward pull, immediate app-log tail, and final layout capture. The final WaterFlow remained mounted and no crash/error marker appeared.
+- Result remains OPEN rather than PASS: the app-log tail contained no refresh-start, refresh-end, reach-end, or page-request marker, and the post-gesture layout alone cannot prove a refresh callback. This closes the planned repeat attempt; no further blind gesture/screenshot repetition is scheduled.
+- Evidence: `.hvigor/outputs/latent-hazard-audit-20260820-usb/followup-top.json`, `followup-after.json`, `followup-after-hilog.txt` (local-only).
+- Follow-up handling: refresh/reach-end now requires either an existing stable runtime marker or an explicitly authorized diagnostic-instrumentation change; until then it stays OPEN and is not counted as a regression or a success.

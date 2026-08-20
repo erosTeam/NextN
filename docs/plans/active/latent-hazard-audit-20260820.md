@@ -122,6 +122,7 @@ WaterFlow near-end；List 不验证不存在的捏合能力。结果以状态树
 - 活跃根 Tab 重按：UNMEASURED；测试时自动隐藏底栏不在目标坐标，未形成有效动作前置条件。
 - Grid/WaterFlow 捏合密度：OPEN；本机 `uitest uiInput` 帮助未提供 pinch 注入，不做盲测或猜测性结论。
 - 证据已写入 `docs/qa/nextn-active-acceptance.md` 的同名 USB 记录；已通过的普通滚动不再重复验证。
+- 一次定向“手势后立即取 app 日志 + 最终布局”复核仍未得到刷新/到尾标记；后续不再盲目重复，只有已有稳定诊断事件或明确授权的诊断改动才重新开启。
 
 ## 车道 E（P1，分页批）：NextE 移植删减审计 AUDITED（首批页面静态批次完成）
 
