@@ -34,6 +34,9 @@ export class HomeSourceState {
   // the selected source: layout is a shared presentation preference, not a
   // Latest-only query option.
   @Trace layoutMenuRequestSeq: number = 0
+  @Trace manageSubtabsRequestSeq: number = 0
+  @Trace editSubtabRequestSeq: number = 0
+  @Trace editSubtabUuid: string = ''
 
   /** `null` is the rendering boundary for the durable follow-global sentinel. */
   presentationOverrideFor(sourceKey: string): NhBrowsePresentation | null {
@@ -105,7 +108,9 @@ export function connectHomeSourceVisualIndex(): HomeSourceVisualIndexState {
 export class HomeSourceBridge {
   static select(key: string): void {
     const state: HomeSourceState = connectHomeSource()
-    state.selectedKey = key === HOME_SOURCE_POPULAR ? HOME_SOURCE_POPULAR : HOME_SOURCE_LATEST
+    if (key.length > 0) {
+      state.selectedKey = key
+    }
   }
 
   static requestBrowseOptions(): void {
@@ -121,5 +126,19 @@ export class HomeSourceBridge {
   static requestLayoutMenu(): void {
     const state: HomeSourceState = connectHomeSource()
     state.layoutMenuRequestSeq = state.layoutMenuRequestSeq + 1
+  }
+
+  static requestManageSubtabs(): void {
+    const state: HomeSourceState = connectHomeSource()
+    state.manageSubtabsRequestSeq = state.manageSubtabsRequestSeq + 1
+  }
+
+  static requestEditSubtab(uuid: string): void {
+    if (uuid.length === 0) {
+      return
+    }
+    const state: HomeSourceState = connectHomeSource()
+    state.editSubtabUuid = uuid
+    state.editSubtabRequestSeq = state.editSubtabRequestSeq + 1
   }
 }

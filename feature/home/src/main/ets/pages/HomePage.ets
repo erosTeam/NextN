@@ -11,13 +11,13 @@ import {
   GalleryListCacheRepository,
   ActiveKeyState,
   HomeGallerySelectionState,
-  HomeSourceBridge,
   HomeSourceState,
   HomeSourceVisualIndexState,
   HOME_SOURCE_LATEST,
-  HOME_SOURCE_POPULAR,
+  HOME_SUBTAB_LATEST_UUID,
   HOME_SOURCE_SELECTOR_HEIGHT,
-  HomeSourcePresentationService,
+  HomeSubtabSettings,
+  HomeSubtabState,
   NextNGroupedListSection,
   NextNListRow,
   NextNPullRefreshController,
@@ -26,6 +26,8 @@ import {
   NhBrowsePresentation,
   NhGalleryPageResult,
   NhGallerySummary,
+  NhHomeSubtabKind,
+  NhHomeSubtabProfile,
   NhTagCatalogService,
   NhSearchLanguage,
   NhSearchOptions,
@@ -40,6 +42,7 @@ import {
   connectContentFilters,
   connectHomeGallerySelection,
   connectHomeSource,
+  connectHomeSubtabs,
   connectHomeSourceVisualIndex,
   connectSubtabTransition,
   connectTagTranslations,
@@ -48,6 +51,7 @@ import {
 import { appMenuOptions } from 'shared'
 import { appSheetOptions } from 'shared'
 import { PopularPage } from './PopularPage'
+import { HomeSearchSubtabPage } from '../components/HomeSearchSubtabPage'
 
 const BROWSE_LANGUAGES: NhSearchLanguage[] = [
   NhSearchLanguage.ALL,
@@ -94,6 +98,7 @@ export struct LatestSourcePage {
   @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   @Local homeSource: HomeSourceState = connectHomeSource()
+  @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
   @Local homeGallerySelection: HomeGallerySelectionState = connectHomeGallerySelection()
   private requestGeneration: number = 0
   /** Retained pages load only after their own first activation. */
@@ -671,7 +676,7 @@ export struct LatestSourcePage {
     GalleryCollectionBody({
       galleries: this.galleries,
       selectedGalleryId: this.homeGallerySelection.selectedGalleryId,
-      presentationOverride: this.homeSource.presentationOverrideFor(this.sourceKey),
+      presentationOverride: this.homeSubtabs.find(this.sourceKey)?.presentationOverride() ?? null,
       isInitialLoading: this.isInitialLoading,
       isLoadingMore: this.isLoadingMore,
       canLoadMore: this.canLoadMore(),
@@ -734,7 +739,7 @@ function homeSourcePageBuilder(
   onDidScroll: (offset: number, state: ScrollState) => void,
   onOpenGallery: (galleryId: number, seed?: NhGallerySummary) => void,
 ) {
-  if (key === HOME_SOURCE_POPULAR) {
+  if (homeSubtabKind(key) === NhHomeSubtabKind.POPULAR) {
     PopularPage({
       sourceKey: key,
       active: active,
@@ -743,15 +748,28 @@ function homeSourcePageBuilder(
       onOpenGallery: onOpenGallery,
       onDidScroll: onDidScroll,
     })
+  } else if (homeSubtabKind(key) === NhHomeSubtabKind.SEARCH) {
+    HomeSearchSubtabPage({
+      sourceKey: key,
+      active: active,
+      scroller: scroller,
+      onOpenGallery: onOpenGallery,
+      onDidScroll: onDidScroll,
+    })
   } else {
     LatestSourcePage({
-      sourceKey: HOME_SOURCE_LATEST,
+      sourceKey: key,
       active: active,
       scroller: scroller,
       onOpenGallery: onOpenGallery,
       onDidScroll: onDidScroll,
     })
   }
+}
+
+function homeSubtabKind(key: string): NhHomeSubtabKind {
+  const profile: NhHomeSubtabProfile | null = connectHomeSubtabs().find(key)
+  return profile === null ? NhHomeSubtabKind.LATEST : profile.kind
 }
 
 /**
@@ -761,6 +779,7 @@ function homeSourcePageBuilder(
 @ComponentV2
 export struct HomePage {
   @Local homeSource: HomeSourceState = connectHomeSource()
+  @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
   @Local visual: HomeSourceVisualIndexState = connectHomeSourceVisualIndex()
   @Local subtabTransition: SubtabTransitionState = connectSubtabTransition()
   @Local layoutMenuShown: boolean = false
@@ -773,13 +792,19 @@ export struct HomePage {
   }
 
   private sourceKeys(): string[] {
-    return [HOME_SOURCE_LATEST, HOME_SOURCE_POPULAR]
+    const keys: string[] = []
+    this.homeSubtabs.visibleProfiles().forEach((profile: NhHomeSubtabProfile): void => {
+      keys.push(profile.uuid)
+    })
+    return keys
   }
 
   private selectedKey(): string {
-    return this.homeSource.selectedKey === HOME_SOURCE_POPULAR
-      ? HOME_SOURCE_POPULAR
-      : HOME_SOURCE_LATEST
+    const keys: string[] = this.sourceKeys()
+    if (keys.indexOf(this.homeSubtabs.selectedUuid) >= 0) {
+      return this.homeSubtabs.selectedUuid
+    }
+    return keys.length > 0 ? keys[0] : HOME_SUBTAB_LATEST_UUID
   }
 
   /** HDS title actions cannot anchor a Menu; the retained Home host owns it. */
@@ -794,17 +819,22 @@ export struct HomePage {
   private setSourcePresentation(override: NhBrowsePresentation | null): void {
     this.layoutMenuShown = false
     const sourceKey: string = this.selectedKey()
-    if (this.homeSource.presentationOverrideFor(sourceKey) === override) {
+    const profile: NhHomeSubtabProfile | null = this.homeSubtabs.find(sourceKey)
+    if (profile !== null && profile.presentationOverride() === override) {
       return
     }
     // A source override only selects a mounted renderer. It deliberately
     // leaves retained snapshots, cursors, Scrollers and all global consumers
     // (Search, Favorites, History) untouched.
-    HomeSourcePresentationService.setOverride(this.context(), sourceKey, override).catch((): void => {})
+    HomeSubtabSettings.setDisplayMode(
+      this.context(),
+      sourceKey,
+      override === null ? 'global' : override,
+    ).catch((): void => {})
   }
 
   private activePresentationOverride(): NhBrowsePresentation | null {
-    return this.homeSource.presentationOverrideFor(this.selectedKey())
+    return this.homeSubtabs.find(this.selectedKey())?.presentationOverride() ?? null
   }
 
   @Builder
@@ -841,7 +871,7 @@ export struct HomePage {
         transitionScope: SUBTAB_TRANSITION_SCOPE_HOME,
         pageBuilder: homeSourcePageBuilder,
         onSelectKey: (key: string): void => {
-          HomeSourceBridge.select(key)
+          HomeSubtabSettings.setSelected(this.context(), key).catch((): void => {})
         },
         onVisualIndex: (value: number): void => {
           this.visual.value = value

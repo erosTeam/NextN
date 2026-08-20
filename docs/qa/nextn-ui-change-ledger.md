@@ -3,6 +3,85 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## ACCEPTED — NextE-style custom Home SubTabs backed by NH search — 2026-08-20
+
+- **Why newly actionable:** the user explicitly requested implementation of the
+  reviewed custom-SubTab plan. NextN already owns the same shared
+  `SubTabBar`/`RetainedSubtabHost` mechanics and two retained Home sources, but
+  its source list is fixed to Latest/Popular and has no named search-backed
+  profiles, manager, editor, durable ordering, or Search-to-SubTab creation.
+- **Reference and whole parent-tree boundary:** preserve the current root tree
+  `Index HdsNavigation -> Browse root HDS titleBar.bottomBuilder ->
+  HomeSourceBar -> SubTabBar` and `HomePage -> RetainedSubtabHost -> one
+  source-owned page -> GalleryCollectionBody`. The new manager/editor follow
+  NextE's `HdsNavDestination -> SecondaryListScaffold -> grouped list rows`
+  tree. Only the NH leaf differs: ordinary profiles call the existing anonymous
+  NH search endpoint with their own query/language/sort snapshot. The Search
+  creation leaf stays inside the existing Search title menu and opens the same
+  editor; it does not replace Quick Search.
+- **Exact before/after:** before — two fixed keys (`latest`, `popular`), no
+  manager affordance, and source selection/display overrides are fixed-field
+  state. after — one ordered durable profile list seeds Latest, Popular,
+  Chinese and Highly favorited; built-ins are non-deletable special types,
+  ordinary profiles are editable search views, every retained profile owns its
+  own request/scroll/page state, and the bar gains the reference trailing
+  manager affordance. Latest/Popular keep their current menu semantics; an
+  ordinary profile gets Search/Edit/Layout/Jump/Random.
+- **Stateful visible states:** review Home with each special/custom profile
+  active, finger-driven SubTab transition, long-label horizontal bar, manager
+  default/reordered/hidden/delete-confirm states, editor create/edit/error and
+  IME-open states, Search with and without a committed query, loading/empty/
+  error/page-footer states, selection fallback after hide/delete, and cold
+  start restoration. Keyboard-resized editor controls must remain inside the
+  actual application window.
+- **Minimality rationale:** reuse the existing retained host, SubTabBar,
+  GalleryCollectionBody, search grammar, search API and standard secondary-page
+  scaffolds. Do not restructure the root tab, title ownership, collection
+  renderer, Quick Search semantics, Favorites, Downloads or account state.
+- **Visual verification plan:** signed build and `install -r`; on the selected
+  device capture foreground-confirmed NextN Home, manager and editor states,
+  then capture the matching NextE reference states at the same root viewport.
+  Compare hierarchy, selector reserve, action placement, list spacing, IME
+  resize and transition settlement. Separately prove real NH search results,
+  paging, retained scroll, edit-triggered reload and cold-start persistence.
+- **Unresolved risk:** source/build evidence cannot accept the new visible
+  surfaces or retained runtime lifecycle. Backup/WebDAV merge correctness also
+  remains unaccepted until an actual export/import or sync round trip is
+  observed; no account, uninstall or data-clear action is authorized by this
+  lane.
+- **Implementation result:** the unified profile model/repository/state now
+  owns stable UUIDs, built-in/search kinds, ordering, tombstones, selected-item
+  fallback and content revisions. Home renders every visible profile through
+  the existing `SubTabBar` and `RetainedSubtabHost`; ordinary profiles use the
+  existing NH search API with independent retained request, paging, error,
+  cache and scroller state. Manager/editor/Search-to-create, RDB schema 21,
+  backup data and the default-enabled WebDAV dataset are wired without merging
+  Quick Search into this model.
+- **Same-device reference acceptance:** USB `56T0225315001128` had NextE 1.3.0
+  installed and was used at the same 1320×2120 viewport. NextN's root tab bar
+  and manager preserve the NextE parent hierarchy and action placement; manager
+  row bounds match. After correcting the editor's basic group to the NextE HDS
+  rows, the group and three row bounds match exactly: section
+  `[36,303][1284,373]`, rows `[48,385][1272,529]`,
+  `[48,531][1272,675]`, `[48,676][1272,820]`. Only NH field/data leaves differ.
+- **Runtime acceptance:** the device showed Latest/Popular/Chinese/Highly
+  favorited after install and cold start. Search `tag:stockings` opened a
+  prefilled editor, save created a fifth retained tab, and the ordinary-tab
+  menu exposed Search/Edit/Layout/Jump/Random under the specified pinning.
+  Switching Latest → custom preserved the same image node IDs and bounds;
+  page jump 1 → 2 replaced the first result; rename retained the current page;
+  changing the query to `tag:full` reset/reloaded only that tab. Hide/delete
+  selected-item fallback and the last-visible guard were exercised; the guard's
+  rejected switch now remounts from the authoritative visibility model.
+- **Backup/sync acceptance boundary:** a real non-secret export captured the
+  four visible defaults. Chinese was then hidden and remained hidden across a
+  cold start; importing that exact file and cold-starting again restored all
+  four tabs. The current device has WebDAV disabled, so a remote round trip was
+  not fabricated. Its Sync page does show the separate Custom SubTab dataset
+  enabled by default; merge/old-payload behavior is covered by repository and
+  backup/sync contracts, while live WebDAV transport remains condition-blocked
+  on an actually configured endpoint.
+
 ## Gallery comments: show commenter avatars — 2026-08-19
 
 - **Why newly actionable:** the user asks to display comment-user avatars;

@@ -5,7 +5,7 @@ import {
   ContentFilterState,
   GalleryCollectionBody,
   HomeGallerySelectionState,
-  HomeSourceState,
+  HomeSubtabState,
   NextNPullRefreshController,
   NhApiClient,
   NhGallerySummary,
@@ -16,7 +16,7 @@ import {
   HOME_SOURCE_SELECTOR_HEIGHT,
   connectContentFilters,
   connectHomeGallerySelection,
-  connectHomeSource,
+  connectHomeSubtabs,
   connectTagTranslations,
 } from 'shared'
 
@@ -39,7 +39,7 @@ export struct PopularPage {
   @Local contentFilters: ContentFilterState = connectContentFilters()
   @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local homeGallerySelection: HomeGallerySelectionState = connectHomeGallerySelection()
-  @Local homeSource: HomeSourceState = connectHomeSource()
+  @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
   @Local isInitialLoading: boolean = false
   @Local isRefreshing: boolean = false
   @Local errorMessage: string = ''
@@ -181,7 +181,7 @@ export struct PopularPage {
       // Only the retained Home source receives its own NextE-style profile
       // override. The legacy pushed route remains a global Browse consumer.
       presentationOverride: this.sourceTab
-        ? this.homeSource.presentationOverrideFor(this.sourceKey)
+        ? this.homeSubtabs.find(this.sourceKey)?.presentationOverride() ?? null
         : null,
       selectedGalleryId: this.sourceTab ? this.homeGallerySelection.selectedGalleryId : 0,
       isInitialLoading: this.isInitialLoading,

@@ -41,6 +41,7 @@ export interface BackupLocalDataCounts {
   viewedHistory: number
   searchHistory: number
   quickSearches: number
+  homeSubtabs?: number
   localBlockRules: number
   settingsTableGroups: number
 }
@@ -72,6 +73,23 @@ export interface BackupQuickSearchEntry {
   p: number
 }
 
+export interface BackupHomeSubtabEntry {
+  uuid: string
+  kind: string
+  name: string
+  query: string
+  language: string
+  sort: string
+  presentation: string
+  hidden: boolean
+  updatedAt: number
+}
+
+export interface BackupHomeSubtabSection {
+  profiles: BackupHomeSubtabEntry[]
+  selectedUuid: string
+}
+
 // NH content-filter rule (NextN's leaf replacement for NextE's local block rules).
 export interface BackupLocalBlockRuleEntry {
   id: string
@@ -95,6 +113,8 @@ export interface BackupLocalDataSection {
   viewedHistory: BackupViewedHistoryEntry[]
   searchHistory: string[]
   quickSearches: BackupQuickSearchEntry[]
+  /** Optional for schema-v1 backups created before Home SubTabs shipped. */
+  homeSubtabs?: BackupHomeSubtabSection
   localBlock: BackupLocalBlockSection
   // NH key-value settings tables: reader_settings / download_settings /
   // browse_presentation_settings / catalog_preferences.

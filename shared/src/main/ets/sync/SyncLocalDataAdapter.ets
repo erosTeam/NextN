@@ -3,17 +3,18 @@ import { NhContentFilterRule, NhContentFilterType } from '../model/NhContentFilt
 import { NhQuickSearchItem } from '../model/NhQuickSearch'
 import { NhReadingHistoryItem } from '../model/NhGallery'
 import { NhSearchHistoryItem } from '../model/NhSearchHistory'
-import { BrowsePresentationService } from '../services/BrowsePresentationService'
-import { CatalogPreferencesService } from '../services/CatalogPreferencesService'
-import { ContentFilterService } from '../services/ContentFilterService'
-import { DownloadSettingsService } from '../services/DownloadSettingsService'
-import { HomeSourcePresentationService } from '../services/HomeSourcePresentationService'
-import { ReaderPresentationService } from '../services/ReaderPresentationService'
+import { NhHomeSubtabProfile } from '../model/NhHomeSubtabProfile'
+import { HomeSubtabSettings } from '../settings/HomeSubtabSettings'
 import { BrowsePresentationRepository } from '../storage/BrowsePresentationRepository'
 import { CatalogPreferencesRepository } from '../storage/CatalogPreferencesRepository'
 import { ContentFilterRepository } from '../storage/ContentFilterRepository'
 import { DownloadSettingsRepository } from '../storage/DownloadSettingsRepository'
 import { HistoryRepository } from '../storage/HistoryRepository'
+import {
+  HomeSubtabRepository,
+  HomeSubtabSelectionRecord,
+  HomeSubtabStorageRecord,
+} from '../storage/HomeSubtabRepository'
 import { QuickSearchRepository } from '../storage/QuickSearchRepository'
 import { ReaderSettingsRepository } from '../storage/ReaderSettingsRepository'
 import { SearchHistoryRepository } from '../storage/SearchHistoryRepository'
@@ -25,6 +26,7 @@ import {
   SyncDatasetSelection,
   SyncDatasets,
   SyncEnvelopeV1,
+  SyncHomeSubtabRecord,
   SyncLocalBlockRuleRecord,
   SyncLocalBlockSettingsRecord,
   SyncQuickSearchRecord,
@@ -39,8 +41,10 @@ const DATASET_READ_PROGRESS: string = 'read-progress'
 const DATASET_VIEWED_HISTORY: string = 'viewed-history'
 const DATASET_SEARCH_HISTORY: string = 'search-history'
 const DATASET_QUICK_SEARCHES: string = 'quick-searches'
+const DATASET_HOME_SUBTABS: string = 'home-subtabs'
 const DATASET_LOCAL_BLOCK: string = 'local-block'
 const DATASET_SETTINGS_TABLES: string = 'settings-tables'
+const HOME_SUBTAB_SELECTION_RECORD: string = '@selection'
 const TABLE_READER_SETTINGS: string = 'reader_settings'
 const TABLE_DOWNLOAD_SETTINGS: string = 'download_settings'
 const TABLE_BROWSE_PRESENTATION_SETTINGS: string = 'browse_presentation_settings'
@@ -88,6 +92,9 @@ export class SyncLocalDataAdapter {
     if (selection.quickSearches) {
       envelope.datasets.quickSearches = await SyncLocalDataAdapter.readQuickSearches(context)
     }
+    if (selection.homeSubtabs) {
+      envelope.datasets.homeSubtabs = await SyncLocalDataAdapter.readHomeSubtabs(context)
+    }
     if (selection.localBlock) {
       // NH has no comment-score scalars; kept empty for NextE envelope parity.
       envelope.datasets.localBlockSettings = []
@@ -99,19 +106,35 @@ export class SyncLocalDataAdapter {
     return envelope
   }
 
-  static async applyEnvelope(context: common.UIAbilityContext, envelope: SyncEnvelopeV1): Promise<void> {
+  static async applyEnvelope(
+    context: common.UIAbilityContext,
+    envelope: SyncEnvelopeV1,
+    selection: SyncDatasetSelection = new SyncDatasetSelection(),
+  ): Promise<void> {
     SyncLocalDataAdapter.normalizeEnvelope(envelope)
     if (!SyncLocalDataAdapter.hasCompleteEnvelopeShape(envelope)) {
       throw new Error('Invalid NextN sync envelope')
     }
     try {
-      await SyncLocalDataAdapter.applyReadingHistory(context, envelope)
-      await SyncLocalDataAdapter.applySearchHistory(context, envelope.datasets.searchHistory)
-      await SyncLocalDataAdapter.applyQuickSearches(context, envelope.datasets.quickSearches)
-      await SyncLocalDataAdapter.applyLocalBlockSettings(context, envelope.datasets.localBlockSettings)
-      await SyncLocalDataAdapter.applyLocalBlockRules(context, envelope.datasets.localBlockRules)
-      await SyncLocalDataAdapter.applySettingsTables(context, envelope.datasets.settingsTables)
-      await SyncLocalDataAdapter.refreshSelectedState(context)
+      if (selection.readProgress || selection.viewedHistory) {
+        await SyncLocalDataAdapter.applyReadingHistory(context, envelope)
+      }
+      if (selection.searchHistory) {
+        await SyncLocalDataAdapter.applySearchHistory(context, envelope.datasets.searchHistory)
+      }
+      if (selection.quickSearches) {
+        await SyncLocalDataAdapter.applyQuickSearches(context, envelope.datasets.quickSearches)
+      }
+      if (selection.homeSubtabs) {
+        await SyncLocalDataAdapter.applyHomeSubtabs(context, envelope.datasets.homeSubtabs)
+      }
+      if (selection.localBlock) {
+        await SyncLocalDataAdapter.applyLocalBlockSettings(context, envelope.datasets.localBlockSettings)
+        await SyncLocalDataAdapter.applyLocalBlockRules(context, envelope.datasets.localBlockRules)
+      }
+      if (selection.settingsTables) {
+        await SyncLocalDataAdapter.applySettingsTables(context, envelope.datasets.settingsTables)
+      }
     } catch (error) {
       const e: Error = error as Error
       throw new Error(e.message || 'Failed to apply sync envelope')
@@ -129,6 +152,8 @@ export class SyncLocalDataAdapter {
       SyncLocalDataAdapter.mergeSearchHistory(local.datasets.searchHistory, remote.datasets.searchHistory)
     merged.datasets.quickSearches =
       SyncLocalDataAdapter.mergeQuickSearches(local.datasets.quickSearches, remote.datasets.quickSearches)
+    merged.datasets.homeSubtabs =
+      SyncLocalDataAdapter.mergeHomeSubtabs(local.datasets.homeSubtabs, remote.datasets.homeSubtabs)
     merged.datasets.localBlockSettings =
       SyncLocalDataAdapter.mergeLocalBlockSettings(
         local.datasets.localBlockSettings,
@@ -158,6 +183,8 @@ export class SyncLocalDataAdapter {
       selectedMerged.datasets.searchHistory : remote.datasets.searchHistory
     out.datasets.quickSearches = selection.quickSearches ?
       selectedMerged.datasets.quickSearches : remote.datasets.quickSearches
+    out.datasets.homeSubtabs = selection.homeSubtabs ?
+      selectedMerged.datasets.homeSubtabs : remote.datasets.homeSubtabs
     out.datasets.localBlockSettings = selection.localBlock ?
       selectedMerged.datasets.localBlockSettings : remote.datasets.localBlockSettings
     out.datasets.localBlockRules = selection.localBlock ?
@@ -197,6 +224,10 @@ export class SyncLocalDataAdapter {
     }
     if (!Array.isArray(data.quickSearches)) {
       data.quickSearches = []
+    }
+    if (!Array.isArray(data.homeSubtabs)) {
+      // v1 envelopes created before this dataset are an empty compatible set.
+      data.homeSubtabs = []
     }
     if (!Array.isArray(data.localBlockSettings)) {
       data.localBlockSettings = []
@@ -241,6 +272,22 @@ export class SyncLocalDataAdapter {
       r.scopeKey = SyncLocalDataAdapter.safeString(r.scopeKey)
       r.queryText = SyncLocalDataAdapter.safeString(r.queryText)
       r.pinnedAt = SyncLocalDataAdapter.safeNumber(r.pinnedAt)
+      r.updatedAt = SyncLocalDataAdapter.safeNumber(r.updatedAt)
+      r.deletedAt = SyncLocalDataAdapter.safeNumber(r.deletedAt)
+    }
+    for (let i: number = 0; i < data.homeSubtabs.length; i++) {
+      const r: SyncHomeSubtabRecord = data.homeSubtabs[i]
+      r.scopeKey = SyncLocalDataAdapter.safeString(r.scopeKey)
+      r.profileUuid = SyncLocalDataAdapter.safeString(r.profileUuid)
+      r.positionIndex = SyncLocalDataAdapter.safeNumber(r.positionIndex)
+      r.kind = SyncLocalDataAdapter.safeString(r.kind)
+      r.name = SyncLocalDataAdapter.safeString(r.name)
+      r.queryText = SyncLocalDataAdapter.safeString(r.queryText)
+      r.language = SyncLocalDataAdapter.safeString(r.language)
+      r.sort = SyncLocalDataAdapter.safeString(r.sort)
+      r.displayMode = SyncLocalDataAdapter.safeString(r.displayMode)
+      r.hidden = SyncLocalDataAdapter.safeBoolean(r.hidden)
+      r.selectedUuid = SyncLocalDataAdapter.safeString(r.selectedUuid)
       r.updatedAt = SyncLocalDataAdapter.safeNumber(r.updatedAt)
       r.deletedAt = SyncLocalDataAdapter.safeNumber(r.deletedAt)
     }
@@ -291,6 +338,7 @@ export class SyncLocalDataAdapter {
       !Array.isArray(data.viewedHistory) ||
       !Array.isArray(data.searchHistory) ||
       !Array.isArray(data.quickSearches) ||
+      !Array.isArray(data.homeSubtabs) ||
       !Array.isArray(data.localBlockSettings) ||
       !Array.isArray(data.localBlockRules) ||
       !Array.isArray(data.settingsTables)
@@ -301,6 +349,7 @@ export class SyncLocalDataAdapter {
       SyncLocalDataAdapter.hasViewedHistoryShape(data.viewedHistory) &&
       SyncLocalDataAdapter.hasSearchHistoryShape(data.searchHistory) &&
       SyncLocalDataAdapter.hasQuickSearchShape(data.quickSearches) &&
+      SyncLocalDataAdapter.hasHomeSubtabShape(data.homeSubtabs) &&
       SyncLocalDataAdapter.hasLocalBlockSettingsShape(data.localBlockSettings) &&
       SyncLocalDataAdapter.hasLocalBlockRuleShape(data.localBlockRules) &&
       SyncLocalDataAdapter.hasSettingsTableShape(data.settingsTables)
@@ -356,6 +405,15 @@ export class SyncLocalDataAdapter {
           )
         },
       )
+    } else if (datasetId === DATASET_HOME_SUBTABS) {
+      envelope.datasets.homeSubtabs.sort(
+        (a: SyncHomeSubtabRecord, b: SyncHomeSubtabRecord): number => {
+          return SyncLocalDataAdapter.compareKey(
+            SyncLocalDataAdapter.homeSubtabKey(a),
+            SyncLocalDataAdapter.homeSubtabKey(b),
+          )
+        },
+      )
     } else if (datasetId === DATASET_LOCAL_BLOCK) {
       envelope.datasets.localBlockSettings.sort(
         (a: SyncLocalBlockSettingsRecord, b: SyncLocalBlockSettingsRecord): number => {
@@ -395,6 +453,9 @@ export class SyncLocalDataAdapter {
     if (datasetId === DATASET_QUICK_SEARCHES) {
       return envelope.datasets.quickSearches.length
     }
+    if (datasetId === DATASET_HOME_SUBTABS) {
+      return envelope.datasets.homeSubtabs.length
+    }
     if (datasetId === DATASET_LOCAL_BLOCK) {
       return envelope.datasets.localBlockSettings.length + envelope.datasets.localBlockRules.length
     }
@@ -424,6 +485,11 @@ export class SyncLocalDataAdapter {
     } else if (datasetId === DATASET_QUICK_SEARCHES) {
       for (let i: number = 0; i < envelope.datasets.quickSearches.length; i++) {
         const r: SyncQuickSearchRecord = envelope.datasets.quickSearches[i]
+        out = Math.max(out, r.updatedAt, r.deletedAt)
+      }
+    } else if (datasetId === DATASET_HOME_SUBTABS) {
+      for (let i: number = 0; i < envelope.datasets.homeSubtabs.length; i++) {
+        const r: SyncHomeSubtabRecord = envelope.datasets.homeSubtabs[i]
         out = Math.max(out, r.updatedAt, r.deletedAt)
       }
     } else if (datasetId === DATASET_LOCAL_BLOCK) {
@@ -530,6 +596,41 @@ export class SyncLocalDataAdapter {
       r.pinnedAt = item.pinnedAt
       r.updatedAt = item.pinnedAt
       r.deletedAt = 0
+      out.push(r)
+    }
+    return out
+  }
+
+  private static async readHomeSubtabs(context: common.UIAbilityContext): Promise<SyncHomeSubtabRecord[]> {
+    await HomeSubtabSettings.flushForSync()
+    const source: HomeSubtabStorageRecord[] = await HomeSubtabRepository.exportRecords(context)
+    const out: SyncHomeSubtabRecord[] = []
+    for (let i: number = 0; i < source.length; i++) {
+      const item: HomeSubtabStorageRecord = source[i]
+      const profile: NhHomeSubtabProfile = item.profile
+      const r: SyncHomeSubtabRecord = new SyncHomeSubtabRecord()
+      r.scopeKey = ''
+      r.profileUuid = profile.uuid
+      r.positionIndex = item.positionIndex
+      r.kind = profile.kind
+      r.name = profile.name
+      r.queryText = profile.query
+      r.language = profile.language
+      r.sort = profile.sort
+      r.displayMode = profile.presentation
+      r.hidden = profile.hidden
+      r.updatedAt = profile.lastEditTime
+      r.deletedAt = item.deletedAt
+      out.push(r)
+    }
+    const selection: HomeSubtabSelectionRecord = await HomeSubtabRepository.loadSelection(context)
+    if (selection.updatedAt > 0 || selection.deletedAt > 0) {
+      const r: SyncHomeSubtabRecord = new SyncHomeSubtabRecord()
+      r.scopeKey = ''
+      r.profileUuid = HOME_SUBTAB_SELECTION_RECORD
+      r.selectedUuid = selection.selectedUuid
+      r.updatedAt = selection.updatedAt
+      r.deletedAt = selection.deletedAt
       out.push(r)
     }
     return out
@@ -705,6 +806,46 @@ export class SyncLocalDataAdapter {
       items.push(item)
     }
     await QuickSearchRepository.restoreBackup(context, items)
+  }
+
+  private static async applyHomeSubtabs(
+    context: common.UIAbilityContext,
+    records: SyncHomeSubtabRecord[],
+  ): Promise<void> {
+    // Old v1 envelopes did not contain this dataset. Empty means absent, not
+    // an authoritative delete of the locally seeded Home configuration.
+    if (records.length === 0) {
+      return
+    }
+    const profiles: HomeSubtabStorageRecord[] = []
+    const selection: HomeSubtabSelectionRecord = new HomeSubtabSelectionRecord()
+    for (let i: number = 0; i < records.length; i++) {
+      const r: SyncHomeSubtabRecord = records[i]
+      if (r.profileUuid === HOME_SUBTAB_SELECTION_RECORD) {
+        selection.selectedUuid = r.selectedUuid
+        selection.updatedAt = r.updatedAt
+        selection.deletedAt = r.deletedAt
+        continue
+      }
+      if (r.profileUuid.length === 0) {
+        continue
+      }
+      const item: HomeSubtabStorageRecord = new HomeSubtabStorageRecord()
+      item.positionIndex = r.positionIndex
+      item.deletedAt = r.deletedAt
+      item.profile.uuid = r.profileUuid
+      item.profile.kind = NhHomeSubtabProfile.normalizeKind(r.kind)
+      item.profile.name = r.name
+      item.profile.query = r.queryText
+      item.profile.language = NhHomeSubtabProfile.normalizeLanguage(r.language)
+      item.profile.sort = NhHomeSubtabProfile.normalizeSort(r.sort)
+      item.profile.presentation = r.displayMode
+      item.profile.hidden = r.hidden
+      item.profile.lastEditTime = r.updatedAt
+      profiles.push(item)
+    }
+    await HomeSubtabRepository.importRecords(context, profiles, selection)
+    await HomeSubtabSettings.refreshFromStorage(context)
   }
 
   private static async applyLocalBlockSettings(
@@ -901,6 +1042,31 @@ export class SyncLocalDataAdapter {
     return out
   }
 
+  private static mergeHomeSubtabs(
+    a: SyncHomeSubtabRecord[],
+    b: SyncHomeSubtabRecord[],
+  ): SyncHomeSubtabRecord[] {
+    const map: Map<string, SyncHomeSubtabRecord> = new Map<string, SyncHomeSubtabRecord>()
+    a.forEach((r: SyncHomeSubtabRecord): void => SyncLocalDataAdapter.keepHomeSubtab(map, r))
+    b.forEach((r: SyncHomeSubtabRecord): void => SyncLocalDataAdapter.keepHomeSubtab(map, r))
+    const out: SyncHomeSubtabRecord[] = []
+    map.forEach((r: SyncHomeSubtabRecord): void => { out.push(r) })
+    return out
+  }
+
+  private static keepHomeSubtab(
+    map: Map<string, SyncHomeSubtabRecord>,
+    r: SyncHomeSubtabRecord,
+  ): void {
+    const key: string = SyncLocalDataAdapter.homeSubtabKey(r)
+    const prev: SyncHomeSubtabRecord | undefined = map.get(key)
+    if (prev === undefined ||
+      SyncLocalDataAdapter.effectiveTime(r.updatedAt, r.deletedAt) >=
+      SyncLocalDataAdapter.effectiveTime(prev.updatedAt, prev.deletedAt)) {
+      map.set(key, r)
+    }
+  }
+
   private static keepQuickSearch(
     map: Map<string, SyncQuickSearchRecord>,
     r: SyncQuickSearchRecord,
@@ -1021,6 +1187,10 @@ export class SyncLocalDataAdapter {
     return r.scopeKey + ':' + r.queryText.trim().toLowerCase()
   }
 
+  private static homeSubtabKey(r: SyncHomeSubtabRecord): string {
+    return r.scopeKey + ':' + r.profileUuid
+  }
+
   private static localBlockRuleKey(r: SyncLocalBlockRuleRecord): string {
     return r.scopeKey + ':' + r.ruleId
   }
@@ -1093,6 +1263,24 @@ export class SyncLocalDataAdapter {
         typeof r.pinnedAt !== 'number' ||
         typeof r.updatedAt !== 'number' ||
         typeof r.deletedAt !== 'number') {
+        return false
+      }
+    }
+    return true
+  }
+
+  private static hasHomeSubtabShape(records: SyncHomeSubtabRecord[]): boolean {
+    for (let i: number = 0; i < records.length; i++) {
+      const r: SyncHomeSubtabRecord = records[i]
+      if (!SyncLocalDataAdapter.isRecord(r) ||
+        typeof r.scopeKey !== 'string' ||
+        typeof r.profileUuid !== 'string' || r.profileUuid.length === 0 ||
+        typeof r.positionIndex !== 'number' ||
+        typeof r.kind !== 'string' || typeof r.name !== 'string' ||
+        typeof r.queryText !== 'string' || typeof r.language !== 'string' ||
+        typeof r.sort !== 'string' || typeof r.displayMode !== 'string' ||
+        typeof r.hidden !== 'boolean' || typeof r.selectedUuid !== 'string' ||
+        typeof r.updatedAt !== 'number' || typeof r.deletedAt !== 'number') {
         return false
       }
     }
@@ -1202,18 +1390,4 @@ export class SyncLocalDataAdapter {
     return NhContentFilterType.TITLE
   }
 
-  /**
-   * State rehydration equivalent to NextE's SyncService.refreshSelectedState:
-   * HistoryRepository.restoreBackup already publishes the reading-history
-   * mutation; the remaining durable writes rehydrate their reactive holders
-   * through the same services the NextN backup chain uses.
-   */
-  private static async refreshSelectedState(context: common.UIAbilityContext): Promise<void> {
-    await ContentFilterService.restore(context)
-    await BrowsePresentationService.restore(context)
-    await HomeSourcePresentationService.restore(context)
-    await ReaderPresentationService.restoreFromBackup(context)
-    await CatalogPreferencesService.restoreFromBackup(context)
-    await DownloadSettingsService.restoreFromBackup(context)
-  }
 }

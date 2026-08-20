@@ -6,6 +6,7 @@ export class CloudSyncFeatureTables {
   static readonly VIEWED_HISTORY: string[] = ['reading_history']
   static readonly SEARCH_HISTORY: string[] = ['search_history']
   static readonly QUICK_SEARCHES: string[] = ['search_quick']
+  static readonly HOME_SUBTABS: string[] = ['home_subtabs', 'home_subtab_selection']
   static readonly LOCAL_BLOCK: string[] = ['content_filter_rules']
   static readonly SETTINGS_TABLES: string[] = [
     'reader_settings',
@@ -19,6 +20,8 @@ export const WEBDAV_SYNC_TABLES: string[] = [
   'reading_history',
   'search_history',
   'search_quick',
+  'home_subtabs',
+  'home_subtab_selection',
   'content_filter_rules',
   'reader_settings',
   'download_settings',
@@ -39,6 +42,9 @@ export function webDavSyncTablesForSelection(selection: SyncDatasetSelection): s
   }
   if (selection.quickSearches) {
     CloudSyncFeatureTables.QUICK_SEARCHES.forEach((table: string) => tables.push(table))
+  }
+  if (selection.homeSubtabs) {
+    CloudSyncFeatureTables.HOME_SUBTABS.forEach((table: string) => tables.push(table))
   }
   if (selection.localBlock) {
     CloudSyncFeatureTables.LOCAL_BLOCK.forEach((table: string) => tables.push(table))

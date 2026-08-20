@@ -3091,3 +3091,32 @@ permitted in this repository.
 - Result is condition-blocked rather than PASS: the app-log tail contained no refresh-start, refresh-end, reach-end, or page-request marker, and the post-gesture layout alone cannot prove a refresh callback. No further blind gesture/screenshot repetition is scheduled.
 - Evidence: `.hvigor/outputs/latent-hazard-audit-20260820-usb/followup-top.json`, `followup-after.json`, `followup-after-hilog.txt` (local-only).
 - Follow-up handling: refresh/reach-end cannot be tested under the current build/diagnostic conditions. It is not counted as a regression or a success; reopening requires a stable runtime marker or an explicitly authorized diagnostic-instrumentation change.
+
+## Current delivery observation — NextE-style custom Home SubTabs accepted
+
+- 2026-08-20 +0800: USB `56T0225315001128` passed the wake gate (AWAKE,
+  `OverrideTimeout=86400000ms`). The signed HAP was installed with `install -r`;
+  no uninstall, data clear, or account credential action occurred. Current S0
+  remained native signed-in on Account and rendered authenticated Favorites.
+- Same-device visual comparison used the installed NextE 1.3.0 at the same
+  1320×2120 viewport. NextN's Home bar, manager and corrected editor preserve
+  the reference parent trees and action placement. Manager row geometry matches;
+  editor basic-section/row bounds match exactly after moving Display into the
+  basic group and giving the inline Name field stable component ownership.
+- Runtime paths completed: four seeded tabs; custom create from submitted
+  Search; search/edit/layout/jump/random menu contract; page-2 replacement;
+  retained scroll across tab switching; rename without reload; query change
+  with directed reload; hide/delete selected fallback; rejected last-visible
+  switch returning to the stored state; temporary-tab cleanup; and cold-start
+  persistence.
+- Backup round trip completed with secrets excluded: exported the four-profile
+  state, hid Chinese, proved the hidden state across cold start, imported that
+  exact file, then cold-started and observed Latest/Popular/Chinese/Highly
+  favorited restored. WebDAV is not configured on this device (`未启用`), so no
+  remote operation was attempted. The separate Custom SubTab dataset is visible
+  and enabled by default; a live WebDAV round trip remains condition-blocked on
+  a configured endpoint, not reported as a pass.
+- Active objective is feature delivery closure. No login action is pending;
+  the next unverified physical action would be a WebDAV round trip only after a
+  real endpoint is configured. This run did not perform or authorize credential
+  entry for that external service.

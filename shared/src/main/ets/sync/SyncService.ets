@@ -5,6 +5,7 @@ import { CatalogPreferencesService } from '../services/CatalogPreferencesService
 import { ContentFilterService } from '../services/ContentFilterService'
 import { DownloadSettingsService } from '../services/DownloadSettingsService'
 import { ReaderPresentationService } from '../services/ReaderPresentationService'
+import { HomeSubtabSettings } from '../settings/HomeSubtabSettings'
 import { BrowsePresentationRepository } from '../storage/BrowsePresentationRepository'
 import { CatalogPreferencesRepository } from '../storage/CatalogPreferencesRepository'
 import { ContentFilterRepository } from '../storage/ContentFilterRepository'
@@ -21,6 +22,7 @@ import {
   SyncDatasetSelection,
   SyncDatasets,
   SyncEnvelopeV1,
+  SyncHomeSubtabRecord,
   SyncLocalBlockRuleRecord,
   SyncLocalBlockSettingsRecord,
   SyncQuickSearchRecord,
@@ -71,7 +73,7 @@ export class SyncService {
     const selectedMerged: SyncEnvelopeV1 =
       SyncLocalDataAdapter.mergeEnvelopes(local, selectedRemote)
     selectedMerged.deviceId = deviceId
-    await SyncLocalDataAdapter.applyEnvelope(context, selectedMerged)
+    await SyncLocalDataAdapter.applyEnvelope(context, selectedMerged, selection)
     await SyncService.refreshSelectedState(context, selection)
     return selectedMerged
   }
@@ -121,6 +123,9 @@ export class SyncService {
     if (!Array.isArray(data.quickSearches)) {
       data.quickSearches = []
     }
+    if (!Array.isArray(data.homeSubtabs)) {
+      data.homeSubtabs = []
+    }
     if (!Array.isArray(data.localBlockSettings)) {
       data.localBlockSettings = []
     }
@@ -164,6 +169,22 @@ export class SyncService {
       r.scopeKey = SyncService.safeString(r.scopeKey)
       r.queryText = SyncService.safeString(r.queryText)
       r.pinnedAt = SyncService.safeNumber(r.pinnedAt)
+      r.updatedAt = SyncService.safeNumber(r.updatedAt)
+      r.deletedAt = SyncService.safeNumber(r.deletedAt)
+    }
+    for (let i: number = 0; i < data.homeSubtabs.length; i++) {
+      const r: SyncHomeSubtabRecord = data.homeSubtabs[i]
+      r.scopeKey = SyncService.safeString(r.scopeKey)
+      r.profileUuid = SyncService.safeString(r.profileUuid)
+      r.positionIndex = SyncService.safeNumber(r.positionIndex)
+      r.kind = SyncService.safeString(r.kind)
+      r.name = SyncService.safeString(r.name)
+      r.queryText = SyncService.safeString(r.queryText)
+      r.language = SyncService.safeString(r.language)
+      r.sort = SyncService.safeString(r.sort)
+      r.displayMode = SyncService.safeString(r.displayMode)
+      r.hidden = SyncService.safeBoolean(r.hidden)
+      r.selectedUuid = SyncService.safeString(r.selectedUuid)
       r.updatedAt = SyncService.safeNumber(r.updatedAt)
       r.deletedAt = SyncService.safeNumber(r.deletedAt)
     }
@@ -256,6 +277,9 @@ export class SyncService {
     if (selection.quickSearches) {
       await QuickSearchRepository.exportForBackup(context)
     }
+    if (selection.homeSubtabs) {
+      await HomeSubtabSettings.flushForSync()
+    }
     if (selection.localBlock) {
       await ContentFilterRepository.exportForBackup(context)
     }
@@ -286,6 +310,9 @@ export class SyncService {
     if (selection.quickSearches) {
       out.datasets.quickSearches = source.datasets.quickSearches
     }
+    if (selection.homeSubtabs) {
+      out.datasets.homeSubtabs = source.datasets.homeSubtabs
+    }
     if (selection.localBlock) {
       out.datasets.localBlockSettings = source.datasets.localBlockSettings
       out.datasets.localBlockRules = source.datasets.localBlockRules
@@ -305,6 +332,9 @@ export class SyncService {
     }
     if (selection.localBlock) {
       await ContentFilterService.restore(context)
+    }
+    if (selection.homeSubtabs) {
+      await HomeSubtabSettings.refreshFromStorage(context)
     }
     if (selection.settingsTables) {
       await ReaderPresentationService.restoreFromBackup(context)

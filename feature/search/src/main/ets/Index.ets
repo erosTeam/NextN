@@ -6,3 +6,4 @@ export {
   SEARCH_TITLE_FIELD_BOTTOM_HEIGHT,
 } from './components/SearchTitleField'
 export { SearchAdvancedConditionInputs } from './components/SearchAdvancedConditionInputs'
+export { HomeSubtabEditPage } from './pages/HomeSubtabEditPage'

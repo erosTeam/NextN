@@ -2,6 +2,8 @@ import { common } from '@kit.AbilityKit'
 import { NhContentFilterRule, NhContentFilterType } from '../model/NhContentFilter'
 import { NhQuickSearchItem } from '../model/NhQuickSearch'
 import { NhReadingHistoryItem } from '../model/NhGallery'
+import { NhHomeSubtabProfile } from '../model/NhHomeSubtabProfile'
+import { HomeSubtabBackupSnapshot, HomeSubtabSettings } from '../settings/HomeSubtabSettings'
 import { BrowsePresentationRepository } from '../storage/BrowsePresentationRepository'
 import { CatalogPreferencesRepository } from '../storage/CatalogPreferencesRepository'
 import { ContentFilterRepository } from '../storage/ContentFilterRepository'
@@ -13,6 +15,8 @@ import { SearchHistoryRepository } from '../storage/SearchHistoryRepository'
 import {
   BackupLocalBlockRuleEntry,
   BackupLocalBlockSection,
+  BackupHomeSubtabEntry,
+  BackupHomeSubtabSection,
   BackupLocalDataSection,
   BackupQuickSearchEntry,
   BackupReadProgressEntry,
@@ -38,6 +42,7 @@ export class BackupLocalDataAdapter {
       viewedHistory: await BackupLocalDataAdapter.exportViewedHistory(context),
       searchHistory: await BackupLocalDataAdapter.exportSearchHistory(context),
       quickSearches: await BackupLocalDataAdapter.exportQuickSearches(context),
+      homeSubtabs: await BackupLocalDataAdapter.exportHomeSubtabs(context),
       localBlock: await BackupLocalDataAdapter.exportLocalBlock(context),
       settingsTables: await BackupLocalDataAdapter.exportSettingsTables(context),
     }
@@ -104,6 +109,28 @@ export class BackupLocalDataAdapter {
     return out
   }
 
+  private static async exportHomeSubtabs(
+    context: common.UIAbilityContext,
+  ): Promise<BackupHomeSubtabSection> {
+    const snapshot: HomeSubtabBackupSnapshot = await HomeSubtabSettings.exportForBackup(context)
+    const profiles: BackupHomeSubtabEntry[] = []
+    for (let i: number = 0; i < snapshot.profiles.length; i++) {
+      const profile: NhHomeSubtabProfile = snapshot.profiles[i]
+      profiles.push({
+        uuid: profile.uuid,
+        kind: profile.kind,
+        name: profile.name,
+        query: profile.query,
+        language: profile.language,
+        sort: profile.sort,
+        presentation: profile.presentation,
+        hidden: profile.hidden,
+        updatedAt: profile.lastEditTime,
+      })
+    }
+    return { profiles: profiles, selectedUuid: snapshot.selectedUuid }
+  }
+
   private static async exportLocalBlock(
     context: common.UIAbilityContext,
   ): Promise<BackupLocalBlockSection> {
@@ -166,8 +193,31 @@ export class BackupLocalDataAdapter {
       BackupLocalDataAdapter.hasReadProgressEntries(candidate.readProgress) &&
       BackupLocalDataAdapter.hasViewedHistoryEntries(candidate.viewedHistory) &&
       BackupLocalDataAdapter.hasSearchHistoryEntries(candidate.searchHistory) &&
-      BackupLocalDataAdapter.hasQuickSearchEntries(candidate.quickSearches)
+      BackupLocalDataAdapter.hasQuickSearchEntries(candidate.quickSearches) &&
+      BackupLocalDataAdapter.hasHomeSubtabSection(candidate.homeSubtabs)
     )
+  }
+
+  private static hasHomeSubtabSection(section: BackupHomeSubtabSection | undefined): boolean {
+    // Missing is the explicit backward-compatible empty dataset.
+    if (section === undefined) {
+      return true
+    }
+    if (!BackupLocalDataAdapter.isRecord(section) || !Array.isArray(section.profiles) ||
+      typeof section.selectedUuid !== 'string') {
+      return false
+    }
+    for (let i: number = 0; i < section.profiles.length; i++) {
+      const entry: BackupHomeSubtabEntry = section.profiles[i]
+      if (!BackupLocalDataAdapter.isRecord(entry) || typeof entry.uuid !== 'string' ||
+        entry.uuid.length === 0 || typeof entry.kind !== 'string' || typeof entry.name !== 'string' ||
+        typeof entry.query !== 'string' || typeof entry.language !== 'string' ||
+        typeof entry.sort !== 'string' || typeof entry.presentation !== 'string' ||
+        typeof entry.hidden !== 'boolean' || typeof entry.updatedAt !== 'number') {
+        return false
+      }
+    }
+    return true
   }
 
   private static hasReadProgressEntries(entries: BackupReadProgressEntry[]): boolean {
@@ -320,6 +370,25 @@ export class BackupLocalDataAdapter {
       quick.push(item)
     }
     await QuickSearchRepository.restoreBackup(context, quick)
+
+    if (section.homeSubtabs !== undefined) {
+      const profiles: NhHomeSubtabProfile[] = []
+      for (let i: number = 0; i < section.homeSubtabs.profiles.length; i++) {
+        const entry: BackupHomeSubtabEntry = section.homeSubtabs.profiles[i]
+        const profile: NhHomeSubtabProfile = new NhHomeSubtabProfile()
+        profile.uuid = entry.uuid
+        profile.kind = NhHomeSubtabProfile.normalizeKind(entry.kind)
+        profile.name = entry.name
+        profile.query = entry.query
+        profile.language = NhHomeSubtabProfile.normalizeLanguage(entry.language)
+        profile.sort = NhHomeSubtabProfile.normalizeSort(entry.sort)
+        profile.presentation = entry.presentation
+        profile.hidden = entry.hidden
+        profile.lastEditTime = entry.updatedAt
+        profiles.push(profile)
+      }
+      await HomeSubtabSettings.restoreBackup(context, profiles, section.homeSubtabs.selectedUuid)
+    }
 
     const rules: NhContentFilterRule[] = []
     for (let i: number = 0; i < section.localBlock.rules.length; i++) {

@@ -91,6 +91,7 @@ export class BackupService {
           viewedHistory: localData.viewedHistory.length,
           searchHistory: localData.searchHistory.length,
           quickSearches: localData.quickSearches.length,
+          homeSubtabs: localData.homeSubtabs === undefined ? 0 : localData.homeSubtabs.profiles.length,
           localBlockRules: localData.localBlock.rules.length,
           settingsTableGroups: Object.keys(localData.settingsTables).length,
         },

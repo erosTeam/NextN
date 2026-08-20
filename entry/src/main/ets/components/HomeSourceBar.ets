@@ -1,30 +1,32 @@
 import {
   AppStrings,
   CatalogPreferencesState,
-  HomeSourceState,
+  HomeSubtabState,
   HomeSourceVisualIndexState,
-  HOME_SOURCE_LATEST,
-  HOME_SOURCE_POPULAR,
+  HOME_SUBTAB_LATEST_UUID,
+  HOME_SUBTAB_POPULAR_UUID,
   HomeSourceBridge,
+  NhHomeSubtabProfile,
   NhSearchLanguage,
   NhSearchOptions,
   SubTabBar,
   SubtabTransitionBridge,
   SUBTAB_TRANSITION_SCOPE_HOME,
   TabItem,
+  ThemeTokens,
   connectCatalogPreferences,
-  connectHomeSource,
+  connectHomeSubtabs,
   connectHomeSourceVisualIndex,
 } from 'shared'
 
 /**
- * The two-source Browse selector, pinned by Index in HDS `bottomBuilder`.
+ * The unified Home source selector, pinned by Index in HDS `bottomBuilder`.
  * It intentionally contains no remote state: RetainedSubtabHost owns the
  * native transition and each retained source page owns its data lifecycle.
  */
 @ComponentV2
 export struct HomeSourceBar {
-  @Local homeSource: HomeSourceState = connectHomeSource()
+  @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
   @Local visual: HomeSourceVisualIndexState = connectHomeSourceVisualIndex()
   @Local catalogPreferences: CatalogPreferencesState = connectCatalogPreferences()
 
@@ -38,14 +40,27 @@ export struct HomeSourceBar {
   }
 
   private tabs(): TabItem[] {
-    return [
-      new TabItem(HOME_SOURCE_LATEST, this.latestTabTitle()),
-      new TabItem(HOME_SOURCE_POPULAR, AppStrings.get('home_source_popular')),
-    ]
+    const tabs: TabItem[] = []
+    this.homeSubtabs.visibleProfiles().forEach((profile: NhHomeSubtabProfile): void => {
+      if (profile.uuid === HOME_SUBTAB_LATEST_UUID) {
+        tabs.push(new TabItem(profile.uuid, this.latestTabTitle()))
+      } else if (profile.uuid === HOME_SUBTAB_POPULAR_UUID) {
+        tabs.push(new TabItem(profile.uuid, AppStrings.get('home_source_popular')))
+      } else {
+        tabs.push(new TabItem(profile.uuid, profile.name))
+      }
+    })
+    return tabs
   }
 
   private selectedIndex(): number {
-    return this.homeSource.selectedKey === HOME_SOURCE_POPULAR ? 1 : 0
+    const items: TabItem[] = this.tabs()
+    for (let index: number = 0; index < items.length; index++) {
+      if (items[index].key === this.homeSubtabs.selectedUuid) {
+        return index
+      }
+    }
+    return 0
   }
 
   build() {
@@ -56,13 +71,27 @@ export struct HomeSourceBar {
         selectedIndex: this.selectedIndex(),
         onSelect: (index: number): void => {
           const items: TabItem[] = this.tabs()
-          if (index < 0 || index >= items.length || items[index].key === this.homeSource.selectedKey) {
+          if (index < 0 || index >= items.length || items[index].key === this.homeSubtabs.selectedUuid) {
             return
           }
           SubtabTransitionBridge.request(SUBTAB_TRANSITION_SCOPE_HOME, items[index].key)
         },
       })
         .layoutWeight(1)
+      Button({ type: ButtonType.Circle }) {
+        SymbolGlyph($r('sys.symbol.list_square'))
+          .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+          .fontColor([$r('sys.color.font_secondary')])
+      }
+      .width(28)
+      .height(28)
+      .margin({ left: ThemeTokens.SPACE_XS, right: ThemeTokens.SPACE_SM })
+      .backgroundColor(Color.Transparent)
+      .alignSelf(ItemAlign.Start)
+      .offset({ y: -2 })
+      .onClick((): void => {
+        HomeSourceBridge.requestManageSubtabs()
+      })
     }
     .width('100%')
     .height('100%')

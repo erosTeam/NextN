@@ -39,18 +39,20 @@ ok('envelope identity + KDF params defined',
 ok("'secrets' is encryption-only, localData is plaintext durable data",
   /BACKUP_SECTION_NAMES: BackupSectionName\[\] = \['preferences', 'localData'\]/.test(types) &&
     /BACKUP_ENCRYPTED_ONLY_SECTION_NAMES: BackupSectionName\[\] = \['secrets'\]/.test(types))
-ok('localData section carries the six durable NH datasets outside Preferences',
+ok('localData section carries the seven durable NH datasets outside Preferences',
   /BackupSectionName = 'preferences' \| 'localData' \| 'secrets'/.test(types) &&
     /interface BackupLocalDataSection/.test(types) &&
     /readProgress: BackupReadProgressEntry\[\]/.test(types) &&
     /viewedHistory: BackupViewedHistoryEntry\[\]/.test(types) &&
     /searchHistory: string\[\]/.test(types) &&
     /quickSearches: BackupQuickSearchEntry\[\]/.test(types) &&
+    /homeSubtabs\?: BackupHomeSubtabSection/.test(types) &&
     /localBlock: BackupLocalBlockSection/.test(types) &&
     /settingsTables: Record<string, Record<string, string>>/.test(types))
 ok('settings-table backup counts every durable table group',
   /settingsTableGroups: number/.test(types) &&
-    /quickSearches: number/.test(types))
+    /quickSearches: number/.test(types) &&
+    /homeSubtabs\?: number/.test(types))
 
 const deny = read('shared/src/main/ets/backup/BackupSecretDenylist.ets')
 ok('denylist marks credential-bearing substrings as secret',
@@ -126,6 +128,7 @@ ok('service exports and restores the localData section with NH counts',
     /sections: BackupSectionName\[\] = \['preferences', 'localData'\]/.test(svc) &&
     /BackupLocalDataAdapter\.restoreSection\(context, envelope\.data\.localData\)/.test(svc) &&
     /quickSearches: localData\.quickSearches\.length/.test(svc) &&
+    /homeSubtabs: localData\.homeSubtabs === undefined \? 0 : localData\.homeSubtabs\.profiles\.length/.test(svc) &&
     /settingsTableGroups: Object\.keys\(localData\.settingsTables\)\.length/.test(svc))
 ok('backup parser and restore boundary reject partial localData replacements',
   /BackupService\.hasCompleteLocalDataTopology\(envelope\)/.test(svc) &&
@@ -171,11 +174,16 @@ ok('local-data restore requires all four durable settings tables and replaces ea
   /'reader_settings'[\s\S]*'download_settings'[\s\S]*'browse_presentation_settings'[\s\S]*'catalog_preferences'/.test(localDataAdapter) &&
     /SearchHistoryRepository\.restoreBackup\(context, section\.searchHistory\)/.test(localDataAdapter) &&
     /QuickSearchRepository\.restoreBackup\(context, quick\)/.test(localDataAdapter) &&
+    /section\.homeSubtabs !== undefined[\s\S]*HomeSubtabSettings\.restoreBackup\(context, profiles, section\.homeSubtabs\.selectedUuid\)/.test(localDataAdapter) &&
     /ContentFilterRepository\.restoreBackup\(context, rules\)/.test(localDataAdapter) &&
     /ReaderSettingsRepository\.restoreBackup\(context, section\.settingsTables\['reader_settings'\]\)/.test(localDataAdapter) &&
     /DownloadSettingsRepository\.restoreBackup\(context, section\.settingsTables\['download_settings'\]\)/.test(localDataAdapter) &&
     /BrowsePresentationRepository\.restoreBackup\([\s\S]*section\.settingsTables\['browse_presentation_settings'\]/.test(localDataAdapter) &&
     /CatalogPreferencesRepository\.restoreBackup\(context, section\.settingsTables\['catalog_preferences'\]\)/.test(localDataAdapter))
+ok('legacy backups may omit Home SubTabs without becoming malformed or clearing current profiles',
+  /homeSubtabs\?: BackupHomeSubtabSection/.test(types) &&
+    /if \(section === undefined\)[\s\S]*return true/.test(localDataAdapter) &&
+    /if \(section\.homeSubtabs !== undefined\)/.test(localDataAdapter))
 
 ok('shared exports BackupService + BackupSecretsAdapter + credential group types',
   /export \{ BackupService \}/.test(read('shared/src/main/ets/Index.ets')) &&

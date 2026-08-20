@@ -9,6 +9,7 @@ import {
   DiagnosticLogger,
   BrowsePresentationState,
   GalleryCollectionBody,
+  HomeSubtabEditParams,
   SecondaryListScaffold,
   LayoutSafeAreaState,
   NextNPullRefreshController,
@@ -176,6 +177,7 @@ export struct SearchPage {
   @Local isSuggestingTags: boolean = false
   @Param scroller: Scroller = new Scroller()
   @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
+  @Event onCreateSubtab?: (params: HomeSubtabEditParams) => void
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private requestGeneration: number = 0
   private tagTranslationRefreshEpoch: number = 0
@@ -2138,6 +2140,24 @@ export struct SearchPage {
     }
     const jumpMenuItem: Record<string, Object> = { 'content': jumpAction }
     const menuItems: Record<string, Object>[] = [filterMenuItem, jumpMenuItem]
+    if (this.activeQuery.trim().length > 0 && this.onCreateSubtab) {
+      const createSubtabAction: Record<string, Object> = {
+        'label': AppStrings.get('action_create_home_subtab'),
+        'icon': $r('sys.symbol.plus_square'),
+        'isEnabled': true,
+        'action': (): void => {
+          if (this.onCreateSubtab) {
+            this.onCreateSubtab(new HomeSubtabEditParams(
+              '',
+              this.activeQuery.trim(),
+              this.activeLanguageFilter,
+              this.activeSearchSort,
+            ))
+          }
+        },
+      }
+      menuItems.push({ 'content': createSubtabAction })
+    }
     const quickSearchQuery: string = this.quickSearchableActiveQuery()
     if (this.isQuickSearchesLoaded && quickSearchQuery.length > 0) {
       const isPinned: boolean = this.isActiveQuickSearchPinned()

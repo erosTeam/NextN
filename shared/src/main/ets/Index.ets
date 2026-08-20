@@ -70,6 +70,17 @@ export {
 } from './model/NhSearchQuery'
 export { NhCatalogPreferences } from './model/NhCatalogPreferences'
 export {
+  NhHomeSubtabKind,
+  NhHomeSubtabProfile,
+  HomeSubtabEditParams,
+  HOME_SUBTAB_LATEST_UUID,
+  HOME_SUBTAB_POPULAR_UUID,
+  HOME_SUBTAB_STARTER_CHINESE_UUID,
+  HOME_SUBTAB_STARTER_FAVORITED_UUID,
+  HOME_SUBTAB_PRESENTATION_GLOBAL,
+  newHomeSubtabUuid,
+} from './model/NhHomeSubtabProfile'
+export {
   NhReaderBackgroundMode,
   NhReaderImageScalingQuality,
   NhReaderMode,
@@ -461,10 +472,17 @@ export { ReaderPresentationService } from './services/ReaderPresentationService'
 export { BrowsePresentationRepository } from './storage/BrowsePresentationRepository'
 export { HomeSourcePresentationRepository } from './storage/HomeSourcePresentationRepository'
 export { CatalogPreferencesRepository } from './storage/CatalogPreferencesRepository'
+export {
+  HomeSubtabRepository,
+  HomeSubtabStorageRecord,
+  HomeSubtabSelectionRecord,
+} from './storage/HomeSubtabRepository'
 export { BrowsePresentationService } from './services/BrowsePresentationService'
 export { HomeSourcePresentationService } from './services/HomeSourcePresentationService'
 export { CatalogPreferencesService } from './services/CatalogPreferencesService'
 export { CatalogPreferencesState, connectCatalogPreferences } from './state/CatalogPreferencesState'
+export { HomeSubtabState, connectHomeSubtabs } from './state/HomeSubtabState'
+export { HomeSubtabSettings, HomeSubtabBackupSnapshot } from './settings/HomeSubtabSettings'
 export { ThemeSettings } from './settings/ThemeSettings'
 export { ThemeColorSettings, ThemeColorOption } from './settings/ThemeColorSettings'
 export { LanguageSettings } from './settings/LanguageSettings'
@@ -646,6 +664,8 @@ export {
   BackupReadProgressEntry,
   BackupViewedHistoryEntry,
   BackupQuickSearchEntry,
+  BackupHomeSubtabEntry,
+  BackupHomeSubtabSection,
   BackupLocalBlockRuleEntry,
   BackupLocalBlockSection,
   BackupLocalDataSection,
@@ -681,6 +701,7 @@ export {
   SyncViewedHistoryRecord,
   SyncSearchHistoryRecord,
   SyncQuickSearchRecord,
+  SyncHomeSubtabRecord,
   SyncLocalBlockSettingsRecord,
   SyncLocalBlockRuleRecord,
   SyncSettingsTableRecord,

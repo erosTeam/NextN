@@ -1,4 +1,4 @@
-import { HomePage, PopularPage } from 'home'
+import { HomePage, HomeSubtabManagerPage, PopularPage } from 'home'
 import {
   GalleryChromeState,
   GalleryCommentsPage,
@@ -8,6 +8,7 @@ import {
 } from 'gallery'
 import {
   SearchChromeState,
+  HomeSubtabEditPage,
   SearchPage,
 } from 'search'
 import { ReaderPage } from 'reader'
@@ -73,6 +74,10 @@ import {
   HomeGallerySelectionState,
   HomeSourceBridge,
   HomeSourceState,
+  HomeSubtabEditParams,
+  HomeSubtabState,
+  NhHomeSubtabKind,
+  NhHomeSubtabProfile,
   HomeTabAutoHideState,
   LLM_CONSUMER_COMMENT_TRANSLATION,
   LLM_CONSUMER_MANGA_TRANSLATION,
@@ -80,7 +85,6 @@ import {
   ImmersiveMaterialSettingsState,
   LlmConsumerBinding,
   LlmSourceProfilesState,
-  HOME_SOURCE_LATEST,
   HOME_SOURCE_SELECTOR_HEIGHT,
   TabletLayoutSettings,
   TabletLayoutState,
@@ -93,6 +97,7 @@ import {
   connectFavoritesActions,
   connectHomeGallerySelection,
   connectHomeSource,
+  connectHomeSubtabs,
   connectHomeTabAutoHide,
   connectImmersiveMaterialSettings,
   connectLlmSourceProfiles,
@@ -122,6 +127,8 @@ import { MainTabIcon } from '../components/MainTabIcon'
 import { GalleryWebPage } from './GalleryWebPage'
 
 const ROUTE_SEARCH: string = 'search'
+const ROUTE_HOME_SUBTAB_MANAGER: string = 'homeSubtabManager'
+const ROUTE_HOME_SUBTAB_EDIT: string = 'homeSubtabEdit'
 const ROUTE_POPULAR: string = 'popular'
 const ROUTE_GALLERY: string = 'gallery'
 const ROUTE_GALLERY_WEB: string = 'GalleryWeb'
@@ -303,6 +310,8 @@ struct Index {
   private homeTabAnimationGuardTimerId: number = -1
   private homeTabVisibleByScroll: boolean = true
   private searchScroller: Scroller = new Scroller()
+  private homeSubtabManagerScroller: Scroller = new Scroller()
+  private homeSubtabEditScroller: Scroller = new Scroller()
   private popularScroller: Scroller = new Scroller()
   private galleryScroller: Scroller = new Scroller()
   private thumbnailScroller: Scroller = new Scroller()
@@ -334,6 +343,7 @@ struct Index {
   @Local private downloadQueueActions: DownloadQueueActionState = connectDownloadQueueActions()
   @Local private homeGallerySelection: HomeGallerySelectionState = connectHomeGallerySelection()
   @Local private homeSource: HomeSourceState = connectHomeSource()
+  @Local private homeSubtabs: HomeSubtabState = connectHomeSubtabs()
   @Local private historyPinnedDayHeader: HistoryPinnedDayHeaderState = connectHistoryPinnedDayHeader()
   @Local private downloadPinnedGroupHeader: DownloadPinnedGroupHeaderState = connectDownloadPinnedGroupHeader()
   @Local private homeTab: HomeTabAutoHideState = connectHomeTabAutoHide()
@@ -425,6 +435,20 @@ struct Index {
     this.cancelRandomGalleryRequest()
   }
 
+  @Monitor('homeSource.manageSubtabsRequestSeq')
+  onManageHomeSubtabsRequested(): void {
+    if (this.homeSource.manageSubtabsRequestSeq > 0) {
+      this.pushHomeSubtabManager()
+    }
+  }
+
+  @Monitor('homeSource.editSubtabRequestSeq')
+  onEditHomeSubtabRequested(): void {
+    if (this.homeSource.editSubtabRequestSeq > 0 && this.homeSource.editSubtabUuid.length > 0) {
+      this.pushHomeSubtabEdit(new HomeSubtabEditParams(this.homeSource.editSubtabUuid))
+    }
+  }
+
   @Monitor('clipboardLink.candidateRevision', 'readerOverlay.visible')
   onClipboardGalleryCandidateChanged(): void {
     this.handleClipboardGalleryCandidate()
@@ -507,6 +531,14 @@ struct Index {
 
   private pushSearch(initialQuery: string = ''): void {
     this.stack.pushPathByName(ROUTE_SEARCH, new SearchRouteParams(initialQuery.trim()))
+  }
+
+  private pushHomeSubtabManager(): void {
+    this.stack.pushPathByName(ROUTE_HOME_SUBTAB_MANAGER, '')
+  }
+
+  private pushHomeSubtabEdit(params: HomeSubtabEditParams): void {
+    this.stack.pushPathByName(ROUTE_HOME_SUBTAB_EDIT, params)
   }
 
   private pushPopular(): void {
@@ -1189,6 +1221,11 @@ struct Index {
     return { 'value': emptyMenuItems, 'maxCount': 0 }
   }
 
+  private activeHomeSubtabKind(): NhHomeSubtabKind {
+    const profile: NhHomeSubtabProfile | null = this.homeSubtabs.find(this.homeSubtabs.selectedUuid)
+    return profile === null ? NhHomeSubtabKind.LATEST : profile.kind
+  }
+
   private rootTitleBar(): Record<string, Object> {
     const title: Record<string, Object> = { 'mainTitle': this.rootTitle() }
     const content: Record<string, Object> = { 'title': title }
@@ -1239,13 +1276,25 @@ struct Index {
         },
       }
       const jumpMenuItem: Record<string, Object> = { 'content': jumpAction }
+      const editSubtabAction: Record<string, Object> = {
+        'label': AppStrings.get('action_edit_home_subtab'),
+        'icon': $r('sys.symbol.pencil_line'),
+        'isEnabled': true,
+        'action': (): void => {
+          HomeSourceBridge.requestEditSubtab(this.homeSubtabs.selectedUuid)
+        },
+      }
+      const editSubtabMenuItem: Record<string, Object> = { 'content': editSubtabAction }
       // Popular is already a retained Browse source. Keep its old route only
       // for compatibility, but never present a duplicate title-bar entry.
       // Query controls belong only to Latest; the shared layout switcher is
       // intentionally available from either source.
-      const browseMenuItems: Record<string, Object>[] = this.homeSource.selectedKey === HOME_SOURCE_LATEST
+      const kind: NhHomeSubtabKind = this.activeHomeSubtabKind()
+      const browseMenuItems: Record<string, Object>[] = kind === NhHomeSubtabKind.LATEST
         ? [searchMenuItem, browseOptionsMenuItem, layoutMenuItem, jumpMenuItem, randomGalleryMenuItem]
-        : [searchMenuItem, layoutMenuItem, randomGalleryMenuItem]
+        : kind === NhHomeSubtabKind.SEARCH
+          ? [searchMenuItem, editSubtabMenuItem, layoutMenuItem, jumpMenuItem, randomGalleryMenuItem]
+          : [searchMenuItem, layoutMenuItem, randomGalleryMenuItem]
       const searchMenu: Record<string, Object> = { 'value': browseMenuItems, 'maxCount': 3 }
       content['menu'] = searchMenu
     } else if (this.activeTab === 1) {
@@ -1528,6 +1577,13 @@ struct Index {
     return new SearchRouteParams()
   }
 
+  private homeSubtabEditParams(param: Object): HomeSubtabEditParams {
+    if (param instanceof HomeSubtabEditParams) {
+      return param
+    }
+    return new HomeSubtabEditParams()
+  }
+
   private readerParams(param: Object): ReaderRouteParams {
     if (param instanceof ReaderRouteParams && param.galleryId > 0) {
       return param
@@ -1578,6 +1634,33 @@ struct Index {
       scroller: this.searchScroller,
       onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
         this.pushGallery(galleryId, seed)
+      },
+      onCreateSubtab: (params: HomeSubtabEditParams): void => {
+        this.pushHomeSubtabEdit(params)
+      },
+    })
+  }
+
+  @Builder
+  private homeSubtabManagerDestination() {
+    HomeSubtabManagerPage({
+      scroller: this.homeSubtabManagerScroller,
+      onCreate: (): void => {
+        this.pushHomeSubtabEdit(new HomeSubtabEditParams())
+      },
+      onEdit: (uuid: string): void => {
+        this.pushHomeSubtabEdit(new HomeSubtabEditParams(uuid))
+      },
+    })
+  }
+
+  @Builder
+  private homeSubtabEditDestination(param: Object) {
+    HomeSubtabEditPage({
+      edit: this.homeSubtabEditParams(param),
+      scroller: this.homeSubtabEditScroller,
+      onDone: (): void => {
+        this.stack.pop()
       },
     })
   }
@@ -2137,6 +2220,10 @@ struct Index {
   private routerMap(name: string, param: Object) {
     if (name === ROUTE_SEARCH) {
       this.searchDestination(param)
+    } else if (name === ROUTE_HOME_SUBTAB_MANAGER) {
+      this.homeSubtabManagerDestination()
+    } else if (name === ROUTE_HOME_SUBTAB_EDIT) {
+      this.homeSubtabEditDestination(param)
     } else if (name === ROUTE_POPULAR) {
       this.popularDestination()
     } else if (name === ROUTE_GALLERY) {

@@ -7,6 +7,7 @@ import {
   CoverBackgroundSettings,
   GalleryTitleSettings,
   HomeSourcePresentationService,
+  HomeSubtabSettings,
   ContentFilterService,
   DownloadQueueService,
   HomeTabSettings,
@@ -183,7 +184,12 @@ export default class EntryAbility extends UIAbility {
       // tab. A failed bootstrap still rejects this Promise as before; the page
       // merely must not turn its first appearance into a hidden second retry.
       DownloadQueueService.restoreAtBootstrap(this.context),
-    ]).finally((): void => {
+    ]).finally((): Promise<void> => {
+      // The unified SubTab store migrates Latest/Popular presentation from
+      // the legacy fixed-source settings. Keep that one-time read ordered
+      // after the legacy restore while still publishing it before Home mounts.
+      return HomeSubtabSettings.restore(this.context)
+    }).finally((): void => {
       // Resolve the persisted Read-action alignment before the first Detail
       // destination can mount. Unsupported sensing falls back inside the
       // service; it never blocks app startup or Reader routing.

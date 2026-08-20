@@ -54,6 +54,23 @@ export class SyncQuickSearchRecord {
   deletedAt: number = 0
 }
 
+/** Unified Home SubTab profile or the singleton selected-profile clock. */
+export class SyncHomeSubtabRecord {
+  scopeKey: string = ''
+  profileUuid: string = ''
+  positionIndex: number = 0
+  kind: string = ''
+  name: string = ''
+  queryText: string = ''
+  language: string = ''
+  sort: string = ''
+  displayMode: string = ''
+  hidden: boolean = false
+  selectedUuid: string = ''
+  updatedAt: number = 0
+  deletedAt: number = 0
+}
+
 /** NH comment-filter scalars do not exist; retained for NextE envelope parity. */
 export class SyncLocalBlockSettingsRecord {
   scopeKey: string = ''
@@ -92,6 +109,7 @@ export class SyncDatasets {
   viewedHistory: SyncViewedHistoryRecord[] = []
   searchHistory: SyncSearchHistoryRecord[] = []
   quickSearches: SyncQuickSearchRecord[] = []
+  homeSubtabs: SyncHomeSubtabRecord[] = []
   localBlockSettings: SyncLocalBlockSettingsRecord[] = []
   localBlockRules: SyncLocalBlockRuleRecord[] = []
   settingsTables: SyncSettingsTableRecord[] = []
@@ -124,6 +142,7 @@ export class SyncDatasetSelection {
   viewedHistory: boolean = true
   searchHistory: boolean = true
   quickSearches: boolean = true
+  homeSubtabs: boolean = true
   localBlock: boolean = true
   settingsTables: boolean = true
 }
