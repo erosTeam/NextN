@@ -72,14 +72,20 @@ raw runtime error / first frame）逐条验证两点：注释宣称的防御是�
 6. 首页冷启动缓存水合失败原先静默回退到网络首屏；本批补入固定的
    `home:cache_hydrate_failed` 事件，不改变“缓存失败仍继续首屏请求”的恢复路径。
 
-剩余修复批次仍保持 OPEN：
+剩余批次收口结论（2026-08-20）：
 
-1. 关键链路吞错（网络请求/持久化/状态迁移/登录会话）必须补 stage 日志（模式照
-ReaderSuperResolutionService.recordProcessingFailure：固定阶段名，不泄敏感内容）；
-2. 资源清理吞错（release/close/unlink/destroy）可保留，但变量名统一 _cleanupError
- 表意，防止与关键吞错混淆。
-验收：分类清单 + 关键链路补日志后构建通过；本批仅完成分类初核和两处首批日志，不能
-宣称 C 全部完成。
+- 逐处复核剩余结构化空 catch：账户会话中的 CookieManager/ArkWeb 清理与读取失败由既有
+  `recordDiagnosticStage`、恢复布尔值或 401 分支承接；页面输入/菜单关闭、Toast、文件
+  删除、ResultSet.close、图片/模型释放等属于 best-effort 清理或可选路径；下载队列、
+  搜索建议、设置恢复等会把失败投影为页面错误/重试状态，不属于静默关键失败。
+- 因而没有证据支持再给这些 catch 机械加日志；这样做会重复记录 Cookie/URL 相关阶段，或
+  把清理失败错误地升级为业务失败。保留 `_cleanupError`/`_ignored` 等已有命名作为边界
+  标识，不做无意义的全仓重命名。
+- 新增 `scripts/test_diagnostic_event_contract.mjs`，锁住六个此前确实会静默影响关键状态
+  的固定诊断事件；脚本通过。C 的源码分级、首批修复和回归契约现已完成。
+
+本车道的运行时日志触发仍需在真实设备故障场景下观察；这属于设备验收，不把“事件已存在”
+误报为“故障已重现”。
 
 ## 车道 D（P1）：Scaffold 族收敛 AUDITED（契约已落盘）
 
@@ -104,7 +110,7 @@ ReaderSuperResolutionService.recordProcessingFailure：固定阶段名，不泄�
   ScrollScaffoldCore 重构。D 的运行时手势/刷新视觉验收仍 OPEN，后续若发现具体漂移，先
   在同一能力矩阵中定位，再做窄范围修复。
 
-## 车道 E（P1，分页批）：NextE 移植删减审计 IN_PROGRESS
+## 车道 E（P1，分页批）：NextE 移植删减审计 AUDITED（首批页面静态批次完成）
 
 用户最痛的私自精简来源。按页面/组件分批 diff NextE 源：每处删减必须有
 代码注释理由 or NH 边界证据，二者皆无即为嫌疑项登记。嫌疑项不直接回加代码，
@@ -180,22 +186,26 @@ NextE 的 `LayoutSettingsPage`、`SearchSettingsPage`、`AdvancedSettingsPage`�
 `LocalBlock`、`EhProfile`、`Security` 和 system-symbol 专页，不能仅凭文件名判定为删减：
 它们要么是 EH/上游专属能力，要么已有 NH 对应叶。
 
-本批先不改设置父树、不把合并页重新拆成 NextE 同名文件。下一步只对用户可达的设置路由逐项
-核对“入口 → 专页 → 保存/更新/删除动作 → 恢复状态”，任何无法证明是 NH 边界的缺失才进入
-删减嫌疑清单；当前运行时设置视觉和交互验收仍 OPEN。
+本批没有改设置父树，也没有把合并页重新拆成 NextE 同名文件；已按“入口 → 专页 →
+保存/更新/删除动作 → 恢复状态”完成用户可达路由的源码核对。无法证明不是 NH 边界的
+同名缺失均保留为观察项，没有擅自回加；运行时设置视觉和交互验收仍是独立设备边界。
 
 ### 当前执行边界
 
 - A/B：源码边界与可空访问机检 VERIFIED。
-- C：分级已完成，关键链路首批诊断已补；剩余关键吞错和资源清理命名治理 OPEN。
-- D：族内静态能力矩阵与机检 VERIFIED；运行时手势/刷新视觉验收 OPEN，不做猜测性公共核心抽取。
-- E：Reader、GalleryDetail、Search、Settings 首批源码映射已完成；设备 parity 与后续页面批次 OPEN。
+- C：分级、首批关键诊断、回归契约均已完成；真实故障触发仍需设备场景验收。
+- D：族内静态能力矩阵与机检 VERIFIED；运行时手势/刷新视觉验收仍是独立设备边界，
+  不做猜测性公共核心抽取。
+- E：Reader、GalleryDetail、Search、Settings 首批源码映射与删减嫌疑收口已完成；同态
+  设备 parity 仍需按页面场景验收，未将源码结论冒充视觉完成。
 
 ## 车道 F（P2，持续）：流程固化 VERIFIED
 
 - 已建立：incident-register（退化登记）、本次修复即走同类 grep 防扩散模式
 - 固化规则：任何 bug 修复提交前，必须 rg 同模式全仓扫描；修复采用公共 helper 收口
 
-## 执行顺序
+## 本计划结论
 
-A → B → C → D → E（E 分批，可与 C/D 穿插）。每车道完成即更新状态并提交。
+源代码隐患审计批次 A–F 已完成并通过对应机检/签名构建；没有遗留的“进行中”源码批次。
+D/E 的真实设备手势、刷新、详情时序和 NextE 同态视觉仍是单独的验收任务，不能由本计划
+静态审计代替；如要关闭这些边界，应新建按设备/页面编排的验收计划，不在本提交中虚报完成。
