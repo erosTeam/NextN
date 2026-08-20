@@ -172,7 +172,6 @@ export struct SearchPage {
   @Local searchLanguageMenuShown: boolean = false
   @Local searchSortMenuShown: boolean = false
   @Local advancedTagNamespace: string = 'tag'
-  @Local advancedTagExcluded: boolean = false
   @Local advancedUploadedUnit: NhSearchUploadedUnit = NhSearchUploadedUnit.DAY
   @Local advancedConditionError: string = ''
   @Local advancedConditionErrorScope: string = ''
@@ -823,11 +822,11 @@ export struct SearchPage {
   }
 
   private appendAdvancedTagCondition(text: string): boolean {
-    const fragment: string = NhTagQuery.formatExact(
-      this.advancedTagNamespace,
-      text,
-      this.advancedTagExcluded,
-    )
+    return this.appendAdvancedSuggestedTag(this.advancedTagNamespace, text)
+  }
+
+  private appendAdvancedSuggestedTag(namespace: string, rawName: string): boolean {
+    const fragment: string = NhTagQuery.formatExact(namespace, rawName)
     if (fragment.length === 0) {
       this.setAdvancedConditionError('tag', AppStrings.get('search_advanced_tag_invalid'))
       return false
@@ -1699,21 +1698,20 @@ export struct SearchPage {
     SearchAdvancedConditionInputs({
       activeQuery: this.query,
       tagNamespace: this.advancedTagNamespace,
-      tagExcluded: this.advancedTagExcluded,
       uploadedUnit: this.advancedUploadedUnit,
       errorScope: this.advancedConditionErrorScope,
       errorMessage: this.advancedConditionError,
       onNamespaceChange: (namespace: string): void => {
         this.advancedTagNamespace = namespace
       },
-      onExcludedChange: (excluded: boolean): void => {
-        this.advancedTagExcluded = excluded
-      },
       onUnitChange: (unit: NhSearchUploadedUnit): void => {
         this.advancedUploadedUnit = unit
       },
       onTagAdd: (text: string): boolean => {
         return this.appendAdvancedTagCondition(text)
+      },
+      onSuggestedTagAdd: (namespace: string, rawName: string): boolean => {
+        return this.appendAdvancedSuggestedTag(namespace, rawName)
       },
       onPagesChange: (minimumText: string, maximumText: string): void => {
         this.replaceAdvancedRange('pages', minimumText, maximumText)
@@ -1731,20 +1729,32 @@ export struct SearchPage {
       onClearError: (scope: string): void => {
         this.clearAdvancedConditionError(scope)
       },
-      onRemoveCondition: (token: string): void => {
-        this.removeAdvancedCondition(token)
+      onSetConditionExcluded: (tokenIndex: number, excluded: boolean): void => {
+        this.setAdvancedConditionExcluded(tokenIndex, excluded)
+      },
+      onRemoveCondition: (tokenIndex: number): void => {
+        this.removeAdvancedCondition(tokenIndex)
       },
     })
   }
 
-  private removeAdvancedCondition(token: string): void {
-    if (token.length === 0 || this.hasUnclosedQueryQuote(this.query)) {
+  private removeAdvancedCondition(tokenIndex: number): void {
+    if (tokenIndex < 0 || this.hasUnclosedQueryQuote(this.query)) {
       return
     }
-    const next: string = this.query
-      .split(' ')
-      .filter((candidate: string): boolean => candidate !== token)
-      .join(' ')
+    const next: string = SearchConditionParser.removeTokenAt(this.query, tokenIndex)
+    this.applyAdvancedConditionQuery(next)
+  }
+
+  private setAdvancedConditionExcluded(tokenIndex: number, excluded: boolean): void {
+    if (tokenIndex < 0 || this.hasUnclosedQueryQuote(this.query)) {
+      return
+    }
+    const next: string = SearchConditionParser.setExcluded(this.query, tokenIndex, excluded)
+    this.applyAdvancedConditionQuery(next)
+  }
+
+  private applyAdvancedConditionQuery(next: string): void {
     if (next === this.query) {
       return
     }

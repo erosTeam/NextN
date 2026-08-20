@@ -1,4 +1,16 @@
-import { NhTagSuggestionDisplay } from 'shared'
+import { NhTagQuery } from 'shared'
+
+export enum SearchConditionKind {
+  PLAIN = 'plain',
+  TAG = 'tag',
+  RANGE = 'range',
+  UNKNOWN = 'unknown',
+}
+
+export enum SearchConditionRelation {
+  INCLUDE = 'include',
+  EXCLUDE = 'exclude',
+}
 
 /**
  * One structured view of a query token in the search-options sheet. The
@@ -9,10 +21,19 @@ import { NhTagSuggestionDisplay } from 'shared'
 export class SearchConditionChip {
   /** Exact token in the query string, including any -/~ prefix. */
   rawToken: string = ''
-  /** User-facing label, e.g. 标签:全彩 or 页数 ≥ 20. */
+  /** Stable position in the canonical token stream. */
+  tokenIndex: number = -1
+  /** Canonical user-facing title without the relation prefix. */
+  title: string = ''
+  /** Compatibility alias for existing call sites. */
   label: string = ''
   /** True when the token is one this sheet knows how to rebuild. */
   structured: boolean = false
+  kind: SearchConditionKind = SearchConditionKind.UNKNOWN
+  relation: SearchConditionRelation = SearchConditionRelation.INCLUDE
+  relationEditable: boolean = false
+  namespace: string = ''
+  rawValue: string = ''
 }
 
 /** Editable projection of one numeric NH query namespace. */
@@ -27,40 +48,70 @@ export class SearchConditionParser {
 
   static chips(query: string, operatorLabels: (key: string) => string): SearchConditionChip[] {
     const chips: SearchConditionChip[] = []
-    SearchConditionParser.tokens(query).forEach((raw: string): void => {
+    SearchConditionParser.tokens(query).forEach((raw: string, tokenIndex: number): void => {
       const chip: SearchConditionChip = new SearchConditionChip()
       chip.rawToken = raw
+      chip.tokenIndex = tokenIndex
       let content: string = raw
-      let prefix: string = ''
-      if (content.startsWith('-') || content.startsWith('~')) {
-        prefix = content.substring(0, 1)
+      if (content.startsWith('-')) {
+        chip.relation = SearchConditionRelation.EXCLUDE
         content = content.substring(1)
       }
+      // NH's public search contract does not implement NextE/EH's leading
+      // tilde as OR. Preserve such manually-entered tokens verbatim instead of
+      // presenting or rewriting them as a supported relation.
+      if (content.startsWith('~')) {
+        chip.title = raw
+        chip.label = raw
+        chips.push(chip)
+        return
+      }
+      if (SearchConditionParser.isQuoted(content)) {
+        const value: string = SearchConditionParser.unquote(content)
+        if (value.length > 0) {
+          chip.kind = SearchConditionKind.PLAIN
+          chip.rawValue = value
+          chip.title = SearchConditionParser.formatPlain(value)
+          chip.structured = chip.title.length > 0
+          chip.relationEditable = chip.structured
+        }
+      }
       const colon: number = content.indexOf(':')
-      if (colon > 0) {
+      if (chip.kind === SearchConditionKind.UNKNOWN && colon > 0) {
         const namespace: string = content.substring(0, colon).trim().toLowerCase()
         let value: string = content.substring(colon + 1).trim()
-        if (value.length >= 2 && value.startsWith('"') && value.endsWith('"')) {
-          value = value.substring(1, value.length - 1).trim()
+        if (SearchConditionParser.isQuoted(value)) {
+          value = SearchConditionParser.unquote(value)
         }
         if (SearchConditionParser.OPERATOR_NAMESPACES.indexOf(namespace) >= 0) {
           const relation: string = value.startsWith('>=') || value.startsWith('<=') ? value.substring(0, 2) : ''
           const numberText: string = relation.length > 0 ? value.substring(2) : value
           if (/^[0-9]+[hdwmy]?$/.test(numberText)) {
-            chip.label = operatorLabels(namespace) + ' ' + SearchConditionParser.relationLabel(relation) + ' ' + numberText
+            chip.kind = SearchConditionKind.RANGE
+            chip.title = operatorLabels(namespace) + ' ' +
+              SearchConditionParser.relationLabel(relation) + ' ' + numberText
             chip.structured = true
           }
-        } else {
-          const display: string = NhTagSuggestionDisplay.namespaceLabel(namespace)
-          if (value.length > 0) {
-            chip.label = `${prefix}${display}:${value}`
+        } else if (NhTagQuery.isAutocompleteNamespace(namespace) && value.length > 0) {
+          const canonical: string = NhTagQuery.formatExact(namespace, value)
+          if (canonical.length > 0) {
+            chip.kind = SearchConditionKind.TAG
+            chip.namespace = namespace
+            chip.rawValue = value
+            chip.title = canonical
             chip.structured = true
+            chip.relationEditable = true
           }
         }
       }
-      if (chip.label.length === 0) {
-        chip.label = raw
+      if (chip.kind === SearchConditionKind.UNKNOWN && colon < 0 && content.length > 0) {
+        chip.kind = SearchConditionKind.PLAIN
+        chip.rawValue = content
+        chip.title = content
+        chip.structured = true
+        chip.relationEditable = true
       }
+      chip.label = chip.title.length > 0 ? chip.title : raw
       chips.push(chip)
     })
     return chips
@@ -70,6 +121,32 @@ export class SearchConditionParser {
     return SearchConditionParser.tokens(query)
       .filter((candidate: string): boolean => candidate !== token)
       .join(' ')
+  }
+
+  static removeTokenAt(query: string, tokenIndex: number): string {
+    return SearchConditionParser.tokens(query)
+      .filter((_candidate: string, index: number): boolean => index !== tokenIndex)
+      .join(' ')
+  }
+
+  static setExcluded(query: string, tokenIndex: number, excluded: boolean): string {
+    return SearchConditionParser.tokens(query)
+      .map((candidate: string, index: number): string => {
+        if (index !== tokenIndex || candidate.startsWith('~')) {
+          return candidate
+        }
+        const content: string = candidate.startsWith('-') ? candidate.substring(1) : candidate
+        return excluded ? `-${content}` : content
+      })
+      .join(' ')
+  }
+
+  static formatPlain(value: string): string {
+    const normalized: string = value.trim()
+    if (normalized.length === 0 || normalized.includes('"')) {
+      return ''
+    }
+    return /\s/.test(normalized) ? `"${normalized}"` : normalized
   }
 
   static range(query: string, namespace: string): SearchConditionRange {
@@ -104,8 +181,14 @@ export class SearchConditionParser {
 
   static isPlainToken(token: string): boolean {
     let content: string = token.trim()
-    if (content.startsWith('-') || content.startsWith('~')) {
+    if (content.startsWith('-')) {
       content = content.substring(1)
+    }
+    if (content.startsWith('~')) {
+      return false
+    }
+    if (SearchConditionParser.isQuoted(content)) {
+      return true
     }
     return content.indexOf(':') < 1
   }
@@ -160,8 +243,11 @@ export class SearchConditionParser {
 
   private static tokenNamespace(token: string): string {
     let content: string = token.trim()
-    if (content.startsWith('-') || content.startsWith('~')) {
+    if (content.startsWith('-')) {
       content = content.substring(1)
+    }
+    if (content.startsWith('~')) {
+      return ''
     }
     const colon: number = content.indexOf(':')
     return colon > 0 ? content.substring(0, colon).trim().toLowerCase() : ''
@@ -209,5 +295,15 @@ export class SearchConditionParser {
       return '≤'
     }
     return ''
+  }
+
+  private static isQuoted(value: string): boolean {
+    return value.length >= 2 && value.startsWith('"') && value.endsWith('"')
+  }
+
+  private static unquote(value: string): string {
+    return SearchConditionParser.isQuoted(value)
+      ? value.substring(1, value.length - 1).trim()
+      : value.trim()
   }
 }

@@ -8024,6 +8024,64 @@ authorize an edit, replace a device comparison, or define product completion.
   corresponding Gallery Detail. No emulator, uninstall, data clear, account
   action, or clipboard-text logging was used.
 
+## ACCEPTED — Home-tab unified condition composer and explicit condition actions — 2026-08-21
+
+- **Why newly actionable:** the user rejected the separate free-keyword row and
+  tag-library input, the draft-fill-then-global-plus suggestion flow, whole-row
+  condition removal, untranslated active tags, and the missing include/exclude
+  presentation. The latest instruction requires one local dictionary composer
+  whose final row adds the raw input itself, while retaining the independent NH
+  type-scoped matcher and validating the result on `192.168.50.237:12345`.
+- **Reference and whole parent tree:** preserve
+  `HomeSubtabEditPage -> HdsNavDestination -> SecondaryListScaffold -> List ->
+  Search section -> spaced grouped sections`. Preserve the existing Basic,
+  numeric range, Options and Delete sections, keyboard-resize owner, save
+  action and canonical query persistence. The changed leaves are the unified
+  local composer, NH match rows, and active-condition rows; Search results,
+  Home retained-page ownership and profile storage are unchanged.
+- **Exact before/after:** before — one standalone Keywords row rewrites all
+  plain tokens; the scoped matcher mixes local and NH results, tapping a result
+  only fills the input, and a separate input plus commits it; active rows remove
+  on any row tap and expose neither translation nor relation. after — one local
+  unscoped dictionary field renders explicit per-result add buttons plus a final
+  raw-input action (`word` or quoted `"multi word"`); every accepted result is
+  one canonical query token in the common active list. The separate scoped NH
+  matcher uses NH results plus its own namespaced raw fallback. Active tag rows
+  show canonical namespace/raw text with translation below, use an explicit
+  direct include/exclude toggle, and remove only through an independent trailing
+  delete control. NH-unsupported `~` is never generated or labelled as OR.
+- **Stateful visible states:** empty composer, raw-only input, local translated
+  matches, NH loading/results/no-match fallback, duplicate candidate, active
+  plain/tag/unknown conditions, include/exclude toggle, explicit delete, and both
+  composer fields with IME open. Numeric range hydration and card separation
+  remain sibling review boundaries.
+- **Minimality rationale:** the durable profile remains one query string and
+  existing request revisions continue to derive from it. Translation is a
+  display-only local projection. No RDB, backup, sync, retained host, root tab,
+  result-list or remote protocol change is required.
+- **Verification plan:** parser/data regressions, locale JSON parse,
+  `git diff --check`, signed build, data-preserving `install -r`, then on the
+  selected 237 device exercise a local translated candidate, a spaced raw
+  phrase, an NH candidate/raw fallback, relation toggle and button-only delete.
+  Review the keyboard-open and final condition-list states from current device
+  evidence; source shape and build success are not visual acceptance.
+- **Unresolved risk:** the NH public tag endpoint and local dictionary can
+  return different namespace identities for similar text; deduplication must
+  use normalized namespace plus raw name and must not replace the user's raw
+  fallback with a guessed tag.
+- **237 acceptance evidence:** the signed package was installed in place on
+  `192.168.50.237:12345`. With the IME open, local input `full color` showed
+  both translated `other:"full color" / 全彩` and the raw fallback
+  `添加 "full color"`; unmatched `codex phrase` was added as the single quoted
+  token `"codex phrase"`. The scoped NH field queried `stock` and showed both
+  the remote `tag:stockings` result and `添加 tag:stock`, each with its own add
+  button; adding the remote row produced an active `tag:stockings` condition.
+  Tapping the active row body left it intact, tapping its relation control
+  changed `包含` to `排除`, and only the independent trash action removed it.
+  The editor was exited without saving; the manager still showed the original
+  `tag:fisting favorites:>=500` query, proving the acceptance draft did not
+  mutate the stored profile.
+
 ## OPEN — Cached seed-less Detail must not publish raw tags before translation — 2026-08-21
 
 - **Why newly actionable:** the user reported a stable one-frame transition

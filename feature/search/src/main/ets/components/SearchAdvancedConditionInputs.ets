@@ -3,8 +3,8 @@ import {
   AppStrings,
   NhApiClient,
   NhTag,
+  NhTagQuery,
   NhTagSuggestion,
-  NhTagSuggestionDisplay,
   NextNGroupedListSection,
   NextNListRow,
   NhSearchUploadedUnit,
@@ -13,8 +13,10 @@ import {
 } from 'shared'
 import {
   SearchConditionChip,
+  SearchConditionKind,
   SearchConditionParser,
   SearchConditionRange,
+  SearchConditionRelation,
 } from '../model/SearchConditionChip'
 import { appMenuOptions } from 'shared'
 import { SymbolGlyphModifier } from '@kit.ArkUI'
@@ -83,49 +85,44 @@ struct AdvancedRangeInput {
 }
 
 @ComponentV2
-struct AdvancedTagInput {
+struct AdvancedConditionInput {
+  @Param value: string = ''
   @Param placeholder: string = ''
   @Event onValueChanged: (value: string) => void = (_value: string) => {}
   @Event onSubmitted: () => void = () => {}
   @Local text: string = ''
 
-  build() {
-    Row({ space: ThemeTokens.SPACE_SM }) {
-      TextInput({
-        text: this.text,
-        placeholder: this.placeholder,
-      })
-        .layoutWeight(1)
-        .height(44)
-        .fontSize(ThemeTokens.FONT_SIZE_BODY)
-        .backgroundColor(ThemeTokens.SURFACE_SUB)
-        .borderRadius(ThemeTokens.RADIUS_MD)
-        .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD, top: 0, bottom: 0 })
-        .onChange((value: string): void => {
-          this.text = value
-          this.onValueChanged(value)
-        })
-        .onSubmit((): void => {
-          if (this.text.trim().length > 0) {
-            this.onSubmitted()
-          }
-        })
-      Button({ type: ButtonType.Circle, stateEffect: true }) {
-        SymbolGlyph($r('sys.symbol.plus'))
-          .fontSize(ThemeTokens.FONT_SIZE_TITLE)
-          .fontColor([this.text.trim().length > 0 ? ThemeTokens.BRAND : ThemeTokens.TEXT_TERTIARY])
-      }
-      .width(44)
-      .height(44)
-      .enabled(this.text.trim().length > 0)
-      .backgroundColor(ThemeTokens.SURFACE_SUB)
-      .accessibilityText(AppStrings.get('search_advanced_add_tag'))
-      .onClick((): void => {
-        this.onSubmitted()
-      })
+  aboutToAppear(): void {
+    this.text = this.value
+  }
+
+  @Monitor('value')
+  onExternalValueChanged(): void {
+    if (this.value !== this.text) {
+      this.text = this.value
     }
-    .width('100%')
-    .alignItems(VerticalAlign.Center)
+  }
+
+  build() {
+    TextInput({
+      text: this.text,
+      placeholder: this.placeholder,
+    })
+      .width('100%')
+      .height(44)
+      .fontSize(ThemeTokens.FONT_SIZE_BODY)
+      .backgroundColor(ThemeTokens.SURFACE_SUB)
+      .borderRadius(ThemeTokens.RADIUS_MD)
+      .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD, top: 0, bottom: 0 })
+      .onChange((value: string): void => {
+        this.text = value
+        this.onValueChanged(value)
+      })
+      .onSubmit((): void => {
+        if (this.text.trim().length > 0) {
+          this.onSubmitted()
+        }
+      })
   }
 }
 
@@ -140,14 +137,14 @@ struct AdvancedTagInput {
 export struct SearchAdvancedConditionInputs {
   @Param activeQuery: string = ''
   @Param tagNamespace: string = 'tag'
-  @Param tagExcluded: boolean = false
+  @Param showLocalComposer: boolean = false
   @Param uploadedUnit: NhSearchUploadedUnit = NhSearchUploadedUnit.DAY
   @Param errorScope: string = ''
   @Param errorMessage: string = ''
-  @Param hidePlainConditions: boolean = false
   @Event onNamespaceChange?: (namespace: string) => void
-  @Event onExcludedChange?: (excluded: boolean) => void
   @Event onUnitChange?: (unit: NhSearchUploadedUnit) => void
+  @Event onPlainAdd?: (text: string) => boolean
+  @Event onSuggestedTagAdd?: (namespace: string, rawName: string) => boolean
   @Event onTagAdd?: (text: string) => boolean
   @Event onPagesChange?: (minimumText: string, maximumText: string) => void
   @Event onFavoritesChange?: (minimumText: string, maximumText: string) => void
@@ -157,7 +154,9 @@ export struct SearchAdvancedConditionInputs {
     unit: NhSearchUploadedUnit,
   ) => void
   @Event onClearError?: (scope: string) => void
-  @Event onRemoveCondition?: (token: string) => void
+  @Event onSetConditionExcluded?: (tokenIndex: number, excluded: boolean) => void
+  @Event onRemoveCondition?: (tokenIndex: number) => void
+  @Local conditionText: string = ''
   @Local tagText: string = ''
   @Local pageMinimumText: string = ''
   @Local pageMaximumText: string = ''
@@ -166,24 +165,33 @@ export struct SearchAdvancedConditionInputs {
   @Local uploadedMinimumText: string = ''
   @Local uploadedMaximumText: string = ''
   @Local tagNamespaceMenuShown: boolean = false
-  @Local tagModeMenuShown: boolean = false
   @Local uploadedUnitMenuShown: boolean = false
+  @Local conditionMatches: NhTagSuggestion[] = []
+  @Local isMatchingConditions: boolean = false
   @Local tagMatches: NhTagSuggestion[] = []
   @Local isMatchingTags: boolean = false
+  @Local conditionTranslations: Map<string, string> = new Map<string, string>()
+  private conditionMatchTimer: number = -1
+  private conditionMatchEpoch: number = 0
   private tagMatchTimer: number = -1
   private tagMatchEpoch: number = 0
+  private conditionTranslationEpoch: number = 0
 
   aboutToAppear(): void {
     this.syncRangeDrafts()
+    this.loadConditionTranslations()
   }
 
   @Monitor('activeQuery')
   onActiveQueryChanged(): void {
     this.syncRangeDrafts()
+    this.loadConditionTranslations()
   }
 
   aboutToDisappear(): void {
+    this.cancelConditionMatches()
     this.cancelTagMatches()
+    this.conditionTranslationEpoch += 1
   }
 
   private tagNamespaceLabel(namespace: string): string {
@@ -203,7 +211,7 @@ export struct SearchAdvancedConditionInputs {
     }
   }
 
-  private tagModeLabel(excluded: boolean): string {
+  private relationLabel(excluded: boolean): string {
     return excluded
       ? AppStrings.get('search_advanced_exclude')
       : AppStrings.get('search_advanced_include')
@@ -233,12 +241,37 @@ export struct SearchAdvancedConditionInputs {
   private addTag(): void {
     if (this.onTagAdd && this.onTagAdd(this.tagText)) {
       this.tagText = ''
+      this.cancelTagMatches()
+    }
+  }
+
+  private addPlainCondition(): void {
+    if (this.onPlainAdd && this.onPlainAdd(this.conditionText)) {
+      this.conditionText = ''
+      this.cancelConditionMatches()
+    }
+  }
+
+  private addSuggestedCondition(suggestion: NhTagSuggestion): void {
+    if (this.onSuggestedTagAdd && this.onSuggestedTagAdd(suggestion.namespace, suggestion.rawName)) {
+      const context: common.UIAbilityContext =
+        this.getUIContext().getHostContext() as common.UIAbilityContext
+      TagTranslationRepository.touchSuggestion(context, suggestion.namespace, suggestion.rawName)
+        .catch((_error: Error): void => {})
+      this.conditionText = ''
+      this.cancelConditionMatches()
     }
   }
 
   private removeCondition(chip: SearchConditionChip): void {
     if (this.onRemoveCondition) {
-      this.onRemoveCondition(chip.rawToken)
+      this.onRemoveCondition(chip.tokenIndex)
+    }
+  }
+
+  private setConditionExcluded(chip: SearchConditionChip, excluded: boolean): void {
+    if (this.onSetConditionExcluded) {
+      this.onSetConditionExcluded(chip.tokenIndex, excluded)
     }
   }
 
@@ -303,11 +336,58 @@ export struct SearchAdvancedConditionInputs {
       this.activeQuery,
       (namespace: string): string => this.operatorLabel(namespace),
     ).filter((chip: SearchConditionChip): boolean => {
-      if (SearchConditionParser.isRangeToken(chip.rawToken)) {
-        return false
-      }
-      return !this.hidePlainConditions || !SearchConditionParser.isPlainToken(chip.rawToken)
+      return !SearchConditionParser.isRangeToken(chip.rawToken)
     })
+  }
+
+  private conditionTranslationKey(chip: SearchConditionChip): string {
+    if (chip.kind !== SearchConditionKind.TAG) {
+      return ''
+    }
+    const tag: NhTag = new NhTag()
+    tag.type = chip.namespace
+    tag.name = chip.rawValue
+    return TagTranslationRepository.keyFor(tag)
+  }
+
+  private conditionSubtitle(chip: SearchConditionChip): string {
+    const key: string = this.conditionTranslationKey(chip)
+    if (key.length === 0) {
+      return ''
+    }
+    const translated: string | undefined = this.conditionTranslations.get(key)
+    return translated === undefined || translated.trim() === chip.rawValue.trim()
+      ? ''
+      : translated.trim()
+  }
+
+  private async loadConditionTranslations(): Promise<void> {
+    const epoch: number = this.conditionTranslationEpoch + 1
+    this.conditionTranslationEpoch = epoch
+    const tags: NhTag[] = this.visibleConditionChips()
+      .filter((chip: SearchConditionChip): boolean => chip.kind === SearchConditionKind.TAG)
+      .map((chip: SearchConditionChip): NhTag => {
+        const tag: NhTag = new NhTag()
+        tag.type = chip.namespace
+        tag.name = chip.rawValue
+        return tag
+      })
+    if (tags.length === 0) {
+      this.conditionTranslations = new Map<string, string>()
+      return
+    }
+    try {
+      const context: common.UIAbilityContext =
+        this.getUIContext().getHostContext() as common.UIAbilityContext
+      const translations: Map<string, string> = await TagTranslationRepository.lookup(context, tags)
+      if (epoch === this.conditionTranslationEpoch) {
+        this.conditionTranslations = translations
+      }
+    } catch (_error) {
+      if (epoch === this.conditionTranslationEpoch) {
+        this.conditionTranslations = new Map<string, string>()
+      }
+    }
   }
 
   @Builder
@@ -317,6 +397,51 @@ export struct SearchAdvancedConditionInputs {
         .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
         .fontColor(Color.Red)
         .width('100%')
+    }
+  }
+
+  private cancelConditionMatches(): void {
+    this.conditionMatchEpoch += 1
+    if (this.conditionMatchTimer >= 0) {
+      clearTimeout(this.conditionMatchTimer)
+      this.conditionMatchTimer = -1
+    }
+    this.isMatchingConditions = false
+    this.conditionMatches = []
+  }
+
+  private scheduleConditionMatches(query: string): void {
+    this.cancelConditionMatches()
+    const normalized: string = query.trim()
+    if (normalized.length === 0) {
+      return
+    }
+    this.isMatchingConditions = true
+    const epoch: number = this.conditionMatchEpoch
+    this.conditionMatchTimer = setTimeout((): void => {
+      this.conditionMatchTimer = -1
+      this.loadConditionMatches(normalized, epoch)
+    }, ADVANCED_TAG_SUGGESTION_DELAY_MS)
+  }
+
+  private async loadConditionMatches(query: string, epoch: number): Promise<void> {
+    try {
+      const context: common.UIAbilityContext =
+        this.getUIContext().getHostContext() as common.UIAbilityContext
+      const matches: NhTagSuggestion[] = await TagTranslationRepository.suggestUnscoped(
+        context,
+        query,
+        ADVANCED_TAG_SUGGESTION_LIMIT,
+      )
+      if (epoch === this.conditionMatchEpoch) {
+        this.conditionMatches = matches
+        this.isMatchingConditions = false
+      }
+    } catch (_error) {
+      if (epoch === this.conditionMatchEpoch) {
+        this.conditionMatches = []
+        this.isMatchingConditions = false
+      }
     }
   }
 
@@ -345,44 +470,19 @@ export struct SearchAdvancedConditionInputs {
   }
 
   private async loadTagMatches(prefix: string, epoch: number): Promise<void> {
-    // Local dictionary first (its rows already carry translated display
-    // names), then NH's own /tags/search with the selected namespace as the
-    // type filter; finally a batch dictionary lookup fills any remote row
-    // that still shows its raw English name.
+    // This is the explicit NH matcher. Local unscoped discovery lives in the
+    // unified condition composer above; keeping the sources separate makes a
+    // namespaced server match distinct from an unscoped local translation hit.
     const context: common.UIAbilityContext =
       this.getUIContext().getHostContext() as common.UIAbilityContext
     let matches: NhTagSuggestion[] = []
     try {
-      matches = await TagTranslationRepository.suggest(
-        context,
+      matches = await NhApiClient.tagSuggestions(
         this.tagNamespace,
         prefix,
         ADVANCED_TAG_SUGGESTION_LIMIT,
       )
     } catch (_error) {}
-    if (epoch !== this.tagMatchEpoch) {
-      return
-    }
-    if (matches.length < ADVANCED_TAG_SUGGESTION_LIMIT && !this.isPureCjk(prefix)) {
-      try {
-        const remote: NhTagSuggestion[] = await NhApiClient.tagSuggestions(
-          this.tagNamespace,
-          prefix,
-          ADVANCED_TAG_SUGGESTION_LIMIT - matches.length,
-        )
-        const seen: Set<string> = new Set<string>(
-          matches.map((item: NhTagSuggestion): string =>
-            `${item.namespace}${item.rawName.toLowerCase()}`),
-        )
-        remote.forEach((item: NhTagSuggestion): void => {
-          const key: string = `${item.namespace}${item.rawName.toLowerCase()}`
-          if (!seen.has(key) && matches.length < ADVANCED_TAG_SUGGESTION_LIMIT) {
-            seen.add(key)
-            matches.push(item)
-          }
-        })
-      } catch (_error) {}
-    }
     if (epoch !== this.tagMatchEpoch) {
       return
     }
@@ -418,12 +518,6 @@ export struct SearchAdvancedConditionInputs {
     this.isMatchingTags = false
   }
 
-  private isPureCjk(value: string): boolean {
-    const hasCjk: boolean =
-      /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f]/.test(value)
-    return hasCjk && !/[A-Za-z0-9]/.test(value)
-  }
-
   @Builder
   private SearchOptionDivider() {
     Divider()
@@ -435,7 +529,8 @@ export struct SearchAdvancedConditionInputs {
   @Builder
   private TagNameInputRow() {
     Column() {
-      AdvancedTagInput({
+      AdvancedConditionInput({
+        value: this.tagText,
         placeholder: AppStrings.get('search_advanced_tag_placeholder'),
         onValueChanged: (value: string): void => {
           this.tagText = value
@@ -453,6 +548,87 @@ export struct SearchAdvancedConditionInputs {
       top: ThemeTokens.SPACE_SM,
       bottom: ThemeTokens.SPACE_SM,
     })
+  }
+
+  @Builder
+  private ConditionComposerInputRow() {
+    Column() {
+      AdvancedConditionInput({
+        value: this.conditionText,
+        placeholder: AppStrings.get('search_condition_input_placeholder'),
+        onValueChanged: (value: string): void => {
+          this.conditionText = value
+          this.scheduleConditionMatches(value)
+          this.clearError('plain')
+        },
+        onSubmitted: (): void => {
+          this.addPlainCondition()
+        },
+      })
+    }
+    .padding({
+      left: ThemeTokens.SPACE_MD,
+      right: ThemeTokens.SPACE_MD,
+      top: ThemeTokens.SPACE_SM,
+      bottom: ThemeTokens.SPACE_SM,
+    })
+  }
+
+  @Builder
+  private AddConditionSuffix(action: () => void, accessibilityLabel: string) {
+    Button({ type: ButtonType.Circle, stateEffect: true }) {
+      SymbolGlyph($r('sys.symbol.plus'))
+        .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+        .fontColor([ThemeTokens.BRAND])
+    }
+    .width(44)
+    .height(44)
+    .backgroundColor(Color.Transparent)
+    .accessibilityText(accessibilityLabel)
+    .onClick(action)
+  }
+
+  @Builder
+  private ConditionComposerMatches() {
+    ForEach(this.conditionMatches, (suggestion: NhTagSuggestion): void => {
+      NextNListRow({
+        title: NhTagQuery.formatExact(suggestion.namespace, suggestion.rawName),
+        subtitle: this.suggestionTranslatedLabel(suggestion),
+        showChevron: false,
+        useCustomTrailing: true,
+        suffixPaddingRight: ThemeTokens.SPACE_SM,
+        customTrailing: (): void => {
+          this.AddConditionSuffix((): void => {
+            this.addSuggestedCondition(suggestion)
+          }, AppStrings.get('search_advanced_add_tag'))
+        },
+        accessibilityLabel: NhTagQuery.formatExact(suggestion.namespace, suggestion.rawName),
+      })
+    }, (suggestion: NhTagSuggestion): string => `${suggestion.namespace}${suggestion.rawName}`)
+    if (this.isMatchingConditions) {
+      NextNListRow({
+        title: AppStrings.get('search_looking_suggestions'),
+        showChevron: false,
+        isEnabled: false,
+      })
+    }
+    if (this.conditionText.trim().length > 0) {
+      NextNListRow({
+        title: this.plainCandidate().length > 0
+          ? AppStrings.format('search_condition_add_plain', [this.plainCandidate()])
+          : this.conditionText.trim(),
+        subtitle: AppStrings.get('search_condition_plain_subtitle'),
+        showChevron: false,
+        useCustomTrailing: this.plainCandidate().length > 0,
+        suffixPaddingRight: ThemeTokens.SPACE_SM,
+        customTrailing: (): void => {
+          this.AddConditionSuffix((): void => {
+            this.addPlainCondition()
+          }, AppStrings.get('search_condition_add_plain_a11y'))
+        },
+        isEnabled: this.plainCandidate().length > 0,
+      })
+    }
   }
 
   @Builder
@@ -480,37 +656,64 @@ export struct SearchAdvancedConditionInputs {
 
   @Builder
   private TagMatchList() {
-    if (this.tagMatches.length > 0 || this.isMatchingTags) {
-      ForEach(this.tagMatches, (suggestion: NhTagSuggestion): void => {
-        NextNListRow({
-          title: suggestion.rawName,
-          subtitle: this.suggestionTranslatedLabel(suggestion),
-          showChevron: false,
-          accessibilityLabel: suggestion.rawName,
-          onAction: (): void => {
-            // Non-destructive: a tap only fills the editable input with the
-            // exact tag name. The list stays visible and the draft stays
-            // editable; the single commit action remains the add row below.
-            this.tagText = suggestion.rawName
-            this.clearError('tag')
-          },
-        })
-      }, (suggestion: NhTagSuggestion): string => `${suggestion.namespace}${suggestion.rawName}`)
-      if (this.isMatchingTags) {
-        NextNListRow({
-          title: AppStrings.get('search_looking_suggestions'),
-          showChevron: false,
-          isEnabled: false,
-        })
-      }
+    ForEach(this.tagMatches, (suggestion: NhTagSuggestion): void => {
+      NextNListRow({
+        title: NhTagQuery.formatExact(suggestion.namespace, suggestion.rawName),
+        subtitle: this.suggestionTranslatedLabel(suggestion),
+        showChevron: false,
+        useCustomTrailing: true,
+        suffixPaddingRight: ThemeTokens.SPACE_SM,
+        customTrailing: (): void => {
+          this.AddConditionSuffix((): void => {
+            if (this.onSuggestedTagAdd &&
+              this.onSuggestedTagAdd(suggestion.namespace, suggestion.rawName)) {
+              this.tagText = ''
+              this.cancelTagMatches()
+            }
+          }, AppStrings.get('search_advanced_add_tag'))
+        },
+        accessibilityLabel: NhTagQuery.formatExact(suggestion.namespace, suggestion.rawName),
+      })
+    }, (suggestion: NhTagSuggestion): string => `${suggestion.namespace}${suggestion.rawName}`)
+    if (this.isMatchingTags) {
+      NextNListRow({
+        title: AppStrings.get('search_looking_suggestions'),
+        showChevron: false,
+        isEnabled: false,
+      })
+    }
+    if (this.tagText.trim().length > 0) {
+      NextNListRow({
+        title: this.onlineTagCandidate().length > 0
+          ? AppStrings.format('search_condition_add_tag', [this.onlineTagCandidate()])
+          : this.tagText.trim(),
+        subtitle: AppStrings.get('search_condition_nh_raw_subtitle'),
+        showChevron: false,
+        useCustomTrailing: this.onlineTagCandidate().length > 0,
+        suffixPaddingRight: ThemeTokens.SPACE_SM,
+        customTrailing: (): void => {
+          this.AddConditionSuffix((): void => {
+            this.addTag()
+          }, AppStrings.get('search_advanced_add_tag'))
+        },
+        isEnabled: this.onlineTagCandidate().length > 0,
+      })
     }
   }
 
   private suggestionTranslatedLabel(suggestion: NhTagSuggestion): string {
     const translated: string = suggestion.displayName.trim()
     return translated.length > 0 && translated !== suggestion.rawName
-      ? NhTagSuggestionDisplay.namespaceLabel(suggestion.namespace) + ':' + translated
+      ? translated
       : ''
+  }
+
+  private plainCandidate(): string {
+    return SearchConditionParser.formatPlain(this.conditionText)
+  }
+
+  private onlineTagCandidate(): string {
+    return NhTagQuery.formatExact(this.tagNamespace, this.tagText)
   }
 
   @Builder
@@ -597,26 +800,38 @@ export struct SearchAdvancedConditionInputs {
   }
 
   @Builder
-  private TagModeMenuItem(excluded: boolean) {
-    MenuItem({
-      content: this.tagModeLabel(excluded),
-      symbolEndIcon: this.tagExcluded === excluded
-        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
-        : undefined,
-    }).onClick((): void => {
-      if (this.onExcludedChange) {
-        this.onExcludedChange(excluded)
+  private ConditionActions(chip: SearchConditionChip) {
+    Row({ space: ThemeTokens.SPACE_XS }) {
+      if (chip.relationEditable) {
+        Row({ space: ThemeTokens.SPACE_XS }) {
+          Text(this.relationLabel(chip.relation === SearchConditionRelation.EXCLUDE))
+            .fontSize(ThemeTokens.FONT_SIZE_BODY)
+            .fontColor(chip.relation === SearchConditionRelation.EXCLUDE
+              ? Color.Red
+              : ThemeTokens.TEXT_SECONDARY)
+        }
+        .height(44)
+        .padding({ left: ThemeTokens.SPACE_SM, right: ThemeTokens.SPACE_SM })
+        .alignItems(VerticalAlign.Center)
+        .accessibilityText(this.relationLabel(chip.relation === SearchConditionRelation.EXCLUDE))
+        .onClick((): void => {
+          this.setConditionExcluded(chip, chip.relation !== SearchConditionRelation.EXCLUDE)
+        })
       }
-      this.tagModeMenuShown = false
-    })
-  }
-
-  @Builder
-  private TagModeMenu() {
-    Menu() {
-      this.TagModeMenuItem(false)
-      this.TagModeMenuItem(true)
+      Button({ type: ButtonType.Circle, stateEffect: true }) {
+        SymbolGlyph($r('sys.symbol.trash'))
+          .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+          .fontColor([Color.Red])
+      }
+      .width(44)
+      .height(44)
+      .backgroundColor(Color.Transparent)
+      .accessibilityText(AppStrings.format('search_condition_remove_a11y', [chip.title]))
+      .onClick((): void => {
+        this.removeCondition(chip)
+      })
     }
+    .alignItems(VerticalAlign.Center)
   }
 
   @Builder
@@ -659,23 +874,34 @@ export struct SearchAdvancedConditionInputs {
             this.visibleConditionChips(),
             (chip: SearchConditionChip): void => {
               NextNListRow({
-                title: chip.label,
+                title: chip.title,
+                subtitle: this.conditionSubtitle(chip),
                 showChevron: false,
-                accessibilityLabel: AppStrings.format('search_condition_remove_a11y', [chip.label]),
-                onAction: (): void => {
-                  this.removeCondition(chip)
+                useCustomTrailing: true,
+                suffixPaddingRight: ThemeTokens.SPACE_SM,
+                customTrailing: (): void => {
+                  this.ConditionActions(chip)
                 },
-                onTrailingAction: (): void => {
-                  this.removeCondition(chip)
-                },
-                trailingActionText: AppStrings.get('search_condition_remove'),
+                accessibilityLabel: chip.title,
               })
             },
-            (chip: SearchConditionChip): string => chip.rawToken,
+            (chip: SearchConditionChip): string => `${chip.tokenIndex}:${chip.rawToken}`,
           )
         }
       }
+      if (this.showLocalComposer) {
+        NextNGroupedListSection() {
+          this.ConditionComposerInputRow()
+          this.ConditionComposerMatches()
+        }
+        this.ConditionError('plain')
+      }
       NextNGroupedListSection() {
+        Text(AppStrings.get('search_condition_nh_match'))
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontColor(ThemeTokens.TEXT_SECONDARY)
+          .width('100%')
+          .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD, top: ThemeTokens.SPACE_SM })
         NextNListRow({
           title: AppStrings.get('search_advanced_type'),
           trailingText: this.tagNamespaceLabel(this.tagNamespace),
@@ -689,22 +915,6 @@ export struct SearchAdvancedConditionInputs {
             placement: Placement.BottomRight,
             onDisappear: (): void => {
               this.tagNamespaceMenuShown = false
-            },
-          }))
-        this.SearchOptionDivider()
-        NextNListRow({
-          title: AppStrings.get('search_advanced_match'),
-          trailingText: this.tagModeLabel(this.tagExcluded),
-          trailingDropdown: true,
-          accessibilityLabel: AppStrings.get('search_advanced_match'),
-          onAction: (): void => {
-            this.tagModeMenuShown = true
-          },
-        })
-          .bindMenu(this.tagModeMenuShown, this.TagModeMenu, appMenuOptions({
-            placement: Placement.BottomRight,
-            onDisappear: (): void => {
-              this.tagModeMenuShown = false
             },
           }))
         this.SearchOptionDivider()

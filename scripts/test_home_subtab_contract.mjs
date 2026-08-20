@@ -84,11 +84,21 @@ ok('range inputs keep a local draft and commit only on submit or blur',
     /\.onChange\(\(value: string\): void => \{\s*this\.text = value\s*\}\)/.test(conditionInputs) &&
     /\.onSubmit\(\(\): void => \{\s*this\.commit\(\)/.test(conditionInputs) &&
     /\.onBlur\(\(\): void => \{\s*this\.commit\(\)/.test(conditionInputs))
-ok('SubTab editor exposes a keyword leaf and reuses the direct range editor',
-  /SearchConditionParser\.plainText\(profile\.query\)/.test(subtabEditor) &&
-    /SearchConditionParser\.replacePlainText\(this\.query, value\)/.test(subtabEditor) &&
-    /hidePlainConditions: true/.test(subtabEditor) &&
-    /onFavoritesChange:[\s\S]*this\.replaceRange\('favorites'/.test(subtabEditor))
+ok('SubTab editor uses one local composer for translated tags and quoted raw conditions',
+  /showLocalComposer: true/.test(subtabEditor) &&
+    /onPlainAdd:[\s\S]*this\.appendPlainCondition/.test(subtabEditor) &&
+    /onSuggestedTagAdd:[\s\S]*this\.appendSuggestedTag/.test(subtabEditor) &&
+    /SearchConditionParser\.formatPlain\(text\)/.test(subtabEditor) &&
+    /TagTranslationRepository\.suggestUnscoped/.test(conditionInputs))
+ok('active conditions use indexed mutation, explicit relation and button-only removal callbacks',
+  /static removeTokenAt\(query: string, tokenIndex: number\)/.test(conditionParser) &&
+    /static setExcluded\(query: string, tokenIndex: number, excluded: boolean\)/.test(conditionParser) &&
+    /onSetConditionExcluded/.test(conditionInputs) &&
+    /ConditionActions\(chip\)/.test(conditionInputs) &&
+    !/onAction:[\s\S]{0,80}this\.removeCondition\(chip\)/.test(conditionInputs))
+ok('NH unsupported tilde is preserved as unknown instead of generated as OR',
+  /if \(content\.startsWith\('~'\)\)/.test(conditionParser) &&
+    /NH's public search contract does not implement/.test(conditionParser))
 
 const backupTypes = read('shared/src/main/ets/backup/BackupTypes.ets')
 const backupAdapter = read('shared/src/main/ets/backup/BackupLocalDataAdapter.ets')

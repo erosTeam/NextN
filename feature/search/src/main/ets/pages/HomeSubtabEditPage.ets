@@ -60,12 +60,10 @@ export struct HomeSubtabEditPage {
   @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
   @Local name: string = ''
   @Local query: string = ''
-  @Local keyword: string = ''
   @Local language: NhSearchLanguage = NhSearchLanguage.ALL
   @Local sort: NhSearchSort = NhSearchSort.RECENT
   @Local presentation: string = HOME_SUBTAB_PRESENTATION_GLOBAL
   @Local tagNamespace: string = 'tag'
-  @Local tagExcluded: boolean = false
   @Local uploadedUnit: NhSearchUploadedUnit = NhSearchUploadedUnit.DAY
   @Local conditionErrorScope: string = ''
   @Local conditionError: string = ''
@@ -106,14 +104,12 @@ export struct HomeSubtabEditPage {
       this.name = profile.name
       this.nameDraft = profile.name
       this.query = profile.query
-      this.keyword = SearchConditionParser.plainText(profile.query)
       this.language = profile.language
       this.sort = profile.sort
       this.presentation = profile.presentation
       return
     }
     this.query = this.edit.seedQuery
-    this.keyword = SearchConditionParser.plainText(this.edit.seedQuery)
     this.language = this.edit.seedLanguage
     this.sort = this.edit.seedSort
   }
@@ -237,12 +233,30 @@ export struct HomeSubtabEditPage {
   }
 
   private appendTag(text: string): boolean {
-    const fragment: string = NhTagQuery.formatExact(this.tagNamespace, text, this.tagExcluded)
+    const fragment: string = NhTagQuery.formatExact(this.tagNamespace, text)
     if (fragment.length === 0) {
       this.setConditionError('tag', AppStrings.get('search_advanced_tag_invalid'))
       return false
     }
     return this.appendFragments([fragment], 'tag')
+  }
+
+  private appendSuggestedTag(namespace: string, rawName: string): boolean {
+    const fragment: string = NhTagQuery.formatExact(namespace, rawName)
+    if (fragment.length === 0) {
+      this.setConditionError('tag', AppStrings.get('search_advanced_tag_invalid'))
+      return false
+    }
+    return this.appendFragments([fragment], 'tag')
+  }
+
+  private appendPlainCondition(text: string): boolean {
+    const fragment: string = SearchConditionParser.formatPlain(text)
+    if (fragment.length === 0) {
+      this.setConditionError('plain', AppStrings.get('search_condition_plain_invalid'))
+      return false
+    }
+    return this.appendFragments([fragment], 'plain')
   }
 
   private replaceRange(
@@ -300,9 +314,15 @@ export struct HomeSubtabEditPage {
     }
   }
 
-  private removeCondition(token: string): void {
-    if (token.length > 0 && !this.hasUnclosedQuote(this.query)) {
-      this.query = SearchConditionParser.removeToken(this.query, token)
+  private removeCondition(tokenIndex: number): void {
+    if (tokenIndex >= 0 && !this.hasUnclosedQuote(this.query)) {
+      this.query = SearchConditionParser.removeTokenAt(this.query, tokenIndex)
+    }
+  }
+
+  private setConditionExcluded(tokenIndex: number, excluded: boolean): void {
+    if (tokenIndex >= 0 && !this.hasUnclosedQuote(this.query)) {
+      this.query = SearchConditionParser.setExcluded(this.query, tokenIndex, excluded)
     }
   }
 
@@ -409,21 +429,6 @@ export struct HomeSubtabEditPage {
   }
 
   @Builder
-  private QuerySection() {
-    NextNGroupedListSection() {
-      HomeSubtabInlineEditRow({
-        title: AppStrings.get('home_subtab_query'),
-        value: this.keyword,
-        placeholder: AppStrings.get('home_subtab_query_placeholder'),
-        onChange: (value: string): void => {
-          this.keyword = value
-          this.query = SearchConditionParser.replacePlainText(this.query, value)
-        },
-      })
-    }
-  }
-
-  @Builder
   private OptionsSection() {
     NextNGroupedListSection() {
       NextNListRow({
@@ -463,20 +468,19 @@ export struct HomeSubtabEditPage {
     SearchAdvancedConditionInputs({
       activeQuery: this.query,
       tagNamespace: this.tagNamespace,
-      tagExcluded: this.tagExcluded,
+      showLocalComposer: true,
       uploadedUnit: this.uploadedUnit,
       errorScope: this.conditionErrorScope,
       errorMessage: this.conditionError,
-      hidePlainConditions: true,
       onNamespaceChange: (value: string): void => {
         this.tagNamespace = value
-      },
-      onExcludedChange: (value: boolean): void => {
-        this.tagExcluded = value
       },
       onUnitChange: (value: NhSearchUploadedUnit): void => {
         this.uploadedUnit = value
       },
+      onPlainAdd: (text: string): boolean => this.appendPlainCondition(text),
+      onSuggestedTagAdd: (namespace: string, rawName: string): boolean =>
+        this.appendSuggestedTag(namespace, rawName),
       onTagAdd: (text: string): boolean => this.appendTag(text),
       onPagesChange: (minimum: string, maximum: string): void =>
         this.replaceRange('pages', minimum, maximum),
@@ -488,7 +492,9 @@ export struct HomeSubtabEditPage {
         unit: NhSearchUploadedUnit,
       ): void => this.replaceRange('uploaded', minimum, maximum, unit),
       onClearError: (scope: string): void => this.clearConditionError(scope),
-      onRemoveCondition: (token: string): void => this.removeCondition(token),
+      onSetConditionExcluded: (tokenIndex: number, excluded: boolean): void =>
+        this.setConditionExcluded(tokenIndex, excluded),
+      onRemoveCondition: (tokenIndex: number): void => this.removeCondition(tokenIndex),
     })
   }
 
@@ -510,7 +516,6 @@ export struct HomeSubtabEditPage {
           Column() {
             NextNSectionHeader({ title: AppStrings.get('home_subtab_search_section') })
             Column({ space: ThemeTokens.SPACE_MD }) {
-              this.QuerySection()
               this.AdvancedConditions()
             }
             .width('100%')
