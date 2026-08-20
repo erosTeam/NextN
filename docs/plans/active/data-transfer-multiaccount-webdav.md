@@ -104,7 +104,8 @@ Preferences 键在备份中以 `<store>.<key>` 前缀避免跨 store 冲突；�
 
 - NextE 语义：单激活 cookie jar + 已保存 cookie bundle 列表；每账号 scope_key（RDB 列）与
   auth.profile.<memberId> 做数据作用域。
-- NextN 等价：单激活 NH 会话（HUKS 信封 {version, cookieHeader, browserUserAgent}）+
+- NextN 等价：单激活 NH 会话（HUKS v3 信封包含完整认证 Cookie 属性快照、
+  cookieHeader 与 browserUserAgent；v2 只读兼容但不得用于账号切换）+
   已保存会话列表；每账号独立 session/profile/收藏缓存；活动账号切换时重载会话与收藏门控。
 - reading_history 是否按账号作用域：先保持设备级（不加 scope 列），文档标记为 OPEN；
   多账号落地时若 NextE 明确按账号隔离历史，则加 scope_key 列并迁移。

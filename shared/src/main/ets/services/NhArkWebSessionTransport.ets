@@ -1,6 +1,5 @@
-import { common } from '@kit.AbilityKit'
 import { webview } from '@kit.ArkWeb'
-import { NhAccountAuthenticatedReadToken, NhAccountSessionService } from './NhAccountSessionService'
+import { NhAccountSessionService } from './NhAccountSessionService'
 import { NhBrowserSessionBoundary } from './NhBrowserSessionBoundary'
 
 const API_PREFIX: string = 'https://nhentai.net/api/v2/'
@@ -58,7 +57,6 @@ export class NhArkWebSessionTransport {
   private static readyTimeoutId: number = -1
   private static bootstrapTask: Promise<void> | null = null
   private static browserIdentityRefreshTask: Promise<boolean> | null = null
-  private static browserIdentityRefreshEpoch: number = -1
   private static requestSequence: number = 0
 
   static attach(controller: webview.WebviewController): void {
@@ -215,46 +213,26 @@ export class NhArkWebSessionTransport {
   }
 
   /**
-   * A terminal sealed-token replay can still happen while ArkWeb retains a
-   * longer-lived first-party browser identity. The explicit native
-   * re-verification action already proves that this identity can mint a new
-   * access token without credentials. Try that same bounded, first-party
-   * browser refresh once before publishing a durable re-verification state.
-   *
-   * This never opens a visible Web surface, reads a cookie into output, or
-   * enters credentials. A failed refresh simply returns false so the caller
-   * preserves the established native re-verification boundary.
+   * Reloads the fixed first-party root so ArkWeb can renew its own Cookie jar,
+   * then lets the caller replay the original request once. No sealed access
+   * token is injected and no response may demote durable account ownership.
    */
-  static async refreshFromRegularBrowserIdentityAfterAuthenticated401(
-    token: NhAccountAuthenticatedReadToken,
-  ): Promise<boolean> {
-    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
-      return false
-    }
+  static async refreshSessionAfter401(): Promise<boolean> {
     const activeTask: Promise<boolean> | null = NhArkWebSessionTransport.browserIdentityRefreshTask
-    if (activeTask !== null &&
-      NhArkWebSessionTransport.browserIdentityRefreshEpoch === token.sessionEpoch) {
+    if (activeTask !== null) {
       try {
         return await activeTask
       } catch (_error) {
         return false
       }
     }
-    if (activeTask !== null) {
-      try {
-        await activeTask
-      } catch (_error) {}
-      return false
-    }
-    const task: Promise<boolean> = NhArkWebSessionTransport.refreshFromRegularBrowserIdentity(token)
+    const task: Promise<boolean> = NhArkWebSessionTransport.refreshBrowserSession()
     NhArkWebSessionTransport.browserIdentityRefreshTask = task
-    NhArkWebSessionTransport.browserIdentityRefreshEpoch = token.sessionEpoch
     try {
       return await task
     } finally {
       if (NhArkWebSessionTransport.browserIdentityRefreshTask === task) {
         NhArkWebSessionTransport.browserIdentityRefreshTask = null
-        NhArkWebSessionTransport.browserIdentityRefreshEpoch = -1
       }
     }
   }
@@ -328,13 +306,15 @@ export class NhArkWebSessionTransport {
 
   private static async bootstrap(controller: webview.WebviewController): Promise<void> {
     NhArkWebSessionTransport.isReady = false
-    // A sealed account marker is not sufficient by itself after process
-    // restart: this retained Web component sends its same-origin requests from
-    // ArkWeb's regular cookie store. Rehydrate that store before its first
-    // fixed-origin navigation, and fail closed rather than issuing a request
-    // that would incorrectly retire an otherwise valid encrypted session.
-    if (!await NhAccountSessionService.ensureRegularArkWebCookieJar()) {
-      throw new Error('Account browser cookies could not be restored')
+    // The regular ArkWeb CookieManager is the live session authority. A
+    // sealed snapshot is only a cold-start fallback when that live jar has no
+    // readable access token; failure to hydrate it must not prevent the root
+    // navigation from using longer-lived browser cookies already owned by
+    // ArkWeb (for example refresh_token or sessionid).
+    if (NhAccountSessionService.hasRetainedAccount()) {
+      try {
+        await NhAccountSessionService.ensureRegularArkWebCookieJar()
+      } catch (_error) {}
     }
     try {
       // Apply the UA captured from the visible login Web component before the
@@ -359,13 +339,9 @@ export class NhArkWebSessionTransport {
     await ready
   }
 
-  private static async refreshFromRegularBrowserIdentity(
-    token: NhAccountAuthenticatedReadToken,
-  ): Promise<boolean> {
-    const context: common.UIAbilityContext | null =
-      NhAccountSessionService.authenticatedRecoveryContext(token)
+  private static async refreshBrowserSession(): Promise<boolean> {
     const controller: webview.WebviewController | null = NhArkWebSessionTransport.controller
-    if (context === null || controller === null) {
+    if (controller === null) {
       return false
     }
     try {
@@ -380,79 +356,20 @@ export class NhArkWebSessionTransport {
     if (!await NhArkWebSessionTransport.loadTrustedSessionRefreshPage(controller)) {
       return false
     }
-    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
-      return false
-    }
-    let observedUrl: string = ''
-    let browserUserAgent: string = ''
     try {
-      observedUrl = controller.getUrl()
-      browserUserAgent = NhAccountSessionService.requestUserAgent(controller.getUserAgent())
+      if (!NhBrowserSessionBoundary.isTrustedUrl(controller.getUrl())) {
+        return false
+      }
     } catch (_error) {
       return false
     }
-    if (!NhBrowserSessionBoundary.isTrustedUrl(observedUrl) || browserUserAgent.length === 0) {
-      return false
-    }
-    try {
-      const status: number = await NhArkWebSessionTransport.requestStatusFromCurrentDocument(
-        controller,
-        `${API_PREFIX}user`,
-      )
-      if (status < 200 || status >= 300) {
-        NhAccountSessionService.discardPendingVisibleBrowserSession()
-        return false
-      }
-      if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
-        return false
-      }
-      // Prefer sealing the newest readable token when the rotation produced
-      // one; the stability fence keeps the exact probed snapshot.
-      const captured: boolean =
-        await NhAccountSessionService.captureRegularArkWebSessionForAuthenticatedRecovery(
-          context,
-          token,
-          observedUrl,
-          browserUserAgent,
-        )
-      if (captured &&
-        NhAccountSessionService.isAuthenticatedReadTokenCurrent(token) &&
-        await NhAccountSessionService.isPendingRegularArkWebSessionStableAfterVerification(
-          context,
-          token,
-          observedUrl,
-          browserUserAgent,
-        )) {
-        const promoted: boolean =
-          await NhAccountSessionService.confirmPendingRegularArkWebSessionForAuthenticatedRecovery(
-            context,
-            token,
-          )
-        if (promoted) {
-          NhAccountSessionService.markBrowserIdentityVerified()
-          NhArkWebSessionTransport.resetForVisibleSessionCandidate()
-        }
-        return promoted
-      }
-      // No readable token (HttpOnly rotation) but the probe succeeded: keep
-      // the browser identity verified and the prior readable envelope intact
-      // for the cold-start fallback.
-      NhAccountSessionService.discardPendingVisibleBrowserSession()
-     if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
-       return false
-      }
-      NhAccountSessionService.markBrowserIdentityVerified()
-      // The probe succeeded on the current trusted document, so keep it as
-      // the ready transport. Do not reset to false here: a false value would
-      // make the caller's replay trigger a bootstrap, whose hydration would
-      // write the stale sealed token back over the server's newly rotated
-      // (possibly HttpOnly) jar cookie.
-      NhArkWebSessionTransport.isReady = true
-      return true
-    } catch (_error) {
-      NhAccountSessionService.discardPendingVisibleBrowserSession()
-      return false
-    }
+    // The refresh navigation has already allowed ArkWeb to consume every
+    // response Set-Cookie. Keep this document ready; the caller now repeats
+    // the original request once and derives Authorization from the refreshed
+    // document.cookie, exactly as the normal request path does.
+    NhArkWebSessionTransport.isReady = true
+    await NhAccountSessionService.persistBrowserManagedCookies()
+    return true
   }
 
   /**

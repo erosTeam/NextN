@@ -599,6 +599,132 @@ const LOGIN_FORM_SELECTION_EXPRESSION = `(() => {
   };
 })()`
 
+// Internal-only submit activation point. It returns no DOM text, selector,
+// value, URL, title, cookie, or account data. The transient coordinates are
+// consumed immediately by CDP Input and never cross the driver's safe result.
+const SUBMIT_ACTIVATION_EXPRESSION = `(() => {
+  const isVisible = (element) => {
+    try {
+      const style = window.getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      return style.display !== 'none' && style.visibility !== 'hidden' &&
+        element.getAttribute('aria-hidden') !== 'true' && rect.width > 0 && rect.height > 0;
+    } catch (_error) {
+      return false;
+    }
+  };
+  const visibleInputs = Array.from(document.querySelectorAll('input')).filter(isVisible);
+  const passwordFields = visibleInputs.filter((input) =>
+    String(input.type || '').toLowerCase() === 'password');
+  const accountFields = visibleInputs.filter((input) => {
+    const type = String(input.type || 'text').toLowerCase();
+    return type === '' || type === 'text' || type === 'email' || type === 'tel' || type === 'search';
+  });
+  const accountField = accountFields.length === 1 ? accountFields[0] : null;
+  const passwordField = passwordFields.length === 1 ? passwordFields[0] : null;
+  const form = accountField !== null && passwordField !== null && accountField.form !== null &&
+    accountField.form === passwordField.form ? accountField.form : null;
+  const submitControls = form === null ? [] : Array.from(form.querySelectorAll('button, input')).filter(isVisible);
+  const submits = submitControls.filter((control) => {
+    const tag = String(control.tagName || '').toLowerCase();
+    const type = String(control.getAttribute('type') || '').toLowerCase();
+    return (tag === 'button' && (type === '' || type === 'submit')) ||
+      (tag === 'input' && type === 'submit');
+  });
+  const submit = submits.length === 1 ? submits[0] : null;
+  const submitEnabled = submit !== null && !submit.disabled &&
+    String(submit.getAttribute('aria-disabled') || '').toLowerCase() !== 'true';
+  const challengeFramePresent = Array.from(document.querySelectorAll('iframe')).some((frame) => {
+    const source = String(frame.getAttribute('src') || '').toLowerCase();
+    const title = String(frame.getAttribute('title') || '').toLowerCase();
+    return isVisible(frame) && (source.includes('challenges.cloudflare.com') || title.includes('challenge'));
+  });
+  const formValid = form !== null && typeof form.checkValidity === 'function' ? Boolean(form.checkValidity()) : false;
+  const eligible = submit !== null && submitEnabled && formValid && !challengeFramePresent;
+  const rect = eligible ? submit.getBoundingClientRect() : null;
+  return {
+    eligible,
+    x: rect === null ? null : rect.left + rect.width / 2,
+    y: rect === null ? null : rect.top + rect.height / 2,
+  };
+})()`
+
+async function dispatchSemanticSubmitClick(socketUrl, timeoutMs) {
+  if (typeof globalThis.WebSocket !== 'function') {
+    return createFailure('cdp_connect', 'websocket_unavailable')
+  }
+  let socket
+  try {
+    socket = new globalThis.WebSocket(socketUrl)
+  } catch (_error) {
+    return createFailure('cdp_connect', 'open_failed')
+  }
+  try {
+    if (!await waitForSocketOpen(socket, timeoutMs)) {
+      return createFailure('cdp_connect', 'open_failed_or_timeout')
+    }
+    const enabled = await sendCdp(socket, 1, 'Runtime.enable', {}, timeoutMs)
+    if (enabled.kind !== 'message' || !isObject(enabled.message) || enabled.message.error !== undefined) {
+      return createFailure('runtime_enable', 'failed')
+    }
+    const evaluated = await sendCdp(socket, 2, 'Runtime.evaluate', {
+      expression: SUBMIT_ACTIVATION_EXPRESSION,
+      awaitPromise: true,
+      returnByValue: true,
+    }, timeoutMs)
+    if (evaluated.kind !== 'message' || !isObject(evaluated.message) || evaluated.message.error !== undefined) {
+      return createFailure('runtime_evaluate', 'failed')
+    }
+    const protocolResult = evaluated.message.result
+    const payload = isObject(protocolResult) && isObject(protocolResult.result)
+      ? protocolResult.result.value
+      : null
+    if (!isObject(payload) || payload.eligible !== true || !Number.isFinite(payload.x) ||
+      !Number.isFinite(payload.y) || payload.x < 0 || payload.y < 0 ||
+      payload.x > 10000 || payload.y > 10000) {
+      return createFailure('action_precondition', 'submit_not_eligible')
+    }
+    const pressed = await sendCdp(socket, 3, 'Input.dispatchMouseEvent', {
+      type: 'mousePressed',
+      x: payload.x,
+      y: payload.y,
+      button: 'left',
+      clickCount: 1,
+    }, timeoutMs)
+    if (pressed.kind !== 'message' || !isObject(pressed.message) || pressed.message.error !== undefined) {
+      return createFailure('action_postcondition', 'submit_dispatch_not_confirmed')
+    }
+    const released = await sendCdp(socket, 4, 'Input.dispatchMouseEvent', {
+      type: 'mouseReleased',
+      x: payload.x,
+      y: payload.y,
+      button: 'left',
+      clickCount: 1,
+    }, timeoutMs)
+    if (released.kind !== 'message' || !isObject(released.message) || released.message.error !== undefined) {
+      return createFailure('action_postcondition', 'submit_dispatch_not_confirmed')
+    }
+    return {
+      ok: true,
+      stage: 'login_field_action',
+      loginFormPresent: true,
+      accountFieldPresent: true,
+      accountFieldFocused: false,
+      passwordFieldPresent: true,
+      passwordFieldFocused: false,
+      passwordFieldMasked: true,
+      submitPresent: true,
+      submitEnabled: true,
+      formValid: true,
+      challengeFramePresent: false,
+      actionApplied: true,
+      submitDispatched: true,
+    }
+  } finally {
+    closeQuietly(socket)
+  }
+}
+
 function actionExpression(action) {
   // The action string is never interpolated into page JavaScript. These are
   // fixed local statements selected from the parser's closed enum.
@@ -606,7 +732,13 @@ function actionExpression(action) {
     ? 'actionApplied = focusCurrentField(accountField);'
     : action === 'focus-password'
       ? 'actionApplied = focusCurrentField(passwordField);'
-      : 'submit.click(); actionApplied = true; submitDispatched = true;'
+      : `if (typeof form.requestSubmit === 'function') {
+          form.requestSubmit(submit);
+        } else {
+          submit.click();
+        }
+        actionApplied = true;
+        submitDispatched = true;`
   const isSubmit = action === 'submit'
   return `(() => {
   const isVisible = (element) => {
@@ -843,6 +975,9 @@ export async function runDriver({ port, action, timeoutMs }, transport = {}) {
   // the separate read-only probe's `submitEligible=true` result in the same
   // volatile protocol epoch, then treat any post-dispatch transport loss as a
   // possible issued submit rather than retrying.
+  if (action === 'submit') {
+    return await dispatchSemanticSubmitClick(selected.socketUrl, timeoutMs)
+  }
   const evaluated = await evaluateSingleLocalPage(selected.socketUrl, actionExpression(action), timeoutMs)
   if (!evaluated.ok) {
     return evaluated

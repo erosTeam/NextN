@@ -390,7 +390,11 @@ export struct BrowserSessionPage {
         this.isControllerAttached = false
         this.stopSessionCaptureTimer()
         this.refreshAccountProfile()
-        AccountListSettings.recordActive(this.hostContext()).catch((): void => {})
+        // Promotion is not durable until the selected saved-account envelope
+        // also receives the new complete Cookie snapshot. A fire-and-forget
+        // copy allowed an immediate cold start to retain the old access-only
+        // saved record and later destroy refresh/session on account switch.
+        await AccountListSettings.recordActive(this.hostContext())
         this.announceVisibleLoginPromotion()
       }
     } catch (error) {

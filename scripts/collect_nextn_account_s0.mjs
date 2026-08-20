@@ -49,7 +49,7 @@ const NAVIGATION_SETTLE_MS = 650
 const ANCHOR_POLL_MS = 500
 const ANCHOR_POLLS = 4
 const FAVORITES_POLL_MS = 800
-const FAVORITES_POLLS = 4
+const FAVORITES_POLLS = 8
 const ACCOUNT_POLL_MS = 800
 const ACCOUNT_POLLS = 4
 
@@ -63,6 +63,8 @@ class SafeFailure extends Error {
 function parseArguments(argv) {
   let target = ''
   let lease = ''
+  let routeLogin = false
+  let includeDiagnostics = false
   for (let index = 2; index < argv.length; index += 1) {
     const argument = argv[index]
     if (argument === '--target') {
@@ -75,12 +77,20 @@ function parseArguments(argv) {
       index += 1
       continue
     }
+    if (argument === '--route-login') {
+      routeLogin = true
+      continue
+    }
+    if (argument === '--include-diagnostics') {
+      includeDiagnostics = true
+      continue
+    }
     throw new SafeFailure('invalid_arguments')
   }
   if (!AUTHORIZED_TARGETS.has(target) || lease.length === 0) {
     throw new SafeFailure('invalid_arguments')
   }
-  return { target, lease }
+  return { target, lease, routeLogin, includeDiagnostics }
 }
 
 function sleep(milliseconds) {
@@ -394,6 +404,38 @@ function resolveClickableAnchor(root, labels) {
   return [...candidates.values()][0]
 }
 
+function resolveTitleBarTrailingAction(root) {
+  const windowBounds = foregroundWindowBounds(root)
+  if (windowBounds === null) {
+    throw new SafeFailure('foreground_bounds_missing')
+  }
+  const candidates = new Map()
+  walk(root, (node) => {
+    const bounds = clickableBounds(node)
+    if (bounds === null) {
+      return
+    }
+    const centerX = (bounds.left + bounds.right) / 2
+    const centerY = (bounds.top + bounds.bottom) / 2
+    const rightThreshold = windowBounds.left + (windowBounds.right - windowBounds.left) * 0.65
+    const titleBottom = windowBounds.top + (windowBounds.bottom - windowBounds.top) * 0.16
+    if (centerX >= rightThreshold && centerY <= titleBottom) {
+      candidates.set(`${bounds.left}:${bounds.top}:${bounds.right}:${bounds.bottom}`, bounds)
+    }
+  })
+  if (candidates.size === 0) {
+    throw new SafeFailure('login_action_anchor_missing')
+  }
+  return [...candidates.values()].sort((left, right) => {
+    const leftArea = (left.right - left.left) * (left.bottom - left.top)
+    const rightArea = (right.right - right.left) * (right.bottom - right.top)
+    if (leftArea !== rightArea) {
+      return rightArea - leftArea
+    }
+    return right.right - left.right
+  })[0]
+}
+
 function centerOf(bounds) {
   return {
     x: Math.floor((bounds.left + bounds.right) / 2),
@@ -561,15 +603,16 @@ function favoritesSummary(root, labels) {
   const favoritesRoot = uniqueVisibleMarker(root, FAVORITES_ROOT_ID, 'favorites_root_marker_missing', 'favorites_root_marker_ambiguous')
   const nativeStructure = isForegroundNextn(root) && hasSelectedLabel(root, labels.favoritesNative)
   const collection = hasType(favoritesRoot, new Set(['List', 'Grid', 'WaterFlow']))
-  // This cold-start S0 reader has no persisted gallery snapshot: a collection
-  // mounts only after this process's page-one Favorites request succeeds. Its
-  // inline/footer feedback is not a full-page session state.
+  // A retained Favorites page can mount cached cards and an inline request
+  // error at the same time. Cached collection structure is never proof of a
+  // successful current authenticated request.
   const primaryState = !collection
   const signInPrompt = primaryState && hasLabel(favoritesRoot, labels.favoritesSignInPrompt)
   const loading = primaryState && hasLabel(favoritesRoot, labels.favoritesLoading)
-  const error = primaryState && hasLabel(favoritesRoot, labels.favoritesError)
+  const error = hasLabel(favoritesRoot, labels.favoritesError)
   const empty = primaryState && hasLabel(favoritesRoot, labels.favoritesEmpty)
-  const authenticated = nativeStructure && (collection || (!signInPrompt && !loading && !error && empty))
+  const authenticated = nativeStructure && !error &&
+    (collection || (!signInPrompt && !loading && empty))
   return { nativeStructure, signInPrompt, loading, error, authenticated }
 }
 
@@ -650,10 +693,12 @@ async function observeFavorites(target, lease, hostTempDirectory, labels) {
       throw new SafeFailure('foreground_unexpected')
     }
     summary = favoritesSummary(favorites, labels)
-    if (!summary.loading) {
+    if (summary.signInPrompt || summary.error || (!summary.loading && !summary.authenticated)) {
       break
     }
-    await sleep(FAVORITES_POLL_MS)
+    if (index + 1 < FAVORITES_POLLS) {
+      await sleep(FAVORITES_POLL_MS)
+    }
   }
   if (summary === null || !summary.nativeStructure || (!summary.signInPrompt && !summary.loading && !summary.error && !summary.authenticated)) {
     throw new SafeFailure('favorites_summary_incomplete')
@@ -737,7 +782,7 @@ async function main() {
   let favorites = null
   let diagnostics = null
   try {
-    const { target, lease } = parseArguments(process.argv)
+    const { target, lease, routeLogin, includeDiagnostics } = parseArguments(process.argv)
     hostTempDirectory = await mkdtemp(join(tmpdir(), TEMP_PREFIX))
     await chmod(hostTempDirectory, 0o700)
     const [
@@ -746,6 +791,8 @@ async function main() {
       accountSignedIn,
       accountSignedOut,
       accountSignIn,
+      accountAdd,
+      accountWebLogin,
       accountSaveFailed,
       favoritesNative,
       favoritesSignInPrompt,
@@ -768,6 +815,8 @@ async function main() {
       loadLabels(new Set(['account_status_signed_in'])),
       loadLabels(new Set(['account_status_not_signed_in'])),
       loadLabels(new Set(['account_sign_in'])),
+      loadLabels(new Set(['settings_add_account'])),
+      loadLabels(new Set(['account_web_login'])),
       loadLabels(new Set(['account_save_failed'])),
       loadLabels(new Set(['tab_favorites'])),
       loadLabels(new Set(['favorites_sign_in_settings'])),
@@ -792,6 +841,8 @@ async function main() {
       accountSignedIn,
       accountSignedOut,
       accountSignIn,
+      accountAdd,
+      accountWebLogin,
       accountVerificationRequired: LEGACY_ACCOUNT_VERIFICATION_LABELS,
       accountSaveFailed,
       favoritesNative,
@@ -811,12 +862,67 @@ async function main() {
       diagnosticsLogShareHint
     }
     account = await observeAccount(target, lease, hostTempDirectory, labels)
+    if (routeLogin) {
+      let accountLayout = await collectLayout(target, lease, hostTempDirectory, 'account-login-route')
+      const loginActions = new Set([...labels.accountSignIn, ...labels.accountAdd])
+      try {
+        await tapAnchor(
+          target,
+          lease,
+          accountLayout,
+          loginActions,
+          'login_action_anchor_missing',
+          'login_action_anchor_ambiguous',
+        )
+      } catch (error) {
+        if (!(error instanceof SafeFailure) || error.code !== 'login_action_anchor_missing') {
+          throw error
+        }
+        const point = centerOf(resolveTitleBarTrailingAction(accountLayout))
+        await leaseCommand(
+          target,
+          lease,
+          ['shell', 'uitest', 'uiInput', 'click', String(point.x), String(point.y)],
+          'input_failed',
+        )
+        await sleep(NAVIGATION_SETTLE_MS)
+      }
+      let visibleLoginWeb = false
+      for (let index = 0; index < ACCOUNT_POLLS; index += 1) {
+        const loginLayout = await collectLayout(target, lease, hostTempDirectory, `login-route-${index}`)
+        visibleLoginWeb = isForegroundNextn(loginLayout) && hasType(loginLayout, new Set(['Web', 'WebComponent']))
+        if (visibleLoginWeb) {
+          break
+        }
+        if (index === 0) {
+          const browserActions = new Set([...labels.accountWebLogin, ...labels.accountSignIn])
+          await tapAnchor(
+            target,
+            lease,
+            loginLayout,
+            browserActions,
+            'browser_login_action_missing',
+            'browser_login_action_ambiguous',
+          )
+        }
+        await sleep(ACCOUNT_POLL_MS)
+      }
+      return {
+        outcome: { ok: visibleLoginWeb, stage: 's1_route', visibleLoginWeb },
+        exitCode: visibleLoginWeb ? 0 : 2,
+        hostTempDirectory,
+      }
+    }
     favorites = await observeFavorites(target, lease, hostTempDirectory, labels)
-    diagnostics = await observeDiagnostics(target, lease, hostTempDirectory, labels)
+    if (includeDiagnostics) {
+      diagnostics = await observeDiagnostics(target, lease, hostTempDirectory, labels)
+    }
     const sessionAccepted = account.signedIn && account.selectionPresent && !account.signedOut &&
       !account.verificationRequired && !account.saveFailed && !account.visibleLoginWeb && favorites.authenticated
     return {
-      outcome: { ok: true, stage: 's0', account, favorites, diagnostics, sessionAccepted },
+      outcome: includeDiagnostics
+        ? { ok: true, stage: 's0', account, favorites, diagnostics, sessionAccepted }
+        : { ok: true, stage: 's0', account, favorites, sessionAccepted },
       exitCode: 0,
       hostTempDirectory,
     }

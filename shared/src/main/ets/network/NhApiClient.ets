@@ -28,8 +28,6 @@ const API_ROOT: string = 'https://nhentai.net'
 const API_V2_PREFIX: string = `${API_ROOT}/api/v2/`
 const THUMB_ROOT: string = 'https://t.nhentai.net'
 const IMAGE_ROOT: string = 'https://i.nhentai.net'
-const CONNECT_TIMEOUT_MS: number = 10000
-const READ_TIMEOUT_MS: number = 20000
 const MAX_COMMENT_POW_DIFFICULTY: number = 24
 const ACCOUNT_LOG_DOMAIN: number = 0xE001
 const ACCOUNT_LOG_TAG: string = 'NextNAccount'
@@ -37,27 +35,18 @@ const CLOUD_BLACKLIST_REFRESH_TTL_MS: number = 10 * 60 * 1000
 const MAX_COMMENT_POW_ATTEMPTS: number = 2000000
 const COMMENT_POW_YIELD_INTERVAL: number = 2048
 // ErosN's unscoped search autocomplete probes these catalog namespaces in
-// order. Keep the list short: expanding it would multiply anonymous requests
-// for every edit without improving the ordinary tag-search path.
+// order. Keep the list short: expanding it would multiply requests for every
+// edit without improving the ordinary tag-search path.
 const DEFAULT_AUTOCOMPLETE_TYPES: string[] = ['tag', 'parody', 'character', 'artist', 'group']
 
-/**
- * Public catalog reads must never carry account authority or decide whether a
- * durable session is valid. Authenticated scopes are opt-in and still guarded
- * by the exact endpoint matcher below; only the authenticated Favorites list,
- * never display enrichment, may retire the global account state.
- */
+/** Response semantics only; transport and browser session ownership are shared. */
 enum NhJsonReadScope {
   PUBLIC,
-  // Browse/Search/Popular/Related prefer the authenticated ArkWeb transport
-  // so the NH server can apply the account's cloud tag blacklist. Any auth
-  // failure silently falls back to the anonymous native request; browsing
-  // must never break or retire the account because a list read went stale.
+  // Browse/Search/Popular/Related use the same browser session when present.
   ACCOUNT_PREFERRED,
   ACCOUNT_OWNED,
-  // Gallery-detail favourite enrichment may use the authenticated browser
-  // transport, but an unknown best-effort leaf must never retire the global
-  // account state behind a swallowed error.
+  // Best-effort callers may swallow the request error, but they never change
+  // the underlying browser/account state.
   ACCOUNT_OWNED_NON_RETIRING,
 }
 
@@ -68,11 +57,10 @@ class NhCommentProofOfWork {
 }
 
 /**
- * Native NetworkKit transport for anonymous ErosN v2 reads plus a fixed
- * ArkWeb bridge for authenticated v2 work. When a visible browser session
- * exists, account-bearing requests stay inside that browser context rather
- * than replaying cookies through native HTTP. Authenticated writes remain
- * one-shot operations reached solely from an explicit native action.
+ * One fixed-origin ArkWeb transport for every ErosN v2 request. The browser
+ * jar decides whether a request is signed in; endpoint response semantics do
+ * not create a second native or anonymous transport. Authenticated writes
+ * remain one-shot operations reached solely from an explicit native action.
  */
 export class NhApiClient {
   private static lastCloudBlacklistRefreshAt: number = 0
@@ -456,23 +444,20 @@ export class NhApiClient {
     }
     const readToken = NhAccountSessionService.captureAuthenticatedReadToken()
     if (readToken === null) {
-      throw new Error('Your account session is changing. Please try again.')
+      throw new Error('account_session_generation_changed')
     }
     let response: NhArkWebAccountProfileResponse = await NhArkWebSessionTransport.requestAccountProfile()
     if (response.statusCode === 401) {
-      // This profile bridge makes only fixed GET requests. A real 401 can
-      // prove that a previously preserved regular-cookie token is stale, so
-      // restore the current sealed non-HttpOnly fallback once before replaying
-      // this idempotent read. Never share this helper with mutation paths.
-      const recoveryPrepared: boolean = await NhApiClient.prepareIdempotentAuthenticatedReadRetryAfter401(readToken)
-      if (recoveryPrepared && NhAccountSessionService.isAuthenticatedReadTokenCurrent(readToken)) {
+      NhAccountSessionService.recordAuthenticatedReadInitial401()
+      const refreshReady: boolean = await NhArkWebSessionTransport.refreshSessionAfter401()
+      NhAccountSessionService.recordAuthenticatedReadBrowserRefresh(refreshReady)
+      if (refreshReady && NhAccountSessionService.isAuthenticatedReadTokenCurrent(readToken)) {
         response = await NhArkWebSessionTransport.requestAccountProfile()
+        NhAccountSessionService.recordAuthenticatedReadBrowserReplay(response.statusCode === 401)
       }
       if (response.statusCode === 401) {
-        // Profile is display enrichment, not an authoritative account check.
-        // Even an actual replayed 401 may fail only this request; Favorites
-        // remains the sole owner allowed to change durable session state.
-        throw new Error('HTTP 401')
+        await NhAccountSessionService.recordAuthenticatedReadReplay401(readToken)
+        throw new Error('account_authenticated_request_rejected')
       }
     }
     if (response.statusCode === 403) {
@@ -485,7 +470,7 @@ export class NhApiClient {
     // verified promotion was durably taking ownership. Do not let a prior
     // session's successful profile payload reach a later account revision.
     if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(readToken)) {
-      throw new Error('Your account session changed. Please try again.')
+      throw new Error('account_session_generation_changed')
     }
     const profile: NhAccountProfile = new NhAccountProfile()
     profile.username = response.username
@@ -495,8 +480,7 @@ export class NhApiClient {
     if (!profile.hasIdentity()) {
       throw new Error('Account profile did not contain a valid identity')
     }
-    // Follow the browser's Set-Cookie rotation after a successful profile
-    // read so the sealed envelope tracks the newest token.
+    await NhAccountSessionService.persistBrowserManagedCookies()
     await NhAccountSessionService.syncSealedSessionFromRegularJar()
     return profile
   }
@@ -595,185 +579,92 @@ export class NhApiClient {
   private static async getJsonValue(
     url: string,
     scope: NhJsonReadScope = NhJsonReadScope.PUBLIC,
-    allowTransportCache: boolean = true,
-    denyRedirects: boolean = false,
-    singleAttempt: boolean = false,
+    _allowTransportCache: boolean = true,
+    _denyRedirects: boolean = false,
+    _singleAttempt: boolean = false,
   ): Promise<Object> {
-    // Cloud-blacklist list reads prefer the authenticated browser transport
-    // (ErosN semantics: the NH server marks blacklisted galleries only when
-    // it knows the account). Any failure falls back to the anonymous native
-    // request below, so a stale session degrades to an unfiltered list
-    // instead of an error or an account retirement.
-    if (scope === NhJsonReadScope.ACCOUNT_PREFERRED &&
-      NhAccountSessionService.isAuthenticated() &&
-     NhApiClient.isAccountPreferredListReadUrl(url)) {
-      try {
-        const preferredResponse: NhArkWebSessionResponse =
-          await NhArkWebSessionTransport.requestJson(url, 'GET')
-        if (preferredResponse.statusCode >= 200 && preferredResponse.statusCode < 300) {
-          const preferredValue: Object = JSON.parse(preferredResponse.body) as Object
-          if (preferredValue !== null) {
-            hilog.info(ACCOUNT_LOG_DOMAIN, ACCOUNT_LOG_TAG,
-              'account-preferred list read ok status=%{public}d', preferredResponse.statusCode)
-            // Follow the browser's Set-Cookie rotation: after a successful
-            // authenticated read, re-seal the newest jar token so a cold
-            // start restores it instead of the login-time snapshot.
-            await NhAccountSessionService.syncSealedSessionFromRegularJar()
-            return preferredValue
-          }
-        }
-      } catch (error) {
-        hilog.warn(ACCOUNT_LOG_DOMAIN, ACCOUNT_LOG_TAG,
-          'account-preferred list read failed stage=%{public}s',
-          error instanceof Error && error.message.startsWith('account_')
-            ? error.message : 'account_transport_unexpected')
-        // Best-effort only: the anonymous path below remains the fallback.
-      }
+    // All nhentai v2 traffic shares one retained ArkWeb transport. Whether a
+    // request carries account identity is decided only inside the browser
+    // from its current document.cookie; response Set-Cookie updates
+    // that same jar. The legacy cache/redirect flags remain in this private
+    // signature for call-site compatibility but cannot create a second
+    // native transport or an anonymous fallback while an account is active.
+    const response: NhArkWebSessionResponse = await NhApiClient.requestBrowserResponse(
+      url,
+      'GET',
+      '',
+      scope,
+    )
+    const value: Object = JSON.parse(response.body) as Object
+    if (value === null) {
+      throw new Error('Received an empty JSON response')
     }
-    // ArkWeb authority and the two-401 retirement boundary belong only to
-    // explicit account reads. Public Detail/Comments/PoW traffic remains
-    // anonymous even while an account is signed in: a public endpoint
-    // cannot prove that the account is stale.
-    if ((scope === NhJsonReadScope.ACCOUNT_OWNED ||
-      scope === NhJsonReadScope.ACCOUNT_OWNED_NON_RETIRING) &&
-      NhAccountSessionService.isAuthenticated() &&
-      NhApiClient.isAccountOwnedIdempotentReadUrl(url)) {
-      let readToken = NhAccountSessionService.captureAuthenticatedReadToken()
-      if (readToken === null) {
-        throw new Error('Your account session is changing. Please try again.')
-      }
-      let response: NhArkWebSessionResponse = await NhArkWebSessionTransport.requestJson(url, 'GET')
-      if (response.statusCode === 401) {
-        NhAccountSessionService.recordAuthenticatedReadInitial401()
-        // The browser is the Set-Cookie authority: a trusted navigation
-        // lets the server rotate access_token through Set-Cookie while
-        // ArkWeb keeps its HttpOnly identity. Try that real refresh before
-        // touching the sealed fallback so a rotated-but-unreadable token is
-        // never overwritten by the stale login-time snapshot. Mutation
-        // methods do not reach this branch because repeating a write can
-        // duplicate a user action.
-        let replayExecuted: boolean = false
-        const browserRefreshReady: boolean = scope === NhJsonReadScope.ACCOUNT_OWNED &&
-          await NhArkWebSessionTransport.refreshFromRegularBrowserIdentityAfterAuthenticated401(readToken)
-        NhAccountSessionService.recordAuthenticatedReadBrowserRefresh(browserRefreshReady)
-        if (browserRefreshReady) {
-          const refreshedReadToken = NhAccountSessionService.captureAuthenticatedReadToken()
-          if (refreshedReadToken !== null) {
-            readToken = refreshedReadToken
-            response = await NhArkWebSessionTransport.requestJson(url, 'GET')
-            replayExecuted = true
-            NhAccountSessionService.recordAuthenticatedReadBrowserReplay(response.statusCode === 401)
-          }
-        }
-        if (!replayExecuted) {
-          // The bounded sealed-token fallback remains as a second candidate
-          // only after the browser refresh could not promote a session.
-          const recoveryPrepared: boolean = await NhApiClient.prepareIdempotentAuthenticatedReadRetryAfter401(readToken)
-          NhAccountSessionService.recordAuthenticatedReadSealedRecovery(recoveryPrepared)
-          if (recoveryPrepared && NhAccountSessionService.isAuthenticatedReadTokenCurrent(readToken)) {
-            response = await NhArkWebSessionTransport.requestJson(url, 'GET')
-            replayExecuted = true
-            NhAccountSessionService.recordAuthenticatedReadSealedReplay(response.statusCode === 401)
-          }
-        }
-        if (replayExecuted && response.statusCode === 401 &&
-          scope === NhJsonReadScope.ACCOUNT_OWNED) {
-          // Record the exhausted repair attempt without changing account
-          // ownership or publishing a login gate.
-          if (!await NhAccountSessionService.recordAuthenticatedReadReplay401(readToken)) {
-            throw new Error('Your account session changed. Please try again.')
-          }
-          throw new Error('HTTP 401')
-        }
-        if (response.statusCode === 401) {
-          throw new Error('HTTP 401')
-        }
-      }
-      if (response.statusCode === 403) {
-        throw new Error('HTTP 403')
-      }
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        throw new Error(`HTTP ${response.statusCode}`)
-      }
-      // The first response or its one recovery replay can become stale while
-      // a durable clear/new verified session is in flight. Gate before JSON
-      // parsing so Favorites and favourite status never receive prior-session
-      // data after that ownership transition.
-      if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(readToken)) {
-        throw new Error('Your account session changed. Please try again.')
-      }
-      const browserValue: Object = JSON.parse(response.body) as Object
-      if (browserValue === null) {
-        throw new Error('Received an empty JSON response')
-      }
-      // Follow the browser's Set-Cookie rotation after a successful
-      // authenticated read so the sealed envelope tracks the newest token.
-      await NhAccountSessionService.syncSealedSessionFromRegularJar()
-      return browserValue
-    }
-    let lastError: Error = new Error('Network request failed')
-    const attemptLimit: number = singleAttempt ? 1 : 2
-    for (let attempt: number = 0; attempt < attemptLimit; attempt++) {
-      const request: http.HttpRequest = http.createHttp()
-      try {
-        const response: http.HttpResponse = await request.request(url, {
-          method: http.RequestMethod.GET,
-          expectDataType: http.HttpDataType.STRING,
-          usingCache: allowTransportCache,
-          connectTimeout: CONNECT_TIMEOUT_MS,
-          readTimeout: READ_TIMEOUT_MS,
-          // Public browse reads preserve NetworkKit's documented default.
-          // The fixed first-party random-ID leaf denies all redirects so it
-          // cannot silently follow an unexpected cross-origin Location.
-          maxRedirects: denyRedirects ? 0 : 30,
-          // Native catalog reads are always anonymous. The exact account
-          // endpoints above stay in ArkWeb; no other GET may replay browser
-          // authority through NetworkKit or retire the sealed session.
-          header: NhApiClient.publicJsonHeaders(),
-        })
-        if (response.responseCode < 200 || response.responseCode >= 300) {
-          throw new Error(`HTTP ${response.responseCode}`)
-        }
-        const value: Object = JSON.parse(response.result as string) as Object
-        if (value === null) {
-          throw new Error('Received an empty JSON response')
-        }
-        return value
-      } catch (error) {
-        lastError = error as Error
-        if (attempt + 1 < attemptLimit) {
-          await NhApiClient.delay(400)
-        }
-      } finally {
-        request.destroy()
-      }
-    }
-    throw lastError
+    return value
   }
 
-  /**
-   * Prepares exactly one replay of an already authenticated idempotent read.
-   * It does not issue a request itself, so POST/DELETE mutation paths cannot
-   * accidentally inherit this recovery. A failed forced cookie replacement
-   * leaves the caller's original 401 as a request failure; only a physically
-   * issued replay can establish the verification boundary.
-   */
-  private static async prepareIdempotentAuthenticatedReadRetryAfter401(
-    readToken: NhAccountAuthenticatedReadToken,
-  ): Promise<boolean> {
-    // Never race a retained-browser refresh with a stale sealed-token
-    // overwrite: the server may have just rotated access_token through
-    // Set-Cookie on the refresh navigation, and writing the old sealed
-    // value back would destroy the newer HttpOnly token. When a refresh is
-    // in flight, leave this replay unexecuted; the refresh owns the jar.
-    if (NhArkWebSessionTransport.isBrowserIdentityRefreshActive()) {
-      return false
+  /** One browser-owned request, one root refresh on 401, then one replay. */
+  private static async requestBrowserResponse(
+    url: string,
+    method: string,
+    body: string,
+    scope: NhJsonReadScope,
+  ): Promise<NhArkWebSessionResponse> {
+    if (!NhApiClient.isFirstPartyApiV2Url(url)) {
+      throw new Error('The browser transport is restricted to the first-party API')
     }
-    if (!await NhAccountSessionService.recoverRegularArkWebCookieJarAfterAuthenticated401(readToken)) {
-      return false
+    const accountOwned: boolean = NhAccountSessionService.hasRetainedAccount()
+    const accountScoped: boolean = scope === NhJsonReadScope.ACCOUNT_OWNED ||
+      scope === NhJsonReadScope.ACCOUNT_OWNED_NON_RETIRING
+    const readToken: NhAccountAuthenticatedReadToken | null =
+      accountScoped ? NhAccountSessionService.captureAuthenticatedReadToken() : null
+    let response: NhArkWebSessionResponse = await NhArkWebSessionTransport.requestJson(url, method, body)
+    if (response.statusCode === 401) {
+      if (accountOwned) {
+        NhAccountSessionService.recordAuthenticatedReadInitial401()
+        await NhAccountSessionService.recordBrowserAuthCookieShape('after_initial_401')
+      }
+      const refreshReady: boolean = await NhArkWebSessionTransport.refreshSessionAfter401()
+      if (accountOwned) {
+        NhAccountSessionService.recordAuthenticatedReadBrowserRefresh(refreshReady)
+        await NhAccountSessionService.recordBrowserAuthCookieShape('after_root_refresh')
+      }
+      if (readToken !== null && !NhAccountSessionService.isAuthenticatedReadTokenCurrent(readToken)) {
+        throw new Error('account_session_generation_changed')
+      }
+      if (refreshReady) {
+        response = await NhArkWebSessionTransport.requestJson(url, method, body)
+        if (accountOwned) {
+          NhAccountSessionService.recordAuthenticatedReadBrowserReplay(response.statusCode === 401)
+          if (response.statusCode === 401) {
+            await NhAccountSessionService.recordBrowserAuthCookieShape('after_replay_401')
+          }
+        }
+      }
     }
-    NhArkWebSessionTransport.resetForSessionRefresh()
-    return true
+    if (response.statusCode === 401) {
+      if (accountOwned && readToken !== null) {
+        await NhAccountSessionService.recordAuthenticatedReadReplay401(readToken)
+      }
+      throw new Error('account_authenticated_request_rejected')
+    }
+    if (response.statusCode === 403) {
+      throw new Error('HTTP 403')
+    }
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw new Error(`HTTP ${response.statusCode}`)
+    }
+    if (readToken !== null && !NhAccountSessionService.isAuthenticatedReadTokenCurrent(readToken)) {
+      throw new Error('account_session_generation_changed')
+    }
+    await NhAccountSessionService.persistBrowserManagedCookies()
+    if (scope === NhJsonReadScope.ACCOUNT_OWNED ||
+      scope === NhJsonReadScope.ACCOUNT_OWNED_NON_RETIRING) {
+      NhAccountSessionService.markBrowserIdentityVerified()
+    }
+    if (NhAccountSessionService.isAuthenticated()) {
+      await NhAccountSessionService.syncSealedSessionFromRegularJar()
+    }
+    return response
   }
 
   /**
@@ -797,61 +688,35 @@ export class NhApiClient {
       throw new Error('Sign in from Settings before changing account data')
     }
     const browserMethod: string = method === http.RequestMethod.POST ? 'POST' : 'DELETE'
-    const response: NhArkWebSessionResponse = await NhArkWebSessionTransport.requestJson(
+    const response: NhArkWebSessionResponse = await NhApiClient.requestBrowserResponse(
       url,
       browserMethod,
       extraData,
+      NhJsonReadScope.ACCOUNT_OWNED_NON_RETIRING,
     )
-    if (response.statusCode === 401) {
-      // A mutation cannot be replayed safely: the server might already have
-      // applied it even though the response reached ArkWeb as a 401. That one
-      // response also cannot distinguish a stale regular cookie from a sealed
-      // fallback that will recover on the next idempotent read. Preserve the
-      // sealed record here; only explicit sign-out or a real replayed GET
-      // followed by 401 may delete it.
-      throw new Error('HTTP 401')
-    }
-    if (response.statusCode === 403) {
-      throw new Error('HTTP 403')
-    }
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw new Error(`${rejectedMessage} (HTTP ${response.statusCode}).`)
-    }
     const value: Object = JSON.parse(response.body) as Object
     if (Array.isArray(value) || value === null || typeof value !== 'object') {
       throw new Error(`${rejectedMessage} The server response was invalid.`)
     }
-    // Follow the browser's Set-Cookie rotation after a successful account
-    // write so the sealed envelope tracks the newest token.
-    await NhAccountSessionService.syncSealedSessionFromRegularJar()
     return value as Record<string, Object>
   }
 
-  /** A single anonymous catalog POST with no cookie or authorization header. */
+  /** Catalog POST through the same browser jar; signed-out jars add no auth header. */
   private static async postPublicJsonArray(url: string, extraData: string): Promise<Object[]> {
     if (!NhApiClient.isFirstPartyApiV2Url(url)) {
       return []
     }
-    const request: http.HttpRequest = http.createHttp()
     try {
-      const response: http.HttpResponse = await request.request(url, {
-        method: http.RequestMethod.POST,
-        extraData: extraData,
-        expectDataType: http.HttpDataType.STRING,
-        usingCache: false,
-        connectTimeout: CONNECT_TIMEOUT_MS,
-        readTimeout: READ_TIMEOUT_MS,
-        header: NhApiClient.publicJsonHeaders(),
-      })
-      if (response.responseCode < 200 || response.responseCode >= 300) {
-        return []
-      }
-      const value: Object = JSON.parse(response.result as string) as Object
+      const response: NhArkWebSessionResponse = await NhApiClient.requestBrowserResponse(
+        url,
+        'POST',
+        extraData,
+        NhJsonReadScope.PUBLIC,
+      )
+      const value: Object = JSON.parse(response.body) as Object
       return Array.isArray(value) ? value as Object[] : []
     } catch (_error) {
       return []
-    } finally {
-      request.destroy()
     }
   }
 
@@ -912,56 +777,6 @@ export class NhApiClient {
     return url.startsWith(API_V2_PREFIX)
   }
 
-  /**
-   * This is deliberately an allowlist, not a first-party prefix test. These
-   * two GETs are the only generic JSON reads that expose account-specific
-  * state; profile uses its separate fixed `/info/` bridge.
-   */
-  private static isAccountOwnedIdempotentReadUrl(url: string): boolean {
-    if (url.startsWith(`${API_V2_PREFIX}favorites?`)) {
-      return true
-    }
-    if (url === `${API_V2_PREFIX}blacklist/ids`) {
-      return true
-    }
-    const galleryFavoritePrefix: string = `${API_V2_PREFIX}galleries/`
-    const galleryFavoriteSuffix: string = '/favorite'
-    if (!url.startsWith(galleryFavoritePrefix) || !url.endsWith(galleryFavoriteSuffix)) {
-      return false
-    }
-    const galleryId: string = url.slice(
-      galleryFavoritePrefix.length,
-      url.length - galleryFavoriteSuffix.length,
-    )
-    return /^[1-9][0-9]*$/.test(galleryId)
-  }
-
-  /**
-   * List surfaces where the NH server applies the account's cloud tag
-   * blacklist once the request carries the browser session. Exact endpoints
-   * only: detail, comments, and random keep their anonymous contracts.
-   */
-  private static isAccountPreferredListReadUrl(url: string): boolean {
-    if (url.startsWith(`${API_V2_PREFIX}galleries?page=`)) {
-      return true
-    }
-    if (url.startsWith(`${API_V2_PREFIX}search?`)) {
-      return true
-    }
-    if (url === `${API_V2_PREFIX}galleries/popular`) {
-      return true
-    }
-    const relatedPrefix: string = `${API_V2_PREFIX}galleries/`
-    if (!url.startsWith(relatedPrefix) || !url.endsWith('/related')) {
-      return false
-    }
-    const relatedId: string = url.slice(
-      relatedPrefix.length,
-      url.length - '/related'.length,
-    )
-    return /^[1-9][0-9]*$/.test(relatedId)
-  }
-
   private static autocompleteType(value: string): string {
     const normalized: string = value.trim().toLowerCase()
     switch (normalized) {
@@ -1002,14 +817,6 @@ export class NhApiClient {
     return url.length > 0 && url.length <= 4096 &&
       /^https:\/\/[A-Za-z0-9.-]+(?::[0-9]{1,5})?(?:[/?#]|$)/.test(url) &&
       !/[\s\\]/.test(url)
-  }
-
-  private static publicJsonHeaders(): Record<string, string> {
-    return {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'User-Agent': 'NextN/1.0.0',
-    }
   }
 
   private static async parseGalleryPage(root: Record<string, Object>): Promise<NhGalleryPageResult> {

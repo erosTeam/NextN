@@ -688,3 +688,166 @@ substitute for measured login-cycle elapsed time.
 - S6：force-stop + 冷启动（未清数据），账户页直接显示已登录（honjow / ID 5623474）；收藏页直接显示认证画廊内容（多个条目），无登录提示、无加载错误。
 - 197 TCP 连接多次瞬断，但登录与持久化验收均完成。
 - 凭据：用户保留的 .nextn-test-account.local.json5（内存 staging，未落输出/日志/提交）。
+
+## S0 会话续期链缺失观察 — 2026-08-20 22:40-22:51 +0800（192.168.50.200:12345）
+
+- session-loss-detected-at: 2026-08-20 22:40:01 +0800（当前持久诊断日志中首次 authenticated-read 401）。
+- concrete reason session absent/invalid: ArkWeb Cookie 形状在初始 401、根刷新和重放 401 三个阶段均为 access=1、refresh=0、session=0；根刷新无法续期，最终 authenticated request 仍为 401。
+- prior cycle terminal outcome: 2026-08-20 22:11 的上一安装包曾记录 Account/Favorites 成功，但其 collector 未检查动态请求错误；该结论已撤回。上一有效周期的精确持续时间为 unavailable-from-existing-evidence。
+- first blocking phase: native-persistence；旧版 saved-account switch 先删除 refresh/session，再从 version-2 信封仅恢复 access token。
+- install/data boundary at observation: install-r=true；data-clear=false；uninstall=false。
+- S0 Account: native ownership retained；此项不能证明请求鉴权有效。
+- S0 Favorites: cached cards 与 terminal authenticated request error 同时存在；不得归类为 authenticated success。
+- restore/401 diagnostic: initial 401 -> root refresh ready -> replay 401 -> terminal 401 after restore。
+- WebView-visible timestamp: 2026-08-20 22:40:01 +0800（根刷新开始）；native-success timestamp: none。
+- terminal observation: 2026-08-20 22:51:01 +0800；elapsed: 11 分钟，超过 60 秒上限；未重置或隐藏该周期。
+- login-page entry / account input / password input / submit / native promotion: not-entered / not-entered / not-entered / not-issued / none。
+- no data clear or uninstall occurred: confirmed。
+- next action: 先安装完整 Cookie 信封修复构建并重新执行 paired S0；只有该当前 S0 仍证明会话无效时，才建立新的 attemptEpoch 并连续完成 S1-S6。
+
+## 修复构建后的当前 S0 终态 — 2026-08-20 22:53:23-22:55:30 +0800（192.168.50.200:12345）
+
+- session-loss-detected-at: 2026-08-20 22:53:35 +0800（完整 Cookie 信封修复构建 install-r 后，Favorites 当前请求首次 401）。
+- current Account safe outcome: native ownership present，saved=1，selected=1，signed-out=false，visible-login-Web=false。
+- current Favorites safe outcome: 缓存 collection 已挂载，但同轮持久诊断为 initial 401 -> root refresh -> replay 401 -> terminal 401；该 collection 不构成 authenticated success。
+- restore/401 stage: after_initial_401、after_root_refresh、after_replay_401 均为 access=1、refresh=0、session=0；无 Cookie 值或账号信息进入日志。
+- collector correction: 22:53 的第一份 `sessionAccepted=true` 因缓存 collection 过早结算而撤回；读取当前请求终态后的结论为 invalid session。
+- install/data boundary: signed Debug install-r=true；data-clear=false；uninstall=false。
+- prior cycle terminal outcome and elapsed: 22:40 周期 terminal 401，11 分钟；本周期 last-observed-at=22:55:30，elapsed=1 分 55 秒，超过 60 秒上限。
+- first blocking phase: native-persistence；旧 version-2 信封已经永久缺少 refresh/session，新构建不能凭空重建服务器续期身份。
+- login-page entry / account input / password input / submit / native promotion: not-entered / not-entered / not-entered / not-issued / none。
+- keychain staging precondition: 固定 presence-only 检查 accountHandleAvailable=true、passwordHandleAvailable=true；没有读取或输出凭据值。
+- no data clear or uninstall occurred: confirmed。
+- next action: 通过当前 native Account 的显式登录/添加账户动作进入 S1；确认当前可见 Web 和语义表单后，另起一个 attemptEpoch，单次执行 S2 account、S3 password、S4 submit。
+
+## 完整 Cookie 信封后的单次重登录 epoch — 2026-08-20 23:05:25 +0800（192.168.50.200:12345）
+
+- concrete reason a new attempt is warranted: 上一周期已以 terminal 401 关闭；当前浏览器 jar 的 refresh/session 被旧 version-2 switch 永久删除，新构建无法无凭据恢复。
+- prior cycle: session-loss-detected-at=22:53:35，terminal observation=22:55:30，elapsed=1 分 55 秒，first blocker=native-persistence。
+- current S0 Account: native ownership=true，saved=1，selected=1，signed-out=false，visible-login-Web=false。
+- current S0 Favorites: cached collection 不作为成功；同轮请求 initial 401 -> root refresh -> replay 401 -> terminal 401。
+- install/data boundary: signed Debug install-r=true；data-clear=false；uninstall=false。
+- S1 login-page entry: explicit native Add account -> native Open login page；visible-login-Web=true。
+- S1 semantic probe: loginFormPresent=true，accountFieldPresent=true/filled=false，passwordFieldPresent=true/filled=false/masked=true，submitPresent=true/enabled=false，challengeFramePresent=false，errorMarkerPresent=false。
+- credential staging: 固定 Keychain 两个 handle 已做 presence-only 检查并可用；值不进入 argv、环境、日志、布局、截图或台账。
+- attemptEpoch started-at: 2026-08-20 23:05:25 +0800；accountEntered=false；passwordEntered=false；submitIssued=false。
+- account input: pending one semantic S2 action。
+- password input: pending one semantic S3 action。
+- submit: pending one semantic S4 action。
+- native promotion / cold-start Account / cold-start Favorites: pending / pending / pending。
+- next action: 立即由固定 Keychain epoch orchestrator 连续执行一次 S2-S4；之后只观察 S5，不在此 epoch 重填、重清或重提交。
+
+### 该 epoch 终态 — 2026-08-20 23:08:54 +0800
+
+- S2 account input: issued once；postcondition accountFieldFilled=true。
+- S3 password input: issued once；postcondition passwordFieldFilled=true、passwordFieldMasked=true。
+- S4 submit: issued once；orchestrator 固定结果 s4_submit_dispatched、submitIssued=true。
+- S5 post-action: visible-login-Web=true；native Account promotion=false。提交后两次有界探针仍为 loginFormPresent=true、formValid=true、challengeFramePresent=false、errorMarkerPresent=false。
+- native promotion: none；cold-start Account/Favorites: not-run because S5 did not promote。
+- last-observed-at: 2026-08-20 23:08:54 +0800；attempt elapsed=3 分 29 秒；超过 60 秒上限。
+- first blocking phase: form；语义 submit dispatch 已执行，但当前页面未产生导航、challenge/error 状态或 native promotion。该结果不允许在同一 epoch 再次提交。
+- no repeated input/clear/submit: confirmed。
+- next action: 精确清理本轮 CDP forward；关闭该已填表单并回到新的 S0/S1。只有新空表单和新 ledger epoch 才允许下一次凭据序列；先检查固定 submit driver 为什么“dispatch success”未形成 HTML form submission。
+
+## 第二次空表单 epoch — 2026-08-20 23:12:04 +0800（192.168.50.200:12345）
+
+- reason: 前一 epoch 已以 S5 未提升关闭且 forward 已精确删除；修正后的冷启动 S0 明确 Favorites error=true、authenticated=false，当前会话仍 invalid。
+- current S0 Account/Favorites: native ownership=true、saved=1、selected=1；Favorites current request error=true、authenticated=false。
+- S1: 重新通过显式 Add account -> Open login page 进入全新 visible Web；当前语义表单 account/password 均 empty，masked=true，challenge=false，error=false。
+- install/data boundary: install-r=true；data-clear=false；uninstall=false。
+- credential handles: fixed Keychain presence already confirmed；no secret output。
+- attemptEpoch started-at: 2026-08-20 23:12:04 +0800；accountEntered=false；passwordEntered=false；submitIssued=false。
+- implementation-specific correction before this epoch: 固定 submit driver 改用 HTML `form.requestSubmit(submit)`，仅在 API 不可用时回退单次 `submit.click()`；两者不会在同一 action 同时执行。
+- account input / password input / submit / native promotion / cold-start verification: pending / pending / pending / pending / pending。
+- next action: 连续执行唯一一次 S2-S3，随后在 challenge-safe 固定分支唯一一次 S4；同一 epoch 不重复。
+
+### 第二次 epoch 终态 — 2026-08-20 23:13:43 +0800
+
+- S2/S3: accountEntered=true once；passwordEntered=true once；filled/masked postconditions=true。
+- S4: requestSubmit branch issued once；submitIssued=true。
+- S5: bounded wait 后 visible login form 仍存在；challenge=false、error=false、formValid/submitEligible=true；native promotion=false。
+- last-observed-at: 2026-08-20 23:13:43 +0800；elapsed=1 分 39 秒，超过 60 秒上限；first blocker=form。
+- no repeated input/clear/submit: confirmed；本 epoch 关闭。
+- diagnosis boundary: JavaScript `click()` 与 `requestSubmit()` 都只证明 untrusted DOM dispatch 被调用，不能证明服务器页面接受了真实用户激活。下一 epoch 前把 S4 改为“当前语义 submit 控件中心 -> CDP Input mousePressed/mouseReleased”，坐标仅在进程内使用且不输出、不复用；凭据字段仍禁止坐标输入。
+
+## 浏览器级 submit 激活 epoch — 2026-08-20 23:16:55 +0800（192.168.50.200:12345）
+
+- reason/current S0: 前一 epoch 已关闭；再次冷启动证明 Account ownership=true、Favorites error=true/authenticated=false。
+- S1: explicit Add account -> Open login page；visible Web=true；account/password empty，masked=true，challenge/error=false。
+- install/data: install-r=true；data-clear=false；uninstall=false；fixed Keychain handles available。
+- attemptEpoch started-at: 2026-08-20 23:16:55 +0800；accountEntered=false；passwordEntered=false；submitIssued=false。
+- S4 driver boundary: 语义唯一 submit 控件的当前中心只在进程内使用，由 CDP Input mousePressed/mouseReleased 发一次浏览器级点击；坐标不输出/保存/复用，credential input 仍无坐标。
+- account input / password input / submit / S5 / S6: pending / pending / pending / pending / pending。
+- next action: 立即连续执行唯一 S2-S4，随后仅观察提升。
+
+### 浏览器级激活 epoch 终态 — 2026-08-20 23:20 +0800
+
+- S2/S3/S4: account entered once；password entered once；CDP Input semantic submit issued once；no repeat/clear/resubmit。
+- S5: login form navigated away；native Account=true、visible Web=false、selected account=true、saveFailed=false。
+- native-promotion-at: 2026-08-20 23:19 +0800；从 attempt start 到提升约 2 分钟，超过 60 秒；first blocker=form（前两种 untrusted submit 实现的定位/替换发生在此前已关闭 epoch，本 epoch 的超时不重写）。
+- S6: force-stop/cold start without data clear/uninstall；Account signedIn=true、saved=1、selected=1；Favorites error=false、authenticated=true；同轮日志无 authenticated 401。
+- conclusion: 登录与第一次冷启动成功；随后继续验证完整 v3 主/selected-saved 信封的落盘和再次冷启动，不把 ArkWeb jar 存活误当成信封恢复成功。
+
+## 完整 v3 信封最终恢复 — 2026-08-20 23:24-23:33 +0800（192.168.50.200:12345）
+
+- final install boundary: signed Debug install-r=true；data-clear=false；uninstall=false。
+- first migration cold start: Account/Favorites accepted，但 fixed diagnostic 发现旧重封装 `valid_v3/headerAccess=1/authCount=2/renewal=1/ua=0`，因此该轮不作为信封恢复验收。
+- root cause of invalid v3: regular ArkWeb jar survived while restore rejected the prior envelope；successful request re-sealed complete Cookies using an empty process `browserUserAgent`，causing the next restore to reject it again。
+- correction: retained ArkWeb stores the exact compatible UA selected for its live browser session；empty UA cannot be sealed；a valid envelope restores its UA；the first successful authenticated read also checkpoints primary and selected saved envelopes。
+- self-heal cold start: Account/Favorites accepted and rewrote the existing ua=0 envelope under the retained controller UA。
+- second cold start: Account signedIn=true、saved=1、selected=1、visibleWeb=false；Favorites error=false、authenticated=true。
+- fixed restore evidence on both Account and Favorites processes: `code=valid_v3;headerAccess=1;ua=1;authCount=2;renewal=1` followed only by `account_restore_arkweb_jar_ready`；no payload-invalid and no authenticated 401 stage。
+- credential input / password input / submit in final two cold starts: not-entered / not-entered / not-issued。
+- terminal outcome: S6 complete；next login action none。
+
+## 197 最终包 S0 会话无效观察 — 2026-08-20 23:41-23:43 +0800（192.168.50.197:12345）
+
+- session-loss-detected-at: 2026-08-20 23:41:58 +0800（最终签名包 install-r 后，Favorites 当前请求首次 authenticated-read 401）。
+- concrete reason session absent/invalid: Account 仍保留 native ownership、saved=1、selected=1，但 corrected collector 等待当前 Favorites 请求结算后记录 error=true、authenticated=false；缓存列表不作为成功。
+- prior cycle terminal outcome: 2026-08-20 22:11 的旧包曾报告 Account/Favorites 成功，但该结论没有证明当前最终包的可续期 v3 信封；从该观察到本次失效边界的精确有效时长为 unavailable-from-existing-evidence。
+- restore/401 diagnostic: `account_restore_arkweb_jar_ready` -> initial 401 -> root refresh ready -> replay 401 -> terminal 401 after restore；新规则保留 account ownership，没有发布 signed-out。
+- install/data boundary: signed Debug install-r=true；data-clear=false；uninstall=false。
+- current S0 Account: signedIn=true、signedOut=false、verificationRequired=false、saved=1、selected=1、visible-login-Web=false。
+- current S0 Favorites: native structure=true、error=true、authenticated=false、sign-in-prompt=false。
+- WebView-visible timestamp: 2026-08-20 23:41:58 +0800；native-success timestamp: none。
+- last-observed-at: 2026-08-20 23:43:17 +0800；elapsed=1 分 19 秒，超过 60 秒上限；first blocking phase=native-persistence（设备现存浏览器身份不能通过一次根刷新续期）。
+- login-page entry / account input / password input / submit / native promotion: not-entered / not-entered / not-entered / not-issued / none。
+- no data clear or uninstall occurred: confirmed。
+- credential staging precondition: 使用既有固定 Keychain handles；开始 S2 前仅执行 presence-only 检查，任何值不得进入输出、argv、环境、布局、截图或台账。
+- next action: 通过当前 native Account 的显式 Add account -> Open login page 进入一个全新 S1；确认空表单与无 challenge 后建立唯一 attemptEpoch，并连续执行一次 S2-S4，随后只观察 S5/S6。
+
+## 197 完整 v3 信封重登录 epoch — 2026-08-20 23:45:39 +0800（192.168.50.197:12345）
+
+- concrete reason a new attempt is warranted: 当前最终包的 paired S0 已以 terminal 401 关闭；Account ownership 保留但当前 Favorites 明确 error=true/authenticated=false，一次根刷新无法恢复设备现存旧身份。
+- prior cycle: session-loss-detected-at=23:41:58，last-observed-at=23:43:17，elapsed=1 分 19 秒，first blocker=native-persistence。
+- current S0 Account/Favorites: signedIn=true、saved=1、selected=1；Favorites current request error=true、authenticated=false。
+- install/data boundary: signed Debug install-r=true；data-clear=false；uninstall=false。
+- S1 login-page entry: explicit native Add account -> Open login page；visible-login-Web=true。
+- S1 semantic probe: loginFormPresent=true，account/password fields present and empty，passwordMasked=true，challenge=false，error=false；submit 尚未可用符合空表单前置状态。
+- credential staging: fixed Keychain presence-only result accountHandleAvailable=true、passwordHandleAvailable=true；no secret output。
+- attemptEpoch started-at: 2026-08-20 23:45:39 +0800；accountEntered=false；passwordEntered=false；submitIssued=false。
+- account input / password input / submit / native promotion / cold-start verification: pending / pending / pending / pending / pending。
+- next action: 立即连续执行唯一一次 S2 account、S3 password 和浏览器级语义 S4 submit；之后只观察 S5，不在本 epoch 重填、重清或重提交。
+
+### 197 epoch S5 提升 — 2026-08-20 23:47:48 +0800
+
+- S2 account input: issued once；postcondition accountFieldFilled=true。
+- S3 password input: issued once；postcondition passwordFieldFilled=true、passwordFieldMasked=true。
+- S4 challenge-safe branch: fixed probe challenge=false、error=false、formValid=true；browser-level semantic submit issued once；submitIssued=true。
+- S5: login form left the page；privacy-bounded native observation reported nativeAccount=true、visibleLoginWeb=false、savedAccountPresent=true、selectionPresent=true。
+- native-promotion-at: 2026-08-20 23:47:48 +0800；从 attempt start 到提升约 2 分 9 秒，超过 60 秒上限；first blocking phase=credential（Keychain 分阶段驱动在唯一 submit 前要求一次固定 challenge-safe probe）。
+- no repeated input/clear/submit: confirmed。
+- raw layout and temporary forwarding: raw host/device layout deleted；本轮 forward 已由调试生命周期自动移除，显式移除返回 not-exist，未删除其他转发。
+- cold-start Account / Favorites: pending / pending。
+- next action: 不清数据 force-stop/cold start；只观察 Account 与本次 Favorites 请求结算，不巡检 diagnostics 或其他界面。
+
+### 197 最终 S6 — 2026-08-21 00:00-00:02 +0800
+
+- interruption boundary: 用户报告 200 的同账号 checkpoint 英文提示后，197 S6 保持 OPEN 并停止设备操作；200 根因修复和当前现场验收完成后才恢复本步骤。
+- final package boundary: 与 200 相同的签名竞态修复 HAP 以 install-r 安装；data-clear=false；uninstall=false；sign-out/switch/re-login=false。
+- first independent cold start: Account signedIn=true、saved=1、selected=1、visibleWeb=false；Favorites error=false、authenticated=true、signInPrompt=false。
+- second independent cold start: Account signedIn=true、saved=1、selected=1、visibleWeb=false；Favorites error=false、authenticated=true、signInPrompt=false。
+- diagnostics/other UI inspection: not-run；S0 collector 默认仅访问 Account 与 Favorites，diagnostics 已改为显式 opt-in。
+- credential input / password input / submit after S5: not-entered / not-entered / not-issued。
+- terminal outcome: S6 complete on 197；the v3 renewable session survived two process cold starts and the same-account checkpoint race fix did not demote ownership or expose a request error。
+- next login action: none。

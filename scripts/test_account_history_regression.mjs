@@ -22,6 +22,7 @@ const arkWebTransport = read('shared/src/main/ets/services/NhArkWebSessionTransp
 const entryAbility = read('entry/src/main/ets/entryability/EntryAbility.ets')
 const settingsPage = read('feature/settings/src/main/ets/pages/SettingsPage.ets')
 const diagnosticsRedactor = read('shared/src/main/ets/diagnostics/DiagnosticsRedactor.ets')
+const accountS0Collector = read('scripts/collect_nextn_account_s0.mjs')
 
 ok('account ownership is separate from request authentication',
   /@Trace signedIn: boolean/.test(accountState) &&
@@ -34,14 +35,34 @@ ok('cold start has a durable non-secret ownership marker cleared only by explici
   (session.match(/retainedAccountPresent = false/g) || []).length === 1)
 
 const terminal401 = session.match(/static async recordAuthenticatedReadReplay401\([\s\S]*?\n  \}/)?.[0] || ''
+const syncSealedSessionStart = session.indexOf('static async syncSealedSessionFromRegularJar')
+const syncSealedSessionEnd = session.indexOf('static async clear(', syncSealedSessionStart)
+const syncSealedSession = syncSealedSessionStart >= 0 && syncSealedSessionEnd > syncSealedSessionStart
+  ? session.slice(syncSealedSessionStart, syncSealedSessionEnd)
+  : ''
 ok('a terminal replayed 401 records diagnostics without demoting the account',
   /recordAuthenticatedReadReplay401/.test(terminal401) &&
   !/retainedAccountPresent\s*=\s*false/.test(terminal401) &&
   !/cookieHeader\s*=\s*''/.test(terminal401) &&
   !/publishSessionChange/.test(terminal401) &&
   /recordAuthenticatedReadInitial401/.test(api) &&
-  /recordAuthenticatedReadBrowserRefresh/.test(api) &&
-  /recordAuthenticatedReadSealedRecovery/.test(api))
+  /recordAuthenticatedReadBrowserRefresh/.test(api))
+ok('all first-party v2 JSON requests share the browser-managed cookie response chain',
+  /private static async requestBrowserResponse/.test(api) &&
+  /NhArkWebSessionTransport\.requestJson\(url, method, body\)/.test(api) &&
+  /refreshSessionAfter401/.test(api) &&
+  /persistBrowserManagedCookies/.test(api) &&
+  !/http\.createHttp\(\)/.test(api) &&
+  !/recoverRegularArkWebCookieJarAfterAuthenticated401/.test(api))
+ok('401 recovery never overwrites the live browser jar with a sealed access token',
+  !/forceRegularArkWebCookieJarFromSealedSession/.test(session) &&
+  !/AUTHENTICATED_READ_SEALED_REPLAY/.test(session) &&
+  /credentials:\s*'include'/.test(arkWebTransport) &&
+  /document\.cookie/.test(arkWebTransport))
+ok('S0 never treats cached Favorites cards plus an inline request error as authenticated',
+  /const error = hasLabel\(favoritesRoot, labels\.favoritesError\)/.test(accountS0Collector) &&
+  /const authenticated = nativeStructure && !error/.test(accountS0Collector) &&
+  /summary\.signInPrompt \|\| summary\.error/.test(accountS0Collector))
 ok('the obsolete re-verify account option is absent from runtime UI',
   !/VERIFICATION_RETRY_REQUIRED/.test(browserPage) &&
   !/account_verify_sign_in/.test(browserPage))
@@ -55,6 +76,33 @@ ok('account switch persists the selected profile back to the primary profile slo
 ok('rotated browser tokens atomically update both primary and active saved envelopes',
   /saveVerifiedForAccount[\s\S]*SQL_UPSERT_SESSION[\s\S]*accountId\.length > 0[\s\S]*SQL_UPSERT_SESSION/.test(sessionRepository) &&
   /syncSealedSessionFromRegularJar[\s\S]*saveVerifiedForAccount\([\s\S]*activeSavedAccountId/.test(session))
+ok('sealed session v3 preserves the complete first-party renewal chain',
+  /RECOVERABLE_ARKWEB_COOKIE_NAMES[\s\S]*'access_token'[\s\S]*'refresh_token'[\s\S]*'sessionid'/.test(session) &&
+  /fetchAllCookies\(false\)/.test(session) &&
+  /'version': 3[\s\S]*'authCookies': authCookies/.test(session) &&
+  /configCookieSync\([\s\S]*authCookieSetValue\([\s\S]*false,[\s\S]*true/.test(session))
+ok('saved-account switching refuses legacy access-only envelopes before deleting live cookies',
+  /switchToSaved[\s\S]*!NhAccountSessionService\.hasRenewalAuthCookie\(payload\.authCookies\)[\s\S]*return false[\s\S]*expireVisibleBrowserIdentityCookies\(\)/.test(session))
+ok('saving an account checkpoints the current browser renewal cookies first',
+  /saveActiveAsSaved[\s\S]*captureFirstPartyAuthCookies\(\)[\s\S]*hasRenewalAuthCookie\(currentAuthCookies\)[\s\S]*serializeSessionPayload\([\s\S]*currentAuthCookies[\s\S]*saveVerifiedByKey/.test(session))
+ok('promotion and first authenticated read durably upgrade the selected saved envelope',
+  /await AccountListSettings\.recordActive\(this\.hostContext\(\)\)/.test(browserPage) &&
+  /needsSavedAccountCheckpoint[\s\S]*saveVerifiedForAccount\([\s\S]*activeSavedAccountId/.test(session) &&
+  /lastSavedAccountCheckpointId\s*=\s*NhAccountSessionService\.activeSavedAccountId/.test(session))
+ok('same-account cookie checkpoints do not invalidate concurrent reads or publish account revisions',
+  /beginDurableSessionTransition\(false\)/.test(session) &&
+  /sessionTransitionChangesOwnership/.test(session) &&
+  /token\.sessionEpoch === NhAccountSessionService\.sessionEpoch/.test(session) &&
+  !/token\.transitionEpoch/.test(session) &&
+  syncSealedSession.length > 0 &&
+  !/publishSessionChange\(\)/.test(syncSealedSession))
+ok('public response scopes never acquire account ownership tokens or expose English transition errors',
+  /accountScoped \? NhAccountSessionService\.captureAuthenticatedReadToken\(\) : null/.test(api) &&
+  !/Your account session (?:is changing|changed)/.test(api))
+ok('a successful browser response cannot re-seal a session with an empty user agent',
+  /requestUserAgent[\s\S]*browserUserAgent = userAgent/.test(session) &&
+  /jarToken\.length > 0 && NhAccountSessionService\.browserUserAgent\.length > 0/.test(session) &&
+  /sealedAuthCookies = restoredPayload\.authCookies[\s\S]*browserUserAgent = normalizedUserAgent/.test(session))
 ok('401 browser repair reloads the authenticated root instead of the login page',
   /loadTrustedSessionRefreshPage/.test(arkWebTransport) &&
   /controller\.loadUrl\(`\$\{NhBrowserSessionBoundary\.trustedOrigin\(\)\}\/`\)/.test(arkWebTransport) &&

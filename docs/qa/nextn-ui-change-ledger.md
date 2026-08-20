@@ -7706,3 +7706,51 @@ authorize an edit, replace a device comparison, or define product completion.
   The advanced-search remove-condition accessibility sibling is corrected by
   the same formatter rule and four-locale audit; its screen-reader announcement
   was not separately exercised in this diagnostics acceptance.
+
+### Account checkpoint race leaked into gallery list — 2026-08-20
+
+- **Status:** OPEN until the corrected signed package is observed on 200 in
+  the same retained-list state.
+- **User counter-evidence:** 200 rendered the English internal exception
+  `Your account session changed. Please try again.` as a non-clickable Text at
+  `[49,440][1126,479]`, inserted directly above retained gallery rows.
+- **Faulty assumption:** a durable write transition was treated as an account
+  ownership transition. The first complete-Cookie checkpoint increments the
+  storage transition epoch even though the active account is unchanged; a
+  concurrent public list request then failed its ownership token and exposed
+  the raw exception through `GalleryCollectionBody`'s retained-row error slot.
+- **Whole parent-tree boundary:** no gallery list, scroll owner, retained-page,
+  card, inset, title-bar, or Action Bar tree changes. The fix is below the UI:
+  public response scopes do not acquire account-ownership tokens, same-account
+  Cookie checkpoints do not invalidate concurrent reads or publish account
+  revisions, and true stale-account results use a fixed internal code.
+- **Why no SnackBar is added for this event:** the observed event is internal
+  bookkeeping, not a user-decision or retry action. Showing it in any surface
+  would still be incorrect.
+- **User-set non-blocking notice rule:** when usable list content remains and a
+  real refresh/retry fact must be retained, present it through HDS
+  `HdsSnackBar`, never as a synthetic first list row. Match NextE's clipboard
+  parent-tree leaf: `SnackBarOperationType.TEXT_WITH_CLOSE`, `duration: 0`, a
+  localized action where one exists, and an explicit close button. A page-local
+  blocking error remains valid only when no usable content exists.
+- **Runtime verification:** install the corrected signed package with
+  `install -r` on 200, preserve the current account and list data, force two
+  overlapping public list/checkpoint reads through cold start and refresh,
+  and require usable rows with no English/internal generation text and no
+  account demotion. Source checks and build success are supplementary.
+
+#### Installed 200 result
+
+- The corrected signed HAP was installed with `install -r`; no uninstall,
+  data clear, sign-out, account switch, or credential action occurred.
+- A corrected Account/Favorites cold-start run returned one selected saved
+  account and a settled authenticated Favorites request with error=false. The
+  collector did not enter Advanced or diagnostics because that unrelated UI
+  lane is now opt-in only.
+- The current Favorites state contained no English session-change or internal
+  generation text. A subsequent force-stop/cold start exercised the first
+  public-list request and same-account selected-envelope checkpoint in one new
+  process; NextN remained foreground, rendered four collection items, and
+  contained zero matching internal prompt nodes.
+- **Status:** ACCEPTED for the reported 200 retained-list checkpoint race. No
+  Snackbar is rendered because the event is no longer a user-facing failure.

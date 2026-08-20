@@ -3267,3 +3267,99 @@ permitted in this repository.
   authenticated Favorites with no sign-in prompt or error. No login, account
   mutation, data clear, uninstall, or WebDAV action occurred. The next physical
   action for the reported diagnostics-text defect is none.
+
+## Current account-session root-cause observation — 2026-08-20 22:40-22:51 +0800
+
+- The preceding broad S0 collector result on `192.168.50.200:12345` is
+  withdrawn: it treated cached Favorites cards as authenticated content and
+  did not recognize the new terminal request error. It is not acceptance
+  evidence.
+- The current persistent diagnostic log records an initial authenticated 401,
+  root refresh, replayed 401 and terminal 401. Privacy-bounded cookie-shape
+  stages before and after refresh report access present, refresh absent and
+  session absent; no cookie value, account value, URL or response body was
+  retained.
+- Source and device evidence agree on the destructive boundary: saved-account
+  switching expired `access_token`, `refresh_token` and `sessionid`, while the
+  version-2 encrypted envelope restored only `access_token`. Its later expiry
+  therefore had no browser renewal identity available for the root refresh.
+- The signed source correction uses ArkWeb for every first-party v2 JSON
+  request, never falls back to anonymous NetworkKit and never overwrites the
+  live browser jar after 401. Version-3 HUKS envelopes retain the bounded
+  first-party authentication Cookie tuple with its path, domain, expiry,
+  Secure, HttpOnly and SameSite attributes; legacy access-only saved envelopes
+  are refused before any live Cookie deletion.
+- Non-UI regression, `git diff --check`, and signed Debug build passed. The
+  installed device still contains the irrecoverable version-2 access-only
+  state; the next physical action is data-preserving installation of this
+  build on 200, followed by fresh paired Account/Favorites S0 and, if still
+  invalid, one ledgered autonomous visible-login epoch before cold-start and
+  Favorites verification.
+
+### Account-session root correction accepted — 2026-08-20 23:33 +0800
+
+- On `192.168.50.200:12345`, the old access-only session was conclusively
+  invalid and one autonomous ledgered login completed without data clear,
+  uninstall, credential output, repeated field input, or repeated submit. A
+  browser-level semantic submit activation was required because JavaScript
+  `click`/`requestSubmit` dispatch had not produced a real page activation.
+- The production request path now sends every first-party v2 JSON request
+  through one retained ArkWeb session. Public pages no longer silently switch
+  to anonymous NetworkKit while Favorites exposes the same expired identity;
+  401 performs one root refresh and one replay without overwriting the live
+  jar or demoting durable account ownership.
+- HUKS envelope version 3 stores the bounded first-party authentication Cookie
+  tuple and its domain/path/expiry/Secure/HttpOnly/SameSite attributes plus the
+  exact ArkWeb-compatible UA. Empty-UA re-seal is forbidden. Login promotion
+  waits for the selected saved envelope, and the first successful authenticated
+  read checkpoints that selected record again after cold-start ordering.
+- The corrected S0 collector no longer accepts cached Favorites cards before
+  the current request settles and treats inline retry as an error even while a
+  collection remains mounted. Its earlier 22:53 acceptance claim is withdrawn.
+- Final signed package was installed with `install -r`. After a migration
+  self-heal cold start, a second independent cold start reported native Account
+  signed in with one selected saved account and Favorites authenticated with no
+  error. Both processes logged `valid_v3`, header access present, UA present,
+  two bounded auth Cookies and renewal present, followed by ArkWeb-jar-ready;
+  there was no payload-invalid or authenticated-401 stage.
+- Non-UI account/history regressions, script syntax checks, `git diff --check`
+  and signed Debug build pass. The account-login/favorites physical action is
+  complete on 200; no new login action is pending.
+
+### Same-account checkpoint race corrected — 2026-08-20 23:59 +0800（200）
+
+- User counter-evidence on the pre-correction package showed the literal
+  internal exception `Your account session changed. Please try again.` as a
+  non-clickable Text inserted above retained gallery rows.
+- Root cause: complete-Cookie re-seal used the same transition epoch as
+  sign-out/account-switch/login-promotion. A same-account RDB checkpoint
+  therefore invalidated a concurrent public request and also published an
+  unnecessary account revision.
+- The installed correction separates storage serialization from ownership
+  change: same-account checkpoints neither invalidate concurrent reads nor
+  publish account state; public response scopes never acquire an account
+  ownership token; actual stale-account results use a fixed internal code.
+- Signed build and non-UI regressions passed. The HAP was installed with
+  `install -r` on 200 without clearing data or changing the account. A paired
+  Account/Favorites cold-start settled with one selected saved account,
+  authenticated Favorites and error=false; diagnostics UI was not visited.
+  A subsequent cold start rendered four public collection items with zero
+  English/internal generation prompt nodes and no account demotion.
+- The reported 200 prompt is accepted as absent in the installed correction.
+  Real non-blocking notices over usable content must use an indefinite,
+  manually closable HDS SnackBar; this internal bookkeeping event displays no
+  notice at all.
+- 197's post-login S6 remains OPEN because the user redirected the run to the
+  200 counter-evidence before that device's final cold-start verification.
+
+### 197 resumed S6 complete — 2026-08-21 00:02 +0800
+
+- After the 200 checkpoint-race correction closed, the same final signed HAP
+  was installed on 197 with `install -r`; no data clear, uninstall, sign-out,
+  account switch, or new credential action occurred.
+- Two independent cold-start runs each reported native Account signed in with
+  one selected saved account and a settled Favorites request with
+  error=false/authenticated=true. Neither run entered Advanced, diagnostics,
+  or any unrelated page.
+- The previously OPEN 197 S6 is accepted for this package. No login action is
+  pending on 197 or 200.
