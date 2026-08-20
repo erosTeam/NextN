@@ -100,7 +100,7 @@ ReaderSuperResolutionService.recordProcessingFailure：固定阶段名，不泄�
   ScrollScaffoldCore 重构。D 的运行时手势/刷新视觉验收仍 OPEN，后续若发现具体漂移，先
   在同一能力矩阵中定位，再做窄范围修复。
 
-## 车道 E（P1，分页批）：NextE 移植删减审计 TODO
+## 车道 E（P1，分页批）：NextE 移植删减审计 IN_PROGRESS
 
 用户最痛的私自精简来源。按页面/组件分批 diff NextE 源：每处删减必须有
 代码注释理由 or NH 边界证据，二者皆无即为嫌疑项登记。嫌疑项不直接回加代码，
@@ -129,6 +129,63 @@ ReaderSuperResolutionService.recordProcessingFailure：固定阶段名，不泄�
 
 本批结论仅是源码映射，不是设备 parity 验收。上述同名缺失文件和 image-block 差异继续列为
   E-Reader OPEN 观察项；若后续要补回，必须先补充功能等价性与 NH 边界证据，再决定是否实现。
+
+### E-GalleryDetail 首批静态盘点 AUDITED（NH 叶替换已登记）
+
+对照范围：NextE `GalleryDetailPage` 与其 Info/Tags/Comments/Torrents/Archiver/AllThumbnails
+叶页，NextN `GalleryDetailPage`、`GalleryDetailContentSections`、`GalleryCommentsPage`、
+`GalleryThumbnailsPage` 及 NH cache/download/torrent 服务。
+
+- NextN 将 Info/Tags/Comments/AllThumbnails 的路由叶合并到详情页内容 sections 或 NH 对应
+  destination；这不是漏掉页面，而是保持详情 → 评论/预览/缩略图的入口并替换数据模型。
+- NextE 的 EH archive/torrent/download 组合不能直接作为 NH 缺失项：NextN 使用 NH 下载队列、
+  `NhTorrentFileExportService` 和 NH API 的种子链接，页面仍保留下载、种子导出和阅读三个
+  不同动作。没有发现因“精简”而把下载误变阅读的当前代码路径。
+- NextN 的详情 cache seed、generation fence、favorite/download chrome、related loading
+  reserve 和 reader progress 均在详情页内有明确 owner；没有发现可安全抽成“只恢复一个
+  缺失组件”的单点。
+
+本批没有回加 EH 专属叶，也没有重排 NH 详情父树。保留的 OPEN 项是设备同态验证：详情首次
+进入、显式刷新、缓存命中/失效、相关画廊加载和下载状态转换仍需与当前 NextE/NH 目标状态
+分别验收；源码盘点不能替代这些视觉与时序证据。
+
+### E-Search 首批静态盘点 AUDITED（现有 NH 扩展保留）
+
+对照范围：NextE `GallerySearchPage` / `SearchFilterSheet` / 搜索历史与筛选状态，NextN
+`SearchPage`、`SearchAdvancedConditionInputs`、`SearchHistoryRepository`、`QuickSearchRepository`
+及标签目录服务。
+
+- NextN 已保留搜索结果、持久条件恢复、标签建议、历史/快捷搜索、标签翻译投影、筛选半模态、
+  跳页和请求 generation fence；这些能力不是由一个“把 NextE 筛选器直接换成 Row”得到的，
+  当前父树和输入状态必须继续作为整体维护。
+- NextN 的高级条件输入是 NH 扩展（收藏数、页数、上传时长等），不能以 NextE 条件数量少
+  为理由删掉；脚本化检查只锁入口存在，不替代输入法/焦点和半模态的设备验收。
+- 搜索建议的翻译显示使用本地目录优先、NH 建议补充，并保留命名空间原文作为副标题；这与
+  NextE 的 EH tag source 不同，不把两者的请求语义强行合并。
+
+本批没有发现可以在不改变 NH 搜索语义的前提下安全回加/删除的单点。搜索输入重建、筛选
+按钮状态、快捷搜索与历史胶囊的布局和冷启动持久条件仍属于 OPEN 运行时/视觉验收项；若发现
+具体回归，必须在 `SearchPage` 的同一父树内处理，不能只改一个文本框叶子。
+
+### E-Settings 首批静态盘点 AUDITED（页面合并不等于功能删减）
+
+NextE 的 `LayoutSettingsPage`、`SearchSettingsPage`、`AdvancedSettingsPage`、`CacheSettingsPage`
+和多个专页在 NextN 由 `SettingsPage` 的 surface/section 路由承载；`ContentFiltersPage` 是 NH
+本地过滤对应叶，`SyncSettingsPage`/`WebDavSyncSettingsPage`、标签/评论/漫画翻译、Reader
+模型、About 和 LLM source manager 均有 NextN destination。缺少同名的 EH `ImageBlock`、
+`LocalBlock`、`EhProfile`、`Security` 和 system-symbol 专页，不能仅凭文件名判定为删减：
+它们要么是 EH/上游专属能力，要么已有 NH 对应叶。
+
+本批先不改设置父树、不把合并页重新拆成 NextE 同名文件。下一步只对用户可达的设置路由逐项
+核对“入口 → 专页 → 保存/更新/删除动作 → 恢复状态”，任何无法证明是 NH 边界的缺失才进入
+删减嫌疑清单；当前运行时设置视觉和交互验收仍 OPEN。
+
+### 当前执行边界
+
+- A/B：源码边界与可空访问机检 VERIFIED。
+- C：分级已完成，关键链路首批诊断已补；剩余关键吞错和资源清理命名治理 OPEN。
+- D：族内静态能力矩阵与机检 VERIFIED；运行时手势/刷新视觉验收 OPEN，不做猜测性公共核心抽取。
+- E：Reader、GalleryDetail、Search、Settings 首批源码映射已完成；设备 parity 与后续页面批次 OPEN。
 
 ## 车道 F（P2，持续）：流程固化 VERIFIED
 
