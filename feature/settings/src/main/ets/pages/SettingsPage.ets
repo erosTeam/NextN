@@ -709,14 +709,18 @@ export struct SettingsPage {
     )
     return definition === null
       ? AppStrings.get('settings_reader_enhancement_model_none')
-      : AppStrings.get(definition.labelStringKey)
+      : definition.systemModel
+        ? AppStrings.get(definition.labelStringKey)
+        : definition.canonicalName
   }
 
   private readerEnhancementModelTitle(model: NhReaderSuperResolutionModel): string {
     const definition = ReaderSuperResolutionModelService.definition(model)
     return definition === null
       ? AppStrings.get('settings_reader_enhancement_model_none')
-      : AppStrings.get(definition.labelStringKey)
+      : definition.systemModel
+        ? AppStrings.get(definition.labelStringKey)
+        : definition.canonicalName
   }
 
   private readerEnhancementMaxHeightLabel(): string {

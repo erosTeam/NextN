@@ -7792,3 +7792,56 @@ authorize an edit, replace a device comparison, or define product completion.
   contained zero matching internal prompt nodes.
 - **Status:** ACCEPTED for the reported 200 retained-list checkpoint race. No
   Snackbar is rendered because the event is no longer a user-facing failure.
+
+## OPEN — Reader enhancement model names are not localized — 2026-08-21
+
+- **Why newly actionable:** the user reported that the enhancement-model
+  selection menu unnecessarily localizes third-party model identities. Only
+  the system image-super-resolution option is permitted to use a localized
+  product label; downloaded third-party entries must show their own names.
+- **Whole parent-tree boundary:** preserve `SettingsPage(READER) →
+  SecondaryListScaffold → ReaderPresentationGroup → NextNGroupedListSection →
+  selected-model NextNListRow → Menu → MenuItem`, and preserve the sibling
+  `ReaderSuperResolutionModelsPage → NextNModalScaffold → ListItem →
+  NextNGroupedListSection → NextNListRow` manager tree. Only the model-name
+  leaf is reopened; row order, geometry, icons, selected state, download and
+  removal actions, model identifiers, storage, and enhancement runtime remain
+  unchanged.
+- **Exact before/after:** before — the selector resolves every model through
+  locale resources, producing labels such as `Waifu2x 插画 2×`, `Waifu2x 照片
+  2×`, and `Real-ESRGAN 照片 2×`. After — third-party definitions expose and
+  render their stable names directly: `waifu2x (art, 2x, noise0)`, `waifu2x
+  (photo, 2x, noise0)`, and `Real-ESRGAN (photo, 2x)`; the system definition
+  alone continues to resolve `settings_reader_enhancement_model_system_title`
+  / manager title from the active locale.
+- **Minimality rationale:** storing third-party identity in model metadata
+  prevents a locale catalog from changing a model's name while retaining the
+  existing system-label localization boundary. No resource cleanup or model
+  registry/runtime redesign is authorized by this correction.
+- **Verification plan:** signed build, then a data-preserving install on the
+  existing API 26 enhancement test device. Open Reader settings and the
+  enhancement-model menu; require the localized `系统图像超分` entry plus the
+  exact third-party names above, and verify the selected row uses the same
+  name. Open model management only to confirm its sibling title leaf remains
+  consistent; do not download, remove, enable enhancement, or change the
+  selected model during acceptance.
+- **Unresolved risk:** a device may have only a subset of third-party models
+  installed, so the selector can prove only installed entries; the manager
+  sibling must cover the full definition set without mutating installation
+  state.
+
+### Installed API 26 result
+
+- The signed build completed successfully and was installed with `install -r`
+  on `192.168.50.237:12345` (API 26) under the required lease and wake gate.
+  No uninstall, data clear, account action, model download/removal,
+  enhancement toggle, or selected-model change occurred.
+- The selected Reader-settings row rendered `waifu2x (art, 2x, noise0)`. The
+  opened menu rendered localized `系统图像超分`, `waifu2x (art, 2x, noise0)`,
+  and `Real-ESRGAN (photo, 2x)` for the currently installed set. The manager
+  sibling rendered the complete set and additionally proved `waifu2x (photo,
+  2x, noise0)` without installing it.
+- After closing the manager, the selected row still rendered the original art
+  model name. **Status: FROZEN** for the model-name leaf at this device state;
+  reopen only after a source change inside this boundary, new explicit user
+  feedback, or same-state counter-evidence.

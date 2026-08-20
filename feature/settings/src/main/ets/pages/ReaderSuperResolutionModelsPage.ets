@@ -51,11 +51,15 @@ export struct ReaderSuperResolutionModelsPage {
   }
 
   private modelTitle(definition: ReaderSuperResolutionModelDefinition): string {
-    return AppStrings.get(definition.labelStringKey)
+    return definition.systemModel
+      ? AppStrings.get(definition.labelStringKey)
+      : definition.canonicalName
   }
 
   private managerTitle(definition: ReaderSuperResolutionModelDefinition): string {
-    return AppStrings.get(definition.managerTitleStringKey)
+    return definition.systemModel
+      ? AppStrings.get(definition.managerTitleStringKey)
+      : definition.canonicalName
   }
 
   private isSystemModel(definition: ReaderSuperResolutionModelDefinition): boolean {

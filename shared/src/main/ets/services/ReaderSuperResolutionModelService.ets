@@ -34,6 +34,7 @@ const REAL_ESRGAN_SOURCE_REPOSITORY: string = 'bpawnzZ/Real-ESRGAN-x2plus-NCNN'
 
 export class ReaderSuperResolutionModelDefinition {
   id: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
+  canonicalName: string = ''
   directoryName: string = ''
   paramFileName: string = 'noise0_scale2.0x_model.param'
   modelFileName: string = 'noise0_scale2.0x_model.bin'
@@ -112,6 +113,7 @@ class ReaderSuperResolutionModelAsset {
 function artDefinition(): ReaderSuperResolutionModelDefinition {
   const definition: ReaderSuperResolutionModelDefinition = new ReaderSuperResolutionModelDefinition()
   definition.id = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
+  definition.canonicalName = 'waifu2x (art, 2x, noise0)'
   // Keep the established art pair in its original private directory so an
   // existing installation is selected without copying, deleting, or fetching.
   definition.directoryName = ''
@@ -133,6 +135,7 @@ function artDefinition(): ReaderSuperResolutionModelDefinition {
 function photoDefinition(): ReaderSuperResolutionModelDefinition {
   const definition: ReaderSuperResolutionModelDefinition = new ReaderSuperResolutionModelDefinition()
   definition.id = NhReaderSuperResolutionModel.WAIFU2X_PHOTO_NOISE0_2X
+  definition.canonicalName = 'waifu2x (photo, 2x, noise0)'
   definition.directoryName = 'waifu2x-photo-noise0-2x-ncnn-v1'
   definition.paramBytes = 1047
   definition.modelBytes = 1106248
@@ -157,6 +160,7 @@ function photoDefinition(): ReaderSuperResolutionModelDefinition {
 function realEsrganDefinition(): ReaderSuperResolutionModelDefinition {
   const definition: ReaderSuperResolutionModelDefinition = new ReaderSuperResolutionModelDefinition()
   definition.id = NhReaderSuperResolutionModel.REAL_ESRGAN_X2PLUS
+  definition.canonicalName = 'Real-ESRGAN (photo, 2x)'
   definition.directoryName = 'realesrgan-x2plus-ncnn-fp32-v1'
   definition.paramFileName = 'realesrgan_x2plus.compat.param'
   definition.modelFileName = REAL_ESRGAN_MODEL_FILE_NAME

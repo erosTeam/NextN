@@ -3363,3 +3363,19 @@ permitted in this repository.
   or any unrelated page.
 - The previously OPEN 197 S6 is accepted for this package. No login action is
   pending on 197 or 200.
+
+### 237 Reader enhancement canonical model names — 2026-08-21 +0800
+
+- `192.168.50.237:12345` reported API 26 and passed the current device gate
+  (`AWAKE`, `OverrideTimeout=86400000ms`) under lease
+  `20260820-164235-423bd7d7`. The signed HAP was installed with `install -r`;
+  no uninstall, data clear, account action, model download/removal, enhancement
+  toggle, or selected-model change occurred.
+- Reader settings rendered the selected value `waifu2x (art, 2x, noise0)`.
+  Its opened selection menu contained localized `系统图像超分` plus installed
+  third-party entries `waifu2x (art, 2x, noise0)` and `Real-ESRGAN (photo,
+  2x)`. The model manager additionally rendered the uninstalled sibling
+  `waifu2x (photo, 2x, noise0)` with the same canonical naming rule.
+- Returning from model management showed the original selected value unchanged.
+  The final PowerManager readback remained `AWAKE` with the requested timeout;
+  no physical acceptance action remains for this bounded label correction.
