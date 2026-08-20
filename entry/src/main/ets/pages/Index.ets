@@ -2554,9 +2554,6 @@ struct Index {
         .width('100%')
         .height('100%')
         .backgroundColor(Color.Transparent)
-        // Reader is a full-window sibling above the retained root navigation.
-        // It owns input isolation without changing the Gallery title lifecycle.
-        .hitTestBehavior(HitTestMode.Block)
         .onAppear((): void => {
           this.readerOverlay.presentPendingReader()
         })

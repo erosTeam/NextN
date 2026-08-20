@@ -3,6 +3,44 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Reader overlay must preserve Reader paging input — 2026-08-21
+
+- **Latest user counter-evidence:** after installing the build containing the
+  recent Reader changes, the Reader surface can no longer turn pages at all.
+  This reopens the full-window Reader overlay input boundary and preempts the
+  pending progress-transition acceptance.
+- **Source isolation:** progress commit `930f51a` changes Detail display state,
+  overlay `closing` observability and progress comments; it does not modify
+  `ReaderPage`, `Swiper`, vertical `List`, tap zones, gesture callbacks or the
+  entry overlay hit-test path. The only recent Reader-shell input mutation is
+  commit `38fb60e`, which added `HitTestMode.Block` to the entire
+  `HdsNavigation(readerOverlay.stack)` sibling.
+- **Faulty assumption and ignored evidence:** `38fb60e` assumed the navigation
+  container needed an explicit blocking hit-test policy to isolate the retained
+  Gallery title, although the earlier receiver was never established and the
+  change was not exercised on device. NextE's matching root `Stack -> retained
+  root navigation + conditional Reader HdsNavigation` has no hit-test override
+  on that navigation container; Reader's own tap/Swiper/List leaves retain their
+  established policies.
+- **Whole parent tree and exact correction:** preserve root `Stack`, retained
+  Gallery navigation, independent `HdsNavigation(readerOverlay.stack)`, Reader
+  backdrop/destination, `ReaderPage -> ReaderContent -> Swiper or vertical
+  List`, transparent tap overlay, chrome, progress snapshot and status-bar
+  lifecycle. Remove only the invented container-level
+  `.hitTestBehavior(HitTestMode.Block)` and its claim of ownership. Do not alter
+  Reader gestures or restore the old Gallery title visibility coupling.
+- **Sibling states and verification:** verify horizontal paged swipe, vertical
+  paged swipe, continuous vertical scroll, tap-zone previous/next, thumbnail
+  selection, chrome controls, back/exit, no underlying Gallery action during
+  Reader, and the P1/P2 Detail progress reveal on exit. A signed build proves
+  only compile validity; the user-reported paging path remains OPEN until the
+  corrected package is observed on the explicitly selected device.
+- **Source/build result:** the container-level hit-test override is removed,
+  `git diff --check` passes and the signed build succeeds (`BUILD SUCCESSFUL in
+  10 s 4 ms`). The default signed HAP has SHA-256
+  `836d721b3fd0da3a2736cf7e6de403f225733bca61557bf3b3267c9aa81a5920`.
+  Paging and retained-Detail isolation remain unaccepted until device evidence.
+
 ## OPEN — Reader progress persists live but Detail reveals it on exit — 2026-08-20
 
 - **Latest user instruction and counter-evidence:** sync NextE's latest Read
