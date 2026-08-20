@@ -82,7 +82,9 @@ export struct LatestSourcePage {
   @Local contentFilters: ContentFilterState = connectContentFilters()
   @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local catalogPreferences: CatalogPreferencesState = connectCatalogPreferences()
-  @Local isInitialLoading: boolean = false
+  // Retained pages mount before their first activation. Until cache hydration
+  // or page one settles, zero rows mean "not loaded yet", never "empty".
+  @Local isInitialLoading: boolean = true
   @Local isRefreshing: boolean = false
   @Local isLoadingMore: boolean = false
   @Local errorMessage: string = ''

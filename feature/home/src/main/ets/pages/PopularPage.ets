@@ -40,12 +40,16 @@ export struct PopularPage {
   @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local homeGallerySelection: HomeGallerySelectionState = connectHomeGallerySelection()
   @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
-  @Local isInitialLoading: boolean = false
+  // Retained pages mount before their first activation. Until the first
+  // request settles, zero rows mean "not loaded yet", never "empty".
+  @Local isInitialLoading: boolean = true
   @Local isRefreshing: boolean = false
   @Local errorMessage: string = ''
   @Param scroller: Scroller = new Scroller()
   private refreshController: NextNPullRefreshController = new NextNPullRefreshController()
   private requestGeneration: number = 0
+  /** Loading presentation and request exclusion are separate state contracts. */
+  private requestPending: boolean = false
   private tagTranslationRefreshEpoch: number = 0
   /** A successful empty response is still a completed retained first load. */
   private loadedOnce: boolean = false
@@ -64,6 +68,7 @@ export struct PopularPage {
       if (this.isInitialLoading && this.rawGalleries.length === 0 && this.errorMessage.length === 0) {
         this.loadedOnce = false
       }
+      this.requestPending = false
       this.isInitialLoading = false
       this.isRefreshing = false
     }
@@ -133,11 +138,12 @@ export struct PopularPage {
   }
 
   private async loadPopular(): Promise<void> {
-    if (this.isInitialLoading || this.isRefreshing) {
+    if (this.requestPending) {
       return
     }
     const generation: number = this.requestGeneration + 1
     this.requestGeneration = generation
+    this.requestPending = true
     const keepsContent: boolean = this.rawGalleries.length > 0
     this.isInitialLoading = !keepsContent
     this.isRefreshing = keepsContent
@@ -160,6 +166,7 @@ export struct PopularPage {
       this.errorMessage = (error as Error).message || AppStrings.get('popular_load_failed')
     } finally {
       if (this.isCurrentRequest(generation)) {
+        this.requestPending = false
         this.isInitialLoading = false
         this.isRefreshing = false
       }
