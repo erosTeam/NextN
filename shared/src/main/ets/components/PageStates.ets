@@ -6,18 +6,12 @@ export struct PageLoadingState {
   @Param text: string = AppStrings.get('common_loading')
 
   build() {
-    Column({ space: ThemeTokens.SPACE_LG }) {
+    Column() {
       LoadingProgress()
         .width(ThemeTokens.STATE_INDICATOR_SIZE)
         .height(ThemeTokens.STATE_INDICATOR_SIZE)
         .color(ThemeTokens.BRAND)
-      Text(this.text)
-        .fontSize(ThemeTokens.FONT_SIZE_BODY)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
-        .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
-        .textAlign(TextAlign.Center)
-        .maxLines(2)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .accessibilityText(this.text)
     }
     .width('100%')
     .layoutWeight(1)

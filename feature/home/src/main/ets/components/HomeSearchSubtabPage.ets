@@ -44,7 +44,9 @@ export struct HomeSearchSubtabPage {
   @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
   @Local homeSource: HomeSourceState = connectHomeSource()
   @Local homeGallerySelection: HomeGallerySelectionState = connectHomeGallerySelection()
-  @Local isInitialLoading: boolean = false
+  // Retained pages mount before their first activation. Until cache hydration
+  // or page one settles, zero rows mean "not loaded yet", never "empty".
+  @Local isInitialLoading: boolean = true
   @Local isRefreshing: boolean = false
   @Local isLoadingMore: boolean = false
   @Local errorMessage: string = ''

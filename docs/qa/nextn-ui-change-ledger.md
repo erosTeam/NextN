@@ -320,6 +320,57 @@ authorize an edit, replace a device comparison, or define product completion.
   `BUILD SUCCESSFUL in 8 s 765 ms`. The prior row-bounds-only visual acceptance
   remains recorded as rejected and is not used as evidence for this result.
 
+### Reopened — first-activation search state must never paint empty before loading — 2026-08-20
+
+- **Why newly actionable:** the user directly observed that switching to an
+  unvisited search-backed Home SubTab first paints the settled empty message,
+  then the loading state, then results. The same report rejects the visible
+  captions below full-page loading indicators, including public-gallery and
+  Favorites wording.
+- **Faulty assumption and impact:** the retained search page initialized
+  `isInitialLoading=false` on the assumption that its activation monitor would
+  start the request before the page could paint. `RetainedSubtabHost` mounts
+  cached pages before first activation, and `loadOnceWithCachedRows` awaits the
+  local cache read before calling `loadFirstPage`; during that boundary an
+  empty gallery array was therefore rendered as a real empty result. The prior
+  acceptance checked settled search results but ignored the first-activation
+  transition, allowing a false empty state to become user-visible.
+- **Whole parent-tree and sibling boundary:** preserve
+  `Index -> HomeSourceBar/SubTabBar -> RetainedSubtabHost ->
+  HomeSearchSubtabPage -> GalleryCollectionBody -> PageLoadingState`. Review
+  the sibling Latest/Popular retained pages and the shared Search/Favorites
+  loading users for the same state contract; do not change their request,
+  cache, collection, empty, error, pagination, or transition ownership.
+- **Exact before/after:** before — an unvisited search page begins with
+  `isInitialLoading=false`, so its empty branch can paint while cache hydration
+  is pending; `PageLoadingState` visibly renders both progress and source-
+  specific text. after — an unvisited retained search page begins in initial
+  loading and stays there until cached rows or a terminal page-one result
+  exists; the shared full-page loading surface renders only the progress
+  indicator while retaining its text parameter as accessibility semantics.
+- **Minimality and prevention rule:** change only the search page's initial
+  state sentinel and the visible leaf inside the shared full-page loading
+  component. A retained async page must explicitly represent “not loaded yet”;
+  absence of rows cannot be interpreted as a settled empty response until its
+  first cache/request path has completed.
+- **Visual verification plan and unresolved risk:** on the selected current
+  device, install with `-r`, then switch from an already loaded Home SubTab to
+  a previously unvisited search-backed SubTab and observe the full transition
+  through result settlement. Acceptance requires no empty-message frame and
+  no visible loading caption. Also observe one Favorites full-page load state
+  if reachable without clearing data; footer “load more” feedback is outside
+  this correction and remains unchanged.
+- **Current verification boundary:** the Home SubTab data/integration contract,
+  locale-independent source diff check, and signed Debug Hvigor build pass
+  (`BUILD SUCCESSFUL in 11 s 416 ms`). The previously selected same-state USB
+  target `56T…1128` is currently `Offline`; a fresh exact-target lease and
+  bounded `shell echo ok` returned `Device not found or connected`. Three
+  distinct TCP targets are connected, but none was substituted without a
+  current selection (one is actively leased by the account-persistence lane).
+  Runtime transition acceptance therefore remains **OPEN**; the next action is
+  `install -r` and the declared first-activation transition on the selected
+  target as soon as it is connected.
+
 ## Gallery comments: show commenter avatars — 2026-08-19
 
 - **Why newly actionable:** the user asks to display comment-user avatars;
