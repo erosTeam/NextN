@@ -117,7 +117,7 @@ export class SyncLocalDataAdapter {
     }
     try {
       if (selection.readProgress || selection.viewedHistory) {
-        await SyncLocalDataAdapter.applyReadingHistory(context, envelope)
+        await SyncLocalDataAdapter.applyReadingHistory(context, envelope, selection)
       }
       if (selection.searchHistory) {
         await SyncLocalDataAdapter.applySearchHistory(context, envelope.datasets.searchHistory)
@@ -542,7 +542,7 @@ export class SyncLocalDataAdapter {
     const out: SyncViewedHistoryRecord[] = []
     for (let i: number = 0; i < source.length; i++) {
       const item: NhReadingHistoryItem = source[i]
-      if (item.galleryId <= 0) {
+      if (item.galleryId <= 0 || SyncLocalDataAdapter.isDisplayMetadataMissing(item)) {
         continue
       }
       const r: SyncViewedHistoryRecord = new SyncViewedHistoryRecord()
@@ -713,60 +713,117 @@ export class SyncLocalDataAdapter {
   private static async applyReadingHistory(
     context: common.UIAbilityContext,
     envelope: SyncEnvelopeV1,
+    selection: SyncDatasetSelection,
   ): Promise<void> {
+    const local: NhReadingHistoryItem[] = await HistoryRepository.exportForBackup(context)
     const items: NhReadingHistoryItem[] = []
-    const viewed: SyncViewedHistoryRecord[] = envelope.datasets.viewedHistory
-    for (let i: number = 0; i < viewed.length; i++) {
-      const r: SyncViewedHistoryRecord = viewed[i]
-      if (r.galleryId <= 0 || r.deletedAt > 0) {
-        continue
-      }
-      const item: NhReadingHistoryItem = new NhReadingHistoryItem()
-      item.galleryId = r.galleryId
-      item.mediaId = r.mediaId
-      item.title = r.title
-      item.thumbnailUrl = r.thumbnailUrl
-      item.pageCount = r.pageCount
-      item.lastReadIndex = r.lastReadIndex
-      item.hasReadProgress = r.hasReadProgress
-      item.lastOpenedAt = r.viewedAt
-      items.push(item)
-    }
-    const progress: SyncReadProgressRecord[] = envelope.datasets.readProgress
-    for (let i: number = 0; i < progress.length; i++) {
-      const r: SyncReadProgressRecord = progress[i]
-      if (r.galleryId <= 0) {
-        continue
-      }
-      let item: NhReadingHistoryItem | undefined = undefined
-      for (let j: number = 0; j < items.length; j++) {
-        if (items[j].galleryId === r.galleryId) {
-          item = items[j]
-          break
+    if (selection.viewedHistory) {
+      const viewed: SyncViewedHistoryRecord[] = envelope.datasets.viewedHistory
+      for (let i: number = 0; i < viewed.length; i++) {
+        const r: SyncViewedHistoryRecord = viewed[i]
+        if (r.galleryId <= 0 || r.deletedAt > 0) {
+          continue
         }
-      }
-      if (r.deletedAt > 0) {
-        // A winning progress tombstone clears only the resume marker; the
-        // display row (if any) stays visible.
-        if (item !== undefined) {
-          item.hasReadProgress = false
-          item.lastReadIndex = 0
-        }
-        continue
-      }
-      if (item === undefined) {
-        item = new NhReadingHistoryItem()
+        const item: NhReadingHistoryItem = new NhReadingHistoryItem()
         item.galleryId = r.galleryId
-        item.lastOpenedAt = r.updatedAt
+        item.mediaId = r.mediaId
+        item.title = r.title
+        item.thumbnailUrl = r.thumbnailUrl
+        item.pageCount = r.pageCount
+        item.lastOpenedAt = r.viewedAt
+        const previous: NhReadingHistoryItem | undefined =
+          SyncLocalDataAdapter.findReadingHistoryItem(local, r.galleryId)
+        if (previous !== undefined) {
+          // viewed-history owns display data only. Preserve the independent
+          // read-progress half even though NextN currently stores both halves
+          // in one RDB row. Also retain known display leaves when repairing a
+          // GID-only payload produced by older builds.
+          item.lastReadIndex = previous.lastReadIndex
+          item.hasReadProgress = previous.hasReadProgress
+          SyncLocalDataAdapter.fillReadingHistoryDisplay(item, previous)
+        }
         items.push(item)
       }
-      item.hasReadProgress = true
-      item.lastReadIndex = r.pageIndex
-      if (r.updatedAt > item.lastOpenedAt) {
-        item.lastOpenedAt = r.updatedAt
+    } else {
+      // A read-progress shard must never reconstruct the whole table from its
+      // progress-only records. Seed the replacement with every local display
+      // row, then overlay only the selected progress fields below.
+      for (let i: number = 0; i < local.length; i++) {
+        items.push(SyncLocalDataAdapter.cloneReadingHistoryItem(local[i]))
+      }
+    }
+    if (selection.readProgress) {
+      const progress: SyncReadProgressRecord[] = envelope.datasets.readProgress
+      for (let i: number = 0; i < progress.length; i++) {
+        const r: SyncReadProgressRecord = progress[i]
+        if (r.galleryId <= 0) {
+          continue
+        }
+        let item: NhReadingHistoryItem | undefined =
+          SyncLocalDataAdapter.findReadingHistoryItem(items, r.galleryId)
+        if (r.deletedAt > 0) {
+          // A winning progress tombstone clears only the resume marker; the
+          // display row (if any) stays visible.
+          if (item !== undefined) {
+            item.hasReadProgress = false
+            item.lastReadIndex = 0
+          }
+          continue
+        }
+        if (item === undefined) {
+          item = new NhReadingHistoryItem()
+          item.galleryId = r.galleryId
+          item.lastOpenedAt = r.updatedAt
+          items.push(item)
+        }
+        item.hasReadProgress = true
+        item.lastReadIndex = r.pageIndex
+        if (r.updatedAt > item.lastOpenedAt) {
+          item.lastOpenedAt = r.updatedAt
+        }
       }
     }
     await HistoryRepository.restoreBackup(context, items)
+  }
+
+  private static findReadingHistoryItem(
+    items: NhReadingHistoryItem[],
+    galleryId: number,
+  ): NhReadingHistoryItem | undefined {
+    for (let i: number = 0; i < items.length; i++) {
+      if (items[i].galleryId === galleryId) {
+        return items[i]
+      }
+    }
+    return undefined
+  }
+
+  private static cloneReadingHistoryItem(source: NhReadingHistoryItem): NhReadingHistoryItem {
+    const out: NhReadingHistoryItem = new NhReadingHistoryItem()
+    out.galleryId = source.galleryId
+    out.mediaId = source.mediaId
+    out.title = source.title
+    out.thumbnailUrl = source.thumbnailUrl
+    out.pageCount = source.pageCount
+    out.lastReadIndex = source.lastReadIndex
+    out.hasReadProgress = source.hasReadProgress
+    out.lastOpenedAt = source.lastOpenedAt
+    return out
+  }
+
+  private static isDisplayMetadataMissing(item: NhReadingHistoryItem): boolean {
+    return item.mediaId.length === 0 && item.title.length === 0 &&
+      item.thumbnailUrl.length === 0 && item.pageCount <= 0
+  }
+
+  private static fillReadingHistoryDisplay(
+    target: NhReadingHistoryItem,
+    fallback: NhReadingHistoryItem,
+  ): void {
+    if (target.mediaId.length === 0) target.mediaId = fallback.mediaId
+    if (target.title.length === 0) target.title = fallback.title
+    if (target.thumbnailUrl.length === 0) target.thumbnailUrl = fallback.thumbnailUrl
+    if (target.pageCount <= 0) target.pageCount = fallback.pageCount
   }
 
   private static async applySearchHistory(

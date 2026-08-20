@@ -372,8 +372,7 @@ export struct GalleryDetailPage {
   }
 
   private hasPublishedAccountSession(): boolean {
-    return this.accountSession.initialized && this.accountSession.signedIn &&
-      !this.accountSession.verificationRequired
+    return this.accountSession.initialized && this.accountSession.signedIn
   }
 
   @Monitor('chrome.wideThumbnailFirstPageRequestVersion')

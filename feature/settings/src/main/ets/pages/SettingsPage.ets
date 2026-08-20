@@ -1,5 +1,8 @@
 import { common, bundleManager } from '@kit.AbilityKit'
+import { uniformTypeDescriptor as utd } from '@kit.ArkData'
 import { CustomContentDialog, SymbolGlyphModifier } from '@kit.ArkUI'
+import { pasteboard } from '@kit.BasicServicesKit'
+import { systemShare } from '@kit.ShareKit'
 import { ReaderSuperResolutionModelsPage } from './ReaderSuperResolutionModelsPage'
 import {
   AppStrings,
@@ -42,6 +45,13 @@ import {
   DownloadNotificationService,
   DownloadSettingsService,
   DownloadSettingsState,
+  DiagnosticLogger,
+  DiagnosticsExportFile,
+  DiagnosticsFileExport,
+  DiagnosticsLogFileInfo,
+  DiagnosticsLogFileSink,
+  DiagnosticsSettings,
+  DiagnosticsState,
   HomeTabAutoHideState,
   HomeTabSettings,
   ImmersiveMaterialOption,
@@ -107,6 +117,7 @@ import {
   connectReaderPresentation,
   connectScreenOrientation,
   connectDownloadSettings,
+  connectDiagnostics,
   connectHomeTabAutoHide,
   connectImmersiveMaterialSettings,
   connectLanguageState,
@@ -265,6 +276,10 @@ export struct SettingsPage {
   @Local readerEnhancementModelMenuShown: boolean = false
   @Local readerEnhancementMaxHeightMenuShown: boolean = false
   @Local downloadSettings: DownloadSettingsState = connectDownloadSettings()
+  @Local diagnostics: DiagnosticsState = connectDiagnostics()
+  @Local diagnosticsLogCount: number = 0
+  @Local diagnosticsLogFiles: DiagnosticsLogFileInfo[] = []
+  @Local diagnosticsLevelMenuShown: boolean = false
   @Local commentTranslationSettings: CommentTranslationSettingsState = connectCommentTranslationSettings()
   @Local tagTranslationSettings: TagTranslationSettingsState = connectTagTranslationSettings()
   @Local accountSession: AccountSessionState = connectAccountSession()
@@ -309,6 +324,7 @@ export struct SettingsPage {
   @Local clipboardLinkSaving: boolean = false
   @Local readButtonStyleMenuShown: boolean = false
   @Local actionAlignmentMenuShown: boolean = false
+  private diagnosticsShareController?: systemShare.ShareController
   @Param scroller: Scroller = new Scroller()
   @Param surface: SettingsSurface = SettingsSurface.ROOT
   /** Reader mounts this same semantic surface inside its private sheet. */
@@ -832,6 +848,141 @@ export struct SettingsPage {
 
   private async loadAdvancedSettings(): Promise<void> {
     await NhClipboardLinkSettings.restore(this.context())
+    this.refreshDiagnosticsState()
+  }
+
+  private refreshDiagnosticsState(): void {
+    this.diagnosticsLogCount = DiagnosticsSettings.count()
+    this.diagnosticsLogFiles = DiagnosticsLogFileSink.listRetainedLogFiles()
+  }
+
+  private updateDiagnosticsEnabled(enabled: boolean): void {
+    const snapshot = DiagnosticsSettings.current()
+    snapshot.enabled = enabled
+    DiagnosticsSettings.save(this.context(), snapshot).catch((): void => {})
+  }
+
+  private updateDiagnosticsMinLevel(level: string): void {
+    this.diagnosticsLevelMenuShown = false
+    const snapshot = DiagnosticsSettings.current()
+    snapshot.minLevel = DiagnosticsSettings.normalizeLevel(level)
+    DiagnosticsSettings.save(this.context(), snapshot).catch((): void => {})
+  }
+
+  private writeDiagnosticsMarker(): void {
+    DiagnosticLogger.info('diagnostics', 'manual_marker', `ts=${Date.now()}`)
+    this.refreshDiagnosticsState()
+    this.toast(AppStrings.get('advanced_marker_written'))
+  }
+
+  private exportCurrentDiagnostics(): void {
+    try {
+      const file: DiagnosticsExportFile = DiagnosticsFileExport.create(this.context())
+      DiagnosticLogger.info('diagnostics', 'export_current_log', `file=${file.fileName} bytes=${file.text.length}`)
+      this.shareDiagnosticsFile(file.fileName, file.uri, file.text)
+      this.refreshDiagnosticsState()
+    } catch (error) {
+      DiagnosticLogger.warn('diagnostics', 'export_current_log_failed', (error as Error).message)
+      this.toast(AppStrings.get('diagnostics_export_failed'))
+    }
+  }
+
+  private shareRetainedDiagnostics(file: DiagnosticsLogFileInfo): void {
+    DiagnosticLogger.info('diagnostics', 'share_log_file', `file=${file.fileName} current=${file.isCurrent}`)
+    this.shareDiagnosticsFile(file.fileName, file.uri, DiagnosticsLogFileSink.readLogFileText(file.fileName))
+  }
+
+  private shareDiagnosticsFile(fileName: string, uri: string, fallbackText: string): void {
+    try {
+      const record: systemShare.SharedRecord = {
+        utd: utd.UniformDataType.FILE,
+        title: fileName,
+        description: 'Redacted NextN diagnostics log',
+        uri: uri,
+      }
+      const data: systemShare.SharedData = new systemShare.SharedData(record)
+      this.diagnosticsShareController = new systemShare.ShareController(data)
+      this.diagnosticsShareController.show(this.context(), {
+        selectionMode: systemShare.SelectionMode.SINGLE,
+        previewMode: systemShare.SharePreviewMode.DEFAULT,
+      }).then((): void => {
+        DiagnosticLogger.info('diagnostics', 'share_log_file_success', `file=${fileName}`)
+      }).catch((error: Error): void => {
+        DiagnosticLogger.warn('diagnostics', 'share_log_file_failed', `${fileName}: ${error.message}`)
+        this.copyDiagnosticsText(fallbackText)
+      })
+    } catch (error) {
+      DiagnosticLogger.warn('diagnostics', 'share_log_file_failed', `${fileName}: ${(error as Error).message}`)
+      this.copyDiagnosticsText(fallbackText)
+    }
+  }
+
+  private copyDiagnosticsText(text: string): void {
+    try {
+      const fallback: string = text.length > 0 ? text : DiagnosticsSettings.exportText()
+      const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, fallback)
+      pasteboard.getSystemPasteboard().setDataSync(data)
+      this.toast(AppStrings.get('diagnostics_copied'))
+    } catch (error) {
+      DiagnosticLogger.warn('diagnostics', 'copy_log_failed', (error as Error).message)
+      this.toast(AppStrings.get('diagnostics_share_failed'))
+    }
+  }
+
+  private clearDiagnosticsMemory(): void {
+    DiagnosticsSettings.clearLogs()
+    this.refreshDiagnosticsState()
+    this.toast(AppStrings.get('diagnostics_boot_records_cleared'))
+  }
+
+  private diagnosticsLevelLabel(level: string): string {
+    if (level === DiagnosticsSettings.LEVEL_DEBUG) {
+      return 'Debug'
+    }
+    if (level === DiagnosticsSettings.LEVEL_WARN) {
+      return 'Warn'
+    }
+    if (level === DiagnosticsSettings.LEVEL_ERROR) {
+      return 'Error'
+    }
+    return 'Info'
+  }
+
+  private retainedDiagnosticsSubtitle(): string {
+    if (this.diagnosticsLogFiles.length <= 0) {
+      return AppStrings.get('no_local_log_files')
+    }
+    return AppStrings.format('retained_local_log_files_count_arg', [`${this.diagnosticsLogFiles.length}`])
+  }
+
+  private diagnosticsLogTitle(file: DiagnosticsLogFileInfo): string {
+    const timestamp: string = this.formatDiagnosticsTimestamp(file.createdAtMs)
+    return file.isCurrent
+      ? AppStrings.format('current_log_with_time', [timestamp])
+      : AppStrings.format('startup_log_with_time', [timestamp])
+  }
+
+  private formatDiagnosticsTimestamp(value: number): string {
+    if (value <= 0) {
+      return AppStrings.get('unknown_time')
+    }
+    const date = new Date(value)
+    const year: string = date.getFullYear().toString().padStart(4, '0')
+    const month: string = (date.getMonth() + 1).toString().padStart(2, '0')
+    const day: string = date.getDate().toString().padStart(2, '0')
+    const hour: string = date.getHours().toString().padStart(2, '0')
+    const minute: string = date.getMinutes().toString().padStart(2, '0')
+    return `${year}-${month}-${day} ${hour}:${minute}`
+  }
+
+  private formatDiagnosticsFileSize(sizeBytes: number): string {
+    if (sizeBytes < 1024) {
+      return `${Math.max(0, sizeBytes)} B`
+    }
+    if (sizeBytes < 1024 * 1024) {
+      return `${Math.round(sizeBytes / 102.4) / 10} KB`
+    }
+    return `${Math.round(sizeBytes / 1024 / 102.4) / 10} MB`
   }
 
   private privateCacheStat(key: string): CacheStat {
@@ -2126,6 +2277,145 @@ export struct SettingsPage {
         left: ThemeTokens.SPACE_MD,
         right: ThemeTokens.SPACE_MD,
       })
+  }
+
+  @Builder
+  private DiagnosticsLevelMenu() {
+    Menu() {
+      this.DiagnosticsLevelMenuItem(DiagnosticsSettings.LEVEL_DEBUG)
+      this.DiagnosticsLevelMenuItem(DiagnosticsSettings.LEVEL_INFO)
+      this.DiagnosticsLevelMenuItem(DiagnosticsSettings.LEVEL_WARN)
+      this.DiagnosticsLevelMenuItem(DiagnosticsSettings.LEVEL_ERROR)
+    }
+  }
+
+  @Builder
+  private DiagnosticsLevelMenuItem(level: string) {
+    MenuItem({
+      content: this.diagnosticsLevelLabel(level),
+      symbolEndIcon: this.diagnostics.minLevel === level
+        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+        : undefined,
+    })
+      .onClick((): void => {
+        this.updateDiagnosticsMinLevel(level)
+      })
+  }
+
+  @Builder
+  private DiagnosticsSettingsGroup() {
+    NextNGroupedListSection({ accessibilityId: 'nextn-diagnostics-settings-group' }) {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.doc_plaintext'),
+        title: AppStrings.get('diagnostics_enabled'),
+        subtitle: AppStrings.get('diagnostics_enabled_hint'),
+        hasSwitch: true,
+        checked: this.diagnostics.enabled,
+        showChevron: false,
+        onAction: (): void => {
+          this.updateDiagnosticsEnabled(!this.diagnostics.enabled)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.updateDiagnosticsEnabled(value)
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.textformat'),
+        title: AppStrings.get('diagnostics_min_level'),
+        subtitle: AppStrings.get('diagnostics_min_level_hint'),
+        trailingText: this.diagnosticsLevelLabel(this.diagnostics.minLevel),
+        trailingDropdown: true,
+        onAction: (): void => {
+          this.diagnosticsLevelMenuShown = true
+        },
+      })
+      .bindMenu(this.diagnosticsLevelMenuShown, this.DiagnosticsLevelMenu, appMenuOptions({
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.diagnosticsLevelMenuShown = false
+        },
+      }))
+    }
+  }
+
+  @Builder
+  private DiagnosticsActionsGroup() {
+    NextNGroupedListSection({ accessibilityId: 'nextn-diagnostics-actions-group' }) {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.arrow_clockwise'),
+        title: AppStrings.format('diagnostics_current_launch_recent_count', [`${this.diagnosticsLogCount}`]),
+        subtitle: this.retainedDiagnosticsSubtitle(),
+        showChevron: false,
+        onAction: (): void => {
+          this.refreshDiagnosticsState()
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.share'),
+        title: AppStrings.get('diagnostics_export_current'),
+        subtitle: AppStrings.get('diagnostics_export_current_hint'),
+        showChevron: false,
+        onAction: (): void => {
+          this.exportCurrentDiagnostics()
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.square_and_pencil'),
+        title: AppStrings.get('advanced_write_marker'),
+        subtitle: AppStrings.get('advanced_diagnostics_hint'),
+        showChevron: false,
+        onAction: (): void => {
+          this.writeDiagnosticsMarker()
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.trash'),
+        title: AppStrings.get('clear_boot_records'),
+        destructive: true,
+        showChevron: false,
+        onAction: (): void => {
+          this.clearDiagnosticsMemory()
+        },
+      })
+    }
+  }
+
+  @Builder
+  private DiagnosticsFilesGroup() {
+    NextNGroupedListSection({ accessibilityId: 'nextn-diagnostics-files-group' }) {
+      if (this.diagnosticsLogFiles.length <= 0) {
+        NextNListRow({
+          leadingIcon: $r('sys.symbol.folder'),
+          title: AppStrings.get('no_log_files'),
+          subtitle: AppStrings.get('reopen_keeps_logs'),
+          showChevron: false,
+          onAction: (): void => {
+            this.refreshDiagnosticsState()
+          },
+        })
+      } else {
+        ForEach(this.diagnosticsLogFiles, (file: DiagnosticsLogFileInfo, index: number): void => {
+          NextNListRow({
+            leadingIcon: $r('sys.symbol.doc_plaintext'),
+            title: this.diagnosticsLogTitle(file),
+            subtitle: AppStrings.format('diagnostics_log_file_share_hint', [
+              this.formatDiagnosticsFileSize(file.sizeBytes),
+            ]),
+            showChevron: false,
+            onAction: (): void => {
+              this.shareRetainedDiagnostics(file)
+            },
+          })
+          if (index < this.diagnosticsLogFiles.length - 1) {
+            this.RowDivider()
+          }
+        }, (file: DiagnosticsLogFileInfo): string => file.fileName)
+      }
+    }
   }
 
   @Builder
@@ -4057,6 +4347,15 @@ export struct SettingsPage {
           }
           ListItem() {
             this.ContentFiltersGroup()
+          }
+          ListItem() {
+            this.DiagnosticsSettingsGroup()
+          }
+          ListItem() {
+            this.DiagnosticsActionsGroup()
+          }
+          ListItem() {
+            this.DiagnosticsFilesGroup()
           }
         }
         }

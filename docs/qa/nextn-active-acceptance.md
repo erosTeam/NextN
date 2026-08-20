@@ -3197,3 +3197,54 @@ permitted in this repository.
   extraction.
 - Active objective is delivery closure. No login or WebDAV physical action is
   pending for this request.
+
+## Current delivery observation — Download search top avoidance correction
+
+- 2026-08-20 +0800: signed Debug build installed with data-preserving `-r` on
+  USB `56T0225315001128` under lease `20260820-111456-088c8e2b`; wake gate
+  read `AWAKE` and `OverrideTimeout=86400000ms`. No uninstall, data clear,
+  account action, WebDAV action, or remote mutation occurred.
+- Before the correction, the active-search semantic layout contained Search
+  y=303..423, its 52vp slot y=285..441, an invisible pinned-group component
+  y=441..531, and the first queue group y=555. The invisible 28vp mirror was
+  incorrectly counted by both HDS and the list's initial reserve.
+- The installed correction makes the pinned-group component conditional and
+  derives the HDS height from the same visibility state. At the initial search
+  position the Search remains y=303..423, its slot y=285..441, and the first
+  group begins at y=465. After an upward scroll the crossed `已完成` mirror
+  appears at y=441..531; after returning to the initial position it disappears
+  and the first group returns to y=465.
+- The USB device is left on Downloads with search open and the keyboard hidden
+  for direct user review. The next physical action for this visible boundary is
+  the user's current-device observation; no screenshot or static UI contract
+  was used as acceptance evidence.
+- The separately reported recurring authenticated `401` and already-corrupted
+  History metadata remain OPEN. This Download correction neither exercises nor
+  closes those lanes; their next action remains the fixed safe 401/session
+  diagnostic on the explicitly selected device before any new login cycle.
+
+## Current delivery observation — Account persistence and retained diagnostics
+
+- 2026-08-20 21:35 +0800: signed Debug HAP installed with data-preserving
+  `install -r` on TCP targets `192.168.50.197:12345` and
+  `192.168.50.200:12345` under fresh leases. No uninstall, data clear, account
+  action, credential entry, or re-login occurred.
+- Privacy-bounded cold-start acceptance passed on both devices: one saved
+  account, one selected account, native signed-in ownership, and authenticated
+  Favorites with no sign-in prompt, loading failure, error state, or HTTP 401.
+  The run repeated process cold starts between Account, Favorites, and
+  Advanced diagnostics observations.
+- Advanced settings on both devices exposed diagnostics settings/actions/files,
+  the enabled, export-current, and write-marker actions, and a retained current
+  log file. The process lifecycle now initializes/closes the redacted file
+  sink, restores its preference, and account recovery stages flow through the
+  same persistent logger.
+- Root causes corrected in the installed package: active saved-account
+  selection is independently persisted; switching writes the selected profile
+  back to the primary profile slot; readable token rotation atomically updates
+  primary and selected saved-account envelopes; 401 repair reloads the
+  authenticated root; terminal 401 never demotes durable account ownership.
+- Raw device layouts were transient and deleted. No account/profile values,
+  cookies, tokens, URLs, request/response bodies, credentials, or screenshots
+  were retained. The next physical account action is none; a future failure can
+  be exported from Advanced settings without reproducing it under live hilog.

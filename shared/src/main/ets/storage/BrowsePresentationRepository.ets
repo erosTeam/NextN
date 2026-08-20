@@ -28,6 +28,9 @@ export class BrowsePresentationRepository {
     if (value === NhBrowsePresentation.LIST) {
       return NhBrowsePresentation.LIST
     }
+    if (value === NhBrowsePresentation.SIMPLE_LIST) {
+      return NhBrowsePresentation.SIMPLE_LIST
+    }
     if (value === NhBrowsePresentation.COVER_GRID) {
       return NhBrowsePresentation.COVER_GRID
     }
@@ -39,6 +42,9 @@ export class BrowsePresentationRepository {
     }
     if (value === NhBrowsePresentation.COVER_WALL) {
       return NhBrowsePresentation.COVER_WALL
+    }
+    if (value === NhBrowsePresentation.THUMBNAIL) {
+      return NhBrowsePresentation.THUMBNAIL
     }
     // Waterfall is the out-of-box view for fresh/unknown persisted values.
     // Every saved mode still resolves above; an installed user's saved

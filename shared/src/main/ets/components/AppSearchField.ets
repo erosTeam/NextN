@@ -22,6 +22,8 @@ export struct AppSearchField {
   @Param autoFocus: boolean = false
   @Param searchButtonText: string = ''
   @Param useSystemMaterial: boolean = false
+  /** Optional leaf correction for title-bar hosts; ordinary page fields keep zero. */
+  @Param verticalOffset: number = 0
   @Local fieldText: string = ''
   @Local private themeDisplay: ThemeDisplayState = connectThemeDisplay()
   @Event onTextChange?: (value: string) => void
@@ -61,6 +63,7 @@ export struct AppSearchField {
           .id(this.fieldId)
           .width('100%')
           .height(ThemeTokens.SEARCH_FIELD_HEIGHT)
+          .translate({ y: this.verticalOffset })
           .backgroundColor(Color.Transparent)
           .systemMaterial(this.searchSystemMaterial())
           .searchButton(this.searchButtonText, { fontColor: ThemeTokens.BRAND })
@@ -84,6 +87,7 @@ export struct AppSearchField {
       .id(this.fieldId)
       .width('100%')
       .height(ThemeTokens.SEARCH_FIELD_HEIGHT)
+      .translate({ y: this.verticalOffset })
       .backgroundColor(this.themeTracked(ThemeTokens.CARD_BACKGROUND))
       .searchButton(this.searchButtonText, { fontColor: ThemeTokens.BRAND })
       .onChange((value: string): void => {

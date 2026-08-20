@@ -22,6 +22,8 @@ export class DownloadQueueActionState {
   @Trace command: string = ''
   @Trace commandSeq: number = 0
   @Trace searchActive: boolean = false
+  /** Local title filter shared with the HDS bottomBuilder field. */
+  @Trace searchText: string = ''
   /** Counts are a presentation snapshot, never durable queue state. */
   @Trace pausableVisibleCount: number = 0
   @Trace resumableVisibleCount: number = 0

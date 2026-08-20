@@ -143,10 +143,6 @@ export struct BrowserSessionPage {
     this.isBrowserRequested = false
     this.isControllerAttached = false
     this.isPageLoading = false
-    if (this.accountSession.verificationRequired) {
-      this.sessionStatus = NhBrowserSessionBoundary.verificationRetryRequired()
-      return
-    }
     // A signed-out Account route remains native until the user explicitly
     // chooses Sign in. Appearing on this page must not itself enter ArkWeb.
     this.sessionStatus = NhBrowserSessionBoundary.preflight()
@@ -169,9 +165,6 @@ export struct BrowserSessionPage {
     this.refreshBrowserStatus()
     if (!this.sessionStatus.canOpenBrowserSession() ||
       !NhAccountSessionService.canOpenVisibleLoginSession()) {
-      if (NhAccountSessionService.requiresExplicitVisibleLoginAction()) {
-        this.sessionStatus = NhBrowserSessionBoundary.verificationRetryRequired()
-      }
       return
     }
     this.stopSessionCaptureTimer()
@@ -450,13 +443,14 @@ export struct BrowserSessionPage {
   /**
    * A same-document candidate can be delayed by a first-party challenge or
    * transport race, but it receives only the initial account probe plus one
-   * delayed confirmation. Once both are non-terminal, return to the native
-   * HDS account row and make the next verification a deliberate user action.
-   * No browser value, response status, or profile data enters this state.
+   * delayed confirmation. Once both are non-terminal, return to the normal
+   * native sign-in row. There is no separate "re-verify" account state: the
+   * failed candidate remains a failed login attempt, not an owned account
+   * transition.
    */
   private closeBrowserAfterCandidateVerificationExhausted(): void {
     this.closeBrowserAfterPromotionFailure()
-    this.sessionStatus = NhBrowserSessionBoundary.verificationRetryRequired()
+    this.sessionStatus = NhBrowserSessionBoundary.preflight()
   }
 
   private confirmSignOut(): void {
@@ -510,8 +504,6 @@ export struct BrowserSessionPage {
         return AppStrings.get('account_status_signed_in')
       case NhBrowserSessionPhase.TRUSTED_REDIRECT_OBSERVED:
         return AppStrings.get('account_status_signing_in')
-      case NhBrowserSessionPhase.VERIFICATION_RETRY_REQUIRED:
-        return AppStrings.get('account_status_verification_required')
       case NhBrowserSessionPhase.UNAVAILABLE:
         return AppStrings.get('account_status_unavailable')
       default:
@@ -541,8 +533,6 @@ export struct BrowserSessionPage {
         return AppStrings.get('account_subtitle_signed_in_device')
       case NhBrowserSessionPhase.TRUSTED_REDIRECT_OBSERVED:
         return AppStrings.get('account_subtitle_completing_sign_in')
-      case NhBrowserSessionPhase.VERIFICATION_RETRY_REQUIRED:
-        return AppStrings.get('account_subtitle_verification_required')
       case NhBrowserSessionPhase.UNAVAILABLE:
         return AppStrings.get('account_subtitle_unavailable')
       default:
@@ -557,9 +547,6 @@ export struct BrowserSessionPage {
     if (this.sessionStatus.phase === NhBrowserSessionPhase.AUTHENTICATED) {
       return AppStrings.get('account_open_browser')
     }
-    if (this.sessionStatus.phase === NhBrowserSessionPhase.VERIFICATION_RETRY_REQUIRED) {
-      return AppStrings.get('account_verify_sign_in')
-    }
     return AppStrings.get('account_sign_in')
   }
 
@@ -569,9 +556,6 @@ export struct BrowserSessionPage {
     }
     if (this.sessionStatus.phase === NhBrowserSessionPhase.AUTHENTICATED) {
       return AppStrings.get('account_open_browser_subtitle')
-    }
-    if (this.sessionStatus.phase === NhBrowserSessionPhase.VERIFICATION_RETRY_REQUIRED) {
-      return AppStrings.get('account_verify_sign_in_subtitle')
     }
     return AppStrings.get('account_sign_in_subtitle')
   }

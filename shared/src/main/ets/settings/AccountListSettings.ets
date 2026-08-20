@@ -9,6 +9,12 @@ import { AccountProfileRepository } from '../storage/AccountProfileRepository'
 
 const ACCOUNT_STORE: string = 'nextn_settings'
 const ACCOUNT_IDS_KEY: string = 'account.list.ids'
+const ACTIVE_ACCOUNT_ID_KEY: string = 'account.list.activeId'
+
+class AccountListSnapshot {
+  ids: string[] = []
+  activeAccountId: string = ''
+}
 
 /**
  * Persistence for the saved-accounts list, layered ADDITIVELY on top of the
@@ -48,21 +54,45 @@ export class AccountListSettings {
     return JSON.stringify(ids)
   }
 
-  private static syncState(ids: string[]): void {
-    const state: AccountListState = connectAccountList()
-    state.accounts = ids.slice()
-    state.activeAccountId = NhAccountProfileService.activeAccountId()
+  private static normalizedActiveAccountId(ids: string[], value: string): string {
+    const candidate: string = value.trim()
+    if (candidate.length > 0 && ids.indexOf(candidate) >= 0) {
+      return candidate
+    }
+    // Legacy builds never persisted the active key. A single saved account
+    // has only one valid owner and can be migrated without guessing between
+    // multiple identities.
+    return ids.length === 1 ? ids[0] : ''
   }
 
-  private static async readIds(context: common.UIAbilityContext): Promise<string[]> {
+  private static syncState(snapshot: AccountListSnapshot): void {
+    const state: AccountListState = connectAccountList()
+    state.accounts = snapshot.ids.slice()
+    state.activeAccountId = snapshot.activeAccountId
+    NhAccountSessionService.setActiveSavedAccountId(snapshot.activeAccountId)
+  }
+
+  private static async readSnapshot(context: common.UIAbilityContext): Promise<AccountListSnapshot> {
     const store: preferences.Preferences = await preferences.getPreferences(context, ACCOUNT_STORE)
-    return AccountListSettings.parseIds(store.getSync(ACCOUNT_IDS_KEY, '') as string)
+    const snapshot: AccountListSnapshot = new AccountListSnapshot()
+    snapshot.ids = AccountListSettings.parseIds(store.getSync(ACCOUNT_IDS_KEY, '') as string)
+    const rawActive: string = store.getSync(ACTIVE_ACCOUNT_ID_KEY, '') as string
+    snapshot.activeAccountId = AccountListSettings.normalizedActiveAccountId(snapshot.ids, rawActive)
+    if (snapshot.activeAccountId !== rawActive) {
+      if (snapshot.activeAccountId.length > 0) {
+        store.putSync(ACTIVE_ACCOUNT_ID_KEY, snapshot.activeAccountId)
+      } else {
+        store.deleteSync(ACTIVE_ACCOUNT_ID_KEY)
+      }
+      store.flushSync()
+    }
+    return snapshot
   }
 
   /** Mirror the persisted list into the reactive state (no mutation). */
   static async load(context: common.UIAbilityContext): Promise<void> {
     try {
-      AccountListSettings.syncState(await AccountListSettings.readIds(context))
+      AccountListSettings.syncState(await AccountListSettings.readSnapshot(context))
     } catch (error) {
       DiagnosticLogger.warn('auth', 'account_list_load_failed', (error as Error).message)
     }
@@ -112,9 +142,13 @@ export class AccountListSettings {
       const serialized: string = AccountListSettings.serializeIds(updated)
       if (raw !== serialized) {
         store.putSync(ACCOUNT_IDS_KEY, serialized)
-        store.flushSync()
       }
-      AccountListSettings.syncState(updated)
+      store.putSync(ACTIVE_ACCOUNT_ID_KEY, finalAccountId)
+      store.flushSync()
+      const snapshot: AccountListSnapshot = new AccountListSnapshot()
+      snapshot.ids = updated
+      snapshot.activeAccountId = finalAccountId
+      AccountListSettings.syncState(snapshot)
       DiagnosticLogger.info('auth', 'account_recorded', `count=${updated.length}`)
     } catch (error) {
       DiagnosticLogger.warn('auth', 'account_list_record_failed', (error as Error).message)
@@ -129,6 +163,10 @@ export class AccountListSettings {
       const ids: string[] = AccountListSettings.parseIds(
         store.getSync(ACCOUNT_IDS_KEY, '') as string,
       )
+      const currentActive: string = AccountListSettings.normalizedActiveAccountId(
+        ids,
+        store.getSync(ACTIVE_ACCOUNT_ID_KEY, '') as string,
+      )
       const updated: string[] = []
       for (let i: number = 0; i < ids.length; i++) {
         if (ids[i] !== accountId) {
@@ -137,9 +175,18 @@ export class AccountListSettings {
         }
       }
       store.putSync(ACCOUNT_IDS_KEY, AccountListSettings.serializeIds(updated))
+      const nextActive: string = currentActive === accountId ? '' : currentActive
+      if (nextActive.length > 0) {
+        store.putSync(ACTIVE_ACCOUNT_ID_KEY, nextActive)
+      } else {
+        store.deleteSync(ACTIVE_ACCOUNT_ID_KEY)
+      }
       store.flushSync()
       await NhAccountSessionService.removeSaved(context, accountId)
-      AccountListSettings.syncState(updated)
+      const snapshot: AccountListSnapshot = new AccountListSnapshot()
+      snapshot.ids = updated
+      snapshot.activeAccountId = nextActive
+      AccountListSettings.syncState(snapshot)
     } catch (error) {
       DiagnosticLogger.warn('auth', 'account_list_remove_failed', (error as Error).message)
     }
@@ -147,7 +194,7 @@ export class AccountListSettings {
   }
 
   static async savedAccountIds(context: common.UIAbilityContext): Promise<string[]> {
-    return AccountListSettings.readIds(context)
+    return (await AccountListSettings.readSnapshot(context)).ids
   }
 
   /** Switches the active NH session and profile to a saved account. */
@@ -156,8 +203,16 @@ export class AccountListSettings {
     if (!switched) {
       return false
     }
-    await NhAccountProfileService.switchTo(context, accountId)
+    const profileSwitched: boolean = await NhAccountProfileService.switchTo(context, accountId)
+    if (!profileSwitched) {
+      DiagnosticLogger.warn('auth', 'account_switch_profile_failed', 'profile unavailable')
+      return false
+    }
+    const store: preferences.Preferences = await preferences.getPreferences(context, ACCOUNT_STORE)
+    store.putSync(ACTIVE_ACCOUNT_ID_KEY, accountId)
+    store.flushSync()
     await AccountListSettings.load(context)
+    DiagnosticLogger.info('auth', 'account_switch_completed', 'selection persisted')
     return true
   }
 }

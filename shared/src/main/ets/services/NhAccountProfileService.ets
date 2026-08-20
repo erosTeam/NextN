@@ -23,9 +23,18 @@ export class NhAccountProfileService {
 
   /** Restores the target account's display snapshot after a session switch. */
   static async switchTo(context: common.UIAbilityContext, accountId: string): Promise<boolean> {
+    const sessionRevision: number = connectAccountSession().revision
     try {
       const profile: NhAccountProfile | null = await AccountProfileRepository.loadByKey(context, accountId)
-      if (profile !== null && NhAccountSessionService.isAuthenticated()) {
+      if (profile !== null && NhAccountProfileService.isCurrentSession(sessionRevision)) {
+        const saved: boolean = await AccountProfileRepository.saveIfCurrent(
+          context,
+          profile,
+          (): boolean => NhAccountProfileService.isCurrentSession(sessionRevision),
+        )
+        if (!saved || !NhAccountProfileService.isCurrentSession(sessionRevision)) {
+          return false
+        }
         connectAccountProfile().replace(profile)
         return true
       }
@@ -36,7 +45,7 @@ export class NhAccountProfileService {
   }
 
   static async restore(context: common.UIAbilityContext): Promise<boolean> {
-    if (!NhAccountSessionService.isAuthenticated()) {
+    if (!NhAccountSessionService.hasRetainedAccount()) {
       connectAccountProfile().clear()
       return false
     }
@@ -114,14 +123,14 @@ export class NhAccountProfileService {
       return true
     } catch (_error) {
       // Profile refresh is deliberately best-effort. A retained trusted
-      // snapshot remains visible on transient first-party failures; a 401 is
-      // handled by NhApiClient and clears the session/profile boundary.
+      // snapshot remains visible on transient first-party failures. A 401 is
+      // repaired and recorded by NhApiClient without changing account ownership.
       return false
     }
   }
 
   private static isCurrentSession(sessionRevision: number): boolean {
-    return NhAccountSessionService.isAuthenticated() &&
+    return NhAccountSessionService.hasRetainedAccount() &&
       connectAccountSession().revision === sessionRevision
   }
 }

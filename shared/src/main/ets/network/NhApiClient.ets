@@ -135,8 +135,12 @@ export class NhApiClient {
    * to the first-party API origin.
    */
   static async favorites(page: number = 1, query: string = ''): Promise<NhGalleryPageResult> {
-    if (!NhAccountSessionService.isAuthenticated()) {
+    if (!NhAccountSessionService.hasRetainedAccount()) {
       throw new Error('A signed-in account session is required to load favourites')
+    }
+    if (!NhAccountSessionService.isAuthenticated() &&
+      !await NhAccountSessionService.repairAuthentication()) {
+      throw new Error('Account authentication is temporarily unavailable')
     }
     const normalizedPage: number = Math.max(1, Math.floor(page))
     const normalizedQuery: string = query.trim()
@@ -468,11 +472,11 @@ export class NhApiClient {
         // Profile is display enrichment, not an authoritative account check.
         // Even an actual replayed 401 may fail only this request; Favorites
         // remains the sole owner allowed to change durable session state.
-        throw new Error('Your account session could not be rechecked. Please try again.')
+        throw new Error('HTTP 401')
       }
     }
     if (response.statusCode === 403) {
-      throw new Error('Your account session needs to be refreshed in Settings')
+      throw new Error('HTTP 403')
     }
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw new Error(`HTTP ${response.statusCode}`)
@@ -640,6 +644,7 @@ export class NhApiClient {
       }
       let response: NhArkWebSessionResponse = await NhArkWebSessionTransport.requestJson(url, 'GET')
       if (response.statusCode === 401) {
+        NhAccountSessionService.recordAuthenticatedReadInitial401()
         // The browser is the Set-Cookie authority: a trusted navigation
         // lets the server rotate access_token through Set-Cookie while
         // ArkWeb keeps its HttpOnly identity. Try that real refresh before
@@ -648,41 +653,44 @@ export class NhApiClient {
         // methods do not reach this branch because repeating a write can
         // duplicate a user action.
         let replayExecuted: boolean = false
-        if (scope === NhJsonReadScope.ACCOUNT_OWNED &&
-          await NhArkWebSessionTransport.refreshFromRegularBrowserIdentityAfterAuthenticated401(readToken)) {
+        const browserRefreshReady: boolean = scope === NhJsonReadScope.ACCOUNT_OWNED &&
+          await NhArkWebSessionTransport.refreshFromRegularBrowserIdentityAfterAuthenticated401(readToken)
+        NhAccountSessionService.recordAuthenticatedReadBrowserRefresh(browserRefreshReady)
+        if (browserRefreshReady) {
           const refreshedReadToken = NhAccountSessionService.captureAuthenticatedReadToken()
           if (refreshedReadToken !== null) {
             readToken = refreshedReadToken
             response = await NhArkWebSessionTransport.requestJson(url, 'GET')
             replayExecuted = true
+            NhAccountSessionService.recordAuthenticatedReadBrowserReplay(response.statusCode === 401)
           }
         }
         if (!replayExecuted) {
           // The bounded sealed-token fallback remains as a second candidate
           // only after the browser refresh could not promote a session.
           const recoveryPrepared: boolean = await NhApiClient.prepareIdempotentAuthenticatedReadRetryAfter401(readToken)
+          NhAccountSessionService.recordAuthenticatedReadSealedRecovery(recoveryPrepared)
           if (recoveryPrepared && NhAccountSessionService.isAuthenticatedReadTokenCurrent(readToken)) {
             response = await NhArkWebSessionTransport.requestJson(url, 'GET')
             replayExecuted = true
+            NhAccountSessionService.recordAuthenticatedReadSealedReplay(response.statusCode === 401)
           }
         }
         if (replayExecuted && response.statusCode === 401 &&
           scope === NhJsonReadScope.ACCOUNT_OWNED) {
-          // Only an actual replay that also returns 401 can prove the account
-          // needs explicit verification after the retained browser identity
-          // itself could not refresh. The original 401 is not enough when
-          // recovery could not issue its bounded replay.
-          if (!await NhAccountSessionService.requireVisibleVerificationAfterAccountGet401(readToken)) {
+          // Record the exhausted repair attempt without changing account
+          // ownership or publishing a login gate.
+          if (!await NhAccountSessionService.recordAuthenticatedReadReplay401(readToken)) {
             throw new Error('Your account session changed. Please try again.')
           }
-          throw new Error('Your account session needs to be refreshed in Settings')
+          throw new Error('HTTP 401')
         }
         if (response.statusCode === 401) {
-          throw new Error('Your account session could not be rechecked. Please try again.')
+          throw new Error('HTTP 401')
         }
       }
       if (response.statusCode === 403) {
-        throw new Error('Your account session needs to be refreshed in Settings')
+        throw new Error('HTTP 403')
       }
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw new Error(`HTTP ${response.statusCode}`)
@@ -801,10 +809,10 @@ export class NhApiClient {
       // fallback that will recover on the next idempotent read. Preserve the
       // sealed record here; only explicit sign-out or a real replayed GET
       // followed by 401 may delete it.
-      throw new Error('Your account session needs to be refreshed in Settings')
+      throw new Error('HTTP 401')
     }
     if (response.statusCode === 403) {
-      throw new Error('Your account session needs to be refreshed in Settings')
+      throw new Error('HTTP 403')
     }
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw new Error(`${rejectedMessage} (HTTP ${response.statusCode}).`)

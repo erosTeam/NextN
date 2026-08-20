@@ -23,8 +23,23 @@ const NEXTN_BUNDLE = 'com.erosteam.nextn'
 const ENTRY_ABILITY = 'EntryAbility'
 const ACCOUNT_ENTRY_ID = 'nextn-settings-root-account'
 const ACCOUNT_NATIVE_ROOT_ID = 'nextn-account-native-root'
+const ACCOUNT_LIST_ROOT_ID = 'nextn-account-list-root'
+const ACCOUNT_SAVED_ROW_ID = 'nextn-account-saved-row'
 const FAVORITES_ROOT_ID = 'nextn-favorites-root'
-const AUTHORIZED_TARGET = '192.168.50.237:12345'
+const DIAGNOSTICS_SETTINGS_GROUP_ID = 'nextn-diagnostics-settings-group'
+const DIAGNOSTICS_ACTIONS_GROUP_ID = 'nextn-diagnostics-actions-group'
+const DIAGNOSTICS_FILES_GROUP_ID = 'nextn-diagnostics-files-group'
+const LEGACY_ACCOUNT_VERIFICATION_LABELS = new Set([
+  'Verification needed',
+  '需要重新验证',
+  '再確認が必要です'
+])
+const AUTHORIZED_TARGETS = new Set([
+  '192.168.50.237:12345',
+  '192.168.50.197:12345',
+  '192.168.50.200:12345',
+  '56T0225315001128'
+])
 const RESOURCE_LOCALES = ['base', 'en_US', 'zh_CN', 'ja_JP']
 const TEMP_PREFIX = 'nextn-account-s0-'
 const REMOTE_PREFIX = '/data/local/tmp/nextn-account-s0-'
@@ -35,6 +50,8 @@ const ANCHOR_POLL_MS = 500
 const ANCHOR_POLLS = 4
 const FAVORITES_POLL_MS = 800
 const FAVORITES_POLLS = 4
+const ACCOUNT_POLL_MS = 800
+const ACCOUNT_POLLS = 4
 
 class SafeFailure extends Error {
   constructor(code) {
@@ -60,7 +77,7 @@ function parseArguments(argv) {
     }
     throw new SafeFailure('invalid_arguments')
   }
-  if (target !== AUTHORIZED_TARGET || lease.length === 0) {
+  if (!AUTHORIZED_TARGETS.has(target) || lease.length === 0) {
     throw new SafeFailure('invalid_arguments')
   }
   return { target, lease }
@@ -165,10 +182,44 @@ function isForegroundNextn(root) {
     parseBounds(attributes(focusedWindows[0]).bounds ?? attributes(focusedWindows[0]).bound) !== null
 }
 
+function foregroundWindowBounds(root) {
+  const declaredRoot = attributes(root)
+  const windows = String(declaredRoot.abilityName ?? '').length > 0
+    ? [root]
+    : children(root).filter((node) => isVisible(node) && String(attributes(node).hostWindowId ?? '').length > 0)
+  const focused = windows.filter((node) => String(attributes(node).focused ?? '').toLowerCase() === 'true')
+  if (focused.length !== 1) {
+    return null
+  }
+  return parseBounds(attributes(focused[0]).bounds ?? attributes(focused[0]).bound)
+}
+
 function hasLabel(root, labels) {
   let found = false
   walk(root, (node) => {
     if (nodeTextValues(node).some((value) => labels.has(value))) {
+      found = true
+    }
+  })
+  return found
+}
+
+function hasLabelSuffix(root, labels) {
+  let found = false
+  walk(root, (node) => {
+    if (nodeTextValues(node).some((value) => [...labels].some((label) =>
+      value === label || value.endsWith(`. ${label}`)))) {
+      found = true
+    }
+  })
+  return found
+}
+
+function hasLabelPrefix(root, labels) {
+  let found = false
+  walk(root, (node) => {
+    if (nodeTextValues(node).some((value) => [...labels].some((label) =>
+      value === label || value.startsWith(`${label}. `)))) {
       found = true
     }
   })
@@ -213,6 +264,40 @@ function hasType(root, expectedTypes) {
     }
   })
   return found
+}
+
+function accountRadioSummary(root) {
+  let savedAccountCount = 0
+  let selectedSavedAccountCount = 0
+  walk(root, (node) => {
+    const attrs = attributes(node)
+    const hasCheckedState = attrs.checked !== undefined &&
+      (String(attrs.checked).toLowerCase() === 'true' || String(attrs.checked).toLowerCase() === 'false')
+    if (nodeType(node) !== 'Radio' && !hasCheckedState) {
+      return
+    }
+    savedAccountCount += 1
+    const selected = String(attrs.checked ?? attrs.selected ?? '').toLowerCase() === 'true'
+    if (selected) {
+      selectedSavedAccountCount += 1
+    }
+  })
+  return {
+    savedAccountCount,
+    selectedSavedAccountCount,
+    selectionPresent: selectedSavedAccountCount === 1,
+  }
+}
+
+function visibleMarkerCount(root, markerId) {
+  let count = 0
+  walk(root, (node) => {
+    const attrs = attributes(node)
+    if (String(attrs.id ?? '') === markerId || String(attrs.accessibilityId ?? '') === markerId) {
+      count += 1
+    }
+  })
+  return count
 }
 
 function parseBounds(value) {
@@ -362,6 +447,23 @@ async function tapAnchor(target, lease, root, labels, missingCode, ambiguousCode
   await sleep(NAVIGATION_SETTLE_MS)
 }
 
+async function swipePageUp(target, lease, root) {
+  const bounds = foregroundWindowBounds(root)
+  if (bounds === null) {
+    throw new SafeFailure('foreground_bounds_missing')
+  }
+  const x = Math.floor((bounds.left + bounds.right) / 2)
+  const startY = Math.floor(bounds.top + (bounds.bottom - bounds.top) * 0.78)
+  const endY = Math.floor(bounds.top + (bounds.bottom - bounds.top) * 0.28)
+  await leaseCommand(
+    target,
+    lease,
+    ['shell', 'uitest', 'uiInput', 'swipe', String(x), String(startY), String(x), String(endY), '600'],
+    'input_failed',
+  )
+  await sleep(NAVIGATION_SETTLE_MS)
+}
+
 async function waitForAnchorableLayout(target, lease, hostTempDirectory, label, labels, missingCode, ambiguousCode) {
   for (let index = 0; index < ANCHOR_POLLS; index += 1) {
     const layout = await collectLayout(target, lease, hostTempDirectory, `${label}-${index}`)
@@ -387,14 +489,43 @@ async function waitForAnchorableLayout(target, lease, hostTempDirectory, label, 
 }
 
 function accountSummary(root, labels) {
-  const accountRoot = uniqueVisibleMarker(root, ACCOUNT_NATIVE_ROOT_ID, 'account_summary_incomplete', 'account_summary_incomplete')
+  const nativeRootCount = visibleMarkerCount(root, ACCOUNT_NATIVE_ROOT_ID)
+  const accountListRootCount = visibleMarkerCount(root, ACCOUNT_LIST_ROOT_ID)
+  if (nativeRootCount + accountListRootCount !== 1) {
+    throw new SafeFailure('account_summary_incomplete')
+  }
+  const accountRoot = accountListRootCount === 1
+    ? uniqueVisibleMarker(root, ACCOUNT_LIST_ROOT_ID, 'account_summary_incomplete', 'account_summary_incomplete')
+    : root
   const visibleLoginWeb = hasType(accountRoot, new Set(['Web', 'WebComponent']))
-  const signedIn = hasLabel(accountRoot, labels.accountSignedIn)
-  const signedOut = hasLabel(accountRoot, labels.accountSignedOut)
+  const signedInLabel = hasLabelSuffix(accountRoot, labels.accountSignedIn)
+  const signedOut = hasLabel(accountRoot, labels.accountSignedOut) ||
+    hasLabelPrefix(accountRoot, labels.accountSignIn)
   const verificationRequired = hasLabel(accountRoot, labels.accountVerificationRequired)
   const saveFailed = hasLabel(accountRoot, labels.accountSaveFailed)
   const nativeSection = !visibleLoginWeb
-  return { visibleLoginWeb, nativeSection, signedIn, signedOut, verificationRequired, saveFailed }
+  const radioSummary = accountRadioSummary(accountRoot)
+  const savedRowCount = visibleMarkerCount(accountRoot, ACCOUNT_SAVED_ROW_ID)
+  const savedAccountCount = savedRowCount > 0 ? savedRowCount : radioSummary.savedAccountCount
+  const selectedSavedAccountCount = accountListRootCount === 1
+    ? (radioSummary.selectionPresent || signedInLabel ? 1 : 0)
+    : radioSummary.selectedSavedAccountCount
+  const selectionPresent = selectedSavedAccountCount === 1
+  // Settings opens AccountPage only for durable account ownership. On that
+  // page the active Radio is the safe, non-PII proof of the selected owner;
+  // the signed-in status string belongs to the preceding Settings row.
+  const signedIn = signedInLabel || (accountListRootCount === 1 && selectionPresent)
+  return {
+    visibleLoginWeb,
+    nativeSection,
+    signedIn,
+    signedOut,
+    verificationRequired,
+    saveFailed,
+    savedAccountCount,
+    selectedSavedAccountCount,
+    selectionPresent,
+  }
 }
 
 function favoritesSummary(root, labels) {
@@ -413,18 +544,49 @@ function favoritesSummary(root, labels) {
   return { nativeStructure, signInPrompt, loading, error, authenticated }
 }
 
+function diagnosticsSummary(root, labels) {
+  const settingsGroup = visibleMarkerCount(root, DIAGNOSTICS_SETTINGS_GROUP_ID) === 1
+  const actionsGroup = visibleMarkerCount(root, DIAGNOSTICS_ACTIONS_GROUP_ID) === 1
+  const filesGroup = visibleMarkerCount(root, DIAGNOSTICS_FILES_GROUP_ID) === 1
+  const enabledAction = hasLabel(root, labels.diagnosticsEnabled)
+  const exportAction = hasLabel(root, labels.diagnosticsExport)
+  const markerAction = hasLabel(root, labels.diagnosticsMarker)
+  const noFiles = hasLabel(root, labels.diagnosticsNoFiles)
+  const persistentLogPresent = filesGroup && !noFiles
+  return {
+    settingsGroup,
+    actionsGroup,
+    filesGroup,
+    enabledAction,
+    exportAction,
+    markerAction,
+    persistentLogPresent,
+  }
+}
+
 async function observeAccount(target, lease, hostTempDirectory, labels) {
   await startAtRoot(target, lease)
   const root = await collectLayout(target, lease, hostTempDirectory, 'settings-root')
   await tapAnchor(target, lease, root, labels.tabSettings, 'settings_tab_anchor_missing', 'settings_tab_anchor_ambiguous')
   const settings = await waitForAnchorableLayout(target, lease, hostTempDirectory, 'settings', labels.accountEntry, 'account_entry_anchor_missing', 'account_entry_anchor_ambiguous')
   await tapAnchor(target, lease, settings, labels.accountEntry, 'account_entry_anchor_missing', 'account_entry_anchor_ambiguous')
-  const account = await collectLayout(target, lease, hostTempDirectory, 'account')
-  if (!isForegroundNextn(account)) {
-    throw new SafeFailure('foreground_unexpected')
+  let summary = null
+  for (let index = 0; index < ACCOUNT_POLLS; index += 1) {
+    const account = await collectLayout(target, lease, hostTempDirectory, `account-${index}`)
+    if (!isForegroundNextn(account)) {
+      throw new SafeFailure('foreground_unexpected')
+    }
+    summary = accountSummary(account, labels)
+    if (summary.nativeSection &&
+      (summary.signedIn || summary.signedOut || summary.verificationRequired || summary.saveFailed ||
+        summary.savedAccountCount > 0)) {
+      break
+    }
+    await sleep(ACCOUNT_POLL_MS)
   }
-  const summary = accountSummary(account, labels)
-  if (!summary.nativeSection || (!summary.signedIn && !summary.signedOut && !summary.verificationRequired && !summary.saveFailed)) {
+  if (summary === null || !summary.nativeSection ||
+    (!summary.signedIn && !summary.signedOut && !summary.verificationRequired && !summary.saveFailed &&
+      summary.savedAccountCount <= 0)) {
     throw new SafeFailure('account_summary_incomplete')
   }
   return summary
@@ -452,10 +614,67 @@ async function observeFavorites(target, lease, hostTempDirectory, labels) {
   return summary
 }
 
+async function observeDiagnostics(target, lease, hostTempDirectory, labels) {
+  await startAtRoot(target, lease)
+  const root = await collectLayout(target, lease, hostTempDirectory, 'diagnostics-root')
+  await tapAnchor(target, lease, root, labels.tabSettings, 'settings_tab_anchor_missing', 'settings_tab_anchor_ambiguous')
+  const settings = await waitForAnchorableLayout(
+    target,
+    lease,
+    hostTempDirectory,
+    'diagnostics-settings',
+    labels.settingsAdvanced,
+    'advanced_settings_anchor_missing',
+    'advanced_settings_anchor_ambiguous',
+  )
+  await tapAnchor(
+    target,
+    lease,
+    settings,
+    labels.settingsAdvanced,
+    'advanced_settings_anchor_missing',
+    'advanced_settings_anchor_ambiguous',
+  )
+  const summary = {
+    settingsGroup: false,
+    actionsGroup: false,
+    filesGroup: false,
+    enabledAction: false,
+    exportAction: false,
+    markerAction: false,
+    persistentLogPresent: false,
+  }
+  for (let index = 0; index < 6; index += 1) {
+    const advanced = await collectLayout(target, lease, hostTempDirectory, `diagnostics-advanced-${index}`)
+    if (!isForegroundNextn(advanced)) {
+      throw new SafeFailure('foreground_unexpected')
+    }
+    const observed = diagnosticsSummary(advanced, labels)
+    summary.settingsGroup = summary.settingsGroup || observed.settingsGroup
+    summary.actionsGroup = summary.actionsGroup || observed.actionsGroup
+    summary.filesGroup = summary.filesGroup || observed.filesGroup
+    summary.enabledAction = summary.enabledAction || observed.enabledAction
+    summary.exportAction = summary.exportAction || observed.exportAction
+    summary.markerAction = summary.markerAction || observed.markerAction
+    summary.persistentLogPresent = summary.persistentLogPresent || observed.persistentLogPresent
+    if (summary.settingsGroup && summary.actionsGroup && summary.filesGroup &&
+      summary.enabledAction && summary.exportAction && summary.markerAction && summary.persistentLogPresent) {
+      break
+    }
+    await swipePageUp(target, lease, advanced)
+  }
+  if (!summary.settingsGroup || !summary.actionsGroup || !summary.filesGroup ||
+    !summary.enabledAction || !summary.exportAction || !summary.markerAction || !summary.persistentLogPresent) {
+    throw new SafeFailure('diagnostics_summary_incomplete')
+  }
+  return summary
+}
+
 async function main() {
   let hostTempDirectory = ''
   let account = null
   let favorites = null
+  let diagnostics = null
   try {
     const { target, lease } = parseArguments(process.argv)
     hostTempDirectory = await mkdtemp(join(tmpdir(), TEMP_PREFIX))
@@ -465,25 +684,35 @@ async function main() {
       tabFavorites,
       accountSignedIn,
       accountSignedOut,
-      accountVerificationRequired,
+      accountSignIn,
       accountSaveFailed,
       favoritesNative,
       favoritesSignInPrompt,
       favoritesLoading,
       favoritesError,
-      favoritesEmpty
+      favoritesEmpty,
+      settingsAdvanced,
+      diagnosticsEnabled,
+      diagnosticsExport,
+      diagnosticsMarker,
+      diagnosticsNoFiles
     ] = await Promise.all([
-      loadLabels(new Set(['tab_settings'])),
+      loadLabels(new Set(['tab_me'])),
       loadLabels(new Set(['tab_favorites'])),
       loadLabels(new Set(['account_status_signed_in'])),
       loadLabels(new Set(['account_status_not_signed_in'])),
-      loadLabels(new Set(['account_status_verification_required'])),
+      loadLabels(new Set(['account_sign_in'])),
       loadLabels(new Set(['account_save_failed'])),
       loadLabels(new Set(['tab_favorites'])),
       loadLabels(new Set(['favorites_sign_in_settings'])),
       loadLabels(new Set(['favorites_checking_session', 'favorites_loading'])),
       loadLabels(new Set(['common_retry'])),
-      loadLabels(new Set(['favorites_empty', 'favorites_search_empty']))
+      loadLabels(new Set(['favorites_empty', 'favorites_search_empty'])),
+      loadLabels(new Set(['settings_advanced'])),
+      loadLabels(new Set(['diagnostics_enabled'])),
+      loadLabels(new Set(['diagnostics_export_current'])),
+      loadLabels(new Set(['advanced_write_marker'])),
+      loadLabels(new Set(['no_log_files']))
     ])
     const labels = {
       tabSettings,
@@ -491,18 +720,30 @@ async function main() {
       accountEntry: new Set([ACCOUNT_ENTRY_ID]),
       accountSignedIn,
       accountSignedOut,
-      accountVerificationRequired,
+      accountSignIn,
+      accountVerificationRequired: LEGACY_ACCOUNT_VERIFICATION_LABELS,
       accountSaveFailed,
       favoritesNative,
       favoritesSignInPrompt,
       favoritesLoading,
       favoritesError,
-      favoritesEmpty
+      favoritesEmpty,
+      settingsAdvanced,
+      diagnosticsEnabled,
+      diagnosticsExport,
+      diagnosticsMarker,
+      diagnosticsNoFiles
     }
     account = await observeAccount(target, lease, hostTempDirectory, labels)
     favorites = await observeFavorites(target, lease, hostTempDirectory, labels)
-    const sessionAccepted = account.signedIn && !account.signedOut && !account.verificationRequired && !account.saveFailed && !account.visibleLoginWeb && favorites.authenticated
-    return { outcome: { ok: true, stage: 's0', account, favorites, sessionAccepted }, exitCode: 0, hostTempDirectory }
+    diagnostics = await observeDiagnostics(target, lease, hostTempDirectory, labels)
+    const sessionAccepted = account.signedIn && account.selectionPresent && !account.signedOut &&
+      !account.verificationRequired && !account.saveFailed && !account.visibleLoginWeb && favorites.authenticated
+    return {
+      outcome: { ok: true, stage: 's0', account, favorites, diagnostics, sessionAccepted },
+      exitCode: 0,
+      hostTempDirectory,
+    }
   } catch (error) {
     const code = error instanceof SafeFailure ? error.code : 'unexpected_failure'
     const outcome = account === null

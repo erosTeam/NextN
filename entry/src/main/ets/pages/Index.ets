@@ -14,7 +14,9 @@ import {
 import { ReaderPage } from 'reader'
 import {
   BrowserSessionPage,
+  FAVORITES_TITLE_SEARCH_HEIGHT,
   FavoritesPage,
+  FavoritesTitleSearchFieldCCBuilder,
   HistoryPage,
   HistoryPinnedDayHeaderCCBuilder,
   HistoryPinnedDayHeaderState,
@@ -22,9 +24,10 @@ import {
   connectHistoryPinnedDayHeader,
 } from 'user'
 import {
-  DownloadPinnedGroupHeaderCCBuilder,
-  DownloadPinnedGroupHeaderState,
+  DOWNLOAD_TITLE_SEARCH_HEIGHT,
+  DownloadTitleBarCCBuilder,
   DownloadQueuePage,
+  DownloadPinnedGroupHeaderState,
   DOWNLOAD_PINNED_GROUP_HEADER_HEIGHT,
   connectDownloadPinnedGroupHeader,
 } from 'download'
@@ -301,7 +304,8 @@ struct Index {
   private splitPlaceholderContent: ComponentContent<Object> | null = null
   private homeSourceBarContent: ComponentContent<Object> | null = null
   private historyPinnedDayHeaderContent: ComponentContent<HistoryPinnedDayHeaderState> | null = null
-  private downloadPinnedGroupHeaderContent: ComponentContent<DownloadPinnedGroupHeaderState> | null = null
+  private favoritesTitleSearchContent: ComponentContent<FavoritesActionState> | null = null
+  private downloadTitleBarContent: ComponentContent<Object> | null = null
   private rootTabScrollers: Scroller[] = [new Scroller(), new Scroller(), new Scroller(), new Scroller()]
   // Retained Home sources own stable scrollers; this fallback is only used
   // before RetainedSubtabHost publishes its initial active source.
@@ -1085,18 +1089,35 @@ struct Index {
     })
   }
 
-  /** Cached HDS mirror for the lifecycle group currently under the title. */
-  private downloadPinnedGroupBottomBuilder(): Record<string, Object> {
-    if (this.downloadPinnedGroupHeaderContent === null) {
-      this.downloadPinnedGroupHeaderContent = new ComponentContent<DownloadPinnedGroupHeaderState>(
+  /** Remote Favorites draft hosted by HDS; request ownership stays in the retained page. */
+  private favoritesSearchBottomBuilder(): Record<string, Object> {
+    if (this.favoritesTitleSearchContent === null) {
+      this.favoritesTitleSearchContent = new ComponentContent<FavoritesActionState>(
         this.getUIContext(),
-        wrapBuilder<[DownloadPinnedGroupHeaderState]>(DownloadPinnedGroupHeaderCCBuilder),
-        this.downloadPinnedGroupHeader,
+        wrapBuilder<[FavoritesActionState]>(FavoritesTitleSearchFieldCCBuilder),
+        this.favoritesActions,
       )
     }
     return {
-      'builderComponent': this.downloadPinnedGroupHeaderContent,
-      'height': DOWNLOAD_PINNED_GROUP_HEADER_HEIGHT,
+      'builderComponent': this.favoritesTitleSearchContent,
+      'height': FAVORITES_TITLE_SEARCH_HEIGHT,
+      'showType': BottomBuilderShowType.DIRECTLY_SHOW,
+    }
+  }
+
+  /** NextE-shaped title owner for local Download search plus lifecycle mirror. */
+  private downloadTitleBottomBuilder(): Record<string, Object> {
+    if (this.downloadTitleBarContent === null) {
+      this.downloadTitleBarContent = new ComponentContent<Object>(
+        this.getUIContext(),
+        wrapBuilder<[Object]>(DownloadTitleBarCCBuilder),
+        new Object(),
+      )
+    }
+    return {
+      'builderComponent': this.downloadTitleBarContent,
+      'height': (this.downloadQueueActions.searchActive ? DOWNLOAD_TITLE_SEARCH_HEIGHT : 0) +
+        (this.downloadPinnedGroupHeader.visible ? DOWNLOAD_PINNED_GROUP_HEADER_HEIGHT : 0),
       'showType': BottomBuilderShowType.DIRECTLY_SHOW,
     }
   }
@@ -1299,6 +1320,9 @@ struct Index {
       content['menu'] = searchMenu
     } else if (this.activeTab === 1) {
       if (this.favoritesActions.actionsAvailable) {
+        if (this.favoritesActions.searchActive) {
+          content['bottomBuilder'] = this.favoritesSearchBottomBuilder()
+        }
         const searchAction: Record<string, Object> = {
           'label': this.favoritesActions.searchActive
             ? AppStrings.get('favorites_search_close')
@@ -1331,7 +1355,7 @@ struct Index {
         }
         const jumpMenuItem: Record<string, Object> = { 'content': jumpAction }
         const favoritesMenuItems: Record<string, Object>[] = [searchMenuItem, layoutMenuItem, jumpMenuItem]
-        const favoritesMenu: Record<string, Object> = { 'value': favoritesMenuItems, 'maxCount': 2 }
+        const favoritesMenu: Record<string, Object> = { 'value': favoritesMenuItems, 'maxCount': 3 }
         content['menu'] = favoritesMenu
       } else {
         content['menu'] = this.emptyHdsMenu()
@@ -1339,7 +1363,12 @@ struct Index {
     } else if (this.activeTab === 2) {
       // Root HDS owns only command intent. DownloadQueuePage owns all local
       // query, ordering, and menu state through the narrow action bridge.
-      content['bottomBuilder'] = this.downloadPinnedGroupBottomBuilder()
+      // Never leave HDS holding a cached zero-height Download builder. During
+      // a Favorites -> Downloads transition that host can remain visually
+      // collapsed even after the nested Search subtree becomes active.
+      if (this.downloadQueueActions.searchActive || this.downloadPinnedGroupHeader.visible) {
+        content['bottomBuilder'] = this.downloadTitleBottomBuilder()
+      }
       const searchAction: Record<string, Object> = {
         'label': this.downloadQueueActions.searchActive
           ? AppStrings.get('download_search_close')

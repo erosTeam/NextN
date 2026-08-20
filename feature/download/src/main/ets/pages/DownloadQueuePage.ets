@@ -9,7 +9,6 @@ import {
   DownloadQueueService,
   DownloadQueueState,
   AppStrings,
-  LayoutSafeAreaState,
   NhDownloadTask,
   NhDownloadTaskProjection,
   NhDownloadSortMode,
@@ -21,9 +20,11 @@ import {
   ThemeTokens,
   connectDownloadQueueActions,
   connectDownloadQueue,
-  connectLayoutSafeArea,
 } from 'shared'
 import { appMenuOptions } from 'shared'
+import {
+  DOWNLOAD_TITLE_SEARCH_HEIGHT,
+} from '../components/DownloadTitleBar'
 import {
   DownloadPinnedGroupHeaderState,
   DOWNLOAD_PINNED_GROUP_HEADER_HEIGHT,
@@ -150,9 +151,7 @@ export struct DownloadQueuePage {
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   @Local queue: DownloadQueueState = connectDownloadQueue()
   @Local taskGroups: NhDownloadTask[][] = [[], [], [], []]
-  /** These are page-local view choices, never queue/task persistence. */
-  @Local searchActive: boolean = false
-  @Local searchQuery: string = ''
+  /** Sort is page-local; search draft/open state lives in the HDS bridge. */
   @Local sortMode: string = NhDownloadSortMode.ADDED_DESC
   @Local sortMenuShown: boolean = false
   @Local taskActionMenuGalleryId: number = 0
@@ -176,12 +175,10 @@ export struct DownloadQueuePage {
   private handledTitleActionSeq: number = 0
   private downloadListGlobalY: number = -1
   private pinnedGroupSyncTimer: number = -1
-  private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
 
   aboutToAppear(): void {
     // Do not replay an old retained title command when this page is recreated.
     this.handledTitleActionSeq = this.titleActions.commandSeq
-    this.reportSearchActive()
     this.reportVisibleEligibility()
     this.resetPinnedGroupHeader()
     this.ensureQueueForAppearance()
@@ -299,7 +296,7 @@ export struct DownloadQueuePage {
     this.rebuildTaskProjection()
   }
 
-  @Monitor('searchQuery', 'sortMode')
+  @Monitor('titleActions.searchText', 'sortMode')
   onLocalPresentationChanged(): void {
     this.rebuildTaskProjection()
   }
@@ -485,7 +482,11 @@ export struct DownloadQueuePage {
   }
 
   private rebuildTaskProjection(): void {
-    this.taskGroups = NhDownloadTaskProjection.build(this.tasks, this.searchQuery, this.sortMode).groups
+    this.taskGroups = NhDownloadTaskProjection.build(
+      this.tasks,
+      this.titleActions.searchText,
+      this.sortMode,
+    ).groups
     this.reportVisibleEligibility()
     this.schedulePinnedGroupSync()
   }
@@ -570,19 +571,14 @@ export struct DownloadQueuePage {
   }
 
   private toggleSearch(): void {
-    this.searchActive = !this.searchActive
-    if (!this.searchActive) {
-      this.searchQuery = ''
+    this.titleActions.searchActive = !this.titleActions.searchActive
+    if (!this.titleActions.searchActive) {
+      this.titleActions.searchText = ''
     }
-    this.reportSearchActive()
-  }
-
-  private reportSearchActive(): void {
-    DownloadQueueActionBridge.reportSearchActive(this.searchActive)
   }
 
   private hasActiveSearch(): boolean {
-    return this.searchQuery.trim().length > 0
+    return this.titleActions.searchText.trim().length > 0
   }
 
   private visibleTaskCount(): number {
@@ -593,8 +589,11 @@ export struct DownloadQueuePage {
     return count
   }
 
+  /** Preserve the page's established list offset beneath the active search slot. */
   private searchFieldReserve(): number {
-    return this.searchActive ? ThemeTokens.SEARCH_FIELD_HEIGHT + ThemeTokens.SPACE_SM : 0
+    return this.titleActions.searchActive
+      ? DOWNLOAD_TITLE_SEARCH_HEIGHT
+      : 0
   }
 
   private setSortMode(sortMode: string): void {
@@ -641,8 +640,18 @@ export struct DownloadQueuePage {
    * surface; off-screen zero rects are never treated as active context.
    */
   private syncPinnedGroupHeader(): void {
-    const pinSurfaceTopY: number = this.pinnedGroupHeader.pinSurfaceTopY
-    if (pinSurfaceTopY < 0 || this.downloadListGlobalY < 0) {
+    if (this.downloadListGlobalY < 0) {
+      this.resetPinnedGroupHeader()
+      return
+    }
+    // With search closed there is intentionally no zero-height title builder.
+    // Its former global Y was the list's own top boundary, so use that stable
+    // boundary directly for group crossing instead of depending on an
+    // invisible HDS component to publish geometry.
+    const pinSurfaceTopY: number = this.titleActions.searchActive
+      ? this.pinnedGroupHeader.pinSurfaceTopY
+      : this.downloadListGlobalY
+    if (pinSurfaceTopY < 0) {
       this.resetPinnedGroupHeader()
       return
     }
@@ -1030,8 +1039,8 @@ export struct DownloadQueuePage {
     SecondaryListScaffold({
       scroller: this.scroller,
       listSpace: 0,
-      topPadding: this.searchActive
-        ? DOWNLOAD_PINNED_GROUP_HEADER_HEIGHT + this.searchFieldReserve()
+      topPadding: this.titleActions.searchActive
+        ? this.searchFieldReserve() + ThemeTokens.SPACE_SM
         : 0,
       bottomPadding: ThemeTokens.ROOT_FLOATING_TAB_RESERVE,
       onDidScroll: (offset: number, state: ScrollState): void => {
@@ -1066,34 +1075,6 @@ export struct DownloadQueuePage {
         }
       }
     }
-  }
-
-  @Builder
-  private LocalSearchField() {
-    Row() {
-      Search({ value: this.searchQuery, placeholder: AppStrings.get('download_search_placeholder') })
-        .width('100%')
-        .height(ThemeTokens.SEARCH_FIELD_HEIGHT)
-        .searchButton(AppStrings.get('action_search'), { fontColor: ThemeTokens.BRAND })
-        .onChange((value: string): void => {
-          this.searchQuery = value
-        })
-        .onSubmit((value: string): void => {
-          this.searchQuery = value
-        })
-    }
-    .width('100%')
-    .height(this.searchFieldReserve())
-    .padding({
-      left: ThemeTokens.LIST_HORIZONTAL_PADDING,
-      right: ThemeTokens.LIST_HORIZONTAL_PADDING,
-      bottom: ThemeTokens.SPACE_SM,
-    })
-    .margin({
-      top: this.layoutSafeArea.topAvoidHeight + ThemeTokens.TITLE_BAR_HEIGHT +
-        DOWNLOAD_PINNED_GROUP_HEADER_HEIGHT,
-    })
-    .backgroundColor(ThemeTokens.SURFACE)
   }
 
   @Builder
@@ -1158,13 +1139,6 @@ export struct DownloadQueuePage {
       }
       .width('100%')
       .height('100%')
-      if (this.searchActive) {
-        Column() {
-          this.LocalSearchField()
-        }
-          .width('100%')
-          .align(Alignment.TopStart)
-      }
       // The page owns the native sort menu and only opens it when the root
       // HDS action bridge requests the command.
       Row()

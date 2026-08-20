@@ -43,6 +43,8 @@ import {
   ThemeColorSettings,
   AppColorFavoritesSettings,
   ThemeSettings,
+  DiagnosticLogger,
+  DiagnosticsSettings,
 } from 'shared'
 
 const ENTRY_PAGE: string = 'pages/Index'
@@ -72,6 +74,8 @@ export default class EntryAbility extends UIAbility {
     this.loginRecoveryRequestedAtLaunch = this.galleryDirectLaunchIdAtLaunch === 0 &&
       typeof recoveryValue === 'string' && recoveryValue === '1'
     AppStrings.init(this.context)
+    DiagnosticLogger.initializePersistentSink(this.context)
+    DiagnosticLogger.info('lifecycle', 'session_start', 'application created')
     ImagePipelineService.initialize(this.context)
     SyncScheduler.rememberContext(this.context)
     // Public tag-name enrichment needs the same app-private RDB context as
@@ -122,6 +126,7 @@ export default class EntryAbility extends UIAbility {
     }
 
     Promise.all([
+      DiagnosticsSettings.restore(this.context),
       // Publish the persisted presentation signal before the first component
       // mounts. The platform color-mode call itself remains below
       // `loadContent`, which is the lifecycle point required by ArkUI.
@@ -241,7 +246,7 @@ export default class EntryAbility extends UIAbility {
       // Pages consume its published result and never invoke restore themselves.
       NhAccountSessionService.publishBootstrapState()
     }
-    if (restored) {
+    if (restored || NhAccountSessionService.hasRetainedAccount()) {
       await NhAccountProfileService.restore(this.context)
     }
   }
@@ -258,6 +263,8 @@ export default class EntryAbility extends UIAbility {
   }
 
   onDestroy(): void {
+    DiagnosticLogger.info('lifecycle', 'session_end', 'application destroyed')
+    DiagnosticLogger.closePersistentSink()
     MotionHandStateService.stop()
     if (this.environmentCallbackId >= 0) {
       try {

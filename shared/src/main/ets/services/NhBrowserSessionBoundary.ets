@@ -88,19 +88,6 @@ export class NhBrowserSessionBoundary {
     return status
   }
 
-  /**
-   * A visible login candidate consumed its finite non-terminal verification
-   * budget. Keep the recovery action native and explicit; this status carries
-   * no browser-derived data.
-   */
-  static verificationRetryRequired(): NhBrowserSessionStatus {
-    const status: NhBrowserSessionStatus = NhBrowserSessionBoundary.preflight()
-    if (status.cookieAccessAllowed) {
-      status.phase = NhBrowserSessionPhase.VERIFICATION_RETRY_REQUIRED
-    }
-    return status
-  }
-
   static blockedNavigation(): NhBrowserSessionStatus {
     const status: NhBrowserSessionStatus = new NhBrowserSessionStatus()
     status.phase = NhBrowserSessionPhase.UNAVAILABLE

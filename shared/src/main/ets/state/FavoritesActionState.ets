@@ -21,6 +21,9 @@ export class FavoritesActionState {
   @Trace commandSeq: number = 0
   @Trace actionsAvailable: boolean = false
   @Trace searchActive: boolean = false
+  /** Title-bar draft; remote Favorites reads run only after submitVersion. */
+  @Trace searchDraft: string = ''
+  @Trace searchSubmitVersion: number = 0
 }
 
 const FAVORITES_ACTION_KEY: string = 'nextn_favorites_actions'

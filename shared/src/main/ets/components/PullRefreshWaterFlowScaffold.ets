@@ -359,7 +359,12 @@ export struct PullRefreshWaterFlowScaffold {
   private TopSpacer() {
     FlowItem() {
       Column() {
-        Blank().height(this.layout.topAvoidHeight + ThemeTokens.TITLE_BAR_HEIGHT + this.topPadding)
+        // The top spacer is a standalone WaterFlow section with rowsGap=0.
+        // Carry one ordinary content gap here because the following section's
+        // rowsGap applies only between its own cards, not across the boundary.
+        Blank().height(
+          this.layout.topAvoidHeight + ThemeTokens.TITLE_BAR_HEIGHT + this.topPadding + this.gap,
+        )
       }
       .width('100%')
     }

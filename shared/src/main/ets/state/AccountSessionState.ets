@@ -10,23 +10,25 @@ const ACCOUNT_SESSION_V2_KEY: string = 'v2_accountSession'
 @ObservedV2
 export class AccountSessionState {
   @Trace initialized: boolean = false
+  /** Durable account ownership; false only after explicit sign-out/removal. */
   @Trace signedIn: boolean = false
-  @Trace verificationRequired: boolean = false
+  /** Whether the current ArkWeb identity can issue authenticated requests now. */
+  @Trace authenticationAvailable: boolean = false
   @Trace revision: number = 0
 
   publish(
     initialized: boolean,
     signedIn: boolean,
-    verificationRequired: boolean,
+    authenticationAvailable: boolean,
   ): void {
     if (this.initialized === initialized &&
       this.signedIn === signedIn &&
-      this.verificationRequired === verificationRequired) {
+      this.authenticationAvailable === authenticationAvailable) {
       return
     }
     this.initialized = initialized
     this.signedIn = signedIn
-    this.verificationRequired = verificationRequired
+    this.authenticationAvailable = authenticationAvailable
     this.revision += 1
   }
 }

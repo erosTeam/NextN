@@ -330,6 +330,7 @@ export struct AccountPage {
     .backgroundColor(ThemeTokens.CARD_BACKGROUND)
     .alignItems(VerticalAlign.Center)
     .opacity(this.isMutatingAccount ? 0.6 : 1)
+    .id('nextn-account-saved-row')
     .accessibilityText(this.accountRowAccessibilityLabel(accountId))
     .onClick((): void => {
       this.switchAccount(accountId)
@@ -406,5 +407,6 @@ export struct AccountPage {
     .width('100%')
     .height('100%')
     .backgroundColor(ThemeTokens.SURFACE)
+    .id('nextn-account-list-root')
   }
 }

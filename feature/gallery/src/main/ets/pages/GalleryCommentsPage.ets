@@ -153,8 +153,7 @@ export struct GalleryCommentsPage {
   }
 
   private hasPublishedAccountSession(): boolean {
-    return this.accountSession.initialized && this.accountSession.signedIn &&
-      !this.accountSession.verificationRequired
+    return this.accountSession.initialized && this.accountSession.signedIn
   }
 
   private commentTranslationConfigured(): boolean {

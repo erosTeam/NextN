@@ -30,12 +30,11 @@ import {
   connectFavoriteMutations,
   connectFavoritesActions,
   connectAccountSession,
-  connectLayoutSafeArea,
   connectTagTranslations,
-  LayoutSafeAreaState,
   TagTranslationState,
 } from 'shared'
 import { appMenuOptions } from 'shared'
+import { FAVORITES_TITLE_SEARCH_HEIGHT } from '../components/FavoritesTitleSearchField'
 
 /**
  * Read-only favourites root. This follows NextE's cover-grid shell but keeps
@@ -55,7 +54,6 @@ export struct FavoritesPage {
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
   @Local layoutMenuShown: boolean = false
   @Local searchActive: boolean = false
-  @Local searchQuery: string = ''
   @Local activeQuery: string = ''
   @Local signedIn: boolean = false
   @Local isResolvingSessionState: boolean = true
@@ -69,7 +67,6 @@ export struct FavoritesPage {
   @Param scroller: Scroller = new Scroller()
   @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
-  private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private requestGeneration: number = 0
   private tagTranslationRefreshEpoch: number = 0
   private sessionProjectionGeneration: number = 0
@@ -77,6 +74,7 @@ export struct FavoritesPage {
   private pendingFavoriteMutationRefresh: boolean = false
   private handledFavoriteMutationRevision: number = 0
   private handledTitleActionSeq: number = 0
+  private handledSearchSubmitVersion: number = 0
   /** Published account state is a real gate, never a retained-tab appearance effect. */
   private sessionStateApplied: boolean = false
   private appliedAccountSessionRevision: number = -1
@@ -129,6 +127,7 @@ export struct FavoritesPage {
   aboutToAppear(): void {
     this.isVisible = true
     this.handledTitleActionSeq = this.titleActions.commandSeq
+    this.handledSearchSubmitVersion = this.titleActions.searchSubmitVersion
     this.reportTitleActions()
     RootRefreshRegistry.register(this.scroller, (): void => {
       // The mounted collection owns the visible programmatic pull. State-only
@@ -224,6 +223,17 @@ export struct FavoritesPage {
     }
   }
 
+  @Monitor('titleActions.searchSubmitVersion')
+  onTitleSearchSubmitted(): void {
+    if (this.titleActions.searchSubmitVersion <= this.handledSearchSubmitVersion) {
+      return
+    }
+    this.handledSearchSubmitVersion = this.titleActions.searchSubmitVersion
+    if (this.searchActive && this.canUseTitleActions()) {
+      this.submitSearch(this.titleActions.searchDraft)
+    }
+  }
+
   private toggleSearch(): void {
     if (!this.canUseTitleActions()) {
       this.reportTitleActions()
@@ -232,7 +242,7 @@ export struct FavoritesPage {
     this.searchActive = !this.searchActive
     if (!this.searchActive) {
       const hadSubmittedQuery: boolean = this.activeQuery.length > 0
-      this.searchQuery = ''
+      this.titleActions.searchDraft = ''
       this.activeQuery = ''
       if (hadSubmittedQuery && this.signedIn) {
         this.scroller.scrollToIndex(0)
@@ -289,7 +299,7 @@ export struct FavoritesPage {
 
   private submitSearch(value: string): void {
     const normalized: string = value.trim()
-    this.searchQuery = normalized
+    this.titleActions.searchDraft = normalized
     this.activeQuery = normalized
     this.scroller.scrollToIndex(0)
     if (this.signedIn) {
@@ -299,10 +309,6 @@ export struct FavoritesPage {
 
   private hasActiveSearch(): boolean {
     return this.activeQuery.length > 0
-  }
-
-  private searchFieldReserve(): number {
-    return this.searchActive ? ThemeTokens.SEARCH_FIELD_HEIGHT + ThemeTokens.SPACE_SM : 0
   }
 
   /**
@@ -416,7 +422,7 @@ export struct FavoritesPage {
     GalleryListCacheRepository.clearPrefix(this.context(), 'favorites:v1:').catch((): void => {})
     this.requestGeneration += 1
     this.searchActive = false
-    this.searchQuery = ''
+    this.titleActions.searchDraft = ''
     this.activeQuery = ''
     this.rawGalleries = []
     this.applyContentFilters()
@@ -691,31 +697,6 @@ export struct FavoritesPage {
       .replace('%2$d', `${this.totalPages}`)
   }
 
-  @Builder
-  private FavoritesSearchField() {
-    Row() {
-      Search({ value: this.searchQuery, placeholder: AppStrings.get('favorites_search_placeholder') })
-        .width('100%')
-        .height(ThemeTokens.SEARCH_FIELD_HEIGHT)
-        .searchButton(AppStrings.get('action_search'), { fontColor: ThemeTokens.BRAND })
-        .onChange((value: string): void => {
-          this.searchQuery = value
-        })
-        .onSubmit((value: string): void => {
-          this.submitSearch(value)
-        })
-    }
-    .width('100%')
-    .height(this.searchFieldReserve())
-    .padding({
-      left: ThemeTokens.LIST_HORIZONTAL_PADDING,
-      right: ThemeTokens.LIST_HORIZONTAL_PADDING,
-      bottom: ThemeTokens.SPACE_SM,
-    })
-    .margin({ top: this.layoutSafeArea.topAvoidHeight + ThemeTokens.TITLE_BAR_HEIGHT })
-    .backgroundColor(ThemeTokens.SURFACE)
-  }
-
   build() {
     Stack({ alignContent: Alignment.TopEnd }) {
       Column() {
@@ -756,7 +737,9 @@ export struct FavoritesPage {
             footerCompleteText: AppStrings.get('favorites_up_to_date'),
             footerIdleText: this.currentPage > 0 ? this.pageProgressLabel() : '',
             footerRetryLabel: AppStrings.get('favorites_retry_loading'),
-            topPadding: this.searchFieldReserve(),
+            topPadding: this.searchActive && this.canUseTitleActions()
+              ? FAVORITES_TITLE_SEARCH_HEIGHT
+              : 0,
             bottomPadding: ThemeTokens.ROOT_FLOATING_TAB_RESERVE,
             scroller: this.scroller,
             controller: this.refreshController,
@@ -787,13 +770,6 @@ export struct FavoritesPage {
       }
       .width('100%')
       .height('100%')
-      if (this.searchActive && this.canUseTitleActions()) {
-        Column() {
-          this.FavoritesSearchField()
-        }
-        .width('100%')
-        .align(Alignment.TopStart)
-      }
       // HDS title actions cannot anchor a Menu; the retained Favorites host
       // owns the same invisible anchor as NextE FavoritesPage/FavcatPage.
       Row()

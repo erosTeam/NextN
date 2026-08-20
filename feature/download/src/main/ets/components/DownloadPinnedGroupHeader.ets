@@ -34,7 +34,7 @@ export class DownloadPinnedGroupHeaderState {
   @Trace group: number = -1
   @Trace count: number = 0
   @Trace visible: boolean = false
-  /** Window Y of the HDS bottom-builder surface. */
+  /** Window Y of the title surface below which a crossed group is mirrored. */
   @Trace pinSurfaceTopY: number = -1
 }
 
@@ -82,9 +82,6 @@ export struct DownloadPinnedGroupHeader {
     }
     .width('100%')
     .height(DOWNLOAD_PINNED_GROUP_HEADER_HEIGHT)
-    .onAreaChange((_oldValue: Area, newValue: Area): void => {
-      this.state.pinSurfaceTopY = newValue.globalPosition.y as number
-    })
   }
 }
 

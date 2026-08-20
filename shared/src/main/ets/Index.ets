@@ -682,6 +682,10 @@ export { BackupCrypto, BackupSealResult } from './backup/BackupCrypto'
 export { BackupChecksum } from './backup/BackupChecksum'
 export { BackupSecretDenylist } from './backup/BackupSecretDenylist'
 export { DiagnosticLogger } from './diagnostics/DiagnosticLogger'
+export { DiagnosticsLogFileSink, DiagnosticsLogFileInfo } from './diagnostics/DiagnosticsLogFileSink'
+export { DiagnosticsSettings, DiagnosticsSettingsSnapshot } from './settings/DiagnosticsSettings'
+export { DiagnosticsFileExport, DiagnosticsExportFile } from './settings/DiagnosticsFileExport'
+export { DiagnosticsState, connectDiagnostics } from './state/DiagnosticsState'
 export {
   BackupWebDavCredentialGroup,
   BackupPreferencesAdapter,

@@ -145,6 +145,19 @@ export class AccountSessionRepository {
     context: common.UIAbilityContext,
     record: EncryptedAccountSession,
   ): Promise<void> {
+    return AccountSessionRepository.saveVerifiedForAccount(context, record, '')
+  }
+
+  /**
+   * Atomically advances the active envelope and, when known, the matching
+   * saved-account envelope. A rotated access token must never leave the
+   * account switcher pointing at an older login-time snapshot.
+   */
+  static saveVerifiedForAccount(
+    context: common.UIAbilityContext,
+    record: EncryptedAccountSession,
+    accountId: string,
+  ): Promise<void> {
     return AccountSessionRepository.enqueueWrite(async (): Promise<void> => {
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
       let transactionOpen: boolean = false
@@ -157,6 +170,14 @@ export class AccountSessionRepository {
           record.nonce,
           Date.now(),
         ])
+        if (accountId.length > 0 && accountId !== SESSION_KEY) {
+          await store.executeSql(SQL_UPSERT_SESSION, [
+            accountId,
+            record.ciphertext,
+            record.nonce,
+            Date.now(),
+          ])
+        }
         await store.executeSql(SQL_DELETE_VERIFICATION_REQUIRED, [SESSION_KEY])
         store.commit()
         transactionOpen = false

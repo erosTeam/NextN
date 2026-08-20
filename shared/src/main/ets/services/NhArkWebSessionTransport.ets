@@ -377,7 +377,7 @@ export class NhArkWebSessionTransport {
     } catch (_error) {
       return false
     }
-    if (!await NhArkWebSessionTransport.loadTrustedLoginPage(controller)) {
+    if (!await NhArkWebSessionTransport.loadTrustedSessionRefreshPage(controller)) {
       return false
     }
     if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
@@ -455,7 +455,15 @@ export class NhArkWebSessionTransport {
     }
   }
 
-  private static async loadTrustedLoginPage(controller: webview.WebviewController): Promise<boolean> {
+  /**
+   * Match ErosN's 401 repair: reload the authenticated root document so the
+   * browser can consume its refresh cookie and rotate access_token. Loading
+   * the login page here does not repair an existing session and can leave the
+   * subsequent API replay on the same rejected token.
+   */
+  private static async loadTrustedSessionRefreshPage(
+    controller: webview.WebviewController,
+  ): Promise<boolean> {
     NhArkWebSessionTransport.isReady = false
     const ready: Promise<void> = new Promise<void>((resolve: () => void, reject: (error: Error) => void): void => {
       NhArkWebSessionTransport.readyResolver = resolve
@@ -465,7 +473,7 @@ export class NhArkWebSessionTransport {
       }, BOOTSTRAP_TIMEOUT_MS)
     })
     try {
-      controller.loadUrl(NhBrowserSessionBoundary.loginUrl())
+      controller.loadUrl(`${NhBrowserSessionBoundary.trustedOrigin()}/`)
       await ready
       return true
     } catch (_error) {

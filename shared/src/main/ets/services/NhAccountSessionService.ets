@@ -1,4 +1,5 @@
 import { common } from '@kit.AbilityKit'
+import { preferences } from '@kit.ArkData'
 import { util } from '@kit.ArkTS'
 import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { huks } from '@kit.UniversalKeystoreKit'
@@ -13,6 +14,7 @@ import {
 import { AccountProfileRepository } from '../storage/AccountProfileRepository'
 import { connectAccountSession } from '../state/AccountSessionState'
 import { connectAccountProfile } from '../state/AccountProfileState'
+import { DiagnosticLogger } from '../diagnostics/DiagnosticLogger'
 import { NhBrowserSessionBoundary } from './NhBrowserSessionBoundary'
 
 const KEY_ALIAS: string = 'com.erosteam.nextn.account-session.v1'
@@ -39,6 +41,8 @@ const MAX_TRANSIENT_CANDIDATE_RETRIES: number = 1
 const ACCOUNT_LOG_DOMAIN: number = 0xE001
 const ACCOUNT_LOG_TAG: string = 'NextNAccount'
 const SEALED_RESYNC_MIN_INTERVAL_MS: number = 30000
+const ACCOUNT_STATE_STORE: string = 'nextn_settings'
+const ACCOUNT_PRESENT_KEY: string = 'account.session.present'
 
 /**
  * Account diagnostics deliberately carry a fixed lifecycle code only. They
@@ -62,8 +66,17 @@ enum AccountSessionDiagnosticStage {
   RESTORE_VERIFICATION_REQUIRED = 'account_restore_verification_required',
   RESTORE_VERIFICATION_REQUIRED_AFTER_BROWSER_REFRESH_FAILURE =
     'account_restore_verification_required_after_browser_refresh_failure',
-  VERIFICATION_REQUIRED_POST_RESTORE_401 = 'account_verification_required_post_restore_401',
-  VERIFICATION_REQUIRED_POST_PROMOTION_401 = 'account_verification_required_post_promotion_401',
+  AUTHENTICATED_READ_INITIAL_401 = 'account_authenticated_read_initial_401',
+  AUTHENTICATED_READ_BROWSER_REFRESH_READY = 'account_authenticated_read_browser_refresh_ready',
+  AUTHENTICATED_READ_BROWSER_REFRESH_UNAVAILABLE = 'account_authenticated_read_browser_refresh_unavailable',
+  AUTHENTICATED_READ_BROWSER_REPLAY_RECOVERED = 'account_authenticated_read_browser_replay_recovered',
+  AUTHENTICATED_READ_BROWSER_REPLAY_401 = 'account_authenticated_read_browser_replay_401',
+  AUTHENTICATED_READ_SEALED_RECOVERY_READY = 'account_authenticated_read_sealed_recovery_ready',
+  AUTHENTICATED_READ_SEALED_RECOVERY_UNAVAILABLE = 'account_authenticated_read_sealed_recovery_unavailable',
+  AUTHENTICATED_READ_SEALED_REPLAY_RECOVERED = 'account_authenticated_read_sealed_replay_recovered',
+  AUTHENTICATED_READ_SEALED_REPLAY_401 = 'account_authenticated_read_sealed_replay_401',
+  AUTHENTICATED_READ_TERMINAL_401_AFTER_RESTORE = 'account_authenticated_read_terminal_401_after_restore',
+  AUTHENTICATED_READ_TERMINAL_401_AFTER_PROMOTION = 'account_authenticated_read_terminal_401_after_promotion',
   VERIFICATION_MARKER_PERSIST_FAILED = 'account_verification_marker_persist_failed',
   PROFILE_SNAPSHOT_CLEAR_FAILED = 'account_profile_snapshot_clear_failed',
   ARKWEB_TRANSPORT_MAIN_FRAME_LOAD_FAILED = 'account_arkweb_transport_main_frame_load_failed',
@@ -187,6 +200,16 @@ export class NhAccountSessionService {
   // hydration. This in-process mirror changes only after that RDB marker has
   // committed, so published verification state can survive a cold start.
   private static verificationRequiredMarkerPresent: boolean = false
+  // Page-facing account ownership is deliberately distinct from transport
+  // availability. Once a verified envelope exists, request, ArkWeb, HUKS, or
+  // RDB recovery failures cannot make the user signed out; only explicit
+  // clear/removal may reset this flag.
+  private static retainedAccountPresent: boolean = false
+  // Non-secret owner key for the active saved envelope. AccountListSettings
+  // restores it independently from the optional display-profile snapshot so
+  // a missing profile can never deselect the account or stop token rotation
+  // from updating the matching saved envelope.
+  private static activeSavedAccountId: string = ''
   // A retained sealed record that cannot currently restore is a recovery
   // boundary, not an implicit replacement-login request. This pair contains
   // no browser or account data and exists only for the active process: a
@@ -206,6 +229,16 @@ export class NhAccountSessionService {
   static isAuthenticated(): boolean {
     return NhAccountSessionService.hasLoginCookies(NhAccountSessionService.cookieHeader) ||
       NhAccountSessionService.browserIdentityVerified
+  }
+
+  /** Durable account ownership as projected to native pages. */
+  static hasRetainedAccount(): boolean {
+    return NhAccountSessionService.retainedAccountPresent ||
+      NhAccountSessionService.isAuthenticated()
+  }
+
+  static setActiveSavedAccountId(accountId: string): void {
+    NhAccountSessionService.activeSavedAccountId = accountId.trim()
   }
 
   /** Captured synchronously before an authenticated ArkWeb GET is issued. */
@@ -261,7 +294,7 @@ export class NhAccountSessionService {
 
   /** True only while a retained sealed record needs an explicit replacement decision. */
   static requiresExplicitVisibleLoginAction(): boolean {
-    return NhAccountSessionService.retainedRestoreRequiresExplicitLogin
+    return false
   }
 
   /**
@@ -286,8 +319,7 @@ export class NhAccountSessionService {
 
   /** Defense in depth for any visible-login caller, not just BrowserSessionPage. */
   static canOpenVisibleLoginSession(): boolean {
-    return !NhAccountSessionService.retainedRestoreRequiresExplicitLogin ||
-      NhAccountSessionService.explicitVisibleLoginActionRegistered
+    return true
   }
 
   /**
@@ -335,6 +367,7 @@ export class NhAccountSessionService {
 
   static async restoreAtBootstrap(context: common.UIAbilityContext): Promise<boolean> {
     NhAccountSessionService.sessionContext = context
+    await NhAccountSessionService.loadRetainedAccountMarker(context)
     // Bootstrap restore is a cold-start recovery path. Once this process already owns a
     // verified runtime session, retained pages must not re-read RDB/HUKS and
     // turn a transient local-storage failure into a visible signed-out state.
@@ -342,8 +375,7 @@ export class NhAccountSessionService {
     // bypasses this fast path so its ownership/fail-closed boundary remains
     // authoritative.
     if (NhAccountSessionService.isAuthenticated() &&
-      !NhAccountSessionService.sessionTransitionInFlight &&
-      !NhAccountSessionService.verificationRequiredMarkerPresent) {
+      !NhAccountSessionService.sessionTransitionInFlight) {
       return true
     }
     if (NhAccountSessionService.restoreTask !== null) {
@@ -359,6 +391,24 @@ export class NhAccountSessionService {
         NhAccountSessionService.restoreTask = null
       }
     }
+  }
+
+  /**
+   * Re-runs the non-visible RDB/HUKS/ArkWeb recovery for a retained account.
+   * It never opens a login page, changes account ownership, or clears cached
+   * profile/content when the transport remains unavailable.
+   */
+  static async repairAuthentication(): Promise<boolean> {
+    if (NhAccountSessionService.isAuthenticated()) {
+      return true
+    }
+    const context: common.UIAbilityContext | null = NhAccountSessionService.sessionContext
+    if (context === null || !NhAccountSessionService.retainedAccountPresent) {
+      return false
+    }
+    const restored: boolean = await NhAccountSessionService.restoreAtBootstrap(context)
+    NhAccountSessionService.publishSessionChange()
+    return restored && NhAccountSessionService.isAuthenticated()
   }
 
   /**
@@ -541,10 +591,8 @@ export class NhAccountSessionService {
    * the browser cookie jar instead of the readable Authorization header.
    */
   static markBrowserIdentityVerified(): void {
-    if (NhAccountSessionService.verificationRequiredMarkerPresent) {
-      return
-    }
     NhAccountSessionService.browserIdentityVerified = true
+    NhAccountSessionService.retainedAccountPresent = true
   }
 
   /**
@@ -560,8 +608,7 @@ export class NhAccountSessionService {
     context: common.UIAbilityContext | null = null,
   ): Promise<void> {
     if (!NhAccountSessionService.isAuthenticated() ||
-      NhAccountSessionService.sessionTransitionInFlight ||
-      NhAccountSessionService.verificationRequiredMarkerPresent) {
+      NhAccountSessionService.sessionTransitionInFlight) {
       return
     }
     const activeContext: common.UIAbilityContext | null =
@@ -601,7 +648,11 @@ export class NhAccountSessionService {
             NhAccountSessionService.browserUserAgent,
           ),
         )
-        await AccountSessionRepository.saveVerified(activeContext, record)
+        await AccountSessionRepository.saveVerifiedForAccount(
+          activeContext,
+          record,
+          NhAccountSessionService.activeSavedAccountId,
+        )
         if (!NhAccountSessionService.isDurableSessionTransitionCurrent(transitionEpoch)) {
           return
         }
@@ -649,6 +700,7 @@ export class NhAccountSessionService {
    const transitionEpoch: number = NhAccountSessionService.beginDurableSessionTransition()
     try {
       await AccountSessionRepository.clear(context)
+      await NhAccountSessionService.persistRetainedAccountMarker(context, false)
     } catch (error) {
       // Do not make a failed durable clear look like a completed logout. The
       // existing authenticated runtime and ArkWeb identity remain usable, so
@@ -661,6 +713,8 @@ export class NhAccountSessionService {
       return
     }
     NhAccountSessionService.verificationRequiredMarkerPresent = false
+    NhAccountSessionService.retainedAccountPresent = false
+    NhAccountSessionService.activeSavedAccountId = ''
     NhAccountSessionService.clearRetainedRestoreLoginGate()
     NhAccountSessionService.advanceSessionEpoch()
     NhAccountSessionService.cookieHeader = ''
@@ -680,14 +734,12 @@ export class NhAccountSessionService {
   }
 
   /**
-   * An authenticated account GET reached a terminal 401 after its bounded
-   * sealed-cookie recovery. It is evidence that this request needs a visible
-   * verification, not evidence that deleting the user's encrypted envelope or
-   * first-party ArkWeb cookies is safe. The existing Account recovery row is
-   * therefore persisted across cold start and is the only route that may
-   * reopen visible ArkWeb.
+   * Records a terminal replayed 401 without changing account ownership.
+   * A request failure can trigger another bounded transport repair later, but
+   * it can never publish signed-out state, clear profile/cache, or persist a
+   * user-facing login gate.
    */
-  static async requireVisibleVerificationAfterAccountGet401(
+  static async recordAuthenticatedReadReplay401(
     token: NhAccountAuthenticatedReadToken,
   ): Promise<boolean> {
     if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
@@ -695,54 +747,45 @@ export class NhAccountSessionService {
     }
     if (NhAccountSessionService.sessionOrigin === AccountSessionOrigin.RESTORED) {
       NhAccountSessionService.recordDiagnosticStage(
-        AccountSessionDiagnosticStage.VERIFICATION_REQUIRED_POST_RESTORE_401,
+        AccountSessionDiagnosticStage.AUTHENTICATED_READ_TERMINAL_401_AFTER_RESTORE,
       )
     } else if (NhAccountSessionService.sessionOrigin === AccountSessionOrigin.PROMOTED) {
       NhAccountSessionService.recordDiagnosticStage(
-        AccountSessionDiagnosticStage.VERIFICATION_REQUIRED_POST_PROMOTION_401,
+        AccountSessionDiagnosticStage.AUTHENTICATED_READ_TERMINAL_401_AFTER_PROMOTION,
       )
     }
-    const context: common.UIAbilityContext | null = NhAccountSessionService.sessionContext
-    try {
-      if (context === null) {
-        throw new Error('account_verification_marker_context_missing')
-      }
-      // The durable recovery decision must commit before this method clears
-      // runtime identity or publishes its revision. Otherwise process death
-      // between those two steps could make the next cold restore reuse the
-      // same sealed envelope without the native verification gate.
-      await AccountSessionRepository.markVerificationRequired(
-        context,
-        'terminal_401_browser_refresh_unsuccessful',
-      )
-    } catch (_error) {
-      // No runtime/session publication has happened yet. Retain the prior
-      // authenticated state rather than presenting a verification-required UI
-      // that would disappear on the next cold start.
-      NhAccountSessionService.recordDiagnosticStage(
-        AccountSessionDiagnosticStage.VERIFICATION_MARKER_PERSIST_FAILED,
-      )
-      throw new Error('account_verification_marker_persist_failed')
-    }
-    // If clear or verified promotion began while this marker was queued, its
-    // later transaction owns the durable record (and deletes this marker).
-    // Never publish the old GET's verification state over that transition.
-    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
-      return false
-    }
-    NhAccountSessionService.verificationRequiredMarkerPresent = true
-    NhAccountSessionService.updateRetainedRestoreLoginGate(true)
-    NhAccountSessionService.advanceSessionEpoch()
-    NhAccountSessionService.browserIdentityVerified = false
-    NhAccountSessionService.cookieHeader = ''
-    NhAccountSessionService.browserUserAgent = ''
-    NhAccountSessionService.sessionOrigin = AccountSessionOrigin.NONE
-    NhAccountSessionService.discardPendingVisibleBrowserSession()
-    NhAccountSessionService.resetRejectedVisibleBrowserSessionCandidate()
-    const profileClearTask: Promise<void> = NhAccountSessionService.clearAccountProfileSnapshot(context)
-    NhAccountSessionService.publishSessionChange()
-    await profileClearTask
     return true
+  }
+
+  /** Fixed, non-secret stages for the bounded authenticated-read repair chain. */
+  static recordAuthenticatedReadInitial401(): void {
+    NhAccountSessionService.recordDiagnosticStage(
+      AccountSessionDiagnosticStage.AUTHENTICATED_READ_INITIAL_401,
+    )
+  }
+
+  static recordAuthenticatedReadBrowserRefresh(ready: boolean): void {
+    NhAccountSessionService.recordDiagnosticStage(ready
+      ? AccountSessionDiagnosticStage.AUTHENTICATED_READ_BROWSER_REFRESH_READY
+      : AccountSessionDiagnosticStage.AUTHENTICATED_READ_BROWSER_REFRESH_UNAVAILABLE)
+  }
+
+  static recordAuthenticatedReadBrowserReplay(returned401: boolean): void {
+    NhAccountSessionService.recordDiagnosticStage(returned401
+      ? AccountSessionDiagnosticStage.AUTHENTICATED_READ_BROWSER_REPLAY_401
+      : AccountSessionDiagnosticStage.AUTHENTICATED_READ_BROWSER_REPLAY_RECOVERED)
+  }
+
+  static recordAuthenticatedReadSealedRecovery(ready: boolean): void {
+    NhAccountSessionService.recordDiagnosticStage(ready
+      ? AccountSessionDiagnosticStage.AUTHENTICATED_READ_SEALED_RECOVERY_READY
+      : AccountSessionDiagnosticStage.AUTHENTICATED_READ_SEALED_RECOVERY_UNAVAILABLE)
+  }
+
+  static recordAuthenticatedReadSealedReplay(returned401: boolean): void {
+    NhAccountSessionService.recordDiagnosticStage(returned401
+      ? AccountSessionDiagnosticStage.AUTHENTICATED_READ_SEALED_REPLAY_401
+      : AccountSessionDiagnosticStage.AUTHENTICATED_READ_SEALED_REPLAY_RECOVERED)
   }
 
   /** Must be called from the visible Web component's UI-thread callback. */
@@ -996,6 +1039,7 @@ export class NhAccountSessionService {
         persisted.record.nonce !== record.nonce) {
         throw new Error('account_session_persistence_readback_failed')
       }
+      await NhAccountSessionService.persistRetainedAccountMarker(context, true)
     } catch (_error) {
       // Keep the exact same redaction boundary for database failures.
       NhAccountSessionService.finishDurableSessionTransition(transitionEpoch)
@@ -1014,6 +1058,7 @@ export class NhAccountSessionService {
     NhAccountSessionService.browserUserAgent = NhAccountSessionService.pendingBrowserUserAgent
     NhAccountSessionService.sessionOrigin = AccountSessionOrigin.PROMOTED
     NhAccountSessionService.verificationRequiredMarkerPresent = false
+    NhAccountSessionService.retainedAccountPresent = true
     NhAccountSessionService.clearRetainedRestoreLoginGate()
     NhAccountSessionService.discardPendingVisibleBrowserSession()
     NhAccountSessionService.resetRejectedVisibleBrowserSessionCandidate()
@@ -1138,6 +1183,7 @@ export class NhAccountSessionService {
     }
     const record: EncryptedAccountSession = await NhAccountSessionService.encrypt(plaintext)
     await AccountSessionRepository.saveVerified(context, record)
+    NhAccountSessionService.retainedAccountPresent = true
   }
 
   /** Backup rollback: deletes the sealed account record (explicit rollback only). */
@@ -1209,7 +1255,7 @@ export class NhAccountSessionService {
     }
     const transitionEpoch: number = NhAccountSessionService.beginDurableSessionTransition()
     try {
-      await AccountSessionRepository.saveVerified(context, record)
+      await AccountSessionRepository.saveVerifiedForAccount(context, record, accountId)
       if (!NhAccountSessionService.isDurableSessionTransitionCurrent(transitionEpoch)) {
         return false
       }
@@ -1218,7 +1264,9 @@ export class NhAccountSessionService {
       NhAccountSessionService.sealedFallbackCookieHeader = normalized
       NhAccountSessionService.browserUserAgent = normalizedUserAgent
       NhAccountSessionService.sessionOrigin = AccountSessionOrigin.RESTORED
+      NhAccountSessionService.activeSavedAccountId = accountId
       NhAccountSessionService.verificationRequiredMarkerPresent = false
+      NhAccountSessionService.retainedAccountPresent = true
       NhAccountSessionService.clearRetainedRestoreLoginGate()
       NhAccountSessionService.discardPendingVisibleBrowserSession()
       NhAccountSessionService.resetRejectedVisibleBrowserSessionCandidate()
@@ -1270,6 +1318,7 @@ export class NhAccountSessionService {
       NhAccountSessionService.cookieHeader = regularJarHeader
       NhAccountSessionService.sessionOrigin = AccountSessionOrigin.RESTORED
       NhAccountSessionService.verificationRequiredMarkerPresent = false
+      NhAccountSessionService.retainedAccountPresent = true
       NhAccountSessionService.discardPendingVisibleBrowserSession()
     }
     if (NhAccountSessionService.verificationRequiredMarkerPresent) {
@@ -1291,33 +1340,19 @@ export class NhAccountSessionService {
         true,
       )
     }
-    const verificationRequired: boolean = verificationSnapshot.required
-    if (verificationRequired) {
-      NhAccountSessionService.verificationRequiredMarkerPresent = true
+    const legacyVerificationMarker: boolean = verificationSnapshot.required
+    if (legacyVerificationMarker) {
+      // Older builds persisted terminal request failures as a login gate.
+      // Preserve the account and remove that obsolete marker; it is neither
+      // proof of logout nor authority to block the native account surface.
+      NhAccountSessionService.retainedAccountPresent = true
+      NhAccountSessionService.verificationRequiredMarkerPresent = false
       NhAccountSessionService.recordDiagnosticStage(
         verificationSnapshot.reasonCode === 'terminal_401_browser_refresh_unsuccessful'
           ? AccountSessionDiagnosticStage.RESTORE_VERIFICATION_REQUIRED_AFTER_BROWSER_REFRESH_FAILURE
           : AccountSessionDiagnosticStage.RESTORE_VERIFICATION_REQUIRED,
       )
-      if (regularJarReady) {
-        // The live ArkWeb jar is the real-time browser identity and is more
-        // authoritative than a previous terminal-401 record. Clear the stale
-        // durable marker and continue the sealed restore (which keeps the jar
-        // untouched) instead of forcing the user through a fake "tap to
-        // reverify" step that immediately succeeds.
-        NhAccountSessionService.verificationRequiredMarkerPresent = false
-        AccountSessionRepository.clearVerificationRequired(context).catch((): void => {})
-      } else {
-        // A durable terminal-401 marker is an explicit native verification
-        // boundary. Retain both recovery materials for the existing visible
-        // Account action, but never hydrate either one into a signed-in native
-        // projection until a verified promotion atomically clears the marker.
-        return await NhAccountSessionService.publishSignedOutAfterRestoreFailure(
-          context,
-          restoredEpoch,
-          true,
-        )
-      }
+      AccountSessionRepository.clearVerificationRequired(context).catch((): void => {})
     }
     let restoreSnapshot: AccountSessionRestoreSnapshot
     try {
@@ -1335,7 +1370,10 @@ export class NhAccountSessionService {
     }
     const record: EncryptedAccountSession | null = restoreSnapshot.record
     const savedRecords: EncryptedAccountSession[] = restoreSnapshot.savedRecords
-    let failureRequiresExplicitVisibleLogin: boolean = verificationRequired
+    if (record !== null || savedRecords.length > 0) {
+      NhAccountSessionService.retainedAccountPresent = true
+    }
+    let failureRequiresExplicitVisibleLogin: boolean = legacyVerificationMarker
     if (record === null) {
       NhAccountSessionService.recordDiagnosticStage(
         AccountSessionDiagnosticStage.RESTORE_RECORD_ABSENT,
@@ -1442,6 +1480,8 @@ export class NhAccountSessionService {
         record === null ? failureRequiresExplicitVisibleLogin : true,
       )
     }
+    NhAccountSessionService.retainedAccountPresent = true
+    NhAccountSessionService.persistRetainedAccountMarker(context, true).catch((): void => {})
     const normalized: string =
       NhAccountSessionService.normalizeCookieHeader(restoredPayload.cookieHeader)
     const normalizedUserAgent: string =
@@ -1541,6 +1581,8 @@ export class NhAccountSessionService {
       // branch would have cleared.
       NhAccountSessionService.verificationRequiredMarkerPresent = false
       NhAccountSessionService.clearRetainedRestoreLoginGate()
+      NhAccountSessionService.retainedAccountPresent = true
+      NhAccountSessionService.persistRetainedAccountMarker(context, true).catch((): void => {})
       return NhAccountSessionService.isAuthenticated()
     }
     // The regular jar was read while no Web component existed; the persisted
@@ -1556,11 +1598,10 @@ export class NhAccountSessionService {
   }
 
   /**
-   * A cold restore failure must be fail-closed for the native UI without
-   * deleting the sealed RDB record. The record can become usable after a
-   * temporary HUKS/RDB availability issue. Explicit sign-out remains the
-   * only destructive path; an authenticated GET 401 becomes verification-
-   * required without deleting the envelope.
+   * A cold transport restore failure keeps durable account ownership while
+   * withholding request authentication. The encrypted record can become
+   * usable after a temporary HUKS/RDB/ArkWeb issue; only explicit sign-out
+   * may remove ownership or its profile/cache projection.
    */
   private static async publishSignedOutAfterRestoreFailure(
     context: common.UIAbilityContext,
@@ -1570,7 +1611,10 @@ export class NhAccountSessionService {
     if (restoredEpoch !== NhAccountSessionService.sessionEpoch) {
       return NhAccountSessionService.isAuthenticated()
     }
-    NhAccountSessionService.updateRetainedRestoreLoginGate(requiresExplicitVisibleLogin)
+    const accountPresent: boolean = NhAccountSessionService.retainedAccountPresent ||
+      requiresExplicitVisibleLogin
+    NhAccountSessionService.retainedAccountPresent = accountPresent
+    NhAccountSessionService.clearRetainedRestoreLoginGate()
     // A normal first launch can repeatedly ask `restore()` from retained
     // root surfaces. Publish only a real signed-in -> signed-out transition;
     // otherwise the Settings revision monitor would call restore again and
@@ -1587,8 +1631,10 @@ export class NhAccountSessionService {
     NhAccountSessionService.sessionOrigin = AccountSessionOrigin.NONE
     NhAccountSessionService.discardPendingVisibleBrowserSession()
     NhAccountSessionService.resetRejectedVisibleBrowserSessionCandidate()
-    const profileClearTask: Promise<void> = NhAccountSessionService.clearAccountProfileSnapshot(context)
-    if (hadNativeSession) {
+    const profileClearTask: Promise<void> = accountPresent
+      ? Promise.resolve()
+      : NhAccountSessionService.clearAccountProfileSnapshot(context)
+    if (hadNativeSession || accountPresent) {
       // A revision is the non-sensitive account-state publication boundary
       // for retained Settings, Favorites, and Gallery surfaces. Without it,
       // an unavailable sealed record could leave a stale signed-in
@@ -1826,14 +1872,39 @@ export class NhAccountSessionService {
   }
 
   private static publishCurrentSessionState(): void {
-    const verificationRequired: boolean =
-      NhAccountSessionService.verificationRequiredMarkerPresent ||
-      NhAccountSessionService.retainedRestoreRequiresExplicitLogin
+    const authenticated: boolean = NhAccountSessionService.isAuthenticated()
     connectAccountSession().publish(
       true,
-      NhAccountSessionService.isAuthenticated(),
-      verificationRequired,
+      NhAccountSessionService.retainedAccountPresent || authenticated,
+      authenticated,
     )
+  }
+
+  /**
+   * A non-secret ownership marker keeps page identity stable even when RDB,
+   * HUKS, or ArkWeb recovery is temporarily unavailable during cold start.
+   * Only the explicit clear path writes false.
+   */
+  private static async loadRetainedAccountMarker(context: common.UIAbilityContext): Promise<void> {
+    try {
+      const store: preferences.Preferences = await preferences.getPreferences(context, ACCOUNT_STATE_STORE)
+      if (store.getSync(ACCOUNT_PRESENT_KEY, false) as boolean) {
+        NhAccountSessionService.retainedAccountPresent = true
+      }
+    } catch (_error) {}
+  }
+
+  private static async persistRetainedAccountMarker(
+    context: common.UIAbilityContext,
+    present: boolean,
+  ): Promise<void> {
+    const store: preferences.Preferences = await preferences.getPreferences(context, ACCOUNT_STATE_STORE)
+    if (present) {
+      store.putSync(ACCOUNT_PRESENT_KEY, true)
+    } else {
+      store.deleteSync(ACCOUNT_PRESENT_KEY)
+    }
+    store.flushSync()
   }
 
   /** Emits each fixed, non-sensitive account lifecycle stage at most once per process. */
@@ -1843,6 +1914,7 @@ export class NhAccountSessionService {
       return
     }
     NhAccountSessionService.emittedDiagnosticStages.add(stage)
+    DiagnosticLogger.info('account-session', stage, 'stage')
     try {
       hilog.info(ACCOUNT_LOG_DOMAIN, ACCOUNT_LOG_TAG, 'account session stage=%{public}s', stage)
     } catch (_ignored) {}
@@ -1850,8 +1922,8 @@ export class NhAccountSessionService {
 
   /**
    * Account identity data is deliberately separate from the HUKS envelope,
-   * but it has the same lifecycle: a missing, replaced, signed-out, or 401
-   * session must never leave a profile snapshot visible or restorable.
+   * but it has the same explicit ownership lifecycle: an absent, replaced,
+   * or signed-out account must not leave a profile snapshot restorable.
    */
   private static async clearAccountProfileSnapshot(
     context: common.UIAbilityContext | null,

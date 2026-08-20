@@ -51,6 +51,9 @@ export class DiagnosticsRedactor {
     clean = clean.replace(/\/delete\/notification\/\d+\?[^\s]+/gi, '/delete/notification/<id>?once=<redacted>')
     clean = clean.replace(/\/thank\/(reply|topic)\/\d+\?[^\s]+/gi, '/thank/$1/<id>?once=<redacted>')
     clean = clean.replace(/\/favorite\/(topic|node)\/[^\s?]+\?[^\s]+/gi, '/favorite/$1/<id>?once=<redacted>')
+    // A diagnostics export must not disclose a server origin or private
+    // collection path. Fixed event names/stages retain the useful context.
+    clean = clean.replace(/\b(?:https?|socks5):\/\/[^\s]+/gi, '<redacted-url>')
     clean = clean.replace(/\/private\/var\/folders\/[^\s]+/gi, '/<tmp>/<path>')
     clean = clean.replace(/\/data\/storage\/[^\s]+/gi, '/<app-data>/<path>')
     if (clean.indexOf('<html') >= 0 || clean.indexOf('<div') >= 0 || clean.indexOf('content_rendered') >= 0) {

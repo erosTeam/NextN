@@ -7140,3 +7140,306 @@ authorize an edit, replace a device comparison, or define product completion.
 - Resource JSON parsing passed for base/en_US/zh_CN/ja_JP; Home SubTab and
   settings-backup contracts passed. The real remote USB path exercised
   OPTIONS, GET, manifest/shard merge and PUT.
+
+## OPEN — Favorites search must live in the title-bar bottomBuilder — 2026-08-20
+
+- **User-visible regression:** NextN currently toggles a locally assembled
+  `Row > Search` field inside `FavoritesPage`, below the root title bar. This
+  control was not ported from NextE and changes the Favorites page hierarchy,
+  content inset, scroll origin, and title-action state.
+- **Faulty assumption:** the NH Favorites query parameter was treated as
+  permission to build an inline search surface. It only permits replacing the
+  search request leaf; it does not permit replacing NextE's navigation or
+  search-page parent tree.
+- **Reference and explicit NH boundary:** NextE proves that search controls
+  belong to navigation chrome rather than the scrolling Favorites body; its
+  own Favorites action pushes a shared search route. The user explicitly
+  selected the NH divergence: keep Favorites on the retained root and render
+  its remote-query field inside the HDS title bar's `bottomBuilder`, using the
+  same host/scroll ownership pattern as NextE's Download search. Unlike the
+  local Download filter, the NH Favorites field keeps a trailing Search button
+  and submits only on that button or the IME action.
+- **Exact before/after:** before — tapping Favorites search toggles an inline
+  field over the retained list and changes its top reserve. After — the title
+  action toggles a cached title-bar `bottomBuilder` search field with a
+  trailing Search button; draft input is inert until submit, then the retained
+  page requests `/api/v2/favorites?page=1&q=...`. Closing restores the normal
+  title-bar bottom region and preserves the Favorites list/scroll state.
+  `FavoritesSearchField` and its root overlay are removed. The collection keeps
+  a first scrolling reserve equal to the active bottomBuilder's fixed 52vp
+  height; bottomBuilder ownership does not itself inset immersive content.
+- **Whole-page verification plan:** after the account P0 is repaired, compare
+  current same-viewport title-bar ownership against NextE's bottomBuilder
+  search behavior. Verify title action placement, trailing Search button,
+  draft-vs-submit behavior, title-bar collapse, unchanged Favorites body
+  geometry, retained scroll state, and a real remote filtered result on USB.
+  Build or source inspection is not visual acceptance.
+- **Remote capability evidence:** a privacy-bounded USB ArkWeb probe returned
+  200 for both the base and `q=` Favorites requests; the base returned 25
+  rows while an impossible query returned 0 rows / 0 pages and a different
+  sequence. Thus `/api/v2/favorites` performs remote `q` filtering; this is not
+  the anonymous `/api/v2/search` endpoint and not a local-only illusion.
+
+### Runtime defect reproduced 2026-08-20 (USB 56T0225315001128)
+
+- At 1320x2120, tapping the Favorites title search action mounted the inline
+  field below the expanded title. After one upward list swipe, the title bar
+  collapsed but the field remained fixed around the upper-middle viewport;
+  gallery cards and tag rows scrolled behind it and were visibly occluded.
+- This proves the defect is not spacing polish: `FavoritesSearchField` is a
+  sibling overlay in the page-root `Stack`, while `GalleryCollectionBody`
+  owns the list scroll. Their separate movement/state ownership cannot satisfy
+  the reference parent tree. The inline implementation must be removed rather
+  than adjusted with another margin or sticky offset.
+- **Explicit action-density correction:** the user had already required three
+  title-bar actions to remain exposed by default. NextN nevertheless set the
+  three-item Favorites menu to `maxCount: 2`, producing only Search plus an
+  overflow button on device. The corrected Favorites menu keeps three actions
+  exposed (`maxCount: 3`), matching the existing NextE menu contract and the
+  user's frozen requirement.
+
+## OPEN — Download search must stay inside the NextE title-bar bottomBuilder — 2026-08-20
+
+- **User-visible regression:** NextN repeated the Favorites mistake on the
+  Downloads root: `DownloadQueuePage` mounts a locally assembled
+  `LocalSearchField` as a sibling overlay in its root `Stack`, with a manually
+  calculated top margin and a second top-padding reserve in the list body.
+- **Reference parent-tree boundary:** NextE keeps search state in the shared
+  download view, but renders `AppSearchField` inside `DownloadTypeBar`, which
+  is owned by the HDS title bar's `bottomBuilder`. When search is inactive the
+  same bottomBuilder renders the Gallery/Archive segmented control; the queue
+  page owns neither control. The pinned lifecycle group remains the second
+  title-bar child and the scrolling queue body remains unchanged.
+- **Exact before/after:** before — the root title action toggles a page-overlay
+  search field and the queue manually offsets itself. After — the root title
+  action toggles the existing title-bar bottomBuilder between the segmented
+  selector and `AppSearchField`, exactly like NextE; `LocalSearchField`, its
+  root `Stack` overlay, and its window-coordinate margin are removed from the
+  queue page. The queue's first scrolling reserve remains and is mapped to the
+  complete active bottomBuilder height (52vp search slot plus the existing
+  pinned-group mirror slot).
+- **Whole-page verification plan:** compare same-viewport NextE and NextN in
+  Gallery and Archive modes, then open search and scroll the queue. Verify the
+  field remains owned by the collapsing title bar, the lifecycle group order
+  is unchanged, rows never pass behind a page overlay, close restores the
+  segmented selector, and three menu icons remain exposed by default.
+
+### Top-avoidance correction after user counter-evidence — 2026-08-20
+
+- **Faulty assumption:** moving the field into `bottomBuilder` was incorrectly
+  treated as if HDS also reserved that height in the page's immersive scroll
+  surface. The first implementation removed the page overlay and also removed
+  the list reserve, so the title-owned field covered the first queue content.
+- **Source evidence:** HDS `BottomBuilderParams.height` declares only the custom
+  title builder height. NextE Download separately inserts a first scrolling
+  `ListItem` of `DOWNLOAD_SELECTOR_BAR_HEIGHT` (52vp) while Index supplies the
+  same 52vp to HDS. NextN's `SecondaryListScaffold` and gallery collection
+  scaffolds likewise add caller `topPadding` to their first scrolling blank.
+- **Corrected geometry:** Download search uses the same fixed 52vp slot and
+  padding as NextE; while active, the queue passes the complete title-builder
+  height into `topPadding`. Favorites uses a 52vp search slot with a trailing
+  Search action and passes the same 52vp into its collection `topPadding`.
+  The reserve is part of the scroll surface, not a second fixed overlay.
+- **Unresolved evidence:** source mapping and build do not accept the visible
+  result. The corrected HAP must be installed over the current data and the
+  active-search initial/scroll states must be checked on the named USB device.
+
+### WaterFlow top rhythm and Simple-list mapping correction — 2026-08-20
+
+- **User counter-evidence:** every WaterFlow presentation loses the normal
+  card interval above its first row; opening Favorites search makes the missing
+  interval especially obvious because the first cards touch the search chrome.
+  Selecting `简洁` in Favorites also renders WaterFlow instead of the compact
+  list presentation.
+- **Root cause:** `PullRefreshWaterFlowScaffold.waterFlowSections()` puts the
+  immersive top spacer in its own one-item section with `rowsGap: 0`. The next
+  content section's `rowsGap` applies only inside that section, so no gap exists
+  at the section boundary. List presentations do not share the bug because
+  `List({ space })` spaces the top spacer and first card directly. Separately,
+  `BrowsePresentationRepository.normalize()` omitted the valid persisted
+  `simple_list` enum; both save and restore therefore normalized `简洁` to the
+  fallback `waterfall` value.
+- **Exact correction:** extend only the WaterFlow top spacer by its existing
+  `gap` value (6vp), reproducing one ordinary card-row interval without
+  reintroducing the rejected global 12vp padding. Preserve `simple_list` in
+  presentation normalization so the Favorites menu selection reaches the
+  existing `GalleryCollectionBody` List branch. Download is not a WaterFlow;
+  while its title search is active, its queue top reserve separately includes
+  one standard 8vp list interval after the complete bottomBuilder height.
+- **Sibling boundary:** Waterfall, Compact Waterfall and Cover Wall share the
+  corrected WaterFlow scaffold. Cover Grid and List keep their own existing
+  row/list spacing. Gallery card geometry, search request state and loaded data
+  are unchanged.
+- **Verification plan:** signed build then `install -r`; on USB verify the
+  initial first-row interval with and without Favorites search in Waterfall,
+  select `简洁` and confirm a List owner is mounted instead of WaterFlow, and
+  verify Download search keeps a normal interval before its first group.
+  Source/build checks remain intermediate evidence only.
+
+### Download search invisible pinned-header reserve correction — 2026-08-20
+
+- **New user/device counter-evidence:** Favorites is now accepted, but the user
+  reports that Downloads still has the wrong top avoidance after opening its
+  search field. On the current USB build, the semantic tree measures the
+  search field at y=303..423, its 52vp title slot at y=285..441, an empty
+  pinned-group component at y=441..531, and the first scrolling group at
+  y=555. The empty 28vp component therefore contributes visible geometry even
+  though `pinnedGroup.visible` is false.
+- **Reference parent tree:** NextE's single Download title bottomBuilder always
+  measures the lower edge of its selector/search slot, renders the crossed
+  group header only when `pinnedGroupVisible`, and gives HDS a height of
+  `selector/search slot + conditional pinned header`. The scrolling list
+  reserves only the fixed selector/search slot; the conditional mirror is an
+  overlay for a group that has already crossed that measured surface.
+- **Exact correction:** measure `pinSurfaceTopY` from the search row's lower
+  edge (or the zero-height title surface while search is closed), render the
+  pinned header only while its state is visible, and make the HDS height use
+  the same conditional expression. Downloads' initial search reserve becomes
+  52vp plus its already-decided 8vp content interval; the invisible 28vp slot
+  is removed from both the title height and initial list spacer.
+- **Sibling/state boundary:** search closed with no pinned group, search open
+  before scrolling, search open after a group crosses the title surface, and
+  scrolling back until the mirror disappears. Search semantics, queue rows,
+  sort state, Favorites, and gallery presentation are unchanged.
+- **Verification plan:** signed build and data-preserving install on the named
+  USB target; use the runtime semantic layout to prove the active search slot,
+  first group, and conditional pinned header bounds. Then scroll down and back
+  to prove the mirror still appears and disappears at the measured surface.
+- **Unresolved risk:** a zero-height inactive bottomBuilder must still publish
+  its window position on the target runtime; if it does not, the inactive
+  pinned-header state remains OPEN and must be repaired from runtime evidence.
+
+#### Installed semantic-layout result
+
+- The signed Debug HAP was installed in place on USB target
+  `56T0225315001128`. With search open at the initial list position, the HDS
+  search slot measured y=285..441, the Search leaf y=303..423, and the first
+  queue group y=465; the prior empty y=441..531 pinned-header slot was absent.
+- After one upward list gesture, the crossed `已完成` mirror appeared only at
+  y=441..531 while the scrolling group header was above that surface. After
+  dismissing the keyboard and returning the list to its initial position, the
+  mirror disappeared and the first group returned to y=465. This accepts the
+  active-search initial/scroll/return geometry on this target without using a
+  screenshot or a static UI contract.
+
+#### Reopened — cross-tab search is semantically present but visually absent
+
+- **User counter-evidence:** after toggling Favorites search, switching to
+  Downloads, and toggling Download search, the user can see that no Download
+  search field is rendered. The prior acceptance incorrectly treated a
+  `dumpLayout` Search node as proof of actual visibility and used a delayed
+  automation path that did not preserve the reported transition timing.
+- **Affected parent tree:** root `HdsNavigation` title `bottomBuilder`, the
+  sibling Favorites and Download builder identities, Download search-active
+  state, conditional pinned-group mirror, and the retained Download list.
+- **Root cause boundary:** Download always submits its cached bottomBuilder,
+  including the state where its declared height is zero. After swapping from
+  Favorites, HDS can retain that zero-height visible host while the nested
+  Download Search semantic subtree has already updated. Semantic presence
+  therefore does not establish rendered visibility.
+- **Exact correction:** do not submit a Download bottomBuilder while both
+  search and pinned-group mirror are inactive. Submit the full non-zero
+  builder only when either surface is visible. While search is inactive,
+  derive the pin crossing surface from the Download list's own top boundary,
+  so pinned-group detection no longer depends on a zero-height HDS component.
+  No delay, forced remount, or semantic-node workaround is allowed.
+- **Sibling/state boundary:** Favorites search open/closed, immediate
+  Favorites-to-Downloads transition, Download search open/closed, and
+  Download pinned mirror appearing/disappearing while search is closed.
+- **Runtime acceptance:** install only on the USB device, perform the exact
+  rapid transition, and capture the actual final rendered frame. Acceptance
+  requires the Download field to be visibly present and unobscured in that
+  frame; semantic bounds are supporting geometry only. Device 200 remains
+  reserved for the separate login/401 lane.
+
+### bottomBuilder search vertical-alignment correction — 2026-08-20
+
+- **User counter-evidence:** after restoring the card interval, the search
+  field itself still appears too far from the title actions and attached to
+  the bottom of the whole bottomBuilder slot.
+- **Current device geometry:** the 52vp bottomBuilder Row measured
+  `y=285..441`; its custom-component wrapper measured `y=297..429`, but the
+  actual native Search node measured `y=321..441`. The Search bottom therefore
+  exactly equalled the builder bottom while the top retained 12vp.
+- **Root cause and correction:** the title Rows applied only horizontal
+  `layoutWeight(1)` to `AppSearchField`. The custom-component wrapper expanded
+  to the Row's 44vp inner height, while its fixed 40vp native Search was laid
+  out against the bottom of that wrapper. Apply an explicit
+  `height(SEARCH_FIELD_HEIGHT)` to the custom component in both Favorites and
+  Download. The 52vp slot then owns a 40vp child and distributes the remaining
+  12vp as a centered 6vp/6vp pair; the separate WaterFlow/List content gap is
+  unchanged.
+- **Verification plan:** rebuild/install, then read the complete Row, wrapper
+  and Search bounds on the USB device. Acceptance requires the Search top and
+  bottom offsets within the 52vp Row to be equal; a source assertion is not a
+  substitute.
+
+#### Installed counter-evidence and leaf correction
+
+- The explicit 40vp custom-component height centered its wrapper as intended
+  (`Row y=285..441`, wrapper `y=303..423`), but the native Search remained
+  displaced by exactly 8vp (`y=327..447`). The first correction therefore did
+  not solve the visible leaf and is not accepted.
+- `AppSearchField` now exposes a caller-owned vertical correction that defaults
+  to zero. Only the Favorites and Download bottomBuilder owners pass `-8vp`,
+  moving the native Search leaf onto the already centered 40vp wrapper. Other
+  search pages keep their existing geometry. The expected installed boundary
+  is Search `y=303..423` inside Row `y=285..441`.
+## ACCEPTED — Persistent diagnostics and account-selection recovery — 2026-08-20
+
+- **User boundary:** devices 197 and 200 lose the selected saved-account Radio
+  after restart; selecting the row does not repair Favorites, which still
+  returns HTTP 401. The user also found that NextN has no usable retained-log
+  management surface, so the failure context disappears before it can be
+  exported.
+- **Reference parent tree:** NextE initializes the persistent diagnostic sink
+  in `EntryAbility`, restores enabled/min-level settings during bootstrap,
+  closes the sink on destroy, and places diagnostics controls/actions/retained
+  files as grouped sections on the native Advanced settings page. NextN keeps
+  its existing `HdsNavDestination -> SettingsPage(ADVANCED) ->
+  SecondaryListScaffold` parent; the NextE diagnostics grouped sections are
+  appended after the existing Clipboard/Translation/Content Filters groups.
+- **Account UI boundary:** the existing Account page remains
+  `SecondaryListScaffold -> saved account ListItems -> AccountRow -> Radio`.
+  No row geometry or action placement changes. The Radio must derive from a
+  separately persisted active saved-account key rather than the optional
+  display-profile snapshot, so transport/profile recovery cannot silently
+  remove selection.
+- **Logging leaf:** add the NextE enable/min-level, current-log export,
+  marker, memory-clear and retained-file share actions using NextN's existing
+  grouped-list primitives and four-locale resources. Logs are redacted before
+  both memory and file sinks and never include account/profile values,
+  cookies, tokens, URLs, request bodies, or response bodies.
+- **Runtime acceptance:** one complete signed build is installed with `-r` on
+  197 and 200. On each device, cold start must keep exactly one selected saved
+  account where one already exists; Favorites must produce an authenticated
+  non-401 result; a later cold start must retain the same selection and result.
+  Advanced settings must list a current persistent log file and export/share
+  the redacted account stages from the current run. Re-login is not used to
+  conceal a failed restore or 401.
+- **Root cause and correction:** the selected saved-account id had been
+  inferred from an optional display-profile snapshot instead of persisted as
+  its own value; account switching restored a saved profile only into memory;
+  and browser token rotation updated only the primary sealed envelope. The
+  correction persists `account.list.activeId`, writes a switched profile back
+  to the primary profile slot, atomically advances both primary and selected
+  saved-account envelopes, and refreshes a 401 through the authenticated site
+  root rather than the login page. Terminal 401 remains a request failure and
+  diagnostic event; it never clears durable account ownership.
+- **Runtime result:** the same signed Debug HAP was installed with `install -r`
+  on `192.168.50.197:12345` and `192.168.50.200:12345`; no uninstall, data
+  clear, account action, or re-login occurred. Privacy-bounded cold-start
+  collection on both devices reported exactly one saved account, exactly one
+  selected account, native signed-in state, and authenticated Favorites with
+  no sign-in prompt, loading failure, request error, or HTTP 401.
+- **Persistent diagnostics result:** after independent cold starts on both
+  devices, Advanced settings exposed the diagnostics settings, actions, and
+  retained-files groups; enable, export-current, and write-marker actions were
+  present, and a retained current log file existed. Raw layouts were held only
+  in private host temp directories and deleted; summaries contain no profile,
+  credential, cookie, token, URL, request body, or response body.
+- **Validation:** account/history regression contract, collector syntax,
+  four-locale resource parsing, and `git diff --check` pass. Signed Hvigor
+  completed with `BUILD SUCCESSFUL in 8 s 855 ms`. The final installed build
+  additionally redacts complete HTTP/SOCKS URLs before either memory or file
+  retention; the final post-install collector passed on both devices.
