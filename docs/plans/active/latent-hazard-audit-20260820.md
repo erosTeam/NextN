@@ -12,7 +12,7 @@
 
 - TODO/FIXME/HACK：0 处
 - ArkUI 可空 API 裸链访问：0 处（2dcaf41 清零；B 的自动检查此前尚未落盘）
-- 空 catch 体：当前约 165 处（未分级；初始摸底为 164，需以 C 车道重新分类）
+- 空 catch 体：145 个结构匹配（已分级初核；初始 164 是多行输出行数，不是匹配数）
 - Scaffold/PullRefresh 组件族：8 文件 2181 行
 - 注释自认坑：当前源代码精确命中 1 处 `first frame`；历史 scroller 注释已移入公共 helper（A 已核对）
 
@@ -74,7 +74,7 @@ ReaderSuperResolutionService.recordProcessingFailure：固定阶段名，不泄�
 验收：分类清单 + 关键链路补日志后构建通过；本批仅完成分类初核和两处首批日志，不能
 宣称 C 全部完成。
 
-## 车道 D（P1）：Scaffold 族收敛 TODO
+## 车道 D（P1）：Scaffold 族收敛 AUDITED（契约已落盘）
 
 8 个组件 2181 行是副本漂移温床（本次 3 处崩溃点全在其中）。两步：
 1. 族内对称性审计：对 PullRefresh x3 / Secondary x3 逐能力对照（onDidScroll/
@@ -82,12 +82,47 @@ ReaderSuperResolutionService.recordProcessingFailure：固定阶段名，不泄�
 2. 评估抽取公共 ScrollScaffoldCore（密度/pinch/section 组装），消副本。
 涉及可见结构变更的部分走 ui-change-ledger 登记。
 
+静态核对记录（2026-08-20）：
+
+- PullRefreshGrid / List / WaterFlow 均保留 refreshEnabled、滚动回调、到尾回调和
+  `onScrollEnableChange`；Grid/WaterFlow 保留 pinch，List 没有把网格密度手势错误带入。
+- SecondaryGrid / List / WaterFlow 均保留滚动回调和到尾回调；Grid/WaterFlow 保留
+  pinch，WaterFlow 额外保留 near-end 阈值；List 没有 WaterFlow 的 near-end 或密度手势。
+- PullRefresh 公共叶仍保留顶部/底部刷新、触摸期间的滚动启停和软触感反馈。
+- 新增 `scripts/test_scaffold_contract.mjs`，把上述“应存在/应不存在”的能力差异固化为
+  可重复检查；脚本通过 `7 shared components scanned`。
+
+结论：本次没有发现可由“抽取一个公共核心”安全消除的已证实功能缺失；当前副本差异承载
+  List/Grid/WaterFlow 的真实能力边界，贸然抽取会扩大行为和可见滚动风险。因此不做猜测性
+  ScrollScaffoldCore 重构。D 的运行时手势/刷新视觉验收仍 OPEN，后续若发现具体漂移，先
+  在同一能力矩阵中定位，再做窄范围修复。
+
 ## 车道 E（P1，分页批）：NextE 移植删减审计 TODO
 
 用户最痛的私自精简来源。按页面/组件分批 diff NextE 源：每处删减必须有
 代码注释理由 or NH 边界证据，二者皆无即为嫌疑项登记。嫌疑项不直接回加代码，
 先列清单给用户决策（用户规则：精简必须多代理审核后由用户拍板）。
 批次顺序：Reader（历史雷最多）→ Gallery 详情 → 搜索 → 设置 → 其余。
+
+### E-Reader 首批静态盘点 AUDITED（不擅自回加）
+
+对照范围：NextE `feature/reader` 的 ReaderPage、ReaderViewModel、图片来源/加载门控、
+缩略图几何和漫画翻译自动策略，与 NextN `feature/reader` 及 shared Reader 服务。
+
+- NextE 的 `ReaderViewModel`、`ReaderImageSourceRequestGate`、`ReaderSessionRequestGate`、
+  `ReaderImageLoadPresentation`、`ReaderImageLoadPriority`、`ReaderComicTranslationAutoPolicy`
+  和 `ReaderThumbnailGeometry` 在 NextN 没有同名文件；NextN 将对应状态、generation/来源
+  校验、自动翻译目标选择、预加载、缩略图尺寸和 Reader 状态合并在 `ReaderPage`、
+  `ReaderImagePage`/`ReaderSpreadImageLayer`、`ReaderPresentationService` 与
+  `ReaderImageCacheService` 中。这是实现形态差异，不足以单独证明功能被删。
+- NextE 的 image-block/上游图片拦截能力在 NextN 没有对应 consumer；这是当前 NH 数据源边界
+  的嫌疑项，不能在没有用户决定和 NH 行为证据时回加。
+- NextN 已有连续/分页/双页树、缩略图条、点按区域预览、双击/捏合缩放、预加载、失败重试、
+  本地图片缓存、漫画翻译自动/当前页入口和增强状态；源码盘点没有找到“只因移植删减而
+  必然缺失”的单点可安全修复项。
+
+本批结论仅是源码映射，不是设备 parity 验收。上述同名缺失文件和 image-block 差异继续列为
+  E-Reader OPEN 观察项；若后续要补回，必须先补充功能等价性与 NH 边界证据，再决定是否实现。
 
 ## 车道 F（P2，持续）：流程固化 VERIFIED
 
