@@ -69,6 +69,8 @@ raw runtime error / first frame）逐条验证两点：注释宣称的防御是�
    原始异常文本。
 5. 登出/会话失效时，账号资料快照的持久化清理失败原先静默吞掉；本批补入固定的
    `account_profile_snapshot_clear_failed` 阶段，保留内存态清理，不记录账号或异常文本。
+6. 首页冷启动缓存水合失败原先静默回退到网络首屏；本批补入固定的
+   `home:cache_hydrate_failed` 事件，不改变“缓存失败仍继续首屏请求”的恢复路径。
 
 剩余修复批次仍保持 OPEN：
 

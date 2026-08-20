@@ -6,6 +6,7 @@ import {
   CatalogPreferencesState,
   ContentFilterService,
   ContentFilterState,
+  DiagnosticLogger,
   GalleryCollectionBody,
   GalleryListCacheRepository,
   ActiveKeyState,
@@ -197,6 +198,7 @@ export struct LatestSourcePage {
         }
       }
     } catch (_error) {
+      DiagnosticLogger.warn('home', 'cache_hydrate_failed', '')
     }
     await this.loadFirstPage(this.rawGalleries.length > 0)
   }
