@@ -3248,3 +3248,22 @@ permitted in this repository.
   cookies, tokens, URLs, request/response bodies, credentials, or screenshots
   were retained. The next physical account action is none; a future failure can
   be exported from Advanced settings without reproducing it under live hilog.
+
+### Rendered diagnostics text correction — 2026-08-20 22:11 +0800
+
+- User counter-evidence showed the installed current-log row exposing `1%`
+  instead of its timestamp. The earlier collector had reduced the diagnostics
+  file surface to group/action/file-presence booleans and therefore never
+  inspected the dynamic title.
+- Five diagnostics templates in all four locale catalogs now use NextN
+  `AppStrings.format` placeholders (`{0}`) instead of the incompatible `%1$s`.
+  The same audit corrected the advanced-search remove-condition accessibility
+  template and now covers all literal formatter keys across the four catalogs.
+- The final signed Debug HAP was installed with data-preserving `install -r` on
+  `192.168.50.197:12345` and `192.168.50.200:12345`. Both current runtime
+  layouts matched rendered counts, `YYYY-MM-DD HH:mm` log titles, and rendered
+  file-size subtitles, with no printf-style, `1%`, or `{0}` residue.
+- Both final-package runs also retained exactly one selected saved account and
+  authenticated Favorites with no sign-in prompt or error. No login, account
+  mutation, data clear, uninstall, or WebDAV action occurred. The next physical
+  action for the reported diagnostics-text defect is none.

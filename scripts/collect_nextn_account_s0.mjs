@@ -239,6 +239,35 @@ function hasSelectedLabel(root, labels) {
   return found
 }
 
+function escapeRegularExpression(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function hasFormattedTemplate(root, templates, replacementPattern) {
+  const patterns = [...templates].map((template) => {
+    const escaped = escapeRegularExpression(template)
+    return new RegExp(`^${escaped.replace('\\{0\\}', `(?:${replacementPattern})`)}$`)
+  })
+  let found = false
+  walk(root, (node) => {
+    if (nodeTextValues(node).some((value) => patterns.some((pattern) => pattern.test(value)))) {
+      found = true
+    }
+  })
+  return found
+}
+
+function hasMalformedTemplateText(root) {
+  let found = false
+  walk(root, (node) => {
+    if (nodeTextValues(node).some((value) =>
+      /%\d+\$[a-z]/i.test(value) || /\{\d+\}/.test(value) || /(?:^|[\s·：:])\d+%(?:$|[\s·])/i.test(value))) {
+      found = true
+    }
+  })
+  return found
+}
+
 function uniqueVisibleMarker(root, markerId, missingCode, ambiguousCode) {
   const matches = []
   walk(root, (node) => {
@@ -553,6 +582,19 @@ function diagnosticsSummary(root, labels) {
   const markerAction = hasLabel(root, labels.diagnosticsMarker)
   const noFiles = hasLabel(root, labels.diagnosticsNoFiles)
   const persistentLogPresent = filesGroup && !noFiles
+  const currentLaunchCountFormatted = hasFormattedTemplate(root, labels.diagnosticsCurrentLaunchCount, '\\d+')
+  const retainedFileCountFormatted = hasFormattedTemplate(root, labels.diagnosticsRetainedFileCount, '\\d+')
+  const logTitleFormatted = hasFormattedTemplate(
+    root,
+    new Set([...labels.diagnosticsCurrentLogTitle, ...labels.diagnosticsStartupLogTitle]),
+    '\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}',
+  )
+  const logShareHintFormatted = hasFormattedTemplate(
+    root,
+    labels.diagnosticsLogShareHint,
+    '\\d+(?:\\.\\d+)? (?:B|KB|MB)',
+  )
+  const malformedTemplateAbsent = !hasMalformedTemplateText(root)
   return {
     settingsGroup,
     actionsGroup,
@@ -561,6 +603,11 @@ function diagnosticsSummary(root, labels) {
     exportAction,
     markerAction,
     persistentLogPresent,
+    currentLaunchCountFormatted,
+    retainedFileCountFormatted,
+    logTitleFormatted,
+    logShareHintFormatted,
+    malformedTemplateAbsent,
   }
 }
 
@@ -643,6 +690,11 @@ async function observeDiagnostics(target, lease, hostTempDirectory, labels) {
     exportAction: false,
     markerAction: false,
     persistentLogPresent: false,
+    currentLaunchCountFormatted: false,
+    retainedFileCountFormatted: false,
+    logTitleFormatted: false,
+    logShareHintFormatted: false,
+    malformedTemplateAbsent: true,
   }
   for (let index = 0; index < 6; index += 1) {
     const advanced = await collectLayout(target, lease, hostTempDirectory, `diagnostics-advanced-${index}`)
@@ -657,14 +709,23 @@ async function observeDiagnostics(target, lease, hostTempDirectory, labels) {
     summary.exportAction = summary.exportAction || observed.exportAction
     summary.markerAction = summary.markerAction || observed.markerAction
     summary.persistentLogPresent = summary.persistentLogPresent || observed.persistentLogPresent
+    summary.currentLaunchCountFormatted = summary.currentLaunchCountFormatted || observed.currentLaunchCountFormatted
+    summary.retainedFileCountFormatted = summary.retainedFileCountFormatted || observed.retainedFileCountFormatted
+    summary.logTitleFormatted = summary.logTitleFormatted || observed.logTitleFormatted
+    summary.logShareHintFormatted = summary.logShareHintFormatted || observed.logShareHintFormatted
+    summary.malformedTemplateAbsent = summary.malformedTemplateAbsent && observed.malformedTemplateAbsent
     if (summary.settingsGroup && summary.actionsGroup && summary.filesGroup &&
-      summary.enabledAction && summary.exportAction && summary.markerAction && summary.persistentLogPresent) {
+      summary.enabledAction && summary.exportAction && summary.markerAction && summary.persistentLogPresent &&
+      summary.currentLaunchCountFormatted && summary.retainedFileCountFormatted && summary.logTitleFormatted &&
+      summary.logShareHintFormatted && summary.malformedTemplateAbsent) {
       break
     }
     await swipePageUp(target, lease, advanced)
   }
   if (!summary.settingsGroup || !summary.actionsGroup || !summary.filesGroup ||
-    !summary.enabledAction || !summary.exportAction || !summary.markerAction || !summary.persistentLogPresent) {
+    !summary.enabledAction || !summary.exportAction || !summary.markerAction || !summary.persistentLogPresent ||
+    !summary.currentLaunchCountFormatted || !summary.retainedFileCountFormatted || !summary.logTitleFormatted ||
+    !summary.logShareHintFormatted || !summary.malformedTemplateAbsent) {
     throw new SafeFailure('diagnostics_summary_incomplete')
   }
   return summary
@@ -695,7 +756,12 @@ async function main() {
       diagnosticsEnabled,
       diagnosticsExport,
       diagnosticsMarker,
-      diagnosticsNoFiles
+      diagnosticsNoFiles,
+      diagnosticsCurrentLaunchCount,
+      diagnosticsRetainedFileCount,
+      diagnosticsCurrentLogTitle,
+      diagnosticsStartupLogTitle,
+      diagnosticsLogShareHint
     ] = await Promise.all([
       loadLabels(new Set(['tab_me'])),
       loadLabels(new Set(['tab_favorites'])),
@@ -712,7 +778,12 @@ async function main() {
       loadLabels(new Set(['diagnostics_enabled'])),
       loadLabels(new Set(['diagnostics_export_current'])),
       loadLabels(new Set(['advanced_write_marker'])),
-      loadLabels(new Set(['no_log_files']))
+      loadLabels(new Set(['no_log_files'])),
+      loadLabels(new Set(['diagnostics_current_launch_recent_count'])),
+      loadLabels(new Set(['retained_local_log_files_count_arg'])),
+      loadLabels(new Set(['current_log_with_time'])),
+      loadLabels(new Set(['startup_log_with_time'])),
+      loadLabels(new Set(['diagnostics_log_file_share_hint']))
     ])
     const labels = {
       tabSettings,
@@ -732,7 +803,12 @@ async function main() {
       diagnosticsEnabled,
       diagnosticsExport,
       diagnosticsMarker,
-      diagnosticsNoFiles
+      diagnosticsNoFiles,
+      diagnosticsCurrentLaunchCount,
+      diagnosticsRetainedFileCount,
+      diagnosticsCurrentLogTitle,
+      diagnosticsStartupLogTitle,
+      diagnosticsLogShareHint
     }
     account = await observeAccount(target, lease, hostTempDirectory, labels)
     favorites = await observeFavorites(target, lease, hostTempDirectory, labels)

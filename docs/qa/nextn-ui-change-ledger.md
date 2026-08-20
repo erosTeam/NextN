@@ -7443,3 +7443,56 @@ authorize an edit, replace a device comparison, or define product completion.
   completed with `BUILD SUCCESSFUL in 8 s 855 ms`. The final installed build
   additionally redacts complete HTTP/SOCKS URLs before either memory or file
   retention; the final post-install collector passed on both devices.
+
+#### REOPENED — Diagnostics log titles expose a malformed placeholder
+
+- **User counter-evidence:** the installed Advanced settings page renders a
+  current-log title containing `1%` instead of the log timestamp. This is a
+  visible product defect; the previous runtime result only proved that the
+  diagnostics groups/actions/files existed and did not inspect their rendered
+  dynamic text.
+- **Faulty assumption and ignored evidence:** five diagnostics strings were
+  copied with Harmony resource placeholders such as `%1$s`, while every call
+  goes through NextN's `AppStrings.format`, whose only supported template
+  grammar is `{0}`, `{1}`, and so on. The prior boolean-only device collector
+  discarded the actual row title, so it could not detect the mismatch. I did
+  not see the malformed rendered text before reporting the surface accepted.
+- **Impact:** current-launch record count, retained-file count, current/startup
+  log titles, and log-file share subtitles can all expose a literal or
+  reordered `%1$s` fragment. Logging, file retention, timestamps, and sharing
+  data are not changed.
+- **Whole parent-tree boundary:** keep `HdsNavDestination -> SettingsPage
+  (ADVANCED) -> SecondaryListScaffold -> NextNGroupedListSection ->
+  NextNListRow` unchanged. Only the five four-locale template leaves change
+  from `%1$s` to `{0}`.
+- **Prevention and verification:** check every resource passed to
+  `AppStrings.format` in this diagnostics group against its actual formatter
+  contract. After the signed build and data-preserving device install, inspect
+  the rendered current/startup titles and counts; acceptance requires real
+  count/timestamp values and no `%1$s`, `1%`, or unreplaced `{0}` fragment.
+  Component presence, source inspection, and build success are supplementary.
+- **Same-contract sibling found before closure:** a full literal-call audit
+  found `search_condition_remove_a11y` also passes through
+  `AppStrings.format` while all four locale resources still use `%1$s`. Change
+  only that advanced-search chip accessibility label template to `{0}`; the
+  advanced-condition editor tree, chip label, remove action, and geometry stay
+  unchanged. Add a repository contract test that resolves every literal
+  `AppStrings.format` key in all four catalogs, requires `{0}`, and rejects
+  printf-style placeholders. This is an accessibility text correction, not a
+  static visual-acceptance substitute.
+
+##### Installed rendered-text result
+
+- The final signed Debug HAP was installed in place on both
+  `192.168.50.197:12345` and `192.168.50.200:12345`; no uninstall, data clear,
+  account action, credential entry, or re-login occurred.
+- On both devices the collector now matched actual rendered values for the
+  current-launch record count, retained-file count, current/startup timestamp
+  title (`YYYY-MM-DD HH:mm`), and file-size share subtitle. It separately
+  proved that no `%1$s`, `1%`, or unreplaced `{0}` fragment remained. These are
+  content assertions over the runtime text, not component-presence booleans.
+- The same post-install cold-start run retained one selected saved account and
+  authenticated Favorites without an error or sign-in prompt on both devices.
+  The advanced-search remove-condition accessibility sibling is corrected by
+  the same formatter rule and four-locale audit; its screen-reader announcement
+  was not separately exercised in this diagnostics acceptance.
