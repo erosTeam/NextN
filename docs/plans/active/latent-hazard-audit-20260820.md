@@ -120,6 +120,9 @@ ReaderSuperResolutionService.recordProcessingFailure：固定阶段名，不泄�
 - NextN 已有连续/分页/双页树、缩略图条、点按区域预览、双击/捏合缩放、预加载、失败重试、
   本地图片缓存、漫画翻译自动/当前页入口和增强状态；源码盘点没有找到“只因移植删减而
   必然缺失”的单点可安全修复项。
+- 新增 `scripts/test_reader_contract.mjs`，锁住上述 Reader 入口以及模式、交互、翻译、缓存、
+  预加载能力；脚本通过。它是防删减机检，不替代设备上的手势、图片尺寸、翻译请求和状态
+  转换验收。
 
 本批结论仅是源码映射，不是设备 parity 验收。上述同名缺失文件和 image-block 差异继续列为
   E-Reader OPEN 观察项；若后续要补回，必须先补充功能等价性与 NH 边界证据，再决定是否实现。
