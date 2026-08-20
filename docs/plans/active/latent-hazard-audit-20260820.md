@@ -67,6 +67,8 @@ raw runtime error / first frame）逐条验证两点：注释宣称的防御是�
 4. 详情页下载入队和种子文件导出失败原先只显示错误提示；本批补入固定的
    `gallery_enqueue_failed`、`gallery_torrent_export_failed` 事件，仍不记录画廊 ID、URL 或
    原始异常文本。
+5. 登出/会话失效时，账号资料快照的持久化清理失败原先静默吞掉；本批补入固定的
+   `account_profile_snapshot_clear_failed` 阶段，保留内存态清理，不记录账号或异常文本。
 
 剩余修复批次仍保持 OPEN：
 

@@ -65,6 +65,7 @@ enum AccountSessionDiagnosticStage {
   VERIFICATION_REQUIRED_POST_RESTORE_401 = 'account_verification_required_post_restore_401',
   VERIFICATION_REQUIRED_POST_PROMOTION_401 = 'account_verification_required_post_promotion_401',
   VERIFICATION_MARKER_PERSIST_FAILED = 'account_verification_marker_persist_failed',
+  PROFILE_SNAPSHOT_CLEAR_FAILED = 'account_profile_snapshot_clear_failed',
   ARKWEB_TRANSPORT_MAIN_FRAME_LOAD_FAILED = 'account_arkweb_transport_main_frame_load_failed',
 }
 
@@ -1861,7 +1862,11 @@ export class NhAccountSessionService {
     }
     try {
       await AccountProfileRepository.clear(context)
-    } catch (_error) {}
+    } catch (_error) {
+      NhAccountSessionService.recordDiagnosticStage(
+        AccountSessionDiagnosticStage.PROFILE_SNAPSHOT_CLEAR_FAILED,
+      )
+    }
   }
 
   private static expireVisibleBrowserIdentityCookies(): void {
