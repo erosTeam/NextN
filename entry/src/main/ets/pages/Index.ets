@@ -60,6 +60,12 @@ import {
   HdsTabsController,
   BottomBuilderShowType,
   HideMode,
+  HdsSnackBar,
+  SnackBarIconOptions,
+  SnackBarMessageOptions,
+  SnackBarOperationOptions,
+  SnackBarOperationType,
+  SnackBarStyleOptions,
 } from '@kit.UIDesignKit'
 import { ComponentContent, window } from '@kit.ArkUI'
 import {
@@ -387,6 +393,7 @@ struct Index {
   private readerSystemBarGeneration: number = 0
   private readerSystemBarWork: Promise<void> = Promise.resolve()
   private lastHandledClipboardCandidateRevision: number = 0
+  private clipboardSnackBar: HdsSnackBar = new HdsSnackBar(this.getUIContext())
   @Local private randomGalleryBusy: boolean = false
   private randomGalleryActionEpoch: number = 0
   private rootNavigationEpoch: number = 0
@@ -525,22 +532,31 @@ struct Index {
     if (!Number.isSafeInteger(galleryId) || galleryId <= 0) {
       return
     }
-    try {
-      this.getUIContext().showAlertDialog({
-        title: AppStrings.get('clipboard_link_prompt_title'),
-        message: AppStrings.get('clipboard_link_prompt_message'),
-        primaryButton: {
-          value: AppStrings.get('common_cancel'),
-          action: (): void => {},
-        },
-        secondaryButton: {
-          value: AppStrings.get('clipboard_link_open'),
-          action: (): void => {
-            this.pushGallery(galleryId)
-          },
-        },
-      })
-    } catch (_error) {}
+    const icon: SnackBarIconOptions = {
+      icon: $r('sys.symbol.link'),
+    }
+    const message: SnackBarMessageOptions = {
+      title: AppStrings.get('clipboard_link_prompt_title'),
+      content: AppStrings.get('clipboard_link_prompt_message'),
+    }
+    const operation: SnackBarOperationOptions = {
+      operationType: SnackBarOperationType.TEXT_WITH_CLOSE,
+      content: AppStrings.get('clipboard_link_open'),
+      contentAccessibilityText: AppStrings.get('clipboard_link_open'),
+      closeButtonAccessibilityText: AppStrings.get('common_cancel'),
+      onContentClick: (): void => {
+        this.clipboardSnackBar.dismiss()
+        this.pushGallery(galleryId)
+      },
+      onCloseButtonClick: (): void => {
+        this.clipboardSnackBar.dismiss()
+      },
+    }
+    const style: SnackBarStyleOptions = {
+      duration: 0,
+    }
+    this.clipboardSnackBar.dismiss()
+    this.clipboardSnackBar.show(icon, message, operation, style)
   }
 
   private pushSearch(initialQuery: string = ''): void {

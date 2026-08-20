@@ -4,6 +4,10 @@ import { AppStrings } from '../i18n/AppStrings'
 import { CoverColorService } from '../services/CoverColorService'
 import { CoverBackgroundState, connectCoverBackground } from '../state/CoverBackgroundState'
 import { BrowsePresentationState, connectBrowsePresentation } from '../state/BrowsePresentationState'
+import {
+  TagTranslationSettingsState,
+  connectTagTranslationSettings,
+} from '../state/TagTranslationSettingsState'
 import { EhImageKnifeImage } from './EhImageKnifeImage'
 import {
   EH_IMAGE_PRIORITY_LOW,
@@ -59,6 +63,7 @@ export struct GalleryWaterfallCard {
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
   @Local coverBackgroundColor: number = 0
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
+  @Local tagTranslationSettings: TagTranslationSettingsState = connectTagTranslationSettings()
   private tagScroller: Scroller = new Scroller()
   @Event onOpen?: (galleryId: number) => void
 
@@ -146,7 +151,8 @@ export struct GalleryWaterfallCard {
 
   private displayLabel(tag: NhTag): string {
     const translated: string = tag.displayName.trim()
-    return this.browsePresentation.showTranslatedTagLabels && translated.length > 0
+    return this.tagTranslationSettings.enabled &&
+      this.browsePresentation.showTranslatedTagLabels && translated.length > 0
       ? translated
       : tag.name
   }

@@ -1,5 +1,9 @@
 import { NhTag } from '../model/NhGallery'
 import { BrowsePresentationState, connectBrowsePresentation } from '../state/BrowsePresentationState'
+import {
+  TagTranslationSettingsState,
+  connectTagTranslationSettings,
+} from '../state/TagTranslationSettingsState'
 import { ThemeTokens } from '../theme/ThemeTokens'
 
 /**
@@ -13,6 +17,7 @@ export struct GalleryTagStrip {
   @Require @Param tags: NhTag[]
   @Param maxTags: number = 10
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
+  @Local tagTranslationSettings: TagTranslationSettingsState = connectTagTranslationSettings()
 
   private visibleTags(): NhTag[] {
     const result: NhTag[] = []
@@ -27,7 +32,8 @@ export struct GalleryTagStrip {
 
   private displayLabel(tag: NhTag): string {
     const translated: string = tag.displayName.trim()
-    return this.browsePresentation.showTranslatedTagLabels && translated.length > 0
+    return this.tagTranslationSettings.enabled &&
+      this.browsePresentation.showTranslatedTagLabels && translated.length > 0
       ? translated
       : tag.name
   }

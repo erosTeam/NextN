@@ -3379,6 +3379,38 @@ permitted in this repository.
 - Returning from model management showed the original selected value unchanged.
   The final PowerManager readback remained `AWAKE` with the requested timeout;
   no physical acceptance action remains for this bounded label correction.
+
+### 197 fixed Home first-loading transition accepted — 2026-08-21 +0800
+
+- The final signed HAP completed a clean ArkTS build and was installed on
+  physical device `192.168.50.197:12345` with `install -r`; no uninstall, data
+  clear, account action, or preference reset occurred.
+- The user exercised the real cold-start path and transitions into both fixed
+  Home tabs and reported no recurrence of the pre-loading empty-state flash.
+  This direct runtime observation closes the reported defect; an automated
+  high-frequency sampling run was not substituted for the user's observation.
+- No emulator was started. `192.168.50.237:12345` and its USB alias were not
+  used after the user clarified that they identify the same other physical
+  device. No physical acceptance action remains for this bounded Home lane.
+
+### 197 tag master switch and clipboard-link flow accepted — 2026-08-21 +0800
+
+- A clean ArkTS signed build was installed data-preservingly on physical device
+  `192.168.50.197:12345`; no emulator, uninstall, data clear, account action,
+  or dictionary replacement was used.
+- With the tag-translation master switch disabled, the current collection and
+  its opened Detail both rendered raw tag names. Enabling it changed both
+  surfaces to the available translated labels. The switch was restored to its
+  original disabled state after acceptance.
+- The clipboard-link preference remained enabled. Gallery Detail Copy link,
+  background, and foreground produced the NextE-parented persistent bottom
+  SnackBar. Closing consumed the candidate exactly once; a foreground cycle
+  without a new copy did not repeat it. A second copy produced one new prompt,
+  and Open dismissed it and navigated from Browse to the matching Detail.
+- Final runtime evidence is under
+  `.hvigor/outputs/tag-clipboard-197-20260821T0340/discovery/`. No physical
+  acceptance action remains for these two bounded defects.
+
 ### USB Gallery menu, title id, and NH settings acceptance — 2026-08-21 +0800
 
 - The final signed Debug HAP (SHA-256

@@ -49,6 +49,7 @@ import {
   NextNModalScaffold,
   PullRefreshListScaffold,
   TagTranslationRepository,
+  TagTranslationSettingsState,
   TagTranslationState,
   PageErrorState,
   PageLoadingState,
@@ -65,6 +66,7 @@ import {
   connectReaderOverlayNavigation,
   connectReadButtonStyle,
   connectTagTranslations,
+  connectTagTranslationSettings,
   ReaderOverlayNavigationState,
   NhReadProgressState,
   connectNhReadProgress,
@@ -203,6 +205,7 @@ export struct GalleryDetailPage {
   @Local tagTranslationLabelMap: Map<string, string> = new Map()
   @Local tagTranslationPending: boolean = false
   @Local tagTranslations: TagTranslationState = connectTagTranslations()
+  @Local tagTranslationSettings: TagTranslationSettingsState = connectTagTranslationSettings()
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
   @Local relatedGalleries: NhGallerySummary[] = []
   /** Related rows use the same local title-rule view as every other gallery list. */
@@ -1756,7 +1759,8 @@ export struct GalleryDetailPage {
     // reorder, re-seed, and async dictionary arrival.
     const liveLabel: string = this.tagTranslationLabelMap.get(this.tagIdentityKey(item.tag)) ??
       item.translatedName
-    return this.browsePresentation.showTranslatedTagLabels && liveLabel.length > 0
+    return this.tagTranslationSettings.enabled &&
+      this.browsePresentation.showTranslatedTagLabels && liveLabel.length > 0
       ? liveLabel
       : item.tag.name
   }
@@ -2506,7 +2510,8 @@ export struct GalleryDetailPage {
       // is about to be replaced. Visibility.Hidden preserves geometry, so the
       // row never collapses and the preview below never jumps.
       .visibility(
-        this.tagTranslationPending &&
+        this.tagTranslationSettings.enabled &&
+          this.tagTranslationPending &&
           this.browsePresentation.showTranslatedTagLabels &&
           this.tagMemberTranslatedLabel(item).length === 0
           ? Visibility.Hidden

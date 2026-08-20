@@ -7914,6 +7914,116 @@ authorize an edit, replace a device comparison, or define product completion.
   title-id and Account grouping are FROZEN until source changes or same-state
   counter-evidence appears.
 
+## ACCEPTED — Fixed Home tabs must never paint empty before first loading — 2026-08-21
+
+- **Why newly actionable:** the user directly observed that after a cold start,
+  swiping from another retained Home tab to either fixed tab can first render
+  `browse_empty` or `popular_empty`, then loading, then galleries. This is new
+  same-state counter-evidence for the previously reviewed Home loading boundary.
+- **Faulty assumption and impact:** the earlier first-activation correction set
+  the search-backed `HomeSearchSubtabPage` sentinel to loading, but left sibling
+  `LatestSourcePage` and retained `PopularPage` initialized as settled. Because
+  `RetainedSubtabHost` mounts inactive pages before their first activation,
+  their zero-row seed frame was still interpreted as a completed empty result.
+- **Whole parent-tree and sibling boundary:** preserve
+  `Index -> HomeSourceBar/SubTabBar -> RetainedSubtabHost ->
+  LatestSourcePage|PopularPage -> GalleryCollectionBody -> PageLoadingState`.
+  The search-backed sibling is the accepted state-owner precedent. Do not alter
+  the retained host, tab order/gesture, collection geometry, cache/request data,
+  empty/error text, pagination, refresh, or settled-result presentation.
+- **Exact before/after:** before, both fixed retained pages start with
+  `isInitialLoading=false`; an inactive unvisited page can therefore paint its
+  empty branch before activation starts cache/network work. After, both start
+  in initial loading and leave it only after cached usable rows are available
+  or the first request reaches a terminal success/error. Popular separately
+  tracks an in-flight request so the initial loading sentinel does not suppress
+  its own first request and repeated refresh entry cannot duplicate it.
+- **Minimality and prevention rule:** only the two fixed-page state sentinels
+  and Popular's request-in-flight guard change. Zero rows are not a settled
+  empty response until that page's first load has completed, regardless of
+  whether the retained page was mounted while inactive.
+- **Visual/runtime verification plan:** signed build and data-preserving
+  `install -r`; on one current device, select a non-fixed Home tab, force-stop
+  and cold-start, then switch continuously to Popular and Latest while sampling
+  the transition. For each fixed tab, no frame/layout may contain its empty
+  message before the loading indicator or settled gallery/error state. Confirm
+  both tabs reach real gallery rows and remain stable after switching away and
+  back. Source/build evidence is supplementary.
+- **Unresolved risk:** a warm retained page with usable rows is intentionally
+  refreshed in place and is outside the reported first-activation defect; a
+  genuine terminal empty response must still render the existing empty state.
+- **Acceptance evidence:** the final signed HAP completed a clean ArkTS build
+  and was installed data-preservingly on physical device
+  `192.168.50.197:12345`. The user then exercised the actual cold-start and
+  fixed-tab transition path and reported no recurrence. No emulator was
+  started; `192.168.50.237:12345` and its USB alias were excluded after the
+  user clarified they are the same other physical device.
+
+## ACCEPTED — Tag translation master switch must control every tag label — 2026-08-21
+
+- **Why newly actionable:** the user directly observed that disabling
+  `Advanced -> Tag translation` leaves translated tag bodies visible in both
+  gallery collection rows and Gallery Detail.
+- **Faulty assumption and impact:** dictionary policy is stored in
+  `TagTranslationSettingsState.enabled`, while tag leaves currently gate only
+  on the independent presentation preference
+  `BrowsePresentationState.showTranslatedTagLabels`. A downloaded/resolved
+  label therefore remains visible after the capability is disabled.
+- **Whole parent-tree and sibling boundary:** preserve collection presentation
+  parents and `GalleryDetailPage -> TagGroupRow -> TagMember`; change only the
+  final translated-vs-raw label decision in the normal list strip, both
+  WaterFlow card variants, and Detail. Raw tag identity, search action,
+  dictionary contents, grouping, geometry, and update policy remain unchanged.
+- **Exact before/after and verification:** before, the presentation preference
+  alone selects translated text. After, translated text requires both the
+  master capability and the presentation preference; disabling the master
+  switch immediately reveals raw names on mounted list and Detail surfaces,
+  while re-enabling restores available translations. Verify both states on
+  `192.168.50.197:12345` without changing the dictionary.
+- **Acceptance evidence:** on the final signed build installed with `install -r`
+  on `192.168.50.197:12345`, the disabled state rendered raw English tags in
+  both the first visible collection cards and the opened Gallery Detail. The
+  enabled state rendered the corresponding translated labels on both surfaces.
+  The original disabled preference was restored after the comparison.
+
+## ACCEPTED — Detail-copied gallery link must remain pending for foreground probe — 2026-08-21
+
+- **Why newly actionable:** after using Gallery Detail's Copy link command,
+  leaving the app and reopening it produces no navigation prompt.
+- **Faulty assumption and impact:** `copyCurrentGalleryLink()` writes the URL
+  and immediately persists that clipboard change count as handled. The next
+  foreground probe therefore exits at its duplicate cursor guard without ever
+  parsing or publishing the gallery id.
+- **Whole parent-tree and state boundary:** preserve
+  `EntryAbility.onForeground -> NhClipboardLinkService.probe ->
+  NhClipboardLinkState -> Index alert -> Gallery route`. Copy remains a local,
+  explicit plain-text write and toast; only a successful foreground probe may
+  advance the detection cursor. Permission, opt-in, strict NH URL parsing,
+  duplicate suppression, cancel/open actions, and route ownership remain intact.
+- **Exact before/after and verification:** before, Detail consumes its own
+  clipboard write before the lifecycle detector can see it. After, Detail does
+  not touch the detector cursor; background then foreground/cold start detects
+  the new canonical link once, shows the prompt, and does not repeat it after
+  cancellation. Verify the real lifecycle path on `192.168.50.197:12345` with
+  the clipboard-link preference enabled and no emulator.
+- **NextE source comparison:** NextE Detail writes the public URL and shows its
+  toast without advancing the detector cursor. Its foreground service advances
+  that cursor only after probing, and supplements direct record properties with
+  `getValidTypes()` / `getData()` plus UTF-8 `ArrayBuffer` decoding. NextN keeps
+  its NH-only parser and its pre-opt-in cursor seed, but adopts both applicable
+  runtime rules so canonical links are neither consumed early nor missed when
+  represented as a typed MIME entry. The user further rejected NextN's modal
+  dialog as UI counter-evidence: the root prompt owner must use NextE's
+  persistent `HdsSnackBar` parent with Open and close actions, not block the
+  current destination with `showAlertDialog`.
+- **Acceptance evidence:** on the same final `.197` install, Detail Copy link
+  followed by Home/background and foreground produced the persistent bottom
+  SnackBar with link icon, message, Open, and close actions. Closing it and
+  repeating the foreground cycle produced no duplicate. A second fresh copy
+  produced one new SnackBar; Open dismissed it and navigated from Browse to the
+  corresponding Gallery Detail. No emulator, uninstall, data clear, account
+  action, or clipboard-text logging was used.
+
 ## OPEN — Cached seed-less Detail must not publish raw tags before translation — 2026-08-21
 
 - **Why newly actionable:** the user reported a stable one-frame transition

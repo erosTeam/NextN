@@ -1,5 +1,7 @@
 import { BusinessError, pasteboard } from '@kit.BasicServicesKit'
 import { common } from '@kit.AbilityKit'
+import { util } from '@kit.ArkTS'
+import { DiagnosticLogger } from '../diagnostics/DiagnosticLogger'
 import { NhClipboardLinkSettings } from '../settings/NhClipboardLinkSettings'
 import { connectNhClipboardLink } from '../state/NhClipboardLinkState'
 
@@ -50,29 +52,71 @@ export class NhClipboardLinkService {
         await NhClipboardLinkSettings.markChangeCount(context, changeCount)
         return 0
       }
-      const galleryId = NhClipboardLinkService.extractGalleryId(await board.getData())
+      const galleryId: number = await NhClipboardLinkService.extractGalleryId(await board.getData())
       await NhClipboardLinkSettings.markChangeCount(context, changeCount)
+      if (galleryId > 0) {
+        DiagnosticLogger.info('clipboard', 'candidate_found', `kind=gallery changeCount=${changeCount}`)
+      }
       return galleryId
     } catch (error) {
-      const businessError = error as BusinessError
+      const businessError: BusinessError = error as BusinessError
       if (businessError.code === 201) {
+        DiagnosticLogger.warn('clipboard', 'read_permission_missing', 'code=201')
         await NhClipboardLinkSettings.disableAfterPermissionFailure(context)
+        return 0
       }
+      DiagnosticLogger.warn(
+        'clipboard',
+        'probe_failed',
+        `code=${businessError.code ?? 0} message=${businessError.message}`,
+      )
       return 0
     }
   }
 
-  private static extractGalleryId(data: pasteboard.PasteData): number {
-    for (let index = 0; index < data.getRecordCount(); index++) {
-      const record = data.getRecord(index)
-      for (const candidate of [record.plainText ?? '', record.uri ?? '', record.htmlText ?? '', record.toPlainText() ?? '']) {
-        const id = NhClipboardLinkService.parseGalleryId(candidate)
+  private static async extractGalleryId(data: pasteboard.PasteData): Promise<number> {
+    const recordCount: number = data.getRecordCount()
+    for (let index: number = 0; index < recordCount; index++) {
+      const record: pasteboard.PasteDataRecord = data.getRecord(index)
+      const candidates: string[] = [
+        record.plainText ?? '',
+        record.uri ?? '',
+        record.htmlText ?? '',
+        record.toPlainText() ?? '',
+      ]
+      for (let candidateIndex: number = 0; candidateIndex < candidates.length; candidateIndex++) {
+        const id: number = NhClipboardLinkService.parseGalleryId(candidates[candidateIndex])
+        if (id > 0) {
+          return id
+        }
+      }
+      const entryTypes: string[] = record.getValidTypes([
+        pasteboard.MIMETYPE_TEXT_PLAIN,
+        pasteboard.MIMETYPE_TEXT_URI,
+        pasteboard.MIMETYPE_TEXT_HTML,
+      ])
+      for (let typeIndex: number = 0; typeIndex < entryTypes.length; typeIndex++) {
+        const value: pasteboard.ValueType = await record.getData(entryTypes[typeIndex])
+        const id: number = NhClipboardLinkService.parseGalleryId(
+          NhClipboardLinkService.textFromEntryValue(value),
+        )
         if (id > 0) {
           return id
         }
       }
     }
     return 0
+  }
+
+  private static textFromEntryValue(value: pasteboard.ValueType): string {
+    if (typeof value === 'string') {
+      return value
+    }
+    if (value instanceof ArrayBuffer) {
+      const decoder: util.TextDecoder = util.TextDecoder.create('utf-8', { ignoreBOM: true })
+      return decoder.decodeToString(new Uint8Array(value))
+    }
+    return ''
   }
 
   private static parseGalleryId(value: string): number {

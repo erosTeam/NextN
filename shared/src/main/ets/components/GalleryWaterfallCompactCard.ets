@@ -3,6 +3,10 @@ import { ThemeTokens } from '../theme/ThemeTokens'
 import { AppStrings } from '../i18n/AppStrings'
 import { CoverBackgroundState, connectCoverBackground } from '../state/CoverBackgroundState'
 import { BrowsePresentationState, connectBrowsePresentation } from '../state/BrowsePresentationState'
+import {
+  TagTranslationSettingsState,
+  connectTagTranslationSettings,
+} from '../state/TagTranslationSettingsState'
 import { EhImageKnifeImage } from './EhImageKnifeImage'
 import {
   EH_IMAGE_PRIORITY_LOW,
@@ -50,6 +54,7 @@ export struct GalleryWaterfallCompactCard {
   @Local hasThumbnailError: boolean = false
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
+  @Local tagTranslationSettings: TagTranslationSettingsState = connectTagTranslationSettings()
   private tagScroller: Scroller = new Scroller()
   @Event onOpen?: (galleryId: number) => void
 
@@ -88,7 +93,8 @@ export struct GalleryWaterfallCompactCard {
 
   private displayLabel(tag: NhTag): string {
     const translated: string = tag.displayName.trim()
-    return this.browsePresentation.showTranslatedTagLabels && translated.length > 0
+    return this.tagTranslationSettings.enabled &&
+      this.browsePresentation.showTranslatedTagLabels && translated.length > 0
       ? translated
       : tag.name
   }
