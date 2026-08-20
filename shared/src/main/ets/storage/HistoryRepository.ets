@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import { relationalStore } from '@kit.ArkData'
 import { NhGalleryDetail, NhReadingHistoryItem } from '../model/NhGallery'
+import { connectNhReadProgress } from '../state/NhReadProgressState'
 import { connectReadingHistory } from '../state/ReadingHistoryState'
 import { LocalDataStore } from './LocalDataStore'
 const SQL_UPSERT_OPEN: string =
@@ -96,6 +97,9 @@ export class HistoryRepository {
       Math.max(0, Math.floor(pageIndex)),
       Math.max(0, detail.pages.length - 1),
     )
+    // Keep the retained Detail action on the same last-call-wins position as
+    // every durable write, including an explicit initial Reader page.
+    connectNhReadProgress().set(detail.id, clamped)
     await HistoryRepository.enqueueWrite((): Promise<void> =>
       HistoryRepository.executeWrite(context, SQL_UPSERT_PROGRESS, HistoryRepository.values(detail, clamped)),
     )

@@ -1430,10 +1430,10 @@ export struct GalleryDetailPage {
   }
 
   private readFabMaterialBarWidth(): number {
-    if (!this.liveHasReadProgress()) {
+    const pageIndex: number = this.liveResumePageIndex()
+    if (pageIndex <= 0) {
       return 86
     }
-    const pageIndex: number = this.liveResumePageIndex()
     return Math.min(172, 104 + (pageIndex + 1).toString().length * 8)
   }
 

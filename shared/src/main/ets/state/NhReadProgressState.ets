@@ -5,12 +5,12 @@ const NH_READ_PROGRESS_STATE_KEY: string = 'nextn_read_progress'
 /**
  * In-memory per-gallery reading position with a reactive revision signal.
  *
- * The Reader writes every page turn here immediately (the RDB flush stays
- * debounced); the gallery detail page reads `has`/`index` inside build(), so
- * returning from the Reader refreshes the Read button without re-querying
- * storage. The RDB remains the durable source and seeds this holder on first
- * detail load. This mirrors NextE GalleryReadProgressState's two-tier memory
- * first / disk debounced design.
+ * HistoryRepository publishes every saved Reader position here immediately,
+ * then serializes the same position to RDB. The gallery detail page reads
+ * `has`/`index` inside build(), so returning from the Reader refreshes the Read
+ * button without re-querying storage. The RDB remains the durable source and
+ * seeds this holder on first detail load. The in-memory page follows NextE's
+ * last-call-wins contract; NextN's durable writes are serialized, not debounced.
  */
 @ObservedV2
 export class NhReadProgressState {
@@ -36,7 +36,7 @@ export class NhReadProgressState {
     return value === undefined ? 0 : value
   }
 
-  /** Immediate page-turn write; the caller still owns the durable flush. */
+  /** Immediate last-call-wins write; page order is never mutation order. */
   set(galleryId: number, pageIndex: number): void {
     if (galleryId <= 0 || pageIndex < 0) {
       return
@@ -46,15 +46,17 @@ export class NhReadProgressState {
   }
 
   /**
-   * Seed from durable storage without overwriting a newer in-memory turn.
-   * Called only when the RDB reports a real marker for this gallery.
+   * Seed from durable storage only before this process has observed a write.
+   * Every in-process progress writer publishes through HistoryRepository, so
+   * an existing entry is newer than an async detail-load snapshot regardless
+   * of whether its page number moved forward or backward.
    */
   seed(galleryId: number, pageIndex: number): void {
     if (galleryId <= 0 || pageIndex < 0) {
       return
     }
     const current: number | undefined = this.indexByGallery.get(galleryId)
-    if (current !== undefined && current > pageIndex) {
+    if (current !== undefined) {
       return
     }
     this.indexByGallery.set(galleryId, pageIndex)

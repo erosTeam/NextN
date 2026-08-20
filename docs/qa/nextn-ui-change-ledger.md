@@ -3,6 +3,49 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Gallery Detail Read progress can move backward and Read width follows its label — 2026-08-20
+
+- **Latest user instruction and counter-evidence:** after Reader reaches P2,
+  explicitly opening P1 and returning still leaves the Detail action at
+  `继续 P2`; scrolling back to P1 does change the label to `阅读`, but the HDS
+  capsule retains the wider Continue geometry. This reopens only the Read FAB
+  progress/measurement boundary.
+- **Faulty prior assumption and impact:** commit `36bb5b7` treated a numerically
+  larger page as a newer in-memory mutation and updated the HDS width predicate
+  from NextE's `index <= 0` contract to `hasProgress`. Page order is not write
+  order: a valid P2 -> P1 navigation was therefore rejected by the retained
+  detail state, while the P1 label and width consumed different predicates.
+  The earlier one-way P1 -> P5 device check did not exercise either reverse
+  navigation or the page-zero geometry transition.
+- **Reference and complete parent tree:** preserve
+  `GalleryDetailPage -> DetailWorkspace(Stack) -> detail Scroll +
+  ReadFabRail(transparent overlay) -> ReadFab(Filled/HDS)`. Reader remains the
+  canonical page-index owner through its paged/vertical callbacks; the local
+  RDB remains durable storage. Current NextE uses last-call-wins for the
+  in-memory page index and derives both `阅读` and the 86vp HDS width from
+  `index <= 0`.
+- **Exact before/after:** before — only Reader page-change callbacks publish to
+  `NhReadProgressState`; the explicit initial page is written to RDB without
+  updating that live owner, durable seeding compares page magnitude, and HDS
+  width tests the marker. after — every `HistoryRepository.saveProgress` call
+  publishes its clamped index to the same live owner before its serialized RDB
+  write; a durable seed never replaces an already-present in-process mutation;
+  and both label and HDS width use the live index-zero boundary. P2 -> explicit
+  P1 and P2 -> scroll P1 therefore both render `阅读` at 86vp.
+- **Sibling-state review and minimality:** verify initial no-record `阅读`, P2
+  `继续 P2`, explicit P1 return, scroll-back P1 return, and re-entry resume.
+  Filled/HDS leaves, rail ownership, alignment, icon, typography, touch target,
+  Reader canvas, history schema, sync/backup formats and navigation remain
+  unchanged. No new heuristic width or duplicate page state is introduced.
+- **Visual verification plan:** signed build, `install -r` without clearing
+  data, then same gallery/viewport on the selected device: observe the button
+  bounds and label for initial/P2/P1 states and confirm re-entering Reader opens
+  at the most recently selected canonical page. Source/build evidence cannot
+  accept this visible transition.
+- **Unresolved risk:** device acceptance must cover the active Reader mode;
+  other paged/vertical/double-page modes share the same canonical callback but
+  are not generalized until observed.
+
 ## ACCEPTED — Home-tab editor and Search-options usability follow-up — 2026-08-20
 
 - **Latest user instruction:** replace Search options' expanded Language and
