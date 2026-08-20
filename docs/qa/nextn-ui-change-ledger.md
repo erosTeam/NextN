@@ -3,6 +3,76 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Reader overlay must not toggle retained Detail chrome — 2026-08-20
+
+- **User counter-evidence:** entering and leaving Reader visibly makes the
+  retained Gallery Detail title bar disappear and then reappear. This reopens
+  the older Reader title-isolation boundary: the title did return, but changing
+  its visibility for the lifetime of a separate overlay is itself the defect.
+- **Whole parent tree:** root `Stack → HdsNavigation(root NavPathStack) →
+  Gallery HdsNavDestination(titleBar + GalleryDetailPage)`, followed by the
+  conditional full-window `HdsNavigation(readerOverlay.stack) → transparent
+  backdrop HdsNavDestination → Reader HdsNavDestination → ReaderPage`. Reader
+  already owns a separate top sibling and does not replace the Gallery route.
+- **Faulty prior assumption:** the old correction treated a retained, clickable
+  Gallery title leaf in a layout dump as proof that input crossed the full-window
+  Reader sibling. The later forensic record did not establish that receiver.
+  Binding `Gallery HdsNavDestination.hideTitleBar` to `readerOverlay.visible`
+  consequently coupled the underlying page's chrome lifecycle to Reader open
+  and close and created the user-observed transition.
+- **Reference contract:** NextE retains the same root-under-private-overlay
+  structure and never binds Gallery Detail title visibility to Reader overlay
+  visibility. Its Reader sibling covers the retained destination while the
+  Detail title owner remains stable.
+- **Exact minimal change:** remove only the Gallery destination's conditional
+  `hideTitleBar`. Make the existing full-window Reader overlay navigation an
+  explicit `HitTestMode.Block` sibling so it, rather than Gallery visibility,
+  owns input isolation for its entire mounted lifetime. Preserve both stacks,
+  overlay animation, Reader destination, Detail title/menu, scroll binding,
+  status-bar lifecycle, Reader canvas, and every action.
+- **Sibling-state review:** verify both collapsed and revealed Detail title
+  states, Reader open and close, Reader chrome shown and hidden, and Gallery
+  title/menu input after return. While Reader is mounted, no underlying Gallery
+  title/menu action may receive input.
+- **Verification plan and risk:** build a signed HAP, install in place on the
+  explicitly selected current device, and capture the same Detail viewport
+  before open, during Reader, and after close. Acceptance requires no Detail
+  title hide/show transition, exact title/menu restoration, and no Reader-time
+  input delivery to the retained Gallery. This remains OPEN until that runtime
+  sequence is observed.
+- **Source/build result:** `git diff --check` passes and the signed build
+  succeeds. The resulting `entry-default-signed.hap` has SHA-256
+  `d93b07460472051e0d6d4e3ab5284b58579cd4359c2cfe93e4439aecebb69cf9`.
+  This establishes compile-time validity only; the runtime sequence above is
+  still required.
+- **Status-bar transition counter-evidence — 2026-08-20:** the user observed
+  that tapping Read hides the status bar before, or at the very beginning of,
+  the Reader push animation, so the retained Detail title/safe-area geometry
+  jumps even after its title visibility is no longer toggled. Source confirms
+  the cause: NextN applies a pending immersive presentation immediately in
+  Reader destination `onShown`, and falls back to an immediate hide when the
+  child has not published yet.
+- **Ignored NextE lifecycle contract:** NextE starts its immersive entry hide
+  only from Reader `onShown`, waits `500ms`, then rechecks route identity,
+  closing state, fullscreen, and chrome visibility before hiding. On close it
+  restores the app status bar, waits `20ms` for that geometry to lead the exit
+  transition, and only then pops the Reader route. The prior NextN lifecycle
+  fencing copied the state guards but omitted both transition boundaries.
+- **Exact lifecycle correction:** retain Index as the sole Window API owner and
+  retain its serialized generation fence. Record Reader presentation before
+  `onShown` without applying it; once shown, keep the app status bar through the
+  first `500ms` of the Reader transition and cancel/re-evaluate that request on
+  every chrome/fullscreen/background update or route close. Remove the invented
+  default immediate hide. Restore the app status bar and give it the same
+  `20ms` lead before the existing overlay pop. No title, canvas, settings value,
+  Reader animation, navigation hierarchy, page geometry, or data path changes.
+- **Additional transition states:** runtime acceptance must observe the tap
+  frame before Reader movement, the active push animation, settled fullscreen
+  Reader with hidden chrome, a chrome-visible Reader, the close frame before
+  pop, the active pop animation, and settled Detail. The status bar must remain
+  stable over the Detail/title portion of both transitions and must still obey
+  fullscreen/chrome changes after Reader settles.
+
 ## OPEN — Gallery Detail Read progress can move backward and Read width follows its label — 2026-08-20
 
 - **Latest user instruction and counter-evidence:** after Reader reaches P2,

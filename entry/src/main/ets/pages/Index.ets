@@ -164,6 +164,14 @@ const ROUTE_TORII_WHOLE_PAGE_LIVE_EVALUATION: string = 'toriiWholePageLiveEvalua
 const ROUTE_ABOUT: string = 'about'
 const STATUS_BAR_LIGHT_CONTENT: string = '#FFFFFFFF'
 const STATUS_BAR_DARK_CONTENT: string = '#FF000000'
+const READER_ENTRY_STATUS_BAR_HIDE_DELAY_MS: number = 500
+const READER_EXIT_STATUS_BAR_LEAD_MS: number = 20
+
+function readerTransitionDelay(durationMs: number): Promise<void> {
+  return new Promise<void>((resolve: () => void): void => {
+    setTimeout(resolve, durationMs)
+  })
+}
 
 /**
  * Typed params placed on the navigation stack. Keeping the route payload in the
@@ -374,6 +382,8 @@ struct Index {
   private readerPresentationChromeVisible: boolean = false
   private readerPresentationFullscreen: boolean = true
   private readerPresentationCanvasDark: boolean = true
+  private readerDestinationShownAtMs: number = 0
+  private readerStatusBarHideTimerId: number = -1
   private readerSystemBarGeneration: number = 0
   private readerSystemBarWork: Promise<void> = Promise.resolve()
   private lastHandledClipboardCandidateRevision: number = 0
@@ -990,11 +1000,44 @@ struct Index {
       !this.readerDestinationVisible || this.readerDestinationClosing) {
       return
     }
+    this.clearPendingReaderStatusBarHide()
     const visible: boolean = !this.readerPresentationFullscreen || this.readerPresentationChromeVisible
-    this.requestReaderStatusBar(visible, this.readerPresentationChromeVisible || this.readerPresentationCanvasDark)
+    const lightIcons: boolean = this.readerPresentationChromeVisible || this.readerPresentationCanvasDark
+    if (visible) {
+      this.requestReaderStatusBar(true, lightIcons)
+      return
+    }
+    const elapsedMs: number = this.readerDestinationShownAtMs > 0
+      ? Math.max(0, Date.now() - this.readerDestinationShownAtMs)
+      : 0
+    const delayMs: number = Math.max(0, READER_ENTRY_STATUS_BAR_HIDE_DELAY_MS - elapsedMs)
+    if (delayMs === 0) {
+      this.requestReaderStatusBar(false, lightIcons)
+      return
+    }
+    const routeEpoch: number = this.readerDestinationRouteEpoch
+    this.readerStatusBarHideTimerId = setTimeout((): void => {
+      this.readerStatusBarHideTimerId = -1
+      if (!this.readerDestinationVisible || this.readerDestinationClosing ||
+        routeEpoch !== this.readerDestinationRouteEpoch || !this.readerPresentationPending ||
+        this.readerPresentationRouteEpoch !== routeEpoch || !this.readerPresentationFullscreen ||
+        this.readerPresentationChromeVisible) {
+        return
+      }
+      this.requestReaderStatusBar(false, this.readerPresentationCanvasDark)
+    }, delayMs)
+  }
+
+  private clearPendingReaderStatusBarHide(): void {
+    if (this.readerStatusBarHideTimerId < 0) {
+      return
+    }
+    clearTimeout(this.readerStatusBarHideTimerId)
+    this.readerStatusBarHideTimerId = -1
   }
 
   private clearRecordedReaderPresentation(): void {
+    this.clearPendingReaderStatusBarHide()
     this.readerPresentationPending = false
     this.readerPresentationRouteEpoch = 0
     this.readerPresentationChromeVisible = false
@@ -1008,11 +1051,13 @@ struct Index {
     }
     this.readerDestinationClosing = true
     this.clearRecordedReaderPresentation()
-    this.restoreAppStatusBar().then((): void => {
-      if (this.readerDestinationClosing) {
-        this.readerOverlay.close()
-      }
-    })
+    this.restoreAppStatusBar()
+      .then((): Promise<void> => readerTransitionDelay(READER_EXIT_STATUS_BAR_LEAD_MS))
+      .then((): void => {
+        if (this.readerDestinationClosing) {
+          this.readerOverlay.close()
+        }
+      })
   }
 
   /**
@@ -1747,10 +1792,6 @@ struct Index {
     // Gallery's semantic title lives in its header first, then hands off to
     // HDS after the header scrolls away.
     .titleBar(this.galleryTitleBar(this.galleryParams(param)))
-    // The retained Gallery destination owns the root title-bar instance. Hide
-    // it only while the private Reader overlay is visible so its HDS menu
-    // leaves cannot receive top-chrome input behind Reader.
-    .hideTitleBar(this.readerOverlay.visible)
     .hideBackButton(false)
     .bindToScrollable([this.galleryScroller])
   }
@@ -1811,24 +1852,26 @@ struct Index {
       this.readerDestinationVisible = true
       this.readerDestinationClosing = false
       this.readerDestinationRouteEpoch = this.readerParams(param).routeEpoch
+      this.readerDestinationShownAtMs = Date.now()
       if (this.readerPresentationPending &&
         this.readerPresentationRouteEpoch === this.readerDestinationRouteEpoch) {
         this.applyRecordedReaderPresentation()
         return
       }
       this.clearRecordedReaderPresentation()
-      // Reader restores its persisted preference asynchronously. Use the
-      // documented default only until the current route publishes its state.
-      this.requestReaderStatusBar(false, true)
+      // Keep the app status bar stable until this route publishes its restored
+      // presentation. The first immersive hide still observes NextE's entry delay.
     })
     .onWillHide((): void => {
       this.readerDestinationVisible = false
       this.readerDestinationClosing = true
+      this.readerDestinationShownAtMs = 0
       this.clearRecordedReaderPresentation()
       this.restoreAppStatusBar()
     })
     .onDisAppear((): void => {
       this.readerDestinationVisible = false
+      this.readerDestinationShownAtMs = 0
       this.clearRecordedReaderPresentation()
       this.readerOverlay.finishClose()
     })
@@ -2511,6 +2554,9 @@ struct Index {
         .width('100%')
         .height('100%')
         .backgroundColor(Color.Transparent)
+        // Reader is a full-window sibling above the retained root navigation.
+        // It owns input isolation without changing the Gallery title lifecycle.
+        .hitTestBehavior(HitTestMode.Block)
         .onAppear((): void => {
           this.readerOverlay.presentPendingReader()
         })
