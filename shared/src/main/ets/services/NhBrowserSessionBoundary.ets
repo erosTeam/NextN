@@ -4,6 +4,7 @@ import { NhBrowserSessionPhase, NhBrowserSessionStatus } from '../model/NhBrowse
 const TRUSTED_ORIGIN: string = 'https://nhentai.net'
 const LOGIN_PATH: string = '/login/'
 const LOGIN_URL: string = `${TRUSTED_ORIGIN}${LOGIN_PATH}`
+const USER_SETTINGS_URL: string = `${TRUSTED_ORIGIN}/user/settings`
 
 /**
  * The native session boundary owns exact-origin classification and capture.
@@ -31,6 +32,10 @@ export class NhBrowserSessionBoundary {
 
   static trustedOrigin(): string {
     return TRUSTED_ORIGIN
+  }
+
+  static userSettingsUrl(): string {
+    return USER_SETTINGS_URL
   }
 
   /**

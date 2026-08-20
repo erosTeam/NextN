@@ -47,6 +47,8 @@ class AccountProfileSummary {
 export struct AccountPage {
   /** Entry-owned hook: opens the NH login/session leaf (BrowserSessionPage). */
   @Event onOpenBrowserSession?: () => void
+  /** Opens the selected account's first-party settings in the shared session WebView. */
+  @Event onOpenNhSettings?: () => void
   @Local accountList: AccountListState = connectAccountList();
   @Local accountSession: AccountSessionState = connectAccountSession();
   @Local accountProfile: AccountProfileState = connectAccountProfile();
@@ -381,6 +383,21 @@ export struct AccountPage {
           (accountId: string): string => accountId,
         )
         if (this.accountSession.signedIn) {
+          ListItem() {
+            NextNGroupedListSection() {
+              NextNListRow({
+                leadingIcon: $r('sys.symbol.gearshape'),
+                title: AppStrings.get('nh_settings_title'),
+                subtitle: AppStrings.get('nh_settings_hint'),
+                isEnabled: !this.isMutatingAccount,
+                onAction: (): void => {
+                  if (this.onOpenNhSettings) {
+                    this.onOpenNhSettings()
+                  }
+                },
+              })
+            }
+          }
           ListItem() {
             NextNGroupedListSection() {
               NextNListRow({

@@ -1,4 +1,5 @@
 import { common } from '@kit.AbilityKit'
+import { pasteboard } from '@kit.BasicServicesKit'
 import { hilog } from '@kit.PerformanceAnalysisKit'
 import { HdsTabsController } from '@kit.UIDesignKit'
 import {
@@ -32,6 +33,7 @@ import {
   NhGalleryDetailCacheService,
   NhGalleryFavoriteStatus,
   NhGalleryExternalOpenService,
+  NhBrowserSessionBoundary,
   NhGalleryPage,
   NhGalleryShareService,
   NhGallerySummary,
@@ -413,6 +415,20 @@ export struct GalleryDetailPage {
     }
   }
 
+  @Monitor('chrome.copyLinkRequestVersion')
+  onCopyLinkRequested(): void {
+    if (this.chrome.copyLinkRequestVersion > 0) {
+      this.copyCurrentGalleryLink()
+    }
+  }
+
+  @Monitor('chrome.commentsRequestVersion')
+  onCommentsRequested(): void {
+    if (this.chrome.commentsRequestVersion > 0) {
+      this.openComments()
+    }
+  }
+
   @Monitor('chrome.externalOpenRequestVersion')
   onExternalOpenRequested(): void {
     if (this.chrome.externalOpenRequestVersion > 0) {
@@ -434,6 +450,24 @@ export struct GalleryDetailPage {
 
   private context(): common.UIAbilityContext {
     return this.getUIContext().getHostContext() as common.UIAbilityContext
+  }
+
+  private toast(message: string): void {
+    this.getUIContext().getPromptAction().showToast({ message: message })
+  }
+
+  private copyCurrentGalleryLink(): void {
+    try {
+      const data = pasteboard.createData(
+        pasteboard.MIMETYPE_TEXT_PLAIN,
+        NhBrowserSessionBoundary.canonicalGalleryUrl(this.galleryId),
+      )
+      const board = pasteboard.getSystemPasteboard()
+      board.setDataSync(data)
+      this.toast(AppStrings.get('detail_link_copied'))
+    } catch (_error) {
+      this.toast(AppStrings.get('detail_link_copy_failed'))
+    }
   }
 
   private isCurrentRequest(generation: number): boolean {
@@ -711,12 +745,12 @@ export struct GalleryDetailPage {
   }
 
   private openComments(): void {
-    if (!this.isDetailReadyForCurrentGallery || this.detail.id !== this.galleryId || !this.onOpenComments) {
+    if (this.galleryId <= 0 || !this.onOpenComments) {
       return
     }
-    const snapshotAvailable: boolean = this.commentPeekLoadedGalleryId === this.detail.id
+    const snapshotAvailable: boolean = this.commentPeekLoadedGalleryId === this.galleryId
     this.onOpenComments(
-      this.detail.id,
+      this.galleryId,
       snapshotAvailable ? this.rawCommentPeek : [],
       snapshotAvailable,
     )
@@ -2118,6 +2152,15 @@ export struct GalleryDetailPage {
                 this.openFullTitleSheet()
               })
           }
+          if (this.galleryHeroIdText().length > 0) {
+            Text(this.galleryHeroIdText())
+              .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+              .fontColor(ThemeTokens.TEXT_TERTIARY)
+              .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+              .width('100%')
+          }
         }
         .layoutWeight(1)
         .height(ThemeTokens.DETAIL_COVER_HEIGHT)
@@ -2150,12 +2193,21 @@ export struct GalleryDetailPage {
     return japanese.length > 0 && japanese !== standard ? japanese : ''
   }
 
+  private galleryHeroIdText(): string {
+    return this.detail.id === this.galleryId && this.detail.id > 0
+      ? `#${this.detail.id.toString()}`
+      : ''
+  }
+
   private galleryHeroTitleMaxLines(): number {
     const hasSecondary: boolean = this.galleryHeroSecondaryTitle().length > 0
     const secondaryReserve: number = hasSecondary
       ? 2 * ThemeTokens.LINE_HEIGHT_BODY + ThemeTokens.SPACE_XS
       : 0
-    const available: number = ThemeTokens.DETAIL_COVER_HEIGHT - secondaryReserve
+    const idReserve: number = this.galleryHeroIdText().length > 0
+      ? ThemeTokens.LINE_HEIGHT_BODY + ThemeTokens.SPACE_XS
+      : 0
+    const available: number = ThemeTokens.DETAIL_COVER_HEIGHT - secondaryReserve - idReserve
     const lines: number = Math.floor(available / ThemeTokens.LINE_HEIGHT_TITLE)
     return Math.min(Math.max(lines, 1), 6)
   }

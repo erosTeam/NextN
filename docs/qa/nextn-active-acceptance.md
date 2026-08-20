@@ -3379,3 +3379,22 @@ permitted in this repository.
 - Returning from model management showed the original selected value unchanged.
   The final PowerManager readback remained `AWAKE` with the requested timeout;
   no physical acceptance action remains for this bounded label correction.
+### USB Gallery menu, title id, and NH settings acceptance — 2026-08-21 +0800
+
+- The final signed Debug HAP (SHA-256
+  `382de9ea0633cf24d7c45970919bcc7a9bcb0f4d0e444b5fb1c75d94ed80772d`) was
+  installed with `install -r` on `56T0225315001128`; no uninstall, data clear,
+  account switch, credential entry, sign-out, or remote settings mutation
+  occurred.
+- Gallery 471768 rendered `#471768` beneath the title block while the metadata
+  and peer action cards retained their two-row balanced geometry. Its overflow
+  menu opened the existing native Comments destination and the Copy link action
+  completed a system-pasteboard write with the localized success toast.
+- A data-preserving cold start restored a signed-in native Account state. The
+  independent NH settings row rendered outside the account selection card and
+  opened the existing wrapped WebView directly on the signed-in nhentai Settings
+  page, with no login or challenge state.
+- Current NextE was captured on the same device and viewport: its detail menu
+  used the same HDS menu geometry and Comments/Copy-link action family, and its
+  account page kept the site-account settings action in a separate grouped row.
+  No physical acceptance action remains for this bounded feature.

@@ -16,6 +16,8 @@ export class GalleryChromeState {
   // reach another retained detail.
   @Trace favoriteRequestVersion: number = 0
   @Trace shareRequestVersion: number = 0
+  @Trace commentsRequestVersion: number = 0
+  @Trace copyLinkRequestVersion: number = 0
   @Trace externalOpenRequestVersion: number = 0
   @Trace refreshInFlight: boolean = false
   // The title-bar favourite action is owned by the Detail route, but HDS is

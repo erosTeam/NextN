@@ -7845,3 +7845,71 @@ authorize an edit, replace a device comparison, or define product completion.
   model name. **Status: FROZEN** for the model-name leaf at this device state;
   reopen only after a source change inside this boundary, new explicit user
   feedback, or same-state counter-evidence.
+
+## FROZEN — Gallery link/comments/GID and account NH settings entry — 2026-08-21
+
+- **Why newly actionable:** the user explicitly requested two Gallery Detail
+  menu commands (copy the canonical gallery link and open the full comments
+  page), a directly visible gallery GID, and an NH settings entry on the
+  Account page that opens `https://nhentai.net/user/settings` through the
+  existing session-aware WebView with the currently selected account Cookie.
+- **Reference parent trees:** Gallery keeps `Index.galleryTitleBar -> HDS
+  menu -> route-local GalleryChromeState -> retained GalleryDetailPage`; the
+  existing `GalleryDetailPage -> DetailMetadataList -> GalleryHero -> title
+  Column` owns the visible id, while `GalleryInformation ->
+  NextNGroupedListSection -> Flex` remains unchanged at two rows. NextE's
+  supported detail menu order is Favorite, Share, Comments, Refresh, Copy
+  link, then browser commands. Account keeps `HdsNavDestination -> AccountPage
+  -> SecondaryListScaffold`; after the saved-account ListItems, a separate
+  `NextNGroupedListSection -> NextNListRow` owns site settings, followed by the
+  existing destructive sign-out section. This mirrors NextE's account-page
+  site-settings group without importing its EH-only dashboard/profile leaves.
+- **Exact before/after:** before, the Gallery menu has Favorite/Share/browser
+  open/internal web/Reload and the information Flex has language/pages/
+  scanlator/favorites/upload date but no id. After, Comments uses the existing
+  `onOpenComments` route with its loaded snapshot, Copy link writes only
+  `NhBrowserSessionBoundary.canonicalGalleryUrl(galleryId)` to the system
+  pasteboard and confirms success, and the Gallery hero shows NH-style
+  `#<id>` below the primary/secondary title only when the current detail
+  matches the current route. An initial proposal put GID in the information
+  Flex; user review rejected the resulting third row because it unbalanced
+  the peer action card, so that row and its localized `GID` prefix were
+  removed. Before, Account contains only saved
+  account cards and an optional sign-out section. After, signed-in Account
+  adds one independent `NH settings` row with a gear icon; it opens the
+  existing GalleryWeb/EhWebView parent at the trusted user-settings URL after
+  `ensureRegularArkWebCookieJar()` prepares the selected account session.
+- **Minimality rationale:** no new metadata page, metadata row, card family,
+  WebView wrapper, Cookie store, comments page, or navigation shell is
+  introduced. The id is a caption leaf inside the existing fixed-height title
+  column; title line budgeting reserves its one line without changing cover or
+  card geometry. The NH settings row is not placed inside an account card
+  because it acts on the selected account rather than selecting or deleting a
+  saved account.
+- **Installed USB result:** the signed Debug HAP was installed with `install
+  -r` on `56T0225315001128`; no uninstall, data clear, account switch,
+  credential entry, sign-out, or site-settings mutation occurred. On Gallery
+  471768, `#471768` rendered below both titles, the information card remained
+  two rows, and its peer download/torrent card regained balanced height. The
+  HDS overflow exposed Comments at `[612,297][1260,441]` and Copy link at
+  `[612,586][1260,731]`; Comments opened the existing native discussion page,
+  and Copy link completed a system-pasteboard write with the localized success
+  toast while NextN remained foreground. The written text has one deterministic
+  source: `canonicalGalleryUrl(471768)`.
+- **Account/session result:** after a data-preserving cold start, the native
+  Account state remained signed in. The separate NH settings group rendered
+  between the selected account card and sign-out. Opening it reached the
+  wrapped WebView's `Settings » nhentai` page with the current profile/settings
+  controls present, not a login or challenge page; this proves the selected
+  session Cookie reached ArkWeb without a new credential action.
+- **Current NextE comparison:** on the same device and `1320x2120` viewport,
+  NextE's detail overflow used the same `[612,297][1260,...]` menu parent,
+  145-pixel rows, Comments-first ordering, and Copy-link action family. Its
+  Account page placed `EH 账号设置` in a separate grouped list row outside the
+  selected-account card, matching the retained parent chosen for `NH 设置`.
+  NextN replaces only NH-specific labels, URL and unsupported EH-only leaves.
+- **Residual external risk:** nhentai can later challenge or change the settings
+  route independently of the app. A future challenge/login page is new
+  counter-evidence and reopens only the WebView/session leaf. The current menu,
+  title-id and Account grouping are FROZEN until source changes or same-state
+  counter-evidence appears.

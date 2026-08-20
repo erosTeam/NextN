@@ -579,6 +579,16 @@ struct Index {
     )
   }
 
+  private pushNhSettings(): void {
+    this.stack.pushPathByName(
+      ROUTE_GALLERY_WEB,
+      new GalleryWebRouteParams(
+        NhBrowserSessionBoundary.userSettingsUrl(),
+        AppStrings.get('nh_settings_title'),
+      ),
+    )
+  }
+
   private cancelRandomGalleryRequest(): void {
     this.randomGalleryActionEpoch += 1
     this.randomGalleryBusy = false
@@ -1543,6 +1553,22 @@ struct Index {
         route.chrome.shareRequestVersion += 1
       },
     }
+    const commentsAction: Record<string, Object> = {
+      'label': AppStrings.get('gallery_action_comments'),
+      'icon': $r('sys.symbol.doc_plaintext'),
+      'isEnabled': route.galleryId > 0,
+      'action': (): void => {
+        route.chrome.commentsRequestVersion += 1
+      },
+    }
+    const copyLinkAction: Record<string, Object> = {
+      'label': AppStrings.get('detail_copy_link'),
+      'icon': $r('sys.symbol.doc_text_on_doc_text'),
+      'isEnabled': route.galleryId > 0,
+      'action': (): void => {
+        route.chrome.copyLinkRequestVersion += 1
+      },
+    }
     const reloadAction: Record<string, Object> = {
       'label': AppStrings.get('action_reload'),
       'icon': $r('sys.symbol.arrow_clockwise'),
@@ -1575,13 +1601,17 @@ struct Index {
     const externalOpenMenuItem: Record<string, Object> = { 'content': externalOpenAction }
     const internalWebMenuItem: Record<string, Object> = { 'content': internalWebAction }
     const shareMenuItem: Record<string, Object> = { 'content': shareAction }
+    const commentsMenuItem: Record<string, Object> = { 'content': commentsAction }
     const reloadMenuItem: Record<string, Object> = { 'content': reloadAction }
+    const copyLinkMenuItem: Record<string, Object> = { 'content': copyLinkAction }
     const menuItems: Record<string, Object>[] = [
       favoriteMenuItem,
       shareMenuItem,
+      commentsMenuItem,
+      reloadMenuItem,
+      copyLinkMenuItem,
       externalOpenMenuItem,
       internalWebMenuItem,
-      reloadMenuItem,
     ]
     if (route.chrome.wideThumbnailActionsAvailable) {
       // Keep Favourite and Share as the two direct compact actions; wide
@@ -1938,6 +1968,9 @@ struct Index {
       AccountPage({
         onOpenBrowserSession: (): void => {
           this.pushBrowserSession()
+        },
+        onOpenNhSettings: (): void => {
+          this.pushNhSettings()
         },
       })
     }
