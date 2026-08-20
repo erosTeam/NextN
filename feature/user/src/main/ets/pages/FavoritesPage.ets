@@ -5,6 +5,7 @@ import {
   BrowsePresentationState,
   ContentFilterService,
   ContentFilterState,
+  DiagnosticLogger,
   FavoriteMutationState,
   FavoritesAction,
   FavoritesActionBridge,
@@ -407,6 +408,7 @@ export struct FavoritesPage {
       this.currentPage = 1
       this.totalPages = 1
     } catch (_error) {
+      DiagnosticLogger.warn('favorites', 'cache_hydrate_failed', '')
     }
   }
 

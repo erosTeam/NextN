@@ -4,6 +4,7 @@ import { NhApiClient } from '../network/NhApiClient'
 import { AccountProfileState, connectAccountProfile } from '../state/AccountProfileState'
 import { connectAccountSession } from '../state/AccountSessionState'
 import { AccountProfileRepository } from '../storage/AccountProfileRepository'
+import { DiagnosticLogger } from '../diagnostics/DiagnosticLogger'
 import { NhAccountSessionService } from './NhAccountSessionService'
 
 /**
@@ -28,7 +29,9 @@ export class NhAccountProfileService {
         connectAccountProfile().replace(profile)
         return true
       }
-    } catch (_error) {}
+    } catch (_error) {
+      DiagnosticLogger.warn('account', 'profile_switch_restore_failed', '')
+    }
     return NhAccountProfileService.refresh(context)
   }
 

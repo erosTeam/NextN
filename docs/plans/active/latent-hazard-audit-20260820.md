@@ -48,14 +48,31 @@ raw runtime error / first frame）逐条验证两点：注释宣称的防御是�
 文件通过；`scripts/build-hvigor-signed.sh` 完成 signed HAP 构建。构建日志仍有既存
 `reader-enhancement` 本地模块信息/SemVer 警告，但没有失败。
 
-## 车道 C（P1）：164 处空 catch 分级 TODO
+## 车道 C（P1）：空 catch 分级 AUDITED（关键链路首批已补日志）
 
-只读子代理分文件审计，分两类：
+当前精确结构扫描得到 145 个空 catch 匹配（初始 164 是把多行匹配的输出行数当成了
+匹配数）。初步分组为：约 62 个资源清理候选、约 53 个账户/网络/持久化关键链路候选、
+约 30 个页面/诊断/可选路径候选；这些数字用于盘点，不替代逐处结论。
+
+已确认的处理边界：
+
+1. `ResultSet.close()`、`release/close/unlink/destroy`、日志清理和 Toast 失败属于资源或
+   可选清理路径，可保留吞错，但后续统一使用 `_cleanupError` 等变量名表达语义。
+2. 账户恢复主链已经由 `NhAccountSessionService.recordDiagnosticStage` 记录固定阶段；其
+   cookie-store 的 best-effort 读取/刷新失败不会改变恢复结论，不再重复写敏感错误。
+3. `NhAccountProfileService.switchTo` 与 `FavoritesPage.hydrateCachedFavorites` 原先会
+   静默吞掉资料恢复/收藏缓存水合失败，本批分别补入固定的
+   `profile_switch_restore_failed`、`cache_hydrate_failed` 事件，不记录账号、Cookie、URL 或
+   原始异常文本。
+
+剩余修复批次仍保持 OPEN：
+
 1. 关键链路吞错（网络请求/持久化/状态迁移/登录会话）必须补 stage 日志（模式照
-   ReaderSuperResolutionService.recordProcessingFailure：固定阶段名，不泄敏感内容）；
+ReaderSuperResolutionService.recordProcessingFailure：固定阶段名，不泄敏感内容）；
 2. 资源清理吞错（release/close/unlink/destroy）可保留，但变量名统一 _cleanupError
-   表意，防止与关键吞错混淆。
-验收：分类清单 + 关键链路补日志后构建通过。
+ 表意，防止与关键吞错混淆。
+验收：分类清单 + 关键链路补日志后构建通过；本批仅完成分类初核和两处首批日志，不能
+宣称 C 全部完成。
 
 ## 车道 D（P1）：Scaffold 族收敛 TODO
 
