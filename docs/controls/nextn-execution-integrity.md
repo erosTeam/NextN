@@ -242,6 +242,22 @@ be justified by a test written to mirror the new implementation.
   behavior merely because the reference's data source differs. Preserve the
   product capability and ask before a material behavior tradeoff.
 
+### 5.1 Reference-audit disposition
+
+- File inventories, count differences, and structural-pattern scans are
+  discovery aids only. Generated or untracked files can change raw counts, so
+  use the tracked source set when a count matters and never treat the count as
+  proof of either a defect or audit completeness.
+- Trace each behavior-relevant candidate in both current parent trees and
+  classify it as a confirmed missing behavior, a product-specific leaf
+  difference, a split owner, or a false positive. Only a confirmed missing
+  behavior with the evidence required by Sections 3 and 4 may become an edit.
+- Stop a broad audit after its candidates have concrete dispositions and no
+  current reproduction or counter-evidence remains. Reopen only for a new
+  reproducible problem, a relevant reference change, or a change inside the
+  affected parent tree; a large number of differing files is not by itself a
+  reason to continue.
+
 ## 6. Status and handoff format
 
 Every status contains only:

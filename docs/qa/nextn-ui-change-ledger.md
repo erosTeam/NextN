@@ -3,7 +3,15 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
-## OPEN — NextE to NextN migration-integrity audit — 2026-08-22
+## FROZEN — NextE to NextN migration-integrity audit — 2026-08-22
+
+- **Closure decision:** the current-source pass has disposed every structural
+  candidate it produced, the confirmed losses were corrected and accepted at
+  their stated evidence boundaries, and no current reproduction or
+  counter-evidence remains. Continuing a repository-wide comparison would now
+  turn raw source difference into speculative work. Reopen only for a new
+  reproducible defect, a relevant NextE change, or a source change inside one
+  of the reviewed parent trees.
 
 - **Latest user instruction:** treat every NextE-derived implementation as
   suspect until current-source comparison proves the parent tree and behavior
@@ -21,12 +29,13 @@ authorize an edit, replace a device comparison, or define product completion.
   live theme dependency are reported examples, not the audit's scope limit.
   Device acceptance target is 237; screenshots may confirm visible output but
   cannot prove request, lifecycle or calculation logic.
-- **Current-source inventory and confirmed corrections:** the complete inventory
-  contains 205 same-path ArkTS files shared with current NextE (37
-  byte-identical, 168 changed) plus 116 NextN files that explicitly cite NextE.
-  The current structural pass compared reusable-subtree, lifecycle, scrolling,
-  menu, area-measurement and theme/language dependency signals across that
-  inventory, then manually traced every resulting higher-count reference lane.
+- **Current-source inventory and confirmed corrections:** the pass compared the
+  tracked same-path ETS source set plus files that explicitly cite NextE. Raw
+  filesystem counts are deliberately not retained as an acceptance metric
+  because generated and untracked files change them without changing product
+  coverage. The structural pass compared reusable-subtree, lifecycle,
+  scrolling, menu, area-measurement and theme/language dependency signals,
+  then manually traced every resulting higher-count reference lane.
   It found and fixed four concrete migration losses: foreground gallery covers
   had been downgraded
   from the reference default priority to low; Grid and Simple/List cards had
