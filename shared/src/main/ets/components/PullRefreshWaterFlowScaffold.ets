@@ -1,7 +1,12 @@
 import { common } from '@kit.AbilityKit'
+import { display } from '@kit.ArkUI'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { NextNPullRefresh, NextNPullRefreshController } from './PullRefresh'
-import { connectLayoutSafeArea, LayoutSafeAreaState } from '../state/LayoutSafeAreaState'
+import {
+  connectLayoutSafeArea,
+  LayoutSafeAreaBridge,
+  LayoutSafeAreaState,
+} from '../state/LayoutSafeAreaState'
 import { BrowsePresentationState, connectBrowsePresentation } from '../state/BrowsePresentationState'
 import { NhBrowsePresentation } from '../model/NhBrowsePresentation'
 import { BrowsePresentationService } from '../services/BrowsePresentationService'
@@ -135,6 +140,7 @@ export struct PullRefreshWaterFlowScaffold {
         const width: number = Number.parseFloat(`${newValue.width}`)
         if (width > 0 && Math.abs(width - this.measuredWidth) > 0.5) {
           this.measuredWidth = width
+          LayoutSafeAreaBridge.publishGalleryContentWidth(width)
         }
         if (this.onListAreaChange) {
           this.onListAreaChange(newValue)
@@ -233,18 +239,26 @@ export struct PullRefreshWaterFlowScaffold {
 
   private contentColumnCount(): number {
     return galleryColumnCount(
-      this.measuredWidthFallback(),
+      this.effectiveMeasuredWidth(),
       this.effectiveMinColumnWidth(),
       this.gap,
       this.horizontalPadding,
     )
   }
 
-  private measuredWidthFallback(): number {
+  /** Resolve the responsive section count before the first area callback. */
+  private effectiveMeasuredWidth(): number {
     if (this.measuredWidth > 0) {
       return this.measuredWidth
     }
-    return this.effectiveMinColumnWidth() * 2 + this.horizontalPadding * 2 + this.gap
+    if (this.layout.galleryContentWidth > 0) {
+      return this.layout.galleryContentWidth
+    }
+    try {
+      return this.getUIContext().px2vp(display.getDefaultDisplaySync().width)
+    } catch (_error) {
+      return 0
+    }
   }
 
   private effectiveMinColumnWidth(): number {

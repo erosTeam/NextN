@@ -16,6 +16,7 @@ import {
   PageEmptyState,
   PageErrorState,
   PageLoadingState,
+  GalleryThumbnail,
   SecondaryListScaffold,
   ThemeTokens,
   connectDownloadQueueActions,
@@ -52,73 +53,24 @@ const DOWNLOAD_TASK_ACTION_BUTTON_SIZE: number = DOWNLOAD_TASK_ACTION_SIZE - The
 @ComponentV2
 struct DownloadTaskCover {
   @Require @Param task: NhDownloadTask
-  @Local isThumbnailLoading: boolean = true
-  @Local hasThumbnailError: boolean = false
   @Event onOpenGallery?: (galleryId: number) => void
 
-  @Monitor('task')
-  onTaskChanged(): void {
-    this.isThumbnailLoading = this.task.thumbnailUrl.length > 0
-    this.hasThumbnailError = false
-  }
-
-  @Builder
-  private Fallback() {
-    if (this.isThumbnailLoading || this.hasThumbnailError) {
-      Column({ space: ThemeTokens.SPACE_XS }) {
-        if (this.hasThumbnailError) {
-          SymbolGlyph($r('sys.symbol.picture'))
-            .fontSize(22)
-            .fontColor([ThemeTokens.TEXT_TERTIARY])
-        } else {
-          LoadingProgress()
-            .width(18)
-            .height(18)
-            .color(ThemeTokens.TEXT_TERTIARY)
-        }
-      }
-      .width('100%')
-      .height('100%')
+  build() {
+    GalleryThumbnail({
+      src: this.task.thumbnailUrl,
+      widthValue: DOWNLOAD_TASK_COVER_WIDTH,
+      heightValue: DOWNLOAD_TASK_COVER_HEIGHT,
+      objectFit: ImageFit.Cover,
+      radius: DOWNLOAD_TASK_COVER_RADIUS,
+    })
       .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
       .borderRadius(DOWNLOAD_TASK_COVER_RADIUS)
-      .justifyContent(FlexAlign.Center)
-      .alignItems(HorizontalAlign.Center)
-    }
-  }
-
-  build() {
-    Stack({ alignContent: Alignment.Center }) {
-      if (this.task.thumbnailUrl.length > 0) {
-        Image(this.task.thumbnailUrl)
-          .width('100%')
-          .height('100%')
-          .objectFit(ImageFit.Cover)
-          .borderRadius(DOWNLOAD_TASK_COVER_RADIUS)
-          .onComplete((): void => {
-            this.isThumbnailLoading = false
-            this.hasThumbnailError = false
-          })
-          .onError((): void => {
-            this.isThumbnailLoading = false
-            this.hasThumbnailError = true
-          })
-        this.Fallback()
-      } else {
-        SymbolGlyph($r('sys.symbol.picture'))
-          .fontSize(22)
-          .fontColor([ThemeTokens.TEXT_TERTIARY])
-      }
-    }
-    .width(DOWNLOAD_TASK_COVER_WIDTH)
-    .height(DOWNLOAD_TASK_COVER_HEIGHT)
-    .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
-    .borderRadius(DOWNLOAD_TASK_COVER_RADIUS)
-    .accessibilityText(AppStrings.get('gallery_action_open'))
-    .onClick((): void => {
-      if (this.onOpenGallery) {
-        this.onOpenGallery(this.task.galleryId)
-      }
-    })
+      .accessibilityText(AppStrings.get('gallery_action_open'))
+      .onClick((): void => {
+        if (this.onOpenGallery) {
+          this.onOpenGallery(this.task.galleryId)
+        }
+      })
   }
 }
 

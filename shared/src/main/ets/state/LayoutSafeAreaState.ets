@@ -19,6 +19,11 @@ export class LayoutSafeAreaState {
   @Trace topAvoidHeight: number = 0
   @Trace bottomAvoidHeight: number = 0
   @Trace keyboardHeight: number = 0
+  // Last measured gallery collection width in vp. WaterFlow sections are
+  // created before their first area callback, so a retained/remounted page
+  // uses this current-window value to avoid a synthetic two-column frame.
+  // EntryAbility invalidates it when the real window size changes.
+  @Trace galleryContentWidth: number = 0
   // Policy can request NavigationMode.Auto, but only HDS knows whether the
   // current root width actually resolved to Split. Destination-level layout
   // must consume this signal instead of inferring physical mode from policy.
@@ -90,6 +95,14 @@ export class LayoutSafeAreaBridge {
     const state: LayoutSafeAreaState = connectLayoutSafeArea()
     if (state.rootNavigationSplit !== isSplitMode) {
       state.rootNavigationSplit = isSplitMode
+    }
+  }
+
+  static publishGalleryContentWidth(width: number): void {
+    const state: LayoutSafeAreaState = connectLayoutSafeArea()
+    const normalizedWidth: number = Math.max(0, width)
+    if (state.galleryContentWidth !== normalizedWidth) {
+      state.galleryContentWidth = normalizedWidth
     }
   }
 

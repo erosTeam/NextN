@@ -397,8 +397,9 @@ export default class EntryAbility extends UIAbility {
     this.windowSizeChangeCallback = (size: window.Size): void => {
       LayoutSafeAreaBridge.publishMainWindowSizePx(size.width, size.height)
       // A fold/unfold, rotation, or multi-window resize invalidates the old
-      // GalleryDetail pane width. The next visible measurement repopulates
-      // the cache under the current resolved root HDS mode.
+      // gallery collection and GalleryDetail pane widths. Their next visible
+      // measurements repopulate the caches under the new window geometry.
+      LayoutSafeAreaBridge.publishGalleryContentWidth(0)
       LayoutSafeAreaBridge.invalidateGalleryDetailContentWidths()
       if (this.safeAreaUiContext !== null) {
         this.refreshSafeAreaInsets(win, this.safeAreaUiContext)

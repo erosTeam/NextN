@@ -1,4 +1,4 @@
-import { AppStrings, NhReadingHistoryItem, ThemeTokens } from 'shared'
+import { AppStrings, GalleryThumbnail, NhReadingHistoryItem, ThemeTokens } from 'shared'
 
 const HISTORY_THUMB_WIDTH: number = 60
 const HISTORY_THUMB_HEIGHT: number = 84
@@ -11,15 +11,7 @@ const HISTORY_THUMB_HEIGHT: number = 84
 @ComponentV2
 export struct HistoryListRow {
   @Require @Param item: NhReadingHistoryItem
-  @Local isThumbnailLoading: boolean = true
-  @Local hasThumbnailError: boolean = false
   @Event onOpenGallery?: (galleryId: number) => void
-
-  @Monitor('item')
-  onItemChanged(): void {
-    this.isThumbnailLoading = this.item.thumbnailUrl.length > 0
-    this.hasThumbnailError = false
-  }
 
   private title(): string {
     return this.item.toSummary().displayTitle()
@@ -49,58 +41,18 @@ export struct HistoryListRow {
       : `${this.title()}, ${this.progressLabel()}`
   }
 
-  @Builder
-  private ThumbnailState() {
-    if (this.isThumbnailLoading || this.hasThumbnailError || this.item.thumbnailUrl.length === 0) {
-      Column({ space: ThemeTokens.SPACE_XS }) {
-        if (this.hasThumbnailError || this.item.thumbnailUrl.length === 0) {
-          SymbolGlyph($r('sys.symbol.picture'))
-            .fontSize(24)
-            .fontColor([ThemeTokens.TEXT_TERTIARY])
-          Text(AppStrings.get('gallery_no_cover'))
-            .fontSize(ThemeTokens.FONT_SIZE_TINY)
-            .fontColor(ThemeTokens.TEXT_TERTIARY)
-            .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-        } else {
-          LoadingProgress()
-            .width(20)
-            .height(20)
-            .color(ThemeTokens.TEXT_TERTIARY)
-        }
-      }
-      .width('100%')
-      .height('100%')
-      .justifyContent(FlexAlign.Center)
-      .alignItems(HorizontalAlign.Center)
-    }
-  }
-
   build() {
     Row({ space: ThemeTokens.SPACE_SM }) {
-      Stack({ alignContent: Alignment.Center }) {
-        if (this.item.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
-          Image(this.item.thumbnailUrl)
-            .width('100%')
-            .height('100%')
-            .objectFit(ImageFit.Cover)
-            .borderRadius(ThemeTokens.THUMB_RADIUS)
-            .onComplete((): void => {
-              this.isThumbnailLoading = false
-              this.hasThumbnailError = false
-            })
-            .onError((): void => {
-              this.isThumbnailLoading = false
-              this.hasThumbnailError = true
-            })
-        }
-        this.ThumbnailState()
-      }
-      .width(HISTORY_THUMB_WIDTH)
-      .height(HISTORY_THUMB_HEIGHT)
-      .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
-      .borderRadius(ThemeTokens.THUMB_RADIUS)
-      .clip(true)
+      GalleryThumbnail({
+        src: this.item.thumbnailUrl,
+        widthValue: HISTORY_THUMB_WIDTH,
+        heightValue: HISTORY_THUMB_HEIGHT,
+        objectFit: ImageFit.Cover,
+        radius: ThemeTokens.THUMB_RADIUS,
+      })
+        .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
+        .borderRadius(ThemeTokens.THUMB_RADIUS)
+        .clip(true)
 
       // The title can legitimately occupy one to three lines. Keep the local
       // progress/time pair on the same fixed baseline in every case, matching

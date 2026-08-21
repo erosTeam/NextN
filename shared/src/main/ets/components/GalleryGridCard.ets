@@ -4,6 +4,7 @@ import { AppStrings } from '../i18n/AppStrings'
 import { CoverColorService } from '../services/CoverColorService'
 import { CoverBackgroundState, connectCoverBackground } from '../state/CoverBackgroundState'
 import { EhImageKnifeImage } from './EhImageKnifeImage'
+import { GalleryThumbnail } from './GalleryThumbnail'
 import {
   EH_IMAGE_PRIORITY_LOW,
   EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
@@ -32,7 +33,6 @@ const GRID_MAX_CONTAIN_SOURCE_RATIO: number = 2.2
 export struct GalleryGridCard {
   @Require @Param gallery: NhGallerySummary
   @Param selected: boolean = false
-  @Local isThumbnailLoading: boolean = true
   @Local hasThumbnailError: boolean = false
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
   @Local coverBackgroundColor: number = 0
@@ -44,7 +44,6 @@ export struct GalleryGridCard {
 
   @Monitor('gallery')
   onGalleryChanged(): void {
-    this.isThumbnailLoading = this.gallery.thumbnailUrl.length > 0
     this.hasThumbnailError = false
     this.coverBackgroundColor = 0
     this.resolveLetterboxColor()
@@ -142,28 +141,6 @@ export struct GalleryGridCard {
   }
 
   @Builder
-  private ThumbnailState() {
-    if (this.isThumbnailLoading || this.hasThumbnailError || this.gallery.thumbnailUrl.length === 0) {
-      Column({ space: ThemeTokens.SPACE_XS }) {
-        if (this.hasThumbnailError || this.gallery.thumbnailUrl.length === 0) {
-          SymbolGlyph($r('sys.symbol.picture'))
-            .fontSize(24)
-            .fontColor([ThemeTokens.TEXT_TERTIARY])
-        } else {
-          LoadingProgress()
-            .width(22)
-            .height(22)
-            .color(ThemeTokens.TEXT_TERTIARY)
-        }
-      }
-      .width('100%')
-      .height('100%')
-      .justifyContent(FlexAlign.Center)
-      .alignItems(HorizontalAlign.Center)
-    }
-  }
-
-  @Builder
   private CoverMeta() {
     Text(`${this.gallery.pageCount}P`)
       .fontSize(ThemeTokens.FONT_SIZE_TINY)
@@ -212,27 +189,16 @@ export struct GalleryGridCard {
               ],
             })
         }
-        if (this.gallery.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
-          EhImageKnifeImage({
-            src: this.gallery.thumbnailUrl,
-            widthValue: '100%',
-            heightValue: '100%',
-            objectFit: this.useContainFit() ? ImageFit.Contain : ImageFit.Cover,
-            radius: ThemeTokens.THUMB_RADIUS,
-            priority: EH_IMAGE_PRIORITY_LOW,
-            connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
-            readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
-            onComplete: (): void => {
-              this.isThumbnailLoading = false
-              this.hasThumbnailError = false
-            },
-            onError: (): void => {
-              this.isThumbnailLoading = false
-              this.hasThumbnailError = true
-            },
-          })
-        }
-        this.ThumbnailState()
+        GalleryThumbnail({
+          src: this.gallery.thumbnailUrl,
+          widthValue: '100%',
+          heightValue: '100%',
+          objectFit: this.useContainFit() ? ImageFit.Contain : ImageFit.Cover,
+          radius: ThemeTokens.THUMB_RADIUS,
+          onErrorStateChange: (failed: boolean): void => {
+            this.hasThumbnailError = failed
+          },
+        })
       }
       .width('100%')
       .height('100%')

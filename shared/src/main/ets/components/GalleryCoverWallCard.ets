@@ -3,6 +3,7 @@ import { ThemeTokens } from '../theme/ThemeTokens'
 import { AppStrings } from '../i18n/AppStrings'
 import { CoverBackgroundState, connectCoverBackground } from '../state/CoverBackgroundState'
 import { EhImageKnifeImage } from './EhImageKnifeImage'
+import { GalleryThumbnail } from './GalleryThumbnail'
 import {
   EH_IMAGE_PRIORITY_LOW,
   EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
@@ -41,14 +42,12 @@ export function galleryCoverWallReuseId(gallery: NhGallerySummary): string {
 export struct GalleryCoverWallCard {
   @Require @Param gallery: NhGallerySummary
   @Param selected: boolean = false
-  @Local isThumbnailLoading: boolean = true
   @Local hasThumbnailError: boolean = false
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
   @Event onOpen?: (galleryId: number) => void
 
   @Monitor('gallery')
   onGalleryChanged(): void {
-    this.isThumbnailLoading = this.gallery.thumbnailUrl.length > 0
     this.hasThumbnailError = false
   }
 
@@ -87,28 +86,6 @@ export struct GalleryCoverWallCard {
     ])
   }
 
-  @Builder
-  private CoverState() {
-    if (this.isThumbnailLoading || this.hasThumbnailError || this.gallery.thumbnailUrl.length === 0) {
-      Column({ space: ThemeTokens.SPACE_XS }) {
-        if (this.hasThumbnailError || this.gallery.thumbnailUrl.length === 0) {
-          SymbolGlyph($r('sys.symbol.picture'))
-            .fontSize(24)
-            .fontColor([ThemeTokens.TEXT_TERTIARY])
-        } else {
-          LoadingProgress()
-            .width(22)
-            .height(22)
-            .color(ThemeTokens.TEXT_TERTIARY)
-        }
-      }
-      .width('100%')
-      .height('100%')
-      .justifyContent(FlexAlign.Center)
-      .alignItems(HorizontalAlign.Center)
-    }
-  }
-
   build() {
     Stack({ alignContent: Alignment.TopEnd }) {
       Stack({ alignContent: Alignment.Center }) {
@@ -122,31 +99,18 @@ export struct GalleryCoverWallCard {
             connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
             readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
           })
-            .scale({ x: 1.08, y: 1.08 })
-            .blur(20)
-            .opacity(0.72)
+            .blur(ThemeTokens.COVER_BG_BLUR_RADIUS)
             .renderGroup(true)
         }
-        if (this.gallery.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
-          EhImageKnifeImage({
-            src: this.gallery.thumbnailUrl,
-            widthValue: '100%',
-            heightValue: '100%',
-            objectFit: this.useContainFit() ? ImageFit.Contain : ImageFit.Cover,
-            priority: EH_IMAGE_PRIORITY_LOW,
-            connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
-            readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
-            onComplete: (): void => {
-              this.isThumbnailLoading = false
-              this.hasThumbnailError = false
-            },
-            onError: (): void => {
-              this.isThumbnailLoading = false
-              this.hasThumbnailError = true
-            },
-          })
-        }
-        this.CoverState()
+        GalleryThumbnail({
+          src: this.gallery.thumbnailUrl,
+          widthValue: '100%',
+          heightValue: '100%',
+          objectFit: this.useContainFit() ? ImageFit.Contain : ImageFit.Cover,
+          onErrorStateChange: (failed: boolean): void => {
+            this.hasThumbnailError = failed
+          },
+        })
       }
       .width('100%')
       .height('100%')

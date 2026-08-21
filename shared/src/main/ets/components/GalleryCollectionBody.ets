@@ -3,6 +3,7 @@ import { NhBrowsePresentation } from '../model/NhBrowsePresentation'
 import { NhGallerySummary } from '../model/NhGallery'
 import { BrowsePresentationState, connectBrowsePresentation } from '../state/BrowsePresentationState'
 import { GalleryCoverPrefetcher } from '../services/GalleryCoverPrefetcher'
+import { requestGalleryCoverRetry } from '../state/GalleryCoverRetryState'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { galleryCoverWallReuseId, GalleryCoverWallCard } from './GalleryCoverWallCard'
 import { GalleryGridCard } from './GalleryGridCard'
@@ -131,6 +132,13 @@ export struct GalleryCollectionBody {
       return
     }
     this.requestLoadMore()
+  }
+
+  private async refreshCollection(): Promise<void> {
+    requestGalleryCoverRetry()
+    if (this.onRefresh) {
+      await this.onRefresh()
+    }
   }
 
   private openGallery(galleryId: number, seed?: NhGallerySummary): void {
@@ -304,9 +312,7 @@ export struct GalleryCollectionBody {
         fullRowContentIndexes: this.fullRowContentIndexes(),
         backToTop: this.backToTop,
         onRefresh: async (): Promise<void> => {
-          if (this.onRefresh) {
-            await this.onRefresh()
-          }
+          await this.refreshCollection()
         },
         onReachEnd: (): void => {
           this.requestLoadMore()
@@ -344,9 +350,7 @@ export struct GalleryCollectionBody {
         fullRowContentIndexes: this.fullRowContentIndexes(),
         backToTop: this.backToTop,
         onRefresh: async (): Promise<void> => {
-          if (this.onRefresh) {
-            await this.onRefresh()
-          }
+          await this.refreshCollection()
         },
         onReachEnd: (): void => {
           this.requestLoadMore()
@@ -384,9 +388,7 @@ export struct GalleryCollectionBody {
         fullRowContentIndexes: this.fullRowContentIndexes(),
         backToTop: this.backToTop,
         onRefresh: async (): Promise<void> => {
-          if (this.onRefresh) {
-            await this.onRefresh()
-          }
+          await this.refreshCollection()
         },
         onReachEnd: (): void => {
           this.requestLoadMore()
@@ -424,9 +426,7 @@ export struct GalleryCollectionBody {
         fullRowContentIndexes: this.fullRowContentIndexes(),
         backToTop: this.backToTop,
         onRefresh: async (): Promise<void> => {
-          if (this.onRefresh) {
-            await this.onRefresh()
-          }
+          await this.refreshCollection()
         },
         onReachEnd: (): void => {
           this.requestLoadMore()
@@ -462,9 +462,7 @@ export struct GalleryCollectionBody {
         normalizeContentIndexes: true,
         backToTop: this.backToTop,
         onRefresh: async (): Promise<void> => {
-          if (this.onRefresh) {
-            await this.onRefresh()
-          }
+          await this.refreshCollection()
         },
         onReachEnd: (): void => {
           this.requestLoadMore()

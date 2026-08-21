@@ -1,26 +1,13 @@
 import { NhGallerySummary } from '../model/NhGallery'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { AppStrings } from '../i18n/AppStrings'
-import { EhImageKnifeImage } from './EhImageKnifeImage'
-import {
-  EH_IMAGE_PRIORITY_LOW,
-  EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
-  EH_THUMBNAIL_READ_TIMEOUT_MS,
-} from '../services/ImagePipelineTypes'
+import { GalleryThumbnail } from './GalleryThumbnail'
 
 @ComponentV2
 export struct GalleryListItem {
   @Require @Param gallery: NhGallerySummary
   @Param selected: boolean = false
-  @Local isThumbnailLoading: boolean = true
-  @Local hasThumbnailError: boolean = false
   @Event onOpen?: (galleryId: number) => void
-
-  @Monitor('gallery')
-  onGalleryChanged(): void {
-    this.isThumbnailLoading = this.gallery.thumbnailUrl.length > 0
-    this.hasThumbnailError = false
-  }
 
   private accessibilityLabel(): string {
     return AppStrings.format('gallery_card_a11y', [
@@ -29,78 +16,19 @@ export struct GalleryListItem {
     ])
   }
 
-  @Builder
-  private ThumbnailState() {
-    if (this.isThumbnailLoading || this.hasThumbnailError) {
-      Column({ space: ThemeTokens.SPACE_XS }) {
-        if (this.hasThumbnailError) {
-          SymbolGlyph($r('sys.symbol.picture'))
-            .fontSize(28)
-            .fontColor([ThemeTokens.TEXT_TERTIARY])
-          Text(AppStrings.get('gallery_image_unavailable'))
-            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-            .fontColor(ThemeTokens.TEXT_TERTIARY)
-            .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-        } else {
-          LoadingProgress()
-            .width(20)
-            .height(20)
-            .color(ThemeTokens.TEXT_TERTIARY)
-        }
-      }
-      .width('100%')
-      .height('100%')
-      .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
-      .borderRadius(ThemeTokens.THUMB_RADIUS)
-      .justifyContent(FlexAlign.Center)
-      .alignItems(HorizontalAlign.Center)
-    }
-  }
-
   build() {
     // Keep NextE's compact simple-row grammar fixed at 72×102: tags belong to
     // the distinct LIST and Waterfall contracts, not this metadata row.
     Row({ space: ThemeTokens.SPACE_SM }) {
-      if (this.gallery.thumbnailUrl.length > 0) {
-        Stack({ alignContent: Alignment.Center }) {
-          EhImageKnifeImage({
-            src: this.gallery.thumbnailUrl,
-            widthValue: '100%',
-            heightValue: '100%',
-            objectFit: ImageFit.Cover,
-            radius: ThemeTokens.THUMB_RADIUS,
-            priority: EH_IMAGE_PRIORITY_LOW,
-            connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
-            readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
-            onComplete: (): void => {
-              this.isThumbnailLoading = false
-              this.hasThumbnailError = false
-            },
-            onError: (): void => {
-              this.isThumbnailLoading = false
-              this.hasThumbnailError = true
-            },
-          })
-          this.ThumbnailState()
-        }
-          .width(ThemeTokens.COVER_WIDTH)
-          .height(ThemeTokens.COVER_HEIGHT)
-          .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
-          .borderRadius(ThemeTokens.THUMB_RADIUS)
-      } else {
-        Column() {
-          Text(AppStrings.get('gallery_no_cover'))
-            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-            .fontColor(ThemeTokens.TEXT_TERTIARY)
-        }
-          .width(ThemeTokens.COVER_WIDTH)
-          .height(ThemeTokens.COVER_HEIGHT)
-          .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
-          .borderRadius(ThemeTokens.THUMB_RADIUS)
-          .justifyContent(FlexAlign.Center)
-          .alignItems(HorizontalAlign.Center)
-      }
+      GalleryThumbnail({
+        src: this.gallery.thumbnailUrl,
+        widthValue: ThemeTokens.COVER_WIDTH,
+        heightValue: ThemeTokens.COVER_HEIGHT,
+        objectFit: ImageFit.Cover,
+        radius: ThemeTokens.THUMB_RADIUS,
+      })
+        .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
+        .borderRadius(ThemeTokens.THUMB_RADIUS)
       Column({ space: ThemeTokens.SPACE_XS }) {
         Text(this.gallery.displayTitle())
           .fontSize(ThemeTokens.FONT_SIZE_META)

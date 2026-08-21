@@ -6,6 +6,7 @@ import { CoverColorService } from '../services/CoverColorService'
 import { CoverBackgroundState, connectCoverBackground } from '../state/CoverBackgroundState'
 import { BrowsePresentationState, connectBrowsePresentation } from '../state/BrowsePresentationState'
 import { EhImageKnifeImage } from './EhImageKnifeImage'
+import { GalleryThumbnail } from './GalleryThumbnail'
 import { GalleryTagStrip } from './GalleryTagStrip'
 import {
   EH_IMAGE_PRIORITY_LOW,
@@ -33,7 +34,6 @@ export struct GalleryMediumCard {
   @Param selected: boolean = false
   /** Measured by the shared List host; used only by adaptive LIST rows. */
   @Param listContentWidth: number = 0
-  @Local isThumbnailLoading: boolean = true
   @Local hasThumbnailError: boolean = false
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
   @Local coverBackgroundColor: number = 0
@@ -48,7 +48,6 @@ export struct GalleryMediumCard {
 
   @Monitor('gallery')
   onGalleryChanged(): void {
-    this.isThumbnailLoading = this.gallery.thumbnailUrl.length > 0
     this.hasThumbnailError = false
     this.adaptiveCoverSlotHeight = 0
     this.coverBackgroundColor = 0
@@ -170,33 +169,6 @@ export struct GalleryMediumCard {
   }
 
   @Builder
-  private ThumbnailState() {
-    if (this.isThumbnailLoading || this.hasThumbnailError || this.gallery.thumbnailUrl.length === 0) {
-      Column({ space: ThemeTokens.SPACE_XS }) {
-        SymbolGlyph($r('sys.symbol.picture'))
-          .fontSize(28)
-          .fontColor([ThemeTokens.TEXT_TERTIARY])
-        if (this.hasThumbnailError || this.gallery.thumbnailUrl.length === 0) {
-          Text(AppStrings.get('gallery_no_cover'))
-            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-            .fontColor(ThemeTokens.TEXT_TERTIARY)
-            .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-        } else {
-          LoadingProgress()
-            .width(22)
-            .height(22)
-            .color(ThemeTokens.TEXT_TERTIARY)
-        }
-      }
-      .width('100%')
-      .height('100%')
-      .justifyContent(FlexAlign.Center)
-      .alignItems(HorizontalAlign.Center)
-    }
-  }
-
-  @Builder
   private CoverContents() {
     // NextE letterbox fill: dominant-color gradient by default, blurred cover
     // copy when the preference is enabled. Scoped to contained extreme ratios.
@@ -224,29 +196,18 @@ export struct GalleryMediumCard {
           ],
         })
     }
-    if (this.gallery.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
-      EhImageKnifeImage({
-        src: this.gallery.thumbnailUrl,
-        widthValue: '100%',
-        heightValue: '100%',
-        objectFit: this.useContainFit() ? ImageFit.Contain : ImageFit.Cover,
-        // NextE list covers carry no radius (EhThumbnail radius: 0): the
-        // image itself is the visible surface in adaptive/contain rows.
-        radius: 0,
-        priority: EH_IMAGE_PRIORITY_LOW,
-        connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
-        readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
-        onComplete: (): void => {
-          this.isThumbnailLoading = false
-          this.hasThumbnailError = false
-        },
-        onError: (): void => {
-          this.isThumbnailLoading = false
-          this.hasThumbnailError = true
-        },
-      })
-    }
-    this.ThumbnailState()
+    GalleryThumbnail({
+      src: this.gallery.thumbnailUrl,
+      widthValue: '100%',
+      heightValue: '100%',
+      objectFit: this.useContainFit() ? ImageFit.Contain : ImageFit.Cover,
+      // NextE list covers carry no radius (EhThumbnail radius: 0): the
+      // image itself is the visible surface in adaptive/contain rows.
+      radius: 0,
+      onErrorStateChange: (failed: boolean): void => {
+        this.hasThumbnailError = failed
+      },
+    })
   }
 
   build() {

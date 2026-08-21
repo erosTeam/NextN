@@ -318,6 +318,8 @@ export {
 } from './services/ImagePipelineTypes'
 export { ImageKnifeProImageAdapter } from './services/ImageKnifeProImageAdapter'
 export { EhImageKnifeImage } from './components/EhImageKnifeImage'
+export { GalleryThumbnail } from './components/GalleryThumbnail'
+export { requestGalleryCoverRetry } from './state/GalleryCoverRetryState'
 export { ContentTransitionType } from '@ohos/imageknifepro'
 export { BasicDataSource } from './utils/BasicDataSource'
 export { currentScrollOffsetX, currentScrollOffsetY } from './utils/ScrollUserInput'

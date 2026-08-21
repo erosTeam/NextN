@@ -8360,3 +8360,71 @@ authorize an edit, replace a device comparison, or define product completion.
   reported accountListPage=true, saved=1, selected=1, signedIn=true and
   Favorites error=false/authenticated=true. The single-account Radio remains
   present and selected.
+## OPEN — Gallery cover loading parity and WaterFlow first-frame columns — 2026-08-22
+
+- **Why newly actionable:** the user observed that list covers show the picture
+  placeholder and loading spinner together, then appear without NextE's fade,
+  and that switching retained subtabs paints two WaterFlow columns for one
+  frame before jumping to the configured responsive count. This is current
+  runtime counter-evidence and reopens the shared gallery-collection boundary.
+- **Faulty assumption and impact:** NextN copied gallery-cover request state
+  into six separate card implementations and omitted the foreground image
+  `OPACITY` content transition everywhere. `GalleryMediumCard` additionally
+  renders its picture symbol unconditionally while the loading branch renders
+  a spinner below it. The WaterFlow scaffolds document a fixed two-column
+  first-frame fallback as if it came from NextE, but current NextE source does
+  the opposite: it uses the measured width, then a shared last-measured gallery
+  width, then the live display width specifically to avoid that jump. The
+  earlier review checked settled cards and stable layouts, not the loading and
+  first-mount transitions, so both regressions were missed.
+- **Whole parent-tree and sibling boundary:** preserve
+  `RetainedSubtabHost -> page -> GalleryCollectionBody -> PullRefreshList/Grid/WaterFlowScaffold -> card`,
+  every presentation branch, existing safe-area/top/bottom reserves, card
+  geometry, cover fit/background layers, language/page overlays, pagination,
+  scrollers, pinch density and request ownership. Change only the shared
+  foreground-cover loading/error/fade leaf and the width source used to build
+  WaterFlow sections before the first area callback. Review all six gallery
+  card variants and both WaterFlow scaffold siblings together.
+- **Exact before/after:** before, `GalleryListItem`, `GalleryMediumCard`,
+  `GalleryGridCard`, both Waterfall cards and Cover Wall each own divergent
+  loading/error builders; none gives the foreground cover an opacity content
+  transition, and Medium shows picture plus spinner while loading. After, all
+  six use one shared foreground thumbnail component: loading is spinner only,
+  failure/missing source is picture only, successful content fades in, and the
+  existing retry/settle policy is applied once. Before, unmeasured WaterFlow
+  fabricates a two-column width. After, it follows NextE's measured -> shared
+  cached gallery width -> live display width chain; window resize invalidates
+  the cache and the next real area measurement repopulates it.
+- **Minimality rationale:** NH card metadata and fit decisions remain in their
+  current leaves; no card is reassembled and no query/cache DTO changes. The
+  shared thumbnail owns only behavior already duplicated in every card. The
+  width cache is app-private reactive geometry and is reset at the existing
+  window-size boundary.
+- **Stateful verification plan:** signed build and data-preserving install on
+  the selected device; clear only the image-cache row through the visible app
+  UI if a cold cover is required, then observe List and Simple List loading,
+  error/missing-source semantics when naturally available, and the foreground
+  fade. From a settled non-two-column WaterFlow, switch among retained Home
+  subtabs in Waterfall, Compact Waterfall and Cover Wall and verify the first
+  painted layout already uses the stable column count. Re-check rotation or
+  window-size change if available to prove stale width is not retained.
+- **Unresolved risk:** an image already present in memory may complete before a
+  loading frame is observable; that run can prove no regression but cannot by
+  itself accept the cold-loading transition. A same-state NextE/NextN runtime
+  comparison remains required for visual parity.
+- **Sibling audit addition:** the shared-root pass found that Download queue
+  covers and History rows also bypassed the ImageKnife foreground component
+  with raw `Image(url)` plus their own loading state, although NextE routes
+  both through `EhThumbnail`. They now consume the same `GalleryThumbnail`
+  leaf as the six collection presentations. The same pass found Cover Wall's
+  blur layer had regressed to a local scale/20vp/opacity recipe despite the
+  earlier accepted 40vp NextE rule; it is restored to the shared blur token.
+  Gallery page-preview tiles are a separate page-image surface and remain an
+  explicit follow-up boundary, not silently counted as accepted gallery-cover
+  loading.
+- **State-machine audit addition:** current NextE also publishes one explicit
+  cover-retry epoch before collection refresh so failed or still-pending
+  thumbnails restart even when their URL and item key do not change. NextN had
+  no equivalent chain. `GalleryThumbnail` now consumes the shared epoch and
+  `GalleryCollectionBody` publishes it for every presentation branch; already
+  successful covers ignore the signal.
