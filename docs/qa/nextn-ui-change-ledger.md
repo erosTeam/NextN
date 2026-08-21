@@ -8776,3 +8776,60 @@ authorize an edit, replace a device comparison, or define product completion.
   Those claims remain OPEN until the current device shows the complete
   scroll-enter-return chain; a layout-only or static source contract cannot
   substitute for that observation.
+
+## ACCEPTED — Gallery Detail seed-to-pretty-title transition — 2026-08-22
+
+- **User correction after first install:** the first implementation animated
+  every seed-to-verified title difference, including a persisted/recent cache
+  hit. That made an already-processed cached title visibly pass through an
+  unnecessary transition. The faulty assumption was that text difference
+  implied an asynchronous user-visible processing boundary; the ignored state
+  was the source of the verified snapshot. The installed sample is rejected.
+  Prevention: the loader, not the title renderer, must explicitly authorize
+  animation only for a fresh network result reached without any accepted
+  cache snapshot. Recent cache, persisted cache and background revalidation
+  all publish their stable title without this transition.
+- **Why newly actionable:** the user reported that opening a Gallery from a
+  list paints the tapped row's title first and then visibly jumps when Detail
+  finishes processing that title. This is new same-boundary counter-evidence
+  for the Gallery Hero title leaf; it reopens only that transition and does not
+  reopen the frozen Japanese-title preference copy or other Detail geometry.
+- **Source and reference evidence:** the list DTO supplies `english_title` and
+  `japanese_title`, so `applySeedSnapshot()` immediately paints the row title.
+  The verified NH Detail DTO additionally supplies `title.pretty`, and
+  `NhGalleryDetail.displayTitle()` prefers it; assigning that DTO therefore
+  replaces the Hero primary/secondary text synchronously. Current NextE keeps
+  the same fixed-cover/header parent tree but does not have this NH-specific
+  summary-to-`pretty` data transition. HarmonyOS `animateTo` documentation
+  states that changing text content itself jumps to the final content, so a
+  bare animation wrapper cannot solve the visible defect.
+- **Whole parent-tree and sibling boundary:** preserve
+  `GalleryDetailPage -> DetailMetadataList -> GalleryHero -> grouped section ->
+  Row(fixed cover, fixed-height title column)`, cover loading and proportion,
+  primary/secondary title choice, line budgets, `#id`, full-title sheet, HDS
+  title chrome, metadata and Read action. Change only the title column's
+  presentation during a verified same-route title replacement.
+- **Exact before/after:** before, one title Column changes its `Text` values and
+  line budget in one reactive frame. On a cache miss only, the old and new
+  complete title layers temporarily share the same fixed 175vp Stack and
+  cross-fade with the established `ThemeTokens.ANIM_DURATION` /
+  `Curve.EaseOut` rhythm; the old layer is non-interactive and is removed after
+  the animation. Initial blank-to-seed paint remains immediate. A recent or
+  persisted cache title, its background revalidation, identical titles and a
+  superseding verified snapshot do not animate.
+- **Sibling-state review:** verify a list entry whose Detail `pretty` title
+  differs, a title whose primary line count changes, primary plus Japanese
+  secondary title, and the stable `#id`/full-title tap target. Loading, error,
+  direct seed-less entry, cover replacement, tags and other metadata must keep
+  their current ownership and geometry.
+- **Verification plan:** review the exact diff, run the signed build, resolve
+  and lease the selected 237 target, pass the wake/timeout gate, install with
+  data preservation, then review both branches at the same portrait viewport:
+  a known cached list row must open with no title animation, while a real
+  cache-miss row must cross-fade only when its network `pretty` title arrives.
+- **Acceptance evidence:** the corrected signed build completed successfully
+  and was installed data-preservingly on the selected 237 device. The user
+  then reviewed the runtime result and explicitly confirmed it was correct,
+  including the corrected cached-page behavior. This closes the rejected
+  first sample: cached snapshots remain immediate, while only a cache-miss
+  network refinement is eligible for the title cross-fade.

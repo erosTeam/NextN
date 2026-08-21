@@ -249,6 +249,17 @@ export struct GalleryDetailPage {
   @Local readFabShouldAnimate: boolean = false
   @Local downloadQueue: DownloadQueueState = connectDownloadQueue()
   @Local titleTranslations: GalleryTitleTranslationState[] = []
+  /**
+   * NH list rows do not carry Detail's `title.pretty`. Keep the outgoing Hero
+   * text alive while the verified title layer fades in, otherwise replacing
+   * the reactive Detail DTO changes Text content in one unanimated frame.
+   */
+  @Local heroTitleOutgoingPrimary: string = ''
+  @Local heroTitleOutgoingSecondary: string = ''
+  @Local heroTitleOutgoingId: string = ''
+  @Local heroTitleOutgoingMaxLines: number = 1
+  @Local heroTitleTransitionProgress: number = 1
+  @Local heroTitleTransitionActive: boolean = false
   // This is not navigation ownership. Gallery only stages its already
   // validated public DTO; the entry-owned overlay attaches it to the next
   // matching Reader route and Reader consumes it exactly once.
@@ -266,6 +277,7 @@ export struct GalleryDetailPage {
   private relatedRequestGeneration: number = 0
   private commentPeekGeneration: number = 0
   private titleTranslationEpoch: number = 0
+  private heroTitleTransitionEpoch: number = 0
   private tagTranslationEpoch: number = 0
   private readProgressRequestGeneration: number = 0
   private favoriteStatusGeneration: number = 0
@@ -515,6 +527,7 @@ export struct GalleryDetailPage {
     this.readProgressRequestGeneration += 1
     this.titleTranslationEpoch += 1
     this.titleTranslations = []
+    this.resetHeroTitleTransition()
     this.favoriteStatusGeneration += 1
     this.favoriteStatusKnown = false
     this.isFavorited = false
@@ -1092,9 +1105,32 @@ export struct GalleryDetailPage {
     }
   }
 
-  private applyVerifiedDetailSnapshot(generation: number, detail: NhGalleryDetail): boolean {
+  private applyVerifiedDetailSnapshot(
+    generation: number,
+    detail: NhGalleryDetail,
+    animateNetworkTitle: boolean,
+  ): boolean {
     if (!this.isCurrentRequest(generation) || detail.id <= 0 || detail.id !== this.galleryId) {
       return false
+    }
+    const previousPrimary: string = this.galleryHeroPrimaryTitle()
+    const previousSecondary: string = this.galleryHeroSecondaryTitle()
+    const previousId: string = this.galleryHeroIdText()
+    const previousMaxLines: number = this.galleryHeroTitleMaxLines()
+    const nextPrimary: string = this.galleryHeroPrimaryTitleFor(detail)
+    const nextSecondary: string = this.galleryHeroSecondaryTitleFor(detail)
+    const nextId: string = this.galleryHeroIdTextFor(detail)
+    const shouldTransitionTitle: boolean = animateNetworkTitle &&
+      this.detail.id === this.galleryId &&
+      previousPrimary.trim().length > 0 &&
+      (previousPrimary !== nextPrimary || previousSecondary !== nextSecondary || previousId !== nextId)
+    if (shouldTransitionTitle) {
+      this.prepareHeroTitleTransition(
+        previousPrimary,
+        previousSecondary,
+        previousId,
+        previousMaxLines,
+      )
     }
     // A cache snapshot intentionally contains only raw tag names. Prepare the
     // presentation owner before publishing the reactive Detail DTO; otherwise
@@ -1105,6 +1141,9 @@ export struct GalleryDetailPage {
     this.tagTranslationLabels = pendingTagLabels
     this.rebuildTagTranslationLabelMap(detail.tags, pendingTagLabels)
     this.detail = detail
+    if (shouldTransitionTitle) {
+      this.startHeroTitleTransition()
+    }
     // The verified response normally carries cover dimensions; a legacy or
     // direct-route detail without them falls back to the tapped row's known
     // source size (same gallery, same cover) exactly like NextE's imgWidth/
@@ -1232,7 +1271,7 @@ export struct GalleryDetailPage {
       }
       if (!forceNetwork) {
         const recent: NhGalleryDetail | null = NhGalleryDetailCacheService.getRecent(requestedGalleryId)
-        if (recent !== null && this.applyVerifiedDetailSnapshot(generation, recent)) {
+        if (recent !== null && this.applyVerifiedDetailSnapshot(generation, recent, false)) {
           cacheApplied = true
           // The current workspace is ready; background revalidation must not
           // impersonate the user's explicit refresh affordance.
@@ -1249,7 +1288,7 @@ export struct GalleryDetailPage {
           if (!this.isCurrentRequest(generation)) {
             return
           }
-          if (persisted !== null && this.applyVerifiedDetailSnapshot(generation, persisted)) {
+          if (persisted !== null && this.applyVerifiedDetailSnapshot(generation, persisted, false)) {
             cacheApplied = true
             this.isLoading = false
             this.publishRefreshChrome(false)
@@ -1265,7 +1304,7 @@ export struct GalleryDetailPage {
       if (detail.id <= 0 || detail.id !== requestedGalleryId || detail.id !== this.galleryId) {
         throw new Error('Gallery response did not match the requested gallery')
       }
-      if (!this.applyVerifiedDetailSnapshot(generation, detail)) {
+      if (!this.applyVerifiedDetailSnapshot(generation, detail, !forceNetwork && !cacheApplied)) {
         return
       }
       if (forceNetwork) {
@@ -2074,6 +2113,58 @@ export struct GalleryDetailPage {
     return (ThemeTokens.DETAIL_COVER_WIDTH * this.detail.coverHeight) / this.detail.coverWidth
   }
 
+  private resetHeroTitleTransition(): void {
+    this.heroTitleTransitionEpoch += 1
+    this.heroTitleOutgoingPrimary = ''
+    this.heroTitleOutgoingSecondary = ''
+    this.heroTitleOutgoingId = ''
+    this.heroTitleOutgoingMaxLines = 1
+    this.heroTitleTransitionProgress = 1
+    this.heroTitleTransitionActive = false
+  }
+
+  private prepareHeroTitleTransition(
+    primary: string,
+    secondary: string,
+    idText: string,
+    maxLines: number,
+  ): void {
+    this.heroTitleTransitionEpoch += 1
+    this.heroTitleOutgoingPrimary = primary
+    this.heroTitleOutgoingSecondary = secondary
+    this.heroTitleOutgoingId = idText
+    this.heroTitleOutgoingMaxLines = maxLines
+    this.heroTitleTransitionProgress = 0
+    this.heroTitleTransitionActive = true
+  }
+
+  private startHeroTitleTransition(): void {
+    const epoch: number = this.heroTitleTransitionEpoch
+    // Commit the two-layer start frame before changing opacity. ArkUI cannot
+    // interpolate Text content itself; only these stable layers are animated.
+    setTimeout((): void => {
+      if (epoch !== this.heroTitleTransitionEpoch || !this.heroTitleTransitionActive) {
+        return
+      }
+      this.getUIContext().animateTo({
+        duration: ThemeTokens.ANIM_DURATION,
+        curve: Curve.EaseOut,
+        onFinish: (): void => {
+          if (epoch !== this.heroTitleTransitionEpoch) {
+            return
+          }
+          this.heroTitleOutgoingPrimary = ''
+          this.heroTitleOutgoingSecondary = ''
+          this.heroTitleOutgoingId = ''
+          this.heroTitleOutgoingMaxLines = 1
+          this.heroTitleTransitionActive = false
+        },
+      }, (): void => {
+        this.heroTitleTransitionProgress = 1
+      })
+    }, 0)
+  }
+
   @Builder
   private GalleryHero() {
     NextNGroupedListSection({ inset: ThemeTokens.SPACE_MD }) {
@@ -2142,44 +2233,86 @@ export struct GalleryDetailPage {
         )
         .borderRadius(ThemeTokens.DETAIL_COVER_RADIUS)
         .clip(true)
-        Column({ space: ThemeTokens.SPACE_XS }) {
-          Text(this.galleryHeroPrimaryTitle())
-            .fontSize(ThemeTokens.FONT_SIZE_TITLE)
-            .fontWeight(FontWeight.Medium)
-            .fontColor(ThemeTokens.TEXT_PRIMARY)
-            .lineHeight(ThemeTokens.LINE_HEIGHT_TITLE)
-            .maxLines(this.galleryHeroTitleMaxLines())
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
+        Stack({ alignContent: Alignment.TopStart }) {
+          if (this.heroTitleTransitionActive) {
+            Column({ space: ThemeTokens.SPACE_XS }) {
+              Text(this.heroTitleOutgoingPrimary)
+                .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+                .fontWeight(FontWeight.Medium)
+                .fontColor(ThemeTokens.TEXT_PRIMARY)
+                .lineHeight(ThemeTokens.LINE_HEIGHT_TITLE)
+                .maxLines(this.heroTitleOutgoingMaxLines)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+                .width('100%')
+              if (this.heroTitleOutgoingSecondary.length > 0) {
+                Text(this.heroTitleOutgoingSecondary)
+                  .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+                  .fontColor(ThemeTokens.TEXT_SECONDARY)
+                  .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
+                  .maxLines(2)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
+                  .width('100%')
+              }
+              if (this.heroTitleOutgoingId.length > 0) {
+                Text(this.heroTitleOutgoingId)
+                  .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+                  .fontColor(ThemeTokens.TEXT_TERTIARY)
+                  .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
+                  .maxLines(1)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
+                  .width('100%')
+              }
+            }
             .width('100%')
-            .onClick((): void => {
-              this.openFullTitleSheet()
-            })
-          if (this.galleryHeroSecondaryTitle().length > 0) {
-            Text(this.galleryHeroSecondaryTitle())
-              .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-              .fontColor(ThemeTokens.TEXT_SECONDARY)
-              .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
-              .maxLines(2)
+            .height(ThemeTokens.DETAIL_COVER_HEIGHT)
+            .clip(true)
+            .alignItems(HorizontalAlign.Start)
+            .opacity(1 - this.heroTitleTransitionProgress)
+            .hitTestBehavior(HitTestMode.None)
+          }
+          Column({ space: ThemeTokens.SPACE_XS }) {
+            Text(this.galleryHeroPrimaryTitle())
+              .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+              .fontWeight(FontWeight.Medium)
+              .fontColor(ThemeTokens.TEXT_PRIMARY)
+              .lineHeight(ThemeTokens.LINE_HEIGHT_TITLE)
+              .maxLines(this.galleryHeroTitleMaxLines())
               .textOverflow({ overflow: TextOverflow.Ellipsis })
               .width('100%')
               .onClick((): void => {
                 this.openFullTitleSheet()
               })
+            if (this.galleryHeroSecondaryTitle().length > 0) {
+              Text(this.galleryHeroSecondaryTitle())
+                .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+                .fontColor(ThemeTokens.TEXT_SECONDARY)
+                .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
+                .maxLines(2)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+                .width('100%')
+                .onClick((): void => {
+                  this.openFullTitleSheet()
+                })
+            }
+            if (this.galleryHeroIdText().length > 0) {
+              Text(this.galleryHeroIdText())
+                .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+                .fontColor(ThemeTokens.TEXT_TERTIARY)
+                .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+                .width('100%')
+            }
           }
-          if (this.galleryHeroIdText().length > 0) {
-            Text(this.galleryHeroIdText())
-              .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-              .fontColor(ThemeTokens.TEXT_TERTIARY)
-              .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
-              .maxLines(1)
-              .textOverflow({ overflow: TextOverflow.Ellipsis })
-              .width('100%')
-          }
+          .width('100%')
+          .height(ThemeTokens.DETAIL_COVER_HEIGHT)
+          .clip(true)
+          .alignItems(HorizontalAlign.Start)
+          .opacity(this.heroTitleTransitionActive ? this.heroTitleTransitionProgress : 1)
         }
         .layoutWeight(1)
         .height(ThemeTokens.DETAIL_COVER_HEIGHT)
         .clip(true)
-        .alignItems(HorizontalAlign.Start)
         .bindSheet($$this.fullTitleSheetShown, this.FullTitleSheet(), appSheetOptions({
           detents: [SheetSize.LARGE],
           showClose: false,
@@ -2191,39 +2324,58 @@ export struct GalleryDetailPage {
   }
 
   /** Direct NextE header-line budget: secondary text keeps its two lines. */
-  private galleryHeroPrimaryTitle(): string {
-    if (this.galleryTitle.japaneseTitlePrimary && this.detail.japaneseTitle.length > 0) {
-      return this.detail.japaneseTitle
+  private galleryHeroPrimaryTitleFor(detail: NhGalleryDetail): string {
+    if (this.galleryTitle.japaneseTitlePrimary && detail.japaneseTitle.length > 0) {
+      return detail.japaneseTitle
     }
-    return this.detail.displayTitle()
+    return detail.displayTitle()
   }
 
-  private galleryHeroSecondaryTitle(): string {
-    const standard: string = this.detail.displayTitle()
-    const japanese: string = this.detail.japaneseTitle
+  private galleryHeroPrimaryTitle(): string {
+    return this.galleryHeroPrimaryTitleFor(this.detail)
+  }
+
+  private galleryHeroSecondaryTitleFor(detail: NhGalleryDetail): string {
+    const standard: string = detail.displayTitle()
+    const japanese: string = detail.japaneseTitle
     if (this.galleryTitle.japaneseTitlePrimary) {
       return japanese.length > 0 && japanese !== standard ? standard : ''
     }
     return japanese.length > 0 && japanese !== standard ? japanese : ''
   }
 
-  private galleryHeroIdText(): string {
-    return this.detail.id === this.galleryId && this.detail.id > 0
-      ? `#${this.detail.id.toString()}`
+  private galleryHeroSecondaryTitle(): string {
+    return this.galleryHeroSecondaryTitleFor(this.detail)
+  }
+
+  private galleryHeroIdTextFor(detail: NhGalleryDetail): string {
+    return detail.id === this.galleryId && detail.id > 0
+      ? `#${detail.id.toString()}`
       : ''
   }
 
-  private galleryHeroTitleMaxLines(): number {
-    const hasSecondary: boolean = this.galleryHeroSecondaryTitle().length > 0
+  private galleryHeroIdText(): string {
+    return this.galleryHeroIdTextFor(this.detail)
+  }
+
+  private galleryHeroTitleMaxLinesFor(secondaryTitle: string, idText: string): number {
+    const hasSecondary: boolean = secondaryTitle.length > 0
     const secondaryReserve: number = hasSecondary
       ? 2 * ThemeTokens.LINE_HEIGHT_BODY + ThemeTokens.SPACE_XS
       : 0
-    const idReserve: number = this.galleryHeroIdText().length > 0
+    const idReserve: number = idText.length > 0
       ? ThemeTokens.LINE_HEIGHT_BODY + ThemeTokens.SPACE_XS
       : 0
     const available: number = ThemeTokens.DETAIL_COVER_HEIGHT - secondaryReserve - idReserve
     const lines: number = Math.floor(available / ThemeTokens.LINE_HEIGHT_TITLE)
     return Math.min(Math.max(lines, 1), 6)
+  }
+
+  private galleryHeroTitleMaxLines(): number {
+    return this.galleryHeroTitleMaxLinesFor(
+      this.galleryHeroSecondaryTitle(),
+      this.galleryHeroIdText(),
+    )
   }
 
   /**
