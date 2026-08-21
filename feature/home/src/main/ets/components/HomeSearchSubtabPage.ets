@@ -282,7 +282,7 @@ export struct HomeSearchSubtabPage {
         .catch((): void => {})
     } catch (error) {
       if (this.isCurrent(generation, profile.contentRevision())) {
-        this.errorMessage = (error as Error).message || AppStrings.get('browse_load_failed')
+        this.errorMessage = AppStrings.get('browse_load_failed')
         refreshOutcome = 'error'
       }
     } finally {
@@ -348,7 +348,7 @@ export struct HomeSearchSubtabPage {
       this.totalPages = Math.max(nextPage, result.totalPages)
     } catch (error) {
       if (this.isCurrent(generation, revision)) {
-        this.loadMoreErrorMessage = (error as Error).message || AppStrings.get('browse_load_more_failed')
+        this.loadMoreErrorMessage = AppStrings.get('browse_load_more_failed')
       }
     } finally {
       if (generation === this.requestGeneration) {
@@ -446,7 +446,7 @@ export struct HomeSearchSubtabPage {
       return true
     } catch (error) {
       if (this.isCurrent(generation, profile.contentRevision())) {
-        this.errorMessage = (error as Error).message || AppStrings.get('browse_load_failed')
+        this.errorMessage = AppStrings.get('browse_load_failed')
       }
       return false
     } finally {

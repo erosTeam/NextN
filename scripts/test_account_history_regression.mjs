@@ -58,6 +58,13 @@ ok('all first-party v2 JSON requests share the browser-managed cookie response c
   /persistBrowserManagedCookies/.test(api) &&
   !/http\.createHttp\(\)/.test(api) &&
   !/recoverRegularArkWebCookieJarAfterAuthenticated401/.test(api))
+ok('early authenticated requests wait for the root ArkWeb controller attachment',
+  /CONTROLLER_ATTACH_TIMEOUT_MS/.test(arkWebTransport) &&
+  /waitForControllerAttach\(\)/.test(arkWebTransport) &&
+  /controller_attach_wait_started/.test(arkWebTransport) &&
+  /controller_attach_wait_completed/.test(arkWebTransport) &&
+  /completeAttachWait\(\)/.test(arkWebTransport) &&
+  !/Account browser transport is not attached/.test(arkWebTransport))
 ok('401 recovery never overwrites the live browser jar with a sealed access token',
   !/forceRegularArkWebCookieJarFromSealedSession/.test(session) &&
   !/AUTHENTICATED_READ_SEALED_REPLAY/.test(session) &&

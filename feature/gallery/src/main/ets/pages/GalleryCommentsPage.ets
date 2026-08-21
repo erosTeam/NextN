@@ -63,6 +63,17 @@ export class CommentTranslationRenderState {
 }
 
 /**
+ * One resolved reply reference. The immutable display leaves may be prepared
+ * by the page, but the card keeps the real comment identity and reads its live
+ * render state when building the quote body.
+ */
+export class GalleryCommentReplyReference {
+  comment: NhComment = new NhComment()
+  body: string = ''
+  emphasizedMentions: string[] = []
+}
+
+/**
  * A separate destination keeps comments from competing with the Gallery hero
  * and Read action. The HDS owns the destination title while this page owns
  * one pull-to-refresh list and its persistent bottom composer.
@@ -88,6 +99,13 @@ export struct GalleryCommentsPage {
   @Local commentSubmitError: string = ''
   /** Per-comment render states (NextE renderStateMap parity). */
   private renderStateMap: Map<number, CommentTranslationRenderState> = new Map()
+  /**
+   * Stable all-comment state references consumed directly by quote builders.
+   * This is the reactive dependency path used by current NextE: a referenced
+   * row's @Trace write invalidates both that row and every mounted quote that
+   * reads the same state object.
+   */
+  private referenceRenderStates: CommentTranslationRenderState[] = []
   /** Stable LazyForEach owner; only mounted comment cards may start automatic work. */
   private commentDataSource: BasicDataSource<NhComment> = new BasicDataSource<NhComment>(
     (comment: NhComment): string => comment.commentId.toString(),
@@ -180,6 +198,7 @@ export struct GalleryCommentsPage {
    */
   private rebuildRenderStates(resetStates: boolean): void {
     const next: Map<number, CommentTranslationRenderState> = new Map()
+    const nextStates: CommentTranslationRenderState[] = []
     for (let index: number = 0; index < this.rawComments.length; index++) {
       const comment: NhComment = this.rawComments[index]
       const existing: CommentTranslationRenderState | undefined = resetStates
@@ -187,13 +206,16 @@ export struct GalleryCommentsPage {
         : this.renderStateMap.get(comment.commentId)
       if (existing !== undefined) {
         next.set(comment.commentId, existing)
+        nextStates.push(existing)
       } else {
         const state: CommentTranslationRenderState = new CommentTranslationRenderState()
         state.commentId = comment.commentId
         next.set(comment.commentId, state)
+        nextStates.push(state)
       }
     }
     this.renderStateMap = next
+    this.referenceRenderStates = nextStates
   }
 
   /** List builder lookup; the map is rebuilt before the list renders. */
@@ -249,10 +271,78 @@ export struct GalleryCommentsPage {
       this.replyBody(comment).trim().length > 0
   }
 
-  private replyQuoteBodyFor(comment: NhComment): string {
-    const reference: NhComment = this.replyReferenceOrFallback(comment)
-    const body: string = this.replyBody(reference)
-    return body.length > 0 ? body : AppStrings.get('comments_empty_body')
+  private replyReferencesFor(comment: NhComment): GalleryCommentReplyReference[] {
+    const references: NhComment[] = this.replyReferences(comment)
+    const resolved: GalleryCommentReplyReference[] = []
+    for (let index: number = 0; index < references.length; index += 1) {
+      const reference: NhComment = references[index]
+      const item: GalleryCommentReplyReference = new GalleryCommentReplyReference()
+      item.comment = reference
+      const body: string = this.replyBody(reference)
+      item.body = body.length > 0 ? body : AppStrings.get('comments_empty_body')
+      item.emphasizedMentions = this.replyMentionLabels(reference)
+      resolved.push(item)
+    }
+    return resolved
+  }
+
+  private matchedMentionLength(comment: NhComment, segment: string): number {
+    const targetId: number = this.replyReferenceTargetId(segment)
+    if (targetId > 0) {
+      const target: NhComment | null = this.commentById(targetId)
+      if (target !== null) {
+        const targetNameLength: number = this.matchedAuthorNameLength(
+          this.authorLabel(target),
+          segment,
+        )
+        if (targetNameLength > 0) {
+          return targetNameLength + 1
+        }
+      }
+    }
+    const nameLength: number = this.matchedMentionNameLength(this.candidateComments(comment), segment)
+    return nameLength > 0 ? nameLength + 1 : 0
+  }
+
+  private replyMentionLabels(comment: NhComment): string[] {
+    const labels: string[] = []
+    const visibleBody: string = this.replyBody(comment)
+    const segments: string[] = visibleBody.split('@')
+    for (let index: number = 1; index < segments.length; index += 1) {
+      const segment: string = `@${segments[index]}`
+      const length: number = this.matchedMentionLength(comment, segment)
+      const label: string = length > 1 ? segment.substring(0, length) : ''
+      if (label.length === 0 || labels.includes(label)) {
+        continue
+      }
+      labels.push(label)
+    }
+    return labels
+  }
+
+  private translationSourceText(comment: NhComment): string {
+    const source: string = this.replyBody(comment)
+    let protectedSource: string = ''
+    let cursor: number = 0
+    while (cursor < source.length) {
+      const at: number = source.indexOf('@', cursor)
+      if (at < 0) {
+        protectedSource += source.substring(cursor)
+        break
+      }
+      protectedSource += source.substring(cursor, at)
+      const length: number = this.matchedMentionLength(comment, source.substring(at))
+      if (length > 1) {
+        protectedSource += CommentTranslationService.protectMentionText(
+          source.substring(at, at + length),
+        )
+        cursor = at + length
+      } else {
+        protectedSource += '@'
+        cursor = at + 1
+      }
+    }
+    return protectedSource
   }
 
   private isTranslationShown(comment: NhComment): boolean {
@@ -276,12 +366,43 @@ export struct GalleryCommentsPage {
     if (state.autoStarted || state.loading || state.translated.length > 0) {
       return
     }
-    const source: string = this.replyBody(comment)
+    const source: string = this.translationSourceText(comment)
     if (source.trim().length === 0 || !CommentTranslationService.needsTranslation(source)) {
       return
     }
     this.applyCommentTranslationState(comment.commentId, undefined, undefined, undefined, true, false)
     this.toggleOrTranslate(comment, COMMENT_TRANSLATION_PRIORITY_AUTO)
+  }
+
+  private autoTranslateReplyReferences(comment: NhComment): void {
+    const references: NhComment[] = this.replyReferences(comment)
+    for (let index: number = 0; index < references.length; index += 1) {
+      this.autoTranslateComment(references[index])
+    }
+  }
+
+  private ensureReplyReferencesTranslated(comment: NhComment): void {
+    const references: NhComment[] = this.replyReferences(comment)
+    for (let index: number = 0; index < references.length; index += 1) {
+      this.ensureCommentTranslation(references[index])
+    }
+  }
+
+  private ensureCommentTranslation(comment: NhComment): void {
+    if (!this.canTranslate(comment)) {
+      return
+    }
+    const state: CommentTranslationRenderState = this.renderStateFor(comment)
+    if (state.loading) {
+      return
+    }
+    if (state.translated.length > 0) {
+      if (!state.shown) {
+        this.applyCommentTranslationState(comment.commentId, undefined, true, false, undefined, false)
+      }
+      return
+    }
+    this.toggleOrTranslate(comment, COMMENT_TRANSLATION_PRIORITY_INTERACTIVE)
   }
 
   private translationActionLabel(comment: NhComment): string {
@@ -310,7 +431,7 @@ export struct GalleryCommentsPage {
     try {
       const translated: string = await CommentTranslationService.translate(
         this.context(),
-        this.replyBody(comment),
+        this.translationSourceText(comment),
         priority,
       )
       if (this.galleryId === galleryId && this.loadedGalleryId === galleryId) {
@@ -331,9 +452,6 @@ export struct GalleryCommentsPage {
         // Queue-evicted background work stays untranslated without a toast (NextE parity).
         this.applyCommentTranslationState(comment.commentId, undefined, undefined, false, undefined, false)
         return
-      }
-      if (this.galleryId === galleryId) {
-        this.showCommentToast(AppStrings.get('comments_translation_failed'))
       }
       this.applyCommentTranslationState(comment.commentId, undefined, undefined, false, undefined, true)
     }
@@ -360,13 +478,17 @@ export struct GalleryCommentsPage {
         return
       }
       this.rawComments = comments
+      this.rebuildRenderStates(true)
       this.applyContentFilters()
       this.loadedGalleryId = this.galleryId
-    } catch (error) {
+    } catch (_error) {
       if (!this.isCurrentRequest(generation)) {
         return
       }
-      this.errorMessage = (error as Error).message || AppStrings.get('comments_error_load')
+      // Transport, lifecycle and protocol details are diagnostics, never user
+      // copy. The page owns one localized recovery state with an explicit
+      // retry action regardless of the lower-layer failure classification.
+      this.errorMessage = AppStrings.get('comments_error_load')
     } finally {
       if (this.isCurrentRequest(generation)) {
         this.isLoading = false
@@ -460,38 +582,203 @@ export struct GalleryCommentsPage {
     return Number.isNaN(value) || value <= 0 ? 0 : value
   }
 
-  private replyTarget(comment: NhComment): NhComment | null {
-    const lines: string[] = comment.body.split('\n')
-    if (lines.length < 2 || !lines[0].trim().startsWith('@')) {
-      return null
+  private hashReplyId(line: string): number {
+    const start: number = line.indexOf('#')
+    if (start < 0) {
+      return 0
     }
-    const targetId: number = this.decodeReplyId(lines[1])
-    if (targetId <= 0 || targetId === comment.commentId) {
-      return null
+    const end: number = line.indexOf('#', start + 1)
+    if (end <= start + 1) {
+      return 0
     }
+    const value: number = Number.parseInt(line.substring(start + 1, end), 10)
+    return Number.isNaN(value) || value <= 0 ? 0 : value
+  }
+
+  private commentIdNum(comment: NhComment): number {
+    return comment.commentId
+  }
+
+  private sortedComments(): NhComment[] {
+    const sorted: NhComment[] = this.rawComments.slice()
+    sorted.sort((first: NhComment, second: NhComment): number =>
+      this.commentIdNum(second) - this.commentIdNum(first))
+    return sorted
+  }
+
+  private candidateComments(comment: NhComment): NhComment[] {
+    const sorted: NhComment[] = this.sortedComments()
+    for (let index: number = 0; index < sorted.length; index += 1) {
+      if (sorted[index].commentId === comment.commentId) {
+        return sorted.slice(index)
+      }
+    }
+    return []
+  }
+
+  private commentById(commentId: number): NhComment | null {
     for (let index: number = 0; index < this.rawComments.length; index += 1) {
       const candidate: NhComment = this.rawComments[index]
-      if (candidate.commentId === targetId) {
+      if (candidate.commentId === commentId) {
         return candidate
       }
     }
     return null
   }
 
+  private mentionTail(segment: string): string {
+    const at: number = segment.indexOf('@')
+    return at >= 0 ? segment.substring(at + 1).trim() : ''
+  }
+
+  private isNameSeparator(character: string): boolean {
+    return character === ' ' || character === '\n' || character === '\t' || character === '\r' ||
+      character === '+' || character === ',' || character === '.' || character === '，' || character === '。'
+  }
+
+  private nameParts(text: string): string[] {
+    const parts: string[] = []
+    let current: string = ''
+    for (let index: number = 0; index < text.length; index += 1) {
+      const character: string = text.charAt(index)
+      if (this.isNameSeparator(character)) {
+        if (current.length > 0) {
+          parts.push(current)
+          current = ''
+        }
+      } else {
+        current += character
+      }
+    }
+    if (current.length > 0) {
+      parts.push(current)
+    }
+    return parts
+  }
+
+  private normalizedName(name: string): string {
+    return this.nameParts(name).join(' ')
+  }
+
+  private findBySpaceAuthor(candidates: NhComment[], segment: string): NhComment | null {
+    const parts: string[] = this.nameParts(this.mentionTail(segment))
+    for (let count: number = parts.length; count > 0; count -= 1) {
+      const author: string = parts.slice(0, count).join(' ')
+      for (let index: number = 0; index < candidates.length; index += 1) {
+        if (this.normalizedName(this.authorLabel(candidates[index])) === author) {
+          return candidates[index]
+        }
+      }
+    }
+    return null
+  }
+
+  private namePartsPrefixLength(text: string, count: number): number {
+    let seen: number = 0
+    let inPart: boolean = false
+    for (let index: number = 0; index < text.length; index += 1) {
+      if (this.isNameSeparator(text.charAt(index))) {
+        if (inPart) {
+          seen += 1
+          inPart = false
+          if (seen === count) {
+            return index
+          }
+        }
+      } else {
+        inPart = true
+      }
+    }
+    if (inPart) {
+      seen += 1
+      if (seen === count) {
+        return text.length
+      }
+    }
+    return 0
+  }
+
+  private matchedMentionNameLength(candidates: NhComment[], segment: string): number {
+    const tail: string = this.mentionTail(segment)
+    const parts: string[] = this.nameParts(tail)
+    for (let count: number = parts.length; count > 0; count -= 1) {
+      const name: string = parts.slice(0, count).join(' ')
+      for (let index: number = 0; index < candidates.length; index += 1) {
+        if (this.normalizedName(this.authorLabel(candidates[index])) === name) {
+          return this.namePartsPrefixLength(tail, count)
+        }
+      }
+    }
+    return 0
+  }
+
+  private matchedAuthorNameLength(author: string, segment: string): number {
+    const authorParts: string[] = this.nameParts(author)
+    if (authorParts.length === 0) {
+      return 0
+    }
+    const tail: string = this.mentionTail(segment)
+    const prefixLength: number = this.namePartsPrefixLength(tail, authorParts.length)
+    if (prefixLength <= 0) {
+      return 0
+    }
+    return this.normalizedName(tail.substring(0, prefixLength)) === this.normalizedName(author)
+      ? prefixLength
+      : 0
+  }
+
+  private replyReferenceTargetId(segment: string): number {
+    const hashId: number = this.hashReplyId(segment)
+    if (hashId > 0) {
+      return hashId
+    }
+    const lines: string[] = segment.split('\n')
+    return lines.length >= 2 ? this.decodeReplyId(lines[1]) : 0
+  }
+
+  private pushReply(replies: NhComment[], comment: NhComment, reply: NhComment | null): void {
+    if (reply === null || reply.commentId <= 0 || reply.commentId === comment.commentId) {
+      return
+    }
+    for (let index: number = 0; index < replies.length; index += 1) {
+      if (replies[index].commentId === reply.commentId) {
+        return
+      }
+    }
+    replies.push(reply)
+  }
+
+  private replyReferences(comment: NhComment): NhComment[] {
+    const segments: string[] = comment.body.split('@')
+    const candidates: NhComment[] = this.candidateComments(comment)
+    const replies: NhComment[] = []
+    for (let index: number = 1; index < segments.length; index += 1) {
+      const segment: string = `@${segments[index]}`
+      const targetId: number = this.replyReferenceTargetId(segment)
+      if (targetId > 0) {
+        this.pushReply(replies, comment, this.commentById(targetId))
+        continue
+      }
+      this.pushReply(replies, comment, this.findBySpaceAuthor(candidates, segment))
+    }
+    return replies
+  }
+
   private replyBody(comment: NhComment): string {
-    if (this.replyTarget(comment) === null) {
+    if (this.replyReferences(comment).length === 0) {
       return comment.body
     }
-    return comment.body.split('\n').slice(2).join('\n').trim()
-  }
-
-  private hasReplyReference(comment: NhComment): boolean {
-    return this.replyTarget(comment) !== null
-  }
-
-  private replyReferenceOrFallback(comment: NhComment): NhComment {
-    const target: NhComment | null = this.replyTarget(comment)
-    return target !== null ? target : comment
+    const lines: string[] = comment.body.split('\n')
+    if (lines.length === 0 || !lines[0].trim().startsWith('@')) {
+      return comment.body
+    }
+    if (this.hashReplyId(lines[0]) > 0) {
+      return lines.slice(1).join('\n').trim()
+    }
+    if (lines.length > 1 && this.decodeReplyId(lines[1]) > 0) {
+      return lines.slice(2).join('\n').trim()
+    }
+    return comment.body
   }
 
   private replyPlaceholder(): string {
@@ -587,6 +874,7 @@ export struct GalleryCommentsPage {
       }
       if (comment !== null) {
         this.rawComments = [comment, ...this.rawComments.filter((item: NhComment): boolean => item.commentId !== comment.commentId)]
+        this.rebuildRenderStates(false)
         this.applyContentFilters()
       } else {
         // The remote mutation is already confirmed. A normal GET refresh is
@@ -837,17 +1125,22 @@ export struct GalleryCommentsPage {
               autoTranslate: this.commentTranslationSettings.autoTranslate,
               bilingual: this.commentTranslationSettings.displayMode ===
                 COMMENT_TRANSLATION_DISPLAY_BILINGUAL,
-              replyQuoteBody: this.hasReplyReference(comment)
-                ? this.replyQuoteBodyFor(comment)
-                : '',
-              replyQuoteAuthor: this.hasReplyReference(comment)
-                ? this.authorLabel(this.replyReferenceOrFallback(comment))
-                : '',
+              replyReferences: this.replyReferencesFor(comment),
+              referenceRenderStates: this.referenceRenderStates,
+              translationEnabled: this.commentTranslationSettings.enabled,
+              emphasizedMentions: this.replyMentionLabels(comment),
               onToggleTranslate: (): void => {
+                const state: CommentTranslationRenderState = this.renderStateFor(comment)
+                if (state.translated.length === 0 || !state.shown) {
+                  this.ensureReplyReferencesTranslated(comment)
+                }
                 this.toggleOrTranslate(comment)
               },
               onAutoTranslate: (): void => {
                 this.autoTranslateComment(comment)
+              },
+              onAutoTranslateReferences: (): void => {
+                this.autoTranslateReplyReferences(comment)
               },
               onReply: (): void => {
                 this.openReply(comment)

@@ -128,9 +128,9 @@ export struct WebDavSyncSettingsPage {
         this.toast(AppStrings.get('sync_now_done'))
       })
       .catch((error: Error) => {
-        SyncSettings.markRun(this.ctx(), SYNC_STATUS_FAILED, error.message)
+        SyncSettings.markRun(this.ctx(), SYNC_STATUS_FAILED)
         DiagnosticLogger.warn('sync', 'manual_webdav_sync_failed', error.message)
-        this.toast(`${AppStrings.get('sync_now_failed')}: ${error.message}`)
+        this.toast(AppStrings.get('sync_now_failed'))
       })
   }
 

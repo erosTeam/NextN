@@ -1260,7 +1260,7 @@ export struct SearchPage {
       if (!this.isCurrentRequest(generation)) {
         return
       }
-      this.errorMessage = (error as Error).message || AppStrings.get('search_failed')
+      this.errorMessage = AppStrings.get('search_failed')
     } finally {
       if (this.isCurrentRequest(generation)) {
         this.isInitialLoading = false
@@ -1308,7 +1308,7 @@ export struct SearchPage {
       if (!this.isCurrentRequest(generation)) {
         return
       }
-      this.errorMessage = (error as Error).message || AppStrings.get('search_failed')
+      this.errorMessage = AppStrings.get('search_failed')
     } finally {
       if (this.isCurrentRequest(generation)) {
         this.isInitialLoading = false
@@ -1381,7 +1381,7 @@ export struct SearchPage {
       if (!this.isCurrentRequest(generation)) {
         return false
       }
-      this.errorMessage = (error as Error).message || AppStrings.get('search_failed')
+      this.errorMessage = AppStrings.get('search_failed')
       return false
     } finally {
       if (this.isCurrentRequest(generation)) {
@@ -1472,7 +1472,7 @@ export struct SearchPage {
       if (!this.isCurrentRequest(generation)) {
         return
       }
-      this.loadMoreErrorMessage = (error as Error).message || AppStrings.get('search_load_more_failed')
+      this.loadMoreErrorMessage = AppStrings.get('search_load_more_failed')
     } finally {
       if (this.isCurrentRequest(generation)) {
         this.isLoadingMore = false

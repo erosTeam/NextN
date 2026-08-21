@@ -64,7 +64,7 @@ export struct LlmSourceManagerPage {
       })
       .catch((error: Error): void => {
         this.getUIContext().getPromptAction().showToast({
-          message: AppStrings.format('llm_source_create_failed', [error.message]),
+          message: AppStrings.get('llm_source_create_failed'),
         })
       })
       .finally((): void => {

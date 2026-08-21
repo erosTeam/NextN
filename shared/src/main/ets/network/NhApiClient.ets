@@ -35,6 +35,7 @@ const ACCOUNT_LOG_TAG: string = 'NextNAccount'
 const CLOUD_BLACKLIST_REFRESH_TTL_MS: number = 10 * 60 * 1000
 const MAX_COMMENT_POW_ATTEMPTS: number = 2000000
 const COMMENT_POW_YIELD_INTERVAL: number = 2048
+const COMMENT_BIDI_FORMAT_CONTROLS: RegExp = /[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g
 // ErosN's unscoped search autocomplete probes these catalog namespaces in
 // order. Keep the list short: expanding it would multiply requests for every
 // edit without improving the ordinary tag-search path.
@@ -991,7 +992,7 @@ export class NhApiClient {
     comment.commentId = NhApiClient.asNumber(item['id'])
     comment.galleryId = NhApiClient.asNumber(item['gallery_id'])
     comment.postDate = NhApiClient.asNumber(item['post_date'])
-    comment.body = NhApiClient.asString(item['body'])
+    comment.body = NhApiClient.normalizeCommentBody(NhApiClient.asString(item['body']))
     const poster: Record<string, Object> = NhApiClient.asRecord(item['poster'])
     comment.posterId = NhApiClient.asNumber(poster['id'])
     comment.posterName = NhApiClient.asString(poster['username'])
@@ -1002,6 +1003,24 @@ export class NhApiClient {
     // A stable List key is required by ArkUI; incomplete server records
     // cannot be displayed safely or attributed to a gallery.
     return comment.commentId > 0 ? comment : null
+  }
+
+  private static normalizeCommentBody(raw: string): string {
+    const lines: string[] = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
+    let start: number = 0
+    let end: number = lines.length
+    while (start < end && NhApiClient.isCommentBoundaryBlank(lines[start])) {
+      start += 1
+    }
+    while (end > start && NhApiClient.isCommentBoundaryBlank(lines[end - 1])) {
+      end -= 1
+    }
+    return lines.slice(start, end).join('\n')
+  }
+
+  private static isCommentBoundaryBlank(line: string): boolean {
+    COMMENT_BIDI_FORMAT_CONTROLS.lastIndex = 0
+    return line.replace(COMMENT_BIDI_FORMAT_CONTROLS, '').trim().length === 0
   }
 
   private static cdnUrl(path: string, root: string): string {

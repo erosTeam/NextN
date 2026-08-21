@@ -3563,3 +3563,59 @@ permitted in this repository.
   `tag:"full color" / 标签:全彩` result, ahead of the independent raw fallback.
   The editor was exited without saving. No physical action remains for this
   bounded matching defect.
+
+## CLOSED — 237 cold-start Comments account-transport attach race — 2026-08-22 +0800
+
+- A signed Debug HAP containing the still-open Gallery Comments correction was
+  installed with data-preserving `install -r` under lease
+  `20260821-190547-516d6887`; no uninstall, data clear, account action,
+  credential action, preference change, or comment submission occurred.
+- A process-cold integer-Want direct route to Gallery `#674009` reached the
+  native Comments destination but rendered the literal internal error
+  `Account browser transport is not attached`. The redacted launch log recorded
+  a valid v3 retained envelope, `account_restore_ready`, deferred hydration,
+  then hydration ready after the retained ArkWeb page attached.
+- The current privacy-bounded S0 reader subsequently reported native Account
+  signed in, one saved/selected account, no verification/save failure/login
+  Web, and Favorites authenticated with no prompt or error. This proves the
+  account state was not lost; the direct request outran the root transport
+  host attachment and the page leaked the internal exception.
+- The shared transport now joins one bounded controller-attachment wait before
+  bootstrap. In the corrected cold direct run, redacted diagnostics recorded
+  `controller_attach_wait_started`, `controller_attached`, then
+  `controller_attach_wait_completed`; the native comment list rendered instead
+  of an internal implementation string.
+- The final privacy-bounded S0 after the final `install -r` reported native
+  Account signed in, one saved/selected account, no verification/save failure
+  or login Web, and Favorites authenticated with no prompt/error. No login
+  epoch or credential action was warranted.
+- Gallery `#674009` then physically rendered the exact-author reply quote for
+  `@Lovingawesome777god`, while its first row showed translated Chinese body
+  with the active translation symbol. No global translation failure copy was
+  present. However, whole-card review found the quote excerpt still used the
+  English original, omitted the referenced avatar, and did not emphasize the
+  resolved mention. The transport/S0 portion is accepted; the combined reply
+  presentation remains open until the same current-device row proves all three
+  missing leaves together.
+- The final reconciled signed Debug HAP was installed in place on 237 with no
+  uninstall or data clear. The cold direct Comments route loaded normally.
+  Comment `4592619` now renders one compact `ok` line instead of preserving its
+  API-supplied 22-line trailing blank block; internal paragraph spacing on the
+  separate `Aki K` comment remains intact.
+- The first final-run quote observation was retained as counter-evidence: the
+  referenced row translated to Chinese but the quote kept an English Span.
+  Source comparison isolated the difference from NextE's direct Text leaf:
+  NextN's new rich-text `ForEach` used position-only keys and retained the old
+  child. After text-sensitive bounded keys were applied and the HAP rebuilt,
+  the same row showed a 20vp quote avatar inline with the referenced username,
+  a Chinese quote excerpt, a Chinese reply body, and a link-colored resolved
+  `@Lovingawesome777god`. The misspelled `@freezingzama` stayed ordinary text
+  and unresolved.
+- The post-install privacy-bounded S0 reader returned signed-in native Account,
+  one saved/selected account, no login Web/verification/save failure, and an
+  authenticated Favorites result without prompt or error. No new login epoch
+  or credential input was warranted. Final PowerManager state remained
+  `AWAKE` with `OverrideTimeout=86400000ms`. Evidence is retained locally under
+  `.hvigor/outputs/gallery-comments-674009-final-20260822T0434/` and excluded
+  from Git. No physical acceptance action remains for this Comments/account
+  transport lane.

@@ -173,7 +173,7 @@ export struct PopularPage {
       if (!this.isCurrentRequest(generation)) {
         return
       }
-      this.errorMessage = (error as Error).message || AppStrings.get('popular_load_failed')
+      this.errorMessage = AppStrings.get('popular_load_failed')
       refreshOutcome = 'error'
     } finally {
       if (this.isCurrentRequest(generation)) {

@@ -369,7 +369,7 @@ export struct LatestSourcePage {
       if (!this.isCurrentRequest(generation)) {
         return
       }
-      this.errorMessage = (error as Error).message || AppStrings.get('browse_load_failed')
+      this.errorMessage = AppStrings.get('browse_load_failed')
       refreshOutcome = 'error'
     } finally {
       if (this.isCurrentRequest(generation)) {
@@ -460,7 +460,7 @@ export struct LatestSourcePage {
       if (!this.isCurrentRequest(generation)) {
         return false
       }
-      this.errorMessage = (error as Error).message || AppStrings.get('browse_load_failed')
+      this.errorMessage = AppStrings.get('browse_load_failed')
       return false
     } finally {
       if (this.isCurrentRequest(generation)) {
@@ -552,7 +552,7 @@ export struct LatestSourcePage {
       if (!this.isCurrentRequest(generation)) {
         return
       }
-      this.loadMoreErrorMessage = (error as Error).message || AppStrings.get('browse_load_more_failed')
+      this.loadMoreErrorMessage = AppStrings.get('browse_load_more_failed')
     } finally {
       if (this.isCurrentRequest(generation)) {
         this.isLoadingMore = false

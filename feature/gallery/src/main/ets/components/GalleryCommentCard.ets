@@ -5,14 +5,30 @@ import {
   NhComment,
   ThemeTokens,
 } from 'shared'
-import { CommentTranslationRenderState } from '../pages/GalleryCommentsPage'
+import {
+  CommentTranslationRenderState,
+  GalleryCommentReplyReference,
+} from '../pages/GalleryCommentsPage'
 
 const COMMENT_ACTION_SIZE: number = 30
 const COMMENT_ACTION_ICON_SIZE: number = 16
 // Next2V ReplyCardHeader avatar diameter (AVATAR_SIZE_REPLY).
 const COMMENT_AVATAR_SIZE: number = 32
+const COMMENT_QUOTE_AVATAR_SIZE: number = 20
 const COMMENT_ANIM_DONE_DELAY_MS: number = 200
 const COMMENT_QUOTE_RADIUS: number = ThemeTokens.RADIUS_SM + ThemeTokens.SPACE_XS
+
+class GalleryCommentTextSegment {
+  key: string = ''
+  text: string = ''
+  emphasized: boolean = false
+
+  constructor(key: string, text: string, emphasized: boolean) {
+    this.key = key
+    this.text = text
+    this.emphasized = emphasized
+  }
+}
 
 /**
  * Height-measure animation machinery (ported from NextE GalleryCommentsCard):
@@ -36,10 +52,13 @@ export struct GalleryCommentCard {
   @Param canTranslate: boolean = false
   @Param autoTranslate: boolean = false
   @Param bilingual: boolean = false
-  @Param replyQuoteBody: string = ''
-  @Param replyQuoteAuthor: string = ''
+  @Param replyReferences: GalleryCommentReplyReference[] = []
+  @Param referenceRenderStates: CommentTranslationRenderState[] = []
+  @Param translationEnabled: boolean = false
+  @Param emphasizedMentions: string[] = []
   @Event onToggleTranslate: () => void = () => {}
   @Event onAutoTranslate: () => void = () => {}
+  @Event onAutoTranslateReferences: () => void = () => {}
   @Event onReply: () => void = () => {}
 
   // Card-local mirrors of the page-held params. The body/icon read THESE and
@@ -108,8 +127,11 @@ export struct GalleryCommentCard {
   }
 
   private requestAutoTranslate(): void {
-    if (!this.canTranslate || !this.autoTranslate || this.renderState.autoStarted ||
-      this.renderState.loading || this.renderState.translated.length > 0) {
+    if (!this.canTranslate || !this.autoTranslate) {
+      return
+    }
+    this.onAutoTranslateReferences()
+    if (this.renderState.autoStarted || this.renderState.loading || this.renderState.translated.length > 0) {
       return
     }
     this.onAutoTranslate()
@@ -217,7 +239,8 @@ export struct GalleryCommentCard {
         this.onToggleTranslate()
       })
     } else if (this.localFailed) {
-      this.FooterAction($r('sys.symbol.translate'), Color.Red, false, this.translationActionLabel(), (): void => {
+      this.FooterAction($r('sys.symbol.exclamationmark_triangle'), Color.Red, false,
+        this.translationActionLabel(), (): void => {
         this.manualTranslateArmed = true
         this.onToggleTranslate()
       })
@@ -259,20 +282,32 @@ export struct GalleryCommentCard {
   }
 
   @Builder
-  private ReplyQuote() {
-    if (this.replyQuoteBody.length > 0) {
+  private ReplyReferences() {
+    ForEach(this.replyReferences, (reference: GalleryCommentReplyReference): void => {
       Column({ space: ThemeTokens.SPACE_XS }) {
-        if (this.replyQuoteAuthor.length > 0) {
-          Text(this.replyQuoteAuthor)
-            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-            .fontWeight(FontWeight.Medium)
-            .fontColor(ThemeTokens.TEXT_LINK)
-            .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
+        Row({ space: ThemeTokens.SPACE_XS }) {
+          this.ReplyAvatar(reference)
+          if (this.replyAuthor(reference).length > 0) {
+            Text(this.replyAuthor(reference))
+              .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+              .fontWeight(FontWeight.Medium)
+              .fontColor(ThemeTokens.TEXT_LINK)
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+          }
         }
-        Text(this.replyQuoteBody)
+        .width('100%')
+        .alignItems(VerticalAlign.Center)
+        Text() {
+          ForEach(this.textSegments(this.replyQuoteBody(reference), reference.emphasizedMentions),
+            (segment: GalleryCommentTextSegment): void => {
+              Span(segment.text)
+                .fontColor(segment.emphasized ? ThemeTokens.TEXT_LINK : ThemeTokens.TEXT_SECONDARY)
+            },
+            (segment: GalleryCommentTextSegment): string => segment.key)
+        }
+          .width('100%')
           .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-          .fontColor(ThemeTokens.TEXT_SECONDARY)
           .maxLines(3)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
@@ -281,7 +316,124 @@ export struct GalleryCommentCard {
       .padding(ThemeTokens.SPACE_SM)
       .borderRadius(COMMENT_QUOTE_RADIUS)
       .backgroundColor(ThemeTokens.SURFACE_SUB)
+    }, (reference: GalleryCommentReplyReference): string => reference.comment.commentId.toString())
+  }
+
+  private replyAuthor(reference: GalleryCommentReplyReference): string {
+    return reference.comment.posterName.length > 0
+      ? reference.comment.posterName
+      : AppStrings.get('comments_author_anonymous')
+  }
+
+  private referenceRenderState(reference: GalleryCommentReplyReference): CommentTranslationRenderState | undefined {
+    const commentId: number = reference.comment.commentId
+    for (let index: number = 0; index < this.referenceRenderStates.length; index += 1) {
+      const state: CommentTranslationRenderState = this.referenceRenderStates[index]
+      if (state.commentId === commentId) {
+        return state
+      }
     }
+    return undefined
+  }
+
+  private replyQuoteBody(reference: GalleryCommentReplyReference): string {
+    const state: CommentTranslationRenderState | undefined = this.referenceRenderState(reference)
+    if (this.translationEnabled && state !== undefined && state.shown && state.translated.length > 0) {
+      return state.translated
+    }
+    return reference.body
+  }
+
+  private replyAvatarInitial(reference: GalleryCommentReplyReference): string {
+    const name: string = this.replyAuthor(reference).trim()
+    return name.length > 0 ? name.substring(0, 1).toUpperCase() : '•'
+  }
+
+  @Builder
+  private ReplyAvatar(reference: GalleryCommentReplyReference) {
+    Stack({ alignContent: Alignment.Center }) {
+      if (reference.comment.posterAvatarUrl.length > 0) {
+        EhImageKnifeImage({
+          src: reference.comment.posterAvatarUrl,
+          objectFit: ImageFit.Cover,
+          radius: COMMENT_QUOTE_AVATAR_SIZE / 2,
+          widthValue: COMMENT_QUOTE_AVATAR_SIZE,
+          heightValue: COMMENT_QUOTE_AVATAR_SIZE,
+          priority: EH_IMAGE_PRIORITY_LOW,
+        })
+      } else {
+        Text(this.replyAvatarInitial(reference))
+          .fontSize(Math.max(11, COMMENT_QUOTE_AVATAR_SIZE / 3))
+          .fontWeight(FontWeight.Medium)
+          .fontColor(ThemeTokens.TEXT_SECONDARY)
+      }
+    }
+    .width(COMMENT_QUOTE_AVATAR_SIZE)
+    .height(COMMENT_QUOTE_AVATAR_SIZE)
+    .borderRadius(COMMENT_QUOTE_AVATAR_SIZE / 2)
+    .backgroundColor(ThemeTokens.CARD_BACKGROUND)
+  }
+
+  private textSegments(value: string, mentions: string[]): GalleryCommentTextSegment[] {
+    const result: GalleryCommentTextSegment[] = []
+    // ForEach retains an existing child when its key is unchanged. A key made
+    // only from the segment position (for example `text_0`) therefore leaves a
+    // reply quote showing its original text after the referenced @Trace state
+    // switches to a translation. Include a bounded fingerprint of the actual
+    // rendered value so the translated segment subtree is rebuilt, while the
+    // same text still keeps stable keys across unrelated card renders.
+    const valueKey: string = this.textValueKey(value)
+    let cursor: number = 0
+    let sequence: number = 0
+    while (cursor < value.length) {
+      let nextStart: number = -1
+      let nextMention: string = ''
+      for (let index: number = 0; index < mentions.length; index += 1) {
+        const mention: string = mentions[index]
+        if (mention.length <= 1) {
+          continue
+        }
+        const start: number = value.indexOf(mention, cursor)
+        if (start >= 0 && (nextStart < 0 || start < nextStart ||
+          (start === nextStart && mention.length > nextMention.length))) {
+          nextStart = start
+          nextMention = mention
+        }
+      }
+      if (nextStart < 0) {
+        result.push(new GalleryCommentTextSegment(
+          `text_${valueKey}_${sequence}`,
+          value.substring(cursor),
+          false,
+        ))
+        break
+      }
+      if (nextStart > cursor) {
+        result.push(new GalleryCommentTextSegment(
+          `text_${valueKey}_${sequence++}`,
+          value.substring(cursor, nextStart),
+          false,
+        ))
+      }
+      result.push(new GalleryCommentTextSegment(
+        `mention_${valueKey}_${sequence++}`,
+        nextMention,
+        true,
+      ))
+      cursor = nextStart + nextMention.length
+    }
+    if (result.length === 0) {
+      result.push(new GalleryCommentTextSegment(`text_${valueKey}_0`, value, false))
+    }
+    return result
+  }
+
+  private textValueKey(value: string): string {
+    let hash: number = 0
+    for (let index: number = 0; index < value.length; index += 1) {
+      hash = (hash * 31 + value.charCodeAt(index)) % 2147483647
+    }
+    return `${value.length}_${hash}`
   }
 
   /**
@@ -317,11 +469,17 @@ export struct GalleryCommentCard {
 
   @Builder
   private BodyText(value: string, color: ResourceColor) {
-    Text(value)
+    Text() {
+      ForEach(this.textSegments(value, this.emphasizedMentions),
+        (segment: GalleryCommentTextSegment): void => {
+          Span(segment.text)
+            .fontColor(segment.emphasized ? ThemeTokens.TEXT_LINK : color)
+        },
+        (segment: GalleryCommentTextSegment): string => segment.key)
+    }
       .width('100%')
       .fontSize(ThemeTokens.FONT_SIZE_BODY)
       .lineHeight(ThemeTokens.LINE_HEIGHT_BODY)
-      .fontColor(color)
   }
 
   @Builder
@@ -415,7 +573,7 @@ export struct GalleryCommentCard {
       }
       .width('100%')
       .alignItems(VerticalAlign.Center)
-      this.ReplyQuote()
+      this.ReplyReferences()
       this.CommentBody()
       Row() {
         if (this.postedLabel().length > 0) {

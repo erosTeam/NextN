@@ -8526,6 +8526,205 @@ authorize an edit, replace a device comparison, or define product completion.
   trailing icon must change with the tab text on both transitions. Source and
   build evidence cannot close this live cached-content behavior.
 
+## CLOSED — Gallery Comments reply references and translation failure identity — 2026-08-22
+
+- **Why newly actionable:** the user reported that the full Comments route does
+  not show reply quotes, making the client-generated encoded comment-id line
+  appear pointless; automatic translation also emits the unowned global toast
+  `comments_translation_failed`, and a failed untranslated row reuses a red
+  translate glyph that looks like an active/highlighted translation. This is
+  new same-surface counter-evidence and reopens only reply-reference resolution
+  plus the failed translation action leaf. The previously accepted composer /
+  IME ownership, card geometry, successful translation presentation and list
+  scheduling remain frozen.
+- **Current device evidence:** on selected target `192.168.50.237:12345`, after
+  the required lease and `AWAKE` / `OverrideTimeout=86400000ms` gate, the
+  existing signed app opened Gallery `#674009` Comments through the documented
+  integer Want. The native `1320x2120` route showed the first English body
+  unchanged with a red translate glyph, while later rows rendered Chinese
+  translations. A settled scroll showed `@freezingzama ...` as ordinary body
+  text with no quote. The current public response contains 37 comments and four
+  `@author` replies; three have an exact older author target in the same result.
+  No comment, account, preference, cache or source state was changed.
+- **Reference parent tree and behavior:** preserve `HdsNavDestination ->
+  SettledCommentsPage(Stack) -> PullRefreshListScaffold(List) -> ListItem ->
+  GalleryCommentCard -> author / ReplyReferences / body / footer`, plus the
+  fixed composer overlay. Current NextE resolves every reply segment against
+  the complete comment result by encoded id, legacy `#id#`, exact author and
+  space-containing author fallback, renders all resolved compact quotes above
+  the body, and removes only a resolved encoded/hash transport prefix. Its
+  failed request returns the translate action to a non-success state.
+- **Faulty migration and impact:** commit `95a730d` explicitly limited NextN to
+  its self-generated `@author` plus encoded-id second line and a single quote,
+  even though `NhComment` already exposes the same numeric id, author and body
+  leaves required by NextE's author/hash resolution. Later row-local failure
+  work retained the page toast and represented failure with the same translate
+  symbol in a saturated error color. That preserved neither existing reply
+  presentation nor an unambiguous translation state.
+- **Exact correction:** port the complete reference resolver over the NH field
+  subset, return every resolved reference to `GalleryCommentCard`, and render
+  the existing compact quote shape once per reference. Keep the encoded reply
+  composer protocol so newly posted client replies remain precise. Remove the
+  non-capacity page toast from automatic/manual row translation failures; keep
+  the error on the owning render state, show a distinct warning symbol with an
+  action-oriented retry accessibility label, and clear it when retry begins.
+  Do not change translation providers, queue capacity, list order, comment
+  requests, posting, card spacing, composer geometry or account behavior.
+- **Physical verification:** the final signed Debug HAP was installed with
+  `install -r` on 237 without uninstall/data clear. A process-cold integer-Want
+  route to `#674009` loaded comments without the transport implementation
+  string or old global translation failure copy. The first `Gimmetoes` row
+  rendered Chinese body text together with the active orange translate symbol,
+  so the previously reported untranslated/highlighted mismatch was absent.
+  After bounded scrolling, `The Masked Newfag` rendered a compact quote
+  containing `Lovingawesome777god` and the referenced original body above the
+  unchanged `@Lovingawesome777god` reply body. The misspelled
+  `@freezingzama` remained unresolved instead of falsely matching
+  `freezingsama`. No comment was submitted and no translation setting changed.
+- **Retained boundary:** provider availability did not naturally reproduce a
+  post-fix failed translation row in this run, so the distinct warning/retry
+  glyph itself is source/build guarded rather than claimed from synthetic UI.
+  The user-reported first-row mismatch and global toast paths are closed by the
+  current physical success state plus the row-local error-boundary correction;
+  a future naturally failed row remains useful additional evidence, not a
+  reason to manufacture provider failure.
+- **Acceptance correction after whole-card review:** the first physical quote
+  capture was counter-evidence, not acceptance: it rendered the referenced
+  body in English even though that referenced row already had a visible Chinese
+  translation, omitted the referenced user's avatar, and rendered the resolved
+  `@Lovingawesome777god` mention with ordinary body color. The reply card is
+  reopened until one same-screen capture proves referenced avatar, referenced
+  translated excerpt, emphasized mention, and translated reply body together.
+  Translation input must preserve resolved mentions as opaque tokens so the
+  emphasized segment survives provider output; unresolved or misspelled
+  mentions remain ordinary text and must not be guessed.
+- **Iteration-method correction:** the first reply fixes treated the page-owned
+  `replyQuotes` value snapshot as if it were equivalent to NextE's card-owned
+  reference object plus stable `@ObservedV2` state dependency. Rebuilding the
+  snapshot array and notifying dependent LazyForEach rows were speculative
+  compensations for that unproven model; repeated installs then tested guesses
+  instead of the reference contract. The ignored evidence was that current
+  NextE resolves real reference comments inside the card and reads each
+  referenced row's `@Trace` translation fields during `ReplyQuote` build. Before
+  another install, replace the snapshot model itself, port the complete current
+  NextE full-name/range matching chain, review avatar/name/body as one quote
+  subtree, and complete source/build checks. Only that single reconciled build
+  may return to 237 for same-screen acceptance.
+- **Website/API whitespace evidence:** the user confirmed that gallery
+  `#674009` renders one comment as only `ok` on the website, while NextN leaves
+  a large blank region after it. A fresh anonymous comments API response
+  identified comment `4592619` as 27 code units and 24 logical lines:
+  `ok`, `U+200E`, twenty-two LF characters, then another `U+200E`. The API
+  mapper currently assigns that string verbatim and ArkUI preserves every LF;
+  ordinary `trim()` cannot remove the block because the final Left-to-Right
+  Mark is not whitespace. Across the same 38-comment response, one legitimate
+  comment contains an internal blank paragraph and must retain it. Normalize
+  only leading/trailing lines whose content becomes empty after removing bidi
+  formatting controls; preserve internal blank lines and ordinary inline bidi
+  controls. Device acceptance must show comment `4592619` as a one-line `ok`
+  body without the trailing reserved area.
+- **Cold-start account-transport counter-evidence:** after the corrected signed
+  HAP was installed with `install -r`, a process-cold direct route to
+  `#674009` rendered the literal internal exception `Account browser transport
+  is not attached` as the whole-page comment error. The same run's redacted
+  persistent diagnostics recorded a valid v3 retained account and
+  `account_restore_ready` before the retained ArkWeb page later completed its
+  deferred hydration. A subsequent privacy-bounded S0 read on 237 proved the
+  native account still signed in with one selected saved account and Favorites
+  currently authenticated. The account was not lost; the request raced the
+  root-owned hidden ArkWeb host's `onControllerAttached` callback, and the page
+  then leaked the thrown implementation message into visible UI.
+- **Transport and presentation correction:** an authenticated request that
+  starts during root construction must wait a bounded interval for the
+  retained ArkWeb controller to attach, then join the existing single-flight
+  bootstrap. Fixed redacted lifecycle events must distinguish wait, attach and
+  timeout for later diagnosis. Comments must never present an exception's raw
+  message: an actual terminal load failure uses the localized
+  `comments_error_load` state and the existing retry action. This changes no
+  account ownership, cookie, login, request payload, route geometry, or
+  composer behavior.
+- **Expanded verification:** after rebuilding and data-preserving installation,
+  force-stop and direct-route to `#674009` without prewarming any root tab. The
+  first request must settle to comments instead of the internal transport
+  error, Account/Favorites S0 must remain accepted, and the prior reply and
+  translation-state checks remain required.
+- **Expanded verification result:** the cold direct request completed after the
+  logged `controller_attach_wait_started -> controller_attached ->
+  controller_attach_wait_completed` sequence and rendered the comment list.
+  The final privacy-bounded S0 reported native Account signed in with one
+  saved/selected account and Favorites authenticated. No login epoch or
+  credential action was warranted.
+- **Final same-package device result:** the final signed Debug HAP built in
+  10s 941ms and was installed with `install -r` on the selected 237 target;
+  no uninstall, data clear, account action, preference change or comment post
+  occurred. The cold direct `#674009` route loaded native comments. API comment
+  `4592619` rendered as one `ok` line with a 60px body node and an ordinary
+  compact card instead of reserving the API's 22 trailing line feeds. The
+  legitimate internal blank paragraph in the `Aki K` comment remained present.
+- **Final whole-card result:** an intermediate capture correctly rejected the
+  first shared-state implementation: after the referenced row became Chinese,
+  its quote still showed the old English Span. The remaining cause was the
+  locally added rich-text `ForEach` using position-only keys (`text_0`), so
+  ArkUI retained the existing child even when `replyQuoteBody` returned a new
+  string. Segment keys now include a bounded fingerprint of the rendered text.
+  On the rebuilt package, one same-screen capture shows the quote's 20vp avatar
+  inline with `Lovingawesome777god`, a Chinese translated excerpt, the translated
+  reply body, and the resolved `@Lovingawesome777god` in link color. The typo
+  `@freezingzama` remains ordinary body color beside the actual `freezingsama`
+  row and does not create a quote.
+- **Final account/error boundary:** the privacy-bounded S0 reader after the
+  final install returned native signed-in Account state with one saved and one
+  selected account, no login Web/verification/save failure, and authenticated
+  Favorites with no prompt or error. No credential attempt was warranted. No
+  raw transport exception or global translation-failure copy appeared. Local
+  evidence is retained under
+  `.hvigor/outputs/gallery-comments-674009-final-20260822T0434/` and excluded
+  from Git. The terminal PowerManager readback remained `AWAKE` with
+  `OverrideTimeout=86400000ms`.
+
+## CLOSED — Product-facing exception boundary audit — 2026-08-22
+
+- **Why newly actionable:** the cold-start Comments failure proved that raw
+  implementation exceptions could cross directly into `PageErrorState`. The
+  user requested an app-wide inventory rather than another one-page patch.
+- **Confirmed scope:** a source-to-sink scan found 35 raw exception propagation
+  sites relative to the current baseline. Thirty-three could feed a visible
+  page error, retry notice or Toast across Comments, Gallery Detail, Home,
+  retained Home search, Popular, Search, Favorites, History, Reader, About,
+  WebDAV, comment/comic translation settings and LLM source settings. Two more
+  persisted raw WebDAV failure detail from manual or scheduled runs. Internal
+  diagnostics, classifiers and download worker reasons were reviewed
+  separately and remain non-product data: current UI maps them to localized
+  status rather than rendering their stored text.
+- **Faulty contract:** page code repeatedly used
+  `error.message || AppStrings.get(...)`, which always prefers a non-empty
+  implementation string and makes the localized fallback nearly unreachable.
+  Several localized failure templates also accepted `{0}` solely to splice in
+  provider/storage exceptions. This is the same boundary violation as the
+  reported Account transport page even when the particular English string is
+  different.
+- **Correction:** retain exact exception detail only in existing redacted
+  diagnostics. Product surfaces receive their operation-specific localized
+  load/save/retry copy; WebDAV status persists only failure state and time;
+  the six generic settings failure resources no longer accept arbitrary detail.
+  A non-UI source guard rejects exception messages assigned to page error state,
+  failure Toasts, or persisted sync summaries. It supplements, but never
+  replaces, physical-device acceptance.
+- **Parent-tree/minimality boundary:** no page scaffold, list, card, navigation,
+  layout, request, mutation, retry or account ownership changed. Only failure
+  payloads crossing into existing text/Toast leaves were replaced. Typed,
+  localized Tag Dictionary attempt details, download row error classification,
+  backup error-code mapping and diagnostics export remain intact.
+- **Verification:** source guard, account/history regression, four-locale
+  formatter contract, JSON parse, signed build, then current-device cold direct
+  Comments and Account/Favorites S0. Other failure branches cannot be claimed
+  physically exercised merely because the guard and build pass.
+- **Verification result:** all three source contracts, four-locale JSON parse,
+  exact diff check and the signed build passed. Final 237 cold direct Comments
+  and Account/Favorites S0 passed. The other operation-specific failure leaves
+  remain deliberately recorded as statically guarded rather than physically
+  induced.
+
 ## OPEN — Reader sheet model-management transition continuity — 2026-08-22
 
 - **Why newly actionable:** the user reported that Reader's private settings

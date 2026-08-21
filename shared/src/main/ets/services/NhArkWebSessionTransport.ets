@@ -1,9 +1,11 @@
 import { webview } from '@kit.ArkWeb'
+import { DiagnosticLogger } from '../diagnostics/DiagnosticLogger'
 import { NhAccountAuthenticatedReadToken, NhAccountSessionService } from './NhAccountSessionService'
 import { NhBrowserSessionBoundary } from './NhBrowserSessionBoundary'
 
 const API_PREFIX: string = 'https://nhentai.net/api/v2/'
 const AUTH_REFRESH_URL: string = `${API_PREFIX}auth/refresh`
+const CONTROLLER_ATTACH_TIMEOUT_MS: number = 15000
 const BOOTSTRAP_TIMEOUT_MS: number = 15000
 const REQUEST_TIMEOUT_MS: number = 20000
 const REQUEST_RESULT_TIMEOUT_MS: number = REQUEST_TIMEOUT_MS + 2000
@@ -59,6 +61,9 @@ export class NhArkWebSessionTransport {
   private static readyResolver: (() => void) | null = null
   private static readyRejecter: ((error: Error) => void) | null = null
   private static readyTimeoutId: number = -1
+  private static attachResolver: (() => void) | null = null
+  private static attachTimeoutId: number = -1
+  private static attachTask: Promise<void> | null = null
   private static bootstrapTask: Promise<void> | null = null
   private static browserIdentityRefreshTask: Promise<boolean> | null = null
   private static lastBrowserIdentityRefreshFailureAtMs: number = 0
@@ -67,6 +72,8 @@ export class NhArkWebSessionTransport {
   static attach(controller: webview.WebviewController): void {
     NhArkWebSessionTransport.controller = controller
     NhArkWebSessionTransport.isReady = false
+    DiagnosticLogger.info('account-transport', 'controller_attached', 'stage')
+    NhArkWebSessionTransport.completeAttachWait()
     // The ArkWeb cookie store only becomes readable once a Web component
     // attaches. A cold-start restore that ran before this point may have
     // misclassified an empty store read as a missing session; give it the one
@@ -282,9 +289,12 @@ export class NhArkWebSessionTransport {
       await NhArkWebSessionTransport.bootstrapTask
       return
     }
+    if (NhArkWebSessionTransport.controller === null) {
+      await NhArkWebSessionTransport.waitForControllerAttach()
+    }
     const controller: webview.WebviewController | null = NhArkWebSessionTransport.controller
     if (controller === null) {
-      throw new Error('Account browser transport is not attached')
+      throw new Error('Account browser transport is unavailable')
     }
     const task: Promise<void> = NhArkWebSessionTransport.bootstrap(controller)
     NhArkWebSessionTransport.bootstrapTask = task
@@ -295,6 +305,55 @@ export class NhArkWebSessionTransport {
         NhArkWebSessionTransport.bootstrapTask = null
       }
     }
+  }
+
+  /**
+   * Root construction and destination appearance are independent ArkUI
+   * lifecycle branches. An early authenticated destination therefore waits
+   * for the root-owned Web controller instead of exposing that normal
+   * construction window as a terminal request failure.
+   */
+  private static async waitForControllerAttach(): Promise<void> {
+    if (NhArkWebSessionTransport.controller !== null) {
+      return
+    }
+    const activeTask: Promise<void> | null = NhArkWebSessionTransport.attachTask
+    if (activeTask !== null) {
+      await activeTask
+      return
+    }
+    DiagnosticLogger.info('account-transport', 'controller_attach_wait_started', 'stage')
+    const task: Promise<void> = new Promise<void>((resolve: () => void, reject: (error: Error) => void): void => {
+      NhArkWebSessionTransport.attachResolver = resolve
+      NhArkWebSessionTransport.attachTimeoutId = setTimeout((): void => {
+        NhArkWebSessionTransport.attachResolver = null
+        NhArkWebSessionTransport.attachTimeoutId = -1
+        DiagnosticLogger.warn('account-transport', 'controller_attach_wait_timed_out', 'stage')
+        reject(new Error('Account browser transport timed out while attaching'))
+      }, CONTROLLER_ATTACH_TIMEOUT_MS)
+    })
+    NhArkWebSessionTransport.attachTask = task
+    try {
+      await task
+    } finally {
+      if (NhArkWebSessionTransport.attachTask === task) {
+        NhArkWebSessionTransport.attachTask = null
+      }
+    }
+  }
+
+  private static completeAttachWait(): void {
+    const resolver: (() => void) | null = NhArkWebSessionTransport.attachResolver
+    if (resolver === null) {
+      return
+    }
+    NhArkWebSessionTransport.attachResolver = null
+    if (NhArkWebSessionTransport.attachTimeoutId >= 0) {
+      clearTimeout(NhArkWebSessionTransport.attachTimeoutId)
+      NhArkWebSessionTransport.attachTimeoutId = -1
+    }
+    DiagnosticLogger.info('account-transport', 'controller_attach_wait_completed', 'stage')
+    resolver()
   }
 
   /**

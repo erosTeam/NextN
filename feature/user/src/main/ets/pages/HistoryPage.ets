@@ -266,7 +266,7 @@ export struct HistoryPage {
       if (!this.isCurrentRequest(generation)) {
         return
       }
-      this.errorMessage = (error as Error).message || AppStrings.get('history_load_failed')
+      this.errorMessage = AppStrings.get('history_load_failed')
       refreshOutcome = 'error'
       this.schedulePinnedDaySync()
     } finally {
@@ -323,7 +323,7 @@ export struct HistoryPage {
       this.schedulePinnedDaySync()
     } catch (error) {
       if (this.isCurrentRequest(generation)) {
-        this.loadMoreErrorMessage = (error as Error).message || AppStrings.get('history_load_failed')
+        this.loadMoreErrorMessage = AppStrings.get('history_load_failed')
       }
     } finally {
       if (this.isCurrentRequest(generation)) {
@@ -388,7 +388,7 @@ export struct HistoryPage {
       if (!this.isCurrentRequest(generation)) {
         return
       }
-      this.errorMessage = (error as Error).message || AppStrings.get('history_remove_failed')
+      this.errorMessage = AppStrings.get('history_remove_failed')
     }
   }
 
@@ -416,7 +416,7 @@ export struct HistoryPage {
       if (!this.isCurrentRequest(generation)) {
         return
       }
-      this.errorMessage = (error as Error).message || AppStrings.get('history_clear_failed')
+      this.errorMessage = AppStrings.get('history_clear_failed')
     }
   }
 

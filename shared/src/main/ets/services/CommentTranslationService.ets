@@ -547,11 +547,12 @@ export class CommentTranslationService {
       config.baseUrl = runtime.baseUrl
       config.modelId = runtime.modelId
       config.apiKey = runtime.apiKey
-      const translated: string = await OpenAiChatCompletionsClient.requestText(
+      const rawTranslated: string = await OpenAiChatCompletionsClient.requestText(
         CommentTranslationService.instructions(targetLanguage),
         source,
         config,
       )
+      const translated: string = CommentTranslationService.restoreMentionTokens(rawTranslated)
       if (translated.length === 0 || translated.length > MAX_TRANSLATED_CHARS) {
         throw new Error('Comment translation output is invalid')
       }
@@ -621,6 +622,50 @@ export class CommentTranslationService {
     entry.expiresAt = expiresAt
     CommentTranslationService.memory.delete(key)
     CommentTranslationService.memory.set(key, entry)
+  }
+
+  static protectMentionText(mention: string): string {
+    let hex: string = ''
+    for (let index: number = 0; index < mention.length; index += 1) {
+      hex += mention.charCodeAt(index).toString(16).padStart(4, '0')
+    }
+    return `NEXTNATHEX${hex}TOKEN`
+  }
+
+  private static restoreMentionTokens(text: string): string {
+    let result: string = ''
+    let cursor: number = 0
+    while (cursor < text.length) {
+      const start: number = text.indexOf('NEXTNATHEX', cursor)
+      if (start < 0) {
+        result += text.substring(cursor)
+        break
+      }
+      const end: number = text.indexOf('TOKEN', start + 10)
+      if (end < 0) {
+        result += text.substring(cursor)
+        break
+      }
+      result += text.substring(cursor, start)
+      result += CommentTranslationService.decodeMentionHex(text.substring(start + 10, end))
+      cursor = end + 5
+    }
+    return result
+  }
+
+  private static decodeMentionHex(hex: string): string {
+    if (hex.length === 0 || hex.length % 4 !== 0) {
+      return ''
+    }
+    let result: string = ''
+    for (let index: number = 0; index < hex.length; index += 4) {
+      const code: number = Number.parseInt(hex.substring(index, index + 4), 16)
+      if (Number.isNaN(code)) {
+        return ''
+      }
+      result += String.fromCharCode(code)
+    }
+    return result
   }
 
   private static cacheKey(scope: string, source: string): string {

@@ -2661,7 +2661,7 @@ export struct ReaderPage {
       if (!this.isCurrentRequest(generation)) {
         return
       }
-      this.errorMessage = (error as Error).message || AppStrings.get('reader_error_load_pages')
+      this.errorMessage = AppStrings.get('reader_error_load_pages')
       // A failed first load must still expose the native back affordance.
       this.readerChromeVisible = true
       this.notifyReaderPresentation()

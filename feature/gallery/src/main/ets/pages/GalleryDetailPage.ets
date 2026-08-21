@@ -1061,8 +1061,7 @@ export struct GalleryDetailPage {
       this.favoriteStatusKnown = previousKnown
       this.isFavorited = previousFavorited
       this.favoriteCountFromSession = previousCount
-      const message: string = (error as Error).message || AppStrings.get('gallery_error_update_favourites')
-      this.showFavoriteToast(message)
+      this.showFavoriteToast(AppStrings.get('gallery_error_update_favourites'))
     } finally {
       this.isFavoriteMutationInFlight = false
       if (this.detail.id === this.galleryId) {
@@ -1294,7 +1293,7 @@ export struct GalleryDetailPage {
       if (!this.isCurrentRequest(generation)) {
         return
       }
-      this.errorMessage = (error as Error).message || AppStrings.get('gallery_error_load')
+      this.errorMessage = AppStrings.get('gallery_error_load')
     } finally {
       if (this.isCurrentRequest(generation)) {
         this.isLoading = false

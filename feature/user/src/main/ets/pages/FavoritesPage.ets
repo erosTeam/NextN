@@ -503,7 +503,7 @@ export struct FavoritesPage {
       return true
     } catch (error) {
       if (generation === this.requestGeneration) {
-        this.errorMessage = (error as Error).message || AppStrings.get('favorites_load_failed')
+        this.errorMessage = AppStrings.get('favorites_load_failed')
       }
       return false
     } finally {
@@ -609,7 +609,7 @@ export struct FavoritesPage {
     } catch (error) {
       if (generation === this.requestGeneration) {
         DiagnosticLogger.info('favorites-session', 'favorites_request_failed', 'stage')
-        this.errorMessage = (error as Error).message || AppStrings.get('favorites_load_failed')
+        this.errorMessage = AppStrings.get('favorites_load_failed')
       }
     } finally {
       if (generation === this.requestGeneration) {
@@ -657,7 +657,7 @@ export struct FavoritesPage {
       this.totalPages = Math.max(nextPage, result.totalPages)
     } catch (error) {
       if (generation === this.requestGeneration) {
-        this.loadMoreErrorMessage = (error as Error).message || AppStrings.get('favorites_load_more_failed')
+        this.loadMoreErrorMessage = AppStrings.get('favorites_load_more_failed')
       }
     } finally {
       if (generation === this.requestGeneration) {

@@ -126,7 +126,7 @@ export struct AboutPage {
       .catch((error: Error) => {
         if (this.isCurrentReleaseLoad(generation)) {
           DiagnosticLogger.warn('settings', 'about_release_open_failed', error.message)
-          this.toast(AppStrings.get('about_update_failed') + ': ' + error.message)
+          this.toast(AppStrings.get('about_update_failed'))
         }
       })
       .finally(() => {

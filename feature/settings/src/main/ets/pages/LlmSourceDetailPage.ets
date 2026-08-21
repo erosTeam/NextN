@@ -144,7 +144,7 @@ export struct LlmSourceDetailPage {
         )
         if (showFailureToast) {
           this.getUIContext().getPromptAction().showToast({
-            message: AppStrings.format('llm_source_save_failed', [error.message]),
+            message: AppStrings.get('llm_source_save_failed'),
           })
         }
         return false
@@ -187,7 +187,7 @@ export struct LlmSourceDetailPage {
             error.message,
           )
           this.getUIContext().getPromptAction().showToast({
-            message: AppStrings.format('comment_translation_models_failed', [error.message]),
+            message: AppStrings.get('comment_translation_models_failed'),
           })
         })
         .finally((): void => {
@@ -251,7 +251,7 @@ export struct LlmSourceDetailPage {
       .catch((error: Error): void => {
         this.deleting = false
         this.getUIContext().getPromptAction().showToast({
-          message: AppStrings.format('llm_source_delete_failed', [error.message]),
+          message: AppStrings.get('llm_source_delete_failed'),
         })
       })
   }

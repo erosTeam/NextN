@@ -158,7 +158,7 @@ export struct CommentTranslationSettingsPage {
           error.message,
         )
         this.getUIContext().getPromptAction().showToast({
-          message: AppStrings.format('comment_translation_models_failed', [error.message]),
+          message: AppStrings.get('comment_translation_models_failed'),
         })
       })
       .finally((): void => {
@@ -178,7 +178,7 @@ export struct CommentTranslationSettingsPage {
       })
       .catch((error: Error): void => {
         this.getUIContext().getPromptAction().showToast({
-          message: AppStrings.format('llm_binding_save_failed', [error.message]),
+          message: AppStrings.get('llm_binding_save_failed'),
         })
       })
   }

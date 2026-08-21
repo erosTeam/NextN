@@ -24,6 +24,12 @@ read and apply `harmony-mandatory-preflight`. It in turn requires
 `harmony-next`; device, HDC, ArkWeb, screenshot, or UI-automation work also
 requires `harmony-run-device-diagnostics`.
 
+The repository signing entrypoint is exactly
+`scripts/build-hvigor-signed.sh` (hyphens). Never call the nonexistent legacy
+spelling `scripts/build_hvigor_signed.sh` (underscores), even if it appears in
+historical logs, memory, or an old command-approval prefix. Resolve the current
+repository filename before invoking a build.
+
 For every device-affecting command, use `scripts/device-lease --device <full-target>`
 as documented in `docs/device-lease.md`. The lease is an agent coordination lock,
 not a device-selection default or an authorization mechanism.

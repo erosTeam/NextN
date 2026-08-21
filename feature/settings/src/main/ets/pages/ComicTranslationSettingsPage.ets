@@ -159,16 +159,16 @@ export struct ComicTranslationSettingsPage {
       return true
     } catch (error) {
       if (showFailureToast) {
-        this.showToriiSaveFailedToast((error as Error).message)
+        this.showToriiSaveFailedToast()
       }
       return false
     }
   }
 
-  private showToriiSaveFailedToast(detail: string): void {
+  private showToriiSaveFailedToast(): void {
     try {
       this.getUIContext().getPromptAction().showToast({
-        message: AppStrings.format('comic_torii_save_failed', [detail]),
+        message: AppStrings.get('comic_torii_save_failed'),
       })
     } catch (_error) {}
   }
@@ -491,7 +491,7 @@ export struct ComicTranslationSettingsPage {
           error.message,
         )
         this.getUIContext().getPromptAction().showToast({
-          message: AppStrings.format('comment_translation_models_failed', [error.message]),
+          message: AppStrings.get('comment_translation_models_failed'),
         })
       })
       .finally((): void => {
@@ -511,7 +511,7 @@ export struct ComicTranslationSettingsPage {
       })
       .catch((error: Error): void => {
         this.getUIContext().getPromptAction().showToast({
-          message: AppStrings.format('llm_binding_save_failed', [error.message]),
+          message: AppStrings.get('llm_binding_save_failed'),
         })
       })
   }

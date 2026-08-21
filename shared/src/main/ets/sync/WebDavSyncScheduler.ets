@@ -164,7 +164,7 @@ export class WebDavSyncScheduler {
       })
       .catch((error: Error) => {
         WebDavSyncScheduler.finish(false, reason)
-        SyncSettings.markRun(context, SYNC_STATUS_FAILED, error.message)
+        SyncSettings.markRun(context, SYNC_STATUS_FAILED)
         DiagnosticLogger.warn('sync', 'webdav_scheduled_failed', error.message)
       })
       .finally(() => {
