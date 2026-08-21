@@ -38,6 +38,33 @@ authorize an edit, replace a device comparison, or define product completion.
   WaterFlow; established blocking empty/full-page errors and pagination footer
   behavior remain unchanged.
 
+## ACCEPTED — Current tag conditions must include the localized namespace — 2026-08-21
+
+- **Reopened user counter-evidence:** after namespace normalization was accepted,
+  the current-condition row still rendered only the translated tag body as its
+  subtitle (for example `全彩`). That loses the namespace half of the translated
+  identity even though the raw primary title correctly remains
+  `tag:"full color"`.
+- **Reference and sibling boundary:** `NhTagSuggestionDisplay.localizedTitle`
+  and NextE's corresponding display helper both define a translated tag title
+  as localized namespace plus translated body. Preserve
+  `HomeSubtabEditPage -> SearchAdvancedConditionInputs -> 当前条件 ->
+  NextNListRow`, its raw canonical primary title, include/exclude control,
+  explicit delete action, row spacing and query ownership. Change only the
+  translated subtitle leaf from `全彩` to `标签:全彩` (and equivalently for the
+  other canonical NH namespaces). Suggestion rows and raw fallback rows remain
+  outside this correction.
+- **Verification boundary:** a signed data-preserving install on 237 must show
+  an active translated condition whose primary title is `tag:"full color"`
+  and whose subtitle is `标签:全彩`, with the relation and delete actions still
+  present. Build/source checks are supplementary.
+- **237 corrected-condition evidence:** after the new signed package was
+  installed with `install-r`, the existing stored condition rendered primary
+  title `tag:netorare`, translated subtitle `标签:NTR`, and relation `包含` on the
+  same row. The separate trailing delete button remained present. This observes
+  the persisted current-condition path directly; no draft edit, save, account
+  action, uninstall or data clear occurred.
+
 ## ACCEPTED — Local tag dictionary categories must normalize to NH query namespaces — 2026-08-21
 
 - **Latest user counter-evidence:** the unified condition composer exposed and

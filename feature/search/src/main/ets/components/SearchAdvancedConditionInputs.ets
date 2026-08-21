@@ -5,6 +5,7 @@ import {
   NhTag,
   NhTagQuery,
   NhTagSuggestion,
+  NhTagSuggestionDisplay,
   NextNGroupedListSection,
   NextNListRow,
   NhSearchUploadedUnit,
@@ -356,9 +357,10 @@ export struct SearchAdvancedConditionInputs {
       return ''
     }
     const translated: string | undefined = this.conditionTranslations.get(key)
-    return translated === undefined || translated.trim() === chip.rawValue.trim()
-      ? ''
-      : translated.trim()
+    if (translated === undefined || translated.trim() === chip.rawValue.trim()) {
+      return ''
+    }
+    return `${NhTagSuggestionDisplay.namespaceLabel(chip.namespace)}:${translated.trim()}`
   }
 
   private async loadConditionTranslations(): Promise<void> {

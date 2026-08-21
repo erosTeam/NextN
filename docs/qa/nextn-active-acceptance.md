@@ -3508,3 +3508,15 @@ permitted in this repository.
   produced one active `tag:"full color" / 全彩 / 包含` condition and no
   `other:` condition. The editor was exited without saving. No physical action
   remains for this bounded namespace-normalization defect.
+
+### 237 current-condition localized namespace accepted — 2026-08-21 +0800
+
+- The new signed HAP was installed in place on `192.168.50.237:12345` after a
+  fresh connected-target resolution, lease, wake and `AWAKE` /
+  `OverrideTimeout=86400000ms` gate. No uninstall, data clear or account action
+  occurred.
+- The existing stored custom-tab condition rendered `tag:netorare` as its raw
+  primary title and `标签:NTR` as its translated subtitle, with `包含` and the
+  independent trailing delete button still present. No draft input or save was
+  used, so the observation covers the persisted current-condition path. No
+  physical action remains for this bounded subtitle defect.
