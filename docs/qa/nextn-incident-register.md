@@ -402,3 +402,21 @@
 - “同底层库”“同名组件”“入口存在”只说明机制可达，不说明占位、错误、过渡、复用和
   首帧语义一致。
 - 每次只能报告已实际关闭的切片，不再使用“全量审计完成”覆盖仍未分类的差异池。
+
+---
+
+## INC-2026-08-22-002：Home SubTab 管理按钮遗漏 cached 主题依赖
+
+- 状态：`OPEN`（源码修复与签名构建已完成；待 237 深浅色连续切换验收）
+- 用户反馈：首页 SubTab 右侧管理按钮不会随着深色模式实时变色，而当前 NextE 已不存在
+  该问题。
+- 根因：`Index` 将 `HomeSourceBar` 作为长期缓存的 HDS `ComponentContent`。NextN 的
+  `SubTabBar` 已连接 `ThemeDisplayState`，但相邻管理按钮仍直接使用
+  `$r('sys.color.font_secondary')`，没有读取任何主题 `@Trace`；所以标签文字所在子树会重建，
+  右侧按钮却可能保留创建时颜色。当前 NextE 的终态在 `HomeSourceBar` 本身也连接主题状态。
+- 同类边界：已检查当前 Download/Favorites/History/Search 的 cached bottomBuilder owner；
+  主题敏感搜索表面走已有 `AppSearchField` 主题依赖，History 为固定品牌色，未发现第二个
+  直接系统前景色且无主题依赖的 sibling。
+- 防止复发：参考移植只读取当前已修复终态；不把历史错误实现或修复过程作为实现模板。
+  cached `ComponentContent` 的每一个主题敏感 sibling 都必须自己读取有效主题状态，不能因
+  邻接子组件已经响应主题就推定整个 builder 会刷新。

@@ -8428,3 +8428,35 @@ authorize an edit, replace a device comparison, or define product completion.
   no equivalent chain. `GalleryThumbnail` now consumes the shared epoch and
   `GalleryCollectionBody` publishes it for every presentation branch; already
   successful covers ignore the signal.
+
+## OPEN — Home SubTab trailing action live theme color — 2026-08-22
+
+- **Why newly actionable:** the user observed that the trailing Home SubTab
+  management button keeps its old color when the effective light/dark theme
+  changes. This is current runtime counter-evidence against the earlier Home
+  SubTab acceptance.
+- **Reference and whole parent tree:** preserve `Index HdsNavigation -> cached
+  titleBar.bottomBuilder ComponentContent -> HomeSourceBar -> [SubTabBar,
+  trailing management Button]`. Current NextE keeps this exact tree and makes
+  both the shared bar and the trailing action read `ThemeDisplayState` so the
+  cached subtree rebuilds on an effective-theme change.
+- **Faulty assumption:** NextN retained the theme dependency inside
+  `SubTabBar`, then treated the adjacent button's direct
+  `$r('sys.color.font_secondary')` as if a cached `ComponentContent` would
+  re-resolve it automatically. The tab text therefore updates while its
+  sibling action can retain the stale resource color.
+- **Sibling review:** every current cached title `bottomBuilder` owner was
+  checked. Download/Favorites/Search delegate theme-sensitive surfaces to
+  `AppSearchField`, which already reads `ThemeDisplayState`; History uses a
+  fixed brand color. `HomeSourceBar` is the only sibling that directly reads a
+  system foreground resource without a reactive theme dependency.
+- **Exact correction and minimality:** add the same current-reference
+  `ThemeDisplayState` connection and identity `themeTracked()` read to
+  `HomeSourceBar`, then pass the management icon's system foreground through
+  it. Do not remount the cached content, change button geometry/action, alter
+  SubTab selection, or touch any other title surface.
+- **Verification and unresolved boundary:** signed build, data-preserving
+  install on the selected 237 device, then keep Home visible and switch the
+  effective theme light -> dark -> light without remounting the page. The
+  trailing icon must change with the tab text on both transitions. Source and
+  build evidence cannot close this live cached-content behavior.

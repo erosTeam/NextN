@@ -13,10 +13,12 @@ import {
   SubtabTransitionBridge,
   SUBTAB_TRANSITION_SCOPE_HOME,
   TabItem,
+  ThemeDisplayState,
   ThemeTokens,
   connectCatalogPreferences,
   connectHomeSubtabs,
   connectHomeSourceVisualIndex,
+  connectThemeDisplay,
 } from 'shared'
 
 /**
@@ -29,6 +31,7 @@ export struct HomeSourceBar {
   @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
   @Local visual: HomeSourceVisualIndexState = connectHomeSourceVisualIndex()
   @Local catalogPreferences: CatalogPreferencesState = connectCatalogPreferences()
+  @Local themeDisplay: ThemeDisplayState = connectThemeDisplay()
 
   private latestTabTitle(): string {
     const sort: string = NhSearchOptions.sortLabel(this.catalogPreferences.browseSort)
@@ -63,6 +66,11 @@ export struct HomeSourceBar {
     return 0
   }
 
+  /** Keep the cached HDS bottomBuilder subscribed to effective theme changes. */
+  private themeTracked(color: ResourceColor): ResourceColor {
+    return this.themeDisplay.effectiveDark ? color : color
+  }
+
   build() {
     Row() {
       SubTabBar({
@@ -81,7 +89,7 @@ export struct HomeSourceBar {
       Button({ type: ButtonType.Circle }) {
         SymbolGlyph($r('sys.symbol.list_square'))
           .fontSize(ThemeTokens.FONT_SIZE_TITLE)
-          .fontColor([$r('sys.color.font_secondary')])
+          .fontColor([this.themeTracked($r('sys.color.font_secondary'))])
       }
       .width(28)
       .height(28)
