@@ -3430,3 +3430,52 @@ permitted in this repository.
   used the same HDS menu geometry and Comments/Copy-link action family, and its
   account page kept the site-account settings action in a separate grouped row.
   No physical acceptance action remains for this bounded feature.
+
+### 197 comment auto-translation failure diagnosis — 2026-08-21 +0800
+
+- The existing installed app was observed on `192.168.50.197:12345` under a
+  fresh lease and an `AWAKE` / `OverrideTimeout=86400000ms` gate. From the
+  current Gallery Detail, the semantic `查看全部` action opened the native
+  Comments page. The resulting layout contained the fixed failure toast
+  `无法翻译这条评论`; after a later settled capture, the visible comment cards
+  still showed their original text and idle translate actions. No install,
+  data clear, preference change, account action, comment submission, or source
+  edit occurred.
+- Source diagnosis: NextN submits every translatable item in the loaded comment
+  array at route hydration time, while the shared queue permits two running and
+  32 waiting tasks and evicts the oldest automatic task when full. Because the
+  array is submitted top-to-bottom, a sufficiently large page evicts earlier
+  top-of-list work in favor of later offscreen work. Current NextE instead
+  starts automatic translation from each lazily mounted comment card, which is
+  the visibility boundary assumed by the queue's newest-visible eviction rule.
+- One task error does not synchronously break the NextN loop: every item owns an
+  independent promise and the scheduler drains again after completion. The
+  page nevertheless collapses every non-capacity error to the same toast and
+  drops the original error, comment id, and list position; the service also
+  records only a generic fixed event. Therefore the retained device evidence
+  cannot identify which individual comment or provider-stage error produced
+  this toast. This is a diagnosis-only result; correction and physical
+  acceptance remain unstarted pending an explicit implementation request.
+- Raw local evidence is retained under
+  `.hvigor/outputs/comment-auto-translation-197-20260821T0510/` and excluded
+  from Git.
+
+### 197 visible-card comment auto-translation fix accepted — 2026-08-21 +0800
+
+- A signed Debug build containing the scoped comment translation fix completed
+  successfully and was installed with `install -r` on only
+  `192.168.50.197:12345`, under lease
+  `20260821-052223-893a5422` and the required `AWAKE` /
+  `OverrideTimeout=86400000ms` gate. No uninstall, data clear, cache clear,
+  account action, preference change, or comment submission occurred.
+- The current first Browse card reopened Gallery `#674199`; its native Comments
+  route contained 50 comments. Six mounted comment bodies on the initial
+  viewport settled with a different aggregate content fingerprint from the
+  retained pre-fix original-text baseline. The generic failure toast and
+  failed-card marker were both absent.
+- One downward swipe mounted a later viewport containing five comment bodies;
+  it also settled without a generic failure toast or failed-card marker. This
+  verifies that later mounted work continued instead of the initial page-wide
+  queue dropping visible rows. The user accepted the runtime result and asked
+  to stop further translation requests. No physical acceptance action remains
+  for this bounded defect.

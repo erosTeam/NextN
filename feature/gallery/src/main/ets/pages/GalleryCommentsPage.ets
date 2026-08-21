@@ -2,6 +2,7 @@ import {
   ContentFilterService,
   ContentFilterState,
   AppStrings,
+  BasicDataSource,
   COMMENT_TRANSLATION_DISPLAY_BILINGUAL,
   COMMENT_TRANSLATION_PRIORITY_AUTO,
   COMMENT_TRANSLATION_PRIORITY_INTERACTIVE,
@@ -57,6 +58,8 @@ export class CommentTranslationRenderState {
   @Trace translated: string = ''
   @Trace shown: boolean = false
   @Trace loading: boolean = false
+  @Trace autoStarted: boolean = false
+  @Trace failed: boolean = false
 }
 
 /**
@@ -85,6 +88,10 @@ export struct GalleryCommentsPage {
   @Local commentSubmitError: string = ''
   /** Per-comment render states (NextE renderStateMap parity). */
   private renderStateMap: Map<number, CommentTranslationRenderState> = new Map()
+  /** Stable LazyForEach owner; only mounted comment cards may start automatic work. */
+  private commentDataSource: BasicDataSource<NhComment> = new BasicDataSource<NhComment>(
+    (comment: NhComment): string => comment.commentId.toString(),
+  )
   @Param scroller: Scroller = new Scroller()
   /** A Detail-owned response seeds this route only after it was successfully fetched. */
   @Param commentSnapshot: NhComment[] = []
@@ -125,6 +132,7 @@ export struct GalleryCommentsPage {
 
   private applyContentFilters(): void {
     this.comments = ContentFilterService.filterComments(this.rawComments)
+    this.commentDataSource.setData(this.comments)
   }
 
   private context(): common.UIAbilityContext {
@@ -148,7 +156,6 @@ export struct GalleryCommentsPage {
     this.loadedGalleryId = this.galleryId
     this.errorMessage = ''
     this.isLoading = false
-    this.scheduleAutoTranslate()
     return true
   }
 
@@ -212,6 +219,8 @@ export struct GalleryCommentsPage {
     translated: string | undefined,
     shown: boolean | undefined,
     loading: boolean | undefined,
+    autoStarted: boolean | undefined = undefined,
+    failed: boolean | undefined = undefined,
   ): void {
     const state: CommentTranslationRenderState | undefined = this.renderStateMap.get(commentId)
     if (state === undefined) {
@@ -225,6 +234,12 @@ export struct GalleryCommentsPage {
     }
     if (loading !== undefined) {
       state.loading = loading
+    }
+    if (autoStarted !== undefined) {
+      state.autoStarted = autoStarted
+    }
+    if (failed !== undefined) {
+      state.failed = failed
     }
   }
 
@@ -251,34 +266,22 @@ export struct GalleryCommentsPage {
     return state !== undefined && state.loading
   }
 
-  private scheduleAutoTranslate(): void {
-    if (!this.commentTranslationSettings.enabled || !this.commentTranslationSettings.autoTranslate) {
+  /** NextE parity: one mounted LazyForEach card owns one automatic attempt. */
+  private autoTranslateComment(comment: NhComment): void {
+    if (!this.commentTranslationSettings.enabled || !this.commentTranslationSettings.autoTranslate ||
+      !this.canTranslate(comment)) {
       return
     }
-    setTimeout((): void => {
-      this.autoTranslateComments()
-    }, 0)
-  }
-
-  private async autoTranslateComments(): Promise<void> {
-    const galleryId: number = this.galleryId
-    for (let index: number = 0; index < this.comments.length; index++) {
-      if (this.galleryId !== galleryId || this.loadedGalleryId !== galleryId) {
-        return
-      }
-      const comment: NhComment = this.comments[index]
-      if (this.isTranslationShown(comment) || this.isTranslationLoading(comment)) {
-        continue
-      }
-      const source: string = this.replyBody(comment)
-      if (source.trim().length === 0 || !CommentTranslationService.needsTranslation(source)) {
-        continue
-      }
-      // Fire every visible comment into the service scheduler (NextE parity):
-      // the queue bounds remote concurrency and evicts stale AUTO work, so the
-      // page never serializes one translation behind another's response.
-      this.toggleOrTranslate(comment, COMMENT_TRANSLATION_PRIORITY_AUTO)
+    const state: CommentTranslationRenderState = this.renderStateFor(comment)
+    if (state.autoStarted || state.loading || state.translated.length > 0) {
+      return
     }
+    const source: string = this.replyBody(comment)
+    if (source.trim().length === 0 || !CommentTranslationService.needsTranslation(source)) {
+      return
+    }
+    this.applyCommentTranslationState(comment.commentId, undefined, undefined, undefined, true, false)
+    this.toggleOrTranslate(comment, COMMENT_TRANSLATION_PRIORITY_AUTO)
   }
 
   private translationActionLabel(comment: NhComment): string {
@@ -303,7 +306,7 @@ export struct GalleryCommentsPage {
       return
     }
     const galleryId: number = this.galleryId
-    this.applyCommentTranslationState(comment.commentId, undefined, undefined, true)
+    this.applyCommentTranslationState(comment.commentId, undefined, undefined, true, undefined, false)
     try {
       const translated: string = await CommentTranslationService.translate(
         this.context(),
@@ -311,7 +314,14 @@ export struct GalleryCommentsPage {
         priority,
       )
       if (this.galleryId === galleryId && this.loadedGalleryId === galleryId) {
-        this.applyCommentTranslationState(comment.commentId, translated, translated.length > 0, false)
+        this.applyCommentTranslationState(
+          comment.commentId,
+          translated,
+          translated.length > 0,
+          false,
+          undefined,
+          false,
+        )
       } else {
         this.applyCommentTranslationState(comment.commentId, undefined, undefined, false)
       }
@@ -319,13 +329,13 @@ export struct GalleryCommentsPage {
       const error: Error = _error as Error
       if (priority === COMMENT_TRANSLATION_PRIORITY_AUTO && CommentTranslationService.isQueueCapacityError(error)) {
         // Queue-evicted background work stays untranslated without a toast (NextE parity).
-        this.applyCommentTranslationState(comment.commentId, undefined, undefined, false)
+        this.applyCommentTranslationState(comment.commentId, undefined, undefined, false, undefined, false)
         return
       }
       if (this.galleryId === galleryId) {
         this.showCommentToast(AppStrings.get('comments_translation_failed'))
       }
-      this.applyCommentTranslationState(comment.commentId, undefined, undefined, false)
+      this.applyCommentTranslationState(comment.commentId, undefined, undefined, false, undefined, true)
     }
   }
 
@@ -352,7 +362,6 @@ export struct GalleryCommentsPage {
       this.rawComments = comments
       this.applyContentFilters()
       this.loadedGalleryId = this.galleryId
-      this.scheduleAutoTranslate()
     } catch (error) {
       if (!this.isCurrentRequest(generation)) {
         return
@@ -818,13 +827,14 @@ export struct GalleryCommentsPage {
           })
         }
       } else {
-        ForEach(this.comments, (comment: NhComment): void => {
+        LazyForEach(this.commentDataSource, (comment: NhComment): void => {
           ListItem() {
             GalleryCommentCard({
               comment: comment,
               body: this.replyBody(comment),
               renderState: this.renderStateFor(comment),
               canTranslate: this.canTranslate(comment),
+              autoTranslate: this.commentTranslationSettings.autoTranslate,
               bilingual: this.commentTranslationSettings.displayMode ===
                 COMMENT_TRANSLATION_DISPLAY_BILINGUAL,
               replyQuoteBody: this.hasReplyReference(comment)
@@ -835,6 +845,9 @@ export struct GalleryCommentsPage {
                 : '',
               onToggleTranslate: (): void => {
                 this.toggleOrTranslate(comment)
+              },
+              onAutoTranslate: (): void => {
+                this.autoTranslateComment(comment)
               },
               onReply: (): void => {
                 this.openReply(comment)

@@ -34,10 +34,12 @@ export struct GalleryCommentCard {
   /** Live page-managed translation state (NextE renderState parity). */
   @Require @Param renderState: CommentTranslationRenderState
   @Param canTranslate: boolean = false
+  @Param autoTranslate: boolean = false
   @Param bilingual: boolean = false
   @Param replyQuoteBody: string = ''
   @Param replyQuoteAuthor: string = ''
   @Event onToggleTranslate: () => void = () => {}
+  @Event onAutoTranslate: () => void = () => {}
   @Event onReply: () => void = () => {}
 
   // Card-local mirrors of the page-held params. The body/icon read THESE and
@@ -46,6 +48,7 @@ export struct GalleryCommentCard {
   @Local localTranslated: string = ''
   @Local localShown: boolean = false
   @Local localLoading: boolean = false
+  @Local localFailed: boolean = false
   // Height-measure animation state, restored from NextE verbatim.
   @Local commentBodyMeasuredHeight: number = 0
   @Local commentBodyAnimatedHeight: number = 0
@@ -65,13 +68,16 @@ export struct GalleryCommentCard {
     this.localTranslated = this.renderState.translated
     this.localShown = this.renderState.shown
     this.localLoading = this.renderState.loading
+    this.localFailed = this.renderState.failed
+    this.requestAutoTranslate()
   }
 
-  @Monitor('renderState.translated', 'renderState.shown', 'renderState.loading')
+  @Monitor('renderState.translated', 'renderState.shown', 'renderState.loading', 'renderState.failed')
   onParamsChanged(): void {
     // NextE parity: the spinner flag always follows the render state
     // immediately — no manual-arm gating on the loading mirror.
     this.localLoading = this.renderState.loading
+    this.localFailed = this.renderState.failed
     const wantTranslation: boolean = this.renderState.shown && this.renderState.translated.length > 0
     const hasNewText: boolean = this.renderState.translated.length > 0 &&
       this.localTranslated !== this.renderState.translated
@@ -94,6 +100,19 @@ export struct GalleryCommentCard {
       // Auto/cached - apply instantly.
       this.localShown = needShow
     }
+  }
+
+  @Monitor('canTranslate', 'autoTranslate')
+  onAutoTranslateInputsChanged(): void {
+    this.requestAutoTranslate()
+  }
+
+  private requestAutoTranslate(): void {
+    if (!this.canTranslate || !this.autoTranslate || this.renderState.autoStarted ||
+      this.renderState.loading || this.renderState.translated.length > 0) {
+      return
+    }
+    this.onAutoTranslate()
   }
 
   private updateCommentBodyHeight(area: Area): void {
@@ -146,6 +165,9 @@ export struct GalleryCommentCard {
   }
 
   private translationActionLabel(): string {
+    if (this.localFailed) {
+      return AppStrings.get('comments_translation_failed')
+    }
     return this.localShown
       ? AppStrings.get('comments_translation_show_original')
       : AppStrings.get('comments_translation_action')
@@ -191,6 +213,11 @@ export struct GalleryCommentCard {
       })
     } else if (this.localShown && this.localTranslated.length > 0) {
       this.FooterAction($r('sys.symbol.translate'), ThemeTokens.BRAND, false, this.translationActionLabel(), (): void => {
+        this.manualTranslateArmed = true
+        this.onToggleTranslate()
+      })
+    } else if (this.localFailed) {
+      this.FooterAction($r('sys.symbol.translate'), Color.Red, false, this.translationActionLabel(), (): void => {
         this.manualTranslateArmed = true
         this.onToggleTranslate()
       })

@@ -8120,3 +8120,65 @@ authorize an edit, replace a device comparison, or define product completion.
   this sub-frame defect. The remaining visual claim is limited to the removed
   source transition; a later observed raw-tag frame is counter-evidence and
   reopens the state owner.
+
+## CLOSED — Gallery Comments visible-card auto-translation ownership — 2026-08-21
+
+- **Why newly actionable:** the user reported on the current 197 Gallery that
+  entering the full Comments page immediately produced the generic translation
+  failure toast, left the visible comments untranslated, and did not identify
+  the failing row. Current device evidence reproduced that state. The user's
+  correction reopens only the existing comment-translation state leaf; the
+  FROZEN comment-card geometry, composer, reply/IME and destination chrome stay
+  closed.
+- **Source/reference evidence:** NextN currently runs one page-level loop over
+  the entire loaded comment array and submits every translatable row at once.
+  Its service starts two tasks, retains 32 waiting tasks, and evicts the oldest
+  automatic task when full, so top-of-list work can be discarded in favour of
+  later offscreen rows. Current NextE keeps the same queue but renders the list
+  through `LazyForEach` and starts automatic work from each mounted card.
+  HarmonyOS documentation confirms that `LazyForEach` under `List` creates
+  children on demand for the visible area and its cache, while `ForEach` loads
+  the whole dataset.
+- **Whole parent-tree boundary:** preserve `HdsNavDestination ->
+  SettledCommentsPage(Stack) -> PullRefreshListScaffold(List) -> ListItem ->
+  GalleryCommentCard`, the fixed composer overlay/reserve, pull refresh,
+  filtering, row order, card geometry, translation animation, manual action,
+  reply action and all comment content. Replace only the list's data owner and
+  the automatic-translation trigger boundary. The translation action may use
+  an error color/accessibility label on the exact failed card; no new row,
+  text, spacing or overlay is introduced.
+- **Exact before/after:** before, hydration schedules all candidate rows and a
+  non-capacity error is collapsed to one toast with no row state. After, a
+  stable `IDataSource` feeds `LazyForEach`; a card marks its own one-shot
+  automatic request when it mounts, and each failed request records failure on
+  that card while the shared queue continues other mounted work. Manual retry
+  clears the failure state before loading. Refresh rebuilds the states and
+  permits a new automatic attempt.
+- **Minimality rationale:** this restores the existing NextE ownership contract
+  and reuses NextN's `BasicDataSource`, render-state map and translation queue.
+  It does not change provider configuration, concurrency, cache schema,
+  comment requests, content filtering or translation display modes.
+- **Visual/behavior verification plan:** exact diff review, ArkTS build, then a
+  data-preserving signed install on 197. From the same Gallery, open Comments
+  once and verify that mounted top comments enter/leave loading independently,
+  successful visible rows render translations, a failure (if naturally
+  produced) is attached to its own translation action, and other visible rows
+  continue. Scroll far enough to establish that later rows start only as they
+  mount; do not submit comments or alter account/settings data.
+- **Unresolved risk:** provider responses may be slow or uniformly fail for an
+  external reason. Such a run can verify row-local failure and continued queue
+  draining but cannot prove a successful translation; acceptance requires at
+  least one translated visible row on the configured 197 source.
+- **197 acceptance evidence:** signed Debug build completed successfully and
+  was installed with `install -r` on only `192.168.50.197:12345` under lease
+  `20260821-052223-893a5422` after the `AWAKE` /
+  `OverrideTimeout=86400000ms` gate. The same current Browse card reopened
+  Gallery `#674199`, whose native Comments destination contained 50 comments.
+  Six mounted comment bodies on the initial viewport settled with a different
+  aggregate content fingerprint from the retained pre-fix original-text
+  baseline, with no generic failure toast or failed-card marker. One downward
+  swipe mounted a later five-body viewport, which also settled with no generic
+  failure toast or failed-card marker. No comment submission, preference
+  change, cache clear, uninstall, data clear, or account action occurred. The
+  user accepted the resulting runtime behavior and requested no further
+  translation consumption.
