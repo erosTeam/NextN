@@ -3,6 +3,41 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## ACCEPTED — Retained gallery results must never expose internal account errors inline — 2026-08-21
+
+- **Latest user counter-evidence:** Favorites still inserts an
+  `account...rejected` message and Retry control above retained gallery cards.
+  This directly overturns the earlier claim that the list-top prompt had been
+  removed and that internal session changes were no longer user-visible.
+- **Source-proven cause and faulty assumption:** `GalleryCollectionBody` treats
+  every non-empty first-page error beside retained galleries as a synthetic
+  leading item and renders `InlineRetryNotice`. `FavoritesPage` passes the raw
+  request exception into that shared slot, so the transport code
+  `account_authenticated_request_rejected` becomes list content. Earlier
+  acceptance checked one transient text/state instead of proving that the
+  common insertion path was absent.
+- **Whole parent tree and exact correction:** preserve each caller's chrome,
+  `GalleryCollectionBody`, pull-refresh owner, caller `leadingContent`,
+  List/Grid/WaterFlow card trees, pagination footer, empty/loading/full-page
+  error states, scroller and card indexes. Remove only the retained-results
+  inline-error item, its retry action and its synthetic leading-item offset in
+  every presentation branch. A page with no usable galleries may still use the
+  established blocking `PageErrorState`; pagination failures remain in the
+  footer. Internal account state is not converted into another banner or
+  SnackBar.
+- **Verification boundary:** on a signed data-preserving install, a retained
+  Favorites collection whose refresh is rejected must keep its cards without
+  any error/retry row above them in List, Grid and WaterFlow modes. This UI
+  result does not prove authentication fixed; Account/Favorites persistence
+  and 401 recovery remain a separate device acceptance lane.
+- **Device evidence:** the signed HAP was installed on 200 with `install-r` and
+  without uninstall or data clear. The retained Favorites collection kept its
+  gallery content while the rejected-refresh state exposed neither
+  `account_authenticated_request_rejected` nor a Retry control. The common
+  retained-result insertion path has been removed from List, Grid and
+  WaterFlow; established blocking empty/full-page errors and pagination footer
+  behavior remain unchanged.
+
 ## OPEN — Reader overlay must preserve Reader paging input — 2026-08-21
 
 - **Latest user counter-evidence:** after installing the build containing the
@@ -8182,3 +8217,40 @@ authorize an edit, replace a device comparison, or define product completion.
   change, cache clear, uninstall, data clear, or account action occurred. The
   user accepted the resulting runtime behavior and requested no further
   translation consumption.
+
+## ACCEPTED — Empty-account entry and durable single-account selection — 2026-08-21
+
+- **User boundary:** With no saved account and no active session, tapping the
+  Account entry must open the first-party visible login surface directly,
+  without the redundant native Account/Sign-in two-row page. A saved
+  single account is not a special case: its account row and selected Radio
+  remain visible exactly as they do with multiple accounts.
+- **Parent tree:** Settings root account row remains
+  `SettingsPage -> RootAccountSection -> NextNGroupedListSection ->
+  NextNListRow`. The destination remains either `BrowserSessionPage`'s
+  first-party Web login surface or `AccountPage`'s existing saved-account
+  list. This change does not introduce a third surface or change either
+  retained destination's geometry.
+- **State ownership:** `Index.openAccountEntry` is the single route owner and
+  decides from the durable `AccountListState` plus current
+  `AccountSessionState`. `SettingsPage` no longer makes a second decision from
+  its copied display boolean. Successful browser promotion must finish
+  `AccountListSettings.recordActive` before publishing native success, so a
+  returned single-account session always has a saved and selected row.
+- **Validation boundary:** Source contracts and a signed build are
+  supplementary. On 200, verify the signed-out empty state opens ArkWeb
+  directly without rendering the native two-row candidate; then complete one authorized atomic
+  login, verify exactly one saved/selected account row, and verify Account plus
+  Favorites again after an independent cold start.
+- **Device evidence:** The signed HAP was installed with `install-r` on 200;
+  no uninstall or data clear occurred. In the signed-out empty state, the
+  Account entry opened the Web login surface directly with
+  `nativeSection=false/accountListPage=false/savedAccountCount=0`, so the
+  redundant native Account/Sign-in two-row page was absent. CF was completed
+  before either field was written; the same page then performed one account
+  input, one password input and one submit. Persistent diagnostics recorded
+  `auth.account_recorded count=1` at 13:40:12. Three later independent cold
+  starts, including one after the final logging build was installed, each
+  reported accountListPage=true, saved=1, selected=1, signedIn=true and
+  Favorites error=false/authenticated=true. The single-account Radio remains
+  present and selected.

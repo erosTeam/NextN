@@ -3,6 +3,7 @@ import { webview } from '@kit.ArkWeb'
 import { hilog } from '@kit.PerformanceAnalysisKit'
 import {
   AccountListSettings,
+  DiagnosticLogger,
   NhAccountSessionService,
   NhAccountProfileService,
   NhArkWebSessionTransport,
@@ -25,7 +26,7 @@ import {
 } from 'shared'
 
 const SESSION_CAPTURE_INTERVAL_MS: number = 1000
-const ACCOUNT_LOG_DOMAIN: number = 0x0000
+const ACCOUNT_LOG_DOMAIN: number = 0xE001
 const ACCOUNT_LOG_TAG: string = 'NextNAccount'
 
 /**
@@ -297,6 +298,7 @@ export struct BrowserSessionPage {
       // Repeated page-end callbacks must not turn into repeated account probes.
       NhAccountSessionService.observeTrustedVisibleBrowserNavigation()
       hilog.info(ACCOUNT_LOG_DOMAIN, ACCOUNT_LOG_TAG, 'trusted login redirect observed')
+      DiagnosticLogger.info('account-login', 'trusted_redirect_observed', 'stage')
     }
     this.requestAccountSessionCapture(url)
   }
@@ -343,6 +345,7 @@ export struct BrowserSessionPage {
         this.browserSessionUserAgent,
       )) {
         hilog.info(ACCOUNT_LOG_DOMAIN, ACCOUNT_LOG_TAG, 'visible login candidate captured')
+        DiagnosticLogger.info('account-login', 'candidate_captured', 'stage')
         // The visible page is the exact ArkWeb context that completed the
         // Cloudflare challenge and credential submit. Validate there before
         // it is removed; asking a second hidden Web component to re-bootstrap
@@ -350,12 +353,15 @@ export struct BrowserSessionPage {
         const verificationOutcome: NhBrowserSessionVerificationOutcome =
           await NhApiClient.verifyAccountSessionFromVisibleBrowser(this.controller)
         if (verificationOutcome === NhBrowserSessionVerificationOutcome.RETRY_EXHAUSTED) {
+          DiagnosticLogger.warn('account-login', 'candidate_verification_retry_exhausted', 'stage')
           this.closeBrowserAfterCandidateVerificationExhausted()
           return
         }
         if (verificationOutcome !== NhBrowserSessionVerificationOutcome.VERIFIED) {
+          DiagnosticLogger.info('account-login', 'candidate_verification_deferred', 'stage')
           return
         }
+        DiagnosticLogger.info('account-login', 'candidate_verified', 'stage')
         // The account response itself can rotate the browser token. Re-read
         // the candidate before sealing: a changed snapshot remains pending
         // and must receive its own bounded verification on the next capture
@@ -373,6 +379,7 @@ export struct BrowserSessionPage {
         // could exhaust the service rate limit without returning to native UI.
         this.stopSessionCaptureTimer()
         if (!await NhAccountSessionService.confirmPendingVisibleBrowserSession(this.hostContext())) {
+          DiagnosticLogger.error('account-login', 'native_session_persist_failed', 'stage')
           // A verified web login must not leave the user inside an inert Web
           // component if its native persistence boundary cannot be completed.
           // Return to the Account surface, where the durable failure is visible
@@ -386,6 +393,7 @@ export struct BrowserSessionPage {
         NhArkWebSessionTransport.resetForVisibleSessionCandidate()
         this.sessionStatus = NhBrowserSessionBoundary.authenticated()
         hilog.info(ACCOUNT_LOG_DOMAIN, ACCOUNT_LOG_TAG, 'visible login session promoted')
+        DiagnosticLogger.info('account-login', 'native_session_promoted', 'stage')
         this.isBrowserRequested = false
         this.isControllerAttached = false
         this.stopSessionCaptureTimer()
@@ -394,7 +402,13 @@ export struct BrowserSessionPage {
         // also receives the new complete Cookie snapshot. A fire-and-forget
         // copy allowed an immediate cold start to retain the old access-only
         // saved record and later destroy refresh/session on account switch.
-        await AccountListSettings.recordActive(this.hostContext())
+        if (!await AccountListSettings.recordActive(this.hostContext())) {
+          DiagnosticLogger.error('account-login', 'active_account_record_failed', 'stage')
+          this.accountActionError = AppStrings.get('account_save_failed')
+          this.closeBrowserAfterPromotionFailure()
+          return
+        }
+        DiagnosticLogger.info('account-login', 'active_account_recorded', 'stage')
         this.announceVisibleLoginPromotion()
       }
     } catch (error) {
@@ -406,6 +420,7 @@ export struct BrowserSessionPage {
         : 'account_session_promotion_failed'
       hilog.error(ACCOUNT_LOG_DOMAIN, ACCOUNT_LOG_TAG,
         'visible login promotion failed stage=%{public}s', stage)
+      DiagnosticLogger.error('account-login', 'promotion_failed', `stage=${stage}`)
       this.accountActionError = AppStrings.get('account_save_failed')
       this.closeBrowserAfterPromotionFailure()
     }

@@ -49,6 +49,10 @@ const ACCOUNT_LOG_TAG: string = 'NextNAccount'
 const SEALED_RESYNC_MIN_INTERVAL_MS: number = 30000
 const ACCOUNT_STATE_STORE: string = 'nextn_settings'
 const ACCOUNT_PRESENT_KEY: string = 'account.session.present'
+const AUTH_REFRESH_RETRY_AT_KEY: string = 'account.session.authRefreshRetryAt'
+const AUTH_REFRESH_DEFAULT_COOLDOWN_MS: number = 5 * 60 * 1000
+const AUTH_REFRESH_MIN_COOLDOWN_MS: number = 60 * 1000
+const AUTH_REFRESH_MAX_COOLDOWN_MS: number = 24 * 60 * 60 * 1000
 
 /**
  * Account diagnostics deliberately carry a fixed lifecycle code only. They
@@ -66,6 +70,8 @@ enum AccountSessionDiagnosticStage {
   RESTORE_ARKWEB_JAR_READY = 'account_restore_arkweb_jar_ready',
   RESTORE_READY = 'account_restore_ready',
   RESTORE_HYDRATION_DEFERRED = 'account_restore_hydration_deferred',
+  RESTORE_HYDRATION_READY_AFTER_PAGE = 'account_restore_hydration_ready_after_page',
+  RESTORE_HYDRATION_UNAVAILABLE_AFTER_PAGE = 'account_restore_hydration_unavailable_after_page',
   RESTORE_SAVED_ENVELOPE_USED = 'account_restore_saved_envelope_used',
   RESTORE_SAVED_ENVELOPE_EXHAUSTED = 'account_restore_saved_envelope_exhausted',
   RESTORE_COOKIE_STORE_RETRY = 'account_restore_cookie_store_retry',
@@ -75,6 +81,8 @@ enum AccountSessionDiagnosticStage {
   AUTHENTICATED_READ_INITIAL_401 = 'account_authenticated_read_initial_401',
   AUTHENTICATED_READ_BROWSER_REFRESH_READY = 'account_authenticated_read_browser_refresh_ready',
   AUTHENTICATED_READ_BROWSER_REFRESH_UNAVAILABLE = 'account_authenticated_read_browser_refresh_unavailable',
+  AUTHENTICATED_READ_REFRESH_ENDPOINT_READY = 'account_authenticated_read_refresh_endpoint_ready',
+  AUTHENTICATED_READ_REFRESH_ENDPOINT_UNAVAILABLE = 'account_authenticated_read_refresh_endpoint_unavailable',
   AUTHENTICATED_READ_BROWSER_REPLAY_RECOVERED = 'account_authenticated_read_browser_replay_recovered',
   AUTHENTICATED_READ_BROWSER_REPLAY_401 = 'account_authenticated_read_browser_replay_401',
   AUTHENTICATED_READ_TERMINAL_401_AFTER_RESTORE = 'account_authenticated_read_terminal_401_after_restore',
@@ -289,6 +297,102 @@ export class NhAccountSessionService {
       !(NhAccountSessionService.sessionTransitionInFlight &&
         NhAccountSessionService.sessionTransitionChangesOwnership) &&
       token.sessionEpoch === NhAccountSessionService.sessionEpoch
+  }
+
+  /**
+   * Builds the fixed NH token-refresh body for the exact retained read epoch.
+   * The value stays inside the account transport call, is never logged or
+   * returned by JavaScript, and can target only the fixed first-party refresh
+   * endpoint.
+   */
+  static authenticatedRefreshRequestBody(token: NhAccountAuthenticatedReadToken): string {
+    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+      return ''
+    }
+    const refreshCookie: SealedAuthCookie | undefined =
+      NhAccountSessionService.sealedAuthCookies.find((cookie: SealedAuthCookie): boolean =>
+        cookie.name === 'refresh_token' && cookie.value.length > 0)
+    if (refreshCookie === undefined) {
+      return ''
+    }
+    return JSON.stringify({ 'refresh_token': refreshCookie.value })
+  }
+
+  /**
+   * Returns the remaining server-directed refresh cooldown. This marker is
+   * deliberately process-independent: Account and Favorites can be opened in
+   * separate app processes during S0, and neither may turn one 429 into a
+   * second refresh attempt. The stored value is only a timestamp.
+   */
+  static async authenticatedRefreshCooldownRemainingMs(
+    token: NhAccountAuthenticatedReadToken,
+  ): Promise<number> {
+    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+      return AUTH_REFRESH_MIN_COOLDOWN_MS
+    }
+    const context: common.UIAbilityContext | null = NhAccountSessionService.sessionContext
+    if (context === null) {
+      return 0
+    }
+    try {
+      const store: preferences.Preferences = await preferences.getPreferences(context, ACCOUNT_STATE_STORE)
+      const retryAtValue: preferences.ValueType = store.getSync(AUTH_REFRESH_RETRY_AT_KEY, 0)
+      const retryAtMs: number = typeof retryAtValue === 'number' && Number.isFinite(retryAtValue)
+        ? Math.floor(retryAtValue)
+        : 0
+      return Math.max(0, retryAtMs - Date.now())
+    } catch (_error) {
+      return 0
+    }
+  }
+
+  /** Persists only a bounded next-attempt timestamp after a refresh 429. */
+  static async recordAuthenticatedRefreshCooldown(
+    token: NhAccountAuthenticatedReadToken,
+    retryAfterMs: number,
+  ): Promise<void> {
+    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+      return
+    }
+    const context: common.UIAbilityContext | null = NhAccountSessionService.sessionContext
+    if (context === null) {
+      return
+    }
+    const requestedMs: number = Number.isFinite(retryAfterMs) && retryAfterMs > 0
+      ? Math.floor(retryAfterMs)
+      : AUTH_REFRESH_DEFAULT_COOLDOWN_MS
+    const boundedMs: number = Math.min(
+      AUTH_REFRESH_MAX_COOLDOWN_MS,
+      Math.max(AUTH_REFRESH_MIN_COOLDOWN_MS, requestedMs),
+    )
+    try {
+      const store: preferences.Preferences = await preferences.getPreferences(context, ACCOUNT_STATE_STORE)
+      store.putSync(AUTH_REFRESH_RETRY_AT_KEY, Date.now() + boundedMs)
+      store.flushSync()
+      DiagnosticLogger.info(
+        'account-session',
+        'account_authenticated_read_refresh_cooldown_recorded',
+        `seconds=${Math.ceil(boundedMs / 1000)}`,
+      )
+    } catch (_error) {}
+  }
+
+  /** A successful rotation removes any prior server-rate-limit marker. */
+  static async clearAuthenticatedRefreshCooldown(
+    token: NhAccountAuthenticatedReadToken,
+  ): Promise<void> {
+    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+      return
+    }
+    const context: common.UIAbilityContext | null = NhAccountSessionService.sessionContext
+    if (context === null) {
+      return
+    }
+    try {
+      const store: preferences.Preferences = await preferences.getPreferences(context, ACCOUNT_STATE_STORE)
+      store.deleteSync(AUTH_REFRESH_RETRY_AT_KEY)
+      store.flushSync()
+    } catch (_error) {}
   }
 
   /**
@@ -636,6 +740,7 @@ export class NhAccountSessionService {
    */
   static async syncSealedSessionFromRegularJar(
     context: common.UIAbilityContext | null = null,
+    forceCheckpoint: boolean = false,
   ): Promise<void> {
     if (!NhAccountSessionService.isAuthenticated() ||
       NhAccountSessionService.sessionTransitionInFlight) {
@@ -667,7 +772,7 @@ export class NhAccountSessionService {
       // authentication tuple so a later cold start or explicit account switch
       // restores the server's renewal chain, not just one expiring access token.
       const now: number = Date.now()
-      if (!needsSavedAccountCheckpoint &&
+      if (!forceCheckpoint && !needsSavedAccountCheckpoint &&
         now - NhAccountSessionService.lastSealedResyncAtMs < SEALED_RESYNC_MIN_INTERVAL_MS) {
         // Still within the throttled window: keep the in-memory jar view
         // fresh but defer the durable re-seal to the next window.
@@ -740,6 +845,9 @@ export class NhAccountSessionService {
     try {
       await AccountSessionRepository.clear(context)
       await NhAccountSessionService.persistRetainedAccountMarker(context, false)
+      const store: preferences.Preferences = await preferences.getPreferences(context, ACCOUNT_STATE_STORE)
+      store.deleteSync(AUTH_REFRESH_RETRY_AT_KEY)
+      store.flushSync()
     } catch (error) {
       // Do not make a failed durable clear look like a completed logout. The
       // existing authenticated runtime and ArkWeb identity remain usable, so
@@ -811,10 +919,29 @@ export class NhAccountSessionService {
       : AccountSessionDiagnosticStage.AUTHENTICATED_READ_BROWSER_REFRESH_UNAVAILABLE)
   }
 
+  static recordAuthenticatedReadRefreshEndpoint(statusCode: number): void {
+    const ready: boolean = statusCode >= 200 && statusCode < 300
+    DiagnosticLogger.info(
+      'account-session',
+      'account_authenticated_read_refresh_endpoint_status',
+      `status=${statusCode}`,
+    )
+    NhAccountSessionService.recordDiagnosticStage(ready
+      ? AccountSessionDiagnosticStage.AUTHENTICATED_READ_REFRESH_ENDPOINT_READY
+      : AccountSessionDiagnosticStage.AUTHENTICATED_READ_REFRESH_ENDPOINT_UNAVAILABLE)
+  }
+
   static recordAuthenticatedReadBrowserReplay(returned401: boolean): void {
     NhAccountSessionService.recordDiagnosticStage(returned401
       ? AccountSessionDiagnosticStage.AUTHENTICATED_READ_BROWSER_REPLAY_401
       : AccountSessionDiagnosticStage.AUTHENTICATED_READ_BROWSER_REPLAY_RECOVERED)
+  }
+
+  /** Records whether the sealed identity reached the live jar after ArkWeb owns a trusted document. */
+  static recordRestoreHydrationAfterPage(ready: boolean): void {
+    NhAccountSessionService.recordDiagnosticStage(ready
+      ? AccountSessionDiagnosticStage.RESTORE_HYDRATION_READY_AFTER_PAGE
+      : AccountSessionDiagnosticStage.RESTORE_HYDRATION_UNAVAILABLE_AFTER_PAGE)
   }
 
   /** Must be called from the visible Web component's UI-thread callback. */
@@ -1625,7 +1752,10 @@ export class NhAccountSessionService {
           'account_restore_payload_shape',
           `code=${payload.validationCode};headerAccess=${NhAccountSessionService.hasLoginCookies(payloadNormalized) ? 1 : 0};` +
             `ua=${payloadUserAgent.length > 0 ? 1 : 0};authCount=${payload.authCookies.length};` +
-            `renewal=${NhAccountSessionService.hasRenewalAuthCookie(payload.authCookies) ? 1 : 0}`,
+            `renewal=${NhAccountSessionService.hasRenewalAuthCookie(payload.authCookies) ? 1 : 0};` +
+            `refresh=${NhAccountSessionService.hasNamedAuthCookie(payload.authCookies, 'refresh_token') ? 1 : 0};` +
+            `session=${NhAccountSessionService.hasNamedAuthCookie(payload.authCookies, 'sessionid') ? 1 : 0};` +
+            `legacy=${NhAccountSessionService.hasNamedAuthCookie(payload.authCookies, 'ipb_pass_hash') ? 1 : 0}`,
         )
         if (!payload.isEnvelopeValid || !NhAccountSessionService.hasLoginCookies(payloadNormalized) ||
           payloadUserAgent.length === 0) {
@@ -2371,6 +2501,11 @@ export class NhAccountSessionService {
     return cookies.some((cookie: SealedAuthCookie): boolean =>
       (cookie.name === 'refresh_token' || cookie.name === 'sessionid' ||
         cookie.name === 'ipb_pass_hash') && cookie.value.length > 0)
+  }
+
+  private static hasNamedAuthCookie(cookies: SealedAuthCookie[], name: string): boolean {
+    return cookies.some((cookie: SealedAuthCookie): boolean =>
+      cookie.name === name && cookie.value.length > 0)
   }
 
   private static authCookieSnapshotContains(

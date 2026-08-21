@@ -3479,3 +3479,19 @@ permitted in this repository.
   queue dropping visible rows. The user accepted the runtime result and asked
   to stop further translation requests. No physical acceptance action remains
   for this bounded defect.
+
+### 200 empty-account direct login and single-account persistence accepted — 2026-08-21 +0800
+
+- After the user-authorized sign-out removed the only account, the final
+  signed route opened the first-party Web login directly from Settings and did
+  not render the redundant native Account/Sign-in two-row page.
+- The corrected executor stopped before credential focus when CF was pending.
+  The visible challenge completed with both fields empty; same-page resume then
+  performed one account input, one password input and one submit. No repeated
+  clear, fill, or submit occurred.
+- The account was durably recorded once. Three independent cold starts,
+  including one after the final persistent-login-stage logging build was
+  installed with `install-r`, reported exactly one saved and selected account
+  plus a successful current Favorites request. No uninstall or data clear
+  occurred. No physical action remains for this bounded account-entry/login
+  acceptance.

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /** Non-UI regressions for account ownership and split history sync. */
 import fs from 'fs'
+import { runStagedLoginEpoch } from './run_arkweb_login_keychain_epoch.mjs'
 
 const read = (path) => fs.readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 let failures = 0
@@ -23,6 +24,9 @@ const entryAbility = read('entry/src/main/ets/entryability/EntryAbility.ets')
 const settingsPage = read('feature/settings/src/main/ets/pages/SettingsPage.ets')
 const diagnosticsRedactor = read('shared/src/main/ets/diagnostics/DiagnosticsRedactor.ets')
 const accountS0Collector = read('scripts/collect_nextn_account_s0.mjs')
+const atomicLoginCycle = read('scripts/run_nextn_account_login_cycle.mjs')
+const entryIndex = read('entry/src/main/ets/pages/Index.ets')
+const galleryCollectionBody = read('shared/src/main/ets/components/GalleryCollectionBody.ets')
 
 ok('account ownership is separate from request authentication',
   /@Trace signedIn: boolean/.test(accountState) &&
@@ -59,10 +63,78 @@ ok('401 recovery never overwrites the live browser jar with a sealed access toke
   !/AUTHENTICATED_READ_SEALED_REPLAY/.test(session) &&
   /credentials:\s*'include'/.test(arkWebTransport) &&
   /document\.cookie/.test(arkWebTransport))
-ok('S0 never treats cached Favorites cards plus an inline request error as authenticated',
-  /const error = hasLabel\(favoritesRoot, labels\.favoritesError\)/.test(accountS0Collector) &&
-  /const authenticated = nativeStructure && !error/.test(accountS0Collector) &&
-  /summary\.signInPrompt \|\| summary\.error/.test(accountS0Collector))
+ok('S0 uses the fixed current-process Favorites outcome when cached cards remain mounted',
+  /collectFavoritesRequestOutcome/.test(accountS0Collector) &&
+  /requestOutcome === 'failed'[\s\S]*summary\.error = true[\s\S]*summary\.authenticated = false/.test(accountS0Collector) &&
+  /requestOutcome === 'success'[\s\S]*summary\.error = false[\s\S]*summary\.authenticated = true/.test(accountS0Collector))
+const credentialPreparation = atomicLoginCycle.indexOf("invokeKeychainHandle('account'")
+const visibleLoginRoute = atomicLoginCycle.indexOf('routeVisibleLogin(options.target, options.lease)')
+const preCredentialCfGate = atomicLoginCycle.indexOf('waitForPreCredentialCfGate(forward.localPort')
+const stagedCredentialEpoch = atomicLoginCycle.indexOf('runStagedLoginEpoch({')
+const fixedSubmit = atomicLoginCycle.indexOf('runCfReviewedSubmit({')
+const nativePromotion = atomicLoginCycle.indexOf('observeNativePromotion(options.target')
+ok('authorized login is one atomic post-WebView queue and pauses only for CF',
+  credentialPreparation >= 0 && visibleLoginRoute > credentialPreparation &&
+  preCredentialCfGate > visibleLoginRoute && stagedCredentialEpoch > preCredentialCfGate &&
+  fixedSubmit > stagedCredentialEpoch &&
+  nativePromotion > fixedSubmit &&
+  /CF_READY_TO_FILL_CEILING_MS = 5000/.test(atomicLoginCycle) &&
+  /challengeFramePresent === true[\s\S]*cf_intervention_required[\s\S]*runStagedLoginEpoch/.test(atomicLoginCycle) &&
+  /cf_intervention_required/.test(atomicLoginCycle) &&
+  /result\.code !== 'cf_intervention_required'[\s\S]*forceStop/.test(atomicLoginCycle) &&
+  /flowDeadlineAt = flowStartedAt \+ LOGIN_FLOW_CEILING_MS/.test(atomicLoginCycle) &&
+  /Date\.now\(\) < deadlineAt/.test(atomicLoginCycle) &&
+  /nativeAccount \|\| accountList/.test(atomicLoginCycle))
+const challengeActions = []
+const challengeResult = await runStagedLoginEpoch({
+  port: 1,
+  timeoutMs: 500,
+  accountSecretBytes: new Uint8Array([1]),
+  passwordSecretBytes: new Uint8Array([2]),
+}, {
+  probe: async () => ({
+    ok: true,
+    loginFormPresent: true,
+    accountFieldPresent: true,
+    accountFieldFocused: false,
+    accountFieldFilled: false,
+    passwordFieldPresent: true,
+    passwordFieldFocused: false,
+    passwordFieldFilled: false,
+    passwordFieldMasked: true,
+    challengeFramePresent: true,
+  }),
+  semanticDriver: async (options) => {
+    challengeActions.push(options.action)
+    return { ok: true }
+  },
+  secretFill: async (options) => {
+    challengeActions.push(`fill-${options.field}`)
+    return { ok: true }
+  },
+})
+ok('a pending CF challenge blocks focus and both credential writes',
+  challengeResult.ok === false && challengeResult.code === 'challenge_present' &&
+  challengeResult.accountEntered === false && challengeResult.passwordEntered === false &&
+  challengeResult.submitIssued === false && challengeActions.length === 0)
+ok('empty signed-out account entry goes directly to the visible login page',
+  /private openAccountEntry\(\)[\s\S]*accountList\.accounts\.length === 0[\s\S]*!this\.accountSession\.signedIn[\s\S]*this\.pushVisibleLoginSession\(\)/.test(entryIndex) &&
+  /private pushVisibleLoginSession\(\)[\s\S]*new BrowserSessionRouteParams\(true\)/.test(entryIndex) &&
+  /onOpenAccount:[\s\S]{0,120}this\.openAccountEntry\(\)/.test(entryIndex) &&
+  /accessibilityId: 'nextn-settings-root-account'[\s\S]{0,320}if \(this\.onOpenAccount\)[\s\S]{0,120}this\.onOpenAccount\(\)/.test(settingsPage) &&
+  !/accessibilityId: 'nextn-settings-root-account'[\s\S]{0,320}if \(this\.isAccountSignedIn && this\.onOpenAccount\)/.test(settingsPage))
+ok('visible login promotion cannot complete without a saved selected account row',
+  /recordActive\(context: common\.UIAbilityContext\): Promise<boolean>/.test(accountList) &&
+  /if \(!await AccountListSettings\.recordActive\(this\.hostContext\(\)\)\)[\s\S]*closeBrowserAfterPromotionFailure\(\)/.test(browserPage))
+ok('visible login promotion stages use the live domain and persistent redacted diagnostics',
+  /ACCOUNT_LOG_DOMAIN: number = 0xE001/.test(browserPage) &&
+  /DiagnosticLogger\.info\('account-login', 'candidate_captured', 'stage'\)/.test(browserPage) &&
+  /DiagnosticLogger\.info\('account-login', 'native_session_promoted', 'stage'\)/.test(browserPage) &&
+  /DiagnosticLogger\.error\('account-login', 'active_account_record_failed', 'stage'\)/.test(browserPage))
+ok('retained gallery collections never render an inline internal error or retry row',
+  !/InlineRetryNotice/.test(galleryCollectionBody) &&
+  !/InlineError/.test(galleryCollectionBody) &&
+  !/hasInlineError/.test(galleryCollectionBody))
 ok('the obsolete re-verify account option is absent from runtime UI',
   !/VERIFICATION_RETRY_REQUIRED/.test(browserPage) &&
   !/account_verify_sign_in/.test(browserPage))
@@ -96,8 +168,9 @@ ok('same-account cookie checkpoints do not invalidate concurrent reads or publis
   !/token\.transitionEpoch/.test(session) &&
   syncSealedSession.length > 0 &&
   !/publishSessionChange\(\)/.test(syncSealedSession))
-ok('public response scopes never acquire account ownership tokens or expose English transition errors',
-  /accountScoped \? NhAccountSessionService\.captureAuthenticatedReadToken\(\) : null/.test(api) &&
+ok('all logged-in first-party reads acquire the same account ownership fence without English transition errors',
+  /const readToken:[\s\S]*accountOwned[\s\S]*captureAuthenticatedReadToken\(\)/.test(api) &&
+  /accountOwned && readToken === null[\s\S]*account_session_generation_changed/.test(api) &&
   !/Your account session (?:is changing|changed)/.test(api))
 ok('a successful browser response cannot re-seal a session with an empty user agent',
   /requestUserAgent[\s\S]*browserUserAgent = userAgent/.test(session) &&
@@ -107,6 +180,32 @@ ok('401 browser repair reloads the authenticated root instead of the login page'
   /loadTrustedSessionRefreshPage/.test(arkWebTransport) &&
   /controller\.loadUrl\(`\$\{NhBrowserSessionBoundary\.trustedOrigin\(\)\}\/`\)/.test(arkWebTransport) &&
   !/loadTrustedSessionRefreshPage[\s\S]{0,1800}loginUrl\(\)/.test(arkWebTransport))
+ok('a failed token refresh has process and persistent server-directed cooldowns',
+  /AUTH_REFRESH_FAILURE_COOLDOWN_MS: number = 60 \* 1000/.test(arkWebTransport) &&
+  /lastBrowserIdentityRefreshFailureAtMs/.test(arkWebTransport) &&
+  /Date\.now\(\) - NhArkWebSessionTransport\.lastBrowserIdentityRefreshFailureAtMs/.test(arkWebTransport) &&
+  /authenticatedRefreshCooldownRemainingMs\(token\)/.test(arkWebTransport) &&
+  /response\.headers\.get\('Retry-After'\)/.test(arkWebTransport) &&
+  /AUTH_REFRESH_RETRY_AT_KEY: string = 'account\.session\.authRefreshRetryAt'/.test(session) &&
+  /recordAuthenticatedRefreshCooldown[\s\S]*store\.putSync\(AUTH_REFRESH_RETRY_AT_KEY/.test(session) &&
+  /clearAuthenticatedRefreshCooldown[\s\S]*store\.deleteSync\(AUTH_REFRESH_RETRY_AT_KEY\)/.test(session))
+ok('cold restore retries sealed-cookie hydration after a trusted ArkWeb page exists',
+  /await ready[\s\S]*ensureRegularArkWebCookieJar\(\)[\s\S]*recordRestoreHydrationAfterPage/.test(arkWebTransport) &&
+  /account_restore_hydration_ready_after_page/.test(session) &&
+  /after_page_ready_hydration/.test(arkWebTransport))
+ok('401 repair hydrates, verifies the account endpoint, and forces a durable checkpoint before replay',
+  /after_refresh_hydration/.test(arkWebTransport) &&
+  /AUTH_REFRESH_URL: string = `\$\{API_PREFIX\}auth\/refresh`/.test(arkWebTransport) &&
+  /authenticatedRefreshRequestBody\(token\)/.test(arkWebTransport) &&
+  /requestStatusWithBodyFromCurrentDocument[\s\S]*'POST'/.test(arkWebTransport) &&
+  /requestStatusFromCurrentDocument\([\s\S]*`\$\{API_PREFIX\}user`/.test(arkWebTransport) &&
+  /syncSealedSessionFromRegularJar\(null, true\)/.test(arkWebTransport) &&
+  /forceCheckpoint: boolean = false/.test(session) &&
+  /authenticatedRefreshRequestBody[\s\S]*cookie\.name === 'refresh_token'[\s\S]*JSON\.stringify/.test(session))
+ok('restore diagnostics distinguish modern and legacy renewal cookie names without values',
+  /refresh=\$\{NhAccountSessionService\.hasNamedAuthCookie\(payload\.authCookies, 'refresh_token'\)/.test(session) &&
+  /session=\$\{NhAccountSessionService\.hasNamedAuthCookie\(payload\.authCookies, 'sessionid'\)/.test(session) &&
+  /legacy=\$\{NhAccountSessionService\.hasNamedAuthCookie\(payload\.authCookies, 'ipb_pass_hash'\)/.test(session))
 ok('persistent diagnostics are initialized for every process and exposed in Advanced settings',
   /DiagnosticLogger\.initializePersistentSink\(this\.context\)/.test(entryAbility) &&
   /DiagnosticsSettings\.restore\(this\.context\)/.test(entryAbility) &&

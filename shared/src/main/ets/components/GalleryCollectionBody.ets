@@ -10,7 +10,6 @@ import { GalleryListItem } from './GalleryListItem'
 import { GalleryMediumCard } from './GalleryMediumCard'
 import { galleryWaterfallCompactReuseId, GalleryWaterfallCompactCard } from './GalleryWaterfallCompactCard'
 import { galleryWaterfallReuseId, GalleryWaterfallCard } from './GalleryWaterfallCard'
-import { InlineRetryNotice } from './InlineRetryNotice'
 import { LoadingFooter } from './LoadingFooter'
 import { PageEmptyState, PageErrorState, PageLoadingState } from './PageStates'
 import { NextNPullRefreshController } from './PullRefresh'
@@ -54,7 +53,7 @@ export struct GalleryCollectionBody {
   @Param topPadding: number = 0
   /**
    * A destination may retain a small, source-owned result-context row before
-   * the common retry notice and gallery cards (for example Search's committed
+   * the gallery cards (for example Search's committed
    * language/sort snapshot). The collection still owns all gallery-card,
    * footer and refresh branches; this is only a leaf insertion boundary.
    */
@@ -91,20 +90,15 @@ export struct GalleryCollectionBody {
     return this.topPadding
   }
 
-  private hasInlineError(): boolean {
-    return this.errorMessage.length > 0 && this.galleries.length > 0
-  }
-
   private isGallerySelected(gallery: NhGallerySummary): boolean {
     return this.selectedGalleryId > 0 && gallery.id === this.selectedGalleryId
   }
 
   private normalizedLeadingItemCount(): number {
-    const callerLeadingCount: number = this.leadingItemCount > 0 ? this.leadingItemCount : 0
-    return callerLeadingCount + (this.hasInlineError() ? 1 : 0)
+    return this.leadingItemCount > 0 ? this.leadingItemCount : 0
   }
 
-  /** Includes the optional inline error item and this parent's single footer. */
+  /** Includes caller-owned leading content and this parent's single footer. */
   private contentItemCount(): number {
     return this.normalizedLeadingItemCount() + this.galleries.length + 1
   }
@@ -175,18 +169,6 @@ export struct GalleryCollectionBody {
   }
 
   @Builder
-  private InlineError() {
-    if (this.hasInlineError()) {
-      InlineRetryNotice({
-        message: this.errorMessage,
-        onRetry: (): void => {
-          this.requestRetry()
-        },
-      })
-    }
-  }
-
-  @Builder
   private EmptyLeadingContent() {}
 
   @Builder
@@ -220,7 +202,6 @@ export struct GalleryCollectionBody {
   @Builder
   private ListCards() {
     this.leadingContent()
-    this.InlineError()
     ForEach(this.galleries, (gallery: NhGallerySummary): void => {
       ListItem() {
         if (this.effectivePresentation() === NhBrowsePresentation.LIST) {
@@ -251,11 +232,6 @@ export struct GalleryCollectionBody {
   @Builder
   private GridCards() {
     this.leadingContent()
-    if (this.hasInlineError()) {
-      GridItem() {
-        this.InlineError()
-      }
-    }
     ForEach(this.galleries, (gallery: NhGallerySummary): void => {
       GridItem() {
         GalleryGridCard({
@@ -275,11 +251,6 @@ export struct GalleryCollectionBody {
   @Builder
   private WaterfallCards(mode: NhBrowsePresentation) {
     this.leadingContent()
-    if (this.hasInlineError()) {
-      FlowItem() {
-        this.InlineError()
-      }
-    }
     ForEach(this.galleries, (gallery: NhGallerySummary): void => {
       FlowItem() {
         if (mode === NhBrowsePresentation.WATERFALL) {

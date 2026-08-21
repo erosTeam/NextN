@@ -449,7 +449,7 @@ export class NhApiClient {
     let response: NhArkWebAccountProfileResponse = await NhArkWebSessionTransport.requestAccountProfile()
     if (response.statusCode === 401) {
       NhAccountSessionService.recordAuthenticatedReadInitial401()
-      const refreshReady: boolean = await NhArkWebSessionTransport.refreshSessionAfter401()
+      const refreshReady: boolean = await NhArkWebSessionTransport.refreshSessionAfter401(readToken)
       NhAccountSessionService.recordAuthenticatedReadBrowserRefresh(refreshReady)
       if (refreshReady && NhAccountSessionService.isAuthenticatedReadTokenCurrent(readToken)) {
         response = await NhArkWebSessionTransport.requestAccountProfile()
@@ -613,17 +613,21 @@ export class NhApiClient {
       throw new Error('The browser transport is restricted to the first-party API')
     }
     const accountOwned: boolean = NhAccountSessionService.hasRetainedAccount()
-    const accountScoped: boolean = scope === NhJsonReadScope.ACCOUNT_OWNED ||
-      scope === NhJsonReadScope.ACCOUNT_OWNED_NON_RETIRING
-    const readToken: NhAccountAuthenticatedReadToken | null =
-      accountScoped ? NhAccountSessionService.captureAuthenticatedReadToken() : null
+    // All first-party reads share the same browser identity. Fence every
+    // logged-in request so its 401 repair cannot race a real account switch.
+    const readToken: NhAccountAuthenticatedReadToken | null = accountOwned
+      ? NhAccountSessionService.captureAuthenticatedReadToken()
+      : null
+    if (accountOwned && readToken === null) {
+      throw new Error('account_session_generation_changed')
+    }
     let response: NhArkWebSessionResponse = await NhArkWebSessionTransport.requestJson(url, method, body)
     if (response.statusCode === 401) {
       if (accountOwned) {
         NhAccountSessionService.recordAuthenticatedReadInitial401()
         await NhAccountSessionService.recordBrowserAuthCookieShape('after_initial_401')
       }
-      const refreshReady: boolean = await NhArkWebSessionTransport.refreshSessionAfter401()
+      const refreshReady: boolean = await NhArkWebSessionTransport.refreshSessionAfter401(readToken)
       if (accountOwned) {
         NhAccountSessionService.recordAuthenticatedReadBrowserRefresh(refreshReady)
         await NhAccountSessionService.recordBrowserAuthCookieShape('after_root_refresh')

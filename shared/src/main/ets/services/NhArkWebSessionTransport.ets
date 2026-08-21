@@ -1,12 +1,15 @@
 import { webview } from '@kit.ArkWeb'
-import { NhAccountSessionService } from './NhAccountSessionService'
+import { NhAccountAuthenticatedReadToken, NhAccountSessionService } from './NhAccountSessionService'
 import { NhBrowserSessionBoundary } from './NhBrowserSessionBoundary'
 
 const API_PREFIX: string = 'https://nhentai.net/api/v2/'
+const AUTH_REFRESH_URL: string = `${API_PREFIX}auth/refresh`
 const BOOTSTRAP_TIMEOUT_MS: number = 15000
 const REQUEST_TIMEOUT_MS: number = 20000
 const REQUEST_RESULT_TIMEOUT_MS: number = REQUEST_TIMEOUT_MS + 2000
 const REQUEST_POLL_INTERVAL_MS: number = 100
+const AUTH_REFRESH_FAILURE_COOLDOWN_MS: number = 60 * 1000
+const MAX_AUTH_REFRESH_RETRY_AFTER_MS: number = 24 * 60 * 60 * 1000
 const MAX_REQUEST_BODY_CHARS: number = 512 * 1024
 const MAX_RESPONSE_BODY_CHARS: number = 4 * 1024 * 1024
 const ACCOUNT_INFO_PATH: string = '/info/'
@@ -23,6 +26,7 @@ const MAX_ACCOUNT_PROFILE_AVATAR_CHARS: number = 2048
 export class NhArkWebSessionResponse {
   statusCode: number = 0
   body: string = ''
+  retryAfterMs: number = 0
 }
 
 /**
@@ -57,6 +61,7 @@ export class NhArkWebSessionTransport {
   private static readyTimeoutId: number = -1
   private static bootstrapTask: Promise<void> | null = null
   private static browserIdentityRefreshTask: Promise<boolean> | null = null
+  private static lastBrowserIdentityRefreshFailureAtMs: number = 0
   private static requestSequence: number = 0
 
   static attach(controller: webview.WebviewController): void {
@@ -213,11 +218,12 @@ export class NhArkWebSessionTransport {
   }
 
   /**
-   * Reloads the fixed first-party root so ArkWeb can renew its own Cookie jar,
-   * then lets the caller replay the original request once. No sealed access
-   * token is injected and no response may demote durable account ownership.
+   * Reloads the fixed first-party root so ArkWeb can renew its own Cookie jar.
+   * A retained account is repaired only after a same-origin account probe
+   * succeeds and the refreshed jar is checkpointed; root page completion
+   * alone is not authentication evidence.
    */
-  static async refreshSessionAfter401(): Promise<boolean> {
+  static async refreshSessionAfter401(token: NhAccountAuthenticatedReadToken | null): Promise<boolean> {
     const activeTask: Promise<boolean> | null = NhArkWebSessionTransport.browserIdentityRefreshTask
     if (activeTask !== null) {
       try {
@@ -226,10 +232,21 @@ export class NhArkWebSessionTransport {
         return false
       }
     }
-    const task: Promise<boolean> = NhArkWebSessionTransport.refreshBrowserSession()
+    if (NhArkWebSessionTransport.lastBrowserIdentityRefreshFailureAtMs > 0 &&
+      Date.now() - NhArkWebSessionTransport.lastBrowserIdentityRefreshFailureAtMs <
+        AUTH_REFRESH_FAILURE_COOLDOWN_MS) {
+      return false
+    }
+    if (token !== null &&
+      await NhAccountSessionService.authenticatedRefreshCooldownRemainingMs(token) > 0) {
+      return false
+    }
+    const task: Promise<boolean> = NhArkWebSessionTransport.refreshBrowserSession(token)
     NhArkWebSessionTransport.browserIdentityRefreshTask = task
     try {
-      return await task
+      const ready: boolean = await task
+      NhArkWebSessionTransport.lastBrowserIdentityRefreshFailureAtMs = ready ? 0 : Date.now()
+      return ready
     } finally {
       if (NhArkWebSessionTransport.browserIdentityRefreshTask === task) {
         NhArkWebSessionTransport.browserIdentityRefreshTask = null
@@ -337,9 +354,23 @@ export class NhArkWebSessionTransport {
       NhArkWebSessionTransport.failBootstrap(error as Error)
     }
     await ready
+    // EntryAbility restores the encrypted envelope before this hidden Web
+    // component has loaded a document. On affected devices CookieManager
+    // accepts neither reads nor writes at that early point, so the first
+    // attempt is deliberately retried only after the fixed trusted page is
+    // ready. Without this boundary the runtime looked authenticated from its
+    // envelope while every browser request used an empty jar and returned 401.
+    if (NhAccountSessionService.isAuthenticated()) {
+      let hydrated: boolean = false
+      try {
+        hydrated = await NhAccountSessionService.ensureRegularArkWebCookieJar()
+      } catch (_error) {}
+      NhAccountSessionService.recordRestoreHydrationAfterPage(hydrated)
+      await NhAccountSessionService.recordBrowserAuthCookieShape('after_page_ready_hydration')
+    }
   }
 
-  private static async refreshBrowserSession(): Promise<boolean> {
+  private static async refreshBrowserSession(token: NhAccountAuthenticatedReadToken | null): Promise<boolean> {
     const controller: webview.WebviewController | null = NhArkWebSessionTransport.controller
     if (controller === null) {
       return false
@@ -363,13 +394,95 @@ export class NhArkWebSessionTransport {
     } catch (_error) {
       return false
     }
-    // The refresh navigation has already allowed ArkWeb to consume every
-    // response Set-Cookie. Keep this document ready; the caller now repeats
-    // the original request once and derives Authorization from the refreshed
-    // document.cookie, exactly as the normal request path does.
+    if (token !== null) {
+      if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+        return false
+      }
+      // A 401 can be the first request that reaches ArkWeb after an early
+      // cold-start hydration was deferred. The refresh page is now a usable
+      // CookieManager boundary, so restore the sealed tuple before deciding
+      // whether the server rejected the identity itself.
+      let hydrated: boolean = false
+      try {
+        hydrated = await NhAccountSessionService.ensureRegularArkWebCookieJar()
+      } catch (_error) {}
+      NhAccountSessionService.recordRestoreHydrationAfterPage(hydrated)
+      await NhAccountSessionService.recordBrowserAuthCookieShape('after_refresh_hydration')
+      const refreshBody: string = NhAccountSessionService.authenticatedRefreshRequestBody(token)
+      if (refreshBody.length <= 0) {
+        NhAccountSessionService.recordAuthenticatedReadRefreshEndpoint(0)
+        return false
+      }
+      const refreshResponse: NhArkWebSessionResponse =
+        await NhArkWebSessionTransport.requestStatusWithBodyFromCurrentDocument(
+        controller,
+        AUTH_REFRESH_URL,
+        refreshBody,
+      )
+      const refreshStatus: number = refreshResponse.statusCode
+      const refreshReady: boolean = refreshStatus >= 200 && refreshStatus < 300
+      NhAccountSessionService.recordAuthenticatedReadRefreshEndpoint(refreshStatus)
+      if (refreshStatus === 429) {
+        await NhAccountSessionService.recordAuthenticatedRefreshCooldown(token, refreshResponse.retryAfterMs)
+      }
+      if (!refreshReady || !NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+        return false
+      }
+      await NhAccountSessionService.clearAuthenticatedRefreshCooldown(token)
+      await NhAccountSessionService.persistBrowserManagedCookies()
+      await NhAccountSessionService.recordBrowserAuthCookieShape('after_refresh_endpoint')
+      const verificationStatus: number = await NhArkWebSessionTransport.requestStatusFromCurrentDocument(
+        controller,
+        `${API_PREFIX}user`,
+      )
+      if (verificationStatus < 200 || verificationStatus >= 300 ||
+        !NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+        return false
+      }
+      // The account probe is the first proof that browser renewal succeeded.
+      // Persist the exact live jar immediately instead of leaving the repair
+      // inside the ordinary checkpoint throttle window.
+      NhAccountSessionService.markBrowserIdentityVerified()
+      await NhAccountSessionService.persistBrowserManagedCookies()
+      await NhAccountSessionService.syncSealedSessionFromRegularJar(null, true)
+      await NhAccountSessionService.recordBrowserAuthCookieShape('after_verified_refresh')
+    }
+    // Keep the verified document ready; the caller now repeats the original
+    // request once and derives Authorization from the refreshed jar.
     NhArkWebSessionTransport.isReady = true
     await NhAccountSessionService.persistBrowserManagedCookies()
     return true
+  }
+
+  /** Executes the single fixed refresh POST and returns only its status. */
+  private static async requestStatusWithBodyFromCurrentDocument(
+    controller: webview.WebviewController,
+    url: string,
+    body: string,
+  ): Promise<NhArkWebSessionResponse> {
+    if (url !== AUTH_REFRESH_URL || body.length <= 0 || body.length > 16 * 1024 ||
+      !NhArkWebSessionTransport.isCurrentDocumentTrusted(controller)) {
+      return new NhArkWebSessionResponse()
+    }
+    const requestKey: string = NhArkWebSessionTransport.nextRequestKey()
+    try {
+      await controller.runJavaScript(
+        NhArkWebSessionTransport.startFetchScript(
+          requestKey,
+          NhArkWebSessionTransport.relativeApiPath(url),
+          'POST',
+          body,
+          true,
+          true,
+        ),
+      )
+      const rawResult: string = await NhArkWebSessionTransport.pollForResponse(controller, requestKey)
+      return NhArkWebSessionTransport.parseResponse(rawResult)
+    } finally {
+      try {
+        await controller.runJavaScript(NhArkWebSessionTransport.cleanupScript(requestKey))
+      } catch (_error) {}
+    }
   }
 
   /**
@@ -503,18 +616,52 @@ export class NhArkWebSessionTransport {
           }
           window[slot] = result;
         };
+        const retryAfterMs = function (response) {
+          if (!response || response.status !== 429 || !response.headers) {
+            return 0;
+          }
+          const raw = response.headers.get('Retry-After') || '';
+          let value = 0;
+          if (/^[0-9]+$/.test(raw)) {
+            value = Number(raw) * 1000;
+          } else {
+            const deadline = Date.parse(raw);
+            value = Number.isFinite(deadline) ? deadline - Date.now() : 0;
+          }
+          return Number.isFinite(value) && value > 0
+            ? Math.min(${MAX_AUTH_REFRESH_RETRY_AFTER_MS}, Math.floor(value))
+            : 0;
+        };
         fetch(${encodedUrl}, request)
           .then(function (response) {
             if (${encodedDiscardResponseBody}) {
-              finish({ done: true, status: response.status, body: '', oversized: false });
+              finish({
+                done: true,
+                status: response.status,
+                body: '',
+                oversized: false,
+                retryAfterMs: retryAfterMs(response),
+              });
               return;
             }
             return response.text().then(function (responseBody) {
               if (responseBody.length > ${MAX_RESPONSE_BODY_CHARS}) {
-                finish({ done: true, status: response.status, body: '', oversized: true });
+                finish({
+                  done: true,
+                  status: response.status,
+                  body: '',
+                  oversized: true,
+                  retryAfterMs: retryAfterMs(response),
+                });
                 return;
               }
-              finish({ done: true, status: response.status, body: responseBody, oversized: false });
+              finish({
+                done: true,
+                status: response.status,
+                body: responseBody,
+                oversized: false,
+                retryAfterMs: retryAfterMs(response),
+              });
             });
           })
           .catch(function (_error) {
@@ -718,6 +865,7 @@ export class NhArkWebSessionTransport {
     const status: Object | undefined = record['status']
     const body: Object | undefined = record['body']
     const oversized: Object | undefined = record['oversized']
+    const retryAfterMs: Object | undefined = record['retryAfterMs']
     if (oversized === true) {
       throw new Error('Account browser response was too large')
     }
@@ -725,9 +873,15 @@ export class NhArkWebSessionTransport {
       typeof body !== 'string' || body.length > MAX_RESPONSE_BODY_CHARS) {
       throw new Error('Account browser transport returned an invalid response')
     }
+    if (retryAfterMs !== undefined &&
+      (typeof retryAfterMs !== 'number' || !Number.isFinite(retryAfterMs) ||
+        retryAfterMs < 0 || retryAfterMs > MAX_AUTH_REFRESH_RETRY_AFTER_MS)) {
+      throw new Error('Account browser transport returned an invalid retry window')
+    }
     const response: NhArkWebSessionResponse = new NhArkWebSessionResponse()
     response.statusCode = Math.floor(status)
     response.body = body as string
+    response.retryAfterMs = typeof retryAfterMs === 'number' ? Math.floor(retryAfterMs) : 0
     return response
   }
 

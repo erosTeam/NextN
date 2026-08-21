@@ -11,7 +11,7 @@
 
 import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
-import { chmod, mkdtemp, readFile, rm } from 'node:fs/promises'
+import { chmod, mkdir, mkdtemp, readFile, readdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -43,6 +43,8 @@ const AUTHORIZED_TARGETS = new Set([
 const RESOURCE_LOCALES = ['base', 'en_US', 'zh_CN', 'ja_JP']
 const TEMP_PREFIX = 'nextn-account-s0-'
 const REMOTE_PREFIX = '/data/local/tmp/nextn-account-s0-'
+const REMOTE_DIAGNOSTICS_DIR =
+  '/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs'
 const ROOT_SETTLE_MS = 650
 const ROOT_STOP_SETTLE_MS = 250
 const NAVIGATION_SETTLE_MS = 650
@@ -65,6 +67,7 @@ function parseArguments(argv) {
   let lease = ''
   let routeLogin = false
   let includeDiagnostics = false
+  let accountOnly = false
   for (let index = 2; index < argv.length; index += 1) {
     const argument = argv[index]
     if (argument === '--target') {
@@ -85,12 +88,19 @@ function parseArguments(argv) {
       includeDiagnostics = true
       continue
     }
+    if (argument === '--account-only') {
+      accountOnly = true
+      continue
+    }
     throw new SafeFailure('invalid_arguments')
   }
   if (!AUTHORIZED_TARGETS.has(target) || lease.length === 0) {
     throw new SafeFailure('invalid_arguments')
   }
-  return { target, lease, routeLogin, includeDiagnostics }
+  if (accountOnly && (routeLogin || includeDiagnostics)) {
+    throw new SafeFailure('invalid_arguments')
+  }
+  return { target, lease, routeLogin, includeDiagnostics, accountOnly }
 }
 
 function sleep(milliseconds) {
@@ -491,6 +501,43 @@ async function collectLayout(target, lease, hostTempDirectory, label) {
   return result
 }
 
+/**
+ * Reads only the last fixed Favorites outcome event from the current process
+ * log. The redacted file is received into the existing 0700 temp directory,
+ * never printed, and deleted with that directory before exit.
+ */
+async function collectFavoritesRequestOutcome(target, lease, hostTempDirectory) {
+  const receivedRoot = join(hostTempDirectory, `favorites-log-${randomUUID()}`)
+  try {
+    await mkdir(receivedRoot, { recursive: true, mode: 0o700 })
+    await leaseCommand(
+      target,
+      lease,
+      ['file', 'recv', REMOTE_DIAGNOSTICS_DIR, receivedRoot],
+      'diagnostics_receive_failed',
+    )
+    const directory = join(receivedRoot, 'diagnostics_logs')
+    const names = (await readdir(directory))
+      .filter((name) => /^nextn-log-\d{8}-\d{6}(?:-\d+)?\.txt$/.test(name))
+      .sort()
+      .reverse()
+    if (names.length === 0) {
+      return ''
+    }
+    const text = await readFile(join(directory, names[0]), 'utf8')
+    const successIndex = text.lastIndexOf('favorites-session.favorites_request_success')
+    const failedIndex = text.lastIndexOf('favorites-session.favorites_request_failed')
+    if (successIndex < 0 && failedIndex < 0) {
+      return ''
+    }
+    return successIndex > failedIndex ? 'success' : 'failed'
+  } catch {
+    return ''
+  } finally {
+    await rm(receivedRoot, { recursive: true, force: true })
+  }
+}
+
 async function startAtRoot(target, lease) {
   await leaseCommand(target, lease, ['shell', 'aa', 'force-stop', NEXTN_BUNDLE], 'root_stop_failed')
   await sleep(ROOT_STOP_SETTLE_MS)
@@ -562,33 +609,53 @@ async function waitForAnchorableLayout(target, lease, hostTempDirectory, label, 
 function accountSummary(root, labels) {
   const nativeRootCount = visibleMarkerCount(root, ACCOUNT_NATIVE_ROOT_ID)
   const accountListRootCount = visibleMarkerCount(root, ACCOUNT_LIST_ROOT_ID)
+  const visibleLoginWeb = hasType(root, new Set(['Web', 'WebComponent']))
+  if (nativeRootCount + accountListRootCount === 0 && visibleLoginWeb) {
+    return {
+      visibleLoginWeb: true,
+      nativeSection: false,
+      loginCandidatePage: false,
+      accountListPage: false,
+      signedIn: false,
+      signedOut: true,
+      verificationRequired: false,
+      saveFailed: false,
+      savedAccountCount: 0,
+      selectedSavedAccountCount: 0,
+      selectionPresent: false,
+    }
+  }
   if (nativeRootCount + accountListRootCount !== 1) {
     throw new SafeFailure('account_summary_incomplete')
   }
   const accountRoot = accountListRootCount === 1
     ? uniqueVisibleMarker(root, ACCOUNT_LIST_ROOT_ID, 'account_summary_incomplete', 'account_summary_incomplete')
     : root
-  const visibleLoginWeb = hasType(accountRoot, new Set(['Web', 'WebComponent']))
+  const visibleNativeLoginWeb = hasType(accountRoot, new Set(['Web', 'WebComponent']))
   const signedInLabel = hasLabelSuffix(accountRoot, labels.accountSignedIn)
   const signedOut = hasLabel(accountRoot, labels.accountSignedOut) ||
     hasLabelPrefix(accountRoot, labels.accountSignIn)
   const verificationRequired = hasLabel(accountRoot, labels.accountVerificationRequired)
   const saveFailed = hasLabel(accountRoot, labels.accountSaveFailed)
-  const nativeSection = !visibleLoginWeb
+  const nativeSection = !visibleNativeLoginWeb
   const radioSummary = accountRadioSummary(accountRoot)
   const savedRowCount = visibleMarkerCount(accountRoot, ACCOUNT_SAVED_ROW_ID)
-  const savedAccountCount = savedRowCount > 0 ? savedRowCount : radioSummary.savedAccountCount
+  const savedAccountCount = accountListRootCount === 1
+    ? savedRowCount
+    : 0
   const selectedSavedAccountCount = accountListRootCount === 1
-    ? (radioSummary.selectionPresent || signedInLabel ? 1 : 0)
-    : radioSummary.selectedSavedAccountCount
+    ? Math.min(savedRowCount, radioSummary.selectedSavedAccountCount)
+    : 0
   const selectionPresent = selectedSavedAccountCount === 1
   // Settings opens AccountPage only for durable account ownership. On that
   // page the active Radio is the safe, non-PII proof of the selected owner;
   // the signed-in status string belongs to the preceding Settings row.
   const signedIn = signedInLabel || (accountListRootCount === 1 && selectionPresent)
   return {
-    visibleLoginWeb,
+    visibleLoginWeb: visibleNativeLoginWeb,
     nativeSection,
+    loginCandidatePage: nativeRootCount === 1,
+    accountListPage: accountListRootCount === 1,
     signedIn,
     signedOut,
     verificationRequired,
@@ -667,16 +734,16 @@ async function observeAccount(target, lease, hostTempDirectory, labels) {
       throw new SafeFailure('foreground_unexpected')
     }
     summary = accountSummary(account, labels)
-    if (summary.nativeSection &&
+    if (summary.visibleLoginWeb || (summary.nativeSection &&
       (summary.signedIn || summary.signedOut || summary.verificationRequired || summary.saveFailed ||
-        summary.savedAccountCount > 0)) {
+        summary.savedAccountCount > 0))) {
       break
     }
     await sleep(ACCOUNT_POLL_MS)
   }
-  if (summary === null || !summary.nativeSection ||
+  if (summary === null || (!summary.visibleLoginWeb && (!summary.nativeSection ||
     (!summary.signedIn && !summary.signedOut && !summary.verificationRequired && !summary.saveFailed &&
-      summary.savedAccountCount <= 0)) {
+      summary.savedAccountCount <= 0)))) {
     throw new SafeFailure('account_summary_incomplete')
   }
   return summary
@@ -702,6 +769,14 @@ async function observeFavorites(target, lease, hostTempDirectory, labels) {
   }
   if (summary === null || !summary.nativeStructure || (!summary.signInPrompt && !summary.loading && !summary.error && !summary.authenticated)) {
     throw new SafeFailure('favorites_summary_incomplete')
+  }
+  const requestOutcome = await collectFavoritesRequestOutcome(target, lease, hostTempDirectory)
+  if (requestOutcome === 'failed') {
+    summary.error = true
+    summary.authenticated = false
+  } else if (requestOutcome === 'success') {
+    summary.error = false
+    summary.authenticated = true
   }
   return summary
 }
@@ -782,7 +857,7 @@ async function main() {
   let favorites = null
   let diagnostics = null
   try {
-    const { target, lease, routeLogin, includeDiagnostics } = parseArguments(process.argv)
+    const { target, lease, routeLogin, includeDiagnostics, accountOnly } = parseArguments(process.argv)
     hostTempDirectory = await mkdtemp(join(tmpdir(), TEMP_PREFIX))
     await chmod(hostTempDirectory, 0o700)
     const [
@@ -862,7 +937,21 @@ async function main() {
       diagnosticsLogShareHint
     }
     account = await observeAccount(target, lease, hostTempDirectory, labels)
+    if (accountOnly) {
+      return {
+        outcome: { ok: true, stage: 'account_only', account },
+        exitCode: 0,
+        hostTempDirectory,
+      }
+    }
     if (routeLogin) {
+      if (account.visibleLoginWeb) {
+        return {
+          outcome: { ok: true, stage: 's1_route', visibleLoginWeb: true },
+          exitCode: 0,
+          hostTempDirectory,
+        }
+      }
       let accountLayout = await collectLayout(target, lease, hostTempDirectory, 'account-login-route')
       const loginActions = new Set([...labels.accountSignIn, ...labels.accountAdd])
       try {

@@ -601,12 +601,14 @@ export struct FavoritesPage {
       }
       this.currentPage = 1
       this.totalPages = Math.max(1, result.totalPages)
+      DiagnosticLogger.info('favorites-session', 'favorites_request_success', 'stage')
       if (querySnapshot.length === 0) {
         GalleryListCacheRepository.save(this.context(), this.favoritesCacheKey(), result.galleries)
           .catch((): void => {})
       }
     } catch (error) {
       if (generation === this.requestGeneration) {
+        DiagnosticLogger.info('favorites-session', 'favorites_request_failed', 'stage')
         this.errorMessage = (error as Error).message || AppStrings.get('favorites_load_failed')
       }
     } finally {

@@ -72,6 +72,8 @@ import {
   nextNHdsTitle,
   nextNHdsTitleBar,
   AppStrings,
+  AccountListState,
+  AccountSessionState,
   GalleryDirectLaunchState,
   LayoutSafeAreaBridge,
   LayoutSafeAreaState,
@@ -100,6 +102,8 @@ import {
   ThemeDisplayState,
   ToriiWholePageLiveEvaluationReport,
   connectGalleryDirectLaunch,
+  connectAccountList,
+  connectAccountSession,
   connectLayoutSafeArea,
   connectLoginRecoveryLaunch,
   connectDownloadQueueActions,
@@ -355,6 +359,8 @@ struct Index {
   private webDavSyncSettingsScroller: Scroller = new Scroller()
   private accountScroller: Scroller = new Scroller()
   @Local private activeTab: number = 0
+  @Local private accountList: AccountListState = connectAccountList()
+  @Local private accountSession: AccountSessionState = connectAccountSession()
   @Local private themeDisplay: ThemeDisplayState = connectThemeDisplay()
   @Local private tabletLayout: TabletLayoutState = connectTabletLayout()
   @Local private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
@@ -783,6 +789,11 @@ struct Index {
     this.stack.pushPathByName(ROUTE_BROWSER_SESSION, new BrowserSessionRouteParams(false, addAccountMode))
   }
 
+  /** Empty ownership has no native choice to present; enter the visible login directly. */
+  private pushVisibleLoginSession(): void {
+    this.stack.pushPathByName(ROUTE_BROWSER_SESSION, new BrowserSessionRouteParams(true))
+  }
+
   /**
    * NextE closeLoginFlowToAccount parity: after a promoted visible login,
    * leave the login route and land on the Account page unless it is already
@@ -877,6 +888,15 @@ struct Index {
 
   private pushAccount(): void {
     this.stack.pushPathByName(ROUTE_ACCOUNT, '')
+  }
+
+  /** An empty signed-out account list enters the first-party login surface directly. */
+  private openAccountEntry(): void {
+    if (this.accountList.accounts.length === 0 && !this.accountSession.signedIn) {
+      this.pushVisibleLoginSession()
+      return
+    }
+    this.pushAccount()
   }
 
   private pushSyncSettings(): void {
@@ -2479,7 +2499,7 @@ struct Index {
               this.pushBrowserSession()
             },
             onOpenAccount: (): void => {
-              this.pushAccount()
+              this.openAccountEntry()
             },
             onOpenLayoutSettings: (): void => {
               this.pushLayoutSettings()

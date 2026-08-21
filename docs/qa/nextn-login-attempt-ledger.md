@@ -851,3 +851,226 @@ substitute for measured login-cycle elapsed time.
 - credential input / password input / submit after S5: not-entered / not-entered / not-issued。
 - terminal outcome: S6 complete on 197；the v3 renewable session survived two process cold starts and the same-account checkpoint race fix did not demote ownership or expose a request error。
 - next login action: none。
+
+## 200 当前会话无效观察 — 2026-08-21 12:31:16 +0800（192.168.50.200:12345）
+
+- session-loss-detected-at: 2026-08-21 12:31:16 +0800（当前 S0 返回后立即记录；collector 返回的精确秒未单独保留）。
+- concrete reason session absent/invalid: Account 仍为 native signed-in、saved=1、selected=1，且没有 visible login Web；Favorites 当前请求已结算为 error=true、authenticated=false、sign-in-prompt=false，因此本地 ownership 与远端 authenticated read 再次分离。
+- prior cycle terminal outcome and elapsed: 200 上一份可用证据为 2026-08-20 23:24-23:33 的完整 v3 信封恢复与第二次冷启动成功；从该成功证据到本次失效边界的精确有效时长为 unavailable-from-existing-evidence。
+- restore/401 diagnostic: 持久化日志记录 `valid_v3/headerAccess=1/ua=1/authCount=2/renewal=1` -> `restore_ready` -> `restore_hydration_deferred`；实际请求随后为 initial 401，且 after-initial/root-refresh/replay 三个 Cookie shape 均为 access=0、refresh=0、session=0，最终 replay 401 -> terminal 401 after restore。实时 hilog 缓冲为空，但 12 个轮转文件保留了 03:18-12:31 的固定脱敏事件。
+- install/data boundary: 本轮尚未安装；data-clear=false；uninstall=false；sign-out/switch/re-login=false。
+- current S0 Account: signedIn=true、signedOut=false、verificationRequired=false、saved=1、selected=1、visible-login-Web=false。
+- current S0 Favorites: native structure=true、error=true、authenticated=false、sign-in-prompt=false。
+- WebView-visible timestamp / native-success timestamp: none / none。
+- last-observed-at: 2026-08-21 12:36:13 +0800；elapsed=4 分 57 秒；first blocking phase=native-persistence（信封有效但其身份 Cookie 未进入活跃 ArkWeb jar；根页刷新后仍为空）。
+- login-page entry / account input / password input / submit / native promotion: not-entered / not-entered / not-entered / not-issued / none。
+- no data clear or uninstall occurred: confirmed。
+- next action: 修复“可信页面 ready 后没有再次 hydration”的生命周期缺口，安装时不清数据；用现存 v3 信封验证自动恢复、Favorites 成功及新的 hydration 固定阶段。仅当修复后仍证明信封不可用时才重新评估 S1/S2。
+
+### 200 旧会话终态诊断 — 2026-08-21 13:00:10 +0800
+
+- corrected restore boundary: 可信页面 ready 后已恢复 renewal Cookie；固定日志证明 live jar 为 access=0、refresh=1(HttpOnly)、session=0，不再是空 jar。
+- definitive invalid-session evidence: 在上一轮 429 窗口结束后的第一个独立 Account 进程中，固定 `POST /api/v2/auth/refresh` 返回 401；现存 refresh token 无法换取新 access token，旧信封不能继续自动修复。
+- subsequent rate-limit evidence: 随后的 Favorites 进程返回 429，并给出 `Retry-After=900s`；当前包已把这一非敏感等待截止时间跨进程持久化，后续进程不得在窗口内重试刷新端点。
+- current S0 Account/Favorites: signedIn=true、saved=1、selected=1；Favorites error=true、authenticated=false、sign-in-prompt=false。
+- last-observed-at: 2026-08-21 13:00:10 +0800；从 session-loss-detected-at 12:31:16 起 elapsed=28 分 54 秒；first blocking phase=native-persistence。
+- login-page entry / account input / password input / submit / native promotion: not-entered / not-entered / not-entered / not-issued / none。
+- no data clear or uninstall occurred: confirmed；所有安装均为 install-r。
+- next action: 现存 refresh token 已被服务器明确拒绝，开始一个新的可见登录 epoch；不得继续拿旧信封重试或把账号 ownership 清成未登录。
+
+## 200 失效 refresh token 重登录 epoch — 2026-08-21 13:02:42 +0800（192.168.50.200:12345）
+
+- concrete reason a new attempt is warranted: 当前包已完成 deferred hydration 和固定 refresh endpoint 修复，但当前设备的 retained refresh token 在正常窗口内返回 401；Account ownership 保留而 Favorites 当前请求仍 error=true/authenticated=false。
+- prior cycle: session-loss-detected-at=2026-08-21 12:31:16 +0800，last-observed-at=2026-08-21 13:00:10 +0800，elapsed=28 分 54 秒，first blocker=native-persistence。
+- restore/401 stage: valid_v3(headerAccess=1, ua=1, authCount=2, renewal=1, refresh=1) -> trusted-page hydration -> live refresh cookie present -> fixed refresh endpoint 401 -> terminal 401 after restore。
+- current S0 Account/Favorites: signedIn=true、saved=1、selected=1、visible-login-Web=false；Favorites error=true、authenticated=false、sign-in-prompt=false。
+- install/data boundary: current signed Debug install-r=true；data-clear=false；uninstall=false；explicit sign-out=false。
+- device preparation: lease current；AWAKE=true；OverrideTimeout=86400000ms；fixed Keychain handles presence account=true/password=true；no secret output。
+- S1 login-page entry: 2026-08-21 13:03:42 +0800，explicit native Add account -> Web login；visible-login-Web=true。
+- S1 semantic probe: 2026-08-21 13:04:24 +0800；login form/account/password/submit present，account/password empty，password masked，challenge=false，error=false；空表单下 submit disabled/form invalid 符合前置状态。
+- attemptEpoch started-at: 2026-08-21 13:04:48 +0800；accountEntered=false；passwordEntered=false；submitIssued=false。
+- account input / password input / submit / native promotion / cold-start Favorites verification: pending / pending / pending / pending / pending。
+- next action: 通过 native Account 的显式添加账号路径进入一个新空表单；确认 form/challenge 安全状态并记录 WebView timestamp 后，连续执行唯一一次 S2-S4，随后只观察 S5。
+
+### 200 失效 refresh token epoch 终态 — 2026-08-21 13:08:00 +0800
+
+- S2 account input: issued once；accountFieldFilled=true。
+- S3 password input: issued once；passwordFieldFilled=true、passwordFieldMasked=true。
+- fixed challenge-safe probe: challenge=false、error=false、formValid=true、submitEligible=true。
+- S4 submit: browser-level semantic submit issued once；submitIssued=true；no repeat。
+- S5: 20 秒固定原生观察后 visible login Web 仍存在；随后只读 probe 仍为同一已填有效表单，challenge=false、error=false；native promotion=false。
+- native-promotion-at: none；last-observed-at=2026-08-21 13:08:00 +0800；从 attempt started-at 13:04:48 起 elapsed=3 分 12 秒，超过 60 秒；从 session-loss-detected-at 12:31:16 起 elapsed=36 分 44 秒；first blocking phase=form。
+- no repeated input/clear/submit: confirmed；本 epoch 关闭。
+- temporary forward/layout: 本轮精确 CDP forward 已按 local+remote endpoint 删除；原始临时布局与 helper artifact 已删除；无 URL、标题、目标元数据、坐标或字段内容留存。
+- cold-start Account / Favorites: not-run；未提升前禁止用冷启动掩盖本轮失败。
+- next action: 在新的 S0/S1 epoch 前，复核现有 browser-level submit driver 与 2026-08-20 成功路径的实际事件序列差异；不得在当前已填表单上再次提交。
+
+## 200 原子登录执行器 epoch — 2026-08-21 13:12:50 +0800（192.168.50.200:12345）
+
+- concrete reason a new attempt is warranted: 前一 epoch 因打开 WebView 后分段工具回合耗尽验证有效期而以 form blocker 关闭；现存 refresh token 的服务器 401 仍证明当前会话无效，且没有发生原生提升。
+- current safe state carried from closed epoch: Account ownership/saved/selected retained；Favorites authenticated=false；旧 visible login Web 已 force-stop 关闭；no data clear/uninstall/sign-out。
+- preparation completed before WebView: current lease、AWAKE/OverrideTimeout=86400000ms、fixed Keychain handles、single-process route/forward/probe/fill/submit/promotion coordinator、syntax/contract checks；no secret output。
+- hard execution rule: credential retrieval occurs before visible Web；without CF, the coordinator cannot yield between S1 and S5；visible-to-fill ceiling=5s、whole flow ceiling=60s。Only `cf_intervention_required` may preserve the visible page and pause the queue。
+- S1 / account input / password input / submit / native promotion / cold-start Favorites: pending / pending / pending / pending / pending / pending。
+- attemptEpoch starts when the coordinator begins the native route；accountEntered=false；passwordEntered=false；submitIssued=false。
+- next action: invoke the single coordinator once；no intermediate commentary, source/log inspection, build, ledger edit, or model decision unless its sole terminal code is `cf_intervention_required`。
+
+### 200 原子 epoch S5 提升 — 2026-08-21 13:13:45 +0800
+
+- one-process result: native_promotion=true；visible-Web-to-credential-fill=691ms；whole route-to-native-promotion=27.201s，均在 5s/60s ceiling 内。
+- S1: fresh visible login form confirmed internally；CF challenge=false、error=false。
+- S2/S3/S4: account entered once；password entered once；browser-level semantic submit issued once；no model/tool yield and no repeated input/clear/submit。
+- native-promotion-at: 2026-08-21 13:13:45 +0800；attemptEpoch terminal success。
+- secrets/forward/artifacts: credential buffers wiped；exact temporary forward removed；temporary DevTools/layout artifacts removed；no values、URL、title、target metadata or coordinates retained。
+- cold-start Account / Favorites: pending / pending；no new login action permitted unless a later independent S0 proves this new session invalid。
+- next action: independent force-stop/cold-start S0 without data clear/uninstall；verify Account ownership/selection and current Favorites authenticated request。
+
+## 200 用户授权退出后的原子复验 epoch — 2026-08-21 13:17:57 +0800（192.168.50.200:12345）
+
+- authorization/reason: 用户明确要求当前设备退出账号并重新验证原子登录流程；退出确认已执行，safe observation 为 saved/native signed-in rows absent。
+- prior cycle terminal: 13:13:45 native promotion success；随后独立 cold-start S0 Account signedIn/saved/selected=true、Favorites authenticated=true。
+- install/data boundary: no install、data clear or uninstall；explicit sign-out=true（本轮用户授权）；Cloudflare challenge cookies retained by product sign-out contract。
+- preparation before WebView: lease current、AWAKE/OverrideTimeout retained、fixed Keychain handles、single-process coordinator ready。
+- S1 / account input / password input / submit / native promotion / cold-start Favorites: pending / pending / pending / pending / pending / pending。
+- attemptEpoch starts inside the coordinator；only CF may interrupt；visible-to-fill ceiling=5s、whole-flow ceiling=60s。
+- next action: invoke the coordinator once with no intermediate model control。
+
+### 该 epoch 终态 — precise timestamp unavailable-from-existing-evidence
+
+- S1/S2/S3/S4: coordinator entered one fresh form, entered account once,
+  entered password once, and issued submit once; no repeated input, clear, or
+  submit occurred.
+- S5: native promotion was not observed before the coordinator was explicitly
+  terminated. The observer used a poll-count timeout whose individual device
+  calls could exceed the intended 60-second wall-clock ceiling.
+- native promotion / cold-start verification: none / not-run. First blocking
+  phase: native-persistence observation. Exact terminal timestamp and elapsed
+  are `unavailable-from-existing-evidence`; they are not inferred from the
+  later successful route check.
+- terminal cleanup: the process was interrupted, the app was later force
+  stopped, and the next safe Account observation remained signed out with no
+  saved account. No data clear or uninstall occurred.
+
+## 200 空账号直达 Web 后的原子复验 epoch — 2026-08-21 13:31 +0800（192.168.50.200:12345）
+
+- concrete reason a new attempt is warranted: user-authorized explicit
+  sign-out removed the only saved account; current safe observation after the
+  signed `install-r` reports saved=0/selected=0/signed-out=true. The user
+  explicitly requested the login flow be reverified.
+- prior cycle: the 13:17:57 epoch is closed without native promotion because
+  its old observer exceeded the intended wall-clock boundary. The executor now
+  uses one absolute route-to-promotion deadline and bounds each device call by
+  the remaining time.
+- current S0 Account/Favorites: Account signed-out=true, saved=0, selected=0;
+  Favorites is not used to justify this already-authorized post-sign-out
+  attempt. The empty Account entry was opened once for route-only acceptance,
+  showed the visible first-party Web directly with no native two-row page, and
+  was force-stopped without credential input.
+- install/data boundary: current signed Debug `install-r`=true; data-clear=false;
+  uninstall=false; explicit sign-out belongs to the user-authorized preceding
+  boundary.
+- device preparation before WebView: lease current; AWAKE=true;
+  OverrideTimeout=86400000ms; route/credential/submit/promotion coordinator
+  syntax and regression contract passed. Credential handles are retrieved and
+  checked inside the coordinator before it opens Web; no value is emitted.
+- S1 / account input / password input / submit / native promotion / cold-start
+  Account / cold-start Favorites: pending / pending / pending / pending /
+  pending / pending / pending.
+- next action: invoke the single coordinator exactly once. Without an actual
+  CF interaction it may not yield between visible Web and native promotion;
+  only `cf_intervention_required` may preserve the page for intervention.
+
+### 该 epoch 终态 — 2026-08-21 13:34 +0800
+
+- terminal trigger: user observed that the CF verification control was still
+  pending while the executor had already advanced toward credential handling
+  and immediately corrected the required order. The coordinator was sent
+  SIGINT at once; the app was then force-stopped.
+- account/password input: the interrupted process emitted no safe terminal
+  result, so whether either write completed is inconclusive. For safety this
+  epoch treats both as consumed and permits no retry on that form.
+- submit/native promotion: submit is not proven and must be treated as
+  inconclusive; native promotion did not occur. No retry, clear, or second
+  submit was issued in this epoch.
+- root cause: the staged helper explicitly replaced the live
+  `challengeFramePresent` value with false and documented CF as a post-fill
+  branch. A single early probe could also run before a delayed Turnstile frame
+  mounted. This was the wrong state-machine order.
+- cleanup: NextN was force-stopped; both stale forwards were matched to dead
+  ArkWeb process ids and removed exactly. No data clear or uninstall occurred.
+- first blocking phase: challenge. The precise credential-write timing is
+  unavailable from safe output and is not inferred.
+
+## 200 CF 前置门禁复验 epoch — 2026-08-21 13:38 +0800（192.168.50.200:12345）
+
+- concrete reason: explicit sign-out still leaves Account signed-out with no
+  saved row, and the user-requested complete re-login validation remains open.
+  The preceding incorrect-order epoch is closed and its form/process removed.
+- implementation correction before WebView: the forced challenge=false branch
+  is deleted; the read-only probe now distinguishes a pending widget from a
+  completed response token; a three-second no-widget settlement or a completed
+  response is required before field focus; the staged helper independently
+  rechecks the challenge before focus and every later credential boundary.
+- CF intervention contract: pending CF returns
+  `cf_intervention_required` before account/password input and preserves the
+  page. After the user-visible verification completes, `--resume-visible`
+  attaches to that same page, proves the response ready, then performs the
+  single S2-S4 sequence without rerouting.
+- device/install boundary: current signed HAP remains installed with
+  `install-r`; AWAKE=true; OverrideTimeout=86400000ms; data-clear=false;
+  uninstall=false. Script syntax, challenge-before-focus behavioral test,
+  account regression contract, and `git diff --check` pass.
+- S1 / CF complete / account input / password input / submit / native
+  promotion / cold-start Account / cold-start Favorites: pending / pending /
+  pending / pending / pending / pending / pending / pending.
+- next action: invoke the corrected coordinator once. If CF is pending, stop
+  before credentials and inspect/interact only with that verification control;
+  do not fill until the same-page response is confirmed complete.
+
+### 该 epoch 终态 — 2026-08-21 13:41:22 +0800
+
+- first coordinator result: `cf_intervention_required`; account/password
+  input=false/false and submit=false by the pre-credential gate. The Web page
+  was preserved.
+- CF observation: the permitted current-page capture showed the Cloudflare
+  control in its green completed state (`成功!`) while both credential fields
+  were empty. No CF click was required because the challenge completed before
+  intervention.
+- same-page resume: `--resume-visible` reattached without rerouting. Its
+  read-only probe observed the completed response token; only then did S2
+  account input once, S3 password input once, and S4 semantic submit once.
+  Reported `cfReadyToFillMs=0` confirms no model/tool pause after the completed
+  gate.
+- S5: native promotion was not observed by the absolute deadline. Fixed result
+  was `promotion_failed`, elapsed=60286ms. No repeated input, clear, or submit
+  occurred; the failure branch force-stopped NextN.
+- native promotion / cold-start Account / cold-start Favorites: none / not-run
+  / not-run. First blocking phase: native-persistence after a correctly ordered
+  submit.
+- next action: inspect only the fixed post-submit capture/promotion/session
+  stages from this closed epoch. Do not begin another credential epoch unless
+  the terminal evidence establishes a new safe reason.
+
+### 该 epoch 后续证据更正 — 2026-08-21 13:47 +0800
+
+- Persistent diagnostics prove the login did promote and finish durable
+  account recording at 2026-08-21 13:40:12 +0800:
+  `auth.account_recorded count=1`. Therefore the preceding executor result was
+  a false negative, not an authentication or persistence failure.
+- false-negative root cause: the S5 observer accepted only
+  `nextn-account-native-root + nextn-account-saved-row`. The successful route
+  had already navigated to `nextn-account-list-root + nextn-account-saved-row`,
+  so the observer ignored the correct final page until its deadline and then
+  force-stopped it. The observer now accepts either native/account-list owner
+  root with a saved row and no Web.
+- first and second independent cold starts both reported Account list=true,
+  saved=1, selected=1, signedIn=true and Favorites
+  error=false/authenticated=true.
+- final logging-build boundary: `BrowserSessionPage` moved off reserved hilog
+  domain 0x0000 to 0xE001 and now records fixed candidate, verification,
+  promotion and account-save stages through the persistent redacted logger.
+  The signed HAP was installed with `install-r`; a third independent cold
+  start again passed saved=1/selected=1 and authenticated Favorites.
+- final S5/S6 outcome: native promotion complete at 13:40:12; three independent
+  S6 observations complete. No additional credential action was performed.
+  No data clear or uninstall occurred.

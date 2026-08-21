@@ -504,10 +504,9 @@ export async function runKeychainLoginEpoch({ port, timeoutMs }, dependencies = 
  * deliberately has no CLI form: secrets cannot become argv, environment,
  * file, stdout, or log data.
  *
- * After both fields are written it stops at `cf_snapshot_required`.  The
- * caller takes the one permitted visual CF snapshot there, then resumes the
- * fixed completion function below.  Every other unexpected state terminates
- * this epoch directly.
+ * The caller must complete its CF gate before invoking this function. This
+ * function independently rechecks that no pending challenge exists before it
+ * focuses or writes either field. Every unexpected state terminates the epoch.
  */
 export async function runStagedLoginEpoch({
   port,
@@ -537,6 +536,19 @@ export async function runStagedLoginEpoch({
     return createEpochResult(epoch, false, 'arguments', 'invalid_arguments')
   }
   try {
+    const preFocusProbe = await probe({ port, timeoutMs })
+    const preFocusProbeError = currentProbeFailure(epoch, 's2_account_precondition', preFocusProbe)
+    if (preFocusProbeError !== null) {
+      return preFocusProbeError
+    }
+    if (preFocusProbe.challengeFramePresent) {
+      return createEpochResult(epoch, false, 's2_account_precondition', 'challenge_present')
+    }
+    if (!preFocusProbe.loginFormPresent || !preFocusProbe.accountFieldPresent ||
+      !preFocusProbe.passwordFieldPresent || !preFocusProbe.passwordFieldMasked ||
+      preFocusProbe.accountFieldFilled || preFocusProbe.passwordFieldFilled) {
+      return createEpochResult(epoch, false, 's2_account_precondition', 'login_form_not_ready')
+    }
     const accountFocus = await semanticDriver({ port, action: 'focus-account', timeoutMs })
     if (accountFocus?.ok !== true || accountFocus.accountFieldFocused !== true || accountFocus.actionApplied !== true) {
       return createEpochResult(epoch, false, 's2_account_focus', 'account_focus_not_current')
@@ -546,12 +558,7 @@ export async function runStagedLoginEpoch({
     if (initialProbeError !== null) {
       return initialProbeError
     }
-    const initialStateError = initialS2Failure(epoch, {
-      ...initialProbe,
-      // CF is intentionally handled after both fields are filled and the
-      // single permitted screenshot is taken; it is not a pre-write branch.
-      challengeFramePresent: false,
-    })
+    const initialStateError = initialS2Failure(epoch, initialProbe)
     if (initialStateError !== null) {
       return initialStateError
     }
@@ -571,6 +578,9 @@ export async function runStagedLoginEpoch({
     if (afterAccountProbeError !== null) {
       return afterAccountProbeError
     }
+    if (afterAccountProbe.challengeFramePresent) {
+      return createEpochResult(epoch, false, 's2_account_verify', 'challenge_present')
+    }
     const accountStateError = accountFilledFailure(epoch, afterAccountProbe)
     if (accountStateError !== null) {
       return accountStateError
@@ -585,6 +595,9 @@ export async function runStagedLoginEpoch({
     const passwordFocusProbeError = currentProbeFailure(epoch, 's3_password_precondition', passwordFocusProbe)
     if (passwordFocusProbeError !== null) {
       return passwordFocusProbeError
+    }
+    if (passwordFocusProbe.challengeFramePresent) {
+      return createEpochResult(epoch, false, 's3_password_precondition', 'challenge_present')
     }
     const passwordFocusStateError = passwordFocusedFailure(epoch, passwordFocusProbe)
     if (passwordFocusStateError !== null) {
@@ -606,11 +619,14 @@ export async function runStagedLoginEpoch({
     if (afterPasswordProbeError !== null) {
       return afterPasswordProbeError
     }
+    if (afterPasswordProbe.challengeFramePresent) {
+      return createEpochResult(epoch, false, 's3_password_verify', 'challenge_present')
+    }
     const passwordStateError = passwordFilledFailure(epoch, afterPasswordProbe)
     if (passwordStateError !== null) {
       return passwordStateError
     }
-    return createEpochResult(epoch, true, 'cf_snapshot_required')
+    return createEpochResult(epoch, true, 'credentials_staged')
   } catch (_error) {
     return createEpochResult(epoch, false, 'epoch_runtime', 'login_probe_unavailable')
   } finally {
@@ -619,9 +635,9 @@ export async function runStagedLoginEpoch({
 }
 
 /**
- * Fixed post-screenshot completion branch.  It contains no credential write
- * and no model decision: the caller has already either observed a green CF
- * check or dispatched the one bound CF click and waited for it to clear.
+ * Fixed completion branch. It contains no credential write and no model
+ * decision: the caller proved CF complete before the credential epoch, and
+ * this branch rechecks that no pending challenge appeared before submit.
  */
 export async function runCfReviewedSubmit({ port, timeoutMs }, dependencies = {}) {
   const epoch = {

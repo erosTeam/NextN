@@ -2065,7 +2065,9 @@ export struct SettingsPage {
           accessibilityLabel: AppStrings.get('account_open_page_a11y'),
           accessibilityId: 'nextn-settings-root-account',
           onAction: (): void => {
-            if (this.isAccountSignedIn && this.onOpenAccount) {
+            // Let the route owner decide from durable accounts and the live
+            // session together. This copied display flag can lag a sign-out.
+            if (this.onOpenAccount) {
               this.onOpenAccount()
             } else if (this.onOpenBrowserSession) {
               this.onOpenBrowserSession()

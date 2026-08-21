@@ -634,11 +634,19 @@ const SUBMIT_ACTIVATION_EXPRESSION = `(() => {
   const submit = submits.length === 1 ? submits[0] : null;
   const submitEnabled = submit !== null && !submit.disabled &&
     String(submit.getAttribute('aria-disabled') || '').toLowerCase() !== 'true';
-  const challengeFramePresent = Array.from(document.querySelectorAll('iframe')).some((frame) => {
+  const challengeFrameDetected = Array.from(document.querySelectorAll('iframe')).some((frame) => {
     const source = String(frame.getAttribute('src') || '').toLowerCase();
     const title = String(frame.getAttribute('title') || '').toLowerCase();
     return isVisible(frame) && (source.includes('challenges.cloudflare.com') || title.includes('challenge'));
   });
+  const challengeResponse = document.querySelector(
+    'input[name="cf-turnstile-response"], textarea[name="cf-turnstile-response"], ' +
+    'input[name="g-recaptcha-response"], textarea[name="g-recaptcha-response"]'
+  );
+  const challengeResponseReady = challengeResponse !== null &&
+    String(challengeResponse.value || '').trim().length > 0;
+  const challengeFramePresent = (challengeFrameDetected || challengeResponse !== null ||
+    document.querySelector('.cf-turnstile, [data-sitekey]') !== null) && !challengeResponseReady;
   const formValid = form !== null && typeof form.checkValidity === 'function' ? Boolean(form.checkValidity()) : false;
   const eligible = submit !== null && submitEnabled && formValid && !challengeFramePresent;
   const rect = eligible ? submit.getBoundingClientRect() : null;
@@ -784,11 +792,19 @@ function actionExpression(action) {
   const submit = submitControlsSemantic.length === 1 ? submitControlsSemantic[0] : null;
   const submitEnabled = submit !== null && !submit.disabled &&
     String(submit.getAttribute('aria-disabled') || '').toLowerCase() !== 'true';
-  const challengeFramePresent = Array.from(document.querySelectorAll('iframe')).some((frame) => {
+  const challengeFrameDetected = Array.from(document.querySelectorAll('iframe')).some((frame) => {
     const source = String(frame.getAttribute('src') || '').toLowerCase();
     const title = String(frame.getAttribute('title') || '').toLowerCase();
     return isVisible(frame) && (source.includes('challenges.cloudflare.com') || title.includes('challenge'));
   });
+  const challengeResponse = document.querySelector(
+    'input[name="cf-turnstile-response"], textarea[name="cf-turnstile-response"], ' +
+    'input[name="g-recaptcha-response"], textarea[name="g-recaptcha-response"]'
+  );
+  const challengeResponseReady = challengeResponse !== null &&
+    String(challengeResponse.value || '').trim().length > 0;
+  const challengeFramePresent = (challengeFrameDetected || challengeResponse !== null ||
+    document.querySelector('.cf-turnstile, [data-sitekey]') !== null) && !challengeResponseReady;
   const loginFormPresent = form !== null && submit !== null;
   let formValid = null;
   let actionApplied = false;

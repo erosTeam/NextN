@@ -99,9 +99,9 @@ export class AccountListSettings {
   }
 
   /** Insert/refresh the currently-loaded account into the saved list. */
-  static async recordActive(context: common.UIAbilityContext): Promise<void> {
+  static async recordActive(context: common.UIAbilityContext): Promise<boolean> {
     if (!NhAccountSessionService.isAuthenticated()) {
-      return
+      return false
     }
     const accountId: string = NhAccountProfileService.activeAccountId()
     if (accountId.length === 0) {
@@ -110,16 +110,16 @@ export class AccountListSettings {
       // non-secret account id, matching NextE's member-id keying.
       const refreshed: boolean = await NhAccountProfileService.refresh(context)
       if (!refreshed) {
-        return
+        return false
       }
     }
     const finalAccountId: string = NhAccountProfileService.activeAccountId()
     if (finalAccountId.length === 0) {
-      return
+      return false
     }
     const saved: boolean = await NhAccountSessionService.saveActiveAsSaved(context, finalAccountId)
     if (!saved) {
-      return
+      return false
     }
     await AccountProfileRepository.saveByKey(context, finalAccountId, connectAccountProfile().snapshot())
     try {
@@ -150,8 +150,10 @@ export class AccountListSettings {
       snapshot.activeAccountId = finalAccountId
       AccountListSettings.syncState(snapshot)
       DiagnosticLogger.info('auth', 'account_recorded', `count=${updated.length}`)
+      return true
     } catch (error) {
       DiagnosticLogger.warn('auth', 'account_list_record_failed', (error as Error).message)
+      return false
     }
   }
 
