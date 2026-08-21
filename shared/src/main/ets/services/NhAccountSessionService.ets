@@ -25,6 +25,8 @@ const MAX_COOKIE_HEADER_BYTES: number = 16 * 1024
 const MAX_BROWSER_USER_AGENT_CHARS: number = 2048
 const MAX_AUTH_COOKIE_VALUE_CHARS: number = 4096
 const MAX_AUTH_COOKIE_ATTRIBUTE_CHARS: number = 1024
+const MAX_ACCOUNT_BACKUP_BUNDLE_CHARS: number = 512 * 1024
+const MAX_ACCOUNT_BACKUP_ID_CHARS: number = 512
 const RECOVERABLE_ARKWEB_COOKIE_NAMES: string[] = [
   'access_token',
   'refresh_token',
@@ -101,6 +103,17 @@ class SealedBrowserSessionPayload {
   authCookies: SealedAuthCookie[] = []
   isEnvelopeValid: boolean = false
   validationCode: string = 'empty'
+}
+
+class AccountSessionBackupEntry {
+  accountId: string = ''
+  payload: string = ''
+}
+
+class AccountSessionBackupBundle {
+  version: number = 1
+  activePayload: string = ''
+  saved: AccountSessionBackupEntry[] = []
 }
 
 /**
@@ -1203,6 +1216,114 @@ export class NhAccountSessionService {
       return null
     }
     return await NhAccountSessionService.decryptWithExistingKey(record)
+  }
+
+  /** Exports the active and every saved account as one encrypted-backup payload. */
+  static async exportAllSealedForBackup(context: common.UIAbilityContext): Promise<string> {
+    const snapshot: AccountSessionRestoreSnapshot = await AccountSessionRepository.loadForRestore(context)
+    const bundle: AccountSessionBackupBundle = new AccountSessionBackupBundle()
+    if (snapshot.record !== null) {
+      bundle.activePayload = await NhAccountSessionService.decryptWithExistingKey(snapshot.record)
+      NhAccountSessionService.validateBackupSessionPayload(bundle.activePayload)
+    }
+    if (snapshot.savedKeys.length !== snapshot.savedRecords.length) {
+      throw new Error('account_session_backup_shape_invalid')
+    }
+    const seen: Set<string> = new Set<string>()
+    for (let i: number = 0; i < snapshot.savedKeys.length; i++) {
+      const accountId: string = NhAccountSessionService.validateBackupAccountId(snapshot.savedKeys[i])
+      if (seen.has(accountId)) {
+        throw new Error('account_session_backup_shape_invalid')
+      }
+      seen.add(accountId)
+      const entry: AccountSessionBackupEntry = new AccountSessionBackupEntry()
+      entry.accountId = accountId
+      entry.payload = await NhAccountSessionService.decryptWithExistingKey(snapshot.savedRecords[i])
+      NhAccountSessionService.validateBackupSessionPayload(entry.payload)
+      bundle.saved.push(entry)
+    }
+    const raw: string = JSON.stringify(bundle)
+    if (raw.length <= 0 || raw.length > MAX_ACCOUNT_BACKUP_BUNDLE_CHARS) {
+      throw new Error('account_session_backup_shape_invalid')
+    }
+    return raw
+  }
+
+  /** Re-wraps a complete account set with the target device HUKS key. */
+  static async restoreAllSealedFromBackup(
+    context: common.UIAbilityContext,
+    raw: string,
+    replace: boolean,
+  ): Promise<void> {
+    if (raw.length === 0) {
+      if (replace) {
+        await AccountSessionRepository.restoreBackup(context, null, [], [], true)
+      }
+      return
+    }
+    if (raw.length > MAX_ACCOUNT_BACKUP_BUNDLE_CHARS) {
+      throw new Error('account_session_backup_shape_invalid')
+    }
+    let parsed: AccountSessionBackupBundle
+    try {
+      parsed = JSON.parse(raw) as AccountSessionBackupBundle
+    } catch (_error) {
+      throw new Error('account_session_backup_shape_invalid')
+    }
+    if (parsed === null || typeof parsed !== 'object' || parsed.version !== 1 ||
+      typeof parsed.activePayload !== 'string' || !Array.isArray(parsed.saved)) {
+      throw new Error('account_session_backup_shape_invalid')
+    }
+    let primary: EncryptedAccountSession | null = null
+    if (parsed.activePayload.length > 0) {
+      NhAccountSessionService.validateBackupSessionPayload(parsed.activePayload)
+      primary = await NhAccountSessionService.encrypt(parsed.activePayload)
+    }
+    const savedKeys: string[] = []
+    const savedRecords: EncryptedAccountSession[] = []
+    const seen: Set<string> = new Set<string>()
+    for (let i: number = 0; i < parsed.saved.length; i++) {
+      const entry: AccountSessionBackupEntry = parsed.saved[i]
+      if (entry === null || typeof entry !== 'object' || typeof entry.accountId !== 'string' ||
+        typeof entry.payload !== 'string') {
+        throw new Error('account_session_backup_shape_invalid')
+      }
+      const accountId: string = NhAccountSessionService.validateBackupAccountId(entry.accountId)
+      if (seen.has(accountId)) {
+        throw new Error('account_session_backup_shape_invalid')
+      }
+      seen.add(accountId)
+      NhAccountSessionService.validateBackupSessionPayload(entry.payload)
+      savedKeys.push(accountId)
+      savedRecords.push(await NhAccountSessionService.encrypt(entry.payload))
+    }
+    await AccountSessionRepository.restoreBackup(
+      context,
+      primary,
+      savedKeys,
+      savedRecords,
+      replace,
+    )
+    NhAccountSessionService.retainedAccountPresent = primary !== null || savedRecords.length > 0
+  }
+
+  private static validateBackupAccountId(value: string): string {
+    const normalized: string = value.trim()
+    if (normalized.length === 0 || normalized.length > MAX_ACCOUNT_BACKUP_ID_CHARS ||
+      normalized !== value || normalized === 'primary' || /[\r\n\t\u0000]/.test(normalized)) {
+      throw new Error('account_session_backup_shape_invalid')
+    }
+    return normalized
+  }
+
+  private static validateBackupSessionPayload(plaintext: string): void {
+    const payload: SealedBrowserSessionPayload = NhAccountSessionService.decodeSessionPayload(plaintext)
+    const normalized: string = NhAccountSessionService.normalizeCookieHeader(payload.cookieHeader)
+    const normalizedUserAgent: string = NhAccountSessionService.normalizeUserAgent(payload.browserUserAgent)
+    if (!payload.isEnvelopeValid || !NhAccountSessionService.hasLoginCookies(normalized) ||
+      normalizedUserAgent.length === 0 || !NhAccountSessionService.hasRenewalAuthCookie(payload.authCookies)) {
+      throw new Error('account_session_backup_payload_invalid')
+    }
   }
 
   /** Backup restore: re-wraps a backed-up plaintext session with the target device HUKS key. */

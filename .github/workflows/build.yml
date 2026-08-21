@@ -45,6 +45,11 @@ jobs:
         run: |
           node scripts/test_settings_backup_contract.mjs
 
+      - name: Check persistence inventory contract
+        shell: bash
+        run: |
+          node scripts/test_persistence_inventory_contract.mjs
+
       - name: Disable clipboard auto-detection for public self-sign builds
         shell: bash
         run: |

@@ -190,6 +190,12 @@ export class ComicVisualProviderSettings {
     return ComicVisualProviderSettings.runtimeRevisionValue
   }
 
+  /** Revalidates imported settings and invalidates any retained runtime backend. */
+  static async reapplyAfterBackup(context: common.UIAbilityContext): Promise<void> {
+    await ComicVisualProviderSettings.load(context)
+    ComicVisualProviderSettings.runtimeRevisionValue++
+  }
+
   static async load(
     context: common.UIAbilityContext,
   ): Promise<ComicVisualProviderSettingsSnapshot> {
@@ -257,4 +263,3 @@ export class ComicVisualProviderSettings {
     store.deleteSync(LEGACY_BYOK_MODEL_KEY)
   }
 }
-

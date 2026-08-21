@@ -3,8 +3,10 @@ import { preferences } from '@kit.ArkData'
 import { BackupSecretDenylist } from './BackupSecretDenylist'
 import { BackupSettingsValue } from './BackupTypes'
 import { ActionAlignmentSettings } from '../settings/ActionAlignmentSettings'
+import { AccountListSettings } from '../settings/AccountListSettings'
 import { AppColorFavoritesSettings } from '../settings/AppColorFavoritesSettings'
 import { CommentTranslationSettings } from '../settings/CommentTranslationSettings'
+import { ComicVisualProviderSettings } from '../settings/ComicVisualProviderSettings'
 import { CoverBackgroundSettings } from '../settings/CoverBackgroundSettings'
 import { GalleryTitleSettings } from '../settings/GalleryTitleSettings'
 import { HomeTabSettings } from '../settings/HomeTabSettings'
@@ -14,6 +16,7 @@ import { MangaRenderingServiceSettings } from '../settings/MangaRenderingService
 import { NhClipboardLinkSettings } from '../settings/NhClipboardLinkSettings'
 import { ReadButtonStyleSettings } from '../settings/ReadButtonStyleSettings'
 import { ScreenOrientationSettings } from '../settings/ScreenOrientationSettings'
+import { SearchTranslationSettings } from '../settings/SearchTranslationSettings'
 import { TabletLayoutSettings } from '../settings/TabletLayoutSettings'
 import { TagTranslationSettings } from '../settings/TagTranslationSettings'
 import { ReaderImageCacheSettings } from '../settings/ReaderImageCacheSettings'
@@ -56,10 +59,16 @@ export class BackupPreferencesAdapter {
     'nextn_settings',
     'nextn_llm_sources',
     'nextn_manga_rendering_service',
+    'nextn_comic_visual_provider',
   ]
 
+  // Stores that may contain credential-bearing values alongside normal
+  // settings. HUKS-backed vaults are exported through BackupSecretsAdapter
+  // after decrypting with the source device key, so their raw envelopes are
+  // deliberately absent here.
   private static readonly SECRET_STORES: string[] = [
-    'nextn_llm_secrets',
+    'nextn_settings',
+    'nextn_comic_visual_provider',
   ]
 
   private static readonly STORE_SEPARATOR: string = '.'
@@ -72,8 +81,17 @@ export class BackupPreferencesAdapter {
     'nextn_settings.sync.last_run_at',
     'nextn_settings.sync.last_status',
     'nextn_settings.sync.last_detail',
+    'nextn_settings.app.releaseHistoryCache',
+    'nextn_settings.cloud_blacklist_ids_v1',
+    'nextn_settings.account.session.present',
+    'nextn_settings.account.session.authRefreshRetryAt',
     'nextn_layout.clipboard_link_enabled',
     'nextn_layout.clipboard_link_change_count',
+    'nextn_comic_visual_provider.torii_credits_cache',
+    'nextn_comic_visual_provider.torii_legacy_billing_mode',
+    'nextn_comic_visual_provider.torii_legacy_byok_provider',
+    'nextn_comic_visual_provider.torii_legacy_byok_source_profile',
+    'nextn_comic_visual_provider.torii_legacy_byok_model',
   ]
 
   // Non-secret keys → plaintext section.
@@ -143,7 +161,8 @@ export class BackupPreferencesAdapter {
     if (allowSecret && !secretKey) {
       return false
     }
-    return BackupPreferencesAdapter.splitStoreKey(key) !== null
+    const parts: string[] | null = BackupPreferencesAdapter.splitStoreKey(key)
+    return parts !== null && BackupPreferencesAdapter.allowedStore(parts[0], allowSecret)
   }
 
   private static splitStoreKey(key: string): string[] | null {
@@ -152,6 +171,13 @@ export class BackupPreferencesAdapter {
       return null
     }
     return [key.substring(0, index), key.substring(index + 1)]
+  }
+
+  private static allowedStore(storeName: string, allowSecret: boolean): boolean {
+    const stores: string[] = allowSecret
+      ? BackupPreferencesAdapter.SECRET_STORES
+      : BackupPreferencesAdapter.PLAINTEXT_STORES
+    return stores.indexOf(storeName) >= 0
   }
 
   // Write a backed-up map back into its stores. `allowSecret=false` re-checks
@@ -343,10 +369,13 @@ export class BackupPreferencesAdapter {
     await DownloadSettingsService.restoreFromBackup(context)
     await LlmSourceProfileRepository.restoreFromBackup(context)
     await MangaRenderingServiceSettings.restore(context)
+    await ComicVisualProviderSettings.reapplyAfterBackup(context)
     await CommentTranslationSettings.restore(context)
     await TagTranslationSettings.restore(context)
+    await SearchTranslationSettings.restore(context)
     await ReaderImageCacheSettings.restore(context)
     await SyncSettings.restore(context)
+    await AccountListSettings.load(context)
   }
 
   static count(map: SettingsMap): number {

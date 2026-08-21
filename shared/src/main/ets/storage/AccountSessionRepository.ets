@@ -12,6 +12,7 @@ const SQL_UPSERT_SESSION: string =
   'ON CONFLICT(key) DO UPDATE SET ciphertext = excluded.ciphertext, nonce = excluded.nonce, ' +
   'updated_at = excluded.updated_at'
 const SQL_DELETE_SESSION: string = 'DELETE FROM account_session WHERE key = ?'
+const SQL_DELETE_ALL_SESSIONS: string = 'DELETE FROM account_session'
 const SQL_SELECT_VERIFICATION_REQUIRED: string =
   'SELECT verification_required, reason_code FROM account_session_verification WHERE key = ? LIMIT 1'
 const SQL_UPSERT_VERIFICATION_REQUIRED: string =
@@ -293,6 +294,54 @@ export class AccountSessionRepository {
         transactionOpen = true
         await store.executeSql(SQL_DELETE_SESSION, [SESSION_KEY])
         await store.executeSql(SQL_DELETE_VERIFICATION_REQUIRED, [SESSION_KEY])
+        store.commit()
+        transactionOpen = false
+      } catch (error) {
+        if (transactionOpen) {
+          store.rollBack()
+        }
+        throw error as Error
+      }
+    })
+  }
+
+  /** Replaces or merges the complete cross-device backup set after HUKS re-wrapping. */
+  static restoreBackup(
+    context: common.UIAbilityContext,
+    primary: EncryptedAccountSession | null,
+    savedKeys: string[],
+    savedRecords: EncryptedAccountSession[],
+    replace: boolean,
+  ): Promise<void> {
+    if (savedKeys.length !== savedRecords.length) {
+      return Promise.reject(new Error('account_session_backup_shape_invalid'))
+    }
+    return AccountSessionRepository.enqueueWrite(async (): Promise<void> => {
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      let transactionOpen: boolean = false
+      try {
+        store.beginTransaction()
+        transactionOpen = true
+        if (replace) {
+          await store.executeSql(SQL_DELETE_ALL_SESSIONS)
+          await store.executeSql(SQL_DELETE_VERIFICATION_REQUIRED, [SESSION_KEY])
+        }
+        if (primary !== null) {
+          await store.executeSql(SQL_UPSERT_SESSION, [
+            SESSION_KEY,
+            primary.ciphertext,
+            primary.nonce,
+            Date.now(),
+          ])
+        }
+        for (let i: number = 0; i < savedKeys.length; i++) {
+          await store.executeSql(SQL_UPSERT_SESSION, [
+            savedKeys[i],
+            savedRecords[i].ciphertext,
+            savedRecords[i].nonce,
+            Date.now(),
+          ])
+        }
         store.commit()
         transactionOpen = false
       } catch (error) {

@@ -33,6 +33,7 @@ export class BackupSecretDenylist {
 
   // Future account-session family (RDB-backed today; reserved for preference-backed migrations).
   private static readonly ACCOUNT_SESSION_PREFIX: string = 'account.session.'
+  private static readonly ACCOUNT_LIST_PREFIX: string = 'nextn_settings.account.list.'
 
   static isWebDavCredentialKey(key: string): boolean {
     if (BackupSecretDenylist.WEBDAV_CREDENTIAL_KEYS.indexOf(key) >= 0) {
@@ -51,6 +52,9 @@ export class BackupSecretDenylist {
       return true
     }
     if (key.startsWith(BackupSecretDenylist.ACCOUNT_SESSION_PREFIX)) {
+      return true
+    }
+    if (key.startsWith(BackupSecretDenylist.ACCOUNT_LIST_PREFIX)) {
       return true
     }
     const lower: string = key.toLowerCase()

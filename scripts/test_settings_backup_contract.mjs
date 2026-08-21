@@ -112,10 +112,25 @@ ok('backup restores WebDAV only as one complete encrypted credential group',
 const secretsAdapter = read('shared/src/main/ets/backup/BackupSecretsAdapter.ets')
 ok('HUKS secrets ride only in the encrypted container and re-wrap on restore',
   /exportPlaintextForBackup\(context\)/.test(secretsAdapter) &&
-    /exportSealedForBackup\(context\)/.test(secretsAdapter) &&
-    /restorePlaintextFromBackup\(context, llmValues\)/.test(secretsAdapter) &&
-    /restoreSealedFromBackup\(context, sessionValue as string\)/.test(secretsAdapter) &&
-    /clearSealedForBackup\(context\)/.test(secretsAdapter))
+  /exportSealedForBackup\(context\)/.test(secretsAdapter) &&
+  /restorePlaintextFromBackup\(context, llmValues\)/.test(secretsAdapter) &&
+  /exportAllSealedForBackup\(context\)/.test(secretsAdapter) &&
+  /restoreAllSealedFromBackup/.test(secretsAdapter))
+ok('ordinary Preferences secrets are connected to the encrypted section',
+  /BackupPreferencesAdapter\.exportSecrets\(context\)/.test(secretsAdapter) &&
+    /BackupPreferencesAdapter\.restore\(context, map, true\)/.test(secretsAdapter) &&
+    /BackupPreferencesAdapter\.replace\(context, map, true\)/.test(secretsAdapter))
+ok('Torii settings, credential, and volatile cache have distinct backup policies',
+  /PLAINTEXT_STORES[\s\S]*'nextn_comic_visual_provider'/.test(adapter) &&
+    /SECRET_STORES[\s\S]*'nextn_comic_visual_provider'/.test(adapter) &&
+    /'nextn_comic_visual_provider\.torii_credits_cache'/.test(adapter) &&
+    /ComicVisualProviderSettings\.reapplyAfterBackup\(context\)/.test(adapter))
+ok('saved account list, sessions, and profiles stay in complete encrypted bundles',
+  /ACCOUNT_LIST_PREFIX: string = 'nextn_settings\.account\.list\.'/.test(deny) &&
+    /ACCOUNT_SESSIONS_KEY: string = 'account\.sessions\.v1'/.test(secretsAdapter) &&
+    /ACCOUNT_PROFILES_KEY: string = 'account\.profiles\.v1'/.test(secretsAdapter) &&
+    /AccountProfileRepository\.exportForBackup\(context\)/.test(secretsAdapter) &&
+    /AccountProfileRepository\.restoreBackup/.test(secretsAdapter))
 
 const svc = read('shared/src/main/ets/backup/BackupService.ets')
 ok('service seals into the encrypted container only when includeSecrets',

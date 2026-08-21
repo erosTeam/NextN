@@ -6,11 +6,19 @@ import { LocalDataStore } from './LocalDataStore'
 const PROFILE_KEY: string = 'primary'
 const SQL_SELECT_PROFILE: string =
   'SELECT username, user_url, user_id, avatar_url FROM account_profile WHERE key = ? LIMIT 1'
+const SQL_SELECT_ALL_PROFILES: string =
+  'SELECT key, username, user_url, user_id, avatar_url FROM account_profile ORDER BY key ASC'
 const SQL_UPSERT_PROFILE: string =
   'INSERT INTO account_profile (key, username, user_url, user_id, avatar_url, updated_at) VALUES (?, ?, ?, ?, ?, ?) ' +
   'ON CONFLICT(key) DO UPDATE SET username = excluded.username, user_url = excluded.user_url, ' +
   'user_id = excluded.user_id, avatar_url = excluded.avatar_url, updated_at = excluded.updated_at'
 const SQL_DELETE_PROFILE: string = 'DELETE FROM account_profile WHERE key = ?'
+const SQL_DELETE_ALL_PROFILES: string = 'DELETE FROM account_profile'
+
+export class AccountProfileBackupEntry {
+  key: string = ''
+  profile: NhAccountProfile = new NhAccountProfile()
+}
 
 /**
  * One display-only snapshot per account. The active account's snapshot lives
@@ -117,6 +125,74 @@ export class AccountProfileRepository {
     return AccountProfileRepository.enqueueWrite(async (): Promise<void> => {
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
       await store.executeSql(SQL_DELETE_PROFILE, [PROFILE_KEY])
+    })
+  }
+
+  static async exportForBackup(context: common.UIAbilityContext): Promise<AccountProfileBackupEntry[]> {
+    let rows: relationalStore.ResultSet | null = null
+    try {
+      await AccountProfileRepository.writeTail
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      rows = await store.querySql(SQL_SELECT_ALL_PROFILES)
+      const entries: AccountProfileBackupEntry[] = []
+      while (rows.goToNextRow()) {
+        const entry: AccountProfileBackupEntry = new AccountProfileBackupEntry()
+        entry.key = AccountProfileRepository.stringColumn(rows, 'key').trim()
+        entry.profile.username = AccountProfileRepository.stringColumn(rows, 'username')
+        entry.profile.userUrl = AccountProfileRepository.stringColumn(rows, 'user_url')
+        entry.profile.userId = AccountProfileRepository.stringColumn(rows, 'user_id')
+        entry.profile.avatarUrl = AccountProfileRepository.stringColumn(rows, 'avatar_url')
+        if (entry.key.length === 0 || !entry.profile.hasIdentity()) {
+          throw new Error('account_profile_backup_shape_invalid')
+        }
+        entries.push(entry)
+      }
+      return entries
+    } finally {
+      if (rows !== null) {
+        try {
+          rows.close()
+        } catch (_error) {}
+      }
+    }
+  }
+
+  static restoreBackup(
+    context: common.UIAbilityContext,
+    entries: AccountProfileBackupEntry[],
+    replace: boolean,
+  ): Promise<void> {
+    return AccountProfileRepository.enqueueWrite(async (): Promise<void> => {
+      const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+      let transactionOpen: boolean = false
+      try {
+        store.beginTransaction()
+        transactionOpen = true
+        if (replace) {
+          await store.executeSql(SQL_DELETE_ALL_PROFILES)
+        }
+        for (let i: number = 0; i < entries.length; i++) {
+          const entry: AccountProfileBackupEntry = entries[i]
+          if (entry.key.trim().length === 0 || !entry.profile.hasIdentity()) {
+            throw new Error('account_profile_backup_shape_invalid')
+          }
+          await store.executeSql(SQL_UPSERT_PROFILE, [
+            entry.key,
+            entry.profile.username,
+            entry.profile.userUrl,
+            entry.profile.userId,
+            entry.profile.avatarUrl,
+            Date.now(),
+          ])
+        }
+        store.commit()
+        transactionOpen = false
+      } catch (error) {
+        if (transactionOpen) {
+          store.rollBack()
+        }
+        throw error as Error
+      }
     })
   }
 
