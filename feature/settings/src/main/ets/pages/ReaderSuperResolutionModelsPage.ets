@@ -1,4 +1,5 @@
 import { common } from '@kit.AbilityKit'
+import { IconStyleMode } from '@kit.UIDesignKit'
 import {
   AppStrings,
   NextNGroupedListSection,
@@ -25,6 +26,8 @@ export struct ReaderSuperResolutionModelsPage {
   @Local modelChanging: string = ''
   @Local errorMessage: string = ''
   @Param modal: boolean = false
+  @Param modalCloseIcon: Resource = $r('sys.symbol.xmark')
+  @Param modalCloseIconStyle: IconStyleMode = IconStyleMode.SMALL
   @Param scroller: Scroller = new Scroller()
   @Event onClose?: () => void
   @Event onModelsChanged?: () => void
@@ -285,6 +288,9 @@ export struct ReaderSuperResolutionModelsPage {
       NextNModalScaffold({
         title: AppStrings.get('settings_reader_enhancement_models'),
         contentBackgroundColor: $r('app.color.surface'),
+        scroller: this.scroller,
+        closeIcon: this.modalCloseIcon,
+        closeIconStyle: this.modalCloseIconStyle,
         onClose: (): void => {
           if (this.onClose) {
             this.onClose()

@@ -3,6 +3,7 @@ import { uniformTypeDescriptor as utd } from '@kit.ArkData'
 import { CustomContentDialog, SymbolGlyphModifier } from '@kit.ArkUI'
 import { pasteboard } from '@kit.BasicServicesKit'
 import { systemShare } from '@kit.ShareKit'
+import { IconStyleMode } from '@kit.UIDesignKit'
 import { ReaderSuperResolutionModelsPage } from './ReaderSuperResolutionModelsPage'
 import {
   AppStrings,
@@ -262,6 +263,7 @@ export struct SettingsPage {
   @Local readerModeError: string = ''
   @Local readerEnhancementInstalledModels: NhReaderSuperResolutionModel[] = []
   @Local readerEnhancementModelsShown: boolean = false
+  @Local readerSheetPanelWidth: number = 0
   @Local browsePresentationError: string = ''
   @Local browsePreferencesError: string = ''
   @Local searchPreferencesError: string = ''
@@ -751,7 +753,12 @@ export struct SettingsPage {
 
   private openReaderEnhancementModels(): void {
     if (this.sheetPresentation) {
-      this.readerEnhancementModelsShown = true
+      this.getUIContext().animateTo({
+        duration: ThemeTokens.ANIM_DURATION,
+        curve: Curve.EaseOut,
+      }, (): void => {
+        this.readerEnhancementModelsShown = true
+      })
       return
     }
     if (this.onOpenReaderEnhancementModels) {
@@ -3386,6 +3393,7 @@ export struct SettingsPage {
   private ReaderPresentationSheet() {
     NextNModalScaffold({
       title: AppStrings.get('settings_reader'),
+      scroller: this.scroller,
       onClose: (): void => {
         if (this.onClose) {
           this.onClose()
@@ -3400,13 +3408,50 @@ export struct SettingsPage {
   private ReaderEnhancementModelsSheet() {
     ReaderSuperResolutionModelsPage({
       modal: true,
+      modalCloseIcon: $r('sys.media.ohos_ic_compnent_titlebar_back'),
+      modalCloseIconStyle: IconStyleMode.NORMAL,
       onClose: (): void => {
-        this.readerEnhancementModelsShown = false
         this.loadReaderPresentation()
+        this.getUIContext().animateTo({
+          duration: ThemeTokens.ANIM_DURATION,
+          curve: Curve.EaseOut,
+        }, (): void => {
+          this.readerEnhancementModelsShown = false
+        })
       },
       onModelsChanged: (): void => {
         this.loadReaderPresentation()
       },
+    })
+  }
+
+  @Builder
+  private ReaderSheetPanel() {
+    Stack() {
+      Column() {
+        this.ReaderPresentationSheet()
+      }
+      .width('100%')
+      .height('100%')
+      .translate({
+        x: this.readerEnhancementModelsShown ? -this.readerSheetPanelWidth : 0,
+      })
+
+      Column() {
+        this.ReaderEnhancementModelsSheet()
+      }
+      .width('100%')
+      .height('100%')
+      .opacity(this.readerSheetPanelWidth > 0 ? 1 : 0)
+      .translate({
+        x: this.readerEnhancementModelsShown ? 0 : this.readerSheetPanelWidth,
+      })
+    }
+    .width('100%')
+    .height('100%')
+    .clip(true)
+    .onAreaChange((_oldArea: Area, area: Area): void => {
+      this.readerSheetPanelWidth = area.width as number
     })
   }
 
@@ -4252,11 +4297,7 @@ export struct SettingsPage {
 
   build() {
     if (this.surface === SettingsSurface.READER && this.sheetPresentation) {
-      if (this.readerEnhancementModelsShown) {
-        this.ReaderEnhancementModelsSheet()
-      } else {
-        this.ReaderPresentationSheet()
-      }
+      this.ReaderSheetPanel()
     } else {
       Column() {
         SecondaryListScaffold({

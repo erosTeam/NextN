@@ -18,6 +18,8 @@ export struct NextNModalScaffold {
   @Param contentHorizontalPadding: number = ThemeTokens.SPACE_MD
   @Param footerReserveHeight: number = 0
   @Param scroller: Scroller = new Scroller()
+  @Param closeIcon: Resource = $r('sys.symbol.xmark')
+  @Param closeIconStyle: IconStyleMode = IconStyleMode.SMALL
   @Param confirmLoading: boolean = false
   // Keep save/remove controls in the HDS modal title cluster, exactly as the
   // established NextE AppModalScaffold does.  Individual sheets therefore do
@@ -70,9 +72,9 @@ export struct NextNModalScaffold {
           subIcon: {
             content: {
               label: 'modal_close',
-              icon: $r('sys.symbol.xmark'),
+              icon: this.closeIcon,
               isEnabled: !this.confirmLoading,
-              type: IconStyleMode.SMALL,
+              type: this.closeIconStyle,
               action: (): void => {
                 if (this.onClose) {
                   this.onClose()

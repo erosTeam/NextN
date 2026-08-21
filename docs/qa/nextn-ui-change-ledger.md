@@ -8525,3 +8525,55 @@ authorize an edit, replace a device comparison, or define product completion.
   effective theme light -> dark -> light without remounting the page. The
   trailing icon must change with the tab text on both transitions. Source and
   build evidence cannot close this live cached-content behavior.
+
+## OPEN — Reader sheet model-management transition continuity — 2026-08-22
+
+- **Why newly actionable:** the user reported that Reader's private settings
+  sheet jumps instantly to model management and reconstructs the settings sheet
+  on return, losing the previous scroll position. This new direct feedback
+  reopens only the Reader-sheet settings/model-management parent tree; model
+  availability, downloads, selection, enhancement processing and Reader canvas
+  behavior remain outside this change.
+- **Reference parent tree and transition:** current NextE keeps one Reader-owned
+  `bindSheet` whose content is `ReaderSettingsPage(sheetPresentation) -> Stack`.
+  The Stack mounts both `ReaderSettingsSheetPage` and
+  `SuperResolutionModelsSheetPage` continuously, measures the panel width, and
+  uses one `animateTo` horizontal translation to enter and return. The settings
+  List and its Scroller stay mounted at their existing offset. Model management
+  uses a normal back icon because its close action returns within the same
+  sheet; the root settings panel retains the modal close icon.
+- **Faulty migration and impact:** NextN commit `0746ba3` copied the model page
+  and a boolean branch but replaced the complete sheet subtree with
+  `ReaderEnhancementModelsSheet` while the boolean is true. Returning rebuilds
+  `ReaderPresentationSheet`; its modal scaffold owns a newly created List and
+  Scroller, so the previous scroll position is discarded. The same migration
+  omitted NextE's transition animation, width owner and back-icon semantics,
+  making the replacement look like an unrelated second sheet.
+- **Exact correction:** keep the existing outer Reader `bindSheet`, detents,
+  setting rows, model rows and actions. Inside `SettingsPage`, mount the two
+  existing modal pages as full-size siblings in one clipped Stack, retain the
+  settings Scroller, measure the current sheet width, and reproduce NextE's
+  `ThemeTokens.ANIM_DURATION` / `Curve.EaseOut` translations in both
+  directions. Allow `NextNModalScaffold` to accept an opt-in close icon/style;
+  use the reference back icon only for the nested model panel and preserve the
+  current xmark default everywhere else. Wire the model page's existing
+  Scroller into its modal scaffold.
+- **Newly affected visible states:** Reader settings at its initial offset;
+  Reader settings deliberately scrolled until model management is visible;
+  forward transition; settled model management; reverse transition; restored
+  settings at the same visible anchor; outer-sheet dismissal from the root
+  panel. Downloading, remove-confirmation, error and empty model states are not
+  changed and must not be manufactured for this interaction acceptance.
+- **Verification plan:** review the exact diff; signed Debug build; discover a
+  current connected target, acquire its repository lease, pass the wake and
+  `OverrideTimeout=86400000ms` gate, then install with data preservation. From
+  a foreground-confirmed Reader, open its settings sheet, scroll to a stable
+  visible anchor containing model management, enter and return continuously,
+  and prove the same anchor/offset is retained with the reference-shaped back
+  affordance. Compare the settled NextN states with current same-viewport NextE
+  if that reference app is available on the selected device.
+- **Unresolved risk:** source and build cannot prove that ArkUI retains the
+  physical List offset or that both transition frames are visually correct.
+  Those claims remain OPEN until the current device shows the complete
+  scroll-enter-return chain; a layout-only or static source contract cannot
+  substitute for that observation.
