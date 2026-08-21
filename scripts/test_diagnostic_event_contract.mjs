@@ -29,6 +29,30 @@ const requiredEvents = [
     file: 'shared/src/main/ets/services/NhAccountSessionService.ets',
     event: "account_profile_snapshot_clear_failed",
   },
+  {
+    file: 'feature/home/src/main/ets/pages/HomePage.ets',
+    event: "collection_refresh_started",
+  },
+  {
+    file: 'feature/home/src/main/ets/pages/HomePage.ets',
+    event: "collection_refresh_settled",
+  },
+  {
+    file: 'feature/home/src/main/ets/pages/PopularPage.ets',
+    event: "collection_refresh_started",
+  },
+  {
+    file: 'feature/home/src/main/ets/components/HomeSearchSubtabPage.ets',
+    event: "collection_refresh_settled",
+  },
+  {
+    file: 'feature/user/src/main/ets/pages/HistoryPage.ets',
+    event: "collection_refresh_settled",
+  },
+  {
+    file: 'shared/src/main/ets/settings/HomeSubtabSettings.ets',
+    event: "home_subtabs_canonicalized",
+  },
 ]
 
 for (const item of requiredEvents) {

@@ -3,6 +3,17 @@ import { ThemeTokens } from '../theme/ThemeTokens'
 import { AppStrings } from '../i18n/AppStrings'
 import { GalleryThumbnail } from './GalleryThumbnail'
 
+// Reuse only rows with the same optional Japanese-title and language nodes.
+export function galleryListItemReuseId(gallery: NhGallerySummary): string {
+  const japaneseShape: string = gallery.japaneseTitle.length > 0 &&
+    gallery.japaneseTitle !== gallery.displayTitle()
+    ? 'japanese'
+    : 'plain'
+  const languageShape: string = gallery.languageCode().length > 0 ? 'language' : 'no_language'
+  return `simple_${japaneseShape}_${languageShape}`
+}
+
+@ReusableV2
 @ComponentV2
 export struct GalleryListItem {
   @Require @Param gallery: NhGallerySummary

@@ -43,8 +43,19 @@ ok('selection falls back to the first visible profile after hide/delete/restore'
     /visibleSelection\(profiles: NhHomeSubtabProfile\[\], selectedUuid: string\)/.test(settings))
 ok('one-time migration preserves legacy Popular selection and fixed builtin query identities',
   /connectHomeSource\(\)\.selectedKey === HOME_SOURCE_POPULAR[\s\S]*HOME_SUBTAB_POPULAR_UUID/.test(settings) &&
-    /latest\.query = ''[\s\S]*latest\.language = NhSearchLanguage\.ALL[\s\S]*latest\.sort = NhSearchSort\.RECENT/.test(settings) &&
-    /popular\.query = ''[\s\S]*popular\.language = NhSearchLanguage\.ALL[\s\S]*popular\.sort = NhSearchSort\.RECENT/.test(settings))
+    /normalizeBuiltinIdentity\(\)/.test(settings) &&
+    /normalizeBuiltinIdentity\(\): boolean/.test(model))
+ok('restore and sync refresh persist canonical builtin fields and selected fallback',
+  /ensureBuiltins\(profiles, canonicalized\)/.test(settings) &&
+    /advanceEditTimes\(ensured, canonicalized\)/.test(settings) &&
+    /ensureBuiltins\(storedProfiles, canonicalized\)/.test(settings) &&
+    /HomeSubtabRepository\.saveChanges\([\s\S]*canonicalized[\s\S]*selectionChanged/.test(settings) &&
+    /home_subtabs_canonicalized/.test(settings))
+ok('builtin names are derived from current resources rather than persisted user text',
+  /static displayName\(profile: NhHomeSubtabProfile\)/.test(settings) &&
+    /Text\(HomeSubtabSettings\.displayName\(profile\)\)/.test(
+      read('feature/home/src/main/ets/pages/HomeSubtabManagerPage.ets'),
+    ))
 
 const store = read('shared/src/main/ets/storage/LocalDataStore.ets')
 const repository = read('shared/src/main/ets/storage/HomeSubtabRepository.ets')
@@ -70,6 +81,21 @@ ok('each retained search profile owns request generation, result, paging, scroll
 ok('stale responses are rejected by both generation and content revision',
   /generation === this\.requestGeneration && revision === this\.profileRevision\(\)/.test(retained) &&
     /if \(!this\.isCurrent\(generation, profile\.contentRevision\(\)\)\)/.test(retained))
+
+const latestPage = read('feature/home/src/main/ets/pages/HomePage.ets')
+const popularPage = read('feature/home/src/main/ets/pages/PopularPage.ets')
+const historyPage = read('feature/user/src/main/ets/pages/HistoryPage.ets')
+const collectionBody = read('shared/src/main/ets/components/GalleryCollectionBody.ets')
+ok('every retained Home caller propagates page-one refreshing into the shared collection footer',
+  /isRefreshing: this\.isRefreshing/.test(latestPage) &&
+    /isRefreshing: this\.isRefreshing/.test(popularPage) &&
+    /isRefreshing: this\.isRefreshing/.test(retained))
+ok('shared collection and History use the same refreshing-aware footer projection',
+  /CollectionFooterState\.canOfferMore/.test(collectionBody) &&
+    /CollectionFooterState\.isComplete/.test(collectionBody) &&
+    /CollectionFooterState\.idleText/.test(collectionBody) &&
+    /CollectionFooterState\.canOfferMore/.test(historyPage) &&
+    /CollectionFooterState\.isComplete/.test(historyPage))
 
 const conditionParser = read('feature/search/src/main/ets/model/SearchConditionChip.ets')
 const conditionInputs = read('feature/search/src/main/ets/components/SearchAdvancedConditionInputs.ets')

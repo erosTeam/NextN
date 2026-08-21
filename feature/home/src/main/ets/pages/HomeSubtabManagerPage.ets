@@ -131,7 +131,7 @@ export struct HomeSubtabManagerPage {
         .fontColor([$r('sys.color.font_secondary')])
       Column({ space: 2 }) {
         Row({ space: ThemeTokens.SPACE_SM }) {
-          Text(profile.name)
+          Text(HomeSubtabSettings.displayName(profile))
             .fontSize(ThemeTokens.FONT_SIZE_BODY)
             .fontColor($r('sys.color.font_primary'))
             .maxLines(1)

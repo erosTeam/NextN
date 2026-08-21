@@ -1,4 +1,5 @@
 import { common } from '@kit.AbilityKit'
+import { KeyboardAvoidMode } from '@kit.ArkUI'
 import {
   AppStrings,
   ComicTranslationDiagnosticLogger,
@@ -49,6 +50,7 @@ export struct LlmSourceDetailPage {
   private apiKeyDraft: string = ''
 
   aboutToAppear(): void {
+    this.getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.RESIZE)
     this.loadSource()
   }
 
@@ -56,6 +58,7 @@ export struct LlmSourceDetailPage {
     if (!this.deleting) {
       this.persistDrafts(false)
     }
+    this.getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET)
   }
 
   private context(): common.UIAbilityContext {

@@ -53,7 +53,9 @@ export class HomeSubtabSettings {
       const selection: HomeSubtabSelectionRecord = persisted
         ? await HomeSubtabRepository.loadSelection(context)
         : new HomeSubtabSelectionRecord()
-      const ensured: NhHomeSubtabProfile[] = HomeSubtabSettings.ensureBuiltins(profiles)
+      const canonicalized: string[] = []
+      const ensured: NhHomeSubtabProfile[] = HomeSubtabSettings.ensureBuiltins(profiles, canonicalized)
+      HomeSubtabSettings.advanceEditTimes(ensured, canonicalized)
       const legacySelected: string = connectHomeSource().selectedKey === HOME_SOURCE_POPULAR
         ? HOME_SUBTAB_POPULAR_UUID
         : HOME_SUBTAB_LATEST_UUID
@@ -65,9 +67,29 @@ export class HomeSubtabSettings {
       state.selectedUuid = selected
       state.restored = true
       connectHomeSource().selectedKey = selected
-      if (!persisted || ensured.length !== profiles.length || selected !== selection.selectedUuid) {
+      const builtinsAdded: boolean = ensured.length !== profiles.length
+      const selectionChanged: boolean = selected !== selection.selectedUuid
+      if (!persisted || builtinsAdded) {
         await HomeSubtabSettings.enqueueWrite(
           (): Promise<void> => HomeSubtabRepository.replaceAll(context, ensured, selected),
+        )
+      } else if (canonicalized.length > 0 || selectionChanged) {
+        await HomeSubtabSettings.enqueueWrite(
+          (): Promise<void> => HomeSubtabRepository.saveChanges(
+            context,
+            ensured,
+            canonicalized,
+            selected,
+            '',
+            selectionChanged,
+          ),
+        )
+      }
+      if (!persisted || builtinsAdded || canonicalized.length > 0 || selectionChanged) {
+        DiagnosticLogger.info(
+          'settings',
+          'home_subtabs_canonicalized',
+          `added=${builtinsAdded} profiles=${canonicalized.length} selection=${selectionChanged}`,
         )
       }
     } catch (error) {
@@ -241,6 +263,17 @@ export class HomeSubtabSettings {
     return snapshot
   }
 
+  /** Built-in names are presentation resources, never synchronized user text. */
+  static displayName(profile: NhHomeSubtabProfile): string {
+    if (profile.uuid === HOME_SUBTAB_LATEST_UUID) {
+      return AppStrings.get('home_source_latest')
+    }
+    if (profile.uuid === HOME_SUBTAB_POPULAR_UUID) {
+      return AppStrings.get('home_source_popular')
+    }
+    return profile.name
+  }
+
   static async restoreBackup(
     context: common.UIAbilityContext,
     profiles: NhHomeSubtabProfile[],
@@ -257,18 +290,45 @@ export class HomeSubtabSettings {
 
   static async refreshFromStorage(context: common.UIAbilityContext): Promise<void> {
     await HomeSubtabSettings.writeTail
-    const profiles: NhHomeSubtabProfile[] = HomeSubtabSettings.ensureBuiltins(
-      await HomeSubtabRepository.loadProfiles(context),
-    )
+    const storedProfiles: NhHomeSubtabProfile[] = await HomeSubtabRepository.loadProfiles(context)
+    const canonicalized: string[] = []
+    const profiles: NhHomeSubtabProfile[] = HomeSubtabSettings.ensureBuiltins(storedProfiles, canonicalized)
+    HomeSubtabSettings.advanceEditTimes(profiles, canonicalized)
+    const selectionRecord: HomeSubtabSelectionRecord = await HomeSubtabRepository.loadSelection(context)
     const selected: string = HomeSubtabSettings.visibleSelection(
       profiles,
-      (await HomeSubtabRepository.loadSelection(context)).selectedUuid,
+      selectionRecord.selectedUuid,
     )
+    const builtinsAdded: boolean = profiles.length !== storedProfiles.length
+    const selectionChanged: boolean = selected !== selectionRecord.selectedUuid
+    if (builtinsAdded) {
+      await HomeSubtabSettings.enqueueWrite(
+        (): Promise<void> => HomeSubtabRepository.replaceAll(context, profiles, selected),
+      )
+    } else if (canonicalized.length > 0 || selectionChanged) {
+      await HomeSubtabSettings.enqueueWrite(
+        (): Promise<void> => HomeSubtabRepository.saveChanges(
+          context,
+          profiles,
+          canonicalized,
+          selected,
+          '',
+          selectionChanged,
+        ),
+      )
+    }
     const state: HomeSubtabState = connectHomeSubtabs()
     state.profiles = HomeSubtabSettings.snapshot(profiles)
     state.selectedUuid = selected
     state.restored = true
     connectHomeSource().selectedKey = selected
+    if (builtinsAdded || canonicalized.length > 0 || selectionChanged) {
+      DiagnosticLogger.info(
+        'settings',
+        'home_subtabs_canonicalized',
+        `added=${builtinsAdded} profiles=${canonicalized.length} selection=${selectionChanged}`,
+      )
+    }
   }
 
   static flushForSync(): Promise<void> {
@@ -332,7 +392,10 @@ export class HomeSubtabSettings {
     return [latest, popular, chinese, favorite]
   }
 
-  private static ensureBuiltins(profiles: NhHomeSubtabProfile[]): NhHomeSubtabProfile[] {
+  private static ensureBuiltins(
+    profiles: NhHomeSubtabProfile[],
+    canonicalized: string[] = [],
+  ): NhHomeSubtabProfile[] {
     const out: NhHomeSubtabProfile[] = HomeSubtabSettings.snapshot(profiles)
     if (HomeSubtabSettings.indexOf(out, HOME_SUBTAB_LATEST_UUID) < 0) {
       out.splice(0, 0, HomeSubtabSettings.profile(
@@ -351,21 +414,34 @@ export class HomeSubtabSettings {
     }
     const latest: NhHomeSubtabProfile | null = HomeSubtabSettings.find(out, HOME_SUBTAB_LATEST_UUID)
     if (latest !== null) {
-      latest.kind = NhHomeSubtabKind.LATEST
+      if (latest.normalizeBuiltinIdentity()) {
+        HomeSubtabSettings.markCanonicalized(canonicalized, latest.uuid)
+      }
       latest.name = AppStrings.get('home_source_latest')
-      latest.query = ''
-      latest.language = NhSearchLanguage.ALL
-      latest.sort = NhSearchSort.RECENT
     }
     const popular: NhHomeSubtabProfile | null = HomeSubtabSettings.find(out, HOME_SUBTAB_POPULAR_UUID)
     if (popular !== null) {
-      popular.kind = NhHomeSubtabKind.POPULAR
+      if (popular.normalizeBuiltinIdentity()) {
+        HomeSubtabSettings.markCanonicalized(canonicalized, popular.uuid)
+      }
       popular.name = AppStrings.get('home_source_popular')
-      popular.query = ''
-      popular.language = NhSearchLanguage.ALL
-      popular.sort = NhSearchSort.RECENT
     }
     return out
+  }
+
+  private static markCanonicalized(uuids: string[], uuid: string): void {
+    if (uuid.length > 0 && uuids.indexOf(uuid) < 0) {
+      uuids.push(uuid)
+    }
+  }
+
+  private static advanceEditTimes(profiles: NhHomeSubtabProfile[], uuids: string[]): void {
+    uuids.forEach((uuid: string): void => {
+      const profile: NhHomeSubtabProfile | null = HomeSubtabSettings.find(profiles, uuid)
+      if (profile !== null) {
+        profile.lastEditTime = HomeSubtabSettings.nextEditTime(profile.lastEditTime)
+      }
+    })
   }
 
   private static profile(uuid: string, kind: NhHomeSubtabKind, name: string): NhHomeSubtabProfile {

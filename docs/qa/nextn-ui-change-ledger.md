@@ -3,6 +3,62 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — NextE to NextN migration-integrity audit — 2026-08-22
+
+- **Latest user instruction:** treat every NextE-derived implementation as
+  suspect until current-source comparison proves the parent tree and behavior
+  complete. Fix confirmed differences, install on 237, use executable tests or
+  bounded logs for logic, and only then perform the wider/deeper audit.
+- **Review boundary:** compare current NextE and NextN source directly. Inventory
+  each affected component, builder, state dependency, initialization path,
+  layout branch and interaction branch. NH may replace leaf data and actions;
+  it does not justify deleting or simplifying the inherited parent behavior.
+- **Modification gate:** a change requires a demonstrated source difference and
+  a deterministic reproduction or executable assertion. Hypothetical risks do
+  not authorize defensive state, persistence, logging or contract additions.
+- **Current known evidence lanes:** gallery thumbnail loading/placeholder/fade,
+  WaterFlow first-frame column derivation, and the Home SubTab trailing action's
+  live theme dependency are reported examples, not the audit's scope limit.
+  Device acceptance target is 237; screenshots may confirm visible output but
+  cannot prove request, lifecycle or calculation logic.
+- **Current-source inventory and confirmed corrections:** the complete inventory
+  contains 205 same-path ArkTS files shared with current NextE (37
+  byte-identical, 168 changed) plus 116 NextN files that explicitly cite NextE.
+  The current structural pass compared reusable-subtree, lifecycle, scrolling,
+  menu, area-measurement and theme/language dependency signals across that
+  inventory, then manually traced every resulting higher-count reference lane.
+  It found and fixed four concrete migration losses: foreground gallery covers
+  had been downgraded
+  from the reference default priority to low; Grid and Simple/List cards had
+  lost `@ReusableV2` plus conditional-subtree reuse identities; the cached
+  SubTab bar had lost the locale-aware render key used by current NextE; and
+  both manga-rendering and LLM-source input pages had lost the reference
+  `RESIZE`/`OFFSET` keyboard-avoid lifecycle. The thumbnail leaf now retains
+  one mutually exclusive loading/error branch and the reference opacity
+  transition for all six Browse presentations.
+- **Disposed structural differences:** the remaining higher-count reference
+  signals were traced to explicit NH leaf boundaries, not accepted by naming
+  alone: NextE Download has gallery plus archiver Swiper branches while NH has
+  one queue; the compact WaterFlow branch is split into its own NextN component;
+  NextE Gallery Detail owns EH remote-favourite note and preview-jump inputs
+  while NextN routes comments/reader separately; Codex OAuth and EH
+  introduction-image options have no NextN service owner. No defensive state or
+  fallback code was added for these differences.
+- **237 evidence:** the current signed main and ohosTest HAPs were installed
+  with `install -r`, without uninstall or data clear. The device gate read
+  `AWAKE` with `OverrideTimeout=86400000ms`; 15/15 Hypium tests passed. On cold
+  start and on first creation of additional retained search SubTabs, bounded
+  `gallery-layout` logs paired `initial source=display/cached width=440.0
+  columns=2` with `measured width=440.0 columns=2`; no initial/final column
+  disagreement occurred. Repeated scroll and retained-page switches kept native
+  cards mounted. One click sample taken while the non-secure lock screen owned
+  input was explicitly rejected and repeated after semantic layout confirmed
+  the app foreground. The app theme was then changed through Settings from
+  Follow system to Dark and Light without remounting the root app. Same-state
+  captures showed the cached Home trailing management glyph change from the
+  dark-mode light foreground to the light-mode dark foreground; its button
+  remained present and clickable. The original Follow system value was restored.
+
 ## ACCEPTED — Retained gallery results must never expose internal account errors inline — 2026-08-21
 
 - **Latest user counter-evidence:** Favorites still inserts an

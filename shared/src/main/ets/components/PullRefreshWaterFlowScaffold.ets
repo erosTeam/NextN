@@ -17,6 +17,7 @@ import {
   supportsGalleryColumnDensity,
 } from '../utils/GalleryColumns'
 import { currentScrollOffsetY, isUserScrollSource } from '../utils/ScrollUserInput'
+import { DiagnosticLogger } from '../diagnostics/DiagnosticLogger'
 
 const WATER_FLOW_CACHE_ROWS: number = 2
 const WATER_FLOW_MAX_CACHE_ITEMS: number = 8
@@ -69,6 +70,10 @@ export struct PullRefreshWaterFlowScaffold {
   @Event onUserScroll?: () => void
   @Event onScrollIndex?: (start: number, end: number) => void
   @Event onListAreaChange?: (area: Area) => void
+
+  aboutToAppear(): void {
+    this.logColumnResolution('initial')
+  }
 
   build() {
     NextNPullRefresh({
@@ -141,6 +146,7 @@ export struct PullRefreshWaterFlowScaffold {
         if (width > 0 && Math.abs(width - this.measuredWidth) > 0.5) {
           this.measuredWidth = width
           LayoutSafeAreaBridge.publishGalleryContentWidth(width)
+          this.logColumnResolution('measured')
         }
         if (this.onListAreaChange) {
           this.onListAreaChange(newValue)
@@ -243,6 +249,27 @@ export struct PullRefreshWaterFlowScaffold {
       this.effectiveMinColumnWidth(),
       this.gap,
       this.horizontalPadding,
+    )
+  }
+
+  private widthSource(): string {
+    if (this.measuredWidth > 0) {
+      return 'measured'
+    }
+    if (this.layout.galleryContentWidth > 0) {
+      return 'cached'
+    }
+    return 'display'
+  }
+
+  private logColumnResolution(stage: string): void {
+    const width: number = this.effectiveMeasuredWidth()
+    const minWidth: number = this.effectiveMinColumnWidth()
+    const columns: number = galleryColumnCount(width, minWidth, this.gap, this.horizontalPadding)
+    DiagnosticLogger.info(
+      'gallery-layout',
+      'waterflow_columns_resolved',
+      `stage=${stage},mode=${this.densityMode},source=${this.widthSource()},width=${width.toFixed(1)},min=${minWidth.toFixed(1)},columns=${columns}`,
     )
   }
 

@@ -247,9 +247,15 @@ export struct HomeSearchSubtabPage {
     this.isLoadingMore = false
     this.errorMessage = ''
     this.loadMoreErrorMessage = ''
+    let refreshOutcome: string = 'pending'
     if (keepUsableRows) {
       this.isRefreshing = true
       this.isInitialLoading = false
+      DiagnosticLogger.info(
+        'collection',
+        'collection_refresh_started',
+        `source=search generation=${generation} rows=${this.rawGalleries.length}`,
+      )
     } else {
       this.isInitialLoading = true
       this.isRefreshing = false
@@ -271,16 +277,25 @@ export struct HomeSearchSubtabPage {
       }
       this.currentPage = 1
       this.totalPages = Math.max(1, result.totalPages)
+      refreshOutcome = 'success'
       GalleryListCacheRepository.save(this.context(), this.cacheKey(this.activeRevision), result.galleries)
         .catch((): void => {})
     } catch (error) {
       if (this.isCurrent(generation, profile.contentRevision())) {
         this.errorMessage = (error as Error).message || AppStrings.get('browse_load_failed')
+        refreshOutcome = 'error'
       }
     } finally {
       if (generation === this.requestGeneration) {
         this.isInitialLoading = false
         this.isRefreshing = false
+        if (keepUsableRows) {
+          DiagnosticLogger.info(
+            'collection',
+            'collection_refresh_settled',
+            `source=search generation=${generation} outcome=${refreshOutcome} rows=${this.rawGalleries.length}`,
+          )
+        }
       }
     }
   }
@@ -495,6 +510,7 @@ export struct HomeSearchSubtabPage {
       selectedGalleryId: this.homeGallerySelection.selectedGalleryId,
       presentationOverride: this.profile()?.presentationOverride() ?? null,
       isInitialLoading: this.isInitialLoading,
+      isRefreshing: this.isRefreshing,
       isLoadingMore: this.isLoadingMore,
       canLoadMore: this.canLoadMore(),
       errorMessage: this.errorMessage,

@@ -1,3 +1,32 @@
+## NextE migration-integrity gallery lane — 2026-08-22 (accepted on 237)
+
+- Target `192.168.50.237:12345` retained its existing data and account state.
+  The active lease was renewed, the wake gate read `AWAKE` with
+  `OverrideTimeout=86400000ms`, and current signed main plus ohosTest HAPs were
+  installed with `install -r`; no uninstall or data clear occurred.
+- The latest device suite completed `Tests run: 15, Failure: 0, Error: 0,
+  Pass: 15`. Cold start emitted `waterflow_columns_resolved` with an initial
+  `display` width of 440vp and measured width of 440vp, both resolving to two
+  columns. First creation of additional retained search pages emitted the same
+  paired `cached`/`measured` width and column result. This rejects the reported
+  stale fixed-two-column initialization mechanism on this viewport by runtime
+  calculation evidence, not screenshot inference.
+- The foreground Browse surface was semantically present after cold start;
+  repeated list scrolls and retained source switches kept native gallery cards
+  mounted. A sample taken while the non-secure lock screen owned input was
+  discarded, the lock was dismissed, and all interaction evidence above was
+  repeated against the foreground app.
+- Source comparison additionally established that all six Browse card
+  presentations share `GalleryThumbnail`; its loading and image-error branches
+  are mutually exclusive and its foreground request retains the NextE opacity
+  transition and default priority. Grid and Simple/List now carry the same
+  conditional-subtree reuse contract as their current NextE counterparts.
+- The app theme was switched through the native Interface page from its original
+  Follow system value to Dark and Light. Same-state Home captures showed the
+  cached trailing management glyph recolor in both directions while the
+  management button stayed present and clickable. Follow system was restored
+  before the run ended.
+
 ## Home/Favorites page-one cache — cold-start observation — 2026-08-16
 
 - After force-stop/cold start on 192.168.50.237:12345 (fresh lease, wake, AWAKE + OverrideTimeout=86400000ms gate, no data clear), foreground-confirmed `com.erosteam.nextn` cold started into Browse and painted the waterfall list with cached rows (tag chips visible). A semantic tap on the 收藏 tab then foregrounded the Favorites root and painted the cover-grid snapshot (GridItems with title/`#id`) without any full-page "正在检查账户会话" state.

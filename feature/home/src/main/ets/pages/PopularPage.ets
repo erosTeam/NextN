@@ -3,6 +3,7 @@ import {
   ActiveKeyState,
   ContentFilterService,
   ContentFilterState,
+  DiagnosticLogger,
   GalleryCollectionBody,
   HomeGallerySelectionState,
   HomeSubtabState,
@@ -148,6 +149,14 @@ export struct PopularPage {
     this.isInitialLoading = !keepsContent
     this.isRefreshing = keepsContent
     this.errorMessage = ''
+    let refreshOutcome: string = 'pending'
+    if (keepsContent) {
+      DiagnosticLogger.info(
+        'collection',
+        'collection_refresh_started',
+        `source=popular generation=${generation} rows=${this.rawGalleries.length}`,
+      )
+    }
     try {
       const tagTranslationRevision: number = this.tagTranslations.revision
       const galleries: NhGallerySummary[] = await NhApiClient.popular()
@@ -156,6 +165,7 @@ export struct PopularPage {
       }
       this.rawGalleries = galleries
       this.applyContentFilters()
+      refreshOutcome = 'success'
       if (tagTranslationRevision !== this.tagTranslations.revision) {
         this.refreshTagTranslationLabels()
       }
@@ -164,11 +174,19 @@ export struct PopularPage {
         return
       }
       this.errorMessage = (error as Error).message || AppStrings.get('popular_load_failed')
+      refreshOutcome = 'error'
     } finally {
       if (this.isCurrentRequest(generation)) {
         this.requestPending = false
         this.isInitialLoading = false
         this.isRefreshing = false
+        if (keepsContent) {
+          DiagnosticLogger.info(
+            'collection',
+            'collection_refresh_settled',
+            `source=popular generation=${generation} outcome=${refreshOutcome} rows=${this.rawGalleries.length}`,
+          )
+        }
       }
     }
   }
@@ -192,6 +210,7 @@ export struct PopularPage {
         : null,
       selectedGalleryId: this.sourceTab ? this.homeGallerySelection.selectedGalleryId : 0,
       isInitialLoading: this.isInitialLoading,
+      isRefreshing: this.isRefreshing,
       isLoadingMore: false,
       canLoadMore: false,
       errorMessage: this.errorMessage,

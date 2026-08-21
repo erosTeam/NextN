@@ -80,6 +80,7 @@ export {
   HOME_SUBTAB_PRESENTATION_GLOBAL,
   newHomeSubtabUuid,
 } from './model/NhHomeSubtabProfile'
+export { CollectionFooterState } from './model/CollectionFooterState'
 export {
   NhReaderBackgroundMode,
   NhReaderImageScalingQuality,
@@ -577,10 +578,10 @@ export { NextNModalScaffold } from './components/NextNModalScaffold'
 export { AppColorPicker } from './components/AppColorPicker'
 export { InlineRetryNotice } from './components/InlineRetryNotice'
 export { LoadingFooter } from './components/LoadingFooter'
-export { GalleryListItem } from './components/GalleryListItem'
+export { GalleryListItem, galleryListItemReuseId } from './components/GalleryListItem'
 export { GalleryMediumCard } from './components/GalleryMediumCard'
 export { GalleryCollectionBody } from './components/GalleryCollectionBody'
-export { GalleryGridCard } from './components/GalleryGridCard'
+export { GalleryGridCard, galleryGridReuseId } from './components/GalleryGridCard'
 export {
   GalleryLanguageCornerBadge,
   galleryLanguageCornerBadgeText,

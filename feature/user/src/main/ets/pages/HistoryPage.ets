@@ -1,5 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import {
+  CollectionFooterState,
+  DiagnosticLogger,
   HistoryRepository,
   HistoryCursor,
   HistoryPageResult,
@@ -237,6 +239,14 @@ export struct HistoryPage {
     this.isRefreshing = keepsRows
     this.errorMessage = ''
     this.loadMoreErrorMessage = ''
+    let refreshOutcome: string = 'pending'
+    if (keepsRows) {
+      DiagnosticLogger.info(
+        'collection',
+        'collection_refresh_started',
+        `source=history generation=${generation} rows=${this.items.length}`,
+      )
+    }
     try {
       const page: HistoryPageResult = await HistoryRepository.loadPage(
         this.context(),
@@ -250,12 +260,14 @@ export struct HistoryPage {
       this.resetDayGroups(page.items)
       this.cursor = page.nextCursor
       this.hasMore = page.hasMore
+      refreshOutcome = 'success'
       this.schedulePinnedDaySync()
     } catch (error) {
       if (!this.isCurrentRequest(generation)) {
         return
       }
       this.errorMessage = (error as Error).message || AppStrings.get('history_load_failed')
+      refreshOutcome = 'error'
       this.schedulePinnedDaySync()
     } finally {
       if (this.isCurrentRequest(generation)) {
@@ -263,6 +275,13 @@ export struct HistoryPage {
         this.isRefreshing = false
         this.historyLoaded = true
         this.observedHistoryRevision = requestedHistoryRevision
+        if (keepsRows) {
+          DiagnosticLogger.info(
+            'collection',
+            'collection_refresh_settled',
+            `source=history generation=${generation} outcome=${refreshOutcome} rows=${this.items.length}`,
+          )
+        }
         if (this.isVisible && this.history.revision !== requestedHistoryRevision) {
           this.reloadIfHistoryChanged()
         }
@@ -747,8 +766,18 @@ export struct HistoryPage {
     LoadingFooter({
       isLoading: this.isLoadingMore,
       isError: this.loadMoreErrorMessage.length > 0,
-      canLoadMore: this.hasMore,
-      isComplete: !this.hasMore && this.items.length > 0,
+      canLoadMore: CollectionFooterState.canOfferMore(
+        this.isRefreshing,
+        this.hasMore,
+        this.isLoadingMore,
+        this.loadMoreErrorMessage.length > 0,
+      ),
+      isComplete: this.items.length > 0 && CollectionFooterState.isComplete(
+        this.isRefreshing,
+        this.hasMore,
+        this.isLoadingMore,
+        this.loadMoreErrorMessage.length > 0,
+      ),
       errorMessage: this.loadMoreErrorMessage,
       onRetry: (): void => {
         this.retryLoadMore()

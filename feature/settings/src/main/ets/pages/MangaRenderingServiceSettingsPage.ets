@@ -1,5 +1,5 @@
 import { common } from '@kit.AbilityKit'
-import { SymbolGlyphModifier } from '@kit.ArkUI'
+import { KeyboardAvoidMode, SymbolGlyphModifier } from '@kit.ArkUI'
 import {
   AppStrings,
   MANGA_RENDERING_DETECTION_BALANCED,
@@ -49,7 +49,12 @@ export struct MangaRenderingServiceSettingsPage {
   private storedCredential: MangaRenderingServiceCredential = new MangaRenderingServiceCredential()
 
   aboutToAppear(): void {
+    this.getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.RESIZE)
     this.load()
+  }
+
+  aboutToDisappear(): void {
+    this.getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET)
   }
 
   private context(): common.UIAbilityContext {

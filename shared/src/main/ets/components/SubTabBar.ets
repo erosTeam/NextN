@@ -108,6 +108,17 @@ export struct SubTabBar {
     }
   }
 
+  private safeKeyPart(value: string): string {
+    const out: string = value.replace(/[^A-Za-z0-9_]/g, '_')
+    return out.length > 0 ? out : '_'
+  }
+
+  private tabRenderKey(tab: TabItem, index: number): string {
+    const label: string = typeof tab.label === 'string' ? tab.label : this.language.effectiveLocale
+    return `tab_${index}_${this.safeKeyPart(tab.key)}_${this.safeKeyPart(label)}_` +
+      `${this.safeKeyPart(`${tab.count}`)}_${this.safeKeyPart(tab.selectedColor)}`
+  }
+
   private updateTabLayout(index: number, area: Area): void {
     const width: number = area.width as number
     if (width <= 0) {
@@ -259,8 +270,7 @@ export struct SubTabBar {
               this.updateTabLayout(index, newValue)
             })
           }
-        }, (tab: TabItem, index: number): string =>
-          `${index}_${tab.key}_${tab.count}_${tab.selectedColor}_${tab.label}`)
+        }, (tab: TabItem, index: number): string => this.tabRenderKey(tab, index))
       }
       .listDirection(Axis.Horizontal)
       .onDidScroll((_scrollOffset: number, _scrollState: ScrollState): void => {

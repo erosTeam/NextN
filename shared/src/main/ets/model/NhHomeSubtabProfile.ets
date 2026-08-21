@@ -38,6 +38,31 @@ export class NhHomeSubtabProfile {
     return this.kind === NhHomeSubtabKind.SEARCH
   }
 
+  /**
+   * Built-in UUIDs are the authority for their request identity. Sync and old
+   * storage may carry stale editable fields, but those fields must never turn a
+   * built-in page into a search request or change its fixed query semantics.
+   * Presentation, visibility, position, clock and localized display name stay
+   * outside this normalization boundary.
+   */
+  normalizeBuiltinIdentity(): boolean {
+    let expectedKind: NhHomeSubtabKind
+    if (this.uuid === HOME_SUBTAB_LATEST_UUID) {
+      expectedKind = NhHomeSubtabKind.LATEST
+    } else if (this.uuid === HOME_SUBTAB_POPULAR_UUID) {
+      expectedKind = NhHomeSubtabKind.POPULAR
+    } else {
+      return false
+    }
+    const changed: boolean = this.kind !== expectedKind || this.query.length > 0 ||
+      this.language !== NhSearchLanguage.ALL || this.sort !== NhSearchSort.RECENT
+    this.kind = expectedKind
+    this.query = ''
+    this.language = NhSearchLanguage.ALL
+    this.sort = NhSearchSort.RECENT
+    return changed
+  }
+
   hasEffectiveSearch(): boolean {
     return this.query.trim().length > 0 ||
       this.language !== NhSearchLanguage.ALL ||

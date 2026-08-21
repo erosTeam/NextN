@@ -12,6 +12,7 @@ import {
 } from '../services/ImagePipelineTypes'
 import {
   GalleryLanguageCornerBadge,
+  galleryLanguageCornerBadgeText,
   LANGUAGE_BADGE_COMPACT_TEXT_CENTER_X_RATIO,
   LANGUAGE_BADGE_COMPACT_TEXT_CENTER_Y_RATIO,
 } from './GalleryLanguageCornerBadge'
@@ -23,12 +24,33 @@ const COVER_META_PAD_Y: number = 3
 const GRID_MIN_CONTAIN_SOURCE_RATIO: number = 0.8
 const GRID_MAX_CONTAIN_SOURCE_RATIO: number = 2.2
 
+// Reuse only cards whose conditional subtree shape matches. The cover may
+// add a contain-background layer, the metadata may add a heart, and the
+// language corner may add its badge text.
+export function galleryGridReuseId(gallery: NhGallerySummary): string {
+  let coverShape: string = 'cover'
+  if (gallery.thumbnailWidth > 0 && gallery.thumbnailHeight > 0) {
+    const sourceRatio: number = gallery.thumbnailHeight / gallery.thumbnailWidth
+    if (sourceRatio <= GRID_MIN_CONTAIN_SOURCE_RATIO || sourceRatio >= GRID_MAX_CONTAIN_SOURCE_RATIO) {
+      coverShape = 'contain'
+    }
+  }
+  const favoriteShape: string = gallery.uploadDate <= 0 && gallery.favoriteCount > 0
+    ? 'favorite'
+    : 'plain'
+  const languageShape: string = galleryLanguageCornerBadgeText(gallery.languageCode()).length > 0
+    ? 'language'
+    : 'no_language'
+  return `grid_${coverShape}_${favoriteShape}_${languageShape}`
+}
+
 /**
  * The default NextE browse card, adapted only at the data boundary for the
  * read-only NextN gallery DTO. It deliberately keeps a compact, cover-first
  * rhythm: metadata overlays the cover, while title and page count remain in a
  * fixed information block below it.
  */
+@ReusableV2
 @ComponentV2
 export struct GalleryGridCard {
   @Require @Param gallery: NhGallerySummary

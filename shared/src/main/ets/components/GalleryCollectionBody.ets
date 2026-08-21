@@ -5,9 +5,10 @@ import { BrowsePresentationState, connectBrowsePresentation } from '../state/Bro
 import { GalleryCoverPrefetcher } from '../services/GalleryCoverPrefetcher'
 import { requestGalleryCoverRetry } from '../state/GalleryCoverRetryState'
 import { ThemeTokens } from '../theme/ThemeTokens'
+import { CollectionFooterState } from '../model/CollectionFooterState'
 import { galleryCoverWallReuseId, GalleryCoverWallCard } from './GalleryCoverWallCard'
-import { GalleryGridCard } from './GalleryGridCard'
-import { GalleryListItem } from './GalleryListItem'
+import { galleryGridReuseId, GalleryGridCard } from './GalleryGridCard'
+import { galleryListItemReuseId, GalleryListItem } from './GalleryListItem'
 import { GalleryMediumCard } from './GalleryMediumCard'
 import { galleryWaterfallCompactReuseId, GalleryWaterfallCompactCard } from './GalleryWaterfallCompactCard'
 import { galleryWaterfallReuseId, GalleryWaterfallCard } from './GalleryWaterfallCard'
@@ -184,7 +185,12 @@ export struct GalleryCollectionBody {
     LoadingFooter({
       isLoading: this.isLoadingMore,
       isError: this.loadMoreErrorMessage.length > 0,
-      canLoadMore: !this.isRefreshing && this.canLoadMore && !this.isLoadingMore && this.loadMoreErrorMessage.length === 0,
+      canLoadMore: CollectionFooterState.canOfferMore(
+        this.isRefreshing,
+        this.canLoadMore,
+        this.isLoadingMore,
+        this.loadMoreErrorMessage.length > 0,
+      ),
       isComplete: this.isComplete(),
       loadingText: this.footerLoadingText,
       errorMessage: this.loadMoreErrorMessage,
@@ -192,7 +198,7 @@ export struct GalleryCollectionBody {
       completeText: this.footerCompleteText,
       // Page-one refresh may replace both the cursor and item count. Avoid
       // showing stale page progress while the caller still owns that request.
-      idleText: this.isRefreshing ? '' : this.footerIdleText,
+      idleText: CollectionFooterState.idleText(this.isRefreshing, this.footerIdleText),
       retryLabel: this.footerRetryLabel,
       onRetry: (): void => {
         this.requestRetryLoadMore()
@@ -204,7 +210,12 @@ export struct GalleryCollectionBody {
   }
 
   private isComplete(): boolean {
-    return !this.isRefreshing && !this.canLoadMore && !this.isLoadingMore && this.loadMoreErrorMessage.length === 0
+    return CollectionFooterState.isComplete(
+      this.isRefreshing,
+      this.canLoadMore,
+      this.isLoadingMore,
+      this.loadMoreErrorMessage.length > 0,
+    )
   }
 
   @Builder
@@ -228,7 +239,7 @@ export struct GalleryCollectionBody {
             onOpen: (galleryId: number): void => {
               this.openGallery(gallery.id, gallery)
             },
-          })
+          }).reuse({ reuseId: () => galleryListItemReuseId(gallery) })
         }
       }
     }, (gallery: NhGallerySummary): string => gallery.id.toString())
@@ -248,7 +259,7 @@ export struct GalleryCollectionBody {
           onOpen: (galleryId: number): void => {
             this.openGallery(gallery.id, gallery)
           },
-        })
+        }).reuse({ reuseId: () => galleryGridReuseId(gallery) })
       }
     }, (gallery: NhGallerySummary): string => gallery.id.toString())
     GridItem() {

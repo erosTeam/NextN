@@ -6,7 +6,6 @@ import {
   GalleryCoverRetryState,
 } from '../state/GalleryCoverRetryState'
 import {
-  EH_IMAGE_PRIORITY_LOW,
   EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
   EH_THUMBNAIL_READ_TIMEOUT_MS,
 } from '../services/ImagePipelineTypes'
@@ -91,7 +90,6 @@ export struct GalleryThumbnail {
           objectFit: this.objectFit,
           radius: this.radius,
           contentTransition: ContentTransitionType.OPACITY,
-          priority: EH_IMAGE_PRIORITY_LOW,
           maxRetries: THUMBNAIL_MAX_RETRIES,
           retryDelayMs: THUMBNAIL_RETRY_DELAY_MS,
           settleTimeoutMs: THUMBNAIL_SETTLE_TIMEOUT_MS,
