@@ -2,6 +2,7 @@ import { common } from '@kit.AbilityKit'
 import { relationalStore } from '@kit.ArkData'
 import { NhTag } from '../model/NhGallery'
 import { NhTagSuggestion } from '../model/NhTagSuggestion'
+import { NhTagQuery } from '../model/NhTagQuery'
 import { NhTagTranslationEntry, NhTagTranslationStatus } from '../model/NhTagTranslation'
 import { CacheStat } from '../services/CacheStat'
 import { connectTagTranslations } from '../state/TagTranslationState'
@@ -253,16 +254,24 @@ export class TagTranslationRepository {
     const boundedLimit: number = TagTranslationRepository.boundedSuggestionLimit(limit)
     const store: relationalStore.RdbStore = await LocalDataStore.open(context)
     const suggestions: NhTagSuggestion[] = []
+    const seen: Set<string> = new Set<string>()
     let rows: relationalStore.ResultSet | null = null
     try {
       rows = await store.querySql(SQL_SUGGEST_UNSCOPED, [pattern, pattern, boundedLimit])
       while (rows.goToNextRow()) {
         const suggestion: NhTagSuggestion = new NhTagSuggestion()
-        suggestion.namespace = TagTranslationRepository.stringColumn(rows, 'namespace')
+        // Match ErosN: EhTagTranslation's finer source namespace remains a
+        // storage detail. NH candidates use the canonical query type before
+        // they reach either Search or the Home-tab condition composer.
+        suggestion.namespace = TagTranslationRepository.normalizedNamespace(
+          TagTranslationRepository.stringColumn(rows, 'namespace'),
+        )
         suggestion.rawName = TagTranslationRepository.stringColumn(rows, 'raw_name')
         suggestion.displayName = TagTranslationRepository.stringColumn(rows, 'display_name')
+        const key: string = TagTranslationRepository.makeKey(suggestion.namespace, suggestion.rawName)
         if (suggestion.namespace.length > 0 && suggestion.rawName.length > 0 &&
-          suggestion.displayName.length > 0) {
+          suggestion.displayName.length > 0 && !seen.has(key)) {
+          seen.add(key)
           suggestions.push(suggestion)
         }
       }
@@ -286,7 +295,17 @@ export class TagTranslationRepository {
       return
     }
     const store: relationalStore.RdbStore = await LocalDataStore.open(context)
-    await store.executeSql(SQL_TOUCH_SUGGESTION, [Date.now(), normalizedNamespace, normalizedRawName])
+    const namespaces: string[] = [normalizedNamespace]
+    TagTranslationRepository.fallbackNamespaces(normalizedNamespace)
+      .forEach((fallback: string): void => {
+        if (namespaces.indexOf(fallback) < 0) {
+          namespaces.push(fallback)
+        }
+      })
+    const now: number = Date.now()
+    for (let index: number = 0; index < namespaces.length; index++) {
+      await store.executeSql(SQL_TOUCH_SUGGESTION, [now, namespaces[index], normalizedRawName])
+    }
   }
 
   static async replace(
@@ -457,25 +476,7 @@ export class TagTranslationRepository {
   }
 
   private static normalizedNamespace(type: string): string {
-    const normalized: string = type.trim().toLowerCase()
-    switch (normalized) {
-      case 'tags':
-        return 'tag'
-      case 'parodies':
-        return 'parody'
-      case 'characters':
-        return 'character'
-      case 'artists':
-        return 'artist'
-      case 'groups':
-        return 'group'
-      case 'languages':
-        return 'language'
-      case 'categories':
-        return 'category'
-      default:
-        return normalized
-    }
+    return NhTagQuery.canonicalNamespace(type)
   }
 
   private static normalizedRawName(name: string): string {

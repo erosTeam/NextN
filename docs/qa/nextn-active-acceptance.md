@@ -3495,3 +3495,16 @@ permitted in this repository.
   plus a successful current Favorites request. No uninstall or data clear
   occurred. No physical action remains for this bounded account-entry/login
   acceptance.
+
+### 237 NH tag namespace normalization accepted — 2026-08-21 +0800
+
+- The current signed package was installed in place on
+  `192.168.50.237:12345` after a fresh lease, wake, and `AWAKE` /
+  `OverrideTimeout=86400000ms` gate. No uninstall, data clear or account action
+  occurred.
+- In the existing custom-tab editor, the unified local composer rendered
+  `full color` as `tag:"full color"` with the translated subtitle `全彩`, while
+  retaining the separate quoted raw fallback. Adding the translated candidate
+  produced one active `tag:"full color" / 全彩 / 包含` condition and no
+  `other:` condition. The editor was exited without saving. No physical action
+  remains for this bounded namespace-normalization defect.

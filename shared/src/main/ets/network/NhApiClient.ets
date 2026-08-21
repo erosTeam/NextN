@@ -14,6 +14,7 @@ import {
 import { NhComment } from '../model/NhComment'
 import { NhAccountProfile } from '../model/NhAccountProfile'
 import { NhTagSuggestion } from '../model/NhTagSuggestion'
+import { NhTagQuery } from '../model/NhTagQuery'
 import { NhTagCatalogService } from '../services/NhTagCatalogService'
 import { NhCloudBlacklistService } from '../services/NhCloudBlacklistService'
 import { NhBrowserSessionVerificationOutcome } from '../model/NhBrowserSessionState'
@@ -782,38 +783,7 @@ export class NhApiClient {
   }
 
   private static autocompleteType(value: string): string {
-    const normalized: string = value.trim().toLowerCase()
-    switch (normalized) {
-      case 'tag':
-      case 'tags':
-      case 'female':
-      case 'male':
-      case 'mixed':
-      case 'other':
-        return 'tag'
-      case 'parody':
-      case 'parodies':
-        return 'parody'
-      case 'character':
-      case 'characters':
-        return 'character'
-      case 'artist':
-      case 'artists':
-      case 'cosplayer':
-        return 'artist'
-      case 'group':
-      case 'groups':
-        return 'group'
-      case 'language':
-      case 'languages':
-        return 'language'
-      case 'category':
-      case 'categories':
-      case 'reclass':
-        return 'category'
-      default:
-        return ''
-    }
+    return NhTagQuery.canonicalNamespace(value)
   }
 
   private static isSafeIssuedTorrentUrl(value: string): boolean {

@@ -38,6 +38,45 @@ authorize an edit, replace a device comparison, or define product completion.
   WaterFlow; established blocking empty/full-page errors and pagination footer
   behavior remain unchanged.
 
+## ACCEPTED — Local tag dictionary categories must normalize to NH query namespaces — 2026-08-21
+
+- **Latest user counter-evidence:** the unified condition composer exposed and
+  added `other:"full color"`, although NH does not provide that fine-grained
+  query namespace. The search matcher already has the NH compatibility
+  mapping, so copying NextE/EhTagTranslation category identity into submitted
+  text is incorrect.
+- **Source-proven cause and faulty assumption:** unscoped local suggestions
+  intentionally retain their EhTagTranslation source namespace for dictionary
+  lookup, while `NhTagQuery.formatExact()` deliberately bypasses the existing
+  `normalizeType()` mapping. Presentation and submission therefore leak
+  `female`, `male`, `mixed` and `other` instead of the NH `tag` namespace.
+- **ErosN source contract:** `singularizeTagType()` defines the seven NH
+  namespaces and maps only the EhTagTranslation attribute buckets to `tag`.
+  Its local translation-candidate builder normalizes the source bucket before
+  constructing `NhTag`, and its query insertion normalizes again before
+  emitting `type:name`. NextN follows both boundaries through one shared map;
+  artist, group, parody, character, language and category remain distinct.
+- **Whole parent tree and exact correction:** preserve the single condition
+  composer, local fuzzy matches, independent NH matcher, per-row add action,
+  raw fallback, active-condition include/exclude/delete actions and canonical
+  profile query ownership. Keep dictionary source namespaces internal for
+  translation lookup and recency. At the query/display leaf, normalize known
+  aliases through the same NH mapping used by gallery/search tag navigation;
+  e.g. `other:"full color"` becomes `tag:"full color"`. Do not invent or
+  expose NextE-only namespace choices.
+- **Verification boundary:** parser/model tests must cover every supported NH
+  namespace plus all four generic dictionary aliases, spaced names and
+  exclusion. On device, local `full color` may show its translation subtitle,
+  but its add candidate and active condition must use `tag:"full color"`.
+- **237 device evidence:** the signed package was installed in place with
+  `install-r`, without uninstall, data clear or account action. In the existing
+  custom-tab editor, entering `full color` in the unified local composer showed
+  the translated candidate `tag:"full color" / 全彩` and a separate quoted raw
+  fallback. Activating the candidate produced one current condition
+  `tag:"full color" / 全彩 / 包含`; the current layout contained zero `other:`
+  conditions. The editor was exited without saving, so the acceptance draft did
+  not mutate the stored custom tab.
+
 ## OPEN — Reader overlay must preserve Reader paging input — 2026-08-21
 
 - **Latest user counter-evidence:** after installing the build containing the
