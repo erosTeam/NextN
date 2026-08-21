@@ -73,6 +73,7 @@ export struct HomeSubtabEditPage {
   @Local saving: boolean = false
   @Param edit: HomeSubtabEditParams = new HomeSubtabEditParams()
   @Param scroller: Scroller = new Scroller()
+  @Param hideBackButton: boolean = false
   @Event onDone?: () => void
   private seeded: boolean = false
   private original: NhHomeSubtabProfile | null = null
@@ -549,6 +550,7 @@ export struct HomeSubtabEditPage {
       }
     }
     .titleBar(this.titleBar())
+    .hideBackButton(this.hideBackButton)
     .backgroundColor($r('sys.color.ohos_id_color_sub_background'))
   }
 }

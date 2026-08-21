@@ -178,6 +178,7 @@ export struct SearchPage {
   @Local tagSuggestions: NhTagSuggestion[] = []
   @Local isSuggestingTags: boolean = false
   @Param scroller: Scroller = new Scroller()
+  @Param hideBackButton: boolean = false
   @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
   @Event onCreateSubtab?: (params: HomeSubtabEditParams) => void
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
@@ -2319,7 +2320,7 @@ export struct SearchPage {
       hideStatusBar: false,
       mode: HideMode.SCROLL_UP,
     })
-    .hideBackButton(false)
+    .hideBackButton(this.hideBackButton)
     .bindToScrollable([this.scroller, this.suggestionScroller, this.historyScroller])
   }
 }

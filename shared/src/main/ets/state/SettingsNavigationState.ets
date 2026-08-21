@@ -67,14 +67,6 @@ export class SettingsNavigationState {
     }
   }
 
-  isFirstSecondaryDestination(name: string, pathStack: NavPathStack | null): boolean {
-    if (pathStack === null) {
-      return false
-    }
-    const pathNames: string[] = pathStack.getAllPathName()
-    return pathNames.length === 1 && pathNames[0] === name
-  }
-
   isRootSelected(name: string, isSplitMode: boolean): boolean {
     return isSplitMode && this.selectedRootRoute === name
   }

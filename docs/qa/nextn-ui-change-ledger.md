@@ -8833,3 +8833,60 @@ authorize an edit, replace a device comparison, or define product completion.
   including the corrected cached-page behavior. This closes the rejected
   first sample: cached snapshots remain immediate, while only a cache-miss
   network refinement is eligible for the title cross-fade.
+
+## ACCEPTED — Root split secondary back-control ownership — 2026-08-22
+
+- **Why newly actionable:** the user reports that a destination shown as the
+  only route in the tablet right pane still displays a back button, despite the
+  2026-08-17 correction that was meant to hide it. This is current
+  counter-evidence for that still-unverified split-layout boundary. The user
+  explicitly authorized rotating target `237` to exercise the physical split.
+- **Reference parent tree and state transition:** current NextE keeps one root
+  `HdsNavigation/NavPathStack`; HDS publishes resolved `NavigationMode.Split`.
+  Each secondary `HdsNavDestination` records from `NavDestinationContext.pathStack`
+  whether it is the sole route in the secondary branch, and combines that
+  reactive value with the reactive split mode for `hideBackButton`. Pushing a
+  child changes the branch depth and restores Back; popping to the sole
+  secondary entry hides it again.
+- **Faulty prior implementation and prevention rule:** commit `4123ac1` added
+  the visual condition only for settings destinations, but evaluated
+  `NavPathStack.getAllPathName()` directly during the entry component's build.
+  `NavPathStack` is an imperative command target rather than a reactive route
+  depth signal; after the transition, no `@Local/@Trace` value consumed by the
+  condition changed, so the initial visible Back state could remain. The
+  settings selection publication does not repair this because the Back helper
+  does not consume that property. Do not derive route chrome from an
+  unobserved stack read inside build.
+- **Whole parent-tree and sibling boundary:** preserve
+  `Index -> HdsNavigation(root stack) -> HdsNavDestination -> existing page`,
+  root tabs, split placeholder, pane widths, title bars, page scroll owners and
+  route actions. Review every destination hosted by this root stack, including
+  feature-owned Search, Gallery Comments, Gallery Web, subtab management/edit
+  and Torii result destinations; do not limit the fix to settings leaves or
+  alter the private Reader overlay stack.
+- **Exact correction:** the root navigation owner publishes one reactive
+  identity only when the current secondary branch contains exactly one route.
+  Every root-stack destination derives `hideBackButton` from that identity plus
+  the HDS-resolved split state. Feature-owned destination components receive
+  the same boolean as a presentation-only parameter. A child branch clears the
+  identity, and returning to the sole entry restores it.
+- **Verification plan:** review the exact diff, run V2 decorator inventory and
+  the signed build, resolve and lease user-selected `237`, pass the wake and
+  timeout gate, install with `-r`, rotate to a landscape viewport, and prove
+  `NavigationMode.Split` from current layout/state. In one continuous Settings
+  path, capture the sole right-pane destination with no Back, open a real child
+  with Back present, then return and verify Back is hidden again. Restore the
+  device orientation after the bounded scenario.
+- **Acceptance evidence:** signed build succeeded and HAP SHA-256
+  `1016cb0fd03ff9553e16879d061da189bd6a6f75f7171cccf950f2f78bf5a461`
+  was installed with `-r` on user-selected `192.168.50.237:12345`. The
+  DisplayManagerService motion command rotated the viewport from `1320×2120`
+  to `2120×1320`; current layout showed the primary pane ending at x=961 and a
+  separate right `NavigationContent [961,0][2120,1320]`, proving physical
+  split. With Interface as the sole secondary destination, its title bar had
+  no Button. The real Grid density child then exposed Back Button
+  `[1009,24][1129,144]`; activating it returned to Interface and the right
+  title-bar Button count returned to zero. The device was restored to
+  `1320×2120`; final PowerManager state remained `AWAKE` with
+  `OverrideTimeout=86400000ms`. Local raw layouts are retained under
+  `.hvigor/outputs/root-split-back-20260822T/` and excluded from Git.

@@ -3619,3 +3619,26 @@ permitted in this repository.
   `.hvigor/outputs/gallery-comments-674009-final-20260822T0434/` and excluded
   from Git. No physical acceptance action remains for this Comments/account
   transport lane.
+
+## Root split sole-destination Back control — accepted on 237 — 2026-08-22
+
+- Signed Debug HAP SHA-256
+  `1016cb0fd03ff9553e16879d061da189bd6a6f75f7171cccf950f2f78bf5a461`
+  was installed data-preservingly on explicitly selected
+  `192.168.50.237:12345` after live target resolution, lease, wake and the
+  `AWAKE` / `OverrideTimeout=86400000ms` gate. No uninstall, data clear,
+  account action or preference change occurred.
+- The DisplayManagerService motion command changed the app viewport from
+  portrait `1320×2120` to landscape `2120×1320`. Current layout showed the
+  root primary pane ending at x=961 and a distinct secondary
+  `NavigationContent [961,0][2120,1320]`, establishing the physical split
+  precondition.
+- Interface as the sole secondary route had no right title-bar Button. Opening
+  its real Grid density child produced Back Button `[1009,24][1129,144]`;
+  activating it returned to Interface and the right title-bar Button count was
+  again zero. This accepts the sole-entry → child → sole-entry state sequence,
+  not only one settled frame.
+- The device was restored to portrait `1320×2120`. Final PowerManager output
+  remained `AWAKE` with `OverrideTimeout=86400000ms`. Raw local layouts are
+  retained under `.hvigor/outputs/root-split-back-20260822T/` and excluded from
+  Git. No physical action remains for this bounded back-control defect.

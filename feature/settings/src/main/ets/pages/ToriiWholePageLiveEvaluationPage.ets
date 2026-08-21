@@ -19,6 +19,7 @@ export struct ToriiWholePageLiveEvaluationPage {
   @Local private report: ToriiWholePageLiveEvaluationReport =
     new ToriiWholePageLiveEvaluationReport();
   private layout: LayoutSafeAreaState = connectLayoutSafeArea()
+  @Param hideBackButton: boolean = false
 
   private elapsedText(value: number): string {
     return value >= 1000 ? `${(value / 1000).toFixed(1)} s` : `${value} ms`
@@ -121,6 +122,7 @@ export struct ToriiWholePageLiveEvaluationPage {
       .edgeEffect(EdgeEffect.Spring)
     }
     .titleBar(nextNHdsTitle($r('app.string.comic_torii_live_evaluation_result_title')))
+    .hideBackButton(this.hideBackButton)
     .backgroundColor($r('sys.color.ohos_id_color_sub_background'))
     .onReady((context: NavDestinationContext) => {
       const params = context.pathInfo.param as ToriiWholePageLiveEvaluationRouteParams

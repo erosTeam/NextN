@@ -20,6 +20,7 @@ import {
 export struct GalleryWebPage {
   @Param url: string = ''
   @Param title: string = ''
+  @Param hideBackButton: boolean = false
   @Local loading: boolean = true
   @Local controllerReady: boolean = false
   // Live <title> from the loaded page (onTitleReceive); falls back to the
@@ -196,6 +197,7 @@ export struct GalleryWebPage {
       .height('100%')
     }
     .titleBar(this.titleBarOpts())
+    .hideBackButton(this.hideBackButton)
     .backgroundColor($r('sys.color.ohos_id_color_sub_background'))
   }
 }

@@ -111,6 +111,7 @@ export struct GalleryCommentsPage {
     (comment: NhComment): string => comment.commentId.toString(),
   )
   @Param scroller: Scroller = new Scroller()
+  @Param hideBackButton: boolean = false
   /** A Detail-owned response seeds this route only after it was successfully fetched. */
   @Param commentSnapshot: NhComment[] = []
   @Param commentSnapshotAvailable: boolean = false
@@ -1178,7 +1179,7 @@ export struct GalleryCommentsPage {
       this.SettledCommentsPage()
     }
     .titleBar(nextNHdsTitle(AppStrings.get('title_comments')))
-    .hideBackButton(false)
+    .hideBackButton(this.hideBackButton)
     .bindToScrollable([this.scroller])
     .backgroundColor(ThemeTokens.SURFACE)
   }

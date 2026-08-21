@@ -377,6 +377,8 @@ struct Index {
   @Local private clipboardLink: NhClipboardLinkState = connectNhClipboardLink()
   @Local private galleryDirectLaunch: GalleryDirectLaunchState = connectGalleryDirectLaunch()
   @Local private loginRecoveryLaunch: LoginRecoveryLaunchState = connectLoginRecoveryLaunch()
+  /** Reactive chrome owner for the sole route in HDS's current secondary branch. */
+  @Local private rootFirstSecondaryRoute: string = ''
   // HDS keeps the scrollable reference it is bound to.  Rebind it explicitly
   // on every root-tab switch, as NextE does, rather than deriving a temporary
   // array value during build.
@@ -419,26 +421,38 @@ struct Index {
   private installRootNavigationStateTracking(): void {
     this.settingsNavigation.syncSecondaryBranch(this.stack)
     this.syncHomeGallerySelection(this.stack)
+    this.syncRootSecondaryBranch(this.stack)
     this.stack.setInterception({
-      willShow: (_from, _to, _operation, _animated): void => {
+      willShow: (_from, to, _operation, _animated): void => {
         this.cancelRandomGalleryRequest()
+        const secondaryBranch: NavPathStack | null = typeof to === 'string' ? null : to.pathStack
+        this.syncRootSecondaryBranch(secondaryBranch)
       },
       didShow: (_from, to, _operation, _animated): void => {
         this.rootNavigationEpoch += 1
         const secondaryBranch: NavPathStack | null = typeof to === 'string' ? null : to.pathStack
         this.settingsNavigation.syncSecondaryBranch(secondaryBranch)
         this.syncHomeGallerySelection(secondaryBranch)
+        this.syncRootSecondaryBranch(secondaryBranch)
       },
     })
   }
 
   /**
-   * NextE destination rule: in the physical split layout the first secondary
-   * destination has no parent route, so HDS must not show a back control.
+   * Publish route depth into V2 state. NavPathStack is an imperative command
+   * target, so reading it directly from a destination builder is not reactive.
    */
-  private settingsBackButtonHidden(name: string): boolean {
-    return this.layoutSafeArea.rootNavigationSplit &&
-      this.settingsNavigation.isFirstSecondaryDestination(name, this.stack)
+  private syncRootSecondaryBranch(pathStack: NavPathStack | null): void {
+    const pathNames: string[] = pathStack === null ? [] : pathStack.getAllPathName()
+    const nextRoute: string = pathNames.length === 1 ? pathNames[0] : ''
+    if (this.rootFirstSecondaryRoute !== nextRoute) {
+      this.rootFirstSecondaryRoute = nextRoute
+    }
+  }
+
+  /** NextE rule: the sole destination in a physical secondary pane has no parent. */
+  private rootDestinationBackButtonHidden(name: string): boolean {
+    return this.layoutSafeArea.rootNavigationSplit && this.rootFirstSecondaryRoute === name
   }
 
   aboutToDisappear(): void {
@@ -1772,6 +1786,7 @@ struct Index {
       initialQuery: this.searchParams(param).initialQuery,
       chrome: this.searchParams(param).chrome,
       scroller: this.searchScroller,
+      hideBackButton: this.rootDestinationBackButtonHidden(ROUTE_SEARCH),
       onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
         this.pushGallery(galleryId, seed)
       },
@@ -1785,6 +1800,7 @@ struct Index {
   private homeSubtabManagerDestination() {
     HomeSubtabManagerPage({
       scroller: this.homeSubtabManagerScroller,
+      hideBackButton: this.rootDestinationBackButtonHidden(ROUTE_HOME_SUBTAB_MANAGER),
       onCreate: (): void => {
         this.pushHomeSubtabEdit(new HomeSubtabEditParams())
       },
@@ -1799,6 +1815,7 @@ struct Index {
     HomeSubtabEditPage({
       edit: this.homeSubtabEditParams(param),
       scroller: this.homeSubtabEditScroller,
+      hideBackButton: this.rootDestinationBackButtonHidden(ROUTE_HOME_SUBTAB_EDIT),
       onDone: (): void => {
         this.stack.pop()
       },
@@ -1816,7 +1833,7 @@ struct Index {
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('title_popular')))
-    .hideBackButton(false)
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_POPULAR))
     .bindToScrollable([this.popularScroller])
   }
 
@@ -1858,7 +1875,7 @@ struct Index {
     // Gallery's semantic title lives in its header first, then hands off to
     // HDS after the header scrolls away.
     .titleBar(this.galleryTitleBar(this.galleryParams(param)))
-    .hideBackButton(false)
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_GALLERY))
     .bindToScrollable([this.galleryScroller])
   }
 
@@ -1870,6 +1887,7 @@ struct Index {
     GalleryWebPage({
       url: this.galleryWebParams(param).url,
       title: this.galleryWebParams(param).title,
+      hideBackButton: this.rootDestinationBackButtonHidden(ROUTE_GALLERY_WEB),
     })
   }
 
@@ -1969,7 +1987,7 @@ struct Index {
       })
     }
     .titleBar(this.thumbnailsTitleBar(this.thumbnailParams(param)))
-    .hideBackButton(false)
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_THUMBNAILS))
     .bindToScrollable([this.thumbnailScroller])
   }
 
@@ -1980,6 +1998,7 @@ struct Index {
       scroller: this.commentsScroller,
       commentSnapshot: this.galleryParams(param).commentSnapshot,
       commentSnapshotAvailable: this.galleryParams(param).commentSnapshotAvailable,
+      hideBackButton: this.rootDestinationBackButtonHidden(ROUTE_COMMENTS),
     })
   }
 
@@ -1995,7 +2014,7 @@ struct Index {
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_account')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_BROWSER_SESSION))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_BROWSER_SESSION))
   }
 
   @Builder
@@ -2011,7 +2030,7 @@ struct Index {
       })
     }
     .titleBar(this.accountTitleBar())
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_ACCOUNT))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_ACCOUNT))
   }
 
   /**
@@ -2043,7 +2062,7 @@ struct Index {
       ContentFiltersPage({ scroller: this.contentFiltersScroller })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('title_content_filters')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_CONTENT_FILTERS))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_CONTENT_FILTERS))
     .bindToScrollable([this.contentFiltersScroller])
   }
 
@@ -2059,7 +2078,7 @@ struct Index {
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_layout')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_LAYOUT_SETTINGS))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_LAYOUT_SETTINGS))
     .bindToScrollable([this.layoutSettingsScroller])
   }
 
@@ -2072,7 +2091,7 @@ struct Index {
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_browse')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_BROWSE_SETTINGS))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_BROWSE_SETTINGS))
     .bindToScrollable([this.browseSettingsScroller])
   }
 
@@ -2085,7 +2104,7 @@ struct Index {
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_search')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_SEARCH_SETTINGS))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_SEARCH_SETTINGS))
     .bindToScrollable([this.searchSettingsScroller])
   }
 
@@ -2098,7 +2117,7 @@ struct Index {
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_browse_column_width')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_BROWSE_DENSITY_SETTINGS))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_BROWSE_DENSITY_SETTINGS))
     .bindToScrollable([this.browseDensitySettingsScroller])
   }
 
@@ -2114,7 +2133,7 @@ struct Index {
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_reader')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_READER_SETTINGS))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_READER_SETTINGS))
     .bindToScrollable([this.readerSettingsScroller])
   }
 
@@ -2124,7 +2143,7 @@ struct Index {
       ReaderSuperResolutionModelsPage({ scroller: this.readerSuperResolutionModelsScroller })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_reader_enhancement_models')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_READER_SUPER_RESOLUTION_MODELS))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_READER_SUPER_RESOLUTION_MODELS))
     .bindToScrollable([this.readerSuperResolutionModelsScroller])
     .backgroundColor(ThemeTokens.SURFACE)
   }
@@ -2140,7 +2159,7 @@ struct Index {
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('llm_sources_title')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_LLM_SOURCE_MANAGER))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_LLM_SOURCE_MANAGER))
     .bindToScrollable([this.translationSourceScroller])
   }
 
@@ -2156,7 +2175,7 @@ struct Index {
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('llm_source_detail_title')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_LLM_SOURCE_DETAIL))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_LLM_SOURCE_DETAIL))
     .bindToScrollable([this.translationSourceScroller])
   }
 
@@ -2166,7 +2185,7 @@ struct Index {
       MangaRenderingServiceSettingsPage({ scroller: this.mangaRenderingServiceScroller })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_manga_rendering_service')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_MANGA_RENDERING_SERVICE))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_MANGA_RENDERING_SERVICE))
     .bindToScrollable([this.mangaRenderingServiceScroller])
   }
 
@@ -2176,7 +2195,7 @@ struct Index {
       SettingsPage({ surface: SettingsSurface.DOWNLOAD, scroller: this.downloadSettingsScroller })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_download')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_DOWNLOAD_SETTINGS))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_DOWNLOAD_SETTINGS))
     .bindToScrollable([this.downloadSettingsScroller])
   }
 
@@ -2192,7 +2211,7 @@ struct Index {
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_cache')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_CACHE_SETTINGS))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_CACHE_SETTINGS))
     .bindToScrollable([this.cacheSettingsScroller])
   }
 
@@ -2207,7 +2226,7 @@ struct Index {
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_sync')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_SYNC_SETTINGS))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_SYNC_SETTINGS))
     .bindToScrollable([this.syncSettingsScroller])
   }
 
@@ -2217,7 +2236,7 @@ struct Index {
       WebDavSyncSettingsPage({ scroller: this.webDavSyncSettingsScroller })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('sync_webdav')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_WEBDAV_SYNC_SETTINGS))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_WEBDAV_SYNC_SETTINGS))
     .bindToScrollable([this.webDavSyncSettingsScroller])
   }
 
@@ -2245,7 +2264,7 @@ struct Index {
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_advanced')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_ADVANCED_SETTINGS))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_ADVANCED_SETTINGS))
     .bindToScrollable([this.advancedSettingsScroller])
   }
 
@@ -2255,7 +2274,7 @@ struct Index {
       TagTranslationSettingsPage({ scroller: this.tagTranslationSettingsScroller })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_tag_translation_title')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_TAG_TRANSLATION_SETTINGS))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_TAG_TRANSLATION_SETTINGS))
     .bindToScrollable([this.tagTranslationSettingsScroller])
   }
 
@@ -2270,7 +2289,7 @@ struct Index {
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_comment_translation')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_COMMENT_TRANSLATION_SETTINGS))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_COMMENT_TRANSLATION_SETTINGS))
     .bindToScrollable([this.commentTranslationSettingsScroller])
   }
 
@@ -2294,13 +2313,15 @@ struct Index {
       })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_reader_comic_translation')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_COMIC_TRANSLATION_SETTINGS))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_COMIC_TRANSLATION_SETTINGS))
     .bindToScrollable([this.comicTranslationSettingsScroller])
   }
 
   @Builder
   private toriiWholePageLiveEvaluationDestination(_param: Object) {
-    ToriiWholePageLiveEvaluationPage()
+    ToriiWholePageLiveEvaluationPage({
+      hideBackButton: this.rootDestinationBackButtonHidden(ROUTE_TORII_WHOLE_PAGE_LIVE_EVALUATION),
+    })
   }
 
   @Builder
@@ -2309,7 +2330,7 @@ struct Index {
       AboutPage({ scroller: this.aboutScroller })
     }
     .titleBar(nextNHdsTitle(AppStrings.get('settings_about')))
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_ABOUT))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_ABOUT))
     .bindToScrollable([this.aboutScroller])
   }
 
@@ -2325,7 +2346,7 @@ struct Index {
       })
     }
     .titleBar(this.historyDestinationTitleBar())
-    .hideBackButton(this.settingsBackButtonHidden(ROUTE_HISTORY))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_HISTORY))
     .bindToScrollable([this.historyScroller])
     .backgroundColor(ThemeTokens.SURFACE)
   }
@@ -2565,6 +2586,7 @@ struct Index {
           }
           this.settingsNavigation.clearRootLocation()
           this.clearHomeGallerySelection()
+          this.syncRootSecondaryBranch(this.stack)
         }
         this.activeTab = index
         this.titleScroller = index === 0 ? this.homeActiveScroller : this.rootTabScrollers[index]

@@ -18,6 +18,7 @@ export struct HomeSubtabManagerPage {
   @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
   @Local visibilityRevision: number = 0
   @Param scroller: Scroller = new Scroller()
+  @Param hideBackButton: boolean = false
   @Event onCreate?: () => void
   @Event onEdit?: (uuid: string) => void
 
@@ -205,6 +206,7 @@ export struct HomeSubtabManagerPage {
       }
     }
     .titleBar(this.titleBar())
+    .hideBackButton(this.hideBackButton)
     .backgroundColor($r('sys.color.ohos_id_color_sub_background'))
   }
 }

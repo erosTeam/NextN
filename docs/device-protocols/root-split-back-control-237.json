@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-root-split-back-control-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/root-split-back-protocol-20260822T",
+  "display": {
+    "widthPx": 2120,
+    "heightPx": 1320
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "1016cb0fd03ff9553e16879d061da189bd6a6f75f7171cccf950f2f78bf5a461",
+    "page": "root-split-interface-grid-density-back-control",
+    "orientation": "landscape",
+    "resolution": "2120x1320",
+    "notes": "Start on Browse. Rotate into HDS Split, open My and Interface, enter Grid density, return to the sole Interface destination, then restore portrait. Coordinates are from the accepted 237 layout."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "verify-awake-override",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "force-stop-nextn",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    },
+    {
+      "name": "launch-nextn",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"]
+    },
+    {
+      "name": "rotate-landscape",
+      "hdcArgs": ["shell", "hidumper", "-s", "DisplayManagerService", "-a", "-motion,1"]
+    },
+    {
+      "name": "split-precondition",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/dev/null", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-my-tab",
+        "uiInput": ["click", "777", "1206"],
+        "pauseAfterMs": 500,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "open-interface-root",
+        "uiInput": ["click", "240", "690"],
+        "pauseAfterMs": 500,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "reveal-grid-density",
+        "uiInput": ["swipe", "1600", "1100", "1600", "450", "3000"],
+        "pauseAfterMs": 500,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "open-grid-density-child",
+        "uiInput": ["click", "1600", "260"],
+        "pauseAfterMs": 500,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "return-to-sole-interface-root",
+        "uiInput": ["click", "1069", "84"],
+        "pauseAfterMs": 800,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "final-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/dev/null", "-a"]
+    },
+    {
+      "name": "restore-portrait",
+      "hdcArgs": ["shell", "hidumper", "-s", "DisplayManagerService", "-a", "-motion,0"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}
