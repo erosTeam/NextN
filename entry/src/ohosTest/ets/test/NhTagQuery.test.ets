@@ -29,5 +29,18 @@ export default function nhTagQueryTest(): void {
       expect(NhTagQuery.formatExact('rows', 'full color')).assertEqual('')
       done()
     })
+
+    it('maps NH namespaces to every compatible translation bucket', 0, (done: Function) => {
+      expect(NhTagQuery.translationNamespaces('tag').join(','))
+        .assertEqual('tag,female,male,mixed,other')
+      expect(NhTagQuery.translationNamespaces('artist').join(','))
+        .assertEqual('artist,cosplayer')
+      expect(NhTagQuery.translationNamespaces('category').join(','))
+        .assertEqual('category,reclass')
+      expect(NhTagQuery.translationNamespaces('group').join(','))
+        .assertEqual('group')
+      expect(NhTagQuery.translationNamespaces('rows').length).assertEqual(0)
+      done()
+    })
   })
 }

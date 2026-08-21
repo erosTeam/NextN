@@ -3520,3 +3520,17 @@ permitted in this repository.
   independent trailing delete button still present. No draft input or save was
   used, so the observation covers the persisted current-condition path. No
   physical action remains for this bounded subtitle defect.
+
+### 237 translated NH tag matching accepted — 2026-08-21 +0800
+
+- The signed HAP was installed in place on `192.168.50.237:12345` after exact
+  target resolution, a fresh device lease, wake and the required `AWAKE` /
+  `OverrideTimeout=86400000ms` gate. No uninstall, data clear or account action
+  occurred.
+- In the existing custom-tab editor's scoped `NH 标签匹配` field, Chinese input
+  `全彩` returned exactly one canonical `tag:"full color"` row with translated
+  subtitle `标签:全彩`. English input `full col` then exercised the local
+  dictionary plus NH API overlap and still rendered exactly one canonical
+  `tag:"full color" / 标签:全彩` result, ahead of the independent raw fallback.
+  The editor was exited without saving. No physical action remains for this
+  bounded matching defect.

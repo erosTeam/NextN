@@ -38,6 +38,46 @@ authorize an edit, replace a device comparison, or define product completion.
   WaterFlow; established blocking empty/full-page errors and pagination footer
   behavior remain unchanged.
 
+## ACCEPTED — NH-scoped tag matching must merge translated local and remote results — 2026-08-21
+
+- **Latest user counter-evidence:** the `NH 标签匹配` field no longer finds
+  tags by Chinese translation, and its result list does not reliably expose
+  translated matches. A namespace selection currently narrows only the NH API
+  request; the already-downloaded translation dictionary is not queried at all.
+- **Source-proven cause and reference:** `loadTagMatches()` calls only
+  `NhApiClient.tagSuggestions()` and performs dictionary lookup afterward for
+  those remote rows. It never calls the existing scoped dictionary suggestion
+  path. ErosN merges local translated-name matches with NH autocomplete and
+  deduplicates on normalized type plus raw name. NextN's local scope expansion
+  already covers `tag -> female/male/mixed/other` and
+  `category -> reclass`, but omits the established
+  `artist -> cosplayer` alias.
+- **Whole parent tree and exact correction:** preserve
+  `HomeSubtabEditPage -> SearchAdvancedConditionInputs -> NH 标签匹配 grouped
+  section -> type row -> stable TextInput -> result rows`, its IME-resize owner,
+  per-row add buttons, raw fallback and query mutation callbacks. Centralize
+  the NH-to-dictionary namespace set beside `NhTagQuery.canonicalNamespace`;
+  launch scoped local and NH API matching from the same input epoch, translate
+  remote-only rows, then merge local-first using canonical namespace plus
+  lowercase raw name. The row keeps its raw canonical query as the primary
+  title and shows localized namespace plus translated body as the subtitle.
+- **Visible states and verification boundary:** cover Chinese dictionary-only
+  input, English local/remote overlap, remote-only results, no-match raw
+  fallback, loading, stale epoch and duplicate identities. On a signed
+  data-preserving install on 237, selecting 标签 and entering a known Chinese
+  translation must show a canonical `tag:` result with a translated subtitle;
+  an English query with overlapping local/remote data must not render duplicate
+  canonical rows. Build and source checks remain supplementary.
+- **237 device evidence:** the signed HAP was installed with `install-r` after
+  resolving the exact connected target and confirming `AWAKE` with
+  `OverrideTimeout=86400000ms`; no uninstall, data clear, account action or
+  saved profile mutation occurred. In the existing custom-tab editor's
+  `NH 标签匹配` field, Chinese input `全彩` produced exactly one canonical
+  `tag:"full color"` row with subtitle `标签:全彩`. English input `full col`
+  exercised the local/remote overlap and likewise produced exactly one
+  `tag:"full color" / 标签:全彩` row, followed by the independent raw fallback.
+  The editor was exited without saving.
+
 ## ACCEPTED — Current tag conditions must include the localized namespace — 2026-08-21
 
 - **Reopened user counter-evidence:** after namespace normalization was accepted,

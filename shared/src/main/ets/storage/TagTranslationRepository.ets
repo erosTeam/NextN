@@ -15,8 +15,6 @@ const MAX_LOOKUP_KEYS_PER_QUERY: number = 200
 const INSERT_BATCH_SIZE: number = 500
 const MAX_SUGGESTIONS: number = 12
 const MAX_SUGGESTION_PREFIX_LENGTH: number = 128
-const TAG_FALLBACK_NAMESPACES: string[] = ['female', 'male', 'mixed', 'other']
-const CATEGORY_FALLBACK_NAMESPACES: string[] = ['reclass']
 const SQL_COUNT: string = 'SELECT COUNT(*) AS count FROM tag_translations'
 const SQL_SELECT_META: string = 'SELECT value FROM tag_translation_meta WHERE key = ? LIMIT 1'
 const SQL_LOOKUP_PREFIX: string =
@@ -163,9 +161,9 @@ export class TagTranslationRepository {
   }
 
   /**
-   * Finds a bounded, namespace-scoped raw-name prefix in the local dictionary.
-   * This deliberately does not search display names or cross namespaces: those
-   * would turn a keystroke into a broad scan on a large optional dictionary.
+   * Finds a bounded, namespace-scoped raw-name or translated-name match in the
+   * local dictionary. CJK input uses contains matching so a translated label
+   * remains discoverable even when its meaningful word is not the first glyph.
    */
   static async suggest(
     context: common.UIAbilityContext,
@@ -184,18 +182,18 @@ export class TagTranslationRepository {
     }
     const boundedLimit: number = TagTranslationRepository.boundedSuggestionLimit(limit)
     const store: relationalStore.RdbStore = await LocalDataStore.open(context)
-    const like: string = `${TagTranslationRepository.escapeLike(normalizedPrefix)}%`
+    const escaped: string = TagTranslationRepository.escapeLike(normalizedPrefix)
+    const like: string = TagTranslationRepository.containsCjk(normalizedPrefix)
+      ? `%${escaped}%`
+      : `${escaped}%`
     // The on-device dictionary stores EhTagTranslation namespaces: a NH
     // "tag" lives across female/male/mixed/other, and "category" under
     // reclass. Lookup already expands these fallbacks; suggestion must use
     // the same expansion or every scoped prefix silently misses.
-    const namespaces: string[] = [normalizedNamespace]
-    TagTranslationRepository.fallbackNamespaces(normalizedNamespace)
-      .forEach((fallback: string): void => {
-        if (namespaces.indexOf(fallback) < 0) {
-          namespaces.push(fallback)
-        }
-      })
+    const namespaces: string[] = NhTagQuery.translationNamespaces(normalizedNamespace)
+    if (namespaces.length === 0) {
+      return []
+    }
     const namespaceSlots: string = namespaces.map((): string => '?').join(', ')
     const suggestSql: string =
       'SELECT namespace, raw_name, display_name FROM tag_translations ' +
@@ -484,13 +482,8 @@ export class TagTranslationRepository {
   }
 
   private static fallbackNamespaces(namespace: string): string[] {
-    if (namespace === 'tag') {
-      return TAG_FALLBACK_NAMESPACES.slice()
-    }
-    if (namespace === 'category') {
-      return CATEGORY_FALLBACK_NAMESPACES.slice()
-    }
-    return []
+    return NhTagQuery.translationNamespaces(namespace)
+      .filter((candidate: string): boolean => candidate !== namespace)
   }
 
   private static containsCjk(value: string): boolean {

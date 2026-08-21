@@ -71,6 +71,30 @@ export class NhTagQuery {
     }
   }
 
+  /**
+   * Maps one NH query namespace to every EhTagTranslation storage namespace
+   * that can represent it. Keep this beside canonicalNamespace() so scoped
+   * matching, translation lookup and submitted queries cannot drift apart.
+   */
+  static translationNamespaces(rawNamespace: string): string[] {
+    const namespace: string = NhTagQuery.canonicalNamespace(rawNamespace)
+    switch (namespace) {
+      case 'tag':
+        return ['tag', 'female', 'male', 'mixed', 'other']
+      case 'artist':
+        return ['artist', 'cosplayer']
+      case 'category':
+        return ['category', 'reclass']
+      case 'parody':
+      case 'character':
+      case 'group':
+      case 'language':
+        return [namespace]
+      default:
+        return []
+    }
+  }
+
   private static formatParts(type: string, rawName: string): string {
     const name: string = rawName.trim()
     // ErosN has no proven escaping rule for a quote inside a tag name. Do not

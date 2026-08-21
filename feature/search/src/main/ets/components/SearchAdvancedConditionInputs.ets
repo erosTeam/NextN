@@ -472,23 +472,33 @@ export struct SearchAdvancedConditionInputs {
   }
 
   private async loadTagMatches(prefix: string, epoch: number): Promise<void> {
-    // This is the explicit NH matcher. Local unscoped discovery lives in the
-    // unified condition composer above; keeping the sources separate makes a
-    // namespaced server match distinct from an unscoped local translation hit.
+    // This remains explicitly NH-namespace scoped, but the selected namespace
+    // applies to both the local translation dictionary and the remote API.
     const context: common.UIAbilityContext =
       this.getUIContext().getHostContext() as common.UIAbilityContext
-    let matches: NhTagSuggestion[] = []
-    try {
-      matches = await NhApiClient.tagSuggestions(
-        this.tagNamespace,
-        prefix,
-        ADVANCED_TAG_SUGGESTION_LIMIT,
-      )
-    } catch (_error) {}
+    const localPromise: Promise<NhTagSuggestion[]> = TagTranslationRepository.suggest(
+      context,
+      this.tagNamespace,
+      prefix,
+      ADVANCED_TAG_SUGGESTION_LIMIT,
+    ).catch((_error: Error): NhTagSuggestion[] => [])
+    const onlinePromise: Promise<NhTagSuggestion[]> = NhApiClient.tagSuggestions(
+      this.tagNamespace,
+      prefix,
+      ADVANCED_TAG_SUGGESTION_LIMIT,
+    ).catch((_error: Error): NhTagSuggestion[] => [])
+    const localMatches: NhTagSuggestion[] = await localPromise
     if (epoch !== this.tagMatchEpoch) {
       return
     }
-    const untranslated: NhTag[] = matches
+    if (localMatches.length > 0) {
+      this.tagMatches = this.mergeTagMatches(localMatches, [])
+    }
+    const onlineMatches: NhTagSuggestion[] = await onlinePromise
+    if (epoch !== this.tagMatchEpoch) {
+      return
+    }
+    const untranslated: NhTag[] = onlineMatches
       .filter((item: NhTagSuggestion): boolean => item.displayName.trim().length === 0)
       .map((item: NhTagSuggestion): NhTag => {
         const tag: NhTag = new NhTag()
@@ -500,7 +510,7 @@ export struct SearchAdvancedConditionInputs {
       try {
         const translations: Map<string, string> =
           await TagTranslationRepository.lookup(context, untranslated)
-        matches.forEach((item: NhTagSuggestion): void => {
+        onlineMatches.forEach((item: NhTagSuggestion): void => {
           if (item.displayName.trim().length === 0) {
             const tag: NhTag = new NhTag()
             tag.type = item.namespace
@@ -516,8 +526,33 @@ export struct SearchAdvancedConditionInputs {
     if (epoch !== this.tagMatchEpoch) {
       return
     }
-    this.tagMatches = matches
+    this.tagMatches = this.mergeTagMatches(localMatches, onlineMatches)
     this.isMatchingTags = false
+  }
+
+  private mergeTagMatches(
+    localMatches: NhTagSuggestion[],
+    onlineMatches: NhTagSuggestion[],
+  ): NhTagSuggestion[] {
+    const merged: NhTagSuggestion[] = []
+    const seen: Set<string> = new Set<string>()
+    const candidates: NhTagSuggestion[] = localMatches.concat(onlineMatches)
+    for (let index: number = 0; index < candidates.length; index++) {
+      const candidate: NhTagSuggestion = candidates[index]
+      const namespace: string = NhTagQuery.canonicalNamespace(candidate.namespace)
+      const rawName: string = candidate.rawName.trim()
+      const key: string = `${namespace}\u001f${rawName.toLowerCase()}`
+      if (namespace.length === 0 || rawName.length === 0 || seen.has(key)) {
+        continue
+      }
+      seen.add(key)
+      candidate.namespace = namespace
+      merged.push(candidate)
+      if (merged.length >= ADVANCED_TAG_SUGGESTION_LIMIT) {
+        break
+      }
+    }
+    return merged
   }
 
   @Builder
@@ -704,8 +739,8 @@ export struct SearchAdvancedConditionInputs {
   }
 
   private suggestionTranslatedLabel(suggestion: NhTagSuggestion): string {
-    const translated: string = suggestion.displayName.trim()
-    return translated.length > 0 && translated !== suggestion.rawName
+    const translated: string = NhTagSuggestionDisplay.localizedTitle(suggestion)
+    return suggestion.displayName.trim().length > 0 && suggestion.displayName.trim() !== suggestion.rawName
       ? translated
       : ''
   }
