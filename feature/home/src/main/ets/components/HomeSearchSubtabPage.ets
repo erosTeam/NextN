@@ -22,12 +22,15 @@ import {
   NhSearchSort,
   NhTagCatalogService,
   RootRefreshRegistry,
+  SafeModeGate,
+  SafeModeState,
   TagTranslationState,
   ThemeTokens,
   connectContentFilters,
   connectHomeGallerySelection,
   connectHomeSource,
   connectHomeSubtabs,
+  connectSafeMode,
   connectTagTranslations,
 } from 'shared'
 
@@ -44,6 +47,7 @@ export struct HomeSearchSubtabPage {
   @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
   @Local homeSource: HomeSourceState = connectHomeSource()
   @Local homeGallerySelection: HomeGallerySelectionState = connectHomeGallerySelection()
+  @Local safeMode: SafeModeState = connectSafeMode()
   // Retained pages mount before their first activation. Until cache hydration
   // or page one settles, zero rows mean "not loaded yet", never "empty".
   @Local isInitialLoading: boolean = true
@@ -191,6 +195,18 @@ export struct HomeSearchSubtabPage {
     this.refreshTagTranslationLabels()
   }
 
+  @Monitor('safeMode.unlocked')
+  onSafeModeChanged(): void {
+    this.requestGeneration += 1
+    this.activeRevision = ''
+    if (this.loadedOnce && this.isActive()) {
+      const profile: NhHomeSubtabProfile | null = this.profile()
+      if (profile !== null && profile.isSearch()) {
+        this.loadFirstPage(profile.copy(), false)
+      }
+    }
+  }
+
   private async loadOnceWithCachedRows(profile: NhHomeSubtabProfile): Promise<void> {
     const cacheKey: string = this.cacheKey(profile.contentRevision())
     try {
@@ -200,7 +216,7 @@ export struct HomeSearchSubtabPage {
         const labeled: NhGallerySummary[] = await NhTagCatalogService.refreshLocalDisplayLabels(cached)
         if (this.loadedOnce && this.rawGalleries.length === 0 &&
           this.profileRevision() === profile.contentRevision()) {
-          this.rawGalleries = labeled
+          this.rawGalleries = SafeModeGate.safeRows(labeled)
           this.applyContentFilters()
           this.currentPage = 1
           this.totalPages = 1
@@ -218,15 +234,15 @@ export struct HomeSearchSubtabPage {
   }
 
   private cacheKey(revision: string): string {
-    return `home:subtab:v1:${this.sourceKey}:${revision}`
+    return SafeModeGate.safeCacheScope(`home:subtab:v1:${this.sourceKey}:${revision}`)
   }
 
   private effectiveQuery(profile: NhHomeSubtabProfile): string {
     const trimmed: string = profile.query.trim()
-    if (trimmed.length === 0) {
-      return profile.language === NhSearchLanguage.ALL ? '' : `language:${profile.language}`
-    }
-    return NhSearchOptions.queryWithLanguage(trimmed, profile.language)
+    const profileQuery: string = trimmed.length === 0
+      ? (profile.language === NhSearchLanguage.ALL ? '' : `language:${profile.language}`)
+      : NhSearchOptions.queryWithLanguage(trimmed, profile.language)
+    return SafeModeGate.safeQuery(profileQuery)
   }
 
   private requestPage(page: number): Promise<NhGalleryPageResult> {
@@ -270,7 +286,7 @@ export struct HomeSearchSubtabPage {
       if (!this.isCurrent(generation, profile.contentRevision())) {
         return
       }
-      this.rawGalleries = result.galleries
+      this.rawGalleries = SafeModeGate.safeRows(result.galleries)
       this.applyContentFilters()
       if (translationRevision !== this.tagTranslations.revision) {
         this.refreshTagTranslationLabels()
@@ -278,7 +294,7 @@ export struct HomeSearchSubtabPage {
       this.currentPage = 1
       this.totalPages = Math.max(1, result.totalPages)
       refreshOutcome = 'success'
-      GalleryListCacheRepository.save(this.context(), this.cacheKey(this.activeRevision), result.galleries)
+      GalleryListCacheRepository.save(this.context(), this.cacheKey(this.activeRevision), this.rawGalleries)
         .catch((): void => {})
     } catch (error) {
       if (this.isCurrent(generation, profile.contentRevision())) {
@@ -340,7 +356,7 @@ export struct HomeSearchSubtabPage {
       if (!this.isCurrent(generation, revision)) {
         return
       }
-      this.appendUnique(result.galleries)
+      this.appendUnique(SafeModeGate.safeRows(result.galleries))
       if (translationRevision !== this.tagTranslations.revision) {
         this.refreshTagTranslationLabels()
       }
@@ -439,7 +455,7 @@ export struct HomeSearchSubtabPage {
       if (!this.isCurrent(generation, profile.contentRevision())) {
         return false
       }
-      this.rawGalleries = result.galleries
+      this.rawGalleries = SafeModeGate.safeRows(result.galleries)
       this.applyContentFilters()
       this.currentPage = page
       this.totalPages = Math.max(1, result.totalPages)

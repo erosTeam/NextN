@@ -32,6 +32,12 @@ ok('unlock state is restored from a default-false device-local preference',
     /state\.unlocked = SAFE_MODE_BUILD_ENABLED && unlocked/.test(settings))
 
 const gate = read('shared/src/main/ets/safe/SafeModeGate.ets')
+ok('review restriction intersects requests, filters rows, and scopes caches',
+  gate.includes("SAFE_MODE_QUERY: string = 'tag:non-h'") &&
+    /static safeQuery\(query: string\): string/.test(gate) &&
+    /static safeRows\(rows: NhGallerySummary\[\]\): NhGallerySummary\[\]/.test(gate) &&
+    /tag\.name\.trim\(\)\.toLowerCase\(\)\.indexOf\(SAFE_MODE_TAG_FRAGMENT\) >= 0/.test(gate) &&
+    /static safeCacheScope\(value: string\): string/.test(gate))
 for (const blocked of [
   'search',
   'homeSubtabManager',
@@ -57,12 +63,40 @@ const index = read('entry/src/main/ets/pages/Index.ets')
 ok('restricted root projects Browse, Downloads, and Settings only',
   /return this\.safeMode\.restricted\(\) \? 3 : 4/.test(index) &&
     /if \(!this\.safeMode\.restricted\(\)\) \{[\s\S]*FavoritesPage/.test(index))
+ok('restricted Browse preserves the pinned Home source bar but removes title actions',
+  /logicalTab === 0 && this\.safeMode\.restricted\(\)[\s\S]*homeSourceBottomBuilder\(\)[\s\S]*emptyHdsMenu\(\)/.test(index))
 ok('static router map enforces the route gate',
   /if \(!SafeModeGate\.routeAllowed\(name\)\)/.test(index))
 
+const sourceBar = read('entry/src/main/ets/components/HomeSourceBar.ets')
+ok('restricted source bar preserves every visible subtab and hides only its manager',
+  /homeSubtabs\.visibleProfiles\(\)\.forEach/.test(sourceBar) &&
+    !sourceBar.includes('safeProfile()') &&
+    /if \(!this\.safeMode\.restricted\(\)\)[\s\S]*requestManageSubtabs\(\)/.test(sourceBar))
+
 const home = read('feature/home/src/main/ets/pages/HomePage.ets')
-ok('restricted Browse does not mount the retained NH request owner',
-  /if \(this\.safeMode\.restricted\(\)\)[\s\S]*safe_mode_browse_message[\s\S]*else[\s\S]*RetainedSubtabHost/.test(home))
+ok('restricted Browse preserves the complete retained source-key parent tree',
+  /homeSubtabs\.visibleProfiles\(\)\.forEach/.test(home) &&
+    /RetainedSubtabHost\(\{/.test(home) &&
+    !home.includes('SAFE_MODE_PROFILE_UUID') &&
+    !home.includes('safe_mode_browse_message'))
+
+const searchSubtab = read('feature/home/src/main/ets/components/HomeSearchSubtabPage.ets')
+ok('every custom search subtab applies safe query, row, cache, and toggle-reload gates',
+  /SafeModeGate\.safeQuery\(profileQuery\)/.test(searchSubtab) &&
+    /SafeModeGate\.safeRows\(result\.galleries\)/.test(searchSubtab) &&
+    /SafeModeGate\.safeCacheScope/.test(searchSubtab) &&
+    /@Monitor\('safeMode\.unlocked'\)/.test(searchSubtab))
+
+ok('Latest and Popular retain their tabs while using safe request and row gates',
+  /SafeModeGate\.safeQuery\(query\)/.test(home) &&
+    /SafeModeGate\.safeRows\(result\.galleries\)/.test(home) &&
+    /@Monitor\('safeMode\.unlocked'\)/.test(home))
+const popular = read('feature/home/src/main/ets/pages/PopularPage.ets')
+ok('Popular maps the retained tab to a Non-H popular search in restricted mode',
+  /SafeModeGate\.restricted\(\)[\s\S]*SafeModeGate\.safeQuery\(''\)[\s\S]*NhSearchSort\.POPULAR_ALL_TIME/.test(popular) &&
+    /SafeModeGate\.safeRows\(galleries\)/.test(popular) &&
+    /@Monitor\('safeMode\.unlocked'\)/.test(popular))
 
 const about = read('feature/settings/src/main/ets/pages/AboutPage.ets')
 ok('About version has a persisted five-tap lock toggle',
@@ -80,7 +114,7 @@ for (const locale of ['base', 'zh_CN', 'en_US', 'ja_JP']) {
   ok(`${locale} contains all safe-mode messages`,
     keys.has('safe_mode_unlocked') &&
       keys.has('safe_mode_locked') &&
-      keys.has('safe_mode_browse_message'))
+      !keys.has('safe_mode_browse_message'))
 }
 
 if (failures > 0) {

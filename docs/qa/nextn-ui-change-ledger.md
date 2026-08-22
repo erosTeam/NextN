@@ -8891,7 +8891,7 @@ authorize an edit, replace a device comparison, or define product completion.
   `OverrideTimeout=86400000ms`. Local raw layouts are retained under
   `.hvigor/outputs/root-split-back-20260822T/` and excluded from Git.
 
-## OPEN — SAFE_MODE global restricted shell — 2026-08-22
+## ACCEPTED — SAFE_MODE global restricted shell — 2026-08-22
 
 - **Why newly actionable:** the user explicitly requested implementing a
   NextE-style `SAFE_MODE` after the current-source audit confirmed that NextN
@@ -8949,3 +8949,94 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Unresolved risk:** no device is selected in the current request, so root-tab
   reprojection, hidden routes, five-tap persistence and the restricted Browse
   empty state remain unaccepted on device even after source/build validation.
+- **User correction and rejected assumption — 2026-08-22:** the user clarified
+  that `SAFE_MODE` is an app-review delivery mode, so a blank Browse landing
+  defeats the requested outcome. The first 237 run is retained as
+  counter-evidence, not acceptance: its locked cold start showed the three-tab
+  shell but only the message “安全模式开启时无法使用在线浏览”. After the five-tap
+  unlock, the same current device exposed the existing working `Non-H` Home
+  subtab and ordinary cards. The faulty assumption was treating the absence of
+  NextE's E-Hentai category bit as proof that NH had no safe content leaf; it
+  ignored NextN's real `tag:` search grammar and retained search-subtab owner.
+  Impact: the review build was technically restricted but unusable for review.
+  Prevention: a cross-product data-leaf difference must be traced through the
+  current service query contract before declaring the reference leaf
+  unsupported; device-visible safe candidates are counter-evidence to an empty
+  replacement.
+- **Corrected before/after:** preserve the same restricted root, route and
+  settings gates, but replace the empty Browse leaf with one non-persisted,
+  built-in review profile: stable UUID, label `Non-H`, anonymous query
+  `tag:non-h`, recent sort and the existing retained Search-subtab
+  request/cache/rendering chain. Locked mode mounts only that profile and keeps
+  NextE's pinned single-profile `Non-H` SubTabBar, while hiding its manager and
+  every layout/search/random action. Unlock still
+  restores the complete persisted Home profile tree; relock immediately
+  returns to the review profile without overwriting the user's profile order,
+  selection or data.
+- **Corrected verification boundary:** rebuild and data-preservingly reinstall
+  the SAFE_MODE package on selected 237 while it remains locked; require a cold
+  launch with Browse cards rather than the rejected empty message, the same
+  three root tabs, one pinned `Non-H` subtab with no manager or trailing Browse
+  actions, and current visual
+  review of the rendered review feed. Then open one card and verify the native
+  detail path remains usable without exposing a blocked account/search route.
+- **Second user correction — 2026-08-22:** the first corrected 237 package
+  loaded real `tag:non-h` cards, but the SubTabBar was absent. Direct current
+  NextE comparison shows that its Gallery title branch always installs
+  `HomeSourceBar` as the HDS `bottomBuilder`, including restricted mode;
+  `HomeSourceBar` always renders `SubTabBar` and hides only the manager button.
+  The NextN omission came from locally replacing that whole restricted title
+  branch with an empty menu. The correction must preserve this parent-tree
+  ownership exactly: restricted Browse keeps `homeSourceBottomBuilder()`, the
+  bar projects only the review profile, and only the trailing manager/actions
+  disappear.
+- **Third user correction — 2026-08-22:** the user rejected the remaining
+  assumption that NextE SAFE_MODE has only one `Non-H` subtab. The two
+  single-profile statements above are retained as rejected history and are
+  superseded by this contract. They came from reading the original
+  `safeProfile()` leaf without tracing the later reference correction.
+  Current NextE commit `8bfb53ee` explicitly removes the restricted
+  single-profile branches from `HomeSourceBar`, `HomePage` and
+  `GallerySourcePage`: the full visible profile list, retained page tree,
+  selection and subtab transitions remain. Its safety boundary is instead in
+  `GalleryListViewModel`, where every request receives the Non-H category
+  exclusion mask, response/cache rows are filtered to `Non-H`, safe caches use
+  a separate scope, and lock-state changes reload retained pages.
+- **Replacement implementation contract:** NextN likewise preserves every
+  visible Home subtab, including Latest, Popular, starter and user-created
+  profiles, and hides only the manager affordance. Each anonymous NH request
+  is intersected with `tag:non-h`: Latest retains its language/sort, Popular
+  uses the existing all-time popular sort, and search profiles retain their own
+  query/language/sort. All three page owners filter resolved rows to the
+  `non-h` tag, isolate safe caches, and reload on the persisted lock toggle. A
+  synthetic safe-only UUID, one-tab projection, or disabled subtab selection
+  is now explicit counter-contract evidence.
+- **Chinese copy correction scope — 2026-08-22:** after a read-only pass over
+  all 1,047 `zh_CN` entries, edit only ten source-comparable translation
+  defects authorized by the user: five `returned`-style empty states, the
+  literal `public catalog` sentence, untranslated `Reader`, Chinese ellipsis
+  and question-mark punctuation, and `Image processing` mistranslated as
+  `制图方式`. Preserve deliberate names, product terminology, community terms
+  and stylistic wording; in particular `橘黄黄` is intentional and unchanged.
+- **Final 237 acceptance — 2026-08-22:** the final signed
+  `NEXTN_SAFE_MODE=1` HAP, including the bounded ten-string Chinese correction,
+  built successfully and was installed on explicitly selected
+  `192.168.50.237:12345` with `install -r`; no uninstall or data clear
+  occurred. A process-cold launch foregrounded `com.erosteam.nextn` and kept
+  the locked three-root-tab projection. At the current `1320x2120` portrait
+  viewport, all seven existing Home subtabs remained visible; Popular and the
+  existing language-qualified profile were each selected during the bounded
+  run. The old restricted empty message was absent, and the retained WaterFlow
+  rendered eight card items with five visible images. Earlier current-device
+  runs additionally observed non-empty Latest, Popular and Chinese-profile
+  results after the per-request Non-H intersection; the Chinese-profile sample
+  visibly retained a `non-h` tag while preserving its language condition.
+  Selecting a card from the final cold-start package opened one native
+  `NavDestination` with the existing detail tag and preview sections, six
+  image nodes and 23 clickable nodes, rather than a Web or empty substitute.
+  Raw layouts are retained under
+  `.hvigor/outputs/safe-mode-237-20260822T1052/` and excluded from Git. The
+  rejected blank-Browse, missing-SubTabBar and synthetic-single-subtab samples
+  remain counter-evidence only. Final PowerManager readback remained `AWAKE`
+  with `OverrideTimeout=86400000ms`; no physical action remains for this
+  bounded SAFE_MODE review path.

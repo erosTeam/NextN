@@ -9,15 +9,21 @@ import {
   HomeSubtabState,
   NextNPullRefreshController,
   NhApiClient,
+  NhGalleryPageResult,
   NhGallerySummary,
+  NhSearchOptions,
+  NhSearchSort,
   NhTagCatalogService,
   RootRefreshRegistry,
+  SafeModeGate,
+  SafeModeState,
   TagTranslationState,
   ThemeTokens,
   HOME_SOURCE_SELECTOR_HEIGHT,
   connectContentFilters,
   connectHomeGallerySelection,
   connectHomeSubtabs,
+  connectSafeMode,
   connectTagTranslations,
 } from 'shared'
 
@@ -41,6 +47,7 @@ export struct PopularPage {
   @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local homeGallerySelection: HomeGallerySelectionState = connectHomeGallerySelection()
   @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
+  @Local safeMode: SafeModeState = connectSafeMode()
   // Retained pages mount before their first activation. Until the first
   // request settles, zero rows mean "not loaded yet", never "empty".
   @Local isInitialLoading: boolean = true
@@ -121,6 +128,15 @@ export struct PopularPage {
     this.refreshTagTranslationLabels()
   }
 
+  @Monitor('safeMode.unlocked')
+  onSafeModeChanged(): void {
+    this.requestGeneration += 1
+    this.requestPending = false
+    if (this.loadedOnce) {
+      this.loadPopular()
+    }
+  }
+
   private applyContentFilters(): void {
     this.galleries = ContentFilterService.filterGalleries(this.rawGalleries)
   }
@@ -159,11 +175,21 @@ export struct PopularPage {
     }
     try {
       const tagTranslationRevision: number = this.tagTranslations.revision
-      const galleries: NhGallerySummary[] = await NhApiClient.popular()
+      let galleries: NhGallerySummary[]
+      if (SafeModeGate.restricted()) {
+        const result: NhGalleryPageResult = await NhApiClient.search(
+          SafeModeGate.safeQuery(''),
+          1,
+          NhSearchOptions.sortValue(NhSearchSort.POPULAR_ALL_TIME),
+        )
+        galleries = result.galleries
+      } else {
+        galleries = await NhApiClient.popular()
+      }
       if (!this.isCurrentRequest(generation)) {
         return
       }
-      this.rawGalleries = galleries
+      this.rawGalleries = SafeModeGate.safeRows(galleries)
       this.applyContentFilters()
       refreshOutcome = 'success'
       if (tagTranslationRevision !== this.tagTranslations.revision) {

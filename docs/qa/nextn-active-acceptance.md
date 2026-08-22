@@ -3642,3 +3642,27 @@ permitted in this repository.
   remained `AWAKE` with `OverrideTimeout=86400000ms`. Raw local layouts are
   retained under `.hvigor/outputs/root-split-back-20260822T/` and excluded from
   Git. No physical action remains for this bounded back-control defect.
+
+## SAFE_MODE review path — accepted on 237 — 2026-08-22
+
+- The final signed `NEXTN_SAFE_MODE=1` HAP was installed with `install -r` on
+  explicitly selected `192.168.50.237:12345`; no uninstall or data clear
+  occurred. A process-cold launch foregrounded `com.erosteam.nextn` at the
+  current `1320x2120` portrait viewport.
+- Locked mode kept exactly three root tabs while preserving all seven existing
+  Home subtabs. Popular and the existing language-qualified profile were each
+  selected during the bounded run. The retained Home WaterFlow rendered eight
+  card items with five visible images; the rejected restricted empty message
+  was absent. Current device samples for Latest, Popular and that profile all
+  remained non-empty after the Non-H request intersection and response gate.
+- Selecting a final-package card opened the native Gallery Detail destination
+  with its tag and preview sections, six image nodes and 23 clickable nodes.
+  This accepts the locked review path from the restricted root into real
+  native content; blocked-route behavior is not broadened beyond the existing
+  source gate by this observation.
+- Raw layouts are retained under
+  `.hvigor/outputs/safe-mode-237-20260822T1052/` and excluded from Git. The
+  earlier blank-Browse, missing-subtab and synthetic-single-subtab packages are
+  rejected counter-evidence. Final PowerManager readback remained `AWAKE` with
+  `OverrideTimeout=86400000ms`. No physical action remains for this bounded
+  SAFE_MODE acceptance lane.

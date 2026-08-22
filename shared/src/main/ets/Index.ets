@@ -20,7 +20,10 @@ export {
 export { HomeTabAutoHideState, connectHomeTabAutoHide } from './state/HomeTabAutoHideState'
 export { SafeModeState, connectSafeMode } from './state/SafeModeState'
 export { SAFE_MODE_BUILD_ENABLED } from './safe/SafeModeBuildFlag'
-export { SafeModeGate } from './safe/SafeModeGate'
+export {
+  SAFE_MODE_QUERY,
+  SafeModeGate,
+} from './safe/SafeModeGate'
 export { CoverBackgroundState, connectCoverBackground } from './state/CoverBackgroundState'
 export { GalleryTitleState, connectGalleryTitle } from './state/GalleryTitleState'
 export { SearchTranslationState, connectSearchTranslation } from './state/SearchTranslationState'

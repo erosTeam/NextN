@@ -33,12 +33,12 @@ import {
   NhSearchOptions,
   NhSearchSort,
   NextNModalScaffold,
-  PageEmptyState,
   RootRefreshRegistry,
   RetainedSubtabHost,
   SubtabTransitionState,
   SUBTAB_TRANSITION_SCOPE_HOME,
   ThemeTokens,
+  SafeModeGate,
   SafeModeState,
   connectCatalogPreferences,
   connectContentFilters,
@@ -85,6 +85,7 @@ export struct LatestSourcePage {
   @Local contentFilters: ContentFilterState = connectContentFilters()
   @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local catalogPreferences: CatalogPreferencesState = connectCatalogPreferences()
+  @Local safeMode: SafeModeState = connectSafeMode()
   // Retained pages mount before their first activation. Until cache hydration
   // or page one settles, zero rows mean "not loaded yet", never "empty".
   @Local isInitialLoading: boolean = true
@@ -201,7 +202,7 @@ export struct LatestSourcePage {
         const labeled: NhGallerySummary[] = await NhTagCatalogService.refreshLocalDisplayLabels(cached)
         if (this.loadedOnce && this.rawGalleries.length === 0 &&
           this.homeCacheKey() === cacheKey) {
-          this.rawGalleries = labeled
+          this.rawGalleries = SafeModeGate.safeRows(labeled)
           this.applyContentFilters()
           this.currentPage = 1
           this.totalPages = 1
@@ -214,7 +215,9 @@ export struct LatestSourcePage {
   }
 
   private homeCacheKey(): string {
-    return `home:v1:${this.sourceKey}:${this.catalogPreferences.browseLanguage}:${this.catalogPreferences.browseSort}`
+    return SafeModeGate.safeCacheScope(
+      `home:v1:${this.sourceKey}:${this.catalogPreferences.browseLanguage}:${this.catalogPreferences.browseSort}`,
+    )
   }
 
   @Monitor('active.activeKey')
@@ -252,6 +255,14 @@ export struct LatestSourcePage {
   @Monitor('catalogPreferences.browseRevision')
   onBrowseCatalogPreferencesChanged(): void {
     this.reloadForCatalogPreferences()
+  }
+
+  @Monitor('safeMode.unlocked')
+  onSafeModeChanged(): void {
+    this.requestGeneration += 1
+    if (this.loadedOnce) {
+      this.loadFirstPage(false)
+    }
   }
 
   private applyContentFilters(): void {
@@ -310,11 +321,11 @@ export struct LatestSourcePage {
     language: NhSearchLanguage,
     sort: NhSearchSort,
   ): Promise<NhGalleryPageResult> {
-    if (language === NhSearchLanguage.ALL && sort === NhSearchSort.RECENT) {
+    if (!SafeModeGate.restricted() && language === NhSearchLanguage.ALL && sort === NhSearchSort.RECENT) {
       return NhApiClient.latest(page)
     }
     return NhApiClient.search(
-      NhSearchOptions.queryWithLanguage(query, language),
+      NhSearchOptions.queryWithLanguage(SafeModeGate.safeQuery(query), language),
       page,
       NhSearchOptions.sortValue(sort),
     )
@@ -358,7 +369,7 @@ export struct LatestSourcePage {
       if (!this.isCurrentRequest(generation)) {
         return
       }
-      this.rawGalleries = result.galleries
+      this.rawGalleries = SafeModeGate.safeRows(result.galleries)
       this.applyContentFilters()
       if (tagTranslationRevision !== this.tagTranslations.revision) {
         this.refreshTagTranslationLabels()
@@ -366,7 +377,7 @@ export struct LatestSourcePage {
       this.currentPage = 1
       this.totalPages = Math.max(1, result.totalPages)
       refreshOutcome = 'success'
-      GalleryListCacheRepository.save(this.context(), this.homeCacheKey(), result.galleries)
+      GalleryListCacheRepository.save(this.context(), this.homeCacheKey(), this.rawGalleries)
         .catch((): void => {})
     } catch (error) {
       if (!this.isCurrentRequest(generation)) {
@@ -454,7 +465,7 @@ export struct LatestSourcePage {
       if (!this.isCurrentRequest(generation)) {
         return false
       }
-      this.rawGalleries = result.galleries
+      this.rawGalleries = SafeModeGate.safeRows(result.galleries)
       this.applyContentFilters()
       this.currentPage = page
       this.totalPages = Math.max(1, result.totalPages)
@@ -545,7 +556,7 @@ export struct LatestSourcePage {
       if (!this.isCurrentRequest(generation)) {
         return
       }
-      this.appendUnique(result.galleries)
+      this.appendUnique(SafeModeGate.safeRows(result.galleries))
       if (tagTranslationRevision !== this.tagTranslations.revision) {
         this.refreshTagTranslationLabels()
       }
@@ -799,7 +810,6 @@ function homeSubtabKind(key: string): NhHomeSubtabKind {
  */
 @ComponentV2
 export struct HomePage {
-  @Local safeMode: SafeModeState = connectSafeMode()
   @Local homeSource: HomeSourceState = connectHomeSource()
   @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
   @Local visual: HomeSourceVisualIndexState = connectHomeSourceVisualIndex()
@@ -832,7 +842,7 @@ export struct HomePage {
   /** HDS title actions cannot anchor a Menu; the retained Home host owns it. */
   @Monitor('homeSource.layoutMenuRequestSeq')
   onLayoutMenuRequested(): void {
-    if (!this.safeMode.restricted() && this.homeSource.layoutMenuRequestSeq > 0) {
+    if (this.homeSource.layoutMenuRequestSeq > 0) {
       this.layoutMenuShown = true
     }
   }
@@ -885,59 +895,51 @@ export struct HomePage {
   }
 
   build() {
-    if (this.safeMode.restricted()) {
-      Column() {
-        PageEmptyState({ message: AppStrings.get('safe_mode_browse_message') })
-      }
-      .width('100%')
-      .height('100%')
-    } else {
-      Stack({ alignContent: Alignment.TopEnd }) {
-        RetainedSubtabHost({
-          keys: this.sourceKeys(),
-          selectedKey: this.selectedKey(),
-          subtabTransition: this.subtabTransition,
-          transitionScope: SUBTAB_TRANSITION_SCOPE_HOME,
-          pageBuilder: homeSourcePageBuilder,
-          onSelectKey: (key: string): void => {
-            HomeSubtabSettings.setSelected(this.context(), key).catch((): void => {})
-          },
-          onVisualIndex: (value: number): void => {
-            this.visual.value = value
-          },
-          onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
-            if (this.onOpenGallery) {
-              this.onOpenGallery(galleryId, seed)
-            }
-          },
-          onScrollerReady: (scroller: Scroller): void => {
-            if (this.onScrollerReady) {
-              this.onScrollerReady(scroller)
-            }
-          },
-          onDidScroll: (offset: number, state: ScrollState): void => {
-            if (this.onDidScroll) {
-              this.onDidScroll(offset, state)
-            }
-          },
-        })
-          .width('100%')
-          .height('100%')
-        // A 1vp non-hit-testable anchor lets the title-bar command open a
-        // native menu without adding a visible control or changing page layout.
-        Row()
-          .width(1)
-          .height(1)
-          .hitTestBehavior(HitTestMode.None)
-          .bindMenu(this.layoutMenuShown, this.LayoutMenu, appMenuOptions({
-            placement: Placement.BottomRight,
-            onDisappear: (): void => {
-              this.layoutMenuShown = false
-            },
-          }))
-      }
+    Stack({ alignContent: Alignment.TopEnd }) {
+      RetainedSubtabHost({
+        keys: this.sourceKeys(),
+        selectedKey: this.selectedKey(),
+        subtabTransition: this.subtabTransition,
+        transitionScope: SUBTAB_TRANSITION_SCOPE_HOME,
+        pageBuilder: homeSourcePageBuilder,
+        onSelectKey: (key: string): void => {
+          HomeSubtabSettings.setSelected(this.context(), key).catch((): void => {})
+        },
+        onVisualIndex: (value: number): void => {
+          this.visual.value = value
+        },
+        onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
+          if (this.onOpenGallery) {
+            this.onOpenGallery(galleryId, seed)
+          }
+        },
+        onScrollerReady: (scroller: Scroller): void => {
+          if (this.onScrollerReady) {
+            this.onScrollerReady(scroller)
+          }
+        },
+        onDidScroll: (offset: number, state: ScrollState): void => {
+          if (this.onDidScroll) {
+            this.onDidScroll(offset, state)
+          }
+        },
+      })
         .width('100%')
         .height('100%')
+      // A 1vp non-hit-testable anchor lets the title-bar command open a
+      // native menu without adding a visible control or changing page layout.
+      Row()
+        .width(1)
+        .height(1)
+        .hitTestBehavior(HitTestMode.None)
+        .bindMenu(this.layoutMenuShown, this.LayoutMenu, appMenuOptions({
+          placement: Placement.BottomRight,
+          onDisappear: (): void => {
+            this.layoutMenuShown = false
+          },
+        }))
     }
+      .width('100%')
+      .height('100%')
   }
 }

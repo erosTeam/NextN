@@ -1475,6 +1475,7 @@ struct Index {
     const content: Record<string, Object> = { 'title': title }
     const logicalTab: number = this.logicalTabForPhysical(this.activeTab)
     if (logicalTab === 0 && this.safeMode.restricted()) {
+      content['bottomBuilder'] = this.homeSourceBottomBuilder()
       content['menu'] = this.emptyHdsMenu()
     } else if (logicalTab === 0) {
       content['bottomBuilder'] = this.homeSourceBottomBuilder()
