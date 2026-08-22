@@ -3763,3 +3763,18 @@ permitted in this repository.
   download -> cold-start Reader -> restore scan -> task removal sequence from
   the OPEN UI ledger entry. Do not substitute the earlier sandbox scan or a
   different device as acceptance.
+- Re-entry on 2026-08-23 used lease `20260822-204228-1b30e29a`. The apparent
+  TCP `Connected` row was first disproved by task commands and HDC's own log:
+  the old daemon retained a 237 TCP socket but had no alive 237 session. After
+  terminating that exact stale daemon, starting the official server, and
+  rerunning the lease-wrapped `tconn` outside the Codex network sandbox, 237
+  returned `Connect OK`; `shell echo` and `bootevent.boot.completed=true`
+  then passed. The display was `AWAKE`, but `SCBScreenLock` still owned focus.
+  Both `uitest uiInput swipe` and the device's bounded `uinput -T -m` fallback
+  left the same lock screen unchanged, including attempts from screenshot-
+  confirmed neutral background bounds. Temporary lock-screen captures were
+  removed from host and device. The device was re-woken and given a temporary
+  `OverrideTimeout=86400000ms` guard while awaiting the physical unlock. No
+  install or app action occurred. The next physical action is a manual
+  non-secure unlock on 237; after that, repeat the final timeout write/readback
+  without repeating source or build work.
