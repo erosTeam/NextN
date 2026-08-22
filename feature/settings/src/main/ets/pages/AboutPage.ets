@@ -10,12 +10,17 @@ import {
   NextNListRow,
   NextNSectionHeader,
   ReleaseNotesPager,
+  SafeModeSettings,
+  SafeModeState,
   SecondaryListScaffold,
   ThemeTokens,
+  connectSafeMode,
 } from 'shared'
 
 @ComponentV2
 export struct AboutPage {
+  @Local safeMode: SafeModeState = connectSafeMode()
+  @Local safeModeTapCount: number = 0
   @Local appVersion: string = ''
   @Local updateChecking: boolean = false;
   @Local updateChecked: boolean = false;
@@ -69,6 +74,26 @@ export struct AboutPage {
     this.getUIContext().getPromptAction()
       .openToast({ message: message })
       .catch((_error: Error) => {})
+  }
+
+  private onVersionTap(): void {
+    if (!this.safeMode.buildEnabled) {
+      return
+    }
+    this.safeModeTapCount += 1
+    if (this.safeModeTapCount < 5) {
+      return
+    }
+    this.safeModeTapCount = 0
+    const wasUnlocked: boolean = this.safeMode.unlocked
+    if (wasUnlocked) {
+      SafeModeSettings.lock(this.ctx()).catch((): void => {})
+    } else {
+      SafeModeSettings.unlock(this.ctx()).catch((): void => {})
+    }
+    this.toast(wasUnlocked
+      ? AppStrings.get('safe_mode_locked')
+      : AppStrings.get('safe_mode_unlocked'))
   }
 
   private loadReleaseHistory(): void {
@@ -301,6 +326,9 @@ export struct AboutPage {
       Text(this.versionText())
         .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
         .fontColor(ThemeTokens.TEXT_SECONDARY)
+        .onClick((): void => {
+          this.onVersionTap()
+        })
     }
     .width('100%')
     .alignItems(HorizontalAlign.Center)
@@ -336,6 +364,9 @@ export struct AboutPage {
         title: AppStrings.get('about_version'),
         trailingText: this.versionText(),
         showChevron: false,
+        onAction: (): void => {
+          this.onVersionTap()
+        },
       })
       this.DividerRow()
       NextNListRow({

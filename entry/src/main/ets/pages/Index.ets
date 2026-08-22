@@ -125,12 +125,15 @@ import {
   NhGalleryPage,
   NhGallerySummary,
   ReaderOverlayNavigationState,
+  SafeModeGate,
+  SafeModeState,
   SettingsNavigationState,
   ReaderRouteParams,
   NhClipboardLinkState,
   RootRefreshRegistry,
   ThemeTokens,
   connectReaderOverlayNavigation,
+  connectSafeMode,
   connectSettingsNavigation,
   clearNhClipboardGalleryCandidate,
   connectNhClipboardLink,
@@ -371,6 +374,7 @@ struct Index {
   @Local private historyPinnedDayHeader: HistoryPinnedDayHeaderState = connectHistoryPinnedDayHeader()
   @Local private downloadPinnedGroupHeader: DownloadPinnedGroupHeaderState = connectDownloadPinnedGroupHeader()
   @Local private homeTab: HomeTabAutoHideState = connectHomeTabAutoHide()
+  @Local private safeMode: SafeModeState = connectSafeMode()
   @Local private immersiveMaterial: ImmersiveMaterialSettingsState = connectImmersiveMaterialSettings()
   @Local private readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
   @Local private settingsNavigation: SettingsNavigationState = connectSettingsNavigation()
@@ -465,6 +469,30 @@ struct Index {
     this.applyHomeTabAutoHide()
   }
 
+  @Monitor('safeMode.unlocked')
+  onSafeModeChanged(): void {
+    let target: number = this.activeTab
+    if (this.safeMode.restricted()) {
+      if (this.activeTab === 2) {
+        target = 1
+      } else if (this.activeTab === 3) {
+        target = 2
+      } else if (this.activeTab === 1) {
+        target = 0
+      }
+    } else if (this.activeTab === 1 || this.activeTab === 2) {
+      target = this.activeTab === 1 ? 2 : 3
+    }
+    this.cancelRandomGalleryRequest()
+    this.activeTab = target
+    this.titleScroller = this.rootTabScroller(target)
+    this.applyHomeTabAutoHide()
+    setTimeout((): void => {
+      this.tabsController.changeIndex(target)
+    }, 0)
+    this.handleClipboardGalleryCandidate()
+  }
+
   /** HDS alone resolves whether the root is physically in its wide split. */
   @Monitor('layoutSafeArea.rootNavigationSplit')
   onRootNavigationSplitChanged(): void {
@@ -508,6 +536,9 @@ struct Index {
   /** Opens one explicit numeric Gallery route without a Browse-card detour. */
   private handleGalleryDirectLaunch(): void {
     const request = this.galleryDirectLaunch.consume()
+    if (this.safeMode.restricted()) {
+      return
+    }
     const galleryId: number = request.galleryId
     if (!Number.isSafeInteger(galleryId) || galleryId <= 0) {
       return
@@ -530,6 +561,9 @@ struct Index {
     if (!this.loginRecoveryLaunch.consume()) {
       return
     }
+    if (this.safeMode.restricted()) {
+      return
+    }
     if (this.stack.getAllPathName().length > 0) {
       this.stack.clear(false)
     }
@@ -542,6 +576,7 @@ struct Index {
     if (
       revision <= 0 ||
       revision === this.lastHandledClipboardCandidateRevision ||
+      this.safeMode.restricted() ||
       this.readerOverlay.visible
     ) {
       return
@@ -580,18 +615,30 @@ struct Index {
   }
 
   private pushSearch(initialQuery: string = ''): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
     this.stack.pushPathByName(ROUTE_SEARCH, new SearchRouteParams(initialQuery.trim()))
   }
 
   private pushHomeSubtabManager(): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
     this.stack.pushPathByName(ROUTE_HOME_SUBTAB_MANAGER, '')
   }
 
   private pushHomeSubtabEdit(params: HomeSubtabEditParams): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
     this.stack.pushPathByName(ROUTE_HOME_SUBTAB_EDIT, params)
   }
 
   private pushPopular(): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
     this.stack.pushPathByName(ROUTE_POPULAR, '')
   }
 
@@ -603,7 +650,7 @@ struct Index {
   }
 
   private pushGalleryWeb(route: GalleryRouteParams): void {
-    if (route.galleryId <= 0) {
+    if (route.galleryId <= 0 || this.safeMode.restricted()) {
       return
     }
     this.stack.pushPathByName(
@@ -649,7 +696,7 @@ struct Index {
   }
 
   private async requestRandomGallery(): Promise<void> {
-    if (this.randomGalleryBusy || this.activeTab !== 0) {
+    if (this.randomGalleryBusy || this.activeTab !== 0 || this.safeMode.restricted()) {
       return
     }
     const actionEpoch: number = this.randomGalleryActionEpoch + 1
@@ -766,7 +813,7 @@ struct Index {
     commentSnapshot: NhComment[] = [],
     commentSnapshotAvailable: boolean = false,
   ): void {
-    if (galleryId <= 0) {
+    if (galleryId <= 0 || this.safeMode.restricted()) {
       return
     }
     this.stack.pushPathByName(
@@ -777,7 +824,7 @@ struct Index {
 
   /** Leaves a detail route for the one durable Downloads root, matching NextE's task handoff. */
   private openDownloads(): void {
-    const target: number = 2
+    const target: number = this.physicalTabForLogical(2)
     if (this.activeTab === target) {
       this.triggerRootRefresh(target)
       return
@@ -788,7 +835,7 @@ struct Index {
     this.settingsNavigation.clearRootLocation()
     this.clearHomeGallerySelection()
     this.activeTab = target
-    this.titleScroller = this.rootTabScrollers[target]
+    this.titleScroller = this.rootTabScrollers[2]
     if (this.homeTab.autoHide) {
       this.restoreHomeTabIfHidden()
     }
@@ -800,11 +847,17 @@ struct Index {
   }
 
   private pushBrowserSession(addAccountMode: boolean = false): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
     this.stack.pushPathByName(ROUTE_BROWSER_SESSION, new BrowserSessionRouteParams(false, addAccountMode))
   }
 
   /** Empty ownership has no native choice to present; enter the visible login directly. */
   private pushVisibleLoginSession(): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
     this.stack.pushPathByName(ROUTE_BROWSER_SESSION, new BrowserSessionRouteParams(true))
   }
 
@@ -854,10 +907,16 @@ struct Index {
   }
 
   private pushLlmSourceManager(): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
     this.stack.pushPathByName(ROUTE_LLM_SOURCE_MANAGER, new LlmSourceManagerRouteParams())
   }
 
   private pushLlmSourceDetail(sourceProfileId: string): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
     this.stack.pushPathByName(
       ROUTE_LLM_SOURCE_DETAIL,
       new LlmSourceDetailRouteParams(sourceProfileId),
@@ -865,18 +924,30 @@ struct Index {
   }
 
   private pushTagTranslationSettings(): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
     this.stack.pushPathByName(ROUTE_TAG_TRANSLATION_SETTINGS, '')
   }
 
   private pushCommentTranslationSettings(): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
     this.stack.pushPathByName(ROUTE_COMMENT_TRANSLATION_SETTINGS, '')
   }
 
   private pushComicTranslationSettings(): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
     this.stack.pushPathByName(ROUTE_COMIC_TRANSLATION_SETTINGS, '')
   }
 
   private pushMangaRenderingService(): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
     this.stack.pushPathByName(ROUTE_MANGA_RENDERING_SERVICE, '')
   }
 
@@ -901,6 +972,9 @@ struct Index {
   }
 
   private pushAccount(): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
     this.stack.pushPathByName(ROUTE_ACCOUNT, '')
   }
 
@@ -914,10 +988,16 @@ struct Index {
   }
 
   private pushSyncSettings(): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
     this.stack.pushPathByName(ROUTE_SYNC_SETTINGS, '')
   }
 
   private pushWebDavSyncSettings(): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
     this.stack.pushPathByName(ROUTE_WEBDAV_SYNC_SETTINGS, '')
   }
 
@@ -947,6 +1027,9 @@ struct Index {
    * parent before the new root choice opens, so Back returns to Settings.
    */
   private openSettingsRootDestination(name: string, param: Object = ''): void {
+    if (!SafeModeGate.routeAllowed(name)) {
+      return
+    }
     const pathNames: string[] = this.stack.getAllPathName()
     const topIndex: number = pathNames.length - 1
     if (topIndex >= 0 && pathNames[topIndex] === name) {
@@ -1126,13 +1209,14 @@ struct Index {
    * account-bound read path; Downloads remains absent until its queue exists.
    */
   private rootTitle(): string {
-    if (this.activeTab === 1) {
+    const logicalTab: number = this.logicalTabForPhysical(this.activeTab)
+    if (logicalTab === 1) {
       return AppStrings.get('tab_favorites')
     }
-    if (this.activeTab === 2) {
+    if (logicalTab === 2) {
       return AppStrings.get('tab_downloads')
     }
-    if (this.activeTab === 3) {
+    if (logicalTab === 3) {
       return AppStrings.get('tab_me')
     }
     return AppStrings.get('tab_browse')
@@ -1228,7 +1312,38 @@ struct Index {
   }
 
   private rootTabScroller(index: number): Scroller {
-    return index === 0 ? this.homeActiveScroller : this.rootTabScrollers[index]
+    const logicalTab: number = this.logicalTabForPhysical(index)
+    return logicalTab === 0 ? this.homeActiveScroller : this.rootTabScrollers[logicalTab]
+  }
+
+  private logicalTabForPhysical(index: number): number {
+    if (!this.safeMode.restricted()) {
+      return index
+    }
+    if (index === 1) {
+      return 2
+    }
+    if (index === 2) {
+      return 3
+    }
+    return 0
+  }
+
+  private physicalTabForLogical(index: number): number {
+    if (!this.safeMode.restricted()) {
+      return index
+    }
+    if (index === 2) {
+      return 1
+    }
+    if (index === 3) {
+      return 2
+    }
+    return 0
+  }
+
+  private rootTabCount(): number {
+    return this.safeMode.restricted() ? 3 : 4
   }
 
   private rootMaterialEffect(): Record<string, Object> {
@@ -1260,12 +1375,14 @@ struct Index {
   }
 
   private applyHomeTabAutoHide(): void {
-    for (let index = 0; index < this.rootTabScrollers.length; index += 1) {
+    this.tabsController.unbindScroller(this.homeActiveScroller)
+    for (let index = 1; index < this.rootTabScrollers.length; index += 1) {
+      this.tabsController.unbindScroller(this.rootTabScrollers[index])
+    }
+    for (let index = 0; index < this.rootTabCount(); index += 1) {
       const scroller: Scroller = this.rootTabScroller(index)
       if (this.homeTab.autoHide) {
         this.tabsController.bindScroller(index, scroller)
-      } else {
-        this.tabsController.unbindScroller(scroller)
       }
     }
     this.restoreHomeTabIfHidden()
@@ -1312,21 +1429,22 @@ struct Index {
   }
 
   private onHomeTabDidScroll(index: number, offset: number, state: ScrollState): void {
+    const offsetIndex: number = this.logicalTabForPhysical(index)
     if (index !== this.activeTab || !this.homeTab.autoHide) {
-      this.homeTabLastScrollOffsets[index] = offset
+      this.homeTabLastScrollOffsets[offsetIndex] = offset
       return
     }
     if (offset <= this.HOME_TAB_SCROLL_DELTA_PX) {
-      this.homeTabLastScrollOffsets[index] = offset
+      this.homeTabLastScrollOffsets[offsetIndex] = offset
       this.restoreHomeTabIfHidden()
       return
     }
     if (state === ScrollState.Idle) {
-      this.homeTabLastScrollOffsets[index] = offset
+      this.homeTabLastScrollOffsets[offsetIndex] = offset
       return
     }
-    const lastOffset: number = this.homeTabLastScrollOffsets[index]
-    this.homeTabLastScrollOffsets[index] = offset
+    const lastOffset: number = this.homeTabLastScrollOffsets[offsetIndex]
+    this.homeTabLastScrollOffsets[offsetIndex] = offset
     const delta: number = offset - lastOffset
     if (delta < -this.HOME_TAB_SCROLL_DELTA_PX) {
       this.applyHomeTabScrollAnimation(true)
@@ -1355,7 +1473,10 @@ struct Index {
   private rootTitleBar(): Record<string, Object> {
     const title: Record<string, Object> = { 'mainTitle': this.rootTitle() }
     const content: Record<string, Object> = { 'title': title }
-    if (this.activeTab === 0) {
+    const logicalTab: number = this.logicalTabForPhysical(this.activeTab)
+    if (logicalTab === 0 && this.safeMode.restricted()) {
+      content['menu'] = this.emptyHdsMenu()
+    } else if (logicalTab === 0) {
       content['bottomBuilder'] = this.homeSourceBottomBuilder()
       const searchAction: Record<string, Object> = {
         'label': AppStrings.get('action_search'),
@@ -1423,7 +1544,7 @@ struct Index {
           : [searchMenuItem, layoutMenuItem, randomGalleryMenuItem]
       const searchMenu: Record<string, Object> = { 'value': browseMenuItems, 'maxCount': 3 }
       content['menu'] = searchMenu
-    } else if (this.activeTab === 1) {
+    } else if (logicalTab === 1) {
       if (this.favoritesActions.actionsAvailable) {
         if (this.favoritesActions.searchActive) {
           content['bottomBuilder'] = this.favoritesSearchBottomBuilder()
@@ -1465,7 +1586,7 @@ struct Index {
       } else {
         content['menu'] = this.emptyHdsMenu()
       }
-    } else if (this.activeTab === 2) {
+    } else if (logicalTab === 2) {
       // Root HDS owns only command intent. DownloadQueuePage owns all local
       // query, ordering, and menu state through the narrow action bridge.
       // Never leave HDS holding a cached zero-height Download builder. During
@@ -1527,7 +1648,7 @@ struct Index {
       }
       content['menu'] = downloadMenu
     }
-    if (this.activeTab === 3) {
+    if (logicalTab === 3) {
       content['menu'] = this.emptyHdsMenu()
     }
     return nextNHdsTitleBar(content)
@@ -1686,11 +1807,11 @@ struct Index {
   }
 
   @Builder
-  private tabBar(label: string, index: number) {
+  private tabBar(label: string, index: number, iconIndex: number) {
     MainTabIcon({
       title: label,
       idx: index,
-      iconIdx: index,
+      iconIdx: iconIndex,
       currentIndex: this.activeTab,
       onSelectedClick: (selectedIndex: number): void => {
         this.triggerRootRefresh(selectedIndex)
@@ -1700,14 +1821,10 @@ struct Index {
 
   /** Matches NextE: a re-tap is routed to the currently registered root list. */
   private triggerRootRefresh(index: number): void {
-    if (index < 0 || index >= this.rootTabScrollers.length) {
+    if (index < 0 || index >= this.rootTabCount()) {
       return
     }
-    if (index === 0) {
-      RootRefreshRegistry.trigger(this.homeActiveScroller)
-      return
-    }
-    RootRefreshRegistry.trigger(this.rootTabScrollers[index])
+    RootRefreshRegistry.trigger(this.rootTabScroller(index))
   }
 
   private galleryParams(param: Object): GalleryRouteParams {
@@ -2380,7 +2497,12 @@ struct Index {
   /** Static route map; entry is allowed to statically import feature HAR pages. */
   @Builder
   private routerMap(name: string, param: Object) {
-    if (name === ROUTE_SEARCH) {
+    if (!SafeModeGate.routeAllowed(name)) {
+      HdsNavDestination() {
+        Column() {}
+      }
+      .hideTitleBar(true)
+    } else if (name === ROUTE_SEARCH) {
       this.searchDestination(param)
     } else if (name === ROUTE_HOME_SUBTAB_MANAGER) {
       this.homeSubtabManagerDestination()
@@ -2482,19 +2604,21 @@ struct Index {
             },
           })
         }
-        .tabBar(this.tabBar(AppStrings.get('tab_browse'), 0))
-        TabContent() {
-          FavoritesPage({
-            scroller: this.rootTabScrollers[1],
-            onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
-              this.pushGallery(galleryId, seed)
-            },
-            onDidScroll: (offset: number, state: ScrollState): void => {
-              this.onHomeTabDidScroll(1, offset, state)
-            },
-          })
+        .tabBar(this.tabBar(AppStrings.get('tab_browse'), 0, 0))
+        if (!this.safeMode.restricted()) {
+          TabContent() {
+            FavoritesPage({
+              scroller: this.rootTabScrollers[1],
+              onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
+                this.pushGallery(galleryId, seed)
+              },
+              onDidScroll: (offset: number, state: ScrollState): void => {
+                this.onHomeTabDidScroll(1, offset, state)
+              },
+            })
+          }
+          .tabBar(this.tabBar(AppStrings.get('tab_favorites'), 1, 1))
         }
-        .tabBar(this.tabBar(AppStrings.get('tab_favorites'), 1))
         TabContent() {
           DownloadQueuePage({
             scroller: this.rootTabScrollers[2],
@@ -2505,11 +2629,15 @@ struct Index {
               this.pushReader(galleryId)
             },
             onDidScroll: (offset: number, state: ScrollState): void => {
-              this.onHomeTabDidScroll(2, offset, state)
+              this.onHomeTabDidScroll(this.physicalTabForLogical(2), offset, state)
             },
           })
         }
-        .tabBar(this.tabBar(AppStrings.get('tab_downloads'), 2))
+        .tabBar(this.tabBar(
+          AppStrings.get('tab_downloads'),
+          this.physicalTabForLogical(2),
+          2,
+        ))
         TabContent() {
           SettingsPage({
             scroller: this.rootTabScrollers[3],
@@ -2553,11 +2681,11 @@ struct Index {
               this.pushContentFilters()
             },
             onDidScroll: (offset: number, state: ScrollState): void => {
-              this.onHomeTabDidScroll(3, offset, state)
+              this.onHomeTabDidScroll(this.physicalTabForLogical(3), offset, state)
             },
           })
         }
-        .tabBar(this.tabBar(AppStrings.get('tab_me'), 3))
+        .tabBar(this.tabBar(AppStrings.get('tab_me'), this.physicalTabForLogical(3), 3))
       }
       .width('100%')
       .height('100%')
@@ -2589,7 +2717,7 @@ struct Index {
           this.syncRootSecondaryBranch(this.stack)
         }
         this.activeTab = index
-        this.titleScroller = index === 0 ? this.homeActiveScroller : this.rootTabScrollers[index]
+        this.titleScroller = this.rootTabScroller(index)
         if (this.homeTab.autoHide) {
           this.restoreHomeTabIfHidden()
         }

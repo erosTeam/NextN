@@ -31,6 +31,7 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `shared/src/main/ets/settings/NhClipboardLinkSettings.ets#LAYOUT_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/ReadButtonStyleSettings.ets#LAYOUT_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/ReaderImageCacheSettings.ets#STORE_NAME` | store | excluded | excluded | Store name only |
+| `shared/src/main/ets/settings/SafeModeSettings.ets#SAFE_MODE_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/ScreenOrientationSettings.ets#SCREEN_ORIENTATION_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/SearchTranslationSettings.ets#SETTINGS_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/SyncSettings.ets#SYNC_STORE` | store | excluded | excluded | Store name only |
@@ -81,6 +82,7 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `shared/src/main/ets/settings/NhClipboardLinkSettings.ets#CHANGE_COUNT_KEY` | runtime | excluded | excluded | Device clipboard cursor |
 | `shared/src/main/ets/settings/ReadButtonStyleSettings.ets#READ_BUTTON_STYLE_KEY` | setting | plaintext | excluded | Reader action style |
 | `shared/src/main/ets/settings/ReaderImageCacheSettings.ets#KEY_LIMIT_MB` | setting | plaintext | excluded | Cache size preference, not cache content |
+| `shared/src/main/ets/settings/SafeModeSettings.ets#SAFE_MODE_UNLOCKED_KEY` | runtime | excluded | excluded | Device-local restricted-build escape marker |
 | `shared/src/main/ets/settings/ScreenOrientationSettings.ets#SCREEN_ORIENTATION_KEY` | setting | plaintext | excluded | Orientation policy |
 | `shared/src/main/ets/settings/SearchTranslationSettings.ets#KEY_TRANSLATE_ENABLED` | setting | plaintext | excluded | Search translation display policy |
 | `shared/src/main/ets/settings/SyncSettings.ets#KEY_WEBDAV_URL` | credential-group | encrypted-only | excluded | Atomic WebDAV group |

@@ -32,6 +32,7 @@ import {
   requestLoginRecoveryLaunch,
   publishNhClipboardGalleryCandidate,
   ScreenOrientationSettings,
+  SafeModeSettings,
   AccountListSettings,
   SearchTranslationSettings,
   SyncScheduler,
@@ -45,6 +46,7 @@ import {
   ThemeSettings,
   DiagnosticLogger,
   DiagnosticsSettings,
+  connectSafeMode,
 } from 'shared'
 
 const ENTRY_PAGE: string = 'pages/Index'
@@ -131,6 +133,9 @@ export default class EntryAbility extends UIAbility {
       // mounts. The platform color-mode call itself remains below
       // `loadContent`, which is the lifecycle point required by ArkUI.
       ThemeSettings.restore(this.context, false),
+      // Restore the build-only restricted shell before any retained Browse
+      // source or external route can mount.
+      SafeModeSettings.restore(this.context),
       // Accent selection changes only app tokens, so it is safe to publish
       // before the first component mounts.
       ThemeColorSettings.restore(this.context),
@@ -203,7 +208,9 @@ export default class EntryAbility extends UIAbility {
       if (this.abilityForeground) {
         MotionHandStateService.start()
       }
-      if (this.loginRecoveryRequestedAtLaunch && !this.accountRestoredAtBootstrap) {
+      if (this.loginRecoveryRequestedAtLaunch &&
+        !this.accountRestoredAtBootstrap &&
+        !connectSafeMode().restricted()) {
         requestLoginRecoveryLaunch()
       }
       windowStage.loadContent(ENTRY_PAGE, (error): void => {
@@ -304,6 +311,9 @@ export default class EntryAbility extends UIAbility {
   }
 
   onNewWant(want: Want, _launchParam: AbilityConstant.LaunchParam): void {
+    if (connectSafeMode().restricted()) {
+      return
+    }
     const galleryId: number = this.galleryDirectLaunchId(want)
     if (galleryId <= 0) {
       return
@@ -355,11 +365,14 @@ export default class EntryAbility extends UIAbility {
     const openComments: boolean = this.galleryDirectLaunchCommentsAtLaunch
     this.galleryDirectLaunchIdAtLaunch = 0
     this.galleryDirectLaunchCommentsAtLaunch = false
+    if (connectSafeMode().restricted()) {
+      return
+    }
     requestGalleryDirectLaunch(galleryId, openComments)
   }
 
   private probeClipboardLinkIfReady(): void {
-    if (!ClipboardLinkBuildFlag.CLIPBOARD_LINK_BUILD_ENABLED) {
+    if (!ClipboardLinkBuildFlag.CLIPBOARD_LINK_BUILD_ENABLED || connectSafeMode().restricted()) {
       return
     }
     if (!this.mainContentReady || !this.abilityForeground || this.clipboardProbeInFlight) {

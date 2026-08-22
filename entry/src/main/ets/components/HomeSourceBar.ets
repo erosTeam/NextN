@@ -9,6 +9,7 @@ import {
   NhHomeSubtabProfile,
   NhSearchLanguage,
   NhSearchOptions,
+  SafeModeState,
   SubTabBar,
   SubtabTransitionBridge,
   SUBTAB_TRANSITION_SCOPE_HOME,
@@ -18,6 +19,7 @@ import {
   connectCatalogPreferences,
   connectHomeSubtabs,
   connectHomeSourceVisualIndex,
+  connectSafeMode,
   connectThemeDisplay,
 } from 'shared'
 
@@ -28,6 +30,7 @@ import {
  */
 @ComponentV2
 export struct HomeSourceBar {
+  @Local safeMode: SafeModeState = connectSafeMode()
   @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
   @Local visual: HomeSourceVisualIndexState = connectHomeSourceVisualIndex()
   @Local catalogPreferences: CatalogPreferencesState = connectCatalogPreferences()
@@ -86,20 +89,22 @@ export struct HomeSourceBar {
         },
       })
         .layoutWeight(1)
-      Button({ type: ButtonType.Circle }) {
-        SymbolGlyph($r('sys.symbol.list_square'))
-          .fontSize(ThemeTokens.FONT_SIZE_TITLE)
-          .fontColor([this.themeTracked($r('sys.color.font_secondary'))])
+      if (!this.safeMode.restricted()) {
+        Button({ type: ButtonType.Circle }) {
+          SymbolGlyph($r('sys.symbol.list_square'))
+            .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+            .fontColor([this.themeTracked($r('sys.color.font_secondary'))])
+        }
+        .width(28)
+        .height(28)
+        .margin({ left: ThemeTokens.SPACE_XS, right: ThemeTokens.SPACE_SM })
+        .backgroundColor(Color.Transparent)
+        .alignSelf(ItemAlign.Start)
+        .offset({ y: -2 })
+        .onClick((): void => {
+          HomeSourceBridge.requestManageSubtabs()
+        })
       }
-      .width(28)
-      .height(28)
-      .margin({ left: ThemeTokens.SPACE_XS, right: ThemeTokens.SPACE_SM })
-      .backgroundColor(Color.Transparent)
-      .alignSelf(ItemAlign.Start)
-      .offset({ y: -2 })
-      .onClick((): void => {
-        HomeSourceBridge.requestManageSubtabs()
-      })
     }
     .width('100%')
     .height('100%')

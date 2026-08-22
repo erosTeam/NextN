@@ -91,6 +91,7 @@ import {
   TabletLayoutState,
   MotionHandStateService,
   SettingsNavigationState,
+  SafeModeState,
   SETTINGS_ROOT_BROWSER_SESSION,
   SETTINGS_ROOT_ACCOUNT,
   SETTINGS_ROOT_LAYOUT,
@@ -124,6 +125,7 @@ import {
   connectLanguageState,
   connectLayoutSafeArea,
   connectSettingsNavigation,
+  connectSafeMode,
   connectTabletLayout,
   connectTagTranslationSettings,
   connectThemeColor,
@@ -178,6 +180,7 @@ export enum SettingsSurface {
  */
 @ComponentV2
 export struct SettingsPage {
+  @Local safeMode: SafeModeState = connectSafeMode()
   @Local pageCacheStat: CacheStat = new CacheStat()
   @Local imageCacheStat: CacheStat = new CacheStat()
   @Local readerCacheLimitMb: number = 1024
@@ -4313,11 +4316,13 @@ export struct SettingsPage {
         },
       }) {
         if (this.surface === SettingsSurface.ROOT) {
-          ListItem() {
-            this.RootAccountSection()
-          }
-          ListItem() {
-            this.RootHistorySection()
+          if (!this.safeMode.restricted()) {
+            ListItem() {
+              this.RootAccountSection()
+            }
+            ListItem() {
+              this.RootHistorySection()
+            }
           }
           ListItem() {
             this.RootMainSection()
@@ -4372,7 +4377,9 @@ export struct SettingsPage {
         } else if (this.surface === SettingsSurface.CACHE) {
           ListItem() {
             Column({ space: ThemeTokens.SPACE_MD }) {
-              this.SyncGroup()
+              if (!this.safeMode.restricted()) {
+                this.SyncGroup()
+              }
               this.BackupGroup()
               this.ReaderCacheLimitGroup()
               this.PrivateCacheTotalSummary()

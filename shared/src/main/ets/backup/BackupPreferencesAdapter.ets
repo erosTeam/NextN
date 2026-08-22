@@ -85,6 +85,9 @@ export class BackupPreferencesAdapter {
     'nextn_settings.cloud_blacklist_ids_v1',
     'nextn_settings.account.session.present',
     'nextn_settings.account.session.authRefreshRetryAt',
+    // A restricted-build escape marker is device-local and must never unlock
+    // another installation through backup restore.
+    'nextn_settings.safeMode.unlocked',
     'nextn_layout.clipboard_link_enabled',
     'nextn_layout.clipboard_link_change_count',
     'nextn_comic_visual_provider.torii_credits_cache',

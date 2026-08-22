@@ -8890,3 +8890,62 @@ authorize an edit, replace a device comparison, or define product completion.
   `1320×2120`; final PowerManager state remained `AWAKE` with
   `OverrideTimeout=86400000ms`. Local raw layouts are retained under
   `.hvigor/outputs/root-split-back-20260822T/` and excluded from Git.
+
+## OPEN — SAFE_MODE global restricted shell — 2026-08-22
+
+- **Why newly actionable:** the user explicitly requested implementing a
+  NextE-style `SAFE_MODE` after the current-source audit confirmed that NextN
+  has no build flag, runtime state, persisted unlock, route gate or restricted
+  parent tree. This instruction reopens the previously recorded “无 SafeMode”
+  gap and no other frozen surface.
+- **Reference and NH boundary:** current NextE owns one build-only gate,
+  `AppStorageV2` state, device-local persisted unlock, About-version five-tap
+  toggle, restricted root-tab projection, route allowlist and subordinate
+  visibility guards. Its Browse leaf relies on E-Hentai's real `Non-H`
+  category. Current NextN/eros_n has no equivalent NH category or safe-content
+  endpoint, so treating the existing NH response as safe would violate the
+  requested outcome. Preserve the parent contract and replace only that
+  unsupported data leaf with a non-network restricted empty state.
+- **Whole parent-tree boundary:** one global boundary:
+  `EntryAbility bootstrap/direct-intent/clipboard gate -> shared SafeMode
+  state/settings/gate -> Index HdsNavigation/HdsTabs/titleBar/routerMap ->
+  HomePage retained-source host -> Settings root/cache surfaces -> AboutPage
+  version row/header`. Preserve the existing root Navigation owner, tab
+  material/geometry, split behavior, route destinations, page scroll owners,
+  normal-build ordering and every normal-mode action.
+- **Exact before/after:** normal builds remain unrestricted in behavior.
+  `NEXTN_SAFE_MODE=1 scripts/build-hvigor-signed.sh` temporarily
+  enables a restored-on-exit build flag. A safe build starts restricted unless
+  its device-local unlock marker is true. Restricted mode projects Browse,
+  Downloads and Settings; Browse mounts no NH request owner and shows one
+  localized empty-state message; Browse title actions/source selector,
+  Favorites, account/history cards, sync entry, login/search/comments/subtab
+  management and sensitive translation/sync destinations are unavailable.
+  Five taps on either About version presentation toggles the persisted unlock
+  and immediately reprojects the same parent tree with a localized toast.
+- **Sibling-state review:** normal build; locked safe build first launch;
+  locked Browse empty state; locked Downloads and Settings; blocked cold/new
+  Gallery intent, clipboard prompt and login recovery; lock while on
+  Favorites/Download/Settings or a blocked destination; unlock and relock from
+  both About version targets; process restart with each persisted state; Stack
+  and physical Split root navigation.
+- **Minimality rationale:** reuse NextE's state/gesture/gate architecture and
+  existing NextN `PageEmptyState`, HDS tabs, settings rows and destinations.
+  Do not add a new settings switch, redesign any row, change normal-mode
+  ordering, invent an NH content classifier, or add a UI-shape contract.
+- **Verification plan:** review the exact diff; run i18n duplicate and V1
+  decorator inventories; build signed normal debug and signed
+  `NEXTN_SAFE_MODE=1` debug while proving the source flag is restored after
+  each build. Runtime/visual acceptance requires a user-selected device and a
+  same-viewport locked/unlocked sequence; source and builds cannot establish
+  that boundary.
+- **Static/build evidence:** `test_safe_mode_contract`, settings-backup,
+  persistence-inventory, AppStrings-format and Home-subtab contracts passed;
+  all four locale files contain no duplicate resource names; the PCRE2 V1
+  decorator inventory returned no matches; `git diff --check` passed. Both
+  ordinary and `NEXTN_SAFE_MODE=1` signed debug builds completed successfully,
+  and `SafeModeBuildFlag.ets` was `false` before and after the safe build,
+  proving the temporary source mutation was restored.
+- **Unresolved risk:** no device is selected in the current request, so root-tab
+  reprojection, hidden routes, five-tap persistence and the restricted Browse
+  empty state remain unaccepted on device even after source/build validation.

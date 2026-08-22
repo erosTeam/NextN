@@ -33,17 +33,20 @@ import {
   NhSearchOptions,
   NhSearchSort,
   NextNModalScaffold,
+  PageEmptyState,
   RootRefreshRegistry,
   RetainedSubtabHost,
   SubtabTransitionState,
   SUBTAB_TRANSITION_SCOPE_HOME,
   ThemeTokens,
+  SafeModeState,
   connectCatalogPreferences,
   connectContentFilters,
   connectHomeGallerySelection,
   connectHomeSource,
   connectHomeSubtabs,
   connectHomeSourceVisualIndex,
+  connectSafeMode,
   connectSubtabTransition,
   connectTagTranslations,
   TagTranslationState,
@@ -796,6 +799,7 @@ function homeSubtabKind(key: string): NhHomeSubtabKind {
  */
 @ComponentV2
 export struct HomePage {
+  @Local safeMode: SafeModeState = connectSafeMode()
   @Local homeSource: HomeSourceState = connectHomeSource()
   @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
   @Local visual: HomeSourceVisualIndexState = connectHomeSourceVisualIndex()
@@ -828,7 +832,7 @@ export struct HomePage {
   /** HDS title actions cannot anchor a Menu; the retained Home host owns it. */
   @Monitor('homeSource.layoutMenuRequestSeq')
   onLayoutMenuRequested(): void {
-    if (this.homeSource.layoutMenuRequestSeq > 0) {
+    if (!this.safeMode.restricted() && this.homeSource.layoutMenuRequestSeq > 0) {
       this.layoutMenuShown = true
     }
   }
@@ -881,51 +885,59 @@ export struct HomePage {
   }
 
   build() {
-    Stack({ alignContent: Alignment.TopEnd }) {
-      RetainedSubtabHost({
-        keys: this.sourceKeys(),
-        selectedKey: this.selectedKey(),
-        subtabTransition: this.subtabTransition,
-        transitionScope: SUBTAB_TRANSITION_SCOPE_HOME,
-        pageBuilder: homeSourcePageBuilder,
-        onSelectKey: (key: string): void => {
-          HomeSubtabSettings.setSelected(this.context(), key).catch((): void => {})
-        },
-        onVisualIndex: (value: number): void => {
-          this.visual.value = value
-        },
-        onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
-          if (this.onOpenGallery) {
-            this.onOpenGallery(galleryId, seed)
-          }
-        },
-        onScrollerReady: (scroller: Scroller): void => {
-          if (this.onScrollerReady) {
-            this.onScrollerReady(scroller)
-          }
-        },
-        onDidScroll: (offset: number, state: ScrollState): void => {
-          if (this.onDidScroll) {
-            this.onDidScroll(offset, state)
-          }
-        },
-      })
-        .width('100%')
-        .height('100%')
-      // A 1vp non-hit-testable anchor lets the title-bar command open a
-      // native menu without adding a visible control or changing page layout.
-      Row()
-        .width(1)
-        .height(1)
-        .hitTestBehavior(HitTestMode.None)
-        .bindMenu(this.layoutMenuShown, this.LayoutMenu, appMenuOptions({
-          placement: Placement.BottomRight,
-          onDisappear: (): void => {
-            this.layoutMenuShown = false
-          },
-        }))
-    }
+    if (this.safeMode.restricted()) {
+      Column() {
+        PageEmptyState({ message: AppStrings.get('safe_mode_browse_message') })
+      }
       .width('100%')
       .height('100%')
+    } else {
+      Stack({ alignContent: Alignment.TopEnd }) {
+        RetainedSubtabHost({
+          keys: this.sourceKeys(),
+          selectedKey: this.selectedKey(),
+          subtabTransition: this.subtabTransition,
+          transitionScope: SUBTAB_TRANSITION_SCOPE_HOME,
+          pageBuilder: homeSourcePageBuilder,
+          onSelectKey: (key: string): void => {
+            HomeSubtabSettings.setSelected(this.context(), key).catch((): void => {})
+          },
+          onVisualIndex: (value: number): void => {
+            this.visual.value = value
+          },
+          onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
+            if (this.onOpenGallery) {
+              this.onOpenGallery(galleryId, seed)
+            }
+          },
+          onScrollerReady: (scroller: Scroller): void => {
+            if (this.onScrollerReady) {
+              this.onScrollerReady(scroller)
+            }
+          },
+          onDidScroll: (offset: number, state: ScrollState): void => {
+            if (this.onDidScroll) {
+              this.onDidScroll(offset, state)
+            }
+          },
+        })
+          .width('100%')
+          .height('100%')
+        // A 1vp non-hit-testable anchor lets the title-bar command open a
+        // native menu without adding a visible control or changing page layout.
+        Row()
+          .width(1)
+          .height(1)
+          .hitTestBehavior(HitTestMode.None)
+          .bindMenu(this.layoutMenuShown, this.LayoutMenu, appMenuOptions({
+            placement: Placement.BottomRight,
+            onDisappear: (): void => {
+              this.layoutMenuShown = false
+            },
+          }))
+      }
+        .width('100%')
+        .height('100%')
+    }
   }
 }
