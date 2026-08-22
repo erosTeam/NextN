@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-public-download-root-recovery-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-recovery-20260823T0520",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "4e42c6fb50ca40c1b5511a52ea04994e2acee026",
+    "page": "non-secure-lock-recovery-before-public-download-acceptance",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Recover the already-authorized 237 session without changing app data. Wake, dismiss the current non-secure lock from the right-side neutral region, then apply and verify the 86400000ms timeout before any app action. Preserve only command metadata and system dumps; do not retain lock-screen screenshots or notification content."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "pre-unlock-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "dismiss-non-secure-lock-from-neutral-region",
+        "uiInput": ["fling", "1120", "1950", "1120", "350", "10000"],
+        "pauseAfterMs": 500,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "apply-unattended-timeout-after-dismissal",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "verify-awake-override",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "post-unlock-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ]
+}

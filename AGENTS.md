@@ -28,6 +28,13 @@ the summary here.
 - Every device-affecting command must use
   `scripts/device-lease --device <full-target>` per `docs/device-lease.md`.
   A lease coordinates agents; it neither selects a device nor grants authority.
+- After transport recovery, stateful or evidentiary HDC work must use
+  `scripts/run-device-protocol` with the full target, active lease ID, and a
+  project-owned manifest. The entrypoint performs the mandatory dry-run and
+  then invokes the checked manifest runner inside the lease. Direct lease-
+  wrapped HDC is limited to target discovery/reconnect, `shell echo`, boot-
+  completion readback, and artifact receive; the lease helper rejects other
+  direct HDC forms.
 
 ## Reference-derived UI
 

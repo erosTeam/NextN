@@ -19,8 +19,19 @@ scripts/device-lease --device "$TARGET" run --lease "$LEASE_ID" -- \
   /Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc \
   -t "$TARGET" shell echo ok
 
+# After transport recovery, all stateful/evidentiary device work uses one
+# checked project manifest. This entrypoint dry-runs before entering the lease.
+scripts/run-device-protocol --device "$TARGET" --lease "$LEASE_ID" \
+  docs/device-protocols/example.json
+
 scripts/device-lease --device "$TARGET" release --lease "$LEASE_ID"
 ```
+
+Direct lease-wrapped HDC is restricted to target discovery/reconnect,
+`shell echo`, boot-completion readback, and artifact receive. Wake/timeout,
+install/start, UI input, layout/screenshot, logs, traces, and other device-state
+or evidence operations are rejected unless they are executed by the checked
+manifest runner.
 
 Use `renew` during a long-lived scenario. Do not use `--force` without an
 explicit user instruction. The default shared lease root is

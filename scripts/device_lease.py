@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Advisory device lease helper for agent-driven NextN device validation."""
+"""Device lease and checked-protocol gate for NextN device validation."""
 from __future__ import annotations
 
 import argparse
@@ -23,6 +23,21 @@ LEASE_ROOT = Path(
         os.environ.get("NEXTE_DEVICE_LEASE_DIR", Path.home() / ".hermes" / "device-leases"),
     )
 )
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+CHECKED_PROTOCOL_RUNNER = (
+    Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
+    / "skills"
+    / "harmony-run-device-diagnostics"
+    / "scripts"
+    / "run_device_protocol.py"
+).resolve()
+
+
+DIRECT_HDC_TRANSPORT_COMMANDS = {"tconn"}
+DIRECT_HDC_SHELL_PROBES = {
+    ("echo", "ok"),
+    ("param", "get", "bootevent.boot.completed"),
+}
 
 
 def utc_now() -> dt.datetime:
@@ -274,9 +289,70 @@ def wait_for_lease(args: argparse.Namespace) -> dict[str, Any] | None:
         time.sleep(1)
 
 
+def direct_device_protocol_violation(
+    command: list[str], expected_device: str | None = None
+) -> str | None:
+    """Reject lease-wrapped shortcuts around the manifest protocol runner."""
+    if not command:
+        return None
+    executable = Path(command[0]).name
+    if executable.startswith("python"):
+        if len(command) != 3 or Path(command[1]).resolve() != CHECKED_PROTOCOL_RUNNER:
+            return "Python device commands must use the checked run_device_protocol.py invocation"
+        manifest = Path(command[2]).resolve()
+        try:
+            manifest.relative_to(PROJECT_ROOT)
+        except ValueError:
+            return "device protocol manifest must be project-owned"
+        try:
+            manifest_target = str(json.loads(manifest.read_text(encoding="utf-8"))["target"])
+        except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError):
+            return "device protocol manifest must be readable JSON with a target"
+        if expected_device and manifest_target != expected_device:
+            return "device protocol manifest target must match the active lease target"
+        return None
+    if executable in {"sh", "bash", "zsh", "env"}:
+        return "shell or environment wrappers are not permitted for device commands"
+    if executable != "hdc":
+        return "lease run accepts only the checked protocol runner or explicit transport probes"
+
+    argv = list(command[1:])
+    command_target: str | None = None
+    if argv[:1] == ["-t"] and len(argv) >= 3:
+        command_target = argv[1]
+        argv = argv[2:]
+    if not argv:
+        return "direct HDC invocation has no permitted transport operation"
+    if argv[0] in DIRECT_HDC_TRANSPORT_COMMANDS:
+        if len(argv) != 2 or (expected_device and argv[1] != expected_device):
+            return "HDC reconnect target must match the active lease target"
+        return None
+    if argv[:2] == ["list", "targets"] and command_target is None:
+        return None
+    if command_target is None:
+        return "device-specific HDC probes require an explicit -t target"
+    if expected_device and command_target != expected_device:
+        return "HDC target must match the active lease target"
+    if argv[:2] == ["file", "recv"]:
+        return None
+    if argv[0] == "shell":
+        shell_argv = tuple(argv[1:])
+        if shell_argv in DIRECT_HDC_SHELL_PROBES:
+            return None
+    return "stateful or evidentiary HDC commands must run through a checked device-protocol manifest"
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     if not args.command:
         print("device lease run requires a command after --", file=sys.stderr)
+        return 2
+    violation = direct_device_protocol_violation(args.command, args.device)
+    if violation:
+        print(f"device lease run denied: {violation}", file=sys.stderr)
+        print(
+            "use scripts/run-device-protocol --device <target> --lease <lease> <manifest.json>",
+            file=sys.stderr,
+        )
         return 2
     if not wait_for_lease(args):
         return 2
@@ -286,7 +362,9 @@ def cmd_run(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Advisory real-device lease helper for NextN agent tasks")
+    parser = argparse.ArgumentParser(
+        description="Real-device lease and checked protocol gate for NextN agent tasks"
+    )
     parser.add_argument("--device", required=True, help="explicit user-authorized device target; no default")
     sub = parser.add_subparsers(dest="cmd", required=True)
 

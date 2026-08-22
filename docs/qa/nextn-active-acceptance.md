@@ -3769,12 +3769,28 @@ permitted in this repository.
   terminating that exact stale daemon, starting the official server, and
   rerunning the lease-wrapped `tconn` outside the Codex network sandbox, 237
   returned `Connect OK`; `shell echo` and `bootevent.boot.completed=true`
-  then passed. The display was `AWAKE`, but `SCBScreenLock` still owned focus.
-  Both `uitest uiInput swipe` and the device's bounded `uinput -T -m` fallback
-  left the same lock screen unchanged, including attempts from screenshot-
-  confirmed neutral background bounds. Temporary lock-screen captures were
-  removed from host and device. The device was re-woken and given a temporary
-  `OverrideTimeout=86400000ms` guard while awaiting the physical unlock. No
-  install or app action occurred. The next physical action is a manual
-  non-secure unlock on 237; after that, repeat the final timeout write/readback
-  without repeating source or build work.
+  then passed. The subsequent individually issued wake/input/timeout commands
+  are rejected as protocol evidence: they bypassed the required manifest
+  runner, split one stateful recovery boundary, and treated command success as
+  state evidence. They do not establish a device or lock-screen defect.
+- The corrected project-owned recovery manifest
+  `docs/device-protocols/public-download-root-recovery-237.json` completed at
+  `2026-08-23T05:13:45+08:00`. Its preflight dump had `SCBScreenLock` window 22
+  at z-order 2000 and focused; after the single declared fling, the postflight
+  dump had that window at z-order -1 and desktop window 13 focused. The same
+  postflight readback proved `AWAKE` and `OverrideTimeout=86400000ms`. Raw
+  command metadata and system dumps are retained under
+  `.hvigor/outputs/nextn-public-download-root-recovery-20260823T0520/`; no
+  lock-screen capture is retained.
+- Repository controls now make the manifest path executable rather than
+  advisory: `scripts/run-device-protocol` checks project ownership and target,
+  dry-runs, and enters the active lease; `scripts/device-lease` rejects direct
+  state/evidence HDC, shell wrappers, arbitrary Python/Node, wrong targets, and
+  non-project manifests. `scripts/test_device_protocol_gate.py`, shell syntax,
+  `git diff --check`, and both updated Harmony skill validators pass. A live
+  lease-wrapped raw wake command was rejected before device access.
+- Physical acceptance remains **OPEN**. No HAP install or app action has yet
+  occurred in this re-entry. The next unverified physical action is to run a
+  project-owned install/cold-start manifest for the exact HAP above, then
+  continue the public-picker -> completed bounded download -> cold-start Reader
+  -> restore scan -> task removal sequence without repeating source/build work.

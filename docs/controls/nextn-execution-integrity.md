@@ -67,6 +67,12 @@ scope change, agent delegation, and task handoff in this repository.
   commit; or acquire/renew the exact lease, then run the one device command.
   A policy decision on the compound command says nothing about those smaller
   operations. Continue the sequence automatically.
+- For a stateful device protocol, "one device command" means one invocation of
+  `scripts/run-device-protocol` for the checked manifest. Never decompose that
+  manifest into individual HDC wake, timeout, UI input, capture, install,
+  launch, or diagnostic commands. The smaller-operation rule applies to lease
+  acquisition/renewal and transport recovery only; it does not override the
+  continuous UI-chain rule in Section 4.1.
 - A user report is permitted only after the exact minimal operation has itself
   been refused and no materially narrower in-scope operation remains. That
   report must name the one failed operation, preserve the active outcome as

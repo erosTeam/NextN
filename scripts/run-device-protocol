@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  echo "usage: run-device-protocol --device <full-target> --lease <lease-id> <manifest.json>" >&2
+}
+
+DEVICE=""
+LEASE=""
+MANIFEST=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --device)
+      if [[ $# -lt 2 ]]; then
+        usage
+        exit 2
+      fi
+      DEVICE="$2"
+      shift 2
+      ;;
+    --lease)
+      if [[ $# -lt 2 ]]; then
+        usage
+        exit 2
+      fi
+      LEASE="$2"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --*)
+      usage
+      exit 2
+      ;;
+    *)
+      if [[ -n "$MANIFEST" ]]; then
+        usage
+        exit 2
+      fi
+      MANIFEST="$1"
+      shift
+      ;;
+  esac
+done
+
+if [[ -z "$DEVICE" || -z "$LEASE" || -z "$MANIFEST" ]]; then
+  usage
+  exit 2
+fi
+[[ -f "$MANIFEST" ]] || { echo "manifest not found: $MANIFEST" >&2; exit 2; }
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+MANIFEST_DIR="$(cd "$(dirname "$MANIFEST")" && pwd)"
+MANIFEST_REAL="$MANIFEST_DIR/$(basename "$MANIFEST")"
+[[ "$MANIFEST_REAL" == "$PROJECT_ROOT/"* ]] || {
+  echo "manifest must be project-owned: $MANIFEST_REAL" >&2
+  exit 2
+}
+MANIFEST_TARGET="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["target"])' "$MANIFEST_REAL")"
+[[ "$MANIFEST_TARGET" == "$DEVICE" ]] || {
+  echo "manifest target mismatch: cli=$DEVICE manifest=$MANIFEST_TARGET" >&2
+  exit 2
+}
+RUNNER="${CODEX_HOME:-$HOME/.codex}/skills/harmony-run-device-diagnostics/scripts/run_device_protocol.py"
+[[ -f "$RUNNER" ]] || { echo "device protocol runner not found: $RUNNER" >&2; exit 2; }
+
+python3 "$RUNNER" "$MANIFEST_REAL" --dry-run
+exec "$SCRIPT_DIR/device-lease" --device "$DEVICE" run --lease "$LEASE" -- \
+  python3 "$RUNNER" "$MANIFEST_REAL"
