@@ -3729,3 +3729,37 @@ permitted in this repository.
   (`nextn-*.json`, `dl-settings.jpeg`, `screen-now.jpeg`) and excluded from
   Git. Unproven items: throttling feel, multi-batch restore with untracked
   sidecar directories, and a physical busy-frame capture.
+
+## Public Download directory correction — source/build complete, device OPEN — 2026-08-23
+
+- The storage-location assumption in the preceding Download restore result is
+  rejected for this follow-up. Its observed sandbox
+  `filesDir/nextn-downloads/<galleryId>` sidecars prove the defect reported by
+  the user; they do not accept the public Download-directory contract.
+- Current `main` commit `4e42c6f` obtains the write root through
+  `DocumentViewPicker` with `DocumentPickerMode.DOWNLOAD`, persists each
+  task-owned `storage_directory`, and routes page/metadata reads, Reader local
+  paths, restore scans, resume, export and removal through that owner. New
+  writes cannot use the legacy sandbox root; existing sandbox tasks remain
+  compatibility read/removal sources only.
+- After an explicit Hvigor clean, the signed build completed with a current
+  ArkTS compile and packaging pass. The resulting
+  `entry-default-signed.hap` SHA-256 is
+  `a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c`.
+  `git diff --check`, `scripts/test_home_subtab_contract.mjs`, and
+  `scripts/test_app_strings_format_contract.mjs` also passed. These are static
+  and build evidence only.
+- Physical acceptance remains **OPEN**. Lease
+  `20260822-202456-5752529c` reserved `192.168.50.237:12345`, but the shared HDC
+  service accepted target-list queries while every task command failed. After
+  terminating the confirmed stale HDC daemon and starting a fresh official
+  daemon, only the USB target remained visible; a lease-wrapped reconnect to
+  237 again returned `Connect server failed` after about 14 seconds. No HAP
+  install, picker interaction, download write or cold-start Reader assertion
+  was performed in this run.
+- Next unverified physical action: once 237's HDC task channel is reachable,
+  reacquire its lease, restore `AWAKE` / `OverrideTimeout`, install this exact
+  HAP with `install -r`, then execute the public-picker -> completed bounded
+  download -> cold-start Reader -> restore scan -> task removal sequence from
+  the OPEN UI ledger entry. Do not substitute the earlier sandbox scan or a
+  different device as acceptance.
