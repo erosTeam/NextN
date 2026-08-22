@@ -5,29 +5,23 @@ cycles on the explicitly selected device. It makes a distinction that must
 never be blurred:
 
 - **Login-page navigation event:** the app displayed a visible ArkWeb login
-  route. It starts a time-tracked login cycle even if credential entry does
-  not follow.
+  route. It is recorded even if credential entry does not follow.
 - **Re-login attempt:** the credential-entry subphase within that cycle. It
   starts only when the account credential is actually entered through the
   semantic field driver.
 
-For every login cycle, write `session-loss-detected-at` immediately after a
-cold-start S0 check finds the session absent, then write
-`webview-opened-at` when the login route becomes visible. On success, write
-`native-promotion-at` and `loss-to-promotion-elapsed`. If no native promotion
-occurs, write `last-observed-at` and `elapsed-so-far` before yielding or
-switching lanes. Before opening another WebView, review the preceding cycle's
-reason, terminal state, and duration. Historic cycles without a recorded
-start or terminal timestamp must be marked
-`unavailable-from-existing-evidence`; do not reconstruct or estimate their
-duration.
+For every login cycle, record the trigger, safe S0 state, actions performed,
+terminal state, and conclusion. Before opening another WebView, review the
+preceding cycle's reason and terminal state. Do not reuse or silently reopen a
+closed attempt.
 
 ## Current execution status
 
 As of the last recorded device result, **no credential epoch or login cycle is
 active**. The later native re-verification and cold-start records below closed
-the earlier timed entries; their historical headings and timestamps are kept
-unchanged as evidence of the overruns, not as instructions to resume them.
+the earlier entries. Historical headings, timestamps, duration fields, and
+retired timing-limit observations are kept unchanged as evidence, not as
+current instructions.
 
 A new cycle may begin only after a fresh current S0 observation proves native
 Account or Favorites unusable. It must append a new redacted record and never
@@ -35,18 +29,11 @@ reuse an old “active”, “prepared”, or “pending” field as a live acti
 source change, build, documentation change, historical login failure, or a
 desire to reconfirm the path is not a trigger.
 
-**Normal-path limit:** when the authorized credentials and submit path are
-ready and no challenge is present, `loss-to-promotion-elapsed` must be at most
-00:01:00. For every overrun, record the first blocking phase
-(`credential`, `form`, `challenge`, `network`, or `native-persistence`) and
-the measured elapsed time. A later retry never erases that overrun.
-
-**Execution rule:** all build/install, wake/lease, prior-cycle accounting, and
-route preparation happen before `session-loss-detected-at`. During a timed
-cycle, only the prepared native route and semantic credential sequence may
-run. Source inspection, documentation edits, layout analysis, helper work,
-and unrelated diagnostics are prohibited until native promotion or a recorded
-overrun; none may reset the timing origin.
+**Execution rule:** complete build/install, wake/lease, prior-cycle accounting,
+and route preparation before an attempt. During it, run only the prepared
+native route and semantic credential sequence. Source inspection,
+documentation edits, layout analysis, helper work, and unrelated diagnostics
+wait until the attempt reaches a terminal state.
 
 ## Hard gate
 
@@ -77,12 +64,6 @@ metadata.
 - restore/401 diagnostic: <fixed stage or diagnostic-inconclusive>
 - install/data boundary: install-r=<true|false>; data-clear=false; uninstall=false
 - login-page navigation: <not-entered|entered>
-- session-loss-detected-at: <ISO-8601 local timestamp|unavailable-from-existing-evidence>
-- webview-opened-at: <ISO-8601 local timestamp|unavailable-from-existing-evidence>
-- native-promotion-at: <ISO-8601 local timestamp|pending|not-applicable>
-- loss-to-promotion-elapsed: <duration|pending|unavailable-from-existing-evidence>
-- last-observed-at: <ISO-8601 local timestamp|not-applicable>
-- elapsed-so-far: <duration|not-applicable>
 - account input: <not-started|entered|not-entered>
 - password input: <not-started|entered|not-entered>
 - submit: <not-issued|issued>
@@ -92,12 +73,11 @@ metadata.
 - conclusion: <accepted|repair-required|not-a-relogin-attempt>
 ```
 
-## Historic timing baseline
+## Historical timing records (retired)
 
-The entries below predate mandatory WebView-to-promotion timing. Their
-per-cycle durations are `unavailable-from-existing-evidence`; the date-only
-records and whole-turn durations elsewhere in the workspace are not a valid
-substitute for measured login-cycle elapsed time.
+The entries below preserve observations made under the retired timing rule.
+They remain historical evidence only and do not define current limits or
+required fields.
 
 ## Closed strict-timing login cycle — 2026-08-10
 

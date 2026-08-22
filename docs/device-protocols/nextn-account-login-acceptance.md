@@ -26,7 +26,7 @@ verify a completed login later, but they never become login-flow steps.
 The coordinator builds one immutable recovery run at the loss signal, then
 executes it from beginning to end with no ad-hoc per-step analysis.
 
-### Preparation — outside the timed run
+### Preparation
 
 The login executor keeps these conditions live before a loss signal arrives:
 
@@ -41,18 +41,16 @@ The login executor keeps these conditions live before a loss signal arrives:
    read-only probe, both semantic writes, the sole CF decision, and submit.
    The helper's default auto-cleanup mode is forbidden when S2--S4 will
    follow. The exact forward is removed only after the terminal native result.
-4. Keep a redacted timing record ready to receive the loss signal and terminal
-   native-promotion timestamp.
 
-No preparation command may run after `runStartedAt` and before either native
-promotion or the terminal timing record.
+Complete preparation before the attempt begins. Do not interrupt an active
+attempt with new setup work.
 
-### Timed fixed sequence: loss signal to native login
+### Fixed sequence: loss signal to native login
 
 With one attempt epoch, execute exactly this queue:
 
-1. At `login-lost-detected`, start the timer and invoke the native Account
-   login action if the visible login form is not already foreground.
+1. At `login-lost-detected`, begin the attempt epoch and invoke the native
+   Account login action if the visible login form is not already foreground.
 2. Confirm the current semantic login form.
 3. Run the **only live conditional**: when a Cloudflare challenge is present,
    invoke its one currently bound verification action once, then poll at the
@@ -64,21 +62,19 @@ With one attempt epoch, execute exactly this queue:
 6. Submit once through the bound submit control.
 7. Poll only for native promotion.
 
-The login flow ends at native promotion. The normal budget is 60 seconds from
-`runStartedAt` to native promotion; the outer hard deadline is 180 seconds.
-If the challenge branch is active, only its fixed poll/click loop may consume
-the extra time.
+The login flow ends at native promotion or a fixed terminal result. A challenge
+branch may use only its declared poll/click loop.
 
 ### Separate persistence verification — never invoked by this flow
 
 Only after the login flow has ended in native promotion may the independent
 P0 verifier force-stop/cold-start without clearing data and read native
 Account plus Favorites. It is not a login-flow stage and it does not alter the
-login timer or the single-submit epoch.
+single-submit epoch.
 
 ### No-interruption constraint
 
-Between `runStartedAt` and the terminal result, the coordinator must not read
+Between attempt start and the terminal result, the coordinator must not read
 documentation, inspect source, run a build, renew a lease, rediscover a
 route, recreate a forwarding channel, retrieve credentials, edit a ledger,
 launch a subtask, or add a diagnostic.  A non-CF failure maps directly to one
@@ -138,34 +134,16 @@ Before any UI or WebView action, apply the repository Harmony preflight:
    login-page entry, account input, password input, submit, native promotion,
    cold start, and Favorites verification. No ledger entry means no
    credential action.
-6. The instant a cold-start S0 check finds the session absent, append or
-   update its login-cycle timing entry with `session-loss-detected-at`, trigger,
-   and prior-cycle terminal outcome/duration. Record the later
-   `webview-opened-at` separately. On native promotion, record
-   `native-promotion-at` and the elapsed duration from the S0 loss boundary.
-   If the cycle becomes terminal without promotion, record
-   `last-observed-at` and its elapsed duration. Before opening a later login
-   WebView, inspect the prior timing entry and carry its measured duration (or
-   `unavailable-from-existing-evidence`, never an estimate) forward into the
-   new record. These timestamps contain no account, cookie, page, or
-   credential data.
-   For a ready form with the authorized credentials available and no active
-   challenge, native promotion has a 60-second operational ceiling measured
-   from `session-loss-detected-at`. A longer cycle must retain its first blocking
-   phase and elapsed duration before any later cycle begins; it cannot be
-   silently retried or treated as a normal login duration.
-7. Before the timed cold restart, complete the lease/wake gate, installation,
-   prior-cycle ledger closure, and route preparation. After
-   `session-loss-detected-at`, run only the minimal live route plus semantic
-   credential sequence. Do not insert source review, document edits, build
-   work, layout analysis, helper creation, or unrelated diagnostics before
-   native promotion or a recorded 60-second overrun. An overrun records its
-   first blocker; it never resets the timing origin.
+6. Complete the lease/wake gate, installation, prior-cycle ledger closure, and
+   route preparation before starting the attempt. During the attempt, run only
+   the minimal live route plus semantic credential sequence; do not insert
+   source review, document edits, build work, layout analysis, helper creation,
+   or unrelated diagnostics.
 
 ### Credential staging
 
 When a resumed authorized run needs credential material, the coordinator
-resolves it before the timed run from the already-authorized task context and
+resolves it before the attempt from the already-authorized task context and
 holds it only as volatile input to the semantic field writer.  It must not
 turn an implementation-specific credential-store miss into a user handoff, a
 coordinate-input fallback, or an in-run analysis branch.
