@@ -9,6 +9,7 @@ import {
   SuffixTextAndArrow,
 } from '@kit.UIDesignKit'
 import { ImageModifier, TextModifier } from '@kit.ArkUI'
+import { appMenuOptions } from './AppMenuOptions'
 import { ThemeTokens } from '../theme/ThemeTokens'
 
 /**
@@ -40,9 +41,14 @@ export struct NextNListRow {
   @Param showChevron: boolean = true
   /** Use the standard down-triangle when this row opens a value menu. */
   @Param trailingDropdown: boolean = false
+  @Param dropdownMenuEnabled: boolean = false
+  @Param dropdownMenuDeferredOpen: boolean = false
+  // Keep popup visibility beside the real suffix anchor; pages only provide menu content.
+  @Local private dropdownMenuShown: boolean = false
   /** Use a caller-owned HDS suffix only for a reference-owned leaf shape. */
   @Param useCustomTrailing: boolean = false
   @BuilderParam customTrailing: () => void = this.EmptyTrailing
+  @BuilderParam dropdownMenuBuilder: () => void = this.EmptyDropdownMenu
   /** Right inset of the wrapped custom suffix; rows may zero it when the suffix owns its padding. */
   @Param suffixPaddingRight: Length = ThemeTokens.SPACE_MD
   @Param hasSwitch: boolean = false
@@ -55,6 +61,7 @@ export struct NextNListRow {
   /** Optional stable selector for a caller-owned native row; no spoken output. */
   @Param accessibilityId: string = ''
   @Event onAction?: () => void
+  @Event dropdownMenuOpenAction?: (openMenu: () => void) => void
   @Event onTrailingAction?: () => void
   @Event onSwitchChange?: (value: boolean) => void
 
@@ -126,6 +133,9 @@ export struct NextNListRow {
   private EmptyTrailing() {}
 
   @Builder
+  private EmptyDropdownMenu() {}
+
+  @Builder
   private DropdownSuffixContent() {
     Text(this.trailingText)
       .fontSize(ThemeTokens.FONT_SIZE_BODY)
@@ -140,10 +150,23 @@ export struct NextNListRow {
 
   @Builder
   private DropdownSuffix() {
-    Row({ space: ThemeTokens.SPACE_XS }) {
-      this.DropdownSuffixContent()
+    if (this.dropdownMenuEnabled) {
+      Row({ space: ThemeTokens.SPACE_XS }) {
+        this.DropdownSuffixContent()
+      }
+      .alignItems(VerticalAlign.Center)
+      .bindMenu(this.dropdownMenuShown, this.dropdownMenuBuilder, appMenuOptions({
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.dropdownMenuShown = false
+        },
+      }))
+    } else {
+      Row({ space: ThemeTokens.SPACE_XS }) {
+        this.DropdownSuffixContent()
+      }
+      .alignItems(VerticalAlign.Center)
     }
-    .alignItems(VerticalAlign.Center)
   }
 
   private hasLeading(): boolean {
@@ -240,10 +263,23 @@ export struct NextNListRow {
   // row edge directly.
   @Builder
   private WrappedSuffixBuilder() {
-    Row() {
-      this.customTrailing()
+    if (this.dropdownMenuEnabled) {
+      Row() {
+        this.customTrailing()
+      }
+      .padding({ left: ThemeTokens.SPACE_SM, right: this.suffixPaddingRight })
+      .bindMenu(this.dropdownMenuShown, this.dropdownMenuBuilder, appMenuOptions({
+        placement: Placement.BottomRight,
+        onDisappear: (): void => {
+          this.dropdownMenuShown = false
+        },
+      }))
+    } else {
+      Row() {
+        this.customTrailing()
+      }
+      .padding({ left: ThemeTokens.SPACE_SM, right: this.suffixPaddingRight })
     }
-    .padding({ left: ThemeTokens.SPACE_SM, right: this.suffixPaddingRight })
   }
 
   build() {
@@ -269,8 +305,19 @@ export struct NextNListRow {
           accessibilitySelected: this.selected,
         },
         onClick: (): void => {
-          if (this.isEnabled && this.onAction) {
-            this.onAction()
+          if (this.isEnabled) {
+            if (this.dropdownMenuEnabled) {
+              if (this.dropdownMenuDeferredOpen && this.dropdownMenuOpenAction) {
+                this.dropdownMenuOpenAction((): void => {
+                  this.dropdownMenuShown = true
+                })
+              } else {
+                this.dropdownMenuShown = true
+              }
+            }
+            if (this.onAction) {
+              this.onAction()
+            }
           }
         },
       })

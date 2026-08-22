@@ -14,7 +14,6 @@ import {
   SecondaryListScaffold,
   ThemeTokens,
 } from 'shared'
-import { appMenuOptions } from 'shared'
 import { appSheetOptions } from 'shared'
 
 /**
@@ -27,7 +26,6 @@ export struct ContentFiltersPage {
   @Local isRestoring: boolean = true
   @Local errorMessage: string = ''
   @Local editorShown: boolean = false
-  @Local typeMenuShown: boolean = false
   @Local editingId: string = ''
   @Local draftType: NhContentFilterType = NhContentFilterType.TITLE
   @Local draftText: string = ''
@@ -196,7 +194,6 @@ export struct ContentFiltersPage {
       symbolEndIcon: this.draftType === type ? new SymbolGlyphModifier($r('sys.symbol.checkmark')) : undefined,
     }).onClick((): void => {
       this.draftType = type
-      this.typeMenuShown = false
     })
   }
 
@@ -268,18 +265,14 @@ export struct ContentFiltersPage {
             leadingIcon: this.typeIcon(this.draftType),
             title: AppStrings.get('content_filter_target_title'),
             trailingText: this.typeLabel(this.draftType),
+            trailingDropdown: true,
+            dropdownMenuEnabled: true,
+            dropdownMenuBuilder: () => {
+              this.FilterTypeMenu()
+            },
             accessibilityLabel: AppStrings.get('content_filter_target_a11y')
               .replace('%s', this.typeLabel(this.draftType)),
-            onAction: (): void => {
-              this.typeMenuShown = true
-            },
           })
-          .bindMenu(this.typeMenuShown, this.FilterTypeMenu, appMenuOptions({
-            placement: Placement.BottomRight,
-            onDisappear: (): void => {
-              this.typeMenuShown = false
-            },
-          }))
           this.RowDivider()
           NextNListRow({
             leadingIcon: $r('sys.symbol.checkmark_circle'),

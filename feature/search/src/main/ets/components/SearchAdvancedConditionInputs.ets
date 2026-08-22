@@ -19,7 +19,6 @@ import {
   SearchConditionRange,
   SearchConditionRelation,
 } from '../model/SearchConditionChip'
-import { appMenuOptions } from 'shared'
 import { SymbolGlyphModifier } from '@kit.ArkUI'
 
 const ADVANCED_RANGE_INPUT_WIDTH: number = 84
@@ -165,8 +164,6 @@ export struct SearchAdvancedConditionInputs {
   @Local favoriteMaximumText: string = ''
   @Local uploadedMinimumText: string = ''
   @Local uploadedMaximumText: string = ''
-  @Local tagNamespaceMenuShown: boolean = false
-  @Local uploadedUnitMenuShown: boolean = false
   @Local conditionMatches: NhTagSuggestion[] = []
   @Local isMatchingConditions: boolean = false
   @Local tagMatches: NhTagSuggestion[] = []
@@ -820,7 +817,6 @@ export struct SearchAdvancedConditionInputs {
       if (this.onNamespaceChange) {
         this.onNamespaceChange(namespace)
       }
-      this.tagNamespaceMenuShown = false
     })
   }
 
@@ -883,7 +879,6 @@ export struct SearchAdvancedConditionInputs {
         this.onUnitChange(unit)
       }
       this.notifyUploadedChanged(unit)
-      this.uploadedUnitMenuShown = false
     })
   }
 
@@ -943,17 +938,12 @@ export struct SearchAdvancedConditionInputs {
           title: AppStrings.get('search_advanced_type'),
           trailingText: this.tagNamespaceLabel(this.tagNamespace),
           trailingDropdown: true,
-          accessibilityLabel: AppStrings.get('search_advanced_type'),
-          onAction: (): void => {
-            this.tagNamespaceMenuShown = true
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: () => {
+            this.TagNamespaceMenu()
           },
+          accessibilityLabel: AppStrings.get('search_advanced_type'),
         })
-          .bindMenu(this.tagNamespaceMenuShown, this.TagNamespaceMenu, appMenuOptions({
-            placement: Placement.BottomRight,
-            onDisappear: (): void => {
-              this.tagNamespaceMenuShown = false
-            },
-          }))
         this.SearchOptionDivider()
         this.TagNameInputRow()
         this.TagMatchList()
@@ -991,17 +981,12 @@ export struct SearchAdvancedConditionInputs {
           title: AppStrings.get('search_advanced_unit'),
           trailingText: this.uploadedUnitLabel(this.uploadedUnit),
           trailingDropdown: true,
-          accessibilityLabel: AppStrings.get('search_advanced_unit'),
-          onAction: (): void => {
-            this.uploadedUnitMenuShown = true
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: () => {
+            this.UploadedUnitMenu()
           },
+          accessibilityLabel: AppStrings.get('search_advanced_unit'),
         })
-          .bindMenu(this.uploadedUnitMenuShown, this.UploadedUnitMenu, appMenuOptions({
-            placement: Placement.BottomRight,
-            onDisappear: (): void => {
-              this.uploadedUnitMenuShown = false
-            },
-          }))
         this.SearchOptionDivider()
         NextNListRow({
           title: AppStrings.get('search_advanced_uploaded'),

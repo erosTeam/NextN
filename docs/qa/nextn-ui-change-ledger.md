@@ -3,6 +3,70 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## ACCEPTED — Split-mode settings dropdown menus must anchor to their real suffix — 2026-08-22
+
+- **Why newly actionable:** current NextE commit `7ee42447` is a relevant
+  reference change after the migration audit freeze. It identifies that
+  page-owned `bindMenu` calls on outer row/container nodes choose the wrong
+  anchor in a Split secondary pane. The user asked to inspect the same issue in
+  NextN, correct it, install it on target 103, and validate the result.
+- **Reference parent tree and source-proven NextN gap:** preserve
+  `Index root HdsNavigation -> Split secondary destination -> settings page ->
+  SecondaryListScaffold/List -> grouped section -> NextNListRow -> HDS suffix`.
+  NextE now owns dropdown visibility and `bindMenu` inside `ConciseListRow`, on
+  the actual trailing dropdown/custom-suffix `Row`; pages provide only menu
+  content. NextN still had forty-two settings and advanced-search dropdowns whose page-local
+  `*MenuShown` state binds the menu outside `NextNListRow`, so the outer row or
+  wrapper remains the popup anchor. The two async model selectors additionally
+  need to preserve their fetch-before-open transition.
+- **Exact change and minimality:** give `NextNListRow` the same internal menu
+  visibility, menu-builder, and optional deferred-open callback contract; bind
+  only the dropdown/custom suffix. Convert only settings-tree value menus to
+  that contract and remove their obsolete page-owned visibility state. Keep
+  every page, list/scroller, grouped section, row order, title/subtitle, current
+  value, menu item, selection write, sheet, enabled predicate, and navigation
+  action unchanged. Non-row title-bar, Reader-canvas, download-card,
+  Favorites, and Home command-bus menus remain outside this boundary.
+- **Affected visible states and sibling review:** portrait and physical Split;
+  ordinary text dropdown suffix and custom theme-color suffix; enabled and
+  disabled rows; a menu near the top and bottom of a secondary pane; dismissal
+  without selection; selection and re-open at the new value; source rows with
+  no compatible provider that navigate instead of opening a menu; async model
+  fetch success, empty, and failure.
+- **Verification plan:** review the exact diff, run decorator/import and signed
+  build checks, resolve selector 103 against live HDC, acquire its exact lease,
+  pass the wake/unlock/`AWAKE` plus `OverrideTimeout=86400000ms` gate, install
+  with `-r`, then establish a real landscape Split secondary pane. Open at
+  least the Interface language menu and a lower Reader/settings dropdown from
+  current semantic row bounds; require each popup to align to the right-pane
+  suffix rather than the pane/row outer edge, while menu contents and
+  non-mutating dismissal remain intact. Restore device orientation after the
+  bounded scenario.
+- **Source and build evidence:** the forty-two page-owned settings and
+  advanced-search bindings now provide menu content to the shared row; no
+  page-level `bindMenu` remains in that reviewed set. `git diff --check` and
+  the V1-decorator inventory passed. `scripts/build-hvigor-signed.sh` completed
+  successfully, producing `entry-default-signed.hap` with SHA-256
+  `110126b89435ee4c27a983eb6a36e263fed35671d960811024563569dff04637`.
+- **103 device evidence:** selector 103 resolved live to
+  `192.168.50.103:12345`. The signed HAP was installed with `install -r`, with
+  no uninstall or data clear. A post-install cold start showed a 2560x1600
+  Split root with `NavBar [0,105][760,1600]` and right
+  `NavigationContent [761,105][2560,1600]`. On the right-side Interface page,
+  the language suffix text occupied `[2317,644][2451,683]`; its menu opened at
+  `[2162,702][2522,1176]`, immediately below and right-aligned to that suffix.
+  The custom theme-color suffix text occupied `[2323,413][2423,452]`; its menu
+  opened at `[2162,471][2522,1401]` with all eight existing choices intact.
+  Both menus dismissed without selection, the final layout contained zero
+  visible menu nodes, and the Split bounds remained unchanged. Final power
+  state was `AWAKE` with `OverrideTimeout=86400000ms`. Raw layouts and captures
+  are retained under `.hvigor/outputs/nextn-menu-anchor-103-20260822T/`.
+- **Acceptance boundary:** this directly accepts the ordinary text suffix and
+  custom suffix on the physical Split Interface page of target 103. The common
+  row owner and successful signed build cover the migrated call sites
+  statically; every migrated menu, portrait geometry, async model success/error
+  result, and a value-changing selection were not individually exercised.
+
 ## FROZEN — NextE to NextN migration-integrity audit — 2026-08-22
 
 - **Closure decision:** the current-source pass has disposed every structural

@@ -18,7 +18,6 @@ import {
   SecondaryListScaffold,
   ThemeTokens,
 } from 'shared'
-import { appMenuOptions } from 'shared'
 
 const CONNECTION_IDLE: string = 'idle'
 const CONNECTION_RUNNING: string = 'running'
@@ -43,8 +42,6 @@ export struct MangaRenderingServiceSettingsPage {
   @Local errorMessage: string = ''
   @Local detectionProfile: string = MANGA_RENDERING_DETECTION_HIGH_RECALL
   @Local inpaintingProfile: string = MANGA_RENDERING_INPAINTING_QUALITY
-  @Local detectionMenuShown: boolean = false
-  @Local inpaintingMenuShown: boolean = false
   @Param scroller: Scroller = new Scroller()
   private storedCredential: MangaRenderingServiceCredential = new MangaRenderingServiceCredential()
 
@@ -205,7 +202,6 @@ export struct MangaRenderingServiceSettingsPage {
           : undefined,
       }).onClick((): void => {
         this.detectionProfile = MANGA_RENDERING_DETECTION_HIGH_RECALL
-        this.detectionMenuShown = false
         this.markConfigurationChanged()
       })
       MenuItem({
@@ -215,7 +211,6 @@ export struct MangaRenderingServiceSettingsPage {
           : undefined,
       }).onClick((): void => {
         this.detectionProfile = MANGA_RENDERING_DETECTION_BALANCED
-        this.detectionMenuShown = false
         this.markConfigurationChanged()
       })
     }
@@ -231,7 +226,6 @@ export struct MangaRenderingServiceSettingsPage {
           : undefined,
       }).onClick((): void => {
         this.inpaintingProfile = MANGA_RENDERING_INPAINTING_QUALITY
-        this.inpaintingMenuShown = false
         this.markConfigurationChanged()
       })
       MenuItem({
@@ -241,7 +235,6 @@ export struct MangaRenderingServiceSettingsPage {
           : undefined,
       }).onClick((): void => {
         this.inpaintingProfile = MANGA_RENDERING_INPAINTING_FAST
-        this.inpaintingMenuShown = false
         this.markConfigurationChanged()
       })
     }
@@ -321,29 +314,27 @@ export struct MangaRenderingServiceSettingsPage {
         showChevron: false,
       })
       this.RowDivider()
-      Column() {
-        NextNListRow({
-          leadingIcon: $r('sys.symbol.character_viewfinder'),
-          title: AppStrings.get('settings_manga_rendering_service_detection'),
-          trailingText: this.detectionProfileText(),
-          onAction: (): void => {
-            this.detectionMenuShown = true
-          },
-        })
-      }
-      .bindMenu(this.detectionMenuShown, this.DetectionProfileMenu, appMenuOptions({}))
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.character_viewfinder'),
+        title: AppStrings.get('settings_manga_rendering_service_detection'),
+        trailingText: this.detectionProfileText(),
+        trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.DetectionProfileMenu()
+        },
+      })
       this.RowDivider()
-      Column() {
-        NextNListRow({
-          leadingIcon: $r('sys.symbol.picture'),
-          title: AppStrings.get('settings_manga_rendering_service_inpainting'),
-          trailingText: this.inpaintingProfileText(),
-          onAction: (): void => {
-            this.inpaintingMenuShown = true
-          },
-        })
-      }
-      .bindMenu(this.inpaintingMenuShown, this.InpaintingProfileMenu, appMenuOptions({}))
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.picture'),
+        title: AppStrings.get('settings_manga_rendering_service_inpainting'),
+        trailingText: this.inpaintingProfileText(),
+        trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.InpaintingProfileMenu()
+        },
+      })
       this.RowDivider()
       this.TextInputRow(AppStrings.get('settings_manga_rendering_service_url'), 'baseUrl')
       this.RowDivider()

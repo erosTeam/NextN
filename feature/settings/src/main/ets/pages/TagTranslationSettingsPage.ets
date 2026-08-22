@@ -17,7 +17,6 @@ import {
   connectTagTranslationSettings,
   releaseTagTranslationVersionLabel,
 } from 'shared'
-import { appMenuOptions } from 'shared'
 
 /**
  * Presentation-only failure codes. TagTranslationUpdateService deliberately
@@ -46,7 +45,6 @@ export struct TagTranslationSettingsPage {
   @Local isDeletingTagDictionary: boolean = false
   @Local tagDictionaryError: string = ''
   @Local tagSettings: TagTranslationSettingsState = connectTagTranslationSettings()
-  @Local updateModeMenuShown: boolean = false
   @Param scroller: Scroller = new Scroller()
 
   aboutToAppear(): void {
@@ -221,7 +219,6 @@ export struct TagTranslationSettingsPage {
 
   private setUpdateMode(mode: string): void {
     TagTranslationSettings.setUpdateMode(this.context(), mode).catch((): void => {})
-    this.updateModeMenuShown = false
   }
 
   private tagDictionaryStatusText(): string {
@@ -350,27 +347,20 @@ export struct TagTranslationSettingsPage {
               },
             })
             this.RowDivider()
-            Column() {
-              NextNListRow({
-                leadingIcon: $r('sys.symbol.clock'),
-                title: AppStrings.get('settings_tag_translation_update_mode'),
-                trailingText: this.updateModeText(),
-                trailingDropdown: true,
-                accessibilityLabel: AppStrings.format('settings_row_a11y', [
-                  AppStrings.get('settings_tag_translation_update_mode'),
-                  this.updateModeText(),
-                ]),
-                onAction: (): void => {
-                  this.updateModeMenuShown = true
-                },
-              })
-            }
-            .bindMenu(this.updateModeMenuShown, this.UpdateModeMenu, appMenuOptions({
-              placement: Placement.BottomRight,
-              onDisappear: (): void => {
-                this.updateModeMenuShown = false
+            NextNListRow({
+              leadingIcon: $r('sys.symbol.clock'),
+              title: AppStrings.get('settings_tag_translation_update_mode'),
+              trailingText: this.updateModeText(),
+              trailingDropdown: true,
+              dropdownMenuEnabled: true,
+              dropdownMenuBuilder: () => {
+                this.UpdateModeMenu()
               },
-            }))
+              accessibilityLabel: AppStrings.format('settings_row_a11y', [
+                AppStrings.get('settings_tag_translation_update_mode'),
+                this.updateModeText(),
+              ]),
+            })
           }
         }
         if (this.tagDictionaryError.length > 0) {

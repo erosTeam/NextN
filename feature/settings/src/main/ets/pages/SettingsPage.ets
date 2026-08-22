@@ -132,7 +132,6 @@ import {
   connectThemeDisplay,
   releaseTagTranslationVersionLabel,
 } from 'shared'
-import { appMenuOptions } from 'shared'
 import { appSheetOptions } from 'shared'
 import {
   BackupFilePickerCoordinator,
@@ -184,7 +183,6 @@ export struct SettingsPage {
   @Local pageCacheStat: CacheStat = new CacheStat()
   @Local imageCacheStat: CacheStat = new CacheStat()
   @Local readerCacheLimitMb: number = 1024
-  @Local readerCacheLimitMenuShown: boolean = false
   @Local isLoadingPrivateCache: boolean = false
   @Local isClearingPrivateCache: boolean = false
   @Local privateCacheError: string = ''
@@ -270,21 +268,10 @@ export struct SettingsPage {
   @Local browsePresentationError: string = ''
   @Local browsePreferencesError: string = ''
   @Local searchPreferencesError: string = ''
-  @Local readerModeMenuShown: boolean = false
-  @Local readerSpreadLayoutMenuShown: boolean = false
-  @Local readerBackgroundMenuShown: boolean = false
-  @Local readerImageScalingQualityMenuShown: boolean = false
-  @Local readerPreloadMenuShown: boolean = false
-  @Local readerAutoPageMenuShown: boolean = false
-  @Local readerTapZoneMenuShown: boolean = false
-  @Local readerTapZoneInvertMenuShown: boolean = false
-  @Local readerEnhancementModelMenuShown: boolean = false
-  @Local readerEnhancementMaxHeightMenuShown: boolean = false
   @Local downloadSettings: DownloadSettingsState = connectDownloadSettings()
   @Local diagnostics: DiagnosticsState = connectDiagnostics()
   @Local diagnosticsLogCount: number = 0
   @Local diagnosticsLogFiles: DiagnosticsLogFileInfo[] = []
-  @Local diagnosticsLevelMenuShown: boolean = false
   @Local commentTranslationSettings: CommentTranslationSettingsState = connectCommentTranslationSettings()
   @Local tagTranslationSettings: TagTranslationSettingsState = connectTagTranslationSettings()
   @Local accountSession: AccountSessionState = connectAccountSession()
@@ -308,27 +295,11 @@ export struct SettingsPage {
   @Local isAccountSignedIn: boolean = false
   @Local downloadSettingsError: string = ''
   @Local isSavingDownloadSettings: boolean = false
-  @Local galleryConcurrencyMenuShown: boolean = false
-  @Local pageConcurrencyMenuShown: boolean = false
-  @Local retryCountMenuShown: boolean = false
-  @Local themeMenuShown: boolean = false
-  @Local themeColorMenuShown: boolean = false
   @Local themeColorPickerShown: boolean = false
   @Local draftCustomThemeColor: string = '#0958F7'
   private themeColorBeforePicker: string = ThemeColorSettings.COLOR_GALAXY_BLUE
   private themeColorPreviewActive: boolean = false
-  @Local immersiveMaterialMenuShown: boolean = false
-  @Local languageMenuShown: boolean = false
-  @Local browsePresentationMenuShown: boolean = false
-  @Local catalogBrowseLanguageMenuShown: boolean = false
-  @Local catalogBrowseSortMenuShown: boolean = false
-  @Local catalogSearchLanguageMenuShown: boolean = false
-  @Local catalogSearchSortMenuShown: boolean = false
-  @Local screenOrientationMenuShown: boolean = false
-  @Local tabletLayoutMenuShown: boolean = false
   @Local clipboardLinkSaving: boolean = false
-  @Local readButtonStyleMenuShown: boolean = false
-  @Local actionAlignmentMenuShown: boolean = false
   private diagnosticsShareController?: systemShare.ShareController
   @Param scroller: Scroller = new Scroller()
   @Param surface: SettingsSurface = SettingsSurface.ROOT
@@ -493,7 +464,6 @@ export struct SettingsPage {
   }
 
   private setTheme(mode: string): void {
-    this.themeMenuShown = false
     ThemeSettings.setMode(this.context(), mode).catch((): void => {})
   }
 
@@ -502,13 +472,11 @@ export struct SettingsPage {
   }
 
   private setThemeColor(value: string): void {
-    this.themeColorMenuShown = false
     ThemeColorSettings.setColor(this.context(), value).catch((): void => {})
   }
 
   /** Opens the custom picker without persisting or replacing the current accent. */
   private openThemeColorPicker(): void {
-    this.themeColorMenuShown = false
     this.themeColorBeforePicker = this.themeColor.color
     this.draftCustomThemeColor = ThemeColorSettings.customSeed(this.themeColorBeforePicker)
     this.themeColorPreviewActive = true
@@ -530,7 +498,6 @@ export struct SettingsPage {
   }
 
   private setImmersiveMaterial(level: string): void {
-    this.immersiveMaterialMenuShown = false
     ImmersiveMaterialSettings.setLevel(this.context(), level).catch((): void => {})
   }
 
@@ -549,7 +516,6 @@ export struct SettingsPage {
   }
 
   private setLanguage(mode: string): void {
-    this.languageMenuShown = false
     LanguageSettings.setMode(this.context(), mode).catch((): void => {})
   }
 
@@ -569,7 +535,6 @@ export struct SettingsPage {
   }
 
   private setTabletLayout(mode: string): void {
-    this.tabletLayoutMenuShown = false
     TabletLayoutSettings.setMode(this.context(), mode).catch((): void => {})
   }
 
@@ -585,7 +550,6 @@ export struct SettingsPage {
   }
 
   private setScreenOrientation(mode: string): void {
-    this.screenOrientationMenuShown = false
     ScreenOrientationSettings.setMode(this.context(), mode).catch((): void => {})
   }
 
@@ -639,7 +603,6 @@ export struct SettingsPage {
   }
 
   private setCatalogBrowseLanguage(language: NhSearchLanguage): void {
-    this.catalogBrowseLanguageMenuShown = false
     this.browsePreferencesError = ''
     CatalogPreferencesService.setBrowseLanguage(this.context(), language).catch((): void => {
       this.browsePreferencesError = AppStrings.get('settings_browse_preferences_save_failed')
@@ -647,7 +610,6 @@ export struct SettingsPage {
   }
 
   private setCatalogBrowseSort(sort: NhSearchSort): void {
-    this.catalogBrowseSortMenuShown = false
     this.browsePreferencesError = ''
     CatalogPreferencesService.setBrowseSort(this.context(), sort).catch((): void => {
       this.browsePreferencesError = AppStrings.get('settings_browse_preferences_save_failed')
@@ -655,7 +617,6 @@ export struct SettingsPage {
   }
 
   private setCatalogSearchLanguage(language: NhSearchLanguage): void {
-    this.catalogSearchLanguageMenuShown = false
     this.searchPreferencesError = ''
     CatalogPreferencesService.setSearchLanguage(this.context(), language).catch((): void => {
       this.searchPreferencesError = AppStrings.get('settings_search_preferences_save_failed')
@@ -663,7 +624,6 @@ export struct SettingsPage {
   }
 
   private setCatalogSearchSort(sort: NhSearchSort): void {
-    this.catalogSearchSortMenuShown = false
     this.searchPreferencesError = ''
     CatalogPreferencesService.setSearchSort(this.context(), sort).catch((): void => {
       this.searchPreferencesError = AppStrings.get('settings_search_preferences_save_failed')
@@ -783,7 +743,6 @@ export struct SettingsPage {
   }
 
   private async setReaderEnhancementModel(model: NhReaderSuperResolutionModel): Promise<void> {
-    this.readerEnhancementModelMenuShown = false
     if (!this.hasReaderEnhancementModelInstalled(model) ||
       this.readerPresentation.superResolutionModel === model) {
       return
@@ -797,7 +756,6 @@ export struct SettingsPage {
   }
 
   private async setReaderEnhancementMaxHeight(height: number): Promise<void> {
-    this.readerEnhancementMaxHeightMenuShown = false
     if (!this.readerPresentation.superResolutionEnabled ||
       !this.selectedReaderEnhancementModelInstalled() ||
       this.readerPresentation.superResolutionMaxHeight === height) {
@@ -827,7 +785,6 @@ export struct SettingsPage {
   private setActionAlignmentMode(mode: string): void {
     ActionAlignmentSettings.save(this.context(), mode).catch((): void => {})
     MotionHandStateService.applyAlignmentMode(mode)
-    this.actionAlignmentMenuShown = false
   }
 
   private setReadButtonStyle(style: string): void {
@@ -877,7 +834,6 @@ export struct SettingsPage {
   }
 
   private updateDiagnosticsMinLevel(level: string): void {
-    this.diagnosticsLevelMenuShown = false
     const snapshot = DiagnosticsSettings.current()
     snapshot.minLevel = DiagnosticsSettings.normalizeLevel(level)
     DiagnosticsSettings.save(this.context(), snapshot).catch((): void => {})
@@ -1217,7 +1173,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveGalleryConcurrency(1)
-        this.galleryConcurrencyMenuShown = false
       })
       MenuItem({
         content: '2',
@@ -1226,7 +1181,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveGalleryConcurrency(2)
-        this.galleryConcurrencyMenuShown = false
       })
       MenuItem({
         content: '3',
@@ -1235,7 +1189,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveGalleryConcurrency(3)
-        this.galleryConcurrencyMenuShown = false
       })
       MenuItem({
         content: '4',
@@ -1244,7 +1197,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveGalleryConcurrency(4)
-        this.galleryConcurrencyMenuShown = false
       })
       MenuItem({
         content: '5',
@@ -1253,7 +1205,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveGalleryConcurrency(5)
-        this.galleryConcurrencyMenuShown = false
       })
     }
   }
@@ -1268,7 +1219,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.savePageConcurrency(1)
-        this.pageConcurrencyMenuShown = false
       })
       MenuItem({
         content: '2',
@@ -1277,7 +1227,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.savePageConcurrency(2)
-        this.pageConcurrencyMenuShown = false
       })
       MenuItem({
         content: '3',
@@ -1286,7 +1235,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.savePageConcurrency(3)
-        this.pageConcurrencyMenuShown = false
       })
       MenuItem({
         content: '4',
@@ -1295,7 +1243,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.savePageConcurrency(4)
-        this.pageConcurrencyMenuShown = false
       })
       MenuItem({
         content: '5',
@@ -1304,7 +1251,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.savePageConcurrency(5)
-        this.pageConcurrencyMenuShown = false
       })
     }
   }
@@ -1319,7 +1265,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveRetryCount(0)
-        this.retryCountMenuShown = false
       })
       MenuItem({
         content: this.retryCountLabelFor(1),
@@ -1328,7 +1273,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveRetryCount(1)
-        this.retryCountMenuShown = false
       })
       MenuItem({
         content: this.retryCountLabelFor(2),
@@ -1337,7 +1281,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveRetryCount(2)
-        this.retryCountMenuShown = false
       })
       MenuItem({
         content: this.retryCountLabelFor(3),
@@ -1346,7 +1289,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveRetryCount(3)
-        this.retryCountMenuShown = false
       })
     }
   }
@@ -1362,7 +1304,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveReaderMode(NhReaderMode.PAGED)
-        this.readerModeMenuShown = false
       })
       MenuItem({
         content: AppStrings.get('settings_reader_mode_paged_rtl'),
@@ -1372,7 +1313,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveReaderMode(NhReaderMode.PAGED_RTL)
-        this.readerModeMenuShown = false
       })
       MenuItem({
         content: AppStrings.get('settings_reader_mode_paged_vertical'),
@@ -1382,7 +1322,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveReaderMode(NhReaderMode.PAGED_VERTICAL)
-        this.readerModeMenuShown = false
       })
       MenuItem({
         content: AppStrings.get('settings_reader_mode_vertical'),
@@ -1392,7 +1331,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveReaderMode(NhReaderMode.VERTICAL)
-        this.readerModeMenuShown = false
       })
     }
   }
@@ -1406,7 +1344,6 @@ export struct SettingsPage {
         : undefined,
     }).onClick((): void => {
       this.saveReaderImageScalingQuality(quality)
-      this.readerImageScalingQualityMenuShown = false
     })
   }
 
@@ -1442,7 +1379,6 @@ export struct SettingsPage {
         : undefined,
     }).onClick((): void => {
       this.saveReaderBackgroundMode(mode)
-      this.readerBackgroundMenuShown = false
     })
   }
 
@@ -1474,7 +1410,6 @@ export struct SettingsPage {
         : undefined,
     }).onClick((): void => {
       this.saveReaderSpreadLayout(layout)
-      this.readerSpreadLayoutMenuShown = false
     })
   }
 
@@ -1501,7 +1436,6 @@ export struct SettingsPage {
         : undefined,
     }).onClick((): void => {
       this.saveReaderTapZoneLayout(layout)
-      this.readerTapZoneMenuShown = false
     })
   }
 
@@ -1537,7 +1471,6 @@ export struct SettingsPage {
         : undefined,
     }).onClick((): void => {
       this.saveReaderTapZoneInvert(invert)
-      this.readerTapZoneInvertMenuShown = false
     })
   }
 
@@ -1574,7 +1507,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.setReadButtonStyle(ReadButtonStyleSettings.STYLE_FILLED)
-        this.readButtonStyleMenuShown = false
       })
       MenuItem({
         content: AppStrings.get('read_button_style_hds'),
@@ -1583,7 +1515,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.setReadButtonStyle(ReadButtonStyleSettings.STYLE_HDS)
-        this.readButtonStyleMenuShown = false
       })
     }
   }
@@ -1676,7 +1607,6 @@ export struct SettingsPage {
         : undefined,
     }).onClick((): void => {
       this.saveReaderPreloadPages(pages)
-      this.readerPreloadMenuShown = false
     })
   }
 
@@ -1701,7 +1631,6 @@ export struct SettingsPage {
         : undefined,
     }).onClick((): void => {
       this.saveReaderAutoPageSeconds(seconds)
-      this.readerAutoPageMenuShown = false
     })
   }
 
@@ -2001,7 +1930,6 @@ export struct SettingsPage {
         : undefined,
     }).onClick((): void => {
       this.setReaderCacheLimit(limitMb)
-      this.readerCacheLimitMenuShown = false
     })
   }
 
@@ -2023,19 +1951,14 @@ export struct SettingsPage {
         title: AppStrings.get('settings_reader_image_cache_limit'),
         trailingText: this.readerCacheLimitLabel(),
         trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.ReaderCacheLimitMenu()
+        },
         accessibilityLabel: AppStrings.format('settings_reader_image_cache_limit_a11y', [
           this.readerCacheLimitLabel(),
         ]),
-        onAction: (): void => {
-          this.readerCacheLimitMenuShown = true
-        },
       })
-        .bindMenu(this.readerCacheLimitMenuShown, this.ReaderCacheLimitMenu, appMenuOptions({
-          placement: Placement.BottomRight,
-          onDisappear: (): void => {
-            this.readerCacheLimitMenuShown = false
-          },
-        }))
     }
   }
 
@@ -2342,16 +2265,11 @@ export struct SettingsPage {
         subtitle: AppStrings.get('diagnostics_min_level_hint'),
         trailingText: this.diagnosticsLevelLabel(this.diagnostics.minLevel),
         trailingDropdown: true,
-        onAction: (): void => {
-          this.diagnosticsLevelMenuShown = true
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.DiagnosticsLevelMenu()
         },
       })
-      .bindMenu(this.diagnosticsLevelMenuShown, this.DiagnosticsLevelMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.diagnosticsLevelMenuShown = false
-        },
-      }))
     }
   }
 
@@ -2915,58 +2833,46 @@ export struct SettingsPage {
         leadingIcon: $r('sys.symbol.rectangle_stack'),
         title: AppStrings.get('settings_download_gallery_concurrency'),
         trailingText: `${this.downloadSettings.maxConcurrentGalleries}`,
+        trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.GalleryConcurrencyMenu()
+        },
         isEnabled: !this.isSavingDownloadSettings,
         accessibilityLabel: AppStrings.format('settings_download_gallery_concurrency_a11y', [
           this.downloadSettings.maxConcurrentGalleries.toString(),
         ]),
-        onAction: (): void => {
-          this.galleryConcurrencyMenuShown = true
-        },
       })
-      .bindMenu(this.galleryConcurrencyMenuShown, this.GalleryConcurrencyMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.galleryConcurrencyMenuShown = false
-        },
-      }))
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.square_grid_2x2'),
         title: AppStrings.get('settings_download_page_concurrency'),
         trailingText: `${this.downloadSettings.maxConcurrentPages}`,
+        trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.PageConcurrencyMenu()
+        },
         isEnabled: !this.isSavingDownloadSettings,
         accessibilityLabel: AppStrings.format('settings_download_page_concurrency_a11y', [
           this.downloadSettings.maxConcurrentPages.toString(),
         ]),
-        onAction: (): void => {
-          this.pageConcurrencyMenuShown = true
-        },
       })
-      .bindMenu(this.pageConcurrencyMenuShown, this.PageConcurrencyMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.pageConcurrencyMenuShown = false
-        },
-      }))
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.arrow_clockwise'),
         title: AppStrings.get('settings_download_failed_page_retries'),
         trailingText: this.retryCountLabel(),
+        trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.RetryCountMenu()
+        },
         isEnabled: !this.isSavingDownloadSettings,
         accessibilityLabel: AppStrings.format('settings_download_failed_page_retries_a11y', [
           this.retryCountLabel(),
         ]),
-        onAction: (): void => {
-          this.retryCountMenuShown = true
-        },
       })
-      .bindMenu(this.retryCountMenuShown, this.RetryCountMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.retryCountMenuShown = false
-        },
-      }))
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.bell'),
@@ -2998,17 +2904,12 @@ export struct SettingsPage {
           title: AppStrings.get('settings_reader_layout'),
           trailingText: this.readerModeLabel(),
           trailingDropdown: true,
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: () => {
+            this.ReaderModeMenu()
+          },
           accessibilityLabel: AppStrings.format('settings_reader_layout_a11y', [this.readerModeLabel()]),
-          onAction: (): void => {
-            this.readerModeMenuShown = true
-          },
         })
-        .bindMenu(this.readerModeMenuShown, this.ReaderModeMenu, appMenuOptions({
-          placement: Placement.BottomRight,
-          onDisappear: (): void => {
-            this.readerModeMenuShown = false
-          },
-        }))
         this.RowDivider()
         NextNListRow({
           title: AppStrings.get('settings_reader_double_page'),
@@ -3035,23 +2936,15 @@ export struct SettingsPage {
           title: AppStrings.get('settings_reader_spread_layout'),
           trailingText: this.readerSpreadLayoutLabel(),
           trailingDropdown: true,
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: () => {
+            this.ReaderSpreadLayoutMenu()
+          },
           isEnabled: this.doublePageAvailable(),
           accessibilityLabel: AppStrings.format('settings_reader_spread_layout_a11y', [
             this.readerSpreadLayoutLabel(),
           ]),
-          onAction: (): void => {
-            if (!this.doublePageAvailable()) {
-              return
-            }
-            this.readerSpreadLayoutMenuShown = true
-          },
         })
-        .bindMenu(this.readerSpreadLayoutMenuShown, this.ReaderSpreadLayoutMenu, appMenuOptions({
-          placement: Placement.BottomRight,
-          onDisappear: (): void => {
-            this.readerSpreadLayoutMenuShown = false
-          },
-        }))
         this.RowDivider()
         NextNListRow({
           title: AppStrings.get('settings_reader_page_turn_animation'),
@@ -3081,37 +2974,27 @@ export struct SettingsPage {
           title: AppStrings.get('settings_reader_tap_zones'),
           trailingText: this.readerTapZoneLayoutLabel(),
           trailingDropdown: true,
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: () => {
+            this.ReaderTapZoneMenu()
+          },
           accessibilityLabel: AppStrings.format('settings_reader_tap_zones_a11y', [
             this.readerTapZoneLayoutLabel(),
           ]),
-          onAction: (): void => {
-            this.readerTapZoneMenuShown = true
-          },
         })
-        .bindMenu(this.readerTapZoneMenuShown, this.ReaderTapZoneMenu, appMenuOptions({
-          placement: Placement.BottomRight,
-          onDisappear: (): void => {
-            this.readerTapZoneMenuShown = false
-          },
-        }))
         this.RowDivider()
         NextNListRow({
           title: AppStrings.get('settings_reader_tap_zone_invert'),
           trailingText: this.readerTapZoneInvertLabel(),
           trailingDropdown: true,
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: () => {
+            this.ReaderTapZoneInvertMenu()
+          },
           accessibilityLabel: AppStrings.format('settings_reader_tap_zone_invert_a11y', [
             this.readerTapZoneInvertLabel(),
           ]),
-          onAction: (): void => {
-            this.readerTapZoneInvertMenuShown = true
-          },
         })
-        .bindMenu(this.readerTapZoneInvertMenuShown, this.ReaderTapZoneInvertMenu, appMenuOptions({
-          placement: Placement.BottomRight,
-          onDisappear: (): void => {
-            this.readerTapZoneInvertMenuShown = false
-          },
-        }))
       }
     }
   }
@@ -3125,19 +3008,14 @@ export struct SettingsPage {
           title: AppStrings.get('settings_reader_background'),
           trailingText: this.readerBackgroundModeLabel(),
           trailingDropdown: true,
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: () => {
+            this.ReaderBackgroundModeMenu()
+          },
           accessibilityLabel: AppStrings.format('settings_reader_background_a11y', [
             this.readerBackgroundModeLabel(),
           ]),
-          onAction: (): void => {
-            this.readerBackgroundMenuShown = true
-          },
         })
-        .bindMenu(this.readerBackgroundMenuShown, this.ReaderBackgroundModeMenu, appMenuOptions({
-          placement: Placement.BottomRight,
-          onDisappear: (): void => {
-            this.readerBackgroundMenuShown = false
-          },
-        }))
         this.RowDivider()
         NextNListRow({
           title: AppStrings.get('settings_reader_image_scaling_quality'),
@@ -3145,19 +3023,14 @@ export struct SettingsPage {
           subtitleMaxLines: 3,
           trailingText: this.readerImageScalingQualityLabel(),
           trailingDropdown: true,
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: () => {
+            this.ReaderImageScalingQualityMenu()
+          },
           accessibilityLabel: AppStrings.format('settings_reader_image_scaling_quality_a11y', [
             this.readerImageScalingQualityLabel(),
           ]),
-          onAction: (): void => {
-            this.readerImageScalingQualityMenuShown = true
-          },
         })
-        .bindMenu(this.readerImageScalingQualityMenuShown, this.ReaderImageScalingQualityMenu, appMenuOptions({
-          placement: Placement.BottomRight,
-          onDisappear: (): void => {
-            this.readerImageScalingQualityMenuShown = false
-          },
-        }))
         this.RowDivider()
         NextNListRow({
           title: AppStrings.get('settings_reader_show_page_number'),
@@ -3236,22 +3109,15 @@ export struct SettingsPage {
           title: AppStrings.get('settings_reader_enhancement_model_selection'),
           trailingText: this.readerEnhancementModelLabel(),
           trailingDropdown: true,
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: () => {
+            this.ReaderEnhancementModelMenu()
+          },
           isEnabled: this.readerEnhancementInstalledModels.length > 0,
           accessibilityLabel: AppStrings.format('settings_reader_enhancement_model_selection_a11y', [
             this.readerEnhancementModelLabel(),
           ]),
-          onAction: (): void => {
-            if (this.readerEnhancementInstalledModels.length > 0) {
-              this.readerEnhancementModelMenuShown = true
-            }
-          },
         })
-        .bindMenu(this.readerEnhancementModelMenuShown, this.ReaderEnhancementModelMenu, appMenuOptions({
-          placement: Placement.BottomRight,
-          onDisappear: (): void => {
-            this.readerEnhancementModelMenuShown = false
-          },
-        }))
         this.RowDivider()
         NextNListRow({
           title: AppStrings.get('settings_reader_enhancement_models'),
@@ -3270,24 +3136,16 @@ export struct SettingsPage {
           subtitleMaxLines: 3,
           trailingText: this.readerEnhancementMaxHeightLabel(),
           trailingDropdown: true,
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: () => {
+            this.ReaderEnhancementMaxHeightMenu()
+          },
           isEnabled: this.readerPresentation.superResolutionEnabled &&
             this.selectedReaderEnhancementModelInstalled(),
           accessibilityLabel: AppStrings.format('settings_reader_enhancement_max_height_a11y', [
             this.readerEnhancementMaxHeightLabel(),
           ]),
-          onAction: (): void => {
-            if (this.readerPresentation.superResolutionEnabled &&
-              this.selectedReaderEnhancementModelInstalled()) {
-              this.readerEnhancementMaxHeightMenuShown = true
-            }
-          },
         })
-        .bindMenu(this.readerEnhancementMaxHeightMenuShown, this.ReaderEnhancementMaxHeightMenu, appMenuOptions({
-          placement: Placement.BottomRight,
-          onDisappear: (): void => {
-            this.readerEnhancementMaxHeightMenuShown = false
-          },
-        }))
       }
     }
   }
@@ -3301,19 +3159,14 @@ export struct SettingsPage {
           title: AppStrings.get('settings_reader_auto_advance_interval'),
           trailingText: this.readerAutoPageLabel(),
           trailingDropdown: true,
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: () => {
+            this.ReaderAutoPageMenu()
+          },
           accessibilityLabel: AppStrings.format('settings_reader_auto_advance_interval_a11y', [
             this.readerAutoPageLabel(),
           ]),
-          onAction: (): void => {
-            this.readerAutoPageMenuShown = true
-          },
         })
-        .bindMenu(this.readerAutoPageMenuShown, this.ReaderAutoPageMenu, appMenuOptions({
-          placement: Placement.BottomRight,
-          onDisappear: (): void => {
-            this.readerAutoPageMenuShown = false
-          },
-        }))
         this.RowDivider()
         NextNListRow({
           title: AppStrings.get('settings_reader_volume_keys_turn_pages'),
@@ -3345,17 +3198,12 @@ export struct SettingsPage {
           title: AppStrings.get('settings_reader_preload_pages'),
           trailingText: this.readerPreloadLabel(),
           trailingDropdown: true,
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: () => {
+            this.ReaderPreloadMenu()
+          },
           accessibilityLabel: AppStrings.format('settings_reader_preload_pages_a11y', [this.readerPreloadLabel()]),
-          onAction: (): void => {
-            this.readerPreloadMenuShown = true
-          },
         })
-        .bindMenu(this.readerPreloadMenuShown, this.ReaderPreloadMenu, appMenuOptions({
-          placement: Placement.BottomRight,
-          onDisappear: (): void => {
-            this.readerPreloadMenuShown = false
-          },
-        }))
       }
     }
   }
@@ -3680,20 +3528,15 @@ export struct SettingsPage {
         title: AppStrings.get('settings_theme'),
         trailingText: this.themeModeLabel(),
         trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.ThemeMenu()
+        },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_theme'),
           this.themeModeLabel(),
         ]),
-        onAction: (): void => {
-          this.themeMenuShown = true
-        },
       })
-      .bindMenu(this.themeMenuShown, this.ThemeMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.themeMenuShown = false
-        },
-      }))
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.paintbrush'),
@@ -3702,20 +3545,15 @@ export struct SettingsPage {
         customTrailing: (): void => {
           this.ThemeColorSuffix()
         },
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.ThemeColorMenu()
+        },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_theme_color'),
           this.themeColorLabel(),
         ]),
-        onAction: (): void => {
-          this.themeColorMenuShown = true
-        },
       })
-      .bindMenu(this.themeColorMenuShown, this.ThemeColorMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.themeColorMenuShown = false
-        },
-      }))
       .bindSheet($$this.themeColorPickerShown, this.ThemeColorPickerSheet(), appSheetOptions({
         detents: [SheetSize.LARGE],
         showClose: false,
@@ -3729,40 +3567,30 @@ export struct SettingsPage {
         title: AppStrings.get('immersive_material'),
         trailingText: this.immersiveMaterialLabel(),
         trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.ImmersiveMaterialMenu()
+        },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('immersive_material'),
           this.immersiveMaterialLabel(),
         ]),
-        onAction: (): void => {
-          this.immersiveMaterialMenuShown = true
-        },
       })
-      .bindMenu(this.immersiveMaterialMenuShown, this.ImmersiveMaterialMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.immersiveMaterialMenuShown = false
-        },
-      }))
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.translate'),
         title: AppStrings.get('settings_language'),
         trailingText: this.languageModeLabel(),
         trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.LanguageMenu()
+        },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_language'),
           this.languageModeLabel(),
         ]),
-        onAction: (): void => {
-          this.languageMenuShown = true
-        },
       })
-      .bindMenu(this.languageMenuShown, this.LanguageMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.languageMenuShown = false
-        },
-      }))
     }
   }
 
@@ -3776,7 +3604,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveBrowsePresentation(NhBrowsePresentation.LIST)
-        this.browsePresentationMenuShown = false
       })
       MenuItem({
         content: AppStrings.get('browse_simple_list'),
@@ -3785,7 +3612,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveBrowsePresentation(NhBrowsePresentation.SIMPLE_LIST)
-        this.browsePresentationMenuShown = false
       })
       MenuItem({
         content: AppStrings.get('browse_cover_grid'),
@@ -3794,7 +3620,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveBrowsePresentation(NhBrowsePresentation.COVER_GRID)
-        this.browsePresentationMenuShown = false
       })
       MenuItem({
         content: AppStrings.get('browse_waterfall'),
@@ -3803,7 +3628,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveBrowsePresentation(NhBrowsePresentation.WATERFALL)
-        this.browsePresentationMenuShown = false
       })
       MenuItem({
         content: AppStrings.get('browse_waterfall_compact'),
@@ -3812,7 +3636,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveBrowsePresentation(NhBrowsePresentation.WATERFALL_COMPACT)
-        this.browsePresentationMenuShown = false
       })
       MenuItem({
         content: AppStrings.get('browse_cover_wall'),
@@ -3821,7 +3644,6 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveBrowsePresentation(NhBrowsePresentation.COVER_WALL)
-        this.browsePresentationMenuShown = false
       })
     }
   }
@@ -3834,20 +3656,15 @@ export struct SettingsPage {
         title: AppStrings.get('browse_presentation'),
         trailingText: this.browsePresentationLabel(),
         trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.BrowsePresentationMenu()
+        },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('browse_presentation'),
           this.browsePresentationLabel(),
         ]),
-        onAction: (): void => {
-          this.browsePresentationMenuShown = true
-        },
       })
-      .bindMenu(this.browsePresentationMenuShown, this.BrowsePresentationMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.browsePresentationMenuShown = false
-        },
-      }))
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.doc_plaintext'),
@@ -3965,20 +3782,15 @@ export struct SettingsPage {
         title: AppStrings.get('settings_action_alignment'),
         trailingText: this.actionAlignmentLabel(),
         trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.ActionAlignmentMenu()
+        },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_action_alignment'),
           this.actionAlignmentLabel(),
         ]),
-        onAction: (): void => {
-          this.actionAlignmentMenuShown = true
-        },
       })
-      .bindMenu(this.actionAlignmentMenuShown, this.ActionAlignmentMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.actionAlignmentMenuShown = false
-        },
-      }))
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.paintbrush'),
@@ -3986,20 +3798,15 @@ export struct SettingsPage {
         subtitle: AppStrings.get('settings_read_button_style_hint'),
         trailingText: this.readButtonStyleLabel(),
         trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.ReadButtonStyleMenu()
+        },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_read_button_style'),
           this.readButtonStyleLabel(),
         ]),
-        onAction: (): void => {
-          this.readButtonStyleMenuShown = true
-        },
       })
-      .bindMenu(this.readButtonStyleMenuShown, this.ReadButtonStyleMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.readButtonStyleMenuShown = false
-        },
-      }))
     }
   }
 
@@ -4011,20 +3818,15 @@ export struct SettingsPage {
         title: AppStrings.get('settings_tablet_layout'),
         trailingText: this.tabletLayoutLabel(),
         trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.TabletLayoutMenu()
+        },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_tablet_layout'),
           this.tabletLayoutLabel(),
         ]),
-        onAction: (): void => {
-          this.tabletLayoutMenuShown = true
-        },
       })
-      .bindMenu(this.tabletLayoutMenuShown, this.TabletLayoutMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.tabletLayoutMenuShown = false
-        },
-      }))
     }
   }
 
@@ -4036,20 +3838,15 @@ export struct SettingsPage {
         title: AppStrings.get('settings_screen_orientation'),
         trailingText: this.screenOrientationLabel(),
         trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.ScreenOrientationMenu()
+        },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_screen_orientation'),
           this.screenOrientationLabel(),
         ]),
-        onAction: (): void => {
-          this.screenOrientationMenuShown = true
-        },
       })
-      .bindMenu(this.screenOrientationMenuShown, this.ScreenOrientationMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.screenOrientationMenuShown = false
-        },
-      }))
     }
   }
 
@@ -4125,39 +3922,31 @@ export struct SettingsPage {
         leadingIcon: $r('sys.symbol.translate'),
         title: AppStrings.get('settings_catalog_browse_language'),
         trailingText: this.catalogLanguageLabel(this.catalogPreferences.browseLanguage),
+        trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.CatalogBrowseLanguageMenu()
+        },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_catalog_browse_language'),
           this.catalogLanguageLabel(this.catalogPreferences.browseLanguage),
         ]),
-        onAction: (): void => {
-          this.catalogBrowseLanguageMenuShown = true
-        },
       })
-      .bindMenu(this.catalogBrowseLanguageMenuShown, this.CatalogBrowseLanguageMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.catalogBrowseLanguageMenuShown = false
-        },
-      }))
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.arrow_clockwise'),
         title: AppStrings.get('settings_catalog_browse_sort'),
         trailingText: this.catalogSortLabel(this.catalogPreferences.browseSort),
+        trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.CatalogBrowseSortMenu()
+        },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_catalog_browse_sort'),
           this.catalogSortLabel(this.catalogPreferences.browseSort),
         ]),
-        onAction: (): void => {
-          this.catalogBrowseSortMenuShown = true
-        },
       })
-      .bindMenu(this.catalogBrowseSortMenuShown, this.CatalogBrowseSortMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.catalogBrowseSortMenuShown = false
-        },
-      }))
     }
   }
 
@@ -4169,39 +3958,31 @@ export struct SettingsPage {
         leadingIcon: $r('sys.symbol.magnifyingglass'),
         title: AppStrings.get('settings_catalog_search_language'),
         trailingText: this.catalogLanguageLabel(this.catalogPreferences.searchLanguage),
+        trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.CatalogSearchLanguageMenu()
+        },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_catalog_search_language'),
           this.catalogLanguageLabel(this.catalogPreferences.searchLanguage),
         ]),
-        onAction: (): void => {
-          this.catalogSearchLanguageMenuShown = true
-        },
       })
-      .bindMenu(this.catalogSearchLanguageMenuShown, this.CatalogSearchLanguageMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.catalogSearchLanguageMenuShown = false
-        },
-      }))
       this.RowDivider()
       NextNListRow({
         leadingIcon: $r('sys.symbol.rectangle_stack'),
         title: AppStrings.get('settings_catalog_search_sort'),
         trailingText: this.catalogSortLabel(this.catalogPreferences.searchSort),
+        trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.CatalogSearchSortMenu()
+        },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_catalog_search_sort'),
           this.catalogSortLabel(this.catalogPreferences.searchSort),
         ]),
-        onAction: (): void => {
-          this.catalogSearchSortMenuShown = true
-        },
       })
-      .bindMenu(this.catalogSearchSortMenuShown, this.CatalogSearchSortMenu, appMenuOptions({
-        placement: Placement.BottomRight,
-        onDisappear: (): void => {
-          this.catalogSearchSortMenuShown = false
-        },
-      }))
     }
   }
 

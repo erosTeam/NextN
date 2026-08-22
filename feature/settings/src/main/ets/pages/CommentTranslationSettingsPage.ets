@@ -22,7 +22,6 @@ import {
   connectLlmSourceProfiles,
   supportsCommentTranslation,
 } from 'shared'
-import { appMenuOptions } from 'shared'
 
 /**
  * Dedicated comment-translation destination, matching NextE's
@@ -34,9 +33,6 @@ import { appMenuOptions } from 'shared'
 export struct CommentTranslationSettingsPage {
   @Local settings: CommentTranslationSettingsState = connectCommentTranslationSettings()
   @Local sources: LlmSourceProfilesState = connectLlmSourceProfiles()
-  @Local displayMenuShown: boolean = false
-  @Local sourceMenuShown: boolean = false
-  @Local modelMenuShown: boolean = false
   @Local fetchingModels: boolean = false
   @Local modelOptions: string[] = []
   @Local selectedSourceId: string = ''
@@ -69,7 +65,6 @@ export struct CommentTranslationSettingsPage {
 
   private setDisplayMode(value: string): void {
     CommentTranslationSettings.setDisplayMode(this.context(), value).catch((): void => {})
-    this.displayMenuShown = false
   }
 
   private displayModeText(): string {
@@ -121,11 +116,9 @@ export struct CommentTranslationSettingsPage {
       }
       return
     }
-    this.sourceMenuShown = true
   }
 
   private selectSource(sourceProfileId: string): void {
-    this.sourceMenuShown = false
     if (sourceProfileId === this.selectedSourceId) {
       return
     }
@@ -135,7 +128,7 @@ export struct CommentTranslationSettingsPage {
     this.fetchModels()
   }
 
-  private fetchModels(): void {
+  private fetchModels(openMenu?: () => void): void {
     if (this.fetchingModels || this.selectedSourceId.length === 0) {
       return
     }
@@ -149,7 +142,9 @@ export struct CommentTranslationSettingsPage {
           })
           return
         }
-        this.modelMenuShown = true
+        if (openMenu) {
+          openMenu()
+        }
       })
       .catch((error: Error): void => {
         ComicTranslationDiagnosticLogger.warn(
@@ -174,7 +169,6 @@ export struct CommentTranslationSettingsPage {
     LlmSourceProfileRepository.saveBinding(this.context(), binding)
       .then((): void => {
         this.selectedModelId = modelId
-        this.modelMenuShown = false
       })
       .catch((error: Error): void => {
         this.getUIContext().getPromptAction().showToast({
@@ -349,85 +343,67 @@ export struct CommentTranslationSettingsPage {
               },
             })
             this.RowDivider()
-            Column() {
-              NextNListRow({
-                leadingIcon: $r('sys.symbol.textformat'),
-                title: AppStrings.get('comment_translation_display_mode'),
-                trailingText: this.displayModeText(),
-                trailingDropdown: true,
-                isEnabled: this.settings.enabled,
-                accessibilityLabel: AppStrings.format('settings_row_a11y', [
-                  AppStrings.get('comment_translation_display_mode'),
-                  this.displayModeText(),
-                ]),
-                onAction: (): void => {
-                  if (this.settings.enabled) {
-                    this.displayMenuShown = true
-                  }
-                },
-              })
-            }
-            .bindMenu(this.displayMenuShown, this.DisplayModeMenu, appMenuOptions({
-              placement: Placement.BottomRight,
-              onDisappear: (): void => {
-                this.displayMenuShown = false
+            NextNListRow({
+              leadingIcon: $r('sys.symbol.textformat'),
+              title: AppStrings.get('comment_translation_display_mode'),
+              trailingText: this.displayModeText(),
+              trailingDropdown: true,
+              dropdownMenuEnabled: true,
+              dropdownMenuBuilder: () => {
+                this.DisplayModeMenu()
               },
-            }))
+              isEnabled: this.settings.enabled,
+              accessibilityLabel: AppStrings.format('settings_row_a11y', [
+                AppStrings.get('comment_translation_display_mode'),
+                this.displayModeText(),
+              ]),
+            })
           }
         }
         ListItem() {
           NextNGroupedListSection() {
-            Column() {
-              NextNListRow({
-                leadingIcon: $r('sys.symbol.externaldrive'),
-                title: AppStrings.get('llm_binding_source'),
-                subtitle: this.compatibleSources().length === 0
-                  ? AppStrings.get('llm_binding_no_compatible_source')
-                  : AppStrings.get('llm_binding_source_hint'),
-                trailingText: this.selectedSourceText(),
-                trailingDropdown: this.compatibleSources().length > 0,
-                showChevron: this.compatibleSources().length === 0,
-                isEnabled: this.settings.enabled,
-                accessibilityLabel: AppStrings.get('comment_translation_source_a11y'),
-                onAction: (): void => {
-                  if (this.settings.enabled) {
-                    this.openSourceSelector()
-                  }
-                },
-              })
-            }
-            .bindMenu(this.sourceMenuShown, this.SourceMenu, appMenuOptions({
-              placement: Placement.BottomRight,
-              onDisappear: (): void => {
-                this.sourceMenuShown = false
+            NextNListRow({
+              leadingIcon: $r('sys.symbol.externaldrive'),
+              title: AppStrings.get('llm_binding_source'),
+              subtitle: this.compatibleSources().length === 0
+                ? AppStrings.get('llm_binding_no_compatible_source')
+                : AppStrings.get('llm_binding_source_hint'),
+              trailingText: this.selectedSourceText(),
+              trailingDropdown: this.compatibleSources().length > 0,
+              showChevron: this.compatibleSources().length === 0,
+              dropdownMenuEnabled: this.compatibleSources().length > 0,
+              dropdownMenuBuilder: () => {
+                this.SourceMenu()
               },
-            }))
+              isEnabled: this.settings.enabled,
+              accessibilityLabel: AppStrings.get('comment_translation_source_a11y'),
+              onAction: (): void => {
+                if (this.settings.enabled) {
+                  this.openSourceSelector()
+                }
+              },
+            })
             this.RowDivider()
-            Column() {
-              NextNListRow({
-                leadingIcon: $r('sys.symbol.arrow_down_circle'),
-                title: AppStrings.get('llm_binding_model'),
-                subtitle: this.fetchingModels
-                  ? AppStrings.get('comment_translation_fetch_models_loading')
-                  : AppStrings.get('llm_binding_model_hint'),
-                trailingText: this.selectedModelText(),
-                trailingDropdown: true,
-                isEnabled: this.settings.enabled &&
-                  this.selectedSourceId.length > 0 && !this.fetchingModels,
-                accessibilityLabel: AppStrings.get('comment_translation_model_a11y'),
-                onAction: (): void => {
-                  if (this.settings.enabled) {
-                    this.fetchModels()
-                  }
-                },
-              })
-            }
-            .bindMenu(this.modelMenuShown, this.ModelMenu, appMenuOptions({
-              placement: Placement.BottomRight,
-              onDisappear: (): void => {
-                this.modelMenuShown = false
+            NextNListRow({
+              leadingIcon: $r('sys.symbol.arrow_down_circle'),
+              title: AppStrings.get('llm_binding_model'),
+              subtitle: this.fetchingModels
+                ? AppStrings.get('comment_translation_fetch_models_loading')
+                : AppStrings.get('llm_binding_model_hint'),
+              trailingText: this.selectedModelText(),
+              trailingDropdown: true,
+              dropdownMenuEnabled: true,
+              dropdownMenuBuilder: () => {
+                this.ModelMenu()
               },
-            }))
+              dropdownMenuDeferredOpen: true,
+              dropdownMenuOpenAction: (openMenu: () => void): void => {
+                this.fetchModels(openMenu)
+              },
+              isEnabled: this.settings.enabled &&
+                this.selectedSourceId.length > 0 && !this.fetchingModels,
+              accessibilityLabel: AppStrings.get('comment_translation_model_a11y'),
+            })
           }
         }
         ListItem() {

@@ -34,7 +34,6 @@ import {
   connectLlmSourceProfiles,
   supportsMangaTranslation,
 } from 'shared'
-import { appMenuOptions } from 'shared'
 
 /**
  * Dedicated comic-translation destination, matching NextE's
@@ -46,11 +45,8 @@ import { appMenuOptions } from 'shared'
 @ComponentV2
 export struct ComicTranslationSettingsPage {
   @Local visualRoute: string = COMIC_VISUAL_ROUTE_LOCAL
-  @Local visualRouteMenuShown: boolean = false
   @Local visualSettingsLoaded: boolean = false
   @Local multimodalTranslationEnabled: boolean = true
-  @Local toriiModelMenuShown: boolean = false
-  @Local toriiFontMenuShown: boolean = false
   @Local toriiModelId: string = ''
   @Local toriiFontId: string = 'noto'
   @Local toriiApiKeyDraft: string = ''
@@ -60,8 +56,6 @@ export struct ComicTranslationSettingsPage {
   @Local toriiLiveEvaluationReport: ToriiWholePageLiveEvaluationReport | null = null
   private toriiCreditsRefreshTimer: number = -1
   @Local sources: LlmSourceProfilesState = connectLlmSourceProfiles()
-  @Local sourceMenuShown: boolean = false
-  @Local modelMenuShown: boolean = false
   @Local fetchingModels: boolean = false
   @Local modelOptions: string[] = []
   @Local selectedSourceId: string = ''
@@ -184,7 +178,6 @@ export struct ComicTranslationSettingsPage {
   }
 
   private selectVisualRoute(route: string): void {
-    this.visualRouteMenuShown = false
     if (route === this.visualRoute) {
       return
     }
@@ -240,7 +233,6 @@ export struct ComicTranslationSettingsPage {
 
   private selectToriiModel(modelId: string): void {
     this.toriiModelId = modelId
-    this.toriiModelMenuShown = false
     this.persistVisualSettings(true)
   }
 
@@ -262,7 +254,6 @@ export struct ComicTranslationSettingsPage {
       return
     }
     this.toriiFontId = fontId
-    this.toriiFontMenuShown = false
     this.persistVisualSettings(true)
   }
 
@@ -454,11 +445,9 @@ export struct ComicTranslationSettingsPage {
       }
       return
     }
-    this.sourceMenuShown = true
   }
 
   private selectSource(sourceProfileId: string): void {
-    this.sourceMenuShown = false
     if (sourceProfileId === this.selectedSourceId) {
       return
     }
@@ -468,7 +457,7 @@ export struct ComicTranslationSettingsPage {
     this.fetchModels()
   }
 
-  private fetchModels(): void {
+  private fetchModels(openMenu?: () => void): void {
     if (this.fetchingModels || this.selectedSourceId.length === 0) {
       return
     }
@@ -482,7 +471,9 @@ export struct ComicTranslationSettingsPage {
           })
           return
         }
-        this.modelMenuShown = true
+        if (openMenu) {
+          openMenu()
+        }
       })
       .catch((error: Error): void => {
         ComicTranslationDiagnosticLogger.warn(
@@ -507,7 +498,6 @@ export struct ComicTranslationSettingsPage {
     LlmSourceProfileRepository.saveBinding(this.context(), binding)
       .then((): void => {
         this.selectedModelId = modelId
-        this.modelMenuShown = false
       })
       .catch((error: Error): void => {
         this.getUIContext().getPromptAction().showToast({
@@ -773,24 +763,17 @@ export struct ComicTranslationSettingsPage {
       }) {
         ListItem() {
           NextNGroupedListSection() {
-            Column() {
-              NextNListRow({
-                leadingIcon: $r('sys.symbol.picture'),
-                title: AppStrings.get('comic_visual_route'),
-                trailingText: this.visualRouteText(),
-                trailingDropdown: true,
-                accessibilityLabel: AppStrings.get('comic_visual_route'),
-                onAction: (): void => {
-                  this.visualRouteMenuShown = true
-                },
-              })
-            }
-            .bindMenu(this.visualRouteMenuShown, this.VisualRouteMenu, appMenuOptions({
-              placement: Placement.BottomRight,
-              onDisappear: (): void => {
-                this.visualRouteMenuShown = false
+            NextNListRow({
+              leadingIcon: $r('sys.symbol.picture'),
+              title: AppStrings.get('comic_visual_route'),
+              trailingText: this.visualRouteText(),
+              trailingDropdown: true,
+              dropdownMenuEnabled: true,
+              dropdownMenuBuilder: () => {
+                this.VisualRouteMenu()
               },
-            }))
+              accessibilityLabel: AppStrings.get('comic_visual_route'),
+            })
           }
         }
         if (this.visualRoute === COMIC_VISUAL_ROUTE_LOCAL) {
@@ -855,51 +838,44 @@ export struct ComicTranslationSettingsPage {
           this.visualRoute === COMIC_VISUAL_ROUTE_SELF_HOSTED) {
           ListItem() {
             NextNGroupedListSection() {
-              Column() {
-                NextNListRow({
-                  leadingIcon: $r('sys.symbol.externaldrive'),
-                  title: AppStrings.get('llm_binding_source'),
-                  subtitle: this.compatibleSources().length === 0
-                    ? AppStrings.get('llm_binding_no_compatible_source')
-                    : AppStrings.get('llm_binding_source_hint'),
-                  trailingText: this.selectedSourceText(),
-                  trailingDropdown: this.compatibleSources().length > 0,
-                  showChevron: this.compatibleSources().length === 0,
-                  accessibilityLabel: AppStrings.get('comic_translation_source_a11y'),
-                  onAction: (): void => {
-                    this.openSourceSelector()
-                  },
-                })
-              }
-              .bindMenu(this.sourceMenuShown, this.SourceMenu, appMenuOptions({
-                placement: Placement.BottomRight,
-                onDisappear: (): void => {
-                  this.sourceMenuShown = false
+              NextNListRow({
+                leadingIcon: $r('sys.symbol.externaldrive'),
+                title: AppStrings.get('llm_binding_source'),
+                subtitle: this.compatibleSources().length === 0
+                  ? AppStrings.get('llm_binding_no_compatible_source')
+                  : AppStrings.get('llm_binding_source_hint'),
+                trailingText: this.selectedSourceText(),
+                trailingDropdown: this.compatibleSources().length > 0,
+                showChevron: this.compatibleSources().length === 0,
+                dropdownMenuEnabled: this.compatibleSources().length > 0,
+                dropdownMenuBuilder: () => {
+                  this.SourceMenu()
                 },
-              }))
+                accessibilityLabel: AppStrings.get('comic_translation_source_a11y'),
+                onAction: (): void => {
+                  this.openSourceSelector()
+                },
+              })
               this.RowDivider()
-              Column() {
-                NextNListRow({
-                  leadingIcon: $r('sys.symbol.arrow_down_circle'),
-                  title: AppStrings.get('llm_binding_model'),
-                  subtitle: this.fetchingModels
-                    ? AppStrings.get('comment_translation_fetch_models_loading')
-                    : AppStrings.get('llm_binding_model_hint'),
-                  trailingText: this.selectedModelText(),
-                  trailingDropdown: true,
-                  isEnabled: this.selectedSourceId.length > 0 && !this.fetchingModels,
-                  accessibilityLabel: AppStrings.get('comic_translation_model_a11y'),
-                  onAction: (): void => {
-                    this.fetchModels()
-                  },
-                })
-              }
-              .bindMenu(this.modelMenuShown, this.ModelMenu, appMenuOptions({
-                placement: Placement.BottomRight,
-                onDisappear: (): void => {
-                  this.modelMenuShown = false
+              NextNListRow({
+                leadingIcon: $r('sys.symbol.arrow_down_circle'),
+                title: AppStrings.get('llm_binding_model'),
+                subtitle: this.fetchingModels
+                  ? AppStrings.get('comment_translation_fetch_models_loading')
+                  : AppStrings.get('llm_binding_model_hint'),
+                trailingText: this.selectedModelText(),
+                trailingDropdown: true,
+                dropdownMenuEnabled: true,
+                dropdownMenuBuilder: () => {
+                  this.ModelMenu()
                 },
-              }))
+                dropdownMenuDeferredOpen: true,
+                dropdownMenuOpenAction: (openMenu: () => void): void => {
+                  this.fetchModels(openMenu)
+                },
+                isEnabled: this.selectedSourceId.length > 0 && !this.fetchingModels,
+                accessibilityLabel: AppStrings.get('comic_translation_model_a11y'),
+              })
               this.RowDivider()
               NextNListRow({
                 leadingIcon: $r('sys.symbol.picture'),
@@ -927,43 +903,29 @@ export struct ComicTranslationSettingsPage {
         if (this.visualRoute === COMIC_VISUAL_ROUTE_TORII) {
           ListItem() {
             NextNGroupedListSection() {
-              Column() {
-                NextNListRow({
-                  leadingIcon: $r('sys.symbol.translate'),
-                  title: AppStrings.get('comic_torii_model'),
-                  trailingText: this.toriiModelText(),
-                  trailingDropdown: true,
-                  accessibilityLabel: AppStrings.get('comic_torii_model'),
-                  onAction: (): void => {
-                    this.toriiModelMenuShown = true
-                  },
-                })
-              }
-              .bindMenu(this.toriiModelMenuShown, this.ToriiModelMenu, appMenuOptions({
-                placement: Placement.BottomRight,
-                onDisappear: (): void => {
-                  this.toriiModelMenuShown = false
+              NextNListRow({
+                leadingIcon: $r('sys.symbol.translate'),
+                title: AppStrings.get('comic_torii_model'),
+                trailingText: this.toriiModelText(),
+                trailingDropdown: true,
+                dropdownMenuEnabled: true,
+                dropdownMenuBuilder: () => {
+                  this.ToriiModelMenu()
                 },
-              }))
+                accessibilityLabel: AppStrings.get('comic_torii_model'),
+              })
               this.RowDivider()
-              Column() {
-                NextNListRow({
-                  leadingIcon: $r('sys.symbol.textformat'),
-                  title: AppStrings.get('comic_torii_font'),
-                  trailingText: this.toriiFontText(),
-                  trailingDropdown: true,
-                  accessibilityLabel: AppStrings.get('comic_torii_font'),
-                  onAction: (): void => {
-                    this.toriiFontMenuShown = true
-                  },
-                })
-              }
-              .bindMenu(this.toriiFontMenuShown, this.ToriiFontMenu, appMenuOptions({
-                placement: Placement.BottomRight,
-                onDisappear: (): void => {
-                  this.toriiFontMenuShown = false
+              NextNListRow({
+                leadingIcon: $r('sys.symbol.textformat'),
+                title: AppStrings.get('comic_torii_font'),
+                trailingText: this.toriiFontText(),
+                trailingDropdown: true,
+                dropdownMenuEnabled: true,
+                dropdownMenuBuilder: () => {
+                  this.ToriiFontMenu()
                 },
-              }))
+                accessibilityLabel: AppStrings.get('comic_torii_font'),
+              })
               this.RowDivider()
               this.ToriiSecretRow(
                 AppStrings.get('comic_torii_api_key'),

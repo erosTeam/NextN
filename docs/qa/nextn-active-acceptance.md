@@ -34,6 +34,29 @@
 - This observes the cache cold-start path only; it does not accept tag translation timing, every layout density, sign-out cache clearing, or the pending developer-guide maintenance contract. Raw layout copies retained under `.hvigor/outputs/nextn-cache-tags-20260816T/` and excluded from Git.
 # NextN active device-acceptance queue
 
+## Split-mode settings dropdown suffix anchoring — 2026-08-22 (accepted on 103)
+
+- The current NextE `7ee42447` fix was mapped against NextN's complete settings
+  parent tree. Forty-two settings and advanced-search dropdowns now delegate
+  menu visibility and anchoring to the actual suffix inside `NextNListRow`;
+  page list/scaffold structure, row order, values, actions, sheets and menu
+  contents remain unchanged.
+- The signed HAP was installed with `install -r` on
+  `192.168.50.103:12345`, without uninstall or data clear. Its SHA-256 is
+  `110126b89435ee4c27a983eb6a36e263fed35671d960811024563569dff04637`.
+- Post-install cold-start evidence proved the physical 2560x1600 Split root:
+  left `NavBar [0,105][760,1600]`, right
+  `NavigationContent [761,105][2560,1600]`. The Interface language suffix at
+  `[2317,644][2451,683]` opened its menu at
+  `[2162,702][2522,1176]`; the custom theme-color suffix at
+  `[2323,413][2423,452]` opened its menu at
+  `[2162,471][2522,1401]`. Both were right-aligned below their real suffix,
+  retained their choices, and dismissed without selection. The final layout
+  had zero visible menu nodes and preserved the same Split bounds.
+- Final device state was `AWAKE` with `OverrideTimeout=86400000ms`. Raw current
+  layouts and screenshots are retained under
+  `.hvigor/outputs/nextn-menu-anchor-103-20260822T/`.
+
 ## Gallery Detail hero cover cache reuse — 2026-08-17 (accepted on 197)
 
 - Signed Debug HAP with the hero `EhImageKnifeImage` swap was installed with
