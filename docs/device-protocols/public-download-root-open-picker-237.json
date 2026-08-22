@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-public-download-root-open-picker-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-open-picker-20260823T0555",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c",
+    "page": "gallery-675023-open-download-picker",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "From the observed Gallery Detail for public gallery 675023, activate the Download button inside its [969,975][1263,1053] semantic bounds. Receive the resulting system/app semantic layout and window ownership before any picker confirmation. Remove only the temporary remote layout; do not confirm a directory in this protocol."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "detail-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "activate-download-action",
+        "uiInput": ["click", "1116", "1014"],
+        "pauseAfterMs": 1200,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-picker-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-public-download-picker.json"]
+    },
+    {
+      "name": "receive-picker-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-public-download-picker.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-open-picker-20260823T0555/picker-layout.json"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-public-download-picker.json"]
+    },
+    {
+      "name": "picker-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

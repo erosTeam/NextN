@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-public-download-root-browse-anchor-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-browse-anchor-20260823T0545",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c",
+    "page": "browse-root-semantic-anchor-before-bounded-download",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "From the foreground Downloads root, open Browse at the accepted portrait root-tab coordinate and receive a semantic layout so a currently visible public card can be selected without touching any retained download task. Remove only the temporary remote layout; retain no screenshot."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "downloads-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-browse-root",
+        "uiInput": ["click", "372", "2006"],
+        "pauseAfterMs": 1500,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-browse-root-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-public-download-browse-anchor.json"]
+    },
+    {
+      "name": "receive-browse-root-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-public-download-browse-anchor.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-browse-anchor-20260823T0545/browse-root-layout.json"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-public-download-browse-anchor.json"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-public-download-root-detail-anchor-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-detail-anchor-20260823T0550",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c",
+    "page": "first-visible-public-gallery-detail-anchor",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Open the first currently visible public Browse card at a point inside its observed [18,417][651,1759] bounds and receive the resulting Gallery Detail semantic layout. The selected card is not one of the four retained completed downloads. Remove only the temporary remote layout; do not start a download yet."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "browse-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-first-visible-public-gallery",
+        "uiInput": ["click", "330", "800"],
+        "pauseAfterMs": 1600,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-gallery-detail-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-public-download-detail-anchor.json"]
+    },
+    {
+      "name": "receive-gallery-detail-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-public-download-detail-anchor.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-detail-anchor-20260823T0550/gallery-detail-layout.json"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-public-download-detail-anchor.json"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

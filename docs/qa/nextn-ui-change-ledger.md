@@ -9104,7 +9104,7 @@ authorize an edit, replace a device comparison, or define product completion.
   remain counter-evidence only. Final PowerManager readback remained `AWAKE`
   with `OverrideTimeout=86400000ms`; no physical action remains for this
   bounded SAFE_MODE review path.
-## OPEN — Gallery downloads must use the public Download directory — 2026-08-23
+## ACCEPTED — Gallery downloads use the public Download directory — 2026-08-23
 
 - **Why newly actionable:** the user explicitly reported that NextN stores
   downloaded galleries under the application sandbox and rejected that as a
@@ -9123,8 +9123,8 @@ authorize an edit, replace a device comparison, or define product completion.
   `DocumentPickerMode.DOWNLOAD`. Gallery, archiver, and export writes use only
   that public root; `context.filesDir` remains a legacy read/removal candidate.
 - **Whole affected tree:** `GalleryDetailPage.DownloadActionChip ->
-  DownloadQueueService.enqueue/resume -> system Download picker -> public
-  gallery directory -> queue metadata/page writes`; downstream readers are
+  DownloadQueueService.enqueue/resume -> DOWNLOAD-mode public-root resolution
+  -> public gallery directory -> queue metadata/page writes`; downstream readers are
   `DownloadQueuePage` read/remove/export, Reader local page URIs, cold-start
   queue reconciliation, and `SettingsPage.DownloadRestoreGroup` directory
   import. Existing Download settings row order, icons, menus, switches,
@@ -9141,12 +9141,18 @@ authorize an edit, replace a device comparison, or define product completion.
   network/account behavior. A reference directory-recovery row may not be
   declared ported until its actual write root and every downstream file
   consumer have been mapped against the reference.
-- **Physical verification plan:** signed build and `install -r` on the selected
-  device; from a new Gallery task, observe the genuine system Download picker,
-  accept it once, complete at least one bounded gallery download, and verify
-  its metadata/pages under the returned public root rather than
-  `context.filesDir`. Force-stop/cold-start without clearing data, open the same
-  completed task in Reader, exercise the restore scan, and confirm task removal
-  deletes only its own public directory. Same-state visual review is limited to
-  the unchanged Detail/Downloads/Settings parents plus the newly restored
-  system-picker transition.
+- **Physical verification:** exact signed HAP SHA-256
+  `a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c`
+  was installed with `install -r` on `192.168.50.237:12345` without uninstall
+  or data clear. New public Gallery `675023` completed `23 / 23`, increasing the
+  completed group from four to five. DOWNLOAD mode returned directly on this
+  device, so no separate picker window is claimed. The local SDK contract and
+  a read-only system Files pass established the user-visible Download root as
+  `file://docs/storage/Users/currentUser/Download/`; the installed source has
+  no new-task `context.filesDir` write branch. After force-stop/cold-start, the
+  task remained complete and opened Reader at `1 / 23`. Restore scan toasted
+  `没有新的可恢复任务`. Its own Remove menu and confirmation removed only that
+  task; final queue returned to the four prior completed tasks with no
+  `True Blue`/`675023`. NextN is foreground, `AWAKE`, with
+  `OverrideTimeout=86400000ms`. Raw evidence is under
+  `.hvigor/outputs/nextn-public-download-root-*` and excluded from Git.

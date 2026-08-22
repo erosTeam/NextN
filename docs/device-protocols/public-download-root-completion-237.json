@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-public-download-root-completion-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-completion-20260823T0600",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c",
+    "page": "gallery-675023-download-completion-and-public-directory-proof",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Return from Gallery 675023 Detail through the observed title-bar back button, open Downloads through the observed root-tab bounds, wait for the bounded 23-page task, receive the queue layout, and search only the public Download tree for a directory named 675023. Preserve the four prior tasks and do not remove the new task yet."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "detail-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "return-to-browse-root",
+        "uiInput": ["click", "108", "201"],
+        "pauseAfterMs": 700,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "open-downloads-root",
+        "uiInput": ["click", "756", "2006"],
+        "pauseAfterMs": 12000,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-downloads-completion-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-public-download-completion.json"]
+    },
+    {
+      "name": "receive-downloads-completion-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-public-download-completion.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-completion-20260823T0600/downloads-completion-layout.json"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-public-download-completion.json"]
+    },
+    {
+      "name": "find-gallery-675023-under-public-download",
+      "hdcArgs": ["shell", "find", "/storage/Users/currentUser/Download", "-type", "d", "-name", "675023"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

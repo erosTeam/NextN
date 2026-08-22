@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-public-download-root-remove-confirmation-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-remove-confirmation-20260823T0635",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c",
+    "page": "gallery-675023-select-remove-menu-item",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "The first task's trailing menu is currently open. Activate only its observed Remove menu item at [714,909][1242,1053] and receive the actual confirmation dialog before confirming. Do not touch Export CBZ or any prior task."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "downloads-menu-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "select-remove-for-gallery-675023",
+        "uiInput": ["click", "978", "981"],
+        "pauseAfterMs": 500,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-actual-removal-confirmation-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-public-download-remove-confirmation.json"]
+    },
+    {
+      "name": "receive-actual-removal-confirmation-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-public-download-remove-confirmation.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-remove-confirmation-20260823T0635/remove-confirmation-layout.json"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-public-download-remove-confirmation.json"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

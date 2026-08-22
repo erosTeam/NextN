@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-public-download-root-cold-reader-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-cold-reader-20260823T0610",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c",
+    "page": "gallery-675023-reader-after-force-stop-cold-start",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Force-stop and cold-start the installed exact HAP without clearing data, open Downloads from the root, then open the first completed task (Gallery 675023) and receive its Reader semantic layout. This validates the durable completed-task Reader path after process restart. Preserve all tasks."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "force-stop-nextn",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    },
+    {
+      "name": "cold-start-nextn",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"],
+      "pauseAfterMs": 1500
+    },
+    {
+      "name": "cold-start-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-downloads-after-cold-start",
+        "uiInput": ["click", "756", "2006"],
+        "pauseAfterMs": 800,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "open-gallery-675023-reader-after-cold-start",
+        "uiInput": ["click", "600", "500"],
+        "pauseAfterMs": 1600,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-cold-start-reader-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-public-download-cold-reader.json"]
+    },
+    {
+      "name": "receive-cold-start-reader-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-public-download-cold-reader.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-cold-reader-20260823T0610/cold-reader-layout.json"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-public-download-cold-reader.json"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

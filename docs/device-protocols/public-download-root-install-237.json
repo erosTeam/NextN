@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-public-download-root-install-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-install-20260823T0531",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c",
+    "page": "exact-hap-install-cold-start-downloads-root",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install the exact signed public-Download-root HAP with -r, without uninstall or data clear. Cold-start NextN, record current root state, then use the previously accepted portrait root-tab coordinate to open Downloads. Retain only system/layout command metadata and no screenshots."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "verify-awake-override-before-install",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "install-exact-signed-hap-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"],
+      "pauseAfterMs": 500,
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "force-stop-nextn",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    },
+    {
+      "name": "cold-start-nextn",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"],
+      "pauseAfterMs": 1500
+    },
+    {
+      "name": "cold-start-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "cold-start-root-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/dev/null", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-downloads-from-retained-root",
+        "uiInput": ["click", "812", "2006"],
+        "pauseAfterMs": 1000,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "downloads-root-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/dev/null", "-a"]
+    },
+    {
+      "name": "downloads-root-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

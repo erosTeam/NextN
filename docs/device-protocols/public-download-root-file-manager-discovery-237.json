@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-public-download-root-file-manager-discovery-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-file-manager-discovery-20260823T0645",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c",
+    "page": "system-file-manager-bundle-discovery-after-cleanup",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Read the installed bundle catalog inside the checked protocol solely to identify the system file manager for a read-only public Download-root check. Retap the current Downloads tab as the bounded UI action. Do not launch an unknown component, inspect app-private storage, mutate files, or recreate the removed task in this protocol."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "installed-bundle-catalog",
+      "hdcArgs": ["shell", "bm", "dump", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "retap-current-downloads-root",
+        "uiInput": ["click", "756", "2006"],
+        "pauseAfterMs": 300,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

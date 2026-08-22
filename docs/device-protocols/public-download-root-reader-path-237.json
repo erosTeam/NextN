@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-public-download-root-reader-path-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-reader-path-20260823T0605",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c",
+    "page": "gallery-675023-complete-task-reader-and-storage-path",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Open the newly completed first Downloads task (True Blue, 23/23) from its observed [330,399][1260,729] clickable bounds, receive the resulting Reader semantic layout, and locate only directories named 675023 under /storage. This is a targeted path probe after the narrower guessed public path did not exist in the device shell namespace. Preserve all task data."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "downloads-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-new-complete-task-reader",
+        "uiInput": ["click", "600", "500"],
+        "pauseAfterMs": 1600,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-reader-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-public-download-reader.json"]
+    },
+    {
+      "name": "receive-reader-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-public-download-reader.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-reader-path-20260823T0605/reader-layout.json"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-public-download-reader.json"]
+    },
+    {
+      "name": "locate-gallery-675023-storage-directory",
+      "hdcArgs": ["shell", "find", "/storage", "-type", "d", "-name", "675023"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-public-download-root-files-home-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-files-home-20260823T0655",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c",
+    "page": "system-files-home-read-only-anchor",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Launch the system Files app through the bundle metadata-confirmed com.huawei.hmos.files/EntryAbility, receive its initial semantic layout before interaction, then issue one manifest-owned Back action to return to NextN. This is read-only and does not open, rename, move, delete, share, or create any file."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "launch-system-files",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.huawei.hmos.files", "-a", "EntryAbility"],
+      "pauseAfterMs": 1400
+    },
+    {
+      "name": "files-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "dump-files-home-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-public-download-files-home.json"]
+    },
+    {
+      "name": "receive-files-home-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-public-download-files-home.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-files-home-20260823T0655/files-home-layout.json"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-public-download-files-home.json"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "return-from-system-files",
+        "uiInput": ["keyEvent", "BACK"],
+        "pauseAfterMs": 500,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "returned-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

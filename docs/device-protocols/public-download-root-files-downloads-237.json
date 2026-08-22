@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-public-download-root-files-downloads-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-files-downloads-20260823T0700",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c",
+    "page": "system-files-public-download-root",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Launch the metadata-confirmed system Files app and open its observed public Download source row at [60,1780][1260,1948]. Receive the resulting directory-list semantic layout. This is read-only: do not select, rename, move, share, delete, or create files."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "launch-system-files",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.huawei.hmos.files", "-a", "EntryAbility"],
+      "pauseAfterMs": 900
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-public-download-source",
+        "uiInput": ["click", "660", "1864"],
+        "pauseAfterMs": 900,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-public-download-root-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-public-download-files-root.json"]
+    },
+    {
+      "name": "receive-public-download-root-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-public-download-files-root.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-files-downloads-20260823T0700/public-download-root-layout.json"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-public-download-files-root.json"]
+    },
+    {
+      "name": "files-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

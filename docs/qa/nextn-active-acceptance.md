@@ -3730,7 +3730,7 @@ permitted in this repository.
   Git. Unproven items: throttling feel, multi-batch restore with untracked
   sidecar directories, and a physical busy-frame capture.
 
-## Public Download directory correction — source/build complete, device OPEN — 2026-08-23
+## Public Download directory correction — verified on 237 — 2026-08-23
 
 - The storage-location assumption in the preceding Download restore result is
   rejected for this follow-up. Its observed sandbox
@@ -3749,20 +3749,6 @@ permitted in this repository.
   `git diff --check`, `scripts/test_home_subtab_contract.mjs`, and
   `scripts/test_app_strings_format_contract.mjs` also passed. These are static
   and build evidence only.
-- Physical acceptance remains **OPEN**. Lease
-  `20260822-202456-5752529c` reserved `192.168.50.237:12345`, but the shared HDC
-  service accepted target-list queries while every task command failed. After
-  terminating the confirmed stale HDC daemon and starting a fresh official
-  daemon, only the USB target remained visible; a lease-wrapped reconnect to
-  237 again returned `Connect server failed` after about 14 seconds. No HAP
-  install, picker interaction, download write or cold-start Reader assertion
-  was performed in this run.
-- Next unverified physical action: once 237's HDC task channel is reachable,
-  reacquire its lease, restore `AWAKE` / `OverrideTimeout`, install this exact
-  HAP with `install -r`, then execute the public-picker -> completed bounded
-  download -> cold-start Reader -> restore scan -> task removal sequence from
-  the OPEN UI ledger entry. Do not substitute the earlier sandbox scan or a
-  different device as acceptance.
 - Re-entry on 2026-08-23 used lease `20260822-204228-1b30e29a`. The apparent
   TCP `Connected` row was first disproved by task commands and HDC's own log:
   the old daemon retained a 237 TCP socket but had no alive 237 session. After
@@ -3789,8 +3775,42 @@ permitted in this repository.
   non-project manifests. `scripts/test_device_protocol_gate.py`, shell syntax,
   `git diff --check`, and both updated Harmony skill validators pass. A live
   lease-wrapped raw wake command was rejected before device access.
-- Physical acceptance remains **OPEN**. No HAP install or app action has yet
-  occurred in this re-entry. The next unverified physical action is to run a
-  project-owned install/cold-start manifest for the exact HAP above, then
-  continue the public-picker -> completed bounded download -> cold-start Reader
-  -> restore scan -> task removal sequence without repeating source/build work.
+- The accepted physical lane used fresh lease
+  `20260822-213126-a5cdd83a` on `192.168.50.237:12345`. The exact signed HAP
+  above installed successfully with `install -r`; no uninstall or data clear
+  occurred. Force-stop/cold start foregrounded `com.erosteam.nextn` as window
+  291. The installed code's new-task write root has only one source: the URI
+  returned by `DocumentViewPicker.save()` with
+  `DocumentPickerMode.DOWNLOAD`; `context.filesDir` is retained only for
+  compatibility reads/removal of old tasks.
+- The first visible public Browse card, Gallery `675023` (`True Blue`, 23
+  pages), was not one of the four retained tasks. Activating Download returned
+  directly from DOWNLOAD mode on this device (no separate picker window was
+  displayed), changed the Detail action to `下载中`, then produced a fifth
+  completed queue item with `23 / 23` and `已完成`. The local SDK contract for
+  DOWNLOAD mode identifies its directories as save-only with no access
+  isolation; an independent read-only launch of the system Files app exposed
+  its user-visible `下载` source and file URIs rooted at
+  `file://docs/storage/Users/currentUser/Download/`. Together with the source
+  branch and completed new task, this rejects a new write under the app
+  sandbox. The shell user could not enumerate `/storage` directly, so no raw
+  per-page filesystem listing is claimed.
+- After another force-stop/cold start without clearing data, Downloads still
+  showed `True Blue`, `23 / 23`, and `已完成`; opening it mounted
+  `reader-overlay-navigation` with page counter `1 / 23`. This accepts the
+  completed local Reader path after process restart for the bounded task.
+- Native My -> Download -> `恢复下载任务` completed a scan and rendered the
+  Toast `没有新的可恢复任务`, proving the newly written metadata was already
+  represented by the durable queue rather than imported as a missing row.
+- Cleanup touched only the new task. Its own trailing menu exposed `导出 CBZ`
+  and `移除`; selecting `移除` produced the explicit dialog
+  `移除下载？这会从此设备移除已保存的图库页面，不会更改远程图库`. Confirming
+  it returned the completed count from five to four. Final semantic layout has
+  no `True Blue` or `675023` and retains all four pre-existing completed tasks.
+- Final state: NextN window 291 is focused on Downloads, system Files window
+  292 is backgrounded, and PowerManager reads `AWAKE` with
+  `OverrideTimeout=86400000ms`. Raw manifest snapshots, command metadata, and
+  semantic layouts are retained under the corresponding
+  `.hvigor/outputs/nextn-public-download-root-*` directories and excluded from
+  Git. No lock-screen or gallery screenshot is retained. No physical action
+  remains for this bounded public Download-directory acceptance lane.

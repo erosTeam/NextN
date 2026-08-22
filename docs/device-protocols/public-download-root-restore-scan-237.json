@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-public-download-root-restore-scan-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-restore-scan-20260823T0625",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c",
+    "page": "download-settings-public-directory-restore-scan",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Open the Download settings row from its current Settings-root semantic bounds, then activate Restore download tasks from the current-build observed [48,1566][1272,1758] row. Receive the immediate result layout. Do not change download policy values or remove any task in this protocol."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "settings-root-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-download-settings",
+        "uiInput": ["click", "660", "1389"],
+        "pauseAfterMs": 800,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "scan-download-directory-for-restorable-tasks",
+        "uiInput": ["click", "660", "1662"],
+        "pauseAfterMs": 250,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-restore-result-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-public-download-restore-result.json"]
+    },
+    {
+      "name": "receive-restore-result-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-public-download-restore-result.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-restore-scan-20260823T0625/restore-result-layout.json"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-public-download-restore-result.json"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

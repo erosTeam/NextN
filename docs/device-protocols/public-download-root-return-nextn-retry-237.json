@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-public-download-root-return-nextn-retry-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-return-nextn-retry-20260823T0710",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c",
+    "page": "explicit-files-back-and-status-quickback-to-nextn",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Correct the ineffective keyEvent return by using only current semantic controls: Files Download-page back at [48,141][168,261], then the status-bar QuickBack labeled NextN at [56,22][199,94]. Receive the final NextN layout and verify the cleaned four-task Downloads state."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "files-download-root-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "return-to-files-home-through-visible-back",
+        "uiInput": ["click", "108", "201"],
+        "pauseAfterMs": 400,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "return-to-nextn-through-status-quickback",
+        "uiInput": ["click", "128", "58"],
+        "pauseAfterMs": 600,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-final-nextn-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-public-download-final-return-retry.json"]
+    },
+    {
+      "name": "receive-final-nextn-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-public-download-final-return-retry.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-return-nextn-retry-20260823T0710/final-nextn-layout.json"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-public-download-final-return-retry.json"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

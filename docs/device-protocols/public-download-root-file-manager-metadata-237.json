@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-public-download-root-file-manager-metadata-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-file-manager-metadata-20260823T0650",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c",
+    "page": "system-file-manager-main-ability-discovery",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Read only the bundle metadata for the three file-related packages identified by the prior installed-bundle catalog. Determine the explicit main ability before launching any external app. Retap the unchanged NextN Downloads root as the bounded UI action; do not mutate files or task state."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "filemanager-bundle-metadata",
+      "hdcArgs": ["shell", "bm", "dump", "-n", "com.huawei.hmos.filemanager"]
+    },
+    {
+      "name": "files-bundle-metadata",
+      "hdcArgs": ["shell", "bm", "dump", "-n", "com.huawei.hmos.files"]
+    },
+    {
+      "name": "external-file-manager-bundle-metadata",
+      "hdcArgs": ["shell", "bm", "dump", "-n", "com.ohos.UserFile.ExternalFileManager"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "retap-unchanged-downloads-root",
+        "uiInput": ["click", "756", "2006"],
+        "pauseAfterMs": 300,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

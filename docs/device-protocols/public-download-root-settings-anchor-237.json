@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-public-download-root-settings-anchor-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-settings-anchor-20260823T0615",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "a6165f3c5bd1ce7044cf14349c79b5bf5d8fabfb063159a2501b7f250017519c",
+    "page": "reader-explicit-exit-to-settings-root-anchor",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "From the cold-start Reader for Gallery 675023, reveal Reader chrome at the neutral canvas center, activate the known top-left Reader back control, then open My from the returned root. Receive the semantic Settings root before choosing the Download row. Preserve all task and preference state."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "reader-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "reveal-reader-chrome",
+        "uiInput": ["click", "660", "1000"],
+        "pauseAfterMs": 400,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "exit-reader-through-explicit-back",
+        "uiInput": ["click", "108", "84"],
+        "pauseAfterMs": 700,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "open-my-settings-root",
+        "uiInput": ["click", "948", "2006"],
+        "pauseAfterMs": 900,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-settings-root-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-public-download-settings-root.json"]
+    },
+    {
+      "name": "receive-settings-root-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-public-download-settings-root.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-public-download-root-settings-anchor-20260823T0615/settings-root-layout.json"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-public-download-settings-root.json"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}
