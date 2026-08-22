@@ -7,6 +7,12 @@ export class NhDownloadSettings {
   maxConcurrentPages: number = 3
   retryCount: number = 2
   notifyOnComplete: boolean = false
+  /** Minimum pause between page batches, in seconds. 0 disables the pause. */
+  requestIntervalSeconds: number = 0
+  /** Resume ERROR tasks automatically on cold start. PAUSED tasks never auto-resume. */
+  autoRetryFailed: boolean = true
+  /** Average queue speed cap in KB/s. 0 disables the cap. */
+  speedLimitKbps: number = 0
 
   copy(): NhDownloadSettings {
     const result: NhDownloadSettings = new NhDownloadSettings()
@@ -14,6 +20,9 @@ export class NhDownloadSettings {
     result.maxConcurrentPages = this.maxConcurrentPages
     result.retryCount = this.retryCount
     result.notifyOnComplete = this.notifyOnComplete
+    result.requestIntervalSeconds = this.requestIntervalSeconds
+    result.autoRetryFailed = this.autoRetryFailed
+    result.speedLimitKbps = this.speedLimitKbps
     return result
   }
 }

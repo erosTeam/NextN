@@ -43,6 +43,7 @@ import {
   ReaderPresentationService,
   ReaderPresentationState,
   DownloadQueueService,
+  DownloadRestoreResult,
   DownloadNotificationService,
   DownloadSettingsService,
   DownloadSettingsState,
@@ -295,6 +296,7 @@ export struct SettingsPage {
   @Local isAccountSignedIn: boolean = false
   @Local downloadSettingsError: string = ''
   @Local isSavingDownloadSettings: boolean = false
+  @Local isRestoringDownloadTasks: boolean = false
   @Local themeColorPickerShown: boolean = false
   @Local draftCustomThemeColor: string = '#0958F7'
   private themeColorBeforePicker: string = ThemeColorSettings.COLOR_GALAXY_BLUE
@@ -1075,6 +1077,82 @@ export struct SettingsPage {
     }
   }
 
+  private async saveRequestInterval(seconds: number): Promise<void> {
+    if (this.isSavingDownloadSettings) {
+      return
+    }
+    this.isSavingDownloadSettings = true
+    this.downloadSettingsError = ''
+    try {
+      await DownloadSettingsService.setRequestIntervalSeconds(this.context(), seconds)
+      await DownloadQueueService.applySettings(this.context())
+    } catch (_error) {
+      this.downloadSettingsError = AppStrings.get('settings_download_request_interval_save_failed')
+    } finally {
+      this.isSavingDownloadSettings = false
+    }
+  }
+
+  private async saveAutoRetryFailed(enabled: boolean): Promise<void> {
+    if (this.isSavingDownloadSettings) {
+      return
+    }
+    this.isSavingDownloadSettings = true
+    this.downloadSettingsError = ''
+    try {
+      await DownloadSettingsService.setAutoRetryFailed(this.context(), enabled)
+      await DownloadQueueService.applySettings(this.context())
+    } catch (_error) {
+      this.downloadSettingsError = AppStrings.get('settings_download_auto_retry_failed_save_failed')
+    } finally {
+      this.isSavingDownloadSettings = false
+    }
+  }
+
+  private async saveSpeedLimit(kbps: number): Promise<void> {
+    if (this.isSavingDownloadSettings) {
+      return
+    }
+    this.isSavingDownloadSettings = true
+    this.downloadSettingsError = ''
+    try {
+      await DownloadSettingsService.setSpeedLimitKbps(this.context(), kbps)
+      await DownloadQueueService.applySettings(this.context())
+    } catch (_error) {
+      this.downloadSettingsError = AppStrings.get('settings_download_speed_limit_save_failed')
+    } finally {
+      this.isSavingDownloadSettings = false
+    }
+  }
+
+  /**
+   * User-initiated download-directory restore (leaf row mirroring NextE's
+   * DownloadSettingsPage): scan the metadata sidecars, merge anything the
+   * queue lacks, then report the outcome as a toast.
+   */
+  private async restoreDownloadTasks(): Promise<void> {
+    if (this.isRestoringDownloadTasks) {
+      return
+    }
+    this.isRestoringDownloadTasks = true
+    this.downloadSettingsError = ''
+    try {
+      const result: DownloadRestoreResult =
+        await DownloadQueueService.restoreFromDownloadDirectory(this.context())
+      if (result.importedCount > 0) {
+        this.toast(AppStrings.format('settings_download_restore_done', [result.importedCount.toString()]))
+      } else if (result.scannedCount > 0) {
+        this.toast(AppStrings.get('settings_download_restore_existing'))
+      } else {
+        this.toast(AppStrings.get('settings_download_restore_none'))
+      }
+    } catch (_error) {
+      this.toast(AppStrings.get('settings_download_restore_failed'))
+    } finally {
+      this.isRestoringDownloadTasks = false
+    }
+  }
+
   private retryCountLabelFor(count: number): string {
     return count === 1
       ? AppStrings.format('settings_download_retry_one', [count.toString()])
@@ -1083,6 +1161,16 @@ export struct SettingsPage {
 
   private retryCountLabel(): string {
     return this.retryCountLabelFor(this.downloadSettings.retryCount)
+  }
+
+  private requestIntervalLabel(seconds: number): string {
+    return AppStrings.format('settings_download_request_interval_value', [seconds.toString()])
+  }
+
+  private speedLimitLabel(kbps: number): string {
+    return kbps <= 0
+      ? AppStrings.get('settings_download_speed_limit_off')
+      : AppStrings.format('settings_download_speed_limit_value', [kbps.toString()])
   }
 
   private readerModeLabel(): string {
@@ -1289,6 +1377,130 @@ export struct SettingsPage {
           : undefined,
       }).onClick((): void => {
         this.saveRetryCount(3)
+      })
+      MenuItem({
+        content: this.retryCountLabelFor(4),
+        symbolEndIcon: this.downloadSettings.retryCount === 4
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveRetryCount(4)
+      })
+      MenuItem({
+        content: this.retryCountLabelFor(5),
+        symbolEndIcon: this.downloadSettings.retryCount === 5
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveRetryCount(5)
+      })
+    }
+  }
+
+  @Builder
+  private RequestIntervalMenu() {
+    Menu() {
+      MenuItem({
+        content: this.requestIntervalLabel(0),
+        symbolEndIcon: this.downloadSettings.requestIntervalSeconds === 0
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveRequestInterval(0)
+      })
+      MenuItem({
+        content: this.requestIntervalLabel(1),
+        symbolEndIcon: this.downloadSettings.requestIntervalSeconds === 1
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveRequestInterval(1)
+      })
+      MenuItem({
+        content: this.requestIntervalLabel(2),
+        symbolEndIcon: this.downloadSettings.requestIntervalSeconds === 2
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveRequestInterval(2)
+      })
+      MenuItem({
+        content: this.requestIntervalLabel(3),
+        symbolEndIcon: this.downloadSettings.requestIntervalSeconds === 3
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveRequestInterval(3)
+      })
+      MenuItem({
+        content: this.requestIntervalLabel(5),
+        symbolEndIcon: this.downloadSettings.requestIntervalSeconds === 5
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveRequestInterval(5)
+      })
+      MenuItem({
+        content: this.requestIntervalLabel(10),
+        symbolEndIcon: this.downloadSettings.requestIntervalSeconds === 10
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveRequestInterval(10)
+      })
+    }
+  }
+
+  @Builder
+  private SpeedLimitMenu() {
+    Menu() {
+      MenuItem({
+        content: this.speedLimitLabel(0),
+        symbolEndIcon: this.downloadSettings.speedLimitKbps === 0
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveSpeedLimit(0)
+      })
+      MenuItem({
+        content: this.speedLimitLabel(512),
+        symbolEndIcon: this.downloadSettings.speedLimitKbps === 512
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveSpeedLimit(512)
+      })
+      MenuItem({
+        content: this.speedLimitLabel(1024),
+        symbolEndIcon: this.downloadSettings.speedLimitKbps === 1024
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveSpeedLimit(1024)
+      })
+      MenuItem({
+        content: this.speedLimitLabel(2048),
+        symbolEndIcon: this.downloadSettings.speedLimitKbps === 2048
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveSpeedLimit(2048)
+      })
+      MenuItem({
+        content: this.speedLimitLabel(4096),
+        symbolEndIcon: this.downloadSettings.speedLimitKbps === 4096
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveSpeedLimit(4096)
+      })
+      MenuItem({
+        content: this.speedLimitLabel(8192),
+        symbolEndIcon: this.downloadSettings.speedLimitKbps === 8192
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        this.saveSpeedLimit(8192)
       })
     }
   }
@@ -2830,7 +3042,7 @@ export struct SettingsPage {
   private DownloadPolicyGroup() {
     NextNGroupedListSection() {
       NextNListRow({
-        leadingIcon: $r('sys.symbol.rectangle_stack'),
+        leadingIcon: $r('sys.symbol.arrow_down_to_line'),
         title: AppStrings.get('settings_download_gallery_concurrency'),
         trailingText: `${this.downloadSettings.maxConcurrentGalleries}`,
         trailingDropdown: true,
@@ -2860,7 +3072,23 @@ export struct SettingsPage {
       })
       this.RowDivider()
       NextNListRow({
-        leadingIcon: $r('sys.symbol.arrow_clockwise'),
+        leadingIcon: $r('sys.symbol.clock'),
+        title: AppStrings.get('settings_download_request_interval'),
+        subtitle: AppStrings.get('settings_download_request_interval_hint'),
+        trailingText: this.requestIntervalLabel(this.downloadSettings.requestIntervalSeconds),
+        trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.RequestIntervalMenu()
+        },
+        isEnabled: !this.isSavingDownloadSettings,
+        accessibilityLabel: AppStrings.format('settings_download_request_interval_a11y', [
+          this.requestIntervalLabel(this.downloadSettings.requestIntervalSeconds),
+        ]),
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.list_number'),
         title: AppStrings.get('settings_download_failed_page_retries'),
         trailingText: this.retryCountLabel(),
         trailingDropdown: true,
@@ -2871,6 +3099,41 @@ export struct SettingsPage {
         isEnabled: !this.isSavingDownloadSettings,
         accessibilityLabel: AppStrings.format('settings_download_failed_page_retries_a11y', [
           this.retryCountLabel(),
+        ]),
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.repeat'),
+        title: AppStrings.get('settings_download_auto_retry_failed'),
+        subtitle: AppStrings.get('settings_download_auto_retry_failed_hint'),
+        hasSwitch: true,
+        checked: this.downloadSettings.autoRetryFailed,
+        showChevron: false,
+        isEnabled: !this.isSavingDownloadSettings,
+        accessibilityLabel: AppStrings.format('settings_download_auto_retry_failed_a11y', [
+          this.toggleStateLabel(this.downloadSettings.autoRetryFailed),
+        ]),
+        onAction: (): void => {
+          this.saveAutoRetryFailed(!this.downloadSettings.autoRetryFailed)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.saveAutoRetryFailed(value)
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.clock'),
+        title: AppStrings.get('settings_download_speed_limit'),
+        subtitle: AppStrings.get('settings_download_speed_limit_hint'),
+        trailingText: this.speedLimitLabel(this.downloadSettings.speedLimitKbps),
+        trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: () => {
+          this.SpeedLimitMenu()
+        },
+        isEnabled: !this.isSavingDownloadSettings,
+        accessibilityLabel: AppStrings.format('settings_download_speed_limit_a11y', [
+          this.speedLimitLabel(this.downloadSettings.speedLimitKbps),
         ]),
       })
       this.RowDivider()
@@ -2893,6 +3156,46 @@ export struct SettingsPage {
         },
       })
     }
+  }
+
+  @Builder
+  private DownloadRestoreGroup() {
+    NextNGroupedListSection() {
+      if (this.isRestoringDownloadTasks) {
+        NextNListRow({
+          leadingIcon: $r('sys.symbol.arrow_clockwise'),
+          title: AppStrings.get('settings_download_restore_tasks'),
+          subtitle: AppStrings.get('settings_download_restore_tasks_scanning'),
+          showChevron: false,
+          isEnabled: false,
+          useCustomTrailing: true,
+          customTrailing: (): void => {
+            this.DownloadRestoreBusySuffix()
+          },
+          accessibilityLabel: AppStrings.get('settings_download_restore_tasks_scanning'),
+        })
+      } else {
+        NextNListRow({
+          leadingIcon: $r('sys.symbol.arrow_clockwise'),
+          title: AppStrings.get('settings_download_restore_tasks'),
+          subtitle: AppStrings.get('settings_download_restore_tasks_hint'),
+          showChevron: false,
+          isEnabled: !this.isSavingDownloadSettings,
+          accessibilityLabel: AppStrings.get('settings_download_restore_tasks_a11y'),
+          onAction: (): void => {
+            this.restoreDownloadTasks()
+          },
+        })
+      }
+    }
+  }
+
+  @Builder
+  private DownloadRestoreBusySuffix() {
+    LoadingProgress()
+      .width(22)
+      .height(22)
+      .color(ThemeTokens.BRAND)
   }
 
   @Builder
@@ -4149,6 +4452,9 @@ export struct SettingsPage {
         } else if (this.surface === SettingsSurface.DOWNLOAD) {
           ListItem() {
             this.DownloadPolicyGroup()
+          }
+          ListItem() {
+            this.DownloadRestoreGroup()
           }
           if (this.downloadSettingsError.length > 0) {
             ListItem() {

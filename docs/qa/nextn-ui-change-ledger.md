@@ -9104,3 +9104,49 @@ authorize an edit, replace a device comparison, or define product completion.
   remain counter-evidence only. Final PowerManager readback remained `AWAKE`
   with `OverrideTimeout=86400000ms`; no physical action remains for this
   bounded SAFE_MODE review path.
+## OPEN — Gallery downloads must use the public Download directory — 2026-08-23
+
+- **Why newly actionable:** the user explicitly reported that NextN stores
+  downloaded galleries under the application sandbox and rejected that as a
+  stripped-down NextE port. This reopens the previously accepted Download
+  settings/queue boundary with direct counter-evidence.
+- **Faulty assumption and impact:** NextN described the queue as intentionally
+  app-private and made `context.filesDir/nextn-downloads/<galleryId>` the sole
+  path owner. The newly added restore row then scanned that same private root,
+  so the UI implied NextE-style directory recovery while users could neither
+  browse nor retain the downloaded files as ordinary public Download data.
+  Build success and the prior sandbox-sidecar scan did not test the actual
+  storage-location contract.
+- **Reference parent tree:** NextE keeps the download action and settings row in
+  their existing owners, but `DownloadQueueSettings` first obtains the public
+  Download root through `DocumentViewPicker` with
+  `DocumentPickerMode.DOWNLOAD`. Gallery, archiver, and export writes use only
+  that public root; `context.filesDir` remains a legacy read/removal candidate.
+- **Whole affected tree:** `GalleryDetailPage.DownloadActionChip ->
+  DownloadQueueService.enqueue/resume -> system Download picker -> public
+  gallery directory -> queue metadata/page writes`; downstream readers are
+  `DownloadQueuePage` read/remove/export, Reader local page URIs, cold-start
+  queue reconciliation, and `SettingsPage.DownloadRestoreGroup` directory
+  import. Existing Download settings row order, icons, menus, switches,
+  scaffold, and queue card geometry remain unchanged.
+- **Exact correction:** obtain the public Download root before every new task
+  write, persist each task's resolved storage directory with the device-local
+  queue row, and make all page/metadata/read/export/remove consumers use that
+  task-owned directory. The restore action obtains the same public root and
+  scans it first. Existing sandbox tasks remain a compatibility read/removal
+  source; an unfinished legacy task selected for resume starts writing a fresh
+  public task directory instead of appending more data to the sandbox.
+- **Minimality and prevention rule:** do not add a fake path label, expose a
+  physical system path, move temporary CBZ/torrent share caches, or alter
+  network/account behavior. A reference directory-recovery row may not be
+  declared ported until its actual write root and every downstream file
+  consumer have been mapped against the reference.
+- **Physical verification plan:** signed build and `install -r` on the selected
+  device; from a new Gallery task, observe the genuine system Download picker,
+  accept it once, complete at least one bounded gallery download, and verify
+  its metadata/pages under the returned public root rather than
+  `context.filesDir`. Force-stop/cold-start without clearing data, open the same
+  completed task in Reader, exercise the restore scan, and confirm task removal
+  deletes only its own public directory. Same-state visual review is limited to
+  the unchanged Detail/Downloads/Settings parents plus the newly restored
+  system-picker transition.

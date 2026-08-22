@@ -7,7 +7,7 @@ const STORE_CONFIG: relationalStore.StoreConfig = {
   autoCleanDirtyData: true,
 }
 
-const SCHEMA_VERSION: number = 21
+const SCHEMA_VERSION: number = 22
 const SQL_CREATE_READING_HISTORY: string =
   'CREATE TABLE IF NOT EXISTS reading_history (' +
   'gallery_id INTEGER PRIMARY KEY, ' +
@@ -108,6 +108,7 @@ const SQL_CREATE_DOWNLOAD_QUEUE: string =
   'thumbnail_url TEXT NOT NULL, ' +
   'page_count INTEGER NOT NULL, ' +
   'page_extensions TEXT NOT NULL, ' +
+  'storage_directory TEXT NOT NULL DEFAULT \'\', ' +
   'completed_pages INTEGER NOT NULL DEFAULT 0, ' +
   'status TEXT NOT NULL, ' +
   'error_message TEXT NOT NULL DEFAULT \'\', ' +
@@ -115,6 +116,9 @@ const SQL_CREATE_DOWNLOAD_QUEUE: string =
   'updated_at INTEGER NOT NULL)'
 const SQL_CREATE_DOWNLOAD_QUEUE_UPDATED_ORDER: string =
   'CREATE INDEX IF NOT EXISTS idx_download_queue_updated ON download_queue (updated_at DESC)'
+const SQL_INSPECT_DOWNLOAD_QUEUE_COLUMNS: string = 'SELECT * FROM download_queue LIMIT 0'
+const SQL_ADD_DOWNLOAD_QUEUE_STORAGE_DIRECTORY: string =
+  'ALTER TABLE download_queue ADD COLUMN storage_directory TEXT NOT NULL DEFAULT \'\''
 const SQL_CREATE_DOWNLOAD_SETTINGS: string =
   'CREATE TABLE IF NOT EXISTS download_settings (' +
   'key TEXT PRIMARY KEY NOT NULL, ' +
@@ -275,6 +279,7 @@ export class LocalDataStore {
       await store.executeSql(SQL_CREATE_NH_GALLERY_LIST_CACHE)
       await LocalDataStore.ensureReadingHistoryProgressColumn(store)
       await LocalDataStore.ensureAccountVerificationReasonColumn(store)
+      await LocalDataStore.ensureDownloadQueueStorageDirectoryColumn(store)
       if (existingVersion < SCHEMA_VERSION) {
         store.version = SCHEMA_VERSION
       }
@@ -321,6 +326,23 @@ export class LocalDataStore {
     }
     if (!hasReasonCode) {
       await store.executeSql(SQL_ADD_ACCOUNT_SESSION_VERIFICATION_REASON_CODE)
+    }
+  }
+
+  /** Adds the device-local public/legacy directory owner without rewriting existing queue rows. */
+  private static async ensureDownloadQueueStorageDirectoryColumn(store: relationalStore.RdbStore): Promise<void> {
+    let rows: relationalStore.ResultSet | null = null
+    let hasStorageDirectory: boolean = false
+    try {
+      rows = await store.querySql(SQL_INSPECT_DOWNLOAD_QUEUE_COLUMNS)
+      hasStorageDirectory = rows.getColumnNames().indexOf('storage_directory') >= 0
+    } finally {
+      if (rows !== null) {
+        rows.close()
+      }
+    }
+    if (!hasStorageDirectory) {
+      await store.executeSql(SQL_ADD_DOWNLOAD_QUEUE_STORAGE_DIRECTORY)
     }
   }
 }

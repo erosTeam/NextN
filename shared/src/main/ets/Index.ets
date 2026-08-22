@@ -464,7 +464,7 @@ export {
   connectReaderOverlayNavigation,
 } from './state/ReaderOverlayNavigationState'
 export { DownloadSettingsState, connectDownloadSettings } from './state/DownloadSettingsState'
-export { DownloadBatchResult, DownloadQueueService } from './services/DownloadQueueService'
+export { DownloadBatchResult, DownloadQueueService, DownloadRestoreResult } from './services/DownloadQueueService'
 export { DownloadSettingsService } from './services/DownloadSettingsService'
 export { DownloadNotificationService } from './services/DownloadNotificationService'
 export { ContentFilterRepository } from './storage/ContentFilterRepository'

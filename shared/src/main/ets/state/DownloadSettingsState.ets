@@ -7,12 +7,18 @@ export class DownloadSettingsState {
   @Trace maxConcurrentPages: number = 3
   @Trace retryCount: number = 2
   @Trace notifyOnComplete: boolean = false
+  @Trace requestIntervalSeconds: number = 0
+  @Trace autoRetryFailed: boolean = true
+  @Trace speedLimitKbps: number = 0
 
   replace(settings: NhDownloadSettings): void {
     this.maxConcurrentGalleries = settings.maxConcurrentGalleries
     this.maxConcurrentPages = settings.maxConcurrentPages
     this.retryCount = settings.retryCount
     this.notifyOnComplete = settings.notifyOnComplete
+    this.requestIntervalSeconds = settings.requestIntervalSeconds
+    this.autoRetryFailed = settings.autoRetryFailed
+    this.speedLimitKbps = settings.speedLimitKbps
   }
 
   snapshot(): NhDownloadSettings {
@@ -21,6 +27,9 @@ export class DownloadSettingsState {
     result.maxConcurrentPages = this.maxConcurrentPages
     result.retryCount = this.retryCount
     result.notifyOnComplete = this.notifyOnComplete
+    result.requestIntervalSeconds = this.requestIntervalSeconds
+    result.autoRetryFailed = this.autoRetryFailed
+    result.speedLimitKbps = this.speedLimitKbps
     return result
   }
 }

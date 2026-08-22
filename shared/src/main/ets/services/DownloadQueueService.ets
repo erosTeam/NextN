@@ -1,5 +1,5 @@
 import { common } from '@kit.AbilityKit'
-import { fileIo } from '@kit.CoreFileKit'
+import { fileIo, fileUri, picker } from '@kit.CoreFileKit'
 import { http } from '@kit.NetworkKit'
 import { NhGalleryDetail, NhGalleryPage } from '../model/NhGallery'
 import { NhDownloadTask, NhDownloadTaskStatus } from '../model/NhDownloadTask'
@@ -11,6 +11,9 @@ import { NhDownloadExportCacheService } from './NhDownloadExportCacheService'
 import { DownloadNotificationService } from './DownloadNotificationService'
 
 const DOWNLOAD_DIR_NAME: string = 'nextn-downloads'
+const DOWNLOAD_ROOT_MARKER: string = '.nextn-download-root'
+const METADATA_FILE_NAME: string = 'metadata.json'
+const METADATA_SCHEMA: number = 1
 const MAX_PAGE_BYTES: number = 64 * 1024 * 1024
 const CONNECT_TIMEOUT_MS: number = 10000
 const READ_TIMEOUT_MS: number = 30000
@@ -18,6 +21,8 @@ const READ_TIMEOUT_MS: number = 30000
 class DownloadPageOutcome {
   completed: boolean = false
   failureMessage: string = ''
+  /** Bytes atomically promoted by this page attempt; feeds the speed-limit delay. */
+  bytes: number = 0
 }
 
 /**
@@ -39,13 +44,19 @@ export class DownloadBatchResult {
   }
 }
 
+/** Structured outcome of a user-initiated download-directory restore. */
+export class DownloadRestoreResult {
+  scannedCount: number = 0
+  importedCount: number = 0
+}
+
 /**
- * User-initiated, app-private gallery download queue.
+ * User-initiated gallery download queue backed by the public Download folder.
  *
  * It intentionally mirrors the ErosN/NextE lifecycle: durable task metadata,
  * one gallery worker, a bounded page pool, atomic .part promotion, and a
- * cold-start transition from in-progress to paused. No public-files export,
- * background transfer, account mutation, or non-GET request is involved.
+ * cold-start transition from in-progress to paused. Legacy sandbox tasks stay
+ * readable/removable, but every new page write uses the public Download root.
  */
 export class DownloadQueueService {
   private static restoreTask: Promise<void> | null = null
@@ -61,6 +72,8 @@ export class DownloadQueueService {
   private static bootstrapRestoreTask: Promise<void> | null = null
   private static activeGalleryIds: Set<number> = new Set<number>()
   private static executionTokens: Map<number, number> = new Map<number, number>()
+  private static downloadPublicRoot: string = ''
+  private static downloadRootRequest: Promise<boolean> | null = null
 
   /**
    * Preserve the original startup rejection for EntryAbility diagnostics while
@@ -121,6 +134,28 @@ export class DownloadQueueService {
     } finally {
       DownloadQueueService.restoreTask = null
     }
+    // Cold-start opt-in mirrors NextE: failed tasks retry automatically, but
+    // paused tasks always stay paused and a retry failure never breaks bootstrap.
+    if (DownloadSettingsService.snapshot().autoRetryFailed) {
+      await DownloadQueueService.autoRetryFailedTasks(context)
+    }
+  }
+
+  /**
+   * Resume ERROR tasks once per cold start when the user opted in. PAUSED
+   * tasks are deliberately excluded: pausing is a manual decision.
+   */
+  private static async autoRetryFailedTasks(context: common.UIAbilityContext): Promise<void> {
+    try {
+      const tasks: NhDownloadTask[] = DownloadQueueService.snapshot()
+      for (let index: number = 0; index < tasks.length; index++) {
+        if (tasks[index].status === NhDownloadTaskStatus.ERROR) {
+          await DownloadQueueService.resume(context, tasks[index].galleryId)
+        }
+      }
+    } catch (error) {
+      console.warn(`NextNDownload auto-retry failed: ${(error as Error).message}`)
+    }
   }
 
   /** Add a verified detail snapshot to the queue, or resume the same unfinished gallery. */
@@ -144,6 +179,9 @@ export class DownloadQueueService {
       }
       extensions.push(extension)
     }
+    if (!await DownloadQueueService.ensureDownloadStorageReady(context)) {
+      throw new Error('Public Download directory is unavailable')
+    }
     const now: number = Date.now()
     const task: NhDownloadTask = new NhDownloadTask()
     task.galleryId = detail.id
@@ -152,6 +190,7 @@ export class DownloadQueueService {
     task.thumbnailUrl = detail.thumbnailUrl.length > 0 ? detail.thumbnailUrl : detail.coverUrl
     task.pageCount = detail.pages.length
     task.pageExtensions = extensions
+    task.storageDirectory = DownloadQueueService.publicTaskDirectory(task.galleryId)
     task.completedPages = 0
     task.status = NhDownloadTaskStatus.QUEUED
     task.createdAt = now
@@ -163,6 +202,7 @@ export class DownloadQueueService {
       DownloadQueueService.removeFromState(task.galleryId)
       throw error as Error
     }
+    DownloadQueueService.writeTaskMetadata(context, task)
     DownloadQueueService.pump(context)
     return task.copy()
   }
@@ -180,14 +220,23 @@ export class DownloadQueueService {
     task.updatedAt = Date.now()
     DownloadQueueService.putInState(task)
     await DownloadQueueRepository.save(context, task)
+    DownloadQueueService.writeTaskMetadata(context, task)
   }
 
-  /** Reconcile already-promoted private files, then schedule the remaining page set. */
+  /** Reconcile promoted files, then schedule the remaining page set. */
   static async resume(context: common.UIAbilityContext, galleryId: number): Promise<void> {
     await DownloadQueueService.restore(context)
     const task: NhDownloadTask | null = DownloadQueueService.task(galleryId)
     if (task === null || task.isComplete()) {
       return
+    }
+    if (DownloadQueueService.isLegacyTaskDirectory(context, task.storageDirectory)) {
+      if (!await DownloadQueueService.ensureDownloadStorageReady(context)) {
+        throw new Error('Public Download directory is unavailable')
+      }
+      // Legacy partial files remain a read/removal source. Resuming starts a
+      // clean public task directory so no new bytes extend the sandbox copy.
+      task.storageDirectory = DownloadQueueService.publicTaskDirectory(task.galleryId)
     }
     const wasComplete: boolean = task.isComplete()
     task.completedPages = DownloadQueueService.completedFileCount(context, task)
@@ -198,6 +247,7 @@ export class DownloadQueueService {
     task.updatedAt = Date.now()
     DownloadQueueService.putInState(task)
     await DownloadQueueRepository.save(context, task)
+    DownloadQueueService.writeTaskMetadata(context, task)
     if (!wasComplete && task.isComplete()) {
       await DownloadNotificationService.publishDownloadComplete(task.title)
     }
@@ -248,7 +298,7 @@ export class DownloadQueueService {
     return result
   }
 
-  /** Forget one task and exactly its own app-private files. This never touches public storage. */
+  /** Forget one task and exactly its own public and legacy task directories. */
   static async remove(context: common.UIAbilityContext, galleryId: number): Promise<void> {
     await DownloadQueueService.restore(context)
     const task: NhDownloadTask | null = DownloadQueueService.task(galleryId)
@@ -278,9 +328,58 @@ export class DownloadQueueService {
   }
 
   /**
-   * Supplies a complete private download to Reader without asking the API for
+   * User-initiated restore (mirrors NextE's importTasksFromDownloadDirectory):
+   * scan public Download metadata (plus the legacy sandbox compatibility root)
+   * the queue row set lacks into state and RDB. Imported tasks keep their
+   * durable status; paused and failed tasks resume through the normal rows.
+   */
+  static async restoreFromDownloadDirectory(
+    context: common.UIAbilityContext,
+  ): Promise<DownloadRestoreResult> {
+    const result: DownloadRestoreResult = new DownloadRestoreResult()
+    await DownloadQueueService.restore(context)
+    if (!await DownloadQueueService.ensureDownloadStorageReady(context)) {
+      throw new Error('Public Download directory is unavailable')
+    }
+    const scanned: NhDownloadTask[] = DownloadQueueService.loadTaskMetadataTasks(context)
+    result.scannedCount = scanned.length
+    const writes: Promise<void>[] = []
+    for (let index: number = 0; index < scanned.length; index++) {
+      const candidate: NhDownloadTask = scanned[index]
+      if (DownloadQueueService.task(candidate.galleryId) !== null) {
+        continue
+      }
+      const task: NhDownloadTask = candidate.copy()
+      task.completedPages = DownloadQueueService.completedFileCount(context, task)
+      if (task.status === NhDownloadTaskStatus.DOWNLOADING ||
+        (task.status === NhDownloadTaskStatus.QUEUED &&
+          DownloadQueueService.isLegacyTaskDirectory(context, task.storageDirectory))) {
+        task.status = NhDownloadTaskStatus.PAUSED
+        task.errorMessage = ''
+      }
+      DownloadQueueService.normalizeTaskState(task)
+      task.updatedAt = Date.now()
+      DownloadQueueService.putInState(task)
+      writes.push(DownloadQueueRepository.save(context, task))
+      result.importedCount += 1
+    }
+    for (let index: number = 0; index < writes.length; index++) {
+      await writes[index]
+    }
+    if (result.importedCount > 0) {
+      const tasks: NhDownloadTask[] = DownloadQueueService.snapshot()
+      for (let index: number = 0; index < tasks.length; index++) {
+        DownloadQueueService.writeTaskMetadata(context, tasks[index])
+      }
+      DownloadQueueService.pump(context)
+    }
+    return result
+  }
+
+  /**
+   * Supplies a complete local download to Reader without asking the API for
    * a second copy of its page manifest. A task is eligible only when every
-   * promoted page is still present in this app's private files directory.
+   * promoted page is still present in the task-owned directory.
    */
   static async localReaderDetail(
     context: common.UIAbilityContext,
@@ -309,7 +408,7 @@ export class DownloadQueueService {
     return detail
   }
 
-  /** Returns a safe display URI only for a verified, fully downloaded page. */
+  /** Returns a display URI only for a verified, fully downloaded local page. */
   static localPageUri(
     context: common.UIAbilityContext,
     galleryId: number,
@@ -326,11 +425,11 @@ export class DownloadQueueService {
   }
 
   /**
-   * Provides the ordered private source files for a local-only archive export.
+   * Provides the ordered local source files for a local-only archive export.
    * This is deliberately a pure verification read: it neither reconciles nor
    * persists task state, so a cancelled or failed share cannot mutate the
    * download queue. A caller receives no paths unless every completed page is
-   * still present under this task's private directory.
+   * still present under this task's owned directory.
    */
   static completeLocalPagePaths(
     context: common.UIAbilityContext,
@@ -349,13 +448,46 @@ export class DownloadQueueService {
     return paths
   }
 
+  /**
+   * Cold-start reconcile. The RDB row set is primary; per-task directory
+   * metadata fills gaps the queue row lost (mirrors NextE's restore merge).
+   * Both sources are re-verified against the page files before persisting,
+   * and every sidecar is rewritten from the reconciled truth.
+   */
   private static async restoreInternal(context: common.UIAbilityContext): Promise<void> {
     const restored: NhDownloadTask[] = await DownloadQueueRepository.loadAll(context)
-    const writes: Promise<void>[] = []
+    DownloadQueueService.adoptPublicRootFromTasks(context, restored)
     for (let index: number = 0; index < restored.length; index++) {
-      const task: NhDownloadTask = restored[index]
+      if (restored[index].storageDirectory.length === 0) {
+        const legacy: string = DownloadQueueService.legacyTaskDirectory(context, restored[index].galleryId)
+        if (DownloadQueueService.directoryExists(legacy)) {
+          restored[index].storageDirectory = legacy
+        }
+      }
+    }
+    const directoryTasks: NhDownloadTask[] = DownloadQueueService.loadTaskMetadataTasks(context)
+    const merged: NhDownloadTask[] = []
+    for (let index: number = 0; index < restored.length; index++) {
+      merged.push(restored[index].copy())
+    }
+    for (let index: number = 0; index < directoryTasks.length; index++) {
+      const candidate: NhDownloadTask = directoryTasks[index]
+      const existing: NhDownloadTask | undefined = merged.find(
+        (value: NhDownloadTask): boolean => value.galleryId === candidate.galleryId,
+      )
+      if (existing === undefined) {
+        merged.push(candidate)
+      } else if (existing.storageDirectory.length === 0 && candidate.storageDirectory.length > 0) {
+        existing.storageDirectory = candidate.storageDirectory
+      }
+    }
+    const writes: Promise<void>[] = []
+    for (let index: number = 0; index < merged.length; index++) {
+      const task: NhDownloadTask = merged[index]
       task.completedPages = DownloadQueueService.completedFileCount(context, task)
-      if (task.status === NhDownloadTaskStatus.DOWNLOADING) {
+      if (task.status === NhDownloadTaskStatus.DOWNLOADING ||
+        (task.status === NhDownloadTaskStatus.QUEUED &&
+          DownloadQueueService.isLegacyTaskDirectory(context, task.storageDirectory))) {
         task.status = NhDownloadTaskStatus.PAUSED
         task.errorMessage = ''
       }
@@ -363,9 +495,12 @@ export class DownloadQueueService {
       task.updatedAt = Date.now()
       writes.push(DownloadQueueRepository.save(context, task))
     }
-    DownloadQueueService.state().replace(restored)
+    DownloadQueueService.state().replace(merged)
     for (let index: number = 0; index < writes.length; index++) {
       await writes[index]
+    }
+    for (let index: number = 0; index < merged.length; index++) {
+      DownloadQueueService.writeTaskMetadata(context, merged[index])
     }
     NhDownloadExportCacheService.pruneExpired(context)
     DownloadQueueService.pump(context)
@@ -430,6 +565,15 @@ export class DownloadQueueService {
       if (!DownloadQueueService.isExecutionActive(galleryId, token)) {
         return
       }
+      // Batch-level pacing mirrors NextE: the interval pauses between batches.
+      if (start > 0) {
+        await DownloadQueueService.delay(DownloadQueueService.requestIntervalSeconds() * 1000)
+        if (!DownloadQueueService.isExecutionActive(galleryId, token)) {
+          return
+        }
+      }
+      const batchStartedAt: number = Date.now()
+      let batchBytes: number = 0
       const jobs: Promise<DownloadPageOutcome>[] = []
       const end: number = Math.min(pending.length, start + DownloadQueueService.maxConcurrentPages())
       for (let index: number = start; index < end; index++) {
@@ -448,10 +592,13 @@ export class DownloadQueueService {
         if (outcomes[index].failureMessage.length > 0 && failureMessage.length === 0) {
           failureMessage = outcomes[index].failureMessage
         }
+        batchBytes += Math.max(0, outcomes[index].bytes)
       }
+      DownloadQueueService.writeTaskMetadata(context, DownloadQueueService.task(galleryId) ?? task)
       if (failureMessage.length > 0) {
         break
       }
+      await DownloadQueueService.delayBytesForSpeedLimit(batchStartedAt, batchBytes)
     }
     if (!DownloadQueueService.isExecutionActive(galleryId, token)) {
       return
@@ -470,6 +617,7 @@ export class DownloadQueueService {
       : ''
     current.updatedAt = Date.now()
     await DownloadQueueService.persist(context, current)
+    DownloadQueueService.writeTaskMetadata(context, current)
     if (!wasComplete && current.isComplete()) {
       await DownloadNotificationService.publishDownloadComplete(current.title)
     }
@@ -496,13 +644,14 @@ export class DownloadQueueService {
         return outcome
       }
       try {
-        await DownloadQueueService.downloadPageOnce(context, task, pageIndex, token)
+        const bytes: number = await DownloadQueueService.downloadPageOnce(context, task, pageIndex, token)
         const current: NhDownloadTask | null = DownloadQueueService.task(task.galleryId)
         if (current !== null && DownloadQueueService.isExecutionActive(task.galleryId, token)) {
           current.completedPages = DownloadQueueService.completedFileCount(context, current)
           current.updatedAt = Date.now()
           await DownloadQueueService.persist(context, current)
           outcome.completed = true
+          outcome.bytes = bytes
         }
         return outcome
       } catch (error) {
@@ -521,11 +670,13 @@ export class DownloadQueueService {
     task: NhDownloadTask,
     pageIndex: number,
     token: number,
-  ): Promise<void> {
+  ): Promise<number> {
     const finalPath: string = DownloadQueueService.pagePath(context, task, pageIndex)
     const temporaryPath: string = `${finalPath}.part`
     DownloadQueueService.ensureTaskDirectory(context, task)
-    DownloadQueueService.removeIfExists(temporaryPath)
+    const directPublicWrite: boolean = DownloadQueueService.isPublicDownloadPath(finalPath)
+    const writePath: string = directPublicWrite ? finalPath : temporaryPath
+    DownloadQueueService.removeIfExists(writePath)
     let file: fileIo.File | null = null
     let request: http.HttpRequest | null = null
     let written: number = 0
@@ -533,13 +684,13 @@ export class DownloadQueueService {
     let promoted: boolean = false
     try {
       file = fileIo.openSync(
-        temporaryPath,
+        writePath,
         fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC,
       )
       request = http.createHttp()
       request.on('dataReceiveProgress', (info: http.DataReceiveProgressInfo): void => {
         if (info.totalSize > MAX_PAGE_BYTES) {
-          writeFailure = 'A gallery page exceeds the private download limit'
+          writeFailure = 'A gallery page exceeds the download limit'
           request?.destroy()
         }
       })
@@ -550,7 +701,7 @@ export class DownloadQueueService {
         }
         try {
           if (written + data.byteLength > MAX_PAGE_BYTES) {
-            writeFailure = 'A gallery page exceeds the private download limit'
+            writeFailure = 'A gallery page exceeds the download limit'
             request?.destroy()
             return
           }
@@ -581,7 +732,7 @@ export class DownloadQueueService {
         },
       )
       if (!DownloadQueueService.isExecutionActive(task.galleryId, token)) {
-        return
+        return 0
       }
       if (writeFailure.length > 0) {
         throw new Error(writeFailure)
@@ -596,13 +747,16 @@ export class DownloadQueueService {
       request = null
       fileIo.closeSync(file)
       file = null
-      DownloadQueueService.removeIfExists(finalPath)
-      fileIo.renameSync(temporaryPath, finalPath)
+      if (!directPublicWrite) {
+        DownloadQueueService.removeIfExists(finalPath)
+        fileIo.renameSync(temporaryPath, finalPath)
+      }
       if (DownloadQueueService.fileSize(finalPath) !== written) {
         DownloadQueueService.removeIfExists(finalPath)
         throw new Error('Saved gallery page did not verify')
       }
       promoted = true
+      return written
     } finally {
       if (request !== null) {
         request.destroy()
@@ -611,7 +765,7 @@ export class DownloadQueueService {
         fileIo.closeSync(file)
       }
       if (!promoted) {
-        DownloadQueueService.removeIfExists(temporaryPath)
+        DownloadQueueService.removeIfExists(writePath)
       }
     }
   }
@@ -647,6 +801,7 @@ export class DownloadQueueService {
     }
     task.updatedAt = Date.now()
     await DownloadQueueService.persist(context, task)
+    DownloadQueueService.writeTaskMetadata(context, task)
     if (!wasComplete && task.isComplete()) {
       await DownloadNotificationService.publishDownloadComplete(task.title)
     }
@@ -754,8 +909,57 @@ export class DownloadQueueService {
     return DownloadSettingsService.snapshot().retryCount
   }
 
+  private static requestIntervalSeconds(): number {
+    return DownloadSettingsService.snapshot().requestIntervalSeconds
+  }
+
+  private static speedLimitKbps(): number {
+    return DownloadSettingsService.snapshot().speedLimitKbps
+  }
+
+  /**
+   * Batch-level speed governor (mirrors NextE): after a batch settles, sleep
+   * so its bytes take no less than the capped-rate duration. A 0 cap is off.
+   */
+  private static async delayBytesForSpeedLimit(batchStartedAt: number, bytes: number): Promise<void> {
+    const kbps: number = DownloadQueueService.speedLimitKbps()
+    if (kbps <= 0 || bytes <= 0) {
+      return
+    }
+    const expectedMs: number = Math.ceil((bytes * 1000) / (kbps * 1024))
+    const remainMs: number = expectedMs - (Date.now() - batchStartedAt)
+    if (remainMs > 0) {
+      await DownloadQueueService.delay(remainMs)
+    }
+  }
+
+  private static legacyDownloadRoot(context: common.UIAbilityContext): string {
+    return `${context.filesDir}/${DOWNLOAD_DIR_NAME}`
+  }
+
+  private static legacyTaskDirectory(context: common.UIAbilityContext, galleryId: number): string {
+    return `${DownloadQueueService.legacyDownloadRoot(context)}/${galleryId}`
+  }
+
+  private static publicDownloadRoot(): string {
+    if (DownloadQueueService.downloadPublicRoot.length === 0) {
+      throw new Error('Public Download directory is unavailable')
+    }
+    return `${DownloadQueueService.downloadPublicRoot}/${DOWNLOAD_DIR_NAME}`
+  }
+
+  private static publicTaskDirectory(galleryId: number): string {
+    return `${DownloadQueueService.publicDownloadRoot()}/${galleryId}`
+  }
+
   private static taskDirectory(context: common.UIAbilityContext, task: NhDownloadTask): string {
-    return `${context.filesDir}/${DOWNLOAD_DIR_NAME}/${task.galleryId}`
+    return task.storageDirectory.length > 0
+      ? DownloadQueueService.normalizePath(task.storageDirectory)
+      : DownloadQueueService.legacyTaskDirectory(context, task.galleryId)
+  }
+
+  private static metadataPath(context: common.UIAbilityContext, task: NhDownloadTask): string {
+    return `${DownloadQueueService.taskDirectory(context, task)}/${METADATA_FILE_NAME}`
   }
 
   private static pagePath(context: common.UIAbilityContext, task: NhDownloadTask, pageIndex: number): string {
@@ -764,6 +968,13 @@ export class DownloadQueueService {
 
   private static ensureTaskDirectory(context: common.UIAbilityContext, task: NhDownloadTask): void {
     const directory: string = DownloadQueueService.taskDirectory(context, task)
+    if (DownloadQueueService.isLegacyTaskDirectory(context, directory)) {
+      throw new Error('Legacy sandbox downloads are read-only')
+    }
+    DownloadQueueService.ensureDirectory(directory)
+  }
+
+  private static ensureDirectory(directory: string): void {
     try {
       fileIo.mkdirSync(directory, true)
     } catch (error) {
@@ -771,6 +982,253 @@ export class DownloadQueueService {
         throw error as Error
       }
     }
+  }
+
+  private static directoryExists(directory: string): boolean {
+    try {
+      return directory.length > 0 && fileIo.accessSync(directory) && fileIo.statSync(directory).isDirectory()
+    } catch (_error) {
+      return false
+    }
+  }
+
+  private static isLegacyTaskDirectory(context: common.UIAbilityContext, directory: string): boolean {
+    const normalized: string = DownloadQueueService.normalizePath(directory)
+    const legacyRoot: string = DownloadQueueService.legacyDownloadRoot(context)
+    return normalized.length === 0 || normalized === legacyRoot || normalized.startsWith(`${legacyRoot}/`)
+  }
+
+  private static isPublicDownloadPath(path: string): boolean {
+    if (DownloadQueueService.downloadPublicRoot.length === 0) {
+      return false
+    }
+    const root: string = DownloadQueueService.normalizePath(DownloadQueueService.downloadPublicRoot)
+    const normalized: string = DownloadQueueService.normalizePath(path)
+    return normalized === root || normalized.startsWith(`${root}/`)
+  }
+
+  private static async ensureDownloadStorageReady(context: common.UIAbilityContext): Promise<boolean> {
+    if (DownloadQueueService.downloadPublicRoot.length > 0) {
+      try {
+        DownloadQueueService.ensureDirectory(DownloadQueueService.publicDownloadRoot())
+        return true
+      } catch (_error) {
+        DownloadQueueService.downloadPublicRoot = ''
+      }
+    }
+    if (DownloadQueueService.downloadRootRequest !== null) {
+      return await DownloadQueueService.downloadRootRequest
+    }
+    const request: Promise<boolean> = DownloadQueueService.requestPublicDownloadRoot(context)
+    DownloadQueueService.downloadRootRequest = request
+    try {
+      return await request
+    } finally {
+      DownloadQueueService.downloadRootRequest = null
+    }
+  }
+
+  private static async requestPublicDownloadRoot(context: common.UIAbilityContext): Promise<boolean> {
+    try {
+      const options = new picker.DocumentSaveOptions()
+      options.pickerMode = picker.DocumentPickerMode.DOWNLOAD
+      const documentPicker = new picker.DocumentViewPicker(context)
+      const result: string[] = await documentPicker.save(options)
+      if (result.length === 0) {
+        return false
+      }
+      const root: string = DownloadQueueService.pathFromDownloadModeUri(result[0])
+      if (root.length === 0) {
+        return false
+      }
+      DownloadQueueService.downloadPublicRoot = root
+      DownloadQueueService.ensureDirectory(DownloadQueueService.publicDownloadRoot())
+      return true
+    } catch (_error) {
+      DownloadQueueService.downloadPublicRoot = ''
+      return false
+    }
+  }
+
+  private static pathFromDownloadModeUri(uri: string): string {
+    const markerPath: string = new fileUri.FileUri(
+      `${DownloadQueueService.normalizePath(uri)}/${DOWNLOAD_ROOT_MARKER}`,
+    ).path
+    const suffix: string = `/${DOWNLOAD_ROOT_MARKER}`
+    if (!markerPath.endsWith(suffix)) {
+      throw new Error('Download directory URI could not be resolved')
+    }
+    let root: string = DownloadQueueService.normalizePath(
+      markerPath.substring(0, markerPath.length - suffix.length),
+    )
+    if (root.endsWith('/NextN/NextN')) {
+      root = root.substring(0, root.length - '/NextN'.length)
+    }
+    return root
+  }
+
+  private static normalizePath(path: string): string {
+    let normalized: string = path.trim()
+    while (normalized.endsWith('/') && normalized.length > 1) {
+      normalized = normalized.substring(0, normalized.length - 1)
+    }
+    return normalized
+  }
+
+  private static adoptPublicRootFromTasks(context: common.UIAbilityContext, tasks: NhDownloadTask[]): void {
+    if (DownloadQueueService.downloadPublicRoot.length > 0) {
+      return
+    }
+    const suffix: string = `/${DOWNLOAD_DIR_NAME}`
+    for (let index: number = 0; index < tasks.length; index++) {
+      const directory: string = DownloadQueueService.normalizePath(tasks[index].storageDirectory)
+      if (directory.length === 0 || DownloadQueueService.isLegacyTaskDirectory(context, directory)) {
+        continue
+      }
+      const marker: string = `${suffix}/${tasks[index].galleryId}`
+      if (directory.endsWith(marker)) {
+        DownloadQueueService.downloadPublicRoot = directory.substring(0, directory.length - marker.length)
+        return
+      }
+    }
+  }
+
+  /**
+   * Per-task sidecar (mirrors NextE's metadata.json fallback): task identity
+   * and status so a queue row lost from RDB can be restored from the page
+   * directory. Fire-and-forget: a failed sidecar write must never break the
+   * download path, because the RDB row and page files remain the recovery pair.
+   */
+  private static writeTaskMetadata(context: common.UIAbilityContext, task: NhDownloadTask): void {
+    if (task.galleryId <= 0 || task.pageCount <= 0 || task.pageExtensions.length !== task.pageCount) {
+      return
+    }
+    if (DownloadQueueService.isLegacyTaskDirectory(context, task.storageDirectory)) {
+      return
+    }
+    try {
+      const payload: Record<string, Object> = {
+        'schema': METADATA_SCHEMA,
+        'galleryId': task.galleryId,
+        'mediaId': task.mediaId,
+        'title': task.title,
+        'thumbnailUrl': task.thumbnailUrl,
+        'pageCount': task.pageCount,
+        'pageExtensions': task.pageExtensions.slice(),
+        'status': task.status,
+        'createdAt': task.createdAt,
+        'updatedAt': task.updatedAt,
+      }
+      DownloadQueueService.ensureTaskDirectory(context, task)
+      const file: fileIo.File = fileIo.openSync(
+        DownloadQueueService.metadataPath(context, task),
+        fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC,
+      )
+      try {
+        fileIo.writeSync(file.fd, JSON.stringify(payload))
+      } finally {
+        fileIo.closeSync(file)
+      }
+    } catch (_error) {
+      // Sidecar failures are diagnostics only; they never interrupt downloads.
+    }
+  }
+
+  /**
+   * Scans the current public Download root first, then the legacy sandbox read
+   * root. Each directory is parsed independently, and the containing directory
+   * (not untrusted metadata text) becomes the task's storage owner.
+   */
+  private static loadTaskMetadataTasks(context: common.UIAbilityContext): NhDownloadTask[] {
+    const out: NhDownloadTask[] = []
+    const roots: string[] = []
+    if (DownloadQueueService.downloadPublicRoot.length > 0) {
+      roots.push(DownloadQueueService.publicDownloadRoot())
+    }
+    roots.push(DownloadQueueService.legacyDownloadRoot(context))
+    for (let rootIndex: number = 0; rootIndex < roots.length; rootIndex++) {
+      const root: string = roots[rootIndex]
+      try {
+        if (!fileIo.accessSync(root)) {
+          continue
+        }
+        const names: string[] = fileIo.listFileSync(root)
+        for (let index: number = 0; index < names.length; index++) {
+          const directory: string = `${root}/${names[index]}`
+          const path: string = `${directory}/${METADATA_FILE_NAME}`
+          if (!fileIo.accessSync(path)) {
+            continue
+          }
+          try {
+            const task: NhDownloadTask | null = DownloadQueueService.parseTaskMetadata(fileIo.readTextSync(path))
+            if (task !== null && !out.some(
+              (existing: NhDownloadTask): boolean => existing.galleryId === task.galleryId,
+            )) {
+              task.storageDirectory = directory
+              out.push(task)
+            }
+          } catch (_error) {
+            // One unreadable sidecar is skipped; the scan continues.
+          }
+        }
+      } catch (_error) {
+        // A vanished root is an empty scan, not a failure.
+      }
+    }
+    return out
+  }
+
+  /**
+   * Validates one sidecar document (NextE's parse pattern: cast to the model
+   * type, then guard every field with typeof so a corrupted document cannot
+   * leak a malformed task into the queue).
+   */
+  private static parseTaskMetadata(raw: string): NhDownloadTask | null {
+    let parsed: Object
+    try {
+      parsed = JSON.parse(raw)
+    } catch (_error) {
+      return null
+    }
+    if (typeof parsed !== 'object' || parsed === null) {
+      return null
+    }
+    const rec: NhDownloadTask = parsed as NhDownloadTask
+    const galleryId: number = typeof rec.galleryId === 'number' ? rec.galleryId : 0
+    const mediaId: string = typeof rec.mediaId === 'string' ? rec.mediaId : ''
+    const pageCount: number = typeof rec.pageCount === 'number' ? rec.pageCount : 0
+    if (galleryId <= 0 || mediaId.length === 0 || pageCount <= 0) {
+      return null
+    }
+    const extensions: string[] = []
+    if (Array.isArray(rec.pageExtensions)) {
+      rec.pageExtensions.forEach((value: string): void => {
+        if (typeof value === 'string' && value.length > 0) {
+          extensions.push(value)
+        }
+      })
+    }
+    if (extensions.length !== pageCount) {
+      return null
+    }
+    const status: string = typeof rec.status === 'string' ? rec.status : NhDownloadTaskStatus.PAUSED
+    const task: NhDownloadTask = new NhDownloadTask()
+    task.galleryId = galleryId
+    task.mediaId = mediaId
+    task.title = typeof rec.title === 'string' ? rec.title : ''
+    task.thumbnailUrl = typeof rec.thumbnailUrl === 'string' ? rec.thumbnailUrl : ''
+    task.pageCount = pageCount
+    task.pageExtensions = extensions
+    task.status = DownloadQueueService.isKnownTaskStatus(status) ? status : NhDownloadTaskStatus.PAUSED
+    task.createdAt = typeof rec.createdAt === 'number' ? rec.createdAt : 0
+    task.updatedAt = typeof rec.updatedAt === 'number' ? rec.updatedAt : 0
+    return task
+  }
+
+  private static isKnownTaskStatus(status: string): boolean {
+    return status === NhDownloadTaskStatus.QUEUED || status === NhDownloadTaskStatus.DOWNLOADING ||
+      status === NhDownloadTaskStatus.PAUSED || status === NhDownloadTaskStatus.COMPLETE ||
+      status === NhDownloadTaskStatus.ERROR
   }
 
   private static pageIsComplete(context: common.UIAbilityContext, task: NhDownloadTask, pageIndex: number): boolean {
@@ -789,7 +1247,19 @@ export class DownloadQueueService {
   }
 
   private static removeTaskFiles(context: common.UIAbilityContext, task: NhDownloadTask): void {
-    const directory: string = DownloadQueueService.taskDirectory(context, task)
+    const directories: string[] = []
+    const owned: string = DownloadQueueService.taskDirectory(context, task)
+    const legacy: string = DownloadQueueService.legacyTaskDirectory(context, task.galleryId)
+    directories.push(owned)
+    if (legacy !== owned) {
+      directories.push(legacy)
+    }
+    for (let index: number = 0; index < directories.length; index++) {
+      DownloadQueueService.removeTaskDirectory(directories[index])
+    }
+  }
+
+  private static removeTaskDirectory(directory: string): void {
     try {
       if (!fileIo.accessSync(directory)) {
         return

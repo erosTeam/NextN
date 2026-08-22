@@ -8,7 +8,10 @@ const MAX_GALLERY_CONCURRENCY: number = 5
 const MIN_PAGE_CONCURRENCY: number = 1
 const MAX_PAGE_CONCURRENCY: number = 5
 const MIN_RETRY_COUNT: number = 0
-const MAX_RETRY_COUNT: number = 3
+const MAX_RETRY_COUNT: number = 5
+const MAX_REQUEST_INTERVAL_SECONDS: number = 10
+const MAX_SPEED_LIMIT_KBPS: number = 8192
+const SPEED_LIMIT_STEP_KBPS: number = 256
 
 /**
  * NextE-style state plus durable policy writer for NextN's small private
@@ -79,6 +82,39 @@ export class DownloadSettingsService {
     return DownloadSettingsService.save(context, settings)
   }
 
+  /** Minimum pause between page batches, clamped to 0 through 10 seconds. */
+  static async setRequestIntervalSeconds(
+    context: common.UIAbilityContext,
+    seconds: number,
+  ): Promise<NhDownloadSettings> {
+    await DownloadSettingsService.restore(context)
+    const settings: NhDownloadSettings = DownloadSettingsService.snapshot()
+    settings.requestIntervalSeconds = seconds
+    return DownloadSettingsService.save(context, settings)
+  }
+
+  /** Whether failed (ERROR) tasks resume automatically on cold start. PAUSED stays manual. */
+  static async setAutoRetryFailed(
+    context: common.UIAbilityContext,
+    enabled: boolean,
+  ): Promise<NhDownloadSettings> {
+    await DownloadSettingsService.restore(context)
+    const settings: NhDownloadSettings = DownloadSettingsService.snapshot()
+    settings.autoRetryFailed = enabled
+    return DownloadSettingsService.save(context, settings)
+  }
+
+  /** Average queue speed cap in KB/s; rounded to the 256 KB step, 0 disables. */
+  static async setSpeedLimitKbps(
+    context: common.UIAbilityContext,
+    kbps: number,
+  ): Promise<NhDownloadSettings> {
+    await DownloadSettingsService.restore(context)
+    const settings: NhDownloadSettings = DownloadSettingsService.snapshot()
+    settings.speedLimitKbps = kbps
+    return DownloadSettingsService.save(context, settings)
+  }
+
   static minGalleryConcurrency(): number {
     return MIN_GALLERY_CONCURRENCY
   }
@@ -138,7 +174,20 @@ export class DownloadSettingsService {
       MIN_RETRY_COUNT,
       MAX_RETRY_COUNT,
     )
+    normalized.requestIntervalSeconds = DownloadSettingsService.clamp(
+      normalized.requestIntervalSeconds,
+      0,
+      MAX_REQUEST_INTERVAL_SECONDS,
+    )
+    normalized.speedLimitKbps = DownloadSettingsService.roundSpeedLimit(
+      normalized.speedLimitKbps,
+    )
     return normalized
+  }
+
+  private static roundSpeedLimit(kbps: number): number {
+    const rounded: number = Math.round(kbps / SPEED_LIMIT_STEP_KBPS) * SPEED_LIMIT_STEP_KBPS
+    return DownloadSettingsService.clamp(rounded, 0, MAX_SPEED_LIMIT_KBPS)
   }
 
   private static clamp(value: number, minimum: number, maximum: number): number {

@@ -19,3 +19,4 @@ __pycache__/
 # Local clang tooling configs (not part of the build)
 .clang-tidy
 .clangd
+.device-leases/

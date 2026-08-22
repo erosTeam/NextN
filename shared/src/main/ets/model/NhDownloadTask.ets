@@ -1,4 +1,4 @@
-/** Persistent, app-private gallery download metadata. No account data is stored here. */
+/** Persistent gallery-download metadata. No account data is stored here. */
 export class NhDownloadTask {
   galleryId: number = 0
   mediaId: string = ''
@@ -6,6 +6,8 @@ export class NhDownloadTask {
   thumbnailUrl: string = ''
   pageCount: number = 0
   pageExtensions: string[] = []
+  /** Device-local directory that owns this task's metadata and promoted pages. */
+  storageDirectory: string = ''
   completedPages: number = 0
   status: string = NhDownloadTaskStatus.QUEUED
   errorMessage: string = ''
@@ -20,6 +22,7 @@ export class NhDownloadTask {
     result.thumbnailUrl = this.thumbnailUrl
     result.pageCount = this.pageCount
     result.pageExtensions = this.pageExtensions.slice()
+    result.storageDirectory = this.storageDirectory
     result.completedPages = this.completedPages
     result.status = this.status
     result.errorMessage = this.errorMessage

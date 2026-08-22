@@ -3689,3 +3689,43 @@ permitted in this repository.
   rejected counter-evidence. Final PowerManager readback remained `AWAKE` with
   `OverrideTimeout=86400000ms`. No physical action remains for this bounded
   SAFE_MODE acceptance lane.
+
+## Download restore group + NextE icon parity — verified on 237 — 2026-08-23
+
+- Lease `20260822-194708-467b24e0` (owner `codex:nextn-download-restore-ui`,
+  workspace lease root via `HARMONY_DEVICE_LEASE_DIR`; the default `~/.hermes`
+  root was sandbox-denied this session). Wake gate passed:
+  `power-shell wakeup` + `power-shell timeout -o 864000000ms`-equivalent
+  override readback.
+- The signed HAP `entry-default-signed.hap`
+  (sha256 `0c8824457c31a68aef6b581e659abeac30e62c44`) was installed with
+  `install -r` on `192.168.50.237:12345`; no uninstall or data clear occurred.
+  Cold start via `aa start -a EntryAbility -b com.erosteam.nextn` foregrounded
+  Browse with the retained WaterFlow at the 1320x2120 portrait viewport.
+- The Download settings surface rendered seven policy rows (gallery
+  concurrency 1, per-gallery pages 3, request interval 0s, retry 2,
+  auto-retry ON, speed limit unthrottled, completion notify) in one group card
+  and the restore row in a **separate group card** below it. Layout evidence:
+  the notify group ended at y=1524 and the restore row sat in its own
+  `ListItem [36,1554][1284,1770]` with `SymbolGlyph` + title/hint rows,
+  matching NextE's standalone restore section.
+- Icons visually matched the NextE contract in the full-screen capture:
+  arrow_down_to_line (gallery concurrency), square grid (per-gallery pages,
+  NextN-specific row retained), clock (interval), list_number (retry), repeat
+  (auto-retry), clock (speed limit), bell (notify), arrow_clockwise (restore).
+- Tapping the restore row completed the scan and toasted
+  `settings_download_restore_existing` ("没有新的可恢复任务"): all four tracked
+  download tasks (Kisa Kiki, Shinkai Aquarium, Kanojo Saimin2, Kanojo no
+  Imouto...) were already in the queue, so zero new imports. The busy-state
+  subtitle/spinner is too brief to capture in a discrete layout probe on this
+  fast filesystem; the row returned enabled-idle after the toast.
+- App hilog for the cold-start PID showed no `NextNDownload` warnings or
+  app-level error events during bootstrap restore; only pre-existing NETSTACK
+  HTTP-info report noise. The metadata sidecar files live under the app
+  sandbox `filesDir/nextn-downloads/<galleryId>/`, which the shell user cannot
+  enumerate directly; sidecar write cadence evidence remains as implemented
+  (enqueue/batch/complete/pause/error/reconcile paths).
+- Raw layouts and captures are retained under `.hvigor/outputs/`
+  (`nextn-*.json`, `dl-settings.jpeg`, `screen-now.jpeg`) and excluded from
+  Git. Unproven items: throttling feel, multi-batch restore with untracked
+  sidecar directories, and a physical busy-frame capture.

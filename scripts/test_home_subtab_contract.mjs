@@ -59,8 +59,8 @@ ok('builtin names are derived from current resources rather than persisted user 
 
 const store = read('shared/src/main/ets/storage/LocalDataStore.ets')
 const repository = read('shared/src/main/ets/storage/HomeSubtabRepository.ets')
-ok('RDB v21 creates ordered profile and selected-profile tables',
-  /SCHEMA_VERSION: number = 21/.test(store) &&
+ok('RDB v22 creates ordered profile and selected-profile tables',
+  /SCHEMA_VERSION: number = 22/.test(store) &&
     /CREATE TABLE IF NOT EXISTS home_subtabs/.test(store) &&
     /CREATE TABLE IF NOT EXISTS home_subtab_selection/.test(store) &&
     /idx_home_subtabs_order/.test(store))

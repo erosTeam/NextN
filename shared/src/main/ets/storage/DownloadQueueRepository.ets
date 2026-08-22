@@ -4,17 +4,18 @@ import { NhDownloadTask, NhDownloadTaskStatus } from '../model/NhDownloadTask'
 import { LocalDataStore } from './LocalDataStore'
 
 const SQL_SELECT_ALL: string =
-  'SELECT gallery_id, media_id, title, thumbnail_url, page_count, page_extensions, completed_pages, status, error_message, created_at, updated_at ' +
+  'SELECT gallery_id, media_id, title, thumbnail_url, page_count, page_extensions, storage_directory, completed_pages, status, error_message, created_at, updated_at ' +
   'FROM download_queue ORDER BY updated_at DESC, gallery_id DESC'
 const SQL_UPSERT: string =
-  'INSERT INTO download_queue (gallery_id, media_id, title, thumbnail_url, page_count, page_extensions, completed_pages, status, error_message, created_at, updated_at) ' +
-  'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(gallery_id) DO UPDATE SET ' +
+  'INSERT INTO download_queue (gallery_id, media_id, title, thumbnail_url, page_count, page_extensions, storage_directory, completed_pages, status, error_message, created_at, updated_at) ' +
+  'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(gallery_id) DO UPDATE SET ' +
   'media_id = excluded.media_id, title = excluded.title, thumbnail_url = excluded.thumbnail_url, page_count = excluded.page_count, ' +
-  'page_extensions = excluded.page_extensions, completed_pages = excluded.completed_pages, status = excluded.status, ' +
+  'page_extensions = excluded.page_extensions, storage_directory = excluded.storage_directory, ' +
+  'completed_pages = excluded.completed_pages, status = excluded.status, ' +
   'error_message = excluded.error_message, updated_at = excluded.updated_at'
 const SQL_DELETE_ONE: string = 'DELETE FROM download_queue WHERE gallery_id = ?'
 
-/** Serial RDB boundary for the download queue; it only records app-private task metadata. */
+/** Serial RDB boundary for device-local download task metadata. */
 export class DownloadQueueRepository {
   private static writeTail: Promise<void> = Promise.resolve()
 
@@ -33,6 +34,7 @@ export class DownloadQueueRepository {
         task.thumbnailUrl = DownloadQueueRepository.stringColumn(rows, 'thumbnail_url')
         task.pageCount = DownloadQueueRepository.numberColumn(rows, 'page_count')
         task.pageExtensions = DownloadQueueRepository.extensions(rows, 'page_extensions')
+        task.storageDirectory = DownloadQueueRepository.stringColumn(rows, 'storage_directory')
         task.completedPages = DownloadQueueRepository.numberColumn(rows, 'completed_pages')
         task.status = DownloadQueueRepository.normalizedStatus(DownloadQueueRepository.stringColumn(rows, 'status'))
         task.errorMessage = DownloadQueueRepository.stringColumn(rows, 'error_message')
@@ -73,6 +75,7 @@ export class DownloadQueueRepository {
         snapshot.thumbnailUrl,
         snapshot.pageCount,
         JSON.stringify(snapshot.pageExtensions),
+        snapshot.storageDirectory,
         snapshot.completedPages,
         DownloadQueueRepository.normalizedStatus(snapshot.status),
         snapshot.errorMessage,
