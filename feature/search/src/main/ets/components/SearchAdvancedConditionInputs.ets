@@ -807,28 +807,30 @@ export struct SearchAdvancedConditionInputs {
   }
 
   @Builder
-  private TagNamespaceMenuItem(namespace: string) {
+  private TagNamespaceMenuItem(namespace: string, select: (action: () => void) => void) {
     MenuItem({
       content: this.tagNamespaceLabel(namespace),
       symbolEndIcon: this.tagNamespace === namespace
         ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
         : undefined,
     }).onClick((): void => {
-      if (this.onNamespaceChange) {
-        this.onNamespaceChange(namespace)
-      }
+      select((): void => {
+        if (this.onNamespaceChange) {
+          this.onNamespaceChange(namespace)
+        }
+      })
     })
   }
 
   @Builder
-  private TagNamespaceMenu() {
+  private TagNamespaceMenu(select: (action: () => void) => void) {
     Menu() {
-      this.TagNamespaceMenuItem('tag')
-      this.TagNamespaceMenuItem('parody')
-      this.TagNamespaceMenuItem('character')
-      this.TagNamespaceMenuItem('artist')
-      this.TagNamespaceMenuItem('group')
-      this.TagNamespaceMenuItem('category')
+      this.TagNamespaceMenuItem('tag', select)
+      this.TagNamespaceMenuItem('parody', select)
+      this.TagNamespaceMenuItem('character', select)
+      this.TagNamespaceMenuItem('artist', select)
+      this.TagNamespaceMenuItem('group', select)
+      this.TagNamespaceMenuItem('category', select)
     }
   }
 
@@ -868,28 +870,30 @@ export struct SearchAdvancedConditionInputs {
   }
 
   @Builder
-  private UploadedUnitMenuItem(unit: NhSearchUploadedUnit) {
+  private UploadedUnitMenuItem(unit: NhSearchUploadedUnit, select: (action: () => void) => void) {
     MenuItem({
       content: this.uploadedUnitLabel(unit),
       symbolEndIcon: this.uploadedUnit === unit
         ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
         : undefined,
     }).onClick((): void => {
-      if (this.onUnitChange) {
-        this.onUnitChange(unit)
-      }
-      this.notifyUploadedChanged(unit)
+      select((): void => {
+        if (this.onUnitChange) {
+          this.onUnitChange(unit)
+        }
+        this.notifyUploadedChanged(unit)
+      })
     })
   }
 
   @Builder
-  private UploadedUnitMenu() {
+  private UploadedUnitMenu(select: (action: () => void) => void) {
     Menu() {
-      this.UploadedUnitMenuItem(NhSearchUploadedUnit.HOUR)
-      this.UploadedUnitMenuItem(NhSearchUploadedUnit.DAY)
-      this.UploadedUnitMenuItem(NhSearchUploadedUnit.WEEK)
-      this.UploadedUnitMenuItem(NhSearchUploadedUnit.MONTH)
-      this.UploadedUnitMenuItem(NhSearchUploadedUnit.YEAR)
+      this.UploadedUnitMenuItem(NhSearchUploadedUnit.HOUR, select)
+      this.UploadedUnitMenuItem(NhSearchUploadedUnit.DAY, select)
+      this.UploadedUnitMenuItem(NhSearchUploadedUnit.WEEK, select)
+      this.UploadedUnitMenuItem(NhSearchUploadedUnit.MONTH, select)
+      this.UploadedUnitMenuItem(NhSearchUploadedUnit.YEAR, select)
     }
   }
 
@@ -939,8 +943,8 @@ export struct SearchAdvancedConditionInputs {
           trailingText: this.tagNamespaceLabel(this.tagNamespace),
           trailingDropdown: true,
           dropdownMenuEnabled: true,
-          dropdownMenuBuilder: () => {
-            this.TagNamespaceMenu()
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.TagNamespaceMenu(select)
           },
           accessibilityLabel: AppStrings.get('search_advanced_type'),
         })
@@ -982,8 +986,8 @@ export struct SearchAdvancedConditionInputs {
           trailingText: this.uploadedUnitLabel(this.uploadedUnit),
           trailingDropdown: true,
           dropdownMenuEnabled: true,
-          dropdownMenuBuilder: () => {
-            this.UploadedUnitMenu()
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.UploadedUnitMenu(select)
           },
           accessibilityLabel: AppStrings.get('search_advanced_unit'),
         })

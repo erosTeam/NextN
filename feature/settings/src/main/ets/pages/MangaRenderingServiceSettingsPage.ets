@@ -193,7 +193,7 @@ export struct MangaRenderingServiceSettingsPage {
   }
 
   @Builder
-  private DetectionProfileMenu() {
+  private DetectionProfileMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: AppStrings.get('settings_manga_rendering_service_detection_high_recall'),
@@ -201,8 +201,10 @@ export struct MangaRenderingServiceSettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.detectionProfile = MANGA_RENDERING_DETECTION_HIGH_RECALL
-        this.markConfigurationChanged()
+        select((): void => {
+          this.detectionProfile = MANGA_RENDERING_DETECTION_HIGH_RECALL
+          this.markConfigurationChanged()
+        })
       })
       MenuItem({
         content: AppStrings.get('settings_manga_rendering_service_detection_balanced'),
@@ -210,14 +212,16 @@ export struct MangaRenderingServiceSettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.detectionProfile = MANGA_RENDERING_DETECTION_BALANCED
-        this.markConfigurationChanged()
+        select((): void => {
+          this.detectionProfile = MANGA_RENDERING_DETECTION_BALANCED
+          this.markConfigurationChanged()
+        })
       })
     }
   }
 
   @Builder
-  private InpaintingProfileMenu() {
+  private InpaintingProfileMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: AppStrings.get('settings_manga_rendering_service_inpainting_quality'),
@@ -225,8 +229,10 @@ export struct MangaRenderingServiceSettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.inpaintingProfile = MANGA_RENDERING_INPAINTING_QUALITY
-        this.markConfigurationChanged()
+        select((): void => {
+          this.inpaintingProfile = MANGA_RENDERING_INPAINTING_QUALITY
+          this.markConfigurationChanged()
+        })
       })
       MenuItem({
         content: AppStrings.get('settings_manga_rendering_service_inpainting_fast'),
@@ -234,8 +240,10 @@ export struct MangaRenderingServiceSettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.inpaintingProfile = MANGA_RENDERING_INPAINTING_FAST
-        this.markConfigurationChanged()
+        select((): void => {
+          this.inpaintingProfile = MANGA_RENDERING_INPAINTING_FAST
+          this.markConfigurationChanged()
+        })
       })
     }
   }
@@ -320,8 +328,8 @@ export struct MangaRenderingServiceSettingsPage {
         trailingText: this.detectionProfileText(),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.DetectionProfileMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.DetectionProfileMenu(select)
         },
       })
       this.RowDivider()
@@ -331,8 +339,8 @@ export struct MangaRenderingServiceSettingsPage {
         trailingText: this.inpaintingProfileText(),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.InpaintingProfileMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.InpaintingProfileMenu(select)
         },
       })
       this.RowDivider()

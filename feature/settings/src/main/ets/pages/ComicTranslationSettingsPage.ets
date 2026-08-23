@@ -610,7 +610,7 @@ export struct ComicTranslationSettingsPage {
   }
 
   @Builder
-  private VisualRouteMenu() {
+  private VisualRouteMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: AppStrings.get('comic_visual_route_local'),
@@ -618,7 +618,9 @@ export struct ComicTranslationSettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.selectVisualRoute(COMIC_VISUAL_ROUTE_LOCAL)
+        select((): void => {
+          this.selectVisualRoute(COMIC_VISUAL_ROUTE_LOCAL)
+        })
       })
       MenuItem({
         content: AppStrings.get('comic_visual_route_self_hosted'),
@@ -626,7 +628,9 @@ export struct ComicTranslationSettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.selectVisualRoute(COMIC_VISUAL_ROUTE_SELF_HOSTED)
+        select((): void => {
+          this.selectVisualRoute(COMIC_VISUAL_ROUTE_SELF_HOSTED)
+        })
       })
       MenuItem({
         content: AppStrings.get('comic_visual_route_torii'),
@@ -634,13 +638,15 @@ export struct ComicTranslationSettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.selectVisualRoute(COMIC_VISUAL_ROUTE_TORII)
+        select((): void => {
+          this.selectVisualRoute(COMIC_VISUAL_ROUTE_TORII)
+        })
       })
     }
   }
 
   @Builder
-  private ToriiModelMenu() {
+  private ToriiModelMenu(select: (action: () => void) => void) {
     Menu() {
       ForEach(
         this.toriiModels(),
@@ -651,7 +657,9 @@ export struct ComicTranslationSettingsPage {
               ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
               : undefined,
           }).onClick((): void => {
-            this.selectToriiModel(model.modelId)
+            select((): void => {
+              this.selectToriiModel(model.modelId)
+            })
           })
         },
         (model: ToriiTranslatorModel): string => model.modelId,
@@ -660,7 +668,7 @@ export struct ComicTranslationSettingsPage {
   }
 
   @Builder
-  private ToriiFontMenu() {
+  private ToriiFontMenu(select: (action: () => void) => void) {
     Menu() {
       ForEach(
         this.toriiFonts(),
@@ -671,7 +679,9 @@ export struct ComicTranslationSettingsPage {
               ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
               : undefined,
           }).onClick((): void => {
-            this.selectToriiFont(font.fontId)
+            select((): void => {
+              this.selectToriiFont(font.fontId)
+            })
           })
         },
         (font: ToriiFontOption): string => font.fontId,
@@ -715,7 +725,7 @@ export struct ComicTranslationSettingsPage {
   }
 
   @Builder
-  private SourceMenu() {
+  private SourceMenu(select: (action: () => void) => void) {
     Menu() {
       ForEach(
         this.compatibleSources(),
@@ -726,7 +736,9 @@ export struct ComicTranslationSettingsPage {
               ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
               : undefined,
           }).onClick((): void => {
-            this.selectSource(profile.sourceProfileId)
+            select((): void => {
+              this.selectSource(profile.sourceProfileId)
+            })
           })
         },
         (profile: LlmSourceProfile) => profile.sourceProfileId,
@@ -735,7 +747,7 @@ export struct ComicTranslationSettingsPage {
   }
 
   @Builder
-  private ModelMenu() {
+  private ModelMenu(select: (action: () => void) => void) {
     Menu() {
       ForEach(
         this.modelOptions,
@@ -746,7 +758,9 @@ export struct ComicTranslationSettingsPage {
               ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
               : undefined,
           }).onClick((): void => {
-            this.selectModel(model)
+            select((): void => {
+              this.selectModel(model)
+            })
           })
         },
         (model: string) => model,
@@ -769,8 +783,8 @@ export struct ComicTranslationSettingsPage {
               trailingText: this.visualRouteText(),
               trailingDropdown: true,
               dropdownMenuEnabled: true,
-              dropdownMenuBuilder: () => {
-                this.VisualRouteMenu()
+              dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+                this.VisualRouteMenu(select)
               },
               accessibilityLabel: AppStrings.get('comic_visual_route'),
             })
@@ -848,8 +862,8 @@ export struct ComicTranslationSettingsPage {
                 trailingDropdown: this.compatibleSources().length > 0,
                 showChevron: this.compatibleSources().length === 0,
                 dropdownMenuEnabled: this.compatibleSources().length > 0,
-                dropdownMenuBuilder: () => {
-                  this.SourceMenu()
+                dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+                  this.SourceMenu(select)
                 },
                 accessibilityLabel: AppStrings.get('comic_translation_source_a11y'),
                 onAction: (): void => {
@@ -866,8 +880,8 @@ export struct ComicTranslationSettingsPage {
                 trailingText: this.selectedModelText(),
                 trailingDropdown: true,
                 dropdownMenuEnabled: true,
-                dropdownMenuBuilder: () => {
-                  this.ModelMenu()
+                dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+                  this.ModelMenu(select)
                 },
                 dropdownMenuDeferredOpen: true,
                 dropdownMenuOpenAction: (openMenu: () => void): void => {
@@ -909,8 +923,8 @@ export struct ComicTranslationSettingsPage {
                 trailingText: this.toriiModelText(),
                 trailingDropdown: true,
                 dropdownMenuEnabled: true,
-                dropdownMenuBuilder: () => {
-                  this.ToriiModelMenu()
+                dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+                  this.ToriiModelMenu(select)
                 },
                 accessibilityLabel: AppStrings.get('comic_torii_model'),
               })
@@ -921,8 +935,8 @@ export struct ComicTranslationSettingsPage {
                 trailingText: this.toriiFontText(),
                 trailingDropdown: true,
                 dropdownMenuEnabled: true,
-                dropdownMenuBuilder: () => {
-                  this.ToriiFontMenu()
+                dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+                  this.ToriiFontMenu(select)
                 },
                 accessibilityLabel: AppStrings.get('comic_torii_font'),
               })

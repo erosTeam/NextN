@@ -1252,7 +1252,7 @@ export struct SettingsPage {
   }
 
   @Builder
-  private GalleryConcurrencyMenu() {
+  private GalleryConcurrencyMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: '1',
@@ -1260,7 +1260,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveGalleryConcurrency(1)
+        select((): void => {
+          this.saveGalleryConcurrency(1)
+        })
       })
       MenuItem({
         content: '2',
@@ -1268,7 +1270,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveGalleryConcurrency(2)
+        select((): void => {
+          this.saveGalleryConcurrency(2)
+        })
       })
       MenuItem({
         content: '3',
@@ -1276,7 +1280,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveGalleryConcurrency(3)
+        select((): void => {
+          this.saveGalleryConcurrency(3)
+        })
       })
       MenuItem({
         content: '4',
@@ -1284,7 +1290,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveGalleryConcurrency(4)
+        select((): void => {
+          this.saveGalleryConcurrency(4)
+        })
       })
       MenuItem({
         content: '5',
@@ -1292,13 +1300,15 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveGalleryConcurrency(5)
+        select((): void => {
+          this.saveGalleryConcurrency(5)
+        })
       })
     }
   }
 
   @Builder
-  private PageConcurrencyMenu() {
+  private PageConcurrencyMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: '1',
@@ -1306,7 +1316,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.savePageConcurrency(1)
+        select((): void => {
+          this.savePageConcurrency(1)
+        })
       })
       MenuItem({
         content: '2',
@@ -1314,7 +1326,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.savePageConcurrency(2)
+        select((): void => {
+          this.savePageConcurrency(2)
+        })
       })
       MenuItem({
         content: '3',
@@ -1322,7 +1336,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.savePageConcurrency(3)
+        select((): void => {
+          this.savePageConcurrency(3)
+        })
       })
       MenuItem({
         content: '4',
@@ -1330,7 +1346,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.savePageConcurrency(4)
+        select((): void => {
+          this.savePageConcurrency(4)
+        })
       })
       MenuItem({
         content: '5',
@@ -1338,13 +1356,15 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.savePageConcurrency(5)
+        select((): void => {
+          this.savePageConcurrency(5)
+        })
       })
     }
   }
 
   @Builder
-  private RetryCountMenu() {
+  private RetryCountMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: this.retryCountLabelFor(0),
@@ -1352,7 +1372,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveRetryCount(0)
+        select((): void => {
+          this.saveRetryCount(0)
+        })
       })
       MenuItem({
         content: this.retryCountLabelFor(1),
@@ -1360,7 +1382,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveRetryCount(1)
+        select((): void => {
+          this.saveRetryCount(1)
+        })
       })
       MenuItem({
         content: this.retryCountLabelFor(2),
@@ -1368,7 +1392,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveRetryCount(2)
+        select((): void => {
+          this.saveRetryCount(2)
+        })
       })
       MenuItem({
         content: this.retryCountLabelFor(3),
@@ -1376,7 +1402,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveRetryCount(3)
+        select((): void => {
+          this.saveRetryCount(3)
+        })
       })
       MenuItem({
         content: this.retryCountLabelFor(4),
@@ -1384,7 +1412,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveRetryCount(4)
+        select((): void => {
+          this.saveRetryCount(4)
+        })
       })
       MenuItem({
         content: this.retryCountLabelFor(5),
@@ -1392,13 +1422,15 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveRetryCount(5)
+        select((): void => {
+          this.saveRetryCount(5)
+        })
       })
     }
   }
 
   @Builder
-  private RequestIntervalMenu() {
+  private RequestIntervalMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: this.requestIntervalLabel(0),
@@ -1406,7 +1438,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveRequestInterval(0)
+        select((): void => {
+          this.saveRequestInterval(0)
+        })
       })
       MenuItem({
         content: this.requestIntervalLabel(1),
@@ -1414,7 +1448,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveRequestInterval(1)
+        select((): void => {
+          this.saveRequestInterval(1)
+        })
       })
       MenuItem({
         content: this.requestIntervalLabel(2),
@@ -1422,7 +1458,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveRequestInterval(2)
+        select((): void => {
+          this.saveRequestInterval(2)
+        })
       })
       MenuItem({
         content: this.requestIntervalLabel(3),
@@ -1430,7 +1468,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveRequestInterval(3)
+        select((): void => {
+          this.saveRequestInterval(3)
+        })
       })
       MenuItem({
         content: this.requestIntervalLabel(5),
@@ -1438,7 +1478,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveRequestInterval(5)
+        select((): void => {
+          this.saveRequestInterval(5)
+        })
       })
       MenuItem({
         content: this.requestIntervalLabel(10),
@@ -1446,13 +1488,15 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveRequestInterval(10)
+        select((): void => {
+          this.saveRequestInterval(10)
+        })
       })
     }
   }
 
   @Builder
-  private SpeedLimitMenu() {
+  private SpeedLimitMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: this.speedLimitLabel(0),
@@ -1460,7 +1504,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveSpeedLimit(0)
+        select((): void => {
+          this.saveSpeedLimit(0)
+        })
       })
       MenuItem({
         content: this.speedLimitLabel(512),
@@ -1468,7 +1514,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveSpeedLimit(512)
+        select((): void => {
+          this.saveSpeedLimit(512)
+        })
       })
       MenuItem({
         content: this.speedLimitLabel(1024),
@@ -1476,7 +1524,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveSpeedLimit(1024)
+        select((): void => {
+          this.saveSpeedLimit(1024)
+        })
       })
       MenuItem({
         content: this.speedLimitLabel(2048),
@@ -1484,7 +1534,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveSpeedLimit(2048)
+        select((): void => {
+          this.saveSpeedLimit(2048)
+        })
       })
       MenuItem({
         content: this.speedLimitLabel(4096),
@@ -1492,7 +1544,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveSpeedLimit(4096)
+        select((): void => {
+          this.saveSpeedLimit(4096)
+        })
       })
       MenuItem({
         content: this.speedLimitLabel(8192),
@@ -1500,13 +1554,15 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveSpeedLimit(8192)
+        select((): void => {
+          this.saveSpeedLimit(8192)
+        })
       })
     }
   }
 
   @Builder
-  private ReaderModeMenu() {
+  private ReaderModeMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: AppStrings.get('settings_reader_mode_paged'),
@@ -1515,7 +1571,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveReaderMode(NhReaderMode.PAGED)
+        select((): void => {
+          this.saveReaderMode(NhReaderMode.PAGED)
+        })
       })
       MenuItem({
         content: AppStrings.get('settings_reader_mode_paged_rtl'),
@@ -1524,7 +1582,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveReaderMode(NhReaderMode.PAGED_RTL)
+        select((): void => {
+          this.saveReaderMode(NhReaderMode.PAGED_RTL)
+        })
       })
       MenuItem({
         content: AppStrings.get('settings_reader_mode_paged_vertical'),
@@ -1533,7 +1593,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveReaderMode(NhReaderMode.PAGED_VERTICAL)
+        select((): void => {
+          this.saveReaderMode(NhReaderMode.PAGED_VERTICAL)
+        })
       })
       MenuItem({
         content: AppStrings.get('settings_reader_mode_vertical'),
@@ -1542,20 +1604,24 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveReaderMode(NhReaderMode.VERTICAL)
+        select((): void => {
+          this.saveReaderMode(NhReaderMode.VERTICAL)
+        })
       })
     }
   }
 
   @Builder
-  private ReaderImageScalingQualityMenuItem(quality: NhReaderImageScalingQuality) {
+  private ReaderImageScalingQualityMenuItem(quality: NhReaderImageScalingQuality, select: (action: () => void) => void) {
     MenuItem({
       content: this.readerImageScalingQualityLabelFor(quality),
       symbolEndIcon: this.readerPresentation.imageScalingQuality === quality
         ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
         : undefined,
     }).onClick((): void => {
-      this.saveReaderImageScalingQuality(quality)
+      select((): void => {
+        this.saveReaderImageScalingQuality(quality)
+      })
     })
   }
 
@@ -1583,45 +1649,49 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ReaderBackgroundModeMenuItem(mode: NhReaderBackgroundMode) {
+  private ReaderBackgroundModeMenuItem(mode: NhReaderBackgroundMode, select: (action: () => void) => void) {
     MenuItem({
       content: this.readerBackgroundModeLabelFor(mode),
       symbolEndIcon: this.readerPresentation.backgroundMode === mode
         ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
         : undefined,
     }).onClick((): void => {
-      this.saveReaderBackgroundMode(mode)
+      select((): void => {
+        this.saveReaderBackgroundMode(mode)
+      })
     })
   }
 
   @Builder
-  private ReaderBackgroundModeMenu() {
+  private ReaderBackgroundModeMenu(select: (action: () => void) => void) {
     Menu() {
-      this.ReaderBackgroundModeMenuItem(NhReaderBackgroundMode.BLACK)
-      this.ReaderBackgroundModeMenuItem(NhReaderBackgroundMode.GRAY)
-      this.ReaderBackgroundModeMenuItem(NhReaderBackgroundMode.WHITE)
-      this.ReaderBackgroundModeMenuItem(NhReaderBackgroundMode.AUTO)
+      this.ReaderBackgroundModeMenuItem(NhReaderBackgroundMode.BLACK, select)
+      this.ReaderBackgroundModeMenuItem(NhReaderBackgroundMode.GRAY, select)
+      this.ReaderBackgroundModeMenuItem(NhReaderBackgroundMode.WHITE, select)
+      this.ReaderBackgroundModeMenuItem(NhReaderBackgroundMode.AUTO, select)
     }
   }
 
   @Builder
-  private ReaderImageScalingQualityMenu() {
+  private ReaderImageScalingQualityMenu(select: (action: () => void) => void) {
     Menu() {
-      this.ReaderImageScalingQualityMenuItem(NhReaderImageScalingQuality.LOW)
-      this.ReaderImageScalingQualityMenuItem(NhReaderImageScalingQuality.MEDIUM)
-      this.ReaderImageScalingQualityMenuItem(NhReaderImageScalingQuality.HIGH)
+      this.ReaderImageScalingQualityMenuItem(NhReaderImageScalingQuality.LOW, select)
+      this.ReaderImageScalingQualityMenuItem(NhReaderImageScalingQuality.MEDIUM, select)
+      this.ReaderImageScalingQualityMenuItem(NhReaderImageScalingQuality.HIGH, select)
     }
   }
 
   @Builder
-  private ReaderSpreadLayoutMenuItem(layout: NhReaderSpreadLayout) {
+  private ReaderSpreadLayoutMenuItem(layout: NhReaderSpreadLayout, select: (action: () => void) => void) {
     MenuItem({
       content: this.readerSpreadLayoutLabelFor(layout),
       symbolEndIcon: this.readerPresentation.spreadLayoutMode === layout
         ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
         : undefined,
     }).onClick((): void => {
-      this.saveReaderSpreadLayout(layout)
+      select((): void => {
+        this.saveReaderSpreadLayout(layout)
+      })
     })
   }
 
@@ -1632,22 +1702,24 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ReaderSpreadLayoutMenu() {
+  private ReaderSpreadLayoutMenu(select: (action: () => void) => void) {
     Menu() {
-      this.ReaderSpreadLayoutMenuItem(NhReaderSpreadLayout.JOINED)
-      this.ReaderSpreadLayoutMenuItem(NhReaderSpreadLayout.SPLIT)
+      this.ReaderSpreadLayoutMenuItem(NhReaderSpreadLayout.JOINED, select)
+      this.ReaderSpreadLayoutMenuItem(NhReaderSpreadLayout.SPLIT, select)
     }
   }
 
   @Builder
-  private ReaderTapZoneMenuItem(layout: NhReaderTapZoneLayout) {
+  private ReaderTapZoneMenuItem(layout: NhReaderTapZoneLayout, select: (action: () => void) => void) {
     MenuItem({
       content: this.readerTapZoneLayoutLabelFor(layout),
       symbolEndIcon: this.readerPresentation.tapZoneLayout === layout
         ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
         : undefined,
     }).onClick((): void => {
-      this.saveReaderTapZoneLayout(layout)
+      select((): void => {
+        this.saveReaderTapZoneLayout(layout)
+      })
     })
   }
 
@@ -1665,24 +1737,26 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ReaderTapZoneMenu() {
+  private ReaderTapZoneMenu(select: (action: () => void) => void) {
     Menu() {
-      this.ReaderTapZoneMenuItem(NhReaderTapZoneLayout.RIGHT_LEFT)
-      this.ReaderTapZoneMenuItem(NhReaderTapZoneLayout.L_SHAPED)
-      this.ReaderTapZoneMenuItem(NhReaderTapZoneLayout.KINDLE)
-      this.ReaderTapZoneMenuItem(NhReaderTapZoneLayout.EDGE)
+      this.ReaderTapZoneMenuItem(NhReaderTapZoneLayout.RIGHT_LEFT, select)
+      this.ReaderTapZoneMenuItem(NhReaderTapZoneLayout.L_SHAPED, select)
+      this.ReaderTapZoneMenuItem(NhReaderTapZoneLayout.KINDLE, select)
+      this.ReaderTapZoneMenuItem(NhReaderTapZoneLayout.EDGE, select)
     }
   }
 
   @Builder
-  private ReaderTapZoneInvertMenuItem(invert: NhReaderTapZoneInvert) {
+  private ReaderTapZoneInvertMenuItem(invert: NhReaderTapZoneInvert, select: (action: () => void) => void) {
     MenuItem({
       content: this.readerTapZoneInvertLabelFor(invert),
       symbolEndIcon: this.readerPresentation.tapZoneInvert === invert
         ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
         : undefined,
     }).onClick((): void => {
-      this.saveReaderTapZoneInvert(invert)
+      select((): void => {
+        this.saveReaderTapZoneInvert(invert)
+      })
     })
   }
 
@@ -1700,17 +1774,17 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ReaderTapZoneInvertMenu() {
+  private ReaderTapZoneInvertMenu(select: (action: () => void) => void) {
     Menu() {
-      this.ReaderTapZoneInvertMenuItem(NhReaderTapZoneInvert.NONE)
-      this.ReaderTapZoneInvertMenuItem(NhReaderTapZoneInvert.HORIZONTAL)
-      this.ReaderTapZoneInvertMenuItem(NhReaderTapZoneInvert.VERTICAL)
-      this.ReaderTapZoneInvertMenuItem(NhReaderTapZoneInvert.BOTH)
+      this.ReaderTapZoneInvertMenuItem(NhReaderTapZoneInvert.NONE, select)
+      this.ReaderTapZoneInvertMenuItem(NhReaderTapZoneInvert.HORIZONTAL, select)
+      this.ReaderTapZoneInvertMenuItem(NhReaderTapZoneInvert.VERTICAL, select)
+      this.ReaderTapZoneInvertMenuItem(NhReaderTapZoneInvert.BOTH, select)
     }
   }
 
   @Builder
-  private ReadButtonStyleMenu() {
+  private ReadButtonStyleMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: AppStrings.get('read_button_style_filled'),
@@ -1718,7 +1792,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setReadButtonStyle(ReadButtonStyleSettings.STYLE_FILLED)
+        select((): void => {
+          this.setReadButtonStyle(ReadButtonStyleSettings.STYLE_FILLED)
+        })
       })
       MenuItem({
         content: AppStrings.get('read_button_style_hds'),
@@ -1726,13 +1802,15 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setReadButtonStyle(ReadButtonStyleSettings.STYLE_HDS)
+        select((): void => {
+          this.setReadButtonStyle(ReadButtonStyleSettings.STYLE_HDS)
+        })
       })
     }
   }
 
   @Builder
-  private ActionAlignmentMenu() {
+  private ActionAlignmentMenu(select: (action: () => void) => void) {
     Menu() {
       ForEach(
         ActionAlignmentSettings.availableOptions(this.actionAlignment.holdingHandSupported),
@@ -1746,7 +1824,9 @@ export struct SettingsPage {
               ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
               : undefined,
           }).onClick((): void => {
-            this.setActionAlignmentMode(option.mode)
+            select((): void => {
+              this.setActionAlignmentMode(option.mode)
+            })
           })
         },
         (option: ActionAlignmentOption): string => option.mode,
@@ -1755,7 +1835,7 @@ export struct SettingsPage {
   }
 
   @Builder
-  private TabletLayoutMenu() {
+  private TabletLayoutMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: this.tabletLayoutLabelFor(TabletLayoutSettings.MODE_AUTO),
@@ -1763,7 +1843,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setTabletLayout(TabletLayoutSettings.MODE_AUTO)
+        select((): void => {
+          this.setTabletLayout(TabletLayoutSettings.MODE_AUTO)
+        })
       })
       MenuItem({
         content: this.tabletLayoutLabelFor(TabletLayoutSettings.MODE_OFF),
@@ -1771,7 +1853,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setTabletLayout(TabletLayoutSettings.MODE_OFF)
+        select((): void => {
+          this.setTabletLayout(TabletLayoutSettings.MODE_OFF)
+        })
       })
       MenuItem({
         content: this.tabletLayoutLabelFor(TabletLayoutSettings.MODE_LANDSCAPE_ONLY),
@@ -1779,13 +1863,15 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setTabletLayout(TabletLayoutSettings.MODE_LANDSCAPE_ONLY)
+        select((): void => {
+          this.setTabletLayout(TabletLayoutSettings.MODE_LANDSCAPE_ONLY)
+        })
       })
     }
   }
 
   @Builder
-  private ScreenOrientationMenu() {
+  private ScreenOrientationMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: this.screenOrientationLabelFor(ScreenOrientationSettings.MODE_UNSPECIFIED),
@@ -1794,7 +1880,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setScreenOrientation(ScreenOrientationSettings.MODE_UNSPECIFIED)
+        select((): void => {
+          this.setScreenOrientation(ScreenOrientationSettings.MODE_UNSPECIFIED)
+        })
       })
       MenuItem({
         content: this.screenOrientationLabelFor(
@@ -1805,55 +1893,61 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setScreenOrientation(ScreenOrientationSettings.MODE_AUTO_ROTATION_UNSPECIFIED)
+        select((): void => {
+          this.setScreenOrientation(ScreenOrientationSettings.MODE_AUTO_ROTATION_UNSPECIFIED)
+        })
       })
     }
   }
 
   @Builder
-  private ReaderPreloadMenuItem(pages: number) {
+  private ReaderPreloadMenuItem(pages: number, select: (action: () => void) => void) {
     MenuItem({
       content: `${pages}`,
       symbolEndIcon: this.readerPresentation.preloadPages === pages
         ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
         : undefined,
     }).onClick((): void => {
-      this.saveReaderPreloadPages(pages)
+      select((): void => {
+        this.saveReaderPreloadPages(pages)
+      })
     })
   }
 
   @Builder
-  private ReaderPreloadMenu() {
+  private ReaderPreloadMenu(select: (action: () => void) => void) {
     Menu() {
-      this.ReaderPreloadMenuItem(0)
-      this.ReaderPreloadMenuItem(1)
-      this.ReaderPreloadMenuItem(2)
-      this.ReaderPreloadMenuItem(3)
-      this.ReaderPreloadMenuItem(4)
-      this.ReaderPreloadMenuItem(5)
+      this.ReaderPreloadMenuItem(0, select)
+      this.ReaderPreloadMenuItem(1, select)
+      this.ReaderPreloadMenuItem(2, select)
+      this.ReaderPreloadMenuItem(3, select)
+      this.ReaderPreloadMenuItem(4, select)
+      this.ReaderPreloadMenuItem(5, select)
     }
   }
 
   @Builder
-  private ReaderAutoPageMenuItem(seconds: number) {
+  private ReaderAutoPageMenuItem(seconds: number, select: (action: () => void) => void) {
     MenuItem({
       content: AppStrings.format('settings_reader_auto_page_seconds', [seconds.toString()]),
       symbolEndIcon: this.readerPresentation.autoPageSeconds === seconds
         ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
         : undefined,
     }).onClick((): void => {
-      this.saveReaderAutoPageSeconds(seconds)
+      select((): void => {
+        this.saveReaderAutoPageSeconds(seconds)
+      })
     })
   }
 
   @Builder
-  private ReaderAutoPageMenu() {
+  private ReaderAutoPageMenu(select: (action: () => void) => void) {
     Menu() {
-      this.ReaderAutoPageMenuItem(2)
-      this.ReaderAutoPageMenuItem(3)
-      this.ReaderAutoPageMenuItem(5)
-      this.ReaderAutoPageMenuItem(8)
-      this.ReaderAutoPageMenuItem(10)
+      this.ReaderAutoPageMenuItem(2, select)
+      this.ReaderAutoPageMenuItem(3, select)
+      this.ReaderAutoPageMenuItem(5, select)
+      this.ReaderAutoPageMenuItem(8, select)
+      this.ReaderAutoPageMenuItem(10, select)
     }
   }
 
@@ -2134,24 +2228,26 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ReaderCacheLimitMenuItem(limitMb: number, label: string) {
+  private ReaderCacheLimitMenuItem(limitMb: number, label: string, select: (action: () => void) => void) {
     MenuItem({
       content: label,
       symbolEndIcon: this.readerCacheLimitMb === limitMb
         ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
         : undefined,
     }).onClick((): void => {
-      this.setReaderCacheLimit(limitMb)
+      select((): void => {
+        this.setReaderCacheLimit(limitMb)
+      })
     })
   }
 
   @Builder
-  private ReaderCacheLimitMenu() {
+  private ReaderCacheLimitMenu(select: (action: () => void) => void) {
     Menu() {
-      this.ReaderCacheLimitMenuItem(256, '256 MB')
-      this.ReaderCacheLimitMenuItem(512, '512 MB')
-      this.ReaderCacheLimitMenuItem(1024, '1 GB')
-      this.ReaderCacheLimitMenuItem(2048, '2 GB')
+      this.ReaderCacheLimitMenuItem(256, '256 MB', select)
+      this.ReaderCacheLimitMenuItem(512, '512 MB', select)
+      this.ReaderCacheLimitMenuItem(1024, '1 GB', select)
+      this.ReaderCacheLimitMenuItem(2048, '2 GB', select)
     }
   }
 
@@ -2164,8 +2260,8 @@ export struct SettingsPage {
         trailingText: this.readerCacheLimitLabel(),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.ReaderCacheLimitMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.ReaderCacheLimitMenu(select)
         },
         accessibilityLabel: AppStrings.format('settings_reader_image_cache_limit_a11y', [
           this.readerCacheLimitLabel(),
@@ -2431,17 +2527,17 @@ export struct SettingsPage {
   }
 
   @Builder
-  private DiagnosticsLevelMenu() {
+  private DiagnosticsLevelMenu(select: (action: () => void) => void) {
     Menu() {
-      this.DiagnosticsLevelMenuItem(DiagnosticsSettings.LEVEL_DEBUG)
-      this.DiagnosticsLevelMenuItem(DiagnosticsSettings.LEVEL_INFO)
-      this.DiagnosticsLevelMenuItem(DiagnosticsSettings.LEVEL_WARN)
-      this.DiagnosticsLevelMenuItem(DiagnosticsSettings.LEVEL_ERROR)
+      this.DiagnosticsLevelMenuItem(DiagnosticsSettings.LEVEL_DEBUG, select)
+      this.DiagnosticsLevelMenuItem(DiagnosticsSettings.LEVEL_INFO, select)
+      this.DiagnosticsLevelMenuItem(DiagnosticsSettings.LEVEL_WARN, select)
+      this.DiagnosticsLevelMenuItem(DiagnosticsSettings.LEVEL_ERROR, select)
     }
   }
 
   @Builder
-  private DiagnosticsLevelMenuItem(level: string) {
+  private DiagnosticsLevelMenuItem(level: string, select: (action: () => void) => void) {
     MenuItem({
       content: this.diagnosticsLevelLabel(level),
       symbolEndIcon: this.diagnostics.minLevel === level
@@ -2449,7 +2545,9 @@ export struct SettingsPage {
         : undefined,
     })
       .onClick((): void => {
-        this.updateDiagnosticsMinLevel(level)
+        select((): void => {
+          this.updateDiagnosticsMinLevel(level)
+        })
       })
   }
 
@@ -2478,8 +2576,8 @@ export struct SettingsPage {
         trailingText: this.diagnosticsLevelLabel(this.diagnostics.minLevel),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.DiagnosticsLevelMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.DiagnosticsLevelMenu(select)
         },
       })
     }
@@ -3047,8 +3145,8 @@ export struct SettingsPage {
         trailingText: `${this.downloadSettings.maxConcurrentGalleries}`,
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.GalleryConcurrencyMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.GalleryConcurrencyMenu(select)
         },
         isEnabled: !this.isSavingDownloadSettings,
         accessibilityLabel: AppStrings.format('settings_download_gallery_concurrency_a11y', [
@@ -3062,8 +3160,8 @@ export struct SettingsPage {
         trailingText: `${this.downloadSettings.maxConcurrentPages}`,
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.PageConcurrencyMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.PageConcurrencyMenu(select)
         },
         isEnabled: !this.isSavingDownloadSettings,
         accessibilityLabel: AppStrings.format('settings_download_page_concurrency_a11y', [
@@ -3078,8 +3176,8 @@ export struct SettingsPage {
         trailingText: this.requestIntervalLabel(this.downloadSettings.requestIntervalSeconds),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.RequestIntervalMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.RequestIntervalMenu(select)
         },
         isEnabled: !this.isSavingDownloadSettings,
         accessibilityLabel: AppStrings.format('settings_download_request_interval_a11y', [
@@ -3093,8 +3191,8 @@ export struct SettingsPage {
         trailingText: this.retryCountLabel(),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.RetryCountMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.RetryCountMenu(select)
         },
         isEnabled: !this.isSavingDownloadSettings,
         accessibilityLabel: AppStrings.format('settings_download_failed_page_retries_a11y', [
@@ -3128,8 +3226,8 @@ export struct SettingsPage {
         trailingText: this.speedLimitLabel(this.downloadSettings.speedLimitKbps),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.SpeedLimitMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.SpeedLimitMenu(select)
         },
         isEnabled: !this.isSavingDownloadSettings,
         accessibilityLabel: AppStrings.format('settings_download_speed_limit_a11y', [
@@ -3208,8 +3306,8 @@ export struct SettingsPage {
           trailingText: this.readerModeLabel(),
           trailingDropdown: true,
           dropdownMenuEnabled: true,
-          dropdownMenuBuilder: () => {
-            this.ReaderModeMenu()
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.ReaderModeMenu(select)
           },
           accessibilityLabel: AppStrings.format('settings_reader_layout_a11y', [this.readerModeLabel()]),
         })
@@ -3240,8 +3338,8 @@ export struct SettingsPage {
           trailingText: this.readerSpreadLayoutLabel(),
           trailingDropdown: true,
           dropdownMenuEnabled: true,
-          dropdownMenuBuilder: () => {
-            this.ReaderSpreadLayoutMenu()
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.ReaderSpreadLayoutMenu(select)
           },
           isEnabled: this.doublePageAvailable(),
           accessibilityLabel: AppStrings.format('settings_reader_spread_layout_a11y', [
@@ -3278,8 +3376,8 @@ export struct SettingsPage {
           trailingText: this.readerTapZoneLayoutLabel(),
           trailingDropdown: true,
           dropdownMenuEnabled: true,
-          dropdownMenuBuilder: () => {
-            this.ReaderTapZoneMenu()
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.ReaderTapZoneMenu(select)
           },
           accessibilityLabel: AppStrings.format('settings_reader_tap_zones_a11y', [
             this.readerTapZoneLayoutLabel(),
@@ -3291,8 +3389,8 @@ export struct SettingsPage {
           trailingText: this.readerTapZoneInvertLabel(),
           trailingDropdown: true,
           dropdownMenuEnabled: true,
-          dropdownMenuBuilder: () => {
-            this.ReaderTapZoneInvertMenu()
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.ReaderTapZoneInvertMenu(select)
           },
           accessibilityLabel: AppStrings.format('settings_reader_tap_zone_invert_a11y', [
             this.readerTapZoneInvertLabel(),
@@ -3312,8 +3410,8 @@ export struct SettingsPage {
           trailingText: this.readerBackgroundModeLabel(),
           trailingDropdown: true,
           dropdownMenuEnabled: true,
-          dropdownMenuBuilder: () => {
-            this.ReaderBackgroundModeMenu()
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.ReaderBackgroundModeMenu(select)
           },
           accessibilityLabel: AppStrings.format('settings_reader_background_a11y', [
             this.readerBackgroundModeLabel(),
@@ -3327,8 +3425,8 @@ export struct SettingsPage {
           trailingText: this.readerImageScalingQualityLabel(),
           trailingDropdown: true,
           dropdownMenuEnabled: true,
-          dropdownMenuBuilder: () => {
-            this.ReaderImageScalingQualityMenu()
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.ReaderImageScalingQualityMenu(select)
           },
           accessibilityLabel: AppStrings.format('settings_reader_image_scaling_quality_a11y', [
             this.readerImageScalingQualityLabel(),
@@ -3413,8 +3511,8 @@ export struct SettingsPage {
           trailingText: this.readerEnhancementModelLabel(),
           trailingDropdown: true,
           dropdownMenuEnabled: true,
-          dropdownMenuBuilder: () => {
-            this.ReaderEnhancementModelMenu()
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.ReaderEnhancementModelMenu(select)
           },
           isEnabled: this.readerEnhancementInstalledModels.length > 0,
           accessibilityLabel: AppStrings.format('settings_reader_enhancement_model_selection_a11y', [
@@ -3440,8 +3538,8 @@ export struct SettingsPage {
           trailingText: this.readerEnhancementMaxHeightLabel(),
           trailingDropdown: true,
           dropdownMenuEnabled: true,
-          dropdownMenuBuilder: () => {
-            this.ReaderEnhancementMaxHeightMenu()
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.ReaderEnhancementMaxHeightMenu(select)
           },
           isEnabled: this.readerPresentation.superResolutionEnabled &&
             this.selectedReaderEnhancementModelInstalled(),
@@ -3463,8 +3561,8 @@ export struct SettingsPage {
           trailingText: this.readerAutoPageLabel(),
           trailingDropdown: true,
           dropdownMenuEnabled: true,
-          dropdownMenuBuilder: () => {
-            this.ReaderAutoPageMenu()
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.ReaderAutoPageMenu(select)
           },
           accessibilityLabel: AppStrings.format('settings_reader_auto_advance_interval_a11y', [
             this.readerAutoPageLabel(),
@@ -3502,8 +3600,8 @@ export struct SettingsPage {
           trailingText: this.readerPreloadLabel(),
           trailingDropdown: true,
           dropdownMenuEnabled: true,
-          dropdownMenuBuilder: () => {
-            this.ReaderPreloadMenu()
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.ReaderPreloadMenu(select)
           },
           accessibilityLabel: AppStrings.format('settings_reader_preload_pages_a11y', [this.readerPreloadLabel()]),
         })
@@ -3610,7 +3708,7 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ReaderEnhancementModelMenu() {
+  private ReaderEnhancementModelMenu(select: (action: () => void) => void) {
     Menu() {
       ForEach(
         this.readerEnhancementInstalledModels,
@@ -3621,7 +3719,9 @@ export struct SettingsPage {
               ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
               : undefined,
           }).onClick((): void => {
-            this.setReaderEnhancementModel(model).catch((): void => {})
+            select((): void => {
+              this.setReaderEnhancementModel(model).catch((): void => {})
+            })
           })
         },
         (model: NhReaderSuperResolutionModel): string => model,
@@ -3630,7 +3730,7 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ReaderEnhancementMaxHeightMenu() {
+  private ReaderEnhancementMaxHeightMenu(select: (action: () => void) => void) {
     Menu() {
       ForEach(
         READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES,
@@ -3641,7 +3741,9 @@ export struct SettingsPage {
               ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
               : undefined,
           }).onClick((): void => {
-            this.setReaderEnhancementMaxHeight(height).catch((): void => {})
+            select((): void => {
+              this.setReaderEnhancementMaxHeight(height).catch((): void => {})
+            })
           })
         },
         (height: number): string => `${height}`,
@@ -3650,7 +3752,7 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ThemeMenu() {
+  private ThemeMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: AppStrings.get('appearance_follow_system'),
@@ -3658,7 +3760,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setTheme(ThemeSettings.MODE_SYSTEM)
+        select((): void => {
+          this.setTheme(ThemeSettings.MODE_SYSTEM)
+        })
       })
       MenuItem({
         content: AppStrings.get('theme_light'),
@@ -3666,7 +3770,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setTheme(ThemeSettings.MODE_LIGHT)
+        select((): void => {
+          this.setTheme(ThemeSettings.MODE_LIGHT)
+        })
       })
       MenuItem({
         content: AppStrings.get('theme_dark'),
@@ -3674,13 +3780,15 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setTheme(ThemeSettings.MODE_DARK)
+        select((): void => {
+          this.setTheme(ThemeSettings.MODE_DARK)
+        })
       })
     }
   }
 
   @Builder
-  private ThemeColorMenu() {
+  private ThemeColorMenu(select: (action: () => void) => void) {
     Menu() {
       ForEach(
         ThemeColorSettings.options(),
@@ -3694,7 +3802,9 @@ export struct SettingsPage {
               ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
               : undefined,
           }).onClick((): void => {
-            this.setThemeColor(option.value)
+            select((): void => {
+              this.setThemeColor(option.value)
+            })
           })
         },
         (option: ThemeColorOption): string => option.value,
@@ -3712,7 +3822,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.openThemeColorPicker()
+        select((): void => {
+          this.openThemeColorPicker()
+        })
       })
     }
   }
@@ -3766,7 +3878,7 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ImmersiveMaterialMenu() {
+  private ImmersiveMaterialMenu(select: (action: () => void) => void) {
     Menu() {
       ForEach(
         ImmersiveMaterialSettings.options(),
@@ -3777,7 +3889,9 @@ export struct SettingsPage {
               ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
               : undefined,
           }).onClick((): void => {
-            this.setImmersiveMaterial(option.value)
+            select((): void => {
+              this.setImmersiveMaterial(option.value)
+            })
           })
         },
         (option: ImmersiveMaterialOption): string => option.value,
@@ -3786,7 +3900,7 @@ export struct SettingsPage {
   }
 
   @Builder
-  private LanguageMenu() {
+  private LanguageMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: AppStrings.get('appearance_follow_system'),
@@ -3794,7 +3908,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setLanguage(LanguageSettings.MODE_SYSTEM)
+        select((): void => {
+          this.setLanguage(LanguageSettings.MODE_SYSTEM)
+        })
       })
       MenuItem({
         content: AppStrings.get('language_zh'),
@@ -3802,7 +3918,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setLanguage(LanguageSettings.MODE_ZH_CN)
+        select((): void => {
+          this.setLanguage(LanguageSettings.MODE_ZH_CN)
+        })
       })
       MenuItem({
         content: AppStrings.get('language_en'),
@@ -3810,7 +3928,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setLanguage(LanguageSettings.MODE_EN)
+        select((): void => {
+          this.setLanguage(LanguageSettings.MODE_EN)
+        })
       })
       MenuItem({
         content: AppStrings.get('language_ja'),
@@ -3818,7 +3938,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setLanguage(LanguageSettings.MODE_JA)
+        select((): void => {
+          this.setLanguage(LanguageSettings.MODE_JA)
+        })
       })
     }
   }
@@ -3832,8 +3954,8 @@ export struct SettingsPage {
         trailingText: this.themeModeLabel(),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.ThemeMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.ThemeMenu(select)
         },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_theme'),
@@ -3849,8 +3971,8 @@ export struct SettingsPage {
           this.ThemeColorSuffix()
         },
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.ThemeColorMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.ThemeColorMenu(select)
         },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_theme_color'),
@@ -3871,8 +3993,8 @@ export struct SettingsPage {
         trailingText: this.immersiveMaterialLabel(),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.ImmersiveMaterialMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.ImmersiveMaterialMenu(select)
         },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('immersive_material'),
@@ -3886,8 +4008,8 @@ export struct SettingsPage {
         trailingText: this.languageModeLabel(),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.LanguageMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.LanguageMenu(select)
         },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_language'),
@@ -3898,7 +4020,7 @@ export struct SettingsPage {
   }
 
   @Builder
-  private BrowsePresentationMenu() {
+  private BrowsePresentationMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: AppStrings.get('browse_list'),
@@ -3906,7 +4028,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveBrowsePresentation(NhBrowsePresentation.LIST)
+        select((): void => {
+          this.saveBrowsePresentation(NhBrowsePresentation.LIST)
+        })
       })
       MenuItem({
         content: AppStrings.get('browse_simple_list'),
@@ -3914,7 +4038,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveBrowsePresentation(NhBrowsePresentation.SIMPLE_LIST)
+        select((): void => {
+          this.saveBrowsePresentation(NhBrowsePresentation.SIMPLE_LIST)
+        })
       })
       MenuItem({
         content: AppStrings.get('browse_cover_grid'),
@@ -3922,7 +4048,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveBrowsePresentation(NhBrowsePresentation.COVER_GRID)
+        select((): void => {
+          this.saveBrowsePresentation(NhBrowsePresentation.COVER_GRID)
+        })
       })
       MenuItem({
         content: AppStrings.get('browse_waterfall'),
@@ -3930,7 +4058,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveBrowsePresentation(NhBrowsePresentation.WATERFALL)
+        select((): void => {
+          this.saveBrowsePresentation(NhBrowsePresentation.WATERFALL)
+        })
       })
       MenuItem({
         content: AppStrings.get('browse_waterfall_compact'),
@@ -3938,7 +4068,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveBrowsePresentation(NhBrowsePresentation.WATERFALL_COMPACT)
+        select((): void => {
+          this.saveBrowsePresentation(NhBrowsePresentation.WATERFALL_COMPACT)
+        })
       })
       MenuItem({
         content: AppStrings.get('browse_cover_wall'),
@@ -3946,7 +4078,9 @@ export struct SettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.saveBrowsePresentation(NhBrowsePresentation.COVER_WALL)
+        select((): void => {
+          this.saveBrowsePresentation(NhBrowsePresentation.COVER_WALL)
+        })
       })
     }
   }
@@ -3960,8 +4094,8 @@ export struct SettingsPage {
         trailingText: this.browsePresentationLabel(),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.BrowsePresentationMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.BrowsePresentationMenu(select)
         },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('browse_presentation'),
@@ -4086,8 +4220,8 @@ export struct SettingsPage {
         trailingText: this.actionAlignmentLabel(),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.ActionAlignmentMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.ActionAlignmentMenu(select)
         },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_action_alignment'),
@@ -4102,8 +4236,8 @@ export struct SettingsPage {
         trailingText: this.readButtonStyleLabel(),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.ReadButtonStyleMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.ReadButtonStyleMenu(select)
         },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_read_button_style'),
@@ -4122,8 +4256,8 @@ export struct SettingsPage {
         trailingText: this.tabletLayoutLabel(),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.TabletLayoutMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.TabletLayoutMenu(select)
         },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_tablet_layout'),
@@ -4142,8 +4276,8 @@ export struct SettingsPage {
         trailingText: this.screenOrientationLabel(),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.ScreenOrientationMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.ScreenOrientationMenu(select)
         },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_screen_orientation'),
@@ -4154,7 +4288,7 @@ export struct SettingsPage {
   }
 
   @Builder
-  private CatalogBrowseLanguageMenu() {
+  private CatalogBrowseLanguageMenu(select: (action: () => void) => void) {
     Menu() {
       ForEach(CATALOG_LANGUAGES, (language: NhSearchLanguage): void => {
         MenuItem({
@@ -4163,14 +4297,16 @@ export struct SettingsPage {
             ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
             : undefined,
         }).onClick((): void => {
-          this.setCatalogBrowseLanguage(language)
+          select((): void => {
+            this.setCatalogBrowseLanguage(language)
+          })
         })
       }, (language: NhSearchLanguage): string => language)
     }
   }
 
   @Builder
-  private CatalogBrowseSortMenu() {
+  private CatalogBrowseSortMenu(select: (action: () => void) => void) {
     Menu() {
       ForEach(CATALOG_SORTS, (sort: NhSearchSort): void => {
         MenuItem({
@@ -4179,14 +4315,16 @@ export struct SettingsPage {
             ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
             : undefined,
         }).onClick((): void => {
-          this.setCatalogBrowseSort(sort)
+          select((): void => {
+            this.setCatalogBrowseSort(sort)
+          })
         })
       }, (sort: NhSearchSort): string => sort)
     }
   }
 
   @Builder
-  private CatalogSearchLanguageMenu() {
+  private CatalogSearchLanguageMenu(select: (action: () => void) => void) {
     Menu() {
       ForEach(CATALOG_LANGUAGES, (language: NhSearchLanguage): void => {
         MenuItem({
@@ -4195,14 +4333,16 @@ export struct SettingsPage {
             ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
             : undefined,
         }).onClick((): void => {
-          this.setCatalogSearchLanguage(language)
+          select((): void => {
+            this.setCatalogSearchLanguage(language)
+          })
         })
       }, (language: NhSearchLanguage): string => language)
     }
   }
 
   @Builder
-  private CatalogSearchSortMenu() {
+  private CatalogSearchSortMenu(select: (action: () => void) => void) {
     Menu() {
       ForEach(CATALOG_SORTS, (sort: NhSearchSort): void => {
         MenuItem({
@@ -4211,7 +4351,9 @@ export struct SettingsPage {
             ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
             : undefined,
         }).onClick((): void => {
-          this.setCatalogSearchSort(sort)
+          select((): void => {
+            this.setCatalogSearchSort(sort)
+          })
         })
       }, (sort: NhSearchSort): string => sort)
     }
@@ -4227,8 +4369,8 @@ export struct SettingsPage {
         trailingText: this.catalogLanguageLabel(this.catalogPreferences.browseLanguage),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.CatalogBrowseLanguageMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.CatalogBrowseLanguageMenu(select)
         },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_catalog_browse_language'),
@@ -4242,8 +4384,8 @@ export struct SettingsPage {
         trailingText: this.catalogSortLabel(this.catalogPreferences.browseSort),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.CatalogBrowseSortMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.CatalogBrowseSortMenu(select)
         },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_catalog_browse_sort'),
@@ -4263,8 +4405,8 @@ export struct SettingsPage {
         trailingText: this.catalogLanguageLabel(this.catalogPreferences.searchLanguage),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.CatalogSearchLanguageMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.CatalogSearchLanguageMenu(select)
         },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_catalog_search_language'),
@@ -4278,8 +4420,8 @@ export struct SettingsPage {
         trailingText: this.catalogSortLabel(this.catalogPreferences.searchSort),
         trailingDropdown: true,
         dropdownMenuEnabled: true,
-        dropdownMenuBuilder: () => {
-          this.CatalogSearchSortMenu()
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.CatalogSearchSortMenu(select)
         },
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_catalog_search_sort'),

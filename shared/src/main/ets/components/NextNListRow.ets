@@ -48,7 +48,8 @@ export struct NextNListRow {
   /** Use a caller-owned HDS suffix only for a reference-owned leaf shape. */
   @Param useCustomTrailing: boolean = false
   @BuilderParam customTrailing: () => void = this.EmptyTrailing
-  @BuilderParam dropdownMenuBuilder: () => void = this.EmptyDropdownMenu
+  @BuilderParam dropdownMenuBuilder: (select: (action: () => void) => void) => void =
+    this.EmptyDropdownMenu
   /** Right inset of the wrapped custom suffix; rows may zero it when the suffix owns its padding. */
   @Param suffixPaddingRight: Length = ThemeTokens.SPACE_MD
   @Param hasSwitch: boolean = false
@@ -133,7 +134,23 @@ export struct NextNListRow {
   private EmptyTrailing() {}
 
   @Builder
-  private EmptyDropdownMenu() {}
+  private EmptyDropdownMenu(_select: (action: () => void) => void) {}
+
+  private selectDropdownItem(action: () => void): void {
+    // Let the MenuItem click dispatch finish before removing the overlay. Closing it in the
+    // active click handler can expose the row underneath to the same pointer event.
+    setTimeout((): void => {
+      this.dropdownMenuShown = false
+      action()
+    }, 0)
+  }
+
+  @Builder
+  private BoundDropdownMenu() {
+    this.dropdownMenuBuilder((action: () => void): void => {
+      this.selectDropdownItem(action)
+    })
+  }
 
   @Builder
   private DropdownSuffixContent() {
@@ -155,7 +172,7 @@ export struct NextNListRow {
         this.DropdownSuffixContent()
       }
       .alignItems(VerticalAlign.Center)
-      .bindMenu(this.dropdownMenuShown, this.dropdownMenuBuilder, appMenuOptions({
+      .bindMenu(this.dropdownMenuShown, this.BoundDropdownMenu, appMenuOptions({
         placement: Placement.BottomRight,
         onDisappear: (): void => {
           this.dropdownMenuShown = false
@@ -268,7 +285,7 @@ export struct NextNListRow {
         this.customTrailing()
       }
       .padding({ left: ThemeTokens.SPACE_SM, right: this.suffixPaddingRight })
-      .bindMenu(this.dropdownMenuShown, this.dropdownMenuBuilder, appMenuOptions({
+      .bindMenu(this.dropdownMenuShown, this.BoundDropdownMenu, appMenuOptions({
         placement: Placement.BottomRight,
         onDisappear: (): void => {
           this.dropdownMenuShown = false

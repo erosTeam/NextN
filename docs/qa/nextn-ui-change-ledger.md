@@ -3,6 +3,41 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Settings dropdown selection lifecycle belongs to the shared row — 2026-08-24
+
+- **Why newly actionable:** the user reported that the shared settings-menu row is not
+  actually encapsulated while callers still participate in visibility timing, and explicitly
+  requested the accepted NextE correction be applied to NextN. Current NextE commit
+  `4a325092` is new reference evidence inside this previously reviewed boundary.
+- **Whole parent-tree boundary:** preserve `settings/search page -> grouped section ->
+  NextNListRow -> real ordinary/custom suffix Row -> bindMenu -> caller-provided Menu`.
+  Title-bar, Reader-canvas, download-card, Home and Favorites menus remain outside the lane.
+- **Exact before/after:** before — `NextNListRow` owns the Boolean and anchor, but callers'
+  menu items directly mutate business state while the Boolean is still true, so a reactive
+  row update can reopen the menu. After — callers provide menu content and wrap only their
+  business callback in the row-provided `select`; the row schedules closing after the active
+  click dispatch, sets its private Boolean false, then runs that callback. No animation
+  duration, page redraw, lifecycle close, or caller-visible shown state is added.
+- **Affected visible states and sibling review:** selecting an ordinary or custom-suffix
+  value, native close animation, immediate reactive trailing-value/layout updates, repeat
+  opening, and the two fetch-before-open model menus. Dismissal without selection and the
+  accepted suffix anchoring contract remain unchanged.
+- **Minimality rationale:** change only the existing forty-four shared-row menu builders and
+  `NextNListRow`; preserve every menu item, write, sheet, enabled predicate, row order and
+  deferred fetch-before-open transition.
+- **Verification plan:** inventory all shared-row menu builders, require every builder to
+  accept the internal selector, run available static checks and the signed build, and report device
+  selection behavior as unaccepted until the user names a NextN target.
+- **Source and build evidence:** current source contains forty-four shared-row menu builders;
+  all forty-four accept the row-provided selector, their ninety-one menu-item callbacks run
+  business changes through it, and no page outside `NextNListRow` owns `dropdownMenuShown`.
+  The two model selectors retain `dropdownMenuDeferredOpen` plus fetch-before-open callbacks.
+  `git diff --check` passed and `scripts/build-hvigor-signed.sh` completed successfully in
+  17.699 seconds. This repository currently has no V1 decorator inventory script.
+- **Acceptance boundary:** implemented in source and build-verified. Native close animation,
+  no-reopen behavior, click-through prevention and repeat selection remain unaccepted on
+  NextN hardware because the user has not selected a NextN HDC target for this lane.
+
 ## ACCEPTED — Split-mode settings dropdown menus must anchor to their real suffix — 2026-08-22
 
 - **Why newly actionable:** current NextE commit `7ee42447` is a relevant

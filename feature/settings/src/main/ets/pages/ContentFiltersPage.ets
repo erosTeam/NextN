@@ -179,21 +179,23 @@ export struct ContentFiltersPage {
   }
 
   @Builder
-  private FilterTypeMenu() {
+  private FilterTypeMenu(select: (action: () => void) => void) {
     Menu() {
-      this.FilterTypeMenuItem(NhContentFilterType.TITLE)
-      this.FilterTypeMenuItem(NhContentFilterType.COMMENTER)
-      this.FilterTypeMenuItem(NhContentFilterType.COMMENT)
+      this.FilterTypeMenuItem(NhContentFilterType.TITLE, select)
+      this.FilterTypeMenuItem(NhContentFilterType.COMMENTER, select)
+      this.FilterTypeMenuItem(NhContentFilterType.COMMENT, select)
     }
   }
 
   @Builder
-  private FilterTypeMenuItem(type: NhContentFilterType) {
+  private FilterTypeMenuItem(type: NhContentFilterType, select: (action: () => void) => void) {
     MenuItem({
       content: this.typeLabel(type),
       symbolEndIcon: this.draftType === type ? new SymbolGlyphModifier($r('sys.symbol.checkmark')) : undefined,
     }).onClick((): void => {
-      this.draftType = type
+      select((): void => {
+        this.draftType = type
+      })
     })
   }
 
@@ -267,8 +269,8 @@ export struct ContentFiltersPage {
             trailingText: this.typeLabel(this.draftType),
             trailingDropdown: true,
             dropdownMenuEnabled: true,
-            dropdownMenuBuilder: () => {
-              this.FilterTypeMenu()
+            dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+              this.FilterTypeMenu(select)
             },
             accessibilityLabel: AppStrings.get('content_filter_target_a11y')
               .replace('%s', this.typeLabel(this.draftType)),

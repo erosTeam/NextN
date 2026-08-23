@@ -234,7 +234,7 @@ export struct CommentTranslationSettingsPage {
   }
 
   @Builder
-  private DisplayModeMenu() {
+  private DisplayModeMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: AppStrings.get('comment_translation_display_replace'),
@@ -242,7 +242,9 @@ export struct CommentTranslationSettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setDisplayMode(COMMENT_TRANSLATION_DISPLAY_REPLACE)
+        select((): void => {
+          this.setDisplayMode(COMMENT_TRANSLATION_DISPLAY_REPLACE)
+        })
       })
       MenuItem({
         content: AppStrings.get('comment_translation_display_bilingual'),
@@ -250,13 +252,15 @@ export struct CommentTranslationSettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setDisplayMode(COMMENT_TRANSLATION_DISPLAY_BILINGUAL)
+        select((): void => {
+          this.setDisplayMode(COMMENT_TRANSLATION_DISPLAY_BILINGUAL)
+        })
       })
     }
   }
 
   @Builder
-  private SourceMenu() {
+  private SourceMenu(select: (action: () => void) => void) {
     Menu() {
       ForEach(
         this.compatibleSources(),
@@ -267,7 +271,9 @@ export struct CommentTranslationSettingsPage {
               ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
               : undefined,
           }).onClick((): void => {
-            this.selectSource(profile.sourceProfileId)
+            select((): void => {
+              this.selectSource(profile.sourceProfileId)
+            })
           })
         },
         (profile: LlmSourceProfile) => profile.sourceProfileId,
@@ -276,7 +282,7 @@ export struct CommentTranslationSettingsPage {
   }
 
   @Builder
-  private ModelMenu() {
+  private ModelMenu(select: (action: () => void) => void) {
     Menu() {
       ForEach(
         this.modelOptions,
@@ -287,7 +293,9 @@ export struct CommentTranslationSettingsPage {
               ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
               : undefined,
           }).onClick((): void => {
-            this.selectModel(model)
+            select((): void => {
+              this.selectModel(model)
+            })
           })
         },
         (model: string) => model,
@@ -349,8 +357,8 @@ export struct CommentTranslationSettingsPage {
               trailingText: this.displayModeText(),
               trailingDropdown: true,
               dropdownMenuEnabled: true,
-              dropdownMenuBuilder: () => {
-                this.DisplayModeMenu()
+              dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+                this.DisplayModeMenu(select)
               },
               isEnabled: this.settings.enabled,
               accessibilityLabel: AppStrings.format('settings_row_a11y', [
@@ -372,8 +380,8 @@ export struct CommentTranslationSettingsPage {
               trailingDropdown: this.compatibleSources().length > 0,
               showChevron: this.compatibleSources().length === 0,
               dropdownMenuEnabled: this.compatibleSources().length > 0,
-              dropdownMenuBuilder: () => {
-                this.SourceMenu()
+              dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+                this.SourceMenu(select)
               },
               isEnabled: this.settings.enabled,
               accessibilityLabel: AppStrings.get('comment_translation_source_a11y'),
@@ -393,8 +401,8 @@ export struct CommentTranslationSettingsPage {
               trailingText: this.selectedModelText(),
               trailingDropdown: true,
               dropdownMenuEnabled: true,
-              dropdownMenuBuilder: () => {
-                this.ModelMenu()
+              dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+                this.ModelMenu(select)
               },
               dropdownMenuDeferredOpen: true,
               dropdownMenuOpenAction: (openMenu: () => void): void => {

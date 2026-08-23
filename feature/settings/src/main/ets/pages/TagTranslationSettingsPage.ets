@@ -242,7 +242,7 @@ export struct TagTranslationSettingsPage {
   }
 
   @Builder
-  private UpdateModeMenu() {
+  private UpdateModeMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
         content: AppStrings.get('settings_tag_translation_update_manual'),
@@ -250,7 +250,9 @@ export struct TagTranslationSettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setUpdateMode(TAG_TRANSLATION_UPDATE_MANUAL)
+        select((): void => {
+          this.setUpdateMode(TAG_TRANSLATION_UPDATE_MANUAL)
+        })
       })
       MenuItem({
         content: AppStrings.get('settings_tag_translation_update_every_start'),
@@ -258,7 +260,9 @@ export struct TagTranslationSettingsPage {
           ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
           : undefined,
       }).onClick((): void => {
-        this.setUpdateMode(TAG_TRANSLATION_UPDATE_EVERY_START)
+        select((): void => {
+          this.setUpdateMode(TAG_TRANSLATION_UPDATE_EVERY_START)
+        })
       })
     }
   }
@@ -353,8 +357,8 @@ export struct TagTranslationSettingsPage {
               trailingText: this.updateModeText(),
               trailingDropdown: true,
               dropdownMenuEnabled: true,
-              dropdownMenuBuilder: () => {
-                this.UpdateModeMenu()
+              dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+                this.UpdateModeMenu(select)
               },
               accessibilityLabel: AppStrings.format('settings_row_a11y', [
                 AppStrings.get('settings_tag_translation_update_mode'),
