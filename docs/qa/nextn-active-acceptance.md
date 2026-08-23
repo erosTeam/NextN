@@ -34,6 +34,34 @@
 - This observes the cache cold-start path only; it does not accept tag translation timing, every layout density, sign-out cache clearing, or the pending developer-guide maintenance contract. Raw layout copies retained under `.hvigor/outputs/nextn-cache-tags-20260816T/` and excluded from Git.
 # NextN active device-acceptance queue
 
+## Reader Popup sheet anchor + scrolled title material — 2026-08-23 (accepted on 103)
+
+- The platform contract and current source comparison established the binding
+  cause: `bindSheet` positions a wide-window Popup from its host node. NextE
+  attaches Reader settings to the gear `Button`; NextN attached it to the
+  full-screen Reader `Stack`. The unchanged sheet builder/options were moved
+  to the gear, and the shared modal HDS title scroll effect was disabled so it
+  does not layer dynamic blur over the API 26 sheet material.
+- Signed build succeeded. The exact HAP SHA-256
+  `905925a4d281f263a5a2d9cad2eb1054183bf10be1f9d629a1aac4faf86c03c5`
+  was installed with `install -r` on live-resolved
+  `192.168.50.103:12345`, without uninstall or data clear. The established
+  Gallery `471768` path foregrounded native Reader at `2560x1600`.
+- The Reader gear occupied `[2332,118][2437,223]`; its Popup opened at
+  `SheetPage [1439,105][2313,1344]`, 19px to the left of the real trigger
+  rather than centered on the page. A real upward fling changed the visible
+  sections from `翻页与布局`/`点按区域` to
+  `图像增强`/`阅读控制`/`加载`; the sheet bounds and fixed
+  `阅读 [1591,105][1686,131]` title bounds remained unchanged. No popup-owned
+  `MaskBlur` exists after the scroll, and the retained screenshot has no tall
+  transparent title blur.
+- Final state is the foreground Reader settings Popup with the scrolled list;
+  power remains `AWAKE` and `OverrideTimeout=86400000ms`. Raw layouts,
+  screenshots, checked manifests and command metadata are retained under
+  `.hvigor/outputs/nextn-popup-modal-scroll-fix-103-20260823/` and excluded
+  from Git. This directly accepts the Reader anchor and shared modal title on
+  this popup path; other callers were not individually reopened.
+
 ## Split-mode settings dropdown suffix anchoring — 2026-08-22 (accepted on 103)
 
 - The current NextE `7ee42447` fix was mapped against NextN's complete settings

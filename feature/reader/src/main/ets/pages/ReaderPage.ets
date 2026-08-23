@@ -4145,6 +4145,19 @@ export struct ReaderPage {
         .onClick((): void => {
           this.openReaderSettings()
         })
+        .bindSheet(
+          $$this.readerSettingsSheetShown,
+          this.settingsSheetContent((): void => {
+            this.closeReaderSettings()
+          }),
+          appSheetOptions({
+            detents: [SheetSize.MEDIUM, SheetSize.LARGE],
+            showClose: false,
+            onDisappear: (): void => {
+              this.closeReaderSettings()
+            },
+          }),
+        )
         // Route-level actions remain in the top chrome. Per-page reading
         // controls intentionally live in ReaderBottomBar with the scrubber.
         Button({ type: ButtonType.Circle }) {
@@ -4903,19 +4916,6 @@ export struct ReaderPage {
     .onTouch((event: TouchEvent): void => {
       this.onReaderSurfaceTouch(event)
     })
-    .bindSheet(
-      $$this.readerSettingsSheetShown,
-      this.settingsSheetContent((): void => {
-        this.closeReaderSettings()
-      }),
-      appSheetOptions({
-        detents: [SheetSize.MEDIUM, SheetSize.LARGE],
-        showClose: false,
-        onDisappear: (): void => {
-          this.closeReaderSettings()
-        },
-      }),
-    )
   }
 
   private persistProgress(pageIndex: number): void {

@@ -1482,6 +1482,76 @@ authorize an edit, replace a device comparison, or define product completion.
   visual parity and the tapped-card seed path remain unobserved; this record
   does not claim them.
 
+## ACCEPTED — Reader Popup sheet host anchoring and title material — 2026-08-23
+
+- **Why newly actionable:** after accepting the title-material defect and
+  shared fix in NextE on the user-selected 103 tablet, the user reported new
+  NextN counter-evidence: Reader settings opens in the middle of the popup
+  viewport instead of beside the gear button. This reopens the popup host plus
+  shared title/material boundary; it does not reopen sheet content, detents,
+  actions, routes or data semantics.
+- **Source-proven causes:** `bindSheet` is strictly positioned from its host
+  node when the adaptive wide-window type resolves to `SheetType.POPUP`.
+  Current NextE binds Reader settings directly to its gear `Button`, but
+  NextN binds the same sheet to the full-screen Reader root `Stack`; the target
+  rectangle is therefore the whole page and the popup resolves around its
+  center. Separately, `appSheetOptions()` assigns the API 26
+  `SheetOptions.systemMaterial`, while `NextNModalScaffold` makes its content
+  transparent and HDS enables title-bar scroll blur by default, layering a
+  second dynamic blur over the sheet-owned material after list scrolling.
+- **Whole parent-tree and sibling review:** preserve
+  `ReaderPage -> ReaderHeader -> Row -> gear Button -> Reader settings sheet`
+  and move only the sheet modifier from the page `Stack` to that actual
+  trigger. The other current NextN hosts were reviewed: Search, Home and
+  thumbnail jump originate in HDS-owned title action data and expose no
+  app-owned trigger node; Content Filters shares one editor across the title
+  add action and rule rows; Gallery full title is already hosted by its title
+  region; Theme custom color is already hosted by its settings row. Preserve
+  those hosts. The shared title edit remains limited to
+  `NextNModalScaffold -> HdsNavigation.titleBar.style.scrollEffectOpts`.
+- **Exact correction and minimality:** move the unchanged Reader
+  `bindSheet`/builder/options block onto the gear `Button`, matching current
+  NextE, and remove it from the root `Stack`; set only
+  `enableScrollEffect: false` on the shared modal title bar. Do not add manual
+  offsets, force a sheet type, change placement, remove the Scroller binding,
+  change sheet material, or alter sheet state/content.
+- **Newly affected visible states:** Reader gear visible before activation;
+  popup initial position beside that gear; the same popup after its real list
+  has scrolled upward; fixed title/close/menu chrome above the moving list;
+  API 26 transparent system-material background. Reader settings is the
+  decisive dark-backdrop/anchor case.
+- **Verification plan:** scoped source/diff checks and the repository signed
+  build, followed by `install -r` on the freshly resolved 103 target. In a
+  foreground-confirmed 2560x1600 landscape Reader, record the gear bounds and
+  prove the popup is adjacent to that target rather than centered on the page;
+  then prove a visible list-anchor change, unchanged title bounds, readable
+  title, and no popup-owned `MaskBlur` after scrolling. Retain raw screenshots
+  and layouts under a unique local artifact directory; do not generalize
+  runtime acceptance to non-Reader callers that were not reopened.
+- **103 acceptance evidence:** the exact signed HAP with SHA-256
+  `905925a4d281f263a5a2d9cad2eb1054183bf10be1f9d629a1aac4faf86c03c5`
+  was installed with `install -r` on the live-resolved
+  `192.168.50.103:12345`; no uninstall or data clear occurred. The established
+  Gallery `471768` route entered foreground native Reader at `2560x1600`.
+  Its gear target was `[2332,118][2437,223]`; activating that exact target
+  opened `SheetPage [1439,105][2313,1344]`, immediately to the gear's left
+  with a 19px gap instead of centered on the full page. One in-sheet upward
+  fling moved the visible anchor from the initial `翻页与布局`/`点按区域`
+  sections to `图像增强`/`阅读控制`/`加载`, while the SheetPage bounds and
+  fixed `阅读 [1591,105][1686,131]` title bounds remained unchanged. The
+  scrolled screenshot has no tall transparent title blur; layout contains no
+  `MaskBlur` descendant under the SheetPage hierarchy. The only two
+  `MaskBlur` nodes belong to the retained root Split HDS title bars outside
+  the sheet and both report `blur=0.00px`. Final power state remained `AWAKE`
+  with `OverrideTimeout=86400000ms`. Raw evidence is retained under
+  `.hvigor/outputs/nextn-popup-modal-scroll-fix-103-20260823/` and excluded
+  from Git.
+- **Acceptance boundary:** this directly accepts Reader's trigger anchoring
+  and the shared modal title behavior on the scrollable API 26 popup path.
+  Other callers inherit the same `NextNModalScaffold` source correction but
+  were not each reopened on device; their unrelated route/content behavior is
+  not generalized from this run.
+
 ## OPEN — API 26 material support across feature components — 2026-08-16
 
 - **Why newly actionable:** the user reports that the app menus (starting

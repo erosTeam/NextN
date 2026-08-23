@@ -65,6 +65,15 @@ export struct NextNModalScaffold {
       }
       .titleBar({
         enableComponentSafeArea: this.enableComponentSafeArea,
+        // bindSheet owns the API 26 material for the complete modal surface. HDS's default
+        // scroll blur extends below this title bar and, in POPUP mode, samples outside the
+        // popup (notably the dark Reader backdrop). Keep the modal title on the sheet material
+        // instead of layering a second dynamic blur over it.
+        style: {
+          scrollEffectOpts: {
+            enableScrollEffect: false,
+          },
+        },
         content: {
           title: {
             mainTitle: this.title,
