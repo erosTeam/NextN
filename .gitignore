@@ -1,4 +1,9 @@
+# macOS
 .DS_Store
+.Spotlight-V100
+.Trashes
+.fseventsd
+
 .idea/
 .hvigor/
 oh_modules/
