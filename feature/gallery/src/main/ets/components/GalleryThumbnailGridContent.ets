@@ -5,6 +5,7 @@ import {
   NhGalleryPage,
   PageEmptyState,
   PullRefreshGridScaffold,
+  ReaderThumbnailTransitionCoordinator,
   ThemeTokens,
 } from 'shared'
 import { appSheetOptions } from 'shared'
@@ -26,6 +27,7 @@ export struct GalleryThumbnailGridContent {
   @Param chrome: GalleryThumbnailsChromeState = new GalleryThumbnailsChromeState()
   @Param scroller: Scroller = new Scroller()
   @Param bottomPadding: number = ThemeTokens.SPACE_XL
+  @Param transitionScope: string = ''
   @Event onOpenPage?: (pageIndex: number) => void
   /** Detail's wide pane may observe only its actual Grid scroll surface. */
   @Event onScrollTouch?: (event: TouchEvent) => void
@@ -232,6 +234,10 @@ export struct GalleryThumbnailGridContent {
               GalleryVirtualPageThumbnailTile({
                 page: page,
                 pageIndex: index,
+                transitionSourceId: ReaderThumbnailTransitionCoordinator.sourceId(
+                  this.transitionScope,
+                  index,
+                ),
                 onOpen: (pageIndex: number): void => {
                   this.openPage(pageIndex)
                 },

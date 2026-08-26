@@ -30,6 +30,7 @@ export struct GalleryThumbnail {
   @Param radius: number = 0
   @Param widthValue: Length = '100%'
   @Param heightValue: Length = '100%'
+  @Param surfaceId: string = ''
   @Local loaded: boolean = false
   @Local failed: boolean = false
   @Local reloadToken: number = 0
@@ -108,5 +109,6 @@ export struct GalleryThumbnail {
     }
     .width(this.widthValue)
     .height(this.heightValue)
+    .id(this.surfaceId)
   }
 }

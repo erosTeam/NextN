@@ -463,6 +463,23 @@ export {
   ReaderOverlayNavigationState,
   connectReaderOverlayNavigation,
 } from './state/ReaderOverlayNavigationState'
+export {
+  GalleryDetailTransitionPhase,
+  GalleryDetailTransitionState,
+  connectGalleryDetailTransition,
+} from './state/GalleryDetailTransitionState'
+export {
+  GalleryDetailTransitionMode,
+  GalleryDetailTransitionSettingsState,
+  connectGalleryDetailTransitionSettings,
+} from './state/GalleryDetailTransitionSettingsState'
+export { GalleryDetailTransitionCoordinator } from './navigation/GalleryDetailTransitionCoordinator'
+export {
+  ReaderThumbnailTransitionPhase,
+  ReaderThumbnailTransitionState,
+  connectReaderThumbnailTransition,
+} from './state/ReaderThumbnailTransitionState'
+export { ReaderThumbnailTransitionCoordinator } from './navigation/ReaderThumbnailTransitionCoordinator'
 export { DownloadSettingsState, connectDownloadSettings } from './state/DownloadSettingsState'
 export { DownloadBatchResult, DownloadQueueService, DownloadRestoreResult } from './services/DownloadQueueService'
 export { DownloadSettingsService } from './services/DownloadSettingsService'
@@ -501,6 +518,7 @@ export { HomeTabSettings } from './settings/HomeTabSettings'
 export { SafeModeSettings, SAFE_MODE_UNLOCKED_KEY } from './settings/SafeModeSettings'
 export { CoverBackgroundSettings } from './settings/CoverBackgroundSettings'
 export { GalleryTitleSettings } from './settings/GalleryTitleSettings'
+export { GalleryDetailTransitionSettings } from './settings/GalleryDetailTransitionSettings'
 export { ReadButtonStyleSettings } from './settings/ReadButtonStyleSettings'
 export {
   ActionAlignmentSettings,

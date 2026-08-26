@@ -71,6 +71,9 @@ import {
   ActionAlignmentOption,
   GalleryTitleSettings,
   GalleryTitleState,
+  GalleryDetailTransitionSettings,
+  GalleryDetailTransitionMode,
+  GalleryDetailTransitionSettingsState,
   ReadButtonStyleSettings,
   ReadButtonStyleState,
   NhClipboardLinkSettings,
@@ -114,6 +117,7 @@ import {
   connectCoverBackground,
   connectActionAlignment,
   connectGalleryTitle,
+  connectGalleryDetailTransitionSettings,
   connectNhClipboardLink,
   connectReadButtonStyle,
   connectReaderEnhancementModels,
@@ -285,6 +289,8 @@ export struct SettingsPage {
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
   @Local actionAlignment: ActionAlignmentState = connectActionAlignment()
   @Local galleryTitle: GalleryTitleState = connectGalleryTitle()
+  @Local galleryDetailTransition: GalleryDetailTransitionSettingsState =
+    connectGalleryDetailTransitionSettings()
   @Local clipboardLink: NhClipboardLinkState = connectNhClipboardLink()
   @Local readButtonStyle: ReadButtonStyleState = connectReadButtonStyle()
   @Local immersiveMaterial: ImmersiveMaterialSettingsState = connectImmersiveMaterialSettings()
@@ -413,6 +419,7 @@ export struct SettingsPage {
         HomeTabSettings.restore(this.context()),
         CoverBackgroundSettings.restore(this.context()),
         GalleryTitleSettings.restore(this.context()),
+        GalleryDetailTransitionSettings.restore(this.context()),
         ReadButtonStyleSettings.restore(this.context()),
         ActionAlignmentSettings.restore(this.context()),
         ScreenOrientationSettings.restore(this.context()),
@@ -580,6 +587,24 @@ export struct SettingsPage {
     } catch (_error) {
       this.browsePresentationError = AppStrings.get('settings_browse_presentation_save_failed')
     }
+  }
+
+  private galleryDetailTransitionLabel(): string {
+    if (this.galleryDetailTransition.mode === GalleryDetailTransitionMode.SYSTEM) {
+      return AppStrings.get('settings_gallery_detail_transition_system')
+    }
+    if (this.galleryDetailTransition.mode === GalleryDetailTransitionMode.COVER_EXPAND) {
+      return AppStrings.get('settings_gallery_detail_transition_cover_expand')
+    }
+    return AppStrings.get('settings_gallery_detail_transition_seamless')
+  }
+
+  private setGalleryDetailTransitionMode(mode: string): void {
+    GalleryDetailTransitionSettings.setMode(this.context(), mode).catch((): void => {})
+  }
+
+  private setReaderThumbnailTransitionEnabled(enabled: boolean): void {
+    GalleryDetailTransitionSettings.setReaderThumbnailEnabled(this.context(), enabled).catch((): void => {})
   }
 
   private setShowGalleryTags(value: boolean): void {
@@ -4020,6 +4045,42 @@ export struct SettingsPage {
   }
 
   @Builder
+  private GalleryDetailTransitionMenu(select: (action: () => void) => void) {
+    Menu() {
+      MenuItem({
+        content: AppStrings.get('settings_gallery_detail_transition_system'),
+        symbolEndIcon: this.galleryDetailTransition.mode === GalleryDetailTransitionMode.SYSTEM
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        select((): void => {
+          this.setGalleryDetailTransitionMode(GalleryDetailTransitionMode.SYSTEM)
+        })
+      })
+      MenuItem({
+        content: AppStrings.get('settings_gallery_detail_transition_seamless'),
+        symbolEndIcon: this.galleryDetailTransition.mode === GalleryDetailTransitionMode.SEAMLESS
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        select((): void => {
+          this.setGalleryDetailTransitionMode(GalleryDetailTransitionMode.SEAMLESS)
+        })
+      })
+      MenuItem({
+        content: AppStrings.get('settings_gallery_detail_transition_cover_expand'),
+        symbolEndIcon: this.galleryDetailTransition.mode === GalleryDetailTransitionMode.COVER_EXPAND
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        select((): void => {
+          this.setGalleryDetailTransitionMode(GalleryDetailTransitionMode.COVER_EXPAND)
+        })
+      })
+    }
+  }
+
+  @Builder
   private BrowsePresentationMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
@@ -4101,6 +4162,41 @@ export struct SettingsPage {
           AppStrings.get('browse_presentation'),
           this.browsePresentationLabel(),
         ]),
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.arrowtriangle_2_inward_square'),
+        title: AppStrings.get('settings_gallery_detail_transition'),
+        subtitle: AppStrings.get('settings_gallery_detail_transition_hint'),
+        trailingText: this.galleryDetailTransitionLabel(),
+        trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.GalleryDetailTransitionMenu(select)
+        },
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_gallery_detail_transition'),
+          this.galleryDetailTransitionLabel(),
+        ]),
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.picture_on_square'),
+        title: AppStrings.get('settings_reader_thumbnail_transition'),
+        subtitle: AppStrings.get('settings_reader_thumbnail_transition_hint'),
+        hasSwitch: true,
+        checked: this.galleryDetailTransition.readerThumbnailEnabled,
+        showChevron: false,
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_reader_thumbnail_transition'),
+          this.toggleStateLabel(this.galleryDetailTransition.readerThumbnailEnabled),
+        ]),
+        onAction: (): void => {
+          this.setReaderThumbnailTransitionEnabled(!this.galleryDetailTransition.readerThumbnailEnabled)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.setReaderThumbnailTransitionEnabled(value)
+        },
       })
       this.RowDivider()
       NextNListRow({

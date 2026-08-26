@@ -3842,3 +3842,48 @@ permitted in this repository.
   `.hvigor/outputs/nextn-public-download-root-*` directories and excluded from
   Git. No lock-screen or gallery screenshot is retained. No physical action
   remains for this bounded public Download-directory acceptance lane.
+
+## Gallery/Reader shared-element transitions — accepted on 197 — 2026-08-26
+
+- The selected target `192.168.50.197:12345` was live-resolved and used under
+  lease `20260825-171158-cdcc2294`. The wake gate read `AWAKE` with
+  `OverrideTimeout=86400000ms`. Signed Debug HAP SHA-256
+  `4fed851c380eedbdac5e628fd7c824b711fa5a2474ca3ed3eae8c348e853cb65`
+  was installed with `install -r`; no uninstall or data clear occurred.
+- Both Gallery Detail modes were exercised at full system animation speed in
+  uninterrupted, chronological capture streams. `封面展开` and `一镜到底`
+  each completed open and close round trips from all six Browse presentations:
+  List, Simple, Grid, Waterfall, Compact Waterfall and Cover Wall. The List
+  sample also covered a horizontally proportioned, cropped/blurred cover. The
+  observed transitions retained the list source until ownership handoff, kept
+  cover aspect/radius continuity, and returned without a duplicate source
+  cover or blank source slot. Shared Favorites and Search collection paths and
+  the separate History row path were each opened and closed on device.
+- Reader thumbnail entry was exercised independently of the Gallery Detail
+  mode. During an intentionally unresolved full-image load, the Reader chrome
+  and pager were already interactive and a real RTL page gesture reached
+  `2 / 357`. A page-one to page-three round trip returned the current page-three
+  image to the visible page-three thumbnail; the same full-speed path was
+  repeated. The close stream retained the Gallery background and did not show
+  a loading indicator or shrink the Reader background. Two separate opening
+  streams pressed Back before the forward transition settled and visibly
+  reversed the in-flight thumbnail to its source instead of invoking the
+  system route animation.
+- Interface settings visibly contains the Gallery Detail transition menu with
+  `系统默认`, `一镜到底` and `封面展开`, plus the separately switchable
+  `阅读器缩略图转场`. The current checked Gallery mode was `一镜到底` and
+  the Reader switch was enabled; the menu was inspected without changing the
+  retained values.
+- The final correction build was then repeated twice for each reported
+  counterexample. Reader Back restored the status bar before the first
+  shrinking transition frame and the revealed Detail layout did not jump
+  after settle. A wide Grid cover transitioned only the centered sharp cover;
+  the blurred slot remained owned by the card and neither endpoint changed
+  cover geometry.
+- Raw single-stream captures, chronological frames, layouts and transition
+  event logs are retained under `.hvigor/outputs/gallery-transition-197/`
+  (`19`–`62` for the accepted transition paths and repeats, `66`–`67` for
+  settings, `71`–`72` for the Grid correction and `76`/`78` for the status-bar
+  correction) and excluded from Git. This accepts the bounded phone/portrait
+  paths above; tablet Split behavior intentionally remains on the native route
+  transition and was source-reviewed rather than claimed as 197 evidence.

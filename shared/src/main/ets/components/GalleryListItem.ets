@@ -18,6 +18,7 @@ export function galleryListItemReuseId(gallery: NhGallerySummary): string {
 export struct GalleryListItem {
   @Require @Param gallery: NhGallerySummary
   @Param selected: boolean = false
+  @Param transitionCoverId: string = ''
   @Event onOpen?: (galleryId: number) => void
 
   private accessibilityLabel(): string {
@@ -38,6 +39,7 @@ export struct GalleryListItem {
         objectFit: ImageFit.Cover,
         radius: ThemeTokens.THUMB_RADIUS,
       })
+        .id(this.transitionCoverId)
         .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
         .borderRadius(ThemeTokens.THUMB_RADIUS)
       Column({ space: ThemeTokens.SPACE_XS }) {

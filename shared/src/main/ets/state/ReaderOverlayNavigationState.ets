@@ -1,6 +1,7 @@
 import { AppStorageV2 } from '@kit.ArkUI'
 import { NhGalleryDetail, NhGalleryPage, NhTag } from '../model/NhGallery'
 import { ReaderRouteParams } from '../model/ReaderRouteParams'
+import { connectReaderThumbnailTransition } from './ReaderThumbnailTransitionState'
 
 /**
  * Owns Reader's full-window navigation stack independently of the root HDS
@@ -15,6 +16,7 @@ export class ReaderOverlayNavigationState {
   // already-persisted final progress without reacting to live Reader writes.
   @Trace closing: boolean = false
   private pendingReader: ReaderRouteParams | null = null
+  private pendingReaderAnimated: boolean = true
   private nextRouteEpoch: number = 0
   // A Gallery stages this only immediately before its own Reader intent.
   // `open` either attaches it to that exact next route or discards it.
@@ -65,7 +67,7 @@ export class ReaderOverlayNavigationState {
     return detail
   }
 
-  open(params: ReaderRouteParams): void {
+  open(params: ReaderRouteParams, animated: boolean = true): void {
     const routeEpoch: number = this.nextRouteEpoch + 1
     this.nextRouteEpoch = routeEpoch
     const routeParams = new ReaderRouteParams(params.galleryId, params.initialPageIndex, routeEpoch)
@@ -73,6 +75,7 @@ export class ReaderOverlayNavigationState {
     this.stack.clear(false)
     this.stack.pushPathByName('ReaderOverlayBackdrop', null, false)
     this.pendingReader = routeParams
+    this.pendingReaderAnimated = animated
     this.closing = false
     this.visible = true
   }
@@ -83,10 +86,11 @@ export class ReaderOverlayNavigationState {
       return
     }
     this.pendingReader = null
-    this.stack.pushPathByName('Reader', params, true)
+    this.stack.pushPathByName('Reader', params, this.pendingReaderAnimated)
+    this.pendingReaderAnimated = true
   }
 
-  close(): void {
+  close(animated: boolean = true): void {
     if (!this.visible || this.closing) {
       return
     }
@@ -98,7 +102,7 @@ export class ReaderOverlayNavigationState {
       return
     }
     this.closing = true
-    this.stack.pop(true)
+    this.stack.pop(animated)
   }
 
   finishClose(): void {
@@ -110,15 +114,19 @@ export class ReaderOverlayNavigationState {
     this.clearStagedDetailSeed()
     this.clearActiveDetailSeed()
     this.stack.clear(false)
+    this.pendingReaderAnimated = true
+    connectReaderThumbnailTransition().reset()
   }
 
   reset(): void {
     this.pendingReader = null
+    this.pendingReaderAnimated = true
     this.closing = false
     this.visible = false
     this.clearStagedDetailSeed()
     this.clearActiveDetailSeed()
     this.stack.clear(false)
+    connectReaderThumbnailTransition().reset()
   }
 
   private attachStagedDetailSeed(params: ReaderRouteParams): void {

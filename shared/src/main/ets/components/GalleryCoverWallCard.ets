@@ -42,6 +42,7 @@ export function galleryCoverWallReuseId(gallery: NhGallerySummary): string {
 export struct GalleryCoverWallCard {
   @Require @Param gallery: NhGallerySummary
   @Param selected: boolean = false
+  @Param transitionCoverId: string = ''
   @Local hasThumbnailError: boolean = false
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
   @Event onOpen?: (galleryId: number) => void
@@ -126,6 +127,7 @@ export struct GalleryCoverWallCard {
     }
     .width('100%')
     .aspectRatio(this.coverRatio())
+    .id(this.transitionCoverId)
     .borderRadius(ThemeTokens.GALLERY_GRID_CARD_RADIUS)
     .clip(true)
     .accessibilityText(this.accessibilityLabel())

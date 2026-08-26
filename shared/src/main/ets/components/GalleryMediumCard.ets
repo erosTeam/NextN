@@ -32,6 +32,7 @@ const MEDIUM_COVER_MIN_FILL_DELTA: number = 0.2
 export struct GalleryMediumCard {
   @Require @Param gallery: NhGallerySummary
   @Param selected: boolean = false
+  @Param transitionCoverId: string = ''
   /** Measured by the shared List host; used only by adaptive LIST rows. */
   @Param listContentWidth: number = 0
   @Local hasThumbnailError: boolean = false
@@ -225,6 +226,7 @@ export struct GalleryMediumCard {
       }
       .width(this.coverWidth())
       .height(this.coverSlotHeight())
+      .id(this.transitionCoverId)
       .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
       .onAreaChange((_oldArea: Area, area: Area): void => {
         if (this.usesFixedHeight()) {

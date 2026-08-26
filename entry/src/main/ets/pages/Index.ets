@@ -67,7 +67,8 @@ import {
   SnackBarOperationType,
   SnackBarStyleOptions,
 } from '@kit.UIDesignKit'
-import { ComponentContent, window } from '@kit.ArkUI'
+import { ComponentContent, curves, FrameCallback, window } from '@kit.ArkUI'
+import { image } from '@kit.ImageKit'
 import {
   nextNHdsTitle,
   nextNHdsTitleBar,
@@ -124,6 +125,11 @@ import {
   NhApiClient,
   NhGalleryPage,
   NhGallerySummary,
+  GalleryDetailTransitionPhase,
+  GalleryDetailTransitionState,
+  GalleryDetailTransitionCoordinator,
+  ReaderThumbnailTransitionState,
+  ReaderThumbnailTransitionCoordinator,
   ReaderOverlayNavigationState,
   SafeModeGate,
   SafeModeState,
@@ -132,6 +138,10 @@ import {
   NhClipboardLinkState,
   RootRefreshRegistry,
   ThemeTokens,
+  DiagnosticLogger,
+  EhImageKnifeImage,
+  connectGalleryDetailTransition,
+  connectReaderThumbnailTransition,
   connectReaderOverlayNavigation,
   connectSafeMode,
   connectSettingsNavigation,
@@ -179,6 +189,68 @@ const STATUS_BAR_LIGHT_CONTENT: string = '#FFFFFFFF'
 const STATUS_BAR_DARK_CONTENT: string = '#FF000000'
 const READER_ENTRY_STATUS_BAR_HIDE_DELAY_MS: number = 500
 const READER_EXIT_STATUS_BAR_LEAD_MS: number = 20
+
+const GALLERY_DETAIL_OPEN_CURVE: curves.ICurve = curves.cubicBezierCurve(0.2, 0, 0, 1)
+const GALLERY_DETAIL_CLOSE_CURVE: curves.ICurve = curves.cubicBezierCurve(0.3, 0, 0.2, 1)
+// These thresholds are measured against visible geometry progress, not elapsed time. Changing a
+// curve therefore cannot silently move the card/detail ownership handoff to a different window size.
+const GALLERY_DETAIL_OPEN_CARD_EXIT_START_PROGRESS: number = 0
+const GALLERY_DETAIL_OPEN_CARD_EXIT_END_PROGRESS: number = 0.55
+const GALLERY_DETAIL_CLOSE_CARD_ENTRY_START_PROGRESS: number = 0.55
+const GALLERY_DETAIL_CLOSE_CARD_ENTRY_END_PROGRESS: number = 0.9
+const GALLERY_DETAIL_COVER_OPEN_CARD_EXIT_START_PROGRESS: number = 0.15
+const GALLERY_DETAIL_COVER_OPEN_CARD_EXIT_END_PROGRESS: number = 0.5
+const GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_START_PROGRESS: number = 0.5
+const GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_END_PROGRESS: number = 0.75
+const GALLERY_DETAIL_CURVE_INVERSE_ITERATIONS: number = 16
+
+function galleryDetailTimeAtProgress(curve: curves.ICurve, targetProgress: number): number {
+  const boundedTarget: number = Math.max(0, Math.min(1, targetProgress))
+  let lower: number = 0
+  let upper: number = 1
+  for (let index: number = 0; index < GALLERY_DETAIL_CURVE_INVERSE_ITERATIONS; index += 1) {
+    const candidate: number = (lower + upper) / 2
+    if (curve.interpolate(candidate) < boundedTarget) {
+      lower = candidate
+    } else {
+      upper = candidate
+    }
+  }
+  return (lower + upper) / 2
+}
+
+const GALLERY_DETAIL_OPEN_CARD_EXIT_START_TIME: number = galleryDetailTimeAtProgress(
+  GALLERY_DETAIL_OPEN_CURVE,
+  GALLERY_DETAIL_OPEN_CARD_EXIT_START_PROGRESS,
+)
+const GALLERY_DETAIL_OPEN_CARD_EXIT_END_TIME: number = galleryDetailTimeAtProgress(
+  GALLERY_DETAIL_OPEN_CURVE,
+  GALLERY_DETAIL_OPEN_CARD_EXIT_END_PROGRESS,
+)
+const GALLERY_DETAIL_COVER_OPEN_CARD_EXIT_START_TIME: number = galleryDetailTimeAtProgress(
+  GALLERY_DETAIL_OPEN_CURVE,
+  GALLERY_DETAIL_COVER_OPEN_CARD_EXIT_START_PROGRESS,
+)
+const GALLERY_DETAIL_COVER_OPEN_CARD_EXIT_END_TIME: number = galleryDetailTimeAtProgress(
+  GALLERY_DETAIL_OPEN_CURVE,
+  GALLERY_DETAIL_COVER_OPEN_CARD_EXIT_END_PROGRESS,
+)
+const GALLERY_DETAIL_CLOSE_CARD_ENTRY_START_TIME: number = galleryDetailTimeAtProgress(
+  GALLERY_DETAIL_CLOSE_CURVE,
+  GALLERY_DETAIL_CLOSE_CARD_ENTRY_START_PROGRESS,
+)
+const GALLERY_DETAIL_CLOSE_CARD_ENTRY_END_TIME: number = galleryDetailTimeAtProgress(
+  GALLERY_DETAIL_CLOSE_CURVE,
+  GALLERY_DETAIL_CLOSE_CARD_ENTRY_END_PROGRESS,
+)
+const GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_START_TIME: number = galleryDetailTimeAtProgress(
+  GALLERY_DETAIL_CLOSE_CURVE,
+  GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_START_PROGRESS,
+)
+const GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_END_TIME: number = galleryDetailTimeAtProgress(
+  GALLERY_DETAIL_CLOSE_CURVE,
+  GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_END_PROGRESS,
+)
 
 function readerTransitionDelay(durationMs: number): Promise<void> {
   return new Promise<void>((resolve: () => void): void => {
@@ -309,6 +381,82 @@ function IndexSplitPlaceholderCCBuilder(_state: Object) {
   IndexSplitPlaceholder()
 }
 
+class GalleryDetailPreparedPopFrameCallback extends FrameCallback {
+  private action: () => void
+
+  constructor(action: () => void) {
+    super()
+    this.action = action
+  }
+
+  onFrame(_frameTimeInNano: number): void {}
+
+  onIdle(_timeLeftInNano: number): void {
+    this.action()
+  }
+}
+
+@ComponentV2
+struct IndexReaderThumbnailTransitionProxy {
+  @Require @Param state: ReaderThumbnailTransitionState
+
+  build() {
+    if (this.state.rootProxyVisible()) {
+      Stack({ alignContent: Alignment.Center }) {
+        if (this.state.closingProxyVisible()) {
+          if (this.state.readerSnapshot !== undefined) {
+            Image(this.state.readerSnapshot)
+              .width(this.state.proxyContentWidth())
+              .height(this.state.proxyContentHeight())
+              .objectFit(ImageFit.Fill)
+              .syncLoad(true)
+          } else if (this.state.closeTargetSnapshot !== undefined) {
+            Image(this.state.closeTargetSnapshot)
+              .width(this.state.proxyContentWidth())
+              .height(this.state.proxyContentHeight())
+              .objectFit(ImageFit.Fill)
+              .syncLoad(true)
+          }
+          if (this.state.readerSnapshot !== undefined && this.state.closeTargetSnapshot !== undefined) {
+            Image(this.state.closeTargetSnapshot)
+              .width('100%')
+              .height('100%')
+              .objectFit(ImageFit.Fill)
+              .syncLoad(true)
+              .opacity(this.state.closeTargetSnapshotOpacity)
+          }
+        } else {
+          if (this.state.openingReverse() && this.state.openingReverseSnapshot !== undefined) {
+            Image(this.state.openingReverseSnapshot)
+              .width('100%')
+              .height('100%')
+              .objectFit(ImageFit.Fill)
+              .syncLoad(true)
+          } else if (this.state.sourceSnapshot !== undefined) {
+            Image(this.state.sourceSnapshot)
+              .width('100%')
+              .height('100%')
+              .objectFit(ImageFit.Fill)
+              .syncLoad(true)
+          } else if (this.state.image.thumbnailUrl.length > 0) {
+            Image(this.state.image.thumbnailUrl)
+              .width('100%')
+              .height('100%')
+              .objectFit(ImageFit.Fill)
+          }
+        }
+      }
+      .width(this.state.proxyWidth)
+      .height(this.state.proxyHeight)
+      .position({ x: this.state.proxyX, y: this.state.proxyY })
+      .borderRadius(this.state.proxyRadius)
+      .clip(true)
+      .opacity(this.state.closingProxyVisible() ? 1 : this.state.openingProxyOpacity)
+      .hitTestBehavior(HitTestMode.None)
+    }
+  }
+}
+
 /**
  * Entry owns the one Navigation/`NavPathStack` pair and only passes callback
  * intents into feature HARs. Browse, Favorites, History, and Settings remain
@@ -376,6 +524,8 @@ struct Index {
   @Local private homeTab: HomeTabAutoHideState = connectHomeTabAutoHide()
   @Local private safeMode: SafeModeState = connectSafeMode()
   @Local private immersiveMaterial: ImmersiveMaterialSettingsState = connectImmersiveMaterialSettings()
+  @Local private galleryDetailTransition: GalleryDetailTransitionState = connectGalleryDetailTransition()
+  @Local private readerThumbnailTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
   @Local private readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
   @Local private settingsNavigation: SettingsNavigationState = connectSettingsNavigation()
   @Local private clipboardLink: NhClipboardLinkState = connectNhClipboardLink()
@@ -409,6 +559,10 @@ struct Index {
   @Local private randomGalleryBusy: boolean = false
   private randomGalleryActionEpoch: number = 0
   private rootNavigationEpoch: number = 0
+  private galleryDetailTransitionSerial: number = 0
+  private coverPopDispatching: boolean = false
+  private readerBackRequest: (() => boolean) | null = null
+  private readerDestinationCloseDispatched: boolean = false
 
   aboutToAppear(): void {
     this.installRootNavigationStateTracking()
@@ -801,11 +955,11 @@ struct Index {
     this.stack.pushPathByName(ROUTE_THUMBNAILS, new ThumbnailRouteParams(galleryId, pages))
   }
 
-  private pushReader(galleryId: number, initialPageIndex: number = -1): void {
+  private pushReader(galleryId: number, initialPageIndex: number = -1, animated: boolean = true): void {
     if (galleryId <= 0) {
       return
     }
-    this.readerOverlay.open(new ReaderRouteParams(galleryId, initialPageIndex))
+    this.readerOverlay.open(new ReaderRouteParams(galleryId, initialPageIndex), animated)
   }
 
   private pushComments(
@@ -1188,19 +1342,30 @@ struct Index {
     this.readerPresentationCanvasDark = true
   }
 
-  private closeReaderDestination(): void {
-    if (this.readerDestinationClosing) {
+  private prepareReaderDestinationClose(): Promise<void> {
+    this.readerDestinationClosing = true
+    this.clearRecordedReaderPresentation()
+    return this.restoreAppStatusBar()
+      .then((): Promise<void> => readerTransitionDelay(READER_EXIT_STATUS_BAR_LEAD_MS))
+  }
+
+  private finishReaderDestinationClose(animated: boolean): void {
+    if (this.readerDestinationCloseDispatched) {
       return
     }
     this.readerDestinationClosing = true
+    this.readerDestinationCloseDispatched = true
     this.clearRecordedReaderPresentation()
-    this.restoreAppStatusBar()
-      .then((): Promise<void> => readerTransitionDelay(READER_EXIT_STATUS_BAR_LEAD_MS))
-      .then((): void => {
-        if (this.readerDestinationClosing) {
-          this.readerOverlay.close()
-        }
-      })
+    this.readerOverlay.close(animated)
+  }
+
+  private closeReaderDestination(animated: boolean = true): void {
+    if (this.readerDestinationCloseDispatched) {
+      return
+    }
+    this.prepareReaderDestinationClose().then((): void => {
+      this.finishReaderDestinationClose(animated)
+    })
   }
 
   /**
@@ -1955,45 +2120,124 @@ struct Index {
     .bindToScrollable([this.popularScroller])
   }
 
+  private syncGalleryDetailCoverTarget(): boolean {
+    return GalleryDetailTransitionCoordinator.syncDetailCoverTarget(this.getUIContext())
+  }
+
+  private coverExpandSurfaceActive(): boolean {
+    return this.galleryDetailTransition.eligible && this.galleryDetailTransition.isCoverExpand()
+  }
+
+  private handleGalleryDetailBackPressed(): boolean {
+    if (
+      this.coverPopDispatching ||
+      this.layoutSafeArea.rootNavigationSplit ||
+      !this.galleryDetailTransition.eligible ||
+      !this.galleryDetailTransition.isCoverExpand()
+    ) {
+      return false
+    }
+    this.coverPopDispatching = true
+    const coverTargetVisible: boolean = this.syncGalleryDetailCoverTarget()
+    let detailSnapshot: image.PixelMap | undefined = undefined
+    if (coverTargetVisible) {
+      try {
+        detailSnapshot = this.getUIContext().getComponentSnapshot()
+          .getSync('nextn-root-navigation', { waitUntilRenderFinished: true })
+      } catch (error) {
+        DiagnosticLogger.info(
+          'gallery-detail-transition',
+          'detail_pop_snapshot_failed',
+          `gallery=${this.galleryDetailTransition.galleryId} error=${error}`,
+        )
+      }
+    }
+    this.galleryDetailTransition.prepareCoverPop(coverTargetVisible, detailSnapshot)
+    this.getUIContext().postFrameCallback(new GalleryDetailPreparedPopFrameCallback((): void => {
+      this.stack.pop()
+      this.coverPopDispatching = false
+    }))
+    return true
+  }
+
   @Builder
   private galleryDestination(param: Object) {
     HdsNavDestination() {
-      GalleryDetailPage({
-        galleryId: this.galleryParams(param).galleryId,
-        seed: this.galleryParams(param).seed,
-        chrome: this.galleryParams(param).chrome,
-        scroller: this.galleryScroller,
-        onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
-          this.pushGallery(galleryId, seed)
-        },
-        onOpenThumbnails: (galleryId: number, pages: NhGalleryPage[]): void => {
-          this.pushThumbnails(galleryId, pages)
-        },
-        onOpenReader: (galleryId: number, initialPageIndex: number): void => {
-          this.pushReader(galleryId, initialPageIndex)
-        },
-        onOpenComments: (
-          galleryId: number,
-          commentSnapshot: NhComment[],
-          commentSnapshotAvailable: boolean,
-        ): void => {
-          this.pushComments(galleryId, commentSnapshot, commentSnapshotAvailable)
-        },
-        onOpenDownloads: (): void => {
-          this.openDownloads()
-        },
-        onSearchQuery: (query: string): void => {
-          this.pushSearch(query)
-        },
-        onChromeChanged: (): void => {
-          this.galleryChromeVersion += 1
-        },
-      })
+      Stack() {
+        Column() {}
+          .width('100%')
+          .height('100%')
+          .backgroundColor(ThemeTokens.SURFACE)
+        if (
+          !this.galleryDetailTransition.isCoverExpand() &&
+          this.galleryDetailTransition.cardSnapshot !== undefined
+        ) {
+          Image(this.galleryDetailTransition.cardSnapshot)
+            .width('100%')
+            .height('100%')
+            .objectFit(ImageFit.Fill)
+            .syncLoad(true)
+            .opacity(this.galleryDetailTransition.cardOpacity)
+            .hitTestBehavior(HitTestMode.None)
+        }
+        GalleryDetailPage({
+          galleryId: this.galleryParams(param).galleryId,
+          seed: this.galleryParams(param).seed,
+          chrome: this.galleryParams(param).chrome,
+          scroller: this.galleryScroller,
+          onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
+            this.pushGallery(galleryId, seed)
+          },
+          onOpenThumbnails: (galleryId: number, pages: NhGalleryPage[]): void => {
+            this.pushThumbnails(galleryId, pages)
+          },
+          onOpenReader: (galleryId: number, initialPageIndex: number, animated: boolean): void => {
+            this.pushReader(galleryId, initialPageIndex, animated)
+          },
+          onOpenComments: (
+            galleryId: number,
+            commentSnapshot: NhComment[],
+            commentSnapshotAvailable: boolean,
+          ): void => {
+            this.pushComments(galleryId, commentSnapshot, commentSnapshotAvailable)
+          },
+          onOpenDownloads: (): void => {
+            this.openDownloads()
+          },
+          onSearchQuery: (query: string): void => {
+            this.pushSearch(query)
+          },
+          onChromeChanged: (): void => {
+            this.galleryChromeVersion += 1
+          },
+        })
+          .opacity(this.galleryDetailTransition.contentOpacity)
+      }
+      .width('100%')
+      .height('100%')
     }
     // Gallery's semantic title lives in its header first, then hands off to
     // HDS after the header scrolls away.
     .titleBar(this.galleryTitleBar(this.galleryParams(param)))
+    .hideTitleBar(
+      this.galleryDetailTransition.eligible && !this.galleryDetailTransition.chromeVisible,
+      false,
+    )
     .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_GALLERY))
+    .onBackPressed((): boolean => this.handleGalleryDetailBackPressed())
+    .backgroundColor(this.galleryDetailTransition.eligible ? Color.Transparent : ThemeTokens.SURFACE)
+    .scale({
+      x: this.galleryDetailTransition.isCoverExpand() ? 1 : this.galleryDetailTransition.scaleX,
+      y: this.galleryDetailTransition.isCoverExpand() ? 1 : this.galleryDetailTransition.scaleY,
+      centerX: '50%',
+      centerY: '50%',
+    })
+    .translate({
+      x: this.galleryDetailTransition.isCoverExpand() ? 0 : this.galleryDetailTransition.translateX,
+      y: this.galleryDetailTransition.isCoverExpand() ? 0 : this.galleryDetailTransition.translateY,
+    })
+    .borderRadius(this.galleryDetailTransition.isCoverExpand() ? 0 : this.galleryDetailTransition.radius)
+    .clip(this.galleryDetailTransition.eligible && !this.galleryDetailTransition.isCoverExpand())
     .bindToScrollable([this.galleryScroller])
   }
 
@@ -2032,8 +2276,14 @@ struct Index {
         settingsSheetContent: (dismiss: () => void): void => {
           this.ReaderSettingsSheet(dismiss)
         },
-        onBack: (): void => {
-          this.closeReaderDestination()
+        onBack: (animated: boolean): void => {
+          this.finishReaderDestinationClose(animated)
+        },
+        onPrepareClose: (): Promise<void> => {
+          return this.prepareReaderDestinationClose()
+        },
+        onRegisterBackRequest: (request: () => boolean): void => {
+          this.readerBackRequest = request
         },
         onReaderPresentationChanged: (chromeVisible: boolean, fullscreen: boolean, canvasDark: boolean): void => {
           this.recordReaderPresentation(
@@ -2047,14 +2297,22 @@ struct Index {
     }
     .hideTitleBar(true)
     .onBackPressed((): boolean => {
-      this.closeReaderDestination()
+      if (this.readerBackRequest !== null) {
+        return this.readerBackRequest()
+      }
+      this.closeReaderDestination(true)
       return true
     })
     .onShown((): void => {
       this.readerDestinationVisible = true
       this.readerDestinationClosing = false
+      this.readerDestinationCloseDispatched = false
       this.readerDestinationRouteEpoch = this.readerParams(param).routeEpoch
       this.readerDestinationShownAtMs = Date.now()
+      ReaderThumbnailTransitionCoordinator.startOpening(
+        this.getUIContext(),
+        this.readerParams(param).galleryId.toString(),
+      )
       if (this.readerPresentationPending &&
         this.readerPresentationRouteEpoch === this.readerDestinationRouteEpoch) {
         this.applyRecordedReaderPresentation()
@@ -2065,6 +2323,7 @@ struct Index {
       // presentation. The first immersive hide still observes NextE's entry delay.
     })
     .onWillHide((): void => {
+      this.readerBackRequest = null
       this.readerDestinationVisible = false
       this.readerDestinationClosing = true
       this.readerDestinationShownAtMs = 0
@@ -2072,6 +2331,7 @@ struct Index {
       this.restoreAppStatusBar()
     })
     .onDisAppear((): void => {
+      this.readerBackRequest = null
       this.readerDestinationVisible = false
       this.readerDestinationShownAtMs = 0
       this.clearRecordedReaderPresentation()
@@ -2099,8 +2359,8 @@ struct Index {
         pages: this.thumbnailParams(param).pages,
         chrome: this.thumbnailParams(param).chrome,
         scroller: this.thumbnailScroller,
-        onOpenReader: (galleryId: number, pageIndex: number): void => {
-          this.pushReader(galleryId, pageIndex)
+        onOpenReader: (galleryId: number, pageIndex: number, animated: boolean): void => {
+          this.pushReader(galleryId, pageIndex, animated)
         },
       })
     }
@@ -2588,9 +2848,324 @@ struct Index {
     }
   }
 
+  private sourceCoverLeftInCard(): number {
+    return Math.max(0, Math.min(
+      this.galleryDetailTransition.handoffWidth,
+      this.galleryDetailTransition.sourceCoverX - this.galleryDetailTransition.handoffX,
+    ))
+  }
+
+  private sourceCoverTopInCard(): number {
+    return Math.max(0, Math.min(
+      this.galleryDetailTransition.handoffHeight,
+      this.galleryDetailTransition.sourceCoverY - this.galleryDetailTransition.handoffY,
+    ))
+  }
+
+  private sourceCoverRightInCard(): number {
+    return Math.max(this.sourceCoverLeftInCard(), Math.min(
+      this.galleryDetailTransition.handoffWidth,
+      this.galleryDetailTransition.sourceCoverX + this.galleryDetailTransition.sourceCoverWidth -
+        this.galleryDetailTransition.handoffX,
+    ))
+  }
+
+  private sourceCoverBottomInCard(): number {
+    return Math.max(this.sourceCoverTopInCard(), Math.min(
+      this.galleryDetailTransition.handoffHeight,
+      this.galleryDetailTransition.sourceCoverY + this.galleryDetailTransition.sourceCoverHeight -
+        this.galleryDetailTransition.handoffY,
+    ))
+  }
+
+  private targetCoverLeftInDetail(): number {
+    return Math.max(0, Math.min(
+      this.galleryDetailTransition.rootWidth,
+      this.galleryDetailTransition.targetCoverX,
+    ))
+  }
+
+  private targetCoverTopInDetail(): number {
+    return Math.max(0, Math.min(
+      this.galleryDetailTransition.rootHeight,
+      this.galleryDetailTransition.targetCoverY,
+    ))
+  }
+
+  private targetCoverRightInDetail(): number {
+    return Math.max(this.targetCoverLeftInDetail(), Math.min(
+      this.galleryDetailTransition.rootWidth,
+      this.galleryDetailTransition.targetCoverX + this.galleryDetailTransition.targetCoverWidth,
+    ))
+  }
+
+  private targetCoverBottomInDetail(): number {
+    return Math.max(this.targetCoverTopInDetail(), Math.min(
+      this.galleryDetailTransition.rootHeight,
+      this.galleryDetailTransition.targetCoverY + this.galleryDetailTransition.targetCoverHeight,
+    ))
+  }
+
+  @Builder
+  private GalleryDetailSnapshotSlice(
+    sliceX: number,
+    sliceY: number,
+    sliceWidth: number,
+    sliceHeight: number,
+  ) {
+    if (this.galleryDetailTransition.detailSnapshot !== undefined && sliceWidth > 0 && sliceHeight > 0) {
+      Stack({ alignContent: Alignment.TopStart }) {
+        Image(this.galleryDetailTransition.detailSnapshot)
+          .width(this.galleryDetailTransition.rootWidth)
+          .height(this.galleryDetailTransition.rootHeight)
+          .objectFit(ImageFit.Fill)
+          .syncLoad(true)
+          .position({ x: -sliceX, y: -sliceY })
+          .hitTestBehavior(HitTestMode.None)
+      }
+      .width(sliceWidth)
+      .height(sliceHeight)
+      .position({ x: sliceX, y: sliceY })
+      .clip(true)
+      .hitTestBehavior(HitTestMode.None)
+    }
+  }
+
+  @Builder
+  private GalleryDetailSnapshotRemainder() {
+    Stack({ alignContent: Alignment.TopStart }) {
+      this.GalleryDetailSnapshotSlice(
+        0,
+        0,
+        this.galleryDetailTransition.rootWidth,
+        this.targetCoverTopInDetail(),
+      )
+      this.GalleryDetailSnapshotSlice(
+        0,
+        this.targetCoverTopInDetail(),
+        this.targetCoverLeftInDetail(),
+        this.targetCoverBottomInDetail() - this.targetCoverTopInDetail(),
+      )
+      this.GalleryDetailSnapshotSlice(
+        this.targetCoverRightInDetail(),
+        this.targetCoverTopInDetail(),
+        this.galleryDetailTransition.rootWidth - this.targetCoverRightInDetail(),
+        this.targetCoverBottomInDetail() - this.targetCoverTopInDetail(),
+      )
+      this.GalleryDetailSnapshotSlice(
+        0,
+        this.targetCoverBottomInDetail(),
+        this.galleryDetailTransition.rootWidth,
+        this.galleryDetailTransition.rootHeight - this.targetCoverBottomInDetail(),
+      )
+    }
+    .width(this.galleryDetailTransition.rootWidth)
+    .height(this.galleryDetailTransition.rootHeight)
+    .position({
+      x: -this.galleryDetailTransition.clipX,
+      y: -this.galleryDetailTransition.clipY,
+    })
+    .hitTestBehavior(HitTestMode.None)
+  }
+
+  @Builder
+  private GalleryDetailCardSnapshotSlice(
+    sliceX: number,
+    sliceY: number,
+    sliceWidth: number,
+    sliceHeight: number,
+  ) {
+    if (this.galleryDetailTransition.cardSnapshot !== undefined && sliceWidth > 0 && sliceHeight > 0) {
+      Stack({ alignContent: Alignment.TopStart }) {
+        Image(this.galleryDetailTransition.cardSnapshot)
+          .width(this.galleryDetailTransition.handoffWidth)
+          .height(this.galleryDetailTransition.handoffHeight)
+          .objectFit(ImageFit.Fill)
+          .syncLoad(true)
+          .position({ x: -sliceX, y: -sliceY })
+          .hitTestBehavior(HitTestMode.None)
+      }
+      .width(sliceWidth)
+      .height(sliceHeight)
+      .position({ x: sliceX, y: sliceY })
+      .clip(true)
+      .hitTestBehavior(HitTestMode.None)
+    }
+  }
+
+  @Builder
+  private GalleryDetailSourceCardRemainder() {
+    Stack({ alignContent: Alignment.TopStart }) {
+      this.GalleryDetailCardSnapshotSlice(
+        0,
+        0,
+        this.galleryDetailTransition.handoffWidth,
+        this.sourceCoverTopInCard(),
+      )
+      this.GalleryDetailCardSnapshotSlice(
+        0,
+        this.sourceCoverTopInCard(),
+        this.sourceCoverLeftInCard(),
+        this.sourceCoverBottomInCard() - this.sourceCoverTopInCard(),
+      )
+      this.GalleryDetailCardSnapshotSlice(
+        this.sourceCoverRightInCard(),
+        this.sourceCoverTopInCard(),
+        this.galleryDetailTransition.handoffWidth - this.sourceCoverRightInCard(),
+        this.sourceCoverBottomInCard() - this.sourceCoverTopInCard(),
+      )
+      this.GalleryDetailCardSnapshotSlice(
+        0,
+        this.sourceCoverBottomInCard(),
+        this.galleryDetailTransition.handoffWidth,
+        this.galleryDetailTransition.handoffHeight - this.sourceCoverBottomInCard(),
+      )
+    }
+    .width(this.galleryDetailTransition.handoffWidth)
+    .height(this.galleryDetailTransition.handoffHeight)
+    .position({
+      x: this.galleryDetailTransition.handoffX,
+      y: this.galleryDetailTransition.handoffY,
+    })
+    .borderRadius(this.galleryDetailTransition.sourceCardRadius)
+    .clip(true)
+    .opacity(this.galleryDetailTransition.cardOpacity)
+    .hitTestBehavior(HitTestMode.None)
+  }
+
+  private galleryDetailNavTransition(
+    from: NavContentInfo,
+    to: NavContentInfo,
+    operation: NavigationOperation,
+  ): NavigationAnimatedTransition | undefined {
+    if (this.layoutSafeArea.rootNavigationSplit || !this.galleryDetailTransition.eligible) {
+      return undefined
+    }
+    const isPush: boolean = operation === NavigationOperation.PUSH && to.name === ROUTE_GALLERY
+    const isPop: boolean = operation === NavigationOperation.POP && from.name === ROUTE_GALLERY
+    if (!isPush && !isPop) {
+      return undefined
+    }
+    this.galleryDetailTransitionSerial += 1
+    const transitionSerial: number = this.galleryDetailTransitionSerial
+    return {
+      timeout: ThemeTokens.ANIM_DURATION * 12,
+      transition: (proxy: NavigationTransitionProxy): void => {
+        if (isPush) {
+          if (this.galleryDetailTransition.isCoverExpand() && !this.syncGalleryDetailCoverTarget()) {
+            DiagnosticLogger.info(
+              'gallery-detail-transition',
+              'cover_target_fallback',
+              `gid=${this.galleryDetailTransition.galleryId}`,
+            )
+            this.galleryDetailTransition.useSeamlessFallback()
+          }
+          const coverExpand: boolean = this.galleryDetailTransition.isCoverExpand()
+          this.getUIContext().animateTo({
+            duration: ThemeTokens.ANIM_DURATION,
+            curve: GALLERY_DETAIL_OPEN_CURVE,
+            onFinish: (): void => {
+              if (transitionSerial === this.galleryDetailTransitionSerial) {
+                proxy.finishTransition()
+              }
+            },
+          }, (): void => {
+            this.galleryDetailTransition.expandWindow()
+          })
+          if (!coverExpand) {
+            this.getUIContext().animateTo({
+              delay: ThemeTokens.ANIM_DURATION * GALLERY_DETAIL_OPEN_CARD_EXIT_START_TIME,
+              duration: ThemeTokens.ANIM_DURATION * (
+                GALLERY_DETAIL_OPEN_CARD_EXIT_END_TIME - GALLERY_DETAIL_OPEN_CARD_EXIT_START_TIME
+              ),
+              curve: Curve.Linear,
+            }, (): void => {
+              this.galleryDetailTransition.crossfadeToDetail()
+            })
+          } else {
+            this.getUIContext().animateTo({
+              delay: ThemeTokens.ANIM_DURATION * GALLERY_DETAIL_COVER_OPEN_CARD_EXIT_START_TIME,
+              duration: ThemeTokens.ANIM_DURATION * (
+                GALLERY_DETAIL_COVER_OPEN_CARD_EXIT_END_TIME - GALLERY_DETAIL_COVER_OPEN_CARD_EXIT_START_TIME
+              ),
+              curve: Curve.Linear,
+            }, (): void => {
+              this.galleryDetailTransition.hideSourceCard()
+            })
+          }
+          return
+        }
+        if (this.galleryDetailTransition.isCoverExpand() && !this.syncGalleryDetailCoverTarget()) {
+          DiagnosticLogger.info(
+            'gallery-detail-transition',
+            'cover_pop_fallback',
+            `gallery=${this.galleryDetailTransition.galleryId} reason=target_not_visible`,
+          )
+          this.galleryDetailTransition.useCoverFadePopFallback()
+        }
+        const coverExpand: boolean = this.galleryDetailTransition.isCoverExpand()
+        this.galleryDetailTransition.beginPop()
+        this.getUIContext().animateTo({
+          duration: ThemeTokens.ANIM_DURATION,
+          curve: GALLERY_DETAIL_CLOSE_CURVE,
+          onFinish: (): void => {
+            if (transitionSerial === this.galleryDetailTransitionSerial) {
+              proxy.finishTransition()
+            }
+          },
+        }, (): void => {
+          this.galleryDetailTransition.collapseWindow(ThemeTokens.RADIUS_CARD)
+        })
+        if (!coverExpand) {
+          this.getUIContext().animateTo({
+            delay: ThemeTokens.ANIM_DURATION * GALLERY_DETAIL_CLOSE_CARD_ENTRY_START_TIME,
+            duration: ThemeTokens.ANIM_DURATION * (
+              GALLERY_DETAIL_CLOSE_CARD_ENTRY_END_TIME - GALLERY_DETAIL_CLOSE_CARD_ENTRY_START_TIME
+            ),
+            curve: Curve.Linear,
+          }, (): void => {
+            this.galleryDetailTransition.crossfadeToCard()
+          })
+        } else {
+          this.getUIContext().animateTo({
+            delay: ThemeTokens.ANIM_DURATION * GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_START_TIME,
+            duration: ThemeTokens.ANIM_DURATION * (
+              GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_END_TIME - GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_START_TIME
+            ),
+            curve: Curve.Linear,
+          }, (): void => {
+            this.galleryDetailTransition.revealSourceCard()
+          })
+        }
+      },
+      onTransitionEnd: (success: boolean): void => {
+        if (transitionSerial !== this.galleryDetailTransitionSerial) {
+          return
+        }
+        if (isPush) {
+          this.galleryDetailTransition.markPushSettled(success)
+        } else {
+          this.galleryDetailTransition.markPopSettled(success)
+        }
+      },
+    }
+  }
+
   build() {
     Stack() {
-      HdsNavigation(this.stack) {
+      if (
+        this.galleryDetailTransition.eligible &&
+        this.galleryDetailTransition.sourceSnapshot !== undefined
+      ) {
+        Image(this.galleryDetailTransition.sourceSnapshot)
+          .width('100%')
+          .height('100%')
+          .objectFit(ImageFit.Fill)
+          .syncLoad(true)
+          .hitTestBehavior(HitTestMode.None)
+      }
+      Stack() {
+        HdsNavigation(this.stack) {
       HdsTabs({ controller: this.tabsController }) {
         TabContent() {
           HomePage({
@@ -2710,6 +3285,7 @@ struct Index {
         const changed: boolean = index !== this.activeTab
         if (changed) {
           this.cancelRandomGalleryRequest()
+          this.galleryDetailTransition.reset()
           if (this.stack.getAllPathName().length > 0) {
             this.stack.clear(false)
           }
@@ -2725,6 +3301,13 @@ struct Index {
       })
       }
       .navDestination(this.routerMap)
+      .customNavContentTransition((
+        from: NavContentInfo,
+        to: NavContentInfo,
+        operation: NavigationOperation,
+      ): NavigationAnimatedTransition | undefined => {
+        return this.galleryDetailNavTransition(from, to, operation)
+      })
       // The root shell owns the optional large-screen split. Root tabs remain
       // the primary pane; detail routes stay on this existing root stack.
       .mode(this.rootNavigationMode())
@@ -2754,8 +3337,148 @@ struct Index {
         mode: HideMode.SCROLL_UP,
       })
       .bindToScrollable([this.titleScroller])
-      .width('100%')
-      .height('100%')
+      .width(
+        this.coverExpandSurfaceActive()
+          ? Math.max(1, this.galleryDetailTransition.rootWidth)
+          : '100%',
+      )
+      .height(
+        this.coverExpandSurfaceActive()
+          ? Math.max(1, this.galleryDetailTransition.rootHeight)
+          : '100%',
+      )
+      .position({
+        x: this.coverExpandSurfaceActive() ? -this.galleryDetailTransition.clipX : 0,
+        y: this.coverExpandSurfaceActive() ? -this.galleryDetailTransition.clipY : 0,
+      })
+      .backgroundColor(this.galleryDetailTransition.eligible ? Color.Transparent : ThemeTokens.SURFACE)
+      .id('nextn-root-navigation')
+      }
+      .width(
+        this.coverExpandSurfaceActive()
+          ? Math.max(1, this.galleryDetailTransition.clipWidth)
+          : '100%',
+      )
+      .height(
+        this.coverExpandSurfaceActive()
+          ? Math.max(1, this.galleryDetailTransition.clipHeight)
+          : '100%',
+      )
+      .position({
+        x: this.coverExpandSurfaceActive() ? this.galleryDetailTransition.clipX : 0,
+        y: this.coverExpandSurfaceActive() ? this.galleryDetailTransition.clipY : 0,
+      })
+      .backgroundColor(ThemeTokens.SURFACE)
+      .shadow(ShadowStyle.OUTER_DEFAULT_MD)
+      .borderRadius(this.coverExpandSurfaceActive() ? this.galleryDetailTransition.radius : 0)
+      .clip(this.coverExpandSurfaceActive())
+
+      if (this.galleryDetailTransition.detailSnapshotVisible()) {
+        Stack({ alignContent: Alignment.TopStart }) {
+          this.GalleryDetailSnapshotRemainder()
+        }
+        .width(Math.max(1, this.galleryDetailTransition.clipWidth))
+        .height(Math.max(1, this.galleryDetailTransition.clipHeight))
+        .position({
+          x: this.galleryDetailTransition.clipX,
+          y: this.galleryDetailTransition.clipY,
+        })
+        .borderRadius(this.galleryDetailTransition.radius)
+        .clip(true)
+        .opacity(this.galleryDetailTransition.contentOpacity)
+        .zIndex(1)
+        .hitTestBehavior(HitTestMode.None)
+      }
+
+      if (
+        this.galleryDetailTransition.phase === GalleryDetailTransitionPhase.PREPARING &&
+        this.galleryDetailTransition.cardSnapshot !== undefined
+      ) {
+        Image(this.galleryDetailTransition.cardSnapshot)
+          .width(this.galleryDetailTransition.handoffWidth)
+          .height(this.galleryDetailTransition.handoffHeight)
+          .objectFit(ImageFit.Fill)
+          .syncLoad(true)
+          .position({
+            x: this.galleryDetailTransition.handoffX,
+            y: this.galleryDetailTransition.handoffY,
+          })
+          .hitTestBehavior(HitTestMode.None)
+      }
+      if (
+        this.galleryDetailTransition.eligible &&
+        this.galleryDetailTransition.isCoverExpand() &&
+        this.galleryDetailTransition.cardSnapshot !== undefined
+      ) {
+        this.GalleryDetailSourceCardRemainder()
+      }
+      if (
+        this.galleryDetailTransition.coverFlightVisible() &&
+        this.galleryDetailTransition.coverSnapshot !== undefined
+      ) {
+        Stack({ alignContent: Alignment.TopStart }) {
+          Stack() {
+            if (this.galleryDetailTransition.coverUrl.length > 0) {
+              EhImageKnifeImage({
+                src: this.galleryDetailTransition.coverUrl,
+                widthValue: '100%',
+                heightValue: '100%',
+                objectFit: ImageFit.Cover,
+                radius: this.galleryDetailTransition.flightCoverRadius,
+                onComplete: (): void => {
+                  this.galleryDetailTransition.markCoverResourceReady()
+                },
+              })
+            }
+            if (!this.galleryDetailTransition.coverResourceReady) {
+              Image(this.galleryDetailTransition.coverSnapshot)
+                .width('100%')
+                .height('100%')
+                .objectFit(ImageFit.Cover)
+                .syncLoad(true)
+            }
+          }
+          .width(this.galleryDetailTransition.flightCoverWidth)
+          .height(this.galleryDetailTransition.flightCoverHeight)
+          .position({
+            x: this.galleryDetailTransition.flightCoverX - this.galleryDetailTransition.clipX,
+            y: this.galleryDetailTransition.flightCoverY - this.galleryDetailTransition.clipY,
+          })
+          .borderRadius(this.galleryDetailTransition.flightCoverRadius)
+          .clip(true)
+          .renderGroup(true)
+          .hitTestBehavior(HitTestMode.None)
+        }
+        .width(Math.max(1, this.galleryDetailTransition.clipWidth))
+        .height(Math.max(1, this.galleryDetailTransition.clipHeight))
+        .position({
+          x: this.galleryDetailTransition.clipX,
+          y: this.galleryDetailTransition.clipY,
+        })
+        .borderRadius(this.galleryDetailTransition.radius)
+        .clip(true)
+        .zIndex(2)
+        .hitTestBehavior(HitTestMode.None)
+      }
+      if (
+        this.galleryDetailTransition.fallbackCoverVisible() &&
+        this.galleryDetailTransition.coverSnapshot !== undefined
+      ) {
+        Image(this.galleryDetailTransition.coverSnapshot)
+          .width(this.galleryDetailTransition.sourceCoverWidth)
+          .height(this.galleryDetailTransition.sourceCoverHeight)
+          .objectFit(ImageFit.Fill)
+          .syncLoad(true)
+          .position({
+            x: this.galleryDetailTransition.sourceCoverX,
+            y: this.galleryDetailTransition.sourceCoverY,
+          })
+          .borderRadius(this.galleryDetailTransition.sourceCoverRadius)
+          .clip(true)
+          .opacity(this.galleryDetailTransition.fallbackCoverOpacity)
+          .zIndex(2)
+          .hitTestBehavior(HitTestMode.None)
+      }
 
       // The host is a transparent one-pixel overlay: it does not participate
       // in HDS layout. It exists only so authenticated v2 requests can stay
@@ -2774,11 +3497,13 @@ struct Index {
         .width('100%')
         .height('100%')
         .backgroundColor(Color.Transparent)
+        .opacity(this.readerThumbnailTransition.overlayOpacity)
         .onAppear((): void => {
           this.readerOverlay.presentPendingReader()
         })
         .id('reader-overlay-navigation')
       }
+      IndexReaderThumbnailTransitionProxy({ state: this.readerThumbnailTransition })
     }
     .width('100%')
     .height('100%')

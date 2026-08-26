@@ -9,6 +9,7 @@ import { CommentTranslationSettings } from '../settings/CommentTranslationSettin
 import { ComicVisualProviderSettings } from '../settings/ComicVisualProviderSettings'
 import { CoverBackgroundSettings } from '../settings/CoverBackgroundSettings'
 import { GalleryTitleSettings } from '../settings/GalleryTitleSettings'
+import { GalleryDetailTransitionSettings } from '../settings/GalleryDetailTransitionSettings'
 import { HomeTabSettings } from '../settings/HomeTabSettings'
 import { ImmersiveMaterialSettings } from '../settings/ImmersiveMaterialSettings'
 import { LanguageSettings } from '../settings/LanguageSettings'
@@ -361,6 +362,7 @@ export class BackupPreferencesAdapter {
     await HomeTabSettings.restore(context)
     await CoverBackgroundSettings.restore(context)
     await GalleryTitleSettings.restore(context)
+    await GalleryDetailTransitionSettings.restore(context)
     await ReadButtonStyleSettings.restore(context)
     await ActionAlignmentSettings.restore(context)
     await NhClipboardLinkSettings.restore(context)

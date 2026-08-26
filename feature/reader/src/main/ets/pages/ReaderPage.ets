@@ -43,6 +43,8 @@ import {
   ReaderPresentationService,
   ReaderPresentationState,
   ReaderOverlayNavigationState,
+  ReaderThumbnailTransitionState,
+  ReaderThumbnailTransitionCoordinator,
   LayoutSafeAreaState,
   LanguageState,
   LlmSourceProfilesState,
@@ -56,6 +58,7 @@ import {
   connectMangaRenderingService,
   connectReaderPresentation,
   connectReaderOverlayNavigation,
+  connectReaderThumbnailTransition,
   supportsMangaTranslation,
 } from 'shared'
 import { appMenuOptions } from 'shared'
@@ -583,6 +586,7 @@ struct ReaderImagePage {
   @Param imageWidth: number = 0
   @Param imageHeight: number = 0
   @Param pageIndex: number = -1
+  @Param snapshotId: string = ''
   @Param doubleTapSequence: number = 0
   @Param doubleTapTargetIndex: number = -1
   @Param doubleTapX: number = 0
@@ -595,6 +599,8 @@ struct ReaderImagePage {
   @Local isRetrying: boolean = false
   @Local isLoading: boolean = true
   @Local imageSource: string = ''
+  @Local imageDecoded: boolean = false
+  @Local readerThumbnailTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
   @Local zoomScale: number = 1
   @Local zoomOffsetX: number = 0
   @Local zoomOffsetY: number = 0
@@ -740,6 +746,7 @@ struct ReaderImagePage {
     this.hasLoadError = false
     this.isRetrying = forceReload
     this.isLoading = true
+    this.imageDecoded = false
     this.imageSource = ''
     ReaderSuperResolutionService.clearOwnerOutcome(this.enhancementOwnerKey())
     this.notifyEnhancementState(false, false)
@@ -1003,10 +1010,12 @@ struct ReaderImagePage {
             this.clampZoomOffset()
           }
           this.hasLoadError = false
+          this.imageDecoded = true
           this.notifyImageLoadState(true)
         })
         .onError((): void => {
           this.hasLoadError = true
+          this.imageDecoded = false
           this.imageSource = ''
           this.notifyImageLoadState(false)
         })
@@ -1016,6 +1025,13 @@ struct ReaderImagePage {
           duration: this.zoomAnimating ? READER_ZOOM_ANIMATION_MS : 0,
           curve: Curve.FastOutSlowIn,
         })
+        .id(this.snapshotId)
+        .opacity(
+          this.imageDecoded &&
+          !this.readerThumbnailTransition.readerImageHidden(this.pageIndex + 1)
+            ? 1
+            : 0,
+        )
     }
     this.ImageRecovery()
   }
@@ -2108,9 +2124,12 @@ export struct ReaderPage {
   @Local doubleTapTargetIndex: number = -1
   @Local readerViewportWidth: number = 0
   @Local readerViewportHeight: number = 0
-  @Event onBack?: () => void
+  @Event onBack?: (animated: boolean) => void
+  @Event onPrepareClose?: () => Promise<void>
+  @Event onRegisterBackRequest?: (request: () => boolean) => void
   @Event onReaderPresentationChanged?: (chromeVisible: boolean, fullscreen: boolean, canvasDark: boolean) => void
   @Local readerPresentation: ReaderPresentationState = connectReaderPresentation()
+  @Local readerThumbnailTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
   @Local themeDisplay: ThemeDisplayState = connectThemeDisplay()
   // A primitive render projection keeps nested AppStorage changes observable
   // for the canvas and its lazy page children.
@@ -2144,6 +2163,8 @@ export struct ReaderPage {
   @Local mangaRenderingService: MangaRenderingServiceState = connectMangaRenderingService()
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
+  private readerSnapshotScope: string = ReaderThumbnailTransitionCoordinator.allocateScope('reader-surface')
+  private readerClosing: boolean = false
   private lastPersistedIndex: number = -1
   private requestGeneration: number = 0
   /** Prevent an async settings restore from publishing window policy after this route leaves. */
@@ -2173,13 +2194,18 @@ export struct ReaderPage {
   private readerEnhancementInteractionActive: boolean = false
 
   aboutToAppear(): void {
+    this.readerClosing = false
     const generation: number = this.readerLifecycleGeneration + 1
     this.readerLifecycleGeneration = generation
     this.readerPresentationReady = false
     this.loadReaderSettings(generation)
+    if (this.onRegisterBackRequest) {
+      this.onRegisterBackRequest((): boolean => this.requestReaderClose())
+    }
   }
 
   aboutToDisappear(): void {
+    this.readerClosing = true
     this.readerLifecycleGeneration += 1
     this.readerPresentationReady = false
     this.resetReaderEnhancementInteractionPause()
@@ -2274,6 +2300,11 @@ export struct ReaderPage {
     }
   }
 
+  @Monitor('readerThumbnailTransition.presentationEpoch')
+  onReaderTransitionPresentationSettled(): void {
+    this.publishInitialProgressIfSettled()
+  }
+
   /** A source/language change hides stale results; auto mode then schedules only the new identity. */
   @Monitor(
     'language.effectiveLocale',
@@ -2289,6 +2320,80 @@ export struct ReaderPage {
 
   private context(): common.UIAbilityContext {
     return this.getUIContext().getHostContext() as common.UIAbilityContext
+  }
+
+  private readerPageSnapshotId(pageIndex: number): string {
+    return `${this.readerSnapshotScope}-route-${this.readerRouteEpoch}-page-${pageIndex}`
+  }
+
+  private currentTransitionPage(): NhGalleryPage | null {
+    const index: number = this.readerNavigationIndex(this.visiblePageIndex)
+    return index >= 0 && index < this.detail.pages.length ? this.detail.pages[index] : null
+  }
+
+  private dispatchReaderClose(animated: boolean): void {
+    if (this.onBack) {
+      this.onBack(animated)
+    }
+  }
+
+  private startReaderCloseTransition(): void {
+    const pageIndex: number = this.readerNavigationIndex(this.visiblePageIndex)
+    const page: NhGalleryPage | null = this.currentTransitionPage()
+    const snapshotId: string = page === null ? '' : this.readerPageSnapshotId(pageIndex)
+    const imageWidth: number = page === null ? 0 : page.width
+    const imageHeight: number = page === null ? 0 : page.height
+    if (ReaderThumbnailTransitionCoordinator.reverseOpening(
+      this.getUIContext(),
+      this.galleryId.toString(),
+      snapshotId,
+      imageWidth,
+      imageHeight,
+      (animated: boolean): void => {
+        this.dispatchReaderClose(animated)
+      },
+    )) {
+      return
+    }
+    if (
+      page !== null &&
+      !this.isDoublePageActive() &&
+      this.zoomedPageIndex < 0 &&
+      ReaderThumbnailTransitionCoordinator.close(
+        this.getUIContext(),
+        this.galleryId.toString(),
+        pageIndex,
+        page,
+        this.isReaderImageLoaded(pageIndex),
+        snapshotId,
+        imageWidth,
+        imageHeight,
+        (animated: boolean): void => {
+          this.dispatchReaderClose(animated)
+        },
+      )
+    ) {
+      return
+    }
+    this.dispatchReaderClose(true)
+  }
+
+  private requestReaderClose(): boolean {
+    if (this.readerClosing) {
+      return true
+    }
+    this.readerClosing = true
+    const preparation: Promise<void> = this.onPrepareClose
+      ? this.onPrepareClose()
+      : Promise.resolve()
+    preparation
+      .catch((): void => {})
+      .then((): void => {
+        if (this.readerClosing) {
+          this.startReaderCloseTransition()
+        }
+      })
+    return true
   }
 
   private isCurrentRequest(generation: number): boolean {
@@ -2615,7 +2720,6 @@ export struct ReaderPage {
         throw new Error('Reader response did not match the requested gallery')
       }
       let restoredIndex: number = 0
-      let persistedResume: boolean = false
       try {
         if (this.initialPageIndex >= 0) {
           // A thumbnail activation is a deliberate page choice. It must not be
@@ -2630,18 +2734,14 @@ export struct ReaderPage {
         }
         // A persisted progress value remains a canonical source index. When
         // the current local canvas renders spreads, normalize it once to the
-        // leading source page before the normal progress write; no display
-        // index or RTL reversal ever reaches history.
+        // leading source page. Publication is deliberately deferred until
+        // Reader owns a rendered presentation frame; it never happens at the
+        // thumbnail click, route request, or close boundary.
         restoredIndex = ReaderSpreadResolver.normalizedNavigationIndex(
           restoredIndex,
           detail.pages.length,
           this.isDoublePageActive(),
         )
-        await HistoryRepository.saveProgress(this.context(), detail, restoredIndex)
-        if (!this.isCurrentRequest(generation)) {
-          return
-        }
-        persistedResume = true
       } catch (error) {
         if (!this.isCurrentRequest(generation)) {
           return
@@ -2653,9 +2753,10 @@ export struct ReaderPage {
       }
       this.detail = detail
       this.rebuildReaderPageDataSources(restoredIndex)
-      this.lastPersistedIndex = persistedResume ? this.visiblePageIndex : -1
+      this.lastPersistedIndex = -1
       this.thumbnailDataSource.setData(detail.pages)
       this.isReaderReadyForCurrentGallery = true
+      this.publishInitialProgressIfSettled()
       this.scheduleReaderPreload(this.visiblePageIndex)
     } catch (error) {
       if (!this.isCurrentRequest(generation)) {
@@ -3644,6 +3745,13 @@ export struct ReaderPage {
     } else if (!loaded && existing >= 0) {
       this.loadedImageIndexes.splice(existing, 1)
     }
+    if (loaded && index < this.detail.pages.length) {
+      ReaderThumbnailTransitionCoordinator.notifyReaderImageReady(
+        this.getUIContext(),
+        this.galleryId.toString(),
+        this.detail.pages[index].number,
+      )
+    }
     if (loaded && this.autoReadActive && this.autoReadWaitingIndex >= 0 &&
       this.isReaderPresentationLoaded(this.autoReadWaitingIndex)) {
       this.autoReadWaitingIndex = -1
@@ -4125,10 +4233,7 @@ export struct ReaderPage {
         .height(44)
         .backgroundColor(Color.Transparent)
         .onClick((): void => {
-          this.invalidateReaderRequest()
-          if (this.onBack) {
-            this.onBack()
-          }
+          this.requestReaderClose()
         })
         Blank()
         // NextE puts Reader settings behind a direct top-bar gear button,
@@ -4299,6 +4404,7 @@ export struct ReaderPage {
             imageWidth: item.page.width,
             imageHeight: item.page.height,
             pageIndex: item.sourceIndex,
+            snapshotId: this.readerPageSnapshotId(item.sourceIndex),
             doubleTapSequence: this.doubleTapSequence,
             doubleTapTargetIndex: this.doubleTapTargetIndex,
             doubleTapX: this.readerDoubleTapX,
@@ -4359,6 +4465,7 @@ export struct ReaderPage {
               imageWidth: item.page.width,
               imageHeight: item.page.height,
               pageIndex: item.sourceIndex,
+              snapshotId: this.readerPageSnapshotId(item.sourceIndex),
               doubleTapSequence: this.doubleTapSequence,
               doubleTapTargetIndex: this.doubleTapTargetIndex,
               doubleTapX: this.readerDoubleTapX,
@@ -4826,10 +4933,30 @@ export struct ReaderPage {
       this.readerSliderValue = this.visiblePageIndex + 1
     }
     this.scrollThumbnailStripTo(this.visiblePageIndex, true)
-    this.persistProgress(this.visiblePageIndex)
+    if (this.visiblePageIndex >= 0 && this.visiblePageIndex < this.detail.pages.length) {
+      this.readerThumbnailTransition.updateCurrent(
+        this.galleryId.toString(),
+        this.visiblePageIndex,
+        this.detail.pages[this.visiblePageIndex],
+      )
+    }
+    if (this.readerThumbnailTransition.presentationSettledFor(this.galleryId.toString())) {
+      this.persistProgress(this.visiblePageIndex)
+    }
     this.scheduleReaderPreload(this.visiblePageIndex)
     this.scheduleReaderTranslationAuto()
     this.awaitAutoReadForVisiblePage()
+  }
+
+  private publishInitialProgressIfSettled(): void {
+    if (
+      !this.readerClosing &&
+      this.isReaderReadyForCurrentGallery &&
+      this.detail.id === this.galleryId &&
+      this.readerThumbnailTransition.presentationSettledFor(this.galleryId.toString())
+    ) {
+      this.persistProgress(this.visiblePageIndex)
+    }
   }
 
   /**
@@ -4880,36 +5007,123 @@ export struct ReaderPage {
     }
   }
 
+  @Builder
+  private ReaderOpeningTransitionProxy() {
+    if (this.readerThumbnailTransition.sourceSnapshot !== undefined) {
+      Image(this.readerThumbnailTransition.sourceSnapshot)
+        .width(this.readerThumbnailTransition.proxyWidth)
+        .height(this.readerThumbnailTransition.proxyHeight)
+        .objectFit(ImageFit.Fill)
+        .syncLoad(true)
+        .position({
+          x: this.readerThumbnailTransition.proxyX,
+          y: this.readerThumbnailTransition.proxyY,
+        })
+        .opacity(this.readerThumbnailTransition.openingProxyOpacity)
+        .hitTestBehavior(HitTestMode.None)
+    }
+  }
+
+  @Builder
+  private ReaderCloseTransitionProxy() {
+    Stack({ alignContent: Alignment.Center }) {
+      if (this.readerThumbnailTransition.readerSnapshot !== undefined) {
+        Image(this.readerThumbnailTransition.readerSnapshot)
+          .width(this.readerThumbnailTransition.proxyContentWidth())
+          .height(this.readerThumbnailTransition.proxyContentHeight())
+          .objectFit(ImageFit.Fill)
+          .syncLoad(true)
+      } else if (this.readerThumbnailTransition.closeTargetSnapshot !== undefined) {
+        Image(this.readerThumbnailTransition.closeTargetSnapshot)
+          .width(this.readerThumbnailTransition.proxyContentWidth())
+          .height(this.readerThumbnailTransition.proxyContentHeight())
+          .objectFit(ImageFit.Fill)
+          .syncLoad(true)
+      }
+      if (
+        this.readerThumbnailTransition.readerSnapshot !== undefined &&
+        this.readerThumbnailTransition.closeTargetSnapshot !== undefined
+      ) {
+        Image(this.readerThumbnailTransition.closeTargetSnapshot)
+          .width('100%')
+          .height('100%')
+          .objectFit(ImageFit.Fill)
+          .syncLoad(true)
+          .opacity(this.readerThumbnailTransition.closeTargetSnapshotOpacity)
+      }
+    }
+    .width(this.readerThumbnailTransition.proxyWidth)
+    .height(this.readerThumbnailTransition.proxyHeight)
+    .position({
+      x: this.readerThumbnailTransition.proxyX,
+      y: this.readerThumbnailTransition.proxyY,
+    })
+    .borderRadius(this.readerThumbnailTransition.proxyRadius)
+    .clip(true)
+    .hitTestBehavior(HitTestMode.None)
+  }
+
+  @Builder
+  private ReaderOpeningLoadingOverlay() {
+    if (
+      this.readerThumbnailTransition.readerOpeningProxyVisible() &&
+      !this.isReaderImageLoaded(this.readerNavigationIndex(this.visiblePageIndex))
+    ) {
+      ReaderLoadingStage({
+        label: AppStrings.get('reader_loading_image'),
+        contentColor: this.readerCanvasForegroundColor(),
+        secondaryColor: this.readerCanvasSecondaryForegroundColor(),
+        trackColor: READER_LOADING_BAR_BG,
+      })
+        .hitTestBehavior(HitTestMode.None)
+    }
+  }
+
   build() {
     Stack({ alignContent: Alignment.Center }) {
-      if (this.isLoading && this.detail.id === 0) {
-        this.ReaderLoadingState()
-      } else if (this.errorMessage.length > 0 && this.detail.id === 0) {
-        this.ReaderFailureState()
-      } else {
-        this.ReaderContent()
-        this.ReaderTapOverlay()
-        if (this.isReaderReadyForCurrentGallery && this.tapZonePreviewVisible) {
-          this.ReaderTapZonePreview()
+      Column() {}
+        .width('100%')
+        .height('100%')
+        .backgroundColor(this.readerCanvasColor())
+        .opacity(this.readerThumbnailTransition.backdropOpacity)
+        .hitTestBehavior(HitTestMode.None)
+      if (!this.readerThumbnailTransition.closingProxyVisible()) {
+        if (this.isLoading && this.detail.id === 0) {
+          this.ReaderLoadingState()
+        } else if (this.errorMessage.length > 0 && this.detail.id === 0) {
+          this.ReaderFailureState()
+        } else {
+          this.ReaderContent()
+          this.ReaderTapOverlay()
+          if (this.isReaderReadyForCurrentGallery && this.tapZonePreviewVisible) {
+            this.ReaderTapZonePreview()
+          }
+          this.ReaderInlineError()
+          this.ReaderTranslationStatusOverlay()
         }
-        this.ReaderInlineError()
-        this.ReaderTranslationStatusOverlay()
-      }
-      if (!this.readerChromeVisible && this.isReaderReadyForCurrentGallery) {
-        this.ReaderPersistentPageStatus()
-      }
-      // The top bar overlays the canvas. It must not permanently subtract from
-      // the page viewport, which is the source of the old NextN top gutter.
-      if (this.readerChromeVisible) {
-        this.ReaderHeader()
-        if (this.isReaderReadyForCurrentGallery && this.detail.pages.length > 0) {
-          this.ReaderBottomBar()
+        if (this.readerThumbnailTransition.readerOpeningProxyVisible()) {
+          this.ReaderOpeningTransitionProxy()
+          this.ReaderOpeningLoadingOverlay()
         }
+        if (!this.readerChromeVisible && this.isReaderReadyForCurrentGallery) {
+          this.ReaderPersistentPageStatus()
+        }
+        // The top bar overlays the canvas. It must not permanently subtract from
+        // the page viewport, which is the source of the old NextN top gutter.
+        if (this.readerChromeVisible) {
+          this.ReaderHeader()
+          if (this.isReaderReadyForCurrentGallery && this.detail.pages.length > 0) {
+            this.ReaderBottomBar()
+          }
+        }
+      }
+      if (this.readerThumbnailTransition.closingProxyVisible()) {
+        this.ReaderCloseTransitionProxy()
       }
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.readerCanvasColor())
+    .backgroundColor(Color.Transparent)
     .onAreaChange((_old: Area, next: Area): void => {
       this.onReaderViewportChanged(next.width as number, next.height as number)
     })

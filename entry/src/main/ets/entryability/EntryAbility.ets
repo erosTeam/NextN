@@ -6,6 +6,7 @@ import {
   CatalogPreferencesService,
   CoverBackgroundSettings,
   GalleryTitleSettings,
+  GalleryDetailTransitionSettings,
   HomeSourcePresentationService,
   HomeSubtabSettings,
   ContentFilterService,
@@ -161,6 +162,7 @@ export default class EntryAbility extends UIAbility {
       // Detail title ordering is restored before a Gallery destination can
       // render. It only reorders fields already included in the v2 response.
       GalleryTitleSettings.restore(this.context),
+      GalleryDetailTransitionSettings.restore(this.context),
       ReadButtonStyleSettings.restore(this.context),
       ActionAlignmentSettings.restore(this.context),
       NhClipboardLinkSettings.restore(this.context),

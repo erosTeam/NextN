@@ -8,6 +8,8 @@ import {
   DiagnosticLogger,
   BrowsePresentationState,
   GalleryTitleState,
+  GalleryDetailTransitionState,
+  ReaderThumbnailTransitionCoordinator,
   GalleryTitleTranslationService,
   DownloadQueueService,
   DownloadQueueState,
@@ -61,6 +63,7 @@ import {
   connectDownloadQueue,
   connectFavoriteMutations,
   connectGalleryTitle,
+  connectGalleryDetailTransition,
   connectLayoutSafeArea,
   connectLlmSourceProfiles,
   connectReaderOverlayNavigation,
@@ -236,6 +239,7 @@ export struct GalleryDetailPage {
     connectLayoutSafeArea().rootNavigationSplit,
   )
   @Local galleryTitle: GalleryTitleState = connectGalleryTitle()
+  @Local galleryDetailTransition: GalleryDetailTransitionState = connectGalleryDetailTransition()
   @Local llmSources: LlmSourceProfilesState = connectLlmSourceProfiles()
   @Local readButtonStyle: ReadButtonStyleState = connectReadButtonStyle()
   @Local actionHandEdge: ActionHandEdgeState = connectActionHandEdge()
@@ -264,11 +268,13 @@ export struct GalleryDetailPage {
   // validated public DTO; the entry-owned overlay attaches it to the next
   // matching Reader route and Reader consumes it exactly once.
   @Local readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
+  private readerTransitionScope: string =
+    ReaderThumbnailTransitionCoordinator.allocateScope('gallery-detail')
   @Param scroller: Scroller = new Scroller()
   @Param chrome: GalleryChromeState = new GalleryChromeState()
   @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
   @Event onOpenThumbnails?: (galleryId: number, pages: NhGalleryPage[]) => void
-  @Event onOpenReader?: (galleryId: number, initialPageIndex: number) => void
+  @Event onOpenReader?: (galleryId: number, initialPageIndex: number, animated: boolean) => void
   @Event onOpenComments?: (galleryId: number, comments: NhComment[], snapshotAvailable: boolean) => void
   @Event onOpenDownloads?: () => void
   @Event onSearchQuery?: (query: string) => void
@@ -742,7 +748,7 @@ export struct GalleryDetailPage {
     this.publishNavigationChrome(this.galleryHeroPrimaryTitle(), revealTitle)
   }
 
-  private openReader(initialPageIndex: number = -1): void {
+  private openReader(initialPageIndex: number = -1, animated: boolean = true): void {
     if (!this.isDetailReadyForCurrentGallery || this.detail.id !== this.galleryId || this.detail.pages.length === 0 || !this.onOpenReader) {
       return
     }
@@ -751,13 +757,40 @@ export struct GalleryDetailPage {
     }
     this.readerOverlay.stageDetailSeed(this.detail)
     try {
-      this.onOpenReader(this.detail.id, initialPageIndex)
+      this.onOpenReader(this.detail.id, initialPageIndex, animated)
     } finally {
       // The entry opens Reader synchronously and has already attached the
       // seed. A no-op/alternate host must not leave it staged for a later
       // unrelated Reader route.
       this.readerOverlay.discardStagedDetailSeed(this.detail.id)
     }
+  }
+
+  private openReaderFromThumbnail(pageIndex: number): void {
+    if (pageIndex < 0 || pageIndex >= this.detail.pages.length) {
+      return
+    }
+    ReaderThumbnailTransitionCoordinator.open(
+      this.getUIContext(),
+      this.readerTransitionScope,
+      this.detail.id.toString(),
+      pageIndex,
+      this.detail.pages[pageIndex],
+      (animated: boolean): void => {
+        this.openReader(pageIndex, animated)
+      },
+    )
+  }
+
+  private detailTransitionCoverId(): string {
+    return this.galleryDetailTransition.galleryId === this.galleryId.toString()
+      ? this.galleryDetailTransition.targetCoverComponentId
+      : ''
+  }
+
+  private detailCoverMasked(): boolean {
+    return this.galleryDetailTransition.galleryId === this.galleryId.toString() &&
+      this.galleryDetailTransition.coverMaskVisible()
   }
 
   private openComments(): void {
@@ -2170,37 +2203,36 @@ export struct GalleryDetailPage {
     NextNGroupedListSection({ inset: ThemeTokens.SPACE_MD }) {
       Row({ space: ThemeTokens.SPACE_MD }) {
         Stack({ alignContent: Alignment.Center }) {
-          if (this.displayedCoverUrl.length > 0 && this.coverFailedUrl !== this.displayedCoverUrl) {
-            if (this.heroCoverHasSourceSize()) {
+          Stack({ alignContent: Alignment.Center }) {
+            if (this.displayedCoverUrl.length > 0 && this.coverFailedUrl !== this.displayedCoverUrl) {
               EhImageKnifeImage({
                 src: this.displayedCoverUrl,
-                widthValue: this.heroCoverFittedWidth(),
-                heightValue: this.heroCoverFittedHeight(),
-                objectFit: ImageFit.Fill,
+                widthValue: '100%',
+                heightValue: '100%',
+                objectFit: this.heroCoverHasSourceSize() ? ImageFit.Fill : ImageFit.Contain,
                 radius: ThemeTokens.DETAIL_COVER_RADIUS,
                 priority: EH_IMAGE_PRIORITY_LOW,
                 onError: (): void => {
                   this.coverFailedUrl = this.displayedCoverUrl
                 },
               })
-                .clip(true)
             } else {
-              EhImageKnifeImage({
-                src: this.displayedCoverUrl,
-                widthValue: '100%',
-                heightValue: '100%',
-                objectFit: ImageFit.Contain,
-                priority: EH_IMAGE_PRIORITY_LOW,
-                onError: (): void => {
-                  this.coverFailedUrl = this.displayedCoverUrl
-                },
-              })
+              SymbolGlyph($r('sys.symbol.picture'))
+                .fontSize(32)
+                .fontColor([ThemeTokens.TEXT_TERTIARY])
             }
-          } else {
-            SymbolGlyph($r('sys.symbol.picture'))
-              .fontSize(32)
-              .fontColor([ThemeTokens.TEXT_TERTIARY])
           }
+          .width(this.heroCoverFittedWidth())
+          .height(this.heroCoverFittedHeight())
+          .backgroundColor(
+            this.heroCoverHasSourceSize() ? Color.Transparent : ThemeTokens.COVER_PLACEHOLDER,
+          )
+          .borderRadius(ThemeTokens.DETAIL_COVER_RADIUS)
+          .clip(true)
+          // Measure and mask the actual visible contain-fit surface, not its fixed 112x160 layout slot.
+          // A wide source therefore flies directly to its final aspect without landing and then jumping.
+          .id(this.detailTransitionCoverId())
+          .opacity(this.detailCoverMasked() ? 0 : 1)
           if (this.pendingCoverUrl.length > 0 && this.pendingCoverUrl !== this.displayedCoverUrl) {
             EhImageKnifeImage({
               src: this.pendingCoverUrl,
@@ -2228,11 +2260,6 @@ export struct GalleryDetailPage {
         }
         .width(ThemeTokens.DETAIL_COVER_WIDTH)
         .height(ThemeTokens.DETAIL_COVER_HEIGHT)
-        .backgroundColor(
-          this.heroCoverHasSourceSize() ? Color.Transparent : ThemeTokens.COVER_PLACEHOLDER,
-        )
-        .borderRadius(ThemeTokens.DETAIL_COVER_RADIUS)
-        .clip(true)
         Stack({ alignContent: Alignment.TopStart }) {
           if (this.heroTitleTransitionActive) {
             Column({ space: ThemeTokens.SPACE_XS }) {
@@ -2792,8 +2819,12 @@ export struct GalleryDetailPage {
               GalleryCompactPreviewTile({
                 page: page,
                 pageIndex: pageIndex,
+                transitionSourceId: ReaderThumbnailTransitionCoordinator.sourceId(
+                  this.readerTransitionScope,
+                  pageIndex,
+                ),
                 onOpen: (selectedIndex: number): void => {
-                  this.openReader(selectedIndex)
+                  this.openReaderFromThumbnail(selectedIndex)
                 },
               })
             }
@@ -3073,12 +3104,13 @@ export struct GalleryDetailPage {
       pages: this.detail.pages,
       chrome: this.widePreviewChrome,
       scroller: this.widePreviewScroller,
+      transitionScope: this.readerTransitionScope,
       bottomPadding: this.readFabContentReserve(),
       onScrollTouch: (event: TouchEvent): void => {
         this.handleFollowTouch(event)
       },
       onOpenPage: (pageIndex: number): void => {
-        this.openReader(pageIndex)
+        this.openReaderFromThumbnail(pageIndex)
       },
     })
   }

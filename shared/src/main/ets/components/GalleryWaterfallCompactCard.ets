@@ -51,6 +51,7 @@ export function galleryWaterfallCompactReuseId(gallery: NhGallerySummary): strin
 export struct GalleryWaterfallCompactCard {
   @Require @Param gallery: NhGallerySummary
   @Param selected: boolean = false
+  @Param transitionCoverId: string = ''
   @Local hasThumbnailError: boolean = false
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
@@ -192,6 +193,7 @@ export struct GalleryWaterfallCompactCard {
     .height('100%')
     .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
     .brightness(this.selected ? 0.86 : 1)
+    .id(this.transitionCoverId)
   }
 
   @Builder

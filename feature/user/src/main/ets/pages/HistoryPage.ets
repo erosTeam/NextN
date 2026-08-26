@@ -1,6 +1,8 @@
 import { common } from '@kit.AbilityKit'
 import {
   CollectionFooterState,
+  GalleryDetailTransitionCoordinator,
+  GalleryDetailTransitionState,
   DiagnosticLogger,
   HistoryRepository,
   HistoryCursor,
@@ -9,6 +11,7 @@ import {
   LoadingFooter,
   AppStrings,
   NhReadingHistoryItem,
+  NhGallerySummary,
   PageEmptyState,
   PageErrorState,
   PageLoadingState,
@@ -18,6 +21,7 @@ import {
   RootRefreshRegistry,
   ThemeTokens,
   connectReadingHistory,
+  connectGalleryDetailTransition,
 } from 'shared'
 import { HistoryListRow } from '../components/HistoryListRow'
 import {
@@ -128,9 +132,11 @@ export struct HistoryPage {
   @Local loadMoreErrorMessage: string = ''
   @Param scroller: Scroller = new Scroller()
   @Param clearVersion: number = 0
-  @Event onOpenGallery?: (galleryId: number) => void
+  @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   @Local private history: ReadingHistoryState = connectReadingHistory()
+  @Local private galleryDetailTransition: GalleryDetailTransitionState = connectGalleryDetailTransition()
+  private transitionScope: string = GalleryDetailTransitionCoordinator.allocateScope('history')
   @Local private pinnedDayHeader: HistoryPinnedDayHeaderState = connectHistoryPinnedDayHeader()
   private requestGeneration: number = 0
   private cursor: HistoryCursor | null = null
@@ -204,6 +210,43 @@ export struct HistoryPage {
 
   private context(): common.UIAbilityContext {
     return this.getUIContext().getHostContext() as common.UIAbilityContext
+  }
+
+  private galleryDetailSourceId(item: NhReadingHistoryItem): string {
+    return GalleryDetailTransitionCoordinator.sourceId(
+      this.transitionScope,
+      'history',
+      item.galleryId.toString(),
+    )
+  }
+
+  private galleryDetailSourceCoverId(item: NhReadingHistoryItem): string {
+    return GalleryDetailTransitionCoordinator.sourceCoverId(
+      this.transitionScope,
+      'history',
+      item.galleryId.toString(),
+    )
+  }
+
+  private openGalleryDetail(item: NhReadingHistoryItem): void {
+    if (!this.onOpenGallery || item.galleryId <= 0) {
+      return
+    }
+    const seed: NhGallerySummary = item.toSummary()
+    GalleryDetailTransitionCoordinator.open(
+      this.getUIContext(),
+      this.galleryDetailSourceId(item),
+      item.galleryId.toString(),
+      (): void => {
+        if (this.onOpenGallery) {
+          this.onOpenGallery(item.galleryId, seed)
+        }
+      },
+      this.galleryDetailSourceCoverId(item),
+      item.thumbnailUrl,
+      0,
+      ThemeTokens.THUMB_RADIUS,
+    )
   }
 
   private isCurrentRequest(generation: number): boolean {
@@ -700,10 +743,9 @@ export struct HistoryPage {
   private HistoryEntry(item: NhReadingHistoryItem) {
     HistoryListRow({
       item: item,
+      transitionCoverId: this.galleryDetailSourceCoverId(item),
       onOpenGallery: (galleryId: number): void => {
-        if (this.onOpenGallery) {
-          this.onOpenGallery(galleryId)
-        }
+        this.openGalleryDetail(item)
       },
     })
       .gesture(
@@ -748,6 +790,12 @@ export struct HistoryPage {
           ListItem() {
             this.HistoryEntry(item)
           }
+          .id(this.galleryDetailSourceId(item))
+          .visibility(
+            this.galleryDetailTransition.sourceComponentId === this.galleryDetailSourceId(item)
+              ? Visibility.Hidden
+              : Visibility.Visible,
+          )
           .swipeAction({
             end: () => {
               this.HistoryDeleteSwipe(item)

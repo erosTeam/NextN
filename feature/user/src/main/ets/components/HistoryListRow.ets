@@ -11,6 +11,7 @@ const HISTORY_THUMB_HEIGHT: number = 84
 @ComponentV2
 export struct HistoryListRow {
   @Require @Param item: NhReadingHistoryItem
+  @Param transitionCoverId: string = ''
   @Event onOpenGallery?: (galleryId: number) => void
 
   private title(): string {
@@ -50,6 +51,7 @@ export struct HistoryListRow {
         objectFit: ImageFit.Cover,
         radius: ThemeTokens.THUMB_RADIUS,
       })
+        .id(this.transitionCoverId)
         .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
         .borderRadius(ThemeTokens.THUMB_RADIUS)
         .clip(true)

@@ -1,7 +1,9 @@
 import {
   AppStrings,
   NhGalleryPage,
+  ReaderThumbnailTransitionState,
   ThemeTokens,
+  connectReaderThumbnailTransition,
 } from 'shared'
 
 // NextE keeps a stable portrait preview frame so a wide or malformed source
@@ -54,10 +56,12 @@ export class GalleryVirtualPageThumbnailDataSource implements IDataSource {
 export struct GalleryVirtualPageThumbnailTile {
   @Require @Param page: NhGalleryPage
   @Require @Param pageIndex: number
+  @Param transitionSourceId: string = ''
   @Event onOpen?: (pageIndex: number) => void
   @Local isThumbnailLoading: boolean = true
   @Local hasThumbnailError: boolean = false
   @Local measuredWidth: number = 0
+  @Local readerTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
 
   aboutToAppear(): void {
     this.resetThumbnailState()
@@ -133,25 +137,32 @@ export struct GalleryVirtualPageThumbnailTile {
   build() {
     Column({ space: ThemeTokens.SPACE_XS }) {
       Stack({ alignContent: Alignment.Center }) {
-        if (this.page.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
-          Image(this.page.thumbnailUrl)
-            // Real aspect + own rounded clip (NextE parity): the frame is a
-            // transparent layout slot, so a loaded thumb never sits inside a
-            // grey rounded container.
-            .width(this.fittedWidth())
-            .height(this.fittedHeight())
-            .objectFit(ImageFit.Fill)
-            .borderRadius(ThemeTokens.THUMB_RADIUS)
-            .clip(true)
-            .onComplete((): void => {
-              this.isThumbnailLoading = false
-            })
-            .onError((): void => {
-              this.isThumbnailLoading = false
-              this.hasThumbnailError = true
-            })
+        Stack({ alignContent: Alignment.Center }) {
+          if (this.page.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
+            Image(this.page.thumbnailUrl)
+              .width('100%')
+              .height('100%')
+              .objectFit(ImageFit.Fill)
+              .onComplete((): void => {
+                this.isThumbnailLoading = false
+              })
+              .onError((): void => {
+                this.isThumbnailLoading = false
+                this.hasThumbnailError = true
+              })
+          }
+          this.ThumbnailFallback()
         }
-        this.ThumbnailFallback()
+        .width(this.fittedWidth())
+        .height(this.fittedHeight())
+        .id(this.transitionSourceId)
+        .borderRadius(ThemeTokens.THUMB_RADIUS)
+        .clip(true)
+        .visibility(
+          this.readerTransition.sourceHidden(this.transitionSourceId)
+            ? Visibility.Hidden
+            : Visibility.Visible,
+        )
       }
       .width('100%')
       .aspectRatio(1 / PREVIEW_FRAME_ASPECT)

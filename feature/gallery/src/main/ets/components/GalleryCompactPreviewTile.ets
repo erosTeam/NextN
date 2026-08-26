@@ -1,7 +1,9 @@
 import {
   AppStrings,
   NhGalleryPage,
+  ReaderThumbnailTransitionState,
   ThemeTokens,
+  connectReaderThumbnailTransition,
 } from 'shared'
 
 // This is deliberately separate from GalleryVirtualPageThumbnailTile: the
@@ -23,9 +25,11 @@ const COMPACT_PREVIEW_FALLBACK_ASPECT: number = 0.65
 export struct GalleryCompactPreviewTile {
   @Require @Param page: NhGalleryPage
   @Require @Param pageIndex: number
+  @Param transitionSourceId: string = ''
   @Event onOpen?: (pageIndex: number) => void
   @Local isThumbnailLoading: boolean = true
   @Local hasThumbnailError: boolean = false
+  @Local readerTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
 
   aboutToAppear(): void {
     this.resetThumbnailState()
@@ -96,6 +100,12 @@ export struct GalleryCompactPreviewTile {
       .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
       .borderRadius(ThemeTokens.THUMB_RADIUS)
       .clip(true)
+      .id(this.transitionSourceId)
+      .visibility(
+        this.readerTransition.sourceHidden(this.transitionSourceId)
+          ? Visibility.Hidden
+          : Visibility.Visible,
+      )
       Text(`${this.pageIndex + 1}`)
         .fontSize(ThemeTokens.FONT_SIZE_TINY)
         .fontColor(ThemeTokens.TEXT_TERTIARY)

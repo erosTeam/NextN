@@ -59,6 +59,7 @@ export function galleryWaterfallReuseId(gallery: NhGallerySummary): string {
 export struct GalleryWaterfallCard {
   @Require @Param gallery: NhGallerySummary
   @Param selected: boolean = false
+  @Param transitionCoverId: string = ''
   @Local hasThumbnailError: boolean = false
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
   @Local coverBackgroundColor: number = 0
@@ -294,6 +295,7 @@ export struct GalleryWaterfallCard {
     .width('100%')
     .aspectRatio(this.coverRatio())
     .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
+    .id(this.transitionCoverId)
   }
 
   @Builder

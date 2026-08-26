@@ -2,6 +2,11 @@ import { AppStrings } from '../i18n/AppStrings'
 import { NhBrowsePresentation } from '../model/NhBrowsePresentation'
 import { NhGallerySummary } from '../model/NhGallery'
 import { BrowsePresentationState, connectBrowsePresentation } from '../state/BrowsePresentationState'
+import {
+  GalleryDetailTransitionState,
+  connectGalleryDetailTransition,
+} from '../state/GalleryDetailTransitionState'
+import { GalleryDetailTransitionCoordinator } from '../navigation/GalleryDetailTransitionCoordinator'
 import { GalleryCoverPrefetcher } from '../services/GalleryCoverPrefetcher'
 import { requestGalleryCoverRetry } from '../state/GalleryCoverRetryState'
 import { ThemeTokens } from '../theme/ThemeTokens'
@@ -75,6 +80,8 @@ export struct GalleryCollectionBody {
   @Event onUserScroll?: () => void
   /** Supplied only by the shared List host for adaptive medium-card cover sizing. */
   @Local listContentWidth: number = 0
+  @Local galleryDetailTransition: GalleryDetailTransitionState = connectGalleryDetailTransition()
+  private transitionScope: string = GalleryDetailTransitionCoordinator.allocateScope('collection')
   private coverPrefetcher: GalleryCoverPrefetcher = new GalleryCoverPrefetcher()
   browsePresentation: BrowsePresentationState = connectBrowsePresentation()
 
@@ -143,9 +150,85 @@ export struct GalleryCollectionBody {
   }
 
   private openGallery(galleryId: number, seed?: NhGallerySummary): void {
-    if (galleryId > 0 && this.onOpenGallery) {
-      this.onOpenGallery(galleryId, seed)
+    if (galleryId <= 0 || !this.onOpenGallery) {
+      return
     }
+    if (seed === undefined) {
+      this.onOpenGallery(galleryId)
+      return
+    }
+    GalleryDetailTransitionCoordinator.open(
+      this.getUIContext(),
+      this.galleryDetailSourceId(seed),
+      galleryId.toString(),
+      (): void => {
+        if (this.onOpenGallery) {
+          this.onOpenGallery(galleryId, seed)
+        }
+      },
+      this.galleryDetailSourceCoverId(seed),
+      seed.thumbnailUrl,
+      this.galleryDetailSourceCardRadius(),
+      this.galleryDetailSourceCoverRadius(),
+    )
+  }
+
+  private galleryDetailSourceId(gallery: NhGallerySummary): string {
+    return GalleryDetailTransitionCoordinator.sourceId(
+      this.transitionScope,
+      this.effectivePresentation(),
+      gallery.id.toString(),
+    )
+  }
+
+  private galleryDetailSourceCoverId(gallery: NhGallerySummary): string {
+    return GalleryDetailTransitionCoordinator.sourceCoverId(
+      this.transitionScope,
+      this.effectivePresentation(),
+      gallery.id.toString(),
+    )
+  }
+
+  private galleryDetailSourceCardRadius(): number {
+    const presentation: string = this.effectivePresentation()
+    if (
+      presentation === NhBrowsePresentation.WATERFALL ||
+      presentation === NhBrowsePresentation.WATERFALL_COMPACT
+    ) {
+      return ThemeTokens.RADIUS_CARD
+    }
+    if (
+      presentation === NhBrowsePresentation.COVER_GRID ||
+      presentation === NhBrowsePresentation.COVER_WALL
+    ) {
+      return ThemeTokens.GALLERY_GRID_CARD_RADIUS
+    }
+    return presentation === NhBrowsePresentation.LIST ? ThemeTokens.RADIUS_MD : 0
+  }
+
+  private galleryDetailSourceCoverRadius(): number {
+    const presentation: string = this.effectivePresentation()
+    if (presentation === NhBrowsePresentation.WATERFALL) {
+      // This cover occupies only the top of the rounded card. The expanding outer surface owns its
+      // top corners; keeping the inner bottom edge square avoids inventing two rounded lower corners.
+      return 0
+    }
+    if (presentation === NhBrowsePresentation.WATERFALL_COMPACT) {
+      return ThemeTokens.RADIUS_CARD
+    }
+    if (presentation === NhBrowsePresentation.COVER_WALL) {
+      return ThemeTokens.GALLERY_GRID_CARD_RADIUS
+    }
+    if (presentation === NhBrowsePresentation.LIST) {
+      return 0
+    }
+    return ThemeTokens.THUMB_RADIUS
+  }
+
+  private galleryVisibility(gallery: NhGallerySummary): Visibility {
+    return this.galleryDetailTransition.sourceComponentId === this.galleryDetailSourceId(gallery)
+      ? Visibility.Hidden
+      : Visibility.Visible
   }
 
   /** List indexes are already normalized by PullRefreshListScaffold. */
@@ -228,6 +311,7 @@ export struct GalleryCollectionBody {
             gallery: gallery,
             selected: this.isGallerySelected(gallery),
             listContentWidth: this.listContentWidth,
+            transitionCoverId: this.galleryDetailSourceCoverId(gallery),
             onOpen: (galleryId: number): void => {
               this.openGallery(gallery.id, gallery)
             },
@@ -236,12 +320,15 @@ export struct GalleryCollectionBody {
           GalleryListItem({
             gallery: gallery,
             selected: this.isGallerySelected(gallery),
+            transitionCoverId: this.galleryDetailSourceCoverId(gallery),
             onOpen: (galleryId: number): void => {
               this.openGallery(gallery.id, gallery)
             },
           }).reuse({ reuseId: () => galleryListItemReuseId(gallery) })
         }
       }
+      .id(this.galleryDetailSourceId(gallery))
+      .visibility(this.galleryVisibility(gallery))
     }, (gallery: NhGallerySummary): string => gallery.id.toString())
     ListItem() {
       this.CollectionFooter()
@@ -256,11 +343,14 @@ export struct GalleryCollectionBody {
         GalleryGridCard({
           gallery: gallery,
           selected: this.isGallerySelected(gallery),
+          transitionCoverId: this.galleryDetailSourceCoverId(gallery),
           onOpen: (galleryId: number): void => {
             this.openGallery(gallery.id, gallery)
           },
         }).reuse({ reuseId: () => galleryGridReuseId(gallery) })
       }
+      .id(this.galleryDetailSourceId(gallery))
+      .visibility(this.galleryVisibility(gallery))
     }, (gallery: NhGallerySummary): string => gallery.id.toString())
     GridItem() {
       this.CollectionFooter()
@@ -276,6 +366,7 @@ export struct GalleryCollectionBody {
           GalleryWaterfallCard({
             gallery: gallery,
             selected: this.isGallerySelected(gallery),
+            transitionCoverId: this.galleryDetailSourceCoverId(gallery),
             onOpen: (galleryId: number): void => {
               this.openGallery(gallery.id, gallery)
             },
@@ -284,6 +375,7 @@ export struct GalleryCollectionBody {
           GalleryWaterfallCompactCard({
             gallery: gallery,
             selected: this.isGallerySelected(gallery),
+            transitionCoverId: this.galleryDetailSourceCoverId(gallery),
             onOpen: (galleryId: number): void => {
               this.openGallery(gallery.id, gallery)
             },
@@ -292,6 +384,7 @@ export struct GalleryCollectionBody {
           GalleryCoverWallCard({
             gallery: gallery,
             selected: this.isGallerySelected(gallery),
+            transitionCoverId: this.galleryDetailSourceCoverId(gallery),
             onOpen: (galleryId: number): void => {
               this.openGallery(gallery.id, gallery)
             },
@@ -299,6 +392,8 @@ export struct GalleryCollectionBody {
         }
       }
       .width('100%')
+      .id(this.galleryDetailSourceId(gallery))
+      .visibility(this.galleryVisibility(gallery))
     }, (gallery: NhGallerySummary): string => gallery.id.toString())
     FlowItem() {
       this.CollectionFooter()

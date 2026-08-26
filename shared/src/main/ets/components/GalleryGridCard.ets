@@ -55,6 +55,7 @@ export function galleryGridReuseId(gallery: NhGallerySummary): string {
 export struct GalleryGridCard {
   @Require @Param gallery: NhGallerySummary
   @Param selected: boolean = false
+  @Param transitionCoverId: string = ''
   @Local hasThumbnailError: boolean = false
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
   @Local coverBackgroundColor: number = 0
@@ -102,6 +103,37 @@ export struct GalleryGridCard {
       this.gallery.thumbnailUrl.length > 0 &&
       !this.hasThumbnailError &&
       this.useContainFit()
+  }
+
+  private sourceCoverAspectRatio(): number {
+    if (this.gallery.thumbnailWidth <= 0 || this.gallery.thumbnailHeight <= 0) {
+      return ThemeTokens.GALLERY_GRID_COVER_RATIO
+    }
+    return this.gallery.thumbnailWidth / this.gallery.thumbnailHeight
+  }
+
+  private foregroundCoverWidth(): Length {
+    if (!this.useContainFit()) {
+      return '100%'
+    }
+    const sourceRatio: number = this.sourceCoverAspectRatio()
+    if (sourceRatio >= ThemeTokens.GALLERY_GRID_COVER_RATIO) {
+      return '100%'
+    }
+    return `${Math.max(0, Math.min(100,
+      sourceRatio / ThemeTokens.GALLERY_GRID_COVER_RATIO * 100))}%`
+  }
+
+  private foregroundCoverHeight(): Length {
+    if (!this.useContainFit()) {
+      return '100%'
+    }
+    const sourceRatio: number = this.sourceCoverAspectRatio()
+    if (sourceRatio <= ThemeTokens.GALLERY_GRID_COVER_RATIO) {
+      return '100%'
+    }
+    return `${Math.max(0, Math.min(100,
+      ThemeTokens.GALLERY_GRID_COVER_RATIO / sourceRatio * 100))}%`
   }
 
   private resolveLetterboxColor(): void {
@@ -213,10 +245,11 @@ export struct GalleryGridCard {
         }
         GalleryThumbnail({
           src: this.gallery.thumbnailUrl,
-          widthValue: '100%',
-          heightValue: '100%',
-          objectFit: this.useContainFit() ? ImageFit.Contain : ImageFit.Cover,
+          widthValue: this.foregroundCoverWidth(),
+          heightValue: this.foregroundCoverHeight(),
+          objectFit: this.useContainFit() ? ImageFit.Fill : ImageFit.Cover,
           radius: ThemeTokens.THUMB_RADIUS,
+          surfaceId: this.transitionCoverId,
           onErrorStateChange: (failed: boolean): void => {
             this.hasThumbnailError = failed
           },
