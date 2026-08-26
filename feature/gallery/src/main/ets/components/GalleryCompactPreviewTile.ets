@@ -1,6 +1,7 @@
 import {
   AppStrings,
   NhGalleryPage,
+  ReaderThumbnailTransitionCoordinator,
   ReaderThumbnailTransitionState,
   ThemeTokens,
   connectReaderThumbnailTransition,
@@ -80,20 +81,26 @@ export struct GalleryCompactPreviewTile {
   build() {
     Column({ space: ThemeTokens.SPACE_XS }) {
       Stack({ alignContent: Alignment.Center }) {
-        if (this.page.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
-          Image(this.page.thumbnailUrl)
-            .width('100%')
-            .height('100%')
-            .objectFit(ImageFit.Cover)
-            .onComplete((): void => {
-              this.isThumbnailLoading = false
-            })
-            .onError((): void => {
-              this.isThumbnailLoading = false
-              this.hasThumbnailError = true
-            })
+        Stack({ alignContent: Alignment.Center }) {
+          if (this.page.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
+            Image(this.page.thumbnailUrl)
+              .width('100%')
+              .height('100%')
+              .objectFit(ImageFit.Cover)
+              .onComplete((): void => {
+                this.isThumbnailLoading = false
+              })
+              .onError((): void => {
+                this.isThumbnailLoading = false
+                this.hasThumbnailError = true
+              })
+          }
+          this.ThumbnailFallback()
         }
-        this.ThumbnailFallback()
+        .id(ReaderThumbnailTransitionCoordinator.sourceSnapshotId(this.transitionSourceId))
+        .width('100%')
+        .height('100%')
+        .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
       }
       .width(this.imageWidth())
       .height(GALLERY_COMPACT_PREVIEW_IMAGE_HEIGHT)

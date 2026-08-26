@@ -87,6 +87,13 @@ ok('detail compact preview, detail grid, and all-thumbnails page share Reader tr
 const readerState = read('shared/src/main/ets/state/ReaderThumbnailTransitionState.ets')
 const readerCoordinator = read('shared/src/main/ets/navigation/ReaderThumbnailTransitionCoordinator.ets')
 const reader = read('feature/reader/src/main/ets/pages/ReaderPage.ets')
+ok('Reader opening captures unclipped pixels and lets the flight proxy animate the corner radius',
+  /sourceSnapshotId\(sourceComponentId: string\)/.test(readerCoordinator) &&
+    /captureSourceImage\(\s*uiContext,\s*snapshotComponentId/.test(readerCoordinator) &&
+    /sourceSnapshotId\(this\.transitionSourceId\)/.test(virtualThumbnail) &&
+    /sourceSnapshotId\(this\.transitionSourceId\)/.test(compactThumbnail) &&
+    /this\.proxyRadius = this\.openTargetRadius/.test(readerState) &&
+    /this\.proxyRadius = this\.sourceRadius/.test(readerState))
 ok('Reader can reverse an opening flight and closes only the image proxy',
   /reverseOpening\(/.test(readerCoordinator) && /openingCanReverse\(\)/.test(readerState) &&
     /ReaderCloseTransitionProxy/.test(reader) && /backdropOpacity/.test(reader) &&
@@ -97,8 +104,8 @@ ok('Reader close reveals the retained Gallery surface below a root-owned image p
     /this\.state\.rootProxyVisible\(\)/.test(index) &&
     /this\.state\.readerSnapshot/.test(index) &&
     /this\.state\.closeTargetSnapshot/.test(index))
-ok('Reader full-image decode does not block its background, loading affordance, or navigation surface',
-  /ReaderOpeningLoadingOverlay/.test(reader) &&
+ok('Reader full-image decode does not block its background or navigation surface with a transition-only loader',
+  !/ReaderOpeningLoadingOverlay/.test(reader) &&
     /readerOpeningProxyVisible/.test(reader) &&
     /ReaderTapOverlay/.test(reader) &&
     /notifyReaderImageReady/.test(reader))

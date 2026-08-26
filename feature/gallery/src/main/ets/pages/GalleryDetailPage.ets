@@ -273,7 +273,11 @@ export struct GalleryDetailPage {
   @Param scroller: Scroller = new Scroller()
   @Param chrome: GalleryChromeState = new GalleryChromeState()
   @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
-  @Event onOpenThumbnails?: (galleryId: number, pages: NhGalleryPage[]) => void
+  @Event onOpenThumbnails?: (
+    galleryId: number,
+    pages: NhGalleryPage[],
+    detailSeed: NhGalleryDetail,
+  ) => void
   @Event onOpenReader?: (galleryId: number, initialPageIndex: number, animated: boolean) => void
   @Event onOpenComments?: (galleryId: number, comments: NhComment[], snapshotAvailable: boolean) => void
   @Event onOpenDownloads?: () => void
@@ -824,7 +828,7 @@ export struct GalleryDetailPage {
     if (!this.canOpenThumbnails() || !onOpenThumbnails) {
       return
     }
-    onOpenThumbnails(this.detail.id, this.detail.pages)
+    onOpenThumbnails(this.detail.id, this.detail.pages, this.detail.copy())
   }
 
   private async shareCurrentGallery(): Promise<void> {

@@ -2125,7 +2125,7 @@ export struct ReaderPage {
   @Local readerViewportWidth: number = 0
   @Local readerViewportHeight: number = 0
   @Event onBack?: (animated: boolean) => void
-  @Event onPrepareClose?: () => Promise<void>
+  @Event onPrepareClose?: () => Promise<boolean>
   @Event onRegisterBackRequest?: (request: () => boolean) => void
   @Event onReaderPresentationChanged?: (chromeVisible: boolean, fullscreen: boolean, canvasDark: boolean) => void
   @Local readerPresentation: ReaderPresentationState = connectReaderPresentation()
@@ -2383,14 +2383,16 @@ export struct ReaderPage {
       return true
     }
     this.readerClosing = true
-    const preparation: Promise<void> = this.onPrepareClose
+    const preparation: Promise<boolean> = this.onPrepareClose
       ? this.onPrepareClose()
-      : Promise.resolve()
+      : Promise.resolve(true)
     preparation
-      .catch((): void => {})
-      .then((): void => {
-        if (this.readerClosing) {
+      .catch((): boolean => false)
+      .then((targetReady: boolean): void => {
+        if (this.readerClosing && targetReady) {
           this.startReaderCloseTransition()
+        } else if (this.readerClosing) {
+          this.dispatchReaderClose(true)
         }
       })
     return true
@@ -5063,22 +5065,6 @@ export struct ReaderPage {
     .hitTestBehavior(HitTestMode.None)
   }
 
-  @Builder
-  private ReaderOpeningLoadingOverlay() {
-    if (
-      this.readerThumbnailTransition.readerOpeningProxyVisible() &&
-      !this.isReaderImageLoaded(this.readerNavigationIndex(this.visiblePageIndex))
-    ) {
-      ReaderLoadingStage({
-        label: AppStrings.get('reader_loading_image'),
-        contentColor: this.readerCanvasForegroundColor(),
-        secondaryColor: this.readerCanvasSecondaryForegroundColor(),
-        trackColor: READER_LOADING_BAR_BG,
-      })
-        .hitTestBehavior(HitTestMode.None)
-    }
-  }
-
   build() {
     Stack({ alignContent: Alignment.Center }) {
       Column() {}
@@ -5103,7 +5089,6 @@ export struct ReaderPage {
         }
         if (this.readerThumbnailTransition.readerOpeningProxyVisible()) {
           this.ReaderOpeningTransitionProxy()
-          this.ReaderOpeningLoadingOverlay()
         }
         if (!this.readerChromeVisible && this.isReaderReadyForCurrentGallery) {
           this.ReaderPersistentPageStatus()

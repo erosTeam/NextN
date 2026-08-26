@@ -1,4 +1,10 @@
-import { NhGalleryPage, ReaderThumbnailTransitionCoordinator } from 'shared'
+import {
+  NhGalleryDetail,
+  NhGalleryPage,
+  ReaderOverlayNavigationState,
+  ReaderThumbnailTransitionCoordinator,
+  connectReaderOverlayNavigation,
+} from 'shared'
 import { GalleryThumbnailGridContent } from '../components/GalleryThumbnailGridContent'
 import { GalleryThumbnailsChromeState } from '../state/GalleryThumbnailsChromeState'
 
@@ -11,9 +17,11 @@ import { GalleryThumbnailsChromeState } from '../state/GalleryThumbnailsChromeSt
 export struct GalleryThumbnailsPage {
   @Require @Param galleryId: number
   @Param pages: NhGalleryPage[] = []
+  @Param detailSeed: NhGalleryDetail = new NhGalleryDetail()
   @Param chrome: GalleryThumbnailsChromeState = new GalleryThumbnailsChromeState()
   @Param scroller: Scroller = new Scroller()
   @Event onOpenReader?: (galleryId: number, pageIndex: number, animated: boolean) => void
+  @Local readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
   private transitionScope: string = ReaderThumbnailTransitionCoordinator.allocateScope('all-thumbnails')
 
   private openReader(pageIndex: number): void {
@@ -28,8 +36,15 @@ export struct GalleryThumbnailsPage {
       pageIndex,
       page,
       (animated: boolean): void => {
-        if (this.onOpenReader) {
-          this.onOpenReader(this.galleryId, pageIndex, animated)
+        if (this.detailSeed.id === this.galleryId) {
+          this.readerOverlay.stageDetailSeed(this.detailSeed)
+        }
+        try {
+          if (this.onOpenReader) {
+            this.onOpenReader(this.galleryId, pageIndex, animated)
+          }
+        } finally {
+          this.readerOverlay.discardStagedDetailSeed(this.galleryId)
         }
       },
     )

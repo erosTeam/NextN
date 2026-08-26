@@ -9348,3 +9348,109 @@ authorize an edit, replace a device comparison, or define product completion.
   the status bar before the first shrinking frame with no Detail reflow after settle. Use a visibly wide Grid
   cover with blur enabled for open and close; require only the sharp centered cover to fly, the blurred fill
   to remain with the card surface, and no first/last-frame content or geometry jump. Repeat both claims.
+
+### Reopened correction — Reader thumbnail corner-radius morph — 2026-08-27
+
+- **Why newly actionable:** the user observed that a rounded Gallery thumbnail stays visibly rounded for the
+  whole opening flight, then changes to square only when the Reader image takes ownership at full size.
+- **Root cause and affected tree:** `ReaderThumbnailTransitionState` already animates `proxyRadius` from the
+  source radius to zero in the same `animateTo` transaction as position and size. The opening PixelMap is,
+  however, captured from the already clipped source node, so its corner pixels are absent before the proxy
+  radius begins to interpolate. The boundary is the compact/full thumbnail source node -> opening snapshot
+  -> root flight proxy -> Reader placeholder; close and interrupted-open use the same radius state in reverse.
+- **Exact correction:** keep the rounded source node as the geometry, visibility and close-handoff owner, but
+  capture opening pixels from an identically sized inner node without rounded clipping. The existing proxy
+  remains the only visible flight owner and clips those complete pixels with the animated `proxyRadius`, so
+  opening continuously reaches zero and reverse/close continuously return to the source radius.
+- **Minimality and verification:** do not change duration, curve, Reader loading, paging, progress publication,
+  source sizing or ownership timing. On `197`, capture uninterrupted full-speed opening, ordinary close and
+  Back-during-opening; inspect the actual corner pixels at multiple intermediate sizes and require no duplicate
+  thumbnail, blank source slot, corner flash or endpoint jump.
+- **Physical verification:** the exact signed HAP SHA-256
+  `ee952745827286addab2120bfd12498bcc7233dff7ff8a83579a143eb86d9803` was installed with `install -r`
+  on explicitly selected `192.168.50.197:12345` without uninstall or data clear. The inspected source was
+  Kaori page 4 at `[662,1243][1202,2052]`. Three timestamped streams started before input and continued
+  through settle for ordinary open, ordinary Back and immediate Back-during-opening. Opening frames show the
+  proxy's corner radius decreasing before the image reaches Reader geometry and reaching square corners before
+  Reader image ownership; close shows the inverse progression back to the source radius. Immediate Back reused
+  the same in-flight proxy and returned to the original rounded page-4 thumbnail, with no system fallback,
+  duplicate source image, blank slot or endpoint corner flash. Stable final layouts retained the page-4 source
+  bounds. Raw evidence is under `.hvigor/outputs/gallery-transition-197/83-reader-radius-open-multistream-197/`,
+  `84-reader-radius-close-multistream-197/` and `85-reader-radius-interrupted-reverse-197/` and is excluded from Git.
+
+### Reopened correction — Reader return target after status-bar restore — 2026-08-27
+
+- **Why newly actionable:** the user observed that a Reader close flight from the full thumbnail page lands
+  slightly above the real thumbnail before handoff and suspected the fullscreen status-bar lifecycle.
+- **Measured root cause:** on `197`, the same page-4 node is `[662,1192][1202,2001]` while Reader fullscreen
+  keeps the status bar hidden and `[662,1243][1202,2052]` after the status bar is restored. The close path awaited
+  the Window API plus a fixed 20 ms delay, which did not prove that the 51 px layout shift had committed before
+  `ReaderThumbnailTransitionCoordinator.close()` measured its target. List/detail transitions keep the status bar
+  visible and therefore do not cross these coordinate states.
+- **Exact correction and boundary:** after the status-bar Window operation, wait through two actual ArkUI frame
+  commits before measuring the retained thumbnail; remove the guessed millisecond lead. Do not add a pixel offset
+  or change thumbnail geometry, animation duration/curve, Reader progress, paging, source ownership or handoff.
+- **Physical verification:** both implementations rebuilt successfully. For NextN, the exact signed HAP SHA-256
+  `6f7b5d8b5f459fba980cac85bc6a8e3d463fbb7dc4d98e4fe0686b94409985a7` was installed with
+  `install -r` on explicitly selected `192.168.50.197:12345` without uninstall or data clear. The same
+  Kaori page-4 source measured `[662,1243][1202,2052]` before entry,
+  `[662,1192][1202,2001]` under the fullscreen Reader, and `[662,1243][1202,2052]` after each
+  corrected close. Two ordered device-side runs captured Reader, an in-flight or near-end checkpoint and
+  the stable grid without the high-frequency `snapshot_display` starvation seen in the rejected capture
+  attempt. A third ordinary Back ran without screenshot contention and logged
+  `close_requested -> close_proxy_prepared -> close_finished -> close_handoff_ready`; the final layout
+  retained the restored-status-bar source bounds. No pixel compensation, duration/curve change, Reader
+  progress change or system-navigation fallback was introduced. Raw evidence is under
+  `.hvigor/outputs/gallery-transition-197/88-open-all-thumbnails-reader-landing-197/`,
+  `89-open-reader-page4-landing-197/`, `90-close-reader-landing-checkpoint-197/`,
+  `91-close-reader-landing-checkpoint-020-197/` and `94-normal-reader-close-landing-197/`, and is
+  excluded from Git.
+
+### Reopened correction — Thumbnail Reader cache parity and target-layout synchronization — 2026-08-27
+
+- **Why newly actionable:** repeated user testing is direct counter-evidence to the preceding acceptance.
+  Cached pages opened from the full-thumbnail destination still show a transition-only loading stage, and
+  ordinary close flights intermittently land above the live thumbnail. The earlier endpoint-only layouts
+  proved that the retained grid eventually moved after status-bar restoration; they did not prove that the
+  moving proxy measured or landed on that final rectangle.
+- **Faulty assumptions and impact:** NextN's port added `ReaderOpeningLoadingOverlay`, whose visibility is
+  driven by a fresh `Image.onComplete`, although the normal Detail entry has no such transition-only layer.
+  The full-thumbnail route also forwards only `galleryId + pages`, so unlike Detail it cannot stage the
+  already verified `NhGalleryDetail` for Reader and may repeat detail resolution before mounting content.
+  Separately, waiting for two arbitrary ArkUI frames after the Window promise was treated as equivalent to
+  the target thumbnail's avoid-area re-layout; repeated device results disprove that equivalence.
+- **Whole parent-tree boundary:** `GalleryDetailPage.openThumbnails -> ThumbnailRouteParams ->
+  GalleryThumbnailsPage.openReader -> ReaderOverlayNavigationState.consumeDetailSeed -> ReaderPage.loadReader`
+  for entry parity; and `Reader close preparation -> retained thumbnail target layout ->
+  ReaderThumbnailTransitionCoordinator.close` for the return endpoint. Reader image cache ownership,
+  paging/progress, animation duration/curve, thumbnail sizing and unrelated Gallery transitions stay unchanged.
+- **Exact correction:** carry a copy of the same verified Detail DTO through the full-thumbnail route and
+  stage it immediately before Reader opens, then remove the transition-only loading overlay. Before a normal
+  close target is measured, compare the real target node's pre-restore rectangle with subsequent rendered
+  rectangles and require the changed rectangle to become stable; do not infer readiness from elapsed time,
+  frame count alone or a status-bar pixel constant.
+- **Verification plan:** on selected `197`, use a cached right/lower thumbnail and repeat open/close at least
+  three times at the user's current slowed animation scale, then repeat at normal scale. Retain ordered frames
+  and transition logs proving no `ReaderOpeningLoadingOverlay`, no repeated Detail network path, one image owner,
+  and proxy endpoint equality with the live thumbnail in every accepted run. A stable post-close layout alone
+  is insufficient.
+- **Physical verification:** current NextN signed HAP SHA-256
+  `6c4b820eade8e1b51a382aa6e5c919f0b1806b576370d9d6f3b7071ba8f9aca0` was installed with
+  `install -r` on explicitly selected `192.168.50.197:12345`, without uninstall or data clear. The tested
+  right/lower page-9 target moved from `[857,1528][1208,2055]` under fullscreen Reader to
+  `[857,1579][1208,2106]` after status-bar restoration. Three independent closes logged the real target
+  changing from `857,1528,351,527` to a stable `857,1579,351,527` before measurement, with no
+  `close_target_layout_unsettled` fallback. Two cached opens rendered the page image directly with no
+  transition-only loader or blank stage; the full-thumbnail route now stages the same copied Detail DTO as
+  the direct Detail entry. Ordered normal-speed streams and layouts are retained under
+  `.hvigor/outputs/reader-transition-reopened-197/03-open-page9-warmup/` through
+  `06-cached-roundtrips-2-and-3/` and are excluded from Git.
+- **Sibling-reference audit:** current NextE signed HAP SHA-256
+  `1803919dfb6b2a008390f5abf2fdac639b364fde091ee84f27fb015aef7770f6` was installed in place on the
+  same target. Three normal-speed closes, one 5x continuous-frame close and a final restored-1x round trip
+  all observed the target change from `845,1489,374,527` to stable `845,1540,374,527` before measurement.
+  The 5x open/close frame streams began before input and continued past handoff; they show the same single
+  page-9 image owner, no loading stage and no final endpoint jump. The system transition scale was read back
+  as `1x` afterward. Evidence is under NextE
+  `.hvigor/outputs/reader-transition-reopened-197/08-open-page9-5x/` through
+  `11-final-page9-1x/` and is excluded from Git.

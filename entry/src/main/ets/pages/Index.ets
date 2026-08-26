@@ -123,6 +123,7 @@ import {
   NhComment,
   NhDownloadTaskStatus,
   NhApiClient,
+  NhGalleryDetail,
   NhGalleryPage,
   NhGallerySummary,
   GalleryDetailTransitionPhase,
@@ -188,7 +189,6 @@ const ROUTE_ABOUT: string = 'about'
 const STATUS_BAR_LIGHT_CONTENT: string = '#FFFFFFFF'
 const STATUS_BAR_DARK_CONTENT: string = '#FF000000'
 const READER_ENTRY_STATUS_BAR_HIDE_DELAY_MS: number = 500
-const READER_EXIT_STATUS_BAR_LEAD_MS: number = 20
 
 const GALLERY_DETAIL_OPEN_CURVE: curves.ICurve = curves.cubicBezierCurve(0.2, 0, 0, 1)
 const GALLERY_DETAIL_CLOSE_CURVE: curves.ICurve = curves.cubicBezierCurve(0.3, 0, 0.2, 1)
@@ -252,12 +252,6 @@ const GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_END_TIME: number = galleryDetailTime
   GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_END_PROGRESS,
 )
 
-function readerTransitionDelay(durationMs: number): Promise<void> {
-  return new Promise<void>((resolve: () => void): void => {
-    setTimeout(resolve, durationMs)
-  })
-}
-
 /**
  * Typed params placed on the navigation stack. Keeping the route payload in the
  * entry shell prevents feature HARs from depending on one another.
@@ -316,11 +310,17 @@ class SearchRouteParams {
 class ThumbnailRouteParams {
   galleryId: number = 0
   pages: NhGalleryPage[] = []
+  detailSeed: NhGalleryDetail = new NhGalleryDetail()
   chrome: GalleryThumbnailsChromeState = new GalleryThumbnailsChromeState()
 
-  constructor(galleryId: number = 0, pages: NhGalleryPage[] = []) {
+  constructor(
+    galleryId: number = 0,
+    pages: NhGalleryPage[] = [],
+    detailSeed: NhGalleryDetail = new NhGalleryDetail(),
+  ) {
     this.galleryId = galleryId
     this.pages = pages
+    this.detailSeed = detailSeed.copy()
   }
 }
 
@@ -948,11 +948,18 @@ struct Index {
     this.homeGallerySelection.clear()
   }
 
-  private pushThumbnails(galleryId: number, pages: NhGalleryPage[]): void {
+  private pushThumbnails(
+    galleryId: number,
+    pages: NhGalleryPage[],
+    detailSeed: NhGalleryDetail,
+  ): void {
     if (galleryId <= 0 || pages.length === 0) {
       return
     }
-    this.stack.pushPathByName(ROUTE_THUMBNAILS, new ThumbnailRouteParams(galleryId, pages))
+    this.stack.pushPathByName(
+      ROUTE_THUMBNAILS,
+      new ThumbnailRouteParams(galleryId, pages, detailSeed),
+    )
   }
 
   private pushReader(galleryId: number, initialPageIndex: number = -1, animated: boolean = true): void {
@@ -1342,11 +1349,21 @@ struct Index {
     this.readerPresentationCanvasDark = true
   }
 
-  private prepareReaderDestinationClose(): Promise<void> {
+  private prepareReaderDestinationClose(): Promise<boolean> {
+    const initialTargetLayoutKey: string =
+      ReaderThumbnailTransitionCoordinator.currentTargetLayoutKey(this.getUIContext())
+    const requireTargetLayoutChange: boolean = this.readerPresentationPending &&
+      this.readerPresentationFullscreen && !this.readerPresentationChromeVisible
     this.readerDestinationClosing = true
     this.clearRecordedReaderPresentation()
     return this.restoreAppStatusBar()
-      .then((): Promise<void> => readerTransitionDelay(READER_EXIT_STATUS_BAR_LEAD_MS))
+      .then((): Promise<boolean> => {
+        return ReaderThumbnailTransitionCoordinator.waitForTargetLayoutCommit(
+          this.getUIContext(),
+          initialTargetLayoutKey,
+          requireTargetLayoutChange,
+        )
+      })
   }
 
   private finishReaderDestinationClose(animated: boolean): void {
@@ -1363,7 +1380,7 @@ struct Index {
     if (this.readerDestinationCloseDispatched) {
       return
     }
-    this.prepareReaderDestinationClose().then((): void => {
+    this.prepareReaderDestinationClose().then((_targetReady: boolean): void => {
       this.finishReaderDestinationClose(animated)
     })
   }
@@ -2188,8 +2205,12 @@ struct Index {
           onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
             this.pushGallery(galleryId, seed)
           },
-          onOpenThumbnails: (galleryId: number, pages: NhGalleryPage[]): void => {
-            this.pushThumbnails(galleryId, pages)
+          onOpenThumbnails: (
+            galleryId: number,
+            pages: NhGalleryPage[],
+            detailSeed: NhGalleryDetail,
+          ): void => {
+            this.pushThumbnails(galleryId, pages, detailSeed)
           },
           onOpenReader: (galleryId: number, initialPageIndex: number, animated: boolean): void => {
             this.pushReader(galleryId, initialPageIndex, animated)
@@ -2279,7 +2300,7 @@ struct Index {
         onBack: (animated: boolean): void => {
           this.finishReaderDestinationClose(animated)
         },
-        onPrepareClose: (): Promise<void> => {
+        onPrepareClose: (): Promise<boolean> => {
           return this.prepareReaderDestinationClose()
         },
         onRegisterBackRequest: (request: () => boolean): void => {
@@ -2357,6 +2378,7 @@ struct Index {
       GalleryThumbnailsPage({
         galleryId: this.thumbnailParams(param).galleryId,
         pages: this.thumbnailParams(param).pages,
+        detailSeed: this.thumbnailParams(param).detailSeed,
         chrome: this.thumbnailParams(param).chrome,
         scroller: this.thumbnailScroller,
         onOpenReader: (galleryId: number, pageIndex: number, animated: boolean): void => {
