@@ -12,7 +12,6 @@ import { DownloadSettingsRepository } from '../storage/DownloadSettingsRepositor
 import { HistoryRepository } from '../storage/HistoryRepository'
 import {
   HomeSubtabRepository,
-  HomeSubtabSelectionRecord,
   HomeSubtabStorageRecord,
 } from '../storage/HomeSubtabRepository'
 import { QuickSearchRepository } from '../storage/QuickSearchRepository'
@@ -623,16 +622,6 @@ export class SyncLocalDataAdapter {
       r.deletedAt = item.deletedAt
       out.push(r)
     }
-    const selection: HomeSubtabSelectionRecord = await HomeSubtabRepository.loadSelection(context)
-    if (selection.updatedAt > 0 || selection.deletedAt > 0) {
-      const r: SyncHomeSubtabRecord = new SyncHomeSubtabRecord()
-      r.scopeKey = ''
-      r.profileUuid = HOME_SUBTAB_SELECTION_RECORD
-      r.selectedUuid = selection.selectedUuid
-      r.updatedAt = selection.updatedAt
-      r.deletedAt = selection.deletedAt
-      out.push(r)
-    }
     return out
   }
 
@@ -875,13 +864,11 @@ export class SyncLocalDataAdapter {
       return
     }
     const profiles: HomeSubtabStorageRecord[] = []
-    const selection: HomeSubtabSelectionRecord = new HomeSubtabSelectionRecord()
     for (let i: number = 0; i < records.length; i++) {
       const r: SyncHomeSubtabRecord = records[i]
+      // Builds before 2026-08-26 encoded the active tab as a synthetic record.
+      // Selection is device-local; ignore that legacy record on import.
       if (r.profileUuid === HOME_SUBTAB_SELECTION_RECORD) {
-        selection.selectedUuid = r.selectedUuid
-        selection.updatedAt = r.updatedAt
-        selection.deletedAt = r.deletedAt
         continue
       }
       if (r.profileUuid.length === 0) {
@@ -901,7 +888,7 @@ export class SyncLocalDataAdapter {
       item.profile.lastEditTime = r.updatedAt
       profiles.push(item)
     }
-    await HomeSubtabRepository.importRecords(context, profiles, selection)
+    await HomeSubtabRepository.importRecords(context, profiles)
     await HomeSubtabSettings.refreshFromStorage(context)
   }
 
@@ -1115,6 +1102,11 @@ export class SyncLocalDataAdapter {
     map: Map<string, SyncHomeSubtabRecord>,
     r: SyncHomeSubtabRecord,
   ): void {
+    // Drop legacy selected-tab records from merged write-backs. Profile rows
+    // remain syncable, while each device keeps its own active Home tab.
+    if (r.profileUuid === HOME_SUBTAB_SELECTION_RECORD) {
+      return
+    }
     const key: string = SyncLocalDataAdapter.homeSubtabKey(r)
     const prev: SyncHomeSubtabRecord | undefined = map.get(key)
     if (prev === undefined ||

@@ -1046,7 +1046,7 @@
     { "name": "action_edit_home_subtab", "value": "Edit current home tab" },
     { "name": "action_create_home_subtab", "value": "Create home tab" },
     { "name": "sync_dataset_home_subtabs", "value": "Custom home tabs" },
-    { "name": "sync_dataset_home_subtabs_hint", "value": "Order, visibility, queries, and selected home tab" },
+    { "name": "sync_dataset_home_subtabs_hint", "value": "Order, visibility, and queries" },
     { "name": "advanced_diagnostics_hint", "value": "NextN keeps redacted local log files and mirrors events to system HiLog" },
     { "name": "advanced_write_marker", "value": "Write test marker" },
     { "name": "advanced_marker_written", "value": "Diagnostic marker written" },

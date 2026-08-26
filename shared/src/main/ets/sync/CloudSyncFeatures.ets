@@ -6,7 +6,9 @@ export class CloudSyncFeatureTables {
   static readonly VIEWED_HISTORY: string[] = ['reading_history']
   static readonly SEARCH_HISTORY: string[] = ['search_history']
   static readonly QUICK_SEARCHES: string[] = ['search_quick']
-  static readonly HOME_SUBTABS: string[] = ['home_subtabs', 'home_subtab_selection']
+  // The selected/last-viewed Home tab is a per-device reading position. Only
+  // profile configuration belongs to the cross-device dataset.
+  static readonly HOME_SUBTABS: string[] = ['home_subtabs']
   static readonly LOCAL_BLOCK: string[] = ['content_filter_rules']
   static readonly SETTINGS_TABLES: string[] = [
     'reader_settings',
@@ -21,7 +23,6 @@ export const WEBDAV_SYNC_TABLES: string[] = [
   'search_history',
   'search_quick',
   'home_subtabs',
-  'home_subtab_selection',
   'content_filter_rules',
   'reader_settings',
   'download_settings',

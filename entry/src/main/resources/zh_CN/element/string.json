@@ -1046,7 +1046,7 @@
     { "name": "action_edit_home_subtab", "value": "编辑当前首页标签" },
     { "name": "action_create_home_subtab", "value": "新建首页标签" },
     { "name": "sync_dataset_home_subtabs", "value": "自定义首页标签" },
-    { "name": "sync_dataset_home_subtabs_hint", "value": "同步顺序、可见性、查询条件与当前首页标签" },
+    { "name": "sync_dataset_home_subtabs_hint", "value": "同步顺序、可见性与查询条件" },
     { "name": "advanced_diagnostics_hint", "value": "保留脱敏本地日志，并同步写入系统 HiLog" },
     { "name": "advanced_write_marker", "value": "写入测试标记" },
     { "name": "advanced_marker_written", "value": "已写入诊断标记" },

@@ -9261,3 +9261,90 @@ authorize an edit, replace a device comparison, or define product completion.
   `True Blue`/`675023`. NextN is foreground, `AWAKE`, with
   `OverrideTimeout=86400000ms`. Raw evidence is under
   `.hvigor/outputs/nextn-public-download-root-*` and excluded from Git.
+
+## ACTIVE — Home SubTab selection stays device-local — 2026-08-26
+
+- **Why newly actionable:** the user asked to verify whether NextN syncs the active Home SubTab and,
+  if so, exclude it because the active reading position must not move between devices. Current source
+  confirms that `SyncLocalDataAdapter` exports a synthetic `@selection` record, merges it by LWW and
+  imports it into `home_subtab_selection`; the sync-settings hint and persistence inventory also claim
+  that behavior.
+- **Reference parent tree:** NextE syncs custom-profile rows only. Its selected/last-viewed Home tab
+  remains in the device-local selection table, and legacy WebDAV selection records are omitted from
+  write-backs so another device cannot replace the local active tab.
+- **Whole affected tree:** `HomeSubtabSettings.setSelected -> home_subtab_selection` remains the local
+  persistence owner. `SyncLocalDataAdapter.readHomeSubtabs/mergeHomeSubtabs/applyHomeSubtabs ->
+  SyncService -> WebDavSyncService` must carry only `home_subtabs` profile rows. Backup/restore keeps
+  its existing selected UUID because device transfer is a separate user-invoked contract.
+- **Exact before/after:** before, one device's selected UUID becomes an `@selection` cloud record and
+  can overwrite another device during sync. After, profile order, visibility, query and display mode
+  still sync; the adapter never exports or applies `@selection`, merge drops legacy remote selection
+  records, and the settings hint no longer claims active-tab sync.
+- **Sibling-state review:** local tab selection across process restart; backup export/restore; profile
+  add/remove/hide fallback; old WebDAV shards containing `@selection`; sync disabled for Home SubTabs;
+  and profile synchronization with the current local selection still visible or removed.
+- **Minimality rationale:** do not remove `home_subtab_selection`, change local selection timing,
+  rewrite the Home state owner, alter backup semantics, or change other WebDAV datasets.
+- **Verification plan:** add a source contract proving local selection persistence remains while cloud
+  export/apply/merge excludes it; run Home SubTab, persistence, sync, i18n and V2-state inventories,
+  then include the change in the signed build and selected-device regression run for the transition
+  work that follows.
+
+## ACTIVE — Gallery and Reader thumbnail transitions — 2026-08-26
+
+- **Why newly actionable:** the user requested that NextE's two custom list-to-detail transitions and
+  thumbnail-to-Reader transition be ported to NextN without simplifying the behavior, then accepted on
+  the selected `197` device. NextN currently uses only the default destination animations and has no
+  shared element/proxy ownership state.
+- **Reference parent tree:** current NextE `GalleryCollectionBody` and History own reusable source-card
+  identities; a shared coordinator captures the card, exact visible cover and root; `Index` owns the
+  root transition surface; Gallery Detail owns the destination cover target; detail preview and the full
+  thumbnail page own Reader source identities; Reader owns placeholder, controls, decoded-image handoff,
+  interruptible Back and the current-page close target. Settings expose `系统默认`、`一镜到底`、`封面展开`
+  plus an independent Reader-thumbnail switch.
+- **Whole affected tree:** all six NextN collection presentations (regular/compact waterfall, cover wall,
+  cover grid, regular list including contain/blur/crop variants, simple list), Home/Favorites/Search and
+  Viewed History entries, Gallery Detail hero and both thumbnail surfaces, the root HDS destination,
+  Reader overlay navigation/current-page state, layout settings restore/backup/i18n, and runtime snapshot
+  cleanup. Split selection behavior and non-gallery navigation stay unchanged.
+- **Exact before/after:** before, navigation immediately swaps list/detail or thumbnail/Reader ownership.
+  After, `系统默认` preserves that path; `一镜到底` scales the complete card and cross-hands content;
+  `封面展开` expands the complete card container while its exact cropped cover flies to the detail cover;
+  Reader independently flies the exact thumbnail, mounts background/controls before full decode, can be
+  reversed during opening, and returns the current page to its current thumbnail without duplicate owners.
+- **Sibling-state review:** source slot remains laid out but contributes no pixels while a proxy owns it;
+  card/cover ratios and rounded clipping remain continuous; title/tag content never reflows mid-flight;
+  off-screen detail cover uses whole-page collapse plus landing fade; page changes update only transition
+  targeting and never move reading-progress publication to click or close; missing/off-screen snapshot
+  targets fall back to the existing system path; all PixelMaps release on settle, cancel and route reset.
+- **Minimality rationale:** port the proven transition ownership graph and timing constants, adapting only
+  NextN model/navigation/layout names. Do not replace NextN image loading, Reader paging, list data,
+  settings-menu lifecycle, Split behavior or existing reading-progress semantics.
+- **Verification plan:** add source contracts for every entry/layout/owner and the two forbidden progress
+  timings; run ArkTS/build/i18n/persistence/V1 inventories and signed build; resolve and lease `197`; then
+  capture uninterrupted full-speed strips that begin before input and continue past settle for open, close,
+  interrupted open, off-screen detail return and page-1-to-page-3 Reader return. Check the full frame and
+  fixed source crop in strict timestamp order, repeat every claimed path twice, and retain raw artifacts.
+
+### Reopened correction — Reader status bar and Grid contain-cover ownership — 2026-08-26
+
+- **Why newly actionable:** device feedback shows two visible counterexamples inside the accepted transition
+  boundary. A fullscreen Reader restores the app status bar only after its thumbnail close flight finishes,
+  causing the revealed Detail layout to jump. An extreme-ratio Grid cover measures and snapshots the whole
+  blurred/gradient slot instead of the centered real cover pixels, so the flight changes content at startup.
+- **Reference and root cause:** NextE restores the app status bar, awaits that Window operation and a short
+  lead, then starts the Reader close flight. NextN currently notifies `Index` only from the transition's final
+  close callback. For Grid, the transition source id resolves to the fixed slot in NextN and to a full-slot
+  Contain image node in NextE; neither id describes the real centered cover rectangle.
+- **Whole parent-tree boundary:** `Index.readerDestination -> ReaderPage.requestReaderClose ->
+  ReaderThumbnailTransitionCoordinator` for system-bar timing; and `GalleryGridCard -> foreground cover ->
+  GalleryDetailTransitionCoordinator -> root Cover Expand proxy` for cover ownership. Reader paging/progress,
+  animation curves/durations, Grid card size/metadata and image request/cache behavior stay unchanged.
+- **Exact correction:** make Reader close preparation restore the status bar and complete the existing lead
+  before reverse/close animation starts, while the final callback only removes the Reader destination. In
+  both NextE and NextN Grid cards, size the transition-tagged foreground node to the actual contain-fitted
+  image rectangle; keep the blurred/gradient fill and badges in the stationary/expanding card snapshot.
+- **Verification:** on `197`, use one uninterrupted full-speed stream for fullscreen Reader Back and require
+  the status bar before the first shrinking frame with no Detail reflow after settle. Use a visibly wide Grid
+  cover with blur enabled for open and close; require only the sharp centered cover to fly, the blurred fill
+  to remain with the card surface, and no first/last-frame content or geometry jump. Repeat both claims.

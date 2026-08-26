@@ -54,7 +54,7 @@ export class SyncQuickSearchRecord {
   deletedAt: number = 0
 }
 
-/** Unified Home SubTab profile or the singleton selected-profile clock. */
+/** Home SubTab profile. `selectedUuid` remains only for old envelope parsing. */
 export class SyncHomeSubtabRecord {
   scopeKey: string = ''
   profileUuid: string = ''

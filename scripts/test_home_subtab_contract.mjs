@@ -135,6 +135,7 @@ ok('old backup compatibility treats a missing Home SubTab field as supported emp
 const syncTypes = read('shared/src/main/ets/sync/SyncTypes.ets')
 const syncAdapter = read('shared/src/main/ets/sync/SyncLocalDataAdapter.ets')
 const webDav = read('shared/src/main/ets/sync/WebDavSyncService.ets')
+const syncFeatures = read('shared/src/main/ets/sync/CloudSyncFeatures.ets')
 const syncSettings = read('shared/src/main/ets/settings/SyncSettings.ets')
 ok('Home SubTabs are a default-enabled independent sync dataset',
   /homeSubtabs: SyncHomeSubtabRecord\[\] = \[\]/.test(syncTypes) &&
@@ -148,6 +149,14 @@ ok('sync roundtrip covers export, LWW merge, apply, shard selection and manifest
     /mergeHomeSubtabs\(local\.datasets\.homeSubtabs, remote\.datasets\.homeSubtabs\)/.test(syncAdapter) &&
     /applyHomeSubtabs\(context, envelope\.datasets\.homeSubtabs\)/.test(syncAdapter) &&
     /DATASET_HOME_SUBTABS/.test(webDav) && /datasets\.homeSubtabs\.push\(r\)/.test(webDav))
+ok('active Home SubTab remains local and legacy cloud selection records are discarded',
+  /static async loadSelection\(context/.test(repository) &&
+    /saveSelectionWithStore\(store, selectedUuid\)/.test(repository) &&
+    !/const selection: HomeSubtabSelectionRecord = await HomeSubtabRepository\.loadSelection/.test(syncAdapter) &&
+    !/selection\.selectedUuid = r\.selectedUuid/.test(syncAdapter) &&
+    /if \(r\.profileUuid === HOME_SUBTAB_SELECTION_RECORD\) \{[\s\S]*?return/.test(syncAdapter) &&
+    /HOME_SUBTABS: string\[\] = \['home_subtabs'\]/.test(syncFeatures) &&
+    !syncFeatures.includes("'home_subtab_selection'"))
 ok('dataset-specific WebDAV apply cannot replace unselected local datasets with empty arrays',
   /selection: SyncDatasetSelection = new SyncDatasetSelection\(\)/.test(syncAdapter) &&
     /if \(selection\.homeSubtabs\)[\s\S]*applyHomeSubtabs/.test(syncAdapter) &&

@@ -178,7 +178,6 @@ export class HomeSubtabRepository {
   static async importRecords(
     context: common.UIAbilityContext,
     records: HomeSubtabStorageRecord[],
-    selection: HomeSubtabSelectionRecord,
   ): Promise<void> {
     const store: relationalStore.RdbStore = await LocalDataStore.open(context)
     store.beginTransaction()
@@ -193,10 +192,6 @@ export class HomeSubtabRepository {
         } else {
           await HomeSubtabRepository.upsert(store, record.profile, record.positionIndex)
         }
-      }
-      if (selection.updatedAt > 0 && selection.updatedAt >= selection.deletedAt) {
-        await store.executeSql(SQL_UPSERT_SELECTION,
-          [SCOPE_GLOBAL, selection.selectedUuid, selection.updatedAt])
       }
       store.commit()
     } catch (error) {

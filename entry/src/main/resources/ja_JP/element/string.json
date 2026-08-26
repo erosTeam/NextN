@@ -1045,7 +1045,7 @@
     { "name": "action_edit_home_subtab", "value": "現在のホームタブを編集" },
     { "name": "action_create_home_subtab", "value": "ホームタブを作成" },
     { "name": "sync_dataset_home_subtabs", "value": "カスタムホームタブ" },
-    { "name": "sync_dataset_home_subtabs_hint", "value": "順序、表示、検索条件、選択中のホームタブ" },
+    { "name": "sync_dataset_home_subtabs_hint", "value": "順序、表示、検索条件" },
     { "name": "advanced_diagnostics_hint", "value": "匿名化したローカルログを保持し、システム HiLog にも出力します" },
     { "name": "advanced_write_marker", "value": "テストマーカーを書き込む" },
     { "name": "advanced_marker_written", "value": "診断マーカーを書き込みました" },

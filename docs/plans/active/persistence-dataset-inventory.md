@@ -23,6 +23,7 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `shared/src/main/ets/settings/CommentTranslationSettings.ets#SETTINGS_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/CoverBackgroundSettings.ets#LAYOUT_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/DiagnosticsSettings.ets#DIAGNOSTICS_STORE` | store | excluded | excluded | Store name only |
+| `shared/src/main/ets/settings/GalleryDetailTransitionSettings.ets#LAYOUT_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/GalleryTitleSettings.ets#LAYOUT_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/HomeTabSettings.ets#LAYOUT_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/ImmersiveMaterialSettings.ets#APPEARANCE_STORE` | store | excluded | excluded | Store name only |
@@ -70,6 +71,9 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `shared/src/main/ets/settings/CoverBackgroundSettings.ets#COVER_BACKGROUND_BLUR_KEY` | setting | plaintext | excluded | Cover blur |
 | `shared/src/main/ets/settings/DiagnosticsSettings.ets#DIAGNOSTICS_ENABLED_KEY` | setting | plaintext | excluded | Diagnostics opt-in |
 | `shared/src/main/ets/settings/DiagnosticsSettings.ets#DIAGNOSTICS_MIN_LEVEL_KEY` | setting | plaintext | excluded | Diagnostics level |
+| `shared/src/main/ets/settings/GalleryDetailTransitionSettings.ets#DETAIL_MODE_KEY` | setting | plaintext | excluded | List-to-detail transition mode |
+| `shared/src/main/ets/settings/GalleryDetailTransitionSettings.ets#LEGACY_DETAIL_ENABLED_KEY` | migration | plaintext | excluded | Legacy transition switch migration source |
+| `shared/src/main/ets/settings/GalleryDetailTransitionSettings.ets#READER_THUMBNAIL_ENABLED_KEY` | setting | plaintext | excluded | Thumbnail-to-Reader transition switch |
 | `shared/src/main/ets/settings/GalleryTitleSettings.ets#GALLERY_TITLE_JAPANESE_PRIMARY_KEY` | setting | plaintext | excluded | Title preference |
 | `shared/src/main/ets/settings/HomeTabSettings.ets#HOME_TAB_AUTO_HIDE_KEY` | setting | plaintext | excluded | Tab behavior |
 | `shared/src/main/ets/settings/ImmersiveMaterialSettings.ets#IMMERSIVE_MATERIAL_LEVEL_KEY` | setting | plaintext | excluded | Material preference |
@@ -133,7 +137,7 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `browse_presentation_settings` | local-data | localData | WebDAV | Browse presentation |
 | `catalog_preferences` | local-data | localData | WebDAV | Catalog query preferences |
 | `home_subtabs` | local-data | localData | WebDAV | Custom home subtabs |
-| `home_subtab_selection` | local-data | localData | WebDAV | Selected home subtab |
+| `home_subtab_selection` | local-data | localData | excluded | Device-local selected home subtab |
 | `comic_translation_document_cache` | cache | excluded | excluded | Regenerable translation document cache |
 | `comment_translation_cache` | cache | excluded | excluded | Regenerable comment translations |
 | `nh_gallery_list_cache` | remote-cache | excluded | excluded | Regenerable list cache |
