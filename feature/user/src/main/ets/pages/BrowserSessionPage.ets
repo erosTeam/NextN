@@ -6,7 +6,7 @@ import {
   DiagnosticLogger,
   NhAccountSessionService,
   NhAccountProfileService,
-  NhArkWebSessionTransport,
+  NhCookieAuthority,
   NhApiClient,
   AppStrings,
   NhBrowserSessionBoundary,
@@ -14,19 +14,16 @@ import {
   NhBrowserSessionStatus,
   NhBrowserSessionVerificationOutcome,
   LayoutSafeAreaState,
-  NextNGroupedListSection,
-  NextNListRow,
-  SecondaryListScaffold,
   ThemeTokens,
   AccountSessionState,
-  AccountProfileState,
+  AccountAuthNoticeState,
   connectAccountSession,
-  connectAccountProfile,
+  connectAccountAuthNotice,
   connectLayoutSafeArea,
 } from 'shared'
 
 const SESSION_CAPTURE_INTERVAL_MS: number = 1000
-const ACCOUNT_LOG_DOMAIN: number = 0xE001
+const ACCOUNT_LOG_DOMAIN: number = 0xD001
 const ACCOUNT_LOG_TAG: string = 'NextNAccount'
 
 /**
@@ -39,15 +36,13 @@ export struct BrowserSessionPage {
   @Param autoOpenVisibleLogin: boolean = false
   /** Adding another account keeps the current one saved and opens a clean form. */
   @Param addAccountMode: boolean = false
-  /** Entry-owned NextE closeLoginFlowToAccount handoff after a promotion. */
-  @Event onVisibleLoginPromoted?: () => void
+  /** Entry-owned handoff back to the sole native Account page. */
+  @Event onLoginFlowFinished?: () => void
   @Local sessionStatus: NhBrowserSessionStatus = new NhBrowserSessionStatus()
   @Local isBrowserRequested: boolean = false
   @Local isControllerAttached: boolean = false
-  @Local isSigningOut: boolean = false
-  @Local accountActionError: string = ''
   @Local accountSession: AccountSessionState = connectAccountSession()
-  @Local accountProfile: AccountProfileState = connectAccountProfile()
+  @Local accountAuthNotice: AccountAuthNoticeState = connectAccountAuthNotice()
   // Match NextE's dedicated login Web host: the only native overlay is an
   // activity indicator while ArkWeb is navigating. It neither alters nor
   // observes the login form or managed challenge.
@@ -60,21 +55,21 @@ export struct BrowserSessionPage {
   // native session if the visible first-party login actually succeeds.
   private browserSessionUserAgent: string = ''
   private appliedAccountSessionRevision: number = -1
-  private autoOpenVisibleLoginConsumed: boolean = false
+  private initialLoginActionConsumed: boolean = false
   private addAccountPromotionCompleted: boolean = false
-  private scroller: Scroller = new Scroller()
+  private loginFlowFinishScheduled: boolean = false
   private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private controller: webview.WebviewController = new webview.WebviewController()
 
   aboutToAppear(): void {
     this.applyPublishedAccountSession(true)
-    this.consumeAutoOpenVisibleLogin()
+    this.consumeInitialLoginAction()
   }
 
   @Monitor('accountSession.revision')
   onAccountSessionChanged(): void {
     this.applyPublishedAccountSession()
-    this.consumeAutoOpenVisibleLogin()
+    this.consumeInitialLoginAction()
   }
 
   aboutToDisappear(): void {
@@ -89,16 +84,11 @@ export struct BrowserSessionPage {
     NhAccountSessionService.revokeExplicitVisibleLoginAction()
     NhAccountSessionService.discardPendingVisibleBrowserSession()
     NhAccountSessionService.resetRejectedVisibleBrowserSessionCandidate()
-    // A candidate probe can have already reloaded the retained transport
-    // host. On route exit it must not leave that host ready under a discarded
-    // candidate UA; an existing sealed account will bootstrap its own UA on
-    // the next fixed-origin request.
-    NhArkWebSessionTransport.resetForVisibleSessionCandidate()
     if (this.addAccountMode && !this.addAccountPromotionCompleted &&
       NhAccountSessionService.isAuthenticated()) {
       // The abandoned add-account form cleared the jar's identity cookies.
-      // Restore the still-active account so the retained transport keeps its
-      // session without waiting for the next authenticated read to repair it.
+      // Restore the still-active account into the compatibility browser jar;
+      // native request authorization remains owned by the sealed generation.
       NhAccountSessionService.ensureRegularArkWebCookieJar().catch((): void => {})
     }
   }
@@ -123,42 +113,33 @@ export struct BrowserSessionPage {
       this.sessionStatus = NhBrowserSessionBoundary.blockedNavigation()
       return
     }
-    if (this.accountSession.signedIn) {
-      this.stopSessionCaptureTimer()
-      this.sessionCaptureInFlight = false
-      this.isBrowserRequested = false
-      this.isControllerAttached = false
-      this.isPageLoading = false
+    if (this.isBrowserRequested) {
+      // A process-local explicit login transaction owns its visible lifetime.
+      // Late restore/verification revisions describe the rejected old session;
+      // they must not close the replacement transaction that is already
+      // collecting a fresh CAPTCHA and credentials.
+      hilog.info(ACCOUNT_LOG_DOMAIN, ACCOUNT_LOG_TAG,
+        'visible login stage=session_revision_deferred')
+      return
+    }
+    if (this.accountSession.authenticationAvailable &&
+      !this.accountSession.verificationRequired) {
       if (this.addAccountMode && !this.addAccountPromotionCompleted) {
-        // An add-account route stays a login surface: show the explicit
-        // add action instead of collapsing into the current session view.
+        // The formal Account page's add action owns this route. The initial
+        // login action below saves the active account and opens Web directly.
         this.sessionStatus = NhBrowserSessionBoundary.preflight()
         return
       }
       this.sessionStatus = NhBrowserSessionBoundary.authenticated()
-      this.restorePublishedAccountProfile()
+      this.finishLoginFlowToAccount()
       return
     }
-    this.stopSessionCaptureTimer()
-    this.sessionCaptureInFlight = false
-    this.isBrowserRequested = false
-    this.isControllerAttached = false
-    this.isPageLoading = false
-    // A signed-out Account route remains native until the user explicitly
-    // chooses Sign in. Appearing on this page must not itself enter ArkWeb.
-    this.sessionStatus = NhBrowserSessionBoundary.preflight()
-  }
-
-  private restorePublishedAccountProfile(): void {
-    NhAccountProfileService.restore(this.hostContext())
-      .then((): void => {
-        this.refreshAccountProfile()
-      })
-      .catch((): void => {})
+    this.sessionStatus = this.accountSession.verificationRequired
+      ? NhBrowserSessionBoundary.verificationRetryRequired()
+      : NhBrowserSessionBoundary.preflight()
   }
 
   private openBrowserSession(): void {
-    this.accountActionError = ''
     if (!this.accountSession.initialized) {
       this.sessionStatus = NhBrowserSessionBoundary.blockedNavigation()
       return
@@ -166,6 +147,8 @@ export struct BrowserSessionPage {
     this.refreshBrowserStatus()
     if (!this.sessionStatus.canOpenBrowserSession() ||
       !NhAccountSessionService.canOpenVisibleLoginSession()) {
+      this.accountAuthNotice.publish('unavailable')
+      this.finishLoginFlowToAccount()
       return
     }
     this.stopSessionCaptureTimer()
@@ -183,6 +166,7 @@ export struct BrowserSessionPage {
     if (!this.accountSession.initialized) {
       return
     }
+    this.accountAuthNotice.clear()
     NhAccountSessionService.registerExplicitVisibleLoginAction()
     this.openBrowserSession()
   }
@@ -193,7 +177,7 @@ export struct BrowserSessionPage {
       this.sessionStatus = NhBrowserSessionBoundary.blockedNavigation()
       return
     }
-    this.accountActionError = ''
+    this.accountAuthNotice.clear()
     NhAccountSessionService.registerExplicitVisibleLoginAction()
     AccountListSettings.recordActive(this.hostContext())
       .then((): void => {
@@ -206,14 +190,35 @@ export struct BrowserSessionPage {
       })
   }
 
-  /** The recovery route supplies the same explicit action the native row uses. */
-  private consumeAutoOpenVisibleLogin(): void {
-    if (!this.autoOpenVisibleLogin || this.autoOpenVisibleLoginConsumed ||
-      !this.accountSession.initialized || this.accountSession.signedIn) {
+  /** A login destination performs one action; it never renders a second native Account page. */
+  private consumeInitialLoginAction(): void {
+    if (this.initialLoginActionConsumed || !this.accountSession.initialized) {
       return
     }
-    this.autoOpenVisibleLoginConsumed = true
-    this.requestExplicitBrowserSession()
+    this.initialLoginActionConsumed = true
+    if (this.addAccountMode) {
+      this.requestAddAccountSession()
+      return
+    }
+    if (this.autoOpenVisibleLogin &&
+      (!this.accountSession.signedIn || this.accountSession.verificationRequired)) {
+      this.requestExplicitBrowserSession()
+      return
+    }
+    this.finishLoginFlowToAccount()
+  }
+
+  /** Pop this login-only destination and reveal the sole native Account page. */
+  private finishLoginFlowToAccount(): void {
+    if (this.loginFlowFinishScheduled) {
+      return
+    }
+    this.loginFlowFinishScheduled = true
+    setTimeout((): void => {
+      if (this.onLoginFlowFinished) {
+        this.onLoginFlowFinished()
+      }
+    }, 0)
   }
 
   private attachAndLoad(): void {
@@ -222,8 +227,9 @@ export struct BrowserSessionPage {
     }
     this.isControllerAttached = true
     try {
-      // Match NextE's production ArkWeb login host. This is scoped to the
-      // current Web context and is applied before the first navigation.
+      // Restore the original proven NextE-compatible identity before the
+      // first navigation. The production NH challenge previously succeeded
+      // under this exact WebView contract.
       const nativeUserAgent: string = this.controller.getUserAgent()
       const nextECompatibleUserAgent: string =
         NhAccountSessionService.nextECompatibleUserAgent(nativeUserAgent)
@@ -232,15 +238,16 @@ export struct BrowserSessionPage {
         return
       }
       this.controller.setCustomUserAgent(nextECompatibleUserAgent)
-      // ArkWeb exposes the per-component value back through the controller.
-      // Do not begin a challenge flow under the native UA if the replacement
-      // was rejected; that would knowingly create the same failure mode the
-      // NextE transform exists to avoid.
       if (this.controller.getCustomUserAgent() !== nextECompatibleUserAgent) {
         this.failBrowserInitialization()
         return
       }
       this.browserSessionUserAgent = nextECompatibleUserAgent
+      DiagnosticLogger.info(
+        'arkweb',
+        'browser_identity',
+        this.browserIdentityProfile(nextECompatibleUserAgent),
+      )
     } catch (_error) {
       this.failBrowserInitialization()
       return
@@ -248,34 +255,128 @@ export struct BrowserSessionPage {
     try {
       // The visible login flow may embed a cross-origin challenge. Native
       // requests never receive those cookies; only the ArkWeb context does.
-      webview.WebCookieManager.putAcceptCookieEnabled(true)
-      webview.WebCookieManager.putAcceptThirdPartyCookieEnabled(true)
+      NhCookieAuthority.initialize()
     } catch (_error) {
       this.failBrowserInitialization()
       return
     }
-    // ErosN polls its visible WebView because the final account cookies can
-    // be committed by a same-page request rather than a main-frame redirect.
-    // Keep that timing behavior, but use ArkWeb's URL-scoped cookie API only:
-    // no DOM script, form field, cookie value, or browser diagnostic is read.
+    this.sessionStatus = NhBrowserSessionBoundary.preflight()
+    if (!this.sessionStatus.cookieAccessAllowed) {
+      this.failBrowserInitialization()
+      return
+    }
+    // Keep NH's original login document and its own form/challenge UI. The
+    // native layer observes only URL-scoped Cookie state and verifies any
+    // resulting candidate through the unified session client.
     this.startSessionCaptureTimer()
     try {
-      // Keep the navigation surface aligned with NextE. The login page may
-      // legitimately load a managed challenge from a different origin; native
-      // session capture stays constrained to the first-party origin below.
       this.controller.loadUrl(NhBrowserSessionBoundary.loginUrl())
     } catch (_error) {
       this.failBrowserInitialization()
     }
   }
 
+  /** Redacted resource classes only; URLs never enter durable diagnostics. */
+  private loginResourceTarget(url: string): string {
+    if (url.startsWith('https://challenges.cloudflare.com/')) {
+      if (url.includes('/turnstile/v0/api.js')) {
+        return 'turnstile_script'
+      }
+      if (url.includes('/pat/')) {
+        return 'turnstile_pat'
+      }
+      if (url.includes('/rcv/')) {
+        return 'turnstile_challenge_response'
+      }
+      if (url.includes('/if/')) {
+        return 'turnstile_iframe'
+      }
+      if (url.includes('/feedback')) {
+        return 'turnstile_feedback'
+      }
+      if (url.includes('/cmg/')) {
+        return 'turnstile_capability_measurement'
+      }
+      if (/\/d\//.test(url)) {
+        return 'turnstile_device_signal'
+      }
+      if (/\/i\//.test(url)) {
+        return 'turnstile_interaction_signal'
+      }
+      if (url.includes('/turnstile/v0/')) {
+        return 'turnstile_v0_runtime'
+      }
+      if (url.includes('/cdn-cgi/challenge-platform/')) {
+        return 'turnstile_challenge_platform'
+      }
+      return 'turnstile_runtime'
+    }
+    if (url.startsWith('about:')) {
+      return 'about'
+    }
+    if (url.startsWith(`${NhBrowserSessionBoundary.trustedOrigin()}/`)) {
+      if (url.includes('/cdn-cgi/challenge-platform/')) {
+        return 'first_party_challenge'
+      }
+      if (url.includes('/favicon.ico')) {
+        return 'first_party_favicon'
+      }
+      if (url.includes('/api/')) {
+        return 'first_party_api'
+      }
+      return 'first_party_other'
+    }
+    if (url.startsWith('data:')) {
+      return 'data'
+    }
+    return 'other'
+  }
+
+  /** Fixed browser capability shape only; the full user-agent is never logged. */
+  private browserIdentityProfile(userAgent: string): string {
+    const chromiumMatch: RegExpMatchArray | null = userAgent.match(/(?:Chrome|Chromium)\/(\d+)/)
+    const chromiumMajor: string = chromiumMatch !== null ? chromiumMatch[1] : 'none'
+    return `chromium=${chromiumMajor},harmony=${/HarmonyOS|OpenHarmony/i.test(userAgent)},` +
+      `arkweb=${/ArkWeb/i.test(userAgent)},mobile=${/Mobile/i.test(userAgent)}`
+  }
+
+  /**
+   * Extracts only Cloudflare's documented six-digit client error family.
+   * Console text, source URLs, line numbers, and challenge data never enter
+   * app diagnostics.
+   */
+  private turnstileConsoleErrorCode(message: string): string {
+    const match: RegExpMatchArray | null = message.match(
+      /\b(?:100|102|103|104|105|106|110|200|300|400|600)\d{3}\b/,
+    )
+    if (match !== null) {
+      return match[0]
+    }
+    if (/failed to load resource|status(?: code)? (?:of |is )?[45]\d\d/i.test(message)) {
+      return 'network_http_failure'
+    }
+    if (/unsupported/i.test(message)) {
+      return 'unsupported'
+    }
+    if (/cloudflare turnstile/i.test(message) && /error|fail/i.test(message)) {
+      return 'client_failure'
+    }
+    return ''
+  }
+
   /**
    * A failed local ArkWeb setup is not a browser page. Return to the native
    * Account surface instead of retaining a blank Web component or its capture
-   * timer. This changes no promoted session and keeps an unfinished candidate
-   * out of the retained transport host.
+   * timer. This changes no promoted session and discards the unfinished
+   * in-memory candidate.
    */
-  private failBrowserInitialization(): void {
+  private failBrowserInitialization(noticeCode: string = 'unavailable'): void {
+    hilog.error(
+      ACCOUNT_LOG_DOMAIN,
+      ACCOUNT_LOG_TAG,
+      'visible login stage=closed code=%{public}s',
+      noticeCode,
+    )
     this.stopSessionCaptureTimer()
     this.sessionCaptureInFlight = false
     this.isBrowserRequested = false
@@ -285,7 +386,8 @@ export struct BrowserSessionPage {
     NhAccountSessionService.revokeExplicitVisibleLoginAction()
     this.sessionStatus = NhBrowserSessionBoundary.blockedNavigation()
     NhAccountSessionService.discardPendingVisibleBrowserSession()
-    NhArkWebSessionTransport.resetForVisibleSessionCandidate()
+    this.accountAuthNotice.publish(noticeCode)
+    this.finishLoginFlowToAccount()
   }
 
   private observePageEnd(url: string): void {
@@ -293,7 +395,7 @@ export struct BrowserSessionPage {
     if (this.sessionStatus.phase === NhBrowserSessionPhase.TRUSTED_REDIRECT_OBSERVED &&
       !this.hasObservedTrustedLoginRedirect) {
       this.hasObservedTrustedLoginRedirect = true
-      // The one-shot ErosN-style redirect latch is also the only navigation
+      // The one-shot redirect latch is also the only navigation
       // event that may reopen a transient candidate's bounded retry budget.
       // Repeated page-end callbacks must not turn into repeated account probes.
       NhAccountSessionService.observeTrustedVisibleBrowserNavigation()
@@ -346,12 +448,11 @@ export struct BrowserSessionPage {
       )) {
         hilog.info(ACCOUNT_LOG_DOMAIN, ACCOUNT_LOG_TAG, 'visible login candidate captured')
         DiagnosticLogger.info('account-login', 'candidate_captured', 'stage')
-        // The visible page is the exact ArkWeb context that completed the
-        // Cloudflare challenge and credential submit. Validate there before
-        // it is removed; asking a second hidden Web component to re-bootstrap
-        // is not a valid signal for whether this login route may return.
+        // ArkWeb owns only the visible login carrier. Once its bounded Cookie
+        // snapshot is captured, the candidate is verified by the same native
+        // request boundary used for every promoted-session operation.
         const verificationOutcome: NhBrowserSessionVerificationOutcome =
-          await NhApiClient.verifyAccountSessionFromVisibleBrowser(this.controller)
+          await NhApiClient.verifyAccountSession()
         if (verificationOutcome === NhBrowserSessionVerificationOutcome.RETRY_EXHAUSTED) {
           DiagnosticLogger.warn('account-login', 'candidate_verification_retry_exhausted', 'stage')
           this.closeBrowserAfterCandidateVerificationExhausted()
@@ -384,13 +485,10 @@ export struct BrowserSessionPage {
           // component if its native persistence boundary cannot be completed.
           // Return to the Account surface, where the durable failure is visible
           // and the user can make a fresh explicit retry.
-          this.accountActionError = AppStrings.get('account_save_failed')
+          this.accountAuthNotice.publish('persistence_failed')
           this.closeBrowserAfterPromotionFailure()
           return
         }
-        // The root-owned host takes over only after promotion, reloading
-        // with the captured UA for later authenticated read operations.
-        NhArkWebSessionTransport.resetForVisibleSessionCandidate()
         this.sessionStatus = NhBrowserSessionBoundary.authenticated()
         hilog.info(ACCOUNT_LOG_DOMAIN, ACCOUNT_LOG_TAG, 'visible login session promoted')
         DiagnosticLogger.info('account-login', 'native_session_promoted', 'stage')
@@ -404,7 +502,7 @@ export struct BrowserSessionPage {
         // saved record and later destroy refresh/session on account switch.
         if (!await AccountListSettings.recordActive(this.hostContext())) {
           DiagnosticLogger.error('account-login', 'active_account_record_failed', 'stage')
-          this.accountActionError = AppStrings.get('account_save_failed')
+          this.accountAuthNotice.publish('persistence_failed')
           this.closeBrowserAfterPromotionFailure()
           return
         }
@@ -421,7 +519,7 @@ export struct BrowserSessionPage {
       hilog.error(ACCOUNT_LOG_DOMAIN, ACCOUNT_LOG_TAG,
         'visible login promotion failed stage=%{public}s', stage)
       DiagnosticLogger.error('account-login', 'promotion_failed', `stage=${stage}`)
-      this.accountActionError = AppStrings.get('account_save_failed')
+      this.accountAuthNotice.publish('persistence_failed')
       this.closeBrowserAfterPromotionFailure()
     }
   }
@@ -432,9 +530,7 @@ export struct BrowserSessionPage {
     }
     this.addAccountPromotionCompleted = true
     this.getUIContext().getPromptAction().showToast({ message: AppStrings.get('login_success') })
-    if (this.onVisibleLoginPromoted) {
-      this.onVisibleLoginPromoted()
-    }
+    this.finishLoginFlowToAccount()
   }
 
   /**
@@ -456,7 +552,7 @@ export struct BrowserSessionPage {
     this.sessionStatus = NhBrowserSessionBoundary.preflight()
     NhAccountSessionService.discardPendingVisibleBrowserSession()
     NhAccountSessionService.resetRejectedVisibleBrowserSessionCandidate()
-    NhArkWebSessionTransport.resetForVisibleSessionCandidate()
+    this.finishLoginFlowToAccount()
   }
 
   /**
@@ -468,66 +564,8 @@ export struct BrowserSessionPage {
    * transition.
    */
   private closeBrowserAfterCandidateVerificationExhausted(): void {
+    this.accountAuthNotice.publish('verification_rejected')
     this.closeBrowserAfterPromotionFailure()
-    this.sessionStatus = NhBrowserSessionBoundary.preflight()
-  }
-
-  private confirmSignOut(): void {
-    if (this.isSigningOut || this.sessionStatus.phase !== NhBrowserSessionPhase.AUTHENTICATED) {
-      return
-    }
-    this.getUIContext().showAlertDialog({
-      title: AppStrings.get('account_sign_out_title'),
-      message: AppStrings.get('account_sign_out_message'),
-      primaryButton: {
-        value: AppStrings.get('common_cancel'),
-        action: (): void => {},
-      },
-      secondaryButton: {
-        value: AppStrings.get('account_sign_out_action'),
-        fontColor: Color.Red,
-        action: (): void => {
-          this.signOut()
-        },
-      },
-    })
-  }
-
-  private async signOut(): Promise<void> {
-    if (this.isSigningOut) {
-      return
-    }
-    this.isSigningOut = true
-    this.accountActionError = ''
-    this.stopSessionCaptureTimer()
-    this.isBrowserRequested = false
-    this.isControllerAttached = false
-    this.isPageLoading = false
-    try {
-      await NhAccountSessionService.clear(this.hostContext())
-      this.refreshBrowserStatus()
-    } catch (_error) {
-      this.accountActionError = AppStrings.get('account_clear_failed')
-    } finally {
-      this.isSigningOut = false
-    }
-  }
-
-  private statusLabel(): string {
-    switch (this.sessionStatus.phase) {
-      case NhBrowserSessionPhase.BROWSER_READY:
-        return AppStrings.get('account_status_not_signed_in')
-      case NhBrowserSessionPhase.LOGIN_REQUIRED:
-        return AppStrings.get('account_status_signing_in')
-      case NhBrowserSessionPhase.AUTHENTICATED:
-        return AppStrings.get('account_status_signed_in')
-      case NhBrowserSessionPhase.TRUSTED_REDIRECT_OBSERVED:
-        return AppStrings.get('account_status_signing_in')
-      case NhBrowserSessionPhase.UNAVAILABLE:
-        return AppStrings.get('account_status_unavailable')
-      default:
-        return AppStrings.get('account_status_not_signed_in')
-    }
   }
 
   /** A transient profile failure never changes a verified session's UI state. */
@@ -542,143 +580,13 @@ export struct BrowserSessionPage {
     return this.layoutSafeArea.topAvoidHeight + ThemeTokens.TITLE_BAR_HEIGHT
   }
 
-  private statusSubtitle(): string {
-    switch (this.sessionStatus.phase) {
-      case NhBrowserSessionPhase.BROWSER_READY:
-        return AppStrings.get('account_subtitle_sign_in')
-      case NhBrowserSessionPhase.LOGIN_REQUIRED:
-        return AppStrings.get('account_subtitle_complete_browser')
-      case NhBrowserSessionPhase.AUTHENTICATED:
-        return AppStrings.get('account_subtitle_signed_in_device')
-      case NhBrowserSessionPhase.TRUSTED_REDIRECT_OBSERVED:
-        return AppStrings.get('account_subtitle_completing_sign_in')
-      case NhBrowserSessionPhase.UNAVAILABLE:
-        return AppStrings.get('account_subtitle_unavailable')
-      default:
-        return AppStrings.get('account_subtitle_sign_in')
-    }
-  }
-
-  private accountBrowserActionTitle(): string {
-    if (this.addAccountMode && !this.addAccountPromotionCompleted) {
-      return AppStrings.get('account_web_login')
-    }
-    if (this.sessionStatus.phase === NhBrowserSessionPhase.AUTHENTICATED) {
-      return AppStrings.get('account_open_browser')
-    }
-    return AppStrings.get('account_sign_in')
-  }
-
-  private accountBrowserActionSubtitle(): string {
-    if (this.addAccountMode && !this.addAccountPromotionCompleted) {
-      return ''
-    }
-    if (this.sessionStatus.phase === NhBrowserSessionPhase.AUTHENTICATED) {
-      return AppStrings.get('account_open_browser_subtitle')
-    }
-    return AppStrings.get('account_sign_in_subtitle')
-  }
-
-  private accountBrowserActionAccessibilityLabel(): string {
-    const subtitle: string = this.accountBrowserActionSubtitle()
-    if (subtitle.length === 0) {
-      return this.accountBrowserActionTitle()
-    }
-    return `${this.accountBrowserActionTitle()}. ${this.accountBrowserActionSubtitle()}`
-  }
-
-  /**
-   * The native account landing view stays deliberately small. The in-app
-   * ArkWeb sign-in experience owns credential entry; storage and request
-   * mechanics do not belong in the customer-facing surface.
-   */
-  @Builder
-  private AccountSection() {
-    NextNGroupedListSection({ accessibilityId: 'nextn-account-native-root' }) {
-      if (!this.addAccountMode || this.addAccountPromotionCompleted) {
-        if (this.sessionStatus.phase === NhBrowserSessionPhase.AUTHENTICATED && this.accountProfile.hasSnapshot) {
-          NextNListRow({
-            leadingImageUrl: this.accountProfile.avatarUrl,
-            leadingIcon: this.accountProfile.avatarUrl.length > 0 ? undefined : $r('sys.symbol.person_fill'),
-            title: this.accountProfile.username,
-            subtitle: AppStrings.format('account_profile_id', [this.accountProfile.userId]),
-            trailingText: this.statusLabel(),
-            showChevron: false,
-            accessibilityLabel: `${this.accountProfile.username}, ${AppStrings.format('account_profile_id', [this.accountProfile.userId])}. ${this.statusLabel()}`,
-          })
-        } else {
-          NextNListRow({
-            leadingIcon: $r('sys.symbol.security_shield'),
-            title: AppStrings.get('account_title'),
-            subtitle: this.statusSubtitle(),
-            trailingText: this.statusLabel(),
-            showChevron: false,
-            accessibilityLabel: `${AppStrings.get('account_title')}, ${this.statusLabel()}. ${this.statusSubtitle()}`,
-          })
-        }
-        this.RowDivider()
-      }
-      NextNListRow({
-        leadingIcon: this.addAccountMode && !this.addAccountPromotionCompleted
-          ? $r('sys.symbol.person_badge_plus')
-          : $r('sys.symbol.worldclock'),
-        title: this.accountBrowserActionTitle(),
-        subtitle: this.accountBrowserActionSubtitle(),
-        trailingText: this.sessionStatus.canOpenBrowserSession() ? '' : AppStrings.get('account_status_unavailable'),
-        showChevron: this.sessionStatus.canOpenBrowserSession(),
-        isEnabled: this.sessionStatus.canOpenBrowserSession(),
-        accessibilityLabel: this.accountBrowserActionAccessibilityLabel(),
-        onAction: (): void => {
-          if (this.addAccountMode && !this.addAccountPromotionCompleted) {
-            this.requestAddAccountSession()
-            return
-          }
-          this.requestExplicitBrowserSession()
-        },
-      })
-      if (this.sessionStatus.phase === NhBrowserSessionPhase.AUTHENTICATED) {
-        this.RowDivider()
-        NextNListRow({
-          leadingIcon: $r('sys.symbol.arrow_right_to_line'),
-          title: this.isSigningOut
-            ? AppStrings.get('account_signing_out')
-            : AppStrings.get('account_sign_out'),
-          subtitle: AppStrings.get('account_sign_out_subtitle'),
-          showChevron: false,
-          destructive: true,
-          isEnabled: !this.isSigningOut,
-          accessibilityLabel: this.isSigningOut
-            ? AppStrings.get('account_signing_out_a11y')
-            : AppStrings.get('account_sign_out_a11y'),
-          onAction: (): void => {
-            this.confirmSignOut()
-          },
-        })
-      }
-      if (this.accountActionError.length > 0) {
-        this.RowDivider()
-        NextNListRow({
-          title: this.accountActionError,
-          showChevron: false,
-          isEnabled: false,
-          accessibilityLabel: this.accountActionError,
-        })
-      }
-    }
-  }
-
-  @Builder
-  private RowDivider() {
-    Divider()
-      .strokeWidth(0.5)
-      .color(ThemeTokens.DIVIDER)
-      .margin({ left: ThemeTokens.SPACE_MD })
-  }
-
   @Builder
   private BrowserSurface() {
     if (this.isBrowserRequested) {
-      Web({ src: '', controller: this.controller, incognitoMode: false })
+      Web({
+        src: '',
+        controller: this.controller,
+      })
         .width('100%')
         .layoutWeight(1)
         .nestedScroll({
@@ -688,11 +596,8 @@ export struct BrowserSessionPage {
         .overScrollMode(OverScrollMode.NEVER)
         .darkMode(WebDarkMode.Off)
         .backgroundColor(Color.White)
-        // Match ErosN's fresh-login behavior without clearing first-party
-        // cookies: ArkWeb's `None` mode may still use an existing resource
-        // cache, while `Online` makes the login and managed-challenge entry
-        // request hit the origin again.  The retained CookieManager state is
-        // intentionally untouched so a valid Cloudflare clearance persists.
+        // Preserve the original fresh-login request contract without clearing
+        // the first-party Cookie jar or Cloudflare clearance.
         .cacheMode(CacheMode.Online)
         .javaScriptAccess(true)
         .domStorageAccess(true)
@@ -712,50 +617,73 @@ export struct BrowserSessionPage {
           this.isPageLoading = false
           this.requestAccountSessionCapture()
         })
-        .onErrorReceive((): void => {
+        .onConsole((event: OnConsoleEvent): boolean => {
+          const level: MessageLevel = event.message.getMessageLevel()
+          if (level !== MessageLevel.Warn && level !== MessageLevel.Error) {
+            return false
+          }
+          const sourceId: string = event.message.getSourceId()
+          const message: string = event.message.getMessage()
+          if (!sourceId.startsWith('https://challenges.cloudflare.com/') &&
+            !/cloudflare turnstile/i.test(message)) {
+            return false
+          }
+          const errorCode: string = this.turnstileConsoleErrorCode(message)
+          if (errorCode.length === 0) {
+            return false
+          }
+          DiagnosticLogger.warn(
+            'account-login',
+            'turnstile_client_error',
+            `code=${errorCode}`,
+          )
+          return false
+        })
+        .onErrorReceive((event: OnErrorReceiveEvent): void => {
           this.isPageLoading = false
+          DiagnosticLogger.warn(
+            'account-login',
+            'resource_error',
+            `code=${event.error.getErrorCode()},target=${this.loginResourceTarget(event.request.getRequestUrl())},` +
+            `mainFrame=${event.request.isMainFrame()}`,
+          )
+        })
+        .onHttpErrorReceive((event: OnHttpErrorReceiveEvent): void => {
+          const status: number = event.response.getResponseCode()
+          const rawMethod: string = event.request.getRequestMethod().toUpperCase()
+          const method: string = ['GET', 'POST', 'HEAD', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
+            .includes(rawMethod) ? rawMethod : 'OTHER'
+          const mainFrame: boolean = event.request.isMainFrame()
+          const target: string = this.loginResourceTarget(event.request.getRequestUrl())
+          DiagnosticLogger.warn(
+            'account-login',
+            'http_error',
+            `status=${status},method=${method},target=${target},mainFrame=${mainFrame}`,
+          )
         })
     }
   }
 
   build() {
-    if (this.isBrowserRequested) {
-      Stack({ alignContent: Alignment.Center }) {
-        // This is the dedicated NextE web-login host, not the generic
-        // Gallery Web page. Its Web content starts below the immersive HDS
-        // title bar exactly once; the root shell and ordinary list pages do
-        // not receive this login-only inset.
-        Column() {
-          this.BrowserSurface()
-        }
-        .width('100%')
-        .height('100%')
-        .padding({ top: this.webContentTopInset() })
-        if (this.isPageLoading) {
-          LoadingProgress()
-            .width(ThemeTokens.INLINE_PROGRESS_SIZE)
-            .height(ThemeTokens.INLINE_PROGRESS_SIZE)
-            .color(ThemeTokens.BRAND)
-        }
-      }
-      .width('100%')
-      .height('100%')
-      .backgroundColor(ThemeTokens.SURFACE)
-    } else {
+    Stack({ alignContent: Alignment.Center }) {
+      // This destination is the dedicated first-party Web login host. It has
+      // no native account-management branch; AccountPage is the sole owner of
+      // profile, multi-account switching and sign-out UI.
       Column() {
-        SecondaryListScaffold({
-          scroller: this.scroller,
-          bottomPadding: ThemeTokens.LIST_BOTTOM_PADDING,
-          alwaysEnableEdgeSpring: true,
-        }) {
-          ListItem() {
-            this.AccountSection()
-          }
-        }
+        this.BrowserSurface()
       }
       .width('100%')
       .height('100%')
-      .backgroundColor(ThemeTokens.SURFACE)
+      .padding({ top: this.webContentTopInset() })
+      if (this.isPageLoading || !this.isBrowserRequested) {
+        LoadingProgress()
+          .width(ThemeTokens.INLINE_PROGRESS_SIZE)
+          .height(ThemeTokens.INLINE_PROGRESS_SIZE)
+          .color(ThemeTokens.BRAND)
+      }
     }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(ThemeTokens.SURFACE)
   }
 }

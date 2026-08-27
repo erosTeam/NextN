@@ -1,8 +1,4 @@
-import { http } from '@kit.NetworkKit'
-import { webview } from '@kit.ArkWeb'
 import { hilog } from '@kit.PerformanceAnalysisKit'
-import { util } from '@kit.ArkTS'
-import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import {
   NhGalleryDetail,
   NhGalleryFavoriteStatus,
@@ -18,39 +14,27 @@ import { NhTagQuery } from '../model/NhTagQuery'
 import { NhTagCatalogService } from '../services/NhTagCatalogService'
 import { NhCloudBlacklistService } from '../services/NhCloudBlacklistService'
 import { NhBrowserSessionVerificationOutcome } from '../model/NhBrowserSessionState'
-import { NhAccountAuthenticatedReadToken, NhAccountSessionService } from '../services/NhAccountSessionService'
+import { NhAccountSessionService } from '../services/NhAccountSessionService'
 import {
-  NhArkWebAccountProfileResponse,
-  NhArkWebSessionResponse,
-  NhArkWebSessionTransport,
-} from '../services/NhArkWebSessionTransport'
+  NhRequestReplayPolicy,
+  NhRequestScope as NhJsonReadScope,
+  NhSessionHttpClient,
+} from './NhSessionHttpClient'
+import { NhApiProofOfWork } from './NhApiProofOfWork'
+import { NhApiHttpResponse } from './NhApiHttpTransport'
 
 const API_ROOT: string = 'https://nhentai.net'
 const API_V2_PREFIX: string = `${API_ROOT}/api/v2/`
 const THUMB_ROOT: string = 'https://t.nhentai.net'
 const IMAGE_ROOT: string = 'https://i.nhentai.net'
-const MAX_COMMENT_POW_DIFFICULTY: number = 24
 const ACCOUNT_LOG_DOMAIN: number = 0xE001
 const ACCOUNT_LOG_TAG: string = 'NextNAccount'
 const CLOUD_BLACKLIST_REFRESH_TTL_MS: number = 10 * 60 * 1000
-const MAX_COMMENT_POW_ATTEMPTS: number = 2000000
-const COMMENT_POW_YIELD_INTERVAL: number = 2048
 const COMMENT_BIDI_FORMAT_CONTROLS: RegExp = /[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g
 // ErosN's unscoped search autocomplete probes these catalog namespaces in
 // order. Keep the list short: expanding it would multiply requests for every
 // edit without improving the ordinary tag-search path.
 const DEFAULT_AUTOCOMPLETE_TYPES: string[] = ['tag', 'parody', 'character', 'artist', 'group']
-
-/** Response semantics only; transport and browser session ownership are shared. */
-enum NhJsonReadScope {
-  PUBLIC,
-  // Browse/Search/Popular/Related use the same browser session when present.
-  ACCOUNT_PREFERRED,
-  ACCOUNT_OWNED,
-  // Best-effort callers may swallow the request error, but they never change
-  // the underlying browser/account state.
-  ACCOUNT_OWNED_NON_RETIRING,
-}
 
 /** Ephemeral challenge material; it is never persisted, logged, or exposed to UI state. */
 class NhCommentProofOfWork {
@@ -59,13 +43,13 @@ class NhCommentProofOfWork {
 }
 
 /**
- * One fixed-origin ArkWeb transport for every ErosN v2 request. The browser
- * jar decides whether a request is signed in; endpoint response semantics do
- * not create a second native or anonymous transport. Authenticated writes
- * remain one-shot operations reached solely from an explicit native action.
+ * One session-aware client for every NH API v2 request. Authentication,
+ * refresh, replay and durable publication stay below this facade;
+ * authenticated writes remain one-shot explicit native actions.
  */
 export class NhApiClient {
   private static lastCloudBlacklistRefreshAt: number = 0
+
   static async latest(page: number = 1): Promise<NhGalleryPageResult> {
     const root: Record<string, Object> = await NhApiClient.getJson(
       `${API_ROOT}/api/v2/galleries?page=${Math.max(1, Math.floor(page))}`,
@@ -119,10 +103,10 @@ export class NhApiClient {
   }
 
   /**
-   * Account favourites are deliberately read-only at this layer. The browser
-   * session must be present before the request is permitted; the fixed
-   * ArkWeb transport then confines browser credentials and v2 authorization
-   * to the first-party API origin.
+   * Account favourites are deliberately read-only at this layer. A promoted
+   * sealed native session must be present before the request is permitted;
+   * the unified session client confines v2 authorization to the fixed
+   * first-party API origin.
    */
   static async favorites(page: number = 1, query: string = ''): Promise<NhGalleryPageResult> {
     if (!NhAccountSessionService.hasRetainedAccount()) {
@@ -290,7 +274,7 @@ export class NhApiClient {
     })
     const root: Record<string, Object> = await NhApiClient.requestJsonMutation(
       `${API_ROOT}/api/v2/galleries/${normalizedGalleryId}/comments`,
-      http.RequestMethod.POST,
+      'POST',
       payload,
       'Comment service rejected this post',
     )
@@ -324,7 +308,7 @@ export class NhApiClient {
     try {
       const root: Record<string, Object> = await NhApiClient.getJson(
         `${API_ROOT}/api/v2/galleries/${normalizedGalleryId}/favorite`,
-        NhJsonReadScope.ACCOUNT_OWNED_NON_RETIRING,
+        NhJsonReadScope.ACCOUNT_OWNED,
       )
       if (typeof root['favorited'] !== 'boolean') {
         return status
@@ -357,7 +341,7 @@ export class NhApiClient {
     const url: string = `${API_ROOT}/api/v2/galleries/${normalizedGalleryId}/favorite`
     const root: Record<string, Object> = await NhApiClient.requestJsonMutation(
       url,
-      shouldFavorite ? http.RequestMethod.POST : http.RequestMethod.DELETE,
+      shouldFavorite ? 'POST' : 'DELETE',
       '',
       'Favourite service rejected this request',
     )
@@ -389,7 +373,7 @@ export class NhApiClient {
     }
     const root: Record<string, Object> = await NhApiClient.requestJsonMutation(
       `${API_V2_PREFIX}galleries/${normalizedGalleryId}/download?format=torrent`,
-      http.RequestMethod.POST,
+      'POST',
       '',
       'Torrent service rejected this request',
     )
@@ -411,80 +395,24 @@ export class NhApiClient {
    * retry budget. An existing verified session is invalidated later only by
    * its own 401 on an authenticated operation.
    */
-  static async verifyAccountSession(): Promise<boolean> {
-    const outcome: NhBrowserSessionVerificationOutcome = await NhApiClient.verifyCapturedAccountSession(
-      NhArkWebSessionTransport.requestStatus(`${API_V2_PREFIX}user`),
-    )
-    return outcome === NhBrowserSessionVerificationOutcome.VERIFIED
-  }
-
-  /**
-   * The one-time login confirmation must run in the visible Web component
-   * that completed the challenge. A separately bootstrapped hidden Web host
-   * is reserved for later API reads and must not decide whether this login
-   * route can return to native UI.
-   */
-  static async verifyAccountSessionFromVisibleBrowser(
-    controller: webview.WebviewController,
-  ): Promise<NhBrowserSessionVerificationOutcome> {
-    return NhApiClient.verifyCapturedAccountSession(
-      NhArkWebSessionTransport.requestStatusFromCurrentDocument(
-        controller,
-        `${API_V2_PREFIX}user`,
-      ),
+  static async verifyAccountSession(): Promise<NhBrowserSessionVerificationOutcome> {
+    return await NhApiClient.verifyCapturedAccountSession(
+      NhSessionHttpClient.requestCandidateStatus(),
     )
   }
 
-  /**
-   * Reads the ErosN-defined display profile only after a session has already
-   * been promoted. The ArkWeb bridge returns four parsed strings rather than
-   * HTML, cookie state, headers, or an API response body.
-   */
+  /** Reads the current official API profile through the unified session lifecycle. */
   static async accountProfile(): Promise<NhAccountProfile> {
-    if (!NhAccountSessionService.isAuthenticated()) {
-      throw new Error('A signed-in account session is required to load the profile')
-    }
-    const readToken = NhAccountSessionService.captureAuthenticatedReadToken()
-    if (readToken === null) {
-      throw new Error('account_session_generation_changed')
-    }
-    let response: NhArkWebAccountProfileResponse = await NhArkWebSessionTransport.requestAccountProfile()
-    if (response.statusCode === 401) {
-      NhAccountSessionService.recordAuthenticatedReadInitial401()
-      const refreshReady: boolean = await NhArkWebSessionTransport.refreshSessionAfter401(readToken)
-      NhAccountSessionService.recordAuthenticatedReadBrowserRefresh(refreshReady)
-      if (refreshReady && NhAccountSessionService.isAuthenticatedReadTokenCurrent(readToken)) {
-        response = await NhArkWebSessionTransport.requestAccountProfile()
-        NhAccountSessionService.recordAuthenticatedReadBrowserReplay(response.statusCode === 401)
-      }
-      if (response.statusCode === 401) {
-        await NhAccountSessionService.recordAuthenticatedReadReplay401(readToken)
-        throw new Error('account_authenticated_request_rejected')
-      }
-    }
-    if (response.statusCode === 403) {
-      throw new Error('HTTP 403')
-    }
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw new Error(`HTTP ${response.statusCode}`)
-    }
-    // The response may have completed while an explicit clear or a newer
-    // verified promotion was durably taking ownership. Do not let a prior
-    // session's successful profile payload reach a later account revision.
-    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(readToken)) {
-      throw new Error('account_session_generation_changed')
-    }
-    const profile: NhAccountProfile = new NhAccountProfile()
-    profile.username = response.username
-    profile.userUrl = response.userUrl
-    profile.userId = response.userId
-    profile.avatarUrl = response.avatarUrl
+    const profile: NhAccountProfile = await NhSessionHttpClient.requestAccountProfile()
     if (!profile.hasIdentity()) {
       throw new Error('Account profile did not contain a valid identity')
     }
-    await NhAccountSessionService.persistBrowserManagedCookies()
-    await NhAccountSessionService.syncSealedSessionFromRegularJar()
     return profile
+  }
+
+  /** One process-lifecycle probe through the same account request authority. */
+  static async validateRestoredAccountSession(): Promise<boolean> {
+    return await NhSessionHttpClient.validatePromotedSession()
   }
 
   private static async verifyCapturedAccountSession(
@@ -498,18 +426,12 @@ export class NhApiClient {
       }
       if (status === 401) {
         NhAccountSessionService.rejectPendingVisibleBrowserSession()
-        NhArkWebSessionTransport.resetForVisibleSessionCandidate()
         return NhBrowserSessionVerificationOutcome.REJECTED
       } else {
         // A 0, 403, 5xx, or other non-401 response can arrive while the
         // first-party login landing page or managed challenge is still
         // settling. It is not evidence that the browser-issued token is bad.
         const retryExhausted: boolean = NhAccountSessionService.deferPendingVisibleBrowserSession()
-        // The candidate probe may have reloaded the retained ArkWeb host with
-        // a different UA. The pending value is now gone, so make the next
-        // active-session request bootstrap with the previously sealed UA
-        // instead of reusing the failed candidate's ready document.
-        NhArkWebSessionTransport.resetForVisibleSessionCandidate()
         return retryExhausted
           ? NhBrowserSessionVerificationOutcome.RETRY_EXHAUSTED
           : NhBrowserSessionVerificationOutcome.RETRY_SCHEDULED
@@ -520,7 +442,6 @@ export class NhApiClient {
       // service applies its own finite candidate-keyed cooldown and budget,
       // so the page's one-second capture timer cannot flood retries.
       const retryExhausted: boolean = NhAccountSessionService.deferPendingVisibleBrowserSession()
-      NhArkWebSessionTransport.resetForVisibleSessionCandidate()
       return retryExhausted
         ? NhBrowserSessionVerificationOutcome.RETRY_EXHAUSTED
         : NhBrowserSessionVerificationOutcome.RETRY_SCHEDULED
@@ -585,13 +506,10 @@ export class NhApiClient {
     _denyRedirects: boolean = false,
     _singleAttempt: boolean = false,
   ): Promise<Object> {
-    // All nhentai v2 traffic shares one retained ArkWeb transport. Whether a
-    // request carries account identity is decided only inside the browser
-    // from its current document.cookie; response Set-Cookie updates
-    // that same jar. The legacy cache/redirect flags remain in this private
-    // signature for call-site compatibility but cannot create a second
-    // native transport or an anonymous fallback while an account is active.
-    const response: NhArkWebSessionResponse = await NhApiClient.requestBrowserResponse(
+    // All NH API v2 traffic shares the same session lifecycle and native wire
+    // transport. The legacy flags remain only for private call compatibility;
+    // they cannot select a second client or anonymous fallback.
+    const response: NhApiHttpResponse = await NhSessionHttpClient.requestJson(
       url,
       'GET',
       '',
@@ -604,75 +522,6 @@ export class NhApiClient {
     return value
   }
 
-  /** One browser-owned request, one root refresh on 401, then one replay. */
-  private static async requestBrowserResponse(
-    url: string,
-    method: string,
-    body: string,
-    scope: NhJsonReadScope,
-  ): Promise<NhArkWebSessionResponse> {
-    if (!NhApiClient.isFirstPartyApiV2Url(url)) {
-      throw new Error('The browser transport is restricted to the first-party API')
-    }
-    const accountOwned: boolean = NhAccountSessionService.hasRetainedAccount()
-    // All first-party reads share the same browser identity. Fence every
-    // logged-in request so its 401 repair cannot race a real account switch.
-    const readToken: NhAccountAuthenticatedReadToken | null = accountOwned
-      ? NhAccountSessionService.captureAuthenticatedReadToken()
-      : null
-    if (accountOwned && readToken === null) {
-      throw new Error('account_session_generation_changed')
-    }
-    let response: NhArkWebSessionResponse = await NhArkWebSessionTransport.requestJson(url, method, body)
-    if (response.statusCode === 401) {
-      if (accountOwned) {
-        NhAccountSessionService.recordAuthenticatedReadInitial401()
-        await NhAccountSessionService.recordBrowserAuthCookieShape('after_initial_401')
-      }
-      const refreshReady: boolean = await NhArkWebSessionTransport.refreshSessionAfter401(readToken)
-      if (accountOwned) {
-        NhAccountSessionService.recordAuthenticatedReadBrowserRefresh(refreshReady)
-        await NhAccountSessionService.recordBrowserAuthCookieShape('after_root_refresh')
-      }
-      if (readToken !== null && !NhAccountSessionService.isAuthenticatedReadTokenCurrent(readToken)) {
-        throw new Error('account_session_generation_changed')
-      }
-      if (refreshReady) {
-        response = await NhArkWebSessionTransport.requestJson(url, method, body)
-        if (accountOwned) {
-          NhAccountSessionService.recordAuthenticatedReadBrowserReplay(response.statusCode === 401)
-          if (response.statusCode === 401) {
-            await NhAccountSessionService.recordBrowserAuthCookieShape('after_replay_401')
-          }
-        }
-      }
-    }
-    if (response.statusCode === 401) {
-      if (accountOwned && readToken !== null) {
-        await NhAccountSessionService.recordAuthenticatedReadReplay401(readToken)
-      }
-      throw new Error('account_authenticated_request_rejected')
-    }
-    if (response.statusCode === 403) {
-      throw new Error('HTTP 403')
-    }
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw new Error(`HTTP ${response.statusCode}`)
-    }
-    if (readToken !== null && !NhAccountSessionService.isAuthenticatedReadTokenCurrent(readToken)) {
-      throw new Error('account_session_generation_changed')
-    }
-    await NhAccountSessionService.persistBrowserManagedCookies()
-    if (scope === NhJsonReadScope.ACCOUNT_OWNED ||
-      scope === NhJsonReadScope.ACCOUNT_OWNED_NON_RETIRING) {
-      NhAccountSessionService.markBrowserIdentityVerified()
-    }
-    if (NhAccountSessionService.isAuthenticated()) {
-      await NhAccountSessionService.syncSealedSessionFromRegularJar()
-    }
-    return response
-  }
-
   /**
    * One-shot authenticated mutation transport. API 24 uses `extraData`, not
    * the API-26 `body` field. The generic error intentionally omits response
@@ -680,25 +529,25 @@ export class NhApiClient {
    */
   private static async requestJsonMutation(
     url: string,
-    method: http.RequestMethod,
+    method: string,
     extraData: string,
     rejectedMessage: string,
   ): Promise<Record<string, Object>> {
     if (!NhApiClient.isFirstPartyApiV2Url(url)) {
       throw new Error('This account action is restricted to the first-party API')
     }
-    if (method !== http.RequestMethod.POST && method !== http.RequestMethod.DELETE) {
+    if (method !== 'POST' && method !== 'DELETE') {
       throw new Error('This account action uses an unsupported request method')
     }
     if (!NhAccountSessionService.isAuthenticated()) {
       throw new Error('Sign in from Settings before changing account data')
     }
-    const browserMethod: string = method === http.RequestMethod.POST ? 'POST' : 'DELETE'
-    const response: NhArkWebSessionResponse = await NhApiClient.requestBrowserResponse(
+    const response: NhApiHttpResponse = await NhSessionHttpClient.requestJson(
       url,
-      browserMethod,
+      method,
       extraData,
-      NhJsonReadScope.ACCOUNT_OWNED_NON_RETIRING,
+      NhJsonReadScope.ACCOUNT_OWNED,
+      NhRequestReplayPolicy.NEVER,
     )
     const value: Object = JSON.parse(response.body) as Object
     if (Array.isArray(value) || value === null || typeof value !== 'object') {
@@ -707,13 +556,13 @@ export class NhApiClient {
     return value as Record<string, Object>
   }
 
-  /** Catalog POST through the same browser jar; signed-out jars add no auth header. */
+  /** Catalog POST through the same lifecycle; signed-out requests add no auth header. */
   private static async postPublicJsonArray(url: string, extraData: string): Promise<Object[]> {
     if (!NhApiClient.isFirstPartyApiV2Url(url)) {
       return []
     }
     try {
-      const response: NhArkWebSessionResponse = await NhApiClient.requestBrowserResponse(
+      const response: NhApiHttpResponse = await NhSessionHttpClient.requestJson(
         url,
         'POST',
         extraData,
@@ -730,47 +579,10 @@ export class NhApiClient {
     const root: Record<string, Object> = await NhApiClient.getJson(`${API_V2_PREFIX}pow?action=comment`)
     const challenge: string = NhApiClient.asString(root['challenge'])
     const difficulty: number = NhApiClient.asNumber(root['difficulty'])
-    if (!/^[0-9a-fA-F]{16,256}$/.test(challenge) || difficulty <= 0 ||
-      difficulty > MAX_COMMENT_POW_DIFFICULTY) {
-      throw new Error('Comment service returned an unsupported proof-of-work challenge')
-    }
     const proof: NhCommentProofOfWork = new NhCommentProofOfWork()
     proof.challenge = challenge
-    for (let attempt: number = 0; attempt < MAX_COMMENT_POW_ATTEMPTS; attempt++) {
-      const nonce: string = attempt.toString()
-      if (NhApiClient.leadingZeroBits(NhApiClient.sha256(`${challenge}${nonce}`)) >= difficulty) {
-        proof.nonce = nonce
-        return proof
-      }
-      if ((attempt + 1) % COMMENT_POW_YIELD_INTERVAL === 0) {
-        await NhApiClient.delay(0)
-      }
-    }
-    throw new Error('Comment proof-of-work could not be completed safely')
-  }
-
-  private static sha256(value: string): Uint8Array {
-    const md = cryptoFramework.createMd('SHA256')
-    md.updateSync({ data: new util.TextEncoder().encodeInto(value) })
-    return md.digestSync().data
-  }
-
-  private static leadingZeroBits(bytes: Uint8Array): number {
-    let count: number = 0
-    for (let index: number = 0; index < bytes.length; index++) {
-      const value: number = bytes[index]
-      if (value === 0) {
-        count += 8
-        continue
-      }
-      for (let bit: number = 7; bit >= 0; bit--) {
-        if ((value & (1 << bit)) !== 0) {
-          return count
-        }
-        count += 1
-      }
-    }
-    return count
+    proof.nonce = await NhApiProofOfWork.solve(challenge, difficulty, 2000000)
+    return proof
   }
 
   private static async delay(milliseconds: number): Promise<void> {
@@ -867,7 +679,7 @@ export class NhApiClient {
   static async cloudBlacklistIds(): Promise<number[]> {
     const rawItems: Object[] = await NhApiClient.getBareJsonArray(
       `${API_ROOT}/api/v2/blacklist/ids`,
-      NhJsonReadScope.ACCOUNT_OWNED_NON_RETIRING,
+      NhJsonReadScope.ACCOUNT_OWNED,
       false,
     )
     const ids: number[] = []

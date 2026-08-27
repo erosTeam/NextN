@@ -20,7 +20,9 @@ import {
   LlmSourceProfileRepository,
   MangaRenderingServiceSettings,
   NhAccountProfileService,
+  NhApiClient,
   NhAccountSessionService,
+  NhCookieAuthority,
   NhTagCatalogService,
   NhCloudBlacklistService,
   NhClipboardLinkService,
@@ -54,6 +56,8 @@ const ENTRY_PAGE: string = 'pages/Index'
 const TRANSPARENT_COLOR: string = '#00FFFFFF'
 const FALLBACK_TOP_AVOID: number = 40
 const FALLBACK_BOTTOM_AVOID: number = 0
+const DEBUG_WEB_DEVTOOLS_PORT: number = 19222
+const ACCOUNT_FOREGROUND_PROBE_INTERVAL_MS: number = 5 * 60 * 1000
 
 export default class EntryAbility extends UIAbility {
   private mainWindow: window.Window | null = null
@@ -69,6 +73,8 @@ export default class EntryAbility extends UIAbility {
   private galleryDirectLaunchIdAtLaunch: number = 0
   private galleryDirectLaunchCommentsAtLaunch: boolean = false
   private accountRestoredAtBootstrap: boolean = false
+  private accountProbeInFlight: boolean = false
+  private lastAccountProbeStartedAt: number = 0
 
   onCreate(want: Want, _launchParam: AbilityConstant.LaunchParam): void {
     this.galleryDirectLaunchIdAtLaunch = this.galleryDirectLaunchId(want)
@@ -91,8 +97,17 @@ export default class EntryAbility extends UIAbility {
     // route can run that preflight.
     try {
       webview.WebviewController.initializeWebEngine()
-      webview.WebCookieManager.putAcceptCookieEnabled(true)
-      webview.WebCookieManager.putAcceptThirdPartyCookieEnabled(true)
+      NhCookieAuthority.initialize()
+      const activeEngine: webview.ArkWebEngineVersion =
+        webview.WebviewController.getActiveWebEngineVersion()
+      DiagnosticLogger.info(
+        'arkweb',
+        'engine_profile',
+        activeEngine === webview.ArkWebEngineVersion.ARKWEB_EVERGREEN ? 'evergreen' :
+          activeEngine === webview.ArkWebEngineVersion.M144 ? 'm144' :
+            activeEngine === webview.ArkWebEngineVersion.M132 ? 'm132' :
+              activeEngine === webview.ArkWebEngineVersion.M114 ? 'm114' : 'system_default',
+      )
     } catch (_error) {}
     try {
       this.environmentCallbackId = this.context.getApplicationContext().on('environment', {
@@ -108,7 +123,7 @@ export default class EntryAbility extends UIAbility {
   onWindowStageCreate(windowStage: window.WindowStage): void {
     if (this.context.applicationInfo.debug || this.context.applicationInfo.appProvisionType === 'debug') {
       try {
-        webview.WebviewController.setWebDebuggingAccess(true)
+        webview.WebviewController.setWebDebuggingAccess(true, DEBUG_WEB_DEVTOOLS_PORT)
       } catch (_error) {}
     }
     let mainWindow: window.Window | null = null
@@ -226,6 +241,7 @@ export default class EntryAbility extends UIAbility {
         // exception before loadContent.
         ThemeSettings.restore(this.context).catch((): void => {})
         this.mainContentReady = true
+        this.probeRestoredAccountSession()
         this.dispatchColdGalleryDirectLaunchIfPending()
         this.probeClipboardLinkIfReady()
         try {
@@ -308,12 +324,18 @@ export default class EntryAbility extends UIAbility {
     SyncScheduler.requestAfterForeground(this.context, 'foreground')
     if (this.mainContentReady) {
       MotionHandStateService.start()
+      this.probeRestoredAccountSession()
     }
     this.probeClipboardLinkIfReady()
   }
 
   onNewWant(want: Want, _launchParam: AbilityConstant.LaunchParam): void {
     if (connectSafeMode().restricted()) {
+      return
+    }
+    const recoveryValue: Object | undefined = want.parameters?.['nextn_login_recovery']
+    if (typeof recoveryValue === 'string' && recoveryValue === '1') {
+      requestLoginRecoveryLaunch()
       return
     }
     const galleryId: number = this.galleryDirectLaunchId(want)
@@ -332,6 +354,28 @@ export default class EntryAbility extends UIAbility {
     this.abilityForeground = false
     ImagePipelineService.clearOnBackground()
     MotionHandStateService.stop()
+  }
+
+  /**
+   * A restored account must not wait for a favourite mutation to discover an
+   * expired access token. Probe once after cold start and after a sufficiently
+   * separated foreground transition; the unified session client owns refresh,
+   * terminal state and the root HDS notice.
+   */
+  private probeRestoredAccountSession(): void {
+    if (this.accountProbeInFlight || !NhAccountSessionService.isAuthenticated()) {
+      return
+    }
+    const now: number = Date.now()
+    if (now - this.lastAccountProbeStartedAt < ACCOUNT_FOREGROUND_PROBE_INTERVAL_MS) {
+      return
+    }
+    this.accountProbeInFlight = true
+    this.lastAccountProbeStartedAt = now
+    NhApiClient.validateRestoredAccountSession()
+      .finally((): void => {
+        this.accountProbeInFlight = false
+      })
   }
 
   private galleryDirectLaunchId(want: Want): number {

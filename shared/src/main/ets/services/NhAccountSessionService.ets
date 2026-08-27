@@ -16,6 +16,7 @@ import { connectAccountSession } from '../state/AccountSessionState'
 import { connectAccountProfile } from '../state/AccountProfileState'
 import { DiagnosticLogger } from '../diagnostics/DiagnosticLogger'
 import { NhBrowserSessionBoundary } from './NhBrowserSessionBoundary'
+import { NhCookieAuthority } from './NhCookieAuthority'
 
 const KEY_ALIAS: string = 'com.erosteam.nextn.account-session.v1'
 const ASSOCIATED_DATA: string = 'com.erosteam.nextn.account-session'
@@ -25,6 +26,11 @@ const MAX_COOKIE_HEADER_BYTES: number = 16 * 1024
 const MAX_BROWSER_USER_AGENT_CHARS: number = 2048
 const MAX_AUTH_COOKIE_VALUE_CHARS: number = 4096
 const MAX_AUTH_COOKIE_ATTRIBUTE_CHARS: number = 1024
+const AUTH_EXPIRY_ONE_HOUR_MS: number = 60 * 60 * 1000
+const AUTH_EXPIRY_ONE_DAY_MS: number = 24 * AUTH_EXPIRY_ONE_HOUR_MS
+const AUTH_EXPIRY_ONE_WEEK_MS: number = 7 * AUTH_EXPIRY_ONE_DAY_MS
+const AUTH_REFRESH_CHECKPOINT_MAX_ATTEMPTS: number = 3
+const AUTH_REFRESH_CHECKPOINT_RETRY_DELAY_MS: number = 250
 const MAX_ACCOUNT_BACKUP_BUNDLE_CHARS: number = 512 * 1024
 const MAX_ACCOUNT_BACKUP_ID_CHARS: number = 512
 const RECOVERABLE_ARKWEB_COOKIE_NAMES: string[] = [
@@ -38,15 +44,17 @@ const RECOVERABLE_ARKWEB_COOKIE_NAMES: string[] = [
 // reaches the account endpoint while a challenge is still settling must not
 // turn that poll into a one-request-per-second retry loop.
 const TRANSIENT_CANDIDATE_RETRY_DELAY_MS: number = 5000
-// ErosN treats a completed WebView login as a one-shot decision. Mirror that
-// bounded completion behavior here: after the initial probe, an unchanged
+// A completed WebView login is a bounded one-shot decision: after the initial
+// probe, an unchanged
 // browser candidate gets one delayed confirmation attempt, never an endless
 // five-second poll. A changed cookie+UA, explicit new login, or trusted
 // redirect is a new candidate phase and can start this small budget again.
 const MAX_TRANSIENT_CANDIDATE_RETRIES: number = 1
+// ArkWeb's all-cookie metadata API is supplementary to the URL-scoped Cookie
+// header. It must never strand the visible-login capture loop indefinitely.
+const VISIBLE_AUTH_COOKIE_SNAPSHOT_TIMEOUT_MS: number = 1500
 const ACCOUNT_LOG_DOMAIN: number = 0xE001
 const ACCOUNT_LOG_TAG: string = 'NextNAccount'
-const SEALED_RESYNC_MIN_INTERVAL_MS: number = 30000
 const ACCOUNT_STATE_STORE: string = 'nextn_settings'
 const ACCOUNT_PRESENT_KEY: string = 'account.session.present'
 const AUTH_REFRESH_RETRY_AT_KEY: string = 'account.session.authRefreshRetryAt'
@@ -79,14 +87,19 @@ enum AccountSessionDiagnosticStage {
   RESTORE_VERIFICATION_REQUIRED_AFTER_BROWSER_REFRESH_FAILURE =
     'account_restore_verification_required_after_browser_refresh_failure',
   AUTHENTICATED_READ_INITIAL_401 = 'account_authenticated_read_initial_401',
+  AUTHENTICATED_READ_STALE_401_AFTER_REFRESH = 'account_authenticated_read_stale_401_after_refresh',
   AUTHENTICATED_READ_BROWSER_REFRESH_READY = 'account_authenticated_read_browser_refresh_ready',
   AUTHENTICATED_READ_BROWSER_REFRESH_UNAVAILABLE = 'account_authenticated_read_browser_refresh_unavailable',
   AUTHENTICATED_READ_REFRESH_ENDPOINT_READY = 'account_authenticated_read_refresh_endpoint_ready',
   AUTHENTICATED_READ_REFRESH_ENDPOINT_UNAVAILABLE = 'account_authenticated_read_refresh_endpoint_unavailable',
+  AUTHENTICATED_READ_REFRESH_TOKEN_REJECTED = 'account_authenticated_read_refresh_token_rejected',
   AUTHENTICATED_READ_BROWSER_REPLAY_RECOVERED = 'account_authenticated_read_browser_replay_recovered',
   AUTHENTICATED_READ_BROWSER_REPLAY_401 = 'account_authenticated_read_browser_replay_401',
   AUTHENTICATED_READ_TERMINAL_401_AFTER_RESTORE = 'account_authenticated_read_terminal_401_after_restore',
   AUTHENTICATED_READ_TERMINAL_401_AFTER_PROMOTION = 'account_authenticated_read_terminal_401_after_promotion',
+  RESPONSE_COOKIE_STORED = 'account_response_cookie_stored',
+  RESPONSE_AUTH_COOKIE_APPLIED = 'account_response_auth_cookie_applied',
+  RESPONSE_COOKIE_REJECTED = 'account_response_cookie_rejected',
   VERIFICATION_MARKER_PERSIST_FAILED = 'account_verification_marker_persist_failed',
   PROFILE_SNAPSHOT_CLEAR_FAILED = 'account_profile_snapshot_clear_failed',
   ARKWEB_TRANSPORT_MAIN_FRAME_LOAD_FAILED = 'account_arkweb_transport_main_frame_load_failed',
@@ -142,40 +155,38 @@ class SealedAuthCookie {
 }
 
 /**
- * Non-secret ownership of one authenticated ArkWeb GET. A response may alter
+ * Non-secret ownership of one authenticated native request. A response may alter
  * session state only while this exact runtime epoch remains active and no
  * durable sign-out or verified-promotion transition has started.
  */
 export class NhAccountAuthenticatedReadToken {
   sessionEpoch: number = -1
+  /** Non-secret generation of the access/refresh pair used when this request began. */
+  credentialRevision: number = -1
+}
+
+/** Result of consuming auth cookies from one bounded first-party response. */
+export enum NhResponseAuthCookieResult {
+  NONE,
+  APPLIED,
+  REJECTED,
 }
 
 /**
- * Owns the local account-session marker without ever accepting or retaining
- * a password. A visible ArkWeb login is the sole producer of the browser
- * cookie header; persistence is encrypted with a non-exportable HUKS AES key.
- * Authenticated dispatch remains in ArkWeb's regular cookie context.
+ * Owns the atomic native account-session generation without retaining a
+ * password. ArkWeb may supply a visible-login candidate, but only a verified
+ * access/renewal pair sealed with the non-exportable HUKS key can authorize
+ * native requests or make the native UI report an authenticated state.
  */
 export class NhAccountSessionService {
-  // `cookieHeader` is the current normal ArkWeb cookie-jar view used by the
-  // retained transport. The encrypted envelope is only a recovery fallback;
-  // treating its flattened snapshot as the live authority split one browser
-  // session into two independently expiring identities after a cold start.
+  // Flattened compatibility view. Request authorization is derived only from
+  // `sealedAuthCookies`; this string and the regular ArkWeb jar cannot vote on
+  // whether the native account is authenticated.
   private static cookieHeader: string = ''
   private static sealedFallbackCookieHeader: string = ''
   private static sealedAuthCookies: SealedAuthCookie[] = []
   private static browserUserAgent: string = ''
-  // A retained browser identity that has just passed the fixed same-origin
-  // account probe is authenticated even when the server rotated its access
-  // token to HttpOnly, which the ArkTS WebCookieManager cannot read. This
-  // signal is process-local and never persisted; a cold start always restores
-  // through the sealed readable envelope and self-heals on the first probe.
-  private static browserIdentityVerified: boolean = false
-  // Minimum interval between sealed-envelope re-seals after a successful
-  // response. The server can rotate access_token on every request; a full
-  // HUKS encrypt + RDB write per page would be needless write amplification.
-  private static lastSealedResyncAtMs: number = 0
-  // Candidate values remain only in memory until a same-origin account probe
+  // Candidate values remain only in memory until the native account probe
   // succeeds. They are deliberately separate from the active sealed session
   // so a managed-challenge 403 cannot replace a working account marker.
   private static pendingCookieHeader: string = ''
@@ -202,26 +213,25 @@ export class NhAccountSessionService {
   private static deferredCandidateRetryAttempts: number = 0
   private static deferredCandidateNavigationEpoch: number = 0
   private static visibleLoginNavigationEpoch: number = 0
+  private static candidateShapeDiagnosticEpoch: number = -1
+  private static candidateCookieFallbackDiagnosticEpoch: number = -1
   private static keyReadyTask: Promise<void> | null = null
   private static sessionContext: common.UIAbilityContext | null = null
   // EntryAbility owns the single cold-start restore. Keep its HUKS/RDB read
   // single-flight so an overlapping durable transition cannot publish a stale
   // session result.
   private static restoreTask: Promise<boolean> | null = null
-  // ArkWeb owns the usable browser identity. This task is deliberately
-  // separate from the sealed-record restore: an early lifecycle call can
-  // retry from the retained transport Web component without deleting a valid
-  // encrypted record just because the Web engine was not ready yet.
+  // Best-effort compatibility sink for visible browser surfaces. It never
+  // participates in native request authentication.
   private static cookieJarHydrationTask: Promise<boolean> | null = null
-  // Cold start can read an empty regular jar before any Web component exists.
-  // A sealed primary/saved envelope still in RDB must be retried once the
-  // retained host attaches, instead of immediately showing "re-verify".
-  private static cookieStoreRestoreRetryPending: boolean = false
-  private static cookieStoreRestoreRetryConsumed: boolean = false
-  private static cookieStoreRestoreRetryTask: Promise<void> | null = null
   private static cookieJarHydrationHeader: string = ''
   private static cookieJarHydrationEpoch: number = -1
   private static sessionEpoch: number = 0
+  // Unlike sessionEpoch, this advances for an in-place access/refresh
+  // rotation. It lets a late 401 from the preceding pair replay with the new
+  // access token instead of launching a second refresh after the single-flight
+  // promise has already settled.
+  private static credentialRevision: number = 0
   // Durable clear and verified promotion announce ownership before their RDB
   // operation starts. An old ArkWeb GET can then neither replay its cookie
   // recovery nor enqueue a verification marker behind the newer transition.
@@ -261,8 +271,9 @@ export class NhAccountSessionService {
     new Set<AccountSessionDiagnosticStage>()
 
   static isAuthenticated(): boolean {
-    return NhAccountSessionService.hasLoginCookies(NhAccountSessionService.cookieHeader) ||
-      NhAccountSessionService.browserIdentityVerified
+    return !NhAccountSessionService.verificationRequiredMarkerPresent &&
+      NhAccountSessionService.hasAccessAuthCookie(NhAccountSessionService.sealedAuthCookies) &&
+      NhAccountSessionService.hasRefreshAuthCookie(NhAccountSessionService.sealedAuthCookies)
   }
 
   /** Durable account ownership as projected to native pages. */
@@ -279,7 +290,7 @@ export class NhAccountSessionService {
     NhAccountSessionService.activeSavedAccountId = normalized
   }
 
-  /** Captured synchronously before an authenticated ArkWeb GET is issued. */
+  /** Captured synchronously before an authenticated native request is issued. */
   static captureAuthenticatedReadToken(): NhAccountAuthenticatedReadToken | null {
     if (!NhAccountSessionService.isAuthenticated() ||
       (NhAccountSessionService.sessionTransitionInFlight &&
@@ -288,6 +299,7 @@ export class NhAccountSessionService {
     }
     const token: NhAccountAuthenticatedReadToken = new NhAccountAuthenticatedReadToken()
     token.sessionEpoch = NhAccountSessionService.sessionEpoch
+    token.credentialRevision = NhAccountSessionService.credentialRevision
     return token
   }
 
@@ -299,6 +311,23 @@ export class NhAccountSessionService {
       token.sessionEpoch === NhAccountSessionService.sessionEpoch
   }
 
+  /** True only while this request still belongs to the access/refresh pair it started with. */
+  static isAuthenticatedReadCredentialCurrent(token: NhAccountAuthenticatedReadToken): boolean {
+    return NhAccountSessionService.isAuthenticatedReadTokenCurrent(token) &&
+      token.credentialRevision === NhAccountSessionService.credentialRevision
+  }
+
+  /** A successfully recovered safe read adopts the current pair before replay. */
+  static adoptCurrentAuthenticatedCredential(
+    token: NhAccountAuthenticatedReadToken,
+  ): boolean {
+    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+      return false
+    }
+    token.credentialRevision = NhAccountSessionService.credentialRevision
+    return true
+  }
+
   /**
    * Builds the fixed NH token-refresh body for the exact retained read epoch.
    * The value stays inside the account transport call, is never logged or
@@ -306,7 +335,7 @@ export class NhAccountSessionService {
    * endpoint.
    */
   static authenticatedRefreshRequestBody(token: NhAccountAuthenticatedReadToken): string {
-    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+    if (!NhAccountSessionService.isAuthenticatedReadCredentialCurrent(token)) {
       return ''
     }
     const refreshCookie: SealedAuthCookie | undefined =
@@ -315,7 +344,193 @@ export class NhAccountSessionService {
     if (refreshCookie === undefined) {
       return ''
     }
-    return JSON.stringify({ 'refresh_token': refreshCookie.value })
+    let refreshValue: string = refreshCookie.value
+    try {
+      refreshValue = decodeURIComponent(refreshValue)
+    } catch (_error) {}
+    return JSON.stringify({
+      'refresh_token': refreshValue,
+    })
+  }
+
+  /**
+   * Returns the fixed API v2 authorization header for the exact retained
+   * session epoch. The value never enters page state or feature code; only
+   * `NhSessionHttpClient` may pass it to the private first-party transport.
+   */
+  static authenticatedAuthorization(token: NhAccountAuthenticatedReadToken): string {
+    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+      return ''
+    }
+    const accessCookie: SealedAuthCookie | undefined =
+      NhAccountSessionService.sealedAuthCookies.find((cookie: SealedAuthCookie): boolean =>
+        cookie.name === 'access_token' && cookie.value.length > 0)
+    if (accessCookie === undefined) {
+      return ''
+    }
+    let accessValue: string = accessCookie.value
+    try {
+      accessValue = decodeURIComponent(accessValue)
+    } catch (_error) {}
+    return NhAccountSessionService.safeApiToken(accessValue).length > 0
+      ? `User ${accessValue}`
+      : ''
+  }
+
+  /**
+   * Atomically checkpoints a successful official refresh response into the
+   * HUKS envelope before the rejected request is replayed. This removes the
+   * old split where ArkWeb could own a new token while native cold-start
+   * storage still owned the rejected one.
+   */
+  static async applyRefreshedApiTokens(
+    token: NhAccountAuthenticatedReadToken,
+    accessToken: string,
+    refreshToken: string,
+    responseCookiesAlreadyStored: boolean = false,
+  ): Promise<boolean> {
+    if (!NhAccountSessionService.isAuthenticatedReadCredentialCurrent(token)) {
+      return false
+    }
+    const access: string = NhAccountSessionService.safeApiToken(accessToken)
+    const refresh: string = NhAccountSessionService.safeApiToken(refreshToken)
+    const context: common.UIAbilityContext | null = NhAccountSessionService.sessionContext
+    if (access.length === 0 || refresh.length === 0 || context === null ||
+      NhAccountSessionService.browserUserAgent.length === 0) {
+      return false
+    }
+    const currentAccess: string = NhAccountSessionService.currentAuthCookieValue('access_token')
+    const currentRefresh: string = NhAccountSessionService.currentAuthCookieValue('refresh_token')
+    if (access === currentAccess && refresh === currentRefresh) {
+      return true
+    }
+    const authCookies: SealedAuthCookie[] = [
+      NhAccountSessionService.apiTokenCookie('access_token', access, false),
+      NhAccountSessionService.apiTokenCookie('refresh_token', refresh, true),
+    ]
+    const header: string = `access_token=${access}; refresh_token=${refresh}`
+    const transitionEpoch: number = NhAccountSessionService.beginDurableSessionTransition(false)
+    try {
+      const record: EncryptedAccountSession = await NhAccountSessionService.encrypt(
+        NhAccountSessionService.serializeSessionPayload(
+          header,
+          NhAccountSessionService.browserUserAgent,
+          authCookies,
+        ),
+      )
+      let checkpointed: boolean = false
+      for (let attempt: number = 1; attempt <= AUTH_REFRESH_CHECKPOINT_MAX_ATTEMPTS; attempt += 1) {
+        if (!NhAccountSessionService.isDurableSessionTransitionCurrent(transitionEpoch) ||
+          !NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+          return false
+        }
+        try {
+          await AccountSessionRepository.saveVerifiedForAccount(
+            context,
+            record,
+            NhAccountSessionService.activeSavedAccountId,
+          )
+          const persisted: AccountSessionRestoreSnapshot =
+            await AccountSessionRepository.loadForRestore(context)
+          if (persisted.record === null ||
+            persisted.record.ciphertext !== record.ciphertext ||
+            persisted.record.nonce !== record.nonce) {
+            throw new Error('account_refresh_checkpoint_readback_failed')
+          }
+          checkpointed = true
+          if (attempt > 1) {
+            DiagnosticLogger.info(
+              'account-session',
+              'account_refresh_checkpoint_recovered',
+              `attempt=${attempt}`,
+            )
+          }
+          break
+        } catch (_error) {
+          if (attempt >= AUTH_REFRESH_CHECKPOINT_MAX_ATTEMPTS) {
+            DiagnosticLogger.warn(
+              'account-session',
+              'account_refresh_checkpoint_failed',
+              `attempts=${AUTH_REFRESH_CHECKPOINT_MAX_ATTEMPTS}`,
+            )
+            break
+          }
+          DiagnosticLogger.warn(
+            'account-session',
+            'account_refresh_checkpoint_retry',
+            `attempt=${attempt}`,
+          )
+          await NhAccountSessionService.delay(AUTH_REFRESH_CHECKPOINT_RETRY_DELAY_MS * attempt)
+        }
+      }
+      if (!checkpointed) {
+        return false
+      }
+      if (!NhAccountSessionService.isDurableSessionTransitionCurrent(transitionEpoch) ||
+        !NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+        return false
+      }
+      NhAccountSessionService.cookieHeader = header
+      NhAccountSessionService.sealedFallbackCookieHeader = header
+      NhAccountSessionService.sealedAuthCookies = authCookies
+      NhAccountSessionService.credentialRevision += 1
+      token.credentialRevision = NhAccountSessionService.credentialRevision
+      NhAccountSessionService.recordAuthCookieExpiryShape('refresh_checkpoint', authCookies)
+      // A response-Set-Cookie path has already written the server's complete
+      // attributes and saved the regular jar once. Rewriting the same values
+      // here with the JSON-refresh compatibility defaults would silently
+      // replace server expiry/SameSite attributes and save a second time.
+      // Only a JSON token response without authoritative auth Set-Cookie needs
+      // this compatibility hydration.
+      if (!responseCookiesAlreadyStored) {
+        try {
+          NhCookieAuthority.storeRefreshedAuthTokens(access, refresh)
+        } catch (_error) {}
+      }
+      return true
+    } catch (_error) {
+      return false
+    } finally {
+      NhAccountSessionService.finishDurableSessionTransition(transitionEpoch)
+    }
+  }
+
+  /**
+   * Applies every successful first-party response's auth Set-Cookie values to
+   * the same HUKS/RDB generation used by Authorization and cold restore. A
+   * partial rotation is completed only from the current fenced pair; malformed
+   * or conflicting auth cookies reject the response checkpoint.
+   */
+  static async applyResponseAuthSetCookies(
+    token: NhAccountAuthenticatedReadToken,
+    setCookieHeaders: string[],
+  ): Promise<NhResponseAuthCookieResult> {
+    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+      return NhResponseAuthCookieResult.REJECTED
+    }
+    const responseAccess: string | null = NhAccountSessionService.responseAuthCookieValue(
+      setCookieHeaders,
+      'access_token',
+    )
+    const responseRefresh: string | null = NhAccountSessionService.responseAuthCookieValue(
+      setCookieHeaders,
+      'refresh_token',
+    )
+    if (responseAccess === null && responseRefresh === null) {
+      return NhResponseAuthCookieResult.NONE
+    }
+    if (responseAccess === '' || responseRefresh === '') {
+      return NhResponseAuthCookieResult.REJECTED
+    }
+    const access: string = responseAccess ??
+      NhAccountSessionService.currentAuthCookieValue('access_token')
+    const refresh: string = responseRefresh ??
+      NhAccountSessionService.currentAuthCookieValue('refresh_token')
+    if (access.length === 0 || refresh.length === 0 ||
+      !await NhAccountSessionService.applyRefreshedApiTokens(token, access, refresh, true)) {
+      return NhResponseAuthCookieResult.REJECTED
+    }
+    return NhResponseAuthCookieResult.APPLIED
   }
 
   /**
@@ -395,40 +610,15 @@ export class NhAccountSessionService {
     } catch (_error) {}
   }
 
-  /**
-   * The retained ArkWeb transport may use the current ability context only
-   * while it is repairing the exact authenticated read that supplied this
-   * token. The context carries no account or browser data; it lets the
-   * already-authorized browser identity atomically re-promote a newly
-   * verified access token before a terminal 401 becomes a visible failure.
-   */
-  static authenticatedRecoveryContext(token: NhAccountAuthenticatedReadToken): common.UIAbilityContext | null {
-    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
-      return null
-    }
-    return NhAccountSessionService.sessionContext
-  }
-
   /** Returns one fixed lifecycle code only; safe for redacted acceptance diagnostics. */
   static latestDiagnosticStageCode(): string {
     return NhAccountSessionService.latestDiagnosticStage
   }
 
-  /**
-   * The retained ArkWeb host has already classified an error as main-frame
-   * only. Preserve that finite fact for the next account-persistence evidence
-   * run without carrying a request URL, error code, response, cookie, or
-   * browser payload across the service boundary.
-   */
-  static recordArkWebTransportMainFrameLoadFailure(): void {
-    NhAccountSessionService.recordDiagnosticStage(
-      AccountSessionDiagnosticStage.ARKWEB_TRANSPORT_MAIN_FRAME_LOAD_FAILED,
-    )
-  }
-
   /** True only while a retained sealed record needs an explicit replacement decision. */
   static requiresExplicitVisibleLoginAction(): boolean {
-    return false
+    return NhAccountSessionService.retainedRestoreRequiresExplicitLogin ||
+      NhAccountSessionService.verificationRequiredMarkerPresent
   }
 
   /**
@@ -446,14 +636,15 @@ export class NhAccountSessionService {
 
   /** Cancels a not-yet-promoted explicit login action when its visible route ends. */
   static revokeExplicitVisibleLoginAction(): void {
-    if (NhAccountSessionService.retainedRestoreRequiresExplicitLogin) {
+    if (NhAccountSessionService.requiresExplicitVisibleLoginAction()) {
       NhAccountSessionService.explicitVisibleLoginActionRegistered = false
     }
   }
 
   /** Defense in depth for any visible-login caller, not just BrowserSessionPage. */
   static canOpenVisibleLoginSession(): boolean {
-    return true
+    return !NhAccountSessionService.requiresExplicitVisibleLoginAction() ||
+      NhAccountSessionService.explicitVisibleLoginActionRegistered
   }
 
   /**
@@ -471,7 +662,7 @@ export class NhAccountSessionService {
     NhAccountSessionService.expireVisibleBrowserIdentityCookies()
   }
 
-  /** Produces the one ArkWeb-compatible UA shape for visible and retained hosts. */
+  /** Produces the proven NextE-compatible UA shape for visible and retained hosts. */
   static nextECompatibleUserAgent(nativeUserAgent: string): string {
     const normalizedNativeUserAgent: string = NhAccountSessionService.normalizeUserAgent(nativeUserAgent)
     if (normalizedNativeUserAgent.length === 0) {
@@ -498,7 +689,7 @@ export class NhAccountSessionService {
     )
     if (userAgent.length > 0 && NhAccountSessionService.browserUserAgent.length === 0 &&
       NhAccountSessionService.pendingBrowserUserAgent.length === 0) {
-      // The retained ArkWeb controller has now chosen the exact compatible UA
+      // The visible ArkWeb login controller has now chosen the exact compatible UA
       // used for this live browser session. Keep it as part of the session
       // snapshot so a successful response cannot re-seal a valid Cookie tuple
       // with an empty UA and make the next cold restore reject the envelope.
@@ -517,7 +708,8 @@ export class NhAccountSessionService {
     // bypasses this fast path so its ownership/fail-closed boundary remains
     // authoritative.
     if (NhAccountSessionService.isAuthenticated() &&
-      !NhAccountSessionService.sessionTransitionInFlight) {
+      !NhAccountSessionService.sessionTransitionInFlight &&
+      !NhAccountSessionService.verificationRequiredMarkerPresent) {
       return true
     }
     if (NhAccountSessionService.restoreTask !== null) {
@@ -536,7 +728,7 @@ export class NhAccountSessionService {
   }
 
   /**
-   * Re-runs the non-visible RDB/HUKS/ArkWeb recovery for a retained account.
+   * Re-runs the non-visible RDB/HUKS recovery for a retained account.
    * It never opens a login page, changes account ownership, or clears cached
    * profile/content when the transport remains unavailable.
    */
@@ -545,7 +737,8 @@ export class NhAccountSessionService {
       return true
     }
     const context: common.UIAbilityContext | null = NhAccountSessionService.sessionContext
-    if (context === null || !NhAccountSessionService.retainedAccountPresent) {
+    if (context === null || !NhAccountSessionService.retainedAccountPresent ||
+      NhAccountSessionService.verificationRequiredMarkerPresent) {
       return false
     }
     const restored: boolean = await NhAccountSessionService.restoreAtBootstrap(context)
@@ -556,49 +749,10 @@ export class NhAccountSessionService {
   /**
    * EntryAbility calls this once after its single cold-start restore attempt.
    * It publishes only non-secret state, so pages can render without becoming
-   * secondary owners of RDB/HUKS/ArkWeb recovery.
+   * secondary owners of RDB/HUKS recovery.
    */
   static publishBootstrapState(): void {
     NhAccountSessionService.publishCurrentSessionState()
-  }
-
-  /**
-   * The retained ArkWeb host attaches only after the root page builds, while
-   * the cold-start restore runs in EntryAbility before any Web component
-   * exists. A restore that read an empty cookie store at that point may have
-   * misclassified a still-present browser identity as absent. Re-run the
-   * single-flight restore exactly once per process when the store becomes
-   * reachable, so the user never sees a fake "re-verify" gate that would
-   * succeed silently anyway.
-   */
-  static noteArkWebCookieStoreAvailable(): void {
-    if (!NhAccountSessionService.cookieStoreRestoreRetryPending ||
-      NhAccountSessionService.cookieStoreRestoreRetryConsumed ||
-      NhAccountSessionService.cookieStoreRestoreRetryTask !== null) {
-      return
-    }
-    const context: common.UIAbilityContext | null = NhAccountSessionService.sessionContext
-    if (context === null) {
-      return
-    }
-    NhAccountSessionService.cookieStoreRestoreRetryConsumed = true
-    NhAccountSessionService.cookieStoreRestoreRetryPending = false
-    NhAccountSessionService.recordDiagnosticStage(
-      AccountSessionDiagnosticStage.RESTORE_COOKIE_STORE_RETRY,
-    )
-    const retryTask: Promise<void> = NhAccountSessionService.restoreAtBootstrap(context)
-      .then((restored: boolean): void => {
-        if (restored) {
-          NhAccountSessionService.publishSessionChange()
-        }
-      })
-      .catch((): void => {})
-      .finally((): void => {
-        if (NhAccountSessionService.cookieStoreRestoreRetryTask === retryTask) {
-          NhAccountSessionService.cookieStoreRestoreRetryTask = null
-        }
-      })
-    NhAccountSessionService.cookieStoreRestoreRetryTask = retryTask
   }
 
   /**
@@ -661,10 +815,10 @@ export class NhAccountSessionService {
   /** Persist ArkWeb's complete live cookie jar after browser-managed updates. */
   static async persistBrowserManagedCookies(): Promise<void> {
     try {
-      webview.WebCookieManager.saveCookieSync()
+      NhCookieAuthority.saveCookieSync()
     } catch (_error) {
       try {
-        await webview.WebCookieManager.saveCookieAsync()
+        await NhCookieAuthority.saveCookieAsync()
       } catch (_asyncError) {}
     }
   }
@@ -683,7 +837,7 @@ export class NhAccountSessionService {
     let sessionPresent: boolean = false
     let sessionHttpOnly: boolean = false
     try {
-      const cookies: webview.WebHttpCookie[] = await webview.WebCookieManager.fetchAllCookies(false)
+      const cookies: webview.WebHttpCookie[] = await NhCookieAuthority.fetchAllAuthCookies()
       for (let index: number = 0; index < cookies.length; index++) {
         const cookie: webview.WebHttpCookie = cookies[index]
         const domain: string = cookie.domain.trim().toLowerCase().replace(/^\./, '')
@@ -718,103 +872,69 @@ export class NhAccountSessionService {
   }
 
   /**
-   * A successful same-origin account probe proves the retained browser
-   * identity is valid even when the server rotated access_token to HttpOnly
-   * (unreadable through the ArkTS WebCookieManager). This runtime signal
-   * keeps the native UI signed in and lets the bridge authenticate through
-   * the browser cookie jar instead of the readable Authorization header.
+   * Records only coarse expiry classes for the sealed access/refresh pair.
+   * It never emits a Cookie value, exact expiry, token-derived identifier,
+   * account value, domain, path, or user agent.
    */
-  static markBrowserIdentityVerified(): void {
-    NhAccountSessionService.browserIdentityVerified = true
-    NhAccountSessionService.retainedAccountPresent = true
+  private static recordAuthCookieExpiryShape(
+    phase: string,
+    cookies: SealedAuthCookie[],
+  ): void {
+    DiagnosticLogger.info(
+      'account-session',
+      'account_auth_expiry_shape',
+      `phase=${phase};` +
+        `access=${NhAccountSessionService.authCookieExpiryClass(cookies, 'access_token')};` +
+        `refresh=${NhAccountSessionService.authCookieExpiryClass(cookies, 'refresh_token')}`,
+    )
   }
 
-  /**
-   * Follows the browser's own Set-Cookie rotation after a successful
-   * authenticated response. Reads the current regular ArkWeb jar and, when a
-   * readable access_token is present, re-seals the envelope so a cold start
-   * restores the newest token instead of the login-time snapshot. When the
-   * rotated token is HttpOnly and therefore unreadable, the successful probe
-   * already kept the browser identity verified; the prior readable envelope
-   * is retained as the cold-start fallback. Best-effort and never throws.
-   */
-  static async syncSealedSessionFromRegularJar(
-    context: common.UIAbilityContext | null = null,
-    forceCheckpoint: boolean = false,
-  ): Promise<void> {
-    if (!NhAccountSessionService.isAuthenticated() ||
-      NhAccountSessionService.sessionTransitionInFlight) {
+  private static authCookieExpiryClass(
+    cookies: SealedAuthCookie[],
+    name: string,
+  ): string {
+    const cookie: SealedAuthCookie | undefined = cookies.find(
+      (candidate: SealedAuthCookie): boolean => candidate.name === name,
+    )
+    if (cookie === undefined) {
+      return 'absent'
+    }
+    const rawExpiry: string = cookie.expiresDate.trim()
+    if (rawExpiry.length === 0) {
+      return cookie.isSessionCookie ? 'session' : 'unknown'
+    }
+    let deadlineMs: number = Number.NaN
+    if (/^[0-9]{10,13}$/.test(rawExpiry)) {
+      const numericExpiry: number = Number(rawExpiry)
+      deadlineMs = rawExpiry.length <= 10 ? numericExpiry * 1000 : numericExpiry
+    } else {
+      deadlineMs = Date.parse(rawExpiry)
+    }
+    if (!Number.isFinite(deadlineMs)) {
+      return 'unknown'
+    }
+    const remainingMs: number = deadlineMs - Date.now()
+    if (remainingMs <= 0) {
+      return 'expired'
+    }
+    if (remainingMs <= AUTH_EXPIRY_ONE_HOUR_MS) {
+      return 'lt_1h'
+    }
+    if (remainingMs <= AUTH_EXPIRY_ONE_DAY_MS) {
+      return 'lt_24h'
+    }
+    if (remainingMs <= AUTH_EXPIRY_ONE_WEEK_MS) {
+      return 'lt_7d'
+    }
+    return 'ge_7d'
+  }
+
+  /** Records a successful request without creating a second authentication authority. */
+  static markAuthenticatedRequestVerified(): void {
+    if (!NhAccountSessionService.isAuthenticated()) {
       return
     }
-    const activeContext: common.UIAbilityContext | null =
-      context !== null ? context : NhAccountSessionService.sessionContext
-    if (activeContext === null) {
-      return
-    }
-    let jarHeader: string = ''
-    let authCookies: SealedAuthCookie[] = []
-    try {
-      jarHeader = NhAccountSessionService.readRegularArkWebCookieHeader()
-      authCookies = await NhAccountSessionService.captureFirstPartyAuthCookies()
-    } catch (_error) {
-      return
-    }
-    const jarToken: string = NhAccountSessionService.cookieValue(jarHeader, 'access_token')
-    const authCookiesChanged: boolean = NhAccountSessionService.authCookieFingerprint(authCookies) !==
-      NhAccountSessionService.authCookieFingerprint(NhAccountSessionService.sealedAuthCookies)
-    const needsSavedAccountCheckpoint: boolean =
-      NhAccountSessionService.activeSavedAccountId.length > 0 &&
-      NhAccountSessionService.lastSavedAccountCheckpointId !== NhAccountSessionService.activeSavedAccountId
-    if (jarToken.length > 0 && NhAccountSessionService.browserUserAgent.length > 0 &&
-      NhAccountSessionService.hasRenewalAuthCookie(authCookies) &&
-      (authCookiesChanged || needsSavedAccountCheckpoint)) {
-      // ArkWeb owns Set-Cookie rotation. Persist the complete first-party
-      // authentication tuple so a later cold start or explicit account switch
-      // restores the server's renewal chain, not just one expiring access token.
-      const now: number = Date.now()
-      if (!forceCheckpoint && !needsSavedAccountCheckpoint &&
-        now - NhAccountSessionService.lastSealedResyncAtMs < SEALED_RESYNC_MIN_INTERVAL_MS) {
-        // Still within the throttled window: keep the in-memory jar view
-        // fresh but defer the durable re-seal to the next window.
-        NhAccountSessionService.cookieHeader = jarHeader
-        NhAccountSessionService.browserIdentityVerified = true
-        return
-      }
-      NhAccountSessionService.lastSealedResyncAtMs = now
-      // A same-account Cookie checkpoint serializes durable storage but does
-      // not change request ownership. Concurrent reads remain valid and no
-      // page-facing account revision is published for this bookkeeping write.
-      const transitionEpoch: number = NhAccountSessionService.beginDurableSessionTransition(false)
-      try {
-        const record: EncryptedAccountSession = await NhAccountSessionService.encrypt(
-          NhAccountSessionService.serializeSessionPayload(
-            jarHeader,
-            NhAccountSessionService.browserUserAgent,
-            authCookies,
-          ),
-        )
-        await AccountSessionRepository.saveVerifiedForAccount(
-          activeContext,
-          record,
-          NhAccountSessionService.activeSavedAccountId,
-        )
-        if (!NhAccountSessionService.isDurableSessionTransitionCurrent(transitionEpoch)) {
-          return
-        }
-        NhAccountSessionService.cookieHeader = jarHeader
-        NhAccountSessionService.sealedFallbackCookieHeader = jarHeader
-        NhAccountSessionService.sealedAuthCookies = authCookies
-        NhAccountSessionService.lastSavedAccountCheckpointId =
-          NhAccountSessionService.activeSavedAccountId
-        NhAccountSessionService.browserIdentityVerified = true
-      } catch (_error) {
-        return
-      } finally {
-        NhAccountSessionService.finishDurableSessionTransition(transitionEpoch)
-      }
-    } else if (jarToken.length === 0) {
-      NhAccountSessionService.browserIdentityVerified = true
-    }
+    NhAccountSessionService.retainedAccountPresent = true
   }
 
   /**
@@ -826,7 +946,6 @@ export class NhAccountSessionService {
    */
   static async clear(context: common.UIAbilityContext): Promise<void> {
     NhAccountSessionService.sessionContext = context
-    NhAccountSessionService.browserIdentityVerified = false
     // A durable clear must not interleave with a verified promotion or a
     // sealed-envelope re-seal that is already writing RDB. Otherwise the
     // older writer can commit a record after this clear's DELETE, and a
@@ -883,15 +1002,41 @@ export class NhAccountSessionService {
   }
 
   /**
-   * Records a terminal replayed 401 without changing account ownership.
-   * A request failure can trigger another bounded transport repair later, but
-   * it can never publish signed-out state, clear profile/cache, or persist a
-   * user-facing login gate.
+   * A replayed account-owned 401 after the bounded refresh chain is definitive.
+   * Keep the encrypted account and saved-account ownership, but atomically
+   * persist and publish one explicit re-verification gate to every consumer.
    */
   static async recordAuthenticatedReadReplay401(
     token: NhAccountAuthenticatedReadToken,
   ): Promise<boolean> {
-    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+    return await NhAccountSessionService.recordAuthenticatedTerminal401(
+      token,
+      'terminal_401_replay_rejected',
+    )
+  }
+
+  /** A direct 401 from the fixed refresh endpoint conclusively rejects the retained renewal token. */
+  static async recordAuthenticatedRefreshToken401(
+    token: NhAccountAuthenticatedReadToken,
+  ): Promise<boolean> {
+    if (!NhAccountSessionService.isAuthenticatedReadCredentialCurrent(token)) {
+      NhAccountSessionService.recordAuthenticatedReadStale401AfterRefresh()
+      return false
+    }
+    NhAccountSessionService.recordDiagnosticStage(
+      AccountSessionDiagnosticStage.AUTHENTICATED_READ_REFRESH_TOKEN_REJECTED,
+    )
+    return await NhAccountSessionService.recordAuthenticatedTerminal401(
+      token,
+      'terminal_401_refresh_token_rejected',
+    )
+  }
+
+  private static async recordAuthenticatedTerminal401(
+    token: NhAccountAuthenticatedReadToken,
+    markerReason: string,
+  ): Promise<boolean> {
+    if (!NhAccountSessionService.isAuthenticatedReadCredentialCurrent(token)) {
       return false
     }
     if (NhAccountSessionService.sessionOrigin === AccountSessionOrigin.RESTORED) {
@@ -903,13 +1048,63 @@ export class NhAccountSessionService {
         AccountSessionDiagnosticStage.AUTHENTICATED_READ_TERMINAL_401_AFTER_PROMOTION,
       )
     }
+    // Claim this exact read epoch synchronously before the durable write. A
+    // later clear or verified promotion may supersede this transition; its
+    // queued envelope write also clears the marker in the same RDB transaction.
+    const transitionEpoch: number = NhAccountSessionService.beginDurableSessionTransition()
+    const context: common.UIAbilityContext | null = NhAccountSessionService.sessionContext
+    try {
+      if (context === null) {
+        throw new Error('account_verification_marker_context_missing')
+      }
+      await AccountSessionRepository.markVerificationRequired(
+        context,
+        markerReason,
+      )
+    } catch (_error) {
+      NhAccountSessionService.recordDiagnosticStage(
+        AccountSessionDiagnosticStage.VERIFICATION_MARKER_PERSIST_FAILED,
+      )
+    }
+    if (!NhAccountSessionService.isDurableSessionTransitionCurrent(transitionEpoch) ||
+      token.sessionEpoch !== NhAccountSessionService.sessionEpoch) {
+      NhAccountSessionService.finishDurableSessionTransition(transitionEpoch)
+      return false
+    }
+    // A local marker-write failure must not turn a definitive server rejection
+    // into a silent request error. Publish the same fail-closed runtime state
+    // now; a later cold-start/foreground probe will retry the durable marker
+    // path if the local store was temporarily unavailable.
+    NhAccountSessionService.verificationRequiredMarkerPresent = true
+    NhAccountSessionService.retainedAccountPresent = true
+    NhAccountSessionService.updateRetainedRestoreLoginGate(true)
+    NhAccountSessionService.advanceSessionEpoch()
+    NhAccountSessionService.cookieHeader = ''
+    NhAccountSessionService.sealedFallbackCookieHeader = ''
+    NhAccountSessionService.sealedAuthCookies = []
+    NhAccountSessionService.browserUserAgent = ''
+    NhAccountSessionService.sessionOrigin = AccountSessionOrigin.NONE
+    NhAccountSessionService.discardPendingVisibleBrowserSession()
+    NhAccountSessionService.resetRejectedVisibleBrowserSessionCandidate()
+    NhAccountSessionService.publishSessionChange()
+    NhAccountSessionService.finishDurableSessionTransition(transitionEpoch)
     return true
   }
 
   /** Fixed, non-secret stages for the bounded authenticated-read repair chain. */
   static recordAuthenticatedReadInitial401(): void {
+    NhAccountSessionService.recordAuthCookieExpiryShape(
+      'initial_401',
+      NhAccountSessionService.sealedAuthCookies,
+    )
     NhAccountSessionService.recordDiagnosticStage(
       AccountSessionDiagnosticStage.AUTHENTICATED_READ_INITIAL_401,
+    )
+  }
+
+  static recordAuthenticatedReadStale401AfterRefresh(): void {
+    NhAccountSessionService.recordDiagnosticStage(
+      AccountSessionDiagnosticStage.AUTHENTICATED_READ_STALE_401_AFTER_REFRESH,
     )
   }
 
@@ -937,11 +1132,25 @@ export class NhAccountSessionService {
       : AccountSessionDiagnosticStage.AUTHENTICATED_READ_BROWSER_REPLAY_RECOVERED)
   }
 
-  /** Records whether the sealed identity reached the live jar after ArkWeb owns a trusted document. */
-  static recordRestoreHydrationAfterPage(ready: boolean): void {
-    NhAccountSessionService.recordDiagnosticStage(ready
-      ? AccountSessionDiagnosticStage.RESTORE_HYDRATION_READY_AFTER_PAGE
-      : AccountSessionDiagnosticStage.RESTORE_HYDRATION_UNAVAILABLE_AFTER_PAGE)
+  /** Fixed, value-free evidence for the global first-party response Cookie boundary. */
+  static recordResponseCookieCheckpoint(
+    compatibilityStored: boolean,
+    authResult: NhResponseAuthCookieResult,
+  ): void {
+    if (!compatibilityStored || authResult === NhResponseAuthCookieResult.REJECTED) {
+      NhAccountSessionService.recordDiagnosticStage(
+        AccountSessionDiagnosticStage.RESPONSE_COOKIE_REJECTED,
+      )
+      return
+    }
+    NhAccountSessionService.recordDiagnosticStage(
+      AccountSessionDiagnosticStage.RESPONSE_COOKIE_STORED,
+    )
+    if (authResult === NhResponseAuthCookieResult.APPLIED) {
+      NhAccountSessionService.recordDiagnosticStage(
+        AccountSessionDiagnosticStage.RESPONSE_AUTH_COOKIE_APPLIED,
+      )
+    }
   }
 
   /** Must be called from the visible Web component's UI-thread callback. */
@@ -958,27 +1167,13 @@ export class NhAccountSessionService {
     )
   }
 
-  /**
-   * A bounded retained-host recovery may capture only the same first-party
-   * candidate that it will immediately status-check and seal. It is distinct
-   * from the visible-login entry point: no login surface, field, credential,
-   * or user decision is involved here.
-   */
-  static async captureRegularArkWebSessionForAuthenticatedRecovery(
-    context: common.UIAbilityContext,
-    token: NhAccountAuthenticatedReadToken,
-    observedUrl: string = '',
-    browserUserAgent: string = '',
-  ): Promise<boolean> {
-    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
-      return false
-    }
-    return await NhAccountSessionService.captureBrowserSessionCandidate(
-      context,
-      observedUrl,
-      browserUserAgent,
-      false,
+  /** Fixed pending-candidate header used only for the one verification GET. */
+  static pendingApiTokenAuthorization(): string {
+    const access: string = NhAccountSessionService.cookieValue(
+      NhAccountSessionService.pendingCookieHeader,
+      'access_token',
     )
+    return NhAccountSessionService.safeApiToken(access).length > 0 ? `User ${access}` : ''
   }
 
   private static async captureBrowserSessionCandidate(
@@ -994,25 +1189,42 @@ export class NhAccountSessionService {
     // Flush before reading. A challenge or login redirect can have just
     // committed a first-party cookie when this visible Web callback arrives.
     try {
-      webview.WebCookieManager.saveCookieSync()
+      NhCookieAuthority.saveCookieSync()
     } catch (_error) {
       try {
-        await webview.WebCookieManager.saveCookieAsync()
+        await NhCookieAuthority.saveCookieAsync()
       } catch (_asyncError) {}
     }
     const rawHeaders: string[] = []
     NhBrowserSessionBoundary.trustedSessionUrls(observedUrl).forEach((url: string): void => {
       try {
-        rawHeaders.push(webview.WebCookieManager.fetchCookieSync(url, false))
+        rawHeaders.push(NhCookieAuthority.fetchCookieSync(url, false))
       } catch (_error) {}
     })
     const normalized: string = NhAccountSessionService.mergeCookieHeaders(rawHeaders)
     const normalizedUserAgent: string = NhAccountSessionService.normalizeUserAgent(browserUserAgent)
     const authCookies: SealedAuthCookie[] =
-      await NhAccountSessionService.captureFirstPartyAuthCookies()
-    if (!NhAccountSessionService.hasLoginCookies(normalized) || normalizedUserAgent.length === 0 ||
-      !NhAccountSessionService.hasAccessAuthCookie(authCookies) ||
-      !NhAccountSessionService.hasRenewalAuthCookie(authCookies)) {
+      await NhAccountSessionService.captureVisibleCandidateAuthCookies(normalized)
+    const headerAccessAvailable: boolean = NhAccountSessionService.hasLoginCookies(normalized)
+    const userAgentAvailable: boolean = normalizedUserAgent.length > 0
+    const authAccessAvailable: boolean = NhAccountSessionService.hasAccessAuthCookie(authCookies)
+    const renewalAvailable: boolean = NhAccountSessionService.hasRefreshAuthCookie(authCookies)
+    if (!headerAccessAvailable || !userAgentAvailable || !authAccessAvailable || !renewalAvailable) {
+      const navigationEpoch: number = NhAccountSessionService.visibleLoginNavigationEpoch
+      if (navigationEpoch > 0 &&
+        NhAccountSessionService.candidateShapeDiagnosticEpoch !== navigationEpoch) {
+        NhAccountSessionService.candidateShapeDiagnosticEpoch = navigationEpoch
+        DiagnosticLogger.info(
+          'account-login',
+          'candidate_shape_incomplete',
+          `headerAccess=${headerAccessAvailable ? 1 : 0};ua=${userAgentAvailable ? 1 : 0};` +
+            `authCount=${authCookies.length};authAccess=${authAccessAvailable ? 1 : 0};` +
+            `renewal=${renewalAvailable ? 1 : 0};` +
+            `refresh=${NhAccountSessionService.hasNamedAuthCookie(authCookies, 'refresh_token') ? 1 : 0};` +
+            `session=${NhAccountSessionService.hasNamedAuthCookie(authCookies, 'sessionid') ? 1 : 0};` +
+            `legacy=${NhAccountSessionService.hasNamedAuthCookie(authCookies, 'ipb_pass_hash') ? 1 : 0}`,
+        )
+      }
       // A visible login page, including a Cloudflare challenge, is not proof
       // that an already persisted native session is invalid. Keep the old
       // sealed session until a complete account probe confirms a candidate. A
@@ -1070,7 +1282,7 @@ export class NhAccountSessionService {
     // Do not turn a late best-effort browser-store failure into a false local
     // login-promotion failure after the synchronous flush has already worked.
     try {
-      await webview.WebCookieManager.saveCookieAsync()
+      await NhCookieAuthority.saveCookieAsync()
     } catch (_error) {}
     NhAccountSessionService.pendingCookieHeader = normalized
     NhAccountSessionService.pendingBrowserUserAgent = normalizedUserAgent
@@ -1112,37 +1324,6 @@ export class NhAccountSessionService {
         verifiedAuthCookieFingerprint
   }
 
-  /** Same candidate-stability fence for the retained browser recovery lane. */
-  static async isPendingRegularArkWebSessionStableAfterVerification(
-    context: common.UIAbilityContext,
-    token: NhAccountAuthenticatedReadToken,
-    observedUrl: string = '',
-    browserUserAgent: string = '',
-  ): Promise<boolean> {
-    const verifiedCookieHeader: string = NhAccountSessionService.pendingCookieHeader
-    const verifiedBrowserUserAgent: string = NhAccountSessionService.pendingBrowserUserAgent
-    const verifiedAuthCookieFingerprint: string = NhAccountSessionService.authCookieFingerprint(
-      NhAccountSessionService.pendingAuthCookies,
-    )
-    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token) ||
-      !NhAccountSessionService.hasLoginCookies(verifiedCookieHeader) ||
-      verifiedBrowserUserAgent.length === 0) {
-      return false
-    }
-    if (!await NhAccountSessionService.captureRegularArkWebSessionForAuthenticatedRecovery(
-      context,
-      token,
-      observedUrl,
-      browserUserAgent,
-    )) {
-      return false
-    }
-    return NhAccountSessionService.pendingCookieHeader === verifiedCookieHeader &&
-      NhAccountSessionService.pendingBrowserUserAgent === verifiedBrowserUserAgent &&
-      NhAccountSessionService.authCookieFingerprint(NhAccountSessionService.pendingAuthCookies) ===
-        verifiedAuthCookieFingerprint
-  }
-
   /**
    * Promotes only a candidate that the caller has verified through the fixed
    * same-origin ArkWeb account probe. No browser value is returned here.
@@ -1154,23 +1335,12 @@ export class NhAccountSessionService {
     return await NhAccountSessionService.confirmPendingBrowserSession(context)
   }
 
-  /** Commits only the candidate already checked by the retained recovery lane. */
-  static async confirmPendingRegularArkWebSessionForAuthenticatedRecovery(
-    context: common.UIAbilityContext,
-    token: NhAccountAuthenticatedReadToken,
-  ): Promise<boolean> {
-    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
-      return false
-    }
-    return await NhAccountSessionService.confirmPendingBrowserSession(context)
-  }
-
   private static async confirmPendingBrowserSession(context: common.UIAbilityContext): Promise<boolean> {
     NhAccountSessionService.sessionContext = context
     if (!NhAccountSessionService.hasLoginCookies(NhAccountSessionService.pendingCookieHeader) ||
       NhAccountSessionService.pendingBrowserUserAgent.length === 0 ||
       !NhAccountSessionService.hasAccessAuthCookie(NhAccountSessionService.pendingAuthCookies) ||
-      !NhAccountSessionService.hasRenewalAuthCookie(NhAccountSessionService.pendingAuthCookies)) {
+      !NhAccountSessionService.hasRefreshAuthCookie(NhAccountSessionService.pendingAuthCookies)) {
       return false
     }
     if (NhAccountSessionService.sessionTransitionInFlight) {
@@ -1230,6 +1400,10 @@ export class NhAccountSessionService {
     NhAccountSessionService.cookieHeader = NhAccountSessionService.pendingCookieHeader
     NhAccountSessionService.sealedFallbackCookieHeader = NhAccountSessionService.pendingCookieHeader
     NhAccountSessionService.sealedAuthCookies = NhAccountSessionService.pendingAuthCookies
+    NhAccountSessionService.recordAuthCookieExpiryShape(
+      'visible_promotion',
+      NhAccountSessionService.sealedAuthCookies,
+    )
     NhAccountSessionService.browserUserAgent = NhAccountSessionService.pendingBrowserUserAgent
     NhAccountSessionService.sessionOrigin = AccountSessionOrigin.PROMOTED
     NhAccountSessionService.verificationRequiredMarkerPresent = false
@@ -1237,6 +1411,19 @@ export class NhAccountSessionService {
     NhAccountSessionService.clearRetainedRestoreLoginGate()
     NhAccountSessionService.discardPendingVisibleBrowserSession()
     NhAccountSessionService.resetRejectedVisibleBrowserSessionCandidate()
+    const promotedAccess: string = NhAccountSessionService.cookieValue(
+      NhAccountSessionService.sealedFallbackCookieHeader,
+      'access_token',
+    )
+    const promotedRefresh: SealedAuthCookie | undefined =
+      NhAccountSessionService.sealedAuthCookies.find((cookie: SealedAuthCookie): boolean =>
+        cookie.name === 'refresh_token')
+    try {
+      NhCookieAuthority.storeRefreshedAuthTokens(
+        promotedAccess,
+        promotedRefresh?.value ?? '',
+      )
+    } catch (_error) {}
     const profileClearTask: Promise<void> = NhAccountSessionService.clearAccountProfileSnapshot(context)
     NhAccountSessionService.publishSessionChange()
     try {
@@ -1448,7 +1635,7 @@ export class NhAccountSessionService {
     const normalized: string = NhAccountSessionService.normalizeCookieHeader(payload.cookieHeader)
     const normalizedUserAgent: string = NhAccountSessionService.normalizeUserAgent(payload.browserUserAgent)
     if (!payload.isEnvelopeValid || !NhAccountSessionService.hasLoginCookies(normalized) ||
-      normalizedUserAgent.length === 0 || !NhAccountSessionService.hasRenewalAuthCookie(payload.authCookies)) {
+      normalizedUserAgent.length === 0 || !NhAccountSessionService.hasRefreshAuthCookie(payload.authCookies)) {
       throw new Error('account_session_backup_payload_invalid')
     }
   }
@@ -1477,37 +1664,19 @@ export class NhAccountSessionService {
 
   /** Saves the active sealed envelope under a stable non-secret account id. */
   static async saveActiveAsSaved(context: common.UIAbilityContext, accountId: string): Promise<boolean> {
-    if (accountId.length === 0) {
+    if (accountId.length === 0 || !NhAccountSessionService.isAuthenticated() ||
+      NhAccountSessionService.browserUserAgent.length === 0) {
       return false
     }
     try {
-      let active: EncryptedAccountSession | null = null
-      const currentHeader: string = NhAccountSessionService.readRegularArkWebCookieHeader()
-      const currentAuthCookies: SealedAuthCookie[] =
-        await NhAccountSessionService.captureFirstPartyAuthCookies()
-      if (NhAccountSessionService.hasLoginCookies(currentHeader) &&
-        NhAccountSessionService.hasAccessAuthCookie(currentAuthCookies)) {
-        if (!NhAccountSessionService.hasRenewalAuthCookie(currentAuthCookies) ||
-          NhAccountSessionService.browserUserAgent.length === 0) {
-          return false
-        }
-        active = await NhAccountSessionService.encrypt(
-          NhAccountSessionService.serializeSessionPayload(
-            currentHeader,
-            NhAccountSessionService.browserUserAgent,
-            currentAuthCookies,
-          ),
-        )
-        await AccountSessionRepository.saveVerified(context, active)
-        NhAccountSessionService.cookieHeader = currentHeader
-        NhAccountSessionService.sealedFallbackCookieHeader = currentHeader
-        NhAccountSessionService.sealedAuthCookies = currentAuthCookies
-      } else {
-        active = await AccountSessionRepository.load(context)
-      }
-      if (active === null) {
-        return false
-      }
+      const active: EncryptedAccountSession = await NhAccountSessionService.encrypt(
+        NhAccountSessionService.serializeSessionPayload(
+          NhAccountSessionService.cookieHeader,
+          NhAccountSessionService.browserUserAgent,
+          NhAccountSessionService.sealedAuthCookies,
+        ),
+      )
+      await AccountSessionRepository.saveVerified(context, active)
       await AccountSessionRepository.saveVerifiedByKey(context, accountId, active)
       return true
     } catch (_error) {
@@ -1555,7 +1724,8 @@ export class NhAccountSessionService {
     const normalizedUserAgent: string = NhAccountSessionService.normalizeUserAgent(payload.browserUserAgent)
     if (!payload.isEnvelopeValid || !NhAccountSessionService.hasLoginCookies(normalized) ||
       normalizedUserAgent.length === 0 ||
-      !NhAccountSessionService.hasRenewalAuthCookie(payload.authCookies)) {
+      !NhAccountSessionService.hasAccessAuthCookie(payload.authCookies) ||
+      !NhAccountSessionService.hasRefreshAuthCookie(payload.authCookies)) {
       return false
     }
     if (NhAccountSessionService.sessionTransitionInFlight) {
@@ -1612,20 +1782,15 @@ export class NhAccountSessionService {
     context: common.UIAbilityContext,
     restoredEpoch: number,
   ): Promise<boolean> {
-    // The regular ArkWeb cookie store is the live browser identity. A valid
-    // encrypted snapshot is still loaded so a cold start can restore the full
-    // renewable Cookie tuple and its exact browser-compatible user agent.
+    // The encrypted access/renewal pair is the native request authority.
+    // ArkWeb's regular jar is inspected only so a restored native session can
+    // avoid rewriting an already-compatible visible-browser jar.
     const regularJarHeader: string = NhAccountSessionService.readRegularArkWebCookieHeader()
     const regularJarReady: boolean = NhAccountSessionService.hasLoginCookies(regularJarHeader)
     if (regularJarReady) {
       if (restoredEpoch !== NhAccountSessionService.sessionEpoch) {
         return NhAccountSessionService.isAuthenticated()
       }
-      NhAccountSessionService.clearRetainedRestoreLoginGate()
-      NhAccountSessionService.cookieHeader = regularJarHeader
-      NhAccountSessionService.sessionOrigin = AccountSessionOrigin.RESTORED
-      NhAccountSessionService.verificationRequiredMarkerPresent = false
-      NhAccountSessionService.retainedAccountPresent = true
       NhAccountSessionService.discardPendingVisibleBrowserSession()
     }
     if (NhAccountSessionService.verificationRequiredMarkerPresent) {
@@ -1647,19 +1812,21 @@ export class NhAccountSessionService {
         true,
       )
     }
-    const legacyVerificationMarker: boolean = verificationSnapshot.required
-    if (legacyVerificationMarker) {
-      // Older builds persisted terminal request failures as a login gate.
-      // Preserve the account and remove that obsolete marker; it is neither
-      // proof of logout nor authority to block the native account surface.
+    const verificationRequired: boolean = verificationSnapshot.required
+    if (verificationRequired) {
       NhAccountSessionService.retainedAccountPresent = true
-      NhAccountSessionService.verificationRequiredMarkerPresent = false
+      NhAccountSessionService.verificationRequiredMarkerPresent = true
+      NhAccountSessionService.updateRetainedRestoreLoginGate(true)
       NhAccountSessionService.recordDiagnosticStage(
-        verificationSnapshot.reasonCode === 'terminal_401_browser_refresh_unsuccessful'
+        verificationSnapshot.reasonCode === 'terminal_401_refresh_token_rejected'
           ? AccountSessionDiagnosticStage.RESTORE_VERIFICATION_REQUIRED_AFTER_BROWSER_REFRESH_FAILURE
           : AccountSessionDiagnosticStage.RESTORE_VERIFICATION_REQUIRED,
       )
-      AccountSessionRepository.clearVerificationRequired(context).catch((): void => {})
+      return await NhAccountSessionService.publishSignedOutAfterRestoreFailure(
+        context,
+        restoredEpoch,
+        true,
+      )
     }
     let restoreSnapshot: AccountSessionRestoreSnapshot
     try {
@@ -1680,7 +1847,7 @@ export class NhAccountSessionService {
     if (record !== null || savedRecords.length > 0) {
       NhAccountSessionService.retainedAccountPresent = true
     }
-    let failureRequiresExplicitVisibleLogin: boolean = legacyVerificationMarker
+    let failureRequiresExplicitVisibleLogin: boolean = verificationRequired
     if (record === null) {
       NhAccountSessionService.recordDiagnosticStage(
         AccountSessionDiagnosticStage.RESTORE_RECORD_ABSENT,
@@ -1752,11 +1919,12 @@ export class NhAccountSessionService {
           'account_restore_payload_shape',
           `code=${payload.validationCode};headerAccess=${NhAccountSessionService.hasLoginCookies(payloadNormalized) ? 1 : 0};` +
             `ua=${payloadUserAgent.length > 0 ? 1 : 0};authCount=${payload.authCookies.length};` +
-            `renewal=${NhAccountSessionService.hasRenewalAuthCookie(payload.authCookies) ? 1 : 0};` +
+            `renewal=${NhAccountSessionService.hasRefreshAuthCookie(payload.authCookies) ? 1 : 0};` +
             `refresh=${NhAccountSessionService.hasNamedAuthCookie(payload.authCookies, 'refresh_token') ? 1 : 0};` +
             `session=${NhAccountSessionService.hasNamedAuthCookie(payload.authCookies, 'sessionid') ? 1 : 0};` +
             `legacy=${NhAccountSessionService.hasNamedAuthCookie(payload.authCookies, 'ipb_pass_hash') ? 1 : 0}`,
         )
+        NhAccountSessionService.recordAuthCookieExpiryShape('restore', payload.authCookies)
         if (!payload.isEnvelopeValid || !NhAccountSessionService.hasLoginCookies(payloadNormalized) ||
           payloadUserAgent.length === 0) {
           NhAccountSessionService.recordDiagnosticStage(
@@ -1767,11 +1935,13 @@ export class NhAccountSessionService {
         }
       }
     }
-    if (restoredPayload === null && savedRecords.length > 0 && !regularJarReady) {
+    if (restoredPayload === null && savedRecords.length > 0) {
       // Multi-account envelopes are sealed with the same non-exportable HUKS
       // key. When the primary row is absent or unreadable, one saved envelope
-      // can still restore the session instead of publishing a destructive
-      // "re-verify" gate over recoverable ciphertext.
+      // remains the authoritative fallback regardless of whether the
+      // compatibility-only ArkWeb jar happens to be readable. A regular jar
+      // must never suppress HUKS recovery and manufacture a "re-verify" gate
+      // over recoverable ciphertext.
       for (let index: number = 0; index < savedRecords.length; index += 1) {
         const candidatePayload: SealedBrowserSessionPayload | null =
           await NhAccountSessionService.decryptRestoreCandidate(savedRecords[index])
@@ -1809,23 +1979,8 @@ export class NhAccountSessionService {
 
     NhAccountSessionService.clearRetainedRestoreLoginGate()
 
-    if (regularJarReady) {
-      // Keep ArkWeb's live Cookie jar. Retain the complete encrypted Cookie
-      // tuple and restore its exact compatible UA before any root navigation;
-      // the snapshot never overwrites the live jar during a 401 replay.
-      NhAccountSessionService.sealedFallbackCookieHeader = normalized
-      NhAccountSessionService.sealedAuthCookies = restoredPayload.authCookies
-      NhAccountSessionService.browserUserAgent = normalizedUserAgent
-      NhAccountSessionService.recordDiagnosticStage(
-        AccountSessionDiagnosticStage.RESTORE_ARKWEB_JAR_READY,
-      )
-      return true
-    }
-
-    // Seed the sealed values before attempting the cookie-store recovery so a
-    // retained ArkWeb host can retry the same operation immediately before it
-    // loads the fixed origin. An unavailable early Web engine must not erase a
-    // valid encrypted record or turn into a destructive 401 cycle.
+    // Publish the sealed generation before any best-effort browser-jar sink.
+    // A Web engine failure cannot withhold native API authentication.
     const preservesActiveSessionOrigin: boolean =
       NhAccountSessionService.isAuthenticated() &&
       NhAccountSessionService.cookieHeader === normalized &&
@@ -1834,18 +1989,17 @@ export class NhAccountSessionService {
     NhAccountSessionService.sealedFallbackCookieHeader = normalized
     NhAccountSessionService.sealedAuthCookies = restoredPayload.authCookies
     NhAccountSessionService.browserUserAgent = normalizedUserAgent
-    // A terminal request warning is not a second durable auth owner. A valid
-    // encrypted fallback still receives one normal ArkWeb restore attempt.
-    NhAccountSessionService.verificationRequiredMarkerPresent = false
     if (!preservesActiveSessionOrigin) {
       NhAccountSessionService.sessionOrigin = AccountSessionOrigin.RESTORED
     }
     NhAccountSessionService.discardPendingVisibleBrowserSession()
     NhAccountSessionService.recordDiagnosticStage(AccountSessionDiagnosticStage.RESTORE_READY)
-    let hydrated: boolean = false
-    try {
-      hydrated = await NhAccountSessionService.ensureRegularArkWebCookieJar()
-    } catch (_error) {}
+    let hydrated: boolean = regularJarReady
+    if (!hydrated) {
+      try {
+        hydrated = await NhAccountSessionService.ensureRegularArkWebCookieJar()
+      } catch (_error) {}
+    }
     if (restoredEpoch !== NhAccountSessionService.sessionEpoch) {
       return NhAccountSessionService.isAuthenticated()
     }
@@ -1882,9 +2036,9 @@ export class NhAccountSessionService {
   }
 
   /**
-   * A usable regular ArkWeb session remains valid when the encrypted fallback
-   * is unavailable. Its failure must not clear native state; only the absent-
-   * jar path enters the existing fail-closed restore boundary.
+   * A regular ArkWeb jar is never sufficient native authentication. Missing or
+   * unreadable HUKS/RDB state enters the same fail-closed ownership boundary
+   * even if a visible-browser compatibility jar still contains token names.
    */
   private static async keepRegularJarOrPublishRestoreFailure(
     context: common.UIAbilityContext,
@@ -1893,22 +2047,10 @@ export class NhAccountSessionService {
     requiresExplicitVisibleLogin: boolean,
   ): Promise<boolean> {
     if (regularJarReady) {
-      // Match the original regular-jar-first policy even when the optional
-      // fallback read reports a stale verification marker or local-store
-      // failure. That fallback must add recovery capability, never demote a
-      // live ArkWeb identity or retain an in-memory gate that the original
-      // branch would have cleared.
-      NhAccountSessionService.verificationRequiredMarkerPresent = false
-      NhAccountSessionService.clearRetainedRestoreLoginGate()
-      NhAccountSessionService.retainedAccountPresent = true
-      NhAccountSessionService.persistRetainedAccountMarker(context, true).catch((): void => {})
-      return NhAccountSessionService.isAuthenticated()
+      NhAccountSessionService.recordDiagnosticStage(
+        AccountSessionDiagnosticStage.RESTORE_ARKWEB_JAR_READY,
+      )
     }
-    // The regular jar was read while no Web component existed; the persisted
-    // ArkWeb store may still hold the identity and only become readable after
-    // the retained host attaches. Keep exactly one cookie-store restore retry
-    // before this signed-out publication becomes user-visible.
-    NhAccountSessionService.cookieStoreRestoreRetryPending = true
     return await NhAccountSessionService.publishSignedOutAfterRestoreFailure(
       context,
       restoredEpoch,
@@ -1933,7 +2075,12 @@ export class NhAccountSessionService {
     const accountPresent: boolean = NhAccountSessionService.retainedAccountPresent ||
       requiresExplicitVisibleLogin
     NhAccountSessionService.retainedAccountPresent = accountPresent
-    NhAccountSessionService.clearRetainedRestoreLoginGate()
+    if (requiresExplicitVisibleLogin) {
+      NhAccountSessionService.updateRetainedRestoreLoginGate(true)
+      NhAccountSessionService.verificationRequiredMarkerPresent = true
+    } else {
+      NhAccountSessionService.clearRetainedRestoreLoginGate()
+    }
     // A normal first launch can repeatedly ask `restore()` from retained
     // root surfaces. Publish only a real signed-in -> signed-out transition;
     // otherwise the Settings revision monitor would call restore again and
@@ -1976,7 +2123,7 @@ export class NhAccountSessionService {
     }
     try {
       const existing: string = NhAccountSessionService.normalizeCookieHeader(
-        webview.WebCookieManager.fetchCookieSync(rootUrl, false),
+        NhCookieAuthority.fetchCookieSync(rootUrl, false),
       )
       const existingAuthCookies: SealedAuthCookie[] =
         await NhAccountSessionService.captureFirstPartyAuthCookies()
@@ -1984,7 +2131,7 @@ export class NhAccountSessionService {
       // chain. Keep it as authority. A lone access token is not a complete
       // session and must not suppress restoration of refresh/session cookies.
       const existingComplete: boolean = NhAccountSessionService.hasAccessAuthCookie(existingAuthCookies) &&
-        (sealedAuthCookies.length === 0 || NhAccountSessionService.hasRenewalAuthCookie(existingAuthCookies))
+        (sealedAuthCookies.length === 0 || NhAccountSessionService.hasRefreshAuthCookie(existingAuthCookies))
       if (NhAccountSessionService.hasLoginCookies(existing) && existingComplete) {
         if (NhAccountSessionService.isCurrentSealedSession(sealedCookieHeader, hydrationEpoch)) {
           NhAccountSessionService.cookieHeader = existing
@@ -1999,7 +2146,7 @@ export class NhAccountSessionService {
           return false
         }
         try {
-          webview.WebCookieManager.configCookieSync(
+          NhCookieAuthority.configCookieSync(
             rootUrl,
             NhAccountSessionService.authCookieSetValue(sealedAuthCookies[index]),
             false,
@@ -2024,7 +2171,7 @@ export class NhAccountSessionService {
           return false
         }
         try {
-          webview.WebCookieManager.configCookieSync(
+          NhCookieAuthority.configCookieSync(
             rootUrl,
             `${cookiePairs[index]}; Path=/; Secure`,
             false,
@@ -2036,10 +2183,10 @@ export class NhAccountSessionService {
       }
     }
     try {
-      webview.WebCookieManager.saveCookieSync()
+      NhCookieAuthority.saveCookieSync()
     } catch (_error) {
       try {
-        await webview.WebCookieManager.saveCookieAsync()
+        await NhCookieAuthority.saveCookieAsync()
       } catch (_asyncError) {
         return false
       }
@@ -2049,7 +2196,7 @@ export class NhAccountSessionService {
     }
     try {
       const restored: string = NhAccountSessionService.normalizeCookieHeader(
-        webview.WebCookieManager.fetchCookieSync(rootUrl, false),
+        NhCookieAuthority.fetchCookieSync(rootUrl, false),
       )
       const restoredAuthCookies: SealedAuthCookie[] =
         await NhAccountSessionService.captureFirstPartyAuthCookies()
@@ -2072,7 +2219,7 @@ export class NhAccountSessionService {
     const headers: string[] = []
     NhBrowserSessionBoundary.trustedSessionUrls().forEach((url: string): void => {
       try {
-        headers.push(webview.WebCookieManager.fetchCookieSync(url, false))
+        headers.push(NhCookieAuthority.fetchCookieSync(url, false))
       } catch (_error) {}
     })
     return NhAccountSessionService.mergeCookieHeaders(headers)
@@ -2161,6 +2308,7 @@ export class NhAccountSessionService {
       true,
       NhAccountSessionService.retainedAccountPresent || authenticated,
       authenticated,
+      NhAccountSessionService.verificationRequiredMarkerPresent,
     )
   }
 
@@ -2237,7 +2385,7 @@ export class NhAccountSessionService {
     authCookieNames.forEach((name: string): void => {
       sessionUrls.forEach((url: string): void => {
         try {
-          webview.WebCookieManager.configCookieSync(
+          NhCookieAuthority.configCookieSync(
             url,
             `${name}=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT`,
             false,
@@ -2247,9 +2395,9 @@ export class NhAccountSessionService {
       })
     })
     try {
-      webview.WebCookieManager.saveCookieSync()
+      NhCookieAuthority.saveCookieSync()
     } catch (_error) {
-      webview.WebCookieManager.saveCookieAsync().catch((): void => {})
+      NhCookieAuthority.saveCookieAsync().catch((): void => {})
     }
   }
 
@@ -2402,7 +2550,7 @@ export class NhAccountSessionService {
 
   private static async captureFirstPartyAuthCookies(): Promise<SealedAuthCookie[]> {
     const captured: SealedAuthCookie[] = []
-    const cookies: webview.WebHttpCookie[] = await webview.WebCookieManager.fetchAllCookies(false)
+    const cookies: webview.WebHttpCookie[] = await NhCookieAuthority.fetchAllAuthCookies()
     for (let index: number = 0; index < cookies.length; index += 1) {
       const source: webview.WebHttpCookie = cookies[index]
       const candidate: SealedAuthCookie = new SealedAuthCookie()
@@ -2426,6 +2574,77 @@ export class NhAccountSessionService {
       return leftKey.localeCompare(rightKey)
     })
     return captured
+  }
+
+  /**
+   * Reads exact ArkWeb Cookie metadata when available, but never lets that
+   * supplementary API strand the visible-login state machine. The URL-scoped
+   * first-party header remains the CookieManager's network view and supplies a
+   * canonical access/refresh pair only when both tokens independently pass the
+   * fixed token validator. The candidate still has to pass the native account
+   * endpoint before it can be sealed or published.
+   */
+  private static async captureVisibleCandidateAuthCookies(
+    cookieHeader: string,
+  ): Promise<SealedAuthCookie[]> {
+    const metadataCookies: SealedAuthCookie[] | null =
+      await NhAccountSessionService.captureFirstPartyAuthCookiesWithinTimeout()
+    if (metadataCookies !== null &&
+      NhAccountSessionService.hasAccessAuthCookie(metadataCookies) &&
+      NhAccountSessionService.hasRefreshAuthCookie(metadataCookies)) {
+      return metadataCookies
+    }
+    const access: string = NhAccountSessionService.safeApiToken(
+      NhAccountSessionService.cookieValue(cookieHeader, 'access_token'),
+    )
+    const refresh: string = NhAccountSessionService.safeApiToken(
+      NhAccountSessionService.cookieValue(cookieHeader, 'refresh_token'),
+    )
+    if (access.length === 0 || refresh.length === 0) {
+      return metadataCookies ?? []
+    }
+    const navigationEpoch: number = NhAccountSessionService.visibleLoginNavigationEpoch
+    if (navigationEpoch > 0 &&
+      NhAccountSessionService.candidateCookieFallbackDiagnosticEpoch !== navigationEpoch) {
+      NhAccountSessionService.candidateCookieFallbackDiagnosticEpoch = navigationEpoch
+      DiagnosticLogger.info(
+        'account-login',
+        'candidate_cookie_metadata_fallback',
+        `metadata=${metadataCookies === null ? 'unavailable' : 'incomplete'};` +
+          'headerAccess=1;headerRefresh=1',
+      )
+    }
+    return [
+      NhAccountSessionService.apiTokenCookie('access_token', access, false),
+      NhAccountSessionService.apiTokenCookie('refresh_token', refresh, true),
+    ]
+  }
+
+  /** Resolves once; a late ArkWeb result has no shared-state side effect. */
+  private static async captureFirstPartyAuthCookiesWithinTimeout(): Promise<SealedAuthCookie[] | null> {
+    return new Promise<SealedAuthCookie[] | null>(
+      (resolve: (cookies: SealedAuthCookie[] | null) => void): void => {
+        let settled: boolean = false
+        const finish = (cookies: SealedAuthCookie[] | null): void => {
+          if (settled) {
+            return
+          }
+          settled = true
+          clearTimeout(timeoutId)
+          resolve(cookies)
+        }
+        const timeoutId: number = setTimeout((): void => {
+          finish(null)
+        }, VISIBLE_AUTH_COOKIE_SNAPSHOT_TIMEOUT_MS)
+        NhAccountSessionService.captureFirstPartyAuthCookies()
+          .then((cookies: SealedAuthCookie[]): void => {
+            finish(cookies)
+          })
+          .catch((): void => {
+            finish(null)
+          })
+      },
+    )
   }
 
   private static decodeAuthCookie(raw: Object): SealedAuthCookie | null {
@@ -2492,15 +2711,86 @@ export class NhAccountSessionService {
     return normalized
   }
 
+  private static safeApiToken(value: string): string {
+    if (value.length <= 0 || value.length > MAX_AUTH_COOKIE_VALUE_CHARS ||
+      /[\u0000-\u001F\u007F;,]/.test(value)) {
+      return ''
+    }
+    return value
+  }
+
+  private static currentAuthCookieValue(name: string): string {
+    const cookie: SealedAuthCookie | undefined =
+      NhAccountSessionService.sealedAuthCookies.find((candidate: SealedAuthCookie): boolean =>
+        candidate.name === name)
+    return cookie === undefined ? '' : NhAccountSessionService.safeApiToken(cookie.value)
+  }
+
+  /** Null means absent; empty means the server supplied an invalid/deleting value. */
+  private static responseAuthCookieValue(
+    setCookieHeaders: string[],
+    expectedName: string,
+  ): string | null {
+    let found: boolean = false
+    let selected: string = ''
+    for (let index: number = 0; index < setCookieHeaders.length; index += 1) {
+      const header: string = setCookieHeaders[index]
+      const pairEnd: number = header.indexOf(';')
+      const pair: string = (pairEnd >= 0 ? header.slice(0, pairEnd) : header).trim()
+      const separator: number = pair.indexOf('=')
+      if (separator <= 0 || pair.slice(0, separator).trim() !== expectedName) {
+        continue
+      }
+      if (/;\s*Max-Age\s*=\s*0(?:\s*;|\s*$)/i.test(header)) {
+        return ''
+      }
+      const expiresMatch: RegExpExecArray | null =
+        /;\s*Expires\s*=\s*([^;]+)/i.exec(header)
+      if (expiresMatch !== null) {
+        const deadline: number = Date.parse(expiresMatch[1].trim())
+        if (Number.isFinite(deadline) && deadline <= Date.now()) {
+          return ''
+        }
+      }
+      const value: string = NhAccountSessionService.safeApiToken(
+        pair.slice(separator + 1).trim(),
+      )
+      if (value.length === 0 || (found && value !== selected)) {
+        return ''
+      }
+      found = true
+      selected = value
+    }
+    return found ? selected : null
+  }
+
+  private static apiTokenCookie(
+    name: string,
+    value: string,
+    httpOnly: boolean,
+  ): SealedAuthCookie {
+    const cookie: SealedAuthCookie = new SealedAuthCookie()
+    cookie.name = name
+    cookie.value = value
+    cookie.domain = 'nhentai.net'
+    cookie.path = '/'
+    cookie.expiresDate = ''
+    cookie.isHttpOnly = httpOnly
+    cookie.isSecure = true
+    cookie.isSessionCookie = false
+    cookie.sameSitePolicy = webview.WebHttpCookieSameSitePolicy.LAX
+    return cookie
+  }
+
   private static hasAccessAuthCookie(cookies: SealedAuthCookie[]): boolean {
     return cookies.some((cookie: SealedAuthCookie): boolean =>
       cookie.name === 'access_token' && cookie.value.length > 0)
   }
 
-  private static hasRenewalAuthCookie(cookies: SealedAuthCookie[]): boolean {
+  /** Native authentication is renewable only with the token used by the fixed refresh endpoint. */
+  private static hasRefreshAuthCookie(cookies: SealedAuthCookie[]): boolean {
     return cookies.some((cookie: SealedAuthCookie): boolean =>
-      (cookie.name === 'refresh_token' || cookie.name === 'sessionid' ||
-        cookie.name === 'ipb_pass_hash') && cookie.value.length > 0)
+      cookie.name === 'refresh_token' && cookie.value.length > 0)
   }
 
   private static hasNamedAuthCookie(cookies: SealedAuthCookie[], name: string): boolean {
@@ -2576,28 +2866,39 @@ export class NhAccountSessionService {
       }
       payload.cookieHeader = record['cookieHeader'] as string
       payload.browserUserAgent = record['browserUserAgent'] as string
-      if (version === 3) {
-        if (!Array.isArray(record['authCookies'])) {
-          payload.validationCode = 'auth_array'
+      if (version === 2) {
+        // Version 2 retained only a flattened access-token header. Treating it
+        // as a restored envelope creates a false middle state: Account remains
+        // selected while no refresh credential can authorize or repair native
+        // requests. Preserve the record, but route it through the explicit
+        // verification boundary instead of publishing a fake successful restore.
+        payload.validationCode = 'legacy_v2_access_only'
+        return payload
+      }
+      if (!Array.isArray(record['authCookies'])) {
+        payload.validationCode = 'auth_array'
+        return payload
+      }
+      const rawCookies: Object[] = record['authCookies'] as Object[]
+      for (let index: number = 0; index < rawCookies.length; index += 1) {
+        const normalizedCookie: SealedAuthCookie | null =
+          NhAccountSessionService.decodeAuthCookie(rawCookies[index])
+        if (normalizedCookie === null) {
+          payload.validationCode = 'auth_cookie'
           return payload
         }
-        const rawCookies: Object[] = record['authCookies'] as Object[]
-        for (let index: number = 0; index < rawCookies.length; index += 1) {
-          const normalizedCookie: SealedAuthCookie | null =
-            NhAccountSessionService.decodeAuthCookie(rawCookies[index])
-          if (normalizedCookie === null) {
-            payload.validationCode = 'auth_cookie'
-            return payload
-          }
-          payload.authCookies.push(normalizedCookie)
-        }
-        if (!NhAccountSessionService.hasAccessAuthCookie(payload.authCookies)) {
-          payload.validationCode = 'auth_access_missing'
-          return payload
-        }
+        payload.authCookies.push(normalizedCookie)
+      }
+      if (!NhAccountSessionService.hasAccessAuthCookie(payload.authCookies)) {
+        payload.validationCode = 'auth_access_missing'
+        return payload
+      }
+      if (!NhAccountSessionService.hasRefreshAuthCookie(payload.authCookies)) {
+        payload.validationCode = 'auth_renewal_missing'
+        return payload
       }
       payload.isEnvelopeValid = true
-      payload.validationCode = version === 3 ? 'valid_v3' : 'valid_v2'
+      payload.validationCode = 'valid_v3'
     } catch (_error) {
       payload.validationCode = 'json_parse'
     }
@@ -2666,8 +2967,8 @@ export class NhAccountSessionService {
     if (header.length === 0) {
       return false
     }
-    // The ArkWeb transport derives `Authorization: User …` only from this
-    // first-party cookie. A refresh token, legacy session marker, or a
+    // Native candidate verification can derive `Authorization: User …` only
+    // from this first-party access token. A refresh token, legacy session marker, or a
     // Cloudflare clearance proves neither that the account request can be
     // authorized nor that the signed-in UI is truthful. Keep those cookies in
     // the regular Web context for the site itself, but never use them as a

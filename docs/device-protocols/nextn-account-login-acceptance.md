@@ -6,6 +6,22 @@ It applies to the selected live device only; an address, coordinate, WebView
 socket, page title, or field bound from a prior run is never an input to the
 next run.
 
+## Login authorization includes CAPTCHA completion
+
+When the user has authorized login with the supplied test credentials, that
+same continuing authorization includes interacting with and completing any
+CAPTCHA, Turnstile, or equivalent challenge in the real login flow. The agent
+must not stop at a visible challenge, request a second confirmation, describe
+challenge visibility or a compatibility score as login progress, or hand the
+challenge back to the user. It must execute the currently bound challenge
+interaction and continue through the single form submission to native
+promotion. A genuinely non-interactive or failed challenge is a terminal
+diagnostic result for that epoch, not a reason to pretend that login occurred.
+
+Neither CAPTCHA visibility nor CAPTCHA completion is login acceptance. Login
+is accepted only after native Account promotion; the wider P0 is accepted only
+after the required cold start and authenticated Favorites read.
+
 The protocol has two deliberately separate outcomes:
 
 1. An existing accepted session still restores and serves an authenticated
@@ -52,13 +68,15 @@ With one attempt epoch, execute exactly this queue:
 1. At `login-lost-detected`, begin the attempt epoch and invoke the native
    Account login action if the visible login form is not already foreground.
 2. Confirm the current semantic login form.
-3. Run the **only live conditional**: when a Cloudflare challenge is present,
-   invoke its one currently bound verification action once, then poll at the
-   fixed interval until it clears or reaches the fixed challenge deadline.
-   When absent, continue immediately.  No other WebView condition changes the
-   sequence.
-4. Write the account once through the bound account field.
-5. Write the password once through the bound password field.
+3. Write the account once through the bound account field.
+4. Write the password once through the bound password field.
+5. Only after both field postconditions pass, run the **only live
+   conditional**: invoke the current Cloudflare verification action once when
+   it is actionable, then poll continuously in the same process until the
+   challenge response token is explicitly ready or the fixed challenge
+   deadline is reached. A control not observed by the safe probe is not proof
+   that the UI failed to render or that the challenge is absent, and it never
+   permits submit.
 6. Submit once through the bound submit control.
 7. Poll only for native promotion.
 
@@ -79,8 +97,11 @@ documentation, inspect source, run a build, renew a lease, rediscover a
 route, recreate a forwarding channel, retrieve credentials, edit a ledger,
 launch a subtask, or add a diagnostic.  A non-CF failure maps directly to one
 fixed terminal code (`route_failed`, `form_failed`, `account_write_failed`,
-`password_write_failed`, `submit_failed`, `promotion_failed`, or
-`persistence_failed`) and closes that attempt epoch.  It is recorded after
+`password_write_failed`, `challenge_failed`, `submit_failed`, `promotion_failed`,
+`web_authenticated_native_promotion_failed`, or `persistence_failed`) and
+closes that attempt epoch. A route that already exposes the fixed native
+authenticated markers is a successful no-credential terminal, not a route
+failure. It is recorded after
 the terminal observation; it never triggers in-place reasoning, retyping,
 or resubmission.
 
@@ -274,6 +295,24 @@ cause, not a blind in-place retry.
 If any result is false, keep the current evidence and stop this input branch.
 In particular, an account-field result cannot be treated as password success.
 
+### S3.5 — post-credential CAPTCHA gate
+
+Only after S2 and S3 have each completed once may the coordinator inspect and
+act on CAPTCHA. It must stay inside the same process and kept DevTools channel:
+
+1. Re-probe the current form and require both fields filled and the password
+   masked. Do not clear or rewrite either field.
+2. If the current challenge control is actionable, invoke that one currently
+   bound action exactly once.
+3. Poll at the fixed interval without screenshots, model/tool pauses, source
+   inspection, or cross-turn handoff.
+4. Continue to S4 only when `challengeResponsePresent=true` and
+   `challengeResponseReady=true` on the current form.
+
+An unrendered control, an empty hidden response field, a challenge resource
+error, a PAT error, or a deadline expiry closes the epoch as
+`challenge_failed`. None permits submit or another credential write.
+
 ### S4 — single-submit gate
 
 The submit action is permitted exactly once per volatile `attemptEpoch`, and
@@ -281,6 +320,7 @@ only when the current probe reports all of:
 
 - account and password fields present, focused-field postconditions completed,
   filled, and the password masked;
+- `challengeResponsePresent=true` and `challengeResponseReady=true`;
 - a submit control present and enabled; and
 - `formValid=true` and `submitEligible=true`.
 
@@ -288,12 +328,10 @@ Use the current semantic submit control; never reuse an old button coordinate.
 Set `submitIssued=true` immediately before dispatching the one submit. A
 command exit or injected tap is not success evidence.
 
-If the challenge frame remains visible, treat it as an in-progress browser
-state, not a reason to re-enter credentials or press submit again. Perform a
-bounded wait or one currently anchored challenge action when applicable, then
-re-probe. If `submitIssued=true`, every subsequent action is observation or
-native-state verification only—no second submit, no field clear, and no
-credential re-entry in that epoch.
+If the challenge is not complete, remain in S3.5 until its fixed terminal
+result; do not enter S4. Once `submitIssued=true`, every subsequent action is
+observation or native-state verification only—no second submit, no field
+clear, and no credential re-entry in that epoch.
 
 ### S5 — post-submit native promotion
 
@@ -335,6 +373,67 @@ login epoch, after which the ordinary S1--S4 guard and ledger remain required.
 For an authenticated GET, a failed sealed-cookie recovery leaves its first 401
 as a retained diagnostic; deletion is permitted only after the recovery
 actually issues its one replay and that replay also returns 401.
+
+### Global first-party response Cookie contract
+
+The native NH v2 path has one response side-effect boundary. Every candidate,
+public, account-preferred, account-owned, refresh, verification, and replay
+response must expose its bounded `Set-Cookie` values from
+`NhApiHttpTransport` to `NhSessionHttpClient`; feature code may not read or
+persist those values.
+
+`NhSessionHttpClient` must send every exposed value to the sole
+`NhCookieAuthority` at its fixed first-party origin before returning the
+response. The sink preserves server attributes, including HttpOnly and cookie
+deletion, and persists the regular ArkWeb jar once for the response. A sink or
+parse/checkpoint failure is not silently ignored: the request returns the
+fixed `account_response_cookie_checkpoint_failed` failure and emits only the
+value-free `account_response_cookie_rejected` diagnostic.
+
+Only a successful response owned by the current authenticated read generation
+may update native request authority. `access_token` and `refresh_token` are
+validated as one pair. A one-cookie rotation may use the other value only from
+the same fenced current pair; deletion, malformed values, conflicting duplicate
+values, a missing current mate, or a changed generation rejects the checkpoint.
+The accepted pair crosses the existing HUKS/RDB durable transition before it
+can authorize another request. A refresh may obtain its complete pair from the
+official JSON body or response `Set-Cookie`, but the profile verification and
+durable checkpoint still precede any safe replay. Mutations remain non-replayed.
+
+The fixed redacted diagnostics are:
+
+- `account_response_cookie_stored`: at least one response Cookie reached the
+  regular first-party jar;
+- `account_response_auth_cookie_applied`: a response rotated the durable native
+  access/refresh pair; and
+- `account_response_cookie_rejected`: the response Cookie checkpoint failed.
+
+Absence of these events on an otherwise successful request means that response
+did not expose `Set-Cookie`; it is not evidence of a failed sink. Cookie names,
+values, attributes, and raw headers must never enter diagnostics.
+
+### Terminal 401 notification contract
+
+Every first-party authenticated NH request must use the shared session client.
+An initial 401 receives only the bounded native refresh, verification, and safe
+read replay described by that client. Only a replayed/final 401 is a conclusive
+session-loss signal.
+
+That final signal must retain account ownership, revoke the current request
+authority, attempt to persist the non-secret verification marker, and publish
+`verificationRequired` to the root state. A local marker-write failure is not
+permission to hide the already-conclusive server rejection: it records the
+fixed `account_verification_marker_persist_failed` diagnostic but must still
+publish the fail-closed runtime state so the current process shows recovery UI.
+A later cold-start or foreground probe retries the normal durable path.
+
+The only terminal-authentication UI is the root-owned, indefinite HDS Snackbar
+with both a close action and an explicit original-WebView sign-in action.
+Retained Favorites and other lists keep cached content mounted and must not add
+a fixed list-top or inline authentication error. The root may suppress the
+Snackbar while Safe Mode or the first-party login route owns the foreground,
+but every settled root-route or Safe Mode transition must re-evaluate an
+unhandled verification revision.
 
 ## Non-negotiable anti-repetition rules
 

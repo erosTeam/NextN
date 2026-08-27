@@ -18,6 +18,7 @@ const MAX_SECRET_BYTES = 4096
 const ALLOWED_ACTIONS = new Set([
   'focus-account',
   'focus-password',
+  'blur-active',
   'submit',
 ])
 
@@ -645,10 +646,15 @@ const SUBMIT_ACTIVATION_EXPRESSION = `(() => {
   );
   const challengeResponseReady = challengeResponse !== null &&
     String(challengeResponse.value || '').trim().length > 0;
-  const challengeFramePresent = (challengeFrameDetected || challengeResponse !== null ||
-    document.querySelector('.cf-turnstile, [data-sitekey]') !== null) && !challengeResponseReady;
+  const challengeResponsePending = challengeResponse !== null && !challengeResponseReady;
+  const challengeContainerPresent = Array.from(
+    document.querySelectorAll('.cf-turnstile, [data-sitekey]')
+  ).some(isVisible);
+  const challengeFramePresent =
+    (challengeFrameDetected || challengeContainerPresent) && !challengeResponseReady;
   const formValid = form !== null && typeof form.checkValidity === 'function' ? Boolean(form.checkValidity()) : false;
-  const eligible = submit !== null && submitEnabled && formValid && !challengeFramePresent;
+  const eligible = submit !== null && submitEnabled && formValid &&
+    !challengeFramePresent && !challengeResponsePending;
   const rect = eligible ? submit.getBoundingClientRect() : null;
   return {
     eligible,
@@ -733,6 +739,108 @@ async function dispatchSemanticSubmitClick(socketUrl, timeoutMs) {
   }
 }
 
+// Internal-only activation point for a currently visible managed challenge.
+// It derives a fresh point from the live checkbox, frame, or provider
+// container and returns only fixed booleans. No DOM text, selector, URL,
+// token, field value, or coordinate crosses the driver boundary.
+const CHALLENGE_ACTIVATION_EXPRESSION = `(() => {
+  const isVisible = (element) => {
+    try {
+      const style = window.getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      return style.display !== 'none' && style.visibility !== 'hidden' &&
+        element.getAttribute('aria-hidden') !== 'true' && rect.width > 0 && rect.height > 0;
+    } catch (_error) {
+      return false;
+    }
+  };
+  const direct = Array.from(document.querySelectorAll(
+    'input[type="checkbox"], [role="checkbox"]'
+  )).filter(isVisible);
+  const frames = Array.from(document.querySelectorAll('iframe')).filter((frame) => {
+    if (!isVisible(frame)) return false;
+    const source = String(frame.getAttribute('src') || '').toLowerCase();
+    const title = String(frame.getAttribute('title') || '').toLowerCase();
+    return source.includes('challenges.cloudflare.com') || title.includes('challenge');
+  });
+  const containers = Array.from(
+    document.querySelectorAll('.cf-turnstile, [data-sitekey]')
+  ).filter(isVisible);
+  const target = direct.length === 1 ? direct[0] :
+    (frames.length === 1 ? frames[0] : (containers.length === 1 ? containers[0] : null));
+  const rect = target === null ? null : target.getBoundingClientRect();
+  const frameLike = target !== null && String(target.tagName || '').toLowerCase() === 'iframe';
+  return {
+    actionable: target !== null && direct.length <= 1 && frames.length <= 1 && containers.length <= 1,
+    x: rect === null ? null : rect.left + (frameLike ? Math.min(32, rect.width / 2) : rect.width / 2),
+    y: rect === null ? null : rect.top + rect.height / 2,
+  };
+})()`
+
+async function dispatchSemanticChallengeClick(socketUrl, timeoutMs) {
+  if (typeof globalThis.WebSocket !== 'function') {
+    return createFailure('cdp_connect', 'websocket_unavailable')
+  }
+  let socket
+  try {
+    socket = new globalThis.WebSocket(socketUrl)
+  } catch (_error) {
+    return createFailure('cdp_connect', 'open_failed')
+  }
+  try {
+    if (!await waitForSocketOpen(socket, timeoutMs)) {
+      return createFailure('cdp_connect', 'open_failed_or_timeout')
+    }
+    const enabled = await sendCdp(socket, 1, 'Runtime.enable', {}, timeoutMs)
+    if (enabled.kind !== 'message' || !isObject(enabled.message) || enabled.message.error !== undefined) {
+      return createFailure('runtime_enable', 'failed')
+    }
+    const evaluated = await sendCdp(socket, 2, 'Runtime.evaluate', {
+      expression: CHALLENGE_ACTIVATION_EXPRESSION,
+      awaitPromise: true,
+      returnByValue: true,
+    }, timeoutMs)
+    if (evaluated.kind !== 'message' || !isObject(evaluated.message) ||
+      evaluated.message.error !== undefined) {
+      return createFailure('runtime_evaluate', 'failed')
+    }
+    const protocolResult = evaluated.message.result
+    const payload = isObject(protocolResult) && isObject(protocolResult.result)
+      ? protocolResult.result.value
+      : null
+    if (!isObject(payload) || payload.actionable !== true || !Number.isFinite(payload.x) ||
+      !Number.isFinite(payload.y) || payload.x < 0 || payload.y < 0 ||
+      payload.x > 10000 || payload.y > 10000) {
+      return createFailure('action_precondition', 'challenge_not_actionable')
+    }
+    const pressed = await sendCdp(socket, 3, 'Input.dispatchMouseEvent', {
+      type: 'mousePressed',
+      x: payload.x,
+      y: payload.y,
+      button: 'left',
+      clickCount: 1,
+    }, timeoutMs)
+    if (pressed.kind !== 'message' || !isObject(pressed.message) ||
+      pressed.message.error !== undefined) {
+      return createFailure('action_postcondition', 'challenge_dispatch_not_confirmed')
+    }
+    const released = await sendCdp(socket, 4, 'Input.dispatchMouseEvent', {
+      type: 'mouseReleased',
+      x: payload.x,
+      y: payload.y,
+      button: 'left',
+      clickCount: 1,
+    }, timeoutMs)
+    if (released.kind !== 'message' || !isObject(released.message) ||
+      released.message.error !== undefined) {
+      return createFailure('action_postcondition', 'challenge_dispatch_not_confirmed')
+    }
+    return { ok: true, stage: 'challenge_action', actionApplied: true }
+  } finally {
+    closeQuietly(socket)
+  }
+}
+
 function actionExpression(action) {
   // The action string is never interpolated into page JavaScript. These are
   // fixed local statements selected from the parser's closed enum.
@@ -740,6 +848,15 @@ function actionExpression(action) {
     ? 'actionApplied = focusCurrentField(accountField);'
     : action === 'focus-password'
       ? 'actionApplied = focusCurrentField(passwordField);'
+      : action === 'blur-active'
+        ? `try {
+          const active = document.activeElement;
+          if (active !== null && typeof active.blur === 'function') active.blur();
+          actionApplied = document.activeElement !== accountField &&
+            document.activeElement !== passwordField;
+        } catch (_error) {
+          actionApplied = false;
+        }`
       : `if (typeof form.requestSubmit === 'function') {
           form.requestSubmit(submit);
         } else {
@@ -803,8 +920,12 @@ function actionExpression(action) {
   );
   const challengeResponseReady = challengeResponse !== null &&
     String(challengeResponse.value || '').trim().length > 0;
-  const challengeFramePresent = (challengeFrameDetected || challengeResponse !== null ||
-    document.querySelector('.cf-turnstile, [data-sitekey]') !== null) && !challengeResponseReady;
+  const challengeResponsePending = challengeResponse !== null && !challengeResponseReady;
+  const challengeContainerPresent = Array.from(
+    document.querySelectorAll('.cf-turnstile, [data-sitekey]')
+  ).some(isVisible);
+  const challengeFramePresent =
+    (challengeFrameDetected || challengeContainerPresent) && !challengeResponseReady;
   const loginFormPresent = form !== null && submit !== null;
   let formValid = null;
   let actionApplied = false;
@@ -812,7 +933,7 @@ function actionExpression(action) {
   if (loginFormPresent) {
     ${isSubmit ? "formValid = typeof form.checkValidity === 'function' ? Boolean(form.checkValidity()) : null;" : ''}
     const canRun = ${isSubmit
-      ? 'submitEnabled && formValid === true && !challengeFramePresent'
+      ? 'submitEnabled && formValid === true && !challengeFramePresent && !challengeResponsePending'
       : 'true'};
     if (canRun) {
       try {
@@ -939,6 +1060,10 @@ function actionPostcondition(action, summary) {
   if (action === 'focus-password' && (!summary.actionApplied || !summary.passwordFieldFocused)) {
     return createFailure('action_postcondition', 'focus_not_confirmed')
   }
+  if (action === 'blur-active' && (!summary.actionApplied || summary.accountFieldFocused ||
+    summary.passwordFieldFocused)) {
+    return createFailure('action_postcondition', 'focus_not_confirmed')
+  }
   if (action === 'submit') {
     if (!summary.submitEnabled || summary.formValid !== true || summary.challengeFramePresent) {
       return createFailure('action_precondition', 'submit_not_eligible')
@@ -1003,6 +1128,27 @@ export async function runDriver({ port, action, timeoutMs }, transport = {}) {
     return summary
   }
   return actionPostcondition(action, summary)
+}
+
+/** Activates at most one currently visible managed challenge on the selected login page. */
+export async function runChallengeAction({ port, timeoutMs }, transport = {}) {
+  if (!Number.isInteger(port) || !Number.isInteger(timeoutMs) ||
+    timeoutMs < MIN_TIMEOUT_MS || timeoutMs > MAX_TIMEOUT_MS) {
+    return createFailure('arguments', 'invalid_arguments')
+  }
+  const discovery = await fetchLocalPages(port, timeoutMs, transport)
+  if (!discovery.ok) {
+    return createFailure('devtools_discovery', discovery.code)
+  }
+  const selection = selectLocalPages(discovery.pages, port)
+  if (selection.socketUrls === undefined) {
+    return createFailure('page_selection', selection.code)
+  }
+  const selected = await selectUniqueLoginFormPage(selection.socketUrls, timeoutMs)
+  if (!selected.ok) {
+    return selected
+  }
+  return await dispatchSemanticChallengeClick(selected.socketUrl, timeoutMs)
 }
 
 /**

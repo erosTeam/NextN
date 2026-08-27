@@ -34,12 +34,9 @@ const LEGACY_ACCOUNT_VERIFICATION_LABELS = new Set([
   '需要重新验证',
   '再確認が必要です'
 ])
-const AUTHORIZED_TARGETS = new Set([
-  '192.168.50.237:12345',
-  '192.168.50.197:12345',
-  '192.168.50.200:12345',
-  '56T0225315001128'
-])
+// The active account-acceptance lane is explicitly scoped to device 237.
+// Connection discovery and lease ownership cannot expand this authority.
+const AUTHORIZED_TARGET = '192.168.50.237:12345'
 const RESOURCE_LOCALES = ['base', 'en_US', 'zh_CN', 'ja_JP']
 const TEMP_PREFIX = 'nextn-account-s0-'
 const REMOTE_PREFIX = '/data/local/tmp/nextn-account-s0-'
@@ -94,7 +91,7 @@ function parseArguments(argv) {
     }
     throw new SafeFailure('invalid_arguments')
   }
-  if (!AUTHORIZED_TARGETS.has(target) || lease.length === 0) {
+  if (target !== AUTHORIZED_TARGET || lease.length === 0) {
     throw new SafeFailure('invalid_arguments')
   }
   if (accountOnly && (routeLogin || includeDiagnostics)) {

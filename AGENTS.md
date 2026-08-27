@@ -58,7 +58,10 @@ Before credential or login work, read the authoritative S0-S6 protocol at
 existing device/login lane, also read `docs/qa/nextn-active-acceptance.md`.
 
 - Supplied test credentials plus authorization to test permit autonomous form
-  entry and submission. Redaction is not a manual-user handoff.
+  entry, CAPTCHA/challenge interaction, and submission. That authorization
+  persists across turns and context compaction: do not ask for another
+  confirmation, pause at a visible CAPTCHA, or hand the challenge back to the
+  user. Redaction is not a manual-user handoff.
 - Start from current safe native Account and Favorites evidence. Before a new
   credential epoch, create the required redacted record in
   `docs/qa/nextn-login-attempt-ledger.md`.
@@ -66,7 +69,9 @@ existing device/login lane, also read `docs/qa/nextn-active-acceptance.md`.
   Never repeat credential entry or submit within one attempt epoch.
 - Acceptance requires native promotion, force-stop/cold start without clearing
   data, native Account state, and authenticated Favorites state. Builds,
-  installs, Web state, and input-command success are supplementary.
+  installs, a visible or completed CAPTCHA, compatibility diagnostics, Web
+  state, and input-command success are supplementary and must never be
+  reported as a completed login.
 - Keep secrets and sensitive session data out of messages and artifacts. After
   interruption, resume the next pending physical action; do not request manual
   submission when autonomous authority already exists.

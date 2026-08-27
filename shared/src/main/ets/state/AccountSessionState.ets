@@ -14,21 +14,26 @@ export class AccountSessionState {
   @Trace signedIn: boolean = false
   /** Whether the current ArkWeb identity can issue authenticated requests now. */
   @Trace authenticationAvailable: boolean = false
+  /** Automatic recovery is exhausted and an explicit visible verification is required. */
+  @Trace verificationRequired: boolean = false
   @Trace revision: number = 0
 
   publish(
     initialized: boolean,
     signedIn: boolean,
     authenticationAvailable: boolean,
+    verificationRequired: boolean,
   ): void {
     if (this.initialized === initialized &&
       this.signedIn === signedIn &&
-      this.authenticationAvailable === authenticationAvailable) {
+      this.authenticationAvailable === authenticationAvailable &&
+      this.verificationRequired === verificationRequired) {
       return
     }
     this.initialized = initialized
     this.signedIn = signedIn
     this.authenticationAvailable = authenticationAvailable
+    this.verificationRequired = verificationRequired
     this.revision += 1
   }
 }

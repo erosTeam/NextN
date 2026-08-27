@@ -1054,3 +1054,196 @@ required fields.
 - final S5/S6 outcome: native promotion complete at 13:40:12; three independent
   S6 observations complete. No additional credential action was performed.
   No data clear or uninstall occurred.
+
+## Current 237 session-loss recovery — 2026-08-27
+
+The discarded application-embedded acceptance detour is not a current login
+mechanism or evidence source. Its bridge, receipt, build flags, key-event input,
+launch parameters, test registration and repeated probe records were removed.
+The product retains only the unified Cookie/session request lifecycle, terminal
+401 state, durable verification marker, root HDS notice and original first-party
+Web login carrier.
+
+### nextn-237-original-webview-20260827T2052 — 2026-08-27 20:52 +0800
+
+- trigger: current preserved session is unusable; the normal signed build
+  restored `account_restore_verification_required_after_browser_refresh_failure`
+  and the root HDS re-verification notice before any account mutation.
+- S0 Account: visible-login-Web=false; native-account-list=true;
+  saved-account-row=true; verification-required=true; authentication-available=false.
+- S0 Favorites: native-favorites-root=true; sign-in-prompt=false;
+  loading=false; inline-error=false; verification-required=true;
+  authenticated=false; cached content remains mounted.
+- restore/401 diagnostic:
+  `account_restore_verification_required_after_browser_refresh_failure`.
+- install/data boundary: install-r=true; data-clear=false; uninstall=false;
+  signed HAP SHA-256
+  `aa3fbc4c1229cb99692d61eff3496352cbcad78bd9b0c3c8cb8c30c9877a8167`.
+- login-page navigation: entered through the original first-party WebView.
+- account input: entered once through the semantic field driver.
+- password input: entered once through the semantic field driver.
+- CAPTCHA: not completed; no ready response token was established. Persistent
+  redacted events include `turnstile_challenge_platform` resource failure and
+  `turnstile_pat` 401. No second CAPTCHA action is permitted in this epoch.
+- submit: issued once incorrectly while the challenge response was empty;
+  `submitIssued=true` is terminal and permanent for this epoch.
+- post-submit native promotion: none; no `candidate_captured` or
+  `native_session_promoted` event exists in the post-submit redacted log.
+- cold-start Account: not-run.
+- cold-start Favorites: not-run.
+- conclusion: repair-required and epoch closed. Do not resume, retype or
+  resubmit this page. The protocol is corrected to write account once, write
+  password once, then complete and explicitly verify CAPTCHA in the same
+  process before the immediate single submit. A new attempt requires a fresh
+  S0, a new ledger record and a resolved challenge-rendering path.
+
+### nextn-237-post-credential-captcha-20260827T2130 — 2026-08-27 21:30 +0800
+
+- trigger: the preceding 237 epoch is closed after an empty CAPTCHA response
+  was incorrectly submitted; the preserved native session remains unusable
+  and the user explicitly directed a fresh login under the corrected order.
+- S0 Account: native-account-list=true; saved-account-row=true;
+  verification-required=true; authentication-available=false.
+- S0 Favorites: native-favorites-root=true; verification-required=true;
+  authenticated=false; cached content is not authentication evidence.
+- restore/401 diagnostic:
+  `account_restore_verification_required_after_browser_refresh_failure`.
+- install/data boundary: install-r=false; data-clear=false; uninstall=false.
+- login-page navigation: not-entered.
+- account input: not-started.
+- password input: not-started.
+- CAPTCHA: not-started; it may be observed and acted on only after both field
+  postconditions pass.
+- submit: not-issued.
+- post-submit native promotion: pending.
+- cold-start Account: pending.
+- cold-start Favorites: pending.
+- conclusion: closed without native promotion. Account and password were each
+  entered once. The visible CAPTCHA was acted on only after the fields, but
+  the submit path did not exit the Web login page before the challenge expired.
+  The user then exited the page. Do not reuse or resubmit this epoch.
+
+### nextn-237-original-webview-20260827T2138 — 2026-08-27 21:38 +0800
+
+- trigger: the user closed the failed Web login page and explicitly authorized
+  one fresh uninterrupted original-WebView login attempt.
+- S0 Account: preserved saved-account row remains locally present; server-side
+  authentication remains unavailable and requires re-verification.
+- S0 Favorites: authenticated state remains unproven.
+- install/data boundary: install-r=false; data-clear=false; uninstall=false.
+- login-page navigation: pending; use only the original first-party WebView.
+- account input: not-started; one semantic write permitted.
+- password input: not-started; one semantic write permitted.
+- CAPTCHA: not-started; act only after both field postconditions and after the
+  password keyboard/editor has been dismissed.
+- submit: not-issued; exactly one submit is permitted after a current nonempty
+  CAPTCHA token is observed.
+- post-submit native promotion: pending.
+- cold-start Account: pending.
+- cold-start Favorites: pending.
+- conclusion: closed before CAPTCHA and without submit. Account and password
+  were each entered once. Because semantic CDP entry had not opened a soft
+  keyboard, the attempted BACK dismissal navigated out of the WebView instead;
+  the screenshot showed an empty Web host and DevTools disconnected. Do not
+  reuse this epoch.
+
+### nextn-237-original-webview-20260827T2141 — 2026-08-27 21:41 +0800
+
+- trigger: fresh retry after the preceding no-submit epoch navigated out while
+  trying to dismiss field focus.
+- S0 Account: preserved saved-account row remains locally present; server-side
+  authentication remains unavailable and requires re-verification.
+- S0 Favorites: authenticated state remains unproven.
+- install/data boundary: install-r=false; data-clear=false; uninstall=false.
+- login-page navigation: pending; use only the original first-party WebView.
+- account input: not-started; one semantic write permitted.
+- password input: not-started; one semantic write permitted.
+- CAPTCHA: not-started. After both fields, cancel field focus with a harmless
+  tap on the native title-bar blank area; do not send BACK.
+- submit: not-issued; exactly one submit is permitted after a current nonempty
+  CAPTCHA token is observed.
+- post-submit native promotion: pending.
+- cold-start Account: pending.
+- cold-start Favorites: pending.
+- conclusion: closed without submit or native promotion. Account and password
+  were each entered once. The old fixed-coordinate CF action did not establish
+  a token before the runner timed out. Do not reuse this credential epoch.
+
+### nextn-237-layout-driven-atomic-20260827T2211 — 2026-08-27 22:11 +0800
+
+- trigger: the fixed-coordinate and model-paused flows are retired. The current
+  single-process runner classifies the live post-blur Web accessibility tree:
+  checkbox plus human-verification text means one derived-coordinate click;
+  alert plus success text means no click; a ready token immediately triggers
+  the sole submit.
+- S0 Account: preserved saved-account row remains locally present; server-side
+  authentication remains unavailable and requires re-verification.
+- S0 Favorites: authenticated state remains unproven.
+- install/data boundary: install-r=false; data-clear=false; uninstall=false.
+- pre-attempt capability evidence: the stored 237 unchecked original-login
+  layout classified as `needs_click`; the current credential-free 237 success
+  layout classified as `ready`; both checks passed without credential input or
+  submit.
+- login-page navigation: pending; use only the original first-party WebView.
+- account input: not-started; one semantic write permitted.
+- password input: not-started; one semantic write permitted.
+- CAPTCHA: not-started; state and click point must come from the live layout
+  after CDP blur, never from a fixed coordinate or model pause.
+- submit: not-issued; exactly one submit is permitted after the current token
+  becomes nonempty.
+- post-submit native promotion: pending.
+- cold-start Account: pending.
+- cold-start Favorites: pending.
+- conclusion: closed after the sole submit. Account and password were each
+  entered once; the live layout classified CAPTCHA as already successful, the
+  ready token triggered the submit with a measured 0 ms coordinator delay,
+  and the WebView reached the authenticated NH home. A value-free CDP shape
+  probe then proved `access_token`, `refresh_token`, and `cf_clearance` at the
+  first-party root with the expected Secure/HttpOnly/SameSite attributes.
+  Native promotion did not occur: no `candidate_captured` or
+  `native_session_promoted` event exists after the submit. Do not reuse or
+  resubmit this epoch.
+
+### nextn-237-cookie-capture-fallback-20260827T2229 — 2026-08-27 22:29 +0800
+
+- trigger: install and verify the bounded Cookie metadata fallback after the
+  preceding atomic epoch proved a complete authenticated Web cookie pair but
+  no native candidate capture.
+- S0 Account: retained saved-account row present; native authentication remains
+  unavailable before this candidate is installed.
+- S0 Favorites: authenticated state remains unproven before this candidate is
+  installed.
+- install/data boundary: install-r=true; data-clear=false; uninstall=false. The
+  Cookie-capture candidate was first installed as
+  `a3c83f2602bca9641257eff90be7c12a534c7d26a0ab31faef383d862d46236c`;
+  the accepted marker/runner build is
+  `029ee06674f290e4e4e26b43fd53382f69b29df4c1211c8243044c7375ddc5cc`.
+- candidate behavior: full Cookie metadata remains preferred; after a bounded
+  1500 ms unavailable/incomplete result, only a validator-checked first-party
+  `access_token` plus `refresh_token` pair may form the fallback candidate.
+  Native account verification remains mandatory before persistence/promotion.
+- login-page navigation: the first atomic-runner route opened the original
+  recovery destination, but the preserved authenticated Web cookie pair was
+  captured and promoted before the runner's first Web layout could settle.
+- account input: not-issued in this epoch.
+- password input: not-issued in this epoch.
+- CAPTCHA: not-issued in this epoch.
+- submit: not-issued in this epoch.
+- native promotion: passed at 22:30. Persistent redacted order is
+  `candidate_captured` -> `candidate_verified` ->
+  `native_session_promoted` -> `active_account_recorded`.
+- cold-start Account: passed after install-r plus force-stop/start without data
+  clear. Layout contains `nextn-account-authenticated-profile` and
+  `nextn-account-authenticated-sign-out`, with no Web component.
+- cold-start Favorites: passed. Layout contains `nextn-favorites-root`; the
+  same cold process records `favorites_request_success`.
+- cold restore: `account_restore_payload_shape`
+  `code=valid_v3;headerAccess=1;ua=1;authCount=2;renewal=1;refresh=1;session=0;legacy=0`,
+  followed by `account_restore_ready`.
+- runner closure: a second invocation on the accepted build returned
+  `ok=true`, `stage=native_promotion`,
+  `routeState=native_authenticated` in 7613 ms, without credential, CAPTCHA or
+  submit action.
+- conclusion: immediate promotion and one force-stop/cold-start S5/S6 cycle
+  accepted on 237. This does not close the separate cross-day persistence and
+  future terminal-401 notification observation.

@@ -8,6 +8,7 @@ export enum NhBrowserSessionPhase {
   LOGIN_REQUIRED = 'login_required',
   AUTHENTICATED = 'authenticated',
   TRUSTED_REDIRECT_OBSERVED = 'trusted_redirect_observed',
+  VERIFICATION_RETRY_REQUIRED = 'verification_retry_required',
   UNAVAILABLE = 'unavailable',
 }
 

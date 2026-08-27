@@ -196,7 +196,8 @@ export class AccountSessionRepository {
     context: common.UIAbilityContext,
     reasonCode: string,
   ): Promise<void> {
-    if (reasonCode !== 'terminal_401_browser_refresh_unsuccessful') {
+    if (reasonCode !== 'terminal_401_replay_rejected' &&
+      reasonCode !== 'terminal_401_refresh_token_rejected') {
       return Promise.reject(new Error('account_verification_reason_invalid'))
     }
     return AccountSessionRepository.enqueueWrite(async (): Promise<void> => {

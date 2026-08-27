@@ -420,6 +420,7 @@ export {
   connectDownloadQueueActions,
 } from './state/DownloadQueueActionState'
 export { AccountSessionState, connectAccountSession } from './state/AccountSessionState'
+export { AccountAuthNoticeState, connectAccountAuthNotice } from './state/AccountAuthNoticeState'
 export {
   LoginRecoveryLaunchState,
   connectLoginRecoveryLaunch,
@@ -570,11 +571,7 @@ export {
   supportsGalleryColumnDensity,
 } from './utils/GalleryColumns'
 export { NhBrowserSessionBoundary } from './services/NhBrowserSessionBoundary'
-export {
-  NhArkWebSessionTransport,
-  NhArkWebSessionResponse,
-  NhArkWebAccountProfileResponse,
-} from './services/NhArkWebSessionTransport'
+export { NhCookieAuthority } from './services/NhCookieAuthority'
 export { NhGalleryExternalOpenService } from './services/NhGalleryExternalOpenService'
 export { NhGalleryShareService } from './services/NhGalleryShareService'
 export { NhTorrentFileExportService } from './services/NhTorrentFileExportService'
@@ -626,7 +623,6 @@ export { SecondaryGridScaffold } from './components/SecondaryGridScaffold'
 export { SecondaryWaterFlowScaffold } from './components/SecondaryWaterFlowScaffold'
 export { PullRefreshGridScaffold } from './components/PullRefreshGridScaffold'
 export { PullRefreshWaterFlowScaffold } from './components/PullRefreshWaterFlowScaffold'
-export { NhArkWebSessionTransportHost } from './components/NhArkWebSessionTransportHost'
 export { AppStrings } from './i18n/AppStrings'
 export { TabItem } from './model/TabItem'
 export { AppRelease, AppReleaseCacheSnapshot } from './model/AppRelease'

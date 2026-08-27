@@ -1,5 +1,5 @@
-import { webview } from '@kit.ArkWeb'
 import { NhBrowserSessionPhase, NhBrowserSessionStatus } from '../model/NhBrowserSessionState'
+import { NhCookieAuthority } from './NhCookieAuthority'
 
 const TRUSTED_ORIGIN: string = 'https://nhentai.net'
 const LOGIN_PATH: string = '/login/'
@@ -16,7 +16,7 @@ export class NhBrowserSessionBoundary {
   static preflight(): NhBrowserSessionStatus {
     const status: NhBrowserSessionStatus = new NhBrowserSessionStatus()
     try {
-      status.cookieAccessAllowed = webview.WebCookieManager.isCookieAllowed()
+      status.cookieAccessAllowed = NhCookieAuthority.isCookieAllowed()
       status.phase = status.cookieAccessAllowed
         ? NhBrowserSessionPhase.BROWSER_READY
         : NhBrowserSessionPhase.UNAVAILABLE
@@ -90,6 +90,15 @@ export class NhBrowserSessionBoundary {
     const status: NhBrowserSessionStatus = new NhBrowserSessionStatus()
     status.cookieAccessAllowed = true
     status.phase = NhBrowserSessionPhase.AUTHENTICATED
+    return status
+  }
+
+  /** Automatic recovery is exhausted; the next browser verification must be explicit. */
+  static verificationRetryRequired(): NhBrowserSessionStatus {
+    const status: NhBrowserSessionStatus = NhBrowserSessionBoundary.preflight()
+    if (status.cookieAccessAllowed) {
+      status.phase = NhBrowserSessionPhase.VERIFICATION_RETRY_REQUIRED
+    }
     return status
   }
 

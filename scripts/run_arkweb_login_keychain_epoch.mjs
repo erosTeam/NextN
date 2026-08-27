@@ -44,7 +44,7 @@ export const SAFE_EPOCH_FAILURE_CODES = [
   'login_form_not_ready',
   'account_focus_not_current',
   'field_not_empty',
-  'challenge_present',
+  'captcha_token_not_ready',
   'keychain_handle_unavailable',
   'keychain_security_unavailable',
   'keychain_lookup_timeout',
@@ -319,9 +319,6 @@ function initialS2Failure(epoch, probe) {
     !probe.passwordFieldMasked) {
     return createEpochResult(epoch, false, 's2_account_precondition', 'login_form_not_ready')
   }
-  if (probe.challengeFramePresent) {
-    return createEpochResult(epoch, false, 's2_account_precondition', 'challenge_present')
-  }
   if (!probe.accountFieldFocused) {
     return createEpochResult(epoch, false, 's2_account_precondition', 'account_focus_not_current')
   }
@@ -356,8 +353,12 @@ function passwordFilledFailure(epoch, probe) {
 }
 
 function submitEligibilityFailure(epoch, probe) {
-  if (!probe.submitPresent || !probe.submitEnabled || probe.formValid !== true || probe.submitEligible !== true ||
+  if (probe.challengeResponsePresent !== true || probe.challengeResponseReady !== true ||
     probe.challengeFramePresent) {
+    return createEpochResult(epoch, false, 's4_submit_precondition', 'captcha_token_not_ready')
+  }
+  if (!probe.submitPresent || !probe.submitEnabled || probe.formValid !== true ||
+    probe.submitEligible !== true) {
     return createEpochResult(epoch, false, 's4_submit_precondition', 'submit_not_eligible')
   }
   return null
@@ -504,9 +505,9 @@ export async function runKeychainLoginEpoch({ port, timeoutMs }, dependencies = 
  * deliberately has no CLI form: secrets cannot become argv, environment,
  * file, stdout, or log data.
  *
- * The caller must complete its CF gate before invoking this function. This
- * function independently rechecks that no pending challenge exists before it
- * focuses or writes either field. Every unexpected state terminates the epoch.
+ * This function owns only the one account write followed by the one password
+ * write. The caller must run the CAPTCHA gate only after this function returns
+ * `credentials_staged`; this function never submits.
  */
 export async function runStagedLoginEpoch({
   port,
@@ -540,9 +541,6 @@ export async function runStagedLoginEpoch({
     const preFocusProbeError = currentProbeFailure(epoch, 's2_account_precondition', preFocusProbe)
     if (preFocusProbeError !== null) {
       return preFocusProbeError
-    }
-    if (preFocusProbe.challengeFramePresent) {
-      return createEpochResult(epoch, false, 's2_account_precondition', 'challenge_present')
     }
     if (!preFocusProbe.loginFormPresent || !preFocusProbe.accountFieldPresent ||
       !preFocusProbe.passwordFieldPresent || !preFocusProbe.passwordFieldMasked ||
@@ -578,9 +576,6 @@ export async function runStagedLoginEpoch({
     if (afterAccountProbeError !== null) {
       return afterAccountProbeError
     }
-    if (afterAccountProbe.challengeFramePresent) {
-      return createEpochResult(epoch, false, 's2_account_verify', 'challenge_present')
-    }
     const accountStateError = accountFilledFailure(epoch, afterAccountProbe)
     if (accountStateError !== null) {
       return accountStateError
@@ -595,9 +590,6 @@ export async function runStagedLoginEpoch({
     const passwordFocusProbeError = currentProbeFailure(epoch, 's3_password_precondition', passwordFocusProbe)
     if (passwordFocusProbeError !== null) {
       return passwordFocusProbeError
-    }
-    if (passwordFocusProbe.challengeFramePresent) {
-      return createEpochResult(epoch, false, 's3_password_precondition', 'challenge_present')
     }
     const passwordFocusStateError = passwordFocusedFailure(epoch, passwordFocusProbe)
     if (passwordFocusStateError !== null) {
@@ -619,9 +611,6 @@ export async function runStagedLoginEpoch({
     if (afterPasswordProbeError !== null) {
       return afterPasswordProbeError
     }
-    if (afterPasswordProbe.challengeFramePresent) {
-      return createEpochResult(epoch, false, 's3_password_verify', 'challenge_present')
-    }
     const passwordStateError = passwordFilledFailure(epoch, afterPasswordProbe)
     if (passwordStateError !== null) {
       return passwordStateError
@@ -636,8 +625,8 @@ export async function runStagedLoginEpoch({
 
 /**
  * Fixed completion branch. It contains no credential write and no model
- * decision: the caller proved CF complete before the credential epoch, and
- * this branch rechecks that no pending challenge appeared before submit.
+ * decision: the caller staged both fields, completed CAPTCHA in the same
+ * process, and this branch rechecks the current token before the sole submit.
  */
 export async function runCfReviewedSubmit({ port, timeoutMs }, dependencies = {}) {
   const epoch = {
@@ -667,7 +656,9 @@ export async function runCfReviewedSubmit({ port, timeoutMs }, dependencies = {}
     const submitStateError = submitEligibilityFailure(epoch, afterSnapshotProbe)
     if (submitStateError !== null) {
       return createEpochResult(epoch, false, 'cf_submit_precondition',
-        afterSnapshotProbe.challengeFramePresent === true ? 'challenge_present' : 'submit_not_eligible')
+        afterSnapshotProbe.challengeResponseReady !== true ||
+          afterSnapshotProbe.challengeFramePresent === true
+          ? 'captcha_token_not_ready' : 'submit_not_eligible')
     }
     epoch.submitIssued = true
     const submitResult = await semanticDriver({ port, action: 'submit', timeoutMs })
@@ -683,8 +674,8 @@ export async function runCfReviewedSubmit({ port, timeoutMs }, dependencies = {}
 /**
  * Retrieves both fixed Keychain entries before the form sequence begins, then
  * delegates the entire account/password write sequence to one uninterrupted
- * staged epoch. The later CF screenshot and submit are separate, credential-
- * free phases by design.
+ * staged epoch. The later same-process CAPTCHA gate and submit are separate,
+ * credential-free phases by design.
  */
 export async function runKeychainStagedLoginEpoch({ port, timeoutMs }, dependencies = {}) {
   const epoch = {

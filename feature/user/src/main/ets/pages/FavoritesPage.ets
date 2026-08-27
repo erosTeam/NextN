@@ -244,7 +244,7 @@ export struct FavoritesPage {
       const hadSubmittedQuery: boolean = this.activeQuery.length > 0
       this.titleActions.searchDraft = ''
       this.activeQuery = ''
-      if (hadSubmittedQuery && this.signedIn) {
+      if (hadSubmittedQuery && this.canRequestAccountData()) {
         this.scroller.scrollToIndex(0)
         this.loadFirstPage(false)
       }
@@ -285,10 +285,16 @@ export struct FavoritesPage {
     })
   }
 
+  /** One published gate for every authenticated Favorites request. */
+  private canRequestAccountData(): boolean {
+    return this.sessionStateApplied && this.signedIn && !this.isResolvingSessionState &&
+      this.accountSession.authenticationAvailable && !this.accountSession.verificationRequired &&
+      this.appliedAccountSessionRevision === this.accountSession.revision
+  }
+
   /** HDS actions exist only after Entry's published session state has settled. */
   private canUseTitleActions(): boolean {
-    return this.sessionStateApplied && this.signedIn && !this.isResolvingSessionState &&
-      this.appliedAccountSessionRevision === this.accountSession.revision
+    return this.canRequestAccountData()
   }
 
   private reportTitleActions(): void {
@@ -302,7 +308,7 @@ export struct FavoritesPage {
     this.titleActions.searchDraft = normalized
     this.activeQuery = normalized
     this.scroller.scrollToIndex(0)
-    if (this.signedIn) {
+    if (this.canRequestAccountData()) {
       this.loadFirstPage(false)
     }
   }
@@ -321,8 +327,7 @@ export struct FavoritesPage {
     if (!this.isVisible || !this.pendingFavoriteMutationRefresh) {
       return
     }
-    if (!this.sessionStateApplied || !this.signedIn || this.isResolvingSessionState ||
-      this.appliedAccountSessionRevision !== this.accountSession.revision) {
+    if (!this.canRequestAccountData()) {
       return
     }
     this.pendingFavoriteMutationRefresh = false
@@ -375,7 +380,30 @@ export struct FavoritesPage {
       }
       return
     }
+    if (!this.canRequestAccountData()) {
+      this.loadRetainedAccountCacheOnly(generation)
+      return
+    }
     this.loadPublishedAccountPage(generation)
+  }
+
+  /**
+   * Durable ownership survives a terminal authentication failure. Keep cached
+   * cards mounted, cancel remote work, and leave the single visible recovery
+   * prompt to Entry's HDS SnackBar.
+   */
+  private async loadRetainedAccountCacheOnly(generation: number): Promise<void> {
+    this.requestGeneration += 1
+    this.isResolvingSessionState = false
+    this.isInitialLoading = false
+    this.isRefreshing = false
+    this.isLoadingMore = false
+    this.errorMessage = ''
+    this.loadMoreErrorMessage = ''
+    this.reportTitleActions()
+    if (this.rawGalleries.length === 0) {
+      await this.hydrateCachedFavorites(generation)
+    }
   }
 
   private async loadPublishedAccountPage(generation: number): Promise<void> {
@@ -437,13 +465,13 @@ export struct FavoritesPage {
   }
 
   private canLoadMore(): boolean {
-    return this.signedIn && this.currentPage > 0 && this.currentPage < this.totalPages &&
+    return this.canRequestAccountData() && this.currentPage > 0 && this.currentPage < this.totalPages &&
       !this.isInitialLoading && !this.isRefreshing && !this.isLoadingMore &&
       this.loadMoreErrorMessage.length === 0
   }
 
   private canRetryLoadMore(): boolean {
-    return this.signedIn && this.currentPage > 0 && this.currentPage < this.totalPages &&
+    return this.canRequestAccountData() && this.currentPage > 0 && this.currentPage < this.totalPages &&
       !this.isInitialLoading && !this.isRefreshing && !this.isLoadingMore
   }
 
@@ -476,7 +504,7 @@ export struct FavoritesPage {
 
   /** Replaces the favourites first page with the requested server page. */
   private async jumpToPage(page: number): Promise<boolean> {
-    if (!this.signedIn) {
+    if (!this.canRequestAccountData()) {
       return false
     }
     const generation: number = this.requestGeneration + 1
@@ -519,7 +547,7 @@ export struct FavoritesPage {
       return
     }
     const page: number = Number.parseInt(this.jumpPageText, 10)
-    if (!this.signedIn || Number.isNaN(page) || page <= 0 ||
+    if (!this.canRequestAccountData() || Number.isNaN(page) || page <= 0 ||
       (this.totalPages > 0 && page > this.totalPages)) {
       this.jumpPageError = AppStrings.get('jump_page_invalid')
       return
@@ -568,7 +596,7 @@ export struct FavoritesPage {
   }
 
   private async loadFirstPage(keepUsableRows: boolean): Promise<void> {
-    if (!this.signedIn) {
+    if (!this.canRequestAccountData()) {
       return
     }
     const generation: number = this.requestGeneration + 1
@@ -607,7 +635,7 @@ export struct FavoritesPage {
           .catch((): void => {})
       }
     } catch (error) {
-      if (generation === this.requestGeneration) {
+      if (generation === this.requestGeneration && this.canRequestAccountData()) {
         DiagnosticLogger.info('favorites-session', 'favorites_request_failed', 'stage')
         this.errorMessage = AppStrings.get('favorites_load_failed')
       }
@@ -626,9 +654,7 @@ export struct FavoritesPage {
    * flash the empty placeholder before page one settles.
    */
   private async refresh(): Promise<void> {
-    if (!this.sessionStateApplied || !this.signedIn || this.isResolvingSessionState ||
-      this.appliedAccountSessionRevision !== this.accountSession.revision ||
-      this.isInitialLoading || this.isRefreshing) {
+    if (!this.canRequestAccountData() || this.isInitialLoading || this.isRefreshing) {
       return
     }
     await this.loadFirstPage(this.galleries.length > 0)

@@ -25,9 +25,9 @@ import {
  * the active row selected. Tap switches through AccountListSettings.switchTo,
  * swipe left deletes (NextE parity, no confirm; deleting the active row
  * switches to the first remaining saved account or clears the session), the
- * top row adds/signs in through the entry-owned onOpenBrowserSession hook,
- * and the bottom row signs the current account out through the
- * BrowserSessionPage clear chain plus its saved-list relationship removal.
+ * the title-bar action enters the login-only original Web destination, and
+ * the bottom row signs the current account out while removing its saved-list
+ * relationship.
  * The NextE EH dashboard sections are intentionally absent: NH has no EH
  * dashboard data source (see data-transfer-multiaccount-webdav.md §2.3).
  */
@@ -45,8 +45,6 @@ class AccountProfileSummary {
 
 @ComponentV2
 export struct AccountPage {
-  /** Entry-owned hook: opens the NH login/session leaf (BrowserSessionPage). */
-  @Event onOpenBrowserSession?: () => void
   /** Opens the selected account's first-party settings in the shared session WebView. */
   @Event onOpenNhSettings?: () => void
   @Local accountList: AccountListState = connectAccountList();

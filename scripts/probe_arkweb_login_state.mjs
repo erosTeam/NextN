@@ -49,6 +49,7 @@ export const SAFE_OUTPUT_KEYS = [
   'formValid',
   'challengeFramePresent',
   'challengeWidgetPresent',
+  'challengeResponsePresent',
   'challengeResponseReady',
   'errorMarkerPresent',
   'submitEligible',
@@ -93,14 +94,18 @@ const LOGIN_STATE_EXPRESSION = `(() => {
   const challengeFrameDetected = Array.from(document.querySelectorAll('iframe')).some((frame) => {
     const source = String(frame.getAttribute('src') || '').toLowerCase();
     const title = String(frame.getAttribute('title') || '').toLowerCase();
-    return source.includes('challenges.cloudflare.com') || title.includes('challenge');
+    return isVisible(frame) &&
+      (source.includes('challenges.cloudflare.com') || title.includes('challenge'));
   });
   const challengeResponse = document.querySelector(
     'input[name="cf-turnstile-response"], textarea[name="cf-turnstile-response"], ' +
     'input[name="g-recaptcha-response"], textarea[name="g-recaptcha-response"]'
   );
-  const challengeWidgetPresent = challengeFrameDetected || challengeResponse !== null ||
-    document.querySelector('.cf-turnstile, [data-sitekey]') !== null;
+  const challengeContainerPresent = Array.from(
+    document.querySelectorAll('.cf-turnstile, [data-sitekey]')
+  ).some(isVisible);
+  const challengeWidgetPresent = challengeFrameDetected || challengeContainerPresent;
+  const challengeResponsePresent = challengeResponse !== null;
   const challengeResponseReady = challengeResponse !== null &&
     String(challengeResponse.value || '').trim().length > 0;
   const challengeFramePresent = challengeWidgetPresent && !challengeResponseReady;
@@ -125,6 +130,7 @@ const LOGIN_STATE_EXPRESSION = `(() => {
     formValid,
     challengeFramePresent,
     challengeWidgetPresent,
+    challengeResponsePresent,
     challengeResponseReady,
     errorMarkerPresent,
     submitEligible: accountField !== null && passwordField !== null && submit !== null &&
@@ -189,6 +195,7 @@ export function normalizeProbeSummary(value) {
     formValid,
     challengeFramePresent: strictBoolean(value.challengeFramePresent),
     challengeWidgetPresent: strictBoolean(value.challengeWidgetPresent),
+    challengeResponsePresent: strictBoolean(value.challengeResponsePresent),
     challengeResponseReady: strictBoolean(value.challengeResponseReady),
     errorMarkerPresent: strictBoolean(value.errorMarkerPresent),
     submitEligible,

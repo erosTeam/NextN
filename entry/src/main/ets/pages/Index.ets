@@ -73,6 +73,7 @@ import {
   nextNHdsTitle,
   nextNHdsTitleBar,
   AppStrings,
+  AccountAuthNoticeState,
   AccountListState,
   AccountSessionState,
   GalleryDirectLaunchState,
@@ -105,6 +106,7 @@ import {
   connectGalleryDirectLaunch,
   connectAccountList,
   connectAccountSession,
+  connectAccountAuthNotice,
   connectLayoutSafeArea,
   connectLoginRecoveryLaunch,
   connectDownloadQueueActions,
@@ -117,7 +119,6 @@ import {
   connectLlmSourceProfiles,
   connectTabletLayout,
   connectThemeDisplay,
-  NhArkWebSessionTransportHost,
   NhBrowserSessionBoundary,
   NhBrowsePresentation,
   NhComment,
@@ -332,7 +333,7 @@ class BrowseDensityRouteParams {
   }
 }
 
-/** One-shot internal recovery route; never persisted or exposed in Settings. */
+/** Login-only Web destination; native account management stays in AccountPage. */
 class BrowserSessionRouteParams {
   autoOpenVisibleLogin: boolean = false
   addAccountMode: boolean = false
@@ -512,6 +513,7 @@ struct Index {
   @Local private activeTab: number = 0
   @Local private accountList: AccountListState = connectAccountList()
   @Local private accountSession: AccountSessionState = connectAccountSession()
+  @Local private accountAuthNotice: AccountAuthNoticeState = connectAccountAuthNotice()
   @Local private themeDisplay: ThemeDisplayState = connectThemeDisplay()
   @Local private tabletLayout: TabletLayoutState = connectTabletLayout()
   @Local private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
@@ -556,6 +558,12 @@ struct Index {
   private readerSystemBarWork: Promise<void> = Promise.resolve()
   private lastHandledClipboardCandidateRevision: number = 0
   private clipboardSnackBar: HdsSnackBar = new HdsSnackBar(this.getUIContext())
+  private lastHandledAccountVerificationRevision: number = -1
+  private displayedAccountVerificationRevision: number = -1
+  private accountVerificationSnackBarVisible: boolean = false
+  private accountVerificationSnackBar: HdsSnackBar = new HdsSnackBar(this.getUIContext())
+  private lastHandledAccountAuthNoticeRevision: number = 0
+  private accountAuthNoticeSnackBar: HdsSnackBar = new HdsSnackBar(this.getUIContext())
   @Local private randomGalleryBusy: boolean = false
   private randomGalleryActionEpoch: number = 0
   private rootNavigationEpoch: number = 0
@@ -570,6 +578,18 @@ struct Index {
     this.handleGalleryDirectLaunch()
     this.handleClipboardGalleryCandidate()
     this.handleLoginRecoveryLaunch()
+    this.handleAccountVerificationRequired()
+    this.handleAccountAuthNotice()
+  }
+
+  @Monitor('accountSession.revision')
+  onAccountSessionChanged(): void {
+    this.handleAccountVerificationRequired()
+  }
+
+  @Monitor('accountAuthNotice.revision')
+  onAccountAuthNoticeChanged(): void {
+    this.handleAccountAuthNotice()
   }
 
   /**
@@ -592,6 +612,11 @@ struct Index {
         this.settingsNavigation.syncSecondaryBranch(secondaryBranch)
         this.syncHomeGallerySelection(secondaryBranch)
         this.syncRootSecondaryBranch(secondaryBranch)
+        // A verification event can arrive while the first-party login route
+        // owns the foreground. Re-evaluate it after every settled route so a
+        // temporarily suppressed root notice cannot disappear permanently.
+        this.handleAccountVerificationRequired()
+        this.handleAccountAuthNotice()
       },
     })
   }
@@ -645,6 +670,11 @@ struct Index {
       this.tabsController.changeIndex(target)
     }, 0)
     this.handleClipboardGalleryCandidate()
+    // Safe Mode suppresses NH account surfaces, but it must not consume a
+    // pending verification event. Re-evaluate the retained root notice when
+    // the restriction changes in either direction.
+    this.handleAccountVerificationRequired()
+    this.handleAccountAuthNotice()
   }
 
   /** HDS alone resolves whether the root is physically in its wide split. */
@@ -766,6 +796,123 @@ struct Index {
     }
     this.clipboardSnackBar.dismiss()
     this.clipboardSnackBar.show(icon, message, operation, style)
+  }
+
+  /**
+   * Terminal account authentication is one root-owned event. Feature pages
+   * keep their cached content mounted and never invent local error banners;
+   * this HDS surface is the sole visible request to re-verify the account.
+   */
+  private handleAccountVerificationRequired(): void {
+    if (!this.accountSession.initialized || !this.accountSession.verificationRequired) {
+      if (this.accountVerificationSnackBarVisible) {
+        this.accountVerificationSnackBar.dismiss()
+      }
+      this.accountVerificationSnackBarVisible = false
+      this.displayedAccountVerificationRevision = -1
+      return
+    }
+    if (this.safeMode.restricted() || this.browserSessionRouteActive()) {
+      if (this.accountVerificationSnackBarVisible) {
+        this.accountVerificationSnackBar.dismiss()
+      }
+      // Suppression is not user handling. Keep the terminal revision pending
+      // so it can be offered again after the root route becomes eligible.
+      this.accountVerificationSnackBarVisible = false
+      this.displayedAccountVerificationRevision = -1
+      return
+    }
+    if (this.lastHandledAccountVerificationRevision === this.accountSession.revision) {
+      return
+    }
+    if (this.accountVerificationSnackBarVisible &&
+      this.displayedAccountVerificationRevision === this.accountSession.revision) {
+      return
+    }
+    const verificationRevision: number = this.accountSession.revision
+    const icon: SnackBarIconOptions = {
+      icon: $r('sys.symbol.security_shield'),
+    }
+    const message: SnackBarMessageOptions = {
+      title: AppStrings.get('account_status_verification_required'),
+      content: AppStrings.get('account_subtitle_verification_required'),
+    }
+    const operation: SnackBarOperationOptions = {
+      operationType: SnackBarOperationType.TEXT_WITH_CLOSE,
+      content: AppStrings.get('account_verify_sign_in'),
+      contentAccessibilityText: AppStrings.get('account_verify_sign_in_subtitle'),
+      closeButtonAccessibilityText: AppStrings.get('common_cancel'),
+      onContentClick: (): void => {
+        this.lastHandledAccountVerificationRevision = verificationRevision
+        this.accountVerificationSnackBarVisible = false
+        this.displayedAccountVerificationRevision = -1
+        this.accountVerificationSnackBar.dismiss()
+        this.pushVisibleLoginSession()
+      },
+      onCloseButtonClick: (): void => {
+        this.lastHandledAccountVerificationRevision = verificationRevision
+        this.accountVerificationSnackBarVisible = false
+        this.displayedAccountVerificationRevision = -1
+        this.accountVerificationSnackBar.dismiss()
+      },
+    }
+    const style: SnackBarStyleOptions = {
+      duration: 0,
+    }
+    this.accountVerificationSnackBar.dismiss()
+    this.displayedAccountVerificationRevision = verificationRevision
+    this.accountVerificationSnackBarVisible = true
+    this.accountVerificationSnackBar.show(icon, message, operation, style)
+  }
+
+  /** Explicit login failures are one root HDS event, never an inline list row. */
+  private handleAccountAuthNotice(): void {
+    if (this.browserSessionRouteActive()) {
+      this.accountAuthNoticeSnackBar.dismiss()
+      return
+    }
+    if (this.accountAuthNotice.revision <= 0 ||
+      this.accountAuthNotice.revision === this.lastHandledAccountAuthNoticeRevision ||
+      this.accountAuthNotice.code.length === 0 || this.safeMode.restricted()) {
+      return
+    }
+    this.lastHandledAccountAuthNoticeRevision = this.accountAuthNotice.revision
+    const specificKey: string = this.accountAuthNotice.code === 'rate_limited'
+      ? 'account_api_login_rate_limited'
+      : this.accountAuthNotice.code === 'challenge_unavailable' ||
+          this.accountAuthNotice.code === 'challenge_invalid'
+        ? 'account_api_login_challenge_unavailable'
+      : this.accountAuthNotice.code === 'rejected' ||
+          this.accountAuthNotice.code === 'verification_rejected'
+        ? 'account_api_login_rejected'
+        : this.accountAuthNotice.code === 'persistence_failed'
+          ? 'account_api_login_save_failed'
+          : 'account_api_login_failed'
+    const icon: SnackBarIconOptions = {
+      icon: $r('sys.symbol.security_shield'),
+    }
+    const message: SnackBarMessageOptions = {
+      title: AppStrings.get('account_api_login_failed_title'),
+      content: AppStrings.get(specificKey),
+    }
+    const operation: SnackBarOperationOptions = {
+      operationType: SnackBarOperationType.TEXT_WITH_CLOSE,
+      content: AppStrings.get('account_verify_sign_in'),
+      contentAccessibilityText: AppStrings.get('account_verify_sign_in_subtitle'),
+      closeButtonAccessibilityText: AppStrings.get('common_cancel'),
+      onContentClick: (): void => {
+        this.accountAuthNoticeSnackBar.dismiss()
+        this.accountAuthNotice.clear()
+        this.pushVisibleLoginSession()
+      },
+      onCloseButtonClick: (): void => {
+        this.accountAuthNoticeSnackBar.dismiss()
+        this.accountAuthNotice.clear()
+      },
+    }
+    const style: SnackBarStyleOptions = { duration: 0 }
+    this.accountAuthNoticeSnackBar.dismiss()
+    this.accountAuthNoticeSnackBar.show(icon, message, operation, style)
   }
 
   private pushSearch(initialQuery: string = ''): void {
@@ -1011,7 +1158,7 @@ struct Index {
     if (this.safeMode.restricted()) {
       return
     }
-    this.stack.pushPathByName(ROUTE_BROWSER_SESSION, new BrowserSessionRouteParams(false, addAccountMode))
+    this.stack.pushPathByName(ROUTE_BROWSER_SESSION, new BrowserSessionRouteParams(true, addAccountMode))
   }
 
   /** Empty ownership has no native choice to present; enter the visible login directly. */
@@ -1019,7 +1166,19 @@ struct Index {
     if (this.safeMode.restricted()) {
       return
     }
+    // A root-owned account notice must never cover or intercept the visible
+    // first-party login form. It may be offered again only after this route
+    // leaves the stack and a later state transition asks for it.
+    this.accountVerificationSnackBar.dismiss()
+    this.accountVerificationSnackBarVisible = false
+    this.displayedAccountVerificationRevision = -1
+    this.accountAuthNoticeSnackBar.dismiss()
     this.stack.pushPathByName(ROUTE_BROWSER_SESSION, new BrowserSessionRouteParams(true))
+  }
+
+  private browserSessionRouteActive(): boolean {
+    const pathNames: string[] = this.stack.getAllPathName()
+    return pathNames.length > 0 && pathNames[pathNames.length - 1] === ROUTE_BROWSER_SESSION
   }
 
   /**
@@ -2415,7 +2574,7 @@ struct Index {
       BrowserSessionPage({
         autoOpenVisibleLogin: this.browserSessionParams(param).autoOpenVisibleLogin,
         addAccountMode: this.browserSessionParams(param).addAccountMode,
-        onVisibleLoginPromoted: (): void => {
+        onLoginFlowFinished: (): void => {
           this.closeBrowserSessionToAccount()
         },
       })
@@ -2428,9 +2587,6 @@ struct Index {
   private accountDestination() {
     HdsNavDestination() {
       AccountPage({
-        onOpenBrowserSession: (): void => {
-          this.pushBrowserSession()
-        },
         onOpenNhSettings: (): void => {
           this.pushNhSettings()
         },
@@ -3508,11 +3664,6 @@ struct Index {
           .zIndex(2)
           .hitTestBehavior(HitTestMode.None)
       }
-
-      // The host is a transparent one-pixel overlay: it does not participate
-      // in HDS layout. It exists only so authenticated v2 requests can stay
-      // in the ArkWeb context that completed the visible login challenge.
-      NhArkWebSessionTransportHost()
 
       // Reader deliberately owns a private full-window navigation stack. The
       // root HDS stack remains mounted below it, preserving the active tab,

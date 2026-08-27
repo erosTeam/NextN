@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 72227)
+Total output lines: 3889
+
 ## NextE migration-integrity gallery lane — 2026-08-22 (accepted on 237)
 
 - Target `192.168.50.237:12345` retained its existing data and account state.
@@ -33,6 +36,59 @@
 - The device RDB (`browse_presentation_settings`) read-only copy shows `browse_presentation=cover_grid`, `home_source_latest_presentation=waterfall`, `browse_presentation_show_gallery_tags=1`; `nh_gallery_list_cache` holds `home:v1:latest:all:recent` and `favorites:v1:default` snapshots, both 25/25 galleries with tagIds and resolved tags. This explains the favorites page showing no tag text: it is rendering the cover-grid card, which has no tag leaf (same as NextE GalleryGridCard), not missing tag data.
 - This observes the cache cold-start path only; it does not accept tag translation timing, every layout density, sign-out cache clearing, or the pending developer-guide maintenance contract. Raw layout copies retained under `.hvigor/outputs/nextn-cache-tags-20260816T/` and excluded from Git.
 # NextN active device-acceptance queue
+
+## NH terminal authentication and unified request lifecycle — 2026-08-27 (OPEN on 237)
+
+- User outcome: NextN on `192.168.50.237:12345` must stop silently losing
+  NH authentication. Cookie capture/storage, access-plus-refresh persistence,
+  request attachment, single-flight refresh, replay policy, terminal 401
+  publication and user feedback must have one product owner. Acceptance still
+  requires a real login, product-owned native promotion, data-preserving cold
+  start, native Account, authenticated Favorites and cross-day observation.
+- Current source boundary: `NhCookieAuthority` is the sole
+  `WebCookieManager` owner; `NhSessionHttpClient` owns account-generation
+  fencing, refresh and one safe read replay; `NhApiHttpTransport` is the sole
+  first-party v2 wire transport. Mutations never auto-replay. A terminal replay
+  401 retains account ownership, withdraws authentication availability, stores
+  a durable verification marker and publishes one root HDS re-verification
+  Snack without inserting a list-top or inline error row.
+- Scope-deviation cleanup: the product-embedded login acceptance bridge,
+  receipt file, acceptance/debug build flags, launch port/nonce/mode,
+  key-event credential injection, test-only Web navigation, semantic ohosTest
+  surface and their assertions were deleted. The external login coordinator,
+  field driver and credential epoch returned to their pre-detour baseline.
+  The original first-party Web page, NextE-compatible UA, online cache mode and
+  product-owned Web-to-native promotion remain.
+- Static/build evidence: account/history regression and recursive network
+  authority contract pass; `git diff --check` passes; the normal signed Debug
+  HAP builds successfully. HAP SHA-256 is
+  `aa3fbc4c1229cb99692d61eff3496352cbcad78bd9b0c3c8cb8c30c9877a8167`.
+- Current physical evidence: that normal HAP was installed in place on
+  `192.168.50.237:12345` with no uninstall or data clear. The cold-start
+  foreground root is `com.erosteam.nextn:EntryAbility`; power is `AWAKE`
+  with `OverrideTimeout=86400000ms`. The root HDS notice shows
+  `需要重新验证`; S0 Account is the native account list with one saved row
+  and verification required, while Favorites remains native with cached
+  content, no sign-in/loading/inline-error row, and no usable authentication.
+  Persistent redacted stage is
+  `account_restore_verification_required_after_browser_refresh_failure`.
+- Current login epoch terminal: the external coordinator wrote the account
+  once, wrote the password once, and incorrectly issued its sole submit while
+  the Turnstile response was still empty. Product-redacted diagnostics contain
+  no `candidate_captured` or `native_session_promoted`; they contain
+  `turnstile_challenge_platform` resource failure and a `turnstile_pat` 401.
+  The epoch is closed and must not be resumed or resubmitted.
+- Corrected protocol/source boundary: the fixed sequence is now account once,
+  password once, post-credential CAPTCHA action/poll in the same process,
+  explicit response-token readiness, then immediate single submit. An empty
+  hidden response field or unrendered widget is `challenge_failed`, never a
+  no-CAPTCHA fallthrough.
+- Next unverified physical action: first finish the non-device protocol and
+  regression repair, then diagnose the current Turnstile/UA compatibility
+  without credentials or submit. A fresh S0 and new ledger epoch are required
+  before any later login. Native promotion, cold Account, authenticated
+  Favorites, refresh/replay and cross-day longevity remain OPEN.
+
 
 ## Reader Popup sheet anchor + scrolled title material — 2026-08-23 (accepted on 103)
 
@@ -2116,136 +2172,7 @@ remains continuous; do not ask for it again.
   fixed stage remained `account_restore_record_absent`, which verifies the
   current no-record state only and is not claimed as record-present retention
   acceptance.
-- A bounded Gallery Detail compact-viewport review found no new visible
-  defect in that one frame. It is not a whole-page or same-state-reference
-  visual acceptance claim. The temporary screenshot was deleted from the
-  host; its device-side counterpart was already absent.
-- Account persistence has been raised to P0. A fresh read-only S0 check found
-  native Favorites sign-in prompt, visible Account login surface, and fixed
-  cold-start stage `account_restore_record_absent`. No record-present
-  HUKS/decrypt/payload/replay failure was observed, no credential action was
-  taken, and all temporary layouts were deleted. Source hardening is in
-  progress before any future authentication attempt.
-- The final account P0 hardening added a durable verification-required marker,
-  authenticated-read transition ownership, and stale-response fencing. It
-  preserves the encrypted record and ArkWeb identity on every network failure;
-  only explicit sign-out deletes them. The complete static suite and signed
-  Debug build passed, and the HAP was installed with `install -r` then
-  force-stopped/cold-started without login. The app was foreground, but the
-  bounded fixed account-tag read yielded no new stage, so no fresh
-  record-absent or record-present device claim is made from that deployment.
-- The latest P0 build additionally makes `restore()` a cold-start path only:
-  an already authenticated runtime session no longer re-reads RDB/HUKS and
-  cannot be visibly downgraded by a transient local-read failure. A rebuilt or
-  repaired RDB with an absent sealed row now enters the native explicit
-  verification boundary instead of being treated as a fresh install. The HAP
-  passed the full static suite and signed build, then was installed with
-  `install -r` and force-stopped/cold-started without credentials. A fresh
-  native root summary had no visible Web; one safe root-tab selection produced
-  the native Favorites sign-in prompt with no loading, empty, or error state.
-  Account/login was not opened, no credential action occurred, and all raw
-  temporary layouts were deleted from host and device. This remains a
-  no-record S0 observation, not record-present retention acceptance.
-- That same signed update contains the Detail rail corrections. It was reached
-  from a fresh native root summary through one safe Browse-tab selection and
-  one safe public gallery-card selection. The app is left on that public
-  Detail for later same-state visual comparison; no account, login, preference
-  or gallery mutation occurred. No visual-parity claim is made without a
-  corresponding reference capture, and the temporary raw navigation layouts
-  were deleted from both host and device.
-- The single-owner account-state build was installed with `install -r` and
-  force-stopped/cold-started on the selected TCP device without clearing data
-  or entering credentials. The application returned to the foreground. This
-  is deployment evidence only: the device has no sealed session record, so it
-  cannot prove record-present restoration. No login attempt was made.
-- A subsequent bounded P0 cold-start diagnostic used the same selected TCP
-  target, current signed Debug HAP, and no credential/UI action. The fixed
-  non-secret stage was again `account_restore_record_absent`. This confirms
-  only that the current durable envelope is absent; it is not presented as a
-  record-present restoration result or a cause attribution.
-- The signed P0 follow-up, which restricts verification-required publication
-  to an actually issued replay that also returns `401` and prevents sealing a
-  candidate that changed during its visible-browser probe, was installed with
-  `install -r` and cold-started without clearing data or entering credentials.
-  Its fixed non-secret startup stage remained `account_restore_record_absent`.
-  This is deployment/no-record evidence only; record-present Favorites
-  restoration remains open.
-- A final P0 follow-up was then installed with `install -r` and cold-started
-  on the same selected target without credential input or data clearing. It
-  additionally confines best-effort gallery favourite enrichment so it cannot
-  retire the global account state. The fixed non-secret stage remained
-  `account_restore_record_absent`; this does not substitute for record-present
-  cold-start and authenticated Favorites proof.
-- The latest signed P0 build was installed with `install -r` and cold-started
-  without clearing data or entering credentials. It also confines Profile
-  refresh to an observational failure path, leaving only authenticated
-  Favorites as the account-state authority. The startup stage remained
-  `account_restore_record_absent`; no record-present claim is made.
-- A subsequent P0-only check renewed the selected-device lease, re-established
-  the awake/24-hour timeout gate, and performed one data-preserving
-  force-stop/cold-start. The fixed non-secret stage was again
-  `account_restore_record_absent`. Installed package metadata still reports
-  one continuous in-place application identity; this rules out a current
-  update-identity switch, but cannot reconstruct the historical deletion.
-
-## Latest completed physical evidence — Content Filters ordinary re-entry
-
-- 2026-08-11: the signed Debug HAP was installed with `install -r` on the
-  selected TCP device only. Native Settings → Advanced → Content Filters was
-  entered once, returned once with native Back, and entered again. Both
-  terminal states showed the retained native content with no loading or error
-  surface. No filter rule, account, preference, queue, or gallery data was
-  changed. The local screenshot/layout evidence is retained outside Git; only
-  this ordinary re-entry boundary is accepted.
-
-## Current transport state
-
-- 2026-08-10 11:12-11:20 +0800: sandboxed HDC invocations returned `Connect
-  server failed`; a local loopback probe then established that the sandbox,
-  not the selected device, was denying the HDC client-server connection. This
-  period establishes no device-state result.
-- 2026-08-10 11:30 +0800: the same HDC commands outside that sandbox confirmed
-  `192.168.50.237:12345` Connected and returned `ok`; the existing lease was
-  renewed and the wake/24-hour timeout gate was re-established. P1 continues
-  from the already-known direct Gallery Detail terminal review.
-- The selected TCP target `192.168.50.237:12345` is currently Connected and
-  remains the only device used; the USB target was not used as a substitute.
-- 2026-08-10 12:48-12:55 +0800: the retained completed-download Reader path
-  was observed in its hidden-chrome canvas state. `uitest uiInput keyEvent 4`
-  did not close that overlay and is rejected for future use. After reading the
-  selected device's `uiInput` help, the literal `uitest uiInput keyEvent Back`
-  returned exactly to the retained Downloads route. No Reader preference,
-  page position, account state, or download state was changed.
-- 2026-08-10 13:02-13:20 +0800: one ordinary History → Browse → History root
-  transition retained the visible local-history rows and day grouping with no
-  first-page clear or refresh indicator. This covers only that normal
-  root-tab return; it is not a cold-start, mutation, search, or pagination
-  claim.
-- The current lease is renewed. The latest wake gate readback is `AWAKE` with
-  `OverrideTimeout=86400000ms`.
-- 2026-08-10 12:28 +0800: one direct Gallery Detail review reached Related and
-  made one horizontal mid-list swipe. The retained local capture shows the
-  list viewport extending through the section's internal horizontal boundary;
-  the partially visible side cards are scroll clipping, not parent-inset
-  clipping. This is a current-device geometry observation only, not a
-  same-state reference-parity claim and not grounds for a size or hierarchy
-  change.
-- The latest Debug HAP was installed with `install -r` only; no uninstall,
-  application-data clear, or broad data deletion was performed.
-- 2026-08-10 15:50 +0800: the signed Debug HAP for the narrow Comments
-  keyboard-inset correction was installed with `install -r` on the selected
-  TCP target. The existing direct zero-comment route was allowed to load, then
-  its empty native TextArea was focused once. With the system keyboard visible,
-  the fixed page-footer input and disabled send control were fully above the
-  keyboard; the TextArea's visible and original heights both measured 104px.
-  No text was entered and no comment mutation was sent. This is a real-device
-  result for that keyboard state only, not a full same-state reference-parity
-  claim.
-- 2026-08-10 16:18 +0800: the existing direct Gallery `471768` route reached
-  native Detail, then the one current visible Read action opened the Reader
-  overlay. Its terminal state was a native hidden-chrome continuous canvas
-  without an extra top or bottom content reserve. No reading setting, page
-  navigation, account state, or content mutation occurred. The local capture
+- A bounded Gallery Detail compact-viewport re…2227 tokens truncated…ocal capture
   is retained outside Git. This is a single current Reader state observation;
   it is not a same-state reference comparison and does not authorize a Reader
   visual change.
@@ -3887,3 +3814,898 @@ permitted in this repository.
   correction) and excluded from Git. This accepts the bounded phone/portrait
   paths above; tablet Split behavior intentionally remains on the native route
   transition and was source-reviewed rather than claimed as 197 evidence.
+
+## 237 NH session recovery — immediate promotion accepted, persistence observation OPEN — 2026-08-27
+
+- Target `192.168.50.237:12345`, bundle `com.erosteam.nextn`, active lease
+  `20260826-193807-2dc9dfd0`. No uninstall or data clear occurred.
+- The layout-driven atomic runner entered account and password once, classified
+  the post-blur Cloudflare layout as already successful, observed a nonempty
+  response token and dispatched the sole submit with a measured 0 ms
+  coordinator delay. The untouched terminal was the authenticated NH Web home,
+  but the then-installed App did not produce a native promotion event.
+- A value-free CDP probe on that preserved Web process proved exactly the
+  expected first-party identity shape: `access_token` (Secure, Lax),
+  `refresh_token` (Secure, HttpOnly, Lax), and `cf_clearance` (Secure,
+  HttpOnly, None), all at `nhentai.net/`. No Cookie value was emitted or
+  persisted by the probe.
+- The installed candidate bounds supplementary `fetchAllCookies(false)`
+  metadata capture to 1500 ms and permits only a validator-checked
+  URL-scoped `access_token` plus `refresh_token` fallback. It does not bypass
+  the fixed native account verification request; only a verified candidate may
+  be sealed or published.
+- On first launch after install-r, the preserved authenticated Web jar was
+  promoted before the runner's Web layout settled. Persistent diagnostics are
+  ordered `candidate_captured`, `candidate_verified`,
+  `native_session_promoted`, `active_account_recorded`.
+- A second install-r plus force-stop/cold-start restored
+  `valid_v3;headerAccess=1;ua=1;authCount=2;renewal=1;refresh=1`, then
+  `account_restore_ready`. Native Favorites recorded
+  `favorites_request_success`; native Account exposed the authenticated profile
+  and sign-out markers with no Web component. The single login command now
+  recognizes this early-native branch and returned
+  `ok=true/stage=native_promotion/routeState=native_authenticated` without
+  credential, CAPTCHA or submit action.
+- Immediate S5/S6 and one data-preserving cold start are accepted. The active
+  outcome remains OPEN for the original recurring failure: the same installed
+  session must survive foreground/background and cross-day observation, and a
+  future conclusive terminal 401 must retain account ownership, publish the
+  durable verification marker and show the root manually closable HDS Snackbar
+  instead of failing silently. The next unverified action is a scheduled 237
+  Account/Favorites/log check after elapsed time without re-login or data
+  mutation.
+
+### 237 terminal-401 notice audit — candidate installed, future live 401 OPEN — 2026-08-27
+
+- Repository-wide authority inspection confirms that `NhApiClient` is the only
+  consumer of `NhSessionHttpClient`, and `NhSessionHttpClient` is the only
+  consumer of the first-party NH wire transport. An authenticated initial 401
+  enters one native refresh plus profile verification; safe reads replay once,
+  mutations never replay implicitly, and only a final 401 calls
+  `recordAuthenticatedReadReplay401`.
+- The final-401 transaction retains account ownership, writes the non-secret
+  durable verification marker, withdraws the active cookie/token generation,
+  and publishes `verificationRequired` through `AccountSessionState`. The root
+  consumes that state with an indefinite `HdsSnackBar`, text action, and close
+  button. Favorites and shared retained lists have no fixed list-top or inline
+  authentication error row.
+- One silent exceptional boundary was removed: a local verification-marker RDB
+  failure previously threw before the global verification state was published.
+  The current source records `account_verification_marker_persist_failed` but
+  still publishes the fail-closed runtime state. Root route settlement and Safe
+  Mode transitions now re-evaluate a pending notice that was temporarily
+  suppressed by the original login route or Safe Mode.
+- Static verification: `scripts/test_account_history_regression.mjs`,
+  `scripts/test_network_authority_contract.mjs`, and `git diff --check` pass.
+  The signed ArkTS build succeeds. Installed HAP SHA-256 is
+  `9e422a0640d5173ac77fe3a16db44b7265bbede9fb240aa9b6adb702fdb20fec`.
+- Device verification on `192.168.50.237:12345`: the candidate was installed
+  with `install -r`, then force-stopped and cold-started without uninstall or
+  data clear. The current envelope restored as
+  `valid_v3;headerAccess=1;ua=1;authCount=2;renewal=1;refresh=1`, followed by
+  `account_restore_ready`; Favorites recorded `favorites_request_success`.
+  Native Account exposed `nextn-account-authenticated-profile` and
+  `nextn-account-authenticated-sign-out`, with no Web login surface. No
+  credential, CAPTCHA, submit, sign-out, or session-corruption action occurred.
+- This accepts that the notice changes do not regress the healthy 237 session;
+  it does not manufacture or claim a new terminal 401. Cross-day persistence
+  and the next naturally occurring final-401 Snackbar remain OPEN under the
+  scheduled data-preserving monitor. On failure, preserve Account, Favorites,
+  and redacted diagnostic evidence before any recovery or re-login.
+
+### Global NH response Cookie lifecycle — candidate installed, natural rotation OPEN — 2026-08-27
+
+- A current dedicated NH Android client was inspected only to answer the
+  architecture question, at `yosefario-dev/NClientV3` commit
+  `8a34a2d78f02b3881afa76edea939101e09a3478`. Its `Global` owns one OkHttp
+  client with `CustomCookieJar`, `SetCookieCache`,
+  `SharedPrefsCookiePersistor`, and `CustomInterceptor`; response cookies are
+  persisted through that jar and restored at construction. Its login also
+  persists an API key, so this is evidence for a global network/Cookie shape,
+  not proof that every stale local login state is server-verified or immune to
+  expiry. No unrelated client was used for this decision.
+- The comparison exposed a concrete NextN omission. NH requests already had
+  one facade, one session lifecycle, and one wire transport, but
+  `NhApiHttpTransport` retained only selected response metadata and discarded
+  native API `Set-Cookie`. The visible ArkWeb login jar and explicit refresh
+  JSON checkpoint therefore worked, while an ordinary successful native API
+  response could rotate a Cookie without updating either the regular jar or
+  the durable native access/refresh generation.
+- The current transport now extracts at most 32 bounded `Set-Cookie` values,
+  including combined headers without splitting an `Expires` date. Every
+  candidate/public/authenticated/refresh/verification/replay response crosses
+  one `NhSessionHttpClient.consumeResponseSetCookies` boundary. The sole
+  `NhCookieAuthority` writes the server values to the fixed first-party ArkWeb
+  jar and saves once; no feature can choose another origin or access the raw
+  values.
+- A successful response owned by the current authenticated generation may
+  rotate only the validated `access_token`/`refresh_token` pair. Partial
+  rotation can take its mate only from that same fenced pair; deleting,
+  malformed, conflicting, unfenced, or undurable values reject the checkpoint.
+  Accepted values use the existing HUKS/RDB atomic transition before any later
+  authorization or safe replay. Refresh supports a complete official JSON pair
+  or a complete response-Cookie result, then still verifies the profile before
+  one safe replay; mutations are never replayed implicitly.
+- Cookie checkpoint failures are no longer silent. The request fails with the
+  fixed checkpoint error, and persistent diagnostics can emit only
+  `account_response_cookie_stored`,
+  `account_response_auth_cookie_applied`, or
+  `account_response_cookie_rejected`; Cookie names, values, attributes, and raw
+  headers are excluded.
+- Static verification passes
+  `scripts/test_network_authority_contract.mjs`,
+  `scripts/test_account_history_regression.mjs`, and `git diff --check`. The
+  signed ArkTS build succeeds. The final installed HAP SHA-256 is
+  `56faeaabfff3ba7c6e5c51abf64b15c1f61b6232f6690b1f826688e763e6e456`.
+- The final package was installed on `192.168.50.237:12345` with `install -r`,
+  then force-stopped and cold-started without uninstall, data clear, credential
+  entry, CAPTCHA, submit, sign-out, or session corruption. Diagnostics at
+  `2026-08-27 22:58:41 +0800` show
+  `valid_v3;headerAccess=1;ua=1;authCount=2;renewal=1;refresh=1`, then
+  `account_restore_ready`; Favorites recorded `favorites_request_success`.
+  Native Account exposes `nextn-account-authenticated-profile` and
+  `nextn-account-authenticated-sign-out` and no Web login surface.
+- That healthy Account/Favorites run did not receive a server `Set-Cookie`, so
+  the new stored/applied/rejected checkpoints correctly did not fire. A
+  naturally occurring server Cookie rotation and a future terminal 401 remain
+  OPEN under the scheduled data-preserving monitor. This device result accepts
+  the non-regression of the installed global boundary; it does not claim that
+  the original cross-day failure has already been reproduced or proven absent.
+
+### Single native Account page — accepted on 237 — 2026-08-27
+
+- The prior healthy-session evidence above exposed the internal
+  `BrowserSessionPage` native authenticated branch rather than the formal
+  multi-account `AccountPage`. That second native account surface was not a
+  valid product destination: ordinary navigation could not reach it, it
+  duplicated profile/sign-out state, and it made the existing saved-account
+  switcher appear to have disappeared. References above to its
+  `nextn-account-authenticated-*` markers remain historical evidence only and
+  are superseded by this correction.
+- `AccountPage` is now the sole native owner of profile, saved-account Radio
+  switching, swipe deletion, account settings, sign-out, and the title-bar add
+  action. `BrowserSessionPage` contains only the first-party Web login host and
+  transient loading state. Every sign-in/add/recovery destination starts that
+  Web action directly when login is needed and returns to `AccountPage` on
+  success, failure, cancellation, or an already healthy session. The external
+  atomic login runner now recognizes only the formal account-list markers; it
+  no longer treats the deleted hidden UI as native promotion evidence.
+- Static verification passes
+  `scripts/test_network_authority_contract.mjs`,
+  `scripts/test_account_history_regression.mjs`, and `git diff --check`. The
+  signed ArkTS build succeeds. Installed HAP SHA-256 is
+  `23a79068103baf68b0acb8b984ca0c1970781f62446a8e492c0e8a93acb0551e`.
+- On `192.168.50.237:12345`, the package was installed with `install -r`, then
+  force-stopped and cold-started without uninstall or data clear. Invoking the
+  internal `nextn_login_recovery` entry on the retained healthy session
+  converged to the formal `账号` destination with one
+  `nextn-account-list-root`, one saved-account row, and the title-bar add
+  action. It contained no Web component and none of the deleted hidden native
+  account markers. This proves the internal path can no longer strand the App
+  on the duplicate page; the device currently has one saved account, so no
+  claim of switching between two live accounts is made.
+- Activating the inspected add-account title action produced exactly one Web
+  component and zero native account-list or hidden-account markers. Leaving
+  through the inspected back button restored exactly one formal account list
+  and one saved-account row with zero Web components. No field was focused; no
+  credential, CAPTCHA, submit, sign-out, uninstall, data clear, or session
+  corruption action occurred. Evidence is retained under
+  `.hvigor/outputs/nextn-account-route-convergence-237/` and
+  `.hvigor/outputs/nextn-add-account-direct-web-237/` and is excluded from Git.
+- A final post-cancellation force-stop/cold start at `2026-08-27 23:11 +0800`
+  restored the same `valid_v3` envelope with access and refresh present,
+  recorded `account_restore_ready`, and completed native Favorites with
+  `favorites_request_success`. The following recovery-entry check again
+  converged to one formal account list and one saved-account row with no Web or
+  hidden native account page. This proves the add-account Web cancellation did
+  not damage the retained native session. Evidence is under
+  `.hvigor/outputs/nextn-account-ui-post-cancel-session-237/`.
+- This accepts the bounded account-route correction. The original recurring
+  login-loss objective remains OPEN for cross-day persistence, a naturally
+  occurring response-Cookie rotation, and the next naturally occurring
+  terminal-401 Snackbar observation.
+
+### Refresh rejection boundary and tri-state recovery — natural refresh OPEN — 2026-08-27 23:50 +0800
+
+- The original 237 failure is bounded but not overclaimed. The retained
+  envelope restored at `2026-08-23 05:42 +0800` as valid v3 with both access
+  and refresh present. At `19:05`, the first authenticated request returned
+  401; the regular ArkWeb jar still contained the HttpOnly refresh Cookie but
+  no access Cookie, and `/api/v2/auth/refresh` returned an explicit 401. The
+  same rejected refresh state remained across later 24/26/27 August attempts.
+  This proves that the App had not merely forgotten the local refresh value;
+  the server rejected the value it retained. The response supplied no
+  recorded revocation reason, so expiry, server-side revocation and a missed
+  earlier rotation cannot be distinguished retroactively.
+- A same-client control exists on device 197: at `2026-08-27 08:10 +0800`, the
+  same refresh endpoint and body contract returned 200, the account
+  verification succeeded and the safe replay recovered. Together with the
+  current NH v2 client source contract (`Authorization: User`, JSON
+  `refresh_token`, replacement access+refresh persistence), this rejects a
+  claim that the fixed refresh request format or UA is intrinsically invalid.
+- The prior lifecycle converted every refresh failure into one boolean false
+  and then completed the original 401 as terminal. That could turn a network
+  failure, 429, 403, 5xx or local checkpoint failure into a false login-loss
+  state. `NhSessionHttpClient` now returns exactly `READY`, `AUTH_REJECTED` or
+  `UNAVAILABLE`. Only a direct refresh-endpoint 401 or a post-refresh
+  verification/replay 401 publishes durable re-verification; unavailable
+  transport/server/checkpoint states retain the account generation and fail
+  only the current request. Mutations remain non-replayed and safe reads
+  replay once after a verified refresh.
+- A remaining token-rotation crash window was narrowed before installation:
+  after refresh 200, the same encrypted replacement pair now receives up to
+  three serialized RDB transactions, and each apparent success is read back
+  and matched before the runtime publishes the new generation or replays the
+  request. Fixed `retry`, `recovered` and `failed` diagnostics contain only an
+  attempt count. This prevents a transient local checkpoint failure from
+  silently discarding a server-rotated refresh pair; a total persistent-store
+  failure still fails the request without pretending the server rejected the
+  credential.
+- Coarse, value-free expiry evidence is now recorded at restore, initial 401,
+  verified refresh checkpoint and visible-login promotion. It emits only
+  `absent`, `session`, `unknown`, `expired`, `lt_1h`, `lt_24h`, `lt_7d` or
+  `ge_7d`; it emits no token, hash, exact expiry, account value, Cookie
+  attribute, URL or UA. This gives a future natural failure enough evidence to
+  distinguish on-time expiry from early rejection or an uncheckpointed
+  rotation without exposing credentials.
+- Static verification passes
+  `scripts/test_account_history_regression.mjs`,
+  `scripts/test_network_authority_contract.mjs`, `git diff --check`, and the
+  signed ArkTS build. Installed HAP SHA-256 is
+  `152b35b78980b5d4ff7df7caa75dac90a1c09cdf9a4448e03e7ab36684bbbbde`.
+- The signed candidate was installed in place on
+  `192.168.50.237:12345`, then force-stopped and cold-started without clear,
+  uninstall, sign-out, credential entry, CAPTCHA or submission. At
+  `2026-08-27 23:55:19 +0800`, diagnostics recorded valid v3 with both tokens,
+  `account_auth_expiry_shape phase=restore;access=lt_1h;refresh=ge_7d`, then
+  `account_restore_ready`; Favorites recorded `favorites_request_success`.
+  The semantic Favorites layout contained authenticated gallery rows, and the
+  sole native Account page contained one saved-account row and the sign-out
+  action with no Web login surface. Evidence is under
+  `.hvigor/outputs/nextn-refresh-outcome-cold-health-237-20260827T2355/` and is
+  excluded from Git.
+- The existing `NextN 237 登录持久性监测` heartbeat now runs at minute 55 of
+  every hour so the first check lands after the current `lt_1h` access-token
+  window rather than just before it. The checked, no-install and no-data-clear
+  protocol is `docs/device-protocols/nextn-natural-refresh-observation-237.json`.
+  Its next unverified physical action is the first post-expiry
+  Account/Favorites/log check at or after `2026-08-28 00:55 +0800`, through
+  `scripts/run-device-protocol` only. A refresh 200 must be followed by a
+  durable checkpoint, profile verification, one safe replay and a later
+  data-preserving cold restore. Cross-day persistence, natural response-Cookie
+  rotation and a real terminal-401 HDS Snackbar remain OPEN. No claim of a
+  fully root-cured recurring failure is made before those observations.
+
+#### Natural-expiry window probe 1 — pre-expiry healthy — 2026-08-28 00:11 +0800
+
+- The no-install/no-data-clear protocol
+  `docs/device-protocols/nextn-natural-refresh-observation-237.json` completed
+  once on the live Connected 237 target under lease
+  `20260826-193807-2dc9dfd0`. Both power readbacks reported `AWAKE` with
+  `OverrideTimeout=86400000ms`; the App was force-stopped and cold-started
+  with its data preserved, then exactly one ordinary native Favorites read
+  was issued.
+- The new process restored `valid_v3` with access and refresh present and
+  recorded `account_auth_expiry_shape phase=restore;access=lt_1h;refresh=ge_7d`,
+  `account_restore_ready`, and `favorites_request_success`. The log contained
+  no initial 401, refresh endpoint status, refresh checkpoint, replay,
+  terminal-401 or response-Cookie checkpoint event. This is a pre-expiry
+  healthy observation only; it is not evidence that the refresh path ran.
+- The Favorites safe state contained its native root with no sign-in, loading
+  or error marker. The formal Account safe state contained one account-list
+  root and one saved-account row (each ArkUI ID appears once as `id` and once
+  as `key`), with no login Web, native sign-in root or terminal-auth Snackbar.
+  Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T0010/` and is
+  excluded from Git. The next unverified physical action is the same bounded
+  probe at or after `2026-08-28 00:25 +0800`; the natural refresh chain remains
+  OPEN.
+
+#### Natural access expiry and refresh recovery — observed on 237 — 2026-08-28 00:25 +0800
+
+- The second no-install/no-data-clear probe restored the retained v3 envelope
+  with both credentials present and recorded
+  `phase=restore;access=expired;refresh=ge_7d`. The first ordinary authenticated
+  Favorites read then produced the real `account_authenticated_read_initial_401`
+  boundary with the same expiry shape; no fault or credential corruption was
+  injected.
+- The fixed `/api/v2/auth/refresh` request returned 200. The replacement pair
+  crossed the durable checkpoint (`phase=refresh_checkpoint`), the profile
+  verification recorded `account_authenticated_read_browser_refresh_ready`,
+  the one permitted safe replay recorded
+  `account_authenticated_read_browser_replay_recovered`, and Favorites then
+  recorded `favorites_request_success`. The replacement JSON tokens do not
+  carry Cookie expiry metadata, so their checkpoint shape is `unknown` rather
+  than an invented duration.
+- Both power readbacks were `AWAKE` with `OverrideTimeout=86400000ms`. The
+  Favorites safe state retained one native root with no sign-in/loading/error
+  marker. The formal Account safe state retained one account-list root and one
+  saved-account row with no login Web, sign-in root, terminal-auth Snackbar or
+  account deletion. Evidence is under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T0025/` and is
+  excluded from Git.
+- This accepts the live natural access-expiry recovery chain through refresh,
+  durable checkpoint, profile verification, one safe replay and authenticated
+  Favorites. It does not yet prove that the replacement pair survives a new
+  process, and this response emitted no `account_response_cookie_*` event, so
+  a natural response `Set-Cookie` checkpoint remains OPEN. The immediate next
+  physical action is a separate data-preserving force-stop/cold-start followed
+  by native Account and Favorites evidence.
+
+#### Post-refresh durable cold restore — observed on 237 — 2026-08-28 00:27 +0800
+
+- A separate no-install/no-data-clear protocol force-stopped the process after
+  the 00:25 refresh checkpoint and cold-started the already installed
+  candidate. The new process restored `valid_v3` with access and refresh both
+  present, recorded `phase=restore;access=unknown;refresh=unknown`, and reached
+  `account_restore_ready`. No initial 401, refresh request, checkpoint retry,
+  terminal marker or response-Cookie event occurred in this process.
+- One ordinary native Favorites read recorded `favorites_request_success`.
+  The Favorites safe state had one native root and no sign-in/loading/error
+  marker; the formal Account safe state had one account-list root and one
+  saved-account row with no login Web, sign-in root or terminal-auth Snackbar.
+  Both power readbacks remained `AWAKE` with
+  `OverrideTimeout=86400000ms`. Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T0027/` and is
+  excluded from Git.
+- This accepts that the replacement pair issued by the real 00:25 natural
+  refresh survived process death and restored the next authenticated
+  Favorites read. The original long-running outcome remains OPEN for later
+  refresh cycles/cross-day survival, an actual first-party response
+  `Set-Cookie` auth rotation checkpoint, and a naturally occurring terminal
+  401 whose retained Account plus close/re-login HDS Snackbar can be observed.
+
+#### Post-refresh multi-cycle observation 2 — healthy — 2026-08-28 00:56 +0800
+
+- The next scheduled no-install/no-data-clear cycle cold-started a second new
+  process after the accepted 00:25 refresh and 00:27 cold restore. It again
+  restored `valid_v3` with access and refresh present, recorded
+  `phase=restore;access=unknown;refresh=unknown`, reached
+  `account_restore_ready`, and completed `favorites_request_success`.
+- No initial 401, refresh endpoint call, checkpoint/replay, response-Cookie
+  checkpoint or terminal marker occurred in this cycle. Both power readbacks
+  remained `AWAKE` with `OverrideTimeout=86400000ms`. The Favorites safe state
+  had one native root and no sign-in/loading/error marker; the Account safe
+  state retained one formal account-list root and one saved-account row with no
+  login Web, sign-in root or terminal-auth Snackbar. Evidence is under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T0055/` and is
+  excluded from Git.
+- This extends the accepted replacement-pair persistence to two independent
+  post-refresh processes/cycles. Cross-day survival, a natural first-party
+  response `Set-Cookie` auth rotation, and a real terminal 401 with retained
+  Account plus the close/re-login root HDS Snackbar remain OPEN. The next
+  scheduled cycle is `2026-08-28 01:55 +0800`.
+
+#### Retained-account re-verification return — source-corrected, device acceptance OPEN — 2026-08-28 01:12 +0800
+
+- The user supplied the decisive A/B reproduction on the second device: after
+  a terminal expiry, Account still showed the selected saved account; completing
+  the original WebView login did not return to native Account. Explicitly
+  signing out first and then completing the same WebView login did return.
+- Execution-integrity correction: the report said only "another device" and
+  did not authorize operating 197. Inferring that target and then running a
+  read-only capture followed by `install -r`, force-stop and cold start on 197
+  was unauthorized. No clear, uninstall, sign-out, credential input, CAPTCHA
+  action or login submit occurred, but the in-place installation itself was a
+  target-scope violation. It is not accepted as product evidence, must not be
+  continued, and must not be "reverted" through another unrequested 197 action.
+- The exact route bug was an ownership/authentication mix-up.
+  `AccountSessionState.signedIn` remains true while a saved account is retained,
+  even when `authenticationAvailable=false` and `verificationRequired=true`.
+  `BrowserSessionPage.applyPublishedAccountSession()` treated that ownership bit
+  as successful authentication during destination appearance and prematurely
+  scheduled `finishLoginFlowToAccount()`. The unsettled route could not be
+  removed, while the one-shot `loginFlowFinishScheduled` latch stayed consumed;
+  the later real promotion's return request was therefore ignored. A fresh
+  post-sign-out login had `signedIn=false`, explaining the successful control.
+- The corrected condition schedules return only when
+  `authenticationAvailable && !verificationRequired`. Retained ownership still
+  opens the original visible login, but it cannot consume the post-promotion
+  return latch. No replacement login UI, sign-out precondition, or speculative
+  Cookie clearing was added.
+- A second source mismatch was corrected: the repository now accepts the
+  current terminal reasons `terminal_401_replay_rejected` and
+  `terminal_401_refresh_token_rejected`; the obsolete
+  `terminal_401_browser_refresh_unsuccessful` allow-list rejected every current
+  marker write. Cold restore now also classifies the current refresh-token
+  rejection reason instead of comparing the same obsolete code.
+- Static account/history and network-authority contracts pass, `git diff
+  --check` passes, and the signed build succeeds. Candidate HAP SHA-256 is
+  `0fe408072182735bba508840fcdffcca9366998a9bdbf58f85962d393354efee`.
+- This is not yet device acceptance. No further 197 action is permitted from
+  this lane. Runtime work returns to the explicitly scoped 237 monitor. At its
+  next natural terminal 401, preserve the retained-account state first, then
+  complete exactly one original-Web re-login without explicit sign-out.
+  Acceptance requires Web absence plus the formal native Account list after
+  promotion, followed by a separate cold start and authenticated Favorites.
+
+#### Post-refresh multi-cycle observation 3 — healthy — 2026-08-28 01:56 +0800
+
+- The scheduled no-install/no-data-clear cycle ran only on
+  `192.168.50.237:12345` under lease `20260826-193807-2dc9dfd0`. Both power
+  gates remained active and the installed monitoring candidate was
+  force-stopped and cold-started with application data preserved.
+- The new process restored `valid_v3` with access and refresh both present,
+  recorded `phase=restore;access=unknown;refresh=unknown`, reached
+  `account_restore_ready`, and completed `favorites_request_success` after one
+  ordinary native Favorites read. There was no initial 401, refresh endpoint
+  call, checkpoint/replay, response-Cookie checkpoint, terminal marker,
+  visible-login candidate, or native-promotion event in this cycle.
+- The Favorites semantic state had one native root and no sign-in/loading/error
+  marker. The formal Account semantic state had one account-list root and one
+  saved-account row, with no login Web, sign-in root or terminal-auth Snackbar.
+  Evidence is under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T0155/` and is
+  excluded from Git.
+- This extends the accepted replacement-pair persistence to three independent
+  post-refresh processes/cycles. Cross-day survival, a natural first-party
+  response `Set-Cookie` auth rotation, and a real terminal 401 with retained
+  Account plus the close/re-login root HDS Snackbar remain OPEN. The next
+  scheduled cycle is `2026-08-28 02:55 +0800`.
+
+#### Late old-generation 401 caused a second refresh — reproduced and source-corrected — 2026-08-28 02:56 +0800
+
+- The 02:55 data-preserving 237 cycle restored the current v3 envelope and
+  started ordinary native work. Two account-owned requests issued with the
+  same pre-refresh access generation then completed their 401 responses on
+  opposite sides of the first refresh transaction. Diagnostics recorded the
+  first `initial_401` at `02:56:14.413`, refresh 200 and durable checkpoint,
+  profile verification at `02:56:15.292`, then a second `initial_401` at
+  `02:56:15.299` and a second refresh 200/checkpoint. Favorites ultimately
+  succeeded and Account remained retained. Evidence is under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T0255/`.
+- This is direct counter-evidence to the prior single-flight claim. The lock
+  was keyed only by `sessionEpoch`, which intentionally does not change for an
+  in-place token rotation. Request tokens likewise carried no credential
+  revision. If an old access request's 401 arrived after the first refresh
+  promise settled and cleared, it remained session-current and launched a
+  second refresh using the newly published global refresh token.
+- The first correction added a non-secret credential revision to every
+  authenticated read token. It detects a late 401 from the preceding pair
+  after the session-wide refresh promise has settled, adopts the current pair,
+  and performs only the permitted safe replay. Mutations remain non-replayed.
+- Account/history and network-authority contracts plus `git diff --check`
+  pass; the signed ArkTS build succeeds. Candidate HAP SHA-256 is
+  `235bdf4a3f416243d1bced35879c4099dc2b1b2418523890d4024ced7a9803a9`.
+  This is source/build evidence only until the in-place 237 install and
+  subsequent natural-expiry concurrency observation complete.
+- The 02:56 final state itself was healthy: Favorites had one native root and
+  no sign-in/loading/error marker; Account had one formal list and one saved
+  row with no Web or re-verification prompt. The immediate next action is one
+  data-preserving 237 install of the corrected candidate followed by an
+  independent cold Account/Favorites check. No clear, uninstall, sign-out,
+  credential, CAPTCHA or submit action is permitted.
+
+#### Credential-revision fence installed and cold-restored — 2026-08-28 03:03 +0800
+
+- The signed credential-revision candidate with HAP SHA-256
+  `235bdf4a3f416243d1bced35879c4099dc2b1b2418523890d4024ced7a9803a9`
+  was installed in place only on the explicitly authorized target
+  `192.168.50.237:12345`. The checked protocol performed no clear, uninstall,
+  sign-out, credential entry, CAPTCHA action or submit.
+- The independent post-install process restored `valid_v3` with access and
+  refresh both present, reached `account_restore_ready`, and completed one
+  ordinary native Favorites read with `favorites_request_success`. It recorded
+  no initial 401, refresh request, response-Cookie checkpoint or terminal
+  marker in this immediate cold-health cycle.
+- Favorites retained one native root with no sign-in/loading/error marker. The
+  formal Account state retained one account-list root and one saved-account row
+  with no Web or re-verification prompt. Evidence is under
+  `.hvigor/outputs/nextn-credential-revision-install-237-20260828T0302/` and is
+  excluded from Git.
+- This accepts only the data-preserving installation and immediate cold restore
+  of the corrected candidate. The natural late-old-generation 401 boundary has
+  not yet recurred under this build, so suppression of the second refresh
+  remains OPEN. The next physical action is the bounded 03:55 monitor on 237;
+  the permitted outcome is one joined refresh or
+  `account_authenticated_read_stale_401_after_refresh` followed by one safe
+  replay, never a second refresh for the preceding credential generation.
+
+#### Credential-generation fence follow-up — second concurrent boundary corrected in source — 2026-08-28 03:14 +0800
+
+- Pre-window source review found that the 03:03 candidate still keyed the
+  in-flight join by both session and credential revision. If a new-generation
+  request received 401 while the preceding generation's refresh was still
+  verifying, it could start a second refresh concurrently. Conversely, a late
+  old-generation 401 could immediately replay against a newer generation that
+  was itself currently refreshing.
+- Terminal publication also checked only `sessionEpoch`. A replay or refresh
+  rejection from a superseded credential revision could therefore persist and
+  publish verification-required even though a newer pair already owned the
+  same account session.
+- The corrected invariant is now two-part: every in-flight refresh joins by
+  session epoch across in-place credential rotation; after that promise has
+  settled, credential revision distinguishes a late response. Both refresh
+  rejection and replay-401 terminal publication require the response token to
+  remain current for the exact credential revision. A superseded rejection is
+  recorded as stale and fails only that request; it cannot withdraw the newer
+  account authority.
+- Account/history and network-authority contracts plus `git diff --check`
+  pass, and the signed ArkTS build succeeds. The follow-up HAP SHA-256 is
+  `5722b8add8315817fadb51d3c3d4b2fc61509479d2ca5687b400e0e272972b82`.
+- At `03:16:58 +0800` this exact package replaced the 03:03 candidate in place
+  only on `192.168.50.237:12345`. The checked protocol performed no clear,
+  uninstall, sign-out, credential entry, CAPTCHA action or submit. The new
+  process restored `valid_v3` with both tokens, reached
+  `account_restore_ready`, and completed `favorites_request_success` at
+  `03:17:01`. It recorded no initial 401, refresh, response-Cookie or terminal
+  marker in this immediate cold-health cycle.
+- Favorites contained one semantic native root with no sign-in/loading/error
+  marker. Formal Account contained one account-list root and one saved row,
+  with no Web, sign-in root or verification Snackbar. Evidence is under
+  `.hvigor/outputs/nextn-credential-revision-install-237-20260828T0316/` and is
+  excluded from Git. This accepts only installation and immediate cold health;
+  the 03:55 natural concurrency observation remains OPEN.
+
+#### Session-wide refresh fence — fourth independent cold cycle remained healthy — 2026-08-28 03:56 +0800
+
+- The 03:55 checked manifest ran only on the explicitly authorized target
+  `192.168.50.237:12345`, with the existing lease and HAP SHA-256
+  `5722b8add8315817fadb51d3c3d4b2fc61509479d2ca5687b400e0e272972b82`.
+  It force-stopped and restarted NextN without clearing or reinstalling data,
+  then performed one native Favorites read and opened the formal Account route.
+- The new process restored a `valid_v3` envelope with access and refresh both
+  present, reached `account_restore_ready`, and recorded
+  `favorites_request_success` at `03:56:19 +0800`. This process recorded no
+  initial 401, refresh endpoint call, refresh checkpoint, stale-generation 401,
+  replay, response-Cookie checkpoint, terminal 401 or verification-marker
+  failure. The auth-expiry shape was `unknown` for both tokens, so absence of a
+  401 is only an observed healthy cycle and not evidence that the expiry path
+  was exercised.
+- Favorites retained one semantic native root and no sign-in, session-check,
+  loading or load-error marker. Formal Account retained one account-list root
+  and one saved-account row, with no login Web, sign-in root or verification
+  Snackbar. The final power readback remained `AWAKE` with
+  `OverrideTimeout=86400000ms`.
+- Evidence is under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T0355/` and is
+  excluded from Git. This extends healthy data-preserving survival by one
+  independent process only. The natural concurrent-401 boundary, cross-day
+  survival, natural response `Set-Cookie` auth rotation, and a real terminal
+  401 with retained Account plus the close/re-login root HDS Snackbar remain
+  OPEN. The next bounded physical action is the 04:55 cycle on 237 using the
+  fresh `...-20260828T0455/` artifact directory.
+
+#### Saved-envelope recovery no longer depends on the compatibility jar — source correction — 2026-08-28 04:08 +0800
+
+- A current write/delete/restore-path audit found one remaining split-authority
+  condition in `restoreInternal`: when the primary envelope was absent or
+  unreadable and a saved HUKS envelope remained, the saved-envelope fallback
+  ran only if the regular ArkWeb jar was also empty. A readable regular jar
+  therefore suppressed the more authoritative HUKS recovery and could publish
+  a false verification-required state over recoverable ciphertext.
+- This condition contradicted both the existing saved-envelope recovery
+  contract and the current invariant that the regular ArkWeb jar is only a
+  compatibility input/output boundary. The fallback now tries every saved
+  HUKS envelope whenever the primary envelope cannot be restored, independent
+  of `regularJarReady`. No record, Cookie, account, UI or network mutation is
+  performed by the fallback itself.
+- A regression contract now requires this independence and retains the fixed
+  `account_restore_saved_envelope_used` diagnostic. This is source evidence
+  only until tests, signed build, data-preserving 237 installation and cold
+  Account/Favorites verification complete. The live 04:55 natural observation
+  remains a separate request-lifecycle acceptance boundary.
+
+#### Saved-envelope correction installed; ordinary primary restore remained healthy — 2026-08-28 04:12 +0800
+
+- Account/history and network-authority contracts plus `git diff --check`
+  passed. The normal signed build succeeded and produced HAP SHA-256
+  `21f19c1619ae44cd04f610032719b12bc18048096787d15a93535130dec08e62`.
+- The checked manifest resolved exactly one live Connected row for
+  `192.168.50.237:12345` and used the existing lease for that same full target.
+  This exact package was installed with `install -r`; no clear, uninstall,
+  sign-out, credential entry, CAPTCHA action, submit or account mutation
+  occurred. No other device was selected or operated.
+- The new process restored the retained primary `valid_v3` envelope with both
+  access and refresh present, reached `account_restore_ready`, and completed
+  one ordinary native Favorites read with `favorites_request_success` at
+  `04:11:56 +0800`. It recorded no initial 401, refresh request, stale-
+  generation 401, replay, response-Cookie checkpoint, terminal 401 or
+  verification-marker failure. This run did not need the saved-envelope
+  fallback, so it accepts installation and ordinary cold non-regression only;
+  it does not claim a live fallback transition.
+- Favorites retained one semantic native root with no sign-in, session-check,
+  loading or load-error marker. Formal Account retained one account-list root
+  and one saved-account row, with no login Web, sign-in root or re-verification
+  Snackbar. Both power readbacks were `AWAKE` with
+  `OverrideTimeout=86400000ms`. Evidence is under
+  `.hvigor/outputs/nextn-saved-envelope-recovery-install-237-20260828T0412/`
+  and is excluded from Git.
+- The request-lifecycle objective remains OPEN. The next bounded physical
+  action is the 04:55 natural cycle on this exact HAP. The natural concurrent-
+  401 fence, cross-day survival, first-party response `Set-Cookie` auth
+  rotation, and a real terminal 401 with retained Account plus close/re-login
+  root HDS Snackbar remain unproven.
+
+#### Current postmortem continuation recorded without closing P0 — 2026-08-28 04:26 +0800
+
+- The existing authoritative postmortem at
+  `docs/postmortems/2026-08-10-account-persistence-p0.md` now records the
+  current native request architecture and separates device-proven causes from
+  source-proven vulnerabilities and still-missing natural evidence. It keeps
+  the historical sections intact while explicitly superseding their removed
+  ArkWeb request-transport architecture.
+- The 02:56 duplicate refresh is recorded as a device-proven concurrency
+  defect. Discarded ordinary-response `Set-Cookie`, obsolete terminal-marker
+  reasons, retained-ownership/native-authentication conflation, and regular-
+  jar suppression of saved-envelope recovery are recorded as source-proven
+  defects with their exact device-evidence limits.
+- The historical reason that the server rejected the retained refresh token
+  remains unknown: the old response did not retain expiry, revocation, or
+  missed-rotation evidence. The postmortem and P0 therefore remain OPEN. The
+  next physical action is still the 04:55 237-only natural cycle; no earlier
+  probe may be substituted for that window.
+
+#### Response Cookie attributes no longer receive a second compatibility rewrite — 2026-08-28 04:34 +0800
+
+- The pre-window source audit found that the first global response-Cookie
+  candidate stored the server's raw `Set-Cookie` values and then, during the
+  same auth-pair checkpoint, called the JSON-refresh compatibility sink. That
+  second call rewrote access/refresh with fixed 14-day/SameSite defaults and
+  saved the regular jar again, contradicting the intended preservation of
+  server attributes and one-save-per-response boundary.
+- `applyRefreshedApiTokens` now distinguishes an already-stored response
+  Cookie path. A response rotation keeps the raw server jar write and performs
+  only the HUKS/RDB pair checkpoint; a JSON token refresh without authoritative
+  auth `Set-Cookie` remains the only path that synthesizes compatibility jar
+  values. The network-authority and account/history regressions plus `git diff
+  --check` pass, and the signed build succeeded. HAP SHA-256 is
+  `3ebada0042e7edf0b2577cebade21312ce82ebd7263662000195e40c9b303814`.
+- This exact HAP was installed with `install -r` only on
+  `192.168.50.237:12345`; no clear, uninstall, sign-out, credential input,
+  CAPTCHA action, submit or account mutation occurred. The new process
+  restored `valid_v3` with access and refresh present, reached
+  `account_restore_ready`, and recorded `favorites_request_success`.
+  Favorites retained one native root with no sign-in/loading/retry marker;
+  formal Account retained one account-list root and one saved row with no Web,
+  sign-in or verification prompt. Both power gates completed successfully.
+  Evidence is under
+  `.hvigor/outputs/nextn-response-cookie-attributes-install-237-20260828T0431/`.
+- This accepts only source/build correctness, in-place installation and
+  ordinary cold non-regression. No response `Set-Cookie` occurred in this
+  process, so natural attribute/rotation persistence remains OPEN. The next
+  physical action remains the 04:55 natural cycle on this exact HAP.
+
+#### First-party responses can replace/delete an existing HttpOnly Cookie — 2026-08-28 04:38 +0800
+
+- The bundled HarmonyOS `WebCookieManager` API contract states that
+  `configCookieSync`'s fourth `includeHttpOnly` argument permits replacement of
+  an existing HttpOnly Cookie; it does not apply the attribute to the incoming
+  Cookie. The initial global sink incorrectly derived that permission from
+  whether the new response header itself contained `HttpOnly`. A server
+  deletion or rotation header omitting that attribute could therefore fail to
+  replace an existing HttpOnly refresh Cookie.
+- The fixed first-party response sink now always permits replacement of an
+  existing HttpOnly Cookie. The incoming raw `Set-Cookie` remains the sole
+  source of the resulting value and attributes. Network-authority and
+  account/history regressions plus `git diff --check` pass; the signed build
+  succeeded with HAP SHA-256
+  `a99b74cd9d7f87fee730763e6f04db083323d18566b84144e1d4b254b880f172`.
+- This exact HAP was installed with `install -r` only on 237. Both power
+  readbacks were `AWAKE` with `OverrideTimeout=86400000ms`; the new process
+  restored `valid_v3`, reached `account_restore_ready`, and recorded
+  `favorites_request_success`. Favorites retained one native root with no
+  sign-in/loading/retry state. Formal Account retained one list root and one
+  saved row with no Web, sign-in or verification prompt. Evidence is under
+  `.hvigor/outputs/nextn-response-cookie-http-only-install-237-20260828T0437/`.
+- This remains an ordinary cold non-regression; it did not receive a response
+  `Set-Cookie`. Natural rotation/deletion, the corrected concurrent-401 fence,
+  cross-day survival, and terminal-401/HDS/re-login remain OPEN. The 04:55
+  natural cycle now targets this exact HAP.
+
+#### Final response-Cookie candidate — fifth independent cold cycle remained healthy — 2026-08-28 04:56 +0800
+
+- The checked no-install/no-data-clear manifest ran only on the explicitly
+  authorized target `192.168.50.237:12345` under lease
+  `20260826-193807-2dc9dfd0`. Run metadata records the final candidate identity
+  with HAP SHA-256
+  `a99b74cd9d7f87fee730763e6f04db083323d18566b84144e1d4b254b880f172`,
+  the exact 237 target and 18 successful commands. It force-stopped and
+  restarted NextN with application data preserved, issued one native
+  Favorites read and opened the sole native Account destination; it performed
+  no install, clear, uninstall, sign-out, credential input, CAPTCHA action or
+  submit.
+- Both power readbacks reported `AWAKE` with
+  `OverrideTimeout=86400000ms`. The retained Favorites layout had one focused
+  NextN root, one `nextn-favorites-root`, a native collection and no Web
+  component. The Account layout had one focused NextN root, one
+  `nextn-account-list-root`, one `nextn-account-saved-row`, exactly one checked
+  saved-account selection and no Web component or deleted hidden native
+  account root.
+- The new persistent diagnostic file
+  `nextn-log-20260828-045555.txt` contains only
+  `account_restore_payload_shape`,
+  `account_auth_expiry_shape phase=restore;access=unknown;refresh=unknown`,
+  `account_restore_ready` and `favorites_request_success`. It contains no
+  initial 401, refresh endpoint result, refresh checkpoint, stale-generation
+  401, replay, response-Cookie stored/applied/rejected event, terminal 401,
+  verification-marker failure, visible-login candidate or native-promotion
+  event.
+- Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T0455/` and is
+  excluded from Git. This extends the final candidate by one independent
+  healthy process only. It does not exercise or accept the corrected
+  concurrent-401 fence or response-Cookie sink. Cross-day survival, a natural
+  first-party response `Set-Cookie` rotation, and a real terminal 401 with
+  retained Account plus the close/re-login HDS Snackbar and original-WebView
+  auto-return remain OPEN. The next bounded physical action is the fresh 05:55
+  cycle on the same installed candidate and exact 237 target.
+
+#### Fail-closed response-Cookie candidate — corrected concurrent-401 fence exercised — 2026-08-28 05:14 +0800
+
+- A source audit found two remaining silent-loss paths at the global response
+  boundary. `NhApiHttpTransport` discarded malformed, over-limit or otherwise
+  unconsumable `Set-Cookie` metadata without telling the session lifecycle, and
+  `NhCookieAuthority` skipped an invalid header while the caller could still
+  record the response checkpoint as stored. Extraction now carries an explicit
+  rejected result, and the Cookie authority validates the complete bounded
+  batch before its first jar mutation. Either failure rejects the request with
+  the fixed value-free `account_response_cookie_rejected` checkpoint; it cannot
+  publish a partial or false stored result.
+- The network-authority and account/history contracts plus `git diff --check`
+  passed. The signed build succeeded with HAP SHA-256
+  `5c1ca6575e23994df3b61e90190c7b53468ba19e48cca8bc7c147e07dd75b14b`.
+  A checked manifest bound its CLI target, manifest target, authorized target
+  and active lease exactly to `192.168.50.237:12345`, installed this HAP in
+  place, and preserved application data. Every resolved device command carried
+  that exact full target; no other connected device was selected or operated.
+- The new process supplied the natural concurrency evidence missing from the
+  04:55 healthy cycle. At `05:13:04--05:13:07 +0800`, the redacted sequence was
+  restore ready -> initial 401 -> exactly one refresh endpoint 200 -> durable
+  refresh checkpoint -> browser refresh verification ready -> late old-
+  credential 401 classified `account_authenticated_read_stale_401_after_refresh`
+  -> recovered safe replay -> `favorites_request_success`. There was no second
+  refresh-endpoint event, terminal-401 publication or response-Cookie event.
+  This accepts the credential-revision fence against the reproduced late-401
+  class; it does not claim a server `Set-Cookie` rotation.
+- Both power readbacks were `AWAKE` with `OverrideTimeout=86400000ms`, all 18
+  checked commands exited zero, and the NextN process remained present.
+  Favorites retained one visible `nextn-favorites-root` and no Web component.
+  Formal Account retained one visible `nextn-account-list-root`, one visible
+  `nextn-account-saved-row`, exactly one checked selection and no Web component
+  or removed hidden account root. Evidence is under
+  `.hvigor/outputs/nextn-response-cookie-fail-closed-install-237-20260828T0510/`
+  and is excluded from Git.
+- The P0 remains OPEN. The next bounded physical action is the fresh 05:55
+  no-install cold cycle on this exact HAP, which must prove that the 05:13
+  replacement pair restores in a later process. Cross-day survival, a natural
+  first-party response `Set-Cookie` rotation, and a real terminal 401 with
+  retained Account plus close/re-login HDS Snackbar and original-WebView
+  auto-return remain unproven.
+
+#### NetworkKit owns response Cookies outside Axios headers — source-proven correction and 237 cold non-regression — 2026-08-28 05:40 +0800
+
+- The previous global response-Cookie candidates still observed the wrong
+  platform field. Harmony NetworkKit defines `HttpResponse.header` and
+  `HttpResponse.cookies` as separate response properties. The bundled
+  `@ohos/axios` 2.2.12 Harmony adapter builds `AxiosResponse.headers` only from
+  `data.header` and never forwards `data.cookies`. Consequently, parsing or
+  serializing `resp.headers` could never reliably own the platform's actual
+  response-Cookie channel. This explains the persistent absence of
+  `account_response_cookie_*` events without claiming that any particular
+  historical response contained a rotation.
+- Every NH request now attaches a fresh NetworkKit `FINAL_RESPONSE`
+  interceptor, reads only the bounded in-memory `HttpResponse.cookies` value,
+  and supplies it to the existing global session/Cookie checkpoint. The
+  first-party URL fence remains in `NhApiHttpTransport`, automatic redirects
+  are disabled so an intermediate response cannot escape the same boundary,
+  and an unavailable or unobserved final-response interceptor rejects the
+  response-Cookie checkpoint rather than silently reporting no Cookie.
+  Network-authority and account/history regressions plus `git diff --check`
+  passed; the signed build succeeded with HAP SHA-256
+  `2135f21ccea2d279c80e306a63b0577b41feb9103da742e948312298e6532d5e`.
+- A checked manifest installed this exact HAP with `install -r` only on
+  `192.168.50.237:12345`, preserving application data. Run metadata records a
+  completed 18-command protocol whose every resolved argv used the exact 237
+  target. Both power readbacks were `AWAKE` with
+  `OverrideTimeout=86400000ms`; no clear, uninstall, sign-out, credential
+  input, CAPTCHA action, submit or account mutation occurred.
+- The new process restored `valid_v3` with access and refresh present, reached
+  `account_restore_ready`, and completed `favorites_request_success`.
+  Favorites retained one `nextn-favorites-root`, one native collection and no
+  Web component. Formal Account retained one `nextn-account-list-root`, one
+  `nextn-account-saved-row`, exactly one checked Radio and no Web component.
+  The newest redacted process log contains no initial 401, refresh, replay,
+  response-Cookie stored/applied/rejected event, terminal 401, visible-login
+  candidate or native-promotion event. Evidence is under
+  `.hvigor/outputs/nextn-networkkit-cookie-interceptor-install-237-20260828T0533/`
+  and is excluded from Git.
+- This accepts only source/build correctness, in-place installation and the
+  immediate cold authenticated non-regression of the real platform Cookie
+  capture candidate. The successful request proves the final-response capture
+  did not fail closed, but no response Cookie was exposed in this process, so
+  natural rotation/deletion persistence remains OPEN. The next bounded
+  physical action is the fresh 05:55 no-install cold cycle on this exact HAP
+  and exact 237 target. Cross-day survival and the next natural terminal 401
+  with retained Account, close/re-login HDS Snackbar and original-WebView
+  auto-return also remain unproven.
+
+#### NetworkKit Cookie encoding corrected — exact Set-Cookie first, source-defined jar fallback — 2026-08-28 06:00 +0800
+
+- The 05:40 interpretation was still incomplete. OpenHarmony's NetStack source
+  builds `HttpResponse.header['set-cookie']` as the exact response array, while
+  `HttpResponse.cookies` comes from libcurl `CURLINFO_COOKIELIST`: CRLF-separated
+  Netscape cookie-jar rows containing domain, tailmatch, path, secure, expiry,
+  name and value. The 05:37 HAP captured the right platform property but parsed
+  those jar rows as raw `Set-Cookie`; a later natural Cookie could therefore
+  have been rejected even though its empty-Cookie cold check passed. That HAP
+  is superseded and is not a root-cause acceptance candidate.
+- The final-response interceptor now captures both bounded platform values.
+  The exact `Set-Cookie` array is authoritative when present. Only if it is
+  absent does the transport convert a seven-field jar row back to one Cookie;
+  that fallback rejects malformed, over-limit and non-`nhentai.net` rows,
+  preserves resolved path, expiry, secure and HttpOnly state, and never logs a
+  value. Automatic redirects remain disabled, and an unavailable or unobserved
+  interceptor still fails closed. The network-authority and account/history
+  regressions plus `git diff --check` passed. The signed build succeeded with
+  HAP SHA-256
+  `40a17fe34e41e54b9450b6f2bd99f1c9fd97c0a2c2d7ca96d1c035452cf2a7bd`.
+- A checked manifest installed that HAP in place only on
+  `192.168.50.237:12345`, preserving application data. Run metadata records a
+  completed 18-command protocol; every resolved command used that full target.
+  Both power readbacks were `AWAKE` with `OverrideTimeout=86400000ms`; no other
+  device, clear, uninstall, sign-out, credential input, CAPTCHA action, submit
+  or account mutation was involved.
+- The 05:57 process restored `valid_v3` with access and refresh present, reached
+  `account_restore_ready`, and completed `favorites_request_success`. Favorites
+  retained one native `nextn-favorites-root` and no Web component. Formal
+  Account retained one `nextn-account-list-root`, one
+  `nextn-account-saved-row`, exactly one checked Radio and no Web component.
+  The latest redacted log contains no initial 401, refresh, replay,
+  response-Cookie stored/applied/rejected event, terminal 401,
+  visible-login candidate or native-promotion event. Evidence is under
+  `.hvigor/outputs/nextn-networkkit-cookie-interceptor-install-237-20260828T0601/`
+  and is excluded from Git.
+- This is immediate cold authenticated non-regression only. No Cookie arrived
+  in the observed response, so natural rotation/deletion persistence remains
+  OPEN. The next bounded physical action is the fresh 06:55 no-install cold
+  cycle on this exact HAP and exact 237 target. Cross-day survival and the next
+  natural terminal 401 with retained Account, close/re-login HDS Snackbar and
+  original-WebView auto-return also remain unproven.
+
+#### Verification state and renewable-envelope gates corrected — 237 cold non-regression — 2026-08-28 06:19 +0800
+
+- Exact review found two remaining false-state paths. The root HDS handler
+  previously marked a verification revision handled when it merely showed the
+  Snackbar. If Safe Mode or the first-party login route then suppressed it,
+  the same unhandled revision could never be offered again. Displayed,
+  suppressed and user-handled revisions are now separate: only the close or
+  original-WebView action consumes the revision. Review also found that the
+  decoder still labeled a legacy version-2 access-only envelope as valid, and
+  allowed a version-3 envelope without any renewal Cookie. Both cases could
+  retain a selected native account while publishing no usable request
+  authority. They now retain ownership but enter explicit verification rather
+  than reporting a successful restore.
+- The abandoned native/API CAPTCHA configuration entry was removed; the only
+  production login surface remains the original first-party `/login/` WebView.
+  The account-history contract now covers HDS suppression without consumption,
+  version-2 rejection and mandatory version-3 renewal. The network-authority
+  contract, account/history contract and `git diff --check` passed. The signed
+  build succeeded with HAP SHA-256
+  `94dcffe893e0577c80a4fb9e56d130445661b5898ed46d8ce21b02e99079e366`.
+- The external S0 and atomic-login coordinators were also found to hard-code
+  197, 200 and a USB serial as accepted targets. That list was not user
+  authorization. Both executable boundaries now accept exactly
+  `192.168.50.237:12345`; direct negative invocations for 197 returned only
+  `invalid_arguments` and performed no device command.
+- The checked 18-command manifest installed the new HAP in place only on 237
+  under lease `20260826-193807-2dc9dfd0`, with application data preserved.
+  Every command exited zero. Both power readbacks were `AWAKE` with
+  `OverrideTimeout=86400000ms`; no clear, uninstall, sign-out, credential
+  input, CAPTCHA action, submit or account mutation occurred.
+- The 06:17 process restored `valid_v3` with access and refresh present, reached
+  `account_restore_ready`, and completed `favorites_request_success`.
+  Favorites contained one `nextn-favorites-root` and no Web component. Formal
+  Account contained one `nextn-account-list-root`, one
+  `nextn-account-saved-row`, exactly one checked Radio and no Web component.
+  The new process log contains no initial 401, refresh, replay,
+  response-Cookie stored/applied/rejected event, terminal 401, visible-login
+  candidate or native-promotion event. Evidence is under
+  `.hvigor/outputs/nextn-verification-state-install-237-20260828T0618/` and is
+  excluded from Git.
+- This is another immediate cold authenticated non-regression, not completion.
+  The next bounded action remains the fresh 06:55 no-install cycle on this new
+  exact HAP and 237. Natural auth `Set-Cookie` rotation/deletion persistence,
+  cross-day survival, and the next natural terminal 401 with retained Account,
+  close/re-login HDS Snackbar, original-WebView promotion, native return and a
+  later cold authenticated Favorites cycle remain OPEN.

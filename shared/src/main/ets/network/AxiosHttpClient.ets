@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from '@ohos/axios'
+import { http } from '@kit.NetworkKit'
 
 export class AxiosTextResponse {
   statusCode: number = 0
@@ -23,6 +24,8 @@ export class AxiosHttpClient {
     connectTimeoutMs: number,
     readTimeoutMs: number,
     maxResponseBytes: number = -1,
+    interceptorChain: http.HttpInterceptorChain | null = null,
+    maxRedirects: number = -1,
   ): Promise<AxiosTextResponse> {
     const config: AxiosRequestConfig<string> = {
       url: url,
@@ -34,6 +37,12 @@ export class AxiosHttpClient {
       timeout: readTimeoutMs,
       maxContentLength: maxResponseBytes,
       validateStatus: AxiosHttpClient.acceptStatus,
+    }
+    if (interceptorChain !== null) {
+      config.interceptorChain = interceptorChain
+    }
+    if (maxRedirects >= 0) {
+      config.maxRedirects = maxRedirects
     }
     if (body.length > 0) {
       config.data = body
