@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-clean-candidate-live-start-hilog-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-clean-candidate-live-start-hilog-237-20260828T0655",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "commit-701018328d9174453ffbb337924f0c558be427af-clean-hap-a69c429e9a26fea9cb34c5db06457f4d2e70415fea5c1a50d34c1ecdc6535f98",
+    "page": "cold-start-live-hilog-diagnostics",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Exact-target 237 read-only startup diagnosis. Preserve application data. Schedule one ordinary EntryAbility start after the live system hilog stream is already attached, wait five seconds, then read the surviving process/window/fault directory. Do not install, clear data, clear hilog, uninstall, sign out, navigate in NextN, enter credentials, act on CAPTCHA, submit, mutate account state, or operate another target. KEYCODE_UNKNOWN is deliberately non-actionable and only provides the checked runner measurement boundary while the scheduled launch and live hilog complete."
+  },
+  "preflight": [
+    {
+      "name": "wake-authorized-237",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "apply-unattended-timeout",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "cold-stop-nextn-with-data-preserved",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"],
+      "pauseAfterMs": 300
+    },
+    {
+      "name": "schedule-one-start-after-live-hilog-attaches",
+      "hdcArgs": ["shell", "sh", "-c", "nohup sh -c 'sleep 2; aa start -b com.erosteam.nextn -a EntryAbility' >/data/local/tmp/nextn-live-start.log 2>&1 &"]
+    }
+  ],
+  "measurement": {
+    "hilog": {
+      "hdcArgs": ["shell", "hilog", "-v", "time"],
+      "localFile": "hilog.txt"
+    },
+    "actions": [
+      {
+        "name": "non-actionable-five-second-observation-boundary",
+        "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"],
+        "pauseAfterMs": 5000
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "read-scheduled-start-result",
+      "hdcArgs": ["shell", "cat", "/data/local/tmp/nextn-live-start.log"]
+    },
+    {
+      "name": "read-nextn-process-after-start",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    },
+    {
+      "name": "read-window-after-start",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "list-faultlogger-directory",
+      "hdcArgs": ["shell", "ls", "-lt", "/data/log/faultlog/faultlogger"]
+    },
+    {
+      "name": "verify-awake-and-timeout",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

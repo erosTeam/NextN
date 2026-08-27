@@ -4709,3 +4709,41 @@ permitted in this repository.
   cross-day survival, and the next natural terminal 401 with retained Account,
   close/re-login HDS Snackbar, original-WebView promotion, native return and a
   later cold authenticated Favorites cycle remain OPEN.
+
+#### Committed clean candidate corrected and accepted for continued 237 observation — 2026-08-28 07:01 +0800
+
+- The account/session lane is committed as
+  `701018328d9174453ffbb337924f0c558be427af`. Its first isolated-worktree HAP,
+  SHA-256
+  `a69c429e9a26fea9cb34c5db06457f4d2e70415fea5c1a50d34c1ecdc6535f98`,
+  is rejected. Four exact 237 faultlogs at 06:39:16, 06:39:32, 06:43:52 and
+  06:46:55 show a pre-`EntryAbility` `ReferenceError` for missing record
+  `&@ohos/axios/index&2.2.12`; the isolated worktree's dependency symlink had
+  omitted the packaged axios module. This bad package is not account/session
+  runtime evidence.
+- Rebuilding the same commit with a worktree-local complete dependency tree
+  produced corrected signed HAP SHA-256
+  `02f6c82f08b194ac17d79915fc6444a269ba70ea6a34601067d68d9b5abdf8bf`.
+  Offline inspection found 133 axios module records, including the previously
+  missing exact request. The checked install manifest used `install -r` only
+  on `192.168.50.237:12345`, preserved application data, and performed no
+  clear, uninstall, sign-out, credential entry, CAPTCHA action or submit.
+- The corrected process remained alive as PID 31992 with focused window
+  `nextn0`. Favorites exposed `nextn-favorites-root`; formal Account exposed
+  `nextn-account-list-root` and `nextn-account-saved-row`. The new redacted
+  process log records `valid_v3` with access, renewal and refresh present,
+  `account_restore_ready`, and `favorites_request_success`. It contains no
+  initial 401, refresh/replay, response-Cookie checkpoint, terminal 401 or
+  verification event. Evidence is under
+  `.hvigor/outputs/nextn-complete-clean-candidate-install-237-20260828T0700/`;
+  the rejected-package faultlogs are under
+  `.hvigor/outputs/nextn-clean-candidate-faultlog-readback-237-20260828T0710/`.
+  Both artifact trees are excluded from Git.
+- This accepts the corrected committed package as the sole candidate for
+  continued observation and proves only one immediate preserve-data cold
+  authenticated cycle. The outcome remains OPEN. The next bounded physical
+  action is the fresh 07:55 no-install observation on exact 237. Natural
+  access/refresh Cookie rotation or deletion, persistence into a later
+  process, cross-day survival, and the next natural terminal 401 with retained
+  Account, global HDS Snackbar, original-WebView re-login promotion, native
+  return and a later cold authenticated Favorites cycle remain unproven.

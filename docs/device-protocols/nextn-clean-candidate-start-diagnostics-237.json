@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-clean-candidate-start-diagnostics-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-clean-candidate-start-diagnostics-237-20260828T0645",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "commit-701018328d9174453ffbb337924f0c558be427af-clean-hap-a69c429e9a26fea9cb34c5db06457f4d2e70415fea5c1a50d34c1ecdc6535f98",
+    "page": "cold-start-survival-diagnostics",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Read the installed clean candidate and reproduce one cold start only on the exact authorized 237 target. The prior aa start returned success but no NextN process or window survived. Capture the installed bundle, process readback, WindowManager, AbilityManager, fault list, recent system hilog, power state, and redacted persistent diagnostics. The sole typed measurement input is KEYCODE_UNKNOWN, a non-actionable key code used only to keep the checked protocol runner's measurement phase valid while postflight reads the retained logs. Do not install, clear data, uninstall, sign out, navigate, enter credentials, act on CAPTCHA, submit, mutate account state, or operate another target."
+  },
+  "preflight": [
+    { "name": "wake-authorized-237", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "read-installed-nextn-bundle", "hdcArgs": ["shell", "bm", "dump", "-n", "com.erosteam.nextn"] },
+    { "name": "cold-stop-nextn-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 300 },
+    { "name": "cold-start-installed-clean-candidate", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 3000 },
+    { "name": "read-nextn-process-after-start", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "read-window-after-start", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "non-actionable-measurement-boundary", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 500 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-recent-system-hilog", "hdcArgs": ["shell", "hilog", "-d", "-T", "08-28 06:38:00.000", "-v", "time"], "timeoutSeconds": 60 },
+    { "name": "list-recent-fault-records", "hdcArgs": ["shell", "faultlogger", "-l"] },
+    { "name": "dump-ability-manager", "hdcArgs": ["shell", "hidumper", "-s", "AbilityManagerService", "-a", "-a"], "timeoutSeconds": 60 },
+    { "name": "receive-redacted-persistent-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-clean-candidate-start-diagnostics-237-20260828T0645/diagnostics"] },
+    { "name": "verify-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}
