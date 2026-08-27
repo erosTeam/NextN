@@ -42,6 +42,7 @@ const accountS0Collector = read('scripts/collect_nextn_account_s0.mjs')
 const atomicLoginCycle = read('scripts/run_nextn_account_login_cycle.mjs')
 const arkWebLoginDriver = read('scripts/drive_arkweb_login_field.mjs')
 const arkWebLoginProbe = read('scripts/probe_arkweb_login_state.mjs')
+const arkWebCookieShapeProbe = read('scripts/probe_arkweb_cookie_shape.mjs')
 const entryIndex = read('entry/src/main/ets/pages/Index.ets')
 const galleryCollectionBody = read('shared/src/main/ets/components/GalleryCollectionBody.ets')
 const favoritesPage = read('feature/user/src/main/ets/pages/FavoritesPage.ets')
@@ -170,6 +171,16 @@ ok('ArkWeb cookies have one native authority and cannot be managed by page or ab
   !/fetchAllCookies\(includeHttpOnly/.test(cookieAuthority) &&
   /configCookieSync/.test(cookieAuthority) &&
   /saveCookieAsync/.test(cookieAuthority))
+ok('post-submit Web authentication diagnosis exposes only one fixed renewable-auth boolean',
+  /runCookieShape/.test(atomicLoginCycle) &&
+  /cookieShape\.renewableAuthPresent === true/.test(atomicLoginCycle) &&
+  /stage: 'cookie_shape'/.test(arkWebCookieShapeProbe) &&
+  /renewableAuthPresent: accessTokenPresent && refreshTokenPresent/.test(
+    arkWebCookieShapeProbe,
+  ) &&
+  !/firstPartyCookies|firstPartyCookieCount|recognized:|httpOnly:|sameSite:/.test(
+    arkWebCookieShapeProbe,
+  ))
 ok('visible-login candidate diagnostics expose only fixed presence shape',
   /candidate_shape_incomplete/.test(session) &&
   /headerAccess=\$\{headerAccessAvailable \? 1 : 0\};ua=\$\{userAgentAvailable \? 1 : 0\}/.test(session) &&

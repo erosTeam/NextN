@@ -633,8 +633,7 @@ async function runCycle(options) {
     if (!promoted) {
       const cookieShape = await runCookieShape({ port: forward.localPort })
       const webAuthenticated = cookieShape?.ok === true &&
-        cookieShape.recognized?.accessToken === true &&
-        cookieShape.recognized?.refreshToken === true
+        cookieShape.renewableAuthPresent === true
       return safeResult(false, 's5', webAuthenticated
         ? 'web_authenticated_native_promotion_failed'
         : 'promotion_failed', {
