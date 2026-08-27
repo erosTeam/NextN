@@ -399,13 +399,22 @@ The continuation did establish these separate causal defects:
   endpoint or terminal publication occurred.
 - The installed 05:13 candidate has HAP SHA-256
   `5c1ca6575e23994df3b61e90190c7b53468ba19e48cca8bc7c147e07dd75b14b`.
-- Those header-only and jar-as-Set-Cookie candidates are superseded. The
-  current installed 237 candidate keeps the exact Set-Cookie array plus the
-  separate source-defined cookie-jar fallback, separates HDS suppression from
-  user handling, and rejects non-renewable envelopes. It has HAP SHA-256
-  `94dcffe893e0577c80a4fb9e56d130445661b5898ed46d8ce21b02e99079e366`.
-  Its 06:17 cold process restored the durable pair and completed authenticated
-  Favorites, but received no observable response Cookie.
+- Those header-only and jar-as-Set-Cookie candidates are superseded. The sole
+  current 237 candidate is commit
+  `701018328d9174453ffbb337924f0c558be427af`: it keeps the exact Set-Cookie
+  array plus the separate source-defined cookie-jar fallback, separates HDS
+  suppression from user handling, and rejects non-renewable envelopes. Its
+  complete-dependency clean HAP has SHA-256
+  `02f6c82f08b194ac17d79915fc6444a269ba70ea6a34601067d68d9b5abdf8bf`.
+  The 06:56 preserve-data cold process restored the complete version-3 pair,
+  completed authenticated Favorites, retained the native saved Account and
+  received no observable response Cookie.
+- An earlier HAP built from the same commit, SHA-256
+  `a69c429e9a26fea9cb34c5db06457f4d2e70415fea5c1a50d34c1ecdc6535f98`,
+  is rejected. Its isolated-worktree dependency symlink omitted the packaged
+  `&@ohos/axios/index&2.2.12` record and caused four pre-`EntryAbility`
+  crashes. That packaging failure is not account/session runtime evidence and
+  is not part of the continued observation candidate.
 
 These results do **not** yet establish cross-day survival, a natural first-
 party auth `Set-Cookie` checkpoint, the saved-envelope fallback on device, or
