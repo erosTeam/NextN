@@ -305,11 +305,18 @@ def direct_device_protocol_violation(
         except ValueError:
             return "device protocol manifest must be project-owned"
         try:
-            manifest_target = str(json.loads(manifest.read_text(encoding="utf-8"))["target"])
+            manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+            manifest_target = str(manifest_payload["target"])
+            manifest_authorized_target = manifest_payload.get("authorizedTarget")
         except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError):
             return "device protocol manifest must be readable JSON with a target"
         if expected_device and manifest_target != expected_device:
             return "device protocol manifest target must match the active lease target"
+        if (
+            manifest_authorized_target is not None
+            and str(manifest_authorized_target) != manifest_target
+        ):
+            return "device protocol manifest target must match its authorized target"
         return None
     if executable in {"sh", "bash", "zsh", "env"}:
         return "shell or environment wrappers are not permitted for device commands"

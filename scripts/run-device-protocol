@@ -64,6 +64,11 @@ MANIFEST_TARGET="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]
   echo "manifest target mismatch: cli=$DEVICE manifest=$MANIFEST_TARGET" >&2
   exit 2
 }
+MANIFEST_AUTHORIZED_TARGET="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8")).get("authorizedTarget", ""))' "$MANIFEST_REAL")"
+[[ -z "$MANIFEST_AUTHORIZED_TARGET" || "$MANIFEST_AUTHORIZED_TARGET" == "$DEVICE" ]] || {
+  echo "manifest authorization mismatch: cli=$DEVICE authorized=$MANIFEST_AUTHORIZED_TARGET" >&2
+  exit 2
+}
 RUNNER="${CODEX_HOME:-$HOME/.codex}/skills/harmony-run-device-diagnostics/scripts/run_device_protocol.py"
 [[ -f "$RUNNER" ]] || { echo "device protocol runner not found: $RUNNER" >&2; exit 2; }
 
