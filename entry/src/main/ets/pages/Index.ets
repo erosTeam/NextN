@@ -1349,19 +1349,24 @@ struct Index {
     this.readerPresentationCanvasDark = true
   }
 
-  private prepareReaderDestinationClose(): Promise<boolean> {
-    const initialTargetLayoutKey: string =
-      ReaderThumbnailTransitionCoordinator.currentTargetLayoutKey(this.getUIContext())
-    const requireTargetLayoutChange: boolean = this.readerPresentationPending &&
+  private prepareReaderDestinationClose(galleryId: number): Promise<boolean> {
+    const readerGalleryId: string = galleryId > 0 ? galleryId.toString() : ''
+    const requireVisibleStatusBarInset: boolean = this.readerPresentationPending &&
       this.readerPresentationFullscreen && !this.readerPresentationChromeVisible
     this.readerDestinationClosing = true
     this.clearRecordedReaderPresentation()
     return this.restoreAppStatusBar()
       .then((): Promise<boolean> => {
+        if (this.readerThumbnailTransition.galleryId === readerGalleryId &&
+          this.readerThumbnailTransition.openingCanReverse()) {
+          return Promise.resolve(true)
+        }
+        if (!this.readerThumbnailTransition.normalCloseReadyFor(readerGalleryId)) {
+          return Promise.resolve(false)
+        }
         return ReaderThumbnailTransitionCoordinator.waitForTargetLayoutCommit(
           this.getUIContext(),
-          initialTargetLayoutKey,
-          requireTargetLayoutChange,
+          requireVisibleStatusBarInset,
         )
       })
   }
@@ -1380,7 +1385,9 @@ struct Index {
     if (this.readerDestinationCloseDispatched) {
       return
     }
-    this.prepareReaderDestinationClose().then((_targetReady: boolean): void => {
+    this.readerDestinationClosing = true
+    this.clearRecordedReaderPresentation()
+    this.restoreAppStatusBar().then((): void => {
       this.finishReaderDestinationClose(animated)
     })
   }
@@ -2301,7 +2308,7 @@ struct Index {
           this.finishReaderDestinationClose(animated)
         },
         onPrepareClose: (): Promise<boolean> => {
-          return this.prepareReaderDestinationClose()
+          return this.prepareReaderDestinationClose(this.readerParams(param).galleryId)
         },
         onRegisterBackRequest: (request: () => boolean): void => {
           this.readerBackRequest = request

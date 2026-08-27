@@ -113,6 +113,14 @@ ok('Reader return tracks the current page and captures that page for the visible
   /readerThumbnailTransition\.updateCurrent/.test(reader) &&
     /readerPageSnapshotId\(pageIndex\)/.test(reader) &&
     /sourceId\(\s*transition\.sourceScope,\s*currentIndex/.test(readerCoordinator))
+ok('Reader normal close waits for stable target layout without requiring its coordinates to change',
+  /normalCloseReadyFor\(galleryId: string\)/.test(readerState) &&
+    /this\.phase === ReaderThumbnailTransitionPhase\.OPEN/.test(readerState) &&
+    /statusBarLayoutReady && currentLayoutKey\.length > 0/.test(readerCoordinator) &&
+    !/requireLayoutChange/.test(readerCoordinator) &&
+    !/initialLayoutKey/.test(readerCoordinator) &&
+    /prepareReaderDestinationClose\(galleryId: number\)/.test(index) &&
+    /normalCloseReadyFor\(readerGalleryId\)/.test(index))
 
 const loadReaderBlock = reader.slice(reader.indexOf('private async loadReader()'), reader.indexOf('private visiblePageText'))
 const closeBlock = reader.slice(reader.indexOf('private requestReaderClose()'), reader.indexOf('private isCurrentRequest'))
