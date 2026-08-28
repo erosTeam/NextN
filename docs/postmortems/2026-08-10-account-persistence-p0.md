@@ -89,6 +89,17 @@ One later force-stop/cold-start again passed. This shows that ArkWeb retained
 an identity capable of reissuing a usable access token, but no retained
 diagnostic identifies why the preceding token pair received terminal 401s.
 
+A later value-free scan of the retained 237 evidence found one fixed
+`account_authenticated_read_terminal_401_after_restore` event in each of the
+archived `20260823-054209`, `20260827-031638`, and `20260827-032044` log
+files. None of those files contains the corresponding `after_promotion` or
+`account_verification_marker_persist_failed` event. The two August 27 files
+may be overlapping captures of one device state, so this is file-level proof
+that the terminal-after-restore signal was retained, not proof of three
+independent server rejections. These older artifacts also cannot accept the
+current root HDS Snackbar or original-WebView recovery branch; those still
+require the next naturally occurring terminal 401 on the current candidate.
+
 The source previously wrote the durable re-verification marker immediately
 after the sealed-token replay also returned 401. That skips the browser-owned
 refresh that the observed native re-verification later performs without
