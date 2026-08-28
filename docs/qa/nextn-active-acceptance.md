@@ -4784,3 +4784,39 @@ permitted in this repository.
   retained Account, global close/re-login HDS Snackbar, original-WebView
   promotion, native return and a later cold authenticated Favorites cycle all
   remain OPEN.
+
+#### Refresh replacement pair cold-restored in a later process — 2026-08-28 08:56 +0800
+
+- The no-install/no-data-clear protocol ran exactly once on the explicitly
+  authorized `192.168.50.237:12345` under lease
+  `20260826-193807-2dc9dfd0`. The live Connected row, CLI target, manifest
+  `target`, manifest `authorizedTarget` and lease target all matched exact
+  237. All 19 checked commands exited zero; both PowerManager readbacks showed
+  `AWAKE` with `OverrideTimeout=86400000ms`, both window readbacks contained
+  the NextN window, and the final process check retained a PID. No install,
+  uninstall, data clear, sign-out, credential input, CAPTCHA action, submit or
+  account mutation occurred.
+- The privacy-bounded summary has one focused native Favorites root with a
+  collection, no Web component, sign-in prompt, loading or error state, and
+  an authenticated layout candidate. Formal Account has one focused account
+  list root, one saved row, exactly one selected Radio, no Web component,
+  sign-in prompt, verification-required state or save failure.
+- This new process emitted only `session_start` -> restore payload shape ->
+  restore expiry shape -> `account_restore_ready` ->
+  `favorites_request_success`. It emitted no initial 401, refresh endpoint,
+  refresh checkpoint, replay, replayed/final 401, verification-marker failure,
+  response-Cookie stored/applied/rejected event or Favorites failure.
+- This proves the access/refresh replacement pair durably checkpointed during
+  the 07:55 refresh was restored by an independent later process and served an
+  authenticated Favorites read without another immediate refresh. Evidence is
+  retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T0855/` and
+  is excluded from Git. It does not prove cross-day survival, a naturally
+  occurring response `Set-Cookie` rotation/deletion, or the terminal-401 UI
+  and original-WebView re-login branch.
+- The checked observation manifest now points to the unique 09:55 artifact
+  directory for the next no-install cycle. Cross-day survival, natural
+  response-Cookie rotation/deletion and the next natural terminal 401 with
+  retained Account, global close/re-login HDS Snackbar, original-WebView
+  promotion, native return and a later cold authenticated Favorites cycle all
+  remain OPEN.
