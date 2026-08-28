@@ -23,6 +23,8 @@ const ACCOUNT_SAVED_ROW_ID = 'nextn-account-saved-row'
 const FAVORITES_ROOT_ID = 'nextn-favorites-root'
 const WEB_TYPES = new Set(['Web', 'WebComponent'])
 const COLLECTION_TYPES = new Set(['List', 'Grid', 'WaterFlow'])
+const DIALOG_TYPES = new Set(['Dialog'])
+const SYMBOL_TYPES = new Set(['SymbolGlyph'])
 const DIAGNOSTIC_LOG_PATTERN = /^nextn-log-\d{8}-\d{6}\.txt$/
 const AUTH_EXPIRY_SHAPE_PATTERN =
   /account_auth_expiry_shape[^\r\n]*?phase=(restore|initial_401|refresh_checkpoint|promotion);access=(absent|session|unknown|expired|lt_1h|lt_24h|lt_7d|ge_7d);refresh=(absent|session|unknown|expired|lt_1h|lt_24h|lt_7d|ge_7d)/g
@@ -171,6 +173,46 @@ function hasKnownLabel(root, labels) {
     }
   })
   return found
+}
+
+function isClickable(node) {
+  return String(attributes(node).clickable ?? '').toLowerCase() === 'true'
+}
+
+function verificationSnackBarSummary(root, titleLabels, messageLabels, actionLabels) {
+  const surfaces = []
+  walk(root, (node) => {
+    if (DIALOG_TYPES.has(nodeType(node)) &&
+      hasKnownLabel(node, titleLabels) &&
+      hasKnownLabel(node, messageLabels) &&
+      hasKnownLabel(node, actionLabels)) {
+      surfaces.push(node)
+    }
+  })
+
+  let reverifyActionVisible = false
+  let closeActionVisible = false
+  for (const surface of surfaces) {
+    walk(surface, (node) => {
+      if (node === surface || !isClickable(node)) {
+        return
+      }
+      if (hasKnownLabel(node, actionLabels)) {
+        reverifyActionVisible = true
+        return
+      }
+      if (hasType(node, SYMBOL_TYPES)) {
+        closeActionVisible = true
+      }
+    })
+  }
+
+  return {
+    surfaceCount: surfaces.length,
+    visible: surfaces.length > 0,
+    reverifyActionVisible,
+    closeActionVisible,
+  }
 }
 
 function isForegroundNextn(root) {
@@ -342,11 +384,14 @@ export async function summarizeArtifact(inputDirectory) {
       loadLabels(new Set(['favorites_empty', 'favorites_search_empty'])),
       loadLabels(new Set(['account_sign_in'])),
       loadLabels(new Set(['account_status_verification_required'])),
+      loadLabels(new Set(['account_subtitle_verification_required'])),
+      loadLabels(new Set(['account_verify_sign_in'])),
       loadLabels(new Set(['account_save_failed'])),
     ]),
   ])
   const [favoritesSignIn, favoritesLoading, favoritesError, favoritesEmpty,
-    accountSignIn, accountVerification, accountSaveFailed] = labels
+    accountSignIn, accountVerification, accountVerificationMessage,
+    accountVerificationAction, accountSaveFailed] = labels
 
   const commands = Array.isArray(metadata.commands) ? metadata.commands : []
   const accountListRootCount = countVisibleMarker(accountLayout, ACCOUNT_LIST_ROOT_ID)
@@ -368,6 +413,18 @@ export async function summarizeArtifact(inputDirectory) {
   const favoritesHasCollection = hasType(favoritesRoot, COLLECTION_TYPES)
   const favoritesForegroundNextn = isForegroundNextn(favoritesLayout)
   const accountForegroundNextn = isForegroundNextn(accountLayout)
+  const favoritesVerificationSnackBar = verificationSnackBarSummary(
+    favoritesLayout,
+    accountVerification,
+    accountVerificationMessage,
+    accountVerificationAction,
+  )
+  const accountVerificationSnackBar = verificationSnackBarSummary(
+    accountLayout,
+    accountVerification,
+    accountVerificationMessage,
+    accountVerificationAction,
+  )
 
   return {
     schemaVersion: 1,
@@ -388,9 +445,11 @@ export async function summarizeArtifact(inputDirectory) {
       loading: favoritesIsLoading,
       error: favoritesHasError,
       empty: favoritesIsEmpty,
+      verificationSnackBar: favoritesVerificationSnackBar,
       authenticatedLayoutCandidate: favoritesForegroundNextn && favoritesRootCount === 1 &&
         !favoritesWebVisible && !favoritesSignInPrompt && !favoritesIsLoading &&
-        !favoritesHasError && (favoritesHasCollection || favoritesIsEmpty),
+        !favoritesHasError && !favoritesVerificationSnackBar.visible &&
+        (favoritesHasCollection || favoritesIsEmpty),
     },
     account: {
       foregroundNextn: accountForegroundNextn,
@@ -400,10 +459,11 @@ export async function summarizeArtifact(inputDirectory) {
       webVisible: accountWebVisible,
       signInPrompt: accountSignInPrompt,
       verificationRequired,
+      verificationSnackBar: accountVerificationSnackBar,
       saveFailed,
       authenticatedLayoutCandidate: accountForegroundNextn && accountListRootCount === 1 && savedAccountCount > 0 &&
         selectedSavedAccountCount === 1 && !accountWebVisible && !accountSignInPrompt &&
-        !verificationRequired && !saveFailed,
+        !verificationRequired && !accountVerificationSnackBar.visible && !saveFailed,
     },
     diagnostics: await diagnosticsSummary(artifactDirectory),
   }

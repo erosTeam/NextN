@@ -32,6 +32,47 @@ function windowWith(children) {
   }
 }
 
+function verificationSnackBar() {
+  return {
+    attributes: { type: 'Dialog', clickable: 'true', visible: 'true' },
+    children: [{
+      attributes: { type: 'Row', visible: 'true' },
+      children: [{
+        attributes: { type: 'Column', visible: 'true' },
+        children: [
+          { attributes: { type: 'Text', text: 'Verification needed', visible: 'true' }, children: [] },
+          {
+            attributes: {
+              type: 'Text',
+              text: 'Your sign-in expired. Verify it again to continue using account features.',
+              visible: 'true',
+            },
+            children: [],
+          },
+        ],
+      }, {
+        attributes: { type: 'Row', visible: 'true' },
+        children: [{
+          attributes: { type: 'Column', clickable: 'true', visible: 'true' },
+          children: [{
+            attributes: { type: 'Button', visible: 'true' },
+            children: [{
+              attributes: { type: 'Text', text: 'Verify again', visible: 'true' },
+              children: [],
+            }],
+          }],
+        }, {
+          attributes: { type: 'Column', clickable: 'true', visible: 'true' },
+          children: [{
+            attributes: { type: 'Button', visible: 'true' },
+            children: [{ attributes: { type: 'SymbolGlyph', visible: 'true' }, children: [] }],
+          }],
+        }],
+      }],
+    }],
+  }
+}
+
 async function writeJson(path, value) {
   await writeFile(path, `${JSON.stringify(value)}\n`, { encoding: 'utf8', mode: 0o600 })
 }
@@ -58,7 +99,7 @@ try {
       attributes: { type: 'Grid', text: SECRET_MARKERS[4], visible: 'true' },
       children: [],
     }],
-  }]))
+  }, verificationSnackBar()]))
   await writeJson(join(directory, 'account.json'), windowWith([{
     attributes: { id: 'nextn-account-list-root', visible: 'true' },
     children: [{
@@ -101,10 +142,22 @@ try {
     runCompleted: true,
     commandCount: 2,
   })
-  assert.equal(summary.favorites.authenticatedLayoutCandidate, true)
+  assert.equal(summary.favorites.authenticatedLayoutCandidate, false)
+  assert.deepEqual(summary.favorites.verificationSnackBar, {
+    surfaceCount: 1,
+    visible: true,
+    reverifyActionVisible: true,
+    closeActionVisible: true,
+  })
   assert.equal(summary.account.authenticatedLayoutCandidate, true)
   assert.equal(summary.account.savedAccountCount, 1)
   assert.equal(summary.account.selectedSavedAccountCount, 1)
+  assert.deepEqual(summary.account.verificationSnackBar, {
+    surfaceCount: 0,
+    visible: false,
+    reverifyActionVisible: false,
+    closeActionVisible: false,
+  })
   assert.equal(summary.diagnostics.responseCookieStored, true)
   assert.equal(summary.diagnostics.responseAuthCookieApplied, true)
   assert.equal(summary.diagnostics.favoritesSuccess, true)
@@ -137,6 +190,43 @@ try {
       'favorites_request_success',
     ],
   )
+
+  await writeJson(join(directory, 'favorites.json'), windowWith([{
+    attributes: { id: 'nextn-favorites-root', visible: 'true' },
+    children: [{ attributes: { type: 'Grid', visible: 'true' }, children: [] }],
+  }]))
+  await writeJson(join(directory, 'account.json'), windowWith([{
+    attributes: { id: 'nextn-account-list-root', visible: 'true' },
+    children: [{
+      attributes: { id: 'nextn-account-saved-row', visible: 'true' },
+      children: [{
+        attributes: { type: 'Radio', checked: 'true', visible: 'true' },
+        children: [],
+      }],
+    }, {
+      attributes: { type: 'Column', visible: 'true' },
+      children: [
+        { attributes: { type: 'Text', text: 'Verification needed', visible: 'true' }, children: [] },
+        {
+          attributes: {
+            type: 'Text',
+            text: 'Your sign-in expired. Verify it again to continue using account features.',
+            visible: 'true',
+          },
+          children: [],
+        },
+        { attributes: { type: 'Text', text: 'Verify again', visible: 'true' }, children: [] },
+      ],
+    }],
+  }]))
+  const accountRowOnlySummary = await summarizeArtifact(directory)
+  assert.equal(accountRowOnlySummary.account.verificationRequired, true)
+  assert.deepEqual(accountRowOnlySummary.account.verificationSnackBar, {
+    surfaceCount: 0,
+    visible: false,
+    reverifyActionVisible: false,
+    closeActionVisible: false,
+  })
   process.stdout.write('nextn account observation summary: pass\n')
 } finally {
   await rm(directory, { recursive: true, force: true })
