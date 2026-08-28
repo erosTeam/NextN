@@ -5089,3 +5089,29 @@ permitted in this repository.
   and its later-process restore, and the next natural terminal 401 with retained
   Account, close/re-login HDS, original-WebView promotion, native return and a
   later cold authenticated Favorites cycle remain OPEN.
+
+#### Cross-process diagnostic observation window closed — 2026-08-28 14:17 +0800
+
+- A current host-tool audit found that the privacy-bounded observation
+  summarizer selected only the newest retained diagnostics file. The hourly
+  protocol force-stops and cold-starts the app before Favorites, so an auth
+  Cookie rotation or terminal 401 appended to the preceding process file
+  between observations would be hidden by the newer cold-start file. Repeated
+  reports of no response-Cookie event were therefore trustworthy only for the
+  newest process, not for the full interval.
+- The summarizer now accepts the manifest's fixed
+  `context.diagnosticWindowStart`, parses only the logger's fixed local
+  millisecond timestamp prefix, scans all retained diagnostics files, and
+  consumes only lines from that baseline through the checked protocol's
+  `metadata.endedAt`. It still returns only allowlisted stage counts, event
+  order, booleans and coarse expiry shapes; it never returns a raw line,
+  Cookie, token, URL, account value or arbitrary message. Same-second retained
+  file suffixes such as `-01` are included. Artifacts without a baseline retain
+  the old latest-file behavior for historical reproducibility.
+- A two-file regression proves that a response-Cookie event appended after the
+  baseline to the older process file is retained alongside the later cold-start
+  events, while a pre-baseline rejection is excluded. The observation-summary,
+  network-authority and account/history tests, JSON validation and
+  `git diff --check` pass. The 14:55 manifest baseline is the completed clean
+  candidate installation time `2026-08-28T14:05:57.962053+08:00`; no app build,
+  install or device action was performed by this host-tool correction.

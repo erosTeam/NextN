@@ -190,6 +190,8 @@ try {
       'favorites_request_success',
     ],
   )
+  assert.equal(summary.diagnostics.scannedLogCount, 1)
+  assert.equal(summary.diagnostics.windowed, false)
 
   await writeJson(join(directory, 'favorites.json'), windowWith([{
     attributes: { id: 'nextn-favorites-root', visible: 'true' },
@@ -227,6 +229,48 @@ try {
     reverifyActionVisible: false,
     closeActionVisible: false,
   })
+
+  await rm(join(directory, 'diagnostics', 'nextn-log-20260828-075500.txt'))
+  await writeJson(join(directory, 'run-metadata.json'), {
+    status: 'completed',
+    target: TARGET,
+    endedAt: '2026-08-28T14:55:30.000+08:00',
+    commands: [{ exitCode: 0 }],
+  })
+  await writeJson(join(directory, 'protocol-manifest.json'), {
+    target: TARGET,
+    authorizedTarget: TARGET,
+    context: { diagnosticWindowStart: '2026-08-28T14:05:57.000+08:00' },
+  })
+  await writeFile(
+    join(directory, 'diagnostics', 'nextn-log-20260828-140532.txt'),
+    [
+      '2026-08-28 14:05:56.999 [WARN] account-session.account_response_cookie_rejected stage',
+      '2026-08-28 14:30:00.000 [INFO] account-session.account_response_cookie_stored stage',
+      '2026-08-28 14:30:00.001 [INFO] account-session.account_response_auth_cookie_applied stage',
+    ].join('\n'),
+    { encoding: 'utf8', mode: 0o600 },
+  )
+  await writeFile(
+    join(directory, 'diagnostics', 'nextn-log-20260828-145501-01.txt'),
+    [
+      '2026-08-28 14:55:01.000 [INFO] lifecycle.session_start application created',
+      '2026-08-28 14:55:10.000 [INFO] favorites-session.favorites_request_success stage',
+    ].join('\n'),
+    { encoding: 'utf8', mode: 0o600 },
+  )
+  const windowedSummary = await summarizeArtifact(directory)
+  assert.equal(windowedSummary.diagnostics.scannedLogCount, 2)
+  assert.equal(windowedSummary.diagnostics.windowed, true)
+  assert.equal(windowedSummary.diagnostics.responseCookieStored, true)
+  assert.equal(windowedSummary.diagnostics.responseAuthCookieApplied, true)
+  assert.equal(windowedSummary.diagnostics.responseCookieRejected, false)
+  assert.deepEqual(windowedSummary.diagnostics.eventSequence, [
+    'account_response_cookie_stored',
+    'account_response_auth_cookie_applied',
+    'session_start',
+    'favorites_request_success',
+  ])
   process.stdout.write('nextn account observation summary: pass\n')
 } finally {
   await rm(directory, { recursive: true, force: true })

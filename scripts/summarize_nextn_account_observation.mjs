@@ -25,7 +25,9 @@ const WEB_TYPES = new Set(['Web', 'WebComponent'])
 const COLLECTION_TYPES = new Set(['List', 'Grid', 'WaterFlow'])
 const DIALOG_TYPES = new Set(['Dialog'])
 const SYMBOL_TYPES = new Set(['SymbolGlyph'])
-const DIAGNOSTIC_LOG_PATTERN = /^nextn-log-\d{8}-\d{6}\.txt$/
+const DIAGNOSTIC_LOG_PATTERN = /^nextn-log-\d{8}-\d{6}(?:-\d+)?\.txt$/
+const DIAGNOSTIC_LINE_TIMESTAMP_PATTERN =
+  /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})\.(\d{3})(?:\s|$)/
 const AUTH_EXPIRY_SHAPE_PATTERN =
   /account_auth_expiry_shape[^\r\n]*?phase=(restore|initial_401|refresh_checkpoint|promotion);access=(absent|session|unknown|expired|lt_1h|lt_24h|lt_7d|ge_7d);refresh=(absent|session|unknown|expired|lt_1h|lt_24h|lt_7d|ge_7d)/g
 
@@ -303,7 +305,36 @@ function authExpiryShapes(content) {
   }))
 }
 
-async function diagnosticsSummary(artifactDirectory) {
+function diagnosticLineTimestamp(line) {
+  const match = DIAGNOSTIC_LINE_TIMESTAMP_PATTERN.exec(line)
+  if (match === null) {
+    return null
+  }
+  const parts = match.slice(1).map((value) => Number(value))
+  const date = new Date(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5], parts[6])
+  if (date.getFullYear() !== parts[0] || date.getMonth() !== parts[1] - 1 ||
+    date.getDate() !== parts[2] || date.getHours() !== parts[3] ||
+    date.getMinutes() !== parts[4] || date.getSeconds() !== parts[5] ||
+    date.getMilliseconds() !== parts[6]) {
+    return null
+  }
+  return date.getTime()
+}
+
+function diagnosticWindow(manifest, metadata) {
+  const rawStart = String(manifest?.context?.diagnosticWindowStart ?? '')
+  const rawEnd = String(metadata?.endedAt ?? '')
+  const start = Date.parse(rawStart)
+  const end = Date.parse(rawEnd)
+  if (rawStart.length === 0 || rawEnd.length === 0 || !Number.isFinite(start) ||
+    !Number.isFinite(end) || start > end) {
+    return null
+  }
+  return { start, end }
+}
+
+async function diagnosticsSummary(artifactDirectory, manifest, metadata) {
+  const window = diagnosticWindow(manifest, metadata)
   let names = []
   try {
     names = await readdir(join(artifactDirectory, 'diagnostics'))
@@ -311,6 +342,8 @@ async function diagnosticsSummary(artifactDirectory) {
     return {
       logPresent: false,
       selectedLog: null,
+      scannedLogCount: 0,
+      windowed: window !== null,
       stages: [],
       terminal401: false,
       responseCookieStored: false,
@@ -327,6 +360,8 @@ async function diagnosticsSummary(artifactDirectory) {
     return {
       logPresent: false,
       selectedLog: null,
+      scannedLogCount: 0,
+      windowed: window !== null,
       stages: [],
       terminal401: false,
       responseCookieStored: false,
@@ -339,12 +374,28 @@ async function diagnosticsSummary(artifactDirectory) {
     }
   }
   const selectedLog = logs.at(-1)
-  let content = ''
-  try {
-    content = await readFile(join(artifactDirectory, 'diagnostics', selectedLog), 'utf8')
-  } catch {
-    throw new SafeFailure('diagnostic_log_unreadable')
+  const logsToRead = window === null ? [selectedLog] : logs
+  const windowedLines = []
+  for (const logName of logsToRead) {
+    let logContent = ''
+    try {
+      logContent = await readFile(join(artifactDirectory, 'diagnostics', logName), 'utf8')
+    } catch {
+      throw new SafeFailure('diagnostic_log_unreadable')
+    }
+    if (window === null) {
+      windowedLines.push({ timestamp: 0, line: logContent })
+      continue
+    }
+    for (const line of logContent.split(/\r?\n/)) {
+      const timestamp = diagnosticLineTimestamp(line)
+      if (timestamp !== null && timestamp >= window.start && timestamp <= window.end) {
+        windowedLines.push({ timestamp, line })
+      }
+    }
   }
+  windowedLines.sort((left, right) => left.timestamp - right.timestamp)
+  const content = windowedLines.map(({ line }) => line).join('\n')
   const stageCounts = new Map()
   for (const stage of DIAGNOSTIC_STAGES) {
     const count = countStage(content, stage)
@@ -357,6 +408,8 @@ async function diagnosticsSummary(artifactDirectory) {
   return {
     logPresent: true,
     selectedLog: basename(selectedLog),
+    scannedLogCount: logsToRead.length,
+    windowed: window !== null,
     stages,
     terminal401: has('account_authenticated_read_terminal_401_after_restore') ||
       has('account_authenticated_read_terminal_401_after_promotion'),
@@ -465,7 +518,7 @@ export async function summarizeArtifact(inputDirectory) {
         selectedSavedAccountCount === 1 && !accountWebVisible && !accountSignInPrompt &&
         !verificationRequired && !accountVerificationSnackBar.visible && !saveFailed,
     },
-    diagnostics: await diagnosticsSummary(artifactDirectory),
+    diagnostics: await diagnosticsSummary(artifactDirectory, manifest, metadata),
   }
 }
 
