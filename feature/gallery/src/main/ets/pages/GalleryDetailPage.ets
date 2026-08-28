@@ -404,7 +404,8 @@ export struct GalleryDetailPage {
   }
 
   private hasPublishedAccountSession(): boolean {
-    return this.accountSession.initialized && this.accountSession.signedIn
+    return this.accountSession.initialized && this.accountSession.signedIn &&
+      this.accountSession.authenticationAvailable && !this.accountSession.verificationRequired
   }
 
   @Monitor('chrome.wideThumbnailFirstPageRequestVersion')
