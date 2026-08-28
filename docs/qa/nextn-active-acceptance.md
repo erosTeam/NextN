@@ -5121,3 +5121,40 @@ permitted in this repository.
   missing or invalid capture boundary rejects the windowed summary. The 14:55
   baseline is `2026-08-28T14:05:57.133530+08:00`; no app build, install or
   device action was performed by this host-tool correction.
+
+#### Clean HEAD later-process refresh recovery — 2026-08-28 14:58 +0800
+
+- The scheduled 14:55 artifact was still absent after its full same-minute
+  startup window. A host-side gate then proved that the active lease, manifest
+  `target`, manifest `authorizedTarget`, CLI target and an exact live Connected
+  row all matched `192.168.50.237:12345`, and that no matching observation
+  process was already running. The checked 19-command protocol ran exactly
+  once from 14:58:28.160418 to 14:58:55.684254. Every command exited zero. No
+  install, uninstall, data clear, sign-out, credential input, CAPTCHA action,
+  submit, internal recovery Want or account mutation occurred.
+- The privacy-bounded summary scanned 12 retained process logs from the fixed
+  `2026-08-28T14:05:57.133530+08:00` baseline through the successful diagnostics
+  receive. In the new cold process it observed `session_start` -> restore
+  payload/expiry shape -> `account_restore_ready` -> one authenticated-read
+  initial 401 -> browser Cookie shape -> one refresh-endpoint status/ready ->
+  durable refresh checkpoint -> browser refresh ready -> one recovered safe
+  replay -> `favorites_request_success`. There was no terminal 401, second
+  refresh, response-Cookie stored/applied/rejected event or Favorites failure.
+- Native Favorites retained one focused root and a collection with no Web,
+  sign-in, loading, error or verification HDS. Formal Account retained one
+  list root, one saved row and exactly one selected Radio with no Web, sign-in,
+  verification-required state, HDS or save failure. This is a second real
+  refresh recovery on the clean candidate and proves the bounded refresh and
+  replay path survived a later process while preserving native account
+  ownership. Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T1455/` and is
+  excluded from Git.
+- This does not prove a natural response `Set-Cookie` auth rotation, because no
+  response-Cookie stage occurred in the captured window, and it is not a
+  terminal-401 acceptance because refresh recovered. Cross-day survival,
+  response-Cookie rotation/deletion with later-process restore, and the next
+  natural terminal 401 with retained Account, close/re-login HDS,
+  original-WebView promotion, native return and a later cold authenticated
+  Favorites cycle remain OPEN. The next no-install observation advances to
+  15:55, with the overlap-safe diagnostics baseline set to the successful
+  receive command's `startedAt`, `2026-08-28T14:58:54.810527+08:00`.
