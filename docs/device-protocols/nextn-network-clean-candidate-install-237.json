@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-network-clean-candidate-install-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-network-clean-candidate-install-237-20260828T1212",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "commit-a0950b42634f869f588add9521f93ede67887476-clean-complete-hap-b82ad8d5df7147d7874c5efc27f08efc522a2bb3a06c293dbfb0b4ee24dca3c9",
+    "page": "data-preserving-network-owner-candidate-favorites-and-formal-account",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Exact authorized target 237 only. The HAP was built from committed HEAD a0950b42634f869f588add9521f93ede67887476 in an isolated worktree with the complete root and per-module oh_modules trees plus the fixed reader-enhancement submodule. Offline modules.abc inspection found the exact @ohos/axios 2.2.12 entry, NhApiHttpTransport, and StreamingHttpClient. Install in place with application data preserved, then use the ordinary native Favorites and My-to-Account routes. Do not clear data, uninstall, sign out, enter credentials, act on CAPTCHA, submit, mutate account state, use an internal recovery Want, or operate another target."
+  },
+  "preflight": [
+    {
+      "name": "wake-authorized-237",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "apply-unattended-timeout",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "verify-awake-and-timeout-before-install",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "install-network-owner-clean-candidate-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-network-clean-candidate-a0950b4/entry-default-signed.hap"],
+      "pauseAfterMs": 500,
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "cold-stop-nextn-with-data-preserved",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"],
+      "pauseAfterMs": 300
+    },
+    {
+      "name": "cold-start-network-owner-clean-candidate",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"],
+      "pauseAfterMs": 3000
+    },
+    {
+      "name": "verify-nextn-process-before-favorites",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    },
+    {
+      "name": "verify-nextn-window-before-favorites",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-native-favorites-from-verified-root",
+        "uiInput": ["click", "564", "2006"],
+        "pauseAfterMs": 6000,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-favorites-after-network-owner-install",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-network-owner-favorites.json", "-a"]
+    },
+    {
+      "name": "receive-favorites-after-network-owner-install",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-network-owner-favorites.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-network-clean-candidate-install-237-20260828T1212/favorites.json"]
+    },
+    {
+      "name": "open-native-my-root",
+      "hdcArgs": ["shell", "uitest", "uiInput", "click", "948", "2006"],
+      "pauseAfterMs": 1200
+    },
+    {
+      "name": "open-native-account-row",
+      "hdcArgs": ["shell", "uitest", "uiInput", "click", "660", "411"],
+      "pauseAfterMs": 2000
+    },
+    {
+      "name": "dump-formal-account-after-network-owner-install",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-network-owner-account.json", "-a"]
+    },
+    {
+      "name": "receive-formal-account-after-network-owner-install",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-network-owner-account.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-network-clean-candidate-install-237-20260828T1212/account.json"]
+    },
+    {
+      "name": "receive-redacted-diagnostics",
+      "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-network-clean-candidate-install-237-20260828T1212/diagnostics"]
+    },
+    {
+      "name": "confirm-nextn-process-remains",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    },
+    {
+      "name": "read-final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "verify-final-awake-and-timeout",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "remove-temporary-layouts",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-network-owner-favorites.json", "/data/local/tmp/nextn-network-owner-account.json"]
+    }
+  ]
+}

@@ -4919,3 +4919,47 @@ permitted in this repository.
   `Set-Cookie` rotation/deletion or the terminal-401 UI and original-WebView
   re-login branch. Those outcomes remain OPEN. The checked manifest now
   points to the unique 12:55 artifact directory.
+
+#### Global HTTP-owner commit installed; natural refresh recovered on 237 — 2026-08-28 12:15 +0800
+
+- The final monitored code identity is now commit
+  `a0950b42634f869f588add9521f93ede67887476`, which includes the committed
+  account/session lifecycle and `93b64ec` global bounded HTTP-owner
+  consolidation. A new detached worktree used the complete root and all nine
+  per-module `oh_modules` trees plus reader-enhancement submodule commit
+  `640f310ee7addb0c4eb46e55b1f7181017a653df`. Network-authority and
+  account/history contracts passed, the signed build completed, and offline
+  `modules.abc` inspection found the exact `@ohos/axios` 2.2.12 entry,
+  `NhApiHttpTransport` and `StreamingHttpClient`.
+- The resulting signed HAP has SHA-256
+  `b82ad8d5df7147d7874c5efc27f08efc522a2bb3a06c293dbfb0b4ee24dca3c9`.
+  A checked 20-command manifest bound the live Connected row, CLI target,
+  manifest `target`, `authorizedTarget` and existing lease exactly to
+  `192.168.50.237:12345`, installed it with `install -r`, force-stopped and
+  cold-started with application data preserved, then used only the ordinary
+  native Favorites and My-to-Account routes. No clear, uninstall, sign-out,
+  credential input, CAPTCHA action, submit, internal recovery Want or account
+  mutation occurred.
+- Both PowerManager readbacks showed `AWAKE` with
+  `OverrideTimeout=86400000ms`; installation reported success and the final
+  process remained as PID 59565. Favorites retained one focused native root
+  with a collection and no Web, sign-in/loading/error state or verification
+  HDS. Formal Account retained one list root, one saved row, exactly one
+  selected Radio and no Web, sign-in, verification-required state, HDS or save
+  failure.
+- The new process emitted restore ready -> one authenticated-read initial 401
+  -> one refresh-endpoint 200/ready -> durable refresh checkpoint -> browser
+  verification ready -> one recovered safe replay ->
+  `favorites_request_success`. There was no second refresh, replayed/final 401,
+  verification-marker failure, response-Cookie stored/applied/rejected event
+  or Favorites failure. Evidence is retained under
+  `.hvigor/outputs/nextn-network-clean-candidate-install-237-20260828T1212/`
+  and is excluded from Git.
+- This accepts the clean final candidate's installation and one real natural
+  refresh recovery only. The replacement pair still needs an independent
+  later-process restore on this HAP. Cross-day survival, a natural response
+  `Set-Cookie` rotation/deletion and the next natural terminal 401 with
+  retained Account, close/re-login HDS Snackbar, original-WebView promotion,
+  native return and a later cold authenticated Favorites cycle remain OPEN.
+  The checked observation manifest remains on the unique 12:55 artifact path
+  and now records this HAP identity.
