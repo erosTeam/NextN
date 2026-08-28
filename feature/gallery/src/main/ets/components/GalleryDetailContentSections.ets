@@ -1,13 +1,14 @@
 import {
   AppStrings,
   EhImageKnifeImage,
+  GalleryDetailTransitionCoordinator,
+  GalleryDetailTransitionState,
+  GalleryThumbnail,
   NhComment,
   NhGallerySummary,
   ThemeTokens,
   EH_IMAGE_PRIORITY_LOW,
-  EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
-  EH_THUMBNAIL_READ_TIMEOUT_MS,
-  ContentTransitionType,
+  connectGalleryDetailTransition,
 } from 'shared'
 
 // Related uses the same cover-height tier as the Detail hero; its separate
@@ -40,6 +41,44 @@ export struct GalleryRelatedCarousel {
   /** Reserve the rail height with a centered indicator until rows settle. */
   @Param loading: boolean = false
   @Event onOpen?: (galleryId: number) => void
+  @Local galleryDetailTransition: GalleryDetailTransitionState = connectGalleryDetailTransition()
+  private transitionScope: string = GalleryDetailTransitionCoordinator.allocateScope('related')
+
+  private relatedSourceId(gallery: NhGallerySummary): string {
+    return GalleryDetailTransitionCoordinator.sourceId(
+      this.transitionScope,
+      'related',
+      gallery.id.toString(),
+    )
+  }
+
+  private relatedSourceCoverId(gallery: NhGallerySummary): string {
+    return GalleryDetailTransitionCoordinator.sourceCoverId(
+      this.transitionScope,
+      'related',
+      gallery.id.toString(),
+    )
+  }
+
+  private openRelatedGallery(gallery: NhGallerySummary): void {
+    if (!this.onOpen) {
+      return
+    }
+    GalleryDetailTransitionCoordinator.open(
+      this.getUIContext(),
+      this.relatedSourceId(gallery),
+      gallery.id.toString(),
+      (): void => {
+        if (this.onOpen) {
+          this.onOpen(gallery.id)
+        }
+      },
+      this.relatedSourceCoverId(gallery),
+      gallery.thumbnailUrl,
+      ThemeTokens.RADIUS_MD,
+      0,
+    )
+  }
 
   private relatedCardAccessibility(gallery: NhGallerySummary): string {
     return AppStrings.format('gallery_card_a11y', [
@@ -62,22 +101,13 @@ export struct GalleryRelatedCarousel {
   @Builder
   private RelatedCover(gallery: NhGallerySummary) {
     Stack({ alignContent: Alignment.Center }) {
-      if (gallery.thumbnailUrl.length > 0) {
-        EhImageKnifeImage({
-          src: gallery.thumbnailUrl,
-          widthValue: '100%',
-          heightValue: '100%',
-          objectFit: ImageFit.Cover,
-          contentTransition: ContentTransitionType.OPACITY,
-          priority: EH_IMAGE_PRIORITY_LOW,
-          connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
-          readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
-        })
-      } else {
-        SymbolGlyph($r('sys.symbol.picture'))
-          .fontSize(28)
-          .fontColor([ThemeTokens.TEXT_TERTIARY])
-      }
+      GalleryThumbnail({
+        src: gallery.thumbnailUrl,
+        objectFit: ImageFit.Cover,
+        widthValue: '100%',
+        heightValue: '100%',
+        surfaceId: this.relatedSourceCoverId(gallery),
+      })
     }
     .width(this.relatedCardWidth(gallery))
     .height(RELATED_COVER_HEIGHT)
@@ -110,11 +140,15 @@ export struct GalleryRelatedCarousel {
     .borderRadius(ThemeTokens.RADIUS_MD)
     .clip(true)
     .backgroundColor(ThemeTokens.CARD_BACKGROUND)
+    .id(this.relatedSourceId(gallery))
+    .visibility(
+      this.galleryDetailTransition.sourceComponentId === this.relatedSourceId(gallery)
+        ? Visibility.Hidden
+        : Visibility.Visible,
+    )
     .accessibilityText(this.relatedCardAccessibility(gallery))
     .onClick((): void => {
-      if (this.onOpen) {
-        this.onOpen(gallery.id)
-      }
+      this.openRelatedGallery(gallery)
     })
   }
 
@@ -155,7 +189,10 @@ export struct GalleryRelatedCarousel {
       .height(RELATED_CAROUSEL_HEIGHT)
       .listDirection(Axis.Horizontal)
       .scrollBar(BarState.Off)
-      .translate({ x: -HORIZONTAL_RAIL_EDGE_INSET })
+      .margin({
+        left: -HORIZONTAL_RAIL_EDGE_INSET,
+        right: -HORIZONTAL_RAIL_EDGE_INSET,
+      })
       }
     }
     .width('100%')

@@ -51,6 +51,22 @@ ok('history uses the same card and cover ownership contract',
     /transitionCoverId: this\.galleryDetailSourceCoverId\(item\)/.test(history) &&
     /\.id\(this\.galleryDetailSourceId\(item\)\)/.test(history))
 
+const detailSections = read('feature/gallery/src/main/ets/components/GalleryDetailContentSections.ets')
+const relatedCarousel = detailSections.slice(
+  detailSections.indexOf('export struct GalleryRelatedCarousel'),
+  detailSections.indexOf('export struct GalleryCommentPreviewCarousel'),
+)
+ok('related galleries use the shared thumbnail and nested transition ownership contract',
+  /GalleryThumbnail\(\{[\s\S]*?surfaceId: this\.relatedSourceCoverId\(gallery\)/.test(detailSections) &&
+    /GalleryDetailTransitionCoordinator\.open\(/.test(detailSections) &&
+    /\.id\(this\.relatedSourceId\(gallery\)\)/.test(detailSections) &&
+    /left: -HORIZONTAL_RAIL_EDGE_INSET/.test(relatedCarousel) &&
+    !/\.translate\(\{ x: -HORIZONTAL_RAIL_EDGE_INSET \}\)/.test(relatedCarousel) &&
+    /retainedTransitions: Map<string, GalleryDetailTransitionContext>/.test(
+      read('shared/src/main/ets/navigation/GalleryDetailTransitionCoordinator.ets')) &&
+    /activateRouteTransition\(fromTransitionToken\)/.test(read('entry/src/main/ets/pages/Index.ets')) &&
+    /transitionToken: string = ''/.test(read('entry/src/main/ets/pages/Index.ets')))
+
 const galleryState = read('shared/src/main/ets/state/GalleryDetailTransitionState.ets')
 const galleryCoordinator = read('shared/src/main/ets/navigation/GalleryDetailTransitionCoordinator.ets')
 const index = read('entry/src/main/ets/pages/Index.ets')

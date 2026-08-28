@@ -259,6 +259,8 @@ const GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_END_TIME: number = galleryDetailTime
  */
 class GalleryRouteParams {
   galleryId: number = 0
+  /** Runtime-only owner for this route instance's captured return transition. */
+  transitionToken: string = ''
   /** Optional tapped-row snapshot; the detail paints it immediately before the verified response. */
   seed: NhGallerySummary | null = null
   chrome: GalleryChromeState = new GalleryChromeState()
@@ -270,11 +272,13 @@ class GalleryRouteParams {
     seed: NhGallerySummary | null = null,
     commentSnapshot: NhComment[] = [],
     commentSnapshotAvailable: boolean = false,
+    transitionToken: string = '',
   ) {
     this.galleryId = galleryId
     this.seed = seed
     this.commentSnapshot = commentSnapshot
     this.commentSnapshotAvailable = commentSnapshotAvailable
+    this.transitionToken = transitionToken
   }
 }
 
@@ -729,6 +733,7 @@ struct Index {
     }
     this.readerOverlay.reset()
     if (this.stack.getAllPathName().length > 0) {
+      this.clearGalleryDetailTransitionOwnership()
       this.stack.clear(false)
     }
     this.settingsNavigation.clearRootLocation()
@@ -749,6 +754,7 @@ struct Index {
       return
     }
     if (this.stack.getAllPathName().length > 0) {
+      this.clearGalleryDetailTransitionOwnership()
       this.stack.clear(false)
     }
     this.settingsNavigation.clearRootLocation()
@@ -947,7 +953,16 @@ struct Index {
     if (galleryId <= 0) {
       return
     }
-    this.stack.pushPathByName(ROUTE_GALLERY, new GalleryRouteParams(galleryId, seed ?? null))
+    this.stack.pushPathByName(
+      ROUTE_GALLERY,
+      new GalleryRouteParams(
+        galleryId,
+        seed ?? null,
+        [],
+        false,
+        GalleryDetailTransitionCoordinator.activeRouteToken(galleryId.toString()),
+      ),
+    )
   }
 
   private pushGalleryWeb(route: GalleryRouteParams): void {
@@ -1062,10 +1077,20 @@ struct Index {
       if (current !== null && current.galleryId === galleryId) {
         return
       }
-      this.stack.replacePathByName(ROUTE_GALLERY, new GalleryRouteParams(galleryId, seed ?? null), true)
+      this.stack.replacePathByName(
+        ROUTE_GALLERY,
+        new GalleryRouteParams(
+          galleryId,
+          seed ?? null,
+          [],
+          false,
+          GalleryDetailTransitionCoordinator.activeRouteToken(galleryId.toString()),
+        ),
+        true,
+      )
       return
     }
-    this.stack.pushPathByName(ROUTE_GALLERY, new GalleryRouteParams(galleryId, seed ?? null))
+    this.pushGallery(galleryId, seed)
   }
 
   /** The selected card follows the secondary branch entry, not a nested leaf. */
@@ -1138,6 +1163,7 @@ struct Index {
       return
     }
     if (this.stack.getAllPathName().length > 0) {
+      this.clearGalleryDetailTransitionOwnership()
       this.stack.clear(false)
     }
     this.settingsNavigation.clearRootLocation()
@@ -1372,6 +1398,7 @@ struct Index {
       this.settingsNavigation.publishRootLocation(name)
       return
     }
+    this.clearGalleryDetailTransitionOwnership()
     this.stack.clear(false)
     this.settingsNavigation.clearRootLocation()
     this.stack.pushPathByName(name, param)
@@ -2311,35 +2338,57 @@ struct Index {
     return this.galleryDetailTransition.eligible && this.galleryDetailTransition.isCoverExpand()
   }
 
-  private handleGalleryDetailBackPressed(): boolean {
+  private handleGalleryDetailBackPressed(route: GalleryRouteParams): boolean {
+    const alreadyActive: boolean = this.galleryDetailTransition.eligible &&
+      route.transitionToken === this.galleryDetailTransition.routeToken
     if (
       this.coverPopDispatching ||
       this.layoutSafeArea.rootNavigationSplit ||
+      route.transitionToken.length === 0 ||
+      !GalleryDetailTransitionCoordinator.activateRouteTransition(route.transitionToken) ||
       !this.galleryDetailTransition.eligible ||
-      !this.galleryDetailTransition.isCoverExpand()
+      route.transitionToken !== this.galleryDetailTransition.routeToken
     ) {
       return false
     }
-    this.coverPopDispatching = true
-    const coverTargetVisible: boolean = this.syncGalleryDetailCoverTarget()
-    let detailSnapshot: image.PixelMap | undefined = undefined
-    if (coverTargetVisible) {
-      try {
-        detailSnapshot = this.getUIContext().getComponentSnapshot()
-          .getSync('nextn-root-navigation', { waitUntilRenderFinished: true })
-      } catch (error) {
-        DiagnosticLogger.info(
-          'gallery-detail-transition',
-          'detail_pop_snapshot_failed',
-          `gallery=${this.galleryDetailTransition.galleryId} error=${error}`,
-        )
+    if (!this.galleryDetailTransition.isCoverExpand()) {
+      if (alreadyActive) {
+        return false
       }
+      this.coverPopDispatching = true
+      this.getUIContext().postFrameCallback(new GalleryDetailPreparedPopFrameCallback((): void => {
+        this.stack.pop()
+        this.coverPopDispatching = false
+      }))
+      return true
     }
-    this.galleryDetailTransition.prepareCoverPop(coverTargetVisible, detailSnapshot)
-    this.getUIContext().postFrameCallback(new GalleryDetailPreparedPopFrameCallback((): void => {
-      this.stack.pop()
-      this.coverPopDispatching = false
-    }))
+    this.coverPopDispatching = true
+    const prepareAndDispatchPop: () => void = (): void => {
+      const coverTargetVisible: boolean = this.syncGalleryDetailCoverTarget()
+      let detailSnapshot: image.PixelMap | undefined = undefined
+      if (coverTargetVisible) {
+        try {
+          detailSnapshot = this.getUIContext().getComponentSnapshot()
+            .getSync('nextn-root-navigation', { waitUntilRenderFinished: true })
+        } catch (error) {
+          DiagnosticLogger.info(
+            'gallery-detail-transition',
+            'detail_pop_snapshot_failed',
+            `gallery=${this.galleryDetailTransition.galleryId} error=${error}`,
+          )
+        }
+      }
+      this.galleryDetailTransition.prepareCoverPop(coverTargetVisible, detailSnapshot)
+      this.getUIContext().postFrameCallback(new GalleryDetailPreparedPopFrameCallback((): void => {
+        this.stack.pop()
+        this.coverPopDispatching = false
+      }))
+    }
+    if (!alreadyActive) {
+      this.getUIContext().postFrameCallback(new GalleryDetailPreparedPopFrameCallback(prepareAndDispatchPop))
+      return true
+    }
+    prepareAndDispatchPop()
     return true
   }
 
@@ -2411,7 +2460,7 @@ struct Index {
       false,
     )
     .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_GALLERY))
-    .onBackPressed((): boolean => this.handleGalleryDetailBackPressed())
+    .onBackPressed((): boolean => this.handleGalleryDetailBackPressed(this.galleryParams(param)))
     .backgroundColor(this.galleryDetailTransition.eligible ? Color.Transparent : ThemeTokens.SURFACE)
     .scale({
       x: this.galleryDetailTransition.isCoverExpand() ? 1 : this.galleryDetailTransition.scaleX,
@@ -3223,11 +3272,21 @@ struct Index {
     to: NavContentInfo,
     operation: NavigationOperation,
   ): NavigationAnimatedTransition | undefined {
-    if (this.layoutSafeArea.rootNavigationSplit || !this.galleryDetailTransition.eligible) {
+    if (this.layoutSafeArea.rootNavigationSplit) {
       return undefined
     }
-    const isPush: boolean = operation === NavigationOperation.PUSH && to.name === ROUTE_GALLERY
-    const isPop: boolean = operation === NavigationOperation.POP && from.name === ROUTE_GALLERY
+    const fromTransitionToken: string = this.galleryTransitionToken(from)
+    const toTransitionToken: string = this.galleryTransitionToken(to)
+    if (operation === NavigationOperation.POP && fromTransitionToken.length > 0) {
+      GalleryDetailTransitionCoordinator.activateRouteTransition(fromTransitionToken)
+    }
+    if (!this.galleryDetailTransition.eligible) {
+      return undefined
+    }
+    const isPush: boolean = operation === NavigationOperation.PUSH &&
+      toTransitionToken === this.galleryDetailTransition.routeToken
+    const isPop: boolean = operation === NavigationOperation.POP &&
+      fromTransitionToken === this.galleryDetailTransition.routeToken
     if (!isPush && !isPop) {
       return undefined
     }
@@ -3329,11 +3388,29 @@ struct Index {
         }
         if (isPush) {
           this.galleryDetailTransition.markPushSettled(success)
+          if (!success) {
+            GalleryDetailTransitionCoordinator.discardRouteTransition(toTransitionToken)
+          }
         } else {
           this.galleryDetailTransition.markPopSettled(success)
+          if (success) {
+            GalleryDetailTransitionCoordinator.discardRouteTransition(fromTransitionToken)
+          }
         }
       },
     }
+  }
+
+  private galleryTransitionToken(content: NavContentInfo): string {
+    if (content.name !== ROUTE_GALLERY || !(content.param instanceof GalleryRouteParams)) {
+      return ''
+    }
+    return content.param.transitionToken
+  }
+
+  private clearGalleryDetailTransitionOwnership(): void {
+    this.galleryDetailTransition.reset()
+    GalleryDetailTransitionCoordinator.clearRetainedTransitions()
   }
 
   build() {
@@ -3470,7 +3547,7 @@ struct Index {
         const changed: boolean = index !== this.activeTab
         if (changed) {
           this.cancelRandomGalleryRequest()
-          this.galleryDetailTransition.reset()
+          this.clearGalleryDetailTransitionOwnership()
           if (this.stack.getAllPathName().length > 0) {
             this.stack.clear(false)
           }

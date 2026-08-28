@@ -11,10 +11,64 @@ export enum GalleryDetailTransitionPhase {
   CLOSING = 'closing',
 }
 
+/**
+ * One Gallery route instance's retained return transition.
+ * PixelMaps move between this holder and the active render state; they are never copied or double-released.
+ */
+export class GalleryDetailTransitionContext {
+  routeToken: string = ''
+  mode: string = GalleryDetailTransitionMode.SEAMLESS
+  galleryId: string = ''
+  sourceComponentId: string = ''
+  sourceCoverComponentId: string = ''
+  preserveSourceCoverBackground: boolean = false
+  targetCoverComponentId: string = ''
+  handoffX: number = 0
+  handoffY: number = 0
+  handoffWidth: number = 0
+  handoffHeight: number = 0
+  rootWidth: number = 0
+  rootHeight: number = 0
+  sourceCardRadius: number = 0
+  collapsedScaleX: number = 1
+  collapsedScaleY: number = 1
+  collapsedTranslateX: number = 0
+  collapsedTranslateY: number = 0
+  collapsedRadius: number = 0
+  sourceCoverX: number = 0
+  sourceCoverY: number = 0
+  sourceCoverWidth: number = 0
+  sourceCoverHeight: number = 0
+  sourceCoverRadius: number = 0
+  coverUrl: string = ''
+  sourceSnapshot: image.PixelMap | undefined = undefined
+  cardSnapshot: image.PixelMap | undefined = undefined
+  coverSnapshot: image.PixelMap | undefined = undefined
+
+  release(): void {
+    const sourceSnapshot: image.PixelMap | undefined = this.sourceSnapshot
+    const cardSnapshot: image.PixelMap | undefined = this.cardSnapshot
+    const coverSnapshot: image.PixelMap | undefined = this.coverSnapshot
+    this.sourceSnapshot = undefined
+    this.cardSnapshot = undefined
+    this.coverSnapshot = undefined
+    if (sourceSnapshot !== undefined) {
+      sourceSnapshot.release().catch((_error: Error) => {})
+    }
+    if (cardSnapshot !== undefined) {
+      cardSnapshot.release().catch((_error: Error) => {})
+    }
+    if (coverSnapshot !== undefined) {
+      coverSnapshot.release().catch((_error: Error) => {})
+    }
+  }
+}
+
 @ObservedV2
 export class GalleryDetailTransitionState {
   @Trace eligible: boolean = false
   @Trace phase: GalleryDetailTransitionPhase = GalleryDetailTransitionPhase.IDLE
+  @Trace routeToken: string = ''
   @Trace mode: string = GalleryDetailTransitionMode.SEAMLESS
   @Trace galleryId: string = ''
   @Trace sourceComponentId: string = ''
@@ -73,6 +127,7 @@ export class GalleryDetailTransitionState {
   @Trace targetCoverRadius: number = 0
 
   beginSourceHandoff(
+    routeToken: string,
     mode: string,
     componentId: string,
     sourceCoverComponentId: string,
@@ -91,6 +146,7 @@ export class GalleryDetailTransitionState {
     coverSnapshot: image.PixelMap | undefined,
     coverUrl: string,
   ): void {
+    this.routeToken = routeToken
     this.mode = mode
     this.sourceComponentId = preserveSourceCoverBackground ? '' : componentId
     this.sourceCoverComponentId = sourceCoverComponentId
@@ -477,9 +533,111 @@ export class GalleryDetailTransitionState {
     this.crossfadeToDetail()
   }
 
+  /** Move this settled Gallery route's return transition out of the active render state. */
+  takeOpenTransitionContext(): GalleryDetailTransitionContext | null {
+    if (
+      !this.eligible ||
+      this.phase !== GalleryDetailTransitionPhase.OPEN ||
+      this.routeToken.length === 0 ||
+      this.galleryId.length === 0
+    ) {
+      return null
+    }
+    const context = new GalleryDetailTransitionContext()
+    context.routeToken = this.routeToken
+    context.mode = this.mode
+    context.galleryId = this.galleryId
+    context.sourceComponentId = this.sourceComponentId
+    context.sourceCoverComponentId = this.sourceCoverComponentId
+    context.preserveSourceCoverBackground = this.preserveSourceCoverBackground
+    context.targetCoverComponentId = this.targetCoverComponentId
+    context.handoffX = this.handoffX
+    context.handoffY = this.handoffY
+    context.handoffWidth = this.handoffWidth
+    context.handoffHeight = this.handoffHeight
+    context.rootWidth = this.rootWidth
+    context.rootHeight = this.rootHeight
+    context.sourceCardRadius = this.sourceCardRadius
+    context.collapsedScaleX = this.collapsedScaleX
+    context.collapsedScaleY = this.collapsedScaleY
+    context.collapsedTranslateX = this.collapsedTranslateX
+    context.collapsedTranslateY = this.collapsedTranslateY
+    context.collapsedRadius = this.collapsedRadius
+    context.sourceCoverX = this.sourceCoverX
+    context.sourceCoverY = this.sourceCoverY
+    context.sourceCoverWidth = this.sourceCoverWidth
+    context.sourceCoverHeight = this.sourceCoverHeight
+    context.sourceCoverRadius = this.sourceCoverRadius
+    context.coverUrl = this.coverUrl
+    context.sourceSnapshot = this.sourceSnapshot
+    context.cardSnapshot = this.cardSnapshot
+    context.coverSnapshot = this.coverSnapshot
+    this.sourceSnapshot = undefined
+    this.cardSnapshot = undefined
+    this.coverSnapshot = undefined
+    this.reset()
+    return context
+  }
+
+  /** Activate one Gallery route instance's retained return transition. */
+  restoreOpenTransitionContext(context: GalleryDetailTransitionContext): void {
+    this.reset()
+    this.routeToken = context.routeToken
+    this.mode = context.mode
+    this.galleryId = context.galleryId
+    this.sourceComponentId = context.sourceComponentId
+    this.sourceCoverComponentId = context.sourceCoverComponentId
+    this.preserveSourceCoverBackground = context.preserveSourceCoverBackground
+    this.targetCoverComponentId = context.targetCoverComponentId
+    this.handoffX = context.handoffX
+    this.handoffY = context.handoffY
+    this.handoffWidth = context.handoffWidth
+    this.handoffHeight = context.handoffHeight
+    this.rootWidth = context.rootWidth
+    this.rootHeight = context.rootHeight
+    this.sourceCardRadius = context.sourceCardRadius
+    this.collapsedScaleX = context.collapsedScaleX
+    this.collapsedScaleY = context.collapsedScaleY
+    this.collapsedTranslateX = context.collapsedTranslateX
+    this.collapsedTranslateY = context.collapsedTranslateY
+    this.collapsedRadius = context.collapsedRadius
+    this.sourceCoverX = context.sourceCoverX
+    this.sourceCoverY = context.sourceCoverY
+    this.sourceCoverWidth = context.sourceCoverWidth
+    this.sourceCoverHeight = context.sourceCoverHeight
+    this.sourceCoverRadius = context.sourceCoverRadius
+    this.coverUrl = context.coverUrl
+    this.sourceSnapshot = context.sourceSnapshot
+    this.cardSnapshot = context.cardSnapshot
+    this.coverSnapshot = context.coverSnapshot
+    context.sourceSnapshot = undefined
+    context.cardSnapshot = undefined
+    context.coverSnapshot = undefined
+    this.eligible = true
+    this.phase = GalleryDetailTransitionPhase.OPEN
+    this.scaleX = 1
+    this.scaleY = 1
+    this.translateX = 0
+    this.translateY = 0
+    this.radius = 0
+    this.cardOpacity = 0
+    this.contentOpacity = 1
+    this.chromeVisible = true
+    this.clipX = 0
+    this.clipY = 0
+    this.clipWidth = this.rootWidth
+    this.clipHeight = this.rootHeight
+    this.targetCoverReady = false
+    this.coverPopPrepared = false
+    this.coverFadePopFallback = false
+    this.fallbackCoverOpacity = 0
+    this.coverResourceReady = false
+  }
+
   reset(): void {
     this.eligible = false
     this.phase = GalleryDetailTransitionPhase.IDLE
+    this.routeToken = ''
     this.mode = GalleryDetailTransitionMode.SEAMLESS
     this.galleryId = ''
     this.sourceComponentId = ''

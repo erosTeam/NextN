@@ -1,7 +1,11 @@
 import { image } from '@kit.ImageKit'
 import { FrameCallback } from '@kit.ArkUI'
 import { DiagnosticLogger } from '../diagnostics/DiagnosticLogger'
-import { connectGalleryDetailTransition } from '../state/GalleryDetailTransitionState'
+import {
+  connectGalleryDetailTransition,
+  GalleryDetailTransitionPhase,
+  GalleryDetailTransitionContext,
+} from '../state/GalleryDetailTransitionState'
 import {
   connectGalleryDetailTransitionSettings,
   GalleryDetailTransitionMode,
@@ -31,7 +35,84 @@ class GalleryDetailCaptureFrameCallback extends FrameCallback {
  */
 export class GalleryDetailTransitionCoordinator {
   private static scopeSeed: number = 0
+  private static routeSeed: number = 0
   private static opening: boolean = false
+  private static retainedTransitions: Map<string, GalleryDetailTransitionContext> =
+    new Map<string, GalleryDetailTransitionContext>()
+
+  private static allocateRouteToken(galleryId: string): string {
+    GalleryDetailTransitionCoordinator.routeSeed += 1
+    return `gallery-route-${GalleryDetailTransitionCoordinator.routeSeed}-${galleryId}`
+  }
+
+  private static retainActiveTransition(): void {
+    const context: GalleryDetailTransitionContext | null =
+      connectGalleryDetailTransition().takeOpenTransitionContext()
+    if (context === null) {
+      return
+    }
+    const previous: GalleryDetailTransitionContext | undefined =
+      GalleryDetailTransitionCoordinator.retainedTransitions.get(context.routeToken)
+    if (previous !== undefined) {
+      previous.release()
+    }
+    GalleryDetailTransitionCoordinator.retainedTransitions.set(context.routeToken, context)
+  }
+
+  static activeRouteToken(galleryId: string): string {
+    const transition = connectGalleryDetailTransition()
+    if (!transition.eligible || transition.galleryId !== galleryId) {
+      return ''
+    }
+    return transition.routeToken
+  }
+
+  static activateRouteTransition(routeToken: string): boolean {
+    if (routeToken.length === 0) {
+      return false
+    }
+    const transition = connectGalleryDetailTransition()
+    if (transition.eligible && transition.routeToken === routeToken) {
+      return true
+    }
+    if (transition.eligible) {
+      if (transition.phase !== GalleryDetailTransitionPhase.OPEN) {
+        return false
+      }
+      GalleryDetailTransitionCoordinator.retainActiveTransition()
+    }
+    const context: GalleryDetailTransitionContext | undefined =
+      GalleryDetailTransitionCoordinator.retainedTransitions.get(routeToken)
+    if (context === undefined) {
+      return false
+    }
+    GalleryDetailTransitionCoordinator.retainedTransitions.delete(routeToken)
+    transition.restoreOpenTransitionContext(context)
+    return true
+  }
+
+  static discardRouteTransition(routeToken: string): void {
+    if (routeToken.length === 0) {
+      return
+    }
+    const retained: GalleryDetailTransitionContext | undefined =
+      GalleryDetailTransitionCoordinator.retainedTransitions.get(routeToken)
+    if (retained !== undefined) {
+      GalleryDetailTransitionCoordinator.retainedTransitions.delete(routeToken)
+      retained.release()
+    }
+    const transition = connectGalleryDetailTransition()
+    if (transition.routeToken === routeToken) {
+      transition.reset()
+    }
+  }
+
+  static clearRetainedTransitions(): void {
+    GalleryDetailTransitionCoordinator.retainedTransitions.forEach(
+      (context: GalleryDetailTransitionContext): void => context.release(),
+    )
+    GalleryDetailTransitionCoordinator.retainedTransitions.clear()
+  }
 
   static syncDetailCoverTarget(uiContext: UIContext): boolean {
     const transition = connectGalleryDetailTransition()
@@ -95,14 +176,19 @@ export class GalleryDetailTransitionCoordinator {
       return
     }
     const transition = connectGalleryDetailTransition()
-    transition.reset()
     const selectedMode: string = connectGalleryDetailTransitionSettings().mode
     if (selectedMode === GalleryDetailTransitionMode.SYSTEM || connectLayoutSafeArea().rootNavigationSplit) {
       openDetail()
       return
     }
 
+    GalleryDetailTransitionCoordinator.retainActiveTransition()
+    if (transition.eligible) {
+      transition.reset()
+    }
+
     GalleryDetailTransitionCoordinator.opening = true
+    const routeToken: string = GalleryDetailTransitionCoordinator.allocateRouteToken(galleryId)
     let transitionMode: string = selectedMode
     let cardSnapshot: image.PixelMap | undefined = undefined
     let coverSnapshot: image.PixelMap | undefined = undefined
@@ -165,6 +251,7 @@ export class GalleryDetailTransitionCoordinator {
       cardSnapshot = uiContext.getComponentSnapshot()
         .getSync(componentId, { waitUntilRenderFinished: true })
       transition.beginSourceHandoff(
+        routeToken,
         transitionMode,
         componentId,
         sourceCoverComponentId,
