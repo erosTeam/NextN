@@ -418,9 +418,14 @@ The continuation did establish these separate causal defects:
   verification -> one recovered safe replay -> authenticated Favorites. No
   second refresh, terminal 401, response-Cookie event or Favorites failure
   occurred. This proves the replacement generation crossed the durable
-  readback checkpoint before replay in that process. It does not yet prove
-  that the same 07:55 generation restores in a later process; the next unique
-  no-install cold observation is reserved for that boundary.
+  readback checkpoint before replay in that process.
+- At 08:55 an independent no-install/no-data-clear cold process restored that
+  07:55 generation and completed an authenticated Favorites read. Its fixed
+  sequence was session start -> restore payload/expiry shape -> restore ready
+  -> Favorites success, with no initial 401, refresh, replay, terminal 401,
+  response-Cookie event or Favorites failure. This closes the later-process
+  durable-restore boundary for the 07:55 replacement pair; it does not extend
+  that proof to a cross-day lifetime or a future server rotation.
 - An earlier HAP built from the same commit, SHA-256
   `a69c429e9a26fea9cb34c5db06457f4d2e70415fea5c1a50d34c1ecdc6535f98`,
   is rejected. Its isolated-worktree dependency symlink omitted the packaged
@@ -428,12 +433,11 @@ The continuation did establish these separate causal defects:
   crashes. That packaging failure is not account/session runtime evidence and
   is not part of the continued observation candidate.
 
-These results do **not** yet establish restoration of the 07:55 generation in
-a later process, cross-day survival, a natural first-party auth `Set-Cookie`
-checkpoint, the saved-envelope fallback on device, or a natural terminal 401
-with retained Account, close/re-login HDS Snackbar, one original-WebView login,
-native return, cold restore, and authenticated Favorites. The P0 and this
-postmortem therefore remain OPEN.
+These results do **not** yet establish cross-day survival, a natural
+first-party auth `Set-Cookie` checkpoint, the saved-envelope fallback on
+device, or a natural terminal 401 with retained Account, close/re-login HDS
+Snackbar, one original-WebView login, native return, cold restore, and
+authenticated Favorites. The P0 and this postmortem therefore remain OPEN.
 
 ### Why the extended effort still failed to close the user outcome
 
