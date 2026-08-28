@@ -5158,3 +5158,37 @@ permitted in this repository.
   Favorites cycle remain OPEN. The next no-install observation advances to
   15:55, with the overlap-safe diagnostics baseline set to the successful
   receive command's `startedAt`, `2026-08-28T14:58:54.810527+08:00`.
+
+#### Original silent-expiry mechanism confirmed — 2026-08-28 15:14 +0800
+
+- The 14:58 clean-candidate process supplied the missing live boundary: a
+  restored account can retain both auth cookies and native selected-account
+  state while its first authenticated read receives a real 401. The current
+  implementation exchanged the retained refresh token at the fixed
+  `/api/v2/auth/refresh` endpoint, checkpointed the replacement pair, verified
+  it and recovered the original safe Favorites read with one replay.
+- Git baseline `d8291aa` did not perform that exchange. Its bounded 401 helper
+  called `recoverRegularArkWebCookieJarAfterAuthenticated401()`, which took the
+  same sealed access token and forced it back into ArkWeb before repeating the
+  GET. No refresh endpoint was called in that path. Once the access token had
+  actually expired, replaying the identical credential necessarily produced a
+  second 401 even though the saved account row and local encrypted envelope
+  still existed.
+- The visible symptom was also structurally local. Baseline authenticated
+  mutations deliberately did not replay, but on 401 only threw a request-local
+  “refresh in Settings” error. Gallery favourite-status enrichment caught its
+  request failure and returned an unknown status; `saveFavorite()` caught its
+  mutation failure and showed only a page-local Toast. The baseline root had
+  no `AccountAuthNoticeState` or global HDS Snackbar host. This combination
+  explains the reported sequence: the native Account page remained selected,
+  no global expiry prompt appeared, and the stale server credential became
+  visible to the user only when a favourite action failed.
+- Later partial fixes added browser refresh and Cookie synchronization, but
+  still split request authority and persistence across ArkWeb, native HTTP and
+  separate checkpoints. The clean candidate replaces that class of behavior
+  with one session HTTP owner, an actual single-flight refresh exchange,
+  encrypted readback-verified token checkpoint, one safe replay and a root
+  terminal-401 notice while retaining Account ownership. The 14:58 device
+  chain proves refresh recovery; later-process restore of this exact pair,
+  natural response `Set-Cookie`, cross-day survival and the terminal-401 HDS
+  plus original-WebView return path remain OPEN.
