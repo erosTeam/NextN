@@ -271,6 +271,15 @@ try {
     'session_start',
     'favorites_request_success',
   ])
+  await writeJson(join(directory, 'protocol-manifest.json'), {
+    target: TARGET,
+    authorizedTarget: TARGET,
+    context: { diagnosticWindowStart: 'invalid' },
+  })
+  await assert.rejects(
+    () => summarizeArtifact(directory),
+    (error) => error?.code === 'diagnostic_window_invalid',
+  )
   process.stdout.write('nextn account observation summary: pass\n')
 } finally {
   await rm(directory, { recursive: true, force: true })

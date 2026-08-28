@@ -324,11 +324,13 @@ function diagnosticLineTimestamp(line) {
 function diagnosticWindow(manifest, metadata) {
   const rawStart = String(manifest?.context?.diagnosticWindowStart ?? '')
   const rawEnd = String(metadata?.endedAt ?? '')
+  if (rawStart.length === 0) {
+    return null
+  }
   const start = Date.parse(rawStart)
   const end = Date.parse(rawEnd)
-  if (rawStart.length === 0 || rawEnd.length === 0 || !Number.isFinite(start) ||
-    !Number.isFinite(end) || start > end) {
-    return null
+  if (rawEnd.length === 0 || !Number.isFinite(start) || !Number.isFinite(end) || start > end) {
+    throw new SafeFailure('diagnostic_window_invalid')
   }
   return { start, end }
 }

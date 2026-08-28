@@ -5107,7 +5107,9 @@ permitted in this repository.
   order, booleans and coarse expiry shapes; it never returns a raw line,
   Cookie, token, URL, account value or arbitrary message. Same-second retained
   file suffixes such as `-01` are included. Artifacts without a baseline retain
-  the old latest-file behavior for historical reproducibility.
+  the old latest-file behavior for historical reproducibility; once a manifest
+  declares a baseline, an invalid start/end window rejects the summary instead
+  of silently falling back to the latest file.
 - A two-file regression proves that a response-Cookie event appended after the
   baseline to the older process file is retained alongside the later cold-start
   events, while a pre-baseline rejection is excluded. The observation-summary,
