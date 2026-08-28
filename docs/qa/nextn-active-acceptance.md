@@ -5027,3 +5027,35 @@ permitted in this repository.
   promotion, native return and a later authenticated cold Favorites cycle all
   remain OPEN. The checked natural monitor advances to 13:55 on this exact
   candidate.
+
+#### Cookie crash candidate multi-cycle observation — healthy — 2026-08-28 14:02 +0800
+
+- The scheduled 13:55 observation did not start inside the sandbox because its
+  HDC child could not see the host daemon. No manifest action or artifact was
+  created by those rejected dry-runs. After the same checked wrapper received
+  host HDC access, its mandatory dry-run matched exactly one live Connected row
+  for `192.168.50.237:12345`; the active lease, CLI target, manifest `target`
+  and `authorizedTarget` all matched exact 237. The protocol then ran exactly
+  once from 14:02:10 to 14:02:38. All 19 checked commands exited zero. No
+  install, uninstall, data clear, sign-out, credential input, CAPTCHA action,
+  submit, internal recovery Want or account mutation occurred.
+- The independent process emitted only `session_start` -> restore payload and
+  expiry shape -> `account_restore_ready` -> `favorites_request_success`. It
+  emitted no initial 401, refresh endpoint, refresh checkpoint, replay,
+  replayed/final 401, verification-marker failure, response-Cookie
+  stored/applied/rejected event or Favorites failure. The native Favorites
+  summary retained one collection with no Web, sign-in, loading, error or HDS.
+  Formal Account retained one list root, one saved row and one selected Radio
+  with no Web, sign-in, verification-required state, HDS or save failure.
+  Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T1355/` and is
+  excluded from Git.
+- This accepts another preserve-data cold authenticated cycle on commit
+  `0b9c3da1fc1220fc57613189e4e6bcfb880891b6`; it does not exercise the repaired
+  response-Cookie commit order. Natural response `Set-Cookie` rotation or
+  deletion and its later-process restore, cross-day survival, and the next
+  natural terminal 401 with retained Account, close/re-login HDS,
+  original-WebView promotion, native return and a later cold authenticated
+  Favorites cycle remain OPEN. The checked old-candidate monitor advances to
+  14:55 pending the planned preserve-data installation of the clean HEAD
+  candidate.
