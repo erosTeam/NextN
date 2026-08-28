@@ -14,7 +14,7 @@
 import { spawn } from 'node:child_process'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:net'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import {
@@ -45,6 +45,10 @@ const VISIBLE_LOGIN_ROUTE_ATTEMPTS = 12
 const VISIBLE_LOGIN_ROUTE_POLL_MS = 500
 const SCREEN_WIDTH = 1320
 const SCREEN_HEIGHT = 2120
+const RESOURCE_LOCALES = ['base', 'zh_CN', 'en_US', 'ja_JP']
+const ACCOUNT_ENTRY_ID = 'nextn-settings-root-account'
+const ACCOUNT_LIST_ROOT_ID = 'nextn-account-list-root'
+const ACCOUNT_SAVED_ROW_ID = 'nextn-account-saved-row'
 
 function safeResult(ok, stage, code = '', extra = {}) {
   return { ok, stage, ...(code.length > 0 ? { code } : {}), ...extra }
@@ -180,6 +184,160 @@ function collectLayoutNodes(root) {
   return nodes
 }
 
+function nodeTextValues(attributes) {
+  return ['id', 'text', 'originalText', 'description', 'accessibilityText',
+    'accessibilityId', 'hint', 'content', 'value']
+    .map((key) => attributes?.[key])
+    .filter((value) => typeof value === 'string')
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0)
+}
+
+function walkVisibleLayout(node, visitor, ancestors = []) {
+  if (node === null || typeof node !== 'object' ||
+    String(node.attributes?.visible ?? 'true').toLowerCase() === 'false') {
+    return
+  }
+  visitor(node, ancestors)
+  const nextAncestors = [...ancestors, node]
+  if (Array.isArray(node.children)) {
+    node.children.forEach((child) => walkVisibleLayout(child, visitor, nextAncestors))
+  }
+}
+
+function clickableBounds(node) {
+  const attributes = node?.attributes
+  if (attributes === null || typeof attributes !== 'object' ||
+    String(attributes.clickable ?? '').toLowerCase() !== 'true' ||
+    String(attributes.enabled ?? 'true').toLowerCase() === 'false') {
+    return null
+  }
+  return parseBounds(attributes.bounds ?? attributes.bound ?? attributes.origBounds)
+}
+
+function clickableDescendantBounds(node) {
+  const candidates = new Map()
+  walkVisibleLayout(node, (candidate) => {
+    const bounds = clickableBounds(candidate)
+    if (bounds !== null) {
+      candidates.set(`${bounds.left}:${bounds.top}:${bounds.right}:${bounds.bottom}`, bounds)
+    }
+  })
+  return candidates
+}
+
+function resolveSemanticClickPoint(root, labels) {
+  const candidates = new Map()
+  walkVisibleLayout(root, (node, ancestors) => {
+    if (!nodeTextValues(node.attributes).some((value) => labels.has(value))) {
+      return
+    }
+    const path = [...ancestors, node]
+    for (let index = path.length - 1; index >= 0; index -= 1) {
+      const bounds = clickableBounds(path[index])
+      if (bounds !== null) {
+        candidates.set(`${bounds.left}:${bounds.top}:${bounds.right}:${bounds.bottom}`, bounds)
+        return
+      }
+    }
+    const descendants = clickableDescendantBounds(node)
+    if (descendants.size === 1) {
+      const bounds = [...descendants.values()][0]
+      candidates.set(`${bounds.left}:${bounds.top}:${bounds.right}:${bounds.bottom}`, bounds)
+    }
+  })
+  if (candidates.size !== 1) {
+    return null
+  }
+  const bounds = [...candidates.values()][0]
+  const x = Math.floor((bounds.left + bounds.right) / 2)
+  const y = Math.floor((bounds.top + bounds.bottom) / 2)
+  return x > 0 && x < SCREEN_WIDTH && y > 0 && y < SCREEN_HEIGHT ? { x, y } : null
+}
+
+function hasExactLabel(root, labels) {
+  let found = false
+  walkVisibleLayout(root, (node) => {
+    if (nodeTextValues(node.attributes).some((value) => labels.has(value))) {
+      found = true
+    }
+  })
+  return found
+}
+
+function hasVisibleMarker(root, marker) {
+  let found = false
+  walkVisibleLayout(root, (node) => {
+    const attributes = node.attributes
+    if (String(attributes?.id ?? '') === marker ||
+      String(attributes?.accessibilityId ?? '') === marker) {
+      found = true
+    }
+  })
+  return found
+}
+
+function visibleWebPresent(root) {
+  let found = false
+  walkVisibleLayout(root, (node) => {
+    if (/^Web(?:Component)?$/.test(String(node.attributes?.type ?? node.type ?? ''))) {
+      found = true
+    }
+  })
+  return found
+}
+
+async function loadRouteLabels() {
+  const keys = new Set([
+    'tab_me',
+    'account_verify_sign_in',
+    'account_verify_sign_in_subtitle',
+    'account_sign_out',
+    'account_sign_out_a11y',
+  ])
+  const values = new Map([...keys].map((key) => [key, new Set()]))
+  for (const locale of RESOURCE_LOCALES) {
+    const path = join(ROOT, 'entry', 'src', 'main', 'resources', locale, 'element', 'string.json')
+    const resource = JSON.parse(await readFile(path, 'utf8'))
+    for (const entry of resource.string ?? []) {
+      if (keys.has(entry.name) && typeof entry.value === 'string' && entry.value.trim().length > 0) {
+        values.get(entry.name).add(entry.value.trim())
+      }
+    }
+  }
+  if ([...values.values()].some((labels) => labels.size === 0)) {
+    throw new Error('route labels unavailable')
+  }
+  return {
+    me: values.get('tab_me'),
+    verify: new Set([
+      ...values.get('account_verify_sign_in'),
+      ...values.get('account_verify_sign_in_subtitle'),
+    ]),
+    signOut: new Set([
+      ...values.get('account_sign_out'),
+      ...values.get('account_sign_out_a11y'),
+    ]),
+    accountEntry: new Set([ACCOUNT_ENTRY_ID]),
+  }
+}
+
+function classifyNativeRoute(root, labels) {
+  const web = visibleWebPresent(root)
+  const accountList = hasVisibleMarker(root, ACCOUNT_LIST_ROOT_ID)
+  const savedAccount = hasVisibleMarker(root, ACCOUNT_SAVED_ROW_ID)
+  const signOutAction = hasExactLabel(root, labels.signOut)
+  return {
+    web,
+    accountList,
+    savedAccount,
+    // A retained row and checked Radio survive terminal 401 by design. The
+    // native account is authenticated only when its signed-in-only action is
+    // also present.
+    nativeAuthenticated: accountList && savedAccount && signOutAction && !web,
+  }
+}
+
 function classifyCaptchaLayout(root) {
   const nodes = collectLayoutNodes(root).filter((attributes) => attributes.visible !== 'false')
   const text = nodes.map((attributes) => String(
@@ -286,15 +444,28 @@ function reserveLocalPort() {
   })
 }
 
-async function routeVisibleLogin(options, artifactDir) {
+async function activateNativeRouteAction(options, artifactDir, name, point) {
+  const result = await runProtocol(options, artifactDir, name, {
+    measurement: [{
+      name,
+      uiInput: ['click', String(point.x), String(point.y)],
+      pauseAfterMs: 250,
+      timeoutSeconds: 30,
+    }],
+  }, 15000)
+  return result.ok
+}
+
+async function routeVisibleLogin(options, artifactDir, labels) {
+  const issuedActions = new Set()
+  let routeStage = 'initial'
   for (let index = 0; index < VISIBLE_LOGIN_ROUTE_ATTEMPTS; index += 1) {
     const suffix = String(index).padStart(2, '0')
     const remoteLayout = `/data/local/tmp/nextn-login-cycle-route-${suffix}.json`
     const localLayout = join(artifactDir, `route-layout-${suffix}.json`)
     const preflight = index === 0 && !options.resumeVisible ? [
-      protocolAction('open-original-visible-login', [
+      protocolAction('bring-nextn-to-foreground-without-hidden-route', [
         'shell', 'aa', 'start', '-b', BUNDLE, '-a', 'EntryAbility',
-        '--ps', 'nextn_login_recovery', '1',
       ], { pauseAfterMs: 500 }),
     ] : []
     const result = await runProtocol(options, artifactDir, `route-visible-login-${suffix}`, {
@@ -313,13 +484,51 @@ async function routeVisibleLogin(options, artifactDir) {
     try {
       if (result.ok) {
         text = await readFile(localLayout, 'utf8')
-        if (text.includes(`"bundleName":"${BUNDLE}"`) &&
-          /"type":"Web(?:Component)?"/.test(text)) {
+        const root = JSON.parse(text)
+        if (!text.includes(`"bundleName":"${BUNDLE}"`)) {
+          return 'unavailable'
+        }
+        const state = classifyNativeRoute(root, labels)
+        if (state.web) {
           return 'web'
         }
-        if (text.includes('nextn-account-list-root') &&
-          text.includes('nextn-account-saved-row')) {
+        if (state.nativeAuthenticated) {
           return 'native_authenticated'
+        }
+        const candidates = routeStage === 'waiting_web'
+          ? []
+          : routeStage === 'account_or_web'
+            ? [['verify', labels.verify]]
+            : routeStage === 'settings'
+              ? [['verify', labels.verify], ['account_entry', labels.accountEntry]]
+              : [
+                ['verify', labels.verify],
+                ['account_entry', labels.accountEntry],
+                ['me', labels.me],
+              ]
+        for (const [action, actionLabels] of candidates) {
+          if (issuedActions.has(action)) {
+            continue
+          }
+          const point = resolveSemanticClickPoint(root, actionLabels)
+          if (point === null) {
+            continue
+          }
+          issuedActions.add(action)
+          if (!await activateNativeRouteAction(
+            options,
+            artifactDir,
+            `activate-normal-${action}-action`,
+            point,
+          )) {
+            return 'unavailable'
+          }
+          routeStage = action === 'verify'
+            ? 'waiting_web'
+            : action === 'account_entry'
+              ? 'account_or_web'
+              : 'settings'
+          break
         }
       }
     } catch (_error) {
@@ -486,7 +695,7 @@ async function waitForLoginWebExit(port, deadlineAt) {
   return false
 }
 
-async function observeNativePromotion(options, artifactDir, port, deadlineAt) {
+async function observeNativePromotion(options, artifactDir, port, deadlineAt, labels) {
   if (!await waitForLoginWebExit(port, deadlineAt)) {
     return false
   }
@@ -513,10 +722,8 @@ async function observeNativePromotion(options, artifactDir, port, deadlineAt) {
         continue
       }
       text = await readFile(localLayout, 'utf8')
-      const accountList = text.includes('nextn-account-list-root')
-      const savedAccount = text.includes('nextn-account-saved-row')
-      const visibleWeb = /"type"\s*:\s*"Web(?:Component)?"/.test(text)
-      if (accountList && savedAccount && !visibleWeb) {
+      const state = classifyNativeRoute(JSON.parse(text), labels)
+      if (state.nativeAuthenticated) {
         return true
       }
     } catch (_error) {
@@ -540,6 +747,9 @@ async function runCycle(options) {
   const artifactDir = await mkdtemp(join(outputRoot, 'nextn-login-cycle-'))
   let flowStartedAt = 0
   try {
+    // Resource-backed native action labels are preparation, not an in-attempt
+    // discovery branch. They contain only fixed product strings.
+    const routeLabels = await loadRouteLabels()
     // Credential retrieval is preparation. A staged resume never reads or
     // writes credentials; it takes over the already-filled visible form.
     if (!options.resumeStaged) {
@@ -558,7 +768,7 @@ async function runCycle(options) {
     flowStartedAt = Date.now()
     const flowDeadlineAt = flowStartedAt + LOGIN_FLOW_CEILING_MS
     if (!options.resumeStaged) {
-      const routeState = await routeVisibleLogin(options, artifactDir)
+      const routeState = await routeVisibleLogin(options, artifactDir, routeLabels)
       if (routeState === 'native_authenticated') {
         return safeResult(true, 'native_promotion', '', {
           routeState,
@@ -628,7 +838,7 @@ async function runCycle(options) {
       return safeResult(false, 's4', 'submit_failed', { cfReadyToSubmitMs })
     }
     const promoted = Date.now() < flowDeadlineAt &&
-      await observeNativePromotion(options, artifactDir, forward.localPort, flowDeadlineAt)
+      await observeNativePromotion(options, artifactDir, forward.localPort, flowDeadlineAt, routeLabels)
     const elapsedMs = Date.now() - flowStartedAt
     if (!promoted) {
       const cookieShape = await runCookieShape({ port: forward.localPort })
@@ -690,6 +900,10 @@ async function main() {
   return result.ok ? 0 : 2
 }
 
-main().then((code) => {
-  process.exitCode = code
-})
+export { classifyNativeRoute, loadRouteLabels, resolveSemanticClickPoint }
+
+if (resolve(process.argv[1] || '') === fileURLToPath(import.meta.url)) {
+  main().then((code) => {
+    process.exitCode = code
+  })
+}

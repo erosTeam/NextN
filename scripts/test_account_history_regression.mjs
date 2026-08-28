@@ -7,6 +7,10 @@ import {
   runCfReviewedSubmit,
   runStagedLoginEpoch,
 } from './run_arkweb_login_keychain_epoch.mjs'
+import {
+  classifyNativeRoute,
+  resolveSemanticClickPoint,
+} from './run_nextn_account_login_cycle.mjs'
 
 const read = (path) => fs.readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 const root = fileURLToPath(new URL('../', import.meta.url))
@@ -330,7 +334,7 @@ ok('S0 uses the fixed current-process Favorites outcome when cached cards remain
   /requestOutcome === 'success'[\s\S]*summary\.error = false[\s\S]*summary\.authenticated = true/.test(accountS0Collector))
 const credentialPreparation = atomicLoginCycle.indexOf("invokeKeychainHandle('account'")
 const visibleLoginRoute = atomicLoginCycle.indexOf(
-  'routeVisibleLogin(options, artifactDir)', credentialPreparation)
+  'routeVisibleLogin(options, artifactDir, routeLabels)', credentialPreparation)
 const stagedCredentialEpoch = atomicLoginCycle.indexOf(
   'runStagedLoginEpoch({', visibleLoginRoute)
 const postCredentialCfGate = atomicLoginCycle.indexOf(
@@ -352,6 +356,11 @@ ok('authorized login is one external atomic original-WebView queue with autonomo
   /VISIBLE_LOGIN_ROUTE_ATTEMPTS = 12/.test(atomicLoginCycle) &&
   /for \(let index = 0; index < VISIBLE_LOGIN_ROUTE_ATTEMPTS; index \+= 1\)/.test(atomicLoginCycle) &&
   /index === 0 && !options\.resumeVisible/.test(atomicLoginCycle) &&
+  /bring-nextn-to-foreground-without-hidden-route/.test(atomicLoginCycle) &&
+  !/nextn_login_recovery/.test(atomicLoginCycle) &&
+  /account_verify_sign_in/.test(atomicLoginCycle) &&
+  /nextn-settings-root-account/.test(atomicLoginCycle) &&
+  /resolveSemanticClickPoint/.test(atomicLoginCycle) &&
   /nextn-account-list-root/.test(atomicLoginCycle) &&
   /nextn-account-saved-row/.test(atomicLoginCycle) &&
   !/nextn-account-native-root|nextn-account-authenticated-profile|nextn-account-authenticated-sign-out/.test(
@@ -375,7 +384,40 @@ ok('authorized login is one external atomic original-WebView queue with autonomo
   /waitForLoginWebExit\(port, deadlineAt\)/.test(atomicLoginCycle) &&
   /PROMOTION_LAYOUT_ATTEMPTS = 3/.test(atomicLoginCycle) &&
   !/PROMOTION_POLLS|postflight: actions/.test(atomicLoginCycle) &&
-  /accountList && savedAccount && !visibleWeb/.test(atomicLoginCycle))
+  /nativeAuthenticated: accountList && savedAccount && signOutAction && !web/.test(atomicLoginCycle) &&
+  /if \(state\.nativeAuthenticated\)/.test(atomicLoginCycle))
+const routeLabels = {
+  verify: new Set(['Verify again']),
+  signOut: new Set(['Sign out of this device']),
+}
+const retainedVerificationLayout = {
+  attributes: { visible: 'true' },
+  children: [
+    { attributes: { visible: 'true', id: 'nextn-account-list-root' } },
+    { attributes: { visible: 'true', id: 'nextn-account-saved-row' } },
+    {
+      attributes: { visible: 'true', clickable: 'true', enabled: 'true', bounds: '[900,1700][1280,1800]' },
+      children: [{ attributes: { visible: 'true', text: 'Verify again' } }],
+    },
+  ],
+}
+const authenticatedAccountLayout = {
+  attributes: { visible: 'true' },
+  children: [
+    { attributes: { visible: 'true', id: 'nextn-account-list-root' } },
+    { attributes: { visible: 'true', id: 'nextn-account-saved-row' } },
+    {
+      attributes: { visible: 'true', clickable: 'true', enabled: 'true', bounds: '[100,1500][1220,1650]' },
+      children: [{ attributes: { visible: 'true', accessibilityText: 'Sign out of this device' } }],
+    },
+  ],
+}
+ok('retained selected account is not native authentication and its normal verification action is semantic',
+  classifyNativeRoute(retainedVerificationLayout, routeLabels).nativeAuthenticated === false &&
+  JSON.stringify(resolveSemanticClickPoint(retainedVerificationLayout, routeLabels.verify)) ===
+    JSON.stringify({ x: 1090, y: 1750 }))
+ok('native promotion requires the signed-in-only account action in addition to the retained row',
+  classifyNativeRoute(authenticatedAccountLayout, routeLabels).nativeAuthenticated === true)
 ok('hidden empty challenge response fields do not manufacture a visible CAPTCHA',
   /const challengeWidgetPresent = challengeFrameDetected \|\| challengeContainerPresent/.test(arkWebLoginProbe) &&
   /const challengeResponsePresent = challengeResponse !== null/.test(arkWebLoginProbe) &&
