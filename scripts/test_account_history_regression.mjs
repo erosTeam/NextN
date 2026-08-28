@@ -245,7 +245,7 @@ ok('401 refresh atomically advances HUKS and the compatibility Cookie sink',
   /AccountSessionRepository\.saveVerifiedForAccount/.test(session) &&
   /NhCookieAuthority\.storeRefreshedAuthTokens/.test(session) &&
   /applyRefreshedApiTokens\(token, access, refresh, true\)/.test(session) &&
-  /if \(!responseCookiesAlreadyStored\)[\s\S]*NhCookieAuthority\.storeRefreshedAuthTokens/.test(
+  /if \(!responseCookieSinkOwnedByCaller\)[\s\S]*NhCookieAuthority\.storeRefreshedAuthTokens/.test(
     session.match(/static async applyRefreshedApiTokens\([\s\S]*?\n  \}/)?.[0] ?? '',
   ) &&
   /storeFirstPartyResponseCookies[\s\S]*NhCookieAuthority\.NH_ORIGIN,[\s\S]*header,[\s\S]*false,[\s\S]*true,/.test(

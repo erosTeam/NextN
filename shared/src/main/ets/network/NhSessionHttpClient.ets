@@ -405,6 +405,29 @@ export class NhSessionHttpClient {
     if (response.setCookieHeaders.length === 0) {
       return NhResponseAuthCookieResult.NONE
     }
+    let authResult: NhResponseAuthCookieResult = NhResponseAuthCookieResult.NONE
+    try {
+      if (readToken !== null && response.statusCode >= 200 && response.statusCode < 300) {
+        authResult = await NhAccountSessionService.applyResponseAuthSetCookies(
+          readToken,
+          response.setCookieHeaders,
+        )
+        if (authResult === NhResponseAuthCookieResult.REJECTED) {
+          NhAccountSessionService.recordResponseCookieCheckpoint(false, authResult)
+          return authResult
+        }
+      }
+    } catch (_error) {
+      NhAccountSessionService.recordResponseCookieCheckpoint(
+        false,
+        NhResponseAuthCookieResult.REJECTED,
+      )
+      return NhResponseAuthCookieResult.REJECTED
+    }
+    // The encrypted native generation is the crash-recovery authority. Commit
+    // an authenticated rotation there before mutating ArkWeb's compatibility
+    // jar; otherwise a process death between these two stores can leave a new
+    // browser refresh token paired with the old cold-start envelope.
     try {
       NhCookieAuthority.storeFirstPartyResponseCookies(response.setCookieHeaders)
     } catch (_error) {
@@ -414,25 +437,8 @@ export class NhSessionHttpClient {
       )
       return NhResponseAuthCookieResult.REJECTED
     }
-    if (readToken === null || response.statusCode < 200 || response.statusCode >= 300) {
-      NhAccountSessionService.recordResponseCookieCheckpoint(true, NhResponseAuthCookieResult.NONE)
-      return NhResponseAuthCookieResult.NONE
-    }
-    try {
-      const authResult: NhResponseAuthCookieResult =
-        await NhAccountSessionService.applyResponseAuthSetCookies(
-          readToken,
-          response.setCookieHeaders,
-        )
-      NhAccountSessionService.recordResponseCookieCheckpoint(true, authResult)
-      return authResult
-    } catch (_error) {
-      NhAccountSessionService.recordResponseCookieCheckpoint(
-        true,
-        NhResponseAuthCookieResult.REJECTED,
-      )
-      return NhResponseAuthCookieResult.REJECTED
-    }
+    NhAccountSessionService.recordResponseCookieCheckpoint(true, authResult)
+    return authResult
   }
 
   private static assertFirstPartyApiUrl(url: string): void {

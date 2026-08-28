@@ -108,7 +108,7 @@ ok('refresh accepts only a complete JSON or fenced Set-Cookie pair and persists 
   /responseAccess \?\?[\s\S]*currentAuthCookieValue\('access_token'\)/.test(responseCookieApply) &&
   /responseRefresh \?\?[\s\S]*currentAuthCookieValue\('refresh_token'\)/.test(responseCookieApply) &&
   /applyRefreshedApiTokens\(token, access, refresh, true\)/.test(responseCookieApply) &&
-  /if \(!responseCookiesAlreadyStored\)[\s\S]*NhCookieAuthority\.storeRefreshedAuthTokens/.test(
+  /if \(!responseCookieSinkOwnedByCaller\)[\s\S]*NhCookieAuthority\.storeRefreshedAuthTokens/.test(
     refreshApply,
   ))
 
@@ -155,10 +155,19 @@ ok('every bounded first-party Set-Cookie response crosses one global persistence
     responseCookieSink,
   ) &&
   !/HttpOnly[^\n]*\.test\(header\)/.test(responseCookieSink) &&
+  /applyResponseAuthSetCookies\([\s\S]*storeFirstPartyResponseCookies/.test(sessionClient) &&
+  !/storeFirstPartyResponseCookies\([\s\S]*applyResponseAuthSetCookies/.test(sessionClient) &&
   JSON.stringify(relativeMatches(/\.setCookieHeaders/)) === JSON.stringify([
     'shared/src/main/ets/network/NhApiHttpTransport.ets',
     'shared/src/main/ets/network/NhSessionHttpClient.ets',
   ]))
+
+ok('cold restore reconciles ArkWeb only against the sealed request generation',
+  /let hydrated: boolean = false[\s\S]*ensureRegularArkWebCookieJar\(\)/.test(sessionService) &&
+  /existingMatchesSealed[\s\S]*authCookieSnapshotContains\(existingAuthCookies, sealedAuthCookies\)/.test(
+    sessionService,
+  ) &&
+  /existingComplete && existingMatchesSealed/.test(sessionService))
 
 if (failures > 0) {
   console.error(`[FAIL] network authority contract: ${failures} failure(s)`)

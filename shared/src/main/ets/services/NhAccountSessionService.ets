@@ -387,7 +387,7 @@ export class NhAccountSessionService {
     token: NhAccountAuthenticatedReadToken,
     accessToken: string,
     refreshToken: string,
-    responseCookiesAlreadyStored: boolean = false,
+    responseCookieSinkOwnedByCaller: boolean = false,
   ): Promise<boolean> {
     if (!NhAccountSessionService.isAuthenticatedReadCredentialCurrent(token)) {
       return false
@@ -476,13 +476,12 @@ export class NhAccountSessionService {
       NhAccountSessionService.credentialRevision += 1
       token.credentialRevision = NhAccountSessionService.credentialRevision
       NhAccountSessionService.recordAuthCookieExpiryShape('refresh_checkpoint', authCookies)
-      // A response-Set-Cookie path has already written the server's complete
-      // attributes and saved the regular jar once. Rewriting the same values
-      // here with the JSON-refresh compatibility defaults would silently
-      // replace server expiry/SameSite attributes and save a second time.
-      // Only a JSON token response without authoritative auth Set-Cookie needs
+      // A response-Set-Cookie caller owns the later one-shot raw-header sink.
+      // Writing JSON compatibility defaults here would create an intermediate
+      // jar generation and then replace the server expiry/SameSite attributes.
+      // Only a JSON token response without an authoritative Cookie sink needs
       // this compatibility hydration.
-      if (!responseCookiesAlreadyStored) {
+      if (!responseCookieSinkOwnedByCaller) {
         try {
           NhCookieAuthority.storeRefreshedAuthTokens(access, refresh)
         } catch (_error) {}
@@ -758,9 +757,9 @@ export class NhAccountSessionService {
   /**
    * Makes a valid sealed browser identity usable by the regular ArkWeb store.
    * The visible login and the retained transport share that store, but a
-   * process restart can retain the encrypted record while losing a session
-   * cookie. Never write outside the fixed first-party root and never replace a
-   * browser token that ArkWeb has already refreshed on its own.
+   * process restart can retain the encrypted record while losing or partially
+   * advancing a session cookie. Never write outside the fixed first-party root;
+   * only a jar matching the sealed request generation can suppress hydration.
    */
   static async ensureRegularArkWebCookieJar(): Promise<boolean> {
     const sealedCookieHeader: string = NhAccountSessionService.sealedFallbackCookieHeader
@@ -1994,12 +1993,14 @@ export class NhAccountSessionService {
     }
     NhAccountSessionService.discardPendingVisibleBrowserSession()
     NhAccountSessionService.recordDiagnosticStage(AccountSessionDiagnosticStage.RESTORE_READY)
-    let hydrated: boolean = regularJarReady
-    if (!hydrated) {
-      try {
-        hydrated = await NhAccountSessionService.ensureRegularArkWebCookieJar()
-      } catch (_error) {}
-    }
+    // Presence alone is insufficient: a crash between two persistence stores
+    // can leave ArkWeb and the sealed request generation on different token
+    // pairs. The hydrator accepts an existing jar only when it contains the
+    // exact sealed pair; otherwise the encrypted generation repairs the jar.
+    let hydrated: boolean = false
+    try {
+      hydrated = await NhAccountSessionService.ensureRegularArkWebCookieJar()
+    } catch (_error) {}
     if (restoredEpoch !== NhAccountSessionService.sessionEpoch) {
       return NhAccountSessionService.isAuthenticated()
     }
@@ -2127,12 +2128,15 @@ export class NhAccountSessionService {
       )
       const existingAuthCookies: SealedAuthCookie[] =
         await NhAccountSessionService.captureFirstPartyAuthCookies()
-      // A retained browser may have silently rotated its complete renewal
-      // chain. Keep it as authority. A lone access token is not a complete
-      // session and must not suppress restoration of refresh/session cookies.
+      // The encrypted generation is the native request and crash-recovery
+      // authority. A complete but different browser pair may be the first half
+      // of an interrupted response checkpoint, so presence alone cannot make
+      // it authoritative or suppress sealed-jar repair.
       const existingComplete: boolean = NhAccountSessionService.hasAccessAuthCookie(existingAuthCookies) &&
         (sealedAuthCookies.length === 0 || NhAccountSessionService.hasRefreshAuthCookie(existingAuthCookies))
-      if (NhAccountSessionService.hasLoginCookies(existing) && existingComplete) {
+      const existingMatchesSealed: boolean = sealedAuthCookies.length === 0 ||
+        NhAccountSessionService.authCookieSnapshotContains(existingAuthCookies, sealedAuthCookies)
+      if (NhAccountSessionService.hasLoginCookies(existing) && existingComplete && existingMatchesSealed) {
         if (NhAccountSessionService.isCurrentSealedSession(sealedCookieHeader, hydrationEpoch)) {
           NhAccountSessionService.cookieHeader = existing
         }
