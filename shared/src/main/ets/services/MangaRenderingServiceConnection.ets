@@ -1,4 +1,3 @@
-import { http } from '@kit.NetworkKit'
 import { MangaRenderingServiceConfig } from './MangaRenderingServiceConfig'
 import { MangaRenderingServiceCredential } from './MangaRenderingServiceSecretStore'
 import { MangaRenderingServiceSession } from './MangaRenderingServiceSession'
@@ -31,7 +30,7 @@ export class MangaRenderingServiceConnection {
     const validatedBaseUrl: string = MangaRenderingServiceConfig.validatedBaseUrl(baseUrl)
     const response: MangaRenderingServiceTextResponse = await MangaRenderingServiceTransport.requestText(
       validatedBaseUrl + OPENAPI_PATH,
-      http.RequestMethod.GET,
+      'GET',
       { 'Accept': 'application/json', 'User-Agent': 'NextN manga translation' },
       '',
       CONNECT_TIMEOUT_MS,
@@ -45,7 +44,7 @@ export class MangaRenderingServiceConnection {
     const token: string = await MangaRenderingServiceSession.acquire(validatedBaseUrl, credential)
     const auth: MangaRenderingServiceTextResponse = await MangaRenderingServiceTransport.requestText(
       validatedBaseUrl + AUTH_CHECK_PATH,
-      http.RequestMethod.GET,
+      'GET',
       {
         'Accept': 'application/json',
         'User-Agent': 'NextN manga translation',

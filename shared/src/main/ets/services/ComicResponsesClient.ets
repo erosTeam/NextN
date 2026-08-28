@@ -1,4 +1,4 @@
-import { http } from '@kit.NetworkKit'
+import { AxiosHttpClient, AxiosTextResponse } from '../network/AxiosHttpClient'
 import { ComicTranslationDiagnosticLogger } from './ComicTranslationDiagnosticLogger'
 import { ComicResponsesProtocol } from './ComicResponsesProtocol'
 
@@ -105,32 +105,27 @@ export class ComicResponsesClient {
       imageDataUrl,
       additionalImages,
     )
-    let request: http.HttpRequest | null = null
     try {
-      request = http.createHttp()
-      const response: http.HttpResponse = await request.request(
+      const response: AxiosTextResponse = await AxiosHttpClient.requestText(
         ComicResponsesClient.responsesUrl(config.baseUrl),
+        'POST',
         {
-          method: http.RequestMethod.POST,
-          extraData: body,
-          expectDataType: http.HttpDataType.STRING,
-          usingCache: false,
-          connectTimeout: RESPONSES_CONNECT_TIMEOUT_MS,
-          readTimeout: RESPONSES_READ_TIMEOUT_MS,
-          header: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + config.accessToken,
-            'User-Agent': 'NextN comic translation',
-          },
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + config.accessToken,
+          'User-Agent': 'NextN comic translation',
         },
+        body,
+        RESPONSES_CONNECT_TIMEOUT_MS,
+        RESPONSES_READ_TIMEOUT_MS,
+        RESPONSES_MAX_BODY_CHARS,
       )
-      const responseBody: string = typeof response.result === 'string' ? response.result : ''
+      const responseBody: string = response.body
       if (responseBody.length > RESPONSES_MAX_BODY_CHARS) {
         throw new ComicProviderStageError('protocol', 'response_size')
       }
-      if (response.responseCode !== 200) {
-        throw new ComicProviderHttpError(response.responseCode, responseBody)
+      if (response.statusCode !== 200) {
+        throw new ComicProviderHttpError(response.statusCode, responseBody)
       }
       try {
         return ComicResponsesProtocol.extractAssistantJson(responseBody, false)
@@ -152,10 +147,6 @@ export class ComicResponsesClient {
         '',
       )
       throw ComicResponsesClient.stageError('transport', error as Error)
-    } finally {
-      if (request !== null) {
-        request.destroy()
-      }
     }
   }
 

@@ -1,7 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { fileIo } from '@kit.CoreFileKit'
-import { http } from '@kit.NetworkKit'
+import { StreamingHttpClient, StreamingHttpResponse } from '../network/StreamingHttpClient'
 
 const MODEL_DIRECTORY: string = 'comic-translation-models/ysgyolo-1.2-os1-ncnn-fp32-v1'
 const MODEL_RELEASE_TAG: string = 'model-pack-v1.1.6'
@@ -374,59 +374,43 @@ export class ComicTranslationModelService {
     const url: string = `https://github.com/erosTeam/NextE-Models/releases/download/` +
       `${MODEL_RELEASE_TAG}/${fileName}`
     let file: fileIo.File | null = null
-    let request: http.HttpRequest | null = null
     let written: number = 0
-    let failed: boolean = false
     try {
       file = fileIo.openSync(
         path,
         fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC,
       )
-      request = http.createHttp()
-      request.on('dataReceiveProgress', (progress: http.DataReceiveProgressInfo): void => {
-        if (progress.totalSize > expectedBytes) {
-          failed = true
-          request?.destroy()
-        }
-      })
-      request.on('dataReceive', (data: ArrayBuffer): void => {
-        if (file === null || failed || written + data.byteLength > expectedBytes) {
-          failed = true
-          request?.destroy()
-          return
-        }
-        try {
-          // The file pointer advances per callback. Supplying the cumulative
-          // byte count as offset would skip bytes after the first chunk.
-          const count: number = fileIo.writeSync(file.fd, data)
-          if (count !== data.byteLength) {
-            failed = true
-            request?.destroy()
-            return
+      const headers: Record<string, string> = {}
+      headers['Accept'] = 'application/octet-stream'
+      headers['User-Agent'] = 'NextN/1.0.0'
+      const response: StreamingHttpResponse = await StreamingHttpClient.get(
+        url,
+        headers,
+        DOWNLOAD_CONNECT_TIMEOUT_MS,
+        DOWNLOAD_READ_TIMEOUT_MS,
+        expectedBytes,
+        (data: ArrayBuffer): boolean => {
+          if (file === null) {
+            return false
           }
-          written += count
-        } catch (_error) {
-          failed = true
-          request?.destroy()
-        }
-      })
-      const status: number = await request.requestInStream(url, {
-        method: http.RequestMethod.GET,
-        usingCache: false,
-        connectTimeout: DOWNLOAD_CONNECT_TIMEOUT_MS,
-        readTimeout: DOWNLOAD_READ_TIMEOUT_MS,
-        header: {
-          Accept: 'application/octet-stream',
-          'User-Agent': 'NextN/1.0.0',
+          try {
+            const count: number = fileIo.writeSync(file.fd, data)
+            if (count !== data.byteLength) {
+              return false
+            }
+            written += count
+            return true
+          } catch (_error) {
+            return false
+          }
         },
-      })
-      if (failed || status < 200 || status >= 300 || written !== expectedBytes) {
+      )
+      if (response.limitExceeded || response.sinkRejected || response.statusCode < 200 ||
+        response.statusCode >= 300 || written !== expectedBytes ||
+        response.receivedBytes !== expectedBytes) {
         throw new Error(`${fileName} download failed`)
       }
     } finally {
-      if (request !== null) {
-        request.destroy()
-      }
       if (file !== null) {
         fileIo.closeSync(file)
       }

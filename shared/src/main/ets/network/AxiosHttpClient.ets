@@ -26,11 +26,12 @@ export class AxiosHttpClient {
     maxResponseBytes: number = -1,
     interceptorChain: http.HttpInterceptorChain | null = null,
     maxRedirects: number = -1,
+    usingCache: boolean = false,
   ): Promise<AxiosTextResponse> {
     const config: AxiosRequestConfig<string> = {
       url: url,
       method: method,
-      headers: headers,
+      headers: AxiosHttpClient.requestHeaders(headers, usingCache),
       responseType: 'string',
       connectTimeout: connectTimeoutMs,
       readTimeout: readTimeoutMs,
@@ -63,11 +64,12 @@ export class AxiosHttpClient {
     maxBytes: number,
     connectTimeoutMs: number,
     readTimeoutMs: number,
+    usingCache: boolean = false,
   ): Promise<AxiosBinaryResponse> {
     const config: AxiosRequestConfig<string> = {
       url: url,
       method: 'GET',
-      headers: headers,
+      headers: AxiosHttpClient.requestHeaders(headers, usingCache),
       responseType: 'array_buffer',
       maxContentLength: maxBytes,
       connectTimeout: connectTimeoutMs,
@@ -96,11 +98,12 @@ export class AxiosHttpClient {
     maxResponseBytes: number,
     connectTimeoutMs: number,
     readTimeoutMs: number,
+    usingCache: boolean = false,
   ): Promise<AxiosBinaryResponse> {
     const config: AxiosRequestConfig<ArrayBuffer> = {
       url: url,
       method: method,
-      headers: headers,
+      headers: AxiosHttpClient.requestHeaders(headers, usingCache),
       data: body,
       responseType: 'array_buffer',
       maxContentLength: maxResponseBytes,
@@ -125,6 +128,33 @@ export class AxiosHttpClient {
 
   private static acceptStatus(status: number): boolean {
     return status >= 100 && status <= 599
+  }
+
+  /**
+   * The bundled Harmony Axios adapter does not forward NetworkKit's
+   * `usingCache` option. Preserve the callers' explicit non-cache contract at
+   * the HTTP boundary instead of silently falling back to NetworkKit's
+   * cache-enabled default. A caller that deliberately wants the platform
+   * cache opts in and keeps its original headers unchanged.
+   */
+  private static requestHeaders(
+    headers: Record<string, string>,
+    usingCache: boolean,
+  ): Record<string, string> {
+    const result: Record<string, string> = {}
+    const names: string[] = Object.keys(headers)
+    let hasCacheControl: boolean = false
+    for (let index: number = 0; index < names.length; index++) {
+      const name: string = names[index]
+      result[name] = headers[name]
+      if (name.toLowerCase() === 'cache-control') {
+        hasCacheControl = true
+      }
+    }
+    if (!usingCache && !hasCacheControl) {
+      result['Cache-Control'] = 'no-cache, no-store'
+    }
+    return result
   }
 
   private static responseEtag(rawHeader: string): string {

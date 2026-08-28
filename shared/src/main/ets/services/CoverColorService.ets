@@ -1,7 +1,7 @@
 import { taskpool } from '@kit.ArkTS'
 import { image } from '@kit.ImageKit'
 import { effectKit } from '@kit.ArkGraphics2D'
-import { http } from '@kit.NetworkKit'
+import { AxiosBinaryResponse, AxiosHttpClient } from '../network/AxiosHttpClient'
 
 const MAX_COVER_COLOR_MEMORY_ENTRIES: number = 512
 const MAX_COVER_COLOR_CONCURRENCY: number = 2
@@ -18,21 +18,21 @@ async function extractCoverColor(url: string): Promise<number> {
   const timeoutMs: number = 15000
   let source: image.ImageSource | undefined = undefined
   let pixelMap: image.PixelMap | undefined = undefined
-  let request: http.HttpRequest | undefined = undefined
   try {
-    request = http.createHttp()
-    const response: http.HttpResponse = await request.request(url, {
-      method: http.RequestMethod.GET,
-      expectDataType: http.HttpDataType.ARRAY_BUFFER,
-      usingCache: true,
-      connectTimeout: timeoutMs,
-      readTimeout: timeoutMs,
-      header: { Accept: 'image/*' },
-    })
-    if (response.responseCode !== 200 || !(response.result instanceof ArrayBuffer)) {
+    const headers: Record<string, string> = {}
+    headers['Accept'] = 'image/*'
+    const response: AxiosBinaryResponse = await AxiosHttpClient.requestBinary(
+      url,
+      headers,
+      16 * 1024 * 1024,
+      timeoutMs,
+      timeoutMs,
+      true,
+    )
+    if (response.statusCode !== 200 || response.bytes === null) {
       return 0
     }
-    source = image.createImageSource(response.result)
+    source = image.createImageSource(response.bytes)
     const options: image.DecodingOptions = {
       editable: false,
       desiredSize: { width: decodeSize, height: decodeSize },
@@ -45,9 +45,6 @@ async function extractCoverColor(url: string): Promise<number> {
   } catch (_error) {
     return 0
   } finally {
-    if (request !== undefined) {
-      request.destroy()
-    }
     if (pixelMap !== undefined) {
       await pixelMap.release()
     }

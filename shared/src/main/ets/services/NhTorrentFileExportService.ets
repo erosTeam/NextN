@@ -1,8 +1,8 @@
 import { common } from '@kit.AbilityKit'
 import { fileIo, fileUri } from '@kit.CoreFileKit'
-import { http } from '@kit.NetworkKit'
 import { uniformTypeDescriptor as utd } from '@kit.ArkData'
 import { systemShare } from '@kit.ShareKit'
+import { StreamingHttpClient, StreamingHttpResponse } from '../network/StreamingHttpClient'
 
 const TORRENT_EXPORT_DIRECTORY: string = 'nextn-torrent-exports'
 const MAX_TORRENT_BYTES: number = 10 * 1024 * 1024
@@ -63,9 +63,7 @@ export class NhTorrentFileExportService {
     NhTorrentFileExportService.removeIfExists(temporaryPath)
 
     let file: fileIo.File | null = null
-    let request: http.HttpRequest | null = null
     let written: number = 0
-    let tooLarge: boolean = false
     let writeFailure: boolean = false
     let promoted: boolean = false
     try {
@@ -73,56 +71,41 @@ export class NhTorrentFileExportService {
         temporaryPath,
         fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC,
       )
-      request = http.createHttp()
-      request.on('dataReceiveProgress', (info: http.DataReceiveProgressInfo): void => {
-        if (info.totalSize > MAX_TORRENT_BYTES) {
-          tooLarge = true
-          request?.destroy()
-        }
-      })
-      request.on('dataReceive', (data: ArrayBuffer): void => {
-        if (file === null || tooLarge || writeFailure) {
-          return
-        }
-        try {
-          if (written + data.byteLength > MAX_TORRENT_BYTES) {
-            tooLarge = true
-            request?.destroy()
-            return
+      const headers: Record<string, string> = {}
+      headers['Accept'] = 'application/x-bittorrent, application/octet-stream;q=0.9'
+      headers['User-Agent'] = 'NextN/1.0.0'
+      const response: StreamingHttpResponse = await StreamingHttpClient.get(
+        issuedUrl,
+        headers,
+        CONNECT_TIMEOUT_MS,
+        READ_TIMEOUT_MS,
+        MAX_TORRENT_BYTES,
+        (data: ArrayBuffer): boolean => {
+          if (file === null || writeFailure) {
+            return false
           }
-          // `offset` is relative to the current pointer; ordinary streamed
-          // chunks must append directly at that pointer.
-          const count: number = fileIo.writeSync(file.fd, data)
-          if (count !== data.byteLength) {
-            throw new Error('Torrent file write was incomplete')
+          try {
+            const count: number = fileIo.writeSync(file.fd, data)
+            if (count !== data.byteLength) {
+              throw new Error('Torrent file write was incomplete')
+            }
+            written += count
+            return true
+          } catch (_error) {
+            writeFailure = true
+            return false
           }
-          written += count
-        } catch (_error) {
-          writeFailure = true
-          request?.destroy()
-        }
-      })
-      const status: number = await request.requestInStream(issuedUrl, {
-        method: http.RequestMethod.GET,
-        header: {
-          Accept: 'application/x-bittorrent, application/octet-stream;q=0.9',
-          'User-Agent': 'NextN/1.0.0',
         },
-        connectTimeout: CONNECT_TIMEOUT_MS,
-        readTimeout: READ_TIMEOUT_MS,
-        usingCache: false,
-      })
-      if (tooLarge) {
+      )
+      if (response.limitExceeded) {
         throw new Error('Torrent file exceeds the private export limit')
       }
-      if (writeFailure) {
+      if (writeFailure || response.sinkRejected) {
         throw new Error('Unable to save torrent file')
       }
-      if (status < 200 || status >= 300 || written <= 0) {
+      if (response.statusCode < 200 || response.statusCode >= 300 || written <= 0) {
         throw new Error('Torrent download was unavailable')
       }
-      request.destroy()
-      request = null
       fileIo.closeSync(file)
       file = null
       NhTorrentFileExportService.removeIfExists(filePath)
@@ -134,9 +117,6 @@ export class NhTorrentFileExportService {
       promoted = true
       return filePath
     } finally {
-      if (request !== null) {
-        request.destroy()
-      }
       if (file !== null) {
         fileIo.closeSync(file)
       }

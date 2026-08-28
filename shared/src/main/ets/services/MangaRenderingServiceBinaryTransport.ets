@@ -1,4 +1,4 @@
-import { http } from '@kit.NetworkKit'
+import { AxiosBinaryResponse, AxiosHttpClient } from '../network/AxiosHttpClient'
 
 const MAX_BINARY_RESPONSE_BYTES: number = 80 * 1024 * 1024
 
@@ -21,35 +21,27 @@ export class MangaRenderingServiceBinaryTransport {
       maxResponseBytes <= 0 || maxResponseBytes > MAX_BINARY_RESPONSE_BYTES) {
       throw new Error('Manga rendering service binary request is invalid')
     }
-    let request: http.HttpRequest | null = null
-    try {
-      request = http.createHttp()
-      const rawBody: ArrayBuffer = body.buffer.slice(
-        body.byteOffset,
-        body.byteOffset + body.byteLength,
-      )
-      const response: http.HttpResponse = await request.request(url, {
-        method: http.RequestMethod.POST,
-        extraData: rawBody,
-        expectDataType: http.HttpDataType.ARRAY_BUFFER,
-        usingCache: false,
-        connectTimeout: connectTimeoutMs,
-        readTimeout: readTimeoutMs,
-        header: headers,
-      })
-      const result: MangaRenderingServiceBinaryResponse = new MangaRenderingServiceBinaryResponse()
-      result.statusCode = response.responseCode
-      if (response.result instanceof ArrayBuffer) {
-        if (response.result.byteLength > maxResponseBytes) {
-          throw new Error('Manga rendering service binary response is too large')
-        }
-        result.body = new Uint8Array(response.result)
+    const rawBody: ArrayBuffer = body.buffer.slice(
+      body.byteOffset,
+      body.byteOffset + body.byteLength,
+    )
+    const response: AxiosBinaryResponse = await AxiosHttpClient.requestBinaryWithBody(
+      url,
+      'POST',
+      headers,
+      rawBody,
+      maxResponseBytes,
+      connectTimeoutMs,
+      readTimeoutMs,
+    )
+    const result: MangaRenderingServiceBinaryResponse = new MangaRenderingServiceBinaryResponse()
+    result.statusCode = response.statusCode
+    if (response.bytes !== null) {
+      if (response.bytes.byteLength > maxResponseBytes) {
+        throw new Error('Manga rendering service binary response is too large')
       }
-      return result
-    } finally {
-      if (request !== null) {
-        request.destroy()
-      }
+      result.body = new Uint8Array(response.bytes)
     }
+    return result
   }
 }

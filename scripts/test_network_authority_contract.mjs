@@ -32,6 +32,7 @@ const sessionClient = read('shared/src/main/ets/network/NhSessionHttpClient.ets'
 const nhApiHttpTransport = read('shared/src/main/ets/network/NhApiHttpTransport.ets')
 const sessionService = read('shared/src/main/ets/services/NhAccountSessionService.ets')
 const cookieAuthority = read('shared/src/main/ets/services/NhCookieAuthority.ets')
+const streamingTransport = read('shared/src/main/ets/network/StreamingHttpClient.ets')
 
 ok('Axios is created only by the bounded base transport',
   JSON.stringify(relativeMatches(/(?:import axios|axios\.request)/)) === JSON.stringify([
@@ -43,6 +44,20 @@ ok('Axios is created only by the bounded base transport',
   /interceptorChain: http\.HttpInterceptorChain \| null = null/.test(axiosTransport) &&
   /config\.interceptorChain = interceptorChain/.test(axiosTransport) &&
   /config\.maxRedirects = maxRedirects/.test(axiosTransport))
+
+ok('NetworkKit request ownership is limited to the bounded transports',
+  JSON.stringify(relativeMatches(/from '@kit\.NetworkKit'/)) === JSON.stringify([
+    'shared/src/main/ets/network/AxiosHttpClient.ets',
+    'shared/src/main/ets/network/NhApiHttpTransport.ets',
+    'shared/src/main/ets/network/StreamingHttpClient.ets',
+  ]) &&
+  JSON.stringify(relativeMatches(/http\.createHttp\(\)/)) === JSON.stringify([
+    'shared/src/main/ets/network/StreamingHttpClient.ets',
+  ]) &&
+  /usingCache: boolean = false/.test(axiosTransport) &&
+  /Cache-Control'\] = 'no-cache, no-store'/.test(axiosTransport) &&
+  /usingCache: false/.test(streamingTransport) &&
+  /result\.limitExceeded \|\| result\.sinkRejected \|\| result\.cancelled/.test(streamingTransport))
 
 ok('ArkWeb cookies have exactly one native authority',
   JSON.stringify(relativeMatches(/WebCookieManager\./)) === JSON.stringify([

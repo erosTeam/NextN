@@ -1,6 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import { fileIo } from '@kit.CoreFileKit'
-import { http } from '@kit.NetworkKit'
+import { StreamingHttpClient, StreamingHttpResponse } from '../network/StreamingHttpClient'
 import { ReaderImageCacheSettings } from '../settings/ReaderImageCacheSettings'
 
 const CACHE_DIR_NAME: string = 'nextn-reader-image-cache'
@@ -167,7 +167,6 @@ export class ReaderImageCacheService {
     const tmpPath: string = `${filePath}.part`
     ReaderImageCacheService.removeIfExists(tmpPath)
     let file: fileIo.File | null = null
-    let request: http.HttpRequest | null = null
     let written: number = 0
     let writeFailureMessage: string = ''
     let bypassCache: boolean = false
@@ -179,58 +178,49 @@ export class ReaderImageCacheService {
         tmpPath,
         fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC,
       )
-      request = http.createHttp()
-      request.on('dataReceiveProgress', (info: http.DataReceiveProgressInfo): void => {
-        if (info.totalSize > limitBytes) {
-          bypassCache = true
-          request?.destroy()
-        }
-      })
-      request.on('dataReceive', (data: ArrayBuffer): void => {
-        if (file === null || writeFailureMessage.length > 0 || bypassCache) {
-          return
-        }
-        try {
-          if (written + data.byteLength > limitBytes) {
-            bypassCache = true
-            request?.destroy()
-            return
+      const headers: Record<string, string> = {}
+      headers['Accept'] = 'image/*'
+      headers['User-Agent'] = 'NextN/1.0.0'
+      const response: StreamingHttpResponse = await StreamingHttpClient.get(
+        url,
+        headers,
+        CONNECT_TIMEOUT_MS,
+        READ_TIMEOUT_MS,
+        limitBytes,
+        (data: ArrayBuffer): boolean => {
+          if (file === null || writeFailureMessage.length > 0) {
+            return false
           }
-          const count: number = fileIo.writeSync(file.fd, data)
-          if (count !== data.byteLength) {
-            throw new Error('Unable to save Reader image')
+          try {
+            const count: number = fileIo.writeSync(file.fd, data)
+            if (count !== data.byteLength) {
+              throw new Error('Unable to save Reader image')
+            }
+            written += count
+            return true
+          } catch (error) {
+            const failure: Error = error as Error
+            writeFailureMessage = failure.message.length > 0 ? failure.message : 'Unable to save Reader image'
+            return false
           }
-          written += count
-        } catch (error) {
-          const failure: Error = error as Error
-          writeFailureMessage = failure.message.length > 0 ? failure.message : 'Unable to save Reader image'
-          request?.destroy()
-        }
-      })
-      const status: number = await request.requestInStream(url, {
-        method: http.RequestMethod.GET,
-        header: {
-          Accept: 'image/*',
-          'User-Agent': 'NextN/1.0.0',
         },
-        connectTimeout: CONNECT_TIMEOUT_MS,
-        readTimeout: READ_TIMEOUT_MS,
-        usingCache: false,
-      })
+      )
+      bypassCache = response.limitExceeded
       if (bypassCache) {
         return ReaderImageCacheService.remoteResult(url)
       }
       if (writeFailureMessage.length > 0) {
         throw new Error(writeFailureMessage)
       }
-      if (status < 200 || status >= 300) {
-        throw new Error(`Reader image request failed (${status}).`)
+      if (response.sinkRejected) {
+        throw new Error('Unable to save Reader image')
+      }
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw new Error(`Reader image request failed (${response.statusCode}).`)
       }
       if (written <= 0) {
         throw new Error('Reader image response was empty')
       }
-      request.destroy()
-      request = null
       fileIo.closeSync(file)
       file = null
       ReaderImageCacheService.removeIfExists(filePath)
@@ -254,9 +244,6 @@ export class ReaderImageCacheService {
       }
       throw error as Error
     } finally {
-      if (request !== null) {
-        request.destroy()
-      }
       if (file !== null) {
         fileIo.closeSync(file)
       }

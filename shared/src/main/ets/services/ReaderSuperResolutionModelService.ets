@@ -2,8 +2,8 @@ import { common } from '@kit.AbilityKit'
 import { deviceInfo } from '@kit.BasicServicesKit'
 import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { fileIo } from '@kit.CoreFileKit'
-import { http } from '@kit.NetworkKit'
 import { NhReaderSuperResolutionModel } from '../model/NhReaderSettings'
+import { StreamingHttpClient, StreamingHttpResponse } from '../network/StreamingHttpClient'
 import { connectReaderEnhancementModels } from '../state/ReaderEnhancementModelsState'
 import { ReaderNativeSuperResolutionConfig } from './ReaderNativeSuperResolution'
 
@@ -581,56 +581,43 @@ export class ReaderSuperResolutionModelService {
       const temporaryPath: string = `${asset.finalPath}.part`
       ReaderSuperResolutionModelService.removeIfExists(temporaryPath)
       let file: fileIo.File | null = null
-      let request: http.HttpRequest | null = null
       let written: number = 0
-      let failed: boolean = false
       let promoted: boolean = false
       try {
         file = fileIo.openSync(
           temporaryPath,
           fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC,
         )
-        request = http.createHttp()
-        request.on('dataReceiveProgress', (progress: http.DataReceiveProgressInfo): void => {
-          if (progress.totalSize > asset.bytes) {
-            failed = true
-            request?.destroy()
-          }
-        })
-        request.on('dataReceive', (data: ArrayBuffer): void => {
-          if (file === null || failed || written + data.byteLength > asset.bytes) {
-            failed = true
-            request?.destroy()
-            return
-          }
-          try {
-            const count: number = fileIo.writeSync(file.fd, data)
-            if (count !== data.byteLength) {
-              failed = true
-              request?.destroy()
-              return
+        const headers: Record<string, string> = {}
+        headers['Accept'] = 'application/octet-stream'
+        headers['User-Agent'] = 'NextN/1.0.0'
+        const response: StreamingHttpResponse = await StreamingHttpClient.get(
+          asset.urls[index],
+          headers,
+          CONNECT_TIMEOUT_MS,
+          READ_TIMEOUT_MS,
+          asset.bytes,
+          (data: ArrayBuffer): boolean => {
+            if (file === null) {
+              return false
             }
-            written += count
-          } catch (_error) {
-            failed = true
-            request?.destroy()
-          }
-        })
-        const status: number = await request.requestInStream(asset.urls[index], {
-          method: http.RequestMethod.GET,
-          usingCache: false,
-          connectTimeout: CONNECT_TIMEOUT_MS,
-          readTimeout: READ_TIMEOUT_MS,
-          header: {
-            Accept: 'application/octet-stream',
-            'User-Agent': 'NextN/1.0.0',
+            try {
+              const count: number = fileIo.writeSync(file.fd, data)
+              if (count !== data.byteLength) {
+                return false
+              }
+              written += count
+              return true
+            } catch (_error) {
+              return false
+            }
           },
-        })
-        if (failed || status < 200 || status >= 300 || written !== asset.bytes) {
+        )
+        if (response.limitExceeded || response.sinkRejected || response.statusCode < 200 ||
+          response.statusCode >= 300 || written !== asset.bytes ||
+          response.receivedBytes !== asset.bytes) {
           throw new Error('Reader enhancement model download failed')
         }
-        request.destroy()
-        request = null
         fileIo.closeSync(file)
         file = null
         if (!ReaderSuperResolutionModelService.validateFile(temporaryPath, asset.bytes, asset.sha256)) {
@@ -643,9 +630,6 @@ export class ReaderSuperResolutionModelService {
       } catch (error) {
         lastError = error as Error
       } finally {
-        if (request !== null) {
-          request.destroy()
-        }
         if (file !== null) {
           fileIo.closeSync(file)
         }

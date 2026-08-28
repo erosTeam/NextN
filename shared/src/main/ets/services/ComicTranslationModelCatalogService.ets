@@ -1,5 +1,5 @@
 import { common } from '@kit.AbilityKit'
-import { http } from '@kit.NetworkKit'
+import { AxiosHttpClient, AxiosTextResponse } from '../network/AxiosHttpClient'
 import { LlmSourceRuntimeConfig, LlmSourceRuntimeResolver } from './LlmSourceRuntimeResolver'
 
 const MODEL_CATALOG_CONNECT_TIMEOUT_MS: number = 15000
@@ -29,10 +29,10 @@ export class ComicTranslationModelCatalogService {
   ): Promise<string[]> {
     const runtime: LlmSourceRuntimeConfig =
       await LlmSourceRuntimeResolver.resolveCatalogSource(context, sourceProfileId)
-    const response: http.HttpResponse = await ComicTranslationModelCatalogService.requestApi(runtime)
-    const body: string = typeof response.result === 'string' ? response.result : ''
-    if (response.responseCode !== 200) {
-      throw new Error('OpenAI model catalog failed (HTTP ' + response.responseCode + ')')
+    const response: AxiosTextResponse = await ComicTranslationModelCatalogService.requestApi(runtime)
+    const body: string = response.body
+    if (response.statusCode !== 200) {
+      throw new Error('OpenAI model catalog failed (HTTP ' + response.statusCode + ')')
     }
     return ComicTranslationModelCatalogService.parseApiModels(body)
   }
@@ -60,30 +60,20 @@ export class ComicTranslationModelCatalogService {
 
   private static async requestApi(
     runtime: LlmSourceRuntimeConfig,
-  ): Promise<http.HttpResponse> {
-    let request: http.HttpRequest | null = null
-    try {
-      request = http.createHttp()
-      return await request.request(
-        ComicTranslationModelCatalogService.apiModelsUrl(runtime.baseUrl),
-        {
-          method: http.RequestMethod.GET,
-          expectDataType: http.HttpDataType.STRING,
-          usingCache: false,
-          connectTimeout: MODEL_CATALOG_CONNECT_TIMEOUT_MS,
-          readTimeout: MODEL_CATALOG_READ_TIMEOUT_MS,
-          header: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + runtime.apiKey,
-            'User-Agent': 'NextN model catalog',
-          },
-        },
-      )
-    } finally {
-      if (request !== null) {
-        request.destroy()
-      }
-    }
+  ): Promise<AxiosTextResponse> {
+    return await AxiosHttpClient.requestText(
+      ComicTranslationModelCatalogService.apiModelsUrl(runtime.baseUrl),
+      'GET',
+      {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ' + runtime.apiKey,
+        'User-Agent': 'NextN model catalog',
+      },
+      '',
+      MODEL_CATALOG_CONNECT_TIMEOUT_MS,
+      MODEL_CATALOG_READ_TIMEOUT_MS,
+      MODEL_CATALOG_MAX_BODY_CHARS,
+    )
   }
 
   private static apiModelsUrl(baseUrl: string): string {

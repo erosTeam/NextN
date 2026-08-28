@@ -1,4 +1,4 @@
-import { http } from '@kit.NetworkKit'
+import { AxiosHttpClient, AxiosTextResponse } from '../network/AxiosHttpClient'
 import { ComicProviderHttpError, ComicProviderStageError } from './ComicResponsesClient'
 
 const CONNECT_TIMEOUT_MS: number = 20000
@@ -61,29 +61,27 @@ export class OpenAiChatCompletionsClient {
     requestBody.model = config.modelId.trim()
     requestBody.messages = [system, user]
 
-    let request: http.HttpRequest | null = null
     try {
-      request = http.createHttp()
-      const response: http.HttpResponse = await request.request(endpoint, {
-        method: http.RequestMethod.POST,
-        extraData: JSON.stringify(requestBody),
-        expectDataType: http.HttpDataType.STRING,
-        usingCache: false,
-        connectTimeout: CONNECT_TIMEOUT_MS,
-        readTimeout: READ_TIMEOUT_MS,
-        header: {
+      const response: AxiosTextResponse = await AxiosHttpClient.requestText(
+        endpoint,
+        'POST',
+        {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + config.apiKey,
           'User-Agent': 'NextN comment translation',
         },
-      })
-      const body: string = typeof response.result === 'string' ? response.result : ''
+        JSON.stringify(requestBody),
+        CONNECT_TIMEOUT_MS,
+        READ_TIMEOUT_MS,
+        MAX_RESPONSE_CHARS,
+      )
+      const body: string = response.body
       if (body.length > MAX_RESPONSE_CHARS) {
         throw new ComicProviderStageError('protocol', 'response_size')
       }
-      if (response.responseCode !== 200) {
-        throw new ComicProviderHttpError(response.responseCode, body)
+      if (response.statusCode !== 200) {
+        throw new ComicProviderHttpError(response.statusCode, body)
       }
       return OpenAiChatCompletionsClient.extractText(body)
     } catch (error) {
@@ -95,10 +93,6 @@ export class OpenAiChatCompletionsClient {
         throw error as ComicProviderStageError
       }
       throw OpenAiChatCompletionsClient.stageError(error as Error)
-    } finally {
-      if (request !== null) {
-        request.destroy()
-      }
     }
   }
 

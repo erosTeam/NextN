@@ -2,9 +2,10 @@ import { common } from '@kit.AbilityKit'
 import { zlib } from '@kit.BasicServicesKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { cryptoFramework } from '@kit.CryptoArchitectureKit'
-import { http } from '@kit.NetworkKit'
 import util from '@ohos.util'
 import { NhTagTranslationEntry, NhTagTranslationStatus } from '../model/NhTagTranslation'
+import { AxiosHttpClient, AxiosTextResponse } from '../network/AxiosHttpClient'
+import { StreamingHttpClient, StreamingHttpResponse } from '../network/StreamingHttpClient'
 import { TagTranslationRepository } from '../storage/TagTranslationRepository'
 
 class PublicDictionarySource {
@@ -214,24 +215,23 @@ export class TagTranslationUpdateService {
   private static async fetchReleaseDescriptor(
     source: PublicDictionarySource,
   ): Promise<ReleaseDescriptor | null> {
-    let request: http.HttpRequest | null = null
     try {
-      request = http.createHttp()
-      const response: http.HttpResponse = await request.request(source.url, {
-        method: http.RequestMethod.GET,
-        expectDataType: http.HttpDataType.STRING,
-        usingCache: false,
-        connectTimeout: RELEASE_METADATA_CONNECT_TIMEOUT_MS,
-        readTimeout: RELEASE_METADATA_READ_TIMEOUT_MS,
-        header: {
-          Accept: 'application/vnd.github+json, application/json',
-          'User-Agent': 'NextN/1.0.0',
-        },
-      })
-      if (response.responseCode < 200 || response.responseCode >= 300) {
+      const headers: Record<string, string> = {}
+      headers['Accept'] = 'application/vnd.github+json, application/json'
+      headers['User-Agent'] = 'NextN/1.0.0'
+      const response: AxiosTextResponse = await AxiosHttpClient.requestText(
+        source.url,
+        'GET',
+        headers,
+        '',
+        RELEASE_METADATA_CONNECT_TIMEOUT_MS,
+        RELEASE_METADATA_READ_TIMEOUT_MS,
+        MAX_RELEASE_METADATA_CHARS,
+      )
+      if (response.statusCode < 200 || response.statusCode >= 300) {
         return null
       }
-      const rawMetadata: string = typeof response.result === 'string' ? response.result : ''
+      const rawMetadata: string = response.body
       if (rawMetadata.length === 0 || rawMetadata.length > MAX_RELEASE_METADATA_CHARS) {
         return null
       }
@@ -239,10 +239,6 @@ export class TagTranslationUpdateService {
       return descriptor
     } catch (_error) {
       return null
-    } finally {
-      if (request !== null) {
-        request.destroy()
-      }
     }
   }
 
@@ -379,7 +375,6 @@ export class TagTranslationUpdateService {
       throw TagTranslationUpdateService.localStorageFailure()
     }
     let file: fileIo.File | null = null
-    let request: http.HttpRequest | null = null
     let written: number = 0
     let fingerprint: number = 2166136261
     let tooLarge: boolean = false
@@ -395,62 +390,49 @@ export class TagTranslationUpdateService {
       } catch (_error) {
         throw TagTranslationUpdateService.localStorageFailure()
       }
-      request = http.createHttp()
-      request.on('dataReceiveProgress', (progress: http.DataReceiveProgressInfo): void => {
-        if (progress.totalSize > DOWNLOAD_LIMIT_BYTES) {
-          tooLarge = true
-          request?.destroy()
-        }
-      })
-      request.on('dataReceive', (data: ArrayBuffer): void => {
-        if (file === null || tooLarge || localWriteFailure) {
-          return
-        }
-        try {
-          if (written + data.byteLength > DOWNLOAD_LIMIT_BYTES) {
-            tooLarge = true
-            request?.destroy()
-            return
+      const headers: Record<string, string> = {}
+      headers['Accept'] = 'application/gzip, application/octet-stream'
+      headers['User-Agent'] = 'NextN/1.0.0'
+      const response: StreamingHttpResponse = await StreamingHttpClient.get(
+        url,
+        headers,
+        CONNECT_TIMEOUT_MS,
+        READ_TIMEOUT_MS,
+        DOWNLOAD_LIMIT_BYTES,
+        (data: ArrayBuffer): boolean => {
+          if (file === null || localWriteFailure) {
+            return false
           }
-          // `offset` is relative to the current file pointer, not a cumulative
-          // stream position. Each callback buffer is complete, so append from
-          // the current pointer and retain the short-write rejection below.
-          const count: number = fileIo.writeSync(file.fd, data)
-          if (count !== data.byteLength) {
-            throw new Error('Unable to save the tag dictionary download')
+          try {
+            const count: number = fileIo.writeSync(file.fd, data)
+            if (count !== data.byteLength) {
+              throw new Error('Unable to save the tag dictionary download')
+            }
+            fingerprint = TagTranslationUpdateService.fingerprintBytes(fingerprint, data)
+            sha256.updateSync({ data: new Uint8Array(data) })
+            written += count
+            return true
+          } catch (_error) {
+            localWriteFailure = true
+            return false
           }
-          fingerprint = TagTranslationUpdateService.fingerprintBytes(fingerprint, data)
-          sha256.updateSync({ data: new Uint8Array(data) })
-          written += count
-        } catch (error) {
-          localWriteFailure = true
-          request?.destroy()
-        }
-      })
-      const status: number = await request.requestInStream(url, {
-        method: http.RequestMethod.GET,
-        usingCache: false,
-        connectTimeout: CONNECT_TIMEOUT_MS,
-        readTimeout: READ_TIMEOUT_MS,
-        header: {
-          Accept: 'application/gzip, application/octet-stream',
-          'User-Agent': 'NextN/1.0.0',
         },
-      })
+      )
+      tooLarge = response.limitExceeded
       if (tooLarge) {
         throw TagTranslationUpdateService.contentValidationFailure()
       }
-      if (localWriteFailure) {
+      if (localWriteFailure || response.sinkRejected) {
         throw TagTranslationUpdateService.localStorageFailure()
       }
-      if (status < 200 || status >= 300) {
+      if (response.statusCode < 200 || response.statusCode >= 300) {
         throw new TagDictionaryUpdateFailure(
           UPDATE_PHASE_DICTIONARY_ASSET,
           [TagTranslationUpdateService.updateAttempt(
             UPDATE_PHASE_DICTIONARY_ASSET,
             '',
             UPDATE_OUTCOME_HTTP,
-            status,
+            response.statusCode,
           )],
           false,
         )
@@ -473,8 +455,6 @@ export class TagTranslationUpdateService {
         actualSha256 !== requiredExistingSha256) {
         throw TagTranslationUpdateService.contentValidationFailure()
       }
-      request.destroy()
-      request = null
       try {
         fileIo.closeSync(file)
         file = null
@@ -489,9 +469,6 @@ export class TagTranslationUpdateService {
       artifact.version = `bytes-${written}-fnv1a-${fingerprint.toString(16)}`
       return artifact
     } finally {
-      if (request !== null) {
-        request.destroy()
-      }
       if (file !== null) {
         TagTranslationUpdateService.closeFileQuietly(file)
       }

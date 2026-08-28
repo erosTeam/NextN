@@ -1,9 +1,9 @@
 import { common } from '@kit.AbilityKit'
 import { fileIo, fileUri, picker } from '@kit.CoreFileKit'
-import { http } from '@kit.NetworkKit'
 import { NhGalleryDetail, NhGalleryPage } from '../model/NhGallery'
 import { NhDownloadTask, NhDownloadTaskStatus } from '../model/NhDownloadTask'
 import { NhApiClient } from '../network/NhApiClient'
+import { StreamingHttpClient, StreamingHttpResponse } from '../network/StreamingHttpClient'
 import { DownloadQueueRepository } from '../storage/DownloadQueueRepository'
 import { DownloadQueueState, connectDownloadQueue } from '../state/DownloadQueueState'
 import { DownloadSettingsService } from './DownloadSettingsService'
@@ -678,7 +678,6 @@ export class DownloadQueueService {
     const writePath: string = directPublicWrite ? finalPath : temporaryPath
     DownloadQueueService.removeIfExists(writePath)
     let file: fileIo.File | null = null
-    let request: http.HttpRequest | null = null
     let written: number = 0
     let writeFailure: string = ''
     let promoted: boolean = false
@@ -687,64 +686,51 @@ export class DownloadQueueService {
         writePath,
         fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC,
       )
-      request = http.createHttp()
-      request.on('dataReceiveProgress', (info: http.DataReceiveProgressInfo): void => {
-        if (info.totalSize > MAX_PAGE_BYTES) {
-          writeFailure = 'A gallery page exceeds the download limit'
-          request?.destroy()
-        }
-      })
-      request.on('dataReceive', (data: ArrayBuffer): void => {
-        if (file === null || writeFailure.length > 0 || !DownloadQueueService.isExecutionActive(task.galleryId, token)) {
-          request?.destroy()
-          return
-        }
-        try {
-          if (written + data.byteLength > MAX_PAGE_BYTES) {
-            writeFailure = 'A gallery page exceeds the download limit'
-            request?.destroy()
-            return
-          }
-          // WriteOptions.offset is relative to the current file pointer. The
-          // stream callback already advances it, so a cumulative count would
-          // create gaps after the first chunk.
-          const count: number = fileIo.writeSync(file.fd, data)
-          if (count !== data.byteLength) {
-            throw new Error('Unable to save gallery page')
-          }
-          written += count
-        } catch (error) {
-          writeFailure = (error as Error).message || 'Unable to save gallery page'
-          request?.destroy()
-        }
-      })
-      const status: number = await request.requestInStream(
+      const headers: Record<string, string> = {}
+      headers['Accept'] = 'image/*'
+      headers['User-Agent'] = 'NextN/1.0.0'
+      const response: StreamingHttpResponse = await StreamingHttpClient.get(
         NhApiClient.imageUrl(task.mediaId, pageIndex, task.pageExtensions[pageIndex]),
-        {
-          method: http.RequestMethod.GET,
-          header: {
-            Accept: 'image/*',
-            'User-Agent': 'NextN/1.0.0',
-          },
-          connectTimeout: CONNECT_TIMEOUT_MS,
-          readTimeout: READ_TIMEOUT_MS,
-          usingCache: false,
+        headers,
+        CONNECT_TIMEOUT_MS,
+        READ_TIMEOUT_MS,
+        MAX_PAGE_BYTES,
+        (data: ArrayBuffer): boolean => {
+          if (file === null || writeFailure.length > 0) {
+            return false
+          }
+          try {
+            const count: number = fileIo.writeSync(file.fd, data)
+            if (count !== data.byteLength) {
+              throw new Error('Unable to save gallery page')
+            }
+            written += count
+            return true
+          } catch (error) {
+            writeFailure = (error as Error).message || 'Unable to save gallery page'
+            return false
+          }
         },
+        (): boolean => DownloadQueueService.isExecutionActive(task.galleryId, token),
       )
       if (!DownloadQueueService.isExecutionActive(task.galleryId, token)) {
         return 0
       }
+      if (response.limitExceeded) {
+        throw new Error('A gallery page exceeds the download limit')
+      }
       if (writeFailure.length > 0) {
         throw new Error(writeFailure)
       }
-      if (status < 200 || status >= 300) {
-        throw new Error(`Gallery page request failed (${status}).`)
+      if (response.sinkRejected) {
+        throw new Error('Unable to save gallery page')
+      }
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw new Error(`Gallery page request failed (${response.statusCode}).`)
       }
       if (written <= 0) {
         throw new Error('Gallery page response was empty')
       }
-      request.destroy()
-      request = null
       fileIo.closeSync(file)
       file = null
       if (!directPublicWrite) {
@@ -758,9 +744,6 @@ export class DownloadQueueService {
       promoted = true
       return written
     } finally {
-      if (request !== null) {
-        request.destroy()
-      }
       if (file !== null) {
         fileIo.closeSync(file)
       }

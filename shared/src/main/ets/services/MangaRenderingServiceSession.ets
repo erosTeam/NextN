@@ -1,6 +1,5 @@
 import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { util } from '@kit.ArkTS'
-import { http } from '@kit.NetworkKit'
 import { MangaRenderingServiceCredential } from './MangaRenderingServiceSecretStore'
 import { MangaRenderingServiceTextResponse, MangaRenderingServiceTransport } from './MangaRenderingServiceTransport'
 
@@ -88,7 +87,7 @@ export class MangaRenderingServiceSession {
     request.password = credential.password
     const response: MangaRenderingServiceTextResponse = await MangaRenderingServiceTransport.requestText(
       baseUrl + LOGIN_PATH,
-      http.RequestMethod.POST,
+      'POST',
       {
         'Accept': 'application/json',
         'Content-Type': 'application/json',

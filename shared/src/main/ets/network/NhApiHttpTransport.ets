@@ -101,7 +101,7 @@ export class NhApiHttpTransport {
     }
     const headers: Record<string, string> = {
       'Accept': 'application/json',
-      'Cache-Control': 'no-store',
+      'Cache-Control': 'no-cache, no-store',
     }
     if (body.length > 0) {
       headers['Content-Type'] = 'application/json'
