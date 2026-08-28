@@ -263,6 +263,8 @@ class GalleryRouteParams {
   transitionToken: string = ''
   /** Optional tapped-row snapshot; the detail paints it immediately before the verified response. */
   seed: NhGallerySummary | null = null
+  /** Route-local scroll owner; stacked Gallery destinations must not overwrite each other's chrome offset. */
+  scroller: Scroller = new Scroller()
   chrome: GalleryChromeState = new GalleryChromeState()
   commentSnapshot: NhComment[] = []
   commentSnapshotAvailable: boolean = false
@@ -491,7 +493,6 @@ struct Index {
   private homeSubtabManagerScroller: Scroller = new Scroller()
   private homeSubtabEditScroller: Scroller = new Scroller()
   private popularScroller: Scroller = new Scroller()
-  private galleryScroller: Scroller = new Scroller()
   private thumbnailScroller: Scroller = new Scroller()
   private commentsScroller: Scroller = new Scroller()
   private contentFiltersScroller: Scroller = new Scroller()
@@ -2416,7 +2417,7 @@ struct Index {
           galleryId: this.galleryParams(param).galleryId,
           seed: this.galleryParams(param).seed,
           chrome: this.galleryParams(param).chrome,
-          scroller: this.galleryScroller,
+          scroller: this.galleryParams(param).scroller,
           onOpenGallery: (galleryId: number, seed?: NhGallerySummary): void => {
             this.pushGallery(galleryId, seed)
           },
@@ -2474,7 +2475,7 @@ struct Index {
     })
     .borderRadius(this.galleryDetailTransition.isCoverExpand() ? 0 : this.galleryDetailTransition.radius)
     .clip(this.galleryDetailTransition.eligible && !this.galleryDetailTransition.isCoverExpand())
-    .bindToScrollable([this.galleryScroller])
+    .bindToScrollable([this.galleryParams(param).scroller])
   }
 
   @Builder

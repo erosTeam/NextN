@@ -70,6 +70,12 @@ ok('related galleries use the shared thumbnail and nested transition ownership c
 const galleryState = read('shared/src/main/ets/state/GalleryDetailTransitionState.ets')
 const galleryCoordinator = read('shared/src/main/ets/navigation/GalleryDetailTransitionCoordinator.ets')
 const index = read('entry/src/main/ets/pages/Index.ets')
+
+ok('stacked Gallery destinations retain route-local scroll and chrome ownership',
+  /class GalleryRouteParams \{[\s\S]*?scroller: Scroller = new Scroller\(\)[\s\S]*?chrome: GalleryChromeState = new GalleryChromeState\(\)/.test(index) &&
+    /scroller: this\.galleryParams\(param\)\.scroller/.test(index) &&
+    /\.bindToScrollable\(\[this\.galleryParams\(param\)\.scroller\]\)/.test(index) &&
+    !/private galleryScroller: Scroller = new Scroller\(\)/.test(index))
 ok('seamless transition owns geometry and spatially-timed card/detail crossfade',
   /customNavContentTransition/.test(index) &&
     /GALLERY_DETAIL_OPEN_CARD_EXIT_END_PROGRESS: number = 0\.55/.test(index) &&
