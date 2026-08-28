@@ -4890,3 +4890,32 @@ permitted in this repository.
   global close/re-login HDS Snackbar, original-WebView promotion, native return
   and a later cold authenticated Favorites cycle remain OPEN. The checked
   manifest now points to the unique 11:55 artifact directory.
+
+#### 11:55 candidate cold-restored without another refresh — 2026-08-28 11:57 +0800
+
+- The no-install/no-data-clear protocol ran exactly once on the explicitly
+  authorized `192.168.50.237:12345` under lease
+  `20260826-193807-2dc9dfd0`. The live Connected row, CLI target, manifest
+  `target`, manifest `authorizedTarget` and lease target all matched exact
+  237. All 19 checked commands exited zero; both PowerManager readbacks showed
+  `AWAKE` with `OverrideTimeout=86400000ms`, and the final process check
+  retained PID 50324. No install, uninstall, data clear, sign-out, credential
+  input, CAPTCHA action, submit or account mutation occurred.
+- The privacy-bounded summary has one focused native Favorites root with a
+  collection, no Web, sign-in/loading/error state or verification HDS. Formal
+  Account has one focused account-list root, one saved row, exactly one
+  selected Radio, no Web, sign-in prompt, verification-required state,
+  verification HDS or save failure. Both are authenticated layout candidates.
+- The new process emitted only `session_start` -> restore payload/expiry shape
+  -> `account_restore_ready` -> `favorites_request_success`. It emitted no
+  initial 401, refresh endpoint, refresh checkpoint, replay, replayed/final
+  401, verification-marker failure, response-Cookie stored/applied/rejected
+  event or Favorites failure.
+- This is another independent preserve-data cold process that restored the
+  current durable access/refresh pair and served authenticated Favorites
+  without an immediate refresh. Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T1155/` and is
+  excluded from Git. It does not prove cross-day survival, natural response
+  `Set-Cookie` rotation/deletion or the terminal-401 UI and original-WebView
+  re-login branch. Those outcomes remain OPEN. The checked manifest now
+  points to the unique 12:55 artifact directory.
