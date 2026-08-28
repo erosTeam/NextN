@@ -4859,3 +4859,34 @@ permitted in this repository.
   Snackbar, original-WebView promotion, native return and a later cold
   authenticated Favorites cycle remain OPEN. The checked manifest now points
   to the unique 10:55 artifact directory.
+
+#### 09:55 replacement pair cold-restored in the next process — 2026-08-28 10:57 +0800
+
+- The no-install/no-data-clear protocol ran exactly once on the explicitly
+  authorized `192.168.50.237:12345` under the renewed lease
+  `20260826-193807-2dc9dfd0`. The live Connected row, CLI target, manifest
+  `target`, manifest `authorizedTarget` and lease target all matched exact
+  237. All 19 checked commands exited zero; both PowerManager readbacks showed
+  `AWAKE` with `OverrideTimeout=86400000ms`, and the final process check
+  retained a PID. No install, uninstall, data clear, sign-out, credential
+  input, CAPTCHA action, submit or account mutation occurred.
+- The privacy-bounded summary has one focused native Favorites root with a
+  collection, no Web, sign-in/loading/error state or verification HDS. Formal
+  Account has one focused account-list root, one saved row, exactly one
+  selected Radio, no Web, sign-in prompt, verification-required state,
+  verification HDS or save failure. Both are authenticated layout candidates.
+- The new process emitted only `session_start` -> restore payload/expiry shape
+  -> `account_restore_ready` -> `favorites_request_success`. It emitted no
+  initial 401, refresh endpoint, refresh checkpoint, replay, replayed/final
+  401, verification-marker failure, response-Cookie stored/applied/rejected
+  event or Favorites failure.
+- This proves the access/refresh replacement pair checkpointed during the
+  09:55 natural refresh was restored by an independent later process and
+  served an authenticated Favorites read without another immediate refresh.
+  Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T1055/` and is
+  excluded from Git. Cross-day survival, natural response-Cookie
+  rotation/deletion and the next natural terminal 401 with retained Account,
+  global close/re-login HDS Snackbar, original-WebView promotion, native return
+  and a later cold authenticated Favorites cycle remain OPEN. The checked
+  manifest now points to the unique 11:55 artifact directory.
