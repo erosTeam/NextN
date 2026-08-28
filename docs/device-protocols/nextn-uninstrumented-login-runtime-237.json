@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-uninstrumented-login-runtime-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-uninstrumented-login-runtime-237-20260827T2005",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "ordinary-signed-build-with-login-acceptance-disabled",
+    "page": "original-first-party-login",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install in place, start the original NH Login surface with the internal acceptance bridge compiled out, wait without DOM polling or credential input, then retain only fixed redacted logs and process state. Do not capture page content, clear data, uninstall, enter credentials, submit, sign out, or terminate the process after observation."
+  },
+  "preflight": [
+    {
+      "name": "install-ordinary-signed-hap-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"],
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "start-original-login-without-acceptance-bridge",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility", "--ps", "nextn_login_recovery", "1"],
+      "pauseAfterMs": 30000,
+      "timeoutSeconds": 45
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "receive-redacted-diagnostics",
+      "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-uninstrumented-login-runtime-237-20260827T2005/received"]
+    },
+    {
+      "name": "confirm-global-devtools-policy",
+      "hdcArgs": ["shell", "param", "get", "web.debug.devtools"]
+    },
+    {
+      "name": "confirm-nextn-remains-live",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    }
+  ]
+}

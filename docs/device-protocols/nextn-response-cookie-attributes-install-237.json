@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-response-cookie-attributes-install-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-response-cookie-attributes-install-237-20260828T0431",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "server-response-cookie-attributes-preserved-with-single-jar-save-hap-3ebada0042e7edf0b2577cebade21312ce82ebd7263662000195e40c9b303814",
+    "page": "data-preserving-cold-favorites-and-formal-account",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "The user-authorized target set is exactly {192.168.50.237:12345}. Install this signed candidate in place only on 237. It preserves a native API response's exact Set-Cookie attributes in the compatibility jar instead of overwriting them with JSON-refresh defaults, while retaining the session-wide refresh, exact-credential terminal, and saved-envelope recovery fences. Preserve all application data, cold-start, issue one native Favorites read, and route to the sole formal Account page. Do not clear data, uninstall, sign out, enter credentials, act on CAPTCHA, submit, mutate account state, or operate another target."
+  },
+  "preflight": [
+    { "name": "wake-authorized-237", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake-and-timeout-before-install", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "install-exact-signed-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "pauseAfterMs": 500, "timeoutSeconds": 120 },
+    { "name": "cold-stop-nextn-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 300 },
+    { "name": "cold-start-installed-candidate", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 3000 },
+    { "name": "verify-nextn-window-before-favorites", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-favorites", "uiInput": ["click", "564", "2006"], "pauseAfterMs": 6000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-cold-favorites", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-response-cookie-attributes-favorites.json", "-a"] },
+    { "name": "receive-cold-favorites", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-response-cookie-attributes-favorites.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-response-cookie-attributes-install-237-20260828T0431/favorites.json"] },
+    { "name": "open-formal-account", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility", "--ps", "nextn_login_recovery", "1"], "pauseAfterMs": 2000 },
+    { "name": "dump-formal-account", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-response-cookie-attributes-account.json", "-a"] },
+    { "name": "receive-formal-account", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-response-cookie-attributes-account.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-response-cookie-attributes-install-237-20260828T0431/account.json"] },
+    { "name": "receive-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-response-cookie-attributes-install-237-20260828T0431/diagnostics"] },
+    { "name": "confirm-nextn-process-remains", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "remove-temporary-layouts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-response-cookie-attributes-favorites.json", "/data/local/tmp/nextn-response-cookie-attributes-account.json"] }
+  ]
+}

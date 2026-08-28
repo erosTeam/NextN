@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-account-ui-post-cancel-session-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-account-ui-post-cancel-session-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "post-add-account-cancel-session-non-regression",
+    "page": "favorites-then-formal-account-after-cold-start",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Cold-start the already installed single-Account-page candidate after the add-account Web was opened and cancelled, then verify authenticated Favorites and convergence to the formal AccountPage. Capture semantic layouts and redacted diagnostics only. Do not enter credentials, act on CAPTCHA, submit, sign out, uninstall or clear data."
+  },
+  "preflight": [
+    { "name": "wake-selected-device", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "cold-stop-nextn", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 300 },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 3000 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-favorites", "uiInput": ["click", "564", "2006"], "pauseAfterMs": 5000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-healthy-favorites", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-account-ui-post-cancel-favorites.json", "-a"] },
+    { "name": "receive-healthy-favorites", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-account-ui-post-cancel-favorites.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-account-ui-post-cancel-session-237/favorites.json"] },
+    { "name": "open-formal-account-through-recovery-entry", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility", "--ps", "nextn_login_recovery", "1"], "pauseAfterMs": 2000 },
+    { "name": "dump-formal-account", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-account-ui-post-cancel-account.json", "-a"] },
+    { "name": "receive-formal-account", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-account-ui-post-cancel-account.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-account-ui-post-cancel-session-237/account.json"] },
+    { "name": "receive-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-account-ui-post-cancel-session-237/diagnostics"] },
+    { "name": "confirm-app-process-remains", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "remove-temporary-layouts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-account-ui-post-cancel-favorites.json", "/data/local/tmp/nextn-account-ui-post-cancel-account.json"] }
+  ]
+}

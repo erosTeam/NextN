@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-semantic-surface-current-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-semantic-surface-current-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "current-built-main-and-ohosTest",
+    "page": "semantic-login-surface-read-only",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Read-only rerun of the previously passing semantic surface suite. No credentials, field input, challenge activation, submit, data clear, or uninstall."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake-override", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "force-stop-nextn", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    {
+      "name": "cold-start-nextn",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"],
+      "pauseAfterMs": 2500
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "run-semantic-login-surface-probe",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test", "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "NhLoginSemanticSurface#findsFixedFieldsWithoutCoordinates", "-s", "timeout", "30000"],
+      "timeoutSeconds": 60,
+      "pauseAfterMs": 500
+    },
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-semantic-surface-current.json", "-a"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-semantic-surface-current.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-semantic-surface-current-237/final-layout.json"] },
+    { "name": "remove-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-semantic-surface-current.json"] },
+    { "name": "confirm-devtools-policy-unchanged", "hdcArgs": ["shell", "param", "get", "web.debug.devtools"] },
+    { "name": "force-stop-after-read-only-probe", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] }
+  ]
+}

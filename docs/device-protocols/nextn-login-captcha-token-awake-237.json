@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-login-captcha-token-awake-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-captcha-token-awake-237-20260827T170232",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "login-persistence-p0-captcha-token-probe",
+    "page": "device-continuity-gate",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Restore the selected 237 wake and timeout gate before the credential-free original-page CAPTCHA token probe. Do not enter credentials, submit, clear data, uninstall, or sign out."
+  },
+  "preflight": [
+    {
+      "name": "wake-selected-device",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "apply-unattended-timeout",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "verify-awake-override",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "verify-current-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ]
+}

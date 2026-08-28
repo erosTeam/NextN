@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-login-current-submit-forward-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-current-submit-forward-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "original-first-party-webview-login",
+    "page": "current-captcha-ready-submit",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Recreate only the temporary DevTools forward for the current user-observed CAPTCHA-ready page. No UI input, credential action, screenshot, dump or submit."
+  },
+  "preflight": [
+    { "name": "create-current-submit-forward", "hdcArgs": ["fport", "tcp:19226", "tcp:19222"], "pauseAfterMs": 100 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "typed-protocol-boundary-at-noninteractive-corner", "uiInput": ["click", "1", "1"], "pauseAfterMs": 10 }
+    ]
+  },
+  "postflight": [
+    { "name": "confirm-current-submit-forward", "hdcArgs": ["fport", "ls"] }
+  ]
+}

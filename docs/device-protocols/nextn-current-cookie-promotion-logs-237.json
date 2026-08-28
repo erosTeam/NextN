@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-current-cookie-promotion-logs-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-current-cookie-promotion-logs-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "layout-driven-atomic-original-webview-login",
+    "page": "authenticated-web-cookie-promotion",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Read current redacted diagnostics and tagged hilog after CDP proved the authenticated WebView contains access_token and refresh_token. No navigation, credential action, challenge action, submission, screenshot or layout dump."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "typed-protocol-boundary-at-noninteractive-corner", "uiInput": ["click", "1", "1"], "pauseAfterMs": 10 }
+    ]
+  },
+  "postflight": [
+    { "name": "receive-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-current-cookie-promotion-logs-237/diagnostics"] },
+    { "name": "read-account-hilog", "hdcArgs": ["shell", "hilog", "-T", "NextNAccount", "-x"] },
+    { "name": "read-login-hilog", "hdcArgs": ["shell", "hilog", "-T", "NextNLoginAccept", "-x"] },
+    { "name": "confirm-app-process-remains", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] }
+  ]
+}

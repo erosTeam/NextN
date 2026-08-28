@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-current-devtools-forward-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-current-devtools-forward-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "current-original-webview-login",
+    "page": "post-captcha-token-check",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Create the exact temporary ArkWeb DevTools forward for privacy-bounded semantic login-state inspection."
+  },
+  "preflight": [
+    { "name": "wake-selected-device", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "create-arkweb-devtools-forward", "hdcArgs": ["fport", "tcp:19224", "tcp:19222"], "pauseAfterMs": 1000 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "typed-protocol-boundary-at-noninteractive-corner", "uiInput": ["click", "1", "1"], "pauseAfterMs": 100 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-current-post-keyboard-screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-current-post-keyboard-237.jpeg"] },
+    { "name": "dump-current-post-keyboard-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-current-post-keyboard-237.json", "-a"] },
+    { "name": "receive-current-post-keyboard-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-current-post-keyboard-237.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-current-devtools-forward-237/current.jpeg"] },
+    { "name": "receive-current-post-keyboard-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-current-post-keyboard-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-current-devtools-forward-237/current-layout.json"] },
+    { "name": "list-current-forwards", "hdcArgs": ["fport", "ls"] },
+    { "name": "confirm-app-process-remains", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "remove-remote-current-screen", "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-current-post-keyboard-237.jpeg"] },
+    { "name": "remove-remote-current-layout", "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-current-post-keyboard-237.json"] }
+  ]
+}

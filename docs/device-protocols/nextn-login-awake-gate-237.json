@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-login-awake-gate-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-awake-gate-237-20260827T1028",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "login-persistence-p0-diagnostic",
+    "page": "device-continuity-gate",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Restore the selected 237 device wake and timeout gate before the credential-free login baseline. Do not launch, stop, install, sign in, submit, clear data, or capture user content."
+  },
+  "preflight": [
+    {
+      "name": "wake-selected-device",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "apply-unattended-timeout",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "verify-awake-override",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "verify-current-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-login-post-submit-terminal-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-original-submit-terminal-237-20260827T1925",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "ordinary-app-fixed-dummy-original-page-submit-probe",
+    "page": "preserved-fixed-dummy-original-nh-login-web",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Read only fixed redacted diagnostics after the isolated-cookie fixed-dummy original Login click returned CLICK_ALLOWED_CONTROL_DISABLED without submit. Do not capture layout or screenshot, enter real credentials, click CAPTCHA or Login, restart, clear data, uninstall, sign out, or terminate the process."
+  },
+  "preflight": [
+    {
+      "name": "confirm-nextn-process-preserved-before-logs",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "receive-redacted-diagnostics",
+      "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-original-submit-terminal-237-20260827T1925/received"]
+    },
+    {
+      "name": "capture-acceptance-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNLoginAccept", "-x"]
+    },
+    {
+      "name": "capture-account-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNAccount", "-x"]
+    },
+    {
+      "name": "confirm-global-devtools-policy",
+      "hdcArgs": ["shell", "param", "get", "web.debug.devtools"]
+    },
+    {
+      "name": "confirm-nextn-process-preserved-after-logs",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    }
+  ]
+}

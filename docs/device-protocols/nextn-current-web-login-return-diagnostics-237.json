@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-current-web-login-return-diagnostics-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-current-web-login-return-diagnostics-237-20260828T0105",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "login-return-defect-current-installed-hap-152b35b78980b5d4ff7df7caa75dac90a1c09cdf9a4448e03e7ab36684bbbbde",
+    "page": "current-visible-login-return-state",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Preserve the current process and inspect whether normal login is still stranded on the first-party Web route. Collect only one semantic layout and product-redacted persistent diagnostics. Do not launch, stop, reload, install, clear data, sign out, enter credentials, act on CAPTCHA, submit, navigate, or capture a screenshot."
+  },
+  "preflight": [
+    { "name": "wake-selected-device", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake-and-timeout-before-ui", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "read-current-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "confirm-current-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "typed-protocol-boundary-at-noninteractive-corner", "uiInput": ["click", "1", "1"], "pauseAfterMs": 100, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-current-login-return-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-current-web-login-return-237.json", "-a"] },
+    { "name": "receive-current-login-return-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-current-web-login-return-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-current-web-login-return-diagnostics-237-20260828T0105/current-layout.json"] },
+    { "name": "receive-redacted-persistent-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-current-web-login-return-diagnostics-237-20260828T0105/diagnostics"] },
+    { "name": "confirm-nextn-process-remains", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "remove-temporary-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-current-web-login-return-237.json"] }
+  ]
+}

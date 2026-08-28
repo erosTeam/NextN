@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-original-login-android-ua-probe-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-original-login-semantic-tree-237-20260827T1254",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "acceptance-signed-original-nh-login-android-compatible-ua",
+    "page": "original-nh-login-android-ua-baseline",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Strict UA-only comparison against the accepted original-page native-UA baseline. Install in place with data preserved and open the same original NH /login/ page, changing only the bounded Android platform token in ArkWeb's UA. Capture the credential-free page and fixed diagnostics. Do not focus or populate fields, submit, sign out, clear data, or uninstall."
+  },
+  "preflight": [
+    {
+      "name": "wake-selected-device",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "apply-unattended-timeout",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "install-android-ua-signed-hap-in-place",
+      "hdcArgs": [
+        "install", "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"
+      ],
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "force-stop-before-android-ua-baseline",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    },
+    {
+      "name": "start-explicit-original-login-route",
+      "hdcArgs": [
+        "shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility",
+        "--ps", "nextn_login_recovery", "1"
+      ],
+      "pauseAfterMs": 25000
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "capture-original-login-android-ua-screen",
+      "hdcArgs": [
+        "shell", "snapshot_display", "-f",
+        "/data/local/tmp/nextn-original-login-android-ua-237.jpeg"
+      ]
+    },
+    {
+      "name": "receive-original-login-android-ua-screen",
+      "hdcArgs": [
+        "file", "recv", "/data/local/tmp/nextn-original-login-android-ua-237.jpeg",
+        "/Users/honjow/git/NextN/.hvigor/outputs/nextn-original-login-semantic-tree-237-20260827T1254/original-login.jpeg"
+      ]
+    },
+    {
+      "name": "dump-original-login-semantic-tree",
+      "hdcArgs": [
+        "shell", "uitest", "dumpLayout", "-p",
+        "/data/local/tmp/nextn-original-login-semantic-tree-237.json", "-a"
+      ]
+    },
+    {
+      "name": "receive-original-login-semantic-tree",
+      "hdcArgs": [
+        "file", "recv", "/data/local/tmp/nextn-original-login-semantic-tree-237.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/nextn-original-login-semantic-tree-237-20260827T1254/original-login-layout.json"
+      ]
+    },
+    {
+      "name": "capture-fixed-acceptance-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNLoginAccept", "-x"]
+    },
+    {
+      "name": "capture-fixed-account-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNAccount", "-x"]
+    },
+    {
+      "name": "confirm-global-devtools-policy",
+      "hdcArgs": ["shell", "param", "get", "web.debug.devtools"]
+    },
+    {
+      "name": "remove-remote-screen",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-original-login-android-ua-237.jpeg"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-original-login-semantic-tree-237.json"]
+    },
+    {
+      "name": "force-stop-after-semantic-tree",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    }
+  ]
+}

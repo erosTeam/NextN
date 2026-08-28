@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-cloudflare-compatibility-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-cloudflare-compatibility-237-20260827",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "temporary-official-cloudflare-troubleshooter-carrier",
+    "page": "cloudflare-official-compatibility",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install a temporary production-flags HAP whose visible Web carrier loads only Cloudflare's official public browser compatibility troubleshooter. No NH page, credential, account field, Cookie value, submit, sign-out, data clear, or uninstall is involved. Capture only the visible verdict, then force-stop."
+  },
+  "preflight": [
+    {
+      "name": "install-official-compatibility-carrier-in-place",
+      "hdcArgs": [
+        "install", "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"
+      ],
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "force-stop-before-official-compatibility",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    },
+    {
+      "name": "start-official-compatibility-carrier",
+      "hdcArgs": [
+        "shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility",
+        "--ps", "nextn_login_recovery", "1"
+      ],
+      "pauseAfterMs": 25000
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "capture-official-compatibility-verdict",
+      "hdcArgs": [
+        "shell", "snapshot_display", "-f",
+        "/data/local/tmp/nextn-cloudflare-compatibility-237.jpeg"
+      ]
+    },
+    {
+      "name": "receive-official-compatibility-verdict",
+      "hdcArgs": [
+        "file", "recv", "/data/local/tmp/nextn-cloudflare-compatibility-237.jpeg",
+        "/Users/honjow/git/NextN/.hvigor/outputs/nextn-cloudflare-compatibility-237-20260827/verdict.jpeg"
+      ]
+    },
+    {
+      "name": "capture-fixed-account-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNAccount", "-x"]
+    },
+    {
+      "name": "confirm-global-devtools-policy",
+      "hdcArgs": ["shell", "param", "get", "web.debug.devtools"]
+    },
+    {
+      "name": "remove-remote-verdict",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-cloudflare-compatibility-237.jpeg"]
+    },
+    {
+      "name": "force-stop-after-official-compatibility",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    }
+  ]
+}

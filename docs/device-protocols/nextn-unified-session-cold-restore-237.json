@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-unified-session-openapi-refresh-pair-probe-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-unified-session-cold-restore-0827d-237",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-openapi-refresh-pair-session-probe-20260827",
+    "page": "preserved-session-cold-restore",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install the signed HAP in place without clearing data, cold-start the preserved session, and capture only native shell state plus redacted account diagnostics. Do not open login, enter credentials, submit, sign out, uninstall, or clear app data."
+  },
+  "preflight": [
+    {
+      "name": "wake-selected-device",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "apply-unattended-timeout",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "install-signed-hap-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"]
+    },
+    {
+      "name": "force-stop-preserved-session",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    },
+    {
+      "name": "cold-start-normal-entry",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"],
+      "pauseAfterMs": 8000
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "noninteractive-corner-sentinel",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 500,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "capture-native-shell",
+      "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-unified-session-cold-restore-probe-237.jpeg"]
+    },
+    {
+      "name": "dump-native-shell-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-unified-session-cold-restore-probe-237.json", "-a"]
+    },
+    {
+      "name": "receive-native-shell",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-unified-session-cold-restore-probe-237.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-unified-session-cold-restore-0827d-237/native-shell.jpeg"]
+    },
+    {
+      "name": "receive-native-shell-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-unified-session-cold-restore-probe-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-unified-session-cold-restore-0827d-237/native-shell-layout.json"]
+    },
+    {
+      "name": "capture-account-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNAccount", "-x"]
+    },
+    {
+      "name": "confirm-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "remove-remote-screenshot",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-unified-session-cold-restore-probe-237.jpeg"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-unified-session-cold-restore-probe-237.json"]
+    }
+  ]
+}

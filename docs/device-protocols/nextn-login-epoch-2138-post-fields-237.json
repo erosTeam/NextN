@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-login-epoch-2141-current-cf-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-epoch-2141-current-cf-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "original-first-party-webview-login",
+    "page": "post-credential-captcha",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Explicitly leave the password editor by tapping the empty native title-bar area, then immediately capture the visible post-field CAPTCHA state before any challenge action or submit."
+  },
+  "preflight": [
+    { "name": "wake-selected-device", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "leave-password-editor-via-titlebar-blank", "uiInput": ["click", "1100", "150"], "pauseAfterMs": 500 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-post-fields-screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-login-epoch-2138-post-fields.jpeg"] },
+    { "name": "dump-post-fields-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-login-epoch-2138-post-fields.json", "-a"] },
+    { "name": "receive-post-fields-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-login-epoch-2138-post-fields.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-epoch-2141-current-cf-237/post-fields.jpeg"] },
+    { "name": "receive-post-fields-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-login-epoch-2138-post-fields.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-epoch-2141-current-cf-237/post-fields.json"] },
+    { "name": "remove-remote-post-fields-screen", "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-login-epoch-2138-post-fields.jpeg"] },
+    { "name": "remove-remote-post-fields-layout", "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-login-epoch-2138-post-fields.json"] }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-current-devtools-diagnose-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-current-devtools-diagnose-237-5",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "external-original-webview-login-coordinator",
+    "page": "current-original-login-devtools-diagnostic",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install the normal signed debug HAP in place and restart the original login WebView to verify the standard ArkWeb TCP DevTools overload. Do not enter credentials, submit, clear data, uninstall, or retain page content."
+  },
+  "preflight": [
+    {
+      "name": "install-normal-signed-debug-hap-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"],
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "force-stop-before-device-debug-verification",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    },
+    {
+      "name": "start-original-login-after-device-debug-verification",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility", "--ps", "nextn_login_recovery", "1"],
+      "pauseAfterMs": 3000
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "read-nextn-process",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    },
+    {
+      "name": "read-live-webview-sockets",
+      "hdcArgs": ["shell", "cat", "/proc/net/unix"]
+    },
+    {
+      "name": "read-existing-forwards",
+      "hdcArgs": ["fport", "ls"]
+    },
+    {
+      "name": "read-global-devtools-policy",
+      "hdcArgs": ["shell", "param", "get", "web.debug.devtools"]
+    },
+    {
+      "name": "read-installed-nextn-bundle",
+      "hdcArgs": ["shell", "bm", "dump", "-n", "com.erosteam.nextn"]
+    }
+  ]
+}

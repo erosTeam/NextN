@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-app-login-input-failure-diagnostics-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-app-login-input-failure-237-20260827T1622",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "ordinary-app-login-failed-after-frame",
+    "page": "original-nh-login-web",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Preserved ordinary-App process after the fixed failed_after_frame result. Logs only: no layout or screenshot is captured. No credential retry, CAPTCHA action, submit, uninstall, data clear, sign-out, or process termination is performed."
+  },
+  "preflight": [
+    {
+      "name": "confirm-nextn-process-preserved",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "receive-redacted-diagnostics",
+      "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-app-login-input-failure-237-20260827T1622/received"]
+    },
+    {
+      "name": "capture-acceptance-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNLoginAccept", "-x"]
+    },
+    {
+      "name": "capture-account-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNAccount", "-x"]
+    },
+    {
+      "name": "confirm-global-devtools-policy",
+      "hdcArgs": ["shell", "param", "get", "web.debug.devtools"]
+    }
+  ]
+}

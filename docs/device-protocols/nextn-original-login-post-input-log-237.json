@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-original-login-post-input-log-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-arkweb-debug-socket-log-237-20260827T1303",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "debug-signed-original-login-arkweb-socket-fixed-log",
+    "page": "original-login-arkweb-debug-socket-terminal",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Capture only the fixed NextN diagnostics after the credential-free ArkWeb socket discovery terminal. Do not capture the screen or layout. Then force-stop the closed page. Do not submit, sign out, clear data, or uninstall."
+  },
+  "preflight": [
+    {
+      "name": "confirm-nextn-process-before-fixed-log",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "capture-fixed-nextn-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"]
+    },
+    {
+      "name": "capture-fixed-account-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNAccount", "-x"]
+    },
+    {
+      "name": "confirm-global-devtools-policy",
+      "hdcArgs": ["shell", "param", "get", "web.debug.devtools"]
+    },
+    {
+      "name": "force-stop-closed-credential-page",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    }
+  ]
+}

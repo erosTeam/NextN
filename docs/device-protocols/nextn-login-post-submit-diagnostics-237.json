@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-login-post-submit-diagnostics-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-product-receipt-cold-terminal-237-20260827T154700",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "internal-main-login-bridge",
+    "page": "login-bridge-diagnostics",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Read-only receipt of the app-redacted persistent diagnostic directory after the product-callback-only acceptance test returned and the immediate no-data-clear cold restore remained unavailable. Read only fixed promotion stages and credential-presence shape. No credential, Cookie value, token, URL, response body, screenshot, or raw UI layout is requested."
+  },
+  "preflight": [
+    {
+      "name": "confirm-diagnostic-directory",
+      "hdcArgs": [
+        "shell",
+        "ls",
+        "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "noninteractive-top-edge-stabilization",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "receive-redacted-diagnostics",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs",
+        "/Users/honjow/git/NextN/.hvigor/outputs/nextn-product-receipt-cold-terminal-237-20260827T154700/received"
+      ]
+    },
+    {
+      "name": "capture-login-acceptance-hilog",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-T",
+        "NextNLoginAccept",
+        "-x"
+      ]
+    },
+    {
+      "name": "confirm-global-devtools-policy",
+      "hdcArgs": [
+        "shell",
+        "param",
+        "get",
+        "web.debug.devtools"
+      ]
+    }
+  ]
+}

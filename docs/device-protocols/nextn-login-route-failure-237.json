@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-login-route-failure-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-route-failure-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "bounded-cookie-metadata-fallback",
+    "page": "atomic-runner-route-failure",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Read the current NextN semantic layout and redacted diagnostics after the atomic runner failed before opening WebView. No credential action, CAPTCHA action, submit, launch, stop, install, sign-out, data clear or screenshot."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "typed-protocol-boundary-at-noninteractive-corner", "uiInput": ["click", "1", "1"], "pauseAfterMs": 10 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-current-route", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-login-route-failure.json", "-a"] },
+    { "name": "receive-current-route", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-login-route-failure.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-route-failure-237/current.json"] },
+    { "name": "receive-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-route-failure-237/diagnostics"] },
+    { "name": "confirm-app-process-remains", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "remove-current-route", "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-login-route-failure.json"] }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-clean-s0-account-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-clean-s0-account-237-20260827T205206",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-session-authority-without-app-login-acceptance-bridge",
+    "page": "account-s0",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Current S0 safe-state capture before one authorized login epoch. Navigate the known My to Account route continuously. No credential input, submit, mutation, uninstall, or data clear."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-current-my-root",
+        "uiInput": ["click", "948", "2006"],
+        "pauseAfterMs": 1200,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "open-current-account-row",
+        "uiInput": ["click", "660", "411"],
+        "pauseAfterMs": 2000,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-account-safe-state",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-clean-s0-account-237.json", "-a"]
+    },
+    {
+      "name": "receive-account-safe-state",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-clean-s0-account-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-clean-s0-account-237-20260827T205206/account-layout.json"]
+    },
+    {
+      "name": "remove-remote-account-state",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-clean-s0-account-237.json"]
+    }
+  ]
+}

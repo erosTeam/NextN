@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-login-challenge-hds-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-challenge-hds-237-20260827",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "production-flags-system-arkweb-challenge-hds",
+    "page": "real-login-terminal-challenge-notice",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install in place with data preserved, open the explicit real first-party login route without credentials, wait for the already-observed terminal Turnstile runtime failure, and capture only the resulting native root HDS notice. Do not focus or fill fields, submit, sign out, clear data, or uninstall."
+  },
+  "preflight": [
+    {
+      "name": "wake-selected-device",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "apply-unattended-timeout",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "install-production-flags-hap-in-place",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"
+      ],
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "force-stop-before-challenge-notice",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    },
+    {
+      "name": "start-explicit-login-route",
+      "hdcArgs": [
+        "shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility",
+        "--ps", "nextn_login_recovery", "1"
+      ],
+      "pauseAfterMs": 15000
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "capture-challenge-notice-screen",
+      "hdcArgs": [
+        "shell", "snapshot_display", "-f",
+        "/data/local/tmp/nextn-login-challenge-hds-237.jpeg"
+      ]
+    },
+    {
+      "name": "dump-challenge-notice-layout",
+      "hdcArgs": [
+        "shell", "uitest", "dumpLayout", "-p",
+        "/data/local/tmp/nextn-login-challenge-hds-237.json", "-a"
+      ]
+    },
+    {
+      "name": "receive-challenge-notice-screen",
+      "hdcArgs": [
+        "file", "recv", "/data/local/tmp/nextn-login-challenge-hds-237.jpeg",
+        "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-challenge-hds-237-20260827/challenge-hds.jpeg"
+      ]
+    },
+    {
+      "name": "receive-challenge-notice-layout",
+      "hdcArgs": [
+        "file", "recv", "/data/local/tmp/nextn-login-challenge-hds-237.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-challenge-hds-237-20260827/challenge-hds.json"
+      ]
+    },
+    {
+      "name": "capture-fixed-account-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNAccount", "-x"]
+    },
+    {
+      "name": "confirm-global-devtools-policy",
+      "hdcArgs": ["shell", "param", "get", "web.debug.devtools"]
+    },
+    {
+      "name": "remove-remote-screen",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-login-challenge-hds-237.jpeg"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-login-challenge-hds-237.json"]
+    },
+    {
+      "name": "force-stop-after-challenge-notice",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    }
+  ]
+}

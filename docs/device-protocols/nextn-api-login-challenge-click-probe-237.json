@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-api-login-challenge-click-probe-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-api-login-challenge-click-probe-237-20260827T1215",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "debug-signed-api-v2-turnstile-click-state",
+    "page": "api-login-challenge-after-checkbox",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Credential-free post-click probe of the dedicated API-v2 Turnstile carrier. Install in place without clearing data, open the explicit login route, click only the visually confirmed checkbox center, and capture the resulting visible state plus fixed diagnostics. Do not focus or populate credential fields and do not submit."
+  },
+  "preflight": [
+    {
+      "name": "wake-selected-device",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "apply-unattended-timeout",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "install-signed-hap-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"]
+    },
+    {
+      "name": "force-stop-preserved-session",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    },
+    {
+      "name": "start-explicit-login-route",
+      "hdcArgs": [
+        "shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility",
+        "--ps", "nextn_login_recovery", "1"
+      ],
+      "pauseAfterMs": 12000
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "activate-visible-turnstile-checkbox",
+        "uiInput": ["click", "132", "857"],
+        "pauseAfterMs": 5000,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "capture-post-click-challenge",
+      "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-api-login-post-click-237.jpeg"]
+    },
+    {
+      "name": "dump-post-click-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-api-login-post-click-237.json", "-a"]
+    },
+    {
+      "name": "receive-post-click-challenge",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-api-login-post-click-237.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-api-login-challenge-click-probe-237-20260827T1215/post-click.jpeg"]
+    },
+    {
+      "name": "receive-post-click-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-api-login-post-click-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-api-login-challenge-click-probe-237-20260827T1215/post-click-layout.json"]
+    },
+    {
+      "name": "capture-fixed-account-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNAccount", "-x"]
+    },
+    {
+      "name": "capture-fixed-acceptance-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNLoginAccept", "-x"]
+    },
+    {
+      "name": "capture-redacted-diagnostic-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"]
+    },
+    {
+      "name": "confirm-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "remove-remote-screenshot",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-api-login-post-click-237.jpeg"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-api-login-post-click-237.json"]
+    }
+  ]
+}

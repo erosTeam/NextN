@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-original-login-native-ua-probe-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-original-login-native-ua-probe-237-20260827T1223",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "acceptance-signed-original-nh-login-native-arkweb-ua",
+    "page": "original-nh-login-native-ua-baseline",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install in place with application data preserved, force-stop, and open the explicit first-party NH /login/ page using the unmodified UA returned by this ArkWeb controller. Capture only the credential-free visible page, layout, fixed diagnostics, and redacted browser capability profile. Do not focus or populate credential fields, submit, sign out, clear data, or uninstall."
+  },
+  "preflight": [
+    {
+      "name": "wake-selected-device",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "apply-unattended-timeout",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "install-original-login-signed-hap-in-place",
+      "hdcArgs": [
+        "install", "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"
+      ],
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "force-stop-before-original-login-baseline",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    },
+    {
+      "name": "start-explicit-original-login-route",
+      "hdcArgs": [
+        "shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility",
+        "--ps", "nextn_login_recovery", "1"
+      ],
+      "pauseAfterMs": 25000
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "capture-original-login-native-ua-screen",
+      "hdcArgs": [
+        "shell", "snapshot_display", "-f",
+        "/data/local/tmp/nextn-original-login-native-ua-237.jpeg"
+      ]
+    },
+    {
+      "name": "dump-original-login-native-ua-layout",
+      "hdcArgs": [
+        "shell", "uitest", "dumpLayout", "-p",
+        "/data/local/tmp/nextn-original-login-native-ua-237.json", "-a"
+      ]
+    },
+    {
+      "name": "receive-original-login-native-ua-screen",
+      "hdcArgs": [
+        "file", "recv", "/data/local/tmp/nextn-original-login-native-ua-237.jpeg",
+        "/Users/honjow/git/NextN/.hvigor/outputs/nextn-original-login-native-ua-probe-237-20260827T1223/original-login.jpeg"
+      ]
+    },
+    {
+      "name": "receive-original-login-native-ua-layout",
+      "hdcArgs": [
+        "file", "recv", "/data/local/tmp/nextn-original-login-native-ua-237.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/nextn-original-login-native-ua-probe-237-20260827T1223/original-login-layout.json"
+      ]
+    },
+    {
+      "name": "capture-fixed-account-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNAccount", "-x"]
+    },
+    {
+      "name": "capture-fixed-acceptance-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNLoginAccept", "-x"]
+    },
+    {
+      "name": "capture-redacted-diagnostic-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"]
+    },
+    {
+      "name": "confirm-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "confirm-global-devtools-policy",
+      "hdcArgs": ["shell", "param", "get", "web.debug.devtools"]
+    },
+    {
+      "name": "remove-remote-screen",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-original-login-native-ua-237.jpeg"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-original-login-native-ua-237.json"]
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-login-live-return-diagnostics-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-live-return-diagnostics-237-20260827T160400",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "live-return-before-cold-start",
+    "page": "post-login-native-return",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Read-only capture of the preserved product process after the exact promotion receipt and before any cold-start force-stop. No input, credential entry, submit, uninstall, data clear, sign-out, or process termination is performed."
+  },
+  "preflight": [
+    {
+      "name": "confirm-nextn-process-preserved",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "capture-live-return-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-login-live-return-237.json", "-a"]
+    },
+    {
+      "name": "receive-live-return-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-login-live-return-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-live-return-diagnostics-237-20260827T160400/nextn-login-live-return-237.json"]
+    },
+    {
+      "name": "capture-live-return-screen",
+      "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-login-live-return-237.jpeg"]
+    },
+    {
+      "name": "receive-live-return-screen",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-login-live-return-237.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-live-return-diagnostics-237-20260827T160400/nextn-login-live-return-237.jpeg"]
+    },
+    {
+      "name": "remove-live-return-temporary-files",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-login-live-return-237.json", "/data/local/tmp/nextn-login-live-return-237.jpeg"]
+    },
+    {
+      "name": "receive-redacted-diagnostics",
+      "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-live-return-diagnostics-237-20260827T160400/received"]
+    },
+    {
+      "name": "capture-login-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNAccount", "-x"]
+    },
+    {
+      "name": "confirm-global-devtools-policy",
+      "hdcArgs": ["shell", "param", "get", "web.debug.devtools"]
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-refresh-outcome-cold-health-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-refresh-outcome-cold-health-237-20260827T2355",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "tri-state-authenticated-refresh-outcome-with-expiry-shape",
+    "page": "cold-start-favorites-and-native-account",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install the signed tri-state refresh candidate in place with app data preserved. Cold-start the retained account, open native Favorites, then route to the sole native Account page. Capture semantic layouts and redacted persistent diagnostics. Do not clear data, uninstall, sign out, enter credentials, interact with CAPTCHA, submit, or mutate account state."
+  },
+  "preflight": [
+    { "name": "wake-selected-device", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "install-signed-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "pauseAfterMs": 500 },
+    { "name": "cold-stop-nextn", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 300 },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 3000 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-favorites", "uiInput": ["click", "564", "2006"], "pauseAfterMs": 5000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-cold-favorites", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-refresh-outcome-favorites.json", "-a"] },
+    { "name": "receive-cold-favorites", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-refresh-outcome-favorites.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-refresh-outcome-cold-health-237-20260827T2355/favorites.json"] },
+    { "name": "open-native-account", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility", "--ps", "nextn_login_recovery", "1"], "pauseAfterMs": 2000 },
+    { "name": "dump-native-account", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-refresh-outcome-account.json", "-a"] },
+    { "name": "receive-native-account", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-refresh-outcome-account.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-refresh-outcome-cold-health-237-20260827T2355/account.json"] },
+    { "name": "receive-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-refresh-outcome-cold-health-237-20260827T2355/diagnostics"] },
+    { "name": "confirm-app-process-remains", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "remove-temporary-layouts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-refresh-outcome-favorites.json", "/data/local/tmp/nextn-refresh-outcome-account.json"] }
+  ]
+}

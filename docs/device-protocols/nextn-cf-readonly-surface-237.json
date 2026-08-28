@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-cf-readonly-surface-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-cf-readonly-surface-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "original-first-party-webview-login",
+    "page": "credential-free-current-surface",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Capture the current credential-free surface after the requested original login route. No UI input, credential action, CAPTCHA action or submit."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "typed-protocol-boundary-at-noninteractive-corner", "uiInput": ["click", "1", "1"], "pauseAfterMs": 10 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-current-screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-cf-readonly-surface.jpeg"] },
+    { "name": "dump-current-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-cf-readonly-surface.json", "-a"] },
+    { "name": "receive-current-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-cf-readonly-surface.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-cf-readonly-surface-237/current.jpeg"] },
+    { "name": "receive-current-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-cf-readonly-surface.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-cf-readonly-surface-237/current.json"] },
+    { "name": "remove-current-screen", "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-cf-readonly-surface.jpeg"] },
+    { "name": "remove-current-layout", "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-cf-readonly-surface.json"] }
+  ]
+}

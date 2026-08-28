@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-clean-s0-favorites-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-clean-s0-favorites-237-20260827T205206",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-session-authority-without-app-login-acceptance-bridge",
+    "page": "favorites-s0",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Current S0 safe-state capture before one authorized login epoch. No credential input, submit, mutation, uninstall, or data clear."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-current-favorites-root",
+        "uiInput": ["click", "564", "2006"],
+        "pauseAfterMs": 2500,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-favorites-safe-state",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-clean-s0-favorites-237.json", "-a"]
+    },
+    {
+      "name": "receive-favorites-safe-state",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-clean-s0-favorites-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-clean-s0-favorites-237-20260827T205206/favorites-layout.json"]
+    },
+    {
+      "name": "remove-remote-favorites-state",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-clean-s0-favorites-237.json"]
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-current-login-fresh-prep-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-current-login-fresh-prep-237",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "current-original-webview-login",
+    "page": "fresh-login-preparation",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Close the terminal prior form and establish the wake gate before one fresh authorized original-WebView epoch. No data clear, uninstall, credential action, CAPTCHA action or submit occurs in this manifest."
+  },
+  "preflight": [
+    {
+      "name": "wake-selected-device",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "apply-unattended-timeout",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "close-terminal-prior-form",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    },
+    {
+      "name": "read-wake-state",
+      "hdcArgs": ["shell", "power-shell", "dump"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "confirm-app-stopped",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    }
+  ]
+}

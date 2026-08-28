@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-real-login-http-only-capture-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-real-login-http-only-capture-237-20260827T1015",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "debug-signed-real-login-http-only-capture-aceeab06",
+    "page": "real-first-party-login-surface",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install the debug-signed HAP in place without clearing data. Cold-start the preserved invalid-session account into the explicit real first-party login route and capture the credential-empty page. The production page must not use a synthetic document, request interception, or JavaScript credential extraction; native promotion later reads the complete HttpOnly-inclusive authentication cookie set. Do not focus a credential field, retrieve credentials, submit, clear data, uninstall, or sign out in this observation run."
+  },
+  "preflight": [
+    {
+      "name": "wake-selected-device",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "apply-unattended-timeout",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "install-signed-hap-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"]
+    },
+    {
+      "name": "force-stop-preserved-session",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    },
+    {
+      "name": "start-explicit-login-route",
+      "hdcArgs": [
+        "shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility",
+        "--ps", "nextn_login_recovery", "1"
+      ],
+      "pauseAfterMs": 8000
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+        "name": "capture-real-login-surface",
+        "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-real-login-surface-237.jpeg"]
+    },
+    {
+        "name": "dump-real-login-layout",
+        "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-real-login-surface-237.json", "-a"]
+    },
+    {
+        "name": "receive-real-login-surface",
+        "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-real-login-surface-237.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-real-login-http-only-capture-237-20260827T1015/login-surface.jpeg"]
+    },
+    {
+        "name": "receive-real-login-layout",
+        "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-real-login-surface-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-real-login-http-only-capture-237-20260827T1015/login-layout.json"]
+    },
+    {
+      "name": "capture-fixed-account-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNAccount", "-x"]
+    },
+    {
+      "name": "confirm-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "confirm-global-devtools-policy",
+      "hdcArgs": ["shell", "param", "get", "web.debug.devtools"]
+    },
+    {
+      "name": "remove-remote-screenshot",
+        "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-real-login-surface-237.jpeg"]
+    },
+    {
+      "name": "remove-remote-layout",
+        "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-real-login-surface-237.json"]
+    }
+  ]
+}

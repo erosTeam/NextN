@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-current-captcha-click-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-current-captcha-click-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "current-original-webview-login",
+    "page": "post-credential-captcha",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Dismiss only the password keyboard, then activate the fixed visible Cloudflare checkbox on the already staged original login page. No credential write, screenshot, layout dump or submit."
+  },
+  "preflight": [
+    { "name": "wake-selected-device", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "dismiss-password-keyboard", "uiInput": ["keyEvent", "BACK"], "pauseAfterMs": 500 },
+      { "name": "activate-current-cloudflare-checkbox", "uiInput": ["click", "275", "1423"], "pauseAfterMs": 5000 }
+    ]
+  },
+  "postflight": [
+    { "name": "confirm-app-process-remains", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-layout-atomic-post-submit-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-layout-atomic-post-submit-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "layout-driven-atomic-original-webview-login",
+    "page": "post-single-submit-terminal",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Read the untouched terminal after the sole layout-driven submit. No UI input, credential action, CAPTCHA action, submit, launch, stop or data mutation."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "typed-protocol-boundary-at-noninteractive-corner", "uiInput": ["click", "1", "1"], "pauseAfterMs": 10 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-terminal-screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-layout-atomic-terminal.jpeg"] },
+    { "name": "dump-terminal-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-layout-atomic-terminal.json", "-a"] },
+    { "name": "receive-terminal-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-layout-atomic-terminal.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-layout-atomic-post-submit-237/terminal.jpeg"] },
+    { "name": "receive-terminal-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-layout-atomic-terminal.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-layout-atomic-post-submit-237/terminal.json"] },
+    { "name": "receive-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-layout-atomic-post-submit-237/diagnostics"] },
+    { "name": "confirm-app-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "remove-terminal-screen", "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-layout-atomic-terminal.jpeg"] },
+    { "name": "remove-terminal-layout", "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-layout-atomic-terminal.json"] }
+  ]
+}

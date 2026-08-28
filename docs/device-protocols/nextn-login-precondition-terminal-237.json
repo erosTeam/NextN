@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-login-precondition-terminal-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-precondition-terminal-237-20260827T1802",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "ordinary-app-credential-free-challenge-first-probe",
+    "page": "preserved-original-nh-login-web",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Read only fixed redacted diagnostics after APP_FAILED_PRECONDITION_CF_PENDING. Do not capture layout or screenshot, enter credentials, click CAPTCHA, submit, restart, clear data, uninstall, sign out, or terminate the process."
+  },
+  "preflight": [
+    {
+      "name": "confirm-nextn-process-preserved-before-logs",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "receive-redacted-diagnostics",
+      "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-precondition-terminal-237-20260827T1802/received"]
+    },
+    {
+      "name": "capture-acceptance-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNLoginAccept", "-x"]
+    },
+    {
+      "name": "capture-account-hilog",
+      "hdcArgs": ["shell", "hilog", "-T", "NextNAccount", "-x"]
+    },
+    {
+      "name": "confirm-global-devtools-policy",
+      "hdcArgs": ["shell", "param", "get", "web.debug.devtools"]
+    },
+    {
+      "name": "confirm-nextn-process-preserved-after-logs",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    }
+  ]
+}

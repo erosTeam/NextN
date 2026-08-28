@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-login-safe-runtime-restore-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-safe-runtime-restore-237-20260827T1127",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "system-selected-arkweb-file-access-disabled",
+    "page": "login-runtime-safe-restore",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install the signed safe login runtime in place after the bounded file-access experiment. Preserve application data; do not launch login, focus a field, submit, uninstall, clear data, or sign out."
+  },
+  "preflight": [
+    {
+      "name": "install-safe-signed-hap-in-place",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"
+      ],
+      "timeoutSeconds": 120
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "force-stop-after-safe-restore",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    },
+    {
+      "name": "confirm-global-devtools-policy",
+      "hdcArgs": ["shell", "param", "get", "web.debug.devtools"]
+    }
+  ]
+}

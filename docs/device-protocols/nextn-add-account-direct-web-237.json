@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-add-account-direct-web-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-add-account-direct-web-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "formal-account-add-action-direct-original-web",
+    "page": "add-account-web-and-return",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "From the already verified formal AccountPage, open the inspected title-bar add-account action and prove it directly displays the original first-party Web component. Then leave through the inspected back button and prove the formal account list is restored. Do not focus fields, enter credentials, act on CAPTCHA, submit, sign out, uninstall or clear data."
+  },
+  "preflight": [
+    { "name": "wake-selected-device", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-add-account-through-inspected-title-action", "uiInput": ["click", "1212", "201"], "pauseAfterMs": 2500, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-direct-web", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-add-account-direct-web.json", "-a"] },
+    { "name": "receive-direct-web", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-add-account-direct-web.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-add-account-direct-web-237/web.json"] },
+    { "name": "leave-add-account-web-through-inspected-back-button", "hdcArgs": ["shell", "uitest", "uiInput", "click", "108", "201"], "pauseAfterMs": 1500 },
+    { "name": "dump-returned-account", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-add-account-returned.json", "-a"] },
+    { "name": "receive-returned-account", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-add-account-returned.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-add-account-direct-web-237/account.json"] },
+    { "name": "confirm-app-process-remains", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "remove-temporary-layouts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-add-account-direct-web.json", "/data/local/tmp/nextn-add-account-returned.json"] }
+  ]
+}

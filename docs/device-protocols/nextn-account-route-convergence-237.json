@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-account-route-convergence-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-account-route-convergence-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "single-native-account-page-login-only-web-destination",
+    "page": "formal-account-after-internal-recovery-route",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install the signed candidate in place with data preserved, cold-start the retained account, invoke the internal login-recovery entry, and prove that it converges to the formal multi-account AccountPage instead of a second native account UI. Do not enter credentials, act on CAPTCHA, submit, sign out, uninstall or clear data."
+  },
+  "preflight": [
+    { "name": "wake-selected-device", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "install-signed-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "pauseAfterMs": 500 },
+    { "name": "cold-stop-nextn", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 300 },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 3000 },
+    { "name": "invoke-internal-login-recovery", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility", "--ps", "nextn_login_recovery", "1"], "pauseAfterMs": 2500 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "noninteractive-top-edge-stabilization", "uiInput": ["click", "1", "1"], "pauseAfterMs": 300, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-converged-account", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-account-route-convergence.json", "-a"] },
+    { "name": "receive-converged-account", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-account-route-convergence.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-account-route-convergence-237/account.json"] },
+    { "name": "confirm-app-process-remains", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "remove-temporary-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-account-route-convergence.json"] }
+  ]
+}

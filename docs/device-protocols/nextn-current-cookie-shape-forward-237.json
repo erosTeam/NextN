@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-current-cookie-shape-forward-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-current-cookie-shape-forward-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "original-first-party-webview-login",
+    "page": "authenticated-web-cookie-shape",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Create one temporary ArkWeb DevTools forward for a read-only, value-free first-party cookie shape probe. No navigation, credential action, challenge action, submission, screenshot or layout dump."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "typed-protocol-boundary-at-noninteractive-corner", "uiInput": ["click", "1", "1"], "pauseAfterMs": 10 }
+    ]
+  },
+  "postflight": [
+    { "name": "create-cookie-shape-forward", "hdcArgs": ["fport", "tcp:19228", "tcp:19222"], "pauseAfterMs": 100 },
+    { "name": "confirm-cookie-shape-forward", "hdcArgs": ["fport", "ls"] },
+    { "name": "confirm-app-process-remains", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] }
+  ]
+}

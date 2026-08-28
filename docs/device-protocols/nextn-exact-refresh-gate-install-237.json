@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-exact-refresh-gate-install-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-exact-refresh-gate-install-237-20260828T0640",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "commit-701018328d9174453ffbb337924f0c558be427af-clean-hap-a69c429e9a26fea9cb34c5db06457f4d2e70415fea5c1a50d34c1ecdc6535f98",
+    "page": "data-preserving-clean-candidate-favorites-and-formal-account",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "The authorized target is exactly 192.168.50.237:12345. This HAP was built in an isolated worktree from commit 701018328d9174453ffbb337924f0c558be427af; it does not contain the unrelated Gallery, Reader, model-download, or general-network working-tree changes. Install it in place only on 237 and preserve application data. The candidate requires the sealed native generation to contain both access_token and the exact refresh_token consumed by the fixed refresh endpoint; sessionid or ipb_pass_hash cannot independently publish authenticated state. Cold-start, issue one native Favorites read, then route to the sole formal Account page and retain semantic layouts plus redacted diagnostics. Do not clear data, uninstall, sign out, enter credentials, act on CAPTCHA, submit, mutate account state, or operate another target."
+  },
+  "preflight": [
+    { "name": "wake-authorized-237", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake-and-timeout-before-install", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "install-clean-commit-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-account-clean-7010183/entry-default-signed.hap"], "pauseAfterMs": 500, "timeoutSeconds": 120 },
+    { "name": "cold-stop-nextn-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 300 },
+    { "name": "cold-start-clean-candidate", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 3000 },
+    { "name": "verify-nextn-window-before-favorites", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-favorites", "uiInput": ["click", "564", "2006"], "pauseAfterMs": 6000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-cold-favorites", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-exact-refresh-favorites.json", "-a"] },
+    { "name": "receive-cold-favorites", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-exact-refresh-favorites.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-exact-refresh-gate-install-237-20260828T0640/favorites.json"] },
+    { "name": "open-formal-account", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility", "--ps", "nextn_login_recovery", "1"], "pauseAfterMs": 2000 },
+    { "name": "dump-formal-account", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-exact-refresh-account.json", "-a"] },
+    { "name": "receive-formal-account", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-exact-refresh-account.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-exact-refresh-gate-install-237-20260828T0640/account.json"] },
+    { "name": "receive-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-exact-refresh-gate-install-237-20260828T0640/diagnostics"] },
+    { "name": "confirm-nextn-process-remains", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "remove-temporary-layouts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-exact-refresh-favorites.json", "/data/local/tmp/nextn-exact-refresh-account.json"] }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-current-webview-socket-discovery-4-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-current-webview-socket-discovery-4-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "original-first-party-webview-login",
+    "page": "current-webview-socket-discovery",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Read only the current NextN process, ArkWeb unix sockets and forward table. No navigation, credential action, CAPTCHA action, submit, screenshot or dump."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "typed-protocol-boundary-at-noninteractive-corner", "uiInput": ["click", "1", "1"], "pauseAfterMs": 10 }
+    ]
+  },
+  "postflight": [
+    { "name": "read-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "read-device-api-version", "hdcArgs": ["shell", "param", "get", "const.ohos.apiversion"] },
+    { "name": "read-live-webview-sockets", "hdcArgs": ["shell", "cat", "/proc/net/unix"] },
+    { "name": "read-existing-forwards", "hdcArgs": ["fport", "ls"] }
+  ]
+}

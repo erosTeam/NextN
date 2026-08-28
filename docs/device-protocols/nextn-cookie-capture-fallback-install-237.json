@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-cookie-capture-fallback-install-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-cookie-capture-fallback-install-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "bounded-cookie-metadata-fallback",
+    "page": "pre-login-install",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install the signed candidate in place while preserving application data. This intentionally ends the prior authenticated Web-only process before one fresh atomic login epoch. No credential action, CAPTCHA action, submit, sign-out, uninstall or data clear."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "typed-protocol-boundary-at-noninteractive-corner", "uiInput": ["click", "1", "1"], "pauseAfterMs": 10 }
+    ]
+  },
+  "postflight": [
+    { "name": "install-signed-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "pauseAfterMs": 500 },
+    { "name": "read-installed-nextn-bundle", "hdcArgs": ["shell", "bm", "dump", "-n", "com.erosteam.nextn"] }
+  ]
+}

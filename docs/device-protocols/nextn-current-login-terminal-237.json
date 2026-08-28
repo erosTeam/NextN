@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-current-login-terminal-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-current-login-terminal-237-20260827T211508",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "external-original-webview-login-coordinator",
+    "page": "current-post-submit-terminal",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Read the current untouched post-submit App state after the single credential epoch. Retain only fixed semantic booleans and product-redacted diagnostics. Do not input, submit, launch, stop, clear data, uninstall, or capture a screenshot."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      {
+        "name": "typed-protocol-boundary-at-noninteractive-corner",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-current-post-submit-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-current-login-terminal-237.json", "-a"]
+    },
+    {
+      "name": "receive-current-post-submit-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-current-login-terminal-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-current-login-terminal-237-20260827T211508/current-layout.json"]
+    },
+    {
+      "name": "receive-current-redacted-diagnostics",
+      "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-current-login-terminal-237-20260827T211508/received"]
+    },
+    {
+      "name": "confirm-current-nextn-process",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    },
+    {
+      "name": "confirm-current-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "confirm-login-forward-cleaned",
+      "hdcArgs": ["fport", "ls"]
+    },
+    {
+      "name": "remove-remote-current-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-current-login-terminal-237.json"]
+    }
+  ]
+}

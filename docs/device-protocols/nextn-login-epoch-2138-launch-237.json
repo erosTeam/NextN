@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-login-epoch-2138-launch-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-epoch-2138-launch-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "original-first-party-webview-login",
+    "page": "fresh-login-route",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Fresh authorized 21:38 epoch. Open only the original login WebView and create a fixed temporary DevTools forward. No credential action or submit."
+  },
+  "preflight": [
+    { "name": "wake-selected-device", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "open-original-visible-login", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility", "--ps", "nextn_login_recovery", "1"], "pauseAfterMs": 2500 },
+    { "name": "create-current-webview-forward", "hdcArgs": ["fport", "tcp:19225", "tcp:19222"], "pauseAfterMs": 500 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "typed-protocol-boundary-at-noninteractive-corner", "uiInput": ["click", "1", "1"], "pauseAfterMs": 100 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-fresh-login-route", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-login-epoch-2138-route.json", "-a"] },
+    { "name": "receive-fresh-login-route", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-login-epoch-2138-route.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-epoch-2138-launch-237/route.json"] },
+    { "name": "confirm-current-forward", "hdcArgs": ["fport", "ls"] },
+    { "name": "confirm-app-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "remove-remote-route", "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-login-epoch-2138-route.json"] }
+  ]
+}
