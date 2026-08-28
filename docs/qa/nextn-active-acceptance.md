@@ -4747,3 +4747,40 @@ permitted in this repository.
   process, cross-day survival, and the next natural terminal 401 with retained
   Account, global HDS Snackbar, original-WebView re-login promotion, native
   return and a later cold authenticated Favorites cycle remain unproven.
+
+#### Natural refresh checkpoint recovered Favorites — later-process restore OPEN — 2026-08-28 07:56 +0800
+
+- The scheduled no-install/no-data-clear protocol ran only on the explicitly
+  authorized `192.168.50.237:12345` under lease
+  `20260826-193807-2dc9dfd0`. The CLI target, manifest `target`, manifest
+  `authorizedTarget`, live Connected row and lease target all matched exact
+  237. All 18 checked commands exited zero; no install, uninstall, data clear,
+  sign-out, credential input, CAPTCHA action, submit or account mutation
+  occurred. Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T0755/` and
+  is excluded from Git.
+- The privacy-bounded layout summary has one focused NextN Favorites root,
+  one native collection, no Web component, no sign-in/loading/error state and
+  an authenticated layout candidate. Formal Account has one focused account
+  list root, one saved row, exactly one selected Radio, no Web component, no
+  sign-in prompt, no verification-required state and no save failure.
+- The newest process supplied a real refresh lifecycle rather than another
+  empty healthy check. Its fixed event order is restore payload shape ->
+  restore expiry shape -> restore ready -> initial-401 expiry shape -> one
+  authenticated-read initial 401 -> browser Cookie shape -> one ready refresh
+  endpoint -> refresh-checkpoint expiry shape -> browser refresh ready -> one
+  recovered safe replay -> `favorites_request_success`. There is no second
+  refresh, replayed/final 401, verification marker failure, response-Cookie
+  stored/applied/rejected event or Favorites failure.
+- The `refresh_checkpoint` event proves that this process crossed the durable
+  replacement-pair checkpoint before its recovered replay. Restore,
+  initial-401 and refresh-checkpoint expiry classes are all `unknown`; this is
+  expected for the current Cookie metadata shape and is not longevity proof.
+  The next independent process must establish that the 07:55 replacement pair
+  restores and serves Favorites without another immediate refresh.
+- The checked observation manifest now points to the unique 08:55 artifact
+  directory for that later-process test. Natural response `Set-Cookie`
+  rotation/deletion, cross-day survival and the next natural terminal 401 with
+  retained Account, global close/re-login HDS Snackbar, original-WebView
+  promotion, native return and a later cold authenticated Favorites cycle all
+  remain OPEN.

@@ -24,6 +24,8 @@ const FAVORITES_ROOT_ID = 'nextn-favorites-root'
 const WEB_TYPES = new Set(['Web', 'WebComponent'])
 const COLLECTION_TYPES = new Set(['List', 'Grid', 'WaterFlow'])
 const DIAGNOSTIC_LOG_PATTERN = /^nextn-log-\d{8}-\d{6}\.txt$/
+const AUTH_EXPIRY_SHAPE_PATTERN =
+  /account_auth_expiry_shape[^\r\n]*?phase=(restore|initial_401|refresh_checkpoint|promotion);access=(absent|session|unknown|expired|lt_1h|lt_24h|lt_7d|ge_7d);refresh=(absent|session|unknown|expired|lt_1h|lt_24h|lt_7d|ge_7d)/g
 
 const DIAGNOSTIC_STAGES = Object.freeze([
   'session_start',
@@ -228,6 +230,37 @@ function countStage(content, stage) {
   return [...content.matchAll(pattern)].length
 }
 
+function diagnosticEventSequence(content) {
+  const events = []
+  for (const line of content.split(/\r?\n/)) {
+    const matches = []
+    for (const stage of DIAGNOSTIC_STAGES) {
+      const index = line.indexOf(stage)
+      if (index >= 0) {
+        const before = index === 0 ? '' : line[index - 1]
+        const afterIndex = index + stage.length
+        const after = afterIndex >= line.length ? '' : line[afterIndex]
+        if (!/[a-z0-9_]/i.test(before) && !/[a-z0-9_]/i.test(after)) {
+          matches.push({ stage, index })
+        }
+      }
+    }
+    matches.sort((left, right) => left.index - right.index || right.stage.length - left.stage.length)
+    for (const match of matches) {
+      events.push(match.stage)
+    }
+  }
+  return events
+}
+
+function authExpiryShapes(content) {
+  return [...content.matchAll(AUTH_EXPIRY_SHAPE_PATTERN)].map((match) => ({
+    phase: match[1],
+    access: match[2],
+    refresh: match[3],
+  }))
+}
+
 async function diagnosticsSummary(artifactDirectory) {
   let names = []
   try {
@@ -243,6 +276,8 @@ async function diagnosticsSummary(artifactDirectory) {
       responseCookieRejected: false,
       favoritesSuccess: false,
       favoritesFailed: false,
+      authExpiryShapes: [],
+      eventSequence: [],
     }
   }
   const logs = names.filter((name) => DIAGNOSTIC_LOG_PATTERN.test(name)).sort()
@@ -257,6 +292,8 @@ async function diagnosticsSummary(artifactDirectory) {
       responseCookieRejected: false,
       favoritesSuccess: false,
       favoritesFailed: false,
+      authExpiryShapes: [],
+      eventSequence: [],
     }
   }
   const selectedLog = logs.at(-1)
@@ -286,6 +323,8 @@ async function diagnosticsSummary(artifactDirectory) {
     responseCookieRejected: has('account_response_cookie_rejected'),
     favoritesSuccess: has('favorites_request_success'),
     favoritesFailed: has('favorites_request_failed'),
+    authExpiryShapes: authExpiryShapes(content),
+    eventSequence: diagnosticEventSequence(content),
   }
 }
 

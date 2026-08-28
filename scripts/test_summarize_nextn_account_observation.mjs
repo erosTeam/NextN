@@ -80,6 +80,8 @@ try {
       'session_start',
       'account_restore_ready',
       'account_restore_verification_required_after_browser_refresh_failure',
+      'account_auth_expiry_shape phase=restore;access=lt_1h;refresh=ge_7d',
+      'account_auth_expiry_shape phase=refresh_checkpoint;access=lt_24h;refresh=lt_7d',
       'account_response_cookie_stored',
       'account_response_auth_cookie_applied',
       'favorites_request_success',
@@ -107,6 +109,20 @@ try {
   assert.equal(summary.diagnostics.responseAuthCookieApplied, true)
   assert.equal(summary.diagnostics.favoritesSuccess, true)
   assert.equal(summary.diagnostics.terminal401, false)
+  assert.deepEqual(summary.diagnostics.authExpiryShapes, [
+    { phase: 'restore', access: 'lt_1h', refresh: 'ge_7d' },
+    { phase: 'refresh_checkpoint', access: 'lt_24h', refresh: 'lt_7d' },
+  ])
+  assert.deepEqual(summary.diagnostics.eventSequence, [
+    'session_start',
+    'account_restore_ready',
+    'account_restore_verification_required_after_browser_refresh_failure',
+    'account_auth_expiry_shape',
+    'account_auth_expiry_shape',
+    'account_response_cookie_stored',
+    'account_response_auth_cookie_applied',
+    'favorites_request_success',
+  ])
   assert.equal(summary.diagnostics.stages.some(({ stage }) =>
     stage === 'account_restore_verification_required'), false)
   assert.deepEqual(
@@ -115,6 +131,7 @@ try {
       'session_start',
       'account_restore_ready',
       'account_restore_verification_required_after_browser_refresh_failure',
+      'account_auth_expiry_shape',
       'account_response_cookie_stored',
       'account_response_auth_cookie_applied',
       'favorites_request_success',
