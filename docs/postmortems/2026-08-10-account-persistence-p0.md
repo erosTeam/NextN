@@ -233,12 +233,15 @@ return to `AccountPage` after real native promotion.
 ### What the current evidence actually establishes
 
 The original multi-day failure is only **partially** explained. On 237, a
-previously valid v3 envelope with access and refresh present restored on
-2026-08-23. The first authenticated read later returned 401, and the fixed
-refresh endpoint also returned 401. This proves that the retained renewal
-credential was rejected by the server; it does not retrospectively distinguish
-expiry, revocation, or a missed earlier credential rotation because that
-response carried no retained reason or rotation evidence.
+previously valid v3 envelope with access and refresh present restored at
+2026-08-23 05:42 +0800. At 19:05 the first authenticated read returned 401;
+the regular ArkWeb jar still contained the HttpOnly refresh Cookie but no
+access Cookie, and the fixed refresh endpoint also returned 401. The same
+rejected refresh state remained observable across later 24/26/27 August
+attempts. This proves that the App had not merely forgotten the local refresh
+value: the server rejected the renewal credential it retained. The response
+carried no retained reason or rotation evidence, so expiry, revocation, or a
+missed earlier credential rotation cannot be distinguished retrospectively.
 
 The continuation did establish these separate causal defects:
 
@@ -409,6 +412,15 @@ The continuation did establish these separate causal defects:
   The 06:56 preserve-data cold process restored the complete version-3 pair,
   completed authenticated Favorites, retained the native saved Account and
   received no observable response Cookie.
+- At 07:55 the current clean package produced another real lifecycle rather
+  than an empty healthy check: restore -> initial authenticated-read 401 ->
+  one ready refresh endpoint -> durable replacement-pair checkpoint -> browser
+  verification -> one recovered safe replay -> authenticated Favorites. No
+  second refresh, terminal 401, response-Cookie event or Favorites failure
+  occurred. This proves the replacement generation crossed the durable
+  readback checkpoint before replay in that process. It does not yet prove
+  that the same 07:55 generation restores in a later process; the next unique
+  no-install cold observation is reserved for that boundary.
 - An earlier HAP built from the same commit, SHA-256
   `a69c429e9a26fea9cb34c5db06457f4d2e70415fea5c1a50d34c1ecdc6535f98`,
   is rejected. Its isolated-worktree dependency symlink omitted the packaged
@@ -416,11 +428,12 @@ The continuation did establish these separate causal defects:
   crashes. That packaging failure is not account/session runtime evidence and
   is not part of the continued observation candidate.
 
-These results do **not** yet establish cross-day survival, a natural first-
-party auth `Set-Cookie` checkpoint, the saved-envelope fallback on device, or
-a natural terminal 401 with retained Account, close/re-login HDS Snackbar, one
-original-WebView login, native return, cold restore, and authenticated
-Favorites. The P0 and this postmortem therefore remain OPEN.
+These results do **not** yet establish restoration of the 07:55 generation in
+a later process, cross-day survival, a natural first-party auth `Set-Cookie`
+checkpoint, the saved-envelope fallback on device, or a natural terminal 401
+with retained Account, close/re-login HDS Snackbar, one original-WebView login,
+native return, cold restore, and authenticated Favorites. The P0 and this
+postmortem therefore remain OPEN.
 
 ### Why the extended effort still failed to close the user outcome
 
@@ -452,9 +465,18 @@ Favorites. The P0 and this postmortem therefore remain OPEN.
 
 ### Additional prevention constraints
 
-- Device authorization is checked at the final command boundary: CLI target,
-  manifest target/authorized target, and active lease must all equal the full
-  237 address. Another connected device is never a fallback.
+- Device identity consistency is not device authorization. CLI target,
+  manifest target/`authorizedTarget`, and active lease equality can prevent a
+  mismatched command, but all three can still be selected by the same executor
+  and therefore cannot prove the user's authority. The final command boundary
+  must compare against a lane-scoped authority input established from the
+  latest user instruction and not writable by the manifest. The generic
+  runner does not yet provide that independent authority source. For this P0,
+  the account collectors and observation summarizer are additionally hard-
+  locked to the exact full `192.168.50.237:12345` target; generic runner use on
+  any other target is outside this lane. Discovery, connectivity, historical
+  use, an existing manifest or the phrase "another device" never authorizes a
+  fallback target.
 - A new credential epoch is permitted only after current native Account and
   Favorites evidence proves the session unusable. It uses the original visible
   WebView: account once, password once, post-credential CAPTCHA action/poll,
