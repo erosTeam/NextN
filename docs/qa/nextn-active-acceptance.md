@@ -4820,3 +4820,42 @@ permitted in this repository.
   retained Account, global close/re-login HDS Snackbar, original-WebView
   promotion, native return and a later cold authenticated Favorites cycle all
   remain OPEN.
+
+#### Recurrent natural refresh recovered Favorites — next-process restore OPEN — 2026-08-28 09:57 +0800
+
+- The no-install/no-data-clear protocol ran exactly once on the explicitly
+  authorized `192.168.50.237:12345` under lease
+  `20260826-193807-2dc9dfd0`. The live Connected row, CLI target, manifest
+  `target`, manifest `authorizedTarget` and lease target all matched exact
+  237. All 19 checked commands exited zero; both PowerManager readbacks showed
+  `AWAKE` with `OverrideTimeout=86400000ms`, and the final process check
+  retained a PID. No install, uninstall, data clear, sign-out, credential
+  input, CAPTCHA action, submit or account mutation occurred.
+- Before this observation, commit `c38622f` corrected the privacy-bounded
+  summarizer so an Account verification row and the root HDS `Dialog` are
+  separate signals. It reports the HDS surface, re-verification click target
+  and close click target independently, and does not call retained content an
+  authenticated layout candidate while that terminal surface is present.
+- The 09:55 layouts have one focused native Favorites root with a collection,
+  no Web, sign-in/loading/error state or verification HDS. Formal Account has
+  one focused account-list root, one saved row, exactly one selected Radio, no
+  Web, sign-in prompt, verification-required state, verification HDS or save
+  failure. Both remain authenticated layout candidates in this non-terminal
+  cycle.
+- The fixed event sequence is restore payload/expiry shape -> restore ready ->
+  initial-401 expiry shape -> one authenticated-read initial 401 -> browser
+  Cookie shape -> exactly one ready refresh endpoint -> refresh-checkpoint
+  expiry shape -> browser refresh ready -> one recovered safe replay ->
+  `favorites_request_success`. There is no second refresh, replayed/final 401,
+  verification-marker failure, response-Cookie stored/applied/rejected event
+  or Favorites failure.
+- Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T0955/` and is
+  excluded from Git. This proves recovery of this natural hourly refresh cycle
+  only. The next independent process must establish that the 09:55 replacement
+  pair restores and serves Favorites without another immediate refresh.
+  Cross-day survival, natural response-Cookie rotation/deletion and the next
+  natural terminal 401 with retained Account, global close/re-login HDS
+  Snackbar, original-WebView promotion, native return and a later cold
+  authenticated Favorites cycle remain OPEN. The checked manifest now points
+  to the unique 10:55 artifact directory.
