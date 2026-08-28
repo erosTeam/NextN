@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-cookie-crash-candidate-install-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-cookie-crash-candidate-install-237-20260828T1258",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "commit-0b9c3da1fc1220fc57613189e4e6bcfb880891b6-clean-complete-hap-c48ba4594affeceab10a2a0361331c8b8648f5b7325d0a69f3a09157dbafb888",
+    "page": "data-preserving-cookie-crash-window-candidate-favorites-and-formal-account",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Exact authorized target 237 only. Commit 0b9c3da1fc1220fc57613189e4e6bcfb880891b6 closes the response-Cookie split-store crash window by durably advancing the encrypted native generation before the sole raw Set-Cookie jar sink and by accepting an existing cold-start jar only when it matches the sealed generation. The HAP was built in an isolated worktree with complete root and per-module oh_modules trees plus reader-enhancement source at 640f310ee7addb0c4eb46e55b1f7181017a653df. Network and account regressions passed. Offline modules.abc inspection found the exact @ohos/axios 2.2.12 entry, NhApiHttpTransport, NhSessionHttpClient, responseCookieSinkOwnedByCaller and existingMatchesSealed. Install in place with application data preserved, then use the ordinary native Favorites and My-to-Account routes. Do not clear data, uninstall, sign out, enter credentials, act on CAPTCHA, submit, mutate account state, use an internal recovery Want, or operate another target."
+  },
+  "preflight": [
+    {
+      "name": "wake-authorized-237",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "apply-unattended-timeout",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "verify-awake-and-timeout-before-install",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "install-cookie-crash-window-candidate-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-cookie-crash-candidate-0b9c3da/entry-default-signed.hap"],
+      "pauseAfterMs": 500,
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "cold-stop-nextn-with-data-preserved",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"],
+      "pauseAfterMs": 300
+    },
+    {
+      "name": "cold-start-cookie-crash-window-candidate",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"],
+      "pauseAfterMs": 3000
+    },
+    {
+      "name": "verify-nextn-process-before-favorites",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    },
+    {
+      "name": "verify-nextn-window-before-favorites",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-native-favorites-from-verified-root",
+        "uiInput": ["click", "564", "2006"],
+        "pauseAfterMs": 6000,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-favorites-after-cookie-crash-window-install",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-cookie-crash-favorites.json", "-a"]
+    },
+    {
+      "name": "receive-favorites-after-cookie-crash-window-install",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-cookie-crash-favorites.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-cookie-crash-candidate-install-237-20260828T1258/favorites.json"]
+    },
+    {
+      "name": "open-native-my-root",
+      "hdcArgs": ["shell", "uitest", "uiInput", "click", "948", "2006"],
+      "pauseAfterMs": 1200
+    },
+    {
+      "name": "open-native-account-row",
+      "hdcArgs": ["shell", "uitest", "uiInput", "click", "660", "411"],
+      "pauseAfterMs": 2000
+    },
+    {
+      "name": "dump-formal-account-after-cookie-crash-window-install",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-cookie-crash-account.json", "-a"]
+    },
+    {
+      "name": "receive-formal-account-after-cookie-crash-window-install",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-cookie-crash-account.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-cookie-crash-candidate-install-237-20260828T1258/account.json"]
+    },
+    {
+      "name": "receive-redacted-diagnostics",
+      "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-cookie-crash-candidate-install-237-20260828T1258/diagnostics"]
+    },
+    {
+      "name": "confirm-nextn-process-remains",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    },
+    {
+      "name": "read-final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "verify-final-awake-and-timeout",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "remove-temporary-layouts",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-cookie-crash-favorites.json", "/data/local/tmp/nextn-cookie-crash-account.json"]
+    }
+  ]
+}

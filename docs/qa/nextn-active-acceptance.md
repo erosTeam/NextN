@@ -4963,3 +4963,67 @@ permitted in this repository.
   native return and a later cold authenticated Favorites cycle remain OPEN.
   The checked observation manifest remains on the unique 12:55 artifact path
   and now records this HAP identity.
+
+#### Replacement pair restored; response-Cookie crash window closed — 2026-08-28 13:00 +0800
+
+- The 12:55 no-install/no-data-clear protocol ran exactly once on the
+  explicitly authorized `192.168.50.237:12345` under lease
+  `20260826-193807-2dc9dfd0`. The live Connected row, CLI target, manifest
+  `target`, manifest `authorizedTarget` and lease target all matched exact
+  237. All 19 checked commands exited zero; both PowerManager readbacks showed
+  `AWAKE` with `OverrideTimeout=86400000ms`, and the final process check
+  retained a PID. No install, uninstall, data clear, sign-out, credential
+  input, CAPTCHA action, submit, internal recovery Want or account mutation
+  occurred.
+- The independent 12:55 process emitted only `session_start` -> restore
+  payload/expiry shape -> `account_restore_ready` ->
+  `favorites_request_success`. It emitted no initial 401, refresh endpoint,
+  refresh checkpoint, replay, replayed/final 401, verification-marker failure,
+  response-Cookie stored/applied/rejected event or Favorites failure. The
+  native Favorites summary has one collection and no Web/sign-in/loading/error
+  or verification HDS. Formal Account has one list root, one saved row and one
+  selected Radio with no Web/sign-in/verification/save-failure state. This
+  proves that the replacement pair checkpointed by the 12:13 refresh restored
+  in a later process and served authenticated Favorites without another
+  immediate refresh. Evidence is under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T1255/` and is
+  excluded from Git.
+- A current source audit then found one remaining two-store crash window. The
+  response lifecycle wrote the raw server `Set-Cookie` batch to ArkWeb before
+  the matching access/refresh pair crossed the HUKS/RDB checkpoint, while cold
+  restore accepted any complete ArkWeb pair without comparing it to the sealed
+  native generation. Process death between those writes could therefore leave
+  a new browser refresh token beside the old native request authority, which
+  is the same split-generation failure class the global owner was intended to
+  remove.
+- Commit `0b9c3da1fc1220fc57613189e4e6bcfb880891b6` makes the encrypted native
+  generation the recoverable commit point: a successful authenticated
+  response checkpoints its fenced pair before the sole raw-header ArkWeb
+  sink, and cold restore accepts an existing jar only when its auth pair
+  matches the sealed generation; otherwise the sealed generation repairs the
+  jar. Network-authority, account/history and observation-summary regressions
+  plus `git diff --check` passed. An isolated signed build with the complete
+  dependency trees succeeded. Its HAP SHA-256 is
+  `c48ba4594affeceab10a2a0361331c8b8648f5b7325d0a69f3a09157dbafb888`;
+  offline `modules.abc` inspection found the exact axios 2.2.12 entry,
+  `NhApiHttpTransport`, `NhSessionHttpClient` and both new generation-fence
+  symbols.
+- A checked 20-command manifest installed that HAP with `install -r` only on
+  exact 237 and preserved application data. Every command exited zero; both
+  PowerManager readbacks were `AWAKE` with `OverrideTimeout=86400000ms`, the
+  final process check retained a PID and the final window remained NextN.
+  The 12:58 process again emitted only restore payload/expiry shape ->
+  `account_restore_ready` -> `favorites_request_success`, with no refresh,
+  replay, terminal 401 or response-Cookie event. Favorites and formal Account
+  retained the same authenticated native summaries and no Web, sign-in,
+  verification HDS or save failure. Evidence is under
+  `.hvigor/outputs/nextn-cookie-crash-candidate-install-237-20260828T1258/`
+  and is excluded from Git.
+- This accepts the source/build correction and one preserve-data cold
+  non-regression on the new candidate. It does not manufacture the event that
+  exercises the new order. Natural response `Set-Cookie` rotation/deletion,
+  persistence into a later process, cross-day survival and the next natural
+  terminal 401 with retained Account, close/re-login HDS, original-WebView
+  promotion, native return and a later authenticated cold Favorites cycle all
+  remain OPEN. The checked natural monitor advances to 13:55 on this exact
+  candidate.
