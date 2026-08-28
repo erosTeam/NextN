@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-clean-head-cadf534-install-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-clean-head-cadf534-install-237",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "commit-cadf534-clean-full-rebuild-hap-93e6cfa1c87e66f5ae67c396c3b0b91f8e58bfc58bc5dc95dda74fff69f965be",
+    "page": "data-preserving-current-head-favorites-and-formal-account",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Exact authorized target 237 only. Commit cadf534 includes the durable NH session lifecycle, bounded global HTTP ownership, response-Cookie split-store crash-window correction, and commit 902b323, which prevents Gallery and Comments account reads from treating retained ownership as available authentication. The signed HAP was produced after a successful ten-module Hvigor clean and full ArkTS/resource/signing rebuild; SHA-256 is 93e6cfa1c87e66f5ae67c396c3b0b91f8e58bfc58bc5dc95dda74fff69f965be. Run only after the current 13:55 natural observation has completed. Install in place with application data preserved, then use the ordinary native Favorites and My-to-Account routes. Do not clear data, uninstall, sign out, enter credentials, act on CAPTCHA, submit, mutate account state, use an internal recovery Want, or operate another target."
+  },
+  "preflight": [
+    {
+      "name": "wake-authorized-237",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "apply-unattended-timeout",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "verify-awake-and-timeout-before-install",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "install-current-clean-head-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-clean-head-cadf534/entry-default-signed.hap"],
+      "pauseAfterMs": 500,
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "cold-stop-nextn-with-data-preserved",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"],
+      "pauseAfterMs": 300
+    },
+    {
+      "name": "cold-start-current-clean-head",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"],
+      "pauseAfterMs": 3000
+    },
+    {
+      "name": "verify-nextn-process-before-favorites",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    },
+    {
+      "name": "verify-nextn-window-before-favorites",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-native-favorites-from-verified-root",
+        "uiInput": ["click", "564", "2006"],
+        "pauseAfterMs": 6000,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-favorites-after-current-head-install",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-clean-head-favorites.json", "-a"]
+    },
+    {
+      "name": "receive-favorites-after-current-head-install",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-clean-head-favorites.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-clean-head-cadf534-install-237/favorites.json"]
+    },
+    {
+      "name": "open-native-my-root",
+      "hdcArgs": ["shell", "uitest", "uiInput", "click", "948", "2006"],
+      "pauseAfterMs": 1200
+    },
+    {
+      "name": "open-native-account-row",
+      "hdcArgs": ["shell", "uitest", "uiInput", "click", "660", "411"],
+      "pauseAfterMs": 2000
+    },
+    {
+      "name": "dump-formal-account-after-current-head-install",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-clean-head-account.json", "-a"]
+    },
+    {
+      "name": "receive-formal-account-after-current-head-install",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-clean-head-account.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-clean-head-cadf534-install-237/account.json"]
+    },
+    {
+      "name": "receive-redacted-diagnostics",
+      "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-clean-head-cadf534-install-237/diagnostics"]
+    },
+    {
+      "name": "confirm-nextn-process-remains",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    },
+    {
+      "name": "read-final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "verify-final-awake-and-timeout",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "remove-temporary-layouts",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-clean-head-favorites.json", "/data/local/tmp/nextn-clean-head-account.json"]
+    }
+  ]
+}
