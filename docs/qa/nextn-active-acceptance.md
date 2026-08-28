@@ -5104,7 +5104,8 @@ permitted in this repository.
   millisecond timestamp prefix, scans all retained diagnostics files, and
   consumes only lines from that baseline through the checked protocol's
   `metadata.endedAt`. It still returns only allowlisted stage counts, event
-  order, booleans and coarse expiry shapes; it never returns a raw line,
+  order, booleans, the next fixed capture-boundary timestamp and coarse expiry
+  shapes; it never returns a raw line,
   Cookie, token, URL, account value or arbitrary message. Same-second retained
   file suffixes such as `-01` are included. Artifacts without a baseline retain
   the old latest-file behavior for historical reproducibility; once a manifest
@@ -5114,6 +5115,9 @@ permitted in this repository.
   baseline to the older process file is retained alongside the later cold-start
   events, while a pre-baseline rejection is excluded. The observation-summary,
   network-authority and account/history tests, JSON validation and
-  `git diff --check` pass. The 14:55 manifest baseline is the completed clean
-  candidate installation time `2026-08-28T14:05:57.962053+08:00`; no app build,
-  install or device action was performed by this host-tool correction.
+  `git diff --check` pass. To avoid a gap between the diagnostics receive and
+  later postflight commands, the next manifest baseline is the successful
+  `receive-redacted-*` command's `startedAt`, not the whole protocol's end; a
+  missing or invalid capture boundary rejects the windowed summary. The 14:55
+  baseline is `2026-08-28T14:05:57.133530+08:00`; no app build, install or
+  device action was performed by this host-tool correction.

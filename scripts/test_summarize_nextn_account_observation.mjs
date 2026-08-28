@@ -192,6 +192,7 @@ try {
   )
   assert.equal(summary.diagnostics.scannedLogCount, 1)
   assert.equal(summary.diagnostics.windowed, false)
+  assert.equal(summary.diagnostics.nextWindowStart, null)
 
   await writeJson(join(directory, 'favorites.json'), windowWith([{
     attributes: { id: 'nextn-favorites-root', visible: 'true' },
@@ -235,7 +236,11 @@ try {
     status: 'completed',
     target: TARGET,
     endedAt: '2026-08-28T14:55:30.000+08:00',
-    commands: [{ exitCode: 0 }],
+    commands: [{
+      name: 'receive-redacted-persistent-diagnostics#1',
+      startedAt: '2026-08-28T14:55:20.000+08:00',
+      exitCode: 0,
+    }],
   })
   await writeJson(join(directory, 'protocol-manifest.json'), {
     target: TARGET,
@@ -262,6 +267,10 @@ try {
   const windowedSummary = await summarizeArtifact(directory)
   assert.equal(windowedSummary.diagnostics.scannedLogCount, 2)
   assert.equal(windowedSummary.diagnostics.windowed, true)
+  assert.equal(
+    windowedSummary.diagnostics.nextWindowStart,
+    '2026-08-28T14:55:20.000+08:00',
+  )
   assert.equal(windowedSummary.diagnostics.responseCookieStored, true)
   assert.equal(windowedSummary.diagnostics.responseAuthCookieApplied, true)
   assert.equal(windowedSummary.diagnostics.responseCookieRejected, false)
@@ -271,6 +280,16 @@ try {
     'session_start',
     'favorites_request_success',
   ])
+  await writeJson(join(directory, 'run-metadata.json'), {
+    status: 'completed',
+    target: TARGET,
+    endedAt: '2026-08-28T14:55:30.000+08:00',
+    commands: [{ exitCode: 0 }],
+  })
+  await assert.rejects(
+    () => summarizeArtifact(directory),
+    (error) => error?.code === 'diagnostic_capture_boundary_invalid',
+  )
   await writeJson(join(directory, 'protocol-manifest.json'), {
     target: TARGET,
     authorizedTarget: TARGET,

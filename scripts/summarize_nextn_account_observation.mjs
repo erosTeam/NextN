@@ -335,8 +335,24 @@ function diagnosticWindow(manifest, metadata) {
   return { start, end }
 }
 
+function diagnosticCaptureStart(metadata, window) {
+  if (window === null) {
+    return null
+  }
+  const commands = Array.isArray(metadata?.commands) ? metadata.commands : []
+  const capture = commands.find((command) =>
+    String(command?.name ?? '').startsWith('receive-redacted-') && command?.exitCode === 0)
+  const rawStart = String(capture?.startedAt ?? '')
+  const start = Date.parse(rawStart)
+  if (rawStart.length === 0 || !Number.isFinite(start) || start < window.start || start > window.end) {
+    throw new SafeFailure('diagnostic_capture_boundary_invalid')
+  }
+  return rawStart
+}
+
 async function diagnosticsSummary(artifactDirectory, manifest, metadata) {
   const window = diagnosticWindow(manifest, metadata)
+  const nextWindowStart = diagnosticCaptureStart(metadata, window)
   let names = []
   try {
     names = await readdir(join(artifactDirectory, 'diagnostics'))
@@ -346,6 +362,7 @@ async function diagnosticsSummary(artifactDirectory, manifest, metadata) {
       selectedLog: null,
       scannedLogCount: 0,
       windowed: window !== null,
+      nextWindowStart,
       stages: [],
       terminal401: false,
       responseCookieStored: false,
@@ -364,6 +381,7 @@ async function diagnosticsSummary(artifactDirectory, manifest, metadata) {
       selectedLog: null,
       scannedLogCount: 0,
       windowed: window !== null,
+      nextWindowStart,
       stages: [],
       terminal401: false,
       responseCookieStored: false,
@@ -412,6 +430,7 @@ async function diagnosticsSummary(artifactDirectory, manifest, metadata) {
     selectedLog: basename(selectedLog),
     scannedLogCount: logsToRead.length,
     windowed: window !== null,
+    nextWindowStart,
     stages,
     terminal401: has('account_authenticated_read_terminal_401_after_restore') ||
       has('account_authenticated_read_terminal_401_after_promotion'),
