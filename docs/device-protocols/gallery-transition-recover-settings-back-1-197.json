@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-gallery-transition-recover-settings-back-1-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-recover-settings-back-1-197",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "5092c09+wip-hap-sha256-1b08c8005d50550293ed5c2b79581577e6f5b8c0e12db1d0d647e2a681784321",
+    "page": "system Settings Maps app info after rejected scale restore path",
+    "orientation": "portrait",
+    "notes": "Single verified Back step only. Capture the resulting Settings level before choosing the next restore action; no app preference or account data changes."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "back-one-settings-level", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 1800, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-result-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-scale-recovery-back1.json", "-a"] },
+    { "name": "receive-result-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-scale-recovery-back1.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-recover-settings-back-1-197/result-layout.json"] },
+    { "name": "cleanup-temporary-evidence", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-scale-recovery-back1.json"] },
+    { "name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

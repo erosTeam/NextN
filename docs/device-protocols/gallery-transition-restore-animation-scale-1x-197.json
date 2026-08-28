@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-gallery-transition-restore-animation-scale-1x-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-restore-animation-scale-1x-197",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "5092c09+wip-hap-sha256-1b08c8005d50550293ed5c2b79581577e6f5b8c0e12db1d0d647e2a681784321",
+    "page": "Developer options transition animation scale 5x row",
+    "orientation": "portrait",
+    "notes": "Restore the original verified 1x value using the inspected 5x row and selector bounds, then retain semantic layout proving the row now reads 1x."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-animation-scale-selector", "uiInput": ["click", "1000", "2425"], "pauseAfterMs": 1800, "timeoutSeconds": 30 },
+      { "name": "restore-animation-scale-1x", "uiInput": ["click", "400", "1180"], "pauseAfterMs": 1800, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-restored-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-animation-scale-restored-1x.json", "-a"] },
+    { "name": "receive-restored-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-animation-scale-restored-1x.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-restore-animation-scale-1x-197/restored-layout.json"] },
+    { "name": "cleanup-temporary-evidence", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-animation-scale-restored-1x.json"] },
+    { "name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-gallery-transition-open-system-settings-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-open-system-settings-197",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "5092c09+wip-hap-sha256-1b08c8005d50550293ed5c2b79581577e6f5b8c0e12db1d0d647e2a681784321",
+    "page": "GalleryDetail to system Settings through Control Center gear",
+    "orientation": "portrait",
+    "notes": "Open only the inspected system Settings gear so the existing animation-duration scale can be read and, if needed, temporarily increased for transition sampling."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-control-center",
+        "uiInput": ["swipe", "1130", "10", "1130", "1600", "3000"],
+        "pauseAfterMs": 700,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "open-system-settings",
+        "uiInput": ["click", "1060", "310"],
+        "pauseAfterMs": 1000,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "capture-system-settings",
+      "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-system-settings-197.jpeg"]
+    },
+    {
+      "name": "receive-system-settings-screen",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-system-settings-197.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-open-system-settings-197/settings.jpeg"]
+    },
+    {
+      "name": "capture-system-settings-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-system-settings-197.json", "-a"]
+    },
+    {
+      "name": "receive-system-settings-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-system-settings-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-open-system-settings-197/settings-layout.json"]
+    },
+    {
+      "name": "cleanup-temporary-evidence",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-system-settings-197.jpeg", "/data/local/tmp/nextn-system-settings-197.json"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

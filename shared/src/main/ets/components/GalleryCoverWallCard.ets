@@ -81,6 +81,10 @@ export struct GalleryCoverWallCard {
       this.useContainFit()
   }
 
+  private transitionCoverBackgroundId(): string {
+    return this.transitionCoverId.length > 0 ? `${this.transitionCoverId}-background` : ''
+  }
+
   private accessibilityLabel(): string {
     return AppStrings.format('gallery_cover_wall_card_a11y', [
       this.gallery.displayTitle(),
@@ -100,6 +104,7 @@ export struct GalleryCoverWallCard {
             connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
             readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
           })
+            .id(this.transitionCoverBackgroundId())
             .blur(ThemeTokens.COVER_BG_BLUR_RADIUS)
             .renderGroup(true)
         }
@@ -108,6 +113,7 @@ export struct GalleryCoverWallCard {
           widthValue: '100%',
           heightValue: '100%',
           objectFit: this.useContainFit() ? ImageFit.Contain : ImageFit.Cover,
+          surfaceId: this.transitionCoverId,
           onErrorStateChange: (failed: boolean): void => {
             this.hasThumbnailError = failed
           },
@@ -127,7 +133,6 @@ export struct GalleryCoverWallCard {
     }
     .width('100%')
     .aspectRatio(this.coverRatio())
-    .id(this.transitionCoverId)
     .borderRadius(ThemeTokens.GALLERY_GRID_CARD_RADIUS)
     .clip(true)
     .accessibilityText(this.accessibilityLabel())

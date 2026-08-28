@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-gallery-cover-expand-waterfall-open-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-197/01-cover-expand-waterfall-open",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "5092c09+wip-hap-sha256-1b08c8005d50550293ed5c2b79581577e6f5b8c0e12db1d0d647e2a681784321",
+    "page": "Browse Non-H waterfall, Cover Expand, right-hand first visible card",
+    "orientation": "portrait",
+    "notes": "One uninterrupted device-side capture stream starts before the click and continues past settled detail. The clicked right card makes the cover and full-card geometry trajectory visually distinct."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "clear-transition-hilog",
+      "hdcArgs": ["shell", "hilog", "-r"]
+    },
+    {
+      "name": "capture-source-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-cover-expand-waterfall-open-source.json", "-a"]
+    },
+    {
+      "name": "receive-source-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-cover-expand-waterfall-open-source.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-197/01-cover-expand-waterfall-open/source-layout.json"]
+    },
+    {
+      "name": "send-frame-capture-script",
+      "hdcArgs": ["file", "send", "/Users/honjow/git/NextN/scripts/capture_transition_frames.sh", "/data/local/tmp/nextn-transition-capture.sh"]
+    },
+    {
+      "name": "prepare-frame-directory",
+      "hdcArgs": ["shell", "sh", "-c", "rm -rf /data/local/tmp/nextn-cover-expand-waterfall-open-frames; mkdir -p /data/local/tmp/nextn-cover-expand-waterfall-open-frames"]
+    },
+    {
+      "name": "start-uninterrupted-frame-stream",
+      "hdcArgs": ["shell", "sh", "-c", "nohup sh /data/local/tmp/nextn-transition-capture.sh /data/local/tmp/nextn-cover-expand-waterfall-open-frames 45 0 >/data/local/tmp/nextn-cover-expand-waterfall-open-frames/capture.log 2>&1 &"],
+      "timeoutSeconds": 30
+    },
+    {
+      "name": "collect-preclick-frames",
+      "hdcArgs": ["shell", "sleep", "1"],
+      "timeoutSeconds": 10
+    }
+  ],
+  "measurement": {
+    "hilog": {
+      "hdcArgs": ["shell", "hilog", "-T", "NextN"],
+      "localFile": "hilog.txt"
+    },
+    "actions": [
+      {
+        "name": "open-right-waterfall-card",
+        "uiInput": ["click", "900", "800"],
+        "pauseAfterMs": 3500,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "wait-for-frame-stream",
+      "hdcArgs": ["shell", "sh", "-c", "while [ ! -f /data/local/tmp/nextn-cover-expand-waterfall-open-frames/done ]; do sleep 1; done"],
+      "timeoutSeconds": 180
+    },
+    {
+      "name": "receive-frame-stream",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-cover-expand-waterfall-open-frames", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-197/01-cover-expand-waterfall-open/frames"],
+      "timeoutSeconds": 240
+    },
+    {
+      "name": "capture-final-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-cover-expand-waterfall-open-final.json", "-a"]
+    },
+    {
+      "name": "receive-final-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-cover-expand-waterfall-open-final.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-197/01-cover-expand-waterfall-open/final-layout.json"]
+    },
+    {
+      "name": "capture-final-screen",
+      "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-cover-expand-waterfall-open-final.jpeg"]
+    },
+    {
+      "name": "receive-final-screen",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-cover-expand-waterfall-open-final.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-197/01-cover-expand-waterfall-open/final.jpeg"]
+    },
+    {
+      "name": "cleanup-temporary-evidence",
+      "hdcArgs": ["shell", "rm", "-rf", "/data/local/tmp/nextn-cover-expand-waterfall-open-frames", "/data/local/tmp/nextn-cover-expand-waterfall-open-source.json", "/data/local/tmp/nextn-cover-expand-waterfall-open-final.json", "/data/local/tmp/nextn-cover-expand-waterfall-open-final.jpeg", "/data/local/tmp/nextn-transition-capture.sh"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

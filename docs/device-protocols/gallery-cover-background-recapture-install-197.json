@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-gallery-cover-background-recapture-install-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/gallery-cover-background-recapture-197/00-install-gate",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "f1c27d1+wip-hap-sha256-960f32d11101f9d88b744328e3b85eb9a79e809fc360496cbf7f2adf395dd66f",
+    "page": "cold-start Browse before wide-cover transition validation",
+    "orientation": "portrait",
+    "notes": "Install in place without data clear, establish AWAKE/OverrideTimeout evidence, cold-start NextN and retain foreground/layout evidence before continuous transition recording."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake-before-install", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    {
+      "name": "install-exact-signed-hap-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"],
+      "pauseAfterMs": 500,
+      "timeoutSeconds": 180
+    },
+    { "name": "force-stop-nextn", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    {
+      "name": "cold-start-nextn",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"],
+      "pauseAfterMs": 2200,
+      "timeoutSeconds": 30
+    }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "noninteractive-top-edge-stabilization", "uiInput": ["click", "1", "1"], "pauseAfterMs": 200 }
+    ]
+  },
+  "postflight": [
+    { "name": "foreground-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-cover-background-install.json", "-a"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-cover-background-install.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-cover-background-recapture-197/00-install-gate/layout.json"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-cover-background-install.jpeg"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-cover-background-install.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-cover-background-recapture-197/00-install-gate/screen.jpeg"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-cover-background-install.json", "/data/local/tmp/nextn-cover-background-install.jpeg"] },
+    { "name": "final-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

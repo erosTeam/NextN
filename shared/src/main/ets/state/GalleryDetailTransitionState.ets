@@ -18,6 +18,8 @@ export class GalleryDetailTransitionState {
   @Trace mode: string = GalleryDetailTransitionMode.SEAMLESS
   @Trace galleryId: string = ''
   @Trace sourceComponentId: string = ''
+  @Trace sourceCoverComponentId: string = ''
+  @Trace preserveSourceCoverBackground: boolean = false
   @Trace targetCoverComponentId: string = ''
   @Trace handoffX: number = 0
   @Trace handoffY: number = 0
@@ -73,6 +75,8 @@ export class GalleryDetailTransitionState {
   beginSourceHandoff(
     mode: string,
     componentId: string,
+    sourceCoverComponentId: string,
+    preserveSourceCoverBackground: boolean,
     targetCoverComponentId: string,
     x: number,
     y: number,
@@ -88,7 +92,9 @@ export class GalleryDetailTransitionState {
     coverUrl: string,
   ): void {
     this.mode = mode
-    this.sourceComponentId = componentId
+    this.sourceComponentId = preserveSourceCoverBackground ? '' : componentId
+    this.sourceCoverComponentId = sourceCoverComponentId
+    this.preserveSourceCoverBackground = preserveSourceCoverBackground
     this.targetCoverComponentId = targetCoverComponentId
     this.handoffX = x
     this.handoffY = y
@@ -110,7 +116,39 @@ export class GalleryDetailTransitionState {
     this.coverFadePopFallback = false
     this.fallbackCoverOpacity = 0
     this.coverResourceReady = false
+    if (preserveSourceCoverBackground) {
+      // Keep the click-time flight visible while one frame is used to recapture the complete card with
+      // only its foreground hidden. The card's own blur/gradient and overlays stay in one rasterization.
+      this.clipX = x
+      this.clipY = y
+      this.clipWidth = width
+      this.clipHeight = height
+      this.radius = coverRadius
+      this.cardOpacity = 1
+    }
     this.phase = GalleryDetailTransitionPhase.PREPARING
+  }
+
+  completePreservedSourceCardSnapshot(
+    componentId: string,
+    replacement: image.PixelMap | undefined,
+  ): void {
+    if (!this.preserveSourceCoverBackground || this.phase !== GalleryDetailTransitionPhase.PREPARING) {
+      if (replacement !== undefined) {
+        replacement.release().catch((_error: Error) => {})
+      }
+      return
+    }
+    if (replacement !== undefined) {
+      const previous: image.PixelMap | undefined = this.cardSnapshot
+      this.cardSnapshot = replacement
+      if (previous !== undefined) {
+        previous.release().catch((_error: Error) => {})
+      }
+    } else {
+      this.preserveSourceCoverBackground = false
+    }
+    this.sourceComponentId = componentId
   }
 
   prepare(
@@ -178,7 +216,9 @@ export class GalleryDetailTransitionState {
     return this.isCoverExpand() &&
       !this.coverFadePopFallback &&
       this.coverSnapshot !== undefined &&
-      (this.coverPopPrepared ||
+      ((this.phase === GalleryDetailTransitionPhase.PREPARING &&
+        this.preserveSourceCoverBackground) ||
+        this.coverPopPrepared ||
         this.phase === GalleryDetailTransitionPhase.OPENING ||
         this.phase === GalleryDetailTransitionPhase.CLOSING)
   }
@@ -443,6 +483,8 @@ export class GalleryDetailTransitionState {
     this.mode = GalleryDetailTransitionMode.SEAMLESS
     this.galleryId = ''
     this.sourceComponentId = ''
+    this.sourceCoverComponentId = ''
+    this.preserveSourceCoverBackground = false
     this.targetCoverComponentId = ''
     this.handoffX = 0
     this.handoffY = 0

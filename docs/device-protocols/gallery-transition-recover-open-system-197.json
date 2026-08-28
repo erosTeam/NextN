@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-gallery-transition-recover-open-system-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-recover-open-system-197",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "5092c09+wip-hap-sha256-1b08c8005d50550293ed5c2b79581577e6f5b8c0e12db1d0d647e2a681784321",
+    "page": "system Settings root",
+    "orientation": "portrait",
+    "notes": "Open System from its inspected Settings-root bound and capture the next restore anchor only."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-system-settings-section", "uiInput": ["click", "400", "1585"], "pauseAfterMs": 1800, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-result-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-scale-recovery-system.json", "-a"] },
+    { "name": "receive-result-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-scale-recovery-system.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-recover-open-system-197/result-layout.json"] },
+    { "name": "cleanup-temporary-evidence", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-scale-recovery-system.json"] },
+    { "name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

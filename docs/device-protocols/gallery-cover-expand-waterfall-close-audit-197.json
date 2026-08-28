@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-gallery-cover-expand-waterfall-close-audit-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-197/03-cover-expand-waterfall-close-audit",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "5092c09+wip-hap-sha256-1b08c8005d50550293ed5c2b79581577e6f5b8c0e12db1d0d647e2a681784321",
+    "page": "GalleryDetail opened from right waterfall card, Cover Expand",
+    "orientation": "portrait",
+    "notes": "Bounded deep audit: navigate to the previously inspected Developer-options row, set 5x, explicitly return through Settings and resume this exact NextN detail, start one uninterrupted capture before Back, then restore the original 1x and resume the settled Browse page before completion."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "open-control-center", "uiInput": ["swipe", "1130", "10", "1130", "1600", "3000"], "pauseAfterMs": 700, "timeoutSeconds": 30 },
+    { "name": "open-developer-options", "uiInput": ["click", "1060", "310"], "pauseAfterMs": 1200, "timeoutSeconds": 30 },
+    { "name": "open-animation-scale-selector", "uiInput": ["click", "1000", "2425"], "pauseAfterMs": 700, "timeoutSeconds": 30 },
+    { "name": "select-temporary-animation-scale-5x", "uiInput": ["click", "400", "1660"], "pauseAfterMs": 900, "timeoutSeconds": 30 },
+    { "name": "back-to-system", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 1200, "timeoutSeconds": 30 },
+    { "name": "back-to-settings-root", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 1200, "timeoutSeconds": 30 },
+    { "name": "back-to-home", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 1200, "timeoutSeconds": 30 },
+    { "name": "resume-nextn-detail", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 1800, "timeoutSeconds": 30 },
+    { "name": "clear-transition-hilog", "hdcArgs": ["shell", "hilog", "-r"] },
+    { "name": "capture-source-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-cover-expand-waterfall-close-source.json", "-a"] },
+    { "name": "receive-source-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-cover-expand-waterfall-close-source.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-197/03-cover-expand-waterfall-close-audit/source-layout.json"] },
+    { "name": "send-frame-capture-script", "hdcArgs": ["file", "send", "/Users/honjow/git/NextN/scripts/capture_transition_frames.sh", "/data/local/tmp/nextn-transition-capture.sh"] },
+    { "name": "prepare-frame-directory", "hdcArgs": ["shell", "sh", "-c", "rm -rf /data/local/tmp/nextn-cover-expand-waterfall-close-audit-frames; mkdir -p /data/local/tmp/nextn-cover-expand-waterfall-close-audit-frames"] },
+    { "name": "start-uninterrupted-frame-stream", "hdcArgs": ["shell", "sh", "-c", "nohup sh /data/local/tmp/nextn-transition-capture.sh /data/local/tmp/nextn-cover-expand-waterfall-close-audit-frames 45 0 >/data/local/tmp/nextn-cover-expand-waterfall-close-audit-frames/capture.log 2>&1 &"], "timeoutSeconds": 30 },
+    { "name": "collect-preback-frames", "hdcArgs": ["shell", "sleep", "1"], "timeoutSeconds": 10 }
+  ],
+  "measurement": {
+    "hilog": { "hdcArgs": ["shell", "hilog", "-T", "NextN"], "localFile": "hilog.txt" },
+    "actions": [
+      { "name": "close-detail-to-right-waterfall-card", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 4500, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "wait-for-frame-stream", "hdcArgs": ["shell", "sh", "-c", "while [ ! -f /data/local/tmp/nextn-cover-expand-waterfall-close-audit-frames/done ]; do sleep 1; done"], "timeoutSeconds": 180 },
+    { "name": "receive-frame-stream", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-cover-expand-waterfall-close-audit-frames", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-197/03-cover-expand-waterfall-close-audit/frames"], "timeoutSeconds": 240 },
+    { "name": "capture-final-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-cover-expand-waterfall-close-final.json", "-a"] },
+    { "name": "receive-final-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-cover-expand-waterfall-close-final.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-197/03-cover-expand-waterfall-close-audit/final-layout.json"] },
+    { "name": "open-control-center-for-restore", "uiInput": ["swipe", "1130", "10", "1130", "1600", "3000"], "pauseAfterMs": 1800, "timeoutSeconds": 30 },
+    { "name": "open-developer-options-for-restore", "uiInput": ["click", "1060", "310"], "pauseAfterMs": 2200, "timeoutSeconds": 30 },
+    { "name": "open-animation-scale-for-restore", "uiInput": ["click", "1000", "2425"], "pauseAfterMs": 1800, "timeoutSeconds": 30 },
+    { "name": "restore-animation-scale-1x", "uiInput": ["click", "400", "1180"], "pauseAfterMs": 1200, "timeoutSeconds": 30 },
+    { "name": "capture-restored-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-animation-scale-restored-1x.json", "-a"] },
+    { "name": "receive-restored-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-animation-scale-restored-1x.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-197/03-cover-expand-waterfall-close-audit/restored-1x-layout.json"] },
+    { "name": "restore-back-to-system", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 900, "timeoutSeconds": 30 },
+    { "name": "restore-back-to-settings-root", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 900, "timeoutSeconds": 30 },
+    { "name": "restore-back-to-home", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 900, "timeoutSeconds": 30 },
+    { "name": "resume-nextn-browse", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 1400, "timeoutSeconds": 30 },
+    { "name": "cleanup-temporary-evidence", "hdcArgs": ["shell", "rm", "-rf", "/data/local/tmp/nextn-cover-expand-waterfall-close-audit-frames", "/data/local/tmp/nextn-cover-expand-waterfall-close-source.json", "/data/local/tmp/nextn-cover-expand-waterfall-close-final.json", "/data/local/tmp/nextn-animation-scale-restored-1x.json", "/data/local/tmp/nextn-transition-capture.sh"] },
+    { "name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

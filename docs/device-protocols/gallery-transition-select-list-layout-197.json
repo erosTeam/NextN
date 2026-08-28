@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-gallery-transition-select-list-layout-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-select-list-layout-197",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "5092c09+wip-hap-sha256-1b08c8005d50550293ed5c2b79581577e6f5b8c0e12db1d0d647e2a681784321",
+    "page": "Open list-layout native menu to Browse list presentation",
+    "orientation": "portrait",
+    "notes": "Select the inspected List MenuItem center, close Interface through its native back control, select the Browse root tab, then receive the settled List layout before any transition action."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "select-list-menu-item", "uiInput": ["click", "950", "1637"], "pauseAfterMs": 600, "timeoutSeconds": 30 },
+      { "name": "close-interface-through-native-back", "uiInput": ["click", "117", "214"], "pauseAfterMs": 700, "timeoutSeconds": 30 },
+      { "name": "open-browse-root-tab", "uiInput": ["click", "250", "2575"], "pauseAfterMs": 1200, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-list-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-browse-list-layout.json", "-a"] },
+    { "name": "receive-list-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-browse-list-layout.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-select-list-layout-197/list-layout.json"] },
+    { "name": "capture-list-screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-browse-list.jpeg"] },
+    { "name": "receive-list-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-browse-list.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-select-list-layout-197/list.jpeg"] },
+    { "name": "cleanup-temporary-evidence", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-browse-list-layout.json", "/data/local/tmp/nextn-browse-list.jpeg"] },
+    { "name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-gallery-transition-resume-nextn-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-resume-nextn-197",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "5092c09+wip-hap-sha256-1b08c8005d50550293ed5c2b79581577e6f5b8c0e12db1d0d647e2a681784321",
+    "page": "home screen after restoring transition animation scale to 1x",
+    "orientation": "portrait",
+    "notes": "Bring the already-installed exact NextN candidate to foreground without reinstalling, then inspect whether its existing navigation state or Browse root is restored."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "resume-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 1600, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "noninteractive-top-edge-stabilization", "uiInput": ["click", "1", "1"], "pauseAfterMs": 100, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-nextn-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-resumed-197.json", "-a"] },
+    { "name": "receive-nextn-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-resumed-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-resume-nextn-197/nextn-layout.json"] },
+    { "name": "capture-nextn-screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-resumed-197.jpeg"] },
+    { "name": "receive-nextn-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-resumed-197.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-resume-nextn-197/nextn.jpeg"] },
+    { "name": "cleanup-temporary-evidence", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-resumed-197.json", "/data/local/tmp/nextn-resumed-197.jpeg"] },
+    { "name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

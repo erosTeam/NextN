@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-gallery-reader-transition-install-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/gallery-reader-transition-install-197",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "5092c09+wip-hap-sha256-1b08c8005d50550293ed5c2b79581577e6f5b8c0e12db1d0d647e2a681784321",
+    "page": "cold-start-browse-root-before-transition-validation",
+    "orientation": "portrait",
+    "notes": "Wake user-selected 197, apply the required 86400000ms timeout override, install the exact signed HAP in place without data clear, cold-start NextN, and retain only protocol metadata plus generic system/layout output."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "verify-awake-override-before-install",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "read-display-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "DisplayManagerService", "-a", "-a"]
+    },
+    {
+      "name": "install-exact-signed-hap-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"],
+      "pauseAfterMs": 500,
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "force-stop-nextn",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"]
+    },
+    {
+      "name": "cold-start-nextn",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"],
+      "pauseAfterMs": 1800
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "noninteractive-top-edge-stabilization",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 300,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "cold-start-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "cold-start-root-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/dev/null", "-a"]
+    },
+    {
+      "name": "final-awake-override",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

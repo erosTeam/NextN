@@ -9454,3 +9454,101 @@ authorize an edit, replace a device comparison, or define product completion.
   as `1x` afterward. Evidence is under NextE
   `.hvigor/outputs/reader-transition-reopened-197/08-open-page9-5x/` through
   `11-final-page9-1x/` and is excluded from Git.
+
+## 账号页单一原生入口与登录专用 Web 叶子纠正 — 2026-08-27
+
+- **Why newly actionable:** 237 的健康会话检查落入了仅能由内部恢复参数打开的
+  `BrowserSessionPage` 原生认证分支。该页面重复展示头像、账号状态和退出操作，却没有
+  `AccountPage` 的保存账号列表/Radio 切换，造成“账号页被改掉、多账号切换消失”的真实
+  产品回归。正常路径不可达并不能让第二套账号 UI 合理化。
+- **Correct parent boundary:** `AccountPage` 是唯一原生账号管理页，拥有保存账号列表、
+  Radio 切换、左滑删除、账号设置、退出和标题栏添加动作；`BrowserSessionPage` 仅是原始
+  第一方 Web 登录叶子。设置根、添加账号、重新验证和内部恢复都只能在二者之间收敛，
+  不得再出现第三个原生账号状态面。
+- **Exact correction:** 删除 `BrowserSessionPage` 的 profile/sign-out/status 原生 section 和
+  相关 profile/sign-out 状态；所有登录 destination 都直接消费一次 sign-in/add action；
+  已登录、成功、失败或取消统一回到正式 `AccountPage`。删除 `AccountPage` 已无用途的
+  hidden-page callback。外部原子登录脚本的 native success 标志改为正式
+  `nextn-account-list-root + nextn-account-saved-row`，并禁止旧 hidden markers 回归。
+- **Static verification:** `scripts/test_network_authority_contract.mjs`、
+  `scripts/test_account_history_regression.mjs` 与 `git diff --check` 通过；签名构建成功。
+- **237 physical verification:** 签名 HAP SHA-256
+  `23a79068103baf68b0acb8b984ca0c1970781f62446a8e492c0e8a93acb0551e` 通过
+  `install -r` 保数据安装。冷启动后调用内部恢复入口只得到正式账号列表和一个已保存账号
+  行，无 Web、无旧 hidden markers。右上添加动作随后直接得到一个 Web、零原生账号列表；
+  返回后恢复一个正式账号列表和一个已保存账号行、Web 为零。设备当前只有一个保存账号，
+  因此本轮接受多账号 UI/切换能力仍在，但不声称完成两个真实账号之间的切换验收。
+
+## Reopened correction — retained-account re-verification convergence — 2026-08-28
+
+- **Why newly actionable:** the user reproduced a terminal-expiry recovery on a second device: the saved
+  account remained selected, the HDS action opened the original Web login, and completing login stayed on
+  Web. Explicitly signing out first made the same Web login return normally. This is direct counter-evidence
+  to the prior claim that every replacement login converged to the formal Account page.
+- **Source-proven cause:** `AccountSessionState.signedIn` means retained account ownership, not usable request
+  authentication. On a terminal 401 it intentionally remains true while `authenticationAvailable=false` and
+  `verificationRequired=true`. `BrowserSessionPage.applyPublishedAccountSession()` nevertheless treated that
+  ownership flag as completed authentication and scheduled its one-shot return while the new destination was
+  still appearing. The early callback could not remove the unsettled Web route but permanently set
+  `loginFlowFinishScheduled`; after the real candidate reached native promotion and the saved-account
+  checkpoint, the required second return call was discarded by that stale latch. A fresh login after explicit
+  sign-out has `signedIn=false`, so it never hits the premature branch and returns normally. Separately, the
+  terminal caller writes `terminal_401_replay_rejected` or `terminal_401_refresh_token_rejected`, while the
+  repository accepted only an obsolete third reason code; the durable verification marker therefore rejected
+  every current terminal write.
+- **Whole parent-tree boundary:** root terminal HDS action -> login-only `BrowserSessionPage` -> regular
+  first-party ArkWeb identity jar -> candidate verification -> HUKS/RDB promotion -> saved-account checkpoint
+  -> browser-route close -> sole native `AccountPage`. Saved account ownership, Radio ordering/switching,
+  Cloudflare clearance, CAPTCHA/form behavior and unrelated native requests remain unchanged.
+- **Exact correction:** a login-only destination may auto-finish only when
+  `authenticationAvailable && !verificationRequired`; retained ownership or a selected Radio never consumes
+  the one-shot return. Accept the two current terminal reason codes in the durable marker store. Preserve the
+  saved row, ArkWeb identity/Cloudflare jar and the original form. Web closes only after the new candidate is
+  verified, promoted, read back and copied to the active saved row.
+- **Verification plan:** run the account/network source contracts and signed build. Runtime acceptance requires
+  a retained terminal account without explicit sign-out: one authorized original-WebView login epoch must
+  promote and automatically reveal the formal Account page, then survive a data-preserving cold start and
+  complete authenticated Favorites. A fresh-login success after deleting the saved account is not acceptance.
+
+## Reopened correction — letterboxed cover background continuity — 2026-08-28
+
+- **Why newly actionable:** the user observed that a wide Grid cover leaves a white replacement block at its
+  original position while the real cover flies. Current NextN captures the card before navigation, then removes
+  the foreground only inside the transition proxy; the card snapshot therefore still contains that foreground
+  and cannot reveal its real blur/gradient sibling. The same source shape exists in Grid, Waterfall, Compact
+  Waterfall, Cover Wall and List cards with contained covers.
+- **Reference and rejected alternative:** the accepted NextE checkpoint makes only the source foreground
+  transparent for one rendered frame and re-captures the complete card, preserving the real background, badges,
+  metadata and their single rasterization. A lighter attempt to snapshot the background leaf separately produced
+  both a visible color mismatch and a thin seam where that image met the original card snapshot, so separate
+  background/card PixelMaps must not be composed.
+- **Whole parent-tree boundary:** collection/history source-card id -> exact foreground-cover id plus its real
+  blur/gradient sibling -> `GalleryDetailTransitionCoordinator` preparation -> root Cover Expand card snapshot
+  and flight cover. Destination Detail, data/loading, layout selection, Reader, progress publication, animation
+  curves and non-letterboxed cards remain unchanged.
+- **Exact correction:** give the rendered blur/gradient sibling the foreground-derived `-background` id. When
+  that sibling is present, PREPARING temporarily suppresses only the matching foreground, waits for one frame,
+  replaces the click-time card PixelMap with a full-card capture, then continues the existing root capture and
+  navigation. The full replacement card is rendered as one image; it is never stitched to a separately captured
+  blur block. Failure to find or recapture the sibling retains the existing four-slice/system fallback.
+- **Verification plan:** build first, then use selected device `197` with uninterrupted recordings beginning
+  before input. For a right/lower extreme-ratio Grid card, inspect every opening and closing frame plus the fixed
+  source crop for no white block, no foreground duplicate, no residual row, no blur color shift, and correct
+  return landing. Repeat the sibling letterboxed layouts before generalizing acceptance.
+
+## Reopened correction — compact simple-row fixed-ratio cover parity — 2026-08-28
+
+- **Why newly actionable:** the user observed that an extreme-wide cover in the compact Simple layout changes
+  geometry immediately before its return animation. The Simple row still forces the whole 72x102 thumbnail
+  through `ImageFit.Cover`, while the fixed-ratio Grid path derives the visible foreground from the source ratio
+  and leaves a separate blur or dominant-color background in the slot.
+- **Whole parent-tree boundary:** the compact Simple row retains its 72x102 slot, title and metadata column,
+  separator, selection state and click behavior. Only the thumbnail leaf adopts the already selected Grid
+  fixed-slot presentation; Detail content, transition curves, loading, navigation and every other layout remain
+  unchanged.
+- **Exact correction:** use the Grid extreme-ratio thresholds and source dimensions in the Simple slot. Keep the
+  real foreground at its contained size with the transition id, render the blur/gradient sibling under the
+  derived `-background` id, and retain the existing crop behavior for ordinary source ratios.
+- **Verification plan:** build, then record an uninterrupted extreme-wide Simple-row open and return on the
+  selected device. Inspect all frames around Back for no pre-animation geometry jump, foreground duplication,
+  white replacement, background color shift, seam, or landing-ratio change.

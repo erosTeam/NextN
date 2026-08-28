@@ -90,6 +90,10 @@ export struct GalleryWaterfallCompactCard {
       !this.hasThumbnailError
   }
 
+  private transitionCoverBackgroundId(): string {
+    return this.transitionCoverId.length > 0 ? `${this.transitionCoverId}-background` : ''
+  }
+
 
   private displayLabel(tag: NhTag): string {
     const translated: string = tag.displayName.trim()
@@ -176,6 +180,7 @@ export struct GalleryWaterfallCompactCard {
           connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
           readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
         })
+          .id(this.transitionCoverBackgroundId())
           .blur(ThemeTokens.COVER_BG_BLUR_RADIUS)
           .renderGroup(true)
       }
@@ -184,6 +189,7 @@ export struct GalleryWaterfallCompactCard {
         widthValue: '100%',
         heightValue: '100%',
         objectFit: ImageFit.Contain,
+        surfaceId: this.transitionCoverId,
         onErrorStateChange: (failed: boolean): void => {
           this.hasThumbnailError = failed
         },
@@ -193,7 +199,6 @@ export struct GalleryWaterfallCompactCard {
     .height('100%')
     .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
     .brightness(this.selected ? 0.86 : 1)
-    .id(this.transitionCoverId)
   }
 
   @Builder

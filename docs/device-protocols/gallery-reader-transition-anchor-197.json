@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-gallery-reader-transition-anchor-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/gallery-reader-transition-anchor-197",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "5092c09+wip-hap-sha256-1b08c8005d50550293ed5c2b79581577e6f5b8c0e12db1d0d647e2a681784321",
+    "page": "current-foreground-anchor-before-transition-validation",
+    "orientation": "portrait",
+    "notes": "Capture one current full-screen anchor and semantic layout, and probe the exact 197 system image for a command-line screen recorder before choosing the frame-evidence path."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "screenrecord-path-probe",
+      "hdcArgs": ["shell", "ls", "-l", "/system/bin/screenrecord"]
+    },
+    {
+      "name": "screen-record-path-probe",
+      "hdcArgs": ["shell", "ls", "-l", "/system/bin/screen_record"]
+    },
+    {
+      "name": "snapshot-current-screen",
+      "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-transition-anchor-197.jpeg"]
+    },
+    {
+      "name": "receive-current-screen",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-transition-anchor-197.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-reader-transition-anchor-197/current-screen.jpeg"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "noninteractive-top-edge-stabilization",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 200,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-current-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-transition-anchor-197.json"]
+    },
+    {
+      "name": "receive-current-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-transition-anchor-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-reader-transition-anchor-197/current-layout.json"]
+    },
+    {
+      "name": "remove-remote-screen",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-transition-anchor-197.jpeg"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-transition-anchor-197.json"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

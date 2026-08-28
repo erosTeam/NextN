@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-gallery-transition-scale-recovery-settings-anchor-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-scale-recovery-settings-anchor-197",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "5092c09+wip-hap-sha256-1b08c8005d50550293ed5c2b79581577e6f5b8c0e12db1d0d647e2a681784321",
+    "page": "NextN Browse while device transition scale may still be 5x",
+    "orientation": "portrait",
+    "notes": "Use five-second waits compatible with a possible 5x system animation: fully open Control Center, then its inspected Settings gear, and capture the actual resulting Settings page without an additional Back."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-control-center-completely", "uiInput": ["swipe", "1130", "10", "1130", "1600", "3000"], "pauseAfterMs": 5000, "timeoutSeconds": 30 },
+      { "name": "open-system-settings-completely", "uiInput": ["click", "1060", "310"], "pauseAfterMs": 5000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-settings-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-scale-recovery-settings-anchor.json", "-a"] },
+    { "name": "receive-settings-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-scale-recovery-settings-anchor.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-scale-recovery-settings-anchor-197/settings-layout.json"] },
+    { "name": "cleanup-temporary-evidence", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-scale-recovery-settings-anchor.json"] },
+    { "name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

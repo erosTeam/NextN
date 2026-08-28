@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-gallery-reader-transition-select-cover-expand-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/gallery-reader-transition-select-cover-expand-197",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "5092c09+wip-hap-sha256-1b08c8005d50550293ed5c2b79581577e6f5b8c0e12db1d0d647e2a681784321",
+    "page": "interface-settings-menu-to-browse-cover-expand",
+    "orientation": "portrait",
+    "notes": "Select Cover Expand from its inspected native MenuItem bound, return once to My, then open Browse from the retained root tab bar."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "select-cover-expand",
+        "uiInput": ["click", "950", "2130"],
+        "pauseAfterMs": 500,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "return-to-my-root",
+        "uiInput": ["keyEvent", "Back"],
+        "pauseAfterMs": 500,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "open-browse-root",
+        "uiInput": ["click", "250", "2575"],
+        "pauseAfterMs": 1000,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "snapshot-cover-expand-browse",
+      "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-cover-expand-browse-197.jpeg"]
+    },
+    {
+      "name": "receive-cover-expand-browse-screen",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-cover-expand-browse-197.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-reader-transition-select-cover-expand-197/browse.jpeg"]
+    },
+    {
+      "name": "dump-cover-expand-browse-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-cover-expand-browse-197.json"]
+    },
+    {
+      "name": "receive-cover-expand-browse-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-cover-expand-browse-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-reader-transition-select-cover-expand-197/browse-layout.json"]
+    },
+    {
+      "name": "remove-remote-screen",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-cover-expand-browse-197.jpeg"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-cover-expand-browse-197.json"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

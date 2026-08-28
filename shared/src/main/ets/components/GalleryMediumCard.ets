@@ -119,6 +119,30 @@ export struct GalleryMediumCard {
     return !this.coverFillsSlot()
   }
 
+  private foregroundCoverWidth(): Length {
+    if (!this.useContainFit() || this.gallery.thumbnailWidth <= 0 || this.gallery.thumbnailHeight <= 0) {
+      return '100%'
+    }
+    const sourceRatio: number = this.gallery.thumbnailWidth / this.gallery.thumbnailHeight
+    const slotRatio: number = this.coverWidth() / this.activeCoverHeight()
+    if (sourceRatio >= slotRatio) {
+      return '100%'
+    }
+    return `${Math.max(0, Math.min(100, sourceRatio / slotRatio * 100))}%`
+  }
+
+  private foregroundCoverHeight(): Length {
+    if (!this.useContainFit() || this.gallery.thumbnailWidth <= 0 || this.gallery.thumbnailHeight <= 0) {
+      return '100%'
+    }
+    const sourceRatio: number = this.gallery.thumbnailWidth / this.gallery.thumbnailHeight
+    const slotRatio: number = this.coverWidth() / this.activeCoverHeight()
+    if (sourceRatio <= slotRatio) {
+      return '100%'
+    }
+    return `${Math.max(0, Math.min(100, slotRatio / sourceRatio * 100))}%`
+  }
+
   private shouldBlurLetterboxBackground(): boolean {
     return this.coverBackground.blurLetterboxBackground &&
       this.gallery.thumbnailUrl.length > 0 &&
@@ -155,6 +179,10 @@ export struct GalleryMediumCard {
     return '#00' + rgb.toString(16).padStart(6, '0')
   }
 
+  private transitionCoverBackgroundId(): string {
+    return this.transitionCoverId.length > 0 ? `${this.transitionCoverId}-background` : ''
+  }
+
   private accessibilityLabel(): string {
     return AppStrings.format('gallery_card_a11y', [
       this.gallery.displayTitle(),
@@ -183,10 +211,12 @@ export struct GalleryMediumCard {
         connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
         readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
       })
+        .id(this.transitionCoverBackgroundId())
         .blur(ThemeTokens.COVER_BG_BLUR_RADIUS)
         .renderGroup(true)
     } else if (this.shouldUseGradientLetterboxBackground() && this.coverBackgroundColor !== 0) {
       Column()
+        .id(this.transitionCoverBackgroundId())
         .width('100%')
         .height('100%')
         .linearGradient({
@@ -201,10 +231,13 @@ export struct GalleryMediumCard {
       src: this.gallery.thumbnailUrl,
       widthValue: '100%',
       heightValue: '100%',
-      objectFit: this.useContainFit() ? ImageFit.Contain : ImageFit.Cover,
+      surfaceWidthValue: this.foregroundCoverWidth(),
+      surfaceHeightValue: this.foregroundCoverHeight(),
+      objectFit: this.useContainFit() ? ImageFit.Fill : ImageFit.Cover,
       // NextE list covers carry no radius (EhThumbnail radius: 0): the
       // image itself is the visible surface in adaptive/contain rows.
       radius: 0,
+      surfaceId: this.transitionCoverId,
       onErrorStateChange: (failed: boolean): void => {
         this.hasThumbnailError = failed
       },
@@ -226,7 +259,6 @@ export struct GalleryMediumCard {
       }
       .width(this.coverWidth())
       .height(this.coverSlotHeight())
-      .id(this.transitionCoverId)
       .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
       .onAreaChange((_oldArea: Area, area: Area): void => {
         if (this.usesFixedHeight()) {

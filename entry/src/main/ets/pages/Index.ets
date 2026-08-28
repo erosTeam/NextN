@@ -3595,7 +3595,25 @@ struct Index {
         this.galleryDetailTransition.isCoverExpand() &&
         this.galleryDetailTransition.cardSnapshot !== undefined
       ) {
-        this.GalleryDetailSourceCardRemainder()
+        if (this.galleryDetailTransition.preserveSourceCoverBackground) {
+          // This replacement card was captured with only the foreground cover hidden, so the real
+          // blur/gradient, badges and metadata remain one image without a separately composited seam.
+          Image(this.galleryDetailTransition.cardSnapshot)
+            .width(this.galleryDetailTransition.handoffWidth)
+            .height(this.galleryDetailTransition.handoffHeight)
+            .objectFit(ImageFit.Fill)
+            .syncLoad(true)
+            .position({
+              x: this.galleryDetailTransition.handoffX,
+              y: this.galleryDetailTransition.handoffY,
+            })
+            .borderRadius(this.galleryDetailTransition.sourceCardRadius)
+            .clip(true)
+            .opacity(this.galleryDetailTransition.cardOpacity)
+            .hitTestBehavior(HitTestMode.None)
+        } else {
+          this.GalleryDetailSourceCardRemainder()
+        }
       }
       if (
         this.galleryDetailTransition.coverFlightVisible() &&

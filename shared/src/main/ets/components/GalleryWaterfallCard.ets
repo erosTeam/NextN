@@ -142,6 +142,10 @@ export struct GalleryWaterfallCard {
     return '#00' + rgb.toString(16).padStart(6, '0')
   }
 
+  private transitionCoverBackgroundId(): string {
+    return this.transitionCoverId.length > 0 ? `${this.transitionCoverId}-background` : ''
+  }
+
   private accessibilityLabel(): string {
     return AppStrings.format('gallery_card_a11y', [
       this.gallery.displayTitle(),
@@ -262,10 +266,12 @@ export struct GalleryWaterfallCard {
             connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
             readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
           })
+            .id(this.transitionCoverBackgroundId())
             .blur(ThemeTokens.COVER_BG_BLUR_RADIUS)
             .renderGroup(true)
         } else if (this.shouldUseGradientLetterboxBackground() && this.coverBackgroundColor !== 0) {
           Column()
+            .id(this.transitionCoverBackgroundId())
             .width('100%')
             .height('100%')
             .linearGradient({
@@ -281,6 +287,7 @@ export struct GalleryWaterfallCard {
           widthValue: '100%',
           heightValue: '100%',
           objectFit: this.imageFit(),
+          surfaceId: this.transitionCoverId,
           onErrorStateChange: (failed: boolean): void => {
             this.hasThumbnailError = failed
           },
@@ -295,7 +302,6 @@ export struct GalleryWaterfallCard {
     .width('100%')
     .aspectRatio(this.coverRatio())
     .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
-    .id(this.transitionCoverId)
   }
 
   @Builder

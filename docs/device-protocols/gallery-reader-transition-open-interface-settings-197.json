@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-gallery-reader-transition-open-interface-settings-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/gallery-reader-transition-open-interface-settings-197",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "5092c09+wip-hap-sha256-1b08c8005d50550293ed5c2b79581577e6f5b8c0e12db1d0d647e2a681784321",
+    "page": "my-root-to-interface-settings",
+    "orientation": "portrait",
+    "notes": "Open Interface from the inspected My-page text bound and capture the transition settings anchor before changing any preference."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-interface-settings",
+        "uiInput": ["click", "420", "870"],
+        "pauseAfterMs": 800,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "snapshot-interface-settings",
+      "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-transition-interface-197.jpeg"]
+    },
+    {
+      "name": "receive-interface-settings-screen",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-transition-interface-197.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-reader-transition-open-interface-settings-197/interface-settings.jpeg"]
+    },
+    {
+      "name": "dump-interface-settings-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-transition-interface-197.json"]
+    },
+    {
+      "name": "receive-interface-settings-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-transition-interface-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-reader-transition-open-interface-settings-197/interface-settings-layout.json"]
+    },
+    {
+      "name": "remove-remote-screen",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-transition-interface-197.jpeg"]
+    },
+    {
+      "name": "remove-remote-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-transition-interface-197.json"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

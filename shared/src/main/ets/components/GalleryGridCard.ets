@@ -158,6 +158,10 @@ export struct GalleryGridCard {
     return '#00' + rgb.toString(16).padStart(6, '0')
   }
 
+  private transitionCoverBackgroundId(): string {
+    return this.transitionCoverId.length > 0 ? `${this.transitionCoverId}-background` : ''
+  }
+
   private accessibilityLabel(): string {
     return AppStrings.format('gallery_card_a11y', [
       this.gallery.displayTitle(),
@@ -227,10 +231,12 @@ export struct GalleryGridCard {
             connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
             readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
           })
+            .id(this.transitionCoverBackgroundId())
             .blur(ThemeTokens.COVER_BG_BLUR_RADIUS)
             .renderGroup(true)
         } else if (this.shouldUseGradientLetterboxBackground() && this.coverBackgroundColor !== 0) {
           Column()
+            .id(this.transitionCoverBackgroundId())
             .width('100%')
             .height('100%')
             .borderRadius(ThemeTokens.THUMB_RADIUS)

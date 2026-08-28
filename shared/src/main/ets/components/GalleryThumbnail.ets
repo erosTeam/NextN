@@ -6,6 +6,11 @@ import {
   GalleryCoverRetryState,
 } from '../state/GalleryCoverRetryState'
 import {
+  connectGalleryDetailTransition,
+  GalleryDetailTransitionPhase,
+  GalleryDetailTransitionState,
+} from '../state/GalleryDetailTransitionState'
+import {
   EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
   EH_THUMBNAIL_READ_TIMEOUT_MS,
 } from '../services/ImagePipelineTypes'
@@ -30,11 +35,14 @@ export struct GalleryThumbnail {
   @Param radius: number = 0
   @Param widthValue: Length = '100%'
   @Param heightValue: Length = '100%'
+  @Param surfaceWidthValue: Length = '100%'
+  @Param surfaceHeightValue: Length = '100%'
   @Param surfaceId: string = ''
   @Local loaded: boolean = false
   @Local failed: boolean = false
   @Local reloadToken: number = 0
   @Local coverRetryState: GalleryCoverRetryState = connectGalleryCoverRetry()
+  @Local galleryDetailTransition: GalleryDetailTransitionState = connectGalleryDetailTransition()
   @Event onErrorStateChange: (failed: boolean) => void = (_failed: boolean): void => {}
 
   @Monitor('src')
@@ -67,6 +75,14 @@ export struct GalleryThumbnail {
     this.onErrorStateChange(true)
   }
 
+  private transitionForegroundOpacity(): number {
+    return this.galleryDetailTransition.preserveSourceCoverBackground &&
+      this.galleryDetailTransition.phase === GalleryDetailTransitionPhase.PREPARING &&
+      this.galleryDetailTransition.sourceCoverComponentId === this.surfaceId
+      ? 0
+      : 1
+  }
+
   @Builder
   private StateOverlay() {
     if (this.src.length === 0 || this.failed) {
@@ -83,32 +99,37 @@ export struct GalleryThumbnail {
 
   build() {
     Stack({ alignContent: Alignment.Center }) {
-      if (this.src.length > 0) {
-        EhImageKnifeImage({
-          src: this.src,
-          widthValue: '100%',
-          heightValue: '100%',
-          objectFit: this.objectFit,
-          radius: this.radius,
-          contentTransition: ContentTransitionType.OPACITY,
-          maxRetries: THUMBNAIL_MAX_RETRIES,
-          retryDelayMs: THUMBNAIL_RETRY_DELAY_MS,
-          settleTimeoutMs: THUMBNAIL_SETTLE_TIMEOUT_MS,
-          connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
-          readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
-          reloadToken: this.reloadToken,
-          onComplete: (): void => {
-            this.markLoaded()
-          },
-          onError: (): void => {
-            this.markFailed()
-          },
-        })
+      Stack({ alignContent: Alignment.Center }) {
+        if (this.src.length > 0) {
+          EhImageKnifeImage({
+            src: this.src,
+            widthValue: '100%',
+            heightValue: '100%',
+            objectFit: this.objectFit,
+            radius: this.radius,
+            contentTransition: ContentTransitionType.OPACITY,
+            maxRetries: THUMBNAIL_MAX_RETRIES,
+            retryDelayMs: THUMBNAIL_RETRY_DELAY_MS,
+            settleTimeoutMs: THUMBNAIL_SETTLE_TIMEOUT_MS,
+            connectTimeoutMs: EH_THUMBNAIL_CONNECT_TIMEOUT_MS,
+            readTimeoutMs: EH_THUMBNAIL_READ_TIMEOUT_MS,
+            reloadToken: this.reloadToken,
+            onComplete: (): void => {
+              this.markLoaded()
+            },
+            onError: (): void => {
+              this.markFailed()
+            },
+          })
+        }
+        this.StateOverlay()
       }
-      this.StateOverlay()
+      .width(this.surfaceWidthValue)
+      .height(this.surfaceHeightValue)
+      .opacity(this.transitionForegroundOpacity())
+      .id(this.surfaceId)
     }
     .width(this.widthValue)
     .height(this.heightValue)
-    .id(this.surfaceId)
   }
 }

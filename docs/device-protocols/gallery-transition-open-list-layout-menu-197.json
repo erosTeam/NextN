@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-gallery-transition-open-list-layout-menu-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-open-list-layout-menu-197",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "5092c09+wip-hap-sha256-1b08c8005d50550293ed5c2b79581577e6f5b8c0e12db1d0d647e2a681784321",
+    "page": "Browse root to Interface list-layout native menu",
+    "orientation": "portrait",
+    "notes": "Use previously inspected root-tab and Interface-row centers, then open the current list-view row and receive the menu before selecting a layout."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-my-root-tab", "uiInput": ["click", "1000", "2575"], "pauseAfterMs": 900, "timeoutSeconds": 30 },
+      { "name": "open-interface-settings", "uiInput": ["click", "420", "870"], "pauseAfterMs": 900, "timeoutSeconds": 30 },
+      { "name": "open-list-layout-menu", "uiInput": ["click", "1030", "1492"], "pauseAfterMs": 500, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-menu-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-list-layout-menu.json", "-a"] },
+    { "name": "receive-menu-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-list-layout-menu.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-open-list-layout-menu-197/menu-layout.json"] },
+    { "name": "capture-menu-screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-list-layout-menu.jpeg"] },
+    { "name": "receive-menu-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-list-layout-menu.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-open-list-layout-menu-197/menu.jpeg"] },
+    { "name": "cleanup-temporary-evidence", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-list-layout-menu.json", "/data/local/tmp/nextn-list-layout-menu.jpeg"] },
+    { "name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

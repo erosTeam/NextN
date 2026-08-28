@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-gallery-transition-scale-recovery-resume-nextn-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-scale-recovery-resume-nextn-197",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "5092c09+wip-hap-sha256-1b08c8005d50550293ed5c2b79581577e6f5b8c0e12db1d0d647e2a681784321",
+    "page": "Developer options after current transition-animation row proved 1x",
+    "orientation": "portrait",
+    "notes": "Foreground the exact installed NextN task directly, avoiding any cross-app Back assumptions, then capture its current app state."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "resume-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 1600, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "noninteractive-top-edge-stabilization", "uiInput": ["click", "1", "1"], "pauseAfterMs": 100, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-nextn-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-after-scale-recovery-final.json", "-a"] },
+    { "name": "receive-nextn-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-after-scale-recovery-final.json", "/Users/honjow/git/NextN/.hvigor/outputs/gallery-transition-scale-recovery-resume-nextn-197/nextn-layout.json"] },
+    { "name": "cleanup-temporary-evidence", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-after-scale-recovery-final.json"] },
+    { "name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

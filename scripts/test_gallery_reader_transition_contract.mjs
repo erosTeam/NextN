@@ -35,7 +35,8 @@ const galleryThumbnail = read('shared/src/main/ets/components/GalleryThumbnail.e
 ok('all six browse presentations expose the real cover node to the transition',
   cardFiles.every((file) => {
     const source = read(file)
-    return /@Param transitionCoverId: string = ''/.test(source) && /\.id\(this\.transitionCoverId\)/.test(source)
+    return /@Param transitionCoverId: string = ''/.test(source) &&
+      /surfaceId: this\.transitionCoverId/.test(source)
   }) &&
     /@Param transitionCoverId: string = ''/.test(gridCard) &&
     /surfaceId: this\.transitionCoverId/.test(gridCard) &&
