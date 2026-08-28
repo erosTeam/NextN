@@ -49,6 +49,8 @@ const arkWebLoginProbe = read('scripts/probe_arkweb_login_state.mjs')
 const arkWebCookieShapeProbe = read('scripts/probe_arkweb_cookie_shape.mjs')
 const entryIndex = read('entry/src/main/ets/pages/Index.ets')
 const galleryCollectionBody = read('shared/src/main/ets/components/GalleryCollectionBody.ets')
+const galleryDetailPage = read('feature/gallery/src/main/ets/pages/GalleryDetailPage.ets')
+const galleryCommentsPage = read('feature/gallery/src/main/ets/pages/GalleryCommentsPage.ets')
 const favoritesPage = read('feature/user/src/main/ets/pages/FavoritesPage.ets')
 const cookieAuthority = read('shared/src/main/ets/services/NhCookieAuthority.ets')
 const sharedIndex = read('shared/src/main/ets/Index.ets')
@@ -88,6 +90,14 @@ ok('account ownership is separate from request authentication',
   /@Trace signedIn: boolean/.test(accountState) &&
   /@Trace authenticationAvailable: boolean/.test(accountState) &&
   /retainedAccountPresent \|\| authenticated/.test(session))
+ok('gallery account consumers require usable authentication rather than retained ownership alone',
+  [galleryDetailPage, galleryCommentsPage].every((source) => {
+    const gate = source.match(/private hasPublishedAccountSession\(\): boolean \{[\s\S]*?\n  \}/)?.[0] ?? ''
+    return /accountSession\.initialized/.test(gate) &&
+      /accountSession\.signedIn/.test(gate) &&
+      /accountSession\.authenticationAvailable/.test(gate) &&
+      /!this\.accountSession\.verificationRequired/.test(gate)
+  }))
 ok('cold start has a durable non-secret ownership marker cleared only by explicit clear',
   /ACCOUNT_PRESENT_KEY: string = 'account\.session\.present'/.test(session) &&
   /loadRetainedAccountMarker\(context\)/.test(session) &&
