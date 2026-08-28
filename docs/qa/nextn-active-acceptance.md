@@ -5192,3 +5192,232 @@ permitted in this repository.
   chain proves refresh recovery; later-process restore of this exact pair,
   natural response `Set-Cookie`, cross-day survival and the terminal-401 HDS
   plus original-WebView return path remain OPEN.
+
+#### External NH-client authentication comparison — 2026-08-28 (read-only research)
+
+- The closest public comparison is Kuron/nhasixapp. Its nhentai configuration
+  declares a `tokenApi` flow with the original WebView login URL, explicit
+  `/api/v2/auth/login`, `/api/v2/auth/refresh` and `/api/v2/auth/logout`
+  endpoints, access/refresh token fields and an `access_token` WebView-cookie
+  promotion boundary. Its release history separately records malformed
+  `Set-Cookie` handling, duplicate CookieManager-interceptor prevention,
+  standardized authentication UA, bounded retry and rate-limit handling.
+  Sources: [config](https://github.com/shirokun20/nhasixapp/blob/master/assets/configs/nhentai-config.json),
+  [releases](https://github.com/shirokun20/nhasixapp/releases).
+- NClientV3 publicly lists OkHttp and PersistentCookieJar. That library makes
+  cookies survive process restarts, but its documented scope does not imply a
+  server-invalidated cookie can refresh itself. NClientV3's release history
+  also says login was not fixed in 4.2.0 before the project migrated v2
+  onboarding toward an API key. Sources: [README](https://github.com/yosefario-dev/NClientV3),
+  [PersistentCookieJar](https://github.com/franmontiel/PersistentCookieJar),
+  [releases](https://github.com/maxwai/NClientV3/releases).
+- NHViewer Universal's public README documents Flutter/Dio and local
+  collection features but no comparable online-auth lifecycle, so it is not
+  acceptance evidence for this lane. Source:
+  [README](https://github.com/ttdyce/nhviewer-universal).
+- This comparison does not prove any other client is problem-free, nor does it
+  replace device evidence. It reinforces the current NextN contract to keep
+  WebView as the login carrier, one native NH request owner, one CookieManager
+  bridge, encrypted access/refresh persistence, single-flight refresh, one
+  safe replay and an explicit terminal-401 HDS path. Natural response
+  `Set-Cookie` rotation, cross-day restore and terminal-401 return-to-WebView
+  acceptance on 237 remain OPEN.
+
+#### Clean HEAD later-process restore and Favorites observation — 2026-08-28 16:58 +0800
+
+- After the scheduled 15:55 artifact was absent, the host-side gate confirmed
+  the active lease, manifest target, authorized target, live Connected row and
+  CLI target all matched `192.168.50.237:12345`; no same-manifest process was
+  running. The checked 19-command protocol then ran exactly once. It performed
+  only wake/timeout, data-preserving cold start, native Favorites, native
+  Account inspection and redacted diagnostics; no install, clear, sign-out,
+  credential input, CAPTCHA, submit, recovery Want or account mutation occurred.
+- The privacy-bounded summary completed with the candidate foregrounded. It
+  observed one native Favorites root with a collection and no Web, sign-in,
+  loading, error or verification HDS, plus one native Account list with one
+  saved and selected account and no Web/sign-in/verification HDS. The retained
+  diagnostics contained `session_start`, restore payload shape,
+  `account_restore_ready`, one restore expiry-shape record and
+  `favorites_request_success`; there was no terminal 401, refresh event or
+  response-Cookie stored/applied/rejected event.
+- This is a later-process authenticated Favorites restore observation, not
+  evidence of natural Cookie rotation or refresh behavior. Cross-day survival,
+  natural response-Cookie persistence and the next terminal-401 HDS plus
+  original-WebView return path remain OPEN. Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T1555/` and
+  the next manifest window advances from the successful diagnostics receive
+  boundary `2026-08-28T16:58:58.456866+08:00`.
+
+#### Clean HEAD later-process refresh recovery — 2026-08-28 17:58 +0800
+
+- At the next scheduled boundary, the host-side gate again confirmed the exact
+  authorized target and active lease, with no same-manifest process running.
+  The checked 19-command protocol ran exactly once and performed only the
+  declared data-preserving cold-start, native Favorites/Account inspection and
+  redacted diagnostics capture; no install, clear, sign-out, credential,
+  CAPTCHA, submit, recovery Want or account mutation occurred.
+- The privacy-bounded summary observed native Account and Favorites roots with
+  one saved/selected account and a populated collection. Diagnostics recorded
+  restore, one authenticated-read initial 401, a successful refresh endpoint
+  check, browser-refresh readiness, one recovered replay and
+  `favorites_request_success`; no terminal 401 or response-Cookie
+  stored/applied/rejected event occurred. The refresh path therefore recovered
+  again in a later process, but the server did not expose a response-Cookie
+  rotation in this window.
+- This is a third observed refresh recovery, not cross-day acceptance and not
+  proof of natural Cookie rotation persistence. Cross-day survival, natural
+  response-Cookie persistence and the next terminal-401 HDS plus
+  original-WebView return path remain OPEN. Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T1655/`; the
+  next manifest window starts at the successful diagnostics receive boundary
+  `2026-08-28T17:58:26.729944+08:00`.
+
+#### Clean HEAD later-process restore and Favorites observation — 2026-08-28 18:57 +0800
+
+- At the scheduled boundary, the checked protocol ran exactly once against the
+  exact authorized target under the active lease. It performed only the
+  declared wake/timeout gate, data-preserving cold start, native Favorites and
+  Account inspection, and redacted diagnostics capture; no install, clear,
+  sign-out, credential input, CAPTCHA, submit, recovery Want, or account
+  mutation occurred.
+- The privacy-bounded summary observed native Account and Favorites roots with
+  one saved/selected account and a populated collection. Diagnostics recorded
+  restore, one expiry-shape record, and authenticated Favorites success; there
+  was no terminal 401, refresh event, or response-Cookie stored/applied/
+  rejected event.
+- This is another later-process authenticated restore observation, not proof
+  of cross-day survival, natural response-Cookie rotation persistence, or the
+  terminal-401 HDS plus original-WebView return path. Those acceptance
+  boundaries remain OPEN. Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T1755/`; the
+  next manifest window starts at the successful diagnostics receive boundary
+  `2026-08-28T18:57:16.350142+08:00`.
+
+#### Clean HEAD later-process restore and Favorites observation — 2026-08-28 19:59 +0800
+
+- After renewing the existing lease because its TTL had elapsed, the checked
+  protocol ran exactly once against the exact authorized target. It performed
+  only the declared wake/timeout gate, data-preserving cold start, native
+  Favorites and Account inspection, and redacted diagnostics capture; no
+  install, clear, sign-out, credential input, CAPTCHA, submit, recovery Want,
+  or account mutation occurred.
+- The privacy-bounded summary observed native Account and Favorites roots with
+  one saved/selected account and a populated collection. Diagnostics recorded
+  restore, one expiry-shape record, and authenticated Favorites success; no
+  terminal 401, refresh event, or response-Cookie stored/applied/rejected event
+  occurred.
+- This is another later-process authenticated restore observation, not proof
+  of cross-day survival, natural response-Cookie rotation persistence, or the
+  terminal-401 HDS plus original-WebView return path. Those acceptance
+  boundaries remain OPEN. Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T1855/`; the
+  next manifest window starts at the successful diagnostics receive boundary
+  `2026-08-28T19:59:10.699681+08:00`.
+
+#### Clean HEAD later-process refresh recovery — 2026-08-28 20:58 +0800
+
+- After acquiring a fresh lease for the exact target because the prior TTL had
+  expired, the checked protocol ran exactly once against
+  `192.168.50.237:12345`. It performed only the declared wake/timeout gate,
+  data-preserving cold start, native Favorites and Account inspection, and
+  redacted diagnostics capture; no install, clear, sign-out, credential input,
+  CAPTCHA, submit, recovery Want, or account mutation occurred.
+- The privacy-bounded summary observed native Account and Favorites roots with
+  one saved/selected account and a populated collection. Diagnostics recorded
+  a later-process authenticated-read initial 401, browser refresh readiness,
+  refresh-endpoint status/readiness, a recovered safe replay, and
+  `favorites_request_success`; no terminal 401 or response-Cookie
+  stored/applied/rejected event occurred.
+- This is another observed refresh recovery, not proof of cross-day survival,
+  natural response-Cookie rotation persistence, or the terminal-401 HDS plus
+  original-WebView return path. Those acceptance boundaries remain OPEN.
+  Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T1955/`; the
+  next manifest window starts at the successful diagnostics receive boundary
+  `2026-08-28T20:58:24.492557+08:00`.
+
+#### Clean HEAD later-process restore and Favorites observation — 2026-08-28 21:56 +0800
+
+- After acquiring a fresh lease for the exact target because the prior TTL had
+  expired, the checked protocol ran exactly once against
+  `192.168.50.237:12345`. It performed only the declared wake/timeout gate,
+  data-preserving cold start, native Favorites and Account inspection, and
+  redacted diagnostics capture; no install, clear, sign-out, credential input,
+  CAPTCHA, submit, recovery Want, or account mutation occurred.
+- The privacy-bounded summary observed native Account and Favorites roots with
+  one saved/selected account and a populated collection. Diagnostics recorded
+  restore, one expiry-shape record, and authenticated Favorites success; no
+  terminal 401, refresh event, or response-Cookie stored/applied/rejected event
+  occurred.
+- This is another later-process authenticated restore observation, not proof
+  of cross-day survival, natural response-Cookie rotation persistence, or the
+  terminal-401 HDS plus original-WebView return path. Those acceptance
+  boundaries remain OPEN. Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T2055/`; the
+  next manifest window starts at the successful diagnostics receive boundary
+  `2026-08-28T21:56:46.990423+08:00`.
+
+#### Clean HEAD later-process restore and Favorites observation — 2026-08-28 22:56 +0800
+
+- After acquiring a fresh lease for the exact target because the prior TTL had
+  expired, the checked protocol ran exactly once against
+  `192.168.50.237:12345`. It performed only the declared wake/timeout gate,
+  data-preserving cold start, native Favorites and Account inspection, and
+  redacted diagnostics capture; no install, clear, sign-out, credential input,
+  CAPTCHA, submit, recovery Want, or account mutation occurred.
+- The privacy-bounded summary observed native Account and Favorites roots with
+  one saved/selected account and a populated collection. Diagnostics recorded
+  restore, one expiry-shape record, and authenticated Favorites success; no
+  terminal 401, refresh event, or response-Cookie stored/applied/rejected event
+  occurred.
+- This is another later-process authenticated restore observation, not proof
+  of cross-day survival, natural response-Cookie rotation persistence, or the
+  terminal-401 HDS plus original-WebView return path. Those acceptance
+  boundaries remain OPEN. Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T2155/`; the
+  next manifest window starts at the successful diagnostics receive boundary
+  `2026-08-28T22:56:43.230970+08:00`.
+
+#### Clean HEAD later-process refresh recovery — 2026-08-28 23:57 +0800
+
+- After acquiring a fresh lease for the exact target because the prior TTL had
+  expired, the checked protocol ran exactly once against
+  `192.168.50.237:12345`. It performed only the declared wake/timeout gate,
+  data-preserving cold start, native Favorites and Account inspection, and
+  redacted diagnostics capture; no install, clear, sign-out, credential input,
+  CAPTCHA, submit, recovery Want, or account mutation occurred.
+- The privacy-bounded summary observed native Account and Favorites roots with
+  one saved/selected account and a populated collection. Diagnostics recorded
+  an authenticated-read initial 401, refresh-endpoint status/readiness,
+  browser refresh readiness, a stale 401 after refresh, a recovered safe
+  replay, and `favorites_request_success`; no terminal 401 or response-Cookie
+  stored/applied/rejected event occurred.
+- This is another observed refresh recovery, not proof of cross-day survival,
+  natural response-Cookie rotation persistence, or the terminal-401 HDS plus
+  original-WebView return path. Those acceptance boundaries remain OPEN.
+  Evidence is retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T2255/`; the
+  next manifest window starts at the successful diagnostics receive boundary
+  `2026-08-28T23:57:12.875114+08:00`.
+
+#### Rejected 237 foreground precondition — 2026-08-29 00:58 +0800
+
+- The prior artifact was absent at the scheduled boundary. The existing lease
+  had expired, so a fresh lease was acquired for the exact authorized target.
+  The live target was initially TCP Offline; one bounded `hdc tconn` recovery
+  restored `192.168.50.237:12345` to Connected and a lease-wrapped shell echo
+  succeeded. The checked 19-command protocol then ran exactly once.
+- The protocol exited successfully at the command level, but its retained
+  Account and Favorites layouts did not prove a focused NextN `EntryAbility`:
+  both safe summaries returned `foregroundNextn=false`, no native roots, and
+  no authenticated-state markers. Diagnostics contained no stages or auth
+  events. This is an evidence/precondition failure, not evidence of logout,
+  terminal 401, or Cookie behavior; the chain is rejected and no login action
+  was taken.
+- Cross-day survival, natural response-Cookie rotation persistence, and the
+  terminal-401 HDS plus original-WebView return path remain OPEN. Evidence is
+  retained under
+  `.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T2355/`; the
+  next manifest window starts at the successful diagnostics receive boundary
+  `2026-08-29T00:58:37.872902+08:00`. The next cycle must re-establish the
+  foreground precondition before any account-state interpretation.

@@ -4,7 +4,7 @@
   "target": "192.168.50.237:12345",
   "authorizedTarget": "192.168.50.237:12345",
   "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
-  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T1555",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-natural-refresh-observation-237-20260829T0055",
   "display": { "widthPx": 1320, "heightPx": 2120 },
   "context": {
     "project": "NextN",
@@ -12,7 +12,7 @@
     "page": "post-natural-refresh-multi-cycle-favorites-then-native-account",
     "orientation": "portrait",
     "resolution": "1320x2120",
-    "diagnosticWindowStart": "2026-08-28T14:58:54.810527+08:00",
+    "diagnosticWindowStart": "2026-08-29T00:58:37.872902+08:00",
     "notes": "The user-authorized target set is exactly {192.168.50.237:12345}; discovery, history, a lease, or another report cannot expand it. Observe source commit cadf534 using the clean full-rebuild HAP with SHA-256 93e6cfa1c87e66f5ae67c396c3b0b91f8e58bfc58bc5dc95dda74fff69f965be. This candidate contains the durable NH session lifecycle, global bounded HTTP ownership, response-Cookie split-store crash-window correction, and the gallery account-read authentication gate. It was installed in place at 14:05 with application data preserved and cold-restored authenticated native Account and Favorites without an immediate refresh, terminal 401 or response-Cookie event. The 14:55 later-process observation then captured one authenticated-read initial 401, one successful refresh endpoint/checkpoint and one safe replay recovery before authenticated Favorites success; Account remained native and selected, no terminal 401 or HDS appeared, and no response-Cookie event was observed. Continue no-install multi-cycle monitoring: wake and verify timeout, cold-start without clearing data, issue one authenticated native Favorites read, then use the already established ordinary My-to-Account route and retain semantic layouts plus redacted persistent diagnostics. The observer must not invoke the login-recovery Want because that route owns BrowserSession and would suppress the root HDS Snackbar or expose WebView at the natural terminal-401 boundary. A natural response Cookie checkpoint must durably advance the sealed native pair before the sole raw-header ArkWeb sink, preserve the server response attributes, and survive a later process. Do not install, clear data, uninstall, sign out, enter credentials, act on CAPTCHA, submit, mutate account state, or operate any target other than 192.168.50.237:12345."
   },
   "preflight": [
@@ -31,12 +31,12 @@
   },
   "postflight": [
     { "name": "dump-favorites-during-expiry-window", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-natural-refresh-favorites.json", "-a"] },
-    { "name": "receive-favorites-during-expiry-window", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-natural-refresh-favorites.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T1555/favorites.json"] },
+    { "name": "receive-favorites-during-expiry-window", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-natural-refresh-favorites.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-natural-refresh-observation-237-20260829T0055/favorites.json"] },
     { "name": "open-native-my-root", "hdcArgs": ["shell", "uitest", "uiInput", "click", "948", "2006"], "pauseAfterMs": 1200 },
     { "name": "open-native-account-row", "hdcArgs": ["shell", "uitest", "uiInput", "click", "660", "411"], "pauseAfterMs": 2000 },
     { "name": "dump-formal-account-during-expiry-window", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-natural-refresh-account.json", "-a"] },
-    { "name": "receive-formal-account-during-expiry-window", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-natural-refresh-account.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T1555/account.json"] },
-    { "name": "receive-redacted-persistent-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-natural-refresh-observation-237-20260828T1555/diagnostics"] },
+    { "name": "receive-formal-account-during-expiry-window", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-natural-refresh-account.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-natural-refresh-observation-237-20260829T0055/account.json"] },
+    { "name": "receive-redacted-persistent-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-natural-refresh-observation-237-20260829T0055/diagnostics"] },
     { "name": "confirm-nextn-process-remains", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
     { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
     { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
