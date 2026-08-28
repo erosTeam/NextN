@@ -5059,3 +5059,33 @@ permitted in this repository.
   Favorites cycle remain OPEN. The checked old-candidate monitor advances to
   14:55 pending the planned preserve-data installation of the clean HEAD
   candidate.
+
+#### Clean HEAD candidate installed with data preserved — 2026-08-28 14:05 +0800
+
+- The signed HAP produced by the clean ten-module rebuild at source commit
+  `cadf534` was rechecked immediately before installation; SHA-256 remained
+  `93e6cfa1c87e66f5ae67c396c3b0b91f8e58bfc58bc5dc95dda74fff69f965be`.
+  The checked manifest, CLI target, active lease and exactly one live Connected
+  row all matched `192.168.50.237:12345`. The 20-command protocol ran exactly
+  once from 14:05:27 to 14:05:57. It used `install -r`, preserved application
+  data, and all commands exited zero. No uninstall, data clear, sign-out,
+  credential input, CAPTCHA action, submit, internal recovery Want or account
+  mutation occurred.
+- The first process on this candidate emitted only `session_start` -> restore
+  payload and expiry shape -> `account_restore_ready` ->
+  `favorites_request_success`. There was no initial 401, refresh endpoint,
+  refresh checkpoint, replay, replayed/final 401, verification-marker failure,
+  response-Cookie stored/applied/rejected event or Favorites failure. Native
+  Favorites retained one collection with no Web, sign-in, loading, error or
+  HDS. Formal Account retained one list root, one saved row and one selected
+  Radio with no Web, sign-in, verification-required state, HDS or save failure.
+  Evidence is retained under
+  `.hvigor/outputs/nextn-clean-head-cadf534-install-237/` and is excluded from
+  Git.
+- This accepts installation and one preserve-data cold authenticated cycle on
+  the complete source candidate. It does not close the long-running outcome.
+  The 14:55 no-install monitor now starts this candidate's multi-cycle and
+  cross-day baseline. A natural response `Set-Cookie` auth rotation or deletion
+  and its later-process restore, and the next natural terminal 401 with retained
+  Account, close/re-login HDS, original-WebView promotion, native return and a
+  later cold authenticated Favorites cycle remain OPEN.
