@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-return-visibility-install-open-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/reader-return-visibility-install-open-237-20260830T1935",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "bc1ee4e+reader-return-fully-visible-gate-hap-a8b4999618bba2ace685923212a039f78663bbabf247c7455cd8fe00b0ac690e",
+    "page": "gallery-653609-detail-after-data-preserving-install",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install the isolated signed candidate in place on selected target 237 without uninstall or data clear, cold-start Gallery 653609 through its public deep link, and retain current layout plus power/window evidence before transition scenarios."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "verify-awake-timeout",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "install-isolated-signed-candidate-in-place",
+      "hdcArgs": ["install", "-r", "/tmp/nextn-reader-return-visible-20260830/entry/build/default/outputs/default/entry-default-signed.hap"],
+      "pauseAfterMs": 500,
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "cold-stop-nextn-with-data-preserved",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"],
+      "pauseAfterMs": 300
+    },
+    {
+      "name": "open-gallery-653609-through-public-deep-link",
+      "hdcArgs": ["shell", "aa", "start", "-A", "ohos.want.action.viewData", "-U", "nextn://gallery/653609"],
+      "pauseAfterMs": 5000,
+      "timeoutSeconds": 30
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "noninteractive-protocol-boundary",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 50,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "capture-detail-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-return-visibility-detail.json", "-a"]
+    },
+    {
+      "name": "capture-detail-screen",
+      "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-reader-return-visibility-detail.jpeg"]
+    },
+    {
+      "name": "receive-detail-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-return-visibility-detail.json", "/Users/honjow/git/NextN/.hvigor/outputs/reader-return-visibility-install-open-237-20260830T1935/detail-layout.json"]
+    },
+    {
+      "name": "receive-detail-screen",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-return-visibility-detail.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/reader-return-visibility-install-open-237-20260830T1935/detail-screen.jpeg"]
+    },
+    {
+      "name": "remove-remote-artifacts",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-reader-return-visibility-detail.json", "/data/local/tmp/nextn-reader-return-visibility-detail.jpeg"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

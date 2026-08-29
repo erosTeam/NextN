@@ -10,6 +10,7 @@ import {
   GalleryTitleState,
   GalleryDetailTransitionState,
   ReaderThumbnailTransitionCoordinator,
+  ReaderThumbnailTransitionState,
   GalleryTitleTranslationService,
   DownloadQueueService,
   DownloadQueueState,
@@ -67,6 +68,7 @@ import {
   connectLayoutSafeArea,
   connectLlmSourceProfiles,
   connectReaderOverlayNavigation,
+  connectReaderThumbnailTransition,
   connectReadButtonStyle,
   connectTagTranslations,
   connectTagTranslationSettings,
@@ -268,6 +270,7 @@ export struct GalleryDetailPage {
   // validated public DTO; the entry-owned overlay attaches it to the next
   // matching Reader route and Reader consumes it exactly once.
   @Local readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
+  private readerThumbnailTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
   private readerTransitionScope: string =
     ReaderThumbnailTransitionCoordinator.allocateScope('gallery-detail')
   @Param scroller: Scroller = new Scroller()
@@ -2836,6 +2839,16 @@ export struct GalleryDetailPage {
             .margin({
               left: pageIndex === 0 ? ThemeTokens.SPACE_MD : 0,
               right: pageIndex === this.compactPreviewPages().length - 1 ? ThemeTokens.SPACE_MD : 0,
+            })
+            .onVisibleAreaChange([0.0, 1.0], (isExpanding: boolean, currentRatio: number): void => {
+              const sourceId: string = ReaderThumbnailTransitionCoordinator.sourceId(
+                this.readerTransitionScope,
+                pageIndex,
+              )
+              this.readerThumbnailTransition.reportSourceVisibility(
+                sourceId,
+                isExpanding && currentRatio >= 0.999,
+              )
             })
           }, (page: NhGalleryPage, pageIndex: number): string => this.compactPreviewPageKey(page, pageIndex))
         }

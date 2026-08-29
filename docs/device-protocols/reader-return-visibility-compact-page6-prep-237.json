@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-return-visibility-compact-page6-prep-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/reader-return-visibility-compact-page6-prep-237-20260830T1941",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "bc1ee4e+reader-return-fully-visible-gate-hap-a8b4999618bba2ace685923212a039f78663bbabf247c7455cd8fe00b0ac690e",
+    "page": "reader-page6-from-compact-page1-with-retained-leading-rail",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Open Reader from fully visible compact page 1, then perform five ordinary rightward page gestures while the retained compact horizontal rail remains untouched at its leading position. Capture the terminal Reader counter before the separate return recording."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-reader-from-compact-page1", "uiInput": ["click", "445", "1190"], "pauseAfterMs": 1800 },
+      { "name": "advance-to-page2", "uiInput": ["swipe", "220", "1100", "1100", "1100", "500"], "pauseAfterMs": 650 },
+      { "name": "advance-to-page3", "uiInput": ["swipe", "220", "1100", "1100", "1100", "500"], "pauseAfterMs": 650 },
+      { "name": "advance-to-page4", "uiInput": ["swipe", "220", "1100", "1100", "1100", "500"], "pauseAfterMs": 650 },
+      { "name": "advance-to-page5", "uiInput": ["swipe", "220", "1100", "1100", "1100", "500"], "pauseAfterMs": 650 },
+      { "name": "advance-to-page6", "uiInput": ["swipe", "220", "1100", "1100", "1100", "500"], "pauseAfterMs": 2200 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-reader-page6-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-return-compact-page6.json", "-a"] },
+    { "name": "capture-reader-page6-screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-reader-return-compact-page6.jpeg"] },
+    { "name": "receive-reader-page6-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-return-compact-page6.json", "/Users/honjow/git/NextN/.hvigor/outputs/reader-return-visibility-compact-page6-prep-237-20260830T1941/reader-layout.json"] },
+    { "name": "receive-reader-page6-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-return-compact-page6.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/reader-return-visibility-compact-page6-prep-237-20260830T1941/reader-screen.jpeg"] },
+    { "name": "remove-remote-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-reader-return-compact-page6.json", "/data/local/tmp/nextn-reader-return-compact-page6.jpeg"] },
+    { "name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

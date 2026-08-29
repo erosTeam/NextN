@@ -37,6 +37,36 @@ Total output lines: 3889
 - This observes the cache cold-start path only; it does not accept tag translation timing, every layout density, sign-out cache clearing, or the pending developer-guide maintenance contract. Raw layout copies retained under `.hvigor/outputs/nextn-cache-tags-20260816T/` and excluded from Git.
 # NextN active device-acceptance queue
 
+## Reader return target visibility — 2026-08-30 (accepted on 237)
+
+- User outcome: Reader Back now uses a shared-element flight only when the current page's
+  exact retained thumbnail is fully visible after ancestor clipping. An off-screen mounted
+  List/Grid child no longer counts as a usable destination, and neither source auto-scrolls.
+- Correction: the compact Detail `ListItem` and full-thumbnail `GridItem` publish complete
+  visible-area state under their exact transition ids; the ordinary close gate requires that
+  state in addition to gallery/scope ownership. Forward flight and immediate opening reversal
+  keep their existing click-time geometry.
+- Static/build evidence: `git diff --check` and the Reader transition contract pass. Because
+  the dirty worktree contains an unrelated untracked thumbnail-surface refactor that currently
+  fails compilation, the signed HAP was built from `bc1ee4e` plus only this lane's three source
+  changes. Build time was `27 s 957 ms`; installed HAP SHA-256 is
+  `a8b4999618bba2ace685923212a039f78663bbabf247c7455cd8fe00b0ac690e`.
+- The exact HAP was installed in place on `192.168.50.237:12345`, with no uninstall or data
+  clear. Every encoded frame was extracted and reviewed for four normal-speed recordings:
+  compact visible page 1 (92 frames) and Grid visible page 2 (97 frames) continuously shrink
+  to their exact tiles; compact off-screen page 6 (47 frames) and Grid-top/off-screen page 20
+  (43 frames) use only the ordinary horizontal route close, with no off-viewport proxy flight.
+- Recording SHA-256 values are respectively
+  `117fa5f84b51b78e5426180d0c045e7638802d7e161ddf0a2ff6b35b517a77d3`,
+  `097d08aca3500e173f1d7da7e1fc6a2ccd7ffc52e6a9a1c4d5bfa006b40f164a`,
+  `4561d9950ad396fb8a5af296b072073a29c3f84f6b3711d378bd5976e2e79fb3`, and
+  `6b51426bea02fb6a89e6436f8679fc8c5da465c497694175e55662fc751174ad`.
+  Evidence is retained under the four
+  `.hvigor/outputs/reader-return-visibility-*-recording-237-20260830T*/` directories.
+- Boundary: accepted for the reported compact rail and full Grid at `1320x2120` on 237.
+  Rotation, partially visible edge targets and the separate fullscreen endpoint-measurement
+  correction remain outside this result.
+
 ## Readable download directories and explicit deletion — 2026-08-30 (accepted on 197)
 
 - User outcome: new public download folders are named with a readable

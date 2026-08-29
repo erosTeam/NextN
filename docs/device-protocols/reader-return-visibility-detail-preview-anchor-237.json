@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-return-visibility-detail-preview-anchor-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/reader-return-visibility-detail-preview-anchor-237-20260830T1937",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "bc1ee4e+reader-return-fully-visible-gate-hap-a8b4999618bba2ace685923212a039f78663bbabf247c7455cd8fe00b0ac690e",
+    "page": "gallery-653609-compact-preview-leading-position",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Move only the retained Detail vertical List until its compact preview rail is fully inspectable; do not scroll the horizontal rail or enter Reader."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "reveal-compact-preview-section",
+        "uiInput": ["swipe", "660", "1810", "660", "920", "900"],
+        "pauseAfterMs": 1200,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-preview-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-return-preview-anchor.json", "-a"] },
+    { "name": "capture-preview-screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-reader-return-preview-anchor.jpeg"] },
+    { "name": "receive-preview-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-return-preview-anchor.json", "/Users/honjow/git/NextN/.hvigor/outputs/reader-return-visibility-detail-preview-anchor-237-20260830T1937/preview-layout.json"] },
+    { "name": "receive-preview-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-return-preview-anchor.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/reader-return-visibility-detail-preview-anchor-237-20260830T1937/preview-screen.jpeg"] },
+    { "name": "remove-remote-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-reader-return-preview-anchor.json", "/data/local/tmp/nextn-reader-return-preview-anchor.jpeg"] },
+    { "name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

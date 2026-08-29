@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-return-visibility-grid-top-anchor-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/reader-return-visibility-grid-top-anchor-237-20260830T1945",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "bc1ee4e+reader-return-fully-visible-gate-hap-a8b4999618bba2ace685923212a039f78663bbabf247c7455cd8fe00b0ac690e",
+    "page": "gallery-653609-full-thumbnail-grid-at-top",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Open the full-thumbnail destination through the currently visible Detail section header and capture its untouched top-of-Grid source geometry before Reader scenarios."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-all-thumbnails", "uiInput": ["click", "1100", "920"], "pauseAfterMs": 1800 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-grid-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-return-grid-top.json", "-a"] },
+    { "name": "capture-grid-screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-reader-return-grid-top.jpeg"] },
+    { "name": "receive-grid-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-return-grid-top.json", "/Users/honjow/git/NextN/.hvigor/outputs/reader-return-visibility-grid-top-anchor-237-20260830T1945/grid-layout.json"] },
+    { "name": "receive-grid-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-return-grid-top.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/reader-return-visibility-grid-top-anchor-237-20260830T1945/grid-screen.jpeg"] },
+    { "name": "remove-remote-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-reader-return-grid-top.json", "/data/local/tmp/nextn-reader-return-grid-top.jpeg"] },
+    { "name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

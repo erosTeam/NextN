@@ -9756,3 +9756,41 @@ authorize an edit, replace a device comparison, or define product completion.
   three nested custom Gallery instances before unwinding every level. Extract every encoded frame; each Gallery
   return must use its own source card, no level may fall back to the system slide, and the final A return must land
   on its original list card. Presence of actions in a manifest is not acceptance without reviewing each segment.
+
+## ACCEPTED — Reader return flight requires a fully visible retained thumbnail — 2026-08-30
+
+- **Why newly actionable:** on selected target 237, the user reproduced two retained-source failures. From the
+  compact Detail rail, Reader page 6 returns toward the off-screen sixth tile while only roughly the first three
+  tiles are in the horizontal viewport. From the full-thumbnail destination left at the top, Reader page 20+
+  still returns toward that off-screen Grid item. This is direct counter-evidence to the existing close gate.
+- **Faulty assumption and impact:** `ReaderThumbnailTransitionCoordinator.close()` treats a nonzero rectangle
+  returned by `getRectangleById()` as a suitable endpoint. Horizontal List and virtual Grid may retain built
+  children after ancestor clipping removes them from the viewport, so component existence is not visibility and
+  the proxy flies beyond the visible source surface.
+- **Whole parent-tree boundary:** retained Detail vertical content -> compact horizontal List -> ListItem -> page
+  thumbnail, and full-thumbnails scaffold -> virtual Grid -> GridItem -> page thumbnail, feeding the shared Reader
+  overlay close gate. Preserve both scrollers and their positions, tile geometry/content, forward flight, immediate
+  opening reversal, Reader paging/progress, status-bar layout synchronization, duration, curve and handoff.
+- **Exact correction:** each retained ListItem/GridItem reports whether its complete area is visible after all
+  ancestor clipping. A normal Reader close is a shared-element candidate only when the current page's exact source
+  reports fully visible; otherwise use the existing ordinary Reader close instead of measuring or snapshotting an
+  off-screen endpoint. Do not auto-scroll either retained source to manufacture a target.
+- **Verification plan:** signed build and in-place install on 237. Record uninterrupted normal-speed returns for a
+  fully visible compact-rail target, compact page 6 while the rail remains at its leading position, a fully visible
+  full-Grid target, and page 20+ while the Grid remains at the top. Extract every encoded frame: visible targets
+  must retain their shared return, while off-screen targets must never produce a proxy flight beyond the viewport.
+- **Static/build evidence:** `git diff --check` and the Reader transition contract pass. The current dirty tree also
+  contains an unrelated, untracked thumbnail-surface refactor that does not compile, so the signed acceptance HAP
+  was built from `bc1ee4e` plus only this lane's three source-file changes. It completed in `27 s 957 ms`; SHA-256 is
+  `a8b4999618bba2ace685923212a039f78663bbabf247c7455cd8fe00b0ac690e`.
+- **237 acceptance:** the exact HAP was installed in place with no uninstall or data clear. Four uninterrupted
+  recordings were reviewed across every encoded frame. Compact page 1 (92 frames, SHA-256
+  `117fa5f84b51b78e5426180d0c045e7638802d7e161ddf0a2ff6b35b517a77d3`) and Grid page 2 (97 frames,
+  `097d08aca3500e173f1d7da7e1fc6a2ccd7ffc52e6a9a1c4d5bfa006b40f164a`) retain continuous shared-element
+  returns to the visible tiles. Compact page 6 while its rail stays leading (47 frames,
+  `4561d9950ad396fb8a5af296b072073a29c3f84f6b3711d378bd5976e2e79fb3`) and Grid page 20 while the Grid stays
+  at the top (43 frames, `6b51426bea02fb6a89e6436f8679fc8c5da465c497694175e55662fc751174ad`) use only the ordinary horizontal route
+  close: the retained source position is unchanged and no shrinking proxy flies outside either viewport.
+- **Acceptance boundary:** this accepts the reported compact-rail and full-Grid visible/off-screen return decisions
+  at `1320x2120` on 237. Rotation, partial-visibility edge cases and the separate fullscreen endpoint-measurement
+  lane remain outside this result.

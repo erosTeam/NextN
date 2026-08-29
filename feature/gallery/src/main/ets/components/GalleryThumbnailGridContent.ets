@@ -6,7 +6,9 @@ import {
   PageEmptyState,
   PullRefreshGridScaffold,
   ReaderThumbnailTransitionCoordinator,
+  ReaderThumbnailTransitionState,
   ThemeTokens,
+  connectReaderThumbnailTransition,
 } from 'shared'
 import { appSheetOptions } from 'shared'
 import {
@@ -37,6 +39,7 @@ export struct GalleryThumbnailGridContent {
   @Local jumpError: string = ''
   private dataSource: GalleryVirtualPageThumbnailDataSource = new GalleryVirtualPageThumbnailDataSource()
   private jumpSheetScroller: Scroller = new Scroller()
+  private readerThumbnailTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
 
   @Monitor('chrome.firstPageRequestVersion')
   onFirstPageRequested(): void {
@@ -243,6 +246,16 @@ export struct GalleryThumbnailGridContent {
                 },
               })
             }
+            .onVisibleAreaChange([0.0, 1.0], (isExpanding: boolean, currentRatio: number): void => {
+              const sourceId: string = ReaderThumbnailTransitionCoordinator.sourceId(
+                this.transitionScope,
+                index,
+              )
+              this.readerThumbnailTransition.reportSourceVisibility(
+                sourceId,
+                isExpanding && currentRatio >= 0.999,
+              )
+            })
           },
           (page: NhGalleryPage, index: number): string => `thumbnail_${index}_${page.number}`,
         )

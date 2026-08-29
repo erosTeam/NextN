@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-return-visibility-grid-offscreen-recording-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/reader-return-visibility-grid-offscreen-recording-237-20260830T1952",
+  "recordingFileName": "nextn-reader-return-grid-offscreen-page20-237-20260830T1952.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 700,
+  "idleRecordMs": 0,
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "actions": [
+    {
+      "name": "return-from-reader-page20-to-retained-grid-top",
+      "uiInput": ["keyEvent", "Back"],
+      "pauseAfterMs": 2400
+    }
+  ],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "bc1ee4e+reader-return-fully-visible-gate-hap-a8b4999618bba2ace685923212a039f78663bbabf247c7455cd8fe00b0ac690e",
+    "page": "gallery-653609-reader-page20-to-retained-full-grid-top",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Precondition is Reader page 20/357 entered through Grid page 1 while the retained full-thumbnail Grid remains at its top showing pages 1 through 9. Normal-speed recording starts before Back. Page 20 is an unsuitable off-screen source, so close must use the ordinary Reader route transition and never fly a page proxy toward an off-screen Grid row."
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-return-visibility-compact-offscreen-recording-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/reader-return-visibility-compact-offscreen-recording-237-20260830T1943",
+  "recordingFileName": "nextn-reader-return-compact-offscreen-page6-237-20260830T1943.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 700,
+  "idleRecordMs": 0,
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "actions": [
+    {
+      "name": "return-from-reader-page6-to-retained-leading-compact-rail",
+      "uiInput": ["keyEvent", "Back"],
+      "pauseAfterMs": 2400
+    }
+  ],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "bc1ee4e+reader-return-fully-visible-gate-hap-a8b4999618bba2ace685923212a039f78663bbabf247c7455cd8fe00b0ac690e",
+    "page": "gallery-653609-reader-page6-to-retained-leading-compact-rail",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Precondition is Reader page 6/357 entered through compact page 1 while the retained horizontal rail still shows complete pages 1 and 2 plus only a sliver of page 3. Normal-speed recording starts before Back. Page 6 is an unsuitable off-screen source, so close must use the ordinary Reader route transition and never fly a page proxy toward the rail's off-screen extension."
+  }
+}

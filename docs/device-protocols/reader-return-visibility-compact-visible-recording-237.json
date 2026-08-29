@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-return-visibility-compact-visible-recording-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/reader-return-visibility-compact-visible-recording-237-20260830T1939",
+  "recordingFileName": "nextn-reader-return-compact-visible-page1-237-20260830T1939.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 700,
+  "idleRecordMs": 0,
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "actions": [
+    {
+      "name": "open-reader-from-fully-visible-compact-page1",
+      "uiInput": ["click", "445", "1190"],
+      "pauseAfterMs": 2200
+    },
+    {
+      "name": "return-to-fully-visible-compact-page1",
+      "uiInput": ["keyEvent", "Back"],
+      "pauseAfterMs": 2200
+    }
+  ],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "bc1ee4e+reader-return-fully-visible-gate-hap-a8b4999618bba2ace685923212a039f78663bbabf247c7455cd8fe00b0ac690e",
+    "page": "gallery-653609-compact-leading-rail-visible-page1-roundtrip",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Normal-speed continuous recording starts from the compact Detail rail with page 1 fully visible, opens Reader through that exact tile, then returns without moving either retained Detail scroller. The shared-element open and close flights must remain continuous and land on the live page-1 thumbnail."
+  }
+}
