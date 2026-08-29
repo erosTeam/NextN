@@ -11,6 +11,9 @@ the summary here.
 - The latest user instruction wins. A temporary execution hold stops
   conflicting work but keeps its outcome `OPEN`; resume after the prerequisite
   unless the user explicitly stops or replaces it.
+- Before editing an existing behavior, query
+  `docs/controls/rejected-approaches.md` with the affected file and symbol
+  names. A matching `REJECTED` entry requires explicit user reopening.
 - Keep the active outcome and next unverified action explicit. Questions,
   intermediate results, command failures, builds, and commits do not close an
   unfinished runtime or device-acceptance path.

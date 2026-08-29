@@ -9757,6 +9757,41 @@ authorize an edit, replace a device comparison, or define product completion.
   return must use its own source card, no level may fall back to the system slide, and the final A return must land
   on its original list card. Presence of actions in a manifest is not acceptance without reviewing each segment.
 
+## OPEN — shared page-thumbnail loading surface — 2026-08-30
+
+- **Why newly actionable:** direct user feedback shows the full-thumbnail Grid paints isolated loading indicators
+  without an image-sized placeholder, while the compact Detail rail does show one. The user also explicitly
+  challenged the duplicated page-thumbnail implementations, reopening this previously unreviewed loading state.
+- **Whole parent-tree boundary:** compact Detail preview, full-thumbnail virtual Grid and Reader thumbnail strip
+  retain their existing geometry, fit, page labels, selection, transition ids, navigation, paging and scroll
+  ownership. Only their duplicated image loading/success/error leaf becomes shared.
+- **Exact before/after:** before, all three parents independently own `Image.onComplete/onError` plus loading/error
+  state, and the virtual Grid omits `COVER_PLACEHOLDER`. After, one shared page-thumbnail surface owns those states
+  and always paints the parent-sized background; each parent supplies only its existing fit and palette.
+- **Minimality rationale:** do not route page thumbnails through the gallery-cover retry/cache contract, change
+  thumbnail dimensions, add a global reload epoch, or alter Reader/Gallery transitions. This removes duplicated
+  state without coupling page thumbnails to unrelated cover refresh behavior.
+- **Visual verification plan:** signed build, then on a selected device exercise uncached loading, success and
+  failure in the compact rail, full-thumbnail Grid and Reader strip. The Grid placeholder must match the fitted
+  image rectangle, and no parent geometry, label, selection border or transition endpoint may change.
+
+## REJECTED CANDIDATE — fullscreen Reader return measurement gate — 2026-08-30
+
+- **User counter-evidence:** requiring the retained target rectangle to change after status-bar restoration made
+  GalleryDetail Reader returns wait for a movement that is not required to occur, then fall back to the system
+  POP. This did not fix the fullscreen landing defect; it reintroduced behavior already removed by `f1c27d1`.
+- **Faulty assumption:** Reader fullscreen state does not imply that the retained GalleryDetail or all-thumbnails
+  target must move. Treating coordinate change as proof of layout readiness confuses one previously observed device
+  layout with a required product invariant and breaks stable targets, rotation-safe live measurement, and custom
+  return eligibility.
+- **Frozen no-repeat boundary:** do not require target-layout-key change, do not move status-bar restoration to
+  after the custom flight/handoff/overlay POP, and do not alter entry geometry, target eligibility, proxy/root
+  dimensions, visibility gating, or radius ownership as a substitute status-bar fix. Before any further product
+  edit, inspect `git show f1c27d1` and preserve the last committed pre-close status-bar timing.
+- **Current status:** the reported fullscreen landing defect remains open and no replacement candidate is accepted.
+  A future proposal requires current source/history evidence and explicit user authorization before product edits;
+  build success or a static contract cannot transfer discovery of another regression back to the user.
+
 ## ACCEPTED — Reader return flight requires a fully visible retained thumbnail — 2026-08-30
 
 - **Why newly actionable:** on selected target 237, the user reproduced two retained-source failures. From the
