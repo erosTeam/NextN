@@ -3,6 +3,34 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## ACCEPTED — Reader return proxy preserves gradual thumbnail corners — 2026-08-30
+
+- **Reported regression:** when Reader closes to a gallery thumbnail, the proxy changes from
+  square to the thumbnail's full corner radius in one frame before its geometry contracts.
+- **Source-proven cause and boundary:** gallery thumbnails already expose an unclipped content
+  snapshot node inside the rounded target, and Reader close geometry remains measured live.
+  The close path nevertheless captured the outer clipped target, baking the endpoint corners
+  into the PixelMap before animation. Prefer the existing content snapshot ID, falling back to
+  the outer target only when that node is unavailable; preserve close eligibility, live target
+  measurement, fullscreen timing, geometry, duration and easing.
+- **Verification plan:** run transition/state contracts and a signed build, then install on the
+  user-selected target 197 and review every frame of a warm-up/action/settle return recording.
+  Require square initial proxy corners, gradual rounding during contraction, and a clean final
+  handoff to the thumbnail.
+- **Static/build evidence:** `node scripts/test_reader_contract.mjs` and `git diff --check`
+  pass. The signed build completed in `14 s 654 ms`; installed HAP SHA-256 is
+  `01fe5eb083cc2255ef44836bbb8ed8e1b6eb1f6867fa55e125da5292061d3080`. The current
+  uncommitted `scripts/test_gallery_reader_transition_contract.mjs` instead expects the rejected
+  pre-restore-coordinate-change approach and fails against the preserved source; it was not
+  changed or treated as evidence for this lane.
+- **197 acceptance:** the exact HAP was installed in place without uninstall or data clear.
+  A continuous visible-page-2 Grid round trip produced 181 encoded frames; every frame was
+  extracted and reviewed, with original-resolution checks across the close sequence. The proxy
+  begins square, gains radius only while contracting, then hands off cleanly to the live page-2
+  thumbnail. Recording SHA-256 is
+  `c54ecdef80c160496839cc3c851155c3ac02de94e20848f73e8c99dfae6375c5`; evidence is under
+  `.hvigor/outputs/reader-radius-content-snapshot-197-20260830/`.
+
 ## ACCEPTED — Reader original images fail globally and Retry is intercepted — 2026-08-30
 
 - **Why newly actionable:** the user reported on selected target 237 that Gallery `653609`
