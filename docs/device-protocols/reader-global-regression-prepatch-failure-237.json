@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-global-regression-prepatch-failure-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-prepatch-failure-237-20260830T0003",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "14e9147+current-device-install",
+    "page": "gallery-653609-reader-global-image-failure-before-fix",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Precondition is the current Gallery 653609 detail route whose semantic Continue P2 control is the clickable Column [972,1946][1236,2060]. Activate it once, wait for the reported Reader failure, and retain one terminal layout/screenshot plus bounded hilog. No retry, account mutation, data clear, install, or unrelated navigation."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "verify-awake-timeout",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "capture-detail-precondition",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-global-prepatch-detail.json", "-a"]
+    },
+    {
+      "name": "receive-detail-precondition",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-global-prepatch-detail.json", "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-prepatch-failure-237-20260830T0003/precondition-layout.json"]
+    }
+  ],
+  "measurement": {
+    "hilog": {
+      "hdcArgs": ["shell", "hilog"],
+      "localFile": "reader-runtime-hilog.txt"
+    },
+    "actions": [
+      {
+        "name": "activate-semantic-continue-p2",
+        "uiInput": ["click", "1104", "2003"],
+        "pauseAfterMs": 5000,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "capture-reader-failure-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-global-prepatch-failure.json", "-a"]
+    },
+    {
+      "name": "capture-reader-failure-screen",
+      "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-reader-global-prepatch-failure.png"]
+    },
+    {
+      "name": "receive-reader-failure-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-global-prepatch-failure.json", "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-prepatch-failure-237-20260830T0003/failure-layout.json"]
+    },
+    {
+      "name": "receive-reader-failure-screen",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-global-prepatch-failure.png", "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-prepatch-failure-237-20260830T0003/failure-screen.png"]
+    },
+    {
+      "name": "remove-remote-precondition-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-reader-global-prepatch-detail.json"]
+    },
+    {
+      "name": "remove-remote-failure-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-reader-global-prepatch-failure.json"]
+    },
+    {
+      "name": "remove-remote-failure-screen",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-reader-global-prepatch-failure.png"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

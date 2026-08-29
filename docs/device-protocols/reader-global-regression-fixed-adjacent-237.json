@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-global-regression-fixed-adjacent-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-fixed-adjacent-237-20260830T0007",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "reader-stream-bound-and-retry-hit-test-hap-829147d7420c9a1c8e528b7562452dee983aa28a808abd2782a9a035b115654f",
+    "page": "gallery-653609-reader-adjacent-page-after-fix",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Precondition is the accepted full original on Gallery 653609 page 2/357. Perform one ordinary horizontal page gesture, wait for the adjacent original stream/decode, and capture its terminal state. Accept either adjacent source index according to the persisted Reader direction, but require a changed counter, a full decoded image, and no image-unavailable state. Do not retry, change settings, mutate account/download state, clear data, or operate another target."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "verify-awake-timeout",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "capture-page2-precondition",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-global-fixed-adjacent-pre.json", "-a"]
+    },
+    {
+      "name": "receive-page2-precondition",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-global-fixed-adjacent-pre.json", "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-fixed-adjacent-237-20260830T0007/precondition-layout.json"]
+    }
+  ],
+  "measurement": {
+    "hilog": {
+      "hdcArgs": ["shell", "hilog"],
+      "localFile": "reader-fixed-adjacent-hilog.txt"
+    },
+    "actions": [
+      {
+        "name": "swipe-once-to-adjacent-page",
+        "uiInput": ["swipe", "1100", "1100", "200", "1100", "500"],
+        "pauseAfterMs": 6000,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "capture-adjacent-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-global-fixed-adjacent.json", "-a"]
+    },
+    {
+      "name": "capture-adjacent-screen",
+      "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-reader-global-fixed-adjacent.png"]
+    },
+    {
+      "name": "receive-adjacent-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-global-fixed-adjacent.json", "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-fixed-adjacent-237-20260830T0007/adjacent-layout.json"]
+    },
+    {
+      "name": "receive-adjacent-screen",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-global-fixed-adjacent.png", "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-fixed-adjacent-237-20260830T0007/adjacent-screen.png"]
+    },
+    {
+      "name": "remove-remote-artifacts",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-reader-global-fixed-adjacent-pre.json", "/data/local/tmp/nextn-reader-global-fixed-adjacent.json", "/data/local/tmp/nextn-reader-global-fixed-adjacent.png"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

@@ -3,6 +3,52 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## ACCEPTED — Reader original images fail globally and Retry is intercepted — 2026-08-30
+
+- **Why newly actionable:** the user reported on selected target 237 that Gallery `653609`
+  first reproduced a thumbnail-to-Reader stall followed by the image-unavailable state, then
+  confirmed the same failure across every gallery. A checked pre-change run reproduced the
+  terminal error on page `2 / 357`; tapping the semantic Retry button did not restart its
+  visual state and instead toggled Reader chrome.
+- **Source-proven causes:** network-centralization commit `93b64ec` made the private Reader
+  cache pass its whole user cache budget (default 1 GiB, optionally 2 GiB) as one request's
+  `maxBytes`, while `StreamingHttpClient` rejects any value above 512 MiB before creating a
+  request. Every uncached original therefore fails while separately-owned thumbnails remain
+  visible. Independently, `ReaderPage -> ReaderContent -> ReaderImagePage.ImageRecovery` is
+  followed by the full-screen `ReaderTapOverlay`; its exclusive tap gesture wins over the
+  failed page's Retry button and treats that tap as a Reader chrome toggle.
+- **Exact correction and parent-tree boundary:** preserve the cache budget, cache ownership,
+  thumbnail transition, Reader scaffold, page modes, gestures, recovery copy, geometry and
+  button. Clamp only the per-image stream allowance to the network owner's 512 MiB ceiling.
+  Publish each image leaf's actual failure state to `ReaderPage`, including both spread
+  halves, and make only the full-screen tap overlay non-hit-testable while the currently
+  visible page or spread is failed so the existing Retry button owns that tap.
+- **Verification plan:** inspect the exact diff, run the network contract and signed build,
+  then install in place on `192.168.50.237:12345` without clearing data. Reopen Gallery
+  `653609`, require two consecutive original pages to replace the transition thumbnail and
+  remain free of the image-unavailable state, and exercise a real failure Retry branch if a
+  safe reproducible failure remains available. Preserve unrelated Reader modes and report
+  any unexercised branch explicitly.
+- **Static/build evidence:** `node scripts/test_network_authority_contract.mjs`,
+  `node scripts/test_reader_contract.mjs`, and `git diff --check` pass. The signed build
+  completed in `31 s 182 ms`; installed HAP SHA-256 is
+  `829147d7420c9a1c8e528b7562452dee983aa28a808abd2782a9a035b115654f`.
+- **237 acceptance:** the exact HAP was installed in place with `install -r`, without
+  uninstall or data clear. Gallery `653609` entered Reader at `2 / 357`; after eight seconds
+  it displayed the complete portrait original with no image-unavailable/retry state, while
+  hilog recorded six completed private-cache stores (`99,534` through `208,548` bytes).
+  One ordinary horizontal gesture then moved to `1 / 357`, which displayed its distinct
+  complete landscape original with no failure state. The app stayed foregrounded, and final
+  power remained `AWAKE` with `OverrideTimeout=86400000ms`. Evidence is under
+  `.hvigor/outputs/reader-global-regression-fixed-page2-237-20260830T0006/` and
+  `.hvigor/outputs/reader-global-regression-fixed-adjacent-237-20260830T0007/`.
+- **Acceptance boundary:** this accepts the global uncached-original regression on the
+  reported gallery and two consecutive source pages in the persisted paged mode. The
+  pre-change device run proved that Retry was intercepted by the overlay; the corrected
+  failure-state ownership covers single, vertical, and spread builders in source, but a new
+  post-fix network failure was not deliberately induced on the user's connected device, so
+  that terminal Retry branch is not separately runtime-accepted.
+
 ## ACCEPTED — Restore readable download directories and explicit delete copy — 2026-08-30
 
 - **Why newly actionable:** the user reported two concrete regressions in the Downloads

@@ -593,6 +593,7 @@ struct ReaderImagePage {
   @Param doubleTapY: number = 0
   @Event onZoomChange?: (zoomed: boolean) => void
   @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
+  @Event onImageFailureStateChanged?: (pageIndex: number, failed: boolean) => void
   @Event onSourceFileReady?: (pageIndex: number, localPath: string) => void
   @Event onEnhancementStateChanged?: (pageIndex: number, processing: boolean, applied: boolean) => void
   @Local hasLoadError: boolean = false
@@ -696,6 +697,12 @@ struct ReaderImagePage {
     }
   }
 
+  private notifyImageFailureState(failed: boolean): void {
+    if (this.onImageFailureStateChanged && this.pageIndex >= 0) {
+      this.onImageFailureStateChanged(this.pageIndex, failed)
+    }
+  }
+
   private notifySourceFileReady(localPath: string): void {
     if (this.onSourceFileReady && this.pageIndex >= 0 && localPath.length > 0) {
       this.onSourceFileReady(this.pageIndex, localPath)
@@ -744,6 +751,7 @@ struct ReaderImagePage {
     const generation: number = this.loadGeneration + 1
     this.loadGeneration = generation
     this.hasLoadError = false
+    this.notifyImageFailureState(false)
     this.isRetrying = forceReload
     this.isLoading = true
     this.imageDecoded = false
@@ -786,6 +794,7 @@ struct ReaderImagePage {
         return
       }
       this.hasLoadError = true
+      this.notifyImageFailureState(true)
     } finally {
       if (this.isCurrentLoad(generation)) {
         this.isLoading = false
@@ -1010,11 +1019,13 @@ struct ReaderImagePage {
             this.clampZoomOffset()
           }
           this.hasLoadError = false
+          this.notifyImageFailureState(false)
           this.imageDecoded = true
           this.notifyImageLoadState(true)
         })
         .onError((): void => {
           this.hasLoadError = true
+          this.notifyImageFailureState(true)
           this.imageDecoded = false
           this.imageSource = ''
           this.notifyImageLoadState(false)
@@ -1172,6 +1183,7 @@ struct ReaderSpreadImageLayer {
   @Param controlTint: ResourceColor = READER_CONTROL_TINT_DARK_CANVAS
   @Param pageIndex: number = -1
   @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
+  @Event onImageFailureStateChanged?: (pageIndex: number, failed: boolean) => void
   @Event onSourceFileReady?: (pageIndex: number, localPath: string) => void
   @Event onEnhancementStateChanged?: (pageIndex: number, processing: boolean, applied: boolean) => void
   @Local hasLoadError: boolean = false
@@ -1234,6 +1246,12 @@ struct ReaderSpreadImageLayer {
     }
   }
 
+  private notifyImageFailureState(failed: boolean): void {
+    if (this.onImageFailureStateChanged && this.pageIndex >= 0) {
+      this.onImageFailureStateChanged(this.pageIndex, failed)
+    }
+  }
+
   private notifySourceFileReady(localPath: string): void {
     if (this.onSourceFileReady && this.pageIndex >= 0 && localPath.length > 0) {
       this.onSourceFileReady(this.pageIndex, localPath)
@@ -1282,6 +1300,7 @@ struct ReaderSpreadImageLayer {
     const generation: number = this.loadGeneration + 1
     this.loadGeneration = generation
     this.hasLoadError = false
+    this.notifyImageFailureState(false)
     this.isRetrying = forceReload
     this.isLoading = true
     this.imageSource = ''
@@ -1321,6 +1340,7 @@ struct ReaderSpreadImageLayer {
         return
       }
       this.hasLoadError = true
+      this.notifyImageFailureState(true)
     } finally {
       if (generation === this.loadGeneration) {
         this.isLoading = false
@@ -1374,10 +1394,12 @@ struct ReaderSpreadImageLayer {
           .backgroundColor(this.canvasColor)
           .onComplete((): void => {
             this.hasLoadError = false
+            this.notifyImageFailureState(false)
             this.notifyImageLoadState(true)
           })
           .onError((): void => {
             this.hasLoadError = true
+            this.notifyImageFailureState(true)
             this.imageSource = ''
             this.notifyImageLoadState(false)
           })
@@ -1422,6 +1444,7 @@ struct ReaderSpreadSurface {
   @Param doubleTapY: number = 0
   @Event onZoomChange?: (sourceIndex: number, zoomed: boolean) => void
   @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
+  @Event onImageFailureStateChanged?: (pageIndex: number, failed: boolean) => void
   @Event onSourceFileReady?: (pageIndex: number, localPath: string) => void
   @Event onEnhancementStateChanged?: (pageIndex: number, processing: boolean, applied: boolean) => void
   @Local zoomScale: number = 1
@@ -1688,6 +1711,11 @@ struct ReaderSpreadSurface {
       onImageLoadStateChanged: (pageIndex: number, loaded: boolean): void => {
         if (this.onImageLoadStateChanged) {
           this.onImageLoadStateChanged(pageIndex, loaded)
+        }
+      },
+      onImageFailureStateChanged: (pageIndex: number, failed: boolean): void => {
+        if (this.onImageFailureStateChanged) {
+          this.onImageFailureStateChanged(pageIndex, failed)
         }
       },
       onSourceFileReady: (pageIndex: number, localPath: string): void => {
@@ -2176,6 +2204,7 @@ export struct ReaderPage {
   private autoReadTimerId: number = -1
   private autoReadWaitingIndex: number = -1
   private loadedImageIndexes: number[] = []
+  @Local failedImageIndexes: number[] = []
   private volumeDownConsumer: ((event: InputConsumerKeyEvent) => void) | null = null
   private volumeUpConsumer: ((event: InputConsumerKeyEvent) => void) | null = null
   private pageDataSource: ReaderPageDataSource = new ReaderPageDataSource()
@@ -2681,6 +2710,7 @@ export struct ReaderPage {
     this.readerSliderPreview = -1
     this.lastPersistedIndex = -1
     this.loadedImageIndexes = []
+    this.failedImageIndexes = []
     this.readerSourcePageIndexes = []
     this.readerSourcePagePaths = []
     this.readerTranslatedPageIndexes = []
@@ -3761,6 +3791,27 @@ export struct ReaderPage {
     }
   }
 
+  private onReaderImageFailureStateChanged(index: number, failed: boolean): void {
+    if (index < 0) {
+      return
+    }
+    const existing: number = this.failedImageIndexes.indexOf(index)
+    if (failed && existing < 0) {
+      this.failedImageIndexes.push(index)
+    } else if (!failed && existing >= 0) {
+      this.failedImageIndexes.splice(existing, 1)
+    }
+  }
+
+  private isCurrentReaderImageFailed(): boolean {
+    const startIndex: number = this.readerNavigationIndex(this.visiblePageIndex)
+    if (this.failedImageIndexes.indexOf(startIndex) >= 0) {
+      return true
+    }
+    const secondIndex: number = this.readerSpreadSecondIndex(startIndex)
+    return secondIndex >= 0 && this.failedImageIndexes.indexOf(secondIndex) >= 0
+  }
+
   private onReaderEnhancementStateChanged(
     pageIndex: number,
     processing: boolean,
@@ -4417,6 +4468,9 @@ export struct ReaderPage {
             onImageLoadStateChanged: (pageIndex: number, loaded: boolean): void => {
               this.onReaderImageLoadStateChanged(pageIndex, loaded)
             },
+            onImageFailureStateChanged: (pageIndex: number, failed: boolean): void => {
+              this.onReaderImageFailureStateChanged(pageIndex, failed)
+            },
             onSourceFileReady: (pageIndex: number, localPath: string): void => {
               this.rememberReaderSourceFile(pageIndex, localPath)
             },
@@ -4477,6 +4531,9 @@ export struct ReaderPage {
               },
               onImageLoadStateChanged: (pageIndex: number, loaded: boolean): void => {
                 this.onReaderImageLoadStateChanged(pageIndex, loaded)
+              },
+              onImageFailureStateChanged: (pageIndex: number, failed: boolean): void => {
+                this.onReaderImageFailureStateChanged(pageIndex, failed)
               },
               onSourceFileReady: (pageIndex: number, localPath: string): void => {
                 this.rememberReaderSourceFile(pageIndex, localPath)
@@ -4553,6 +4610,9 @@ export struct ReaderPage {
             },
             onImageLoadStateChanged: (pageIndex: number, loaded: boolean): void => {
               this.onReaderImageLoadStateChanged(pageIndex, loaded)
+            },
+            onImageFailureStateChanged: (pageIndex: number, failed: boolean): void => {
+              this.onReaderImageFailureStateChanged(pageIndex, failed)
             },
             onSourceFileReady: (pageIndex: number, localPath: string): void => {
               this.rememberReaderSourceFile(pageIndex, localPath)
@@ -4795,7 +4855,7 @@ export struct ReaderPage {
     Blank()
       .width('100%')
       .height('100%')
-      .hitTestBehavior(HitTestMode.Transparent)
+      .hitTestBehavior(this.isCurrentReaderImageFailed() ? HitTestMode.None : HitTestMode.Transparent)
       .onAreaChange((_old: Area, next: Area): void => {
         this.readerTapViewportWidth = next.width as number
         this.readerTapViewportHeight = next.height as number

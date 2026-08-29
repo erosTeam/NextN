@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-global-regression-prepatch-retry-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-prepatch-retry-237-20260830T0004",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "14e9147+current-device-install",
+    "page": "gallery-653609-reader-global-image-retry-before-fix",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Precondition is the observed Reader page 2/357 image failure. The semantic Retry button is [564,1118][757,1262]. Activate it exactly once and retain the terminal state after the invalid stream-boundary call settles. No repeated retry, navigation, account mutation, data clear, or install."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "verify-awake-timeout",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "capture-retry-precondition",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-global-retry-pre.json", "-a"]
+    },
+    {
+      "name": "receive-retry-precondition",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-global-retry-pre.json", "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-prepatch-retry-237-20260830T0004/precondition-layout.json"]
+    }
+  ],
+  "measurement": {
+    "hilog": {
+      "hdcArgs": ["shell", "hilog"],
+      "localFile": "reader-retry-hilog.txt"
+    },
+    "actions": [
+      {
+        "name": "activate-semantic-retry-once",
+        "uiInput": ["click", "660", "1190"],
+        "pauseAfterMs": 1500,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "capture-retry-terminal-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-global-retry-post.json", "-a"]
+    },
+    {
+      "name": "capture-retry-terminal-screen",
+      "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-reader-global-retry-post.png"]
+    },
+    {
+      "name": "receive-retry-terminal-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-global-retry-post.json", "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-prepatch-retry-237-20260830T0004/terminal-layout.json"]
+    },
+    {
+      "name": "receive-retry-terminal-screen",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-global-retry-post.png", "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-prepatch-retry-237-20260830T0004/terminal-screen.png"]
+    },
+    {
+      "name": "remove-remote-precondition",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-reader-global-retry-pre.json"]
+    },
+    {
+      "name": "remove-remote-terminal-layout",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-reader-global-retry-post.json"]
+    },
+    {
+      "name": "remove-remote-terminal-screen",
+      "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-reader-global-retry-post.png"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

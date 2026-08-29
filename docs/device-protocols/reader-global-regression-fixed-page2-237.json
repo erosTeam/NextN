@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-global-regression-fixed-page2-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-fixed-page2-237-20260830T0006",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "reader-stream-bound-and-retry-hit-test-hap-829147d7420c9a1c8e528b7562452dee983aa28a808abd2782a9a035b115654f",
+    "page": "gallery-653609-reader-page2-after-fix",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Precondition is Gallery 653609 detail after the exact data-preserving install. Activate the observed Continue P2 control [48,1934][384,2072] once, allow the original stream and decode to settle, and capture terminal Reader evidence. Do not retry, change settings, mutate account/download state, clear data, or operate another target."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "verify-awake-timeout",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "capture-detail-precondition",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-global-fixed-page2-pre.json", "-a"]
+    },
+    {
+      "name": "receive-detail-precondition",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-global-fixed-page2-pre.json", "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-fixed-page2-237-20260830T0006/precondition-layout.json"]
+    }
+  ],
+  "measurement": {
+    "hilog": {
+      "hdcArgs": ["shell", "hilog"],
+      "localFile": "reader-fixed-page2-hilog.txt"
+    },
+    "actions": [
+      {
+        "name": "activate-observed-continue-p2",
+        "uiInput": ["click", "216", "2003"],
+        "pauseAfterMs": 8000,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "capture-reader-page2-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-global-fixed-page2.json", "-a"]
+    },
+    {
+      "name": "capture-reader-page2-screen",
+      "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-reader-global-fixed-page2.png"]
+    },
+    {
+      "name": "receive-reader-page2-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-global-fixed-page2.json", "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-fixed-page2-237-20260830T0006/page2-layout.json"]
+    },
+    {
+      "name": "receive-reader-page2-screen",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-global-fixed-page2.png", "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-fixed-page2-237-20260830T0006/page2-screen.png"]
+    },
+    {
+      "name": "remove-remote-artifacts",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-reader-global-fixed-page2-pre.json", "/data/local/tmp/nextn-reader-global-fixed-page2.json", "/data/local/tmp/nextn-reader-global-fixed-page2.png"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

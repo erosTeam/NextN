@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-global-regression-fix-install-open-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-fix-install-open-237-20260830T0005",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "reader-stream-bound-and-retry-hit-test-hap-829147d7420c9a1c8e528b7562452dee983aa28a808abd2782a9a035b115654f",
+    "page": "gallery-653609-detail-after-data-preserving-install",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install the exact signed Reader regression candidate in place on user-selected target 237, without uninstall or data clear. Cold-stop only the app, launch Gallery 653609 through its public deep link, and capture the detail entry precondition. Do not mutate account, downloads, settings, or another target."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "verify-awake-timeout",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "install-exact-signed-candidate-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"],
+      "pauseAfterMs": 500,
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "cold-stop-nextn-with-data-preserved",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"],
+      "pauseAfterMs": 300
+    },
+    {
+      "name": "open-gallery-653609-through-public-deep-link",
+      "hdcArgs": ["shell", "aa", "start", "-A", "ohos.want.action.viewData", "-U", "nextn://gallery/653609"],
+      "pauseAfterMs": 3000,
+      "timeoutSeconds": 30
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "noninteractive-protocol-boundary",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 50,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "capture-detail-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-global-fixed-detail.json", "-a"]
+    },
+    {
+      "name": "capture-detail-screen",
+      "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-reader-global-fixed-detail.png"]
+    },
+    {
+      "name": "receive-detail-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-global-fixed-detail.json", "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-fix-install-open-237-20260830T0005/detail-layout.json"]
+    },
+    {
+      "name": "receive-detail-screen",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-global-fixed-detail.png", "/Users/honjow/git/NextN/.hvigor/outputs/reader-global-regression-fix-install-open-237-20260830T0005/detail-screen.png"]
+    },
+    {
+      "name": "remove-remote-artifacts",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-reader-global-fixed-detail.json", "/data/local/tmp/nextn-reader-global-fixed-detail.png"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

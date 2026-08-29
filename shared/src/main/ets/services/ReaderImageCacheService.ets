@@ -9,6 +9,9 @@ const CACHE_MAINTENANCE_WRITE_INTERVAL: number = 16
 const CACHE_MAINTENANCE_BYTES_INTERVAL: number = 16 * 1024 * 1024
 const CONNECT_TIMEOUT_MS: number = 10000
 const READ_TIMEOUT_MS: number = 30000
+// StreamingHttpClient owns a fixed 512 MiB safety ceiling for one response.
+// The user setting is the aggregate cache budget, not a per-request allowance.
+const READER_IMAGE_STREAM_MAX_BYTES: number = 512 * 1024 * 1024
 // Defensive file-count cap derived from the byte budget (assumes >=256KB per
 // page). It keeps LRU scans bounded while the user-selected byte limit stays
 // the real eviction budget, mirroring NextE's byte-only reader cache policy.
@@ -172,6 +175,7 @@ export class ReaderImageCacheService {
     let bypassCache: boolean = false
     let completed: boolean = false
     const limitBytes: number = ReaderImageCacheSettings.limitBytes()
+    const streamLimitBytes: number = Math.min(limitBytes, READER_IMAGE_STREAM_MAX_BYTES)
     try {
       ReaderImageCacheService.ensureDir(ReaderImageCacheService.cacheDir(context))
       file = fileIo.openSync(
@@ -186,7 +190,7 @@ export class ReaderImageCacheService {
         headers,
         CONNECT_TIMEOUT_MS,
         READ_TIMEOUT_MS,
-        limitBytes,
+        streamLimitBytes,
         (data: ArrayBuffer): boolean => {
           if (file === null || writeFailureMessage.length > 0) {
             return false
