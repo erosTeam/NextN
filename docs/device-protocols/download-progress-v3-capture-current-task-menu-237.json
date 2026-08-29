@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-v3-capture-current-task-menu-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-v3-capture-current-task-menu-retry2-237",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "abaaada+download-progress-public-write-race-fix-hap-sha256-6a169d60d33233c4aa7e3ff38f4ceb0a7959c81394b09351be8dcc70ae1e6b50",
+    "page": "Downloads completed Gallery 676564 task menu",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Capture the current semantic row and open only the Gallery 676564 overflow menu using its current visible bounds. This is preparatory evidence for deleting this lane's test task and owned files; no menu action is selected in this manifest."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "dump-completed-row", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-v3-completed-row.json", "-a"] },
+    { "name": "receive-completed-row", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-v3-completed-row.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-v3-capture-current-task-menu-retry2-237/completed-row.json"] },
+    { "name": "cleanup-completed-row-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-v3-completed-row.json"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "return-from-accidentally-opened-local-reader", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 500 },
+      { "name": "open-current-gallery-676564-overflow", "uiInput": ["click", "1212", "687"], "pauseAfterMs": 700 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-current-task-menu", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-v3-task-menu.json", "-a"] },
+    { "name": "receive-current-task-menu", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-v3-task-menu.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-v3-capture-current-task-menu-retry2-237/task-menu.json"] },
+    { "name": "cleanup-task-menu-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-v3-task-menu.json"] },
+    { "name": "verify-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

@@ -71,6 +71,12 @@ export class DownloadQueueService {
   private static bootstrapRestorePending: boolean = false
   private static bootstrapRestoreTask: Promise<void> | null = null
   private static activeGalleryIds: Set<number> = new Set<number>()
+  /**
+   * Public Download files are written directly because the selected directory
+   * does not support the sandbox rename contract. Exclude those visible but
+   * still-open paths from durable progress reconciliation.
+   */
+  private static activePageWritePaths: Set<string> = new Set<string>()
   private static executionTokens: Map<number, number> = new Map<number, number>()
   private static downloadPublicRoot: string = ''
   private static downloadRootRequest: Promise<boolean> | null = null
@@ -676,6 +682,7 @@ export class DownloadQueueService {
     DownloadQueueService.ensureTaskDirectory(context, task)
     const directPublicWrite: boolean = DownloadQueueService.isPublicDownloadPath(finalPath)
     const writePath: string = directPublicWrite ? finalPath : temporaryPath
+    DownloadQueueService.activePageWritePaths.add(finalPath)
     DownloadQueueService.removeIfExists(writePath)
     let file: fileIo.File | null = null
     let written: number = 0
@@ -750,6 +757,7 @@ export class DownloadQueueService {
       if (!promoted) {
         DownloadQueueService.removeIfExists(writePath)
       }
+      DownloadQueueService.activePageWritePaths.delete(finalPath)
     }
   }
 
@@ -831,7 +839,11 @@ export class DownloadQueueService {
     if (pageCount === 0) {
       return
     }
-    if (task.completedPages === pageCount) {
+    // The gallery worker owns the DOWNLOADING -> COMPLETE transition after
+    // every page job has settled. Per-page persistence may report pageCount,
+    // but must not terminate that worker before its final reconciliation and
+    // completion notification.
+    if (task.completedPages === pageCount && task.status !== NhDownloadTaskStatus.DOWNLOADING) {
       task.status = NhDownloadTaskStatus.COMPLETE
       task.errorMessage = ''
       return
@@ -1215,8 +1227,12 @@ export class DownloadQueueService {
   }
 
   private static pageIsComplete(context: common.UIAbilityContext, task: NhDownloadTask, pageIndex: number): boolean {
-    return pageIndex >= 0 && pageIndex < task.pageExtensions.length &&
-      DownloadQueueService.fileSize(DownloadQueueService.pagePath(context, task, pageIndex)) > 0
+    if (pageIndex < 0 || pageIndex >= task.pageExtensions.length) {
+      return false
+    }
+    const path: string = DownloadQueueService.pagePath(context, task, pageIndex)
+    return !DownloadQueueService.activePageWritePaths.has(path) &&
+      DownloadQueueService.fileSize(path) > 0
   }
 
   private static completedFileCount(context: common.UIAbilityContext, task: NhDownloadTask): number {

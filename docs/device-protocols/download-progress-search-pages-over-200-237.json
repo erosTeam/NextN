@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-search-pages-over-200-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-search-pages-over-200-237-20260829T2315",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "installed-build-before-download-progress-fix",
+    "page": "search-results-pages-greater-than-200",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Use the foreground-confirmed Search field id nextn-app-search-field-0 and current bounds to issue the supported pages:>200 query in one uninterrupted action chain, then retain semantic results. Do not start a download, install, clear data, uninstall, or mutate account state."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "read-current-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "focus-search-field", "uiInput": ["click", "575", "369"], "pauseAfterMs": 300, "timeoutSeconds": 30 },
+      { "name": "enter-large-page-query", "uiInput": ["text", "pages:>200"], "pauseAfterMs": 200, "timeoutSeconds": 30 },
+      { "name": "submit-large-page-query", "uiInput": ["click", "1181", "369"], "pauseAfterMs": 2500, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "apply-final-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "dump-large-page-results", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-progress-pages-over-200.json", "-a"] },
+    { "name": "receive-large-page-results", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-progress-pages-over-200.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-search-pages-over-200-237-20260829T2315/results.json"] },
+    { "name": "remove-remote-layout", "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-download-progress-pages-over-200.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

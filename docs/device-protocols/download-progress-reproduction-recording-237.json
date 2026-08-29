@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-reproduction-recording-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-reproduction-recording-237-20260829T2330",
+  "recordingFileName": "nextn-download-progress-reproduction-676564-200p-20260829T2330.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 500,
+  "idleRecordMs": 0,
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "actions": [
+    {
+      "name": "start-gallery-676564-200-page-download",
+      "uiInput": ["click", "1116", "1014"],
+      "pauseAfterMs": 400
+    },
+    {
+      "name": "return-from-detail-to-search",
+      "uiInput": ["keyEvent", "Back"],
+      "pauseAfterMs": 400
+    },
+    {
+      "name": "return-from-search-to-browse-root",
+      "uiInput": ["keyEvent", "Back"],
+      "pauseAfterMs": 400
+    },
+    {
+      "name": "open-downloads-root-during-active-download",
+      "uiInput": ["click", "756", "2006"],
+      "pauseAfterMs": 120000
+    }
+  ],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "installed-build-before-download-progress-fix",
+    "page": "gallery-676564-200-pages-detail-to-live-download-queue",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "One uninterrupted normal-speed recording begins before the first input, starts Gallery 676564 BAD END SHUFFLE! at 200 pages, returns through Search to the Browse root, immediately opens the current semantic Downloads tab center, and keeps the queue visible for 120 seconds. This replaces the rejected 37-page sample and all stepwise observation attempts. Acceptance requires visible intermediate completed-page changes, not merely queued/downloading and a final complete state."
+  }
+}

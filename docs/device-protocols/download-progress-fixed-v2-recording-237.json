@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-fixed-v2-recording-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fixed-v2-recording-237-20260829T2325",
+  "recordingFileName": "nextn-download-progress-fixed-v2-676564-200p-20260829T2325.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 500,
+  "idleRecordMs": 0,
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "actions": [
+    { "name": "start-gallery-676564-200-page-download", "uiInput": ["click", "1116", "1014"], "pauseAfterMs": 350 },
+    { "name": "return-from-deep-linked-detail-to-retained-downloads-root", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 350 },
+    { "name": "assert-downloads-root-tab-during-active-download", "uiInput": ["click", "756", "2006"], "pauseAfterMs": 70000 }
+  ],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "abaaada+complete-download-reactivity-contract-hap-sha256-a848aeb90184f259369244885f1b691ca27daf9489d84a209cd34ef68fbf14ca",
+    "page": "gallery-676564-200-pages-detail-to-live-download-queue-after-complete-contract-fix",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "One uninterrupted normal-speed recording begins before the first input, starts the same Gallery 676564 at 200 pages, returns to the already retained Downloads root within one second, and keeps it visible for 70 seconds. The v2 candidate restores the complete NextE-derived contract: observed task fields, identity-preserving assignment, queue publication, and retained-row projection tick. Acceptance requires multiple increasing intermediate page counts and final complete."
+  }
+}

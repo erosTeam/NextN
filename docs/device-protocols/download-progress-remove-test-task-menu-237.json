@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-remove-test-task-menu-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fix-676564/remove-menu-retry",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "abaaada+download-queue-signal-hap-sha256-aa4fc2f99adf7b3a0b358c3955487da94f384e7c79ca99e11e9e3d5dc86cb093",
+    "page": "completed Gallery 676564 task action menu",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Open only the ordinary action menu for the completed 200-page Gallery 676564 task created by this diagnostic lane. Capture semantic menu bounds before removing it. Do not operate another task or mutate account state."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "return-from-accidentally-opened-local-reader", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 500 },
+      { "name": "open-gallery-676564-task-menu", "uiInput": ["click", "1212", "687"], "pauseAfterMs": 700 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-task-menu-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-progress-remove-menu.json", "-a"] },
+    { "name": "receive-task-menu-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-progress-remove-menu.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fix-676564/remove-menu-retry/layout.json"] },
+    { "name": "capture-task-menu-screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-download-progress-remove-menu.jpeg"] },
+    { "name": "receive-task-menu-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-progress-remove-menu.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fix-676564/remove-menu-retry/screen.jpeg"] },
+    { "name": "cleanup-remote-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-progress-remove-menu.json", "/data/local/tmp/nextn-download-progress-remove-menu.jpeg"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

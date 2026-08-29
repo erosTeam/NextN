@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-v3-current-screen-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-v3-current-screen-237-20260830T0004",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "abaaada+download-progress-public-write-race-fix-hap-sha256-6a169d60d33233c4aa7e3ff38f4ceb0a7959c81394b09351be8dcc70ae1e6b50",
+    "page": "current Downloads screen after task-menu action",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Read-only screenshot of the current test screen to determine whether the task overflow menu is open. No input or queue mutation."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "non-actionable-measurement-boundary", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 200 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-current-screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-download-v3-current.jpeg"] },
+    { "name": "receive-current-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-v3-current.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-v3-current-screen-237-20260830T0004/screen.jpeg"] },
+    { "name": "cleanup-current-screen", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-v3-current.jpeg"] },
+    { "name": "verify-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

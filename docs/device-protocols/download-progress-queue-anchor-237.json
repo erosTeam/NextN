@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-queue-anchor-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-queue-anchor-237-20260829T2255",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "installed-build-before-download-progress-fix",
+    "page": "downloads-root-before-progress-reproduction",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Data-preserving cold start of NextN, activate the established Downloads root tab coordinate, and retain a semantic queue layout. Do not install, clear data, uninstall, remove or pause tasks, or mutate account state."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "force-stop-nextn-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-a", "EntryAbility", "-b", "com.erosteam.nextn"] }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-downloads-root-tab",
+        "uiInput": ["click", "812", "2006"],
+        "pauseAfterMs": 1500,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    { "name": "apply-final-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "dump-downloads-root-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-progress-queue-anchor.json", "-a"] },
+    { "name": "receive-downloads-root-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-progress-queue-anchor.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-queue-anchor-237-20260829T2255/downloads-root.json"] },
+    { "name": "remove-remote-layout", "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-download-progress-queue-anchor.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

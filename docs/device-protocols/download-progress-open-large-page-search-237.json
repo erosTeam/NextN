@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-open-large-page-search-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-open-large-page-search-237-20260829T2310",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "installed-build-before-download-progress-fix",
+    "page": "search-route-for-pages-greater-than-200",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Reject the 37-page sample. Return from its Detail to the foreground Browse root and open the current first Browse title action, source-confirmed as Search. Retain semantic Search layout to resolve the field anchor before entering pages:>200. Do not start a download, install, clear data, uninstall, or mutate account state."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "read-current-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "return-from-rejected-37-page-detail", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 900, "timeoutSeconds": 30 },
+      { "name": "open-browse-search-route", "uiInput": ["click", "924", "201"], "pauseAfterMs": 1200, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "apply-final-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "dump-search-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-progress-large-search.json", "-a"] },
+    { "name": "receive-search-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-progress-large-search.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-open-large-page-search-237-20260829T2310/search.json"] },
+    { "name": "remove-remote-layout", "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-download-progress-large-search.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

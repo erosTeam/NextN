@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-v3-terminal-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-v3-terminal-237-20260830T0012",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "abaaada+download-progress-public-write-race-fix-hap-sha256-6a169d60d33233c4aa7e3ff38f4ceb0a7959c81394b09351be8dcc70ae1e6b50",
+    "page": "Downloads terminal state after fresh 200-page run",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Read the untouched terminal Downloads state after the uninterrupted fresh 200-page recording. No queue action, navigation, install, process stop, data clear, or account mutation."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "non-actionable-measurement-boundary", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 200 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-terminal-downloads", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-v3-terminal.json", "-a"] },
+    { "name": "receive-terminal-downloads", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-v3-terminal.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-v3-terminal-237-20260830T0012/layout.json"] },
+    { "name": "cleanup-terminal-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-v3-terminal.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

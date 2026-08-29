@@ -7,6 +7,7 @@ import {
   DownloadBatchResult,
   NhDownloadCbzExportService,
   DownloadQueueService,
+  DownloadQueueSignalState,
   DownloadQueueState,
   AppStrings,
   NhDownloadTask,
@@ -21,6 +22,7 @@ import {
   ThemeTokens,
   connectDownloadQueueActions,
   connectDownloadQueue,
+  connectDownloadQueueSignal,
 } from 'shared'
 import { appMenuOptions } from 'shared'
 import {
@@ -102,6 +104,8 @@ export struct DownloadQueuePage {
   @Event onOpenReader?: (galleryId: number) => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   @Local queue: DownloadQueueState = connectDownloadQueue()
+  @Local queueSignal: DownloadQueueSignalState = connectDownloadQueueSignal()
+  @Local queueProjectionTick: number = 0
   @Local taskGroups: NhDownloadTask[][] = [[], [], [], []]
   /** Sort is page-local; search draft/open state lives in the HDS bridge. */
   @Local sortMode: string = NhDownloadSortMode.ADDED_DESC
@@ -146,10 +150,11 @@ export struct DownloadQueuePage {
     this.resetPinnedGroupHeader()
   }
 
-  @Monitor('queue.revision')
+  @Monitor('queueSignal.version')
   onQueueChanged(): void {
-    // Queue changes already have a durable publisher. A retained page only
-    // needs to rebuild its local projection; it must not re-read storage.
+    // The signal is published after every in-memory queue replacement,
+    // including per-page progress. Rebuild the retained page's local
+    // projection without re-reading durable storage.
     if (!this.queueBootstrapResolved && DownloadQueueService.isRestored()) {
       this.adoptRestoredQueue()
       return
@@ -243,9 +248,13 @@ export struct DownloadQueuePage {
   }
 
   private projectQueueSnapshot(): void {
-    this.tasks = DownloadQueueService.snapshot()
+    // Preserve the queue's observed task identities. Stable ForEach keys then
+    // keep their rows while @Trace field changes and this tick invalidate the
+    // dynamic progress/status builders.
+    this.tasks = this.queue.tasks.slice()
     this.resolvedQueueRevision = this.queue.revision
     this.rebuildTaskProjection()
+    this.queueProjectionTick += 1
   }
 
   @Monitor('titleActions.searchText', 'sortMode')
@@ -651,6 +660,9 @@ export struct DownloadQueuePage {
   }
 
   private taskStatusText(task: NhDownloadTask): string {
+    if (this.queueProjectionTick < 0) {
+      return ''
+    }
     const status: string = this.taskStatusLabel(task)
     if (task.errorMessage.length === 0) {
       return status
@@ -659,10 +671,16 @@ export struct DownloadQueuePage {
   }
 
   private taskProgressText(task: NhDownloadTask): string {
+    if (this.queueProjectionTick < 0) {
+      return ''
+    }
     return task.pageCount > 0 ? task.progressText() : ''
   }
 
   private taskProgressPercent(task: NhDownloadTask): number {
+    if (this.queueProjectionTick < 0) {
+      return 0
+    }
     if (task.pageCount <= 0) {
       return 0
     }
@@ -671,6 +689,9 @@ export struct DownloadQueuePage {
   }
 
   private shouldShowTaskProgress(task: NhDownloadTask): boolean {
+    if (this.queueProjectionTick < 0) {
+      return false
+    }
     return task.pageCount > 0 &&
       task.status !== NhDownloadTaskStatus.COMPLETE &&
       task.status !== NhDownloadTaskStatus.ERROR

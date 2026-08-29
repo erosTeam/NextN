@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-reset-and-open-detail-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fix-676564/reset-and-detail",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "abaaada+download-queue-signal-hap-sha256-aa4fc2f99adf7b3a0b358c3955487da94f384e7c79ca99e11e9e3d5dc86cb093",
+    "page": "Gallery 676564 200-page detail after removing only the prior test task",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Confirm removal of only the already identified Gallery 676564 test task, then use the documented public Gallery deep link to load the same 200-page detail. This creates a clean queue and a deterministic starting state for the uninterrupted post-fix recording. Do not clear app data, uninstall, mutate account state, or operate another target."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "confirm-removal-of-gallery-676564-test-task", "uiInput": ["click", "948", "1188"], "pauseAfterMs": 1200 }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "open-gallery-676564-through-public-deep-link",
+      "hdcArgs": ["shell", "aa", "start", "-A", "ohos.want.action.viewData", "-U", "nextn://gallery/676564"],
+      "pauseAfterMs": 2200,
+      "timeoutSeconds": 30
+    },
+    { "name": "dump-200-page-detail", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-progress-fixed-detail.json", "-a"] },
+    { "name": "receive-200-page-detail", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-progress-fixed-detail.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fix-676564/reset-and-detail/detail.json"] },
+    { "name": "capture-200-page-detail", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-download-progress-fixed-detail.jpeg"] },
+    { "name": "receive-200-page-detail-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-progress-fixed-detail.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fix-676564/reset-and-detail/detail.jpeg"] },
+    { "name": "cleanup-remote-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-progress-fixed-detail.json", "/data/local/tmp/nextn-download-progress-fixed-detail.jpeg"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

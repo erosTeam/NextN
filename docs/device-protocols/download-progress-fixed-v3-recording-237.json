@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-fixed-v3-recording-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fixed-v3-recording-237-20260830T0008",
+  "recordingFileName": "nextn-download-progress-fixed-v3-676564-200p-20260830T0008.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 500,
+  "idleRecordMs": 0,
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "actions": [
+    { "name": "start-gallery-676564-200-page-download", "uiInput": ["click", "1116", "1014"], "pauseAfterMs": 350 },
+    { "name": "return-from-deep-linked-detail-to-retained-downloads-root", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 350 },
+    { "name": "assert-downloads-root-tab-during-active-download", "uiInput": ["click", "756", "2006"], "pauseAfterMs": 70000 }
+  ],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "abaaada+download-progress-public-write-race-fix-hap-sha256-6a169d60d33233c4aa7e3ff38f4ceb0a7959c81394b09351be8dcc70ae1e6b50",
+    "page": "gallery-676564-200-pages-detail-to-live-download-queue-after-public-write-race-fix",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "One uninterrupted normal-speed recording begins before the first input, starts Gallery 676564 at 200 pages, returns to the retained Downloads root within one second, and keeps it visible for 70 seconds. Acceptance requires multiple increasing intermediate page counts, exactly one final transition to 200/200 Complete, and no later regression to Paused or a smaller count."
+  }
+}

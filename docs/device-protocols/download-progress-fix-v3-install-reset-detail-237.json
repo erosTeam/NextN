@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-fix-v3-install-reset-detail-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fix-v3-676564/install-reset-detail",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "abaaada+download-progress-public-write-race-fix-hap-sha256-6a169d60d33233c4aa7e3ff38f4ceb0a7959c81394b09351be8dcc70ae1e6b50",
+    "page": "Gallery 676564 detail after v3 install and prior test-task reset",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install the third isolated candidate in place only on 237, preserving data. Open Downloads, remove only Gallery 676564 created by this lane using the already accepted task-menu and confirmation coordinates, then load the same Gallery through the documented public deep link. Do not clear data, uninstall, mutate account state, or operate another target."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    {
+      "name": "install-v3-isolated-signed-candidate-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fix-v3-676564/entry-default-signed.hap"],
+      "pauseAfterMs": 500,
+      "timeoutSeconds": 180
+    },
+    { "name": "force-stop-nextn-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-a", "EntryAbility", "-b", "com.erosteam.nextn"], "pauseAfterMs": 2200 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-downloads-root-tab", "uiInput": ["click", "756", "2006"], "pauseAfterMs": 900 },
+      { "name": "open-only-gallery-676564-task-menu", "uiInput": ["click", "1212", "687"], "pauseAfterMs": 500 },
+      { "name": "select-captured-remove-menu-item", "uiInput": ["click", "978", "981"], "pauseAfterMs": 500 },
+      { "name": "confirm-removal-of-only-gallery-676564-test-task", "uiInput": ["click", "948", "1188"], "pauseAfterMs": 1200 }
+    ]
+  },
+  "postflight": [
+    { "name": "open-gallery-676564-through-public-deep-link", "hdcArgs": ["shell", "aa", "start", "-A", "ohos.want.action.viewData", "-U", "nextn://gallery/676564"], "pauseAfterMs": 2200 },
+    { "name": "dump-v3-200-page-detail", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-progress-v3-detail.json", "-a"] },
+    { "name": "receive-v3-200-page-detail", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-progress-v3-detail.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fix-v3-676564/install-reset-detail/detail.json"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-progress-v3-detail.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

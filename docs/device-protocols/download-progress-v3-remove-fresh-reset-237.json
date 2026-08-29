@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-v3-remove-fresh-reset-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-v3-remove-fresh-reset-237-20260830T0007",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "abaaada+download-progress-public-write-race-fix-hap-sha256-6a169d60d33233c4aa7e3ff38f4ceb0a7959c81394b09351be8dcc70ae1e6b50",
+    "page": "remove only Gallery 676564 test task and its owned pages, then reopen detail",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "The semantically captured Gallery 676564 menu is already open. Select its Remove item, confirm the dialog that explicitly removes saved gallery pages from this device, verify the Downloads list is empty, then reopen the same 200-page Gallery by its documented deep link. Do not touch any other task, account state, app data, or target."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "select-semantic-gallery-676564-remove-item", "uiInput": ["click", "978", "981"], "pauseAfterMs": 700 },
+      { "name": "confirm-remove-gallery-676564-and-owned-pages", "uiInput": ["click", "948", "1188"], "pauseAfterMs": 1600 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-empty-downloads-after-removal", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-v3-empty.json", "-a"] },
+    { "name": "receive-empty-downloads-after-removal", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-v3-empty.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-v3-remove-fresh-reset-237-20260830T0007/empty-downloads.json"] },
+    { "name": "cleanup-empty-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-v3-empty.json"] },
+    { "name": "open-gallery-676564-through-public-deep-link", "hdcArgs": ["shell", "aa", "start", "-A", "ohos.want.action.viewData", "-U", "nextn://gallery/676564"], "pauseAfterMs": 2200 },
+    { "name": "dump-fresh-200-page-detail", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-v3-fresh-detail.json", "-a"] },
+    { "name": "receive-fresh-200-page-detail", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-v3-fresh-detail.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-v3-remove-fresh-reset-237-20260830T0007/fresh-detail.json"] },
+    { "name": "cleanup-fresh-detail-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-v3-fresh-detail.json"] },
+    { "name": "verify-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

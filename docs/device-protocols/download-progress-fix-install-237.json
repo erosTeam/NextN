@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-fix-install-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fix-676564/install-gate",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "abaaada+download-queue-signal-hap-sha256-aa4fc2f99adf7b3a0b358c3955487da94f384e7c79ca99e11e9e3d5dc86cb093",
+    "page": "downloads-root-after-data-preserving-fix-install",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install the isolated signed candidate in place only on 237, preserving all application data. Cold-start NextN and open the Downloads root so the task created by this lane can be removed through the ordinary UI before repeating Gallery 676564. Do not clear data, uninstall, mutate account state, or operate another target."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake-before-install", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    {
+      "name": "install-isolated-signed-candidate-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fix-676564/entry-default-signed.hap"],
+      "pauseAfterMs": 500,
+      "timeoutSeconds": 180
+    },
+    { "name": "force-stop-nextn-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    {
+      "name": "cold-start-nextn",
+      "hdcArgs": ["shell", "aa", "start", "-a", "EntryAbility", "-b", "com.erosteam.nextn"],
+      "pauseAfterMs": 2200,
+      "timeoutSeconds": 30
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-downloads-root-tab",
+        "uiInput": ["click", "756", "2006"],
+        "pauseAfterMs": 1200,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-downloads-root-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-progress-fix-install.json", "-a"] },
+    { "name": "receive-downloads-root-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-progress-fix-install.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fix-676564/install-gate/downloads-root.json"] },
+    { "name": "capture-downloads-root-screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-download-progress-fix-install.jpeg"] },
+    { "name": "receive-downloads-root-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-progress-fix-install.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fix-676564/install-gate/downloads-root.jpeg"] },
+    { "name": "cleanup-remote-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-progress-fix-install.json", "/data/local/tmp/nextn-download-progress-fix-install.jpeg"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

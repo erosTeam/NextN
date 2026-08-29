@@ -412,7 +412,13 @@ export {
 export { ComicVisualTranslationContract } from './services/ComicVisualTranslationContract'
 export { DownloadQueueRepository } from './storage/DownloadQueueRepository'
 export { DownloadSettingsRepository } from './storage/DownloadSettingsRepository'
-export { DownloadQueueState, connectDownloadQueue } from './state/DownloadQueueState'
+export {
+  DownloadQueueState,
+  DownloadQueueSignalState,
+  connectDownloadQueue,
+  connectDownloadQueueSignal,
+  publishDownloadQueueChanged,
+} from './state/DownloadQueueState'
 export {
   DownloadQueueAction,
   DownloadQueueActionBridge,

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-open-200-page-gallery-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-open-200-page-gallery-237-20260829T2325",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "installed-build-before-download-progress-fix",
+    "page": "first-exact-200-page-gallery-detail-before-download",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Open the first exact-200-page search result from its current clickable card bound [18,495][651,1764], then retain Detail semantics and the current Download action bound. Do not start the download yet, install, clear data, uninstall, or mutate account state."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "read-current-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-first-exact-200-page-gallery", "uiInput": ["click", "330", "1000"], "pauseAfterMs": 1800, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "apply-final-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "dump-200-page-detail", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-progress-200-page-detail.json", "-a"] },
+    { "name": "receive-200-page-detail", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-progress-200-page-detail.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-open-200-page-gallery-237-20260829T2325/detail.json"] },
+    { "name": "remove-remote-layout", "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-download-progress-200-page-detail.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

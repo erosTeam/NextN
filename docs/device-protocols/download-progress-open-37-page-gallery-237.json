@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-open-37-page-gallery-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-open-37-page-gallery-237-20260829T2305",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "installed-build-before-download-progress-fix",
+    "page": "37-page-gallery-detail-before-download",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "From the foreground-confirmed empty Downloads root, activate Browse via the current semantic tab center, then open the current first 37-page gallery card using its current clickable card bound [18,417][651,1331]. Retain the Detail semantic layout. Do not start a download yet, install, clear data, uninstall, or mutate account state."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "read-current-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-browse-root-from-current-semantic-bound", "uiInput": ["click", "372", "2006"], "pauseAfterMs": 900, "timeoutSeconds": 30 },
+      { "name": "open-first-37-page-gallery-card", "uiInput": ["click", "330", "850"], "pauseAfterMs": 1500, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "apply-final-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "dump-gallery-detail-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-progress-37-page-detail.json", "-a"] },
+    { "name": "receive-gallery-detail-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-progress-37-page-detail.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-open-37-page-gallery-237-20260829T2305/gallery-detail.json"] },
+    { "name": "remove-remote-layout", "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-download-progress-37-page-detail.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

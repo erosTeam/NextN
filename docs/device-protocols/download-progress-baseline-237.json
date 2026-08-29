@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-baseline-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-baseline-237-20260829T2250",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "1702cb2",
+    "page": "current-device-baseline-before-download-progress-reproduction",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Wake the exact user-selected target, apply the unattended timeout, and record only power and foreground-window evidence before the multi-page download progress reproduction. Do not install, clear data, uninstall, mutate account state, or issue UI input."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "establish-neutral-home-baseline",
+        "uiInput": ["keyEvent", "Home"],
+        "pauseAfterMs": 800,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "apply-final-unattended-timeout",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "verify-awake-override",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "read-current-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ]
+}

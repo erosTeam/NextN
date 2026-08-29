@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-search-exact-200-pages-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-search-exact-200-pages-237-20260829T2320",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "installed-build-before-download-progress-fix",
+    "page": "search-results-exactly-200-pages",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "The pages:>200 injection was rejected because the semantic field remained empty. Use the supported exact pages:200 query, which contains no shell metacharacter, in one uninterrupted action chain and retain semantic results. Do not start a download, install, clear data, uninstall, or mutate account state."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "read-current-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "focus-search-field", "uiInput": ["click", "575", "369"], "pauseAfterMs": 300, "timeoutSeconds": 30 },
+      { "name": "enter-exact-200-page-query", "uiInput": ["text", "pages:200"], "pauseAfterMs": 200, "timeoutSeconds": 30 },
+      { "name": "submit-exact-200-page-query", "uiInput": ["click", "1181", "369"], "pauseAfterMs": 3000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "apply-final-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "dump-exact-200-page-results", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-progress-exact-200-pages.json", "-a"] },
+    { "name": "receive-exact-200-page-results", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-progress-exact-200-pages.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-search-exact-200-pages-237-20260829T2320/results.json"] },
+    { "name": "remove-remote-layout", "hdcArgs": ["shell", "rm", "/data/local/tmp/nextn-download-progress-exact-200-pages.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

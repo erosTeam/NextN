@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-progress-remove-test-task-confirm-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fix-676564/remove-confirm",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "abaaada+download-queue-signal-hap-sha256-aa4fc2f99adf7b3a0b358c3955487da94f384e7c79ca99e11e9e3d5dc86cb093",
+    "page": "Gallery 676564 removal confirmation",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Select only the semantically captured Move/Remove menu item for completed Gallery 676564, then capture the confirmation dialog before the final destructive tap. Do not remove another task or mutate account state."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "select-gallery-676564-remove-action", "uiInput": ["click", "978", "981"], "pauseAfterMs": 700 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-remove-confirm-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-progress-remove-confirm.json", "-a"] },
+    { "name": "receive-remove-confirm-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-progress-remove-confirm.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fix-676564/remove-confirm/layout.json"] },
+    { "name": "capture-remove-confirm-screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/nextn-download-progress-remove-confirm.jpeg"] },
+    { "name": "receive-remove-confirm-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-progress-remove-confirm.jpeg", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-progress-fix-676564/remove-confirm/screen.jpeg"] },
+    { "name": "cleanup-remote-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-progress-remove-confirm.json", "/data/local/tmp/nextn-download-progress-remove-confirm.jpeg"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}
