@@ -3,6 +3,29 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## OPEN — Download-policy group flashes/grays whole section on every save — 2026-08-29
+
+- **Why newly actionable:** the user reported that adjusting any download-policy
+  value (gallery/page concurrency, retry count, interval, speed, switches)
+  makes the entire Download settings group flash/dim once on every change.
+- **Whole parent-tree boundary:** SettingsPage(DOWNLOAD) -> SecondaryListScaffold -> ListItem(DownloadPolicyGroup) -> NextNGroupedListSection -> NextNListRow and the sibling DownloadRestoreGroup row. Menu content, value text, scatter, persistence, queue reapply, and all non-visible behavior remain unchanged.
+- **Cause:** every saveXxx() flips the component-scoped @Local isSavingDownloadSettings between true/false while every row binds isEnabled: !this.isSavingDownloadSettings. NextNListRow interprets isEnabled=false as whole-card .opacity(0.4) plus HDS enable:false, so the whole group dims and restores on each save. The NextE reference page has no such whole-group disable-on-save; its setters are fire-and-forget.
+- **Exact correction:** stop driving isEnabled from the shared save-lock for the download-policy rows. Keep the saveXxx() re-entrancy guard (which already prevents overlapping writes) so behavior, persistence, and error routing are unchanged; only remove the visible whole-group dim on save.
+- **Minimality rationale:** no layout, copy, value, order, scatter, or queue behavior changes. Only the visible disabling-on-save of the group is dropped.
+- **Verification plan:** inspect the scoped diff and a signed build; device visual acceptance remains OPEN until a same-viewport capture on a selected NextN target shows no dim/flash while editing a download-policy value.
+
+## OPEN — Settings-pages full sweep for shared-busy whole-group disable — 2026-08-29
+
+- **Why newly actionable:** after the download-policy flash defect above was confirmed, the user asked to sweep every settings page for the same class of problem: one shared busy/saving boolean driving the isEnabled (and thus the whole-card dim) of multiple unrelated rows.
+- **Sweep result:** every settings page under feature/settings/src/main/ets/pages was inspected for isEnabled: !this.<busy> / .opacity(<busy>...) and for a boolean reused across more than one row.
+- **Confirmed same-class defect (fixed in this run):** SettingsPage.ets DownloadPolicyGroup + DownloadRestoreGroup by 8 rows bound isEnabled: !this.isSavingDownloadSettings. saveXxx() flips that boolean quickly, so all 8 rows dim together on every value change. Already corrected to isEnabled: true, keeps the property-write re-entrancy guard, and the signed build succeeds.
+- **Reviewed as intentional mutual-exclusion, not a flash defect:**
+  - SettingsPage.ets BackupGroup (isEnabled: !this.busy on export+import). busy covers a genuine long-running export/import/decrypt/restore chain; disabling both rows during it is correct feedback, not a transient flash.
+  - SettingsPage.ets PrivateCacheGroup (!this.isClearingPrivateCache). Clearing cache is a real mutual-exclusion operation.
+  - AccountPage.ets (isEnabled: !this.isMutatingAccount on lines 390/409 plus row .opacity(0.6)). Account switch/delete/sign-out are mutually exclusive destructive operations; disabling sibling account actions is proper.
+  - Single-row busy states (no whole-group dim, left unchanged) appear in MangaRenderingServiceSettingsPage, LlmSourceManagerPage, LlmSourceDetailPage, CommentTranslationSettingsPage, TagTranslationSettingsPage, ComicTranslationSettingsPage, AboutPage, WebDavSyncSettingsPage.
+  - **Disposition:** no further source edit is warranted. Device visual acceptance for the fixed download-policy group remains OPEN until a same-viewport capture on a selected NextN target shows no dim/flash.
+
 ## OPEN — Settings dropdown selection lifecycle belongs to the shared row — 2026-08-24
 
 - **Why newly actionable:** the user reported that the shared settings-menu row is not
@@ -9552,3 +9575,52 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Verification plan:** build, then record an uninterrupted extreme-wide Simple-row open and return on the
   selected device. Inspect all frames around Back for no pre-animation geometry jump, foreground duplication,
   white replacement, background color shift, seam, or landing-ratio change.
+
+## Reopened correction — nested related-gallery transition ownership and shared thumbnail — 2026-08-28
+
+- **Why newly actionable:** on device `197`, one uninterrupted 350-frame recording reproduced the reported
+  route chain. Opening related gallery `616662` from gallery `657025` animated from `657025`'s original Browse
+  card instead of the tapped related card. The first Back then collapsed `616662` into that same Browse card
+  before revealing `657025`; the second Back used the ordinary horizontal system transition because the first
+  pop had already consumed the single global transition state. Source inspection also confirms the related rail
+  renders `EhImageKnifeImage` directly, bypassing the shared gallery-thumbnail loading/error contract.
+- **Whole parent-tree boundary:** Gallery Detail related section -> related card and its cover leaf -> shared
+  gallery-detail transition coordinator -> root Navigation route ownership -> previous Gallery Detail or Browse
+  source. Related query/data ownership, card geometry/title, Gallery Detail loading, Reader and transition curves
+  remain unchanged.
+- **Exact correction:** related cards launch through the same coordinator and `GalleryThumbnail` used by the
+  collection layouts. Each nested custom transition suspends the already-open parent transition context and
+  restores it only after the matching child pop succeeds. Root custom transitions and prepared Cover Expand
+  Back handling accept only the Gallery route whose `galleryId` owns the active context; unrelated Gallery routes
+  cannot consume it. Changing the root tab releases all suspended contexts with the existing navigation reset.
+- **Verification plan:** signed build, then data-preserving install on selected device `197`. Record at normal
+  animation speed from settled `657025` related rail through opening `616662`, Back to the related card, and Back
+  to the original Browse card. Extract every encoded frame and inspect both open/close pairs for the correct
+  source, no duplicate source/flight cover, no wrong-card collapse or route jump, and two independently correct
+  returns. Exercise an uncached related rail separately and confirm the shared loading indicator appears without
+  changing card geometry or clearing user data.
+
+## Reopened correction — route-owned Gallery return transitions — 2026-08-29
+
+- **Why newly actionable:** direct user testing disproved the preceding ownership design. After Gallery A opens
+  a tag Search and that Search opens Gallery B, B can return to Search but the saved custom return for A is lost;
+  subsequent Gallery returns use the system transition. The already-recorded A -> related B -> A -> Browse run
+  also contained a wrong final return that was not reviewed before acceptance.
+- **Faulty assumption and impact:** one app-global active transition plus a stack restored only when a Gallery
+  pop lands directly on another Gallery was treated as equivalent to Navigation's route stack. It is not: Search,
+  Web, comments and other intervening destinations make `toGalleryId` empty, so the parent context is never
+  restored. Matching by gallery id also cannot distinguish two route instances for the same gallery. This loses
+  return ownership as soon as navigation is deeper than the single special-cased shape.
+- **Whole parent-tree boundary:** `NavPathStack` Gallery route instance -> its captured list/card context -> any
+  intervening child destinations -> that same Gallery instance's eventual pop. Card rendering, Detail data,
+  Search data, Reader, transition geometry/curves and ordinary system-only routes remain unchanged.
+- **Exact correction:** assign a unique transition token to each Gallery route opened from a captured source.
+  Retain inactive contexts by that token, activate only the context owned by the Gallery route being pushed or
+  popped, and release it only after that route successfully pops or the root stack is explicitly cleared. Remove
+  gallery-id parent guessing and direct-child restoration; arbitrary nested Gallery/Search chains use the same
+  route-token mechanism.
+- **Verification plan:** on selected device `197`, record uninterrupted normal-speed chains for Browse -> A ->
+  related B -> A -> Browse and Browse -> A -> tag Search -> B -> tag Search -> A -> Browse. Then exercise at least
+  three nested custom Gallery instances before unwinding every level. Extract every encoded frame; each Gallery
+  return must use its own source card, no level may fall back to the system slide, and the final A return must land
+  on its original list card. Presence of actions in a manifest is not acceptance without reviewing each segment.

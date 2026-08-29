@@ -3173,7 +3173,7 @@ export struct SettingsPage {
         dropdownMenuBuilder: (select: (action: () => void) => void): void => {
           this.GalleryConcurrencyMenu(select)
         },
-        isEnabled: !this.isSavingDownloadSettings,
+        isEnabled: true,
         accessibilityLabel: AppStrings.format('settings_download_gallery_concurrency_a11y', [
           this.downloadSettings.maxConcurrentGalleries.toString(),
         ]),
@@ -3188,7 +3188,7 @@ export struct SettingsPage {
         dropdownMenuBuilder: (select: (action: () => void) => void): void => {
           this.PageConcurrencyMenu(select)
         },
-        isEnabled: !this.isSavingDownloadSettings,
+        isEnabled: true,
         accessibilityLabel: AppStrings.format('settings_download_page_concurrency_a11y', [
           this.downloadSettings.maxConcurrentPages.toString(),
         ]),
@@ -3204,7 +3204,7 @@ export struct SettingsPage {
         dropdownMenuBuilder: (select: (action: () => void) => void): void => {
           this.RequestIntervalMenu(select)
         },
-        isEnabled: !this.isSavingDownloadSettings,
+        isEnabled: true,
         accessibilityLabel: AppStrings.format('settings_download_request_interval_a11y', [
           this.requestIntervalLabel(this.downloadSettings.requestIntervalSeconds),
         ]),
@@ -3219,7 +3219,7 @@ export struct SettingsPage {
         dropdownMenuBuilder: (select: (action: () => void) => void): void => {
           this.RetryCountMenu(select)
         },
-        isEnabled: !this.isSavingDownloadSettings,
+        isEnabled: true,
         accessibilityLabel: AppStrings.format('settings_download_failed_page_retries_a11y', [
           this.retryCountLabel(),
         ]),
@@ -3232,7 +3232,7 @@ export struct SettingsPage {
         hasSwitch: true,
         checked: this.downloadSettings.autoRetryFailed,
         showChevron: false,
-        isEnabled: !this.isSavingDownloadSettings,
+        isEnabled: true,
         accessibilityLabel: AppStrings.format('settings_download_auto_retry_failed_a11y', [
           this.toggleStateLabel(this.downloadSettings.autoRetryFailed),
         ]),
@@ -3254,7 +3254,7 @@ export struct SettingsPage {
         dropdownMenuBuilder: (select: (action: () => void) => void): void => {
           this.SpeedLimitMenu(select)
         },
-        isEnabled: !this.isSavingDownloadSettings,
+        isEnabled: true,
         accessibilityLabel: AppStrings.format('settings_download_speed_limit_a11y', [
           this.speedLimitLabel(this.downloadSettings.speedLimitKbps),
         ]),
@@ -3267,7 +3267,7 @@ export struct SettingsPage {
         hasSwitch: true,
         checked: this.downloadSettings.notifyOnComplete,
         showChevron: false,
-        isEnabled: !this.isSavingDownloadSettings,
+        isEnabled: true,
         accessibilityLabel: AppStrings.format('settings_download_notify_complete_a11y', [
           this.toggleStateLabel(this.downloadSettings.notifyOnComplete),
         ]),
@@ -3303,7 +3303,7 @@ export struct SettingsPage {
           title: AppStrings.get('settings_download_restore_tasks'),
           subtitle: AppStrings.get('settings_download_restore_tasks_hint'),
           showChevron: false,
-          isEnabled: !this.isSavingDownloadSettings,
+          isEnabled: true,
           accessibilityLabel: AppStrings.get('settings_download_restore_tasks_a11y'),
           onAction: (): void => {
             this.restoreDownloadTasks()
