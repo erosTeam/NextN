@@ -40,6 +40,6 @@ assert.match(service, /current\.completedPages = DownloadQueueService\.completed
 assert.match(service, /private static activePageWritePaths: Set<string> = new Set<string>\(\)/)
 assert.match(service, /DownloadQueueService\.activePageWritePaths\.add\(finalPath\)[\s\S]*?finally \{[\s\S]*?DownloadQueueService\.activePageWritePaths\.delete\(finalPath\)/)
 assert.match(service, /task\.completedPages === pageCount && task\.status !== NhDownloadTaskStatus\.DOWNLOADING/)
-assert.match(service, /return !DownloadQueueService\.activePageWritePaths\.has\(path\) &&\s+DownloadQueueService\.fileSize\(path\) > 0/)
+assert.match(service, /return journalAllowsPage && !DownloadQueueService\.activePageWritePaths\.has\(path\) &&\s+DownloadQueueService\.fileSize\(path\) > 0/)
 
 console.log('Download queue progress publication contract passed.')

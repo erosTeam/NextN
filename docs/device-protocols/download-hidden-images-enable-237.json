@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-hidden-images-enable-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/hide-enable",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-chain-integrity-hap-sha256-676a2126f04ccb764f39c1870d5681c0dcbf3f945c12f5d2549c558ffbd88f79",
+    "page": "Download settings hidden-images toggle disabled to enabled",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Toggle only Hide downloaded images back to the reference default enabled state. Verify the switch and app-owned marker creation log. Preserve all other preferences and tasks."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "clear-bounded-hilog", "hdcArgs": ["shell", "hilog", "-r"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "enable-hide-downloaded-images", "uiInput": ["click", "1194", "1622"], "pauseAfterMs": 900, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-enabled-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-hide-downloads-enabled.json", "-a"] },
+    { "name": "receive-enabled-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-hide-downloads-enabled.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/hide-enable/enabled-layout.json"] },
+    { "name": "capture-bounded-nextn-hilog", "hdcArgs": ["shell", "sh", "-c", "hilog -T NextN -x > /data/local/tmp/nextn-hide-downloads-enabled.log"] },
+    { "name": "receive-bounded-nextn-hilog", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-hide-downloads-enabled.log", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/hide-enable/enabled-hilog.txt"] },
+    { "name": "cleanup-remote-evidence", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-hide-downloads-enabled.json", "/data/local/tmp/nextn-hide-downloads-enabled.log"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

@@ -7,6 +7,7 @@ const GALLERY_CONCURRENCY_KEY: string = 'gallery_concurrency'
 const PAGE_CONCURRENCY_KEY: string = 'page_concurrency'
 const RETRY_COUNT_KEY: string = 'retry_count'
 const NOTIFY_ON_COMPLETE_KEY: string = 'notify_on_complete'
+const HIDE_FROM_MEDIA_LIBRARY_KEY: string = 'hide_from_media_library'
 const REQUEST_INTERVAL_KEY: string = 'request_interval_seconds'
 const AUTO_RETRY_KEY: string = 'auto_retry_failed'
 const SPEED_LIMIT_KEY: string = 'speed_limit_kbps'
@@ -42,6 +43,8 @@ export class DownloadSettingsRepository {
           settings.retryCount = value
         } else if (key === NOTIFY_ON_COMPLETE_KEY) {
           settings.notifyOnComplete = value === 1
+        } else if (key === HIDE_FROM_MEDIA_LIBRARY_KEY) {
+          settings.hideFromMediaLibrary = value === 1
         } else if (key === REQUEST_INTERVAL_KEY) {
           settings.requestIntervalSeconds = value
         } else if (key === AUTO_RETRY_KEY) {
@@ -70,6 +73,7 @@ export class DownloadSettingsRepository {
       await store.executeSql(SQL_UPSERT, [PAGE_CONCURRENCY_KEY, `${snapshot.maxConcurrentPages}`])
       await store.executeSql(SQL_UPSERT, [RETRY_COUNT_KEY, `${snapshot.retryCount}`])
       await store.executeSql(SQL_UPSERT, [NOTIFY_ON_COMPLETE_KEY, snapshot.notifyOnComplete ? '1' : '0'])
+      await store.executeSql(SQL_UPSERT, [HIDE_FROM_MEDIA_LIBRARY_KEY, snapshot.hideFromMediaLibrary ? '1' : '0'])
       await store.executeSql(SQL_UPSERT, [REQUEST_INTERVAL_KEY, `${snapshot.requestIntervalSeconds}`])
       await store.executeSql(SQL_UPSERT, [AUTO_RETRY_KEY, snapshot.autoRetryFailed ? '1' : '0'])
       await store.executeSql(SQL_UPSERT, [SPEED_LIMIT_KEY, `${snapshot.speedLimitKbps}`])

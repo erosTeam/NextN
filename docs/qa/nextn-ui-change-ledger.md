@@ -3,6 +3,35 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## ACCEPTED — Restore hidden-download-images policy and `.nomedia` ownership — 2026-08-30
+
+- **Why newly actionable:** the user identified that NextN's Download settings omit the
+  reference app's "Hide downloaded images" switch. Source inspection confirms that this is
+  not only a missing row: NextN also lacks the setting model, durable key, startup
+  reconciliation, and marker removal path.
+- **Reference parent tree and behavior:** preserve `Settings Download destination ->
+  Download policy group -> completion notifications -> hidden-images switch`, with the
+  `eye_slash` leading symbol, title/hint, enabled switch, and no chevron. NextE defaults the
+  preference to enabled and reconciles a `.nomedia` marker whenever download storage becomes
+  ready and immediately after the user toggles it.
+- **NextN storage boundary:** NextN owns one public `nextn-downloads` root containing all
+  gallery directories, so the single marker belongs at that root and covers every downloaded
+  page without duplicating markers in individual gallery folders.
+- **Minimality:** add only the missing state/persistence/service contract, one row after the
+  existing completion-notification row, localized strings, and root-marker reconciliation.
+  Preserve all other download settings, queue policy, directory selection, ordering, and
+  notification behavior.
+- **Static/build evidence:** both download-queue contract checks, resource JSON parsing, and
+  `git diff --check` pass. The signed build completed in `9 s 402 ms`; installed HAP
+  SHA-256 is `676a2126f04ccb764f39c1870d5681c0dcbf3f945c12f5d2549c558ffbd88f79`.
+- **237 acceptance:** an in-place install with no data clear rendered the row, localized hint,
+  and enabled switch in the existing Download policy group. Disabling and enabling emitted
+  exact service evidence `enabled=false,present=false` and
+  `enabled=true,present=true`; force-stop/cold-start retained the enabled switch and emitted
+  the enabled/present reconciliation again. Surrounding policy rows remained mounted and
+  usable. Evidence is retained under
+  `.hvigor/outputs/nextn-download-chain-integrity-237-20260830/`.
+
 ## ACCEPTED — Download queue publishes live page progress without terminal rollback — 2026-08-30
 
 - **Why newly actionable:** the user reported that a new gallery stays at queued or downloading with no page-count movement, then jumps directly to complete. One uninterrupted device-237 recording reproduced Gallery `676564` at `200` pages: the queue stayed at `0/200 下载中` through video PTS `31.032s`, then jumped to `200/200 已完成` at `31.944s`, with no intermediate value in 306 extracted frames.

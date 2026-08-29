@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-chain-resume-pause-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/resume-pause",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-chain-integrity-hap-sha256-676a2126f04ccb764f39c1870d5681c0dcbf3f945c12f5d2549c558ffbd88f79",
+    "page": "Interrupted Gallery 676564 after resume, further verified progress, and pause",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Resume the cold-restored 36/200 paused test task through its observed inline action, let verified progress advance, then pause through the same action. Verify the task returns to paused with a larger bounded count; no other task or setting changes."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "resume-interrupted-test-task", "uiInput": ["click", "1212", "591"], "pauseAfterMs": 1200, "timeoutSeconds": 30 },
+      { "name": "pause-resumed-test-task", "uiInput": ["click", "1212", "591"], "pauseAfterMs": 900, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-resumed-then-paused-task", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-chain-resume-pause.json", "-a"] },
+    { "name": "receive-resumed-then-paused-task", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-chain-resume-pause.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/resume-pause/paused-layout.json"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-chain-resume-pause.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

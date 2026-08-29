@@ -7,7 +7,7 @@ const STORE_CONFIG: relationalStore.StoreConfig = {
   autoCleanDirtyData: true,
 }
 
-const SCHEMA_VERSION: number = 22
+const SCHEMA_VERSION: number = 23
 const SQL_CREATE_READING_HISTORY: string =
   'CREATE TABLE IF NOT EXISTS reading_history (' +
   'gallery_id INTEGER PRIMARY KEY, ' +
@@ -108,6 +108,7 @@ const SQL_CREATE_DOWNLOAD_QUEUE: string =
   'thumbnail_url TEXT NOT NULL, ' +
   'page_count INTEGER NOT NULL, ' +
   'page_extensions TEXT NOT NULL, ' +
+  'completed_page_indexes TEXT, ' +
   'storage_directory TEXT NOT NULL DEFAULT \'\', ' +
   'completed_pages INTEGER NOT NULL DEFAULT 0, ' +
   'status TEXT NOT NULL, ' +
@@ -119,6 +120,8 @@ const SQL_CREATE_DOWNLOAD_QUEUE_UPDATED_ORDER: string =
 const SQL_INSPECT_DOWNLOAD_QUEUE_COLUMNS: string = 'SELECT * FROM download_queue LIMIT 0'
 const SQL_ADD_DOWNLOAD_QUEUE_STORAGE_DIRECTORY: string =
   'ALTER TABLE download_queue ADD COLUMN storage_directory TEXT NOT NULL DEFAULT \'\''
+const SQL_ADD_DOWNLOAD_QUEUE_COMPLETED_PAGE_INDEXES: string =
+  'ALTER TABLE download_queue ADD COLUMN completed_page_indexes TEXT'
 const SQL_CREATE_DOWNLOAD_SETTINGS: string =
   'CREATE TABLE IF NOT EXISTS download_settings (' +
   'key TEXT PRIMARY KEY NOT NULL, ' +
@@ -280,6 +283,7 @@ export class LocalDataStore {
       await LocalDataStore.ensureReadingHistoryProgressColumn(store)
       await LocalDataStore.ensureAccountVerificationReasonColumn(store)
       await LocalDataStore.ensureDownloadQueueStorageDirectoryColumn(store)
+      await LocalDataStore.ensureDownloadQueueCompletedPageIndexesColumn(store)
       if (existingVersion < SCHEMA_VERSION) {
         store.version = SCHEMA_VERSION
       }
@@ -343,6 +347,25 @@ export class LocalDataStore {
     }
     if (!hasStorageDirectory) {
       await store.executeSql(SQL_ADD_DOWNLOAD_QUEUE_STORAGE_DIRECTORY)
+    }
+  }
+
+  /** Null on old rows so the queue can distinguish a legacy scan from a real empty journal. */
+  private static async ensureDownloadQueueCompletedPageIndexesColumn(
+    store: relationalStore.RdbStore,
+  ): Promise<void> {
+    let rows: relationalStore.ResultSet | null = null
+    let hasCompletedPageIndexes: boolean = false
+    try {
+      rows = await store.querySql(SQL_INSPECT_DOWNLOAD_QUEUE_COLUMNS)
+      hasCompletedPageIndexes = rows.getColumnNames().indexOf('completed_page_indexes') >= 0
+    } finally {
+      if (rows !== null) {
+        rows.close()
+      }
+    }
+    if (!hasCompletedPageIndexes) {
+      await store.executeSql(SQL_ADD_DOWNLOAD_QUEUE_COMPLETED_PAGE_INDEXES)
     }
   }
 }

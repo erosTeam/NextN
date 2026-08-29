@@ -7,6 +7,10 @@ export class NhDownloadTask {
   @Trace thumbnailUrl: string = ''
   @Trace pageCount: number = 0
   @Trace pageExtensions: string[] = []
+  /** Zero-based pages whose final files were durably verified after the stream closed. */
+  completedPageIndexes: number[] = []
+  /** False only for a pre-journal task that still needs one bounded migration scan. */
+  completionJournalPresent: boolean = false
   /** Device-local directory that owns this task's metadata and promoted pages. */
   @Trace storageDirectory: string = ''
   @Trace completedPages: number = 0
@@ -23,6 +27,8 @@ export class NhDownloadTask {
     result.thumbnailUrl = this.thumbnailUrl
     result.pageCount = this.pageCount
     result.pageExtensions = this.pageExtensions.slice()
+    result.completedPageIndexes = this.completedPageIndexes.slice()
+    result.completionJournalPresent = this.completionJournalPresent
     result.storageDirectory = this.storageDirectory
     result.completedPages = this.completedPages
     result.status = this.status
@@ -39,6 +45,8 @@ export class NhDownloadTask {
     this.thumbnailUrl = source.thumbnailUrl
     this.pageCount = source.pageCount
     this.pageExtensions = source.pageExtensions.slice()
+    this.completedPageIndexes = source.completedPageIndexes.slice()
+    this.completionJournalPresent = source.completionJournalPresent
     this.storageDirectory = source.storageDirectory
     this.completedPages = source.completedPages
     this.status = source.status
@@ -49,6 +57,24 @@ export class NhDownloadTask {
 
   progressText(): string {
     return `${Math.max(0, this.completedPages)} / ${Math.max(0, this.pageCount)}`
+  }
+
+  hasCompletedPage(pageIndex: number): boolean {
+    return this.completedPageIndexes.indexOf(pageIndex) >= 0
+  }
+
+  markPageCompleted(pageIndex: number): void {
+    if (pageIndex < 0 || pageIndex >= this.pageCount || this.hasCompletedPage(pageIndex)) {
+      return
+    }
+    this.completedPageIndexes.push(pageIndex)
+    this.completedPageIndexes.sort((left: number, right: number): number => left - right)
+  }
+
+  clearCompletedPage(pageIndex: number): void {
+    this.completedPageIndexes = this.completedPageIndexes.filter(
+      (candidate: number): boolean => candidate !== pageIndex,
+    )
   }
 
   isComplete(): boolean {

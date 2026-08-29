@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-chain-cold-queue-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/cold-queue",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-chain-integrity-hap-sha256-676a2126f04ccb764f39c1870d5681c0dcbf3f945c12f5d2549c558ffbd88f79",
+    "page": "Download queue after schema-23 completion-journal migration and cold start",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Return from the cold-restored Download settings destination and open Downloads. Inspect only task status/count semantics after the in-place RDB migration. Preserve every task and account state."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "return-to-settings-root", "uiInput": ["click", "108", "201"], "pauseAfterMs": 500, "timeoutSeconds": 30 },
+      { "name": "open-downloads-root", "uiInput": ["click", "756", "2006"], "pauseAfterMs": 900, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-cold-queue-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-chain-cold-queue.json", "-a"] },
+    { "name": "receive-cold-queue-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-chain-cold-queue.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/cold-queue/queue-layout.json"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-chain-cold-queue.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

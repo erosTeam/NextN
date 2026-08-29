@@ -7,6 +7,8 @@ export class NhDownloadSettings {
   maxConcurrentPages: number = 3
   retryCount: number = 2
   notifyOnComplete: boolean = false
+  /** Keep downloaded gallery pages out of media-library scans via `.nomedia`. */
+  hideFromMediaLibrary: boolean = true
   /** Minimum pause between page batches, in seconds. 0 disables the pause. */
   requestIntervalSeconds: number = 0
   /** Resume ERROR tasks automatically on cold start. PAUSED tasks never auto-resume. */
@@ -20,6 +22,7 @@ export class NhDownloadSettings {
     result.maxConcurrentPages = this.maxConcurrentPages
     result.retryCount = this.retryCount
     result.notifyOnComplete = this.notifyOnComplete
+    result.hideFromMediaLibrary = this.hideFromMediaLibrary
     result.requestIntervalSeconds = this.requestIntervalSeconds
     result.autoRetryFailed = this.autoRetryFailed
     result.speedLimitKbps = this.speedLimitKbps

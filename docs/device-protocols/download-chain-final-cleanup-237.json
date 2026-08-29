@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-chain-final-cleanup-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/final-cleanup",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-chain-integrity-hap-sha256-676a2126f04ccb764f39c1870d5681c0dcbf3f945c12f5d2549c558ffbd88f79",
+    "page": "Empty queue after final removal of interrupted Gallery 676564 test task",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Remove only the final 39/200 paused Gallery 676564 test task through its observed action menu and confirmation. Verify the queue is empty; keep Hide downloaded images enabled and preserve every other setting and account state."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-final-paused-task-menu", "uiInput": ["click", "1212", "687"], "pauseAfterMs": 200, "timeoutSeconds": 30 },
+      { "name": "select-final-paused-remove", "uiInput": ["click", "978", "837"], "pauseAfterMs": 200, "timeoutSeconds": 30 },
+      { "name": "confirm-final-paused-remove", "uiInput": ["click", "948", "1188"], "pauseAfterMs": 2500, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-final-empty-queue", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-chain-final-empty.json", "-a"] },
+    { "name": "receive-final-empty-queue", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-chain-final-empty.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/final-cleanup/final-empty-layout.json"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-chain-final-empty.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-chain-interrupted-cold-restore-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/interrupted-cold-restore",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-chain-integrity-hap-sha256-676a2126f04ccb764f39c1870d5681c0dcbf3f945c12f5d2549c558ffbd88f79",
+    "page": "Gallery 676564 after cold restore from forced active-process stop",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Cold-start the already force-stopped process without clearing data and open Downloads. Verify the interrupted 200-page task is paused with only journal-verified pages, never promoted to complete from a nonempty partial final file."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-a", "EntryAbility", "-b", "com.erosteam.nextn"], "pauseAfterMs": 2400 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-downloads-after-interruption", "uiInput": ["click", "756", "2006"], "pauseAfterMs": 900, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-interrupted-cold-task", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-chain-interrupted-cold.json", "-a"] },
+    { "name": "receive-interrupted-cold-task", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-chain-interrupted-cold.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/interrupted-cold-restore/cold-layout.json"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-chain-interrupted-cold.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

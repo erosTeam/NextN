@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-chain-active-removal-race-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/active-removal-race",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-chain-integrity-hap-sha256-676a2126f04ccb764f39c1870d5681c0dcbf3f945c12f5d2549c558ffbd88f79",
+    "page": "Queue after removing Gallery 676564 while its 200-page worker is active",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "In one uninterrupted scenario, start a fresh Gallery 676564 download, return to Downloads within 200 ms, open its active action menu, select the sole Remove item, and confirm. Verify the queue stays empty after the service invalidates and awaits the active worker before deleting its row and owned files."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "start-fresh-active-download", "uiInput": ["click", "1116", "1014"], "pauseAfterMs": 100, "timeoutSeconds": 30 },
+      { "name": "return-from-detail-immediately", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 100, "timeoutSeconds": 30 },
+      { "name": "open-downloads-root-immediately", "uiInput": ["click", "756", "2006"], "pauseAfterMs": 250, "timeoutSeconds": 30 },
+      { "name": "open-active-test-task-menu", "uiInput": ["click", "1212", "687"], "pauseAfterMs": 150, "timeoutSeconds": 30 },
+      { "name": "select-active-remove", "uiInput": ["click", "978", "837"], "pauseAfterMs": 150, "timeoutSeconds": 30 },
+      { "name": "confirm-active-remove", "uiInput": ["click", "948", "1188"], "pauseAfterMs": 5000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-post-active-removal-queue", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-chain-active-removal.json", "-a"] },
+    { "name": "receive-post-active-removal-queue", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-chain-active-removal.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/active-removal-race/post-removal-layout.json"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-chain-active-removal.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

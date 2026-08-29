@@ -1102,6 +1102,24 @@ export struct SettingsPage {
     }
   }
 
+  private async saveHideFromMediaLibrary(enabled: boolean): Promise<void> {
+    if (this.isSavingDownloadSettings) {
+      return
+    }
+    this.isSavingDownloadSettings = true
+    this.downloadSettingsError = ''
+    try {
+      await DownloadSettingsService.setHideFromMediaLibrary(this.context(), enabled)
+      if (!DownloadQueueService.reconcileNoMediaMarkerIfReady()) {
+        throw new Error('Unable to reconcile the download media marker')
+      }
+    } catch (_error) {
+      this.downloadSettingsError = AppStrings.get('settings_download_hide_from_media_library_save_failed')
+    } finally {
+      this.isSavingDownloadSettings = false
+    }
+  }
+
   private async saveRequestInterval(seconds: number): Promise<void> {
     if (this.isSavingDownloadSettings) {
       return
@@ -3276,6 +3294,25 @@ export struct SettingsPage {
         },
         onSwitchChange: (value: boolean): void => {
           this.saveCompletionNotifications(value)
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.eye_slash'),
+        title: AppStrings.get('settings_download_hide_from_media_library'),
+        subtitle: AppStrings.get('settings_download_hide_from_media_library_hint'),
+        hasSwitch: true,
+        checked: this.downloadSettings.hideFromMediaLibrary,
+        showChevron: false,
+        isEnabled: true,
+        accessibilityLabel: AppStrings.format('settings_download_hide_from_media_library_a11y', [
+          this.toggleStateLabel(this.downloadSettings.hideFromMediaLibrary),
+        ]),
+        onAction: (): void => {
+          this.saveHideFromMediaLibrary(!this.downloadSettings.hideFromMediaLibrary)
+        },
+        onSwitchChange: (value: boolean): void => {
+          this.saveHideFromMediaLibrary(value)
         },
       })
     }

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-chain-force-stop-active-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/force-stop-active",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-chain-integrity-hap-sha256-676a2126f04ccb764f39c1870d5681c0dcbf3f945c12f5d2549c558ffbd88f79",
+    "page": "Active Gallery 676564 immediately before forced process stop",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Start a fresh 200-page Gallery 676564 download, return immediately to Downloads, capture the active journal-backed count, then force-stop the process without clearing data. This deliberately interrupts a public final-file stream for cold-restore validation."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "start-fresh-download-for-interruption", "uiInput": ["click", "1116", "1014"], "pauseAfterMs": 100, "timeoutSeconds": 30 },
+      { "name": "return-from-detail-immediately", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 100, "timeoutSeconds": 30 },
+      { "name": "open-downloads-root-immediately", "uiInput": ["click", "756", "2006"], "pauseAfterMs": 250, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-active-before-force-stop", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-chain-before-force-stop.json", "-a"] },
+    { "name": "receive-active-before-force-stop", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-chain-before-force-stop.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/force-stop-active/before-force-stop-layout.json"] },
+    { "name": "force-stop-active-nextn-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-chain-before-force-stop.json"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

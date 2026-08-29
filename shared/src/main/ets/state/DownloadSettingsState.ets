@@ -7,6 +7,7 @@ export class DownloadSettingsState {
   @Trace maxConcurrentPages: number = 3
   @Trace retryCount: number = 2
   @Trace notifyOnComplete: boolean = false
+  @Trace hideFromMediaLibrary: boolean = true
   @Trace requestIntervalSeconds: number = 0
   @Trace autoRetryFailed: boolean = true
   @Trace speedLimitKbps: number = 0
@@ -16,6 +17,7 @@ export class DownloadSettingsState {
     this.maxConcurrentPages = settings.maxConcurrentPages
     this.retryCount = settings.retryCount
     this.notifyOnComplete = settings.notifyOnComplete
+    this.hideFromMediaLibrary = settings.hideFromMediaLibrary
     this.requestIntervalSeconds = settings.requestIntervalSeconds
     this.autoRetryFailed = settings.autoRetryFailed
     this.speedLimitKbps = settings.speedLimitKbps
@@ -27,6 +29,7 @@ export class DownloadSettingsState {
     result.maxConcurrentPages = this.maxConcurrentPages
     result.retryCount = this.retryCount
     result.notifyOnComplete = this.notifyOnComplete
+    result.hideFromMediaLibrary = this.hideFromMediaLibrary
     result.requestIntervalSeconds = this.requestIntervalSeconds
     result.autoRetryFailed = this.autoRetryFailed
     result.speedLimitKbps = this.speedLimitKbps

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-chain-integrity-install-settings-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/install-settings",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-chain-integrity-hap-sha256-676a2126f04ccb764f39c1870d5681c0dcbf3f945c12f5d2549c558ffbd88f79",
+    "page": "Download settings after in-place schema-23 upgrade and cold start",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install the signed download-chain candidate in place on target 237 without clearing data. Cold-start, let the existing public-root task restore migrate its completion journal and reconcile the default-enabled .nomedia marker, then open My and Download settings. Preserve account state and all existing download tasks."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "clear-bounded-hilog", "hdcArgs": ["shell", "hilog", "-r"] },
+    {
+      "name": "install-signed-candidate-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"],
+      "pauseAfterMs": 500,
+      "timeoutSeconds": 180
+    },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-a", "EntryAbility", "-b", "com.erosteam.nextn"], "pauseAfterMs": 2500 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-my-settings-root", "uiInput": ["click", "948", "2006"], "pauseAfterMs": 900, "timeoutSeconds": 30 },
+      { "name": "open-download-settings", "uiInput": ["click", "660", "1389"], "pauseAfterMs": 1000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-download-settings-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-chain-settings.json", "-a"] },
+    { "name": "receive-download-settings-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-chain-settings.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/install-settings/settings-layout.json"] },
+    { "name": "read-bounded-nextn-hilog", "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"] },
+    { "name": "remove-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-chain-settings.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

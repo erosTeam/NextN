@@ -4,13 +4,14 @@ import { NhDownloadTask, NhDownloadTaskStatus } from '../model/NhDownloadTask'
 import { LocalDataStore } from './LocalDataStore'
 
 const SQL_SELECT_ALL: string =
-  'SELECT gallery_id, media_id, title, thumbnail_url, page_count, page_extensions, storage_directory, completed_pages, status, error_message, created_at, updated_at ' +
+  'SELECT gallery_id, media_id, title, thumbnail_url, page_count, page_extensions, completed_page_indexes, storage_directory, completed_pages, status, error_message, created_at, updated_at ' +
   'FROM download_queue ORDER BY updated_at DESC, gallery_id DESC'
 const SQL_UPSERT: string =
-  'INSERT INTO download_queue (gallery_id, media_id, title, thumbnail_url, page_count, page_extensions, storage_directory, completed_pages, status, error_message, created_at, updated_at) ' +
-  'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(gallery_id) DO UPDATE SET ' +
+  'INSERT INTO download_queue (gallery_id, media_id, title, thumbnail_url, page_count, page_extensions, completed_page_indexes, storage_directory, completed_pages, status, error_message, created_at, updated_at) ' +
+  'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(gallery_id) DO UPDATE SET ' +
   'media_id = excluded.media_id, title = excluded.title, thumbnail_url = excluded.thumbnail_url, page_count = excluded.page_count, ' +
-  'page_extensions = excluded.page_extensions, storage_directory = excluded.storage_directory, ' +
+  'page_extensions = excluded.page_extensions, completed_page_indexes = excluded.completed_page_indexes, ' +
+  'storage_directory = excluded.storage_directory, ' +
   'completed_pages = excluded.completed_pages, status = excluded.status, ' +
   'error_message = excluded.error_message, updated_at = excluded.updated_at'
 const SQL_DELETE_ONE: string = 'DELETE FROM download_queue WHERE gallery_id = ?'
@@ -34,6 +35,11 @@ export class DownloadQueueRepository {
         task.thumbnailUrl = DownloadQueueRepository.stringColumn(rows, 'thumbnail_url')
         task.pageCount = DownloadQueueRepository.numberColumn(rows, 'page_count')
         task.pageExtensions = DownloadQueueRepository.extensions(rows, 'page_extensions')
+        const completedIndexesColumn: number = rows.getColumnIndex('completed_page_indexes')
+        task.completionJournalPresent = !rows.isColumnNull(completedIndexesColumn)
+        task.completedPageIndexes = task.completionJournalPresent
+          ? DownloadQueueRepository.completedPageIndexes(rows.getString(completedIndexesColumn), task.pageCount)
+          : []
         task.storageDirectory = DownloadQueueRepository.stringColumn(rows, 'storage_directory')
         task.completedPages = DownloadQueueRepository.numberColumn(rows, 'completed_pages')
         task.status = DownloadQueueRepository.normalizedStatus(DownloadQueueRepository.stringColumn(rows, 'status'))
@@ -75,6 +81,7 @@ export class DownloadQueueRepository {
         snapshot.thumbnailUrl,
         snapshot.pageCount,
         JSON.stringify(snapshot.pageExtensions),
+        snapshot.completionJournalPresent ? JSON.stringify(snapshot.completedPageIndexes) : null,
         snapshot.storageDirectory,
         snapshot.completedPages,
         DownloadQueueRepository.normalizedStatus(snapshot.status),
@@ -128,6 +135,31 @@ export class DownloadQueueRepository {
   private static normalizedExtension(value: string): string {
     const extension: string = value.toLowerCase().replace('.', '').trim()
     return /^[a-z0-9]{1,8}$/.test(extension) ? extension : ''
+  }
+
+  private static completedPageIndexes(raw: string, pageCount: number): number[] {
+    try {
+      const values: Object = JSON.parse(raw) as Object
+      if (!Array.isArray(values)) {
+        return []
+      }
+      const out: number[] = []
+      for (let index: number = 0; index < values.length; index += 1) {
+        if (typeof values[index] !== 'number') {
+          continue
+        }
+        const pageIndex: number = Math.floor(values[index] as number)
+        if (!Number.isSafeInteger(pageIndex) ||
+          pageIndex < 0 || pageIndex >= pageCount || out.indexOf(pageIndex) >= 0) {
+          continue
+        }
+        out.push(pageIndex)
+      }
+      out.sort((left: number, right: number): number => left - right)
+      return out
+    } catch (_error) {
+      return []
+    }
   }
 
   private static normalizedStatus(value: string): string {

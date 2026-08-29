@@ -47,6 +47,31 @@ Total output lines: 3889
 - Fresh-device preparation was semantically verified: after removing only this test task and its owned pages, Downloads showed `暂无画廊下载`; the reopened detail showed `200 页` and `下载`. The accepted uninterrupted recording then showed `3/200`, `33/200`, `63/200`, `97/200`, `129/200`, `162/200`, `195/200`, `198/200`, `200/200 下载中`, and the single final transition to `200/200 已完成`.
 - All 1043 VFR frames were extracted. Completion remained stable through the final frame at PTS `72.570400s`; no later paused state or smaller count appeared. A post-recording semantic layout independently reads `200 / 200` and `已完成`. Recording SHA-256 is `c23b7b0ca5f2e1c4fb4f5cc863d596123544adcb47f9ae88489423c863fbd9f9`; evidence is retained under `.hvigor/outputs/nextn-download-progress-fixed-v3-recording-237-20260830T0008/` and `.hvigor/outputs/nextn-download-progress-v3-terminal-237-20260830T0012/`.
 
+## Download-chain integrity and hidden-images policy — 2026-08-30 (accepted on 237)
+
+- User outcome: the queue no longer treats interrupted public files as completed pages,
+  active removal cannot race its worker or delete files before durable row removal, public
+  restore metadata is path-bounded, and Download settings again owns the hidden-images
+  switch plus `.nomedia` lifecycle.
+- Static/build evidence: both download-queue contract checks, resource JSON parsing, and
+  `git diff --check` pass. The signed build completed in `9 s 402 ms`; installed HAP
+  SHA-256 is `676a2126f04ccb764f39c1870d5681c0dcbf3f945c12f5d2549c558ffbd88f79`.
+- The final HAP was installed in place on `192.168.50.237:12345` with no uninstall or data
+  clear. The existing 200-page completed task migrated to schema 23 as `200 / 200 已完成`,
+  and its local Reader opened at `1 / 200`.
+- An active removal produced `暂无画廊下载` and remained absent after a cold start. A separate
+  force-stop run was captured at `6 / 200 下载中`; cold restore produced
+  `36 / 200 已暂停`, not complete, and resume/pause advanced only verified pages to
+  `39 / 200 已暂停`. Final cleanup left the queue empty.
+- Download settings rendered `隐藏下载图片` and its `.nomedia` hint. Off/on actions emitted
+  `enabled=false,present=false` and `enabled=true,present=true`; a force-stop/cold-start kept
+  the switch enabled and reconciled the marker again. Evidence is retained under
+  `.hvigor/outputs/nextn-download-chain-integrity-237-20260830/`; the final device state is
+  an empty queue with hidden-images enabled.
+- Physical acceptance covers migration, Reader, active removal, interrupted cold restore,
+  resume/pause, and marker persistence. CBZ ShareKit handoff, notification delivery, and
+  manual directory restore were source/build-reviewed but not physically exercised here.
+
 ## NH terminal authentication and unified request lifecycle — 2026-08-27 (OPEN on 237)
 
 - User outcome: NextN on `192.168.50.237:12345` must stop silently losing

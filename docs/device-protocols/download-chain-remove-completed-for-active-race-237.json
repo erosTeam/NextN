@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-chain-remove-completed-for-active-race-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/remove-completed-for-active-race",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-chain-integrity-hap-sha256-676a2126f04ccb764f39c1870d5681c0dcbf3f945c12f5d2549c558ffbd88f79",
+    "page": "Gallery 676564 detail reset immediately before active-removal race",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "From the currently open completed-task menu, select and confirm removal of only Gallery 676564, then reopen its public detail. This resets the isolated test task immediately before one uninterrupted active-removal scenario."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "select-remove-completed-test-task", "uiInput": ["click", "978", "981"], "pauseAfterMs": 300, "timeoutSeconds": 30 },
+      { "name": "confirm-remove-completed-test-task", "uiInput": ["click", "948", "1188"], "pauseAfterMs": 1200, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "open-gallery-676564-detail", "hdcArgs": ["shell", "aa", "start", "-A", "ohos.want.action.viewData", "-U", "nextn://gallery/676564"], "pauseAfterMs": 2200 },
+    { "name": "dump-reset-detail", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-chain-active-race-detail.json", "-a"] },
+    { "name": "receive-reset-detail", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-chain-active-race-detail.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/remove-completed-for-active-race/detail-layout.json"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-chain-active-race-detail.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

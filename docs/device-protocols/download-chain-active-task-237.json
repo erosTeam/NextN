@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-chain-active-task-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/active-task",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-chain-integrity-hap-sha256-676a2126f04ccb764f39c1870d5681c0dcbf3f945c12f5d2549c558ffbd88f79",
+    "page": "Active 200-page Gallery 676564 task",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Start a fresh 200-page download for the isolated Gallery 676564 test task, immediately return to Downloads, and capture its current active status/count and action bounds. This prepares an active-removal race test."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "start-fresh-200-page-download", "uiInput": ["click", "1116", "1014"], "pauseAfterMs": 300, "timeoutSeconds": 30 },
+      { "name": "return-from-detail", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 300, "timeoutSeconds": 30 },
+      { "name": "open-downloads-root", "uiInput": ["click", "756", "2006"], "pauseAfterMs": 700, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-active-task", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-chain-active-task.json", "-a"] },
+    { "name": "receive-active-task", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-chain-active-task.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-chain-integrity-237-20260830/active-task/active-layout.json"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-chain-active-task.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

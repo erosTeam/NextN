@@ -82,6 +82,16 @@ export class DownloadSettingsService {
     return DownloadSettingsService.save(context, settings)
   }
 
+  static async setHideFromMediaLibrary(
+    context: common.UIAbilityContext,
+    enabled: boolean,
+  ): Promise<NhDownloadSettings> {
+    await DownloadSettingsService.restore(context)
+    const settings: NhDownloadSettings = DownloadSettingsService.snapshot()
+    settings.hideFromMediaLibrary = enabled
+    return DownloadSettingsService.save(context, settings)
+  }
+
   /** Minimum pause between page batches, clamped to 0 through 10 seconds. */
   static async setRequestIntervalSeconds(
     context: common.UIAbilityContext,
