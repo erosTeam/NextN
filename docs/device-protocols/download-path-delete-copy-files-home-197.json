@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-path-delete-copy-files-home-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/files-home",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-path-delete-copy-hap-sha256-8b1abda0372092c5d04c01a3eab53efd3a550f775ba2451494d94497ed40165d",
+    "page": "system Files home read-only anchor",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Launch the previously metadata-confirmed system Files com.huawei.hmos.files/EntryAbility and capture its home layout before interaction. This is read-only: do not select, rename, move, share, delete, or create files. Do not operate another target."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "launch-system-files", "hdcArgs": ["shell", "aa", "start", "-b", "com.huawei.hmos.files", "-a", "EntryAbility"], "pauseAfterMs": 1200 },
+    { "name": "capture-files-home-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-path-files-home-197.json", "-a"] },
+    { "name": "receive-files-home-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-path-files-home-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/files-home/layout.json"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-path-files-home-197.json"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "return-from-files-home", "uiInput": ["keyEvent", "BACK"], "pauseAfterMs": 300, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

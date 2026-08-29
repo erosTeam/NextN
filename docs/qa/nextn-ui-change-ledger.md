@@ -3,6 +3,53 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## ACCEPTED — Restore readable download directories and explicit delete copy — 2026-08-30
+
+- **Why newly actionable:** the user reported two concrete regressions in the Downloads
+  parent tree: public gallery directories expose only the numeric GID, and the task menu plus
+  confirmation use the ambiguous action `移除` with an irrelevant statement about a remote
+  gallery. This directly reopens only download-directory ownership and task deletion copy.
+- **Faulty assumption and impact:** public-storage port `4e42c6f` introduced
+  `publicTaskDirectory(galleryId)` and an exact GID-only sidecar scan instead of porting the
+  reference path-name contract. The baseline deletion surface likewise retained generic
+  `Remove` copy, then added a remote-gallery disclaimer even though deletion owns only the
+  queue row and its local files. Public folders became unreadable to users and the destructive
+  action failed to say plainly what it deletes.
+- **Reference and whole parent tree:** current NextE names gallery directories through
+  `galleryDirName(gid, preferOriginal, title)`, producing a filesystem-safe, UTF-8-bounded
+  `GID-title` segment. Its Downloads action tree is `task menu -> Delete download ->
+  Delete download? -> This removes it from Downloads and deletes local files -> Delete`.
+  Preserve NextN's queue grouping, progress, pause/resume, export action, dialog geometry,
+  cancellation button, red destructive button, and storage root.
+- **Exact correction:** new public gallery tasks and legacy-sandbox resumptions use the same
+  safe `GID-title` naming boundary. Sidecar discovery and root adoption accept that current
+  name while retaining GID-only directories as read/removal compatibility owners; do not
+  risk user data by bulk-renaming existing public directories. Replace only download-task
+  action, confirmation, error, and long-press accessibility copy with explicit delete terms
+  and the local queue/files consequence; remove the remote-gallery disclaimer.
+- **Verification plan:** review every storage-directory consumer, resource locale, and exact
+  diff; run download contracts, four-locale JSON checks, and a signed build. On user-selected
+  target 197, install in place without clearing data, download a fresh titled gallery, verify
+  the public folder basename is `GID-title`, then open its task menu and confirmation and
+  verify `删除下载` / `删除下载？` / `将从下载列表移除，并删除本地文件。` / `删除` before
+  deleting only that test task.
+- **Static and build evidence:** both download-queue contracts, the four-locale string
+  contract, resource JSON parsing, and `git diff --check` pass. The signed build completed in
+  `14 s 78 ms`; installed HAP SHA-256 is
+  `8b1abda0372092c5d04c01a3eab53efd3a550f775ba2451494d94497ed40165d`.
+- **197 acceptance:** the exact HAP was installed in place on
+  `192.168.50.197:12345` without uninstall or data clear. Fresh Gallery `676543`, title
+  `(潤子/采華）グッバイ マイ ビューティフル ワールド（K)`, completed as
+  `107 / 107 已完成` and survived a force-stop/cold start. The system Files semantic path
+  resolved its public task directory as
+  `nextn-downloads/676543-(潤子_采華）グッバイ マイ ビューティフル ワールド（K)`
+  with the forbidden slash safely replaced. Its task menu rendered `导出 CBZ` and
+  `删除下载`; the confirmation rendered `删除下载？`,
+  `将从下载列表移除，并删除本地文件。`, `取消`, and `删除`, with no remote-gallery
+  disclaimer. Confirming deleted only Gallery `676543`; the six pre-existing completed tasks
+  remained. Evidence is under
+  `.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/`.
+
 ## ACCEPTED — Restore hidden-download-images policy and `.nomedia` ownership — 2026-08-30
 
 - **Why newly actionable:** the user identified that NextN's Download settings omit the

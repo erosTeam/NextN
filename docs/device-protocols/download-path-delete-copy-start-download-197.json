@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-path-delete-copy-start-download-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/start-download",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-path-delete-copy-hap-sha256-8b1abda0372092c5d04c01a3eab53efd3a550f775ba2451494d94497ed40165d",
+    "page": "fresh titled Gallery 676543 detail with 107 pages and Download action",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Activate only the currently observed Download action for fresh Gallery 676543 titled (潤子/采華）グッバイ マイ ビューティフル ワールド（K). Capture whether 197 returns directly to the detail or presents a system storage decision gate. Do not operate another gallery or target."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "clear-bounded-hilog", "hdcArgs": ["shell", "hilog", "-r"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "start-gallery-676543-download", "uiInput": ["click", "1060", "1094"], "pauseAfterMs": 900, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-post-download-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-path-start-197.json", "-a"] },
+    { "name": "receive-post-download-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-path-start-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/start-download/layout.json"] },
+    { "name": "read-bounded-nextn-hilog", "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-path-start-197.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

@@ -397,25 +397,25 @@ export struct DownloadQueuePage {
     }
   }
 
-  private confirmRemove(task: NhDownloadTask): void {
+  private confirmDeleteTask(task: NhDownloadTask): void {
     this.getUIContext().showAlertDialog({
-      title: AppStrings.get('download_remove_title'),
-      message: AppStrings.get('download_remove_message'),
+      title: AppStrings.get('download_delete_confirm_title'),
+      message: AppStrings.get('download_delete_confirm_message'),
       primaryButton: {
         value: AppStrings.get('common_cancel'),
         action: (): void => {},
       },
       secondaryButton: {
-        value: AppStrings.get('download_remove_action'),
+        value: AppStrings.get('download_delete_confirm_action'),
         fontColor: Color.Red,
         action: (): void => {
-          this.remove(task)
+          this.deleteTask(task)
         },
       },
     })
   }
 
-  private async remove(task: NhDownloadTask): Promise<void> {
+  private async deleteTask(task: NhDownloadTask): Promise<void> {
     try {
       await DownloadQueueService.remove(this.context(), task.galleryId)
       this.tasks = DownloadQueueService.snapshot()
@@ -716,7 +716,7 @@ export struct DownloadQueuePage {
       case DownloadQueueUiErrorCode.LOAD_FAILED:
         return AppStrings.get('download_error_load')
       case DownloadQueueUiErrorCode.REMOVE_FAILED:
-        return AppStrings.get('download_error_remove')
+        return AppStrings.get('download_error_delete')
       case DownloadQueueUiErrorCode.EXPORT_FAILED:
         return AppStrings.get('download_error_export')
       case DownloadQueueUiErrorCode.UPDATE_FAILED:
@@ -841,11 +841,11 @@ export struct DownloadQueuePage {
     }
   }
 
-  private confirmRemoveActiveTask(): void {
+  private confirmDeleteActiveTask(): void {
     const task: NhDownloadTask | null = this.activeTaskActionMenuTask()
     this.closeTaskActionMenu()
     if (task !== null) {
-      this.confirmRemove(task)
+      this.confirmDeleteTask(task)
     }
   }
 
@@ -859,9 +859,9 @@ export struct DownloadQueuePage {
           })
       }
       if (this.activeTaskActionMenuTask() !== null) {
-        MenuItem({ content: AppStrings.get('download_remove_action') })
+        MenuItem({ content: AppStrings.get('download_delete_task') })
           .onClick((): void => {
-            this.confirmRemoveActiveTask()
+            this.confirmDeleteActiveTask()
           })
       }
     }
@@ -963,7 +963,7 @@ export struct DownloadQueuePage {
     .gesture(
       LongPressGesture({ repeat: false, duration: 500 })
         .onAction((): void => {
-          this.confirmRemove(task)
+          this.confirmDeleteTask(task)
         }),
     )
   }

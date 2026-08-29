@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-path-delete-copy-open-detail-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/open-detail",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-path-delete-copy-hap-sha256-8b1abda0372092c5d04c01a3eab53efd3a550f775ba2451494d94497ed40165d",
+    "page": "Gallery 676543 detail route discovery from current Browse anchor",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Open only the semantically observed first Browse card gallery-list-collection-1-cover_wall-676543 within [19,448][413,1011], then capture the detail page to establish its title, page count, and current download action. Do not start a download or mutate another task."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-observed-gallery-676543", "uiInput": ["click", "216", "730"], "pauseAfterMs": 1800, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-detail-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-path-detail-197.json", "-a"] },
+    { "name": "receive-detail-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-path-detail-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/open-detail/layout.json"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-path-detail-197.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

@@ -37,6 +37,31 @@ Total output lines: 3889
 - This observes the cache cold-start path only; it does not accept tag translation timing, every layout density, sign-out cache clearing, or the pending developer-guide maintenance contract. Raw layout copies retained under `.hvigor/outputs/nextn-cache-tags-20260816T/` and excluded from Git.
 # NextN active device-acceptance queue
 
+## Readable download directories and explicit deletion — 2026-08-30 (accepted on 197)
+
+- User outcome: new public download folders are named with a readable
+  filesystem-safe `GID-title` segment, and deleting a download states plainly
+  that it removes the Downloads entry and local files.
+- Root cause: public-storage port `4e42c6f` introduced a bare-GID directory and
+  exact bare-GID recovery scan instead of porting NextE's title-derived naming
+  contract. The task menu retained generic Remove copy and later gained an
+  irrelevant remote-gallery disclaimer.
+- Static/build evidence: both download-queue contracts, the four-locale string
+  contract, resource JSON parsing, and `git diff --check` pass. The signed HAP
+  SHA-256 is
+  `8b1abda0372092c5d04c01a3eab53efd3a550f775ba2451494d94497ed40165d`.
+- The exact HAP was installed in place on user-selected
+  `192.168.50.197:12345` with no uninstall or data clear; 237 was not used for
+  this follow-up. Fresh Gallery `676543` completed at `107 / 107 已完成` and
+  survived a force-stop/cold start. System Files exposed
+  `nextn-downloads/676543-(潤子_采華）グッバイ マイ ビューティフル ワールド（K)`,
+  proving both title inclusion and forbidden-slash replacement.
+- The task menu rendered `导出 CBZ` and `删除下载`. Its confirmation rendered
+  `删除下载？`, `将从下载列表移除，并删除本地文件。`, `取消`, and `删除`, with no
+  remote-gallery disclaimer. Confirming deleted only Gallery `676543`; the six
+  pre-existing completed tasks remained. Evidence is retained under
+  `.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/`.
+
 ## Download queue live page progress — 2026-08-30 (accepted on 237)
 
 - User outcome: a newly queued multi-page gallery visibly advances its page count and progress bar while downloading; queued/downloading no longer remains frozen and then jumps directly to complete.

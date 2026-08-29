@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-path-delete-copy-confirm-delete-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/confirm-delete",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-path-delete-copy-hap-sha256-8b1abda0372092c5d04c01a3eab53efd3a550f775ba2451494d94497ed40165d",
+    "page": "remove only the Gallery 676543 acceptance task",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Cold-start NextN without clearing data, open Downloads, open the observed first task action, select Delete download, and confirm through the observed right-side Delete button [640,1424][1156,1554]. Delete only acceptance task Gallery 676543, then capture the queue. Preserve all other tasks and account state; do not operate another target."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "force-stop-nextn", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 1000 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-downloads-root", "uiInput": ["click", "754", "2595"], "pauseAfterMs": 700, "timeoutSeconds": 30 },
+      { "name": "open-gallery-676543-task-menu", "uiInput": ["click", "1144", "741"], "pauseAfterMs": 350, "timeoutSeconds": 30 },
+      { "name": "select-delete-download", "uiInput": ["click", "934", "1060"], "pauseAfterMs": 350, "timeoutSeconds": 30 },
+      { "name": "confirm-delete-gallery-676543", "uiInput": ["click", "898", "1489"], "pauseAfterMs": 800, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-final-queue-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-path-confirm-delete-197.json", "-a"] },
+    { "name": "receive-final-queue-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-path-confirm-delete-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/confirm-delete/layout.json"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-path-confirm-delete-197.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

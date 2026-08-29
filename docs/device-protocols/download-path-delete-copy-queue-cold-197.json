@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-path-delete-copy-queue-cold-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/queue-cold",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-path-delete-copy-hap-sha256-8b1abda0372092c5d04c01a3eab53efd3a550f775ba2451494d94497ed40165d",
+    "page": "cold-restored Downloads after completed Gallery 676543",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Force-stop and cold-start the installed exact HAP without clearing data, then open the Downloads root through its established device-197 tab center. Verify the durable Gallery 676543 task and its action bounds. Preserve all tasks and account state; do not operate another target."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "force-stop-nextn", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 1000 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-downloads-root", "uiInput": ["click", "754", "2595"], "pauseAfterMs": 800, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-downloads-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-path-queue-cold-197.json", "-a"] },
+    { "name": "receive-downloads-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-path-queue-cold-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/queue-cold/layout.json"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-path-queue-cold-197.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

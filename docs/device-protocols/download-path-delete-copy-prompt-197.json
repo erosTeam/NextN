@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-path-delete-copy-prompt-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/prompt",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-path-delete-copy-hap-sha256-8b1abda0372092c5d04c01a3eab53efd3a550f775ba2451494d94497ed40165d",
+    "page": "Gallery 676543 delete-download confirmation",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Select only the currently observed Delete download menu item [690,982][1177,1138] for Gallery 676543 and capture the confirmation copy without confirming. Preserve all tasks and do not operate another target."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "select-delete-download", "uiInput": ["click", "934", "1060"], "pauseAfterMs": 500, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-delete-prompt-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-path-prompt-197.json", "-a"] },
+    { "name": "receive-delete-prompt-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-path-prompt-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/prompt/layout.json"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-path-prompt-197.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

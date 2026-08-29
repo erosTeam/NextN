@@ -48,6 +48,21 @@ switch behavior. `DownloadQueueService` owns one marker at the shared public
 setting changes, and during cold restore. Disabling removes only that exact
 marker.
 
+### 5. Public directory names and task-deletion copy lost the reference contract
+
+The public-storage port reduced every task directory to a bare GID and required
+that exact bare name during sidecar recovery. The Downloads task menu also used
+the generic action `Remove`, while its confirmation explained an unrelated
+remote-gallery non-effect instead of stating the local destructive consequence.
+
+Disposition: implemented in source. New public tasks and legacy-sandbox resumes
+use a filesystem-safe, UTF-8-bounded `GID-title` segment matching the current
+NextE contract. Root adoption and sidecar recovery accept this current name;
+existing GID-only directories remain valid read/removal compatibility owners so
+the correction does not bulk-rename user data. The action tree now says Delete
+download, Delete download?, that the task leaves Downloads and its local files
+are deleted, and Delete, across all four locales.
+
 ## Reviewed branches without a confirmed defect
 
 - Enqueue validates the complete NH page manifest before creating either state or RDB ownership.
@@ -59,6 +74,9 @@ marker.
 - Completion notifications occur only after the durable final task write and are default-off; notification failure does not alter queue state.
 - Download settings backup/sync continues to use the repository's generic key table, so the new hidden-images key follows the existing settings transport rather than introducing a second persistence path.
 - Removal is bounded to the task-owned public directory, its exact legacy compatibility directory, and its gallery-scoped private export cache.
+- Current and legacy public directory names are matched only against the task's
+  own gallery ID and title-derived safe segment; recovery does not adopt an
+  arbitrary sibling directory.
 
 ## Verification evidence and boundary
 
@@ -84,8 +102,20 @@ marker.
   `.hvigor/outputs/nextn-download-chain-integrity-237-20260830/` and excluded
   from Git. The device finishes with an empty download queue and hidden-images
   enabled.
+- The follow-up naming/copy correction was installed in place only on the
+  user-selected `192.168.50.197:12345`; target 237 was not used for this
+  follow-up. Fresh Gallery `676543` completed at `107 / 107`, survived a cold
+  start, and the system Files semantic path exposed the exact directory
+  `nextn-downloads/676543-(潤子_采華）グッバイ マイ ビューティフル ワールド（K)`.
+  The task menu and confirmation rendered `删除下载`, `删除下载？`,
+  `将从下载列表移除，并删除本地文件。`, and `删除`; confirming removed only the
+  acceptance task and retained the six existing completed tasks. Follow-up
+  evidence is under
+  `.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/`.
 
 This accepts the corrected persistence, Reader, active-removal,
-interruption/restore, resume/pause, and marker lifecycle on 237. CBZ ShareKit
-handoff, notification delivery, and manual directory restore were source- and
-build-reviewed but were not physically exercised in this run.
+interruption/restore, resume/pause, and marker lifecycle on 237, plus current
+directory naming, cold persistence, explicit deletion copy, and scoped deletion
+on 197. CBZ ShareKit handoff, notification delivery, and manual directory
+restore were source- and build-reviewed but were not physically exercised in
+this run.

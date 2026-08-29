@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-download-path-delete-copy-install-anchor-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/install-anchor",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "download-path-delete-copy-hap-sha256-8b1abda0372092c5d04c01a3eab53efd3a550f775ba2451494d94497ed40165d",
+    "page": "current 197 foreground anchor after in-place candidate install",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Install only on user-selected target 197 with install -r and no data clear, cold-start NextN, and retain one semantic anchor before discovering the current route to a fresh titled gallery. Do not operate target 237 or mutate account state."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake-before-install", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    {
+      "name": "install-signed-candidate-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"],
+      "pauseAfterMs": 500,
+      "timeoutSeconds": 180
+    },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    {
+      "name": "cold-start-nextn",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"],
+      "pauseAfterMs": 2500,
+      "timeoutSeconds": 30
+    }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "noninteractive-top-edge-stabilization", "uiInput": ["click", "1", "1"], "pauseAfterMs": 200 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-current-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-download-path-anchor-197.json", "-a"] },
+    { "name": "receive-current-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-download-path-anchor-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-download-path-delete-copy-197-20260830/install-anchor/layout.json"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-download-path-anchor-197.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

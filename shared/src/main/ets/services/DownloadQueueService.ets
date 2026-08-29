@@ -1,4 +1,5 @@
 import { common } from '@kit.AbilityKit'
+import { util } from '@kit.ArkTS'
 import { fileIo, fileUri, picker } from '@kit.CoreFileKit'
 import { DiagnosticLogger } from '../diagnostics/DiagnosticLogger'
 import { NhGalleryDetail, NhGalleryPage } from '../model/NhGallery'
@@ -16,6 +17,8 @@ const DOWNLOAD_ROOT_MARKER: string = '.nextn-download-root'
 const NO_MEDIA_MARKER_FILE: string = '.nomedia'
 const METADATA_FILE_NAME: string = 'metadata.json'
 const METADATA_SCHEMA: number = 2
+const DOWNLOAD_PATH_TITLE_MAX_LENGTH: number = 96
+const DOWNLOAD_PATH_SEGMENT_MAX_BYTES: number = 255
 const MAX_PAGE_BYTES: number = 64 * 1024 * 1024
 const CONNECT_TIMEOUT_MS: number = 10000
 const READ_TIMEOUT_MS: number = 30000
@@ -201,7 +204,7 @@ export class DownloadQueueService {
     task.pageExtensions = extensions
     task.completedPageIndexes = []
     task.completionJournalPresent = true
-    task.storageDirectory = DownloadQueueService.publicTaskDirectory(task.galleryId)
+    task.storageDirectory = DownloadQueueService.publicTaskDirectory(task.galleryId, task.title)
     task.completedPages = 0
     task.status = NhDownloadTaskStatus.QUEUED
     task.createdAt = now
@@ -247,7 +250,7 @@ export class DownloadQueueService {
       }
       // Legacy partial files remain a read/removal source. Resuming starts a
       // clean public task directory so no new bytes extend the sandbox copy.
-      task.storageDirectory = DownloadQueueService.publicTaskDirectory(task.galleryId)
+      task.storageDirectory = DownloadQueueService.publicTaskDirectory(task.galleryId, task.title)
       task.completedPageIndexes = []
       task.completionJournalPresent = true
     }
@@ -1006,8 +1009,24 @@ export class DownloadQueueService {
     return `${DownloadQueueService.downloadPublicRoot}/${DOWNLOAD_DIR_NAME}`
   }
 
-  private static publicTaskDirectory(galleryId: number): string {
-    return `${DownloadQueueService.publicDownloadRoot()}/${galleryId}`
+  private static publicTaskDirectory(galleryId: number, title: string): string {
+    return `${DownloadQueueService.publicDownloadRoot()}/${DownloadQueueService.taskDirectoryName(galleryId, title)}`
+  }
+
+  /** Match NextE's readable public-directory contract without exceeding one path segment. */
+  private static taskDirectoryName(galleryId: number, title: string): string {
+    const base: string = DownloadQueueService.safePathPart(`${galleryId}`)
+    const titlePrefix: string = `${base}-`
+    const titleMaxBytes: number = DOWNLOAD_PATH_SEGMENT_MAX_BYTES -
+      DownloadQueueService.utf8ByteLength(titlePrefix)
+    const titlePart: string = DownloadQueueService.pathTitlePart(title, titleMaxBytes)
+    return titlePart.length > 0 ? `${base}-${titlePart}` : base
+  }
+
+  /** Existing GID-only public directories remain valid read/removal owners. */
+  private static taskDirectoryNameMatches(name: string, task: NhDownloadTask): boolean {
+    return name === `${task.galleryId}` ||
+      name === DownloadQueueService.taskDirectoryName(task.galleryId, task.title)
   }
 
   private static taskDirectory(context: common.UIAbilityContext, task: NhDownloadTask): string {
@@ -1174,17 +1193,23 @@ export class DownloadQueueService {
     if (DownloadQueueService.downloadPublicRoot.length > 0) {
       return
     }
-    const suffix: string = `/${DOWNLOAD_DIR_NAME}`
+    const marker: string = `/${DOWNLOAD_DIR_NAME}/`
     for (let index: number = 0; index < tasks.length; index++) {
       const directory: string = DownloadQueueService.normalizePath(tasks[index].storageDirectory)
       if (directory.length === 0 || DownloadQueueService.isLegacyTaskDirectory(context, directory)) {
         continue
       }
-      const marker: string = `${suffix}/${tasks[index].galleryId}`
-      if (directory.endsWith(marker)) {
-        DownloadQueueService.downloadPublicRoot = directory.substring(0, directory.length - marker.length)
-        return
+      const markerIndex: number = directory.lastIndexOf(marker)
+      if (markerIndex < 0) {
+        continue
       }
+      const name: string = directory.substring(markerIndex + marker.length)
+      if (name.length === 0 || name.indexOf('/') >= 0 ||
+        !DownloadQueueService.taskDirectoryNameMatches(name, tasks[index])) {
+        continue
+      }
+      DownloadQueueService.downloadPublicRoot = directory.substring(0, markerIndex)
+      return
     }
   }
 
@@ -1257,7 +1282,7 @@ export class DownloadQueueService {
           }
           try {
             const task: NhDownloadTask | null = DownloadQueueService.parseTaskMetadata(fileIo.readTextSync(path))
-            if (task !== null && names[index] === `${task.galleryId}` && !out.some(
+            if (task !== null && DownloadQueueService.taskDirectoryNameMatches(names[index], task) && !out.some(
               (existing: NhDownloadTask): boolean => existing.galleryId === task.galleryId,
             )) {
               task.storageDirectory = directory
@@ -1474,6 +1499,46 @@ export class DownloadQueueService {
   private static normalizedExtension(value: string): string {
     const extension: string = value.toLowerCase().replace('.', '').trim()
     return /^[a-z0-9]{1,8}$/.test(extension) ? extension : ''
+  }
+
+  private static safePathPart(value: string): string {
+    return value.replace(/[\/:*"<>|,?\\]/g, '_')
+  }
+
+  private static utf8ByteLength(value: string): number {
+    return new util.TextEncoder().encodeInto(value).byteLength
+  }
+
+  private static pathTitlePart(value: string, maxBytes: number): string {
+    if (maxBytes <= 0) {
+      return ''
+    }
+    const safe: string = DownloadQueueService.safePathPart(value).trim().replace(/\s+/g, ' ')
+    const encoder: util.TextEncoder = new util.TextEncoder()
+    let usedBytes: number = 0
+    let index: number = 0
+    let end: number = 0
+    while (index < safe.length && index < DOWNLOAD_PATH_TITLE_MAX_LENGTH) {
+      let next: number = index + 1
+      const first: number = safe.charCodeAt(index)
+      if (first >= 0xD800 && first <= 0xDBFF && next < safe.length) {
+        const second: number = safe.charCodeAt(next)
+        if (second >= 0xDC00 && second <= 0xDFFF) {
+          next += 1
+        }
+      }
+      if (next > DOWNLOAD_PATH_TITLE_MAX_LENGTH) {
+        break
+      }
+      const nextBytes: number = encoder.encodeInto(safe.substring(index, next)).byteLength
+      if (usedBytes + nextBytes > maxBytes) {
+        break
+      }
+      usedBytes += nextBytes
+      end = next
+      index = next
+    }
+    return safe.substring(0, end).trim()
   }
 
   private static async delay(milliseconds: number): Promise<void> {
