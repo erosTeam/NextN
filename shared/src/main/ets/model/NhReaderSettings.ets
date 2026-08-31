@@ -77,8 +77,13 @@ export class NhReaderPresentation {
   spreadLayoutMode: NhReaderSpreadLayout = NhReaderSpreadLayout.JOINED
   /** Animate only adjacent programmatic Pager moves; direct Swipe stays component-owned. */
   pageTurnAnimation: boolean = true
-  tapZoneLayout: NhReaderTapZoneLayout = NhReaderTapZoneLayout.RIGHT_LEFT
-  tapZoneInvert: NhReaderTapZoneInvert = NhReaderTapZoneInvert.NONE
+  tapZoneLayoutPaged: NhReaderTapZoneLayout = NhReaderTapZoneLayout.RIGHT_LEFT
+  tapZoneInvertPaged: NhReaderTapZoneInvert = NhReaderTapZoneInvert.NONE
+  tapZoneLayoutContinuous: NhReaderTapZoneLayout = NhReaderTapZoneLayout.RIGHT_LEFT
+  tapZoneInvertContinuous: NhReaderTapZoneInvert = NhReaderTapZoneInvert.NONE
+  /** Disabled by default; detection failure always falls back to the untouched page. */
+  cropBordersPaged: boolean = false
+  cropBordersContinuous: boolean = false
   /** Explicit opt-in; the original Reader image always remains available. */
   superResolutionEnabled: boolean = false
   /** Existing installations resolve to the original art model without a migration download. */
@@ -100,11 +105,23 @@ export class NhReaderPresentation {
     result.doublePageEnabled = this.doublePageEnabled
     result.spreadLayoutMode = this.spreadLayoutMode
     result.pageTurnAnimation = this.pageTurnAnimation
-    result.tapZoneLayout = this.tapZoneLayout
-    result.tapZoneInvert = this.tapZoneInvert
+    result.tapZoneLayoutPaged = this.tapZoneLayoutPaged
+    result.tapZoneInvertPaged = this.tapZoneInvertPaged
+    result.tapZoneLayoutContinuous = this.tapZoneLayoutContinuous
+    result.tapZoneInvertContinuous = this.tapZoneInvertContinuous
+    result.cropBordersPaged = this.cropBordersPaged
+    result.cropBordersContinuous = this.cropBordersContinuous
     result.superResolutionEnabled = this.superResolutionEnabled
     result.superResolutionModel = this.superResolutionModel
     result.superResolutionMaxHeight = this.superResolutionMaxHeight
     return result
+  }
+
+  activeTapZoneLayout(): NhReaderTapZoneLayout {
+    return this.mode === NhReaderMode.VERTICAL ? this.tapZoneLayoutContinuous : this.tapZoneLayoutPaged
+  }
+
+  activeTapZoneInvert(): NhReaderTapZoneInvert {
+    return this.mode === NhReaderMode.VERTICAL ? this.tapZoneInvertContinuous : this.tapZoneInvertPaged
   }
 }

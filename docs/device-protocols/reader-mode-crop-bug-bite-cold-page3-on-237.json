@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-mode-crop-bug-bite-cold-page3-on-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/bug-bite-independent-edge-on-20260901T028",
+  "display": {"widthPx": 1320, "heightPx": 2120},
+  "context": {"project": "NextN", "codeIdentity": "worktree-reader-mode-crop-independent-edges-build-20260901", "page": "gallery-663205-bug-bite-cold-reader-page3-crop-enabled", "deviceAlias": "device-237", "deviceModel": "unknown", "foldState": "unknown", "orientation": "portrait", "resolution": "1320x2120", "notes": "Cold-start the rebuilt independent-edge detector with data preserved, open Gallery 663205, and reopen persisted Continue P3 while paged crop remains enabled."},
+  "preflight": [
+    {"name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"]},
+    {"name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]},
+    {"name": "cold-stop-nextn-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 400},
+    {"name": "open-gallery-663205-public-route", "hdcArgs": ["shell", "aa", "start", "-A", "ohos.want.action.viewData", "-U", "nextn://gallery/663205"], "pauseAfterMs": 3500, "timeoutSeconds": 30}
+  ],
+  "measurement": {"actions": [{"name": "reopen-cold-reader-page3", "uiInput": ["click", "1104", "2003"], "pauseAfterMs": 5000, "timeoutSeconds": 30}]},
+  "postflight": [
+    {"name": "capture-cold-page3-on-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-mode-crop-bug-bite-cold-page3-on.json", "-a"]},
+    {"name": "capture-cold-page3-on-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-reader-mode-crop-bug-bite-cold-page3-on.png"]},
+    {"name": "receive-cold-page3-on-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-mode-crop-bug-bite-cold-page3-on.json", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/bug-bite-independent-edge-on-20260901T028/cold-page3-on-layout.json"]},
+    {"name": "receive-cold-page3-on-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-mode-crop-bug-bite-cold-page3-on.png", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/bug-bite-independent-edge-on-20260901T028/cold-page3-on-screen.png"]},
+    {"name": "remove-remote-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-reader-mode-crop-bug-bite-cold-page3-on.json", "/data/local/tmp/nextn-reader-mode-crop-bug-bite-cold-page3-on.png"]},
+    {"name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]},
+    {"name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]}
+  ]
+}

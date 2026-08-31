@@ -5511,3 +5511,19 @@ permitted in this repository.
   next manifest window starts at the successful diagnostics receive boundary
   `2026-08-29T00:58:37.872902+08:00`. The next cycle must re-establish the
   foreground precondition before any account-state interpretation.
+
+## Reader mode-owned settings and automatic page-border cropping — 237 — 2026-09-01
+
+- The signed main candidate and signed `entry@ohosTest` candidate both built successfully. The main HAP was
+  installed in place on exact authorized target `192.168.50.237:12345`; no uninstall or data clear was used.
+- Root Reader settings show separate Paged and Continuous groups. The in-Reader sheet shows only the active mode:
+  RTL showed Paged, while true Continuous vertical showed Continuous. Temporary Paged `L 形` and Continuous
+  `Kindle` values survived a cold start independently.
+- On Gallery `663205`, exact page `3 / 40`, enabling crop removed its uniform top white band; disabling on the same
+  current page restored the band. An unframed page was observed only before the final independent-edge detector
+  revision and is therefore not claimed as final-candidate device evidence.
+- The device was left with its original state restored: direction `从右到左`, both tap-zone values `左右`, and both
+  crop switches disabled. A final data-preserving cold start reconfirmed those values. Evidence is under
+  `.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/`, especially
+  `reader-sheet-continuous-20260901T033`, `bug-bite-independent-edge-on-20260901T028`,
+  `bug-bite-independent-edge-off-clean-20260901T030`, and `cold-restored-preferences-20260901T036`.

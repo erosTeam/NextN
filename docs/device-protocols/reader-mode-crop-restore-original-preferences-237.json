@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-mode-crop-restore-original-preferences-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/restored-preferences-sheet-20260901T035",
+  "display": {"widthPx": 1320, "heightPx": 2120},
+  "context": {"project": "NextN", "codeIdentity": "worktree-reader-mode-crop-independent-edges-build-20260901", "page": "reader-sheet-restored-original-preferences", "deviceAlias": "device-237", "deviceModel": "unknown", "foldState": "unknown", "orientation": "portrait", "resolution": "1320x2120", "notes": "Restore the user's original continuous Right and left tap zones, paged RTL direction, and paged Right and left tap zones. Both crop switches remain disabled."},
+  "preflight": [
+    {"name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"]},
+    {"name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]}
+  ],
+  "measurement": {"actions": [
+    {"name": "restore-continuous-tap-zone-right-left", "uiInput": ["click", "955", "916"], "pauseAfterMs": 700, "timeoutSeconds": 30},
+    {"name": "open-reading-direction-menu", "uiInput": ["click", "1110", "1165"], "pauseAfterMs": 700, "timeoutSeconds": 30},
+    {"name": "restore-paged-rtl", "uiInput": ["click", "955", "1480"], "pauseAfterMs": 1200, "timeoutSeconds": 30},
+    {"name": "open-paged-tap-zone-menu", "uiInput": ["click", "1100", "1900"], "pauseAfterMs": 700, "timeoutSeconds": 30},
+    {"name": "restore-paged-tap-zone-right-left", "uiInput": ["click", "955", "1350"], "pauseAfterMs": 1000, "timeoutSeconds": 30}
+  ]},
+  "postflight": [
+    {"name": "capture-restored-sheet-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-restored-preferences.json", "-a"]},
+    {"name": "capture-restored-sheet-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-reader-restored-preferences.png"]},
+    {"name": "receive-restored-sheet-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-restored-preferences.json", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/restored-preferences-sheet-20260901T035/restored-sheet-layout.json"]},
+    {"name": "receive-restored-sheet-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-restored-preferences.png", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/restored-preferences-sheet-20260901T035/restored-sheet-screen.png"]},
+    {"name": "remove-remote-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-reader-restored-preferences.json", "/data/local/tmp/nextn-reader-restored-preferences.png"]},
+    {"name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]},
+    {"name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]}
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-mode-crop-cold-persistence-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/cold-restored-preferences-20260901T036",
+  "display": {"widthPx": 1320, "heightPx": 2120},
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "worktree-reader-mode-crop-independent-edges-build-20260901",
+    "page": "cold-start-reader-settings-restored-values",
+    "deviceAlias": "device-237",
+    "deviceModel": "unknown",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Force-stop and cold-start NextN with data preserved, then open Reader settings. Prove the original paged and continuous Right and left tap zones, paged RTL mode, and both disabled crop switches were restored and persisted."
+  },
+  "preflight": [
+    {"name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"]},
+    {"name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]},
+    {"name": "cold-stop-nextn-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 400},
+    {"name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-a", "EntryAbility", "-b", "com.erosteam.nextn"], "pauseAfterMs": 2500, "timeoutSeconds": 30}
+  ],
+  "measurement": {
+    "actions": [
+      {"name": "open-my-settings-root", "uiInput": ["click", "948", "1964"], "pauseAfterMs": 900, "timeoutSeconds": 30},
+      {"name": "open-reader-settings", "uiInput": ["click", "732", "1244"], "pauseAfterMs": 1000, "timeoutSeconds": 30}
+    ]
+  },
+  "postflight": [
+    {"name": "capture-cold-reader-settings-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-mode-crop-cold-persistence.json", "-a"]},
+    {"name": "capture-cold-reader-settings-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-reader-mode-crop-cold-persistence.png"]},
+    {"name": "receive-cold-reader-settings-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-mode-crop-cold-persistence.json", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/cold-restored-preferences-20260901T036/cold-restored-layout.json"]},
+    {"name": "receive-cold-reader-settings-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-mode-crop-cold-persistence.png", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/cold-restored-preferences-20260901T036/cold-restored-screen.png"]},
+    {"name": "remove-remote-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-reader-mode-crop-cold-persistence.json", "/data/local/tmp/nextn-reader-mode-crop-cold-persistence.png"]},
+    {"name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]},
+    {"name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]}
+  ]
+}

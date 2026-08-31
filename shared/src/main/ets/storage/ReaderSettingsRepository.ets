@@ -30,6 +30,12 @@ const READER_SPREAD_LAYOUT_KEY: string = 'reader_spread_layout'
 const READER_PAGE_TURN_ANIMATION_KEY: string = 'reader_page_turn_animation'
 const READER_TAP_ZONE_LAYOUT_KEY: string = 'reader_tap_zone_layout'
 const READER_TAP_ZONE_INVERT_KEY: string = 'reader_tap_zone_invert'
+const READER_TAP_ZONE_LAYOUT_PAGED_KEY: string = 'reader_tap_zone_layout_paged'
+const READER_TAP_ZONE_INVERT_PAGED_KEY: string = 'reader_tap_zone_invert_paged'
+const READER_TAP_ZONE_LAYOUT_CONTINUOUS_KEY: string = 'reader_tap_zone_layout_continuous'
+const READER_TAP_ZONE_INVERT_CONTINUOUS_KEY: string = 'reader_tap_zone_invert_continuous'
+const READER_CROP_BORDERS_PAGED_KEY: string = 'reader_crop_borders_paged'
+const READER_CROP_BORDERS_CONTINUOUS_KEY: string = 'reader_crop_borders_continuous'
 const READER_SUPER_RESOLUTION_ENABLED_KEY: string = 'reader_super_resolution_enabled'
 const READER_SUPER_RESOLUTION_MODEL_KEY: string = 'reader_super_resolution_model'
 const READER_SUPER_RESOLUTION_MAX_HEIGHT_KEY: string = 'reader_super_resolution_max_height'
@@ -183,16 +189,40 @@ export class ReaderSettingsRepository {
     return (await ReaderSettingsRepository.value(context, READER_PAGE_TURN_ANIMATION_KEY)) !== 'false'
   }
 
-  static async tapZoneLayout(context: common.UIAbilityContext): Promise<NhReaderTapZoneLayout> {
+  static async tapZoneLayoutPaged(context: common.UIAbilityContext): Promise<NhReaderTapZoneLayout> {
+    const stored: string | null = await ReaderSettingsRepository.value(context, READER_TAP_ZONE_LAYOUT_PAGED_KEY)
     return NhReaderTapZoneResolver.normalizeLayout(
-      (await ReaderSettingsRepository.value(context, READER_TAP_ZONE_LAYOUT_KEY)) ?? '',
+      stored ?? (await ReaderSettingsRepository.value(context, READER_TAP_ZONE_LAYOUT_KEY)) ?? '',
     )
   }
 
-  static async tapZoneInvert(context: common.UIAbilityContext): Promise<NhReaderTapZoneInvert> {
+  static async tapZoneInvertPaged(context: common.UIAbilityContext): Promise<NhReaderTapZoneInvert> {
+    const stored: string | null = await ReaderSettingsRepository.value(context, READER_TAP_ZONE_INVERT_PAGED_KEY)
     return NhReaderTapZoneResolver.normalizeInvert(
-      (await ReaderSettingsRepository.value(context, READER_TAP_ZONE_INVERT_KEY)) ?? '',
+      stored ?? (await ReaderSettingsRepository.value(context, READER_TAP_ZONE_INVERT_KEY)) ?? '',
     )
+  }
+
+  static async tapZoneLayoutContinuous(context: common.UIAbilityContext): Promise<NhReaderTapZoneLayout> {
+    const stored: string | null = await ReaderSettingsRepository.value(context, READER_TAP_ZONE_LAYOUT_CONTINUOUS_KEY)
+    return NhReaderTapZoneResolver.normalizeLayout(
+      stored ?? (await ReaderSettingsRepository.value(context, READER_TAP_ZONE_LAYOUT_KEY)) ?? '',
+    )
+  }
+
+  static async tapZoneInvertContinuous(context: common.UIAbilityContext): Promise<NhReaderTapZoneInvert> {
+    const stored: string | null = await ReaderSettingsRepository.value(context, READER_TAP_ZONE_INVERT_CONTINUOUS_KEY)
+    return NhReaderTapZoneResolver.normalizeInvert(
+      stored ?? (await ReaderSettingsRepository.value(context, READER_TAP_ZONE_INVERT_KEY)) ?? '',
+    )
+  }
+
+  static async cropBordersPaged(context: common.UIAbilityContext): Promise<boolean> {
+    return (await ReaderSettingsRepository.value(context, READER_CROP_BORDERS_PAGED_KEY)) === 'true'
+  }
+
+  static async cropBordersContinuous(context: common.UIAbilityContext): Promise<boolean> {
+    return (await ReaderSettingsRepository.value(context, READER_CROP_BORDERS_CONTINUOUS_KEY)) === 'true'
   }
 
   static async superResolutionEnabled(context: common.UIAbilityContext): Promise<boolean> {
@@ -313,25 +343,63 @@ export class ReaderSettingsRepository {
     )
   }
 
-  static saveTapZoneLayout(
+  static saveTapZoneLayoutPaged(
     context: common.UIAbilityContext,
     layout: NhReaderTapZoneLayout,
   ): Promise<void> {
     return ReaderSettingsRepository.saveValue(
       context,
-      READER_TAP_ZONE_LAYOUT_KEY,
+      READER_TAP_ZONE_LAYOUT_PAGED_KEY,
       NhReaderTapZoneResolver.normalizeLayout(layout),
     )
   }
 
-  static saveTapZoneInvert(
+  static saveTapZoneInvertPaged(
     context: common.UIAbilityContext,
     invert: NhReaderTapZoneInvert,
   ): Promise<void> {
     return ReaderSettingsRepository.saveValue(
       context,
-      READER_TAP_ZONE_INVERT_KEY,
+      READER_TAP_ZONE_INVERT_PAGED_KEY,
       NhReaderTapZoneResolver.normalizeInvert(invert),
+    )
+  }
+
+  static saveTapZoneLayoutContinuous(
+    context: common.UIAbilityContext,
+    layout: NhReaderTapZoneLayout,
+  ): Promise<void> {
+    return ReaderSettingsRepository.saveValue(
+      context,
+      READER_TAP_ZONE_LAYOUT_CONTINUOUS_KEY,
+      NhReaderTapZoneResolver.normalizeLayout(layout),
+    )
+  }
+
+  static saveTapZoneInvertContinuous(
+    context: common.UIAbilityContext,
+    invert: NhReaderTapZoneInvert,
+  ): Promise<void> {
+    return ReaderSettingsRepository.saveValue(
+      context,
+      READER_TAP_ZONE_INVERT_CONTINUOUS_KEY,
+      NhReaderTapZoneResolver.normalizeInvert(invert),
+    )
+  }
+
+  static saveCropBordersPaged(context: common.UIAbilityContext, enabled: boolean): Promise<void> {
+    return ReaderSettingsRepository.saveValue(
+      context,
+      READER_CROP_BORDERS_PAGED_KEY,
+      enabled ? 'true' : 'false',
+    )
+  }
+
+  static saveCropBordersContinuous(context: common.UIAbilityContext, enabled: boolean): Promise<void> {
+    return ReaderSettingsRepository.saveValue(
+      context,
+      READER_CROP_BORDERS_CONTINUOUS_KEY,
+      enabled ? 'true' : 'false',
     )
   }
 

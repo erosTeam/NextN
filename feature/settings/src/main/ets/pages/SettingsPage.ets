@@ -1251,8 +1251,15 @@ export struct SettingsPage {
 
   /** Double page and spread layout exist only in the horizontal LTR/RTL Pager modes (NextE doublePageAvailable). */
   private doublePageAvailable(): boolean {
+    if (!this.sheetPresentation) {
+      return true
+    }
     return this.readerPresentation.mode === NhReaderMode.PAGED ||
       this.readerPresentation.mode === NhReaderMode.PAGED_RTL
+  }
+
+  private continuousModeSelected(): boolean {
+    return this.readerPresentation.mode === NhReaderMode.VERTICAL
   }
 
   private readerModeIcon(mode: NhReaderMode): Resource {
@@ -1268,27 +1275,39 @@ export struct SettingsPage {
     return $r('sys.symbol.arrow_right_and_square')
   }
 
-  private readerTapZoneLayoutLabel(): string {
-    if (this.readerPresentation.tapZoneLayout === NhReaderTapZoneLayout.L_SHAPED) {
+  private readerTapZoneLayout(continuous: boolean): NhReaderTapZoneLayout {
+    return continuous
+      ? this.readerPresentation.tapZoneLayoutContinuous
+      : this.readerPresentation.tapZoneLayoutPaged
+  }
+
+  private readerTapZoneInvert(continuous: boolean): NhReaderTapZoneInvert {
+    return continuous
+      ? this.readerPresentation.tapZoneInvertContinuous
+      : this.readerPresentation.tapZoneInvertPaged
+  }
+
+  private readerTapZoneLayoutLabel(continuous: boolean): string {
+    if (this.readerTapZoneLayout(continuous) === NhReaderTapZoneLayout.L_SHAPED) {
       return AppStrings.get('settings_reader_tap_zone_l_shaped')
     }
-    if (this.readerPresentation.tapZoneLayout === NhReaderTapZoneLayout.KINDLE) {
+    if (this.readerTapZoneLayout(continuous) === NhReaderTapZoneLayout.KINDLE) {
       return AppStrings.get('settings_reader_tap_zone_kindle')
     }
-    if (this.readerPresentation.tapZoneLayout === NhReaderTapZoneLayout.EDGE) {
+    if (this.readerTapZoneLayout(continuous) === NhReaderTapZoneLayout.EDGE) {
       return AppStrings.get('settings_reader_tap_zone_edge')
     }
     return AppStrings.get('settings_reader_tap_zone_right_left')
   }
 
-  private readerTapZoneInvertLabel(): string {
-    if (this.readerPresentation.tapZoneInvert === NhReaderTapZoneInvert.HORIZONTAL) {
+  private readerTapZoneInvertLabel(continuous: boolean): string {
+    if (this.readerTapZoneInvert(continuous) === NhReaderTapZoneInvert.HORIZONTAL) {
       return AppStrings.get('settings_reader_tap_zone_invert_horizontal')
     }
-    if (this.readerPresentation.tapZoneInvert === NhReaderTapZoneInvert.VERTICAL) {
+    if (this.readerTapZoneInvert(continuous) === NhReaderTapZoneInvert.VERTICAL) {
       return AppStrings.get('settings_reader_tap_zone_invert_vertical')
     }
-    if (this.readerPresentation.tapZoneInvert === NhReaderTapZoneInvert.BOTH) {
+    if (this.readerTapZoneInvert(continuous) === NhReaderTapZoneInvert.BOTH) {
       return AppStrings.get('settings_reader_tap_zone_invert_both')
     }
     return AppStrings.get('settings_reader_tap_zone_invert_none')
@@ -1753,15 +1772,19 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ReaderTapZoneMenuItem(layout: NhReaderTapZoneLayout, select: (action: () => void) => void) {
+  private ReaderTapZoneMenuItem(
+    continuous: boolean,
+    layout: NhReaderTapZoneLayout,
+    select: (action: () => void) => void,
+  ) {
     MenuItem({
       content: this.readerTapZoneLayoutLabelFor(layout),
-      symbolEndIcon: this.readerPresentation.tapZoneLayout === layout
+      symbolEndIcon: this.readerTapZoneLayout(continuous) === layout
         ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
         : undefined,
     }).onClick((): void => {
       select((): void => {
-        this.saveReaderTapZoneLayout(layout)
+        this.saveReaderTapZoneLayout(continuous, layout)
       })
     })
   }
@@ -1780,25 +1803,29 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ReaderTapZoneMenu(select: (action: () => void) => void) {
+  private ReaderTapZoneMenu(continuous: boolean, select: (action: () => void) => void) {
     Menu() {
-      this.ReaderTapZoneMenuItem(NhReaderTapZoneLayout.RIGHT_LEFT, select)
-      this.ReaderTapZoneMenuItem(NhReaderTapZoneLayout.L_SHAPED, select)
-      this.ReaderTapZoneMenuItem(NhReaderTapZoneLayout.KINDLE, select)
-      this.ReaderTapZoneMenuItem(NhReaderTapZoneLayout.EDGE, select)
+      this.ReaderTapZoneMenuItem(continuous, NhReaderTapZoneLayout.RIGHT_LEFT, select)
+      this.ReaderTapZoneMenuItem(continuous, NhReaderTapZoneLayout.L_SHAPED, select)
+      this.ReaderTapZoneMenuItem(continuous, NhReaderTapZoneLayout.KINDLE, select)
+      this.ReaderTapZoneMenuItem(continuous, NhReaderTapZoneLayout.EDGE, select)
     }
   }
 
   @Builder
-  private ReaderTapZoneInvertMenuItem(invert: NhReaderTapZoneInvert, select: (action: () => void) => void) {
+  private ReaderTapZoneInvertMenuItem(
+    continuous: boolean,
+    invert: NhReaderTapZoneInvert,
+    select: (action: () => void) => void,
+  ) {
     MenuItem({
       content: this.readerTapZoneInvertLabelFor(invert),
-      symbolEndIcon: this.readerPresentation.tapZoneInvert === invert
+      symbolEndIcon: this.readerTapZoneInvert(continuous) === invert
         ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
         : undefined,
     }).onClick((): void => {
       select((): void => {
-        this.saveReaderTapZoneInvert(invert)
+        this.saveReaderTapZoneInvert(continuous, invert)
       })
     })
   }
@@ -1817,12 +1844,12 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ReaderTapZoneInvertMenu(select: (action: () => void) => void) {
+  private ReaderTapZoneInvertMenu(continuous: boolean, select: (action: () => void) => void) {
     Menu() {
-      this.ReaderTapZoneInvertMenuItem(NhReaderTapZoneInvert.NONE, select)
-      this.ReaderTapZoneInvertMenuItem(NhReaderTapZoneInvert.HORIZONTAL, select)
-      this.ReaderTapZoneInvertMenuItem(NhReaderTapZoneInvert.VERTICAL, select)
-      this.ReaderTapZoneInvertMenuItem(NhReaderTapZoneInvert.BOTH, select)
+      this.ReaderTapZoneInvertMenuItem(continuous, NhReaderTapZoneInvert.NONE, select)
+      this.ReaderTapZoneInvertMenuItem(continuous, NhReaderTapZoneInvert.HORIZONTAL, select)
+      this.ReaderTapZoneInvertMenuItem(continuous, NhReaderTapZoneInvert.VERTICAL, select)
+      this.ReaderTapZoneInvertMenuItem(continuous, NhReaderTapZoneInvert.BOTH, select)
     }
   }
 
@@ -2135,27 +2162,48 @@ export struct SettingsPage {
     }
   }
 
-  private async saveReaderTapZoneLayout(layout: NhReaderTapZoneLayout): Promise<void> {
-    if (this.readerPresentation.tapZoneLayout === layout) {
+  private async saveReaderTapZoneLayout(continuous: boolean, layout: NhReaderTapZoneLayout): Promise<void> {
+    if (this.readerTapZoneLayout(continuous) === layout) {
       return
     }
     this.readerModeError = ''
     try {
-      await ReaderPresentationService.setTapZoneLayout(this.context(), layout)
+      if (continuous) {
+        await ReaderPresentationService.setTapZoneLayoutContinuous(this.context(), layout)
+      } else {
+        await ReaderPresentationService.setTapZoneLayoutPaged(this.context(), layout)
+      }
     } catch (_error) {
       this.readerModeError = AppStrings.get('settings_reader_tap_zone_save_failed')
     }
   }
 
-  private async saveReaderTapZoneInvert(invert: NhReaderTapZoneInvert): Promise<void> {
-    if (this.readerPresentation.tapZoneInvert === invert) {
+  private async saveReaderTapZoneInvert(continuous: boolean, invert: NhReaderTapZoneInvert): Promise<void> {
+    if (this.readerTapZoneInvert(continuous) === invert) {
       return
     }
     this.readerModeError = ''
     try {
-      await ReaderPresentationService.setTapZoneInvert(this.context(), invert)
+      if (continuous) {
+        await ReaderPresentationService.setTapZoneInvertContinuous(this.context(), invert)
+      } else {
+        await ReaderPresentationService.setTapZoneInvertPaged(this.context(), invert)
+      }
     } catch (_error) {
       this.readerModeError = AppStrings.get('settings_reader_tap_zone_save_failed')
+    }
+  }
+
+  private async saveReaderCropBorders(continuous: boolean, enabled: boolean): Promise<void> {
+    this.readerModeError = ''
+    try {
+      if (continuous) {
+        await ReaderPresentationService.setCropBordersContinuous(this.context(), enabled)
+      } else {
+        await ReaderPresentationService.setCropBordersPaged(this.context(), enabled)
+      }
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_crop_borders_save_failed')
     }
   }
 
@@ -3373,7 +3421,15 @@ export struct SettingsPage {
           },
           accessibilityLabel: AppStrings.format('settings_reader_layout_a11y', [this.readerModeLabel()]),
         })
-        this.RowDivider()
+      }
+    }
+  }
+
+  @Builder
+  private ReaderPagedModeGroup() {
+    Column({ space: ThemeTokens.SPACE_XS }) {
+      NextNSectionHeader({ title: AppStrings.get('settings_reader_group_paged_mode') })
+      NextNGroupedListSection() {
         NextNListRow({
           title: AppStrings.get('settings_reader_double_page'),
           hasSwitch: true,
@@ -3424,39 +3480,101 @@ export struct SettingsPage {
             this.saveReaderPageTurnAnimation(value)
           },
         })
-      }
-    }
-  }
-
-  @Builder
-  private ReaderTapZonesGroup() {
-    Column({ space: ThemeTokens.SPACE_XS }) {
-      NextNSectionHeader({ title: AppStrings.get('settings_reader_group_tap_zones') })
-      NextNGroupedListSection() {
+        this.RowDivider()
         NextNListRow({
           title: AppStrings.get('settings_reader_tap_zones'),
-          trailingText: this.readerTapZoneLayoutLabel(),
+          trailingText: this.readerTapZoneLayoutLabel(false),
           trailingDropdown: true,
           dropdownMenuEnabled: true,
           dropdownMenuBuilder: (select: (action: () => void) => void): void => {
-            this.ReaderTapZoneMenu(select)
+            this.ReaderTapZoneMenu(false, select)
           },
           accessibilityLabel: AppStrings.format('settings_reader_tap_zones_a11y', [
-            this.readerTapZoneLayoutLabel(),
+            this.readerTapZoneLayoutLabel(false),
           ]),
         })
         this.RowDivider()
         NextNListRow({
           title: AppStrings.get('settings_reader_tap_zone_invert'),
-          trailingText: this.readerTapZoneInvertLabel(),
+          trailingText: this.readerTapZoneInvertLabel(false),
           trailingDropdown: true,
           dropdownMenuEnabled: true,
           dropdownMenuBuilder: (select: (action: () => void) => void): void => {
-            this.ReaderTapZoneInvertMenu(select)
+            this.ReaderTapZoneInvertMenu(false, select)
           },
           accessibilityLabel: AppStrings.format('settings_reader_tap_zone_invert_a11y', [
-            this.readerTapZoneInvertLabel(),
+            this.readerTapZoneInvertLabel(false),
           ]),
+        })
+        this.RowDivider()
+        NextNListRow({
+          title: AppStrings.get('reader_crop_borders'),
+          subtitle: AppStrings.get('settings_reader_crop_borders_paged_hint'),
+          subtitleMaxLines: 3,
+          hasSwitch: true,
+          checked: this.readerPresentation.cropBordersPaged,
+          showChevron: false,
+          accessibilityLabel: AppStrings.format('settings_reader_crop_borders_a11y', [
+            this.toggleStateLabel(this.readerPresentation.cropBordersPaged),
+          ]),
+          onAction: (): void => {
+            this.saveReaderCropBorders(false, !this.readerPresentation.cropBordersPaged)
+          },
+          onSwitchChange: (value: boolean): void => {
+            this.saveReaderCropBorders(false, value)
+          },
+        })
+      }
+    }
+  }
+
+  @Builder
+  private ReaderContinuousModeGroup() {
+    Column({ space: ThemeTokens.SPACE_XS }) {
+      NextNSectionHeader({ title: AppStrings.get('settings_reader_group_continuous_mode') })
+      NextNGroupedListSection() {
+        NextNListRow({
+          title: AppStrings.get('settings_reader_tap_zones'),
+          trailingText: this.readerTapZoneLayoutLabel(true),
+          trailingDropdown: true,
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.ReaderTapZoneMenu(true, select)
+          },
+          accessibilityLabel: AppStrings.format('settings_reader_tap_zones_a11y', [
+            this.readerTapZoneLayoutLabel(true),
+          ]),
+        })
+        this.RowDivider()
+        NextNListRow({
+          title: AppStrings.get('settings_reader_tap_zone_invert'),
+          trailingText: this.readerTapZoneInvertLabel(true),
+          trailingDropdown: true,
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.ReaderTapZoneInvertMenu(true, select)
+          },
+          accessibilityLabel: AppStrings.format('settings_reader_tap_zone_invert_a11y', [
+            this.readerTapZoneInvertLabel(true),
+          ]),
+        })
+        this.RowDivider()
+        NextNListRow({
+          title: AppStrings.get('reader_crop_borders'),
+          subtitle: AppStrings.get('settings_reader_crop_borders_continuous_hint'),
+          subtitleMaxLines: 3,
+          hasSwitch: true,
+          checked: this.readerPresentation.cropBordersContinuous,
+          showChevron: false,
+          accessibilityLabel: AppStrings.format('settings_reader_crop_borders_a11y', [
+            this.toggleStateLabel(this.readerPresentation.cropBordersContinuous),
+          ]),
+          onAction: (): void => {
+            this.saveReaderCropBorders(true, !this.readerPresentation.cropBordersContinuous)
+          },
+          onSwitchChange: (value: boolean): void => {
+            this.saveReaderCropBorders(true, value)
+          },
         })
       }
     }
@@ -3677,8 +3795,15 @@ export struct SettingsPage {
     ListItem() {
       this.ReaderLayoutGroup()
     }
-    ListItem() {
-      this.ReaderTapZonesGroup()
+    if (!this.sheetPresentation || !this.continuousModeSelected()) {
+      ListItem() {
+        this.ReaderPagedModeGroup()
+      }
+    }
+    if (!this.sheetPresentation || this.continuousModeSelected()) {
+      ListItem() {
+        this.ReaderContinuousModeGroup()
+      }
     }
     ListItem() {
       this.ReaderDisplayGroup()

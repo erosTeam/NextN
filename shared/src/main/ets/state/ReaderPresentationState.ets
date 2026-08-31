@@ -29,8 +29,12 @@ export class ReaderPresentationState {
   @Trace doublePageEnabled: boolean = false
   @Trace spreadLayoutMode: NhReaderSpreadLayout = NhReaderSpreadLayout.JOINED
   @Trace pageTurnAnimation: boolean = true
-  @Trace tapZoneLayout: NhReaderTapZoneLayout = NhReaderTapZoneLayout.RIGHT_LEFT
-  @Trace tapZoneInvert: NhReaderTapZoneInvert = NhReaderTapZoneInvert.NONE
+  @Trace tapZoneLayoutPaged: NhReaderTapZoneLayout = NhReaderTapZoneLayout.RIGHT_LEFT
+  @Trace tapZoneInvertPaged: NhReaderTapZoneInvert = NhReaderTapZoneInvert.NONE
+  @Trace tapZoneLayoutContinuous: NhReaderTapZoneLayout = NhReaderTapZoneLayout.RIGHT_LEFT
+  @Trace tapZoneInvertContinuous: NhReaderTapZoneInvert = NhReaderTapZoneInvert.NONE
+  @Trace cropBordersPaged: boolean = false
+  @Trace cropBordersContinuous: boolean = false
   @Trace superResolutionEnabled: boolean = false
   @Trace superResolutionModel: NhReaderSuperResolutionModel =
     NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
@@ -49,8 +53,12 @@ export class ReaderPresentationState {
     this.doublePageEnabled = presentation.doublePageEnabled
     this.spreadLayoutMode = presentation.spreadLayoutMode
     this.pageTurnAnimation = presentation.pageTurnAnimation
-    this.tapZoneLayout = presentation.tapZoneLayout
-    this.tapZoneInvert = presentation.tapZoneInvert
+    this.tapZoneLayoutPaged = presentation.tapZoneLayoutPaged
+    this.tapZoneInvertPaged = presentation.tapZoneInvertPaged
+    this.tapZoneLayoutContinuous = presentation.tapZoneLayoutContinuous
+    this.tapZoneInvertContinuous = presentation.tapZoneInvertContinuous
+    this.cropBordersPaged = presentation.cropBordersPaged
+    this.cropBordersContinuous = presentation.cropBordersContinuous
     this.superResolutionEnabled = presentation.superResolutionEnabled
     this.superResolutionModel = presentation.superResolutionModel
     this.superResolutionMaxHeight = presentation.superResolutionMaxHeight
@@ -70,12 +78,24 @@ export class ReaderPresentationState {
     result.doublePageEnabled = this.doublePageEnabled
     result.spreadLayoutMode = this.spreadLayoutMode
     result.pageTurnAnimation = this.pageTurnAnimation
-    result.tapZoneLayout = this.tapZoneLayout
-    result.tapZoneInvert = this.tapZoneInvert
+    result.tapZoneLayoutPaged = this.tapZoneLayoutPaged
+    result.tapZoneInvertPaged = this.tapZoneInvertPaged
+    result.tapZoneLayoutContinuous = this.tapZoneLayoutContinuous
+    result.tapZoneInvertContinuous = this.tapZoneInvertContinuous
+    result.cropBordersPaged = this.cropBordersPaged
+    result.cropBordersContinuous = this.cropBordersContinuous
     result.superResolutionEnabled = this.superResolutionEnabled
     result.superResolutionModel = this.superResolutionModel
     result.superResolutionMaxHeight = this.superResolutionMaxHeight
     return result
+  }
+
+  activeTapZoneLayout(): NhReaderTapZoneLayout {
+    return this.mode === NhReaderMode.VERTICAL ? this.tapZoneLayoutContinuous : this.tapZoneLayoutPaged
+  }
+
+  activeTapZoneInvert(): NhReaderTapZoneInvert {
+    return this.mode === NhReaderMode.VERTICAL ? this.tapZoneInvertContinuous : this.tapZoneInvertPaged
   }
 }
 

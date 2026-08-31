@@ -9857,3 +9857,51 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Acceptance boundary:** this accepts the reported compact-rail and full-Grid visible/off-screen return decisions
   at `1320x2120` on 237. Rotation, partial-visibility edge cases and the separate fullscreen endpoint-measurement
   lane remain outside this result.
+
+## ACCEPTED — Reader mode-owned settings and automatic page-border cropping — 2026-09-01
+
+- **Why newly actionable:** the user approved the current NextE implementation and explicitly requested the same
+  automatic black/white page-border removal plus mode-grouped Reader settings in NextN. This reopens only Reader
+  settings ownership and page-image presentation; it does not reopen the accepted six-group row grammar.
+- **Whole parent-tree boundary:** root `Settings -> Reader -> SecondaryListScaffold` shows one Reading mode group,
+  then separate Paged mode and Continuous mode groups. The Reader-owned modal sheet keeps the same scaffold and
+  rows but mounts only the group that can affect the currently selected mode. Tap-zone layout/inversion and crop
+  switches are owned independently by those two mode groups; Display, enhancement, controls and loading remain
+  shared and retain their current order. Reader page leaves keep existing cache, enhancement, zoom, spread,
+  transition, retry and progress ownership.
+- **Exact change:** migrate the legacy shared tap-zone values as fallback defaults into paged and continuous durable
+  keys, persist future changes independently, and add false-by-default crop switches for both groups. When enabled,
+  detect only conservative uniform transparent/white/black edge bands from the local page file, cache normalized
+  bounds, render the cropped content without changing source/cache identity, and protect continuous page seams by
+  cropping top/bottom only on the first/last page. A detection failure renders the original unchanged.
+- **Minimality and affected states:** no Reader mode is renamed or removed; paged includes horizontal, RTL and
+  top-to-bottom paging, while continuous is vertical. Root settings shows both mode groups; the Reader sheet shows
+  only the active one. Newly affected states are crop off/on, first/middle/last continuous page, single page,
+  double-page spread, retry/cache/enhancement source replacement, zoom/pan and cold-start preference restore.
+- **Verification plan and unresolved risk:** run detector unit coverage, resource parsing, exact diff review and the
+  signed build. Install in place on user-selected target 237 without clearing data; prove different paged/continuous
+  tap-zone values, both root groups, active-only Reader sheet grouping, cold-start persistence, crop switch behavior
+  on suitable bordered pages, fallback on an unbordered page, and unchanged foreground/Reader navigation. Source and
+  build evidence alone do not accept visual cropping or mode isolation.
+- **Static/build evidence:** resource JSON parsing and `git diff --check` passed. The signed main HAP completed in
+  `16 s 672 ms` (105 tasks), and the signed `entry@ohosTest` HAP including synthetic white/black/full-frame,
+  one-sided-white and continuous-seam detector coverage compiled in `23 s 271 ms` (107 tasks). NextN has no
+  `scripts/test_v1_decorator_inventory_contract.mjs`; the missing NextE-only script was not treated as a product
+  failure.
+- **237 mode/settings acceptance:** the signed candidate was installed in place with application data preserved.
+  Root Reader settings rendered separate Reading mode, Paged mode and Continuous mode groups. The Reader sheet
+  rendered Reading mode plus only Paged mode in RTL, and after selecting true Continuous vertical rendered Reading
+  mode plus only Continuous mode. Temporary Paged `L 形` and Continuous `Kindle` tap zones remained distinct after
+  a data-preserving cold start.
+- **237 cropping acceptance:** on Gallery `663205` page `3 / 40`, crop enabled removed the uniform one-sided white
+  band and moved the unchanged page content to the top; disabling crop on the same current page restored that band.
+  The accepted strict pair is under
+  `.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/bug-bite-independent-edge-{on-20260901T028,off-clean-20260901T030}/`.
+- **Restoration and acceptance boundary:** after validation, Paged and Continuous tap zones were both restored to
+  `左右`, direction to `从右到左`, and both crop switches to disabled. A final data-preserving cold start confirmed
+  all five restored values under `reader-mode-crop/cold-restored-preferences-20260901T036/`. This accepts portrait
+  `1320x2120` behavior on 237, including paged single-page visual cropping, active-mode sheet isolation and
+  independent persistence. An unframed page was observed only before the final independent-edge detector revision,
+  so it is not promoted as final-candidate device evidence. Rotation, a visually bordered double-page sample and
+  first/middle/last continuous-page visual cropping were not separately observed in this run; their source paths and
+  detector/seam contracts remain covered but are not promoted to device evidence.

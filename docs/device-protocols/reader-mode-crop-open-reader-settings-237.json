@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-mode-crop-open-reader-settings-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/reader-settings-top-20260901T003",
+  "display": {"widthPx": 1320, "heightPx": 2120},
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "worktree-reader-mode-crop-build-20260901",
+    "page": "settings-root-to-reader-settings-top",
+    "deviceAlias": "device-237",
+    "deviceModel": "unknown",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Open Reader from its current semantic Settings-root bound [48,1172][1272,1316] and capture the top of the global Reader settings hierarchy."
+  },
+  "preflight": [
+    {"name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"]},
+    {"name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]},
+    {"name": "current-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]}
+  ],
+  "measurement": {
+    "actions": [
+      {"name": "open-reader-settings", "uiInput": ["click", "732", "1244"], "pauseAfterMs": 1000, "timeoutSeconds": 30}
+    ]
+  },
+  "postflight": [
+    {"name": "capture-reader-settings-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-mode-crop-reader-settings-top.json", "-a"]},
+    {"name": "capture-reader-settings-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-reader-mode-crop-reader-settings-top.png"]},
+    {"name": "receive-reader-settings-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-mode-crop-reader-settings-top.json", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/reader-settings-top-20260901T003/reader-settings-layout.json"]},
+    {"name": "receive-reader-settings-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-mode-crop-reader-settings-top.png", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/reader-settings-top-20260901T003/reader-settings-screen.png"]},
+    {"name": "remove-remote-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-reader-mode-crop-reader-settings-top.json", "/data/local/tmp/nextn-reader-mode-crop-reader-settings-top.png"]},
+    {"name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]},
+    {"name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]}
+  ]
+}

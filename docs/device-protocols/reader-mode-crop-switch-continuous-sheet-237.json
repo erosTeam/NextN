@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-mode-crop-switch-continuous-sheet-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/reader-sheet-continuous-20260901T033",
+  "display": {"widthPx": 1320, "heightPx": 2120},
+  "context": {"project": "NextN", "codeIdentity": "worktree-reader-mode-crop-independent-edges-build-20260901", "page": "reader-sheet-continuous-active-only", "deviceAlias": "device-237", "deviceModel": "unknown", "foldState": "unknown", "orientation": "portrait", "resolution": "1320x2120", "notes": "Select continuous vertical reading from the already-open direction menu and capture the same Reader sheet after it rerenders to show only continuous-mode settings."},
+  "preflight": [
+    {"name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"]},
+    {"name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]}
+  ],
+  "measurement": {"actions": [
+    {"name": "reopen-reading-direction-menu", "uiInput": ["click", "1110", "1165"], "pauseAfterMs": 700, "timeoutSeconds": 30},
+    {"name": "select-continuous-vertical", "uiInput": ["click", "955", "1765"], "pauseAfterMs": 1600, "timeoutSeconds": 30}
+  ]},
+  "postflight": [
+    {"name": "capture-continuous-sheet-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-continuous-sheet.json", "-a"]},
+    {"name": "capture-continuous-sheet-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-reader-continuous-sheet.png"]},
+    {"name": "receive-continuous-sheet-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-continuous-sheet.json", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/reader-sheet-continuous-20260901T033/continuous-sheet-layout.json"]},
+    {"name": "receive-continuous-sheet-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-continuous-sheet.png", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/reader-sheet-continuous-20260901T033/continuous-sheet-screen.png"]},
+    {"name": "remove-remote-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-reader-continuous-sheet.json", "/data/local/tmp/nextn-reader-continuous-sheet.png"]},
+    {"name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]},
+    {"name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]}
+  ]
+}

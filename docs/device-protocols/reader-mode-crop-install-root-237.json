@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-mode-crop-install-root-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/reinstall-root-20260901T027",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "worktree-reader-mode-crop-independent-edges-build-20260901",
+    "page": "root-after-data-preserving-install",
+    "deviceAlias": "device-237",
+    "deviceModel": "unknown",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install the signed Reader mode/crop candidate in place, preserve all application data, cold-start NextN, and capture the root navigation precondition."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": ["shell", "power-shell", "wakeup"]
+    },
+    {
+      "name": "keep-awake",
+      "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]
+    },
+    {
+      "name": "verify-awake-timeout",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "install-signed-candidate-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"],
+      "pauseAfterMs": 600,
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "cold-stop-nextn-with-data-preserved",
+      "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"],
+      "pauseAfterMs": 300
+    },
+    {
+      "name": "cold-start-nextn",
+      "hdcArgs": ["shell", "aa", "start", "-a", "EntryAbility", "-b", "com.erosteam.nextn"],
+      "pauseAfterMs": 2500,
+      "timeoutSeconds": 30
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "noninteractive-boundary",
+        "uiInput": ["click", "1", "1"],
+        "pauseAfterMs": 50,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "capture-root-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-mode-crop-root.json", "-a"]
+    },
+    {
+      "name": "capture-root-screen",
+      "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-reader-mode-crop-root.png"]
+    },
+    {
+      "name": "receive-root-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-mode-crop-root.json", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/reinstall-root-20260901T027/root-layout.json"]
+    },
+    {
+      "name": "receive-root-screen",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-mode-crop-root.png", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/reinstall-root-20260901T027/root-screen.png"]
+    },
+    {
+      "name": "remove-remote-artifacts",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-reader-mode-crop-root.json", "/data/local/tmp/nextn-reader-mode-crop-root.png"]
+    },
+    {
+      "name": "final-window-owner",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    },
+    {
+      "name": "final-power-state",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

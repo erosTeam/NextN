@@ -104,6 +104,7 @@ export {
   NhReaderTapZoneRegion,
   NhReaderTapZoneResolver,
 } from './model/NhReaderTapZone'
+export { ReaderPageCropBounds, ReaderPageCropDetector } from './model/ReaderPageCropBounds'
 export { ReaderRouteParams } from './model/ReaderRouteParams'
 export { NhBrowsePresentation } from './model/NhBrowsePresentation'
 export { NhContentFilterRule, NhContentFilterType } from './model/NhContentFilter'
@@ -502,6 +503,7 @@ export { ReadingHistoryState, connectReadingHistory } from './state/ReadingHisto
 export { NhReadProgressState, connectNhReadProgress } from './state/NhReadProgressState'
 export { ReaderSettingsRepository } from './storage/ReaderSettingsRepository'
 export { ReaderPresentationService } from './services/ReaderPresentationService'
+export { ReaderPageCropService } from './services/ReaderPageCropService'
 export { BrowsePresentationRepository } from './storage/BrowsePresentationRepository'
 export { HomeSourcePresentationRepository } from './storage/HomeSourcePresentationRepository'
 export { CatalogPreferencesRepository } from './storage/CatalogPreferencesRepository'

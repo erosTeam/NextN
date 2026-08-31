@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-mode-crop-bug-bite-page3-off-clean-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/bug-bite-independent-edge-off-clean-20260901T030",
+  "display": {"widthPx": 1320, "heightPx": 2120},
+  "context": {"project": "NextN", "codeIdentity": "worktree-reader-mode-crop-independent-edges-build-20260901", "page": "gallery-663205-bug-bite-reader-page3-crop-disabled-clean", "deviceAlias": "device-237", "deviceModel": "unknown", "foldState": "unknown", "orientation": "portrait", "resolution": "1320x2120", "notes": "Hide Reader chrome after restoring paged cropping to disabled and capture the exact same 3/40 page for a strict clean on/off comparison."},
+  "preflight": [
+    {"name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"]},
+    {"name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]}
+  ],
+  "measurement": {"actions": [
+    {"name": "hide-reader-chrome", "uiInput": ["click", "660", "1060"], "pauseAfterMs": 1500, "timeoutSeconds": 30}
+  ]},
+  "postflight": [
+    {"name": "capture-page3-off-clean-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-mode-crop-bug-bite-off-clean.json", "-a"]},
+    {"name": "capture-page3-off-clean-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-reader-mode-crop-bug-bite-off-clean.png"]},
+    {"name": "receive-page3-off-clean-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-mode-crop-bug-bite-off-clean.json", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/bug-bite-independent-edge-off-clean-20260901T030/page3-off-clean-layout.json"]},
+    {"name": "receive-page3-off-clean-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-mode-crop-bug-bite-off-clean.png", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/bug-bite-independent-edge-off-clean-20260901T030/page3-off-clean-screen.png"]},
+    {"name": "remove-remote-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-reader-mode-crop-bug-bite-off-clean.json", "/data/local/tmp/nextn-reader-mode-crop-bug-bite-off-clean.png"]},
+    {"name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]},
+    {"name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]}
+  ]
+}

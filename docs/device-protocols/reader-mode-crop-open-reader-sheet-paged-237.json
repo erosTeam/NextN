@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-reader-mode-crop-open-reader-sheet-paged-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/reader-sheet-paged-20260901T013",
+  "display": {"widthPx": 1320, "heightPx": 2120},
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "worktree-reader-mode-crop-build-20260901",
+    "page": "reader-settings-sheet-active-paged-mode-only",
+    "deviceAlias": "device-237",
+    "deviceModel": "unknown",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Open the Reader gear at observed bound [1032,135][1164,267]. Current mode is paged RTL. The sheet must show Reading mode plus only the Paged mode group and omit Continuous mode settings."
+  },
+  "preflight": [
+    {"name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"]},
+    {"name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"]}
+  ],
+  "measurement": {"actions": [{"name": "open-reader-settings-sheet", "uiInput": ["click", "1098", "201"], "pauseAfterMs": 900, "timeoutSeconds": 30}]},
+  "postflight": [
+    {"name": "capture-paged-sheet-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-reader-mode-crop-sheet-paged.json", "-a"]},
+    {"name": "capture-paged-sheet-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-reader-mode-crop-sheet-paged.png"]},
+    {"name": "receive-paged-sheet-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-mode-crop-sheet-paged.json", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/reader-sheet-paged-20260901T013/paged-sheet-layout.json"]},
+    {"name": "receive-paged-sheet-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-reader-mode-crop-sheet-paged.png", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/reader-sheet-paged-20260901T013/paged-sheet-screen.png"]},
+    {"name": "remove-remote-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-reader-mode-crop-sheet-paged.json", "/data/local/tmp/nextn-reader-mode-crop-sheet-paged.png"]},
+    {"name": "final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]},
+    {"name": "final-power-state", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]}
+  ]
+}

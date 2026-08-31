@@ -154,31 +154,81 @@ export class ReaderPresentationService {
     })
   }
 
-  static setTapZoneLayout(
+  static setTapZoneLayoutPaged(
     context: common.UIAbilityContext,
     layout: NhReaderTapZoneLayout,
   ): Promise<NhReaderPresentation> {
     return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
-      presentation.tapZoneLayout = NhReaderTapZoneResolver.normalizeLayout(layout)
+      presentation.tapZoneLayoutPaged = NhReaderTapZoneResolver.normalizeLayout(layout)
     }, (presentation: NhReaderPresentation): Promise<void> => {
-      return ReaderSettingsRepository.saveTapZoneLayout(
+      return ReaderSettingsRepository.saveTapZoneLayoutPaged(
         context,
-        presentation.tapZoneLayout,
+        presentation.tapZoneLayoutPaged,
       )
     })
   }
 
-  static setTapZoneInvert(
+  static setTapZoneInvertPaged(
     context: common.UIAbilityContext,
     invert: NhReaderTapZoneInvert,
   ): Promise<NhReaderPresentation> {
     return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
-      presentation.tapZoneInvert = NhReaderTapZoneResolver.normalizeInvert(invert)
+      presentation.tapZoneInvertPaged = NhReaderTapZoneResolver.normalizeInvert(invert)
     }, (presentation: NhReaderPresentation): Promise<void> => {
-      return ReaderSettingsRepository.saveTapZoneInvert(
+      return ReaderSettingsRepository.saveTapZoneInvertPaged(
         context,
-        presentation.tapZoneInvert,
+        presentation.tapZoneInvertPaged,
       )
+    })
+  }
+
+  static setTapZoneLayoutContinuous(
+    context: common.UIAbilityContext,
+    layout: NhReaderTapZoneLayout,
+  ): Promise<NhReaderPresentation> {
+    return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
+      presentation.tapZoneLayoutContinuous = NhReaderTapZoneResolver.normalizeLayout(layout)
+    }, (presentation: NhReaderPresentation): Promise<void> => {
+      return ReaderSettingsRepository.saveTapZoneLayoutContinuous(
+        context,
+        presentation.tapZoneLayoutContinuous,
+      )
+    })
+  }
+
+  static setTapZoneInvertContinuous(
+    context: common.UIAbilityContext,
+    invert: NhReaderTapZoneInvert,
+  ): Promise<NhReaderPresentation> {
+    return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
+      presentation.tapZoneInvertContinuous = NhReaderTapZoneResolver.normalizeInvert(invert)
+    }, (presentation: NhReaderPresentation): Promise<void> => {
+      return ReaderSettingsRepository.saveTapZoneInvertContinuous(
+        context,
+        presentation.tapZoneInvertContinuous,
+      )
+    })
+  }
+
+  static setCropBordersPaged(
+    context: common.UIAbilityContext,
+    enabled: boolean,
+  ): Promise<NhReaderPresentation> {
+    return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
+      presentation.cropBordersPaged = enabled
+    }, (presentation: NhReaderPresentation): Promise<void> => {
+      return ReaderSettingsRepository.saveCropBordersPaged(context, presentation.cropBordersPaged)
+    })
+  }
+
+  static setCropBordersContinuous(
+    context: common.UIAbilityContext,
+    enabled: boolean,
+  ): Promise<NhReaderPresentation> {
+    return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
+      presentation.cropBordersContinuous = enabled
+    }, (presentation: NhReaderPresentation): Promise<void> => {
+      return ReaderSettingsRepository.saveCropBordersContinuous(context, presentation.cropBordersContinuous)
     })
   }
 
@@ -248,6 +298,10 @@ export class ReaderPresentationService {
       boolean,
       NhReaderTapZoneLayout,
       NhReaderTapZoneInvert,
+      NhReaderTapZoneLayout,
+      NhReaderTapZoneInvert,
+      boolean,
+      boolean,
       boolean,
       NhReaderSuperResolutionModel,
       number,
@@ -264,8 +318,12 @@ export class ReaderPresentationService {
       ReaderSettingsRepository.doublePageEnabled(context),
       ReaderSettingsRepository.spreadLayout(context),
       ReaderSettingsRepository.pageTurnAnimation(context),
-      ReaderSettingsRepository.tapZoneLayout(context),
-      ReaderSettingsRepository.tapZoneInvert(context),
+      ReaderSettingsRepository.tapZoneLayoutPaged(context),
+      ReaderSettingsRepository.tapZoneInvertPaged(context),
+      ReaderSettingsRepository.tapZoneLayoutContinuous(context),
+      ReaderSettingsRepository.tapZoneInvertContinuous(context),
+      ReaderSettingsRepository.cropBordersPaged(context),
+      ReaderSettingsRepository.cropBordersContinuous(context),
       ReaderSettingsRepository.superResolutionEnabled(context),
       ReaderSettingsRepository.superResolutionModel(context),
       ReaderSettingsRepository.superResolutionMaxHeight(context),
@@ -283,11 +341,15 @@ export class ReaderPresentationService {
     presentation.doublePageEnabled = values[9]
     presentation.spreadLayoutMode = values[10]
     presentation.pageTurnAnimation = values[11]
-    presentation.tapZoneLayout = values[12]
-    presentation.tapZoneInvert = values[13]
-    presentation.superResolutionEnabled = values[14]
-    presentation.superResolutionModel = values[15]
-    presentation.superResolutionMaxHeight = values[16]
+    presentation.tapZoneLayoutPaged = values[12]
+    presentation.tapZoneInvertPaged = values[13]
+    presentation.tapZoneLayoutContinuous = values[14]
+    presentation.tapZoneInvertContinuous = values[15]
+    presentation.cropBordersPaged = values[16]
+    presentation.cropBordersContinuous = values[17]
+    presentation.superResolutionEnabled = values[18]
+    presentation.superResolutionModel = values[19]
+    presentation.superResolutionMaxHeight = values[20]
     ReaderPresentationService.state().replace(presentation)
   }
 
