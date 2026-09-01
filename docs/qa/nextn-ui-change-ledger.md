@@ -9997,3 +9997,31 @@ authorize an edit, replace a device comparison, or define product completion.
   prove Hidden, positive/negative total-weight cancellation, strict threshold equality, retained-row reprojection,
   Search bypass without a new request, independent Subtab bypass, unchanged NH cloud/title gates, cold-start restore
   and ordinary empty behavior. Source and build evidence do not accept these runtime paths.
+
+## OPEN — Local user-tag management and tag presentation — 2026-09-02
+
+- **Why newly actionable:** the same approved local-user-tag contract now enters its visible Phase 3/4 boundary.
+  NextE `MyTagsPage` and `AppColorPicker` were inspected as the reference; NextN keeps their management-page,
+  grouped-row and modal-edit ownership while replacing EH account requests with the NH numeric-tag/local-RDB leaf.
+- **Whole parent-tree boundary:** Settings gains a sibling destination beside Content filters. The destination owns
+  one `HdsNavDestination`/`SecondaryListScaffold`, a threshold group, an add row, the grouped configured-tag rows,
+  and page loading/error/empty state. A concrete configured row owns its edit Sheet; the page host owns add and
+  threshold Sheets. Each Sheet uses the shared modal scaffold, and the existing shared `AppColorPicker` remains the
+  color leaf. Search keeps its existing options Sheet and adds one switch in the existing language/sort group;
+  custom Search Subtab keeps its existing editor and adds the independent switch in its existing options group.
+- **Row and editor contract:** a tag row shows raw namespace/name (plus available display label), Hidden status and
+  weight badge with its selected color. Add accepts only a catalog suggestion carrying a positive NH tag ID. Edit
+  preserves color, weight and Hidden as independent fields; Hidden never clears the other two, negative weight never
+  enables Hidden, and default color only clears the color. Delete writes the existing tombstone path.
+- **Tag presentation boundary:** `GalleryTagStrip`, regular Waterfall and compact Waterfall derive a new ordered tag
+  array through the shared stable partition before their existing 10/8-item truncation. Normal/regular tags use the
+  custom chip background plus readable foreground; compact keeps its current one-line overlay geometry and uses the
+  NextE-style lightened custom text color. Detail `TagMember` reads the same color but keeps namespace grouping,
+  list-seed order and detail-only append order unchanged.
+- **Minimality and exclusions:** do not add tagsets, Watched, free-text rules, a gallery-tag single-tap editor,
+  page-level reveal actions, filtered counts or a special all-filtered empty state. Do not rewrite `gallery.tags`,
+  change card geometry, or move Detail tags merely because a color exists.
+- **Verification plan and unresolved risk:** compile main/ohosTest, then on selected device 197 prove add/edit/delete,
+  threshold validation, independent Hidden/weight/color persistence, Search/default/Subtab switches, colored-first
+  truncation in list/regular/compact presentations, unchanged Detail order, live repaint and cold start. Same-gallery,
+  same-viewport before/after captures are required for visible acceptance; source and build evidence are insufficient.

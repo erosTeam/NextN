@@ -1,5 +1,7 @@
 import { NhTag } from '../model/NhGallery'
+import { NhLocalUserTagService } from '../services/NhLocalUserTagService'
 import { BrowsePresentationState, connectBrowsePresentation } from '../state/BrowsePresentationState'
+import { connectLocalUserTags, NhLocalUserTagState } from '../state/NhLocalUserTagState'
 import {
   TagTranslationSettingsState,
   connectTagTranslationSettings,
@@ -18,16 +20,31 @@ export struct GalleryTagStrip {
   @Param maxTags: number = 10
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
   @Local tagTranslationSettings: TagTranslationSettingsState = connectTagTranslationSettings()
+  @Local localUserTags: NhLocalUserTagState = connectLocalUserTags()
 
   private visibleTags(): NhTag[] {
     const result: NhTag[] = []
     const limit: number = Math.max(1, Math.min(10, Math.floor(this.maxTags)))
-    for (let index: number = 0; index < this.tags.length && result.length < limit; index++) {
-      if (this.displayLabel(this.tags[index]).length > 0) {
-        result.push(this.tags[index])
+    const revision: number = this.localUserTags.revision
+    const ordered: NhTag[] = revision >= 0 ? NhLocalUserTagService.orderedTags(this.tags) : []
+    for (let index: number = 0; index < ordered.length && result.length < limit; index++) {
+      if (this.displayLabel(ordered[index]).length > 0) {
+        result.push(ordered[index])
       }
     }
     return result
+  }
+
+  private tagBackground(tag: NhTag): ResourceColor {
+    const colorCode: string = NhLocalUserTagService.colorCode(tag.id)
+    return colorCode.length > 0 ? colorCode : ThemeTokens.BRAND_CONTAINER
+  }
+
+  private tagForeground(tag: NhTag): ResourceColor {
+    const colorCode: string = NhLocalUserTagService.colorCode(tag.id)
+    return colorCode.length > 0
+      ? NhLocalUserTagService.readableTextColor(tag.id)
+      : ThemeTokens.TEXT_SECONDARY
   }
 
   private displayLabel(tag: NhTag): string {
@@ -43,10 +60,10 @@ export struct GalleryTagStrip {
     Column() {
       Text(this.displayLabel(tag))
         .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
+        .fontColor(this.tagForeground(tag))
         .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
-        .backgroundColor(ThemeTokens.BRAND_CONTAINER)
+        .backgroundColor(this.tagBackground(tag))
         .borderRadius(ThemeTokens.LIST_TAG_RADIUS)
         .padding({
           left: 6,

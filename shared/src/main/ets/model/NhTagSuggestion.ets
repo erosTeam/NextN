@@ -4,6 +4,7 @@
  * display name is never used to build a public search request.
  */
 export class NhTagSuggestion {
+  tagId: number = 0
   namespace: string = ''
   rawName: string = ''
   displayName: string = ''

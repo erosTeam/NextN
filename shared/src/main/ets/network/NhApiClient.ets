@@ -236,6 +236,7 @@ export class NhApiClient {
           }
           seen.add(key)
           const suggestion: NhTagSuggestion = new NhTagSuggestion()
+          suggestion.tagId = Math.floor(NhApiClient.asNumber(item['id']))
           suggestion.namespace = responseType
           suggestion.rawName = rawName
           suggestion.displayName = rawName

@@ -1,8 +1,10 @@
 import { NhGallerySummary, NhTag } from '../model/NhGallery'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { AppStrings } from '../i18n/AppStrings'
+import { NhLocalUserTagService } from '../services/NhLocalUserTagService'
 import { CoverBackgroundState, connectCoverBackground } from '../state/CoverBackgroundState'
 import { BrowsePresentationState, connectBrowsePresentation } from '../state/BrowsePresentationState'
+import { connectLocalUserTags, NhLocalUserTagState } from '../state/NhLocalUserTagState'
 import {
   TagTranslationSettingsState,
   connectTagTranslationSettings,
@@ -20,6 +22,13 @@ import {
 } from './GalleryLanguageCornerBadge'
 const WATERFALL_TAG_LIMIT: number = 8
 const WATERFALL_COMPACT_TAG_STRIP_HEIGHT: number = 24
+const WATERFALL_NO_TEXT_SHADOWS: Array<ShadowOptions> = []
+const WATERFALL_COMPACT_TAG_TEXT_SHADOWS: Array<ShadowOptions> = [{
+  radius: 2,
+  color: '#CC000000',
+  offsetX: 0,
+  offsetY: 0,
+}]
 
 /**
  * Compact WaterFlow cards keep a different overlay subtree from CoverWall and
@@ -43,8 +52,9 @@ export function galleryWaterfallCompactReuseId(gallery: NhGallerySummary): strin
  *
  * Like NextE, the card uses the source cover ratio as its WaterFlow height and
  * keeps title metadata directly on an image-gradient overlay. Missing summary
- * fields (tag colours, category, rating and user metadata) remain absent
- * instead of being guessed or fetched from a card.
+ * fields (category, rating and user metadata) remain absent instead of being
+ * guessed or fetched from a card. Local user-tag colours are resolved from
+ * the shared in-memory index without per-card requests.
  */
 @ReusableV2
 @ComponentV2
@@ -56,6 +66,7 @@ export struct GalleryWaterfallCompactCard {
   @Local coverBackground: CoverBackgroundState = connectCoverBackground()
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
   @Local tagTranslationSettings: TagTranslationSettingsState = connectTagTranslationSettings()
+  @Local localUserTags: NhLocalUserTagState = connectLocalUserTags()
   private tagScroller: Scroller = new Scroller()
   @Event onOpen?: (galleryId: number) => void
 
@@ -104,15 +115,19 @@ export struct GalleryWaterfallCompactCard {
   }
 
   private tagAt(index: number): NhTag | undefined {
+    const revision: number = this.localUserTags.revision
+    const ordered: NhTag[] = revision >= 0
+      ? NhLocalUserTagService.orderedTags(this.gallery.tags)
+      : []
     if (
       !this.browsePresentation.showGalleryTags ||
       index < 0 ||
       index >= WATERFALL_TAG_LIMIT ||
-      index >= this.gallery.tags.length
+      index >= ordered.length
     ) {
       return undefined
     }
-    const tag: NhTag = this.gallery.tags[index]
+    const tag: NhTag = ordered[index]
     return this.displayLabel(tag).trim().length > 0 ? tag : undefined
   }
 
@@ -121,13 +136,38 @@ export struct GalleryWaterfallCompactCard {
     return tag === undefined ? '' : this.displayLabel(tag)
   }
 
+  private compactTagHasCustomColorAt(index: number): boolean {
+    const tag: NhTag | undefined = this.tagAt(index)
+    return tag !== undefined && NhLocalUserTagService.colorCode(tag.id).length > 0
+  }
+
+  private compactTagTextColorAt(index: number): ResourceColor {
+    const tag: NhTag | undefined = this.tagAt(index)
+    if (tag === undefined || NhLocalUserTagService.colorCode(tag.id).length === 0) {
+      return ThemeTokens.TEXT_ON_BRAND
+    }
+    return NhLocalUserTagService.compactTextColor(tag.id)
+  }
+
+  private compactTagFontWeightAt(index: number): FontWeight {
+    return this.compactTagHasCustomColorAt(index) ? FontWeight.Medium : FontWeight.Normal
+  }
+
+  private compactTagTextShadowsAt(index: number): Array<ShadowOptions> {
+    return this.compactTagHasCustomColorAt(index)
+      ? WATERFALL_COMPACT_TAG_TEXT_SHADOWS
+      : WATERFALL_NO_TEXT_SHADOWS
+  }
+
   @Builder
   private CompactTagTextAt(index: number) {
     if (this.tagAt(index) !== undefined) {
       Column() {
         Text(this.tagLabelAt(index))
           .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-          .fontColor(ThemeTokens.TEXT_ON_BRAND)
+          .fontColor(this.compactTagTextColorAt(index))
+          .fontWeight(this.compactTagFontWeightAt(index))
+          .textShadow(this.compactTagTextShadowsAt(index))
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .lineHeight(ThemeTokens.TAG_LINE_HEIGHT)

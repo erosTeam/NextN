@@ -41,6 +41,7 @@ import {
   LlmSourceManagerPage,
   MangaRenderingServiceSettingsPage,
   ContentFiltersPage,
+  LocalUserTagsPage,
   ReaderSuperResolutionModelsPage,
   SettingsPage,
   SettingsSurface,
@@ -173,6 +174,7 @@ const ROUTE_BROWSE_SETTINGS: string = 'browseSettings'
 const ROUTE_SEARCH_SETTINGS: string = 'searchSettings'
 const ROUTE_BROWSE_DENSITY_SETTINGS: string = 'browseDensitySettings'
 const ROUTE_CONTENT_FILTERS: string = 'contentFilters'
+const ROUTE_LOCAL_USER_TAGS: string = 'localUserTags'
 const ROUTE_HISTORY: string = 'history'
 const ROUTE_READER_SETTINGS: string = 'readerSettings'
 const ROUTE_READER_SUPER_RESOLUTION_MODELS: string = 'readerSuperResolutionModels'
@@ -496,6 +498,7 @@ struct Index {
   private thumbnailScroller: Scroller = new Scroller()
   private commentsScroller: Scroller = new Scroller()
   private contentFiltersScroller: Scroller = new Scroller()
+  private localUserTagsScroller: Scroller = new Scroller()
   private layoutSettingsScroller: Scroller = new Scroller()
   private browseSettingsScroller: Scroller = new Scroller()
   private searchSettingsScroller: Scroller = new Scroller()
@@ -1245,6 +1248,10 @@ struct Index {
     this.stack.pushPathByName(ROUTE_CONTENT_FILTERS, '')
   }
 
+  private pushLocalUserTags(): void {
+    this.stack.pushPathByName(ROUTE_LOCAL_USER_TAGS, '')
+  }
+
   private pushReaderSettings(): void {
     this.openSettingsRootDestination(ROUTE_READER_SETTINGS)
   }
@@ -1363,6 +1370,7 @@ struct Index {
       name === ROUTE_CACHE_SETTINGS ||
       name === ROUTE_ADVANCED_SETTINGS ||
       name === ROUTE_CONTENT_FILTERS ||
+      name === ROUTE_LOCAL_USER_TAGS ||
       name === ROUTE_HISTORY ||
       name === ROUTE_ABOUT
   }
@@ -2699,6 +2707,16 @@ struct Index {
   }
 
   @Builder
+  private localUserTagsDestination() {
+    HdsNavDestination() {
+      LocalUserTagsPage({ scroller: this.localUserTagsScroller })
+    }
+    .titleBar(nextNHdsTitle(AppStrings.get('title_local_user_tags')))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_LOCAL_USER_TAGS))
+    .bindToScrollable([this.localUserTagsScroller])
+  }
+
+  @Builder
   private layoutSettingsDestination() {
     HdsNavDestination() {
       SettingsPage({
@@ -2890,6 +2908,9 @@ struct Index {
         onOpenContentFilters: (): void => {
           this.pushContentFilters()
         },
+        onOpenLocalUserTags: (): void => {
+          this.pushLocalUserTags()
+        },
         onOpenTranslationSource: (): void => {
           this.pushLlmSourceManager()
         },
@@ -3051,6 +3072,8 @@ struct Index {
       this.browseDensitySettingsDestination(param)
     } else if (name === ROUTE_CONTENT_FILTERS) {
       this.contentFiltersDestination()
+    } else if (name === ROUTE_LOCAL_USER_TAGS) {
+      this.localUserTagsDestination()
     } else if (name === ROUTE_READER_SETTINGS) {
       this.readerSettingsDestination()
     } else if (name === ROUTE_READER_SUPER_RESOLUTION_MODELS) {
@@ -3647,6 +3670,9 @@ struct Index {
             },
             onOpenContentFilters: (): void => {
               this.pushContentFilters()
+            },
+            onOpenLocalUserTags: (): void => {
+              this.pushLocalUserTags()
             },
             onDidScroll: (offset: number, state: ScrollState): void => {
               this.onHomeTabDidScroll(this.physicalTabForLogical(3), offset, state)

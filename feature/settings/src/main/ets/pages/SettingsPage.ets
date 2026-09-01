@@ -331,6 +331,7 @@ export struct SettingsPage {
   @Event onOpenAbout?: () => void
   @Event onOpenHistory?: () => void
   @Event onOpenContentFilters?: () => void
+  @Event onOpenLocalUserTags?: () => void
   @Event onOpenTagTranslation?: () => void
   @Event onOpenSyncSettings?: () => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
@@ -4686,6 +4687,21 @@ export struct SettingsPage {
           this.catalogSortLabel(this.catalogPreferences.searchSort),
         ]),
       })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.textformat'),
+        title: AppStrings.get('search_ignore_local_user_tag_filtering'),
+        subtitle: AppStrings.get('search_ignore_local_user_tag_filtering_desc'),
+        hasSwitch: true,
+        checked: this.catalogPreferences.ignoreLocalUserTagFiltering,
+        showChevron: false,
+        onSwitchChange: (value: boolean): void => {
+          CatalogPreferencesService.setSearchIgnoreLocalUserTagFiltering(this.context(), value)
+            .catch((): void => {
+              this.searchPreferencesError = AppStrings.get('settings_catalog_save_failed')
+            })
+        },
+      })
     }
   }
 
@@ -4717,6 +4733,18 @@ export struct SettingsPage {
         onAction: (): void => {
           if (this.onOpenContentFilters) {
             this.onOpenContentFilters()
+          }
+        },
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.textformat'),
+        title: AppStrings.get('settings_local_user_tags'),
+        subtitle: AppStrings.get('settings_local_user_tags_subtitle'),
+        accessibilityLabel: AppStrings.get('settings_local_user_tags_a11y'),
+        onAction: (): void => {
+          if (this.onOpenLocalUserTags) {
+            this.onOpenLocalUserTags()
           }
         },
       })

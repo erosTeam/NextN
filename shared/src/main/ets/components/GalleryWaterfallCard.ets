@@ -2,8 +2,10 @@ import { NhGallerySummary, NhTag } from '../model/NhGallery'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { AppStrings } from '../i18n/AppStrings'
 import { CoverColorService } from '../services/CoverColorService'
+import { NhLocalUserTagService } from '../services/NhLocalUserTagService'
 import { CoverBackgroundState, connectCoverBackground } from '../state/CoverBackgroundState'
 import { BrowsePresentationState, connectBrowsePresentation } from '../state/BrowsePresentationState'
+import { connectLocalUserTags, NhLocalUserTagState } from '../state/NhLocalUserTagState'
 import {
   TagTranslationSettingsState,
   connectTagTranslationSettings,
@@ -65,6 +67,7 @@ export struct GalleryWaterfallCard {
   @Local coverBackgroundColor: number = 0
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
   @Local tagTranslationSettings: TagTranslationSettingsState = connectTagTranslationSettings()
+  @Local localUserTags: NhLocalUserTagState = connectLocalUserTags()
   private tagScroller: Scroller = new Scroller()
   @Event onOpen?: (galleryId: number) => void
 
@@ -162,15 +165,19 @@ export struct GalleryWaterfallCard {
   }
 
   private tagAt(index: number): NhTag | undefined {
+    const revision: number = this.localUserTags.revision
+    const ordered: NhTag[] = revision >= 0
+      ? NhLocalUserTagService.orderedTags(this.gallery.tags)
+      : []
     if (
       !this.browsePresentation.showGalleryTags ||
       index < 0 ||
       index >= WATERFALL_TAG_LIMIT ||
-      index >= this.gallery.tags.length
+      index >= ordered.length
     ) {
       return undefined
     }
-    const tag: NhTag = this.gallery.tags[index]
+    const tag: NhTag = ordered[index]
     return this.displayLabel(tag).trim().length > 0 ? tag : undefined
   }
 
@@ -179,14 +186,34 @@ export struct GalleryWaterfallCard {
     return tag === undefined ? '' : this.displayLabel(tag)
   }
 
+  private tagBackgroundAt(index: number): ResourceColor {
+    const tag: NhTag | undefined = this.tagAt(index)
+    if (tag === undefined) {
+      return Color.Transparent
+    }
+    const colorCode: string = NhLocalUserTagService.colorCode(tag.id)
+    return colorCode.length > 0 ? colorCode : ThemeTokens.BRAND_CONTAINER
+  }
+
+  private tagForegroundAt(index: number): ResourceColor {
+    const tag: NhTag | undefined = this.tagAt(index)
+    if (tag === undefined) {
+      return Color.Transparent
+    }
+    const colorCode: string = NhLocalUserTagService.colorCode(tag.id)
+    return colorCode.length > 0
+      ? NhLocalUserTagService.readableTextColor(tag.id)
+      : ThemeTokens.TEXT_SECONDARY
+  }
+
   @Builder
   private TagChipAt(index: number) {
     if (this.tagAt(index) !== undefined) {
       Column() {
         Text(this.tagLabelAt(index))
           .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-          .fontColor(ThemeTokens.TEXT_SECONDARY)
-          .backgroundColor(ThemeTokens.BRAND_CONTAINER)
+          .fontColor(this.tagForegroundAt(index))
+          .backgroundColor(this.tagBackgroundAt(index))
           .borderRadius(ThemeTokens.LIST_TAG_RADIUS)
           .padding({ left: 6, right: 6, top: ThemeTokens.LIST_TAG_PADDING_VERTICAL, bottom: ThemeTokens.LIST_TAG_PADDING_VERTICAL })
           .maxLines(1)

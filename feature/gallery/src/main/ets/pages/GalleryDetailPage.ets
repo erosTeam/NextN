@@ -40,6 +40,7 @@ import {
   NhGalleryPage,
   NhGalleryShareService,
   NhGallerySummary,
+  NhLocalUserTagService,
   NhLocalUserTagState,
   NhDownloadTask,
   NhDownloadTaskStatus,
@@ -2687,8 +2688,8 @@ export struct GalleryDetailPage {
     Text(this.tagMemberLabel(item))
       .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
       .lineHeight(ThemeTokens.TAG_LINE_HEIGHT)
-      .fontColor(ThemeTokens.TEXT_SECONDARY)
-      .backgroundColor(ThemeTokens.SURFACE_SUB)
+      .fontColor(this.tagMemberForeground(item.tag))
+      .backgroundColor(this.tagMemberBackground(item.tag))
       .borderRadius(ThemeTokens.TAG_RADIUS)
       .padding({
         left: ThemeTokens.SPACE_SM,
@@ -2720,6 +2721,22 @@ export struct GalleryDetailPage {
           this.openTagSearch(item.tag)
         }
       })
+  }
+
+  private tagMemberColorCode(tag: NhTag): string {
+    const revision: number = this.localUserTags.revision
+    return revision >= 0 ? NhLocalUserTagService.colorCode(tag.id) : ''
+  }
+
+  private tagMemberForeground(tag: NhTag): ResourceColor {
+    return this.tagMemberColorCode(tag).length > 0
+      ? NhLocalUserTagService.readableTextColor(tag.id)
+      : ThemeTokens.TEXT_SECONDARY
+  }
+
+  private tagMemberBackground(tag: NhTag): ResourceColor {
+    const colorCode: string = this.tagMemberColorCode(tag)
+    return colorCode.length > 0 ? colorCode : ThemeTokens.SURFACE_SUB
   }
 
   @Builder

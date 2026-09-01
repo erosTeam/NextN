@@ -8,6 +8,7 @@ import {
 } from '../model/NhLocalUserTag'
 import { connectLocalUserTags, NhLocalUserTagState } from '../state/NhLocalUserTagState'
 import { NhLocalUserTagRepository } from '../storage/NhLocalUserTagRepository'
+import { SyncScheduler } from '../sync/SyncScheduler'
 import { NhLocalUserTagPresentation } from '../utils/NhLocalUserTagPresentation'
 import { NhLocalUserTagRules } from './NhLocalUserTagRules'
 import { NhLocalUserTagStore } from './NhLocalUserTagStore'
@@ -35,6 +36,7 @@ export class NhLocalUserTagService {
       }
       await NhLocalUserTagRepository.saveTag(context, draft)
       await NhLocalUserTagService.reload(context)
+      SyncScheduler.requestAfterLocalWrite(context, 'local_user_tags')
     })
   }
 
@@ -42,6 +44,7 @@ export class NhLocalUserTagService {
     return NhLocalUserTagService.enqueueWrite(async (): Promise<void> => {
       await NhLocalUserTagRepository.removeTag(context, tagId)
       await NhLocalUserTagService.reload(context)
+      SyncScheduler.requestAfterLocalWrite(context, 'local_user_tags')
     })
   }
 
@@ -51,6 +54,7 @@ export class NhLocalUserTagService {
       settings.filteringThreshold = NhLocalUserTagContract.normalizeFilteringThreshold(value)
       await NhLocalUserTagRepository.saveSettings(context, settings)
       await NhLocalUserTagService.reload(context)
+      SyncScheduler.requestAfterLocalWrite(context, 'local_user_tag_settings')
     })
   }
 
@@ -72,6 +76,22 @@ export class NhLocalUserTagService {
 
   static colorCode(tagId: number): string {
     return NhLocalUserTagPresentation.colorCode(tagId, NhLocalUserTagStore.index())
+  }
+
+  static readableTextColor(tagId: number): string {
+    return NhLocalUserTagPresentation.readableTextColor(NhLocalUserTagService.colorCode(tagId))
+  }
+
+  static compactTextColor(tagId: number): string {
+    return NhLocalUserTagPresentation.compactTextColor(NhLocalUserTagService.colorCode(tagId))
+  }
+
+  static activeTags(): NhLocalUserTag[] {
+    return NhLocalUserTagStore.activeTags()
+  }
+
+  static filteringThreshold(): number {
+    return NhLocalUserTagStore.filteringThreshold()
   }
 
   private static enqueueWrite(operation: () => Promise<void>): Promise<void> {

@@ -96,5 +96,14 @@ export default function nhLocalUserTagRulesTest(): void {
       expect(ordered.slice(0, 8).some((value: NhTag): boolean => value.id === 11)).assertEqual(true)
       done()
     })
+
+    it('derives readable chip text and NextE compact text colors', 0, (done: Function) => {
+      expect(NhLocalUserTagPresentation.readableTextColor('#000000')).assertEqual('#FFFFFF')
+      expect(NhLocalUserTagPresentation.readableTextColor('#FFFFFF')).assertEqual('#000000')
+      expect(NhLocalUserTagPresentation.compactTextColor('#000000')).assertEqual('#333333')
+      expect(NhLocalUserTagPresentation.compactTextColor('#FFFFFF')).assertEqual('#FFFFFF')
+      expect(NhLocalUserTagPresentation.compactTextColor('invalid')).assertEqual('')
+      done()
+    })
   })
 }

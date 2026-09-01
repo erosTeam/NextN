@@ -2187,7 +2187,8 @@ export struct SearchPage {
     // sys.symbol has no funnel_fill variant (compile-verified), so an active
     // filter is shown by tinting the outline funnel with the brand color.
     const hasActiveFilters: boolean = this.activeLanguageFilter !== NhSearchLanguage.ALL ||
-      this.activeSearchSort !== NhSearchSort.RECENT
+      this.activeSearchSort !== NhSearchSort.RECENT ||
+      this.catalogPreferences.ignoreLocalUserTagFiltering
     // The tinted branch must render at the same title-bar icon size as the
     // plain resource branch. Without an explicit fontSize the modifier path
     // falls back to a smaller intrinsic default (measured 40px ink vs 66px
