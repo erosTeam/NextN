@@ -211,6 +211,14 @@ export struct LocalUserTagsPage {
   }
 
   private updateAddQuery(value: string): void {
+    const selectedQuery: string = this.draftNamespace.length > 0
+      ? `${this.draftNamespace}:${this.draftName}`
+      : this.draftName
+    if (this.draftTagId > 0 && value.trim() === selectedQuery) {
+      this.draftQuery = value
+      this.cancelSuggestions()
+      return
+    }
     this.draftQuery = value
     this.draftTagId = 0
     this.draftNamespace = ''
