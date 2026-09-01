@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-open-subtab-bypass-result-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/open-subtab-bypass-result",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "88bec05-local-user-tags-switch-fix",
+    "page": "Selected ASANAGI Search Subtab with independent bypass on",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Return to Home after the selected custom profile is persisted. Its artist:asanagi results must remain visible despite the explicit Hidden rule because this Subtab owns bypass=true while global Search remains false."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "return-to-home", "uiInput": ["click", "117", "214"], "pauseAfterMs": 7000 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-subtab-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-subtab-bypass-result-197.json", "-a"] },
+    { "name": "capture-subtab-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-user-tags-subtab-bypass-result-197.png"] },
+    { "name": "receive-subtab-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-subtab-bypass-result-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/open-subtab-bypass-result/layout.json"] },
+    { "name": "receive-subtab-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-subtab-bypass-result-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/open-subtab-bypass-result/screen.png"] },
+    { "name": "cleanup-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-subtab-bypass-result-197.json"] },
+    { "name": "cleanup-screen", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-subtab-bypass-result-197.png"] }
+  ]
+}

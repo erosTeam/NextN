@@ -6071,3 +6071,33 @@ permitted in this repository.
   `3644216` changed Reader crop/settings code but not the Gallery list-detail transition implementation; the current
   combined dirty tree still passes the Gallery/Reader transition contract, `git diff --check`, a zero-match V1
   decorator inventory and the signed build. Device acceptance above remains tied to the exact installed candidate.
+
+## Local user tags — accepted on 197; WebDAV device B pending — 2026-09-02
+
+- User outcome: local tag color, weight and explicit Hidden coexist. The soft-filter score is the sum of all matched
+  configured tag weights and filters only when that sum is strictly below the threshold. Global Search and each
+  custom Search Subtab own persistent, independent bypass switches that skip only the local tag gate.
+- Static/device evidence: six focused contracts pass; the 197 ohosTest run completed
+  `Tests run: 32, Failure: 0, Error: 0, Pass: 32, Ignore: 0`. The final main HAP was rebuilt from committed
+  `88bec05`, installed in place on `192.168.50.197:12345`, and cold-started without uninstall or data clear.
+- Runtime filtering: a gallery matching `+5` and `-8` tags was retained at threshold `-3` and hidden at `-2`,
+  proving aggregate scoring and strict `<`. Hidden remained a separate hard gate. Global Search immediately
+  reprojected retained raw results when its bypass changed, and a Subtab-specific bypass remained effective while
+  the global value was off and after cold start.
+- Presentation: a blue `artist:asanagi` tag was stably moved ahead of ordinary tags in Waterfall, List and Compact
+  Waterfall. Detail applied the custom color without changing namespace grouping or order.
+- WebDAV evidence: the configured sync page shows the `本地用户标签` dataset enabled, and a successful 197 sync log
+  contains `webdav_dataset_start`/`webdav_dataset_done` for `dataset=local-user-tags` across five shards. This
+  proves real single-device remote transport, not two-device convergence.
+- Restoration: all test tag rules and the temporary Search Subtab were deleted through product UI, threshold was
+  restored to `0`, and global Search bypass was restored to off. After installing the final clean HAP, one cold
+  start showed `尚未设置本地标签` and threshold `0`; a second showed the Search bypass still off.
+- Evidence root: `.hvigor/outputs/local-user-tags-197-20260902/`, especially
+  `install-tests-anchor`, `threshold-equal-minus-three`, `threshold-below-minus-two`,
+  `global-bypass-result`, `cold-subtab-bypass-result-corrected`, `colored-list`,
+  `colored-compact-waterfall`, `open-angie-detail-at-minus-five`, `read-webdav-evidence`,
+  `final-clean-manager-state`, and `final-clean-search-bypass-cold`.
+- Remaining external block: §12.4 of `docs/plans/active/local-user-tags.md` requires a second authorized device on
+  the same WebDAV endpoint to verify pull/cold-start recovery, concurrent whole-record LWW, deletion tombstone
+  non-resurrection, and both Search bypass owners. No second device was authorized in this run, so the long-running
+  goal remains OPEN only for that cross-device matrix.

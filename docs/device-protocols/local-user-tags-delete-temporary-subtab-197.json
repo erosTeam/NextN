@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-delete-temporary-subtab-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/delete-temporary-subtab",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "88bec05-local-user-tags",
+    "page": "Delete temporary ASANAGI acceptance Home Subtab",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Invoke the visible destructive Delete row and confirm removal of only the ASANAGI acceptance profile created during this run. Capture the manager afterward to prove it is absent."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "request-delete-asanagi-subtab", "uiInput": ["click", "630", "2440"], "pauseAfterMs": 600 },
+      { "name": "confirm-delete-asanagi-subtab", "uiInput": ["click", "900", "1490"], "pauseAfterMs": 1400 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-clean-subtab-manager-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-clean-subtab-manager-197.json", "-a"] },
+    { "name": "receive-clean-subtab-manager-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-clean-subtab-manager-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/delete-temporary-subtab/layout.json"] },
+    { "name": "cleanup-clean-subtab-manager-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-clean-subtab-manager-197.json"] }
+  ]
+}

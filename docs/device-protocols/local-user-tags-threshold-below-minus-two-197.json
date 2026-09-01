@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-threshold-below-minus-two-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/threshold-below-minus-two",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "88bec05-local-user-tags-switch-fix",
+    "page": "Home with total local weight -3 below threshold -2",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Change only the threshold from -3 to -2, return Home, and capture that the previously visible gallery matching angie +5 plus low lolicon -8 is removed because -3 < -2."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-my-tab", "uiInput": ["click", "1001", "2585"], "pauseAfterMs": 800 },
+      { "name": "open-advanced-settings", "uiInput": ["click", "630", "1817"], "pauseAfterMs": 800 },
+      { "name": "open-local-tag-manager", "uiInput": ["click", "630", "1780"], "pauseAfterMs": 900 },
+      { "name": "open-threshold-editor", "uiInput": ["click", "630", "415"], "pauseAfterMs": 800 },
+      { "name": "focus-threshold-at-end", "uiInput": ["click", "1110", "1400"], "pauseAfterMs": 200 },
+      { "name": "delete-threshold-three", "uiInput": ["keyEvent", "2055"], "pauseAfterMs": 100 },
+      { "name": "enter-two", "uiInput": ["text", "2"], "pauseAfterMs": 200 },
+      { "name": "dismiss-threshold-keyboard", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 500 },
+      { "name": "save-threshold-minus-two", "uiInput": ["click", "1143", "1205"], "pauseAfterMs": 1200 },
+      { "name": "back-to-advanced", "uiInput": ["click", "117", "214"], "pauseAfterMs": 500 },
+      { "name": "back-to-my", "uiInput": ["click", "117", "214"], "pauseAfterMs": 500 },
+      { "name": "open-home-tab", "uiInput": ["click", "126", "2585"], "pauseAfterMs": 2500 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-below-home-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-threshold-below-197.json", "-a"] },
+    { "name": "capture-below-home-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-user-tags-threshold-below-197.png"] },
+    { "name": "receive-below-home-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-threshold-below-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/threshold-below-minus-two/layout.json"] },
+    { "name": "receive-below-home-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-threshold-below-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/threshold-below-minus-two/screen.png"] },
+    { "name": "cleanup-below-home-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-threshold-below-197.json"] },
+    { "name": "cleanup-below-home-screen", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-threshold-below-197.png"] }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-read-webdav-evidence-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/read-webdav-evidence",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "88bec05-local-user-tags",
+    "page": "Read-only WebDAV local-user-tags evidence",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Read the current safe Sync overview and existing NextN diagnostics only. No sync is triggered, no credentials are captured, and no remote or local data is changed."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "anchor-current-sync-overview", "uiInput": ["click", "630", "2500"], "pauseAfterMs": 300 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-sync-overview-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-read-webdav-evidence-197.json", "-a"] },
+    { "name": "receive-sync-overview-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-read-webdav-evidence-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/read-webdav-evidence/layout.json"] },
+    { "name": "cleanup-sync-overview-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-read-webdav-evidence-197.json"] },
+    { "name": "read-nextn-hilog", "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"], "timeoutSeconds": 60 },
+    { "name": "verify-final-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

@@ -1,6 +1,7 @@
 # NextN 本地用户标签系统开发指南
 
-> 状态：OPEN（Phase 1-5 源码与静态验证已完成；设备 197 运行验收与真实 WebDAV 往返待完成）
+> 状态：OPEN（Phase 1-5 已实现并通过设备 197 验收；仅 §12.4 的双设备 WebDAV
+> 往返仍待第二台获授权设备）
 > 目标：在不依赖 NH 上游新增 API 的前提下，提供一套受 EH My Tags
 > 启发的本地用户标签系统，并通过现有 WebDAV 在用户设备间同步。
 > 本文档是后续设计、实现和验收的权威入口。实现中若要改变本文的
@@ -590,7 +591,59 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 
 ## 14. 当前下一步
 
-Phase 1-5 的源码、契约脚本、主应用签名构建和 `entry@ohosTest` 签名构建已经完成；
-这些结果只证明设备候选可生成。下一项可执行工作是在用户指定的设备 197 上按 §12
-执行测试包、管理交互、三种列表与详情呈现、全局 Search/Subtab 独立旁路、冷启动持久化
-和真实 WebDAV 往返，并将观察结果写回活动验收记录。完成前本文档保持 `OPEN`。
+Phase 1-5 的源码、契约脚本、主应用签名构建和 `entry@ohosTest` 签名构建已经完成。
+设备 197 已完成 §12.1-§12.3 的运行时验收及 `local-user-tags` 数据集的单设备远端传输
+观察；详见 §15。当前唯一未闭合项是 §12.4 的双设备往返：需要一台由用户明确授权、
+配置同一 WebDAV 端点的设备 B，验证拉取、冷启动、并发 LWW、删除墓碑不复活以及
+全局 Search/Subtab 两级开关恢复。在完成该项前本文档保持 `OPEN`，但不得把已通过的
+197 运行时行为重新降级为“仅源码/构建完成”。
+
+## 15. 设备 197 验收结果（2026-09-02）
+
+### 15.1 构建、测试与持久化
+
+- 六项静态合同通过：settings backup、persistence inventory、Home Subtab、四语言字符串、
+  scaffold 和 local user tags。
+- 设备测试在 `192.168.50.197:12345` 上完成
+  `Tests run: 32, Failure: 0, Error: 0, Pass: 32, Ignore: 0`；证据位于
+  `.hvigor/outputs/local-user-tags-197-20260902/install-tests-anchor/`。
+- 最终签名主包从已提交的 `88bec05` 源码重新构建，`BUILD SUCCESSFUL in 9 s 621 ms`，
+  随后用 `install -r` 原位安装；未卸载、未清数据。冷启动原生 Browse 证据位于
+  `.hvigor/outputs/local-user-tags-197-20260902/install-final-clean/`。
+- 最终干净构建再次冷启动后，本地标签管理页显示阈值 `0`、`尚未设置本地标签`；全局
+  Search 条件的“忽略本地标签过滤”显示关闭。证据分别位于
+  `.hvigor/outputs/local-user-tags-197-20260902/final-clean-manager-state/` 和
+  `.hvigor/outputs/local-user-tags-197-20260902/final-clean-search-bypass-cold/`。
+
+### 15.2 Hidden、权重与搜索旁路
+
+- 在同一图库上配置 `+5` 与 `-8` 两个命中标签：阈值 `-3` 时总和等于阈值，图库保留；
+  阈值改为 `-2` 后总和严格小于阈值，图库隐藏，锁定了“总权重求和 + 严格 `<`”语义。
+  证据位于 `threshold-equal-minus-three/` 与 `threshold-below-minus-two/`。
+- 显式 Hidden 独立于 weight/color 保存并生效；规则编辑、关闭/开启及冷启动读回均保持
+  三个字段互不替代。
+- 全局 Search 开启旁路后，已保留在 `rawGalleries` 的 Hidden 结果立即重新出现，无需
+  重新提交搜索；关闭后恢复过滤。证据位于 `enable-global-bypass-reproject/` 和
+  `global-bypass-result/`。
+- 自定义 Search Subtab 在编辑条件页持有自己的同级持久化开关；全局开关关闭、Subtab
+  开关开启时，Subtab 仍显示仅因本地 Hidden 被过滤的结果，冷启动后不变。证据位于
+  `fill-subtab-and-find-bypass/`、`open-subtab-bypass-result/` 和
+  `cold-subtab-bypass-result-corrected/`。
+
+### 15.3 颜色与顺序
+
+- 为 `artist:asanagi` 设置蓝色后，瀑布流、普通列表和紧凑瀑布流都将该彩色标签稳定前置；
+  普通/瀑布流使用彩色 chip，紧凑瀑布流保持原有几何并使用彩色文字。证据位于
+  `save-asanagi-color-and-return/`、`colored-list/` 和 `colored-compact-waterfall/`。
+- Gallery Detail 显示同一颜色，但保留 namespace 分组和既有顺序，没有应用列表前置；
+  证据位于 `open-angie-detail-at-minus-five/`。
+
+### 15.4 WebDAV 已证实边界与剩余阻塞
+
+- 197 的 WebDAV 同步设置中 `本地用户标签` 数据集已启用；成功同步记录显示
+  `dataset=local-user-tags` 的 start/done，并处理五个分片。证据位于
+  `open-sync-overview/` 和 `read-webdav-evidence/`。这证明该独立数据集在 197 与已配置
+  远端之间实际进入传输链，不只是静态注册。
+- 本次仅获授权使用设备 197，因此没有执行 §12.4 所要求的设备 B 拉取、冷启动、并发
+  LWW 和删除墓碑不复活验证。单设备成功传输不能代替双设备往返；这也是当前唯一外部
+  阻塞。测试规则、测试 Subtab 和临时阈值均已清理，删除经产品路径写入墓碑。

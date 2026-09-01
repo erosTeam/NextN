@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-final-clean-search-bypass-cold-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/final-clean-search-bypass-cold",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "88bec05-clean-signed",
+    "page": "Global Search conditions after a second final clean cold start",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Cold-start again without clearing data, open global Search and its conditions, and verify the persisted local-filter bypass cleanup remains off."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-final-clean-again", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 3000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-global-search", "uiInput": ["click", "830", "214"], "pauseAfterMs": 1000 },
+      { "name": "open-search-conditions", "uiInput": ["click", "987", "214"], "pauseAfterMs": 1100 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-final-search-options-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-final-clean-search-options-197.json", "-a"] },
+    { "name": "receive-final-search-options-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-final-clean-search-options-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/final-clean-search-bypass-cold/layout.json"] },
+    { "name": "capture-final-search-options-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-user-tags-final-clean-search-options-197.png"] },
+    { "name": "receive-final-search-options-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-final-clean-search-options-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/final-clean-search-bypass-cold/screen.png"] },
+    { "name": "cleanup-final-search-options-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-final-clean-search-options-197.json", "/data/local/tmp/nextn-local-user-tags-final-clean-search-options-197.png"] },
+    { "name": "verify-final-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

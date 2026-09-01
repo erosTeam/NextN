@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-install-tests-anchor-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/install-tests-anchor",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "1e4e6bc-local-user-tags",
+    "page": "cold-start native root after in-place candidate and test installation",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Operate only user-selected target 197. Install both signed candidates with -r, run the complete device suite, and cold-start without uninstall or data clear. Capture only the semantic root anchor; no account, Cookie, token, or WebDAV credential values are collected."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake-before-install", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    {
+      "name": "install-main-signed-candidate-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"],
+      "timeoutSeconds": 180
+    },
+    {
+      "name": "install-test-signed-candidate-in-place",
+      "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"],
+      "timeoutSeconds": 180
+    },
+    {
+      "name": "run-complete-device-test-suite",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test", "-s", "unittest", "OpenHarmonyTestRunner", "-s", "timeout", "120000"],
+      "timeoutSeconds": 150
+    },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    {
+      "name": "cold-start-nextn",
+      "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"],
+      "pauseAfterMs": 3000,
+      "timeoutSeconds": 30
+    }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "noninteractive-top-edge-stabilization", "uiInput": ["click", "1", "1"], "pauseAfterMs": 200 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-cold-root-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-cold-root-197.json", "-a"] },
+    { "name": "receive-cold-root-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-cold-root-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/install-tests-anchor/layout.json"] },
+    { "name": "cleanup-remote-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-cold-root-197.json"] },
+    { "name": "read-final-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "verify-final-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

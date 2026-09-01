@@ -9977,7 +9977,7 @@ authorize an edit, replace a device comparison, or define product completion.
   first/middle/last continuous-page visual cropping were not separately observed in this run; their source paths and
   detector/seam contracts remain covered but are not promoted to device evidence.
 
-## OPEN — Local user-tag filtering across gallery collections — 2026-09-02
+## ACCEPTED ON 197 — Local user-tag filtering across gallery collections — 2026-09-02
 
 - **Why newly actionable:** the user approved `docs/plans/active/local-user-tags.md` as the implementation contract
   and explicitly requested implementation plus device-197 validation. This entry opens only the collection filtering
@@ -9997,8 +9997,17 @@ authorize an edit, replace a device comparison, or define product completion.
   prove Hidden, positive/negative total-weight cancellation, strict threshold equality, retained-row reprojection,
   Search bypass without a new request, independent Subtab bypass, unchanged NH cloud/title gates, cold-start restore
   and ordinary empty behavior. Source and build evidence do not accept these runtime paths.
+- **197 acceptance:** device tests completed `32/32`. A gallery matching configured `+5` and `-8` tags remained
+  visible at threshold `-3` and disappeared at `-2`, proving aggregate scoring and strict `<`. Explicit Hidden was
+  edited and read back independently. Global Search reprojected its retained raw result immediately when the
+  persistent bypass changed; a custom Search Subtab kept its own bypass while the global value was off and retained
+  it through cold start. Existing ordinary empty presentation remained unchanged. Evidence is under
+  `.hvigor/outputs/local-user-tags-197-20260902/{threshold-equal-minus-three,threshold-below-minus-two,global-bypass-result,open-subtab-bypass-result,cold-subtab-bypass-result-corrected}/`.
+- **Boundary:** this accepts the new local tag gate and both Search bypass owners on portrait device 197. It does
+  not claim a new device exercise of the unchanged NH cloud-blacklist/title-filter gates, nor WebDAV cross-device
+  convergence.
 
-## OPEN — Local user-tag management and tag presentation — 2026-09-02
+## ACCEPTED ON 197 — Local user-tag management and tag presentation — 2026-09-02
 
 - **Why newly actionable:** the same approved local-user-tag contract now enters its visible Phase 3/4 boundary.
   NextE `MyTagsPage` and `AppColorPicker` were inspected as the reference; NextN keeps their management-page,
@@ -10025,3 +10034,12 @@ authorize an edit, replace a device comparison, or define product completion.
   threshold validation, independent Hidden/weight/color persistence, Search/default/Subtab switches, colored-first
   truncation in list/regular/compact presentations, unchanged Detail order, live repaint and cold start. Same-gallery,
   same-viewport before/after captures are required for visible acceptance; source and build evidence are insufficient.
+- **197 acceptance:** add/edit/delete, threshold editing, independent color/weight/Hidden controls and cold-start
+  restoration were exercised. The same configured colored artist tag moved ahead of ordinary tags in Waterfall,
+  List and Compact Waterfall; the Detail page applied color without moving the tag out of its existing grouping and
+  order. Temporary rules were deleted through the product UI and the final clean cold-start manager shows threshold
+  `0` plus `尚未设置本地标签`. Evidence is under
+  `.hvigor/outputs/local-user-tags-197-20260902/{save-asanagi-color-and-return,colored-list,colored-compact-waterfall,open-angie-detail-at-minus-five,final-clean-manager-state}/`.
+- **Final candidate:** committed source at `88bec05` rebuilt successfully and was installed in place on 197 without
+  uninstall or data clear. A second final-candidate cold start shows the global Search bypass restored to off under
+  `final-clean-search-bypass-cold/`. WebDAV two-device convergence remains outside this UI acceptance entry.

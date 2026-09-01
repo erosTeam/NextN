@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-cold-subtab-bypass-result-corrected-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/cold-subtab-bypass-result-corrected",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "88bec05-local-user-tags-switch-fix",
+    "page": "Selected ASANAGI Subtab after corrected cold-start readback",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Repeat the no-data-clear cold start and tap within the visible ASANAGI tab itself. The prior probe touched the adjacent T tab at x700 and therefore was not valid persistence evidence."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 7500 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "confirm-visible-asanagi-tab", "uiInput": ["click", "950", "344"], "pauseAfterMs": 4500 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-cold-subtab-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-cold-subtab-corrected-197.json", "-a"] },
+    { "name": "capture-cold-subtab-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-user-tags-cold-subtab-corrected-197.png"] },
+    { "name": "receive-cold-subtab-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-cold-subtab-corrected-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/cold-subtab-bypass-result-corrected/layout.json"] },
+    { "name": "receive-cold-subtab-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-cold-subtab-corrected-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/cold-subtab-bypass-result-corrected/screen.png"] },
+    { "name": "cleanup-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-cold-subtab-corrected-197.json"] },
+    { "name": "cleanup-screen", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-cold-subtab-corrected-197.png"] },
+    { "name": "verify-final-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

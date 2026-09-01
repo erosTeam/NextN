@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-readback-search-bypass-cold-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/readback-search-bypass-cold",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "88bec05-local-user-tags-switch-fix",
+    "page": "Global Search options after force-stop/cold start",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Dismiss the cold-start Search IME, open the correctly located funnel action, and read back the persisted local-filter bypass checked=true."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "dismiss-cold-search-ime", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 700 },
+      { "name": "open-search-options", "uiInput": ["click", "987", "214"], "pauseAfterMs": 900 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-cold-options-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-search-bypass-cold-readback-197.json", "-a"] },
+    { "name": "receive-cold-options-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-search-bypass-cold-readback-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-197-20260902/readback-search-bypass-cold/layout.json"] },
+    { "name": "cleanup-cold-options-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-search-bypass-cold-readback-197.json"] }
+  ]
+}
