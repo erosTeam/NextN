@@ -7,6 +7,7 @@ import { Action, KeyEvent as InputConsumerKeyEvent } from '@ohos.multimodalInput
 import {
   HistoryRepository,
   AppStrings,
+  GalleryPageThumbnailSurface,
   NhApiClient,
   NhGalleryExternalOpenService,
   NhGalleryDetail,
@@ -5454,22 +5455,6 @@ struct ReaderThumbnailTile {
   @Require @Param currentIndex: number
   @Param selected: boolean = false
   @Event onSelect?: (sourceIndex: number) => void
-  @Local isThumbnailLoading: boolean = true
-  @Local hasThumbnailError: boolean = false
-
-  aboutToAppear(): void {
-    this.resetThumbnailState()
-  }
-
-  @Monitor('page')
-  onPageChanged(): void {
-    this.resetThumbnailState()
-  }
-
-  private resetThumbnailState(): void {
-    this.isThumbnailLoading = this.page.thumbnailUrl.length > 0
-    this.hasThumbnailError = false
-  }
 
   private thumbnailWidth(): number {
     const aspect: number = this.page.width > 0 && this.page.height > 0
@@ -5488,42 +5473,20 @@ struct ReaderThumbnailTile {
     return AppStrings.format('thumbnails_page_label', [(this.sourceIndex + 1).toString()])
   }
 
-  @Builder
-  private ThumbnailFallback() {
-    if (this.page.thumbnailUrl.length === 0 || this.hasThumbnailError) {
-      SymbolGlyph($r('sys.symbol.picture'))
-        .fontSize(24)
-        .fontColor([ThemeTokens.TEXT_ON_BRAND])
-        .opacity(0.62)
-    } else if (this.isThumbnailLoading) {
-      LoadingProgress()
-        .width(20)
-        .height(20)
-        .color(ThemeTokens.TEXT_ON_BRAND)
-    }
-  }
-
   build() {
     Column({ space: ThemeTokens.SPACE_XS }) {
       Stack({ alignContent: Alignment.Center }) {
-        if (this.page.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
-          Image(this.page.thumbnailUrl)
-            .width('100%')
-            .height('100%')
-            .objectFit(ImageFit.Contain)
-            .onComplete((): void => {
-              this.isThumbnailLoading = false
-            })
-            .onError((): void => {
-              this.isThumbnailLoading = false
-              this.hasThumbnailError = true
-            })
-        }
-        this.ThumbnailFallback()
+        GalleryPageThumbnailSurface({
+          src: this.page.thumbnailUrl,
+          objectFit: ImageFit.Contain,
+          placeholderColor: READER_CONTROL_TINT,
+          indicatorColor: ThemeTokens.TEXT_ON_BRAND,
+          errorOpacity: 0.62,
+          errorIconSize: 24,
+        })
       }
       .width(this.thumbnailWidth())
       .height(READER_THUMB_IMAGE_HEIGHT)
-      .backgroundColor(READER_CONTROL_TINT)
       .border({
         width: this.selected ? 2 : 0,
         color: this.selected ? ThemeTokens.BRAND : Color.Transparent,

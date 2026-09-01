@@ -1,5 +1,6 @@
 import {
   AppStrings,
+  GalleryPageThumbnailSurface,
   NhGalleryPage,
   ReaderThumbnailTransitionCoordinator,
   ReaderThumbnailTransitionState,
@@ -28,23 +29,7 @@ export struct GalleryCompactPreviewTile {
   @Require @Param pageIndex: number
   @Param transitionSourceId: string = ''
   @Event onOpen?: (pageIndex: number) => void
-  @Local isThumbnailLoading: boolean = true
-  @Local hasThumbnailError: boolean = false
   @Local readerTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
-
-  aboutToAppear(): void {
-    this.resetThumbnailState()
-  }
-
-  @Monitor('page')
-  onPageChanged(): void {
-    this.resetThumbnailState()
-  }
-
-  private resetThumbnailState(): void {
-    this.isThumbnailLoading = this.page.thumbnailUrl.length > 0
-    this.hasThumbnailError = false
-  }
 
   private pageAspect(): number {
     if (this.page.width > 0 && this.page.height > 0) {
@@ -64,47 +49,21 @@ export struct GalleryCompactPreviewTile {
     return AppStrings.format('thumbnails_page_label', [(this.pageIndex + 1).toString()])
   }
 
-  @Builder
-  private ThumbnailFallback() {
-    if (this.page.thumbnailUrl.length === 0 || this.hasThumbnailError) {
-      SymbolGlyph($r('sys.symbol.picture'))
-        .fontSize(26)
-        .fontColor([ThemeTokens.TEXT_TERTIARY])
-    } else if (this.isThumbnailLoading) {
-      LoadingProgress()
-        .width(20)
-        .height(20)
-        .color(ThemeTokens.TEXT_TERTIARY)
-    }
-  }
-
   build() {
     Column({ space: ThemeTokens.SPACE_XS }) {
       Stack({ alignContent: Alignment.Center }) {
         Stack({ alignContent: Alignment.Center }) {
-          if (this.page.thumbnailUrl.length > 0 && !this.hasThumbnailError) {
-            Image(this.page.thumbnailUrl)
-              .width('100%')
-              .height('100%')
-              .objectFit(ImageFit.Cover)
-              .onComplete((): void => {
-                this.isThumbnailLoading = false
-              })
-              .onError((): void => {
-                this.isThumbnailLoading = false
-                this.hasThumbnailError = true
-              })
-          }
-          this.ThumbnailFallback()
+          GalleryPageThumbnailSurface({
+            src: this.page.thumbnailUrl,
+            objectFit: ImageFit.Cover,
+          })
         }
         .id(ReaderThumbnailTransitionCoordinator.sourceSnapshotId(this.transitionSourceId))
         .width('100%')
         .height('100%')
-        .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
       }
       .width(this.imageWidth())
       .height(GALLERY_COMPACT_PREVIEW_IMAGE_HEIGHT)
-      .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
       .borderRadius(ThemeTokens.THUMB_RADIUS)
       .clip(true)
       .id(this.transitionSourceId)
