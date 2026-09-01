@@ -31,6 +31,13 @@ CHECKED_PROTOCOL_RUNNER = (
     / "scripts"
     / "run_device_protocol.py"
 ).resolve()
+CHECKED_RECORDING_RUNNER = (
+    Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
+    / "skills"
+    / "harmony-run-device-diagnostics"
+    / "scripts"
+    / "capture_transition_recording.mjs"
+).resolve()
 
 
 DIRECT_HDC_TRANSPORT_COMMANDS = {"tconn"}
@@ -317,6 +324,31 @@ def direct_device_protocol_violation(
             and str(manifest_authorized_target) != manifest_target
         ):
             return "device protocol manifest target must match its authorized target"
+        return None
+    if executable == "node":
+        if len(command) != 3 or Path(command[1]).resolve() != CHECKED_RECORDING_RUNNER:
+            return "Node device commands must use the checked capture_transition_recording.mjs invocation"
+        manifest = Path(command[2]).resolve()
+        try:
+            manifest.relative_to(PROJECT_ROOT)
+        except ValueError:
+            return "transition recording manifest must be project-owned"
+        try:
+            manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+            manifest_target = str(manifest_payload["target"])
+            manifest_authorized_target = manifest_payload.get("authorizedTarget")
+            recording_file_name = str(manifest_payload["recordingFileName"])
+        except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError):
+            return "transition recording manifest must be readable JSON with target and recordingFileName"
+        if not recording_file_name.endswith(".mp4"):
+            return "transition recording manifest must declare an mp4 recordingFileName"
+        if expected_device and manifest_target != expected_device:
+            return "transition recording manifest target must match the active lease target"
+        if (
+            manifest_authorized_target is not None
+            and str(manifest_authorized_target) != manifest_target
+        ):
+            return "transition recording manifest target must match its authorized target"
         return None
     if executable in {"sh", "bash", "zsh", "env"}:
         return "shell or environment wrappers are not permitted for device commands"
