@@ -15,6 +15,7 @@
 - 为单个 NH 标签设置显式屏蔽（硬过滤）。
 - 设置全局标签过滤阈值，以图库命中标签的**权重总和**执行软过滤。
 - 显式屏蔽与权重软过滤并存；权重不是显式屏蔽的另一种写法。
+- 搜索条件提供“忽略本地标签过滤”开关，用于临时绕过本地 Hidden 和权重软过滤。
 - 在图库列表的标签展示中，自定义颜色标签排在未设置颜色的标签前面。
 - 本地用户标签和阈值通过 WebDAV 跨设备同步。
 - 复用 NextE 已有的 My Tags 管理页、编辑 Sheet、颜色选择器和标签着色模式，
@@ -25,6 +26,7 @@
 - 不增加“临时显示本页隐藏项”。
 - 不增加“本页结果均被本地标签规则隐藏”之类的特殊空态。
 - 不增加 EH 的“本页过滤了多少项”提示。
+- 不把“忽略本地标签过滤”做成持久化的全局禁用项。
 - 不改变 NH 服务器黑名单现有的刷新、缓存和过滤语义。
 
 “自定义颜色标签优先”只作用于图库**列表卡片**中的标签展示。详情页继续保持
@@ -72,6 +74,7 @@ NextE 的 `EhUsertag`、`MyTagsPage`、`GalleryTagsCard`、`UserTagStore` 和
 | `shared/src/main/ets/network/NhApiClient.ets` | 列表解析 `tag_ids`，再批量调用 `/api/v2/tags/ids` 丰富标签 | 不需要为本地过滤增加网络请求 |
 | `NhCloudBlacklistService` | NH 账号云端黑名单按相同 tag ID 空间过滤 | 保持独立的上游硬过滤来源 |
 | `ContentFilterService.filterGalleries()` | Home、Popular、搜索、收藏、相关图库共用本地过滤入口 | 本地标签硬/软过滤应并入同一结果链 |
+| `SearchPage` | 持有未过滤的 `rawGalleries`、已展示的 `galleries` 和搜索条件 Sheet | 临时忽略开关可在不重新请求网络的情况下重新应用当前结果 |
 | `GalleryTagStrip` | 普通列表最多显示 10 个可见标签，按输入顺序先到先得 | 颜色优先排序必须发生在 10 个标签截断之前 |
 | `GalleryWaterfallCard` | 最多读取 8 个标签，以索引 `0/2/4/6`、`1/3/5/7` 组成两行 | 先生成统一有序数组，再按现有索引布局显示 |
 | `GalleryWaterfallCompactCard` | 最多读取 8 个标签，单行横向显示 | 与普通瀑布流共享同一排序合同 |
@@ -139,30 +142,37 @@ deletedAt: number
 输入：
 
 - `gallery.tagIds`
+- 现有图库标题内容过滤判定
 - 当前 NH 云端黑名单 ID 集合
 - 本地用户标签 ID 索引
 - 本地 `filteringThreshold`
+- 调用上下文中的 `ignoreLocalUserTagFiltering`，默认 `false`
 
 算法：
 
 ```text
 uniqueTagIds = gallery.tagIds 去重
 
+if 图库命中现有标题内容过滤规则:
+    return true
+
 if uniqueTagIds 命中 NH 云端黑名单:
-    filtered = true
+    return true
+
+if ignoreLocalUserTagFiltering == true:
+    return false
 
 matchedLocalTags = uniqueTagIds 对应的未删除本地标签记录
 
 if matchedLocalTags 中任一 hidden == true:
-    filtered = true
+    return true
 
 score = matchedLocalTags.weight 的总和
 
 if score < filteringThreshold:
-    filtered = true
+    return true
 
-otherwise:
-    filtered = false
+return false
 ```
 
 硬性边界：
@@ -174,6 +184,8 @@ otherwise:
 - 命中零条本地标签时总权重为 `0`；默认阈值 `0` 下不过滤。
 - Hidden 优先于权重；正权重不能挽救 Hidden。
 - 过滤使用 `tagIds`，不等待 `NhTagCatalogService` 丰富名称。
+- `ignoreLocalUserTagFiltering=true` 只跳过本地 Hidden 和权重求和；NH 云端黑名单和
+  现有图库标题内容过滤仍然执行，独立的评论过滤逻辑也不受影响。
 
 ### 5.2 必须锁定的示例
 
@@ -203,6 +215,24 @@ otherwise:
 
 当前已打开的 Gallery Detail 和 Reader 不因随后修改标签规则而自动退出。规则只影响
 后续列表集合的可见性。
+
+### 5.4 搜索中的临时忽略开关
+
+完整 Search 页面在搜索条件 Sheet 中新增一个 Switch 行：
+
+- 标题使用“忽略本地标签过滤”，默认关闭。
+- 开启后，当前 `SearchPage` 实例中的本次及后续搜索结果跳过本地用户标签的 Hidden
+  和权重阈值过滤；关闭后恢复两种过滤。
+- 开关变化立即从已保留的 `rawGalleries` 重新生成 `galleries`，不重复发起网络搜索。
+- 刷新、加载下一页和跳页都沿用当前开关值，避免同一搜索结果混用两套过滤条件。
+- 开关只由 `SearchPage` 的路由会话持有；关闭该搜索页面后恢复默认关闭。
+- 不写入搜索关键词、搜索历史、快捷搜索、Home 子标签、全局设置、备份或 WebDAV。
+- 不作用于 Home、Popular、Favorites 或详情页相关图库；这些入口继续执行本地标签过滤。
+- 不绕过 NH 云端黑名单和现有图库标题内容过滤；评论过滤逻辑也不受影响。
+- 不关闭标签颜色与彩色标签优先排序；两者是展示规则，不是过滤规则。
+
+搜索标题栏漏斗图标的激活状态应包含该开关。开关开启时，即使语言和排序仍为默认值，
+漏斗也保持当前已有的激活色，避免用户看不到临时过滤条件仍在生效。
 
 ## 6. 标签颜色与列表优先排序合同
 
@@ -267,6 +297,8 @@ visible = ordered.take(该卡片现有上限)
 - WebDAV merge、备份恢复和冷启动都走同一 `reload/reapply` 入口。
 - 规则变化后，当前已挂载的 Home、Popular、Search、Favorites 和相关图库从各自
   `rawGalleries` 重新过滤，不重新请求网络。
+- Search 调用过滤服务时显式传入页面级 `ignoreLocalUserTagFiltering`；其他入口不传或
+  传 `false`。不能为此绕过整个 `ContentFilterService`。
 - 颜色或排序变化必须使已挂载列表卡片重新渲染；不能只更新管理页。
 - 每次成功的本地写入调用 `SyncScheduler.requestAfterLocalWrite(...)`。
 
@@ -290,6 +322,8 @@ visible = ordered.take(该卡片现有上限)
   无法绑定 NH ID 的规则。
 - 编辑 Sheet：Hidden、weight、自定义颜色/默认颜色、删除。
 - 阈值设置：在本地标签页面内提供 Tag Filtering Threshold 数字编辑项。
+- Search 条件 Sheet 增加“忽略本地标签过滤”Switch 行；它属于搜索页面临时状态，
+  不放进本地标签管理页的持久化设置。
 
 Hidden、weight 和 color 是并列字段：
 
@@ -346,6 +380,7 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 - `docs/plans/active/persistence-dataset-inventory.md` 把新表登记为
   `localData + WebDAV`，并由现有反向扫描合同覆盖。
 - 标签目录、翻译缓存和 NH 黑名单快照继续排除。
+- Search 页的 `ignoreLocalUserTagFiltering` 是瞬时 UI 状态，也继续排除。
 
 ## 10. 预计代码落点
 
@@ -359,6 +394,7 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 | 过滤、求和、写入编排 | `shared/src/main/ets/services/NhLocalUserTagService.ets` |
 | ID Map 与响应信号 | `shared/src/main/ets/state/` 或 `services/` 下的 store + state |
 | 统一图库过滤 | `shared/src/main/ets/services/ContentFilterService.ets` |
+| 搜索临时忽略开关 | `feature/search/src/main/ets/pages/SearchPage.ets` 及搜索资源字符串 |
 | 列表颜色和稳定分区 | `GalleryTagStrip.ets`、两个 Waterfall 卡片和 shared helper |
 | 详情颜色 | `feature/gallery/src/main/ets/pages/GalleryDetailPage.ets` |
 | 管理页面 | `feature/settings/src/main/ets/pages/LocalUserTagsPage.ets` |
@@ -382,6 +418,7 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 
 - 启动恢复、写入串行化、revision、当前列表重过滤。
 - 接入现有 `ContentFilterService.filterGalleries()` 页面集合。
+- 为过滤调用增加窄作用域选项；Search 可跳过本地用户标签过滤，其他调用方保持默认行为。
 - 接入写后 WebDAV 调度请求，但此阶段不宣称远端同步完成。
 
 完成边界：源码和构建通过；运行时仍需设备验证。
@@ -391,6 +428,7 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 - 先在 `nextn-ui-change-ledger.md` 记录 NextE 参考父树、页面入口、Sheet 状态和设备验收计划。
 - 复用 NextE My Tags 列表和编辑 Sheet，替换为 NH tag ID/本地 Repository 叶子。
 - 增加过滤阈值编辑、添加/编辑/删除流程。
+- 在 Search 条件 Sheet 增加临时忽略 Switch，并把它纳入漏斗激活态。
 
 完成边界：页面源码与构建完成；视觉/交互必须经过真实设备验收。
 
@@ -443,6 +481,11 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 - 编辑 weight、Hidden 或 threshold 后，已挂载列表从 `rawGalleries` 即时重算。
 - 过滤后沿用现有普通空态，不出现新增提示或临时反过滤入口。
 - 已打开详情/Reader 不自动退出。
+- Search 开关打开后，当前 `rawGalleries` 中仅因本地 Hidden/权重被隐藏的项目立即恢复；
+  关闭后立即重新隐藏，全程不新增网络请求。
+- Search 开关不恢复 NH 云端黑名单结果，也不绕过图库标题内容过滤；评论过滤不受影响。
+- 刷新、加载更多和跳页沿用当前开关；离开并重新创建 Search 页面后恢复默认关闭。
+- 开关开启时仍应用标签颜色和列表彩色标签前置排序。
 
 ### 12.4 WebDAV 双设备验收
 
@@ -462,6 +505,8 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 - 不得先截断再把可见范围内的彩色标签排序。
 - 不得用标签翻译文字或 namespace/name 拼接串替代 NH tag ID 作为主身份。
 - 不得把 NH 云端黑名单自动复制为本地用户标签。
+- 不得把 Search 的临时忽略开关扩大成 `ContentFilterService` 总开关，或持久化/同步为
+  全局偏好。
 - 不得用构建、静态测试或单设备截图声称 WebDAV 跨设备同步已验收。
 
 ## 14. 当前下一步
