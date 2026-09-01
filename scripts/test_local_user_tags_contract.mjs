@@ -15,6 +15,9 @@ const manager = read('feature/settings/src/main/ets/pages/LocalUserTagsPage.ets'
 ok('selecting a catalog suggestion survives the TextInput programmatic echo',
   /if \(this\.draftTagId > 0 && value\.trim\(\) === selectedQuery\) \{[\s\S]*?return[\s\S]*?this\.draftTagId = 0/.test(manager) &&
     /this\.draftTagId = suggestion\.tagId[\s\S]*this\.draftNamespace = suggestion\.namespace[\s\S]*this\.draftName = suggestion\.rawName/.test(manager))
+ok('editor draft switches have one mutation path so a switch tap cannot be applied twice',
+  /private DraftSwitchRow\([\s\S]*?onSwitchChange: \(value: boolean\): void => onChange\(value\),[\s\S]*?\n      \}\)[\s\S]*?\n  \}/.test(manager) &&
+    !/private DraftSwitchRow\([\s\S]*?onAction: \(\): void => onChange\(!checked\)[\s\S]*?\n  \}/.test(manager))
 
 const rules = read('shared/src/main/ets/services/NhLocalUserTagRules.ets')
 ok('soft filtering sums every unique matched weight and uses strict threshold comparison',

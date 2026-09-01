@@ -481,7 +481,6 @@ export struct LocalUserTagsPage {
         checked: checked,
         showChevron: false,
         isEnabled: !this.saving,
-        onAction: (): void => onChange(!checked),
         onSwitchChange: (value: boolean): void => onChange(value),
       })
     }
