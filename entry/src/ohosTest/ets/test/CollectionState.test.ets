@@ -1,6 +1,7 @@
 import { describe, expect, it } from '@ohos/hypium'
 import {
   CollectionFooterState,
+  HomeSubtabEditParams,
   HOME_SUBTAB_LATEST_UUID,
   HOME_SUBTAB_POPULAR_UUID,
   NhHomeSubtabKind,
@@ -35,6 +36,7 @@ export default function collectionStateTest(): void {
       latest.query = 'favorites:>=1000'
       latest.language = NhSearchLanguage.CHINESE
       latest.sort = NhSearchSort.POPULAR_ALL_TIME
+      latest.ignoreLocalUserTagFiltering = true
       latest.hidden = true
       latest.presentation = 'waterfall'
       expect(latest.normalizeBuiltinIdentity()).assertEqual(true)
@@ -42,6 +44,7 @@ export default function collectionStateTest(): void {
       expect(latest.query).assertEqual('')
       expect(latest.language).assertEqual(NhSearchLanguage.ALL)
       expect(latest.sort).assertEqual(NhSearchSort.RECENT)
+      expect(latest.ignoreLocalUserTagFiltering).assertEqual(false)
       expect(latest.name).assertEqual('kept-for-presentation')
       expect(latest.hidden).assertEqual(true)
       expect(latest.presentation).assertEqual('waterfall')
@@ -52,6 +55,27 @@ export default function collectionStateTest(): void {
       popular.kind = NhHomeSubtabKind.SEARCH
       expect(popular.normalizeBuiltinIdentity()).assertEqual(true)
       expect(popular.kind).assertEqual(NhHomeSubtabKind.POPULAR)
+      done()
+    })
+
+    it('keeps the local tag bypass in custom search identity and edit seeds', 0, (done: Function) => {
+      const profile: NhHomeSubtabProfile = new NhHomeSubtabProfile()
+      profile.uuid = 'custom-search'
+      profile.kind = NhHomeSubtabKind.SEARCH
+      profile.query = 'language:chinese'
+      const before: string = profile.contentRevision()
+      profile.ignoreLocalUserTagFiltering = true
+      expect(profile.contentRevision() === before).assertEqual(false)
+      expect(profile.copy().ignoreLocalUserTagFiltering).assertEqual(true)
+
+      const edit: HomeSubtabEditParams = new HomeSubtabEditParams(
+        '',
+        'artist:test',
+        NhSearchLanguage.JAPANESE,
+        NhSearchSort.POPULAR_WEEK,
+        true,
+      )
+      expect(edit.seedIgnoreLocalUserTagFiltering).assertEqual(true)
       done()
     })
   })

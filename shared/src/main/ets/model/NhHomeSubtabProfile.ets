@@ -26,6 +26,7 @@ export class NhHomeSubtabProfile {
   query: string = ''
   language: NhSearchLanguage = NhSearchLanguage.ALL
   sort: NhSearchSort = NhSearchSort.RECENT
+  ignoreLocalUserTagFiltering: boolean = false
   presentation: string = HOME_SUBTAB_PRESENTATION_GLOBAL
   hidden: boolean = false
   lastEditTime: number = 0
@@ -55,18 +56,21 @@ export class NhHomeSubtabProfile {
       return false
     }
     const changed: boolean = this.kind !== expectedKind || this.query.length > 0 ||
-      this.language !== NhSearchLanguage.ALL || this.sort !== NhSearchSort.RECENT
+      this.language !== NhSearchLanguage.ALL || this.sort !== NhSearchSort.RECENT ||
+      this.ignoreLocalUserTagFiltering
     this.kind = expectedKind
     this.query = ''
     this.language = NhSearchLanguage.ALL
     this.sort = NhSearchSort.RECENT
+    this.ignoreLocalUserTagFiltering = false
     return changed
   }
 
   hasEffectiveSearch(): boolean {
     return this.query.trim().length > 0 ||
       this.language !== NhSearchLanguage.ALL ||
-      this.sort !== NhSearchSort.RECENT
+      this.sort !== NhSearchSort.RECENT ||
+      this.ignoreLocalUserTagFiltering
   }
 
   /** Stable identity for request/cache invalidation; display-only edits are excluded. */
@@ -77,7 +81,8 @@ export class NhHomeSubtabProfile {
     return revisionPart(this.kind) +
       revisionPart(this.query.trim()) +
       revisionPart(this.language) +
-      revisionPart(this.sort)
+      revisionPart(this.sort) +
+      revisionPart(this.ignoreLocalUserTagFiltering ? '1' : '0')
   }
 
   presentationOverride(): NhBrowsePresentation | null {
@@ -92,6 +97,7 @@ export class NhHomeSubtabProfile {
     copy.query = this.query
     copy.language = this.language
     copy.sort = this.sort
+    copy.ignoreLocalUserTagFiltering = this.ignoreLocalUserTagFiltering
     copy.presentation = this.presentation
     copy.hidden = this.hidden
     copy.lastEditTime = this.lastEditTime
@@ -168,17 +174,20 @@ export class HomeSubtabEditParams {
   seedQuery: string = ''
   seedLanguage: NhSearchLanguage = NhSearchLanguage.ALL
   seedSort: NhSearchSort = NhSearchSort.RECENT
+  seedIgnoreLocalUserTagFiltering: boolean = false
 
   constructor(
     profileUuid: string = '',
     seedQuery: string = '',
     seedLanguage: NhSearchLanguage = NhSearchLanguage.ALL,
     seedSort: NhSearchSort = NhSearchSort.RECENT,
+    seedIgnoreLocalUserTagFiltering: boolean = false,
   ) {
     this.profileUuid = profileUuid
     this.seedQuery = seedQuery
     this.seedLanguage = seedLanguage
     this.seedSort = seedSort
+    this.seedIgnoreLocalUserTagFiltering = seedIgnoreLocalUserTagFiltering
   }
 }
 

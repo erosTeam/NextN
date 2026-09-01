@@ -11,26 +11,31 @@ const SCOPE_GLOBAL: string = 'global'
 const SQL_HAS_PROFILES: string = 'SELECT 1 AS has_state FROM home_subtabs WHERE scope_key = ? LIMIT 1'
 const SQL_HAS_SELECTION: string = 'SELECT 1 AS has_state FROM home_subtab_selection WHERE scope_key = ? LIMIT 1'
 const SQL_SELECT_ACTIVE: string =
-  'SELECT profile_uuid, position_index, kind, name, query_text, language, sort, display_mode, hidden, ' +
+  'SELECT profile_uuid, position_index, kind, name, query_text, language, sort, ' +
+  'ignore_local_user_tag_filtering, display_mode, hidden, ' +
   'last_edit_time, deleted_at FROM home_subtabs WHERE scope_key = ? AND COALESCE(deleted_at, 0) = 0 ' +
   'ORDER BY position_index ASC, profile_uuid ASC'
 const SQL_SELECT_ALL: string =
-  'SELECT profile_uuid, position_index, kind, name, query_text, language, sort, display_mode, hidden, ' +
+  'SELECT profile_uuid, position_index, kind, name, query_text, language, sort, ' +
+  'ignore_local_user_tag_filtering, display_mode, hidden, ' +
   'last_edit_time, deleted_at FROM home_subtabs WHERE scope_key = ? ORDER BY profile_uuid ASC'
 const SQL_SELECT_ONE_CLOCK: string =
   'SELECT last_edit_time, deleted_at FROM home_subtabs WHERE scope_key = ? AND profile_uuid = ? LIMIT 1'
 const SQL_UPSERT: string =
   'INSERT INTO home_subtabs (scope_key, profile_uuid, position_index, kind, name, query_text, language, sort, ' +
-  'display_mode, hidden, last_edit_time, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0) ' +
+  'ignore_local_user_tag_filtering, display_mode, hidden, last_edit_time, deleted_at) ' +
+  'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0) ' +
   'ON CONFLICT(scope_key, profile_uuid) DO UPDATE SET position_index = excluded.position_index, ' +
   'kind = excluded.kind, name = excluded.name, query_text = excluded.query_text, language = excluded.language, ' +
-  'sort = excluded.sort, display_mode = excluded.display_mode, hidden = excluded.hidden, ' +
+  'sort = excluded.sort, ignore_local_user_tag_filtering = excluded.ignore_local_user_tag_filtering, ' +
+  'display_mode = excluded.display_mode, hidden = excluded.hidden, ' +
   'last_edit_time = excluded.last_edit_time, deleted_at = 0 WHERE excluded.last_edit_time >= ' +
   'CASE WHEN COALESCE(home_subtabs.deleted_at, 0) > COALESCE(home_subtabs.last_edit_time, 0) ' +
   'THEN COALESCE(home_subtabs.deleted_at, 0) ELSE COALESCE(home_subtabs.last_edit_time, 0) END'
 const SQL_UPSERT_TOMBSTONE: string =
   'INSERT INTO home_subtabs (scope_key, profile_uuid, position_index, kind, name, query_text, language, sort, ' +
-  'display_mode, hidden, last_edit_time, deleted_at) VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?, 1, 0, ?) ' +
+  'ignore_local_user_tag_filtering, display_mode, hidden, last_edit_time, deleted_at) ' +
+  'VALUES (?, ?, 0, ?, ?, ?, ?, ?, 0, ?, 1, 0, ?) ' +
   'ON CONFLICT(scope_key, profile_uuid) DO UPDATE SET deleted_at = excluded.deleted_at WHERE ' +
   'excluded.deleted_at >= CASE WHEN COALESCE(home_subtabs.deleted_at, 0) > ' +
   'COALESCE(home_subtabs.last_edit_time, 0) THEN COALESCE(home_subtabs.deleted_at, 0) ' +
@@ -222,12 +227,15 @@ export class HomeSubtabRepository {
           HomeSubtabRepository.stringColumn(rows, 'language'),
         )
         record.profile.sort = NhHomeSubtabProfile.normalizeSort(HomeSubtabRepository.stringColumn(rows, 'sort'))
+        record.profile.ignoreLocalUserTagFiltering =
+          HomeSubtabRepository.numberColumn(rows, 'ignore_local_user_tag_filtering') !== 0
         const presentation: string = HomeSubtabRepository.stringColumn(rows, 'display_mode')
         record.profile.presentation = NhHomeSubtabProfile.normalizePresentation(presentation) === null
           ? HOME_SUBTAB_PRESENTATION_GLOBAL
           : presentation
         record.profile.hidden = HomeSubtabRepository.numberColumn(rows, 'hidden') !== 0
         record.profile.lastEditTime = Math.floor(HomeSubtabRepository.numberColumn(rows, 'last_edit_time'))
+        record.profile.normalizeBuiltinIdentity()
         record.deletedAt = Math.floor(HomeSubtabRepository.numberColumn(rows, 'deleted_at'))
         if (record.profile.uuid.length > 0) {
           records.push(record)
@@ -268,6 +276,7 @@ export class HomeSubtabRepository {
       profile.query.trim(),
       profile.language,
       profile.sort,
+      profile.ignoreLocalUserTagFiltering ? 1 : 0,
       profile.presentation,
       profile.hidden ? 1 : 0,
       profile.lastEditTime,

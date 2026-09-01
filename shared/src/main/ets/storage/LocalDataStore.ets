@@ -7,7 +7,7 @@ const STORE_CONFIG: relationalStore.StoreConfig = {
   autoCleanDirtyData: true,
 }
 
-const SCHEMA_VERSION: number = 24
+const SCHEMA_VERSION: number = 25
 const SQL_CREATE_READING_HISTORY: string =
   'CREATE TABLE IF NOT EXISTS reading_history (' +
   'gallery_id INTEGER PRIMARY KEY, ' +
@@ -154,11 +154,15 @@ const SQL_CREATE_HOME_SUBTABS: string =
   'query_text TEXT NOT NULL, ' +
   'language TEXT NOT NULL, ' +
   'sort TEXT NOT NULL, ' +
+  'ignore_local_user_tag_filtering INTEGER NOT NULL DEFAULT 0, ' +
   'display_mode TEXT NOT NULL, ' +
   'hidden INTEGER NOT NULL DEFAULT 0, ' +
   'last_edit_time INTEGER NOT NULL, ' +
   'deleted_at INTEGER NOT NULL DEFAULT 0, ' +
   'PRIMARY KEY(scope_key, profile_uuid))'
+const SQL_INSPECT_HOME_SUBTABS_COLUMNS: string = 'SELECT * FROM home_subtabs LIMIT 0'
+const SQL_ADD_HOME_SUBTABS_IGNORE_LOCAL_USER_TAG_FILTERING: string =
+  'ALTER TABLE home_subtabs ADD COLUMN ignore_local_user_tag_filtering INTEGER NOT NULL DEFAULT 0'
 const SQL_CREATE_HOME_SUBTABS_ORDER: string =
   'CREATE INDEX IF NOT EXISTS idx_home_subtabs_order ON home_subtabs ' +
   '(scope_key, deleted_at, position_index ASC, profile_uuid ASC)'
@@ -308,6 +312,7 @@ export class LocalDataStore {
       await LocalDataStore.ensureAccountVerificationReasonColumn(store)
       await LocalDataStore.ensureDownloadQueueStorageDirectoryColumn(store)
       await LocalDataStore.ensureDownloadQueueCompletedPageIndexesColumn(store)
+      await LocalDataStore.ensureHomeSubtabsIgnoreLocalUserTagFilteringColumn(store)
       if (existingVersion < SCHEMA_VERSION) {
         store.version = SCHEMA_VERSION
       }
@@ -390,6 +395,25 @@ export class LocalDataStore {
     }
     if (!hasCompletedPageIndexes) {
       await store.executeSql(SQL_ADD_DOWNLOAD_QUEUE_COMPLETED_PAGE_INDEXES)
+    }
+  }
+
+  /** Adds the per-custom-Search bypass without changing any existing Subtab. */
+  private static async ensureHomeSubtabsIgnoreLocalUserTagFilteringColumn(
+    store: relationalStore.RdbStore,
+  ): Promise<void> {
+    let rows: relationalStore.ResultSet | null = null
+    let hasColumn: boolean = false
+    try {
+      rows = await store.querySql(SQL_INSPECT_HOME_SUBTABS_COLUMNS)
+      hasColumn = rows.getColumnNames().indexOf('ignore_local_user_tag_filtering') >= 0
+    } finally {
+      if (rows !== null) {
+        rows.close()
+      }
+    }
+    if (!hasColumn) {
+      await store.executeSql(SQL_ADD_HOME_SUBTABS_IGNORE_LOCAL_USER_TAG_FILTERING)
     }
   }
 }

@@ -1062,6 +1062,8 @@
     { "name": "home_subtab_query_placeholder", "value": "Optional" },
     { "name": "home_subtab_language", "value": "Language" },
     { "name": "home_subtab_order", "value": "Order" },
+    { "name": "search_ignore_local_user_tag_filtering", "value": "Ignore local tag filtering" },
+    { "name": "search_ignore_local_user_tag_filtering_desc", "value": "Skip local tag Hidden and weight rules" },
     { "name": "home_subtab_display", "value": "Display" },
     { "name": "home_subtab_basic_section", "value": "Basic" },
     { "name": "home_subtab_search_section", "value": "Search conditions" },

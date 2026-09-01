@@ -62,6 +62,7 @@ export struct HomeSubtabEditPage {
   @Local query: string = ''
   @Local language: NhSearchLanguage = NhSearchLanguage.ALL
   @Local sort: NhSearchSort = NhSearchSort.RECENT
+  @Local ignoreLocalUserTagFiltering: boolean = false
   @Local presentation: string = HOME_SUBTAB_PRESENTATION_GLOBAL
   @Local tagNamespace: string = 'tag'
   @Local uploadedUnit: NhSearchUploadedUnit = NhSearchUploadedUnit.DAY
@@ -107,12 +108,14 @@ export struct HomeSubtabEditPage {
       this.query = profile.query
       this.language = profile.language
       this.sort = profile.sort
+      this.ignoreLocalUserTagFiltering = profile.ignoreLocalUserTagFiltering
       this.presentation = profile.presentation
       return
     }
     this.query = this.edit.seedQuery
     this.language = this.edit.seedLanguage
     this.sort = this.edit.seedSort
+    this.ignoreLocalUserTagFiltering = this.edit.seedIgnoreLocalUserTagFiltering
   }
 
   private isCreate(): boolean {
@@ -148,6 +151,7 @@ export struct HomeSubtabEditPage {
     profile.query = this.query.trim()
     profile.language = this.language
     profile.sort = this.sort
+    profile.ignoreLocalUserTagFiltering = this.ignoreLocalUserTagFiltering
     profile.presentation = this.presentation
     if (profile.name.length === 0 || !profile.hasEffectiveSearch()) {
       this.getUIContext().getPromptAction().showToast({ message: AppStrings.get('home_subtab_validation') })
@@ -461,6 +465,17 @@ export struct HomeSubtabEditPage {
             this.sortMenuShown = false
           },
         }))
+      Divider().strokeWidth(0.5).color(ThemeTokens.DIVIDER).margin({ left: ThemeTokens.SPACE_MD })
+      NextNListRow({
+        title: AppStrings.get('search_ignore_local_user_tag_filtering'),
+        subtitle: AppStrings.get('search_ignore_local_user_tag_filtering_desc'),
+        hasSwitch: true,
+        checked: this.ignoreLocalUserTagFiltering,
+        showChevron: false,
+        onSwitchChange: (value: boolean): void => {
+          this.ignoreLocalUserTagFiltering = value
+        },
+      })
     }
   }
 

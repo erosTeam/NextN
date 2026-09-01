@@ -40,6 +40,7 @@ import {
   NhGalleryPage,
   NhGalleryShareService,
   NhGallerySummary,
+  NhLocalUserTagState,
   NhDownloadTask,
   NhDownloadTaskStatus,
   NhTag,
@@ -67,6 +68,7 @@ import {
   connectGalleryDetailTransition,
   connectLayoutSafeArea,
   connectLlmSourceProfiles,
+  connectLocalUserTags,
   connectReaderOverlayNavigation,
   connectReaderThumbnailTransition,
   connectReadButtonStyle,
@@ -230,6 +232,7 @@ export struct GalleryDetailPage {
   @Local isTorrentExportInFlight: boolean = false
   @Local favoriteCountFromSession: number = -1
   @Local contentFilters: ContentFilterState = connectContentFilters()
+  @Local localUserTags: NhLocalUserTagState = connectLocalUserTags()
   @Local accountSession: AccountSessionState = connectAccountSession()
   @Local favoriteMutations: FavoriteMutationState = connectFavoriteMutations()
   @Local layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
@@ -349,6 +352,11 @@ export struct GalleryDetailPage {
   onContentFiltersChanged(): void {
     this.applyRelatedContentFilters()
     this.applyCommentPeekFilters()
+  }
+
+  @Monitor('localUserTags.revision')
+  onLocalUserTagsChanged(): void {
+    this.applyRelatedContentFilters()
   }
 
   @Monitor('tagTranslations.revision')

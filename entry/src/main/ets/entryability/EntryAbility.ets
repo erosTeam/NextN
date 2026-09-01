@@ -25,6 +25,7 @@ import {
   NhCookieAuthority,
   NhTagCatalogService,
   NhCloudBlacklistService,
+  NhLocalUserTagService,
   NhClipboardLinkService,
   ClipboardLinkBuildFlag,
   NhClipboardLinkSettings,
@@ -184,6 +185,7 @@ export default class EntryAbility extends UIAbility {
       this.restoreAccountIdentity(),
       ContentFilterService.restore(this.context),
       NhCloudBlacklistService.restore(this.context),
+      NhLocalUserTagService.restore(this.context),
       BrowsePresentationService.restore(this.context),
       // Latest and Popular match NextE's active-profile semantics: each may
       // pin a local renderer or explicitly fall back to the global Browse mode.

@@ -5,6 +5,7 @@ import { NhGallerySummary } from '../model/NhGallery'
 import { connectContentFilters, ContentFilterState } from '../state/ContentFilterState'
 import { ContentFilterRepository } from '../storage/ContentFilterRepository'
 import { NhCloudBlacklistService } from './NhCloudBlacklistService'
+import { NhLocalUserTagService } from './NhLocalUserTagService'
 
 /**
  * Matches ErosN's local block-rule semantics without changing remote queries:
@@ -71,10 +72,14 @@ export class ContentFilterService {
     await ContentFilterService.save(context, next)
   }
 
-  static filterGalleries(galleries: NhGallerySummary[]): NhGallerySummary[] {
+  static filterGalleries(
+    galleries: NhGallerySummary[],
+    ignoreLocalUserTagFiltering: boolean = false,
+  ): NhGallerySummary[] {
     return galleries.filter((gallery: NhGallerySummary): boolean =>
       !ContentFilterService.isGalleryBlocked(gallery) &&
-      !NhCloudBlacklistService.isGalleryCloudBlacklisted(gallery))
+      !NhCloudBlacklistService.isGalleryCloudBlacklisted(gallery) &&
+      !NhLocalUserTagService.isGalleryFiltered(gallery, ignoreLocalUserTagFiltering))
   }
 
   static filterComments(comments: NhComment[]): NhComment[] {

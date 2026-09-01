@@ -17,6 +17,7 @@ import {
   NhGalleryPageResult,
   NhGallerySummary,
   NhHomeSubtabProfile,
+  NhLocalUserTagState,
   NhSearchLanguage,
   NhSearchOptions,
   NhSearchSort,
@@ -30,6 +31,7 @@ import {
   connectHomeGallerySelection,
   connectHomeSource,
   connectHomeSubtabs,
+  connectLocalUserTags,
   connectSafeMode,
   connectTagTranslations,
 } from 'shared'
@@ -43,6 +45,7 @@ export struct HomeSearchSubtabPage {
   @Local galleries: NhGallerySummary[] = []
   @Local rawGalleries: NhGallerySummary[] = []
   @Local contentFilters: ContentFilterState = connectContentFilters()
+  @Local localUserTags: NhLocalUserTagState = connectLocalUserTags()
   @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
   @Local homeSource: HomeSourceState = connectHomeSource()
@@ -187,6 +190,11 @@ export struct HomeSearchSubtabPage {
 
   @Monitor('contentFilters.revision')
   onContentFiltersChanged(): void {
+    this.applyContentFilters()
+  }
+
+  @Monitor('localUserTags.revision')
+  onLocalUserTagsChanged(): void {
     this.applyContentFilters()
   }
 
@@ -385,7 +393,11 @@ export struct HomeSearchSubtabPage {
   }
 
   private applyContentFilters(): void {
-    this.galleries = ContentFilterService.filterGalleries(this.rawGalleries)
+    const profile: NhHomeSubtabProfile | null = this.profile()
+    this.galleries = ContentFilterService.filterGalleries(
+      this.rawGalleries,
+      profile !== null && profile.isSearch() && profile.ignoreLocalUserTagFiltering,
+    )
   }
 
   private async refreshTagTranslationLabels(): Promise<void> {

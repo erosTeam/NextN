@@ -18,6 +18,7 @@ import {
   NhBrowsePresentation,
   NhGalleryPageResult,
   NhGallerySummary,
+  NhLocalUserTagState,
   NhTagCatalogService,
   PageEmptyState,
   PageErrorState,
@@ -29,6 +30,7 @@ import {
   connectContentFilters,
   connectFavoriteMutations,
   connectFavoritesActions,
+  connectLocalUserTags,
   connectAccountSession,
   connectTagTranslations,
   TagTranslationState,
@@ -47,6 +49,7 @@ export struct FavoritesPage {
   /** Keep the authenticated GET snapshot separate from local presentation rules. */
   @Local rawGalleries: NhGallerySummary[] = []
   @Local contentFilters: ContentFilterState = connectContentFilters()
+  @Local localUserTags: NhLocalUserTagState = connectLocalUserTags()
   @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local accountSession: AccountSessionState = connectAccountSession()
   @Local favoriteMutations: FavoriteMutationState = connectFavoriteMutations()
@@ -155,6 +158,11 @@ export struct FavoritesPage {
 
   @Monitor('contentFilters.revision')
   onContentFiltersChanged(): void {
+    this.applyContentFilters()
+  }
+
+  @Monitor('localUserTags.revision')
+  onLocalUserTagsChanged(): void {
     this.applyContentFilters()
   }
 

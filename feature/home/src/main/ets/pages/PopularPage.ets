@@ -11,6 +11,7 @@ import {
   NhApiClient,
   NhGalleryPageResult,
   NhGallerySummary,
+  NhLocalUserTagState,
   NhSearchOptions,
   NhSearchSort,
   NhTagCatalogService,
@@ -23,6 +24,7 @@ import {
   connectContentFilters,
   connectHomeGallerySelection,
   connectHomeSubtabs,
+  connectLocalUserTags,
   connectSafeMode,
   connectTagTranslations,
 } from 'shared'
@@ -44,6 +46,7 @@ export struct PopularPage {
   /** Preserve the successful response while local display rules are toggled. */
   @Local rawGalleries: NhGallerySummary[] = []
   @Local contentFilters: ContentFilterState = connectContentFilters()
+  @Local localUserTags: NhLocalUserTagState = connectLocalUserTags()
   @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local homeGallerySelection: HomeGallerySelectionState = connectHomeGallerySelection()
   @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
@@ -120,6 +123,11 @@ export struct PopularPage {
 
   @Monitor('contentFilters.revision')
   onContentFiltersChanged(): void {
+    this.applyContentFilters()
+  }
+
+  @Monitor('localUserTags.revision')
+  onLocalUserTagsChanged(): void {
     this.applyContentFilters()
   }
 

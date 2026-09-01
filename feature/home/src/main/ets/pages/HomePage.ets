@@ -28,6 +28,7 @@ import {
   NhGallerySummary,
   NhHomeSubtabKind,
   NhHomeSubtabProfile,
+  NhLocalUserTagState,
   NhTagCatalogService,
   NhSearchLanguage,
   NhSearchOptions,
@@ -46,6 +47,7 @@ import {
   connectHomeSource,
   connectHomeSubtabs,
   connectHomeSourceVisualIndex,
+  connectLocalUserTags,
   connectSafeMode,
   connectSubtabTransition,
   connectTagTranslations,
@@ -83,6 +85,7 @@ export struct LatestSourcePage {
   /** The response snapshot stays intact so a local rule change never needs another GET. */
   @Local rawGalleries: NhGallerySummary[] = []
   @Local contentFilters: ContentFilterState = connectContentFilters()
+  @Local localUserTags: NhLocalUserTagState = connectLocalUserTags()
   @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local catalogPreferences: CatalogPreferencesState = connectCatalogPreferences()
   @Local safeMode: SafeModeState = connectSafeMode()
@@ -244,6 +247,11 @@ export struct LatestSourcePage {
 
   @Monitor('contentFilters.revision')
   onContentFiltersChanged(): void {
+    this.applyContentFilters()
+  }
+
+  @Monitor('localUserTags.revision')
+  onLocalUserTagsChanged(): void {
     this.applyContentFilters()
   }
 

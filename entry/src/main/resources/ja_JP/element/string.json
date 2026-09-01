@@ -1061,6 +1061,8 @@
     { "name": "home_subtab_query_placeholder", "value": "任意" },
     { "name": "home_subtab_language", "value": "言語" },
     { "name": "home_subtab_order", "value": "並び順" },
+    { "name": "search_ignore_local_user_tag_filtering", "value": "ローカルタグのフィルターを無視" },
+    { "name": "search_ignore_local_user_tag_filtering_desc", "value": "ローカルタグの非表示と重みルールを適用しません" },
     { "name": "home_subtab_display", "value": "表示" },
     { "name": "home_subtab_basic_section", "value": "基本" },
     { "name": "home_subtab_search_section", "value": "検索条件" },

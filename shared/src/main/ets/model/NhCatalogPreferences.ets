@@ -10,6 +10,7 @@ export class NhCatalogPreferences {
   browseSort: NhSearchSort = NhSearchSort.RECENT
   searchLanguage: NhSearchLanguage = NhSearchLanguage.ALL
   searchSort: NhSearchSort = NhSearchSort.RECENT
+  ignoreLocalUserTagFiltering: boolean = false
 
   copy(): NhCatalogPreferences {
     const result: NhCatalogPreferences = new NhCatalogPreferences()
@@ -17,6 +18,7 @@ export class NhCatalogPreferences {
     result.browseSort = this.browseSort
     result.searchLanguage = this.searchLanguage
     result.searchSort = this.searchSort
+    result.ignoreLocalUserTagFiltering = this.ignoreLocalUserTagFiltering
     return result
   }
 
@@ -58,6 +60,7 @@ export class NhCatalogPreferences {
     result.browseSort = NhCatalogPreferences.normalizeSort(source.browseSort)
     result.searchLanguage = NhCatalogPreferences.normalizeLanguage(source.searchLanguage)
     result.searchSort = NhCatalogPreferences.normalizeSort(source.searchSort)
+    result.ignoreLocalUserTagFiltering = source.ignoreLocalUserTagFiltering === true
     return result
   }
 }

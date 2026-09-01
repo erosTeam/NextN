@@ -9976,3 +9976,24 @@ authorize an edit, replace a device comparison, or define product completion.
   so it is not promoted as final-candidate device evidence. Rotation, a visually bordered double-page sample and
   first/middle/last continuous-page visual cropping were not separately observed in this run; their source paths and
   detector/seam contracts remain covered but are not promoted to device evidence.
+
+## OPEN — Local user-tag filtering across gallery collections — 2026-09-02
+
+- **Why newly actionable:** the user approved `docs/plans/active/local-user-tags.md` as the implementation contract
+  and explicitly requested implementation plus device-197 validation. This entry opens only the collection filtering
+  projection; management UI, tag-chip coloring and colored-first ordering remain separate later boundaries.
+- **Whole parent-tree boundary:** each existing collection owner retains its unfiltered `rawGalleries`, ordinary
+  loading/error/empty/paging state and current `GalleryCollectionBody`. The shared `ContentFilterService` remains the
+  single projection chain for Home Latest, Home Search Subtab, Popular, global Search, Favorites and Gallery Detail
+  related galleries. Comment filtering and an already-open Detail/Reader remain outside this change.
+- **Exact before/after:** before, gallery projection applies title rules and the NH cloud blacklist. After, it applies
+  those two unchanged gates first, then local user-tag Hidden and total-weight threshold rules. Global Search and each
+  custom Search Subtab may independently bypass only the local user-tag gate through their persisted condition; all
+  other collection routes always apply it. A rule revision reprojects retained raw rows without a network request.
+- **Minimality rationale:** do not add a hidden-count label, an all-filtered special empty state, a page-level reveal
+  action, or a broad switch that bypasses title/cloud filtering. Do not make open Detail or Reader routes exit when a
+  rule changes, and do not change any request, cache, pagination or ordinary empty-state owner.
+- **Verification plan and unresolved risk:** compile the main and ohosTest candidates, then on selected device 197
+  prove Hidden, positive/negative total-weight cancellation, strict threshold equality, retained-row reprojection,
+  Search bypass without a new request, independent Subtab bypass, unchanged NH cloud/title gates, cold-start restore
+  and ordinary empty behavior. Source and build evidence do not accept these runtime paths.

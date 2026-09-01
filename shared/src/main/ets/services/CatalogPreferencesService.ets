@@ -77,6 +77,16 @@ export class CatalogPreferencesService {
     return CatalogPreferencesService.saveAfterRestore(context, preferences)
   }
 
+  static async setSearchIgnoreLocalUserTagFiltering(
+    context: common.UIAbilityContext,
+    ignore: boolean,
+  ): Promise<NhCatalogPreferences> {
+    await CatalogPreferencesService.restore(context)
+    const preferences: NhCatalogPreferences = CatalogPreferencesService.snapshot()
+    preferences.ignoreLocalUserTagFiltering = ignore
+    return CatalogPreferencesService.saveAfterRestore(context, preferences)
+  }
+
   static async restoreFromBackup(context: common.UIAbilityContext): Promise<void> {
     if (CatalogPreferencesService.restoreTask !== null) {
       await CatalogPreferencesService.restoreTask

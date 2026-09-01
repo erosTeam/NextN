@@ -13,6 +13,7 @@ export class CatalogPreferencesState {
   @Trace browseSort: NhSearchSort = NhSearchSort.RECENT
   @Trace searchLanguage: NhSearchLanguage = NhSearchLanguage.ALL
   @Trace searchSort: NhSearchSort = NhSearchSort.RECENT
+  @Trace ignoreLocalUserTagFiltering: boolean = false
   @Trace browseRevision: number = 0
   @Trace searchRevision: number = 0
 
@@ -21,7 +22,8 @@ export class CatalogPreferencesState {
     const browseChanged: boolean = this.browseLanguage !== normalized.browseLanguage ||
       this.browseSort !== normalized.browseSort
     const searchChanged: boolean = this.searchLanguage !== normalized.searchLanguage ||
-      this.searchSort !== normalized.searchSort
+      this.searchSort !== normalized.searchSort ||
+      this.ignoreLocalUserTagFiltering !== normalized.ignoreLocalUserTagFiltering
     if (browseChanged) {
       this.browseLanguage = normalized.browseLanguage
       this.browseSort = normalized.browseSort
@@ -30,6 +32,7 @@ export class CatalogPreferencesState {
     if (searchChanged) {
       this.searchLanguage = normalized.searchLanguage
       this.searchSort = normalized.searchSort
+      this.ignoreLocalUserTagFiltering = normalized.ignoreLocalUserTagFiltering
       this.searchRevision += 1
     }
   }
@@ -40,6 +43,7 @@ export class CatalogPreferencesState {
     result.browseSort = this.browseSort
     result.searchLanguage = this.searchLanguage
     result.searchSort = this.searchSort
+    result.ignoreLocalUserTagFiltering = this.ignoreLocalUserTagFiltering
     return result
   }
 }

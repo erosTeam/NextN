@@ -7,6 +7,7 @@ const BROWSE_LANGUAGE_KEY: string = 'browse_language'
 const BROWSE_SORT_KEY: string = 'browse_sort'
 const SEARCH_LANGUAGE_KEY: string = 'search_language'
 const SEARCH_SORT_KEY: string = 'search_sort'
+const SEARCH_IGNORE_LOCAL_USER_TAG_FILTERING_KEY: string = 'search_ignore_local_user_tag_filtering'
 const SQL_SELECT: string = 'SELECT key, value FROM catalog_preferences'
 const SQL_UPSERT: string =
   'INSERT INTO catalog_preferences (key, value) VALUES (?, ?) ' +
@@ -39,6 +40,8 @@ export class CatalogPreferencesRepository {
           preferences.searchLanguage = NhCatalogPreferences.normalizeLanguage(value)
         } else if (key === SEARCH_SORT_KEY) {
           preferences.searchSort = NhCatalogPreferences.normalizeSort(value)
+        } else if (key === SEARCH_IGNORE_LOCAL_USER_TAG_FILTERING_KEY) {
+          preferences.ignoreLocalUserTagFiltering = value === '1' || value.toLowerCase() === 'true'
         }
       }
       return NhCatalogPreferences.normalized(preferences)
@@ -61,6 +64,10 @@ export class CatalogPreferencesRepository {
       await store.executeSql(SQL_UPSERT, [BROWSE_SORT_KEY, snapshot.browseSort])
       await store.executeSql(SQL_UPSERT, [SEARCH_LANGUAGE_KEY, snapshot.searchLanguage])
       await store.executeSql(SQL_UPSERT, [SEARCH_SORT_KEY, snapshot.searchSort])
+      await store.executeSql(SQL_UPSERT, [
+        SEARCH_IGNORE_LOCAL_USER_TAG_FILTERING_KEY,
+        snapshot.ignoreLocalUserTagFiltering ? '1' : '0',
+      ])
     })
   }
 

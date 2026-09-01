@@ -17,6 +17,7 @@ import {
   NhClipboardLinkService,
   NhGalleryPageResult,
   NhGallerySummary,
+  NhLocalUserTagState,
   NhTag,
   NhTagCatalogService,
   NhSearchLanguage,
@@ -47,6 +48,7 @@ import {
   connectCatalogPreferences,
   connectContentFilters,
   connectLayoutSafeArea,
+  connectLocalUserTags,
   connectSearchTranslation,
   connectTagTranslations,
   nextNHdsTitleBar,
@@ -144,6 +146,7 @@ export struct SearchPage {
   /** Retains search responses so display-rule edits do not restart a search. */
   @Local rawGalleries: NhGallerySummary[] = []
   @Local contentFilters: ContentFilterState = connectContentFilters()
+  @Local localUserTags: NhLocalUserTagState = connectLocalUserTags()
   @Local tagTranslations: TagTranslationState = connectTagTranslations()
   @Local browsePresentation: BrowsePresentationState = connectBrowsePresentation()
   @Local catalogPreferences: CatalogPreferencesState = connectCatalogPreferences()
@@ -253,6 +256,11 @@ export struct SearchPage {
     this.applyContentFilters()
   }
 
+  @Monitor('localUserTags.revision')
+  onLocalUserTagsChanged(): void {
+    this.applyContentFilters()
+  }
+
   @Monitor('tagTranslations.revision')
   onTagTranslationsChanged(): void {
     this.refreshTagTranslationLabels()
@@ -270,19 +278,27 @@ export struct SearchPage {
 
   @Monitor('catalogPreferences.searchRevision')
   onSearchCatalogPreferencesChanged(): void {
-    // Sync the funnel's snapshot the moment a language/sort preference
-    // changes (either direction). Without this, reverting to defaults keeps
-    // the stale active values and the tint never clears until another
-    // submit; the icon's read branch stays untouched by design.
-    this.activeLanguageFilter = this.catalogPreferences.searchLanguage
-    this.activeSearchSort = this.catalogPreferences.searchSort
-    if (this.isVisible) {
+    const requestOptionsChanged: boolean = this.searchPreferencesChanged()
+    if (requestOptionsChanged && this.isVisible) {
       this.reapplySearchOptions()
+      return
+    }
+    if (this.activeQuery.length === 0) {
+      this.activeLanguageFilter = this.catalogPreferences.searchLanguage
+      this.activeSearchSort = this.catalogPreferences.searchSort
+    }
+    if (this.isVisible) {
+      // The local-tag bypass belongs to the persisted search condition, but
+      // it only reprojects the retained response and never changes the GET.
+      this.applyContentFilters()
     }
   }
 
   private applyContentFilters(): void {
-    this.galleries = ContentFilterService.filterGalleries(this.rawGalleries)
+    this.galleries = ContentFilterService.filterGalleries(
+      this.rawGalleries,
+      this.catalogPreferences.ignoreLocalUserTagFiltering,
+    )
   }
 
   /** Re-label the retained search snapshot without repeating its public query. */
@@ -1524,7 +1540,6 @@ export struct SearchPage {
     if (this.catalogPreferences.searchLanguage === option) {
       return
     }
-    this.activeLanguageFilter = option
     CatalogPreferencesService.setSearchLanguage(this.context(), option).catch((): void => {})
   }
 
@@ -1532,7 +1547,6 @@ export struct SearchPage {
     if (this.catalogPreferences.searchSort === option) {
       return
     }
-    this.activeSearchSort = option
     CatalogPreferencesService.setSearchSort(this.context(), option).catch((): void => {})
   }
 
@@ -1847,6 +1861,18 @@ export struct SearchPage {
             this.searchSortMenuShown = false
           },
         }))
+      this.SearchOptionDivider()
+      NextNListRow({
+        title: AppStrings.get('search_ignore_local_user_tag_filtering'),
+        subtitle: AppStrings.get('search_ignore_local_user_tag_filtering_desc'),
+        hasSwitch: true,
+        checked: this.catalogPreferences.ignoreLocalUserTagFiltering,
+        showChevron: false,
+        onSwitchChange: (value: boolean): void => {
+          CatalogPreferencesService.setSearchIgnoreLocalUserTagFiltering(this.context(), value)
+            .catch((): void => {})
+        },
+      })
     }
   }
 
@@ -2207,6 +2233,7 @@ export struct SearchPage {
               this.activeQuery.trim(),
               this.activeLanguageFilter,
               this.activeSearchSort,
+              this.catalogPreferences.ignoreLocalUserTagFiltering,
             ))
           }
         },

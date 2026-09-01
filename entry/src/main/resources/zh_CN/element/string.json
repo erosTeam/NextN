@@ -1062,6 +1062,8 @@
     { "name": "home_subtab_query_placeholder", "value": "可选" },
     { "name": "home_subtab_language", "value": "语言" },
     { "name": "home_subtab_order", "value": "排序" },
+    { "name": "search_ignore_local_user_tag_filtering", "value": "忽略本地标签过滤" },
+    { "name": "search_ignore_local_user_tag_filtering_desc", "value": "不应用本地标签的隐藏和权重规则" },
     { "name": "home_subtab_display", "value": "展示模式" },
     { "name": "home_subtab_basic_section", "value": "基本信息" },
     { "name": "home_subtab_search_section", "value": "搜索条件" },
