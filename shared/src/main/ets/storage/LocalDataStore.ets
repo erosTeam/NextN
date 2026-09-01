@@ -7,7 +7,7 @@ const STORE_CONFIG: relationalStore.StoreConfig = {
   autoCleanDirtyData: true,
 }
 
-const SCHEMA_VERSION: number = 23
+const SCHEMA_VERSION: number = 24
 const SQL_CREATE_READING_HISTORY: string =
   'CREATE TABLE IF NOT EXISTS reading_history (' +
   'gallery_id INTEGER PRIMARY KEY, ' +
@@ -168,6 +168,27 @@ const SQL_CREATE_HOME_SUBTAB_SELECTION: string =
   'selected_uuid TEXT NOT NULL, ' +
   'updated_at INTEGER NOT NULL, ' +
   'deleted_at INTEGER NOT NULL DEFAULT 0)'
+const SQL_CREATE_LOCAL_USER_TAGS: string =
+  'CREATE TABLE IF NOT EXISTS local_user_tags (' +
+  'scope_key TEXT NOT NULL, ' +
+  'tag_id INTEGER NOT NULL, ' +
+  'namespace_snapshot TEXT NOT NULL, ' +
+  'name_snapshot TEXT NOT NULL, ' +
+  'color_code TEXT NOT NULL, ' +
+  'weight INTEGER NOT NULL DEFAULT 10, ' +
+  'hidden INTEGER NOT NULL DEFAULT 0, ' +
+  'updated_at INTEGER NOT NULL, ' +
+  'deleted_at INTEGER NOT NULL DEFAULT 0, ' +
+  'PRIMARY KEY(scope_key, tag_id))'
+const SQL_CREATE_LOCAL_USER_TAGS_ORDER: string =
+  'CREATE INDEX IF NOT EXISTS idx_local_user_tags_active ON local_user_tags ' +
+  '(scope_key, deleted_at, tag_id ASC)'
+const SQL_CREATE_LOCAL_USER_TAG_SETTINGS: string =
+  'CREATE TABLE IF NOT EXISTS local_user_tag_settings (' +
+  'scope_key TEXT PRIMARY KEY NOT NULL, ' +
+  'filtering_threshold INTEGER NOT NULL DEFAULT 0, ' +
+  'updated_at INTEGER NOT NULL, ' +
+  'deleted_at INTEGER NOT NULL DEFAULT 0)'
 // Generated comic-analysis documents are app-private cache records. They are
 // deliberately separate from rendered image artifacts so a corrupt document
 // can be discarded without touching a rendered Reader page.
@@ -274,6 +295,9 @@ export class LocalDataStore {
       await store.executeSql(SQL_CREATE_HOME_SUBTABS)
       await store.executeSql(SQL_CREATE_HOME_SUBTABS_ORDER)
       await store.executeSql(SQL_CREATE_HOME_SUBTAB_SELECTION)
+      await store.executeSql(SQL_CREATE_LOCAL_USER_TAGS)
+      await store.executeSql(SQL_CREATE_LOCAL_USER_TAGS_ORDER)
+      await store.executeSql(SQL_CREATE_LOCAL_USER_TAG_SETTINGS)
       await store.executeSql(SQL_CREATE_COMIC_TRANSLATION_DOCUMENT_CACHE)
       await store.executeSql(SQL_CREATE_COMIC_TRANSLATION_DOCUMENT_CACHE_SCOPE_ORDER)
       await store.executeSql(SQL_CREATE_COMIC_TRANSLATION_DOCUMENT_CACHE_ACCESS_ORDER)

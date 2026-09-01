@@ -66,6 +66,18 @@ export {
   NhTag,
   NhReadingHistoryItem,
 } from './model/NhGallery'
+export {
+  NH_LOCAL_USER_TAG_SCOPE_GLOBAL,
+  NH_LOCAL_USER_TAG_DEFAULT_WEIGHT,
+  NH_LOCAL_USER_TAG_MIN_WEIGHT,
+  NH_LOCAL_USER_TAG_MAX_WEIGHT,
+  NH_LOCAL_USER_TAG_DEFAULT_FILTERING_THRESHOLD,
+  NH_LOCAL_USER_TAG_MIN_FILTERING_THRESHOLD,
+  NhLocalUserTag,
+  NhLocalUserTagSettings,
+  NhLocalUserTagSnapshot,
+  NhLocalUserTagContract,
+} from './model/NhLocalUserTag'
 export { NhSearchHistoryItem } from './model/NhSearchHistory'
 export { NhQuickSearchItem } from './model/NhQuickSearch'
 export { NhSearchLanguage, NhSearchOptions, NhSearchSort } from './model/NhSearchOptions'
@@ -497,6 +509,12 @@ export { DownloadNotificationService } from './services/DownloadNotificationServ
 export { ContentFilterRepository } from './storage/ContentFilterRepository'
 export { ContentFilterState, connectContentFilters } from './state/ContentFilterState'
 export { ContentFilterService } from './services/ContentFilterService'
+export { NhLocalUserTagState, connectLocalUserTags } from './state/NhLocalUserTagState'
+export { NhLocalUserTagRepository } from './storage/NhLocalUserTagRepository'
+export { NhLocalUserTagEvaluation, NhLocalUserTagRules } from './services/NhLocalUserTagRules'
+export { NhLocalUserTagStore } from './services/NhLocalUserTagStore'
+export { NhLocalUserTagService } from './services/NhLocalUserTagService'
+export { NhLocalUserTagPresentation } from './utils/NhLocalUserTagPresentation'
 export { NhCloudBlacklistState, connectCloudBlacklist } from './state/NhCloudBlacklistState'
 export { NhCloudBlacklistRepository } from './storage/NhCloudBlacklistRepository'
 export { NhCloudBlacklistService } from './services/NhCloudBlacklistService'
