@@ -3,6 +3,7 @@ import backupLocalDataStructureGuardTest from './BackupLocalDataStructureGuard.t
 import backupWebDavCredentialGroupTest from './BackupWebDavCredentialGroup.test'
 import nhTagQueryTest from './NhTagQuery.test'
 import nhLocalUserTagRulesTest from './NhLocalUserTagRules.test'
+import nhLocalUserTagSyncTest from './NhLocalUserTagSync.test'
 import collectionStateTest from './CollectionState.test'
 import readerPageCropDetectorTest from './ReaderPageCropDetector.test'
 
@@ -12,6 +13,7 @@ export default function testsuite(): void {
   backupWebDavCredentialGroupTest()
   nhTagQueryTest()
   nhLocalUserTagRulesTest()
+  nhLocalUserTagSyncTest()
   collectionStateTest()
   readerPageCropDetectorTest()
 }

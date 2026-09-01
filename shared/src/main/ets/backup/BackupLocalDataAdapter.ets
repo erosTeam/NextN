@@ -3,12 +3,18 @@ import { NhContentFilterRule, NhContentFilterType } from '../model/NhContentFilt
 import { NhQuickSearchItem } from '../model/NhQuickSearch'
 import { NhReadingHistoryItem } from '../model/NhGallery'
 import { NhHomeSubtabProfile } from '../model/NhHomeSubtabProfile'
+import {
+  NhLocalUserTag,
+  NhLocalUserTagSettings,
+  NhLocalUserTagSnapshot,
+} from '../model/NhLocalUserTag'
 import { HomeSubtabBackupSnapshot, HomeSubtabSettings } from '../settings/HomeSubtabSettings'
 import { BrowsePresentationRepository } from '../storage/BrowsePresentationRepository'
 import { CatalogPreferencesRepository } from '../storage/CatalogPreferencesRepository'
 import { ContentFilterRepository } from '../storage/ContentFilterRepository'
 import { DownloadSettingsRepository } from '../storage/DownloadSettingsRepository'
 import { HistoryRepository } from '../storage/HistoryRepository'
+import { NhLocalUserTagRepository } from '../storage/NhLocalUserTagRepository'
 import { QuickSearchRepository } from '../storage/QuickSearchRepository'
 import { ReaderSettingsRepository } from '../storage/ReaderSettingsRepository'
 import { SearchHistoryRepository } from '../storage/SearchHistoryRepository'
@@ -18,6 +24,8 @@ import {
   BackupHomeSubtabEntry,
   BackupHomeSubtabSection,
   BackupLocalDataSection,
+  BackupLocalUserTagEntry,
+  BackupLocalUserTagSettingsEntry,
   BackupQuickSearchEntry,
   BackupReadProgressEntry,
   BackupViewedHistoryEntry,
@@ -37,14 +45,47 @@ import {
  */
 export class BackupLocalDataAdapter {
   static async exportSection(context: common.UIAbilityContext): Promise<BackupLocalDataSection> {
+    const localUserTags: NhLocalUserTagSnapshot = await NhLocalUserTagRepository.exportSnapshot(context)
     return {
       readProgress: await BackupLocalDataAdapter.exportReadProgress(context),
       viewedHistory: await BackupLocalDataAdapter.exportViewedHistory(context),
       searchHistory: await BackupLocalDataAdapter.exportSearchHistory(context),
       quickSearches: await BackupLocalDataAdapter.exportQuickSearches(context),
       homeSubtabs: await BackupLocalDataAdapter.exportHomeSubtabs(context),
+      localUserTags: BackupLocalDataAdapter.exportLocalUserTags(localUserTags),
+      localUserTagSettings: [BackupLocalDataAdapter.exportLocalUserTagSettings(localUserTags.settings)],
       localBlock: await BackupLocalDataAdapter.exportLocalBlock(context),
       settingsTables: await BackupLocalDataAdapter.exportSettingsTables(context),
+    }
+  }
+
+  private static exportLocalUserTags(snapshot: NhLocalUserTagSnapshot): BackupLocalUserTagEntry[] {
+    const out: BackupLocalUserTagEntry[] = []
+    for (let index: number = 0; index < snapshot.tags.length; index++) {
+      const record: NhLocalUserTag = snapshot.tags[index]
+      out.push({
+        scopeKey: record.scopeKey,
+        tagId: record.tagId,
+        namespaceSnapshot: record.namespaceSnapshot,
+        nameSnapshot: record.nameSnapshot,
+        colorCode: record.colorCode,
+        weight: record.weight,
+        hidden: record.hidden,
+        updatedAt: record.updatedAt,
+        deletedAt: record.deletedAt,
+      })
+    }
+    return out
+  }
+
+  private static exportLocalUserTagSettings(
+    settings: NhLocalUserTagSettings,
+  ): BackupLocalUserTagSettingsEntry {
+    return {
+      scopeKey: settings.scopeKey,
+      filteringThreshold: settings.filteringThreshold,
+      updatedAt: settings.updatedAt,
+      deletedAt: settings.deletedAt,
     }
   }
 
@@ -125,6 +166,7 @@ export class BackupLocalDataAdapter {
         sort: profile.sort,
         presentation: profile.presentation,
         hidden: profile.hidden,
+        ignoreLocalUserTagFiltering: profile.ignoreLocalUserTagFiltering,
         updatedAt: profile.lastEditTime,
       })
     }
@@ -194,8 +236,39 @@ export class BackupLocalDataAdapter {
       BackupLocalDataAdapter.hasViewedHistoryEntries(candidate.viewedHistory) &&
       BackupLocalDataAdapter.hasSearchHistoryEntries(candidate.searchHistory) &&
       BackupLocalDataAdapter.hasQuickSearchEntries(candidate.quickSearches) &&
-      BackupLocalDataAdapter.hasHomeSubtabSection(candidate.homeSubtabs)
+      BackupLocalDataAdapter.hasHomeSubtabSection(candidate.homeSubtabs) &&
+      BackupLocalDataAdapter.hasLocalUserTagSections(
+        candidate.localUserTags,
+        candidate.localUserTagSettings,
+      )
     )
+  }
+
+  private static hasLocalUserTagSections(
+    tags: BackupLocalUserTagEntry[] | undefined,
+    settings: BackupLocalUserTagSettingsEntry[] | undefined,
+  ): boolean {
+    if (tags === undefined && settings === undefined) {
+      return true
+    }
+    if (!Array.isArray(tags) || !Array.isArray(settings) || settings.length !== 1) {
+      return false
+    }
+    for (let index: number = 0; index < tags.length; index++) {
+      const record: BackupLocalUserTagEntry = tags[index]
+      if (!BackupLocalDataAdapter.isRecord(record) || typeof record.scopeKey !== 'string' ||
+        typeof record.tagId !== 'number' || record.tagId <= 0 ||
+        typeof record.namespaceSnapshot !== 'string' || typeof record.nameSnapshot !== 'string' ||
+        typeof record.colorCode !== 'string' || typeof record.weight !== 'number' ||
+        typeof record.hidden !== 'boolean' || typeof record.updatedAt !== 'number' ||
+        typeof record.deletedAt !== 'number') {
+        return false
+      }
+    }
+    const value: BackupLocalUserTagSettingsEntry = settings[0]
+    return BackupLocalDataAdapter.isRecord(value) && typeof value.scopeKey === 'string' &&
+      typeof value.filteringThreshold === 'number' && typeof value.updatedAt === 'number' &&
+      typeof value.deletedAt === 'number'
   }
 
   private static hasHomeSubtabSection(section: BackupHomeSubtabSection | undefined): boolean {
@@ -214,6 +287,10 @@ export class BackupLocalDataAdapter {
         typeof entry.query !== 'string' || typeof entry.language !== 'string' ||
         typeof entry.sort !== 'string' || typeof entry.presentation !== 'string' ||
         typeof entry.hidden !== 'boolean' || typeof entry.updatedAt !== 'number') {
+        return false
+      }
+      if (entry.ignoreLocalUserTagFiltering !== undefined &&
+        typeof entry.ignoreLocalUserTagFiltering !== 'boolean') {
         return false
       }
     }
@@ -384,10 +461,35 @@ export class BackupLocalDataAdapter {
         profile.sort = NhHomeSubtabProfile.normalizeSort(entry.sort)
         profile.presentation = entry.presentation
         profile.hidden = entry.hidden
+        profile.ignoreLocalUserTagFiltering = entry.ignoreLocalUserTagFiltering ?? false
         profile.lastEditTime = entry.updatedAt
         profiles.push(profile)
       }
       await HomeSubtabSettings.restoreBackup(context, profiles, section.homeSubtabs.selectedUuid)
+    }
+
+    if (section.localUserTags !== undefined && section.localUserTagSettings !== undefined) {
+      const snapshot: NhLocalUserTagSnapshot = new NhLocalUserTagSnapshot()
+      for (let index: number = 0; index < section.localUserTags.length; index++) {
+        const entry: BackupLocalUserTagEntry = section.localUserTags[index]
+        const record: NhLocalUserTag = new NhLocalUserTag()
+        record.scopeKey = entry.scopeKey
+        record.tagId = entry.tagId
+        record.namespaceSnapshot = entry.namespaceSnapshot
+        record.nameSnapshot = entry.nameSnapshot
+        record.colorCode = entry.colorCode
+        record.weight = entry.weight
+        record.hidden = entry.hidden
+        record.updatedAt = entry.updatedAt
+        record.deletedAt = entry.deletedAt
+        snapshot.tags.push(record)
+      }
+      const settingsEntry: BackupLocalUserTagSettingsEntry = section.localUserTagSettings[0]
+      snapshot.settings.scopeKey = settingsEntry.scopeKey
+      snapshot.settings.filteringThreshold = settingsEntry.filteringThreshold
+      snapshot.settings.updatedAt = settingsEntry.updatedAt
+      snapshot.settings.deletedAt = settingsEntry.deletedAt
+      await NhLocalUserTagRepository.replaceSnapshot(context, snapshot)
     }
 
     const rules: NhContentFilterRule[] = []

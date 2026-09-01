@@ -758,6 +758,8 @@ export {
   SyncSearchHistoryRecord,
   SyncQuickSearchRecord,
   SyncHomeSubtabRecord,
+  SyncLocalUserTagRecord,
+  SyncLocalUserTagSettingsRecord,
   SyncLocalBlockSettingsRecord,
   SyncLocalBlockRuleRecord,
   SyncSettingsTableRecord,

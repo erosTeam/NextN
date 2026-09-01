@@ -4,12 +4,18 @@ import { NhQuickSearchItem } from '../model/NhQuickSearch'
 import { NhReadingHistoryItem } from '../model/NhGallery'
 import { NhSearchHistoryItem } from '../model/NhSearchHistory'
 import { NhHomeSubtabProfile } from '../model/NhHomeSubtabProfile'
+import {
+  NhLocalUserTag,
+  NhLocalUserTagSettings,
+  NhLocalUserTagSnapshot,
+} from '../model/NhLocalUserTag'
 import { HomeSubtabSettings } from '../settings/HomeSubtabSettings'
 import { BrowsePresentationRepository } from '../storage/BrowsePresentationRepository'
 import { CatalogPreferencesRepository } from '../storage/CatalogPreferencesRepository'
 import { ContentFilterRepository } from '../storage/ContentFilterRepository'
 import { DownloadSettingsRepository } from '../storage/DownloadSettingsRepository'
 import { HistoryRepository } from '../storage/HistoryRepository'
+import { NhLocalUserTagRepository } from '../storage/NhLocalUserTagRepository'
 import {
   HomeSubtabRepository,
   HomeSubtabStorageRecord,
@@ -28,6 +34,8 @@ import {
   SyncHomeSubtabRecord,
   SyncLocalBlockRuleRecord,
   SyncLocalBlockSettingsRecord,
+  SyncLocalUserTagRecord,
+  SyncLocalUserTagSettingsRecord,
   SyncQuickSearchRecord,
   SyncReadProgressRecord,
   SyncSearchHistoryRecord,
@@ -41,6 +49,7 @@ const DATASET_VIEWED_HISTORY: string = 'viewed-history'
 const DATASET_SEARCH_HISTORY: string = 'search-history'
 const DATASET_QUICK_SEARCHES: string = 'quick-searches'
 const DATASET_HOME_SUBTABS: string = 'home-subtabs'
+const DATASET_LOCAL_USER_TAGS: string = 'local-user-tags'
 const DATASET_LOCAL_BLOCK: string = 'local-block'
 const DATASET_SETTINGS_TABLES: string = 'settings-tables'
 const HOME_SUBTAB_SELECTION_RECORD: string = '@selection'
@@ -94,6 +103,11 @@ export class SyncLocalDataAdapter {
     if (selection.homeSubtabs) {
       envelope.datasets.homeSubtabs = await SyncLocalDataAdapter.readHomeSubtabs(context)
     }
+    if (selection.localUserTags) {
+      const snapshot: NhLocalUserTagSnapshot = await NhLocalUserTagRepository.exportSnapshot(context)
+      envelope.datasets.localUserTags = SyncLocalDataAdapter.readLocalUserTags(snapshot)
+      envelope.datasets.localUserTagSettings = SyncLocalDataAdapter.readLocalUserTagSettings(snapshot)
+    }
     if (selection.localBlock) {
       // NH has no comment-score scalars; kept empty for NextE envelope parity.
       envelope.datasets.localBlockSettings = []
@@ -127,6 +141,13 @@ export class SyncLocalDataAdapter {
       if (selection.homeSubtabs) {
         await SyncLocalDataAdapter.applyHomeSubtabs(context, envelope.datasets.homeSubtabs)
       }
+      if (selection.localUserTags) {
+        await SyncLocalDataAdapter.applyLocalUserTags(
+          context,
+          envelope.datasets.localUserTags,
+          envelope.datasets.localUserTagSettings,
+        )
+      }
       if (selection.localBlock) {
         await SyncLocalDataAdapter.applyLocalBlockSettings(context, envelope.datasets.localBlockSettings)
         await SyncLocalDataAdapter.applyLocalBlockRules(context, envelope.datasets.localBlockRules)
@@ -153,6 +174,12 @@ export class SyncLocalDataAdapter {
       SyncLocalDataAdapter.mergeQuickSearches(local.datasets.quickSearches, remote.datasets.quickSearches)
     merged.datasets.homeSubtabs =
       SyncLocalDataAdapter.mergeHomeSubtabs(local.datasets.homeSubtabs, remote.datasets.homeSubtabs)
+    merged.datasets.localUserTags =
+      SyncLocalDataAdapter.mergeLocalUserTags(local.datasets.localUserTags, remote.datasets.localUserTags)
+    merged.datasets.localUserTagSettings = SyncLocalDataAdapter.mergeLocalUserTagSettings(
+      local.datasets.localUserTagSettings,
+      remote.datasets.localUserTagSettings,
+    )
     merged.datasets.localBlockSettings =
       SyncLocalDataAdapter.mergeLocalBlockSettings(
         local.datasets.localBlockSettings,
@@ -184,6 +211,10 @@ export class SyncLocalDataAdapter {
       selectedMerged.datasets.quickSearches : remote.datasets.quickSearches
     out.datasets.homeSubtabs = selection.homeSubtabs ?
       selectedMerged.datasets.homeSubtabs : remote.datasets.homeSubtabs
+    out.datasets.localUserTags = selection.localUserTags ?
+      selectedMerged.datasets.localUserTags : remote.datasets.localUserTags
+    out.datasets.localUserTagSettings = selection.localUserTags ?
+      selectedMerged.datasets.localUserTagSettings : remote.datasets.localUserTagSettings
     out.datasets.localBlockSettings = selection.localBlock ?
       selectedMerged.datasets.localBlockSettings : remote.datasets.localBlockSettings
     out.datasets.localBlockRules = selection.localBlock ?
@@ -227,6 +258,12 @@ export class SyncLocalDataAdapter {
     if (!Array.isArray(data.homeSubtabs)) {
       // v1 envelopes created before this dataset are an empty compatible set.
       data.homeSubtabs = []
+    }
+    if (!Array.isArray(data.localUserTags)) {
+      data.localUserTags = []
+    }
+    if (!Array.isArray(data.localUserTagSettings)) {
+      data.localUserTagSettings = []
     }
     if (!Array.isArray(data.localBlockSettings)) {
       data.localBlockSettings = []
@@ -286,7 +323,27 @@ export class SyncLocalDataAdapter {
       r.sort = SyncLocalDataAdapter.safeString(r.sort)
       r.displayMode = SyncLocalDataAdapter.safeString(r.displayMode)
       r.hidden = SyncLocalDataAdapter.safeBoolean(r.hidden)
+      r.ignoreLocalUserTagFiltering = SyncLocalDataAdapter.safeBoolean(r.ignoreLocalUserTagFiltering)
       r.selectedUuid = SyncLocalDataAdapter.safeString(r.selectedUuid)
+      r.updatedAt = SyncLocalDataAdapter.safeNumber(r.updatedAt)
+      r.deletedAt = SyncLocalDataAdapter.safeNumber(r.deletedAt)
+    }
+    for (let i: number = 0; i < data.localUserTags.length; i++) {
+      const r: SyncLocalUserTagRecord = data.localUserTags[i]
+      r.scopeKey = SyncLocalDataAdapter.safeString(r.scopeKey)
+      r.tagId = SyncLocalDataAdapter.safeNumber(r.tagId)
+      r.namespaceSnapshot = SyncLocalDataAdapter.safeString(r.namespaceSnapshot)
+      r.nameSnapshot = SyncLocalDataAdapter.safeString(r.nameSnapshot)
+      r.colorCode = SyncLocalDataAdapter.safeString(r.colorCode)
+      r.weight = SyncLocalDataAdapter.safeNumber(r.weight)
+      r.hidden = SyncLocalDataAdapter.safeBoolean(r.hidden)
+      r.updatedAt = SyncLocalDataAdapter.safeNumber(r.updatedAt)
+      r.deletedAt = SyncLocalDataAdapter.safeNumber(r.deletedAt)
+    }
+    for (let i: number = 0; i < data.localUserTagSettings.length; i++) {
+      const r: SyncLocalUserTagSettingsRecord = data.localUserTagSettings[i]
+      r.scopeKey = SyncLocalDataAdapter.safeString(r.scopeKey)
+      r.filteringThreshold = SyncLocalDataAdapter.safeNumber(r.filteringThreshold)
       r.updatedAt = SyncLocalDataAdapter.safeNumber(r.updatedAt)
       r.deletedAt = SyncLocalDataAdapter.safeNumber(r.deletedAt)
     }
@@ -338,6 +395,8 @@ export class SyncLocalDataAdapter {
       !Array.isArray(data.searchHistory) ||
       !Array.isArray(data.quickSearches) ||
       !Array.isArray(data.homeSubtabs) ||
+      !Array.isArray(data.localUserTags) ||
+      !Array.isArray(data.localUserTagSettings) ||
       !Array.isArray(data.localBlockSettings) ||
       !Array.isArray(data.localBlockRules) ||
       !Array.isArray(data.settingsTables)
@@ -349,6 +408,8 @@ export class SyncLocalDataAdapter {
       SyncLocalDataAdapter.hasSearchHistoryShape(data.searchHistory) &&
       SyncLocalDataAdapter.hasQuickSearchShape(data.quickSearches) &&
       SyncLocalDataAdapter.hasHomeSubtabShape(data.homeSubtabs) &&
+      SyncLocalDataAdapter.hasLocalUserTagShape(data.localUserTags) &&
+      SyncLocalDataAdapter.hasLocalUserTagSettingsShape(data.localUserTagSettings) &&
       SyncLocalDataAdapter.hasLocalBlockSettingsShape(data.localBlockSettings) &&
       SyncLocalDataAdapter.hasLocalBlockRuleShape(data.localBlockRules) &&
       SyncLocalDataAdapter.hasSettingsTableShape(data.settingsTables)
@@ -413,6 +474,20 @@ export class SyncLocalDataAdapter {
           )
         },
       )
+    } else if (datasetId === DATASET_LOCAL_USER_TAGS) {
+      envelope.datasets.localUserTags.sort(
+        (a: SyncLocalUserTagRecord, b: SyncLocalUserTagRecord): number => {
+          return SyncLocalDataAdapter.compareKey(
+            SyncLocalDataAdapter.localUserTagKey(a),
+            SyncLocalDataAdapter.localUserTagKey(b),
+          )
+        },
+      )
+      envelope.datasets.localUserTagSettings.sort(
+        (a: SyncLocalUserTagSettingsRecord, b: SyncLocalUserTagSettingsRecord): number => {
+          return SyncLocalDataAdapter.compareKey(a.scopeKey, b.scopeKey)
+        },
+      )
     } else if (datasetId === DATASET_LOCAL_BLOCK) {
       envelope.datasets.localBlockSettings.sort(
         (a: SyncLocalBlockSettingsRecord, b: SyncLocalBlockSettingsRecord): number => {
@@ -455,6 +530,9 @@ export class SyncLocalDataAdapter {
     if (datasetId === DATASET_HOME_SUBTABS) {
       return envelope.datasets.homeSubtabs.length
     }
+    if (datasetId === DATASET_LOCAL_USER_TAGS) {
+      return envelope.datasets.localUserTags.length + envelope.datasets.localUserTagSettings.length
+    }
     if (datasetId === DATASET_LOCAL_BLOCK) {
       return envelope.datasets.localBlockSettings.length + envelope.datasets.localBlockRules.length
     }
@@ -489,6 +567,15 @@ export class SyncLocalDataAdapter {
     } else if (datasetId === DATASET_HOME_SUBTABS) {
       for (let i: number = 0; i < envelope.datasets.homeSubtabs.length; i++) {
         const r: SyncHomeSubtabRecord = envelope.datasets.homeSubtabs[i]
+        out = Math.max(out, r.updatedAt, r.deletedAt)
+      }
+    } else if (datasetId === DATASET_LOCAL_USER_TAGS) {
+      for (let i: number = 0; i < envelope.datasets.localUserTags.length; i++) {
+        const r: SyncLocalUserTagRecord = envelope.datasets.localUserTags[i]
+        out = Math.max(out, r.updatedAt, r.deletedAt)
+      }
+      for (let i: number = 0; i < envelope.datasets.localUserTagSettings.length; i++) {
+        const r: SyncLocalUserTagSettingsRecord = envelope.datasets.localUserTagSettings[i]
         out = Math.max(out, r.updatedAt, r.deletedAt)
       }
     } else if (datasetId === DATASET_LOCAL_BLOCK) {
@@ -618,11 +705,48 @@ export class SyncLocalDataAdapter {
       r.sort = profile.sort
       r.displayMode = profile.presentation
       r.hidden = profile.hidden
+      r.ignoreLocalUserTagFiltering = profile.ignoreLocalUserTagFiltering
       r.updatedAt = profile.lastEditTime
       r.deletedAt = item.deletedAt
       out.push(r)
     }
     return out
+  }
+
+  private static readLocalUserTags(snapshot: NhLocalUserTagSnapshot): SyncLocalUserTagRecord[] {
+    const out: SyncLocalUserTagRecord[] = []
+    for (let index: number = 0; index < snapshot.tags.length; index++) {
+      const source: NhLocalUserTag = snapshot.tags[index]
+      if (source.tagId <= 0) {
+        continue
+      }
+      const record: SyncLocalUserTagRecord = new SyncLocalUserTagRecord()
+      record.scopeKey = source.scopeKey
+      record.tagId = source.tagId
+      record.namespaceSnapshot = source.namespaceSnapshot
+      record.nameSnapshot = source.nameSnapshot
+      record.colorCode = source.colorCode
+      record.weight = source.weight
+      record.hidden = source.hidden
+      record.updatedAt = source.updatedAt
+      record.deletedAt = source.deletedAt
+      out.push(record)
+    }
+    return out
+  }
+
+  private static readLocalUserTagSettings(
+    snapshot: NhLocalUserTagSnapshot,
+  ): SyncLocalUserTagSettingsRecord[] {
+    if (snapshot.settings.updatedAt <= 0 && snapshot.settings.deletedAt <= 0) {
+      return []
+    }
+    const record: SyncLocalUserTagSettingsRecord = new SyncLocalUserTagSettingsRecord()
+    record.scopeKey = snapshot.settings.scopeKey
+    record.filteringThreshold = snapshot.settings.filteringThreshold
+    record.updatedAt = snapshot.settings.updatedAt
+    record.deletedAt = snapshot.settings.deletedAt
+    return [record]
   }
 
   private static async readLocalBlockRules(context: common.UIAbilityContext): Promise<SyncLocalBlockRuleRecord[]> {
@@ -885,11 +1009,44 @@ export class SyncLocalDataAdapter {
       item.profile.sort = NhHomeSubtabProfile.normalizeSort(r.sort)
       item.profile.presentation = r.displayMode
       item.profile.hidden = r.hidden
+      item.profile.ignoreLocalUserTagFiltering = r.ignoreLocalUserTagFiltering
       item.profile.lastEditTime = r.updatedAt
       profiles.push(item)
     }
     await HomeSubtabRepository.importRecords(context, profiles)
     await HomeSubtabSettings.refreshFromStorage(context)
+  }
+
+  private static async applyLocalUserTags(
+    context: common.UIAbilityContext,
+    tags: SyncLocalUserTagRecord[],
+    settings: SyncLocalUserTagSettingsRecord[],
+  ): Promise<void> {
+    const snapshot: NhLocalUserTagSnapshot = new NhLocalUserTagSnapshot()
+    for (let index: number = 0; index < tags.length; index++) {
+      const source: SyncLocalUserTagRecord = tags[index]
+      const record: NhLocalUserTag = new NhLocalUserTag()
+      record.scopeKey = source.scopeKey
+      record.tagId = source.tagId
+      record.namespaceSnapshot = source.namespaceSnapshot
+      record.nameSnapshot = source.nameSnapshot
+      record.colorCode = source.colorCode
+      record.weight = source.weight
+      record.hidden = source.hidden
+      record.updatedAt = source.updatedAt
+      record.deletedAt = source.deletedAt
+      snapshot.tags.push(record)
+    }
+    if (settings.length > 0) {
+      const source: SyncLocalUserTagSettingsRecord = settings[0]
+      const value: NhLocalUserTagSettings = new NhLocalUserTagSettings()
+      value.scopeKey = source.scopeKey
+      value.filteringThreshold = source.filteringThreshold
+      value.updatedAt = source.updatedAt
+      value.deletedAt = source.deletedAt
+      snapshot.settings = value
+    }
+    await NhLocalUserTagRepository.importSnapshot(context, snapshot)
   }
 
   private static async applyLocalBlockSettings(
@@ -1116,6 +1273,58 @@ export class SyncLocalDataAdapter {
     }
   }
 
+  private static mergeLocalUserTags(
+    a: SyncLocalUserTagRecord[],
+    b: SyncLocalUserTagRecord[],
+  ): SyncLocalUserTagRecord[] {
+    const map: Map<string, SyncLocalUserTagRecord> = new Map<string, SyncLocalUserTagRecord>()
+    a.forEach((r: SyncLocalUserTagRecord): void => SyncLocalDataAdapter.keepLocalUserTag(map, r))
+    b.forEach((r: SyncLocalUserTagRecord): void => SyncLocalDataAdapter.keepLocalUserTag(map, r))
+    const out: SyncLocalUserTagRecord[] = []
+    map.forEach((r: SyncLocalUserTagRecord): void => { out.push(r) })
+    return out
+  }
+
+  private static keepLocalUserTag(
+    map: Map<string, SyncLocalUserTagRecord>,
+    r: SyncLocalUserTagRecord,
+  ): void {
+    const key: string = SyncLocalDataAdapter.localUserTagKey(r)
+    const previous: SyncLocalUserTagRecord | undefined = map.get(key)
+    if (previous === undefined ||
+      SyncLocalDataAdapter.effectiveTime(r.updatedAt, r.deletedAt) >=
+      SyncLocalDataAdapter.effectiveTime(previous.updatedAt, previous.deletedAt)) {
+      map.set(key, r)
+    }
+  }
+
+  private static mergeLocalUserTagSettings(
+    a: SyncLocalUserTagSettingsRecord[],
+    b: SyncLocalUserTagSettingsRecord[],
+  ): SyncLocalUserTagSettingsRecord[] {
+    const map: Map<string, SyncLocalUserTagSettingsRecord> =
+      new Map<string, SyncLocalUserTagSettingsRecord>()
+    a.forEach((r: SyncLocalUserTagSettingsRecord): void =>
+      SyncLocalDataAdapter.keepLocalUserTagSettings(map, r))
+    b.forEach((r: SyncLocalUserTagSettingsRecord): void =>
+      SyncLocalDataAdapter.keepLocalUserTagSettings(map, r))
+    const out: SyncLocalUserTagSettingsRecord[] = []
+    map.forEach((r: SyncLocalUserTagSettingsRecord): void => { out.push(r) })
+    return out
+  }
+
+  private static keepLocalUserTagSettings(
+    map: Map<string, SyncLocalUserTagSettingsRecord>,
+    r: SyncLocalUserTagSettingsRecord,
+  ): void {
+    const previous: SyncLocalUserTagSettingsRecord | undefined = map.get(r.scopeKey)
+    if (previous === undefined ||
+      SyncLocalDataAdapter.effectiveTime(r.updatedAt, r.deletedAt) >=
+      SyncLocalDataAdapter.effectiveTime(previous.updatedAt, previous.deletedAt)) {
+      map.set(r.scopeKey, r)
+    }
+  }
+
   private static keepQuickSearch(
     map: Map<string, SyncQuickSearchRecord>,
     r: SyncQuickSearchRecord,
@@ -1240,6 +1449,10 @@ export class SyncLocalDataAdapter {
     return r.scopeKey + ':' + r.profileUuid
   }
 
+  private static localUserTagKey(r: SyncLocalUserTagRecord): string {
+    return r.scopeKey + ':' + r.tagId.toString()
+  }
+
   private static localBlockRuleKey(r: SyncLocalBlockRuleRecord): string {
     return r.scopeKey + ':' + r.ruleId
   }
@@ -1328,8 +1541,36 @@ export class SyncLocalDataAdapter {
         typeof r.kind !== 'string' || typeof r.name !== 'string' ||
         typeof r.queryText !== 'string' || typeof r.language !== 'string' ||
         typeof r.sort !== 'string' || typeof r.displayMode !== 'string' ||
-        typeof r.hidden !== 'boolean' || typeof r.selectedUuid !== 'string' ||
+        typeof r.hidden !== 'boolean' || typeof r.ignoreLocalUserTagFiltering !== 'boolean' ||
+        typeof r.selectedUuid !== 'string' ||
         typeof r.updatedAt !== 'number' || typeof r.deletedAt !== 'number') {
+        return false
+      }
+    }
+    return true
+  }
+
+  private static hasLocalUserTagShape(records: SyncLocalUserTagRecord[]): boolean {
+    for (let index: number = 0; index < records.length; index++) {
+      const r: SyncLocalUserTagRecord = records[index]
+      if (!SyncLocalDataAdapter.isRecord(r) || typeof r.scopeKey !== 'string' ||
+        typeof r.tagId !== 'number' || r.tagId <= 0 ||
+        typeof r.namespaceSnapshot !== 'string' || typeof r.nameSnapshot !== 'string' ||
+        typeof r.colorCode !== 'string' || typeof r.weight !== 'number' ||
+        typeof r.hidden !== 'boolean' || typeof r.updatedAt !== 'number' ||
+        typeof r.deletedAt !== 'number') {
+        return false
+      }
+    }
+    return true
+  }
+
+  private static hasLocalUserTagSettingsShape(records: SyncLocalUserTagSettingsRecord[]): boolean {
+    for (let index: number = 0; index < records.length; index++) {
+      const r: SyncLocalUserTagSettingsRecord = records[index]
+      if (!SyncLocalDataAdapter.isRecord(r) || typeof r.scopeKey !== 'string' ||
+        typeof r.filteringThreshold !== 'number' || typeof r.updatedAt !== 'number' ||
+        typeof r.deletedAt !== 'number') {
         return false
       }
     }

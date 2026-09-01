@@ -45,6 +45,11 @@ const SQL_UPSERT_SETTINGS_TOMBSTONE: string =
   'ON CONFLICT(scope_key) DO UPDATE SET deleted_at = excluded.deleted_at ' +
   'WHERE excluded.deleted_at >= COALESCE(local_user_tag_settings.updated_at, 0) ' +
   'AND excluded.deleted_at >= COALESCE(local_user_tag_settings.deleted_at, 0)'
+const SQL_INSERT_TAG_RAW: string =
+  'INSERT INTO local_user_tags (scope_key, tag_id, namespace_snapshot, name_snapshot, color_code, weight, hidden, ' +
+  'updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+const SQL_INSERT_SETTINGS_RAW: string =
+  'INSERT INTO local_user_tag_settings (scope_key, filtering_threshold, updated_at, deleted_at) VALUES (?, ?, ?, ?)'
 
 class LocalUserTagClock {
   updatedAt: number = 0
@@ -123,6 +128,45 @@ export class NhLocalUserTagRepository {
       } else if (settings.updatedAt > 0) {
         await NhLocalUserTagRepository.upsertSettings(store, settings)
       }
+      store.commit()
+    } catch (error) {
+      store.rollBack()
+      throw error as Error
+    }
+  }
+
+  /** Authoritative backup replacement; unlike WebDAV import it may restore older clocks. */
+  static async replaceSnapshot(context: common.UIAbilityContext, snapshot: NhLocalUserTagSnapshot): Promise<void> {
+    const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+    store.beginTransaction()
+    try {
+      await store.executeSql('DELETE FROM local_user_tags')
+      await store.executeSql('DELETE FROM local_user_tag_settings')
+      for (let index: number = 0; index < snapshot.tags.length; index++) {
+        const record: NhLocalUserTag = NhLocalUserTagContract.normalizeTag(snapshot.tags[index])
+        if (record.tagId <= 0) {
+          continue
+        }
+        await store.executeSql(SQL_INSERT_TAG_RAW, [
+          record.scopeKey,
+          record.tagId,
+          record.namespaceSnapshot,
+          record.nameSnapshot,
+          record.colorCode,
+          record.weight,
+          record.hidden ? 1 : 0,
+          record.updatedAt,
+          record.deletedAt,
+        ])
+      }
+      const settings: NhLocalUserTagSettings =
+        NhLocalUserTagContract.normalizeSettings(snapshot.settings)
+      await store.executeSql(SQL_INSERT_SETTINGS_RAW, [
+        settings.scopeKey,
+        settings.filteringThreshold,
+        settings.updatedAt,
+        settings.deletedAt,
+      ])
       store.commit()
     } catch (error) {
       store.rollBack()

@@ -5,12 +5,14 @@ import { CatalogPreferencesService } from '../services/CatalogPreferencesService
 import { ContentFilterService } from '../services/ContentFilterService'
 import { DownloadSettingsService } from '../services/DownloadSettingsService'
 import { ReaderPresentationService } from '../services/ReaderPresentationService'
+import { NhLocalUserTagService } from '../services/NhLocalUserTagService'
 import { HomeSubtabSettings } from '../settings/HomeSubtabSettings'
 import { BrowsePresentationRepository } from '../storage/BrowsePresentationRepository'
 import { CatalogPreferencesRepository } from '../storage/CatalogPreferencesRepository'
 import { ContentFilterRepository } from '../storage/ContentFilterRepository'
 import { DownloadSettingsRepository } from '../storage/DownloadSettingsRepository'
 import { HistoryRepository } from '../storage/HistoryRepository'
+import { NhLocalUserTagRepository } from '../storage/NhLocalUserTagRepository'
 import { QuickSearchRepository } from '../storage/QuickSearchRepository'
 import { ReaderSettingsRepository } from '../storage/ReaderSettingsRepository'
 import { SearchHistoryRepository } from '../storage/SearchHistoryRepository'
@@ -25,6 +27,8 @@ import {
   SyncHomeSubtabRecord,
   SyncLocalBlockRuleRecord,
   SyncLocalBlockSettingsRecord,
+  SyncLocalUserTagRecord,
+  SyncLocalUserTagSettingsRecord,
   SyncQuickSearchRecord,
   SyncReadProgressRecord,
   SyncSearchHistoryRecord,
@@ -126,6 +130,12 @@ export class SyncService {
     if (!Array.isArray(data.homeSubtabs)) {
       data.homeSubtabs = []
     }
+    if (!Array.isArray(data.localUserTags)) {
+      data.localUserTags = []
+    }
+    if (!Array.isArray(data.localUserTagSettings)) {
+      data.localUserTagSettings = []
+    }
     if (!Array.isArray(data.localBlockSettings)) {
       data.localBlockSettings = []
     }
@@ -184,7 +194,27 @@ export class SyncService {
       r.sort = SyncService.safeString(r.sort)
       r.displayMode = SyncService.safeString(r.displayMode)
       r.hidden = SyncService.safeBoolean(r.hidden)
+      r.ignoreLocalUserTagFiltering = SyncService.safeBoolean(r.ignoreLocalUserTagFiltering)
       r.selectedUuid = SyncService.safeString(r.selectedUuid)
+      r.updatedAt = SyncService.safeNumber(r.updatedAt)
+      r.deletedAt = SyncService.safeNumber(r.deletedAt)
+    }
+    for (let i: number = 0; i < data.localUserTags.length; i++) {
+      const r: SyncLocalUserTagRecord = data.localUserTags[i]
+      r.scopeKey = SyncService.safeString(r.scopeKey)
+      r.tagId = SyncService.safeNumber(r.tagId)
+      r.namespaceSnapshot = SyncService.safeString(r.namespaceSnapshot)
+      r.nameSnapshot = SyncService.safeString(r.nameSnapshot)
+      r.colorCode = SyncService.safeString(r.colorCode)
+      r.weight = SyncService.safeNumber(r.weight)
+      r.hidden = SyncService.safeBoolean(r.hidden)
+      r.updatedAt = SyncService.safeNumber(r.updatedAt)
+      r.deletedAt = SyncService.safeNumber(r.deletedAt)
+    }
+    for (let i: number = 0; i < data.localUserTagSettings.length; i++) {
+      const r: SyncLocalUserTagSettingsRecord = data.localUserTagSettings[i]
+      r.scopeKey = SyncService.safeString(r.scopeKey)
+      r.filteringThreshold = SyncService.safeNumber(r.filteringThreshold)
       r.updatedAt = SyncService.safeNumber(r.updatedAt)
       r.deletedAt = SyncService.safeNumber(r.deletedAt)
     }
@@ -280,6 +310,9 @@ export class SyncService {
     if (selection.homeSubtabs) {
       await HomeSubtabSettings.flushForSync()
     }
+    if (selection.localUserTags) {
+      await NhLocalUserTagRepository.exportSnapshot(context)
+    }
     if (selection.localBlock) {
       await ContentFilterRepository.exportForBackup(context)
     }
@@ -313,6 +346,10 @@ export class SyncService {
     if (selection.homeSubtabs) {
       out.datasets.homeSubtabs = source.datasets.homeSubtabs
     }
+    if (selection.localUserTags) {
+      out.datasets.localUserTags = source.datasets.localUserTags
+      out.datasets.localUserTagSettings = source.datasets.localUserTagSettings
+    }
     if (selection.localBlock) {
       out.datasets.localBlockSettings = source.datasets.localBlockSettings
       out.datasets.localBlockRules = source.datasets.localBlockRules
@@ -335,6 +372,9 @@ export class SyncService {
     }
     if (selection.homeSubtabs) {
       await HomeSubtabSettings.refreshFromStorage(context)
+    }
+    if (selection.localUserTags) {
+      await NhLocalUserTagService.restore(context)
     }
     if (selection.settingsTables) {
       await ReaderPresentationService.restoreFromBackup(context)

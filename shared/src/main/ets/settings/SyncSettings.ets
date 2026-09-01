@@ -19,6 +19,7 @@ const KEY_DATASET_VIEWED_HISTORY: string = 'sync.dataset.viewed_history'
 const KEY_DATASET_SEARCH_HISTORY: string = 'sync.dataset.search_history'
 const KEY_DATASET_QUICK_SEARCHES: string = 'sync.dataset.quick_searches'
 const KEY_DATASET_HOME_SUBTABS: string = 'sync.dataset.home_subtabs'
+const KEY_DATASET_LOCAL_USER_TAGS: string = 'sync.dataset.local_user_tags'
 const KEY_DATASET_LOCAL_BLOCK: string = 'sync.dataset.local_block'
 const KEY_DATASET_SETTINGS_TABLES: string = 'sync.dataset.settings_tables'
 const KEY_LAST_RUN_AT: string = 'sync.last_run_at'
@@ -83,6 +84,7 @@ export class SyncSettingsSnapshot {
   datasetSearchHistory: boolean = true
   datasetQuickSearches: boolean = true
   datasetHomeSubtabs: boolean = true
+  datasetLocalUserTags: boolean = true
   datasetLocalBlock: boolean = true
   datasetSettingsTables: boolean = true
   lastRunAt: number = 0
@@ -106,6 +108,7 @@ export class SyncSettings {
     state.datasetSearchHistory = snapshot.datasetSearchHistory
     state.datasetQuickSearches = snapshot.datasetQuickSearches
     state.datasetHomeSubtabs = snapshot.datasetHomeSubtabs
+    state.datasetLocalUserTags = snapshot.datasetLocalUserTags
     state.datasetLocalBlock = snapshot.datasetLocalBlock
     state.datasetSettingsTables = snapshot.datasetSettingsTables
     state.lastRunAt = Math.max(0, snapshot.lastRunAt)
@@ -125,6 +128,7 @@ export class SyncSettings {
     snapshot.datasetSearchHistory = state.datasetSearchHistory
     snapshot.datasetQuickSearches = state.datasetQuickSearches
     snapshot.datasetHomeSubtabs = state.datasetHomeSubtabs
+    snapshot.datasetLocalUserTags = state.datasetLocalUserTags
     snapshot.datasetLocalBlock = state.datasetLocalBlock
     snapshot.datasetSettingsTables = state.datasetSettingsTables
     snapshot.lastRunAt = state.lastRunAt
@@ -140,6 +144,7 @@ export class SyncSettings {
     selection.searchHistory = snapshot.datasetSearchHistory
     selection.quickSearches = snapshot.datasetQuickSearches
     selection.homeSubtabs = snapshot.datasetHomeSubtabs
+    selection.localUserTags = snapshot.datasetLocalUserTags
     selection.localBlock = snapshot.datasetLocalBlock
     selection.settingsTables = snapshot.datasetSettingsTables
     return selection
@@ -159,6 +164,7 @@ export class SyncSettings {
       snapshot.datasetSearchHistory = store.getSync(KEY_DATASET_SEARCH_HISTORY, true) as boolean
       snapshot.datasetQuickSearches = store.getSync(KEY_DATASET_QUICK_SEARCHES, true) as boolean
       snapshot.datasetHomeSubtabs = store.getSync(KEY_DATASET_HOME_SUBTABS, true) as boolean
+      snapshot.datasetLocalUserTags = store.getSync(KEY_DATASET_LOCAL_USER_TAGS, true) as boolean
       snapshot.datasetLocalBlock = store.getSync(KEY_DATASET_LOCAL_BLOCK, true) as boolean
       snapshot.datasetSettingsTables = store.getSync(KEY_DATASET_SETTINGS_TABLES, true) as boolean
       snapshot.lastRunAt = store.getSync(KEY_LAST_RUN_AT, 0) as number
@@ -190,6 +196,7 @@ export class SyncSettings {
       store.putSync(KEY_DATASET_SEARCH_HISTORY, snapshot.datasetSearchHistory)
       store.putSync(KEY_DATASET_QUICK_SEARCHES, snapshot.datasetQuickSearches)
       store.putSync(KEY_DATASET_HOME_SUBTABS, snapshot.datasetHomeSubtabs)
+      store.putSync(KEY_DATASET_LOCAL_USER_TAGS, snapshot.datasetLocalUserTags)
       store.putSync(KEY_DATASET_LOCAL_BLOCK, snapshot.datasetLocalBlock)
       store.putSync(KEY_DATASET_SETTINGS_TABLES, snapshot.datasetSettingsTables)
       store.putSync(KEY_LAST_RUN_AT, snapshot.lastRunAt)

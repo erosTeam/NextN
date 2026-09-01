@@ -6,6 +6,7 @@ import { BackupLocalDataAdapter } from './BackupLocalDataAdapter'
 import { BackupPreferencesAdapter } from './BackupPreferencesAdapter'
 import { BackupSecretsAdapter } from './BackupSecretsAdapter'
 import { SyncScheduler } from '../sync/SyncScheduler'
+import { NhLocalUserTagService } from '../services/NhLocalUserTagService'
 import {
   BackupAppMetadata,
   BackupCipherMeta,
@@ -92,6 +93,10 @@ export class BackupService {
           searchHistory: localData.searchHistory.length,
           quickSearches: localData.quickSearches.length,
           homeSubtabs: localData.homeSubtabs === undefined ? 0 : localData.homeSubtabs.profiles.length,
+          localUserTags: localData.localUserTags === undefined ? 0 : localData.localUserTags.length,
+          localUserTagSettings: localData.localUserTagSettings === undefined
+            ? 0
+            : localData.localUserTagSettings.length,
           localBlockRules: localData.localBlock.rules.length,
           settingsTableGroups: Object.keys(localData.settingsTables).length,
         },
@@ -295,6 +300,7 @@ export class BackupService {
         // Re-hydrate live state from the freshly written stores.
         await BackupPreferencesAdapter.reapply(context)
         await BackupSecretsAdapter.reapply(context)
+        await NhLocalUserTagService.restore(context)
       } catch (error) {
         let message: string = (error as Error).message
         try {
@@ -303,6 +309,7 @@ export class BackupService {
           await BackupSecretsAdapter.restoreSecrets(context, rollbackSecrets, true)
           await BackupPreferencesAdapter.reapply(context)
           await BackupSecretsAdapter.reapply(context)
+          await NhLocalUserTagService.restore(context)
         } catch (rollbackError) {
           message = `${message}; rollback failed: ${(rollbackError as Error).message}`
         }

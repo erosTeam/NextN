@@ -40,6 +40,11 @@ function emptyLocalData(): string {
   )
 }
 
+function withLocalUserTags(base: string, tags: string, settings: string): string {
+  return base.substring(0, base.length - 1) +
+    `,"localUserTags":${tags},"localUserTagSettings":${settings}}`
+}
+
 function envelopeWithLocalData(localDataJson: string, declaresLocalData: boolean): string {
   const sections: string = declaresLocalData ? '["preferences","localData"]' : '["preferences"]'
   return `{"magic":"NEXTN_BACKUP","appId":"com.erosteam.nextn","schemaVersion":1,` +
@@ -74,6 +79,25 @@ export default function backupLocalDataStructureGuardTest(): void {
 
     it('accepts explicit empty replacement snapshots and empty settings tables', 0, async (done: Function) => {
       expect(await parseOk(envelopeWithLocalData(emptyLocalData(), true))).assertEqual(true)
+      done()
+    })
+
+    it('accepts complete local-user-tag sections and rejects partial topology', 0, async (done: Function) => {
+      const tags: string = '[{"scopeKey":"global","tagId":7,"namespaceSnapshot":"tag",' +
+        '"nameSnapshot":"sample","colorCode":"#112233","weight":-5,"hidden":false,' +
+        '"updatedAt":10,"deletedAt":0}]'
+      const settings: string = '[{"scopeKey":"global","filteringThreshold":-6,' +
+        '"updatedAt":11,"deletedAt":0}]'
+      expect(await parseOk(envelopeWithLocalData(
+        withLocalUserTags(validLocalData(), tags, settings),
+        true,
+      ))).assertEqual(true)
+      const partial: string = validLocalData().substring(0, validLocalData().length - 1) +
+        `,"localUserTags":${tags}}`
+      expect(await parseMalformed(envelopeWithLocalData(
+        partial,
+        true,
+      ))).assertEqual(true)
       done()
     })
 

@@ -42,6 +42,8 @@ export interface BackupLocalDataCounts {
   searchHistory: number
   quickSearches: number
   homeSubtabs?: number
+  localUserTags?: number
+  localUserTagSettings?: number
   localBlockRules: number
   settingsTableGroups: number
 }
@@ -82,7 +84,27 @@ export interface BackupHomeSubtabEntry {
   sort: string
   presentation: string
   hidden: boolean
+  ignoreLocalUserTagFiltering?: boolean
   updatedAt: number
+}
+
+export interface BackupLocalUserTagEntry {
+  scopeKey: string
+  tagId: number
+  namespaceSnapshot: string
+  nameSnapshot: string
+  colorCode: string
+  weight: number
+  hidden: boolean
+  updatedAt: number
+  deletedAt: number
+}
+
+export interface BackupLocalUserTagSettingsEntry {
+  scopeKey: string
+  filteringThreshold: number
+  updatedAt: number
+  deletedAt: number
 }
 
 export interface BackupHomeSubtabSection {
@@ -115,6 +137,9 @@ export interface BackupLocalDataSection {
   quickSearches: BackupQuickSearchEntry[]
   /** Optional for schema-v1 backups created before Home SubTabs shipped. */
   homeSubtabs?: BackupHomeSubtabSection
+  /** Optional in old schema-v1 backups; absence preserves current local tags. */
+  localUserTags?: BackupLocalUserTagEntry[]
+  localUserTagSettings?: BackupLocalUserTagSettingsEntry[]
   localBlock: BackupLocalBlockSection
   // NH key-value settings tables: reader_settings / download_settings /
   // browse_presentation_settings / catalog_preferences.

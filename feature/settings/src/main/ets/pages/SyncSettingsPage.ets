@@ -45,6 +45,8 @@ export struct SyncSettingsPage {
       snapshot.datasetQuickSearches = enabled
     } else if (field === 'homeSubtabs') {
       snapshot.datasetHomeSubtabs = enabled
+    } else if (field === 'localUserTags') {
+      snapshot.datasetLocalUserTags = enabled
     } else if (field === 'localBlock') {
       snapshot.datasetLocalBlock = enabled
     } else if (field === 'settingsTables') {
@@ -172,6 +174,13 @@ export struct SyncSettingsPage {
               AppStrings.get('sync_dataset_home_subtabs_hint'),
               this.settings.datasetHomeSubtabs,
               'homeSubtabs',
+            )
+            this.RowDivider()
+            this.DatasetRow(
+              AppStrings.get('sync_dataset_local_user_tags'),
+              AppStrings.get('sync_dataset_local_user_tags_hint'),
+              this.settings.datasetLocalUserTags,
+              'localUserTags',
             )
             this.RowDivider()
             this.DatasetRow(

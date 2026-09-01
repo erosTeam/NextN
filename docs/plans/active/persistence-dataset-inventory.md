@@ -98,6 +98,7 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `shared/src/main/ets/settings/SyncSettings.ets#KEY_DATASET_SEARCH_HISTORY` | setting | plaintext | excluded | Sync selection |
 | `shared/src/main/ets/settings/SyncSettings.ets#KEY_DATASET_QUICK_SEARCHES` | setting | plaintext | excluded | Sync selection |
 | `shared/src/main/ets/settings/SyncSettings.ets#KEY_DATASET_HOME_SUBTABS` | setting | plaintext | excluded | Sync selection |
+| `shared/src/main/ets/settings/SyncSettings.ets#KEY_DATASET_LOCAL_USER_TAGS` | setting | plaintext | excluded | Sync selection |
 | `shared/src/main/ets/settings/SyncSettings.ets#KEY_DATASET_LOCAL_BLOCK` | setting | plaintext | excluded | Sync selection |
 | `shared/src/main/ets/settings/SyncSettings.ets#KEY_DATASET_SETTINGS_TABLES` | setting | plaintext | excluded | Sync selection |
 | `shared/src/main/ets/settings/SyncSettings.ets#KEY_LAST_RUN_AT` | runtime | excluded | excluded | Provider status |
@@ -137,6 +138,8 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `browse_presentation_settings` | local-data | localData | WebDAV | Browse presentation |
 | `catalog_preferences` | local-data | localData | WebDAV | Catalog query preferences |
 | `home_subtabs` | local-data | localData | WebDAV | Custom home subtabs |
+| `local_user_tags` | local-data | localData | WebDAV | Local tag color, weight, Hidden, and tombstones |
+| `local_user_tag_settings` | local-data | localData | WebDAV | Local tag filtering threshold and tombstone |
 | `home_subtab_selection` | local-data | localData | excluded | Device-local selected home subtab |
 | `comic_translation_document_cache` | cache | excluded | excluded | Regenerable translation document cache |
 | `comment_translation_cache` | cache | excluded | excluded | Regenerable comment translations |

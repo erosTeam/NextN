@@ -9,6 +9,7 @@ export class CloudSyncFeatureTables {
   // The selected/last-viewed Home tab is a per-device reading position. Only
   // profile configuration belongs to the cross-device dataset.
   static readonly HOME_SUBTABS: string[] = ['home_subtabs']
+  static readonly LOCAL_USER_TAGS: string[] = ['local_user_tags', 'local_user_tag_settings']
   static readonly LOCAL_BLOCK: string[] = ['content_filter_rules']
   static readonly SETTINGS_TABLES: string[] = [
     'reader_settings',
@@ -23,6 +24,8 @@ export const WEBDAV_SYNC_TABLES: string[] = [
   'search_history',
   'search_quick',
   'home_subtabs',
+  'local_user_tags',
+  'local_user_tag_settings',
   'content_filter_rules',
   'reader_settings',
   'download_settings',
@@ -46,6 +49,9 @@ export function webDavSyncTablesForSelection(selection: SyncDatasetSelection): s
   }
   if (selection.homeSubtabs) {
     CloudSyncFeatureTables.HOME_SUBTABS.forEach((table: string) => tables.push(table))
+  }
+  if (selection.localUserTags) {
+    CloudSyncFeatureTables.LOCAL_USER_TAGS.forEach((table: string) => tables.push(table))
   }
   if (selection.localBlock) {
     CloudSyncFeatureTables.LOCAL_BLOCK.forEach((table: string) => tables.push(table))

@@ -39,7 +39,7 @@ ok('envelope identity + KDF params defined',
 ok("'secrets' is encryption-only, localData is plaintext durable data",
   /BACKUP_SECTION_NAMES: BackupSectionName\[\] = \['preferences', 'localData'\]/.test(types) &&
     /BACKUP_ENCRYPTED_ONLY_SECTION_NAMES: BackupSectionName\[\] = \['secrets'\]/.test(types))
-ok('localData section carries the seven durable NH datasets outside Preferences',
+ok('localData section carries the durable NH datasets outside Preferences',
   /BackupSectionName = 'preferences' \| 'localData' \| 'secrets'/.test(types) &&
     /interface BackupLocalDataSection/.test(types) &&
     /readProgress: BackupReadProgressEntry\[\]/.test(types) &&
@@ -47,6 +47,8 @@ ok('localData section carries the seven durable NH datasets outside Preferences'
     /searchHistory: string\[\]/.test(types) &&
     /quickSearches: BackupQuickSearchEntry\[\]/.test(types) &&
     /homeSubtabs\?: BackupHomeSubtabSection/.test(types) &&
+    /localUserTags\?: BackupLocalUserTagEntry\[\]/.test(types) &&
+    /localUserTagSettings\?: BackupLocalUserTagSettingsEntry\[\]/.test(types) &&
     /localBlock: BackupLocalBlockSection/.test(types) &&
     /settingsTables: Record<string, Record<string, string>>/.test(types))
 ok('settings-table backup counts every durable table group',
@@ -144,6 +146,7 @@ ok('service exports and restores the localData section with NH counts',
     /BackupLocalDataAdapter\.restoreSection\(context, envelope\.data\.localData\)/.test(svc) &&
     /quickSearches: localData\.quickSearches\.length/.test(svc) &&
     /homeSubtabs: localData\.homeSubtabs === undefined \? 0 : localData\.homeSubtabs\.profiles\.length/.test(svc) &&
+    /localUserTags: localData\.localUserTags === undefined \? 0 : localData\.localUserTags\.length/.test(svc) &&
     /settingsTableGroups: Object\.keys\(localData\.settingsTables\)\.length/.test(svc))
 ok('backup parser and restore boundary reject partial localData replacements',
   /BackupService\.hasCompleteLocalDataTopology\(envelope\)/.test(svc) &&

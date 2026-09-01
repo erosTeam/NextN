@@ -66,7 +66,29 @@ export class SyncHomeSubtabRecord {
   sort: string = ''
   displayMode: string = ''
   hidden: boolean = false
+  ignoreLocalUserTagFiltering: boolean = false
   selectedUuid: string = ''
+  updatedAt: number = 0
+  deletedAt: number = 0
+}
+
+/** One locally configured NH tag rule, including syncable tombstones. */
+export class SyncLocalUserTagRecord {
+  scopeKey: string = ''
+  tagId: number = 0
+  namespaceSnapshot: string = ''
+  nameSnapshot: string = ''
+  colorCode: string = ''
+  weight: number = 10
+  hidden: boolean = false
+  updatedAt: number = 0
+  deletedAt: number = 0
+}
+
+/** Scope-wide soft-filter threshold for the local user-tag dataset. */
+export class SyncLocalUserTagSettingsRecord {
+  scopeKey: string = ''
+  filteringThreshold: number = 0
   updatedAt: number = 0
   deletedAt: number = 0
 }
@@ -110,6 +132,8 @@ export class SyncDatasets {
   searchHistory: SyncSearchHistoryRecord[] = []
   quickSearches: SyncQuickSearchRecord[] = []
   homeSubtabs: SyncHomeSubtabRecord[] = []
+  localUserTags: SyncLocalUserTagRecord[] = []
+  localUserTagSettings: SyncLocalUserTagSettingsRecord[] = []
   localBlockSettings: SyncLocalBlockSettingsRecord[] = []
   localBlockRules: SyncLocalBlockRuleRecord[] = []
   settingsTables: SyncSettingsTableRecord[] = []
@@ -143,6 +167,7 @@ export class SyncDatasetSelection {
   searchHistory: boolean = true
   quickSearches: boolean = true
   homeSubtabs: boolean = true
+  localUserTags: boolean = true
   localBlock: boolean = true
   settingsTables: boolean = true
 }

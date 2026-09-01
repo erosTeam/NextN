@@ -17,6 +17,7 @@ export class SyncSettingsState {
   @Trace datasetSearchHistory: boolean = true
   @Trace datasetQuickSearches: boolean = true
   @Trace datasetHomeSubtabs: boolean = true
+  @Trace datasetLocalUserTags: boolean = true
   @Trace datasetLocalBlock: boolean = true
   @Trace datasetSettingsTables: boolean = true
   @Trace lastRunAt: number = 0

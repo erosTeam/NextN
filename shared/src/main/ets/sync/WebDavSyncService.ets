@@ -21,6 +21,8 @@ import {
     SyncDatasets,
     SyncLocalBlockRuleRecord,
     SyncLocalBlockSettingsRecord,
+    SyncLocalUserTagRecord,
+    SyncLocalUserTagSettingsRecord,
     SyncQuickSearchRecord,
     SyncReadProgressRecord,
     SyncSearchHistoryRecord,
@@ -41,6 +43,7 @@ const DATASET_VIEWED_HISTORY: string = 'viewed-history'
 const DATASET_SEARCH_HISTORY: string = 'search-history'
 const DATASET_QUICK_SEARCHES: string = 'quick-searches'
 const DATASET_HOME_SUBTABS: string = 'home-subtabs'
+const DATASET_LOCAL_USER_TAGS: string = 'local-user-tags'
 const DATASET_LOCAL_BLOCK: string = 'local-block'
 const DATASET_SETTINGS_TABLES: string = 'settings-tables'
 const DATASET_IDS: string[] = [
@@ -49,6 +52,7 @@ const DATASET_IDS: string[] = [
     DATASET_SEARCH_HISTORY,
     DATASET_QUICK_SEARCHES,
     DATASET_HOME_SUBTABS,
+    DATASET_LOCAL_USER_TAGS,
     DATASET_LOCAL_BLOCK,
     DATASET_SETTINGS_TABLES,
 ]
@@ -70,6 +74,7 @@ function buildWebDavShardsTask(rawEnvelope: string, datasetId: string): string {
     const datasetSearchHistory: string = 'search-history'
     const datasetQuickSearches: string = 'quick-searches'
     const datasetHomeSubtabs: string = 'home-subtabs'
+    const datasetLocalUserTags: string = 'local-user-tags'
     const datasetLocalBlock: string = 'local-block'
     const datasetSettingsTables: string = 'settings-tables'
 
@@ -108,6 +113,12 @@ function buildWebDavShardsTask(rawEnvelope: string, datasetId: string): string {
         }
         if (!Array.isArray(envelope.datasets.homeSubtabs)) {
             envelope.datasets.homeSubtabs = []
+        }
+        if (!Array.isArray(envelope.datasets.localUserTags)) {
+            envelope.datasets.localUserTags = []
+        }
+        if (!Array.isArray(envelope.datasets.localUserTagSettings)) {
+            envelope.datasets.localUserTagSettings = []
         }
         if (!Array.isArray(envelope.datasets.localBlockSettings)) {
             envelope.datasets.localBlockSettings = []
@@ -190,6 +201,15 @@ function buildWebDavShardsTask(rawEnvelope: string, datasetId: string): string {
                 const r: SyncHomeSubtabRecord = envelope.datasets.homeSubtabs[i]
                 bucketForKey(ids, envelopes, r.scopeKey + ':' + r.profileUuid).datasets.homeSubtabs.push(r)
             }
+        } else if (datasetId === datasetLocalUserTags) {
+            for (let i: number = 0; i < envelope.datasets.localUserTags.length; i++) {
+                const r: SyncLocalUserTagRecord = envelope.datasets.localUserTags[i]
+                bucketForKey(ids, envelopes, r.scopeKey + ':' + r.tagId).datasets.localUserTags.push(r)
+            }
+            for (let i: number = 0; i < envelope.datasets.localUserTagSettings.length; i++) {
+                const r: SyncLocalUserTagSettingsRecord = envelope.datasets.localUserTagSettings[i]
+                bucketForKey(ids, envelopes, r.scopeKey).datasets.localUserTagSettings.push(r)
+            }
         } else if (datasetId === datasetLocalBlock) {
             for (let i: number = 0; i < envelope.datasets.localBlockSettings.length; i++) {
                 const r: SyncLocalBlockSettingsRecord = envelope.datasets.localBlockSettings[i]
@@ -224,6 +244,9 @@ function buildWebDavShardsTask(rawEnvelope: string, datasetId: string): string {
         if (datasetId === datasetHomeSubtabs) {
             return envelope.datasets.homeSubtabs.length
         }
+        if (datasetId === datasetLocalUserTags) {
+            return envelope.datasets.localUserTags.length + envelope.datasets.localUserTagSettings.length
+        }
         if (datasetId === datasetLocalBlock) {
             return envelope.datasets.localBlockSettings.length + envelope.datasets.localBlockRules.length
         }
@@ -253,6 +276,13 @@ function buildWebDavShardsTask(rawEnvelope: string, datasetId: string): string {
         } else if (datasetId === datasetHomeSubtabs) {
             for (let i: number = 0; i < envelope.datasets.homeSubtabs.length; i++) {
                 out = Math.max(out, envelope.datasets.homeSubtabs[i].updatedAt, envelope.datasets.homeSubtabs[i].deletedAt)
+            }
+        } else if (datasetId === datasetLocalUserTags) {
+            for (let i: number = 0; i < envelope.datasets.localUserTags.length; i++) {
+                out = Math.max(out, envelope.datasets.localUserTags[i].updatedAt, envelope.datasets.localUserTags[i].deletedAt)
+            }
+            for (let i: number = 0; i < envelope.datasets.localUserTagSettings.length; i++) {
+                out = Math.max(out, envelope.datasets.localUserTagSettings[i].updatedAt, envelope.datasets.localUserTagSettings[i].deletedAt)
             }
         } else if (datasetId === datasetLocalBlock) {
             for (let i: number = 0; i < envelope.datasets.localBlockSettings.length; i++) {
@@ -295,6 +325,13 @@ function buildWebDavShardsTask(rawEnvelope: string, datasetId: string): string {
         } else if (datasetId === datasetHomeSubtabs) {
             envelope.datasets.homeSubtabs.sort((a: SyncHomeSubtabRecord, b: SyncHomeSubtabRecord): number => {
                 return compareKey(a.scopeKey + ':' + a.profileUuid, b.scopeKey + ':' + b.profileUuid)
+            })
+        } else if (datasetId === datasetLocalUserTags) {
+            envelope.datasets.localUserTags.sort((a: SyncLocalUserTagRecord, b: SyncLocalUserTagRecord): number => {
+                return compareKey(a.scopeKey + ':' + a.tagId, b.scopeKey + ':' + b.tagId)
+            })
+            envelope.datasets.localUserTagSettings.sort((a: SyncLocalUserTagSettingsRecord, b: SyncLocalUserTagSettingsRecord): number => {
+                return compareKey(a.scopeKey, b.scopeKey)
             })
         } else if (datasetId === datasetLocalBlock) {
             envelope.datasets.localBlockSettings.sort((a: SyncLocalBlockSettingsRecord, b: SyncLocalBlockSettingsRecord): number => {
@@ -796,6 +833,9 @@ export class WebDavSyncService {
             out.datasets.quickSearches = envelope.datasets.quickSearches
         } else if (datasetId === DATASET_HOME_SUBTABS) {
             out.datasets.homeSubtabs = envelope.datasets.homeSubtabs
+        } else if (datasetId === DATASET_LOCAL_USER_TAGS) {
+            out.datasets.localUserTags = envelope.datasets.localUserTags
+            out.datasets.localUserTagSettings = envelope.datasets.localUserTagSettings
         } else if (datasetId === DATASET_LOCAL_BLOCK) {
             out.datasets.localBlockSettings = envelope.datasets.localBlockSettings
             out.datasets.localBlockRules = envelope.datasets.localBlockRules
@@ -820,6 +860,9 @@ export class WebDavSyncService {
         }
         if (datasetId === DATASET_HOME_SUBTABS) {
             return envelope.datasets.homeSubtabs.length
+        }
+        if (datasetId === DATASET_LOCAL_USER_TAGS) {
+            return envelope.datasets.localUserTags.length + envelope.datasets.localUserTagSettings.length
         }
         if (datasetId === DATASET_LOCAL_BLOCK) {
             return envelope.datasets.localBlockSettings.length + envelope.datasets.localBlockRules.length
@@ -851,6 +894,13 @@ export class WebDavSyncService {
         } else if (datasetId === DATASET_HOME_SUBTABS) {
             for (let i: number = 0; i < envelope.datasets.homeSubtabs.length; i++) {
                 out = Math.max(out, envelope.datasets.homeSubtabs[i].updatedAt, envelope.datasets.homeSubtabs[i].deletedAt)
+            }
+        } else if (datasetId === DATASET_LOCAL_USER_TAGS) {
+            for (let i: number = 0; i < envelope.datasets.localUserTags.length; i++) {
+                out = Math.max(out, envelope.datasets.localUserTags[i].updatedAt, envelope.datasets.localUserTags[i].deletedAt)
+            }
+            for (let i: number = 0; i < envelope.datasets.localUserTagSettings.length; i++) {
+                out = Math.max(out, envelope.datasets.localUserTagSettings[i].updatedAt, envelope.datasets.localUserTagSettings[i].deletedAt)
             }
         } else if (datasetId === DATASET_LOCAL_BLOCK) {
             for (let i: number = 0; i < envelope.datasets.localBlockSettings.length; i++) {
@@ -895,6 +945,13 @@ export class WebDavSyncService {
         } else if (datasetId === DATASET_HOME_SUBTABS) {
             envelope.datasets.homeSubtabs.sort((a: SyncHomeSubtabRecord, b: SyncHomeSubtabRecord): number => {
                 return WebDavSyncService.compareKey(a.scopeKey + ':' + a.profileUuid, b.scopeKey + ':' + b.profileUuid)
+            })
+        } else if (datasetId === DATASET_LOCAL_USER_TAGS) {
+            envelope.datasets.localUserTags.sort((a: SyncLocalUserTagRecord, b: SyncLocalUserTagRecord): number => {
+                return WebDavSyncService.compareKey(a.scopeKey + ':' + a.tagId, b.scopeKey + ':' + b.tagId)
+            })
+            envelope.datasets.localUserTagSettings.sort((a: SyncLocalUserTagSettingsRecord, b: SyncLocalUserTagSettingsRecord): number => {
+                return WebDavSyncService.compareKey(a.scopeKey, b.scopeKey)
             })
         } else if (datasetId === DATASET_LOCAL_BLOCK) {
             envelope.datasets.localBlockSettings.sort((a: SyncLocalBlockSettingsRecord, b: SyncLocalBlockSettingsRecord): number => {
@@ -1001,6 +1058,7 @@ export class WebDavSyncService {
         out.searchHistory = datasetId === DATASET_SEARCH_HISTORY
         out.quickSearches = datasetId === DATASET_QUICK_SEARCHES
         out.homeSubtabs = datasetId === DATASET_HOME_SUBTABS
+        out.localUserTags = datasetId === DATASET_LOCAL_USER_TAGS
         out.localBlock = datasetId === DATASET_LOCAL_BLOCK
         out.settingsTables = datasetId === DATASET_SETTINGS_TABLES
         return out
@@ -1021,6 +1079,9 @@ export class WebDavSyncService {
         }
         if (datasetId === DATASET_HOME_SUBTABS) {
             return selection.homeSubtabs
+        }
+        if (datasetId === DATASET_LOCAL_USER_TAGS) {
+            return selection.localUserTags
         }
         if (datasetId === DATASET_LOCAL_BLOCK) {
             return selection.localBlock
