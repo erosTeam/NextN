@@ -2,7 +2,7 @@ import { common } from '@kit.AbilityKit'
 import {
   CollectionFooterState,
   GalleryDetailTransitionCoordinator,
-  GalleryDetailTransitionState,
+  GalleryDetailTransitionSourceSlot,
   DiagnosticLogger,
   HistoryRepository,
   HistoryCursor,
@@ -21,7 +21,6 @@ import {
   RootRefreshRegistry,
   ThemeTokens,
   connectReadingHistory,
-  connectGalleryDetailTransition,
 } from 'shared'
 import { HistoryListRow } from '../components/HistoryListRow'
 import {
@@ -135,7 +134,6 @@ export struct HistoryPage {
   @Event onOpenGallery?: (galleryId: number, seed?: NhGallerySummary) => void
   @Event onDidScroll?: (offset: number, state: ScrollState) => void
   @Local private history: ReadingHistoryState = connectReadingHistory()
-  @Local private galleryDetailTransition: GalleryDetailTransitionState = connectGalleryDetailTransition()
   private transitionScope: string = GalleryDetailTransitionCoordinator.allocateScope('history')
   @Local private pinnedDayHeader: HistoryPinnedDayHeaderState = connectHistoryPinnedDayHeader()
   private requestGeneration: number = 0
@@ -228,6 +226,10 @@ export struct HistoryPage {
     )
   }
 
+  private galleryDetailSourceSurfaceId(): string {
+    return GalleryDetailTransitionCoordinator.sourceSurfaceId(this.transitionScope, 'history')
+  }
+
   private openGalleryDetail(item: NhReadingHistoryItem): void {
     if (!this.onOpenGallery || item.galleryId <= 0) {
       return
@@ -246,6 +248,7 @@ export struct HistoryPage {
       item.thumbnailUrl,
       0,
       ThemeTokens.THUMB_RADIUS,
+      this.galleryDetailSourceSurfaceId(),
     )
   }
 
@@ -788,14 +791,13 @@ export struct HistoryPage {
       ListItemGroup({ header: this.HistoryDayHeader(group), space: 0 }) {
         LazyForEach(group.dataSource, (item: NhReadingHistoryItem): void => {
           ListItem() {
-            this.HistoryEntry(item)
+            GalleryDetailTransitionSourceSlot({
+              sourceComponentId: this.galleryDetailSourceId(item),
+            }) {
+              this.HistoryEntry(item)
+            }
           }
           .id(this.galleryDetailSourceId(item))
-          .visibility(
-            this.galleryDetailTransition.sourceComponentId === this.galleryDetailSourceId(item)
-              ? Visibility.Hidden
-              : Visibility.Visible,
-          )
           .swipeAction({
             end: () => {
               this.HistoryDeleteSwipe(item)
@@ -905,6 +907,7 @@ export struct HistoryPage {
     }
     .width('100%')
     .height('100%')
+    .id(this.galleryDetailSourceSurfaceId())
     .backgroundColor(ThemeTokens.SURFACE)
   }
 }

@@ -60,6 +60,10 @@ export struct GalleryRelatedCarousel {
     )
   }
 
+  private relatedSourceSurfaceId(): string {
+    return GalleryDetailTransitionCoordinator.sourceSurfaceId(this.transitionScope, 'related')
+  }
+
   private openRelatedGallery(gallery: NhGallerySummary): void {
     if (!this.onOpen) {
       return
@@ -77,6 +81,7 @@ export struct GalleryRelatedCarousel {
       gallery.thumbnailUrl,
       ThemeTokens.RADIUS_MD,
       0,
+      this.relatedSourceSurfaceId(),
     )
   }
 
@@ -187,6 +192,7 @@ export struct GalleryRelatedCarousel {
       }
       .width(horizontalRailViewportWidth())
       .height(RELATED_CAROUSEL_HEIGHT)
+      .id(this.relatedSourceSurfaceId())
       .listDirection(Axis.Horizontal)
       .scrollBar(BarState.Off)
       .margin({

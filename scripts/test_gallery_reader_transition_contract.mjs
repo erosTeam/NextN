@@ -32,6 +32,9 @@ const cardFiles = [
 ]
 const gridCard = read('shared/src/main/ets/components/GalleryGridCard.ets')
 const galleryThumbnail = read('shared/src/main/ets/components/GalleryThumbnail.ets')
+const galleryTransitionSourceSlot = read(
+  'shared/src/main/ets/components/GalleryDetailTransitionSourceSlot.ets',
+)
 ok('all six browse presentations expose the real cover node to the transition',
   cardFiles.every((file) => {
     const source = read(file)
@@ -43,7 +46,11 @@ ok('all six browse presentations expose the real cover node to the transition',
     /@Param surfaceId: string = ''/.test(galleryThumbnail) &&
     /\.id\(this\.surfaceId\)/.test(galleryThumbnail) &&
     /GalleryDetailTransitionCoordinator\.open/.test(collection) &&
-    /\.visibility\(this\.galleryVisibility\(gallery\)\)/.test(collection))
+    (collection.match(/GalleryDetailTransitionSourceSlot\(\{/g) ?? []).length === 3 &&
+    /sourceComponentId: this\.galleryDetailSourceId\(gallery\)/.test(collection) &&
+    /this\.transitionState\.sourceComponentId === this\.sourceComponentId/.test(
+      galleryTransitionSourceSlot,
+    ))
 
 const history = read('feature/user/src/main/ets/pages/HistoryPage.ets')
 ok('history uses the same card and cover ownership contract',
@@ -136,14 +143,18 @@ ok('Reader return tracks the current page and captures that page for the visible
   /readerThumbnailTransition\.updateCurrent/.test(reader) &&
     /readerPageSnapshotId\(pageIndex\)/.test(reader) &&
     /sourceId\(\s*transition\.sourceScope,\s*currentIndex/.test(readerCoordinator))
-ok('Reader normal close waits for stable target layout without requiring its coordinates to change',
+ok('Reader fullscreen close waits for the retained target to settle without requiring it to move',
   /normalCloseReadyFor\(galleryId: string\)/.test(readerState) &&
     /this\.phase === ReaderThumbnailTransitionPhase\.OPEN/.test(readerState) &&
-    /statusBarLayoutReady && currentLayoutKey\.length > 0/.test(readerCoordinator) &&
+    /statusBarLayoutReady/.test(readerCoordinator) &&
+    /currentStableFrames >= READER_TARGET_LAYOUT_STABLE_FRAMES/.test(readerCoordinator) &&
+    /waitForTargetLayoutCommit\(/.test(readerCoordinator) &&
     !/requireLayoutChange/.test(readerCoordinator) &&
     !/initialLayoutKey/.test(readerCoordinator) &&
     /prepareReaderDestinationClose\(galleryId: number\)/.test(index) &&
-    /normalCloseReadyFor\(readerGalleryId\)/.test(index))
+    /normalCloseReadyFor\(readerGalleryId\)/.test(index) &&
+    /requireVisibleStatusBarInset/.test(index) &&
+    !/requireTargetLayoutChange/.test(index))
 
 const loadReaderBlock = reader.slice(reader.indexOf('private async loadReader()'), reader.indexOf('private visiblePageText'))
 const closeBlock = reader.slice(reader.indexOf('private requestReaderClose()'), reader.indexOf('private isCurrentRequest'))

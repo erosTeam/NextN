@@ -9858,6 +9858,77 @@ authorize an edit, replace a device comparison, or define product completion.
   at `1320x2120` on 237. Rotation, partial-visibility edge cases and the separate fullscreen endpoint-measurement
   lane remain outside this result.
 
+## ACCEPTED — Stack-opened Gallery migration to Split Back continuity — 2026-08-31
+
+- **Why newly actionable:** the user requires the multilevel/rotation transition matrix to include tablet layout
+  enabled as well as disabled. On the current NextN HAP, 103 with `仅横屏` and 237 with `自动` both changed from
+  portrait Stack to landscape Split. In both custom-transition modes the final hardware Back left NextN and
+  exposed the previously foregrounded app; 197 with tablet layout `关闭` remained Stack and returned inside NextN.
+- **Source-proven cause:** a Gallery opened in Stack owns a non-empty route transition token and keeps that token
+  after Auto resolves the same root `NavPathStack` to Split. `handleGalleryDetailBackPressed()` currently rejects
+  every Split Back before popping, while `galleryDetailNavTransition()` also correctly declines a custom flight in
+  Split. The unconsumed Back therefore reaches the application boundary instead of removing the migrated Gallery
+  route. A Gallery opened directly in Split has no transition token and is a distinct existing first-secondary case.
+- **Whole parent-tree boundary:** root HDS Navigation mode change -> route-owned Gallery Detail destination ->
+  hardware/title Back -> same root `NavPathStack` and retained transition context. Gallery content/layout, Split
+  list/detail geometry, ordinary first-secondary semantics, transition curves, card snapshots and Reader remain
+  unchanged.
+- **Exact correction:** only when Split is physical and the current Gallery still owns a non-empty Stack-origin
+  transition token, consume Back, release that exact token context and pop the route through its existing
+  `NavPathStack`. Keep the first-secondary Back hidden only for tokenless Gallery routes opened directly in Split;
+  a migrated Stack route remains visibly returnable. The first 103 candidate proved that route correction but also
+  exposed a separate retained-size defect: after portrait Stack -> landscape Split, the 2560-wide root still rendered
+  the detail only through x=1600 because `coverExpandSurfaceActive()` remained true in settled `OPEN` and kept HDS
+  bound to the portrait transition `rootWidth`. Match the accepted lifecycle boundary by applying that temporary
+  root size/offset only during `OPENING` or `CLOSING`; settled detail returns to the live container size.
+- **Disproof and verification plan:** if the route token is empty after rotation, or an explicit Split `pop()` still
+  leaves NextN, this cause is disproved. A settled landscape Split detail whose `NavDestination` does not reach the
+  live root's right edge disproves the retained-size correction. Build and install the scoped candidate, then on 103,
+  197 and 237 test tablet layout disabled and enabled with both `一镜到底` and `封面展开`, the six-level Gallery/Search
+  chain, and mixed portrait/landscape returns. Each uninterrupted recording must retain NextN foreground identity,
+  unwind every route to the declared parent, fill the live Stack/Split surface, show no wrong-source flight, and be
+  reviewed across every encoded frame.
+- **Accepted evidence:** candidate `c6a9c4aa+working-tree+hap-sha256-c6061bc0dc42` completed the declared six-level
+  `A list -> B detail -> C search -> D detail -> E search -> F detail` unwind on exact authorized targets 197, 103
+  and 237. Both custom modes were recorded with tablet layout disabled and `仅横屏`, including mixed rotations. All
+  12 uninterrupted recordings were decoded to 10,919 frames and reviewed in order. Every route returned to its
+  declared parent; Stack detail returns retained their custom transition, while a Stack-opened route that migrated
+  to physical Split popped only its detail pane and ended at the retained list plus the native empty-detail
+  placeholder. NextN stayed foreground and no wrong Gallery, white flash or application exit was observed.
+
+## ACCEPTED — rotated Gallery POP must use the live destination geometry — 2026-09-01
+
+- **Why newly actionable:** the 197 Cover Expand six-level run reached the final `B -> A` Back after rotating from
+  portrait to landscape. In the uninterrupted 989-frame recording, frames 957–963 kept the old two-column,
+  portrait-constrained list and a large centered proxy; frame 964 then jumped to the real five-column landscape
+  list with the source card in column two. The earlier custom returns before that final rotation remained custom.
+- **Source-proven cause:** the route-owned context retained the click-time root/card/cover geometry and source
+  snapshot. NextN activated that context at POP but never let the destination collection render under the current
+  constraints before measuring it. NextE's accepted `5041fd92` lifecycle instead exposes the retained source behind
+  an opaque detail surface, waits for rendered-frame boundaries, measures and recaptures the current card/cover and
+  source surface, completes Navigation POP underneath an independent Cover Expand snapshot, then holds the final
+  overlay across the live-list handoff.
+- **Whole parent-tree boundary:** route-local Gallery transition context -> current root Navigation viewport ->
+  retained collection surface and exact source item -> POP overlay/handoff. Gallery data order, scroller position,
+  card component geometry, transition duration/curves, Reader transitions and system-only routes remain unchanged.
+- **Exact correction:** refresh only when the live root dimensions differ from the retained transition root. Use
+  the current rendered card/cover rectangles and PixelMaps; never rotate or infer cached coordinates. Subscribe to
+  source visibility inside the virtualized item, keep the real source hidden while the proxy owns its pixels, and
+  for Cover Expand finish Navigation POP below an opaque current-detail snapshot before animating to the new target.
+  Reset the route token only after a rendered-frame post-POP handoff.
+- **Disproof and verification plan:** first repeat the same six-level 197 mixed-orientation chain at normal speed.
+  The candidate fails if the final proxy does not continuously land on the current five-column source, if any old
+  portrait list frame is exposed, if the destination reflows after landing, or if any parent return falls back to
+  the system slide. Only after that narrow run passes, execute 197/237/103 with tablet layout disabled and enabled,
+  both custom transition modes, mixed rotations and full encoded-frame review.
+- **Accepted evidence:** the four-run matrix passed independently on each of 197, 103 and 237. Frame totals were
+  197: `1196/1151/1147/1356`, 103: `517/509/521/561`, and 237: `969/981/990/1021` for Cover-off,
+  Cover-landscape, Seamless-off and Seamless-landscape respectively. Critical original frames were inspected around
+  each `F -> E`, `D -> C` and `B -> A` return in addition to the all-frame contact sheets. Stack returns used the
+  live rotated list/card geometry without exposing the stale portrait list or reflowing after landing. In physical
+  Split, the established contract deliberately declines the custom card flight: the live list remains visible while
+  the right detail pane exits to `选择一项以查看详情`; that native Split close is not a system-fallback regression.
+
 ## ACCEPTED — Reader mode-owned settings and automatic page-border cropping — 2026-09-01
 
 - **Why newly actionable:** the user approved the current NextE implementation and explicitly requested the same

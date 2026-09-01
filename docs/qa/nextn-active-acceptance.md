@@ -5527,3 +5527,25 @@ permitted in this repository.
   `.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/reader-mode-crop/`, especially
   `reader-sheet-continuous-20260901T033`, `bug-bite-independent-edge-on-20260901T028`,
   `bug-bite-independent-edge-off-clean-20260901T030`, and `cold-restored-preferences-20260901T036`.
+
+## Gallery multilevel rotation and Split-return matrix — accepted on 197/103/237 — 2026-09-01
+
+- The exact installed candidate was `c6a9c4aa+working-tree+hap-sha256-c6061bc0dc42`. On each authorized target
+  197, 103 and 237, both `封面展开` and `一镜到底` ran with tablet layout disabled and `仅横屏`. Every run built the
+  six-level route chain `A list -> B detail -> C search -> D detail -> E search -> F detail`, mixed portrait and
+  landscape states, then continuously recorded the full `F -> E -> D -> C -> B -> A` unwind at normal speed.
+- The 12 accepted recordings decoded to 10,919 frames: 197 contributed `1196/1151/1147/1356`, 103 contributed
+  `517/509/521/561`, and 237 contributed `969/981/990/1021` frames for Cover-off, Cover-landscape, Seamless-off and
+  Seamless-landscape. All decoded frames were reviewed chronologically through 309 contact sheets; original frames
+  were also inspected around the critical custom returns and the final rotation/Split handoffs.
+- Every route returned to its declared parent. Stack detail returns retained the selected custom transition and used
+  the live post-rotation list/card target; no stale portrait layout, wrong Gallery, first-frame lateral jump, white
+  flash, post-landing reflow or default-slide replacement was observed. Search-to-parent-detail routes retained their
+  ordinary route transition. When a Stack-opened detail migrated to physical Split, the live list remained visible
+  while the right detail pane closed to `选择一项以查看详情`, which is the established native Split contract rather
+  than a missing custom flight. NextN remained foreground throughout.
+- Raw recordings, decoded frames, contact sheets, semantic layouts and manifests are retained under the three
+  device-specific `.hvigor/outputs/.../gallery-transition-full-matrix/` roots and excluded from Git. A later commit
+  `3644216` changed Reader crop/settings code but not the Gallery list-detail transition implementation; the current
+  combined dirty tree still passes the Gallery/Reader transition contract, `git diff --check`, a zero-match V1
+  decorator inventory and the signed build. Device acceptance above remains tied to the exact installed candidate.

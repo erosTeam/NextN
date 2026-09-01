@@ -2336,15 +2336,31 @@ struct Index {
   }
 
   private coverExpandSurfaceActive(): boolean {
-    return this.galleryDetailTransition.eligible && this.galleryDetailTransition.isCoverExpand()
+    return this.galleryDetailTransition.eligible &&
+      this.galleryDetailTransition.isCoverExpand() &&
+      !this.galleryDetailTransition.independentPopSurfaceActive &&
+      (this.galleryDetailTransition.phase === GalleryDetailTransitionPhase.OPENING ||
+        this.galleryDetailTransition.phase === GalleryDetailTransitionPhase.CLOSING)
   }
 
   private handleGalleryDetailBackPressed(route: GalleryRouteParams): boolean {
     const alreadyActive: boolean = this.galleryDetailTransition.eligible &&
       route.transitionToken === this.galleryDetailTransition.routeToken
+    // A Gallery opened in Stack keeps its transition token when Auto later
+    // resolves to Split. HDS treats the sole secondary destination as a root,
+    // so consume Back explicitly for that migrated route instead of allowing
+    // the UIAbility to leave the foreground. A Gallery opened in Split has no
+    // token and retains the existing first-secondary behavior.
+    if (this.layoutSafeArea.rootNavigationSplit) {
+      if (route.transitionToken.length === 0) {
+        return false
+      }
+      GalleryDetailTransitionCoordinator.discardRouteTransition(route.transitionToken)
+      this.stack.pop()
+      return true
+    }
     if (
       this.coverPopDispatching ||
-      this.layoutSafeArea.rootNavigationSplit ||
       route.transitionToken.length === 0 ||
       !GalleryDetailTransitionCoordinator.activateRouteTransition(route.transitionToken) ||
       !this.galleryDetailTransition.eligible ||
@@ -2460,7 +2476,10 @@ struct Index {
       this.galleryDetailTransition.eligible && !this.galleryDetailTransition.chromeVisible,
       false,
     )
-    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_GALLERY))
+    .hideBackButton(
+      this.rootDestinationBackButtonHidden(ROUTE_GALLERY) &&
+        this.galleryParams(param).transitionToken.length === 0,
+    )
     .onBackPressed((): boolean => this.handleGalleryDetailBackPressed(this.galleryParams(param)))
     .backgroundColor(this.galleryDetailTransition.eligible ? Color.Transparent : ThemeTokens.SURFACE)
     .scale({
@@ -3265,7 +3284,24 @@ struct Index {
     .borderRadius(this.galleryDetailTransition.sourceCardRadius)
     .clip(true)
     .opacity(this.galleryDetailTransition.cardOpacity)
+    .zIndex(2)
     .hitTestBehavior(HitTestMode.None)
+  }
+
+  @Builder
+  private GalleryDetailSourceSurfaceSnapshot() {
+    if (this.galleryDetailTransition.sourceSnapshot !== undefined) {
+      Image(this.galleryDetailTransition.sourceSnapshot)
+        .width(this.galleryDetailTransition.sourceSnapshotWidth)
+        .height(this.galleryDetailTransition.sourceSnapshotHeight)
+        .objectFit(ImageFit.Fill)
+        .syncLoad(true)
+        .position({
+          x: this.galleryDetailTransition.sourceSnapshotX,
+          y: this.galleryDetailTransition.sourceSnapshotY,
+        })
+        .hitTestBehavior(HitTestMode.None)
+    }
   }
 
   private galleryDetailNavTransition(
@@ -3340,48 +3376,122 @@ struct Index {
           }
           return
         }
-        if (this.galleryDetailTransition.isCoverExpand() && !this.syncGalleryDetailCoverTarget()) {
-          DiagnosticLogger.info(
-            'gallery-detail-transition',
-            'cover_pop_fallback',
-            `gallery=${this.galleryDetailTransition.galleryId} reason=target_not_visible`,
-          )
-          this.galleryDetailTransition.useCoverFadePopFallback()
+        const animatePopSurface: (onFinish: () => void) => void = (onFinish: () => void): void => {
+          if (transitionSerial !== this.galleryDetailTransitionSerial) {
+            return
+          }
+          if (this.galleryDetailTransition.isCoverExpand() && !this.syncGalleryDetailCoverTarget()) {
+            DiagnosticLogger.info(
+              'gallery-detail-transition',
+              'cover_pop_fallback',
+              `gallery=${this.galleryDetailTransition.galleryId} reason=target_not_visible`,
+            )
+            this.galleryDetailTransition.useCoverFadePopFallback()
+          }
+          const coverExpand: boolean = this.galleryDetailTransition.isCoverExpand()
+          this.getUIContext().animateTo({
+            duration: ThemeTokens.ANIM_DURATION,
+            curve: GALLERY_DETAIL_CLOSE_CURVE,
+            onFinish: (): void => {
+              if (transitionSerial === this.galleryDetailTransitionSerial) {
+                onFinish()
+              }
+            },
+          }, (): void => {
+            this.galleryDetailTransition.collapseWindow(ThemeTokens.RADIUS_CARD)
+          })
+          if (!coverExpand) {
+            this.getUIContext().animateTo({
+              delay: ThemeTokens.ANIM_DURATION * GALLERY_DETAIL_CLOSE_CARD_ENTRY_START_TIME,
+              duration: ThemeTokens.ANIM_DURATION * (
+                GALLERY_DETAIL_CLOSE_CARD_ENTRY_END_TIME - GALLERY_DETAIL_CLOSE_CARD_ENTRY_START_TIME
+              ),
+              curve: Curve.Linear,
+            }, (): void => {
+              this.galleryDetailTransition.crossfadeToCard()
+            })
+          } else {
+            this.getUIContext().animateTo({
+              delay: ThemeTokens.ANIM_DURATION * GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_START_TIME,
+              duration: ThemeTokens.ANIM_DURATION * (
+                GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_END_TIME -
+                  GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_START_TIME
+              ),
+              curve: Curve.Linear,
+            }, (): void => {
+              this.galleryDetailTransition.revealSourceCard()
+            })
+          }
         }
-        const coverExpand: boolean = this.galleryDetailTransition.isCoverExpand()
-        this.galleryDetailTransition.beginPop()
-        this.getUIContext().animateTo({
-          duration: ThemeTokens.ANIM_DURATION,
-          curve: GALLERY_DETAIL_CLOSE_CURVE,
-          onFinish: (): void => {
-            if (transitionSerial === this.galleryDetailTransitionSerial) {
+        const startPopAnimation: () => void = (): void => {
+          this.galleryDetailTransition.beginPop()
+          animatePopSurface((): void => {
+            proxy.finishTransition()
+          })
+        }
+        const startIndependentPopAnimation: () => void = (): void => {
+          this.galleryDetailTransition.beginPop()
+          GalleryDetailTransitionCoordinator.finishNavigationBeforeIndependentPop(
+            this.getUIContext(),
+            (): void => {
               proxy.finishTransition()
-            }
-          },
-        }, (): void => {
-          this.galleryDetailTransition.collapseWindow(ThemeTokens.RADIUS_CARD)
-        })
-        if (!coverExpand) {
-          this.getUIContext().animateTo({
-            delay: ThemeTokens.ANIM_DURATION * GALLERY_DETAIL_CLOSE_CARD_ENTRY_START_TIME,
-            duration: ThemeTokens.ANIM_DURATION * (
-              GALLERY_DETAIL_CLOSE_CARD_ENTRY_END_TIME - GALLERY_DETAIL_CLOSE_CARD_ENTRY_START_TIME
-            ),
-            curve: Curve.Linear,
-          }, (): void => {
-            this.galleryDetailTransition.crossfadeToCard()
-          })
-        } else {
-          this.getUIContext().animateTo({
-            delay: ThemeTokens.ANIM_DURATION * GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_START_TIME,
-            duration: ThemeTokens.ANIM_DURATION * (
-              GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_END_TIME - GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_START_TIME
-            ),
-            curve: Curve.Linear,
-          }, (): void => {
-            this.galleryDetailTransition.revealSourceCard()
-          })
+            },
+            (): void => {
+              if (transitionSerial !== this.galleryDetailTransitionSerial) {
+                return
+              }
+              animatePopSurface((): void => {
+                const handoffStarted: boolean =
+                  GalleryDetailTransitionCoordinator.finishPostPopHandoff(
+                    this.getUIContext(),
+                    (): void => {
+                      if (transitionSerial === this.galleryDetailTransitionSerial) {
+                        GalleryDetailTransitionCoordinator.discardRouteTransition(fromTransitionToken)
+                      }
+                    },
+                  )
+                if (!handoffStarted) {
+                  GalleryDetailTransitionCoordinator.discardRouteTransition(fromTransitionToken)
+                }
+              })
+            },
+          )
         }
+        const sourceGeometryNeedsRefresh: boolean =
+          GalleryDetailTransitionCoordinator.sourceGeometryNeedsRefresh(this.getUIContext())
+        if (sourceGeometryNeedsRefresh) {
+          const useIndependentPopSurface: boolean = this.galleryDetailTransition.isCoverExpand()
+          if (
+            useIndependentPopSurface &&
+            !GalleryDetailTransitionCoordinator.prepareIndependentPopSurface(this.getUIContext())
+          ) {
+            GalleryDetailTransitionCoordinator.discardRouteTransition(fromTransitionToken)
+            proxy.finishTransition()
+            return
+          }
+          // The destination list is now the real POP target. Measure it only after its current
+          // orientation constraints have rendered; entry-time geometry is deliberately discarded.
+          GalleryDetailTransitionCoordinator.refreshSourceGeometryForPop(
+            this.getUIContext(),
+            (success: boolean): void => {
+              if (transitionSerial !== this.galleryDetailTransitionSerial) {
+                return
+              }
+              if (!success) {
+                GalleryDetailTransitionCoordinator.discardRouteTransition(fromTransitionToken)
+                proxy.finishTransition()
+                return
+              }
+              if (useIndependentPopSurface) {
+                startIndependentPopAnimation()
+              } else {
+                startPopAnimation()
+              }
+            },
+          )
+          return
+        }
+        startPopAnimation()
       },
       onTransitionEnd: (success: boolean): void => {
         if (transitionSerial !== this.galleryDetailTransitionSerial) {
@@ -3391,6 +3501,23 @@ struct Index {
           this.galleryDetailTransition.markPushSettled(success)
           if (!success) {
             GalleryDetailTransitionCoordinator.discardRouteTransition(toTransitionToken)
+          }
+        } else if (this.galleryDetailTransition.independentPopSurfaceActive) {
+          if (!success) {
+            GalleryDetailTransitionCoordinator.discardRouteTransition(fromTransitionToken)
+          }
+        } else if (success && this.galleryDetailTransition.isCoverExpand()) {
+          const handoffStarted: boolean = GalleryDetailTransitionCoordinator.finishPostPopHandoff(
+            this.getUIContext(),
+            (): void => {
+              if (transitionSerial === this.galleryDetailTransitionSerial) {
+                GalleryDetailTransitionCoordinator.discardRouteTransition(fromTransitionToken)
+              }
+            },
+          )
+          if (!handoffStarted) {
+            this.galleryDetailTransition.markPopSettled(true)
+            GalleryDetailTransitionCoordinator.discardRouteTransition(fromTransitionToken)
           }
         } else {
           this.galleryDetailTransition.markPopSettled(success)
@@ -3418,14 +3545,16 @@ struct Index {
     Stack() {
       if (
         this.galleryDetailTransition.eligible &&
-        this.galleryDetailTransition.sourceSnapshot !== undefined
+        this.galleryDetailTransition.sourceSnapshot !== undefined &&
+        !this.galleryDetailTransition.independentPopSurfaceActive &&
+        (
+          !this.galleryDetailTransition.isCoverExpand() ||
+          this.galleryDetailTransition.phase === GalleryDetailTransitionPhase.OPENING ||
+          this.galleryDetailTransition.phase === GalleryDetailTransitionPhase.CLOSING ||
+          this.galleryDetailTransition.phase === GalleryDetailTransitionPhase.POST_POP_HANDOFF
+        )
       ) {
-        Image(this.galleryDetailTransition.sourceSnapshot)
-          .width('100%')
-          .height('100%')
-          .objectFit(ImageFit.Fill)
-          .syncLoad(true)
-          .hitTestBehavior(HitTestMode.None)
+        this.GalleryDetailSourceSurfaceSnapshot()
       }
       Stack() {
         HdsNavigation(this.stack) {
@@ -3636,6 +3765,33 @@ struct Index {
       .borderRadius(this.coverExpandSurfaceActive() ? this.galleryDetailTransition.radius : 0)
       .clip(this.coverExpandSurfaceActive())
 
+      if (this.galleryDetailTransition.independentPopSurfaceVisible()) {
+        Stack({ alignContent: Alignment.TopStart }) {
+          Image(this.galleryDetailTransition.detailSnapshot)
+            .width(this.galleryDetailTransition.rootWidth)
+            .height(this.galleryDetailTransition.rootHeight)
+            .objectFit(ImageFit.Fill)
+            .syncLoad(true)
+            .position({
+              x: -this.galleryDetailTransition.clipX,
+              y: -this.galleryDetailTransition.clipY,
+            })
+            .hitTestBehavior(HitTestMode.None)
+        }
+        .width(Math.max(1, this.galleryDetailTransition.clipWidth))
+        .height(Math.max(1, this.galleryDetailTransition.clipHeight))
+        .position({
+          x: this.galleryDetailTransition.clipX,
+          y: this.galleryDetailTransition.clipY,
+        })
+        .backgroundColor(ThemeTokens.SURFACE)
+        .shadow(ShadowStyle.OUTER_DEFAULT_MD)
+        .borderRadius(this.galleryDetailTransition.radius)
+        .clip(true)
+        .zIndex(1)
+        .hitTestBehavior(HitTestMode.None)
+      }
+
       if (this.galleryDetailTransition.detailSnapshotVisible()) {
         Stack({ alignContent: Alignment.TopStart }) {
           this.GalleryDetailSnapshotRemainder()
@@ -3688,6 +3844,7 @@ struct Index {
             .borderRadius(this.galleryDetailTransition.sourceCardRadius)
             .clip(true)
             .opacity(this.galleryDetailTransition.cardOpacity)
+            .zIndex(2)
             .hitTestBehavior(HitTestMode.None)
         } else {
           this.GalleryDetailSourceCardRemainder()
@@ -3738,7 +3895,7 @@ struct Index {
         })
         .borderRadius(this.galleryDetailTransition.radius)
         .clip(true)
-        .zIndex(2)
+        .zIndex(3)
         .hitTestBehavior(HitTestMode.None)
       }
       if (
@@ -3757,7 +3914,7 @@ struct Index {
           .borderRadius(this.galleryDetailTransition.sourceCoverRadius)
           .clip(true)
           .opacity(this.galleryDetailTransition.fallbackCoverOpacity)
-          .zIndex(2)
+          .zIndex(3)
           .hitTestBehavior(HitTestMode.None)
       }
 
