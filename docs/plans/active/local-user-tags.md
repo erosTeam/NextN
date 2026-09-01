@@ -15,7 +15,9 @@
 - 为单个 NH 标签设置显式屏蔽（硬过滤）。
 - 设置全局标签过滤阈值，以图库命中标签的**权重总和**执行软过滤。
 - 显式屏蔽与权重软过滤并存；权重不是显式屏蔽的另一种写法。
-- 搜索条件提供“忽略本地标签过滤”开关，用于临时绕过本地 Hidden 和权重软过滤。
+- 全局搜索条件提供“忽略本地标签过滤”开关，用于绕过本地 Hidden 和权重软过滤；
+  开关本身与搜索语言、排序同级持久化。
+- 自定义 Search Subtab 的编辑条件页面提供同一开关，并按 Subtab 分别持久化。
 - 在图库列表的标签展示中，自定义颜色标签排在未设置颜色的标签前面。
 - 本地用户标签和阈值通过 WebDAV 跨设备同步。
 - 复用 NextE 已有的 My Tags 管理页、编辑 Sheet、颜色选择器和标签着色模式，
@@ -26,7 +28,6 @@
 - 不增加“临时显示本页隐藏项”。
 - 不增加“本页结果均被本地标签规则隐藏”之类的特殊空态。
 - 不增加 EH 的“本页过滤了多少项”提示。
-- 不把“忽略本地标签过滤”做成持久化的全局禁用项。
 - 不改变 NH 服务器黑名单现有的刷新、缓存和过滤语义。
 
 “自定义颜色标签优先”只作用于图库**列表卡片**中的标签展示。详情页继续保持
@@ -74,7 +75,10 @@ NextE 的 `EhUsertag`、`MyTagsPage`、`GalleryTagsCard`、`UserTagStore` 和
 | `shared/src/main/ets/network/NhApiClient.ets` | 列表解析 `tag_ids`，再批量调用 `/api/v2/tags/ids` 丰富标签 | 不需要为本地过滤增加网络请求 |
 | `NhCloudBlacklistService` | NH 账号云端黑名单按相同 tag ID 空间过滤 | 保持独立的上游硬过滤来源 |
 | `ContentFilterService.filterGalleries()` | Home、Popular、搜索、收藏、相关图库共用本地过滤入口 | 本地标签硬/软过滤应并入同一结果链 |
-| `SearchPage` | 持有未过滤的 `rawGalleries`、已展示的 `galleries` 和搜索条件 Sheet | 临时忽略开关可在不重新请求网络的情况下重新应用当前结果 |
+| `NhCatalogPreferences` | `searchLanguage`、`searchSort` 由 `catalog_preferences` 持久化，并进入备份/WebDAV `settings-tables` | 全局搜索忽略开关应进入同一所有权链 |
+| `SearchPage` | 持有未过滤的 `rawGalleries`、已展示的 `galleries` 和搜索条件 Sheet | 忽略开关变化可在不重新请求网络的情况下重新应用当前结果 |
+| `NhHomeSubtabProfile` / `HomeSubtabEditPage` | 自定义 Search Subtab 持有 query、language、sort，并可独立编辑 | Subtab 忽略开关应成为同级 profile 字段和编辑条件 |
+| `HomeSearchSubtabPage` | 按 profile 请求、缓存并从 `rawGalleries` 应用过滤 | 按各 Subtab 的忽略开关跳过本地用户标签过滤 |
 | `GalleryTagStrip` | 普通列表最多显示 10 个可见标签，按输入顺序先到先得 | 颜色优先排序必须发生在 10 个标签截断之前 |
 | `GalleryWaterfallCard` | 最多读取 8 个标签，以索引 `0/2/4/6`、`1/3/5/7` 组成两行 | 先生成统一有序数组，再按现有索引布局显示 |
 | `GalleryWaterfallCompactCard` | 最多读取 8 个标签，单行横向显示 | 与普通瀑布流共享同一排序合同 |
@@ -128,7 +132,36 @@ deletedAt: number
 第一版使用 `scopeKey='global'`：这是用户设备间共享的本地偏好，不绑定 NH 登录状态；
 表结构保留 scope 是为了将来可以增加账号配置，而不需要重做同步主键。
 
-### 4.3 不属于本地用户标签的数据
+### 4.3 搜索条件的持久化所有者
+
+“忽略本地标签过滤”不是本地用户标签规则本身，不能塞进 `local-user-tags` 数据集。
+它按现有搜索条件的两级所有权保存：
+
+```text
+NhCatalogPreferences.ignoreLocalUserTagFiltering: boolean = false
+NhHomeSubtabProfile.ignoreLocalUserTagFiltering: boolean = false
+```
+
+- 全局 Search 默认值由 `catalog_preferences` 保存，建议键名为
+  `search_ignore_local_user_tag_filtering`；模型、State、Service 和 Repository 与
+  `searchLanguage`、`searchSort` 使用同一读写链。
+- Repository 沿用设置表布尔值约定写入 `'1'/'0'`，读取时接受现有规范化形式；新增
+  `CatalogPreferencesService.setSearchIgnoreLocalUserTagFiltering(...)` 作为唯一 UI 写入口。
+- `CatalogPreferencesState.searchRevision` 必须把该字段纳入变化判定，使 Search 页面和
+  设置页同时得到更新。
+- 每个自定义 Search Subtab 在 `home_subtabs` 中保存自己的值；该字段进入 profile 的
+  `copy()`、内容 revision、RDB 读写、备份和 WebDAV 记录。
+- `home_subtabs` 新列使用非空布尔整数并以 `0` 为迁移默认值；
+  `HomeSubtabEditParams` 增加同级 seed 字段，以便从当前 Search 创建时完整复制条件。
+- 内置 Latest/Popular Subtab 固定为 `false`；其身份规范化必须清除旧数据中意外携带的值。
+- 从当前 Search 创建 Subtab 时，像 query、language、sort 一样复制当前忽略开关。
+- 已有 Subtab 不跟随之后的全局 Search 默认值变化；它使用自己保存的快照。
+- 旧数据库、旧备份和旧同步记录缺少字段时规范化为 `false`。
+
+这里“临时禁用”描述的是用户可以用搜索条件暂时绕过规则，而不是开关只在一次请求或
+一次页面会话内保存。
+
+### 4.4 不属于本地用户标签的数据
 
 - NH `/api/v2/blacklist/ids` 快照仍是账号派生缓存，不复制为本地规则。
 - `nh_tag_catalog` 和 `tag_translations` 仍是可再生成缓存，不进入用户标签同步。
@@ -216,23 +249,43 @@ return false
 当前已打开的 Gallery Detail 和 Reader 不因随后修改标签规则而自动退出。规则只影响
 后续列表集合的可见性。
 
-### 5.4 搜索中的临时忽略开关
+### 5.4 全局搜索中的持久化忽略开关
 
 完整 Search 页面在搜索条件 Sheet 中新增一个 Switch 行：
 
-- 标题使用“忽略本地标签过滤”，默认关闭。
-- 开启后，当前 `SearchPage` 实例中的本次及后续搜索结果跳过本地用户标签的 Hidden
-  和权重阈值过滤；关闭后恢复两种过滤。
+- 标题使用“忽略本地标签过滤”；新安装或旧数据缺少该字段时默认关闭。
+- Switch 直接绑定 `CatalogPreferencesState.ignoreLocalUserTagFiltering`，修改后通过
+  `CatalogPreferencesService` 写入 `catalog_preferences`，不能由 `SearchPage @Local`
+  单独持有。
+- 开启后，当前及后续全局 Search 结果跳过本地用户标签的 Hidden 和权重阈值过滤；
+  关闭后恢复两种过滤。
 - 开关变化立即从已保留的 `rawGalleries` 重新生成 `galleries`，不重复发起网络搜索。
 - 刷新、加载下一页和跳页都沿用当前开关值，避免同一搜索结果混用两套过滤条件。
-- 开关只由 `SearchPage` 的路由会话持有；关闭该搜索页面后恢复默认关闭。
-- 不写入搜索关键词、搜索历史、快捷搜索、Home 子标签、全局设置、备份或 WebDAV。
-- 不作用于 Home、Popular、Favorites 或详情页相关图库；这些入口继续执行本地标签过滤。
+- 退出并重新进入 Search、进程冷启动、备份恢复和 WebDAV 同步后都恢复已保存值。
+- 搜索历史和快捷搜索继续只保存 query；点击它们时使用当前持久化的全局搜索条件，
+  与现有 language/sort 一致。
+- 不作用于内置 Home Latest/Popular、独立 Popular、Favorites 或详情页相关图库；自定义
+  Search Subtab 只读取自己的独立开关。
 - 不绕过 NH 云端黑名单和现有图库标题内容过滤；评论过滤逻辑也不受影响。
 - 不关闭标签颜色与彩色标签优先排序；两者是展示规则，不是过滤规则。
 
 搜索标题栏漏斗图标的激活状态应包含该开关。开关开启时，即使语言和排序仍为默认值，
-漏斗也保持当前已有的激活色，避免用户看不到临时过滤条件仍在生效。
+漏斗也保持当前已有的激活色，避免用户看不到忽略条件仍在生效。
+
+设置页现有 Search defaults 分组也增加同一个 Switch，与 Search 条件 Sheet 绑定同一份
+`CatalogPreferencesState`；任一入口修改后，另一入口立即反映。
+
+### 5.5 自定义 Search Subtab 中的独立开关
+
+`HomeSubtabEditPage` 的搜索条件组在 language、sort 同级增加“忽略本地标签过滤”：
+
+- 只对 `NhHomeSubtabKind.SEARCH` 的自定义 Subtab 显示和生效。
+- 新建普通 Subtab 时默认关闭；从当前 Search 创建时复制当前全局搜索开关。
+- 编辑已有 Subtab 时读写该 profile 自己的值，不读取或覆盖全局 Search 默认值。
+- `HomeSearchSubtabPage` 调用过滤链时传入 profile 的值；开关开启只跳过本地用户标签
+  Hidden/权重过滤，其他过滤和标签颜色/排序保持不变。
+- 该字段必须进入 `contentRevision()`，避免修改后继续复用旧过滤结果或旧缓存身份。
+- Home Subtab 的 RDB、备份和 WebDAV 记录都保存该字段；旧记录缺失时按 `false` 恢复。
 
 ## 6. 标签颜色与列表优先排序合同
 
@@ -297,8 +350,12 @@ visible = ordered.take(该卡片现有上限)
 - WebDAV merge、备份恢复和冷启动都走同一 `reload/reapply` 入口。
 - 规则变化后，当前已挂载的 Home、Popular、Search、Favorites 和相关图库从各自
   `rawGalleries` 重新过滤，不重新请求网络。
-- Search 调用过滤服务时显式传入页面级 `ignoreLocalUserTagFiltering`；其他入口不传或
-  传 `false`。不能为此绕过整个 `ContentFilterService`。
+- Search 调用过滤服务时传入 `CatalogPreferencesState.ignoreLocalUserTagFiltering`；
+  `HomeSearchSubtabPage` 传入当前 profile 的值；其他入口不传或传 `false`。不能为此
+  绕过整个 `ContentFilterService`。
+- `CatalogPreferencesState.searchRevision` 变化时要区分请求条件与纯本地过滤条件：
+  language/sort 变化按现有路径重新请求，只有 ignore 开关变化时只重算 `rawGalleries`，
+  不发网络请求。
 - 颜色或排序变化必须使已挂载列表卡片重新渲染；不能只更新管理页。
 - 每次成功的本地写入调用 `SyncScheduler.requestAfterLocalWrite(...)`。
 
@@ -322,8 +379,10 @@ visible = ordered.take(该卡片现有上限)
   无法绑定 NH ID 的规则。
 - 编辑 Sheet：Hidden、weight、自定义颜色/默认颜色、删除。
 - 阈值设置：在本地标签页面内提供 Tag Filtering Threshold 数字编辑项。
-- Search 条件 Sheet 增加“忽略本地标签过滤”Switch 行；它属于搜索页面临时状态，
-  不放进本地标签管理页的持久化设置。
+- Search 条件 Sheet 和设置页 Search defaults 分组增加同一个“忽略本地标签过滤”
+  Switch，绑定 `NhCatalogPreferences` 的持久化值。
+- `HomeSubtabEditPage` 的自定义搜索条件组增加同名 Switch，绑定当前 Subtab profile，
+  不绑定全局默认值。
 
 Hidden、weight 和 color 是并列字段：
 
@@ -377,10 +436,13 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 - `BackupTypes.localData` 增加可选的 local user tags 和 settings 段，旧备份缺失时不得
   清空当前本地标签。
 - `BackupLocalDataAdapter` 增加导出、预览计数、拓扑校验、事务恢复和 reapply。
+- 全局 `ignoreLocalUserTagFiltering` 作为 `catalog_preferences` 的新键，自动进入现有
+  `settingsTables` 备份和 WebDAV 数据集；不在 `local-user-tags` 中保存第二份。
+- 每个自定义 Search Subtab 的值进入 `BackupHomeSubtabEntry` 和
+  `SyncHomeSubtabRecord`，随现有 `home-subtabs` 数据集同步；旧记录缺失时取 `false`。
 - `docs/plans/active/persistence-dataset-inventory.md` 把新表登记为
   `localData + WebDAV`，并由现有反向扫描合同覆盖。
 - 标签目录、翻译缓存和 NH 黑名单快照继续排除。
-- Search 页的 `ignoreLocalUserTagFiltering` 是瞬时 UI 状态，也继续排除。
 
 ## 10. 预计代码落点
 
@@ -394,7 +456,9 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 | 过滤、求和、写入编排 | `shared/src/main/ets/services/NhLocalUserTagService.ets` |
 | ID Map 与响应信号 | `shared/src/main/ets/state/` 或 `services/` 下的 store + state |
 | 统一图库过滤 | `shared/src/main/ets/services/ContentFilterService.ets` |
-| 搜索临时忽略开关 | `feature/search/src/main/ets/pages/SearchPage.ets` 及搜索资源字符串 |
+| 全局搜索忽略偏好 | `NhCatalogPreferences.ets`、`CatalogPreferencesState.ets`、`CatalogPreferencesService.ets`、`CatalogPreferencesRepository.ets` |
+| 全局搜索开关 UI | `feature/search/src/main/ets/pages/SearchPage.ets`、`SettingsPage.ets` 及资源字符串 |
+| Subtab 独立开关 | `NhHomeSubtabProfile.ets`、`LocalDataStore.ets`、`HomeSubtabRepository.ets`、`HomeSubtabEditPage.ets`、`HomeSearchSubtabPage.ets` |
 | 列表颜色和稳定分区 | `GalleryTagStrip.ets`、两个 Waterfall 卡片和 shared helper |
 | 详情颜色 | `feature/gallery/src/main/ets/pages/GalleryDetailPage.ets` |
 | 管理页面 | `feature/settings/src/main/ets/pages/LocalUserTagsPage.ets` |
@@ -418,7 +482,10 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 
 - 启动恢复、写入串行化、revision、当前列表重过滤。
 - 接入现有 `ContentFilterService.filterGalleries()` 页面集合。
-- 为过滤调用增加窄作用域选项；Search 可跳过本地用户标签过滤，其他调用方保持默认行为。
+- 扩展 `catalog_preferences` 全局搜索默认值和 `home_subtabs` profile 字段，并完成旧数据
+  默认 `false` 的迁移/规范化。
+- 为过滤调用增加窄作用域选项；全局 Search 和自定义 Search Subtab 可按各自持久化值
+  跳过本地用户标签过滤，其他调用方保持默认行为。
 - 接入写后 WebDAV 调度请求，但此阶段不宣称远端同步完成。
 
 完成边界：源码和构建通过；运行时仍需设备验证。
@@ -428,7 +495,9 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 - 先在 `nextn-ui-change-ledger.md` 记录 NextE 参考父树、页面入口、Sheet 状态和设备验收计划。
 - 复用 NextE My Tags 列表和编辑 Sheet，替换为 NH tag ID/本地 Repository 叶子。
 - 增加过滤阈值编辑、添加/编辑/删除流程。
-- 在 Search 条件 Sheet 增加临时忽略 Switch，并把它纳入漏斗激活态。
+- 在 Search 条件 Sheet 和设置页 Search defaults 增加全局持久化 Switch，并把它纳入
+  漏斗激活态。
+- 在 `HomeSubtabEditPage` 增加每个自定义 Search Subtab 独立的同名 Switch。
 
 完成边界：页面源码与构建完成；视觉/交互必须经过真实设备验收。
 
@@ -447,6 +516,8 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 
 - 新增 `local-user-tags` 数据集、同步设置开关、LWW/tombstone 和旧客户端保留未知数据集
   合同。
+- 让全局开关随现有 `settings-tables/catalog_preferences` 同步，让 Subtab 开关随
+  `home-subtabs` 同步，并验证旧记录缺少字段时为 `false`。
 - 接入备份导出/恢复/reapply 和持久化清单。
 - 完成真实两设备 WebDAV 往返。
 
@@ -484,7 +555,12 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 - Search 开关打开后，当前 `rawGalleries` 中仅因本地 Hidden/权重被隐藏的项目立即恢复；
   关闭后立即重新隐藏，全程不新增网络请求。
 - Search 开关不恢复 NH 云端黑名单结果，也不绕过图库标题内容过滤；评论过滤不受影响。
-- 刷新、加载更多和跳页沿用当前开关；离开并重新创建 Search 页面后恢复默认关闭。
+- 刷新、加载更多和跳页沿用当前开关；离开并重新创建 Search 页面及进程冷启动后仍恢复
+  已保存值。
+- Search 条件 Sheet 与设置页 Search defaults 任一处修改，另一处立即显示相同状态。
+- 从当前 Search 创建 Subtab 时复制开关；之后修改全局值不改变已有 Subtab。
+- `HomeSubtabEditPage` 可独立修改每个自定义 Search Subtab；不同 Subtab 的过滤结果互不
+  影响，内置 Latest/Popular 始终执行本地标签过滤。
 - 开关开启时仍应用标签颜色和列表彩色标签前置排序。
 
 ### 12.4 WebDAV 双设备验收
@@ -495,6 +571,8 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 4. A/B 并发修改同一标签，验证整记录 LWW。
 5. A 删除标签后同步，B 不得将其复活。
 6. 旧版本客户端同步其他数据集，不得移除 `local-user-tags`。
+7. A 修改全局 Search 开关和一个自定义 Subtab 的开关，B 同步并冷启动后恢复两个各自的
+   值；旧同步记录缺少字段时保持默认关闭。
 
 ## 13. 实施停止条件
 
@@ -505,8 +583,9 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 - 不得先截断再把可见范围内的彩色标签排序。
 - 不得用标签翻译文字或 namespace/name 拼接串替代 NH tag ID 作为主身份。
 - 不得把 NH 云端黑名单自动复制为本地用户标签。
-- 不得把 Search 的临时忽略开关扩大成 `ContentFilterService` 总开关，或持久化/同步为
-  全局偏好。
+- 不得把 Search 的持久化忽略开关扩大成 `ContentFilterService` 总开关。
+- 不得只保存全局值而省略每个自定义 Search Subtab 的独立字段和编辑入口。
+- 不得让全局 Search 默认值在创建完成后继续覆盖已有 Subtab 的保存值。
 - 不得用构建、静态测试或单设备截图声称 WebDAV 跨设备同步已验收。
 
 ## 14. 当前下一步
