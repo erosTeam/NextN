@@ -1,7 +1,7 @@
 {
   "modelVersion": "6.1.1",
   "name": "nextn",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "NextN native HarmonyOS NEXT client",
   "license": "MIT",
   "dependencies": {},
