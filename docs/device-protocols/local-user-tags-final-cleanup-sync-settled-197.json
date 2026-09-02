@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-final-cleanup-sync-settled-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-webdav-197-103/final-cleanup-sync-settled-197-20260902T1129",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "0581ef0-local-user-tags-final-cleanup",
+    "page": "Home Subtab manager after final acceptance-data cleanup",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Keep the app foreground for two bounded scheduler windows after deleting the temporary local-tag records, resetting threshold to 0, and deleting 标签同步验收. Read the existing NextN log afterward; do not change any WebDAV dataset selection."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "wait-for-cleanup-sync-first-window", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 45000 },
+      { "name": "wait-for-cleanup-sync-second-window", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 45000 }
+    ]
+  },
+  "postflight": [
+    { "name": "read-cleanup-sync-hilog", "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"], "timeoutSeconds": 60 },
+    { "name": "verify-final-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

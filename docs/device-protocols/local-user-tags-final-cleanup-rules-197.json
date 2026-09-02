@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-final-cleanup-rules-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-webdav-197-103/final-cleanup-rules-197-20260902T1111",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "0581ef0-local-user-tags-final-cleanup",
+    "page": "Device A local user-tag manager with two active acceptance records",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "The current captured manager contains only the acceptance records tag:low lolicon and artist:cuchuflin plus threshold -5. Delete those two records through their edit Sheets, then restore the threshold to 0. Do not touch any application-settings sync selection."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-low-lolicon-editor", "uiInput": ["click", "630", "890"], "pauseAfterMs": 600 },
+      { "name": "request-delete-low-lolicon", "uiInput": ["click", "988", "266"], "pauseAfterMs": 500 },
+      { "name": "confirm-delete-low-lolicon", "uiInput": ["click", "900", "1490"], "pauseAfterMs": 1000 },
+      { "name": "open-cuchuflin-editor", "uiInput": ["click", "630", "890"], "pauseAfterMs": 600 },
+      { "name": "request-delete-cuchuflin", "uiInput": ["click", "988", "266"], "pauseAfterMs": 500 },
+      { "name": "confirm-delete-cuchuflin", "uiInput": ["click", "900", "1490"], "pauseAfterMs": 1000 },
+      { "name": "open-threshold-editor", "uiInput": ["click", "630", "415"], "pauseAfterMs": 700 },
+      { "name": "focus-threshold-at-end", "uiInput": ["click", "1110", "1400"], "pauseAfterMs": 200 },
+      { "name": "delete-threshold-five", "uiInput": ["keyEvent", "2055"], "pauseAfterMs": 100 },
+      { "name": "delete-threshold-minus", "uiInput": ["keyEvent", "2055"], "pauseAfterMs": 100 },
+      { "name": "enter-default-zero", "uiInput": ["text", "0"], "pauseAfterMs": 200 },
+      { "name": "dismiss-threshold-keyboard", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 500 },
+      { "name": "save-default-threshold", "uiInput": ["click", "1143", "1205"], "pauseAfterMs": 1400 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-clean-manager-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-final-clean-manager-197.json", "-a"] },
+    { "name": "capture-clean-manager-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-user-tags-final-clean-manager-197.png"] },
+    { "name": "receive-clean-manager-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-final-clean-manager-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-webdav-197-103/final-cleanup-rules-197-20260902T1111/layout.json"] },
+    { "name": "receive-clean-manager-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-final-clean-manager-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-webdav-197-103/final-cleanup-rules-197-20260902T1111/screen.png"] },
+    { "name": "cleanup-manager-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-final-clean-manager-197.json", "/data/local/tmp/nextn-local-user-tags-final-clean-manager-197.png"] },
+    { "name": "verify-final-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

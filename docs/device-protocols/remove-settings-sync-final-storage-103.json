@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-remove-settings-sync-final-storage-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/remove-settings-sync/final-storage-103-20260902T1115",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": { "project": "NextN", "codeIdentity": "7850bdc-remove-settings-sync-final", "page": "Storage settings after final in-place install", "deviceAlias": "matepadpro-lab103", "deviceModel": "MLR-AL00", "orientation": "portrait", "resolution": "1600x2560", "notes": "Install final signed candidate without clearing data, navigate through the unchanged My parent, and capture the corrected device-data-only sync summary." },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "install-final-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-final-candidate", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 15000, "timeoutSeconds": 30 }
+  ],
+  "measurement": { "actions": [
+    { "name": "open-native-my-tab", "uiInput": ["click", "1036", "2470"], "pauseAfterMs": 900 },
+    { "name": "open-storage-settings", "uiInput": ["click", "800", "1223"], "pauseAfterMs": 1000 }
+  ] },
+  "postflight": [
+    { "name": "capture-final-storage-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-remove-settings-sync-final-storage-103.json", "-a"] },
+    { "name": "capture-final-storage-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-remove-settings-sync-final-storage-103.png"] },
+    { "name": "receive-final-storage-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-remove-settings-sync-final-storage-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/remove-settings-sync/final-storage-103-20260902T1115/layout.json"] },
+    { "name": "receive-final-storage-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-remove-settings-sync-final-storage-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/remove-settings-sync/final-storage-103-20260902T1115/screen.png"] },
+    { "name": "cleanup-final-storage-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-remove-settings-sync-final-storage-103.json", "/data/local/tmp/nextn-remove-settings-sync-final-storage-103.png"] }
+  ]
+}

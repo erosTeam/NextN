@@ -7197,7 +7197,7 @@ authorize an edit, replace a device comparison, or define product completion.
 - **MED-2（已修）:** NextNListRow 增加 NextE 的 WrappedSuffixBuilder 等价实现：customTrailing 统一包 Row（padding left 8 / right suffixPaddingRight，默认 12），新增 suffixPaddingRight 参数；缓存行传 0 并保留按钮自带 padding（与 NextE CacheRow+ClearSuffix 精确一致）。构建通过、装机后四个清除按钮右缘 1272 不变（槽宽向左扩展），截图已更新。
 - **LOW（计划内）:** 华为云链路移除；entry 宿主多 bindToScrollable；屏蔽规则 hint 为 NH 数据面改写。静态结构结论不替代同态同视口视觉比对。
 
-## OPEN — Remove misleading WebDAV application-settings dataset — 2026-09-02
+## ACCEPTED ON 197 AND 103 — Remove misleading WebDAV application-settings dataset — 2026-09-02
 
 - **Why newly actionable:** after inspecting the actual `settings-tables` scope, the user explicitly requested
   removal of the WebDAV “应用设置” option because it groups four whole settings tables under a misleading broad
@@ -7212,10 +7212,15 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Minimality rationale:** do not rename or redesign the page, move the four tables into another WebDAV dataset,
   remove local backup support, delete remote files, or change any retained dataset default. The current device-local
   settings remain untouched.
-- **Verification plan and unresolved risk:** run the focused contract and signed build, install in place on authorized
-  197/103 without clearing data, open the synchronization overview on both and confirm the row is absent. Run a
-  scheduled/manual sync with an old persisted selection and confirm no `dataset=settings-tables` start/apply event
-  occurs while retained datasets still complete. Device evidence, not source shape, closes the visible boundary.
+- **Verification:** focused local-user-tag, settings-backup, persistence-inventory, Home Subtab, four-locale strings
+  and scaffold contracts passed. Signed candidate `7850bdc` built in 9 s 271 ms and was installed in place on both
+  authorized devices without clearing data. Their Storage summaries no longer mention application settings, and
+  both synchronization overviews show exactly the seven retained user-data rows with no “应用设置”.
+- **Runtime acceptance:** 197 PID `51121` and 103 PID `24139` each completed the startup WebDAV round with
+  `webdav_scheduled_done ok=true`; current-process logs contain no `settings-tables` event while retained datasets,
+  including `home-subtabs`, `local-user-tags` and `local-block`, completed. Evidence is under
+  `.hvigor/outputs/remove-settings-sync/final-storage-197-20260902T1115/`,
+  `final-overview-197-20260902T1118/` and the corresponding 103 `remove-settings-sync/` directories.
 
 ## 导出入口从半模态改为 Dialog（2026-08-17，用户指示）
 

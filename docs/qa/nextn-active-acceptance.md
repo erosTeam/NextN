@@ -6111,8 +6111,17 @@ permitted in this repository.
 - Ownership correction: after confirming that `settings-tables` covers four whole settings tables, the user
   explicitly removed the WebDAV “应用设置” option. The global Search switch and its `catalog_preferences` table
   remain device-local and locally backed up; old persisted `settingsTables=true` must be ignored. The Subtab switch
-  still belongs to the Subtab record and its cross-device recovery through `home-subtabs` is accepted above. The
-  goal remains OPEN for final candidate installation, two-device runtime verification and cleanup convergence.
+  still belongs to the Subtab record and its cross-device recovery through `home-subtabs` is accepted above.
+- Final removal acceptance passed on both authorized devices with committed candidate `7850bdc`. In-place install
+  preserved data. The Storage summary no longer claims application settings are synchronized; both synchronization
+  overviews contain seven retained user-data rows and no “应用设置” row. Current-process startup sync completed with
+  `ok=true` on 197 (PID 51121) and 103 (PID 24139), while each current-process log contains zero
+  `settings-tables` events. Local `settingsTables` backup/restore remains covered by the static backup contract.
+- Final cleanup also converged. Device 197 restored threshold `0`, removed the temporary rules and deleted
+  `标签同步验收` through product UI, then successfully synchronized `home-subtabs` and `local-user-tags`. Device 103
+  pulled that state; after a no-clear cold start its local-tag manager shows threshold `0` and
+  `尚未设置本地标签`, and the temporary Subtab is absent. The local-user-tags goal is now complete.
 - New evidence roots are `.hvigor/outputs/local-user-tags-webdav-197-103/` and
   `.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/`.
-  Temporary clock diagnostics were removed afterward; the clean main candidate rebuilt successfully in 12 s 66 ms.
+  Removal evidence is under `.hvigor/outputs/remove-settings-sync/` and the corresponding 103
+  `remove-settings-sync/` directory. The final main candidate rebuilt successfully in 9 s 271 ms.

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-remove-settings-sync-final-overview-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/remove-settings-sync/final-overview-103-20260902T1118",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": { "project": "NextN", "codeIdentity": "7850bdc-remove-settings-sync-final", "page": "WebDAV synchronization overview and cleanup convergence", "deviceAlias": "matepadpro-lab103", "deviceModel": "MLR-AL00", "orientation": "portrait", "resolution": "1600x2560", "notes": "Open synchronization from the accepted Storage parent, allow one bounded scheduler window, capture all visible dataset rows and the current-process sync log. Do not alter any selection or credentials." },
+  "preflight": [{ "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }],
+  "measurement": { "actions": [
+    { "name": "open-sync-overview", "uiInput": ["click", "800", "335"], "pauseAfterMs": 1200 },
+    { "name": "wait-bounded-sync-and-cleanup-pull-window", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 25000 }
+  ] },
+  "postflight": [
+    { "name": "capture-final-overview-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-remove-settings-sync-final-overview-103.json", "-a"] },
+    { "name": "capture-final-overview-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-remove-settings-sync-final-overview-103.png"] },
+    { "name": "receive-final-overview-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-remove-settings-sync-final-overview-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/remove-settings-sync/final-overview-103-20260902T1118/layout.json"] },
+    { "name": "receive-final-overview-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-remove-settings-sync-final-overview-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/remove-settings-sync/final-overview-103-20260902T1118/screen.png"] },
+    { "name": "read-current-pid", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "read-current-sync-log", "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"], "timeoutSeconds": 60 },
+    { "name": "cleanup-final-overview-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-remove-settings-sync-final-overview-103.json", "/data/local/tmp/nextn-remove-settings-sync-final-overview-103.png"] }
+  ]
+}
