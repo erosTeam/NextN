@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-subtab-open-manager-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/subtab-open-manager-20260902T1008",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "4439686+temporary-clock-diagnostics",
+    "page": "Device B Home Subtab manager after cold WebDAV pull",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Open the Home Subtab manager using the observed source-bar action bounds, then capture the synced temporary profile before opening its editor."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-home-subtab-manager", "uiInput": ["click", "1548", "264"], "pauseAfterMs": 1200 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-manager-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-subtab-open-manager-103.json", "-a"] },
+    { "name": "capture-manager-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-user-tags-subtab-open-manager-103.png"] },
+    { "name": "receive-manager-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-subtab-open-manager-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/subtab-open-manager-20260902T1008/layout.json"] },
+    { "name": "receive-manager-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-subtab-open-manager-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/subtab-open-manager-20260902T1008/screen.png"] },
+    { "name": "cleanup-manager-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-subtab-open-manager-103.json"] },
+    { "name": "cleanup-manager-screen", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-subtab-open-manager-103.png"] }
+  ]
+}

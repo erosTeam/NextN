@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-final-clean-install-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-webdav-197-103/final-clean-install-197-20260902T1030",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "4439686-clean-no-clock-diagnostics",
+    "page": "Device A final clean candidate cold start",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Install the clean signed candidate in place after removing bounded acceptance diagnostics. Do not clear data or change any WebDAV dataset selection."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "install-final-clean-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 8000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "settle-clean-cold-start", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 1000 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-clean-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-final-clean-install-197.json", "-a"] },
+    { "name": "receive-clean-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-final-clean-install-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-webdav-197-103/final-clean-install-197-20260902T1030/layout.json"] },
+    { "name": "cleanup-clean-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-final-clean-install-197.json"] },
+    { "name": "verify-final-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

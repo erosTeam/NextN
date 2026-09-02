@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-current-client-after-old-sync-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/current-after-old-sync-20260902T1021",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "4439686+temporary-clock-diagnostics",
+    "page": "Current client verifies local-user-tags after old-client manifest rewrite",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Reinstall the current signed client in place without clearing data after the old client completed a full known-dataset sync. Verify its local-user-tags shards remain present in the remote manifest and the synchronized active rules still render."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "install-current-signed-client-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "clear-bounded-hilog", "hdcArgs": ["shell", "hilog", "-r"] },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-current-client", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 12000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "wait-for-current-client-sync-first-window", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 45000 },
+      { "name": "wait-for-current-client-sync-second-window", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 45000 },
+      { "name": "open-native-my-tab", "uiInput": ["click", "1036", "2470"], "pauseAfterMs": 800 },
+      { "name": "open-advanced", "uiInput": ["click", "800", "1340"], "pauseAfterMs": 800 },
+      { "name": "open-local-tag-manager", "uiInput": ["click", "800", "1318"], "pauseAfterMs": 1000 }
+    ]
+  },
+  "postflight": [
+    { "name": "read-current-client-nextn-hilog", "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"], "timeoutSeconds": 60 },
+    { "name": "capture-manager-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-current-after-old-sync-103.json", "-a"] },
+    { "name": "capture-manager-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-user-tags-current-after-old-sync-103.png"] },
+    { "name": "receive-manager-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-current-after-old-sync-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/current-after-old-sync-20260902T1021/layout.json"] },
+    { "name": "receive-manager-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-current-after-old-sync-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/current-after-old-sync-20260902T1021/screen.png"] },
+    { "name": "cleanup-manager-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-current-after-old-sync-103.json"] },
+    { "name": "cleanup-manager-screen", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-current-after-old-sync-103.png"] }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-webdav-seed-a-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-webdav-197-103/seed-a-20260902T0031",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "3a67acc-product-88bec05",
+    "page": "Device A WebDAV local-tag baseline",
+    "deviceAlias": "device-197",
+    "deviceModel": "unknown",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Starting from the empty manager, set threshold -5; add artist:asanagi #26639 at +10 with custom blue #3377FF; add tag:low lolicon #14362 at -8; add artist:cuchuflin #161141 at +10 with explicit Hidden. Capture the persisted source baseline before WebDAV upload."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-threshold-editor", "uiInput": ["click", "630", "415"], "pauseAfterMs": 600 },
+      { "name": "focus-threshold", "uiInput": ["click", "1110", "1400"], "pauseAfterMs": 150 },
+      { "name": "delete-zero", "uiInput": ["keyEvent", "2055"], "pauseAfterMs": 100 },
+      { "name": "enter-minus-five", "uiInput": ["text", "-5"], "pauseAfterMs": 150 },
+      { "name": "dismiss-threshold-keyboard", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 350 },
+      { "name": "save-threshold", "uiInput": ["click", "1143", "1205"], "pauseAfterMs": 900 },
+
+      { "name": "open-add-asanagi", "uiInput": ["click", "630", "680"], "pauseAfterMs": 450 },
+      { "name": "focus-asanagi-query", "uiInput": ["click", "630", "535"], "pauseAfterMs": 150 },
+      { "name": "query-asanagi", "uiInput": ["text", "asanagi"], "pauseAfterMs": 1700 },
+      { "name": "dismiss-asanagi-keyboard", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 900 },
+      { "name": "select-artist-asanagi-26639", "uiInput": ["click", "630", "767"], "pauseAfterMs": 650 },
+      { "name": "enable-custom-blue", "uiInput": ["click", "1136", "1476"], "pauseAfterMs": 700 },
+      { "name": "save-asanagi", "uiInput": ["click", "1143", "266"], "pauseAfterMs": 1000 },
+
+      { "name": "open-add-low-lolicon", "uiInput": ["click", "630", "680"], "pauseAfterMs": 450 },
+      { "name": "focus-low-lolicon-query", "uiInput": ["click", "630", "535"], "pauseAfterMs": 150 },
+      { "name": "query-low-lolicon", "uiInput": ["text", "low lolicon"], "pauseAfterMs": 1700 },
+      { "name": "dismiss-low-lolicon-keyboard", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 900 },
+      { "name": "select-tag-low-lolicon-14362", "uiInput": ["click", "630", "767"], "pauseAfterMs": 600 },
+      { "name": "focus-low-lolicon-weight", "uiInput": ["click", "1110", "1170"], "pauseAfterMs": 150 },
+      { "name": "delete-weight-zero", "uiInput": ["keyEvent", "2055"], "pauseAfterMs": 100 },
+      { "name": "delete-weight-one", "uiInput": ["keyEvent", "2055"], "pauseAfterMs": 100 },
+      { "name": "enter-minus-eight", "uiInput": ["text", "-8"], "pauseAfterMs": 150 },
+      { "name": "dismiss-weight-keyboard", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 350 },
+      { "name": "save-low-lolicon", "uiInput": ["click", "1143", "266"], "pauseAfterMs": 1000 },
+
+      { "name": "open-add-cuchuflin", "uiInput": ["click", "630", "680"], "pauseAfterMs": 450 },
+      { "name": "focus-cuchuflin-query", "uiInput": ["click", "630", "535"], "pauseAfterMs": 150 },
+      { "name": "query-cuchuflin", "uiInput": ["text", "cuchuflin"], "pauseAfterMs": 1700 },
+      { "name": "dismiss-cuchuflin-keyboard", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 900 },
+      { "name": "select-artist-cuchuflin-161141", "uiInput": ["click", "630", "767"], "pauseAfterMs": 600 },
+      { "name": "enable-explicit-hidden", "uiInput": ["click", "1136", "865"], "pauseAfterMs": 400 },
+      { "name": "save-cuchuflin", "uiInput": ["click", "1143", "266"], "pauseAfterMs": 1300 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-baseline-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-webdav-seed-a-197.json", "-a"] },
+    { "name": "capture-baseline-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-user-tags-webdav-seed-a-197.png"] },
+    { "name": "receive-baseline-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-webdav-seed-a-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-webdav-197-103/seed-a-20260902T0031/layout.json"] },
+    { "name": "receive-baseline-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-webdav-seed-a-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-webdav-197-103/seed-a-20260902T0031/screen.png"] },
+    { "name": "cleanup-baseline-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-webdav-seed-a-197.json"] },
+    { "name": "cleanup-baseline-screen", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-webdav-seed-a-197.png"] }
+  ]
+}

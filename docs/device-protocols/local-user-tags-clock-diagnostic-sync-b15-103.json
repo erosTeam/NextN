@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-clock-diagnostic-sync-b15-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/clock-diagnostic-sync-b15-20260902T0947",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "4439686+temporary-clock-diagnostics",
+    "page": "Device B isolated 15 automatic sync clocks",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Wait for the isolated 15 local-write sync to finish, then capture local, remote and merged record clocks plus the unchanged manager state."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "wait-for-automatic-sync", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 55000 }
+    ]
+  },
+  "postflight": [
+    { "name": "read-nextn-hilog", "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"], "timeoutSeconds": 60 },
+    { "name": "capture-manager-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-clock-diagnostic-sync-b15-103.json", "-a"] },
+    { "name": "receive-manager-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-clock-diagnostic-sync-b15-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/clock-diagnostic-sync-b15-20260902T0947/layout.json"] },
+    { "name": "cleanup-manager-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-clock-diagnostic-sync-b15-103.json"] }
+  ]
+}

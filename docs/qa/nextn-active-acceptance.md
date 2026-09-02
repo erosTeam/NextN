@@ -6072,7 +6072,7 @@ permitted in this repository.
   combined dirty tree still passes the Gallery/Reader transition contract, `git diff --check`, a zero-match V1
   decorator inventory and the signed build. Device acceptance above remains tied to the exact installed candidate.
 
-## Local user tags — accepted on 197; WebDAV device B pending — 2026-09-02
+## Local user tags — accepted on 197/103; global Search WebDAV owner pending — 2026-09-02
 
 - User outcome: local tag color, weight and explicit Hidden coexist. The soft-filter score is the sum of all matched
   configured tag weights and filters only when that sum is strictly below the threshold. Global Search and each
@@ -6097,7 +6097,21 @@ permitted in this repository.
   `global-bypass-result`, `cold-subtab-bypass-result-corrected`, `colored-list`,
   `colored-compact-waterfall`, `open-angie-detail-at-minus-five`, `read-webdav-evidence`,
   `final-clean-manager-state`, and `final-clean-search-bypass-cold`.
-- Remaining external block: §12.4 of `docs/plans/active/local-user-tags.md` requires a second authorized device on
-  the same WebDAV endpoint to verify pull/cold-start recovery, concurrent whole-record LWW, deletion tombstone
-  non-resurrection, and both Search bypass owners. No second device was authorized in this run, so the long-running
-  goal remains OPEN only for that cross-device matrix.
+- Device 103 was subsequently authorized as device B on the same configured WebDAV endpoint. A-to-B rule pull and
+  data-preserving cold-start recovery retained threshold `-5`, negative weight `-8`, explicit Hidden and color.
+  A clean later B record (`15`, Hidden, `#3377FF`, clock `1788313371566`) won as one whole record on A; A's later
+  tombstone (`1788313798230`) then removed it on B without resurrection.
+- A temporary Search Subtab with its own ignore-local-tag-filter switch enabled synchronized through the already
+  enabled `home-subtabs` dataset. After B cold-started without clearing data, its manager contained
+  `标签同步验收`; the B editor's `忽略本地标签过滤` Toggle was `checked=true`.
+- Runtime old-client compatibility also passed: signed commit `f3623c5`, which predates the `local-user-tags`
+  WebDAV dataset, completed a full known-dataset sync and manifest upload on B. After reinstalling the current
+  client, the remote manifest still exposed all five local-user-tag shards (four skipped by matching state, one
+  downloaded for a hash difference), the scheduled sync completed successfully, and active rules remained visible.
+- Remaining external block: the global Search owner travels in the broad existing `settings-tables` / `应用设置`
+  dataset. It is disabled on both devices, and enabling it would synchronize unrelated application settings as
+  well as this one key. The approval gate rejected doing that without the user's explicit authorization. The goal
+  remains OPEN only for that cross-device global-owner readback plus final product-path cleanup.
+- New evidence roots are `.hvigor/outputs/local-user-tags-webdav-197-103/` and
+  `.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/`.
+  Temporary clock diagnostics were removed afterward; the clean main candidate rebuilt successfully in 12 s 66 ms.

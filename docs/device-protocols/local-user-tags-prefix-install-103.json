@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-prefix-install-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/prefix-candidate-20260902T0900",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "3a67acc-plus-local-tag-prefix-fix",
+    "page": "Device B synchronized local-tag manager with namespace-prefixed translations",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Install the same signed prefix candidate in place without clearing data, cold-start, then follow the accepted My -> Advanced -> Local tags route and capture the retained synchronized rules."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "install-signed-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 5000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-my-tab", "uiInput": ["click", "1036", "2470"], "pauseAfterMs": 800 },
+      { "name": "open-advanced", "uiInput": ["click", "800", "1340"], "pauseAfterMs": 800 },
+      { "name": "open-local-tag-manager", "uiInput": ["click", "800", "1318"], "pauseAfterMs": 1000 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-manager-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-prefix-install-103.json", "-a"] },
+    { "name": "capture-manager-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-user-tags-prefix-install-103.png"] },
+    { "name": "receive-manager-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-prefix-install-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/prefix-candidate-20260902T0900/layout.json"] },
+    { "name": "receive-manager-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-prefix-install-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/prefix-candidate-20260902T0900/screen.png"] },
+    { "name": "cleanup-manager-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-prefix-install-103.json"] },
+    { "name": "cleanup-manager-screen", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-prefix-install-103.png"] },
+    { "name": "verify-final-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

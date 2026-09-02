@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-subtab-open-synced-editor-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/subtab-open-synced-editor-20260902T1010",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "4439686+temporary-clock-diagnostics",
+    "page": "Device B synced Search Subtab editor local-filter bypass readback",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Open the exact synced temporary Search Subtab row and scroll its editor to the peer search conditions. Capture the switch state without modifying it."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-synced-search-subtab", "uiInput": ["click", "800", "1688"], "pauseAfterMs": 1000 },
+      { "name": "scroll-to-search-options", "uiInput": ["swipe", "800", "2200", "800", "600", "1200"], "pauseAfterMs": 1000 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-editor-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-subtab-open-synced-editor-103.json", "-a"] },
+    { "name": "capture-editor-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-user-tags-subtab-open-synced-editor-103.png"] },
+    { "name": "receive-editor-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-subtab-open-synced-editor-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/subtab-open-synced-editor-20260902T1010/layout.json"] },
+    { "name": "receive-editor-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-subtab-open-synced-editor-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/subtab-open-synced-editor-20260902T1010/screen.png"] },
+    { "name": "cleanup-editor-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-subtab-open-synced-editor-103.json"] },
+    { "name": "cleanup-editor-screen", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-subtab-open-synced-editor-103.png"] }
+  ]
+}

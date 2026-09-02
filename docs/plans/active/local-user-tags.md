@@ -1,7 +1,7 @@
 # NextN 本地用户标签系统开发指南
 
-> 状态：OPEN（Phase 1-5 已实现并通过设备 197 验收；仅 §12.4 的双设备 WebDAV
-> 往返仍待第二台获授权设备）
+> 状态：OPEN（Phase 1-5 与 §12.4 第 1-6 项已通过设备 197/103 验收；第 7 项的
+> Subtab 所有者已闭环，仅全局 Search 所有者跨设备恢复仍待明确授权）
 > 目标：在不依赖 NH 上游新增 API 的前提下，提供一套受 EH My Tags
 > 启发的本地用户标签系统，并通过现有 WebDAV 在用户设备间同步。
 > 本文档是后续设计、实现和验收的权威入口。实现中若要改变本文的
@@ -592,11 +592,11 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 ## 14. 当前下一步
 
 Phase 1-5 的源码、契约脚本、主应用签名构建和 `entry@ohosTest` 签名构建已经完成。
-设备 197 已完成 §12.1-§12.3 的运行时验收及 `local-user-tags` 数据集的单设备远端传输
-观察；详见 §15。当前唯一未闭合项是 §12.4 的双设备往返：需要一台由用户明确授权、
-配置同一 WebDAV 端点的设备 B，验证拉取、冷启动、并发 LWW、删除墓碑不复活以及
-全局 Search/Subtab 两级开关恢复。在完成该项前本文档保持 `OPEN`，但不得把已通过的
-197 运行时行为重新降级为“仅源码/构建完成”。
+设备 197 已完成 §12.1-§12.3；设备 103 已作为同一 WebDAV 端点上的获授权设备 B，完成
+§12.4 的规则拉取、冷启动、整记录 LWW、删除墓碑不复活、旧客户端未知数据集保留以及
+Subtab 独立开关恢复，详见 §15.4-§15.5。当前只剩全局 Search 所有者的跨设备同步：它
+属于现有 `settings-tables`（UI 名称“应用设置”）数据集，开启会同步不止本功能的设置，
+审批要求先取得用户明确授权。完成该项并清理临时验收数据前本文档保持 `OPEN`。
 
 ## 15. 设备 197 验收结果（2026-09-02）
 
@@ -638,12 +638,41 @@ Phase 1-5 的源码、契约脚本、主应用签名构建和 `entry@ohosTest` �
 - Gallery Detail 显示同一颜色，但保留 namespace 分组和既有顺序，没有应用列表前置；
   证据位于 `open-angie-detail-at-minus-five/`。
 
-### 15.4 WebDAV 已证实边界与剩余阻塞
+### 15.4 WebDAV 双设备规则、冲突和兼容验收
 
-- 197 的 WebDAV 同步设置中 `本地用户标签` 数据集已启用；成功同步记录显示
-  `dataset=local-user-tags` 的 start/done，并处理五个分片。证据位于
-  `open-sync-overview/` 和 `read-webdav-evidence/`。这证明该独立数据集在 197 与已配置
-  远端之间实际进入传输链，不只是静态注册。
-- 本次仅获授权使用设备 197，因此没有执行 §12.4 所要求的设备 B 拉取、冷启动、并发
-  LWW 和删除墓碑不复活验证。单设备成功传输不能代替双设备往返；这也是当前唯一外部
-  阻塞。测试规则、测试 Subtab 和临时阈值均已清理，删除经产品路径写入墓碑。
+- 设备 A 为 `192.168.50.197:12345`，设备 B 为获授权的
+  `192.168.50.103:12345`（`matepadpro-lab103`、`MLR-AL00`）；两台均使用同一已配置的
+  WebDAV 端点，所有安装均为 `install -r`，没有卸载或清数据。
+- A 上传阈值 `-5`、负权重 `-8`、正权重/Hidden/颜色规则后，B 自动拉取并在无清数据冷
+  启动后读回相同设置。B 的列表过滤、Hidden、阈值与颜色状态保持一致。证据位于
+  `.hvigor/outputs/local-user-tags-webdav-197-103/` 与
+  `.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/`。
+- 干净 LWW 轮次中，B 把 `artist:asanagi` 保存为 `15`、Hidden、`#3377FF`，记录时钟
+  `1788313371566` 晚于 A 的值；B 上传后 A 冷启动合并为完整的 B 记录，没有字段拼接。
+  随后 A 写入更晚 tombstone `1788313798230`，B 冷启动合并后活动记录消失，旧值没有
+  复活。关键证据目录为 `clock-diagnostic-sync-b15-20260902T0947/`、
+  `clock-diagnostic-pull-b15-20260902T0949/`、`tombstone-sync-a15-20260902T0954/` 和
+  `tombstone-pull-b15-20260902T0956/`。
+- 旧客户端兼容在设备 103 运行时验证：签名旧提交 `f3623c5`（尚不认识
+  `local-user-tags` WebDAV 数据集）完成 `home-subtabs`、`local-block` 等已知数据集同步
+  并写回 manifest；恢复当前客户端后仍从远端 manifest 命中五个 `local-user-tags`
+  分片，其中四个直接 skipped、一个按 hash 拉取，最终 `webdav_scheduled_done ok=true`，
+  活动规则仍显示。证据位于 `old-client-sync-settled-20260902T1019/`、
+  `current-after-old-sync-20260902T1021/` 和
+  `current-sync-settled-after-old-20260902T1024/`。
+
+### 15.5 Search/Subtab 跨设备边界与剩余授权
+
+- A 创建临时 Search Subtab `标签同步验收`，查询为公开条件 `language:chinese`，并开启
+  Subtab 自己的“忽略本地标签过滤”。`home-subtabs` 自动上传后，B 无清数据冷启动拉取，
+  管理器出现该记录；打开编辑页后开关语义节点为 `checked=true`。证据位于
+  `subtab-create-sync-a-20260902T1002/`、`subtab-cold-pull-home-20260902T1005/`、
+  `subtab-open-manager-20260902T1008/` 和 `subtab-open-synced-editor-20260902T1010/`。
+- 全局 Search 开关的单设备持久化、即时重投影和冷启动此前已在 197 验收，但其跨设备
+  所有权位于现有 `settings-tables`（“应用设置”）数据集，而不是窄的
+  `local-user-tags`。两台设备原先都关闭该数据集；自动开启会连同其他应用设置一起导出，
+  已被审批门拒绝。必须在用户明确授权临时开启后执行 A 修改、B 拉取/冷启动读回，再把
+  两台设备恢复为关闭，才能关闭 §12.4 第 7 项和全文档。
+- 临时时钟诊断源码已经移除，干净主包重新签名构建通过
+  `BUILD SUCCESSFUL in 12 s 66 ms`。测试标签、阈值和临时 Subtab 将保留到最后一个全局
+  Search 同步轮次完成后统一通过产品路径清理，避免提前删除远端验收基线。

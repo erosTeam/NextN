@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-old-client-sync-settled-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/old-client-sync-settled-20260902T1019",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "f3623c5-pre-local-user-tags-webdav",
+    "page": "Old client known-dataset sync settled",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Allow the already-running old-client full sync to finish and capture its final known-dataset and manifest upload results before reinstalling the current client."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "wait-for-old-client-sync-settle", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 55000 }
+    ]
+  },
+  "postflight": [
+    { "name": "read-settled-old-client-hilog", "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"], "timeoutSeconds": 60 }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-webdav-preflight-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/unknown/local-user-tags-webdav/preflight-20260902T0016",
+  "display": { "widthPx": 2560, "heightPx": 1600 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "3a67acc",
+    "page": "device B transport and installed-app preflight",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "unknown",
+    "resolution": "unknown",
+    "notes": "Establish the authorized device-B awake gate, installed NextN metadata, current foreground identity, and effective display state before any install or WebDAV mutation."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "noninteractive-top-edge-anchor", "uiInput": ["click", "1", "1"], "pauseAfterMs": 200 }
+    ]
+  },
+  "postflight": [
+    { "name": "read-device-model", "hdcArgs": ["shell", "param", "get", "const.product.model"] },
+    { "name": "read-display-state", "hdcArgs": ["shell", "hidumper", "-s", "DisplayManagerService", "-a", "-a"] },
+    { "name": "read-window-owner", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "read-nextn-bundle", "hdcArgs": ["shell", "bm", "dump", "-n", "com.erosteam.nextn"] },
+    { "name": "capture-current-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-webdav-preflight-103.json", "-a"] },
+    { "name": "receive-current-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-webdav-preflight-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/unknown/local-user-tags-webdav/preflight-20260902T0016/layout.json"] },
+    { "name": "cleanup-current-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-webdav-preflight-103.json"] },
+    { "name": "verify-final-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

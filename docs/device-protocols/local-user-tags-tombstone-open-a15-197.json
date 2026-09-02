@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-tombstone-open-a15-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-webdav-197-103/tombstone-open-a15-20260902T0950",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "4439686+temporary-clock-diagnostics",
+    "page": "Device A artist:asanagi editor before tombstone",
+    "deviceAlias": "device-197",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Open the converged 15/blue/Hidden record editor and capture semantic delete and confirmation bounds before the tombstone test."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-asanagi-editor", "uiInput": ["click", "630", "880"], "pauseAfterMs": 600 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-editor-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-tombstone-open-a15-197.json", "-a"] },
+    { "name": "receive-editor-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-tombstone-open-a15-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-webdav-197-103/tombstone-open-a15-20260902T0950/layout.json"] },
+    { "name": "cleanup-editor-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-tombstone-open-a15-197.json"] }
+  ]
+}

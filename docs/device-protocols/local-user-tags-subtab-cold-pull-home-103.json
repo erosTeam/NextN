@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-subtab-cold-pull-home-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/subtab-cold-pull-home-20260902T1005",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "4439686+temporary-clock-diagnostics",
+    "page": "Device B cold pull of device A Home Search Subtab",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Cold-start without clearing data, wait for the already-enabled Home Subtabs dataset to pull, then capture the Home surface before opening the manager."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "clear-bounded-hilog", "hdcArgs": ["shell", "hilog", "-r"] },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 12000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "wait-for-startup-sync", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 55000 },
+      { "name": "select-home-tab", "uiInput": ["click", "320", "2470"], "pauseAfterMs": 1800 }
+    ]
+  },
+  "postflight": [
+    { "name": "read-nextn-hilog", "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"], "timeoutSeconds": 60 },
+    { "name": "capture-home-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-subtab-cold-pull-home-103.json", "-a"] },
+    { "name": "capture-home-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-user-tags-subtab-cold-pull-home-103.png"] },
+    { "name": "receive-home-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-subtab-cold-pull-home-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/subtab-cold-pull-home-20260902T1005/layout.json"] },
+    { "name": "receive-home-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-subtab-cold-pull-home-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/subtab-cold-pull-home-20260902T1005/screen.png"] },
+    { "name": "cleanup-home-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-subtab-cold-pull-home-103.json"] },
+    { "name": "cleanup-home-screen", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-subtab-cold-pull-home-103.png"] }
+  ]
+}

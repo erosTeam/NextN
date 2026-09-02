@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-tombstone-sync-a15-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-webdav-197-103/tombstone-sync-a15-20260902T0954",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "4439686+temporary-clock-diagnostics",
+    "page": "Device A artist:asanagi tombstone automatic upload",
+    "deviceAlias": "device-197",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Wait for the local deletion sync and capture the local tombstone versus remote active record versus merged tombstone clocks."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "wait-for-tombstone-upload", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 55000 }
+    ]
+  },
+  "postflight": [
+    { "name": "read-nextn-hilog", "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"], "timeoutSeconds": 60 }
+  ]
+}

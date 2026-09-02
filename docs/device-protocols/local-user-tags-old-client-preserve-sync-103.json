@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-old-client-preserve-sync-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/old-client-preserve-sync-20260902T1017",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "f3623c5-pre-local-user-tags-webdav",
+    "page": "Old client sync of known datasets while local-user-tags remains unknown",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Install the signed pre-local-user-tags-WebDAV commit in place without clearing data, cold-start, and let its already-enabled known datasets sync. The following current-client protocol must prove the unknown remote local-user-tags manifest entries and shards were preserved."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "install-signed-old-client-in-place", "hdcArgs": ["install", "-r", "/private/tmp/nextn-local-user-tags-old-client/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "clear-bounded-hilog", "hdcArgs": ["shell", "hilog", "-r"] },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-old-client", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 12000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "wait-for-old-client-known-dataset-sync", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 65000 }
+    ]
+  },
+  "postflight": [
+    { "name": "read-old-client-nextn-hilog", "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"], "timeoutSeconds": 60 },
+    { "name": "capture-old-client-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-old-client-preserve-sync-103.json", "-a"] },
+    { "name": "receive-old-client-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-old-client-preserve-sync-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/old-client-preserve-sync-20260902T1017/layout.json"] },
+    { "name": "cleanup-old-client-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-old-client-preserve-sync-103.json"] }
+  ]
+}

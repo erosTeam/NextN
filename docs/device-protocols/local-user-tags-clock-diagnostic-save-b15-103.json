@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-clock-diagnostic-save-b15-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/clock-diagnostic-save-b15-20260902T0946",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "4439686+temporary-clock-diagnostics",
+    "page": "Device B isolated 14 to 15 LWW write",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "From an idle startup state, navigate to the local tag manager, change artist:asanagi from 14 to 15 while retaining blue and Hidden, save, and capture the persisted record clock before automatic sync begins."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "clear-bounded-hilog", "hdcArgs": ["shell", "hilog", "-r"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-my-tab", "uiInput": ["click", "1036", "2470"], "pauseAfterMs": 800 },
+      { "name": "open-advanced", "uiInput": ["click", "800", "1340"], "pauseAfterMs": 800 },
+      { "name": "open-local-tag-manager", "uiInput": ["click", "800", "1318"], "pauseAfterMs": 900 },
+      { "name": "open-asanagi-editor", "uiInput": ["click", "800", "835"], "pauseAfterMs": 500 },
+      { "name": "focus-weight", "uiInput": ["click", "1280", "1235"], "pauseAfterMs": 120 },
+      { "name": "delete-weight", "uiInput": ["keyEvent", "2055"], "repeat": 2, "intervalMs": 80, "pauseAfterMs": 80 },
+      { "name": "enter-final-fifteen", "uiInput": ["text", "15"], "pauseAfterMs": 120 },
+      { "name": "dismiss-keyboard", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 350 },
+      { "name": "save-b15-record", "uiInput": ["click", "1284", "700"], "pauseAfterMs": 1200 }
+    ]
+  },
+  "postflight": [
+    { "name": "read-nextn-hilog", "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"], "timeoutSeconds": 60 },
+    { "name": "capture-manager-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-clock-diagnostic-save-b15-103.json", "-a"] },
+    { "name": "receive-manager-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-clock-diagnostic-save-b15-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/clock-diagnostic-save-b15-20260902T0946/layout.json"] },
+    { "name": "cleanup-manager-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-clock-diagnostic-save-b15-103.json"] }
+  ]
+}

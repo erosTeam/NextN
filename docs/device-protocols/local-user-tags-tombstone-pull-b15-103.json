@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-tombstone-pull-b15-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/tombstone-pull-b15-20260902T0956",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "4439686+temporary-clock-diagnostics",
+    "page": "Device B cold pull of device A artist:asanagi tombstone",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Start from B's active 15/blue/Hidden record, cold-start without clearing data, pull A's later tombstone, and verify the stale active record cannot resurrect the deleted tag."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "clear-bounded-hilog", "hdcArgs": ["shell", "hilog", "-r"] },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 12000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "wait-for-startup-sync", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 55000 },
+      { "name": "open-native-my-tab", "uiInput": ["click", "1036", "2470"], "pauseAfterMs": 800 },
+      { "name": "open-advanced", "uiInput": ["click", "800", "1340"], "pauseAfterMs": 800 },
+      { "name": "open-local-tag-manager", "uiInput": ["click", "800", "1318"], "pauseAfterMs": 1000 }
+    ]
+  },
+  "postflight": [
+    { "name": "read-nextn-hilog", "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"], "timeoutSeconds": 60 },
+    { "name": "capture-manager-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-tombstone-pull-b15-103.json", "-a"] },
+    { "name": "capture-manager-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-user-tags-tombstone-pull-b15-103.png"] },
+    { "name": "receive-manager-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-tombstone-pull-b15-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/tombstone-pull-b15-20260902T0956/layout.json"] },
+    { "name": "receive-manager-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-tombstone-pull-b15-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/tombstone-pull-b15-20260902T0956/screen.png"] },
+    { "name": "cleanup-manager-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-tombstone-pull-b15-103.json"] },
+    { "name": "cleanup-manager-screen", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-tombstone-pull-b15-103.png"] }
+  ]
+}

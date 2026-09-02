@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-webdav-cold-pull-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/diagnostic-open-manager-b-20260902T0922",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "4439686+temporary-save-diagnostics",
+    "page": "Device B local-tag manager after cold-start automatic WebDAV pull",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Cold-start without clearing data, wait for the configured automatic foreground sync, then follow the accepted My -> Advanced -> Local tags route and capture the device-B result plus bounded diagnostics. No manual sync action is used."
+  },
+  "preflight": [
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "clear-bounded-hilog", "hdcArgs": ["shell", "hilog", "-r"] },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 12000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-my-tab", "uiInput": ["click", "1036", "2470"], "pauseAfterMs": 800 },
+      { "name": "open-advanced", "uiInput": ["click", "800", "1340"], "pauseAfterMs": 800 },
+      { "name": "open-local-tag-manager", "uiInput": ["click", "800", "1318"], "pauseAfterMs": 1000 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-cold-manager-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-user-tags-webdav-cold-pull-103.json", "-a"] },
+    { "name": "capture-cold-manager-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-user-tags-webdav-cold-pull-103.png"] },
+    { "name": "receive-cold-manager-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-webdav-cold-pull-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/diagnostic-open-manager-b-20260902T0922/layout.json"] },
+    { "name": "receive-cold-manager-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-user-tags-webdav-cold-pull-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/diagnostic-open-manager-b-20260902T0922/screen.png"] },
+    { "name": "cleanup-cold-manager-layout", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-webdav-cold-pull-103.json"] },
+    { "name": "cleanup-cold-manager-screen", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-user-tags-webdav-cold-pull-103.png"] },
+    { "name": "read-nextn-hilog", "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"], "timeoutSeconds": 60 },
+    { "name": "verify-final-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}
