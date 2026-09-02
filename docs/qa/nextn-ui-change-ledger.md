@@ -10152,3 +10152,51 @@ authorize an edit, replace a device comparison, or define product completion.
   initial landscape orientation and its lease was released. Evidence is under
   `portrait-1600x2560/local-tag-detail/cleanup-confirmed-final-20260902T154000/` and
   `landscape-2560x1600/local-tag-detail/cleanup-restored-20260902T154300/`.
+
+## ACCEPTED ON 200 — Gallery Comments composer API 26 material fallback — 2026-09-03
+
+- **Why newly actionable:** the user supplied the current API 26 immersive-light material whitelist and reported
+  that custom components outside the allowed title-bar, bottom-TabBar and exempt popup/control regions cannot rely
+  on the new system material. The current `GalleryCommentsPage.CommentComposer` is a custom fixed overlay outside
+  those regions and still selects `systemMaterial` on API 26. The same user accepted the corrected NextE component
+  on selected device 200 and explicitly requested the same change and validation in NextN. This is new platform and
+  device counter-evidence that reopens only the previously frozen composer-material leaf.
+- **Whole parent-tree boundary:** preserve `GalleryCommentsPage -> HdsNavDestination -> Stack(bottom) ->
+  PullRefreshListScaffold + CommentComposer overlay`. Preserve the existing list/empty/loading/error owners, outer
+  safe-area padding, reply context, TextArea, send action, posting state, keyboard resizing, card geometry and title.
+  Change only the inner rounded composer surface that currently branches between API 26 material and an opaque card.
+- **Exact before/after and minimality:** replace the material/fallback split with one ordinary `backdropBlur(40)`
+  surface. Use a 20% white tint in light mode and 20% black tint in dark mode. Keep the existing default outer shadow;
+  add only a dark-mode `0.5vp` 20%-white rim because the dark default shadow does not separate the surface from dark
+  comment cards. The light mode has no rim. Remove only the now-unused composer-specific material resolver and imports;
+  retain all other API 26 Menu/Sheet material owners.
+- **Affected states and verification plan:** the shared surface is visible in loaded, empty, initial-loading,
+  first-error, disabled, ordinary focus, reply-prefilled multiline, submit-error and keyboard-resized states. Build
+  the signed candidate, install it in place on the user-selected target 200 without clearing data, and use the
+  established direct Comments route. Review the loaded unfocused surface in explicit dark and restored follow-system
+  light modes, then invoke one existing reply action without posting and verify the complete contextual composer and
+  send control remain inside the resized application root with the blur/rim still present. No list scroll, card,
+  request, account or comment mutation is authorized. Empty/initial/error visual states remain evidence-limited if
+  the existing route does not naturally produce them; do not manufacture request failure or submit error.
+- **User-facing error copy correction:** a naturally occurring transient request failure exposed the Chinese
+  `comments_error_load` text as `无法加载公开评论`. The user explicitly requested normal product language, so the same
+  bounded change replaces only that Chinese resource with `加载评论失败`; the error owner, Retry action, layout and
+  all other comment copy remain unchanged. Rebuild and reinstall before treating the live failure state as evidence.
+- **Device-200 acceptance:** the signed candidate was installed in place without uninstall or data clear and the
+  established integer-Want route opened loaded Gallery `471768` comments at the live folded portrait `1264×1848`
+  viewport. Follow-system light retained the translucent blurred composer without an extra rim. Explicit dark kept
+  the comment content visibly diffused behind the composer and added the intended subtle light rim, separating it
+  from the dark cards without changing its geometry. Evidence is under
+  `.hvigor/outputs/pura-x-max-lab200__HOP-AL10/folded/portrait-1264x1848/comment-composer-api26/`
+  in `20260903-final-candidate-follow-system/` and `20260903-dark-loaded/`.
+- **Reply/IME acceptance:** invoking the first loaded reply action on dark mode created the existing quoted reply
+  context and focused TextArea without entering or posting user text. With the IME visible, the application root was
+  `[0,107][1264,1031]`, the complete composer surface was `[34,643][1230,997]`, and the focused TextArea was
+  `[34,797][1109,997]`; the quote, close action, input and send control all remained above the keyboard. Evidence is
+  under `20260903-dark-reply-ime/`.
+- **Copy evidence boundary and restoration:** the rebuilt signed package contains Chinese `comments_error_load =
+  加载评论失败` and was reinstalled on 200. The transient request failure that motivated the correction did not
+  naturally recur on the rebuilt candidate, so this run does not promote a post-rebuild error screenshot as visual
+  acceptance and does not manufacture a network failure. The app theme was restored from explicit dark to its
+  original Follow system value, the final candidate was left on loaded Comments, and the display timeout was restored
+  to `120000ms` with the device awake.

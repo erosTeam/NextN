@@ -19,18 +19,19 @@ import {
   PageErrorState,
   PageLoadingState,
   PullRefreshListScaffold,
+  ThemeDisplayState,
   ThemeTokens,
   connectAccountSession,
   connectCommentTranslationSettings,
   connectContentFilters,
   connectLayoutSafeArea,
   connectLlmSourceProfiles,
+  connectThemeDisplay,
   nextNHdsTitle,
   supportsCommentTranslation,
 } from 'shared'
 import { common } from '@kit.AbilityKit'
-import { KeyboardAvoidMode, uiMaterial } from '@kit.ArkUI'
-import { deviceInfo } from '@kit.BasicServicesKit'
+import { KeyboardAvoidMode } from '@kit.ArkUI'
 import { HdsNavDestination } from '@kit.UIDesignKit'
 import { GalleryCommentCard } from '../components/GalleryCommentCard'
 
@@ -85,6 +86,7 @@ export struct GalleryCommentsPage {
   /** Retain the returned discussion so local rules reapply without a request. */
   @Local rawComments: NhComment[] = []
   @Local contentFilters: ContentFilterState = connectContentFilters()
+  @Local themeDisplay: ThemeDisplayState = connectThemeDisplay()
   @Local accountSession: AccountSessionState = connectAccountSession()
   @Local sources: LlmSourceProfilesState = connectLlmSourceProfiles()
   @Local commentTranslationSettings: CommentTranslationSettingsState = connectCommentTranslationSettings()
@@ -909,6 +911,20 @@ export struct GalleryCommentsPage {
     return this.layoutSafeArea.bottomAvoidHeight
   }
 
+  private composerBlurTint(): ResourceColor {
+    return this.themeDisplay.effectiveDark
+      ? ThemeTokens.FROSTED_SURFACE_DARK_TINT
+      : ThemeTokens.FROSTED_SURFACE_LIGHT_TINT
+  }
+
+  private composerBorderWidth(): number {
+    return this.themeDisplay.effectiveDark ? ThemeTokens.FROSTED_SURFACE_BORDER_WIDTH : 0
+  }
+
+  private composerBorderColor(): ResourceColor {
+    return this.themeDisplay.effectiveDark ? ThemeTokens.FROSTED_SURFACE_DARK_BORDER : Color.Transparent
+  }
+
   @Builder
   private CommentComposerFields() {
     Column({ space: COMMENT_COMPOSER_INNER_GAP }) {
@@ -993,28 +1009,7 @@ export struct GalleryCommentsPage {
   }
 
   @Builder
-  private MaterialCommentComposerSurface() {
-    if (deviceInfo.apiAvailable('26.0.0')) {
-      Column({ space: COMMENT_COMPOSER_INNER_GAP }) {
-        this.CommentComposerFields()
-      }
-      .width('100%')
-      .padding({
-        left: COMMENT_COMPOSER_INNER_GAP,
-        right: COMMENT_COMPOSER_INNER_GAP,
-        top: COMMENT_COMPOSER_INNER_GAP,
-        bottom: COMMENT_COMPOSER_INNER_GAP,
-      })
-      .backgroundColor(Color.Transparent)
-      .systemMaterial(this.composerSystemMaterial())
-      .borderRadius(COMMENT_COMPOSER_RADIUS)
-    } else {
-      this.FallbackCommentComposerSurface()
-    }
-  }
-
-  @Builder
-  private FallbackCommentComposerSurface() {
+  private CommentComposerSurface() {
     Column({ space: COMMENT_COMPOSER_INNER_GAP }) {
       this.CommentComposerFields()
     }
@@ -1025,31 +1020,17 @@ export struct GalleryCommentsPage {
       top: COMMENT_COMPOSER_INNER_GAP,
       bottom: COMMENT_COMPOSER_INNER_GAP,
     })
-    .backgroundColor(ThemeTokens.CARD_BACKGROUND)
+    .backdropBlur(ThemeTokens.FROSTED_SURFACE_BLUR_RADIUS)
+    .backgroundColor(this.composerBlurTint())
+    .border({ width: this.composerBorderWidth(), color: this.composerBorderColor() })
     .borderRadius(COMMENT_COMPOSER_RADIUS)
     .shadow(ShadowStyle.OUTER_DEFAULT_MD)
-  }
-
-  private composerSystemMaterial() {
-    if (deviceInfo.apiAvailable('26.0.0')) {
-      return new uiMaterial.ImmersiveMaterial({
-        style: uiMaterial.ImmersiveStyle.THICK,
-        colorInvert: true,
-        applyShadow: true,
-        interactive: true,
-      })
-    }
-    return undefined
   }
 
   @Builder
   private CommentComposer() {
     Column() {
-      if (deviceInfo.apiAvailable('26.0.0')) {
-        this.MaterialCommentComposerSurface()
-      } else {
-        this.FallbackCommentComposerSurface()
-      }
+      this.CommentComposerSurface()
     }
     .width('100%')
     .padding({

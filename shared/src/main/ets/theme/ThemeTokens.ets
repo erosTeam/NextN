@@ -35,6 +35,12 @@ export class ThemeTokens {
   static readonly TEXT_ON_BRAND: ResourceColor = '#FFFFFFFF'
   static readonly DIVIDER: ResourceColor = $r('sys.color.ohos_id_color_list_separator')
   static readonly OVERLAY_SCRIM: ResourceColor = '#99000000'
+  // Floating frosted surfaces keep most sampled content visible while retaining edge contrast in both themes.
+  static readonly FROSTED_SURFACE_LIGHT_TINT: ResourceColor = '#33FFFFFF'
+  static readonly FROSTED_SURFACE_DARK_TINT: ResourceColor = '#33000000'
+  static readonly FROSTED_SURFACE_DARK_BORDER: ResourceColor = '#33FFFFFF'
+  static readonly FROSTED_SURFACE_BORDER_WIDTH: number = 0.5
+  static readonly FROSTED_SURFACE_BLUR_RADIUS: number = 40
 
   // Spacing scale
   static readonly SPACE_XS: number = 4

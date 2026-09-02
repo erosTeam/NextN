@@ -232,7 +232,7 @@
     { "name": "comments_dialog_hint", "value": "评论将以此设备上的已登录账户公开发布" },
     { "name": "comments_dialog_post_title", "value": "发布评论" },
     { "name": "comments_empty_body", "value": "暂无评论内容" },
-    { "name": "comments_error_load", "value": "无法加载公开评论" },
+    { "name": "comments_error_load", "value": "加载评论失败" },
     { "name": "comments_error_post", "value": "无法发布此评论，请检查账户会话后重试" },
     { "name": "comments_error_signin_post", "value": "请先在设置中登录，再发布评论" },
     { "name": "comments_placeholder", "value": "写一条评论" },
