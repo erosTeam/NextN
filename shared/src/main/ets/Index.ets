@@ -69,8 +69,6 @@ export {
 export {
   NH_LOCAL_USER_TAG_SCOPE_GLOBAL,
   NH_LOCAL_USER_TAG_DEFAULT_WEIGHT,
-  NH_LOCAL_USER_TAG_MIN_WEIGHT,
-  NH_LOCAL_USER_TAG_MAX_WEIGHT,
   NH_LOCAL_USER_TAG_DEFAULT_FILTERING_THRESHOLD,
   NH_LOCAL_USER_TAG_MIN_FILTERING_THRESHOLD,
   NhLocalUserTag,
@@ -145,6 +143,7 @@ export {
 export { NhTagSuggestion } from './model/NhTagSuggestion'
 export { NhTagQuery } from './model/NhTagQuery'
 export { NhTagSuggestionDisplay } from './utils/NhTagSuggestionDisplay'
+export { NhTagSuggestionService } from './services/NhTagSuggestionService'
 export { NhComment } from './model/NhComment'
 export {
   LLM_SOURCE_TYPE_OPENAI_COMPATIBLE,
@@ -612,6 +611,7 @@ export { AppSearchField } from './components/AppSearchField'
 export { appMenuOptions } from './components/AppMenuOptions'
 export { appSheetOptions } from './components/AppSheetOptions'
 export { NextNListRow } from './components/NextNListRow'
+export { NextNInlineEditRow } from './components/NextNInlineEditRow'
 export { NextNGroupedListSection } from './components/NextNGroupedListSection'
 export { NextNSectionHeader } from './components/NextNSectionHeader'
 export { SecondaryListScaffold } from './components/SecondaryListScaffold'
@@ -625,6 +625,7 @@ export {
   nextNHdsCapsuleActivityHeight,
 } from './components/NextNHdsCapsuleBarButton'
 export { NextNModalScaffold } from './components/NextNModalScaffold'
+export { LocalUserTagEditorSheet } from './components/LocalUserTagEditorSheet'
 export { AppColorPicker } from './components/AppColorPicker'
 export { InlineRetryNotice } from './components/InlineRetryNotice'
 export { LoadingFooter } from './components/LoadingFooter'

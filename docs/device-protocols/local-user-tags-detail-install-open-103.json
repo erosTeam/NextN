@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-detail-install-open-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/candidate-install-open-20260902T134914",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "aa52e2d-local-tag-detail-dirty-candidate",
+    "page": "Local user tags manager candidate after in-place install",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Install in place without clearing data, cold-start, navigate through My and Advanced to the local tag manager, and capture the current title action and retained rows. Do not change sync settings."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "read-api-version", "hdcArgs": ["shell", "param", "get", "const.ohos.apiversion"] },
+    { "name": "install-signed-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 7000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-my-tab", "uiInput": ["click", "1036", "2470"], "pauseAfterMs": 900 },
+      { "name": "open-advanced", "uiInput": ["click", "800", "1340"], "pauseAfterMs": 900 },
+      { "name": "open-local-tag-manager", "uiInput": ["click", "800", "1318"], "pauseAfterMs": 1200 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-manager-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-tag-detail-install-open-103.json", "-a"] },
+    { "name": "capture-manager-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-tag-detail-install-open-103.png"] },
+    { "name": "receive-manager-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-detail-install-open-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/candidate-install-open-20260902T134914/layout.json"] },
+    { "name": "receive-manager-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-detail-install-open-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/candidate-install-open-20260902T134914/screen.png"] },
+    { "name": "cleanup-manager-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-tag-detail-install-open-103.json", "/data/local/tmp/nextn-local-tag-detail-install-open-103.png"] }
+  ]
+}

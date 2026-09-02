@@ -13,6 +13,9 @@ const SQL_UPSERT: string =
 const SQL_INSERT_DETAIL_FALLBACK: string =
   'INSERT INTO nh_tag_catalog (id, type, name, count, updated_at) VALUES (?, ?, ?, ?, 0) ' +
   'ON CONFLICT(id) DO NOTHING'
+const SQL_FIND_IDENTITY: string =
+  'SELECT id, type, name, count FROM nh_tag_catalog ' +
+  'WHERE LOWER(type) = ? AND LOWER(name) = ? ORDER BY updated_at DESC LIMIT 1'
 
 export class NhTagCatalogResolution {
   tags: Map<number, NhTag> = new Map<number, NhTag>()
@@ -24,6 +27,36 @@ export class NhTagCatalogResolution {
  * request, account state, translation preference, or user-generated data.
  */
 export class NhTagCatalogRepository {
+  static async findByIdentity(
+    context: common.UIAbilityContext,
+    namespace: string,
+    rawName: string,
+  ): Promise<NhTag | null> {
+    const normalizedNamespace: string = namespace.trim().toLowerCase()
+    const normalizedName: string = rawName.trim().toLowerCase()
+    if (normalizedNamespace.length === 0 || normalizedName.length === 0) {
+      return null
+    }
+    const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+    let rows: relationalStore.ResultSet | null = null
+    try {
+      rows = await store.querySql(SQL_FIND_IDENTITY, [normalizedNamespace, normalizedName])
+      if (!rows.goToFirstRow()) {
+        return null
+      }
+      const tag: NhTag = new NhTag()
+      tag.id = NhTagCatalogRepository.numberColumn(rows, 'id')
+      tag.type = NhTagCatalogRepository.stringColumn(rows, 'type')
+      tag.name = NhTagCatalogRepository.stringColumn(rows, 'name')
+      tag.count = NhTagCatalogRepository.numberColumn(rows, 'count')
+      return tag.id > 0 && tag.name.length > 0 ? tag : null
+    } finally {
+      if (rows !== null) {
+        rows.close()
+      }
+    }
+  }
+
   static async findByIds(
     context: common.UIAbilityContext,
     rawIds: number[],

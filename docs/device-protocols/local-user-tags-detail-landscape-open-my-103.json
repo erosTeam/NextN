@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-detail-landscape-open-my-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/landscape-2560x1600/local-tag-detail/unrestricted-weight-open-my-20260902T142700",
+  "display": { "widthPx": 2560, "heightPx": 1600 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "local-tag-detail-unrestricted-weight-dirty-candidate",
+    "page": "My tab after in-place install",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "landscape",
+    "resolution": "2560x1600",
+    "notes": "Install in place without clearing data, cold-start, open My using the observed landscape bottom-nav bounds, and capture semantic layout."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "read-api-version", "hdcArgs": ["shell", "param", "get", "const.ohos.apiversion"] },
+    { "name": "install-signed-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 7000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-my-tab", "uiInput": ["click", "616", "1508"], "pauseAfterMs": 1200 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-my-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-tag-landscape-my-103.json", "-a"] },
+    { "name": "capture-my-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-tag-landscape-my-103.png"] },
+    { "name": "receive-my-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-landscape-my-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/landscape-2560x1600/local-tag-detail/unrestricted-weight-open-my-20260902T142700/layout.json"] },
+    { "name": "receive-my-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-landscape-my-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/landscape-2560x1600/local-tag-detail/unrestricted-weight-open-my-20260902T142700/screen.png"] },
+    { "name": "cleanup-my-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-tag-landscape-my-103.json", "/data/local/tmp/nextn-local-tag-landscape-my-103.png"] }
+  ]
+}

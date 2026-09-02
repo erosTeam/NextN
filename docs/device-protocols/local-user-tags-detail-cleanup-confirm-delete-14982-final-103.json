@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-detail-cleanup-confirm-delete-14982-final-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/cleanup-confirmed-final-20260902T154000",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "local-tag-detail-unrestricted-weight-dirty-candidate",
+    "page": "Local user tags manager after confirmed cleanup",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Confirm deletion of character 14982 at the now-observed alert button and capture the manager; acceptance requires threshold 0 and no local tag rows."
+  },
+  "preflight": [],
+  "measurement": { "actions": [
+    { "name": "confirm-observed-delete-character-14982", "uiInput": ["click", "1028", "1360"], "pauseAfterMs": 1800 }
+  ] },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-tag-cleanup-confirmed-final-103.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-tag-cleanup-confirmed-final-103.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-cleanup-confirmed-final-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/cleanup-confirmed-final-20260902T154000/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-cleanup-confirmed-final-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/cleanup-confirmed-final-20260902T154000/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-tag-cleanup-confirmed-final-103.json", "/data/local/tmp/nextn-local-tag-cleanup-confirmed-final-103.png"] }
+  ]
+}

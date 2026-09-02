@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-detail-landscape-save-recording-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/landscape-2560x1600/local-tag-detail/save-animation-20260902T145100",
+  "recordingFileName": "nextn-local-tag-save-animation-103-20260902T145100.mp4",
+  "timeoutMs": 30000,
+  "warmupMs": 700,
+  "idleRecordMs": 0,
+  "display": { "widthPx": 2560, "heightPx": 1600 },
+  "actions": [
+    { "name": "confirm-local-tag-save", "uiInput": ["click", "2002", "340"], "pauseAfterMs": 1400 }
+  ],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "local-tag-detail-unrestricted-weight-dirty-candidate",
+    "page": "Save local tag and return to current manager",
+    "orientation": "landscape",
+    "resolution": "2560x1600",
+    "notes": "Uninterrupted normal-speed recording begins before confirm. Acceptance requires the half-modal close animation to complete before the queued persistence mutation updates the current manager list."
+  }
+}

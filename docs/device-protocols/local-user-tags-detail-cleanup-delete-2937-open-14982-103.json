@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-detail-cleanup-delete-2937-open-14982-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/cleanup-open-14982-20260902T153100",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "local-tag-detail-unrestricted-weight-dirty-candidate",
+    "page": "Local user tag editor for cleanup of character 14982",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Accept deletion of tag 2937 at the observed confirmation bound, then open the remaining observed manager row for character 14982."
+  },
+  "preflight": [],
+  "measurement": { "actions": [
+    { "name": "confirm-delete-tag-2937", "uiInput": ["click", "1028", "1360"], "pauseAfterMs": 1000 },
+    { "name": "open-remaining-character-14982-row", "uiInput": ["click", "800", "520"], "pauseAfterMs": 900 }
+  ] },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-tag-cleanup-14982-103.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-tag-cleanup-14982-103.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-cleanup-14982-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/cleanup-open-14982-20260902T153100/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-cleanup-14982-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/cleanup-open-14982-20260902T153100/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-tag-cleanup-14982-103.json", "/data/local/tmp/nextn-local-tag-cleanup-14982-103.png"] }
+  ]
+}

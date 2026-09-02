@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-detail-cleanup-request-delete-2937-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/cleanup-request-delete-2937-20260902T152900",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "local-tag-detail-unrestricted-weight-dirty-candidate",
+    "page": "Delete confirmation for local tag 2937",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Tap the observed shared-editor delete action and capture the confirmation bounds before accepting."
+  },
+  "preflight": [],
+  "measurement": { "actions": [
+    { "name": "tap-observed-delete-action", "uiInput": ["click", "1170", "700"], "pauseAfterMs": 700 }
+  ] },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-tag-delete-confirm-2937-103.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-tag-delete-confirm-2937-103.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-delete-confirm-2937-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/cleanup-request-delete-2937-20260902T152900/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-delete-confirm-2937-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/cleanup-request-delete-2937-20260902T152900/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-tag-delete-confirm-2937-103.json", "/data/local/tmp/nextn-local-tag-delete-confirm-2937-103.png"] }
+  ]
+}

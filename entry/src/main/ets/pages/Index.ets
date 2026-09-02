@@ -548,6 +548,7 @@ struct Index {
   // array value during build.
   @Local private titleScroller: Scroller = this.rootTabScrollers[0]
   @Local private historyClearVersion: number = 0
+  @Local private localUserTagsAddRequestVersion: number = 0
   @Local private favoritesActions: FavoritesActionState = connectFavoritesActions()
   @Local private galleryChromeVersion: number = 0
   private readerDestinationVisible: boolean = false
@@ -2709,11 +2710,31 @@ struct Index {
   @Builder
   private localUserTagsDestination() {
     HdsNavDestination() {
-      LocalUserTagsPage({ scroller: this.localUserTagsScroller })
+      LocalUserTagsPage({
+        scroller: this.localUserTagsScroller,
+        addRequestVersion: this.localUserTagsAddRequestVersion,
+      })
     }
-    .titleBar(nextNHdsTitle(AppStrings.get('title_local_user_tags')))
+    .titleBar(this.localUserTagsTitleBar())
     .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_LOCAL_USER_TAGS))
     .bindToScrollable([this.localUserTagsScroller])
+  }
+
+  private localUserTagsTitleBar(): Record<string, Object> {
+    const title: Record<string, Object> = { 'mainTitle': AppStrings.get('title_local_user_tags') }
+    const addAction: Record<string, Object> = {
+      'label': AppStrings.get('local_user_tag_add'),
+      'icon': $r('sys.symbol.plus'),
+      'isEnabled': true,
+      'action': (): void => { this.localUserTagsAddRequestVersion += 1 },
+    }
+    const addMenuItem: Record<string, Object> = { 'content': addAction }
+    const menuItems: Record<string, Object>[] = [addMenuItem]
+    const menu: Record<string, Object> = {
+      'value': menuItems,
+      'maxCount': 1,
+    }
+    return nextNHdsTitleBar({ 'title': title, 'menu': menu })
   }
 
   @Builder

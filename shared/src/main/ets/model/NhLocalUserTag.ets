@@ -1,7 +1,5 @@
 export const NH_LOCAL_USER_TAG_SCOPE_GLOBAL: string = 'global'
 export const NH_LOCAL_USER_TAG_DEFAULT_WEIGHT: number = 10
-export const NH_LOCAL_USER_TAG_MIN_WEIGHT: number = -99
-export const NH_LOCAL_USER_TAG_MAX_WEIGHT: number = 99
 export const NH_LOCAL_USER_TAG_DEFAULT_FILTERING_THRESHOLD: number = 0
 export const NH_LOCAL_USER_TAG_MIN_FILTERING_THRESHOLD: number = -9999
 
@@ -60,7 +58,8 @@ export class NhLocalUserTagContract {
     if (!Number.isFinite(value)) {
       return NH_LOCAL_USER_TAG_DEFAULT_WEIGHT
     }
-    return Math.max(NH_LOCAL_USER_TAG_MIN_WEIGHT, Math.min(NH_LOCAL_USER_TAG_MAX_WEIGHT, Math.round(value)))
+    const rounded: number = Math.round(value)
+    return Number.isSafeInteger(rounded) ? rounded : NH_LOCAL_USER_TAG_DEFAULT_WEIGHT
   }
 
   static normalizeFilteringThreshold(value: number): number {

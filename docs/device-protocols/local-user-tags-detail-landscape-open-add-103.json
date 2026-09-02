@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-detail-landscape-open-add-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/landscape-2560x1600/local-tag-detail/retry-open-add-20260902T144100",
+  "display": { "widthPx": 2560, "heightPx": 1600 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "local-tag-detail-dirty-candidate",
+    "page": "Add local tag sheet",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "landscape",
+    "resolution": "2560x1600",
+    "notes": "Open the upper-right add title action and capture the wide sheet before mutation."
+  },
+  "preflight": [],
+  "measurement": { "actions": [
+    { "name": "open-add-title-action", "uiInput": ["click", "2455", "170"], "pauseAfterMs": 1200 }
+  ] },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-tag-add-103.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-tag-add-103.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-add-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/landscape-2560x1600/local-tag-detail/retry-open-add-20260902T144100/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-add-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/landscape-2560x1600/local-tag-detail/retry-open-add-20260902T144100/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-tag-add-103.json", "/data/local/tmp/nextn-local-tag-add-103.png"] }
+  ]
+}

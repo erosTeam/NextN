@@ -16,6 +16,7 @@ export struct NextNModalScaffold {
   /** Kept opt-in so existing modal surfaces retain their established host colour. */
   @Param contentBackgroundColor: ResourceColor = ThemeTokens.SURFACE
   @Param contentHorizontalPadding: number = ThemeTokens.SPACE_MD
+  @Param closeInMenu: boolean = false
   @Param footerReserveHeight: number = 0
   @Param scroller: Scroller = new Scroller()
   @Param closeIcon: Resource = $r('sys.symbol.xmark')
@@ -78,7 +79,7 @@ export struct NextNModalScaffold {
           title: {
             mainTitle: this.title,
           },
-          subIcon: {
+          subIcon: this.closeInMenu ? undefined : {
             content: {
               label: 'modal_close',
               icon: this.closeIcon,
@@ -109,6 +110,20 @@ export struct NextNModalScaffold {
 
   private menuItems(): Record<string, Object>[] {
     const items: Record<string, Object>[] = []
+    if (this.closeInMenu) {
+      const closeAction: Record<string, Object> = {
+        'label': 'modal_close',
+        'icon': this.closeIcon,
+        'isEnabled': !this.confirmLoading,
+        'type': this.closeIconStyle,
+        'action': (): void => {
+          if (this.onClose) {
+            this.onClose()
+          }
+        },
+      }
+      items.push({ 'content': closeAction })
+    }
     if (this.showSecondaryAction) {
       const secondaryAction: Record<string, Object> = {
         'label': this.secondaryText,

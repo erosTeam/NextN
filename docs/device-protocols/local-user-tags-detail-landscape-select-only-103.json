@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-detail-landscape-select-only-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/landscape-2560x1600/local-tag-detail/select-only-20260902T144400",
+  "display": { "widthPx": 2560, "heightPx": 1600 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "local-tag-detail-unrestricted-weight-dirty-candidate",
+    "page": "Selected positive-id translated NH tag",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "landscape",
+    "resolution": "2560x1600",
+    "notes": "Select only the first visible translated NH tag suggestion, then capture the updated editor layout before further input."
+  },
+  "preflight": [],
+  "measurement": { "actions": [
+    { "name": "select-first-positive-id-translation-result", "uiInput": ["click", "1600", "1060"], "pauseAfterMs": 1000 }
+  ] },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-tag-select-only-103.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-tag-select-only-103.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-select-only-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/landscape-2560x1600/local-tag-detail/select-only-20260902T144400/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-select-only-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/landscape-2560x1600/local-tag-detail/select-only-20260902T144400/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-tag-select-only-103.json", "/data/local/tmp/nextn-local-tag-select-only-103.png"] }
+  ]
+}

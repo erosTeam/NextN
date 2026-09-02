@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import { pasteboard } from '@kit.BasicServicesKit'
 import { hilog } from '@kit.PerformanceAnalysisKit'
+import { vibrator } from '@kit.SensorServiceKit'
 import { HdsTabsController } from '@kit.UIDesignKit'
 import {
   ContentFilterService,
@@ -17,6 +18,7 @@ import {
   FavoriteMutationState,
   HistoryRepository,
   InlineRetryNotice,
+  LocalUserTagEditorSheet,
   LayoutSafeAreaBridge,
   LayoutSafeAreaState,
   LlmSourceProfilesState,
@@ -42,10 +44,12 @@ import {
   NhGallerySummary,
   NhLocalUserTagService,
   NhLocalUserTagState,
+  NhLocalUserTag,
   NhDownloadTask,
   NhDownloadTaskStatus,
   NhTag,
   NhTagQuery,
+  NhTagSuggestionDisplay,
   NhTorrentFileExportService,
   NextNHdsCapsuleBarButton,
   NextNPullRefreshController,
@@ -106,6 +110,9 @@ const TITLE_TRANSLATION_ACTION_SIZE: number = 30
 const TITLE_TRANSLATION_ICON_SIZE: number = 16
 const TITLE_TRANSLATION_ENGLISH: string = 'english'
 const TITLE_TRANSLATION_JAPANESE: string = 'japanese'
+const TAG_INFO_ACTION_SIZE: number = 32
+const TAG_INFO_HAPTIC_INTENSITY: number = 80
+const TAG_INFO_HAPTIC_FALLBACK_DURATION: number = 30
 const FOLLOW_OPERATION_VERTICAL_SCROLL_THRESHOLD: number = 12
 const FOLLOW_OPERATION_VERTICAL_DOMINANCE_RATIO: number = 1.2
 const DETAIL_CACHE_LOG_DOMAIN: number = 0x0000
@@ -196,6 +203,13 @@ export struct GalleryDetailPage {
    * the native sheet so drag/back dismissal cannot leave stale local state.
    */
   @Local fullTitleSheetShown: boolean = false
+  @Local selectedTag: NhTag = new NhTag()
+  @Local selectedTagDisplay: string = ''
+  @Local tagInfoSheetShown: boolean = false
+  @Local tagEditorSheetShown: boolean = false
+  @Local tagHiddenMutationInFlight: boolean = false
+  @Local pendingTagEditorSave: NhLocalUserTag | null = null
+  @Local pendingTagEditorDeleteId: number = 0
   @Local coverFailedUrl: string = ''
   /** The cover bitmap currently on screen; a verified cover replaces it only after loading. */
   @Local displayedCoverUrl: string = ''
@@ -1676,6 +1690,130 @@ export struct GalleryDetailPage {
     }
   }
 
+  private triggerTagLongPressHaptic(): void {
+    try {
+      if (vibrator.isHdHapticSupported()) {
+        vibrator.startVibration({
+          type: 'preset',
+          effectId: 'haptic.effect.soft',
+          count: 1,
+          intensity: TAG_INFO_HAPTIC_INTENSITY,
+        }, { usage: 'physicalFeedback' })
+      } else {
+        vibrator.startVibration({
+          type: 'time',
+          duration: TAG_INFO_HAPTIC_FALLBACK_DURATION,
+        }, { usage: 'physicalFeedback' })
+      }
+    } catch (_error) {}
+  }
+
+  private openTagInfo(item: GalleryTagVisualItem): void {
+    const selected: NhTag = new NhTag()
+    selected.id = item.tag.id
+    selected.type = item.tag.type
+    selected.name = item.tag.name
+    selected.count = item.tag.count
+    this.selectedTag = selected
+    const translated: string = this.tagMemberTranslatedLabel(item).trim()
+    if (translated.length > 0 && translated !== selected.name) {
+      const prefix: string = NhTagSuggestionDisplay.namespaceLabel(selected.type)
+      this.selectedTagDisplay = prefix.length > 0 ? `${prefix}:${translated}` : translated
+    } else {
+      this.selectedTagDisplay = selected.name
+    }
+    this.triggerTagLongPressHaptic()
+    this.tagInfoSheetShown = true
+  }
+
+  private selectedTagIdentity(): string {
+    return this.selectedTag.type.trim().length > 0
+      ? `${this.selectedTag.type}:${this.selectedTag.name}`
+      : this.selectedTag.name
+  }
+
+  private selectedLocalTagRecord(): NhLocalUserTag | null {
+    const revision: number = this.localUserTags.revision
+    const records: NhLocalUserTag[] = NhLocalUserTagService.activeTags()
+    if (revision < 0) {
+      return null
+    }
+    for (let index: number = 0; index < records.length; index++) {
+      if (records[index].tagId === this.selectedTag.id) {
+        return records[index]
+      }
+    }
+    return null
+  }
+
+  private selectedTagIsHidden(): boolean {
+    const record: NhLocalUserTag | null = this.selectedLocalTagRecord()
+    return record !== null && record.hidden
+  }
+
+  private selectedLocalTagWeight(): number {
+    const record: NhLocalUserTag | null = this.selectedLocalTagRecord()
+    return record !== null ? record.weight : 0
+  }
+
+  private selectedLocalTagColor(): string {
+    const record: NhLocalUserTag | null = this.selectedLocalTagRecord()
+    return record !== null ? record.colorCode : ''
+  }
+
+  private queueSelectedTagSave(record: NhLocalUserTag): void {
+    this.pendingTagEditorSave = record
+  }
+
+  private queueSelectedTagDelete(tagId: number): void {
+    this.pendingTagEditorDeleteId = tagId
+  }
+
+  private async commitSelectedTagEditorMutation(): Promise<void> {
+    const pendingSave: NhLocalUserTag | null = this.pendingTagEditorSave
+    const pendingDeleteId: number = this.pendingTagEditorDeleteId
+    this.pendingTagEditorSave = null
+    this.pendingTagEditorDeleteId = 0
+    try {
+      if (pendingSave !== null) {
+        await NhLocalUserTagService.save(this.context(), pendingSave)
+      } else if (pendingDeleteId > 0) {
+        await NhLocalUserTagService.remove(this.context(), pendingDeleteId)
+      }
+    } catch (_error) {
+      try {
+        this.getUIContext().getPromptAction().showToast({
+          message: pendingDeleteId > 0
+            ? AppStrings.get('local_user_tag_delete_failed')
+            : AppStrings.get('local_user_tag_save_failed'),
+        })
+      } catch (_promptError) {}
+    }
+  }
+
+  private async toggleSelectedTagHidden(): Promise<void> {
+    if (this.tagHiddenMutationInFlight || this.selectedTag.id <= 0) {
+      return
+    }
+    const current: NhLocalUserTag | null = this.selectedLocalTagRecord()
+    const record: NhLocalUserTag = current !== null ? current.copy() : new NhLocalUserTag()
+    if (current === null) {
+      record.tagId = this.selectedTag.id
+      record.namespaceSnapshot = this.selectedTag.type
+      record.nameSnapshot = this.selectedTag.name
+    }
+    record.hidden = !this.selectedTagIsHidden()
+    this.tagHiddenMutationInFlight = true
+    try {
+      await NhLocalUserTagService.save(this.context(), record)
+      this.toast(AppStrings.get(record.hidden ? 'gallery_tag_hidden' : 'gallery_tag_unhidden'))
+    } catch (_error) {
+      this.toast(AppStrings.get('local_user_tag_save_failed'))
+    } finally {
+      this.tagHiddenMutationInFlight = false
+    }
+  }
+
   private requestTagTranslations(generation: number, galleryId: number, tags: NhTag[]): void {
     const epoch: number = this.tagTranslationEpoch + 1
     this.tagTranslationEpoch = epoch
@@ -2684,6 +2822,145 @@ export struct GalleryDetailPage {
   }
 
   @Builder
+  private TagInfoAction(icon: Resource, label: string, active: boolean, enabled: boolean, action: () => void) {
+    Button({ type: ButtonType.Circle, stateEffect: true }) {
+      SymbolGlyph(icon)
+        .fontSize(ThemeTokens.FONT_SIZE_HEADING)
+        .fontColor([active ? Color.Red : ThemeTokens.TEXT_SECONDARY])
+    }
+    .buttonStyle(ButtonStyleMode.NORMAL)
+    .width(TAG_INFO_ACTION_SIZE)
+    .height(TAG_INFO_ACTION_SIZE)
+    .enabled(enabled)
+    .accessibilityText(label)
+    .onClick(action)
+  }
+
+  @Builder
+  private SelectedTagEditor() {
+    LocalUserTagEditorSheet({
+      tag: this.selectedTag,
+      allowDelete: true,
+      onClose: (): void => { this.tagEditorSheetShown = false },
+      onSaveRequested: (record: NhLocalUserTag): void => this.queueSelectedTagSave(record),
+      onDeleteRequested: (tagId: number): void => this.queueSelectedTagDelete(tagId),
+    })
+  }
+
+  @Builder
+  private TagInfoHeader() {
+    ListItem() {
+      Row({ space: ThemeTokens.SPACE_MD }) {
+        Column({ space: ThemeTokens.SPACE_XS }) {
+          Text(this.selectedTagDisplay.length > 0 ? this.selectedTagDisplay : this.selectedTag.name)
+            .fontSize(ThemeTokens.FONT_SIZE_TITLE)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(ThemeTokens.TEXT_PRIMARY)
+            .maxLines(2)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+            .width('100%')
+          Text(`${this.selectedTagIdentity()} · #${this.selectedTag.id}`)
+            .fontSize(ThemeTokens.FONT_SIZE_META)
+            .fontColor(ThemeTokens.TEXT_SECONDARY)
+            .width('100%')
+        }
+        .layoutWeight(1)
+        .alignItems(HorizontalAlign.Start)
+
+        Row({ space: ThemeTokens.SPACE_XS }) {
+          this.TagInfoAction(
+            $r('sys.symbol.eye_slash'),
+            AppStrings.get(this.selectedTagIsHidden() ? 'gallery_tag_unhide_action' : 'gallery_tag_hide_action'),
+            this.selectedTagIsHidden(),
+            !this.tagHiddenMutationInFlight,
+            (): void => { this.toggleSelectedTagHidden() },
+          )
+          Button({ type: ButtonType.Circle, stateEffect: true }) {
+            SymbolGlyph($r('sys.symbol.bookmark'))
+              .fontSize(ThemeTokens.FONT_SIZE_HEADING)
+              .fontColor([ThemeTokens.TEXT_SECONDARY])
+          }
+          .buttonStyle(ButtonStyleMode.NORMAL)
+          .width(TAG_INFO_ACTION_SIZE)
+          .height(TAG_INFO_ACTION_SIZE)
+          .enabled(this.selectedTag.id > 0 && !this.tagHiddenMutationInFlight)
+          .accessibilityText(AppStrings.get('gallery_tag_manage_action'))
+          .onClick((): void => { this.tagEditorSheetShown = true })
+          .bindSheet($$this.tagEditorSheetShown, this.SelectedTagEditor(), appSheetOptions({
+            detents: [SheetSize.LARGE],
+            showClose: false,
+            keyboardAvoidMode: SheetKeyboardAvoidMode.TRANSLATE_AND_RESIZE,
+            onDisappear: (): void => {
+              this.tagEditorSheetShown = false
+              this.commitSelectedTagEditorMutation()
+            },
+          }))
+        }
+        .flexShrink(0)
+      }
+      .width('100%')
+      .alignItems(VerticalAlign.Center)
+      .padding({ top: ThemeTokens.SPACE_SM, bottom: ThemeTokens.SPACE_SM })
+    }
+  }
+
+  @Builder
+  private TagInfoBody() {
+    ListItem() {
+      if (this.selectedLocalTagRecord() === null) {
+        Text(AppStrings.get('gallery_tag_no_local_rule'))
+          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+          .fontColor(ThemeTokens.TEXT_TERTIARY)
+          .width('100%')
+      } else {
+        NextNGroupedListSection({ inset: 0 }) {
+          Column({ space: ThemeTokens.SPACE_SM }) {
+            Text(AppStrings.format('gallery_tag_rule_summary', [
+              `${this.selectedLocalTagWeight()}`,
+              this.selectedTagIsHidden() ? AppStrings.get('common_on') : AppStrings.get('common_off'),
+            ]))
+              .fontSize(ThemeTokens.FONT_SIZE_BODY)
+              .fontColor(ThemeTokens.TEXT_SECONDARY)
+              .width('100%')
+            if (this.selectedLocalTagColor().length > 0) {
+              Row({ space: ThemeTokens.SPACE_SM }) {
+                Column()
+                  .width(24)
+                  .height(24)
+                  .borderRadius(12)
+                  .backgroundColor(this.selectedLocalTagColor())
+                  .borderWidth(1)
+                  .borderColor(ThemeTokens.DIVIDER)
+                Text(this.selectedLocalTagColor())
+                  .fontSize(ThemeTokens.FONT_SIZE_BODY)
+                  .fontColor(ThemeTokens.TEXT_SECONDARY)
+              }
+            }
+          }
+          .width('100%')
+          .padding(ThemeTokens.SPACE_MD)
+          .alignItems(HorizontalAlign.Start)
+        }
+      }
+    }
+  }
+
+  @Builder
+  private TagInfoSheet() {
+    NextNModalScaffold({
+      title: AppStrings.get('gallery_tag_info_title'),
+      showConfirmAction: false,
+      closeInMenu: true,
+      contentHorizontalPadding: ThemeTokens.SPACE_LG,
+      contentBackgroundColor: ThemeTokens.SURFACE_SUB,
+      onClose: (): void => { this.tagInfoSheetShown = false },
+    }) {
+      this.TagInfoHeader()
+      this.TagInfoBody()
+    }
+  }
+
+  @Builder
   private TagMember(item: GalleryTagVisualItem) {
     Text(this.tagMemberLabel(item))
       .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
@@ -2721,6 +2998,10 @@ export struct GalleryDetailPage {
           this.openTagSearch(item.tag)
         }
       })
+      .gesture(
+        LongPressGesture({ repeat: false, duration: 500 })
+          .onAction((): void => { this.openTagInfo(item) }),
+      )
   }
 
   private tagMemberColorCode(tag: NhTag): string {
@@ -3219,6 +3500,14 @@ export struct GalleryDetailPage {
     .width('100%')
     .height('100%')
     .backgroundColor(ThemeTokens.SURFACE)
+    .bindSheet($$this.tagInfoSheetShown, this.TagInfoSheet(), appSheetOptions({
+      detents: [SheetSize.MEDIUM, SheetSize.LARGE],
+      showClose: false,
+      onDisappear: (): void => {
+        this.tagInfoSheetShown = false
+        this.tagEditorSheetShown = false
+      },
+    }))
     .onAreaChange((_oldArea: Area, area: Area): void => {
       const width: number = area.width as number
       if (this.detailRootWidth !== width) {

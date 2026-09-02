@@ -12,12 +12,47 @@ function ok(name, condition) {
 }
 
 const manager = read('feature/settings/src/main/ets/pages/LocalUserTagsPage.ets')
+const editor = read('shared/src/main/ets/components/LocalUserTagEditorSheet.ets')
+const inlineEditor = read('shared/src/main/ets/components/NextNInlineEditRow.ets')
+const listRow = read('shared/src/main/ets/components/NextNListRow.ets')
+const subtabEditor = read('feature/search/src/main/ets/pages/HomeSubtabEditPage.ets')
+const entryShell = read('entry/src/main/ets/pages/Index.ets')
+ok('add local tag remains a NextE-style destination title action instead of a list row',
+  /private localUserTagsTitleBar\(\): Record<string, Object>/.test(entryShell) &&
+    /'label': AppStrings\.get\('local_user_tag_add'\)[\s\S]*?'icon': \$r\('sys\.symbol\.plus'\)/.test(entryShell) &&
+    !/private TagsGroup\(\)[\s\S]*?title: AppStrings\.get\('local_user_tag_add'\)/.test(manager))
 ok('selecting a catalog suggestion survives the TextInput programmatic echo',
   /if \(this\.draftTagId > 0 && value\.trim\(\) === selectedQuery\) \{[\s\S]*?return[\s\S]*?this\.draftTagId = 0/.test(manager) &&
     /this\.draftTagId = suggestion\.tagId[\s\S]*this\.draftNamespace = suggestion\.namespace[\s\S]*this\.draftName = suggestion\.rawName/.test(manager))
-ok('editor draft switches have one mutation path so a switch tap cannot be applied twice',
-  /private DraftSwitchRow\([\s\S]*?onSwitchChange: \(value: boolean\): void => onChange\(value\),[\s\S]*?\n      \}\)[\s\S]*?\n  \}/.test(manager) &&
-    !/private DraftSwitchRow\([\s\S]*?onAction: \(\): void => onChange\(!checked\)[\s\S]*?\n  \}/.test(manager))
+ok('all local-tag option rows reuse the shared list-row family',
+  !/DraftSwitchRow|Toggle\(|TextInput\(/.test(editor) &&
+    !/DraftSwitchRow|Toggle\(|TextInput\(/.test(manager) &&
+    /NextNListRow\(\{[\s\S]*?hasSwitch: true/.test(editor) &&
+    /NextNInlineEditRow\(\{[\s\S]*?title: AppStrings\.get\('local_user_tag_weight'\)/.test(editor) &&
+    /NextNInlineEditRow\(\{[\s\S]*?title: AppStrings\.get\('local_user_tag_weight'\)/.test(manager))
+ok('local weights accept signed safe integers without a product range or explanatory subtitle',
+  !/NH_LOCAL_USER_TAG_(MIN|MAX)_WEIGHT/.test(read('shared/src/main/ets/model/NhLocalUserTag.ets')) &&
+    /Number\.isSafeInteger\(parsed\) \? parsed : null/.test(editor) &&
+    /Number\.isSafeInteger\(parsed\) \? parsed : null/.test(manager) &&
+    !/local_user_tag_weight_desc/.test(editor) &&
+    !/local_user_tag_weight_desc/.test(manager))
+ok('the Subtab inline editor is shared and keeps the established transparent field',
+  /NextNInlineEditRow\(\{/.test(subtabEditor) &&
+    !/struct HomeSubtabInlineEditRow/.test(subtabEditor) &&
+    /NextNListRow\(\{[\s\S]*?useCustomTrailing: true/.test(inlineEditor) &&
+    /\.backgroundColor\(Color\.Transparent\)/.test(inlineEditor))
+ok('the shared list row owns one nonzero right inset for every suffix',
+  /cardSuffixMargin: this\.suffixPaddingRight/.test(listRow) &&
+    !/cardSuffixMargin: 0/.test(listRow))
+ok('saved tag rows replace stale ForEach closures after a local-tag revision',
+  /@Local displayedTags: NhLocalUserTag\[\]/.test(manager) &&
+    /onLocalUserTagsChanged\(\): void \{[\s\S]*?this\.refreshDisplayedTags\(\)/.test(manager) &&
+    /local_tag_\$\{this\.localUserTags\.revision\}/.test(manager))
+ok('saving closes the sheet before the local-tag mutation publishes a list revision',
+  /this\.pendingTagSave = record[\s\S]*?this\.closeSheet\(\)/.test(manager) &&
+    /onDisappear: \(\): void => \{[\s\S]*?this\.finishCloseSheet\(\)/.test(manager) &&
+    /private finishCloseSheet\(\): void \{[\s\S]*?this\.commitPendingMutation\(\)/.test(manager) &&
+    /onSaveRequested: \(updated: NhLocalUserTag\)/.test(manager))
 
 const rules = read('shared/src/main/ets/services/NhLocalUserTagRules.ets')
 ok('soft filtering sums every unique matched weight and uses strict threshold comparison',

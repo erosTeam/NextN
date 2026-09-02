@@ -10094,3 +10094,61 @@ authorize an edit, replace a device comparison, or define product completion.
   and explicit Hidden marker were retained. Evidence is under
   `.hvigor/outputs/local-user-tags-webdav-197-103/prefix-candidate-197-20260902T0900/` and
   `.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/prefix-candidate-20260902T0900/`.
+
+## ACCEPTED ON 103 — Gallery tag detail sheet and local-tag editor discoverability — 2026-09-02
+
+- **Why newly actionable:** the user explicitly requested the current NextE long-press tag-detail interaction on
+  NextN Gallery Detail, adapted from EH voting to one local Hidden toggle plus one local-tag management action. The
+  same feedback identifies three defects in the existing local-tag manager: add suggestions cannot discover a tag
+  through the Chinese translation dictionary, an existing tag's edit header omits that translation, and the weight
+  input has no visual separation from its containing card. The user also identified that the right-side Switches in
+  this half-modal editor sit too close to the card edge.
+- **Reference parent tree and interaction:** preserve NextE's `GalleryTagsCard root -> plain Text tag chip -> 500 ms
+  LongPressGesture -> one root-owned bindSheet -> modal scaffold -> tag header/actions/body`. Single tap remains exact
+  tag search. The detail Sheet keeps `[MEDIUM, LARGE]` detents and continuous sizing; its management action opens the
+  same local tag editor in a nested Sheet. On narrow portrait the Sheet is a bottom half-modal; on the wide landscape
+  window HarmonyOS may resolve the same `appSheetOptions` contract to a masked popup. The content tree must remain
+  identical across both host forms.
+- **Exact adaptation:** the header shows the translated namespace-prefixed label when available and the canonical
+  `namespace:name` plus NH numeric id. Replace NextE's two EH vote actions with one red-tinted-when-active Hidden
+  toggle that creates or updates only the selected local record while preserving color and weight; retain one
+  management action that opens the shared add/edit property editor. The info body summarizes the local Hidden,
+  weight and color state because the NH/dictionary model has no EH tag-introduction, link or image payload.
+- **Shared suggestion boundary:** extract the existing Search/Subtab autocomplete policy into one shared service:
+  local translation matches remain first, ordinary non-CJK input may merge NH public suggestions, and the local-tag
+  add path additionally resolves every dictionary-only candidate to a positive NH tag id by an exact NH catalog
+  check before it becomes selectable. Translated text is presentation only and never becomes the saved identity.
+- **Manager visual correction:** the existing-record editor and Gallery management action now share
+  `LocalUserTagEditorSheet`. Its identity, Hidden and default-color rows use `NextNListRow`; its weight control reuses
+  `NextNInlineEditRow`, whose trailing field receives the shared suffix inset and remains transparent rather than
+  introducing a one-off gray fill. The weight row intentionally contains only its title and input. It accepts signed
+  safe integers without inheriting EH's `-99..99` service limit. The existing threshold description and threshold
+  validation remain unchanged. Add and threshold ownership, color picker, Hidden/weight independence, delete
+  tombstones, RDB/WebDAV schemas and filtering semantics remain unchanged.
+- **Verification plan:** run focused suggestion/rule/resource checks and the signed build; install
+  in place only on authorized target `192.168.50.103:12345`. In portrait, prove single-tap search remains intact,
+  long press opens the bottom half-modal, Hidden toggles both directions, and management edits weight/color without
+  losing translation or the Switch right inset. In landscape, reopen the same tag and inspect the wide popup geometry, masking,
+  header/actions and nested editor. Finally search by a Chinese substring, select only a positive-id NH result, save,
+  cold-start, and restore any temporary local rule through the product UI. Source/build evidence alone is not visual
+  acceptance.
+- **Accepted evidence:** the signed candidate built successfully and was installed in place on only the authorized
+  `192.168.50.103:12345` target, without uninstall or data clear. Chinese query `朝` returned translated NH candidates
+  with namespace prefixes, raw identities and positive IDs; selected `character:aoi asahina #14982` saved weight
+  `100010` plus a pink custom color, repainted the manager after the Sheet close animation, survived a no-clear cold
+  start, and reopened with the same translation, ID, weight, color and default-color-off state. The save recording is
+  under `landscape-2560x1600/local-tag-detail/save-animation-20260902T145100/`; cold manager and reopened editor
+  evidence are under `cold-manager-20260902T145800/` and `reopen-tag-corrected-20260902T150300/`.
+- **Gallery interaction acceptance:** in landscape, a 500 ms long press on `标签:巨乳` opened the API 26 material
+  Sheet with exactly the Hidden and manage controls; Hidden changed to on and then back off, and manage opened the
+  same shared editor. In portrait, the same parent Sheet resolved to the bottom half-modal and the nested editor kept
+  the shared rows, right inset and weight row without a subtitle. Ordinary single tap still opened exact query
+  `tag:\"big breasts\"`. Evidence is under `gallery-long-press-20260902T150900/`,
+  `gallery-hidden-on-20260902T151100/`, `gallery-manage-20260902T151400/`,
+  `portrait-1600x2560/local-tag-detail/gallery-manage-20260902T151800/` and
+  `single-tap-search-20260902T152000/`.
+- **Restoration:** temporary rules `#2937` and `#14982` were deleted through the product UI. The final portrait and
+  restored-landscape manager states both show threshold `0` and `尚未设置本地标签`; the device was returned to its
+  initial landscape orientation and its lease was released. Evidence is under
+  `portrait-1600x2560/local-tag-detail/cleanup-confirmed-final-20260902T154000/` and
+  `landscape-2560x1600/local-tag-detail/cleanup-restored-20260902T154300/`.

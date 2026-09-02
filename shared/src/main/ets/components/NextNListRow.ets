@@ -51,7 +51,7 @@ export struct NextNListRow {
   @BuilderParam dropdownMenuBuilder: (select: (action: () => void) => void) => void =
     this.EmptyDropdownMenu
   /** Right inset of the wrapped custom suffix; rows may zero it when the suffix owns its padding. */
-  @Param suffixPaddingRight: Length = ThemeTokens.SPACE_MD
+  @Param suffixPaddingRight: Dimension = ThemeTokens.SPACE_MD
   @Param hasSwitch: boolean = false
   @Param checked: boolean = false
   /** Navigational location marker, separate from a switch's checked state. */
@@ -162,7 +162,7 @@ export struct NextNListRow {
     SymbolGlyph($r('sys.symbol.arrowtriangle_down_fill'))
       .fontSize(ThemeTokens.FONT_SIZE_TITLE)
       .fontColor([ThemeTokens.TEXT_TERTIARY])
-      .padding({ left: ThemeTokens.SPACE_XS, right: ThemeTokens.SPACE_MD })
+      .padding({ left: ThemeTokens.SPACE_XS })
   }
 
   @Builder
@@ -275,16 +275,15 @@ export struct NextNListRow {
     return undefined
   }
 
-  // NextE wraps every custom suffix in a Row with a fixed left inset and a
-  // per-row right inset (suffixPaddingRight); suffix content never touches the
-  // row edge directly.
+  // Custom suffixes own only their internal left separation. HdsListItemCard
+  // owns the common right inset for every suffix kind through cardSuffixMargin.
   @Builder
   private WrappedSuffixBuilder() {
     if (this.dropdownMenuEnabled) {
       Row() {
         this.customTrailing()
       }
-      .padding({ left: ThemeTokens.SPACE_SM, right: this.suffixPaddingRight })
+      .padding({ left: ThemeTokens.SPACE_SM })
       .bindMenu(this.dropdownMenuShown, this.BoundDropdownMenu, appMenuOptions({
         placement: Placement.BottomRight,
         onDisappear: (): void => {
@@ -295,7 +294,7 @@ export struct NextNListRow {
       Row() {
         this.customTrailing()
       }
-      .padding({ left: ThemeTokens.SPACE_SM, right: this.suffixPaddingRight })
+      .padding({ left: ThemeTokens.SPACE_SM })
     }
   }
 
@@ -309,7 +308,7 @@ export struct NextNListRow {
             : undefined,
         },
         cardPrefixMargin: 0,
-        cardSuffixMargin: 0,
+        cardSuffixMargin: this.suffixPaddingRight,
         prefixItem: this.prefixItem(),
         suffixItem: this.suffixItem(),
         cardBackgroundColor: this.selected

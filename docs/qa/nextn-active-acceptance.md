@@ -6125,3 +6125,27 @@ permitted in this repository.
   `.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/`.
   Removal evidence is under `.hvigor/outputs/remove-settings-sync/` and the corresponding 103
   `remove-settings-sync/` directory. The final main candidate rebuilt successfully in 9 s 271 ms.
+
+## Local user-tag Gallery detail and shared editor — accepted on 103 — 2026-09-02
+
+- The signed candidate was installed in place only on authorized target `192.168.50.103:12345`; no uninstall or
+  data clear was used. The focused host contracts and signed build passed before device acceptance.
+- In landscape, a 500 ms long press on `标签:巨乳` opened the shared API 26 material tag-detail Sheet with exactly
+  two controls: explicit Hidden and local-tag management. Hidden toggled on and back off; management opened the same
+  `LocalUserTagEditorSheet` used by the local-tag manager. In portrait, the same parent contract resolved to the
+  bottom half-modal and its nested editor retained the shared row geometry and right inset. Ordinary single tap still
+  opened exact query `tag:\"big breasts\"`.
+- Chinese query `朝` returned translated candidates with namespace prefixes, canonical raw identities and positive NH
+  IDs. `character:aoi asahina #14982` accepted weight `100010` and a pink custom color. The weight row displayed no
+  subtitle and imposed no EH `-99..99` cap; the existing threshold description and threshold value were unchanged.
+- The save recording shows the editor Sheet completing its close transition before the manager row refreshed. A
+  no-clear cold start and same-page reopen both restored `角色:朝日奈葵`, the canonical identity, ID, weight, color and
+  default-color-off state. Temporary rules `#2937` and `#14982` were then deleted through the product UI. The final
+  portrait and restored-landscape manager captures show threshold `0` and `尚未设置本地标签`; target 103 was returned
+  to its initial landscape orientation and its device lease was released.
+- Evidence is under `.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/` in the
+  `landscape-2560x1600/local-tag-detail/` and `portrait-1600x2560/local-tag-detail/` trees, especially
+  `save-animation-20260902T145100`, `cold-manager-20260902T145800`, `reopen-tag-corrected-20260902T150300`,
+  `gallery-long-press-20260902T150900`, `gallery-manage-20260902T151400`,
+  `gallery-manage-20260902T151800`, `single-tap-search-20260902T152000`,
+  `cleanup-confirmed-final-20260902T154000` and `cleanup-restored-20260902T154300`.

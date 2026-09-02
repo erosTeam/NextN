@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-detail-landscape-accept-and-open-my-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/landscape-2560x1600/local-tag-detail/accept-open-my-20260902T141100",
+  "display": { "widthPx": 2560, "heightPx": 1600 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "local-tag-detail-dirty-candidate",
+    "page": "My tab after system privacy consent",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "landscape",
+    "resolution": "2560x1600",
+    "notes": "Accept the visible system privacy consent, then open My and capture semantic layout."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "accept-system-privacy-consent", "uiInput": ["click", "1553", "1380"], "pauseAfterMs": 1400 },
+      { "name": "open-native-my-tab", "uiInput": ["click", "616", "1508"], "pauseAfterMs": 1400 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-my-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-tag-landscape-my2-103.json", "-a"] },
+    { "name": "capture-my-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-tag-landscape-my2-103.png"] },
+    { "name": "receive-my-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-landscape-my2-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/landscape-2560x1600/local-tag-detail/accept-open-my-20260902T141100/layout.json"] },
+    { "name": "receive-my-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-landscape-my2-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/landscape-2560x1600/local-tag-detail/accept-open-my-20260902T141100/screen.png"] },
+    { "name": "cleanup-my-artifacts", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-tag-landscape-my2-103.json", "/data/local/tmp/nextn-local-tag-landscape-my2-103.png"] }
+  ]
+}

@@ -2,10 +2,11 @@ import { common } from '@kit.AbilityKit'
 import {
   AppColorPicker,
   AppStrings,
+  LocalUserTagEditorSheet,
   NextNGroupedListSection,
+  NextNInlineEditRow,
   NextNListRow,
   NextNModalScaffold,
-  NhApiClient,
   NhLocalUserTag,
   NhLocalUserTagContract,
   NhLocalUserTagService,
@@ -13,6 +14,7 @@ import {
   NhTag,
   NhTagSuggestion,
   NhTagSuggestionDisplay,
+  NhTagSuggestionService,
   PageEmptyState,
   SecondaryListScaffold,
   TagTranslationRepository,
@@ -51,13 +53,19 @@ export struct LocalUserTagsPage {
   @Local suggestions: NhTagSuggestion[] = []
   @Local isSuggesting: boolean = false
   @Local translationLabels: Map<number, string> = new Map<number, string>()
+  @Local displayedTags: NhLocalUserTag[] = []
+  @Local pendingTagSave: NhLocalUserTag | null = null
+  @Local pendingTagDeleteId: number = 0
+  @Local pendingThresholdSave: number | null = null
   @Param scroller: Scroller = new Scroller()
+  @Param addRequestVersion: number = 0
   private suggestEpoch: number = 0
   private suggestTimer: number = -1
 
   aboutToAppear(): void {
     if (this.localUserTags.isRestored) {
       this.isRestoring = false
+      this.refreshDisplayedTags()
       this.refreshTranslationLabels()
       return
     }
@@ -66,12 +74,20 @@ export struct LocalUserTagsPage {
 
   aboutToDisappear(): void {
     this.cancelSuggestions()
-    this.closeSheet()
+    this.forceCloseSheet()
   }
 
   @Monitor('localUserTags.revision')
   onLocalUserTagsChanged(): void {
+    this.refreshDisplayedTags()
     this.refreshTranslationLabels()
+  }
+
+  @Monitor('addRequestVersion')
+  onAddRequested(): void {
+    if (this.addRequestVersion > 0) {
+      this.openAdd()
+    }
   }
 
   private context(): common.UIAbilityContext {
@@ -83,6 +99,7 @@ export struct LocalUserTagsPage {
     this.errorMessage = ''
     try {
       await NhLocalUserTagService.restore(this.context())
+      this.refreshDisplayedTags()
       await this.refreshTranslationLabels()
     } catch (_error) {
       this.errorMessage = AppStrings.get('local_user_tags_unavailable')
@@ -92,13 +109,13 @@ export struct LocalUserTagsPage {
   }
 
   private configuredTags(): NhLocalUserTag[] {
-    const revision: number = this.localUserTags.revision
+    return this.displayedTags
+  }
+
+  private refreshDisplayedTags(): void {
     const tags: NhLocalUserTag[] = NhLocalUserTagService.activeTags()
-    if (revision < 0) {
-      return []
-    }
     tags.sort((left: NhLocalUserTag, right: NhLocalUserTag): number => left.tagId - right.tagId)
-    return tags
+    this.displayedTags = tags
   }
 
   private thresholdLabel(): string {
@@ -151,7 +168,7 @@ export struct LocalUserTagsPage {
   }
 
   private rowKey(record: NhLocalUserTag): string {
-    return `local_tag_${record.tagId}`
+    return `local_tag_${this.localUserTags.revision}_${record.tagId}_${record.updatedAt}`
   }
 
   private openAdd(): void {
@@ -186,9 +203,18 @@ export struct LocalUserTagsPage {
     this.cancelSuggestions()
     this.pageSheetShown = false
     this.anchoredSheetShown = false
+  }
+
+  private finishCloseSheet(): void {
     this.sheetKind = ''
     this.editingTagId = 0
-    this.saving = false
+    this.commitPendingMutation()
+  }
+
+  private forceCloseSheet(): void {
+    this.pageSheetShown = false
+    this.anchoredSheetShown = false
+    this.finishCloseSheet()
   }
 
   private resetDraft(): void {
@@ -245,7 +271,12 @@ export struct LocalUserTagsPage {
   private async loadSuggestions(query: string, epoch: number): Promise<void> {
     this.isSuggesting = true
     try {
-      const result: NhTagSuggestion[] = await NhApiClient.tagSuggestions('', query, LOCAL_TAG_SUGGEST_LIMIT)
+      const result: NhTagSuggestion[] = await NhTagSuggestionService.suggestVerified(
+        this.context(),
+        '',
+        query,
+        LOCAL_TAG_SUGGEST_LIMIT,
+      )
       if (epoch !== this.suggestEpoch || this.sheetKind !== LOCAL_TAG_SHEET_ADD) {
         return
       }
@@ -277,8 +308,8 @@ export struct LocalUserTagsPage {
     if (!/^-?\d+$/.test(value)) {
       return null
     }
-    const parsed: number = Number.parseInt(value, 10)
-    return parsed < -99 || parsed > 99 ? null : parsed
+    const parsed: number = Number(value)
+    return Number.isSafeInteger(parsed) ? parsed : null
   }
 
   private parsedThreshold(): number | null {
@@ -307,7 +338,7 @@ export struct LocalUserTagsPage {
     return !this.saving && this.parsedThreshold() !== null
   }
 
-  private async saveEditor(): Promise<void> {
+  private saveEditor(): void {
     const weight: number | null = this.parsedWeight()
     if (!this.canSaveEditor() || weight === null) {
       this.errorMessage = this.duplicateDraftTag()
@@ -324,16 +355,11 @@ export struct LocalUserTagsPage {
     record.colorCode = this.draftDefaultColor ? '' : this.draftColor
     this.saving = true
     this.errorMessage = ''
-    try {
-      await NhLocalUserTagService.save(this.context(), record)
-      this.closeSheet()
-    } catch (_error) {
-      this.errorMessage = AppStrings.get('local_user_tag_save_failed')
-      this.saving = false
-    }
+    this.pendingTagSave = record
+    this.closeSheet()
   }
 
-  private async saveThreshold(): Promise<void> {
+  private saveThreshold(): void {
     const threshold: number | null = this.parsedThreshold()
     if (threshold === null) {
       this.errorMessage = AppStrings.get('local_user_tag_threshold_invalid')
@@ -341,13 +367,8 @@ export struct LocalUserTagsPage {
     }
     this.saving = true
     this.errorMessage = ''
-    try {
-      await NhLocalUserTagService.setFilteringThreshold(this.context(), threshold)
-      this.closeSheet()
-    } catch (_error) {
-      this.errorMessage = AppStrings.get('local_user_tag_save_failed')
-      this.saving = false
-    }
+    this.pendingThresholdSave = threshold
+    this.closeSheet()
   }
 
   private confirmDelete(): void {
@@ -369,13 +390,44 @@ export struct LocalUserTagsPage {
     })
   }
 
-  private async deleteTag(tagId: number): Promise<void> {
+  private deleteTag(tagId: number): void {
     this.saving = true
+    this.pendingTagDeleteId = tagId
+    this.closeSheet()
+  }
+
+  private queueKnownTagSave(record: NhLocalUserTag): void {
+    this.saving = true
+    this.errorMessage = ''
+    this.pendingTagSave = record
+  }
+
+  private queueKnownTagDelete(tagId: number): void {
+    this.saving = true
+    this.errorMessage = ''
+    this.pendingTagDeleteId = tagId
+  }
+
+  private async commitPendingMutation(): Promise<void> {
+    const pendingSave: NhLocalUserTag | null = this.pendingTagSave
+    const pendingDeleteId: number = this.pendingTagDeleteId
+    const pendingThreshold: number | null = this.pendingThresholdSave
+    this.pendingTagSave = null
+    this.pendingTagDeleteId = 0
+    this.pendingThresholdSave = null
     try {
-      await NhLocalUserTagService.remove(this.context(), tagId)
-      this.closeSheet()
+      if (pendingSave !== null) {
+        await NhLocalUserTagService.save(this.context(), pendingSave)
+      } else if (pendingDeleteId > 0) {
+        await NhLocalUserTagService.remove(this.context(), pendingDeleteId)
+      } else if (pendingThreshold !== null) {
+        await NhLocalUserTagService.setFilteringThreshold(this.context(), pendingThreshold)
+      }
+      this.saving = false
     } catch (_error) {
-      this.errorMessage = AppStrings.get('local_user_tag_delete_failed')
+      this.errorMessage = pendingDeleteId > 0
+        ? AppStrings.get('local_user_tag_delete_failed')
+        : AppStrings.get('local_user_tag_save_failed')
       this.saving = false
     }
   }
@@ -430,17 +482,36 @@ export struct LocalUserTagsPage {
     .width('100%')
     .bindSheet(
       this.anchoredSheetShown && this.editingTagId === record.tagId,
-      this.EditorSheet(),
+      this.KnownTagEditor(record),
       appSheetOptions({
         detents: [SheetSize.LARGE],
         showClose: false,
         onDisappear: (): void => {
           if (this.editingTagId === record.tagId) {
-            this.closeSheet()
+            this.finishCloseSheet()
           }
         },
       }),
     )
+  }
+
+  private tagForRecord(record: NhLocalUserTag): NhTag {
+    const tag: NhTag = new NhTag()
+    tag.id = record.tagId
+    tag.type = record.namespaceSnapshot
+    tag.name = record.nameSnapshot
+    return tag
+  }
+
+  @Builder
+  private KnownTagEditor(record: NhLocalUserTag) {
+    LocalUserTagEditorSheet({
+      tag: this.tagForRecord(record),
+      allowDelete: true,
+      onClose: (): void => this.closeSheet(),
+      onSaveRequested: (updated: NhLocalUserTag): void => this.queueKnownTagSave(updated),
+      onDeleteRequested: (tagId: number): void => this.queueKnownTagDelete(tagId),
+    })
   }
 
   @Builder
@@ -459,14 +530,7 @@ export struct LocalUserTagsPage {
   @Builder
   private TagsGroup() {
     NextNGroupedListSection() {
-      NextNListRow({
-        leadingIcon: $r('sys.symbol.plus'),
-        title: AppStrings.get('local_user_tag_add'),
-        subtitle: AppStrings.get('local_user_tag_add_desc'),
-        onAction: (): void => this.openAdd(),
-      })
       if (this.configuredTags().length > 0) {
-        this.RowDivider()
         ForEach(this.configuredTags(), (record: NhLocalUserTag, index: number): void => {
           this.TagRow(record)
           if (index < this.configuredTags().length - 1) {
@@ -478,24 +542,9 @@ export struct LocalUserTagsPage {
   }
 
   @Builder
-  private DraftSwitchRow(title: string, subtitle: string, checked: boolean, onChange: (value: boolean) => void) {
-    NextNGroupedListSection({ inset: 0 }) {
-      NextNListRow({
-        title: title,
-        subtitle: subtitle,
-        hasSwitch: true,
-        checked: checked,
-        showChevron: false,
-        isEnabled: !this.saving,
-        onSwitchChange: (value: boolean): void => onChange(value),
-      })
-    }
-  }
-
-  @Builder
   private Suggestions() {
     if (this.isSuggesting || this.suggestions.length > 0) {
-      NextNGroupedListSection({ inset: 0 }) {
+      NextNGroupedListSection() {
         if (this.isSuggesting && this.suggestions.length === 0) {
           NextNListRow({
             title: AppStrings.get('local_user_tag_suggesting'),
@@ -504,7 +553,9 @@ export struct LocalUserTagsPage {
         }
         ForEach(this.suggestions, (suggestion: NhTagSuggestion, index: number): void => {
           NextNListRow({
-            title: suggestion.rawName,
+            title: NhTagSuggestionDisplay.localizedTitle(suggestion).length > 0
+              ? NhTagSuggestionDisplay.localizedTitle(suggestion)
+              : suggestion.rawName,
             subtitle: `${suggestion.namespace}:${suggestion.rawName}`,
             trailingText: `#${suggestion.tagId}`,
             onAction: (): void => this.selectSuggestion(suggestion),
@@ -534,36 +585,20 @@ export struct LocalUserTagsPage {
       },
       onSecondary: (): void => this.confirmDelete(),
     }) {
-      if (this.sheetKind === LOCAL_TAG_SHEET_ADD) {
-        ListItem() {
-          NextNGroupedListSection({ inset: 0 }) {
-            Column({ space: ThemeTokens.SPACE_SM }) {
-              Text(AppStrings.get('local_user_tag_search_label'))
-                .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-                .fontColor(ThemeTokens.TEXT_SECONDARY)
-                .width('100%')
-              TextInput({ text: this.draftQuery, placeholder: AppStrings.get('local_user_tag_search_placeholder') })
-                .width('100%')
-                .backgroundColor(Color.Transparent)
-                .enabled(!this.saving)
-                .onChange((value: string): void => this.updateAddQuery(value))
-              if (this.draftTagId > 0) {
-                Text(AppStrings.format('local_user_tag_selected_id', [`${this.draftTagId}`]))
-                  .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-                  .fontColor(ThemeTokens.TEXT_SECONDARY)
-                  .width('100%')
-              }
-            }
-            .padding(ThemeTokens.SPACE_MD)
-            .width('100%')
-          }
-        }
-        ListItem() {
-          this.Suggestions()
-        }
-      } else {
-        ListItem() {
-          NextNGroupedListSection({ inset: 0 }) {
+      ListItem() {
+        NextNGroupedListSection() {
+          if (this.sheetKind === LOCAL_TAG_SHEET_ADD) {
+            NextNInlineEditRow({
+              title: AppStrings.get('local_user_tag_search_label'),
+              subtitle: this.draftTagId > 0
+                ? AppStrings.format('local_user_tag_selected_id', [`${this.draftTagId}`])
+                : '',
+              value: this.draftQuery,
+              placeholder: AppStrings.get('local_user_tag_search_placeholder'),
+              isEnabled: !this.saving,
+              onChange: (value: string): void => this.updateAddQuery(value),
+            })
+          } else {
             NextNListRow({
               title: this.draftName,
               subtitle: this.draftNamespace.length > 0
@@ -573,45 +608,40 @@ export struct LocalUserTagsPage {
               showChevron: false,
             })
           }
+          this.RowDivider()
+          NextNListRow({
+            title: AppStrings.get('local_user_tag_hidden'),
+            subtitle: AppStrings.get('local_user_tag_hidden_desc'),
+            hasSwitch: true,
+            checked: this.draftHidden,
+            showChevron: false,
+            isEnabled: !this.saving,
+            onSwitchChange: (value: boolean): void => { this.draftHidden = value },
+          })
+          this.RowDivider()
+          NextNInlineEditRow({
+            title: AppStrings.get('local_user_tag_weight'),
+            value: this.draftWeight,
+            placeholder: '10',
+            isEnabled: !this.saving,
+            onChange: (value: string): void => { this.draftWeight = value },
+          })
+          this.RowDivider()
+          NextNListRow({
+            title: AppStrings.get('local_user_tag_default_color'),
+            subtitle: AppStrings.get('local_user_tag_default_color_desc'),
+            hasSwitch: true,
+            checked: this.draftDefaultColor,
+            showChevron: false,
+            isEnabled: !this.saving,
+            onSwitchChange: (value: boolean): void => { this.draftDefaultColor = value },
+          })
         }
       }
-      ListItem() {
-        this.DraftSwitchRow(
-          AppStrings.get('local_user_tag_hidden'),
-          AppStrings.get('local_user_tag_hidden_desc'),
-          this.draftHidden,
-          (value: boolean): void => { this.draftHidden = value },
-        )
-      }
-      ListItem() {
-        NextNGroupedListSection({ inset: 0 }) {
-          Column({ space: ThemeTokens.SPACE_SM }) {
-            Text(AppStrings.get('local_user_tag_weight'))
-              .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-              .fontColor(ThemeTokens.TEXT_SECONDARY)
-              .width('100%')
-            TextInput({ text: this.draftWeight, placeholder: '10' })
-              .width('100%')
-              .backgroundColor(Color.Transparent)
-              .enabled(!this.saving)
-              .type(InputType.Normal)
-              .onChange((value: string): void => { this.draftWeight = value })
-            Text(AppStrings.get('local_user_tag_weight_desc'))
-              .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-              .fontColor(ThemeTokens.TEXT_SECONDARY)
-              .width('100%')
-          }
-          .padding(ThemeTokens.SPACE_MD)
-          .width('100%')
+      if (this.sheetKind === LOCAL_TAG_SHEET_ADD) {
+        ListItem() {
+          this.Suggestions()
         }
-      }
-      ListItem() {
-        this.DraftSwitchRow(
-          AppStrings.get('local_user_tag_default_color'),
-          AppStrings.get('local_user_tag_default_color_desc'),
-          this.draftDefaultColor,
-          (value: boolean): void => { this.draftDefaultColor = value },
-        )
       }
       if (!this.draftDefaultColor) {
         ListItem() {
@@ -619,7 +649,10 @@ export struct LocalUserTagsPage {
             title: AppStrings.get('local_user_tag_color'),
             color: this.draftColor,
             disabled: this.saving,
-            colorChange: (value: string): void => { this.draftColor = value },
+            colorChange: (value: string): void => {
+              this.draftColor = value
+              this.draftDefaultColor = false
+            },
           })
         }
       }
@@ -648,21 +681,16 @@ export struct LocalUserTagsPage {
       },
     }) {
       ListItem() {
-        NextNGroupedListSection({ inset: 0 }) {
-          Column({ space: ThemeTokens.SPACE_SM }) {
-            TextInput({ text: this.draftThreshold, placeholder: '0' })
-              .width('100%')
-              .backgroundColor(Color.Transparent)
-              .enabled(!this.saving)
-              .type(InputType.Normal)
-              .onChange((value: string): void => { this.draftThreshold = value })
-            Text(AppStrings.get('local_user_tag_threshold_help'))
-              .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-              .fontColor(ThemeTokens.TEXT_SECONDARY)
-              .width('100%')
-          }
-          .padding(ThemeTokens.SPACE_MD)
-          .width('100%')
+        NextNGroupedListSection() {
+          NextNInlineEditRow({
+            title: AppStrings.get('local_user_tag_threshold'),
+            subtitle: AppStrings.get('local_user_tag_threshold_help'),
+            value: this.draftThreshold,
+            placeholder: '0',
+            numeric: true,
+            isEnabled: !this.saving,
+            onChange: (value: string): void => { this.draftThreshold = value },
+          })
         }
       }
       if (this.errorMessage.length > 0) {
@@ -721,6 +749,7 @@ export struct LocalUserTagsPage {
     .bindSheet($$this.pageSheetShown, this.PageSheet(), appSheetOptions({
       detents: [this.sheetKind === LOCAL_TAG_SHEET_THRESHOLD ? SheetSize.MEDIUM : SheetSize.LARGE],
       showClose: false,
+      onDisappear: (): void => this.finishCloseSheet(),
     }))
   }
 }

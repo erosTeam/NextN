@@ -31,6 +31,7 @@ import {
   NhTagQuery,
   NhTagSuggestion,
   NhTagSuggestionDisplay,
+  NhTagSuggestionService,
   NextNGroupedListSection,
   NextNListRow,
   NextNModalScaffold,
@@ -1007,39 +1008,12 @@ export struct SearchPage {
     epoch: number,
   ): Promise<void> {
     try {
-      let suggestions: NhTagSuggestion[] = []
-      if (input.namespace.length > 0) {
-        suggestions = await TagTranslationRepository.suggest(
-          context,
-          input.namespace,
-          input.rawPrefix,
-          TAG_SUGGESTION_LIMIT,
-        )
-      } else {
-        suggestions = await TagTranslationRepository.suggestUnscoped(
-          context,
-          input.rawPrefix,
-          TAG_SUGGESTION_LIMIT,
-        )
-      }
-      if (
-        !this.isVisible ||
-        epoch !== this.tagSuggestionEpoch ||
-        !this.matchesCurrentTagSuggestionInput(input)
-      ) {
-        return
-      }
-      // The optional on-device dictionary remains first choice. ErosN's
-      // catalog endpoint accepts English only, so a pure CJK token returns
-      // local translated matches without issuing five pointless probes.
-      if (suggestions.length < TAG_SUGGESTION_LIMIT && !this.isPureCjk(input.rawPrefix)) {
-        const remoteSuggestions: NhTagSuggestion[] = await NhApiClient.tagSuggestions(
-          input.namespace,
-          input.rawPrefix,
-          TAG_SUGGESTION_LIMIT - suggestions.length,
-        )
-        suggestions = this.mergeTagSuggestions(suggestions, remoteSuggestions)
-      }
+      const suggestions: NhTagSuggestion[] = await NhTagSuggestionService.suggest(
+        context,
+        input.namespace,
+        input.rawPrefix,
+        TAG_SUGGESTION_LIMIT,
+      )
       if (
         !this.isVisible ||
         epoch !== this.tagSuggestionEpoch ||
@@ -1082,30 +1056,6 @@ export struct SearchPage {
     }
     this.preserveResultSnapshotForDraftChange()
     this.scheduleTagSuggestions(value)
-  }
-
-  private isPureCjk(value: string): boolean {
-    const hasCjk: boolean = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f]/.test(value)
-    return hasCjk && !/[A-Za-z0-9]/.test(value)
-  }
-
-  private mergeTagSuggestions(
-    localSuggestions: NhTagSuggestion[],
-    remoteSuggestions: NhTagSuggestion[],
-  ): NhTagSuggestion[] {
-    const merged: NhTagSuggestion[] = []
-    const seen: Set<string> = new Set<string>()
-    const candidates: NhTagSuggestion[] = localSuggestions.concat(remoteSuggestions)
-    for (let index: number = 0; index < candidates.length && merged.length < TAG_SUGGESTION_LIMIT; index++) {
-      const suggestion: NhTagSuggestion = candidates[index]
-      const key: string = `${suggestion.namespace}\u001f${suggestion.rawName.toLowerCase()}`
-      if (suggestion.namespace.length === 0 || suggestion.rawName.length === 0 || seen.has(key)) {
-        continue
-      }
-      seen.add(key)
-      merged.push(suggestion)
-    }
-    return merged
   }
 
   private acceptTagSuggestion(suggestion: NhTagSuggestion): void {

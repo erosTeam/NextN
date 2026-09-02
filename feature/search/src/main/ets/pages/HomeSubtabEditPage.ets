@@ -8,6 +8,7 @@ import {
   HomeSubtabState,
   HOME_SUBTAB_PRESENTATION_GLOBAL,
   NextNGroupedListSection,
+  NextNInlineEditRow,
   NextNListRow,
   NextNSectionHeader,
   NhBrowsePresentation,
@@ -401,7 +402,7 @@ export struct HomeSubtabEditPage {
   @Builder
   private NameSection() {
     NextNGroupedListSection() {
-      HomeSubtabInlineEditRow({
+      NextNInlineEditRow({
         title: AppStrings.get('home_subtab_name'),
         value: this.name,
         placeholder: AppStrings.get('home_subtab_name'),
@@ -567,54 +568,5 @@ export struct HomeSubtabEditPage {
     .titleBar(this.titleBar())
     .hideBackButton(this.hideBackButton)
     .backgroundColor($r('sys.color.ohos_id_color_sub_background'))
-  }
-}
-
-/** NextE InlineEditRow mirror: the field owns its draft so typing never rebuilds the page row. */
-@ComponentV2
-struct HomeSubtabInlineEditRow {
-  @Param title: string = ''
-  @Param value: string = ''
-  @Param placeholder: string = ''
-  @Event onChange: (value: string) => void = (): void => {}
-  @Local fieldText: string = ''
-
-  aboutToAppear(): void {
-    this.fieldText = this.value
-  }
-
-  @Monitor('value')
-  onExternalValueChanged(): void {
-    if (this.value !== this.fieldText) {
-      this.fieldText = this.value
-    }
-  }
-
-  @Builder
-  private InputSuffix() {
-    TextInput({ text: this.fieldText, placeholder: this.placeholder })
-      .textAlign(TextAlign.End)
-      .fontSize(ThemeTokens.FONT_SIZE_BODY)
-      .fontColor(ThemeTokens.TEXT_PRIMARY)
-      .placeholderColor(ThemeTokens.TEXT_TERTIARY)
-      .backgroundColor(Color.Transparent)
-      .height(40)
-      .padding({ top: 0, bottom: 0, left: 0, right: 2 })
-      .width(200)
-      .onChange((next: string): void => {
-        this.fieldText = next
-        this.onChange(next)
-      })
-  }
-
-  build() {
-    NextNListRow({
-      title: this.title,
-      showChevron: false,
-      useCustomTrailing: true,
-      customTrailing: (): void => {
-        this.InputSuffix()
-      },
-    })
   }
 }

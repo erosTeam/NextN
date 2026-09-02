@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-detail-cleanup-open-manager-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/cleanup-open-manager-20260902T152500",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "local-tag-detail-unrestricted-weight-dirty-candidate",
+    "page": "Local user tags manager before test-data cleanup",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Open the manager through the observed My and Advanced product path, then capture the actual test-rule bounds before deleting through UI."
+  },
+  "preflight": [],
+  "measurement": { "actions": [
+    { "name": "open-native-my-tab", "uiInput": ["click", "1036", "2470"], "pauseAfterMs": 900 },
+    { "name": "open-advanced", "uiInput": ["click", "800", "1340"], "pauseAfterMs": 900 },
+    { "name": "open-local-tag-manager", "uiInput": ["click", "800", "1318"], "pauseAfterMs": 1000 }
+  ] },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-local-tag-cleanup-manager-103.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-local-tag-cleanup-manager-103.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-cleanup-manager-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/cleanup-open-manager-20260902T152500/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-local-tag-cleanup-manager-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/cleanup-open-manager-20260902T152500/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-local-tag-cleanup-manager-103.json", "/data/local/tmp/nextn-local-tag-cleanup-manager-103.png"] }
+  ]
+}

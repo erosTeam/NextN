@@ -71,9 +71,9 @@ export default function nhLocalUserTagRulesTest(): void {
       done()
     })
 
-    it('normalizes EH ranges and canonical colors', 0, (done: Function) => {
-      expect(NhLocalUserTagContract.normalizeWeight(-1000)).assertEqual(-99)
-      expect(NhLocalUserTagContract.normalizeWeight(1000)).assertEqual(99)
+    it('keeps unrestricted integer weights and canonical colors', 0, (done: Function) => {
+      expect(NhLocalUserTagContract.normalizeWeight(-1000)).assertEqual(-1000)
+      expect(NhLocalUserTagContract.normalizeWeight(1000)).assertEqual(1000)
       expect(NhLocalUserTagContract.normalizeFilteringThreshold(-10000)).assertEqual(-9999)
       expect(NhLocalUserTagContract.normalizeFilteringThreshold(5)).assertEqual(0)
       expect(NhLocalUserTagContract.normalizeColorCode('1a2b3c')).assertEqual('#1A2B3C')

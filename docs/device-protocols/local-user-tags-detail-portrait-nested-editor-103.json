@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-detail-portrait-nested-editor-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/gallery-nested-editor-20260902T151600",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "local-tag-detail-unrestricted-weight-dirty-candidate",
+    "page": "Nested local tag editor from Gallery tag detail",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Rotate the already-open nested editor to portrait and capture the shared API26 sheet geometry without mutating the tag."
+  },
+  "preflight": [
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "rotate-portrait", "hdcArgs": ["shell", "hidumper", "-s", "DisplayManagerService", "-a", "-motion,0"], "pauseAfterMs": 1500 }
+  ],
+  "measurement": { "actions": [
+    { "name": "tap-noninteractive-sheet-title", "uiInput": ["click", "800", "250"], "pauseAfterMs": 300 }
+  ] },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-gallery-tag-nested-portrait-103.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-gallery-tag-nested-portrait-103.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-gallery-tag-nested-portrait-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/gallery-nested-editor-20260902T151600/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-gallery-tag-nested-portrait-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-tag-detail/gallery-nested-editor-20260902T151600/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-gallery-tag-nested-portrait-103.json", "/data/local/tmp/nextn-gallery-tag-nested-portrait-103.png"] }
+  ]
+}
