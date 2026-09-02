@@ -1001,8 +1001,6 @@
     { "name": "sync_dataset_quick_searches_hint", "value": "固定的搜索快捷方式" },
     { "name": "sync_dataset_local_block", "value": "屏蔽规则" },
     { "name": "sync_dataset_local_block_hint", "value": "标签与内容过滤规则" },
-    { "name": "sync_dataset_settings_tables", "value": "应用设置" },
-    { "name": "sync_dataset_settings_tables_hint", "value": "阅读、下载、浏览与目录偏好" },
     { "name": "backup_export", "value": "导出" },
     { "name": "backup_export_subtitle", "value": "把设置保存到文件" },
     { "name": "backup_import", "value": "导入" },

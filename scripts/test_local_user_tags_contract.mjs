@@ -32,6 +32,18 @@ ok('WebDAV keeps local user tags as an independent dataset',
   /DATASET_LOCAL_USER_TAGS: string = 'local-user-tags'/.test(sync) &&
     /out\.localUserTags = datasetId === DATASET_LOCAL_USER_TAGS/.test(sync))
 
+const syncSettings = read('shared/src/main/ets/settings/SyncSettings.ets')
+const syncTypes = read('shared/src/main/ets/sync/SyncTypes.ets')
+const syncPage = read('feature/settings/src/main/ets/pages/SyncSettingsPage.ets')
+ok('WebDAV application-settings sync is removed while legacy remote data stays parseable',
+  /selection\.settingsTables = false/.test(syncSettings) &&
+    /snapshot\.datasetSettingsTables = false/.test(syncSettings) &&
+    /settingsTables: boolean = false/.test(syncTypes) &&
+    !/DATASET_LOCAL_BLOCK,\s*DATASET_SETTINGS_TABLES,/.test(sync) &&
+    /if \(datasetId === DATASET_SETTINGS_TABLES\) \{\s*return false\s*\}/.test(sync) &&
+    !/sync_dataset_settings_tables/.test(syncPage) &&
+    !/'settingsTables'/.test(syncPage))
+
 if (failures === 0) {
   console.log('OK local user tags contract passed')
   process.exit(0)

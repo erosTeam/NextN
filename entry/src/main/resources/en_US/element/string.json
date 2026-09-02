@@ -1000,8 +1000,6 @@
     { "name": "sync_dataset_quick_searches_hint", "value": "Pinned search shortcuts" },
     { "name": "sync_dataset_local_block", "value": "Hidden tag rules" },
     { "name": "sync_dataset_local_block_hint", "value": "Tag and content filter rules" },
-    { "name": "sync_dataset_settings_tables", "value": "App settings" },
-    { "name": "sync_dataset_settings_tables_hint", "value": "Reader, download, browse, and catalog preferences" },
     { "name": "backup_export", "value": "Export" },
     { "name": "backup_export_subtitle", "value": "Save settings to a file" },
     { "name": "backup_import", "value": "Import" },

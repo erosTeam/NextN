@@ -6072,7 +6072,7 @@ permitted in this repository.
   combined dirty tree still passes the Gallery/Reader transition contract, `git diff --check`, a zero-match V1
   decorator inventory and the signed build. Device acceptance above remains tied to the exact installed candidate.
 
-## Local user tags — accepted on 197/103; global Search WebDAV owner pending — 2026-09-02
+## Local user tags — accepted on 197/103; cleanup pending — 2026-09-02
 
 - User outcome: local tag color, weight and explicit Hidden coexist. The soft-filter score is the sum of all matched
   configured tag weights and filters only when that sum is strictly below the threshold. Global Search and each
@@ -6108,10 +6108,11 @@ permitted in this repository.
   WebDAV dataset, completed a full known-dataset sync and manifest upload on B. After reinstalling the current
   client, the remote manifest still exposed all five local-user-tag shards (four skipped by matching state, one
   downloaded for a hash difference), the scheduled sync completed successfully, and active rules remained visible.
-- Remaining external block: the global Search owner travels in the broad existing `settings-tables` / `应用设置`
-  dataset. It is disabled on both devices, and enabling it would synchronize unrelated application settings as
-  well as this one key. The approval gate rejected doing that without the user's explicit authorization. The goal
-  remains OPEN only for that cross-device global-owner readback plus final product-path cleanup.
+- Ownership correction: after confirming that `settings-tables` covers four whole settings tables, the user
+  explicitly removed the WebDAV “应用设置” option. The global Search switch and its `catalog_preferences` table
+  remain device-local and locally backed up; old persisted `settingsTables=true` must be ignored. The Subtab switch
+  still belongs to the Subtab record and its cross-device recovery through `home-subtabs` is accepted above. The
+  goal remains OPEN for final candidate installation, two-device runtime verification and cleanup convergence.
 - New evidence roots are `.hvigor/outputs/local-user-tags-webdav-197-103/` and
   `.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/`.
   Temporary clock diagnostics were removed afterward; the clean main candidate rebuilt successfully in 12 s 66 ms.

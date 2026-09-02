@@ -2,8 +2,10 @@
  * NextN WebDAV sync envelope/manifest contract (ported from the NextE sync
  * chain). Application identity is NextN; dataset records are NH leaves:
  * reading_history, search_history, search_quick, content_filter_rules and the
- * four key-value settings tables. All merge/shard parameters stay identical
- * to NextE (64 shards, FNV-1a, ETag guard, tombstone by max timestamp).
+ * user-selected NH datasets. Legacy settings-table records remain parseable so
+ * a current client can preserve old remote manifests without consuming them.
+ * All merge/shard parameters stay identical to NextE (64 shards, FNV-1a,
+ * ETag guard, tombstone by max timestamp).
  */
 export const SYNC_MAGIC: string = 'NEXTN_SYNC'
 export const SYNC_APP_ID: string = 'com.erosteam.nextn'
@@ -169,7 +171,8 @@ export class SyncDatasetSelection {
   homeSubtabs: boolean = true
   localUserTags: boolean = true
   localBlock: boolean = true
-  settingsTables: boolean = true
+  /** Legacy sync-envelope field; current WebDAV selection keeps it disabled. */
+  settingsTables: boolean = false
 }
 
 export class SyncEnvelopeV1 {

@@ -7197,6 +7197,26 @@ authorize an edit, replace a device comparison, or define product completion.
 - **MED-2（已修）:** NextNListRow 增加 NextE 的 WrappedSuffixBuilder 等价实现：customTrailing 统一包 Row（padding left 8 / right suffixPaddingRight，默认 12），新增 suffixPaddingRight 参数；缓存行传 0 并保留按钮自带 padding（与 NextE CacheRow+ClearSuffix 精确一致）。构建通过、装机后四个清除按钮右缘 1272 不变（槽宽向左扩展），截图已更新。
 - **LOW（计划内）:** 华为云链路移除；entry 宿主多 bindToScrollable；屏蔽规则 hint 为 NH 数据面改写。静态结构结论不替代同态同视口视觉比对。
 
+## OPEN — Remove misleading WebDAV application-settings dataset — 2026-09-02
+
+- **Why newly actionable:** after inspecting the actual `settings-tables` scope, the user explicitly requested
+  removal of the WebDAV “应用设置” option because it groups four whole settings tables under a misleading broad
+  label and can make device-specific preferences overwrite one another.
+- **Whole parent-tree boundary:** only the final dataset row and its preceding divider inside
+  `SyncSettingsPage -> datasets ListItem -> NextNGroupedListSection` are removed. The WebDAV provider row, the seven
+  retained user-data dataset rows, page scaffold, navigation owner and WebDAV detail page remain unchanged.
+- **Exact before/after:** before, the last switch is “应用设置 / 阅读、下载、浏览与目录偏好” and an old persisted
+  `true` can include `settings-tables`. After, that row is absent and every WebDAV configuration forces
+  `settingsTables=false`; local backup/restore still owns the same four tables, and an existing remote
+  `settings-tables` manifest entry is preserved without being read, merged, restored or rewritten.
+- **Minimality rationale:** do not rename or redesign the page, move the four tables into another WebDAV dataset,
+  remove local backup support, delete remote files, or change any retained dataset default. The current device-local
+  settings remain untouched.
+- **Verification plan and unresolved risk:** run the focused contract and signed build, install in place on authorized
+  197/103 without clearing data, open the synchronization overview on both and confirm the row is absent. Run a
+  scheduled/manual sync with an old persisted selection and confirm no `dataset=settings-tables` start/apply event
+  occurs while retained datasets still complete. Device evidence, not source shape, closes the visible boundary.
+
 ## 导出入口从半模态改为 Dialog（2026-08-17，用户指示）
 
 - **用户指示:** "把导出也按照导入的形式改成 Dialog 的形式"——导出不再用半模态。

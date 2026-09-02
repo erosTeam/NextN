@@ -128,15 +128,15 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `tag_translation_meta` | cache | excluded | excluded | Dictionary metadata |
 | `nh_tag_catalog` | remote-cache | excluded | excluded | Regenerable tag catalog |
 | `nh_gallery_detail_cache` | remote-cache | excluded | excluded | Regenerable detail cache |
-| `reader_settings` | local-data | localData | WebDAV | Reader preferences |
+| `reader_settings` | local-data | localData | excluded | Device-local reader preferences |
 | `account_session` | secret | encrypted-only | excluded | Active and saved sessions, target-HUKS re-wrapped |
 | `account_profile` | account-secret | encrypted-only | excluded | Active and saved display profiles |
 | `account_session_verification` | runtime | excluded | excluded | Recovery decision marker |
 | `download_queue` | operational | excluded | excluded | Device download task state |
-| `download_settings` | local-data | localData | WebDAV | Download preferences |
+| `download_settings` | local-data | localData | excluded | Device-local download preferences |
 | `content_filter_rules` | local-data | localData | WebDAV | User rules |
-| `browse_presentation_settings` | local-data | localData | WebDAV | Browse presentation |
-| `catalog_preferences` | local-data | localData | WebDAV | Catalog query preferences |
+| `browse_presentation_settings` | local-data | localData | excluded | Device-local browse presentation |
+| `catalog_preferences` | local-data | localData | excluded | Device-local catalog query preferences |
 | `home_subtabs` | local-data | localData | WebDAV | Custom home subtabs |
 | `local_user_tags` | local-data | localData | WebDAV | Local tag color, weight, Hidden, and tombstones |
 | `local_user_tag_settings` | local-data | localData | WebDAV | Local tag filtering threshold and tombstone |

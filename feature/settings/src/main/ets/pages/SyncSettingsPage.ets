@@ -49,8 +49,6 @@ export struct SyncSettingsPage {
       snapshot.datasetLocalUserTags = enabled
     } else if (field === 'localBlock') {
       snapshot.datasetLocalBlock = enabled
-    } else if (field === 'settingsTables') {
-      snapshot.datasetSettingsTables = enabled
     }
     SyncSettings.save(this.ctx(), snapshot)
   }
@@ -188,13 +186,6 @@ export struct SyncSettingsPage {
               AppStrings.get('sync_dataset_local_block_hint'),
               this.settings.datasetLocalBlock,
               'localBlock',
-            )
-            this.RowDivider()
-            this.DatasetRow(
-              AppStrings.get('sync_dataset_settings_tables'),
-              AppStrings.get('sync_dataset_settings_tables_hint'),
-              this.settings.datasetSettingsTables,
-              'settingsTables',
             )
           }
         }

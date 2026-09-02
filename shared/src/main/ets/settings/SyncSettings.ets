@@ -86,7 +86,8 @@ export class SyncSettingsSnapshot {
   datasetHomeSubtabs: boolean = true
   datasetLocalUserTags: boolean = true
   datasetLocalBlock: boolean = true
-  datasetSettingsTables: boolean = true
+  /** Legacy persisted field; WebDAV no longer exposes or consumes settings tables. */
+  datasetSettingsTables: boolean = false
   lastRunAt: number = 0
   lastStatus: string = SYNC_STATUS_IDLE
   lastDetail: string = ''
@@ -110,7 +111,7 @@ export class SyncSettings {
     state.datasetHomeSubtabs = snapshot.datasetHomeSubtabs
     state.datasetLocalUserTags = snapshot.datasetLocalUserTags
     state.datasetLocalBlock = snapshot.datasetLocalBlock
-    state.datasetSettingsTables = snapshot.datasetSettingsTables
+    state.datasetSettingsTables = false
     state.lastRunAt = Math.max(0, snapshot.lastRunAt)
     state.lastStatus = SyncSettings.normalizeStatus(snapshot.lastStatus)
     state.lastDetail = SyncSettings.normalizeDetail(snapshot.lastDetail)
@@ -130,7 +131,7 @@ export class SyncSettings {
     snapshot.datasetHomeSubtabs = state.datasetHomeSubtabs
     snapshot.datasetLocalUserTags = state.datasetLocalUserTags
     snapshot.datasetLocalBlock = state.datasetLocalBlock
-    snapshot.datasetSettingsTables = state.datasetSettingsTables
+    snapshot.datasetSettingsTables = false
     snapshot.lastRunAt = state.lastRunAt
     snapshot.lastStatus = SyncSettings.normalizeStatus(state.lastStatus)
     snapshot.lastDetail = SyncSettings.normalizeDetail(state.lastDetail)
@@ -146,7 +147,7 @@ export class SyncSettings {
     selection.homeSubtabs = snapshot.datasetHomeSubtabs
     selection.localUserTags = snapshot.datasetLocalUserTags
     selection.localBlock = snapshot.datasetLocalBlock
-    selection.settingsTables = snapshot.datasetSettingsTables
+    selection.settingsTables = false
     return selection
   }
 
@@ -166,7 +167,8 @@ export class SyncSettings {
       snapshot.datasetHomeSubtabs = store.getSync(KEY_DATASET_HOME_SUBTABS, true) as boolean
       snapshot.datasetLocalUserTags = store.getSync(KEY_DATASET_LOCAL_USER_TAGS, true) as boolean
       snapshot.datasetLocalBlock = store.getSync(KEY_DATASET_LOCAL_BLOCK, true) as boolean
-      snapshot.datasetSettingsTables = store.getSync(KEY_DATASET_SETTINGS_TABLES, true) as boolean
+      // Ignore a legacy persisted true value. Device-specific application settings are not WebDAV data.
+      snapshot.datasetSettingsTables = false
       snapshot.lastRunAt = store.getSync(KEY_LAST_RUN_AT, 0) as number
       snapshot.lastStatus = store.getSync(KEY_LAST_STATUS, SYNC_STATUS_IDLE) as string
       snapshot.lastDetail = store.getSync(KEY_LAST_DETAIL, '') as string
@@ -179,6 +181,7 @@ export class SyncSettings {
   }
 
   static async save(context: common.UIAbilityContext, snapshot: SyncSettingsSnapshot): Promise<void> {
+    snapshot.datasetSettingsTables = false
     snapshot.webdavUrl = snapshot.webdavUrl.trim()
     snapshot.webdavUsername = snapshot.webdavUsername.trim()
     snapshot.lastRunAt = Math.max(0, snapshot.lastRunAt)

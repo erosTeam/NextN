@@ -19,7 +19,8 @@ export class SyncSettingsState {
   @Trace datasetHomeSubtabs: boolean = true
   @Trace datasetLocalUserTags: boolean = true
   @Trace datasetLocalBlock: boolean = true
-  @Trace datasetSettingsTables: boolean = true
+  /** Legacy state slot kept for persisted-schema compatibility; never enabled by current WebDAV. */
+  @Trace datasetSettingsTables: boolean = false
   @Trace lastRunAt: number = 0
   @Trace lastStatus: string = SYNC_STATUS_IDLE
   @Trace lastDetail: string = ''

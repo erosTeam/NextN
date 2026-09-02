@@ -1000,8 +1000,6 @@
     { "name": "sync_dataset_quick_searches_hint", "value": "ピン留めした検索ショートカット" },
     { "name": "sync_dataset_local_block", "value": "非表示タグルール" },
     { "name": "sync_dataset_local_block_hint", "value": "タグとコンテンツフィルタールール" },
-    { "name": "sync_dataset_settings_tables", "value": "アプリ設定" },
-    { "name": "sync_dataset_settings_tables_hint", "value": "リーダー、ダウンロード、閲覧、カタログの設定" },
     { "name": "backup_export", "value": "エクスポート" },
     { "name": "backup_export_subtitle", "value": "設定をファイルに保存" },
     { "name": "backup_import", "value": "インポート" },

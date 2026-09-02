@@ -1,7 +1,6 @@
 # NextN 本地用户标签系统开发指南
 
-> 状态：OPEN（Phase 1-5 与 §12.4 第 1-6 项已通过设备 197/103 验收；第 7 项的
-> Subtab 所有者已闭环，仅全局 Search 所有者跨设备恢复仍待明确授权）
+> 状态：OPEN（Phase 1-5 与 §12.4 已通过设备 197/103 验收；仅剩临时验收数据清理）
 > 目标：在不依赖 NH 上游新增 API 的前提下，提供一套受 EH My Tags
 > 启发的本地用户标签系统，并通过现有 WebDAV 在用户设备间同步。
 > 本文档是后续设计、实现和验收的权威入口。实现中若要改变本文的
@@ -76,7 +75,7 @@ NextE 的 `EhUsertag`、`MyTagsPage`、`GalleryTagsCard`、`UserTagStore` 和
 | `shared/src/main/ets/network/NhApiClient.ets` | 列表解析 `tag_ids`，再批量调用 `/api/v2/tags/ids` 丰富标签 | 不需要为本地过滤增加网络请求 |
 | `NhCloudBlacklistService` | NH 账号云端黑名单按相同 tag ID 空间过滤 | 保持独立的上游硬过滤来源 |
 | `ContentFilterService.filterGalleries()` | Home、Popular、搜索、收藏、相关图库共用本地过滤入口 | 本地标签硬/软过滤应并入同一结果链 |
-| `NhCatalogPreferences` | `searchLanguage`、`searchSort` 由 `catalog_preferences` 持久化，并进入备份/WebDAV `settings-tables` | 全局搜索忽略开关应进入同一所有权链 |
+| `NhCatalogPreferences` | `searchLanguage`、`searchSort` 由 `catalog_preferences` 持久化，并进入本地备份 | 全局搜索忽略开关应进入同一设备本地所有权链，不参与 WebDAV |
 | `SearchPage` | 持有未过滤的 `rawGalleries`、已展示的 `galleries` 和搜索条件 Sheet | 忽略开关变化可在不重新请求网络的情况下重新应用当前结果 |
 | `NhHomeSubtabProfile` / `HomeSubtabEditPage` | 自定义 Search Subtab 持有 query、language、sort，并可独立编辑 | Subtab 忽略开关应成为同级 profile 字段和编辑条件 |
 | `HomeSearchSubtabPage` | 按 profile 请求、缓存并从 `rawGalleries` 应用过滤 | 按各 Subtab 的忽略开关跳过本地用户标签过滤 |
@@ -438,7 +437,7 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
   清空当前本地标签。
 - `BackupLocalDataAdapter` 增加导出、预览计数、拓扑校验、事务恢复和 reapply。
 - 全局 `ignoreLocalUserTagFiltering` 作为 `catalog_preferences` 的新键，自动进入现有
-  `settingsTables` 备份和 WebDAV 数据集；不在 `local-user-tags` 中保存第二份。
+  `settingsTables` 本地备份；应用设置不参与 WebDAV，不在 `local-user-tags` 中保存第二份。
 - 每个自定义 Search Subtab 的值进入 `BackupHomeSubtabEntry` 和
   `SyncHomeSubtabRecord`，随现有 `home-subtabs` 数据集同步；旧记录缺失时取 `false`。
 - `docs/plans/active/persistence-dataset-inventory.md` 把新表登记为
@@ -517,8 +516,10 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 
 - 新增 `local-user-tags` 数据集、同步设置开关、LWW/tombstone 和旧客户端保留未知数据集
   合同。
-- 让全局开关随现有 `settings-tables/catalog_preferences` 同步，让 Subtab 开关随
+- 保持全局开关随 `catalog_preferences` 在设备本地持久化且可本地备份；让 Subtab 开关随
   `home-subtabs` 同步，并验证旧记录缺少字段时为 `false`。
+- 移除 WebDAV“应用设置”数据集选项并强制旧选择失效；保留旧远端 manifest 项，不读取、
+  合并、恢复或重写 `settings-tables`。
 - 接入备份导出/恢复/reapply 和持久化清单。
 - 完成真实两设备 WebDAV 往返。
 
@@ -572,8 +573,11 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 4. A/B 并发修改同一标签，验证整记录 LWW。
 5. A 删除标签后同步，B 不得将其复活。
 6. 旧版本客户端同步其他数据集，不得移除 `local-user-tags`。
-7. A 修改全局 Search 开关和一个自定义 Subtab 的开关，B 同步并冷启动后恢复两个各自的
-   值；旧同步记录缺少字段时保持默认关闭。
+7. 全局 Search 开关只验证本机持久化、冷启动恢复和本地备份，不参与 WebDAV；自定义
+   Subtab 的开关随该 Subtab 通过 `home-subtabs` 同步，B 冷启动后恢复该 Subtab 的值；
+   旧 Subtab 同步记录缺少字段时保持默认关闭。
+8. WebDAV 同步页不显示“应用设置”；即使旧持久化选择为开启，同步日志也不得出现
+   `dataset=settings-tables` 的开始、合并或应用事件，其他已启用数据集仍正常完成。
 
 ## 13. 实施停止条件
 
@@ -594,9 +598,11 @@ dataset，会保留未知 dataset；如果把新字段塞进现有 `local-block`
 Phase 1-5 的源码、契约脚本、主应用签名构建和 `entry@ohosTest` 签名构建已经完成。
 设备 197 已完成 §12.1-§12.3；设备 103 已作为同一 WebDAV 端点上的获授权设备 B，完成
 §12.4 的规则拉取、冷启动、整记录 LWW、删除墓碑不复活、旧客户端未知数据集保留以及
-Subtab 独立开关恢复，详见 §15.4-§15.5。当前只剩全局 Search 所有者的跨设备同步：它
-属于现有 `settings-tables`（UI 名称“应用设置”）数据集，开启会同步不止本功能的设置，
-审批要求先取得用户明确授权。完成该项并清理临时验收数据前本文档保持 `OPEN`。
+Subtab 独立开关恢复，详见 §15.4-§15.5。全局 Search 开关已经在设备 197 验证本地持久化
+和冷启动恢复。用户随后明确移除 WebDAV“应用设置”数据集；全局开关及同表其他设置保持
+设备本地所有权，只进入本地备份。当前仅剩安装最终候选、验证 197/103 均无该选项且运行时
+不再处理 `settings-tables`，以及确认设备 103 拉取临时验收数据的清理结果；完成前本文档
+保持 `OPEN`。
 
 ## 15. 设备 197 验收结果（2026-09-02）
 
@@ -661,18 +667,17 @@ Subtab 独立开关恢复，详见 §15.4-§15.5。当前只剩全局 Search 所
   `current-after-old-sync-20260902T1021/` 和
   `current-sync-settled-after-old-20260902T1024/`。
 
-### 15.5 Search/Subtab 跨设备边界与剩余授权
+### 15.5 Search/Subtab 持久化与同步边界
 
 - A 创建临时 Search Subtab `标签同步验收`，查询为公开条件 `language:chinese`，并开启
   Subtab 自己的“忽略本地标签过滤”。`home-subtabs` 自动上传后，B 无清数据冷启动拉取，
   管理器出现该记录；打开编辑页后开关语义节点为 `checked=true`。证据位于
   `subtab-create-sync-a-20260902T1002/`、`subtab-cold-pull-home-20260902T1005/`、
   `subtab-open-manager-20260902T1008/` 和 `subtab-open-synced-editor-20260902T1010/`。
-- 全局 Search 开关的单设备持久化、即时重投影和冷启动此前已在 197 验收，但其跨设备
-  所有权位于现有 `settings-tables`（“应用设置”）数据集，而不是窄的
-  `local-user-tags`。两台设备原先都关闭该数据集；自动开启会连同其他应用设置一起导出，
-  已被审批门拒绝。必须在用户明确授权临时开启后执行 A 修改、B 拉取/冷启动读回，再把
-  两台设备恢复为关闭，才能关闭 §12.4 第 7 项和全文档。
+- 全局 Search 开关的单设备持久化、即时重投影和冷启动已在 197 验收。用户随后明确决定
+  去掉 WebDAV“应用设置”选项，避免四张整表在不同设备之间互相覆盖。因此该开关与
+  `catalog_preferences` 的其他键保持设备本地所有权并进入本地备份，不再参与 WebDAV；
+  Subtab 开关仍属于 Subtab 记录，其 `home-subtabs` 跨设备恢复已在上文验收。
 - 临时时钟诊断源码已经移除，干净主包重新签名构建通过
-  `BUILD SUCCESSFUL in 12 s 66 ms`。测试标签、阈值和临时 Subtab 将保留到最后一个全局
-  Search 同步轮次完成后统一通过产品路径清理，避免提前删除远端验收基线。
+  `BUILD SUCCESSFUL in 12 s 66 ms`。测试标签、阈值和临时 Subtab 正通过产品路径清理；
+  清理同步到设备 103 并确认不再存在活动测试数据后关闭本文档。

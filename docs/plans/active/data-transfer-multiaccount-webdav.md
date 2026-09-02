@@ -64,7 +64,7 @@
 | search_history | 用户数据 | localData.searchHistory | 分片同步 | 无 |
 | search_quick | 用户数据 | localData.quickSearches | 分片同步 | 无 |
 | content_filter_rules | 用户数据 | localData.localBlock（NH 映射） | 分片同步 | 无 |
-| reader_settings / download_settings / browse_presentation_settings / catalog_preferences | 用户设置 | localData.settingsTables | 分片同步 | 无 |
+| reader_settings / download_settings / browse_presentation_settings / catalog_preferences | 用户设置 | localData.settingsTables | 排除（设备本地设置） | 无 |
 | account_session / account_profile / account_session_verification | 凭据/资料 | secrets（加密-only，HUKS 重封装后） | 排除 | 每账号独立 |
 | tag_translations / tag_translation_meta / nh_tag_catalog | 字典/缓存 | 排除 | 排除 | 无 |
 | nh_gallery_detail_cache / nh_gallery_list_cache / comic_translation_document_cache / comment_translation_cache | 缓存 | 排除 | 排除 | 无 |

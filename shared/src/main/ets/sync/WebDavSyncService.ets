@@ -54,7 +54,6 @@ const DATASET_IDS: string[] = [
     DATASET_HOME_SUBTABS,
     DATASET_LOCAL_USER_TAGS,
     DATASET_LOCAL_BLOCK,
-    DATASET_SETTINGS_TABLES,
 ]
 
 class WebDavBuiltShard {
@@ -1060,7 +1059,8 @@ export class WebDavSyncService {
         out.homeSubtabs = datasetId === DATASET_HOME_SUBTABS
         out.localUserTags = datasetId === DATASET_LOCAL_USER_TAGS
         out.localBlock = datasetId === DATASET_LOCAL_BLOCK
-        out.settingsTables = datasetId === DATASET_SETTINGS_TABLES
+        // Legacy remote settings-table shards are preserved in the manifest but never selected.
+        out.settingsTables = false
         return out
     }
 
@@ -1087,7 +1087,7 @@ export class WebDavSyncService {
             return selection.localBlock
         }
         if (datasetId === DATASET_SETTINGS_TABLES) {
-            return selection.settingsTables
+            return false
         }
         return false
     }
