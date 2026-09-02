@@ -10200,3 +10200,89 @@ authorize an edit, replace a device comparison, or define product completion.
   acceptance and does not manufacture a network failure. The app theme was restored from explicit dark to its
   original Follow system value, the final candidate was left on loaded Comments, and the display timeout was restored
   to `120000ms` with the device awake.
+
+## OPEN — Chinese product-copy natural-language pass — 2026-09-03
+
+- **Why newly actionable:** after reviewing the current Chinese UI copy, the user approved the proposed plain-language
+  rewrites and corrected two limits: the clipboard setting must still identify the clipboard, and accurate domain
+  terms such as `元数据`, `备份完整性校验` and `LLM 源` must not be replaced merely to sound conversational.
+  `SubTab` may be localized, but the localized wording must remain semantically exact and must not invent a
+  `筛选设置` concept.
+- **Whole parent-tree boundary:** only existing values in
+  `entry/src/main/resources/zh_CN/element/string.json` change. Resource keys, format arguments, pages, row ownership,
+  actions, state transitions, layouts and the other locales remain unchanged. The affected surfaces are Browse,
+  Search, Comments, Gallery/Reader, Account, translation/API settings, storage/download settings, clipboard prompts,
+  sync/backup, About, and comic-translation disclosures.
+- **Exact before/after:** `nh_settings_hint` 在 nhentai 管理当前账号 → 管理 nhentai 账号;
+  `browse_follow_global` 跟随全局 → 使用全局设置; `footer_unable_to_load_more` 无法加载更多项目 → 加载更多失败;
+  `footer_more_available` 还有更多项目 → 还有更多内容; `browse_loading_public` 正在加载公开图库… → 正在加载图库…;
+  `browse_load_failed` 无法加载公开图库 → 加载图库失败; `browse_footer_available` 还有更多公开图库 → 还有更多图库;
+  `search_condition_plain_subtitle` 作为一个完整关键词条件 → 按完整关键词搜索;
+  `search_condition_nh_raw_subtitle` 按所选类型将输入原文作为标签 → 按所选类型搜索这个标签;
+  `search_footer_complete` 已加载所有匹配页 → 已显示全部结果;
+  `comments_error_post` 无法发布此评论，请检查账户会话后重试 → 评论发布失败，请检查登录状态后重试;
+  `comments_status_filtered_empty` 没有公开评论符合本地筛选条件 → 没有符合筛选条件的评论;
+  `gallery_error_add_download` 无法将此画廊添加到下载 → 无法开始下载;
+  `gallery_error_export_torrent_session` 无法导出 torrent 文件，请检查账户会话后重试 → 无法导出种子文件，请重新登录后重试;
+  `gallery_error_external_open_unavailable` 当前无法在外部打开 → 无法用浏览器打开;
+  `gallery_error_share_unavailable` 系统分享当前不可用 → 暂时无法分享;
+  `gallery_tag_no_local_rule` 尚未为此标签设置本地属性。 → 还没有为这个标签设置颜色、权重或屏蔽规则;
+  `reader_comic_translation_running` 正在转录并翻译当前页… → 正在翻译当前页…;
+  `reader_comic_translation_provider_unavailable` 请先在设置中配置漫画翻译提供方和模型 → 请先在设置中选择漫画翻译服务和模型;
+  `settings_reader_comic_translation_hint` 端侧工作流、模型与云端服务 → 本地模型与云端服务;
+  `reader_retry_connection` 网络连接可用后重试 → 请检查网络后重试;
+  `favorites_checking_session` 正在检查账户会话… → 正在检查登录状态…; `favorites_empty` 该账号暂无收藏 → 还没有收藏;
+  `account_clear_failed` 无法清除此设备会话，请重试 → 退出登录失败，请重试;
+  `account_sign_out_subtitle` 清除此设备上的加密会话和浏览器身份状态 → 清除此设备的登录信息;
+  `account_sign_out_message` 这会清除此设备上的加密 NextN 会话和第一方登录状态，但会保留 Cloudflare 挑战 Cookie。 →
+  退出后将清除本机登录信息；安全验证记录会保留，方便下次登录。;
+  `account_api_login_failed` 认证服务未能完成请求，没有保存任何登录状态 → 登录失败，请稍后重试;
+  `account_api_login_rejected` 账户、密码或验证挑战未通过，没有保存任何登录状态 → 账号、密码或安全验证有误;
+  `account_api_login_save_failed` 服务端已接受登录，但此设备未能保存加密会话 → 登录成功，但无法保存登录信息，请重试;
+  `llm_source_delete_referenced` {0} 正在使用该源。删除后对应功能将保持未配置，不会自动切换。 →
+  {0} 正在使用该 LLM 源。删除后，相关功能将保持未配置，不会自动切换;
+  `llm_binding_source_hint` 选择一条可复用连接 → 选择 LLM 源;
+  `llm_binding_model_hint` 查询该源并选择模型 → 查看该 LLM 源支持的模型;
+  `llm_sources_hint` 统一管理可复用的 API 连接 → 统一管理可复用的 LLM 源;
+  `settings_manga_rendering_service_check_hint` 启用前验证固定服务协议和账户 → 先测试连接，确认服务和账号可用;
+  `settings_manga_rendering_service_security_hint` 服务账户仅安全保存在本设备上，不会保留服务令牌 → 账号信息仅加密保存在本机;
+  `settings_translation_local_model_remove_message` 漫画翻译会继续使用基础本地回退能力 → 移除后仍可使用基础本地翻译;
+  `comment_translation_auto_hint` 打开完整评论页时自动开始翻译 → 进入评论区时自动翻译;
+  `settings_browse_presentation_unavailable` 浏览展示偏好不可用 → 加载浏览布局失败;
+  `settings_tag_translation_status_unavailable` 本地词典状态不可用 → 加载标签词典状态失败;
+  `settings_reader_layout_unavailable` 阅读器布局偏好不可用 → 加载阅读设置失败;
+  `settings_download_settings_unavailable` 私有下载设置不可用 → 加载下载设置失败;
+  `settings_private_cache_status_unavailable` 私有缓存状态不可用 → 计算缓存占用失败;
+  `content_filters_unavailable` 本地内容过滤器不可用 → 加载内容过滤器失败;
+  `settings_private_cache_calculating` 正在计算私有缓存占用… → 正在计算缓存占用…;
+  `settings_private_cache_clear_message` 这只会移除本设备上“{0}”可再生成的私有缓存数据 → 将清除“{0}”缓存，需要时可重新生成;
+  `settings_private_cache_clear_all_message` 这只会移除可再生成的私有缓存数据。下载、历史、账号数据和偏好设置会保留。 →
+  缓存可重新生成；下载内容、阅读记录、账号和设置不会受影响。;
+  `settings_download_notify_complete_hint` 私有图库下载完成后发送通知 → 下载完成后通知我;
+  `download_batch_failed` 没有下载项更新成功，%1$d 个失败 → 操作失败：%1$d 个任务未更新;
+  `download_batch_partial` 已更新 %1$d/%2$d 个下载项，%3$d 个失败 → 共 %2$d 个任务，已更新 %1$d 个，%3$d 个失败;
+  `download_error_export` 无法导出此本地下载 → 无法导出这个下载;
+  `settings_content_filters_subtitle` 在本机隐藏命中的画廊和评论 → 隐藏符合规则的图库和评论;
+  `settings_clipboard_link_hint` 剪贴板中有受支持的画廊链接时提示打开 → 剪贴板中发现画廊链接时提示打开;
+  `clipboard_link_prompt_message` 检测到剪贴板中的受支持画廊链接 → 发现剪贴板中的画廊链接;
+  `sync_webdav_hint` 通过 WebDAV 目录同步选中的数据 → 选择要通过 WebDAV 同步的数据;
+  `backup_include_secrets_hint` 登录态、已存账户与 API Key——用密码加密 → 登录信息、保存的账号和 API Key 将使用密码加密;
+  `about_update_hint` 后台检查更新并加载日志 → 检查更新并查看更新日志;
+  `about_update_no_notes` 没有发布说明 → 暂无更新说明;
+  `comic_visual_route_torii_confirm` 只有主动翻译时才会向 Torii 上传当前漫画页和上下文。Torii 返回完整译图，不参与端侧处理管线。 →
+  只有主动翻译时才会向 Torii 上传当前漫画页和上下文。Torii 会返回完整译图，不会使用本地处理步骤。;
+  `comic_translation_live_evaluation_confirm` 使用当前提供方评测 2 张内置原创页？可能消耗额度，不会使用画廊页面。 →
+  用当前翻译服务测试 2 张内置图片？可能消耗额度，不会使用画廊图片。;
+  `comic_translation_multimodal_assist_notice` 开启后向所选 LLM 上传整页和文字区域裁图；关闭后只发送 OCR 文本与上下文。 →
+  开启后会把整页图片和文字区域截图发送给所选翻译服务；关闭后只发送识别出的文字和上下文。;
+  currently unused future-risk values also change: `comments_title_public_discussion` 公开讨论 → 评论;
+  `comments_status_loading_discussion` 正在加载公开讨论… → 正在加载评论…;
+  `gallery_comments_hint` 阅读公开讨论，或使用已登录账户发布评论 → 查看或发表评论;
+  `gallery_error_favourite_status` 收藏状态不可用，正在刷新 → 正在刷新收藏状态…;
+  `about_version_unavailable` 版本不可用 → 无法获取版本信息.
+- **Minimality and verification:** this is a Chinese-copy-only pass over existing keys; no new resource or UI
+  contract is added. Verify JSON/resource parsing, format-argument preservation, exact diff and a signed build. The
+  affected live pages remain OPEN for incidental visual review; source/build evidence does not claim every string
+  was rendered on device. Before closure, remove only the final `。` from the 28 existing Chinese resource values
+  that end in that character; sentence-internal punctuation, question marks, exclamation marks, abbreviations,
+  version numbers and terminology remain unchanged.
