@@ -971,7 +971,7 @@
     { "name": "fixed_left", "value": "固定左侧" },
     { "name": "fixed_right", "value": "固定右侧" },
     { "name": "settings_sync", "value": "同步" },
-    { "name": "settings_sync_hint", "value": "同步历史、阅读进度、快捷搜索、屏蔽规则和应用设置" },
+    { "name": "settings_sync_hint", "value": "同步历史、阅读进度、快捷搜索和屏蔽规则" },
     { "name": "sync_webdav", "value": "WebDAV 同步" },
     { "name": "sync_webdav_hint", "value": "通过 WebDAV 目录同步选中的数据" },
     { "name": "sync_provider_disabled", "value": "未启用" },

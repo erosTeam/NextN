@@ -970,7 +970,7 @@
     { "name": "fixed_left", "value": "左に固定" },
     { "name": "fixed_right", "value": "右に固定" },
     { "name": "settings_sync", "value": "同期" },
-    { "name": "settings_sync_hint", "value": "履歴、読書進捗、クイック検索、ブロックルール、アプリ設定を同期" },
+    { "name": "settings_sync_hint", "value": "履歴、読書進捗、クイック検索、ブロックルールを同期" },
     { "name": "sync_webdav", "value": "WebDAV同期" },
     { "name": "sync_webdav_hint", "value": "WebDAVディレクトリで選択したデータを同期" },
     { "name": "sync_provider_disabled", "value": "無効" },

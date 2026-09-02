@@ -971,7 +971,7 @@
     { "name": "fixed_left", "value": "Fixed left" },
     { "name": "fixed_right", "value": "Fixed right" },
     { "name": "settings_sync", "value": "Sync" },
-    { "name": "settings_sync_hint", "value": "Sync history, read progress, quick searches, block rules, and app settings" },
+    { "name": "settings_sync_hint", "value": "Sync history, read progress, quick searches, and block rules" },
     { "name": "sync_webdav", "value": "WebDAV sync" },
     { "name": "sync_webdav_hint", "value": "Sync selected data through a WebDAV directory" },
     { "name": "sync_provider_disabled", "value": "Disabled" },
