@@ -10043,3 +10043,29 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Final candidate:** committed source at `88bec05` rebuilt successfully and was installed in place on 197 without
   uninstall or data clear. A second final-candidate cold start shows the global Search bypass restored to off under
   `final-clean-search-bypass-cold/`. WebDAV two-device convergence remains outside this UI acceptance entry.
+
+## ACCEPTED ON 197 AND 103 — Local user-tag translated titles retain their namespace prefix — 2026-09-02
+
+- **Why newly actionable:** during the 197 → 103 WebDAV acceptance, the user identified the real synchronized
+  manager screenshot as missing the translated tag prefix. The rows rendered `朝凪` and `低比例萝莉`, while other
+  translated tag surfaces already present the same values as `作者:朝凪` and `标签:低比例萝莉`.
+- **Whole parent-tree boundary:** only the configured-tag row title inside
+  `LocalUserTagsPage -> TagsGroup -> TagRow -> NextNListRow` changes. Threshold/add rows, raw identity subtitle,
+  Hidden marker, weight/color badge, editor Sheet, rule ordering, translation storage and WebDAV payload remain
+  unchanged.
+- **Exact before/after:** when a dictionary translation differs from the raw tag name, prefix that translated body
+  with `NhTagSuggestionDisplay.namespaceLabel(namespaceSnapshot)` and `:`. Without a translation, retain the current
+  raw `nameSnapshot` title. This reuses the established Search suggestion/condition presentation policy instead of
+  adding a second namespace map.
+- **Minimality and affected states:** no RDB or sync record changes; the namespace and raw name remain visible in the
+  existing subtitle. Affected states are only translated configured rows on 197 and 103, including the reactive row
+  state after WebDAV merge and cold start. Untranslated rows such as `cuchuflin` stay unchanged.
+- **Verification plan:** build the signed candidate, install it in place without clearing data on the authorized 197
+  and 103 devices, and capture the same synchronized manager state. The candidate is accepted only if both devices
+  show the namespace-prefixed translated titles while retaining `-5`, `-8`, `+10`, blue color and explicit Hidden.
+- **Accepted evidence:** the signed candidate built successfully in `9 s 321 ms` and was installed in place on both
+  devices without clearing data. The same synchronized manager state rendered `标签:低比例萝莉` and `作者:朝凪`
+  on 197 and 103, while `cuchuflin` remained unchanged and the `-5` threshold, `-8/+10/+10` weights, blue badge
+  and explicit Hidden marker were retained. Evidence is under
+  `.hvigor/outputs/local-user-tags-webdav-197-103/prefix-candidate-197-20260902T0900/` and
+  `.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/local-user-tags-webdav/prefix-candidate-20260902T0900/`.

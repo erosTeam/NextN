@@ -12,6 +12,7 @@ import {
   NhLocalUserTagState,
   NhTag,
   NhTagSuggestion,
+  NhTagSuggestionDisplay,
   PageEmptyState,
   SecondaryListScaffold,
   TagTranslationRepository,
@@ -134,7 +135,12 @@ export struct LocalUserTagsPage {
   }
 
   private tagTitle(record: NhLocalUserTag): string {
-    return this.translationLabels.get(record.tagId) ?? record.nameSnapshot
+    const translated: string | undefined = this.translationLabels.get(record.tagId)
+    if (translated === undefined) {
+      return record.nameSnapshot
+    }
+    const prefix: string = NhTagSuggestionDisplay.namespaceLabel(record.namespaceSnapshot)
+    return prefix.length > 0 ? `${prefix}:${translated}` : translated
   }
 
   private tagSubtitle(record: NhLocalUserTag): string {
