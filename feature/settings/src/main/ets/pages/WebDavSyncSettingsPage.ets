@@ -6,6 +6,7 @@ import {
   NextNGroupedListSection,
   NextNListRow,
   SecondaryListScaffold,
+  SettingsTextField,
   SYNC_STATUS_FAILED,
   SYNC_STATUS_OK,
   SyncSettings,
@@ -149,53 +150,40 @@ export struct WebDavSyncSettingsPage {
     secret: boolean,
     field: string,
   ) {
-    Column({ space: ThemeTokens.SPACE_XS }) {
-      Text(label)
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
-        .width('100%')
-      if (field === 'url') {
-        TextInput({ text: $$this.webdavUrlDraft, placeholder: placeholder })
-          .type(secret ? InputType.Password : InputType.Normal)
-          .width('100%')
-          .height(48)
-          .fontSize(ThemeTokens.FONT_SIZE_BODY)
-          .backgroundColor(ThemeTokens.BRAND_CONTAINER)
-          .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
-          .onChange(() => {
-            this.saveWebDavConfig()
-          })
-      } else if (field === 'username') {
-        TextInput({ text: $$this.webdavUsernameDraft, placeholder: placeholder })
-          .type(secret ? InputType.Password : InputType.Normal)
-          .width('100%')
-          .height(48)
-          .fontSize(ThemeTokens.FONT_SIZE_BODY)
-          .backgroundColor(ThemeTokens.BRAND_CONTAINER)
-          .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
-          .onChange(() => {
-            this.saveWebDavConfig()
-          })
-      } else {
-        TextInput({ text: $$this.webdavPasswordDraft, placeholder: placeholder })
-          .type(secret ? InputType.Password : InputType.Normal)
-          .width('100%')
-          .height(48)
-          .fontSize(ThemeTokens.FONT_SIZE_BODY)
-          .backgroundColor(ThemeTokens.BRAND_CONTAINER)
-          .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
-          .onChange(() => {
-            this.saveWebDavConfig()
-          })
-      }
+    if (field === 'url') {
+      SettingsTextField({
+        label: label,
+        value: this.webdavUrlDraft,
+        placeholder: placeholder,
+        inputType: secret ? InputType.Password : InputType.Normal,
+        onChange: (value: string): void => {
+          this.webdavUrlDraft = value
+          this.saveWebDavConfig()
+        },
+      })
+    } else if (field === 'username') {
+      SettingsTextField({
+        label: label,
+        value: this.webdavUsernameDraft,
+        placeholder: placeholder,
+        inputType: secret ? InputType.Password : InputType.Normal,
+        onChange: (value: string): void => {
+          this.webdavUsernameDraft = value
+          this.saveWebDavConfig()
+        },
+      })
+    } else {
+      SettingsTextField({
+        label: label,
+        value: this.webdavPasswordDraft,
+        placeholder: placeholder,
+        inputType: secret ? InputType.Password : InputType.Normal,
+        onChange: (value: string): void => {
+          this.webdavPasswordDraft = value
+          this.saveWebDavConfig()
+        },
+      })
     }
-    .width('100%')
-    .padding({
-      left: ThemeTokens.SPACE_MD,
-      right: ThemeTokens.SPACE_MD,
-      top: ThemeTokens.SPACE_SM,
-      bottom: ThemeTokens.SPACE_SM,
-    })
   }
 
   @Builder

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-settings-text-field-parity-open-picker-portrait-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/settings-text-field-parity/20260904T031400",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "f7e09e1-plus-settings-text-field-parity-dirty-candidate",
+    "page": "Open custom color picker in the current unsaved local-tag draft",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Use the measured default-color Toggle bounds [1228,1212][1314,1260], disable it in the already-open unsaved draft, scroll within the modal, and capture the Hex input without saving."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "disable-default-color-at-measured-toggle", "uiInput": ["click", "1271", "1236"], "pauseAfterMs": 1100 },
+      { "name": "scroll-picker-to-hex-field", "uiInput": ["fling", "800", "2100", "800", "900", "10000"], "pauseAfterMs": 800 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-settings-text-field-parity-open-picker-103.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-settings-text-field-parity-open-picker-103.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-settings-text-field-parity-open-picker-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/settings-text-field-parity/20260904T031400/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-settings-text-field-parity-open-picker-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/settings-text-field-parity/20260904T031400/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-settings-text-field-parity-open-picker-103.json", "/data/local/tmp/nextn-settings-text-field-parity-open-picker-103.png"] }
+  ]
+}

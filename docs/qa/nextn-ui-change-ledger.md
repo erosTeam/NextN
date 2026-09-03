@@ -10378,3 +10378,48 @@ authorize an edit, replace a device comparison, or define product completion.
   captured under `27-restore-max-height-run/artifacts/`; direction and double-page state under
   `29-restore-direction-run/artifacts/`; the closed sheet and visible double-page Reader under
   `30-close-restored-settings-run/artifacts/`. The 237 lease was then released.
+
+## DEVICE PASS — Shared settings text-field and tag-color hex-field parity — 2026-09-04
+
+- **Why newly actionable:** the user observed that the tag editor's hexadecimal color input still renders as an
+  opaque grey box and identified it as another incomplete NextE port. The subsequent source audit confirmed that
+  NextN replaced NextE's system dynamic input background with the app-owned opaque cover-placeholder color and also
+  omitted NextE's shared `SettingsTextField`, leaving several settings forms as duplicated hand-written fields.
+- **Faulty assumption and impact:** treating `ThemeTokens.COVER_PLACEHOLDER`, `ThemeTokens.SURFACE_SUB` or
+  `ThemeTokens.BRAND_CONTAINER` as interchangeable input backgrounds ignored the reference component owner. This
+  made the color hex field and multiple settings fields visually inconsistent and allowed later pages to repeat the
+  same unsupported assembly.
+- **Whole parent-tree boundary:** `AppColorPicker -> hex Row -> TextInput`; and the labeled text-field leaves inside
+  `LlmSourceDetailPage`, `MangaRenderingServiceSettingsPage` and `WebDavSyncSettingsPage`. The active untracked
+  `AccountApiKeyPage` worktree owner also consumes the shared component but remains in its separate account lane.
+  Their containing sections, row order, values, validation, persistence, actions, keyboard behavior and page
+  navigation remain unchanged. `NextNListRow`, advanced-search range fields and all unrelated dirty-worktree files
+  are outside this correction.
+- **Exact before/after:** restore the color picker's NextE `ohos_id_color_button_normal` background. Port NextE's
+  complete shared `SettingsTextField` contract and replace the three tracked pages' duplicated labeled-field
+  assemblies with that component; do not introduce another local wrapper or page-specific background token.
+- **Verification plan:** review the exact scoped diff, run `git diff --check`, complete the signed build, then inspect
+  the tag color editor and representative shared settings fields on the authorized device. Source/build evidence
+  alone does not close the visual result.
+- **Static result:** the new shared component is a direct NextE `SettingsTextField` port with only the established
+  NextN token-name adaptation. `AppColorPicker` now uses the same
+  `sys.color.ohos_id_color_button_normal` resource as current NextE. The exact diff and `git diff --check` pass, and
+  `scripts/build-hvigor-signed.sh` completed with `BUILD SUCCESSFUL`.
+- **103 device result:** the current signed HAP was installed in place on exact target
+  `192.168.50.103:12345` without uninstall or data clear. In the portrait add-local-tag sheet, the measured default
+  color switch was disabled and the color picker was scrolled to the Hex row. The rendered Hex `TextInput` measured
+  `[356,1161][1314,1266]` with dynamic background `#0C000000`, not the former opaque cover-placeholder color. The
+  existing LLM source detail rendered all three shared fields with the same `#0C000000` system background and
+  consistent full-width insets. The draft was closed without saving, then the device was restored to its pre-test
+  landscape orientation. Evidence is under
+  `.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/settings-text-field-parity/`
+  and the orientation-restoration capture is under
+  `.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560_to_landscape-2560x1600/settings-text-field-parity/`.
+- **197 device result:** after the user authorized immediate takeover of the occupied target, the same signed HAP was
+  installed in place on exact target `192.168.50.197:12345` without uninstall or data clear. In the portrait
+  add-local-tag draft, disabling the measured default-color Toggle exposed the Hex input at
+  `[174,2433][1182,2576]`; its rendered background was `#0C000000`, matching the system dynamic input layer rather
+  than the former opaque app token. An existing LLM source was then opened read-only: its name, base-URL and API-key
+  fields measured `[91,581][1169,737]`, `[91,849][1169,1005]` and `[91,1118][1169,1274]`, and all three reported the
+  same `#0C000000` background with consistent insets. No field or tag was saved. The app was returned to Advanced
+  settings and the 197 lease was released. Evidence is under

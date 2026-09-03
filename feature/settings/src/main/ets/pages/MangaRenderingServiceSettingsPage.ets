@@ -16,6 +16,7 @@ import {
   NextNListRow,
   PageEmptyState,
   SecondaryListScaffold,
+  SettingsTextField,
   ThemeTokens,
 } from 'shared'
 
@@ -250,66 +251,41 @@ export struct MangaRenderingServiceSettingsPage {
 
   @Builder
   private TextInputRow(label: string, field: string) {
-    Column({ space: ThemeTokens.SPACE_XS }) {
-      Text(label)
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
-        .width('100%')
-      if (field === 'baseUrl') {
-        TextInput({
-          text: this.baseUrlDraft,
-          placeholder: AppStrings.get('settings_manga_rendering_service_url_hint'),
-        })
-          .type(InputType.Normal)
-          .width('100%')
-          .height(48)
-          .fontSize(ThemeTokens.FONT_SIZE_BODY)
-          .backgroundColor(ThemeTokens.SURFACE_SUB)
-          .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
-          .onChange((value: string): void => {
-            this.baseUrlDraft = value
-            this.markConfigurationChanged()
-          })
-      } else if (field === 'username') {
-        TextInput({ text: this.usernameDraft })
-          .type(InputType.Normal)
-          .width('100%')
-          .height(48)
-          .fontSize(ThemeTokens.FONT_SIZE_BODY)
-          .backgroundColor(ThemeTokens.SURFACE_SUB)
-          .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
-          .onChange((value: string): void => {
-            this.usernameDraft = value
-            this.credentialDirty = true
-            this.markConfigurationChanged()
-          })
-      } else {
-        TextInput({
-          text: this.passwordDraft,
-          placeholder: this.storedCredential.configured()
-            ? AppStrings.get('settings_manga_rendering_service_password_saved')
-            : '',
-        })
-          .type(InputType.Password)
-          .width('100%')
-          .height(48)
-          .fontSize(ThemeTokens.FONT_SIZE_BODY)
-          .backgroundColor(ThemeTokens.SURFACE_SUB)
-          .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
-          .onChange((value: string): void => {
-            this.passwordDraft = value
-            this.credentialDirty = true
-            this.markConfigurationChanged()
-          })
-      }
+    if (field === 'baseUrl') {
+      SettingsTextField({
+        label: label,
+        value: this.baseUrlDraft,
+        placeholder: AppStrings.get('settings_manga_rendering_service_url_hint'),
+        onChange: (value: string): void => {
+          this.baseUrlDraft = value
+          this.markConfigurationChanged()
+        },
+      })
+    } else if (field === 'username') {
+      SettingsTextField({
+        label: label,
+        value: this.usernameDraft,
+        onChange: (value: string): void => {
+          this.usernameDraft = value
+          this.credentialDirty = true
+          this.markConfigurationChanged()
+        },
+      })
+    } else {
+      SettingsTextField({
+        label: label,
+        value: this.passwordDraft,
+        placeholder: this.storedCredential.configured()
+          ? AppStrings.get('settings_manga_rendering_service_password_saved')
+          : '',
+        inputType: InputType.Password,
+        onChange: (value: string): void => {
+          this.passwordDraft = value
+          this.credentialDirty = true
+          this.markConfigurationChanged()
+        },
+      })
     }
-    .width('100%')
-    .padding({
-      left: ThemeTokens.SPACE_MD,
-      right: ThemeTokens.SPACE_MD,
-      top: ThemeTokens.SPACE_SM,
-      bottom: ThemeTokens.SPACE_SM,
-    })
   }
 
   @Builder

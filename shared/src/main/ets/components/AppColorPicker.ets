@@ -109,7 +109,7 @@ export struct AppColorPicker {
           .layoutWeight(1)
           .height(44)
           .fontSize(ThemeTokens.FONT_SIZE_BODY)
-          .backgroundColor(ThemeTokens.COVER_PLACEHOLDER)
+          .backgroundColor($r('sys.color.ohos_id_color_button_normal'))
           .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
           .enabled(!this.disabled)
           .onChange((value: string): void => {

@@ -15,6 +15,7 @@ import {
   NextNListRow,
   PageEmptyState,
   SecondaryListScaffold,
+  SettingsTextField,
   ThemeTokens,
   connectLlmSourceProfiles,
   supportsMangaTranslation,
@@ -266,56 +267,34 @@ export struct LlmSourceDetailPage {
 
   @Builder
   private TextInputRow(label: string, field: string) {
-    Column({ space: ThemeTokens.SPACE_XS }) {
-      Text(label)
-        .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-        .fontColor(ThemeTokens.TEXT_SECONDARY)
-        .width('100%')
-      if (field === 'name') {
-        TextInput({ text: this.displayNameDraft })
-          .type(InputType.Normal)
-          .width('100%')
-          .height(48)
-          .fontSize(ThemeTokens.FONT_SIZE_BODY)
-          .backgroundColor(ThemeTokens.SURFACE_SUB)
-          .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
-          .onChange((value: string): void => {
-            this.displayNameDraft = value
-          })
-      } else if (field === 'baseUrl') {
-        TextInput({ text: this.baseUrlDraft, placeholder: 'https://api.openai.com' })
-          .type(InputType.Normal)
-          .width('100%')
-          .height(48)
-          .fontSize(ThemeTokens.FONT_SIZE_BODY)
-          .backgroundColor(ThemeTokens.SURFACE_SUB)
-          .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
-          .onChange((value: string): void => {
-            this.baseUrlDraft = value
-          })
-      } else {
-        TextInput({
-          text: this.apiKeyDraft,
-          placeholder: this.apiKeyStateText(),
-        })
-          .type(InputType.Password)
-          .width('100%')
-          .height(48)
-          .fontSize(ThemeTokens.FONT_SIZE_BODY)
-          .backgroundColor(ThemeTokens.SURFACE_SUB)
-          .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
-          .onChange((value: string): void => {
-            this.apiKeyDraft = value
-          })
-      }
+    if (field === 'name') {
+      SettingsTextField({
+        label: label,
+        value: this.displayNameDraft,
+        onChange: (value: string): void => {
+          this.displayNameDraft = value
+        },
+      })
+    } else if (field === 'baseUrl') {
+      SettingsTextField({
+        label: label,
+        value: this.baseUrlDraft,
+        placeholder: 'https://api.openai.com',
+        onChange: (value: string): void => {
+          this.baseUrlDraft = value
+        },
+      })
+    } else {
+      SettingsTextField({
+        label: label,
+        value: this.apiKeyDraft,
+        placeholder: this.apiKeyStateText(),
+        inputType: InputType.Password,
+        onChange: (value: string): void => {
+          this.apiKeyDraft = value
+        },
+      })
     }
-    .width('100%')
-    .padding({
-      left: ThemeTokens.SPACE_MD,
-      right: ThemeTokens.SPACE_MD,
-      top: ThemeTokens.SPACE_SM,
-      bottom: ThemeTokens.SPACE_SM,
-    })
   }
 
   @Builder

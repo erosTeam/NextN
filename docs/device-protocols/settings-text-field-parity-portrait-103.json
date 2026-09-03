@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-settings-text-field-parity-portrait-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/settings-text-field-parity/20260904T024700",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "f7e09e1-plus-settings-text-field-parity-dirty-candidate",
+    "page": "Local user tag add sheet with custom color picker",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Install the current signed candidate in place, open a non-persisted add-tag draft, disable default color, scroll the shared picker to its Hex field, and capture the NextE-parity system input background without saving or changing any existing local-tag rule."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "read-api-version", "hdcArgs": ["shell", "param", "get", "const.ohos.apiversion"] },
+    { "name": "rotate-portrait", "hdcArgs": ["shell", "hidumper", "-s", "DisplayManagerService", "-a", "-motion,0"], "pauseAfterMs": 1500 },
+    { "name": "install-signed-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 7000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-my-tab", "uiInput": ["click", "1036", "2470"], "pauseAfterMs": 900 },
+      { "name": "open-advanced", "uiInput": ["click", "800", "1340"], "pauseAfterMs": 900 },
+      { "name": "open-local-tag-manager", "uiInput": ["click", "800", "1318"], "pauseAfterMs": 1100 },
+      { "name": "open-add-local-tag", "uiInput": ["click", "1480", "135"], "pauseAfterMs": 900 },
+      { "name": "disable-default-color", "uiInput": ["click", "1190", "1010"], "pauseAfterMs": 900 },
+      { "name": "scroll-picker-to-hex-field", "uiInput": ["fling", "800", "2050", "800", "1050", "10000"], "pauseAfterMs": 700 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-settings-text-field-parity-103.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-settings-text-field-parity-103.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-settings-text-field-parity-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/settings-text-field-parity/20260904T024700/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-settings-text-field-parity-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/settings-text-field-parity/20260904T024700/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-settings-text-field-parity-103.json", "/data/local/tmp/nextn-settings-text-field-parity-103.png"] }
+  ]
+}

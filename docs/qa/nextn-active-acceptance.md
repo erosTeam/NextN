@@ -6180,3 +6180,37 @@ permitted in this repository.
   `restore-rotation-lock-20260903T0458/`. The selected source tag has no links, so no link was fabricated or tapped;
   the link parser/presenter/open action is covered by the source mapping and focused contract. Existing 103 evidence
   remains authoritative for the unchanged two controls, shared editor, and single-tap search.
+
+## Shared settings text-field and tag-color Hex-field parity — 197 accepted, 103 supplementary — 2026-09-04
+
+- The tag color picker's Hex field now uses current NextE's
+  `sys.color.ohos_id_color_button_normal` resource instead of the opaque app cover-placeholder token. NextE's complete
+  shared `SettingsTextField` owner was ported and now replaces the duplicated labeled inputs in the LLM source,
+  manga rendering service and WebDAV settings implementations. The active untracked API-key page worktree owner also
+  consumes the component but remains in its separate account lane. Advanced-search fields and the shared inline
+  list-row editor remain unchanged because they have separate established owners.
+- The exact scoped diff and `git diff --check` pass. The complete signed build finished with `BUILD SUCCESSFUL` in
+  16 seconds. On exact target `192.168.50.103:12345`, the signed HAP was installed in place without uninstall or data
+  clear. The portrait add-local-tag sheet was opened as an unsaved draft, default color was disabled at the measured
+  Toggle bounds, and the picker was scrolled to the Hex row.
+- The rendered Hex `TextInput` measured `[356,1161][1314,1266]` and reported background `#0C000000`, confirming the
+  system translucent input layer rather than the former opaque cover-placeholder color. A read-only existing LLM
+  source detail then rendered its name, URL and password inputs at `[65,437][1535,551]`, `[65,633][1535,747]` and
+  `[65,829][1535,943]`; all three reported the same `#0C000000` dynamic system background and preserved the reference
+  full-width alignment. No field was edited.
+- The add-tag draft was closed without invoking save and returned to the local-tag manager. The device was restored
+  to the landscape orientation observed before this run and the 103 lease was released. Portrait evidence is under
+  `.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/settings-text-field-parity/`; the
+  restored landscape capture is under
+  `.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560_to_landscape-2560x1600/settings-text-field-parity/`.
+- The user then explicitly requested 197 and authorized immediate takeover of its occupied lease. The same signed HAP
+  was installed in place on exact target `192.168.50.197:12345` without uninstall or data clear. In the portrait
+  add-local-tag draft, the measured default-color Toggle was disabled without saving. The visible Hex input measured
+  `[174,2433][1182,2576]` and reported `#0C000000`. A read-only existing LLM source detail rendered name, base-URL and
+  masked API-key inputs at `[91,581][1169,737]`, `[91,849][1169,1005]` and `[91,1118][1169,1274]`; all three reported
+  `#0C000000` and retained consistent full-width insets. This makes 197 the primary device acceptance for the current
+  task; the earlier 103 result remains supplementary tablet evidence.
+- No tag, color, LLM value, credential or other setting was saved during the 197 protocol. The unsaved tag draft was
+  discarded, the read-only LLM detail was left normally, the app was returned to Advanced settings, and the 197
+  lease was released. Evidence is under
+  `.hvigor/outputs/mate60pro-lab197__ALN-AL80/not-applicable/portrait-1260x2720/settings-text-field-parity/`.

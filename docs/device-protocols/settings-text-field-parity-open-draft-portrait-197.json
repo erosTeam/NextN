@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-settings-text-field-parity-open-draft-portrait-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/mate60pro-lab197__ALN-AL80/not-applicable/portrait-1260x2720/settings-text-field-parity/20260904T034200",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "f7e09e1-plus-settings-text-field-parity-dirty-candidate",
+    "page": "Unsaved add-local-tag draft on 197",
+    "deviceAlias": "mate60pro-lab197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Open the measured title-bar add action [1078,149][1208,279] and capture the unsaved draft so the default-color Toggle can be operated from current 197 bounds."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "open-add-local-tag-draft", "uiInput": ["click", "1143", "214"], "pauseAfterMs": 900 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-settings-text-field-parity-draft-197.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-settings-text-field-parity-draft-197.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-settings-text-field-parity-draft-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/mate60pro-lab197__ALN-AL80/not-applicable/portrait-1260x2720/settings-text-field-parity/20260904T034200/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-settings-text-field-parity-draft-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/mate60pro-lab197__ALN-AL80/not-applicable/portrait-1260x2720/settings-text-field-parity/20260904T034200/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-settings-text-field-parity-draft-197.json", "/data/local/tmp/nextn-settings-text-field-parity-draft-197.png"] }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-settings-text-field-parity-restore-landscape-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560_to_landscape-2560x1600/settings-text-field-parity/20260904T032000",
+  "display": { "widthPx": 2560, "heightPx": 1600 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "f7e09e1-plus-settings-text-field-parity-dirty-candidate",
+    "page": "Existing LLM source detail after restoring the pre-test device orientation",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "landscape",
+    "resolution": "2560x1600",
+    "stateSequence": [
+      { "name": "accepted-portrait", "foldState": "not-applicable", "orientation": "portrait", "widthPx": 1600, "heightPx": 2560 },
+      { "name": "restored-landscape", "foldState": "not-applicable", "orientation": "landscape", "widthPx": 2560, "heightPx": 1600 }
+    ],
+    "notes": "Restore the 103 orientation observed before this validation, capture the resulting visible state, and do not edit any source value or application setting."
+  },
+  "preflight": [
+    { "name": "restore-landscape", "hdcArgs": ["shell", "hidumper", "-s", "DisplayManagerService", "-a", "-motion,1"], "pauseAfterMs": 1800 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "mark-restored-state", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 300 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-settings-text-field-parity-restored-landscape-103.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-settings-text-field-parity-restored-landscape-103.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-settings-text-field-parity-restored-landscape-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560_to_landscape-2560x1600/settings-text-field-parity/20260904T032000/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-settings-text-field-parity-restored-landscape-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560_to_landscape-2560x1600/settings-text-field-parity/20260904T032000/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-settings-text-field-parity-restored-landscape-103.json", "/data/local/tmp/nextn-settings-text-field-parity-restored-landscape-103.png"] }
+  ]
+}

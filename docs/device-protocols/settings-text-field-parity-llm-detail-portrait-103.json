@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-settings-text-field-parity-llm-detail-portrait-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/settings-text-field-parity/20260904T031900",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "f7e09e1-plus-settings-text-field-parity-dirty-candidate",
+    "page": "Existing LLM source detail with shared settings text fields",
+    "deviceAlias": "matepadpro-lab103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Open the existing source row [37,260][1563,412] without editing any value and capture the complete shared SettingsTextField group."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "open-existing-llm-source", "uiInput": ["click", "800", "335"], "pauseAfterMs": 900 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-settings-text-field-parity-llm-detail-103.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-settings-text-field-parity-llm-detail-103.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-settings-text-field-parity-llm-detail-103.json", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/settings-text-field-parity/20260904T031900/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-settings-text-field-parity-llm-detail-103.png", "/Users/honjow/git/NextN/.hvigor/outputs/matepadpro-lab103__MLR-AL00/not-applicable/portrait-1600x2560/settings-text-field-parity/20260904T031900/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-settings-text-field-parity-llm-detail-103.json", "/data/local/tmp/nextn-settings-text-field-parity-llm-detail-103.png"] }
+  ]
+}
