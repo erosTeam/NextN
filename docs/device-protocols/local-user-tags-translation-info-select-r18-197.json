@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-translation-info-select-r18-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/select-r18-20260903T0421",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "dirty-tag-translation-info-merged-namespace-candidate-20260903",
+    "page": "Tag translation image level temporarily set to R18",
+    "deviceAlias": "device-197",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Select the third shared dropdown item and capture its persisted row label before the content test."
+  },
+  "measurement": { "actions": [
+    { "name": "select-hide-disturbing-r18-level", "uiInput": ["click", "850", "2189"], "pauseAfterMs": 900 }
+  ] },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-tag-info-select-r18-197.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-tag-info-select-r18-197.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-select-r18-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/select-r18-20260903T0421/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-select-r18-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/select-r18-20260903T0421/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-tag-info-select-r18-197.json", "/data/local/tmp/nextn-tag-info-select-r18-197.png"] }
+  ]
+}

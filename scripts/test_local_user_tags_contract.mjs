@@ -17,6 +17,13 @@ const inlineEditor = read('shared/src/main/ets/components/NextNInlineEditRow.ets
 const listRow = read('shared/src/main/ets/components/NextNListRow.ets')
 const subtabEditor = read('feature/search/src/main/ets/pages/HomeSubtabEditPage.ets')
 const entryShell = read('entry/src/main/ets/pages/Index.ets')
+const galleryDetail = read('feature/gallery/src/main/ets/pages/GalleryDetailPage.ets')
+const tagTranslationModel = read('shared/src/main/ets/model/NhTagTranslation.ets')
+const tagTranslationUpdater = read('shared/src/main/ets/services/TagTranslationUpdateService.ets')
+const tagTranslationRepository = read('shared/src/main/ets/storage/TagTranslationRepository.ets')
+const tagTranslationInfoService = read('shared/src/main/ets/services/TagTranslationInfoService.ets')
+const localDataStore = read('shared/src/main/ets/storage/LocalDataStore.ets')
+const tagTranslationSettings = read('feature/settings/src/main/ets/pages/TagTranslationSettingsPage.ets')
 ok('add local tag remains a NextE-style destination title action instead of a list row',
   /private localUserTagsTitleBar\(\): Record<string, Object>/.test(entryShell) &&
     /'label': AppStrings\.get\('local_user_tag_add'\)[\s\S]*?'icon': \$r\('sys\.symbol\.plus'\)/.test(entryShell) &&
@@ -53,6 +60,35 @@ ok('saving closes the sheet before the local-tag mutation publishes a list revis
     /onDisappear: \(\): void => \{[\s\S]*?this\.finishCloseSheet\(\)/.test(manager) &&
     /private finishCloseSheet\(\): void \{[\s\S]*?this\.commitPendingMutation\(\)/.test(manager) &&
     /onSaveRequested: \(updated: NhLocalUserTag\)/.test(manager))
+ok('Gallery tag detail body displays translation-library information rather than local-rule summary',
+  /TagTranslationInfoService\.lookupTagInfo\(/.test(galleryDetail) &&
+    /TagInfoMarkdownText\(AppStrings\.get\('gallery_tag_info_intro'\), this\.tagInfoIntro\)/.test(galleryDetail) &&
+    /TagInfoLinks\(AppStrings\.get\('gallery_tag_info_links'\), this\.tagInfoLinks\)/.test(galleryDetail) &&
+    /this\.TagInfoImages\(\)/.test(galleryDetail) &&
+    !/private TagInfoBody\(\)[\s\S]*?gallery_tag_rule_summary/.test(galleryDetail) &&
+    !/private TagInfoBody\(\)[\s\S]*?gallery_tag_no_local_rule/.test(galleryDetail))
+ok('tag dictionary import and RDB preserve the complete detail payload',
+  /class NhTagTranslationEntry[\s\S]*intro: string[\s\S]*links: string/.test(tagTranslationModel) &&
+    /entry\.intro = intro[\s\S]*entry\.links = links/.test(tagTranslationUpdater) &&
+    /'intro': entry\.intro[\s\S]*'links': entry\.links/.test(tagTranslationRepository) &&
+    /translateInlineCodeTags[\s\S]*filterIntroImages[\s\S]*extractMarkdownImageUrls/.test(
+      tagTranslationInfoService) &&
+    /intro TEXT NOT NULL DEFAULT/.test(localDataStore) &&
+    /links TEXT NOT NULL DEFAULT/.test(localDataStore))
+ok('collapsed NH namespaces merge only equivalent definitions while retaining every example image',
+  /lookupInfoEntries/.test(tagTranslationRepository) &&
+    /mergeEquivalentEntries/.test(tagTranslationInfoService) &&
+    /introWithoutImages\(candidate\.intro\) !== body/.test(tagTranslationInfoService) &&
+    /images\.indexOf\(value\) < 0/.test(tagTranslationInfoService))
+ok('a migrated name-only dictionary is re-imported even when its release version is unchanged',
+  /AS info_count/.test(tagTranslationRepository) &&
+    /previous\.infoRowCount > 0/.test(tagTranslationUpdater))
+ok('tag info image filtering is a persistent shared-row setting',
+  /introImageLevel: string = TAG_INTRO_IMAGE_NON_H/.test(
+    read('shared/src/main/ets/state/TagTranslationSettingsState.ets')) &&
+    /KEY_INTRO_IMAGE_LEVEL/.test(read('shared/src/main/ets/settings/TagTranslationSettings.ets')) &&
+    /NextNListRow\(\{[\s\S]*?settings_tag_translation_intro_image_level[\s\S]*?IntroImageMenu/.test(
+      tagTranslationSettings))
 
 const rules = read('shared/src/main/ets/services/NhLocalUserTagRules.ets')
 ok('soft filtering sums every unique matched weight and uses strict threshold comparison',

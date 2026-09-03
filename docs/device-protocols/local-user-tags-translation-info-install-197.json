@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-translation-info-install-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/install-20260903T0336",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "dirty-tag-translation-info-candidate-20260903",
+    "page": "NextN cold start after data-preserving candidate install",
+    "deviceAlias": "device-197",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Install the signed tag-translation-info candidate in place, preserve all app data and settings, cold-start, allow the existing translation-library updater one bounded window, and capture the landing state. Do not uninstall, clear data, or alter account and sync settings."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "read-api-version", "hdcArgs": ["shell", "param", "get", "const.ohos.apiversion"] },
+    { "name": "install-signed-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 15000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "noninteractive-stability-window", "uiInput": ["click", "1", "1"], "pauseAfterMs": 1000 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-tag-translation-info-install-197.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-tag-translation-info-install-197.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-translation-info-install-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/install-20260903T0336/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-translation-info-install-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/install-20260903T0336/screen.png"] },
+    { "name": "read-current-log", "hdcArgs": ["shell", "hilog", "-T", "NextN", "-x"], "timeoutSeconds": 60 },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-tag-translation-info-install-197.json", "/data/local/tmp/nextn-tag-translation-info-install-197.png"] }
+  ]
+}

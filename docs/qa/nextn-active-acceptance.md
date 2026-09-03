@@ -6149,3 +6149,34 @@ permitted in this repository.
   `gallery-long-press-20260902T150900`, `gallery-manage-20260902T151400`,
   `gallery-manage-20260902T151800`, `single-tap-search-20260902T152000`,
   `cleanup-confirmed-final-20260902T154000` and `cleanup-restored-20260902T154300`.
+
+## Gallery translation-library tag detail body — ACCEPTED on 197 — 2026-09-03
+
+- User counter-evidence invalidates the prior body semantics: the requested NextE tag detail displays the selected
+  tag's EhTagTranslation introduction, links and eligible images. The accepted candidate instead displayed local
+  Hidden/weight/color. Prior evidence remains valid only for the long-press host, two adapted controls, nested shared
+  editor and portrait/landscape Sheet form.
+- The current candidate preserves those hosts and actions while extending the local dictionary import/RDB/lookup
+  chain with `intro` and `links`, inline tag translation, image filtering, and the NextE body structure. The existing
+  tag-translation settings group now owns the persistent four-level intro-image policy.
+- Target 103 remained TCP `Offline`; the user explicitly authorized substituting `192.168.50.197:12345`. The final
+  signed candidate was installed in place without clearing data. Its current translation database remained
+  `v7.27868.1 2026-09-03T00:13:34Z`, `44059` rows.
+- The first 197 attempt showed an empty body for `big breasts` and was rejected. Current EhTagTranslation source data
+  demonstrated that NH's generic tag maps to female/male rows with the same translated name, image-free introduction
+  and links but different examples. The final service merges only such equivalent definitions and all unique images;
+  true textual/link conflicts remain unresolved.
+- In the final `1260×2720` portrait run, `巨乳 / tag:big breasts · #2937` rendered the complete translated
+  introduction and inline `超乳 (huge breasts)` reference. At the restored default `隐藏 H 图片` level it rendered
+  no R18 examples. The shared settings menu displayed all four levels; the temporary third level rendered the same
+  tag's two-column R18 images, after which the row was restored to `隐藏 H 图片`.
+- The device's original system Rotation lock was observed on. It was temporarily disabled for this requested check;
+  the real NextN window changed to `2720×1260`, where the same body rendered in the centered wide Sheet. A 28-frame
+  stream shows the Sheet entrance transition. The device was then restored to `1260×2720`, the Rotation lock tile
+  was restored blue/on, and the control center was closed.
+- Evidence is under `.hvigor/outputs/local-user-tags-translation-info/197/merged-content-portrait-20260903T0400/`,
+  `image-menu-20260903T0416/`, `r18-content-20260903T0419/`, `restore-nonh-20260903T0426/`,
+  `landscape-gallery-20260903T0446/`, `landscape-long-press-20260903T0454/`, and
+  `restore-rotation-lock-20260903T0458/`. The selected source tag has no links, so no link was fabricated or tapped;
+  the link parser/presenter/open action is covered by the source mapping and focused contract. Existing 103 evidence
+  remains authoritative for the unchanged two controls, shared editor, and single-tap search.

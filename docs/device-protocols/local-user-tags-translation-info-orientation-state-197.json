@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-translation-info-orientation-state-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/orientation-state-20260903T0437",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "dirty-tag-translation-info-merged-namespace-candidate-20260903",
+    "page": "Read-only complete display orientation state",
+    "deviceAlias": "device-197",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Capture the complete DisplayManagerService state to determine the current system rotation-lock value before any bounded rotation attempt."
+  },
+  "measurement": { "actions": [
+    { "name": "noninteractive-read-boundary", "uiInput": ["click", "1", "1"], "pauseAfterMs": 100 }
+  ] },
+  "postflight": [
+    { "name": "complete-display-state", "hdcArgs": ["shell", "hidumper", "-s", "DisplayManagerService", "-a", "-a"] }
+  ]
+}

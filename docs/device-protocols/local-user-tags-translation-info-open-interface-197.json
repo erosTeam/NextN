@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-translation-info-open-interface-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/open-interface-20260903T0430",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "dirty-tag-translation-info-merged-namespace-candidate-20260903",
+    "page": "Interface settings before bounded auto-rotation test",
+    "deviceAlias": "device-197",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Return to My, open Interface, and capture the current local screen-orientation policy before temporarily enabling Auto-rotate for the requested landscape sheet check."
+  },
+  "measurement": { "actions": [
+    { "name": "back-to-advanced", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 700 },
+    { "name": "back-to-my", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 900 },
+    { "name": "open-interface", "uiInput": ["click", "420", "870"], "pauseAfterMs": 900 }
+  ] },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-tag-info-interface-197.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-tag-info-interface-197.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-interface-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/open-interface-20260903T0430/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-interface-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/open-interface-20260903T0430/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-tag-info-interface-197.json", "/data/local/tmp/nextn-tag-info-interface-197.png"] }
+  ]
+}

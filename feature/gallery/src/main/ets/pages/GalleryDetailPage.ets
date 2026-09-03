@@ -1,4 +1,4 @@
-import { common } from '@kit.AbilityKit'
+import { common, Want } from '@kit.AbilityKit'
 import { pasteboard } from '@kit.BasicServicesKit'
 import { hilog } from '@kit.PerformanceAnalysisKit'
 import { vibrator } from '@kit.SensorServiceKit'
@@ -49,6 +49,7 @@ import {
   NhDownloadTaskStatus,
   NhTag,
   NhTagQuery,
+  NhTagTranslationInfo,
   NhTagSuggestionDisplay,
   NhTorrentFileExportService,
   NextNHdsCapsuleBarButton,
@@ -58,6 +59,7 @@ import {
   NextNModalScaffold,
   PullRefreshListScaffold,
   TagTranslationRepository,
+  TagTranslationInfoService,
   TagTranslationSettingsState,
   TagTranslationState,
   PageErrorState,
@@ -113,6 +115,9 @@ const TITLE_TRANSLATION_JAPANESE: string = 'japanese'
 const TAG_INFO_ACTION_SIZE: number = 32
 const TAG_INFO_HAPTIC_INTENSITY: number = 80
 const TAG_INFO_HAPTIC_FALLBACK_DURATION: number = 30
+const TAG_INFO_IMAGE_FALLBACK_RATIO: number = 3 / 4
+const TAG_INFO_IMAGE_MIN_RATIO: number = 0.42
+const TAG_INFO_IMAGE_MAX_RATIO: number = 1.8
 const FOLLOW_OPERATION_VERTICAL_SCROLL_THRESHOLD: number = 12
 const FOLLOW_OPERATION_VERTICAL_DOMINANCE_RATIO: number = 1.2
 const DETAIL_CACHE_LOG_DOMAIN: number = 0x0000
@@ -151,6 +156,65 @@ class GalleryTagVisualGroup {
 
   constructor(namespace: string) {
     this.namespace = namespace
+  }
+}
+
+class TagInfoLinkItem {
+  label: string = ''
+  url: string = ''
+}
+
+@ComponentV2
+struct TagInfoIntroImage {
+  @Param url: string = ''
+  @Local loadedAspectRatio: number = 0
+
+  private imageSizeMatch(): RegExpExecArray | null {
+    const pattern: RegExp = /-\d+-(\d+)-(\d+)-[A-Za-z0-9]+(?:_(\d+)|_[A-Za-z]+)?\.[A-Za-z0-9]+(?:[?#].*)?$/
+    return pattern.exec(this.url)
+  }
+
+  private clampAspectRatio(ratio: number): number {
+    return Math.min(TAG_INFO_IMAGE_MAX_RATIO, Math.max(TAG_INFO_IMAGE_MIN_RATIO, ratio))
+  }
+
+  private sourceAspectRatio(): number {
+    if (this.loadedAspectRatio > 0) {
+      return this.loadedAspectRatio
+    }
+    const match: RegExpExecArray | null = this.imageSizeMatch()
+    if (match === null) {
+      return TAG_INFO_IMAGE_FALLBACK_RATIO
+    }
+    const width: number = Number.parseInt(match[1], 10)
+    const height: number = Number.parseInt(match[2], 10)
+    return width > 0 && height > 0
+      ? this.clampAspectRatio(width / height)
+      : TAG_INFO_IMAGE_FALLBACK_RATIO
+  }
+
+  private updateLoadedAspectRatio(width: number, height: number): void {
+    if (width > 0 && height > 0) {
+      this.loadedAspectRatio = this.clampAspectRatio(width / height)
+    }
+  }
+
+  build() {
+    EhImageKnifeImage({
+      src: this.url,
+      widthValue: '100%',
+      heightValue: '100%',
+      objectFit: ImageFit.Contain,
+      radius: ThemeTokens.LIST_ROW_RADIUS,
+      onImageInfo: (width: number, height: number): void => {
+        this.updateLoadedAspectRatio(width, height)
+      },
+    })
+      .width('100%')
+      .aspectRatio(this.sourceAspectRatio())
+      .backgroundColor(ThemeTokens.CARD_BACKGROUND)
+      .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
+      .clip(true)
   }
 }
 
@@ -208,6 +272,13 @@ export struct GalleryDetailPage {
   @Local tagInfoSheetShown: boolean = false
   @Local tagEditorSheetShown: boolean = false
   @Local tagHiddenMutationInFlight: boolean = false
+  @Local tagInfoLoading: boolean = false
+  @Local tagInfoError: string = ''
+  @Local tagInfoName: string = ''
+  @Local tagInfoIntro: string = ''
+  @Local tagInfoLinks: string = ''
+  @Local tagInfoImages: string[] = []
+  @Local tagInfoEpoch: number = 0
   @Local pendingTagEditorSave: NhLocalUserTag | null = null
   @Local pendingTagEditorDeleteId: number = 0
   @Local coverFailedUrl: string = ''
@@ -1722,8 +1793,46 @@ export struct GalleryDetailPage {
     } else {
       this.selectedTagDisplay = selected.name
     }
+    this.tagInfoName = ''
+    this.tagInfoIntro = ''
+    this.tagInfoLinks = ''
+    this.tagInfoImages = []
+    this.tagInfoError = ''
+    const epoch: number = this.tagInfoEpoch + 1
+    this.tagInfoEpoch = epoch
     this.triggerTagLongPressHaptic()
     this.tagInfoSheetShown = true
+    this.loadTagInfo(epoch)
+  }
+
+  private async loadTagInfo(epoch: number): Promise<void> {
+    this.tagInfoLoading = true
+    this.tagInfoError = ''
+    try {
+      const info: NhTagTranslationInfo | null = await TagTranslationInfoService.lookupTagInfo(
+        this.getUIContext().getHostContext() as common.UIAbilityContext,
+        this.selectedTag.type,
+        this.selectedTag.name,
+        this.tagTranslationSettings.introImageLevel,
+      )
+      if (epoch !== this.tagInfoEpoch) {
+        return
+      }
+      if (info !== null) {
+        this.tagInfoName = info.displayName
+        this.tagInfoIntro = info.intro
+        this.tagInfoLinks = info.links
+        this.tagInfoImages = info.images
+      }
+    } catch (error) {
+      if (epoch === this.tagInfoEpoch) {
+        this.tagInfoError = (error as Error).message
+      }
+    } finally {
+      if (epoch === this.tagInfoEpoch) {
+        this.tagInfoLoading = false
+      }
+    }
   }
 
   private selectedTagIdentity(): string {
@@ -1749,16 +1858,6 @@ export struct GalleryDetailPage {
   private selectedTagIsHidden(): boolean {
     const record: NhLocalUserTag | null = this.selectedLocalTagRecord()
     return record !== null && record.hidden
-  }
-
-  private selectedLocalTagWeight(): number {
-    const record: NhLocalUserTag | null = this.selectedLocalTagRecord()
-    return record !== null ? record.weight : 0
-  }
-
-  private selectedLocalTagColor(): string {
-    const record: NhLocalUserTag | null = this.selectedLocalTagRecord()
-    return record !== null ? record.colorCode : ''
   }
 
   private queueSelectedTagSave(record: NhLocalUserTag): void {
@@ -2847,12 +2946,152 @@ export struct GalleryDetailPage {
     })
   }
 
+  private markdownBodyLines(markdown: string): string[] {
+    let text: string = markdown.replace(/\r\n/g, '\n')
+    text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '')
+    text = text.replace(/^#{1,6}\s*/gm, '')
+    text = text.replace(/\*\*([^*]+)\*\*/g, '$1')
+    text = text.replace(/__([^_]+)__/g, '$1')
+    text = text.replace(/`([^`]+)`/g, '$1')
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')
+    text = text.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim()
+    return text.length > 0
+      ? text.split('\n').map((line: string): string => line.trim())
+        .filter((line: string): boolean => line.length > 0)
+      : []
+  }
+
+  private markdownLinks(markdown: string): TagInfoLinkItem[] {
+    const links: TagInfoLinkItem[] = []
+    const pattern: RegExp = /\[([^\]]+)\]\(([^)]+)\)/g
+    let match: RegExpExecArray | null = pattern.exec(markdown)
+    while (match !== null) {
+      const item: TagInfoLinkItem = new TagInfoLinkItem()
+      item.label = match[1].trim()
+      item.url = match[2].trim()
+      if (item.label.length > 0 || item.url.length > 0) {
+        links.push(item)
+      }
+      match = pattern.exec(markdown)
+    }
+    if (links.length === 0 && markdown.trim().length > 0) {
+      const item: TagInfoLinkItem = new TagInfoLinkItem()
+      item.label = markdown.trim()
+      links.push(item)
+    }
+    return links
+  }
+
+  private openTagInfoLink(url: string): void {
+    if (url.length === 0) {
+      return
+    }
+    const want: Want = { action: 'ohos.want.action.viewData', uri: url }
+    const context: common.UIAbilityContext = this.getUIContext().getHostContext() as common.UIAbilityContext
+    context.startAbility(want).catch((_error: Error): void => {
+      this.getUIContext().getPromptAction().showToast({ message: url })
+    })
+  }
+
+  private tagInfoHeaderTitle(): string {
+    if (this.tagInfoName.length > 0 && this.tagInfoName !== this.selectedTag.name) {
+      const prefix: string = NhTagSuggestionDisplay.namespaceLabel(this.selectedTag.type)
+      return prefix.length > 0 ? `${prefix}:${this.tagInfoName}` : this.tagInfoName
+    }
+    return this.selectedTagDisplay.length > 0 ? this.selectedTagDisplay : this.selectedTag.name
+  }
+
+  @Builder
+  private TagInfoMarkdownText(title: string, markdown: string) {
+    if (this.markdownBodyLines(markdown).length > 0) {
+      ListItem() {
+        Column({ space: ThemeTokens.SPACE_XS }) {
+          Text(title)
+            .fontSize(ThemeTokens.FONT_SIZE_BODY)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(ThemeTokens.TEXT_PRIMARY)
+            .width('100%')
+          ForEach(this.markdownBodyLines(markdown), (line: string) => {
+            Text(line)
+              .fontSize(ThemeTokens.FONT_SIZE_BODY)
+              .fontColor(ThemeTokens.TEXT_SECONDARY)
+              .width('100%')
+          }, (_line: string, index: number): string => `tag_info_line_${index}`)
+        }
+        .width('100%')
+        .padding({ top: ThemeTokens.SPACE_SM, bottom: ThemeTokens.SPACE_SM })
+      }
+    }
+  }
+
+  @Builder
+  private TagInfoLinks(title: string, markdown: string) {
+    if (markdown.trim().length > 0) {
+      ListItem() {
+        Column({ space: ThemeTokens.SPACE_XS }) {
+          Text(title)
+            .fontSize(ThemeTokens.FONT_SIZE_BODY)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(ThemeTokens.TEXT_PRIMARY)
+            .width('100%')
+          ForEach(this.markdownLinks(markdown), (item: TagInfoLinkItem) => {
+            Column({ space: ThemeTokens.SPACE_XS }) {
+              Text(item.label.length > 0 ? item.label : item.url)
+                .fontSize(ThemeTokens.FONT_SIZE_BODY)
+                .fontColor(item.url.length > 0 ? ThemeTokens.TEXT_LINK : ThemeTokens.TEXT_SECONDARY)
+                .width('100%')
+              if (item.url.length > 0 && item.url !== item.label) {
+                Text(item.url)
+                  .fontSize(ThemeTokens.FONT_SIZE_META)
+                  .fontColor(ThemeTokens.TEXT_SECONDARY)
+                  .width('100%')
+              }
+            }
+            .width('100%')
+            .onClick((): void => { this.openTagInfoLink(item.url) })
+          }, (item: TagInfoLinkItem, index: number): string =>
+            `tag_info_link_${index}_${item.label}_${item.url}`.replace(/[^A-Za-z0-9_]/g, '_'))
+        }
+        .width('100%')
+        .padding({ top: ThemeTokens.SPACE_SM, bottom: ThemeTokens.SPACE_SM })
+      }
+    }
+  }
+
+  @Builder
+  private TagInfoImageColumn(remainder: number) {
+    Column({ space: ThemeTokens.SPACE_SM }) {
+      ForEach(this.tagInfoImages, (url: string, index: number) => {
+        if (index % 2 === remainder) {
+          TagInfoIntroImage({ url: url })
+        }
+      }, (url: string, index: number): string =>
+        `tag_info_image_${index}_${url}`.replace(/[^A-Za-z0-9_]/g, '_'))
+    }
+    .layoutWeight(1)
+  }
+
+  @Builder
+  private TagInfoImages() {
+    if (this.tagInfoImages.length > 0) {
+      ListItem() {
+        Row({ space: ThemeTokens.SPACE_SM }) {
+          this.TagInfoImageColumn(0)
+          this.TagInfoImageColumn(1)
+        }
+        .alignItems(VerticalAlign.Top)
+        .width('100%')
+        .padding({ top: ThemeTokens.SPACE_SM, bottom: ThemeTokens.SPACE_SM })
+      }
+    }
+  }
+
   @Builder
   private TagInfoHeader() {
     ListItem() {
       Row({ space: ThemeTokens.SPACE_MD }) {
         Column({ space: ThemeTokens.SPACE_XS }) {
-          Text(this.selectedTagDisplay.length > 0 ? this.selectedTagDisplay : this.selectedTag.name)
+          Text(this.tagInfoHeaderTitle())
             .fontSize(ThemeTokens.FONT_SIZE_TITLE)
             .fontWeight(FontWeight.Medium)
             .fontColor(ThemeTokens.TEXT_PRIMARY)
@@ -2906,40 +3145,30 @@ export struct GalleryDetailPage {
 
   @Builder
   private TagInfoBody() {
-    ListItem() {
-      if (this.selectedLocalTagRecord() === null) {
-        Text(AppStrings.get('gallery_tag_no_local_rule'))
-          .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
-          .fontColor(ThemeTokens.TEXT_TERTIARY)
+    if (this.tagInfoLoading) {
+      ListItem() {
+        Text(AppStrings.get('common_loading'))
+          .fontSize(ThemeTokens.FONT_SIZE_BODY)
+          .fontColor(ThemeTokens.TEXT_SECONDARY)
           .width('100%')
-      } else {
-        NextNGroupedListSection({ inset: 0 }) {
-          Column({ space: ThemeTokens.SPACE_SM }) {
-            Text(AppStrings.format('gallery_tag_rule_summary', [
-              `${this.selectedLocalTagWeight()}`,
-              this.selectedTagIsHidden() ? AppStrings.get('common_on') : AppStrings.get('common_off'),
-            ]))
-              .fontSize(ThemeTokens.FONT_SIZE_BODY)
-              .fontColor(ThemeTokens.TEXT_SECONDARY)
-              .width('100%')
-            if (this.selectedLocalTagColor().length > 0) {
-              Row({ space: ThemeTokens.SPACE_SM }) {
-                Column()
-                  .width(24)
-                  .height(24)
-                  .borderRadius(12)
-                  .backgroundColor(this.selectedLocalTagColor())
-                  .borderWidth(1)
-                  .borderColor(ThemeTokens.DIVIDER)
-                Text(this.selectedLocalTagColor())
-                  .fontSize(ThemeTokens.FONT_SIZE_BODY)
-                  .fontColor(ThemeTokens.TEXT_SECONDARY)
-              }
-            }
-          }
+      }
+    } else if (this.tagInfoError.length > 0) {
+      ListItem() {
+        Text(this.tagInfoError)
+          .fontSize(ThemeTokens.FONT_SIZE_BODY)
+          .fontColor(Color.Red)
           .width('100%')
-          .padding(ThemeTokens.SPACE_MD)
-          .alignItems(HorizontalAlign.Start)
+      }
+    } else {
+      this.TagInfoMarkdownText(AppStrings.get('gallery_tag_info_intro'), this.tagInfoIntro)
+      this.TagInfoLinks(AppStrings.get('gallery_tag_info_links'), this.tagInfoLinks)
+      this.TagInfoImages()
+      if (this.tagInfoIntro.length === 0 && this.tagInfoLinks.length === 0 && this.tagInfoImages.length === 0) {
+        ListItem() {
+          Text(AppStrings.get('gallery_tag_info_empty'))
+            .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+            .fontColor(ThemeTokens.TEXT_TERTIARY)
+            .width('100%')
         }
       }
     }

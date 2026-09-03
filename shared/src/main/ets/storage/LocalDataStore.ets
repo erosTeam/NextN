@@ -7,7 +7,7 @@ const STORE_CONFIG: relationalStore.StoreConfig = {
   autoCleanDirtyData: true,
 }
 
-const SCHEMA_VERSION: number = 25
+const SCHEMA_VERSION: number = 26
 const SQL_CREATE_READING_HISTORY: string =
   'CREATE TABLE IF NOT EXISTS reading_history (' +
   'gallery_id INTEGER PRIMARY KEY, ' +
@@ -42,8 +42,15 @@ const SQL_CREATE_TAG_TRANSLATIONS: string =
   'namespace TEXT NOT NULL, ' +
   'raw_name TEXT NOT NULL, ' +
   'display_name TEXT NOT NULL, ' +
+  'intro TEXT NOT NULL DEFAULT \'\', ' +
+  'links TEXT NOT NULL DEFAULT \'\', ' +
   'last_used_at INTEGER NOT NULL DEFAULT 0, ' +
   'PRIMARY KEY (namespace, raw_name))'
+const SQL_INSPECT_TAG_TRANSLATION_COLUMNS: string = 'SELECT * FROM tag_translations LIMIT 0'
+const SQL_ADD_TAG_TRANSLATION_INTRO: string =
+  'ALTER TABLE tag_translations ADD COLUMN intro TEXT NOT NULL DEFAULT \'\''
+const SQL_ADD_TAG_TRANSLATION_LINKS: string =
+  'ALTER TABLE tag_translations ADD COLUMN links TEXT NOT NULL DEFAULT \'\''
 const SQL_CREATE_TAG_TRANSLATION_USAGE_ORDER: string =
   'CREATE INDEX IF NOT EXISTS idx_tag_translations_used ON tag_translations (last_used_at DESC)'
 const SQL_CREATE_TAG_TRANSLATION_META: string =
@@ -282,6 +289,7 @@ export class LocalDataStore {
       await store.executeSql(SQL_CREATE_TAG_TRANSLATIONS)
       await store.executeSql(SQL_CREATE_TAG_TRANSLATION_USAGE_ORDER)
       await store.executeSql(SQL_CREATE_TAG_TRANSLATION_META)
+      await LocalDataStore.ensureTagTranslationInfoColumns(store)
       await store.executeSql(SQL_CREATE_NH_TAG_CATALOG)
       await store.executeSql(SQL_CREATE_NH_GALLERY_DETAIL_CACHE)
       await store.executeSql(SQL_CREATE_NH_GALLERY_DETAIL_CACHE_ACCESS_ORDER)
@@ -318,6 +326,26 @@ export class LocalDataStore {
       }
     } catch (error) {
       throw (error as Error)
+    }
+  }
+
+  /** Adds the source dictionary's tag-detail payload without rewriting installed rows. */
+  private static async ensureTagTranslationInfoColumns(store: relationalStore.RdbStore): Promise<void> {
+    let rows: relationalStore.ResultSet | null = null
+    let columns: string[] = []
+    try {
+      rows = await store.querySql(SQL_INSPECT_TAG_TRANSLATION_COLUMNS)
+      columns = rows.getColumnNames()
+    } finally {
+      if (rows !== null) {
+        rows.close()
+      }
+    }
+    if (columns.indexOf('intro') < 0) {
+      await store.executeSql(SQL_ADD_TAG_TRANSLATION_INTRO)
+    }
+    if (columns.indexOf('links') < 0) {
+      await store.executeSql(SQL_ADD_TAG_TRANSLATION_LINKS)
     }
   }
 

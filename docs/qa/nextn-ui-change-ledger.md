@@ -10153,6 +10153,56 @@ authorize an edit, replace a device comparison, or define product completion.
   `portrait-1600x2560/local-tag-detail/cleanup-confirmed-final-20260902T154000/` and
   `landscape-2560x1600/local-tag-detail/cleanup-restored-20260902T154300/`.
 
+## ACCEPTED ON 197 — Correct Gallery tag detail body to show translation-library information — 2026-09-03
+
+- **User counter-evidence and invalidated claim:** the accepted entry above incorrectly states that the local NH
+  dictionary has no tag-introduction, link or image payload. The user requested the current NextE tag-detail body,
+  whose purpose is to display the selected tag's translation-library information. The shipped NextN body instead
+  summarizes local Hidden, weight and color. Therefore the previous Gallery body acceptance is invalid; its
+  single-tap, long-press host, two adapted actions and shared editor evidence remain separate observations.
+- **Faulty assumption:** implementation inspected NextN's already-truncated `NhTagTranslationEntry` and treated that
+  local model as the source capability boundary. It did not trace the authoritative EhTagTranslation raw record or
+  NextE's complete `lookupTagInfo -> name/intro/links/images -> TagInfoBody` chain before deciding what the body
+  should contain. The updater had already discarded `intro` and `links`, and the UI then rationalized that data loss
+  instead of restoring the reference contract.
+- **Reference parent tree and exact before/after:** retain the existing Detail root-owned Sheet, API 26 material,
+  `[MEDIUM, LARGE]` detents, translated header, canonical identity/ID, Hidden action, manage action and nested shared
+  editor. Replace only the body data path and presentation: import and persist EhTagTranslation `intro`/`links`, look
+  up the selected tag with the same NH-to-dictionary namespace fallback rules, translate inline code-tag references,
+  apply the configured intro-image visibility level, and render `简介`, `链接`, the two-column image area, loading,
+  error and empty states like NextE. Local Hidden/weight/color must not appear as the information body.
+- **Required supporting surface:** because NextE's image filtering is part of the displayed information contract,
+  add its persistent `标签简介图片` choice to the existing tag-translation settings group by reusing the current
+  `NextNListRow` dropdown/menu pattern. Do not alter the local-user-tag editor, weight row, threshold description,
+  filtering algorithm, WebDAV records or their frozen presentation.
+- **Verification plan:** focused parser/repository/resource contracts and the signed build must pass first. Install
+  in place on freshly resolved authorized target 103 without clearing data, refresh the translation library through
+  the product UI so existing rows receive the new fields, then compare the same information-bearing tag in NextE
+  and NextN at the same viewport. In both landscape and portrait, prove the body contains translation-library intro,
+  links and eligible images (or the corresponding filtered state), while the two NextN-specific controls and
+  single-tap exact search remain intact. Source/build evidence alone cannot close this entry.
+- **Final implementation mapping:** NextE's `lookupTagInfo`, inline code-tag translation, four-level image filtering,
+  Markdown image extraction, two-column adaptive `TagInfoIntroImage`, intro/link/image body, loading/error/empty
+  states and shared modal scaffold are all present in the final NextN candidate. The NH-specific adaptation is limited
+  to its generic tag namespace and the two requested Hidden/manage actions. Generic NH tags merge source namespaces
+  only when translated name, image-free body and links are equivalent; their unique example images are retained.
+- **Observed portrait and image policy:** after the user authorized 197 in place of offline 103, the signed candidate
+  was installed without clearing data. At `1260×2720`, `巨乳 / tag:big breasts · #2937` displayed the complete local
+  translation-library introduction and translated inline reference. The default `隐藏 H 图片` suppressed its R18
+  examples. The shared row menu showed all four expected choices; temporarily selecting `隐藏引起不适的图片`
+  rendered two columns of real source examples, and the setting was then restored to `隐藏 H 图片`.
+- **Observed landscape and animation:** the app policy was already Auto-rotate but the device's blue Rotation lock
+  tile was on, explaining the earlier no-op motion result. After temporarily disabling that lock, WindowManager
+  reported a real `2720×1260` NextN window and the same detail rendered in the centered wide Sheet. The retained
+  28-frame stream shows the progressive Sheet entrance. The window was restored to `1260×2720`, the system Rotation
+  lock was restored blue/on, and the control center was closed.
+- **Evidence and boundary:** raw evidence is in `.hvigor/outputs/local-user-tags-translation-info/197/` under
+  `merged-content-portrait-20260903T0400`, `image-menu-20260903T0416`, `r18-content-20260903T0419`,
+  `restore-nonh-20260903T0426`, `landscape-gallery-20260903T0446`,
+  `landscape-long-press-20260903T0454`, and `restore-rotation-lock-20260903T0458`. The selected tag's source `links`
+  is empty, so runtime correctly omitted that section; its parser, presenter and system-open branch are source-mapped
+  and contract-covered. Existing 103 evidence remains valid for the unchanged controls, editor and single-tap path.
+
 ## ACCEPTED ON 200 — Gallery Comments composer API 26 material fallback — 2026-09-03
 
 - **Why newly actionable:** the user supplied the current API 26 immersive-light material whitelist and reported

@@ -3,11 +3,24 @@ export class NhTagTranslationEntry {
   namespace: string = ''
   rawName: string = ''
   displayName: string = ''
+  intro: string = ''
+  links: string = ''
+}
+
+/** Complete information for one tag from the optional on-device dictionary. */
+export class NhTagTranslationInfo {
+  namespace: string = ''
+  rawName: string = ''
+  displayName: string = ''
+  intro: string = ''
+  links: string = ''
+  images: string[] = []
 }
 
 /** Metadata for the optional dictionary without exposing its content. */
 export class NhTagTranslationStatus {
   rowCount: number = 0
+  infoRowCount: number = 0
   version: string = ''
   source: string = ''
   updatedAt: number = 0

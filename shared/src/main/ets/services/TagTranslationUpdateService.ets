@@ -133,10 +133,12 @@ export class TagTranslationUpdateService {
       TagTranslationUpdateService.storedReleaseDescriptor(previous.version)
     const release: ReleaseDescriptor | null =
       await TagTranslationUpdateService.tryFetchReleaseDescriptor(preferMirror)
-    if (!force && previous.rowCount > 0 && release !== null && previous.version === release.version) {
+    if (!force && previous.rowCount > 0 && previous.infoRowCount > 0 &&
+      release !== null && previous.version === release.version) {
       return previous
     }
-    if (previous.rowCount > 0 && release !== null && previousRelease !== null && release.version !== previous.version &&
+    if (previous.rowCount > 0 && previous.infoRowCount > 0 && release !== null && previousRelease !== null &&
+      release.version !== previous.version &&
       release.publishedAt <= previousRelease.publishedAt) {
       return previous
     }
@@ -154,11 +156,11 @@ export class TagTranslationUpdateService {
         storedVersion = release.version
       } else if (previous.rowCount > 0 && previousRelease !== null) {
         storedVersion = previous.version
-        if (!force && previous.rowCount > 0) {
+        if (!force && previous.rowCount > 0 && previous.infoRowCount > 0) {
           return previous
         }
       }
-      if (!force && previous.rowCount > 0 && previous.version === storedVersion) {
+      if (!force && previous.rowCount > 0 && previous.infoRowCount > 0 && previous.version === storedVersion) {
         return previous
       }
       let entries: NhTagTranslationEntry[]
@@ -175,7 +177,7 @@ export class TagTranslationUpdateService {
       }
       try {
         await TagTranslationRepository.replace(context, entries, storedVersion, PROVIDER_LABEL)
-        return TagTranslationUpdateService.updatedDictionaryStatus(entries.length, storedVersion)
+        return TagTranslationUpdateService.updatedDictionaryStatus(entries, storedVersion)
       } catch (error) {
         throw TagTranslationUpdateService.updateFailure(
           error as Error,
@@ -530,14 +532,20 @@ export class TagTranslationUpdateService {
         const rawName: string = TagTranslationUpdateService.normalizedRawName(rawNames[nameIndex])
         const value: Record<string, Object> = TagTranslationUpdateService.asRecord(values[rawNames[nameIndex]])
         const displayName: string = TagTranslationUpdateService.cleanDisplayName(value['name'])
+        const intro: string = TagTranslationUpdateService.detailField(value['intro'])
+        const links: string = TagTranslationUpdateService.detailField(value['links'])
         const key: string = `${namespace}\u001f${rawName}`
-        if (rawName.length === 0 || displayName.length === 0 || seen.has(key)) {
+        if (rawName.length === 0 ||
+          (displayName.length === 0 && intro.length === 0 && links.length === 0) ||
+          seen.has(key)) {
           continue
         }
         const entry: NhTagTranslationEntry = new NhTagTranslationEntry()
         entry.namespace = namespace
         entry.rawName = rawName
         entry.displayName = displayName
+        entry.intro = intro
+        entry.links = links
         entries.push(entry)
         seen.add(key)
         if (entries.length > MAX_IMPORT_ROWS) {
@@ -583,6 +591,10 @@ export class TagTranslationUpdateService {
       .replace(/!\[(\S+)?\]\(.+?\)(\s+)?(\S+)/g, '$3')
       .trim()
     return withoutImageMarkdown.length <= MAX_FIELD_LENGTH ? withoutImageMarkdown : ''
+  }
+
+  private static detailField(value: Object): string {
+    return TagTranslationUpdateService.safeString(value)
   }
 
   private static asArray(value: Object): Object[] {
@@ -744,9 +756,11 @@ export class TagTranslationUpdateService {
     } catch (_error) {}
   }
 
-  private static updatedDictionaryStatus(rowCount: number, version: string): NhTagTranslationStatus {
+  private static updatedDictionaryStatus(entries: NhTagTranslationEntry[], version: string): NhTagTranslationStatus {
     const status: NhTagTranslationStatus = new NhTagTranslationStatus()
-    status.rowCount = rowCount
+    status.rowCount = entries.length
+    status.infoRowCount = entries.filter((entry: NhTagTranslationEntry): boolean =>
+      entry.intro.length > 0 || entry.links.length > 0).length
     status.version = version
     status.source = PROVIDER_LABEL
     status.updatedAt = Date.now()

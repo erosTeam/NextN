@@ -6,6 +6,10 @@ import {
   NextNListRow,
   NhTagTranslationStatus,
   SecondaryListScaffold,
+  TAG_INTRO_IMAGE_DISABLE,
+  TAG_INTRO_IMAGE_NON_H,
+  TAG_INTRO_IMAGE_R18,
+  TAG_INTRO_IMAGE_R18G,
   TAG_TRANSLATION_UPDATE_EVERY_START,
   TAG_TRANSLATION_UPDATE_MANUAL,
   TagTranslationSettings,
@@ -221,6 +225,23 @@ export struct TagTranslationSettingsPage {
     TagTranslationSettings.setUpdateMode(this.context(), mode).catch((): void => {})
   }
 
+  private introImageLevelText(): string {
+    switch (this.tagSettings.introImageLevel) {
+      case TAG_INTRO_IMAGE_DISABLE:
+        return AppStrings.get('settings_tag_translation_intro_image_disable')
+      case TAG_INTRO_IMAGE_R18:
+        return AppStrings.get('settings_tag_translation_intro_image_r18')
+      case TAG_INTRO_IMAGE_R18G:
+        return AppStrings.get('settings_tag_translation_intro_image_r18g')
+      default:
+        return AppStrings.get('settings_tag_translation_intro_image_nonh')
+    }
+  }
+
+  private setIntroImageLevel(level: string): void {
+    TagTranslationSettings.setIntroImageLevel(this.context(), level).catch((): void => {})
+  }
+
   private tagDictionaryStatusText(): string {
     if (this.isUpdatingTagDictionary) {
       return AppStrings.get('settings_tag_translation_updating')
@@ -263,6 +284,44 @@ export struct TagTranslationSettingsPage {
         select((): void => {
           this.setUpdateMode(TAG_TRANSLATION_UPDATE_EVERY_START)
         })
+      })
+    }
+  }
+
+  @Builder
+  private IntroImageMenu(select: (action: () => void) => void) {
+    Menu() {
+      MenuItem({
+        content: AppStrings.get('settings_tag_translation_intro_image_disable'),
+        symbolEndIcon: this.tagSettings.introImageLevel === TAG_INTRO_IMAGE_DISABLE
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        select((): void => { this.setIntroImageLevel(TAG_INTRO_IMAGE_DISABLE) })
+      })
+      MenuItem({
+        content: AppStrings.get('settings_tag_translation_intro_image_nonh'),
+        symbolEndIcon: this.tagSettings.introImageLevel === TAG_INTRO_IMAGE_NON_H
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        select((): void => { this.setIntroImageLevel(TAG_INTRO_IMAGE_NON_H) })
+      })
+      MenuItem({
+        content: AppStrings.get('settings_tag_translation_intro_image_r18'),
+        symbolEndIcon: this.tagSettings.introImageLevel === TAG_INTRO_IMAGE_R18
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        select((): void => { this.setIntroImageLevel(TAG_INTRO_IMAGE_R18) })
+      })
+      MenuItem({
+        content: AppStrings.get('settings_tag_translation_intro_image_r18g'),
+        symbolEndIcon: this.tagSettings.introImageLevel === TAG_INTRO_IMAGE_R18G
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        select((): void => { this.setIntroImageLevel(TAG_INTRO_IMAGE_R18G) })
       })
     }
   }
@@ -363,6 +422,22 @@ export struct TagTranslationSettingsPage {
               accessibilityLabel: AppStrings.format('settings_row_a11y', [
                 AppStrings.get('settings_tag_translation_update_mode'),
                 this.updateModeText(),
+              ]),
+            })
+            this.RowDivider()
+            NextNListRow({
+              leadingIcon: $r('sys.symbol.picture'),
+              title: AppStrings.get('settings_tag_translation_intro_image_level'),
+              subtitle: AppStrings.get('settings_tag_translation_intro_image_level_hint'),
+              trailingText: this.introImageLevelText(),
+              trailingDropdown: true,
+              dropdownMenuEnabled: true,
+              dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+                this.IntroImageMenu(select)
+              },
+              accessibilityLabel: AppStrings.format('settings_row_a11y', [
+                AppStrings.get('settings_tag_translation_intro_image_level'),
+                this.introImageLevelText(),
               ]),
             })
           }

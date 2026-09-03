@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-translation-info-merge-install-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/merge-install-20260903T0358",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "dirty-tag-translation-info-merged-namespace-candidate-20260903",
+    "page": "Gallery 677618 after installing equivalent-definition image merge fix",
+    "deviceAlias": "device-197",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Install in place without clearing data, cold-start, reopen the same gallery using the already refreshed complete dictionary, and capture the semantic tag anchor."
+  },
+  "preflight": [
+    { "name": "install-signed-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "force-stop-without-data-clear", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-start-gallery-677618", "hdcArgs": ["shell", "aa", "start", "-A", "ohos.want.action.viewData", "-U", "nextn://gallery/677618"], "pauseAfterMs": 6000, "timeoutSeconds": 30 }
+  ],
+  "measurement": { "actions": [
+    { "name": "noninteractive-stability", "uiInput": ["click", "1", "1"], "pauseAfterMs": 500 }
+  ] },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-tag-info-merge-install-197.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-tag-info-merge-install-197.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-merge-install-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/merge-install-20260903T0358/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-merge-install-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/merge-install-20260903T0358/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-tag-info-merge-install-197.json", "/data/local/tmp/nextn-tag-info-merge-install-197.png"] }
+  ]
+}

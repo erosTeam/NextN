@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-translation-info-restore-nonh-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/restore-nonh-20260903T0426",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "dirty-tag-translation-info-merged-namespace-candidate-20260903",
+    "page": "Restore original non-H image level",
+    "deviceAlias": "device-197",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Leave the R18 content test through product-owned navigation and restore the original Hide H images setting, then capture the persisted row label."
+  },
+  "measurement": { "actions": [
+    { "name": "dismiss-tag-detail", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 900 },
+    { "name": "return-from-gallery-detail", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 1200 },
+    { "name": "open-my-tab", "uiInput": ["click", "1000", "2585"], "pauseAfterMs": 900 },
+    { "name": "open-advanced", "uiInput": ["click", "630", "1816"], "pauseAfterMs": 900 },
+    { "name": "open-tag-translation", "uiInput": ["click", "630", "1100"], "pauseAfterMs": 900 },
+    { "name": "open-image-level-menu", "uiInput": ["click", "630", "1710"], "pauseAfterMs": 700 },
+    { "name": "restore-hide-h-images", "uiInput": ["click", "850", "2033"], "pauseAfterMs": 900 }
+  ] },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-tag-info-restore-nonh-197.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-tag-info-restore-nonh-197.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-restore-nonh-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/restore-nonh-20260903T0426/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-restore-nonh-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/restore-nonh-20260903T0426/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-tag-info-restore-nonh-197.json", "/data/local/tmp/nextn-tag-info-restore-nonh-197.png"] }
+  ]
+}

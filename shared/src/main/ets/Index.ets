@@ -36,6 +36,10 @@ export {
 } from './state/CommentTranslationSettingsState'
 export {
   TagTranslationSettingsState,
+  TAG_INTRO_IMAGE_DISABLE,
+  TAG_INTRO_IMAGE_NON_H,
+  TAG_INTRO_IMAGE_R18,
+  TAG_INTRO_IMAGE_R18G,
   TAG_TRANSLATION_UPDATE_EVERY_START,
   TAG_TRANSLATION_UPDATE_MANUAL,
   connectTagTranslationSettings,
@@ -137,6 +141,7 @@ export { NhAccountSessionService } from './services/NhAccountSessionService'
 export { NhAccountProfileService } from './services/NhAccountProfileService'
 export {
   NhTagTranslationEntry,
+  NhTagTranslationInfo,
   NhTagTranslationStatus,
   releaseTagTranslationVersionLabel,
 } from './model/NhTagTranslation'
@@ -284,6 +289,7 @@ export {
 export { CommentTranslationSettings } from './settings/CommentTranslationSettings'
 export { SearchTranslationSettings } from './settings/SearchTranslationSettings'
 export { TagTranslationSettings } from './settings/TagTranslationSettings'
+export { TagTranslationInfoService } from './services/TagTranslationInfoService'
 export { GalleryTitleTranslationService } from './services/GalleryTitleTranslationService'
 export { AppColorFavoritesSettings } from './settings/AppColorFavoritesSettings'
 export {

@@ -5,6 +5,10 @@ import { ComicTranslationDiagnosticLogger } from '../services/ComicTranslationDi
 import { TagTranslationUpdateService } from '../services/TagTranslationUpdateService'
 import { TagTranslationRepository } from '../storage/TagTranslationRepository'
 import {
+  TAG_INTRO_IMAGE_DISABLE,
+  TAG_INTRO_IMAGE_NON_H,
+  TAG_INTRO_IMAGE_R18,
+  TAG_INTRO_IMAGE_R18G,
   TAG_TRANSLATION_UPDATE_EVERY_START,
   TAG_TRANSLATION_UPDATE_MANUAL,
   connectTagTranslationSettings,
@@ -14,6 +18,7 @@ const SETTINGS_STORE: string = 'nextn_settings'
 const KEY_ENABLED: string = 'tag_translation_enabled'
 const KEY_USE_CDN: string = 'tag_translation_use_cdn'
 const KEY_UPDATE_MODE: string = 'tag_translation_update_mode'
+const KEY_INTRO_IMAGE_LEVEL: string = 'tag_translation_intro_image_level'
 const STARTUP_UPDATE_DELAY_MS: number = 10000
 
 /** Preferences-backed tag dictionary policy and status display metadata. */
@@ -30,6 +35,9 @@ export class TagTranslationSettings {
         store.getSync(KEY_USE_CDN, false) as boolean
       connectTagTranslationSettings().updateMode = TagTranslationSettings.normalizeMode(
         store.getSync(KEY_UPDATE_MODE, TAG_TRANSLATION_UPDATE_MANUAL) as string,
+      )
+      connectTagTranslationSettings().introImageLevel = TagTranslationSettings.normalizeIntroImageLevel(
+        store.getSync(KEY_INTRO_IMAGE_LEVEL, TAG_INTRO_IMAGE_NON_H) as string,
       )
     } catch (error) {
       ComicTranslationDiagnosticLogger.warn(
@@ -64,6 +72,23 @@ export class TagTranslationSettings {
       ComicTranslationDiagnosticLogger.warn(
         'tag-translation',
         'update_mode_save_failed',
+        (error as Error).message,
+      )
+    }
+  }
+
+  static async setIntroImageLevel(context: common.UIAbilityContext, level: string): Promise<void> {
+    const normalized: string = TagTranslationSettings.normalizeIntroImageLevel(level)
+    connectTagTranslationSettings().introImageLevel = normalized
+    try {
+      const store: preferences.Preferences =
+        await preferences.getPreferences(context, SETTINGS_STORE)
+      store.putSync(KEY_INTRO_IMAGE_LEVEL, normalized)
+      store.flushSync()
+    } catch (error) {
+      ComicTranslationDiagnosticLogger.warn(
+        'tag-translation',
+        'intro_image_level_save_failed',
         (error as Error).message,
       )
     }
@@ -128,6 +153,17 @@ export class TagTranslationSettings {
     return mode === TAG_TRANSLATION_UPDATE_EVERY_START
       ? TAG_TRANSLATION_UPDATE_EVERY_START
       : TAG_TRANSLATION_UPDATE_MANUAL
+  }
+
+  private static normalizeIntroImageLevel(level: string): string {
+    switch (level) {
+      case TAG_INTRO_IMAGE_DISABLE:
+      case TAG_INTRO_IMAGE_R18:
+      case TAG_INTRO_IMAGE_R18G:
+        return level
+      default:
+        return TAG_INTRO_IMAGE_NON_H
+    }
   }
 
   private static async saveBoolean(

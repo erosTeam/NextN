@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-translation-info-long-press-portrait-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/portrait-long-press-20260903T0342",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "dirty-tag-translation-info-candidate-20260903",
+    "page": "Translation-library tag detail half-modal after long-pressing 巨乳",
+    "deviceAlias": "device-197",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Continuously capture the full long-press transition and settled tag detail. Verify the body is translation-library information, not local-rule summary, with exactly the NH Hidden and management controls."
+  },
+  "preflight": [
+    { "name": "send-frame-capture-script", "hdcArgs": ["file", "send", "/Users/honjow/git/NextN/scripts/capture_transition_frames.sh", "/data/local/tmp/nextn-tag-info-capture.sh"] },
+    { "name": "prepare-frame-directory", "hdcArgs": ["shell", "sh", "-c", "rm -rf /data/local/tmp/nextn-tag-info-portrait-frames; mkdir -p /data/local/tmp/nextn-tag-info-portrait-frames"] },
+    { "name": "start-frame-stream", "hdcArgs": ["shell", "sh", "-c", "nohup sh /data/local/tmp/nextn-tag-info-capture.sh /data/local/tmp/nextn-tag-info-portrait-frames 28 0 p >/data/local/tmp/nextn-tag-info-portrait-frames/p.log 2>&1 &"] },
+    { "name": "collect-pre-action-frames", "hdcArgs": ["shell", "sleep", "1"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "long-press-semantic-tag-巨乳", "uiInput": ["longClick", "312", "1691"], "pauseAfterMs": 4000 }
+    ]
+  },
+  "postflight": [
+    { "name": "wait-for-frame-stream", "hdcArgs": ["shell", "sh", "-c", "while [ ! -f /data/local/tmp/nextn-tag-info-portrait-frames/p-done ]; do sleep 1; done"], "timeoutSeconds": 180 },
+    { "name": "receive-frame-stream", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-portrait-frames", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/portrait-long-press-20260903T0342/frames"], "timeoutSeconds": 180 },
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-tag-info-portrait-197.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-tag-info-portrait-197.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-portrait-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/portrait-long-press-20260903T0342/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-portrait-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/portrait-long-press-20260903T0342/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-rf", "/data/local/tmp/nextn-tag-info-portrait-frames", "/data/local/tmp/nextn-tag-info-portrait-197.json", "/data/local/tmp/nextn-tag-info-portrait-197.png", "/data/local/tmp/nextn-tag-info-capture.sh"] }
+  ]
+}

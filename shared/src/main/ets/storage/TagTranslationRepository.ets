@@ -3,7 +3,10 @@ import { relationalStore } from '@kit.ArkData'
 import { NhTag } from '../model/NhGallery'
 import { NhTagSuggestion } from '../model/NhTagSuggestion'
 import { NhTagQuery } from '../model/NhTagQuery'
-import { NhTagTranslationEntry, NhTagTranslationStatus } from '../model/NhTagTranslation'
+import {
+  NhTagTranslationEntry,
+  NhTagTranslationStatus,
+} from '../model/NhTagTranslation'
 import { CacheStat } from '../services/CacheStat'
 import { connectTagTranslations } from '../state/TagTranslationState'
 import { LocalDataStore } from './LocalDataStore'
@@ -15,10 +18,17 @@ const MAX_LOOKUP_KEYS_PER_QUERY: number = 200
 const INSERT_BATCH_SIZE: number = 500
 const MAX_SUGGESTIONS: number = 12
 const MAX_SUGGESTION_PREFIX_LENGTH: number = 128
-const SQL_COUNT: string = 'SELECT COUNT(*) AS count FROM tag_translations'
+const SQL_COUNT: string =
+  "SELECT COUNT(*) AS count, SUM(CASE WHEN intro <> '' OR links <> '' THEN 1 ELSE 0 END) AS info_count " +
+  'FROM tag_translations'
 const SQL_SELECT_META: string = 'SELECT value FROM tag_translation_meta WHERE key = ? LIMIT 1'
 const SQL_LOOKUP_PREFIX: string =
   'SELECT raw_name, display_name FROM tag_translations WHERE namespace = ? AND raw_name IN ('
+const SQL_LOOKUP_INFO: string =
+  'SELECT namespace, raw_name, display_name, intro, links FROM tag_translations ' +
+  'WHERE namespace = ? AND raw_name = ? LIMIT 1'
+const SQL_LOOKUP_NAME_BY_RAW: string =
+  'SELECT display_name FROM tag_translations WHERE raw_name = ? ORDER BY namespace ASC LIMIT 1'
 const SQL_SUGGEST_UNSCOPED: string =
   "SELECT namespace, raw_name, display_name FROM tag_translations " +
   "WHERE raw_name LIKE ? ESCAPE '\\' OR display_name LIKE ? ESCAPE '\\' " +
@@ -28,7 +38,9 @@ const SQL_TOUCH_SUGGESTION: string =
 const SQL_CLEAR: string = 'DELETE FROM tag_translations'
 const SQL_CLEAR_META: string = 'DELETE FROM tag_translation_meta'
 const SQL_STAT: string =
-  'SELECT COUNT(*) AS count, COALESCE(SUM(LENGTH(CAST(display_name AS BLOB))), 0) AS bytes ' +
+  'SELECT COUNT(*) AS count, COALESCE(SUM(' +
+  'LENGTH(CAST(display_name AS BLOB)) + LENGTH(CAST(intro AS BLOB)) + LENGTH(CAST(links AS BLOB))' +
+  '), 0) AS bytes ' +
   'FROM tag_translations'
 const SQL_UPSERT_META: string =
   'INSERT INTO tag_translation_meta (key, value) VALUES (?, ?) ' +
@@ -117,6 +129,7 @@ export class TagTranslationRepository {
       rows = await store.querySql(SQL_COUNT)
       if (rows.goToFirstRow()) {
         status.rowCount = TagTranslationRepository.numberColumn(rows, 'count')
+        status.infoRowCount = TagTranslationRepository.numberColumn(rows, 'info_count')
       }
     } finally {
       if (rows !== null) {
@@ -129,6 +142,42 @@ export class TagTranslationRepository {
       await TagTranslationRepository.metaValue(store, META_UPDATED_AT),
     )
     return status
+  }
+
+  /** Reads every source-namespace record represented by one NH tag namespace. */
+  static async lookupInfoEntries(
+    context: common.UIAbilityContext,
+    namespace: string,
+    rawName: string,
+  ): Promise<NhTagTranslationEntry[]> {
+    const normalizedRawName: string = TagTranslationRepository.normalizedRawName(rawName)
+    const namespaces: string[] = TagTranslationRepository.infoLookupNamespaces(namespace)
+    if (normalizedRawName.length === 0 || namespaces.length === 0) {
+      return []
+    }
+    const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+    const candidates: NhTagTranslationEntry[] = []
+    for (let index: number = 0; index < namespaces.length; index++) {
+      const candidate: NhTagTranslationEntry | null = await TagTranslationRepository.queryInfoRow(
+        store,
+        namespaces[index],
+        normalizedRawName,
+      )
+      if (candidate !== null) {
+        if (index === 0 && namespaces[index] === NhTagQuery.canonicalNamespace(namespace)) {
+          candidates.splice(0, candidates.length)
+          candidates.push(candidate)
+          break
+        }
+        candidates.push(candidate)
+      }
+    }
+    return candidates
+  }
+
+  /** Resolves a tag token referenced by backticks inside a dictionary introduction. */
+  static async lookupCodeTagName(context: common.UIAbilityContext, raw: string): Promise<string> {
+    return await TagTranslationRepository.queryCodeTagName(await LocalDataStore.open(context), raw)
   }
 
   /** Aggregate-only dictionary state for the private cache page. */
@@ -465,7 +514,73 @@ export class TagTranslationRepository {
       'namespace': entry.namespace,
       'raw_name': entry.rawName,
       'display_name': entry.displayName,
+      'intro': entry.intro,
+      'links': entry.links,
       'last_used_at': 0,
+    }
+  }
+
+  private static async queryInfoRow(
+    store: relationalStore.RdbStore,
+    namespace: string,
+    rawName: string,
+  ): Promise<NhTagTranslationEntry | null> {
+    let rows: relationalStore.ResultSet | null = null
+    try {
+      rows = await store.querySql(SQL_LOOKUP_INFO, [namespace, rawName])
+      if (!rows.goToFirstRow()) {
+        return null
+      }
+      const entry: NhTagTranslationEntry = new NhTagTranslationEntry()
+      entry.namespace = TagTranslationRepository.stringColumn(rows, 'namespace')
+      entry.rawName = TagTranslationRepository.stringColumn(rows, 'raw_name')
+      entry.displayName = TagTranslationRepository.stringColumn(rows, 'display_name')
+      entry.intro = TagTranslationRepository.stringColumn(rows, 'intro')
+      entry.links = TagTranslationRepository.stringColumn(rows, 'links')
+      return entry
+    } finally {
+      if (rows !== null) {
+        rows.close()
+      }
+    }
+  }
+
+  private static infoLookupNamespaces(rawNamespace: string): string[] {
+    const sourceNamespace: string = rawNamespace.trim().toLowerCase()
+    const canonical: string = NhTagQuery.canonicalNamespace(sourceNamespace)
+    if (sourceNamespace !== canonical && NhTagQuery.translationNamespaces(canonical).indexOf(sourceNamespace) >= 0) {
+      return [sourceNamespace]
+    }
+    return NhTagQuery.translationNamespaces(canonical)
+  }
+
+  private static async queryCodeTagName(store: relationalStore.RdbStore, raw: string): Promise<string> {
+    const text: string = raw.trim().toLowerCase()
+    if (text.length === 0) {
+      return ''
+    }
+    const separator: number = text.indexOf(':')
+    let rows: relationalStore.ResultSet | null = null
+    try {
+      if (separator > 0) {
+        const namespaces: string[] = TagTranslationRepository.infoLookupNamespaces(text.substring(0, separator))
+        const name: string = TagTranslationRepository.normalizedRawName(text.substring(separator + 1))
+        for (let index: number = 0; index < namespaces.length; index++) {
+          rows = await store.querySql(SQL_LOOKUP_INFO, [namespaces[index], name])
+          if (rows.goToFirstRow()) {
+            return TagTranslationRepository.stringColumn(rows, 'display_name')
+          }
+          rows.close()
+          rows = null
+        }
+        return raw
+      }
+      rows = await store.querySql(SQL_LOOKUP_NAME_BY_RAW, [TagTranslationRepository.normalizedRawName(text)])
+      return rows.goToFirstRow() ? TagTranslationRepository.stringColumn(rows, 'display_name') : raw
+    } finally {
+      if (rows !== null) {
+        rows.close()
+      }
     }
   }
 

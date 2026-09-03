@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-translation-info-unlock-rotation-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/unlock-rotation-20260903T0443",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "dirty-tag-translation-info-merged-namespace-candidate-20260903",
+    "page": "Temporarily disable the observed system rotation lock",
+    "deviceAlias": "device-197",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "The existing blue Rotation lock tile was observed in the system control center. Disable it only for the requested landscape tag-sheet check; a later protocol restores it to blue/on."
+  },
+  "measurement": { "actions": [
+    { "name": "open-control-center", "uiInput": ["swipe", "1130", "10", "1130", "1600", "3000"], "pauseAfterMs": 900 },
+    { "name": "disable-rotation-lock", "uiInput": ["click", "760", "1550"], "pauseAfterMs": 900 }
+  ] },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-tag-info-unlock-rotation-197.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-tag-info-unlock-rotation-197.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-unlock-rotation-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/unlock-rotation-20260903T0443/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-unlock-rotation-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/unlock-rotation-20260903T0443/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-tag-info-unlock-rotation-197.json", "/data/local/tmp/nextn-tag-info-unlock-rotation-197.png"] }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-translation-info-landscape-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/landscape-20260903T0402",
+  "display": { "widthPx": 2720, "heightPx": 1260 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "dirty-tag-translation-info-merged-namespace-candidate-20260903",
+    "page": "Same open translation-library detail rotated to landscape",
+    "deviceAlias": "device-197",
+    "orientation": "landscape",
+    "resolution": "2720x1260",
+    "notes": "Rotate the already-open tag detail to landscape and capture the shared half-modal's responsive geometry and retained definition without mutating its actions or local tag rule."
+  },
+  "preflight": [
+    { "name": "rotate-landscape", "hdcArgs": ["shell", "hidumper", "-s", "DisplayManagerService", "-a", "-motion,1"], "pauseAfterMs": 1800 }
+  ],
+  "measurement": { "actions": [
+    { "name": "noninteractive-sheet-stability", "uiInput": ["click", "1", "1"], "pauseAfterMs": 500 }
+  ] },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-tag-info-landscape-197.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-tag-info-landscape-197.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-landscape-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/landscape-20260903T0402/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-landscape-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/landscape-20260903T0402/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-tag-info-landscape-197.json", "/data/local/tmp/nextn-tag-info-landscape-197.png"] }
+  ]
+}

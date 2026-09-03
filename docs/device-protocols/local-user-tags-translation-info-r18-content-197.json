@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-local-user-tags-translation-info-r18-content-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/r18-content-20260903T0419",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "dirty-tag-translation-info-merged-namespace-candidate-20260903",
+    "page": "Merged translation-library detail at R18 image level",
+    "deviceAlias": "device-197",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Temporarily select the third image level, reopen Gallery 677618, long-press 巨乳, allow its merged R18 example images to load, and capture the actual rendered sheet. The original non-H level is restored in a later bounded protocol."
+  },
+  "preflight": [
+    { "name": "open-gallery-677618", "hdcArgs": ["shell", "aa", "start", "-A", "ohos.want.action.viewData", "-U", "nextn://gallery/677618"], "pauseAfterMs": 5000, "timeoutSeconds": 30 }
+  ],
+  "measurement": { "actions": [
+    { "name": "long-press-semantic-tag-巨乳", "uiInput": ["longClick", "312", "1704"], "pauseAfterMs": 8000 }
+  ] },
+  "postflight": [
+    { "name": "capture-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-tag-info-r18-content-197.json", "-a"] },
+    { "name": "capture-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-tag-info-r18-content-197.png"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-r18-content-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/r18-content-20260903T0419/layout.json"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-tag-info-r18-content-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/local-user-tags-translation-info/197/r18-content-20260903T0419/screen.png"] },
+    { "name": "cleanup", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-tag-info-r18-content-197.json", "/data/local/tmp/nextn-tag-info-r18-content-197.png"] }
+  ]
+}
