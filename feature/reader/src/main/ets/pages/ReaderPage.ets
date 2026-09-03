@@ -127,6 +127,7 @@ const READER_LOADING_BAR_WIDTH_PERCENT: string = '80%'
 const READER_LOADING_BAR_MAX_WIDTH: number = 180
 const READER_LOADING_SLIDER_WIDTH_RATIO: number = 0.3
 const READER_LOADING_BAR_RADIUS: number = 2
+const READER_TRANSITION_LOADING_PANEL_COLOR: ResourceColor = '#665F6368'
 const READER_LOADING_BAR_BG: ResourceColor = '#33FFFFFF'
 const READER_LOADING_BAR_LIGHT_BG: ResourceColor = '#33000000'
 const READER_LOADING_BAR_FG: ResourceColor = Color.White
@@ -268,8 +269,8 @@ struct ReaderLoadingStage {
   @Param loaded: number = 0
   @Param total: number = 0
   @Param contentColor: ResourceColor = READER_FOREGROUND_DARK_CANVAS
-  @Param secondaryColor: ResourceColor = READER_SECONDARY_FOREGROUND_DARK_CANVAS
   @Param trackColor: ResourceColor = READER_LOADING_BAR_BG
+  @Param showTransitionBackground: boolean = false
 
   private hasProgress(): boolean {
     return this.total > 0
@@ -283,29 +284,51 @@ struct ReaderLoadingStage {
     return `${Math.round(this.progressRatio() * 100)}%`
   }
 
-  build() {
+  @Builder
+  private LoadingElements() {
+    ReaderLoadingBar({
+      determinate: this.hasProgress(),
+      ratio: this.progressRatio(),
+      barFillColor: this.contentColor,
+      barTrackColor: this.trackColor,
+    })
+    Text(this.hasProgress() ? this.progressPercent() : this.label)
+      .fontSize(ThemeTokens.FONT_SIZE_BODY)
+      .fontColor(this.contentColor)
+      .textAlign(TextAlign.Center)
+  }
+
+  @Builder
+  private LoadingContent() {
     Column({ space: ThemeTokens.SPACE_SM }) {
-      ReaderLoadingBar({
-        determinate: this.hasProgress(),
-        ratio: this.progressRatio(),
-        barFillColor: this.contentColor,
-        barTrackColor: this.trackColor,
-      })
-      Text(this.label)
-        .fontSize(ThemeTokens.FONT_SIZE_BODY)
-        .fontColor(this.contentColor)
-        .textAlign(TextAlign.Center)
-      Text(this.hasProgress() ? this.progressPercent() : '0%')
-        .fontSize(ThemeTokens.FONT_SIZE_META)
-        .fontColor(this.secondaryColor)
-        .textAlign(TextAlign.Center)
-        .opacity(this.hasProgress() ? 1 : 0)
+      this.LoadingElements()
     }
     .width('100%')
     .height('100%')
     .justifyContent(FlexAlign.Center)
     .alignItems(HorizontalAlign.Center)
     .padding(ThemeTokens.SPACE_XL)
+  }
+
+  build() {
+    Stack({ alignContent: Alignment.Center }) {
+      if (this.showTransitionBackground) {
+        Column({ space: ThemeTokens.SPACE_SM }) {
+          this.LoadingElements()
+        }
+        .width(READER_LOADING_BAR_WIDTH_PERCENT)
+        .constraintSize({ maxWidth: READER_LOADING_BAR_MAX_WIDTH + ThemeTokens.SPACE_MD * 2 })
+        .padding(ThemeTokens.SPACE_MD)
+        .backgroundBlurStyle(BlurStyle.BACKGROUND_THIN)
+        .backgroundColor(READER_TRANSITION_LOADING_PANEL_COLOR)
+        .borderRadius(ThemeTokens.RADIUS_CARD)
+        .clip(true)
+      } else {
+        this.LoadingContent()
+      }
+    }
+    .width('100%')
+    .height('100%')
   }
 }
 
@@ -1155,8 +1178,8 @@ struct ReaderImagePage {
               ? 'reader_status_retrying_image'
               : 'reader_loading_image'),
             contentColor: this.canvasContentColor,
-            secondaryColor: this.canvasSecondaryContentColor,
             trackColor: READER_LOADING_BAR_BG,
+            showTransitionBackground: this.readerThumbnailTransition.readerOpeningProxyVisible(),
           })
         } else {
           SymbolGlyph($r('sys.symbol.exclamationmark_triangle'))
@@ -1383,6 +1406,7 @@ struct ReaderSpreadImageLayer {
   @Local isLoading: boolean = true
   @Local imageSource: string = ''
   @Local cropBounds: ReaderPageCropBounds = ReaderPageCropBounds.none()
+  @Local readerThumbnailTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
   private loadGeneration: number = 0
   private resolvedFilePath: string = ''
   private resolvedDisplayUri: string = ''
@@ -1632,8 +1656,8 @@ struct ReaderSpreadImageLayer {
               ? 'reader_status_retrying_image'
               : 'reader_loading_image'),
             contentColor: this.canvasContentColor,
-            secondaryColor: this.canvasContentColor,
             trackColor: READER_LOADING_BAR_BG,
+            showTransitionBackground: this.readerThumbnailTransition.readerOpeningProxyVisible(),
           })
         } else {
           SymbolGlyph($r('sys.symbol.exclamationmark_triangle'))

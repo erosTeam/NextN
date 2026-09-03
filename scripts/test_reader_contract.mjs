@@ -50,6 +50,32 @@ if (!page.includes('private readerContentSurfaceColor(): ResourceColor')) {
   throw new Error('ReaderPage: missing transparent content surface during thumbnail handoff')
 }
 
+const loadingStageStart = page.indexOf('struct ReaderLoadingStage')
+const loadingStageEnd = page.indexOf('interface ReaderImageLoadEvent', loadingStageStart)
+const loadingStage = page.slice(loadingStageStart, loadingStageEnd)
+for (const token of [
+  '@Param showTransitionBackground: boolean = false',
+  'Text(this.hasProgress() ? this.progressPercent() : this.label)',
+  'constraintSize({ maxWidth: READER_LOADING_BAR_MAX_WIDTH + ThemeTokens.SPACE_MD * 2 })',
+  'padding(ThemeTokens.SPACE_MD)',
+  'backgroundBlurStyle(BlurStyle.BACKGROUND_THIN)',
+  'borderRadius(ThemeTokens.RADIUS_CARD)',
+]) {
+  if (!loadingStage.includes(token)) {
+    throw new Error(`ReaderLoadingStage: missing transition background contract ${token}`)
+  }
+}
+if (loadingStage.includes('READER_TRANSITION_LOADING_PANEL_HEIGHT') ||
+  loadingStage.includes("this.hasProgress() ? this.progressPercent() : '0%'")) {
+  throw new Error('ReaderLoadingStage: transition background must not reserve a hidden progress row or fixed height')
+}
+const transitionBackgroundCalls = page.match(
+  /showTransitionBackground: this\.readerThumbnailTransition\.readerOpeningProxyVisible\(\)/g,
+) ?? []
+if (transitionBackgroundCalls.length !== 2) {
+  throw new Error('ReaderPage: only the two image-level loading paths may enable the transition background')
+}
+
 const service = await readFile(new URL('shared/src/main/ets/services/ReaderPresentationService.ets', ROOT), 'utf8')
 for (const token of ['setMode', 'setSpreadLayout', 'setPreloadPages', 'setTapZoneLayout', 'setTapZoneInvert']) {
   if (!service.includes(token)) {
