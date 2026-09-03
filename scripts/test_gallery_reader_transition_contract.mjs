@@ -139,6 +139,18 @@ ok('Reader full-image decode does not block its background or navigation surface
     /readerOpeningProxyVisible/.test(reader) &&
     /ReaderTapOverlay/.test(reader) &&
     /notifyReaderImageReady/.test(reader))
+ok('Reader fades the decoded image over an opaque opening thumbnail before releasing the proxy',
+  /@Trace openingReaderImageOpacity: number = 1/.test(readerState) &&
+    /this\.openingReaderImageOpacity = 0/.test(readerState) &&
+    /startOpeningHandoff\(\): void[\s\S]*?this\.openingReaderImageOpacity = 1/.test(readerState) &&
+    /readerImageOpacity\(page: number\): number/.test(readerState) &&
+    /readerThumbnailTransition\.readerImageOpacity\(this\.pageIndex \+ 1\)/.test(reader) &&
+    /private static startOpeningHandoff\([\s\S]*?animateTo\([\s\S]*?transition\.startOpeningHandoff\(\)/.test(
+      readerCoordinator,
+    ) &&
+    (readerCoordinator.match(
+      /ReaderThumbnailTransitionCoordinator\.startOpeningHandoff\(uiContext, transition\)/g,
+    ) ?? []).length === 2)
 ok('Reader return tracks the current page and captures that page for the visible thumbnail target',
   /readerThumbnailTransition\.updateCurrent/.test(reader) &&
     /readerPageSnapshotId\(pageIndex\)/.test(reader) &&

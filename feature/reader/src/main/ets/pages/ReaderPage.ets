@@ -1251,9 +1251,8 @@ struct ReaderImagePage {
         })
         .id(this.snapshotId)
         .opacity(
-          this.imageDecoded &&
-          !this.readerThumbnailTransition.readerImageHidden(this.pageIndex + 1)
-            ? 1
+          this.imageDecoded
+            ? this.readerThumbnailTransition.readerImageOpacity(this.pageIndex + 1)
             : 0,
         )
     }

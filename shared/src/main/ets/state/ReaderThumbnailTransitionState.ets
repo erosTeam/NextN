@@ -40,6 +40,7 @@ export class ReaderThumbnailTransitionState {
   @Trace overlayOpacity: number = 1
   @Trace backdropOpacity: number = 1
   @Trace openingProxyOpacity: number = 1
+  @Trace openingReaderImageOpacity: number = 1
   @Trace closeTargetSnapshotOpacity: number = 0
   @Trace readerImageReady: boolean = false
   @Trace presentationEpoch: number = 0
@@ -182,6 +183,16 @@ export class ReaderThumbnailTransitionState {
         this.phase === ReaderThumbnailTransitionPhase.REVERSING_OPEN)
   }
 
+  readerImageOpacity(page: number): number {
+    if (page <= 0 || page !== this.image.number) {
+      return 1
+    }
+    if (this.phase === ReaderThumbnailTransitionPhase.OPEN_HANDOFF) {
+      return this.openingReaderImageOpacity
+    }
+    return this.readerImageHidden(page) ? 0 : 1
+  }
+
   private imageRatio(image: NhGalleryPage): number {
     if (image.width > 0 && image.height > 0) {
       return image.width / image.height
@@ -245,6 +256,7 @@ export class ReaderThumbnailTransitionState {
     this.overlayOpacity = 0
     this.backdropOpacity = 1
     this.openingProxyOpacity = 1
+    this.openingReaderImageOpacity = 0
     this.closeTargetSnapshotOpacity = 0
     this.readerImageReady = false
     this.phase = ReaderThumbnailTransitionPhase.WAITING_READER
@@ -308,7 +320,7 @@ export class ReaderThumbnailTransitionState {
 
   startOpeningHandoff(): void {
     if (this.phase === ReaderThumbnailTransitionPhase.OPEN_HANDOFF) {
-      this.openingProxyOpacity = 0
+      this.openingReaderImageOpacity = 1
     }
   }
 
@@ -318,6 +330,7 @@ export class ReaderThumbnailTransitionState {
     }
     this.phase = ReaderThumbnailTransitionPhase.OPEN
     this.openingProxyOpacity = 1
+    this.openingReaderImageOpacity = 1
     return true
   }
 
@@ -330,6 +343,7 @@ export class ReaderThumbnailTransitionState {
     // is still exactly one image surface throughout the reverse flight.
     this.openingReverseSnapshot = reverseSnapshot
     this.openingProxyOpacity = 1
+    this.openingReaderImageOpacity = 0
     this.phase = ReaderThumbnailTransitionPhase.REVERSING_OPEN
     return true
   }
@@ -365,6 +379,7 @@ export class ReaderThumbnailTransitionState {
       // and gestures remain observable instead of appearing frozen behind the old thumbnail.
       this.phase = ReaderThumbnailTransitionPhase.OPEN
       this.openingProxyOpacity = 1
+      this.openingReaderImageOpacity = 1
       this.readerImageReady = false
       // The scheduled handoff callback now sees OPEN and intentionally exits. Preserve the same
       // presentation-settled signal here so a page turn in that one-frame ownership window cannot
@@ -490,6 +505,7 @@ export class ReaderThumbnailTransitionState {
     this.overlayOpacity = 1
     this.backdropOpacity = 1
     this.openingProxyOpacity = 1
+    this.openingReaderImageOpacity = 1
     this.closeTargetSnapshotOpacity = 0
     this.readerImageReady = false
     this.presentationGalleryId = ''

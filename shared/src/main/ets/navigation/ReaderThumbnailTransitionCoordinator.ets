@@ -206,6 +206,8 @@ export class ReaderThumbnailTransitionCoordinator {
     if (!transition.openingHandoff()) {
       return
     }
+    // Keep the lower thumbnail proxy opaque while the upper Reader image fades in. Image.onComplete
+    // can precede the first displayed bitmap frame, so fading the proxy itself exposes the dark canvas.
     uiContext.animateTo({
       duration: ThemeTokens.ANIM_DURATION * READER_OPEN_CONTENT_HANDOFF_FRACTION,
       curve: Curve.EaseOut,
