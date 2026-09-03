@@ -30,6 +30,26 @@ for (const token of requiredPageTokens) {
   }
 }
 
+const spreadLayerStart = page.indexOf('struct ReaderSpreadImageLayer')
+const spreadLayerEnd = page.indexOf('struct ReaderSpreadSurface', spreadLayerStart)
+const spreadLayer = page.slice(spreadLayerStart, spreadLayerEnd)
+if (!spreadLayer.includes('ReaderLoadingStage({')) {
+  throw new Error('ReaderSpreadImageLayer: loading recovery must use the shared ReaderLoadingStage')
+}
+if (/if \(this\.isRetrying \|\| this\.isLoading\) \{\s*LoadingProgress\(\)/s.test(spreadLayer)) {
+  throw new Error('ReaderSpreadImageLayer: bare loading progress regresses the shared loading contract')
+}
+
+const rootStackStart = page.indexOf('Stack() {', page.indexOf('export struct ReaderPage'))
+const openingProxyIndex = page.indexOf('this.ReaderOpeningTransitionProxy()', rootStackStart)
+const readerContentIndex = page.indexOf('this.ReaderContent()', rootStackStart)
+if (openingProxyIndex < 0 || readerContentIndex < 0 || openingProxyIndex >= readerContentIndex) {
+  throw new Error('ReaderPage: opening proxy must stay below live Reader content and its loading UI')
+}
+if (!page.includes('private readerContentSurfaceColor(): ResourceColor')) {
+  throw new Error('ReaderPage: missing transparent content surface during thumbnail handoff')
+}
+
 const service = await readFile(new URL('shared/src/main/ets/services/ReaderPresentationService.ets', ROOT), 'utf8')
 for (const token of ['setMode', 'setSpreadLayout', 'setPreloadPages', 'setTapZoneLayout', 'setTapZoneInvert']) {
   if (!service.includes(token)) {

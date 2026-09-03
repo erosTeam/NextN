@@ -1627,10 +1627,14 @@ struct ReaderSpreadImageLayer {
     if (this.hasLoadError || this.isRetrying || this.isLoading) {
       Column({ space: ThemeTokens.SPACE_SM }) {
         if (this.isRetrying || this.isLoading) {
-          LoadingProgress()
-            .width(24)
-            .height(24)
-            .color(this.canvasContentColor)
+          ReaderLoadingStage({
+            label: AppStrings.get(this.isRetrying
+              ? 'reader_status_retrying_image'
+              : 'reader_loading_image'),
+            contentColor: this.canvasContentColor,
+            secondaryColor: this.canvasContentColor,
+            trackColor: READER_LOADING_BAR_BG,
+          })
         } else {
           SymbolGlyph($r('sys.symbol.exclamationmark_triangle'))
             .fontSize(28)
@@ -2850,6 +2854,17 @@ export struct ReaderPage {
 
   private readerCanvasColor(): ResourceColor {
     return readerBackgroundColor(this.readerPresentation.backgroundMode, this.themeDisplay.effectiveDark)
+  }
+
+  /**
+   * The root backdrop owns the Reader canvas during the thumbnail handoff. Keeping the pager and
+   * image leaves transparent for that short window lets their existing loading UI remain above the
+   * moving thumbnail without introducing a second loading subtree.
+   */
+  private readerContentSurfaceColor(): ResourceColor {
+    return this.readerThumbnailTransition.readerOpeningProxyVisible()
+      ? Color.Transparent
+      : this.readerCanvasColor()
   }
 
   private readerCanvasForegroundColor(): ResourceColor {
@@ -4750,7 +4765,7 @@ export struct ReaderPage {
             enhancementModel: this.readerPresentation.superResolutionModel,
             enhancementMaxHeight: this.readerPresentation.superResolutionMaxHeight,
             imageScalingQuality: this.readerPresentation.imageScalingQuality,
-            canvasColor: this.readerCanvasColor(),
+            canvasColor: this.readerContentSurfaceColor(),
             canvasContentColor: this.readerCanvasForegroundColor(),
             canvasSecondaryContentColor: this.readerCanvasSecondaryForegroundColor(),
             controlTint: this.readerCanvasControlTint(),
@@ -4794,7 +4809,7 @@ export struct ReaderPage {
     }
     .height('100%')
     .width('100%')
-    .backgroundColor(this.readerCanvasColor())
+    .backgroundColor(this.readerContentSurfaceColor())
     .cachedCount(3)
     .enableScrollInteraction(this.zoomedPageIndex < 0)
     .onScrollIndex((start: number, _end: number): void => {
@@ -4817,7 +4832,7 @@ export struct ReaderPage {
               enhancementModel: this.readerPresentation.superResolutionModel,
               enhancementMaxHeight: this.readerPresentation.superResolutionMaxHeight,
               imageScalingQuality: this.readerPresentation.imageScalingQuality,
-              canvasColor: this.readerCanvasColor(),
+              canvasColor: this.readerContentSurfaceColor(),
               canvasContentColor: this.readerCanvasForegroundColor(),
               canvasSecondaryContentColor: this.readerCanvasSecondaryForegroundColor(),
               controlTint: this.readerCanvasControlTint(),
@@ -4870,7 +4885,7 @@ export struct ReaderPage {
     .cachedCount(1)
     .vertical(this.isVerticallyPagedMode())
     .disableSwipe(this.zoomedPageIndex >= 0)
-    .backgroundColor(this.readerCanvasColor())
+    .backgroundColor(this.readerContentSurfaceColor())
     .onChange((index: number): void => {
       this.zoomedPageIndex = -1
       this.onReaderPagedIndexChanged(index)
@@ -4901,7 +4916,7 @@ export struct ReaderPage {
             enhancementModel: this.readerPresentation.superResolutionModel,
             enhancementMaxHeight: this.readerPresentation.superResolutionMaxHeight,
             imageScalingQuality: this.readerPresentation.imageScalingQuality,
-            canvasColor: this.readerCanvasColor(),
+            canvasColor: this.readerContentSurfaceColor(),
             canvasContentColor: this.readerCanvasForegroundColor(),
             controlTint: this.readerCanvasControlTint(),
             spreadLayoutMode: this.readerPresentation.spreadLayoutMode,
@@ -4940,7 +4955,7 @@ export struct ReaderPage {
     .cachedCount(1)
     .vertical(false)
     .disableSwipe(this.zoomedPageIndex >= 0)
-    .backgroundColor(this.readerCanvasColor())
+    .backgroundColor(this.readerContentSurfaceColor())
     .onChange((index: number): void => {
       this.zoomedPageIndex = -1
       this.onReaderPagedIndexChanged(index)
@@ -5439,6 +5454,9 @@ export struct ReaderPage {
         .backgroundColor(this.readerCanvasColor())
         .opacity(this.readerThumbnailTransition.backdropOpacity)
         .hitTestBehavior(HitTestMode.None)
+      if (this.readerThumbnailTransition.readerOpeningProxyVisible()) {
+        this.ReaderOpeningTransitionProxy()
+      }
       if (!this.readerThumbnailTransition.closingProxyVisible()) {
         if (this.isLoading && this.detail.id === 0) {
           this.ReaderLoadingState()
@@ -5452,9 +5470,6 @@ export struct ReaderPage {
           }
           this.ReaderInlineError()
           this.ReaderTranslationStatusOverlay()
-        }
-        if (this.readerThumbnailTransition.readerOpeningProxyVisible()) {
-          this.ReaderOpeningTransitionProxy()
         }
         if (!this.readerChromeVisible && this.isReaderReadyForCurrentGallery) {
           this.ReaderPersistentPageStatus()
