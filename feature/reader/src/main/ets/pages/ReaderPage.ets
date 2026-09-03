@@ -724,6 +724,8 @@ struct ReaderImagePage {
   @Local intrinsicHeight: number = 0
   @Local cropBounds: ReaderPageCropBounds = ReaderPageCropBounds.none()
   private loadGeneration: number = 0
+  private resolvedFilePath: string = ''
+  private resolvedDisplayUri: string = ''
   private cropRequestKey: string = ''
   private cropFilePath: string = ''
   private pinchStartScale: number = 1
@@ -775,17 +777,17 @@ struct ReaderImagePage {
 
   @Monitor('enhancementEnabled')
   onEnhancementEnabledChanged(): void {
-    this.loadImage()
+    this.refreshEnhancement()
   }
 
   @Monitor('enhancementModel')
   onEnhancementModelChanged(): void {
-    this.loadImage()
+    this.refreshEnhancement()
   }
 
   @Monitor('enhancementMaxHeight')
   onEnhancementMaxHeightChanged(): void {
-    this.loadImage()
+    this.refreshEnhancement()
   }
 
   @Monitor('cropBordersEnabled', 'continuous', 'pageIndex', 'totalPages')
@@ -843,10 +845,29 @@ struct ReaderImagePage {
     return `reader-image:${this.cacheKey}:${this.pageIndex}`
   }
 
-  private async applyEnhancement(generation: number, localPath: string): Promise<void> {
+  private refreshEnhancement(): void {
+    this.notifyEnhancementState(false, false)
+    if (this.renderedImageUri.length > 0 || this.resolvedDisplayUri.length <= 0) {
+      return
+    }
+    this.imageSource = this.resolvedDisplayUri
+    this.setCropFilePath(this.resolvedFilePath)
+    if (this.enhancementEnabled && this.resolvedFilePath.length > 0) {
+      this.applyEnhancement(this.loadGeneration, this.resolvedFilePath).catch((): void => {})
+    }
+  }
+
+  private async applyEnhancement(
+    generation: number,
+    localPath: string,
+  ): Promise<void> {
     if (!this.enhancementEnabled || localPath.length === 0) {
       return
     }
+    const enabled: boolean = this.enhancementEnabled
+    const model: NhReaderSuperResolutionModel = this.enhancementModel
+    const maxHeight: number = this.enhancementMaxHeight
+    const displayUri: string = this.resolvedDisplayUri
     this.notifyEnhancementState(true, false)
     try {
       const result = await ReaderSuperResolutionService.process(
@@ -854,10 +875,12 @@ struct ReaderImagePage {
         localPath,
         this.enhancementOwnerKey(),
         true,
-        this.enhancementModel,
-        this.enhancementMaxHeight,
+        model,
+        maxHeight,
       )
-      if (!this.isCurrentLoad(generation)) {
+      if (!this.isCurrentLoad(generation) || this.enhancementEnabled !== enabled ||
+        this.enhancementModel !== model || this.enhancementMaxHeight !== maxHeight ||
+        this.resolvedFilePath !== localPath || this.resolvedDisplayUri !== displayUri) {
         return
       }
       this.notifyEnhancementState(false, result.applied)
@@ -866,7 +889,8 @@ struct ReaderImagePage {
         this.setCropFilePath(readerLocalFilePath(result.displayUri))
       }
     } catch (_error) {
-      if (this.isCurrentLoad(generation)) {
+      if (this.isCurrentLoad(generation) && this.enhancementEnabled === enabled &&
+        this.enhancementModel === model && this.enhancementMaxHeight === maxHeight) {
         this.notifyEnhancementState(false, false)
       }
     }
@@ -881,6 +905,8 @@ struct ReaderImagePage {
     this.isLoading = true
     this.imageDecoded = false
     this.imageSource = ''
+    this.resolvedFilePath = ''
+    this.resolvedDisplayUri = ''
     this.cropFilePath = ''
     this.resetCropBounds()
     ReaderSuperResolutionService.clearOwnerOutcome(this.enhancementOwnerKey())
@@ -898,6 +924,8 @@ struct ReaderImagePage {
     if (this.localImageUri.length > 0) {
       this.imageSource = this.localImageUri
       const localPath: string = readerLocalFilePath(this.localImageUri)
+      this.resolvedFilePath = localPath
+      this.resolvedDisplayUri = this.localImageUri
       this.setCropFilePath(localPath)
       this.notifySourceFileReady(localPath)
       this.applyEnhancement(generation, localPath).catch((): void => {})
@@ -915,6 +943,8 @@ struct ReaderImagePage {
       if (!this.isCurrentLoad(generation)) {
         return
       }
+      this.resolvedFilePath = result.localPath
+      this.resolvedDisplayUri = result.displayUri
       this.imageSource = result.displayUri
       this.setCropFilePath(result.localPath)
       this.notifySourceFileReady(result.localPath)
@@ -1354,6 +1384,8 @@ struct ReaderSpreadImageLayer {
   @Local imageSource: string = ''
   @Local cropBounds: ReaderPageCropBounds = ReaderPageCropBounds.none()
   private loadGeneration: number = 0
+  private resolvedFilePath: string = ''
+  private resolvedDisplayUri: string = ''
   private cropRequestKey: string = ''
   private cropFilePath: string = ''
 
@@ -1389,17 +1421,17 @@ struct ReaderSpreadImageLayer {
 
   @Monitor('enhancementEnabled')
   onEnhancementEnabledChanged(): void {
-    this.loadImage()
+    this.refreshEnhancement()
   }
 
   @Monitor('enhancementModel')
   onEnhancementModelChanged(): void {
-    this.loadImage()
+    this.refreshEnhancement()
   }
 
   @Monitor('enhancementMaxHeight')
   onEnhancementMaxHeightChanged(): void {
-    this.loadImage()
+    this.refreshEnhancement()
   }
 
   @Monitor('cropBordersEnabled')
@@ -1443,10 +1475,29 @@ struct ReaderSpreadImageLayer {
     return `reader-spread:${this.cacheKey}:${this.pageIndex}`
   }
 
-  private async applyEnhancement(generation: number, localPath: string): Promise<void> {
+  private refreshEnhancement(): void {
+    this.notifyEnhancementState(false, false)
+    if (this.renderedImageUri.length > 0 || this.resolvedDisplayUri.length <= 0) {
+      return
+    }
+    this.imageSource = this.resolvedDisplayUri
+    this.setCropFilePath(this.resolvedFilePath)
+    if (this.enhancementEnabled && this.resolvedFilePath.length > 0) {
+      this.applyEnhancement(this.loadGeneration, this.resolvedFilePath).catch((): void => {})
+    }
+  }
+
+  private async applyEnhancement(
+    generation: number,
+    localPath: string,
+  ): Promise<void> {
     if (!this.enhancementEnabled || localPath.length === 0) {
       return
     }
+    const enabled: boolean = this.enhancementEnabled
+    const model: NhReaderSuperResolutionModel = this.enhancementModel
+    const maxHeight: number = this.enhancementMaxHeight
+    const displayUri: string = this.resolvedDisplayUri
     this.notifyEnhancementState(true, false)
     try {
       const result = await ReaderSuperResolutionService.process(
@@ -1454,10 +1505,12 @@ struct ReaderSpreadImageLayer {
         localPath,
         this.enhancementOwnerKey(),
         true,
-        this.enhancementModel,
-        this.enhancementMaxHeight,
+        model,
+        maxHeight,
       )
-      if (generation !== this.loadGeneration) {
+      if (generation !== this.loadGeneration || this.enhancementEnabled !== enabled ||
+        this.enhancementModel !== model || this.enhancementMaxHeight !== maxHeight ||
+        this.resolvedFilePath !== localPath || this.resolvedDisplayUri !== displayUri) {
         return
       }
       this.notifyEnhancementState(false, result.applied)
@@ -1466,7 +1519,8 @@ struct ReaderSpreadImageLayer {
         this.setCropFilePath(readerLocalFilePath(result.displayUri))
       }
     } catch (_error) {
-      if (generation === this.loadGeneration) {
+      if (generation === this.loadGeneration && this.enhancementEnabled === enabled &&
+        this.enhancementModel === model && this.enhancementMaxHeight === maxHeight) {
         this.notifyEnhancementState(false, false)
       }
     }
@@ -1480,6 +1534,8 @@ struct ReaderSpreadImageLayer {
     this.isRetrying = forceReload
     this.isLoading = true
     this.imageSource = ''
+    this.resolvedFilePath = ''
+    this.resolvedDisplayUri = ''
     this.cropFilePath = ''
     this.resetCropBounds()
     ReaderSuperResolutionService.clearOwnerOutcome(this.enhancementOwnerKey())
@@ -1495,6 +1551,8 @@ struct ReaderSpreadImageLayer {
     if (this.localImageUri.length > 0) {
       this.imageSource = this.localImageUri
       const localPath: string = readerLocalFilePath(this.localImageUri)
+      this.resolvedFilePath = localPath
+      this.resolvedDisplayUri = this.localImageUri
       this.setCropFilePath(localPath)
       this.notifySourceFileReady(localPath)
       this.applyEnhancement(generation, localPath).catch((): void => {})
@@ -1512,6 +1570,8 @@ struct ReaderSpreadImageLayer {
       if (generation !== this.loadGeneration) {
         return
       }
+      this.resolvedFilePath = result.localPath
+      this.resolvedDisplayUri = result.displayUri
       this.imageSource = result.displayUri
       this.setCropFilePath(result.localPath)
       this.notifySourceFileReady(result.localPath)

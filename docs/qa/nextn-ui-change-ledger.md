@@ -10286,3 +10286,45 @@ authorize an edit, replace a device comparison, or define product completion.
   was rendered on device. Before closure, remove only the final `。` from the 28 existing Chinese resource values
   that end in that character; sentence-internal punctuation, question marks, exclamation marks, abbreviations,
   version numbers and terminology remain unchanged.
+## CLOSED / PASS — Reader image-enhancement setting changes keep the current page visible — 2026-09-03
+
+- **Why newly actionable:** the user reproduced that changing super-resolution settings while a Reader page is
+  already visible clears the current picture to black until a page turn forces it to load again. The user explicitly
+  selected this as the first independently fixed and committed stage.
+- **Whole parent-tree boundary:** only the existing `ReaderImagePage` and `ReaderSpreadImageLayer` image-source /
+  super-resolution refresh lifecycle in `feature/reader/src/main/ets/pages/ReaderPage.ets`. Single-page and continuous
+  modes share `ReaderImagePage`; double-page mode uses `ReaderSpreadImageLayer`. Reader route ownership, transition,
+  chrome, page index, zoom, crop settings, translation images, loading presentation, and NextE production code are
+  outside this stage.
+- **Source-proven bad transition:** all three super-resolution setting monitors currently call the full
+  `loadImage()`. That method immediately clears `imageSource` and resets image-loading state before rediscovering an
+  already-loaded source. Current NextE instead retains its resolved original display URI and reapplies enhancement
+  without clearing the visible image.
+- **Exact before/after:** before, changing enabled/model/maximum-height clears the visible bitmap and restarts the
+  whole image-load lifecycle. After, the existing original local path and display URI remain owned by the mounted
+  image leaf; the prior enhancement request is invalidated, the current bitmap remains visible, and only a result
+  matching the current page/source/settings may replace it. Disabling enhancement restores the retained original
+  display URI without a page turn.
+- **Minimality and visual verification:** no new control, loading indicator, overlay, delay, or layout value is added.
+  On device 237, continuously record enable, disable, model/configuration changes and a rapid repeated change in
+  single-page, continuous, and double-page presentation. Reject any black/empty frame, page/index change, zoom reset,
+  manual page-turn recovery, or stale result replacing the final selection.
+- **Static gates:** `git diff --check` passed; `node scripts/test_reader_contract.mjs` returned
+  `OK reader contract passed (presentation, interaction, translation, cache, preload)`; the signed Hvigor build
+  completed with `BUILD SUCCESSFUL`.
+- **Device acceptance:** target `192.168.50.237:12345` (`VDE-AL00`, EXPAND, portrait `1320x2120`) produced five
+  full-speed continuous recordings: single-page enable (125 frames), double-page disable (122 frames), continuous
+  enable (123 frames), rapid disable then enable (383 frames, approximately 154 ms between completed disable and
+  next enable input), and maximum-original-height 2000px to 1500px (125 frames). Every extracted frame was reviewed;
+  the current image and page index remained visible and stable, with no black/empty frame, forced page turn, reload
+  flash, or stale result replacing the final setting.
+- **Evidence:**
+  `.hvigor/outputs/reader-super-resolution-continuity-237-20260903/06-single-enable-frames/`,
+  `15-double-disable-frames/`, `21-continuous-enable-frames/`, `22-continuous-rapid-toggle-frames/`, and
+  `26-max-height-change-frames/`; the rapid-input timing is recorded in
+  `22-continuous-rapid-toggle-recording-run/command-ledger.json`.
+- **State restoration:** the device was returned to the pre-test Reader configuration: image enhancement enabled,
+  maximum original height 2000px, right-to-left direction, and double-page mode enabled. The restored 2000px state is
+  captured under `27-restore-max-height-run/artifacts/`; direction and double-page state under
+  `29-restore-direction-run/artifacts/`; the closed sheet and visible double-page Reader under
+  `30-close-restored-settings-run/artifacts/`. The 237 lease was then released.
