@@ -56,8 +56,6 @@ const loadingStage = page.slice(loadingStageStart, loadingStageEnd)
 for (const token of [
   '@Param showTransitionBackground: boolean = false',
   'Text(this.hasProgress() ? this.progressPercent() : this.label)',
-  'constraintSize({ maxWidth: READER_LOADING_BAR_MAX_WIDTH + ThemeTokens.SPACE_MD * 2 })',
-  'padding(ThemeTokens.SPACE_MD)',
   'backgroundBlurStyle(BlurStyle.BACKGROUND_THIN)',
   'borderRadius(ThemeTokens.RADIUS_CARD)',
 ]) {

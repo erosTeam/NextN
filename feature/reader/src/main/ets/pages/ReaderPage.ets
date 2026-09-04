@@ -317,8 +317,14 @@ struct ReaderLoadingStage {
           this.LoadingElements()
         }
         .width(READER_LOADING_BAR_WIDTH_PERCENT)
-        .constraintSize({ maxWidth: READER_LOADING_BAR_MAX_WIDTH + ThemeTokens.SPACE_MD * 2 })
-        .padding(ThemeTokens.SPACE_MD)
+        .constraintSize({ maxWidth: READER_LOADING_BAR_MAX_WIDTH + ThemeTokens.SPACE_XL * 2 })
+        .alignItems(HorizontalAlign.Center)
+        .padding({
+          top: ThemeTokens.SPACE_XL + ThemeTokens.SPACE_LG,
+          bottom: ThemeTokens.SPACE_LG,
+          left: ThemeTokens.SPACE_XL,
+          right: ThemeTokens.SPACE_XL,
+        })
         .backgroundBlurStyle(BlurStyle.BACKGROUND_THIN)
         .backgroundColor(READER_TRANSITION_LOADING_PANEL_COLOR)
         .borderRadius(ThemeTokens.RADIUS_CARD)

@@ -9663,6 +9663,24 @@ authorize an edit, replace a device comparison, or define product completion.
   `.hvigor/outputs/reader-transition-reopened-197/08-open-page9-5x/` through
   `11-final-page9-1x/` and is excluded from Git.
 
+### Reopened correction — transition loading panel spacing and visual anchor — 2026-09-04
+
+- **Why newly actionable:** the user found the accepted NextE transition loading panel too crowded, then physically
+  tested and accepted its revised spacing and explicitly requested the same change in NextN.
+- **Reference and whole parent-tree boundary:** NextE commit `50bc2b2a` changes only the
+  `ReaderLoadingStage.showTransitionBackground` branch. NextN has the same `ReaderLoadingBar + status Text` tree;
+  image loading, Reader paging, chrome, thumbnail proxy ownership, transition timing and non-transition loading stay
+  unchanged.
+- **Exact before/after:** replace the uniform 12vp panel padding with 24vp left/right, 40vp above and 16vp below;
+  widen the maximum panel constraint by the matching 24vp horizontal insets and explicitly center the Column's
+  children. The asymmetric vertical insets compensate for the status line below the bar, keeping the bar itself near
+  the panel's visual center.
+- **Minimality and verification:** use only existing `ThemeTokens` spacing values. Remove the static test's exact
+  12vp visual-value assertions while retaining the existing component, single status line, blur, radius, opt-in and
+  no-fixed-height checks. Review the exact diff, run the Reader contract and signed build, then commit only this
+  ledger hunk, `ReaderPage.ets` and `test_reader_contract.mjs`. NextN runtime visual acceptance remains unobserved in
+  this run; the user requested the source-equivalent commit after accepting the reference implementation.
+
 ## 账号页单一原生入口与登录专用 Web 叶子纠正 — 2026-08-27
 
 - **Why newly actionable:** 237 的健康会话检查落入了仅能由内部恢复参数打开的
