@@ -1,5 +1,5 @@
 import { AbilityConstant, Configuration, UIAbility, Want } from '@kit.AbilityKit'
-import { captureReaderLabWant } from '@reader-kit/ui'
+import { captureReaderLabWant, updateReaderLabForeground } from '@reader-kit/ui'
 import { window } from '@kit.ArkUI'
 import { webview } from '@kit.ArkWeb'
 import {
@@ -325,6 +325,7 @@ export default class EntryAbility extends UIAbility {
   }
 
   onForeground(): void {
+    updateReaderLabForeground(true, this.context.applicationInfo.debug)
     this.abilityForeground = true
     ImagePipelineService.reloadOnForeground()
     SyncScheduler.rememberContext(this.context)
@@ -359,6 +360,7 @@ export default class EntryAbility extends UIAbility {
   }
 
   onBackground(): void {
+    updateReaderLabForeground(false, this.context.applicationInfo.debug)
     this.abilityForeground = false
     ImagePipelineService.clearOnBackground()
     MotionHandStateService.stop()

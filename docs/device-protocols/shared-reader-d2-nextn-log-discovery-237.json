@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d2-nextn-log-discovery",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d2/03-nextn-log-discovery",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "D2-observation-build2",
+    "page": "Read-only log availability exception gate",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Terminal initial original observation gate. Native decode is not acceptance without active visible original event."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      {
+        "name": "noninteractive-boundary",
+        "uiInput": [
+          "click",
+          "1",
+          "1"
+        ]
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "hilog-help",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "--help"
+      ]
+    },
+    {
+      "name": "readerlab-app-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "--type",
+        "app",
+        "-e",
+        "ReaderLab"
+      ]
+    }
+  ]
+}

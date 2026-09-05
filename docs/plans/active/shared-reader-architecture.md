@@ -1,6 +1,6 @@
 # NextE / NextN / Koma 共享阅读器设计草案
 
-状态：D1 可选调试试接进行中；2026-09-06 用户已明确授权开始，禁止替换现有阅读器。
+状态：D1 三方限域试接、D2 映射/原图观测切片已有证据，完整迁移仍 OPEN；2026-09-06 用户要求自主判断推进，禁止替换现有阅读器。
 
 核对日期：2026-09-06。设计源码基点：NextN `7f79cb4`、NextE `89532d99`、Koma `2bb00cd`；D1 执行时三个工作区均有其他任务的后续修改。D1 只增加共享库、宿主适配器及独立调试入口，不改动现有阅读器、账户或进度存储实现。
 
@@ -325,7 +325,25 @@ D1 当前为技术候选，完整迁移仍 OPEN：两个 HAR、三个独立 adap
 
 源码检查点：共享库 `227ca3a`；NextN 仅提交本轮入口/adapter/依赖/计划及本节验收记录，其他旧 WIP 保留。E/K 遵守各自提交边界，本轮接线保留独立可审查 diff。公开 build-profile 只应记录两个 module 行，绝不暂存本机整份签名 profile；本地 ignored profile 已同步 module 行。远程分发、CI checkout 和正式依赖锁定在发布前单独处理，不以当前本地目录假装已完成发布集成。
 
-独立 review 指出的本地 URI 排除、逐页整章校验、EH 共享 VM 竞争和重试重复坏缓存四项均修正。消费者取消/底层取消仍显式区分；Koma 派生缩略图暂不启用，不用整张原图冒充派生结果。D2–D6 未开始，三种布局、手势、设置、进度、下载/处理能力的完整迁移均保留原路径。
+独立 review 指出的本地 URI 排除、逐页整章校验、EH 共享 VM 竞争和重试重复坏缓存四项均修正。消费者取消/底层取消仍显式区分；Koma 派生缩略图暂不启用，不用整张原图冒充派生结果。D2 当前增量见下节；D3–D6 未开始，三种布局、手势、设置、进度、下载/处理能力的完整迁移均保留原路径。
+
+### 11.1 D2 映射与原图观测切片（2026-09-06，限域验收）
+
+用户要求普通技术选择自主推进。本切片先落实单元内显示映射和锚点，以及已确认的 Koma 零页目录/本地 manifest 适配缺口；不新增生产入口、UI 开关或持久设置，不替换既有 Reader。
+
+- 参考规则：NextE `ReaderSpreadResolver` 与 NextN 同名 resolver 的源页配对/封面对齐；Koma `buildReaderDisplayPages` 的分页半页展开、`READER_WIDE_RATIO=1.2`。这三个规则不由一个 `isKoma` 分支表达，输入为中性 `ReaderDisplayPolicy`。
+- 新增 `ReaderDisplayMap`：同一单元内 single/spread/continuous 拓扑、原页稳定身份、逻辑 next/previous、独立 RTL 左右呈现。spread 和 continuous 不消费分页拆宽设置；完整长图和未知原图尺寸不从缩略图比例推断为宽页。
+- `ReaderReadingAnchor` 保存原图归一化位置和物理片段。元数据迟到、配对变化或插入页时优先恢复稳定 ID；完整目录缺 ID 与稀疏目录待补元数据明确区分。索引兜底必须显式允许，不能跨来源/账户/章节。返回映射只是导航目标，不是已显示或已读事件。
+- 独立复核发现整页中心点首次拆分后未记选中半页，后续 RTL 会跳半页；已修正返回锚点并补连续恢复测试。映射检查点为共享库 `593b4ba`，当前 16 项映射测试和 15 项会话测试独立重跑 31/31 通过。没有激活旧 fit/逐作品偏好。
+- 原图观测与请求/解码分离：`presentedAnchor` 只在宿主前台、当前 destination 可见、图像已解码且完整可见时更新；缩略图、失败和新单元准备不能推进它。观察值保留自身单元身份，不表示已保存进度或已读完。`assetRequestId` 与 command epoch 分开，保留 A 图等待 B 时，A 图不能被标记成 B 请求并用迟到回调确认 B。身份模型移至 `ReaderContent`，避免 Session/DisplayMap 循环依赖；旧导出保持兼容。
+- 三宿主只增加 debug 内存前台信号和 lab route shown/hidden 接线，共享 contain 叶负责实际可见事件。当前实现不声称支持缩放/连续页观测，也不检测兄弟遮挡或系统窗口遮挡。独立复核两项 P2（仅解码当可见、旧图继承新 epoch）已关闭，无新增 P1/P2。
+- 最终签名 Debug 构建：N `nextn-build-d2-observation-2.log`（10s963ms）、E `/private/tmp/readerk-d2-nexte-observation.log`（13s128ms）、Koma `qa/d2-adapter/build-final.log` 均成功；E V1 inventory 0/561。N 首次观测构建因组件保留名 `visibility` 冲突失败，统一更名 `labVisibility` 后成功；不是已接受候选。共享 HAR 串行构建，未混用中间包。
+- 237 本轮：N 2/14 原图 `request=4 accepted=true sourceIndex=1`，Home 后 active=false，恢复后同页同资源 active=true；thumbnail 2→1 不产生新原图观测，恢复 original 1 才产生 request7/sourceIndex0。E 原图 1/398、sprite 2/398、原图 2/398 与前后台恢复均观察到；恢复时 request4/sourceIndex1 accepted=true。两者 Back 均返回各自生产首页并关闭观测。有效 app root 均 `[0,117][1320,2120]`，原始屏幕 1320x2120，fold unknown；主控逐张检查终点截图。证据根 `shared-reader-d2/` 下 02/04/05/06 为 N，07/08/09/10 为 E。最初截图后才读取日志为空，未标通过；后续使用实时采集及恢复后立即读取取得事件。
+- Koma 新独立适配 helper 沿用 Index 当前 manifest fallback：正常非空目录不替换，DOWNLOADED/PARTIAL 读取已验证路径，CORRUPT 只保留缺页映射；不写库、不触发远端 hydration。6 组真实生产 fallback 输出对照及 adapter host 路径通过。NAV 的并行类型错误由其负责人修复，本任务未修改其生产代码。
+- 197 按交接新租约独立验证最终包：ONE PIECE 00話 2→3/23 原图显示并 accepted，Home→resume 关闭/恢复观测且保留同页资源，Back 恢复三列生产书架与 4/23·17%；前后 library 文件逐字节相同。主控检查实际阅读和恢复截图，设备与共享构建窗口已交回。证据 `/Users/honjow/git/Koma/.hermes-artifacts/device197__ALN-AL80/not-applicable/portrait-1260x2720/20260906-reader-kit-d2-adapter/`；03b 为立即读取日志的恢复证据。
+- 精确未验证边界：197 新鲜读取的四个已有 manifest 中，无“现存章节零页目录 + 完整下载”的样本；该新分支只有 host 验证，不能写成设备通过。两章均本地可用的连续切章与派生缩略图也未验。不会制造/改写用户书库样本来掩盖缺口。
+- 后续安全步骤：在同一 debug 入口接入实际 display map/模式视口和基于实测位置的锚点恢复，再做三方同场景验证；预加载、设置适配等 D2 余项分别推进。三种布局视觉/手势迁移属于 D3，不因 map 测试通过就宣布完成；生产替换、持久进度迁移及跨章默认策略仍不授权。
+- 持久检查点：共享 map `593b4ba`、原图观测与资源身份 `dfbda1f`。NextN 将本节、lab 接线和本轮协议/验收记录独立提交；NextE/Koma 试接继续保留可审查 WIP，未混入各自其他任务提交。共享库无 remote/发布，三方仍依赖本地 sibling 源码，不作为独立可发布构建。
 
 ## 附录：本次读取的主要源码定位
 
