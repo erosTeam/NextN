@@ -760,7 +760,6 @@ struct ReaderImageSurfaceCore {
   @Param enhancementMaxHeight: number = 2000
   @Param imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
   @Param canvasColor: ResourceColor = READER_BACKGROUND_BLACK
-  @Param recoveryColor: ResourceColor = READER_BACKGROUND_BLACK
   @Param canvasContentColor: ResourceColor = READER_FOREGROUND_DARK_CANVAS
   @Param canvasSecondaryContentColor: ResourceColor = READER_SECONDARY_FOREGROUND_DARK_CANVAS
   @Param controlTint: ResourceColor = READER_CONTROL_TINT_DARK_CANVAS
@@ -1268,8 +1267,15 @@ struct ReaderImageSurfaceCore {
       .padding(ThemeTokens.SPACE_LG)
       .alignItems(HorizontalAlign.Center)
       .constraintSize({ maxWidth: this.hasLoadError && !this.isRetrying && !this.isLoading ? 280 : undefined })
-      .backgroundColor(this.hasLoadError && !this.isRetrying && !this.isLoading ? this.recoveryColor : Color.Transparent)
+      .backgroundBlurStyle(this.hasLoadError && !this.isRetrying && !this.isLoading
+        ? BlurStyle.BACKGROUND_THIN : BlurStyle.NONE, {
+        colorMode: this.canvasContentColor === READER_FOREGROUND_DARK_CANVAS
+          ? ThemeColorMode.DARK : ThemeColorMode.LIGHT,
+      })
+      .backgroundColor(this.hasLoadError && !this.isRetrying && !this.isLoading
+        ? READER_TRANSITION_LOADING_PANEL_COLOR : Color.Transparent)
       .borderRadius(ThemeTokens.RADIUS_CARD)
+      .clip(this.hasLoadError && !this.isRetrying && !this.isLoading)
     }
   }
 
@@ -1441,7 +1447,6 @@ struct ReaderImagePage {
   @Param enhancementMaxHeight: number = 2000
   @Param imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
   @Param canvasColor: ResourceColor = READER_BACKGROUND_BLACK
-  @Param recoveryColor: ResourceColor = READER_BACKGROUND_BLACK
   @Param canvasContentColor: ResourceColor = READER_FOREGROUND_DARK_CANVAS
   @Param canvasSecondaryContentColor: ResourceColor = READER_SECONDARY_FOREGROUND_DARK_CANVAS
   @Param controlTint: ResourceColor = READER_CONTROL_TINT_DARK_CANVAS
@@ -1473,7 +1478,6 @@ struct ReaderImagePage {
         enhancementMaxHeight: this.enhancementMaxHeight,
         imageScalingQuality: this.imageScalingQuality,
         canvasColor: this.canvasColor,
-        recoveryColor: this.recoveryColor,
         canvasContentColor: this.canvasContentColor,
         canvasSecondaryContentColor: this.canvasSecondaryContentColor,
         controlTint: this.controlTint,
@@ -1518,7 +1522,6 @@ struct ReaderVerticalImage {
   @Param enhancementMaxHeight: number = 2000
   @Param imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
   @Param canvasColor: ResourceColor = READER_BACKGROUND_BLACK
-  @Param recoveryColor: ResourceColor = READER_BACKGROUND_BLACK
   @Param canvasContentColor: ResourceColor = READER_FOREGROUND_DARK_CANVAS
   @Param canvasSecondaryContentColor: ResourceColor = READER_SECONDARY_FOREGROUND_DARK_CANVAS
   @Param controlTint: ResourceColor = READER_CONTROL_TINT_DARK_CANVAS
@@ -1566,7 +1569,6 @@ struct ReaderVerticalImage {
         enhancementMaxHeight: this.enhancementMaxHeight,
         imageScalingQuality: this.imageScalingQuality,
         canvasColor: this.canvasColor,
-        recoveryColor: this.recoveryColor,
         canvasContentColor: this.canvasContentColor,
         canvasSecondaryContentColor: this.canvasSecondaryContentColor,
         controlTint: this.controlTint,
@@ -1626,7 +1628,6 @@ struct ReaderSpreadImageLayer {
   @Param enhancementMaxHeight: number = 2000
   @Param imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
   @Param canvasColor: ResourceColor = READER_BACKGROUND_BLACK
-  @Param recoveryColor: ResourceColor = READER_BACKGROUND_BLACK
   @Param canvasContentColor: ResourceColor = READER_FOREGROUND_DARK_CANVAS
   @Param controlTint: ResourceColor = READER_CONTROL_TINT_DARK_CANVAS
   @Param pageIndex: number = -1
@@ -1917,8 +1918,15 @@ struct ReaderSpreadImageLayer {
       .padding(ThemeTokens.SPACE_MD)
       .alignItems(HorizontalAlign.Center)
       .constraintSize({ maxWidth: this.hasLoadError && !this.isRetrying && !this.isLoading ? 196 : undefined })
-      .backgroundColor(this.hasLoadError && !this.isRetrying && !this.isLoading ? this.recoveryColor : Color.Transparent)
+      .backgroundBlurStyle(this.hasLoadError && !this.isRetrying && !this.isLoading
+        ? BlurStyle.BACKGROUND_THIN : BlurStyle.NONE, {
+        colorMode: this.canvasContentColor === READER_FOREGROUND_DARK_CANVAS
+          ? ThemeColorMode.DARK : ThemeColorMode.LIGHT,
+      })
+      .backgroundColor(this.hasLoadError && !this.isRetrying && !this.isLoading
+        ? READER_TRANSITION_LOADING_PANEL_COLOR : Color.Transparent)
       .borderRadius(ThemeTokens.RADIUS_CARD)
+      .clip(this.hasLoadError && !this.isRetrying && !this.isLoading)
     }
   }
 
@@ -1975,7 +1983,6 @@ struct ReaderSpreadSurface {
   @Param enhancementMaxHeight: number = 2000
   @Param imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
   @Param canvasColor: ResourceColor = READER_BACKGROUND_BLACK
-  @Param recoveryColor: ResourceColor = READER_BACKGROUND_BLACK
   @Param canvasContentColor: ResourceColor = READER_FOREGROUND_DARK_CANVAS
   @Param controlTint: ResourceColor = READER_CONTROL_TINT_DARK_CANVAS
   @Param spreadLayoutMode: NhReaderSpreadLayout = NhReaderSpreadLayout.JOINED
@@ -2252,7 +2259,6 @@ struct ReaderSpreadSurface {
       enhancementMaxHeight: this.enhancementMaxHeight,
       imageScalingQuality: this.imageScalingQuality,
       canvasColor: this.canvasColor,
-      recoveryColor: this.recoveryColor,
       canvasContentColor: this.canvasContentColor,
       controlTint: this.controlTint,
       pageIndex: item.sourceIndex,
@@ -5427,7 +5433,6 @@ export struct ReaderPage {
             enhancementMaxHeight: this.readerPresentation.superResolutionMaxHeight,
             imageScalingQuality: this.readerPresentation.imageScalingQuality,
             canvasColor: this.readerContentSurfaceColor(),
-            recoveryColor: this.readerCanvasColor(),
             canvasContentColor: this.readerCanvasForegroundColor(),
             canvasSecondaryContentColor: this.readerCanvasSecondaryForegroundColor(),
             controlTint: this.readerCanvasControlTint(),
@@ -5494,7 +5499,6 @@ export struct ReaderPage {
               enhancementMaxHeight: this.readerPresentation.superResolutionMaxHeight,
               imageScalingQuality: this.readerPresentation.imageScalingQuality,
               canvasColor: this.readerContentSurfaceColor(),
-              recoveryColor: this.readerCanvasColor(),
               canvasContentColor: this.readerCanvasForegroundColor(),
               canvasSecondaryContentColor: this.readerCanvasSecondaryForegroundColor(),
               controlTint: this.readerCanvasControlTint(),
@@ -5578,7 +5582,6 @@ export struct ReaderPage {
             enhancementMaxHeight: this.readerPresentation.superResolutionMaxHeight,
             imageScalingQuality: this.readerPresentation.imageScalingQuality,
             canvasColor: this.readerContentSurfaceColor(),
-            recoveryColor: this.readerCanvasColor(),
             canvasContentColor: this.readerCanvasForegroundColor(),
             controlTint: this.readerCanvasControlTint(),
             spreadLayoutMode: this.readerPresentation.spreadLayoutMode,

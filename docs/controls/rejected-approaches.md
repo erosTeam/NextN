@@ -62,3 +62,15 @@ user explicitly reopens the entry after reviewing its failure evidence.
   and discontinuous corner-radius morphs without proving the landing defect.
 - **Evidence:** Reader transition correction history in
   `docs/qa/nextn-ui-change-ledger.md`.
+
+## REJ-READER-005 — Opaque canvas color as the failure overlay material
+
+- **Status:** `REJECTED`
+- **Lookup keys:** `ReaderPage`, `ImageRecovery`, `recoveryColor`, failure panel,
+  thumbnail proxy, error contrast.
+- **Rejected approach:** use the opaque Reader canvas color as the error-panel
+  background over the retained opening thumbnail.
+- **Why rejected:** the user rejected the visible solid-black block on device
+  237. Readable labels alone do not make that composited appearance acceptable.
+- **Evidence:** `cache-reader-failure-actual/` under the request-stall evidence
+  root; user rejection and material correction in the UI change ledger.

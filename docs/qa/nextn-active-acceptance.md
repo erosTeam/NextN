@@ -6364,3 +6364,35 @@ permitted in this repository.
   ON in `final-network-and-route-restored/wlan-layout.json`. Both original access permissions are now restored.
   The same final directory confirms native Download root and all original56/56,41/41,70/70 tasks, without the
   temporary0/87 task. No device mutation remains pending apart from the unapproved Reader-cache validation choice.
+- **Cache-test authority reopened by user:** user explicitly approved clearing the regenerable image cache and
+  instructed not to ask again for equivalent cache testing. Downloads, history and accounts are excluded. Source
+  inspection shows the native Image cache row combines ImageKnife thumbnail cache and Reader image files; it does
+  not expose a Reader-only clear action. Use that existing cache action, reload test thumbnails, and then validate
+  the real failed Reader state and retry. Current 237 Storage reports 848 image-cache items / 203.6 MB; page cache
+  and translation caches are separate and will remain untouched. Reader visual acceptance remains OPEN.
+- **Current physical result:** `cache-cleared/layout.json` confirms Image cache 0 items / 0 B after clearing
+  848 items / 203.6 MB; page cache remains 44 items / 1.5 MB, comic-translation cache 6 items / 5.6 MB.
+  After thumbnail reload and denied connectivity, `cache-reader-failure-actual/` shows native Reader 1/14,
+  root `[0,0][1320,2120]`, real Image unavailable / Check network / Retry over the retained long-strip preview.
+  The screenshot was inspected: opaque black recovery panel separates every label/button from the preview.
+  Retry is `[564,1118][757,1262]`. Actual failure-panel contrast is observed; restoration and successful same-page
+  retry remain OPEN. Both NextN network permissions must now be restored ON before leaving the device lane.
+- **User rejection supersedes the prior contrast observation:** user rejects the solid-black recovery panel as
+  visually ugly. This candidate is NOT visually accepted. Both permissions have been restored: mobile ON in
+  `cache-restore-mobile-wlan-check/mobile-layout.json`, WLAN ON in `cache-network-restored/layout.json`.
+  Next: replace the solid failure fill with the established Reader loading-overlay material, build/install, and
+  repeat actual failure plus successful same-page retry. The user-approved cache-test authority remains active.
+- **Revised Reader path observed and functionally accepted on 237:** the signed frosted-material build passed in
+  11 s 777 ms, installed in place, and the inspected `frosted-reader-failure-actual/` shows the revised rounded
+  frosted failure panel over the retained preview at Reader1/14, native root `[0,0][1320,2120]`. Icon, title, hint
+  and Retry remain readable without the rejected opaque-black cutout. This records actual appearance, not user
+  approval of the new style. No additional source changes beyond the two failure leaves/material-only plumbing.
+- **Same-page retry result:** restored mobile and WLAN ON, confirmed the same error persisted before tapping;
+  pressed Retry once and inspected `frosted-retry-result/`: actual full original rendered at1/14 and error/loading
+  controls disappeared. Eleven source-executing network/queue tests pass again. Original historical stall cause
+  remains unestablished; this evidence covers real Reader failure/retry and the earlier queue error feedback, not
+  a new physical no-byte timeout reproduction or a recovery-download run.
+- **Final cleanup:** `frosted-final-download-root/layout.json` confirms native Download root
+  `[0,117][1320,2120]`, the same three completed tasks56/56,41/41,70/70, and no temporary task. No download,
+  history or account deletion was performed. Image cache regenerates on demand; other cache categories remained
+  unchanged at the clear readback. Both original network permissions are restored and no test restriction remains.

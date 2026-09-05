@@ -10596,3 +10596,31 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Restoration correction:** original mobile-data All was checked ON. After the system denial dialog NextN mobile
   access was OFF; that single permission was also restored ON. `restore-nextn-mobile-permission/` and
   `final-network-and-route-restored/` prove mobile/WLAN ON and final native Download root with the original tasks.
+
+## EVIDENCE-ONLY — Rejected Reader solid panel replaced with existing material — 2026-09-05
+
+- **User counter-evidence:** the actual 237 `cache-reader-failure-actual/screen.png` shows the opaque black panel
+  cutting a rectangular gap through the retained thumbnail. User explicitly rejects its appearance. Legibility
+  alone is not visual acceptance; withdraw the candidate's visual acceptance, while retaining network test results.
+- **Faulty assumption / prevention:** Reader canvas color is not an overlay material. Reusing it hides detail but
+  produces a hard block, ignoring the existing ReaderLoadingStage frosted transition panel. Compare the actual
+  composited failure state, not just text contrast, before accepting this leaf.
+- **Parent and sibling boundary:** Reader root -> existing page/spread canvas -> ImageRecovery over retained proxy.
+  NextN and NextE ReaderLoadingStage already use BACKGROUND_THIN with neutral translucent `#665F6368` and card
+  radius. Reuse that material on both failure leaves, matching material light/dark mode to their foreground palette.
+  Remove only the newly introduced recoveryColor parameter plumbing, which existed solely for the rejected solid
+  fill. Keep failure width, padding, icon/text/button geometry, loading branch, retry owner and proxy lifetime.
+- **Next verification:** signed build and in-place 237 install; repeat the now-proven cache-miss/network-denied
+  thumbnail-entry path, inspect the frosted failure panel, restore both network permissions, and retry the same page.
+  No shared Reader extraction, transition restructuring or static UI acceptance test is authorized by this correction.
+- **Observed revised result:** signed build passed in 11 s 777 ms and was installed in place on 237. The same
+  native Reader1/14 failure root `[0,0][1320,2120]` is recorded in `frosted-reader-failure-actual/`. Its inspected
+  screenshot shows the neutral, translucent frosted rounded panel instead of an opaque black cutout. The retained
+  thumbnail is diffused behind the panel and the icon/title/hint/capsule Retry remain legible at unchanged bounds.
+  This is implementation review against the existing loading material, not a claim that the user approved its taste.
+- **Functional acceptance for this path:** mobile ON is read back in
+  `frosted-restore-mobile-wlan-check/mobile-layout.json`; WLAN ON in
+  `frosted-network-restored-reader/wlan-layout.json`. The same-page error remained visible after restoration;
+  one Retry press then produced the actual full image at1/14 with no error/loading overlay in `frosted-retry-result/`.
+  The screenshot was inspected, not inferred from command success. The eleven request/queue runtime tests still
+  pass. No new split-screen/light-canvas visual or recovery-download test is claimed by this evidence.
