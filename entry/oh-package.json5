@@ -6,6 +6,8 @@
   "author": "erosTeam",
   "license": "UNLICENSED",
   "dependencies": {
+    "@reader-kit/core": "file:../../reader-kit/reader-core",
+    "@reader-kit/ui": "file:../../reader-kit/reader-ui",
     "shared": "file:../shared",
     "home": "file:../feature/home",
     "gallery": "file:../feature/gallery",

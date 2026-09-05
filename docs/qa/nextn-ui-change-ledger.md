@@ -1,5 +1,14 @@
 # NextN UI change ledger
 
+## 2026-09-06 — Shared reader D1 optional debug route — OPEN
+
+- Authority: user approved the three-app technical integration, explicitly forbidding replacement of the existing reader. This is a new diagnostic destination, not a redesign of ReaderPage or the root scaffold.
+- Parent boundary: existing app-level HdsNavigation remains the navigation owner; only the new `ReaderLab` branch mounts a HdsNavDestination with the shared diagnostic surface. Normal routes, chrome, system bars, image gestures, transitions, settings and progress are unchanged.
+- Entry: explicit debug-build Want parameters only; no persistent default-reader setting and no ordinary menu replacement. The diagnostic page contains source selection/position, native Image and bounded previous/next/retry actions, not the production reader toolbars.
+- Reference: use the existing app-level destination ownership and native controls; existing reader surfaces remain frozen. No old Reader UI subtree is removed or recomposed.
+- Verification: compile all three actual consumers, run core request-ownership behavior tests, then verify the new destination, actual source images/thumbnail kind, navigation and return on the project device protocols. Inspect whole debug page screenshots; source checks are not visual acceptance.
+- Current evidence: three signed Debug consumers build and core behavior tests pass 9/9. On 237, N long original and independent thumbnail, E original and sprite regions, rapid EH boundary navigation, Back and both ordinary production Reader entries were observed. Initial host title/status overlap was failed QA and corrected with the existing host safe-area/title reservation; corrected whole-page screenshots inspected. Koma 197 displays real downloaded pages and chapter-failure/return recovery while preserving the ordinary 4/23 Reader position. Koma adjacent available-chapter success lacks a real sample and is not marked passed. No existing Reader UI was replaced; only the new debug destination is accepted for these bounded paths. Evidence and outstanding scope are in the active shared-reader plan. Existing WIP is outside this record.
+
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 

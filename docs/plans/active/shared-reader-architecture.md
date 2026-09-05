@@ -1,0 +1,340 @@
+# NextE / NextN / Koma 共享阅读器设计草案
+
+状态：D1 可选调试试接进行中；2026-09-06 用户已明确授权开始，禁止替换现有阅读器。
+
+核对日期：2026-09-06。设计源码基点：NextN `7f79cb4`、NextE `89532d99`、Koma `2bb00cd`；D1 执行时三个工作区均有其他任务的后续修改。D1 只增加共享库、宿主适配器及独立调试入口，不改动现有阅读器、账户或进度存储实现。
+
+交付范围：三方源码边界、功能归属、接口语义、迁移顺序与 D1 独立调试试接。本文不是“现有功能全部通过”的证明，也不授权替换三个应用的阅读器。
+
+## 1. 建议结论
+
+采用 **两个共享 HAR：`reader-core` + `reader-ui`，三个应用各自提供适配层**。Koma 从接口设计和试接阶段就参与，不作为 NextE/NextN 完成后的附加兼容对象。
+
+- `reader-core`：阅读会话、页面身份与显示映射、导航意图、请求生命周期、预加载计划、设置合成和进度事件。没有 ArkUI 组件、应用数据库、网站 DTO 或路由。
+- `reader-ui`：共享的 ArkUI V2 阅读界面与交互实现，包括独立的分页/连续/双页布局、手势、默认工具栏、缩略图和加载失败提示。功能与界面分层，但三个应用不各自重写这套默认界面。
+- 应用适配层：网站或文件解析、鉴权、缓存和下载服务、持久化、系统能力调用、路由、分享和章节业务。
+
+共享的是一个实现和明确的行为契约，不是三个复制品，也不是带有 `isNextE/isNextN/isKoma` 分支的巨型页面。能力差异必须能追溯到实际数据源或宿主能力，不能成为隐藏删减阅读功能的开关。
+
+第一轮迁移保留当前已接受的默认交互。Koma 的无缝跨章、无效设置修复、进度存储改造属于独立的产品/数据变更，不在“抽取组件”过程中顺便改变。
+
+## 2. 当前源码告诉我们的边界
+
+以下是架构相关的源码盘点，不是三方完整运行验收表。表中“有实现”不等于已在本轮设备验证。
+
+| 能力/问题 | NextE | NextN | Koma | 共享方式 |
+| --- | --- | --- | --- | --- |
+| 阅读会话入口 | Reader 自带 `HdsNavDestination` | Index 包装 destination | Index 包装 destination、准备章节 | 路由容器留宿主，共享 ReaderSurface 不再拥有应用路由 |
+| 页目录 | 可稀疏加载的 EH 预览、逐页解析 | NH 详情页目录、下载优先 | 章节页列表、来源 hydration | 中性页目录端口，区分页数已知与元数据已加载 |
+| 单页与连续阅读 | 独立图片组件 | 单页/连续共用 surface core，外层尺寸分开 | 分页与 webtoon、独立显示页映射 | 保留不同布局所有者，共享页加载状态 |
+| 双页拼合、单双页规则 | 已有 | 已有 | 不能仅凭宽页切分认定具备同样双页行为 | 共享 display map；三方逐项声明实际能力并验收 |
+| 宽图切成两次翻页 | 不由双页拼合自动等价得到 | 不由双页拼合自动等价得到 | 同一原页映射 left/right 两个显示项 | 原始页与显示片段分离；不能只保存显示数组下标 |
+| 缩放、拖动、点击区域 | 有多处图片层实现及 transform helper | surface core 与 spread 分开 | 图片层和点击区模型 | 数学规则入 core；手势与布局反馈统一在 UI |
+| 自动翻页、音量键 | 阅读器内部处理 | 阅读器内部处理 | 阅读器和偏好处理 | core 调度/命令，宿主注册系统输入，UI 仲裁手势 |
+| 在线/下载/归档 | EH 在线、下载和归档 | NH 在线与下载 | 本地与多源在线/离线 | 资源端口；不把来源数量变成 Reader 的分支 |
+| 大图加载 | 解析、缓存队列优先级、进度、解码等多阶段 | 私有文件缓存、请求去重；load 无进度/取消参数 | 多源解析、文件缓存、运行时请求头 | 共用状态机；传输真实性由适配器达标证明 |
+| 缩略图内容 | 在线精灵图裁切，或本地图像 | 独立缩略图，可能只是长图局部 | 当前 Reader 从图源生成有界解码缩略图 | 独立缩略图描述，禁止推定与原图等比例 |
+| 缩略图栏几何 | 固定图高 118，真实比例宽度 | 固定图高 100，比例/宽度有界 | 自有缩略图宽度和缓存 lease | 当前不是完全相同的 UI；迁移前明确保留项与可见变更 |
+| 裁边/超分/翻译 | 含原图变体、屏蔽策略、超分和翻译业务 | 裁边、超分和翻译接入 | 有自己的设置和能力边界 | 共用处理阶段/呈现，具体服务按能力注入，不静默省略 |
+| 错误/重试 | 普通与紧凑失败面板 | 普通/双页失败面板 | 自有错误呈现 | 同一默认组件及上下文尺寸规则，动作由可恢复方式驱动 |
+| 分享、保存、图片信息 | 网站与图片动作 | 画廊与图片动作 | 书籍/章节业务不同 | 语义化动作；分享当前图片与分享作品不是同一动作 |
+| 转场、全屏、系统栏 | 与应用转场状态耦合 | 与 Index、route epoch 耦合 | 路由与页面生命周期耦合 | 共用几何/阶段协议，系统窗口与路由操作由宿主执行 |
+| 设置存储 | Preferences，E 自有枚举/键 | RDB，自有枚举/键 | Preferences，按作品接口当前仍落全局 | 中性运行设置 + 宿主映射；不重写既有序列化值 |
+| 进度与已读 | 画廊页索引 | 画廊历史页索引 | progressByComicId 与独立章节已读状态 | core 发布锚点；最近阅读、逐章进度、已读由宿主分别存储 |
+| 章节切换 | 画廊是单一阅读单元 | 画廊是单一阅读单元 | 显式前后章节回调；普通下一页受当前章节约束 | 中性阅读单元与边界事件；章节列表、排序、路由留 Koma |
+
+两个必须记录的事实：
+
+1. NextN 的单页/连续图层已经局部合并，但双页仍有独立加载逻辑；NextE 也有多处相似图片加载路径。不能把“页面文件搬入 HAR”当作完成统一。
+2. Koma 的 `imageFit()` 当前把 `fit_width/fit_height` 都映射为 `Contain`，默认存储值却为 `fit_width`；`loadForComic/saveForComic` 当前明确作为全局设置的兼容别名，不提供逐作品隔离。这些是必须显式处理的兼容现状，不能仅凭方法名推定支持，也不能在迁移时悄悄激活旧设置。
+
+## 3. 模块与状态所有权
+
+```text
+NextE 宿主 / NextN 宿主 / Koma 宿主
+  ├─ 路由、窗口、业务动作、持久化
+  ├─ Catalog / Asset / Settings / Progress 适配器
+  └─ Koma ChapterCoordinator（E/N 不需要）
+           │ 数据端口、命令与事件
+           ▼
+      reader-core  ←  reader-ui
+      单一会话状态     共享默认界面、布局、手势
+           ▲              │
+           └── 布局观测 ───┘
+```
+
+| 状态 | 唯一所有者 | 禁止的第二份真相 |
+| --- | --- | --- |
+| 会话、单元、页面目录、导航目标、请求 epoch | core 的 ReaderSession | 宿主用双向绑定另存一套 currentIndex 并相互修正 |
+| 已实际显示的页/片段、滚动锚点 | UI 上报观测，core 接收后发布会话快照 | 用“发出跳页命令”直接写成“已显示” |
+| Scroller/Swiper、手势序列、实时变换、原生图片资源 | 对应 UI 布局/图片 surface | 每个业务应用再复制缩放和拖动状态；共享全局 PixelMap |
+| 持久设置、历史、章节已读 | 宿主存储适配器 | HAR 自建应用无感知的第二套数据库 |
+| 鉴权、源运行时、缓存文件、下载任务 | 宿主服务 | core 导入 NH/EH DTO、Koma 全局请求头或账户单例 |
+| 章节排序、邻章可用性、目录、跟踪同步 | Koma ChapterCoordinator | core 用 chapterId 字符串猜测下一章 |
+| 系统栏、亮屏、输入注册、导航栈 | 宿主平台桥 | Reader 在销毁时写死恢复某个默认窗口配置 |
+
+UI 使用 V2 状态投影。core 的快照对调用方只读，操作走明确命令；高频手势不把每一帧搬进持久会话或应用全局状态。core 保留可测试的计算规则，UI 只持有本布局实际需要的即时状态。
+
+可单独复用的 UI：`ReaderSurface`、默认 chrome、`ReaderThumbnailTile`、缩略图列表、失败面板。详情页可以使用 thumbnail 组件和目录端口，不必启动完整 ReaderSession。详情页横向栏/全部缩略图页的父级布局仍归各自页面，不能借复用 tile 改掉父级结构。
+
+扩展点以语义化 action、主题 token 和少量明确 slot 为主。不开放“任意替换整棵图片/手势树”作为普通接入方式，否则会重新出现三套阅读器。
+
+## 4. 中性数据模型与端口草案
+
+以下是接口语义草案，不是已经编译的 ArkTS SDK；最终命名和类型表达在技术试接中确定。
+
+### 4.1 身份和坐标
+
+- `SourceScopeKey`：来源/账户隔离的非敏感标识，由适配器生成，不包含 cookie、token 或密码。
+- `WorkKey`：作品身份；`UnitKey`：本次阅读单元。E/N 的单元是画廊，Koma 是章节或文件。
+- `PageKey`：原始页稳定身份；`sourceIndex` 只表示当前单元内的零基顺序。源为一基页号时只在适配器转换。
+- `contentRevision`：内容变化版本。临时下载地址、文件路径、签名 URL 不能作为唯一持久页面身份。
+- `ReadingAnchor`：单元、原始页、片段与归一化页内位置；可附带用于找不到稳定页 ID 时恢复的索引提示。
+- `DisplayItem`：由原始页生成的显示项，可能含单页、同一页的一个片段，或一个双页组合。它的下标随布局变化，不是持久进度。
+
+页目录支持页数已知但部分元数据未解析，及页数尚未确定两种情况。未知尺寸不能默认为缩略图尺寸；元数据迟到引发布局变化时保持当前锚点。
+
+### 4.2 最小端口集合
+
+| 端口 | 关键操作/结果 | 责任边界 |
+| --- | --- | --- |
+| `ReaderCatalog` | prepareUnit、loadPageRange；返回单元描述、稳定页 ID、页数状态和元数据范围 | 适配 EH 稀疏预览、NH 详情和 Koma hydration；不会下载所有大图 |
+| `ReaderAssetProvider` | acquire(request) → ticket；ticket 有结果、进度订阅、提升优先级、cancel；成功结果含可释放 asset lease | 来源解析、缓存读写和传输由宿主完成；取消与释放必须实际接入服务 |
+| `ReaderProgressSink` | saveAnchor(event)、flush；结果可观察 | core 不判定整本漫画已读；存储失败不能假称已保存 |
+| `ReaderSettingsPort` | 初始有效快照、外部更新订阅、patch 请求及保存结果 | 保留三应用原有键与数据；界面即时状态与持久化结果区分 |
+| `ReaderUnitNavigator`（可选） | resolveAdjacent(unit, logicalDirection) | 返回 available / end / failed / cancelled，失败不等于没有下一章 |
+| `ReaderProcessingPort`（可选） | 基于源版本和参数快照申请裁边/增强/翻译结果 | 调用权限和服务在宿主；变更参数不要求重新下载原图 |
+| `ReaderHostBridge` | 业务动作、窗口策略申请/释放、转场准备、退出请求 | 原生资源/窗口接口放 UI 平台边界，不泄漏进 core |
+
+最小用法形状：
+
+```text
+session = ReaderSession(catalog, assets, settings, progress, optionalNavigator)
+surface = ReaderSurface(session, hostBridge, presentation, optionalActions)
+
+session.open(unitRequest, entryAnchor)
+session.navigate(next | previous | targetAnchor)
+session.retry(pageKey, recoveryAction)
+session.updateSettings(patch)
+
+surface -> reportVisibleAnchors(...)
+surface -> reportImagePresentation(pageKey, requestId, decoded | failed)
+session -> positionChanged / boundaryReached / persistenceFailed / closeReady
+
+session.close()   // 有顺序的停止、flush 与释放；宿主仍拥有最终路由退出
+```
+
+接口不要求 NextE/NextN 伪造章节，不要求 Koma 伪造 galleryId/token，也不让 UI 直接调用 app 的 ViewModel。
+
+### 4.3 缩略图与原图必须分开
+
+`PageDescriptor` 可以引用 `OriginalAsset` 和独立的 `ThumbnailDescriptor`。缩略图三种来源：
+
+1. 独立图：自己的 asset key、尺寸，可能仅覆盖原图一小块。NH 属于这一类。
+2. 精灵图区域：sprite asset key、裁切矩形、区域尺寸。EH 在线缩略图属于这一类；整张 sprite 尺寸不是 tile 比例。
+3. 原图派生：源 asset key、有界解码/派生策略和结果尺寸。Koma 当前 Reader、本地文件可用此路径。
+
+比例来源优先取该缩略图实际解码/裁切结果，其次取可信的缩略图元数据；均未知时临时占位，不能回退到原图比例。组件区分“容器尺寸策略”和“内容 fit 策略”，宽度受限不意味着可以拉伸图像。
+
+目录分页和缩略图下载分开：详情栏继续加载后续目录范围，但只为可见和邻近范围申请缩略图。不能为“能看完所有缩略图”一次解码整本原图。
+
+## 5. 页面布局与输入契约
+
+### 5.1 三种布局不是一个尺寸公式
+
+- 分页：外层是固定视口，默认完整容纳图像。长图不能因 `.width('100%')` 与裁切组合而失去上下内容。
+- 连续：页面依据实际内容比例决定高度，列表负责滚动和虚拟化。不能照搬分页的固定高度。
+- 双页：先按单元、单双页规则形成组合，再计算整体显示与缩放。joined/split 的语义与宽图切分成两个翻页项分开建模。
+
+按宽/高适配若作为显式选项开放，超出视口的内容必须可平移/滚动访问；“适配宽度”不是“裁掉其余部分”。实际裁边是另一个可选的内容处理步骤，保留原始坐标到裁边后坐标的映射。
+
+默认不跨章节配对双页；章节末尾单页不能为了凑双页吞入下一章。宽页拆分后的最后原页必须读到最后一个显示片段，才满足单元末端显示条件。
+
+模式切换、方向变化、横竖屏和窗口变化都从稳定锚点重建 display map。源顺序、RTL 的物理移动、逻辑 next/previous 分开，避免 RTL 时“下一章”反向。
+
+### 5.2 手势只有一个仲裁者
+
+按图片 surface、组合 surface 和阅读视口分层处理输入；缩放图的拖动、翻页手势、点击区、双击、长按、滑块和按钮不能各自抢占同一事件。
+
+- 错误重试按钮与菜单获得可操作命中区，不能被整屏点击层截获。
+- 缩放状态与当前模式决定翻页是否可触发；不用业务应用补丁抑制重复触发。
+- 自动翻页依据实际可见内容的可展示状态、手势/弹层/前后台状态调度，不把“请求结束”当成“图片可读”。
+- 音量键/键盘等系统输入由宿主按当前有效路由注册，统一转成导航命令，离开后释放。
+- 点击区配置是阅读设置；应用差异通过完整配置映射表达，不私自减少区域或动作。
+
+## 6. 加载、失败与资源生命周期
+
+加载和呈现使用关联但不同的状态：
+
+```text
+资源请求：queued → resolving → transferring → ready
+                    └──────────────→ failed / cancelled
+图片呈现：placeholder → decoding → displayed
+                           └─────→ decodeFailed
+```
+
+每次请求携带 session epoch、unit key、page key、content revision、request id；增强请求额外包含参数版本。每个异步提交点检查身份，不能只在最外层 await 后检查。过期结果释放资源，不写回新章节或新账户的页面。
+
+必须具备的语义：
+
+1. 每个 ticket 有且只有一个终态。网络超时、取消、无数据结束、解码失败分别表达；进度未知不是 0%，连接停住不允许无限显示 loading。
+2. 会话离开、翻页和重试取消的是本消费者。文件下载与阅读器合用底层任务时，阅读器释放 lease 不能把用户下载任务一起取消；最后消费者释放后的底层处理按缓存服务政策执行。
+3. 请求去重、缓存键隔离和优先级提升由持有真实任务队列的服务实现。core 决定可见页/预加载需求，不再另建一个与宿主争抢资源的网络队列。
+4. 必须有总时限/无进展时限及清理结果；仅外层 Promise 超时、底层请求仍占队列，不算链路闭合。既有服务不支持取消时，标为适配缺口，不能用忽略返回值伪装达标。
+5. 原图、缩略图、派生图分别缓存。派生图键包含处理参数和源版本；改变超分参数尽量复用可用原图，不保留无限份 PixelMap。
+6. 已显示的原图在可选增强失败时仍可读；“首次加载失败”和“已有可读图但增强失败”不是同一整页错误。用户显式切换图源时不得让旧图冒充新图成功。
+7. 文件就绪不等于解码成功；渲染回调必须带同一次请求身份。长图解码、内存压力及滚动回收由 UI 与资源 lease 配合，不强制每页都转成长期持有的全尺寸 PixelMap。
+
+失败 UI 用共享的可读背景材料与布局，保留已接受的转场透出效果；不改成不透明纯黑底，也不删掉背景回避设计。普通页、双页紧凑区和整页失败分别使用经过页面上下文审查的尺寸变体。后续可见变更需要整卡/整页截图，不用一个孤立按钮裁图验收。
+
+重试动作由错误类型和 provider 能力给出：重试传输、重新解析、切换可用图源、打开宿主设置等。EH 配额/限速和 change source 不能退化成一律“重试”；NH 也不能显示没有实现的切源动作。用户取消不作为错误提示。
+
+### 6.1 三个适配层必须先解决的缺口
+
+| 适配层 | 当前证据 | 试接必须证明 |
+| --- | --- | --- |
+| NextE | 文件服务有优先级/进度，queued cancellation 不等于所有进行中传输可取消 | 当前可见页优先、旧解析不串页、队列和活动传输各自取消边界 |
+| NextN | `ReaderImageCacheService.load` 没有进度/取消入参，force reload 会处理已有 flight | 真正取消/终态和重试去重语义，阅读与下载共存不互相卡死 |
+| Koma | 来源适配器已有多源服务，但部分读取使用模块级请求头配置 | 请求开始时绑定来源/账户作用域，跨章或换源的迟到请求不会使用另一作用域 |
+
+这三项不能在“已接上同一个 ReaderSurface”后被标记通过。
+
+## 7. Koma 章节解耦与切换流程
+
+需要共享的是**单元切换能力**，不是 Koma 的整个章节系统。
+
+### 7.1 显式切换与普通翻页边界
+
+章节目录、顺序、可用来源和用户的章节选择由 Koma 决定；Reader 发出逻辑边界意图。宿主提供 `ReaderUnitNavigator` 后，core 才能请求相邻阅读单元。
+
+```text
+当前单元 A 仍可读
+  → 用户选择章节 / 发出末端继续意图
+  → 宿主解析目标 B
+  → prepare B（新切换 epoch，A 保留）
+  → B 最小可用目录就绪：原子提交 active unit 与入口锚点
+  → 加载 B 当前页；A 资源按窗口/预算释放
+```
+
+“目录就绪”和“大图已显示”分开；等待目标首图成功后才允许换章，会把图片网络失败变成无法进入章节。提交后若首图失败，应有 B 的明确错误和返回/重试路径，不能把 A 的缩略图当 B 的成功画面。
+
+- prepare 失败：A 不被清空，显示目标切换失败，可重试或继续读 A。
+- 快速点 B 再点 C：只有最新有效切换能提交；B 的迟到响应释放。
+- next 默认入口、previous 默认入口、目录跳章与恢复阅读各自使用明确的入口策略，不共用含糊的 initialIndex=0。
+- 预加载邻章不更新阅读进度、不标已读、不触发跟踪同步。
+- 末端事件不是整本已读事件；Koma 自行合并逐章进度、手动已读覆盖和最近阅读指针。
+
+### 7.2 无缝连续跨章作为独立能力
+
+架构保留 `ReaderUnitWindow`：有界的邻近单元目录与资源窗口，每个显示项仍带 unit/page 身份。向前追加或向后插入章节时保存屏幕锚点，回收远端单元时也不能让当前位置跳动。
+
+元数据窗口和图片/解码预算分别有界，不能仅以“最多三章”假定内存安全；单章也可能很长。具体页数、字节和解码预算在真实设备试接中确定。
+
+这与“同一路由内换一章”不同。首轮可以只保留当前显式章节动作，但数据模型从开始就不能假设永远只有一个无身份的 pages 数组。普通翻页自动跨章与连续阅读无缝跨章的默认体验，需要实施到这一阶段时给用户选择，不在抽取中偷偷开启。
+
+## 8. 设置、进度、动作与转场
+
+### 8.1 设置和进度
+
+设置按“库默认 → 应用默认 → 用户全局 → 作品有效覆盖”合成，作品覆盖保存字段补丁，不保存一份会冻结旧默认值的完整设置副本。读取三方原存储时保留其实际默认行为，不机械把 E 的 `ltr`、N 的 `paged` 和 Koma 的值写成新枚举。
+
+Koma 现有无效 fit 设置与逐作品设置必须先定义迁移策略：用户明确选择过的设置与沿用默认但未生效的设置不能简单混同。不会在本文内实施或清除这些值。
+
+core 发布的 `positionChanged` 至少包含 work/unit/page、片段、页内位置、原因和会话版本；只在实际可见观测成立后推进位置。跳到末页、末页图像仍失败、读完末页最后片段是不同事件。宿主定义何时算已读，库不擅自改用户原有规则。
+
+持久化允许合并连续滚动事件，但切章、离开和生命周期边界有明确 flush。异步保存按同一作用域排序；失败可观察、可重试，不能让慢请求把较新位置覆盖掉。Koma 的逐章进度修复需单独数据迁移与冷启动验收，不能以一个新接口名代替修复。
+
+### 8.2 动作与主题
+
+动作区分 `shareDisplayedImage`、`shareWork`、`saveSelectedPages`、`showImageInfo`、`openChapterList` 等语义，带明确目标、可用性与执行状态。双页保存左/右/两页必须携带页集合；不会因为共享一个回调把两种“分享”又显示成难以区分的同名入口。
+
+默认 chrome 和失败面板由共享 UI 提供，颜色、字号、间距、材质通过有边界的 token 输入；默认值参考当前已接受的 NextE 组件树。来源差异只替换对应动作/内容，不随意重排父级工具栏或提示卡。
+
+现有 E/N 缩略图栏尺寸不相同，不能宣称已经同样验收。先记录两套现状；决定统一尺寸时列为可见变更，提交同状态、同视口的参考和候选整页截图，避免抽取时夹带重新设计。
+
+### 8.3 转场和生命周期
+
+共享 UI 报告当前图像的实际显示矩形、裁边/片段映射及可供转场使用的资源 lease；宿主负责目标缩略图是否在有效可见区域、路由身份、系统栏和目标视口。
+
+关闭采用单次事务：停止冲突输入/自动翻页 → 准备系统栏和目标布局 → 测量当前有效目标 → 执行适用转场或普通关闭 → flush/释放 → 宿主完成退出。恢复系统栏后的目标可以不发生几何变化，不能把“必须变化”当作就绪条件；不得复用进入时坐标作为退出目标。
+
+退后台、临时遮挡、弹层打开和会话结束分别处理。结束会话取消订阅与任务、释放 lease；系统资源恢复的是该次申请前的有效策略，而不是假定的固定默认。正在进行的下载属于宿主业务，不随 Reader 销毁。
+
+## 9. 交付形式与迁移顺序
+
+HAR 是编译期被宿主打包复用的代码/资源，不意味着三个已安装应用共享进程、账户、缓存或数据库。Huawei 的 [HAR 文档](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/har-package) 支持这一用法；依赖不得成环，资源需避免重名，公开类型涉及的 HAR 由消费者显式声明依赖。
+
+共享源码使用独立本地仓库，D1 revision 为 `227ca3a`，三个宿主通过同级目录的两个 HAR 消费同一源码。当前仅本地技术试接：未创建远程仓库、未发布包，也未配置 CI 的共享库 checkout。三方试接补丁不能单独当作可发布生产版本；后续推广需固定共享 revision 并补齐分发/CI。库资源使用专有前缀，不依赖应用 AppScope；`reader-core` 不反向引用 UI 或宿主 shared。
+
+核心/UI 成对发布，三个应用记录实际消费的同一候选版本，完成各自验收后才推广；不要一次升级所有应用来消除版本号差异。允许短期、明确到期的旧路径回退，不允许为每个 app 长期维护私有布局分叉。
+
+| 阶段 | 具体交付 | 进入下一阶段的证据 |
+| --- | --- | --- |
+| D0，设计基线 | 本设计及源码定位，标明差异、产品决策和适配缺口 | 设计可评审；不声称代码或设备完成 |
+| D1，技术试接 | 最小双 HAR 工程、稳定身份/目录/请求接口；三个宿主各接一个真实来源，不替换生产入口 | 三个真实依赖图均能编译；EH 稀疏页、NH 独立缩略图、Koma 章节/片段都不需要 app 特判 |
+| D2，核心迁移 | 从现有算法提取 display map、锚点、请求 epoch、预加载和设置映射；完善服务适配缺口 | 行为测试覆盖真实提取逻辑；取消、迟到结果、切章、进度写入有可观察结果 |
+| D3，共享 UI 接入 | 以 NextE 已接受父级树为起点，先一条可回退入口；N/K 同步试接验证接口 | 三种布局、完整长图、手势与失败态有设备证据；不能只完成单页就删旧实现 |
+| D4，宿主功能补齐 | 原图变体/切源、下载/归档、增强/翻译、保存分享、设置、转场、Koma 显式章节动作 | 对各 app 的现有功能清单逐项映射到新入口；未覆盖项有旧路径且不对用户减配 |
+| D5，分应用替换 | E、N、K 各自完成完整相关回归、独立提交和受控版本推广 | 消费同一已验证库版本；旧路径只能在全部对应能力验收后移除 |
+| D6，可选产品增强 | Koma 普通翻页跨章/无缝连续跨章，设置有效性及逐章持久化修复 | 用户确认体验或数据策略后，独立实施和验收；不与抽取提交混合 |
+
+D1 必须提前纳入 Koma，而不是把 Koma 留到 D5 才检查。D3 的试点只是缩小一次可见变更范围，不是先为 E 固化一个只能读画廊的 API。
+
+## 10. 回归门槛：把反复出现的问题变成明确案例
+
+不创建 UI 源码正则、组件形状匹配或合成布局脚本来证明“对齐”。纯逻辑测试执行被提取的真实算法/状态代码；视觉和手势通过真实应用、正确设备与页面验证。
+
+| 风险 | 必要案例与观察 |
+| --- | --- |
+| 长图被按宽裁切 | 超长页在单页模式首次显示完整；主动按宽时上下可到达；连续模式高度正常；横竖屏均保持锚点 |
+| NH 局部缩略图被原图比例拉伸 | 同一实际长图的详情栏、全部缩略图和 Reader 栏都使用缩略图自己的内容比例；未知尺寸加载前后也检查 |
+| EH sprite 误用 | 多个 sprite 裁切区、边缘区、在线与本地下采样分别检查；不能拿 NH 的独立图片测试替代 |
+| 请求/下载同时卡住 | 真实并发、慢响应、无数据结束、超时、离开、重试、恢复；任务确实释放/继续，不以一个下载完成代替原始停滞链路 |
+| 错误与转场背景混杂 | 从缩略图进入后制造可恢复大图失败，审查整张提示卡、按钮命中、重试后的原图和返回转场 |
+| 手势抢按钮 | 单页、连续、双页的缩放/拖动、点击区、错误按钮、菜单/滑块互不误触；恢复后正常手势仍工作 |
+| 跨章串状态 | A→B→C 快速操作、B 慢响应、失败保留 A、逆向入口、无下一章与加载失败区分 |
+| 片段进度丢失 | RTL/LTR 宽页两半、最后一页两半、模式切换/旋转/冷启动；进度仍指向正确原页和可恢复片段 |
+| Koma 已读串章 | 预加载不写已读；逐章进度不被最近阅读指针覆盖；不因最后章节的一次跳页宣称整本读完 |
+| 缓存/账户串源 | 同页标识在不同 source scope/account 下不复用错误资源；阅读器关闭不取消用户下载 |
+| 功能静默丢失 | 每一现有菜单动作、设置项和来源恢复方式逐项保留；不支持的项明确说明并回到已有路径 |
+| 转场/系统栏回归 | 当前可见目标、不可见目标、旋转后的目标、全屏进出与快速反向；记录有效视口和身份 |
+
+设备计划沿用各项目要求：E/N 的 237 与 Koma 的 197 分别按当次指令、实时目标和协议验证。跨应用参考对照需要同状态、同有效视口；不同设备截图不直接充当像素或几何对齐证据。
+
+最终 UI 结论附已经实际看过的截图/关键帧，标明设备、页面、候选版本和未覆盖项。构建、安装、源码相似和截图存在均不单独称为通过。库变更至少触发三个消费者的编译及受影响行为测试；高风险 UI/生命周期变更追加三方对应实机场景。
+
+## 11. 决策清单与当前下一步
+
+当前不需要用户为包名、接口命名或两层拆分逐项决策，采用本文建议继续细化即可。不会把尚未发生的技术试接写成成功结果。
+
+需要在对应实施阶段取得用户决定的只有实际产品变化：
+
+1. **Koma 的跨章默认体验**：第一轮迁移建议保留当前显式章节切换；普通下一页直接跨章、边界确认、连续阅读无缝衔接作为明确的后续体验选择。接口同时容纳这些策略，不因此阻塞核心设计。
+2. **Koma 旧设置与进度的纠正**：让目前无效的适配/逐作品设置生效，以及逐章进度数据迁移，需要单独方案和数据保留规则，不能顺便改。
+3. **现有可见差异是否统一**：例如 E/N 缩略图栏尺寸。先保留实测基准，真正要统一时提供整页候选供用户选择，不在本文里拍脑袋确定新的尺寸。
+
+2026-09-06 用户确认进入 D1，限定为可选接入/调试切换。共享源码落在独立本地目录 `/Users/honjow/git/reader-kit`，三方通过同一源码 HAR 消费；正常 Reader 路由和组件保持不变。入口只接收 debug 构建的显式 `readerLabWork/readerLabUnit/readerLabPage` Want，不保存全局开关。NextN 试接在线 NH、NextE 试接在线 EH 稀疏目录/精灵图、Koma 首先试接既有本地/下载章节；实验会话没有进度或设置写入端口。
+
+D1 当前为技术候选，完整迁移仍 OPEN：两个 HAR、三个独立 adapter/page、debug Want 路由均已建立。核心真实行为测试 9/9；三个宿主签名 Debug 构建通过。首次实机发现标题/系统栏遮挡，已标失败并按宿主已有安全区和标题预留方式重建，未改共享图像区域或生产页面。
+
+- NextN / 237：678049 长条原图页 1→2，独立 NH 缩略图及恢复原图均 `displayed`，Back 回到 Browse。缩略图没有套原图比例；原图仅在诊断视口中完整 contain，没有宣称已有缩放/滚动。
+- NextE / 237：4152165 原图、两个不同 EH 精灵区域均显示；从第 40 页快速下一页四次，最终第 44 页 `displayed`。退出后普通详情仍显示此前 `继续 P117`，普通按钮打开原有双页 Reader 的 117/398，不使用 lab 页号覆盖原进度。
+- Koma / 197：真实 ONE PIECE 00话下载页 1→2 均 displayed；下一章 01卷缺少本地文件，明确失败；上一章恢复 00话第1页；Back 返回书架。普通继续阅读仍打开原 Reader 的 4/23，lab 前后 library 文件完全相同。主控检查了整张原图与恢复截图；197 已交回原 Koma 任务。缺少两章均本地可用的相邻样本，不能据此接受完整跨章成功路径；零页旧元数据但 manifest 完整的兜底、派生缩略图仍未接入。
+- 237 证据根：`.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d1/`；03/04 为 N 修正后原图/缩略图，05/06/08 为 E 原图/精灵图/快速翻页，07 为 E 生产入口。当前只验证 portrait 1320x2120，不作未知折叠状态的几何结论。
+- N 普通阅读入口补核在 09/10，仍进入原 Reader 而不是 lab。Koma 证据根为 `/Users/honjow/git/Koma/.hermes-artifacts/device197__ALN-AL80/not-applicable/portrait-1260x2720/20260906-reader-kit-d1/`，03/04/05/06/07/08/09 分别覆盖原图、翻页、缺章、恢复、退出、普通 Reader 和最后书架。
+
+源码检查点：共享库 `227ca3a`；NextN 仅提交本轮入口/adapter/依赖/计划及本节验收记录，其他旧 WIP 保留。E/K 遵守各自提交边界，本轮接线保留独立可审查 diff。公开 build-profile 只应记录两个 module 行，绝不暂存本机整份签名 profile；本地 ignored profile 已同步 module 行。远程分发、CI checkout 和正式依赖锁定在发布前单独处理，不以当前本地目录假装已完成发布集成。
+
+独立 review 指出的本地 URI 排除、逐页整章校验、EH 共享 VM 竞争和重试重复坏缓存四项均修正。消费者取消/底层取消仍显式区分；Koma 派生缩略图暂不启用，不用整张原图冒充派生结果。D2–D6 未开始，三种布局、手势、设置、进度、下载/处理能力的完整迁移均保留原路径。
+
+## 附录：本次读取的主要源码定位
+
+行号以本次核对版本为准；后续以符号定位为主。
+
+- NextN：[ReaderPage.ets](/Users/honjow/git/NextN/feature/reader/src/main/ets/pages/ReaderPage.ets:752)：`ReaderImageSurfaceCore`、`ReaderImagePage`、`ReaderVerticalImage`、`ReaderSpreadImageLayer`、`scheduleReaderPreload`、`persistProgress`、`ReaderThumbnailTile`。
+- NextN：[NhGallery.ets](/Users/honjow/git/NextN/shared/src/main/ets/model/NhGallery.ets:73)、[NhReaderSettings.ets](/Users/honjow/git/NextN/shared/src/main/ets/model/NhReaderSettings.ets)、[ReaderImageCacheService.ets](/Users/honjow/git/NextN/shared/src/main/ets/services/ReaderImageCacheService.ets)、[ReaderSettingsRepository.ets](/Users/honjow/git/NextN/shared/src/main/ets/storage/ReaderSettingsRepository.ets)。
+- NextE：[ReaderPage.ets](/Users/honjow/git/NextE/feature/reader/src/main/ets/pages/ReaderPage.ets:419)：destination、`publishReaderProgress`、`ReaderThumbTile`、`ReaderZoomCoordinator`、多个图片层与 `ReaderFailureOverlay`。
+- NextE：[ReaderViewModel.ets](/Users/honjow/git/NextE/feature/reader/src/main/ets/viewmodel/ReaderViewModel.ets:81)、[ReaderImageSourceRequestGate.ets](/Users/honjow/git/NextE/feature/reader/src/main/ets/model/ReaderImageSourceRequestGate.ets)、[ReaderThumbnailGeometry.ets](/Users/honjow/git/NextE/feature/reader/src/main/ets/model/ReaderThumbnailGeometry.ets)、[ImagePipelineService.ets](/Users/honjow/git/NextE/shared/src/main/ets/services/ImagePipelineService.ets:65)、[ReaderImageFileCacheService.ets](/Users/honjow/git/NextE/shared/src/main/ets/services/ReaderImageFileCacheService.ets)。
+- Koma：[ReaderPage.ets](/Users/honjow/git/Koma/entry/src/main/ets/pages/ReaderPage.ets:110)：`imageFit`、`ReaderThumbnailTile`、`canNext`、`nextPage`、`persistProgress`、显式章节动作；[ReaderChrome.ets](/Users/honjow/git/Koma/entry/src/main/ets/components/ReaderChrome.ets)。
+- Koma：[ReaderSessionStore.ets](/Users/honjow/git/Koma/entry/src/main/ets/model/ReaderSessionStore.ets:100)、[ReaderDisplayPageDataSource.ets](/Users/honjow/git/Koma/entry/src/main/ets/model/ReaderDisplayPageDataSource.ets:12)、[ReaderPageSourceAdapter.ets](/Users/honjow/git/Koma/entry/src/main/ets/model/ReaderPageSourceAdapter.ets)、[ReaderPreferencesStore.ets](/Users/honjow/git/Koma/entry/src/main/ets/model/ReaderPreferencesStore.ets:541)、[Index.ets](/Users/honjow/git/Koma/entry/src/main/ets/pages/Index.ets:467)。
+- 当前拒绝方案边界：[rejected-approaches.md](../../controls/rejected-approaches.md)，尤其 Reader 退出几何、系统栏时序和不透明错误底色条目。

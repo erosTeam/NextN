@@ -1,4 +1,6 @@
 import { HomePage, HomeSubtabManagerPage, PopularPage } from 'home'
+import { NextNReaderLabPage } from 'reader'
+import { ReaderLabLaunchState, ReaderLabRequest, connectReaderLabLaunch } from '@reader-kit/ui'
 import {
   GalleryChromeState,
   GalleryCommentsPage,
@@ -478,6 +480,15 @@ struct IndexReaderThumbnailTransitionProxy {
 @Entry
 @ComponentV2
 struct Index {
+  @Local private readerLabLaunch: ReaderLabLaunchState = connectReaderLabLaunch()
+
+  @Monitor('readerLabLaunch.version')
+  private handleReaderLabLaunch(): void {
+    const request = this.readerLabLaunch.consume()
+    if (request !== null && !connectSafeMode().restricted()) {
+      this.stack.pushPathByName('ReaderLab', request)
+    }
+  }
   private stack: NavPathStack = new NavPathStack()
   private tabsController: HdsTabsController = new HdsTabsController()
   private readonly HOME_TAB_SCROLL_DELTA_PX: number = 6
@@ -586,6 +597,7 @@ struct Index {
   private readerDestinationCloseDispatched: boolean = false
 
   aboutToAppear(): void {
+    this.handleReaderLabLaunch()
     this.installRootNavigationStateTracking()
     this.readerOverlay.reset()
     this.handleGalleryDirectLaunch()
@@ -3158,6 +3170,8 @@ struct Index {
         Column() {}
       }
       .hideTitleBar(true)
+    } else if (name === 'ReaderLab') {
+      NextNReaderLabPage({ request: param as ReaderLabRequest })
     } else if (name === ROUTE_SEARCH) {
       this.searchDestination(param)
     } else if (name === ROUTE_HOME_SUBTAB_MANAGER) {

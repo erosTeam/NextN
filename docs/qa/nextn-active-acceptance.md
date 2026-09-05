@@ -1,6 +1,16 @@
 Warning: truncated output (original token count: 72227)
 Total output lines: 3889
 
+## Shared reader D1 optional integration — 2026-09-06 (OPEN)
+
+- User authority: build an opt-in/debug shared reader for NextN, NextE and Koma; never replace the existing reader or migrate settings/progress. Existing unrelated WIP is outside this lane.
+- Current source: sibling `reader-kit` contains core/UI HARs; three host adapters and explicit debug Want routes are additive. No production ReaderPage was edited. Core behavior tests pass 9/9; all three first candidate builds pass.
+- 237 current physical result: NextN gallery 678049 opens the debug route, turns 1→2, displays the independent NH thumbnail, restores original page 2, and Back returns to Browse. Native Image presentation reports `displayed`. The initial title/status-bar overlap was failed QA; the rebuilt host uses its existing safe-area/title reservation. Corrected full-page captures were inspected. No uninstall or data clear.
+- Evidence: `.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d1/03-nextn-safearea/` and `04-nextn-page-thumbnail/`. Live model VDE-AL00, portrait 1320x2120; fold state remains unknown and no fold geometry claim is made.
+- Further 237 result: NextE gallery 4152165 displays original and two distinct sprite regions; a warm debug launch at page 40 followed by four quick Next commands settles on 44/398 displayed. Ordinary Continue still opens the production double-page reader at the prior 117/398. NextN ordinary Read still opens its production Reader at 1/14. Both return normally; the 237 lease was released with NextN on ordinary Detail, no settings changed.
+- Independent 197 result: Koma actual ONE PIECE downloaded 00 chapter displays pages 1→2; next chapter lacks local content and explicitly fails, Previous chapter restores 00 page 1, Back returns to Library. Ordinary Continue remains the existing Reader at 4/23. Lab-before/after library-file copies compare identical. Both original and recovery screenshots were inspected by root. Evidence: `/Users/honjow/git/Koma/.hermes-artifacts/device197__ALN-AL80/not-applicable/portrait-1260x2720/20260906-reader-kit-d1/`. The 197 lease was released to the concurrent Koma task.
+- Boundary / next unverified work: successful switching between two locally available adjacent Koma chapters lacks a current sample; zero-page library metadata with an intact download manifest and derived thumbnails remain adapter gaps. Keep these open. The next development slice is core display mapping/anchors and request capability adaptation, still behind this debug route. D1 is not full feature parity, gesture migration, transport cancellation, or production release acceptance; no default replacement is authorized.
+
 ## NextE migration-integrity gallery lane — 2026-08-22 (accepted on 237)
 
 - Target `192.168.50.237:12345` retained its existing data and account state.

@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d1-nexte-production-reader",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d1/07-nexte-production",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "NextE D1 build2 safe-area",
+    "page": "ordinary Detail continue action still opens production Reader",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Current foreground and physical identity before optional reader lab install; no data clear or account changes."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      {
+        "name": "ordinary-continue-reader",
+        "uiInput": [
+          "click",
+          "1120",
+          "2004"
+        ],
+        "pauseAfterMs": 2000
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d1-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d1-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d1-layout.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d1/07-nexte-production/layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d1-screen.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d1/07-nexte-production/screen.png"
+      ]
+    },
+    {
+      "name": "return-from-production-reader",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "uiInput",
+        "keyEvent",
+        "Back"
+      ],
+      "pauseAfterMs": 1000
+    }
+  ]
+}

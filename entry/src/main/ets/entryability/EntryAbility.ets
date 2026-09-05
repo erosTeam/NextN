@@ -1,4 +1,5 @@
 import { AbilityConstant, Configuration, UIAbility, Want } from '@kit.AbilityKit'
+import { captureReaderLabWant } from '@reader-kit/ui'
 import { window } from '@kit.ArkUI'
 import { webview } from '@kit.ArkWeb'
 import {
@@ -78,6 +79,7 @@ export default class EntryAbility extends UIAbility {
   private lastAccountProbeStartedAt: number = 0
 
   onCreate(want: Want, _launchParam: AbilityConstant.LaunchParam): void {
+    captureReaderLabWant(want, this.context.applicationInfo.debug)
     this.galleryDirectLaunchIdAtLaunch = this.galleryDirectLaunchId(want)
     this.galleryDirectLaunchCommentsAtLaunch = this.galleryDirectLaunchWantsComments(want)
     const recoveryValue: Object | undefined = want.parameters?.['nextn_login_recovery']
@@ -335,6 +337,7 @@ export default class EntryAbility extends UIAbility {
   }
 
   onNewWant(want: Want, _launchParam: AbilityConstant.LaunchParam): void {
+    captureReaderLabWant(want, this.context.applicationInfo.debug)
     if (connectSafeMode().restricted()) {
       return
     }

@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d1-nextn-safearea",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d1/03-nextn-safearea",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "NextN D1 safe-area build4",
+    "page": "debug-only long-strip original",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Current foreground and physical identity before optional reader lab install; no data clear or account changes."
+  },
+  "preflight": [
+    {
+      "name": "verify-awake-before-install",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "install-nextn",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"
+      ],
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "cold-stop",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "force-stop",
+        "com.erosteam.nextn"
+      ]
+    },
+    {
+      "name": "open-explicit-debug-route",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "start",
+        "-a",
+        "EntryAbility",
+        "-b",
+        "com.erosteam.nextn",
+        "--ps",
+        "readerLabWork",
+        "678049"
+      ],
+      "pauseAfterMs": 5000
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "noninteractive-boundary",
+        "uiInput": [
+          "click",
+          "1",
+          "1"
+        ]
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d1-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d1-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d1-layout.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d1/03-nextn-safearea/layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d1-screen.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d1/03-nextn-safearea/screen.png"
+      ]
+    }
+  ]
+}

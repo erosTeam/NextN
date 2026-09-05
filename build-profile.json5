@@ -23,6 +23,8 @@
     ]
   },
   "modules": [
+    { "name": "reader_core", "srcPath": "../reader-kit/reader-core" },
+    { "name": "reader_ui", "srcPath": "../reader-kit/reader-ui" },
     {
       "name": "entry",
       "srcPath": "./entry"
