@@ -10535,3 +10535,27 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Next evidence:** on target 237, capture the current long-strip Reader rail and the same gallery's compact detail
   rail, then map actual asset dimensions, tile bounds and fit/clipping before another source edit. Closure requires
   the Reader thumbnail's visible proportion to match the cropped NH preview rather than the full strip page.
+
+## CLOSED / DEVICE PASS — Detail thumbnail rail browses every page — 2026-09-05
+
+- **Why newly actionable:** the user explicitly requests horizontal automatic loading beyond the first six
+  thumbnails so the entire gallery can be browsed within Detail.
+- **Source cause:** `GalleryDetailPage.compactPreviewPages()` slices the already-complete `detail.pages` to six.
+- **Whole parent boundary:** retained HDS Detail -> vertical `PullRefreshListScaffold` -> preview section -> fixed-height
+  horizontal List -> existing compact tile. Header/count/View all, tags above, related content below, tile geometry,
+  page labels and Reader transition/index ownership stay in their existing positions.
+- **Exact change:** replace the six-item eager `ForEach` with the existing thumbnail `IDataSource` and `LazyForEach`
+  over all pages, caching two adjacent tiles. Metadata refresh updates that source; returning from Reader with the
+  same array does not reload it. No new server pagination is necessary because Detail already owns every page URL.
+- **Current baseline:** 237 / VDE-AL00, portrait screen 1320x2120, native NextN root `[0,117][1320,2120]`;
+  the horizontal rail is `[36,937][1284,1429]`, showing pages 1-4 and total 14 in Gallery 678049.
+  Screenshot and current foreground/power readbacks: `.hvigor/outputs/detail-thumbnail-rail-20260905/baseline/`.
+- **Accepted evidence:** signed build `BUILD SUCCESSFUL in 10 s 523 ms`; installed in place on exact 237 with no
+  data clear. `candidate-leading` preserves the leading pages 1-4, tile dimensions and parent section structure;
+  its vertical swipe settled 6px below baseline, with no geometry change within the rail. `past-six` visibly shows
+  pages 8-11; `last-page` shows pages 11-14 and the final inset. Both retain the same `[36,943][1284,1435]` rail.
+  `open-last` shows Reader `14 / 14`; `return` restores pages 11-14 with identical rail and label bounds.
+  `view-all` reaches the native all-thumbnail Grid. These current screenshots were visually inspected with the
+  expected native NextN foreground and portrait viewport. Evidence: `.hvigor/outputs/detail-thumbnail-rail-20260905/`.
+- **Freeze boundary:** full-array lazy rail, existing tile geometry, canonical Reader index, retained scroll position
+  and header route are accepted for this path. No new UI static matcher was used as acceptance evidence.

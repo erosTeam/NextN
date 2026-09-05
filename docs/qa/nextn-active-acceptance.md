@@ -6299,3 +6299,18 @@ permitted in this repository.
   current page and Auto translate without Share. `final-run/screen.png` shows the menu dismissed on the same Reader
   page with `com.erosteam.nextn` foreground. No Share action was invoked and no Reader setting was changed. Evidence
   is under `.hvigor/outputs/reader-share-affordance-237-20260905/`.
+
+## Detail thumbnail rail — 237 device accepted — 2026-09-05
+
+- User outcome: scroll horizontally through all thumbnails directly in compact Detail, automatically loading later
+  images. Existing thumbnail geometry and View all entry remain the reference.
+- Current source confirms a six-page slice despite complete metadata. Current 237 baseline captured Gallery 678049
+  in native NextN with pages 1-4 visible, total 14, root `[0,117][1320,2120]` and rail `[36,937][1284,1429]`.
+- Implemented `LazyForEach` with the existing thumbnail data source over all pages and two cached adjacent tiles.
+  The final signed build passed in 10 s 523 ms and was installed in place without clearing data.
+- Current 237 evidence: leading tiles retain their geometry; horizontal swipes show pages 8-11, then 11-14;
+  selecting page14 enters Reader at `14 / 14`; Back restores the same pages 11-14 and identical rail/label bounds.
+  View all opens the native Grid. Native Detail root is `[0,117][1320,2120]`; the installed rail is
+  `[36,943][1284,1435]`. Screenshots were actually reviewed, and power readbacks retained AWAKE/86400000ms.
+- Evidence: `.hvigor/outputs/detail-thumbnail-rail-20260905/`. The requested browse-all/Reader-return/View-all path
+  has no remaining unverified action. This does not claim a new refresh, rotation or performance benchmark.

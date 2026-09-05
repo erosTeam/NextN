@@ -90,6 +90,7 @@ import { appSheetOptions, EhImageKnifeImage, EH_IMAGE_PRIORITY_LOW } from 'share
 import { GalleryChromeState } from '../state/GalleryChromeState'
 import { GalleryThumbnailsChromeState } from '../state/GalleryThumbnailsChromeState'
 import { GalleryThumbnailGridContent } from '../components/GalleryThumbnailGridContent'
+import { GalleryVirtualPageThumbnailDataSource } from '../components/GalleryVirtualPageThumbnail'
 import {
   GalleryCompactPreviewTile,
   GALLERY_COMPACT_PREVIEW_IMAGE_HEIGHT,
@@ -104,10 +105,6 @@ const DETAIL_TITLE_REVEAL_OFFSET: number = 160
 // detail pane only becomes a workspace after HDS has actually resolved the
 // root to Split and the real secondary pane can comfortably hold both halves.
 const GALLERY_DETAIL_WIDE_WORKSPACE_MIN_WIDTH: number = 720
-// Compact detail intentionally mounts only a bounded, non-scrollable preview
-// peek inside its metadata List. The full virtualised page browser remains a
-// separate destination, while a page tile still carries its real Reader index.
-const GALLERY_COMPACT_PREVIEW_LIMIT: number = 6
 const TITLE_TRANSLATION_ACTION_SIZE: number = 30
 const TITLE_TRANSLATION_ICON_SIZE: number = 16
 const TITLE_TRANSLATION_ENGLISH: string = 'english'
@@ -391,8 +388,12 @@ export struct GalleryDetailPage {
   // reference wide workspace keeps full-thumbnail browsing independent.
   private widePreviewScroller: Scroller = new Scroller()
   private widePreviewChrome: GalleryThumbnailsChromeState = new GalleryThumbnailsChromeState()
+  private compactPreviewDataSource: GalleryVirtualPageThumbnailDataSource =
+    new GalleryVirtualPageThumbnailDataSource()
+  private appliedCompactPreviewPages: NhGalleryPage[] | undefined = undefined
 
   aboutToAppear(): void {
+    this.syncCompactPreviewPages()
     this.resetNavigationChromeForCurrentRoute()
     this.publishWideThumbnailActionAvailability()
     if (!this.readerOverlay.visible) {
@@ -3299,9 +3300,9 @@ export struct GalleryDetailPage {
   }
 
   /**
-   * Compact detail follows ErosN's single all-thumbnails entry plus a bounded
-   * horizontal first-page rail. The tiles retain their actual zero-based
-   * Reader index; the section header is the sole route to all thumbnails.
+   * Compact detail keeps its horizontal rail and separate all-thumbnails entry.
+   * Every page is reachable, but only visible and adjacent tiles are mounted.
+   * The tiles retain their actual zero-based Reader index.
    */
   private shouldShowCompactPreview(): boolean {
     return !this.usesWideDetailWorkspace() && this.canOpenThumbnails()
@@ -3314,12 +3315,23 @@ export struct GalleryDetailPage {
       this.detail.pages.length === 0
   }
 
-  private compactPreviewPages(): NhGalleryPage[] {
-    return this.detail.pages.slice(0, GALLERY_COMPACT_PREVIEW_LIMIT)
+  @Monitor('detail')
+  onCompactPreviewPagesChanged(): void {
+    this.syncCompactPreviewPages()
+  }
+
+  private syncCompactPreviewPages(): void {
+    // The retained Detail also appears when Reader closes. Reload only when
+    // its page payload changes, so the horizontal position survives return.
+    if (this.appliedCompactPreviewPages === this.detail.pages) {
+      return
+    }
+    this.appliedCompactPreviewPages = this.detail.pages
+    this.compactPreviewDataSource.setData(this.detail.pages)
   }
 
   private compactPreviewPageKey(page: NhGalleryPage, pageIndex: number): string {
-    return `compact_preview_${pageIndex}_${page.number}`
+    return `compact_preview_${this.galleryId}_${pageIndex}_${page.number}_${page.thumbnailUrl}_${page.width}_${page.height}`
   }
 
   @Builder
@@ -3357,7 +3369,7 @@ export struct GalleryDetailPage {
           this.openThumbnails()
         })
         List({ space: ThemeTokens.SPACE_SM }) {
-          ForEach(this.compactPreviewPages(), (page: NhGalleryPage, pageIndex: number): void => {
+          LazyForEach(this.compactPreviewDataSource, (page: NhGalleryPage, pageIndex: number): void => {
             ListItem() {
               GalleryCompactPreviewTile({
                 page: page,
@@ -3373,7 +3385,7 @@ export struct GalleryDetailPage {
             }
             .margin({
               left: pageIndex === 0 ? ThemeTokens.SPACE_MD : 0,
-              right: pageIndex === this.compactPreviewPages().length - 1 ? ThemeTokens.SPACE_MD : 0,
+              right: pageIndex === this.detail.pages.length - 1 ? ThemeTokens.SPACE_MD : 0,
             })
             .onVisibleAreaChange([0.0, 1.0], (isExpanding: boolean, currentRatio: number): void => {
               const sourceId: string = ReaderThumbnailTransitionCoordinator.sourceId(
@@ -3390,6 +3402,7 @@ export struct GalleryDetailPage {
         .width('100%')
         .height(GALLERY_COMPACT_PREVIEW_IMAGE_HEIGHT + ThemeTokens.FONT_SIZE_TINY + ThemeTokens.SPACE_XS)
         .listDirection(Axis.Horizontal)
+        .cachedCount(2)
         .scrollBar(BarState.Off)
       }
       .width('100%')
