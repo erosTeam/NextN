@@ -371,10 +371,11 @@ export class ReaderPresentationService {
   }
 
   private static normalizeMode(mode: NhReaderMode): NhReaderMode {
-    if (mode === NhReaderMode.PAGED || mode === NhReaderMode.PAGED_RTL || mode === NhReaderMode.PAGED_VERTICAL) {
+    if (mode === NhReaderMode.VERTICAL || mode === NhReaderMode.PAGED ||
+      mode === NhReaderMode.PAGED_RTL || mode === NhReaderMode.PAGED_VERTICAL) {
       return mode
     }
-    return NhReaderMode.VERTICAL
+    return NhReaderMode.PAGED
   }
 
   private static normalizePreloadPages(value: number): number {

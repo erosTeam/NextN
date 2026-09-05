@@ -13,6 +13,14 @@ export enum NhReaderMode {
   PAGED_VERTICAL = 'paged_vertical',
 }
 
+/** Per-gallery page pairing parity for horizontal double-page reading. */
+export enum NhReaderColumnMode {
+  /** Page 1, 3, 5... starts a two-page spread. */
+  ODD_LEFT = 'odd_left',
+  /** Page 1 is a cover singleton; page 2, 4, 6... starts a spread. */
+  EVEN_LEFT = 'even_left',
+}
+
 /** Geometry of an eligible two-page Reader spread; page pairing remains separate. */
 export enum NhReaderSpreadLayout {
   JOINED = 'joined',
@@ -55,7 +63,7 @@ export const READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES: number[] = [1000
  * the current Reader route, source-page index, cache, and history boundary.
  */
 export class NhReaderPresentation {
-  mode: NhReaderMode = NhReaderMode.VERTICAL
+  mode: NhReaderMode = NhReaderMode.PAGED
   keepScreenOn: boolean = true
   preloadPages: number = 2
   /** Keep the canonical page range visible while Reader chrome is hidden. */

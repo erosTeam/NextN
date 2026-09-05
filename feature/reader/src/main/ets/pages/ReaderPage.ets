@@ -14,7 +14,9 @@ import {
   NhGalleryPage,
   NhTag,
   NhGalleryShareService,
+  NhReaderImageActionService,
   NhReaderBackgroundMode,
+  NhReaderColumnMode,
   NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderSpreadLayout,
@@ -45,6 +47,7 @@ import {
   CommentTranslationService,
   ReaderPresentationService,
   ReaderPresentationState,
+  ReaderSettingsRepository,
   ReaderOverlayNavigationState,
   ReaderThumbnailTransitionState,
   ReaderThumbnailTransitionCoordinator,
@@ -675,27 +678,68 @@ class ReaderSpreadResolver {
     return requested && ReaderSpreadResolver.supports(mode)
   }
 
-  static startForSourceIndex(sourceIndex: number, pageCount: number): number {
+  static spreadStarts(columnMode: NhReaderColumnMode, pageCount: number): number[] {
+    const result: number[] = []
+    if (pageCount <= 0) {
+      return result
+    }
+    if (columnMode === NhReaderColumnMode.EVEN_LEFT) {
+      result.push(0)
+      for (let sourceIndex: number = 1; sourceIndex < pageCount; sourceIndex += 2) {
+        result.push(sourceIndex)
+      }
+      return result
+    }
+    for (let sourceIndex: number = 0; sourceIndex < pageCount; sourceIndex += 2) {
+      result.push(sourceIndex)
+    }
+    return result
+  }
+
+  static startForSourceIndex(
+    columnMode: NhReaderColumnMode,
+    sourceIndex: number,
+    pageCount: number,
+  ): number {
     const normalized: number = Math.min(Math.max(0, Math.floor(sourceIndex)), Math.max(0, pageCount - 1))
+    if (columnMode === NhReaderColumnMode.EVEN_LEFT) {
+      return normalized <= 0 ? 0 : normalized - ((normalized + 1) % 2)
+    }
     return normalized - (normalized % 2)
   }
 
-  static secondForStart(startIndex: number, pageCount: number): number {
+  static secondForStart(
+    columnMode: NhReaderColumnMode,
+    startIndex: number,
+    pageCount: number,
+  ): number {
+    if (columnMode === NhReaderColumnMode.EVEN_LEFT && startIndex <= 0) {
+      return -1
+    }
     const candidate: number = startIndex + 1
     return candidate >= 0 && candidate < pageCount ? candidate : -1
   }
 
-  static containsSourceIndex(startIndex: number, sourceIndex: number, pageCount: number): boolean {
-    return sourceIndex === startIndex || sourceIndex === ReaderSpreadResolver.secondForStart(startIndex, pageCount)
+  static containsSourceIndex(
+    columnMode: NhReaderColumnMode,
+    startIndex: number,
+    sourceIndex: number,
+    pageCount: number,
+  ): boolean {
+    return sourceIndex === startIndex ||
+      sourceIndex === ReaderSpreadResolver.secondForStart(columnMode, startIndex, pageCount)
   }
 
-  static navigationStep(doublePage: boolean): number {
-    return doublePage ? 2 : 1
-  }
-
-  static normalizedNavigationIndex(sourceIndex: number, pageCount: number, doublePage: boolean): number {
+  static normalizedNavigationIndex(
+    columnMode: NhReaderColumnMode,
+    sourceIndex: number,
+    pageCount: number,
+    doublePage: boolean,
+  ): number {
     const normalized: number = Math.min(Math.max(0, Math.floor(sourceIndex)), Math.max(0, pageCount - 1))
-    return doublePage ? ReaderSpreadResolver.startForSourceIndex(normalized, pageCount) : normalized
+    return doublePage
+      ? ReaderSpreadResolver.startForSourceIndex(columnMode, normalized, pageCount)
+      : normalized
   }
 }
 
@@ -705,7 +749,7 @@ class ReaderSpreadResolver {
  * the source once, rather than starting an automatic retry loop.
  */
 @ComponentV2
-struct ReaderImagePage {
+struct ReaderImageSurfaceCore {
   @Require @Param imageUrl: string
   @Require @Param cacheKey: string
   @Param localImageUri: string = ''
@@ -719,7 +763,6 @@ struct ReaderImagePage {
   @Param canvasContentColor: ResourceColor = READER_FOREGROUND_DARK_CANVAS
   @Param canvasSecondaryContentColor: ResourceColor = READER_SECONDARY_FOREGROUND_DARK_CANVAS
   @Param controlTint: ResourceColor = READER_CONTROL_TINT_DARK_CANVAS
-  @Param fillViewport: boolean = false
   @Param imageWidth: number = 0
   @Param imageHeight: number = 0
   @Param pageIndex: number = -1
@@ -736,6 +779,7 @@ struct ReaderImagePage {
   @Event onImageFailureStateChanged?: (pageIndex: number, failed: boolean) => void
   @Event onSourceFileReady?: (pageIndex: number, localPath: string) => void
   @Event onEnhancementStateChanged?: (pageIndex: number, processing: boolean, applied: boolean) => void
+  @Event onAspectRatioChanged?: (ratio: number) => void
   @Local hasLoadError: boolean = false
   @Local isRetrying: boolean = false
   @Local isLoading: boolean = true
@@ -1067,6 +1111,7 @@ struct ReaderImagePage {
   private resetCropBounds(): void {
     this.cropRequestKey = ''
     this.cropBounds = ReaderPageCropBounds.none()
+    this.notifyAspectRatioChanged()
   }
 
   private async updateCropBounds(filePath: string): Promise<void> {
@@ -1084,7 +1129,14 @@ struct ReaderImagePage {
     this.cropBounds = this.continuous
       ? detected.forContinuousPage(this.pageIndex + 1, this.totalPages)
       : detected
+    this.notifyAspectRatioChanged()
     this.clampZoomOffset()
+  }
+
+  private notifyAspectRatioChanged(): void {
+    if (this.onAspectRatioChanged) {
+      this.onAspectRatioChanged(this.imageAspectRatio())
+    }
   }
 
   private notifyZoom(): void {
@@ -1223,7 +1275,7 @@ struct ReaderImagePage {
       ReaderCroppedImage({
         src: this.imageSource,
         widthValue: '100%',
-        heightValue: this.fillViewport ? '100%' : 'auto',
+        heightValue: '100%',
         cropBounds: this.cropBounds,
         interpolation: readerImageInterpolation(this.imageScalingQuality),
         onComplete: (event?: ReaderImageLoadEvent): void => {
@@ -1233,6 +1285,7 @@ struct ReaderImagePage {
             bitmapWidth > 0 && bitmapHeight > 0) {
             this.intrinsicWidth = this.getUIContext().px2vp(bitmapWidth)
             this.intrinsicHeight = this.getUIContext().px2vp(bitmapHeight)
+            this.notifyAspectRatioChanged()
             this.clampZoomOffset()
           }
           this.hasLoadError = false
@@ -1270,8 +1323,7 @@ struct ReaderImagePage {
       this.ImageContent()
     }
     .width('100%')
-    .height(this.fillViewport ? '100%' : 'auto')
-    .aspectRatio(this.imageAspectRatio())
+    .height('100%')
     .backgroundColor(this.canvasColor)
     .clip(true)
     .onAreaChange((_previous: Area, current: Area): void => {
@@ -1366,6 +1418,175 @@ struct ReaderImagePage {
           }),
       ),
     )
+  }
+}
+
+/**
+ * Paged reading owns a full-viewport Contain surface. It deliberately exposes
+ * no aspect-ratio input, so a continuous-list placeholder can never override
+ * the Swiper's fixed viewport height again.
+ */
+@ComponentV2
+struct ReaderImagePage {
+  @Require @Param imageUrl: string
+  @Require @Param cacheKey: string
+  @Param localImageUri: string = ''
+  @Param renderedImageUri: string = ''
+  @Param enhancementEnabled: boolean = false
+  @Param enhancementModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
+  @Param enhancementMaxHeight: number = 2000
+  @Param imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
+  @Param canvasColor: ResourceColor = READER_BACKGROUND_BLACK
+  @Param canvasContentColor: ResourceColor = READER_FOREGROUND_DARK_CANVAS
+  @Param canvasSecondaryContentColor: ResourceColor = READER_SECONDARY_FOREGROUND_DARK_CANVAS
+  @Param controlTint: ResourceColor = READER_CONTROL_TINT_DARK_CANVAS
+  @Param imageWidth: number = 0
+  @Param imageHeight: number = 0
+  @Param pageIndex: number = -1
+  @Param totalPages: number = 0
+  @Param cropBordersEnabled: boolean = false
+  @Param snapshotId: string = ''
+  @Param doubleTapSequence: number = 0
+  @Param doubleTapTargetIndex: number = -1
+  @Param doubleTapX: number = 0
+  @Param doubleTapY: number = 0
+  @Event onZoomChange?: (zoomed: boolean) => void
+  @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
+  @Event onImageFailureStateChanged?: (pageIndex: number, failed: boolean) => void
+  @Event onSourceFileReady?: (pageIndex: number, localPath: string) => void
+  @Event onEnhancementStateChanged?: (pageIndex: number, processing: boolean, applied: boolean) => void
+
+  build() {
+    Stack({ alignContent: Alignment.Center }) {
+      ReaderImageSurfaceCore({
+        imageUrl: this.imageUrl,
+        cacheKey: this.cacheKey,
+        localImageUri: this.localImageUri,
+        renderedImageUri: this.renderedImageUri,
+        enhancementEnabled: this.enhancementEnabled,
+        enhancementModel: this.enhancementModel,
+        enhancementMaxHeight: this.enhancementMaxHeight,
+        imageScalingQuality: this.imageScalingQuality,
+        canvasColor: this.canvasColor,
+        canvasContentColor: this.canvasContentColor,
+        canvasSecondaryContentColor: this.canvasSecondaryContentColor,
+        controlTint: this.controlTint,
+        imageWidth: this.imageWidth,
+        imageHeight: this.imageHeight,
+        pageIndex: this.pageIndex,
+        totalPages: this.totalPages,
+        continuous: false,
+        cropBordersEnabled: this.cropBordersEnabled,
+        snapshotId: this.snapshotId,
+        doubleTapSequence: this.doubleTapSequence,
+        doubleTapTargetIndex: this.doubleTapTargetIndex,
+        doubleTapX: this.doubleTapX,
+        doubleTapY: this.doubleTapY,
+        onZoomChange: this.onZoomChange,
+        onImageLoadStateChanged: this.onImageLoadStateChanged,
+        onImageFailureStateChanged: this.onImageFailureStateChanged,
+        onSourceFileReady: this.onSourceFileReady,
+        onEnhancementStateChanged: this.onEnhancementStateChanged,
+      })
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(this.canvasColor)
+    .clip(true)
+  }
+}
+
+/**
+ * Continuous reading is the only owner of width-derived intrinsic-ratio
+ * geometry. The stateful image pipeline remains shared with paged reading,
+ * while this wrapper alone controls the ListItem height.
+ */
+@ComponentV2
+struct ReaderVerticalImage {
+  @Require @Param imageUrl: string
+  @Require @Param cacheKey: string
+  @Param localImageUri: string = ''
+  @Param renderedImageUri: string = ''
+  @Param enhancementEnabled: boolean = false
+  @Param enhancementModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
+  @Param enhancementMaxHeight: number = 2000
+  @Param imageScalingQuality: NhReaderImageScalingQuality = NhReaderImageScalingQuality.MEDIUM
+  @Param canvasColor: ResourceColor = READER_BACKGROUND_BLACK
+  @Param canvasContentColor: ResourceColor = READER_FOREGROUND_DARK_CANVAS
+  @Param canvasSecondaryContentColor: ResourceColor = READER_SECONDARY_FOREGROUND_DARK_CANVAS
+  @Param controlTint: ResourceColor = READER_CONTROL_TINT_DARK_CANVAS
+  @Param imageWidth: number = 0
+  @Param imageHeight: number = 0
+  @Param pageIndex: number = -1
+  @Param totalPages: number = 0
+  @Param cropBordersEnabled: boolean = false
+  @Param snapshotId: string = ''
+  @Param doubleTapSequence: number = 0
+  @Param doubleTapTargetIndex: number = -1
+  @Param doubleTapX: number = 0
+  @Param doubleTapY: number = 0
+  @Event onZoomChange?: (zoomed: boolean) => void
+  @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
+  @Event onImageFailureStateChanged?: (pageIndex: number, failed: boolean) => void
+  @Event onSourceFileReady?: (pageIndex: number, localPath: string) => void
+  @Event onEnhancementStateChanged?: (pageIndex: number, processing: boolean, applied: boolean) => void
+  @Local imageAspectRatio: number = 1
+
+  aboutToAppear(): void {
+    this.restoreDeclaredAspectRatio()
+  }
+
+  @Monitor('imageWidth', 'imageHeight')
+  onDeclaredSizeChanged(): void {
+    this.restoreDeclaredAspectRatio()
+  }
+
+  private restoreDeclaredAspectRatio(): void {
+    this.imageAspectRatio = this.imageWidth > 0 && this.imageHeight > 0
+      ? this.imageWidth / this.imageHeight
+      : 1
+  }
+
+  build() {
+    Stack({ alignContent: Alignment.Center }) {
+      ReaderImageSurfaceCore({
+        imageUrl: this.imageUrl,
+        cacheKey: this.cacheKey,
+        localImageUri: this.localImageUri,
+        renderedImageUri: this.renderedImageUri,
+        enhancementEnabled: this.enhancementEnabled,
+        enhancementModel: this.enhancementModel,
+        enhancementMaxHeight: this.enhancementMaxHeight,
+        imageScalingQuality: this.imageScalingQuality,
+        canvasColor: this.canvasColor,
+        canvasContentColor: this.canvasContentColor,
+        canvasSecondaryContentColor: this.canvasSecondaryContentColor,
+        controlTint: this.controlTint,
+        imageWidth: this.imageWidth,
+        imageHeight: this.imageHeight,
+        pageIndex: this.pageIndex,
+        totalPages: this.totalPages,
+        continuous: true,
+        cropBordersEnabled: this.cropBordersEnabled,
+        snapshotId: this.snapshotId,
+        doubleTapSequence: this.doubleTapSequence,
+        doubleTapTargetIndex: this.doubleTapTargetIndex,
+        doubleTapX: this.doubleTapX,
+        doubleTapY: this.doubleTapY,
+        onZoomChange: this.onZoomChange,
+        onImageLoadStateChanged: this.onImageLoadStateChanged,
+        onImageFailureStateChanged: this.onImageFailureStateChanged,
+        onSourceFileReady: this.onSourceFileReady,
+        onEnhancementStateChanged: this.onEnhancementStateChanged,
+        onAspectRatioChanged: (ratio: number): void => {
+          this.imageAspectRatio = ratio > 0 ? ratio : 1
+        },
+      })
+    }
+    .width('100%')
+    .aspectRatio(this.imageAspectRatio)
+    .backgroundColor(this.canvasColor)
+    .clip(true)
   }
 }
 
@@ -2231,8 +2452,9 @@ class ReaderPageDataSource implements IDataSource {
 
 /**
  * One visual destination in double-page mode. Its `sourceIndex` is always
- * the canonical leading source page of `[0,1]`, `[2,3]`, and so on; a final
- * odd page deliberately stays as a singleton spread.
+ * the canonical start selected by ReaderSpreadResolver. Odd-left pairing
+ * starts at 0, 2, 4; even-left keeps page 0 single and starts at 1, 3, 5.
+ * Either layout may finish with a terminal singleton.
  */
 class ReaderSpreadItem {
   readonly first: ReaderPagedItem
@@ -2260,12 +2482,14 @@ class ReaderSpreadDataSource implements IDataSource {
   private items: ReaderSpreadItem[] = []
   private listeners: DataChangeListener[] = []
 
-  setData(pages: NhGalleryPage[], reverse: boolean): void {
+  setData(pages: NhGalleryPage[], reverse: boolean, columnMode: NhReaderColumnMode): void {
     const canonical: ReaderSpreadItem[] = []
-    for (let sourceIndex: number = 0; sourceIndex < pages.length; sourceIndex += 2) {
+    const starts: number[] = ReaderSpreadResolver.spreadStarts(columnMode, pages.length)
+    for (let index: number = 0; index < starts.length; index += 1) {
+      const sourceIndex: number = starts[index]
       const first: ReaderPagedItem = new ReaderPagedItem(pages[sourceIndex], sourceIndex)
-      const secondIndex: number = sourceIndex + 1
-      const second: ReaderPagedItem | null = secondIndex < pages.length
+      const secondIndex: number = ReaderSpreadResolver.secondForStart(columnMode, sourceIndex, pages.length)
+      const second: ReaderPagedItem | null = secondIndex >= 0
         ? new ReaderPagedItem(pages[secondIndex], secondIndex)
         : null
       canonical.push(new ReaderSpreadItem(first, second))
@@ -2467,6 +2691,10 @@ export struct ReaderPage {
   @Local readerModeMenuShown: boolean = false
   @Local readerOverflowMenuShown: boolean = false
   @Local readerSettingsSheetShown: boolean = false
+  @Local readerSaveSpreadMenuShown: boolean = false
+  @Local savingReaderImages: boolean = false
+  /** Gallery-local horizontal spread pairing, independent from global Reader presentation. */
+  @Local readerColumnMode: NhReaderColumnMode = NhReaderColumnMode.ODD_LEFT
   // A slider drag previews a one-based source-page number. It must not move
   // the Reader or write history until the Slider's End event commits it.
   @Local readerSliderValue: number = 1
@@ -2781,25 +3009,37 @@ export struct ReaderPage {
 
   private readerNavigationIndex(sourceIndex: number): number {
     return ReaderSpreadResolver.normalizedNavigationIndex(
+      this.readerColumnMode,
       sourceIndex,
       this.detail.pages.length,
       this.isDoublePageActive(),
     )
   }
 
-  private readerNavigationStep(): number {
-    return ReaderSpreadResolver.navigationStep(this.isDoublePageActive())
+  private readerAdjacentNavigationIndex(sourceIndex: number, offset: number): number {
+    const currentIndex: number = this.readerNavigationIndex(sourceIndex)
+    if (!this.isDoublePageActive()) {
+      const target: number = currentIndex + (offset < 0 ? -1 : 1)
+      return target >= 0 && target < this.detail.pages.length ? target : -1
+    }
+    const starts: number[] = ReaderSpreadResolver.spreadStarts(this.readerColumnMode, this.detail.pages.length)
+    const currentPosition: number = starts.indexOf(currentIndex)
+    if (currentPosition < 0) {
+      return -1
+    }
+    const targetPosition: number = currentPosition + (offset < 0 ? -1 : 1)
+    return targetPosition >= 0 && targetPosition < starts.length ? starts[targetPosition] : -1
   }
 
   private readerProgressStep(): number {
-    return this.isDoublePageActive() && this.detail.pages.length > 2 ? 2 : 1
+    return 1
   }
 
   private readerSpreadSecondIndex(startIndex: number): number {
     if (!this.isDoublePageActive()) {
       return -1
     }
-    return ReaderSpreadResolver.secondForStart(startIndex, this.detail.pages.length)
+    return ReaderSpreadResolver.secondForStart(this.readerColumnMode, startIndex, this.detail.pages.length)
   }
 
   private isSourceIndexInCurrentSpread(sourceIndex: number): boolean {
@@ -2807,7 +3047,12 @@ export struct ReaderPage {
     if (!this.isDoublePageActive()) {
       return sourceIndex === currentStart
     }
-    return ReaderSpreadResolver.containsSourceIndex(currentStart, sourceIndex, this.detail.pages.length)
+    return ReaderSpreadResolver.containsSourceIndex(
+      this.readerColumnMode,
+      currentStart,
+      sourceIndex,
+      this.detail.pages.length,
+    )
   }
 
   /**
@@ -2818,7 +3063,11 @@ export struct ReaderPage {
   private rebuildReaderPageDataSources(sourceIndex: number): void {
     const currentIndex: number = this.readerNavigationIndex(sourceIndex)
     this.pageDataSource.setData(this.detail.pages, this.isRightToLeftPagedMode())
-    this.spreadDataSource.setData(this.detail.pages, this.isRightToLeftPagedMode())
+    this.spreadDataSource.setData(
+      this.detail.pages,
+      this.isRightToLeftPagedMode(),
+      this.readerColumnMode,
+    )
     this.resumeIndex = currentIndex
     this.visiblePageIndex = currentIndex
     this.readerSliderPreview = -1
@@ -3047,6 +3296,7 @@ export struct ReaderPage {
     this.showThumbnailStrip = false
     this.readerSliderValue = 1
     this.readerSliderPreview = -1
+    this.readerColumnMode = NhReaderColumnMode.ODD_LEFT
     this.lastPersistedIndex = -1
     this.loadedImageIndexes = []
     this.failedImageIndexes = []
@@ -3065,7 +3315,7 @@ export struct ReaderPage {
     this.restoreComicVisualRouteIdentity()
     this.detail = new NhGalleryDetail()
     this.pageDataSource.setData([], false)
-    this.spreadDataSource.setData([], false)
+    this.spreadDataSource.setData([], false, this.readerColumnMode)
     this.thumbnailDataSource.setData([])
     try {
       const savedDetail: NhGalleryDetail | null = await DownloadQueueService.localReaderDetail(
@@ -3108,7 +3358,12 @@ export struct ReaderPage {
         // leading source page. Publication is deliberately deferred until
         // Reader owns a rendered presentation frame; it never happens at the
         // thumbnail click, route request, or close boundary.
+        this.readerColumnMode = await ReaderSettingsRepository.columnMode(this.context(), detail.id)
+        if (!this.isCurrentRequest(generation)) {
+          return
+        }
         restoredIndex = ReaderSpreadResolver.normalizedNavigationIndex(
+          this.readerColumnMode,
           restoredIndex,
           detail.pages.length,
           this.isDoublePageActive(),
@@ -3340,9 +3595,8 @@ export struct ReaderPage {
     if (!this.isReaderReadyForCurrentGallery || this.zoomedPageIndex >= 0 || offset === 0) {
       return
     }
-    const currentIndex: number = this.readerNavigationIndex(this.visiblePageIndex)
-    const target: number = currentIndex + (offset < 0 ? -this.readerNavigationStep() : this.readerNavigationStep())
-    if (target < 0 || target >= this.detail.pages.length) {
+    const target: number = this.readerAdjacentNavigationIndex(this.visiblePageIndex, offset)
+    if (target < 0) {
       return
     }
     this.clearAutoReadTimer()
@@ -3410,6 +3664,290 @@ export struct ReaderPage {
     this.rebuildReaderPageDataSources(currentIndex)
     this.scrollThumbnailStripTo(this.visiblePageIndex, false)
     this.scheduleReaderPreload(this.visiblePageIndex)
+  }
+
+  private isHorizontalPagedMode(): boolean {
+    return this.readerPresentation.mode === NhReaderMode.PAGED ||
+      this.readerPresentation.mode === NhReaderMode.PAGED_RTL
+  }
+
+  private toggleDoublePage(): void {
+    if (!this.isHorizontalPagedMode()) {
+      return
+    }
+    ReaderPresentationService.setDoublePageEnabled(
+      this.context(),
+      !this.readerPresentation.doublePageEnabled,
+    ).catch((): void => {
+      this.showReaderOverflowToast('settings_reader_double_page_save_failed')
+    })
+  }
+
+  private showOnePageStepButton(): boolean {
+    return this.isHorizontalPagedMode() && this.readerPresentation.doublePageEnabled
+  }
+
+  private canTurnOnePageInDoublePage(): boolean {
+    return this.showOnePageStepButton() &&
+      this.readerNavigationIndex(this.visiblePageIndex) + 1 < this.detail.pages.length
+  }
+
+  private columnModeForSpreadStart(index: number): NhReaderColumnMode {
+    return index <= 0 || index % 2 === 0
+      ? NhReaderColumnMode.ODD_LEFT
+      : NhReaderColumnMode.EVEN_LEFT
+  }
+
+  private turnOnePageInDoublePage(): void {
+    if (!this.canTurnOnePageInDoublePage()) {
+      return
+    }
+    const target: number = this.readerNavigationIndex(this.visiblePageIndex) + 1
+    this.readerColumnMode = this.columnModeForSpreadStart(target)
+    this.clearZoomForNavigation()
+    this.rebuildReaderPageDataSources(target)
+    this.turnToReaderPage(target, true)
+    this.scrollThumbnailStripTo(target, true)
+    this.scheduleReaderPreload(target)
+    ReaderSettingsRepository.saveColumnMode(
+      this.context(),
+      this.galleryId,
+      this.readerColumnMode,
+    ).catch((): void => {
+      this.showReaderOverflowToast('reader_column_mode_save_failed')
+    })
+  }
+
+  private cropBordersEnabledForCurrentMode(): boolean {
+    return this.readerPresentation.mode === NhReaderMode.VERTICAL
+      ? this.readerPresentation.cropBordersContinuous
+      : this.readerPresentation.cropBordersPaged
+  }
+
+  private toggleCropBordersForCurrentMode(): void {
+    if (this.readerPresentation.mode === NhReaderMode.VERTICAL) {
+      ReaderPresentationService.setCropBordersContinuous(
+        this.context(),
+        !this.readerPresentation.cropBordersContinuous,
+      ).catch((): void => {
+        this.showReaderOverflowToast('settings_reader_crop_borders_save_failed')
+      })
+      return
+    }
+    ReaderPresentationService.setCropBordersPaged(
+      this.context(),
+      !this.readerPresentation.cropBordersPaged,
+    ).catch((): void => {
+      this.showReaderOverflowToast('settings_reader_crop_borders_save_failed')
+    })
+  }
+
+  private readerActionLocalPath(pageIndex: number): string {
+    const translatedUri: string = this.readerTranslatedImageUri(pageIndex)
+    if (translatedUri.length > 0) {
+      return readerLocalFilePath(translatedUri)
+    }
+    const sourcePath: string = this.readerSourceFilePath(pageIndex)
+    if (sourcePath.length > 0) {
+      return sourcePath
+    }
+    if (pageIndex < 0 || pageIndex >= this.detail.pages.length) {
+      return ''
+    }
+    return readerLocalFilePath(this.localImageUri(this.detail.pages[pageIndex], pageIndex))
+  }
+
+  private readerActionRemoteUrl(pageIndex: number): string {
+    if (pageIndex < 0 || pageIndex >= this.detail.pages.length) {
+      return ''
+    }
+    const page: NhGalleryPage = this.detail.pages[pageIndex]
+    return NhApiClient.imageUrl(this.detail.mediaId, pageIndex, page.extension)
+  }
+
+  private async ensureReaderActionLocalPath(pageIndex: number): Promise<string> {
+    const existing: string = this.readerActionLocalPath(pageIndex)
+    if (NhReaderImageActionService.fileSize(existing) > 0) {
+      return existing
+    }
+    if (pageIndex < 0 || pageIndex >= this.detail.pages.length) {
+      return ''
+    }
+    const page: NhGalleryPage = this.detail.pages[pageIndex]
+    try {
+      const result: ReaderImageCacheResult = await ReaderImageCacheService.load(
+        this.context(),
+        this.readerActionRemoteUrl(pageIndex),
+        ReaderImageCacheService.cacheKey(this.detail.id, this.detail.mediaId, page.number, page.extension),
+      )
+      if (result.localPath.length > 0) {
+        this.rememberReaderSourceFile(pageIndex, result.localPath)
+      }
+      return result.localPath
+    } catch (_error) {
+      return ''
+    }
+  }
+
+  private readerActionTitle(pageIndex: number): string {
+    return `${this.detail.displayTitle()} ${pageIndex + 1}`.trim()
+  }
+
+  private async shareCurrentImage(): Promise<void> {
+    const pageIndex: number = this.readerNavigationIndex(this.visiblePageIndex)
+    if (pageIndex < 0 || pageIndex >= this.detail.pages.length) {
+      await this.shareCurrentGallery()
+      return
+    }
+    const localPath: string = this.readerActionLocalPath(pageIndex)
+    const shared: boolean = await NhReaderImageActionService.shareCurrentImage(
+      this.context(),
+      this.readerActionTitle(pageIndex),
+      NhReaderImageActionService.fileSize(localPath) > 0 ? localPath : '',
+      this.readerActionRemoteUrl(pageIndex),
+    )
+    if (!shared) {
+      await this.shareCurrentGallery()
+    }
+  }
+
+  private readerSpreadVisualLeftIndex(): number {
+    const start: number = this.readerNavigationIndex(this.visiblePageIndex)
+    const second: number = this.readerSpreadSecondIndex(start)
+    return this.isRightToLeftPagedMode() && second >= 0 ? second : start
+  }
+
+  private readerSpreadVisualRightIndex(): number {
+    const start: number = this.readerNavigationIndex(this.visiblePageIndex)
+    const second: number = this.readerSpreadSecondIndex(start)
+    if (second < 0) {
+      return -1
+    }
+    return this.isRightToLeftPagedMode() ? start : second
+  }
+
+  private readerSpreadVisualIndexes(): number[] {
+    const result: number[] = []
+    const left: number = this.readerSpreadVisualLeftIndex()
+    if (left >= 0 && left < this.detail.pages.length) {
+      result.push(left)
+    }
+    const right: number = this.readerSpreadVisualRightIndex()
+    if (right >= 0 && right < this.detail.pages.length) {
+      result.push(right)
+    }
+    return result
+  }
+
+  private hasTwoReaderSpreadActions(): boolean {
+    return this.isDoublePageActive() && this.readerSpreadVisualIndexes().length > 1
+  }
+
+  private readerSpreadPageLabel(key: string, pageIndex: number): string {
+    return AppStrings.format(key, [`${pageIndex + 1}`])
+  }
+
+  private saveReaderImagesAtIndexes(pageIndexes: number[]): void {
+    if (this.savingReaderImages || pageIndexes.length === 0) {
+      return
+    }
+    this.savingReaderImages = true
+    this.saveReaderImagesSequential(pageIndexes).finally((): void => {
+      this.savingReaderImages = false
+    })
+  }
+
+  private async saveReaderImagesSequential(pageIndexes: number[]): Promise<void> {
+    for (let position: number = 0; position < pageIndexes.length; position += 1) {
+      const pageIndex: number = pageIndexes[position]
+      if (pageIndex < 0 || pageIndex >= this.detail.pages.length) {
+        continue
+      }
+      const localPath: string = await this.ensureReaderActionLocalPath(pageIndex)
+      if (localPath.length === 0) {
+        this.showReaderOverflowToast('reader_save_no_image')
+        continue
+      }
+      try {
+        await NhReaderImageActionService.saveLocalImageToGallery(
+          this.context(),
+          localPath,
+          `${this.galleryId}-${pageIndex + 1}`,
+          this.detail.pages[pageIndex].extension,
+        )
+        this.showReaderOverflowToast('reader_save_success')
+      } catch (_error) {
+        this.showReaderOverflowToast('reader_save_failed')
+      }
+    }
+  }
+
+  private openReaderSaveAction(): void {
+    if (this.savingReaderImages) {
+      return
+    }
+    if (this.hasTwoReaderSpreadActions()) {
+      this.readerSaveSpreadMenuShown = true
+      return
+    }
+    this.saveReaderImagesAtIndexes([this.readerNavigationIndex(this.visiblePageIndex)])
+  }
+
+  private readerImageInfoCurrentText(pageIndex: number): string {
+    if (this.readerTranslatedImageUri(pageIndex).length > 0) {
+      return AppStrings.get('reader_image_info_translated')
+    }
+    const state: ReaderEnhancementPageState | undefined = this.enhancementStateForPage(pageIndex)
+    if (state !== undefined && state.applied) {
+      return AppStrings.get('reader_image_info_enhanced')
+    }
+    return AppStrings.get('reader_image_info_source_image')
+  }
+
+  private readerImageEnhancementText(pageIndex: number): string {
+    if (!this.readerEnhancementEnabled) {
+      return AppStrings.get('reader_image_info_enhancement_off')
+    }
+    const state: ReaderEnhancementPageState | undefined = this.enhancementStateForPage(pageIndex)
+    if (state !== undefined && state.processing) {
+      return AppStrings.get('reader_enhancement_processing')
+    }
+    if (state !== undefined && state.applied) {
+      return AppStrings.get('reader_enhancement_applied')
+    }
+    return AppStrings.get('reader_enhancement_not_applied')
+  }
+
+  private showReaderImageInfo(pageIndex: number): void {
+    if (pageIndex < 0 || pageIndex >= this.detail.pages.length) {
+      return
+    }
+    const page: NhGalleryPage = this.detail.pages[pageIndex]
+    const localPath: string = this.readerActionLocalPath(pageIndex)
+    const sizeText: string = NhReaderImageActionService.formatBytes(
+      NhReaderImageActionService.fileSize(localPath),
+    )
+    const sourceText: string = NhReaderImageActionService.fileSize(localPath) > 0
+      ? AppStrings.get('reader_image_info_local_cache')
+      : AppStrings.get('reader_image_info_nh_source')
+    const lines: string[] = [
+      AppStrings.format('reader_image_info_format', [page.extension.toUpperCase()]),
+      AppStrings.format('reader_image_info_size', [
+        sizeText.length > 0 ? sizeText : AppStrings.get('reader_image_info_unknown'),
+      ]),
+      AppStrings.format('reader_image_info_current', [this.readerImageInfoCurrentText(pageIndex)]),
+      AppStrings.format('reader_image_info_dimensions', [`${page.width}`, `${page.height}`]),
+      AppStrings.format('reader_image_info_enhancement', [this.readerImageEnhancementText(pageIndex)]),
+      AppStrings.format('reader_image_info_source', [sourceText]),
+    ]
+    this.getUIContext().showAlertDialog({
+      title: AppStrings.format('reader_image_info_title', [`${pageIndex + 1}`]),
+      message: lines.join('\n'),
+      primaryButton: {
+        value: AppStrings.get('common_ok'),
+        action: (): void => {},
+      },
+    })
   }
 
   /**
@@ -3507,12 +4045,26 @@ export struct ReaderPage {
   @Builder
   private ReaderOverflowMenu() {
     Menu() {
+      if (this.hasTwoReaderSpreadActions()) {
+        MenuItem({
+          content: AppStrings.get('reader_image_info'),
+          builder: (): void => this.ReaderImageInfoSubMenu(),
+        })
+      } else {
+        MenuItem({ content: AppStrings.get('reader_image_info') })
+          .onClick((): void => {
+            this.readerOverflowMenuShown = false
+            this.showReaderImageInfo(this.readerNavigationIndex(this.visiblePageIndex))
+          })
+      }
       MenuItem({
-        content: AppStrings.get('action_share'),
-        symbolStartIcon: new SymbolGlyphModifier($r('sys.symbol.share')),
+        content: AppStrings.get('reader_crop_borders'),
+        symbolEndIcon: this.cropBordersEnabledForCurrentMode()
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
       }).onClick((): void => {
         this.readerOverflowMenuShown = false
-        this.shareCurrentGallery()
+        this.toggleCropBordersForCurrentMode()
       })
       MenuItem({
         content: AppStrings.get('action_open_externally'),
@@ -3534,6 +4086,61 @@ export struct ReaderPage {
         .enabled(true)
         .onClick((): void => {
           this.toggleReaderTranslationAuto()
+        })
+    }
+  }
+
+  @Builder
+  private ReaderImageInfoSubMenu() {
+    Menu() {
+      this.ReaderImageInfoSpreadMenuItem(
+        this.readerSpreadVisualLeftIndex(),
+        'reader_spread_left_page',
+      )
+      this.ReaderImageInfoSpreadMenuItem(
+        this.readerSpreadVisualRightIndex(),
+        'reader_spread_right_page',
+      )
+    }
+  }
+
+  @Builder
+  private ReaderImageInfoSpreadMenuItem(pageIndex: number, labelKey: string) {
+    if (pageIndex >= 0 && pageIndex < this.detail.pages.length) {
+      MenuItem({ content: this.readerSpreadPageLabel(labelKey, pageIndex) })
+        .onClick((): void => {
+          this.readerOverflowMenuShown = false
+          this.showReaderImageInfo(pageIndex)
+        })
+    }
+  }
+
+  @Builder
+  private ReaderSaveSpreadMenu() {
+    Menu() {
+      this.ReaderSaveSpreadMenuItem(
+        this.readerSpreadVisualLeftIndex(),
+        'reader_spread_left_page',
+      )
+      this.ReaderSaveSpreadMenuItem(
+        this.readerSpreadVisualRightIndex(),
+        'reader_spread_right_page',
+      )
+      MenuItem({ content: AppStrings.get('reader_spread_save_both') })
+        .onClick((): void => {
+          this.readerSaveSpreadMenuShown = false
+          this.saveReaderImagesAtIndexes(this.readerSpreadVisualIndexes())
+        })
+    }
+  }
+
+  @Builder
+  private ReaderSaveSpreadMenuItem(pageIndex: number, labelKey: string) {
+    if (pageIndex >= 0 && pageIndex < this.detail.pages.length) {
+      MenuItem({ content: this.readerSpreadPageLabel(labelKey, pageIndex) })
+        .onClick((): void => {
+          this.readerSaveSpreadMenuShown = false
+          this.saveReaderImagesAtIndexes([pageIndex])
         })
     }
   }
@@ -4260,7 +4867,7 @@ export struct ReaderPage {
   }
 
   private nextAutoReadIndex(): number {
-    return this.readerNavigationIndex(this.visiblePageIndex) + this.readerNavigationStep()
+    return this.readerAdjacentNavigationIndex(this.visiblePageIndex, 1)
   }
 
   /**
@@ -4364,9 +4971,8 @@ export struct ReaderPage {
     }
     const offset: number = keyCode === KeyCode.KEYCODE_VOLUME_DOWN ? 1 :
       keyCode === KeyCode.KEYCODE_VOLUME_UP ? -1 : 0
-    const target: number = this.readerNavigationIndex(this.visiblePageIndex) +
-      (offset < 0 ? -this.readerNavigationStep() : this.readerNavigationStep())
-    if (offset === 0 || target < 0 || target >= this.detail.pages.length) {
+    const target: number = this.readerAdjacentNavigationIndex(this.visiblePageIndex, offset)
+    if (offset === 0 || target < 0) {
       return
     }
     this.clearAutoReadTimer()
@@ -4480,7 +5086,7 @@ export struct ReaderPage {
       return
     }
     const target: number = this.nextAutoReadIndex()
-    if (target >= this.detail.pages.length) {
+    if (target < 0 || target >= this.detail.pages.length) {
       this.stopAutoRead()
       return
     }
@@ -4633,6 +5239,18 @@ export struct ReaderPage {
           this.requestReaderClose()
         })
         Blank()
+        Button({ type: ButtonType.Circle }) {
+          SymbolGlyph($r('sys.symbol.share'))
+            .fontSize(22)
+            .fontColor([ThemeTokens.TEXT_ON_BRAND])
+        }
+        .width(44)
+        .height(44)
+        .backgroundColor(Color.Transparent)
+        .accessibilityText(AppStrings.get('reader_action_share_current_image'))
+        .onClick((): void => {
+          this.shareCurrentImage()
+        })
         // NextE puts Reader settings behind a direct top-bar gear button,
         // not inside the overflow menu as a text item.
         Button({ type: ButtonType.Circle }) {
@@ -4786,7 +5404,7 @@ export struct ReaderPage {
         this.pageDataSource,
         (item: ReaderPagedItem, _displayIndex: number): void => {
         ListItem() {
-          ReaderImagePage({
+          ReaderVerticalImage({
             imageUrl: NhApiClient.imageUrl(this.detail.mediaId, item.sourceIndex, item.page.extension),
             localImageUri: this.localImageUri(item.page, item.sourceIndex),
             renderedImageUri: this.readerTranslatedImageUri(item.sourceIndex),
@@ -4802,7 +5420,6 @@ export struct ReaderPage {
             imageHeight: item.page.height,
             pageIndex: item.sourceIndex,
             totalPages: this.detail.pages.length,
-            continuous: true,
             cropBordersEnabled: this.readerPresentation.cropBordersContinuous,
             snapshotId: this.readerPageSnapshotId(item.sourceIndex),
             doubleTapSequence: this.doubleTapSequence,
@@ -4896,7 +5513,6 @@ export struct ReaderPage {
                 item.page.number,
                 item.page.extension,
               ),
-              fillViewport: true,
             })
           }
           .width('100%')
@@ -5095,6 +5711,99 @@ export struct ReaderPage {
   private ReaderBottomToolbar() {
     Row({ space: ThemeTokens.SPACE_SM }) {
       Button({ type: ButtonType.Circle }) {
+        if (this.savingReaderImages) {
+          LoadingProgress()
+            .width(22)
+            .height(22)
+            .color(ThemeTokens.TEXT_ON_BRAND)
+        } else {
+          SymbolGlyph($r('sys.symbol.arrow_down_to_line'))
+            .fontSize(22)
+            .fontColor([ThemeTokens.TEXT_ON_BRAND])
+        }
+      }
+      .width(READER_BOTTOM_TOOLBAR_HEIGHT)
+      .height(READER_BOTTOM_TOOLBAR_HEIGHT)
+      .backgroundColor(Color.Transparent)
+      .enabled(!this.savingReaderImages)
+      .accessibilityText(AppStrings.get('reader_action_save_current_image'))
+      .onClick((): void => {
+        this.openReaderSaveAction()
+      })
+      .bindMenu(this.readerSaveSpreadMenuShown, this.ReaderSaveSpreadMenu, appMenuOptions({
+        placement: Placement.TopRight,
+        onDisappear: (): void => {
+          this.readerSaveSpreadMenuShown = false
+        },
+      }))
+      Button({ type: ButtonType.Circle }) {
+        SymbolGlyph($r('sys.symbol.clock'))
+          .fontSize(22)
+          .fontColor([this.autoReadActive ? ThemeTokens.BRAND : ThemeTokens.TEXT_ON_BRAND])
+      }
+      .width(READER_BOTTOM_TOOLBAR_HEIGHT)
+      .height(READER_BOTTOM_TOOLBAR_HEIGHT)
+      .backgroundColor(Color.Transparent)
+      .accessibilityText(this.autoReadActive
+        ? AppStrings.get('reader_action_stop_auto_advance')
+        : AppStrings.get('reader_action_start_auto_advance'))
+      .onClick((): void => {
+        this.toggleAutoRead()
+      })
+      Button({ type: ButtonType.Circle }) {
+        SymbolGlyph($r('sys.symbol.rectangle_grid_2x1'))
+          .fontSize(22)
+          .fontColor([this.showThumbnailStrip ? ThemeTokens.BRAND : ThemeTokens.TEXT_ON_BRAND])
+      }
+      .width(READER_BOTTOM_TOOLBAR_HEIGHT)
+      .height(READER_BOTTOM_TOOLBAR_HEIGHT)
+      .backgroundColor(Color.Transparent)
+      .accessibilityText(this.showThumbnailStrip
+        ? AppStrings.get('reader_action_hide_thumbnails')
+        : AppStrings.get('reader_action_show_thumbnails'))
+      .onClick((): void => {
+        this.toggleThumbnailStrip()
+      })
+      Blank()
+      if (this.showOnePageStepButton()) {
+        Button({ type: ButtonType.Circle }) {
+          SymbolGlyph($r('sys.symbol.transfer'))
+            .fontSize(22)
+            .fontColor([
+              this.canTurnOnePageInDoublePage()
+                ? ThemeTokens.TEXT_ON_BRAND
+                : ThemeTokens.TEXT_TERTIARY,
+            ])
+        }
+        .width(READER_BOTTOM_TOOLBAR_HEIGHT)
+        .height(READER_BOTTOM_TOOLBAR_HEIGHT)
+        .backgroundColor(Color.Transparent)
+        .enabled(this.canTurnOnePageInDoublePage())
+        .accessibilityText(AppStrings.get('reader_action_shift_spread_one_page'))
+        .onClick((): void => {
+          this.turnOnePageInDoublePage()
+        })
+      }
+      Button({ type: ButtonType.Circle }) {
+        SymbolGlyph($r('sys.symbol.book'))
+          .fontSize(22)
+          .fontColor([
+            !this.isHorizontalPagedMode()
+              ? ThemeTokens.TEXT_TERTIARY
+              : this.readerPresentation.doublePageEnabled
+                ? ThemeTokens.BRAND
+                : ThemeTokens.TEXT_ON_BRAND,
+          ])
+      }
+      .width(READER_BOTTOM_TOOLBAR_HEIGHT)
+      .height(READER_BOTTOM_TOOLBAR_HEIGHT)
+      .backgroundColor(Color.Transparent)
+      .enabled(this.isHorizontalPagedMode())
+      .accessibilityText(AppStrings.get('reader_action_toggle_double_page'))
+      .onClick((): void => {
+        this.toggleDoublePage()
+      })
+      Button({ type: ButtonType.Circle }) {
         SymbolGlyph(this.readerModeIcon(this.readerPresentation.mode))
           .fontSize(22)
           .fontColor([ThemeTokens.TEXT_ON_BRAND])
@@ -5112,35 +5821,6 @@ export struct ReaderPage {
           this.readerModeMenuShown = false
         },
       }))
-      Button({ type: ButtonType.Circle }) {
-        SymbolGlyph($r('sys.symbol.rectangle_grid_2x1'))
-          .fontSize(22)
-          .fontColor([this.showThumbnailStrip ? ThemeTokens.BRAND : ThemeTokens.TEXT_ON_BRAND])
-      }
-      .width(READER_BOTTOM_TOOLBAR_HEIGHT)
-      .height(READER_BOTTOM_TOOLBAR_HEIGHT)
-      .backgroundColor(Color.Transparent)
-      .accessibilityText(this.showThumbnailStrip
-        ? AppStrings.get('reader_action_hide_thumbnails')
-        : AppStrings.get('reader_action_show_thumbnails'))
-      .onClick((): void => {
-        this.toggleThumbnailStrip()
-      })
-      Button({ type: ButtonType.Circle }) {
-        SymbolGlyph($r('sys.symbol.clock'))
-          .fontSize(22)
-          .fontColor([this.autoReadActive ? ThemeTokens.BRAND : ThemeTokens.TEXT_ON_BRAND])
-      }
-      .width(READER_BOTTOM_TOOLBAR_HEIGHT)
-      .height(READER_BOTTOM_TOOLBAR_HEIGHT)
-      .backgroundColor(Color.Transparent)
-      .accessibilityText(this.autoReadActive
-        ? AppStrings.get('reader_action_stop_auto_advance')
-        : AppStrings.get('reader_action_start_auto_advance'))
-      .onClick((): void => {
-        this.toggleAutoRead()
-      })
-      Blank()
     }
     .width('100%')
     .height(READER_BOTTOM_TOOLBAR_HEIGHT)
@@ -5386,16 +6066,27 @@ export struct ReaderPage {
     }
     const generation: number = this.requestGeneration
     const currentStart: number = this.readerNavigationIndex(sourceIndex)
-    const spreadStep: number = this.readerNavigationStep()
+    const starts: number[] = this.isDoublePageActive()
+      ? ReaderSpreadResolver.spreadStarts(this.readerColumnMode, this.detail.pages.length)
+      : this.detail.pages.map((_page: NhGalleryPage, index: number): number => index)
+    const currentPosition: number = starts.indexOf(currentStart)
+    if (currentPosition < 0) {
+      return
+    }
     // In double-page mode this setting warms complete upcoming visual
     // destinations. It never preloads just one half of a spread.
     for (let destination: number = 1; destination <= preloadPages; destination += 1) {
-      const start: number = currentStart + destination * spreadStep
-      if (start >= this.detail.pages.length) {
+      const destinationPosition: number = currentPosition + destination
+      if (destinationPosition >= starts.length) {
         break
       }
-      const end: number = Math.min(this.detail.pages.length, start + spreadStep)
-      for (let index: number = start; index < end; index += 1) {
+      const start: number = starts[destinationPosition]
+      const second: number = this.isDoublePageActive()
+        ? ReaderSpreadResolver.secondForStart(this.readerColumnMode, start, this.detail.pages.length)
+        : -1
+      const pageIndexes: number[] = second >= 0 ? [start, second] : [start]
+      for (let pagePosition: number = 0; pagePosition < pageIndexes.length; pagePosition += 1) {
+        const index: number = pageIndexes[pagePosition]
         const page: NhGalleryPage = this.detail.pages[index]
         if (this.localImageUri(page, index).length > 0) {
           continue
@@ -5559,10 +6250,24 @@ struct ReaderThumbnailTile {
   @Require @Param currentIndex: number
   @Param selected: boolean = false
   @Event onSelect?: (sourceIndex: number) => void
+  @Local decodedThumbnailWidth: number = 0
+  @Local decodedThumbnailHeight: number = 0
+
+  @Monitor('page')
+  onThumbnailSourceChanged(): void {
+    this.decodedThumbnailWidth = 0
+    this.decodedThumbnailHeight = 0
+  }
 
   private thumbnailWidth(): number {
-    const aspect: number = this.page.width > 0 && this.page.height > 0
-      ? this.page.width / this.page.height
+    const sourceWidth: number = this.page.thumbnailWidth > 0
+      ? this.page.thumbnailWidth
+      : this.decodedThumbnailWidth
+    const sourceHeight: number = this.page.thumbnailHeight > 0
+      ? this.page.thumbnailHeight
+      : this.decodedThumbnailHeight
+    const aspect: number = sourceWidth > 0 && sourceHeight > 0
+      ? sourceWidth / sourceHeight
       : READER_THUMB_FALLBACK_ASPECT
     const boundedAspect: number = Number.isFinite(aspect)
       ? Math.min(1.4, Math.max(0.45, aspect))
@@ -5587,6 +6292,10 @@ struct ReaderThumbnailTile {
           indicatorColor: ThemeTokens.TEXT_ON_BRAND,
           errorOpacity: 0.62,
           errorIconSize: 24,
+          onImageInfo: (width: number, height: number): void => {
+            this.decodedThumbnailWidth = width
+            this.decodedThumbnailHeight = height
+          },
         })
       }
       .width(this.thumbnailWidth())

@@ -781,6 +781,8 @@ export class NhApiClient {
       page.width = NhApiClient.asNumber(item['width'])
       page.height = NhApiClient.asNumber(item['height'])
       page.thumbnailUrl = NhApiClient.cdnUrl(NhApiClient.asString(item['thumbnail']), THUMB_ROOT)
+      page.thumbnailWidth = NhApiClient.asNumber(item['thumbnail_width'])
+      page.thumbnailHeight = NhApiClient.asNumber(item['thumbnail_height'])
       detail.pages.push(page)
     })
     if (detail.pageCount <= 0) {

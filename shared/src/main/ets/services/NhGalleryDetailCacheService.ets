@@ -239,6 +239,12 @@ export class NhGalleryDetailCacheService {
       page.width = sourcePage.width
       page.height = sourcePage.height
       page.thumbnailUrl = NhGalleryDetailCacheService.text(sourcePage.thumbnailUrl)
+      page.thumbnailWidth = NhGalleryDetailCacheService.isNonNegativeInteger(sourcePage.thumbnailWidth)
+        ? sourcePage.thumbnailWidth
+        : 0
+      page.thumbnailHeight = NhGalleryDetailCacheService.isNonNegativeInteger(sourcePage.thumbnailHeight)
+        ? sourcePage.thumbnailHeight
+        : 0
       detail.pages.push(page)
     }
     return detail

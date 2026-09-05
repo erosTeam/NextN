@@ -103,6 +103,7 @@ export {
 export { CollectionFooterState } from './model/CollectionFooterState'
 export {
   NhReaderBackgroundMode,
+  NhReaderColumnMode,
   NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderPresentation,
@@ -607,6 +608,7 @@ export { NhBrowserSessionBoundary } from './services/NhBrowserSessionBoundary'
 export { NhCookieAuthority } from './services/NhCookieAuthority'
 export { NhGalleryExternalOpenService } from './services/NhGalleryExternalOpenService'
 export { NhGalleryShareService } from './services/NhGalleryShareService'
+export { NhReaderImageActionService } from './services/NhReaderImageActionService'
 export { NhTorrentFileExportService } from './services/NhTorrentFileExportService'
 export { NhDownloadCbzExportService } from './services/NhDownloadCbzExportService'
 export { AppReleaseService } from './services/AppReleaseService'

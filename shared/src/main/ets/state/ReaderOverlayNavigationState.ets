@@ -186,6 +186,8 @@ export class ReaderOverlayNavigationState {
       pageCopy.width = page.width
       pageCopy.height = page.height
       pageCopy.thumbnailUrl = page.thumbnailUrl
+      pageCopy.thumbnailWidth = page.thumbnailWidth
+      pageCopy.thumbnailHeight = page.thumbnailHeight
       return pageCopy
     })
     return copy

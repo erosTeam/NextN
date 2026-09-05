@@ -71,6 +71,8 @@ export class NhGalleryPage {
   width: number = 0
   height: number = 0
   thumbnailUrl: string = ''
+  thumbnailWidth: number = 0
+  thumbnailHeight: number = 0
 
   copy(): NhGalleryPage {
     const result: NhGalleryPage = new NhGalleryPage()
@@ -79,6 +81,8 @@ export class NhGalleryPage {
     result.width = this.width
     result.height = this.height
     result.thumbnailUrl = this.thumbnailUrl
+    result.thumbnailWidth = this.thumbnailWidth
+    result.thumbnailHeight = this.thumbnailHeight
     return result
   }
 }

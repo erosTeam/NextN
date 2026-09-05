@@ -2,6 +2,7 @@ import { common } from '@kit.AbilityKit'
 import { relationalStore } from '@kit.ArkData'
 import {
   NhReaderBackgroundMode,
+  NhReaderColumnMode,
   NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderSpreadLayout,
@@ -39,6 +40,7 @@ const READER_CROP_BORDERS_CONTINUOUS_KEY: string = 'reader_crop_borders_continuo
 const READER_SUPER_RESOLUTION_ENABLED_KEY: string = 'reader_super_resolution_enabled'
 const READER_SUPER_RESOLUTION_MODEL_KEY: string = 'reader_super_resolution_model'
 const READER_SUPER_RESOLUTION_MAX_HEIGHT_KEY: string = 'reader_super_resolution_max_height'
+const READER_COLUMN_MODE_PREFIX: string = 'reader_column_mode:'
 const SQL_SELECT_MODE: string = 'SELECT value FROM reader_settings WHERE key = ? LIMIT 1'
 const SQL_UPSERT_MODE: string =
   'INSERT INTO reader_settings (key, value) VALUES (?, ?) ' +
@@ -49,12 +51,23 @@ export class ReaderSettingsRepository {
   private static writeTail: Promise<void> = Promise.resolve()
 
   private static normalizeMode(value: string): NhReaderMode {
-    if (value === NhReaderMode.PAGED ||
+    if (value === NhReaderMode.VERTICAL ||
+      value === NhReaderMode.PAGED ||
       value === NhReaderMode.PAGED_RTL ||
       value === NhReaderMode.PAGED_VERTICAL) {
       return value as NhReaderMode
     }
-    return NhReaderMode.VERTICAL
+    return NhReaderMode.PAGED
+  }
+
+  private static normalizeColumnMode(value: string): NhReaderColumnMode {
+    return value === NhReaderColumnMode.EVEN_LEFT
+      ? NhReaderColumnMode.EVEN_LEFT
+      : NhReaderColumnMode.ODD_LEFT
+  }
+
+  private static columnModeKey(galleryId: number): string {
+    return `${READER_COLUMN_MODE_PREFIX}${Math.max(0, Math.floor(galleryId))}`
   }
 
   private static normalizePreloadPages(value: number): number {
@@ -119,6 +132,19 @@ export class ReaderSettingsRepository {
   static async mode(context: common.UIAbilityContext): Promise<NhReaderMode> {
     return ReaderSettingsRepository.normalizeMode(
       (await ReaderSettingsRepository.value(context, READER_MODE_KEY)) ?? '',
+    )
+  }
+
+  /** The pairing offset is gallery-local, matching reading-progress semantics. */
+  static async columnMode(
+    context: common.UIAbilityContext,
+    galleryId: number,
+  ): Promise<NhReaderColumnMode> {
+    if (galleryId <= 0) {
+      return NhReaderColumnMode.ODD_LEFT
+    }
+    return ReaderSettingsRepository.normalizeColumnMode(
+      (await ReaderSettingsRepository.value(context, ReaderSettingsRepository.columnModeKey(galleryId))) ?? '',
     )
   }
 
@@ -324,6 +350,21 @@ export class ReaderSettingsRepository {
       context,
       READER_DOUBLE_PAGE_ENABLED_KEY,
       enabled ? 'true' : 'false',
+    )
+  }
+
+  static saveColumnMode(
+    context: common.UIAbilityContext,
+    galleryId: number,
+    mode: NhReaderColumnMode,
+  ): Promise<void> {
+    if (galleryId <= 0) {
+      return Promise.resolve()
+    }
+    return ReaderSettingsRepository.saveValue(
+      context,
+      ReaderSettingsRepository.columnModeKey(galleryId),
+      ReaderSettingsRepository.normalizeColumnMode(mode),
     )
   }
 

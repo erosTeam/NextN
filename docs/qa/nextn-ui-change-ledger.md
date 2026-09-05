@@ -10441,3 +10441,97 @@ authorize an edit, replace a device comparison, or define product completion.
   fields measured `[91,581][1169,737]`, `[91,849][1169,1005]` and `[91,1118][1169,1274]`, and all three reported the
   same `#0C000000` background with consistent insets. No field or tag was saved. The app was returned to Advanced
   settings and the 197 lease was released. Evidence is under
+## PARTIAL DEVICE PASS / THUMBNAIL OPEN — Reader parity recovery after cross-mode geometry regression — 2026-09-05
+
+- **Why newly actionable:** the user reported that NextN single-page reading sizes a tall strip from the screen width,
+  leaving the portions beyond the fixed pager viewport unreachable, while the same content is fully contained in
+  NextE. The user also explicitly reopened the complete Reader comparison after repeated prior claims of parity were
+  contradicted by newly observed regressions.
+- **Faulty assumption, ignored evidence and impact:** the 2026-08-17 continuous-loading correction recorded an
+  `aspectRatio` placeholder for the non-`fillViewport` state, but the source attached that constraint
+  unconditionally to the shared `ReaderImagePage`. The review tested the continuous sibling only and did not inspect
+  the paged sibling even though both modes used the same component. ArkUI resolves width + height + aspect ratio by
+  ignoring the declared height, so an extreme tall page becomes screen-width-derived and is clipped by the fixed
+  `Swiper`. Prevention rule: a mode-specific geometry change must live under that mode's geometry owner, and any
+  shared-leaf change requires same-content evidence for every consuming Reader mode.
+- **Whole parent-tree boundary:** `ReaderPage -> ReaderContent` and its continuous `List -> ReaderVerticalImage`,
+  single-page `Swiper -> ReaderImagePage`, and double-page `Swiper -> ReaderSpreadSurface -> image layers`, together
+  with the loading/failure states, gesture arbitration, preload/cache ownership, top/bottom chrome actions and
+  lifecycle that consume their page/index state. NH gallery/source/authentication/translation/enhancement services
+  remain product-specific leaves. Gallery detail layout and the accepted Reader return-transition ownership are out
+  of scope; `REJ-READER-001` through `004` remain closed.
+- **Exact first before/after:** before, continuous and paged modes share one flag-driven image surface and a
+  continuous-only intrinsic-ratio constraint leaks into the full-viewport pager. After, paged mode owns a page-sized
+  `Contain` surface without an aspect-ratio constraint, while continuous mode owns the intrinsic-ratio placeholder
+  needed for stable scroll layout. This is the first confirmed row of the broader audit in
+  `docs/plans/active/nextn-reader-parity-recovery.md`; later edits are allowed only for rows classified `MISSING`.
+- **Minimality:** separate only the mutually incompatible geometry owners and share lower-level loading/rendering
+  behavior where its contract is genuinely common. Do not redesign Reader chrome, invent NH source actions or copy
+  E-Hentai-only leaves to inflate parity.
+- **Visual verification plan:** on one currently selected full device target, compare NextN with NextE at the same
+  foreground identity, root viewport, orientation, content and page. Exercise ordinary and extreme-tall pages in
+  horizontal/vertical paging, cold and loaded continuous mode, and double-page siblings; then verify zoom/pan,
+  double-tap, crop, translation/enhancement replacement, thumbnails, progress, fullscreen and lifecycle states.
+  Source review and signed build do not accept any visible row.
+- **Final classification:** loading/retry, cache warming, translation/enhancement and lifecycle cleanup retain
+  equivalent documented owners; per-gallery spread alignment, portable image actions, mode defaults and page
+  geometry were confirmed missing and restored. Thumbnail sizing remains open after current user counter-evidence.
+  EH-only alternate-original, source-reload and image-block
+  actions remain intentional NH leaves. The complete matrix and current 237 evidence are recorded in
+  `docs/plans/active/nextn-reader-parity-recovery.md` and `docs/qa/nextn-active-acceptance.md`.
+- **Initial counter-evidence — Reader thumbnail geometry:** the user reported that NH long-strip page
+  thumbnails are cropped partial previews, but the Reader rail stretches their tile geometry from the full page's
+  width/height; the compact six-image Detail rail does not show the same defect. Source confirms
+  `ReaderThumbnailTile.thumbnailWidth()` reads `NhGalleryPage.width / height` while rendering `thumbnailUrl`.
+  Those values describe different images and cannot share an aspect contract. The first attempted correction made the NH API's
+  page-level `thumbnail_width` / `thumbnail_height` are preserved through model, cache and navigation state; decoded
+  asset dimensions the fallback. Full-page dimensions remain exclusive to Reader page/spread geometry. On 237,
+  Gallery `678049` proved navigation, selection and LTR/RTL ordering, but the current user counter-evidence says the
+  visible long-strip thumbnail proportion remains wrong; the prior visual acceptance claim is withdrawn.
+- **Accepted device/build result:** signed HAP SHA-256
+  `cc5229681cd8105367c4e77548768052d2e63eab438f809a4508c7dedff72a82` was installed in place on exact target
+  `192.168.50.237:12345`. Single horizontal, RTL, top-to-bottom, continuous and double-page presentations; first/last
+  and odd/even spread ownership; one-page alignment and cold persistence; thumbnail jump; save/share/image
+  information; crop; zoom/pan; settings and progress were exercised under
+  `.hvigor/outputs/reader-parity-237-20260905/`. The temporary crop setting was restored off; exactly one page-2 test
+  image was saved to the device media library and no share recipient was selected. No Git commit was created.
+
+## CLOSED / DEVICE PASS — Reader duplicate share affordance correction — 2026-09-05
+
+- **Why newly actionable:** after the full Reader recovery was accepted, the user reported that a Share action in
+  the overflow menu and another Share icon in the top bar are confusing and easy to mistake for duplicate actions.
+  This explicit counter-evidence reopens only the Reader chrome action boundary.
+- **Faulty assumption and impact:** the parity change added NextE's top-bar current-image Share while retaining
+  NextN's older overflow-menu gallery Share. Although their targets differ, both surfaces present the same generic
+  Share concept without exposing that distinction, so the user has to guess which object will be shared.
+- **Whole parent-tree boundary:** `ReaderPage -> ReaderHeader -> top-bar current-image Share` and
+  `ReaderOverflowMenu -> gallery Share`. Reader image sharing, its gallery fallback, settings, other overflow items,
+  bottom controls, page layout, gestures and navigation remain unchanged.
+- **Exact before/after:** before, current-image Share is a direct top-bar action and gallery Share is a generic
+  overflow item. After, retain the NextE-aligned direct current-image Share and remove only the redundant visible
+  gallery Share menu item. The existing gallery fallback remains available when the current image cannot resolve.
+- **Minimality and verification:** make no new icon, wording or action contract. Review the exact one-block source
+  deletion, signed-build and install in place, then verify on target 237 that the top bar still has one Share action
+  and the overflow menu no longer contains Share while its other actions remain present.
+- **Accepted device/build result:** the signed HAP with SHA-256
+  `6f6649e0e390e48e8830e142f40319fc523c29019bf8c1db0ac4ef13a60a46d7` was installed in place on exact target
+  `192.168.50.237:12345` without clearing data. `chrome-run/` shows the direct top-bar current-image Share beside
+  Settings and More. `overflow-run/` shows exactly Image information, Crop page borders, Open in browser,
+  Translate current page and Auto translate, with no Share item. `final-run/` proves the menu dismissed back to the
+  same Reader page and foreground bundle. No Share action was invoked and no Reader setting was changed. Evidence
+  is under `.hvigor/outputs/reader-share-affordance-237-20260905/`.
+
+## OPEN — Reader long-strip thumbnail visible geometry — 2026-09-05
+
+- **Why newly actionable:** the user reports that the long-strip thumbnail problem is still visible after the prior
+  metadata-based correction. This supersedes the earlier visual-pass interpretation and reopens the Reader thumbnail
+  rail only.
+- **Faulty assumption and impact:** the previous acceptance equated receiving the NH `200x364` thumbnail dimensions
+  with rendering the correct visible thumbnail. That did not separately prove which thumbnail asset was displayed,
+  the tile's measured bounds, clipping, or its `ImageFit` behavior against the known-correct compact detail rail.
+- **Whole parent-tree boundary:** `ReaderBottomBar -> ReaderThumbnailStrip -> ReaderThumbnailTile ->
+  GalleryPageThumbnailSurface`, plus the same gallery page's compact detail thumbnail surface as reference. Reader
+  page image geometry, progress, navigation, selection, loading, cache identity and all other chrome remain frozen.
+- **Next evidence:** on target 237, capture the current long-strip Reader rail and the same gallery's compact detail
+  rail, then map actual asset dimensions, tile bounds and fit/clipping before another source edit. Closure requires
+  the Reader thumbnail's visible proportion to match the cropped NH preview rather than the full strip page.

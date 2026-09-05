@@ -6214,3 +6214,88 @@ permitted in this repository.
   discarded, the read-only LLM detail was left normally, the app was returned to Advanced settings, and the 197
   lease was released. Evidence is under
   `.hvigor/outputs/mate60pro-lab197__ALN-AL80/not-applicable/portrait-1260x2720/settings-text-field-parity/`.
+## Reader parity recovery — 237 partial device acceptance, thumbnail reopened — 2026-09-05
+
+- **Accepted candidate:** the exact signed HAP installed in place with data
+  preserved on `192.168.50.237:12345` has SHA-256
+  `cc5229681cd8105367c4e77548768052d2e63eab438f809a4508c7dedff72a82`.
+  `scripts/build-hvigor-signed.sh` completed with `BUILD SUCCESSFUL`; the
+  executable contract returned
+  `OK reader contract passed (mode/default, geometry, thumbnails, spread pairing, actions, cache, preload)`;
+  and the scoped exact-diff check passed.
+- **Confirmed cause and correction:** commit
+  `33a2941b834bd836af881f7ccfcd8db18a85ab9f` had attached a
+  continuous-only `aspectRatio` to the flag-driven image component shared by
+  continuous and paged reading. In the fixed-height pager, ArkUI therefore
+  derived an extreme strip's height from screen width and clipped its
+  unreachable remainder. The candidate separates `ReaderImagePage` as a
+  fixed-viewport `Contain` owner from `ReaderVerticalImage` as the only
+  intrinsic-ratio scroll owner. Shared loading/rendering remains below those
+  incompatible geometry boundaries.
+- **Extreme-strip proof:** public NH Gallery `678049` has 14 pages from
+  `720x9245` through `720x10000`. Page 1 and page 2 are fully visible top to
+  bottom in fixed single-page and top-to-bottom paged modes under
+  `open-long-strip-reader-run/` and `ttb-tap-next-long-strip-run/`. The same
+  page switches to readable full width only in continuous mode and scrolls to
+  a materially different slice under `select-continuous-long-strip-run/` and
+  `scroll-continuous-long-strip-run/`.
+- **Thumbnail counter-evidence / OPEN:** NH supplies a distinct cropped
+  `200x364` preview for each extreme page, and the API/model/cache chain now
+  retains those fields. The earlier rail capture proved navigation and ordering
+  only; it did not prove the visible thumbnail proportion. The user's current
+  observation says long-strip thumbnails remain wrong, so the prior visual-pass
+  claim is withdrawn pending a fresh 237 asset/container/fit comparison with
+  the compact detail rail.
+- **Mode, spread and persistence proof:** LTR, RTL, vertical paging and
+  continuous mode were exercised on the same gallery and viewport. Double page
+  rendered `1-2`, the one-page alignment action changed it to `2-3`, and a
+  data-preserving force-stop/cold reopen restored `2-3 / 14` with the
+  gallery-keyed even-left column. Repeated navigation reached the valid page-14
+  singleton; RTL retained logical `12-13` while reversing the visual page and
+  progress directions. Evidence is under `select-ltr-double-long-strip-run/`,
+  `shift-double-alignment-run/`, `cold-restore-double-run/`,
+  `advance-double-last-run/` and `select-rtl-double-long-strip-run/`.
+- **Actions and gestures proof:** single-page save reached the system
+  media-creation confirmation and was allowed once; exactly one page-2 test
+  image was added to the device media library. Current-image share reached the
+  system chooser and no recipient was selected. Double-page save exposes left,
+  right and both; double-page image information identifies the visible page on
+  each side. Paged crop visibly toggled on and back off. Double-tap zoomed page
+  12; an upward pan changed its visible slice while the header stayed `12 / 14`;
+  the zoom cycle was then returned to contain. Evidence is under
+  `open-reader-save-flow-run/`, `confirm-reader-save-run/`,
+  `open-reader-share-flow-run/`, `open-double-save-menu-run/`,
+  `open-double-info-menu-run/`, `toggle-crop-double-run/`,
+  `zoom-single-long-strip-run/`, `pan-zoomed-single-run/` and
+  `open-reader-settings-run/`.
+- **Settings and final state:** opening and scrolling the injected Reader
+  settings surface did not change page 12. Reading direction/mode, double-page
+  layout, animation, tap zones, keep-awake, image enhancement, auto-page,
+  volume-key and preload controls were present. The temporary paged-crop test
+  setting was restored off and zoom was restored to contain. The original
+  global RTL + double-page preference was restored after the thumbnail test;
+  `final-restore-double-run/` shows pages 10-11 fully contained with the
+  thumbnail strip closed and double-page mode active. No Git commit was
+  created.
+- **Scope:** all other portable Reader behavior identified in the current
+  NextE comparison has accepted evidence; thumbnail geometry remains open.
+  EH-only alternate-original, source-reload and
+  image-block actions remain deliberate NH source leaves, not Reader omissions.
+  Shared-component extraction remains deferred until both products have a
+  stable boundary; this repair did not couple the repositories.
+
+## Reader duplicate Share affordance — 237 device accepted — 2026-09-05
+
+- **Observed cause:** the NextE-aligned top-bar action shares the current Reader image, while the older NextN
+  overflow item shares the gallery. Both were exposed as generic Share affordances, leaving their different targets
+  invisible to the user.
+- **Implemented boundary:** keep the direct top-bar current-image Share and remove only the visible overflow-menu
+  gallery Share item. The current-image action's existing gallery fallback remains unchanged, as do all other Reader
+  chrome, image actions, page geometry, navigation, gestures and settings.
+- **Build and exact artifact:** `scripts/build-hvigor-signed.sh` completed with `BUILD SUCCESSFUL in 11 s 846 ms`.
+  Installed HAP SHA-256 is `6f6649e0e390e48e8830e142f40319fc523c29019bf8c1db0ac4ef13a60a46d7`.
+- **237 result:** after an in-place install with data preserved, `chrome-run/screen.png` shows one direct top-bar
+  Share action. `overflow-run/screen.png` shows Image information, Crop page borders, Open in browser, Translate
+  current page and Auto translate without Share. `final-run/screen.png` shows the menu dismissed on the same Reader
+  page with `com.erosteam.nextn` foreground. No Share action was invoked and no Reader setting was changed. Evidence
+  is under `.hvigor/outputs/reader-share-affordance-237-20260905/`.

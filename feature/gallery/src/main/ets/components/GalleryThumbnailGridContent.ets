@@ -130,7 +130,9 @@ export struct GalleryThumbnailGridContent {
       left.extension === right.extension &&
       left.width === right.width &&
       left.height === right.height &&
-      left.thumbnailUrl === right.thumbnailUrl
+      left.thumbnailUrl === right.thumbnailUrl &&
+      left.thumbnailWidth === right.thumbnailWidth &&
+      left.thumbnailHeight === right.thumbnailHeight
   }
 
   private copyPages(pages: NhGalleryPage[]): NhGalleryPage[] {
@@ -141,6 +143,8 @@ export struct GalleryThumbnailGridContent {
       copy.width = page.width
       copy.height = page.height
       copy.thumbnailUrl = page.thumbnailUrl
+      copy.thumbnailWidth = page.thumbnailWidth
+      copy.thumbnailHeight = page.thumbnailHeight
       return copy
     })
   }

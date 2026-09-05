@@ -1,5 +1,10 @@
 import { ThemeTokens } from '../theme/ThemeTokens'
 
+interface GalleryPageThumbnailLoadEvent {
+  width?: number
+  height?: number
+}
+
 /**
  * Shared request/loading/error surface for one gallery page thumbnail.
  *
@@ -17,6 +22,7 @@ export struct GalleryPageThumbnailSurface {
   @Param errorOpacity: number = 1
   @Param loadingSize: number = 20
   @Param errorIconSize: number = 26
+  @Event onImageInfo?: (width: number, height: number) => void
   @Local loaded: boolean = false
   @Local failed: boolean = false
 
@@ -57,9 +63,13 @@ export struct GalleryPageThumbnailSurface {
           .width('100%')
           .height('100%')
           .objectFit(this.objectFit)
-          .onComplete((): void => {
+          .onComplete((event?: GalleryPageThumbnailLoadEvent): void => {
             this.loaded = true
             this.failed = false
+            if (event && event.width !== undefined && event.height !== undefined &&
+              event.width > 0 && event.height > 0 && this.onImageInfo) {
+              this.onImageInfo(event.width, event.height)
+            }
           })
           .onError((): void => {
             this.loaded = true

@@ -17,7 +17,7 @@ import { NhReaderTapZoneInvert, NhReaderTapZoneLayout } from '../model/NhReaderT
  */
 @ObservedV2
 export class ReaderPresentationState {
-  @Trace mode: NhReaderMode = NhReaderMode.VERTICAL
+  @Trace mode: NhReaderMode = NhReaderMode.PAGED
   @Trace keepScreenOn: boolean = true
   @Trace preloadPages: number = 2
   @Trace showPageNumber: boolean = true
