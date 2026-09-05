@@ -10559,3 +10559,40 @@ authorize an edit, replace a device comparison, or define product completion.
   expected native NextN foreground and portrait viewport. Evidence: `.hvigor/outputs/detail-thumbnail-rail-20260905/`.
 - **Freeze boundary:** full-array lazy rail, existing tile geometry, canonical Reader index, retained scroll position
   and header route are accepted for this path. No new UI static matcher was used as acceptance evidence.
+
+## OPEN — Reader failure contrast and download error feedback — 2026-09-05
+
+- **Reopening authority:** new user report and current 237 Reader failure screenshot; Download screenshot shows a
+  generic update error at 2/56. Evidence: `.hvigor/outputs/request-stall-237-20260905/`.
+- **Parent boundary:** Reader root/chrome -> existing paged/spread/continuous canvas -> ImageRecovery over the
+  existing opening-thumbnail proxy. Keep transition lifetime, image geometry, loading stage and Retry ownership.
+  NextE ReaderFailureOverlay owns icon/title/hint/capsule Retry on the normal readable canvas; NextN retains an
+  NH preview under this leaf. Both local single-image and spread failure leaves were reviewed.
+- **Before/after:** the failure Column currently spans the viewport with transparent background. Bound only its
+  failure state to NextE's 280vp (single) / 196vp (compact) maximum width and pass the opaque Reader canvas color
+  separately as `recoveryColor`, with the existing card radius. The ordinary `canvasColor` deliberately becomes
+  transparent during thumbnail handoff and therefore cannot supply this background. Keep its foreground palette
+  and real capsule Retry. Loading width and the normal canvas transparency stay unchanged.
+- **Download sibling boundary:** existing queue scaffold/group/card/order/progress/actions remain unchanged. Replace
+  the status leaf's universal update error with safe localized timeout/network/page-failure categories; downloading
+  with an observed failed attempt explicitly says retrying. No raw request URLs or native error strings in UI.
+- **Minimality:** these leaves directly explain or disambiguate the reported failure; no page redesign or shared
+  Reader extraction. Retry settings, completed-page journal and pause/resume ownership remain intact.
+- **Verification plan/risk:** deterministic runtime tests of the actual request owner and queue guard, signed build,
+  then current 237 failure contrast plus retry and cancellation/resume behavior. Need actual failure-state device
+  evidence; a successful request/build does not accept failure UI. Large-image request limits remain conservative.
+- **Current result:** final idle-watchdog signed build passed in 9 s 509 ms and was installed on 237. Eleven
+  source-executing request/queue regression tests pass, including preserving slow transfers with real byte progress.
+  The real temporary download showed `0 / 87` and `失败 · 网络请求失败`; its native screenshot was inspected at
+  `[0,117][1320,2120]`, with all three original completed tasks still present. Evidence: `temporary-download-start/`.
+- **Still OPEN:** Reader pages continued rendering in the controlled network-denied runs; no final-candidate
+  failure panel was observed. Device cache-directory access was denied; no Reader cache was deleted. A user choice
+  was requested before clearing only Reader image cache to force new original requests. Do not mark this visual
+  branch passed or reuse successful-image captures as failure evidence. No recovery-download run was performed.
+- **Physical cleanup:** WLAN ON was restored and read back in `restore-wlan-for-download-retry/`. The temporary
+  task was selected for removal without resuming its contents; original downloads remain outside the cleanup scope.
+  `temporary-download-removed-final/` confirms the temporary task is gone and the original56/56,41/41,70/70 tasks
+  remain. Final native route is Download; no Reader-cache clear has been authorized or performed.
+- **Restoration correction:** original mobile-data All was checked ON. After the system denial dialog NextN mobile
+  access was OFF; that single permission was also restored ON. `restore-nextn-mobile-permission/` and
+  `final-network-and-route-restored/` prove mobile/WLAN ON and final native Download root with the original tasks.

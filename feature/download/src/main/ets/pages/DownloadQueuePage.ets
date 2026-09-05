@@ -428,7 +428,8 @@ export struct DownloadQueuePage {
 
   private taskStatusLabel(task: NhDownloadTask): string {
     if (task.status === NhDownloadTaskStatus.DOWNLOADING) {
-      return AppStrings.get('download_status_downloading')
+      return AppStrings.get(task.errorMessage.length > 0
+        ? 'download_status_retrying' : 'download_status_downloading')
     }
     if (task.status === NhDownloadTaskStatus.PAUSED) {
       return AppStrings.get('download_status_paused')
@@ -654,7 +655,7 @@ export struct DownloadQueuePage {
       .replace('%1$s', task.progressText())
       .replace('%2$s', this.taskStatusLabel(task))
     const failure: string = task.errorMessage.length > 0
-      ? this.queueErrorMessage(DownloadQueueUiErrorCode.UPDATE_FAILED)
+      ? this.taskFailureText(task)
       : ''
     return failure.length > 0 ? `${detail} · ${failure}` : detail
   }
@@ -667,7 +668,20 @@ export struct DownloadQueuePage {
     if (task.errorMessage.length === 0) {
       return status
     }
-    return `${status} · ${this.queueErrorMessage(DownloadQueueUiErrorCode.UPDATE_FAILED)}`
+    return `${status} · ${this.taskFailureText(task)}`
+  }
+
+  private taskFailureText(task: NhDownloadTask): string {
+    // Retain compatibility with persisted native errors, but never render raw
+    // transport messages (which may contain URLs or other private metadata).
+    const failure: string = task.errorMessage.toLowerCase()
+    if (failure.includes('timed out') || failure.includes('timeout') || failure.includes('2300028')) {
+      return AppStrings.get('download_error_timeout')
+    }
+    if (failure.includes('network') || failure.includes('http') || failure.includes('connect')) {
+      return AppStrings.get('download_error_network')
+    }
+    return AppStrings.get('download_error_page')
   }
 
   private taskProgressText(task: NhDownloadTask): string {

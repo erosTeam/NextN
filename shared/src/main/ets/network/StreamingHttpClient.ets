@@ -1,4 +1,5 @@
 import { http } from '@kit.NetworkKit'
+import { BusinessError } from '@kit.BasicServicesKit'
 
 const MAX_STREAM_BYTES: number = 512 * 1024 * 1024
 
@@ -32,62 +33,106 @@ export class StreamingHttpClient {
       maxBytes <= 0 || maxBytes > MAX_STREAM_BYTES) {
       throw new Error('Streaming HTTP request is invalid')
     }
-    const result: StreamingHttpResponse = new StreamingHttpResponse()
-    const request: http.HttpRequest = http.createHttp()
-    request.on('dataReceiveProgress', (progress: http.DataReceiveProgressInfo): void => {
-      if (progress.totalSize > maxBytes) {
-        result.limitExceeded = true
-        request.destroy()
-      }
-    })
-    request.on('dataReceive', (data: ArrayBuffer): void => {
-      if (result.limitExceeded || result.sinkRejected || result.cancelled) {
-        return
-      }
-      let continueRequest: boolean = false
-      try {
-        continueRequest = shouldContinue()
-      } catch (_error) {
-        continueRequest = false
-      }
-      if (!continueRequest) {
-        result.cancelled = true
-        request.destroy()
-        return
-      }
-      if (result.receivedBytes + data.byteLength > maxBytes) {
-        result.limitExceeded = true
-        request.destroy()
-        return
-      }
-      try {
-        if (!sink(data)) {
-          result.sinkRejected = true
-          request.destroy()
+    return new Promise<StreamingHttpResponse>((resolve, reject): void => {
+      const result: StreamingHttpResponse = new StreamingHttpResponse()
+      const request: http.HttpRequest = http.createHttp()
+      let deadline: number = Date.now() + connectTimeoutMs + readTimeoutMs
+      let settled: boolean = false
+      let watchdog: number = -1
+      // Native destruction is cleanup, not our completion signal. A silent
+      // native promise must not pin the cache's in-flight entry or a queue slot.
+      const finish = (error?: Error): void => {
+        if (settled) {
           return
         }
-        result.receivedBytes += data.byteLength
+        settled = true
+        clearInterval(watchdog)
+        try {
+          request.destroy()
+        } catch (_error) {
+          // Still release our caller if the native handle is already gone.
+        }
+        if (error !== undefined) {
+          reject(error)
+        } else {
+          resolve(result)
+        }
+      }
+      const canContinue = (): boolean => {
+        if (settled) {
+          return false
+        }
+        let active: boolean = false
+        try {
+          active = shouldContinue()
+        } catch (_error) {
+          active = false
+        }
+        if (!active) {
+          result.cancelled = true
+          finish()
+        }
+        return active
+      }
+      watchdog = setInterval((): void => {
+        if (canContinue() && Date.now() >= deadline) {
+          finish(new Error('Image request timed out'))
+        }
+      }, Math.min(250, connectTimeoutMs + readTimeoutMs))
+      if (!canContinue()) {
+        return
+      }
+      try {
+        request.on('dataReceiveProgress', (progress: http.DataReceiveProgressInfo): void => {
+          if (!settled && progress.totalSize > maxBytes) {
+            result.limitExceeded = true
+            finish()
+          }
+        })
+        request.on('dataReceive', (data: ArrayBuffer): void => {
+          if (!canContinue()) {
+            return
+          }
+          if (result.receivedBytes + data.byteLength > maxBytes) {
+            result.limitExceeded = true
+            finish()
+            return
+          }
+          try {
+            if (!sink(data)) {
+              result.sinkRejected = true
+              finish()
+              return
+            }
+            result.receivedBytes += data.byteLength
+            if (data.byteLength > 0) {
+              // Bound silence, not the total lifetime of a progressing large
+              // image. Repeated progress metadata is not evidence of new bytes.
+              deadline = Date.now() + readTimeoutMs
+            }
+          } catch (_error) {
+            result.sinkRejected = true
+            finish()
+          }
+        })
+        request.requestInStream(url, {
+          method: http.RequestMethod.GET,
+          usingCache: false,
+          connectTimeout: connectTimeoutMs,
+          readTimeout: readTimeoutMs,
+          header: headers,
+        }).then((statusCode: number): void => {
+          if (canContinue()) {
+            result.statusCode = statusCode
+            finish()
+          }
+        }, (error: BusinessError): void => {
+          finish(new Error(error.code === 2300028
+            ? 'Image request timed out' : 'Image network request failed'))
+        })
       } catch (_error) {
-        result.sinkRejected = true
-        request.destroy()
+        finish(new Error('Image network request failed'))
       }
     })
-    try {
-      result.statusCode = await request.requestInStream(url, {
-        method: http.RequestMethod.GET,
-        usingCache: false,
-        connectTimeout: connectTimeoutMs,
-        readTimeout: readTimeoutMs,
-        header: headers,
-      })
-      return result
-    } catch (error) {
-      if (result.limitExceeded || result.sinkRejected || result.cancelled) {
-        return result
-      }
-      throw error as Error
-    } finally {
-      request.destroy()
-    }
   }
 }

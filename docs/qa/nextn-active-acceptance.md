@@ -6314,3 +6314,53 @@ permitted in this repository.
   `[36,943][1284,1435]`. Screenshots were actually reviewed, and power readbacks retained AWAKE/86400000ms.
 - Evidence: `.hvigor/outputs/detail-thumbnail-rail-20260905/`. The requested browse-all/Reader-return/View-all path
   has no remaining unverified action. This does not claim a new refresh, rotation or performance benchmark.
+
+## OPEN — silent image/download requests and Reader failure contrast — 2026-09-05
+
+- User reopened the network/download and Reader failure surfaces on exact device 237. No data was cleared and
+  the original process (42255) was preserved for observation. Native Reader root was `[0,0][1320,2120]`.
+- `current/screen.png` reproduces page 2/65 failure text and Retry blending into the enlarged transition preview.
+  A single retry later removed the failure state. Same-process NETSTACK evidence includes successful image
+  responses taking about 5–20 seconds; the historical stall cause is not established by that recovery.
+- Current Download root `[0,117][1320,2120]` shows one failed task at 2/56 and two completed tasks. The failure
+  reason is rendered only as generic “无法更新此下载”. No task is currently observed stuck DOWNLOADING.
+- Source-proven gaps: streaming cancellation checks only upon data arrival and settlement depends on the native
+  promise; unexpected gallery-worker errors only log; automatic retries publish no interim failure; the queue
+  hides all error reasons. Reader failure leaves have no opaque surface over the transition preview.
+- Evidence root: `.hvigor/outputs/request-stall-237-20260905/`. Next: regression-test silent native requests and
+  cancellation, implement bounded settlement/status feedback and local failure contrast, then build and verify
+  actual device failure/retry behavior. Source tests will not be used as visual acceptance.
+- Intermediate physical result: first signed candidate installed in place; the queue now shows all three tasks
+  complete, including 56/56. No resume was dispatched by this run; this observation does not establish the historical
+  cause or accept error UI. Ten source-executing request/queue tests passed. Final failure-panel source now supplies
+  a separate opaque `recoveryColor`, since the normal child canvas is intentionally transparent during the proxy.
+- Controlled failure precondition: OEM Settings -> Mobile network -> Data usage -> Application network -> WLAN,
+  N index. Current NextN WLAN toggle is ON at `[1104,953][1212,1013]`; other apps are unchanged. Standard settings
+  intents were unsupported and dismissed; the installed OEM MainAbility was used. Next: prepare uncached Reader
+  page, temporarily disable only NextN WLAN, compare the real failure state, restore ON and retry. This restriction
+  must be restored before leaving the physical lane. `nextn-wlan-denied/layout.json` now confirms only the NextN
+  WLAN toggle is OFF at the same bounds. RESTORE REQUIRED: Settings MainAbility -> WLAN tab -> N index -> NextN ON.
+- WLAN has since been restored ON and read back in `restore-nextn-wlan-before-final-install/layout.json`.
+  Mobile-data permission was read OFF and never directly modified. Pages2/6/9 rendered successfully under denial,
+  so those samples are rejected as failure acceptance. Cache-directory readback was denied by the device and no
+  cache was removed. Next: final signed install and last-page thumbnail preparation outside that preload region.
+- **Latest disposition:** final signed idle-watchdog build passed in 9 s 509 ms, installed on exact 237; eleven
+  source-executing runtime tests pass. Watchdog bounds no-byte silence (initial connect+read allowance, then read
+  timeout after actual bytes), rather than imposing a new total deadline on progressing large images. Cancellation
+  settles independently of native callbacks; worker failures publish ERROR; retries expose their observed failure.
+- **Accepted current physical boundary:** the agent-created temporary gallery677618 task showed `0 / 87` and
+  `失败 · 网络请求失败` on the native Download page. Its screenshot was actually inspected. This proves real queue
+  failure feedback under denied connectivity, not the historical stall cause or recovery-download behavior.
+- **Reader remains OPEN:** pages2/6/9/87/79 displayed despite the denied-network scenario and cannot accept the
+  final failure-panel appearance. A prompt now asks the user whether clearing only Reader image cache is allowed;
+  do not clear it without that answer, repeat cached-page probes, or label the new failure panel device-passed.
+- **Cleanup/current state:** `restore-wlan-for-download-retry/` confirms NextN WLAN ON again. Only the agent-created
+  empty 0/87 task was removed in `temporary-download-removed-final/`; original56/56,41/41,70/70 tasks remain.
+  No recovery download was dispatched and no original download/history/account/cache was removed. Device remains
+  at native Download root `[0,117][1320,2120]`. Next permitted action requires the user's Reader-cache choice.
+- **Final permission restoration correction:** the original `settings-app-network/` mobile-data tab had its All
+  switch checked ON. The system Do not allow dialog also left NextN mobile-data OFF, despite this run only directly
+  toggling WLAN during setup. Restored only NextN mobile-data ON in `restore-nextn-mobile-permission/`; then read WLAN
+  ON in `final-network-and-route-restored/wlan-layout.json`. Both original access permissions are now restored.
+  The same final directory confirms native Download root and all original56/56,41/41,70/70 tasks, without the
+  temporary0/87 task. No device mutation remains pending apart from the unapproved Reader-cache validation choice.

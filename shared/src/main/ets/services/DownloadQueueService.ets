@@ -573,8 +573,8 @@ export class DownloadQueueService {
       DownloadQueueService.activeGalleryIds.add(candidate.galleryId)
       const token: number = DownloadQueueService.nextExecutionToken(candidate.galleryId)
       const run: Promise<void> = DownloadQueueService.runGallery(context, candidate.galleryId, token)
-        .catch((error: Error): void => {
-          console.warn(`NextNDownload worker failed: ${error.message}`)
+        .catch(async (error: Error): Promise<void> => {
+          await DownloadQueueService.failGalleryRun(context, candidate.galleryId, token, error)
         })
         .finally((): void => {
           if (DownloadQueueService.activeGalleryRuns.get(candidate.galleryId) === run) {
@@ -584,6 +584,30 @@ export class DownloadQueueService {
           DownloadQueueService.pump(context)
         })
       DownloadQueueService.activeGalleryRuns.set(candidate.galleryId, run)
+    }
+  }
+
+  private static async failGalleryRun(
+    context: common.UIAbilityContext,
+    galleryId: number,
+    token: number,
+    error: Error,
+  ): Promise<void> {
+    const current: NhDownloadTask | null = DownloadQueueService.task(galleryId)
+    if (current === null || DownloadQueueService.executionTokens.get(galleryId) !== token ||
+      (current.status !== NhDownloadTaskStatus.DOWNLOADING && current.status !== NhDownloadTaskStatus.QUEUED)) {
+      return
+    }
+    current.status = NhDownloadTaskStatus.ERROR
+    current.errorMessage = error.message || 'Page download failed'
+    current.updatedAt = Date.now()
+    // Publish before persistence: a storage failure must still leave a visible,
+    // retryable terminal task rather than a permanently occupied worker state.
+    try {
+      await DownloadQueueService.persist(context, current)
+      DownloadQueueService.writeTaskMetadata(context, current)
+    } catch (_error) {
+      console.warn('NextNDownload failed to persist worker failure')
     }
   }
 
@@ -641,7 +665,12 @@ export class DownloadQueueService {
       const jobs: Promise<DownloadPageOutcome>[] = []
       const end: number = Math.min(pending.length, start + DownloadQueueService.maxConcurrentPages())
       for (let index: number = start; index < end; index++) {
-        jobs.push(DownloadQueueService.downloadPage(context, task, pending[index], token))
+        jobs.push(DownloadQueueService.downloadPage(context, task, pending[index], token)
+          .catch((error: Error): DownloadPageOutcome => {
+            const failed: DownloadPageOutcome = new DownloadPageOutcome()
+            failed.failureMessage = error.message || 'Page download failed'
+            return failed
+          }))
       }
       const outcomes: DownloadPageOutcome[] = await Promise.all(jobs)
       if (!DownloadQueueService.isExecutionActive(galleryId, token)) {
@@ -661,6 +690,11 @@ export class DownloadQueueService {
       DownloadQueueService.writeTaskMetadata(context, DownloadQueueService.task(galleryId) ?? task)
       if (failureMessage.length > 0) {
         break
+      }
+      const progressed: NhDownloadTask | null = DownloadQueueService.task(galleryId)
+      if (progressed !== null && progressed.errorMessage.length > 0) {
+        progressed.errorMessage = ''
+        DownloadQueueService.putInState(progressed)
       }
       await DownloadQueueService.delayBytesForSpeedLimit(galleryId, token, batchStartedAt, batchBytes)
     }
@@ -723,6 +757,12 @@ export class DownloadQueueService {
       } catch (error) {
         lastFailure = (error as Error).message || 'Page download failed'
         if (attempt + 1 < attempts && DownloadQueueService.isExecutionActive(task.galleryId, token)) {
+          const retrying: NhDownloadTask | null = DownloadQueueService.task(task.galleryId)
+          if (retrying !== null) {
+            retrying.errorMessage = lastFailure
+            retrying.updatedAt = Date.now()
+            DownloadQueueService.putInState(retrying)
+          }
           await DownloadQueueService.delay((attempt + 1) * 700)
         }
       }
