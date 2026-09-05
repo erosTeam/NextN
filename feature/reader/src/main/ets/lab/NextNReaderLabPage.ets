@@ -1,6 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
-import { ReaderSession, ReaderUnitKey } from '@reader-kit/core'
+import { ReaderPagedSession, ReaderUnitKey } from '@reader-kit/core'
 import { ReaderLabRequest, ReaderLabSurface, ReaderLabVisibilityState, connectReaderLabVisibility } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { connectLayoutSafeArea, LayoutSafeAreaState, ThemeTokens, nextNHdsTitle } from 'shared'
@@ -8,7 +8,7 @@ import { connectLayoutSafeArea, LayoutSafeAreaState, ThemeTokens, nextNHdsTitle 
 @ComponentV2
 export struct NextNReaderLabPage {
   @Require @Param request: ReaderLabRequest
-  @Local private session: ReaderSession | null = null
+  @Local private session: ReaderPagedSession | null = null
   @Local private labVisibility: ReaderLabVisibilityState = connectReaderLabVisibility()
   @Local private routeActive: boolean = false
   @Local private safeArea: LayoutSafeAreaState = connectLayoutSafeArea()
@@ -19,7 +19,7 @@ export struct NextNReaderLabPage {
     if (!context.applicationInfo.debug) return
     const adapter = new NextNReaderLabAdapter(context)
     this.unitKey = new ReaderUnitKey('nh', this.request.work, this.request.work)
-    this.session = new ReaderSession(adapter, adapter)
+    this.session = new ReaderPagedSession(adapter, adapter)
   }
 
   build() {

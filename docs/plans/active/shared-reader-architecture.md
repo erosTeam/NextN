@@ -1,5 +1,9 @@
 # NextE / NextN / Koma 共享阅读器设计草案
 
+## D3 active slice — 2026-09-06
+
+User clarified: use device 237 whenever 197 is unavailable; 197 is supplementary cross-device verification, never a fixed acceptance prerequisite. The selected-item D3 viewport is implemented in all three optional hosts at shared revision `07bc120`. Actual237 N long-strip/independent-thumbnail/RTL spread and E original/sprite/physical-half/anchor paths have bounded evidence. Koma237 default/failed-catalog/Retry/Back is accepted after fixing its newly observed `1 / 0` counter; this empty-shelf path is not counted as reading. Supplementary197 real Koma single/joinedLTR/RTL/cover/Home/Back now passes with byte-identical production library/progress before and after. Both device leases are released and197 handed back. Production readers/default routes, preferences/progress migration and Koma chapter-state work remain excluded. D3 full gestures/continuous mode/chrome and the overall migration remain OPEN; see §11.2.
+
 状态：D1 三方限域试接、D2 映射/原图观测切片已有证据，完整迁移仍 OPEN；2026-09-06 用户要求自主判断推进，禁止替换现有阅读器。
 
 核对日期：2026-09-06。设计源码基点：NextN `7f79cb4`、NextE `89532d99`、Koma `2bb00cd`；D1 执行时三个工作区均有其他任务的后续修改。D1 只增加共享库、宿主适配器及独立调试入口，不改动现有阅读器、账户或进度存储实现。
@@ -325,7 +329,7 @@ D1 当前为技术候选，完整迁移仍 OPEN：两个 HAR、三个独立 adap
 
 源码检查点：共享库 `227ca3a`；NextN 仅提交本轮入口/adapter/依赖/计划及本节验收记录，其他旧 WIP 保留。E/K 遵守各自提交边界，本轮接线保留独立可审查 diff。公开 build-profile 只应记录两个 module 行，绝不暂存本机整份签名 profile；本地 ignored profile 已同步 module 行。远程分发、CI checkout 和正式依赖锁定在发布前单独处理，不以当前本地目录假装已完成发布集成。
 
-独立 review 指出的本地 URI 排除、逐页整章校验、EH 共享 VM 竞争和重试重复坏缓存四项均修正。消费者取消/底层取消仍显式区分；Koma 派生缩略图暂不启用，不用整张原图冒充派生结果。D2 当前增量见下节；D3–D6 未开始，三种布局、手势、设置、进度、下载/处理能力的完整迁移均保留原路径。
+独立 review 指出的本地 URI 排除、逐页整章校验、EH 共享 VM 竞争和重试重复坏缓存四项均修正。消费者取消/底层取消仍显式区分；Koma 派生缩略图暂不启用，不用整张原图冒充派生结果。D2 当前增量见下节，D3 选中显示项增量见 §11.2；D4–D6 未开始，三种布局、手势、设置、进度、下载/处理能力的完整迁移均保留原路径。
 
 ### 11.1 D2 映射与原图观测切片（2026-09-06，限域验收）
 
@@ -344,6 +348,30 @@ D1 当前为技术候选，完整迁移仍 OPEN：两个 HAR、三个独立 adap
 - 精确未验证边界：197 新鲜读取的四个已有 manifest 中，无“现存章节零页目录 + 完整下载”的样本；该新分支只有 host 验证，不能写成设备通过。两章均本地可用的连续切章与派生缩略图也未验。不会制造/改写用户书库样本来掩盖缺口。
 - 后续安全步骤：在同一 debug 入口接入实际 display map/模式视口和基于实测位置的锚点恢复，再做三方同场景验证；预加载、设置适配等 D2 余项分别推进。三种布局视觉/手势迁移属于 D3，不因 map 测试通过就宣布完成；生产替换、持久进度迁移及跨章默认策略仍不授权。
 - 持久检查点：共享 map `593b4ba`、原图观测与资源身份 `dfbda1f`。NextN 将本节、lab 接线和本轮协议/验收记录独立提交；NextE/Koma 试接继续保留可审查 WIP，未混入各自其他任务提交。共享库无 remote/发布，三方仍依赖本地 sibling 源码，不作为独立可发布构建。
+
+### 11.2 D3 选中显示项视口 — 2026-09-06（限域实现，完整 D3 仍 OPEN）
+
+- 共享检查点 `07bc120`：`ReaderPagedSession` 是唯一显示映射/锚点所有者，最多两个已有 `ReaderSession` 资源槽，单元目录只打开一次。选中项才取页元数据，不预先下载整章。`ReaderPagedViewport` 只负责像素与呈现/可见/失败事件，诊断按钮仍在独立 `ReaderLabSurface`；三个宿主 Lab 只替换会话构造类型，不改生产 ReaderPage。
+- 视口输入是 whole、物理 left/right 或 joined spread。共同高度由有效视口和原图比例决定，RTL 只反转视觉左右。原生原图尺寸迟到可重建映射但保留稳定原页/物理半边；缩略图尺寸不进入原图拓扑。NH 独立预览和 EH 精灵图裁切仍走各自缩略图描述，不套原图半片。
+- 可见事实采用 selection/slot/asset/fragment 四重身份。非选中双页先解码不能夺取锚点；新半页复用资源时仍可报告失败并强制重试；过期半页/资源不能污染当前页。换章准备失败保留旧像素/观测值及其旧单元身份，普通最后一项翻页不自动跨章。章节读完、历史、tracker、持久进度/偏好全部仍归宿主，Lab 不写入。
+- 真实 core 测试40/40（16映射、15旧会话、9分页会话）通过，独立复跑及额外竞态/重入检查通过。初版 `Select.fontSize` 编译失败，按原生 API 改为 `.font({ size: 14 })`。独立预设备审查拒绝 ForEach 闭包绑定旧 snapshot 导致 spinner/比例不更新，以及同资源新半页失败不触发 retry；修正后才安装。首次 Koma 空目录实机又发现 `1 / 0`，明确标失败并改为 `0 / 0` 后复验。编译/测试不作为视觉验收。
+
+237 实测统一身份：VDE-AL00，portrait1320x2120，app root `[0,117][1320,2120]`，fold unknown。证据根为 `.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3/`，每一项终点原图由主控实看，N/E主链与Koma空态另有独立整页复核：
+
+| 候选 / 证据 | 当前实际结果 | 不扩大的边界 |
+| --- | --- | --- |
+| N build4，02–07 | 完整长图；独立缩略图；joined双页、RTL、封面对齐后保留第二原图；single/Home/resume原位置；Back普通Browse。 | 03是菜单打开态，不能拿它证明关闭菜单全图。02模板误写build2，实际build4 HAP06:09:02产出、06:09:34安装；保留原记录和更正说明。 |
+| E build2，08–14 | 原图whole→left→right复用slot1/request1；RTL保留right；sprite整区域不再裁半；joined RTL保留第二原图；single/Home同right；Back普通Gallery。 | 不代表动画帧、旋转或手势接受。 |
+| Koma旧固定包，15/16 | 保留数据升级后普通启动仍是空书架；显式请求237缺少的真实章节进入failed。 | 16的1/0是失败证据，不计视觉通过。 |
+| 最终 Koma build1，17/18 | 新计数0/0；点击Retry后明确failed、无残留spinner；Back空书架。前后library/queue路径均明确不存在，没有制造书库。 | 缺内容不是成功阅读；Retry不可能恢复不存在的目录，不声称图像失败恢复通过。 |
+| 最终 N build5，19/20 | 同页NH独立预览在关闭菜单态完整显示，图像447×814px；非空计数正常；Back普通Browse。 | 原图仍是另外一张极长图，不能把预览比例借给它。 |
+| 最终 E build3，21/22 | 第二原图在RTL joined左侧，原图1在右侧，共同381px高、相邻边x660；sourceIndex1仍为观测锚点；Back普通Gallery。 | 本次whole锚点没有经历拆分，不倒签为right半页测试。 |
+
+- 最终三端串行签名构建 N5 10s105ms、E3 12s522ms、K1 9s172ms 成功；E V1 inventory0/561。K1构建源包13,407,533bytes、06:32:03，固定副本 `/private/tmp/readerk-d3-koma-final-signed.hap` 复制时间06:33:24；另一任务的 `rdr001-final-signed.hap` 不变。最终计数修正没有改任何非空文本/viewport表达式；旧主链包和最终冒烟包证据分别标注，不倒签。
+- 197补充交叉：ALN-AL80，portrait1260x2720，app root `[0,124][1260,2720]`，fold not-applicable。真实ONE PIECE00話2/23经过single→joinedLTR→RTL→封面单/双→single/Home/resume始终保留sourceIndex1/whole；active=false回调被拒、active=true后同selection13/slot1/request1可观测。RTL实际pane为 `[39,1192][810,1781]` 和 `[810,1192][1221,1781]`，不同原图宽度、共同589px高且相邻。主控实看初始、LTR/RTL、恢复及Back书架整图；fresh reader-sessions先与生产任务末次基线相同，最终reader-sessions8,919bytes及library550,852bytes再与测试前逐字节相同。A00話23/23 completed/isRead=true、B01卷3/210 unread未变。证据 `Koma/.hermes-artifacts/device197__ALN-AL80/not-applicable/portrait-1260x2720/20260906-reader-kit-d3-cross/`，10个项目协议归本切片。
+- 237租约 `20260905-220032-1008e7a4` 已释放且状态readback为released，三个Lab均退出；197独立QA回grid并释租，生产任务已确认接回并开始下一阶段。197只在可用窗口补交叉，不作为237前置条件，也不混算生产RDR验收；其后安装/页面状态由接续任务拥有，不能宣称仍停在本轮D3候选。
+- 发布/范围边界：NextN只提交Lab接线和本切片记录/协议；E/K试接保留各自可审查WIP，未混入其他任务生产提交。共享库仍无remote/发布/CI checkout，三方依赖本地sibling源码；不是可单独发布的正式接入。
+- 下一步：D3剩余的实际翻页容器与缩放/拖动输入仲裁、连续阅读/可见锚点、失败/工具栏完整父级树应继续在可选入口分块接入。每块有对照和回归证据后才向前推进；默认替换、设置/进度迁移、Koma无缝跨章策略仍不授权。Koma零页目录manifest fallback、派生缩略图、两章本地可用成功切章仍有独立未验证边界。
 
 ## 附录：本次读取的主要源码定位
 
