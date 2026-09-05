@@ -7,7 +7,7 @@ const STORE_CONFIG: relationalStore.StoreConfig = {
   autoCleanDirtyData: true,
 }
 
-const SCHEMA_VERSION: number = 26
+const SCHEMA_VERSION: number = 27
 const SQL_CREATE_READING_HISTORY: string =
   'CREATE TABLE IF NOT EXISTS reading_history (' +
   'gallery_id INTEGER PRIMARY KEY, ' +
@@ -85,6 +85,14 @@ const SQL_CREATE_ACCOUNT_SESSION: string =
   'key TEXT PRIMARY KEY NOT NULL, ' +
   'ciphertext TEXT NOT NULL, ' +
   'nonce TEXT NOT NULL, ' +
+  'updated_at INTEGER NOT NULL)'
+// The active owner must commit with the primary encrypted envelope. Keeping
+// this identity in Preferences allowed a process death between the two stores
+// to attribute account B's rotated credential to account A.
+const SQL_CREATE_ACCOUNT_SESSION_OWNER: string =
+  'CREATE TABLE IF NOT EXISTS account_session_owner (' +
+  'key TEXT PRIMARY KEY NOT NULL, ' +
+  'account_id TEXT NOT NULL, ' +
   'updated_at INTEGER NOT NULL)'
 const SQL_CREATE_ACCOUNT_PROFILE: string =
   'CREATE TABLE IF NOT EXISTS account_profile (' +
@@ -295,6 +303,7 @@ export class LocalDataStore {
       await store.executeSql(SQL_CREATE_NH_GALLERY_DETAIL_CACHE_ACCESS_ORDER)
       await store.executeSql(SQL_CREATE_READER_SETTINGS)
       await store.executeSql(SQL_CREATE_ACCOUNT_SESSION)
+      await store.executeSql(SQL_CREATE_ACCOUNT_SESSION_OWNER)
       await store.executeSql(SQL_CREATE_ACCOUNT_PROFILE)
       await store.executeSql(SQL_CREATE_ACCOUNT_SESSION_VERIFICATION)
       await store.executeSql(SQL_CREATE_DOWNLOAD_QUEUE)

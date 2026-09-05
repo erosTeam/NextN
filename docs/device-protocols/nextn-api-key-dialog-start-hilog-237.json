@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-api-key-dialog-start-hilog-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-api-key-dialog-20260904T2135/start-hilog",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-16207aaff78921cdbb95ac9590640f28c4b4e1e5829fa266ac83d2547dbf345e",
+    "page": "cold-start-live-hilog-after-no-window",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Capture one bounded live startup log after the current installed candidate repeatedly starts a process but exposes no window. Preserve data and do not navigate, clear, sign out, open Web, alter credentials, submit, or operate another target."
+  },
+  "preflight": [
+    { "name": "verify-awake-before-start", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "cold-stop-nextn-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 300 },
+    { "name": "schedule-one-start-after-live-hilog-attaches", "hdcArgs": ["shell", "sh", "-c", "nohup sh -c 'sleep 2; aa start -b com.erosteam.nextn -a EntryAbility' >/data/local/tmp/nextn-api-key-dialog-start.log 2>&1 &"] }
+  ],
+  "measurement": {
+    "hilog": {
+      "hdcArgs": ["shell", "hilog", "-v", "time"],
+      "localFile": "hilog.txt"
+    },
+    "actions": [
+      { "name": "non-actionable-start-observation-boundary", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 7000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "read-scheduled-start-result", "hdcArgs": ["shell", "cat", "/data/local/tmp/nextn-api-key-dialog-start.log"] },
+    { "name": "read-nextn-process-after-start", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "read-window-after-start", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "list-faultlogger-directory", "hdcArgs": ["shell", "ls", "-lt", "/data/log/faultlog/faultlogger"] },
+    { "name": "cleanup-scheduled-start-result", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-api-key-dialog-start.log"] },
+    { "name": "verify-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

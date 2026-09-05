@@ -112,15 +112,83 @@ ok('backup restores WebDAV only as one complete encrypted credential group',
     /store\.putSync\('sync\.webdav\.url', group\.url\)[\s\S]*store\.putSync\('sync\.webdav\.password', group\.password\)/.test(adapter))
 
 const secretsAdapter = read('shared/src/main/ets/backup/BackupSecretsAdapter.ets')
+const accountSessionService = read('shared/src/main/ets/services/NhAccountSessionService.ets')
 ok('HUKS secrets ride only in the encrypted container and re-wrap on restore',
   /exportPlaintextForBackup\(context\)/.test(secretsAdapter) &&
-  /exportSealedForBackup\(context\)/.test(secretsAdapter) &&
+  /exportSealedForBackup\([\s\S]*context,[\s\S]*portable/.test(secretsAdapter) &&
   /restorePlaintextFromBackup\(context, llmValues\)/.test(secretsAdapter) &&
-  /exportAllSealedForBackup\(context\)/.test(secretsAdapter) &&
+  /exportAllSealedForBackup\([\s\S]*context,[\s\S]*portable/.test(secretsAdapter) &&
+  /portableApiKeyPayload/.test(accountSessionService) &&
+  /Legacy portable backups contain device\/session-family credentials/.test(accountSessionService) &&
   /restoreAllSealedFromBackup/.test(secretsAdapter))
+ok('portable account backup is v2 API-key-only and strips every Web session field',
+  /bundle\.version = portable \? 2 : 1/.test(accountSessionService) &&
+    /portableApiKeyPayload\(plaintext: string\): string \| null[\s\S]*NhNativeCredentialKind\.API_KEY/.test(
+      accountSessionService,
+    ) &&
+    /serializeSessionPayload\([\s\S]*'',\s*[\s\S]*'',\s*[\s\S]*\[\],\s*[\s\S]*NhNativeCredentialKind\.API_KEY,/.test(
+      accountSessionService,
+    ) &&
+    /isPortableBackupSessionPayload\(plaintext: string\): boolean[\s\S]*NhNativeCredentialKind\.API_KEY[\s\S]*payload\.cookieHeader\.length === 0[\s\S]*payload\.browserUserAgent\.length === 0[\s\S]*payload\.authCookies\.length === 0/.test(
+      accountSessionService,
+    ) &&
+    /validateBackupSessionPayload\(plaintext: string, portable: boolean\)[\s\S]*if \(portable\)[\s\S]*isPortableBackupSessionPayload\(plaintext\)/.test(
+      accountSessionService,
+    ))
+ok('portable account restore merges API keys without deleting target-local Web sessions',
+  /restoreAllSealedFromBackup\(\s*context,\s*sessionsValue as string,\s*replace,\s*replace,\s*\)/.test(
+    secretsAdapter,
+  ) &&
+    /AccountProfileRepository\.restoreBackup\(\s*context,\s*BackupSecretsAdapter\.parseAccountProfiles\(profilesValue as string\),\s*replace,\s*preserveExistingPrimary,\s*\)/.test(
+      secretsAdapter,
+    ) &&
+    /backupRestorePreservesExistingPrimary\(portable, replace\)/.test(accountSessionService) &&
+    /SQL_INSERT_SESSION_IF_ABSENT/.test(
+      read('shared/src/main/ets/storage/AccountSessionRepository.ets'),
+    ) &&
+    /preserveExistingPrimary \? SQL_INSERT_SESSION_IF_ABSENT : SQL_UPSERT_SESSION/.test(
+      read('shared/src/main/ets/storage/AccountSessionRepository.ets'),
+    ) &&
+    /ACCOUNT_ACTIVE_ID_KEY: string = 'account\.list\.activeId'/.test(adapter) &&
+    /BackupPreferencesAdapter\.restore\([\s\S]*preserveExistingPrimary,[\s\S]*retainedPrimaryOwnerId/.test(
+      secretsAdapter,
+    ) &&
+    /mergeKeepsCurrentActiveAccount\([\s\S]*preserveExistingPrimary/.test(adapter) &&
+    /mergeAccountIdLists\([\s\S]*retainedPrimaryOwnerId/.test(adapter) &&
+    /savedKeys\.length[\s\S]*preserveExistingPrimary \? SQL_INSERT_SESSION_IF_ABSENT : SQL_UPSERT_SESSION/.test(
+      read('shared/src/main/ets/storage/AccountSessionRepository.ets'),
+    ) &&
+    /if \(replace\) \{\s*await store\.executeSql\(SQL_DELETE_ALL_SESSIONS\)/.test(
+      read('shared/src/main/ets/storage/AccountSessionRepository.ets'),
+    ))
+ok('portable account restore preserves the target primary profile with its retained session',
+  /retainedSnapshot:[\s\S]*AccountSessionRepository\.loadForRestore\(context\)[\s\S]*retainedPrimary = retainedSnapshot\.record[\s\S]*preserveExistingPrimary = retainedPrimary !== null/.test(
+    secretsAdapter,
+  ) &&
+    /retainedPrimaryOwnerId = AccountSessionRepository\.resolvePrimaryOwner\(retainedSnapshot\)/.test(
+      secretsAdapter,
+    ) &&
+    /AccountSessionRepository\.saveVerifiedByKey\([\s\S]*retainedPrimaryOwnerId,[\s\S]*retainedPrimary/.test(
+      secretsAdapter,
+    ) &&
+    /AccountProfileRepository\.restoreBackup\([\s\S]*BackupSecretsAdapter\.parseAccountProfiles\(profilesValue as string\),[\s\S]*replace,[\s\S]*preserveExistingPrimary/.test(
+      secretsAdapter,
+    ) &&
+    /if \(preserveExistingPrimary && entry\.key === PROFILE_KEY\) \{[\s\S]*continue[\s\S]*SQL_UPSERT_PROFILE/.test(
+      read('shared/src/main/ets/storage/AccountProfileRepository.ets'),
+    ))
+ok('portable restore leaves imported owners unselected when a retained primary has no known owner',
+  /reconcileRestoredCredentialIds\([\s\S]*preserveExistingPrimary,[\s\S]*retainedPrimaryOwnerId/.test(
+    secretsAdapter,
+  ) &&
+    /restoredActiveAccountId\([\s\S]*targetPrimaryPresent,[\s\S]*retainedPrimaryOwnerId[\s\S]*ids\.indexOf\(retained\) >= 0[\s\S]*currentActiveAccountId\.trim\(\)[\s\S]*return !targetPrimaryPresent && ids\.length > 0 \? ids\[0\] : ''/.test(
+      read('shared/src/main/ets/settings/AccountListSettings.ets'),
+    ))
 ok('ordinary Preferences secrets are connected to the encrypted section',
   /BackupPreferencesAdapter\.exportSecrets\(context\)/.test(secretsAdapter) &&
-    /BackupPreferencesAdapter\.restore\(context, map, true\)/.test(secretsAdapter) &&
+    /BackupPreferencesAdapter\.restore\([\s\S]*context,[\s\S]*map,[\s\S]*true,[\s\S]*preserveExistingPrimary/.test(
+      secretsAdapter,
+    ) &&
     /BackupPreferencesAdapter\.replace\(context, map, true\)/.test(secretsAdapter))
 ok('Torii settings, credential, and volatile cache have distinct backup policies',
   /PLAINTEXT_STORES[\s\S]*'nextn_comic_visual_provider'/.test(adapter) &&
@@ -168,7 +236,7 @@ ok('checksum is verified on parse',
 ok('restore snapshots durable stores and rolls back on section failure',
   /const rollbackPreferences: SettingsMap = await BackupPreferencesAdapter\.exportPreferences\(context\)/.test(svc) &&
     /const rollbackLocalData: BackupLocalDataSection = await BackupLocalDataAdapter\.exportSection\(context\)/.test(svc) &&
-    /const rollbackSecrets: SettingsMap = await BackupSecretsAdapter\.exportSecrets\(context\)/.test(svc) &&
+    /const rollbackSecrets: SettingsMap = await BackupSecretsAdapter\.exportSecrets\(context, false\)/.test(svc) &&
     /await BackupPreferencesAdapter\.replace\(context, rollbackPreferences, false\)/.test(svc) &&
     /await BackupLocalDataAdapter\.restoreSection\(context, rollbackLocalData\)/.test(svc) &&
     /await BackupSecretsAdapter\.restoreSecrets\(context, rollbackSecrets, true\)/.test(svc) &&
@@ -178,6 +246,20 @@ ok('restore suppresses scheduled provider sync across the whole transaction wind
     /SyncScheduler\.suspendAutomaticSync\(\)[\s\S]*const rollbackPreferences/.test(svc) &&
     /SyncScheduler\.resumeAutomaticSync\(\)/.test(svc) &&
     !/HuaweiCloudSyncService/.test(svc))
+ok('encrypted restore fences account ownership across mutation, reapply, and rollback',
+  /NhAccountSessionService\.beginBackupRestoreTransition\(context\)/.test(svc) &&
+    /const rollbackSecrets:[\s\S]*beginBackupRestoreTransition\(context\)[\s\S]*BackupPreferencesAdapter\.restore/.test(
+      svc,
+    ) &&
+    /BackupSecretsAdapter\.reapply\(context\)[\s\S]*finally \{[\s\S]*finishBackupRestoreTransition\(accountTransitionEpoch\)/.test(
+      svc,
+    ) &&
+    /beginBackupRestoreTransition[\s\S]*restoreTask !== null[\s\S]*sessionTransitionInFlight[\s\S]*beginDurableSessionTransition\(\)/.test(
+      accountSessionService,
+    ) &&
+    /finishBackupRestoreTransition[\s\S]*advanceSessionEpoch\(\)[\s\S]*finishDurableSessionTransition[\s\S]*publishSessionChange/.test(
+      accountSessionService,
+    ))
 
 const syncScheduler = read('shared/src/main/ets/sync/SyncScheduler.ets')
 const webDavScheduler = read('shared/src/main/ets/sync/WebDavSyncScheduler.ets')

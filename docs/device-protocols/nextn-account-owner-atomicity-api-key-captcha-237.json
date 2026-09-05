@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-account-owner-atomicity-api-key-captcha-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/api-key-captcha-20260904T0403",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-00dc0e7ea3a74296aec9d9f316d169554ef3ff3acffbe2fb0f5b0cb900cc08d6",
+    "page": "official-api-key-captcha-only-before-create",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Within the open 0403 API-key epoch, activate the currently visible first-party Cloudflare checkbox exactly once, then stop for the immediate value-free token probe. The semantic Key Name field is already filled and the response bridge is installed. Do not enter text, submit Create Key, capture a screen or layout, receive diagnostics, or expose a credential."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      {
+        "name": "complete-current-cloudflare-checkbox-exactly-once",
+        "uiInput": ["click", "191", "1892"],
+        "repeat": 1,
+        "intervalMs": 0,
+        "pauseAfterMs": 900,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": []
+}

@@ -47,6 +47,8 @@ class AccountProfileSummary {
 export struct AccountPage {
   /** Opens the selected account's first-party settings in the shared session WebView. */
   @Event onOpenNhSettings?: () => void
+  /** Opens the normal API-key onboarding child; never a hidden developer route. */
+  @Event onOpenApiKeySetup?: () => void
   @Local accountList: AccountListState = connectAccountList();
   @Local accountSession: AccountSessionState = connectAccountSession();
   @Local accountProfile: AccountProfileState = connectAccountProfile();
@@ -54,6 +56,28 @@ export struct AccountPage {
   @Local isMutatingAccount: boolean = false;
   @Local isSigningOut: boolean = false;
   private scroller: Scroller = new Scroller();
+
+  private apiKeySummary(): string {
+    if (this.accountSession.verificationRequired &&
+      this.accountSession.verificationRecoveryKind === 'api_key') {
+      return AppStrings.get('account_api_key_status_update_hint')
+    }
+    return AppStrings.get(this.accountSession.authenticationAvailable &&
+      this.accountSession.credentialKind === 'api_key'
+      ? 'account_api_key_status_bound_hint'
+      : 'account_api_key_status_not_bound_hint')
+  }
+
+  private apiKeyStatus(): string {
+    if (this.accountSession.verificationRequired &&
+      this.accountSession.verificationRecoveryKind === 'api_key') {
+      return AppStrings.get('account_api_key_verification_required')
+    }
+    return AppStrings.get(this.accountSession.authenticationAvailable &&
+      this.accountSession.credentialKind === 'api_key'
+      ? 'account_api_key_status_bound'
+      : 'account_api_key_status_not_bound')
+  }
 
   aboutToAppear(): void {
     this.reload()
@@ -201,18 +225,7 @@ export struct AccountPage {
     }
     this.isMutatingAccount = true
     try {
-      const wasActive: boolean = accountId === this.accountList.activeAccountId
-      const remaining: string[] = await AccountListSettings.remove(this.ctx(), accountId)
-      if (wasActive) {
-        if (remaining.length > 0) {
-          const switched: boolean = await AccountListSettings.switchTo(this.ctx(), remaining[0])
-          if (!switched) {
-            this.toast(AppStrings.get('account_switch_failed'))
-          }
-        } else {
-          await NhAccountSessionService.clear(this.ctx())
-        }
-      }
+      await AccountListSettings.remove(this.ctx(), accountId)
       await this.loadAccountProfiles()
     } catch (_error) {
       this.toast(AppStrings.get('account_clear_failed'))
@@ -256,15 +269,7 @@ export struct AccountPage {
     try {
       const activeAccountId: string = this.accountList.activeAccountId
       if (activeAccountId.length > 0) {
-        const remaining: string[] = await AccountListSettings.remove(this.ctx(), activeAccountId)
-        if (remaining.length > 0) {
-          const switched: boolean = await AccountListSettings.switchTo(this.ctx(), remaining[0])
-          if (!switched) {
-            this.toast(AppStrings.get('account_switch_failed'))
-          }
-        } else {
-          await NhAccountSessionService.clear(this.ctx())
-        }
+        await AccountListSettings.remove(this.ctx(), activeAccountId)
       } else {
         await NhAccountSessionService.clear(this.ctx())
       }
@@ -380,6 +385,22 @@ export struct AccountPage {
           },
           (accountId: string): string => accountId,
         )
+        ListItem() {
+          NextNGroupedListSection() {
+            NextNListRow({
+              leadingIcon: $r('sys.symbol.key'),
+              title: AppStrings.get('account_api_key_title'),
+              subtitle: this.apiKeySummary(),
+              trailingText: this.apiKeyStatus(),
+              isEnabled: !this.isMutatingAccount,
+              onAction: (): void => {
+                if (this.onOpenApiKeySetup) {
+                  this.onOpenApiKeySetup()
+                }
+              },
+            })
+          }
+        }
         if (this.accountSession.signedIn) {
           ListItem() {
             NextNGroupedListSection() {

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-s0-favorites-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/237/s0-favorites-20260903T1952",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-26c1e84ed76ac2fdbd41300cde8a097015c41b0009a78c05efe06d0249017bf9",
+    "page": "pre-api-key-native-favorites-s0",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Establish S0 authenticated Favorites on exact target 237 before creating a device-specific API Key. Force-stop and cold-start without clearing data, then use the normal Favorites tab. Do not alter account state or operate another target."
+  },
+  "preflight": [
+    { "name": "force-stop-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 300 },
+    { "name": "cold-start-candidate", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 3000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-favorites", "uiInput": ["click", "564", "2006"], "pauseAfterMs": 6000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-native-favorites", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-dual-auth-favorites-237.json", "-a"] },
+    { "name": "capture-native-favorites", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-dual-auth-favorites-237.png"] },
+    { "name": "receive-native-favorites-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-dual-auth-favorites-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/237/s0-favorites-20260903T1952/favorites.json"] },
+    { "name": "receive-native-favorites-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-dual-auth-favorites-237.png", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/237/s0-favorites-20260903T1952/favorites.png"] },
+    { "name": "receive-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/237/s0-favorites-20260903T1952/diagnostics"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-dual-auth-favorites-237.json", "/data/local/tmp/nextn-dual-auth-favorites-237.png"] }
+  ]
+}

@@ -108,6 +108,7 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `shared/src/main/ets/settings/TagTranslationSettings.ets#KEY_ENABLED` | setting | plaintext | excluded | Tag translation switch |
 | `shared/src/main/ets/settings/TagTranslationSettings.ets#KEY_USE_CDN` | setting | plaintext | excluded | Translation source policy |
 | `shared/src/main/ets/settings/TagTranslationSettings.ets#KEY_UPDATE_MODE` | setting | plaintext | excluded | Update mode |
+| `shared/src/main/ets/settings/TagTranslationSettings.ets#KEY_INTRO_IMAGE_LEVEL` | setting | plaintext | excluded | Tag detail intro image policy |
 | `shared/src/main/ets/settings/ThemeColorSettings.ets#THEME_COLOR_KEY` | setting | plaintext | excluded | Theme accent |
 | `shared/src/main/ets/settings/ThemeSettings.ets#THEME_KEY` | setting | plaintext | excluded | Theme mode |
 | `shared/src/main/ets/storage/LlmSourceProfileRepository.ets#LLM_SOURCE_PROFILES_KEY` | setting | plaintext | excluded | Provider metadata |
@@ -129,7 +130,8 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `nh_tag_catalog` | remote-cache | excluded | excluded | Regenerable tag catalog |
 | `nh_gallery_detail_cache` | remote-cache | excluded | excluded | Regenerable detail cache |
 | `reader_settings` | local-data | localData | excluded | Device-local reader preferences |
-| `account_session` | secret | encrypted-only | excluded | Active and saved sessions, target-HUKS re-wrapped |
+| `account_session` | secret | encrypted-only | excluded | Portable backup carries only verified API-key envelopes and target-HUKS re-wraps them; rotating access/refresh cookies, sessionid, CF state and browser UA stay device-local and are excluded |
+| `account_session_owner` | account-secret | encrypted-only | excluded | Non-secret saved-account id committed atomically with the active encrypted envelope; portable restore derives it only from one unambiguous active payload match |
 | `account_profile` | account-secret | encrypted-only | excluded | Active and saved display profiles |
 | `account_session_verification` | runtime | excluded | excluded | Recovery decision marker |
 | `download_queue` | operational | excluded | excluded | Device download task state |

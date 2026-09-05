@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-account-owner-atomicity-account-favorites-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/account-favorites-20260904T0355",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-main-00dc0e7ea3a74296aec9d9f316d169554ef3ff3acffbe2fb0f5b0cb900cc08d6-test-453b17b5c2350eda8f7478011b22d1110824484d0b98d9d99fc54c66e6772f0c",
+    "page": "data-preserving-cold-account-then-native-favorites",
+    "deviceAlias": "device-237",
+    "deviceModel": "unknown",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "diagnosticWindowStart": "2026-09-04T03:50:33.188213+08:00",
+    "notes": "Cold start the installed owner-atomicity candidate with data preserved, traverse the established native My to Account path, capture Account, return once to My, then open and capture native Favorites. Do not install, clear data, sign out, enter credentials, open Web content, submit forms, or operate any other target."
+  },
+  "preflight": [
+    { "name": "wake-authorized-target", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake-before-navigation", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "force-stop-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 300 },
+    { "name": "cold-start-candidate", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 6000, "timeoutSeconds": 30 },
+    { "name": "open-native-my", "hdcArgs": ["shell", "uitest", "uiInput", "click", "948", "2006"], "pauseAfterMs": 1200 },
+    { "name": "open-native-account", "hdcArgs": ["shell", "uitest", "uiInput", "click", "660", "390"], "pauseAfterMs": 1800 },
+    { "name": "dump-native-account", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-owner-atomicity-account-237.json", "-a"] },
+    { "name": "capture-native-account", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-owner-atomicity-account-237.png"] },
+    { "name": "receive-native-account-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-owner-atomicity-account-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/account-favorites-20260904T0355/account.json"] },
+    { "name": "receive-native-account-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-owner-atomicity-account-237.png", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/account-favorites-20260904T0355/account.png"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "preserve-account-precondition", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 300, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "return-to-native-my", "hdcArgs": ["shell", "uitest", "uiInput", "keyEvent", "KEYCODE_BACK"], "pauseAfterMs": 1000 },
+    { "name": "open-native-favorites", "hdcArgs": ["shell", "uitest", "uiInput", "click", "564", "2006"], "pauseAfterMs": 6000, "timeoutSeconds": 30 },
+    { "name": "dump-native-favorites", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-owner-atomicity-favorites-237.json", "-a"] },
+    { "name": "capture-native-favorites", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-owner-atomicity-favorites-237.png"] },
+    { "name": "receive-native-favorites-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-owner-atomicity-favorites-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/account-favorites-20260904T0355/favorites.json"] },
+    { "name": "receive-native-favorites-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-owner-atomicity-favorites-237.png", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/account-favorites-20260904T0355/favorites.png"] },
+    { "name": "receive-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/account-favorites-20260904T0355/diagnostics"] },
+    { "name": "verify-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-owner-atomicity-account-237.json", "/data/local/tmp/nextn-owner-atomicity-account-237.png", "/data/local/tmp/nextn-owner-atomicity-favorites-237.json", "/data/local/tmp/nextn-owner-atomicity-favorites-237.png"] }
+  ]
+}

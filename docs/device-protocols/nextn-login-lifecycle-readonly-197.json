@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-login-lifecycle-readonly-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-lifecycle-readonly-197-20260903T1306",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "installed-build-current-readonly",
+    "page": "current-untouched",
+    "orientation": "current-preserved",
+    "resolution": "1260x2720-no-ui-capture",
+    "notes": "Read only the existing product-redacted NextN diagnostics on exact target 197 for cross-device login-lifecycle comparison. Do not wake, change timeout, start, stop, navigate, click, dump layout, screenshot, install, clear data, sign out, open Web, enter credentials, submit, or alter account state."
+  },
+  "preflight": [
+    {
+      "name": "read-nextn-process-before-receive",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    },
+    {
+      "name": "read-power-state-before-receive",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "schema-required-non-actionable-boundary",
+        "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"],
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "receive-existing-redacted-diagnostics",
+      "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-login-lifecycle-readonly-197-20260903T1306/diagnostics"]
+    },
+    {
+      "name": "read-nextn-process-after-receive",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    },
+    {
+      "name": "read-power-state-after-receive",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    }
+  ]
+}

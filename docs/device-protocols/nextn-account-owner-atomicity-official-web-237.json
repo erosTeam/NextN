@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-account-owner-atomicity-official-web-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/official-web-session-reuse-20260904T0358",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-main-00dc0e7ea3a74296aec9d9f316d169554ef3ff3acffbe2fb0f5b0cb900cc08d6-test-453b17b5c2350eda8f7478011b22d1110824484d0b98d9d99fc54c66e6772f0c",
+    "page": "normal-native-path-to-shared-official-api-key-webview",
+    "deviceAlias": "device-237",
+    "deviceModel": "unknown",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "diagnosticWindowStart": "2026-09-04T03:56:34.939403+08:00",
+    "notes": "From the currently accepted native Favorites state, traverse the established My, Account, API Key and shared official WebView path and expose one bounded localhost DevTools forward for a value-free login-state probe. Do not install, cold start, clear data, sign out, enter or create credentials, submit forms, or operate any other target."
+  },
+  "preflight": [
+    { "name": "verify-awake-before-web-navigation", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-my", "uiInput": ["click", "948", "2006"], "pauseAfterMs": 1200, "timeoutSeconds": 30 },
+      { "name": "open-native-account", "uiInput": ["click", "660", "390"], "pauseAfterMs": 1800, "timeoutSeconds": 30 },
+      { "name": "open-api-key-onboarding", "uiInput": ["click", "660", "630"], "pauseAfterMs": 1800, "timeoutSeconds": 30 },
+      { "name": "open-official-api-key-settings", "uiInput": ["click", "660", "405"], "pauseAfterMs": 6000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-official-api-key-webview", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-owner-atomicity-official-web-237.json", "-a"] },
+    { "name": "capture-official-api-key-webview", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-owner-atomicity-official-web-237.png"] },
+    { "name": "receive-official-api-key-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-owner-atomicity-official-web-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/official-web-session-reuse-20260904T0358/official.json"] },
+    { "name": "receive-official-api-key-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-owner-atomicity-official-web-237.png", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/official-web-session-reuse-20260904T0358/official.png"] },
+    { "name": "create-bounded-webview-forward", "hdcArgs": ["fport", "tcp:19241", "tcp:19222"], "pauseAfterMs": 500 },
+    { "name": "receive-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/official-web-session-reuse-20260904T0358/diagnostics"] },
+    { "name": "verify-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-owner-atomicity-official-web-237.json", "/data/local/tmp/nextn-owner-atomicity-official-web-237.png"] }
+  ]
+}

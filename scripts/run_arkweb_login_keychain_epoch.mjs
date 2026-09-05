@@ -44,6 +44,7 @@ export const SAFE_EPOCH_FAILURE_CODES = [
   'login_form_not_ready',
   'account_focus_not_current',
   'field_not_empty',
+  'stale_captcha_token',
   'captcha_token_not_ready',
   'keychain_handle_unavailable',
   'keychain_security_unavailable',
@@ -314,7 +315,7 @@ function currentProbeFailure(epoch, stage, result) {
   return null
 }
 
-function initialS2Failure(epoch, probe) {
+function initialS2Failure(epoch, probe, freshChallengeBaselineObserved = false) {
   if (!probe.loginFormPresent || !probe.accountFieldPresent || !probe.passwordFieldPresent ||
     !probe.passwordFieldMasked) {
     return createEpochResult(epoch, false, 's2_account_precondition', 'login_form_not_ready')
@@ -324,6 +325,9 @@ function initialS2Failure(epoch, probe) {
   }
   if (probe.accountFieldFilled || probe.passwordFieldFilled) {
     return createEpochResult(epoch, false, 's2_account_precondition', 'field_not_empty')
+  }
+  if (probe.challengeResponseReady && !freshChallengeBaselineObserved) {
+    return createEpochResult(epoch, false, 's2_account_precondition', 'stale_captcha_token')
   }
   return null
 }
@@ -514,6 +518,7 @@ export async function runStagedLoginEpoch({
   timeoutMs,
   accountSecretBytes,
   passwordSecretBytes,
+  freshChallengeBaselineObserved = false,
 }, dependencies = {}) {
   const epoch = {
     accountEntered: false,
@@ -524,6 +529,7 @@ export async function runStagedLoginEpoch({
   const passwordSecret = passwordSecretBytes instanceof Uint8Array ? passwordSecretBytes : null
   if (!Number.isInteger(port) || !Number.isInteger(timeoutMs) || timeoutMs < MIN_TIMEOUT_MS ||
     timeoutMs > MAX_TIMEOUT_MS || accountSecret === null || passwordSecret === null ||
+    typeof freshChallengeBaselineObserved !== 'boolean' ||
     accountSecret.length === 0 || passwordSecret.length === 0 ||
     accountSecret.length > MAX_KEYCHAIN_SECRET_BYTES || passwordSecret.length > MAX_KEYCHAIN_SECRET_BYTES) {
     wipeBuffers([accountSecretBytes, passwordSecretBytes])
@@ -547,6 +553,13 @@ export async function runStagedLoginEpoch({
       preFocusProbe.accountFieldFilled || preFocusProbe.passwordFieldFilled) {
       return createEpochResult(epoch, false, 's2_account_precondition', 'login_form_not_ready')
     }
+    // A non-empty response that predates this credential epoch has no usable
+    // freshness signal. Never write credentials into that document: the
+    // server may reject it as expired even though the widget still renders a
+    // success state. A new document must prove not-ready before this epoch.
+    if (preFocusProbe.challengeResponseReady && !freshChallengeBaselineObserved) {
+      return createEpochResult(epoch, false, 's2_account_precondition', 'stale_captcha_token')
+    }
     const accountFocus = await semanticDriver({ port, action: 'focus-account', timeoutMs })
     if (accountFocus?.ok !== true || accountFocus.accountFieldFocused !== true || accountFocus.actionApplied !== true) {
       return createEpochResult(epoch, false, 's2_account_focus', 'account_focus_not_current')
@@ -556,7 +569,11 @@ export async function runStagedLoginEpoch({
     if (initialProbeError !== null) {
       return initialProbeError
     }
-    const initialStateError = initialS2Failure(epoch, initialProbe)
+    const initialStateError = initialS2Failure(
+      epoch,
+      initialProbe,
+      freshChallengeBaselineObserved,
+    )
     if (initialStateError !== null) {
       return initialStateError
     }

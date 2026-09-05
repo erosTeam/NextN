@@ -161,6 +161,7 @@ export class AccountProfileRepository {
     context: common.UIAbilityContext,
     entries: AccountProfileBackupEntry[],
     replace: boolean,
+    preserveExistingPrimary: boolean = false,
   ): Promise<void> {
     return AccountProfileRepository.enqueueWrite(async (): Promise<void> => {
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
@@ -175,6 +176,12 @@ export class AccountProfileRepository {
           const entry: AccountProfileBackupEntry = entries[i]
           if (entry.key.trim().length === 0 || !entry.profile.hasIdentity()) {
             throw new Error('account_profile_backup_shape_invalid')
+          }
+          if (preserveExistingPrimary && entry.key === PROFILE_KEY) {
+            // The source primary profile belongs to the source credential.
+            // Never attach it to a retained target primary, even when an old
+            // target has no primary profile row to protect with INSERT IGNORE.
+            continue
           }
           await store.executeSql(SQL_UPSERT_PROFILE, [
             entry.key,

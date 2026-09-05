@@ -53,6 +53,32 @@ export const SAFE_OUTPUT_KEYS = [
   'challengeResponseReady',
   'errorMarkerPresent',
   'submitEligible',
+  'apiKeySettingsPath',
+  'formMethodPost',
+  'formActionApiKeyEndpoint',
+  'apiKeyFieldNamedName',
+  'apiKeyBridgeInstalled',
+  'visibleTextFieldCountOne',
+  'accountFieldHasForm',
+  'accountFormHasChallengeResponse',
+  'accountFormSubmitCountOne',
+  'apiKeyChallengeFormPresent',
+  'apiKeyChallengeFormTextFieldOne',
+  'apiKeyChallengeFormSubmitOne',
+  'apiKeyNameLabelPresent',
+  'apiKeyNameLabelForInput',
+  'apiKeyNameLabelFieldVisible',
+  'apiKeyNameLabelFieldWithoutForm',
+  'apiKeyNameLabelFieldFilled',
+  'apiKeyNameFillRequested',
+  'apiKeyNameFillWrongPage',
+  'apiKeyNameFillFieldShapeFailed',
+  'apiKeyNameFillLookupFailed',
+  'apiKeyNameFillShapeMatched',
+  'apiKeyNameFillApplied',
+  'apiKeyNameFillStable',
+  'apiKeyNameFillCleared',
+  'apiKeyNameFillWriteRejected',
 ]
 
 // This expression is intentionally read-only. Its returned object has only
@@ -116,6 +142,41 @@ const LOGIN_STATE_EXPRESSION = `(() => {
   const passwordFieldFilled = passwordField !== null && passwordField.value.length > 0;
   const passwordFieldMasked = passwordField !== null &&
     String(passwordField.type || '').toLowerCase() === 'password';
+  let formActionApiKeyEndpoint = false;
+  try {
+    const actionUrl = new URL(String(form && form.action || location.href), location.href);
+    formActionApiKeyEndpoint = form !== null && actionUrl.origin === location.origin &&
+      actionUrl.pathname === '/api/v2/user/keys';
+  } catch (_error) {}
+  const textLikeFields = visibleInputs.filter((input) => {
+    const type = String(input.type || 'text').toLowerCase();
+    return type === '' || type === 'text';
+  });
+  const accountFormSubmitCount = form === null ? 0 : Array.from(
+    form.querySelectorAll('button[type="submit"], button:not([type]), input[type="submit"]')
+  ).length;
+  const accountFormHasChallengeResponse = form !== null && form.querySelector(
+    'input[name="cf-turnstile-response"], textarea[name="cf-turnstile-response"]'
+  ) !== null;
+  const challengeForm = challengeResponse === null ? null :
+    (challengeResponse.form || challengeResponse.closest('form'));
+  const challengeFormTextFields = challengeForm === null ? [] : Array.from(
+    challengeForm.querySelectorAll('input')
+  ).filter((input) => {
+    const type = String(input.type || 'text').toLowerCase();
+    return isVisible(input) && (type === '' || type === 'text' || type === 'search');
+  });
+  const challengeFormSubmitCount = challengeForm === null ? 0 : Array.from(
+    challengeForm.querySelectorAll('button[type="submit"], button:not([type]), input[type="submit"]')
+  ).length;
+  const apiKeyNameLabels = Array.from(document.querySelectorAll('label')).filter((label) =>
+    String(label.textContent || '').trim() === 'Key Name');
+  const apiKeyNameLabel = apiKeyNameLabels.length === 1 ? apiKeyNameLabels[0] : null;
+  const apiKeyNameLabelFor = apiKeyNameLabel === null ? '' :
+    String(apiKeyNameLabel.getAttribute('for') || '');
+  const apiKeyNameLabelField = apiKeyNameLabelFor.length === 0 ? null :
+    document.getElementById(apiKeyNameLabelFor);
+  const apiKeyNameFillState = String(window.__nextNApiKeyNameFillState || '');
   return {
     loginFormPresent: form !== null && accountField !== null && passwordField !== null,
     accountFieldPresent: accountField !== null,
@@ -135,10 +196,42 @@ const LOGIN_STATE_EXPRESSION = `(() => {
     errorMarkerPresent,
     submitEligible: accountField !== null && passwordField !== null && submit !== null &&
       accountFieldFilled && passwordFieldFilled && passwordFieldMasked && submitEnabled && formValid === true,
+    apiKeySettingsPath: location.origin === 'https://nhentai.net' && location.pathname === '/user/settings',
+    formMethodPost: form !== null && String(form.method || 'GET').toUpperCase() === 'POST',
+    formActionApiKeyEndpoint,
+    apiKeyFieldNamedName: accountField !== null && String(accountField.name || '') === 'name',
+    apiKeyBridgeInstalled: window.__nextNApiKeyCaptureInstalled === true,
+    visibleTextFieldCountOne: textLikeFields.length === 1,
+    accountFieldHasForm: accountField !== null && accountField.form !== null,
+    accountFormHasChallengeResponse,
+    accountFormSubmitCountOne: accountFormSubmitCount === 1,
+    apiKeyChallengeFormPresent: challengeForm !== null,
+    apiKeyChallengeFormTextFieldOne: challengeFormTextFields.length === 1,
+    apiKeyChallengeFormSubmitOne: challengeFormSubmitCount === 1,
+    apiKeyNameLabelPresent: apiKeyNameLabel !== null,
+    apiKeyNameLabelForInput: apiKeyNameLabelField instanceof HTMLInputElement,
+    apiKeyNameLabelFieldVisible: apiKeyNameLabelField instanceof HTMLInputElement &&
+      isVisible(apiKeyNameLabelField),
+    apiKeyNameLabelFieldWithoutForm: apiKeyNameLabelField instanceof HTMLInputElement &&
+      apiKeyNameLabelField.form === null,
+    apiKeyNameLabelFieldFilled: apiKeyNameLabelField instanceof HTMLInputElement &&
+      String(apiKeyNameLabelField.value || '').trim().length > 0,
+    apiKeyNameFillRequested: apiKeyNameFillState.length > 0,
+    apiKeyNameFillWrongPage: apiKeyNameFillState === 'wrong_page',
+    apiKeyNameFillFieldShapeFailed: apiKeyNameFillState === 'field_shape',
+    apiKeyNameFillLookupFailed: apiKeyNameFillState === 'lookup_error',
+    apiKeyNameFillShapeMatched: !['', 'requested', 'wrong_page', 'field_shape',
+      'lookup_error'].includes(apiKeyNameFillState),
+    apiKeyNameFillApplied: ['applied', 'already_filled', 'stable', 'cleared'].includes(
+      apiKeyNameFillState),
+    apiKeyNameFillStable: apiKeyNameFillState === 'stable' || apiKeyNameFillState === 'already_filled',
+    apiKeyNameFillCleared: apiKeyNameFillState === 'cleared',
+    apiKeyNameFillWriteRejected: apiKeyNameFillState === 'write_rejected' ||
+      apiKeyNameFillState === 'write_error' || apiKeyNameFillState === 'verify_error',
   };
 })()`
 
-function isObject(value) {
+export function isObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
@@ -199,6 +292,32 @@ export function normalizeProbeSummary(value) {
     challengeResponseReady: strictBoolean(value.challengeResponseReady),
     errorMarkerPresent: strictBoolean(value.errorMarkerPresent),
     submitEligible,
+    apiKeySettingsPath: strictBoolean(value.apiKeySettingsPath),
+    formMethodPost: strictBoolean(value.formMethodPost),
+    formActionApiKeyEndpoint: strictBoolean(value.formActionApiKeyEndpoint),
+    apiKeyFieldNamedName: strictBoolean(value.apiKeyFieldNamedName),
+    apiKeyBridgeInstalled: strictBoolean(value.apiKeyBridgeInstalled),
+    visibleTextFieldCountOne: strictBoolean(value.visibleTextFieldCountOne),
+    accountFieldHasForm: strictBoolean(value.accountFieldHasForm),
+    accountFormHasChallengeResponse: strictBoolean(value.accountFormHasChallengeResponse),
+    accountFormSubmitCountOne: strictBoolean(value.accountFormSubmitCountOne),
+    apiKeyChallengeFormPresent: strictBoolean(value.apiKeyChallengeFormPresent),
+    apiKeyChallengeFormTextFieldOne: strictBoolean(value.apiKeyChallengeFormTextFieldOne),
+    apiKeyChallengeFormSubmitOne: strictBoolean(value.apiKeyChallengeFormSubmitOne),
+    apiKeyNameLabelPresent: strictBoolean(value.apiKeyNameLabelPresent),
+    apiKeyNameLabelForInput: strictBoolean(value.apiKeyNameLabelForInput),
+    apiKeyNameLabelFieldVisible: strictBoolean(value.apiKeyNameLabelFieldVisible),
+    apiKeyNameLabelFieldWithoutForm: strictBoolean(value.apiKeyNameLabelFieldWithoutForm),
+    apiKeyNameLabelFieldFilled: strictBoolean(value.apiKeyNameLabelFieldFilled),
+    apiKeyNameFillRequested: strictBoolean(value.apiKeyNameFillRequested),
+    apiKeyNameFillWrongPage: strictBoolean(value.apiKeyNameFillWrongPage),
+    apiKeyNameFillFieldShapeFailed: strictBoolean(value.apiKeyNameFillFieldShapeFailed),
+    apiKeyNameFillLookupFailed: strictBoolean(value.apiKeyNameFillLookupFailed),
+    apiKeyNameFillShapeMatched: strictBoolean(value.apiKeyNameFillShapeMatched),
+    apiKeyNameFillApplied: strictBoolean(value.apiKeyNameFillApplied),
+    apiKeyNameFillStable: strictBoolean(value.apiKeyNameFillStable),
+    apiKeyNameFillCleared: strictBoolean(value.apiKeyNameFillCleared),
+    apiKeyNameFillWriteRejected: strictBoolean(value.apiKeyNameFillWriteRejected),
   }
 }
 
@@ -266,7 +385,7 @@ function isLocalDebuggerSocket(value, port) {
   }
 }
 
-async function fetchLocalPages(port, timeoutMs, transport = {}) {
+export async function fetchLocalPages(port, timeoutMs, transport = {}) {
   const startedAt = Date.now()
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
@@ -409,7 +528,7 @@ function fetchLocalPagesWithNodeHttp(port, timeoutMs, requestImpl = httpRequest)
   })
 }
 
-function selectLocalPages(pages, port) {
+export function selectLocalPages(pages, port) {
   const candidates = pages.filter((page) => isObject(page) && page.type === 'page' &&
     isLocalDebuggerSocket(page.webSocketDebuggerUrl, port))
   if (candidates.length === 0) {
@@ -421,7 +540,7 @@ function selectLocalPages(pages, port) {
   return { socketUrls: candidates.map((candidate) => candidate.webSocketDebuggerUrl) }
 }
 
-function waitForSocketOpen(socket, timeoutMs) {
+export function waitForSocketOpen(socket, timeoutMs) {
   return new Promise((resolve) => {
     let settled = false
     const finish = (result) => {
@@ -439,7 +558,7 @@ function waitForSocketOpen(socket, timeoutMs) {
   })
 }
 
-function sendCdp(socket, id, method, params, timeoutMs) {
+export function sendCdp(socket, id, method, params, timeoutMs) {
   return new Promise((resolve) => {
     let settled = false
     const finish = (result) => {
@@ -477,7 +596,7 @@ function sendCdp(socket, id, method, params, timeoutMs) {
   })
 }
 
-function closeQuietly(socket) {
+export function closeQuietly(socket) {
   try {
     socket.close()
   } catch (_error) {

@@ -1050,6 +1050,51 @@ async function selectUniqueLoginFormPage(socketUrls, timeoutMs) {
   return createFailure('page_selection', 'login_form_absent')
 }
 
+/**
+ * Reloads exactly one currently visible first-party login document. This is
+ * imported only by the atomic coordinator before any credential write when a
+ * pre-existing challenge response has no freshness proof.
+ */
+export async function runFreshLoginDocument({ port, timeoutMs }, transport = {}) {
+  if (!Number.isInteger(port) || !Number.isInteger(timeoutMs) ||
+    timeoutMs < MIN_TIMEOUT_MS || timeoutMs > MAX_TIMEOUT_MS) {
+    return createFailure('arguments', 'invalid_arguments')
+  }
+  const discovery = await fetchLocalPages(port, timeoutMs, transport)
+  if (!discovery.ok) {
+    return createFailure('devtools_discovery', discovery.code)
+  }
+  const selection = selectLocalPages(discovery.pages, port)
+  if (selection.socketUrls === undefined) {
+    return createFailure('page_selection', selection.code)
+  }
+  const selected = await selectUniqueLoginFormPage(selection.socketUrls, timeoutMs)
+  if (!selected.ok || typeof globalThis.WebSocket !== 'function') {
+    return selected.ok ? createFailure('cdp_connect', 'websocket_unavailable') : selected
+  }
+  let socket
+  try {
+    socket = new globalThis.WebSocket(selected.socketUrl)
+  } catch (_error) {
+    return createFailure('cdp_connect', 'open_failed')
+  }
+  try {
+    if (!await waitForSocketOpen(socket, timeoutMs)) {
+      return createFailure('cdp_connect', 'open_failed_or_timeout')
+    }
+    const reloaded = await sendCdp(socket, 1, 'Page.reload', {
+      ignoreCache: false,
+    }, timeoutMs)
+    if (reloaded.kind !== 'message' || !isObject(reloaded.message) ||
+      reloaded.message.error !== undefined) {
+      return createFailure('page_reload', 'reload_not_confirmed')
+    }
+    return { ok: true, stage: 'login_document_reload', reloadDispatched: true }
+  } finally {
+    closeQuietly(socket)
+  }
+}
+
 function actionPostcondition(action, summary) {
   if (!summary.loginFormPresent) {
     return createFailure('action_precondition', 'login_form_not_unique_or_missing')

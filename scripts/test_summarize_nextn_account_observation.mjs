@@ -32,7 +32,11 @@ function windowWith(children) {
   }
 }
 
-function verificationSnackBar() {
+function verificationSnackBar(
+  title = 'Verification needed',
+  message = 'Your sign-in expired. Verify it again to continue using account features.',
+  action = 'Verify again',
+) {
   return {
     attributes: { type: 'Dialog', clickable: 'true', visible: 'true' },
     children: [{
@@ -40,11 +44,11 @@ function verificationSnackBar() {
       children: [{
         attributes: { type: 'Column', visible: 'true' },
         children: [
-          { attributes: { type: 'Text', text: 'Verification needed', visible: 'true' }, children: [] },
+          { attributes: { type: 'Text', text: title, visible: 'true' }, children: [] },
           {
             attributes: {
               type: 'Text',
-              text: 'Your sign-in expired. Verify it again to continue using account features.',
+              text: message,
               visible: 'true',
             },
             children: [],
@@ -57,7 +61,7 @@ function verificationSnackBar() {
           children: [{
             attributes: { type: 'Button', visible: 'true' },
             children: [{
-              attributes: { type: 'Text', text: 'Verify again', visible: 'true' },
+              attributes: { type: 'Text', text: action, visible: 'true' },
               children: [],
             }],
           }],
@@ -125,6 +129,8 @@ try {
       'account_auth_expiry_shape phase=refresh_checkpoint;access=lt_24h;refresh=lt_7d',
       'account_response_cookie_stored',
       'account_response_auth_cookie_applied',
+      'account_authenticated_read_refresh_response_rejected',
+      'account_authenticated_read_identity_mismatch',
       'favorites_request_success',
     ].join('\n'),
     { encoding: 'utf8', mode: 0o600 },
@@ -160,6 +166,8 @@ try {
   })
   assert.equal(summary.diagnostics.responseCookieStored, true)
   assert.equal(summary.diagnostics.responseAuthCookieApplied, true)
+  assert.equal(summary.diagnostics.refreshResponseRejected, true)
+  assert.equal(summary.diagnostics.identityMismatch, true)
   assert.equal(summary.diagnostics.favoritesSuccess, true)
   assert.equal(summary.diagnostics.terminal401, false)
   assert.deepEqual(summary.diagnostics.authExpiryShapes, [
@@ -174,6 +182,8 @@ try {
     'account_auth_expiry_shape',
     'account_response_cookie_stored',
     'account_response_auth_cookie_applied',
+    'account_authenticated_read_refresh_response_rejected',
+    'account_authenticated_read_identity_mismatch',
     'favorites_request_success',
   ])
   assert.equal(summary.diagnostics.stages.some(({ stage }) =>
@@ -185,6 +195,8 @@ try {
       'account_restore_ready',
       'account_restore_verification_required_after_browser_refresh_failure',
       'account_auth_expiry_shape',
+      'account_authenticated_read_refresh_response_rejected',
+      'account_authenticated_read_identity_mismatch',
       'account_response_cookie_stored',
       'account_response_auth_cookie_applied',
       'favorites_request_success',
@@ -193,6 +205,22 @@ try {
   assert.equal(summary.diagnostics.scannedLogCount, 1)
   assert.equal(summary.diagnostics.windowed, false)
   assert.equal(summary.diagnostics.nextWindowStart, null)
+
+  await writeJson(join(directory, 'favorites.json'), windowWith([{
+    attributes: { id: 'nextn-favorites-root', visible: 'true' },
+    children: [{ attributes: { type: 'Grid', visible: 'true' }, children: [] }],
+  }, verificationSnackBar(
+    'API key rejected',
+    'Create or paste a current API key to restore native account access.',
+    'Update key',
+  )]))
+  const apiKeyVerificationSummary = await summarizeArtifact(directory)
+  assert.deepEqual(apiKeyVerificationSummary.favorites.verificationSnackBar, {
+    surfaceCount: 1,
+    visible: true,
+    reverifyActionVisible: true,
+    closeActionVisible: true,
+  })
 
   await writeJson(join(directory, 'favorites.json'), windowWith([{
     attributes: { id: 'nextn-favorites-root', visible: 'true' },

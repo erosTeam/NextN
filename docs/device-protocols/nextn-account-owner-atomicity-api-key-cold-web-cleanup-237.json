@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-account-owner-atomicity-api-key-cold-web-cleanup-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/api-key-cold-web-cleanup-20260904T0417",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-00dc0e7ea3a74296aec9d9f316d169554ef3ff3acffbe2fb0f5b0cb900cc08d6",
+    "page": "shared-official-api-key-web-forward-cleanup",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Remove only the exact bounded localhost DevTools mapping after the value-free cold Web-session probe. Do not navigate, click, start, stop, install, clear data, sign out, create or read a credential, or submit a form."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "non-actionable-measurement-boundary", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 0, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "remove-bounded-webview-forward", "hdcArgs": ["fport", "rm", "tcp:19242", "tcp:19222"] },
+    { "name": "verify-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] }
+  ]
+}

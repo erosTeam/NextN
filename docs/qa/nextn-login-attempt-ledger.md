@@ -1247,3 +1247,481 @@ Web login carrier.
 - conclusion: immediate promotion and one force-stop/cold-start S5/S6 cycle
   accepted on 237. This does not close the separate cross-day persistence and
   future terminal-401 notification observation.
+
+### nextn-197-device-api-key-20260903T1955 — 2026-09-03 19:55 +0800
+
+- trigger: create one device-specific first-party API Key from the official
+  settings page and verify clipboard-free native capture on authorized target
+  `192.168.50.197:12345`.
+- S0 Account: passed after data-preserving install and cold start; the ordinary
+  My-to-Account route retained the active saved account and exposed the normal
+  optional API Key row.
+- S0 Favorites: passed after a second force-stop/cold start without data clear;
+  the native Favorites grid loaded authenticated content.
+- install/data boundary: install-r=true; data-clear=false; uninstall=false.
+  Candidate SHA-256 is
+  `26c1e84ed76ac2fdbd41300cde8a097015c41b0009a78c05efe06d0249017bf9`.
+- key-name input: failed without secret exposure. The coordinate write did not
+  reach the official text field; a subsequent value-free CDP probe reported the
+  field present but empty.
+- CAPTCHA: ready according to the same value-free probe.
+- create: not submitted. The single click was issued while the form remained
+  invalid because the name field was empty; the page stayed on the creation
+  form and no credential was created.
+- automatic capture: not reached; no successful same-origin POST occurred.
+- native API-key promotion: not reached.
+- cold-start Account: not applicable to this failed epoch.
+- cold-start Favorites: not applicable to this failed epoch.
+- conclusion: closed without submission. Do not reuse this epoch. A new epoch
+  may begin only after the non-secret name field can be filled semantically.
+
+### nextn-197-device-api-key-20260903T2130 — 2026-09-03 21:30 +0800
+
+- trigger: a fresh 197 device-specific API Key attempt after the previous
+  no-submit epoch. The current candidate resolves the official `Key Name`
+  field through its unique label association and a value-free probe proved the
+  non-secret label remained filled after the page settled.
+- S0 Account: passed on the current data-preserving candidate. The ordinary
+  My-to-Account route retains the selected saved-account row and exposes both
+  the optional API Key row and the existing NH settings row.
+- S0 Favorites: passed after one force-stop/cold start without clearing data;
+  the native Favorites grid loaded authenticated content.
+- install/data boundary: install-r=true; data-clear=false; uninstall=false.
+  Candidate SHA-256 is
+  `e20327b486cf536cdfe94d9b270b7aab57bad217cf3647cb5e93cdb0f035da03`.
+- key-name input: passed. The post-load script resolved the official `Key Name`
+  label's unique `for` target and filled that visible input. The target input
+  legitimately had no parent form, which was the reason the earlier helper
+  stopped before applying the value. No coordinate or keyboard input was used.
+- CAPTCHA: passed once. A value-free probe first confirmed the semantic name
+  field remained filled; the single challenge action then produced a nonempty
+  challenge response without exposing its value.
+- create: submitted exactly once, immediately after the current challenge
+  response was observed. No repeated credential entry or submit occurred.
+- automatic capture: passed. The document-start same-origin response bridge
+  recorded `candidateCaptured=true`, and native validation recorded
+  `candidateVerified=true`; no clipboard access or key value appeared in an
+  artifact or message.
+- native API-key promotion: passed. Diagnostics recorded
+  `nativeApiKeyPromoted=true` with a valid capture/verify/promotion sequence,
+  and the Web destination automatically returned to the native Account page.
+- cold-start Account: passed after one force-stop/start without uninstall or
+  data clear. The selected account and authenticated Account actions remained
+  present.
+- cold-start Favorites: passed in that same cold process, without a second
+  cold start. The grid populated and diagnostics recorded one
+  `favorites_request_success` with a `valid_v4_api_key` restore and zero
+  initial-401, refresh-endpoint, browser-refresh, replay-recovery, API-key
+  rejection, terminal-401, or Favorites-failure events.
+- conclusion: complete on 197. This epoch proves device-specific API-key
+  capture, durable encrypted restore and direct authenticated Favorites use;
+  it does not grant stateful operation on 237 or by itself close the separate
+  portable-backup cross-device acceptance lane.
+
+### nextn-197-api-key-web-session-recovery-20260903T2220 — 2026-09-03 22:20 +0800
+
+- trigger: recover the first-party website session once after an earlier
+  candidate replaced the live ArkWeb identity pair with a persisted pair that
+  the website rejected. Native API-key authentication remains available.
+- S0 Account: passed after a data-preserving install and cold start; the
+  selected saved account and normal API Key row remain present.
+- S0 Favorites: retained from the accepted API-key epoch; no native sign-out,
+  uninstall or data clear occurred.
+- install/data boundary: install-r=true; data-clear=false; uninstall=false.
+  Candidate SHA-256 is
+  `283bbf1a7bbd79017d7d2d73df9fa5dd1e5e486f08e6d1d0f6246529b38578f7`.
+- login-page entry: passed through the ordinary My-to-Account-to-API-Key route.
+  The shared first-party WebView currently shows the official login form.
+- credential source: fixed Keychain handles; values are never logged or
+  written to an artifact. Presence-only diagnosis found both handles.
+- account/password/CAPTCHA/submit: passed in one atomic epoch. Both fixed
+  Keychain fields were staged once, the editor was blurred, the first-party
+  challenge reached its success state, and exactly one semantic submit was
+  dispatched.
+- post-login Web state: passed. The login form disappeared and the official
+  authenticated website home rendered.
+- force-stop/cold-start Web retention: passed with data preserved. Reopening
+  the ordinary My-to-Account-to-API-Key route rendered the authenticated
+  official API Key settings page, including the current account header and
+  API Keys section, without another login.
+
+### nextn-237-device-api-key-20260904T0403 — 2026-09-04 04:03 +0800
+
+- trigger: create one device-specific first-party API Key from the already
+  authenticated official settings page and verify automatic native capture,
+  durable promotion and cold authenticated use on the current candidate.
+- S0 Account: passed on the data-preserving candidate; the selected saved
+  account remained available on the ordinary native Account route.
+- S0 Favorites: passed before this epoch; authenticated native content loaded.
+- install/data boundary: install-r=true; data-clear=false; uninstall=false.
+  Candidate SHA-256 is
+  `00dc0e7ea3a74296aec9d9f316d169554ef3ff3acffbe2fb0f5b0cb900cc08d6`.
+- pre-create gate: passed. A value-free DOM probe reported the login form
+  absent, official API-key settings present, one visible Key Name field filled
+  through its semantic label association, and the capture bridge installed.
+- CAPTCHA: passed once. The current visible first-party checkbox was activated
+  once, and the immediate value-free probe reported a ready challenge response
+  while the semantic Key Name field and capture bridge remained ready.
+- create: submitted exactly once by the current DOM control after the official
+  settings path, unique Key Name label, filled field, ready challenge, unique
+  enabled `Create Key` control and capture bridge all passed in one check. No
+  historical button coordinate or repeated submit was used.
+- automatic capture and native promotion: passed. Product-redacted diagnostics
+  recorded exactly one `candidate_captured`, one `candidate_verified` and one
+  `native_api_key_promoted`, in that order, with no rejection, persistence
+  failure or active-account-record failure. The Web destination returned to
+  the native Account page automatically.
+- cold-start Favorites: passed after one force-stop/start without uninstall or
+  data clear. The new process restored `valid_v4_api_key`; native Favorites
+  loaded a collection and recorded one `favorites_request_success` with zero
+  initial-401, refresh, replay-recovery, terminal-401, API-key-rejection or
+  Favorites-failure events.
+- cold-start Account: passed in the same process. The native Account page
+  contained one saved account and exactly one selected owner with no Web
+  surface.
+- conclusion: complete for real device-specific API-key creation, automatic
+  capture, durable promotion and direct cold authenticated use on this
+  candidate. The promoted Key is intentionally retained as the optional
+  fallback instead of being revoked immediately.
+- cold-start Web retention: passed in the same process through the ordinary
+  native Account and API Key route. The value-free probe reported no login
+  form, the authenticated official settings path present and the capture
+  bridge installed. The temporary DevTools mapping was removed afterward.
+
+### nextn-237-api-key-replacement-after-rejection-20260904T0852 — 2026-09-04 08:52 +0800
+
+- trigger: replace the previously accepted device-specific API Key after its
+  deliberate server-side revocation proved the terminal rejection and native
+  recovery-notice path. The rejected credential is not eligible for reuse.
+- current safe state: the durable verification marker retains native account
+  ownership and cached content. The recovery action has opened the shared
+  first-party WebView on the authenticated official API-key settings page;
+  a value-free probe reports the login form absent, the Key Name field present
+  and the replacement name absent.
+- replacement name: `NextN 237 20260904`; this label is non-secret and is not
+  an account identifier or credential value.
+- key-name input: not-issued.
+- CAPTCHA: not-issued.
+- create submit: not-issued.
+- execution boundary: set the semantic Key Name field once, activate the
+  current first-party challenge once only if its response is not ready, and
+  dispatch the unique eligible Create Key control once. No retry is permitted
+  after submit; ambiguous transport must be resolved from product-redacted
+  capture, verification and promotion events.
+- acceptance still required: automatic candidate capture, server validation,
+  durable native API-key promotion, automatic native Account return, then one
+  data-preserving cold process proving native Account and authenticated
+  Favorites.
+
+#### 08:52 replacement epoch terminal result — 2026-09-04 09:02 +0800
+
+- key-name input: passed once through the unique semantic label association;
+  the non-secret name remained stable and no same-name active row was present.
+- CAPTCHA: no interaction was issued in this epoch. The value-free probe found
+  a nonempty challenge response already present before submit, but exposes no
+  freshness information.
+- create submit: dispatched exactly once after the fixed structural gate passed.
+- terminal observation: the page remained on the authenticated official
+  settings WebView; the expected active-key row was absent and product-redacted
+  diagnostics contained no candidate capture, verification or native promotion
+  event. No Web error marker or confirmation surface was present.
+- conclusion: closed without credential creation. The absent server result does
+  not establish whether the pre-existing challenge response was stale or the
+  request was rejected for another reason. This form will not be submitted
+  again.
+
+### nextn-237-api-key-replacement-fresh-page-20260904T0902 — 2026-09-04 09:02 +0800
+
+- trigger: complete the rejected-key recovery with a fresh official settings
+  document so the new attempt does not inherit the previous form or its
+  challenge response.
+- planned replacement name: `NextN 237 replacement 20260904T0902`; this label
+  is non-secret and distinct from the closed attempt.
+- current action: return once to the native API Key page and immediately reopen
+  the shared official settings page through the already established route.
+- key-name input: not-issued.
+- CAPTCHA: not-issued.
+- create submit: not-issued.
+- execution boundary: after the fresh page is value-free probed, fill the new
+  semantic name once, activate the current challenge once only if needed, and
+  submit exactly once when all gates are simultaneously true.
+
+#### 09:02 replacement epoch terminal result — 2026-09-04 09:10 +0800
+
+- the return-and-reopen route did not establish a fresh challenge boundary.
+  The probe still reported a pre-existing ready response before this epoch
+  performed any challenge action.
+- key-name input: passed once with the planned non-secret name.
+- CAPTCHA: not activated because the pre-existing response was incorrectly
+  treated as current.
+- create submit: dispatched exactly once; the page remained on official
+  settings, no same-name row appeared and no capture, verification or native
+  promotion event followed.
+- conclusion: closed without credential creation. No retry will occur on that
+  document.
+
+### nextn-237-api-key-replacement-fresh-process-20260904T0910 — 2026-09-04 09:10 +0800
+
+- trigger: discard both consumed documents with one data-preserving process
+  restart and enter the official settings route from the durable recovery
+  notice.
+- fresh-page gate: passed. The authenticated official settings page and capture
+  bridge are present, the login form is absent, and the challenge response is
+  explicitly present but not ready. This is the first replacement attempt with
+  an unconsumed challenge boundary.
+- planned replacement name: `NextN 237 replacement 20260904T0910`; non-secret
+  and distinct from both closed attempts.
+- key-name input: not-issued.
+- CAPTCHA: not-issued.
+- create submit: not-issued.
+- execution boundary: fill the semantic name once, activate the visible
+  first-party challenge once, confirm readiness immediately, then dispatch the
+  eligible Create Key control exactly once without another delay or retry.
+
+#### 09:10 fresh-process replacement epoch accepted — 2026-09-04 09:18 +0800
+
+- key-name input: passed once through the unique semantic label association;
+  the non-secret replacement name remained stable and no same-name active row
+  existed before creation.
+- CAPTCHA: passed once. The fresh process first proved
+  `challengeResponsePresent=true` and `challengeResponseReady=false`; after the
+  single established checkbox action, the immediate probe proved readiness
+  while the name and response bridge remained intact.
+- create submit: dispatched exactly once immediately after that readiness
+  observation. The bounded Web page then disappeared, so no retry was issued.
+- automatic capture and native promotion: passed. Product-redacted diagnostics
+  recorded exactly one `candidate_captured`, one `candidate_verified` and one
+  `native_api_key_promoted`, in that order, with no active-account-record,
+  rejection or persistence failure event.
+- data-preserving cold Account: passed after one force-stop/start. The native
+  Account page contained one saved owner, exactly one selected owner, no Web
+  surface, sign-in prompt, verification notice or save failure.
+- same-process Favorites: passed. The native collection rendered and diagnostics
+  recorded `favorites_request_success` after `account_restore_ready`, with no
+  terminal 401, API-key rejection, refresh-response rejection, identity mismatch
+  or Favorites failure.
+- cause of the two closed replacement attempts: a nonempty challenge response
+  was treated as sufficient even though those documents had not performed a
+  challenge action in their own epoch. Both produced no server key and no
+  capture event. The discriminating fresh-process run began at not-ready, moved
+  to ready after one current action and succeeded on its only submit. Future
+  automated creation must require a fresh-document not-ready-to-ready transition,
+  not only a nonempty response value.
+- conclusion: the deliberate rejected-key recovery is closed with one retained
+  replacement API Key and accepted automatic capture, durable promotion, cold
+  native Account restoration and authenticated Favorites use.
+
+## Final Web-session reseed after Cookie-preservation repair — 2026-09-04 18:08 +0800
+
+- trigger: the final API-key/page-container candidate preserves an independent
+  ArkWeb jar when the sealed native API-key record has no owned Web snapshot,
+  but the preceding installed candidate had already removed the existing Web
+  identity. The ordinary shared first-party WebView therefore opened the login
+  page and required one real session reseed before Web-retention acceptance.
+- first attempt account input: completed once through the fixed Keychain and
+  semantic CDP field path; no value was retained.
+- first attempt password input: completed once through the same private path;
+  no value was retained.
+- first attempt CAPTCHA: the document already exposed a nonempty response
+  before this credential epoch; it was incorrectly accepted as current.
+- first attempt submit: issued exactly once. The server left the form visible
+  with the explicit expired-CAPTCHA error; no Web authentication or native
+  promotion followed within the 120-second ceiling. This document and submit
+  are consumed and will not be retried.
+- proven executor defect: `waitForPostCredentialCfGate` could accept a response
+  that predated the credential epoch. The staged-login precondition now rejects
+  `challengeResponseReady=true` before any focus or field write, and the staged
+  resume path rejects the same unverifiable state. Account-history, network-
+  authority, settings-backup, persistence-inventory and diagnostic-event
+  regressions plus `git diff --check` pass.
+- next epoch: reopen the ordinary official page as a new document, prove the
+  challenge response is not ready before credential entry, then perform one
+  account input, one password input, the current CAPTCHA transition and one
+  immediate submit. No action in that new epoch has been issued yet.
+
+#### Fresh-document Web authentication result — 2026-09-04 18:31 +0800
+
+- the repaired coordinator established the required not-ready baseline before
+  credential entry, then performed one account write, one password write, one
+  current challenge transition and one submit.
+- Web authentication passed: the login form disappeared and the coordinator
+  observed an authenticated first-party landing. The regular-login native
+  promotion expectation was not applicable because this destination was the
+  API-key setup flow.
+- follow-up evidence exposed a separate product defect: API-key setup skipped
+  the ordinary visible-login Cookie checkpoint and did not return the trusted
+  post-login landing to official settings. A later data-preserving install
+  reopened a signed-out Web form, proving that the successful Web session had
+  remained process-local.
+- the final candidate now initializes the shared Cookie authority, persists the
+  regular ArkWeb jar on a trusted authenticated landing, then returns to the
+  requested official settings page. The embeddable Web leaf is unchanged.
+
+### nextn-237-api-key-final-cookie-checkpoint-login-20260904T1831 — 2026-09-04 18:31 +0800
+
+- trigger: reseed the Web session once in the final candidate so the corrected
+  API-key setup path can persist it and continue directly to official key
+  creation without another install.
+- fresh-page gate: passed. The final candidate shows the original first-party
+  login form with empty fields and an explicitly present but not-ready
+  challenge response.
+- account input: not-issued.
+- password input: not-issued.
+- CAPTCHA: not-issued.
+- submit: not-issued.
+- execution boundary: use the fixed Keychain and semantic staged coordinator;
+  require the current not-ready-to-ready transition and submit exactly once.
+  After the authenticated landing, continue to official settings and create
+  one distinct named API key only after a separate fresh challenge boundary.
+
+#### 18:31 final-cookie-checkpoint epoch result — 2026-09-04 18:39 +0800
+
+- account input, password input, current challenge transition and submit each
+  occurred exactly once; Web authentication passed and the login form
+  disappeared.
+- the page remained on an authenticated trusted landing. The ArkWeb
+  `onPageEnd` callback did not deliver the expected routing event, so neither
+  the Cookie checkpoint nor the return to official settings ran.
+- a direct fixed-origin navigation confirmed that the authenticated official
+  settings page and automatic Key-name bridge were functional. No Key was
+  created because the challenge response predated the Key-creation epoch.
+- one data-preserving cold process then returned to the login form, proving
+  that the page-end-only persistence hook had not executed. No credential or
+  Key submit was repeated.
+
+### nextn-237-api-key-final-load-fallback-login-20260904T1839 — 2026-09-04 18:39 +0800
+
+- trigger: install the candidate whose API-key host also classifies the loaded
+  document as `login`, `settings`, `trusted` or `other` in `onLoadFinished`.
+  A trusted completed document reuses the same Cookie checkpoint and official
+  settings route even when ArkWeb omits the usable page-end callback.
+- account input: not-issued.
+- password input: not-issued.
+- CAPTCHA: not-issued.
+- submit: not-issued.
+- execution boundary: one final staged login on a fresh not-ready challenge,
+  followed by automatic official-settings routing. API-key creation remains a
+  separate epoch requiring its own not-ready-to-ready transition.
+
+#### 18:39 load-fallback epoch result — 2026-09-04 18:46 +0800
+
+- account input, password input, current challenge transition and submit each
+  occurred exactly once; Web authentication passed.
+- neither the page-end callback nor the load-finished callback covered the
+  site's in-document authenticated transition. The page remained on the
+  trusted landing and the official settings route did not run. No Key action
+  was issued.
+- SDK and existing NextE source confirmed that `runJavaScript` returns the
+  direct string result, excluding result encoding as the cause.
+
+### nextn-237-api-key-final-document-bridge-login-20260904T1846 — 2026-09-04 18:46 +0800
+
+- trigger: install the tested candidate that extends the existing API-key
+  document-start bridge with a fixed `login/settings/trusted/other` page-state
+  signal. DOM, History and request completion can now notify the native host
+  even when ArkWeb emits no navigation callback.
+- account input: not-issued.
+- password input: not-issued.
+- CAPTCHA: not-issued.
+- submit: not-issued.
+- execution boundary: perform one staged login from a fresh not-ready baseline.
+  The bridge must then checkpoint the Web jar and automatically display the
+  official settings page before any API-key form action is permitted.
+
+#### 18:46 document-bridge epoch result — 2026-09-04 18:53 +0800
+
+- account input, password input, current challenge transition and submit each
+  occurred exactly once; Web authentication passed and the password form
+  disappeared.
+- the page remained on the authenticated in-document landing. A fixed
+  `trusted` notification sent through the added second proxy method did not
+  reach the native route, so the Cookie checkpoint and official-settings
+  transition were not accepted.
+- no API-key name, challenge or submit action was issued in this epoch.
+
+### nextn-237-api-key-final-single-capture-login-20260904T1853 — 2026-09-04 18:53 +0800
+
+- trigger: install the tested candidate that reuses the already proven single
+  `capture` proxy for both fixed page-state notifications and API-key capture.
+  A completed `/login/` document is classified as authenticated only after the
+  visible password form disappears, then the document itself navigates to the
+  fixed official API-key settings path while native code checkpoints the Web
+  Cookie jar.
+- account input: not-issued.
+- password input: not-issued.
+- CAPTCHA: not-issued.
+- submit: not-issued.
+- execution boundary: establish a fresh not-ready challenge baseline, perform
+  one staged login, and require automatic official-settings arrival plus a
+  data-preserving cold-process Web-session restore before starting a separate
+  API-key creation epoch.
+
+#### 18:53 single-capture epoch result — 2026-09-04 19:08 +0800
+
+- account input, password input, current challenge transition and submit each
+  occurred exactly once; Web authentication passed.
+- the existing single `capture` proxy delivered both `trusted` and `settings`
+  page-state events to native code, and the App automatically opened the
+  official API-key settings page. No API-key action was issued.
+- a data-preserving cold process returned to the login form. Redacted
+  diagnostics prove the page-state events reached native code, isolating the
+  failure after delivery: flushing ArkWeb alone did not attach the Web session
+  credentials to the current encrypted API-key account envelope.
+
+### nextn-237-api-key-verified-web-checkpoint-login-20260904T1943 — 2026-09-04 19:43 +0800
+
+- trigger: install the candidate that verifies the visible Web credential on
+  the fixed first-party account endpoint, requires its account id to match the
+  current API-key owner, then atomically checkpoints the Web snapshot into the
+  existing API-key envelope without replacing the API key.
+- account input: not-issued.
+- password input: not-issued.
+- CAPTCHA: not-issued.
+- submit: not-issued.
+- execution boundary: one fresh staged login followed by automatic official
+  settings arrival and a data-preserving cold-process restore. The same build
+  also restores the separate manual existing-key binding path; no key creation
+  or manual binding begins before the Web checkpoint passes.
+
+#### 19:43 verified checkpoint epoch accepted — 2026-09-04 19:51 +0800
+
+- account input, password input, the current challenge transition and login
+  submit each occurred exactly once through the existing staged coordinator.
+- Web authentication passed. The legacy regular-login coordinator returned
+  `web_authenticated_native_promotion_failed`, which is not the API-key setup
+  completion predicate; product diagnostics independently recorded
+  `browser_session_checkpointed` after the same-account verification succeeded.
+- the official-settings transition did not occur because generic `onPageEnd`
+  reserved the one-shot navigation flag before the verified checkpoint callback.
+  This was a product route-order defect, not another credential or CAPTCHA failure.
+- the corrected API-key setup path no longer routes from `onPageEnd`; the verified
+  document classifier/checkpoint is the sole owner of that transition. A new signed
+  build then cold-restored the authenticated official settings page.
+
+### nextn-237-api-key-shared-create-20260904T1954 — 2026-09-04 19:54 +0800
+
+- trigger: prove the user-visible optional official-create path after the verified
+  same-account Web snapshot survived a data-preserving cold process.
+- planned name: `NextN 237 shared 20260904T1954`; non-secret and unique.
+- first document name input: issued once. Its synthetic DOM `button.click()` was
+  not accepted as a trusted user submit; the official list remained at five keys,
+  the planned name was absent and no native capture event occurred. That document
+  was closed without a retry.
+- fresh document name input: issued once with the same non-secret name. The current
+  challenge became ready on that document without a manual checkbox action.
+- trusted create submit: dispatched exactly once through CDP pointer events to the
+  semantically selected visible Create Key control. No second submit occurred.
+- automatic result: accepted. The App returned to the native API Key page and
+  recorded `candidate_captured` → `candidate_verified` →
+  `native_api_key_promoted` exactly once. Native status showed Bound, the planned
+  name and a masked identity; the complete key was not refilled.
+- official verification: after the same data-preserving cold process, the
+  authenticated settings page contained six keys and exactly one planned-name row,
+  with no login form or dialog.
+- native verification: the cold Account/Favorites sequence completed without a
+  terminal 401, rejection or identity mismatch. After one invalid non-secret
+  manual candidate, the prior identity remained and a non-cold Favorites pull
+  refresh recorded `favorites_request_success`.
+- valid manual cross-device import remains unissued because this scope has no
+  second user-supplied complete key and the created secret is intentionally not
+  extracted from encrypted storage.

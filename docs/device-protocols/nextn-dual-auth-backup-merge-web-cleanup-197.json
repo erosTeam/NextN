@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-backup-merge-web-cleanup-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/backup-merge-web-forward-cleanup-20260904T0144",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-15dfe07bdd32ef497f47de136ea0eb5ddf7f30315878cd8473fa2b1e0bb54f8c",
+    "page": "bounded-devtools-forward-cleanup",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Remove only the temporary localhost ArkWeb forward created for the value-free WebView probe on exact target 197. Do not navigate, stop, install, clear data or alter account state."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "schema-required-non-actionable-boundary", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 10, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "remove-bounded-webview-forward", "hdcArgs": ["fport", "rm", "tcp:19231", "tcp:19222"] },
+    { "name": "verify-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] }
+  ]
+}

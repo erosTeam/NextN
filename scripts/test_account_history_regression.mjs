@@ -33,12 +33,21 @@ const session = read('shared/src/main/ets/services/NhAccountSessionService.ets')
 const api = read('shared/src/main/ets/network/NhApiClient.ets')
 const sessionHttpClient = read('shared/src/main/ets/network/NhSessionHttpClient.ets')
 const nhApiHttpTransport = read('shared/src/main/ets/network/NhApiHttpTransport.ets')
+const refreshResponseCodec = read('shared/src/main/ets/network/NhRefreshResponseCodec.ets')
 const accountState = read('shared/src/main/ets/state/AccountSessionState.ets')
 const browserPage = read('feature/user/src/main/ets/pages/BrowserSessionPage.ets')
+const ehWebView = read('shared/src/main/ets/components/EhWebView.ets')
+const webPageScaffold = read('shared/src/main/ets/components/NextNWebPageScaffold.ets')
+const galleryWebPage = read('entry/src/main/ets/pages/GalleryWebPage.ets')
 const accountPage = read('feature/settings/src/main/ets/pages/AccountPage.ets')
+const accountApiKeyPage = read('feature/settings/src/main/ets/pages/AccountApiKeyPage.ets')
+const accountApiKeyBuildBody = accountApiKeyPage.split('\n  build() {')[1] ?? ''
+const accountAuthNoticeState = read('shared/src/main/ets/state/AccountAuthNoticeState.ets')
 const accountList = read('shared/src/main/ets/settings/AccountListSettings.ets')
 const accountProfile = read('shared/src/main/ets/services/NhAccountProfileService.ets')
 const sessionRepository = read('shared/src/main/ets/storage/AccountSessionRepository.ets')
+const localDataStore = read('shared/src/main/ets/storage/LocalDataStore.ets')
+const backupSecrets = read('shared/src/main/ets/backup/BackupSecretsAdapter.ets')
 const entryAbility = read('entry/src/main/ets/entryability/EntryAbility.ets')
 const settingsPage = read('feature/settings/src/main/ets/pages/SettingsPage.ets')
 const diagnosticsRedactor = read('shared/src/main/ets/diagnostics/DiagnosticsRedactor.ets')
@@ -47,15 +56,27 @@ const atomicLoginCycle = read('scripts/run_nextn_account_login_cycle.mjs')
 const arkWebLoginDriver = read('scripts/drive_arkweb_login_field.mjs')
 const arkWebLoginProbe = read('scripts/probe_arkweb_login_state.mjs')
 const arkWebCookieShapeProbe = read('scripts/probe_arkweb_cookie_shape.mjs')
+const arkWebApiKeySubmit = read('scripts/submit_arkweb_api_key_once.mjs')
 const entryIndex = read('entry/src/main/ets/pages/Index.ets')
 const galleryCollectionBody = read('shared/src/main/ets/components/GalleryCollectionBody.ets')
 const galleryDetailPage = read('feature/gallery/src/main/ets/pages/GalleryDetailPage.ets')
 const galleryCommentsPage = read('feature/gallery/src/main/ets/pages/GalleryCommentsPage.ets')
 const favoritesPage = read('feature/user/src/main/ets/pages/FavoritesPage.ets')
 const cookieAuthority = read('shared/src/main/ets/services/NhCookieAuthority.ets')
+const browserSessionBoundary = read('shared/src/main/ets/services/NhBrowserSessionBoundary.ets')
+const browserSessionOwnershipTest = read('entry/src/ohosTest/ets/test/NhBrowserSessionOwnership.test.ets')
 const sharedIndex = read('shared/src/main/ets/Index.ets')
+const appPrompt = read('shared/src/main/ets/utils/AppPrompt.ets')
 const applicationEtsFiles = ['entry', 'feature', 'shared']
   .flatMap((directory) => listEts(path.join(root, directory)))
+const customDialogsWithoutMaterial = applicationEtsFiles
+  .filter((file) => {
+    const source = fs.readFileSync(file, 'utf8')
+    const controllerCount = (source.match(/new CustomDialogController\(\{/g) ?? []).length
+    const materialCount = (source.match(/systemMaterial: AppPrompt\.modalSystemMaterial\(\)/g) ?? []).length
+    return controllerCount > materialCount
+  })
+  .map((file) => path.relative(root, file)).sort()
 const directCookieManagerFiles = applicationEtsFiles.filter((file) =>
   /WebCookieManager\./.test(fs.readFileSync(file, 'utf8')))
 const arkWebRequestTransportFiles = applicationEtsFiles.filter((file) =>
@@ -90,6 +111,85 @@ ok('account ownership is separate from request authentication',
   /@Trace signedIn: boolean/.test(accountState) &&
   /@Trace authenticationAvailable: boolean/.test(accountState) &&
   /retainedAccountPresent \|\| authenticated/.test(session))
+ok('API-key onboarding failures reuse the root HDS account notice channel',
+  /connectAccountAuthNotice\(\)/.test(browserPage) &&
+  /connectAccountAuthNotice\(\)/.test(accountApiKeyPage) &&
+  /accountAuthNotice\.publish\(message === 'account_api_key_rejected'/.test(browserPage) &&
+  /accountAuthNotice\.publish\(message === 'account_api_key_rejected'/.test(accountApiKeyPage) &&
+  /'api_key_rejected'/.test(accountAuthNoticeState) &&
+  !/private toast\(/.test(accountApiKeyPage) &&
+  !/private toast\(/.test(browserPage) &&
+  /apiKeyNotice[\s\S]*openAccountApiKeyRecovery/.test(entryIndex))
+ok('full-page Web surfaces share one page scaffold while EhWebView stays embeddable',
+  /HdsNavDestination\(\)/.test(webPageScaffold) &&
+  /SecondaryListScaffold\(\{/.test(webPageScaffold) &&
+  /ListItem\(\)[\s\S]{0,100}this\.content\(\)/.test(webPageScaffold) &&
+  /NextNWebPageScaffold\(\{/.test(galleryWebPage) &&
+  /NextNWebPageScaffold\(\{/.test(browserPage) &&
+  /EhWebView\(\{/.test(galleryWebPage) &&
+  /EhWebView\(\{/.test(browserPage) &&
+  !/HdsNavDestination|SecondaryListScaffold|NextNWebPageScaffold/.test(ehWebView) &&
+  !/webContentTopInset|layoutSafeArea|\.padding\(\{ top:/.test(browserPage))
+ok('API-key creation reuses the full-page Web container and fills the non-secret label after page load',
+  /accountApiKeyWebDestination\(\)[\s\S]*?BrowserSessionPage\(\{[\s\S]*?apiKeySetupMode: true/.test(entryIndex) &&
+  /API_KEY_NAME_FILL_SCRIPT/.test(browserPage) &&
+  /onLoadFinished:[\s\S]{0,220}settleApiKeyPageAfterLoad/.test(browserPage) &&
+  /settleApiKeyPageAfterLoad\(\): Promise<void>[\s\S]*?handleApiKeyPageKind\(pageKind\)/.test(browserPage) &&
+  /handleApiKeyPageKind\(pageKind: string\): void[\s\S]*?pageKind === 'settings'[\s\S]*?fillApiKeyNameAfterLoad\(\)/.test(browserPage) &&
+  /newApiKeyDefaultName\(\)[\s\S]*NextN HarmonyOS \$\{date\}-\$\{time\}/.test(browserPage) &&
+  /javaScriptOnDocumentStart\(this\.documentStartScripts\)/.test(ehWebView))
+ok('API-key login success returns the shared host to the requested official settings page',
+  /static isApiKeySettingsUrl\(url: string\)/.test(browserSessionBoundary) &&
+  /private routeApiKeyAuthenticatedLandingToSettings\(url: string\): void/.test(browserPage) &&
+  /API_KEY_PAGE_KIND_SCRIPT/.test(browserPage) &&
+  /handleApiKeyPageKind\(pageKind: string\): void[\s\S]*?pageKind === 'trusted'[\s\S]*?checkpointApiKeyAuthenticatedLanding\(\)/.test(browserPage) &&
+  /JSON\.stringify\(\{pageState:k\}\)/.test(browserPage) &&
+  /typeof parsed\['pageState'\] === 'string'/.test(browserPage) &&
+  !/location\.assign\('\/user\/settings#apikeys'\)/.test(browserPage) &&
+  /\['capture'\]/.test(browserPage) &&
+  /MutationObserver\(emitPageKind\)/.test(browserPage) &&
+  /checkpointApiKeyBrowserSession\([\s\S]*this\.browserSessionUserAgent/.test(browserPage) &&
+  /validateAndCheckpointApiKeyBrowserSession/.test(sessionHttpClient) &&
+  /checkpointVerifiedApiKeyBrowserSession/.test(session) &&
+  /NhBrowserSessionBoundary\.observePageEnd\(url\)/.test(browserPage) &&
+  /NhBrowserSessionPhase\.TRUSTED_REDIRECT_OBSERVED/.test(browserPage) &&
+  /this\.controller\.loadUrl\(NhBrowserSessionBoundary\.apiKeysSettingsUrl\(\)\)/.test(browserPage) &&
+  /browser_session_checkpointed[\s\S]{0,180}routeApiKeyAuthenticatedLandingToSettings\(NhBrowserSessionBoundary\.trustedOrigin\(\)\)/.test(browserPage) &&
+  !/onPageEnd:[\s\S]{0,260}routeApiKeyAuthenticatedLandingToSettings\(event\.url\)/.test(browserPage) &&
+  !/routeApiKeyAuthenticatedLandingToSettings/.test(ehWebView))
+ok('API-key Web mode initializes the shared Cookie authority before loading the official page',
+  /attachApiKeySettingsAndLoad\(\): Promise<void>[\s\S]{0,180}NhCookieAuthority\.initialize\(\)[\s\S]{0,180}registerJavaScriptProxy/.test(browserPage))
+ok('API-key setup supports existing-key binding and automatic official creation capture',
+  /ManualBindingDialogContent/.test(accountApiKeyPage) &&
+  /TextInput/.test(accountApiKeyPage) &&
+  /apiKeyDraft/.test(accountApiKeyPage) &&
+  /NhApiClient\.bindApiKey/.test(accountApiKeyPage) &&
+  /CustomContentDialog/.test(accountApiKeyPage) &&
+  /new CustomDialogController\(\{/.test(accountApiKeyPage) &&
+  /systemMaterial: AppPrompt\.modalSystemMaterial\(\)/.test(accountApiKeyPage) &&
+  !/ManualBindingDialogContent[\s\S]*?\.defaultFocus\(true\)/.test(accountApiKeyPage) &&
+  /manualBindRequestVersion/.test(accountApiKeyPage) &&
+  /accountApiKeyTitleBar/.test(entryIndex) &&
+  /account_api_key_bind_existing/.test(entryIndex) &&
+  !/TextInput/.test(accountApiKeyBuildBody) &&
+  !/NextNPrimaryActionButton/.test(accountApiKeyPage) &&
+  /API_KEY_CAPTURE_SCRIPT/.test(browserPage) &&
+  /JSON\.stringify\(\{key:v,name:readName\(p\)\}\)/.test(browserPage) &&
+  /bindApiKey\([\s\S]{0,180}keyName\.length > 0 \? keyName : this\.apiKeyDefaultName/.test(browserPage) &&
+  /Input\.dispatchMouseEvent/.test(arkWebApiKeySubmit) &&
+  !/button\.click\(\)/.test(arkWebApiKeySubmit) &&
+  /@Trace credentialKind: string/.test(accountState) &&
+  /@Trace apiKeyIdentity: string/.test(accountState) &&
+  /@Trace apiKeyName: string/.test(accountState) &&
+  /accountSession\.apiKeyIdentity/.test(accountApiKeyPage) &&
+  /accountSession\.apiKeyName/.test(accountApiKeyPage) &&
+  (accountApiKeyPage.match(/showChevron: false/g) ?? []).length === 2 &&
+  /account_api_key_status_bound_hint/.test(accountApiKeyPage))
+ok('native custom dialogs share the AppPrompt modal material boundary without wrapping controller options',
+  customDialogsWithoutMaterial.length === 0 &&
+  /static modalSystemMaterial\(\)/.test(appPrompt) &&
+  /export \{ AppPrompt \}/.test(sharedIndex) &&
+  !/appDialogOptions/.test(sharedIndex))
 ok('gallery account consumers require usable authentication rather than retained ownership alone',
   [galleryDetailPage, galleryCommentsPage].every((source) => {
     const gate = source.match(/private hasPublishedAccountSession\(\): boolean \{[\s\S]*?\n  \}/)?.[0] ?? ''
@@ -101,30 +201,50 @@ ok('gallery account consumers require usable authentication rather than retained
 ok('cold start has a durable non-secret ownership marker cleared only by explicit clear',
   /ACCOUNT_PRESENT_KEY: string = 'account\.session\.present'/.test(session) &&
   /loadRetainedAccountMarker\(context\)/.test(session) &&
-  /AccountSessionRepository\.clear\(context\)[\s\S]*persistRetainedAccountMarker\(context, false\)/.test(session) &&
+  /AccountSessionRepository\.clear\(context, savedAccountId\)[\s\S]*persistRetainedAccountMarker\(context, false\)/.test(session) &&
   (session.match(/retainedAccountPresent = false/g) || []).length === 1)
-const terminal401 = session.match(/private static async recordAuthenticatedTerminal401\([\s\S]*?\n  \}/)?.[0] || ''
+const verificationRequired = session.match(
+  /private static async recordAuthenticatedVerificationRequired\([\s\S]*?\n  \}/,
+)?.[0] || ''
 const expiryShape = session.match(/private static recordAuthCookieExpiryShape\([\s\S]*?\n  \}/)?.[0] || ''
 ok('a conclusive refresh or replay 401 preserves ownership and atomically publishes durable re-verification',
-  /recordAuthenticatedReadReplay401[\s\S]*recordAuthenticatedTerminal401/.test(session) &&
-  /recordAuthenticatedRefreshToken401[\s\S]*recordAuthenticatedTerminal401/.test(session) &&
-  /recordAuthenticatedTerminal401/.test(terminal401) &&
-  !/retainedAccountPresent\s*=\s*false/.test(terminal401) &&
-  /AccountSessionRepository\.markVerificationRequired/.test(terminal401) &&
-  /VERIFICATION_MARKER_PERSIST_FAILED/.test(terminal401) &&
-  !/account_verification_marker_persist_failed/.test(terminal401) &&
-  /verificationRequiredMarkerPresent\s*=\s*true/.test(terminal401) &&
-  /cookieHeader\s*=\s*''/.test(terminal401) &&
-  /publishSessionChange/.test(terminal401) &&
-  !/AccountSessionRepository\.clear/.test(terminal401) &&
+  /recordAuthenticatedReadReplay401[\s\S]*recordAuthenticatedVerificationRequired/.test(session) &&
+  /recordAuthenticatedRefreshToken401[\s\S]*recordAuthenticatedVerificationRequired/.test(session) &&
+  /recordTerminal401Stage: boolean/.test(verificationRequired) &&
+  !/retainedAccountPresent\s*=\s*false/.test(verificationRequired) &&
+  /AccountSessionRepository\.markVerificationRequired/.test(verificationRequired) &&
+  /VERIFICATION_MARKER_PERSIST_FAILED/.test(verificationRequired) &&
+  !/account_verification_marker_persist_failed/.test(verificationRequired) &&
+  /verificationRequiredMarkerPresent\s*=\s*true/.test(verificationRequired) &&
+  /cookieHeader\s*=\s*''/.test(verificationRequired) &&
+  /publishSessionChange/.test(verificationRequired) &&
+  !/AccountSessionRepository\.clear/.test(verificationRequired) &&
   /recordAuthenticatedReadInitial401/.test(sessionHttpClient) &&
   /recordAuthenticatedReadBrowserRefresh/.test(sessionHttpClient))
 ok('current terminal reasons are accepted by the durable verification marker',
   /reasonCode !== 'terminal_401_replay_rejected'/.test(sessionRepository) &&
   /reasonCode !== 'terminal_401_refresh_token_rejected'/.test(sessionRepository) &&
+  /reasonCode !== 'terminal_api_key_identity_mismatch'/.test(sessionRepository) &&
+  /reasonCode !== 'terminal_web_token_identity_mismatch'/.test(sessionRepository) &&
   !/terminal_401_browser_refresh_unsuccessful/.test(sessionRepository) &&
   /verificationSnapshot\.reasonCode === 'terminal_401_refresh_token_rejected'/.test(session) &&
+  /isApiKeyRecoveryReason\(verificationSnapshot\.reasonCode\)/.test(session) &&
   !/verificationSnapshot\.reasonCode === 'terminal_401_browser_refresh_unsuccessful'/.test(session))
+ok('cold API-key rejection retains only its non-secret display identity',
+  /verificationRecoveryKind === 'api_key'[\s\S]*restoreRejectedApiKeyDisplayMetadata\(context\)/.test(session) &&
+  /restoreRejectedApiKeyDisplayMetadata[\s\S]*decryptWithExistingKey[\s\S]*credentialKind !== NhNativeCredentialKind\.API_KEY[\s\S]*apiKeyIdentityForDisplay\(apiKey\)/.test(session) &&
+  /preserveRejectedApiKeyDisplay[\s\S]*verificationRequiredMarkerPresent[\s\S]*verificationRecoveryKind === 'api_key'/.test(session) &&
+  /nativeCredentialKind = NhNativeCredentialKind\.NONE[\s\S]*nativeApiKey = ''[\s\S]*if \(!preserveRejectedApiKeyDisplay\)/.test(session))
+ok('a profile identity mismatch fails closed without being misreported as a terminal 401',
+  /requestAccountProfile[\s\S]*captureAuthenticatedReadToken\(\)/.test(sessionHttpClient) &&
+  /authenticatedIdentityMatchesActiveAccount\(userId\)[\s\S]*adoptCurrentAuthenticatedCredential\(ownerToken\)[\s\S]*recordAuthenticatedIdentityMismatch\(ownerToken\)/.test(
+    sessionHttpClient,
+  ) &&
+  /recordAuthenticatedIdentityMismatch[\s\S]*AUTHENTICATED_READ_IDENTITY_MISMATCH[\s\S]*recordAuthenticatedVerificationRequired\([\s\S]*false/.test(
+    session,
+  ) &&
+  /terminal_api_key_identity_mismatch/.test(sessionRepository) &&
+  /terminal_web_token_identity_mismatch/.test(sessionRepository))
 ok('auth lifetime diagnostics expose only fixed coarse access and refresh expiry classes',
   /account_auth_expiry_shape/.test(expiryShape) &&
   /phase=\$\{phase\};/.test(expiryShape) &&
@@ -162,8 +282,9 @@ ok('all first-party v2 requests share one credential-aware request lifecycle',
   /replayPolicy === NhRequestReplayPolicy\.SAFE_AFTER_REFRESH/.test(sessionHttpClient) &&
   !/http\.createHttp\(\)/.test(api) &&
   !/recoverRegularArkWebCookieJarAfterAuthenticated401/.test(api))
-ok('native authentication truth requires one sealed access and exact refresh pair',
-  /static isAuthenticated\(\): boolean \{[\s\S]*hasAccessAuthCookie\(NhAccountSessionService\.sealedAuthCookies\)[\s\S]*hasRefreshAuthCookie\(NhAccountSessionService\.sealedAuthCookies\)/.test(session) &&
+ok('native authentication truth is one API key or one exact legacy access-refresh pair',
+  /nativeCredentialKind === NhNativeCredentialKind\.API_KEY[\s\S]*nativeApiKey/.test(session) &&
+  /nativeCredentialKind === NhNativeCredentialKind\.WEB_TOKEN[\s\S]*hasAccessAuthCookie\(NhAccountSessionService\.sealedAuthCookies\)[\s\S]*hasRefreshAuthCookie\(NhAccountSessionService\.sealedAuthCookies\)/.test(session) &&
   !/browserIdentityVerified/.test(session) &&
   !/hasLoginCookies\(NhAccountSessionService\.cookieHeader\) \|\|/.test(session))
 ok('NH API v2 has one native wire transport and ArkWeb is not its request path',
@@ -241,9 +362,10 @@ ok('401 refresh atomically advances HUKS and the compatibility Cookie sink',
   /return JSON\.stringify\(\{[\s\S]*'refresh_token': refreshValue,[\s\S]*\}\)/.test(session) &&
   !/'refreshToken': refreshValue|'refresh': refreshValue/.test(session) &&
   /auth\/refresh/.test(sessionHttpClient) &&
-  /typeof accessValue === 'string' && typeof refreshValue === 'string'/.test(sessionHttpClient) &&
-  /NhSessionHttpClient\.validApiToken\(accessValue\)/.test(sessionHttpClient) &&
-  /NhSessionHttpClient\.validApiToken\(refreshValue\)/.test(sessionHttpClient) &&
+  /NhRefreshResponseCodec\.decode\([\s\S]*response\.body,[\s\S]*readToken\.accountId/.test(sessionHttpClient) &&
+  /record\['user'\][\s\S]*user\['id'\]/.test(refreshResponseCodec) &&
+  /expected\.length > 0 && expected !== accountId/.test(refreshResponseCodec) &&
+  /consumeResponseSetCookies\([\s\S]*response,[\s\S]*readToken,[\s\S]*NhResponseCookieAuthority\.WEBSITE_SESSION,[\s\S]*refreshed\.accountId/.test(sessionHttpClient) &&
   /responseCookieResult === NhResponseAuthCookieResult\.APPLIED/.test(sessionHttpClient) &&
   /NhAccountSessionService\.applyRefreshedApiTokens/.test(sessionHttpClient) &&
   /const refresh: string = NhAccountSessionService\.safeApiToken\(refreshToken\)/.test(session) &&
@@ -251,10 +373,14 @@ ok('401 refresh atomically advances HUKS and the compatibility Cookie sink',
     /static async applyRefreshedApiTokens\([\s\S]*?\n  \}/,
   )?.[0] ?? '') &&
   /NhApiHttpTransport\.requestJson\([\s\S]*API_USER_URL/.test(sessionHttpClient) &&
-  /consumeResponseSetCookies\(verificationResponse, readToken\)/.test(sessionHttpClient) &&
+  /consumeResponseSetCookies\([\s\S]*verificationResponse,[\s\S]*readToken,[\s\S]*NhResponseCookieAuthority\.WEBSITE_SESSION,[\s\S]*verificationAccountId/.test(
+    sessionHttpClient,
+  ) &&
   /AccountSessionRepository\.saveVerifiedForAccount/.test(session) &&
   /NhCookieAuthority\.storeRefreshedAuthTokens/.test(session) &&
-  /applyRefreshedApiTokens\(token, access, refresh, true\)/.test(session) &&
+  /applyRefreshedApiTokens\([\s\S]*token,[\s\S]*access,[\s\S]*refresh,[\s\S]*true,[\s\S]*verifiedAccountId/.test(
+    session,
+  ) &&
   /if \(!responseCookieSinkOwnedByCaller\)[\s\S]*NhCookieAuthority\.storeRefreshedAuthTokens/.test(
     session.match(/static async applyRefreshedApiTokens\([\s\S]*?\n  \}/)?.[0] ?? '',
   ) &&
@@ -271,7 +397,7 @@ ok('candidate verification and account profile use the same native request bound
   /requestCandidateStatus[\s\S]*NhApiHttpTransport\.requestJson\([\s\S]*API_USER_URL[\s\S]*authorization/.test(
     sessionHttpClient,
   ) &&
-  /requestCandidateStatus[\s\S]*consumeResponseSetCookies\(response, null\)/.test(sessionHttpClient) &&
+  /requestCandidateStatus[\s\S]*validatedAccountId\(response\.body\)[\s\S]*consumeResponseSetCookies\([\s\S]*response,[\s\S]*null,[\s\S]*NhResponseCookieAuthority\.WEBSITE_SESSION/.test(sessionHttpClient) &&
   /requestJson\([\s\S]*API_USER_URL[\s\S]*NhRequestScope\.ACCOUNT_OWNED/.test(sessionHttpClient) &&
   /record\['username'\]/.test(sessionHttpClient) &&
   /record\['slug'\]/.test(sessionHttpClient) &&
@@ -296,8 +422,11 @@ ok('a visible login transaction cannot be closed by a late old-session revision'
   /if \(this\.isBrowserRequested\) \{[\s\S]*visible login stage=session_revision_deferred/.test(browserPage) &&
   /visible login stage=session_revision_deferred/.test(browserPage) &&
   /this\.accountAuthNotice\.clear\(\)[\s\S]*registerExplicitVisibleLoginAction/.test(browserPage))
-ok('production login never extracts credentials or replaces the first-party document',
-  !/runJavaScript/.test(browserPage) &&
+ok('visible login keeps the original first-party document and gates the API-key helper by mode',
+  (browserPage.match(/runJavaScript\(/g) ?? []).length === 2 &&
+  /API_KEY_NAME_FILL_SCRIPT[\s\S]*split\(API_KEY_DEFAULT_NAME_PLACEHOLDER\)[\s\S]*runJavaScript\(script\)/.test(browserPage) &&
+  /runJavaScript\(API_KEY_PAGE_KIND_SCRIPT\)/.test(browserPage) &&
+  /onLoadFinished:[\s\S]{0,180}if \(this\.apiKeySetupMode\)[\s\S]{0,120}settleApiKeyPageAfterLoad\(\)[\s\S]{0,100}else[\s\S]{0,100}requestAccountSessionCapture\(\)/.test(browserPage) &&
   !/API_LOGIN_FRAME_PREFIX|API_LOGIN_CHALLENGE_PREFIX|API_LOGIN_SURFACE_URL/.test(browserPage) &&
   !/onInterceptRequest|WebResourceResponse|loadData\(/.test(browserPage) &&
   !/apiLoginHtml|__nextnApiLogin/.test(browserPage))
@@ -328,7 +457,8 @@ ok('visible login restores the proven NextE-compatible UA before first navigatio
   /this\.controller\.setCustomUserAgent\(nextECompatibleUserAgent\)/.test(browserPage) &&
   !/configuredUserAgentOverride/.test(browserPage))
 ok('visible login restores the original online cache mode without clearing cookies',
-  /\.cacheMode\(CacheMode\.Online\)/.test(browserPage))
+  /\.cacheMode\(CacheMode\.Online\)/.test(ehWebView) &&
+  /EhWebView\(\{/.test(browserPage))
 ok('Turnstile console diagnostics retain only a documented fixed client error code',
   /turnstileConsoleErrorCode/.test(browserPage) &&
   /\(\?:100\|102\|103\|104\|105\|106\|110\|200\|300\|400\|600\)\\d\{3\}/.test(browserPage) &&
@@ -381,6 +511,9 @@ ok('authorized login is one external atomic original-WebView queue with autonomo
   /type \|\| ''\)\.toLowerCase\(\) === 'checkbox'[\s\S]*真人\|human/.test(atomicLoginCycle) &&
   /captcha\.state === 'needs_click'[\s\S]*activateVisibleCaptcha\(options, artifactDir, captcha\.x, captcha\.y\)/.test(atomicLoginCycle) &&
   /challengeResponsePresent === true[\s\S]*challengeResponseReady === true/.test(atomicLoginCycle) &&
+  /establishFreshCaptchaBaseline[\s\S]*runFreshLoginDocument/.test(atomicLoginCycle) &&
+  /challengeResponsePresent === true &&[\s\S]*challengeResponseReady === false/.test(atomicLoginCycle) &&
+  /freshChallengeBaselineObserved/.test(atomicLoginCycle) &&
   /captcha_token_not_ready/.test(atomicLoginCycle) &&
   !/CF_DISCOVERY_SETTLE_MS|freshWithoutWidgetSince|waitForPreCredentialCfGate/.test(atomicLoginCycle) &&
   /DEVICE_PROTOCOL_SCRIPT[\s\S]*runProtocol/.test(atomicLoginCycle) &&
@@ -476,6 +609,41 @@ ok('credential staging completes once before the pending CF gate and never submi
   challengeResult.accountEntered === true && challengeResult.passwordEntered === true &&
   challengeResult.submitIssued === false &&
   challengeActions.join(',') === 'focus-account,fill-account,focus-password,fill-password')
+const staleChallengeActions = []
+const staleChallengeResult = await runStagedLoginEpoch({
+  port: 1,
+  timeoutMs: 500,
+  accountSecretBytes: new Uint8Array([1]),
+  passwordSecretBytes: new Uint8Array([2]),
+}, {
+  probe: async () => ({
+    ok: true,
+    loginFormPresent: true,
+    accountFieldPresent: true,
+    accountFieldFocused: false,
+    accountFieldFilled: false,
+    passwordFieldPresent: true,
+    passwordFieldFocused: false,
+    passwordFieldFilled: false,
+    passwordFieldMasked: true,
+    challengeFramePresent: false,
+    challengeResponsePresent: true,
+    challengeResponseReady: true,
+  }),
+  semanticDriver: async (options) => {
+    staleChallengeActions.push(options.action)
+    return { ok: true, actionApplied: true }
+  },
+  secretFill: async (options) => {
+    staleChallengeActions.push(`fill-${options.field}`)
+    return { ok: true, fieldInputApplied: true }
+  },
+})
+ok('a CAPTCHA response that predates the credential epoch blocks every field action',
+  staleChallengeResult.ok === false && staleChallengeResult.code === 'stale_captcha_token' &&
+  staleChallengeResult.accountEntered === false && staleChallengeResult.passwordEntered === false &&
+  staleChallengeResult.submitIssued === false && staleChallengeActions.length === 0 &&
+  /isStagedLoginForm\(staged\) && staged\.challengeResponseReady !== true/.test(atomicLoginCycle))
 const incompleteChallengeSubmitActions = []
 const incompleteChallengeSubmit = await runCfReviewedSubmit({ port: 1, timeoutMs: 500 }, {
   probe: async () => ({
@@ -503,13 +671,17 @@ ok('an empty CAPTCHA response blocks the sole submit after both fields are stage
   incompleteChallengeSubmit.ok === false && incompleteChallengeSubmit.code === 'captcha_token_not_ready' &&
   incompleteChallengeSubmit.accountEntered === true && incompleteChallengeSubmit.passwordEntered === true &&
   incompleteChallengeSubmit.submitIssued === false && incompleteChallengeSubmitActions.length === 0)
-ok('empty signed-out account entry goes directly to the visible login page',
-  /private openAccountEntry\(\)[\s\S]*accountList\.accounts\.length === 0[\s\S]*!this\.accountSession\.signedIn[\s\S]*this\.pushVisibleLoginSession\(\)/.test(entryIndex) &&
+ok('empty signed-out account entry exposes normal API-key and Web-login choices',
+  /private openAccountEntry\(\)[\s\S]{0,120}this\.pushAccount\(\)/.test(entryIndex) &&
+  /onOpenApiKeySetup[\s\S]{0,120}this\.pushAccountApiKey\(\)/.test(entryIndex) &&
+  /AccountApiKeyPage\(/.test(entryIndex) &&
+  /account_api_key_status_bound/.test(accountApiKeyPage) &&
+  /SettingsTextField|apiKeyDraft|NhApiClient\.bindApiKey/.test(accountApiKeyPage) &&
   /private pushVisibleLoginSession\(\)[\s\S]*new BrowserSessionRouteParams\(true\)/.test(entryIndex) &&
   /onOpenAccount:[\s\S]{0,120}this\.openAccountEntry\(\)/.test(entryIndex) &&
   /accessibilityId: 'nextn-settings-root-account'[\s\S]{0,320}if \(this\.onOpenAccount\)[\s\S]{0,120}this\.onOpenAccount\(\)/.test(settingsPage) &&
   !/accessibilityId: 'nextn-settings-root-account'[\s\S]{0,320}if \(this\.isAccountSignedIn && this\.onOpenAccount\)/.test(settingsPage))
-ok('AccountPage is the sole native account manager and every login destination starts original Web directly',
+ok('AccountPage is the sole native account manager and every login destination uses the shared original-Web wrapper',
   /ForEach\([\s\S]{0,80}this\.accountList\.accounts/.test(accountPage) &&
   /Radio\(\{ value: accountId, group: 'nextn_accounts' \}\)/.test(accountPage) &&
   /AccountListSettings\.switchTo/.test(accountPage) &&
@@ -522,7 +694,8 @@ ok('AccountPage is the sole native account manager and every login destination s
   /private consumeInitialLoginAction\(\): void[\s\S]*this\.requestAddAccountSession\(\)[\s\S]*this\.requestExplicitBrowserSession\(\)/.test(
     browserPage,
   ) &&
-  /\bWeb\(\{/.test(browserPage) &&
+  /EhWebView\(\{/.test(browserPage) &&
+  !/\bWeb\(\{/.test(browserPage) &&
   !/AccountSection|SecondaryListScaffold|nextn-account-native-root|nextn-account-authenticated-profile|nextn-account-authenticated-sign-out|confirmSignOut/.test(
     browserPage,
   ))
@@ -561,21 +734,42 @@ ok('terminal authentication uses one root HDS Snackbar and no retained-list erro
   !/account_verify_sign_in/.test(browserPage) &&
   /loadRetainedAccountCacheOnly/.test(favoritesPage) &&
   !/InlineRetryNotice/.test(favoritesPage))
-ok('saved-account selection has its own durable key and migrates one unambiguous legacy account',
+ok('saved-account selection resolves the primary owner without adopting an imported singleton',
   /ACTIVE_ACCOUNT_ID_KEY: string = 'account\.list\.activeId'/.test(accountList) &&
+  /if \(primaryPresent\) \{[\s\S]*retainedOwner\.length > 0 && ids\.indexOf\(retainedOwner\) >= 0[\s\S]*: ''/.test(accountList) &&
   /return ids\.length === 1 \? ids\[0\] : ''/.test(accountList) &&
+  /sessionSnapshot: AccountSessionRestoreSnapshot =[\s\S]*AccountSessionRepository\.loadForRestore\(context\)/.test(accountList) &&
+  /primaryOwnerId: string = AccountSessionRepository\.resolvePrimaryOwner\(sessionSnapshot\)/.test(accountList) &&
+  /savedIds: Set<string>[\s\S]*snapshot\.ids = snapshot\.ids\.filter[\s\S]*snapshot\.ids\.push\(primaryOwnerId\)/.test(accountList) &&
+  /restoredActiveAccountId\([\s\S]*targetPrimaryPresent,[\s\S]*retainedPrimaryOwnerId[\s\S]*ids\.indexOf\(retained\) >= 0[\s\S]*currentActiveAccountId\.trim\(\)[\s\S]*return !targetPrimaryPresent && ids\.length > 0 \? ids\[0\] : ''/.test(accountList) &&
   /NhAccountSessionService\.setActiveSavedAccountId\(snapshot\.activeAccountId\)/.test(accountList))
-ok('account switch persists the selected profile back to the primary profile slot',
+ok('primary credential and saved-account owner share one RDB transaction',
+  /CREATE TABLE IF NOT EXISTS account_session_owner/.test(localDataStore) &&
+  /saveVerifiedForAccount[\s\S]*SQL_UPSERT_SESSION, \[[\s\S]*SESSION_KEY[\s\S]*SQL_UPSERT_SESSION, \[[\s\S]*accountId[\s\S]*SQL_UPSERT_SESSION_OWNER[\s\S]*store\.commit\(\)/.test(sessionRepository) &&
+  /else \{[\s\S]*SQL_DELETE_SESSION_OWNER, \[SESSION_KEY\]/.test(sessionRepository) &&
+  /static resolvePrimaryOwner\([\s\S]*primaryOwnerId\.trim\(\)[\s\S]*matchingCount === 1 \? matchingOwner : ''/.test(sessionRepository) &&
+  /retainedSnapshot: AccountSessionRestoreSnapshot =[\s\S]*resolvePrimaryOwner\(retainedSnapshot\)/.test(backupSecrets))
+ok('cold restore resolves saved-account ownership before selecting or repairing a fallback envelope',
+  /restoreAccountIdentity\(\)[\s\S]*await AccountListSettings\.load\(this\.context\)[\s\S]*restoreAtBootstrap\(this\.context\)/.test(entryAbility) &&
+  /preferredIndex: number = restoreSnapshot\.savedKeys\.indexOf\([\s\S]*activeSavedAccountId/.test(session) &&
+  /candidateIndexes\.push\(preferredIndex\)[\s\S]*restoredFallbackRecord = savedRecords\[index\]/.test(session) &&
+  /saveVerifiedForAccount\([\s\S]*restoredFallbackRecord,[\s\S]*restoredFallbackAccountId/.test(session))
+ok('account switch commits credential ownership before optional profile refresh',
   /static async switchTo[\s\S]*AccountProfileRepository\.saveIfCurrent[\s\S]*connectAccountProfile\(\)\.replace\(profile\)/.test(accountProfile) &&
-  /profileSwitched: boolean[\s\S]*if \(!profileSwitched\)[\s\S]*return false[\s\S]*ACTIVE_ACCOUNT_ID_KEY/.test(accountList))
+  /switchToSaved\(context, accountId\)[\s\S]*ACTIVE_ACCOUNT_ID_KEY[\s\S]*AccountListSettings\.load\(context\)[\s\S]*profileSwitched: boolean/.test(accountList) &&
+  /if \(!profileSwitched\)[\s\S]*account_switch_profile_failed[\s\S]*account_switch_completed[\s\S]*return true/.test(accountList) &&
+  !/if \(!profileSwitched\)[\s\S]{0,180}return false/.test(accountList))
 ok('refreshed native tokens atomically update both primary and active saved envelopes',
-  /saveVerifiedForAccount[\s\S]*SQL_UPSERT_SESSION[\s\S]*accountId\.length > 0[\s\S]*SQL_UPSERT_SESSION/.test(sessionRepository) &&
-  /applyRefreshedApiTokens[\s\S]*saveVerifiedForAccount\([\s\S]*activeSavedAccountId/.test(session))
-ok('sealed session v3 requires the exact native access and refresh pair',
+  /saveVerifiedForAccount[\s\S]*SQL_UPSERT_SESSION[\s\S]*accountId\.length > 0[\s\S]*SQL_UPSERT_SESSION[\s\S]*SQL_UPSERT_SESSION_OWNER/.test(sessionRepository) &&
+  /applyRefreshedApiTokens[\s\S]*resolveAuthenticatedReadOwner[\s\S]*saveVerifiedForAccount\([\s\S]*resolvedOwner/.test(session))
+ok('sealed session v4 stores one typed credential and retains v3 Web-token compatibility',
   /RECOVERABLE_ARKWEB_COOKIE_NAMES[\s\S]*'access_token'[\s\S]*'refresh_token'[\s\S]*'sessionid'/.test(session) &&
   /fetchAllAuthCookies\(\)/.test(session) &&
   !/fetchAllCookies\(false\)/.test(session) &&
-  /'version': 3[\s\S]*'authCookies': authCookies/.test(session) &&
+  /'version': 4[\s\S]*'credentialKind': credentialKind[\s\S]*'apiKey':[\s\S]*'authCookies': authCookies/.test(session) &&
+  /version !== 2 && version !== 3 && version !== 4/.test(session) &&
+  /valid_v4_api_key/.test(session) &&
+  /valid_v4_web_token/.test(session) &&
   /if \(version === 2\)[\s\S]*legacy_v2_access_only[\s\S]*return payload/.test(session) &&
   /private static hasRefreshAuthCookie\(cookies: SealedAuthCookie\[\]\): boolean \{[\s\S]*cookie\.name === 'refresh_token'[\s\S]*cookie\.value\.length > 0/.test(session) &&
   !/private static hasRefreshAuthCookie[\s\S]{0,300}sessionid/.test(session) &&
@@ -583,14 +777,30 @@ ok('sealed session v3 requires the exact native access and refresh pair',
   /!NhAccountSessionService\.hasRefreshAuthCookie\(payload\.authCookies\)[\s\S]*auth_renewal_missing/.test(session) &&
   !/valid_v2/.test(session) &&
   /configCookieSync\([\s\S]*authCookieSetValue\([\s\S]*false,[\s\S]*true/.test(session))
-ok('saved-account switching refuses envelopes without refresh authority before deleting live cookies',
-  /switchToSaved[\s\S]*!NhAccountSessionService\.hasRefreshAuthCookie\(payload\.authCookies\)[\s\S]*return false[\s\S]*expireVisibleBrowserIdentityCookies\(\)/.test(session))
+ok('saved-account switching accepts only a usable typed envelope before deleting live cookies',
+  /switchToSaved[\s\S]*!NhAccountSessionService\.isUsableDecodedPayload\(payload\)[\s\S]*return false[\s\S]*expireVisibleBrowserIdentityCookies\(\)/.test(session) &&
+  /isUsableDecodedPayload[\s\S]*NhNativeCredentialKind\.API_KEY[\s\S]*NhNativeCredentialKind\.WEB_TOKEN[\s\S]*hasRefreshAuthCookie/.test(session))
+ok('active account removal changes credential ownership before list projection',
+  /static async remove[\s\S]*currentActive === accountId[\s\S]*AccountListSettings\.switchTo\(context, updated\[0\]\)[\s\S]*NhAccountSessionService\.clear\(context, accountId\)[\s\S]*store\.putSync\(ACCOUNT_IDS_KEY/.test(accountList) &&
+  /static clear\([\s\S]*savedAccountId: string = ''[\s\S]*SQL_DELETE_SESSION, \[SESSION_KEY\][\s\S]*SQL_DELETE_SESSION, \[savedAccountId\][\s\S]*SQL_DELETE_SESSION_OWNER, \[SESSION_KEY\][\s\S]*SQL_DELETE_VERIFICATION_REQUIRED/.test(sessionRepository) &&
+  !/removeSavedAccount[\s\S]{0,600}AccountListSettings\.switchTo/.test(accountPage))
 ok('saving an account snapshots the current sealed native generation, not a browser jar',
-  /saveActiveAsSaved[\s\S]*isAuthenticated\(\)[\s\S]*serializeSessionPayload\([\s\S]*sealedAuthCookies[\s\S]*saveVerifiedByKey/.test(session) &&
+  /saveActiveAsSaved[\s\S]*isAuthenticated\(\)[\s\S]*serializeSessionPayload\([\s\S]*sealedAuthCookies[\s\S]*saveVerifiedForAccount\(context, active, accountId\)/.test(session) &&
   !/saveActiveAsSaved[\s\S]{0,900}captureFirstPartyAuthCookies/.test(session))
 ok('promotion durably records the selected saved envelope',
   /await AccountListSettings\.recordActive\(this\.hostContext\(\)\)/.test(browserPage) &&
-  /saveActiveAsSaved[\s\S]*saveVerifiedByKey/.test(session))
+  /saveActiveAsSaved[\s\S]*saveVerifiedForAccount\(context, active, accountId\)/.test(session))
+ok('API-key promotion carries Web cookies only when they belong to the validated account',
+  /browserSessionCaptured: boolean =[\s\S]*adoptCompleteRegularArkWebCookieJar\([\s\S]*this\.browserSessionUserAgent[\s\S]*\)[\s\S]*bindApiKey\([\s\S]*this\.hostContext\(\),[\s\S]*candidate,[\s\S]*browserSessionCaptured,[\s\S]*keyName/.test(browserPage) &&
+  /browserSessionOwnedByCandidate: boolean = false/.test(api) &&
+  /browserSessionOwnedByCandidate: boolean = false/.test(sessionHttpClient) &&
+  /browserSessionMatchesCandidate: boolean =[\s\S]*NhBrowserSessionBoundary\.browserSessionMatchesValidatedAccount\([\s\S]*activeSavedAccountId,[\s\S]*normalizedAccountId,[\s\S]*browserSessionOwnedByCandidate/.test(session) &&
+  /browserSessionMatchesValidatedAccount\([\s\S]*capturedByOfficialFlow \|\| activeSavedAccountId\.trim\(\) === accountId/.test(browserSessionBoundary) &&
+  /browserSessionComplete: boolean = browserSessionMatchesCandidate[\s\S]*hasAccessAuthCookie[\s\S]*hasRefreshAuthCookie[\s\S]*normalizeUserAgent/.test(session) &&
+  /serializeSessionPayload\(\s*ownedCookieHeader,\s*ownedBrowserUserAgent,\s*ownedAuthCookies,\s*NhNativeCredentialKind\.API_KEY/.test(session) &&
+  /if \(!browserSessionComplete\) \{[\s\S]*expireVisibleBrowserIdentityCookies\(\)/.test(session) &&
+  /NhApiClient\.bindApiKey\(context, this\.apiKeyDraft, false, keyName\)/.test(accountApiKeyPage) &&
+  /'101',[\s\S]*'202',[\s\S]*false[\s\S]*assertEqual\(false\)/.test(browserSessionOwnershipTest))
 ok('saved-envelope cold recovery is independent of the compatibility ArkWeb jar',
   /if \(restoredPayload === null && savedRecords\.length > 0\)/.test(session) &&
   !/if \(restoredPayload === null && savedRecords\.length > 0 && !regularJarReady\)/.test(session) &&
@@ -614,7 +824,7 @@ ok('one session-wide refresh remains single-flight while credentials rotate in p
   /afterDiagnostic !== null[\s\S]*refreshInFlightEpoch === readToken\.sessionEpoch[\s\S]*return await afterDiagnostic/.test(sessionHttpClient) &&
   !/refreshInFlightCredentialRevision/.test(sessionHttpClient))
 ok('terminal 401 publication rejects a response from a superseded credential generation',
-  /recordAuthenticatedTerminal401\([\s\S]*isAuthenticatedReadCredentialCurrent\(token\)/.test(session) &&
+  /recordAuthenticatedVerificationRequired\([\s\S]*isAuthenticatedReadCredentialCurrent\(token\)/.test(session) &&
   /recordAuthenticatedRefreshToken401\([\s\S]*isAuthenticatedReadCredentialCurrent\(token\)[\s\S]*recordAuthenticatedReadStale401AfterRefresh/.test(session) &&
   /statusCode === 401[\s\S]*!NhAccountSessionService\.isAuthenticatedReadCredentialCurrent\(readToken\)[\s\S]*recordAuthenticatedReadStale401AfterRefresh\(\)[\s\S]*account_session_generation_changed/.test(sessionHttpClient))
 ok('all logged-in first-party reads acquire the same account ownership fence without English transition errors',
@@ -634,10 +844,12 @@ ok('a successful native response cannot publish authentication from an empty use
 ok('401 repair stays inside the native refresh and verification transaction',
   /NhApiHttpTransport\.requestJson\([\s\S]*auth\/refresh/.test(sessionHttpClient) &&
   /applyRefreshedApiTokens/.test(sessionHttpClient) &&
-  /verificationResponse: NhApiHttpResponse = await NhApiHttpTransport\.requestJson\([\s\S]*API_USER_URL/.test(
+  /let verificationResponse: NhApiHttpResponse[\s\S]*verificationResponse = await NhApiHttpTransport\.requestJson\([\s\S]*API_USER_URL/.test(
     sessionHttpClient,
   ) &&
-  /consumeResponseSetCookies\(verificationResponse, readToken\)/.test(sessionHttpClient) &&
+  /consumeResponseSetCookies\([\s\S]*verificationResponse,[\s\S]*readToken,[\s\S]*verificationAccountId/.test(
+    sessionHttpClient,
+  ) &&
   !/loadUrl|runJavaScript|NhArkWebSessionTransport/.test(sessionHttpClient))
 ok('concurrent 401 responses join one session-generation refresh transaction',
   /refreshInFlight: Promise<NhRefreshAfter401Outcome> \| null = null/.test(sessionHttpClient) &&
@@ -647,8 +859,11 @@ ok('concurrent 401 responses join one session-generation refresh transaction',
   /refreshInFlight === task[\s\S]*refreshInFlight = null[\s\S]*refreshInFlightEpoch = -1/.test(sessionHttpClient))
 ok('only a refresh 401 or a post-refresh replay 401 publishes terminal verification',
   /enum NhRefreshAfter401Outcome[\s\S]*READY[\s\S]*AUTH_REJECTED[\s\S]*UNAVAILABLE/.test(sessionHttpClient) &&
-  /response\.statusCode === 401[\s\S]*NhRefreshAfter401Outcome\.AUTH_REJECTED/.test(sessionHttpClient) &&
+  /apiKeyCheckDispositionForStatus[\s\S]*statusCode === 401 \|\| statusCode === 403[\s\S]*NhApiKeyCheckDisposition\.AUTH_REJECTED/.test(sessionHttpClient) &&
   /response\.statusCode === 429[\s\S]*NhRefreshAfter401Outcome\.UNAVAILABLE/.test(sessionHttpClient) &&
+  /let verificationResponse: NhApiHttpResponse[\s\S]*try \{[\s\S]*verificationResponse = await NhApiHttpTransport\.requestJson\([\s\S]*API_USER_URL[\s\S]*catch \(_error\) \{[\s\S]*recordAuthenticatedReadBrowserRefresh\(false\)[\s\S]*return NhRefreshAfter401Outcome\.UNAVAILABLE/.test(
+    sessionHttpClient,
+  ) &&
   /refreshOutcome === NhRefreshAfter401Outcome\.UNAVAILABLE[\s\S]*account_authenticated_refresh_unavailable/.test(
     sessionHttpClient,
   ) &&
@@ -679,8 +894,10 @@ ok('401 repair verifies and durably checkpoints refreshed native tokens before r
   /authenticatedRefreshRequestBody\(readToken\)/.test(sessionHttpClient) &&
   /applyRefreshedApiTokens/.test(sessionHttpClient) &&
   /responseCookieResult === NhResponseAuthCookieResult\.APPLIED/.test(sessionHttpClient) &&
-  /verificationResponse: NhApiHttpResponse = await NhApiHttpTransport\.requestJson/.test(sessionHttpClient) &&
-  /consumeResponseSetCookies\(verificationResponse, readToken\)/.test(sessionHttpClient) &&
+  /let verificationResponse: NhApiHttpResponse[\s\S]*verificationResponse = await NhApiHttpTransport\.requestJson/.test(sessionHttpClient) &&
+  /consumeResponseSetCookies\([\s\S]*verificationResponse,[\s\S]*readToken,[\s\S]*verificationAccountId/.test(
+    sessionHttpClient,
+  ) &&
   /clearAuthenticatedRefreshCooldown/.test(sessionHttpClient) &&
   /authenticatedRefreshRequestBody[\s\S]*cookie\.name === 'refresh_token'[\s\S]*JSON\.stringify/.test(session))
 ok('restore diagnostics distinguish modern and legacy renewal cookie names without values',

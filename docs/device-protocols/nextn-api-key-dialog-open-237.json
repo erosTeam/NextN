@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-api-key-dialog-open-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-api-key-dialog-20260904T2145-no-autofocus/dialog",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-59b85436f22e7a97ad79ea0fa0b12f7cfa0570a12535a5a6d2ee4374e7647963",
+    "page": "native-api-key-manual-binding-dialog",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "From the already captured native API Key page, open its measured upper-right manual-binding action and capture the empty dialog. Do not enter or alter a credential, submit, open official Web, sign out, clear data, or operate another target."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "open-manual-binding-dialog", "uiInput": ["click", "1212", "201"], "pauseAfterMs": 1200, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-manual-binding-dialog", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-api-key-dialog-open-237.json", "-a"] },
+    { "name": "capture-manual-binding-dialog", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-api-key-dialog-open-237.png"] },
+    { "name": "receive-manual-binding-dialog-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-api-key-dialog-open-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-api-key-dialog-20260904T2145-no-autofocus/dialog/layout.json"] },
+    { "name": "receive-manual-binding-dialog-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-api-key-dialog-open-237.png", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-api-key-dialog-20260904T2145-no-autofocus/dialog/screen.png"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-api-key-dialog-open-237.json", "/data/local/tmp/nextn-api-key-dialog-open-237.png"] }
+  ]
+}

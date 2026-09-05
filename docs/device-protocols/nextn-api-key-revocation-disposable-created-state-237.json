@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-api-key-revocation-disposable-created-state-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-api-key-revocation/disposable-created-20260904T072100",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-59dfb693a28a4da94fe8f7747c151e909b2ff10ae49f2771411eae93e109c9e2",
+    "page": "post-single-disposable-api-key-create-native-promotion",
+    "deviceAlias": "device-237",
+    "deviceModel": "unknown",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "After the single structurally checked Create Key dispatch for the uniquely named disposable key, wait for the existing response bridge and capture the native semantic state plus product-redacted diagnostics. Do not click, retry, navigate, start, stop, install, clear data, sign out, enter text, act on CAPTCHA, expose a credential value or capture a screenshot."
+  },
+  "preflight": [
+    {
+      "name": "verify-nextn-window-after-disposable-create",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "non-actionable-measurement-boundary",
+        "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"],
+        "pauseAfterMs": 8000,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-current-semantic-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-api-key-revocation-disposable-created-237.json", "-a"]
+    },
+    {
+      "name": "receive-current-semantic-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-api-key-revocation-disposable-created-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-api-key-revocation/disposable-created-20260904T072100/current.json"]
+    },
+    {
+      "name": "receive-product-redacted-diagnostics",
+      "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-api-key-revocation/disposable-created-20260904T072100/diagnostics"]
+    },
+    {
+      "name": "verify-nextn-process",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    },
+    {
+      "name": "cleanup-temporary-layout",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-api-key-revocation-disposable-created-237.json"]
+    }
+  ]
+}

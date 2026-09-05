@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-response-cookie-codec-tests-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/237/response-cookie-codec-20260904T0500",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-main-4f582f1a7311a54eb5e591a216be6fa57f6f766ab721926fabaa27feaab9c21d-test-3b3631e9b4b52366601412ea5675e1275b317b8af56fab8bd83e12d93e25dd38",
+    "page": "response-cookie-codec-device-tests",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Install the matching signed main and ohosTest HAPs in place with app data preserved, then run the complete device suite including production response Set-Cookie exact-header, NetworkKit cookie-list fallback and atomic rejection tests. Do not clear data, uninstall, cold-start the app, open account UI, sign out, enter credentials, create or revoke keys, submit forms, or import a backup."
+  },
+  "preflight": [
+    { "name": "wake-authorized-target", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake-before-install", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "install-signed-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "pauseAfterMs": 500, "timeoutSeconds": 180 },
+    { "name": "install-signed-device-tests-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "pauseAfterMs": 500, "timeoutSeconds": 180 },
+    { "name": "run-complete-device-test-suite", "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test", "-s", "unittest", "OpenHarmonyTestRunner", "-s", "timeout", "120000"], "timeoutSeconds": 150 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "complete-without-ui-mutation", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 100 }
+    ]
+  },
+  "postflight": [
+    { "name": "verify-authorized-target-responsive", "hdcArgs": ["shell", "echo", "response-cookie-codec-test-complete"] }
+  ]
+}

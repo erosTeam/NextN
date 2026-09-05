@@ -206,7 +206,6 @@ export default class EntryAbility extends UIAbility {
       SearchTranslationSettings.restore(this.context),
       ReaderImageCacheSettings.restore(this.context),
       SyncSettings.restore(this.context),
-      AccountListSettings.load(this.context),
       // Resume only the durable, user-created private queue. Any process-killed
       // active task is restored as paused by the service before a user resumes it.
       // Keep the final startup outcome available to the retained Downloads
@@ -266,6 +265,10 @@ export default class EntryAbility extends UIAbility {
   private async restoreAccountIdentity(): Promise<void> {
     let restored: boolean = false
     try {
+      // Resolve the selected saved-account owner before the sealed primary.
+      // When a repaired/portable database has no primary row, fallback restore
+      // must select the matching saved envelope instead of query order.
+      await AccountListSettings.load(this.context)
       restored = await NhAccountSessionService.restoreAtBootstrap(this.context)
     } finally {
       this.accountRestoredAtBootstrap = restored

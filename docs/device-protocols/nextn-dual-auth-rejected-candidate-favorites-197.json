@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-rejected-candidate-favorites-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/rejected-candidate-existing-key-favorites-20260904T0047",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-185942269fa7b6d2cfd812ede1869cff30fb3a533a2b2b7fcb0f231e3e876370",
+    "page": "native-favorites-after-rejected-api-key-candidate",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Dismiss the observed root HDS rejection, leave the native API-key and Account pages, and open Favorites in the same process on exact target 197. This proves that the rejected unpromoted candidate did not overwrite or clear the existing sealed credential."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "dismiss-rejected-key-hds", "uiInput": ["click", "1130", "2330"], "pauseAfterMs": 400, "timeoutSeconds": 30 },
+      { "name": "return-from-api-key-to-account", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 500, "timeoutSeconds": 30 },
+      { "name": "return-from-account-to-my", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 500, "timeoutSeconds": 30 },
+      { "name": "open-native-favorites", "uiInput": ["click", "510", "2585"], "pauseAfterMs": 6000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-native-favorites", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-rejected-candidate-favorites-197.json", "-a"] },
+    { "name": "capture-native-favorites", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-rejected-candidate-favorites-197.png"] },
+    { "name": "receive-native-favorites-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-rejected-candidate-favorites-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/rejected-candidate-existing-key-favorites-20260904T0047/favorites.json"] },
+    { "name": "receive-native-favorites-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-rejected-candidate-favorites-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/rejected-candidate-existing-key-favorites-20260904T0047/favorites.png"] },
+    { "name": "receive-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/rejected-candidate-existing-key-favorites-20260904T0047/diagnostics"] },
+    { "name": "verify-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-rejected-candidate-favorites-197.json", "/data/local/tmp/nextn-rejected-candidate-favorites-197.png"] }
+  ]
+}

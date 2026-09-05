@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-ownership-order-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/web-identity-and-ownership-order-20260904T0127",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-main-7e936a40be0f4d4d253b0968f4a62622f301a3a92b151dd84676307a94f085b7-test-d74a39784da6cd15f50e8a7c1ec8ea12ed5acd4b182f7ad3cac9e5d29605b31b",
+    "page": "official-api-key-web-after-data-preserving-cold-start",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Install the signed ownership-order candidate in place on exact target 197, run the complete device suite, cold start with data preserved, and traverse the normal My, Account, API Key and shared official WebView path. Do not clear data, sign out, enter or create credentials, submit forms, or operate another target."
+  },
+  "preflight": [
+    { "name": "wake-authorized-target", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake-before-install", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "install-signed-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "pauseAfterMs": 500, "timeoutSeconds": 180 },
+    { "name": "install-signed-device-tests-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "pauseAfterMs": 500, "timeoutSeconds": 180 },
+    { "name": "run-complete-device-test-suite", "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test", "-s", "unittest", "OpenHarmonyTestRunner", "-s", "timeout", "120000"], "timeoutSeconds": 150 },
+    { "name": "force-stop-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 300 },
+    { "name": "cold-start-candidate", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 8000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-my", "uiInput": ["click", "1000", "2585"], "pauseAfterMs": 1000, "timeoutSeconds": 30 },
+      { "name": "open-native-account", "uiInput": ["click", "630", "430"], "pauseAfterMs": 1200, "timeoutSeconds": 30 },
+      { "name": "open-api-key-onboarding", "uiInput": ["click", "630", "675"], "pauseAfterMs": 1200, "timeoutSeconds": 30 },
+      { "name": "open-official-api-key-settings", "uiInput": ["click", "630", "430"], "pauseAfterMs": 5000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "create-bounded-webview-forward", "hdcArgs": ["fport", "tcp:19231", "tcp:19222"], "pauseAfterMs": 500 },
+    { "name": "receive-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/web-identity-and-ownership-order-20260904T0127/diagnostics"] },
+    { "name": "verify-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] }
+  ]
+}

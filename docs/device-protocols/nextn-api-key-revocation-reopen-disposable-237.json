@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-api-key-revocation-reopen-disposable-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-api-key-revocation/reopen-disposable-20260904T072400",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-59dfb693a28a4da94fe8f7747c151e909b2ff10ae49f2771411eae93e109c9e2",
+    "page": "normal-native-route-to-uniquely-named-disposable-key-row",
+    "deviceAlias": "device-237",
+    "deviceModel": "unknown",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "From the native Account list reached by the successful promotion bridge, reopen the active account, API Key child and shared official settings page. Preserve the existing bounded DevTools forward for a structure-only unique-row probe. Do not cold-start, install, clear data, sign out, create another key, submit a form, activate a challenge, revoke any key or capture a screenshot."
+  },
+  "preflight": [
+    {
+      "name": "verify-nextn-account-list-before-reopen",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-active-saved-account",
+        "uiInput": ["click", "660", "405"],
+        "pauseAfterMs": 1600,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "open-native-api-key-child",
+        "uiInput": ["click", "660", "630"],
+        "pauseAfterMs": 1600,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "open-shared-official-key-settings",
+        "uiInput": ["click", "660", "405"],
+        "pauseAfterMs": 6000,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-current-web-container",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-api-key-revocation-reopen-disposable-237.json", "-a"]
+    },
+    {
+      "name": "receive-current-web-container-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-api-key-revocation-reopen-disposable-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-api-key-revocation/reopen-disposable-20260904T072400/web.json"]
+    },
+    {
+      "name": "confirm-bounded-webview-forward",
+      "hdcArgs": ["fport", "ls"]
+    },
+    {
+      "name": "verify-nextn-process",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    },
+    {
+      "name": "cleanup-current-web-container-layout",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-api-key-revocation-reopen-disposable-237.json"]
+    }
+  ]
+}

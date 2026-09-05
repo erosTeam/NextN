@@ -33,6 +33,7 @@ const AUTH_REFRESH_CHECKPOINT_MAX_ATTEMPTS: number = 3
 const AUTH_REFRESH_CHECKPOINT_RETRY_DELAY_MS: number = 250
 const MAX_ACCOUNT_BACKUP_BUNDLE_CHARS: number = 512 * 1024
 const MAX_ACCOUNT_BACKUP_ID_CHARS: number = 512
+const MAX_API_KEY_NAME_CHARS: number = 160
 const RECOVERABLE_ARKWEB_COOKIE_NAMES: string[] = [
   'access_token',
   'refresh_token',
@@ -92,7 +93,10 @@ enum AccountSessionDiagnosticStage {
   AUTHENTICATED_READ_BROWSER_REFRESH_UNAVAILABLE = 'account_authenticated_read_browser_refresh_unavailable',
   AUTHENTICATED_READ_REFRESH_ENDPOINT_READY = 'account_authenticated_read_refresh_endpoint_ready',
   AUTHENTICATED_READ_REFRESH_ENDPOINT_UNAVAILABLE = 'account_authenticated_read_refresh_endpoint_unavailable',
+  AUTHENTICATED_READ_REFRESH_RESPONSE_REJECTED = 'account_authenticated_read_refresh_response_rejected',
+  AUTHENTICATED_READ_IDENTITY_MISMATCH = 'account_authenticated_read_identity_mismatch',
   AUTHENTICATED_READ_REFRESH_TOKEN_REJECTED = 'account_authenticated_read_refresh_token_rejected',
+  AUTHENTICATED_READ_API_KEY_REJECTED = 'account_authenticated_read_api_key_rejected',
   AUTHENTICATED_READ_BROWSER_REPLAY_RECOVERED = 'account_authenticated_read_browser_replay_recovered',
   AUTHENTICATED_READ_BROWSER_REPLAY_401 = 'account_authenticated_read_browser_replay_401',
   AUTHENTICATED_READ_TERMINAL_401_AFTER_RESTORE = 'account_authenticated_read_terminal_401_after_restore',
@@ -119,11 +123,21 @@ enum AccountSessionOrigin {
  * its cookies. This is not UI state and is never logged.
  */
 class SealedBrowserSessionPayload {
+  credentialKind: NhNativeCredentialKind = NhNativeCredentialKind.NONE
+  apiKey: string = ''
+  apiKeyName: string = ''
   cookieHeader: string = ''
   browserUserAgent: string = ''
   authCookies: SealedAuthCookie[] = []
   isEnvelopeValid: boolean = false
   validationCode: string = 'empty'
+}
+
+/** The single native API credential stored inside the HUKS session envelope. */
+export enum NhNativeCredentialKind {
+  NONE = 'none',
+  WEB_TOKEN = 'web_token',
+  API_KEY = 'api_key',
 }
 
 class AccountSessionBackupEntry {
@@ -161,8 +175,12 @@ class SealedAuthCookie {
  */
 export class NhAccountAuthenticatedReadToken {
   sessionEpoch: number = -1
+  /** Non-secret owner selected when this request began; empty only while a new login is being identified. */
+  accountId: string = ''
   /** Non-secret generation of the access/refresh pair used when this request began. */
   credentialRevision: number = -1
+  /** Non-secret discriminator; the credential value never leaves the service. */
+  credentialKind: NhNativeCredentialKind = NhNativeCredentialKind.NONE
 }
 
 /** Result of consuming auth cookies from one bounded first-party response. */
@@ -179,6 +197,10 @@ export enum NhResponseAuthCookieResult {
  * native requests or make the native UI report an authenticated state.
  */
 export class NhAccountSessionService {
+  private static nativeCredentialKind: NhNativeCredentialKind = NhNativeCredentialKind.NONE
+  private static nativeApiKey: string = ''
+  private static nativeApiKeyName: string = ''
+  private static nativeApiKeyIdentity: string = ''
   // Flattened compatibility view. Request authorization is derived only from
   // `sealedAuthCookies`; this string and the regular ArkWeb jar cannot vote on
   // whether the native account is authenticated.
@@ -243,6 +265,7 @@ export class NhAccountSessionService {
   // hydration. This in-process mirror changes only after that RDB marker has
   // committed, so published verification state can survive a cold start.
   private static verificationRequiredMarkerPresent: boolean = false
+  private static verificationRecoveryKind: string = 'web_login'
   // Page-facing account ownership is deliberately distinct from transport
   // availability. Once a verified envelope exists, request, ArkWeb, HUKS, or
   // RDB recovery failures cannot make the user signed out; only explicit
@@ -271,9 +294,40 @@ export class NhAccountSessionService {
     new Set<AccountSessionDiagnosticStage>()
 
   static isAuthenticated(): boolean {
-    return !NhAccountSessionService.verificationRequiredMarkerPresent &&
+    if (NhAccountSessionService.verificationRequiredMarkerPresent) {
+      return false
+    }
+    if (NhAccountSessionService.nativeCredentialKind === NhNativeCredentialKind.API_KEY) {
+      return NhAccountSessionService.safeApiToken(NhAccountSessionService.nativeApiKey).length > 0
+    }
+    return NhAccountSessionService.nativeCredentialKind === NhNativeCredentialKind.WEB_TOKEN &&
       NhAccountSessionService.hasAccessAuthCookie(NhAccountSessionService.sealedAuthCookies) &&
       NhAccountSessionService.hasRefreshAuthCookie(NhAccountSessionService.sealedAuthCookies)
+  }
+
+  static credentialKind(): NhNativeCredentialKind {
+    return NhAccountSessionService.nativeCredentialKind
+  }
+
+  /** Non-secret UI identity for matching the active key without exposing it. */
+  static apiKeyIdentityForDisplay(candidate: string): string {
+    const normalized: string = NhAccountSessionService.normalizeApiKeyCandidate(candidate)
+    if (normalized.length < 5) {
+      return normalized.length > 0 ? '••••' : ''
+    }
+    if (normalized.length < 12) {
+      return `••••${normalized.slice(-4)}`
+    }
+    return `${normalized.slice(0, 4)}••••${normalized.slice(-4)}`
+  }
+
+  private static normalizeApiKeyName(value: string): string {
+    const normalized: string = value.trim()
+    if (normalized.length === 0 || normalized.length > MAX_API_KEY_NAME_CHARS ||
+      /[\u0000-\u001F\u007F]/.test(normalized)) {
+      return ''
+    }
+    return normalized
   }
 
   /** Durable account ownership as projected to native pages. */
@@ -299,7 +353,9 @@ export class NhAccountSessionService {
     }
     const token: NhAccountAuthenticatedReadToken = new NhAccountAuthenticatedReadToken()
     token.sessionEpoch = NhAccountSessionService.sessionEpoch
+    token.accountId = NhAccountSessionService.activeSavedAccountId
     token.credentialRevision = NhAccountSessionService.credentialRevision
+    token.credentialKind = NhAccountSessionService.nativeCredentialKind
     return token
   }
 
@@ -314,7 +370,8 @@ export class NhAccountSessionService {
   /** True only while this request still belongs to the access/refresh pair it started with. */
   static isAuthenticatedReadCredentialCurrent(token: NhAccountAuthenticatedReadToken): boolean {
     return NhAccountSessionService.isAuthenticatedReadTokenCurrent(token) &&
-      token.credentialRevision === NhAccountSessionService.credentialRevision
+      token.credentialRevision === NhAccountSessionService.credentialRevision &&
+      token.credentialKind === NhAccountSessionService.nativeCredentialKind
   }
 
   /** A successfully recovered safe read adopts the current pair before replay. */
@@ -325,7 +382,24 @@ export class NhAccountSessionService {
       return false
     }
     token.credentialRevision = NhAccountSessionService.credentialRevision
+    token.credentialKind = NhAccountSessionService.nativeCredentialKind
     return true
+  }
+
+  static isApiKeyCredential(token: NhAccountAuthenticatedReadToken): boolean {
+    return NhAccountSessionService.isAuthenticatedReadTokenCurrent(token) &&
+      token.credentialKind === NhNativeCredentialKind.API_KEY &&
+      NhAccountSessionService.nativeCredentialKind === NhNativeCredentialKind.API_KEY
+  }
+
+  /** A returned account identity may fill an ownerless new login, but never replace a known owner. */
+  static authenticatedIdentityMatchesActiveAccount(accountId: string): boolean {
+    const normalized: string = accountId.trim()
+    if (!/^[1-9][0-9]*$/.test(normalized)) {
+      return false
+    }
+    return NhAccountSessionService.activeSavedAccountId.length === 0 ||
+      NhAccountSessionService.activeSavedAccountId === normalized
   }
 
   /**
@@ -335,7 +409,8 @@ export class NhAccountSessionService {
    * endpoint.
    */
   static authenticatedRefreshRequestBody(token: NhAccountAuthenticatedReadToken): string {
-    if (!NhAccountSessionService.isAuthenticatedReadCredentialCurrent(token)) {
+    if (!NhAccountSessionService.isAuthenticatedReadCredentialCurrent(token) ||
+      token.credentialKind !== NhNativeCredentialKind.WEB_TOKEN) {
       return ''
     }
     const refreshCookie: SealedAuthCookie | undefined =
@@ -362,6 +437,12 @@ export class NhAccountSessionService {
     if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
       return ''
     }
+    if (token.credentialKind === NhNativeCredentialKind.API_KEY) {
+      const apiKey: string = NhAccountSessionService.safeApiToken(
+        NhAccountSessionService.nativeApiKey,
+      )
+      return apiKey.length > 0 ? `Key ${apiKey}` : ''
+    }
     const accessCookie: SealedAuthCookie | undefined =
       NhAccountSessionService.sealedAuthCookies.find((cookie: SealedAuthCookie): boolean =>
         cookie.name === 'access_token' && cookie.value.length > 0)
@@ -378,6 +459,170 @@ export class NhAccountSessionService {
   }
 
   /**
+   * Returns the account-owned Web authorization required by first-party
+   * endpoints that explicitly reject API keys (currently comment mutations).
+   * For an API-key account this reads only the optional Web snapshot sealed in
+   * the same owner envelope; it never changes the native credential kind.
+   */
+  static authenticatedUserTokenAuthorization(token: NhAccountAuthenticatedReadToken): string {
+    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token) ||
+      NhAccountSessionService.normalizeUserAgent(NhAccountSessionService.browserUserAgent).length === 0 ||
+      !NhAccountSessionService.hasAccessAuthCookie(NhAccountSessionService.sealedAuthCookies) ||
+      !NhAccountSessionService.hasRefreshAuthCookie(NhAccountSessionService.sealedAuthCookies)) {
+      return ''
+    }
+    const accessCookie: SealedAuthCookie | undefined =
+      NhAccountSessionService.sealedAuthCookies.find((cookie: SealedAuthCookie): boolean =>
+        cookie.name === 'access_token' && cookie.value.length > 0)
+    if (accessCookie === undefined) {
+      return ''
+    }
+    let accessValue: string = accessCookie.value
+    try {
+      accessValue = decodeURIComponent(accessValue)
+    } catch (_error) {}
+    return NhAccountSessionService.safeApiToken(accessValue).length > 0
+      ? `User ${accessValue}`
+      : ''
+  }
+
+  /** Complete optional Web refresh body, fenced to the captured account epoch. */
+  static authenticatedUserTokenRefreshRequestBody(token: NhAccountAuthenticatedReadToken): string {
+    if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+      return ''
+    }
+    const refreshCookie: SealedAuthCookie | undefined =
+      NhAccountSessionService.sealedAuthCookies.find((cookie: SealedAuthCookie): boolean =>
+        cookie.name === 'refresh_token' && cookie.value.length > 0)
+    if (refreshCookie === undefined) {
+      return ''
+    }
+    let refreshValue: string = refreshCookie.value
+    try {
+      refreshValue = decodeURIComponent(refreshValue)
+    } catch (_error) {}
+    return NhAccountSessionService.safeApiToken(refreshValue).length > 0
+      ? JSON.stringify({ 'refresh_token': refreshValue })
+      : ''
+  }
+
+  /** Normalizes a user-supplied API key without ever publishing or logging it. */
+  static normalizeApiKeyCandidate(value: string): string {
+    const normalized: string = value.trim()
+    if (normalized.length === 0 || /\s/.test(normalized) ||
+      NhAccountSessionService.safeApiToken(normalized).length === 0) {
+      return ''
+    }
+    return normalized
+  }
+
+  /**
+   * Persists a candidate only after `NhSessionHttpClient` has verified it on
+   * the fixed first-party account endpoint. Existing browser state is carried
+   * only as optional, device-local Web compatibility state; it never becomes
+   * the native request credential for this envelope.
+   */
+  static async promoteVerifiedApiKey(
+    context: common.UIAbilityContext,
+    candidate: string,
+    accountId: string,
+    browserSessionOwnedByCandidate: boolean = false,
+    keyName: string = '',
+  ): Promise<boolean> {
+    const apiKey: string = NhAccountSessionService.normalizeApiKeyCandidate(candidate)
+    const apiKeyName: string = NhAccountSessionService.normalizeApiKeyName(keyName)
+    const normalizedAccountId: string = accountId.trim()
+    if (apiKey.length === 0 || !/^[1-9][0-9]*$/.test(normalizedAccountId) ||
+      NhAccountSessionService.sessionTransitionInFlight) {
+      return false
+    }
+    NhAccountSessionService.sessionContext = context
+    const browserSessionMatchesCandidate: boolean =
+      NhBrowserSessionBoundary.browserSessionMatchesValidatedAccount(
+        NhAccountSessionService.activeSavedAccountId,
+        normalizedAccountId,
+        browserSessionOwnedByCandidate,
+      )
+    const browserSessionComplete: boolean = browserSessionMatchesCandidate &&
+      NhAccountSessionService.hasLoginCookies(NhAccountSessionService.cookieHeader) &&
+      NhAccountSessionService.hasAccessAuthCookie(NhAccountSessionService.sealedAuthCookies) &&
+      NhAccountSessionService.hasRefreshAuthCookie(NhAccountSessionService.sealedAuthCookies) &&
+      NhAccountSessionService.normalizeUserAgent(NhAccountSessionService.browserUserAgent).length > 0
+    const ownedCookieHeader: string = browserSessionComplete
+      ? NhAccountSessionService.cookieHeader
+      : ''
+    const ownedBrowserUserAgent: string = browserSessionComplete
+      ? NhAccountSessionService.browserUserAgent
+      : ''
+    const ownedAuthCookies: SealedAuthCookie[] = browserSessionComplete
+      ? NhAccountSessionService.sealedAuthCookies
+      : []
+    const transitionEpoch: number = NhAccountSessionService.beginDurableSessionTransition()
+    let record: EncryptedAccountSession
+    try {
+      record = await NhAccountSessionService.encrypt(
+        NhAccountSessionService.serializeSessionPayload(
+          ownedCookieHeader,
+          ownedBrowserUserAgent,
+          ownedAuthCookies,
+          NhNativeCredentialKind.API_KEY,
+          apiKey,
+          apiKeyName,
+        ),
+      )
+      await AccountSessionRepository.saveVerifiedForAccount(
+        context,
+        record,
+        normalizedAccountId,
+      )
+      const persisted: AccountSessionRestoreSnapshot =
+        await AccountSessionRepository.loadForRestore(context)
+      if (persisted.record === null || persisted.record.ciphertext !== record.ciphertext ||
+        persisted.record.nonce !== record.nonce) {
+        throw new Error('account_api_key_persistence_readback_failed')
+      }
+      await NhAccountSessionService.persistRetainedAccountMarker(context, true)
+    } catch (_error) {
+      NhAccountSessionService.finishDurableSessionTransition(transitionEpoch)
+      return false
+    }
+    if (!NhAccountSessionService.isDurableSessionTransitionCurrent(transitionEpoch)) {
+      NhAccountSessionService.finishDurableSessionTransition(transitionEpoch)
+      return false
+    }
+    NhAccountSessionService.advanceSessionEpoch()
+    NhAccountSessionService.cookieHeader = ownedCookieHeader
+    NhAccountSessionService.sealedFallbackCookieHeader = ownedCookieHeader
+    NhAccountSessionService.sealedAuthCookies = ownedAuthCookies
+    NhAccountSessionService.browserUserAgent = ownedBrowserUserAgent
+    NhAccountSessionService.nativeCredentialKind = NhNativeCredentialKind.API_KEY
+    NhAccountSessionService.nativeApiKey = apiKey
+    NhAccountSessionService.nativeApiKeyName = apiKeyName
+    NhAccountSessionService.nativeApiKeyIdentity =
+      NhAccountSessionService.apiKeyIdentityForDisplay(apiKey)
+    NhAccountSessionService.sessionOrigin = AccountSessionOrigin.PROMOTED
+    NhAccountSessionService.activeSavedAccountId = normalizedAccountId
+    NhAccountSessionService.lastSavedAccountCheckpointId = normalizedAccountId
+    NhAccountSessionService.verificationRequiredMarkerPresent = false
+    NhAccountSessionService.verificationRecoveryKind = 'web_login'
+    NhAccountSessionService.retainedAccountPresent = true
+    NhAccountSessionService.clearRetainedRestoreLoginGate()
+    if (!browserSessionComplete) {
+      NhAccountSessionService.discardPendingVisibleBrowserSession()
+      NhAccountSessionService.resetRejectedVisibleBrowserSessionCandidate()
+      NhAccountSessionService.expireVisibleBrowserIdentityCookies()
+    }
+    const profileClearTask: Promise<void> = NhAccountSessionService.clearAccountProfileSnapshot(context)
+    NhAccountSessionService.publishSessionChange()
+    try {
+      await profileClearTask
+      return true
+    } finally {
+      NhAccountSessionService.finishDurableSessionTransition(transitionEpoch)
+    }
+  }
+
+  /**
    * Atomically checkpoints a successful official refresh response into the
    * HUKS envelope before the rejected request is replayed. This removes the
    * old split where ArkWeb could own a new token while native cold-start
@@ -388,20 +633,27 @@ export class NhAccountSessionService {
     accessToken: string,
     refreshToken: string,
     responseCookieSinkOwnedByCaller: boolean = false,
+    verifiedAccountId: string = '',
   ): Promise<boolean> {
-    if (!NhAccountSessionService.isAuthenticatedReadCredentialCurrent(token)) {
+    if (!NhAccountSessionService.isAuthenticatedReadCredentialCurrent(token) ||
+      token.credentialKind !== NhNativeCredentialKind.WEB_TOKEN) {
       return false
     }
     const access: string = NhAccountSessionService.safeApiToken(accessToken)
     const refresh: string = NhAccountSessionService.safeApiToken(refreshToken)
+    const resolvedOwner: string | null = NhAccountSessionService.resolveAuthenticatedReadOwner(
+      token,
+      verifiedAccountId,
+    )
     const context: common.UIAbilityContext | null = NhAccountSessionService.sessionContext
-    if (access.length === 0 || refresh.length === 0 || context === null ||
+    if (resolvedOwner === null || access.length === 0 || refresh.length === 0 || context === null ||
       NhAccountSessionService.browserUserAgent.length === 0) {
       return false
     }
     const currentAccess: string = NhAccountSessionService.currentAuthCookieValue('access_token')
     const currentRefresh: string = NhAccountSessionService.currentAuthCookieValue('refresh_token')
-    if (access === currentAccess && refresh === currentRefresh) {
+    if (access === currentAccess && refresh === currentRefresh &&
+      (resolvedOwner.length === 0 || resolvedOwner === NhAccountSessionService.activeSavedAccountId)) {
       return true
     }
     const authCookies: SealedAuthCookie[] = [
@@ -416,6 +668,7 @@ export class NhAccountSessionService {
           header,
           NhAccountSessionService.browserUserAgent,
           authCookies,
+          NhNativeCredentialKind.WEB_TOKEN,
         ),
       )
       let checkpointed: boolean = false
@@ -428,7 +681,7 @@ export class NhAccountSessionService {
           await AccountSessionRepository.saveVerifiedForAccount(
             context,
             record,
-            NhAccountSessionService.activeSavedAccountId,
+            resolvedOwner,
           )
           const persisted: AccountSessionRestoreSnapshot =
             await AccountSessionRepository.loadForRestore(context)
@@ -473,6 +726,15 @@ export class NhAccountSessionService {
       NhAccountSessionService.cookieHeader = header
       NhAccountSessionService.sealedFallbackCookieHeader = header
       NhAccountSessionService.sealedAuthCookies = authCookies
+      NhAccountSessionService.nativeCredentialKind = NhNativeCredentialKind.WEB_TOKEN
+      NhAccountSessionService.nativeApiKey = ''
+      NhAccountSessionService.nativeApiKeyName = ''
+      NhAccountSessionService.nativeApiKeyIdentity = ''
+      if (resolvedOwner.length > 0) {
+        NhAccountSessionService.activeSavedAccountId = resolvedOwner
+        NhAccountSessionService.lastSavedAccountCheckpointId = resolvedOwner
+        token.accountId = resolvedOwner
+      }
       NhAccountSessionService.credentialRevision += 1
       token.credentialRevision = NhAccountSessionService.credentialRevision
       NhAccountSessionService.recordAuthCookieExpiryShape('refresh_checkpoint', authCookies)
@@ -495,6 +757,101 @@ export class NhAccountSessionService {
   }
 
   /**
+   * Checkpoints a refreshed website token pair without replacing a stable
+   * native API key. Legacy Web-token accounts reuse the ordinary native
+   * checkpoint because their website token is also their native authority.
+   */
+  static async applyRefreshedUserTokens(
+    token: NhAccountAuthenticatedReadToken,
+    accessToken: string,
+    refreshToken: string,
+    responseCookieSinkOwnedByCaller: boolean = false,
+    verifiedAccountId: string = '',
+  ): Promise<boolean> {
+    if (token.credentialKind === NhNativeCredentialKind.WEB_TOKEN) {
+      return await NhAccountSessionService.applyRefreshedApiTokens(
+        token,
+        accessToken,
+        refreshToken,
+        responseCookieSinkOwnedByCaller,
+        verifiedAccountId,
+      )
+    }
+    if (!NhAccountSessionService.isAuthenticatedReadCredentialCurrent(token) ||
+      token.credentialKind !== NhNativeCredentialKind.API_KEY) {
+      return false
+    }
+    const access: string = NhAccountSessionService.safeApiToken(accessToken)
+    const refresh: string = NhAccountSessionService.safeApiToken(refreshToken)
+    const apiKey: string = NhAccountSessionService.safeApiToken(
+      NhAccountSessionService.nativeApiKey,
+    )
+    const resolvedOwner: string | null = NhAccountSessionService.resolveAuthenticatedReadOwner(
+      token,
+      verifiedAccountId,
+    )
+    const context: common.UIAbilityContext | null = NhAccountSessionService.sessionContext
+    if (resolvedOwner === null || resolvedOwner.length === 0 || access.length === 0 ||
+      refresh.length === 0 || apiKey.length === 0 || context === null ||
+      NhAccountSessionService.normalizeUserAgent(NhAccountSessionService.browserUserAgent).length === 0) {
+      return false
+    }
+    const authCookies: SealedAuthCookie[] =
+      NhAccountSessionService.sealedAuthCookies.filter((cookie: SealedAuthCookie): boolean =>
+        cookie.name !== 'access_token' && cookie.name !== 'refresh_token')
+    authCookies.push(NhAccountSessionService.apiTokenCookie('access_token', access, false))
+    authCookies.push(NhAccountSessionService.apiTokenCookie('refresh_token', refresh, true))
+    authCookies.sort((left: SealedAuthCookie, right: SealedAuthCookie): number => {
+      const leftKey: string = `${left.name}|${left.domain}|${left.path}`
+      const rightKey: string = `${right.name}|${right.domain}|${right.path}`
+      return leftKey.localeCompare(rightKey)
+    })
+    const header: string = NhAccountSessionService.mergeCookieHeaders([
+      NhAccountSessionService.cookieHeader,
+      `access_token=${access}; refresh_token=${refresh}`,
+    ])
+    if (!NhAccountSessionService.hasLoginCookies(header)) {
+      return false
+    }
+    const transitionEpoch: number = NhAccountSessionService.beginDurableSessionTransition(false)
+    try {
+      const record: EncryptedAccountSession = await NhAccountSessionService.encrypt(
+        NhAccountSessionService.serializeSessionPayload(
+          header,
+          NhAccountSessionService.browserUserAgent,
+          authCookies,
+          NhNativeCredentialKind.API_KEY,
+          apiKey,
+          NhAccountSessionService.nativeApiKeyName,
+        ),
+      )
+      await AccountSessionRepository.saveVerifiedForAccount(context, record, resolvedOwner)
+      const persisted: AccountSessionRestoreSnapshot =
+        await AccountSessionRepository.loadForRestore(context)
+      if (persisted.record === null || persisted.record.ciphertext !== record.ciphertext ||
+        persisted.record.nonce !== record.nonce ||
+        !NhAccountSessionService.isDurableSessionTransitionCurrent(transitionEpoch) ||
+        !NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
+        return false
+      }
+      NhAccountSessionService.cookieHeader = header
+      NhAccountSessionService.sealedFallbackCookieHeader = header
+      NhAccountSessionService.sealedAuthCookies = authCookies
+      NhAccountSessionService.recordAuthCookieExpiryShape('website_refresh_checkpoint', authCookies)
+      if (!responseCookieSinkOwnedByCaller) {
+        try {
+          NhCookieAuthority.storeRefreshedAuthTokens(access, refresh)
+        } catch (_error) {}
+      }
+      return true
+    } catch (_error) {
+      return false
+    } finally {
+      NhAccountSessionService.finishDurableSessionTransition(transitionEpoch)
+    }
+  }
+
+  /**
    * Applies every successful first-party response's auth Set-Cookie values to
    * the same HUKS/RDB generation used by Authorization and cold restore. A
    * partial rotation is completed only from the current fenced pair; malformed
@@ -503,6 +860,7 @@ export class NhAccountSessionService {
   static async applyResponseAuthSetCookies(
     token: NhAccountAuthenticatedReadToken,
     setCookieHeaders: string[],
+    verifiedAccountId: string = '',
   ): Promise<NhResponseAuthCookieResult> {
     if (!NhAccountSessionService.isAuthenticatedReadTokenCurrent(token)) {
       return NhResponseAuthCookieResult.REJECTED
@@ -526,7 +884,13 @@ export class NhAccountSessionService {
     const refresh: string = responseRefresh ??
       NhAccountSessionService.currentAuthCookieValue('refresh_token')
     if (access.length === 0 || refresh.length === 0 ||
-      !await NhAccountSessionService.applyRefreshedApiTokens(token, access, refresh, true)) {
+      !await NhAccountSessionService.applyRefreshedUserTokens(
+        token,
+        access,
+        refresh,
+        true,
+        verifiedAccountId,
+      )) {
       return NhResponseAuthCookieResult.REJECTED
     }
     return NhResponseAuthCookieResult.APPLIED
@@ -767,17 +1131,8 @@ export class NhAccountSessionService {
     if (!NhAccountSessionService.hasLoginCookies(NhAccountSessionService.cookieHeader)) {
       return false
     }
-    // A cold start can have a fully usable regular ArkWeb session even when
-    // its old encrypted fallback is absent. Never synthesize a cookie from a
-    // transient in-memory value in that case; simply confirm ArkWeb's own
-    // current URL-scoped identity.
     if (!NhAccountSessionService.hasLoginCookies(sealedCookieHeader)) {
-      const currentJarHeader: string = NhAccountSessionService.readRegularArkWebCookieHeader()
-      if (!NhAccountSessionService.hasLoginCookies(currentJarHeader)) {
-        return false
-      }
-      NhAccountSessionService.cookieHeader = currentJarHeader
-      return true
+      return false
     }
     const activeTask: Promise<boolean> | null = NhAccountSessionService.cookieJarHydrationTask
     if (activeTask !== null &&
@@ -943,7 +1298,10 @@ export class NhAccountSessionService {
    * boundary so a later user-initiated login does not have to restart a
    * managed challenge unnecessarily.
    */
-  static async clear(context: common.UIAbilityContext): Promise<void> {
+  static async clear(
+    context: common.UIAbilityContext,
+    savedAccountId: string = '',
+  ): Promise<void> {
     NhAccountSessionService.sessionContext = context
     // A durable clear must not interleave with a verified promotion or a
     // sealed-envelope re-seal that is already writing RDB. Otherwise the
@@ -961,7 +1319,7 @@ export class NhAccountSessionService {
     }
    const transitionEpoch: number = NhAccountSessionService.beginDurableSessionTransition()
     try {
-      await AccountSessionRepository.clear(context)
+      await AccountSessionRepository.clear(context, savedAccountId)
       await NhAccountSessionService.persistRetainedAccountMarker(context, false)
       const store: preferences.Preferences = await preferences.getPreferences(context, ACCOUNT_STATE_STORE)
       store.deleteSync(AUTH_REFRESH_RETRY_AT_KEY)
@@ -978,6 +1336,7 @@ export class NhAccountSessionService {
       return
     }
     NhAccountSessionService.verificationRequiredMarkerPresent = false
+    NhAccountSessionService.verificationRecoveryKind = 'web_login'
     NhAccountSessionService.retainedAccountPresent = false
     NhAccountSessionService.activeSavedAccountId = ''
     NhAccountSessionService.lastSavedAccountCheckpointId = ''
@@ -987,6 +1346,10 @@ export class NhAccountSessionService {
     NhAccountSessionService.sealedFallbackCookieHeader = ''
     NhAccountSessionService.sealedAuthCookies = []
     NhAccountSessionService.browserUserAgent = ''
+    NhAccountSessionService.nativeCredentialKind = NhNativeCredentialKind.NONE
+    NhAccountSessionService.nativeApiKey = ''
+    NhAccountSessionService.nativeApiKeyName = ''
+    NhAccountSessionService.nativeApiKeyIdentity = ''
     NhAccountSessionService.sessionOrigin = AccountSessionOrigin.NONE
     NhAccountSessionService.discardPendingVisibleBrowserSession()
     NhAccountSessionService.resetRejectedVisibleBrowserSessionCandidate()
@@ -1008,9 +1371,10 @@ export class NhAccountSessionService {
   static async recordAuthenticatedReadReplay401(
     token: NhAccountAuthenticatedReadToken,
   ): Promise<boolean> {
-    return await NhAccountSessionService.recordAuthenticatedTerminal401(
+    return await NhAccountSessionService.recordAuthenticatedVerificationRequired(
       token,
       'terminal_401_replay_rejected',
+      true,
     )
   }
 
@@ -1025,24 +1389,65 @@ export class NhAccountSessionService {
     NhAccountSessionService.recordDiagnosticStage(
       AccountSessionDiagnosticStage.AUTHENTICATED_READ_REFRESH_TOKEN_REJECTED,
     )
-    return await NhAccountSessionService.recordAuthenticatedTerminal401(
+    return await NhAccountSessionService.recordAuthenticatedVerificationRequired(
       token,
       'terminal_401_refresh_token_rejected',
+      true,
     )
   }
 
-  private static async recordAuthenticatedTerminal401(
+  /** A fixed account-endpoint 401/403 conclusively rejects an API key. */
+  static async recordAuthenticatedApiKeyRejected(
     token: NhAccountAuthenticatedReadToken,
-    markerReason: string,
+  ): Promise<boolean> {
+    if (!NhAccountSessionService.isAuthenticatedReadCredentialCurrent(token) ||
+      token.credentialKind !== NhNativeCredentialKind.API_KEY) {
+      return false
+    }
+    NhAccountSessionService.recordDiagnosticStage(
+      AccountSessionDiagnosticStage.AUTHENTICATED_READ_API_KEY_REJECTED,
+    )
+    return await NhAccountSessionService.recordAuthenticatedVerificationRequired(
+      token,
+      'terminal_api_key_rejected',
+      true,
+    )
+  }
+
+  /** A successful account response for a different saved owner is terminal for that credential binding. */
+  static async recordAuthenticatedIdentityMismatch(
+    token: NhAccountAuthenticatedReadToken,
   ): Promise<boolean> {
     if (!NhAccountSessionService.isAuthenticatedReadCredentialCurrent(token)) {
       return false
     }
-    if (NhAccountSessionService.sessionOrigin === AccountSessionOrigin.RESTORED) {
+    NhAccountSessionService.recordDiagnosticStage(
+      AccountSessionDiagnosticStage.AUTHENTICATED_READ_IDENTITY_MISMATCH,
+    )
+    return await NhAccountSessionService.recordAuthenticatedVerificationRequired(
+      token,
+      token.credentialKind === NhNativeCredentialKind.API_KEY
+        ? 'terminal_api_key_identity_mismatch'
+        : 'terminal_web_token_identity_mismatch',
+      false,
+    )
+  }
+
+  private static async recordAuthenticatedVerificationRequired(
+    token: NhAccountAuthenticatedReadToken,
+    markerReason: string,
+    recordTerminal401Stage: boolean,
+  ): Promise<boolean> {
+    if (!NhAccountSessionService.isAuthenticatedReadCredentialCurrent(token)) {
+      return false
+    }
+    if (recordTerminal401Stage &&
+      NhAccountSessionService.sessionOrigin === AccountSessionOrigin.RESTORED) {
       NhAccountSessionService.recordDiagnosticStage(
         AccountSessionDiagnosticStage.AUTHENTICATED_READ_TERMINAL_401_AFTER_RESTORE,
       )
-    } else if (NhAccountSessionService.sessionOrigin === AccountSessionOrigin.PROMOTED) {
+    } else if (recordTerminal401Stage &&
+      NhAccountSessionService.sessionOrigin === AccountSessionOrigin.PROMOTED) {
       NhAccountSessionService.recordDiagnosticStage(
         AccountSessionDiagnosticStage.AUTHENTICATED_READ_TERMINAL_401_AFTER_PROMOTION,
       )
@@ -1075,19 +1480,30 @@ export class NhAccountSessionService {
     // now; a later cold-start/foreground probe will retry the durable marker
     // path if the local store was temporarily unavailable.
     NhAccountSessionService.verificationRequiredMarkerPresent = true
+    const apiKeyRecovery: boolean = NhAccountSessionService.isApiKeyRecoveryReason(markerReason)
+    NhAccountSessionService.verificationRecoveryKind = apiKeyRecovery ? 'api_key' : 'web_login'
     NhAccountSessionService.retainedAccountPresent = true
     NhAccountSessionService.updateRetainedRestoreLoginGate(true)
     NhAccountSessionService.advanceSessionEpoch()
-    NhAccountSessionService.cookieHeader = ''
-    NhAccountSessionService.sealedFallbackCookieHeader = ''
-    NhAccountSessionService.sealedAuthCookies = []
-    NhAccountSessionService.browserUserAgent = ''
+    if (!apiKeyRecovery) {
+      NhAccountSessionService.cookieHeader = ''
+      NhAccountSessionService.sealedFallbackCookieHeader = ''
+      NhAccountSessionService.sealedAuthCookies = []
+      NhAccountSessionService.browserUserAgent = ''
+    }
+    NhAccountSessionService.nativeCredentialKind = NhNativeCredentialKind.NONE
+    NhAccountSessionService.nativeApiKey = ''
     NhAccountSessionService.sessionOrigin = AccountSessionOrigin.NONE
     NhAccountSessionService.discardPendingVisibleBrowserSession()
     NhAccountSessionService.resetRejectedVisibleBrowserSessionCandidate()
     NhAccountSessionService.publishSessionChange()
     NhAccountSessionService.finishDurableSessionTransition(transitionEpoch)
     return true
+  }
+
+  private static isApiKeyRecoveryReason(reasonCode: string): boolean {
+    return reasonCode === 'terminal_api_key_rejected' ||
+      reasonCode === 'terminal_api_key_identity_mismatch'
   }
 
   /** Fixed, non-secret stages for the bounded authenticated-read repair chain. */
@@ -1123,6 +1539,12 @@ export class NhAccountSessionService {
     NhAccountSessionService.recordDiagnosticStage(ready
       ? AccountSessionDiagnosticStage.AUTHENTICATED_READ_REFRESH_ENDPOINT_READY
       : AccountSessionDiagnosticStage.AUTHENTICATED_READ_REFRESH_ENDPOINT_UNAVAILABLE)
+  }
+
+  static recordAuthenticatedReadRefreshResponseRejected(): void {
+    NhAccountSessionService.recordDiagnosticStage(
+      AccountSessionDiagnosticStage.AUTHENTICATED_READ_REFRESH_RESPONSE_REJECTED,
+    )
   }
 
   static recordAuthenticatedReadBrowserReplay(returned401: boolean): void {
@@ -1399,13 +1821,23 @@ export class NhAccountSessionService {
     NhAccountSessionService.cookieHeader = NhAccountSessionService.pendingCookieHeader
     NhAccountSessionService.sealedFallbackCookieHeader = NhAccountSessionService.pendingCookieHeader
     NhAccountSessionService.sealedAuthCookies = NhAccountSessionService.pendingAuthCookies
+    NhAccountSessionService.nativeCredentialKind = NhNativeCredentialKind.WEB_TOKEN
+    NhAccountSessionService.nativeApiKey = ''
+    NhAccountSessionService.nativeApiKeyName = ''
+    NhAccountSessionService.nativeApiKeyIdentity = ''
     NhAccountSessionService.recordAuthCookieExpiryShape(
       'visible_promotion',
       NhAccountSessionService.sealedAuthCookies,
     )
     NhAccountSessionService.browserUserAgent = NhAccountSessionService.pendingBrowserUserAgent
     NhAccountSessionService.sessionOrigin = AccountSessionOrigin.PROMOTED
+    // The visible credential has replaced the active owner. Its stable user id
+    // is established by the first account response and must not be inherited
+    // from the account that opened the add-account flow.
+    NhAccountSessionService.activeSavedAccountId = ''
+    NhAccountSessionService.lastSavedAccountCheckpointId = ''
     NhAccountSessionService.verificationRequiredMarkerPresent = false
+    NhAccountSessionService.verificationRecoveryKind = 'web_login'
     NhAccountSessionService.retainedAccountPresent = true
     NhAccountSessionService.clearRetainedRestoreLoginGate()
     NhAccountSessionService.discardPendingVisibleBrowserSession()
@@ -1521,23 +1953,37 @@ export class NhAccountSessionService {
     NhAccountSessionService.deferredCandidateNavigationEpoch = 0
   }
 
-  /** Backup export: decrypts the sealed account session to the backup container. */
-  static async exportSealedForBackup(context: common.UIAbilityContext): Promise<string | null> {
+  /** Backup export: portable mode strips every device-local Web session field. */
+  static async exportSealedForBackup(
+    context: common.UIAbilityContext,
+    portable: boolean = true,
+  ): Promise<string | null> {
     const snapshot: AccountSessionRestoreSnapshot = await AccountSessionRepository.loadForRestore(context)
     const record: EncryptedAccountSession | null = snapshot.record
     if (record === null) {
       return null
     }
-    return await NhAccountSessionService.decryptWithExistingKey(record)
+    const plaintext: string = await NhAccountSessionService.decryptWithExistingKey(record)
+    return portable ? NhAccountSessionService.portableApiKeyPayload(plaintext) : plaintext
   }
 
-  /** Exports the active and every saved account as one encrypted-backup payload. */
-  static async exportAllSealedForBackup(context: common.UIAbilityContext): Promise<string> {
+  /** Exports API-key accounts portably, or a full local-only rollback snapshot. */
+  static async exportAllSealedForBackup(
+    context: common.UIAbilityContext,
+    portable: boolean = true,
+  ): Promise<string> {
     const snapshot: AccountSessionRestoreSnapshot = await AccountSessionRepository.loadForRestore(context)
     const bundle: AccountSessionBackupBundle = new AccountSessionBackupBundle()
+    bundle.version = portable ? 2 : 1
     if (snapshot.record !== null) {
-      bundle.activePayload = await NhAccountSessionService.decryptWithExistingKey(snapshot.record)
-      NhAccountSessionService.validateBackupSessionPayload(bundle.activePayload)
+      const plaintext: string = await NhAccountSessionService.decryptWithExistingKey(snapshot.record)
+      const exportPayload: string | null = portable
+        ? NhAccountSessionService.portableApiKeyPayload(plaintext)
+        : plaintext
+      if (exportPayload !== null) {
+        bundle.activePayload = exportPayload
+        NhAccountSessionService.validateBackupSessionPayload(bundle.activePayload, portable)
+      }
     }
     if (snapshot.savedKeys.length !== snapshot.savedRecords.length) {
       throw new Error('account_session_backup_shape_invalid')
@@ -1551,9 +1997,15 @@ export class NhAccountSessionService {
       seen.add(accountId)
       const entry: AccountSessionBackupEntry = new AccountSessionBackupEntry()
       entry.accountId = accountId
-      entry.payload = await NhAccountSessionService.decryptWithExistingKey(snapshot.savedRecords[i])
-      NhAccountSessionService.validateBackupSessionPayload(entry.payload)
-      bundle.saved.push(entry)
+      const plaintext: string = await NhAccountSessionService.decryptWithExistingKey(snapshot.savedRecords[i])
+      const exportPayload: string | null = portable
+        ? NhAccountSessionService.portableApiKeyPayload(plaintext)
+        : plaintext
+      if (exportPayload !== null) {
+        entry.payload = exportPayload
+        NhAccountSessionService.validateBackupSessionPayload(entry.payload, portable)
+        bundle.saved.push(entry)
+      }
     }
     const raw: string = JSON.stringify(bundle)
     if (raw.length <= 0 || raw.length > MAX_ACCOUNT_BACKUP_BUNDLE_CHARS) {
@@ -1562,11 +2014,33 @@ export class NhAccountSessionService {
     return raw
   }
 
-  /** Re-wraps a complete account set with the target device HUKS key. */
+  /** Non-secret saved-account ids whose sealed envelopes are currently usable. */
+  static async savedCredentialAccountIds(context: common.UIAbilityContext): Promise<string[]> {
+    const snapshot: AccountSessionRestoreSnapshot = await AccountSessionRepository.loadForRestore(context)
+    if (snapshot.savedKeys.length !== snapshot.savedRecords.length) {
+      return []
+    }
+    const ids: string[] = []
+    for (let index: number = 0; index < snapshot.savedKeys.length; index += 1) {
+      try {
+        const plaintext: string = await NhAccountSessionService.decryptWithExistingKey(
+          snapshot.savedRecords[index],
+        )
+        const payload: SealedBrowserSessionPayload = NhAccountSessionService.decodeSessionPayload(plaintext)
+        if (NhAccountSessionService.isUsableDecodedPayload(payload)) {
+          ids.push(snapshot.savedKeys[index])
+        }
+      } catch (_error) {}
+    }
+    return ids
+  }
+
+  /** Re-wraps a portable API-key set or an explicitly local rollback snapshot. */
   static async restoreAllSealedFromBackup(
     context: common.UIAbilityContext,
     raw: string,
     replace: boolean,
+    allowLocalLegacySessions: boolean = false,
   ): Promise<void> {
     if (raw.length === 0) {
       if (replace) {
@@ -1583,13 +2057,22 @@ export class NhAccountSessionService {
     } catch (_error) {
       throw new Error('account_session_backup_shape_invalid')
     }
-    if (parsed === null || typeof parsed !== 'object' || parsed.version !== 1 ||
+    if (parsed === null || typeof parsed !== 'object' ||
+      (parsed.version !== 1 && parsed.version !== 2) ||
       typeof parsed.activePayload !== 'string' || !Array.isArray(parsed.saved)) {
       throw new Error('account_session_backup_shape_invalid')
     }
+    const portable: boolean = parsed.version === 2
+    if (!portable && !allowLocalLegacySessions) {
+      // Legacy portable backups contain device/session-family credentials.
+      // Ignore them instead of cloning a rotating Web session onto this device.
+      return
+    }
     let primary: EncryptedAccountSession | null = null
+    let primaryOwnerId: string = ''
+    let primaryOwnerMatchCount: number = 0
     if (parsed.activePayload.length > 0) {
-      NhAccountSessionService.validateBackupSessionPayload(parsed.activePayload)
+      NhAccountSessionService.validateBackupSessionPayload(parsed.activePayload, portable)
       primary = await NhAccountSessionService.encrypt(parsed.activePayload)
     }
     const savedKeys: string[] = []
@@ -1606,7 +2089,11 @@ export class NhAccountSessionService {
         throw new Error('account_session_backup_shape_invalid')
       }
       seen.add(accountId)
-      NhAccountSessionService.validateBackupSessionPayload(entry.payload)
+      NhAccountSessionService.validateBackupSessionPayload(entry.payload, portable)
+      if (parsed.activePayload.length > 0 && entry.payload === parsed.activePayload) {
+        primaryOwnerId = accountId
+        primaryOwnerMatchCount += 1
+      }
       savedKeys.push(accountId)
       savedRecords.push(await NhAccountSessionService.encrypt(entry.payload))
     }
@@ -1616,8 +2103,17 @@ export class NhAccountSessionService {
       savedKeys,
       savedRecords,
       replace,
+      NhAccountSessionService.backupRestorePreservesExistingPrimary(portable, replace),
+      primaryOwnerMatchCount === 1 ? primaryOwnerId : '',
     )
-    NhAccountSessionService.retainedAccountPresent = primary !== null || savedRecords.length > 0
+    if (primary !== null || savedRecords.length > 0) {
+      NhAccountSessionService.retainedAccountPresent = true
+    }
+  }
+
+  /** Portable merge adopts the backed-up primary only when the target has none. */
+  static backupRestorePreservesExistingPrimary(portable: boolean, replace: boolean): boolean {
+    return portable && !replace
   }
 
   private static validateBackupAccountId(value: string): string {
@@ -1629,14 +2125,48 @@ export class NhAccountSessionService {
     return normalized
   }
 
-  private static validateBackupSessionPayload(plaintext: string): void {
+  private static validateBackupSessionPayload(plaintext: string, portable: boolean): void {
+    if (portable) {
+      if (!NhAccountSessionService.isPortableBackupSessionPayload(plaintext)) {
+        throw new Error('account_session_backup_payload_invalid')
+      }
+      return
+    }
     const payload: SealedBrowserSessionPayload = NhAccountSessionService.decodeSessionPayload(plaintext)
-    const normalized: string = NhAccountSessionService.normalizeCookieHeader(payload.cookieHeader)
-    const normalizedUserAgent: string = NhAccountSessionService.normalizeUserAgent(payload.browserUserAgent)
-    if (!payload.isEnvelopeValid || !NhAccountSessionService.hasLoginCookies(normalized) ||
-      normalizedUserAgent.length === 0 || !NhAccountSessionService.hasRefreshAuthCookie(payload.authCookies)) {
+    if (!NhAccountSessionService.isUsableDecodedPayload(payload)) {
       throw new Error('account_session_backup_payload_invalid')
     }
+  }
+
+  /** The exact pure admission predicate used by portable restore. */
+  static isPortableBackupSessionPayload(plaintext: string): boolean {
+    const payload: SealedBrowserSessionPayload = NhAccountSessionService.decodeSessionPayload(plaintext)
+    return NhAccountSessionService.isUsableDecodedPayload(payload) &&
+      payload.credentialKind === NhNativeCredentialKind.API_KEY &&
+      payload.cookieHeader.length === 0 && payload.browserUserAgent.length === 0 &&
+      payload.authCookies.length === 0
+  }
+
+  /**
+   * Converts one valid local envelope into the only cross-device shape we
+   * accept. This stays value-preserving for the API key itself, but removes
+   * every device/session-family Web field before the encrypted backup layer
+   * can serialize it.
+   */
+  static portableApiKeyPayload(plaintext: string): string | null {
+    const payload: SealedBrowserSessionPayload = NhAccountSessionService.decodeSessionPayload(plaintext)
+    if (!payload.isEnvelopeValid || payload.credentialKind !== NhNativeCredentialKind.API_KEY ||
+      NhAccountSessionService.normalizeApiKeyCandidate(payload.apiKey).length === 0) {
+      return null
+    }
+    return NhAccountSessionService.serializeSessionPayload(
+      '',
+      '',
+      [],
+      NhNativeCredentialKind.API_KEY,
+      payload.apiKey,
+      payload.apiKeyName,
+    )
   }
 
   /** Backup restore: re-wraps a backed-up plaintext session with the target device HUKS key. */
@@ -1645,10 +2175,10 @@ export class NhAccountSessionService {
       throw new Error('account_session_backup_payload_invalid')
     }
     const payload: SealedBrowserSessionPayload = NhAccountSessionService.decodeSessionPayload(plaintext)
-    const normalized: string = NhAccountSessionService.normalizeCookieHeader(payload.cookieHeader)
-    const normalizedUserAgent: string = NhAccountSessionService.normalizeUserAgent(payload.browserUserAgent)
-    if (!payload.isEnvelopeValid || !NhAccountSessionService.hasLoginCookies(normalized) ||
-      normalizedUserAgent.length === 0) {
+    if (!NhAccountSessionService.isUsableDecodedPayload(payload) ||
+      payload.credentialKind !== NhNativeCredentialKind.API_KEY ||
+      payload.cookieHeader.length > 0 || payload.browserUserAgent.length > 0 ||
+      payload.authCookies.length > 0) {
       throw new Error('account_session_backup_payload_invalid')
     }
     const record: EncryptedAccountSession = await NhAccountSessionService.encrypt(plaintext)
@@ -1663,8 +2193,7 @@ export class NhAccountSessionService {
 
   /** Saves the active sealed envelope under a stable non-secret account id. */
   static async saveActiveAsSaved(context: common.UIAbilityContext, accountId: string): Promise<boolean> {
-    if (accountId.length === 0 || !NhAccountSessionService.isAuthenticated() ||
-      NhAccountSessionService.browserUserAgent.length === 0) {
+    if (accountId.length === 0 || !NhAccountSessionService.isAuthenticated()) {
       return false
     }
     try {
@@ -1673,10 +2202,12 @@ export class NhAccountSessionService {
           NhAccountSessionService.cookieHeader,
           NhAccountSessionService.browserUserAgent,
           NhAccountSessionService.sealedAuthCookies,
+          NhAccountSessionService.nativeCredentialKind,
+          NhAccountSessionService.nativeApiKey,
+          NhAccountSessionService.nativeApiKeyName,
         ),
       )
-      await AccountSessionRepository.saveVerified(context, active)
-      await AccountSessionRepository.saveVerifiedByKey(context, accountId, active)
+      await AccountSessionRepository.saveVerifiedForAccount(context, active, accountId)
       return true
     } catch (_error) {
       return false
@@ -1721,10 +2252,7 @@ export class NhAccountSessionService {
     const payload: SealedBrowserSessionPayload = NhAccountSessionService.decodeSessionPayload(plaintext)
     const normalized: string = NhAccountSessionService.normalizeCookieHeader(payload.cookieHeader)
     const normalizedUserAgent: string = NhAccountSessionService.normalizeUserAgent(payload.browserUserAgent)
-    if (!payload.isEnvelopeValid || !NhAccountSessionService.hasLoginCookies(normalized) ||
-      normalizedUserAgent.length === 0 ||
-      !NhAccountSessionService.hasAccessAuthCookie(payload.authCookies) ||
-      !NhAccountSessionService.hasRefreshAuthCookie(payload.authCookies)) {
+    if (!NhAccountSessionService.isUsableDecodedPayload(payload)) {
       return false
     }
     if (NhAccountSessionService.sessionTransitionInFlight) {
@@ -1741,10 +2269,16 @@ export class NhAccountSessionService {
       NhAccountSessionService.sealedFallbackCookieHeader = normalized
       NhAccountSessionService.sealedAuthCookies = payload.authCookies
       NhAccountSessionService.browserUserAgent = normalizedUserAgent
+      NhAccountSessionService.nativeCredentialKind = payload.credentialKind
+      NhAccountSessionService.nativeApiKey = payload.apiKey
+      NhAccountSessionService.nativeApiKeyName = payload.apiKeyName
+      NhAccountSessionService.nativeApiKeyIdentity =
+        NhAccountSessionService.apiKeyIdentityForDisplay(payload.apiKey)
       NhAccountSessionService.sessionOrigin = AccountSessionOrigin.RESTORED
       NhAccountSessionService.activeSavedAccountId = accountId
       NhAccountSessionService.lastSavedAccountCheckpointId = accountId
       NhAccountSessionService.verificationRequiredMarkerPresent = false
+      NhAccountSessionService.verificationRecoveryKind = 'web_login'
       NhAccountSessionService.retainedAccountPresent = true
       NhAccountSessionService.clearRetainedRestoreLoginGate()
       NhAccountSessionService.discardPendingVisibleBrowserSession()
@@ -1775,6 +2309,34 @@ export class NhAccountSessionService {
     }
     const restoredEpoch: number = NhAccountSessionService.sessionEpoch
     return await NhAccountSessionService.restoreInternal(context, restoredEpoch)
+  }
+
+  /**
+   * Fences an encrypted backup restore before its first durable mutation. Old
+   * authenticated responses cannot checkpoint into the imported primary, and
+   * no new account request can start until success or rollback is rehydrated.
+   */
+  static async beginBackupRestoreTransition(context: common.UIAbilityContext): Promise<number> {
+    NhAccountSessionService.sessionContext = context
+    if (NhAccountSessionService.restoreTask !== null) {
+      await NhAccountSessionService.restoreTask
+    }
+    if (NhAccountSessionService.sessionTransitionInFlight) {
+      return -1
+    }
+    return NhAccountSessionService.beginDurableSessionTransition()
+  }
+
+  /** Publishes one new epoch only after the restored or rolled-back state has been rehydrated. */
+  static finishBackupRestoreTransition(transitionEpoch: number): void {
+    const current: boolean = NhAccountSessionService.isDurableSessionTransitionCurrent(transitionEpoch)
+    if (current) {
+      NhAccountSessionService.advanceSessionEpoch()
+    }
+    NhAccountSessionService.finishDurableSessionTransition(transitionEpoch)
+    if (current) {
+      NhAccountSessionService.publishSessionChange()
+    }
   }
 
   private static async restoreInternal(
@@ -1815,7 +2377,14 @@ export class NhAccountSessionService {
     if (verificationRequired) {
       NhAccountSessionService.retainedAccountPresent = true
       NhAccountSessionService.verificationRequiredMarkerPresent = true
+      NhAccountSessionService.verificationRecoveryKind =
+        NhAccountSessionService.isApiKeyRecoveryReason(verificationSnapshot.reasonCode)
+          ? 'api_key'
+          : 'web_login'
       NhAccountSessionService.updateRetainedRestoreLoginGate(true)
+      if (NhAccountSessionService.verificationRecoveryKind === 'api_key') {
+        await NhAccountSessionService.restoreRejectedApiKeyDisplayMetadata(context)
+      }
       NhAccountSessionService.recordDiagnosticStage(
         verificationSnapshot.reasonCode === 'terminal_401_refresh_token_rejected'
           ? AccountSessionDiagnosticStage.RESTORE_VERIFICATION_REQUIRED_AFTER_BROWSER_REFRESH_FAILURE
@@ -1897,6 +2466,8 @@ export class NhAccountSessionService {
       )
     }
     let restoredPayload: SealedBrowserSessionPayload | null = null
+    let restoredFallbackRecord: EncryptedAccountSession | null = null
+    let restoredFallbackAccountId: string = ''
     if (record !== null) {
       let restored: string = ''
       try {
@@ -1924,8 +2495,7 @@ export class NhAccountSessionService {
             `legacy=${NhAccountSessionService.hasNamedAuthCookie(payload.authCookies, 'ipb_pass_hash') ? 1 : 0}`,
         )
         NhAccountSessionService.recordAuthCookieExpiryShape('restore', payload.authCookies)
-        if (!payload.isEnvelopeValid || !NhAccountSessionService.hasLoginCookies(payloadNormalized) ||
-          payloadUserAgent.length === 0) {
+        if (!NhAccountSessionService.isUsableDecodedPayload(payload)) {
           NhAccountSessionService.recordDiagnosticStage(
             AccountSessionDiagnosticStage.RESTORE_PAYLOAD_INVALID,
           )
@@ -1941,11 +2511,26 @@ export class NhAccountSessionService {
       // compatibility-only ArkWeb jar happens to be readable. A regular jar
       // must never suppress HUKS recovery and manufacture a "re-verify" gate
       // over recoverable ciphertext.
+      const candidateIndexes: number[] = []
+      const preferredIndex: number = restoreSnapshot.savedKeys.indexOf(
+        NhAccountSessionService.activeSavedAccountId,
+      )
+      if (preferredIndex >= 0 && preferredIndex < savedRecords.length) {
+        candidateIndexes.push(preferredIndex)
+      }
       for (let index: number = 0; index < savedRecords.length; index += 1) {
+        if (index !== preferredIndex) {
+          candidateIndexes.push(index)
+        }
+      }
+      for (let orderIndex: number = 0; orderIndex < candidateIndexes.length; orderIndex += 1) {
+        const index: number = candidateIndexes[orderIndex]
         const candidatePayload: SealedBrowserSessionPayload | null =
           await NhAccountSessionService.decryptRestoreCandidate(savedRecords[index])
         if (candidatePayload !== null) {
           restoredPayload = candidatePayload
+          restoredFallbackRecord = savedRecords[index]
+          restoredFallbackAccountId = restoreSnapshot.savedKeys[index]
           NhAccountSessionService.recordDiagnosticStage(
             AccountSessionDiagnosticStage.RESTORE_SAVED_ENVELOPE_USED,
           )
@@ -1965,6 +2550,22 @@ export class NhAccountSessionService {
         regularJarReady,
         record === null ? failureRequiresExplicitVisibleLogin : true,
       )
+    }
+    if (restoredFallbackRecord !== null) {
+      try {
+        // Repair the missing/unusable primary with the selected saved owner so
+        // later cold starts no longer depend on fallback query order.
+        await AccountSessionRepository.saveVerifiedForAccount(
+          context,
+          restoredFallbackRecord,
+          restoredFallbackAccountId,
+        )
+        NhAccountSessionService.activeSavedAccountId = restoredFallbackAccountId
+        NhAccountSessionService.lastSavedAccountCheckpointId = restoredFallbackAccountId
+      } catch (_error) {
+        // The decrypted runtime credential remains usable. A later cold start
+        // can retry this non-destructive repair from the retained saved row.
+      }
     }
     NhAccountSessionService.retainedAccountPresent = true
     NhAccountSessionService.persistRetainedAccountMarker(context, true).catch((): void => {})
@@ -1988,6 +2589,11 @@ export class NhAccountSessionService {
     NhAccountSessionService.sealedFallbackCookieHeader = normalized
     NhAccountSessionService.sealedAuthCookies = restoredPayload.authCookies
     NhAccountSessionService.browserUserAgent = normalizedUserAgent
+    NhAccountSessionService.nativeCredentialKind = restoredPayload.credentialKind
+    NhAccountSessionService.nativeApiKey = restoredPayload.apiKey
+    NhAccountSessionService.nativeApiKeyName = restoredPayload.apiKeyName
+    NhAccountSessionService.nativeApiKeyIdentity =
+      NhAccountSessionService.apiKeyIdentityForDisplay(restoredPayload.apiKey)
     if (!preservesActiveSessionOrigin) {
       NhAccountSessionService.sessionOrigin = AccountSessionOrigin.RESTORED
     }
@@ -1997,10 +2603,19 @@ export class NhAccountSessionService {
     // can leave ArkWeb and the sealed request generation on different token
     // pairs. The hydrator accepts an existing jar only when it contains the
     // exact sealed pair; otherwise the encrypted generation repairs the jar.
-    let hydrated: boolean = false
-    try {
-      hydrated = await NhAccountSessionService.ensureRegularArkWebCookieJar()
-    } catch (_error) {}
+    const completeWebCompatibilityState: boolean =
+      NhBrowserSessionBoundary.hasCompleteOwnedBrowserSessionSnapshot(
+        NhAccountSessionService.hasLoginCookies(normalized),
+        normalizedUserAgent.length > 0,
+        NhAccountSessionService.hasAccessAuthCookie(restoredPayload.authCookies),
+        NhAccountSessionService.hasRefreshAuthCookie(restoredPayload.authCookies),
+      )
+    let hydrated: boolean = !completeWebCompatibilityState
+    if (completeWebCompatibilityState) {
+      try {
+        hydrated = await NhAccountSessionService.ensureRegularArkWebCookieJar()
+      } catch (_error) {}
+    }
     if (restoredEpoch !== NhAccountSessionService.sessionEpoch) {
       return NhAccountSessionService.isAuthenticated()
     }
@@ -2029,11 +2644,61 @@ export class NhAccountSessionService {
     const payload: SealedBrowserSessionPayload = NhAccountSessionService.decodeSessionPayload(plaintext)
     const normalized: string = NhAccountSessionService.normalizeCookieHeader(payload.cookieHeader)
     const normalizedUserAgent: string = NhAccountSessionService.normalizeUserAgent(payload.browserUserAgent)
-    if (!payload.isEnvelopeValid || !NhAccountSessionService.hasLoginCookies(normalized) ||
-      normalizedUserAgent.length === 0) {
+    if (!NhAccountSessionService.isUsableDecodedPayload(payload)) {
       return null
     }
     return payload
+  }
+
+  /**
+   * Restores only the non-secret label and masked identity for a terminally
+   * rejected API key. The raw key is decrypted into a local value solely to
+   * derive its display mask; it is never promoted back into request state.
+   */
+  private static async restoreRejectedApiKeyDisplayMetadata(
+    context: common.UIAbilityContext,
+  ): Promise<void> {
+    let snapshot: AccountSessionRestoreSnapshot
+    try {
+      snapshot = await AccountSessionRepository.loadForRestore(context)
+    } catch (_error) {
+      return
+    }
+    const candidates: EncryptedAccountSession[] = []
+    if (snapshot.record !== null) {
+      candidates.push(snapshot.record)
+    }
+    const preferredOwners: string[] = [
+      snapshot.primaryOwnerId.trim(),
+      NhAccountSessionService.activeSavedAccountId.trim(),
+    ]
+    for (let ownerIndex: number = 0; ownerIndex < preferredOwners.length; ownerIndex += 1) {
+      const owner: string = preferredOwners[ownerIndex]
+      const savedIndex: number = owner.length > 0 ? snapshot.savedKeys.indexOf(owner) : -1
+      if (savedIndex < 0 || savedIndex >= snapshot.savedRecords.length) {
+        continue
+      }
+      const saved: EncryptedAccountSession = snapshot.savedRecords[savedIndex]
+      if (!candidates.some((candidate: EncryptedAccountSession): boolean =>
+        candidate.ciphertext === saved.ciphertext && candidate.nonce === saved.nonce)) {
+        candidates.push(saved)
+      }
+    }
+    for (let index: number = 0; index < candidates.length; index += 1) {
+      try {
+        const plaintext: string = await NhAccountSessionService.decryptWithExistingKey(candidates[index])
+        const payload: SealedBrowserSessionPayload = NhAccountSessionService.decodeSessionPayload(plaintext)
+        const apiKey: string = NhAccountSessionService.normalizeApiKeyCandidate(payload.apiKey)
+        if (!payload.isEnvelopeValid || payload.credentialKind !== NhNativeCredentialKind.API_KEY ||
+          apiKey.length === 0) {
+          continue
+        }
+        NhAccountSessionService.nativeApiKeyName = payload.apiKeyName
+        NhAccountSessionService.nativeApiKeyIdentity =
+          NhAccountSessionService.apiKeyIdentityForDisplay(apiKey)
+        return
+      } catch (_error) {}
+    }
   }
 
   /**
@@ -2075,6 +2740,9 @@ export class NhAccountSessionService {
     }
     const accountPresent: boolean = NhAccountSessionService.retainedAccountPresent ||
       requiresExplicitVisibleLogin
+    const preserveRejectedApiKeyDisplay: boolean = requiresExplicitVisibleLogin &&
+      NhAccountSessionService.verificationRequiredMarkerPresent &&
+      NhAccountSessionService.verificationRecoveryKind === 'api_key'
     NhAccountSessionService.retainedAccountPresent = accountPresent
     if (requiresExplicitVisibleLogin) {
       NhAccountSessionService.updateRetainedRestoreLoginGate(true)
@@ -2096,6 +2764,12 @@ export class NhAccountSessionService {
     NhAccountSessionService.sealedFallbackCookieHeader = ''
     NhAccountSessionService.sealedAuthCookies = []
     NhAccountSessionService.browserUserAgent = ''
+    NhAccountSessionService.nativeCredentialKind = NhNativeCredentialKind.NONE
+    NhAccountSessionService.nativeApiKey = ''
+    if (!preserveRejectedApiKeyDisplay) {
+      NhAccountSessionService.nativeApiKeyName = ''
+      NhAccountSessionService.nativeApiKeyIdentity = ''
+    }
     NhAccountSessionService.sessionOrigin = AccountSessionOrigin.NONE
     NhAccountSessionService.discardPendingVisibleBrowserSession()
     NhAccountSessionService.resetRejectedVisibleBrowserSessionCandidate()
@@ -2218,6 +2892,123 @@ export class NhAccountSessionService {
     }
   }
 
+  /**
+   * Checkpoints a complete live first-party ArkWeb session for the API-key
+   * creation bridge. Callers outside that visible Web flow must not adopt an
+   * unrelated account's browser jar.
+   */
+  static async adoptCompleteRegularArkWebCookieJar(browserUserAgent: string = ''): Promise<boolean> {
+    try {
+      const capturedUserAgent: string = NhAccountSessionService.normalizeUserAgent(browserUserAgent)
+      if (browserUserAgent.length > 0 && capturedUserAgent.length === 0) {
+        return false
+      }
+      const currentHeader: string = NhAccountSessionService.readRegularArkWebCookieHeader()
+      const currentAuthCookies: SealedAuthCookie[] =
+        await NhAccountSessionService.captureFirstPartyAuthCookies()
+      if (!NhAccountSessionService.hasLoginCookies(currentHeader) ||
+        !NhAccountSessionService.hasAccessAuthCookie(currentAuthCookies) ||
+        !NhAccountSessionService.hasRefreshAuthCookie(currentAuthCookies)) {
+        return false
+      }
+      NhAccountSessionService.cookieHeader = currentHeader
+      NhAccountSessionService.sealedFallbackCookieHeader = currentHeader
+      NhAccountSessionService.sealedAuthCookies = currentAuthCookies
+      if (capturedUserAgent.length > 0) {
+        NhAccountSessionService.browserUserAgent = capturedUserAgent
+      }
+      return true
+    } catch (_error) {
+      return false
+    }
+  }
+
+  /**
+   * Captures the visible API-key setup browser as an uncommitted candidate.
+   * Unlike the regular login transaction, this never replaces the current
+   * native credential before the candidate account has been verified.
+   */
+  static async captureApiKeySetupBrowserSessionCandidate(
+    context: common.UIAbilityContext,
+    observedUrl: string,
+    browserUserAgent: string,
+  ): Promise<boolean> {
+    return await NhAccountSessionService.captureBrowserSessionCandidate(
+      context,
+      observedUrl,
+      browserUserAgent,
+      false,
+    )
+  }
+
+  /**
+   * Adds a verified same-account Web snapshot to the existing API-key
+   * envelope without replacing that API key. The primary and saved rows are
+   * updated atomically, and read back before the live snapshot is published.
+   */
+  static async checkpointVerifiedApiKeyBrowserSession(
+    context: common.UIAbilityContext,
+    verifiedAccountId: string,
+  ): Promise<boolean> {
+    const accountId: string = verifiedAccountId.trim()
+    const apiKey: string = NhAccountSessionService.normalizeApiKeyCandidate(
+      NhAccountSessionService.nativeApiKey,
+    )
+    if (NhAccountSessionService.nativeCredentialKind !== NhNativeCredentialKind.API_KEY ||
+      apiKey.length === 0 || !/^[1-9][0-9]*$/.test(accountId) ||
+      accountId !== NhAccountSessionService.activeSavedAccountId ||
+      !NhAccountSessionService.hasLoginCookies(NhAccountSessionService.pendingCookieHeader) ||
+      !NhAccountSessionService.hasAccessAuthCookie(NhAccountSessionService.pendingAuthCookies) ||
+      !NhAccountSessionService.hasRefreshAuthCookie(NhAccountSessionService.pendingAuthCookies) ||
+      NhAccountSessionService.normalizeUserAgent(
+        NhAccountSessionService.pendingBrowserUserAgent,
+      ).length === 0 || NhAccountSessionService.sessionTransitionInFlight) {
+      return false
+    }
+    const expectedApiKey: string = apiKey
+    const transitionEpoch: number = NhAccountSessionService.beginDurableSessionTransition(false)
+    let record: EncryptedAccountSession
+    try {
+      record = await NhAccountSessionService.encrypt(
+        NhAccountSessionService.serializeSessionPayload(
+          NhAccountSessionService.pendingCookieHeader,
+          NhAccountSessionService.pendingBrowserUserAgent,
+          NhAccountSessionService.pendingAuthCookies,
+          NhNativeCredentialKind.API_KEY,
+          expectedApiKey,
+          NhAccountSessionService.nativeApiKeyName,
+        ),
+      )
+      await AccountSessionRepository.saveVerifiedForAccount(context, record, accountId)
+      const persisted: AccountSessionRestoreSnapshot =
+        await AccountSessionRepository.loadForRestore(context)
+      if (persisted.record === null || persisted.record.ciphertext !== record.ciphertext ||
+        persisted.record.nonce !== record.nonce) {
+        throw new Error('account_api_key_browser_checkpoint_readback_failed')
+      }
+    } catch (_error) {
+      NhAccountSessionService.finishDurableSessionTransition(transitionEpoch)
+      return false
+    }
+    if (!NhAccountSessionService.isDurableSessionTransitionCurrent(transitionEpoch) ||
+      NhAccountSessionService.nativeCredentialKind !== NhNativeCredentialKind.API_KEY ||
+      NhAccountSessionService.nativeApiKey !== expectedApiKey ||
+      NhAccountSessionService.activeSavedAccountId !== accountId) {
+      NhAccountSessionService.finishDurableSessionTransition(transitionEpoch)
+      return false
+    }
+    NhAccountSessionService.cookieHeader = NhAccountSessionService.pendingCookieHeader
+    NhAccountSessionService.sealedFallbackCookieHeader =
+      NhAccountSessionService.pendingCookieHeader
+    NhAccountSessionService.sealedAuthCookies =
+      NhAccountSessionService.pendingAuthCookies.slice()
+    NhAccountSessionService.browserUserAgent =
+      NhAccountSessionService.pendingBrowserUserAgent
+    NhAccountSessionService.discardPendingVisibleBrowserSession()
+    NhAccountSessionService.finishDurableSessionTransition(transitionEpoch)
+    return true
+  }
+
   /** Reads only the fixed first-party cookie scopes used by the retained transport. */
   private static readRegularArkWebCookieHeader(): string {
     const headers: string[] = []
@@ -2232,6 +3023,30 @@ export class NhAccountSessionService {
   private static isCurrentSealedSession(sealedCookieHeader: string, expectedEpoch: number): boolean {
     return expectedEpoch === NhAccountSessionService.sessionEpoch &&
       sealedCookieHeader === NhAccountSessionService.sealedFallbackCookieHeader
+  }
+
+  /** Resolves a checkpoint owner without allowing a response to change a known request owner. */
+  private static resolveAuthenticatedReadOwner(
+    token: NhAccountAuthenticatedReadToken,
+    verifiedAccountId: string,
+  ): string | null {
+    const captured: string = token.accountId.trim()
+    const active: string = NhAccountSessionService.activeSavedAccountId.trim()
+    const verified: string = verifiedAccountId.trim()
+    if ((captured.length > 0 && !/^[1-9][0-9]*$/.test(captured)) ||
+      (active.length > 0 && !/^[1-9][0-9]*$/.test(active)) ||
+      (verified.length > 0 && !/^[1-9][0-9]*$/.test(verified))) {
+      return null
+    }
+    if (captured.length > 0 && active.length > 0 && captured !== active) {
+      return null
+    }
+    if (verified.length > 0 &&
+      ((captured.length > 0 && verified !== captured) ||
+        (active.length > 0 && verified !== active))) {
+      return null
+    }
+    return verified.length > 0 ? verified : (captured.length > 0 ? captured : active)
   }
 
   private static advanceSessionEpoch(): void {
@@ -2313,6 +3128,10 @@ export class NhAccountSessionService {
       NhAccountSessionService.retainedAccountPresent || authenticated,
       authenticated,
       NhAccountSessionService.verificationRequiredMarkerPresent,
+      NhAccountSessionService.verificationRecoveryKind,
+      NhAccountSessionService.nativeCredentialKind,
+      NhAccountSessionService.nativeApiKeyIdentity,
+      NhAccountSessionService.nativeApiKeyName,
     )
   }
 
@@ -2860,7 +3679,7 @@ export class NhAccountSessionService {
       }
       const record: Record<string, Object> = parsed as Record<string, Object>
       const version: Object = record['version']
-      if (version !== 2 && version !== 3) {
+      if (version !== 2 && version !== 3 && version !== 4) {
         payload.validationCode = 'version'
         return payload
       }
@@ -2879,6 +3698,34 @@ export class NhAccountSessionService {
         payload.validationCode = 'legacy_v2_access_only'
         return payload
       }
+      if (version === 4) {
+        if (record['credentialKind'] === NhNativeCredentialKind.API_KEY) {
+          if (typeof record['apiKey'] !== 'string') {
+            payload.validationCode = 'api_key_type'
+            return payload
+          }
+          payload.credentialKind = NhNativeCredentialKind.API_KEY
+          payload.apiKey = NhAccountSessionService.normalizeApiKeyCandidate(record['apiKey'] as string)
+          if (payload.apiKey.length === 0) {
+            payload.validationCode = 'api_key_invalid'
+            return payload
+          }
+          if (record['apiKeyName'] !== undefined && typeof record['apiKeyName'] !== 'string') {
+            payload.validationCode = 'api_key_name_type'
+            return payload
+          }
+          payload.apiKeyName = typeof record['apiKeyName'] === 'string'
+            ? NhAccountSessionService.normalizeApiKeyName(record['apiKeyName'] as string)
+            : ''
+        } else if (record['credentialKind'] === NhNativeCredentialKind.WEB_TOKEN) {
+          payload.credentialKind = NhNativeCredentialKind.WEB_TOKEN
+        } else {
+          payload.validationCode = 'credential_kind'
+          return payload
+        }
+      } else {
+        payload.credentialKind = NhNativeCredentialKind.WEB_TOKEN
+      }
       if (!Array.isArray(record['authCookies'])) {
         payload.validationCode = 'auth_array'
         return payload
@@ -2893,6 +3740,11 @@ export class NhAccountSessionService {
         }
         payload.authCookies.push(normalizedCookie)
       }
+      if (payload.credentialKind === NhNativeCredentialKind.API_KEY) {
+        payload.isEnvelopeValid = true
+        payload.validationCode = 'valid_v4_api_key'
+        return payload
+      }
       if (!NhAccountSessionService.hasAccessAuthCookie(payload.authCookies)) {
         payload.validationCode = 'auth_access_missing'
         return payload
@@ -2902,20 +3754,42 @@ export class NhAccountSessionService {
         return payload
       }
       payload.isEnvelopeValid = true
-      payload.validationCode = 'valid_v3'
+      payload.validationCode = version === 4 ? 'valid_v4_web_token' : 'valid_v3'
     } catch (_error) {
       payload.validationCode = 'json_parse'
     }
     return payload
   }
 
+  private static isUsableDecodedPayload(payload: SealedBrowserSessionPayload): boolean {
+    if (!payload.isEnvelopeValid) {
+      return false
+    }
+    if (payload.credentialKind === NhNativeCredentialKind.API_KEY) {
+      return NhAccountSessionService.normalizeApiKeyCandidate(payload.apiKey).length > 0
+    }
+    return payload.credentialKind === NhNativeCredentialKind.WEB_TOKEN &&
+      NhAccountSessionService.hasLoginCookies(
+        NhAccountSessionService.normalizeCookieHeader(payload.cookieHeader),
+      ) &&
+      NhAccountSessionService.normalizeUserAgent(payload.browserUserAgent).length > 0 &&
+      NhAccountSessionService.hasAccessAuthCookie(payload.authCookies) &&
+      NhAccountSessionService.hasRefreshAuthCookie(payload.authCookies)
+  }
+
   private static serializeSessionPayload(
     cookieHeader: string,
     browserUserAgent: string,
     authCookies: SealedAuthCookie[],
+    credentialKind: NhNativeCredentialKind = NhNativeCredentialKind.WEB_TOKEN,
+    apiKey: string = '',
+    apiKeyName: string = '',
   ): string {
     return JSON.stringify({
-      'version': 3,
+      'version': 4,
+      'credentialKind': credentialKind,
+      'apiKey': credentialKind === NhNativeCredentialKind.API_KEY ? apiKey : '',
+      'apiKeyName': credentialKind === NhNativeCredentialKind.API_KEY ? apiKeyName : '',
       'cookieHeader': cookieHeader,
       'browserUserAgent': browserUserAgent,
       'authCookies': authCookies,

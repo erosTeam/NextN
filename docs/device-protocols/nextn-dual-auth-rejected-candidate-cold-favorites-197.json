@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-rejected-candidate-cold-favorites-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/rejected-candidate-persisted-key-cold-favorites-20260904T0052",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-185942269fa7b6d2cfd812ede1869cff30fb3a533a2b2b7fcb0f231e3e876370",
+    "page": "cold-native-favorites-after-rejected-api-key-candidate",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "After the one rejected unpromoted candidate, force-stop with data preserved, cold start the same installed candidate, and open Favorites on exact target 197. This verifies the rejected candidate did not replace the persisted primary credential. Do not install, clear data, sign out, enter a credential, or operate another target."
+  },
+  "preflight": [
+    { "name": "force-stop-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 300 },
+    { "name": "cold-start-same-installed-candidate", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 8000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-favorites-after-cold-restore", "uiInput": ["click", "510", "2585"], "pauseAfterMs": 6000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-cold-native-favorites", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-rejected-candidate-cold-favorites-197.json", "-a"] },
+    { "name": "capture-cold-native-favorites", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-rejected-candidate-cold-favorites-197.png"] },
+    { "name": "receive-cold-native-favorites-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-rejected-candidate-cold-favorites-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/rejected-candidate-persisted-key-cold-favorites-20260904T0052/favorites.json"] },
+    { "name": "receive-cold-native-favorites-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-rejected-candidate-cold-favorites-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/rejected-candidate-persisted-key-cold-favorites-20260904T0052/favorites.png"] },
+    { "name": "receive-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/rejected-candidate-persisted-key-cold-favorites-20260904T0052/diagnostics"] },
+    { "name": "verify-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-rejected-candidate-cold-favorites-197.json", "/data/local/tmp/nextn-rejected-candidate-cold-favorites-197.png"] }
+  ]
+}

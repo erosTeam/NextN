@@ -16,6 +16,14 @@ export class AccountSessionState {
   @Trace authenticationAvailable: boolean = false
   /** Automatic recovery is exhausted and an explicit visible verification is required. */
   @Trace verificationRequired: boolean = false
+  /** Non-secret recovery route: API-key editor or first-party Web login. */
+  @Trace verificationRecoveryKind: string = 'web_login'
+  /** Non-secret credential class currently selected for native NH requests. */
+  @Trace credentialKind: string = 'none'
+  /** Redacted identity of the active API key; never contains the complete key. */
+  @Trace apiKeyIdentity: string = ''
+  /** Display name stored with the active API key. */
+  @Trace apiKeyName: string = ''
   @Trace revision: number = 0
 
   publish(
@@ -23,17 +31,35 @@ export class AccountSessionState {
     signedIn: boolean,
     authenticationAvailable: boolean,
     verificationRequired: boolean,
+    verificationRecoveryKind: string = 'web_login',
+    credentialKind: string = 'none',
+    apiKeyIdentity: string = '',
+    apiKeyName: string = '',
   ): void {
     if (this.initialized === initialized &&
       this.signedIn === signedIn &&
       this.authenticationAvailable === authenticationAvailable &&
-      this.verificationRequired === verificationRequired) {
+      this.verificationRequired === verificationRequired &&
+      this.verificationRecoveryKind === verificationRecoveryKind &&
+      this.credentialKind === credentialKind &&
+      this.apiKeyIdentity === apiKeyIdentity &&
+      this.apiKeyName === apiKeyName) {
       return
     }
     this.initialized = initialized
     this.signedIn = signedIn
     this.authenticationAvailable = authenticationAvailable
     this.verificationRequired = verificationRequired
+    this.verificationRecoveryKind = verificationRecoveryKind === 'api_key' ? 'api_key' : 'web_login'
+    this.credentialKind = credentialKind === 'api_key'
+      ? 'api_key'
+      : credentialKind === 'web_token'
+        ? 'web_token'
+        : 'none'
+    const retainsApiKeyIdentity: boolean = this.credentialKind === 'api_key' ||
+      this.verificationRecoveryKind === 'api_key'
+    this.apiKeyIdentity = retainsApiKeyIdentity ? apiKeyIdentity : ''
+    this.apiKeyName = retainsApiKeyIdentity ? apiKeyName : ''
     this.revision += 1
   }
 }

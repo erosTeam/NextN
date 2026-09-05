@@ -48,9 +48,11 @@ ok('the Subtab inline editor is shared and keeps the established transparent fie
     !/struct HomeSubtabInlineEditRow/.test(subtabEditor) &&
     /NextNListRow\(\{[\s\S]*?useCustomTrailing: true/.test(inlineEditor) &&
     /\.backgroundColor\(Color\.Transparent\)/.test(inlineEditor))
-ok('the shared list row owns one nonzero right inset for every suffix',
-  /cardSuffixMargin: this\.suffixPaddingRight/.test(listRow) &&
-    !/cardSuffixMargin: 0/.test(listRow))
+ok('the shared list row keeps native HDS suffix geometry and insets only custom suffix content',
+  /cardSuffixMargin: 0/.test(listRow) &&
+    !/cardSuffixMargin: this\.suffixPaddingRight/.test(listRow) &&
+    /private DropdownSuffixContent\(\)[\s\S]*?right: ThemeTokens\.SPACE_MD/.test(listRow) &&
+    /private WrappedSuffixBuilder\(\)[\s\S]*?right: this\.suffixPaddingRight/.test(listRow))
 ok('saved tag rows replace stale ForEach closures after a local-tag revision',
   /@Local displayedTags: NhLocalUserTag\[\]/.test(manager) &&
     /onLocalUserTagsChanged\(\): void \{[\s\S]*?this\.refreshDisplayedTags\(\)/.test(manager) &&

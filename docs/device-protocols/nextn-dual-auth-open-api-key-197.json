@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-open-api-key-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/shared-primary-button-native-api-key-20260903T2227",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-283bbf1a7bbd79017d7d2d73df9fa5dd1e5e486f08e6d1d0f6246529b38578f7",
+    "page": "native-api-key-onboarding",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "From the cold-start root on exact target 197, traverse My and Account, open the normal API Key row, then capture the shared primary-action button. Do not enter, generate, bind, delete, or submit any credential."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-my", "uiInput": ["click", "1000", "2585"], "pauseAfterMs": 1000, "timeoutSeconds": 30 },
+      { "name": "open-native-account", "uiInput": ["click", "630", "430"], "pauseAfterMs": 1200, "timeoutSeconds": 30 },
+      { "name": "open-api-key-onboarding", "uiInput": ["click", "630", "675"], "pauseAfterMs": 1800, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-api-key-onboarding", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-dual-auth-api-key-197.json", "-a"] },
+    { "name": "capture-api-key-onboarding", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-dual-auth-api-key-197.png"] },
+    { "name": "receive-api-key-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-dual-auth-api-key-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/shared-primary-button-native-api-key-20260903T2227/api-key.json"] },
+    { "name": "receive-api-key-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-dual-auth-api-key-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/shared-primary-button-native-api-key-20260903T2227/api-key.png"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-dual-auth-api-key-197.json", "/data/local/tmp/nextn-dual-auth-api-key-197.png"] }
+  ]
+}

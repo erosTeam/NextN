@@ -5,6 +5,7 @@ const TRUSTED_ORIGIN: string = 'https://nhentai.net'
 const LOGIN_PATH: string = '/login/'
 const LOGIN_URL: string = `${TRUSTED_ORIGIN}${LOGIN_PATH}`
 const USER_SETTINGS_URL: string = `${TRUSTED_ORIGIN}/user/settings`
+const API_KEYS_SETTINGS_URL: string = `${USER_SETTINGS_URL}#apikeys`
 
 /**
  * The native session boundary owns exact-origin classification and capture.
@@ -36,6 +37,53 @@ export class NhBrowserSessionBoundary {
 
   static userSettingsUrl(): string {
     return USER_SETTINGS_URL
+  }
+
+  static apiKeysSettingsUrl(): string {
+    return API_KEYS_SETTINGS_URL
+  }
+
+  static isApiKeySettingsUrl(url: string): boolean {
+    return url === USER_SETTINGS_URL ||
+      url === `${USER_SETTINGS_URL}/` ||
+      url.startsWith(`${USER_SETTINGS_URL}#`) ||
+      url.startsWith(`${USER_SETTINGS_URL}?`) ||
+      url.startsWith(`${USER_SETTINGS_URL}/#`) ||
+      url.startsWith(`${USER_SETTINGS_URL}/?`)
+  }
+
+  /**
+   * A browser snapshot may accompany a validated API key only when it was
+   * captured by that official Web flow, or when the validated account is the
+   * already-active saved account. Manual binding for another account must not
+   * inherit the current account's ArkWeb identity.
+   */
+  static browserSessionMatchesValidatedAccount(
+    activeSavedAccountId: string,
+    validatedAccountId: string,
+    capturedByOfficialFlow: boolean,
+  ): boolean {
+    const accountId: string = validatedAccountId.trim()
+    if (!/^[1-9][0-9]*$/.test(accountId)) {
+      return false
+    }
+    return capturedByOfficialFlow || activeSavedAccountId.trim() === accountId
+  }
+
+  /**
+   * A sealed account envelope can repopulate the process-global ArkWeb jar
+   * only when it carries the complete browser identity it owns. An API key
+   * without this device-local snapshot remains a valid native credential, but
+   * it has no authority to inherit whichever browser identity is already on
+   * the target device.
+   */
+  static hasCompleteOwnedBrowserSessionSnapshot(
+    hasCookieHeader: boolean,
+    hasBrowserUserAgent: boolean,
+    hasAccessCookie: boolean,
+    hasRefreshCookie: boolean,
+  ): boolean {
+    return hasCookieHeader && hasBrowserUserAgent && hasAccessCookie && hasRefreshCookie
   }
 
   /**

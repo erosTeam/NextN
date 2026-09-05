@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-api-key-dialog-keyboard-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-api-key-dialog-20260904T2145-no-autofocus/keyboard",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-59b85436f22e7a97ad79ea0fa0b12f7cfa0570a12535a5a6d2ee4374e7647963",
+    "page": "native-api-key-manual-binding-dialog-keyboard-open",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Focus the measured empty existing-Key input in the already open native dialog and capture the keyboard-open layout. Do not enter text, submit, alter a credential, sign out, clear data, or operate another target."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "focus-empty-existing-key-field", "uiInput": ["click", "660", "952"], "pauseAfterMs": 1200, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-keyboard-open-dialog", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-api-key-dialog-keyboard-237.json", "-a"] },
+    { "name": "capture-keyboard-open-dialog", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-api-key-dialog-keyboard-237.png"] },
+    { "name": "receive-keyboard-open-dialog-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-api-key-dialog-keyboard-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-api-key-dialog-20260904T2145-no-autofocus/keyboard/layout.json"] },
+    { "name": "receive-keyboard-open-dialog-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-api-key-dialog-keyboard-237.png", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-api-key-dialog-20260904T2145-no-autofocus/keyboard/screen.png"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-api-key-dialog-keyboard-237.json", "/data/local/tmp/nextn-api-key-dialog-keyboard-237.png"] }
+  ]
+}

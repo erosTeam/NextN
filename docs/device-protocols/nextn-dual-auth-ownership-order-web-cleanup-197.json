@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-ownership-order-web-cleanup-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/ownership-order-web-forward-cleanup-20260904T0140",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-7e936a40be0f4d4d253b0968f4a62622f301a3a92b151dd84676307a94f085b7",
+    "page": "bounded-devtools-forward-cleanup",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Remove only the temporary localhost ArkWeb forward created for the completed value-free probe on exact target 197. Do not navigate, click, stop, install, clear data or alter account state."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "schema-required-non-actionable-boundary", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 10, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "remove-bounded-webview-forward", "hdcArgs": ["fport", "rm", "tcp:19231", "tcp:19222"] },
+    { "name": "verify-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] }
+  ]
+}

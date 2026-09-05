@@ -11,8 +11,19 @@ const SQL_UPSERT_SESSION: string =
   'INSERT INTO account_session (key, ciphertext, nonce, updated_at) VALUES (?, ?, ?, ?) ' +
   'ON CONFLICT(key) DO UPDATE SET ciphertext = excluded.ciphertext, nonce = excluded.nonce, ' +
   'updated_at = excluded.updated_at'
+const SQL_INSERT_SESSION_IF_ABSENT: string =
+  'INSERT OR IGNORE INTO account_session (key, ciphertext, nonce, updated_at) VALUES (?, ?, ?, ?)'
 const SQL_DELETE_SESSION: string = 'DELETE FROM account_session WHERE key = ?'
 const SQL_DELETE_ALL_SESSIONS: string = 'DELETE FROM account_session'
+const SQL_SELECT_SESSION_OWNER: string =
+  'SELECT account_id FROM account_session_owner WHERE key = ? LIMIT 1'
+const SQL_UPSERT_SESSION_OWNER: string =
+  'INSERT INTO account_session_owner (key, account_id, updated_at) VALUES (?, ?, ?) ' +
+  'ON CONFLICT(key) DO UPDATE SET account_id = excluded.account_id, updated_at = excluded.updated_at'
+const SQL_DELETE_SESSION_OWNER: string = 'DELETE FROM account_session_owner WHERE key = ?'
+const SQL_DELETE_SESSION_OWNER_BY_ACCOUNT: string =
+  'DELETE FROM account_session_owner WHERE key = ? AND account_id = ?'
+const SQL_DELETE_ALL_SESSION_OWNERS: string = 'DELETE FROM account_session_owner'
 const SQL_SELECT_VERIFICATION_REQUIRED: string =
   'SELECT verification_required, reason_code FROM account_session_verification WHERE key = ? LIMIT 1'
 const SQL_UPSERT_VERIFICATION_REQUIRED: string =
@@ -35,6 +46,7 @@ export class EncryptedAccountSession {
  */
 export class AccountSessionRestoreSnapshot {
   record: EncryptedAccountSession | null = null
+  primaryOwnerId: string = ''
   rebuiltOrRepaired: boolean = false
   savedRecords: EncryptedAccountSession[] = []
   savedKeys: string[] = []
@@ -127,6 +139,17 @@ export class AccountSessionRepository {
         snapshot.savedKeys.push(savedKey)
         snapshot.savedRecords.push(savedRecord)
       }
+      try {
+        rows.close()
+      } catch (_error) {}
+      rows = null
+      rows = await store.querySql(SQL_SELECT_SESSION_OWNER, [SESSION_KEY])
+      if (rows.goToNextRow()) {
+        const ownerColumn: number = rows.getColumnIndex('account_id')
+        if (!rows.isColumnNull(ownerColumn)) {
+          snapshot.primaryOwnerId = rows.getString(ownerColumn).trim()
+        }
+      }
       return snapshot
     } finally {
       if (rows !== null) {
@@ -135,6 +158,35 @@ export class AccountSessionRepository {
         } catch (_error) {}
       }
     }
+  }
+
+  /**
+   * Resolves the primary envelope's owner from its atomic owner row. Old
+   * databases are migrated lazily only when exactly one saved row contains
+   * the same encrypted envelope; ambiguous or incomplete state stays ownerless.
+   */
+  static resolvePrimaryOwner(snapshot: AccountSessionRestoreSnapshot): string {
+    if (snapshot.record === null || snapshot.savedKeys.length !== snapshot.savedRecords.length) {
+      return ''
+    }
+    const explicitOwner: string = snapshot.primaryOwnerId.trim()
+    if (explicitOwner.length > 0 && snapshot.savedKeys.indexOf(explicitOwner) >= 0) {
+      return explicitOwner
+    }
+    let matchingOwner: string = ''
+    let matchingCount: number = 0
+    for (let index: number = 0; index < snapshot.savedKeys.length; index += 1) {
+      const savedKey: string = snapshot.savedKeys[index].trim()
+      const savedRecord: EncryptedAccountSession = snapshot.savedRecords[index]
+      if (savedKey.length === 0 || savedKey === SESSION_KEY ||
+        savedRecord.ciphertext !== snapshot.record.ciphertext ||
+        savedRecord.nonce !== snapshot.record.nonce) {
+        continue
+      }
+      matchingOwner = savedKey
+      matchingCount += 1
+    }
+    return matchingCount === 1 ? matchingOwner : ''
   }
 
   /**
@@ -178,6 +230,13 @@ export class AccountSessionRepository {
             record.nonce,
             Date.now(),
           ])
+          await store.executeSql(SQL_UPSERT_SESSION_OWNER, [
+            SESSION_KEY,
+            accountId,
+            Date.now(),
+          ])
+        } else {
+          await store.executeSql(SQL_DELETE_SESSION_OWNER, [SESSION_KEY])
         }
         await store.executeSql(SQL_DELETE_VERIFICATION_REQUIRED, [SESSION_KEY])
         store.commit()
@@ -197,7 +256,10 @@ export class AccountSessionRepository {
     reasonCode: string,
   ): Promise<void> {
     if (reasonCode !== 'terminal_401_replay_rejected' &&
-      reasonCode !== 'terminal_401_refresh_token_rejected') {
+      reasonCode !== 'terminal_401_refresh_token_rejected' &&
+      reasonCode !== 'terminal_api_key_rejected' &&
+      reasonCode !== 'terminal_api_key_identity_mismatch' &&
+      reasonCode !== 'terminal_web_token_identity_mismatch') {
       return Promise.reject(new Error('account_verification_reason_invalid'))
     }
     return AccountSessionRepository.enqueueWrite(async (): Promise<void> => {
@@ -282,11 +344,27 @@ export class AccountSessionRepository {
   static deleteByKey(context: common.UIAbilityContext, key: string): Promise<void> {
     return AccountSessionRepository.enqueueWrite(async (): Promise<void> => {
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
-      await store.executeSql(SQL_DELETE_SESSION, [key])
+      let transactionOpen: boolean = false
+      try {
+        store.beginTransaction()
+        transactionOpen = true
+        await store.executeSql(SQL_DELETE_SESSION, [key])
+        await store.executeSql(SQL_DELETE_SESSION_OWNER_BY_ACCOUNT, [SESSION_KEY, key])
+        store.commit()
+        transactionOpen = false
+      } catch (error) {
+        if (transactionOpen) {
+          store.rollBack()
+        }
+        throw error as Error
+      }
     })
   }
 
-  static clear(context: common.UIAbilityContext): Promise<void> {
+  static clear(
+    context: common.UIAbilityContext,
+    savedAccountId: string = '',
+  ): Promise<void> {
     return AccountSessionRepository.enqueueWrite(async (): Promise<void> => {
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
       let transactionOpen: boolean = false
@@ -294,6 +372,10 @@ export class AccountSessionRepository {
         store.beginTransaction()
         transactionOpen = true
         await store.executeSql(SQL_DELETE_SESSION, [SESSION_KEY])
+        if (savedAccountId.length > 0 && savedAccountId !== SESSION_KEY) {
+          await store.executeSql(SQL_DELETE_SESSION, [savedAccountId])
+        }
+        await store.executeSql(SQL_DELETE_SESSION_OWNER, [SESSION_KEY])
         await store.executeSql(SQL_DELETE_VERIFICATION_REQUIRED, [SESSION_KEY])
         store.commit()
         transactionOpen = false
@@ -313,6 +395,8 @@ export class AccountSessionRepository {
     savedKeys: string[],
     savedRecords: EncryptedAccountSession[],
     replace: boolean,
+    preserveExistingPrimary: boolean = false,
+    primaryOwnerId: string = '',
   ): Promise<void> {
     if (savedKeys.length !== savedRecords.length) {
       return Promise.reject(new Error('account_session_backup_shape_invalid'))
@@ -320,28 +404,52 @@ export class AccountSessionRepository {
     return AccountSessionRepository.enqueueWrite(async (): Promise<void> => {
       const store: relationalStore.RdbStore = await LocalDataStore.open(context)
       let transactionOpen: boolean = false
+      let rows: relationalStore.ResultSet | null = null
       try {
         store.beginTransaction()
         transactionOpen = true
+        let retainedPrimary: boolean = false
+        if (preserveExistingPrimary) {
+          rows = await store.querySql(SQL_SELECT_SESSION, [SESSION_KEY])
+          retainedPrimary = rows.goToNextRow()
+          try {
+            rows.close()
+          } catch (_error) {}
+          rows = null
+        }
         if (replace) {
           await store.executeSql(SQL_DELETE_ALL_SESSIONS)
+          await store.executeSql(SQL_DELETE_ALL_SESSION_OWNERS)
           await store.executeSql(SQL_DELETE_VERIFICATION_REQUIRED, [SESSION_KEY])
         }
+        let primaryWritten: boolean = false
         if (primary !== null) {
-          await store.executeSql(SQL_UPSERT_SESSION, [
+          await store.executeSql(preserveExistingPrimary ? SQL_INSERT_SESSION_IF_ABSENT : SQL_UPSERT_SESSION, [
             SESSION_KEY,
             primary.ciphertext,
             primary.nonce,
             Date.now(),
           ])
+          primaryWritten = !preserveExistingPrimary || !retainedPrimary
         }
         for (let i: number = 0; i < savedKeys.length; i++) {
-          await store.executeSql(SQL_UPSERT_SESSION, [
+          await store.executeSql(preserveExistingPrimary ? SQL_INSERT_SESSION_IF_ABSENT : SQL_UPSERT_SESSION, [
             savedKeys[i],
             savedRecords[i].ciphertext,
             savedRecords[i].nonce,
             Date.now(),
           ])
+        }
+        if (primaryWritten) {
+          if (primaryOwnerId.length > 0 && primaryOwnerId !== SESSION_KEY) {
+            await store.executeSql(SQL_UPSERT_SESSION_OWNER, [
+              SESSION_KEY,
+              primaryOwnerId,
+              Date.now(),
+            ])
+          } else {
+            await store.executeSql(SQL_DELETE_SESSION_OWNER, [SESSION_KEY])
+          }
         }
         store.commit()
         transactionOpen = false
@@ -350,6 +458,12 @@ export class AccountSessionRepository {
           store.rollBack()
         }
         throw error as Error
+      } finally {
+        if (rows !== null) {
+          try {
+            rows.close()
+          } catch (_error) {}
+        }
       }
     })
   }

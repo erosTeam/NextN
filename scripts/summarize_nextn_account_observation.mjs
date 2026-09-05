@@ -62,6 +62,9 @@ const DIAGNOSTIC_STAGES = Object.freeze([
   'account_authenticated_read_refresh_endpoint_status',
   'account_authenticated_read_refresh_endpoint_ready',
   'account_authenticated_read_refresh_endpoint_unavailable',
+  'account_authenticated_read_refresh_response_rejected',
+  'account_authenticated_read_api_key_rejected',
+  'account_authenticated_read_identity_mismatch',
   'account_authenticated_read_refresh_token_rejected',
   'account_authenticated_read_refresh_cooldown_recorded',
   'account_refresh_checkpoint_retry',
@@ -341,7 +344,9 @@ function diagnosticCaptureStart(metadata, window) {
   }
   const commands = Array.isArray(metadata?.commands) ? metadata.commands : []
   const capture = commands.find((command) =>
-    String(command?.name ?? '').startsWith('receive-redacted-') && command?.exitCode === 0)
+    (String(command?.name ?? '').startsWith('receive-redacted-') ||
+      String(command?.name ?? '').startsWith('receive-product-redacted-')) &&
+    command?.exitCode === 0)
   const rawStart = String(capture?.startedAt ?? '')
   const start = Date.parse(rawStart)
   if (rawStart.length === 0 || !Number.isFinite(start) || start < window.start || start > window.end) {
@@ -368,6 +373,9 @@ async function diagnosticsSummary(artifactDirectory, manifest, metadata) {
       responseCookieStored: false,
       responseAuthCookieApplied: false,
       responseCookieRejected: false,
+      refreshResponseRejected: false,
+      apiKeyRejected: false,
+      identityMismatch: false,
       favoritesSuccess: false,
       favoritesFailed: false,
       authExpiryShapes: [],
@@ -387,6 +395,9 @@ async function diagnosticsSummary(artifactDirectory, manifest, metadata) {
       responseCookieStored: false,
       responseAuthCookieApplied: false,
       responseCookieRejected: false,
+      refreshResponseRejected: false,
+      apiKeyRejected: false,
+      identityMismatch: false,
       favoritesSuccess: false,
       favoritesFailed: false,
       authExpiryShapes: [],
@@ -437,6 +448,9 @@ async function diagnosticsSummary(artifactDirectory, manifest, metadata) {
     responseCookieStored: has('account_response_cookie_stored'),
     responseAuthCookieApplied: has('account_response_auth_cookie_applied'),
     responseCookieRejected: has('account_response_cookie_rejected'),
+    refreshResponseRejected: has('account_authenticated_read_refresh_response_rejected'),
+    apiKeyRejected: has('account_authenticated_read_api_key_rejected'),
+    identityMismatch: has('account_authenticated_read_identity_mismatch'),
     favoritesSuccess: has('favorites_request_success'),
     favoritesFailed: has('favorites_request_failed'),
     authExpiryShapes: authExpiryShapes(content),
@@ -457,9 +471,18 @@ export async function summarizeArtifact(inputDirectory) {
       loadLabels(new Set(['common_retry'])),
       loadLabels(new Set(['favorites_empty', 'favorites_search_empty'])),
       loadLabels(new Set(['account_sign_in'])),
-      loadLabels(new Set(['account_status_verification_required'])),
-      loadLabels(new Set(['account_subtitle_verification_required'])),
-      loadLabels(new Set(['account_verify_sign_in'])),
+      loadLabels(new Set([
+        'account_status_verification_required',
+        'account_api_key_verification_required',
+      ])),
+      loadLabels(new Set([
+        'account_subtitle_verification_required',
+        'account_api_key_verification_required_hint',
+      ])),
+      loadLabels(new Set([
+        'account_verify_sign_in',
+        'account_api_key_update',
+      ])),
       loadLabels(new Set(['account_save_failed'])),
     ]),
   ])

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-api-key-web-forward-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/api-key-fill-observer-web-forward-cleanup-20260904T0038",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-185942269fa7b6d2cfd812ede1869cff30fb3a533a2b2b7fcb0f231e3e876370",
+    "page": "post-final-ownership-web-probe-forward-cleanup",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Remove the single bounded HDC forward from host TCP 19229 to the app-owned ArkWeb debug TCP 19222 on exact target 197 after the value-free DOM shape proof."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "schema-required-non-actionable-boundary", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 10, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "remove-bounded-webview-forward", "hdcArgs": ["fport", "rm", "tcp:19229", "tcp:19222"] },
+    { "name": "confirm-bounded-webview-forward-removed", "hdcArgs": ["fport", "ls"] }
+  ]
+}

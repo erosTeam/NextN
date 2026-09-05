@@ -55,6 +55,7 @@ import {
 } from 'shared'
 import { appMenuOptions } from 'shared'
 import { appSheetOptions } from 'shared'
+import { AppPrompt } from 'shared'
 import { PopularPage } from './PopularPage'
 import { HomeSearchSubtabPage } from '../components/HomeSearchSubtabPage'
 
@@ -150,6 +151,7 @@ export struct LatestSourcePage {
     },
     alignment: DialogAlignment.Center,
     customStyle: false,
+    systemMaterial: AppPrompt.modalSystemMaterial(),
   });
 
   aboutToAppear(): void {

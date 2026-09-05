@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-api-key-web-socket-filtered-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/api-key-web-socket-filtered-20260903T2004",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-26c1e84ed76ac2fdbd41300cde8a097015c41b0009a78c05efe06d0249017bf9",
+    "page": "current-api-key-webview-filtered-devtools-discovery",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Read only filtered ArkWeb socket names on exact target 197 because the unfiltered proc output was truncated before the relevant row. No navigation, click, screenshot, layout dump, credential read, submit, or account mutation."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "schema-required-non-actionable-boundary", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 10, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "read-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "read-filtered-webview-sockets", "hdcArgs": ["shell", "grep", "webview_devtools_remote", "/proc/net/unix"] },
+    { "name": "read-existing-forwards", "hdcArgs": ["fport", "ls"] }
+  ]
+}

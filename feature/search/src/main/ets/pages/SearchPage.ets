@@ -57,6 +57,7 @@ import {
 } from 'shared'
 import { appMenuOptions } from 'shared'
 import { appSheetOptions } from 'shared'
+import { AppPrompt } from 'shared'
 import { ComponentContent, KeyboardAvoidMode, SymbolGlyphModifier } from '@kit.ArkUI'
 import { BottomBuilderShowType, HdsNavDestination, HideMode } from '@kit.UIDesignKit'
 import { SearchChromeState } from '../state/SearchChromeState'
@@ -142,6 +143,7 @@ export struct SearchPage {
     },
     alignment: DialogAlignment.Center,
     customStyle: false,
+    systemMaterial: AppPrompt.modalSystemMaterial(),
   });
   @Local galleries: NhGallerySummary[] = []
   /** Retains search responses so display-rule edits do not restart a search. */

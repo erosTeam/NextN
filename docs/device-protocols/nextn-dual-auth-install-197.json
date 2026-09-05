@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-install-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/api-key-fill-observer-install-and-tests-20260904T0032",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-main-185942269fa7b6d2cfd812ede1869cff30fb3a533a2b2b7fcb0f231e3e876370-test-d74a39784da6cd15f50e8a7c1ec8ea12ed5acd4b182f7ad3cac9e5d29605b31b",
+    "page": "data-preserving-cold-start-after-browser-session-ownership-tests",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Install the same signed dual-auth candidate on exact authorized target 197 with application data preserved. Capture the cold-start root and product-redacted diagnostics. Do not clear data, uninstall, sign out, enter a credential, submit a form, or operate any other target."
+  },
+  "preflight": [
+    { "name": "wake-authorized-target", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake-before-install", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "install-signed-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "pauseAfterMs": 500, "timeoutSeconds": 180 },
+    { "name": "install-signed-device-tests-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "pauseAfterMs": 500, "timeoutSeconds": 180 },
+    { "name": "run-complete-device-test-suite", "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test", "-s", "unittest", "OpenHarmonyTestRunner", "-s", "timeout", "120000"], "timeoutSeconds": 150 },
+    { "name": "force-stop-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 300 },
+    { "name": "cold-start-candidate", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 8000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "settle-cold-start", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 500, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-cold-root", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-dual-auth-root-197.json", "-a"] },
+    { "name": "capture-cold-root", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-dual-auth-root-197.png"] },
+    { "name": "receive-cold-root-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-dual-auth-root-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/api-key-fill-observer-install-and-tests-20260904T0032/root.json"] },
+    { "name": "receive-cold-root-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-dual-auth-root-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/api-key-fill-observer-install-and-tests-20260904T0032/root.png"] },
+    { "name": "receive-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/api-key-fill-observer-install-and-tests-20260904T0032/diagnostics"] },
+    { "name": "verify-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-dual-auth-root-197.json", "/data/local/tmp/nextn-dual-auth-root-197.png"] }
+  ]
+}

@@ -162,7 +162,7 @@ export struct NextNListRow {
     SymbolGlyph($r('sys.symbol.arrowtriangle_down_fill'))
       .fontSize(ThemeTokens.FONT_SIZE_TITLE)
       .fontColor([ThemeTokens.TEXT_TERTIARY])
-      .padding({ left: ThemeTokens.SPACE_XS })
+      .padding({ left: ThemeTokens.SPACE_XS, right: ThemeTokens.SPACE_MD })
   }
 
   @Builder
@@ -275,15 +275,15 @@ export struct NextNListRow {
     return undefined
   }
 
-  // Custom suffixes own only their internal left separation. HdsListItemCard
-  // owns the common right inset for every suffix kind through cardSuffixMargin.
+  // Match NextE's HDS row contract: ordinary HDS suffixes keep their native
+  // geometry, while caller-owned suffixes carry their own explicit inset.
   @Builder
   private WrappedSuffixBuilder() {
     if (this.dropdownMenuEnabled) {
       Row() {
         this.customTrailing()
       }
-      .padding({ left: ThemeTokens.SPACE_SM })
+      .padding({ left: ThemeTokens.SPACE_SM, right: this.suffixPaddingRight })
       .bindMenu(this.dropdownMenuShown, this.BoundDropdownMenu, appMenuOptions({
         placement: Placement.BottomRight,
         onDisappear: (): void => {
@@ -294,7 +294,7 @@ export struct NextNListRow {
       Row() {
         this.customTrailing()
       }
-      .padding({ left: ThemeTokens.SPACE_SM })
+      .padding({ left: ThemeTokens.SPACE_SM, right: this.suffixPaddingRight })
     }
   }
 
@@ -308,7 +308,7 @@ export struct NextNListRow {
             : undefined,
         },
         cardPrefixMargin: 0,
-        cardSuffixMargin: this.suffixPaddingRight,
+        cardSuffixMargin: 0,
         prefixItem: this.prefixItem(),
         suffixItem: this.suffixItem(),
         cardBackgroundColor: this.selected

@@ -151,15 +151,19 @@ ok('Torii settings store is scanned for plaintext and encrypted-only values',
   plaintextStores.has('nextn_comic_visual_provider') && secretStores.has('nextn_comic_visual_provider'))
 ok('generic Preferences secrets are connected to the encrypted backup adapter',
   /BackupPreferencesAdapter\.exportSecrets\(context\)/.test(secretsAdapter) &&
-    /BackupPreferencesAdapter\.restore\(context, map, true\)/.test(secretsAdapter) &&
+    /BackupPreferencesAdapter\.restore\([\s\S]*context,[\s\S]*map,[\s\S]*true/.test(secretsAdapter) &&
     /BackupPreferencesAdapter\.replace\(context, map, true\)/.test(secretsAdapter))
 ok('saved account identities are encrypted-only',
   /ACCOUNT_LIST_PREFIX: string = 'nextn_settings\.account\.list\.'/.test(denylist) &&
     /key\.startsWith\(BackupSecretDenylist\.ACCOUNT_LIST_PREFIX\)/.test(denylist))
-ok('active and saved account sessions plus profiles use complete encrypted bundles',
+ok('portable account bundles contain API keys and profiles but exclude rotating Web sessions',
   /ACCOUNT_SESSIONS_KEY: string = 'account\.sessions\.v1'/.test(secretsAdapter) &&
-    /exportAllSealedForBackup\(context\)/.test(secretsAdapter) &&
+    /exportAllSealedForBackup\([\s\S]*context,[\s\S]*portable/.test(secretsAdapter) &&
     /restoreAllSealedFromBackup/.test(secretsAdapter) &&
+    /portableApiKeyPayload/.test(read('shared/src/main/ets/services/NhAccountSessionService.ets')) &&
+    /rotating access\/refresh cookies, sessionid, CF state and browser UA stay device-local/.test(
+      fs.readFileSync(new URL('../docs/plans/active/persistence-dataset-inventory.md', import.meta.url), 'utf8'),
+    ) &&
     /ACCOUNT_PROFILES_KEY: string = 'account\.profiles\.v1'/.test(secretsAdapter) &&
     /AccountProfileRepository\.exportForBackup\(context\)/.test(secretsAdapter) &&
     /AccountProfileRepository\.restoreBackup/.test(secretsAdapter))

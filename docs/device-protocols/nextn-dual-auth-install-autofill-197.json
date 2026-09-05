@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-install-autofill-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/install-api-key-web-cookie-preservation-20260903T222448",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-283bbf1a7bbd79017d7d2d73df9fa5dd1e5e486f08e6d1d0f6246529b38578f7",
+    "page": "data-preserving-cold-start-before-api-key-web-cookie-recovery",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Install the API-key ArkWeb cookie-preservation candidate on exact target 197 with application data preserved. Do not clear data, uninstall, sign out, enter a credential, submit a form, or operate any other target."
+  },
+  "preflight": [
+    { "name": "wake-authorized-target", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake-before-install", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "install-signed-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "pauseAfterMs": 500, "timeoutSeconds": 180 },
+    { "name": "force-stop-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 300 },
+    { "name": "cold-start-candidate", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 8000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "settle-cold-start", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 500, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-cold-root", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-dual-auth-autofill-root-197.json", "-a"] },
+    { "name": "receive-cold-root-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-dual-auth-autofill-root-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/install-api-key-web-cookie-preservation-20260903T222448/root.json"] },
+    { "name": "receive-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/install-api-key-web-cookie-preservation-20260903T222448/diagnostics"] },
+    { "name": "verify-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-dual-auth-autofill-root-197.json"] }
+  ]
+}

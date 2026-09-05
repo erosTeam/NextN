@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-ui-system-capsule-return-account-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/system-capsule-return-account-20260904T0229",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-main-23ae59e59e26d0124e886d66dadc47f281881e15105d4ccb29342271b7219ed9",
+    "page": "native-account-row-suffix-alignment",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Return once from the native API Key child to Account and capture ordinary HDS row suffix alignment on exact target 197. Do not install, clear data, sign out, enter or save a key, import a backup, or operate another target."
+  },
+  "preflight": [
+    { "name": "verify-awake-before-return", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "return-from-api-key-to-account", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 800, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-native-account", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-account-row-suffix-197.json", "-a"] },
+    { "name": "capture-native-account", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-account-row-suffix-197.png"] },
+    { "name": "receive-native-account-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-account-row-suffix-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/system-capsule-return-account-20260904T0229/account.json"] },
+    { "name": "receive-native-account-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-account-row-suffix-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/system-capsule-return-account-20260904T0229/account.png"] },
+    { "name": "verify-awake-after-capture", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-account-row-suffix-197.json", "/data/local/tmp/nextn-account-row-suffix-197.png"] }
+  ]
+}

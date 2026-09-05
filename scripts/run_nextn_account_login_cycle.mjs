@@ -22,7 +22,7 @@ import {
   runCfReviewedSubmit,
   runStagedLoginEpoch,
 } from './run_arkweb_login_keychain_epoch.mjs'
-import { runDriver } from './drive_arkweb_login_field.mjs'
+import { runDriver, runFreshLoginDocument } from './drive_arkweb_login_field.mjs'
 import { runCookieShape } from './probe_arkweb_cookie_shape.mjs'
 import { runProbe } from './probe_arkweb_login_state.mjs'
 
@@ -37,6 +37,8 @@ const AUTHORIZED_TARGET = '192.168.50.237:12345'
 const MAX_CAPTURE_BYTES = 1024 * 1024
 const CF_GATE_POLL_MS = 100
 const CF_READY_TO_SUBMIT_CEILING_MS = 5000
+const FRESH_CAPTCHA_BASELINE_CEILING_MS = 5000
+const FRESH_CAPTCHA_BASELINE_POLL_MS = 25
 const LOGIN_FLOW_CEILING_MS = 120000
 const PROMOTION_WEB_EXIT_POLL_MS = 250
 const PROMOTION_LAYOUT_SETTLE_MS = 400
@@ -619,6 +621,54 @@ function isStagedLoginForm(probe) {
     probe.passwordFieldMasked === true && probe.errorMarkerPresent === false
 }
 
+function isEmptyLoginForm(probe) {
+  return probe?.ok === true && probe.loginFormPresent === true &&
+    probe.accountFieldPresent === true && probe.accountFieldFilled === false &&
+    probe.passwordFieldPresent === true && probe.passwordFieldFilled === false &&
+    probe.passwordFieldMasked === true && probe.errorMarkerPresent === false
+}
+
+/**
+ * Proves a current not-ready challenge value before any credential write. If
+ * the visible document already has a ready response, reload it once inside
+ * this same coordinator process and capture the new not-ready state without a
+ * model/tool pause. A ready value that appears after this proof belongs to the
+ * current short-lived epoch instead of an older document.
+ */
+async function establishFreshCaptchaBaseline(port, deadlineAt) {
+  const initial = await runProbe({ port, timeoutMs: 5000 })
+  if (!isEmptyLoginForm(initial)) {
+    return safeResult(false, 's1_5', 'login_form_not_ready')
+  }
+  if (initial.challengeResponsePresent === true &&
+    initial.challengeResponseReady === false) {
+    return safeResult(true, 's1_5', '', { reloaded: false })
+  }
+  if (initial.challengeResponseReady !== true) {
+    return safeResult(false, 's1_5', 'captcha_baseline_unavailable')
+  }
+  const reloaded = await runFreshLoginDocument({ port, timeoutMs: 5000 })
+  if (reloaded?.ok !== true || reloaded.reloadDispatched !== true) {
+    return safeResult(false, 's1_5', 'fresh_document_reload_failed')
+  }
+  const baselineDeadlineAt = Math.min(
+    deadlineAt,
+    Date.now() + FRESH_CAPTCHA_BASELINE_CEILING_MS,
+  )
+  while (Date.now() < baselineDeadlineAt) {
+    const timeoutMs = Math.max(500, Math.min(1500, baselineDeadlineAt - Date.now()))
+    const probe = await runProbe({ port, timeoutMs })
+    if (isEmptyLoginForm(probe) && probe.challengeResponsePresent === true &&
+      probe.challengeResponseReady === false) {
+      return safeResult(true, 's1_5', '', { reloaded: true })
+    }
+    if (Date.now() < baselineDeadlineAt) {
+      await wait(Math.min(FRESH_CAPTCHA_BASELINE_POLL_MS, baselineDeadlineAt - Date.now()))
+    }
+  }
+  return safeResult(false, 's1_5', 'fresh_captcha_baseline_unobserved')
+}
+
 async function readCaptchaLayout(options, artifactDir) {
   const remoteLayout = '/data/local/tmp/nextn-login-cycle-post-fields.json'
   const localLayout = join(artifactDir, 'post-fields.json')
@@ -783,6 +833,17 @@ async function runCycle(options) {
     if (forward === null) {
       return safeResult(false, 'forward', 'devtools_unavailable')
     }
+    let freshChallengeBaselineObserved = false
+    if (!options.resumeStaged) {
+      const baseline = await establishFreshCaptchaBaseline(
+        forward.localPort,
+        flowDeadlineAt,
+      )
+      if (baseline.ok !== true) {
+        return baseline
+      }
+      freshChallengeBaselineObserved = true
+    }
     const staged = options.resumeStaged
       ? await runProbe({ port: forward.localPort, timeoutMs: 5000 })
       : await runStagedLoginEpoch({
@@ -790,15 +851,19 @@ async function runCycle(options) {
         timeoutMs: 5000,
         accountSecretBytes: accountSecret,
         passwordSecretBytes: passwordSecret,
+        freshChallengeBaselineObserved,
       })
     accountSecret = null
     passwordSecret = null
     const stagedReady = options.resumeStaged
-      ? isStagedLoginForm(staged)
+      ? isStagedLoginForm(staged) && staged.challengeResponseReady !== true
       : staged?.ok === true && staged.accountEntered === true &&
         staged.passwordEntered === true && staged.submitIssued === false
     if (!stagedReady) {
-      return safeResult(false, 's2_s3', 'credential_epoch_failed')
+      return safeResult(false, 's2_s3', options.resumeStaged &&
+        staged?.challengeResponseReady === true
+        ? 'stale_captcha_token'
+        : 'credential_epoch_failed')
     }
     const blurred = await runDriver({
       port: forward.localPort,

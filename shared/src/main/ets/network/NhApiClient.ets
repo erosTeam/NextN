@@ -1,3 +1,4 @@
+import { common } from '@kit.AbilityKit'
 import { hilog } from '@kit.PerformanceAnalysisKit'
 import {
   NhGalleryDetail,
@@ -49,6 +50,34 @@ class NhCommentProofOfWork {
  */
 export class NhApiClient {
   private static lastCloudBlacklistRefreshAt: number = 0
+
+  /** One-time native API-key binding through the sole session-aware client. */
+  static async bindApiKey(
+    context: common.UIAbilityContext,
+    candidate: string,
+    browserSessionOwnedByCandidate: boolean = false,
+    keyName: string = '',
+  ): Promise<void> {
+    await NhSessionHttpClient.validateAndPromoteApiKey(
+      context,
+      candidate,
+      browserSessionOwnedByCandidate,
+      keyName,
+    )
+  }
+
+  /** Same-account Web compatibility checkpoint for the official API-key flow. */
+  static async checkpointApiKeyBrowserSession(
+    context: common.UIAbilityContext,
+    observedUrl: string,
+    browserUserAgent: string,
+  ): Promise<boolean> {
+    return await NhSessionHttpClient.validateAndCheckpointApiKeyBrowserSession(
+      context,
+      observedUrl,
+      browserUserAgent,
+    )
+  }
 
   static async latest(page: number = 1): Promise<NhGalleryPageResult> {
     const root: Record<string, Object> = await NhApiClient.getJson(
@@ -278,6 +307,7 @@ export class NhApiClient {
       'POST',
       payload,
       'Comment service rejected this post',
+      true,
     )
     const candidate: Record<string, Object> = root['comment'] !== undefined
       ? NhApiClient.asRecord(root['comment'])
@@ -533,6 +563,7 @@ export class NhApiClient {
     method: string,
     extraData: string,
     rejectedMessage: string,
+    requiresUserToken: boolean = false,
   ): Promise<Record<string, Object>> {
     if (!NhApiClient.isFirstPartyApiV2Url(url)) {
       throw new Error('This account action is restricted to the first-party API')
@@ -543,13 +574,15 @@ export class NhApiClient {
     if (!NhAccountSessionService.isAuthenticated()) {
       throw new Error('Sign in from Settings before changing account data')
     }
-    const response: NhApiHttpResponse = await NhSessionHttpClient.requestJson(
-      url,
-      method,
-      extraData,
-      NhJsonReadScope.ACCOUNT_OWNED,
-      NhRequestReplayPolicy.NEVER,
-    )
+    const response: NhApiHttpResponse = requiresUserToken
+      ? await NhSessionHttpClient.requestJsonUserTokenMutation(url, method, extraData)
+      : await NhSessionHttpClient.requestJson(
+        url,
+        method,
+        extraData,
+        NhJsonReadScope.ACCOUNT_OWNED,
+        NhRequestReplayPolicy.NEVER,
+      )
     const value: Object = JSON.parse(response.body) as Object
     if (Array.isArray(value) || value === null || typeof value !== 'object') {
       throw new Error(`${rejectedMessage} The server response was invalid.`)

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-api-key-dialog-js-error-readback-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-api-key-dialog-20260904T2135/js-error-readback",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-16207aaff78921cdbb95ac9590640f28c4b4e1e5829fa266ac83d2547dbf345e",
+    "page": "startup-js-type-error-readback",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Read the retained startup TypeError diagnostics after the current candidate exposed no window. Do not start, stop, install, clear data or logs, navigate, open Web, alter credentials, submit, or operate another target."
+  },
+  "preflight": [
+    { "name": "verify-awake-before-readback", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "non-actionable-readback-boundary", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 100, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "read-faultlogger-tag", "hdcArgs": ["shell", "hilog", "-T", "FaultLogger", "-x"], "timeoutSeconds": 60 },
+    { "name": "read-jsapp-tag", "hdcArgs": ["shell", "hilog", "-T", "JSAPP", "-x"], "timeoutSeconds": 60 },
+    { "name": "read-appspawn-tag", "hdcArgs": ["shell", "hilog", "-T", "AppSpawn", "-x"], "timeoutSeconds": 60 },
+    { "name": "receive-system-faultlogger-directory", "hdcArgs": ["file", "recv", "/data/log/faultlog/faultlogger", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-api-key-dialog-20260904T2135/js-error-readback/faultlogger"], "timeoutSeconds": 120 },
+    { "name": "verify-awake-and-timeout", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] }
+  ]
+}

@@ -7,6 +7,7 @@ import { BackupPreferencesAdapter } from './BackupPreferencesAdapter'
 import { BackupSecretsAdapter } from './BackupSecretsAdapter'
 import { SyncScheduler } from '../sync/SyncScheduler'
 import { NhLocalUserTagService } from '../services/NhLocalUserTagService'
+import { NhAccountSessionService } from '../services/NhAccountSessionService'
 import {
   BackupAppMetadata,
   BackupCipherMeta,
@@ -268,11 +269,23 @@ export class BackupService {
       }
     }
     const fromEncrypted: boolean = envelope.sections.indexOf('secrets') >= 0
+    let accountTransitionEpoch: number = -1
     SyncScheduler.suspendAutomaticSync()
     try {
       const rollbackPreferences: SettingsMap = await BackupPreferencesAdapter.exportPreferences(context)
       const rollbackLocalData: BackupLocalDataSection = await BackupLocalDataAdapter.exportSection(context)
-      const rollbackSecrets: SettingsMap = await BackupSecretsAdapter.exportSecrets(context)
+      const rollbackSecrets: SettingsMap = await BackupSecretsAdapter.exportSecrets(context, false)
+      if (fromEncrypted) {
+        accountTransitionEpoch = await NhAccountSessionService.beginBackupRestoreTransition(context)
+        if (accountTransitionEpoch < 0) {
+          return {
+            ok: false,
+            restoredSections: [],
+            failedSections: ['secrets'],
+            message: 'account session transition is already in progress',
+          }
+        }
+      }
       let failedSection: BackupSectionName = 'preferences'
       try {
         if (envelope.data.preferences !== undefined) {
@@ -334,6 +347,9 @@ export class BackupService {
         message: 'backup rollback snapshot failed',
       }
     } finally {
+      if (accountTransitionEpoch >= 0) {
+        NhAccountSessionService.finishBackupRestoreTransition(accountTransitionEpoch)
+      }
       SyncScheduler.resumeAutomaticSync()
     }
   }

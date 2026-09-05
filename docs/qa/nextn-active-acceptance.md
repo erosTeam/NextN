@@ -6181,6 +6181,405 @@ permitted in this repository.
   the link parser/presenter/open action is covered by the source mapping and focused contract. Existing 103 evidence
   remains authoritative for the unchanged two controls, shared editor, and single-tap search.
 
+## Natural terminal refresh rejection on current 200 process — evidence captured, recovery not started — 2026-09-03
+
+- The user reported a live login-loss state on the still-running `192.168.50.200:12345` process. One checked
+  evidence manifest captured the current process/window, one temporary layout and the product-redacted diagnostics.
+  It did not launch, stop, navigate, screenshot, install, clear data, sign out, open Web, enter credentials or submit.
+  The same NextN PID was present before and after capture; the temporary device and host layout were removed after
+  the fixed safe summary was produced.
+- The process started at `12:43:33 +0800` and restored a `valid_v3` envelope with UA, access and refresh present.
+  At `12:43:38` the first authenticated read returned 401 while the regular browser-cookie shape still contained
+  access and refresh. Its first refresh attempt ended as status `0` / unavailable. A second authenticated read at
+  `12:44:26` again observed access and refresh present; the fixed refresh endpoint then returned an explicit 401 at
+  `12:44:27`, followed by `account_authenticated_read_refresh_token_rejected` and
+  `account_authenticated_read_terminal_401_after_restore`. There was no verification-marker persistence failure.
+- The retained value-free logs give a useful control: refresh returned 200 and crossed a replacement-pair checkpoint
+  at `2026-09-02 19:18`, `2026-09-03 01:22`, and `2026-09-03 03:40`. A later process restored the last pair and
+  recorded four authenticated Favorites successes through `04:19`. Across all twelve retained logs there is no
+  `account_response_cookie_stored`, `account_response_auth_cookie_applied` or
+  `account_response_cookie_rejected` event. This occurrence is therefore not evidence that NextN failed to consume
+  an observed response `Set-Cookie`: no response-Cookie event existed in the retained window. It establishes that a
+  previously checkpointed replacement refresh credential later received a direct server 401. The server response
+  still does not distinguish expiry, revocation or another server-side invalidation cause.
+- The preserved foreground layout contained the NextN root navigation but neither Account/Favorites/Web markers nor
+  the verification notice labels. That single late capture cannot distinguish a notice that never rendered from one
+  already dismissed before collection. Account/Favorites navigation and any visible Web recovery have not started.
+  The P0 remains OPEN. Evidence is under
+  `.hvigor/outputs/pura-x-max-lab200__HOP-AL10/folded/portrait-1264x1848/account-login-loss/20260903T0452-current-process/`;
+  its retained `summary.json` contains only fixed booleans, counts, allowed event names and coarse credential shape.
+
+## Dual authentication and portable-restore isolation — 197 accepted, 237 stateful acceptance pending — 2026-09-03
+
+- Reuse audit: the first-party API-key acquisition page uses the existing shared `EhWebView`; Account/API-key UI uses
+  the existing secondary-list, grouped-section and row components; failures publish through the existing root HDS
+  notice state. NH traffic still has one authority chain,
+  `NhApiClient -> NhSessionHttpClient -> NhApiHttpTransport -> AxiosHttpClient`, and `NhCookieAuthority` remains the
+  only owner of the ArkWeb cookie manager. No second WebView container, Cookie manager or NH request client was added.
+- Portable restore no longer hard-replaces device-local browser credentials. Ordinary restore merges sealed account
+  and profile records while portable payload generation permits only the API-key credential form; cookies, browser
+  user agent and access/refresh material are excluded. Focused account-history, network-authority and settings-backup
+  contracts pass, as does the signed build. The persistence-inventory contract still has its pre-existing unrelated
+  `TagTranslationSettings.ets#KEY_INTRO_IMAGE_LEVEL` inventory failure and is not treated as evidence for this lane.
+- On exact target `192.168.50.197:12345`, the signed HAP with SHA-256
+  `e20327b486cf536cdfe94d9b270b7aab57bad217cf3647cb5e93cdb0f035da03` was installed in place without uninstall or
+  data clear. The official first-party settings page was opened through the shared WebView. A semantic label probe
+  established that the visible `Key Name` input is uniquely associated through the label's `for` target but has no
+  parent form; removing the incorrect form requirement fixed the existing autofill path without coordinate input.
+- The fresh ledger epoch `nextn-197-device-api-key-20260903T2130` completed one challenge and one submit. The
+  document-start bridge captured only the successful same-origin response; native validation and durable promotion
+  completed, and navigation returned automatically to the native Account page. No key value or challenge value was
+  emitted to diagnostics or artifacts.
+- One data-preserving force-stop/cold start then restored `valid_v4_api_key`. Native Account retained the selected
+  account. In the same cold process, native Favorites populated and recorded one `favorites_request_success`, with
+  zero initial-401, refresh-endpoint, browser-refresh, replay-recovery, API-key-rejection, terminal-401 or
+  Favorites-failure events. This is direct API-key authentication, not a Web-cookie refresh recovery.
+- Evidence is under `.hvigor/outputs/nextn-dual-auth/197/`, especially
+  `official-api-key-semantic-autofill-20260903T2111/`, `api-key-post-promotion-cold-account-20260903T2146/` and
+  `api-key-post-promotion-cold-favorites-20260903T2150/`. Target 237 remains read-only under the current authority;
+  a read-only receipt of its twelve retained product-redacted logs found that its latest retained process reached
+  `account_restore_ready` with no 401 or terminal transition. Across the retained window, three initial-401 events
+  each had refresh readiness and safe replay recovery, with no terminal 401 or response-Cookie event. This receipt
+  did not start, stop, navigate, click, capture UI, install or alter 237, and does not constitute new-candidate
+  acceptance; the new candidate has not been installed there. The overall lane remains OPEN for a bounded
+  portable-backup restore acceptance and, if explicitly authorized later, stateful 237 candidate acceptance. These
+  documentation changes remain uncommitted under the no-periodic-commit control.
+- A later correction prevents API-key cold restore from overwriting an already
+  complete live ArkWeb identity pair with a stale sealed browser-cookie pair.
+  Adoption of a live ArkWeb pair is restricted to the official first-party Web
+  capture route, so manual binding for a different account cannot associate
+  unrelated browser cookies. The refined signed HAP SHA-256 is
+  `283bbf1a7bbd79017d7d2d73df9fa5dd1e5e486f08e6d1d0f6246529b38578f7`.
+- The native API Key page now consumes the shared full-width themed
+  `NextNPrimaryActionButton`; 197 shows the disabled `验证并保存` action spanning
+  the card content width with the current pink theme and capsule shape. Reader,
+  Gallery and compact row actions retain their distinct semantics and styling.
+- On 197, one redacted S0-S6 Web recovery epoch used the existing fixed
+  Keychain handles, entered each field once, observed first-party CAPTCHA
+  success and dispatched exactly one submit. The WebView left the login form
+  and rendered the authenticated site. A subsequent data-preserving force-stop
+  and cold start, followed by the ordinary My-to-Account-to-API-Key route,
+  rendered the authenticated official API Key settings page without another
+  login. The safe DOM proof reported `loginFormPresent=false` and
+  `apiKeySettingsPath=true`. Evidence is under
+  `.hvigor/outputs/nextn-dual-auth/197/api-key-web-cookie-preservation-postlogin-20260903T2234/` and
+  `.hvigor/outputs/nextn-dual-auth/197/api-key-web-cookie-preservation-cold-20260903T2236/`.
+- This closes the immediate 197 Web-cookie overwrite regression and its
+  cold-start acceptance. The broader login-persistence lane remains OPEN for
+  cross-device portable-restore proof and naturally occurring long-duration
+  credential rotation/rejection evidence. No Git commit was created.
+- The stricter browser-session ownership candidate, signed HAP SHA-256
+  `ac777dcdccd3d0765c537fbccd85486f30df0432f129722593cbbcd744c1d3db`, was then installed in place on 197 without
+  clearing data. A cold start restored the selected native account; the authenticated Favorites request populated
+  and recorded one restore-ready event plus one Favorites success, with no initial 401, refresh, terminal 401,
+  response-Cookie or Favorites-failure event in that process. A separate cold traversal through the normal
+  My-to-Account-to-API-Key route reached the authenticated official settings page; the value-free DOM probe reported
+  `loginFormPresent=false` and `apiKeySettingsPath=true`. Evidence is under
+  `.hvigor/outputs/nextn-dual-auth/197/browser-session-ownership-native-my-20260903T2350/`,
+  `browser-session-ownership-native-account-20260903T2351/`,
+  `browser-session-ownership-native-favorites-20260903T2352/` and
+  `browser-session-ownership-official-web-20260903T2353/`. The focused account-history, network-authority and
+  settings-backup contracts still pass. Cross-account ownership is covered statically but cannot be claimed as
+  physical acceptance from this single saved account; portable restore and natural long-duration evidence remain
+  OPEN. No Git commit was created.
+- The final ownership candidate, signed HAP SHA-256
+  `15b6435609a9b3166bdc39dfc0a13e437cbd87d195eeb170b1f66f60114f5abc`, was installed in place on exact target
+  `192.168.50.197:12345` without uninstall or data clear. Its signed `ohosTest` HAP SHA-256 was
+  `64fe487f50ef8fe6c977a763726d75dc8972d4742acbabc1fe20f3c75dfb31dc`; the complete device test run reported
+  36 tests, 36 passes, zero failures, zero errors and zero ignored tests, including the browser-session ownership
+  matrix for same-account retention, manual cross-account rejection, explicit official-Web capture and invalid
+  candidate rejection.
+- The single post-install force-stop/cold start retained the native account on My and its selected state on Account.
+  Without another cold start, native Favorites populated successfully. The current-process redacted diagnostics
+  contained one restore-ready event and zero initial-401, refresh-ready/checkpoint, terminal-401 or response-Cookie
+  stored/applied/rejected events; this acceptance path used the persisted credential directly rather than a 401
+  recovery cycle. Continuing in the same process through the ordinary My-to-Account-to-API-Key route reached the
+  authenticated official settings page. The value-free DOM probe reported `loginFormPresent=false` and
+  `apiKeySettingsPath=true`, after which the bounded DevTools forward was removed.
+- Final-candidate evidence is under `.hvigor/outputs/nextn-dual-auth/197/`, especially
+  `final-ownership-install-and-tests-20260904T0010/`, `final-ownership-native-my-20260904T0012/`,
+  `final-ownership-native-account-20260904T0013/`, `final-ownership-native-favorites-20260904T0014/`,
+  `final-ownership-official-web-20260904T0015/` and `final-ownership-web-forward-cleanup-20260904T0016/`.
+  The 197 same-account cold-start/native/Web path is accepted for this final candidate. A physical two-account
+  switch cannot be claimed because 197 currently has only one saved account; cross-device portable-restore and
+  natural long-duration refresh/rejection evidence remain OPEN. No Git commit was created.
+
+## Portable-primary isolation and delayed API-key autofill — 197 accepted, broader matrix open — 2026-09-04
+
+- A deeper restore review found that an additive portable restore could merge the incoming API-key records while
+  also replacing the target device's primary credential. Account settings could retain the target's previous
+  `activeAccountId`, producing an active-account/transport-credential mismatch. Portable additive restore now
+  validates but does not replace primary; only an explicit replace restore or a permitted local rollback may do so.
+  Its retained-account in-memory state is also mutated only in replace mode. Focused tests cover both the portable
+  preserve case and the local/replace case.
+- The official API-key page renders its name field asynchronously. The previous fixed retries could finish before
+  the field existed, leaving the page authenticated but the field empty. The existing shared `EhWebView` path now
+  keeps the same semantic label-to-input selector and uses a document mutation observer plus a bounded retry window;
+  no second WebView, alternate login flow, coordinate input or credential submission path was introduced.
+- The superseding signed main HAP SHA-256 is
+  `185942269fa7b6d2cfd812ede1869cff30fb3a533a2b2b7fcb0f231e3e876370`; its signed `ohosTest` HAP SHA-256 is
+  `d74a39784da6cd15f50e8a7c1ec8ea12ed5acd4b182f7ad3cac9e5d29605b31b`. Both were installed in place on exact
+  target `192.168.50.197:12345` without uninstall or data clear. The complete device test run reported 38 tests,
+  38 passes, zero failures, zero errors and zero ignored tests.
+- One post-install force-stop/cold start retained the native account on My and its selected state on Account.
+  Continuing in that same process, authenticated Favorites populated successfully. The current-process redacted
+  diagnostics contained one restore-ready event and zero initial-401, refresh-ready/checkpoint, terminal-401,
+  response-Cookie stored/applied/rejected or Favorites-failure events. This was a direct persisted API-key path, not
+  a recovery cycle triggered by cold start.
+- Still in the same process, the normal My-to-Account-to-API-Key route reached the authenticated official settings
+  page. The value-free probe reported no login form, confirmed the official API-key settings path, and confirmed the
+  unique visible label-associated field was filled, applied and stable. The bounded DevTools forward was then
+  removed. Evidence is under `.hvigor/outputs/nextn-dual-auth/197/`, especially
+  `api-key-fill-observer-install-and-tests-20260904T0032/`,
+  `api-key-fill-observer-native-my-20260904T0034/`,
+  `api-key-fill-observer-native-account-20260904T0035/`,
+  `api-key-fill-observer-native-favorites-20260904T0036/`,
+  `api-key-fill-observer-official-web-20260904T0037/` and
+  `api-key-fill-observer-web-forward-cleanup-20260904T0038/`.
+- This accepts the current candidate's single-account 197 cold-start/native/Web/autofill path and the focused
+  portable-primary isolation tests. A separate native manual-binding attempt submitted one fixed non-secret invalid
+  candidate exactly once. The server rejection rendered the existing root HDS with an actionable update operation;
+  after dismissal, native Favorites still populated in the same process using the previously sealed valid key. The
+  current process retained one restore-ready and one Favorites-success event with zero initial-401, terminal API-key
+  rejection, response-Cookie or Favorites-failure events. This accepts rejected-onboarding UI and preservation of
+  the existing credential, but does not manufacture revocation of the already promoted real key.
+- Rejection evidence is under `rejected-candidate-native-return-20260904T0043/`,
+  `rejected-candidate-hds-20260904T0045/` and
+  `rejected-candidate-existing-key-favorites-20260904T0047/`. A subsequent data-preserving force-stop/cold start
+  again restored the old primary credential and loaded Favorites, with a new-process count of one restore-ready,
+  one Favorites success and zero initial-401, terminal-rejection, response-Cookie or Favorites-failure events.
+  This confirms the rejected candidate did not overwrite the persisted primary row; cold evidence is under
+  `rejected-candidate-persisted-key-cold-favorites-20260904T0052/`.
+- In that same cold process, the ordinary My-to-Account-to-API-Key path reopened the official shared WebView. The
+  value-free probe again found no login form, confirmed the official API-key settings page and reported stable name
+  autofill. Thus the rejected native candidate did not clear the independent website Cookie jar. The bounded
+  DevTools forward was removed. Evidence is under `rejected-candidate-web-cookie-cold-20260904T0056/` and
+  `rejected-candidate-web-forward-cleanup-20260904T0058/`.
+- A targeted post-acceptance ownership audit found no first-party NH bypass: every API-v2 feature call enters
+  `NhSessionHttpClient` through `NhApiClient`; only `NhSessionHttpClient` calls `NhApiHttpTransport`; only
+  `NhAccountSessionService` accesses `AccountSessionRepository`; and only `NhCookieAuthority` calls ArkWeb's Cookie
+  manager. The shared browser page initializes that authority and hands captured candidates to the same session
+  service; it does not own a second Cookie store or a Cookie-clear path. No source change was made from this audit.
+  The 197 process was then returned from the authenticated official Web page to native Favorites without a cold
+  start. Favorites rendered populated, with one visible Favorites root, no Web component, one restore-ready event,
+  one Favorites success and zero Favorites failures, initial 401s, terminal 401s or response-Cookie events. Evidence
+  is under `normal-favorites-after-final-web-proof-20260904T0100/`.
+- Physical acceptance is still not claimed for a two-account switch/remove cycle, cross-device portable restore,
+  terminal revocation of the already promoted key, simulated transport/5xx/429 behavior, real API-key comment
+  mutation, or natural long-duration response-Cookie rotation and terminal-rejection recovery. Those outcomes remain
+  OPEN. No Git commit was created.
+
+## Web identity propagation and account ownership ordering — 197 accepted, multi-account physical matrix open — 2026-09-04
+
+- Focused lifecycle review found that the official API-key WebView kept its actual custom user agent only in the
+  page component. The Cookie capture bridge therefore could collect a complete live Web login while API-key
+  promotion still classified that snapshot as incomplete because the session service had no matching user agent;
+  the incomplete branch expires visible identity cookies. The official capture now passes the exact normalized
+  WebView user agent together with the complete first-party Cookie snapshot, while non-Web/manual binding retains
+  the existing account-ownership checks.
+- The same review found two account-ownership ordering windows. Saved-account switching previously changed the
+  sealed primary credential, then waited for fallible profile retrieval, and only afterwards persisted the selected
+  account id. Profile failure could therefore leave account A selected while native requests already used account
+  B. The selected id is now committed immediately after the sealed switch and before profile work; profile failure
+  no longer reports that an already-completed credential switch failed. Active-account removal now changes to a
+  retained fallback before deleting the old list row. Removing the final account deletes the primary and matching
+  saved envelope in one RDB transaction before updating the list, preventing that saved fallback from restoring an
+  account after sign-out.
+- The superseding signed main HAP SHA-256 is
+  `7e936a40be0f4d4d253b0968f4a62622f301a3a92b151dd84676307a94f085b7`; the signed `ohosTest` HAP remains
+  `d74a39784da6cd15f50e8a7c1ec8ea12ed5acd4b182f7ad3cac9e5d29605b31b`. The signed build, account-history,
+  network-authority and settings-backup contracts, and exact diff check pass. The complete 197 device suite reported
+  38 tests, 38 passes, zero failures and zero errors. This total suite is not represented as full physical coverage
+  of the new dual-auth matrix.
+- On exact target `192.168.50.197:12345`, both HAPs were installed in place without uninstall or data clear. A
+  data-preserving cold start restored the native account. The normal My-to-Account-to-API-Key route opened the
+  shared official WebView in its authenticated API-key settings state: the value-free probe reported no login form,
+  the expected settings path, an installed capture bridge, and a filled stable semantic name field with no error
+  marker. Returning through the same native stack without another cold start populated Favorites. The process log
+  contained one restore-ready and one Favorites-success event with zero Favorites failures, initial 401s, terminal
+  401s or response-Cookie stored/applied/rejected events. Evidence is under
+  `.hvigor/outputs/nextn-dual-auth/197/web-identity-and-ownership-order-20260904T0127/` and
+  `.hvigor/outputs/nextn-dual-auth/197/ownership-order-favorites-20260904T0135/`; the bounded
+  localhost forward was removed under `ownership-order-web-forward-cleanup-20260904T0140/`.
+- This physically accepts the corrected candidate's single-account cold-start, native API-key, persisted Web login,
+  shared-WebView and Favorites return path on 197. Physical two-account switch/remove, cross-device portable
+  restore, promoted-key terminal rejection, 5xx/429 fault behavior, real comment mutation and natural long-duration
+  response-Cookie rotation/rejection remain OPEN. No Git commit was created.
+
+## Portable backup merge ownership — 197 regression accepted, physical restore matrix open — 2026-09-04
+
+- Review after the preceding device run found that portable additive restore protected an existing target primary by
+  never writing the backed-up primary. That also left a blank target without a primary. The repository now receives
+  the backed-up active API-key envelope in both cases and applies it with one atomic `INSERT OR IGNORE`: an existing
+  target primary is retained, while an empty target receives the backed-up primary. The additive Preferences path
+  likewise retains a non-empty target `account.list.activeId` but fills a blank target from the backup, so the native
+  primary and selected account cannot be split by the two restore layers.
+- Focused device tests cover the opposing ownership rules. The complete signed 197 suite reported 39 tests, 39
+  passes, zero failures, zero errors and zero ignored tests. Settings-backup, account-history and network-authority
+  contracts and `git diff --check` pass. The persistence inventory still reports only its pre-existing unrelated
+  missing entry for `TagTranslationSettings#KEY_INTRO_IMAGE_LEVEL`; it was not changed in this lane.
+- The superseding signed main HAP SHA-256 is
+  `15dfe07bdd32ef497f47de136ea0eb5ddf7f30315878cd8473fa2b1e0bb54f8c`; the rebuilt signed `ohosTest` HAP
+  SHA-256 is `54db5defa7f0ad5887a7c33fb51c5612fc45e4adbda52ed82db2d9dd051b8432`. Both were installed in place on
+  exact target `192.168.50.197:12345` without uninstall or data clear.
+- A data-preserving cold start restored the native account. The normal My-to-Account-to-API-Key route opened the
+  shared official WebView in its authenticated API-key settings state: the value-free probe reported no login form,
+  the expected settings path, an installed capture bridge, and a filled stable semantic name field with no error
+  marker. Returning through the same native stack without another cold start populated Favorites. The current
+  process contained one restore-ready and one Favorites-success event, with zero Favorites failures, initial 401s,
+  terminal 401s or response-Cookie stored/applied/rejected events.
+- Evidence is under `.hvigor/outputs/nextn-dual-auth/197/backup-merge-20260904T0142/`,
+  `.hvigor/outputs/nextn-dual-auth/197/backup-merge-favorites-20260904T0144/` and
+  `.hvigor/outputs/nextn-dual-auth/197/backup-merge-web-forward-cleanup-20260904T0144/`. The bounded localhost
+  forward was removed and 197 was left on populated native Favorites.
+- This run does not claim that a real backup was imported. Physical existing-primary merge, blank-target restore,
+  two-account switch/remove, cross-device restore, promoted-key terminal rejection, 5xx/429 behavior, real comment
+  mutation and natural long-duration response-Cookie rotation/rejection remain OPEN. No Git commit was created.
+
+## Restore owner ordering — latest 197 regression accepted, restore matrix remains open — 2026-09-04
+
+- A subsequent review found that additive preference restore could still retain a stale non-empty active-account id
+  when the target had no primary session, and that cold-start restoration loaded the saved-account owner concurrently
+  with session restoration. The preference adapter now preserves the current active id only when a target primary is
+  actually present. Bootstrap now loads the account list before restoring session state. Saved-envelope fallback tries
+  the active saved account first and repairs the primary plus owner checkpoint after a successful fallback.
+- The latest signed main HAP SHA-256 is
+  `088fecca5b17eb57d134a7201bf317f26323ca216e4e72d9d8fd61c080bdaffa`; the rebuilt signed `ohosTest` HAP
+  SHA-256 is `23ee17a3d3145314910b1dd2e0b61091cab40b3da20f815db01ed804f000a58f`. Settings-backup,
+  account-history and network-authority contracts and `git diff --check` pass. The complete 197 device suite reported
+  39 tests, 39 passes, zero failures, zero errors and zero ignored tests.
+- Both HAPs were installed in place on exact target `192.168.50.197:12345` without uninstall or data clear. A
+  data-preserving cold start restored the native account. The normal My-to-Account-to-API-Key route opened the shared
+  official WebView in its authenticated API-key settings state: the value-free probe reported no login form, the
+  expected settings path, an installed capture bridge, and a filled stable semantic name field with no error marker.
+  Returning through the same native stack without another cold start populated Favorites. Its layout contained one
+  native Favorites root, one WaterFlow, five FlowItems and no Web component.
+- The current process recorded one `account_restore_ready` and one `favorites_request_success`, with zero Favorites
+  failures, initial 401s, terminal 401s, saved-envelope exhaustion events or response-Cookie
+  stored/applied/rejected events. Evidence is under
+  `.hvigor/outputs/nextn-dual-auth/197/restore-owner-20260904T0153/` and
+  `.hvigor/outputs/nextn-dual-auth/197/restore-owner-favorites-20260904T0156/`. The bounded localhost forward was
+  removed, and 197 was left on populated native Favorites.
+- This accepts only the latest candidate's single-account cold-start, persisted-WebView and native Favorites path.
+  No real backup was imported. Physical existing-primary merge, blank-target restore, two-account switch/remove,
+  cross-device restore, promoted-key terminal rejection, 5xx/429 behavior, real comment mutation and natural
+  long-duration response-Cookie rotation/rejection remain OPEN. No Git commit was created.
+
+## API-key confirmation status classification — 197 regression accepted, destructive and long-duration paths open — 2026-09-04
+
+- The API-key confirmation path now has an executable, side-effect-free status classifier used by the production
+  session client: only 401 and 403 classify as credential rejection, successful 2xx responses retain the credential,
+  and transport status 0 plus 429 and 5xx classify as temporary unavailability. The latter branch does not erase or
+  reject a stored API key. The classifier is exported without exposing `NhSessionHttpClient` or widening the sole
+  network-owner boundary.
+- The superseding signed main HAP SHA-256 is
+  `023d73cb126bec4559add82c37fb01d581dcd733994d165d90186e4ffacd1666`; the rebuilt signed `ohosTest` HAP
+  SHA-256 is `5a32b3753e02c09a76ea51c25aceb26563f62ba8a228effc1032fd050005d4af`. Network-authority,
+  account-history and settings-backup contracts and `git diff --check` pass. The complete 197 device suite reported
+  42 tests, 42 passes, zero failures, zero errors and zero ignored tests, including executed 401/403, 0/429/500 and
+  200/204 classifier branches.
+- Both HAPs were installed in place on exact target `192.168.50.197:12345` without uninstall or data clear. A
+  data-preserving force-stop/cold start retained the native account. The normal My-to-Account-to-API-Key route opened
+  the shared official WebView in its authenticated API-key settings state: the value-free probe reported no login
+  form, the expected settings path, an installed capture bridge, and a filled stable semantic name field with no
+  error marker.
+- Returning through the same native stack without another cold start populated Favorites. Its layout contained one
+  native Favorites root, one WaterFlow, five FlowItems and no Web component. The current process recorded one
+  `account_restore_ready` and one `favorites_request_success`, with zero Favorites failures, initial 401s, terminal
+  401s, saved-envelope exhaustion events or response-Cookie stored/applied/rejected events. Evidence is under
+  `.hvigor/outputs/nextn-dual-auth/197/api-key-classifier-20260904T0210/` and
+  `.hvigor/outputs/nextn-dual-auth/197/api-key-classifier-favorites-20260904T0210/`. The bounded localhost forward was
+  removed, and 197 was left on populated native Favorites.
+- This closes the stale-device-evidence gap introduced by the status-classifier change; it does not convert simulated
+  status inputs into backend fault evidence. No real backup was imported. Physical existing-primary merge,
+  blank-target restore, two-account switch/remove, cross-device restore, revocation of the promoted key, live
+  backend 429/5xx behavior, real comment mutation and natural long-duration response-Cookie rotation/rejection remain
+  OPEN. No Git commit was created.
+
+## API-key action size and shared list-row suffix regression — 197 evidence, user visual confirmation open — 2026-09-04
+
+- Source history identified commit `e45fe67` as moving the custom-suffix right inset into
+  `HdsListItemCard.cardSuffixMargin`, thereby applying it to every standard suffix. The candidate restores
+  `cardSuffixMargin: 0`, matching current NextE and the pre-regression NextN owner, while retaining explicit inset
+  only inside dropdown/custom suffix content.
+- The full-width API-key action now matches NextE's equivalent form actions by leaving Button height to ArkUI instead
+  of hard-coding either `46vp` or `40vp`. Account-history regression, exact diff check and the signed build pass. The
+  signed main HAP SHA-256 is `23ae59e59e26d0124e886d66dadc47f281881e15105d4ccb29342271b7219ed9`.
+- `NextNListRow` is the repository's only direct `HdsListItemCard` owner and is used from 21 source files, so the
+  zero global suffix margin applies to the whole shared row family. A stale static assertion that required one
+  nonzero right inset for every suffix was corrected to require native HDS geometry and explicit inset only inside
+  custom/dropdown suffix content; the local-user-tags contract passes.
+- The HAP was installed in place on exact target `192.168.50.197:12345` without uninstall or data clear. A
+  data-preserving cold start retained the account. The native API-key action measured `130px` high versus `150px`
+  in the preceding explicit-height candidate. Returning once to Account showed the saved-account marker and ordinary
+  API Key/NH Settings arrows on the restored HDS suffix track.
+- Evidence is under `.hvigor/outputs/nextn-dual-auth/197/system-capsule-row-suffix-20260904T0227/` and
+  `.hvigor/outputs/nextn-dual-auth/197/system-capsule-return-account-20260904T0229/`. No key was entered or saved, no
+  Web page was opened, and the device was left on native Account. Explicit user visual confirmation and broader
+  switch/value/custom-suffix review remain OPEN. The dual-auth physical restore, multi-account, revocation, backend
+  failure, comment mutation and natural response-Cookie evidence matrix also remains OPEN. No Git commit was created.
+
+## Cross-device backup ownership audit — source gap removed, physical matrix open — 2026-09-04
+
+- Current source and the built `module.json` contain no backup extension, `ohos.extension.backup` metadata or
+  `backup_config`; the packaged entry HAP has an empty `extensionAbilities` array. Under the platform backup
+  contract, `allowToBackupRestore` defaults to false, so the system file-backup path is not an enabled credential
+  transfer route for this candidate. The application backup remains the only project-owned portable route.
+- That application backup exports account credentials only through the encrypted secrets section. Portable session
+  bundle version 2 serializes API-key envelopes with empty Cookie header, UA and auth-cookie arrays; device-local Web
+  access/refresh credentials and ArkWeb state are rejected on portable restore. The local rollback snapshot remains
+  full-fidelity and is accepted only by the explicit replace path. The HUKS account key is generated without the
+  platform wrap-export opt-in, and raw `account_session` rows are absent from local-data and WebDAV sync exports.
+- The audit found one remaining cross-owner conflict: additive portable restore preserved an existing target primary
+  session but unconditionally upserted the backed-up `account_profile.primary`, allowing the target credential and
+  primary profile to describe different owners. `BackupSecretsAdapter` now snapshots target-primary presence before
+  restore, and `AccountProfileRepository` uses `INSERT OR IGNORE` only for the primary profile when that target
+  primary is retained. Empty targets still receive the backed-up primary profile, while saved-account profiles keep
+  normal additive upsert behavior.
+- Settings-backup and account-history regressions and `git diff --check` pass. The complete signed build succeeds;
+  the resulting main HAP SHA-256 is
+  `23061bdd98185b32ca7aa6601feac93fe3cc6772218a039cf36282ba863f0748`. The persistence inventory still has its
+  unrelated pre-existing `TagTranslationSettings#KEY_INTRO_IMAGE_LEVEL` registration failure and was not altered.
+- No device was operated and no Git commit was created in this audit. A real existing-primary import, blank-target
+  import, two-account switch/remove, and cross-device restore remain OPEN; source/build evidence does not accept
+  those physical paths.
+
+## Cross-device backup ownership follow-up — retained and unknown owner repair, 197 evidence — 2026-09-04
+
+- A second source pass found that preserving the target primary row was still insufficient when an older target had
+  a durable primary credential but an empty `account.list.activeId`. In that state, additive restore could adopt the
+  source backup's active owner and account order while retaining the target ciphertext, so a later credential
+  checkpoint could be attributed to the wrong owner. A same-ID imported saved credential could also overwrite the
+  target-local saved envelope.
+- Portable restore now treats target-primary presence as the ownership boundary even when the active preference is
+  blank. When the target owner is known, it keeps the target account order, appends only new imported owners without
+  duplication, repairs the retained primary ciphertext into that owner's saved row, and passes that owner through the
+  final account-list reconciliation after the complete credential ID list has been rebuilt. The retained owner has
+  priority over a stale or imported `activeId`, and is selected even when an older target list did not contain it.
+  When the target owner is unknown, restore leaves imported owners
+  unselected. The source `account_profile.primary` is skipped unconditionally whenever a target primary credential is
+  retained; this supersedes the earlier insert-if-absent intermediate rule, so a source profile can never be attached
+  to a retained target credential. `AccountSessionRepository` uses additive insert-only semantics for imported saved
+  credentials, so a source API key cannot replace an existing target-local credential with the same account ID.
+- The settings-backup contract, account-history regression, network-authority contract, local-user-tags contract and
+  exact diff check pass.
+  The complete ten-module signed build and the signed ohosTest build pass. The installed artifacts are main HAP
+  SHA-256 `c9fb6546f684bfba8561d463890ee92abf96f8fb808f19e663ae12d5fc9773a0` and ohosTest HAP SHA-256
+  `2ed8df0c5f7b5e9189ea40479f6d6838235a7d03575591be0a8813421a1cf5ae`. The device suite includes the pure
+  owner-resolution matrix for known retained owner, unknown retained owner and an empty target.
+- On exact target `192.168.50.197:12345`, both HAPs were installed with `install -r` and no data clear. The complete
+  device test suite returned success. After a data-preserving force-stop/cold start, native Account retained one
+  saved account with exactly one selected owner; no WebView, sign-in prompt, verification-required state or save
+  failure was visible. The same process then opened native Favorites without another cold start and loaded a
+  collection successfully; diagnostics recorded `favorites_request_success` with no terminal 401, response-Cookie
+  rejection, HDS or failed Favorites event.
+- Evidence is under
+  `.hvigor/outputs/nextn-dual-auth/197/backup-owner-priority-final-20260904T0318/` and
+  `.hvigor/outputs/nextn-dual-auth/197/backup-owner-priority-final-favorites-20260904T0320/`. The device was left on
+  native Favorites. No backup was imported, no credential was entered or created, no Web page was opened, and no Git
+  commit was created. Real existing-primary import, blank-target import, two-account switch/remove and cross-device
+  restore remain OPEN; this positive cold path does not substitute for those mutation-path checks.
+
 ## Shared settings text-field and tag-color Hex-field parity — 197 accepted, 103 supplementary — 2026-09-04
 
 - The tag color picker's Hex field now uses current NextE's
@@ -6214,6 +6613,528 @@ permitted in this repository.
   discarded, the read-only LLM detail was left normally, the app was returned to Advanced settings, and the 197
   lease was released. Evidence is under
   `.hvigor/outputs/mate60pro-lab197__ALN-AL80/not-applicable/portrait-1260x2720/settings-text-field-parity/`.
+## Legacy refresh verification transport guard — source/build complete, device regression open — 2026-09-04
+
+- Source review found one unhandled transport boundary after a legacy refresh had already durably checkpointed its
+  replacement access/refresh pair. The fixed account verification request could reject its Promise directly instead
+  of returning the established temporary-unavailability outcome. It did not clear the retained credential, but it
+  bypassed the shared refresh result and error semantics.
+- `NhSessionHttpClient.performRefreshAfter401` now catches that verification transport failure, records only the
+  value-free failed refresh diagnostic, and returns `UNAVAILABLE`. The caller therefore preserves the newly
+  checkpointed credential and reports the existing `account_authenticated_refresh_unavailable` state. Explicit
+  verification 401 remains the only terminal outcome at this stage.
+- Account-history, network-authority and settings-backup regressions and `git diff --check` pass. The complete
+  ten-module signed build and signed `ohosTest` build pass. The current main HAP SHA-256 is
+  `bcce2fb15495959641aca2426bf1915bea6caee5a766c81ceb6fd8718885021b`; the current `ohosTest` HAP SHA-256 is
+  `90a2cf90fbf2c1686ab869391de5b7924a9760388b4c3dc2c2bf145c99d3de6b`.
+- No device protocol started, so no installation, cold start or physical fault-path claim is made for these hashes.
+  Current-candidate Account/Favorites regression and a naturally occurring or controlled verification-transport
+  failure remain OPEN. No Git commit was created.
+
+## Atomic primary-session ownership — 237 single-account regression accepted, mutation matrix open — 2026-09-04
+
+- A focused multi-account review found a cross-store crash window in the saved-account switch path. The encrypted
+  primary credential and selected saved-account id were persisted in RDB and Preferences separately. A process death
+  after switching the primary envelope but before updating `account.list.activeId` could therefore leave account B's
+  credential paired with account A's selected id; a later refresh checkpoint could overwrite A's saved credential
+  with B's rotated credential. The separately stored primary profile was also not a safe ownership authority.
+- Schema 27 adds `account_session_owner`. The primary encrypted envelope, matching saved-account envelope and owner id
+  now commit in one RDB transaction. Delete, final-account clear, refresh checkpoint, saved-account promotion and
+  backup restore update or clear that owner in the same repository boundary. Account-list restoration trusts the
+  explicit owner only when its saved credential exists. Legacy databases infer an owner only from exactly one saved
+  envelope whose ciphertext and nonce equal the primary; incomplete or ambiguous state remains ownerless. Portable
+  restore derives the owner only when exactly one saved plaintext payload matches the active payload, because target
+  HUKS re-wrapping can produce different ciphertext for the same credential.
+- Settings-backup, account-history, network-authority, persistence-inventory and Home-SubTab contracts plus
+  `git diff --check` pass. The complete ten-module signed build and signed `ohosTest` build pass. The current main HAP
+  SHA-256 is `00dc0e7ea3a74296aec9d9f316d169554ef3ff3acffbe2fb0f5b0cb900cc08d6`; the current signed `ohosTest` HAP
+  SHA-256 is `453b17b5c2350eda8f7478011b22d1110824484d0b98d9d99fc54c66e6772f0c`.
+- Only exact target `192.168.50.237:12345` was used. Both HAPs were installed with `install -r` without uninstall or
+  data clear. The complete device suite reported 47 tests, 47 passes, zero failures and zero errors, including the
+  explicit-owner, unique-legacy-owner, ambiguous-legacy-owner and stale-owner cases. A data-preserving cold start then
+  showed one saved native account with exactly one selected owner, no Web component, sign-in prompt, verification
+  state, HDS recovery surface or save failure. Native Favorites subsequently loaded a collection and recorded one
+  `favorites_request_success`, with no Favorites failure, terminal 401 or response-Cookie stored/applied/rejected
+  event in the bounded window.
+- Evidence is under
+  `.hvigor/outputs/nextn-dual-auth/237/owner-atomicity-install-tests-20260904T0349/` and
+  `.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/account-favorites-back-20260904T0359/`.
+  One intermediate navigation sample used an unrecognized `KEYCODE_BACK` literal; HDC returned success while Account
+  remained visible, so that sample was rejected and the established `keyEvent Back` action produced the accepted
+  Favorites evidence. Device 197 was not inspected or operated.
+- This accepts the current candidate's schema migration, device-test execution, single-account cold restoration,
+  native owner projection and authenticated Favorites path on 237. A real two-account switch/remove sequence, real
+  existing-primary and blank-target backup imports, cross-device restore, promoted-key terminal rejection, live
+  429/5xx behavior, real comment mutation and natural long-duration response-Cookie rotation/rejection remain OPEN.
+  No Git commit was created.
+
+## Current-candidate API-key acquisition — real creation and cold use accepted — 2026-09-04
+
+- Starting from the already authenticated shared official settings page, a
+  value-free probe confirmed that the login form was absent, the semantic
+  `Key Name` field was filled and stable, and the response-capture bridge was
+  installed. The visible first-party challenge was activated once; the next
+  probe reported its response ready without reading or retaining the value.
+- A new semantic one-shot driver required the official settings path, absent
+  login form, unique `Key Name` label association, filled visible field, ready
+  challenge, unique enabled `Create Key` control and installed capture bridge
+  in the same DOM evaluation. Only then did it dispatch the current control
+  once. It emitted no form, challenge, account, Cookie or API-key value and did
+  not reuse a historical coordinate.
+- Product-redacted diagnostics recorded exactly one `candidate_captured`, one
+  `candidate_verified` and one `native_api_key_promoted`, in that order, with
+  no API-key rejection, persistence failure or active-account-record failure.
+  The Web destination automatically returned to the native Account page.
+- A data-preserving force-stop/cold start then restored
+  `valid_v4_api_key`. In that new process, native Favorites populated and
+  recorded one `favorites_request_success` with no initial 401, refresh,
+  replay recovery, terminal 401, API-key rejection or Favorites failure. The
+  same cold process then showed one native saved Account row with exactly one
+  selected owner and no Web surface.
+- From that same cold Account state, the normal API Key route reopened the
+  shared official WebView. A value-free DOM probe reported the login form
+  absent, the authenticated API-key settings path present and the capture
+  bridge installed. This proves the API-key promotion did not clear or replace
+  the existing first-party Web login state. The temporary DevTools mapping was
+  removed immediately after the probe.
+- Evidence is under
+  `.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/api-key-post-submit-20260904T0405/`,
+  `api-key-cold-favorites-20260904T0411/` and
+  `api-key-cold-account-20260904T0414/`. The bounded DevTools mapping was
+  removed before the cold start. The promoted Key remains stored as the
+  optional fallback; revoking it immediately would invalidate the feature
+  just accepted.
+- This closes real API-key creation, automatic capture, durable promotion,
+  cold restoration and direct authenticated Favorites use for the current
+  candidate. Real two-account switch/remove, existing-primary and blank-target
+  backup imports, cross-device restore, deliberate promoted-key rejection,
+  live 429/5xx behavior, real comment mutation and natural long-duration
+  response-Cookie rotation/rejection remain OPEN. No Git commit was created.
+
+## Portable backup credential filtering — executable export/import codec regression accepted — 2026-09-04
+
+- The production portable-session converter is now exercised directly with a
+  typed synthetic API-key envelope containing Cookie header, browser UA and
+  auth-cookie material. The executable assertion confirms that the portable
+  result retains the API-key credential and clears all three Web-session
+  fields. A second valid Web-token envelope confirms that legacy rotating
+  credentials are excluded instead of being converted into a portable entry.
+  A third assertion exercises the exact pure predicate used by production
+  restore: it admits the stripped API-key payload, rejects an API-key payload
+  carrying any Web-session field and rejects a valid Web-token payload.
+- The signed main HAP SHA-256 is
+  `55683800e817995aad7d58e3da484f6bb8d56b50944bcf37280a687ea39fba56`;
+  the signed `ohosTest` HAP SHA-256 is
+  `334196b3aefb5aa5f3d74fad36bbb8ca4e51fcf5ebe3a9fb9d03aff0e1314f6d`.
+  Both were installed in place on the authorized target with application data
+  preserved. The complete device suite increased from 47 to 50 tests and
+  reported 50 runs, 50 passes, zero failures, zero errors and zero ignored
+  tests. Evidence is under
+  `.hvigor/outputs/nextn-dual-auth/237/portable-backup-import-admission-20260904T0440/`.
+- No backup was imported, no app page was opened, and no account, Cookie or key
+  state was mutated by the tests. This strengthens the portable export/import
+  boundary but does not accept real existing-primary, blank-target or
+  cross-device restore behavior; those physical paths remain OPEN. No Git
+  commit was created.
+
+## NetworkKit response Cookie codec — official format established and production parser exercised — 2026-09-04
+
+- OpenHarmony `communication_netstack` source at
+  `e98a071cc390652f8d43111ff5cc770d5b877bad` establishes both response channels
+  used by the app: final response headers retain `set-cookie` as an array of
+  original field values, while `HttpResponse.cookies` is populated directly
+  from libcurl `CURLINFO_COOKIELIST` as newline-separated Netscape cookie-list
+  records. This confirms that the existing fallback's seven tab-separated
+  fields were based on the actual platform representation rather than an
+  assumed raw-header format.
+- The private conversion was moved without changing its request lifecycle into
+  `NhApiResponseCookieCodec`, which remains owned by `NhApiHttpTransport`.
+  Device tests now execute that production codec for three discriminating
+  cases: exact header precedence with an expiry comma and a `Max-Age=0`
+  deletion, conversion of secure/HttpOnly/domain/path/expiry cookie-list
+  records, and atomic rejection when a later record belongs to another origin.
+- The signed main HAP SHA-256 is
+  `4f582f1a7311a54eb5e591a216be6fa57f6f766ab721926fabaa27feaab9c21d`;
+  the signed `ohosTest` HAP SHA-256 is
+  `3b3631e9b4b52366601412ea5675e1275b317b8af56fab8bd83e12d93e25dd38`.
+  Both were installed in place with application data preserved. The complete
+  suite reported 53 runs, 53 passes, zero failures, zero errors and zero
+  ignored tests. Evidence is under
+  `.hvigor/outputs/nextn-dual-auth/237/response-cookie-codec-20260904T0500/`.
+- This removes the suspected platform-format mismatch from the current root-
+  cause tree. It does not fabricate a natural server rotation: a live response
+  that actually advertises auth `Set-Cookie`, and the corresponding stored,
+  applied or rejected diagnostic branch, remain OPEN. No Git commit was
+  created.
+
+## Official refresh-owner binding — source and current-device regression accepted — 2026-09-04
+
+- Official OpenAPI establishes that refresh is JSON token rotation: the old
+  refresh token is revoked, the response requires a new access token, refresh
+  token and user, and no proactive expiry field is supplied. Waiting for a
+  natural auth `Set-Cookie` was therefore not a valid proof strategy for this
+  endpoint.
+- `NhRefreshResponseCodec` now rejects incomplete or wrong-owner refresh
+  responses before replacement state is written. The authenticated read carries
+  its captured owner through the durable checkpoint, and the post-refresh
+  `/user` response must return that same owner before any of its response Cookie
+  side effects are accepted. A normal profile response for a different saved
+  owner can no longer be swallowed by the foreground probe: it records a fixed
+  identity-mismatch stage, preserves the saved account, atomically disables the
+  mismatched credential and publishes the existing durable verification route.
+  API-key mismatch returns to API-key verification; Web-token mismatch returns
+  to the original Web login route. Both fixed rejection stages are included in
+  the privacy-bounded observation summary.
+- Account-history, network-authority, settings-backup and account-summary
+  regressions plus exact diff checking pass. The complete signed product build
+  and signed `ohosTest` build pass. Product HAP SHA-256 is
+  `4f5581a749ab0086bb5af4a120006612c2cc6b1eb35e357e660798e88e506d86`;
+  test HAP SHA-256 is
+  `8ad3a6140ad2a22e41dd333b3b96027440b7c402d7999b0a5b379a9dc2622762`.
+- Both HAPs were installed in place with application data preserved. The full
+  device suite reported 56 runs, 56 passes, zero failures, zero errors and zero
+  ignored tests. A subsequent data-preserving cold start retained one selected
+  native Account and loaded native Favorites successfully, with no sign-in
+  prompt, verification surface, initial 401, refresh, replay, terminal 401 or
+  identity-mismatch event. Both captured pages were also visually checked.
+  Evidence is under
+  `.hvigor/outputs/nextn-dual-auth/237/profile-identity-20260904T0540/`.
+- This accepts the new refresh-response decoder, owner guard and current
+  API-key cold-use regression. It also accepts the source, contract and signed
+  build wiring for fail-closed profile identity mismatch, but does not claim a
+  fabricated live mismatch. Live legacy rotation or auth `Set-Cookie`, real
+  multi-account mutation, physical backup import and explicit rejected-key or
+  comment paths remain OPEN. No Git commit was created.
+
+## Encrypted backup restore session fence — same-device existing-primary path accepted — 2026-09-04
+
+- Source review found that `BackupService.restoreBackup` could mutate Preferences,
+  local RDB data and encrypted account records while normal authenticated work still
+  owned the previous in-memory session epoch. `beginBackupRestoreTransition` now
+  acquires the existing durable session-transition fence after rollback snapshots and
+  before the first restore mutation. `finishBackupRestoreTransition` advances and
+  publishes the new epoch only after successful reapply or rollback reapply. The
+  settings-backup contract exercises this ordering and the transition-in-flight guard.
+- The signed product candidate SHA-256 is
+  `ea297d209a2e69d5af13966d5a5af16cf146b810cc0bb0345854bcfdc69f5987`;
+  the signed `ohosTest` HAP SHA-256 is
+  `0e4e054b893c80f1a304c34132bfb1ca87869b02b6d5a7a2796928450fefab49`.
+  The complete device suite reported 56 runs, 56 passes, zero failures and zero
+  errors before the physical restore.
+- On the current target, the installed product candidate exported one encrypted
+  backup including sensitive data, selected that exact file through the system
+  picker, decrypted it and applied the real restore confirmation. A data-preserving
+  force-stop/cold start then restored one saved Account with exactly one selected
+  owner, no Web surface, sign-in prompt, verification state or HDS notice. In the
+  same cold process, native Favorites rendered its collection and recorded one
+  `favorites_request_success`; there was no terminal 401, Favorites failure,
+  refresh-response rejection or identity mismatch. Restore diagnostics classified
+  both access and refresh credentials as `ge_7d`.
+- Evidence is under
+  `.hvigor/outputs/nextn-dual-auth/237/backup-restore-fence-cold-20260904T0615/`
+  and
+  `.hvigor/outputs/nextn-dual-auth/237/backup-restore-fence-favorites-20260904T0620/`.
+  The first Favorites sample was rejected because the test used an unrecognized back
+  key literal and remained on Account; the accepted sample used the visible Account
+  back control and then the normal native Favorites path. The exact disposable export
+  was deleted after acceptance and its absence was verified.
+- This accepts the encrypted existing-primary same-device restore, its cold account
+  ownership projection and authenticated native use. Blank-target import,
+  cross-device import, concurrent rollback fault injection, real two-account
+  switch/remove, explicit rejected-key UI, real comment mutation and natural
+  long-duration server-side rotation/rejection remain OPEN. No Git commit was created.
+
+## Browser-session restore ownership fence — source/build and device predicate accepted — 2026-09-04
+
+- Source review found two cross-owner ArkWeb transitions. API-key cold restore could
+  adopt any complete process-global first-party jar before comparing it with the
+  sealed account snapshot. A portable API-key payload intentionally carrying no Web
+  snapshot could also leave a target-local browser identity in place. Both paths
+  could present one account's native credential beside another account's Web session.
+- `ensureRegularArkWebCookieJar` now accepts only the current sealed generation; it
+  no longer adopts a complete live jar as a restore shortcut. Restore hydrates ArkWeb
+  only from a complete account-owned snapshot. When the restored credential has no
+  such snapshot, it retains the native API key and expires only the known first-party
+  identity cookies, preserving unrelated browser state.
+- Network-authority, account-history, settings-backup, persistence-inventory and
+  account-observation regressions plus `git diff --check` pass. The complete signed
+  product and signed device-test builds pass. Product HAP SHA-256 is
+  `59dfb693a28a4da94fe8f7747c151e909b2ff10ae49f2771411eae93e109c9e2`;
+  test HAP SHA-256 is
+  `c994a3ba86abed7b35d197f64f9c58b3b3b8334646ccc4cc1efbd9a4a0d9bd4f`.
+- One data-preserving install/test protocol ran without a product cold start or UI
+  navigation. The complete device suite increased to 57 tests and reported 57 passes,
+  zero failures, zero errors and zero ignored tests, including the production
+  complete-snapshot ownership predicate. Evidence is under
+  `.hvigor/outputs/nextn-dual-auth/237/browser-session-restore-ownership-20260904T0643/`.
+- This accepts the source correction, build wiring and executable ownership decision.
+  A physical blank-target or cross-device import with an intentionally conflicting
+  target Web identity remains OPEN; this run does not substitute another ordinary
+  Account/Favorites cold-start check for that missing scenario. No Git commit was
+  created.
+
+## Promoted API-key rejection and replacement recovery — physical path accepted — 2026-09-04
+
+- The previously accepted device-specific API Key was deliberately revoked on the
+  authenticated official settings page. The next native Favorites request recorded
+  `account_authenticated_read_api_key_rejected` and a terminal 401 while retaining
+  the selected account owner and cached content. The root recovery HDS was physically
+  visible with both its update action and close action; its update action opened the
+  existing native API Key destination and shared official settings WebView without
+  signing out or losing the website login session.
+- An initial summary false negative was isolated to the privacy-bounded observation
+  script: it recognized only the generic Web re-login resource labels and omitted the
+  API-key-specific verification title, hint and action. The speculative product-side
+  display delay used while diagnosing that false negative was removed. The corrected
+  summary then recognized the unchanged product HDS on the final-source signed HAP,
+  SHA-256
+  `98cd290bae8c450a2b93e027c14005aaa33e1658b770c206f8b3f1885ff8ecf4`.
+- Two replacement attempts were closed after their single submit produced no server
+  key, response capture or promotion event. Both had treated a pre-existing nonempty
+  challenge response as sufficient even though the current epoch had not performed a
+  challenge action. No retry was issued on either consumed document.
+- The discriminating replacement run restarted the process with data preserved and
+  reached the same authenticated official settings page through the durable recovery
+  notice. Its initial value-free state was explicitly not ready. After semantic name
+  input and exactly one current challenge action, the immediate state became ready;
+  the sole Create Key dispatch then closed the Web page. Product-redacted diagnostics
+  recorded `candidate_captured`, `candidate_verified` and
+  `native_api_key_promoted` exactly once and in that order.
+- One subsequent data-preserving cold start restored the replacement credential. In
+  that same process, native Account showed one saved and exactly one selected owner,
+  with no Web, sign-in or verification surface; native Favorites rendered its
+  collection and recorded `favorites_request_success`. There was no terminal 401,
+  API-key rejection, refresh-response rejection, identity mismatch or Favorites
+  failure in the bounded window.
+- Evidence is under
+  `.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-api-key-revocation/notice-final-install-20260904T085500/`,
+  `replacement-post-submit-20260904T0915/` and
+  `replacement-cold-account-favorites-20260904T0920/`. The replacement Key remains
+  retained as the optional fallback and all temporary DevTools forwards were removed.
+- This closes deliberate promoted-key rejection, actionable recovery notice, retained
+  official Web login, replacement creation, automatic native promotion and cold
+  Account/Favorites recovery on the current candidate. Natural long-duration legacy
+  token rotation/response-Cookie evidence, a future naturally occurring terminal 401,
+  real multi-account mutation, blank-target and cross-device imports, and live
+  comment mutation remain OPEN. No Git commit was created.
+
+## Current P0 disposition — 2026-09-04
+
+- The current signed candidate is the clean ten-module HAP SHA-256
+  `1157c413d911459582e3d1ecbcc60ad6aacb25e31b05ec74dd49f50023995dd9`.
+  Its candidate lineage has physically passed API-key creation, automatic capture,
+  durable promotion, deliberate rejection, retained-account recovery and replacement.
+  This exact HAP has now also passed a data-preserving install and cold native
+  Account/Favorites restore. The authenticated official WebView session remained
+  available through native-key rejection and replacement on the preceding candidate.
+- The same candidate lineage has physically passed an encrypted same-device
+  existing-primary backup export/import, durable restore fence, cold Account
+  projection and authenticated Favorites read. Portable backup code and executable
+  production-codec tests admit only API-key envelopes stripped of Web tokens,
+  Cookies and browser identity.
+- These results accept the user-visible login-persistence P0 for the current
+  candidate. The retired hourly cold-start observer is not a completion gate:
+  API-key traffic does not use the legacy refresh endpoint, that endpoint rotates
+  Web tokens in JSON rather than through a required `Set-Cookie`, and another
+  ordinary cold start would repeat an already accepted path.
+- Three broader physical coverage rows remain OPEN: a real two-account switch/remove
+  sequence, a real blank-target or cross-device encrypted import, and a real comment
+  mutation. Existing source and executable contracts cover their internal ownership,
+  isolation and no-replay rules, but do not replace those physical scenarios. No Git
+  commit was created.
+
+## Official comment authorization correction — source/build accepted — 2026-09-04
+
+- The official OpenAPI `2.0.0+483414f` contract distinguishes comment reads from
+  writes: `GET /api/v2/galleries/{gallery_id}/comments` accepts optional User Token
+  or API Key, while `POST` requires User Token, proof of work and an optional CAPTCHA
+  response. The previous generic mutation path would send the active API Key and
+  therefore could not satisfy the documented write contract.
+- `NhApiClient.postComment` now selects a comment-only User-Token mutation owned by
+  `NhSessionHttpClient`. It validates that the optional sealed website session belongs
+  to the active account and refreshes that website token pair through the same bounded
+  first-party transport when necessary. The refreshed pair is checkpointed inside the
+  existing API-key envelope; it never replaces or rejects the native API Key used by
+  Account, Favorites and other ordinary API traffic.
+- The public comment mutation is still issued at most once. If a 401 recovery succeeds,
+  the client preserves the recovered website pair but returns an explicit failure for
+  the user to retry; it does not replay the POST and risk a duplicate public comment.
+- Account-history, settings-backup and network-authority regressions pass, including a
+  new structural contract for account ownership, API-key preservation and no mutation
+  replay. A clean ten-module signed build succeeds; the resulting product HAP SHA-256
+  is `1157c413d911459582e3d1ecbcc60ad6aacb25e31b05ec74dd49f50023995dd9`.
+  No product install or public comment was performed in this source/build lane.
+- Physical comment acceptance remains OPEN because it changes public server-side
+  content and the optional CAPTCHA branch cannot be proven by compilation. This is no
+  longer an API-key routing ambiguity; the remaining evidence requires an explicitly
+  authorized real comment target/content or a non-public server fixture. No Git commit
+  was created.
+
+## Comment User-Token candidate — data-preserving cold regression accepted — 2026-09-04
+
+- The clean signed product HAP SHA-256
+  `1157c413d911459582e3d1ecbcc60ad6aacb25e31b05ec74dd49f50023995dd9`
+  was installed in place with application data preserved. One checked protocol then
+  performed the cold start and ordinary native My-to-Account and Favorites route as a
+  single run. All 21 declared commands completed with zero failed commands; the power
+  gate showed the device awake with the `86400000ms` override both before installation
+  and after the final capture.
+- The privacy-bounded Account summary reported one saved account and exactly one
+  selected account, a native account list, no Web surface, sign-in prompt,
+  verification state, save failure or recovery Snackbar. The Favorites summary
+  reported the native collection, no Web surface, sign-in prompt, loading, empty or
+  error state, and no recovery Snackbar.
+- The new-process diagnostic sequence was `session_start` →
+  `account_restore_payload_shape` → `account_auth_expiry_shape` →
+  `account_restore_ready` → `favorites_request_success`. It contained no terminal
+  401, response-Cookie checkpoint, refresh-response rejection, API-key rejection,
+  identity mismatch or Favorites failure. The raw Account and Favorites layouts were
+  removed after the fixed summary was produced.
+- Without another install or cold start, the same process then traversed the native
+  Account and API Key route into the shared official WebView. A value-free probe found
+  the official API Key settings path, no login form and the native capture bridge
+  installed. The exact temporary DevTools mapping was removed immediately afterward.
+  The accepted native back stack then returned the app to one visible Favorites root
+  with a native collection and no Web surface; its temporary layout was removed after
+  this fixed result was derived.
+- Evidence is under
+  `.hvigor/outputs/nextn-comment-user-token-install-20260904T100331/`,
+  `.hvigor/outputs/nextn-comment-user-token-web-retention-20260904T100837/`,
+  `.hvigor/outputs/nextn-comment-user-token-web-cleanup-20260904T100837/` and
+  `.hvigor/outputs/nextn-comment-user-token-final-return-20260904T101139/`. This
+  accepts the data-preserving installation, cold Account/Favorites regression and
+  authenticated shared-WebView retention for the exact comment-authorization
+  candidate. It does not issue or accept a public comment; real comment mutation and
+  its optional CAPTCHA branch remain OPEN. No Git commit was created.
+
+## API-key page-container candidate Web-session reseed — accepted — 2026-09-04 18:13 +0800
+
+- The source boundary is now two explicit layers: `EhWebView` remains an
+  embeddable Web leaf, while `NextNWebPageScaffold` owns the immersive title,
+  parent scroll and loading layer for full-page Web destinations. Gallery and
+  the shared login/API-key host compose those layers. The account-history
+  structural regression and `git diff --check` pass.
+- On `192.168.50.237:12345`, the data-preserving final candidate opened the
+  ordinary official API-key Web destination with the shared page chrome, but
+  the Web document was a login form because an earlier candidate had already
+  removed the independent ArkWeb identity before the preservation fix was
+  installed.
+- One authorized atomic login submit was consumed. Its current challenge was
+  not established: the coordinator accepted a response already present before
+  credential entry. The server displayed an expired-CAPTCHA error; the 120-
+  second terminal observation found no Web authentication and no native
+  promotion. No second submit was issued on that document.
+- The executor now fails before any credential write when the pre-credential
+  probe already reports a ready challenge response, including the staged-resume
+  path. The five account/network/persistence diagnostic regressions and exact
+  diff check pass.
+- Next unverified physical action: destroy the consumed document by returning
+  once to the native API Key page, reopen the ordinary official destination,
+  prove a not-ready CAPTCHA baseline, and run one new uninterrupted login epoch.
+  API-key automatic creation/capture, visible name and masked identity, cold
+  restore, authenticated Favorites and retained official-Web login were still
+  OPEN at that point and are resolved by the accepted evidence below. No Git
+  commit was created.
+
+### Verified same-account Web checkpoint and API-key result — 2026-09-04 20:22 +0800
+
+- The final staged Web login completed one fresh credential/CAPTCHA/submit epoch.
+  The first-party account check verified the visible Web session belongs to the
+  selected native API-key owner, then `browser_session_checkpointed` recorded the
+  encrypted browser snapshot. A route race was found at this boundary: generic
+  `onPageEnd` marked navigation pending before the verified checkpoint callback.
+  API-key setup no longer routes from `onPageEnd`; its only route now follows the
+  verified page-state checkpoint.
+- A clean ten-module signed build passed after that correction. The installed
+  data-preserving product HAP SHA-256 is
+  `333cf984ac71fd8e05e3e8fda1b3ced9999b544d84075f206f7be31526ece085`.
+  Its subsequent cold process restored the authenticated official settings page
+  rather than the login form.
+- One explicit official create epoch used the distinct non-secret name
+  `NextN 237 shared 20260904T1954`. A synthetic DOM click was rejected as
+  non-evidence after the official list remained at five keys with no matching row
+  or capture event. A fresh document then received one trusted CDP pointer submit.
+  The App returned automatically to the native API Key page and recorded exactly
+  one `candidate_captured`, `candidate_verified` and `native_api_key_promoted` in
+  order. Native status displayed Bound, the exact name and a masked identity; the
+  complete key was not refilled.
+- The official authenticated page now reports six keys and exactly one matching
+  name row. After a data-preserving cold process, the native Account page retained
+  one saved and selected account and native Favorites rendered its collection.
+  The fixed summary recorded `session_start` → `account_restore_payload_shape` →
+  `account_auth_expiry_shape` → `account_restore_ready` →
+  `favorites_request_success`, with no terminal 401, API-key rejection, identity
+  mismatch, recovery notice or Favorites failure. Reopening the official route in
+  that same cold process again showed the authenticated settings page, not login.
+- The manual existing-key path remains visible as a complete-key field plus an
+  optional local name; official creation remains a separate explicit action, so
+  opening status or settings does not create another key. One clearly invalid
+  non-secret candidate was submitted once. The existing name and masked identity
+  stayed unchanged, and a subsequent non-cold pull-to-refresh recorded one new
+  `favorites_request_success` with no terminal 401, API-key rejection or identity
+  mismatch. Thus a failed candidate cannot replace the active key.
+- A valid manual same-key import on another device is not claimed: the only newly
+  created complete key is intentionally sealed and never exposed or refilled, and
+  no second user-supplied complete key exists in this acceptance scope. That final
+  cross-device reuse proof requires a user-provided complete key on an explicitly
+  authorized target; it is not a reason to remove or weaken the manual path.
+- Accepted evidence is under
+  `.hvigor/outputs/nextn-api-key-web-container-20260904T0551/verified-checkpoint-trusted-create-result-run/`,
+  `verified-checkpoint-same-cold-account-favorites-run/`,
+  `verified-checkpoint-post-promotion-cold-web-run/`,
+  `manual-bind-invalid-candidate-run/` and
+  `manual-bind-invalid-candidate-refresh-run/`. No Git commit was created.
+
+## API-key authority and manual-dialog correction — source/build and 237 UI accepted — 2026-09-04 21:48 +0800
+
+- Response Cookie mutation is now an explicit website-session authority rather
+  than an implicit side effect of every JSON request. Anonymous and API-key
+  responses cannot write the ArkWeb Cookie jar; website-token reads, legacy
+  refresh and verified same-account website mutations opt in explicitly. A
+  candidate Web session checkpoints response Cookies only after a successful
+  response and account-identity validation.
+- Cold restore after an explicit API-key rejection now preserves only the
+  non-secret saved name and derived masked identity for the native recovery
+  page. It does not publish the rejected raw Key or mark any native credential
+  usable. API-key setup failures route through the existing root HDS notice;
+  the ordinary success toast remains success-only.
+- The native API-key page now keeps only status, active saved name/masked
+  identity, and the official management row in its list body. Its upper-right
+  action opens the existing `CustomContentDialog` content grammar with direct
+  system `TextInput` children and shared `AppPrompt` modal material. The
+  complete Key remains a manual multi-device reuse path but is never refilled.
+  Automatic official creation receives a timestamped readable name so several
+  server-side Keys can be distinguished.
+- The first build in this runtime pass used a normal function to wrap ArkUI
+  controller options. Although it compiled, 237 rejected it at startup with a
+  `TypeError` reporting that a class constructor was called without `new`.
+  That abstraction was removed: every `CustomDialogController` retains its
+  compiler-recognized direct object form and reads only the shared material
+  value. The rejected HAP and launcher captures are not acceptance evidence.
+- Final product HAP SHA-256
+  `59b85436f22e7a97ad79ea0fa0b12f7cfa0570a12535a5a6d2ee4374e7647963`
+  was installed on `192.168.50.237:12345` with application data preserved. A
+  cold start reached the native API-key page with Bound status, the saved name
+  and masked identity visible, no inline form, and no chevrons on the two
+  non-action rows. The upper-right action opened the centered system-material
+  dialog without automatically focusing the secure field.
+- After an explicit tap on the empty complete-Key field, the layout dump showed
+  that field focused and the secure keyboard present. The dialog moved above
+  the IME with both fields and both actions inside the visible window. No text
+  was entered and no Key was created, replaced or submitted. The Cancel action
+  returned to the native API-key page, where the same active saved identity
+  remained visible and the app process remained alive.
+- Evidence is under
+  `.hvigor/outputs/nextn-api-key-dialog-20260904T2135/` for the rejected wrapper
+  diagnosis and
+  `.hvigor/outputs/nextn-api-key-dialog-20260904T2145-no-autofocus/` for the
+  accepted final page, dialog, keyboard-layout and Cancel-return states. The
+  account-history and network-authority contracts, exact diff check and signed
+  ten-module build pass. Forced terminal API-key rejection metadata and a
+  natural website response-Cookie rotation were not induced in this visual
+  pass; they remain source/contract evidence, not newly claimed physical
+  evidence. No Git commit was created.
+
 ## Reader parity recovery — 237 partial device acceptance, thumbnail reopened — 2026-09-05
 
 - **Accepted candidate:** the exact signed HAP installed in place with data

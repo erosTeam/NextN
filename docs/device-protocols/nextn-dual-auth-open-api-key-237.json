@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-open-api-key-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/237/api-key-20260903T1947",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-26c1e84ed76ac2fdbd41300cde8a097015c41b0009a78c05efe06d0249017bf9",
+    "page": "native-api-key-onboarding",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Open the normal API Key row from the already captured native Account page on exact target 237, then capture the optional onboarding page. Do not enter, generate, bind, delete, or submit any credential."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "open-api-key-onboarding", "uiInput": ["click", "660", "630"], "pauseAfterMs": 1800, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-api-key-onboarding", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-dual-auth-api-key-237.json", "-a"] },
+    { "name": "capture-api-key-onboarding", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-dual-auth-api-key-237.png"] },
+    { "name": "receive-api-key-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-dual-auth-api-key-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/237/api-key-20260903T1947/api-key.json"] },
+    { "name": "receive-api-key-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-dual-auth-api-key-237.png", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/237/api-key-20260903T1947/api-key.png"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-dual-auth-api-key-237.json", "/data/local/tmp/nextn-dual-auth-api-key-237.png"] }
+  ]
+}

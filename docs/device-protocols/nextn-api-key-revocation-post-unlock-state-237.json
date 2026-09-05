@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-api-key-revocation-post-unlock-state-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-api-key-revocation/post-unlock-state-20260904T070600",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-59dfb693a28a4da94fe8f7747c151e909b2ff10ae49f2771411eae93e109c9e2",
+    "page": "post-unlock-foreground-classification-before-promoted-api-key-revocation-discovery",
+    "deviceAlias": "device-237",
+    "deviceModel": "unknown",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Classify whether the accepted neutral-region unlock reached the application foreground. Do not navigate, start, stop, install, cold-start, clear data, sign out, enter or create credentials, submit forms, activate a challenge, or mutate account state. Retain no screenshot and expose no layout text in the user-facing summary."
+  },
+  "preflight": [
+    {
+      "name": "verify-awake-override-before-classification",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "read-window-owner-before-classification",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "non-actionable-protocol-boundary",
+        "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"],
+        "pauseAfterMs": 100,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-post-unlock-semantic-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-api-key-revocation-post-unlock-state-237.json", "-a"]
+    },
+    {
+      "name": "receive-post-unlock-semantic-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-api-key-revocation-post-unlock-state-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-api-key-revocation/post-unlock-state-20260904T070600/current.json"]
+    },
+    {
+      "name": "verify-nextn-process",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    },
+    {
+      "name": "cleanup-post-unlock-semantic-layout",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-api-key-revocation-post-unlock-state-237.json"]
+    }
+  ]
+}

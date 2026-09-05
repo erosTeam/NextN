@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-api-key-dialog-recover-foreground-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-api-key-dialog-20260904T2135/foreground-recovery",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-16207aaff78921cdbb95ac9590640f28c4b4e1e5829fa266ac83d2547dbf345e",
+    "page": "foreground-current-nextn-after-rejected-launcher-sample",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Bring the current data-preserving NextN task to the foreground and classify its window before any navigation. Do not install, clear data, sign out, open Web, alter a credential, submit, or operate another target."
+  },
+  "preflight": [
+    { "name": "verify-awake-before-foreground", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "foreground-current-nextn", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 2500, "timeoutSeconds": 30 },
+    { "name": "verify-nextn-window-after-foreground", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "non-actionable-protocol-boundary", "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"], "pauseAfterMs": 100, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-current-foreground-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-api-key-dialog-foreground-237.json", "-a"] },
+    { "name": "capture-current-foreground-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-api-key-dialog-foreground-237.png"] },
+    { "name": "receive-current-foreground-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-api-key-dialog-foreground-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-api-key-dialog-20260904T2135/foreground-recovery/layout.json"] },
+    { "name": "receive-current-foreground-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-api-key-dialog-foreground-237.png", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-api-key-dialog-20260904T2135/foreground-recovery/screen.png"] },
+    { "name": "verify-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "cleanup-temporary-foreground-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-api-key-dialog-foreground-237.json", "/data/local/tmp/nextn-api-key-dialog-foreground-237.png"] }
+  ]
+}

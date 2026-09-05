@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-create-api-key-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/api-key-epoch-2130-submit-20260903T2140",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-e20327b486cf536cdfe94d9b270b7aab57bad217cf3647cb5e93cdb0f035da03",
+    "page": "official-api-key-single-create-and-automatic-native-import",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Within the open 2130 credential epoch on exact target 197, issue the sole Create Key click after the value-free probe proved the semantic label filled and the current challenge token nonempty. The successful same-origin response must be captured, verified, sealed and promoted by the existing bridge. Do not repeat, screenshot, dump layout, or expose a credential."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "submit-create-key-exactly-once", "uiInput": ["click", "325", "2088"], "pauseAfterMs": 8000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "receive-product-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/api-key-epoch-2130-submit-20260903T2140/diagnostics"] },
+    { "name": "verify-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] }
+  ]
+}

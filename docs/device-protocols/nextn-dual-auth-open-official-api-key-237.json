@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-open-official-api-key-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/237/official-api-key-20260903T1949",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-26c1e84ed76ac2fdbd41300cde8a097015c41b0009a78c05efe06d0249017bf9",
+    "page": "official-first-party-api-key-settings-before-generation",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Open the first-party official API Key settings from the native onboarding page on exact target 237, then capture the pre-generation page. Do not generate, delete, bind, enter, or submit a credential in this protocol."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "open-official-api-key-settings", "uiInput": ["click", "660", "405"], "pauseAfterMs": 5000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-official-api-key-page", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-dual-auth-official-key-237.json", "-a"] },
+    { "name": "capture-official-api-key-page", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-dual-auth-official-key-237.png"] },
+    { "name": "receive-official-api-key-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-dual-auth-official-key-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/237/official-api-key-20260903T1949/official.json"] },
+    { "name": "receive-official-api-key-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-dual-auth-official-key-237.png", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/237/official-api-key-20260903T1949/official.png"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-dual-auth-official-key-237.json", "/data/local/tmp/nextn-dual-auth-official-key-237.png"] }
+  ]
+}

@@ -500,3 +500,107 @@ authenticated Favorites. The P0 and this postmortem therefore remain OPEN.
 - Completion remains event-based, not patch-based: cross-day/multi-cycle
   survival, natural response-Cookie rotation persistence, and the next natural
   terminal-401/HDS/re-login/cold-Favorites path must all be observed on 237.
+
+## 2026-09-04 current resolution and remaining coverage
+
+This section supersedes the closing status above without rewriting the historical
+sequence that led to it.
+
+### Root cause now established at the available evidence boundary
+
+The original physical loss was not a local account-row disappearance. A complete,
+previously checkpointed Web-token envelope restored, its business request returned
+401, and the fixed refresh endpoint later rejected the retained refresh token. The
+server does not expose whether that credential family ended through expiry,
+revocation, session-limit eviction, or use of another copied rotating credential,
+so that narrower server-side reason remains unknowable from the retained response.
+
+The durable product failure was nevertheless established: NextN treated a rotating
+browser credential family as portable native authority while its request, Cookie,
+refresh, account-owner, restore and recovery-notice transitions were split across
+multiple owners. Concrete source and device evidence found discarded response
+`Set-Cookie`, duplicate refresh after a late old-generation 401, obsolete terminal
+reason admission, Account/authentication conflation, saved-envelope suppression by
+the compatibility jar, non-atomic owner transitions, and a backup path that could
+copy Web access/refresh material between devices. Any one of those defects could
+leave a locally remembered account without usable server authority or without a
+visible recovery action.
+
+### Durable resolution
+
+- All NH API v2 traffic now crosses
+  `NhApiClient -> NhSessionHttpClient -> NhApiHttpTransport`; feature code cannot
+  select credentials, refresh, replay, or own response Cookies.
+- `NhCookieAuthority` is the only `WebCookieManager` owner. First-party response
+  Cookies cross one bounded extraction/checkpoint/sink boundary, while the official
+  refresh endpoint follows its documented JSON replacement-token contract.
+- A typed sealed envelope separates stable native API-key authority from optional,
+  account-owned website session material. API-key requests never enter the legacy
+  refresh endpoint. Website login remains available for website-only actions but
+  can no longer decide whether native Favorites is authenticated.
+- Portable backups admit stripped API-key envelopes only. Web access/refresh
+  tokens, Cookie state and browser UA are excluded; restore and account selection
+  run behind the durable owner/session transition fence.
+- Confirmed credential rejection retains the Account row and feature cache,
+  withdraws only unusable request authority, and publishes the existing root HDS
+  recovery action. Transient transport, 429 and 5xx outcomes do not delete or
+  disable the credential.
+
+### Physical resolution evidence
+
+The current signed HAP SHA-256 is
+`98cd290bae8c450a2b93e027c14005aaa33e1658b770c206f8b3f1885ff8ecf4`.
+On the selected device, a real API key was created in the authenticated official
+settings page, captured without clipboard exposure, verified, durably promoted and
+restored after a data-preserving cold start. Native Account retained the selected
+owner and Favorites completed an authenticated read without a legacy refresh.
+
+That key was then deliberately revoked. The next native request recorded the
+credential-specific rejection and terminal 401, retained Account/cache state, and
+showed the actionable root recovery HDS. Its action opened the native API-key page
+and shared official WebView without signing out; the website session was still
+authenticated. A fresh replacement key then completed one challenge, one create,
+one capture, one verification and one promotion. A later data-preserving cold start
+again produced native Account plus authenticated Favorites with no terminal or
+identity-mismatch event.
+
+A real encrypted existing-primary backup export/import also completed its restore
+transition, cold Account projection and authenticated Favorites read. Together
+these results satisfy the repository P0 gate: the durable native path survives a
+cold start, and the rejected-credential path is visible and recoverable without
+silently discarding the account.
+
+### Why the extended effort did not close this sooner
+
+The work repeatedly optimized for an immediate healthy screen instead of proving
+one owner from response through durable checkpoint and later restore. Successful
+builds, ordinary cold starts and repeated refresh recoveries were reported too
+broadly; the observer was also allowed to become an hourly loop even after its
+results stopped distinguishing causes. Login automation then became a separate UI
+project and consumed attempts without improving the persistence model. Finally,
+several fixes were expressed as isolated branch checks before the complete network,
+owner and backup boundaries had been mapped.
+
+The corrective discipline is now structural: one transport lifecycle, one Cookie
+authority, one durable account owner, event-specific physical acceptance, and no
+recurring observation unless a new run can discriminate between live hypotheses.
+
+### Remaining coverage, not a reason to occupy the device indefinitely
+
+- A real two-account switch/remove sequence remains open because the current
+  physical dataset contains one saved account. Source and device tests cover owner
+  atomicity, but they do not substitute for that mutation path.
+- A real blank-target or cross-device encrypted import remains open. The portable
+  codec and same-device existing-primary import are accepted; no destructive data
+  clear will be used merely to manufacture the missing topology.
+- A real comment mutation remains open because it changes server-side user content;
+  ordinary Account/Favorites acceptance does not authorize fabricating such data.
+- A natural response `Set-Cookie` is not a refresh-endpoint completion gate: the
+  official refresh contract rotates tokens in JSON. The current API-key credential
+  cannot generate a legacy refresh event at all. The old hourly cold-start manifest
+  therefore remains retired instead of repeatedly exercising an already accepted
+  path.
+
+The user-visible account-persistence P0 is resolved and accepted for the current
+candidate. The broader goal remains open only for the three explicit physical
+coverage rows above; none is replaced by more cold-start or refresh-loop sampling.

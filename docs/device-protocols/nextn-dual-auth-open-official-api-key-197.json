@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-open-official-api-key-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/api-key-fill-observer-official-web-20260904T0037",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-185942269fa7b6d2cfd812ede1869cff30fb3a533a2b2b7fcb0f231e3e876370",
+    "page": "official-first-party-webview-after-final-ownership-test",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Continue from the final candidate cold process, traverse the normal My, Account and API Key route, reopen the official WebView, and expose only a bounded local DevTools forward for the existing value-free login-state probe. Do not screenshot, dump layout, or read a credential value."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-my", "uiInput": ["click", "1000", "2585"], "pauseAfterMs": 1000, "timeoutSeconds": 30 },
+      { "name": "open-native-account", "uiInput": ["click", "630", "430"], "pauseAfterMs": 1200, "timeoutSeconds": 30 },
+      { "name": "open-api-key-onboarding", "uiInput": ["click", "630", "675"], "pauseAfterMs": 1200, "timeoutSeconds": 30 },
+      { "name": "open-official-api-key-settings", "uiInput": ["click", "630", "430"], "pauseAfterMs": 5000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "create-bounded-webview-forward", "hdcArgs": ["fport", "tcp:19229", "tcp:19222"], "pauseAfterMs": 500 },
+    { "name": "verify-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-open-account-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/account-20260903T1944",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-26c1e84ed76ac2fdbd41300cde8a097015c41b0009a78c05efe06d0249017bf9",
+    "page": "ordinary-native-account",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "From the captured native My page, open its ordinary account row on exact target 197 and capture the account/API-key entry. Do not alter credentials or account state."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-account-row", "uiInput": ["click", "630", "330"], "pauseAfterMs": 1800, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-native-account", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-dual-auth-account-197.json", "-a"] },
+    { "name": "capture-native-account", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-dual-auth-account-197.png"] },
+    { "name": "receive-native-account-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-dual-auth-account-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/account-20260903T1944/account.json"] },
+    { "name": "receive-native-account-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-dual-auth-account-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/account-20260903T1944/account.png"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-dual-auth-account-197.json", "/data/local/tmp/nextn-dual-auth-account-197.png"] }
+  ]
+}

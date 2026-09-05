@@ -3,10 +3,16 @@ import { LlmSourceSecretVault } from '../services/LlmSourceSecretVault'
 import { NhAccountProfileService } from '../services/NhAccountProfileService'
 import { NhAccountSessionService } from '../services/NhAccountSessionService'
 import { NhAccountProfile } from '../model/NhAccountProfile'
+import { AccountListSettings } from '../settings/AccountListSettings'
 import {
   AccountProfileBackupEntry,
   AccountProfileRepository,
 } from '../storage/AccountProfileRepository'
+import {
+  AccountSessionRepository,
+  AccountSessionRestoreSnapshot,
+  EncryptedAccountSession,
+} from '../storage/AccountSessionRepository'
 import { BackupPreferencesAdapter } from './BackupPreferencesAdapter'
 import { BackupSettingsValue } from './BackupTypes'
 
@@ -30,26 +36,36 @@ class AccountProfilesBackupBundle {
  * The 'secrets' section only ever rides inside the AES-256-GCM password
  * container. On export, each HUKS envelope is decrypted with the source
  * device's non-exportable key and carried as plaintext inside that container;
- * on restore it is re-wrapped with the target device's own HUKS key. This is
- * the cross-device equivalent of NextE's cookie/API-key credential restore.
+ * on restore it is re-wrapped with the target device's own HUKS key.
+ * Cross-device account export is API-key-only. Rotating Web tokens, session
+ * cookies, Cloudflare state and browser UA never leave their source device.
  *
  * Restore is additive (overwrites families present in the backup, keeps
  * absent families untouched); replace mode is used only for rollback and
  * returns the target to its exact pre-restore secret state.
  */
 export class BackupSecretsAdapter {
-  static async exportSecrets(context: common.UIAbilityContext): Promise<SettingsMap> {
+  static async exportSecrets(
+    context: common.UIAbilityContext,
+    portable: boolean = true,
+  ): Promise<SettingsMap> {
     const out: SettingsMap = await BackupPreferencesAdapter.exportSecrets(context)
     const llm: Record<string, string> = await LlmSourceSecretVault.exportPlaintextForBackup(context)
     const llmKeys: string[] = Object.keys(llm)
     for (let i: number = 0; i < llmKeys.length; i++) {
       out[`${LLM_SECRET_PREFIX}${llmKeys[i]}`] = llm[llmKeys[i]]
     }
-    const session: string | null = await NhAccountSessionService.exportSealedForBackup(context)
+    const session: string | null = await NhAccountSessionService.exportSealedForBackup(
+      context,
+      portable,
+    )
     if (session !== null && session.length > 0) {
       out[ACCOUNT_SESSION_KEY] = session
     }
-    out[ACCOUNT_SESSIONS_KEY] = await NhAccountSessionService.exportAllSealedForBackup(context)
+    out[ACCOUNT_SESSIONS_KEY] = await NhAccountSessionService.exportAllSealedForBackup(
+      context,
+      portable,
+    )
     const profileBundle: AccountProfilesBackupBundle = new AccountProfilesBackupBundle()
     profileBundle.entries = await AccountProfileRepository.exportForBackup(context)
     const profileRaw: string = JSON.stringify(profileBundle)
@@ -70,10 +86,32 @@ export class BackupSecretsAdapter {
     map: SettingsMap,
     replace: boolean,
   ): Promise<void> {
+    let preserveExistingPrimary: boolean = false
+    let retainedPrimary: EncryptedAccountSession | null = null
+    let retainedPrimaryOwnerId: string = ''
+    if (!replace) {
+      try {
+        const retainedSnapshot: AccountSessionRestoreSnapshot =
+          await AccountSessionRepository.loadForRestore(context)
+        retainedPrimary = retainedSnapshot.record
+        preserveExistingPrimary = retainedPrimary !== null
+        retainedPrimaryOwnerId = AccountSessionRepository.resolvePrimaryOwner(retainedSnapshot)
+      } catch (_error) {
+        // A failed ownership read must not authorize an additive backup to
+        // overwrite a possibly retained target account projection.
+        preserveExistingPrimary = true
+      }
+    }
     if (replace) {
       await BackupPreferencesAdapter.replace(context, map, true)
     } else {
-      await BackupPreferencesAdapter.restore(context, map, true)
+      await BackupPreferencesAdapter.restore(
+        context,
+        map,
+        true,
+        preserveExistingPrimary,
+        retainedPrimaryOwnerId,
+      )
     }
     const llmValues: Record<string, string> = {}
     const keys: string[] = Object.keys(map)
@@ -112,18 +150,39 @@ export class BackupSecretsAdapter {
       await NhAccountSessionService.restoreAllSealedFromBackup(
         context,
         sessionsValue as string,
-        true,
+        replace,
+        replace,
       )
+      if (!replace) {
+        if (retainedPrimary !== null && retainedPrimaryOwnerId.length > 0) {
+          // Old builds could have a primary envelope and profile without the
+          // later saved-account projection. Repair that projection with the
+          // retained target ciphertext before the merged list is published.
+          await AccountSessionRepository.saveVerifiedByKey(
+            context,
+            retainedPrimaryOwnerId,
+            retainedPrimary,
+          )
+        }
+        await AccountListSettings.reconcileRestoredCredentialIds(
+          context,
+          await NhAccountSessionService.savedCredentialAccountIds(context),
+          preserveExistingPrimary,
+          retainedPrimaryOwnerId,
+        )
+      }
     } else if (replace) {
       await NhAccountSessionService.restoreAllSealedFromBackup(context, '', true)
     } else if (hasSession) {
-      await NhAccountSessionService.restoreSealedFromBackup(context, sessionValue as string)
+      // A legacy single-session backup can contain a rotating Web token pair.
+      // It is never imported onto a different device.
     }
     if (hasProfileBundle) {
       await AccountProfileRepository.restoreBackup(
         context,
         BackupSecretsAdapter.parseAccountProfiles(profilesValue as string),
-        true,
+        replace,
+        preserveExistingPrimary,
       )
     } else if (replace) {
       await AccountProfileRepository.restoreBackup(context, [], true)

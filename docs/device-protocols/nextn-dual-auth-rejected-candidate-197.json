@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-rejected-candidate-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/rejected-candidate-hds-20260904T0045",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-185942269fa7b6d2cfd812ede1869cff30fb3a533a2b2b7fcb0f231e3e876370",
+    "page": "native-api-key-rejected-candidate",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Enter one fixed non-secret invalid candidate into the already-confirmed empty native API-key field on exact target 197, dismiss the editor, submit exactly once, and capture the root HDS rejection result. Existing sealed credentials must not be overwritten."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "enter-fixed-non-secret-rejected-candidate", "uiInput": ["inputText", "630", "797", "nextn-rejected-candidate-197"], "pauseAfterMs": 300, "timeoutSeconds": 30 },
+      { "name": "dismiss-api-key-editor", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 300, "timeoutSeconds": 30 },
+      { "name": "submit-rejected-candidate-once", "uiInput": ["click", "630", "1048"], "pauseAfterMs": 6000, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-rejected-candidate-result", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-rejected-candidate-result-197.json", "-a"] },
+    { "name": "capture-rejected-candidate-result", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-rejected-candidate-result-197.png"] },
+    { "name": "receive-rejected-candidate-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-rejected-candidate-result-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/rejected-candidate-hds-20260904T0045/result.json"] },
+    { "name": "receive-rejected-candidate-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-rejected-candidate-result-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/rejected-candidate-hds-20260904T0045/result.png"] },
+    { "name": "verify-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-rejected-candidate-result-197.json", "/data/local/tmp/nextn-rejected-candidate-result-197.png"] }
+  ]
+}

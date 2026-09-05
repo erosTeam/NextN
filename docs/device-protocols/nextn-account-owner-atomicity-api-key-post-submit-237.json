@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-account-owner-atomicity-api-key-post-submit-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/api-key-post-submit-20260904T0405",
+  "display": { "widthPx": 1320, "heightPx": 2120 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-00dc0e7ea3a74296aec9d9f316d169554ef3ff3acffbe2fb0f5b0cb900cc08d6",
+    "page": "post-single-api-key-create-native-promotion",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "After the one semantic Create Key dispatch in the current epoch, wait for the existing response bridge and capture only the native semantic layout plus product-redacted diagnostics. Do not click, retry, navigate, start, stop, install, clear data, sign out, enter text, act on CAPTCHA, expose a credential, or capture a screenshot."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      {
+        "name": "non-actionable-measurement-boundary",
+        "uiInput": ["keyEvent", "KEYCODE_UNKNOWN"],
+        "pauseAfterMs": 8000,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-current-semantic-layout",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-api-key-post-submit-237.json", "-a"]
+    },
+    {
+      "name": "receive-current-semantic-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-api-key-post-submit-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/api-key-post-submit-20260904T0405/current.json"]
+    },
+    {
+      "name": "receive-product-redacted-diagnostics",
+      "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-account-owner-atomicity/api-key-post-submit-20260904T0405/diagnostics"]
+    },
+    {
+      "name": "verify-nextn-process",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    },
+    {
+      "name": "cleanup-temporary-layout",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-api-key-post-submit-237.json"]
+    }
+  ]
+}

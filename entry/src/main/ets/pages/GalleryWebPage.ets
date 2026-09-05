@@ -1,11 +1,9 @@
 import { webview } from '@kit.ArkWeb'
-import { HdsNavDestination } from '@kit.UIDesignKit'
 import {
   DiagnosticLogger,
   EhWebView,
+  NextNWebPageScaffold,
   NhAccountSessionService,
-  SecondaryListScaffold,
-  ThemeTokens,
   nextNHdsTitleBar,
 } from 'shared'
 
@@ -31,7 +29,6 @@ export struct GalleryWebPage {
   @Local canBack: boolean = false
   @Local canForward: boolean = false
   private controller: webview.WebviewController = new webview.WebviewController()
-  private scroller: Scroller = new Scroller()
   private loadedUrl: string = ''
 
   private titleText(): string {
@@ -147,57 +144,33 @@ export struct GalleryWebPage {
   }
 
   build() {
-    HdsNavDestination() {
-      Stack({ alignContent: Alignment.Center }) {
-        // The scaffold's first row insets past the status bar + title bar;
-        // the Web (full-bleed ListItem, height 100%) scrolls UNDER the
-        // immersive title bar as nestedScroll feeds the List.
-        SecondaryListScaffold({
-          scroller: this.scroller,
-          horizontalPadding: 0,
-          bottomPadding: 0,
-          listSpace: 0,
-        }) {
-          ListItem() {
-            EhWebView({
-              controller: this.controller,
-              onControllerAttached: () => {
-                this.controllerReady = true
-                this.loadIfReady()
-              },
-              onPageBegin: () => {
-                this.loading = true
-              },
-              onPageEnd: () => {
-                this.loading = false
-                this.updateNavState()
-              },
-              onErrorReceive: () => {
-                this.loading = false
-              },
-              onTitleReceive: (event?: OnTitleReceiveEvent) => {
-                if (event !== undefined && event.title.length > 0) {
-                  this.pageTitle = event.title
-                }
-              },
-            })
+    NextNWebPageScaffold({
+      titleBarOptions: this.titleBarOpts(),
+      hideBackButton: this.hideBackButton,
+      loading: this.loading,
+    }) {
+      EhWebView({
+        controller: this.controller,
+        onControllerAttached: () => {
+          this.controllerReady = true
+          this.loadIfReady()
+        },
+        onPageBegin: () => {
+          this.loading = true
+        },
+        onPageEnd: () => {
+          this.loading = false
+          this.updateNavState()
+        },
+        onErrorReceive: () => {
+          this.loading = false
+        },
+        onTitleReceive: (event?: OnTitleReceiveEvent) => {
+          if (event !== undefined && event.title.length > 0) {
+            this.pageTitle = event.title
           }
-          .height('100%')
-          .clip(false)
-        }
-
-        if (this.loading) {
-          LoadingProgress()
-            .width(ThemeTokens.LOADING_SIZE)
-            .height(ThemeTokens.LOADING_SIZE)
-            .color(ThemeTokens.BRAND)
-        }
-      }
-      .width('100%')
-      .height('100%')
+        },
+      })
     }
-    .titleBar(this.titleBarOpts())
-    .hideBackButton(this.hideBackButton)
-    .backgroundColor($r('sys.color.ohos_id_color_sub_background'))
   }
 }

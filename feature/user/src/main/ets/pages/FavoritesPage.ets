@@ -36,6 +36,7 @@ import {
   TagTranslationState,
 } from 'shared'
 import { appMenuOptions } from 'shared'
+import { AppPrompt } from 'shared'
 import { FAVORITES_TITLE_SEARCH_HEIGHT } from '../components/FavoritesTitleSearchField'
 
 /**
@@ -116,6 +117,7 @@ export struct FavoritesPage {
     },
     alignment: DialogAlignment.Center,
     customStyle: false,
+    systemMaterial: AppPrompt.modalSystemMaterial(),
   });
 
   private context(): common.UIAbilityContext {

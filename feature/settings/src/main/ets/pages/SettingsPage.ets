@@ -138,6 +138,7 @@ import {
   releaseTagTranslationVersionLabel,
 } from 'shared'
 import { appSheetOptions } from 'shared'
+import { AppPrompt } from 'shared'
 import {
   BackupFilePickerCoordinator,
   BackupImportSelection,
@@ -230,6 +231,7 @@ export struct SettingsPage {
     },
     alignment: DialogAlignment.Center,
     customStyle: false,
+    systemMaterial: AppPrompt.modalSystemMaterial(),
   });
   private exportDialogController: CustomDialogController = new CustomDialogController({
     builder: CustomContentDialog({
@@ -261,6 +263,7 @@ export struct SettingsPage {
     },
     alignment: DialogAlignment.Center,
     customStyle: false,
+    systemMaterial: AppPrompt.modalSystemMaterial(),
   });
   @Local commentTranslationCacheStatus: CacheStat = new CacheStat()
   @Local comicTranslationCacheStatus: CacheStat = new CacheStat()

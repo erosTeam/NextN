@@ -33,6 +33,7 @@ import {
 } from 'download'
 import {
   AboutPage,
+  AccountApiKeyPage,
   AccountPage,
   BrowseDensitySettingsPage,
   CommentTranslationSettingsPage,
@@ -167,6 +168,8 @@ const ROUTE_READER: string = 'Reader'
 const ROUTE_READER_OVERLAY_BACKDROP: string = 'ReaderOverlayBackdrop'
 const ROUTE_BROWSER_SESSION: string = 'browserSession'
 const ROUTE_ACCOUNT: string = 'account'
+const ROUTE_ACCOUNT_API_KEY: string = 'accountApiKey'
+const ROUTE_ACCOUNT_API_KEY_WEB: string = 'accountApiKeyWeb'
 const ROUTE_SYNC_SETTINGS: string = 'syncSettings'
 const ROUTE_WEBDAV_SYNC_SETTINGS: string = 'webDavSyncSettings'
 const ROUTE_LAYOUT_SETTINGS: string = 'layoutSettings'
@@ -549,6 +552,7 @@ struct Index {
   @Local private titleScroller: Scroller = this.rootTabScrollers[0]
   @Local private historyClearVersion: number = 0
   @Local private localUserTagsAddRequestVersion: number = 0
+  @Local private accountApiKeyManualBindRequestVersion: number = 0
   @Local private favoritesActions: FavoritesActionState = connectFavoritesActions()
   @Local private galleryChromeVersion: number = 0
   private readerDestinationVisible: boolean = false
@@ -844,21 +848,34 @@ struct Index {
     const icon: SnackBarIconOptions = {
       icon: $r('sys.symbol.security_shield'),
     }
+    const apiKeyRecovery: boolean = this.accountSession.verificationRecoveryKind === 'api_key'
     const message: SnackBarMessageOptions = {
-      title: AppStrings.get('account_status_verification_required'),
-      content: AppStrings.get('account_subtitle_verification_required'),
+      title: AppStrings.get(apiKeyRecovery
+        ? 'account_api_key_verification_required'
+        : 'account_status_verification_required'),
+      content: AppStrings.get(apiKeyRecovery
+        ? 'account_api_key_verification_required_hint'
+        : 'account_subtitle_verification_required'),
     }
     const operation: SnackBarOperationOptions = {
       operationType: SnackBarOperationType.TEXT_WITH_CLOSE,
-      content: AppStrings.get('account_verify_sign_in'),
-      contentAccessibilityText: AppStrings.get('account_verify_sign_in_subtitle'),
+      content: AppStrings.get(apiKeyRecovery
+        ? 'account_api_key_update'
+        : 'account_verify_sign_in'),
+      contentAccessibilityText: AppStrings.get(apiKeyRecovery
+        ? 'account_api_key_update'
+        : 'account_verify_sign_in_subtitle'),
       closeButtonAccessibilityText: AppStrings.get('common_cancel'),
       onContentClick: (): void => {
         this.lastHandledAccountVerificationRevision = verificationRevision
         this.accountVerificationSnackBarVisible = false
         this.displayedAccountVerificationRevision = -1
         this.accountVerificationSnackBar.dismiss()
-        this.pushVisibleLoginSession()
+        if (apiKeyRecovery) {
+          this.pushAccountApiKey()
+        } else {
+          this.pushVisibleLoginSession()
+        }
       },
       onCloseButtonClick: (): void => {
         this.lastHandledAccountVerificationRevision = verificationRevision
@@ -888,7 +905,18 @@ struct Index {
       return
     }
     this.lastHandledAccountAuthNoticeRevision = this.accountAuthNotice.revision
-    const specificKey: string = this.accountAuthNotice.code === 'rate_limited'
+    const apiKeyNotice: boolean = this.accountAuthNotice.code.startsWith('api_key_')
+    const specificKey: string = this.accountAuthNotice.code === 'api_key_invalid_input'
+      ? 'account_api_key_invalid_input'
+      : this.accountAuthNotice.code === 'api_key_rejected'
+        ? 'account_api_key_rejected'
+        : this.accountAuthNotice.code === 'api_key_save_failed'
+          ? 'account_api_key_save_failed'
+          : this.accountAuthNotice.code === 'api_key_profile_failed'
+            ? 'account_api_key_profile_failed'
+            : this.accountAuthNotice.code === 'api_key_unavailable'
+              ? 'account_api_key_unavailable'
+              : this.accountAuthNotice.code === 'rate_limited'
       ? 'account_api_login_rate_limited'
       : this.accountAuthNotice.code === 'challenge_unavailable' ||
           this.accountAuthNotice.code === 'challenge_invalid'
@@ -903,18 +931,24 @@ struct Index {
       icon: $r('sys.symbol.security_shield'),
     }
     const message: SnackBarMessageOptions = {
-      title: AppStrings.get('account_api_login_failed_title'),
+      title: AppStrings.get(apiKeyNotice ? 'account_api_key_title' : 'account_api_login_failed_title'),
       content: AppStrings.get(specificKey),
     }
     const operation: SnackBarOperationOptions = {
       operationType: SnackBarOperationType.TEXT_WITH_CLOSE,
-      content: AppStrings.get('account_verify_sign_in'),
-      contentAccessibilityText: AppStrings.get('account_verify_sign_in_subtitle'),
+      content: AppStrings.get(apiKeyNotice ? 'account_api_key_update' : 'account_verify_sign_in'),
+      contentAccessibilityText: AppStrings.get(apiKeyNotice
+        ? 'account_api_key_subtitle'
+        : 'account_verify_sign_in_subtitle'),
       closeButtonAccessibilityText: AppStrings.get('common_cancel'),
       onContentClick: (): void => {
         this.accountAuthNoticeSnackBar.dismiss()
         this.accountAuthNotice.clear()
-        this.pushVisibleLoginSession()
+        if (apiKeyNotice) {
+          this.openAccountApiKeyRecovery()
+        } else {
+          this.pushVisibleLoginSession()
+        }
       },
       onCloseButtonClick: (): void => {
         this.accountAuthNoticeSnackBar.dismiss()
@@ -991,6 +1025,10 @@ struct Index {
         AppStrings.get('nh_settings_title'),
       ),
     )
+  }
+
+  private pushApiKeySettings(): void {
+    this.stack.pushPathByName(ROUTE_ACCOUNT_API_KEY_WEB, '')
   }
 
   private cancelRandomGalleryRequest(): void {
@@ -1333,12 +1371,28 @@ struct Index {
     this.stack.pushPathByName(ROUTE_ACCOUNT, '')
   }
 
-  /** An empty signed-out account list enters the first-party login surface directly. */
-  private openAccountEntry(): void {
-    if (this.accountList.accounts.length === 0 && !this.accountSession.signedIn) {
-      this.pushVisibleLoginSession()
+  private pushAccountApiKey(): void {
+    if (this.safeMode.restricted()) {
       return
     }
+    this.stack.pushPathByName(ROUTE_ACCOUNT_API_KEY, '')
+  }
+
+  /** Reuse the existing API-key destination without stacking duplicate routes. */
+  private openAccountApiKeyRecovery(): void {
+    const pathNames: string[] = this.stack.getAllPathName()
+    if (pathNames.length > 0 && pathNames[pathNames.length - 1] === ROUTE_ACCOUNT_API_KEY_WEB) {
+      this.stack.pop()
+      return
+    }
+    if (pathNames.length > 0 && pathNames[pathNames.length - 1] === ROUTE_ACCOUNT_API_KEY) {
+      return
+    }
+    this.pushAccountApiKey()
+  }
+
+  /** Account always exposes both API-key onboarding and the explicit Web fallback. */
+  private openAccountEntry(): void {
     this.pushAccount()
   }
 
@@ -2648,23 +2702,24 @@ struct Index {
 
   @Builder
   private browserSessionDestination(param: Object) {
-    HdsNavDestination() {
-      BrowserSessionPage({
-        autoOpenVisibleLogin: this.browserSessionParams(param).autoOpenVisibleLogin,
-        addAccountMode: this.browserSessionParams(param).addAccountMode,
-        onLoginFlowFinished: (): void => {
-          this.closeBrowserSessionToAccount()
-        },
-      })
-    }
-    .titleBar(nextNHdsTitle(AppStrings.get('settings_account')))
-    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_BROWSER_SESSION))
+    BrowserSessionPage({
+      title: AppStrings.get('settings_account'),
+      hideBackButton: this.rootDestinationBackButtonHidden(ROUTE_BROWSER_SESSION),
+      autoOpenVisibleLogin: this.browserSessionParams(param).autoOpenVisibleLogin,
+      addAccountMode: this.browserSessionParams(param).addAccountMode,
+      onLoginFlowFinished: (): void => {
+        this.closeBrowserSessionToAccount()
+      },
+    })
   }
 
   @Builder
   private accountDestination() {
     HdsNavDestination() {
       AccountPage({
+        onOpenApiKeySetup: (): void => {
+          this.pushAccountApiKey()
+        },
         onOpenNhSettings: (): void => {
           this.pushNhSettings()
         },
@@ -2672,6 +2727,50 @@ struct Index {
     }
     .titleBar(this.accountTitleBar())
     .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_ACCOUNT))
+  }
+
+  @Builder
+  private accountApiKeyDestination() {
+    HdsNavDestination() {
+      AccountApiKeyPage({
+        manualBindRequestVersion: this.accountApiKeyManualBindRequestVersion,
+        onOpenOfficialSettings: (): void => {
+          this.pushApiKeySettings()
+        },
+      })
+    }
+    .titleBar(this.accountApiKeyTitleBar())
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_ACCOUNT_API_KEY))
+  }
+
+  private accountApiKeyTitleBar(): Record<string, Object> {
+    const manualBindAction: Record<string, Object> = {
+      'label': AppStrings.get('account_api_key_bind_existing'),
+      'icon': $r('sys.symbol.square_and_pencil'),
+      'isEnabled': true,
+      'action': (): void => {
+        this.accountApiKeyManualBindRequestVersion += 1
+      },
+    }
+    const menuItems: Record<string, Object>[] = [{ 'content': manualBindAction }]
+    const menu: Record<string, Object> = { 'value': menuItems, 'maxCount': 1 }
+    const title: Record<string, Object> = { 'mainTitle': AppStrings.get('account_api_key_title') }
+    return nextNHdsTitleBar({ 'title': title, 'menu': menu })
+  }
+
+  @Builder
+  private accountApiKeyWebDestination() {
+    BrowserSessionPage({
+      title: AppStrings.get('account_api_key_open_settings'),
+      hideBackButton: this.rootDestinationBackButtonHidden(ROUTE_ACCOUNT_API_KEY_WEB),
+      apiKeySetupMode: true,
+      onLoginFlowFinished: (): void => {
+        const paths: string[] = this.stack.getAllPathName()
+        if (paths.length > 0 && paths[paths.length - 1] === ROUTE_ACCOUNT_API_KEY_WEB) {
+          this.stack.pop()
+        }
+      },
+    })
   }
 
   /**
@@ -3071,6 +3170,8 @@ struct Index {
       this.galleryDestination(param)
     } else if (name === ROUTE_GALLERY_WEB) {
       this.galleryWebDestination(param)
+    } else if (name === ROUTE_ACCOUNT_API_KEY_WEB) {
+      this.accountApiKeyWebDestination()
     } else if (name === ROUTE_THUMBNAILS) {
       this.thumbnailsDestination(param)
     } else if (name === ROUTE_COMMENTS) {
@@ -3079,6 +3180,8 @@ struct Index {
       this.browserSessionDestination(param)
     } else if (name === ROUTE_ACCOUNT) {
       this.accountDestination()
+    } else if (name === ROUTE_ACCOUNT_API_KEY) {
+      this.accountApiKeyDestination()
     } else if (name === ROUTE_SYNC_SETTINGS) {
       this.syncSettingsDestination()
     } else if (name === ROUTE_WEBDAV_SYNC_SETTINGS) {

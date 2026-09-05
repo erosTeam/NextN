@@ -34,6 +34,7 @@ import {
   connectLocalUserTags,
   connectSafeMode,
   connectTagTranslations,
+  AppPrompt,
 } from 'shared'
 
 /**
@@ -103,6 +104,7 @@ export struct HomeSearchSubtabPage {
     },
     alignment: DialogAlignment.Center,
     customStyle: false,
+    systemMaterial: AppPrompt.modalSystemMaterial(),
   })
 
   aboutToAppear(): void {

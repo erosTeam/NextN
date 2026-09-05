@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-backup-merge-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/refresh-verification-unavailable-20260904T0331",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-main-bcce2fb15495959641aca2426bf1915bea6caee5a766c81ceb6fd8718885021b-test-90a2cf90fbf2c1686ab869391de5b7924a9760388b4c3dc2c2bf145c99d3de6b",
+    "page": "native-account-after-refresh-verification-unavailable-guard",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Install the signed backup-owner hardening candidate in place on exact target 197, run the complete device suite, cold start with data preserved, and capture native Account. Do not clear data, sign out, import a backup, enter or create credentials, submit forms, open Web, or operate another target."
+  },
+  "preflight": [
+    { "name": "wake-authorized-target", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "apply-unattended-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "verify-awake-before-install", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "install-signed-candidate-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "pauseAfterMs": 500, "timeoutSeconds": 180 },
+    { "name": "install-signed-device-tests-in-place", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "pauseAfterMs": 500, "timeoutSeconds": 180 },
+    { "name": "run-complete-device-test-suite", "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test", "-s", "unittest", "OpenHarmonyTestRunner", "-s", "timeout", "120000"], "timeoutSeconds": 150 },
+    { "name": "force-stop-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 300 },
+    { "name": "cold-start-candidate", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility"], "pauseAfterMs": 8000, "timeoutSeconds": 30 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-native-my", "uiInput": ["click", "1000", "2585"], "pauseAfterMs": 1000, "timeoutSeconds": 30 },
+      { "name": "open-native-account", "uiInput": ["click", "630", "430"], "pauseAfterMs": 1500, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-native-account", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-backup-owner-account-197.json", "-a"] },
+    { "name": "capture-native-account", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-backup-owner-account-197.png"] },
+    { "name": "receive-native-account-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-backup-owner-account-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/refresh-verification-unavailable-20260904T0331/account.json"] },
+    { "name": "receive-native-account-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-backup-owner-account-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/refresh-verification-unavailable-20260904T0331/account.png"] },
+    { "name": "receive-redacted-diagnostics", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/haps/entry/files/diagnostics_logs", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/refresh-verification-unavailable-20260904T0331/diagnostics"] },
+    { "name": "verify-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "verify-awake-after-capture", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-backup-owner-account-197.json", "/data/local/tmp/nextn-backup-owner-account-197.png"] }
+  ]
+}

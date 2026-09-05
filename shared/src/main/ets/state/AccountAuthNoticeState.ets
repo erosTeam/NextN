@@ -22,6 +22,11 @@ export class AccountAuthNoticeState {
       'persistence_failed',
       'request_failed',
       'unavailable',
+      'api_key_invalid_input',
+      'api_key_rejected',
+      'api_key_save_failed',
+      'api_key_profile_failed',
+      'api_key_unavailable',
     ].includes(code) ? code : 'unavailable'
     this.code = normalized
     this.revision += 1

@@ -138,7 +138,10 @@ export {
   EncryptedAccountSession,
 } from './storage/AccountSessionRepository'
 export { AccountProfileRepository } from './storage/AccountProfileRepository'
-export { NhAccountSessionService } from './services/NhAccountSessionService'
+export {
+  NhAccountSessionService,
+  NhNativeCredentialKind,
+} from './services/NhAccountSessionService'
 export { NhAccountProfileService } from './services/NhAccountProfileService'
 export {
   NhTagTranslationEntry,
@@ -358,6 +361,18 @@ export {
   PersistentComicRenderedPageRepository,
 } from './services/ComicRenderedPageRepository'
 export { NhApiClient } from './network/NhApiClient'
+export {
+  apiKeyCheckDispositionForStatus,
+  NhApiKeyCheckDisposition,
+} from './network/NhSessionHttpClient'
+export {
+  NhApiResponseCookieCodec,
+  NhApiResponseCookieExtraction,
+} from './network/NhApiResponseCookieCodec'
+export {
+  NhRefreshResponse,
+  NhRefreshResponseCodec,
+} from './network/NhRefreshResponseCodec'
 export { NhTagCatalogRepository } from './storage/NhTagCatalogRepository'
 export { NhTagCatalogService } from './services/NhTagCatalogService'
 export { NhGalleryDetailCacheRepository } from './storage/NhGalleryDetailCacheRepository'
@@ -614,10 +629,12 @@ export { NhDownloadCbzExportService } from './services/NhDownloadCbzExportServic
 export { AppReleaseService } from './services/AppReleaseService'
 export { PageLoadingState, PageErrorState, PageEmptyState } from './components/PageStates'
 export { EhWebView } from './components/EhWebView'
+export { NextNWebPageScaffold } from './components/NextNWebPageScaffold'
 export { nextNHdsTitle, nextNHdsTitleBar } from './components/NextNHdsTitleBar'
 export { AppSearchField } from './components/AppSearchField'
 export { appMenuOptions } from './components/AppMenuOptions'
 export { appSheetOptions } from './components/AppSheetOptions'
+export { AppPrompt } from './utils/AppPrompt'
 export { NextNListRow } from './components/NextNListRow'
 export { NextNInlineEditRow } from './components/NextNInlineEditRow'
 export { SettingsTextField } from './components/SettingsTextField'

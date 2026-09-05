@@ -54,6 +54,9 @@ export class BackupWebDavCredentialGroup {
  * re-hydration contract.
  */
 export class BackupPreferencesAdapter {
+  private static readonly ACCOUNT_ACTIVE_ID_STORE: string = 'nextn_settings'
+  private static readonly ACCOUNT_IDS_KEY: string = 'account.list.ids'
+  private static readonly ACCOUNT_ACTIVE_ID_KEY: string = 'account.list.activeId'
   private static readonly PLAINTEXT_STORES: string[] = [
     'nextn_layout',
     'nextn_appearance',
@@ -192,6 +195,8 @@ export class BackupPreferencesAdapter {
     context: common.UIAbilityContext,
     map: SettingsMap,
     allowSecret: boolean,
+    preserveExistingPrimary: boolean = false,
+    preservedPrimaryOwnerId: string = '',
   ): Promise<void> {
     const grouped: Record<string, SettingsMap> = {}
     const keys: string[] = Object.keys(map)
@@ -221,11 +226,98 @@ export class BackupPreferencesAdapter {
       const store: preferences.Preferences = await preferences.getPreferences(context, storeName)
       const values: SettingsMap = grouped[storeName]
       const valueKeys: string[] = Object.keys(values)
+      let retainedPrimaryOwnerId: string = BackupPreferencesAdapter.normalizedAccountId(
+        preservedPrimaryOwnerId,
+      )
+      if (storeName === BackupPreferencesAdapter.ACCOUNT_ACTIVE_ID_STORE && preserveExistingPrimary &&
+        retainedPrimaryOwnerId.length === 0) {
+        retainedPrimaryOwnerId = BackupPreferencesAdapter.normalizedAccountId(
+          store.getSync(BackupPreferencesAdapter.ACCOUNT_ACTIVE_ID_KEY, ''),
+        )
+      }
       for (let j: number = 0; j < valueKeys.length; j++) {
-        store.putSync(valueKeys[j], values[valueKeys[j]])
+        const valueKey: string = valueKeys[j]
+        if (storeName === BackupPreferencesAdapter.ACCOUNT_ACTIVE_ID_STORE &&
+          valueKey === BackupPreferencesAdapter.ACCOUNT_IDS_KEY && preserveExistingPrimary) {
+          store.putSync(valueKey, BackupPreferencesAdapter.mergeAccountIdLists(
+            store.getSync(valueKey, ''),
+            values[valueKey],
+            retainedPrimaryOwnerId,
+          ))
+          continue
+        }
+        if (BackupPreferencesAdapter.mergeKeepsCurrentActiveAccount(
+          storeName,
+          valueKey,
+          preserveExistingPrimary,
+        )) {
+          if (retainedPrimaryOwnerId.length > 0) {
+            store.putSync(valueKey, retainedPrimaryOwnerId)
+          }
+          continue
+        }
+        store.putSync(valueKey, values[valueKey])
       }
       store.flushSync()
     }
+  }
+
+  /** Additive cross-device restore must not retarget an existing native primary. */
+  static mergeKeepsCurrentActiveAccount(
+    storeName: string,
+    key: string,
+    targetPrimaryPresent: boolean,
+  ): boolean {
+    return storeName === BackupPreferencesAdapter.ACCOUNT_ACTIVE_ID_STORE &&
+      key === BackupPreferencesAdapter.ACCOUNT_ACTIVE_ID_KEY &&
+      targetPrimaryPresent
+  }
+
+  /** Target-local account order wins; imported API-key owners append without duplicates. */
+  static mergeAccountIdLists(
+    currentValue: preferences.ValueType,
+    restoredValue: BackupSettingsValue,
+    retainedPrimaryOwnerId: string,
+  ): string {
+    const merged: string[] = []
+    BackupPreferencesAdapter.appendAccountIds(merged, currentValue)
+    BackupPreferencesAdapter.appendAccountId(merged, retainedPrimaryOwnerId)
+    BackupPreferencesAdapter.appendAccountIds(merged, restoredValue)
+    return JSON.stringify(merged)
+  }
+
+  private static appendAccountIds(
+    target: string[],
+    value: preferences.ValueType | BackupSettingsValue,
+  ): void {
+    if (typeof value !== 'string') {
+      return
+    }
+    try {
+      const parsed: Object = JSON.parse(value) as Object
+      if (!Array.isArray(parsed)) {
+        return
+      }
+      const ids: Object[] = parsed as Object[]
+      for (let i: number = 0; i < ids.length; i++) {
+        BackupPreferencesAdapter.appendAccountId(target, ids[i])
+      }
+    } catch (_error) {}
+  }
+
+  private static appendAccountId(target: string[], value: Object): void {
+    const accountId: string = BackupPreferencesAdapter.normalizedAccountId(value)
+    if (accountId.length > 0 && target.indexOf(accountId) < 0) {
+      target.push(accountId)
+    }
+  }
+
+  private static normalizedAccountId(value: Object): string {
+    if (typeof value !== 'string') {
+      return ''
+    }
+    const normalized: string = (value as string).trim()
+    return /^[1-9][0-9]*$/.test(normalized) ? normalized : ''
   }
 
   /**

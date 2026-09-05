@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-dual-auth-return-api-key-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/rejected-candidate-native-return-20260904T0043",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-185942269fa7b6d2cfd812ede1869cff30fb3a533a2b2b7fcb0f231e3e876370",
+    "page": "native-api-key-onboarding-before-rejected-candidate",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Return from the already-authenticated official API-key Web page to the existing native API-key page on exact target 197 and capture only that native page. Do not enter or submit any value in this protocol."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "return-from-official-web-to-native-api-key", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 1200, "timeoutSeconds": 30 }
+    ]
+  },
+  "postflight": [
+    { "name": "dump-native-api-key", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-rejected-candidate-native-api-key-197.json", "-a"] },
+    { "name": "capture-native-api-key", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-rejected-candidate-native-api-key-197.png"] },
+    { "name": "receive-native-api-key-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-rejected-candidate-native-api-key-197.json", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/rejected-candidate-native-return-20260904T0043/api-key.json"] },
+    { "name": "receive-native-api-key-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-rejected-candidate-native-api-key-197.png", "/Users/honjow/git/NextN/.hvigor/outputs/nextn-dual-auth/197/rejected-candidate-native-return-20260904T0043/api-key.png"] },
+    { "name": "verify-nextn-process", "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"] },
+    { "name": "cleanup-temporary-captures", "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-rejected-candidate-native-api-key-197.json", "/data/local/tmp/nextn-rejected-candidate-native-api-key-197.png"] }
+  ]
+}

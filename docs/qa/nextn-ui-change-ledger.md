@@ -3,6 +3,89 @@
 This register records visible-change boundaries and their evidence. It does not
 authorize an edit, replace a device comparison, or define product completion.
 
+## ACCEPTED ON 237 — Account API-key manual binding moves from the page body to a dialog — 2026-09-04
+
+- **User-approved outcome:** the low-frequency manual existing-Key path must not occupy a permanent form card in
+  the main API-key list. Keep the capability for reusing one Key across devices, but expose it from the page's
+  upper-right action and collect the complete Key plus optional local name in a temporary dialog.
+- **Faulty assumption:** preserving manual entry was treated as requiring both inputs and a large primary action to
+  remain visible in the list. That mixed a fallback management task into the page's everyday status hierarchy and
+  made a short status page look like a form.
+- **Whole parent-tree boundary:** `HdsNavDestination` continues to own the title band and its upper-right action;
+  `AccountApiKeyPage` continues to own status, saved masked identity, official-create navigation, manual draft state,
+  validation and persistence. The new overlay is the project's existing centered `CustomContentDialog`; the shared
+  official `BrowserSessionPage -> NextNWebPageScaffold -> EhWebView` boundary and all network/session services stay
+  unchanged.
+- **Exact before/after:** before, the body always renders a grouped card containing complete-Key input, optional-name
+  input and a full-width `验证并绑定` button. After, the body contains only current status, saved name/masked identity
+  when present, and the separate official-create row. The title action opens one dialog containing the same two
+  fields and ordinary Cancel/Verify dialog actions. The saved complete Key is never refilled. Cancel, outside dismiss
+  and route exit clear the transient drafts; a rejected candidate leaves the dialog available for correction and
+  must not replace the active saved identity; a successful candidate closes the dialog after persistence.
+- **Minimality:** this changes presentation ownership only. It does not alter Key creation, validation, HUKS storage,
+  account switching, authentication precedence, Favorites requests, Web cookies, or recovery routing.
+- **Device verification boundary:** on the authorized 237 viewport, compare the closed page with the prior inline-form
+  state, open the upper-right action, inspect the empty dialog, focus the complete-Key input with the keyboard open,
+  cancel, and verify that the prior masked identity remains unchanged. The rejected-candidate and official-Web
+  branches already have accepted evidence in the current candidate lineage and are not mutated again for a visual-only
+  dialog pass.
+- **Resolved runtime risks:** the HDS title action remains visible and accessible on the secondary destination. The
+  centered system-material dialog opens without initial input focus; after the secure field is explicitly focused, the
+  complete dialog moves above the IME with both inputs and actions still visible.
+- **First-device review correction:** the first 237 capture proved the routing and system dialog shell, but its content
+  incorrectly embedded `SettingsTextField`, a list-card field with its own label, padding, fixed height and background.
+  That nested form styling obscured the same system-owned dialog treatment already used by the jump-page and backup
+  password dialogs. Reuse their complete content grammar instead: direct system `TextInput` children inside the dialog
+  content column, with the existing system title and action area remaining the sole surrounding chrome. The first
+  capture is rejected as visual acceptance; rebuild and repeat normal plus keyboard-open review after this correction.
+- **Current source correction:** the page now uses that direct `TextInput` grammar and the shared API 26 modal-material
+  options used by every existing `CustomDialogController`. Non-action status/identity rows explicitly suppress their
+  chevrons, validation failures publish through the root HDS notice, and only successful persistence uses a toast.
+  The official row is labeled as the source of truth for managing all server-side Keys, while the native row remains
+  the currently active saved name plus masked identity. Automatic official creation receives a timestamped Key name.
+- **Current verification:** account/network/backup/persistence contracts, resource parsing and a signed ten-module build
+  pass. A first shared-options wrapper was rejected after 237 exposed an ArkUI runtime constructor failure; it was
+  removed rather than accepted from build evidence. The final signed HAP
+  `59b85436f22e7a97ad79ea0fa0b12f7cfa0570a12535a5a6d2ee4374e7647963` then passed a data-preserving cold start,
+  closed-page capture, initial-unfocused dialog capture, explicit secure-input/IME layout dump and Cancel return on
+  237. The saved active name and masked identity remained visible before and after the empty-dialog exercise.
+
+## PARTIAL PASS ON 197 — Account API-key onboarding and recovery — 2026-09-03
+
+- **User-approved outcome:** make an official API key the durable native NH
+  authentication authority. The original official settings page owns the explicit
+  create/CAPTCHA action; NextN observes its successful same-origin response and
+  imports the one-time key without clipboard transfer. Validation, HUKS persistence,
+  cold restore, request authorization and rejection handling are automatic afterward;
+  masked manual paste remains only a compatibility fallback.
+- **Visible boundary:** preserve the existing Account multi-account list, saved-row
+  switching, swipe deletion, NH settings row and sign-out row. Add one normal,
+  reachable API-key setup destination from Account; terminal API-key rejection uses
+  the existing root HDS SnackBar and routes to that same destination. Do not add a
+  hidden/developer route or an inline fixed error banner.
+- **Existing-component inventory:** the API-key destination uses the existing
+  `SecondaryListScaffold -> NextNGroupedListSection -> NextNListRow` tree. The
+  official settings route composes the existing shared `EhWebView`; repository-wide
+  source inspection found `EhWebView` is still the only raw `Web` owner, while
+  Gallery Web, login and API-key settings own only their route-specific controllers
+  and callbacks. Failures use the existing `AccountAuthNoticeState -> root HDS
+  SnackBar` path. No duplicate WebView wrapper, account-list scaffold, Cookie
+  manager, NH transport or local failure banner was introduced.
+- **Static evidence:** four-locale copy parses, the network/account/backup contracts
+  pass, and the full signed build accepts the document-start capture bridge.
+- **197 acceptance:** the official page's unique `Key Name` label targets a visible
+  input with no parent form; removing that erroneous form requirement made semantic
+  autofill stable without coordinate or keyboard input. One challenge and one submit
+  completed same-origin capture, validation, encrypted persistence and automatic
+  native Account return. After one data-preserving cold start, Account retained the
+  selected account and Favorites loaded in the same process. Diagnostics recorded a
+  `valid_v4_api_key` restore and one Favorites success with zero initial-401,
+  refresh, Web replay, API-key rejection or terminal-401 events.
+- **Still open:** multi-account API-key switching, terminal rejection HDS routing,
+  portable-backup restore, native comment PoW, and stateful candidate acceptance on
+  237 remain unverified. The current 237 authority is read-only; no install or UI
+  action was taken there for this lane.
+
 ## ACCEPTED — Reader return proxy preserves gradual thumbnail corners — 2026-08-30
 
 - **Reported regression:** when Reader closes to a gallery thumbnail, the proxy changes from
@@ -10354,6 +10437,36 @@ authorize an edit, replace a device comparison, or define product completion.
   was rendered on device. Before closure, remove only the final `。` from the 28 existing Chinese resource values
   that end in that character; sentence-internal punctuation, question marks, exclamation marks, abbreviations,
   version numbers and terminology remain unchanged.
+## EVIDENCE-ONLY ON 197 — Shared list-row suffix inset regression — 2026-09-04
+
+- **Why newly actionable:** the user observed that every ordinary settings option now has an excessive right inset.
+  Source history identifies commit `e45fe67` as moving `suffixPaddingRight` from caller-owned custom suffixes to
+  `HdsListItemCard.cardSuffixMargin`, thereby changing every standard suffix type at once.
+- **Whole parent-tree boundary:** `NextNGroupedListSection -> NextNListRow -> HdsListItemCard`; titles, subtitles,
+  row height, prefix geometry, actions, menus, switches, enabled state and all page-specific behavior remain unchanged.
+- **Exact before/after:** restore `cardSuffixMargin: 0`, matching both current NextE `ConciseListRow` and the parent
+  of `e45fe67`. Restore the explicit right inset only inside dropdown/custom suffix content, where it existed before.
+- **Verification plan:** review the exact diff and build the signed candidate. Runtime visual acceptance remains OPEN
+  until ordinary arrow, value, switch and custom-suffix rows are compared on the same authorized device viewport.
+- **197 evidence:** the signed candidate was installed in place without clearing data. The native Account page shows
+  the saved-account marker plus ordinary API Key and NH Settings arrows on the restored HDS suffix track. Evidence is
+  under `.hvigor/outputs/nextn-dual-auth/197/system-capsule-return-account-20260904T0229/`. Wider settings-page
+  switch/value/custom-suffix review and explicit user visual confirmation remain OPEN.
+
+## EVIDENCE-ONLY ON 197 — Account API-key primary action uses the platform capsule size — 2026-09-04
+
+- **Why newly actionable:** the user observed that the full-width `验证并保存` action is visibly too tall. The two
+  same-purpose full-width form actions in current NextE set width and theme colors but do not override Button height.
+- **Boundary and change:** keep the API-key page group, full available width, label, enabled state, theme colors and
+  action unchanged; remove only `NextNPrimaryActionButton`'s explicit height so ArkUI owns the capsule size.
+- **Verification plan:** build once with the list-row correction, then review the native API-key page and ordinary
+  settings suffix alignment on the same authorized 197 viewport. Source similarity is not visual acceptance.
+- **197 evidence:** the signed candidate was installed in place without clearing data. The disabled full-width native
+  action measured `[91,973][1169,1103]` (`130px` high), compared with the preceding explicit-height candidate's
+  `[91,973][1169,1123]` (`150px` high). Evidence is under
+  `.hvigor/outputs/nextn-dual-auth/197/system-capsule-row-suffix-20260904T0227/`. Explicit user visual confirmation
+  remains OPEN.
+
 ## CLOSED / PASS — Reader image-enhancement setting changes keep the current page visible — 2026-09-03
 
 - **Why newly actionable:** the user reproduced that changing super-resolution settings while a Reader page is
@@ -10441,6 +10554,25 @@ authorize an edit, replace a device comparison, or define product completion.
   fields measured `[91,581][1169,737]`, `[91,849][1169,1005]` and `[91,1118][1169,1274]`, and all three reported the
   same `#0C000000` background with consistent insets. No field or tag was saved. The app was returned to Advanced
   settings and the 197 lease was released. Evidence is under
+## OPEN — Shared ArkWeb JavaScript confirmation handling — 2026-09-04
+
+- **Why newly actionable:** on the authenticated official API-key settings page, both a CDP trusted click and a
+  real device tap reached the uniquely identified disposable-key Revoke button but produced no confirmation surface
+  and no server-side revocation. Source inspection then found that the shared `EhWebView` does not handle ArkWeb
+  `onConfirm`; the official ArkWeb contract requires the host to resolve the supplied `JsResult` with
+  `handleConfirm()` or `handleCancel()`.
+- **Whole parent-tree boundary:** only `EhWebView -> Web` JavaScript-confirm handling. Preserve the existing shared
+  Web container, BrowserSessionPage ownership, navigation, page content, Cookie/session handling, document-start
+  scripts, loading overlay, and every non-confirm Web event.
+- **Exact change and affected state:** when a page calls `confirm()`, show the ordinary system alert using the
+  page-provided message and existing localized Cancel/OK strings. Cancel, mask dismissal, and dialog setup failure
+  resolve the Web result as cancel; OK resolves it as confirm. Each event may be resolved once. No native dialog is
+  added unless the loaded page actually requests one.
+- **Verification:** exact diff and signed build first; install in place without clearing data; reopen the same
+  disposable-key row, verify the system confirmation appears, accept it once, then force one explicit Favorites
+  refresh and require the terminal API-key rejection plus the root recovery surface. Create and promote one
+  replacement key only after that rejection evidence, then recheck native Account and Favorites.
+
 ## PARTIAL DEVICE PASS / THUMBNAIL OPEN — Reader parity recovery after cross-mode geometry regression — 2026-09-05
 
 - **Why newly actionable:** the user reported that NextN single-page reading sizes a tall strip from the screen width,

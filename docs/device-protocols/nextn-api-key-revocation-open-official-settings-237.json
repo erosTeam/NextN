@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-api-key-revocation-open-official-settings-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-api-key-revocation/open-official-settings-20260904T071700",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "working-tree-signed-hap-59dfb693a28a4da94fe8f7747c151e909b2ff10ae49f2771411eae93e109c9e2",
+    "page": "normal-native-route-to-official-api-key-settings-for-read-only-revocation-discovery",
+    "deviceAlias": "device-237",
+    "deviceModel": "unknown",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "From the current foreground-confirmed My page, follow the already accepted Account, API Key and shared BrowserSessionPage route continuously, then expose one bounded localhost DevTools forward for a value-free management-structure probe. Do not cold-start, install, clear data, sign out, enter or create credentials, submit forms, activate a challenge, revoke or delete a key, or mutate account state. Retain no screenshot and expose no layout text, URL, cookie or credential value in the user-facing summary."
+  },
+  "preflight": [
+    {
+      "name": "verify-awake-override-before-official-route",
+      "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"]
+    },
+    {
+      "name": "verify-nextn-window-before-official-route",
+      "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-current-semantic-account-row",
+        "uiInput": ["click", "660", "411"],
+        "pauseAfterMs": 1600,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "open-established-native-api-key-row",
+        "uiInput": ["click", "660", "630"],
+        "pauseAfterMs": 1600,
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "open-shared-official-api-key-settings",
+        "uiInput": ["click", "660", "405"],
+        "pauseAfterMs": 6000,
+        "timeoutSeconds": 30
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "dump-official-settings-web-container",
+      "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-api-key-revocation-official-settings-237.json", "-a"]
+    },
+    {
+      "name": "receive-official-settings-web-container-layout",
+      "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-api-key-revocation-official-settings-237.json", "/Users/honjow/git/NextN/.hvigor/outputs/device-237__unknown/unknown/portrait-1320x2120/nextn-api-key-revocation/open-official-settings-20260904T071700/web.json"]
+    },
+    {
+      "name": "create-bounded-webview-forward",
+      "hdcArgs": ["fport", "tcp:19243", "tcp:19222"],
+      "pauseAfterMs": 500
+    },
+    {
+      "name": "confirm-bounded-webview-forward",
+      "hdcArgs": ["fport", "ls"]
+    },
+    {
+      "name": "verify-nextn-process",
+      "hdcArgs": ["shell", "pidof", "com.erosteam.nextn"]
+    },
+    {
+      "name": "cleanup-official-settings-web-container-layout",
+      "hdcArgs": ["shell", "rm", "-f", "/data/local/tmp/nextn-api-key-revocation-official-settings-237.json"]
+    }
+  ]
+}
