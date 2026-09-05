@@ -10624,3 +10624,46 @@ authorize an edit, replace a device comparison, or define product completion.
   one Retry press then produced the actual full image at1/14 with no error/loading overlay in `frosted-retry-result/`.
   The screenshot was inspected, not inferred from command success. The eleven request/queue runtime tests still
   pass. No new split-screen/light-canvas visual or recovery-download test is claimed by this evidence.
+
+## OPEN — Short text action proportions and NextE failure material — 2026-09-05
+
+- **Authority / faulty assumption:** user rejects the Retry proportions in the actual frosted Reader screenshot,
+  asks for an app-wide short-button audit, includes matching NextE defects and explicitly requests its failure
+  backdrop too. Auto text width plus 48vp height produced a 64.3x48vp Retry inside the 280vp card; merely preserving
+  the native Capsule type did not establish balanced spacing or a useful one-character shape.
+- **Parent boundary:** preserve Reader canvas, proxy, card widths/padding, icon/title/hint order, native Capsule and
+  retry owner. Review single/continuous, spread, initial Reader failure and shared PageErrorState together. NextE's
+  ReaderFailureOverlay keeps its 280/196vp Column, page label and error classification; add the existing loading
+  panel's thin blur, neutral translucent tint and card radius to that Column only.
+- **Candidate geometry:** standalone short text actions use explicit 14fp body text, 40vp height, at least 120vp
+  width and 24vp horizontal padding. The measured two-character Retry becomes 120x40vp, not 64.3x48vp; one character
+  retains that footprint and longer translations may grow naturally. Shared named dimensions affect only these
+  actions, not all buttons or the global touch-target token. Final proportions require raw device inspection.
+- **Audit dispositions:** NextN's two image recovery leaves, initial Reader failure and PageErrorState are affected;
+  the shared error state reaches nine page families (Home, Popular, Home search, Search, Favorites, Detail, Comments,
+  History, Downloads). NextE's image failure, initial Reader failure, shared PageErrorState and lock-screen Unlock
+  are the corresponding auto-width short actions. Its longer image-unblock action is not a short-label defect.
+  Both apps' circle icon actions, +/- steppers, transparent Clear/inline text actions, full-width forms, padded
+  icon+label detail chips/FABs and metadata/tag chips are excluded for distinct structure and purpose. NextN's
+  32vp inline Retry is separate from the tall standalone pattern and remains unchanged.
+- **Minimality / verification:** no new controls, no shared Reader extraction, no changed navigation/network/auth
+  behavior. Build each app, inspect actual 237 failed Reader and page-error states, restore network access and retry.
+  Include actual after screenshots in the conclusion. Source inventory is not a count of visually accepted defects;
+  unvisited branches, one-character labels and language/font-scale variants remain explicitly unverified.
+- **Actual device observations:** both builds installed in place. `nextn-reader-failure/` shows native Reader1/14,
+  root[0,0][1320,2120], Retry[480,1130][840,1250]=120x40vp. Whole frame inspected: horizontal capsule, centered
+  beneath readable title/hint, material retained, no clipped button. `nextn-restored-retry/` confirms both permissions
+  restored ON and original1/14 loaded after one Retry, with the failure overlay gone.
+- **NextE counterexample handled:** first actual double-page capture overlapped two280vp cards. That candidate is
+  rejected. Existing spread failure leaf now passes compact=true and the Column uses parent-bounded width100%,
+  max196vp. `nexte-compact-settled/` verifies separate cards[36,751][624,1370] and[696,751][1284,1370], complete
+  wrapped hints and120x40vp actions. `nexte-restored-retry/` confirms both permissions ON and both originals displayed
+  after each page was retried once. Reader canvas/image/gesture/transition owners remain unchanged.
+- **Shared error representative paths:** actual unavailable-gallery native PageErrorState in both apps, each root
+  [0,117][1320,2120]. NextN Retry[480,1054][840,1174]; NextE Retry[480,1448][840,1568]. Both120x40vp, centered,
+  with visible text and no overlap/clipping. Raw captures: `nextn-page-error/`, `nexte-page-error-visible/`.
+  These validate the shared component on these pages, not individual device acceptance of every consumer.
+- **Remaining evidence boundary:** NextN spread/initial failure, NextE single/continuous/initial failure and security
+  Unlock have source/build review but no distinct current runtime capture. No new security setting or biometric
+  interaction was introduced for testing. One-character and alternate-locale/font-scale appearances are not claimed
+  device-passed. Images remain local under the stable-device short-text-actions evidence directory.

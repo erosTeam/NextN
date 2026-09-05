@@ -115,6 +115,9 @@ export class ThemeTokens {
   static readonly MIN_TOUCH_TARGET: number = 48
   static readonly ACTION_HEIGHT: number = 46
   static readonly SECONDARY_ACTION_HEIGHT: number = 40
+  // Standalone text actions retain a horizontal footprint even with a one-character label.
+  static readonly TEXT_ACTION_MIN_WIDTH: number = 120
+  static readonly TEXT_ACTION_HORIZONTAL_PADDING: number = 24
   // Detail action chips: 26vp capsule (radius 13, close to NextE's 28)
   // with a 4vp icon/text gap (user-raised from NextE's 2vp for the link
   // glyph's visual mass). Closed form for the action card:

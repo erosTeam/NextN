@@ -6396,3 +6396,37 @@ permitted in this repository.
   `[0,117][1320,2120]`, the same three completed tasks56/56,41/41,70/70, and no temporary task. No download,
   history or account deletion was performed. Image cache regenerates on demand; other cache categories remained
   unchanged at the clear readback. Both original network permissions are restored and no test restriction remains.
+
+## OPEN — Cross-app short actions and NextE failure material — 2026-09-05
+
+- User broadens short Retry repair to the whole NextN app and matching NextE buttons, then explicitly includes
+  NextE's image failure backdrop. Source candidates implemented without replacing native controls or Reader owners.
+- Both signed builds succeeded (NextN 16 s 368 ms, NextE 20 s 36 ms) and installed in place on 237.
+- NextN current actual failure at Reader1/14: root [0,0][1320,2120], Retry [480,1130][840,1250] =120x40vp.
+  Raw screenshot reviewed: centered horizontal capsule, readable labels/material, no clipped action, unchanged
+  retained narrow strip and bottom page indicator. No claim is made about the separate preview-aspect behavior.
+- Image cache only: 34 items /1.8 MB ->0; page cache44/1.5 MB and translation6/5.6 MB retained.
+- Evidence: .hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/short-text-actions-20260905/.
+  Next steps: inspect same-page retry/readbacks, NextE real failure and generic page-error action. App-wide source
+  classification does not mean every consumer/state was individually accepted on device.
+- NextN same-page retry confirmed: mobile/WLAN ON readbacks and actual original1/14 with error removed in
+  `nextn-restored-retry/`.
+- NextE first candidate failed double-page QA because fixed280vp cards overlap in220vp halves. Corrected the
+  existing spread leaf to compact=true and bounded the existing failure Column to parent width/max196vp.
+  Rebuilt in14 s909 ms and installed. `nexte-compact-settled/` verifies cards [36,751][624,1370] and
+  [696,751][1284,1370], with separate120x40vp buttons, readable wrapped hints and visible original proxy around
+  the material. Native NextE Reader root [0,0][1320,2120],1/24; no overlapping card or clipped action.
+- `nexte-restored-retry/` proves both NextE permissions restored ON; retrying pages1/2 once each produced the
+  actual cover and originally blank second page, with no error/loading overlay. NextN permissions remained ON.
+  Current next action: generic PageErrorState native-path verification, exact diff review and scoped checkpoint.
+- Generic error representative paths now observed and visually reviewed: `nextn-page-error/` native root
+  [0,117][1320,2120] with Retry[480,1054][840,1174], and `nexte-page-error-visible/` same root dimensions with
+  Retry[480,1448][840,1568]. Both120x40vp; source-shared consumers were not individually visited. Earlier NextE
+  hidden-under-Reader error capture was rejected, not used as visual evidence.
+- Runtime evidence is bounded to these two shared-error routes plus NextN single Reader and NextE double Reader
+  failure/retry. Other source-updated variants, including security Unlock, are not claimed device-passed. The
+  implementation does not require changing security settings or involving biometric approval merely for a capture.
+- Cleanup observed in `final-restored-roots/`: NextE original Hot subtab restored; final foreground NextN Download
+  root[0,117][1320,2120] retains exactly the original3 completed tasks56/56,41/41,70/70. Both applications retain
+  their original mobile/WLAN access. Power readbacks AWAKE and OverrideTimeout86400000ms. No test restriction,
+  temporary download, or data cleanup remains pending. Scoped source checkpoint follows; no blanket parity claim.
