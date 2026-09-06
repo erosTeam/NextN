@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d3-paged-failure-nextn-recovered-pager-reset",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3-paged-failure/05b-nextn-recovered-pager-reset",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "NextN paged failure build3 9s965ms",
+    "page": "Recovered original reset then native next page",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "05 did NOT page: existing double-tap cycle is1→2→max→1 and second double tap selected12x; subsequent swipe correctly stayed a pan. Current12x observed. One more double tap resets, then same native swipe tests paging.05 retained as non-paging evidence, no product change."
+  },
+  "preflight": [],
+  "measurement": {
+    "hilog": {
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-e",
+        "ReaderLab"
+      ],
+      "localFile": "readerlab-live.log"
+    },
+    "actions": [
+      {
+        "name": "reset-recovered-zoom",
+        "uiInput": [
+          "doubleClick",
+          "660",
+          "1206"
+        ],
+        "pauseAfterMs": 350
+      },
+      {
+        "name": "native-next-page",
+        "uiInput": [
+          "swipe",
+          "1010",
+          "1206",
+          "310",
+          "1206",
+          "800"
+        ],
+        "pauseAfterMs": 900
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "readerlab-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderViewport"
+      ]
+    },
+    {
+      "name": "observation-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderLab"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d3-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d3-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d3-layout.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3-paged-failure/05b-nextn-recovered-pager-reset/layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d3-screen.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3-paged-failure/05b-nextn-recovered-pager-reset/screen.png"
+      ]
+    }
+  ]
+}

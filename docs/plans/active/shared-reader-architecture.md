@@ -2,7 +2,7 @@
 
 ## D3 active slice — 2026-09-06
 
-User clarified: use device237 whenever197 is unavailable;197 is supplementary cross-device verification, never a fixed prerequisite. Selected-item D3 is recorded in §11.2 at `07bc120`; `fa1954a` adds transient zoom/pan (§11.3), `220816c` native paging (§11.4), `c87f1e3` continuous reading/anchors (§11.5), and `64a5d1f` per-row continuous failure/retry (§11.6). Current `e4be692` adds a request-bound late-dimensions diagnostic and62 core tests (§11.7); N/E237 actual same-point results did not require a List patch. Both Labs exited and237 lease is released. Koma's prior selected-item197 evidence is not current pager/continuous acceptance;197 belongs to its production task. Next implementation boundary is paged per-pane failure UI, followed by remaining geometry/gesture work. Production readers/default routes, preferences/progress migration and Koma chapter-state work remain excluded; complete chrome and full migration remain OPEN.
+User clarified: use device237 whenever197 is unavailable;197 is supplementary cross-device verification, never a fixed prerequisite. Selected-item D3 is recorded in §11.2 at `07bc120`; `fa1954a` adds zoom/pan (§11.3), `220816c` native paging (§11.4), `c87f1e3` continuous reading/anchors (§11.5), `64a5d1f` per-row failure/retry (§11.6), and `e4be692` late-dimensions diagnostics (§11.7). Current `b603003` adds paged per-pane failure/retry,64 core tests and bounded N/E237 whole/spread/half runtime evidence (§11.8). Both Labs exited and237 lease is released. Koma compiles clean b603003; its prior selected-item197 evidence is not current pager/continuous/failure acceptance and197 belongs to its production task. Next boundary is continuous zoom/scroll arbitration, beginning with source/reference investigation. Production readers/default routes, preferences/progress migration and Koma chapter-state work remain excluded; complete chrome and full migration remain OPEN.
 
 状态：D1 三方限域试接、D2 映射/原图观测切片已有证据，完整迁移仍 OPEN；2026-09-06 用户要求自主判断推进，禁止替换现有阅读器。
 
@@ -432,6 +432,16 @@ D1 当前为技术候选，完整迁移仍 OPEN：两个 HAR、三个独立 adap
 - 237 N09已有720x9245目录原图仍为16025px高，[36,-275][1284,15750]、slot1/request1/y0.06705。10释放相同原生尺寸后画面坐标不变；11 Home后onActive10:51:15.908、观测10:51:15.925同点。两端释放动作前后均[480,1805][840,1925]，只变禁用态，不改变视口。全部整图及真实根节点已查看，E07/N12返回普通宿主，237租约释放且readback确认；197未操作。
 - 证据：docs/device-protocols/shared-reader-d3-late-size-01至12及对应本地shared-reader-d3-late-size产物。仅接受受控尺寸通知顺序、已知尺寸对照和上述前台恢复端点；自然网络延迟、旋转/缩放组合、Koma当前实图和完整D3仍未验收。Koma消费同一clean共享点的编译另记，不升级为功能通过。
 - Koma在协调窗口内仅构建，消费clean e4be692，hvigorw assembleHap --mode module -p product=default -p module=entry@default -p buildMode=debug --no-daemon成功9s879ms/exit0；日志/private/tmp/readerk-d3-late-size-koma-build1.log。前后git status一致，无源码/配置改动、固定HAP覆盖、安装或197操作，窗口已释放。此项仅为第三消费者编译兼容，不是其当前连续/错误/迟到尺寸运行验收。
+
+### 11.8 D3 分页逐页失败与精确重试 — 2026-09-06（有限路径验收）
+
+- 共用既有ReaderFailurePanel及核心retryItem，不另造宿主重试状态机。失败单页采用完整视口；双页采用等宽独立恢复区域，正常图各自contain，不让控件继承条漫的63px窄框或横图拼合的127vp矮框。重试中保留恢复区域，全部成功后回到原来的共高拼合；失败重置缩放，卡片不可缩放，原生翻页不被锁死。生产入口、持久设置/进度、核心和连续List均未修改。
+- 显式readerLabFailureLayout=single/spread扩展既有零基readerLabFailPage；省略或无效时仍是continuous，不改变原有探针语义。N/E宿主各加一行转发；Koma宿主不变。64项实际core测试覆盖错误半页/旧epoch拒绝及只重试失败邻页；Nbuild3成功9s965ms、Ebuild1成功12s630ms，E V1 inventory0/561。最初两次N编译的Want类型错误已修复，均未安装。
+- 237 N02整页实看280vp卡片和120x40vp按钮；03真实Retry slot1/request1→2后原图完整contain至63x814px，无错误/加载圈残留。04恢复图2x/top在Home后保持。05误把三级双击的第二档当复位，只算12x拖图；05b实际复位至1x后原生翻页到P2，slot2/request1观测被接受。06返回普通Browse。
+- 237 E08正常P1与失败P2等宽区域，完整196vp卡片/120x40vp按钮；09双击卡片不放大；10 RTL使P2在左，P1在右；10b/10c错误态下真实往返翻页后卡片及P1原生节点975/slot1/request1仍在。11只重试P2为request2，P1原生节点975、原图坐标[660,987][1284,1368]及选中P1不变，恢复为381px共高拼合。12共用2x/x208vp边界及Home保持；13换页复位并原生滑回完整拼页，14返回普通Gallery。
+- 15至18宽图失败→拆分左半页→真实滑到右半页→精确0:right Retry也已实看：slot1/request1→2，原图0/right不变，完整右半页[304,743][1016,1613]，不是整图/左半页/下一原图。19回普通Gallery。主控逐一查看上述当前根节点[0,117][1320,2120]及整张截图，证据为22份shared-reader-d3-paged-failure协议和同名本地产物。237租约20260906-031104-c7ec2b7f释放且readback确认，197未操作。
+- 共享提交b603003；Koma在协调窗口仅编译消费clean b603003，hvigorw assembleHap --mode module -p product=default -p module=entry@default -p buildMode=debug --no-daemon成功9s577ms/exit0，日志/private/tmp/readerk-d3-paged-failure-koma-build1.log。其git status前后相同，无源码配置/暂存提交/固定HAP覆盖/安装/197操作，窗口释放。仅记编译兼容，不将自然网络超时、转场背景、深色/大字体、旋转/逐帧或Koma当前设备功能混算通过。
+- 下一可执行边界是连续缩放与原生滚动仲裁：先对照NextE连续父树及现有List可见点契约，不能给每行独立缩放却让List继续按旧几何发布观测。普通阅读器/默认入口、设置进度迁移、Koma跨章策略仍保持原边界，完整D3继续OPEN。
 
 ## 附录：本次读取的主要源码定位
 
