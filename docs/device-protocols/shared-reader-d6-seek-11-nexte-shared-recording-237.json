@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d6-seek-nexte-shared-recording",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d6-seek/11-nexte-shared-recording",
+  "recordingFileName": "rkit-d6-nexte-shared-237-20260906.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 700,
+  "idleRecordMs": 0,
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "actions": [
+    {
+      "name": "shared-drag-preview-forward",
+      "uiInput": [
+        "swipe",
+        "468",
+        "1784",
+        "568",
+        "1784",
+        "200"
+      ],
+      "pauseAfterMs": 2200
+    },
+    {
+      "name": "shared-return-near-original117",
+      "uiInput": [
+        "click",
+        "448",
+        "1784"
+      ],
+      "pauseAfterMs": 1800
+    }
+  ],
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "D6 shared candidate2 mainbuild2 11s177ms",
+    "page": "shared P117 spread,100px genuine slider gesture then track click near117",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "E08 22px drag did not expose a moving preview phase and ended125; its click at468 did not restore117. Do not treat it as mid-drag acceptance. E10 actual shared117 root and paired originals matchE07. Use100px movement for clear moving state; actual native result determines source index, never infer from inset thumb geometry."
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d6-seek-nexte-reference-recording",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d6-seek/08-nexte-reference-recording",
+  "recordingFileName": "rkit-d6-nexte-reference-237-20260906.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 700,
+  "idleRecordMs": 0,
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "actions": [
+    {
+      "name": "drag-production-preview-forward",
+      "uiInput": [
+        "drag",
+        "468",
+        "1784",
+        "490",
+        "1784",
+        "200"
+      ],
+      "pauseAfterMs": 1600
+    },
+    {
+      "name": "restore-production-source117",
+      "uiInput": [
+        "click",
+        "468",
+        "1784"
+      ],
+      "pauseAfterMs": 1400
+    }
+  ],
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "D6 mainbuild2; production reader unchanged",
+    "page": "P117 spread preview drag nearP127, then restore117",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Current E07 original root1320x2120, Slider[150,1724][1170,1844], P117 handle468,1784. Review transient labels/List and unchanged P117 original before release. Restore original source via slider before leaving. No setting changes."
+  }
+}

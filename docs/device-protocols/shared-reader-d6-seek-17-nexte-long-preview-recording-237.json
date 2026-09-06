@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d6-seek-nexte-long-preview-recording",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d6-seek/17-nexte-long-preview-recording",
+  "recordingFileName": "rkit-d6-nexte-long-preview-237-20260906.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 700,
+  "idleRecordMs": 0,
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "actions": [
+    {
+      "name": "sustained-preview-forward",
+      "uiInput": [
+        "swipe",
+        "468",
+        "1784",
+        "1118",
+        "1784",
+        "200"
+      ],
+      "pauseAfterMs": 2200
+    },
+    {
+      "name": "reset-track-away",
+      "uiInput": [
+        "click",
+        "200",
+        "1784"
+      ],
+      "pauseAfterMs": 300
+    },
+    {
+      "name": "return117",
+      "uiInput": [
+        "click",
+        "468",
+        "1784"
+      ],
+      "pauseAfterMs": 1800
+    }
+  ],
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "D6 shared candidate2 mainbuild2 11s177ms",
+    "page": "shared117 long650px slow200px/s gesture then return117",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "N/E fast gesture deferred animation likewise; newly actionable sustained Moving phase. Preserve current source until release; actual frames determine rail response."
+  }
+}
