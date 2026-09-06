@@ -10,6 +10,13 @@
 
 ## D3 earlier slice — 2026-09-06（以下为历史记录，当前以上段为准）
 
+### 新增：D4 正式共享界面第一切片 — 2026-09-06（限域验收，替代目标 OPEN）
+
+- `ReaderSurface` 只组合已有分页/连续视口及会话回调；`ReaderChrome` 独立拥有显隐/滑块预览，发出关闭、运行策略和原始页跳转意图。`ReaderPagedSession.seekSource` 用原始页码和 unit/navigation 防迟到提交，同页重选回到起点，不冒充已显示/已保存。72项core测试通过。
+- N/E仅显式Debug Want `readerLabChrome=true` 打开全窗口试用，旧Lab和默认阅读器保持原入口。宿主保有导航、安全区、前后台状态和窗口恢复；暂时不写设置/进度。共享手势新增单/双击互斥及双指/平移尾事件隔离，N06真实失败与N07修正回放均保留。
+- 最终候选N mainbuild5/nativebuild3、E mainbuild4/nativebuild2在237各执行2项原生测试，分别30s441ms/30s317ms、0错误。已检查同页缩放复位、LTR→RTL原始页1→2→3→2、浅/深背景描边页码与退出截图及native根。E11与当前生产参考E03同P117/P118、同1320×2120根，两幅原图均为[0,827][660,1294]/[660,827][1320,1294]，进度条与布局动作组位置一致；分享/更多等未接叶子明确缺失，不据此称完整对齐。
+- 下一步继续共享缩略图导航：先记录E/N当前缩略图栏完整父树和独立比例/精灵裁切语义，再接有界缩略图资源窗口及原始页跳转。滑块按住期间预览、错误Retry与新增点按竞争、全屏/旋转/后台组合、Koma正式chrome及章节动作仍各自OPEN。不得提前切换默认阅读器或迁移持久设置/进度。
+
 User clarified: use device237 whenever197 is unavailable;197 is supplementary cross-device verification, never a fixed prerequisite. Selected-item D3 is recorded in §11.2 at `07bc120`; `fa1954a` adds zoom/pan (§11.3), `220816c` native paging (§11.4), `c87f1e3` continuous reading/anchors (§11.5), `64a5d1f` per-row failure/retry (§11.6), and `e4be692` late-dimensions diagnostics (§11.7). Current `b603003` adds paged per-pane failure/retry,64 core tests and bounded N/E237 whole/spread/half runtime evidence (§11.8). Both Labs exited and237 lease is released. Koma compiles clean b603003; its prior selected-item197 evidence is not current pager/continuous/failure acceptance and197 belongs to its production task. Next boundary is continuous zoom/scroll arbitration, beginning with source/reference investigation. Production readers/default routes, preferences/progress migration and Koma chapter-state work remain excluded; complete chrome and full migration remain OPEN.
 
 状态：D1 三方限域试接、D2 映射/原图观测切片已有证据，完整迁移仍 OPEN；2026-09-06 用户要求自主判断推进，禁止替换现有阅读器。

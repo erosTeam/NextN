@@ -481,12 +481,28 @@ struct IndexReaderThumbnailTransitionProxy {
 @ComponentV2
 struct Index {
   @Local private readerLabLaunch: ReaderLabLaunchState = connectReaderLabLaunch()
+  @Local private readerTrialRequest: ReaderLabRequest | null = null
+  @Local private readerTrialEpoch: number = 0
+  private readerTrialStack: NavPathStack = new NavPathStack()
+
+  @Builder
+  private readerTrialRouter(_name: string, _param: Object) {
+    if (this.readerTrialRequest !== null) {
+      NextNReaderLabPage({ request: this.readerTrialRequest,
+        onClose: (): void => { this.readerTrialRequest = null; this.readerTrialStack.clear(false) } })
+    }
+  }
 
   @Monitor('readerLabLaunch.version')
   private handleReaderLabLaunch(): void {
     const request = this.readerLabLaunch.consume()
     if (request !== null && !connectSafeMode().restricted()) {
-      this.stack.pushPathByName('ReaderLab', request)
+      if (request.readingChrome) {
+        if (this.readerOverlay.visible) return
+        this.readerTrialStack.clear(false)
+        this.readerTrialRequest = request
+        this.readerTrialEpoch += 1
+      } else this.stack.pushPathByName('ReaderLab', request)
     }
   }
   private stack: NavPathStack = new NavPathStack()
@@ -4101,6 +4117,15 @@ struct Index {
         .id('reader-overlay-navigation')
       }
       IndexReaderThumbnailTransitionProxy({ state: this.readerThumbnailTransition })
+      if (this.readerTrialRequest !== null) {
+        ForEach([this.readerTrialEpoch], (_epoch: number) => {
+          HdsNavigation(this.readerTrialStack) { Column() {} }
+            .navDestination(this.readerTrialRouter).hideNavBar(true)
+            .width('100%').height('100%').backgroundColor(Color.Black)
+            .onAppear((): void => { this.readerTrialStack.pushPathByName('ReaderTrial', this.readerTrialRequest as ReaderLabRequest, false) })
+            .id('rkit-trial-navigation')
+        }, (epoch: number): string => `${epoch}`)
+      }
     }
     .width('100%')
     .height('100%')

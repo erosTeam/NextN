@@ -8,6 +8,7 @@ import nhLocalUserTagSyncTest from './NhLocalUserTagSync.test'
 import collectionStateTest from './CollectionState.test'
 import readerPageCropDetectorTest from './ReaderPageCropDetector.test'
 import readerLabGesturesTest from './ReaderLabGestures.test'
+import readerChromeTest from './ReaderChrome.test'
 
 export default function testsuite(): void {
   backupCipherMetadataGuardTest()
@@ -20,4 +21,5 @@ export default function testsuite(): void {
   collectionStateTest()
   readerPageCropDetectorTest()
   readerLabGesturesTest()
+  readerChromeTest()
 }
