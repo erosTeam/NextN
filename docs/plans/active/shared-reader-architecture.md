@@ -443,6 +443,17 @@ D1 当前为技术候选，完整迁移仍 OPEN：两个 HAR、三个独立 adap
 - 共享提交b603003；Koma在协调窗口仅编译消费clean b603003，hvigorw assembleHap --mode module -p product=default -p module=entry@default -p buildMode=debug --no-daemon成功9s577ms/exit0，日志/private/tmp/readerk-d3-paged-failure-koma-build1.log。其git status前后相同，无源码配置/暂存提交/固定HAP覆盖/安装/197操作，窗口释放。仅记编译兼容，不将自然网络超时、转场背景、深色/大字体、旋转/逐帧或Koma当前设备功能混算通过。
 - 下一可执行边界是连续缩放与原生滚动仲裁：先对照NextE连续父树及现有List可见点契约，不能给每行独立缩放却让List继续按旧几何发布观测。普通阅读器/默认入口、设置进度迁移、Koma跨章策略仍保持原边界，完整D3继续OPEN。
 
+### 11.9 D3 连续逐图缩放与原生滚动仲裁 — 2026-09-06（有限路径验收）
+
+- 共享提交4a17aed，仅四个共享文件：新ReaderContinuousZoomImage、既有List接线、两项实际数学回归及README。原生List继续拥有滚动/真实行高，图片层复用ReaderViewportTransform与原图/NH独立缩略图/EH精灵图叶子；只变换图片，不变换错误提示和宿主控件。navigation/slot/request绑定单一缩放锁；放大、双指或动画中关闭List输入和未缩放坐标观测。稳定缩放跨Home保留，换页/资源替换/失败/宽度变化释放复位；核心仍独占阅读事实，三个默认阅读器和持久状态未改。
+- 本轮不是全绿：E12实机证明放大后越出原行的可见部分拖不动，原始失败保留；据官方responseRegion契约将手势热区扩到变换后图片范围，13同坐标拖动出现pan且邻行不变。E15证明Next命令后曾接受旧P1坐标，按官方FrameCallback.onIdle等待下一原生布局帧，再解除位置门禁；19最终候选点击Next后只接受P2，不用最终截图掩盖中间错误。宽度/导航/disposal使旧帧回调失效。
+- 66项实际core测试通过，包括5342vp长行偏心焦点及220vp最小行内真实图片边界；数学测试不算UI通过。最终Nbuild4成功9s460ms、nativebuild2成功8s253ms、Ebuild3成功11s452ms，E V1 inventory0/561。第一轮保留成员名transform编译错误已改名imageTransform，失败包未安装。
+- 237为VDE-AL00、portrait1320x2120、root[0,117][1320,2120]、fold unknown。N23偏心2x及对角pan使图到x208/y2139.60，16025px原行不变且Home恢复；24双击经native1.731回1，再滚动得到slot1/request1/y0.14926。最终原生25双指1.796及新单指panx-165.57期间不发布旧坐标；26双指1.795→1后新List滑动到y0.10176。两类各1test/0failure/0error，退出测试进程前的整图及完整JSON已实看；这不是剩余手指不抬起的接力验收。
+- E最终20b错误仍为220vp行、196vp卡片、120x40vp动作，21双击卡片不缩放，真实Retry只让P1 request1→2，健康P2/native918和762px原高保留。28–30在最终布局门禁候选上重放EH精灵图：P2使用实际4000x300画布/200x122裁切，2x及越行panx79跨Home保持，P3/native980原行不缩放且没有精灵图邻块泄漏；切回原图恢复P2完整762px和slot9/request1/y0。
+- 本切片32份协议（01至31及20b）和同名本地shared-reader-d3-continuous-zoom产物保留实际失败与重测；主控已逐张查看上述整图及真实根节点。N27回普通Browse，E31回普通Gallery，237租约20260906-035605-fdba0c04释放并读回确认；197未操作，只作为空闲时补充交叉，不能阻塞237推进。
+- Koma仅在协调窗口编译消费clean4a17aed：hvigorw assembleHap --mode module -p product=default -p module=entry@default -p buildMode=debug --no-daemon，exit0/9s342ms，日志/private/tmp/readerk-d3-continuous-zoom-koma-build1.log。git status前后相同，无其源码配置/暂存提交/固定HAP覆盖/安装/197操作，窗口释放，RDR003设备记录不变。仅接受第三消费者编译兼容，不冒充其连续缩放实图通过。
+- 完整D3仍OPEN，下一未验证边界为宽度/旋转变化时稳定缩放的释放与原图局部锚点保位。剩余手指接力、迟到尺寸与缩放组合、完整工具栏及Koma当前运行路径分别保留；默认替换、设置/进度迁移和Koma自动跨章策略仍不属于本轮授权。不能拿上述端点宣称三个生产阅读器已经完全共享或完全对齐。
+
 ## 附录：本次读取的主要源码定位
 
 行号以本次核对版本为准；后续以符号定位为主。

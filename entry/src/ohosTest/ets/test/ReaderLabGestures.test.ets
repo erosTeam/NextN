@@ -21,8 +21,9 @@ export default function readerLabGesturesTest(): void {
   // Native arguments retain the '-s ' prefix; Hypium's log is a normalized copy.
   const selected = parameters['-s class']
   const work = parameters['-s readerLabWork']
+  const continuous = selected === 'ReaderLabContinuousPinchPan' || selected === 'ReaderLabContinuousPinchResetScroll'
   if ((selected !== 'ReaderLabPinchOut' && selected !== 'ReaderLabPinchReset' &&
-    selected !== 'ReaderLabPinchPan' && selected !== 'ReaderLabPinchResetSwipe') ||
+    selected !== 'ReaderLabPinchPan' && selected !== 'ReaderLabPinchResetSwipe' && !continuous) ||
     typeof work !== 'string' || work.length === 0) return
   describe(selected, (): void => {
     it('applyNativePinch', 0, async (): Promise<void> => {
@@ -32,18 +33,29 @@ export default function readerLabGesturesTest(): void {
       })
       const driver = Driver.create()
       await driver.delayMs(2500)
-      const viewport = await driver.findComponent(ON.id('rkit-image-viewport'))
+      if (continuous) {
+        await (await driver.findComponent(ON.id('rkit-layout'))).click()
+        await (await driver.findComponent(ON.text('连续'))).click()
+        await driver.delayMs(600)
+      }
+      const viewport = await driver.findComponent(ON.id(continuous ? 'rkit-continuous-list' : 'rkit-image-viewport'))
       const position = await driver.findComponent(ON.id('rkit-page-position'))
       expect(await position.getText()).assertContain('1 / ')
       // Resolve the live semantic viewport once, then execute an explicit two-pointer
       // trajectory. Component.pinchOut hit12x on this platform and is not a ratio oracle.
       const bounds = await viewport.getBounds()
+      if (continuous) {
+        await driver.swipe(Math.round((bounds.left + bounds.right) / 2), bounds.bottom - 60,
+          Math.round((bounds.left + bounds.right) / 2), bounds.top + 60, 600)
+        await driver.delayMs(1200)
+      }
       await pinchTrajectory(driver, bounds, true)
       await driver.delayMs(400)
-      if (selected === 'ReaderLabPinchReset' || selected === 'ReaderLabPinchResetSwipe') {
+      if (selected === 'ReaderLabPinchReset' || selected === 'ReaderLabPinchResetSwipe' ||
+        selected === 'ReaderLabContinuousPinchResetScroll') {
         await pinchTrajectory(driver, bounds, false)
         await driver.delayMs(400)
-      } else if (selected === 'ReaderLabPinchPan') {
+      } else if (selected === 'ReaderLabPinchPan' || selected === 'ReaderLabContinuousPinchPan') {
         // After the two-pointer sequence fully ends, a new horizontal drag must
         // pan the zoomed item, never advance its parent Swiper to page2.
         await driver.swipe(Math.round(bounds.right - (bounds.right - bounds.left) * 0.15),
@@ -58,6 +70,11 @@ export default function readerLabGesturesTest(): void {
           Math.round(bounds.left + (bounds.right - bounds.left) * 0.15),
           Math.round((bounds.top + bounds.bottom) / 2), 600)
         await driver.delayMs(500)
+      }
+      if (selected === 'ReaderLabContinuousPinchResetScroll') {
+        await driver.swipe(Math.round((bounds.left + bounds.right) / 2), bounds.bottom - 60,
+          Math.round((bounds.left + bounds.right) / 2), bounds.top + 60, 600)
+        await driver.delayMs(1200)
       }
       console.info(`[ReaderLabGestureTest] native_injection_completed=${selected}`)
       // This checks command/page continuity only. The protocol captures actual pixels

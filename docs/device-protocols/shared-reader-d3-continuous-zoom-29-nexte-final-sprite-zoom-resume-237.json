@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d3-continuous-zoom-nexte-final-sprite-zoom-resume",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3-continuous-zoom/29-nexte-final-sprite-zoom-resume",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "NextE continuous zoom build3 with post-layout position gate",
+    "page": "sprite crop zoom and overlap pan over Home",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "28 final baseline expected P2 sprite crop[36,743][1284,1504], P3[36,1504][1284,2265]. Double-tap P2 center, overlap horizontal pan, Home/plain resume; inspect only selected crop grows and no neighboring sheet leakage."
+  },
+  "preflight": [
+    {
+      "name": "verify-awake-before-install",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    }
+  ],
+  "measurement": {
+    "hilog": {
+      "localFile": "readerlab-live.log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-e",
+        "ReaderContinuousZoom"
+      ]
+    },
+    "actions": [
+      {
+        "name": "sprite-double-tap",
+        "uiInput": [
+          "doubleClick",
+          "660",
+          "1124"
+        ],
+        "pauseAfterMs": 450
+      },
+      {
+        "name": "sprite-overlap-pan",
+        "uiInput": [
+          "swipe",
+          "660",
+          "1560",
+          "900",
+          "1560",
+          "600"
+        ],
+        "pauseAfterMs": 400
+      },
+      {
+        "name": "home",
+        "uiInput": [
+          "keyEvent",
+          "Home"
+        ],
+        "pauseAfterMs": 500
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "resume-host",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "start",
+        "-a",
+        "EntryAbility",
+        "-b",
+        "com.erosteam.nexte"
+      ],
+      "pauseAfterMs": 700
+    },
+    {
+      "name": "continuous-zoom-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderContinuousZoom"
+      ]
+    },
+    {
+      "name": "sprite-dimensions",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "sprite_pixels"
+      ]
+    },
+    {
+      "name": "observation-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderLab"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d3-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d3-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d3-layout.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3-continuous-zoom/29-nexte-final-sprite-zoom-resume/layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d3-screen.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3-continuous-zoom/29-nexte-final-sprite-zoom-resume/screen.png"
+      ]
+    }
+  ]
+}
