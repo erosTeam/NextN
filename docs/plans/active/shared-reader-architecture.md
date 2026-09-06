@@ -2,7 +2,7 @@
 
 ## D3 active slice — 2026-09-06
 
-User clarified: use device237 whenever197 is unavailable;197 is supplementary cross-device verification, never a fixed prerequisite. Selected-item D3 is recorded in §11.2 at `07bc120`; checkpoint `fa1954a` adds transient zoom/pan (§11.3). Current shared checkpoint `220816c` adds optional native paging with53 core tests and bounded N/E237 evidence (§11.4), not full D3 acceptance. N/E Labs exited and237 lease is released. Koma's prior selected-item197 evidence is not current pager acceptance;197 belongs to its production task. Next implementation is the optional continuous viewport and its actual visible anchor. Production readers/default routes, preferences/progress migration and Koma chapter-state work remain excluded; continuous reading, chrome and full migration remain OPEN.
+User clarified: use device237 whenever197 is unavailable;197 is supplementary cross-device verification, never a fixed prerequisite. Selected-item D3 is recorded in §11.2 at `07bc120`; `fa1954a` adds transient zoom/pan (§11.3), `220816c` native paging (§11.4), and current shared checkpoint `c87f1e3` optional continuous reading/observed anchors with58 core tests (§11.5). N/E237 have the bounded endpoints below, not full D3 acceptance. Both Labs exited and237 lease is released. Koma's prior selected-item197 evidence is not current pager/continuous acceptance;197 belongs to its production task. Next implementation boundary is per-page failure/retry ownership, followed by remaining continuous geometry/gesture work. Production readers/default routes, preferences/progress migration and Koma chapter-state work remain excluded; complete chrome and full migration remain OPEN.
 
 状态：D1 三方限域试接、D2 映射/原图观测切片已有证据，完整迁移仍 OPEN；2026-09-06 用户要求自主判断推进，禁止替换现有阅读器。
 
@@ -405,6 +405,17 @@ D1 当前为技术候选，完整迁移仍 OPEN：两个 HAR、三个独立 adap
 - 原始异常保留：N04录制402帧全部查看，1196×1920编码与1320×2120应用截图不等，局部重影只算定性线索、不作精确几何或干净动效验收；原生N09缩放复位成功但布局文件残留旧尾部，原始JSON不冒充有效证据。测试只清理两个自身cache导出后重建8s842ms，09b完整JSON/原图2实图已核对。旧产物均保留。
 - 生产构建隔离：LIB006、LIB007分别借用clean `fa1954a`窗口；只把七个本轮共享WIP安全stash，固定测试HAP后继续237物理链。Koma确认固定生产包并释放后自动恢复原WIP，不让生产包隐式消费未完成pager，也不把197作为前置阻塞。
 - 下一边界：持久化本切片后，继续可选连续阅读视口及实际可见锚点。干净动效、剩余单指连续接力、旋转、拖动中图谱变化、Koma当前pager及宿主完整工具栏仍有独立未验证项；默认替换、设置/进度迁移仍不授权。
+
+### 11.5 D3 连续视口与真实可见位置 — 2026-09-06（有限路径验收）
+
+当前切片（2026-09-06）：可选连续视口已实现，58项真实core行为测试通过，N/E签名消费者已有237限域运行证据。复用同一session的catalog、display map和资源槽；原生List声明可见区间只驱动按需资源，不直接发布阅读进度。真正的原图观测必须同时满足宿主活跃、原生图片本次解码完成、该图是实际首个可见项、当前拓扑/导航/slot/request匹配，并由ListScroller局部几何换算原图归一化点。保留卸载图片的几何元数据以避免回滚到占位比例；普通翻页和连续滚动不再各自计算原图身份。
+
+连续首批UI保持既有诊断父树，仅增加模式选项；List负责长图完整可滚动高度和当前单元内跳转，不跨章推断完成，不让宽图拆分设置影响连续模式。先接入滚动、模式/资产切换和位置恢复，再分别补连续缩放仲裁与迟到尺寸恢复；现有分页缩放不因新模式而削减。官方maintainVisibleContentPosition仅针对区外插删，不可冒充图片高度变化保位证明。
+
+- NextN：实际16025px长原图从顶部经过39.25%、88.438%、98.295%到相邻原图；在首图尾部仍可见时不让预加载的第二图提前抢走锚点。原图2在NH独立缩略图→原图→单页→连续模式后保留y0.03001；缩略图1248x2271不借用原图1248x17299比例。快速Next/Previous、Home/resume、回普通Browse均有对应端点证据。
+- NextE：实际连续行完整原图按762px高度衔接，滚动后的原图3保留y0.07261。首轮精灵图16被白边反例否决：实际画布4000x300被压进解析范围4000x284；对照当前EhSpriteThumbnail补上解码后画布尺寸，保持200x122裁切框/偏移/父行不变。18连续与19分页同裁切端点已查看，20原图4/Home恢复保持y0.03671。不得继续引用16为通过。
+- 最后源码复核补上List本地native-ready表的slot/request门禁：旧回调不覆盖/删除新图的解码证明。最终Nbuild4的22保留原图1y0.09801；Ebuild3的24再次确认正确精灵图画布，25保留原图4y0.03524至Home/native onActive之后。23/26分别回普通Browse/Gallery；全页截图和实际根节点已查看，237租约已释放且readback确认。共享源码提交c87f1e3；原始截图留本地，提交仅存可复现manifest和判读记录。
+- 未覆盖：连续缩放仲裁、迟到尺寸保位、220vp短行最低高度、旋转/折叠、性能/连续动画、注入迟到原生回调和Koma当前连续实图。Koma章节编排/完成语义/持久化仍由宿主持有；237主验证、197仅补充交叉验证。
 
 ## 附录：本次读取的主要源码定位
 

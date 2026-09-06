@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d3-continuous-nexte-final-original",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3-continuous/20-nexte-final-original",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "NextE continuous build2 12s918ms with real sprite canvas",
+    "page": "corrected sprite to original scroll and Home resume",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "19 actual single sprite3 crop[36,797][1284,1558], no false lower band. Single thumbnail→Continuous→Original3→one native scroll→Home/plain resume. Inspect latest original identity/point and inactive fence."
+  },
+  "preflight": [
+    {
+      "name": "verify-awake-before-install",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    }
+  ],
+  "measurement": {
+    "hilog": {
+      "localFile": "readerlab-live.log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-e",
+        "ReaderLab"
+      ]
+    },
+    "actions": [
+      {
+        "name": "layout-menu",
+        "uiInput": [
+          "click",
+          "225",
+          "647"
+        ],
+        "pauseAfterMs": 250
+      },
+      {
+        "name": "continuous",
+        "uiInput": [
+          "click",
+          "150",
+          "1100"
+        ],
+        "pauseAfterMs": 500
+      },
+      {
+        "name": "original",
+        "uiInput": [
+          "click",
+          "660",
+          "1865"
+        ],
+        "pauseAfterMs": 700
+      },
+      {
+        "name": "scroll-original",
+        "uiInput": [
+          "swipe",
+          "660",
+          "1530",
+          "660",
+          "860",
+          "600"
+        ],
+        "pauseAfterMs": 900
+      },
+      {
+        "name": "home",
+        "uiInput": [
+          "keyEvent",
+          "Home"
+        ],
+        "pauseAfterMs": 500
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "resume-host",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "start",
+        "-a",
+        "EntryAbility",
+        "-b",
+        "com.erosteam.nexte"
+      ],
+      "pauseAfterMs": 700
+    },
+    {
+      "name": "readerlab-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderLab"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d3-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d3-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d3-layout.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3-continuous/20-nexte-final-original/layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d3-screen.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3-continuous/20-nexte-final-original/screen.png"
+      ]
+    }
+  ]
+}
