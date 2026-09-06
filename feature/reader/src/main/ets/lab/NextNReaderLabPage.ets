@@ -28,6 +28,7 @@ export struct NextNReaderLabPage {
         if (this.session !== null) {
           ReaderLabSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
             failurePage: this.request.failurePage,
+            delayedMetricsPage: this.request.delayedMetricsPage,
             active: this.routeActive && this.labVisibility.foreground })
         }
       }
