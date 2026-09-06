@@ -253,12 +253,10 @@ export struct GalleryDetailPage {
    * while `hasReadProgress` is true, because page zero is a real resume page.
    */
   @Local resumePageIndex: number = 0
-  // In-memory reactive marker written by Reader page turns. Build-time readers
-  // of has()/index() subscribe to its revision. Detail snapshots this state so
-  // covered Reader changes become visible only when the exit transition starts.
+  // Live per-gallery reading position written by Reader page turns. Build-time
+  // readers of has()/index() subscribe to its revision. The revealed value is
+  // never deferred to Reader exit; NextE fbc483cd rejected that display freeze.
   @Local readProgress: NhReadProgressState = connectNhReadProgress()
-  @Local displayedHasReadProgress: boolean = false
-  @Local displayedResumePageIndex: number = 0
   /**
    * The full-title sheet is strictly presentational. It is two-way bound to
    * the native sheet so drag/back dismissal cannot leave stale local state.
@@ -396,9 +394,6 @@ export struct GalleryDetailPage {
     this.syncCompactPreviewPages()
     this.resetNavigationChromeForCurrentRoute()
     this.publishWideThumbnailActionAvailability()
-    if (!this.readerOverlay.visible) {
-      this.syncDisplayedReadProgress()
-    }
     // A retained destination returning from Reader already has a verified
     // snapshot. Reloading it here was what painted an unsolicited pull-refresh
     // state on every return; only the first unresolved route loads on appear.
@@ -623,8 +618,6 @@ export struct GalleryDetailPage {
     this.detail = new NhGalleryDetail()
     this.hasReadProgress = false
     this.resumePageIndex = 0
-    this.displayedHasReadProgress = false
-    this.displayedResumePageIndex = 0
     this.fullTitleSheetShown = false
     this.coverFailedUrl = ''
     this.displayedCoverUrl = ''
@@ -1117,9 +1110,6 @@ export struct GalleryDetailPage {
         // Keep the durable seed in the in-memory holder so a later Reader
         // turn always has a reactive baseline even before any new write.
         this.readProgress.seed(galleryId, resumePageIndex)
-      }
-      if (!this.readerOverlay.visible) {
-        this.syncDisplayedReadProgress()
       }
     } catch (error) {
       if (this.isCurrentReadProgressRequest(detailGeneration, galleryId, readProgressGeneration)) {
@@ -1644,31 +1634,20 @@ export struct GalleryDetailPage {
       (this.readFabUsesHdsMaterial() ? 0 : ThemeTokens.SPACE_LG)
   }
 
-  /** Snapshot live progress without making persistence own covered Detail timing. */
-  private syncDisplayedReadProgress(): void {
-    const hasLiveProgress: boolean = this.readProgress.has(this.galleryId)
-    this.displayedHasReadProgress = hasLiveProgress || this.hasReadProgress
-    this.displayedResumePageIndex = hasLiveProgress
-      ? this.clampResumePageIndex(this.readProgress.index(this.galleryId))
-      : this.clampResumePageIndex(this.resumePageIndex)
+  /** Live value; the Read action never waits for Reader exit timing. */
+  private liveHasReadProgress(): boolean {
+    return this.readProgress.has(this.galleryId) || this.hasReadProgress
   }
 
-  @Monitor('readProgress.revision')
-  private onReadProgressChanged(): void {
-    if (!this.readerOverlay.visible) {
-      this.syncDisplayedReadProgress()
+  private liveResumePageIndex(): number {
+    if (this.readProgress.has(this.galleryId)) {
+      return this.clampResumePageIndex(this.readProgress.index(this.galleryId))
     }
-  }
-
-  @Monitor('readerOverlay.closing')
-  private onReaderOverlayClosingChanged(): void {
-    if (this.readerOverlay.closing) {
-      this.syncDisplayedReadProgress()
-    }
+    return this.clampResumePageIndex(this.resumePageIndex)
   }
 
   private readFabMaterialBarWidth(): number {
-    const pageIndex: number = this.displayedResumePageIndex
+    const pageIndex: number = this.liveResumePageIndex()
     if (pageIndex <= 0) {
       return 86
     }
@@ -1677,11 +1656,11 @@ export struct GalleryDetailPage {
 
   private readActionLabel(): string {
     const pageCount: number = this.localResumePageCount()
-    const pageIndex: number = this.displayedResumePageIndex
+    const pageIndex: number = this.liveResumePageIndex()
     // A saved marker at page zero means the reader was opened but never
     // advanced: resuming there is the same as starting from the beginning,
     // so the label stays 阅读/Read instead of an impossible 继续 P1.
-    if (!this.displayedHasReadProgress || pageCount <= 0 || pageIndex <= 0) {
+    if (!this.liveHasReadProgress() || pageCount <= 0 || pageIndex <= 0) {
       return AppStrings.get('gallery_action_read')
     }
     return AppStrings.format('gallery_action_continue_page', [

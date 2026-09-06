@@ -74,3 +74,24 @@ user explicitly reopens the entry after reviewing its failure evidence.
   237. Readable labels alone do not make that composited appearance acceptable.
 - **Evidence:** `cache-reader-failure-actual/` under the request-stall evidence
   root; user rejection and material correction in the UI change ledger.
+
+## REJ-READER-006 — Defer Detail Read-action progress reveal to Reader exit
+
+- **Status:** `REJECTED`
+- **Lookup keys:** `GalleryDetailPage`, `readActionLabel`,
+  `readFabMaterialBarWidth`, `syncDisplayedReadProgress`,
+  `displayedResumePageIndex`, `displayedHasReadProgress`,
+  `readerOverlay.closing`, `readerOverlay.visible`, `NhReadProgressState`,
+  progress reveal.
+- **Rejected approach:** freeze the Detail Read action's page label and capsule
+  width on a display snapshot while `readerOverlay.visible` is true and
+  refresh that snapshot only when `readerOverlay.closing` flips, or defer the
+  revealed page number to any other Reader-exit moment.
+- **Why rejected:** the user has explicitly and repeatedly forbidden updating
+  the Detail Read button page number only after leaving Reader. The approach
+  entered NextN through `930f51a` as a port of NextE `e57c771f`, but NextE
+  repealed it in `fbc483cd` (`resumeIndex()` reads live state; the closing
+  flag is lifecycle-only). Any future NextE-sync port must not reintroduce it.
+- **Evidence:** `git show 930f51a`; `git -C ../NextE show fbc483cd`; the
+  2026-09-07 live-progress reversal record in
+  `docs/qa/nextn-ui-change-ledger.md`.

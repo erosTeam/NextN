@@ -1,5 +1,39 @@
 # NextN UI change ledger
 
+## OPEN — Detail Read action consumes live Reader progress — 2026-09-07
+
+- **Why newly actionable:** the user reported the Detail Read button page label
+  still updates only after exiting Reader and restated that this behavior is
+  explicitly forbidden. Source history maps the resurrection: `930f51a` ported
+  NextE `e57c771f`'s frozen display snapshot, but NextE repealed that design
+  in `fbc483cd` (`resumeIndex()` reads live state; "Never defer this to
+  Reader exit"); the repeal was never ported. This supersedes the 2026-08-20
+  exit-time reveal entry below.
+- **Exact before/after:** before — Detail froze `displayedHasReadProgress` /
+  `displayedResumePageIndex`, ignored `readProgress.revision` while
+  `readerOverlay.visible`, and refreshed the snapshot only when
+  `readerOverlay.closing` became true. After — those fields and monitors are
+  removed; `readFabMaterialBarWidth()` and `readActionLabel()` read
+  `NhReadProgressState` live, with durable-loaded values only as the
+  pre-first-write baseline. Reader persistence, RDB serialization, resume
+  entry, FAB geometry tokens, and the 2026-08-20 sibling states are unchanged.
+- **Minimality rationale:** Detail-side port of NextE `fbc483cd` only. No
+  Reader-side change: NextN's per-turn publish already matches NextE
+  (settled-presentation gate with the one-frame no-flight fallback for the
+  plain Read-button entry).
+- **Prevention:** `REJ-READER-006` in
+  `docs/controls/rejected-approaches.md` now forbids reintroducing
+  exit-deferred progress reveal in any future NextE-sync port.
+- **Verification plan:** signed build; then on the selected device enter Reader
+  by thumbnail and by the Read button, turn pages, and verify the retained
+  Detail button already shows the final page when the close transition reveals
+  it, with re-entry resuming that page. No device evidence yet; this surface
+  stays OPEN.
+- **Source/build result:** `git diff --check` passes, the Reader contract
+  passes, and the signed build succeeds (`BUILD SUCCESSFUL in 14 s 407 ms`).
+  The default signed HAP has SHA-256
+  `0a79e3b93ce50cb2eb3a109dc535e329ea4ec121b18dc272af49aa85fa499003`. This
+  establishes compile-time validity only; the runtime path remains OPEN.
 ## 2026-09-06 — Shared external input arbitration — LIMITED ACCEPTANCE
 
 - Freeze only N03/E04 named9-capture sequences (1pass each26s866ms/26s223ms) and N05/E06 separate3-capture system-release sequences (1pass each10s336ms/10s156ms), whole screenshots and native roots inspected. SameP2 nativezoom survives realTestAbility background; pinch-reset/newkey, continuousP4 and close are observed. Post-close native system media-volume panelwindow24 appears, baseline4→5→4 restored; no added UI sizing/geometry.81core tests. Active gesture/seek/rotation and Koma combinations remainOPEN, as does full replacement. Newly actionable next boundary: semantic host actions with reference full toolbar/menu parent ownership, not frozen viewport restyling.
@@ -765,7 +799,11 @@ authorize an edit, replace a device comparison, or define product completion.
   `836d721b3fd0da3a2736cf7e6de403f225733bca61557bf3b3267c9aa81a5920`.
   Paging and retained-Detail isolation remain unaccepted until device evidence.
 
-## OPEN — Reader progress persists live but Detail reveals it on exit — 2026-08-20
+## SUPERSEDED — Reader progress persists live but Detail reveals it on exit — 2026-08-20
+
+- **Superseded 2026-09-07:** the user reasserted that exit-time reveal is
+  forbidden; the live Reader progress entry at the top of this register and
+  `REJ-READER-006` replace this design.
 
 - **Latest user instruction and counter-evidence:** sync NextE's latest Read
   progress optimization. In NextN, selecting a Reader thumbnail currently
