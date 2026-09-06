@@ -2,7 +2,7 @@
 
 ## D3 active slice — 2026-09-06
 
-User clarified: use device237 whenever197 is unavailable;197 is supplementary cross-device verification, never a fixed prerequisite. Selected-item D3 is recorded in §11.2 at `07bc120`; `fa1954a` adds transient zoom/pan (§11.3), `220816c` native paging (§11.4), and current shared checkpoint `c87f1e3` optional continuous reading/observed anchors with58 core tests (§11.5). N/E237 have the bounded endpoints below, not full D3 acceptance. Both Labs exited and237 lease is released. Koma's prior selected-item197 evidence is not current pager/continuous acceptance;197 belongs to its production task. Next implementation boundary is per-page failure/retry ownership, followed by remaining continuous geometry/gesture work. Production readers/default routes, preferences/progress migration and Koma chapter-state work remain excluded; complete chrome and full migration remain OPEN.
+User clarified: use device237 whenever197 is unavailable;197 is supplementary cross-device verification, never a fixed prerequisite. Selected-item D3 is recorded in §11.2 at `07bc120`; `fa1954a` adds transient zoom/pan (§11.3), `220816c` native paging (§11.4), `c87f1e3` continuous reading/anchors (§11.5), and current `64a5d1f` per-row continuous failure/retry with61 core tests (§11.6). N/E237 have the bounded endpoints below, not full D3 acceptance. Both Labs exited and237 lease is released. Koma's prior selected-item197 evidence is not current pager/continuous acceptance;197 belongs to its production task. Next boundary is a reproducible late image-size/visible-position test, followed by remaining geometry/gesture work. Production readers/default routes, preferences/progress migration and Koma chapter-state work remain excluded; paged per-pane failure UI, complete chrome and full migration remain OPEN.
 
 状态：D1 三方限域试接、D2 映射/原图观测切片已有证据，完整迁移仍 OPEN；2026-09-06 用户要求自主判断推进，禁止替换现有阅读器。
 
@@ -416,6 +416,14 @@ D1 当前为技术候选，完整迁移仍 OPEN：两个 HAR、三个独立 adap
 - NextE：实际连续行完整原图按762px高度衔接，滚动后的原图3保留y0.07261。首轮精灵图16被白边反例否决：实际画布4000x300被压进解析范围4000x284；对照当前EhSpriteThumbnail补上解码后画布尺寸，保持200x122裁切框/偏移/父行不变。18连续与19分页同裁切端点已查看，20原图4/Home恢复保持y0.03671。不得继续引用16为通过。
 - 最后源码复核补上List本地native-ready表的slot/request门禁：旧回调不覆盖/删除新图的解码证明。最终Nbuild4的22保留原图1y0.09801；Ebuild3的24再次确认正确精灵图画布，25保留原图4y0.03524至Home/native onActive之后。23/26分别回普通Browse/Gallery；全页截图和实际根节点已查看，237租约已释放且readback确认。共享源码提交c87f1e3；原始截图留本地，提交仅存可复现manifest和判读记录。
 - 未覆盖：连续缩放仲裁、迟到尺寸保位、220vp短行最低高度、旋转/折叠、性能/连续动画、注入迟到原生回调和Koma当前连续实图。Koma章节编排/完成语义/持久化仍由宿主持有；237主验证、197仅补充交叉验证。
+
+### 11.6 D3 连续逐页失败与精确重试 — 2026-09-06（有限路径验收）
+
+- 共享提交64a5d1f，61项真实core测试；retryItem按当前拓扑、可见项、slot及request epoch重试一张失败图，不选中邻页、不重开章节、不重载成功图片。尚未获取URI时assetRequestId可能为0，重试仍使用当前请求epoch，旧/重复/不可见/非活跃请求被拒绝。
+- 只在连续行接入共享ReaderFailurePanel：复用NextE失败优先、加载互斥、220vp最低行高和196vp紧凑卡片完整结构，文字动作120x40vp。失败条漫不把小卡片放在万像素行的中间；健康原图/缩略图比例保持原实现。章节目录失败仍由外层处理；分页双图错误布局尚未接入。
+- 237真实端点：N03完整P1卡片，04实点重试恢复16025px原图，05新request2/y0.02787前后台保持。E08在P1尾部仍可见时完整显示P2错误卡片；09实点P2重试，P1的[36,208][1284,970]、slot1/request1/y0.70104不变，P2独立恢复。10滚入P2后新slot2/request2/y0.14340前后台保持。全页截图及根节点已查看，N06/E11回普通宿主，237租约释放且readback确认；197未操作。
+- Nbuild2为10s833ms，Ebuild1为13s044ms；首轮N构建的保留字段enabled冲突已改成retryEnabled，失败构建未安装。E的Lab新增一行显式探针传参，保留其原有未提交试接工作，未擅自提交E或改Koma宿主。
+- readerLabFailPage仅对显式debug Want指定的零基原页注入一次已标注的render failure，再由真实provider forceReload重试。探针不破坏缓存/下载；这是UI与路由恢复证据，不是自然网络超时、配额分类、传输取消或转场背景合成验收。深色/大字体、分页错误、Koma当前故障UI仍OPEN。下一步先复现迟到尺寸保位风险；不引用List的插删保位标志冒充该保证。
 
 ## 附录：本次读取的主要源码定位
 
