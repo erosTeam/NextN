@@ -1,6 +1,41 @@
 import { describe, expect, it } from '@ohos/hypium'
 import { abilityDelegatorRegistry, Driver, ON, PointerMatrix, Rect } from '@kit.TestKit'
 import { fileIo } from '@kit.CoreFileKit'
+import { window } from '@kit.ArkUI'
+
+async function captureReflow(driver: Driver, name: string): Promise<void> {
+  const cache = abilityDelegatorRegistry.getAbilityDelegator().getAppContext().cacheDir
+  const layout = `${cache}/rkit-reflow-${name}.json`
+  const screen = `${cache}/rkit-reflow-${name}.png`
+  if (fileIo.accessSync(layout)) fileIo.unlinkSync(layout)
+  if (fileIo.accessSync(screen)) fileIo.unlinkSync(screen)
+  expect(await driver.dumpLayout(layout)).assertTrue()
+  expect(await driver.screenCap(screen)).assertTrue()
+  console.info(`[ReaderLabReflowTest] checkpoint=${name}`)
+}
+
+async function rotateContinuous(driver: Driver): Promise<void> {
+  const ability = await abilityDelegatorRegistry.getAbilityDelegator().getCurrentTopAbility()
+  const mainWindow = await window.getLastWindow(ability.context)
+  const original = mainWindow.getPreferredOrientation()
+  try {
+    await captureReflow(driver, 'zoomed-portrait')
+    await mainWindow.setPreferredOrientation(window.Orientation.LANDSCAPE)
+    await driver.delayMs(1600)
+    await captureReflow(driver, 'landscape')
+    // HDS can keep this destination in a split pane. Assert the actual display
+    // orientation, not an invented full-window width for the reader child.
+    const wide = await driver.getDisplaySize()
+    expect(wide.x > wide.y).assertTrue()
+    await mainWindow.setPreferredOrientation(window.Orientation.PORTRAIT)
+    await driver.delayMs(1600)
+    await captureReflow(driver, 'returned-portrait')
+  } finally {
+    await mainWindow.setPreferredOrientation(original)
+    await driver.delayMs(600)
+    console.info(`[ReaderLabReflowTest] restored_orientation_policy=${mainWindow.getPreferredOrientation()} original=${original}`)
+  }
+}
 
 async function pinchTrajectory(driver: Driver, bounds: Rect, expanding: boolean): Promise<void> {
   const points = PointerMatrix.create(2, 12)
@@ -21,7 +56,9 @@ export default function readerLabGesturesTest(): void {
   // Native arguments retain the '-s ' prefix; Hypium's log is a normalized copy.
   const selected = parameters['-s class']
   const work = parameters['-s readerLabWork']
-  const continuous = selected === 'ReaderLabContinuousPinchPan' || selected === 'ReaderLabContinuousPinchResetScroll'
+  const reflow = selected === 'ReaderLabContinuousReflow' || selected === 'ReaderLabContinuousReflowEdge'
+  const continuous = selected === 'ReaderLabContinuousPinchPan' || selected === 'ReaderLabContinuousPinchResetScroll' ||
+    reflow
   if ((selected !== 'ReaderLabPinchOut' && selected !== 'ReaderLabPinchReset' &&
     selected !== 'ReaderLabPinchPan' && selected !== 'ReaderLabPinchResetSwipe' && !continuous) ||
     typeof work !== 'string' || work.length === 0) return
@@ -55,7 +92,8 @@ export default function readerLabGesturesTest(): void {
         selected === 'ReaderLabContinuousPinchResetScroll') {
         await pinchTrajectory(driver, bounds, false)
         await driver.delayMs(400)
-      } else if (selected === 'ReaderLabPinchPan' || selected === 'ReaderLabContinuousPinchPan') {
+      } else if (selected === 'ReaderLabPinchPan' || selected === 'ReaderLabContinuousPinchPan' ||
+        reflow) {
         // After the two-pointer sequence fully ends, a new horizontal drag must
         // pan the zoomed item, never advance its parent Swiper to page2.
         await driver.swipe(Math.round(bounds.right - (bounds.right - bounds.left) * 0.15),
@@ -75,6 +113,26 @@ export default function readerLabGesturesTest(): void {
         await driver.swipe(Math.round((bounds.left + bounds.right) / 2), bounds.bottom - 60,
           Math.round((bounds.left + bounds.right) / 2), bounds.top + 60, 600)
         await driver.delayMs(1200)
+      }
+      if (reflow) {
+        if (selected === 'ReaderLabContinuousReflowEdge') {
+          for (let i = 0; i < 3; i++) {
+            await driver.swipe(Math.round((bounds.left + bounds.right) / 2), bounds.top + 30,
+              Math.round((bounds.left + bounds.right) / 2), bounds.bottom - 30, 600)
+          }
+          await driver.delayMs(400)
+        }
+        await rotateContinuous(driver)
+        await driver.swipe(Math.round(bounds.left + 100), Math.round((bounds.top + bounds.bottom) / 2),
+          Math.round(bounds.right - 100), Math.round((bounds.top + bounds.bottom) / 2), 600)
+        await driver.delayMs(500)
+        await captureReflow(driver, 'post-rotation-pan')
+        await pinchTrajectory(driver, bounds, false)
+        await driver.delayMs(400)
+        await driver.swipe(Math.round((bounds.left + bounds.right) / 2), bounds.bottom - 60,
+          Math.round((bounds.left + bounds.right) / 2), bounds.top + 60, 600)
+        await driver.delayMs(1200)
+        await captureReflow(driver, 'reset-scroll')
       }
       console.info(`[ReaderLabGestureTest] native_injection_completed=${selected}`)
       // This checks command/page continuity only. The protocol captures actual pixels

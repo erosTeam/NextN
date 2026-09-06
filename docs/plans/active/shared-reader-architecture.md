@@ -1,6 +1,14 @@
 # NextE / NextN / Koma 共享阅读器设计草案
 
-## D3 active slice — 2026-09-06
+## 当前目标：逐步具备替代现有阅读器的能力 — 2026-09-06
+
+用户最新要求“继续啊，要慢慢完善，以替代当前阅读器为目标”。因此可选接入是安全实施方式，不是项目终点。最终要由共享实现承接现有阅读器能力，消除三个副本间的功能退化；当前仍不得提前切换默认入口或修改持久设置/进度。
+
+推进顺序沿用原设计：先完成共用布局/输入/失败恢复及锚点行为，再接正式共享chrome与缩略图导航，随后按宿主端口补系统输入、图像处理、下载/分享与Koma章节编排；最后才做显式可回退试用、设置/进度兼容和逐宿主替代验收。每个能力记录真实缺口与设备证据，不能以诊断页、构建或“共用组件”作为替代就绪证明。涉及持久数据/默认切换的实际启用时机单独决策，不在基础组件完善时顺带迁移。
+
+在共享基线4a17aed上补齐连续缩放的旋转保位，68项core测试。237原生04复现清掉约1.8x缩放；候选N06/N09原图普通点与已到达的平移边界、E07b原图/E08精灵图均已检查完整旋转往返截图与native坐标，复位后的新滚动也有N实证。只冻结这些端点，不据此宣称正式横屏布局或完整D3通过。下一切片是正式共享阅读界面的工具栏显隐、页码/跳页，先映射参考完整父树，再可选试接。237主验，197仅补充；Koma生产任务独占197，不重复compile-only，其生产签名构建单独协调clean共享窗口。
+
+## D3 earlier slice — 2026-09-06（以下为历史记录，当前以上段为准）
 
 User clarified: use device237 whenever197 is unavailable;197 is supplementary cross-device verification, never a fixed prerequisite. Selected-item D3 is recorded in §11.2 at `07bc120`; `fa1954a` adds zoom/pan (§11.3), `220816c` native paging (§11.4), `c87f1e3` continuous reading/anchors (§11.5), `64a5d1f` per-row failure/retry (§11.6), and `e4be692` late-dimensions diagnostics (§11.7). Current `b603003` adds paged per-pane failure/retry,64 core tests and bounded N/E237 whole/spread/half runtime evidence (§11.8). Both Labs exited and237 lease is released. Koma compiles clean b603003; its prior selected-item197 evidence is not current pager/continuous/failure acceptance and197 belongs to its production task. Next boundary is continuous zoom/scroll arbitration, beginning with source/reference investigation. Production readers/default routes, preferences/progress migration and Koma chapter-state work remain excluded; complete chrome and full migration remain OPEN.
 
