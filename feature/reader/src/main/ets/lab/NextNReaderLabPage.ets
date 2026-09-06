@@ -1,7 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
-import { ReaderPagedSession, ReaderUnitKey } from '@reader-kit/core'
-import { ReaderLabRequest, ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility, ReaderLabAssetProbe } from '@reader-kit/ui'
+import { ReaderPagedSession, ReaderUnitKey, ReaderInputPort } from '@reader-kit/core'
+import { ReaderLabRequest, ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility, ReaderLabAssetProbe, ReaderVolumeKeys } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { connectLayoutSafeArea, LayoutSafeAreaState, ThemeTokens, nextNHdsTitle } from 'shared'
 
@@ -15,6 +15,8 @@ export struct NextNReaderLabPage {
   @Local private safeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private unitKey: ReaderUnitKey = new ReaderUnitKey('', '', '')
   private trialWindow: ReaderTrialWindow = new ReaderTrialWindow()
+  private input: ReaderInputPort = new ReaderInputPort()
+  private volumeKeys: ReaderVolumeKeys = new ReaderVolumeKeys(this.input)
 
   aboutToAppear(): void {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext
@@ -25,7 +27,13 @@ export struct NextNReaderLabPage {
     this.session = new ReaderPagedSession(adapter, new ReaderLabAssetProbe(adapter, this.request.thumbnailFailurePage))
   }
 
-  aboutToDisappear(): void { this.trialWindow.close() }
+  aboutToDisappear(): void { this.volumeKeys.close(); this.trialWindow.close() }
+
+  @Monitor('routeActive', 'labVisibility.foreground')
+  syncVolumeKeys(): void {
+    this.volumeKeys.setActive(this.session !== null && this.request.readingChrome && this.request.volumeKeys &&
+      this.routeActive && this.labVisibility.foreground)
+  }
 
   build() {
     HdsNavDestination() {
@@ -33,6 +41,7 @@ export struct NextNReaderLabPage {
         if (this.session !== null) {
           if (this.request.readingChrome) {
             ReaderSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
+              input: this.input,
               active: this.routeActive && this.labVisibility.foreground,
               topInset: this.safeArea.topAvoidHeight, bottomInset: this.safeArea.bottomAvoidHeight,
               accent: ThemeTokens.BRAND, onClose: this.onClose })

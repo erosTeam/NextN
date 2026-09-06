@@ -12,6 +12,7 @@ import readerChromeTest from './ReaderChrome.test'
 import readerThumbnailRailTest from './ReaderThumbnailRail.test'
 import readerSliderLifecycleTest from './ReaderSliderLifecycle.test'
 import readerThumbnailRetryTest from './ReaderThumbnailRetry.test'
+import readerVolumeKeysTest from './ReaderVolumeKeys.test'
 
 export default function testsuite(): void {
   backupCipherMetadataGuardTest()
@@ -28,4 +29,5 @@ export default function testsuite(): void {
   readerThumbnailRailTest()
   readerSliderLifecycleTest()
   readerThumbnailRetryTest()
+  readerVolumeKeysTest()
 }

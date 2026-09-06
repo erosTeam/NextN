@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d8-volume-release-nexte",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d8-input/06-nexte-system-release",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "D8 NextE mainbuild1/nativebuild2; isolated real system volume release",
+    "page": "Reader key leaves volume fixed; close returns native system volume; inverse key restores baseline",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Optional Debug trial only. One system-volume step after close, exact baseline readback and inverse key in finally. No audio playback or preference migration."
+  },
+  "preflight": [
+    {
+      "name": "verify-awake-before-install",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "close-prior-nexte-trial",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "force-stop",
+        "com.erosteam.nexte"
+      ]
+    },
+    {
+      "name": "install-completed-nexte-main",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextE/entry/build/default/outputs/default/entry-default-signed.hap"
+      ]
+    },
+    {
+      "name": "install-completed-native-test",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextE/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"
+      ]
+    },
+    {
+      "name": "native-volume-release-suite",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "test",
+        "-b",
+        "com.erosteam.nexte",
+        "-m",
+        "entry_test",
+        "-s",
+        "unittest",
+        "OpenHarmonyTestRunner",
+        "-s",
+        "class",
+        "ReaderVolumeReleaseTrial",
+        "-s",
+        "readerLabWork",
+        "4152165",
+        "-s",
+        "readerLabUnit",
+        "2e67d2b506",
+        "-s",
+        "timeout",
+        "90000"
+      ],
+      "timeoutSeconds": 120
+    }
+  ],
+  "measurement": {
+    "hilog": {
+      "localFile": "readerlab-live.log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-e",
+        "ReaderLab"
+      ]
+    },
+    "actions": [
+      {
+        "name": "terminal-noninteractive",
+        "uiInput": [
+          "click",
+          "1",
+          "1"
+        ],
+        "pauseAfterMs": 200
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "input-lifecycle-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderVolumeKeys"
+      ]
+    },
+    {
+      "name": "surface-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderSurface"
+      ]
+    },
+    {
+      "name": "volume-readback-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderVolumeRelease"
+      ]
+    },
+    {
+      "name": "receive-release-host-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-volume-release-host.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d8-input/06-nexte-system-release/release-host.json"
+      ]
+    },
+    {
+      "name": "receive-release-host-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-volume-release-host.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d8-input/06-nexte-system-release/release-host.png"
+      ]
+    },
+    {
+      "name": "receive-release-system-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-volume-release-system.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d8-input/06-nexte-system-release/release-system.json"
+      ]
+    },
+    {
+      "name": "receive-release-system-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-volume-release-system.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d8-input/06-nexte-system-release/release-system.png"
+      ]
+    },
+    {
+      "name": "receive-release-restored-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-volume-release-restored.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d8-input/06-nexte-system-release/release-restored.json"
+      ]
+    },
+    {
+      "name": "receive-release-restored-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-volume-release-restored.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d8-input/06-nexte-system-release/release-restored.png"
+      ]
+    }
+  ]
+}
