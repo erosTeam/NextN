@@ -11,6 +11,7 @@ import readerLabGesturesTest from './ReaderLabGestures.test'
 import readerChromeTest from './ReaderChrome.test'
 import readerThumbnailRailTest from './ReaderThumbnailRail.test'
 import readerSliderLifecycleTest from './ReaderSliderLifecycle.test'
+import readerThumbnailRetryTest from './ReaderThumbnailRetry.test'
 
 export default function testsuite(): void {
   backupCipherMetadataGuardTest()
@@ -26,4 +27,5 @@ export default function testsuite(): void {
   readerChromeTest()
   readerThumbnailRailTest()
   readerSliderLifecycleTest()
+  readerThumbnailRetryTest()
 }

@@ -1,7 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
 import { ReaderPagedSession, ReaderUnitKey } from '@reader-kit/core'
-import { ReaderLabRequest, ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility } from '@reader-kit/ui'
+import { ReaderLabRequest, ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility, ReaderLabAssetProbe } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { connectLayoutSafeArea, LayoutSafeAreaState, ThemeTokens, nextNHdsTitle } from 'shared'
 
@@ -22,7 +22,7 @@ export struct NextNReaderLabPage {
     if (this.request.readingChrome) this.trialWindow.open(context)
     const adapter = new NextNReaderLabAdapter(context)
     this.unitKey = new ReaderUnitKey('nh', this.request.work, this.request.work)
-    this.session = new ReaderPagedSession(adapter, adapter)
+    this.session = new ReaderPagedSession(adapter, new ReaderLabAssetProbe(adapter, this.request.thumbnailFailurePage))
   }
 
   aboutToDisappear(): void { this.trialWindow.close() }
