@@ -2,7 +2,7 @@
 
 ## D3 active slice — 2026-09-06
 
-User clarified: use device237 whenever197 is unavailable;197 is supplementary cross-device verification, never a fixed prerequisite. Selected-item D3 is recorded in §11.2 at `07bc120`; current shared checkpoint `fa1954a` adds transient zoom/pan with actual NextN/NextE237 evidence (§11.3). Koma's prior selected-item real-content197 evidence is not promoted to current zoom acceptance;197 remains owned by its concurrent production task. N/E zoom Labs exited and237 lease released. The next implementation boundary is optional swipe paging and gesture arbitration. Production readers/default routes, preferences/progress migration and Koma chapter-state work remain excluded; continuous reading, chrome and full migration remain OPEN.
+User clarified: use device237 whenever197 is unavailable;197 is supplementary cross-device verification, never a fixed prerequisite. Selected-item D3 is recorded in §11.2 at `07bc120`; checkpoint `fa1954a` adds transient zoom/pan (§11.3). Current shared checkpoint `220816c` adds optional native paging with53 core tests and bounded N/E237 evidence (§11.4), not full D3 acceptance. N/E Labs exited and237 lease is released. Koma's prior selected-item197 evidence is not current pager acceptance;197 belongs to its production task. Next implementation is the optional continuous viewport and its actual visible anchor. Production readers/default routes, preferences/progress migration and Koma chapter-state work remain excluded; continuous reading, chrome and full migration remain OPEN.
 
 状态：D1 三方限域试接、D2 映射/原图观测切片已有证据，完整迁移仍 OPEN；2026-09-06 用户要求自主判断推进，禁止替换现有阅读器。
 
@@ -393,6 +393,18 @@ D1 当前为技术候选，完整迁移仍 OPEN：两个 HAR、三个独立 adap
 - N/E当前未放大whole/half/independent-thumbnail几何保持此前同样本同viewport父级契约，所有控制区原位；接受范围为上述终点。动画逐帧、旋转、pinch松一指后的连续pan、未来pager输入仲裁、zoomed锚点仍未验证或未实现，不扩大为完整手势保真。
 - 237租约 `20260905-231641-d40f222c` 已释放并状态readback为released，两端退出Lab。197本缩放切片未操作；Koma真实章节缩放交叉在其生产任务自然空闲时补，不以197不可用阻断237或后续开发。Koma零页manifest fallback/派生缩略图/相邻本地双章成功路径保留各自未验证状态。
 - 下一项：保留这份共享视口，在可选入口接入真实分页容器，先明确Swiper页缓存/核心资源槽与zoom手势的父子所有权及当前页锚点，再实现并按237真实手势验证。不得以简单滑动触发按钮冒充正式分页动画；连续阅读/工具栏、持久化迁移和宿主处理能力仍分别推进。
+
+### 11.4 D3 原生横向分页与缩放仲裁 — 2026-09-06（有限路径验收）
+
+- 共享父级：`ReaderPagerSurface` 的原生非循环 Swiper/LazyForEach 包住既有拟合视口；诊断控制、标题、章节路由仍在外面。没有三个宿主分别手写滑动翻页，也没有生产 Reader 替换。
+- core 仍是唯一 display map/anchor owner。可选前一项/当前项/后一项窗口，双页最多六个不同原图槽；拆分相邻半页复用同一原图。旧拓扑/被后续命令取代的原生索引会被拒绝，decode 不算看到页面，缓存邻页不能抢原图观测，重试只针对当前显示项。
+- UI 的当前项持有缩放锁；非当前缓存项清除缩放，前后台恢复保留选中项已稳定的缩放。Swiper 运动期间关闭观测。原生 onChange 出栈后再反馈，避免递归刷新 LazyForEach。
+- 当前源码计算证据：实际 core53项测试通过，包含窗口上限、资源复用/释放、邻页不能观测、旧索引拒绝、迟到尺寸改图谱保持原图、缓存失败身份/当前项重试和副本隔离。N签名build2为11s025ms；E固定签名build1为13s630ms，V1 inventory0/561。构建不是设备验收。
+- N237：完整长图基线一致；LTR1→2→1有真实原生index和sourceIndex观测；RTL单页/双页往返保持原图，独立双指约1.8×后新单指横拖不误翻页，缩回1×恢复翻页，2×top/Home/resume再横拖不误翻页。普通无参数启动返回Browse。原图和NH缩略图比例所有权未改。
+- E237当前：候选whole原图1与安装前zoom候选同根视口/拟合尺寸；原生LTR从left到right仍是slot1/request1；RTL right1→left1→right2→left1→right1全过程索引与观测对应。16双页RTL next/back回到首组，原图2左/原图1右共同381px高。17双页2×横移/Home/resume后再横拖仍在首组，selection22、x-208/y0；完整截图与实际根视口均已查看。18 Back已核对普通Gallery，237租约释放并读回；197未操作。
+- 原始异常保留：N04录制402帧全部查看，1196×1920编码与1320×2120应用截图不等，局部重影只算定性线索、不作精确几何或干净动效验收；原生N09缩放复位成功但布局文件残留旧尾部，原始JSON不冒充有效证据。测试只清理两个自身cache导出后重建8s842ms，09b完整JSON/原图2实图已核对。旧产物均保留。
+- 生产构建隔离：LIB006、LIB007分别借用clean `fa1954a`窗口；只把七个本轮共享WIP安全stash，固定测试HAP后继续237物理链。Koma确认固定生产包并释放后自动恢复原WIP，不让生产包隐式消费未完成pager，也不把197作为前置阻塞。
+- 下一边界：持久化本切片后，继续可选连续阅读视口及实际可见锚点。干净动效、剩余单指连续接力、旋转、拖动中图谱变化、Koma当前pager及宿主完整工具栏仍有独立未验证项；默认替换、设置/进度迁移仍不授权。
 
 ## 附录：本次读取的主要源码定位
 

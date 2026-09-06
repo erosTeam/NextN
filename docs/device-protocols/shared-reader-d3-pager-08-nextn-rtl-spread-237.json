@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d3-pager-nextn-rtl-spread",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3-pager/08-nextn-rtl-spread",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "native pager NextN build2 11s025ms",
+    "page": "RTL single next/back then joined spread next/back",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Known native Select route, current07 bounds. Direction change keeps original1; rightward swipe advances RTL, leftward returns; joined pair1/2 remains after paired roundtrip. No progress migration."
+  },
+  "preflight": [
+    {
+      "name": "verify-awake-before-install",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    }
+  ],
+  "measurement": {
+    "hilog": {
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-e",
+        "ReaderLab"
+      ],
+      "localFile": "readerlab-live.log"
+    },
+    "actions": [
+      {
+        "name": "open-direction",
+        "uiInput": [
+          "click",
+          "660",
+          "700"
+        ],
+        "pauseAfterMs": 400
+      },
+      {
+        "name": "choose-rtl",
+        "uiInput": [
+          "click",
+          "600",
+          "1010"
+        ],
+        "pauseAfterMs": 500
+      },
+      {
+        "name": "rtl-next",
+        "uiInput": [
+          "swipe",
+          "250",
+          "1206",
+          "1120",
+          "1206",
+          "700"
+        ],
+        "pauseAfterMs": 600
+      },
+      {
+        "name": "rtl-previous",
+        "uiInput": [
+          "swipe",
+          "1120",
+          "1206",
+          "250",
+          "1206",
+          "700"
+        ],
+        "pauseAfterMs": 600
+      },
+      {
+        "name": "open-layout",
+        "uiInput": [
+          "click",
+          "232",
+          "700"
+        ],
+        "pauseAfterMs": 400
+      },
+      {
+        "name": "choose-spread",
+        "uiInput": [
+          "click",
+          "150",
+          "1010"
+        ],
+        "pauseAfterMs": 600
+      },
+      {
+        "name": "rtl-next-spread",
+        "uiInput": [
+          "swipe",
+          "250",
+          "1206",
+          "1120",
+          "1206",
+          "700"
+        ],
+        "pauseAfterMs": 600
+      },
+      {
+        "name": "rtl-previous-spread",
+        "uiInput": [
+          "swipe",
+          "1120",
+          "1206",
+          "250",
+          "1206",
+          "700"
+        ],
+        "pauseAfterMs": 700
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "pager-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderPager"
+      ]
+    },
+    {
+      "name": "readerlab-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderViewport"
+      ]
+    },
+    {
+      "name": "observation-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderLab"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d3-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d3-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d3-layout.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3-pager/08-nextn-rtl-spread/layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d3-screen.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3-pager/08-nextn-rtl-spread/screen.png"
+      ]
+    }
+  ]
+}

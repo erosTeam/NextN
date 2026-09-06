@@ -1,5 +1,6 @@
 import { describe, expect, it } from '@ohos/hypium'
 import { abilityDelegatorRegistry, Driver, ON, PointerMatrix, Rect } from '@kit.TestKit'
+import { fileIo } from '@kit.CoreFileKit'
 
 async function pinchTrajectory(driver: Driver, bounds: Rect, expanding: boolean): Promise<void> {
   const points = PointerMatrix.create(2, 12)
@@ -20,7 +21,8 @@ export default function readerLabGesturesTest(): void {
   // Native arguments retain the '-s ' prefix; Hypium's log is a normalized copy.
   const selected = parameters['-s class']
   const work = parameters['-s readerLabWork']
-  if ((selected !== 'ReaderLabPinchOut' && selected !== 'ReaderLabPinchReset') ||
+  if ((selected !== 'ReaderLabPinchOut' && selected !== 'ReaderLabPinchReset' &&
+    selected !== 'ReaderLabPinchPan' && selected !== 'ReaderLabPinchResetSwipe') ||
     typeof work !== 'string' || work.length === 0) return
   describe(selected, (): void => {
     it('applyNativePinch', 0, async (): Promise<void> => {
@@ -38,19 +40,41 @@ export default function readerLabGesturesTest(): void {
       const bounds = await viewport.getBounds()
       await pinchTrajectory(driver, bounds, true)
       await driver.delayMs(400)
-      if (selected === 'ReaderLabPinchReset') {
+      if (selected === 'ReaderLabPinchReset' || selected === 'ReaderLabPinchResetSwipe') {
         await pinchTrajectory(driver, bounds, false)
         await driver.delayMs(400)
+      } else if (selected === 'ReaderLabPinchPan') {
+        // After the two-pointer sequence fully ends, a new horizontal drag must
+        // pan the zoomed item, never advance its parent Swiper to page2.
+        await driver.swipe(Math.round(bounds.right - (bounds.right - bounds.left) * 0.15),
+          Math.round((bounds.top + bounds.bottom) / 2),
+          Math.round(bounds.left + (bounds.right - bounds.left) * 0.15),
+          Math.round((bounds.top + bounds.bottom) / 2), 600)
+        await driver.delayMs(500)
+      }
+      if (selected === 'ReaderLabPinchResetSwipe') {
+        await driver.swipe(Math.round(bounds.right - (bounds.right - bounds.left) * 0.15),
+          Math.round((bounds.top + bounds.bottom) / 2),
+          Math.round(bounds.left + (bounds.right - bounds.left) * 0.15),
+          Math.round((bounds.top + bounds.bottom) / 2), 600)
+        await driver.delayMs(500)
       }
       console.info(`[ReaderLabGestureTest] native_injection_completed=${selected}`)
       // This checks command/page continuity only. The protocol captures actual pixels
       // and ReaderViewport logs for the owner's separate gesture acceptance.
-      expect(await (await driver.findComponent(ON.id('rkit-page-position'))).getText()).assertContain('1 / ')
+      expect(await (await driver.findComponent(ON.id('rkit-page-position'))).getText())
+        .assertContain(selected === 'ReaderLabPinchResetSwipe' ? '2 / ' : '1 / ')
       // The native runner terminates its test process at completion. Capture this
       // terminal state before that teardown, not the app revealed underneath it.
       const cacheDir = abilityDelegatorRegistry.getAbilityDelegator().getAppContext().cacheDir
-      expect(await driver.dumpLayout(`${cacheDir}/rkit-native-pinch-layout.json`)).assertTrue()
-      expect(await driver.screenCap(`${cacheDir}/rkit-native-pinch.png`)).assertTrue()
+      const layoutPath = `${cacheDir}/rkit-native-pinch-layout.json`
+      const screenPath = `${cacheDir}/rkit-native-pinch.png`
+      // Driver.dumpLayout can leave trailing bytes when replacing a larger capture.
+      // Remove only these two test-owned exports; received protocol artifacts stay intact.
+      if (fileIo.accessSync(layoutPath)) fileIo.unlinkSync(layoutPath)
+      if (fileIo.accessSync(screenPath)) fileIo.unlinkSync(screenPath)
+      expect(await driver.dumpLayout(layoutPath)).assertTrue()
+      expect(await driver.screenCap(screenPath)).assertTrue()
       console.info(`[ReaderLabGestureTest] evidence_cache=${cacheDir}`)
     })
   })

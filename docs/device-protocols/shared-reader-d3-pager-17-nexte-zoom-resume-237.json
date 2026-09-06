@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d3-pager-nexte-zoom-resume",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3-pager/17-nexte-zoom-resume",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "NextE pager build1 13s630ms; fixed HAP before LIB007 clean-fa1954a window",
+    "page": "Zoomed joined RTL spread pan, Home/resume, and new horizontal pan",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Start current16 first joined pair, source0/right pane. Both independent pans must retain selected first pair at2x, including after inactive/active. No same-gesture remaining-finger assertion."
+  },
+  "preflight": [
+    {
+      "name": "verify-awake-before-install",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    }
+  ],
+  "measurement": {
+    "hilog": {
+      "localFile": "readerlab-live.log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-e",
+        "ReaderLab"
+      ]
+    },
+    "actions": [
+      {
+        "name": "double-tap-joined",
+        "uiInput": [
+          "doubleClick",
+          "660",
+          "1178"
+        ],
+        "pauseAfterMs": 400
+      },
+      {
+        "name": "pan-zoomed-joined",
+        "uiInput": [
+          "swipe",
+          "1120",
+          "1178",
+          "250",
+          "1178",
+          "700"
+        ],
+        "pauseAfterMs": 500
+      },
+      {
+        "name": "background",
+        "uiInput": [
+          "keyEvent",
+          "Home"
+        ],
+        "pauseAfterMs": 600
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "resume-host",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "start",
+        "-a",
+        "EntryAbility",
+        "-b",
+        "com.erosteam.nexte"
+      ],
+      "pauseAfterMs": 600
+    },
+    {
+      "name": "pan-after-resume",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "uiInput",
+        "swipe",
+        "1120",
+        "1178",
+        "250",
+        "1178",
+        "700"
+      ],
+      "pauseAfterMs": 600
+    },
+    {
+      "name": "viewport-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderViewport"
+      ]
+    },
+    {
+      "name": "pager-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderPager"
+      ]
+    },
+    {
+      "name": "readerlab-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderLab"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d3-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d3-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d3-layout.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3-pager/17-nexte-zoom-resume/layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d3-screen.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3-pager/17-nexte-zoom-resume/screen.png"
+      ]
+    }
+  ]
+}

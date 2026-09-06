@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d3-pager-ltr-recording",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d3-pager/04-nextn-ltr-recording",
+  "recordingFileName": "rkit-pager-ltr-237-20260906-first.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 700,
+  "idleRecordMs": 0,
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "actions": [
+    {
+      "name": "native-next",
+      "uiInput": [
+        "swipe",
+        "1120",
+        "1206",
+        "250",
+        "1206",
+        "700"
+      ],
+      "pauseAfterMs": 1200
+    },
+    {
+      "name": "native-previous",
+      "uiInput": [
+        "swipe",
+        "250",
+        "1206",
+        "1120",
+        "1206",
+        "700"
+      ],
+      "pauseAfterMs": 1000
+    },
+    {
+      "name": "native-next-again",
+      "uiInput": [
+        "swipe",
+        "1120",
+        "1206",
+        "250",
+        "1206",
+        "700"
+      ],
+      "pauseAfterMs": 1200
+    }
+  ],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "native pager NextN build2 11s025ms",
+    "page": "original1/14 LTR native swipe roundtrip",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "03 foreground NextN root[0,117][1320,2120],native pager[36,799][1284,1613]. Normal animation speed, full warmup/action/settle. Expected1→2→1→2; current whole image/control geometry matches02 reference."
+  }
+}
