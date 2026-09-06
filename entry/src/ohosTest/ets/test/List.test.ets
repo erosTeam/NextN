@@ -9,6 +9,7 @@ import collectionStateTest from './CollectionState.test'
 import readerPageCropDetectorTest from './ReaderPageCropDetector.test'
 import readerLabGesturesTest from './ReaderLabGestures.test'
 import readerChromeTest from './ReaderChrome.test'
+import readerThumbnailRailTest from './ReaderThumbnailRail.test'
 
 export default function testsuite(): void {
   backupCipherMetadataGuardTest()
@@ -22,4 +23,5 @@ export default function testsuite(): void {
   readerPageCropDetectorTest()
   readerLabGesturesTest()
   readerChromeTest()
+  readerThumbnailRailTest()
 }
