@@ -52,6 +52,7 @@ import {
   DiagnosticLogger,
   DiagnosticsSettings,
   connectSafeMode,
+  ReaderTrialOriginalProbe,
 } from 'shared'
 
 const ENTRY_PAGE: string = 'pages/Index'
@@ -78,7 +79,24 @@ export default class EntryAbility extends UIAbility {
   private accountProbeInFlight: boolean = false
   private lastAccountProbeStartedAt: number = 0
 
+  private captureReaderOriginalProbe(want: Want): void {
+    ReaderTrialOriginalProbe.cancel(ReaderTrialOriginalProbe.read().epoch)
+    const parameters = want.parameters
+    if (!this.context.applicationInfo.debug || parameters === undefined ||
+      parameters['readerLabOriginalProbe'] !== 'hold-once' ||
+      (parameters['readerLabChrome'] !== true && parameters['readerLabChrome'] !== 'true') ||
+      (parameters['readerLabThumbnailEntry'] !== true && parameters['readerLabThumbnailEntry'] !== 'true')) return
+    const work = parameters['readerLabWork']
+    const requestedPage = parameters['readerLabPage']
+    const page = typeof requestedPage === 'string' ? Number(requestedPage) :
+      (typeof requestedPage === 'number' ? requestedPage : -1)
+    if (typeof work !== 'string' || !/^[1-9]\d*$/.test(work) || !Number.isSafeInteger(Number(work)) ||
+      !Number.isSafeInteger(page) || page < 0) return
+    ReaderTrialOriginalProbe.arm(work, page)
+  }
+
   onCreate(want: Want, _launchParam: AbilityConstant.LaunchParam): void {
+    this.captureReaderOriginalProbe(want)
     captureReaderLabWant(want, this.context.applicationInfo.debug)
     this.galleryDirectLaunchIdAtLaunch = this.galleryDirectLaunchId(want)
     this.galleryDirectLaunchCommentsAtLaunch = this.galleryDirectLaunchWantsComments(want)
@@ -338,6 +356,7 @@ export default class EntryAbility extends UIAbility {
   }
 
   onNewWant(want: Want, _launchParam: AbilityConstant.LaunchParam): void {
+    this.captureReaderOriginalProbe(want)
     captureReaderLabWant(want, this.context.applicationInfo.debug)
     if (connectSafeMode().restricted()) {
       return

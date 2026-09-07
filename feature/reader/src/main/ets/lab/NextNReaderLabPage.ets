@@ -1,11 +1,13 @@
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
-import { ReaderPagedSession, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderDisplayPolicy } from '@reader-kit/core'
+import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderDisplayPolicy } from '@reader-kit/core'
 import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabRequest, ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility, ReaderLabAssetProbe, ReaderVolumeKeys } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
-import { connectLayoutSafeArea, LayoutSafeAreaState, ThemeTokens, nextNHdsTitle } from 'shared'
+import { connectLayoutSafeArea, LayoutSafeAreaState, ThemeTokens, nextNHdsTitle,
+  ReaderTrialOriginalProbe, ReaderTrialOriginalFacts } from 'shared'
+import { NextNReaderOriginalProbeProvider } from './NextNReaderOriginalProbeProvider'
 
 @ComponentV2
 export struct NextNReaderLabPage {
@@ -22,6 +24,9 @@ export struct NextNReaderLabPage {
   private trialWindow: ReaderTrialWindow = new ReaderTrialWindow()
   private input: ReaderInputPort = new ReaderInputPort()
   private volumeKeys: ReaderVolumeKeys = new ReaderVolumeKeys(this.input)
+  private originalProbeEpoch: number = 0
+  private originalProbe: NextNReaderOriginalProbeProvider | null = null
+  private originalProbeHostClosed: boolean = false
 
   aboutToAppear(): void {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext
@@ -30,7 +35,14 @@ export struct NextNReaderLabPage {
     const adapter = new NextNReaderLabAdapter(context)
     this.imageShare = new ReaderLabShareProbe(adapter, this.request.shareProbe)
     this.unitKey = new ReaderUnitKey('nh', this.request.work, this.request.work)
-    this.session = new ReaderPagedSession(adapter, new ReaderLabAssetProbe(adapter, this.request.thumbnailFailurePage,
+    this.originalProbeEpoch = this.request.thumbnailEntry ?
+      ReaderTrialOriginalProbe.consume(this.request.work, this.request.pageIndex) : 0
+    if (this.originalProbeEpoch !== 0) {
+      this.originalProbe = new NextNReaderOriginalProbeProvider(adapter, this.originalProbeEpoch,
+        this.request.work, this.request.pageIndex)
+      ReaderTrialOriginalProbe.bindFacts(this.originalProbeEpoch, (): ReaderTrialOriginalFacts => this.originalProbeFacts())
+    }
+    this.session = new ReaderPagedSession(adapter, new ReaderLabAssetProbe(this.originalProbe ?? adapter, this.request.thumbnailFailurePage,
       this.request.informationProbe, this.request.thumbnailEntry ? this.request.failurePage : -1))
     if (this.request.thumbnailEntry) {
       const policy = new ReaderDisplayPolicy()
@@ -42,7 +54,33 @@ export struct NextNReaderLabPage {
 
   aboutToDisappear(): void {
     this.entryTransition?.cancel(); this.entryPreview?.release()
+    this.originalProbeHostClosed = true
+    this.originalProbe?.close()
+    if (this.originalProbeEpoch !== 0) ReaderTrialOriginalProbe.detachFacts(this.originalProbeEpoch)
     this.volumeKeys.close(); this.trialWindow.close()
+  }
+
+  private originalProbeFacts(): ReaderTrialOriginalFacts {
+    const facts = new ReaderTrialOriginalFacts()
+    const entry = this.entryTransition
+    facts.entryId = entry?.entryId ?? 0
+    facts.entryPhase = entry?.phase ?? 'none'
+    facts.layoutReady = entry?.target?.geometryReady ?? false
+    facts.decodedReady = entry?.target?.decodedReady ?? false
+    facts.hostActive = !this.originalProbeHostClosed && this.routeActive && this.labVisibility.foreground
+    const state = this.session?.snapshot()
+    if (state !== undefined) {
+      facts.sessionPhase = state.phase
+      facts.anchor = state.anchor?.sourceIndexHint ?? -1
+      facts.navigationRevision = state.navigationRevision
+      facts.selectionId = state.selectionId
+      const frame = state.frames.find((value: ReaderPagedFrame): boolean => value.part.sourceIndex === facts.anchor)
+      facts.slotId = frame?.slotId ?? 0
+      facts.assetRequestId = frame?.asset.assetRequestId ?? 0
+      facts.assetPhase = frame?.asset.phase ?? 'idle'
+    }
+    // layout/target facts do not assert that Index has revealed its trial overlay to the user.
+    return facts
   }
 
   @Monitor('routeActive', 'labVisibility.foreground')

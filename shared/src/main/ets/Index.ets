@@ -524,6 +524,7 @@ export {
 } from './state/ReaderThumbnailTransitionState'
 export { ReaderThumbnailTransitionCoordinator } from './navigation/ReaderThumbnailTransitionCoordinator'
 export { ReaderTrialEntryRelay, ReaderTrialEntrySource, ReaderTrialEntryProbe } from './navigation/ReaderTrialEntryRelay'
+export { ReaderTrialOriginalProbe, ReaderTrialOriginalSnapshot, ReaderTrialOriginalFacts } from './navigation/ReaderTrialOriginalProbe'
 export { DownloadSettingsState, connectDownloadSettings } from './state/DownloadSettingsState'
 export { DownloadBatchResult, DownloadQueueService, DownloadRestoreResult } from './services/DownloadQueueService'
 export { DownloadSettingsService } from './services/DownloadSettingsService'

@@ -16,6 +16,7 @@ import readerVolumeKeysTest from './ReaderVolumeKeys.test'
 import readerImageShareTest from './ReaderImageShare.test'
 import readerImageInformationTest from './ReaderImageInformation.test'
 import readerThumbnailEntryTest from './ReaderThumbnailEntry.test'
+import readerThumbnailOriginalProbeTest from './ReaderThumbnailOriginalProbe.test'
 
 export default function testsuite(): void {
   backupCipherMetadataGuardTest()
@@ -36,4 +37,5 @@ export default function testsuite(): void {
   readerImageShareTest()
   readerImageInformationTest()
   readerThumbnailEntryTest()
+  readerThumbnailOriginalProbeTest()
 }

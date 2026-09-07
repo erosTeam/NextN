@@ -18,7 +18,7 @@ function clearEntryCaptures(): void {
   }
 }
 
-async function captureEntry(driver: Driver, name: string): Promise<void> {
+export async function captureEntry(driver: Driver, name: string): Promise<void> {
   const cache = abilityDelegatorRegistry.getAbilityDelegator().getAppContext().cacheDir
   expect(await driver.dumpLayout(`${cache}/rkit-entry-${name}.json`)).assertTrue()
   expect(await driver.screenCap(`${cache}/rkit-entry-${name}.png`)).assertTrue()
@@ -34,7 +34,7 @@ async function armEntry(driver: Driver, delayed: boolean = false): Promise<void>
   await driver.delayMs(1500)
 }
 
-async function findFirstDetailThumbnail(driver: Driver): Promise<Component> {
+export async function findFirstDetailThumbnail(driver: Driver): Promise<Component> {
   // The accepted portrait Detail metadata List fills the current root Navigation.
   // Select that real owner by its current bounds, never the nested horizontal thumbnail List.
   let owner: Component | null = null
@@ -68,7 +68,7 @@ async function findFirstDetailThumbnail(driver: Driver): Promise<Component> {
   return await driver.findComponent(ON.id(sourceId))
 }
 
-async function assertNoReader(driver: Driver): Promise<void> {
+export async function assertNoReader(driver: Driver): Promise<void> {
   expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
   expect(await driver.findComponent(ON.id('reader-overlay-navigation'))).assertNull()
   expect(await driver.findComponent(ON.id('rkit-chrome-page'))).assertNull()
@@ -104,7 +104,7 @@ async function assertDelayedDiscard(driver: Driver, epoch: number): Promise<void
   throw new Error('No same-epoch real-preview navigation discard before fresh opt-in')
 }
 
-async function waitFreshFirstPage(driver: Driver): Promise<void> {
+export async function waitFreshFirstPage(driver: Driver): Promise<void> {
   for (let attempt = 0; attempt < 40; attempt++) {
     const page = await driver.findComponent(ON.id('rkit-chrome-page'))
     if (page !== null && await driver.findComponent(ON.type('Image').within(ON.id('rkit-image-viewport'))) !== null &&

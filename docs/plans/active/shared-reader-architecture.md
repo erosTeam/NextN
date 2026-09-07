@@ -11,7 +11,7 @@
 
 分工已进入实现：`assess_spread_transition` 完成 Pager/Viewport 可选目的端，发布实际图片矩形及解码状态、隐藏期可见性门控；`assess_nh_thumbnail` 完成 NextN shared 一次性 relay、Detail/Grid点击转发及8项真实relay行为测试。root负责 UI port/preview、Surface与Index/Lab接线、真实状态机测试、构建和237验收。当前已保存 shared2ce53ee / NextN90bfaff，默认null路径保留；237正常入口已逐帧检查，初版编译问题已修正。Koma章节与进度仍由宿主拥有。
 
-当前后续分配：root先完成真实快照迟到结果的原生分支证据；NH子代理交叉审查测试的接管、真实preview、同epoch丢弃和fresh前完成，防止“没打开”假阳性。双页子代理只读复核下一批源页/邻页失败，确认现有 `readerLabFailPage` 没有接入 thumbnail chrome，不能仅传参数就算失败测试。下一个实现切片应在既有 Debug asset probe 接一次原图失败，保持生产 Surface 无测试业务；随后root负责237错误卡可见/可点、精确Retry、原页/邻页及返回位置。再做飞行期翻页/旋转与普通/宽图，之后接NextE可选源端（真实sprite裁切）及Koma宿主边界；不替换默认入口，不重抄三套核心交互。
+当前后续分配：快照迟到取消25与源页/邻页失败29/30已限域验收并保存检查点。NH子代理完成 NextN-only 真实原图交付 hold、请求所有权及9项模块回归；root原生31/32证明释放和先翻到P2后迟到P1不回退，但完整画面反证等待仍藏在Detail后。双页子代理已交付同一实际内容Stack提前测量及跨交付重挂载的实测框保留；root完成严格load/asset身份晋级、审查整合，并负责下一组33/34匹配构建和237可见等待/释放/翻页验证。然后做飞行期旋转与普通/宽图，之后接NextE可选源端（真实sprite裁切）及Koma宿主边界；不替换默认入口，不重抄三套核心交互。
 
 两份落地设计已回收，root 合并约束如下：
 
@@ -32,6 +32,10 @@
 - 后续最小证据：Detail/Grid两入口，普通/长/宽图、thumbnail尺寸未知/冲突，LTR/RTL点左右页、原页/邻页分别慢载失败、飞行/交接立即退出、翻页/旋转、返回目标可见/离屏。必须同视口连续录屏检查起点、运动、等待和最后一帧交接；源代码或静态终点不作通过。
 
 ## 当前实现切片：D11 可选缩略图入场 — OPEN
+
+29/30已限域接受P1源页/P2邻页失败卡及Retry/同源返回：main9/native10，1pass14s032ms/14s373ms，10张整屏/current root均审阅；局部黑底配色修复保存shared fb1b84c，NextN测试/记录保存d082f96、dd5643b。此前28深字深底保留为反例。Koma第三次clean窗口已归还。
+
+下一分配已启动：NH子代理只在NextN实现一次性真实原图资产交付gate（严格Debug、同gallery/page/epoch、超时与资源所有权），root写原生慢载/取消用例并验收237；双页子代理只读核对目标框能否在原图URI到达前由真实共用布局发布。必须分开“asset未交付仍layout”和“已落位waiting”；当前前者还隐藏trial Navigation，预览节点存在不能声称用户已看见。先获取真实等待态证据，不用假decode/手动phase推进，也不修改core配对或持久进度。
 
 实际分工后的首版：window-vp真实Image叶目的端、源snapshot自身比例、280ms等比scale/translate与140ms独立原图交接。首段237录屏04因直接跳位和空黑判失败；按官方V2 Monitor动画指导在animateTo内applySync后，07–09 Detail单页75帧、11–13 LTR左74帧、14–16 RTL右76帧、17–20 Grid92帧及对应源/终点/返回整屏均已检查。当前只冻结NH678049 P1正常入口，返回位置均一致，不声称未知预览对应完整原图。旧05状态栏点击污染证据，未据此加滚动补丁。
 
