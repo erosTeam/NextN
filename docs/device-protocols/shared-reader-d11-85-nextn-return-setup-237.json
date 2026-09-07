@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-85-nextn-return-setup",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/85-nextn-return-setup",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "D11 N main22/native29 memoized ordered window restoration and host wait-before-clear candidate",
+    "page": "Install matching main22/native29 exit-order candidate",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Optional reader only. Restore operation settles before visible host clear; hidden cancellation remains synchronous. No fixed frame delay, geometry/default/settings/progress change. Current matching screenshots/roots and recording86 determine first Detail status; native endpoint alone is not motion acceptance."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    },
+    {
+      "name": "timeout",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "86400000"
+      ]
+    },
+    {
+      "name": "power-after-timeout",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "close-old-nextn",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "force-stop",
+        "com.erosteam.nextn"
+      ]
+    },
+    {
+      "name": "close-old-nexte",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "force-stop",
+        "com.erosteam.nexte"
+      ]
+    },
+    {
+      "name": "install-main22",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"
+      ]
+    },
+    {
+      "name": "install-native29",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"
+      ]
+    },
+    {
+      "name": "restore-ordinary-browse",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "start",
+        "-b",
+        "com.erosteam.nextn",
+        "-a",
+        "EntryAbility"
+      ],
+      "pauseAfterMs": 1500
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "background-restored-ordinary-app",
+        "uiInput": [
+          "keyEvent",
+          "Home"
+        ],
+        "pauseAfterMs": 500
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    }
+  ]
+}

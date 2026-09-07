@@ -542,6 +542,9 @@ struct Index {
   private readerTrialWindow: ReaderTrialWindow | null = null
   private readerTrialWindowEpoch: number = -1
   private readerTrialWindowOpened: boolean = false
+  private readerTrialClosing: Promise<void> | null = null
+  private readerTrialLaunchEpoch: number = 0
+  private readerTrialHostAlive: boolean = true
   @Local private readerEntryTransition: ReaderEntryTransition | null = null
   @Local private readerEntryPreview: ReaderEntryPreviewSource | null = null
   private readerEntryToken: number = 0
@@ -624,13 +627,13 @@ struct Index {
     lease.open(context)
   }
 
-  private retireReaderTrialWindow(): void {
+  private retireReaderTrialWindow(): Promise<void> | null {
     const lease = this.readerTrialWindow
     // Retire ownership before cancel changes layout to cancelled and notifies the phase monitor.
     this.readerTrialWindowEpoch = -1
     this.readerTrialWindow = null
     this.readerTrialWindowOpened = false
-    lease?.close()
+    return lease === null ? null : lease.close()
   }
 
   private prepareReaderTrialWindow(): void {
@@ -640,13 +643,34 @@ struct Index {
     this.syncReaderTrialWindow()
   }
 
-  private closeReaderTrial(): void {
-    this.retireReaderTrialWindow()
+  private closeReaderTrial(): Promise<void> | null {
+    if (this.readerTrialClosing !== null) return this.readerTrialClosing
+    const opened = this.readerTrialWindowOpened
+    const request = this.readerTrialRequest
+    const trialEpoch = this.readerTrialEpoch
+    const restoration = this.retireReaderTrialWindow()
     this.releaseReaderEntryClaim()
     this.retireReaderTrialEntryGuard()
     this.readerEntryEpoch += 1
-    this.readerEntryTransition?.cancel()
+    if (!opened || restoration === null || request === null) {
+      // Hidden layout/capture never acquired colors: clear before cancel can expose it.
+      this.clearReaderTrial()
+      return null
+    }
+    // Keep the actual reading surface until its previous window properties are restored.
+    const closing = restoration.then((): void => {
+      if (this.readerTrialHostAlive && this.readerTrialClosing === closing &&
+        this.readerTrialRequest === request && this.readerTrialEpoch === trialEpoch) this.clearReaderTrial()
+    }).finally((): void => {
+      if (this.readerTrialClosing === closing) this.readerTrialClosing = null
+    })
+    this.readerTrialClosing = closing
+    return closing
+  }
+
+  private clearReaderTrial(): void {
     this.readerTrialRequest = null
+    this.readerEntryTransition?.cancel()
     this.readerTrialStack.clear(false)
     this.readerEntryTransition = null
     this.readerEntryPreview = null
@@ -747,30 +771,41 @@ struct Index {
   @Monitor('readerLabLaunch.version')
   private handleReaderLabLaunch(): void {
     const request = this.readerLabLaunch.consume()
+    const launchEpoch = ++this.readerTrialLaunchEpoch
     if (request !== null && !connectSafeMode().restricted()) {
       ReaderTrialEntryRelay.clear(this.readerEntryToken)
-      if (this.readerEntryClaim !== null || this.readerTrialRequest !== null) this.closeReaderTrial()
-      this.readerEntryEpoch += 1
-      if (request.thumbnailEntry) {
-        const host = this.getUIContext().getHostContext() as common.UIAbilityContext
-        if (!host.applicationInfo.debug || this.readerOverlay.visible || this.readerTrialRequest !== null) return
-        this.readerEntryToken = ReaderTrialEntryRelay.install(request.work, (source: ReaderTrialEntrySource): boolean => {
-          if (this.readerOverlay.visible || this.readerTrialRequest !== null || this.safeMode.restricted()) return false
-          void this.openThumbnailTrial(request, source)
-          return true
-        })
-        this.pushGallery(Number(request.work))
-        return
-      }
-      if (request.readingChrome) {
-        if (this.readerOverlay.visible) return
-        this.retireReaderTrialWindow()
-        this.readerTrialStack.clear(false)
-        this.readerTrialRequest = request
-        this.readerTrialEpoch += 1
-        this.prepareReaderTrialWindow()
-      } else this.stack.pushPathByName('ReaderLab', request)
+      const closing = this.readerEntryClaim !== null || this.readerTrialRequest !== null ||
+        this.readerTrialClosing !== null ? this.closeReaderTrial() : null
+      if (closing !== null) {
+        void closing.then((): void => this.applyReaderLabLaunch(request, launchEpoch, true))
+      } else this.applyReaderLabLaunch(request, launchEpoch)
     }
+  }
+
+  private applyReaderLabLaunch(request: ReaderLabRequest, launchEpoch: number, resumedAfterClose: boolean = false): void {
+    if (!this.readerTrialHostAlive || launchEpoch !== this.readerTrialLaunchEpoch ||
+      (resumedAfterClose && !this.readerEntryVisibility.foreground) || connectSafeMode().restricted()) return
+    this.readerEntryEpoch += 1
+    if (request.thumbnailEntry) {
+      const host = this.getUIContext().getHostContext() as common.UIAbilityContext
+      if (!host.applicationInfo.debug || this.readerOverlay.visible || this.readerTrialRequest !== null) return
+      this.readerEntryToken = ReaderTrialEntryRelay.install(request.work, (source: ReaderTrialEntrySource): boolean => {
+        if (!this.readerTrialHostAlive || launchEpoch !== this.readerTrialLaunchEpoch ||
+          this.readerOverlay.visible || this.readerTrialRequest !== null || this.safeMode.restricted()) return false
+        void this.openThumbnailTrial(request, source)
+        return true
+      })
+      this.pushGallery(Number(request.work))
+      return
+    }
+    if (request.readingChrome) {
+      if (this.readerOverlay.visible) return
+      this.retireReaderTrialWindow()
+      this.readerTrialStack.clear(false)
+      this.readerTrialRequest = request
+      this.readerTrialEpoch += 1
+      this.prepareReaderTrialWindow()
+    } else this.stack.pushPathByName('ReaderLab', request)
   }
   private stack: NavPathStack = new NavPathStack()
   private tabsController: HdsTabsController = new HdsTabsController()
@@ -880,6 +915,7 @@ struct Index {
   private readerDestinationCloseDispatched: boolean = false
 
   aboutToAppear(): void {
+    this.readerTrialHostAlive = true
     this.handleReaderLabLaunch()
     this.installRootNavigationStateTracking()
     this.readerOverlay.reset()
@@ -949,6 +985,9 @@ struct Index {
   }
 
   aboutToDisappear(): void {
+    this.readerTrialHostAlive = false
+    this.readerTrialLaunchEpoch += 1
+    this.readerTrialClosing = null
     this.retireReaderTrialWindow()
     this.releaseReaderEntryClaim()
     this.retireReaderTrialEntryGuard()

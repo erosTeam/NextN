@@ -30,7 +30,8 @@ function section(source, start, end) {
 const index = read('../entry/src/main/ets/pages/Index.ets')
 const hostSource = section(index, 'struct Index {', '\n  @Builder')
   .replace('struct Index {', 'export class Index {') +
-  section(index, "  @Monitor('readerLabLaunch.version')", '\n  private stack:') + '\n}'
+  section(index, "  @Monitor('readerLabLaunch.version')", '\n  private stack:') +
+  section(index, '  aboutToDisappear(): void {', "  @Monitor('homeTab.autoHide')") + '\n}'
 const hostCode = compile(hostSource.replace(/@Local\s+/g, '').replace(/@Monitor\([^\n]*\)\s*/g, ''), 'Index.ets')
 const claimCode = compile('export ' + section(index, 'class ReaderEntryClaim {', '/** Pending feedback'), 'Index.ets')
 const relayCode = compile(read('../shared/src/main/ets/navigation/ReaderTrialEntryRelay.ets'), 'ReaderTrialEntryRelay.ets')
@@ -43,7 +44,7 @@ function moduleExports(code, globals = {}, filename = 'runtime.ets') {
   return exports
 }
 
-function setup() {
+function setup({ deferRestore = false } = {}) {
   const shared = moduleExports(relayCode, {}, 'ReaderTrialEntryRelay.ets')
   const { ReaderEntryRect } = moduleExports(rectCode, {}, 'ReaderEntryTransition.ets')
   const { ReaderEntryClaim } = moduleExports(claimCode, {}, 'Index.ets')
@@ -53,6 +54,7 @@ function setup() {
   let measurements = 0
   let windowOpens = 0
   let windowCloses = 0
+  const restores = []
   const context = { applicationInfo: { debug: true } }
   const uiContext = {
     getHostContext: () => context,
@@ -69,7 +71,10 @@ function setup() {
   }
   class ReaderTrialWindow {
     open() { windowOpens++ }
-    close() { windowCloses++ }
+    close() {
+      windowCloses++
+      return deferRestore ? new Promise(resolve => restores.push(resolve)) : Promise.resolve()
+    }
   }
   const { Index } = moduleExports(hostCode, {
     ...shared, ReaderEntryRect, ReaderEntryClaim, NavPathStack, ReaderTrialWindow,
@@ -85,16 +90,18 @@ function setup() {
   host.getUIContext = () => uiContext
   host.context = () => context
   host.pushGallery = () => {}
+  host.cancelRandomGalleryRequest = () => {}
+  host.clearHomeTabAnimationGuardTimer = () => {}
   const source = new shared.ReaderTrialEntrySource(678049, 0, 'source-frame', 'source-snapshot',
     'detail', 'https://example.invalid/thumbnail.jpg')
   source.isCurrent = () => true
-  function arm() {
-    const request = { work: '678049', pageIndex: 0, thumbnailEntry: true, readingChrome: true, entryProbe: '' }
+  function arm(overrides = {}) {
+    const request = { work: '678049', pageIndex: 0, thumbnailEntry: true, readingChrome: true, entryProbe: '', ...overrides }
     nextRequest = request
     host.handleReaderLabLaunch()
     return request
   }
-  return { host, source, arm, relay: shared.ReaderTrialEntryRelay, ReaderEntryClaim, ReaderEntryRect,
+  return { host, source, arm, restores, relay: shared.ReaderTrialEntryRelay, ReaderEntryClaim, ReaderEntryRect,
     measurements: () => measurements, windowOpens: () => windowOpens, windowCloses: () => windowCloses }
 }
 
@@ -118,19 +125,20 @@ test('live source measurement failure holds the real relay through fallback and 
   assert.equal(value.measurements(), 1)
   assert.equal(value.windowOpens(), 1)
   await Promise.resolve()
-  value.host.closeReaderTrial()
+  await value.host.closeReaderTrial()
   assert.equal(value.host.readerTrialRequest, null)
   assert.equal(value.host.readerTrialEntryGuardToken, 0)
   assert.equal(value.windowCloses(), 1)
   assert.equal(value.relay.tryOpen(value.source), false)
 })
 
-test('new host intent retires fallback but an old token cannot release its replacement', () => {
+test('new host intent retires fallback but an old token cannot release its replacement', async () => {
   const value = setup()
   value.arm()
   assert.equal(value.relay.tryOpen(value.source), true)
   const oldToken = value.host.readerTrialEntryGuardToken
   const replacement = value.arm()
+  await value.host.readerTrialClosing
   assert.equal(value.host.readerTrialRequest, null)
   assert.equal(value.host.readerTrialEntryGuardToken, 0)
   assert.equal(value.windowCloses(), 1)
@@ -142,11 +150,11 @@ test('new host intent retires fallback but an old token cannot release its repla
   assert.equal(value.host.readerTrialRequest, replacement)
   assert.equal(value.host.readerTrialEntryGuardToken, newToken)
   assert.equal(value.windowOpens(), 2)
-  value.host.closeReaderTrial()
+  await value.host.closeReaderTrial()
   assert.equal(value.relay.tryOpen(value.source), false)
 })
 
-test('clearing an existing source claim clears feedback ownership but retains the trial click guard', () => {
+test('clearing an existing source claim clears feedback ownership but retains the trial click guard', async () => {
   const value = setup()
   value.arm()
   assert.equal(value.relay.tryOpen(value.source), true)
@@ -159,6 +167,111 @@ test('clearing an existing source claim clears feedback ownership but retains th
   assert.equal(value.host.readerEntryClaim, null)
   assert.equal(value.host.readerTrialEntryGuardToken, token)
   assert.equal(value.relay.tryOpen(value.source), true)
-  value.host.closeReaderTrial()
+  await value.host.closeReaderTrial()
   assert.equal(value.relay.tryOpen(value.source), false)
+})
+
+test('visible trial and preview remain until restoration settles; repeated Back shares one close', async () => {
+  const value = setup({ deferRestore: true })
+  const request = value.arm()
+  value.relay.tryOpen(value.source)
+  let cancels = 0
+  const entry = { phase: 'waiting', cancel() { cancels++; this.phase = 'cancelled' } }
+  const preview = { marker: 'same owned preview' }
+  value.host.readerEntryTransition = entry
+  value.host.readerEntryPreview = preview
+  const clears = value.host.readerTrialStack.clears
+  const closing = value.host.closeReaderTrial()
+  assert.equal(value.host.closeReaderTrial(), closing)
+  assert.equal(value.host.readerTrialRequest, request)
+  assert.equal(value.host.readerEntryTransition, entry)
+  assert.equal(value.host.readerEntryPreview, preview)
+  assert.equal(cancels, 0)
+  assert.equal(value.host.readerTrialStack.clears, clears)
+  assert.equal(value.windowCloses(), 1)
+  assert.equal(value.host.readerTrialWindow, null)
+  value.host.syncReaderTrialWindow()
+  assert.equal(value.windowOpens(), 1)
+  value.restores.shift()()
+  await closing
+  assert.equal(value.host.readerTrialRequest, null)
+  assert.equal(value.host.readerEntryPreview, null)
+  assert.equal(value.host.readerTrialStack.clears, clears + 1)
+  assert.equal(cancels, 1)
+})
+
+test('hidden layout cancels synchronously without acquiring or waiting for window colors', () => {
+  const value = setup({ deferRestore: true })
+  const request = value.arm()
+  value.host.readerTrialRequest = request
+  value.host.readerEntryTransition = { phase: 'layout', cancel() {
+    assert.equal(value.host.readerTrialRequest, null)
+    this.phase = 'cancelled'
+  } }
+  value.host.prepareReaderTrialWindow()
+  assert.equal(value.windowOpens(), 0)
+  assert.equal(value.host.closeReaderTrial(), null)
+  assert.equal(value.host.readerTrialRequest, null)
+  assert.equal(value.host.readerEntryTransition, null)
+  assert.equal(value.windowOpens(), 0)
+})
+
+test('two replacement intents while A restores admit only latest C after A is removed', async () => {
+  const value = setup({ deferRestore: true })
+  const first = value.arm()
+  value.relay.tryOpen(value.source)
+  value.arm({ pageIndex: 1, thumbnailEntry: false })
+  const closing = value.host.readerTrialClosing
+  const latest = value.arm({ pageIndex: 2, thumbnailEntry: false })
+  assert.equal(value.host.readerTrialRequest, first)
+  assert.equal(value.windowOpens(), 1)
+  value.restores.shift()()
+  await closing
+  await Promise.resolve()
+  assert.equal(value.host.readerTrialRequest, latest)
+  assert.equal(value.windowOpens(), 2)
+  assert.equal(value.windowCloses(), 1)
+  assert.equal(value.host.readerTrialClosing, null)
+})
+
+test('destruction retires late close and queued launch without changing the destroyed host tree', async () => {
+  const value = setup({ deferRestore: true })
+  const first = value.arm()
+  value.relay.tryOpen(value.source)
+  value.arm({ thumbnailEntry: false })
+  const closing = value.host.readerTrialClosing
+  const clears = value.host.readerTrialStack.clears
+  value.host.aboutToDisappear()
+  value.restores.shift()()
+  await closing
+  await Promise.resolve()
+  assert.equal(value.host.readerTrialRequest, first)
+  assert.equal(value.host.readerTrialStack.clears, clears)
+  assert.equal(value.windowOpens(), 1)
+  assert.equal(value.host.readerTrialHostAlive, false)
+})
+
+test('queued launch rechecks foreground after restoration', async () => {
+  const value = setup({ deferRestore: true })
+  value.arm()
+  value.relay.tryOpen(value.source)
+  value.arm({ thumbnailEntry: false })
+  const closing = value.host.readerTrialClosing
+  value.host.readerEntryVisibility.foreground = false
+  value.restores.shift()()
+  await closing
+  await Promise.resolve()
+  assert.equal(value.host.readerTrialRequest, null)
+  assert.equal(value.windowOpens(), 1)
+})
+
+test('initial Want before onForeground remains admitted; only its window lease waits for foreground', () => {
+  const value = setup()
+  value.host.readerEntryVisibility.foreground = false
+  const request = value.arm({ thumbnailEntry: false })
+  assert.equal(value.host.readerTrialRequest, request)
+  assert.equal(value.windowOpens(), 0)
+  value.host.readerEntryVisibility.foreground = true
+  value.host.syncReaderTrialWindow()
+  assert.equal(value.windowOpens(), 1)
 })
