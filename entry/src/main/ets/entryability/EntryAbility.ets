@@ -83,7 +83,8 @@ export default class EntryAbility extends UIAbility {
     ReaderTrialOriginalProbe.cancel(ReaderTrialOriginalProbe.read().epoch)
     const parameters = want.parameters
     if (!this.context.applicationInfo.debug || parameters === undefined ||
-      parameters['readerLabOriginalProbe'] !== 'hold-once' ||
+      (parameters['readerLabOriginalProbe'] !== 'hold-once' &&
+        parameters['readerLabOriginalProbe'] !== 'hold-unknown-metrics-once') ||
       (parameters['readerLabChrome'] !== true && parameters['readerLabChrome'] !== 'true') ||
       (parameters['readerLabThumbnailEntry'] !== true && parameters['readerLabThumbnailEntry'] !== 'true')) return
     const work = parameters['readerLabWork']
@@ -92,7 +93,8 @@ export default class EntryAbility extends UIAbility {
       (typeof requestedPage === 'number' ? requestedPage : -1)
     if (typeof work !== 'string' || !/^[1-9]\d*$/.test(work) || !Number.isSafeInteger(Number(work)) ||
       !Number.isSafeInteger(page) || page < 0) return
-    ReaderTrialOriginalProbe.arm(work, page)
+    ReaderTrialOriginalProbe.arm(work, page,
+      parameters['readerLabOriginalProbe'] === 'hold-unknown-metrics-once')
   }
 
   onCreate(want: Want, _launchParam: AbilityConstant.LaunchParam): void {

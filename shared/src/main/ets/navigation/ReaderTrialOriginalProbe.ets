@@ -11,6 +11,8 @@ export class ReaderTrialOriginalFacts {
   slotId: number = 0
   assetRequestId: number = 0
   assetPhase: string = 'idle'
+  originalWidth: number = 0
+  originalHeight: number = 0
   hostActive: boolean = false
 
   copy(): ReaderTrialOriginalFacts {
@@ -21,6 +23,7 @@ export class ReaderTrialOriginalFacts {
     value.navigationRevision = this.navigationRevision; value.selectionId = this.selectionId
     value.slotId = this.slotId; value.assetRequestId = this.assetRequestId
     value.assetPhase = this.assetPhase; value.hostActive = this.hostActive
+    value.originalWidth = this.originalWidth; value.originalHeight = this.originalHeight
     return value
   }
 }
@@ -36,6 +39,7 @@ export class ReaderTrialOriginalSnapshot {
   state: ReaderTrialOriginalState = 'idle'
   failureReason: '' | 'timeout' | 'provider' = ''
   assetReleased: boolean = false
+  unknownMetrics: boolean = false
   reader: ReaderTrialOriginalFacts = new ReaderTrialOriginalFacts()
 
   copy(): ReaderTrialOriginalSnapshot {
@@ -43,6 +47,7 @@ export class ReaderTrialOriginalSnapshot {
     value.epoch = this.epoch; value.galleryId = this.galleryId; value.pageIndex = this.pageIndex
     value.requestId = this.requestId; value.state = this.state; value.failureReason = this.failureReason
     value.assetReleased = this.assetReleased; value.reader = this.reader.copy()
+    value.unknownMetrics = this.unknownMetrics
     return value
   }
 }
@@ -55,12 +60,13 @@ export class ReaderTrialOriginalProbe {
   private static control: ((release: boolean) => void) | null = null
   private static facts: (() => ReaderTrialOriginalFacts) | null = null
 
-  static arm(galleryId: string, pageIndex: number): number {
+  static arm(galleryId: string, pageIndex: number, unknownMetrics: boolean = false): number {
     ReaderTrialOriginalProbe.cancel(ReaderTrialOriginalProbe.current.epoch)
     ReaderTrialOriginalProbe.facts = null
     const value = new ReaderTrialOriginalSnapshot()
     value.epoch = ++ReaderTrialOriginalProbe.serial
     value.galleryId = galleryId; value.pageIndex = pageIndex; value.state = 'armed'
+    value.unknownMetrics = unknownMetrics
     ReaderTrialOriginalProbe.current = value
     return value.epoch
   }

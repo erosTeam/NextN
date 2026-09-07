@@ -28,7 +28,7 @@ async function reportOriginal(label: string): Promise<void> {
     `ReaderOriginalAlignment ${label}: mode=${alignment.alignmentMode}, supported=${alignment.holdingHandSupported}, edge=${connectActionHandEdge().edge}`)
 }
 
-async function waitHeldOriginal(driver: Driver): Promise<void> {
+async function waitHeldOriginal(driver: Driver, unknownMetrics: boolean): Promise<void> {
   for (let attempt = 0; attempt < 60; attempt++) {
     const state = ReaderTrialOriginalProbe.read()
     if (state.state === 'failed' || state.state === 'cancelled') {
@@ -36,11 +36,16 @@ async function waitHeldOriginal(driver: Driver): Promise<void> {
       throw new Error('Original asset did not reach an owned hold')
     }
     if (state.state === 'held' && state.reader.sessionPhase === 'ready' &&
-      state.reader.entryPhase === 'waiting' && state.reader.layoutReady) {
+      state.reader.entryPhase === (unknownMetrics ? 'layout' : 'waiting') &&
+      state.reader.layoutReady === !unknownMetrics) {
       expect(state.epoch > 0 && state.requestId > 0 && state.reader.entryId > 0).assertTrue()
       expect(state.pageIndex).assertEqual(0)
       expect(state.reader.anchor).assertEqual(0)
       expect(state.reader.decodedReady).assertFalse()
+      if (unknownMetrics) {
+        expect(state.reader.originalWidth).assertEqual(0)
+        expect(state.reader.originalHeight).assertEqual(0)
+      }
       expect(state.reader.assetRequestId).assertEqual(0)
       expect(await driver.findComponent(ON.id('rkit-entry-preview-image')) !== null).assertTrue()
       // The full held capture additionally judges ancestor visibility, not merely
@@ -132,9 +137,12 @@ async function assertOriginalSourceBounds(driver: Driver, sourceId: string, befo
 export default function readerThumbnailOriginalProbeTest(): void {
   const className = abilityDelegatorRegistry.getArguments().parameters['-s class']
   if (className !== 'ReaderThumbnailOriginalReleaseTrial' && className !== 'ReaderThumbnailOriginalNavigationTrial' &&
-    className !== 'ReaderThumbnailOriginalBackTrial' && className !== 'ReaderThumbnailOriginalRotationTrial') return
+    className !== 'ReaderThumbnailOriginalBackTrial' && className !== 'ReaderThumbnailOriginalRotationTrial' &&
+    className !== 'ReaderThumbnailUnknownOriginalTrial' && className !== 'ReaderThumbnailUnknownOriginalBackTrial') return
+  const unknownMetrics = className === 'ReaderThumbnailUnknownOriginalTrial' ||
+    className === 'ReaderThumbnailUnknownOriginalBackTrial'
   const navigated = className === 'ReaderThumbnailOriginalNavigationTrial'
-  const back = className === 'ReaderThumbnailOriginalBackTrial'
+  const back = className === 'ReaderThumbnailOriginalBackTrial' || className === 'ReaderThumbnailUnknownOriginalBackTrial'
   const rotated = className === 'ReaderThumbnailOriginalRotationTrial'
   describe(className, (): void => {
     it('heldRealOriginalHasAnObservedOwnerAndCannotReopenRetiredEntry', 0, async (): Promise<void> => {
@@ -149,7 +157,7 @@ export default function readerThumbnailOriginalProbeTest(): void {
           bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
           parameters: { readerLabWork: '678049', readerLabPage: '0', readerLabChrome: 'true',
             readerLabThumbnailEntry: 'true', readerLabEntryLayout: 'single', readerLabEntryDirection: 'ltr',
-            readerLabOriginalProbe: 'hold-once', readerLabVolumeKeys: 'true' },
+            readerLabOriginalProbe: unknownMetrics ? 'hold-unknown-metrics-once' : 'hold-once', readerLabVolumeKeys: 'true' },
         })
         await driver.delayMs(1500)
         epoch = ReaderTrialOriginalProbe.read().epoch
@@ -161,7 +169,7 @@ export default function readerThumbnailOriginalProbeTest(): void {
         await reportOriginal('source')
         await captureEntry(driver, 'original-source')
         await source.click()
-        await waitHeldOriginal(driver)
+        await waitHeldOriginal(driver, unknownMetrics)
         const held = ReaderTrialOriginalProbe.read()
         epoch = held.epoch
         const entryId = held.reader.entryId
@@ -219,6 +227,12 @@ export default function readerThumbnailOriginalProbeTest(): void {
         const expectedPhase = navigated || rotated ? 'cancelled' : 'finished'
         // Navigation checks the current P2, not whether cached P1 has decoded.
         await waitDeliveredOriginal(driver, epoch, entryId, expectedAnchor, expectedPhase)
+        if (unknownMetrics) {
+          const decoded = ReaderTrialOriginalProbe.read()
+          expect(decoded.reader.originalWidth > 0).assertTrue()
+          expect(decoded.reader.originalHeight > 0).assertTrue()
+          expect(decoded.reader.decodedReady).assertTrue()
+        }
         if (!navigated && !rotated) await waitFreshFirstPage(driver)
         await captureEntry(driver, 'original-released')
         await driver.delayMs(1000)

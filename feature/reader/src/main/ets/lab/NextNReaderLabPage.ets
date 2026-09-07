@@ -8,6 +8,7 @@ import { ReaderLabShareProbe } from '@reader-kit/ui'
 import { connectLayoutSafeArea, LayoutSafeAreaState, ThemeTokens, nextNHdsTitle,
   ReaderTrialOriginalProbe, ReaderTrialOriginalFacts } from 'shared'
 import { NextNReaderOriginalProbeProvider } from './NextNReaderOriginalProbeProvider'
+import { NextNReaderOriginalProbeCatalog } from './NextNReaderOriginalProbeCatalog'
 
 @ComponentV2
 export struct NextNReaderLabPage {
@@ -42,7 +43,9 @@ export struct NextNReaderLabPage {
         this.request.work, this.request.pageIndex)
       ReaderTrialOriginalProbe.bindFacts(this.originalProbeEpoch, (): ReaderTrialOriginalFacts => this.originalProbeFacts())
     }
-    this.session = new ReaderPagedSession(adapter, new ReaderLabAssetProbe(this.originalProbe ?? adapter, this.request.thumbnailFailurePage,
+    const catalog = this.originalProbeEpoch !== 0 && ReaderTrialOriginalProbe.read().unknownMetrics ?
+      new NextNReaderOriginalProbeCatalog(adapter, this.request.work, this.request.pageIndex) : adapter
+    this.session = new ReaderPagedSession(catalog, new ReaderLabAssetProbe(this.originalProbe ?? adapter, this.request.thumbnailFailurePage,
       this.request.informationProbe, this.request.thumbnailEntry ? this.request.failurePage : -1))
     if (this.request.thumbnailEntry) {
       const policy = new ReaderDisplayPolicy()
@@ -78,6 +81,8 @@ export struct NextNReaderLabPage {
       facts.slotId = frame?.slotId ?? 0
       facts.assetRequestId = frame?.asset.assetRequestId ?? 0
       facts.assetPhase = frame?.asset.phase ?? 'idle'
+      facts.originalWidth = frame?.asset.page?.width ?? 0
+      facts.originalHeight = frame?.asset.page?.height ?? 0
     }
     // layout/target facts do not assert that Index has revealed its trial overlay to the user.
     return facts
