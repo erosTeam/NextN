@@ -2,16 +2,18 @@ import { common } from '@kit.AbilityKit'
 import { uniformTypeDescriptor as utd } from '@kit.ArkData'
 import { fileUri } from '@kit.CoreFileKit'
 import { systemShare } from '@kit.ShareKit'
-import { ReaderSystemSharePresentation } from '@reader-kit/ui'
+import { ReaderSystemSharePresentation, ReaderFileInformation } from '@reader-kit/ui'
 import { NhApiClient, NhGalleryDetail, ReaderImageCacheService } from 'shared'
 import {
   ReaderCatalog, ReaderAssetProvider, ReaderUnitKey, ReaderUnit, ReaderPage,
   ReaderCancellation, ReaderAsset, ReaderAssetKind, ReaderImageShareHost,
   ReaderImageShareTarget, ReaderImageSharePresentation,
+  ReaderImageInformation,
 } from '@reader-kit/core'
 
 export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider, ReaderImageShareHost {
   cancellationMode: 'consumer-only' | 'transport' = 'consumer-only'
+  informationSupported: boolean = true
   private context: common.UIAbilityContext
   private details: Map<string, NhGalleryDetail> = new Map()
 
@@ -76,6 +78,9 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
     const cacheKey = ReaderImageCacheService.cacheKey(detail.id, detail.mediaId, source.number, source.extension)
     const result = await ReaderImageCacheService.load(this.context, url, cacheKey, forceReload)
     // Core releases a late result; the cache file remains owned by the existing service.
-    return new ReaderAsset(result.displayUri)
+    const facts = new ReaderImageInformation()
+    facts.bytes = result.bytes
+    facts.variant = 'source'
+    return new ReaderAsset(result.displayUri, () => {}, new ReaderFileInformation(result.localPath, facts))
   }
 }
