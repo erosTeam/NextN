@@ -28,6 +28,18 @@ async function reportOriginal(label: string): Promise<void> {
     `ReaderOriginalAlignment ${label}: mode=${alignment.alignmentMode}, supported=${alignment.holdingHandSupported}, edge=${connectActionHandEdge().edge}`)
 }
 
+function statusContent(mainWindow: window.Window): string {
+  const color = mainWindow.getWindowSystemBarProperties().statusBarContentColor?.toUpperCase() ?? ''
+  return color.length === 9 && color.startsWith('#FF') ? `#${color.substring(3)}` : color
+}
+
+async function assertStatusContent(mainWindow: window.Window, expected: string, label: string): Promise<void> {
+  const color = statusContent(mainWindow)
+  await abilityDelegatorRegistry.getAbilityDelegator().print(`ReaderOriginalStatus ${label}: ${color}`)
+  expect(color.length > 0).assertTrue()
+  expect(color).assertEqual(expected)
+}
+
 async function waitHeldOriginal(driver: Driver, unknownMetrics: boolean): Promise<void> {
   for (let attempt = 0; attempt < 60; attempt++) {
     const state = ReaderTrialOriginalProbe.read()
@@ -136,6 +148,39 @@ async function assertOriginalSourceBounds(driver: Driver, sourceId: string, befo
 
 export default function readerThumbnailOriginalProbeTest(): void {
   const className = abilityDelegatorRegistry.getArguments().parameters['-s class']
+  if (className === 'ReaderTrialWindowNoPreviewTrial') {
+    describe(className, (): void => {
+      it('ordinaryTrialOwnsAndRestoresStatusWithoutAnEntryPreview', 0, async (): Promise<void> => {
+        clearOriginalCaptures()
+        const driver = Driver.create()
+        const delegator = abilityDelegatorRegistry.getAbilityDelegator()
+        try {
+          await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility' })
+          await driver.delayMs(1500)
+          const ability = await delegator.getCurrentTopAbility()
+          const mainWindow = await window.getLastWindow(ability.context)
+          const before = statusContent(mainWindow)
+          await assertStatusContent(mainWindow, before, 'ordinary-source')
+          await captureEntry(driver, 'original-source')
+          await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+            parameters: { readerLabWork: '678049', readerLabPage: '0', readerLabChrome: 'true' } })
+          await waitFreshFirstPage(driver)
+          expect(await driver.findComponent(ON.id('rkit-entry-preview-image'))).assertNull()
+          await captureEntry(driver, 'original-released')
+          await assertStatusContent(mainWindow, '#FFFFFF', 'ordinary-visible')
+          await (await driver.findComponent(ON.id('rkit-close'))).click()
+          await driver.delayMs(700)
+          await assertNoReader(driver)
+          await captureEntry(driver, 'original-closed')
+          await assertStatusContent(mainWindow, before, 'ordinary-closed')
+        } catch (error) {
+          await captureEntry(driver, 'original-exception')
+          throw error as Error
+        }
+      })
+    })
+    return
+  }
   if (className !== 'ReaderThumbnailOriginalReleaseTrial' && className !== 'ReaderThumbnailOriginalNavigationTrial' &&
     className !== 'ReaderThumbnailOriginalBackTrial' && className !== 'ReaderThumbnailOriginalRotationTrial' &&
     className !== 'ReaderThumbnailUnknownOriginalTrial' && className !== 'ReaderThumbnailUnknownOriginalBackTrial') return
@@ -166,6 +211,10 @@ export default function readerThumbnailOriginalProbeTest(): void {
         const sourceId = await source.getId()
         const before = await source.getBounds()
         const rootBefore = await (await driver.findComponent(ON.id('nextn-root-navigation'))).getBounds()
+        const sourceAbility = await abilityDelegatorRegistry.getAbilityDelegator().getCurrentTopAbility()
+        mainWindow = await window.getLastWindow(sourceAbility.context)
+        const sourceStatusContent = statusContent(mainWindow)
+        await assertStatusContent(mainWindow, sourceStatusContent, 'source')
         await reportOriginal('source')
         await captureEntry(driver, 'original-source')
         await source.click()
@@ -174,11 +223,13 @@ export default function readerThumbnailOriginalProbeTest(): void {
         epoch = held.epoch
         const entryId = held.reader.entryId
         await captureEntry(driver, 'original-held')
+        if (unknownMetrics) await assertStatusContent(mainWindow, sourceStatusContent, 'hidden-held')
         if (back) {
           await driver.triggerKey(KeyCode.KEYCODE_BACK)
           await waitBackReleased(driver, epoch, held.requestId)
           await assertOriginalSourceBounds(driver, sourceId, before, rootBefore)
           await captureEntry(driver, 'original-back')
+          await assertStatusContent(mainWindow, sourceStatusContent, 'back')
           for (let attempt = 0; attempt < 20; attempt++) {
             await driver.delayMs(200)
             await assertNoReader(driver)
@@ -186,6 +237,7 @@ export default function readerThumbnailOriginalProbeTest(): void {
             expect(state.epoch).assertEqual(epoch)
             expect(state.state).assertEqual('cancelled')
             expect(state.assetReleased).assertTrue()
+            expect(statusContent(mainWindow)).assertEqual(sourceStatusContent)
           }
           expect(ReaderTrialOriginalProbe.release(epoch, held.requestId)).assertFalse()
           await captureEntry(driver, 'original-late')
@@ -235,6 +287,7 @@ export default function readerThumbnailOriginalProbeTest(): void {
         }
         if (!navigated && !rotated) await waitFreshFirstPage(driver)
         await captureEntry(driver, 'original-released')
+        await assertStatusContent(mainWindow, '#FFFFFF', 'visible-released')
         await driver.delayMs(1000)
         await waitDeliveredOriginal(driver, epoch, entryId, expectedAnchor, expectedPhase)
         await captureEntry(driver, 'original-late')
@@ -251,6 +304,7 @@ export default function readerThumbnailOriginalProbeTest(): void {
         await assertOriginalSourceBounds(driver, sourceId, before, rootBefore)
         await reportOriginal('closed')
         await captureEntry(driver, 'original-closed')
+        await assertStatusContent(mainWindow, sourceStatusContent, 'closed')
       } catch (error) {
         await reportOriginal('exception')
         await captureEntry(driver, 'original-exception')

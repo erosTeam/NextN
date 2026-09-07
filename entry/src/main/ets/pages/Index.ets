@@ -1,6 +1,6 @@
 import { HomePage, HomeSubtabManagerPage, PopularPage } from 'home'
 import { NextNReaderLabPage } from 'reader'
-import { ReaderLabLaunchState, ReaderLabRequest, connectReaderLabLaunch } from '@reader-kit/ui'
+import { ReaderLabLaunchState, ReaderLabRequest, connectReaderLabLaunch, ReaderTrialWindow } from '@reader-kit/ui'
 import { ReaderEntryTransition, ReaderEntryPreviewSource, ReaderEntryRect,
   ReaderLabVisibilityState, connectReaderLabVisibility } from '@reader-kit/ui'
 import { ReaderDisplayPart, ReaderUnitKey } from '@reader-kit/core'
@@ -489,6 +489,9 @@ struct Index {
   @Local private readerTrialRequest: ReaderLabRequest | null = null
   @Local private readerTrialEpoch: number = 0
   private readerTrialStack: NavPathStack = new NavPathStack()
+  private readerTrialWindow: ReaderTrialWindow | null = null
+  private readerTrialWindowEpoch: number = -1
+  private readerTrialWindowOpened: boolean = false
   @Local private readerEntryTransition: ReaderEntryTransition | null = null
   @Local private readerEntryPreview: ReaderEntryPreviewSource | null = null
   private readerEntryToken: number = 0
@@ -504,7 +507,36 @@ struct Index {
     }
   }
 
+  @Monitor('readerEntryTransition.phase', 'readerEntryVisibility.foreground')
+  private syncReaderTrialWindow(): void {
+    const lease = this.readerTrialWindow
+    if (lease === null || this.readerTrialWindowOpened || this.readerTrialWindowEpoch !== this.readerTrialEpoch ||
+      this.readerTrialRequest === null || !this.readerTrialRequest.readingChrome ||
+      !this.readerEntryVisibility.foreground || this.readerEntryTransition?.phase === 'layout') return
+    const context = this.context()
+    if (!context.applicationInfo.debug) return
+    this.readerTrialWindowOpened = true
+    lease.open(context)
+  }
+
+  private retireReaderTrialWindow(): void {
+    const lease = this.readerTrialWindow
+    // Retire ownership before cancel changes layout to cancelled and notifies the phase monitor.
+    this.readerTrialWindowEpoch = -1
+    this.readerTrialWindow = null
+    this.readerTrialWindowOpened = false
+    lease?.close()
+  }
+
+  private prepareReaderTrialWindow(): void {
+    this.readerTrialWindow = new ReaderTrialWindow()
+    this.readerTrialWindowEpoch = this.readerTrialEpoch
+    this.readerTrialWindowOpened = false
+    this.syncReaderTrialWindow()
+  }
+
   private closeReaderTrial(): void {
+    this.retireReaderTrialWindow()
     this.readerEntryEpoch += 1
     this.readerEntryTransition?.cancel()
     this.readerTrialRequest = null
@@ -555,6 +587,7 @@ struct Index {
       preview?.release(); return
     }
     if (probe) ReaderTrialEntryProbe.recordHandoff(epoch)
+    this.retireReaderTrialWindow()
     request.pageIndex = source.pageIndex
     this.readerEntryPreview = preview
     this.readerEntryTransition = preview === null ? null : new ReaderEntryTransition(epoch,
@@ -562,12 +595,14 @@ struct Index {
     this.readerTrialStack.clear(false)
     this.readerTrialRequest = request
     this.readerTrialEpoch += 1
+    this.prepareReaderTrialWindow()
   }
 
   @Builder
   private readerTrialRouter(_name: string, _param: Object) {
     if (this.readerTrialRequest !== null) {
       NextNReaderLabPage({ request: this.readerTrialRequest,
+        managesTrialWindow: false,
         entryTransition: this.readerEntryTransition, entryPreview: this.readerEntryPreview,
         onClose: (): void => { this.closeReaderTrial() } })
     }
@@ -592,9 +627,11 @@ struct Index {
       }
       if (request.readingChrome) {
         if (this.readerOverlay.visible) return
+        this.retireReaderTrialWindow()
         this.readerTrialStack.clear(false)
         this.readerTrialRequest = request
         this.readerTrialEpoch += 1
+        this.prepareReaderTrialWindow()
       } else this.stack.pushPathByName('ReaderLab', request)
     }
   }
@@ -775,6 +812,7 @@ struct Index {
   }
 
   aboutToDisappear(): void {
+    this.retireReaderTrialWindow()
     ReaderTrialEntryRelay.clear(this.readerEntryToken)
     this.readerEntryEpoch += 1
     this.cancelRandomGalleryRequest()

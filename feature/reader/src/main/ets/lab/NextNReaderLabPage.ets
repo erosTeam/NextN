@@ -15,6 +15,7 @@ export struct NextNReaderLabPage {
   @Require @Param request: ReaderLabRequest
   @Param entryTransition: ReaderEntryTransition | null = null
   @Param entryPreview: ReaderEntryPreviewSource | null = null
+  @Param managesTrialWindow: boolean = true
   @Event onClose: () => void = () => {}
   @Local private session: ReaderPagedSession | null = null
   private imageShare: ReaderImageShareHost | null = null
@@ -32,7 +33,7 @@ export struct NextNReaderLabPage {
   aboutToAppear(): void {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext
     if (!context.applicationInfo.debug) return
-    if (this.request.readingChrome) this.trialWindow.open(context)
+    if (this.request.readingChrome && this.managesTrialWindow) this.trialWindow.open(context)
     const adapter = new NextNReaderLabAdapter(context)
     this.imageShare = new ReaderLabShareProbe(adapter, this.request.shareProbe)
     this.unitKey = new ReaderUnitKey('nh', this.request.work, this.request.work)
@@ -60,7 +61,8 @@ export struct NextNReaderLabPage {
     this.originalProbeHostClosed = true
     this.originalProbe?.close()
     if (this.originalProbeEpoch !== 0) ReaderTrialOriginalProbe.detachFacts(this.originalProbeEpoch)
-    this.volumeKeys.close(); this.trialWindow.close()
+    this.volumeKeys.close()
+    if (this.managesTrialWindow) this.trialWindow.close()
   }
 
   private originalProbeFacts(): ReaderTrialOriginalFacts {
