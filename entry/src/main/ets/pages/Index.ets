@@ -84,6 +84,7 @@ import {
   LayoutSafeAreaBridge,
   LayoutSafeAreaState,
   LoginRecoveryLaunchState,
+  DownloadQueueAction,
   DownloadQueueActionBridge,
   DownloadQueueActionState,
   FavoritesActionBridge,
@@ -2103,7 +2104,9 @@ struct Index {
       const sortMenuItem: Record<string, Object> = { 'content': sortAction }
       const pauseVisibleMenuItem: Record<string, Object> = { 'content': pauseVisibleAction }
       const resumeVisibleMenuItem: Record<string, Object> = { 'content': resumeVisibleAction }
-      const downloadMenuItems: Record<string, Object>[] = [searchMenuItem, sortMenuItem]
+      const downloadMenuItems: Record<string, Object>[] = [searchMenuItem, sortMenuItem,
+        this.downloadSelectionItem(AppStrings.get('download_select'), $r('sys.symbol.checkmark_square'),
+          DownloadQueueAction.SELECT, this.downloadQueueActions.visibleCount > 0)]
       if (this.downloadQueueActions.resumableVisibleCount > 0) {
         downloadMenuItems.push(resumeVisibleMenuItem)
       }
@@ -2115,11 +2118,49 @@ struct Index {
         'maxCount': downloadMenuItems.length,
       }
       content['menu'] = downloadMenu
+      if (this.downloadQueueActions.selectionMode) {
+        title['mainTitle'] = this.downloadQueueActions.batchProgress.length > 0 ? this.downloadQueueActions.batchProgress :
+          AppStrings.get('download_selected_count').replace('%s', `${this.downloadQueueActions.selectedCount}`)
+        const cancel: Record<string, Object> = { 'label': AppStrings.get('common_cancel'), 'icon': $r('sys.symbol.xmark'),
+          'action': (): void => { DownloadQueueActionBridge.request(DownloadQueueAction.CANCEL_SELECTION) } }
+        content['backIcon'] = cancel
+        content['menu'] = this.downloadSelectionMenu()
+      }
     }
     if (logicalTab === 3) {
       content['menu'] = this.emptyHdsMenu()
     }
     return nextNHdsTitleBar(content)
+  }
+
+  private downloadSelectionItem(label: string, icon: Resource, command: string, enabled: boolean): Record<string, Object> {
+    const content: Record<string, Object> = { 'label': label, 'icon': icon,
+      'isEnabled': enabled && !this.downloadQueueActions.batchBusy,
+      'action': (): void => { DownloadQueueActionBridge.request(command) } }
+    return { 'content': content }
+  }
+
+  private downloadSelectionMenu(): Record<string, Object> {
+    const items: Record<string, Object>[] = [
+      this.downloadSelectionItem(AppStrings.get(this.downloadQueueActions.allSelected ? 'download_deselect_all' : 'download_select_all'),
+        $r('sys.symbol.checkmark_square'), DownloadQueueAction.SELECT_ALL, this.downloadQueueActions.visibleCount > 0),
+      this.downloadSelectionItem(AppStrings.get('download_pause_selected').replace('%s', `${this.downloadQueueActions.selectedPausable}`),
+        $r('sys.symbol.pause'), DownloadQueueAction.PAUSE_SELECTED, this.downloadQueueActions.selectedPausable > 0),
+      this.downloadSelectionItem(AppStrings.get('download_resume_selected').replace('%s', `${this.downloadQueueActions.selectedResumable}`),
+        $r('sys.symbol.play_fill'), DownloadQueueAction.RESUME_SELECTED, this.downloadQueueActions.selectedResumable > 0),
+      this.downloadSelectionItem(AppStrings.get('download_delete_task'), $r('sys.symbol.trash'),
+        DownloadQueueAction.DELETE_SELECTED, this.downloadQueueActions.selectedCount > 0),
+    ]
+    return { 'value': items, 'maxCount': 3 }
+  }
+
+  onBackPress(): boolean {
+    if (this.logicalTabForPhysical(this.activeTab) === 2 && this.stack.getAllPathName().length === 0 &&
+      this.downloadQueueActions.selectionMode) {
+      DownloadQueueActionBridge.request(DownloadQueueAction.CANCEL_SELECTION)
+      return true
+    }
+    return false
   }
 
   private thumbnailsTitleBar(route: ThumbnailRouteParams): Record<string, Object> {
@@ -3837,6 +3878,7 @@ struct Index {
       }
       .width('100%')
       .height('100%')
+      .enabled(!this.downloadQueueActions.batchBusy)
       .barOverlap(true)
       .barPosition(BarPosition.End)
       .barMode(BarMode.Fixed)
@@ -3856,6 +3898,7 @@ struct Index {
         // page behind unrelated tab content.
         const changed: boolean = index !== this.activeTab
         if (changed) {
+          this.downloadQueueActions.selectionMode = false
           this.cancelRandomGalleryRequest()
           this.clearGalleryDetailTransitionOwnership()
           if (this.stack.getAllPathName().length > 0) {
@@ -3901,9 +3944,9 @@ struct Index {
       .enableDragBar(true)
       .titleBar(this.rootTitleBar())
       .titleMode(HdsNavigationTitleMode.MINI)
-      .hideBackButton(true)
+      .hideBackButton(this.logicalTabForPhysical(this.activeTab) !== 2 || !this.downloadQueueActions.selectionMode)
       .dynamicHideTitleBar({
-        hideTitleArea: true,
+        hideTitleArea: !this.downloadQueueActions.selectionMode,
         hideBottomBuilder: false,
         hideStatusBar: false,
         mode: HideMode.SCROLL_UP,

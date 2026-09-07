@@ -60,6 +60,7 @@ export struct DownloadTitleBar {
               this.actions.searchText = value
             },
           })
+            .enabled(!this.actions.selectionMode && !this.actions.batchBusy)
             .height(ThemeTokens.SEARCH_FIELD_HEIGHT)
             .layoutWeight(1)
         }

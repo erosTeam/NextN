@@ -29,6 +29,7 @@ function setup() {
   const repository = { save: async () => {} }
   const { DownloadQueueService: service } = load('services/DownloadQueueService', {
     '../model/NhDownloadTask': model,
+    './DownloadSettingsService': { DownloadSettingsService: { restore: async () => {} } },
     '../state/DownloadQueueState': { connectDownloadQueue: () => state },
     '../storage/DownloadQueueRepository': { DownloadQueueRepository: repository },
   })
@@ -106,4 +107,85 @@ test('late worker failure cannot overwrite pause, completion, deletion or a newe
     await service.failGalleryRun({}, 1, 1, Error('late error'))
     assert.equal(state.tasks[0]?.status, status === 'deleted' ? undefined : status === 'newer' ? 'downloading' : status)
   }
+})
+
+
+test('batch pause cancels every selected queued start before the first persistence await', async () => {
+  const { service, state, repository } = setup()
+  const second = state.tasks[0].copy()
+  second.galleryId = 2
+  const untouched = second.copy()
+  untouched.galleryId = 3
+  const complete = second.copy()
+  complete.galleryId = 4
+  complete.status = 'complete'
+  complete.completedPages = complete.pageCount
+  state.tasks.push(second, untouched, complete)
+  let releaseSave
+  repository.save = () => new Promise(resolve => { releaseSave = resolve })
+  const batch = service.pauseVisible({}, [1, 2, 4])
+  for (let i = 0; i < 10; i++) await Promise.resolve()
+  assert.deepEqual(Array.from(state.tasks, t => t.status), ['paused', 'paused', 'queued', 'complete'])
+  assert.equal(service.nextQueuedTask().galleryId, 3)
+  repository.save = async () => {}
+  releaseSave()
+  const result = await batch
+  assert.equal(result.succeededCount, 3)
+})
+
+test('batch pause reports partial persistence failure and continues remaining tasks', async () => {
+  const { service, state, repository } = setup()
+  const second = state.tasks[0].copy()
+  second.galleryId = 2
+  state.tasks.push(second)
+  const saved = []
+  repository.save = async (_ctx, task) => {
+    saved.push(task.galleryId)
+    if (task.galleryId === 1) throw Error('storage unavailable')
+  }
+  const result = await service.pauseVisible({}, [1, 1, 2])
+  assert.deepEqual(saved, [1, 2])
+  assert.equal(result.requestedCount, 2)
+  assert.equal(result.failedCount, 1)
+  assert.equal(result.succeededCount, 1)
+})
+
+test('cancelling selected starts invalidates late failure and keeps unrelated work eligible', async () => {
+  const { service, state } = setup()
+  const second = state.tasks[0].copy()
+  second.galleryId = 2
+  state.tasks.push(second)
+  service.executionTokens.set(1, 1)
+  service.cancelSelectedStarts([1])
+  await service.failGalleryRun({}, 1, 1, Error('late failure'))
+  assert.equal(state.tasks[0].status, 'paused')
+  assert.equal(state.tasks[0].errorMessage, '')
+  assert.equal(service.nextQueuedTask().galleryId, 2)
+})
+
+test('selected resume uses the existing concurrency limit and a queued pause prevents its start', async () => {
+  const { service, state } = setup()
+  state.tasks[0].status = 'paused'
+  const second = state.tasks[0].copy()
+  second.galleryId = 2
+  const untouched = second.copy()
+  untouched.galleryId = 3
+  state.tasks.push(second, untouched)
+  service.isLegacyTaskDirectory = () => false
+  let release
+  const gate = new Promise(resolve => { release = resolve })
+  const started = []
+  service.downloadPageOnce = async (_ctx, task) => { started.push(task.galleryId); await gate; throw Error('fixture request failed') }
+  const result = await service.resumeVisible({}, [1, 2])
+  assert.equal(result.succeededCount, 2)
+  for (let i = 0; i < 20; i++) await Promise.resolve()
+  assert.equal(service.activeGalleryIds.size, 1)
+  assert(started.every(id => id === 1))
+  assert.equal(state.tasks[2].status, 'paused')
+  await service.pauseVisible({}, [1, 2])
+  release()
+  await Promise.all(Array.from(service.activeGalleryRuns.values()))
+  assert(started.every(id => id === 1))
+  assert.equal(service.activeGalleryIds.size, 0)
+  assert(state.tasks.every(task => task.status === 'paused'))
 })

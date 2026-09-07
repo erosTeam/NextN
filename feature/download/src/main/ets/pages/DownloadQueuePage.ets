@@ -96,6 +96,8 @@ class DownloadQueueUiErrorCode {
  */
 @ComponentV2
 export struct DownloadQueuePage {
+  @Local selectedIds: Set<number> = new Set<number>()
+  private suppressedSelectionId: number = 0
   @Local tasks: NhDownloadTask[] = []
   @Local isLoading: boolean = true
   @Local errorMessage: string = ''
@@ -273,6 +275,13 @@ export struct DownloadQueuePage {
       return
     }
     this.handledTitleActionSeq = this.titleActions.commandSeq
+    if (this.titleActions.batchBusy) return
+    if (this.titleActions.command === DownloadQueueAction.SELECT) this.beginSelection()
+    if (this.titleActions.command === DownloadQueueAction.CANCEL_SELECTION) this.titleActions.selectionMode = false
+    if (this.titleActions.command === DownloadQueueAction.SELECT_ALL) this.selectAll()
+    if (this.titleActions.command === DownloadQueueAction.PAUSE_SELECTED) this.applyVisibleBatch(true, true)
+    if (this.titleActions.command === DownloadQueueAction.RESUME_SELECTED) this.applyVisibleBatch(false, true)
+    if (this.titleActions.command === DownloadQueueAction.DELETE_SELECTED) this.confirmDeleteSelected()
     if (this.titleActions.command === DownloadQueueAction.TOGGLE_SEARCH) {
       this.toggleSearch()
       return
@@ -288,6 +297,101 @@ export struct DownloadQueuePage {
     if (this.titleActions.command === DownloadQueueAction.RESUME_VISIBLE) {
       this.applyVisibleBatch(false)
     }
+  }
+
+  @Monitor('titleActions.selectionMode')
+  private onSelectionChanged(): void {
+    if (!this.titleActions.selectionMode) {
+      this.selectedIds = new Set<number>()
+      this.suppressedSelectionId = 0
+      this.publishSelection()
+    }
+  }
+
+  private publishSelection(): void {
+    const visible: NhDownloadTask[] = this.visibleTasks()
+    const ids: number[] = visible.map((task: NhDownloadTask) => task.galleryId)
+    const kept: number[] = Array.from(this.selectedIds).filter((id: number) => ids.includes(id))
+    if (kept.length !== this.selectedIds.size) this.selectedIds = new Set<number>(kept)
+    this.titleActions.visibleCount = ids.length
+    this.titleActions.selectedCount = kept.length
+    this.titleActions.allSelected = ids.length > 0 && kept.length === ids.length
+    this.titleActions.selectedPausable = this.visiblePausableIds().filter((id: number) => this.selectedIds.has(id)).length
+    this.titleActions.selectedResumable = this.visibleResumableIds().filter((id: number) => this.selectedIds.has(id)).length
+  }
+
+  private beginSelection(id: number = 0): void {
+    if (this.titleActions.batchBusy || this.titleActions.selectionMode) return
+    this.closeTaskActionMenu()
+    this.sortMenuShown = false
+    this.selectedIds = new Set<number>(id > 0 ? [id] : [])
+    this.titleActions.selectionMode = true
+    this.suppressedSelectionId = id
+    this.publishSelection()
+  }
+
+  private setSelected(id: number, selected: boolean): void {
+    if (!this.titleActions.selectionMode || this.titleActions.batchBusy || this.selectedIds.has(id) === selected) return
+    const next: Set<number> = new Set<number>(this.selectedIds)
+    if (selected) next.add(id)
+    else next.delete(id)
+    this.selectedIds = next
+    this.publishSelection()
+  }
+
+  private selectionTouch(event: TouchEvent): void {
+    if (event.type === TouchType.Down) this.suppressedSelectionId = 0
+  }
+
+  private handleSelectionClick(id: number): boolean {
+    if (this.suppressedSelectionId === id) {
+      this.suppressedSelectionId = 0
+      return true
+    }
+    if (!this.titleActions.selectionMode) return false
+    this.setSelected(id, !this.selectedIds.has(id))
+    return true
+  }
+
+  private selectAll(): void {
+    this.selectedIds = new Set<number>(this.titleActions.allSelected ? [] :
+      this.visibleTasks().map((task: NhDownloadTask) => task.galleryId))
+    this.publishSelection()
+  }
+
+  private confirmDeleteSelected(): void {
+    const ids: number[] = Array.from(this.selectedIds)
+    if (ids.length === 0) return
+    this.getUIContext().showAlertDialog({
+      title: AppStrings.get('download_delete_confirm_title'),
+      message: AppStrings.get('download_batch_delete_confirm').replace('%s', `${ids.length}`),
+      primaryButton: { value: AppStrings.get('common_cancel'), action: (): void => {} },
+      secondaryButton: { value: AppStrings.get('download_delete_confirm_action'), fontColor: Color.Red,
+        action: (): void => { this.deleteSelected(ids) } },
+    })
+  }
+
+  private async deleteSelected(ids: number[]): Promise<void> {
+    if (this.titleActions.batchBusy) return
+    this.titleActions.batchBusy = true
+    DownloadQueueService.cancelSelectedStarts(ids)
+    const failed: number[] = []
+    try {
+      for (let index: number = 0; index < ids.length; index++) {
+        this.titleActions.batchProgress = AppStrings.get('download_batch_deleting').replace('%s', `${index + 1}/${ids.length}`)
+        try { await DownloadQueueService.remove(this.context(), ids[index]) }
+        catch (_error) { failed.push(ids[index]) }
+      }
+    } finally {
+      this.titleActions.batchBusy = false
+      this.titleActions.batchProgress = ''
+      this.selectedIds = new Set<number>(failed)
+      this.titleActions.selectionMode = failed.length > 0
+      this.tasks = DownloadQueueService.snapshot()
+      this.rebuildTaskProjection()
+    }
+    this.getUIContext().getPromptAction().showToast({ message: AppStrings.get('download_batch_deleted')
+      .replace('%1$s', `${ids.length - failed.length}`).replace('%2$s', `${failed.length}`) })
   }
 
   private context(): common.UIAbilityContext {
@@ -450,6 +554,7 @@ export struct DownloadQueuePage {
       this.sortMode,
     ).groups
     this.reportVisibleEligibility()
+    this.publishSelection()
     this.schedulePinnedGroupSync()
   }
 
@@ -490,21 +595,37 @@ export struct DownloadQueuePage {
     )
   }
 
-  private async applyVisibleBatch(pause: boolean): Promise<void> {
-    const galleryIds: number[] = pause ? this.visiblePausableIds() : this.visibleResumableIds()
+  private async applyVisibleBatch(pause: boolean, selected: boolean = false): Promise<void> {
+    const galleryIds: number[] = (pause ? this.visiblePausableIds() : this.visibleResumableIds())
+      .filter((id: number) => !selected || this.selectedIds.has(id))
     if (galleryIds.length === 0) {
       this.reportVisibleEligibility()
       return
     }
     this.errorMessage = ''
-    const result: DownloadBatchResult = pause
-      ? await DownloadQueueService.pauseVisible(this.context(), galleryIds)
-      : await DownloadQueueService.resumeVisible(this.context(), galleryIds)
+    this.titleActions.batchBusy = true
+    let result: DownloadBatchResult = new DownloadBatchResult()
+    try {
+      result = pause
+        ? await DownloadQueueService.pauseVisible(this.context(), galleryIds)
+        : await DownloadQueueService.resumeVisible(this.context(), galleryIds)
+    } catch (_error) {
+      result.requestedCount = galleryIds.length
+      result.failedCount = galleryIds.length
+    } finally {
+      this.titleActions.batchBusy = false
+    }
     // Every successful mutation is already durable. Always reconcile the
     // projection before presenting the aggregate outcome, including partials.
     this.tasks = DownloadQueueService.snapshot()
     this.rebuildTaskProjection()
     if (result.failedCount === 0) {
+      if (selected) {
+        this.getUIContext().getPromptAction().showToast({ message:
+          AppStrings.get(pause ? 'download_batch_paused' : 'download_batch_queued')
+            .replace('%s', `${result.succeededCount}`)
+            .replace('%1$s', `${result.succeededCount}`).replace('%2$s', '0') })
+      }
       return
     }
     const message: string = this.batchOutcomeMessage(result)
@@ -909,8 +1030,18 @@ export struct DownloadQueuePage {
   @Builder
   private TaskInlineActionColumn(task: NhDownloadTask) {
     Column({ space: ThemeTokens.SPACE_XS }) {
-      this.TaskPrimaryAction(task)
-      this.TaskMoreButton(task)
+      if (this.titleActions.selectionMode) {
+        Checkbox({ name: `${task.galleryId}` })
+          .select(this.selectedIds.has(task.galleryId))
+          .selectedColor(ThemeTokens.BRAND)
+          .width(24).height(24).margin(0)
+          .enabled(!this.titleActions.batchBusy)
+          .accessibilityText(task.title)
+          .onChange((selected: boolean) => this.setSelected(task.galleryId, selected))
+      } else {
+        this.TaskPrimaryAction(task)
+        this.TaskMoreButton(task)
+      }
     }
     .width(DOWNLOAD_TASK_ACTION_SIZE)
     .height('100%')
@@ -924,11 +1055,18 @@ export struct DownloadQueuePage {
       DownloadTaskCover({
         task: task,
         onOpenGallery: (galleryId: number): void => {
-          if (this.onOpenGallery) {
+          if (!this.handleSelectionClick(galleryId) && this.onOpenGallery) {
             this.onOpenGallery(galleryId)
           }
         },
       })
+        .onTouch((event: TouchEvent) => this.selectionTouch(event))
+        .priorityGesture(GestureGroup(GestureMode.Exclusive,
+          LongPressGesture({ repeat: false, duration: 500 }).onAction(() => this.beginSelection(task.galleryId)),
+          TapGesture().onAction(() => {
+            if (!this.handleSelectionClick(task.galleryId) && this.onOpenGallery) this.onOpenGallery(task.galleryId)
+          })
+        ))
 
       Column({ space: ThemeTokens.SPACE_XS }) {
         Text(task.title.length > 0 ? task.title : `#${task.galleryId}`)
@@ -960,9 +1098,13 @@ export struct DownloadQueuePage {
       .height(DOWNLOAD_TASK_COVER_HEIGHT)
       .justifyContent(FlexAlign.Start)
       .accessibilityText(this.taskAccessibilityLabel(task))
-      .onClick((): void => {
-        this.openTaskIfComplete(task)
-      })
+      .onTouch((event: TouchEvent) => this.selectionTouch(event))
+      .gesture(GestureGroup(GestureMode.Exclusive,
+        LongPressGesture({ repeat: false, duration: 500 }).onAction(() => this.beginSelection(task.galleryId)),
+        TapGesture().onAction(() => {
+          if (!this.handleSelectionClick(task.galleryId)) this.openTaskIfComplete(task)
+        })
+      ))
     }
     .width('100%')
     .padding({
@@ -974,12 +1116,7 @@ export struct DownloadQueuePage {
     .borderRadius(ThemeTokens.RADIUS_CARD)
     .backgroundColor(ThemeTokens.CARD_BACKGROUND)
     .alignItems(VerticalAlign.Top)
-    .gesture(
-      LongPressGesture({ repeat: false, duration: 500 })
-        .onAction((): void => {
-          this.confirmDeleteTask(task)
-        }),
-    )
+
   }
 
   @Builder

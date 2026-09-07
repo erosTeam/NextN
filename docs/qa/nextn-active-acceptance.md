@@ -7614,3 +7614,14 @@ permitted in this repository.
   root[0,117][1320,2120] retains exactly the original3 completed tasks56/56,41/41,70/70. Both applications retain
   their original mobile/WLAN access. Power readbacks AWAKE and OverrideTimeout86400000ms. No test restriction,
   temporary download, or data cleanup remains pending. Scoped source checkpoint follows; no blanket parity claim.
+
+## CLOSED / DEVICE PASS — Download multi-selection parity — 2026-09-07
+
+- Implemented native multiselect from NextE b9b5bce4: long press / title menu, stable task-ID selection, filtered select-all, selected pause/resume/delete, Back/tab exit and sequential deletion retaining failures.
+- Reused NextN's bounded scheduler; cancelled selected starts before per-task batch persistence. No new worker, queue or compatibility adapter.
+- Validation: signed build passed (15 s 515 ms), nine service runtime tests and four actual page-method tests passed, download progress contract passed, live V1 inventory was 0 files. Four locale resources parsed with no duplicates.
+- 197 (ALN-AL80, 1260x2720) observed: long press selects one; first following tap deselects it; native Checkbox and all-six selection; Back exits; filter Cima selects only the visible task; two selected tasks (paused + completed) expose Resume(1); resume then pause advances the paused task from 0/24 to 1/24 while the complete task remains 107/107. Both selected identities survive regrouping.
+- Deletion: cancel preserves both selected tasks; confirm deletes only this lane's 676541 and 676543; cold restart retains the original six completed tasks and does not restore either fixture. Koma ordinary shelf grid restored; lease 20260907-083654-1c6da66e released successfully.
+- Visual comparison: reviewed current NextN long-press/menu/terminal pages against this conversation's accepted NextE device197 selection capture (15-two-resume-pause, same 1260x2720). Same native title/action placement and inline Checkbox hierarchy; NH has its existing single queue, not E's gallery/archive selector. Existing NextN card/text/cover bounds remain unchanged between baseline and selection.
+- Boundaries: multi-active-task concurrency, partial persistence failure and sequential delete failure are proven by runtime tests, not injected real-device failures. The old download integrity script still expects a Chinese terminal full stop absent in the unchanged resource; its unrelated exact-copy assertion remains a known failure. Single-task pause was not accepted from the attempted run because that fixture had already completed.
+- Evidence: `.hvigor/outputs/download-multiselect-20260907/verification.md`; immutable per-run protocol snapshots, layouts and screenshots under `mate60pro-lab__ALN-AL80/not-applicable/portrait-1260x2720/`; source manifests retained in the same artifact root's `protocols/` directory. Source/build/device evidence concerns the fixed multiselect HAP, not concurrent D11 reader changes.

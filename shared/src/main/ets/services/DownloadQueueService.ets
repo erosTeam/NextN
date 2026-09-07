@@ -273,6 +273,18 @@ export class DownloadQueueService {
     }
   }
 
+  /** Stop every selected task before batch persistence or deletion yields to the pump. */
+  static cancelSelectedStarts(galleryIds: number[]): void {
+    galleryIds.forEach((id: number) => {
+      const task: NhDownloadTask | null = DownloadQueueService.task(id)
+      if (task === null || task.isComplete()) return
+      DownloadQueueService.invalidateExecution(id)
+      task.status = NhDownloadTaskStatus.PAUSED
+      task.errorMessage = ''
+      DownloadQueueService.putInState(task)
+    })
+  }
+
   /**
    * Apply a page-selected local batch by reusing the established pause path.
    * The caller supplies only visible eligible IDs; this service deliberately
@@ -283,6 +295,8 @@ export class DownloadQueueService {
     galleryIds: number[],
   ): Promise<DownloadBatchResult> {
     const ids: number[] = DownloadQueueService.uniqueGalleryIds(galleryIds)
+    await DownloadQueueService.restore(context)
+    DownloadQueueService.cancelSelectedStarts(ids)
     const result: DownloadBatchResult = new DownloadBatchResult()
     result.requestedCount = ids.length
     for (let index: number = 0; index < ids.length; index += 1) {
