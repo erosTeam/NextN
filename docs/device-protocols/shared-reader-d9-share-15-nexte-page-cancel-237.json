@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d9-share-nexte-page-cancel",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "D9 NextE mainbuild2/nativebuild2; explicit delay-once host preparation probe",
+    "page": "P2 preparation delayed, explicit P3 page tap, delayed-result retirement, fresh share/cancel",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Explicit Debug delay-once prepares real host payload then delays3s. Native page tap uses current viewport bounds, waits3500ms after change; inspect no stale panel and fresh P3 sheet. No cache content/transport changes."
+  },
+  "preflight": [
+    {
+      "name": "verify-awake-before-install",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "close-prior-nexte-trial",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "force-stop",
+        "com.erosteam.nexte"
+      ]
+    },
+    {
+      "name": "native-current-image-share-suite",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "test",
+        "-b",
+        "com.erosteam.nexte",
+        "-m",
+        "entry_test",
+        "-s",
+        "unittest",
+        "OpenHarmonyTestRunner",
+        "-s",
+        "class",
+        "ReaderSharePageCancelTrial",
+        "-s",
+        "readerLabWork",
+        "4152165",
+        "-s",
+        "timeout",
+        "90000",
+        "-s",
+        "readerLabUnit",
+        "2e67d2b506"
+      ],
+      "timeoutSeconds": 120
+    }
+  ],
+  "measurement": {
+    "hilog": {
+      "localFile": "readerlab-live.log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-e",
+        "ReaderLab"
+      ]
+    },
+    "actions": [
+      {
+        "name": "terminal-noninteractive",
+        "uiInput": [
+          "click",
+          "1",
+          "1"
+        ],
+        "pauseAfterMs": 200
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "share-probe-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderLabShareProbe"
+      ]
+    },
+    {
+      "name": "receive-recovery-baseline-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-recovery-baseline.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel/recovery-baseline.json"
+      ]
+    },
+    {
+      "name": "receive-recovery-baseline-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-recovery-baseline.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel/recovery-baseline.png"
+      ]
+    },
+    {
+      "name": "receive-pending-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-pending.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel/pending.json"
+      ]
+    },
+    {
+      "name": "receive-pending-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-pending.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel/pending.png"
+      ]
+    },
+    {
+      "name": "receive-changed-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-changed.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel/changed.json"
+      ]
+    },
+    {
+      "name": "receive-changed-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-changed.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel/changed.png"
+      ]
+    },
+    {
+      "name": "receive-late-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-late.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel/late.json"
+      ]
+    },
+    {
+      "name": "receive-late-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-late.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel/late.png"
+      ]
+    },
+    {
+      "name": "receive-recovery-panel-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-recovery-panel.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel/recovery-panel.json"
+      ]
+    },
+    {
+      "name": "receive-recovery-panel-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-recovery-panel.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel/recovery-panel.png"
+      ]
+    },
+    {
+      "name": "receive-recovery-returned-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-recovery-returned.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel/recovery-returned.json"
+      ]
+    },
+    {
+      "name": "receive-recovery-returned-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-recovery-returned.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel/recovery-returned.png"
+      ]
+    },
+    {
+      "name": "receive-recovery-closed-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-recovery-closed.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel/recovery-closed.json"
+      ]
+    },
+    {
+      "name": "receive-recovery-closed-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-recovery-closed.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel/recovery-closed.png"
+      ]
+    },
+    {
+      "name": "receive-exception-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-exception.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel/exception.json"
+      ]
+    },
+    {
+      "name": "receive-exception-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-exception.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/15-nexte-page-cancel/exception.png"
+      ]
+    }
+  ]
+}

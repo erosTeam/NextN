@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d9-share-production-cancel",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/08-production-share-cancel",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "clean shared2063b3b; no candidate installation",
+    "page": "Cancel production share sheet and retain current P2",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00-await-live-readback",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "07 actual system share sheet shows hyperlink record title ending2; no recipient selected. System Back dismisses only sheet; inspect retained original/chrome."
+  },
+  "preflight": [
+    {
+      "name": "power-before",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "cancel-share-only",
+        "uiInput": [
+          "keyEvent",
+          "Back"
+        ],
+        "pauseAfterMs": 600
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d9-08-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d9-08-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d9-08-layout.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/08-production-share-cancel/layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d9-08-screen.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/08-production-share-cancel/screen.png"
+      ]
+    }
+  ]
+}

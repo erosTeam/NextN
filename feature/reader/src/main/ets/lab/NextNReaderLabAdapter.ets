@@ -1,11 +1,16 @@
 import { common } from '@kit.AbilityKit'
+import { uniformTypeDescriptor as utd } from '@kit.ArkData'
+import { fileUri } from '@kit.CoreFileKit'
+import { systemShare } from '@kit.ShareKit'
+import { ReaderSystemSharePresentation } from '@reader-kit/ui'
 import { NhApiClient, NhGalleryDetail, ReaderImageCacheService } from 'shared'
 import {
   ReaderCatalog, ReaderAssetProvider, ReaderUnitKey, ReaderUnit, ReaderPage,
-  ReaderCancellation, ReaderAsset, ReaderAssetKind,
+  ReaderCancellation, ReaderAsset, ReaderAssetKind, ReaderImageShareHost,
+  ReaderImageShareTarget, ReaderImageSharePresentation,
 } from '@reader-kit/core'
 
-export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider {
+export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider, ReaderImageShareHost {
   cancellationMode: 'consumer-only' | 'transport' = 'consumer-only'
   private context: common.UIAbilityContext
   private details: Map<string, NhGalleryDetail> = new Map()
@@ -38,6 +43,28 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
   }
 
   adjacent(_unit: ReaderUnit, _direction: 'next' | 'previous'): ReaderUnitKey | null { return null }
+
+  async prepare(target: ReaderImageShareTarget, cancellation: ReaderCancellation): Promise<ReaderImageSharePresentation> {
+    cancellation.check()
+    const detail = this.details.get(target.unit.key.unit)
+    const source = detail?.pages[target.sourceIndex]
+    if (detail === undefined || source === undefined) throw new Error('missing_nh_share_page')
+    const url = NhApiClient.imageUrl(detail.mediaId, target.sourceIndex, source.extension)
+    const key = ReaderImageCacheService.cacheKey(detail.id, detail.mediaId, source.number, source.extension)
+    const result = await ReaderImageCacheService.load(this.context, url, key, false)
+    cancellation.check()
+    const title = `${target.unit.title} ${target.sourceIndex + 1}`
+    let record: systemShare.SharedRecord
+    if (result.localPath.length > 0 && result.bytes > 0) {
+      record = { utd: utd.UniformDataType.FILE, title, description: title,
+        uri: fileUri.getUriFromPath(result.localPath) }
+    } else {
+      record = { utd: utd.UniformDataType.HYPERLINK, title, content: url }
+    }
+    return new ReaderSystemSharePresentation(this.context, new systemShare.SharedData(record), {
+      selectionMode: systemShare.SelectionMode.SINGLE, previewMode: systemShare.SharePreviewMode.DEFAULT,
+    })
+  }
 
   async load(page: ReaderPage, kind: ReaderAssetKind, cancellation: ReaderCancellation, forceReload: boolean): Promise<ReaderAsset> {
     cancellation.check()

@@ -13,6 +13,7 @@ import readerThumbnailRailTest from './ReaderThumbnailRail.test'
 import readerSliderLifecycleTest from './ReaderSliderLifecycle.test'
 import readerThumbnailRetryTest from './ReaderThumbnailRetry.test'
 import readerVolumeKeysTest from './ReaderVolumeKeys.test'
+import readerImageShareTest from './ReaderImageShare.test'
 
 export default function testsuite(): void {
   backupCipherMetadataGuardTest()
@@ -30,4 +31,5 @@ export default function testsuite(): void {
   readerSliderLifecycleTest()
   readerThumbnailRetryTest()
   readerVolumeKeysTest()
+  readerImageShareTest()
 }

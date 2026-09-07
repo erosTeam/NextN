@@ -1,8 +1,9 @@
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
-import { ReaderPagedSession, ReaderUnitKey, ReaderInputPort } from '@reader-kit/core'
+import { ReaderPagedSession, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost } from '@reader-kit/core'
 import { ReaderLabRequest, ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility, ReaderLabAssetProbe, ReaderVolumeKeys } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
+import { ReaderLabShareProbe } from '@reader-kit/ui'
 import { connectLayoutSafeArea, LayoutSafeAreaState, ThemeTokens, nextNHdsTitle } from 'shared'
 
 @ComponentV2
@@ -10,6 +11,7 @@ export struct NextNReaderLabPage {
   @Require @Param request: ReaderLabRequest
   @Event onClose: () => void = () => {}
   @Local private session: ReaderPagedSession | null = null
+  private imageShare: ReaderImageShareHost | null = null
   @Local private labVisibility: ReaderLabVisibilityState = connectReaderLabVisibility()
   @Local private routeActive: boolean = false
   @Local private safeArea: LayoutSafeAreaState = connectLayoutSafeArea()
@@ -23,6 +25,7 @@ export struct NextNReaderLabPage {
     if (!context.applicationInfo.debug) return
     if (this.request.readingChrome) this.trialWindow.open(context)
     const adapter = new NextNReaderLabAdapter(context)
+    this.imageShare = new ReaderLabShareProbe(adapter, this.request.shareProbe)
     this.unitKey = new ReaderUnitKey('nh', this.request.work, this.request.work)
     this.session = new ReaderPagedSession(adapter, new ReaderLabAssetProbe(adapter, this.request.thumbnailFailurePage))
   }
@@ -41,7 +44,7 @@ export struct NextNReaderLabPage {
         if (this.session !== null) {
           if (this.request.readingChrome) {
             ReaderSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
-              input: this.input,
+              input: this.input, imageShare: this.imageShare,
               active: this.routeActive && this.labVisibility.foreground,
               topInset: this.safeArea.topAvoidHeight, bottomInset: this.safeArea.bottomAvoidHeight,
               accent: ThemeTokens.BRAND, onClose: this.onClose })

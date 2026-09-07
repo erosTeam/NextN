@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d9-current-image-share-nexte",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "D9 NextE mainbuild1/nativebuild1; current-image hyperlink share, P2 spread reference",
+    "page": "P2 share open/cancel, fresh P3 share open/cancel, close",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Explicit Debug only. P2 spread matches current production reference E06/08. Native assertions supplement inspected system hyperlink record and original/chrome. Never select recipients. Production force-stop closes old overlay without clearing data."
+  },
+  "preflight": [
+    {
+      "name": "verify-awake-before-install",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "close-prior-nextn-trial",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "force-stop",
+        "com.erosteam.nexte"
+      ]
+    },
+    {
+      "name": "install-completed-nextn-main",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextE/entry/build/default/outputs/default/entry-default-signed.hap"
+      ]
+    },
+    {
+      "name": "install-completed-native-test",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextE/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"
+      ]
+    },
+    {
+      "name": "native-current-image-share-suite",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "test",
+        "-b",
+        "com.erosteam.nexte",
+        "-m",
+        "entry_test",
+        "-s",
+        "unittest",
+        "OpenHarmonyTestRunner",
+        "-s",
+        "class",
+        "ReaderImageShareTrial",
+        "-s",
+        "readerLabWork",
+        "4152165",
+        "-s",
+        "timeout",
+        "90000",
+        "-s",
+        "readerLabUnit",
+        "2e67d2b506",
+        "-s",
+        "readerShareSpread",
+        "true"
+      ],
+      "timeoutSeconds": 120
+    }
+  ],
+  "measurement": {
+    "hilog": {
+      "localFile": "readerlab-live.log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-e",
+        "ReaderLab"
+      ]
+    },
+    "actions": [
+      {
+        "name": "terminal-noninteractive",
+        "uiInput": [
+          "click",
+          "1",
+          "1"
+        ],
+        "pauseAfterMs": 200
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "share-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderShare"
+      ]
+    },
+    {
+      "name": "receive-baseline-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-baseline.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native/baseline.json"
+      ]
+    },
+    {
+      "name": "receive-baseline-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-baseline.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native/baseline.png"
+      ]
+    },
+    {
+      "name": "receive-panel-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-panel.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native/panel.json"
+      ]
+    },
+    {
+      "name": "receive-panel-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-panel.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native/panel.png"
+      ]
+    },
+    {
+      "name": "receive-returned-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-returned.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native/returned.json"
+      ]
+    },
+    {
+      "name": "receive-returned-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-returned.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native/returned.png"
+      ]
+    },
+    {
+      "name": "receive-next-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-next.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native/next.json"
+      ]
+    },
+    {
+      "name": "receive-next-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-next.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native/next.png"
+      ]
+    },
+    {
+      "name": "receive-next-panel-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-next-panel.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native/next-panel.json"
+      ]
+    },
+    {
+      "name": "receive-next-panel-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-next-panel.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native/next-panel.png"
+      ]
+    },
+    {
+      "name": "receive-next-returned-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-next-returned.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native/next-returned.json"
+      ]
+    },
+    {
+      "name": "receive-next-returned-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-next-returned.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native/next-returned.png"
+      ]
+    },
+    {
+      "name": "receive-closed-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-closed.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native/closed.json"
+      ]
+    },
+    {
+      "name": "receive-closed-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-closed.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native/closed.png"
+      ]
+    },
+    {
+      "name": "receive-exception-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-exception.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native/exception.json"
+      ]
+    },
+    {
+      "name": "receive-exception-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-share-exception.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/10-nexte-native/exception.png"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d9-share-current-p2-chrome",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/06-current-p2-chrome",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "clean shared2063b3b; no candidate installation",
+    "page": "Current production P2 chrome/share geometry reference",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00-await-live-readback",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "E05 native EntryAbility root[0,0][1320,2120], fitted P1/P2 pair[0,858][660,1261]/[660,858][1320,1261], page2/398. Center tap only reveals chrome, no navigation."
+  },
+  "preflight": [
+    {
+      "name": "power-before",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "show-current-reader-chrome",
+        "uiInput": [
+          "click",
+          "660",
+          "1060"
+        ],
+        "pauseAfterMs": 600
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d9-06-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d9-06-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d9-06-layout.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/06-current-p2-chrome/layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d9-06-screen.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/06-current-p2-chrome/screen.png"
+      ]
+    }
+  ]
+}

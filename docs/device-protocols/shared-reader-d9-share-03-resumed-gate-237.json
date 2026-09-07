@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d9-share-resumed-display-gate",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/03-resumed-gate",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "clean shared2063b3b; no candidate installation",
+    "page": "current237 power and foreground gate",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00-await-live-readback",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Current resumed display gate only; Koma clean build hold. Home is neutral; if keyguard remains, inspect current neutral unlock region before a recovery manifest. No gallery progress/default/cache mutation."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "home-before-host-resume",
+        "uiInput": [
+          "keyEvent",
+          "Home"
+        ],
+        "pauseAfterMs": 300
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "model",
+      "hdcArgs": [
+        "shell",
+        "param",
+        "get",
+        "const.product.model"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "timeout",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "86400000"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d9-03-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d9-03-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d9-03-layout.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/03-resumed-gate/layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d9-03-screen.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d9-share/03-resumed-gate/screen.png"
+      ]
+    }
+  ]
+}
