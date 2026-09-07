@@ -4,7 +4,7 @@ import { ReaderLabLaunchState, ReaderLabRequest, connectReaderLabLaunch } from '
 import { ReaderEntryTransition, ReaderEntryPreviewSource, ReaderEntryRect,
   ReaderLabVisibilityState, connectReaderLabVisibility } from '@reader-kit/ui'
 import { ReaderDisplayPart, ReaderUnitKey } from '@reader-kit/core'
-import { ReaderTrialEntryRelay, ReaderTrialEntrySource } from 'shared'
+import { ReaderTrialEntryRelay, ReaderTrialEntrySource, ReaderTrialEntryProbe } from 'shared'
 import {
   GalleryChromeState,
   GalleryCommentsPage,
@@ -516,6 +516,8 @@ struct Index {
   private async openThumbnailTrial(request: ReaderLabRequest, source: ReaderTrialEntrySource): Promise<void> {
     const epoch = ++this.readerEntryEpoch
     const navigation = this.rootNavigationEpoch
+    const probe = request.entryProbe === 'delay-once'
+    if (probe) ReaderTrialEntryProbe.recordAccepted(epoch)
     const context = this.getUIContext()
     let preview: ReaderEntryPreviewSource | null = null
     let captured: image.PixelMap | null = null
@@ -542,10 +544,17 @@ struct Index {
       if (captured !== null) void captured.release()
       // A missing/offscreen source still opens the optional reader without inventing a snapshot.
     }
+    if (probe) {
+      request.entryProbe = ''
+      ReaderTrialEntryProbe.recordDelayedPreview(epoch, preview !== null)
+      await new Promise<void>((resolve): void => { setTimeout(resolve, 2500) })
+    }
     if (epoch !== this.readerEntryEpoch || navigation !== this.rootNavigationEpoch || !this.readerEntryVisibility.foreground ||
       this.readerOverlay.visible || this.safeMode.restricted()) {
+      if (probe) ReaderTrialEntryProbe.recordDiscarded(epoch, navigation !== this.rootNavigationEpoch)
       preview?.release(); return
     }
+    if (probe) ReaderTrialEntryProbe.recordHandoff(epoch)
     request.pageIndex = source.pageIndex
     this.readerEntryPreview = preview
     this.readerEntryTransition = preview === null ? null : new ReaderEntryTransition(epoch,

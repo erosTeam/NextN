@@ -20,8 +20,44 @@ function setup() {
   const entry = (galleryId = 678049, pageIndex = 0, origin = 'detail') => new Source(
     galleryId, pageIndex, 'source-frame', 'source-snapshot', origin, 'https://example.invalid/thumbnail.jpg',
   )
-  return { relay, entry }
+  return { relay, entry, probe: exports.ReaderTrialEntryProbe }
 }
+
+test('entry probe keeps same-epoch facts and ignores retired callbacks', () => {
+  const { probe } = setup()
+  probe.reset()
+  probe.recordAccepted(4)
+  probe.recordDelayedPreview(4, true)
+  probe.recordAccepted(5)
+  probe.recordDiscarded(4, true)
+  probe.recordHandoff(4)
+  const current = probe.read()
+  assert.equal(current.epoch, 5)
+  assert.equal(current.accepted, true)
+  assert.equal(current.delayedPreview, false)
+  assert.equal(current.discarded, false)
+  assert.equal(current.handoff, false)
+  probe.recordDelayedPreview(5, true)
+  probe.recordDiscarded(5, true)
+  assert.equal(probe.read().delayedPreview, true)
+  assert.equal(probe.read().discarded, true)
+  assert.equal(probe.read().navigationChanged, true)
+})
+
+test('entry probe snapshots cannot mutate the host and reset retires the old epoch', () => {
+  const { probe } = setup()
+  probe.recordAccepted(3)
+  probe.recordDelayedPreview(3, false)
+  assert.equal(probe.read().delayedPreview, false)
+  probe.read().handoff = true
+  assert.equal(probe.read().handoff, false)
+  probe.reset()
+  probe.recordDelayedPreview(3, true)
+  probe.recordHandoff(3)
+  assert.equal(probe.read().accepted, false)
+  assert.equal(probe.read().delayedPreview, false)
+  assert.equal(probe.read().handoff, false)
+})
 
 test('normal entry is not intercepted without a registration', () => {
   const { relay, entry } = setup()

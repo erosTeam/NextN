@@ -31,7 +31,7 @@ export struct NextNReaderLabPage {
     this.imageShare = new ReaderLabShareProbe(adapter, this.request.shareProbe)
     this.unitKey = new ReaderUnitKey('nh', this.request.work, this.request.work)
     this.session = new ReaderPagedSession(adapter, new ReaderLabAssetProbe(adapter, this.request.thumbnailFailurePage,
-      this.request.informationProbe))
+      this.request.informationProbe, this.request.thumbnailEntry ? this.request.failurePage : -1))
     if (this.request.thumbnailEntry) {
       const policy = new ReaderDisplayPolicy()
       policy.layout = this.request.entryLayout === 'spread' ? 'spread' : 'single'

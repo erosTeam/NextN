@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-source-failure-retry",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/26-source-failure-retry",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "D11 main8/native8; shared0a7882c",
+    "page": "D11 P1 spread source original native decode failure, exact retry and retained Detail",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Only explicit thumbnailEntry original failure index is injected once; no real files/cache/network modified. Inspect whole error card, live retry, same P1 spread after native decode and exact return source bounds. Not transition-motion or natural transport failure acceptance."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    },
+    {
+      "name": "power-before",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "close-old-app",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "force-stop",
+        "com.erosteam.nextn"
+      ]
+    },
+    {
+      "name": "native-entry-test",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "test",
+        "-b",
+        "com.erosteam.nextn",
+        "-m",
+        "entry_test",
+        "-s",
+        "unittest",
+        "OpenHarmonyTestRunner",
+        "-s",
+        "class",
+        "ReaderThumbnailEntrySourceFailureTrial",
+        "-s",
+        "timeout",
+        "90000"
+      ],
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "restore-ordinary-browse-after-native-runner",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "start",
+        "-b",
+        "com.erosteam.nextn",
+        "-a",
+        "EntryAbility"
+      ],
+      "pauseAfterMs": 1500
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "background-restored-ordinary-app",
+        "uiInput": [
+          "keyEvent",
+          "Home"
+        ],
+        "pauseAfterMs": 500
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "entry-failure-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderLabAssetProbe"
+      ]
+    },
+    {
+      "name": "receive-failure-source-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-failure-source.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/26-source-failure-retry/failure-source.json"
+      ]
+    },
+    {
+      "name": "receive-failure-source-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-failure-source.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/26-source-failure-retry/failure-source.png"
+      ]
+    },
+    {
+      "name": "receive-failure-reader-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-failure-reader.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/26-source-failure-retry/failure-reader.json"
+      ]
+    },
+    {
+      "name": "receive-failure-reader-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-failure-reader.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/26-source-failure-retry/failure-reader.png"
+      ]
+    },
+    {
+      "name": "receive-failure-retried-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-failure-retried.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/26-source-failure-retry/failure-retried.json"
+      ]
+    },
+    {
+      "name": "receive-failure-retried-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-failure-retried.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/26-source-failure-retry/failure-retried.png"
+      ]
+    },
+    {
+      "name": "receive-failure-retried-settled-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-failure-retried-settled.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/26-source-failure-retry/failure-retried-settled.json"
+      ]
+    },
+    {
+      "name": "receive-failure-retried-settled-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-failure-retried-settled.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/26-source-failure-retry/failure-retried-settled.png"
+      ]
+    },
+    {
+      "name": "receive-failure-closed-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-failure-closed.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/26-source-failure-retry/failure-closed.json"
+      ]
+    },
+    {
+      "name": "receive-failure-closed-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-failure-closed.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/26-source-failure-retry/failure-closed.png"
+      ]
+    },
+    {
+      "name": "receive-failure-exception-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-failure-exception.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/26-source-failure-retry/failure-exception.json"
+      ]
+    },
+    {
+      "name": "receive-failure-exception-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-failure-exception.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/26-source-failure-retry/failure-exception.png"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    }
+  ]
+}

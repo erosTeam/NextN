@@ -63,3 +63,53 @@ export class ReaderTrialEntryRelay {
     return true
   }
 }
+
+/** In-memory facts written only by the host's explicit Debug entry probe; never by the relay itself. */
+export class ReaderTrialEntryProbe {
+  epoch: number = 0
+  accepted: boolean = false
+  delayedPreview: boolean = false
+  discarded: boolean = false
+  navigationChanged: boolean = false
+  handoff: boolean = false
+  private static latest: ReaderTrialEntryProbe = new ReaderTrialEntryProbe()
+
+  static reset(): void {
+    ReaderTrialEntryProbe.latest = new ReaderTrialEntryProbe()
+  }
+
+  /** A detached snapshot: readers cannot mutate the host's observed facts. */
+  static read(): ReaderTrialEntryProbe {
+    const current = ReaderTrialEntryProbe.latest
+    const snapshot = new ReaderTrialEntryProbe()
+    snapshot.epoch = current.epoch
+    snapshot.accepted = current.accepted
+    snapshot.delayedPreview = current.delayedPreview
+    snapshot.discarded = current.discarded
+    snapshot.navigationChanged = current.navigationChanged
+    snapshot.handoff = current.handoff
+    return snapshot
+  }
+
+  static recordAccepted(epoch: number): void {
+    ReaderTrialEntryProbe.reset()
+    ReaderTrialEntryProbe.latest.epoch = epoch
+    ReaderTrialEntryProbe.latest.accepted = true
+  }
+
+  static recordDelayedPreview(epoch: number, hasPreview: boolean): void {
+    if (ReaderTrialEntryProbe.latest.epoch !== epoch || !ReaderTrialEntryProbe.latest.accepted) return
+    ReaderTrialEntryProbe.latest.delayedPreview = hasPreview
+  }
+
+  static recordDiscarded(epoch: number, navigationChanged: boolean): void {
+    if (ReaderTrialEntryProbe.latest.epoch !== epoch || !ReaderTrialEntryProbe.latest.accepted) return
+    ReaderTrialEntryProbe.latest.discarded = true
+    ReaderTrialEntryProbe.latest.navigationChanged = navigationChanged
+  }
+
+  static recordHandoff(epoch: number): void {
+    if (ReaderTrialEntryProbe.latest.epoch !== epoch || !ReaderTrialEntryProbe.latest.accepted) return
+    ReaderTrialEntryProbe.latest.handoff = true
+  }
+}

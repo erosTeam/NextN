@@ -523,7 +523,7 @@ export {
   connectReaderThumbnailTransition,
 } from './state/ReaderThumbnailTransitionState'
 export { ReaderThumbnailTransitionCoordinator } from './navigation/ReaderThumbnailTransitionCoordinator'
-export { ReaderTrialEntryRelay, ReaderTrialEntrySource } from './navigation/ReaderTrialEntryRelay'
+export { ReaderTrialEntryRelay, ReaderTrialEntrySource, ReaderTrialEntryProbe } from './navigation/ReaderTrialEntryRelay'
 export { DownloadSettingsState, connectDownloadSettings } from './state/DownloadSettingsState'
 export { DownloadBatchResult, DownloadQueueService, DownloadRestoreResult } from './services/DownloadQueueService'
 export { DownloadSettingsService } from './services/DownloadSettingsService'

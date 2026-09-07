@@ -9,7 +9,9 @@
 3. **D11b 可选入口第一条实机闭环（root）**：保留生产默认入口，在显式调试接入中验证点中源页直接连接到双页实际位置、真实图片交接及邻页出现。NextN 局部预览保持自己的比例和身份，不能 Fill 成整条原图；保留清晰可操作的加载/失败层。先竖屏、实际可见缩略图入口，再扩展另一入口与 RTL。
 4. **D11c 同一能力的反例覆盖（root 设备验收）**：Detail/Grid 分开验证，普通/长/宽图，点左右页，拼合/均分、封面/末页，源页与邻页分别慢载/失败，立即退出/翻页/旋转、目标离屏。连续录屏用于判定起点、运动、等待与最后交接，不以终点截图替代。默认双页正常退出是否新增自定义返程不夹带实施。
 
-分工已进入实现：`assess_spread_transition` 完成 Pager/Viewport 可选目的端，发布实际图片矩形及解码状态、隐藏期可见性门控；`assess_nh_thumbnail` 完成 NextN shared 一次性 relay、Detail/Grid点击转发及8项真实relay行为测试。root负责 UI port/preview、Surface与Index/Lab接线、真实状态机测试、构建和237验收。初版源码已接通，默认null路径保留；首次构建暴露 root ArkTS构造器字段/组件字段命名错误以及nullable层级监听warning，尚未安装。Koma章节与进度仍由宿主拥有。
+分工已进入实现：`assess_spread_transition` 完成 Pager/Viewport 可选目的端，发布实际图片矩形及解码状态、隐藏期可见性门控；`assess_nh_thumbnail` 完成 NextN shared 一次性 relay、Detail/Grid点击转发及8项真实relay行为测试。root负责 UI port/preview、Surface与Index/Lab接线、真实状态机测试、构建和237验收。当前已保存 shared2ce53ee / NextN90bfaff，默认null路径保留；237正常入口已逐帧检查，初版编译问题已修正。Koma章节与进度仍由宿主拥有。
+
+当前后续分配：root先完成真实快照迟到结果的原生分支证据；NH子代理交叉审查测试的接管、真实preview、同epoch丢弃和fresh前完成，防止“没打开”假阳性。双页子代理只读复核下一批源页/邻页失败，确认现有 `readerLabFailPage` 没有接入 thumbnail chrome，不能仅传参数就算失败测试。下一个实现切片应在既有 Debug asset probe 接一次原图失败，保持生产 Surface 无测试业务；随后root负责237错误卡可见/可点、精确Retry、原页/邻页及返回位置。再做飞行期翻页/旋转与普通/宽图，之后接NextE可选源端（真实sprite裁切）及Koma宿主边界；不替换默认入口，不重抄三套核心交互。
 
 两份落地设计已回收，root 合并约束如下：
 
@@ -17,7 +19,7 @@
 - **最小入口关系先放可选 UI port**。复用 `ReaderDisplayPart` / frame 的源页、fragment、request 与 navigation 身份，附加 UI layout revision、内容矩形和布局/解码/实际呈现状态；源端附带快照、预览自身比例、源窗口 epoch 与对应关系。当前无 mapped 数据，不先为未来整图派生新增 core 状态或持久字段。未知对应关系仍做等比预览运动和独立真实图层交接，不默认删除转场。
 - **双页目的端由 ReaderPagedViewport 发布**，不在 Gallery 重抄拼合公式；真实图像隐藏期不得提前报 onVisible。点中原页身份不被 spread-start 归一化覆盖，邻页只改变绘制显隐，不改变整组布局/缩放所有者。快照、无效化、释放与源节点恢复由 entryId 生命周期统一收束。
 - **文件分配**：root拥有新 `ReaderEntryTransition.ets`、UI导出及 `ReaderSurface` 集成；双页实现可单独分配 `ReaderPagerSurface` / `ReaderPagedViewport`；NH宿主接线可单独分配 LabPage、Detail/Grid入口转发和源快照适配。`Index.ets` readerLab区域由root整合，与其他任务下载标题栏区域分开。先约定接口再启动并行写入，禁止多个实现者同时改 Surface/Index。
-- **首轮237**：NH678049长图Detail入口，已加载的实际缩略图→单页等比预览/独立原图交接，再同一port接双页视觉左右源页；普通677618和Grid为下一对照。首次即覆盖立即退出/重开/首次翻页和源mask恢复，随后补慢载/失败、RTL与旋转。不是以“同长宽比所以完整”的样本绕开条漫问题。Detail宽度/Cover先保留；是否改为完整露出预览留实机候选比较，原图下载生成概览不在本项。
+- **首轮237**：NH678049长图Detail单页、LTR左/RTL右及Grid入口已观察，未知对应关系仍独立交接。普通677618实际源图不适合作为可发布验收素材，停止该样本，不算通过；普通/宽图需另选适当样本。立即退出/重开正在补同epoch分支断言，随后补慢载/失败、首次翻页与旋转。不是以“同长宽比所以完整”的样本绕开条漫问题。Detail宽度/Cover先保留；是否改为完整露出预览留实机候选比较，原图下载生成概览不在本项。
 
 ## D11 输入：双页入场与 NH 局部预览的只读证据 — 2026-09-07
 
@@ -31,7 +33,9 @@
 
 ## 当前实现切片：D11 可选缩略图入场 — OPEN
 
-实际分工后的首版：window-vp真实Image叶目的端、源snapshot自身比例、280ms等比scale/translate与140ms独立原图交接。真实port状态机6项、全部共享98项与宿主relay8项通过，只证明各自行为边界。首段237录屏04因直接跳位和空黑判失败；官方V2 Monitor动画场景指导在animateTo内applySync，main5构建10s555ms。07–09实机全75帧与源/终点/返回整屏已查看：连续运动、独立原图交接、返回保持原位置，限于NH678049 P1 Detail条漫入口。旧05状态栏点击污染返回位置，未据此加滚动补丁。下一步保存可选检查点并短借Koma干净构建窗口，然后继续双页左右源页、Grid和失败/立即退出/翻页/旋转反例；这不是D11全部完成或正式替换验收。
+实际分工后的首版：window-vp真实Image叶目的端、源snapshot自身比例、280ms等比scale/translate与140ms独立原图交接。首段237录屏04因直接跳位和空黑判失败；按官方V2 Monitor动画指导在animateTo内applySync后，07–09 Detail单页75帧、11–13 LTR左74帧、14–16 RTL右76帧、17–20 Grid92帧及对应源/终点/返回整屏均已检查。当前只冻结NH678049 P1正常入口，返回位置均一致，不声称未知预览对应完整原图。旧05状态栏点击污染证据，未据此加滚动补丁。
+
+25补齐有归属的取消反例：main8/native8、1pass28s962ms；先确认同epoch真实preview，点击后312ms Back，然后同epoch navigation discard/handoff=false，之后才进入无迟到重开观察和fresh P1成功/close，六张整屏已检查。21/22缺证、23/24日志读取失败保留；最终以仅显式Debug的内存probe替代不可靠的测试内shell日志采集。当前共享103项、宿主relay/probe10项通过。26因UiTest嵌套选择器失败，修正后28源页失败→精确Retry→同源返回功能通过1pass14s162ms，但整卡深字/深底对比度拒绝视觉通过。下一步只修黑色ReaderSurface阅读内容的局部配色，保留Lab浅色路径、材质和尺寸，再匹配构建验证源页/邻页失败；27预备协议未执行。随后慢载、飞行期翻页/旋转和其他图形/源端。共享检查点2ce53ee、0e160c4、0a7882c及NextN90bfaff已保存；Koma前两次clean构建已归还，当前第三次短借0a7882c。D11与最终默认替代仍OPEN。
 
 ## D10 图片信息 — 已命名路径限域验收
 
