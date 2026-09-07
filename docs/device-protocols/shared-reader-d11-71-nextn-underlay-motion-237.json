@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-71-nextn-underlay-motion",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/71-nextn-underlay-motion",
+  "recordingFileName": "rkit_d11_source_wait_20260907_71.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 600,
+  "idleRecordMs": 90000,
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "actions": [],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "D11 N main19/native25 opaque preview underlay",
+    "page": "Continuous real NH cropped source waiting/flight/complete-original handoff; native72",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Reopen handoff from64/65 after shared underlay correction; preserve full Detail, actual cropped-source proportions, complete long original and existing140ms fade. No thumbnail geometry or production default change. Run71 recorder+72 native in one shell. Same actual root and full original motion required; native pass alone is not visual acceptance."
+  }
+}

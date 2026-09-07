@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-67-nexte-underlay-motion",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/67-nexte-underlay-motion",
+  "recordingFileName": "rkit_d11_nexte_sprite_20260907_67.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 600,
+  "idleRecordMs": 60000,
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "actions": [],
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "D11 E main9/native8 + shared opaque preview underlay candidate",
+    "page": "Continuous sprite-to-left-spread handoff, anchored by native68",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Current E62/63 counterexample requires original-frame handoff review: preview stays opaque under fading original until existing140ms finish. Same horizontal sprite semantic entry and exact same-epoch Probe; no geometry, timing, settings or production-reader change. Run67 recording and68 native in one shell so approval delay cannot omit motion."
+  }
+}

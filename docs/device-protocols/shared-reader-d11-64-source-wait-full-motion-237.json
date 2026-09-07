@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-64-source-wait-full-motion",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/64-source-wait-full-motion",
+  "recordingFileName": "rkit_d11_source_wait_20260907_64.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 600,
+  "idleRecordMs": 90000,
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "actions": [],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "NextN a3c8fd1 main18/native24; clean shared56634ca",
+    "page": "Continuous current local source-wait through actual unknown-original release and entry flight",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Recorder and semantic65 launched in one approved shell lifecycle, 3s transport warmup only, no altered app animation speed. The full native source/wait/release/close must fit before recorder stop; verify timestamp coverage before frame acceptance.59 retained as incomplete."
+  }
+}

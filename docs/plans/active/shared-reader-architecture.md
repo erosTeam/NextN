@@ -10,6 +10,10 @@
 
 ## 当前实施顺序与分工 — 2026-09-07
 
+当前进度（22:21）：N71反例否定所有来源都保留不透明预览；E67原帧确认sprite亮度凹陷消失。共享新增UI入口来源coverage（unknown默认/whole-page），unknown保留旧淡出，只有宿主确知完整页才保留底层。E还存在非sprite Cover，故仅当前有效完整sprite-cell声明whole-page，不从比例推断、不改core。129项真实方法测试通过；E main10/native9与N main20/native26匹配构建完成，root执行237的73安装及74/75 unknown真实交接。NH子代理下一步只读收敛一帧返回状态色的所有者问题，双页子代理负责本次运动原帧复核；Koma DL004单包请求排队，Index/ReaderLab保持未改，clean检查点后主动给SHA/窗口。新增能力仍按既定Koma可选chrome切片推进，不把此处反例当作D11全部通过。
+
+当前进度（21:54）：共享输入门禁56634ca / NextN a3c8fd1已保存。两名子代理分别完整审阅N64/E62连续入场，root核对原始帧：源等待、单页等比落位、完整详情背景和返回已有具体证据，但E原图接管亮度凹陷成为新反例；仅移除下层Preview淡出、保留上层原图既有140ms淡入，保持取消/失败和所有几何。N main19/native25匹配后72原生1pass18s623ms，71完整录屏待审；E main9完成，NH子代理补真实Grid入口测试后匹配native8，root执行67/68运动复验与69 Grid。双页子代理负责新原帧和共享小diff独立审查；root整合、顺序构建及237。Koma已归还SRC002构建窗口，正在协调Index现有WIP后再推进可选chrome/退出切片；不覆盖其改动，不把章节或末页完成语义塞进core，197仍独占。
+
 当前进度（21:22）：E56 main8/native7已完成首条真实横向sprite源P1→共享双页→同一Detail源返回，native1pass20s662ms、三张整屏/current root检查通过，ready/captured/finished同epoch事实成立；仅端点限域接受，55选择器错误保留。N硬件等待门禁main18/native23进入57实机验证。后续分配不再挂起子代理结论：root先收束N硬件反例与N/E连续入场证据；下一Koma切片仅Index+KomaReaderLabPage的显式debug chrome和退出生命周期，复用原本地adapter，先无preview本地选定章/后台/退出，不改生产。Koma源图另切，现cache PixelMap不直接交可release的PreviewSource；章切换owner须在switchUnit/open前取消entry并退休capture，不等新章ready，也不把末页变整作完成。已向Koma任务说明文件边界但未派发冲突编辑，197仍其独占。
 
 当前进度（21:12）：NextN检查点1a5c78e后的52 Grid等待Back、53源页失败、54邻页失败均已在main17/native22完成并审阅15张整屏及当前窗口，限域接受等待取消和既有重试交接。NextE现进入候选集成：NH子代理已交回relay与两个源leaf，正写真实native入口测试；双页子代理已交回adapter/Sprite readiness及9项真实行为测试，并在交叉审查中发现N/E隐藏layout仍接收音量翻页的同类缺口，现负责共享externalMove同步门禁及真实方法测试。root负责两端Lab订阅门禁、E Index导航/源快照/生命周期、匹配构建与237检查。E测试必须观察真实ready、snapshotCaptured、同epoch转场完成和原图/源页交接，不能以无动画fallback打开当成通过。下一实机动作是E的首条sprite到共享双页入口；N新增等待层连续运动、E未ready/取消/连续运动仍OPEN，生产默认和197保持不动。
