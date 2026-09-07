@@ -3,7 +3,7 @@ import { abilityDelegatorRegistry, Driver, ON, Rect } from '@kit.TestKit'
 import { KeyCode } from '@kit.InputKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { window } from '@kit.ArkUI'
-import { ReaderTrialOriginalProbe } from 'shared'
+import { ReaderTrialOriginalProbe, connectActionAlignment, connectActionHandEdge } from 'shared'
 import { captureEntry, findFirstDetailThumbnail, assertNoReader, waitFreshFirstPage } from './ReaderThumbnailEntry.test'
 
 const originalCaptures: string[] = ['original-source', 'original-held', 'original-released',
@@ -23,6 +23,9 @@ function clearOriginalCaptures(): void {
 async function reportOriginal(label: string): Promise<void> {
   await abilityDelegatorRegistry.getAbilityDelegator().print(
     `ReaderOriginalProbe ${label}: ${JSON.stringify(ReaderTrialOriginalProbe.read())}`)
+  const alignment = connectActionAlignment()
+  await abilityDelegatorRegistry.getAbilityDelegator().print(
+    `ReaderOriginalAlignment ${label}: mode=${alignment.alignmentMode}, supported=${alignment.holdingHandSupported}, edge=${connectActionHandEdge().edge}`)
 }
 
 async function waitHeldOriginal(driver: Driver): Promise<void> {
@@ -155,6 +158,7 @@ export default function readerThumbnailOriginalProbeTest(): void {
         const sourceId = await source.getId()
         const before = await source.getBounds()
         const rootBefore = await (await driver.findComponent(ON.id('nextn-root-navigation'))).getBounds()
+        await reportOriginal('source')
         await captureEntry(driver, 'original-source')
         await source.click()
         await waitHeldOriginal(driver)
@@ -225,11 +229,13 @@ export default function readerThumbnailOriginalProbeTest(): void {
           await driver.delayMs(1600)
           orientationRestored = true
           await waitDeliveredOriginal(driver, epoch, entryId, expectedAnchor, expectedPhase)
+          await reportOriginal('restored')
           await captureEntry(driver, 'original-restored')
         }
         await (await driver.findComponent(ON.id('rkit-close'))).click()
         await driver.delayMs(700)
         await assertOriginalSourceBounds(driver, sourceId, before, rootBefore)
+        await reportOriginal('closed')
         await captureEntry(driver, 'original-closed')
       } catch (error) {
         await reportOriginal('exception')
