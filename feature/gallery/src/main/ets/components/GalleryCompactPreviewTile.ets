@@ -33,6 +33,8 @@ export struct GalleryCompactPreviewTile {
   @Param transitionSourceId: string = ''
   @Event onOpen?: (pageIndex: number) => void
   @Local readerTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
+  private sourceMounted: boolean = false
+  private sourceMountEpoch: number = 0
 
   private pageAspect(): number {
     if (this.page.width > 0 && this.page.height > 0) {
@@ -70,6 +72,8 @@ export struct GalleryCompactPreviewTile {
       .borderRadius(ThemeTokens.THUMB_RADIUS)
       .clip(true)
       .id(this.transitionSourceId)
+      .onAppear((): void => { this.sourceMounted = true; this.sourceMountEpoch += 1 })
+      .onDisAppear((): void => { this.sourceMounted = false })
       .visibility(
         this.readerTransition.sourceHidden(this.transitionSourceId)
           ? Visibility.Hidden
@@ -85,8 +89,19 @@ export struct GalleryCompactPreviewTile {
     .accessibilityText(AppStrings.format('thumbnails_open_reader_a11y', [this.pageLabel()]))
     .onClick((): void => {
       if (this.onOpen) {
-        const source = new ReaderTrialEntrySource(this.galleryId, this.pageIndex, this.transitionSourceId,
-          ReaderThumbnailTransitionCoordinator.sourceSnapshotId(this.transitionSourceId), 'detail', this.page.thumbnailUrl)
+        const galleryId = this.galleryId
+        const pageIndex = this.pageIndex
+        const pageNumber = this.page.number
+        const sourceId = this.transitionSourceId
+        const snapshotId = ReaderThumbnailTransitionCoordinator.sourceSnapshotId(sourceId)
+        const thumbnailUrl = this.page.thumbnailUrl
+        const mountEpoch = this.sourceMountEpoch
+        const source = new ReaderTrialEntrySource(galleryId, pageIndex, sourceId, snapshotId, 'detail', thumbnailUrl)
+        source.isCurrent = (): boolean => this.sourceMounted && this.sourceMountEpoch === mountEpoch &&
+          this.galleryId === galleryId && this.pageIndex === pageIndex && this.page.number === pageNumber &&
+          sourceId.length > 0 && this.transitionSourceId === sourceId &&
+          ReaderThumbnailTransitionCoordinator.sourceSnapshotId(this.transitionSourceId) === snapshotId &&
+          this.page.thumbnailUrl === thumbnailUrl && !this.readerTransition.sourceHidden(sourceId)
         if (ReaderTrialEntryRelay.tryOpen(source)) return
         this.onOpen(this.pageIndex)
       }

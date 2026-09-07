@@ -12,6 +12,8 @@ export class ReaderTrialEntrySource {
   decodedHeight: number = 0
   objectFit: 'cover' | 'contain'
   originalRelation: 'unknown' = 'unknown'
+  /** Live tile identity/mount check. Geometry is still measured by the host. */
+  isCurrent: () => boolean = (): boolean => false
 
   constructor(galleryId: number, pageIndex: number, sourceComponentId: string,
     snapshotComponentId: string, origin: 'detail' | 'grid', thumbnailUrl: string) {
@@ -36,6 +38,22 @@ export class ReaderTrialEntryRelay {
   private static token: number = 0
   private static workId: string = ''
   private static handler: ((source: ReaderTrialEntrySource) => boolean) | null = null
+  private static pendingToken: number = 0
+  private static pendingGalleryId: number = 0
+
+  static holdPending(galleryId: number): number {
+    if (!Number.isSafeInteger(galleryId) || galleryId <= 0) return 0
+    const token = ++ReaderTrialEntryRelay.serial
+    ReaderTrialEntryRelay.pendingToken = token
+    ReaderTrialEntryRelay.pendingGalleryId = galleryId
+    return token
+  }
+
+  static releasePending(token: number): void {
+    if (token !== ReaderTrialEntryRelay.pendingToken) return
+    ReaderTrialEntryRelay.pendingToken = 0
+    ReaderTrialEntryRelay.pendingGalleryId = 0
+  }
 
   static install(workId: string, handler: (source: ReaderTrialEntrySource) => boolean): number {
     const token: number = ++ReaderTrialEntryRelay.serial
@@ -53,6 +71,9 @@ export class ReaderTrialEntryRelay {
   }
 
   static tryOpen(source: ReaderTrialEntrySource): boolean {
+    // This guard survives consumption of the one-shot registration, including the same-frame second click.
+    if (ReaderTrialEntryRelay.pendingToken !== 0 &&
+      ReaderTrialEntryRelay.pendingGalleryId === source.galleryId) return true
     const handler = ReaderTrialEntryRelay.handler
     if (handler === null || source.galleryId <= 0 || !Number.isSafeInteger(source.galleryId) ||
       source.pageIndex < 0 || !Number.isSafeInteger(source.pageIndex) ||

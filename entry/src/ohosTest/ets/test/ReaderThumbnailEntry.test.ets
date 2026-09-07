@@ -94,14 +94,14 @@ async function assertDelayedDiscard(driver: Driver, epoch: number): Promise<void
     expect(state.accepted && state.delayedPreview).assertTrue()
     expect(state.handoff).assertFalse()
     if (state.discarded) {
-      expect(state.navigationChanged).assertTrue()
+      expect(state.navigationChanged).assertFalse()
       await abilityDelegatorRegistry.getAbilityDelegator().print(`ReaderEntryProbe verified: ${JSON.stringify(state)}`)
       return
     }
     await driver.delayMs(300)
   }
   await abilityDelegatorRegistry.getAbilityDelegator().print(`ReaderEntryProbe pending: ${JSON.stringify(ReaderTrialEntryProbe.read())}`)
-  throw new Error('No same-epoch real-preview navigation discard before fresh opt-in')
+  throw new Error('No same-epoch real-preview pending cancellation before fresh opt-in')
 }
 
 export async function waitFreshFirstPage(driver: Driver): Promise<void> {
@@ -240,6 +240,8 @@ export default function readerThumbnailEntryTest(): void {
       try {
         await armEntry(driver, true)
         const source = await findFirstDetailThumbnail(driver)
+        const sourceId = await source.getId()
+        const sourceBounds = await source.getBounds()
         await captureEntry(driver, 'source')
         ReaderTrialEntryProbe.reset()
         // The explicit host probe delays after the real snapshot, before its ownership fence.
@@ -255,6 +257,14 @@ export default function readerThumbnailEntryTest(): void {
         await abilityDelegatorRegistry.getAbilityDelegator().print(`ReaderEntryProbe epoch=${probeEpoch} preview=true beforeBack=true`)
         await driver.delayMs(700)
         await assertNoReader(driver)
+        expect(await driver.findComponent(ON.id('rkit-entry-source-pending'))).assertNull()
+        const returnedSource = await driver.findComponent(ON.id(sourceId))
+        expect(returnedSource !== null).assertTrue()
+        const returnedBounds = await returnedSource.getBounds()
+        expect(returnedBounds.left).assertEqual(sourceBounds.left)
+        expect(returnedBounds.top).assertEqual(sourceBounds.top)
+        expect(returnedBounds.right).assertEqual(sourceBounds.right)
+        expect(returnedBounds.bottom).assertEqual(sourceBounds.bottom)
         await captureEntry(driver, 'quick-return')
         await assertDelayedDiscard(driver, probeEpoch)
         for (let attempt = 0; attempt < 20; attempt++) {

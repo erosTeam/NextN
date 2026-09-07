@@ -64,6 +64,80 @@ test('normal entry is not intercepted without a registration', () => {
   assert.equal(relay.tryOpen(entry()), false)
 })
 
+test('same-frame repeat clicks are consumed by the pending owner after the one-shot claim', () => {
+  const { relay, entry } = setup()
+  let calls = 0
+  let pending = 0
+  relay.install('678049', source => {
+    calls++
+    pending = relay.holdPending(source.galleryId)
+    return true
+  })
+  assert.equal(relay.tryOpen(entry()), true)
+  assert.equal(relay.tryOpen(entry()), true)
+  assert.equal(relay.tryOpen(entry(678049, 1)), true)
+  assert.equal(calls, 1)
+  relay.releasePending(pending)
+  assert.equal(relay.tryOpen(entry()), false)
+})
+
+test('pending gallery match does not consume a different gallery registration', () => {
+  const { relay, entry } = setup()
+  const pending = relay.holdPending(678049)
+  let calls = 0
+  relay.install('677618', () => { calls++; return true })
+  assert.equal(relay.tryOpen(entry()), true)
+  assert.equal(calls, 0)
+  assert.equal(relay.tryOpen(entry(678050)), false)
+  assert.equal(relay.tryOpen(entry(677618)), true)
+  assert.equal(calls, 1)
+  relay.releasePending(pending)
+  assert.equal(relay.tryOpen(entry()), false)
+})
+
+test('old pending release cannot clear a replacement and registration clear cannot release pending', () => {
+  const { relay, entry } = setup()
+  const old = relay.holdPending(677618)
+  const current = relay.holdPending(678049)
+  assert.notEqual(old, current)
+  relay.releasePending(old)
+  relay.clear(current)
+  assert.equal(relay.tryOpen(entry()), true)
+  assert.equal(relay.tryOpen(entry(677618)), false)
+  relay.releasePending(current)
+  assert.equal(relay.tryOpen(entry()), false)
+})
+
+test('pending and replacement registration created inside a claim survive its original clear', () => {
+  const { relay, entry } = setup()
+  let pending = 0
+  let secondCalls = 0
+  relay.install('678049', () => {
+    pending = relay.holdPending(678049)
+    relay.install('678049', () => { secondCalls++; return true })
+    return true
+  })
+  assert.equal(relay.tryOpen(entry()), true)
+  assert.equal(relay.tryOpen(entry()), true)
+  assert.equal(secondCalls, 0)
+  relay.releasePending(pending)
+  assert.equal(relay.tryOpen(entry()), true)
+  assert.equal(secondCalls, 1)
+  assert.equal(relay.tryOpen(entry()), false)
+})
+
+test('releasing an install token cannot clear pending and invalid holds preserve the owner', () => {
+  const { relay, entry } = setup()
+  const install = relay.install('678049', () => true)
+  const pending = relay.holdPending(678049)
+  relay.releasePending(install)
+  for (const id of [0, -1, NaN, Infinity, 1.5]) assert.equal(relay.holdPending(id), 0)
+  assert.equal(relay.tryOpen(entry()), true)
+  relay.releasePending(pending)
+  assert.equal(relay.tryOpen(entry()), true)
+  assert.equal(relay.tryOpen(entry()), false)
+})
+
 test('matching registration receives the source and is consumed once', () => {
   const { relay, entry } = setup()
   const source = entry()
@@ -150,5 +224,6 @@ test('source retains independent thumbnail identity without inferring decoded si
     assert.equal(source.decodedWidth, 0)
     assert.equal(source.decodedHeight, 0)
     assert.equal(source.originalRelation, 'unknown')
+    assert.equal(source.isCurrent(), false)
   }
 })

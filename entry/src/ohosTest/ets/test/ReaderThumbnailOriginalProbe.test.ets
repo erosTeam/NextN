@@ -8,7 +8,7 @@ import { captureEntry, findFirstDetailThumbnail, assertNoReader, waitFreshFirstP
 
 const originalCaptures: string[] = ['original-source', 'original-held', 'original-released',
   'original-next', 'original-late', 'original-closed', 'original-exception',
-  'original-back', 'original-rotated', 'original-restored']
+  'original-back', 'original-rotated', 'original-restored', 'original-input-held']
 
 function clearOriginalCaptures(): void {
   const cache = abilityDelegatorRegistry.getAbilityDelegator().getAppContext().cacheDir
@@ -133,8 +133,9 @@ async function waitRotatedOriginal(driver: Driver, epoch: number, entryId: numbe
   throw new Error('Rotation did not change the real viewport and cancel the held entry')
 }
 
-async function assertOriginalSourceBounds(driver: Driver, sourceId: string, before: Rect, rootBefore: Rect): Promise<void> {
-  await assertNoReader(driver)
+async function assertOriginalSourceBounds(driver: Driver, sourceId: string, before: Rect, rootBefore: Rect,
+  readerClosed: boolean = true): Promise<void> {
+  if (readerClosed) await assertNoReader(driver)
   const root = await (await driver.findComponent(ON.id('nextn-root-navigation'))).getBounds()
   // A changed effective viewport is not a comparable source-return sample.
   expect(root.right - root.left).assertEqual(rootBefore.right - rootBefore.left)
@@ -183,9 +184,12 @@ export default function readerThumbnailOriginalProbeTest(): void {
   }
   if (className !== 'ReaderThumbnailOriginalReleaseTrial' && className !== 'ReaderThumbnailOriginalNavigationTrial' &&
     className !== 'ReaderThumbnailOriginalBackTrial' && className !== 'ReaderThumbnailOriginalRotationTrial' &&
-    className !== 'ReaderThumbnailUnknownOriginalTrial' && className !== 'ReaderThumbnailUnknownOriginalBackTrial') return
+    className !== 'ReaderThumbnailUnknownOriginalTrial' && className !== 'ReaderThumbnailUnknownOriginalBackTrial' &&
+    className !== 'ReaderThumbnailPendingInputTrial' && className !== 'ReaderThumbnailPendingRotationTrial') return
+  const pendingInput = className === 'ReaderThumbnailPendingInputTrial'
+  const pendingRotation = className === 'ReaderThumbnailPendingRotationTrial'
   const unknownMetrics = className === 'ReaderThumbnailUnknownOriginalTrial' ||
-    className === 'ReaderThumbnailUnknownOriginalBackTrial'
+    className === 'ReaderThumbnailUnknownOriginalBackTrial' || pendingInput || pendingRotation
   const navigated = className === 'ReaderThumbnailOriginalNavigationTrial'
   const back = className === 'ReaderThumbnailOriginalBackTrial' || className === 'ReaderThumbnailUnknownOriginalBackTrial'
   const rotated = className === 'ReaderThumbnailOriginalRotationTrial'
@@ -224,9 +228,52 @@ export default function readerThumbnailOriginalProbeTest(): void {
         const entryId = held.reader.entryId
         await captureEntry(driver, 'original-held')
         if (unknownMetrics) await assertStatusContent(mainWindow, sourceStatusContent, 'hidden-held')
+        if (pendingInput) {
+          expect(await driver.findComponent(ON.id('rkit-entry-source-loading')) !== null).assertTrue()
+          expect(await driver.findComponent(ON.id('rkit-entry-source-pending')) !== null).assertTrue()
+          await (await driver.findComponent(ON.id(sourceId))).click()
+          await (await driver.findComponent(ON.id(sourceId))).click()
+          const x = Math.round((rootBefore.left + rootBefore.right) / 2)
+          await driver.swipe(x, rootBefore.bottom - 150, x, rootBefore.top + 350, 600)
+          await driver.delayMs(300)
+          expect(await driver.findComponent(ON.id('reader-overlay-navigation'))).assertNull()
+          expect(ReaderTrialOriginalProbe.read().epoch).assertEqual(epoch)
+          expect(ReaderTrialOriginalProbe.read().requestId).assertEqual(held.requestId)
+          expect(ReaderTrialOriginalProbe.read().reader.entryId).assertEqual(entryId)
+          expect(ReaderTrialOriginalProbe.read().reader.entryPhase).assertEqual('layout')
+          await assertOriginalSourceBounds(driver, sourceId, before, rootBefore, false)
+          await captureEntry(driver, 'original-input-held')
+        }
+        if (pendingRotation) {
+          originalOrientation = mainWindow.getPreferredOrientation()
+          await mainWindow.setPreferredOrientation(window.Orientation.LANDSCAPE)
+          await waitBackReleased(driver, epoch, held.requestId)
+          await driver.delayMs(800)
+          const rotatedRoot = await (await driver.findComponent(ON.id('nextn-root-navigation'))).getBounds()
+          expect(rotatedRoot.right - rotatedRoot.left > rotatedRoot.bottom - rotatedRoot.top).assertTrue()
+          expect(await driver.findComponent(ON.id('rkit-entry-source-pending'))).assertNull()
+          await assertNoReader(driver)
+          await assertStatusContent(mainWindow, sourceStatusContent, 'pending-rotated')
+          await captureEntry(driver, 'original-rotated')
+          expect(ReaderTrialOriginalProbe.release(epoch, held.requestId)).assertFalse()
+          for (let attempt = 0; attempt < 20; attempt++) {
+            await driver.delayMs(200)
+            await assertNoReader(driver)
+            expect(ReaderTrialOriginalProbe.read().epoch).assertEqual(epoch)
+          }
+          await captureEntry(driver, 'original-late')
+          await mainWindow.setPreferredOrientation(originalOrientation)
+          await driver.delayMs(1600)
+          orientationRestored = true
+          await assertOriginalSourceBounds(driver, sourceId, before, rootBefore)
+          await captureEntry(driver, 'original-restored')
+          await captureEntry(driver, 'original-closed')
+          return
+        }
         if (back) {
           await driver.triggerKey(KeyCode.KEYCODE_BACK)
           await waitBackReleased(driver, epoch, held.requestId)
+          expect(await driver.findComponent(ON.id('rkit-entry-source-pending'))).assertNull()
           await assertOriginalSourceBounds(driver, sourceId, before, rootBefore)
           await captureEntry(driver, 'original-back')
           await assertStatusContent(mainWindow, sourceStatusContent, 'back')
@@ -287,6 +334,7 @@ export default function readerThumbnailOriginalProbeTest(): void {
         }
         if (!navigated && !rotated) await waitFreshFirstPage(driver)
         await captureEntry(driver, 'original-released')
+        expect(await driver.findComponent(ON.id('rkit-entry-source-pending'))).assertNull()
         await assertStatusContent(mainWindow, '#FFFFFF', 'visible-released')
         await driver.delayMs(1000)
         await waitDeliveredOriginal(driver, epoch, entryId, expectedAnchor, expectedPhase)
