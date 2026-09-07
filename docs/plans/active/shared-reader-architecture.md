@@ -1,6 +1,18 @@
 # NextE / NextN / Koma 共享阅读器设计草案
 
+### D11 NextE 源就绪端口 — 实施边界（2026-09-07）
+
+- 参考：当前 EhSpriteThumbnail 原生 ImageKnife 子树和裁切后的 content 节点；不改源页父树。
+- 主信息：同请求主图 success 与 native content-ready 共同给出可截图候选，不把 vendor status1 宣称实际解码时刻。
+- 动作：默认无操作的 readiness 事件与同步身份句柄；生产点击、加载/重试、屏蔽和 OPACITY 过渡保持。
+- 本包闭环：双页子代理仅实现 adapter→EhImageKnifeImage→Sprite 与真实回调/状态测试；root随后接 tile/relay/宿主及237。模块通过不是像素或导航验收。
+- HarmonyOS 表达：V2 Param/Event；epoch加捕获Param直接核验，复用现有尺寸/裁切，无新等待计时/UI容器。宿主截图仍须 waitUntilRenderFinished 并前后复查当前源，旧句柄不可释放新源。
+
 ## 当前实施顺序与分工 — 2026-09-07
+
+当前进度（21:22）：E56 main8/native7已完成首条真实横向sprite源P1→共享双页→同一Detail源返回，native1pass20s662ms、三张整屏/current root检查通过，ready/captured/finished同epoch事实成立；仅端点限域接受，55选择器错误保留。N硬件等待门禁main18/native23进入57实机验证。后续分配不再挂起子代理结论：root先收束N硬件反例与N/E连续入场证据；下一Koma切片仅Index+KomaReaderLabPage的显式debug chrome和退出生命周期，复用原本地adapter，先无preview本地选定章/后台/退出，不改生产。Koma源图另切，现cache PixelMap不直接交可release的PreviewSource；章切换owner须在switchUnit/open前取消entry并退休capture，不等新章ready，也不把末页变整作完成。已向Koma任务说明文件边界但未派发冲突编辑，197仍其独占。
+
+当前进度（21:12）：NextN检查点1a5c78e后的52 Grid等待Back、53源页失败、54邻页失败均已在main17/native22完成并审阅15张整屏及当前窗口，限域接受等待取消和既有重试交接。NextE现进入候选集成：NH子代理已交回relay与两个源leaf，正写真实native入口测试；双页子代理已交回adapter/Sprite readiness及9项真实行为测试，并在交叉审查中发现N/E隐藏layout仍接收音量翻页的同类缺口，现负责共享externalMove同步门禁及真实方法测试。root负责两端Lab订阅门禁、E Index导航/源快照/生命周期、匹配构建与237检查。E测试必须观察真实ready、snapshotCaptured、同epoch转场完成和原图/源页交接，不能以无动画fallback打开当成通过。下一实机动作是E的首条sprite到共享双页入口；N新增等待层连续运动、E未ready/取消/连续运动仍OPEN，生产默认和197保持不动。
 
 当前进度（20:42）：共享起飞前活源授权接口已保存clean501cb5e，NextN系统栏检查点5ea7a9f。D11g已落地源缩略图局部等待、同帧重复输入归属、起飞前身份/源矩形/窗口核验；50重复点击/滑动与真实交付、48快照等待Back/重新试接、49原图等待Back、51真实旋转取消，23张整屏/current root已审阅，限域接受这些端点，不把它们算作新增等待层的连续运动验收。宿主真实方法3项回归覆盖无测量fallback与guard生命周期。下一项由NH子代理准备Grid等待Back原生测试，root保存当前检查点并负责237匹配包及整页验收；随后复核新claim下原图失败交接，再按已审阅清单贯通NextE实际sprite就绪/现有导航所有者。Koma20:40已归还clean501cb5e单包窗口，197继续其独占；章节编排不进入core，生产默认和持久化迁移仍不动。
 

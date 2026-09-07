@@ -739,6 +739,7 @@ struct Index {
       NextNReaderLabPage({ request: this.readerTrialRequest,
         managesTrialWindow: false,
         entryTransition: this.readerEntryTransition, entryPreview: this.readerEntryPreview,
+        entryPhase: this.readerEntryTransition?.phase ?? 'finished',
         onClose: (): void => { this.closeReaderTrial() } })
     }
   }

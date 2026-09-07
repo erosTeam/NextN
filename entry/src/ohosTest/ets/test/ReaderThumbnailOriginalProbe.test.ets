@@ -1,9 +1,10 @@
 import { describe, expect, it } from '@ohos/hypium'
-import { abilityDelegatorRegistry, Driver, ON, Rect } from '@kit.TestKit'
+import { abilityDelegatorRegistry, Component, Driver, MatchPattern, ON, Rect } from '@kit.TestKit'
 import { KeyCode } from '@kit.InputKit'
+import { audio } from '@kit.AudioKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { window } from '@kit.ArkUI'
-import { ReaderTrialOriginalProbe, connectActionAlignment, connectActionHandEdge } from 'shared'
+import { AppStrings, ReaderTrialOriginalProbe, connectActionAlignment, connectActionHandEdge } from 'shared'
 import { captureEntry, findFirstDetailThumbnail, assertNoReader, waitFreshFirstPage } from './ReaderThumbnailEntry.test'
 
 const originalCaptures: string[] = ['original-source', 'original-held', 'original-released',
@@ -147,8 +148,197 @@ async function assertOriginalSourceBounds(driver: Driver, sourceId: string, befo
   expect(after.bottom).assertEqual(before.bottom)
 }
 
+async function findFirstGridThumbnail(driver: Driver): Promise<Component> {
+  await findFirstDetailThumbnail(driver)
+  // Use the same real View all action observed in Grid17/18, never its historical coordinates.
+  const links = await driver.findComponents(ON.text(AppStrings.get('detail_view_all'))
+    .within(ON.id('nextn-root-navigation')))
+  if (links.length !== 1) throw new Error('Detail View all semantic action is not unique')
+  await links[0].click()
+  const firstPage = '^reader-thumb-all-thumbnails-[0-9]+-page-0$'
+  const selector = ON.id(firstPage, MatchPattern.REG_EXP).within(ON.type('Grid'))
+  for (let attempt = 0; attempt < 30; attempt++) {
+    const grids = await driver.findComponents(ON.type('Grid').within(ON.id('nextn-root-navigation')))
+    if (grids.length > 1) throw new Error('Ambiguous full-thumbnail Grid; no coordinate fallback')
+    if (grids.length === 1) {
+      let matches = await driver.findComponents(selector)
+      if (matches.length === 0) {
+        const found = await grids[0].scrollSearch(selector, true)
+        if (found === null) throw new Error('Grid P1 thumbnail was not found by semantic scrollSearch')
+        matches = await driver.findComponents(selector)
+      }
+      if (matches.length !== 1) throw new Error('Grid P1 source identity is not unique')
+      const sourceId = await matches[0].getId()
+      const bounds = await matches[0].getBounds()
+      const owner = await grids[0].getBounds()
+      expect(bounds.right > bounds.left && bounds.bottom > bounds.top).assertTrue()
+      expect(bounds.left >= owner.left && bounds.right <= owner.right &&
+        bounds.top >= owner.top && bounds.bottom <= owner.bottom).assertTrue()
+      return await driver.findComponent(ON.id(sourceId))
+    }
+    await driver.delayMs(200)
+  }
+  throw new Error('View all did not open the actual full-thumbnail Grid')
+}
+
+async function assertRetainedGrid(driver: Driver, sourceId: string, before: Rect): Promise<void> {
+  const grids = await driver.findComponents(ON.type('Grid').within(ON.id('nextn-root-navigation')))
+  expect(grids.length).assertEqual(1)
+  const after = await grids[0].getBounds()
+  expect(after.left).assertEqual(before.left)
+  expect(after.top).assertEqual(before.top)
+  expect(after.right).assertEqual(before.right)
+  expect(after.bottom).assertEqual(before.bottom)
+  expect((await driver.findComponents(ON.id(sourceId).within(ON.type('Grid')))).length).assertEqual(1)
+}
+
+async function unknownOriginalVolumeTrial(): Promise<void> {
+  clearOriginalCaptures()
+  const driver = Driver.create()
+  const delegator = abilityDelegatorRegistry.getAbilityDelegator()
+  const manager = audio.getAudioManager().getVolumeManager()
+  const usage = audio.StreamUsage.STREAM_USAGE_MUSIC
+  let epoch: number = 0
+  try {
+    await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+      parameters: { readerLabWork: '678049', readerLabPage: '0', readerLabChrome: 'true',
+        readerLabThumbnailEntry: 'true', readerLabEntryLayout: 'single', readerLabEntryDirection: 'ltr',
+        readerLabOriginalProbe: 'hold-unknown-metrics-once', readerLabVolumeKeys: 'true' } })
+    await driver.delayMs(1500)
+    epoch = ReaderTrialOriginalProbe.read().epoch
+    expect(epoch > 0).assertTrue()
+    const source = await findFirstDetailThumbnail(driver)
+    const sourceId = await source.getId()
+    const before = await source.getBounds()
+    const rootBefore = await (await driver.findComponent(ON.id('nextn-root-navigation'))).getBounds()
+    const ability = await delegator.getCurrentTopAbility()
+    const mainWindow = await window.getLastWindow(ability.context)
+    const sourceStatusContent = statusContent(mainWindow)
+    await captureEntry(driver, 'original-source')
+    await source.click()
+    await waitHeldOriginal(driver, true)
+    const held = ReaderTrialOriginalProbe.read()
+    expect(held.epoch).assertEqual(epoch)
+    const entryId = held.reader.entryId
+    const pendingBefore = await (await driver.findComponent(ON.id('rkit-entry-source-pending'))).getBounds()
+    expect(await driver.findComponent(ON.id('rkit-entry-source-loading')) !== null).assertTrue()
+    await assertOriginalSourceBounds(driver, sourceId, before, rootBefore, false)
+    await assertStatusContent(mainWindow, sourceStatusContent, 'volume-hidden-held')
+    await captureEntry(driver, 'original-held')
+
+    // Use real native key injection. Pick a reversible pair even at the system volume boundary.
+    const baseline = manager.getVolumeByStream(usage)
+    const increase = baseline < manager.getMaxVolumeByStream(usage)
+    const firstKey = increase ? KeyCode.KEYCODE_VOLUME_UP : KeyCode.KEYCODE_VOLUME_DOWN
+    const secondKey = increase ? KeyCode.KEYCODE_VOLUME_DOWN : KeyCode.KEYCODE_VOLUME_UP
+    await driver.triggerKey(firstKey)
+    await driver.delayMs(650)
+    const afterFirst = ReaderTrialOriginalProbe.read()
+    const sourceAfterFirst = await (await driver.findComponent(ON.id(sourceId))).getBounds()
+    await driver.triggerKey(secondKey)
+    await driver.delayMs(650)
+    const afterSecond = ReaderTrialOriginalProbe.read()
+    await delegator.print(`ReaderOriginalVolume keys=${firstKey},${secondKey} first=${JSON.stringify(afterFirst)} second=${JSON.stringify(afterSecond)}`)
+    expect(manager.getVolumeByStream(usage)).assertEqual(baseline)
+    for (const current of [afterFirst, afterSecond]) {
+      expect(current.epoch).assertEqual(epoch)
+      expect(current.requestId).assertEqual(held.requestId)
+      expect(current.state).assertEqual('held')
+      expect(current.unknownMetrics).assertTrue()
+      expect(current.reader.entryId).assertEqual(entryId)
+      expect(current.reader.anchor).assertEqual(0)
+      expect(current.reader.navigationRevision).assertEqual(held.reader.navigationRevision)
+      expect(current.reader.entryPhase).assertEqual('layout')
+      expect(current.reader.layoutReady).assertFalse()
+      expect(current.reader.decodedReady).assertFalse()
+      expect(current.reader.assetRequestId).assertEqual(0)
+      expect(current.reader.originalWidth).assertEqual(0)
+      expect(current.reader.originalHeight).assertEqual(0)
+    }
+    expect(await driver.findComponent(ON.id('reader-overlay-navigation'))).assertNull()
+    expect(await driver.findComponent(ON.id('rkit-entry-source-loading')) !== null).assertTrue()
+    // UiTest reports the exposed portion (990px) while the OS volume window
+    // covers the right edge; compare geometry only after the same full viewport returns.
+    for (let attempt = 0; attempt < 60; attempt++) {
+      const bounds = await (await driver.findComponent(ON.id('nextn-root-navigation'))).getBounds()
+      if (bounds.left === rootBefore.left && bounds.right === rootBefore.right &&
+        bounds.top === rootBefore.top && bounds.bottom === rootBefore.bottom) break
+      await driver.delayMs(100)
+    }
+    const pendingAfter = await (await driver.findComponent(ON.id('rkit-entry-source-pending'))).getBounds()
+    expect(pendingAfter.left).assertEqual(pendingBefore.left)
+    expect(pendingAfter.top).assertEqual(pendingBefore.top)
+    expect(pendingAfter.right).assertEqual(pendingBefore.right)
+    expect(pendingAfter.bottom).assertEqual(pendingBefore.bottom)
+    expect(sourceAfterFirst.left).assertEqual(before.left)
+    expect(sourceAfterFirst.top).assertEqual(before.top)
+    expect(sourceAfterFirst.right).assertEqual(before.right)
+    expect(sourceAfterFirst.bottom).assertEqual(before.bottom)
+    await assertOriginalSourceBounds(driver, sourceId, before, rootBefore, false)
+    await captureEntry(driver, 'original-input-held')
+    await assertStatusContent(mainWindow, sourceStatusContent, 'volume-still-hidden')
+
+    expect(ReaderTrialOriginalProbe.release(epoch, held.requestId)).assertTrue()
+    await waitDeliveredOriginal(driver, epoch, entryId, 0, 'finished')
+    await waitFreshFirstPage(driver)
+    const released = ReaderTrialOriginalProbe.read()
+    expect(released.requestId).assertEqual(held.requestId)
+    expect(released.reader.originalWidth > 0 && released.reader.originalHeight > 0).assertTrue()
+    expect(released.reader.decodedReady).assertTrue()
+    expect(await driver.findComponent(ON.id('rkit-entry-source-pending'))).assertNull()
+    await assertStatusContent(mainWindow, '#FFFFFF', 'volume-visible-released')
+    await captureEntry(driver, 'original-released')
+
+    await driver.triggerKey(KeyCode.KEYCODE_VOLUME_DOWN)
+    // P2 can have its own download/metadata/decode wait; require the current original, not a cached neighbor Image.
+    await waitDeliveredOriginal(driver, epoch, entryId, 1, 'finished')
+    for (let attempt = 0; attempt < 40; attempt++) {
+      const current = ReaderTrialOriginalProbe.read()
+      expect(current.epoch).assertEqual(epoch)
+      expect(current.requestId).assertEqual(held.requestId)
+      expect(current.reader.entryId).assertEqual(entryId)
+      expect(current.reader.anchor).assertEqual(1)
+      if (current.reader.originalWidth > 0 && current.reader.originalHeight > 0) break
+      await driver.delayMs(250)
+    }
+    const moved = ReaderTrialOriginalProbe.read()
+    expect(moved.requestId).assertEqual(held.requestId)
+    expect(moved.reader.navigationRevision > released.reader.navigationRevision).assertTrue()
+    expect(moved.reader.originalWidth > 0 && moved.reader.originalHeight > 0).assertTrue()
+    const page = await driver.findComponent(ON.id('rkit-chrome-page'))
+    expect(Number((await page.getText()).split('/')[0].trim())).assertEqual(2)
+    expect(manager.getVolumeByStream(usage)).assertEqual(baseline)
+    await captureEntry(driver, 'original-next')
+
+    await (await driver.findComponent(ON.id('rkit-close'))).click()
+    await driver.delayMs(700)
+    await assertOriginalSourceBounds(driver, sourceId, before, rootBefore)
+    expect(await driver.findComponent(ON.id('rkit-entry-source-pending'))).assertNull()
+    const closed = ReaderTrialOriginalProbe.read()
+    expect(closed.epoch).assertEqual(epoch)
+    expect(closed.requestId).assertEqual(held.requestId)
+    expect(closed.reader.hostActive).assertFalse()
+    expect(ReaderTrialOriginalProbe.release(epoch, held.requestId)).assertFalse()
+    await assertStatusContent(mainWindow, sourceStatusContent, 'volume-closed')
+    await reportOriginal('volume-closed')
+    await captureEntry(driver, 'original-closed')
+  } catch (error) {
+    await reportOriginal('volume-exception')
+    await captureEntry(driver, 'original-exception')
+    throw error as Error
+  } finally {
+    if (epoch > 0) ReaderTrialOriginalProbe.cancel(epoch)
+  }
+}
+
 export default function readerThumbnailOriginalProbeTest(): void {
   const className = abilityDelegatorRegistry.getArguments().parameters['-s class']
+  if (className === 'ReaderThumbnailUnknownOriginalVolumeTrial') {
+    describe(className, (): void => {
+      it('nativeVolumeKeysCannotMoveHiddenEntryAndResumeAfterOriginalHandoff', 0, unknownOriginalVolumeTrial)
+    })
+    return
+  }
   if (className === 'ReaderTrialWindowNoPreviewTrial') {
     describe(className, (): void => {
       it('ordinaryTrialOwnsAndRestoresStatusWithoutAnEntryPreview', 0, async (): Promise<void> => {
@@ -185,13 +375,16 @@ export default function readerThumbnailOriginalProbeTest(): void {
   if (className !== 'ReaderThumbnailOriginalReleaseTrial' && className !== 'ReaderThumbnailOriginalNavigationTrial' &&
     className !== 'ReaderThumbnailOriginalBackTrial' && className !== 'ReaderThumbnailOriginalRotationTrial' &&
     className !== 'ReaderThumbnailUnknownOriginalTrial' && className !== 'ReaderThumbnailUnknownOriginalBackTrial' &&
-    className !== 'ReaderThumbnailPendingInputTrial' && className !== 'ReaderThumbnailPendingRotationTrial') return
+    className !== 'ReaderThumbnailPendingInputTrial' && className !== 'ReaderThumbnailPendingRotationTrial' &&
+    className !== 'ReaderThumbnailGridUnknownOriginalBackTrial') return
+  const gridBack = className === 'ReaderThumbnailGridUnknownOriginalBackTrial'
   const pendingInput = className === 'ReaderThumbnailPendingInputTrial'
   const pendingRotation = className === 'ReaderThumbnailPendingRotationTrial'
   const unknownMetrics = className === 'ReaderThumbnailUnknownOriginalTrial' ||
-    className === 'ReaderThumbnailUnknownOriginalBackTrial' || pendingInput || pendingRotation
+    className === 'ReaderThumbnailUnknownOriginalBackTrial' || pendingInput || pendingRotation || gridBack
   const navigated = className === 'ReaderThumbnailOriginalNavigationTrial'
-  const back = className === 'ReaderThumbnailOriginalBackTrial' || className === 'ReaderThumbnailUnknownOriginalBackTrial'
+  const back = className === 'ReaderThumbnailOriginalBackTrial' ||
+    className === 'ReaderThumbnailUnknownOriginalBackTrial' || gridBack
   const rotated = className === 'ReaderThumbnailOriginalRotationTrial'
   describe(className, (): void => {
     it('heldRealOriginalHasAnObservedOwnerAndCannotReopenRetiredEntry', 0, async (): Promise<void> => {
@@ -211,10 +404,12 @@ export default function readerThumbnailOriginalProbeTest(): void {
         await driver.delayMs(1500)
         epoch = ReaderTrialOriginalProbe.read().epoch
         expect(epoch > 0).assertTrue()
-        const source = await findFirstDetailThumbnail(driver)
+        const source = gridBack ? await findFirstGridThumbnail(driver) : await findFirstDetailThumbnail(driver)
         const sourceId = await source.getId()
         const before = await source.getBounds()
         const rootBefore = await (await driver.findComponent(ON.id('nextn-root-navigation'))).getBounds()
+        const gridBefore: Rect | null = gridBack ?
+          await (await driver.findComponent(ON.type('Grid').within(ON.id('nextn-root-navigation')))).getBounds() : null
         const sourceAbility = await abilityDelegatorRegistry.getAbilityDelegator().getCurrentTopAbility()
         mainWindow = await window.getLastWindow(sourceAbility.context)
         const sourceStatusContent = statusContent(mainWindow)
@@ -224,8 +419,14 @@ export default function readerThumbnailOriginalProbeTest(): void {
         await source.click()
         await waitHeldOriginal(driver, unknownMetrics)
         const held = ReaderTrialOriginalProbe.read()
+        if (gridBack) expect(held.epoch).assertEqual(epoch)
         epoch = held.epoch
         const entryId = held.reader.entryId
+        if (gridBack) {
+          expect(await driver.findComponent(ON.id('rkit-entry-source-loading')) !== null).assertTrue()
+          expect(await driver.findComponent(ON.id('rkit-entry-source-pending')) !== null).assertTrue()
+          await assertOriginalSourceBounds(driver, sourceId, before, rootBefore, false)
+        }
         await captureEntry(driver, 'original-held')
         if (unknownMetrics) await assertStatusContent(mainWindow, sourceStatusContent, 'hidden-held')
         if (pendingInput) {
@@ -275,6 +476,7 @@ export default function readerThumbnailOriginalProbeTest(): void {
           await waitBackReleased(driver, epoch, held.requestId)
           expect(await driver.findComponent(ON.id('rkit-entry-source-pending'))).assertNull()
           await assertOriginalSourceBounds(driver, sourceId, before, rootBefore)
+          if (gridBefore !== null) await assertRetainedGrid(driver, sourceId, gridBefore)
           await captureEntry(driver, 'original-back')
           await assertStatusContent(mainWindow, sourceStatusContent, 'back')
           for (let attempt = 0; attempt < 20; attempt++) {
@@ -285,10 +487,15 @@ export default function readerThumbnailOriginalProbeTest(): void {
             expect(state.state).assertEqual('cancelled')
             expect(state.assetReleased).assertTrue()
             expect(statusContent(mainWindow)).assertEqual(sourceStatusContent)
+            if (gridBack) {
+              expect(state.requestId).assertEqual(held.requestId)
+              expect(await driver.findComponent(ON.id('rkit-entry-source-pending'))).assertNull()
+            }
           }
           expect(ReaderTrialOriginalProbe.release(epoch, held.requestId)).assertFalse()
           await captureEntry(driver, 'original-late')
           await assertOriginalSourceBounds(driver, sourceId, before, rootBefore)
+          if (gridBefore !== null) await assertRetainedGrid(driver, sourceId, gridBefore)
           await captureEntry(driver, 'original-closed')
           return
         }

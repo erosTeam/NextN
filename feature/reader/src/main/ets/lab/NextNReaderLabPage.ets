@@ -14,6 +14,7 @@ import { NextNReaderOriginalProbeCatalog } from './NextNReaderOriginalProbeCatal
 export struct NextNReaderLabPage {
   @Require @Param request: ReaderLabRequest
   @Param entryTransition: ReaderEntryTransition | null = null
+  @Param entryPhase: string = 'finished'
   @Param entryPreview: ReaderEntryPreviewSource | null = null
   @Param managesTrialWindow: boolean = true
   @Event onClose: () => void = () => {}
@@ -90,10 +91,10 @@ export struct NextNReaderLabPage {
     return facts
   }
 
-  @Monitor('routeActive', 'labVisibility.foreground')
+  @Monitor('routeActive', 'labVisibility.foreground', 'entryPhase')
   syncVolumeKeys(): void {
     this.volumeKeys.setActive(this.session !== null && this.request.readingChrome && this.request.volumeKeys &&
-      this.routeActive && this.labVisibility.foreground)
+      this.routeActive && this.labVisibility.foreground && this.entryPhase !== 'layout')
   }
 
   build() {
