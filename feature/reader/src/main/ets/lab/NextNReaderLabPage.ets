@@ -27,7 +27,8 @@ export struct NextNReaderLabPage {
     const adapter = new NextNReaderLabAdapter(context)
     this.imageShare = new ReaderLabShareProbe(adapter, this.request.shareProbe)
     this.unitKey = new ReaderUnitKey('nh', this.request.work, this.request.work)
-    this.session = new ReaderPagedSession(adapter, new ReaderLabAssetProbe(adapter, this.request.thumbnailFailurePage))
+    this.session = new ReaderPagedSession(adapter, new ReaderLabAssetProbe(adapter, this.request.thumbnailFailurePage,
+      this.request.informationProbe))
   }
 
   aboutToDisappear(): void { this.volumeKeys.close(); this.trialWindow.close() }

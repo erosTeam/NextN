@@ -3,7 +3,8 @@ import { abilityDelegatorRegistry, Driver, ON } from '@kit.TestKit'
 import { KeyCode } from '@kit.InputKit'
 import { fileIo } from '@kit.CoreFileKit'
 
-const captureNames: string[] = ['baseline', 'single', 'single-return', 'spread', 'choice', 'left', 'right', 'returned', 'next', 'closed', 'exception']
+const captureNames: string[] = ['baseline', 'single', 'single-return', 'spread', 'choice', 'left', 'right', 'returned', 'next', 'closed', 'exception',
+  'recovery-baseline', 'failed', 'pending', 'changed', 'late', 'recovery-info', 'recovery-returned', 'recovery-closed']
 function clearInformationCaptures(): void {
   const cache = abilityDelegatorRegistry.getAbilityDelegator().getAppContext().cacheDir
   for (const name of captureNames) {
@@ -50,9 +51,89 @@ async function assertInformation(driver: Driver, page: number, name: string): Pr
   await informationReady(driver)
 }
 
+async function informationPage(driver: Driver): Promise<number> {
+  return Number((await (await driver.findComponent(ON.id('rkit-chrome-page'))).getText()).split('/')[0].trim())
+}
+
+async function informationRecoveryTrial(work: string, unit: string, mode: string): Promise<void> {
+  clearInformationCaptures()
+  const driver = Driver.create()
+  const delegator = abilityDelegatorRegistry.getAbilityDelegator()
+  await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+    parameters: { readerLabWork: work, readerLabUnit: unit, readerLabPage: '1', readerLabChrome: 'true',
+      readerLabInformationProbe: mode === 'failure' ? 'fail-once' : 'delay-once' } })
+  await driver.delayMs(1500); await informationReady(driver)
+  expect(await informationPage(driver)).assertEqual(2)
+  await captureInformation(driver, 'recovery-baseline')
+  await openInformationMenu(driver)
+  let expectedPage = 2
+  if (mode === 'failure') {
+    await informationReady(driver)
+    await captureInformation(driver, 'failed')
+    expect(await driver.findComponent(ON.type('AlertDialog'))).assertNull()
+    expect(await informationPage(driver)).assertEqual(2)
+  } else {
+    expect(await (await driver.findComponent(ON.id('rkit-more'))).isEnabled()).assertFalse()
+    await captureInformation(driver, 'pending')
+    if (mode === 'page') {
+      const bounds = await (await driver.findComponent(ON.id('rkit-image-viewport'))).getBounds()
+      await driver.click(Math.round(bounds.left + (bounds.right - bounds.left) * 0.8),
+        Math.round((bounds.top + bounds.bottom) / 2))
+      expectedPage = 3
+      await driver.delayMs(500); await informationReady(driver)
+    } else if (mode === 'close') {
+      await (await driver.findComponent(ON.id('rkit-close'))).click()
+      await driver.delayMs(700)
+      expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
+    } else {
+      const ability = await delegator.getCurrentTopAbility()
+      try {
+        await delegator.doAbilityBackground(ability); await driver.delayMs(500)
+        expect(delegator.getAbilityState(ability)).assertEqual(abilityDelegatorRegistry.AbilityLifecycleState.BACKGROUND)
+        await captureInformation(driver, 'changed')
+      } finally {
+        await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility' })
+      }
+      await driver.delayMs(700); await informationReady(driver)
+    }
+    if (mode !== 'background') await captureInformation(driver, 'changed')
+    await driver.delayMs(3500)
+    await captureInformation(driver, 'late')
+    expect(await driver.findComponent(ON.type('AlertDialog'))).assertNull()
+    if (mode === 'close') {
+      expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
+      await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+        parameters: { readerLabWork: work, readerLabUnit: unit, readerLabPage: '1', readerLabChrome: 'true' } })
+      await driver.delayMs(1500); await informationReady(driver)
+    }
+    expect(await informationPage(driver)).assertEqual(expectedPage)
+  }
+  await openInformationMenu(driver)
+  await assertInformation(driver, expectedPage, 'recovery-info')
+  expect(await informationPage(driver)).assertEqual(expectedPage)
+  await captureInformation(driver, 'recovery-returned')
+  await (await driver.findComponent(ON.id('rkit-close'))).click()
+  await driver.delayMs(700)
+  expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
+  await captureInformation(driver, 'recovery-closed')
+}
+
 export default function readerImageInformationTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
   const work = args['-s readerLabWork'], unit = args['-s readerLabUnit']
+  const trial = args['-s class']
+  if (typeof work === 'string' && work.length > 0 &&
+    (trial === 'ReaderInformationFailureTrial' || trial === 'ReaderInformationPageCancelTrial' ||
+      trial === 'ReaderInformationCloseCancelTrial' || trial === 'ReaderInformationBackgroundTrial')) {
+    describe(trial, (): void => {
+      it('metadataFailureOrLateResultDoesNotBreakReadingOrFreshInformation', 0, async (): Promise<void> => {
+        await informationRecoveryTrial(work, typeof unit === 'string' ? unit : '',
+          trial === 'ReaderInformationFailureTrial' ? 'failure' : trial === 'ReaderInformationPageCancelTrial' ? 'page' :
+            trial === 'ReaderInformationCloseCancelTrial' ? 'close' : 'background')
+      })
+    })
+    return
+  }
   if (args['-s class'] !== 'ReaderImageInformationTrial' || typeof work !== 'string' || work.length === 0) return
   describe('ReaderImageInformationTrial', (): void => {
     it('actualFileInformationKeepsSingleAndBothSpreadSourceIdentities', 0, async (): Promise<void> => {
