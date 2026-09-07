@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d12-13-koma-real-page-turn",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/13-real-page-turn",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "D12 Koma main2 candidate installed by03, shared c4c6350",
+    "page": "Actual normally imported chapter P4 then edge-tap P5",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "12 imported1comic1chapter10pages via normal picker, persisted ascending01..10. Explicit optional reader on genuine work/unit, start index3. Initial full capture then next edge tap; no progress/settings migration or197."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    },
+    {
+      "name": "timeout",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "86400000"
+      ]
+    },
+    {
+      "name": "power-after-timeout",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "existing-lab-launch",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "start",
+        "-b",
+        "com.honjow.koma",
+        "-a",
+        "EntryAbility",
+        "--ps",
+        "readerLabWork",
+        "local-folder-data-storage-el2-base-haps-entry-cache-import-koma-d12-solo-00001-056bc7fcb75f65ee-6acdc35d",
+        "--ps",
+        "readerLabUnit",
+        "local-folder-data-storage-el2-base-haps-entry-cache-import-koma-d12-solo-00001-056bc7fcb75f65ee-6acdc35d-chapter-1",
+        "--ps",
+        "readerLabChrome",
+        "true",
+        "--ps",
+        "readerLabPage",
+        "3"
+      ],
+      "pauseAfterMs": 1500
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d12-13-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d12-13-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d12-13-layout.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/13-real-page-turn/layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d12-13-screen.png",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/13-real-page-turn/screen.png"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "next-page-edge-tap",
+        "uiInput": [
+          "click",
+          "1100",
+          "1080"
+        ],
+        "pauseAfterMs": 700
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d12-13-next-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d12-13-next-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d12-13-next-layout.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/13-real-page-turn/next-layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d12-13-next-screen.png",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/13-real-page-turn/next-screen.png"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    }
+  ]
+}

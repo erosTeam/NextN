@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d12-06-koma-chrome-toolbar-close",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/06-chrome-toolbar-close",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "D12 Koma main2 candidate installed by03, shared c4c6350",
+    "page": "Optional ReaderSurface toolbar close and read-only import destination check",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "05 fresh layout rkit-close bounds[24,135][156,267]. Known same launch then toolbar close. Before launch inspect only exact public Download directory and proposed unique sample folder, no file writes."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    },
+    {
+      "name": "timeout",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "86400000"
+      ]
+    },
+    {
+      "name": "power-after-timeout",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "inspect-public-download",
+      "hdcArgs": [
+        "shell",
+        "ls",
+        "-ld",
+        "/storage/media/100/local/files/Docs/Download",
+        "/storage/media/100/local/files/Docs/Download/Koma-Reader-D12-Solo-Leveling-20260907"
+      ]
+    },
+    {
+      "name": "existing-lab-launch",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "start",
+        "-b",
+        "com.honjow.koma",
+        "-a",
+        "EntryAbility",
+        "--ps",
+        "readerLabWork",
+        "com.komiic.koma:kic:2861",
+        "--ps",
+        "readerLabUnit",
+        "kic-ch:218021",
+        "--ps",
+        "readerLabChrome",
+        "true"
+      ],
+      "pauseAfterMs": 1800
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "toolbar-close",
+        "uiInput": [
+          "click",
+          "90",
+          "201"
+        ],
+        "pauseAfterMs": 700
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d12-06-closed-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d12-06-closed-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d12-06-closed-layout.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/06-chrome-toolbar-close/closed-layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d12-06-closed-screen.png",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/06-chrome-toolbar-close/closed-screen.png"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    }
+  ]
+}

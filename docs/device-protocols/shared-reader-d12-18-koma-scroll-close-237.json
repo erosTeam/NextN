@@ -1,0 +1,203 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d12-18-koma-scroll-close",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/18-scroll-close",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "D12 Koma main2 candidate installed by03, shared c4c6350",
+    "page": "Continuous actual image scroll then system Back with library non-mutation readback",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "17 continuous P5 observed at top; swipe inside current full reading viewport then terminal scroll capture. System Back then final shelf capture and exact current library readback, compare to12. No fake scroll-state probe or persistence writes."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    },
+    {
+      "name": "timeout",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "86400000"
+      ]
+    },
+    {
+      "name": "power-after-timeout",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "scroll-real-long-page",
+        "uiInput": [
+          "swipe",
+          "660",
+          "1490",
+          "660",
+          "650",
+          "1200"
+        ],
+        "pauseAfterMs": 600
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d12-18-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d12-18-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d12-18-layout.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/18-scroll-close/layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d12-18-screen.png",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/18-scroll-close/screen.png"
+      ]
+    },
+    {
+      "name": "system-back-after-reading",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "uiInput",
+        "keyEvent",
+        "Back"
+      ],
+      "pauseAfterMs": 700
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d12-18-closed-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d12-18-closed-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d12-18-closed-layout.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/18-scroll-close/closed-layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d12-18-closed-screen.png",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/18-scroll-close/closed-screen.png"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "receive-library-after-trial",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.honjow.koma/haps/entry/files/library-store.v1.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/18-scroll-close/library-after.json"
+      ]
+    }
+  ]
+}

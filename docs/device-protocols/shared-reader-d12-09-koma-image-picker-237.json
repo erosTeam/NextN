@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d12-09-koma-image-picker",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/09-image-picker",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "D12 Koma main2 candidate installed by03, shared c4c6350",
+    "page": "Normal image picker and bounded existing-directory transfer",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "08 exact direct destination absent. 07 directory creation was denied; no permissions changed. Try one standard file send directly to established public Download (197 precedent), not mkdir or app storage. Then current08 Images menu bounds732,444..1260,588."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    },
+    {
+      "name": "timeout",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "86400000"
+      ]
+    },
+    {
+      "name": "power-after-timeout",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "copy-one-real-page",
+      "hdcArgs": [
+        "file",
+        "send",
+        "/Users/honjow/git/Koma/.hermes-artifacts/device197/20260905-d34-download-file-audit-run1/solo-leveling-chapter/00001-056bc7fcb75f65ee.jpg",
+        "/storage/media/100/local/files/Docs/Download/Koma-D12-Solo-00001-056bc7fcb75f65ee.jpg"
+      ]
+    },
+    {
+      "name": "verify-one-page",
+      "hdcArgs": [
+        "shell",
+        "ls",
+        "-l",
+        "/storage/media/100/local/files/Docs/Download/Koma-D12-Solo-00001-056bc7fcb75f65ee.jpg"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-image-picker",
+        "uiInput": [
+          "click",
+          "996",
+          "516"
+        ],
+        "pauseAfterMs": 700
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d12-09-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d12-09-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d12-09-layout.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/09-image-picker/layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d12-09-screen.png",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/09-image-picker/screen.png"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    }
+  ]
+}

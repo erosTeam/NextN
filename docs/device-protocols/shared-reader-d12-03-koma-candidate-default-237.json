@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d12-03-koma-candidate-default",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/03-candidate-default",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "Koma D12 optional ReaderSurface main2 build successful 8s903ms; shared c4c6350; existing WIP preserved",
+    "page": "Installed D12 candidate ordinary bookshelf",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "In-place signed install, no data clearing. Default entry and empty shelf comparison against01. Local-only UI evidence, no credentials or197. Capture then Home."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    },
+    {
+      "name": "timeout",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "86400000"
+      ]
+    },
+    {
+      "name": "power-after-timeout",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "install-d12-main2",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/Koma/entry/build/default/outputs/default/entry-default-signed.hap"
+      ],
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "ordinary-launch",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "start",
+        "-b",
+        "com.honjow.koma",
+        "-a",
+        "EntryAbility"
+      ],
+      "pauseAfterMs": 1800
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d12-03-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d12-03-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d12-03-layout.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/03-candidate-default/layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d12-03-screen.png",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/03-candidate-default/screen.png"
+      ]
+    },
+    {
+      "name": "read-library-inventory",
+      "hdcArgs": [
+        "shell",
+        "ls",
+        "-l",
+        "/data/app/el2/100/base/com.honjow.koma/haps/entry/files/library-store.v1.json"
+      ]
+    },
+    {
+      "name": "read-download-queue",
+      "hdcArgs": [
+        "shell",
+        "ls",
+        "-l",
+        "/data/app/el2/100/base/com.honjow.koma/haps/entry/files/downloads/queue.v1.json"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "background-after-terminal-baseline",
+        "uiInput": [
+          "keyEvent",
+          "Home"
+        ],
+        "pauseAfterMs": 300
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    }
+  ]
+}

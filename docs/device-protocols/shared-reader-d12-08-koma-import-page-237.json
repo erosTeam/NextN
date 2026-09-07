@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d12-08-koma-import-page",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/08-import-page",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "D12 Koma main2 candidate installed by03, shared c4c6350",
+    "page": "Normal import page discovery and exact direct-download target absence",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "07 shell mkdir denied; no sample files created. Reuse197 proven direct file send only after exact target absence; no chmod or app sandbox workaround. Current07 import menu bounds612,297..1260,441."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    },
+    {
+      "name": "timeout",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "86400000"
+      ]
+    },
+    {
+      "name": "power-after-timeout",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "check-direct-targets-absent",
+      "hdcArgs": [
+        "shell",
+        "ls",
+        "-l",
+        "/storage/media/100/local/files/Docs/Download/Koma-D12-Solo-00001-056bc7fcb75f65ee.jpg",
+        "/storage/media/100/local/files/Docs/Download/Koma-D12-Solo-00002-066bc98fb65f645b.jpg",
+        "/storage/media/100/local/files/Docs/Download/Koma-D12-Solo-00003-076bcb22b55f62c8.jpg",
+        "/storage/media/100/local/files/Docs/Download/Koma-D12-Solo-00004-086bccb5b45f6135.jpg",
+        "/storage/media/100/local/files/Docs/Download/Koma-D12-Solo-00005-016bc1b0b35f5fa2.jpg",
+        "/storage/media/100/local/files/Docs/Download/Koma-D12-Solo-00006-026bc343b25f5e0f.jpg",
+        "/storage/media/100/local/files/Docs/Download/Koma-D12-Solo-00007-036bc4d6b15f5c7c.jpg",
+        "/storage/media/100/local/files/Docs/Download/Koma-D12-Solo-00008-046bc669b05f5ae9.jpg",
+        "/storage/media/100/local/files/Docs/Download/Koma-D12-Solo-00009-0d6bd494af5f5956.jpg",
+        "/storage/media/100/local/files/Docs/Download/Koma-D12-Solo-00010-0e6bd627ae5f57c3.jpg"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "open-import-page",
+        "uiInput": [
+          "click",
+          "936",
+          "369"
+        ],
+        "pauseAfterMs": 500
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d12-08-layout.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/rkit-d12-08-screen.png"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d12-08-layout.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/08-import-page/layout.json"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d12-08-screen.png",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260907-shared-reader-koma/08-import-page/screen.png"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    }
+  ]
+}
