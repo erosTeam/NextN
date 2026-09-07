@@ -109,6 +109,56 @@ async function waitBackReleased(driver: Driver, epoch: number, requestId: number
   throw new Error('Back did not cancel and release the same held original')
 }
 
+async function assertLtrSpreadParts(driver: Driver, label: string): Promise<void> {
+  const viewport = ON.id('rkit-image-viewport')
+  const selected = await driver.findComponents(ON.id('rkit-part-0-whole').within(viewport))
+  const neighbor = await driver.findComponents(ON.id('rkit-part-1-whole').within(viewport))
+  expect(selected.length).assertEqual(1)
+  expect(neighbor.length).assertEqual(1)
+  const targetBounds = await selected[0].getBounds()
+  const neighborBounds = await neighbor[0].getBounds()
+  const viewportBounds = await (await driver.findComponent(viewport)).getBounds()
+  expect(targetBounds.right > targetBounds.left && targetBounds.bottom > targetBounds.top).assertTrue()
+  expect(neighborBounds.right > neighborBounds.left && neighborBounds.bottom > neighborBounds.top).assertTrue()
+  expect(targetBounds.left < neighborBounds.left && targetBounds.right <= neighborBounds.left + 1).assertTrue()
+  expect(targetBounds.left >= viewportBounds.left && neighborBounds.right <= viewportBounds.right).assertTrue()
+  // These are settled native part bounds, not proof of the transformed preview's flight.
+  await abilityDelegatorRegistry.getAbilityDelegator().print(
+    `ReaderOriginalSpread ${label}: target=P1 ${JSON.stringify(targetBounds)}, neighbor=P2 ${JSON.stringify(neighborBounds)}, viewport=${JSON.stringify(viewportBounds)}`)
+}
+
+async function waitDeliveredSpread(driver: Driver, epoch: number, requestId: number, entryId: number): Promise<void> {
+  const viewport = ON.id('rkit-image-viewport')
+  for (let attempt = 0; attempt < 40; attempt++) {
+    const state = ReaderTrialOriginalProbe.read()
+    expect(state.epoch).assertEqual(epoch)
+    expect(state.requestId).assertEqual(requestId)
+    expect(state.reader.entryId).assertEqual(entryId)
+    expect(state.state === 'failed' || state.state === 'cancelled').assertFalse()
+    const selected = await driver.findComponent(ON.id('rkit-part-0-whole').within(viewport))
+    const neighbor = await driver.findComponent(ON.id('rkit-part-1-whole').within(viewport))
+    const images = await driver.findComponents(
+      ON.id(`^rkit-entry-image-${entryId}-[0-9]+-[1-9][0-9]*$`, MatchPattern.REG_EXP).within(viewport))
+    const selectedImage = await driver.findComponent(
+      ON.id(`rkit-entry-image-${entryId}-${state.reader.slotId}-${state.reader.assetRequestId}`).within(viewport))
+    if (state.state === 'delivered' && state.reader.entryPhase === 'finished' && state.reader.anchor === 0 &&
+      state.reader.assetPhase === 'displayed' && state.reader.decodedReady &&
+      selected !== null && neighbor !== null && selectedImage !== null && images.length === 2 &&
+      await driver.findComponent(ON.type('LoadingProgress').within(viewport)) === null &&
+      await driver.findComponent(ON.id('^rkit-failure-page-[0-9]+$', MatchPattern.REG_EXP).within(viewport)) === null &&
+      await driver.findComponent(ON.id('rkit-entry-preview-image')) === null) {
+      const page = await driver.findComponent(ON.id('rkit-chrome-page'))
+      expect(page !== null).assertTrue()
+      expect(/^1\s*\/\s*[1-9]\d*$/.test((await page.getText()).trim())).assertTrue()
+      await reportOriginal('spread-delivered')
+      return
+    }
+    await driver.delayMs(250)
+  }
+  await reportOriginal('spread-delivery-timeout')
+  throw new Error('Same-entry LTR spread did not finish with both real originals and no failure/loading/preview')
+}
+
 async function waitRotatedOriginal(driver: Driver, epoch: number, entryId: number, before: Rect): Promise<void> {
   for (let attempt = 0; attempt < 30; attempt++) {
     const state = ReaderTrialOriginalProbe.read()
@@ -376,7 +426,9 @@ export default function readerThumbnailOriginalProbeTest(): void {
     className !== 'ReaderThumbnailOriginalBackTrial' && className !== 'ReaderThumbnailOriginalRotationTrial' &&
     className !== 'ReaderThumbnailUnknownOriginalTrial' && className !== 'ReaderThumbnailUnknownOriginalBackTrial' &&
     className !== 'ReaderThumbnailPendingInputTrial' && className !== 'ReaderThumbnailPendingRotationTrial' &&
-    className !== 'ReaderThumbnailGridUnknownOriginalBackTrial') return
+    className !== 'ReaderThumbnailGridUnknownOriginalBackTrial' &&
+    className !== 'ReaderThumbnailOriginalSpreadReleaseTrial') return
+  const spreadRelease = className === 'ReaderThumbnailOriginalSpreadReleaseTrial'
   const gridBack = className === 'ReaderThumbnailGridUnknownOriginalBackTrial'
   const pendingInput = className === 'ReaderThumbnailPendingInputTrial'
   const pendingRotation = className === 'ReaderThumbnailPendingRotationTrial'
@@ -398,7 +450,7 @@ export default function readerThumbnailOriginalProbeTest(): void {
         await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
           bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
           parameters: { readerLabWork: '678049', readerLabPage: '0', readerLabChrome: 'true',
-            readerLabThumbnailEntry: 'true', readerLabEntryLayout: 'single', readerLabEntryDirection: 'ltr',
+            readerLabThumbnailEntry: 'true', readerLabEntryLayout: spreadRelease ? 'spread' : 'single', readerLabEntryDirection: 'ltr',
             readerLabOriginalProbe: unknownMetrics ? 'hold-unknown-metrics-once' : 'hold-once', readerLabVolumeKeys: 'true' },
         })
         await driver.delayMs(1500)
@@ -419,9 +471,10 @@ export default function readerThumbnailOriginalProbeTest(): void {
         await source.click()
         await waitHeldOriginal(driver, unknownMetrics)
         const held = ReaderTrialOriginalProbe.read()
-        if (gridBack) expect(held.epoch).assertEqual(epoch)
+        if (gridBack || spreadRelease) expect(held.epoch).assertEqual(epoch)
         epoch = held.epoch
         const entryId = held.reader.entryId
+        if (spreadRelease) await assertLtrSpreadParts(driver, 'waiting')
         if (gridBack) {
           expect(await driver.findComponent(ON.id('rkit-entry-source-loading')) !== null).assertTrue()
           expect(await driver.findComponent(ON.id('rkit-entry-source-pending')) !== null).assertTrue()
@@ -528,11 +581,23 @@ export default function readerThumbnailOriginalProbeTest(): void {
           await waitRotatedOriginal(driver, epoch, entryId, viewport)
           await captureEntry(driver, 'original-rotated')
         }
+        if (spreadRelease) {
+          const current = ReaderTrialOriginalProbe.read()
+          expect(current.epoch).assertEqual(epoch)
+          expect(current.requestId).assertEqual(held.requestId)
+          expect(current.reader.entryId).assertEqual(entryId)
+          expect(current.state).assertEqual('held')
+          expect(current.reader.entryPhase).assertEqual('waiting')
+        }
         expect(ReaderTrialOriginalProbe.release(epoch, held.requestId)).assertTrue()
         const expectedAnchor = navigated ? 1 : 0
         const expectedPhase = navigated || rotated ? 'cancelled' : 'finished'
         // Navigation checks the current P2, not whether cached P1 has decoded.
         await waitDeliveredOriginal(driver, epoch, entryId, expectedAnchor, expectedPhase)
+        if (spreadRelease) {
+          await waitDeliveredSpread(driver, epoch, held.requestId, entryId)
+          await assertLtrSpreadParts(driver, 'released')
+        }
         if (unknownMetrics) {
           const decoded = ReaderTrialOriginalProbe.read()
           expect(decoded.reader.originalWidth > 0).assertTrue()
@@ -545,6 +610,10 @@ export default function readerThumbnailOriginalProbeTest(): void {
         await assertStatusContent(mainWindow, '#FFFFFF', 'visible-released')
         await driver.delayMs(1000)
         await waitDeliveredOriginal(driver, epoch, entryId, expectedAnchor, expectedPhase)
+        if (spreadRelease) {
+          await waitDeliveredSpread(driver, epoch, held.requestId, entryId)
+          await assertLtrSpreadParts(driver, 'late')
+        }
         await captureEntry(driver, 'original-late')
         if (mainWindow !== null && originalOrientation !== undefined) {
           await mainWindow.setPreferredOrientation(originalOrientation)
@@ -557,6 +626,13 @@ export default function readerThumbnailOriginalProbeTest(): void {
         await (await driver.findComponent(ON.id('rkit-close'))).click()
         await driver.delayMs(700)
         await assertOriginalSourceBounds(driver, sourceId, before, rootBefore)
+        if (spreadRelease) {
+          const rootAfter = await (await driver.findComponent(ON.id('nextn-root-navigation'))).getBounds()
+          expect(rootAfter.left).assertEqual(rootBefore.left)
+          expect(rootAfter.top).assertEqual(rootBefore.top)
+          expect(rootAfter.right).assertEqual(rootBefore.right)
+          expect(rootAfter.bottom).assertEqual(rootBefore.bottom)
+        }
         await reportOriginal('closed')
         await captureEntry(driver, 'original-closed')
         await assertStatusContent(mainWindow, sourceStatusContent, 'closed')

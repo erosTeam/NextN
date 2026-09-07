@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-77-nextn-nonblend-motion",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/77-nextn-nonblend-motion",
+  "recordingFileName": "rkit_d11_source_wait_20260907_77.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 600,
+  "idleRecordMs": 90000,
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "actions": [],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "D11 N main21/native27 unknown-coverage synchronous non-blending handoff candidate",
+    "page": "Continuous unknown-coverage NH source handoff; native78",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Candidate unknown decoded-ready handoff uses explicit duration0 reveal/finish. Same real source and held-input case anchors77 recording/78 native. Compare retained74 overlap; inspect for black/empty frames or unacceptable content pop. Whole-page140ms and all geometry/default ownership unchanged; return-status frame remains OPEN."
+  }
+}
