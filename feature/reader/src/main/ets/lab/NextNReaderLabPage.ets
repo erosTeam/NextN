@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
-import { ReaderPagedSession, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost } from '@reader-kit/core'
+import { ReaderPagedSession, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderDisplayPolicy } from '@reader-kit/core'
+import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabRequest, ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility, ReaderLabAssetProbe, ReaderVolumeKeys } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
@@ -9,6 +10,8 @@ import { connectLayoutSafeArea, LayoutSafeAreaState, ThemeTokens, nextNHdsTitle 
 @ComponentV2
 export struct NextNReaderLabPage {
   @Require @Param request: ReaderLabRequest
+  @Param entryTransition: ReaderEntryTransition | null = null
+  @Param entryPreview: ReaderEntryPreviewSource | null = null
   @Event onClose: () => void = () => {}
   @Local private session: ReaderPagedSession | null = null
   private imageShare: ReaderImageShareHost | null = null
@@ -29,9 +32,18 @@ export struct NextNReaderLabPage {
     this.unitKey = new ReaderUnitKey('nh', this.request.work, this.request.work)
     this.session = new ReaderPagedSession(adapter, new ReaderLabAssetProbe(adapter, this.request.thumbnailFailurePage,
       this.request.informationProbe))
+    if (this.request.thumbnailEntry) {
+      const policy = new ReaderDisplayPolicy()
+      policy.layout = this.request.entryLayout === 'spread' ? 'spread' : 'single'
+      policy.direction = this.request.entryDirection === 'rtl' ? 'rtl' : 'ltr'
+      this.session.setPolicy(policy)
+    }
   }
 
-  aboutToDisappear(): void { this.volumeKeys.close(); this.trialWindow.close() }
+  aboutToDisappear(): void {
+    this.entryTransition?.cancel(); this.entryPreview?.release()
+    this.volumeKeys.close(); this.trialWindow.close()
+  }
 
   @Monitor('routeActive', 'labVisibility.foreground')
   syncVolumeKeys(): void {
@@ -46,6 +58,7 @@ export struct NextNReaderLabPage {
           if (this.request.readingChrome) {
             ReaderSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
               input: this.input, imageShare: this.imageShare,
+              entryTransition: this.entryTransition, entryPreview: this.entryPreview,
               active: this.routeActive && this.labVisibility.foreground,
               topInset: this.safeArea.topAvoidHeight, bottomInset: this.safeArea.bottomAvoidHeight,
               accent: ThemeTokens.BRAND, onClose: this.onClose })

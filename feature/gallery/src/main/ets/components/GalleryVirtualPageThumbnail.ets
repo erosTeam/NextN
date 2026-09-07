@@ -4,6 +4,8 @@ import {
   NhGalleryPage,
   ReaderThumbnailTransitionCoordinator,
   ReaderThumbnailTransitionState,
+  ReaderTrialEntryRelay,
+  ReaderTrialEntrySource,
   ThemeTokens,
   connectReaderThumbnailTransition,
 } from 'shared'
@@ -56,6 +58,7 @@ export class GalleryVirtualPageThumbnailDataSource implements IDataSource {
  */
 @ComponentV2
 export struct GalleryVirtualPageThumbnailTile {
+  @Param galleryId: number = 0
   @Require @Param page: NhGalleryPage
   @Require @Param pageIndex: number
   @Param transitionSourceId: string = ''
@@ -155,3 +158,6 @@ export struct GalleryVirtualPageThumbnailTile {
     })
   }
 }
+        const source = new ReaderTrialEntrySource(this.galleryId, this.pageIndex, this.transitionSourceId,
+          ReaderThumbnailTransitionCoordinator.sourceSnapshotId(this.transitionSourceId), 'grid', this.page.thumbnailUrl)
+        if (ReaderTrialEntryRelay.tryOpen(source)) return

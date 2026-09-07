@@ -52,6 +52,7 @@ export struct GalleryThumbnailsPage {
 
   build() {
     GalleryThumbnailGridContent({
+      galleryId: this.galleryId,
       pages: this.pages,
       chrome: this.chrome,
       scroller: this.scroller,

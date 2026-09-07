@@ -3351,6 +3351,7 @@ export struct GalleryDetailPage {
           LazyForEach(this.compactPreviewDataSource, (page: NhGalleryPage, pageIndex: number): void => {
             ListItem() {
               GalleryCompactPreviewTile({
+                galleryId: this.detail.id,
                 page: page,
                 pageIndex: pageIndex,
                 transitionSourceId: ReaderThumbnailTransitionCoordinator.sourceId(
@@ -3646,6 +3647,7 @@ export struct GalleryDetailPage {
   @Builder
   private WidePreviewPane() {
     GalleryThumbnailGridContent({
+      galleryId: this.detail.id,
       pages: this.detail.pages,
       chrome: this.widePreviewChrome,
       scroller: this.widePreviewScroller,

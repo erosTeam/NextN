@@ -1,6 +1,10 @@
 import { HomePage, HomeSubtabManagerPage, PopularPage } from 'home'
 import { NextNReaderLabPage } from 'reader'
 import { ReaderLabLaunchState, ReaderLabRequest, connectReaderLabLaunch } from '@reader-kit/ui'
+import { ReaderEntryTransition, ReaderEntryPreviewSource, ReaderEntryRect,
+  ReaderLabVisibilityState, connectReaderLabVisibility } from '@reader-kit/ui'
+import { ReaderDisplayPart, ReaderUnitKey } from '@reader-kit/core'
+import { ReaderTrialEntryRelay, ReaderTrialEntrySource } from 'shared'
 import {
   GalleryChromeState,
   GalleryCommentsPage,
@@ -485,12 +489,78 @@ struct Index {
   @Local private readerTrialRequest: ReaderLabRequest | null = null
   @Local private readerTrialEpoch: number = 0
   private readerTrialStack: NavPathStack = new NavPathStack()
+  @Local private readerEntryTransition: ReaderEntryTransition | null = null
+  @Local private readerEntryPreview: ReaderEntryPreviewSource | null = null
+  private readerEntryToken: number = 0
+  private readerEntryEpoch: number = 0
+  @Local private readerEntryVisibility: ReaderLabVisibilityState = connectReaderLabVisibility()
+
+  @Monitor('readerEntryVisibility.foreground')
+  private onReaderEntryForeground(): void {
+    if (!this.readerEntryVisibility.foreground) {
+      this.readerEntryEpoch += 1
+      if (this.readerEntryTransition?.phase === 'layout') this.closeReaderTrial()
+      else this.readerEntryTransition?.cancel()
+    }
+  }
+
+  private closeReaderTrial(): void {
+    this.readerEntryEpoch += 1
+    this.readerEntryTransition?.cancel()
+    this.readerTrialRequest = null
+    this.readerTrialStack.clear(false)
+    this.readerEntryTransition = null
+    this.readerEntryPreview = null
+  }
+
+  private async openThumbnailTrial(request: ReaderLabRequest, source: ReaderTrialEntrySource): Promise<void> {
+    const epoch = ++this.readerEntryEpoch
+    const navigation = this.rootNavigationEpoch
+    const context = this.getUIContext()
+    let preview: ReaderEntryPreviewSource | null = null
+    let captured: image.PixelMap | null = null
+    try {
+      const before = context.getComponentUtils().getRectangleById(source.snapshotComponentId)
+      const pixels = await context.getComponentSnapshot().get(source.snapshotComponentId,
+        { waitUntilRenderFinished: true })
+      captured = pixels
+      const after = context.getComponentUtils().getRectangleById(source.snapshotComponentId)
+      const size = pixels.getImageInfoSync().size
+      const rect = new ReaderEntryRect(context.px2vp(after.windowOffset.x), context.px2vp(after.windowOffset.y),
+        context.px2vp(after.size.width), context.px2vp(after.size.height))
+      if (!rect.valid() || size.width <= 0 || size.height <= 0 ||
+        before.windowOffset.x !== after.windowOffset.x || before.windowOffset.y !== after.windowOffset.y ||
+        before.size.width !== after.size.width || before.size.height !== after.size.height) {
+        void pixels.release(); captured = null
+      } else {
+        // The snapshot's own aspect is authoritative, including the source's existing crop.
+        const height = rect.width * size.height / size.width
+        preview = new ReaderEntryPreviewSource(pixels, new ReaderEntryRect(rect.x, rect.y, rect.width, height))
+        captured = null
+      }
+    } catch (_) {
+      if (captured !== null) void captured.release()
+      // A missing/offscreen source still opens the optional reader without inventing a snapshot.
+    }
+    if (epoch !== this.readerEntryEpoch || navigation !== this.rootNavigationEpoch || !this.readerEntryVisibility.foreground ||
+      this.readerOverlay.visible || this.safeMode.restricted()) {
+      preview?.release(); return
+    }
+    request.pageIndex = source.pageIndex
+    this.readerEntryPreview = preview
+    this.readerEntryTransition = preview === null ? null : new ReaderEntryTransition(epoch,
+      new ReaderDisplayPart(new ReaderUnitKey('nh', request.work, request.work), null, source.pageIndex))
+    this.readerTrialStack.clear(false)
+    this.readerTrialRequest = request
+    this.readerTrialEpoch += 1
+  }
 
   @Builder
   private readerTrialRouter(_name: string, _param: Object) {
     if (this.readerTrialRequest !== null) {
       NextNReaderLabPage({ request: this.readerTrialRequest,
-        onClose: (): void => { this.readerTrialRequest = null; this.readerTrialStack.clear(false) } })
+        entryTransition: this.readerEntryTransition, entryPreview: this.readerEntryPreview,
+        onClose: (): void => { this.closeReaderTrial() } })
     }
   }
 
@@ -498,6 +568,19 @@ struct Index {
   private handleReaderLabLaunch(): void {
     const request = this.readerLabLaunch.consume()
     if (request !== null && !connectSafeMode().restricted()) {
+      ReaderTrialEntryRelay.clear(this.readerEntryToken)
+      this.readerEntryEpoch += 1
+      if (request.thumbnailEntry) {
+        const host = this.getUIContext().getHostContext() as common.UIAbilityContext
+        if (!host.applicationInfo.debug || this.readerOverlay.visible || this.readerTrialRequest !== null) return
+        this.readerEntryToken = ReaderTrialEntryRelay.install(request.work, (source: ReaderTrialEntrySource): boolean => {
+          if (this.readerOverlay.visible || this.readerTrialRequest !== null || this.safeMode.restricted()) return false
+          void this.openThumbnailTrial(request, source)
+          return true
+        })
+        this.pushGallery(Number(request.work))
+        return
+      }
       if (request.readingChrome) {
         if (this.readerOverlay.visible) return
         this.readerTrialStack.clear(false)
@@ -644,6 +727,8 @@ struct Index {
     this.syncRootSecondaryBranch(this.stack)
     this.stack.setInterception({
       willShow: (_from, to, _operation, _animated): void => {
+        this.readerEntryEpoch += 1
+        if (this.readerEntryTransition?.phase === 'layout') this.closeReaderTrial()
         this.cancelRandomGalleryRequest()
         const secondaryBranch: NavPathStack | null = typeof to === 'string' ? null : to.pathStack
         this.syncRootSecondaryBranch(secondaryBranch)
@@ -681,6 +766,8 @@ struct Index {
   }
 
   aboutToDisappear(): void {
+    ReaderTrialEntryRelay.clear(this.readerEntryToken)
+    this.readerEntryEpoch += 1
     this.cancelRandomGalleryRequest()
     this.clearHomeTabAnimationGuardTimer()
   }
@@ -4165,6 +4252,9 @@ struct Index {
           HdsNavigation(this.readerTrialStack) { Column() {} }
             .navDestination(this.readerTrialRouter).hideNavBar(true)
             .width('100%').height('100%').backgroundColor(Color.Black)
+            .opacity(this.readerEntryTransition?.phase === 'layout' ? 0 : 1)
+            .animation({ duration: this.readerEntryTransition === null ? 0 : 140, curve: Curve.Linear })
+            .hitTestBehavior(this.readerEntryTransition?.phase === 'layout' ? HitTestMode.None : HitTestMode.Default)
             .onAppear((): void => { this.readerTrialStack.pushPathByName('ReaderTrial', this.readerTrialRequest as ReaderLabRequest, false) })
             .id('rkit-trial-navigation')
         }, (epoch: number): string => `${epoch}`)

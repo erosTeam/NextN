@@ -25,6 +25,7 @@ import { GalleryThumbnailsChromeState } from '../state/GalleryThumbnailsChromeSt
  */
 @ComponentV2
 export struct GalleryThumbnailGridContent {
+  @Param galleryId: number = 0
   @Param pages: NhGalleryPage[] = []
   @Param chrome: GalleryThumbnailsChromeState = new GalleryThumbnailsChromeState()
   @Param scroller: Scroller = new Scroller()
@@ -239,6 +240,7 @@ export struct GalleryThumbnailGridContent {
           (page: NhGalleryPage, index: number): void => {
             GridItem() {
               GalleryVirtualPageThumbnailTile({
+                galleryId: this.galleryId,
                 page: page,
                 pageIndex: index,
                 transitionSourceId: ReaderThumbnailTransitionCoordinator.sourceId(

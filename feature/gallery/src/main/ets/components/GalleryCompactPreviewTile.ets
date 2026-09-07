@@ -4,6 +4,8 @@ import {
   NhGalleryPage,
   ReaderThumbnailTransitionCoordinator,
   ReaderThumbnailTransitionState,
+  ReaderTrialEntryRelay,
+  ReaderTrialEntrySource,
   ThemeTokens,
   connectReaderThumbnailTransition,
 } from 'shared'
@@ -25,6 +27,7 @@ const COMPACT_PREVIEW_FALLBACK_ASPECT: number = 0.65
  */
 @ComponentV2
 export struct GalleryCompactPreviewTile {
+  @Param galleryId: number = 0
   @Require @Param page: NhGalleryPage
   @Require @Param pageIndex: number
   @Param transitionSourceId: string = ''
@@ -82,6 +85,9 @@ export struct GalleryCompactPreviewTile {
     .accessibilityText(AppStrings.format('thumbnails_open_reader_a11y', [this.pageLabel()]))
     .onClick((): void => {
       if (this.onOpen) {
+        const source = new ReaderTrialEntrySource(this.galleryId, this.pageIndex, this.transitionSourceId,
+          ReaderThumbnailTransitionCoordinator.sourceSnapshotId(this.transitionSourceId), 'detail', this.page.thumbnailUrl)
+        if (ReaderTrialEntryRelay.tryOpen(source)) return
         this.onOpen(this.pageIndex)
       }
     })
