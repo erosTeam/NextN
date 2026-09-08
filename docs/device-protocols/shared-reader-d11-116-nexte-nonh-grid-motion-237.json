@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-116-nexte-nonh-grid-motion",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/116-nexte-nonh-grid-motion",
+  "recordingFileName": "rkit_d11_nexte_nonh_grid_20260908_116.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 600,
+  "idleRecordMs": 90000,
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "actions": [],
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "E main15/native15 restored diagnostic baseline; shared3925f45 clean; RTL prepared native path",
+    "page": "Actual Non-H4175844 AllThumbnails Grid sprite to RTL P1(right)/P2(left) and same Grid return",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "HDS-only and close-stack candidates reverted. Validate existing RTL source-P1 flight to right part, neighbor-P2 left, decoded originals and same Grid return. Status return remains OPEN from113; this run is not an exit fix. No default/settings/progress replacement."
+  }
+}
