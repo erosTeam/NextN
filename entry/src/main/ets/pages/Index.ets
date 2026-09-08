@@ -629,13 +629,13 @@ struct Index {
     lease.open(context)
   }
 
-  private retireReaderTrialWindow(): Promise<void> | null {
+  private retireReaderTrialWindow(beforeRestoreColors: (() => Promise<boolean>) | null = null): Promise<void> | null {
     const lease = this.readerTrialWindow
     // Retire ownership before cancel changes layout to cancelled and notifies the phase monitor.
     this.readerTrialWindowEpoch = -1
     this.readerTrialWindow = null
     this.readerTrialWindowOpened = false
-    return lease === null ? null : lease.close()
+    return lease === null ? null : lease.close(beforeRestoreColors)
   }
 
   private prepareReaderTrialWindow(): void {
@@ -654,7 +654,17 @@ struct Index {
     const trialEpoch = this.readerTrialEpoch
     const windowLease = this.readerTrialWindow
     const sourceId = this.readerEntryClaim?.source.snapshotComponentId ?? 'nextn-reader-entry-host'
-    const restoration = this.retireReaderTrialWindow()
+    const restoration = this.retireReaderTrialWindow(async (): Promise<boolean> => {
+      if (windowLease?.getCloseSystemAvoidAreaResult() !== 'ready') return true
+      const layoutReady = await ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string => {
+        if (this.layoutSafeArea.topAvoidHeight <= 0) return ''
+        const rect = this.readerEntryRect(sourceId)
+        return rect.valid() ? `${this.layoutSafeArea.topAvoidHeight}:${rect.x},${rect.y},${rect.width},${rect.height}` : ''
+      }, (): boolean => this.readerTrialHostAlive && this.readerTrialRequest === request &&
+        this.readerTrialEpoch === trialEpoch)
+      console.info('[ReaderTrialHost] close_layout_ready=' + layoutReady)
+      return layoutReady
+    })
     this.releaseReaderEntryClaim()
     this.retireReaderTrialEntryGuard()
     this.readerEntryEpoch += 1
@@ -664,16 +674,7 @@ struct Index {
       return null
     }
     // Keep the actual reading surface until its previous window properties are restored.
-    const closing = restoration.then(async (): Promise<void> => {
-      if (windowLease?.getCloseSystemAvoidAreaResult() === 'ready') {
-        const layoutReady = await ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string => {
-          if (this.layoutSafeArea.topAvoidHeight <= 0) return ''
-          const rect = this.readerEntryRect(sourceId)
-          return rect.valid() ? `${this.layoutSafeArea.topAvoidHeight}:${rect.x},${rect.y},${rect.width},${rect.height}` : ''
-        }, (): boolean => this.readerTrialHostAlive && this.readerTrialRequest === request &&
-          this.readerTrialEpoch === trialEpoch)
-        console.info(`[ReaderTrialHost] close_layout_ready=${layoutReady}`)
-      }
+    const closing = restoration.then((): void => {
       if (this.readerTrialHostAlive && this.readerTrialClosing === closing &&
         this.readerTrialRequest === request && this.readerTrialEpoch === trialEpoch) this.clearReaderTrial()
     }).finally((): void => {

@@ -91,13 +91,16 @@ export struct NextNReaderLabPage {
   private closeTrial(): void {
     if (this.closeRequested) return
     this.closeRequested = true
-    if (this.managesTrialWindow) this.trialWindow.close().then(async (): Promise<void> => {
+    if (this.managesTrialWindow) this.trialWindow.close(async (): Promise<boolean> => {
       if (this.trialWindow.getCloseSystemAvoidAreaResult() === 'ready') {
         const ready = await ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string =>
           this.safeArea.topAvoidHeight > 0 ? `${this.safeArea.topAvoidHeight}:${this.safeArea.bottomAvoidHeight}` : '',
           (): boolean => this.routeActive && this.labVisibility.foreground)
         console.info(`[ReaderTrialHost] standalone_close_layout_ready=${ready}`)
+        return ready
       }
+      return true
+    }).then((): void => {
       if (this.routeActive) this.onClose()
     })
     else this.onClose()

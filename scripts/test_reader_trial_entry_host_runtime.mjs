@@ -69,15 +69,23 @@ test('ready close waits for actual host layout promise and duplicate close share
   const v = setup({ readiness: 'ready', deferRestore: true })
   v.arm(); v.relay.tryOpen(v.source)
   const request = v.host.readerTrialRequest, clears = v.host.readerTrialStack.clears
+  const lease = v.host.readerTrialWindow
   const close = v.host.closeReaderTrial()
   assert.equal(v.host.closeReaderTrial(), close)
-  v.restores.shift()(); await drainClose()
+  await drainClose()
+  assert.notEqual(lease.colorsStarted, true)
   assert.equal(v.layouts.length, 1)
   assert.equal(v.layouts[0].current(), true)
   assert.equal(v.host.readerTrialRequest, request)
   assert.equal(v.host.readerTrialStack.clears, clears)
   assert.equal(v.host.closeReaderTrial(), close)
-  v.layouts[0].resolve(true); await close
+  v.layouts[0].resolve(true); await drainClose()
+  assert.equal(lease.callbackResult, true)
+  assert.equal(lease.colorsStarted, true); assert.notEqual(lease.colorsCompleted, true)
+  assert.equal(v.host.readerTrialRequest, request)
+  assert.equal(v.host.readerTrialStack.clears, clears)
+  v.restores.shift()(); await close
+  assert.equal(lease.colorsCompleted, true)
   assert.equal(v.host.readerTrialRequest, null)
   assert.equal(v.host.readerTrialStack.clears, clears + 1)
   assert.ok(v.logs.includes('[ReaderTrialHost] close_layout_ready=true'))
@@ -87,14 +95,20 @@ test('destroy or replace while layout is pending rejects late clear', async () =
   for (const action of ['destroy', 'replace']) {
     const v = setup({ readiness: 'ready', deferRestore: true })
     v.arm(); v.relay.tryOpen(v.source)
+    const lease = v.host.readerTrialWindow
     const close = v.host.closeReaderTrial()
-    v.restores.shift()(); await drainClose()
+    await drainClose()
     const clears = v.host.readerTrialStack.clears
     if (action === 'destroy') v.host.aboutToDisappear()
     else { v.host.readerTrialRequest = { work: 'replacement' }; v.host.readerTrialEpoch++ }
     const retained = v.host.readerTrialRequest
     assert.equal(v.layouts[0].current(), false)
-    v.layouts[0].resolve(false); await close
+    v.layouts[0].resolve(false); await drainClose()
+    assert.equal(lease.callbackResult, false)
+    assert.equal(lease.colorsStarted, true); assert.notEqual(lease.colorsCompleted, true)
+    assert.equal(v.host.readerTrialRequest, retained)
+    v.restores.shift()(); await close
+    assert.equal(lease.colorsCompleted, true)
     assert.equal(v.host.readerTrialRequest, retained)
     assert.equal(v.host.readerTrialStack.clears, clears)
     assert.equal(v.logs.includes('[ReaderTrialHost] close_layout_ready=true'), false)
@@ -185,9 +199,21 @@ function setup({ deferRestore = false, readiness = 'not-required' } = {}) {
     }
     getCloseSystemAvoidAreaResult() { return readiness }
     open() { windowOpens++ }
-    close() {
+    close(beforeRestoreColors = null) {
       windowCloses++
-      return deferRestore ? new Promise(resolve => restores.push(resolve)) : Promise.resolve()
+      if (!this.closing) {
+        const colors = deferRestore ? new Promise(resolve => restores.push(resolve)) : Promise.resolve()
+        // Schedule the host callback after area readiness, before deferred colors.
+        this.closing = Promise.resolve().then(async () => {
+          if ((readiness === 'ready' || readiness === 'already-visible') && beforeRestoreColors !== null) {
+            this.callbackResult = await beforeRestoreColors()
+          }
+          this.colorsStarted = true
+          await colors
+          this.colorsCompleted = true
+        })
+      }
+      return this.closing
     }
   }
   const { Index } = moduleExports(hostCode, {
