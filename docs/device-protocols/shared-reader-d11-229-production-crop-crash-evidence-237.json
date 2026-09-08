@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-229-production-crop-crash-evidence",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/229-production-crop-crash-evidence",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "E main30/native34 existing direct ReaderParams test",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "page": "228 App died before crop reference or finally readback",
+    "notes": "Preserve bounded fault evidence before install or settings recovery.226/227 restored baseline ltr/true/crop false;228 restoration unproven."
+  },
+  "preflight": [
+    {
+      "name": "fault-record-names",
+      "hdcArgs": [
+        "shell",
+        "ls",
+        "-lt",
+        "/data/log/faultlog/faultlogger"
+      ]
+    },
+    {
+      "name": "faultlogger-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-T",
+        "FaultLogger",
+        "-x"
+      ],
+      "timeoutSeconds": 30
+    }
+  ],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": []
+}

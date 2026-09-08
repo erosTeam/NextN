@@ -3,13 +3,27 @@ import { uniformTypeDescriptor as utd } from '@kit.ArkData'
 import { fileUri } from '@kit.CoreFileKit'
 import { systemShare } from '@kit.ShareKit'
 import { ReaderSystemSharePresentation, ReaderFileInformation } from '@reader-kit/ui'
-import { NhApiClient, NhGalleryDetail, ReaderImageCacheService } from 'shared'
+import { NhApiClient, NhGalleryDetail, ReaderImageCacheService, ReaderPageCropService } from 'shared'
 import {
   ReaderCatalog, ReaderAssetProvider, ReaderUnitKey, ReaderUnit, ReaderPage,
   ReaderCancellation, ReaderAsset, ReaderAssetKind, ReaderImageShareHost,
   ReaderImageShareTarget, ReaderImageSharePresentation,
-  ReaderImageInformation,
+  ReaderImageInformation, ReaderImageCropBounds, ReaderImageCropSource,
 } from '@reader-kit/core'
+
+class NextNReaderCropSource implements ReaderImageCropSource {
+  private static sequence: number = 0
+  private path: string
+  private identity: string
+  constructor(path: string) {
+    this.path = path
+    this.identity = `reader-lab-asset:${++NextNReaderCropSource.sequence}`
+  }
+  async read(): Promise<ReaderImageCropBounds> {
+    const bounds = await ReaderPageCropService.detect(this.path, this.identity)
+    return new ReaderImageCropBounds(bounds.left, bounds.top, bounds.right, bounds.bottom)
+  }
+}
 
 export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider, ReaderImageShareHost {
   cancellationMode: 'consumer-only' | 'transport' = 'consumer-only'
@@ -81,6 +95,8 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
     const facts = new ReaderImageInformation()
     facts.bytes = result.bytes
     facts.variant = 'source'
-    return new ReaderAsset(result.displayUri, () => {}, new ReaderFileInformation(result.localPath, facts))
+    const asset = new ReaderAsset(result.displayUri, () => {}, new ReaderFileInformation(result.localPath, facts))
+    if (result.localPath.length > 0) asset.crop = new NextNReaderCropSource(result.localPath)
+    return asset
   }
 }

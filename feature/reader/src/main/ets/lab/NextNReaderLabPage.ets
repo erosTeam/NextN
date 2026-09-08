@@ -165,6 +165,7 @@ export struct NextNReaderLabPage {
             ReaderSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
               input: this.input, imageShare: this.imageShare, imageSave: this.imageSave,
               autoReadAvailable: true, autoReadSeconds: this.readerPresentation.autoPageSeconds,
+              cropBorders: this.request.cropBorders && !this.request.thumbnailEntry,
               entryTransition: this.entryTransition, entryPreview: this.entryPreview,
               active: this.routeActive && this.labVisibility.foreground,
               closing: this.closeRequested || this.hostClosing,
