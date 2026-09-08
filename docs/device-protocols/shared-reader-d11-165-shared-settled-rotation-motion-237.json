@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-165-shared-settled-rotation-motion",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/165-shared-settled-rotation-motion",
+  "recordingFileName": "rkit_d11_165_shared_settled_rotation_motion_20260908.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 600,
+  "idleRecordMs": 90000,
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "actions": [],
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "Current E signed color-order main12s931/native11s659; shared3be5ad9 plus reviewed close callback",
+    "page": "Non-H4175844 optional RTL P1/P2 settled portrait-landscape-portrait rotation",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait_to_landscape_to_portrait",
+    "resolution": "1320x2120",
+    "notes": "Run continuously alongside164; retained production140/141 comparison requires actual matching foreground/root viewport/status and pair. No settings writes; native restores orientation and ordinary app."
+  }
+}
