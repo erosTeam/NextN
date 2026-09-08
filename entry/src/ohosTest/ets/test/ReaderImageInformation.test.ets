@@ -3,6 +3,7 @@ import { abilityDelegatorRegistry, Driver, ON } from '@kit.TestKit'
 import { KeyCode } from '@kit.InputKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { window } from '@kit.ArkUI'
+import { connectReaderPresentation } from 'shared'
 
 const captureNames: string[] = ['baseline', 'single', 'single-return', 'spread', 'choice', 'left', 'right', 'returned', 'next', 'closed', 'exception',
   'recovery-baseline', 'failed', 'pending', 'changed', 'late', 'recovery-info', 'recovery-returned', 'recovery-closed']
@@ -123,6 +124,46 @@ export default function readerImageInformationTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
   const work = args['-s readerLabWork'], unit = args['-s readerLabUnit']
   const trial = args['-s class']
+  if (trial === 'ReaderKeepScreenOnTrial' && typeof work === 'string' && work.length > 0) {
+    describe(trial, (): void => {
+      it('foregroundReadingOwnsKeepAwakeAndReleasesOnBackgroundAndClose', 0, async (): Promise<void> => {
+        const driver = Driver.create(), delegator = abilityDelegatorRegistry.getAbilityDelegator()
+        await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility' })
+        await driver.delayMs(1000)
+        const ability = await delegator.getCurrentTopAbility()
+        const mainWindow = await window.getLastWindow(ability.context)
+        const before = mainWindow.getWindowProperties().isKeepScreenOn
+        const setting = connectReaderPresentation().keepScreenOn
+        await delegator.print(`ReaderKeepScreenOn before=${before} setting=${setting}`)
+        expect(setting).assertTrue()
+        const verify = async (label: string, expected: boolean): Promise<void> => {
+          for (let i = 0; i < 30; i++) {
+            if (mainWindow.getWindowProperties().isKeepScreenOn === expected) break
+            await driver.delayMs(100)
+          }
+          const value = mainWindow.getWindowProperties().isKeepScreenOn
+          await delegator.print(`ReaderKeepScreenOn ${label}=${value}`)
+          expect(value).assertEqual(expected)
+        }
+        await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+          parameters: { readerLabWork: work, readerLabUnit: typeof unit === 'string' ? unit : '',
+            readerLabPage: '1', readerLabChrome: 'true', readerLabVolumeKeys: 'true' } })
+        await informationReady(driver); await verify('shown', true)
+        await driver.triggerKey(KeyCode.KEYCODE_VOLUME_DOWN); await driver.delayMs(600)
+        expect(await informationPage(driver)).assertEqual(3)
+        await driver.triggerKey(KeyCode.KEYCODE_VOLUME_UP); await driver.delayMs(600)
+        expect(await informationPage(driver)).assertEqual(2)
+        await delegator.doAbilityBackground(ability); await verify('background', before)
+        await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility' })
+        await informationReady(driver); await verify('resumed', true)
+        expect(await informationPage(driver)).assertEqual(2)
+        await (await driver.findComponent(ON.id('rkit-close'))).click()
+        await verify('closed', before)
+        expect(connectReaderPresentation().keepScreenOn).assertEqual(setting)
+      })
+    })
+    return
+  }
   if (trial === 'ReaderSpreadShiftTrial' && typeof work === 'string' && work.length > 0) {
     describe(trial, (): void => {
       it('rtlSpreadRePairsOnePageThenTurnsWithinTheNewPairing', 0, async (): Promise<void> => {

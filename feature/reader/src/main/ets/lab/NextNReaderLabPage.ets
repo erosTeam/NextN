@@ -1,4 +1,4 @@
-import { ReaderTrialLayoutCommit } from '@reader-kit/ui'
+import { ReaderTrialLayoutCommit, ReaderKeepScreenOn } from '@reader-kit/ui'
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
 import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderDisplayPolicy } from '@reader-kit/core'
@@ -35,6 +35,7 @@ export struct NextNReaderLabPage {
   @Local private safeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private unitKey: ReaderUnitKey = new ReaderUnitKey('', '', '')
   private trialWindow: ReaderTrialWindow = new ReaderTrialWindow(null, true)
+  private keepScreenOn: ReaderKeepScreenOn | null = null
   @Local private closeRequested: boolean = false
   private input: ReaderInputPort = new ReaderInputPort()
   private volumeKeys: ReaderVolumeKeys = new ReaderVolumeKeys(this.input)
@@ -45,6 +46,7 @@ export struct NextNReaderLabPage {
   aboutToAppear(): void {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext
     if (!context.applicationInfo.debug) return
+    this.keepScreenOn = new ReaderKeepScreenOn(context)
     if (this.request.readingChrome && this.managesTrialWindow) this.trialWindow.open(context)
     const adapter = new NextNReaderLabAdapter(context)
     this.imageShare = new ReaderLabShareProbe(adapter, this.request.shareProbe)
@@ -71,6 +73,7 @@ export struct NextNReaderLabPage {
   }
 
   aboutToDisappear(): void {
+    this.keepScreenOn?.close()
     this.entryTransition?.cancel(); this.entryPreview?.release()
     this.originalProbeHostClosed = true
     this.originalProbe?.close()
@@ -139,8 +142,17 @@ export struct NextNReaderLabPage {
     return facts
   }
 
+  syncKeepScreenOn(): void {
+    this.keepScreenOn?.setActive(this.request.readingChrome && this.routeActive && this.labVisibility.foreground &&
+      this.entryPhase !== 'layout' && !this.closeRequested && !this.hostClosing && this.readerPresentation.keepScreenOn)
+  }
+
+  @Monitor('readerPresentation.keepScreenOn', 'closeRequested', 'hostClosing')
+  syncKeepScreenOnPolicy(): void { this.syncKeepScreenOn() }
+
   @Monitor('routeActive', 'labVisibility.foreground', 'entryPhase')
-  syncVolumeKeys(): void {
+  syncReaderActivity(): void {
+    this.syncKeepScreenOn()
     this.volumeKeys.setActive(this.session !== null && this.request.readingChrome && this.request.volumeKeys &&
       this.routeActive && this.labVisibility.foreground && this.entryPhase !== 'layout')
   }

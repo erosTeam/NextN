@@ -1,5 +1,13 @@
 # NextN UI change ledger
 
+## 2026-09-08 E standalone background retention — OPEN / pre-edit
+
+- Runtime223 LIMITED / exact resumed state FROZEN: E1pass5s294, window false/true/false/true/false, P2 retained and setting unchanged. Returned whole PNG/current ROOT184 E[0,117][1320,2120] inspected: reader remains visible with white status content. No elapsed timeout, thumbnail-background or motion claim; no geometry/color edits.
+
+- New220/222 counter-evidence: keep-screen flag reaches true then false on background, but empty-Want resume exposes Gallery instead of reader. Current222 exception root E[0,117][1320,2120], Gallery text and no rkit nodes. Source onReaderEntryEnvironment closes every trial whenever foreground=false, including already-shown standalone reader; N retains its finished route.
+- Boundary: E Index standalone debug route background lifecycle only. Before: any foreground loss closes. After: foreground loss still cancels thumbnail entries and not-yet-shown standalone; already-shown standalone remains mounted/inactive and restores on foreground. Security lock, restricted mode, site change and pending source claim cancellation unchanged. No thumbnail transition geometry, status colors, persistence or default reader edits.
+- Verify next223: same standalone P2, window keep-screen false/true/false/true/false, retained P2 after resume, ordinary close; existing setting unchanged. This is not thumbnail-background acceptance or all entry/exit animation acceptance.
+
 ## 2026-09-08 optional spread one-page re-pair — OPEN / pre-edit
 
 - Runtime LIMITED:214 E1pass16s480 and215 N1pass18s408 both prove RTL re-pair P1/P2→P2/P3, next P4/P5 and return P2/P3, standalone close. E baseline/changed/next/returned full PNGs and N changed full PNG inspected; all current app roots[0,117][1320,2120].216 E1pass11s559 proves final P45/P46→P46 singleton, disabled transfer, next stays46, close; full changed PNG and all3 roots inspected. Existing205 production toolbar supplies transfer-before-book reference, both current consumers preserve44/22 sizes and sibling ordering. No new whole-reader equivalence or setting persistence claim. Freeze these exact action/toolbar states after checkpoint; background/rotation are not part of this slice.
