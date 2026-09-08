@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-241-nextn-production-crop-spread",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/241-nextn-production-crop-spread",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "N main31/native35 crop production reference; temporary SR off/restored",
+    "page": "NH spread production crop reference",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Actual N overlay owner; temporary settings independently restored with live and real repository readback. P3 single/spread, P6 continuous; no production replacement."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    },
+    {
+      "name": "timeout",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "86400000"
+      ]
+    },
+    {
+      "name": "power-after-timeout",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "window-before",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "close-old",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "force-stop",
+        "com.erosteam.nextn"
+      ]
+    },
+    {
+      "name": "install-main",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"
+      ]
+    },
+    {
+      "name": "install-native",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"
+      ]
+    },
+    {
+      "name": "native-production-crop",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "test",
+        "-b",
+        "com.erosteam.nextn",
+        "-m",
+        "entry_test",
+        "-s",
+        "unittest",
+        "OpenHarmonyTestRunner",
+        "-s",
+        "class",
+        "ReaderProductionCropSpreadTrial",
+        "-s",
+        "readerLabWork",
+        "663205",
+        "-s",
+        "timeout",
+        "180000"
+      ],
+      "timeoutSeconds": 210
+    },
+    {
+      "name": "restore-ordinary-browse",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "start",
+        "-b",
+        "com.erosteam.nextn",
+        "-a",
+        "EntryAbility"
+      ],
+      "pauseAfterMs": 1500
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "background-ordinary-app",
+        "uiInput": [
+          "keyEvent",
+          "Home"
+        ],
+        "pauseAfterMs": 500
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "receive-reader-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-reader.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/241-nextn-production-crop-spread/reader.png"
+      ]
+    },
+    {
+      "name": "receive-reader-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-reader.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/241-nextn-production-crop-spread/reader.json"
+      ]
+    },
+    {
+      "name": "receive-closed-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-closed.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/241-nextn-production-crop-spread/closed.png"
+      ]
+    },
+    {
+      "name": "receive-closed-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-closed.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/241-nextn-production-crop-spread/closed.json"
+      ]
+    },
+    {
+      "name": "receive-exception-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-exception.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/241-nextn-production-crop-spread/exception.png"
+      ]
+    },
+    {
+      "name": "receive-exception-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-exception.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/241-nextn-production-crop-spread/exception.json"
+      ]
+    }
+  ]
+}

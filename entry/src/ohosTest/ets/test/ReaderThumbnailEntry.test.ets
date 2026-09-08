@@ -4,15 +4,17 @@ import { KeyCode } from '@kit.InputKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { window } from '@kit.ArkUI'
 import { UIAbility } from '@kit.AbilityKit'
-import { ReaderTrialEntryProbe, ReaderTrialOriginalProbe, connectReaderPresentation } from 'shared'
+import { ReaderTrialEntryProbe, ReaderTrialOriginalProbe, connectReaderPresentation,
+  connectReaderOverlayNavigation, ReaderRouteParams, ReaderPresentationService, ReaderSettingsRepository,
+  NhReaderMode } from 'shared'
 
 const ENTRY_WORK: string = '678049'
 const FIRST_THUMBNAIL: string = '^reader-thumb-gallery-detail-[0-9]+-page-0$'
 const captureNames: string[] = ['source', 'quick-return', 'no-late-open', 'fresh-source', 'fresh-reader', 'fresh-closed', 'exception']
 
-function clearEntryCaptures(): void {
+function clearEntryCaptures(names: string[] = captureNames): void {
   const cache = abilityDelegatorRegistry.getAbilityDelegator().getAppContext().cacheDir
-  for (const name of captureNames) {
+  for (const name of names) {
     for (const extension of ['json', 'png']) {
       const path = `${cache}/rkit-entry-${name}.${extension}`
       if (fileIo.accessSync(path)) fileIo.unlinkSync(path)
@@ -880,8 +882,100 @@ function readerThumbnailAutoReadTrial(): void {
 }
 
 /** Explicit class selection: P1 entry cancellation or the authorized P1/P2 spread failure endpoints. */
+function readerProductionCropTrial(work: string, layout: string): void {
+  describe(layout === 'spread' ? 'ReaderProductionCropSpreadTrial' :
+    layout === 'continuous' ? 'ReaderProductionCropContinuousTrial' : 'ReaderProductionCropTrial', (): void => {
+    it('productionCropReferenceRestoresLiveAndDurableSettings', 0, async (): Promise<void> => {
+      clearEntryCaptures(['reader', 'closed', 'exception'])
+      const driver = Driver.create(), delegator = abilityDelegatorRegistry.getAbilityDelegator()
+      await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility' })
+      for (let i = 0; i < 40; i++) {
+        if (await driver.findComponent(ON.id('nextn-root-navigation')) !== null) break
+        await driver.delayMs(250)
+      }
+      expect(await driver.findComponent(ON.id('nextn-root-navigation')) !== null).assertTrue()
+      const ability = await delegator.getCurrentTopAbility(), context = ability.context
+      await ReaderPresentationService.restore(context)
+      const setting = connectReaderPresentation()
+      const mode = setting.mode, doublePage = setting.doublePageEnabled
+      const crop = setting.cropBordersPaged, continuousCrop = setting.cropBordersContinuous
+      const superResolution = setting.superResolutionEnabled
+      const overlay = connectReaderOverlayNavigation()
+      expect(overlay.visible).assertFalse()
+      const sourceIndex = layout === 'continuous' ? 5 : 2
+      try {
+        await ReaderPresentationService.setSuperResolutionEnabled(context, false)
+        await ReaderPresentationService.setMode(context, layout === 'continuous' ? NhReaderMode.VERTICAL : NhReaderMode.PAGED)
+        await ReaderPresentationService.setDoublePageEnabled(context, layout === 'spread')
+        if (layout === 'continuous') await ReaderPresentationService.setCropBordersContinuous(context, true)
+        else await ReaderPresentationService.setCropBordersPaged(context, true)
+        overlay.open(new ReaderRouteParams(Number(work), sourceIndex), false)
+        const surface = ON.id('reader-overlay-navigation')
+        const slider = ON.type('Slider').within(surface)
+        let ready = false
+        for (let i = 0; i < 80; i++) {
+          if (await driver.findComponent(surface) !== null &&
+            await driver.findComponent(ON.type('Image').within(surface)) !== null &&
+            await driver.findComponent(ON.type('LoadingProgress').within(surface)) === null) {
+            ready = true; break
+          }
+          await driver.delayMs(250)
+        }
+        expect(ready).assertTrue()
+        if (await driver.findComponent(slider) === null) {
+          const bounds = await (await driver.findComponent(surface)).getBounds()
+          await driver.click(Math.round((bounds.left + bounds.right) / 2), Math.round((bounds.top + bounds.bottom) / 2))
+        }
+        const label = layout === 'spread' ? '3–4 / 40' : `${sourceIndex + 1} / 40`
+        for (let i = 0; i < 30; i++) {
+          if (await driver.findComponent(ON.text(label).within(surface)) !== null &&
+            await driver.findComponent(slider) !== null) break
+          await driver.delayMs(200)
+        }
+        expect(await driver.findComponent(ON.text(label).within(surface)) !== null).assertTrue()
+        expect(await driver.findComponent(slider) !== null).assertTrue()
+        await captureEntry(driver, 'reader')
+        await driver.pressBack()
+        for (let i = 0; i < 40 && overlay.visible; i++) await driver.delayMs(200)
+        expect(overlay.visible).assertFalse()
+        await captureEntry(driver, 'closed')
+      } catch (error) {
+        await captureEntry(driver, 'exception')
+        throw error as Error
+      } finally {
+        const errors: string[] = []
+        try { if (overlay.visible) { await driver.pressBack(); await driver.delayMs(800) } }
+        catch (error) { errors.push(String(error)) }
+        try { await ReaderPresentationService.setMode(context, mode) } catch (error) { errors.push(String(error)) }
+        try { await ReaderPresentationService.setDoublePageEnabled(context, doublePage) } catch (error) { errors.push(String(error)) }
+        try { await ReaderPresentationService.setCropBordersPaged(context, crop) } catch (error) { errors.push(String(error)) }
+        try { await ReaderPresentationService.setCropBordersContinuous(context, continuousCrop) } catch (error) { errors.push(String(error)) }
+        try { await ReaderPresentationService.setSuperResolutionEnabled(context, superResolution) } catch (error) { errors.push(String(error)) }
+        const live = connectReaderPresentation()
+        const restored = live.mode === mode && live.doublePageEnabled === doublePage &&
+          live.cropBordersPaged === crop && live.cropBordersContinuous === continuousCrop &&
+          await ReaderSettingsRepository.mode(context) === mode &&
+          await ReaderSettingsRepository.doublePageEnabled(context) === doublePage &&
+          await ReaderSettingsRepository.cropBordersPaged(context) === crop &&
+          await ReaderSettingsRepository.cropBordersContinuous(context) === continuousCrop &&
+          live.superResolutionEnabled === superResolution &&
+          await ReaderSettingsRepository.superResolutionEnabled(context) === superResolution
+        await delegator.print(`ReaderProductionCrop restored=${restored} storage=reader_settings_RDB mode=${mode} double=${doublePage} crop=${crop} continuousCrop=${continuousCrop} superResolution=${superResolution} errors=${errors.length}`)
+        expect(restored && errors.length === 0 && !overlay.visible).assertTrue()
+      }
+    })
+  })
+}
+
 export default function readerThumbnailEntryTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
+  const trial = args['-s class']
+  if (trial === 'ReaderProductionCropTrial' || trial === 'ReaderProductionCropSpreadTrial' ||
+    trial === 'ReaderProductionCropContinuousTrial') {
+    readerProductionCropTrial('663205', trial === 'ReaderProductionCropSpreadTrial' ? 'spread' :
+      trial === 'ReaderProductionCropContinuousTrial' ? 'continuous' : 'single')
+    return
+  }
   if (args['-s class'] === 'ReaderThumbnailAutoReadForegroundTrial') {
     readerThumbnailAutoReadForegroundTrial()
     return

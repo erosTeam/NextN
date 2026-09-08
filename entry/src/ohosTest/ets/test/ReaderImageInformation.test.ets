@@ -124,6 +124,93 @@ export default function readerImageInformationTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
   const work = args['-s readerLabWork'], unit = args['-s readerLabUnit']
   const trial = args['-s class']
+  if ((trial === 'ReaderCropTrial' || trial === 'ReaderCropSpreadTrial' || trial === 'ReaderCropContinuousTrial') &&
+    typeof work === 'string' && work.length > 0) {
+    describe(trial, (): void => {
+      it('standaloneBodyCropKeepsSourcePageAndCloses', 0, async (): Promise<void> => {
+        clearInformationCaptures()
+        const driver = Driver.create(), delegator = abilityDelegatorRegistry.getAbilityDelegator()
+        const spreadCrop = trial === 'ReaderCropSpreadTrial', continuousCrop = trial === 'ReaderCropContinuousTrial'
+        const layoutTrial = spreadCrop || continuousCrop
+        let sourceIndex = 2
+        const open = async (crop: boolean): Promise<void> => {
+          await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+            parameters: { readerLabWork: work, readerLabUnit: typeof unit === 'string' ? unit : '',
+              readerLabPage: `${sourceIndex}`, readerLabChrome: 'true', readerLabVolumeKeys: layoutTrial ? 'true' : 'false',
+              readerLabCropBorders: crop ? 'true' : 'false' } })
+          await informationReady(driver)
+          if (layoutTrial) {
+            await (await driver.findComponent(ON.id('rkit-runtime-settings'))).click()
+            await driver.delayMs(300)
+            await (await driver.findComponent(ON.text(spreadCrop ? '双页' : '连续'))).click()
+            await driver.delayMs(600); await informationReady(driver)
+          }
+          expect(await informationPage(driver)).assertEqual(sourceIndex + 1)
+        }
+        let selected = false
+        for (; !selected && sourceIndex < 8; sourceIndex += spreadCrop ? 2 : 1) {
+          await open(true)
+          for (let attempt = 0; attempt < 20; attempt++) {
+            if (await driver.findComponent(ON.id(`rkit-cropped-image-${sourceIndex}-whole`)) !== null) { selected = true; break }
+            await driver.delayMs(250)
+          }
+          await delegator.print(`ReaderCrop discovery page=${sourceIndex + 1} detected=${selected}`)
+          await (await driver.findComponent(ON.id('rkit-close'))).click()
+          await driver.delayMs(800)
+          if (selected) break
+        }
+        expect(selected).assertTrue()
+        await open(false)
+        await captureInformation(driver, 'baseline')
+        await (await driver.findComponent(ON.id('rkit-close'))).click()
+        await driver.delayMs(800)
+        await open(true)
+        let cropped = false
+        for (let attempt = 0; attempt < 40; attempt++) {
+          if (await driver.findComponent(ON.id(`rkit-cropped-image-${sourceIndex}-whole`)) !== null) { cropped = true; break }
+          await driver.delayMs(250)
+        }
+        await captureInformation(driver, cropped ? 'changed' : 'exception')
+        await delegator.print(`ReaderCrop sample=${sourceIndex + 1} detected=${cropped}`)
+        expect(cropped).assertTrue()
+        expect(await informationPage(driver)).assertEqual(sourceIndex + 1)
+        if (spreadCrop) {
+          await driver.triggerKey(KeyCode.KEYCODE_VOLUME_DOWN); await driver.delayMs(700); await informationReady(driver)
+          expect(await informationPage(driver)).assertEqual(sourceIndex + 3)
+          await captureInformation(driver, 'next')
+          await driver.triggerKey(KeyCode.KEYCODE_VOLUME_UP); await driver.delayMs(700); await informationReady(driver)
+          expect(await informationPage(driver)).assertEqual(sourceIndex + 1)
+          await captureInformation(driver, 'returned')
+        } else if (continuousCrop) {
+          const ability = await delegator.getCurrentTopAbility(), win = await window.getLastWindow(ability.context)
+          const utils = win.getUIContext().getComponentUtils()
+          const beforeHeight = utils.getRectangleById(`rkit-continuous-page-${sourceIndex}`).size.height
+          const list = await (await driver.findComponent(ON.id('rkit-continuous-list'))).getBounds()
+          const x = Math.round((list.left + list.right) / 2)
+          for (let i = 0; i < 12 && await informationPage(driver) < sourceIndex + 5; i++) {
+            await driver.swipe(x, Math.round(list.top + (list.bottom - list.top) * .8),
+              x, Math.round(list.top + (list.bottom - list.top) * .2), 900)
+            await driver.delayMs(600)
+          }
+          expect(await informationPage(driver) >= sourceIndex + 5).assertTrue()
+          await captureInformation(driver, 'next')
+          for (let i = 0; i < 12 && await informationPage(driver) > sourceIndex + 1; i++) {
+            await driver.triggerKey(KeyCode.KEYCODE_VOLUME_UP); await driver.delayMs(700)
+          }
+          await informationReady(driver)
+          expect(await informationPage(driver)).assertEqual(sourceIndex + 1)
+          const afterHeight = utils.getRectangleById(`rkit-continuous-page-${sourceIndex}`).size.height
+          await delegator.print(`ReaderCrop continuous rowBefore=${beforeHeight} rowAfter=${afterHeight}`)
+          expect(Math.abs(beforeHeight - afterHeight) <= 1).assertTrue()
+          await captureInformation(driver, 'returned')
+        }
+        await (await driver.findComponent(ON.id('rkit-close'))).click()
+        await driver.delayMs(800)
+        await captureInformation(driver, 'closed')
+      })
+    })
+    return
+  }
   if (trial === 'ReaderKeepScreenOnTrial' && typeof work === 'string' && work.length > 0) {
     describe(trial, (): void => {
       it('foregroundReadingOwnsKeepAwakeAndReleasesOnBackgroundAndClose', 0, async (): Promise<void> => {
