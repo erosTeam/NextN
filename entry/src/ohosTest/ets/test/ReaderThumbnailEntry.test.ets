@@ -3,7 +3,8 @@ import { abilityDelegatorRegistry, Component, Driver, MatchPattern, ON } from '@
 import { KeyCode } from '@kit.InputKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { window } from '@kit.ArkUI'
-import { ReaderTrialEntryProbe, connectReaderPresentation } from 'shared'
+import { UIAbility } from '@kit.AbilityKit'
+import { ReaderTrialEntryProbe, ReaderTrialOriginalProbe, connectReaderPresentation } from 'shared'
 
 const ENTRY_WORK: string = '678049'
 const FIRST_THUMBNAIL: string = '^reader-thumb-gallery-detail-[0-9]+-page-0$'
@@ -548,6 +549,172 @@ async function autoReadCurrentPage(driver: Driver): Promise<number> {
   return Number((await page.getText()).split('/')[0].trim())
 }
 
+function readerThumbnailAutoReadForegroundTrial(): void {
+  describe('ReaderThumbnailAutoReadForegroundTrial', (): void => {
+    it('liveBackgroundSessionPausesThenForegroundRestartsFullInterval', 0, async (): Promise<void> => {
+      const delegator = abilityDelegatorRegistry.getAbilityDelegator()
+      const cache = delegator.getAppContext().cacheDir
+      for (const name of ['auto-foreground-ready', 'auto-foreground-resumed',
+        'auto-foreground-closed', 'auto-foreground-exception']) {
+        for (const extension of ['png', 'json']) {
+          const path = `${cache}/rkit-entry-${name}.${extension}`
+          if (fileIo.accessSync(path)) fileIo.unlinkSync(path)
+        }
+      }
+      const driver = Driver.create()
+      let mainWindow: window.Window | null = null
+      let sourceId: string = ''
+      let entered: boolean = false
+      let backgroundRequested: boolean = false
+      let originalEpoch: number = 0
+      let ownedAbility: UIAbility | null = null
+      try {
+        // Existing released original probe supplies live session facts even while UI is backgrounded.
+        await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+          parameters: { readerLabWork: ENTRY_WORK, readerLabPage: '0', readerLabChrome: 'true',
+            readerLabThumbnailEntry: 'true', readerLabEntryLayout: 'spread', readerLabEntryDirection: 'rtl',
+            readerLabEntryProbe: 'delay-once', readerLabOriginalProbe: 'hold-once' } })
+        const source = await findFirstDetailThumbnail(driver)
+        const armedDeadline = Date.now() + 5000
+        while (ReaderTrialOriginalProbe.read().state !== 'armed' && Date.now() < armedDeadline) {
+          await driver.delayMs(25)
+        }
+        const armed = ReaderTrialOriginalProbe.read()
+        expect(armed.state).assertEqual('armed')
+        expect(armed.galleryId).assertEqual(ENTRY_WORK)
+        expect(armed.pageIndex).assertEqual(0)
+        originalEpoch = armed.epoch
+        sourceId = await source.getId()
+        const ability = await delegator.getCurrentTopAbility()
+        ownedAbility = ability
+        mainWindow = await window.getLastWindow(ability.context)
+        const baseline = ReaderTrialEntryProbe.read().epoch
+        entered = true
+        await source.click()
+        const heldDeadline = Date.now() + 20000
+        while (ReaderTrialOriginalProbe.read().state !== 'held' && Date.now() < heldDeadline) {
+          await driver.delayMs(100)
+        }
+        const held = ReaderTrialOriginalProbe.read()
+        expect(held.epoch).assertEqual(originalEpoch)
+        expect(held.state).assertEqual('held')
+        expect(ReaderTrialOriginalProbe.release(originalEpoch, held.requestId)).assertTrue()
+        const entryEpoch = await waitChromeEntrySpread(driver, baseline)
+        await waitChromeState(driver, mainWindow, true, entryEpoch)
+        await waitRetriedSpread(driver)
+        const initial = ReaderTrialOriginalProbe.read()
+        expect(initial.state).assertEqual('delivered')
+        expect(initial.reader.assetPhase).assertEqual('displayed')
+        expect(initial.reader.decodedReady).assertTrue()
+        expect(initial.reader.hostActive).assertTrue()
+        expect(initial.reader.anchor).assertEqual(0)
+        const intervalMs = connectReaderPresentation().autoPageSeconds * 1000
+        if (!Number.isInteger(intervalMs / 1000) || intervalMs < 1000 || intervalMs > 60000) {
+          throw new Error('Invalid host auto-read interval')
+        }
+        const assertSameSession = (active: boolean): void => {
+          const current = ReaderTrialOriginalProbe.read()
+          expect(current.epoch).assertEqual(originalEpoch)
+          expect(current.requestId).assertEqual(initial.requestId)
+          expect(current.state).assertEqual('delivered')
+          expect(current.reader.entryId).assertEqual(initial.reader.entryId)
+          expect(current.reader.sessionPhase).assertEqual(initial.reader.sessionPhase)
+          expect(current.reader.anchor).assertEqual(initial.reader.anchor)
+          expect(current.reader.navigationRevision).assertEqual(initial.reader.navigationRevision)
+          expect(current.reader.hostActive).assertEqual(active)
+          expect(ReaderTrialEntryProbe.read().epoch).assertEqual(entryEpoch)
+        }
+        await captureEntry(driver, 'auto-foreground-ready')
+        const clock = await driver.findComponent(ON.id('rkit-auto-read'))
+        if (clock === null) throw new Error('Auto-read clock missing')
+        await clock.click()
+        assertSameSession(true)
+        backgroundRequested = true
+        await delegator.doAbilityBackground(ability)
+        const backgroundDeadline = Date.now() + 5000
+        while ((ReaderTrialOriginalProbe.read().reader.hostActive ||
+          delegator.getAbilityState(ability) !== abilityDelegatorRegistry.AbilityLifecycleState.BACKGROUND) &&
+          Date.now() < backgroundDeadline) await driver.delayMs(25)
+        const backgroundStarted = Date.now()
+        do {
+          expect(delegator.getAbilityState(ability)).assertEqual(abilityDelegatorRegistry.AbilityLifecycleState.BACKGROUND)
+          assertSameSession(false)
+          await driver.delayMs(100)
+        } while (Date.now() - backgroundStarted < intervalMs + 1500)
+        await delegator.print(`ReaderThumbnailAutoReadForeground background_ms=${Date.now() - backgroundStarted} live=${JSON.stringify(ReaderTrialOriginalProbe.read())}`)
+        assertSameSession(false)
+        // doAbilityForeground replays the original debug Want on this device; an empty Want preserves the route.
+        const foregroundRequestedAt = Date.now()
+        await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility' })
+        const foregroundDeadline = Date.now() + 5000
+        while ((!ReaderTrialOriginalProbe.read().reader.hostActive ||
+          delegator.getAbilityState(ability) !== abilityDelegatorRegistry.AbilityLifecycleState.FOREGROUND) &&
+          Date.now() < foregroundDeadline) await driver.delayMs(25)
+        backgroundRequested = false
+        const foregroundObservedAt = Date.now()
+        // Bound the observation latency so this entire half-interval is before the earliest full timer expiry.
+        if (foregroundObservedAt - foregroundRequestedAt >= intervalMs / 4) {
+          throw new Error(`Foreground observation too late elapsed=${foregroundObservedAt - foregroundRequestedAt}` +
+            ` ability=${delegator.getAbilityState(ability)} live=${JSON.stringify(ReaderTrialOriginalProbe.read())}` +
+            ` entry=${JSON.stringify(ReaderTrialEntryProbe.read())}`)
+        }
+        do {
+          expect(delegator.getAbilityState(ability)).assertEqual(abilityDelegatorRegistry.AbilityLifecycleState.FOREGROUND)
+          assertSameSession(true)
+          await driver.delayMs(25)
+        } while (Date.now() - foregroundObservedAt < intervalMs / 2)
+        assertSameSession(true)
+        const shortWindowMs = Date.now() - foregroundObservedAt
+        const advanceDeadline = Date.now() + intervalMs + 5000
+        let advanced: boolean = false
+        let firstAdvanceElapsed: number = -1
+        while (Date.now() < advanceDeadline) {
+          const current = ReaderTrialOriginalProbe.read()
+          expect(current.epoch).assertEqual(originalEpoch)
+          expect(current.reader.entryId).assertEqual(initial.reader.entryId)
+          expect(current.reader.hostActive).assertTrue()
+          if (firstAdvanceElapsed < 0 && (current.reader.anchor !== initial.reader.anchor ||
+            current.reader.navigationRevision !== initial.reader.navigationRevision)) {
+            firstAdvanceElapsed = Date.now() - foregroundRequestedAt
+            expect(firstAdvanceElapsed >= intervalMs).assertTrue()
+          }
+          if (current.reader.anchor === 2 && current.reader.navigationRevision > initial.reader.navigationRevision &&
+            await autoReadCurrentPage(driver) === 3 &&
+            await driver.findComponent(ON.id('rkit-part-2-whole').within(ON.id('rkit-image-viewport'))) !== null &&
+            await driver.findComponent(ON.id('rkit-part-3-whole').within(ON.id('rkit-image-viewport'))) !== null) {
+            advanced = true
+            break
+          }
+          await driver.delayMs(25)
+        }
+        if (!advanced) throw new Error('Same foreground reader did not automatically advance to P3/P4')
+        const stop = await driver.findComponent(ON.id('rkit-auto-read'))
+        if (stop === null) throw new Error('Auto-read stop clock missing')
+        await stop.click()
+        await captureEntry(driver, 'auto-foreground-resumed')
+        await delegator.print(`ReaderThumbnailAutoReadForeground first_advance_elapsed_ms=${firstAdvanceElapsed} short_window_ms=${shortWindowMs} interval_ms=${intervalMs} released_original_probe=true settings_unmodified=true advanced_to=3 stopped=true P3_P4_decoded_not_asserted=true`)
+        await driver.pressBack()
+        await waitChromeClosed(driver, mainWindow, sourceId)
+        entered = false
+        await captureEntry(driver, 'auto-foreground-closed')
+      } catch (error) {
+        try { await captureEntry(driver, 'auto-foreground-exception') } catch (_) {}
+        try {
+          if (backgroundRequested && ownedAbility !== null) {
+            await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility' })
+          }
+          ReaderTrialOriginalProbe.cancel(originalEpoch)
+          if (entered) {
+            await driver.triggerKey(KeyCode.KEYCODE_BACK)
+            if (mainWindow !== null && sourceId.length > 0) await waitChromeClosed(driver, mainWindow, sourceId)
+          }
+        } catch (cleanupError) { console.error(`ReaderThumbnailAutoReadForeground cleanup_failed=${String(cleanupError)}`) }
+        throw error as Error
+      }
+    })
+  })
+}
+
 function readerThumbnailAutoReadFailureTrial(): void {
   describe('ReaderThumbnailAutoReadFailureTrial', (): void => {
     it('waitsForMissingP2OriginalThenRetriesBeforeAutomaticAdvance', 0, async (): Promise<void> => {
@@ -715,6 +882,10 @@ function readerThumbnailAutoReadTrial(): void {
 /** Explicit class selection: P1 entry cancellation or the authorized P1/P2 spread failure endpoints. */
 export default function readerThumbnailEntryTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
+  if (args['-s class'] === 'ReaderThumbnailAutoReadForegroundTrial') {
+    readerThumbnailAutoReadForegroundTrial()
+    return
+  }
   if (args['-s class'] === 'ReaderThumbnailAutoReadFailureTrial') {
     readerThumbnailAutoReadFailureTrial()
     return
