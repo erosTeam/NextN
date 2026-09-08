@@ -790,7 +790,8 @@ struct Index {
   @Builder
   private readerTrialRouter(_name: string, _param: Object) {
     if (this.readerTrialRequest !== null) {
-      NextNReaderLabPage({ request: this.readerTrialRequest,
+      // The destination owns its launch request through teardown; the host clears its active pointer first.
+      NextNReaderLabPage({ request: _param as ReaderLabRequest,
         managesTrialWindow: false,
         hostClosing: this.readerTrialCloseRequested,
         prepareChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareReaderTrialChrome(isCurrent),

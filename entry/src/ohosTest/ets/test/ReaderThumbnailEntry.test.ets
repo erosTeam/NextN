@@ -3,7 +3,7 @@ import { abilityDelegatorRegistry, Component, Driver, MatchPattern, ON } from '@
 import { KeyCode } from '@kit.InputKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { window } from '@kit.ArkUI'
-import { ReaderTrialEntryProbe } from 'shared'
+import { ReaderTrialEntryProbe, connectReaderPresentation } from 'shared'
 
 const ENTRY_WORK: string = '678049'
 const FIRST_THUMBNAIL: string = '^reader-thumb-gallery-detail-[0-9]+-page-0$'
@@ -542,9 +542,187 @@ function readerThumbnailSaveMenuTrial(positive: boolean = false, both: boolean =
   })
 }
 
+async function autoReadCurrentPage(driver: Driver): Promise<number> {
+  const page = await driver.findComponent(ON.id('rkit-chrome-page'))
+  if (page === null) throw new Error('Auto-read page label missing')
+  return Number((await page.getText()).split('/')[0].trim())
+}
+
+function readerThumbnailAutoReadFailureTrial(): void {
+  describe('ReaderThumbnailAutoReadFailureTrial', (): void => {
+    it('waitsForMissingP2OriginalThenRetriesBeforeAutomaticAdvance', 0, async (): Promise<void> => {
+      const delegator = abilityDelegatorRegistry.getAbilityDelegator()
+      const cache = delegator.getAppContext().cacheDir
+      for (const name of ['auto-failure-waiting', 'auto-failure-resumed', 'auto-failure-closed', 'auto-failure-exception']) {
+        for (const extension of ['png', 'json']) {
+          const path = `${cache}/rkit-entry-${name}.${extension}`
+          if (fileIo.accessSync(path)) fileIo.unlinkSync(path)
+        }
+      }
+      const driver = Driver.create()
+      let mainWindow: window.Window | null = null
+      let sourceId: string = ''
+      let entered: boolean = false
+      try {
+        // Same once-only missing original injection as armFailureEntry, with explicit RTL for this suite.
+        await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+          parameters: { readerLabWork: ENTRY_WORK, readerLabPage: '0', readerLabChrome: 'true',
+            readerLabThumbnailEntry: 'true', readerLabEntryLayout: 'spread', readerLabEntryDirection: 'rtl',
+            readerLabFailPage: '1', readerLabEntryProbe: '' } })
+        const source = await findFirstDetailThumbnail(driver)
+        sourceId = await source.getId()
+        const ability = await delegator.getCurrentTopAbility()
+        mainWindow = await window.getLastWindow(ability.context)
+        entered = true
+        await source.click()
+        await waitEntryFailure(driver, 2)
+        const first = await driver.findComponent(ON.id('rkit-part-0-whole').within(ON.id('rkit-image-viewport')))
+        const second = await driver.findComponent(ON.id('rkit-part-1-whole').within(ON.id('rkit-image-viewport')))
+        if (first === null || second === null) throw new Error('Expected RTL P1/P2 failure spread unavailable')
+        expect((await second.getBounds()).right <= (await first.getBounds()).left + 1).assertTrue()
+        const interval = connectReaderPresentation().autoPageSeconds
+        if (!Number.isInteger(interval) || interval < 1 || interval > 60) throw new Error('Invalid host auto-read interval')
+        const clock = await driver.findComponent(ON.id('rkit-auto-read'))
+        if (clock === null) throw new Error('Auto-read clock missing on failed spread')
+        await clock.click()
+        const waitingDeadline = Date.now() + interval * 1000 + 1500
+        while (Date.now() < waitingDeadline) {
+          await assertFirstSpreadAnchor(driver)
+          expect(await driver.findComponent(ON.id('rkit-failure-page-2').within(ON.id('rkit-image-viewport'))) !== null).assertTrue()
+          await driver.delayMs(200)
+        }
+        await captureEntry(driver, 'auto-failure-waiting')
+        await delegator.print(`ReaderThumbnailAutoReadFailure wait_ms=${interval * 1000 + 1500} injected_missing_original=P2 transport_failure=false settings_unmodified=true`)
+        const retry = await waitEntryFailure(driver, 2)
+        await retry.click()
+        await waitRetriedSpread(driver)
+        const advanceDeadline = Date.now() + interval * 1000 + 5000
+        let advanced: boolean = false
+        while (Date.now() < advanceDeadline) {
+          if (await autoReadCurrentPage(driver) === 3 &&
+            await driver.findComponent(ON.id('rkit-part-2-whole').within(ON.id('rkit-image-viewport'))) !== null &&
+            await driver.findComponent(ON.id('rkit-part-3-whole').within(ON.id('rkit-image-viewport'))) !== null) {
+            advanced = true
+            break
+          }
+          await driver.delayMs(100)
+        }
+        if (!advanced) throw new Error('Auto-read did not resume after P2 original retry')
+        const stop = await driver.findComponent(ON.id('rkit-auto-read'))
+        if (stop === null) throw new Error('Auto-read stop clock missing')
+        await stop.click()
+        await captureEntry(driver, 'auto-failure-resumed')
+        await delegator.print('ReaderThumbnailAutoReadFailure retried_group_ready=true advanced_to=3 P3_P4_decoded_not_asserted=true')
+        await driver.pressBack()
+        await waitChromeClosed(driver, mainWindow, sourceId)
+        entered = false
+        await captureEntry(driver, 'auto-failure-closed')
+      } catch (error) {
+        try { await captureEntry(driver, 'auto-failure-exception') } catch (_) {}
+        try {
+          if (entered) {
+            await driver.triggerKey(KeyCode.KEYCODE_BACK)
+            if (mainWindow !== null && sourceId.length > 0) await waitChromeClosed(driver, mainWindow, sourceId)
+          }
+        } catch (cleanupError) { console.error(`ReaderThumbnailAutoReadFailure cleanup_failed=${String(cleanupError)}`) }
+        throw error as Error
+      }
+    })
+  })
+}
+
+function readerThumbnailAutoReadTrial(): void {
+  describe('ReaderThumbnailAutoReadTrial', (): void => {
+    it('rtlNextSpreadThenExplicitStopRetainsPage', 0, async (): Promise<void> => {
+      const delegator = abilityDelegatorRegistry.getAbilityDelegator()
+      const cache = delegator.getAppContext().cacheDir
+      for (const name of ['auto-start', 'auto-stopped', 'auto-closed', 'auto-exception']) {
+        for (const extension of ['png', 'json']) {
+          const path = `${cache}/rkit-entry-${name}.${extension}`
+          if (fileIo.accessSync(path)) fileIo.unlinkSync(path)
+        }
+      }
+      const driver = Driver.create()
+      let mainWindow: window.Window | null = null
+      let sourceId: string = ''
+      let entered: boolean = false
+      try {
+        await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+          parameters: { readerLabWork: ENTRY_WORK, readerLabPage: '0', readerLabChrome: 'true',
+            readerLabThumbnailEntry: 'true', readerLabEntryLayout: 'spread', readerLabEntryDirection: 'rtl',
+            readerLabEntryProbe: 'delay-once' } })
+        const source = await findFirstDetailThumbnail(driver)
+        sourceId = await source.getId()
+        const ability = await delegator.getCurrentTopAbility()
+        mainWindow = await window.getLastWindow(ability.context)
+        const baseline = ReaderTrialEntryProbe.read().epoch
+        entered = true
+        await source.click()
+        const epoch = await waitChromeEntrySpread(driver, baseline)
+        await waitChromeState(driver, mainWindow, true, epoch)
+        const interval = connectReaderPresentation().autoPageSeconds
+        if (!Number.isInteger(interval) || interval < 1 || interval > 60) throw new Error('Auto-read interval outside supported range')
+        await delegator.print(`ReaderThumbnailAutoRead interval_seconds=${interval} settings_unmodified=true next_spread_decode_acceptance=false`)
+        const clock = await driver.findComponent(ON.id('rkit-auto-read'))
+        if (clock === null) throw new Error('Auto-read clock missing')
+        await clock.click()
+        await captureEntry(driver, 'auto-start')
+        const advanceDeadline = Date.now() + interval * 1000 + 5000
+        let advanced: boolean = false
+        while (Date.now() < advanceDeadline) {
+          if (await autoReadCurrentPage(driver) === 3 &&
+            await driver.findComponent(ON.id('rkit-part-2-whole').within(ON.id('rkit-image-viewport'))) !== null &&
+            await driver.findComponent(ON.id('rkit-part-3-whole').within(ON.id('rkit-image-viewport'))) !== null) {
+            advanced = true
+            break
+          }
+          await driver.delayMs(100)
+        }
+        if (!advanced) throw new Error('Auto-read did not advance to actual P3/P4 viewport')
+        const stop = await driver.findComponent(ON.id('rkit-auto-read'))
+        if (stop === null) throw new Error('Auto-read stop clock missing')
+        await stop.click()
+        const stoppedPage = await autoReadCurrentPage(driver)
+        expect(stoppedPage).assertEqual(3)
+        const stableDeadline = Date.now() + interval * 1000 + 1000
+        while (Date.now() < stableDeadline) {
+          expect(await autoReadCurrentPage(driver)).assertEqual(stoppedPage)
+          await driver.delayMs(200)
+        }
+        expect(await autoReadCurrentPage(driver)).assertEqual(stoppedPage)
+        await captureEntry(driver, 'auto-stopped')
+        await delegator.print('ReaderThumbnailAutoRead advanced_to=3 stopped_stable=true P3_P4_decoded_not_asserted=true')
+        await driver.pressBack()
+        await waitChromeClosed(driver, mainWindow, sourceId)
+        entered = false
+        await captureEntry(driver, 'auto-closed')
+      } catch (error) {
+        try { await captureEntry(driver, 'auto-exception') } catch (_) {}
+        try {
+          if (entered) {
+            await driver.triggerKey(KeyCode.KEYCODE_BACK)
+            if (mainWindow !== null && sourceId.length > 0) await waitChromeClosed(driver, mainWindow, sourceId)
+          }
+        } catch (cleanupError) {
+          try { await delegator.print(`ReaderThumbnailAutoRead cleanup_failed=${String(cleanupError)}`) } catch (_) {}
+        }
+        throw error as Error
+      }
+    })
+  })
+}
+
 /** Explicit class selection: P1 entry cancellation or the authorized P1/P2 spread failure endpoints. */
 export default function readerThumbnailEntryTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
+  if (args['-s class'] === 'ReaderThumbnailAutoReadFailureTrial') {
+    readerThumbnailAutoReadFailureTrial()
+    return
+  }
+  if (args['-s class'] === 'ReaderThumbnailAutoReadTrial') {
+    readerThumbnailAutoReadTrial()
+    return
+  }
   if (args['-s class'] === 'ReaderThumbnailSaveBothTrial') {
     readerThumbnailSaveMenuTrial(true, true)
     return

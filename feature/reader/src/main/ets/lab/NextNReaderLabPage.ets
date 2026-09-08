@@ -6,7 +6,7 @@ import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabRequest, ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility, ReaderLabAssetProbe, ReaderVolumeKeys } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
-import { connectReaderPresentation, connectLayoutSafeArea, LayoutSafeAreaState, ThemeTokens, nextNHdsTitle,
+import { connectReaderPresentation, ReaderPresentationState, connectLayoutSafeArea, LayoutSafeAreaState, ThemeTokens, nextNHdsTitle,
   ReaderTrialOriginalProbe, ReaderTrialOriginalFacts } from 'shared'
 import { NextNReaderOriginalProbeProvider } from './NextNReaderOriginalProbeProvider'
 import { NextNReaderOriginalProbeCatalog } from './NextNReaderOriginalProbeCatalog'
@@ -29,6 +29,7 @@ export struct NextNReaderLabPage {
   private imageShare: ReaderImageShareHost | null = null
   private imageSave: ReaderImageSaveHost | null = null
   @Local private labVisibility: ReaderLabVisibilityState = connectReaderLabVisibility()
+  @Local private readerPresentation: ReaderPresentationState = connectReaderPresentation()
   @Local private routeActive: boolean = false
   @Local private safeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private unitKey: ReaderUnitKey = new ReaderUnitKey('', '', '')
@@ -150,6 +151,7 @@ export struct NextNReaderLabPage {
           if (this.request.readingChrome) {
             ReaderSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
               input: this.input, imageShare: this.imageShare, imageSave: this.imageSave,
+              autoReadAvailable: true, autoReadSeconds: this.readerPresentation.autoPageSeconds,
               entryTransition: this.entryTransition, entryPreview: this.entryPreview,
               active: this.routeActive && this.labVisibility.foreground,
               closing: this.closeRequested || this.hostClosing,
