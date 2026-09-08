@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-149-nextn-chrome-probe-motion",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/149-nextn-chrome-probe-motion",
+  "recordingFileName": "rkit_d11_nextn_chrome_20260908_149.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 600,
+  "idleRecordMs": 90000,
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "actions": [],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "NextN unchanged host candidate; native chrome2 explicit existing delay-once probe",
+    "page": "NextN678049 actual thumbnail RTL spread chrome toggles and hidden Back",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "No persisted settings writes; explicit native class owns fixed NH sample, not EH unit. Actual status area and existing probe fields only. Existing delay-once probe holds captured entry for2500ms; no new product delay. Previous146 failed test probe precondition, not UI acceptance."
+  }
+}

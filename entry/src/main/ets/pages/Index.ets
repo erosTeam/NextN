@@ -1,3 +1,4 @@
+import { ReaderTrialLayoutCommit } from '@reader-kit/ui'
 import { HomePage, HomeSubtabManagerPage, PopularPage } from 'home'
 import { NextNReaderLabPage } from 'reader'
 import { ReaderLabLaunchState, ReaderLabRequest, connectReaderLabLaunch, ReaderTrialWindow } from '@reader-kit/ui'
@@ -543,6 +544,7 @@ struct Index {
   private readerTrialWindowEpoch: number = -1
   private readerTrialWindowOpened: boolean = false
   private readerTrialClosing: Promise<void> | null = null
+  @Local private readerTrialCloseRequested: boolean = false
   private readerTrialLaunchEpoch: number = 0
   private readerTrialHostAlive: boolean = true
   @Local private readerEntryTransition: ReaderEntryTransition | null = null
@@ -637,7 +639,8 @@ struct Index {
   }
 
   private prepareReaderTrialWindow(): void {
-    this.readerTrialWindow = new ReaderTrialWindow()
+    this.readerTrialCloseRequested = false
+    this.readerTrialWindow = new ReaderTrialWindow(null, true)
     this.readerTrialWindowEpoch = this.readerTrialEpoch
     this.readerTrialWindowOpened = false
     this.syncReaderTrialWindow()
@@ -645,9 +648,12 @@ struct Index {
 
   private closeReaderTrial(): Promise<void> | null {
     if (this.readerTrialClosing !== null) return this.readerTrialClosing
+    this.readerTrialCloseRequested = true
     const opened = this.readerTrialWindowOpened
     const request = this.readerTrialRequest
     const trialEpoch = this.readerTrialEpoch
+    const windowLease = this.readerTrialWindow
+    const sourceId = this.readerEntryClaim?.source.snapshotComponentId ?? 'nextn-reader-entry-host'
     const restoration = this.retireReaderTrialWindow()
     this.releaseReaderEntryClaim()
     this.retireReaderTrialEntryGuard()
@@ -658,7 +664,16 @@ struct Index {
       return null
     }
     // Keep the actual reading surface until its previous window properties are restored.
-    const closing = restoration.then((): void => {
+    const closing = restoration.then(async (): Promise<void> => {
+      if (windowLease?.getCloseSystemAvoidAreaResult() === 'ready') {
+        const layoutReady = await ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string => {
+          if (this.layoutSafeArea.topAvoidHeight <= 0) return ''
+          const rect = this.readerEntryRect(sourceId)
+          return rect.valid() ? `${this.layoutSafeArea.topAvoidHeight}:${rect.x},${rect.y},${rect.width},${rect.height}` : ''
+        }, (): boolean => this.readerTrialHostAlive && this.readerTrialRequest === request &&
+          this.readerTrialEpoch === trialEpoch)
+        console.info(`[ReaderTrialHost] close_layout_ready=${layoutReady}`)
+      }
       if (this.readerTrialHostAlive && this.readerTrialClosing === closing &&
         this.readerTrialRequest === request && this.readerTrialEpoch === trialEpoch) this.clearReaderTrial()
     }).finally((): void => {
@@ -666,6 +681,20 @@ struct Index {
     })
     this.readerTrialClosing = closing
     return closing
+  }
+
+  private async prepareReaderTrialChrome(isCurrent: () => boolean): Promise<boolean> {
+    const lease = this.readerTrialWindow
+    const request = this.readerTrialRequest
+    const epoch = this.readerTrialEpoch
+    const current = (): boolean => isCurrent() && !this.readerTrialCloseRequested &&
+      this.readerTrialHostAlive && this.readerTrialWindow === lease && this.readerTrialRequest === request &&
+      this.readerTrialEpoch === epoch && this.readerEntryVisibility.foreground
+    if (lease === null || request === null || !current()) return false
+    if (!await lease.prepareStatusBarVisible() || !current()) return false
+    return ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string =>
+      this.layoutSafeArea.topAvoidHeight > 0 ?
+        `${this.layoutSafeArea.topAvoidHeight}:${this.layoutSafeArea.bottomAvoidHeight}` : '', current)
   }
 
   private clearReaderTrial(): void {
@@ -762,6 +791,9 @@ struct Index {
     if (this.readerTrialRequest !== null) {
       NextNReaderLabPage({ request: this.readerTrialRequest,
         managesTrialWindow: false,
+        hostClosing: this.readerTrialCloseRequested,
+        prepareChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareReaderTrialChrome(isCurrent),
+        onStatusBarVisible: (visible: boolean): void => { this.readerTrialWindow?.setStatusBarVisible(visible) },
         entryTransition: this.readerEntryTransition, entryPreview: this.readerEntryPreview,
         entryPhase: this.readerEntryTransition?.phase ?? 'finished',
         onClose: (): void => { this.closeReaderTrial() } })
@@ -3542,7 +3574,8 @@ struct Index {
       }
       .hideTitleBar(true)
     } else if (name === 'ReaderLab') {
-      NextNReaderLabPage({ request: param as ReaderLabRequest })
+      NextNReaderLabPage({ request: param as ReaderLabRequest,
+        onClose: (): void => { this.stack.pop() } })
     } else if (name === ROUTE_SEARCH) {
       this.searchDestination(param)
     } else if (name === ROUTE_HOME_SUBTAB_MANAGER) {

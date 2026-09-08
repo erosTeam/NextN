@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-147-nextn-host-status-motion",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/147-nextn-host-status-motion",
+  "recordingFileName": "rkit_d11_nextn_chrome_20260908_147.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 600,
+  "idleRecordMs": 90000,
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "actions": [],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "NextN status host candidate and native chrome build9s240",
+    "page": "NextN678049 actual thumbnail RTL spread chrome toggles and hidden Back",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "No persisted settings writes; explicit native class owns fixed NH sample, not EH unit. Actual status area and existing probe fields only."
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-153-nexte-hidden-layout-motion",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/153-nexte-hidden-layout-motion",
+  "recordingFileName": "rkit_d11_nexte_hidden_layout_20260908_153.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 600,
+  "idleRecordMs": 90000,
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "actions": [],
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "E main17b12s535/native27 actual system avoid and host layout close gate",
+    "page": "Non-H4175844 shared RTL spread chrome shown hidden reshown then hidden Back",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "No persisted settings writes. Native observes system area and chrome, never sets status visibility. Verify exit restoration. Compare first hidden Back Detail to144 overlap, not whole-reader parity. Chrome reshow unchanged and OPEN."
+  }
+}

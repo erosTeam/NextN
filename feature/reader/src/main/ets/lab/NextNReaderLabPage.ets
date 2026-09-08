@@ -1,3 +1,4 @@
+import { ReaderTrialLayoutCommit } from '@reader-kit/ui'
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
 import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderDisplayPolicy } from '@reader-kit/core'
@@ -5,7 +6,7 @@ import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabRequest, ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility, ReaderLabAssetProbe, ReaderVolumeKeys } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
-import { connectLayoutSafeArea, LayoutSafeAreaState, ThemeTokens, nextNHdsTitle,
+import { connectReaderPresentation, connectLayoutSafeArea, LayoutSafeAreaState, ThemeTokens, nextNHdsTitle,
   ReaderTrialOriginalProbe, ReaderTrialOriginalFacts } from 'shared'
 import { NextNReaderOriginalProbeProvider } from './NextNReaderOriginalProbeProvider'
 import { NextNReaderOriginalProbeCatalog } from './NextNReaderOriginalProbeCatalog'
@@ -17,14 +18,18 @@ export struct NextNReaderLabPage {
   @Param entryPhase: string = 'finished'
   @Param entryPreview: ReaderEntryPreviewSource | null = null
   @Param managesTrialWindow: boolean = true
+  @Param hostClosing: boolean = false
+  @Param prepareChrome: ((isCurrent: () => boolean) => Promise<boolean>) | null = null
   @Event onClose: () => void = () => {}
+  @Event onStatusBarVisible: (visible: boolean) => void = () => {}
   @Local private session: ReaderPagedSession | null = null
   private imageShare: ReaderImageShareHost | null = null
   @Local private labVisibility: ReaderLabVisibilityState = connectReaderLabVisibility()
   @Local private routeActive: boolean = false
   @Local private safeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private unitKey: ReaderUnitKey = new ReaderUnitKey('', '', '')
-  private trialWindow: ReaderTrialWindow = new ReaderTrialWindow()
+  private trialWindow: ReaderTrialWindow = new ReaderTrialWindow(null, true)
+  @Local private closeRequested: boolean = false
   private input: ReaderInputPort = new ReaderInputPort()
   private volumeKeys: ReaderVolumeKeys = new ReaderVolumeKeys(this.input)
   private originalProbeEpoch: number = 0
@@ -64,6 +69,38 @@ export struct NextNReaderLabPage {
     if (this.originalProbeEpoch !== 0) ReaderTrialOriginalProbe.detachFacts(this.originalProbeEpoch)
     this.volumeKeys.close()
     if (this.managesTrialWindow) this.trialWindow.close()
+  }
+
+  private syncChromeVisible(visible: boolean): void {
+    if (visible) return // The before-show gate already applied host visibility.
+    const statusVisible = !connectReaderPresentation().fullscreen || visible
+    if (this.managesTrialWindow) this.trialWindow.setStatusBarVisible(statusVisible)
+    else this.onStatusBarVisible(statusVisible)
+  }
+
+  private async prepareChromeShow(isCurrent: () => boolean): Promise<boolean> {
+    const current = (): boolean => isCurrent() && !this.closeRequested && !this.hostClosing &&
+      this.routeActive && this.labVisibility.foreground
+    if (!current()) return false
+    if (!this.managesTrialWindow) return this.prepareChrome === null ? false : this.prepareChrome(current)
+    if (!await this.trialWindow.prepareStatusBarVisible() || !current()) return false
+    return ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string =>
+      this.safeArea.topAvoidHeight > 0 ? `${this.safeArea.topAvoidHeight}:${this.safeArea.bottomAvoidHeight}` : '', current)
+  }
+
+  private closeTrial(): void {
+    if (this.closeRequested) return
+    this.closeRequested = true
+    if (this.managesTrialWindow) this.trialWindow.close().then(async (): Promise<void> => {
+      if (this.trialWindow.getCloseSystemAvoidAreaResult() === 'ready') {
+        const ready = await ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string =>
+          this.safeArea.topAvoidHeight > 0 ? `${this.safeArea.topAvoidHeight}:${this.safeArea.bottomAvoidHeight}` : '',
+          (): boolean => this.routeActive && this.labVisibility.foreground)
+        console.info(`[ReaderTrialHost] standalone_close_layout_ready=${ready}`)
+      }
+      if (this.routeActive) this.onClose()
+    })
+    else this.onClose()
   }
 
   private originalProbeFacts(): ReaderTrialOriginalFacts {
@@ -106,8 +143,11 @@ export struct NextNReaderLabPage {
               input: this.input, imageShare: this.imageShare,
               entryTransition: this.entryTransition, entryPreview: this.entryPreview,
               active: this.routeActive && this.labVisibility.foreground,
+              closing: this.closeRequested || this.hostClosing,
+              beforeShowChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareChromeShow(isCurrent),
               topInset: this.safeArea.topAvoidHeight, bottomInset: this.safeArea.bottomAvoidHeight,
-              accent: ThemeTokens.BRAND, onClose: this.onClose })
+              accent: ThemeTokens.BRAND, onClose: (): void => this.closeTrial(),
+              onChromeVisible: (visible: boolean): void => this.syncChromeVisible(visible) })
           } else {
           ReaderLabSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
             failurePage: this.request.failurePage,
@@ -124,7 +164,7 @@ export struct NextNReaderLabPage {
     .hideTitleBar(this.request.readingChrome)
     .onBackPressed((): boolean => {
       if (!this.request.readingChrome) return false
-      this.onClose()
+      this.closeTrial()
       return true
     })
     .onShown((): void => { this.routeActive = true })

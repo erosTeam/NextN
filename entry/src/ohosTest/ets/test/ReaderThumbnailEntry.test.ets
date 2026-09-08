@@ -2,6 +2,7 @@ import { describe, expect, it } from '@ohos/hypium'
 import { abilityDelegatorRegistry, Component, Driver, MatchPattern, ON } from '@kit.TestKit'
 import { KeyCode } from '@kit.InputKit'
 import { fileIo } from '@kit.CoreFileKit'
+import { window } from '@kit.ArkUI'
 import { ReaderTrialEntryProbe } from 'shared'
 
 const ENTRY_WORK: string = '678049'
@@ -221,9 +222,198 @@ function readerEntryFailureSuite(className: string, failurePage: number): void {
   })
 }
 
+const chromeCaptureNames: string[] = ['chrome-shown', 'chrome-hidden', 'chrome-reshown', 'chrome-closed', 'chrome-exception']
+
+function clearChromeCaptures(): void {
+  const cache = abilityDelegatorRegistry.getAbilityDelegator().getAppContext().cacheDir
+  for (const name of chromeCaptureNames) {
+    for (const extension of ['json', 'png']) {
+      const path = `${cache}/rkit-entry-${name}.${extension}`
+      if (fileIo.accessSync(path)) fileIo.unlinkSync(path)
+    }
+  }
+}
+
+function chromeSystemArea(area: window.AvoidArea): number {
+  return area.topRect.width * area.topRect.height + area.bottomRect.width * area.bottomRect.height +
+    area.leftRect.width * area.leftRect.height + area.rightRect.width * area.rightRect.height
+}
+
+async function waitChromeState(driver: Driver, mainWindow: window.Window, shown: boolean, epoch: number): Promise<void> {
+  const deadline = Date.now() + 10000
+  while (Date.now() < deadline) {
+    const close = await driver.findComponent(ON.id('rkit-close'))
+    const area = mainWindow.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM)
+    const probe = ReaderTrialEntryProbe.read()
+    expect(probe.epoch).assertEqual(epoch)
+    expect(probe.accepted && probe.handoff && !probe.discarded).assertTrue()
+    if ((close !== null) === shown && (chromeSystemArea(area) > 0) === shown) {
+      await abilityDelegatorRegistry.getAbilityDelegator().print(
+        `ReaderThumbnailChrome shown=${shown} area=${JSON.stringify(area)} probe=${JSON.stringify(probe)}`)
+      return
+    }
+    await driver.delayMs(200)
+  }
+  throw new Error(`NextN chrome/system-area did not become shown=${shown}`)
+}
+
+async function toggleChromeAtCurrentCenter(driver: Driver): Promise<void> {
+  const viewport = await driver.findComponent(ON.id('rkit-image-viewport'))
+  expect(viewport !== null).assertTrue()
+  const bounds = await viewport.getBounds()
+  expect(bounds.right > bounds.left && bounds.bottom > bounds.top).assertTrue()
+  await driver.click(Math.round((bounds.left + bounds.right) / 2), Math.round((bounds.top + bounds.bottom) / 2))
+}
+
+async function waitChromeClosed(driver: Driver, mainWindow: window.Window, sourceId: string): Promise<void> {
+  const deadline = Date.now() + 10000
+  while (Date.now() < deadline) {
+    if (await driver.findComponent(ON.id('rkit-trial-navigation')) === null &&
+      await driver.findComponent(ON.id(sourceId)) !== null &&
+      chromeSystemArea(mainWindow.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM)) > 0) {
+      await assertNoReader(driver)
+      return
+    }
+    await driver.delayMs(200)
+  }
+  throw new Error('NextN hidden Back did not restore Detail source and system area')
+}
+
+async function waitChromeEntrySpread(driver: Driver, baselineEpoch: number): Promise<number> {
+  const deadline = Date.now() + 20000
+  let epoch: number = 0
+  while (Date.now() < deadline) {
+    const probe = ReaderTrialEntryProbe.read()
+    if (probe.epoch > baselineEpoch && probe.accepted) {
+      if (epoch === 0) epoch = probe.epoch
+      expect(probe.epoch).assertEqual(epoch)
+      expect(probe.discarded).assertFalse()
+      const viewport = await driver.findComponent(ON.id('rkit-image-viewport'))
+      if (probe.handoff && viewport !== null &&
+        await driver.findComponent(ON.id('rkit-entry-preview-image')) === null &&
+        await driver.findComponent(ON.id('rkit-entry-source-pending')) === null) {
+        let ready = true
+        for (const page of [0, 1]) {
+          const id = `rkit-part-${page}-whole`
+          const part = await driver.findComponent(ON.id(id).within(ON.id('rkit-image-viewport')))
+          if (part === null) { ready = false; break }
+          const image = await driver.findComponent(ON.type('Image').within(ON.id(id)))
+          if (image === null || await driver.findComponent(ON.type('LoadingProgress').within(ON.id(id))) !== null ||
+            await driver.findComponent(ON.id(`rkit-failure-page-${page + 1}`).within(ON.id(id))) !== null) {
+            ready = false; break
+          }
+          const bounds = await image.getBounds()
+          if (bounds.right <= bounds.left || bounds.bottom <= bounds.top) { ready = false; break }
+        }
+        if (ready && await driver.findComponent(ON.type('LoadingProgress').within(ON.id('rkit-image-viewport'))) === null &&
+          await driver.findComponent(ON.id('^rkit-failure-page-[0-9]+$', MatchPattern.REG_EXP)
+            .within(ON.id('rkit-image-viewport'))) === null) {
+          await assertFirstSpreadAnchor(driver)
+          return epoch
+        }
+      }
+    }
+    await driver.delayMs(200)
+  }
+  throw new Error(`Chrome entry did not complete same-epoch P1/P2 handoff: ${JSON.stringify(ReaderTrialEntryProbe.read())}`)
+}
+
+function readerThumbnailChromeTrial(): void {
+  describe('ReaderThumbnailChromeTrial', (): void => {
+    it('shownHiddenReshownChromeRestoresStatusAreaOnHiddenBack', 0, async (): Promise<void> => {
+      clearChromeCaptures()
+      const driver = Driver.create()
+      let mainWindow: window.Window | null = null
+      let sourceId: string = ''
+      let baselineEpoch: number = 0
+      let entryClicked: boolean = false
+      let failed: boolean = false
+      try {
+        await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
+          bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+          parameters: { readerLabWork: ENTRY_WORK, readerLabPage: '0', readerLabChrome: 'true',
+            readerLabThumbnailEntry: 'true', readerLabEntryLayout: 'spread', readerLabEntryDirection: 'rtl',
+            // This existing opt-in is the only host path that publishes entry probe facts.
+            readerLabEntryProbe: 'delay-once' },
+        })
+        const source = await findFirstDetailThumbnail(driver)
+        sourceId = await source.getId()
+        const ability = await abilityDelegatorRegistry.getAbilityDelegator().getCurrentTopAbility()
+        mainWindow = await window.getLastWindow(ability.context)
+        const sourceArea = mainWindow.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM)
+        await abilityDelegatorRegistry.getAbilityDelegator().print(
+          `ReaderThumbnailChrome source_area=${JSON.stringify(sourceArea)}`)
+        expect(chromeSystemArea(sourceArea) > 0).assertTrue()
+        baselineEpoch = ReaderTrialEntryProbe.read().epoch
+        entryClicked = true
+        await source.click()
+        const epoch = await waitChromeEntrySpread(driver, baselineEpoch)
+        const first = await driver.findComponent(ON.id('rkit-part-0-whole').within(ON.id('rkit-image-viewport')))
+        const second = await driver.findComponent(ON.id('rkit-part-1-whole').within(ON.id('rkit-image-viewport')))
+        expect(first !== null && second !== null).assertTrue()
+        expect((await second.getBounds()).right <= (await first.getBounds()).left + 1).assertTrue()
+        expect(epoch > 0).assertTrue()
+        expect(ReaderTrialEntryProbe.read().delayedPreview).assertTrue()
+        await waitChromeState(driver, mainWindow, true, epoch)
+        await captureEntry(driver, 'chrome-shown')
+        await toggleChromeAtCurrentCenter(driver)
+        await waitChromeState(driver, mainWindow, false, epoch)
+        await captureEntry(driver, 'chrome-hidden')
+        await toggleChromeAtCurrentCenter(driver)
+        await waitChromeState(driver, mainWindow, true, epoch)
+        await captureEntry(driver, 'chrome-reshown')
+        await toggleChromeAtCurrentCenter(driver)
+        await waitChromeState(driver, mainWindow, false, epoch)
+        await driver.pressBack()
+        await waitChromeClosed(driver, mainWindow, sourceId)
+        await captureEntry(driver, 'chrome-closed')
+      } catch (error) {
+        failed = true
+        try { await captureEntry(driver, 'chrome-exception') } catch (_) {}
+        try {
+          const probe = ReaderTrialEntryProbe.read()
+          const pending = await driver.findComponent(ON.id('rkit-entry-source-pending'))
+          const trial = await driver.findComponent(ON.id('rkit-trial-navigation'))
+          if (trial !== null || pending !== null ||
+            (entryClicked && probe.epoch > baselineEpoch && probe.accepted && !probe.discarded)) {
+            // The established Back path retires the pending claim as well as a mounted reader.
+            await driver.triggerKey(KeyCode.KEYCODE_BACK)
+            const deadline = Date.now() + 10000
+            while (Date.now() < deadline) {
+              const after = ReaderTrialEntryProbe.read()
+              if (after.epoch > baselineEpoch && (after.discarded || after.handoff) &&
+                await driver.findComponent(ON.id('rkit-entry-source-pending')) === null &&
+                await driver.findComponent(ON.id('rkit-trial-navigation')) === null) break
+              await driver.delayMs(100)
+            }
+            const retired = ReaderTrialEntryProbe.read()
+            expect(retired.epoch > baselineEpoch && (retired.discarded || retired.handoff)).assertTrue()
+            expect(await driver.findComponent(ON.id('rkit-entry-source-pending'))).assertNull()
+            if (mainWindow !== null && sourceId.length > 0) await waitChromeClosed(driver, mainWindow, sourceId)
+          }
+        } catch (cleanupError) {
+          try { await abilityDelegatorRegistry.getAbilityDelegator().print(
+            `ReaderThumbnailChrome cleanup_failed=${String(cleanupError)}`) } catch (_) {}
+        }
+        throw error as Error
+      } finally {
+        try {
+          await abilityDelegatorRegistry.getAbilityDelegator().print(
+            `ReaderThumbnailChrome final_area=${JSON.stringify(mainWindow?.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM))}` +
+            ` probe=${JSON.stringify(ReaderTrialEntryProbe.read())}`)
+        } catch (error) { if (!failed) throw error as Error }
+      }
+    })
+  })
+}
+
 /** Explicit class selection: P1 entry cancellation or the authorized P1/P2 spread failure endpoints. */
 export default function readerThumbnailEntryTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
+  if (args['-s class'] === 'ReaderThumbnailChromeTrial') {
+    readerThumbnailChromeTrial()
+    return
+  }
   if (args['-s class'] === 'ReaderThumbnailEntrySourceFailureTrial') {
     readerEntryFailureSuite('ReaderThumbnailEntrySourceFailureTrial', 0)
     return

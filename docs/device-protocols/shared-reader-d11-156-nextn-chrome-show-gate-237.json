@@ -1,0 +1,240 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-156-nextn-chrome-show-gate",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/156-nextn-chrome-show-gate",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "N chrome-show gate main12s024, matched native rebuild",
+    "page": "NextN678049 actual thumbnail RTL spread chrome toggles and hidden Back",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Optional before-show waits for real system area and current layout before chrome commit. Same RTL sample and existing delay-once probe; no settings writes. Exit color remains known OPEN."
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    },
+    {
+      "name": "timeout",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "86400000"
+      ]
+    },
+    {
+      "name": "power-after-timeout",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "close-old-nextn",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "force-stop",
+        "com.erosteam.nextn"
+      ]
+    },
+    {
+      "name": "install-main-layout-gate",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"
+      ]
+    },
+    {
+      "name": "install-native-chrome",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"
+      ]
+    },
+    {
+      "name": "native-entry-test",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "test",
+        "-b",
+        "com.erosteam.nextn",
+        "-m",
+        "entry_test",
+        "-s",
+        "unittest",
+        "OpenHarmonyTestRunner",
+        "-s",
+        "class",
+        "ReaderThumbnailChromeTrial",
+        "-s",
+        "timeout",
+        "90000"
+      ],
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "restore-ordinary-browse",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "start",
+        "-b",
+        "com.erosteam.nextn",
+        "-a",
+        "EntryAbility"
+      ],
+      "pauseAfterMs": 1500
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "background-restored-ordinary-app",
+        "uiInput": [
+          "keyEvent",
+          "Home"
+        ],
+        "pauseAfterMs": 500
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "receive-chrome-shown-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-chrome-shown.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/156-nextn-chrome-show-gate/chrome-shown.png"
+      ]
+    },
+    {
+      "name": "receive-chrome-shown-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-chrome-shown.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/156-nextn-chrome-show-gate/chrome-shown.json"
+      ]
+    },
+    {
+      "name": "receive-chrome-hidden-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-chrome-hidden.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/156-nextn-chrome-show-gate/chrome-hidden.png"
+      ]
+    },
+    {
+      "name": "receive-chrome-hidden-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-chrome-hidden.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/156-nextn-chrome-show-gate/chrome-hidden.json"
+      ]
+    },
+    {
+      "name": "receive-chrome-reshown-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-chrome-reshown.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/156-nextn-chrome-show-gate/chrome-reshown.png"
+      ]
+    },
+    {
+      "name": "receive-chrome-reshown-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-chrome-reshown.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/156-nextn-chrome-show-gate/chrome-reshown.json"
+      ]
+    },
+    {
+      "name": "receive-chrome-closed-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-chrome-closed.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/156-nextn-chrome-show-gate/chrome-closed.png"
+      ]
+    },
+    {
+      "name": "receive-chrome-closed-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-chrome-closed.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/156-nextn-chrome-show-gate/chrome-closed.json"
+      ]
+    },
+    {
+      "name": "receive-chrome-exception-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-chrome-exception.png",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/156-nextn-chrome-show-gate/chrome-exception.png"
+      ]
+    },
+    {
+      "name": "receive-chrome-exception-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-entry-chrome-exception.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/156-nextn-chrome-show-gate/chrome-exception.json"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    }
+  ]
+}

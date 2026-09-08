@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-159-nexte-chrome-show-motion",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/159-nexte-chrome-show-motion",
+  "recordingFileName": "rkit_d11_nexte_chrome_show_20260908_159.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 600,
+  "idleRecordMs": 90000,
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "actions": [],
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "E chrome-show gate main13s252, matched native rebuild",
+    "page": "Non-H4175844 shared RTL spread chrome shown hidden reshown then hidden Back",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Optional before-show actual system area and live layout readiness; unchanged RTL Non-H4175844 sample. No settings changes; exit-color mismatch separately OPEN."
+  }
+}
