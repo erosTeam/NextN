@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-92-nexte-nonh-list",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/92-nexte-nonh-list",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "installed main9 discovery only; main11 not yet installed",
+    "page": "Select live Non-H tab at observed [496,285][704,346]; inspect resulting list",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "User directed Non-H sample discovery. Local layout evidence only; do not publish account data or ordinary adult browse images. No cache, login, defaults or progress edits."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      {
+        "name": "select-nonh",
+        "uiInput": [
+          "click",
+          "600",
+          "320"
+        ],
+        "pauseAfterMs": 2500
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/rkit-d11-92.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-d11-92.json",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/92-nexte-nonh-list/layout.json"
+      ]
+    }
+  ]
+}
