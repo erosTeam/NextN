@@ -124,6 +124,61 @@ export default function readerImageInformationTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
   const work = args['-s readerLabWork'], unit = args['-s readerLabUnit']
   const trial = args['-s class']
+  if (trial === 'ReaderCropToggleTrial' && typeof work === 'string' && work.length > 0) {
+    describe(trial, (): void => {
+      it('runtimeMenuCropOnOffRetainsPageAndRestoresGeometry', 0, async (): Promise<void> => {
+        clearInformationCaptures()
+        const driver = Driver.create(), delegator = abilityDelegatorRegistry.getAbilityDelegator()
+        const layout = args['-s readerLabCropLayout'] === 'continuous' ? 'continuous' :
+          args['-s readerLabCropLayout'] === 'spread' ? 'spread' : 'single'
+        const sourceIndex = layout === 'continuous' ? 5 : 2
+        await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+          parameters: { readerLabWork: work, readerLabUnit: typeof unit === 'string' ? unit : '',
+            readerLabPage: `${sourceIndex}`, readerLabChrome: 'true', readerLabCropBorders: 'false' } })
+        await informationReady(driver)
+        if (layout !== 'single') {
+          await (await driver.findComponent(ON.id('rkit-runtime-settings'))).click()
+          await driver.delayMs(300)
+          await (await driver.findComponent(ON.text(layout === 'spread' ? '双页' : '连续'))).click()
+          await driver.delayMs(600); await informationReady(driver)
+        }
+        const cropImage = ON.id(`rkit-cropped-image-${sourceIndex}-whole`)
+        expect(await informationPage(driver)).assertEqual(sourceIndex + 1)
+        expect(await driver.findComponent(cropImage) === null).assertTrue()
+        await captureInformation(driver, 'baseline')
+        const ability = await delegator.getCurrentTopAbility(), win = await window.getLastWindow(ability.context)
+        const utils = win.getUIContext().getComponentUtils()
+        const height = (): number => layout === 'continuous' ?
+          utils.getRectangleById(`rkit-continuous-page-${sourceIndex}`).size.height :
+          utils.getRectangleById(`rkit-part-${sourceIndex}-whole`).size.height
+        const before = height()
+        await (await driver.findComponent(ON.id('rkit-runtime-settings'))).click()
+        await driver.delayMs(300)
+        const toggle = await driver.findComponent(ON.id('rkit-crop-toggle'))
+        expect(toggle !== null).assertTrue()
+        await captureInformation(driver, 'choice')
+        await toggle.click()
+        for (let i = 0; i < 40 && await driver.findComponent(cropImage) === null; i++) await driver.delayMs(250)
+        expect(await driver.findComponent(cropImage) !== null).assertTrue()
+        expect(await informationPage(driver)).assertEqual(sourceIndex + 1)
+        await captureInformation(driver, 'changed')
+        await (await driver.findComponent(ON.id('rkit-runtime-settings'))).click()
+        await driver.delayMs(300)
+        await (await driver.findComponent(ON.id('rkit-crop-toggle'))).click()
+        for (let i = 0; i < 40 && await driver.findComponent(cropImage) !== null; i++) await driver.delayMs(250)
+        expect(await driver.findComponent(cropImage) === null).assertTrue()
+        await driver.delayMs(500)
+        expect(await informationPage(driver)).assertEqual(sourceIndex + 1)
+        const after = height()
+        await delegator.print(`ReaderCropToggle layout=${layout} page=${sourceIndex + 1} before=${before} after=${after}`)
+        expect(Math.abs(before - after) <= 1).assertTrue()
+        await captureInformation(driver, 'returned')
+        await (await driver.findComponent(ON.id('rkit-close'))).click()
+        await driver.delayMs(800); await captureInformation(driver, 'closed')
+      })
+    })
+    return
+  }
   if ((trial === 'ReaderCropTrial' || trial === 'ReaderCropSpreadTrial' || trial === 'ReaderCropContinuousTrial') &&
     typeof work === 'string' && work.length > 0) {
     describe(trial, (): void => {
