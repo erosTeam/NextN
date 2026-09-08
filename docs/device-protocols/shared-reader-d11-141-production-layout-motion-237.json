@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-141-production-layout-motion",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/141-production-layout-motion",
+  "recordingFileName": "rkit_d11_nexte_production_rotation_20260908_141.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 600,
+  "idleRecordMs": 90000,
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "actions": [],
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "E main15/native25 layout-space diagnostic; actual Slider chrome gate and authorized settings restore",
+    "page": "Actual production reader, same Non-H4175844 P1/P2 joined RTL spread, settled rotation comparison",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait_to_landscape_to_portrait",
+    "resolution": "1320x2120",
+    "notes": "User explicitly authorized temporary RTL/joined double-page test and restoration. Save/restore only mode,doublePageEnabled,spreadLayoutMode via existing writer; no default implementation/migration change. Build succeeded; runtime and motion not yet accepted.",
+    "stateSequence": [
+      {
+        "name": "source",
+        "foldState": "unknown",
+        "orientation": "portrait",
+        "widthPx": 1320,
+        "heightPx": 2120
+      },
+      {
+        "name": "rotated",
+        "foldState": "unknown",
+        "orientation": "landscape",
+        "widthPx": 2120,
+        "heightPx": 1320
+      },
+      {
+        "name": "restored",
+        "foldState": "unknown",
+        "orientation": "portrait",
+        "widthPx": 1320,
+        "heightPx": 2120
+      }
+    ]
+  }
+}
