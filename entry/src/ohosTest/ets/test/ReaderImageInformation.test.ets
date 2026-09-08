@@ -123,6 +123,53 @@ export default function readerImageInformationTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
   const work = args['-s readerLabWork'], unit = args['-s readerLabUnit']
   const trial = args['-s class']
+  if (trial === 'ReaderSpreadShiftTrial' && typeof work === 'string' && work.length > 0) {
+    describe(trial, (): void => {
+      it('rtlSpreadRePairsOnePageThenTurnsWithinTheNewPairing', 0, async (): Promise<void> => {
+        clearInformationCaptures()
+        const driver = Driver.create(), delegator = abilityDelegatorRegistry.getAbilityDelegator()
+        try {
+          await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+            parameters: { readerLabWork: work, readerLabUnit: typeof unit === 'string' ? unit : '',
+              readerLabPage: '1', readerLabChrome: 'true', readerLabVolumeKeys: 'true' } })
+          await informationReady(driver)
+          expect(await driver.findComponent(ON.id('rkit-shift-spread'))).assertNull()
+          await (await driver.findComponent(ON.id('rkit-runtime-settings'))).click()
+          await driver.delayMs(400)
+          await (await driver.findComponent(ON.text('右→左'))).click()
+          await driver.delayMs(400)
+          await (await driver.findComponent(ON.id('rkit-toggle-spread'))).click()
+          await informationReady(driver)
+          await captureInformation(driver, 'baseline')
+          await (await driver.findComponent(ON.id('rkit-shift-spread'))).click()
+          await driver.delayMs(500); await informationReady(driver)
+          expect(await informationPage(driver)).assertEqual(2)
+          await captureInformation(driver, 'changed')
+          await openInformationMenu(driver)
+          expect(await driver.findComponent(ON.id('rkit-info-source-1')) !== null).assertTrue()
+          expect(await driver.findComponent(ON.id('rkit-info-source-2')) !== null).assertTrue()
+          expect(await driver.findComponent(ON.id('rkit-info-source-0'))).assertNull()
+          await driver.triggerKey(KeyCode.KEYCODE_BACK); await driver.delayMs(600)
+          await driver.triggerKey(KeyCode.KEYCODE_VOLUME_DOWN)
+          await driver.delayMs(700); await informationReady(driver)
+          expect(await informationPage(driver)).assertEqual(4)
+          await captureInformation(driver, 'next')
+          await driver.triggerKey(KeyCode.KEYCODE_VOLUME_UP)
+          await driver.delayMs(700); await informationReady(driver)
+          expect(await informationPage(driver)).assertEqual(2)
+          await captureInformation(driver, 'returned')
+          await (await driver.findComponent(ON.id('rkit-close'))).click()
+          await driver.delayMs(700)
+          expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
+          await captureInformation(driver, 'closed')
+        } catch (error) {
+          await captureInformation(driver, 'exception')
+          throw error as Error
+        }
+      })
+    })
+    return
+  }
   if (trial === 'ReaderStandaloneStatusTrial' && typeof work === 'string' && work.length > 0) {
     describe(trial, (): void => {
       it('standaloneStatusRestoresPreReaderProperties', 0, async (): Promise<void> => {
