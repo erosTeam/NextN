@@ -124,7 +124,7 @@ export default function readerImageInformationTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
   const work = args['-s readerLabWork'], unit = args['-s readerLabUnit']
   const trial = args['-s class']
-  if (trial === 'ReaderCropToggleTrial' && typeof work === 'string' && work.length > 0) {
+  if ((trial === 'ReaderCropToggleTrial' || trial === 'ReaderCropZoomToggleTrial') && typeof work === 'string' && work.length > 0) {
     describe(trial, (): void => {
       it('runtimeMenuCropOnOffRetainsPageAndRestoresGeometry', 0, async (): Promise<void> => {
         clearInformationCaptures()
@@ -145,6 +145,18 @@ export default function readerImageInformationTest(): void {
         const cropImage = ON.id(`rkit-cropped-image-${sourceIndex}-whole`)
         expect(await informationPage(driver)).assertEqual(sourceIndex + 1)
         expect(await driver.findComponent(cropImage) === null).assertTrue()
+        const zoomTrial = trial === 'ReaderCropZoomToggleTrial'
+        const bodyImage = ON.type('Image').within(ON.id('rkit-image-viewport'))
+        const originalBounds = zoomTrial ? await (await driver.findComponent(bodyImage)).getBounds() : null
+        if (zoomTrial) {
+          const viewport = await (await driver.findComponent(ON.id('rkit-image-viewport'))).getBounds()
+          await driver.doubleClick(Math.round(viewport.left + (viewport.right - viewport.left) * 0.45),
+            Math.round(viewport.top + (viewport.bottom - viewport.top) * 0.45))
+          await driver.delayMs(500)
+        }
+        const zoomBounds = zoomTrial ? await (await driver.findComponent(bodyImage)).getBounds() : null
+        if (zoomBounds !== null && originalBounds !== null) expect(zoomBounds.right - zoomBounds.left > originalBounds.right - originalBounds.left ||
+          zoomBounds.bottom - zoomBounds.top > originalBounds.bottom - originalBounds.top).assertTrue()
         await captureInformation(driver, 'baseline')
         const ability = await delegator.getCurrentTopAbility(), win = await window.getLastWindow(ability.context)
         const utils = win.getUIContext().getComponentUtils()
@@ -173,6 +185,13 @@ export default function readerImageInformationTest(): void {
         await delegator.print(`ReaderCropToggle layout=${layout} page=${sourceIndex + 1} before=${before} after=${after}`)
         expect(Math.abs(before - after) <= 1).assertTrue()
         await captureInformation(driver, 'returned')
+        if (zoomBounds !== null) {
+          const restored = await (await driver.findComponent(bodyImage)).getBounds()
+          // UiTest clips image bounds to the viewport; whole screenshots remain required for content-position acceptance.
+          await delegator.print(`ReaderCropZoom before=${JSON.stringify(zoomBounds)} after=${JSON.stringify(restored)}`)
+          expect(Math.abs(restored.left - zoomBounds.left) <= 2 && Math.abs(restored.top - zoomBounds.top) <= 2 &&
+            Math.abs(restored.right - zoomBounds.right) <= 2 && Math.abs(restored.bottom - zoomBounds.bottom) <= 2).assertTrue()
+        }
         await (await driver.findComponent(ON.id('rkit-close'))).click()
         await driver.delayMs(800); await captureInformation(driver, 'closed')
       })
