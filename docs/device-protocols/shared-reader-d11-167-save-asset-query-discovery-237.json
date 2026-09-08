@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-167-save-asset-query-discovery",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/167-save-asset-query-discovery",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "Shared current-image save WIP over 8c038e8; NextN main save build2 and native save build2",
+    "page": "Bounded read-only MediaLibrary query command discovery",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "No app or gallery changes. Read query help and only title 678049-1 baseline; no broad album dump."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "media-query-help",
+      "hdcArgs": [
+        "shell",
+        "mediatool",
+        "query",
+        "-h"
+      ]
+    },
+    {
+      "name": "save-title-baseline",
+      "hdcArgs": [
+        "shell",
+        "mediatool",
+        "query",
+        "678049-1",
+        "-u"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-173-nexte-save-file-readback",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/173-nexte-save-file-readback",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "Shared current-image save WIP over 8c038e8; NextN main save build2 and native save build2",
+    "page": "Export exact new E P1/P2 assets882/881 from172",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Only172 new E assets, absent before save. Preserve album assets. Bounded exact N save title log diagnostic to determine170 duplicate names, no broad album query."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "export-1",
+      "hdcArgs": [
+        "shell",
+        "mediatool",
+        "recv",
+        "file://media/Photo/882/IMG_1788856411_708/4175844-1.webp",
+        "/data/local/tmp/rkit-save-173-1.webp"
+      ]
+    },
+    {
+      "name": "receive-1",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-save-173-1.webp",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/173-nexte-save-file-readback/4175844-1.webp"
+      ]
+    },
+    {
+      "name": "export-2",
+      "hdcArgs": [
+        "shell",
+        "mediatool",
+        "recv",
+        "file://media/Photo/881/IMG_1788856411_707/4175844-2.webp",
+        "/data/local/tmp/rkit-save-173-2.webp"
+      ]
+    },
+    {
+      "name": "receive-2",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-save-173-2.webp",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/173-nexte-save-file-readback/4175844-2.webp"
+      ]
+    },
+    {
+      "name": "bounded-n-save-title-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "678049-"
+      ],
+      "timeoutSeconds": 15
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-178-nextn-batch-exact-readback",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/178-nextn-batch-exact-readback",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "Shared current-image save WIP over 8c038e8; NextN main save build2 and native save build2",
+    "page": "Read exact176 returned N batch assets887/888",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "177 actual UIAbility cache diagnostic identifies these destinations. Read only both exact new assets, preserve album photos. No inferred neighboring IDs, title workaround or global permission."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "export-1",
+      "hdcArgs": [
+        "shell",
+        "mediatool",
+        "recv",
+        "file://media/Photo/888/IMG_1788857400_714/678049-1.webp",
+        "/data/local/tmp/rkit-save-178-1.webp"
+      ]
+    },
+    {
+      "name": "receive-1",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-save-178-1.webp",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/178-nextn-batch-exact-readback/678049-1.webp"
+      ]
+    },
+    {
+      "name": "export-2",
+      "hdcArgs": [
+        "shell",
+        "mediatool",
+        "recv",
+        "file://media/Photo/887/IMG_1788857400_713/678049-2.webp",
+        "/data/local/tmp/rkit-save-178-2.webp"
+      ]
+    },
+    {
+      "name": "receive-2",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-save-178-2.webp",
+        "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/178-nextn-batch-exact-readback/678049-2.webp"
+      ]
+    }
+  ]
+}

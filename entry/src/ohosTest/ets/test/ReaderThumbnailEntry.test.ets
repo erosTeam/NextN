@@ -407,9 +407,156 @@ function readerThumbnailChromeTrial(): void {
   })
 }
 
+function readerThumbnailSaveMenuTrial(positive: boolean = false, both: boolean = false): void {
+  describe(both ? 'ReaderThumbnailSaveBothTrial' : positive ? 'ReaderThumbnailSaveTrial' : 'ReaderThumbnailSaveMenuTrial', (): void => {
+    it(both ? 'visualBothSystemAllowRequiresTwoIndependentFileReadbacks' : positive ? 'visualRightP1SystemAllowRequiresExternalFileReadback' :
+      'visualLeftMenuAndSystemDialogDiscoveryCancelOnly', 0, async (): Promise<void> => {
+      const delegator = abilityDelegatorRegistry.getAbilityDelegator()
+      const cache = delegator.getAppContext().cacheDir
+      const positivePrefix: string = both ? 'save-both' : 'save-positive'
+      const names: string[] = positive ? [`${positivePrefix}-saved-reader`, `${positivePrefix}-closed`, `${positivePrefix}-exception`] :
+        ['save-menu', 'save-dialog', 'save-closed', 'save-exception']
+      for (const name of names) {
+        for (const extension of ['png', 'json']) {
+          const path = `${cache}/rkit-entry-${name}.${extension}`
+          if (fileIo.accessSync(path)) fileIo.unlinkSync(path)
+        }
+      }
+      const driver = Driver.create()
+      let mainWindow: window.Window | null = null
+      let sourceId: string = ''
+      let baselineEpoch: number = 0
+      let entryClicked: boolean = false
+      let dialogAttempted: boolean = false
+      try {
+        await delegator.print(positive ?
+          `ReaderThumbnailSave scope=${both ? 'P1-P2' : 'single-P1'}-system-allow album_file_readback_required=true` :
+          'ReaderThumbnailSaveMenu scope=menu+dialog-discovery/cancel positive_album_save_acceptance=false')
+        await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+          parameters: { readerLabWork: ENTRY_WORK, readerLabPage: '0', readerLabChrome: 'true',
+            readerLabThumbnailEntry: 'true', readerLabEntryLayout: 'spread', readerLabEntryDirection: 'rtl',
+            readerLabEntryProbe: 'delay-once' } })
+        const source = await findFirstDetailThumbnail(driver)
+        sourceId = await source.getId()
+        const ability = await delegator.getCurrentTopAbility()
+        mainWindow = await window.getLastWindow(ability.context)
+        baselineEpoch = ReaderTrialEntryProbe.read().epoch
+        entryClicked = true
+        await source.click()
+        const epoch = await waitChromeEntrySpread(driver, baselineEpoch)
+        await waitChromeState(driver, mainWindow, true, epoch)
+        const first = await driver.findComponent(ON.id('rkit-part-0-whole').within(ON.id('rkit-image-viewport')))
+        const second = await driver.findComponent(ON.id('rkit-part-1-whole').within(ON.id('rkit-image-viewport')))
+        expect(first !== null && second !== null).assertTrue()
+        expect((await second.getBounds()).right <= (await first.getBounds()).left + 1).assertTrue()
+        const save = await driver.findComponent(ON.id('rkit-save-image'))
+        expect(save !== null).assertTrue()
+        await save.click()
+        let left: Component | null = null
+        const menuDeadline = Date.now() + 5000
+        while (Date.now() < menuDeadline && left === null) {
+          left = await driver.findComponent(ON.id('rkit-save-left'))
+          if (left === null) await driver.delayMs(100)
+        }
+        const right = await driver.findComponent(ON.id('rkit-save-right'))
+        expect(left !== null && right !== null).assertTrue()
+        if (left === null || right === null) throw new Error('Save menu did not appear before deadline')
+        expect(await left.getText()).assertEqual('左侧 · 第 2 页')
+        expect(await right.getText()).assertEqual('右侧 · 第 1 页')
+        if (!positive) await captureEntry(driver, 'save-menu')
+        dialogAttempted = true
+        if (positive) {
+          if (both) {
+            const saveBoth = await driver.findComponent(ON.id('rkit-save-both'))
+            if (saveBoth === null) throw new Error('Save both menu did not appear')
+            await saveBoth.click()
+          } else await right.click()
+          const dialogTitle: string = both ? '允许“NextN”保存 2 张图片？' : '允许“NextN”保存 1 张图片？'
+          let allow: Component | null = null
+          const dialogDeadline = Date.now() + 15000
+          while (Date.now() < dialogDeadline) {
+            allow = await driver.findComponent(ON.id('advanced_dialog_button_1').text('允许'))
+            const title = await driver.findComponent(ON.text(dialogTitle))
+            if (allow !== null && title !== null) break
+            allow = null
+            await driver.delayMs(100)
+          }
+          if (allow === null) throw new Error(`Expected ${both ? 'two' : 'single'}-image save permission dialog did not appear`)
+          await allow.click()
+          const dismissedDeadline = Date.now() + 15000
+          let dismissed: boolean = false
+          while (Date.now() < dismissedDeadline) {
+            if (await driver.findComponent(ON.id('advanced_dialog_button_1').text('允许')) === null &&
+              await driver.findComponent(ON.text(dialogTitle)) === null) {
+              dismissed = true
+              break
+            }
+            await driver.delayMs(100)
+          }
+          expect(dismissed).assertTrue()
+        } else {
+          await left.click()
+          // Discovery only: no unknown system action is selected and no save success is inferred.
+          await driver.delayMs(1500)
+          await captureEntry(driver, 'save-dialog')
+          await delegator.print('ReaderThumbnailSaveMenu discovery_capture=save-dialog system_layout_requires_review saved=false')
+          await driver.pressBack()
+        }
+        dialogAttempted = false
+        await waitChromeEntrySpread(driver, baselineEpoch)
+        if (positive) {
+          const saveSettledDeadline = Date.now() + 15000
+          let saveSettled: boolean = false
+          while (Date.now() < saveSettledDeadline) {
+            const saveAction = await driver.findComponent(ON.id('rkit-save-image'))
+            if (saveAction !== null && await saveAction.isEnabled()) {
+              saveSettled = true
+              break
+            }
+            await driver.delayMs(100)
+          }
+          if (!saveSettled) throw new Error('Save action did not become enabled after system dialog dismissal')
+          await captureEntry(driver, `${positivePrefix}-saved-reader`)
+          await delegator.print(`ReaderThumbnailSave system_allow_completed=true source_pages=${both ? '1,2' : '1'} album_file_verified=false external_readback_required=true`)
+        }
+        await driver.pressBack()
+        await waitChromeClosed(driver, mainWindow, sourceId)
+        await captureEntry(driver, positive ? `${positivePrefix}-closed` : 'save-closed')
+      } catch (error) {
+        try { await captureEntry(driver, positive ? `${positivePrefix}-exception` : 'save-exception') } catch (_) {}
+        try {
+          if (dialogAttempted) { await driver.pressBack(); dialogAttempted = false }
+          const probe = ReaderTrialEntryProbe.read()
+          if (entryClicked && (await driver.findComponent(ON.id('rkit-trial-navigation')) !== null ||
+            await driver.findComponent(ON.id('rkit-entry-source-pending')) !== null ||
+            probe.epoch > baselineEpoch && probe.accepted && !probe.discarded && !probe.handoff)) {
+            await driver.triggerKey(KeyCode.KEYCODE_BACK)
+            if (mainWindow !== null && sourceId.length > 0) await waitChromeClosed(driver, mainWindow, sourceId)
+          }
+        } catch (cleanupError) {
+          try { await delegator.print(`ReaderThumbnailSaveMenu cleanup_failed=${String(cleanupError)}`) } catch (_) {}
+        }
+        throw error as Error
+      }
+    })
+  })
+}
+
 /** Explicit class selection: P1 entry cancellation or the authorized P1/P2 spread failure endpoints. */
 export default function readerThumbnailEntryTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
+  if (args['-s class'] === 'ReaderThumbnailSaveBothTrial') {
+    readerThumbnailSaveMenuTrial(true, true)
+    return
+  }
+  if (args['-s class'] === 'ReaderThumbnailSaveTrial') {
+    readerThumbnailSaveMenuTrial(true)
+    return
+  }
+  if (args['-s class'] === 'ReaderThumbnailSaveMenuTrial') {
+    readerThumbnailSaveMenuTrial()
+    return
+  }
   if (args['-s class'] === 'ReaderThumbnailChromeTrial') {
     readerThumbnailChromeTrial()
     return

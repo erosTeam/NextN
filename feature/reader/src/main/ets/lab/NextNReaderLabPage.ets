@@ -10,6 +10,9 @@ import { connectReaderPresentation, connectLayoutSafeArea, LayoutSafeAreaState, 
   ReaderTrialOriginalProbe, ReaderTrialOriginalFacts } from 'shared'
 import { NextNReaderOriginalProbeProvider } from './NextNReaderOriginalProbeProvider'
 import { NextNReaderOriginalProbeCatalog } from './NextNReaderOriginalProbeCatalog'
+import { ReaderSystemImageSaveHost } from '@reader-kit/ui'
+import { ReaderImageSaveHost } from '@reader-kit/core'
+import { NextNReaderImageSaveDownload } from './NextNReaderImageSaveDownload'
 
 @ComponentV2
 export struct NextNReaderLabPage {
@@ -24,6 +27,7 @@ export struct NextNReaderLabPage {
   @Event onStatusBarVisible: (visible: boolean) => void = () => {}
   @Local private session: ReaderPagedSession | null = null
   private imageShare: ReaderImageShareHost | null = null
+  private imageSave: ReaderImageSaveHost | null = null
   @Local private labVisibility: ReaderLabVisibilityState = connectReaderLabVisibility()
   @Local private routeActive: boolean = false
   @Local private safeArea: LayoutSafeAreaState = connectLayoutSafeArea()
@@ -42,6 +46,8 @@ export struct NextNReaderLabPage {
     if (this.request.readingChrome && this.managesTrialWindow) this.trialWindow.open(context)
     const adapter = new NextNReaderLabAdapter(context)
     this.imageShare = new ReaderLabShareProbe(adapter, this.request.shareProbe)
+    this.imageSave = new ReaderSystemImageSaveHost(context,
+      (uri: string, path: string): Promise<void> => NextNReaderImageSaveDownload.download(uri, path))
     this.unitKey = new ReaderUnitKey('nh', this.request.work, this.request.work)
     this.originalProbeEpoch = this.request.thumbnailEntry ?
       ReaderTrialOriginalProbe.consume(this.request.work, this.request.pageIndex) : 0
@@ -143,7 +149,7 @@ export struct NextNReaderLabPage {
         if (this.session !== null) {
           if (this.request.readingChrome) {
             ReaderSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
-              input: this.input, imageShare: this.imageShare,
+              input: this.input, imageShare: this.imageShare, imageSave: this.imageSave,
               entryTransition: this.entryTransition, entryPreview: this.entryPreview,
               active: this.routeActive && this.labVisibility.foreground,
               closing: this.closeRequested || this.hostClosing,

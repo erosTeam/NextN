@@ -816,3 +816,4 @@ export {
 export { SyncSettings, SyncSettingsSnapshot, WebDavConfigPersistScheduler } from './settings/SyncSettings'
 export { AccountListState, connectAccountList } from './state/AccountListState'
 export { AccountListSettings } from './settings/AccountListSettings'
+export { StreamingHttpClient } from './network/StreamingHttpClient'

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-d11-171-media-command-help",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hvigor/outputs/device-237__VDE-AL00/unknown/portrait-1320x2120/shared-reader-d11-entry/171-media-command-help",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "Shared current-image save WIP over 8c038e8; NextN main save build2 and native save build2",
+    "page": "MediaTool command help only after batch title collision",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "170 system allowed two; exact preexisting title queries unchanged, not evidence of saved batch. Discover bounded query/readback without album-wide dump."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "media-help",
+      "hdcArgs": [
+        "shell",
+        "mediatool",
+        "-h"
+      ]
+    }
+  ]
+}
