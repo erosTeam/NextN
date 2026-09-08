@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-information-menu-discovery",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/device-237__VDE-AL00/unknown/portrait-1320x2120/20260909-shared-information/02-menu-discovery",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "Root confirmed build-information exit0",
+    "page": "Existing optional readingChrome prechange baseline",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Root delegated237 existing lease. Reuse D12 genuine normally imported10-page source; no persistence/settings/default-reader modifications."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      {
+        "name": "discovered-rkit-more",
+        "uiInput": [
+          "click",
+          "1230",
+          "201"
+        ],
+        "pauseAfterMs": 500
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "shown-window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "shown-layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/koma-info-menu.json"
+      ]
+    },
+    {
+      "name": "shown-screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/koma-info-menu.png"
+      ]
+    },
+    {
+      "name": "shown-recv-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/koma-info-menu.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/device-237__VDE-AL00/unknown/portrait-1320x2120/20260909-shared-information/02-menu-discovery/shown.json"
+      ]
+    },
+    {
+      "name": "shown-recv-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/koma-info-menu.png",
+        "/Users/honjow/git/Koma/.hermes-artifacts/device-237__VDE-AL00/unknown/portrait-1320x2120/20260909-shared-information/02-menu-discovery/shown.png"
+      ]
+    }
+  ]
+}

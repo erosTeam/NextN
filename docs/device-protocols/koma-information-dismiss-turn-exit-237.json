@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-information-dismiss-turn-exit",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/device-237__VDE-AL00/unknown/portrait-1320x2120/20260909-shared-information/04-dismiss-turn-exit",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "Root confirmed build-information exit0",
+    "page": "Existing optional readingChrome prechange baseline",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Continuous one-time Back dismiss, accepted D12P4 edge page-turn, Back exit; only terminal shelf capture. Page-turn command injection alone not independent P5 acceptance."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      {
+        "name": "dismiss-information",
+        "uiInput": [
+          "keyEvent",
+          "Back"
+        ],
+        "pauseAfterMs": 400
+      },
+      {
+        "name": "accepted-edge-next",
+        "uiInput": [
+          "click",
+          "1100",
+          "1080"
+        ],
+        "pauseAfterMs": 700
+      },
+      {
+        "name": "exit-optional",
+        "uiInput": [
+          "keyEvent",
+          "Back"
+        ],
+        "pauseAfterMs": 600
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "shown-window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "shown-layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/koma-info-closed.json"
+      ]
+    },
+    {
+      "name": "shown-screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/koma-info-closed.png"
+      ]
+    },
+    {
+      "name": "shown-recv-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/koma-info-closed.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/device-237__VDE-AL00/unknown/portrait-1320x2120/20260909-shared-information/04-dismiss-turn-exit/shown.json"
+      ]
+    },
+    {
+      "name": "shown-recv-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/koma-info-closed.png",
+        "/Users/honjow/git/Koma/.hermes-artifacts/device-237__VDE-AL00/unknown/portrait-1320x2120/20260909-shared-information/04-dismiss-turn-exit/shown.png"
+      ]
+    }
+  ]
+}

@@ -1,5 +1,13 @@
 # NextN UI change ledger
 
+## 2026-09-09 Koma optional file information — OPEN
+
+- Rationale: the Koma local asset adapter omitted the existing information capability, unlike the N/E retained-file adapters; Koma production also exposes image facts. Reuse shared RuntimeMenu source selection and information dialog without altering its parent, ordering, geometry or actions.
+- Change: capability absent to supported only for existing local body assets; lazy stat/header reads provide bytes/MIME/full dimensions, quality remains unknown. No settings, chapter or progress writes. No new shared component or API.
+- Evidence plan: same existing local P4/10 on237, information dialog, dismiss, page movement, close to unchanged shelf; compare values to the exact source file if an independent fact source is available. Failure/stale/dual-page branches are not accepted by the ordinary path.
+- Sequence correction: this rationale was written after the adapter edit, not before; build and review do not substitute for device acceptance. Next action is pending237 protocol, with197 untouched.
+- Limited result:237 P4 dialog shows JPEG/510.0KB/720x6040/current unknown, matching independently inspected522218byte imported original; root reviewed whole dialog and final unread shelf. Ordinary local information/dismiss/exit only; intermediate page turn was not observed, spread/downloaded/error/stale branches remain OPEN. Evidence20260909-shared-information/03-information and04-dismiss-turn-exit.
+
 ## 2026-09-08 optional body crop — OPEN / pre-edit
 
 - Runtime crop control next / pre-edit: geometry endpoints are saved in N e0980a5. Add on/off intention to existing shared RuntimeMenu, with explicit N/E standalone host capability and session-owned runtime state. Keep Koma and thumbnail-entry control absent, preserve menu/chrome parent geometry, no persisted setting or migration. Validate same open page off/on/off and continuous row restoration; initial debug flag remains supported.
