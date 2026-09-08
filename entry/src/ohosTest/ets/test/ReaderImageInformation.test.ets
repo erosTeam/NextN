@@ -2,6 +2,7 @@ import { describe, expect, it } from '@ohos/hypium'
 import { abilityDelegatorRegistry, Driver, ON } from '@kit.TestKit'
 import { KeyCode } from '@kit.InputKit'
 import { fileIo } from '@kit.CoreFileKit'
+import { window } from '@kit.ArkUI'
 
 const captureNames: string[] = ['baseline', 'single', 'single-return', 'spread', 'choice', 'left', 'right', 'returned', 'next', 'closed', 'exception',
   'recovery-baseline', 'failed', 'pending', 'changed', 'late', 'recovery-info', 'recovery-returned', 'recovery-closed']
@@ -122,6 +123,35 @@ export default function readerImageInformationTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
   const work = args['-s readerLabWork'], unit = args['-s readerLabUnit']
   const trial = args['-s class']
+  if (trial === 'ReaderStandaloneStatusTrial' && typeof work === 'string' && work.length > 0) {
+    describe(trial, (): void => {
+      it('standaloneStatusRestoresPreReaderProperties', 0, async (): Promise<void> => {
+        clearInformationCaptures()
+        const driver = Driver.create(), delegator = abilityDelegatorRegistry.getAbilityDelegator()
+        await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility' })
+        await driver.delayMs(1000)
+        const ability = await delegator.getCurrentTopAbility()
+        const mainWindow = await window.getLastWindow(ability.context)
+        const before = mainWindow.getWindowSystemBarProperties()
+        await delegator.print(`ReaderStandaloneStatus before=${JSON.stringify(before)}`)
+        await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+          parameters: { readerLabWork: work, readerLabUnit: typeof unit === 'string' ? unit : '',
+            readerLabPage: '1', readerLabChrome: 'true' } })
+        await informationReady(driver)
+        await delegator.print(`ReaderStandaloneStatus shown=${JSON.stringify(mainWindow.getWindowSystemBarProperties())}`)
+        await captureInformation(driver, 'baseline')
+        await (await driver.findComponent(ON.id('rkit-close'))).click()
+        await driver.delayMs(700)
+        expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
+        const after = mainWindow.getWindowSystemBarProperties()
+        await delegator.print(`ReaderStandaloneStatus closed=${JSON.stringify(after)}`)
+        expect(after.statusBarContentColor).assertEqual(before.statusBarContentColor)
+        expect(after.isStatusBarLightIcon).assertEqual(before.isStatusBarLightIcon)
+        await captureInformation(driver, 'closed')
+      })
+    })
+    return
+  }
   if (typeof work === 'string' && work.length > 0 &&
     (trial === 'ReaderInformationFailureTrial' || trial === 'ReaderInformationPageCancelTrial' ||
       trial === 'ReaderInformationCloseCancelTrial' || trial === 'ReaderInformationBackgroundTrial')) {

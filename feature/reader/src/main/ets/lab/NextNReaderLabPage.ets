@@ -24,6 +24,7 @@ export struct NextNReaderLabPage {
   @Param hostClosing: boolean = false
   @Param prepareChrome: ((isCurrent: () => boolean) => Promise<boolean>) | null = null
   @Event onClose: () => void = () => {}
+  @Event onShown: () => void = () => {}
   @Event onStatusBarVisible: (visible: boolean) => void = () => {}
   @Local private session: ReaderPagedSession | null = null
   private imageShare: ReaderImageShareHost | null = null
@@ -178,7 +179,7 @@ export struct NextNReaderLabPage {
       this.closeTrial()
       return true
     })
-    .onShown((): void => { this.routeActive = true })
+    .onShown((): void => { this.routeActive = true; this.onShown() })
     .onHidden((): void => { this.routeActive = false })
   }
 }

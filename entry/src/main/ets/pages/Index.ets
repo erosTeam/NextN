@@ -543,6 +543,7 @@ struct Index {
   private readerTrialWindow: ReaderTrialWindow | null = null
   private readerTrialWindowEpoch: number = -1
   private readerTrialWindowOpened: boolean = false
+  private readerTrialDestinationShown: boolean = false
   private readerTrialClosing: Promise<void> | null = null
   @Local private readerTrialCloseRequested: boolean = false
   private readerTrialLaunchEpoch: number = 0
@@ -623,6 +624,7 @@ struct Index {
     if (lease === null || this.readerTrialWindowOpened || this.readerTrialWindowEpoch !== this.readerTrialEpoch ||
       this.readerTrialRequest === null || !this.readerTrialRequest.readingChrome ||
       !this.readerEntryVisibility.foreground || this.readerEntryTransition?.phase === 'layout') return
+    if (!this.readerTrialRequest.thumbnailEntry && !this.readerTrialDestinationShown) return
     const context = this.context()
     if (!context.applicationInfo.debug) return
     this.readerTrialWindowOpened = true
@@ -643,6 +645,7 @@ struct Index {
     this.readerTrialWindow = new ReaderTrialWindow(null, true)
     this.readerTrialWindowEpoch = this.readerTrialEpoch
     this.readerTrialWindowOpened = false
+    this.readerTrialDestinationShown = false
     this.syncReaderTrialWindow()
   }
 
@@ -793,6 +796,11 @@ struct Index {
       // The destination owns its launch request through teardown; the host clears its active pointer first.
       NextNReaderLabPage({ request: _param as ReaderLabRequest,
         managesTrialWindow: false,
+        onShown: (): void => {
+          if (this.readerTrialRequest !== _param) return
+          this.readerTrialDestinationShown = true
+          this.syncReaderTrialWindow()
+        },
         hostClosing: this.readerTrialCloseRequested,
         prepareChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareReaderTrialChrome(isCurrent),
         onStatusBarVisible: (visible: boolean): void => { this.readerTrialWindow?.setStatusBarVisible(visible) },
