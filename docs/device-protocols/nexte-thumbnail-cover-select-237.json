@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "name": "nexte-thumbnail-cover-select-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260909-shared-thumbnail-cover/nexte/device237__VDE-AL00/unknown/portrait-1320x2120/04-selected",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "NextE signed 2026-09-09 17:55:16 62591403 bytes",
+    "page": "Select current fully visible P4 sprite tile; verify P4 body",
+    "deviceAlias": "device237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "03 rail current rkit-thumbnail-3 [873,1256][1124,1676]"
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      {
+        "name": "select-P4",
+        "uiInput": [
+          "click",
+          "998",
+          "1450"
+        ],
+        "pauseAfterMs": 1000
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/nexte_coverselected237.json"
+      ]
+    },
+    {
+      "name": "recv-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/nexte_coverselected237.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260909-shared-thumbnail-cover/nexte/device237__VDE-AL00/unknown/portrait-1320x2120/04-selected/layout.json"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/nexte_coverselected237.png"
+      ]
+    },
+    {
+      "name": "recv-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/nexte_coverselected237.png",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260909-shared-thumbnail-cover/nexte/device237__VDE-AL00/unknown/portrait-1320x2120/04-selected/screen.png"
+      ]
+    },
+    {
+      "name": "sprite-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "sprite_pixels"
+      ]
+    }
+  ]
+}

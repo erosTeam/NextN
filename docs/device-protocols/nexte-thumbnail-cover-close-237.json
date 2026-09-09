@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "name": "nexte-thumbnail-cover-close-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260909-shared-thumbnail-cover/nexte/device237__VDE-AL00/unknown/portrait-1320x2120/05-closed",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "NextE signed 2026-09-09 17:55:16 62591403 bytes",
+    "page": "Hide rail then close optional reader to ordinary NextE",
+    "deviceAlias": "device237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Current04 toggle[444,1856][576,1988], close[24,135][156,267]; no settings/progress writes"
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      {
+        "name": "hide-rail",
+        "uiInput": [
+          "click",
+          "510",
+          "1922"
+        ],
+        "pauseAfterMs": 300
+      },
+      {
+        "name": "close-optional",
+        "uiInput": [
+          "click",
+          "90",
+          "201"
+        ],
+        "pauseAfterMs": 700
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/nexte_coverclosed237.json"
+      ]
+    },
+    {
+      "name": "recv-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/nexte_coverclosed237.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260909-shared-thumbnail-cover/nexte/device237__VDE-AL00/unknown/portrait-1320x2120/05-closed/layout.json"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/nexte_coverclosed237.png"
+      ]
+    },
+    {
+      "name": "recv-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/nexte_coverclosed237.png",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260909-shared-thumbnail-cover/nexte/device237__VDE-AL00/unknown/portrait-1320x2120/05-closed/screen.png"
+      ]
+    }
+  ]
+}

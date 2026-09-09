@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "name": "nexte-thumbnail-cover-install-open-237",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260909-shared-thumbnail-cover/nexte/device237__VDE-AL00/unknown/portrait-1320x2120/02-open",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "NextE signed 2026-09-09 17:55:16 62591403 bytes",
+    "page": "Current safe shelf observed; wake timeout then data-preserving candidate and optional Non-H chrome",
+    "deviceAlias": "device237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120"
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    },
+    {
+      "name": "timeout",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "86400000"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "install",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextE/entry/build/default/outputs/default/entry-default-signed.hap"
+      ],
+      "timeoutSeconds": 90
+    },
+    {
+      "name": "open",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "start",
+        "-b",
+        "com.erosteam.nexte",
+        "-a",
+        "EntryAbility",
+        "--ps",
+        "readerLabWork",
+        "4175844",
+        "--ps",
+        "readerLabUnit",
+        "37d7c39ec2",
+        "--ps",
+        "readerLabChrome",
+        "true"
+      ],
+      "pauseAfterMs": 1800
+    }
+  ],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/nexte_coveropen237.json"
+      ]
+    },
+    {
+      "name": "recv-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/nexte_coveropen237.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260909-shared-thumbnail-cover/nexte/device237__VDE-AL00/unknown/portrait-1320x2120/02-open/layout.json"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/nexte_coveropen237.png"
+      ]
+    },
+    {
+      "name": "recv-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/nexte_coveropen237.png",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260909-shared-thumbnail-cover/nexte/device237__VDE-AL00/unknown/portrait-1320x2120/02-open/screen.png"
+      ]
+    }
+  ]
+}

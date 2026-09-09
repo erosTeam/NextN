@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-thumbnail-crop-first-restore",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "Installed fixed candidate18:01:50/14426115",
+    "page": "Restore original10000 after candidate bounded acceptance",
+    "deviceAlias": "device-197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "No new app/navigation. Final shelf accepted09; restore and power/window readback."
+  },
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260909-shared-thumbnail-cover/crop-first/device197__ALN-AL80/not-applicable/portrait-1260x2720/09-restore-timeout",
+  "preflight": [
+    {
+      "name": "restore-original-timeout",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "10000"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    }
+  ]
+}
