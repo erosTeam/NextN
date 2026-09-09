@@ -593,7 +593,11 @@ export class TagTranslationRepository {
   }
 
   private static normalizedRawName(name: string): string {
-    return name.trim().toLowerCase()
+    // Like NextE's canonicalTagText: display aliases are "raw | alias",
+    // while the translation dictionary is keyed by the raw first segment.
+    const raw: string = name.trim().toLowerCase()
+    const pipe: number = raw.indexOf('|')
+    return pipe >= 0 ? raw.substring(0, pipe).trim() : raw
   }
 
   private static fallbackNamespaces(namespace: string): string[] {
