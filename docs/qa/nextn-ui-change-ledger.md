@@ -1,5 +1,13 @@
 # NextN UI change ledger
 
+## 2026-09-09 Koma optional derived thumbnails — OPEN / pre-edit
+
+- User direction: continue optional shared reader toward eventual replacement, retain existing readers and distinct host thumbnail semantics. This slice makes Koma's currently unavailable local thumbnails usable; no NH preview or EH sprite changes.
+- Whole parent: existing shared ReaderChrome bottom row -> ReaderThumbnailRail horizontal List -> ReaderThumbnailRailTile -> ReaderPagedImage. Keep all chrome ordering, row height118, rail height140, gaps, selection/seek and gestures unchanged. Host supplies only real thumbnail files; production Koma ReaderThumbnailTile full-image max-edge192/no-upscale/Contain is the resource reference.
+- Implementation boundary: Koma local/downloaded file adapter and a host-owned temporary derived-file provider, with request cancellation and exact asset-release cleanup. Actual thumbnail dimensions are separate from body dimensions; no full body URI pretending to be a thumbnail, no crop/sprite inference. Prior keepawake/information diffs remain separately identifiable and unchanged.
+- Baseline and verification: fresh237 same existing local P4/10 rail before edits; candidate whole rail with decoded-image evidence and aspect comparison, select another thumbnail and prove source-page change, exit to original shelf. Pending baseline capture; no device or visual pass yet. No default/settings/progress migration,197 untouched, no Koma commit.
+- LIMITED result: baselineROOT247 and candidateROOT250 both[0,117][1320,2120]. Root/QA inspected actual P4 rail, P5 selected with5/10+different正文 and P1 wide source;10 thumbnails displayed, no crop/stretch introduced. Read-only evidence identifies10 private derivative directories alive and none afterclose. Encoded PNG dimensions remain unverified due permission denial; actual image/selection/exit only, not failure/cancel/downloaded coverage. Current original-page chrome geometry unchanged by source diff, no whole-reader parity claim.
+
 ## 2026-09-09 Koma optional file information — OPEN
 
 - Rationale: the Koma local asset adapter omitted the existing information capability, unlike the N/E retained-file adapters; Koma production also exposes image facts. Reuse shared RuntimeMenu source selection and information dialog without altering its parent, ordering, geometry or actions.
