@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-thumbnail-lifecycle-open-immediate-exit",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260909-shared-thumbnails/lifecycle/device-237__VDE-AL00/unknown/portrait-1320x2120/03-open-immediate-exit",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "Koma shared-thumbnails build-2 root confirmed exit0",
+    "page": "Optional reader P4 thumbnail baseline discovery",
+    "deviceAlias": "device-237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "unknown",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "Root delegated237 existing lease. Reuse D12 genuine normally imported10-page source; no persistence/settings/default-reader modifications."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      {
+        "name": "hide-current-rail",
+        "uiInput": [
+          "click",
+          "114",
+          "1922"
+        ],
+        "pauseAfterMs": 0
+      },
+      {
+        "name": "reopen-rail-before-exit",
+        "uiInput": [
+          "click",
+          "114",
+          "1922"
+        ],
+        "pauseAfterMs": 0
+      },
+      {
+        "name": "immediate-exit",
+        "uiInput": [
+          "keyEvent",
+          "Back"
+        ],
+        "pauseAfterMs": 1000
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "closed-window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "closed-layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/koma-thumb-life-exit-closed.json"
+      ]
+    },
+    {
+      "name": "closed-screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/koma-thumb-life-exit-closed.png"
+      ]
+    },
+    {
+      "name": "closed-recv-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/koma-thumb-life-exit-closed.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260909-shared-thumbnails/lifecycle/device-237__VDE-AL00/unknown/portrait-1320x2120/03-open-immediate-exit/closed.json"
+      ]
+    },
+    {
+      "name": "closed-recv-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/koma-thumb-life-exit-closed.png",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260909-shared-thumbnails/lifecycle/device-237__VDE-AL00/unknown/portrait-1320x2120/03-open-immediate-exit/closed.png"
+      ]
+    },
+    {
+      "name": "own-derived-directories-after-close",
+      "hdcArgs": [
+        "shell",
+        "find",
+        "/data/app/el2/100/base/com.honjow.koma/haps/entry/cache",
+        "-maxdepth",
+        "1",
+        "-name",
+        "rkit-thumbnail-*"
+      ]
+    }
+  ]
+}
