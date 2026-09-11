@@ -53,3 +53,68 @@ in this initial-entry scenario; cold restart; device initialization-read failure
 other settings; E/K initial mode wiring; whole-reader parity/replacement. Next:
 NextE canonical initialization-result publication then optional non-thumbnail mapping.
 Best-effort bootstrap completion or skipped gallery merge must not imply restoration.
+
+## NextE candidate — runtime OPEN
+
+Canonical holders now expose latest restore result separately from historical success.
+ReadMode publishes applied only after its existing assignments. Gallery revision
+skip is superseded; swallowed legacy migration failure plus an empty load is failed,
+even though the existing production replacement behavior remains unchanged.
+No new restore or persistence owner was added to the Lab. Only non-thumbnail full
+entry consumes applied canonical values, resolves the gallery-owned parity and sets
+policy before publishing; unavailable state closes via the existing owner.
+
+Root and independent reviewer inspected actual restore/migration,32 policy mappings,
+entry branch, close and one-shot Context probe tests; runtime-method script passes.
+V1 inventory0 and existing read-progress RDB contract pass (source evidence only).
+Final main68967 build11.953s signed06:10:17/62653010; native66761 build19.171s
+signed06:17:10/67417001. Native exact-storage fixture reviewed, not yet device accepted.
+
+197 next run requires actual entry Context, durable AND live disabled/idle sync,
+empty legacy progress and applied canonical state before fixture changes. It drains
+existing progress writes before baseline, saves three Preferences including types
+and existence, and one global/gallery full nullable row. It avoids the debounced
+column setter and restores original timestamps/tombstone. Every canonical mode
+restore also returns the pre-test global column immediately, including baseline
+failure; the Lab consumes gallery parity, not that global field. Complete six-case
+first entry/gesture replay and exact final readback remain OPEN. E source is uncommitted
+under its repository boundary; N source/method checkpoints are6d0f27e/c77a766.
+
+### 197 initial-policy fixture gate rejected, not a reader failure
+
+02-native paired main68967/native66761 runs1 native test, failure1/pass0,4.881s.
+Root read the native stack and PID4053 logs: actual Context `/entry` established;
+durable/live WebDAV and Huawei Cloud both enabled, WebDAV busy. It stops at the
+first sync gate before flush, baseline capture or any fixture setting/row write.
+No six-case entry/gesture acceptance; received stale case/exception files excluded.
+03-exit raw power/window and original desktop reviewed: focus10/root1260x2720,
+AWAKE/OverrideTimeout10000ms; lease20260911-221837-75f037b2 released. No sync toggle.
+
+Next safe alternative is a separate read-only current-policy native path: inspect
+actual canonical values without restore/flush/setter/SQL mutation, observe first
+entry and a real swipe, then close. Actual external sync changes invalidate a
+comparison rather than being overwritten. Full temporary-write six-case matrix
+remains OPEN; read-only success must not stand in for it.
+
+### NextE current RTL single entry — limited device acceptance
+
+05-readonly paired main68967/native63459 (native signed06:25:17/67437906) reports
+1 pass,0 failures/errors,24.981s. Root read the raw native report and PID8892 logs:
+actual `/entry` Context, canonical rtl/double=false/joined/oddLeft, initial policy
+single/horizontal/rtl. Source2/P3 opens and a real rightward swipe selects source3/P4.
+The canonical policy and complete target gallery entry signatures are unchanged
+before, after and after closing; fixtureWrites=0. No restore, flush, setter, SQL
+mutation or sync toggle is in this read-only path.
+
+Root reviewed all three named whole original PNGs and current JSON roots:
+com.erosteam.nexte, original1260x2720, visible[0,124][1260,2720]. Initial and after
+show different complete page bodies with P3/46 then P4/46; exit returns the gallery.
+06-exit is a later launcher state, not the gallery capture: root reviewed raw power,
+window and original desktop; focus10,1260x2720,OverrideTimeout10000. Lease
+20260911-222630-5d16c112 released. Evidence is in the NextE artifact tree's05/06.
+
+Freeze only this current saved RTL single non-thumbnail entry/swipe/close path.
+JOINED is a stored value here, not double-page geometry acceptance. Full six-case
+matrix stays OPEN behind its disabled-sync fixture precondition; no repeat of this
+read-only path is needed without a relevant change. Koma initial policy is next;
+default replacement, thumbnail inheritance, restart and failure paths remain OPEN.

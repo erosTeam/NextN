@@ -490,6 +490,9 @@ D1 必须提前纳入 Koma，而不是把 Koma 留到 D5 才检查。D3 的试�
 
 ### 2026-09-12 初始模式承接前置审计
 
+- 197后续状态：NextE02完整fixture被真实同步开启/忙碌门控拒绝，零fixture写；03恢复原10000/桌面/释放已根审。当前下一物理动作改为只读现有canonical模式首屏与手势，不关闭同步，不把该路径替代六组合。详见initial-policy验收文档。
+- Koma并行只读审计已进入后续队列（主控实施前须复核当前源码）：global ReaderPreferencesStore.load/loadForComic提供mode/direction/spread；配对由ReaderSessionStore.restoreColumnMode提供。生产settingsReady在catch也置真，不证明成功；Lab目前默认session立即发布，load旁路只服务音量/常亮。建议等待本次load成功→首章配对→policy→publish，并消费nullable覆盖。生产syncSession不重新读取每章配对，因此初始切片跨章应保留运行期policy，不擅自引入逐章恢复语义。103后续验证初始模式/混合比例/章节配对/显式覆盖/运行期改模式后跨章及无写回；本次仅源审，没有Koma新修改或设备操作。
+
 NextE当前切片 grounding：参考是当前生产ReaderPage的ReadModeState与逐gallery进度配对；主信息仍是原图和源页索引；主次阅读动作不变；仅独立可选全工具栏入口继承，默认/thumbnail/diagnostic不变；沿现有V2 holder和session.setPolicy→publish，无新增UI或持久化所有者。真实路径为已有保存模式→独立Lab首屏和实际翻页→原宿主退出；反例为恢复失败、revision跳过、明确覆盖与早关闭。canonical结果四文件已构建，仅源码前置证据；模式接线及197设备验证仍OPEN。
 
 - 当前进展：NextN非缩略图入口六组真实entry配置继承已有限验收，原始截图11张/恢复出口已根审，完整共享方法280/280。详情见 docs/qa/shared-reader-initial-policy-20260912.md；下列“正在验收/先关闭失败”为历史过程，不是当前阻塞。下一动作是NextE canonical恢复结果可观察性：read mode发布完成才applied；gallery revision跳过整份replaceAll必须是superseded而非成功，保留既有生产保护；不重复restore。首次失败不提升默认值，旧成功知识与最近恢复结果区分。其后才接非缩略图policy。
@@ -660,3 +663,4 @@ D1 当前为技术候选，完整迁移仍 OPEN：两个 HAR、三个独立 adap
 - Koma：[ReaderPage.ets](/Users/honjow/git/Koma/entry/src/main/ets/pages/ReaderPage.ets:110)：`imageFit`、`ReaderThumbnailTile`、`canNext`、`nextPage`、`persistProgress`、显式章节动作；[ReaderChrome.ets](/Users/honjow/git/Koma/entry/src/main/ets/components/ReaderChrome.ets)。
 - Koma：[ReaderSessionStore.ets](/Users/honjow/git/Koma/entry/src/main/ets/model/ReaderSessionStore.ets:100)、[ReaderDisplayPageDataSource.ets](/Users/honjow/git/Koma/entry/src/main/ets/model/ReaderDisplayPageDataSource.ets:12)、[ReaderPageSourceAdapter.ets](/Users/honjow/git/Koma/entry/src/main/ets/model/ReaderPageSourceAdapter.ets)、[ReaderPreferencesStore.ets](/Users/honjow/git/Koma/entry/src/main/ets/model/ReaderPreferencesStore.ets:541)、[Index.ets](/Users/honjow/git/Koma/entry/src/main/ets/pages/Index.ets:467)。
 - 当前拒绝方案边界：[rejected-approaches.md](../../controls/rejected-approaches.md)，尤其 Reader 退出几何、系统栏时序和不透明错误底色条目。
+- Initial-policy latest checkpoint (2026-09-12): NextE05 read-only actual-entry RTL single P3→rightward swipe P4→close accepted for this named path, root raw/three originals/current roots reviewed;06 launcher/10000 restored and lease released. No fixture writes or sync toggle. Full six-case matrix remains OPEN, not covered by this result. Next active implementation is Koma load-success→initial chapter parity→policy→session publication; preserve runtime policy across chapter switches, optional entry and read-only boundaries. Detailed evidence: docs/qa/shared-reader-initial-policy-20260912.md.
