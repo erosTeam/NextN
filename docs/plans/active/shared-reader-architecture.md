@@ -467,7 +467,7 @@ D1 必须提前纳入 Koma，而不是把 Koma 留到 D5 才检查。D3 的试�
 - **兼容与回退**：当前实验会话不得写原设置/进度；后续持久化接入必须另列读取旧值、保存、冷启动恢复和退回旧阅读器兼容证据。三方能力清单及适用高风险路径未关闭、存在已知功能缺失/退化时，不放行默认替换。
 - **变更回归范围**：每个切片先声明受影响宿主和行为，公共库修改触发三个消费者构建与受影响实测；已冻结且未改变的表面不反复截图。变更触及其边界则重开相应验收，不继承旧包通过。评审与设备执行独立复核，结论附主控实际审阅的截图/关键帧。
 
-当前下一动作：103文件夹冷启动命名路径及三宿主音量偏好衔接已有限验收；继续NextN初始模式的只读衔接，保留画廊级单双页配对和明确调试覆盖，不能把未支持的纵向分页静默降级。默认替换及设置/进度写回仍不启动。章节准备失败、实际在途取消、完整旧进度衔接和三宿主剩余矩阵仍OPEN；新增文件夹activation await仅有方法级取消证据。当前任务按小时续跑，调度不等于验收完成。
+当前下一动作：103文件夹冷启动命名路径、三宿主音量偏好、纵向分页及SPLIT命名路径已有限验收。SPLIT检查点shared3dba868含实际图片边界修复，278项真实方法回归；N197双向及完整路径、E197完整路径、Koma103混合比例对应路径的证据与缺口见docs/qa/shared-reader-split-layout-20260912.md。接下来实施NextN初始模式只读衔接：首次open前解析全局模式与画廊配对，区分明确调试覆盖，读取失败/关闭后迟到不得发布空白会话或默认降级。默认替换及设置/进度写回仍不启动。E双向端点、Koma真实双指、裁边/失败/转场组合、章节准备失败、实际在途取消和完整旧进度衔接仍OPEN。按小时续跑，调度不等于验收完成。
 
 最终 UI 结论附已经实际看过的截图/关键帧，标明设备、页面、候选版本和未覆盖项。构建、安装、源码相似和截图存在均不单独称为通过。库变更至少触发三个消费者的编译及受影响行为测试；高风险 UI/生命周期变更追加三方对应实机场景。
 
@@ -493,6 +493,7 @@ D1 必须提前纳入 Koma，而不是把 Koma 留到 D5 才检查。D3 的试�
 - 当前共享policy仅single/spread/continuous、ltr/rtl及firstPageAlone/splitWidePages；既没有纵向分页轴，也没有JOINED/SPLIT双页几何。splitWidePages是宽原图裁成两片，**不是**SPLIT等宽双页布局。两项须补能力后才能承接对应旧偏好，不得忽略保存值或静默降级。
 - Index缩略图入口只捕获源图和sourceIndex，没有第二份配对policy；真实目标由Page/session/frame发布。因此必须在首次session open/转场target发布前解析初始policy，不能先按默认打开再await后setPolicy。后者递增navigationRevision，会使已有目标转场取消。
 - 调试entryLayout/entryDirection当前压平缺省和显式single/ltr；承接前需区分nullable覆盖并保持未接入宿主的旧解析语义。先补独立纵向分页表达与原生手势轴，再补SPLIT几何；其后接NextN只读初始设置及配对。所有新能力仍只在实验入口验证，常规入口与写回不动。
+- 二次只读审查确认：NextNReaderLabPage当前fire-and-forget restore后立即发布session；应在canonical restore及画廊columnMode读取成功、关闭状态复核之后，先setPolicy再发布session。现restorePresentation吞异常，不能await它便当作成功；build在session=null且readingChrome时是空Column，没有可复用的初始化失败提示。实施时必须验证失败返回原宿主/既有关闭恢复路径，尤其尚未揭示的缩略图转场，不能遗留空白页。Index已有closeReaderTrial负责claim/guard/window恢复，不能新增第二套窗口恢复所有者。此段仅审计，尚未实施。
 - 纵向分页已在shared a346d24固化：51实际方法测试；N/E197及Koma103命名实机路径和缺口见`docs/qa/shared-reader-vertical-paging-20260912.md`。这只关闭限定路径，Koma真实双指缩放等仍OPEN。下一源动作是SPLIT双页等宽槽/独立contain及实际图像pan边界，JOINED默认、末尾单页适配和既有源页配对不变；随后再承接只读初始偏好。
 
 当前不需要用户为包名、接口命名或两层拆分逐项决策，采用本文建议继续细化即可。不会把尚未发生的技术试接写成成功结果。
