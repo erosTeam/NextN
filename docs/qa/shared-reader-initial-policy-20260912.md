@@ -178,3 +178,72 @@ errors, not reader failures;10 onward `hilog -x -e` and15 pager logs succeeded.
 Project templates are corrected separately, raw run snapshots are not rewritten.
 Next normal-UI temporary saved-mode cases on103, with exact typed preference
 restoration; no raw Preferences injection or chapter-parity/progress fixture writes.
+
+### Koma103 saved-mode matrix — limited acceptance
+
+Same signed18969, no new build/install. Normal Settings→Reading saves each mode
+before a fresh optional entry at source2; no runtime menu precedes entry. Root
+reviewed twelve whole original screens and current Koma1600x2560 roots, visible
+[0,105][1600,2560]:22/23,26/27,30/31,34/35,36/37,39/40.
+
+| Saved mode | Actual entry/action |
+| --- | --- |
+| vertical_page/LTR/joined/odd_left |22 source2 blueP3→23 pure-Y upward swipe source3 redP4 |
+| continuous_scroll/webtoon/joined |26 actual source2 blue row y0..2311→27 same row y-1000..1311 and next red row top2311→1311 after upswipe; label3/5 is not scroll evidence |
+| double_page/LTR/joined/odd_left |30 source2 left/source3 right P3→31 left swipe source4 singletonP5 |
+| double_page/RTL/split/odd_left |34 source3 left/source2 right P3→35 right swipe source4 singletonP5 |
+| saved double/RTL/split; explicit single/ltr |36 source2 aloneP3→37 left swipe source3P4; saved mode remains unchanged |
+
+Continuous direction was normalized to webtoon by the normal host settings owner,
+not by a fixture. SPLIT part bounds are slots, not actual Image bounds; these cases
+accept policy, source identity and gesture direction only, not additional geometry.
+Existing odd parity is covered; even chapter records were not created or changed.
+
+38 restores normal-UI single/LTR/joined. Root independently parsed17 original versus
+38/39/40: all22 keys, types, presence and values identical; XML ordering differs,
+and no raw file overwrite was performed.39 no-override entry is source2 singleP3;
+40 exits to normal Reading settings, not shelf. Root inspected its original/current
+root and raw readbacks: MUSIC9,portrait,normal600000/override10000; library SHA256
+6da5ebf8ae3828e443a472db8192eadd794c3999270929fc0f91f74a60f85a5c and sessions
+f0fdbd8fb6f7e315c450b57562380208553eee3c338d87a14adc63f42e1c9cce equal17.
+Lease20260911-225959-b4af213e released.18 approval502 and25 approval deadline were
+retried without a first execution; neither is a product failure. Raw evidence stays
+in Koma qa103; matrix-result.md is supplementary to the root-reviewed endpoints.
+
+Freeze only these controlled named paths. Real sources, cold continuous entry,
+storage failure, even chapter parity, thumbnail transition, other settings and
+production writeback remain OPEN. Default replacement remains prohibited.
+
+### Next bounded slice: thumbnail initial policy — source audit only
+
+After the Koma saved-mode matrix and restoration close, address N/E thumbnail
+entry inheritance. Both Lab hosts currently exclude thumbnailEntry from canonical
+initialization. Simply removing that exclusion is unsafe: ReaderSurface does not
+pass entryTransition to its continuous branch, while both Index hosts hide the
+trial during phase=layout. No continuous target means no beginMove and a hidden
+reader. Root inspected both source-claim/snapshot owners and shared transition,
+preview, continuous image and paged target code; independent audit agrees.
+
+Preserve host ownership of clicked source identity, capture claim and window
+restoration. Policy remains host-resolved before first session publication. Reuse
+the actual ReaderPagedImage leaf, separating entry measurement eligibility from
+paged visibility reporting; continuous progress remains owned by List. Position
+completion must bind a captured epoch and current row/selection/topology/navigation/
+slot/load/asset identity, never stamp a late measurement with a newer epoch.
+
+Continuous entry needs separate full Image window bounds and actual viewport clip.
+The row's minimum height or getItemRect is not Image geometry. Preview scale and
+translation use the full Image rect, not its visible intersection; clip only limits
+drawing. Keep paged full-containment checks unchanged and no new per-row clip that
+would break zoom across neighboring rows. Unknown geometry waits for real layout;
+failure, retirement, scroll or rotation must cancel without leaving a hidden layer.
+Keep N unknown coverage, E verified-sprite whole-page coverage, existing280/140ms
+timing and same-frame unknown-preview retirement unchanged.
+
+Before acceptance, execute actual methods for pending/late-position identity,
+Image-versus-row geometry, decode refinement, long-image clip and cancellation;
+these are not visual proof. N and E each need their own current-view recordings:
+nonfirst vertical-paged source, continuous short/long image, saved RTL spread with
+independent overrides, load failure and rotation/cancel/return. Preserve real source
+page, image aspect and final settings/progress. This is an implementation/verification
+plan, not implemented or accepted behavior; default replacement remains prohibited.
