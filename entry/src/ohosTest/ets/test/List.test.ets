@@ -11,6 +11,7 @@ import readerLabGesturesTest from './ReaderLabGestures.test'
 import readerChromeTest from './ReaderChrome.test'
 import readerPagingAxisTest from './ReaderPagingAxis.test'
 import readerSpreadLayoutTest from './ReaderSpreadLayout.test'
+import readerInitialPolicyTest from './ReaderInitialPolicy.test'
 import readerThumbnailRailTest from './ReaderThumbnailRail.test'
 import readerSliderLifecycleTest from './ReaderSliderLifecycle.test'
 import readerThumbnailRetryTest from './ReaderThumbnailRetry.test'
@@ -34,6 +35,7 @@ export default function testsuite(): void {
   readerChromeTest()
   readerPagingAxisTest()
   readerSpreadLayoutTest()
+  readerInitialPolicyTest()
   readerThumbnailRailTest()
   readerSliderLifecycleTest()
   readerThumbnailRetryTest()

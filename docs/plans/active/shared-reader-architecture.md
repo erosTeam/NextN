@@ -462,6 +462,7 @@ D1 必须提前纳入 Koma，而不是把 Koma 留到 D5 才检查。D3 的试�
 
 - **功能清单不是方法清单**：按三个宿主分别追踪入口、数据生产者、状态所有者、输入竞争、渲染与退出恢复；第10节各风险和每项现有菜单/设置都记录“现有行为、共享承接者、宿主差异、证据、未验证动作”。不适用必须说明产品原因，不得用隐藏入口消除缺口。
 - **逐项证据等级**：源码实现、真实方法测试、匹配版本构建、指定设备路径验收分别记录；缺样本、注入能力不足、未执行的分支全部OPEN。测试图仅证明受控样本，不代表真实来源或生产视觉对齐。
+- **原生测试存储前置条件**：测试fixture与实际宿主必须记录并比对模块数据库/偏好目录，写入前确认正式entry上下文；同进程与AppStorage值相同不证明持久层相同。2026-09-12初始配对测试曾写entry_test库而宿主读entry库，保留失败并修fixture，不修改产品配对迁就测试。既有行为证据不自动升级为真实旧存储继承；正式替代前相关持久化路径仍须独立关闭。
 - **交互组合**：197与103覆盖横竖屏；单页/双页/连续、LTR/RTL、普通/长/宽图覆盖其适用行为。缩放必须实际拖动并检查最终内容位移，物理双指 pinch 单独取证，双击不能替代；连续模式检查图片与列表滚动归属；点击、滑块、菜单、重试不得被阅读手势吞掉。旋转检查页/片段/缩放锚点，不只看无裁切。
 - **异常和生命周期**：慢载、超时、失败重试、快速反向、关闭和前后台恢复；跨章准备失败保留旧章节，迟到结果不覆盖新会话；资源释放不能取消独立下载。正文资产失败不算目录准备失败，快速退出不算证明真实在途取消。
 - **兼容与回退**：当前实验会话不得写原设置/进度；后续持久化接入必须另列读取旧值、保存、冷启动恢复和退回旧阅读器兼容证据。三方能力清单及适用高风险路径未关闭、存在已知功能缺失/退化时，不放行默认替换。
@@ -489,6 +490,11 @@ D1 必须提前纳入 Koma，而不是把 Koma 留到 D5 才检查。D3 的试�
 
 ### 2026-09-12 初始模式承接前置审计
 
+- 当前进展：NextN非缩略图入口六组真实entry配置继承已有限验收，原始截图11张/恢复出口已根审，完整共享方法280/280。详情见 docs/qa/shared-reader-initial-policy-20260912.md；下列“正在验收/先关闭失败”为历史过程，不是当前阻塞。下一动作是NextE canonical恢复结果可观察性：read mode发布完成才applied；gallery revision跳过整份replaceAll必须是superseded而非成功，保留既有生产保护；不重复restore。首次失败不提升默认值，旧成功知识与最近恢复结果区分。其后才接非缩略图policy。
+
+- 后续分配（源审结果必须进入队列）：先关闭NextN非缩略图入口197配对读链失败，再做NextE canonical初始化结果可观察性。E枚举为ltr/rtl/topToBottom/vertical、画廊oddLeft/evenLeft；ReadModeSettings与GalleryReadProgressSettings都会吞异常，bootstrap best-effort/finally不能证明成功，Lab不可重复全量restore或拿默认odd冒充读取完成。Koma继续保持现有边界。
+- 缩略图初始继承为独立必补项：本次保留整个thumbnail入口旧policy。continuous目前缺少entry target，使Index的layout隐藏门控可能无法结束。后续沿Surface→ContinuousSurface→List/Cell→ZoomImage，在初始seek/post-frame与真实leaf尺寸应用后测量window-space原图矩形；复用source/slot/request/asset/revision身份，补完整原图rect与viewport裁剪契约，不把可见交集或NH部分缩略图当作整图对应。独立检查隐藏overlay几何、非零页seek、慢载/失败、迟到回调、reflow与关闭；不改变fullyVisible进度门控，不临时cancel或降级single掩盖缺口。该项未完成前不启用thumbnail保存模式继承。
+- 实施进展（以下审计描述的是实施前基线）：纵向分页与SPLIT前置能力已分别有限验收；shared a1e1270 增加nullable布局/方向覆盖且保留旧字段，三消费者构建兼容。NextN宿主已实现canonical restore→gallery column→policy→session发布；所有读取只读，诊断surface不变，失败沿现有close owner退出。真实方法测试含32映射组合、独立覆盖、两次await迟到取消及独立window退出；44入口/probe回归通过。首屏六组合197设备验收正在进行，不是完整旧设置继承；NextE/Koma初始mode接线尚未实施。
 - NextN全局mode/doublePageEnabled/spreadLayoutMode来自ReaderPresentationService.restore；画廊columnMode来自ReaderSettingsRepository.columnMode，不能用一个全局封面开关代替。PAGED/PAGED_RTL才启用双页，VERTICAL是连续，PAGED_VERTICAL是原生竖向Swiper。EVEN_LEFT对应首图独页；source index不得变成display index写回。
 - 当前共享policy仅single/spread/continuous、ltr/rtl及firstPageAlone/splitWidePages；既没有纵向分页轴，也没有JOINED/SPLIT双页几何。splitWidePages是宽原图裁成两片，**不是**SPLIT等宽双页布局。两项须补能力后才能承接对应旧偏好，不得忽略保存值或静默降级。
 - Index缩略图入口只捕获源图和sourceIndex，没有第二份配对policy；真实目标由Page/session/frame发布。因此必须在首次session open/转场target发布前解析初始policy，不能先按默认打开再await后setPolicy。后者递增navigationRevision，会使已有目标转场取消。

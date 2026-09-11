@@ -13,6 +13,9 @@ import { NextNReaderOriginalProbeCatalog } from './NextNReaderOriginalProbeCatal
 import { ReaderSystemImageSaveHost } from '@reader-kit/ui'
 import { ReaderImageSaveHost } from '@reader-kit/core'
 import { NextNReaderImageSaveDownload } from './NextNReaderImageSaveDownload'
+import { ReaderSettingsRepository } from 'shared'
+import { NextNReaderInitialPolicy } from './NextNReaderInitialPolicy'
+import { connectNextNReaderLabContextProbe } from './NextNReaderLabContextProbe'
 
 @ComponentV2
 export struct NextNReaderLabPage {
@@ -48,8 +51,9 @@ export struct NextNReaderLabPage {
   aboutToAppear(): void {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext
     if (!context.applicationInfo.debug) return
+    connectNextNReaderLabContextProbe().deliver(this.request.work, context)
     this.volumeDisposed = false
-    void this.restorePresentation(context)
+    if (!this.request.readingChrome || this.request.thumbnailEntry) void this.restorePresentation(context)
     this.keepScreenOn = new ReaderKeepScreenOn(context)
     if (this.request.readingChrome && this.managesTrialWindow) this.trialWindow.open(context)
     const adapter = new NextNReaderLabAdapter(context)
@@ -66,13 +70,39 @@ export struct NextNReaderLabPage {
     }
     const catalog = this.originalProbeEpoch !== 0 && ReaderTrialOriginalProbe.read().unknownMetrics ?
       new NextNReaderOriginalProbeCatalog(adapter, this.request.work, this.request.pageIndex) : adapter
-    this.session = new ReaderPagedSession(catalog, new ReaderLabAssetProbe(this.originalProbe ?? adapter, this.request.thumbnailFailurePage,
+    const session = new ReaderPagedSession(catalog, new ReaderLabAssetProbe(this.originalProbe ?? adapter, this.request.thumbnailFailurePage,
       this.request.informationProbe, this.request.thumbnailEntry ? this.request.failurePage : -1))
-    if (this.request.thumbnailEntry) {
-      const policy = new ReaderDisplayPolicy()
-      policy.layout = this.request.entryLayout === 'spread' ? 'spread' : 'single'
-      policy.direction = this.request.entryDirection === 'rtl' ? 'rtl' : 'ltr'
-      this.session.setPolicy(policy)
+    if (this.request.readingChrome && !this.request.thumbnailEntry) void this.initializeSession(context, session)
+    else {
+      // Preserve the existing thumbnail-entry policy until continuous entry has a real geometry target.
+      if (this.request.thumbnailEntry) {
+        const policy = new ReaderDisplayPolicy()
+        policy.layout = this.request.entryLayout === 'spread' ? 'spread' : 'single'
+        policy.direction = this.request.entryDirection === 'rtl' ? 'rtl' : 'ltr'
+        session.setPolicy(policy)
+      }
+      this.session = session
+    }
+  }
+
+  private async initializeSession(context: common.UIAbilityContext, session: ReaderPagedSession): Promise<void> {
+    try {
+      await ReaderPresentationService.restore(context)
+      if (this.volumeDisposed || this.closeRequested || this.hostClosing) return
+      const galleryId = Number(this.request.work)
+      const column = await ReaderSettingsRepository.columnMode(context,
+        Number.isSafeInteger(galleryId) && galleryId > 0 ? galleryId : 0)
+      if (this.volumeDisposed || this.closeRequested || this.hostClosing) return
+      const policy = NextNReaderInitialPolicy.resolve(ReaderPresentationService.snapshot(), column, this.request)
+      session.setPolicy(policy)
+      console.info(`[NextNReaderLab] initial_policy gallery=${galleryId} database=${context.databaseDir} column=${column} cover=${policy.firstPageAlone} layout=${policy.layout} axis=${policy.pagingAxis} direction=${policy.direction} spread=${policy.spreadLayout}`)
+      this.presentationReady = true
+      // ReaderSurface opens on mount: never publish a default session and change it after first open.
+      this.session = session
+      this.syncReaderActivity()
+    } catch (_error) {
+      console.warn('[NextNReaderLab] initial_reader_policy_unavailable')
+      if (!this.volumeDisposed && !this.closeRequested && !this.hostClosing) this.closeTrial(true)
     }
   }
 
@@ -104,7 +134,7 @@ export struct NextNReaderLabPage {
       this.safeArea.topAvoidHeight > 0 ? `${this.safeArea.topAvoidHeight}:${this.safeArea.bottomAvoidHeight}` : '', current)
   }
 
-  private closeTrial(): void {
+  private closeTrial(initializationFailed: boolean = false): void {
     if (this.closeRequested) return
     this.closeRequested = true
     if (this.managesTrialWindow) this.trialWindow.close(async (): Promise<boolean> => {
@@ -117,7 +147,7 @@ export struct NextNReaderLabPage {
       }
       return true
     }).then((): void => {
-      if (this.routeActive) this.onClose()
+      if (this.routeActive || (initializationFailed && !this.volumeDisposed)) this.onClose()
     })
     else this.onClose()
   }

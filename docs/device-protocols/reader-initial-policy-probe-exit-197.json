@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "name": "reader-initial-policy-probe-exit-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main3167 05:44:43/46990159 native44524 05:48:00/43385163",
+    "page": "N678049 source2 six saved-mode initial handoff cases; only4 temporary local keys exact restored",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720"
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/18-probe-exit",
+  "preflight": [],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/volume197-end.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/volume197-end.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/18-probe-exit/layout.json"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "snapshot_display",
+        "-f",
+        "/data/local/tmp/volume197-end.jpeg"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/volume197-end.jpeg",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/18-probe-exit/screen.jpeg"
+      ]
+    },
+    {
+      "name": "restore-timeout",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "10000"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,296 @@
+{
+  "schemaVersion": 1,
+  "name": "reader-initial-policy-probe-full-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main3167 05:44:43/46990159 native44524 05:48:00/43385163",
+    "page": "N678049 source2 six saved-mode initial handoff cases; only4 temporary local keys exact restored",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720"
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full",
+  "preflight": [
+    {
+      "name": "install-main",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "name": "install-native",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "name": "native-initial-policy-once",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "test",
+        "-b",
+        "com.erosteam.nextn",
+        "-m",
+        "entry_test",
+        "-s",
+        "unittest",
+        "OpenHarmonyTestRunner",
+        "-s",
+        "class",
+        "ReaderInitialPolicyTrial",
+        "-s",
+        "readerLabWork",
+        "678049",
+        "-s",
+        "timeout",
+        "360000"
+      ],
+      "timeoutSeconds": 390
+    }
+  ],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "initial-policy-log",
+      "hdcArgs": [
+        "shell",
+        "hilog -x | grep -E 'ReaderInitialPolicyTest|NextNReaderLab|ReaderPager|ReaderViewport' | tail -300"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "receive-exception-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-initial-exception.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/exception.json"
+      ]
+    },
+    {
+      "name": "receive-exception-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-initial-exception.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/exception.png"
+      ]
+    },
+    {
+      "name": "receive-case-0-initial-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-initial-case-0-initial.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-0-initial.json"
+      ]
+    },
+    {
+      "name": "receive-case-0-initial-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-initial-case-0-initial.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-0-initial.png"
+      ]
+    },
+    {
+      "name": "receive-case-0-after-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-initial-case-0-after.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-0-after.json"
+      ]
+    },
+    {
+      "name": "receive-case-0-after-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-initial-case-0-after.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-0-after.png"
+      ]
+    },
+    {
+      "name": "receive-case-1-initial-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-initial-case-1-initial.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-1-initial.json"
+      ]
+    },
+    {
+      "name": "receive-case-1-initial-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-initial-case-1-initial.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-1-initial.png"
+      ]
+    },
+    {
+      "name": "receive-case-1-after-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-initial-case-1-after.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-1-after.json"
+      ]
+    },
+    {
+      "name": "receive-case-1-after-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-initial-case-1-after.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-1-after.png"
+      ]
+    },
+    {
+      "name": "receive-case-2-initial-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-initial-case-2-initial.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-2-initial.json"
+      ]
+    },
+    {
+      "name": "receive-case-2-initial-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-initial-case-2-initial.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-2-initial.png"
+      ]
+    },
+    {
+      "name": "receive-case-3-initial-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-initial-case-3-initial.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-3-initial.json"
+      ]
+    },
+    {
+      "name": "receive-case-3-initial-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-initial-case-3-initial.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-3-initial.png"
+      ]
+    },
+    {
+      "name": "receive-case-3-after-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-initial-case-3-after.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-3-after.json"
+      ]
+    },
+    {
+      "name": "receive-case-3-after-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-initial-case-3-after.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-3-after.png"
+      ]
+    },
+    {
+      "name": "receive-case-4-initial-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-initial-case-4-initial.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-4-initial.json"
+      ]
+    },
+    {
+      "name": "receive-case-4-initial-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-initial-case-4-initial.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-4-initial.png"
+      ]
+    },
+    {
+      "name": "receive-case-4-after-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-initial-case-4-after.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-4-after.json"
+      ]
+    },
+    {
+      "name": "receive-case-4-after-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-initial-case-4-after.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-4-after.png"
+      ]
+    },
+    {
+      "name": "receive-case-5-initial-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-initial-case-5-initial.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-5-initial.json"
+      ]
+    },
+    {
+      "name": "receive-case-5-initial-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-initial-case-5-initial.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-5-initial.png"
+      ]
+    },
+    {
+      "name": "receive-case-5-after-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-initial-case-5-after.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-5-after.json"
+      ]
+    },
+    {
+      "name": "receive-case-5-after-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-initial-case-5-after.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-probe-full/case-5-after.png"
+      ]
+    }
+  ]
+}

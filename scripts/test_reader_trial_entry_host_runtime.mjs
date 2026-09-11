@@ -375,6 +375,10 @@ test('two replacement intents while A restores admit only latest C after A is re
   await closing
   await Promise.resolve()
   assert.equal(value.host.readerTrialRequest, latest)
+  assert.equal(value.windowOpens(), 1)
+  // Standalone full-reader destinations acquire their window only after onShown.
+  value.host.readerTrialDestinationShown = true
+  value.host.syncReaderTrialWindow()
   assert.equal(value.windowOpens(), 2)
   assert.equal(value.windowCloses(), 1)
   assert.equal(value.host.readerTrialClosing, null)
@@ -411,13 +415,16 @@ test('queued launch rechecks foreground after restoration', async () => {
   assert.equal(value.windowOpens(), 1)
 })
 
-test('initial Want before onForeground remains admitted; only its window lease waits for foreground', () => {
+test('initial Want remains admitted; its window waits for both foreground and destination shown', () => {
   const value = setup()
   value.host.readerEntryVisibility.foreground = false
   const request = value.arm({ thumbnailEntry: false })
   assert.equal(value.host.readerTrialRequest, request)
   assert.equal(value.windowOpens(), 0)
   value.host.readerEntryVisibility.foreground = true
+  value.host.syncReaderTrialWindow()
+  assert.equal(value.windowOpens(), 0)
+  value.host.readerTrialDestinationShown = true
   value.host.syncReaderTrialWindow()
   assert.equal(value.windowOpens(), 1)
 })
