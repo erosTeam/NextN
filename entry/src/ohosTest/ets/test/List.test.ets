@@ -9,6 +9,7 @@ import collectionStateTest from './CollectionState.test'
 import readerPageCropDetectorTest from './ReaderPageCropDetector.test'
 import readerLabGesturesTest from './ReaderLabGestures.test'
 import readerChromeTest from './ReaderChrome.test'
+import readerPagingAxisTest from './ReaderPagingAxis.test'
 import readerThumbnailRailTest from './ReaderThumbnailRail.test'
 import readerSliderLifecycleTest from './ReaderSliderLifecycle.test'
 import readerThumbnailRetryTest from './ReaderThumbnailRetry.test'
@@ -30,6 +31,7 @@ export default function testsuite(): void {
   readerPageCropDetectorTest()
   readerLabGesturesTest()
   readerChromeTest()
+  readerPagingAxisTest()
   readerThumbnailRailTest()
   readerSliderLifecycleTest()
   readerThumbnailRetryTest()

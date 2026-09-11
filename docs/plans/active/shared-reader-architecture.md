@@ -487,6 +487,14 @@ D1 必须提前纳入 Koma，而不是把 Koma 留到 D5 才检查。D3 的试�
 
 模式初始衔接、纵向分页与自定义点击区仍是分开的能力缺口；不借音量键切片更改其模式或默认值。
 
+### 2026-09-12 初始模式承接前置审计
+
+- NextN全局mode/doublePageEnabled/spreadLayoutMode来自ReaderPresentationService.restore；画廊columnMode来自ReaderSettingsRepository.columnMode，不能用一个全局封面开关代替。PAGED/PAGED_RTL才启用双页，VERTICAL是连续，PAGED_VERTICAL是原生竖向Swiper。EVEN_LEFT对应首图独页；source index不得变成display index写回。
+- 当前共享policy仅single/spread/continuous、ltr/rtl及firstPageAlone/splitWidePages；既没有纵向分页轴，也没有JOINED/SPLIT双页几何。splitWidePages是宽原图裁成两片，**不是**SPLIT等宽双页布局。两项须补能力后才能承接对应旧偏好，不得忽略保存值或静默降级。
+- Index缩略图入口只捕获源图和sourceIndex，没有第二份配对policy；真实目标由Page/session/frame发布。因此必须在首次session open/转场target发布前解析初始policy，不能先按默认打开再await后setPolicy。后者递增navigationRevision，会使已有目标转场取消。
+- 调试entryLayout/entryDirection当前压平缺省和显式single/ltr；承接前需区分nullable覆盖并保持未接入宿主的旧解析语义。先补独立纵向分页表达与原生手势轴，再补SPLIT几何；其后接NextN只读初始设置及配对。所有新能力仍只在实验入口验证，常规入口与写回不动。
+- 纵向分页已在shared a346d24固化：51实际方法测试；N/E197及Koma103命名实机路径和缺口见`docs/qa/shared-reader-vertical-paging-20260912.md`。这只关闭限定路径，Koma真实双指缩放等仍OPEN。下一源动作是SPLIT双页等宽槽/独立contain及实际图像pan边界，JOINED默认、末尾单页适配和既有源页配对不变；随后再承接只读初始偏好。
+
 当前不需要用户为包名、接口命名或两层拆分逐项决策，采用本文建议继续细化即可。不会把尚未发生的技术试接写成成功结果。
 
 需要在对应实施阶段取得用户决定的只有实际产品变化：
