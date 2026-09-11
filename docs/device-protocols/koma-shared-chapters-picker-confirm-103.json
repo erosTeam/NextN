@@ -1,0 +1,8 @@
+{
+ "schemaVersion":1,"name":"koma-shared-chapters-picker-confirm-103","target":"192.168.50.103:12345","authorizedTarget":"192.168.50.103:12345","hdc":"/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+ "artifactDir":"/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa103-candidate/device103__MLR-AL00/not-applicable/portrait-1600x2560/08-imported",
+ "display":{"widthPx":1600,"heightPx":2560},"context":{"project":"Koma","codeIdentity":"candidate002812","page":"normal folder import result","deviceAlias":"device103","deviceModel":"MLR-AL00","foldState":"not-applicable","orientation":"portrait","resolution":"1600x2560","notes":"Picker selection text names only KomaReaderValidation20260912. dialog_confirm SymbolGlyph1259,669..1316,726 in Button1240,650..1335,745. User authorized independent import; existing comic untouched."},
+ "preflight":[],"measurement":{"actions":[{"name":"confirm-independent-folder","uiInput":["click","1287","697"],"pauseAfterMs":1000}]},
+ "postflight":[{"name":"layout","hdcArgs":["shell","uitest","dumpLayout","-p","/data/local/tmp/koma103-imported.json"]},{"name":"receive-layout","hdcArgs":["file","recv","/data/local/tmp/koma103-imported.json","/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa103-candidate/device103__MLR-AL00/not-applicable/portrait-1600x2560/08-imported/layout.json"]},
+ {"name":"screen","hdcArgs":["shell","uitest","screenCap","-p","/data/local/tmp/koma103-imported.png"]},{"name":"receive-screen","hdcArgs":["file","recv","/data/local/tmp/koma103-imported.png","/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa103-candidate/device103__MLR-AL00/not-applicable/portrait-1600x2560/08-imported/screen.png"]}]
+}

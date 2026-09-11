@@ -1,0 +1,7 @@
+{
+ "schemaVersion":1,"name":"koma-shared-chapters-import-menu-103","target":"192.168.50.103:12345","authorizedTarget":"192.168.50.103:12345","hdc":"/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+ "artifactDir":"/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa103-candidate/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-menu",
+ "display":{"widthPx":1600,"heightPx":2560},"context":{"project":"Koma","codeIdentity":"candidate002812","page":"normal shelf more menu discovery","deviceAlias":"device103","deviceModel":"MLR-AL00","foldState":"not-applicable","orientation":"portrait","resolution":"1600x2560","notes":"Current hdsNavigationMoreButton bounds1448,123..1543,218; no library or reading actions."},
+ "preflight":[],"measurement":{"actions":[{"name":"more","uiInput":["click","1495","170"],"pauseAfterMs":300}]},
+ "postflight":[{"name":"layout","hdcArgs":["shell","uitest","dumpLayout","-p","/data/local/tmp/koma103-menu.json"]},{"name":"receive-layout","hdcArgs":["file","recv","/data/local/tmp/koma103-menu.json","/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa103-candidate/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-menu/layout.json"]}]
+}

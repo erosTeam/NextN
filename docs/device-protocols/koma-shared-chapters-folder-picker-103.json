@@ -1,0 +1,7 @@
+{
+ "schemaVersion":1,"name":"koma-shared-chapters-folder-picker-103","target":"192.168.50.103:12345","authorizedTarget":"192.168.50.103:12345","hdc":"/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+ "artifactDir":"/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa103-candidate/device103__MLR-AL00/not-applicable/portrait-1600x2560/04-folder-picker",
+ "display":{"widthPx":1600,"heightPx":2560},"context":{"project":"Koma","codeIdentity":"candidate002812","page":"normal folder picker discovery","deviceAlias":"device103","deviceModel":"MLR-AL00","foldState":"not-applicable","orientation":"portrait","resolution":"1600x2560","notes":"Folder MenuItem1242,476..1553,590. No selection until independent test folder prepared."},
+ "preflight":[],"measurement":{"actions":[{"name":"folder-picker","uiInput":["click","1370","533"],"pauseAfterMs":500}]},
+ "postflight":[{"name":"layout","hdcArgs":["shell","uitest","dumpLayout","-p","/data/local/tmp/koma103-folder.json"]},{"name":"receive-layout","hdcArgs":["file","recv","/data/local/tmp/koma103-folder.json","/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa103-candidate/device103__MLR-AL00/not-applicable/portrait-1600x2560/04-folder-picker/layout.json"]}]
+}

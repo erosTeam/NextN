@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-shared-chapters-candidate-tail46",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "2026-09-12 00:28:12 signed HAP14451173",
+    "page": "Returnedhe46 rail must endat11not19or55",
+    "deviceAlias": "device-197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Optional chrome he46P1 direct route, no chapter roundtrip. Root installed with original user authorization."
+  },
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa197-candidate/device197__ALN-AL80/not-applicable/portrait-1260x2720/12-tail46",
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      {
+        "name": "rail-to-end",
+        "uiInput": [
+          "fling",
+          "1200",
+          "1970",
+          "100",
+          "1970",
+          "10000"
+        ],
+        "repeat": 1,
+        "intervalMs": 600,
+        "pauseAfterMs": 700
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/koma_cropfirstchrome46197.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "recv-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/koma_cropfirstchrome46197.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa197-candidate/device197__ALN-AL80/not-applicable/portrait-1260x2720/12-tail46/layout.json"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/koma_cropfirstchrome46197.png"
+      ]
+    },
+    {
+      "name": "recv-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/koma_cropfirstchrome46197.png",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa197-candidate/device197__ALN-AL80/not-applicable/portrait-1260x2720/12-tail46/screen.png"
+      ]
+    }
+  ]
+}
