@@ -3,6 +3,7 @@ import { abilityDelegatorRegistry, Driver, ON, PointerMatrix } from '@kit.TestKi
 import { KeyCode } from '@kit.InputKit'
 import { audio } from '@kit.AudioKit'
 import { fileIo } from '@kit.CoreFileKit'
+import { ReaderPresentationService, ReaderSettingsRepository } from 'shared'
 
 async function captureVolume(driver: Driver, name: string): Promise<void> {
   const cache = abilityDelegatorRegistry.getAbilityDelegator().getAppContext().cacheDir
@@ -10,7 +11,14 @@ async function captureVolume(driver: Driver, name: string): Promise<void> {
   const screen = `${cache}/rkit-volume-${name}.png`
   if (fileIo.accessSync(layout)) fileIo.unlinkSync(layout)
   if (fileIo.accessSync(screen)) fileIo.unlinkSync(screen)
-  expect(await driver.dumpLayout(layout)).assertTrue()
+  if (typeof driver.dumpLayout === 'function') {
+    expect(await driver.dumpLayout(layout)).assertTrue()
+  } else {
+    // Driver.dumpLayout starts at API 26; older devices retain the uitest CLI.
+    const result = await abilityDelegatorRegistry.getAbilityDelegator().executeShellCommand(
+      `uitest dumpLayout -p /data/local/tmp/rkit-volume-${name}.json`, 15)
+    expect(result.exitCode).assertEqual(0)
+  }
   expect(await driver.screenCap(screen)).assertTrue()
 }
 async function volumePage(driver: Driver): Promise<number> {
@@ -69,10 +77,119 @@ async function volumeReleaseTrial(work: string, unit: string): Promise<void> {
   }
 }
 
+/** System key injection through Driver, not a claim of human physical-key input. */
+async function volumePreferenceTrial(work: string, unit: string): Promise<void> {
+  const driver = Driver.create(), delegator = abilityDelegatorRegistry.getAbilityDelegator()
+  await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility' })
+  await driver.delayMs(1000)
+  const context = (await delegator.getCurrentTopAbility()).context
+  await ReaderPresentationService.restore(context)
+  const original = await ReaderSettingsRepository.volumeKeyTurn(context)
+  const manager = audio.getAudioManager().getVolumeManager()
+  const usage = audio.StreamUsage.STREAM_USAGE_MUSIC
+  const baseline = manager.getVolumeByStream(usage)
+  console.info(`[ReaderVolumePreference] baseline preference=${original} volume=${baseline}`)
+  try {
+    for (let caseIndex = 0; caseIndex < 4; caseIndex++) {
+      const preference = caseIndex < 2
+      const explicit = caseIndex % 2 === 1
+      const enabled = explicit ? !preference : preference
+      await ReaderPresentationService.setVolumeKeyTurn(context, preference)
+      expect(await ReaderSettingsRepository.volumeKeyTurn(context)).assertEqual(preference)
+      if (explicit) {
+        await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+          parameters: { readerLabWork: work, readerLabUnit: unit, readerLabPage: '1',
+            readerLabChrome: 'true', readerLabVolumeKeys: enabled ? 'true' : 'false' } })
+      } else {
+        await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+          parameters: { readerLabWork: work, readerLabUnit: unit, readerLabPage: '1', readerLabChrome: 'true' } })
+      }
+      await driver.delayMs(1800); await volumeImage(driver)
+      const status = await (await driver.findComponent(ON.id('rkit-chrome-page'))).getText()
+      expect(Number(status.split('/')[1].trim()) >= 3).assertTrue()
+      expect(await volumePage(driver)).assertEqual(2)
+      if (enabled) {
+        await volumeKey(driver, KeyCode.KEYCODE_VOLUME_DOWN, 3)
+        expect(manager.getVolumeByStream(usage)).assertEqual(baseline)
+        await volumeKey(driver, KeyCode.KEYCODE_VOLUME_UP, 2)
+        expect(manager.getVolumeByStream(usage)).assertEqual(baseline)
+      } else {
+        const increase = baseline < manager.getMaxVolumeByStream(usage)
+        try {
+          await volumeKey(driver, increase ? KeyCode.KEYCODE_VOLUME_UP : KeyCode.KEYCODE_VOLUME_DOWN, 2)
+          expect(manager.getVolumeByStream(usage)).assertEqual(baseline + (increase ? 1 : -1))
+        } finally {
+          if (manager.getVolumeByStream(usage) !== baseline) {
+            await driver.triggerKey(increase ? KeyCode.KEYCODE_VOLUME_DOWN : KeyCode.KEYCODE_VOLUME_UP)
+            await driver.delayMs(500)
+          }
+        }
+        expect(await volumePage(driver)).assertEqual(2)
+        expect(manager.getVolumeByStream(usage)).assertEqual(baseline)
+      }
+      await captureVolume(driver, `preference-${caseIndex}-endpoint`)
+      await (await driver.findComponent(ON.id('rkit-close'))).click()
+      await driver.delayMs(700)
+      expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
+      // Same release proof as volumeReleaseTrial: the next system key changes music volume.
+      const increase = baseline < manager.getMaxVolumeByStream(usage)
+      try {
+        await driver.triggerKey(increase ? KeyCode.KEYCODE_VOLUME_UP : KeyCode.KEYCODE_VOLUME_DOWN)
+        await driver.delayMs(500)
+        expect(manager.getVolumeByStream(usage)).assertEqual(baseline + (increase ? 1 : -1))
+      } finally {
+        if (manager.getVolumeByStream(usage) !== baseline) {
+          await driver.triggerKey(increase ? KeyCode.KEYCODE_VOLUME_DOWN : KeyCode.KEYCODE_VOLUME_UP)
+          await driver.delayMs(500)
+        }
+      }
+      expect(manager.getVolumeByStream(usage)).assertEqual(baseline)
+      console.info(`[ReaderVolumePreference] case=${caseIndex} preference=${preference} explicit=${explicit} enabled=${enabled} release=passed`)
+    }
+  } catch (error) {
+    console.error(`[ReaderVolumePreference] failure=${(error as Error).message}`)
+    try {
+      await captureVolume(driver, 'preference-exception')
+    } catch (captureError) {
+      console.error(`[ReaderVolumePreference] capture_failure=${(captureError as Error).message}`)
+    }
+    throw error as Error
+  } finally {
+    try {
+      const close = await driver.findComponent(ON.id('rkit-close'))
+      if (close !== null) { await close.click(); await driver.delayMs(700) }
+      expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
+    } finally {
+      try {
+        await ReaderPresentationService.setVolumeKeyTurn(context, original)
+        expect(await ReaderSettingsRepository.volumeKeyTurn(context)).assertEqual(original)
+        expect(ReaderPresentationService.snapshot().volumeKeyTurn).assertEqual(original)
+      } finally {
+        // Recover any interrupted key pair after the trial consumer has been closed.
+        for (let attempt = 0; attempt < 3 && manager.getVolumeByStream(usage) !== baseline; attempt++) {
+          await driver.triggerKey(manager.getVolumeByStream(usage) < baseline ?
+            KeyCode.KEYCODE_VOLUME_UP : KeyCode.KEYCODE_VOLUME_DOWN)
+          await driver.delayMs(500)
+        }
+        expect(manager.getVolumeByStream(usage)).assertEqual(baseline)
+        console.info(`[ReaderVolumePreference] restored preference=${await ReaderSettingsRepository.volumeKeyTurn(context)} volume=${manager.getVolumeByStream(usage)}`)
+      }
+    }
+  }
+}
+
 export default function readerVolumeKeysTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
   const work = args['-s readerLabWork']
   const unit = args['-s readerLabUnit']
+  if (args['-s class'] === 'ReaderVolumePreferenceTrial' && typeof work === 'string' && work.length > 0) {
+    describe('ReaderVolumePreferenceTrial', (): void => {
+      it('preferenceAndExplicitOverrideRespectSystemVolumeAndRestore', 0, async (): Promise<void> => {
+        await volumePreferenceTrial(work, typeof unit === 'string' ? unit : '')
+      })
+    })
+    return
+  }
   if (args['-s class'] === 'ReaderVolumeReleaseTrial' && typeof work === 'string' && work.length > 0) {
     describe('ReaderVolumeReleaseTrial', (): void => {
       it('closeReturnsRealSystemVolumeAndRestoresBaseline', 0, async (): Promise<void> => {

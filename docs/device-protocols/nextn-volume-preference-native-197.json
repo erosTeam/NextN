@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-volume-preference-native-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main51785 02:12:00 46962766; native42035 02:15:44 41325079",
+    "page": "678049 optional native four preference and explicit override combinations",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720"
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-volume-preference-197/02-native",
+  "preflight": [
+    {
+      "name": "install-main",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "name": "install-native",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "name": "native-preference-once",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "test",
+        "-b",
+        "com.erosteam.nextn",
+        "-m",
+        "entry_test",
+        "-s",
+        "unittest",
+        "OpenHarmonyTestRunner",
+        "-s",
+        "class",
+        "ReaderVolumePreferenceTrial",
+        "-s",
+        "readerLabWork",
+        "678049",
+        "-s",
+        "timeout",
+        "150000"
+      ],
+      "timeoutSeconds": 180
+    }
+  ],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "preference-log",
+      "hdcArgs": [
+        "shell",
+        "hilog -x | grep -F '[ReaderVolumePreference]' | tail -20"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "receive-0-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-volume-preference-0-endpoint.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-volume-preference-197/02-native/endpoint-0.json"
+      ]
+    },
+    {
+      "name": "receive-0-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-volume-preference-0-endpoint.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-volume-preference-197/02-native/endpoint-0.png"
+      ]
+    },
+    {
+      "name": "receive-1-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-volume-preference-1-endpoint.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-volume-preference-197/02-native/endpoint-1.json"
+      ]
+    },
+    {
+      "name": "receive-1-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-volume-preference-1-endpoint.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-volume-preference-197/02-native/endpoint-1.png"
+      ]
+    },
+    {
+      "name": "receive-2-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-volume-preference-2-endpoint.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-volume-preference-197/02-native/endpoint-2.json"
+      ]
+    },
+    {
+      "name": "receive-2-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-volume-preference-2-endpoint.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-volume-preference-197/02-native/endpoint-2.png"
+      ]
+    },
+    {
+      "name": "receive-3-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-volume-preference-3-endpoint.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-volume-preference-197/02-native/endpoint-3.json"
+      ]
+    },
+    {
+      "name": "receive-3-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-volume-preference-3-endpoint.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-volume-preference-197/02-native/endpoint-3.png"
+      ]
+    }
+  ]
+}

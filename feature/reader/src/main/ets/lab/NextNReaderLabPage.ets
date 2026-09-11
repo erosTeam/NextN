@@ -6,7 +6,7 @@ import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabRequest, ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility, ReaderLabAssetProbe, ReaderVolumeKeys } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
-import { connectReaderPresentation, ReaderPresentationState, connectLayoutSafeArea, LayoutSafeAreaState, ThemeTokens, nextNHdsTitle,
+import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea, LayoutSafeAreaState, ThemeTokens, nextNHdsTitle,
   ReaderTrialOriginalProbe, ReaderTrialOriginalFacts } from 'shared'
 import { NextNReaderOriginalProbeProvider } from './NextNReaderOriginalProbeProvider'
 import { NextNReaderOriginalProbeCatalog } from './NextNReaderOriginalProbeCatalog'
@@ -37,6 +37,8 @@ export struct NextNReaderLabPage {
   private trialWindow: ReaderTrialWindow = new ReaderTrialWindow(null, true)
   private keepScreenOn: ReaderKeepScreenOn | null = null
   @Local private closeRequested: boolean = false
+  @Local private presentationReady: boolean = false
+  private volumeDisposed: boolean = false
   private input: ReaderInputPort = new ReaderInputPort()
   private volumeKeys: ReaderVolumeKeys = new ReaderVolumeKeys(this.input)
   private originalProbeEpoch: number = 0
@@ -46,6 +48,8 @@ export struct NextNReaderLabPage {
   aboutToAppear(): void {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext
     if (!context.applicationInfo.debug) return
+    this.volumeDisposed = false
+    void this.restorePresentation(context)
     this.keepScreenOn = new ReaderKeepScreenOn(context)
     if (this.request.readingChrome && this.managesTrialWindow) this.trialWindow.open(context)
     const adapter = new NextNReaderLabAdapter(context)
@@ -73,6 +77,7 @@ export struct NextNReaderLabPage {
   }
 
   aboutToDisappear(): void {
+    this.volumeDisposed = true
     this.keepScreenOn?.close()
     this.entryTransition?.cancel(); this.entryPreview?.release()
     this.originalProbeHostClosed = true
@@ -150,10 +155,24 @@ export struct NextNReaderLabPage {
   @Monitor('readerPresentation.keepScreenOn', 'closeRequested', 'hostClosing')
   syncKeepScreenOnPolicy(): void { this.syncKeepScreenOn() }
 
-  @Monitor('routeActive', 'labVisibility.foreground', 'entryPhase')
+  private async restorePresentation(context: common.UIAbilityContext): Promise<void> {
+    try {
+      await ReaderPresentationService.restore(context)
+      if (this.volumeDisposed) return
+      this.presentationReady = true
+      this.syncReaderActivity()
+    } catch (_error) {
+      console.warn('[NextNReaderLab] reader_preferences_unavailable')
+    }
+  }
+
+  @Monitor('routeActive', 'labVisibility.foreground', 'entryPhase', 'readerPresentation.volumeKeyTurn',
+    'presentationReady', 'closeRequested', 'hostClosing', 'session')
   syncReaderActivity(): void {
     this.syncKeepScreenOn()
-    this.volumeKeys.setActive(this.session !== null && this.request.readingChrome && this.request.volumeKeys &&
+    const enabled = this.request.volumeKeysOverride ?? (this.presentationReady && this.readerPresentation.volumeKeyTurn)
+    this.volumeKeys.setActive(!this.volumeDisposed && !this.closeRequested && !this.hostClosing &&
+      this.session !== null && this.request.readingChrome && enabled &&
       this.routeActive && this.labVisibility.foreground && this.entryPhase !== 'layout')
   }
 

@@ -473,6 +473,18 @@ D1 必须提前纳入 Koma，而不是把 Koma 留到 D5 才检查。D3 的试�
 
 ## 11. 决策清单与当前下一步
 
+### 2026-09-12 音量键衔接切片
+
+这是命名差异登记，不是三个阅读器的完整能力清单。先收束 NextN 实机，再逐宿主接入，不能照搬恢复成功假设或丢掉反向设置。
+
+| 宿主 | 生产所有者与当前缺口 | 下一验收边界 |
+| --- | --- | --- |
+| NextN | ReaderPresentationService/State.volumeKeyTurn；候选已接只读恢复与 nullable debug override，未写回 | 197 系统键事件四组合、真实音量恢复、关闭注销；首轮取证 API 不兼容已保留，修正 native 后继续 |
+| NextE | ReadModeSettings.restore/ReadModeState.volumeKeyTurn；Lab 仍读 legacy debug bool，restore 内部捕获错误 | 先确认恢复成功信号，再接用户开关与显式覆盖、关闭门控；await 返回不能自动标 hydrated |
+| Koma | ReaderPreferencesStore/ReaderModeState.hydrated；Lab 尚无音量输入桥，生产支持 volumeKeyBehavior 反向 | 共享适配器当前固定 down-next，接入必须同时保留反向映射与生命周期，不能只搬启用开关 |
+
+模式初始衔接、纵向分页与自定义点击区仍是分开的能力缺口；不借音量键切片更改其模式或默认值。
+
 当前不需要用户为包名、接口命名或两层拆分逐项决策，采用本文建议继续细化即可。不会把尚未发生的技术试接写成成功结果。
 
 需要在对应实施阶段取得用户决定的只有实际产品变化：

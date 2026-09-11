@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "display": {"widthPx":1260,"heightPx":2720},
+  "name": "nextn-volume-readonly-readiness-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-volume-preflight/01-readonly-197",
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "installed-identity-readonly",
+    "page": "current window without launch",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "unknown-readonly",
+    "resolution": "unknown-readonly",
+    "notes": "Read-only: no wake, launch, install, input or settings. Lease previously released; acquire succeeded."
+  },
+  "preflight": [
+    {
+      "name": "current-window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "nextn-installed-identity",
+      "hdcArgs": [
+        "shell",
+        "bm dump -n com.erosteam.nextn | grep -E '\"(name|versionName|versionCode|bundleName|enabled|installTime|updateTime)\"' | head -25"
+      ]
+    },
+    {
+      "name": "power-readonly",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "input-cli-help-only",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "uiInput",
+        "help"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": []
+}

@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-volume-preference-gate2-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main51785 native42035",
+    "page": "neutral awake gate",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720"
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-volume-preference-197/04-gate2",
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "neutral-lockscreen-unlock-below-notifications-end2317",
+        "uiInput": [
+          "swipe",
+          "630",
+          "2450",
+          "630",
+          "1200",
+          "2000"
+        ],
+        "pauseAfterMs": 400
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "post-unlock-timeout",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "86400000"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    }
+  ]
+}
