@@ -118,3 +118,63 @@ JOINED is a stored value here, not double-page geometry acceptance. Full six-cas
 matrix stays OPEN behind its disabled-sync fixture precondition; no repeat of this
 read-only path is needed without a relevant change. Koma initial policy is next;
 default replacement, thumbnail inheritance, restart and failure paths remain OPEN.
+
+## Koma candidate preparation — implementation/runtime OPEN
+
+103 current preflight01/02/03 has root-reviewed raw device power/window, current
+Koma layout and reader Preferences XML. Original1600x2560 portrait, visible
+[0,105][1600,2560],PID30940/focus84; MUSIC9 and original10000ms restored.
+Library/session hashes before and after are identical; no settings edit, install or
+reader acceptance occurred. Existing canonical preferences are single_page,
+left_to_right,joined,odd_left; source image fit_width is outside this mode slice.
+Evidence: Koma `.hermes-artifacts/20260912-initial-policy/qa103/`.
+
+Source review found that constructing AppFilesReaderSessionPersistenceAdapter can
+write a schema migration during load. The Lab must not construct a persistent store
+for parity. Inject a read-only query from Index's existing ready owner and preserve
+its current fallback semantics. That owner readiness is not proof of a successful
+independent disk read: the production adapter swallows load errors. Await this
+entry's preference load, reject unavailable owner, then map the resolved initial
+chapter with odd_left fallback before publication. Late close/re-entry must fence
+the result. Keep diagnostic entry and current runtime policy across chapter changes.
+
+Koma source candidate now implements that narrow mapping in KomaReaderInitialPolicy,
+Lab initialization and Index callback. Real-method tests execute all48 base mappings,
+independent nullable overrides, ready-owner callback, close/disappear/failed-load,
+re-entry with adapter construction failure, and chapter prepare→open without policy
+reset. Dependencies are isolated test doubles, not device/storage-success proof.
+Root read and ran the tests; independent source review found no additional blocker.
+
+Signed build18969 succeeds9.500s; root checked log/stat/hash:06:46:04,14482266 bytes,
+SHA256 `1e8bb92c30daf3f2f4e8e06cf105c0b47148fdc172ea59ba3fa36ed8798ee04b`.
+Koma source remains uncommitted. Next103 install-r this exact package, current
+saved LTR single P3→leftward swipe P4→close and existing folder chapter roundtrip
+with one session-only mode change. Final typed preferences and library/session
+hashes must remain unchanged; no fixture writes or saved-mode matrix in this run.
+
+### Koma103 current LTR single and runtime-policy chapter roundtrip
+
+Candidate18969 installed in place. Root reviewed nine named original whole screens
+and their current Koma roots:05,06,07,08,10,12,14,15,16. All original1600x2560,
+visible[0,105][1600,2560].05 starts source2/P3 without entry overrides;06 real left
+swipe reaches source3/P4 with a different image;07 returns to the shelf.
+08 folder Chapter1 red P1/2→10 Chapter2 blue P1/3;12 switches only the session to
+vertical paging;14 previous chapter returns red P1/2;15 real pure-Y upward swipe
+reaches blue P2/2. PID48465 ReaderPager records selected1/topology4/navigation5.
+This establishes runtime vertical policy surviving that explicit chapter return,
+not automatic chapter-boundary progression or saved vertical-mode inheritance.
+
+16 returns to the shelf. Root independently compared04/16 raw hashes and original
+1242-byte Preferences XML: library and session hashes unchanged, Preferences bytes
+identical, MUSIC9/portrait/OverrideTimeout10000 preserved/restored, final focus88.
+Lease20260911-224719-8d435641 released; no device remains occupied by this slice.
+The fixture is an independently imported controlled sample, not real-source or
+whole-reader acceptance. Named endpoint paths are accepted; full saved-mode matrix,
+RTL/spread inheritance, continuous first-entry scrolling, cold entry, real storage
+failure, chapter cancellation/failure and production writeback remain OPEN.
+
+Retain05–08 rejected log commands and09 broad-log UTF-8 truncation as diagnostic
+errors, not reader failures;10 onward `hilog -x -e` and15 pager logs succeeded.
+Project templates are corrected separately, raw run snapshots are not rewritten.
+Next normal-UI temporary saved-mode cases on103, with exact typed preference
+restoration; no raw Preferences injection or chapter-parity/progress fixture writes.

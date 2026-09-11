@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-initial-policy-folder-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260912-initial-policy/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/08-folder-initial",
+  "display": {
+    "widthPx": 1600,
+    "heightPx": 2560
+  },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "Koma18969 signed06:46:04/14482266 sha2561e8bb92c30daf3f2f4e8e06cf105c0b47148fdc172ea59ba3fa36ed8798ee04b",
+    "page": "Saved LTR single source2 initial",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "No import or normal progress writes"
+  },
+  "preflight": [
+    {
+      "name": "folder",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "start",
+        "-b",
+        "com.honjow.koma",
+        "-a",
+        "EntryAbility",
+        "--ps",
+        "readerLabWork",
+        "local-library-folder-series-80f7f03f",
+        "--ps",
+        "readerLabUnit",
+        "local-library-folder-chapter-3a11f536",
+        "--ps",
+        "readerLabPage",
+        "0",
+        "--pb",
+        "readerLabChrome",
+        "true"
+      ],
+      "pauseAfterMs": 1200
+    }
+  ],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/kinit08.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/kinit08.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260912-initial-policy/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/08-folder-initial/layout.json"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "snapshot_display",
+        "-f",
+        "/data/local/tmp/kinit08.jpeg"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/kinit08.jpeg",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260912-initial-policy/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/08-folder-initial/screen.jpeg"
+      ]
+    },
+    {
+      "name": "music-readback",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "AudioPolicyService",
+        "-a",
+        "-v"
+      ]
+    },
+    {
+      "name": "logs",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "KomaReaderLab"
+      ]
+    }
+  ]
+}

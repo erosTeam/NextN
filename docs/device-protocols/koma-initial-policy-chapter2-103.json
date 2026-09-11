@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-initial-policy-chapter2-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260912-initial-policy/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/10-folder-chapter2",
+  "display": {
+    "widthPx": 1600,
+    "heightPx": 2560
+  },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "Koma18969 signed06:46:04/14482266 sha2561e8bb92c30daf3f2f4e8e06cf105c0b47148fdc172ea59ba3fa36ed8798ee04b",
+    "page": "Saved LTR single source2 initial",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "No import or normal progress writes"
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      {
+        "name": "next-chapter",
+        "uiInput": [
+          "click",
+          "1398",
+          "536"
+        ],
+        "pauseAfterMs": 900
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/kinit10.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/kinit10.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260912-initial-policy/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/10-folder-chapter2/layout.json"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "snapshot_display",
+        "-f",
+        "/data/local/tmp/kinit10.jpeg"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/kinit10.jpeg",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260912-initial-policy/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/10-folder-chapter2/screen.jpeg"
+      ]
+    },
+    {
+      "name": "music-readback",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "AudioPolicyService",
+        "-a",
+        "-v"
+      ]
+    },
+    {
+      "name": "logs",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "KomaReaderLab"
+      ]
+    }
+  ]
+}
