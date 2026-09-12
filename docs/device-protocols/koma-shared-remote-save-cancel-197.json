@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-shared-remote-save-cancel-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-remote-197/device197__phone/not-applicable/portrait-1260x2720/08-save-cancel",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "same installed remote-action candidate",
+    "page": "Optional shared reader remote page 4 after cancelling save",
+    "deviceAlias": "device197",
+    "deviceModel": "phone",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Chooses the system dialog's deny/cancel action; expects the same remote page and enabled actions with no media creation."
+  },
+  "preflight": [],
+  "measurement": { "actions": [
+    { "name": "cancel-save", "uiInput": ["click", "350", "1820"], "pauseAfterMs": 700 }
+  ] },
+  "postflight": [
+    { "name": "layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/koma-shared-remote-save-cancel.json", "-a"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-remote-save-cancel.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-remote-197/device197__phone/not-applicable/portrait-1260x2720/08-save-cancel/layout.json"] },
+    { "name": "screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/koma-shared-remote-save-cancel.jpeg"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-remote-save-cancel.jpeg", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-remote-197/device197__phone/not-applicable/portrait-1260x2720/08-save-cancel/screen.jpeg"] }
+  ]
+}
