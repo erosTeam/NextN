@@ -86,8 +86,29 @@ The matching real-content follow-through on device 197 is `01-online-native` und
 - Whole ordinary/scrolled screenshots were inspected. The large white areas are part of the source page itself; the row and actual Image geometry remain full width. Presentation/repository signatures remain unchanged and the trial closes to the NextN host.
 - Exact native package for this follow-through: 43,647,765 bytes, SHA256 `64dc91749b177486ca6d99466e1366fd41f120dd0e5bdb51fbcef11f16c64378`; build passed in 8.759 s. Main package is unchanged from the 103 run.
 
+## Cross-host continuous full-width regression
+
+Koma was rebuilt against the corrected shared module and exercised through its normal Reading settings on device 103. The accepted run is under `.hermes-artifacts/20260912-continuous-fit-width-koma-regression-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/`:
+
+- The real optional reader List is 1600 px wide. Page 1 and its Image are `[0,0][1600,2311]`; after a vertical swipe page 1 moves to `[0,-1562][1600,749]` and page 2 becomes `[0,749][1600,3060]` without narrowing.
+- The ordinary and scrolled whole screenshots were inspected. The independent five-page QA comic remains the only test fixture.
+- Normal UI restored all 22 preference values exactly after temporarily selecting continuous mode. Library SHA256 stayed `6da5ebf8ae3828e443a472db8192eadd794c3999270929fc0f91f74a60f85a5c`; reader-session SHA256 stayed `f0fdbd8fb6f7e315c450b57562380208553eee3c338d87a14adc63f42e1c9cce`; timeout returned to 10000 ms.
+- Matching Koma signed HAP: 14,537,859 bytes, SHA256 `1569e442fe8ec6b27e607b25c4c38a0ceef83cc6e52c963f617df1228618da93`; build passed.
+
+NextE initially exposed a real host-policy drift: `ReaderLabRequest.entryLayoutOverride` accepted `continuous`, but `NextEReaderInitialPolicy` only applied `single` and `spread`, unlike the already validated NextN mapping. The first full-screen entry trial therefore finished its thumbnail transition without creating a continuous List and was retained as a failed gate. NextE now maps the optional continuous override to `layout=continuous` plus `pagingAxis=vertical`; production settings and defaults remain untouched.
+
+The corrected full-screen thumbnail-entry run on device 197 is under `.hermes-artifacts/20260912-continuous-fit-width-nexte-entry-reflow-fixed-197/device197__ALN-AL80/not-applicable/portrait-1260x2720_to_landscape-2720x1260/01-native-reflow/`:
+
+- Native report: 1 run, 0 failure, 0 error, 1 pass; the same reader epoch finished and closed back to the retained Detail P1 thumbnail.
+- Before zoom the real continuous List is `[0,124][1260,2720]`; page 1 and its Image are `[0,124][1260,1779]`, proving fit-width rather than the former narrow strip.
+- After 2× zoom and horizontal pan, portrait Image original bounds change horizontally while the List stays 1260 px wide. In landscape the full-screen List becomes `[0,0][2720,1260]` and the real Image remains present; returning to portrait restores the 1260 px List, and a second pan remains functional.
+- All four whole screenshots were inspected: zoomed portrait, landscape, returned portrait, and post-rotation pan. Original orientation and timeout 10000 ms were restored; the 197 lease was released. No device 237 action occurred.
+- Matching NextE packages: main 62,713,523 bytes, SHA256 `4ae42e70a2ddabf011ce9d2572ee63b9a7229f3db3dd149cda7f54cfcbabe1a0`; native 67,603,800 bytes, SHA256 `d2ebc01388b64fcab8b021e27c13f25c29cac2e21e3e9d5409c626fb29e7393a`. Both builds passed.
+
+The NextN device-protocol entrypoint now performs a second result gate after the manifest runner: Hypium output must report every test passed with zero failures/errors, and each `file recv` must report no HDC receive failure and produce a non-empty local artifact. This specifically prevents HDC exit code 0 from turning an internal test error or missing capture into a completed acceptance.
+
 ## Accepted and still open
 
-Accepted only for these named paths: shared chain source/build gate; NextN actual Low/Medium/High paged Image leaves and real page turn; NextN local-fixture 103 and real-NH long-strip 197 continuous full-width geometry and vertical reach; Koma canonical medium paged plus low/high normal-UI selection and low/high continuous rendering/scroll; exact state restoration; NextN final quality-row visual separation on 197.
+Accepted only for these named paths: shared chain source/build gate; NextN actual Low/Medium/High paged Image leaves and real page turn; NextN local-fixture 103 and real-NH long-strip 197 continuous full-width geometry and vertical reach; Koma canonical medium paged plus low/high normal-UI selection, low/high continuous rendering/scroll, and corrected 1600 px continuous-row regression; NextE optional full-screen continuous entry with fit-width, zoom/pan, portrait-landscape-portrait reflow, and retained-thumbnail close; exact state restoration; NextN final quality-row visual separation on 197.
 
-Still open: NextE device leaf capture, continuous Low/High plus cropped/split-body native enum sampling, failure/retry combinations, and complete default-reader replacement/regression acceptance. These gaps do not justify changing the existing default readers.
+Still open: NextE actual Low/High enum sampling, continuous Low/High plus cropped/split-body native enum sampling, failure/retry combinations, and complete default-reader replacement/regression acceptance. These gaps do not justify changing the existing default readers.

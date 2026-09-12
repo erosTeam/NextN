@@ -85,5 +85,6 @@ if [[ "$IS_RECORDING" == "1" ]]; then
 fi
 
 python3 "$RUNNER" "$MANIFEST_REAL" --dry-run
-exec "$SCRIPT_DIR/device-lease" --device "$DEVICE" run --lease "$LEASE" -- \
+"$SCRIPT_DIR/device-lease" --device "$DEVICE" run --lease "$LEASE" -- \
   python3 "$RUNNER" "$MANIFEST_REAL"
+python3 "$SCRIPT_DIR/validate_device_protocol_result.py" "$MANIFEST_REAL"
