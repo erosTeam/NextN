@@ -122,7 +122,9 @@ export struct NextNReaderLabPage {
     this.imageSave = new ReaderSystemImageSaveHost(context,
       (uri: string, path: string): Promise<void> => NextNReaderImageSaveDownload.download(uri, path))
     this.unitKey = new ReaderUnitKey('nh', this.request.work, this.request.work)
-    this.originalProbeEpoch = this.request.thumbnailEntry ?
+    // The probe observes the actual optional entry lifecycle, whether the host
+    // labels the request as a Lab thumbnail trial or supplies a production entry.
+    this.originalProbeEpoch = this.entryTransition !== null ?
       ReaderTrialOriginalProbe.consume(this.request.work, this.request.pageIndex) : 0
     if (this.originalProbeEpoch !== 0) {
       this.originalProbe = new NextNReaderOriginalProbeProvider(adapter, this.originalProbeEpoch,

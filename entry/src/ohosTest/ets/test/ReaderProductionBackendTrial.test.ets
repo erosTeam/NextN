@@ -5,7 +5,20 @@ import { relationalStore } from '@kit.ArkData'
 import { window } from '@kit.ArkUI'
 import { fileIo } from '@kit.CoreFileKit'
 import { KeyCode } from '@kit.InputKit'
-import { AppStrings, connectNhReadProgress, connectNextNReaderBackendSelection, NextNReaderBackend } from 'shared'
+import {
+  AppStrings,
+  connectNhReadProgress,
+  connectNextNReaderBackendSelection,
+  connectReaderPresentation,
+  NextNReaderBackend,
+  NhReaderColumnMode,
+  NhReaderMode,
+  NhReaderSpreadLayout,
+  ReaderPresentationService,
+  ReaderSettingsRepository,
+  ReaderTrialOriginalProbe,
+  ReaderTrialOriginalSnapshot,
+} from 'shared'
 import { NextNReaderProductionFailureFacts, NextNReaderProductionFailureProbe } from 'reader'
 
 const GALLERY_ID: number = 678049
@@ -22,6 +35,12 @@ class HistorySnapshot {
   lastReadIndex: number = 0
   hasReadProgress: number = 0
   lastOpenedAt: number = 0
+}
+
+class SettingSnapshot {
+  key: string
+  value: string | null
+  constructor(key: string, value: string | null) { this.key = key; this.value = value }
 }
 
 function snapshotPath(): string {
@@ -103,6 +122,25 @@ async function restoreHistory(database: relationalStore.RdbStore, value: History
 async function restoreAndVerify(database: relationalStore.RdbStore, value: HistorySnapshot): Promise<void> {
   await restoreHistory(database, value)
   expect(JSON.stringify(await snapshotHistory(database))).assertEqual(JSON.stringify(value))
+}
+
+async function settingValue(database: relationalStore.RdbStore, key: string): Promise<string | null> {
+  const rows = await database.querySql('SELECT value FROM reader_settings WHERE key=? LIMIT 1', [key])
+  try {
+    if (!rows.goToFirstRow()) return null
+    return rows.isColumnNull(0) ? '' : rows.getString(0)
+  } finally { rows.close() }
+}
+
+async function restoreSetting(database: relationalStore.RdbStore, value: SettingSnapshot): Promise<void> {
+  if (value.value === null) {
+    await database.executeSql('DELETE FROM reader_settings WHERE key=?', [value.key])
+  } else {
+    await database.executeSql(
+      'INSERT INTO reader_settings (key,value) VALUES (?,?) ' +
+        'ON CONFLICT(key) DO UPDATE SET value=excluded.value', [value.key, value.value])
+  }
+  expect(await settingValue(database, value.key)).assertEqual(value.value)
 }
 
 async function seedFirstPage(database: relationalStore.RdbStore): Promise<void> {
@@ -247,6 +285,75 @@ async function findWideDetailThumbnail(driver: Driver, pageIndex: number): Promi
   expect(sourceBounds.left >= paneBounds.left && sourceBounds.right <= paneBounds.right &&
     sourceBounds.top >= paneBounds.top && sourceBounds.bottom <= paneBounds.bottom).assertTrue()
   return await driver.findComponent(ON.id(sourceId))
+}
+
+async function waitProductionSpreadHeld(driver: Driver, epoch: number): Promise<ReaderTrialOriginalSnapshot> {
+  for (let attempt = 0; attempt < 120; attempt++) {
+    const state = ReaderTrialOriginalProbe.read()
+    expect(state.epoch).assertEqual(epoch)
+    if (state.state === 'cancelled' || state.state === 'failed') {
+      throw new Error(`Production spread entry became terminal while waiting: ${state.state}`)
+    }
+    if (state.state === 'held' && state.reader.entryPhase === 'waiting' && state.reader.layoutReady &&
+      state.reader.anchor === 2 && state.reader.entryId > 0 && state.requestId > 0) {
+      const viewport = await waitId(driver, 'rkit-image-viewport')
+      const selected = await waitId(driver, 'rkit-part-2-whole')
+      const neighbor = await waitId(driver, 'rkit-part-3-whole')
+      const preview = await waitId(driver, 'rkit-entry-preview-image')
+      const viewportBounds = await viewport.getBounds()
+      const selectedBounds = await selected.getBounds()
+      const neighborBounds = await neighbor.getBounds()
+      const previewBounds = await preview.getBounds()
+      expect(selectedBounds.left > neighborBounds.left).assertTrue()
+      expect(selectedBounds.right <= viewportBounds.right && neighborBounds.left >= viewportBounds.left).assertTrue()
+      const previewCenterX = (previewBounds.left + previewBounds.right) / 2
+      expect(previewCenterX >= selectedBounds.left && previewCenterX <= selectedBounds.right).assertTrue()
+      expect(await driver.findComponent(ON.type('Image').within(ON.id('rkit-part-3-whole'))) !== null).assertTrue()
+      expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertEqual('3 / 14')
+      return state
+    }
+    await driver.delayMs(100)
+  }
+  throw new Error('Production spread entry did not reach selected-page waiting geometry')
+}
+
+async function waitProductionSpreadDelivered(driver: Driver, epoch: number,
+  requestId: number, entryId: number): Promise<void> {
+  for (let attempt = 0; attempt < 80; attempt++) {
+    const state = ReaderTrialOriginalProbe.read()
+    expect(state.epoch).assertEqual(epoch)
+    expect(state.requestId).assertEqual(requestId)
+    if (state.state === 'cancelled' || state.state === 'failed') {
+      throw new Error(`Production spread delivery became terminal: ${state.state}`)
+    }
+    if (state.state !== 'delivered') expect(state.reader.entryId).assertEqual(entryId)
+    else expect(state.reader.entryId === entryId || state.reader.entryId === 0).assertTrue()
+    const selected = await driver.findComponent(ON.type('Image').within(ON.id('rkit-part-2-whole')))
+    const neighbor = await driver.findComponent(ON.type('Image').within(ON.id('rkit-part-3-whole')))
+    const entrySettled = state.reader.entryId === 0 ||
+      (state.reader.entryPhase === 'finished' && state.reader.decodedReady)
+    if (state.state === 'delivered' && entrySettled && state.reader.anchor === 2 &&
+      state.reader.assetPhase === 'displayed' &&
+      selected !== null && neighbor !== null &&
+      await driver.findComponent(ON.id('rkit-entry-preview-image')) === null &&
+      await driver.findComponent(ON.type('LoadingProgress').within(ON.id('rkit-image-viewport'))) === null &&
+      await driver.findComponent(ON.id('^rkit-failure-page-[0-9]+$', MatchPattern.REG_EXP)
+        .within(ON.id('rkit-image-viewport'))) === null) return
+    await driver.delayMs(100)
+  }
+  throw new Error('Production spread entry did not finish the real-image handoff')
+}
+
+async function restoreProductionSpreadSettings(context: common.UIAbilityContext,
+  database: relationalStore.RdbStore, settings: SettingSnapshot[], mode: NhReaderMode,
+  doublePageEnabled: boolean, spreadLayout: NhReaderSpreadLayout): Promise<void> {
+  await ReaderPresentationService.setMode(context, mode)
+  await ReaderPresentationService.setDoublePageEnabled(context, doublePageEnabled)
+  await ReaderPresentationService.setSpreadLayout(context, spreadLayout)
+  for (const setting of settings) await restoreSetting(database, setting)
+  connectReaderPresentation().mode = mode
+  connectReaderPresentation().doublePageEnabled = doublePageEnabled
+  connectReaderPresentation().spreadLayoutMode = spreadLayout
 }
 
 function pageIndex(text: string): number {
@@ -596,6 +703,99 @@ export default function readerProductionBackendTrialTest(): void {
           await launchBackend('legacy', false)
         }
       })
+    })
+    return
+  }
+
+  if (selectedClass === 'ReaderProductionThumbnailSpreadEntryTrial') {
+    describe(selectedClass, (): void => {
+      it('movesTheSelectedGridThumbnailToItsActualRtlSpreadSideBeforeNeighborHandoff', 0,
+        async (): Promise<void> => {
+          const driver = Driver.create()
+          let context: common.UIAbilityContext | null = null
+          let database: relationalStore.RdbStore | null = null
+          let history: HistorySnapshot | null = null
+          let settings: SettingSnapshot[] = []
+          let savedMode: NhReaderMode = NhReaderMode.PAGED
+          let savedDoublePage: boolean = false
+          let savedSpread: NhReaderSpreadLayout = NhReaderSpreadLayout.JOINED
+          let historyRestored = false
+          let settingsRestored = false
+          let probeEpoch = 0
+          let failed = false
+          try {
+            await launchBackend('shared', true)
+            context = await entryContext(driver)
+            database = await store(context)
+            history = await snapshotHistory(database)
+            writeSnapshot(history)
+            await ReaderPresentationService.restore(context)
+            const presentation = ReaderPresentationService.snapshot()
+            savedMode = presentation.mode
+            savedDoublePage = presentation.doublePageEnabled
+            savedSpread = presentation.spreadLayoutMode
+            for (const key of ['reader_mode', 'reader_double_page_enabled', 'reader_spread_layout',
+              `reader_column_mode:${GALLERY_ID}`]) {
+              settings.push(new SettingSnapshot(key, await settingValue(database, key)))
+            }
+            await ReaderPresentationService.setMode(context, NhReaderMode.PAGED_RTL)
+            await ReaderPresentationService.setDoublePageEnabled(context, true)
+            await ReaderPresentationService.setSpreadLayout(context, NhReaderSpreadLayout.SPLIT)
+            await ReaderSettingsRepository.saveColumnMode(context, GALLERY_ID, NhReaderColumnMode.ODD_LEFT)
+            await seedHistoryPage(database, 6)
+
+            expect(connectNextNReaderBackendSelection().current()).assertEqual(NextNReaderBackend.SHARED)
+            const source = await findFullThumbnail(driver, 2)
+            const sourceId = await source.getId()
+            const before = await source.getBounds()
+            probeEpoch = ReaderTrialOriginalProbe.arm(GALLERY_ID.toString(), 2)
+            await capture(driver, 'spread-source')
+            await source.click()
+            const held = await waitProductionSpreadHeld(driver, probeEpoch)
+            expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
+            expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
+            await capture(driver, 'spread-waiting')
+
+            expect(ReaderTrialOriginalProbe.release(probeEpoch, held.requestId)).assertTrue()
+            await waitProductionSpreadDelivered(driver, probeEpoch, held.requestId, held.reader.entryId)
+            expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertEqual('3 / 14')
+            await capture(driver, 'spread-settled')
+            await closeAnyReader(driver)
+            const returned = await waitId(driver, sourceId)
+            const after = await returned.getBounds()
+            expect(after.left).assertEqual(before.left)
+            expect(after.top).assertEqual(before.top)
+            expect(after.right).assertEqual(before.right)
+            expect(after.bottom).assertEqual(before.bottom)
+            await capture(driver, 'spread-closed')
+
+            await restoreAndVerify(database, history)
+            historyRestored = true
+            removeSnapshot()
+            await restoreProductionSpreadSettings(context, database, settings,
+              savedMode, savedDoublePage, savedSpread)
+            settingsRestored = true
+            console.info('[ReaderProductionBackendTrial] thumbnailSpreadShared=true clicked=2 savedBefore=6 ' +
+              'heldWaiting=true selectedRight=true neighborLeft=true delivered=true sourceRestored=true ' +
+              'historyRestored=true settingsRestored=true')
+          } catch (error) {
+            failed = true
+            try { await capture(driver, 'spread-exception') } catch (_) {}
+            throw error as Error
+          } finally {
+            if (probeEpoch !== 0) ReaderTrialOriginalProbe.cancel(probeEpoch)
+            try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+            if (!historyRestored && database !== null && history !== null) {
+              await restoreAndVerify(database, history)
+              removeSnapshot()
+            }
+            if (!settingsRestored && context !== null && database !== null && settings.length > 0) {
+              await restoreProductionSpreadSettings(context, database, settings,
+                savedMode, savedDoublePage, savedSpread)
+            }
+            await launchBackend('legacy', false)
+          }
+        })
     })
     return
   }
