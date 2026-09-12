@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "name": "reader-thumbnail-policy-media-directory-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main65640 unchanged sha2563c19cc73ead87202fe889406acd9502aa9b765c55832ff3ba75945d8540b9ba0; native93464 08:01:25/43465156 sha2568152fee9a931ffbc25f9bd1284ba07d79c1f42360c592107e19760b3a361253c",
+    "page": "Read only two exact parent directories from query physical path",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720"
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/19-media-directory",
+  "preflight": [
+    {
+      "name": "media-size-0",
+      "hdcArgs": [
+        "shell",
+        "mediatool",
+        "ls",
+        "-l",
+        "/storage/cloud/100/files/Photo/3"
+      ]
+    },
+    {
+      "name": "media-size-1",
+      "hdcArgs": [
+        "shell",
+        "mediatool",
+        "ls",
+        "-l",
+        "/storage/cloud/100/files/Photo/5"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": []
+}

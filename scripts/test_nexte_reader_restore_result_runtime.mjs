@@ -222,6 +222,37 @@ for (const [readingChrome, thumbnailEntry, debug] of [[true, false, true], [true
   assert.equal(handoffs, debug ? 1 : 0)
   if (!debug) { probe.deliver('7', debugContext); assert.equal(handoffs, 1) }
   probe.cancel(epoch)
-  assert.deepEqual(events, !debug ? [] : thumbnailEntry ? ['policy', 'publish'] : readingChrome ? ['initialize'] : ['publish'])
+  assert.deepEqual(events, !debug ? [] : readingChrome ? ['initialize'] : ['publish'])
+}
+// Real thumbnail entry -> canonical initialization -> policy -> publication.
+for (const [mode, override, expected] of [
+  ['vertical', {}, ['continuous', 'horizontal', 'ltr']],
+  ['topToBottom', { entryDirectionOverride: 'rtl' }, ['single', 'vertical', 'rtl']],
+  ['rtl', {}, ['spread', 'horizontal', 'rtl']],
+  ['rtl', { entryLayoutOverride: 'single' }, ['single', 'horizontal', 'rtl']],
+]) for (const ready of [true, false]) {
+  const events = []
+  class Stub {}
+  class Session { setPolicy(p) { this.policy = p; events.push('policy') } }
+  const Host = compile(`export class Host { ${method('aboutToAppear')} ${method('initializeSession')} ${method('closeTrial')} }`, {
+    connectNextEReaderLabContextProbe: () => probe,
+    ReaderKeepScreenOn: Stub, ReaderUnitKey: Stub, NextEReaderLabAdapter: Stub,
+    ReaderLabShareProbe: Stub, ReaderSystemImageSaveHost: Stub, ReaderPagedSession: Session, ReaderLabAssetProbe: Stub,
+    NextEReaderInitialPolicy: helper,
+    connectGalleryReadProgress: () => ({ restoreResult: ready ? 'applied' : 'pending',
+      getColumnMode: () => { events.push('column'); return 'evenLeft' } }),
+  }).Host
+  const host = new Host(), r = { readingChrome: true, thumbnailEntry: true, work: '7', pageIndex: 2,
+    entryLayout: 'single', entryDirection: 'ltr', ...override }
+  Object.assign(host, { request: r, entrySite: 'eh', managesTrialWindow: false, closeRequested: false, hostClosing: false,
+    readMode: { restoreResult: 'applied', mode, doublePageEnabled: true, spreadLayoutMode: 'split' },
+    getUIContext: () => ({ getHostContext: () => debugContext }), onClose: () => events.push('close') })
+  Object.defineProperty(host, 'session', { set(s) { this.published = s; events.push('publish') } })
+  host.aboutToAppear(); assert.equal(r.pageIndex, 2)
+  if (!ready) { assert.deepEqual(events, ['close']); assert.equal(host.published, undefined); continue }
+  const p = host.published.policy
+  assert.deepEqual([p.layout, p.pagingAxis, p.direction], expected)
+  assert.equal(p.firstPageAlone, true); assert.equal(p.spreadLayout, 'split')
+  assert.deepEqual(events, ['column', 'policy', 'publish'])
 }
 console.log('PASS actual NextE restore/migrate, initial-policy and initialization methods; mocked storage, no UI/device acceptance')

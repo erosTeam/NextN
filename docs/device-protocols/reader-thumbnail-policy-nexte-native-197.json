@@ -1,0 +1,214 @@
+{
+  "schemaVersion": 1,
+  "name": "reader-thumbnail-policy-nexte-native-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "E main46490 signed2026-09-12 07:39:33/62686786 sha25607cc3b563c0d87505432d6378880df1ec5e05ab1d8010facc2dbcb65a760392c; native14577 signed07:42:45/67511046 sha256afd45e75bbb144793c5642b64e709c8a0cb853a7aafa9e50d9833f2d03756653",
+    "page": "Current canonical readonly real sprite source2 click roundtrip",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "JSON always CLI -a remote, PNG appcache. Branch-specific exception only if this run logs execution. N restores exactly3 RDB TEXT keys; gallery column readonly, progress signature only index/has_read_progress. E zero fixture writes/sync unchanged. Failure must preserve original error and native cleanup evidence."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/07-nexte-native",
+  "preflight": [
+    {
+      "name": "native-real-thumbnail",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "test",
+        "-b",
+        "com.erosteam.nexte",
+        "-m",
+        "entry_test",
+        "-s",
+        "unittest",
+        "OpenHarmonyTestRunner",
+        "-s",
+        "class",
+        "ReaderThumbnailInitialPolicyReadOnlyTrial",
+        "-s",
+        "readerLabWork",
+        "4175844",
+        "-s",
+        "readerLabUnit",
+        "37d7c39ec2",
+        "-s",
+        "timeout",
+        "360000"
+      ],
+      "timeoutSeconds": 390
+    }
+  ],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "log-ThumbnailPolicy",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ThumbnailPolicy"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "log-NextEReaderLab",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "NextEReaderLab"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "log-ReaderPager",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderPager"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "log-ReaderViewport",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderViewport"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "receive-readonly-source-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-thumbnail-policy-readonly-source.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/07-nexte-native/readonly-source.json"
+      ]
+    },
+    {
+      "name": "receive-readonly-source-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-thumbnail-policy-readonly-source.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/07-nexte-native/readonly-source.png"
+      ]
+    },
+    {
+      "name": "receive-readonly-settled-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-thumbnail-policy-readonly-settled.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/07-nexte-native/readonly-settled.json"
+      ]
+    },
+    {
+      "name": "receive-readonly-settled-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-thumbnail-policy-readonly-settled.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/07-nexte-native/readonly-settled.png"
+      ]
+    },
+    {
+      "name": "receive-readonly-gesture-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-thumbnail-policy-readonly-gesture.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/07-nexte-native/readonly-gesture.json"
+      ]
+    },
+    {
+      "name": "receive-readonly-gesture-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-thumbnail-policy-readonly-gesture.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/07-nexte-native/readonly-gesture.png"
+      ]
+    },
+    {
+      "name": "receive-readonly-closed-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-thumbnail-policy-readonly-closed.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/07-nexte-native/readonly-closed.json"
+      ]
+    },
+    {
+      "name": "receive-readonly-closed-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-thumbnail-policy-readonly-closed.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/07-nexte-native/readonly-closed.png"
+      ]
+    },
+    {
+      "name": "receive-readonly-exception-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-thumbnail-policy-readonly-exception.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/07-nexte-native/readonly-exception.json"
+      ]
+    },
+    {
+      "name": "receive-readonly-exception-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-thumbnail-policy-readonly-exception.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/07-nexte-native/readonly-exception.png"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "music",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "AudioPolicyService",
+        "-a",
+        "-v"
+      ]
+    }
+  ]
+}

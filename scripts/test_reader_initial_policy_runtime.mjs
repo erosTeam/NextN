@@ -179,13 +179,50 @@ for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [fal
   probe.arm(host.request.work, value => { assert.equal(value.applicationInfo.debug, true); handoffs++ })
   host.aboutToAppear()
   assert.equal(handoffs, 1)
-  if (readingChrome && !thumbnailEntry) {
+  if (readingChrome) {
     assert.deepEqual(events, ['initialize']); assert.equal(host.published, undefined)
-  } else if (thumbnailEntry) {
-    assert.deepEqual(events, ['restore', 'policy', 'publish'])
-    assert.equal(host.published.policy.layout, 'spread'); assert.equal(host.published.policy.direction, 'rtl')
   } else {
     assert.deepEqual(events, ['restore', 'publish']); assert.equal(host.published.policy, undefined)
   }
+}
+// Compose the real thumbnail entry and initialization methods, with deferred I/O.
+for (const [mode, extra, expected] of [
+  ['vertical', {}, ['continuous', 'horizontal', 'ltr']],
+  ['paged_vertical', { readerLabEntryDirection: 'rtl' }, ['single', 'vertical', 'rtl']],
+  ['paged_rtl', {}, ['spread', 'horizontal', 'rtl']],
+  ['paged_rtl', { readerLabEntryLayout: 'single' }, ['single', 'horizontal', 'rtl']],
+]) for (const ending of ['ready', 'close', 'failure']) {
+  const restore = deferred(), column = deferred(), events = []
+  class Stub {}
+  class Session { setPolicy(p) { this.policy = p; events.push('policy') } }
+  const Host = compile(`export class Host { ${appear} ${methods} }`, {}, {
+    connectNextNReaderLabContextProbe: probeModule.connectNextNReaderLabContextProbe,
+    ReaderKeepScreenOn: Stub, NextNReaderLabAdapter: Stub, ReaderLabShareProbe: Stub,
+    ReaderSystemImageSaveHost: Stub, ReaderUnitKey: Stub, ReaderPagedSession: Session,
+    ReaderLabAssetProbe: Stub, ReaderTrialOriginalProbe: { consume: () => 0 },
+    ReaderPresentationService: { restore: () => { events.push('restore'); return restore.promise },
+      snapshot: () => ({ mode, doublePageEnabled: true, spreadLayoutMode: 'split' }) },
+    ReaderSettingsRepository: { columnMode: () => { events.push('column'); return column.promise } },
+    NextNReaderInitialPolicy: resolver,
+  }).Host
+  const host = new Host(), r = request({ readerLabChrome: true, readerLabThumbnailEntry: true, ...extra })
+  // Index replaces the requested page with the actual clicked source before mounting.
+  r.pageIndex = 2
+  Object.assign(host, { request: r, closeRequested: false, hostClosing: false, managesTrialWindow: false,
+    getUIContext: () => ({ getHostContext: () => debugContext }),
+    syncReaderActivity: () => events.push('sync'), onClose: () => events.push('close') })
+  Object.defineProperty(host, 'session', { set(s) { this.published = s; events.push('publish') } })
+  host.aboutToAppear(); assert.deepEqual(events, ['restore']); assert.equal(host.published, undefined)
+  restore.resolve(); await flush(); assert.deepEqual(events, ['restore', 'column'])
+  assert.equal(host.published, undefined)
+  if (ending === 'close') host.closeTrial()
+  ending === 'failure' ? column.reject(Error('column unavailable')) : column.resolve('even_left')
+  await flush()
+  assert.equal(r.pageIndex, 2)
+  if (ending !== 'ready') { assert.equal(host.published, undefined); assert.equal(events.at(-1), 'close'); continue }
+  const p = host.published.policy
+  assert.deepEqual([p.layout, p.pagingAxis, p.direction], expected)
+  assert.equal(p.firstPageAlone, true); assert.equal(p.spreadLayout, 'split')
+  assert.deepEqual(events, ['restore', 'column', 'policy', 'publish', 'sync'])
 }
 console.log('PASS actual initial-policy resolver, Want parser and initialization methods; no ArkUI/device acceptance')

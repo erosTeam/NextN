@@ -1,0 +1,223 @@
+{
+  "schemaVersion": 1,
+  "name": "reader-thumbnail-policy-rtl-only-nextn-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main65640 unchanged sha2563c19cc73ead87202fe889406acd9502aa9b765c55832ff3ba75945d8540b9ba0; native24503 08:12:34/43472387 sha256de54bd5c8f544c8bab4fc05cc01725b28ea14dce7e614330c0aa9d25673f618f",
+    "page": "Continuous and RTL spread real Detail source2 click roundtrips",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Endpoint only: motion remains OPEN after export failures. Native actual ComponentUtils geometry, raw styled JSON independently host received. Preserve all fixture restoration assertions."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/24-nextn-rtl",
+  "preflight": [
+    {
+      "name": "install-native24503",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "name": "native-real-thumbnail",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "test",
+        "-b",
+        "com.erosteam.nextn",
+        "-m",
+        "entry_test",
+        "-s",
+        "unittest",
+        "OpenHarmonyTestRunner",
+        "-s",
+        "class",
+        "ReaderThumbnailInitialPolicyTrial",
+        "-s",
+        "readerLabWork",
+        "678049",
+        "-s",
+        "timeout",
+        "360000",
+        "-s",
+        "readerThumbnailCase",
+        "rtl-spread"
+      ],
+      "timeoutSeconds": 390
+    }
+  ],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "log-ThumbnailPolicy",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ThumbnailPolicy"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "log-NextNReaderLab",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "NextNReaderLab"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "log-ReaderPager",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderPager"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "log-ReaderViewport",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderViewport"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "receive-rtl-spread-source-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-thumbnail-policy-rtl-spread-source.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/24-nextn-rtl/rtl-spread-source.json"
+      ]
+    },
+    {
+      "name": "receive-rtl-spread-source-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-thumbnail-policy-rtl-spread-source.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/24-nextn-rtl/rtl-spread-source.png"
+      ]
+    },
+    {
+      "name": "receive-rtl-spread-settled-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-thumbnail-policy-rtl-spread-settled.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/24-nextn-rtl/rtl-spread-settled.json"
+      ]
+    },
+    {
+      "name": "receive-rtl-spread-settled-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-thumbnail-policy-rtl-spread-settled.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/24-nextn-rtl/rtl-spread-settled.png"
+      ]
+    },
+    {
+      "name": "receive-rtl-spread-gesture-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-thumbnail-policy-rtl-spread-gesture.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/24-nextn-rtl/rtl-spread-gesture.json"
+      ]
+    },
+    {
+      "name": "receive-rtl-spread-gesture-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-thumbnail-policy-rtl-spread-gesture.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/24-nextn-rtl/rtl-spread-gesture.png"
+      ]
+    },
+    {
+      "name": "receive-rtl-spread-closed-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-thumbnail-policy-rtl-spread-closed.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/24-nextn-rtl/rtl-spread-closed.json"
+      ]
+    },
+    {
+      "name": "receive-rtl-spread-closed-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-thumbnail-policy-rtl-spread-closed.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/24-nextn-rtl/rtl-spread-closed.png"
+      ]
+    },
+    {
+      "name": "receive-exception-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-thumbnail-policy-exception.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/24-nextn-rtl/exception.json"
+      ]
+    },
+    {
+      "name": "receive-exception-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-thumbnail-policy-exception.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/24-nextn-rtl/exception.png"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "music",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "AudioPolicyService",
+        "-a",
+        "-v"
+      ]
+    }
+  ]
+}

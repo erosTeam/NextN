@@ -1,7 +1,7 @@
 import { ReaderTrialLayoutCommit, ReaderKeepScreenOn } from '@reader-kit/ui'
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
-import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderDisplayPolicy } from '@reader-kit/core'
+import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost } from '@reader-kit/core'
 import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabRequest, ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility, ReaderLabAssetProbe, ReaderVolumeKeys } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
@@ -53,7 +53,7 @@ export struct NextNReaderLabPage {
     if (!context.applicationInfo.debug) return
     connectNextNReaderLabContextProbe().deliver(this.request.work, context)
     this.volumeDisposed = false
-    if (!this.request.readingChrome || this.request.thumbnailEntry) void this.restorePresentation(context)
+    if (!this.request.readingChrome) void this.restorePresentation(context)
     this.keepScreenOn = new ReaderKeepScreenOn(context)
     if (this.request.readingChrome && this.managesTrialWindow) this.trialWindow.open(context)
     const adapter = new NextNReaderLabAdapter(context)
@@ -72,17 +72,8 @@ export struct NextNReaderLabPage {
       new NextNReaderOriginalProbeCatalog(adapter, this.request.work, this.request.pageIndex) : adapter
     const session = new ReaderPagedSession(catalog, new ReaderLabAssetProbe(this.originalProbe ?? adapter, this.request.thumbnailFailurePage,
       this.request.informationProbe, this.request.thumbnailEntry ? this.request.failurePage : -1))
-    if (this.request.readingChrome && !this.request.thumbnailEntry) void this.initializeSession(context, session)
-    else {
-      // Preserve the existing thumbnail-entry policy until continuous entry has a real geometry target.
-      if (this.request.thumbnailEntry) {
-        const policy = new ReaderDisplayPolicy()
-        policy.layout = this.request.entryLayout === 'spread' ? 'spread' : 'single'
-        policy.direction = this.request.entryDirection === 'rtl' ? 'rtl' : 'ltr'
-        session.setPolicy(policy)
-      }
-      this.session = session
-    }
+    if (this.request.readingChrome) void this.initializeSession(context, session)
+    else this.session = session
   }
 
   private async initializeSession(context: common.UIAbilityContext, session: ReaderPagedSession): Promise<void> {

@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "name": "reader-thumbnail-policy-rect-smoke-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main65640 unchanged sha2563c19cc73ead87202fe889406acd9502aa9b765c55832ff3ba75945d8540b9ba0; native93464 08:01:25/43465156 sha2568152fee9a931ffbc25f9bd1284ba07d79c1f42360c592107e19760b3a361253c",
+    "page": "Independent zero-fixture native direct-cache capture smoke",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720"
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/16-rect-smoke",
+  "preflight": [
+    {
+      "name": "power-before",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "install-native86874",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "name": "native-capture-smoke",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "test",
+        "-b",
+        "com.erosteam.nextn",
+        "-m",
+        "entry_test",
+        "-s",
+        "unittest",
+        "OpenHarmonyTestRunner",
+        "-s",
+        "class",
+        "ReaderThumbnailPolicyCaptureSmoke",
+        "-s",
+        "timeout",
+        "60000"
+      ],
+      "timeoutSeconds": 90
+    }
+  ],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "log-smoke",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ThumbnailPolicy"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "receive-smoke-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-thumbnail-policy-capture-smoke.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/16-rect-smoke/capture-smoke.json"
+      ]
+    },
+    {
+      "name": "receive-smoke-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-thumbnail-policy-capture-smoke.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-thumbnail-initial-policy-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/16-rect-smoke/capture-smoke.png"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    }
+  ]
+}

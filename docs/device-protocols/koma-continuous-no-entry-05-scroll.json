@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-continuous-no-entry-05-scroll",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260912-continuous-no-entry/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/05-scroll",
+  "display": {
+    "widthPx": 1600,
+    "heightPx": 2560
+  },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "Koma40856 signed07:40:11/14507247 sha256 d6e7eb6c8dc183bc4f4f067460b67df118e47174084f20afb8b9618321601928",
+    "page": "05-scroll",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Controlled five-page sample only; optional no entryTransition regression; normal UI preferences restored, no progress writeback"
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      {
+        "name": "scroll-up",
+        "uiInput": [
+          "swipe",
+          "800",
+          "1900",
+          "800",
+          "1000",
+          "700"
+        ],
+        "pauseAfterMs": 900
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/kcne27.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/kcne27.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260912-continuous-no-entry/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/05-scroll/layout.json"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "snapshot_display",
+        "-f",
+        "/data/local/tmp/kcne27.jpeg"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/kcne27.jpeg",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260912-continuous-no-entry/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/05-scroll/screen.jpeg"
+      ]
+    },
+    {
+      "name": "music-readback",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "AudioPolicyService",
+        "-a",
+        "-v"
+      ]
+    },
+    {
+      "name": "logs",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "KomaReaderLab"
+      ]
+    },
+    {
+      "name": "saved-prefs",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.honjow.koma/haps/entry/preferences/koma_reader_preferences_v1",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260912-continuous-no-entry/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/05-scroll/prefs.xml"
+      ]
+    }
+  ]
+}
