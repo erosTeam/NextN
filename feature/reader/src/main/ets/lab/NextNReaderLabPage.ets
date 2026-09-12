@@ -1,7 +1,8 @@
 import { ReaderTrialLayoutCommit, ReaderKeepScreenOn, ReaderTapAction } from '@reader-kit/ui'
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
-import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderLayout } from '@reader-kit/core'
+import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderLayout,
+  ReaderReadingAnchor } from '@reader-kit/core'
 import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabRequest, ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility, ReaderLabAssetProbe, ReaderVolumeKeys } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
@@ -16,6 +17,8 @@ import { NextNReaderImageSaveDownload } from './NextNReaderImageSaveDownload'
 import { connectThemeDisplay, NhReaderBackgroundMode, ReaderSettingsRepository, NhReaderTapZoneResolver } from 'shared'
 import { NextNReaderInitialPolicy } from './NextNReaderInitialPolicy'
 import { connectNextNReaderLabContextProbe } from './NextNReaderLabContextProbe'
+import { NextNReaderObservedProgress } from './NextNReaderObservedProgress'
+import { connectNextNReaderObservedProgressProbe } from './NextNReaderObservedProgressProbe'
 
 @ComponentV2
 export struct NextNReaderLabPage {
@@ -48,6 +51,7 @@ export struct NextNReaderLabPage {
   private originalProbeEpoch: number = 0
   private originalProbe: NextNReaderOriginalProbeProvider | null = null
   private originalProbeHostClosed: boolean = false
+  private observedProgress: NextNReaderObservedProgress = new NextNReaderObservedProgress()
 
   aboutToAppear(): void {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext
@@ -199,6 +203,14 @@ export struct NextNReaderLabPage {
     return this.readerCanvasDark() ? '#FFFFFFFF' : '#FF000000'
   }
 
+  private observeReaderPosition(anchor: ReaderReadingAnchor): void {
+    const pageCount = this.session?.snapshot().unit?.pageCount ?? 0
+    const pageIndex = this.observedProgress.observe(this.request.work, pageCount, anchor)
+    if (pageIndex < 0) return
+    connectNextNReaderObservedProgressProbe().deliver(this.request.work, pageIndex)
+    console.info(`[NextNReaderLab] observed_progress gallery=${this.request.work} page=${pageIndex}`)
+  }
+
   syncKeepScreenOn(): void {
     this.keepScreenOn?.setActive(this.request.readingChrome && this.routeActive && this.labVisibility.foreground &&
       this.entryPhase !== 'layout' && !this.closeRequested && !this.hostClosing && this.readerPresentation.keepScreenOn)
@@ -249,6 +261,7 @@ export struct NextNReaderLabPage {
               beforeShowChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareChromeShow(isCurrent),
               topInset: this.safeArea.topAvoidHeight, bottomInset: this.safeArea.bottomAvoidHeight,
               accent: ThemeTokens.BRAND, onClose: (): void => this.closeTrial(),
+              onObserved: (anchor: ReaderReadingAnchor): void => this.observeReaderPosition(anchor),
               onChromeVisible: (visible: boolean): void => this.syncChromeVisible(visible) })
           } else {
           ReaderLabSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,

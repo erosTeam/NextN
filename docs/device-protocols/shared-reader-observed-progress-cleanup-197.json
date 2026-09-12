@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-observed-progress-cleanup-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "post-test exact timeout restoration",
+    "page": "ordinary NextN host after optional reader exit",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Restore the original 10000ms timeout; no data clearing, account, setting or history mutation."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-observed-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-cleanup",
+  "preflight": [],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/rkit-observed-final.json", "-a"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-observed-final.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-observed-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-cleanup/layout.json"] },
+    { "name": "screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/rkit-observed-final.jpeg"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-observed-final.jpeg", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-observed-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-cleanup/screen.jpeg"] },
+    { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "10000"] },
+    { "name": "power", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] },
+    { "name": "music", "hdcArgs": ["shell", "hidumper", "-s", "AudioPolicyService", "-a", "-v"] }
+  ]
+}
