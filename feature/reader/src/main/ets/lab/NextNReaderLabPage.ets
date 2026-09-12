@@ -438,6 +438,7 @@ export struct NextNReaderLabPage {
               input: this.input, imageShare: this.imageShare, imageSave: this.imageSave,
               tapZoneResolver: (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout),
               autoReadAvailable: true, autoReadSeconds: this.readerPresentation.autoPageSeconds,
+              pageTurnAnimation: this.request.pageTurnAnimationOverride ?? this.readerPresentation.pageTurnAnimation,
               showPageNumber: this.readerPresentation.showPageNumber,
               cropBorders: this.initialCropBorders(),
               cropAvailable: !this.request.thumbnailEntry,

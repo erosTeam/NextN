@@ -3,12 +3,17 @@ import { abilityDelegatorRegistry, Driver, ON, PointerMatrix } from '@kit.TestKi
 import { fileIo } from '@kit.CoreFileKit'
 
 async function captureChrome(driver: Driver, name: string): Promise<void> {
-  const cache = abilityDelegatorRegistry.getAbilityDelegator().getAppContext().cacheDir
+  const delegator = abilityDelegatorRegistry.getAbilityDelegator()
+  const cache = delegator.getAppContext().cacheDir
   const layout = `${cache}/rkit-chrome-${name}.json`
   const screen = `${cache}/rkit-chrome-${name}.png`
   if (fileIo.accessSync(layout)) fileIo.unlinkSync(layout)
   if (fileIo.accessSync(screen)) fileIo.unlinkSync(screen)
-  expect(await driver.dumpLayout(layout)).assertTrue()
+  if (typeof driver.dumpLayout === 'function') expect(await driver.dumpLayout(layout)).assertTrue()
+  else {
+    const result = await delegator.executeShellCommand(`uitest dumpLayout -p /data/local/tmp/rkit-chrome-${name}.json`, 15)
+    expect(result.exitCode).assertEqual(0)
+  }
   expect(await driver.screenCap(screen)).assertTrue()
 }
 
@@ -37,9 +42,10 @@ export default function readerChromeTest(): void {
       const driver = Driver.create()
       await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
         bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
-        parameters: { readerLabWork: work, readerLabChrome: 'true' },
+        parameters: { readerLabWork: work, readerLabChrome: 'true', readerLabPageTurnAnimation: 'true',
+          readerLabEntryDirection: 'ltr' },
       })
-      await driver.delayMs(2200)
+      await waitChromeImage(driver, 'rkit-image-viewport')
       const bounds = await (await driver.findComponent(ON.id('rkit-image-viewport'))).getBounds()
       const x = Math.round((bounds.left + bounds.right) / 2)
       const y = Math.round((bounds.top + bounds.bottom) / 2)
@@ -83,7 +89,8 @@ export default function readerChromeTest(): void {
       const driver = Driver.create()
       await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
         bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
-        parameters: { readerLabWork: work, readerLabChrome: 'true' },
+        parameters: { readerLabWork: work, readerLabChrome: 'true', readerLabPageTurnAnimation: 'true',
+          readerLabEntryDirection: 'ltr' },
       })
       await driver.delayMs(1200)
       await waitChromeImage(driver, 'rkit-image-viewport')

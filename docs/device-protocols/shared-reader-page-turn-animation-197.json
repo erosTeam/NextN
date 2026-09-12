@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-page-turn-animation-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main 7f33dcb645d84e2331ba9cca71a6c23227c9c70a54e02328ef06e64ca05f2626; native eef60c5286c06dff5c153334ceb7ea84295aea7493b97b8d302186cea9370b82",
+    "page": "optional shared Reader adjacent page-turn animation",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Uses an explicit debug-only animation override. Verifies adjacent LTR and RTL taps reach the expected pages through the native pager command, direct slider seek remains direct, continuous navigation remains session-owned, and the Reader closes. No production setting is written."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-page-turn-animation-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-dump-layout-fallback",
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "temporary-long-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "install-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "install-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    {
+      "name": "native-page-turn-animation",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test",
+        "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderChromeTrial",
+        "-s", "readerLabWork", "678049", "-s", "timeout", "90000"],
+      "timeoutSeconds": 105
+    },
+    { "name": "page-turn-log", "hdcArgs": ["shell", "hilog -x | grep -E 'ReaderPager|ReaderSurface' | tail -320"], "timeoutSeconds": 30 },
+    { "name": "receive-ltr", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-chrome-navigation-ltr.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-page-turn-animation-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-dump-layout-fallback/navigation-ltr.png"] },
+    { "name": "receive-rtl-next", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-chrome-navigation-rtl-next.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-page-turn-animation-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-dump-layout-fallback/navigation-rtl-next.png"] },
+    { "name": "receive-rtl-previous", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-chrome-navigation-rtl-previous.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-page-turn-animation-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-dump-layout-fallback/navigation-rtl-previous.png"] },
+    { "name": "receive-continuous", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-chrome-continuous.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-page-turn-animation-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-dump-layout-fallback/continuous.png"] },
+    { "name": "receive-closed", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-chrome-navigation-closed.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-page-turn-animation-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-dump-layout-fallback/navigation-closed.png"] },
+    { "name": "force-stop-nextn-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "10000"] },
+    { "name": "power", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}

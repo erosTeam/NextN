@@ -17,6 +17,8 @@ export interface NextNReaderHostRequest {
   entryDirectionOverride: string | null
   cropBorders: boolean
   volumeKeysOverride: boolean | null
+  /** Debug-only override; production inherits the live host setting. */
+  pageTurnAnimationOverride?: boolean | null
   failurePage: number
   delayedMetricsPage: number
   failureLayout: string
