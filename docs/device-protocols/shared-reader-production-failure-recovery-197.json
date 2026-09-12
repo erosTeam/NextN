@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-production-failure-recovery-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main aa8afa82be5bb7d66fc7303b2ce9d44b5f67f93a1935e181e6a2acac98e58318; native 99a3d566b425256904d85a2663c721bc131795603ee7ae8d3fed88b295edfa92",
+    "page": "N678049 normal Detail entry through optional shared production Reader, warmed real asset decode failure and exact retry",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "A Debug-only NextN host probe first resolves and releases the real production asset, then injects one native decode failure. Verifies the shared Retry returns to the NextN provider with forceReload, recovers the same page, closes to Detail and restores the exact history row. It does not simulate a natural transport outage."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-failure-recovery-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-final",
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "temporary-long-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "install-current-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "install-current-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 },
+    {
+      "name": "native-production-failure-recovery",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test",
+        "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderProductionFailureRecoveryTrial",
+        "-s", "timeout", "300000"],
+      "timeoutSeconds": 330
+    }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "production-failure-test-log", "hdcArgs": ["shell", "hilog -x | grep -E 'ReaderProductionBackendTrial|NextNReaderDataSource|NextNReaderProductionFailureProbe|NextNReaderCache' | tail -300"], "timeoutSeconds": 30 },
+    { "name": "receive-production-failure-json", "hdcArgs": ["file", "recv", "/data/local/tmp/reader-production-backend-production-failure.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-failure-recovery-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-final/production-failure.json"] },
+    { "name": "receive-production-failure-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-production-failure.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-failure-recovery-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-final/production-failure.png"] },
+    { "name": "receive-production-recovered-json", "hdcArgs": ["file", "recv", "/data/local/tmp/reader-production-backend-production-recovered.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-failure-recovery-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-final/production-recovered.json"] },
+    { "name": "receive-production-recovered-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-production-recovered.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-failure-recovery-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-final/production-recovered.png"] },
+    { "name": "receive-production-recovery-closed-json", "hdcArgs": ["file", "recv", "/data/local/tmp/reader-production-backend-production-recovery-closed.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-failure-recovery-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-final/production-recovery-closed.json"] },
+    { "name": "receive-production-recovery-closed-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-production-recovery-closed.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-failure-recovery-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-final/production-recovery-closed.png"] },
+    { "name": "force-stop-nextn-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "10000"] },
+    { "name": "power", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}

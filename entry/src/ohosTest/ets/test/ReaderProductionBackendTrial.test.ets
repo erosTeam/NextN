@@ -5,6 +5,7 @@ import { relationalStore } from '@kit.ArkData'
 import { fileIo } from '@kit.CoreFileKit'
 import { KeyCode } from '@kit.InputKit'
 import { connectNhReadProgress } from 'shared'
+import { NextNReaderProductionFailureFacts, NextNReaderProductionFailureProbe } from 'reader'
 
 const GALLERY_ID: number = 678049
 const SNAPSHOT_FILE: string = 'reader-production-backend-history.json'
@@ -264,6 +265,64 @@ async function closeAnyReader(driver: Driver): Promise<void> {
 
 export default function readerProductionBackendTrialTest(): void {
   const selectedClass = abilityDelegatorRegistry.getArguments().parameters['-s class']
+  if (selectedClass === 'ReaderProductionFailureRecoveryTrial') {
+    describe(selectedClass, (): void => {
+      it('retriesProductionCacheAfterNativeDecodeFailure', 0, async (): Promise<void> => {
+        const driver = Driver.create()
+        let database: relationalStore.RdbStore | null = null
+        let original: HistorySnapshot | null = null
+        let restored = false
+        let failed = false
+        try {
+          await launchBackend('shared', true)
+          database = await store(await entryContext(driver))
+          original = await snapshotHistory(database)
+          writeSnapshot(original)
+          await seedFirstPage(database)
+          NextNReaderProductionFailureProbe.arm(GALLERY_ID.toString(), 0)
+
+          await (await waitDetailRead(driver)).click()
+          const retry = await waitId(driver, 'rkit-retry-page-1', 160)
+          const failedFacts: NextNReaderProductionFailureFacts = NextNReaderProductionFailureProbe.read()
+          expect(failedFacts.consumed).assertTrue()
+          expect(failedFacts.warmedRealAsset).assertTrue()
+          expect(failedFacts.injectedDecodeFailure).assertTrue()
+          expect(failedFacts.retryObserved).assertFalse()
+          expect(pageIndex(await (await waitId(driver, 'rkit-chrome-page')).getText())).assertEqual(0)
+          await capture(driver, 'production-failure')
+
+          await retry.click()
+          expect(await waitSharedReady(driver)).assertEqual(0)
+          const recoveredFacts: NextNReaderProductionFailureFacts = NextNReaderProductionFailureProbe.read()
+          expect(recoveredFacts.retryObserved).assertTrue()
+          expect(recoveredFacts.retryForceReload).assertTrue()
+          await capture(driver, 'production-recovered')
+
+          await closeAnyReader(driver)
+          await waitDetailRead(driver)
+          await capture(driver, 'production-recovery-closed')
+          await restoreAndVerify(database, original)
+          restored = true
+          removeSnapshot()
+          console.info('[ReaderProductionBackendTrial] productionFailure=true warmedRealAsset=true ' +
+            'retryForceReload=true recoveredPage=0 historyRestored=true')
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'production-recovery-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+          if (!restored && database !== null && original !== null) {
+            await restoreAndVerify(database, original)
+            removeSnapshot()
+          }
+          NextNReaderProductionFailureProbe.reset()
+          await launchBackend('legacy', false)
+        }
+      })
+    })
+    return
+  }
   if (selectedClass === 'ReaderProductionNetworkActionsTrial') {
     describe(selectedClass, (): void => {
       it('keepsNetworkThumbnailGeometryAndSharesCurrentCachedPage', 0, async (): Promise<void> => {

@@ -24,6 +24,10 @@ import { NextNReaderProgressPersistence } from './NextNReaderProgressPersistence
 import { NextNReaderHostRequest } from './NextNReaderHostRequest'
 import { NextNProductionReaderDataSource } from './NextNReaderDataSource'
 import { connectReaderOverlayNavigation } from 'shared'
+import {
+  NextNReaderProductionFailureProbe,
+  NextNReaderProductionFailureProbeProvider,
+} from './NextNReaderProductionFailureProbe'
 
 @ComponentV2
 export struct NextNReaderLabPage {
@@ -93,6 +97,12 @@ export struct NextNReaderLabPage {
         ),
       ))
       : new NextNReaderLabAdapter(context)
+    const productionFailurePage: number = this.request.productionSources === true && context.applicationInfo.debug
+      ? NextNReaderProductionFailureProbe.consume(this.request.work)
+      : -1
+    const productionProvider = productionFailurePage >= 0
+      ? new NextNReaderProductionFailureProbeProvider(adapter, this.request.work, productionFailurePage)
+      : adapter
     this.progressPersistence = new NextNReaderProgressPersistence(context, adapter)
     this.progressFlush = null
     this.progressEpoch = this.progressWrites.open(this.request.work, (pageIndex: number): Promise<void> => {
@@ -117,7 +127,7 @@ export struct NextNReaderLabPage {
     }
     const catalog = this.originalProbeEpoch !== 0 && ReaderTrialOriginalProbe.read().unknownMetrics ?
       new NextNReaderOriginalProbeCatalog(adapter, this.request.work, this.request.pageIndex) : adapter
-    const session = new ReaderPagedSession(catalog, new ReaderLabAssetProbe(this.originalProbe ?? adapter, this.request.thumbnailFailurePage,
+    const session = new ReaderPagedSession(catalog, new ReaderLabAssetProbe(this.originalProbe ?? productionProvider, this.request.thumbnailFailurePage,
       this.request.informationProbe, this.request.thumbnailEntry ? this.request.failurePage : -1))
     if (this.request.readingChrome) void this.initializeSession(context, session)
     else this.session = session

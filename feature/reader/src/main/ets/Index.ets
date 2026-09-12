@@ -7,3 +7,7 @@ export {
 } from './lab/NextNReaderDataSource'
 export { connectNextNReaderLabContextProbe } from './lab/NextNReaderLabContextProbe'
 export { connectNextNReaderObservedProgressProbe } from './lab/NextNReaderObservedProgressProbe'
+export {
+  NextNReaderProductionFailureFacts,
+  NextNReaderProductionFailureProbe,
+} from './lab/NextNReaderProductionFailureProbe'

@@ -286,3 +286,44 @@ the ordinary 10-second timeout were restored, and the lease was released. This
 closes production network thumbnail geometry and cached current-page sharing
 for the captured state. Partial downloads, failure/retry through the production
 source, thumbnail-origin transition and default replacement remain open.
+
+## Follow-up: production cache decode failure and exact retry
+
+The optional production body now has direct evidence that the shared failure
+state returns its generic Retry intent to the real NextN asset provider. A
+process-local Debug probe remains entirely in the NextN reader host: it first
+resolves and releases one real production original, then substitutes one
+missing URI so ArkUI reports a native decode failure. It does not add an NH
+cache, URL or retry branch to reader-kit, and it is inert unless explicitly
+armed in a Debug process.
+
+On 197 gallery `678049` passed 1/1 in 38.469 s:
+
+- `detail_source=route_seed` opened the ordinary Detail production route;
+- the initial page hit the existing private cache (`1262348` bytes), and only
+  after that real asset was released did the probe inject one decode failure;
+- the inspected failure frame kept the existing translucent material, readable
+  hierarchy and bounded retry button over the dark Reader canvas; it did not
+  reintroduce the rejected opaque-black overlay;
+- the user Retry returned through the NextN provider with `forceReload=true`;
+  the service stored a fresh `1262348`-byte file, and P1 rendered again;
+- closing returned to the exact Detail page and all eight history columns were
+  restored.
+
+Matching signed artifacts:
+
+- main `aa8afa82be5bb7d66fc7303b2ce9d44b5f67f93a1935e181e6a2acac98e58318`
+  (10.764 s);
+- native `99a3d566b425256904d85a2663c721bc131795603ee7ae8d3fed88b295edfa92`
+  (9.871 s).
+
+Evidence roots:
+
+- `.hermes-artifacts/20260912-shared-production-failure-recovery-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-final`
+- `.hermes-artifacts/20260912-shared-production-failure-recovery-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/04-final-cleanup`
+
+The independent cleanup passed 1/1 in 2 ms. NextN was force-stopped, Home and
+the ordinary 10-second timeout were restored, and the lease was released. This
+accepts the production provider/cache/decode-retry handoff only. Natural
+transport timeout/status classification, partial downloads, thumbnail-origin
+transition and default replacement remain open.
