@@ -12,7 +12,7 @@ const ts = require(process.env.READER_KIT_TYPESCRIPT ||
 const load = require(path.join(root, 'third_party/reader-kit/tests/load-core.cjs'))
 const core = { ...load('ReaderContent'), ...load('ReaderSession'), ...load('ReaderImageCrop'),
   ...load('ReaderImageInformation') }
-const released = [], calls = []
+const released = [], calls = [], probeEvents = []
 let processResult = { displayUri: 'file:///cache/enhanced.jpg', applied: true, reason: '' }
 let processPromise = null
 const shared = {
@@ -37,6 +37,9 @@ vm.runInNewContext(ts.transpileModule(source, {
       this.path = path; this.facts = facts
     } } }
     if (name === 'shared') return shared
+    if (name === './NextNReaderSuperResolutionProbe') return {
+      connectNextNReaderSuperResolutionProbe: () => ({ deliver(...args) { probeEvents.push(args) } }),
+    }
     throw new Error(`unexpected import ${name}`)
   },
 })
@@ -82,5 +85,9 @@ await assert.rejects(provider.prepareVariant(page, 'enhanced', identity, new cor
 processResult = { displayUri: 'file:///cache/source.jpg', applied: false, reason: 'model_not_installed' }
 await assert.rejects(provider.prepareVariant(page, 'enhanced', configuration.identity(), new core.ReaderCancellation()),
   /reader_variant_not_applied:model_not_installed/)
+assert.ok(probeEvents.some(event => event[3] === 'prepare'))
+assert.ok(probeEvents.some(event => event[3] === 'applied'))
+assert.ok(probeEvents.some(event => event[3] === 'cancelled'))
+assert.ok(probeEvents.some(event => event[3] === 'unavailable'))
 
 console.log('reader super-resolution provider runtime: ok')

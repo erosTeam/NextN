@@ -9,6 +9,7 @@ import {
   NhReaderSuperResolutionModel, ReaderPageCropService, ReaderSuperResolutionResult,
   ReaderSuperResolutionService,
 } from 'shared'
+import { connectNextNReaderSuperResolutionProbe } from './NextNReaderSuperResolutionProbe'
 
 class NextNReaderVariantCropSource implements ReaderImageCropSource {
   private static sequence: number = 0
@@ -126,11 +127,15 @@ export class NextNReaderSuperResolutionProvider implements ReaderAssetProvider {
     const ownerKey = `${this.ownerPrefix}:${page.unit.scope}:${page.unit.work}:${page.unit.unit}:${page.key}:${identity}`
     const detach = cancellation.onCancel((): void => {
       console.info(`[NextNSharedSuperResolution] cancelled source=${page.sourceIndex} identity=${identity}`)
+      connectNextNReaderSuperResolutionProbe().deliver(
+        this.context, page.unit.work, page.sourceIndex, 'cancelled', identity)
       ReaderSuperResolutionService.releaseOwner(ownerKey)
     })
     let retained: boolean = false
     try {
       console.info(`[NextNSharedSuperResolution] prepare source=${page.sourceIndex} identity=${identity}`)
+      connectNextNReaderSuperResolutionProbe().deliver(
+        this.context, page.unit.work, page.sourceIndex, 'prepare', identity)
       const result: ReaderSuperResolutionResult = await ReaderSuperResolutionService.process(
         this.context,
         sourcePath,
@@ -146,11 +151,15 @@ export class NextNReaderSuperResolutionProvider implements ReaderAssetProvider {
       const path = NextNReaderSuperResolutionProvider.localPath(result.displayUri)
       if (path.length === 0) throw new Error('reader_variant_output_unavailable')
       console.info(`[NextNSharedSuperResolution] applied source=${page.sourceIndex} identity=${identity}`)
+      connectNextNReaderSuperResolutionProbe().deliver(
+        this.context, page.unit.work, page.sourceIndex, 'applied', identity)
       retained = true
       return new NextNReaderSuperResolutionPlan(page, identity, path, ownerKey,
         this.provider.prepareOriginal !== undefined)
     } catch (error) {
       console.warn(`[NextNSharedSuperResolution] unavailable source=${page.sourceIndex} identity=${identity} error=${String(error)}`)
+      connectNextNReaderSuperResolutionProbe().deliver(
+        this.context, page.unit.work, page.sourceIndex, 'unavailable', identity)
       throw error as Error
     } finally {
       detach()

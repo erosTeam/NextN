@@ -6,6 +6,7 @@ import {
   AppStrings, NhReaderMode, NhReaderSpreadLayout, NhReaderSuperResolutionModel,
   ReaderPresentationService, ReaderSettingsRepository, ReaderSuperResolutionModelService,
 } from 'shared'
+import { connectNextNReaderSuperResolutionProbe } from 'reader'
 
 const FIXTURE: string = '__rkit_local_fixture__'
 
@@ -31,16 +32,9 @@ async function waitImage(driver: Driver): Promise<void> {
   expect(false).assertTrue()
 }
 
-async function waitApplied(single: boolean): Promise<void> {
-  const delegator = abilityDelegatorRegistry.getAbilityDelegator()
+async function waitApplied(applied: Set<number>, single: boolean): Promise<void> {
   for (let attempt = 0; attempt < 120; attempt++) {
-    const result = await delegator.executeShellCommand(
-      "hilog -x | grep -F '[NextNSharedSuperResolution] applied source=' | tail -40",
-      10,
-    )
-    const output = result.stdResult ?? ''
-    if (single ? output.includes('applied source=0') :
-      output.includes('applied source=1') && output.includes('applied source=2')) return
+    if (single ? applied.has(0) : applied.has(1) && applied.has(2)) return
     await new Promise<void>((resolve): void => { setTimeout(resolve, 500) })
   }
   expect(false).assertTrue()
@@ -91,6 +85,12 @@ export default function readerSharedSuperResolutionTest(): void {
       const models: NhReaderSuperResolutionModel[] = await ReaderSuperResolutionModelService.installedModels(context)
       expect(models.length > 0).assertTrue()
       const model = models.includes(originalModel) ? originalModel : models[0]
+      const applied: Set<number> = new Set<number>()
+      const probe = connectNextNReaderSuperResolutionProbe()
+      const probeEpoch = probe.arm(FIXTURE, (sourceIndex: number, stage: string, identity: string): void => {
+        console.info(`[ReaderSharedSuperResolutionTest] source=${sourceIndex} stage=${stage} identity=${identity}`)
+        if (stage === 'applied') applied.add(sourceIndex)
+      })
       try {
         await ReaderPresentationService.setMode(context, spread ? NhReaderMode.PAGED_RTL : NhReaderMode.PAGED)
         await ReaderPresentationService.setDoublePageEnabled(context, spread)
@@ -104,7 +104,7 @@ export default function readerSharedSuperResolutionTest(): void {
             readerLabVolumeKeys: 'false' },
         })
         await waitImage(driver)
-        await waitApplied(!spread)
+        await waitApplied(applied, !spread)
         await waitImage(driver)
         await capture(driver, spread ? 'spread' : 'single')
         if (!spread) await assertEnhancedInformation(driver)
@@ -113,6 +113,7 @@ export default function readerSharedSuperResolutionTest(): void {
         await driver.delayMs(500)
         expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
       } finally {
+        probe.cancel(probeEpoch)
         try { await ReaderPresentationService.setSuperResolutionEnabled(context, originalEnabled) } catch (_) {}
         try { await ReaderPresentationService.setSuperResolutionModel(context, originalModel) } catch (_) {}
         try { await ReaderPresentationService.setSuperResolutionMaxHeight(context, originalMaxHeight) } catch (_) {}
