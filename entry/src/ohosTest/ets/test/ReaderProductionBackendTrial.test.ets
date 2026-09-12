@@ -1,10 +1,10 @@
 import { describe, expect, it } from '@ohos/hypium'
-import { abilityDelegatorRegistry, Component, Driver, ON } from '@kit.TestKit'
+import { abilityDelegatorRegistry, Component, Driver, MatchPattern, ON } from '@kit.TestKit'
 import { common } from '@kit.AbilityKit'
 import { relationalStore } from '@kit.ArkData'
 import { fileIo } from '@kit.CoreFileKit'
 import { KeyCode } from '@kit.InputKit'
-import { connectNhReadProgress } from 'shared'
+import { connectNhReadProgress, connectNextNReaderBackendSelection, NextNReaderBackend } from 'shared'
 import { NextNReaderProductionFailureFacts, NextNReaderProductionFailureProbe } from 'reader'
 
 const GALLERY_ID: number = 678049
@@ -116,6 +116,21 @@ async function seedFirstPage(database: relationalStore.RdbStore): Promise<void> 
   connectNhReadProgress().set(GALLERY_ID, 0)
 }
 
+async function seedHistoryPage(database: relationalStore.RdbStore, pageIndex: number): Promise<void> {
+  const current = await snapshotHistory(database)
+  if (current.present) {
+    await database.executeSql(
+      'UPDATE reading_history SET last_read_index=?,has_read_progress=1 WHERE gallery_id=?',
+      [pageIndex, GALLERY_ID])
+  } else {
+    await database.executeSql(
+      'INSERT INTO reading_history ' +
+        '(gallery_id,media_id,title,thumbnail_url,page_count,last_read_index,has_read_progress,last_opened_at) ' +
+        'VALUES (?,?,?,?,?,?,1,?)', [GALLERY_ID, '', '', '', 14, pageIndex, Date.now()])
+  }
+  connectNhReadProgress().set(GALLERY_ID, pageIndex)
+}
+
 async function launchBackend(backend: string, directGallery: boolean): Promise<void> {
   if (directGallery) {
     await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
@@ -148,6 +163,36 @@ async function waitDetailRead(driver: Driver): Promise<Component> {
     await driver.delayMs(250)
   }
   throw new Error('Ready Detail Read action unavailable')
+}
+
+async function findDetailThumbnail(driver: Driver, pageIndex: number): Promise<Component> {
+  let owner: Component | null = null
+  for (let attempt = 0; attempt < 80; attempt++) {
+    const root = await driver.findComponent(ON.id('nextn-root-navigation'))
+    if (root !== null) {
+      const rootBounds = await root.getBounds()
+      const lists = await driver.findComponents(ON.type('List').within(ON.id('nextn-root-navigation')))
+      const owners: Component[] = []
+      for (const list of lists) {
+        const bounds = await list.getBounds()
+        if (bounds.left === rootBounds.left && bounds.right === rootBounds.right &&
+          bounds.top === rootBounds.top && bounds.bottom === rootBounds.bottom) owners.push(list)
+      }
+      if (owners.length > 1) throw new Error('Ambiguous Detail metadata List; no coordinate fallback')
+      if (owners.length === 1) { owner = owners[0]; break }
+    }
+    await driver.delayMs(250)
+  }
+  if (owner === null) throw new Error('Detail metadata List unavailable')
+  const pattern = `^reader-thumb-gallery-detail-[0-9]+-page-${pageIndex}$`
+  const selector = ON.id(pattern, MatchPattern.REG_EXP).within(ON.id('nextn-root-navigation'))
+  const source = await owner.scrollSearch(selector, true)
+  if (source === null) throw new Error(`Detail thumbnail unavailable: ${pageIndex}`)
+  const matches = await driver.findComponents(selector)
+  expect(matches.length).assertEqual(1)
+  const sourceId = await source.getId()
+  expect(new RegExp(pattern).test(sourceId)).assertTrue()
+  return await driver.findComponent(ON.id(sourceId))
 }
 
 function pageIndex(text: string): number {
@@ -418,6 +463,75 @@ export default function readerProductionBackendTrialTest(): void {
         } catch (error) {
           failed = true
           try { await capture(driver, 'exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+          if (!restored && database !== null && original !== null) {
+            await restoreAndVerify(database, original)
+            removeSnapshot()
+          }
+          await launchBackend('legacy', false)
+        }
+      })
+    })
+    return
+  }
+
+  if (selectedClass === 'ReaderProductionThumbnailEntryTrial') {
+    describe(selectedClass, (): void => {
+      it('opensExactCompactThumbnailThroughSharedBodyWithoutDebugFeatureLoss', 0, async (): Promise<void> => {
+        const driver = Driver.create()
+        let database: relationalStore.RdbStore | null = null
+        let original: HistorySnapshot | null = null
+        let restored = false
+        let failed = false
+        try {
+          await launchBackend('shared', true)
+          database = await store(await entryContext(driver))
+          original = await snapshotHistory(database)
+          writeSnapshot(original)
+          await seedHistoryPage(database, 6)
+
+          await waitDetailRead(driver)
+          expect(connectNextNReaderBackendSelection().current()).assertEqual(NextNReaderBackend.SHARED)
+          const source = await findDetailThumbnail(driver, 2)
+          const sourceId = await source.getId()
+          const before = await source.getBounds()
+          await capture(driver, 'thumbnail-source')
+          await source.click()
+          const initial = await waitSharedReady(driver)
+          expect(initial).assertEqual(2)
+          expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
+          expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
+          for (let attempt = 0; attempt < 40; attempt++) {
+            if (await driver.findComponent(ON.id('rkit-entry-preview-image')) === null &&
+              await driver.findComponent(ON.id('rkit-entry-source-pending')) === null) break
+            await driver.delayMs(100)
+          }
+          expect(await driver.findComponent(ON.id('rkit-entry-preview-image'))).assertNull()
+          expect(await driver.findComponent(ON.id('rkit-entry-source-pending'))).assertNull()
+          await (await waitId(driver, 'rkit-runtime-settings')).click()
+          expect(await waitId(driver, 'rkit-crop-toggle') !== null).assertTrue()
+          await capture(driver, 'thumbnail-shared')
+          await driver.pressBack()
+          await closeAnyReader(driver)
+          await waitDetailRead(driver)
+          const returned = await waitId(driver, sourceId)
+          const after = await returned.getBounds()
+          expect(after.left).assertEqual(before.left)
+          expect(after.top).assertEqual(before.top)
+          expect(after.right).assertEqual(before.right)
+          expect(after.bottom).assertEqual(before.bottom)
+          await capture(driver, 'thumbnail-closed')
+
+          await restoreAndVerify(database, original)
+          restored = true
+          removeSnapshot()
+          console.info('[ReaderProductionBackendTrial] thumbnailShared=true clicked=2 persistedBefore=6 ' +
+            'cropAvailable=true sourceRestored=true debugTrialAbsent=true historyRestored=true')
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'thumbnail-exception') } catch (_) {}
           throw error as Error
         } finally {
           try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }

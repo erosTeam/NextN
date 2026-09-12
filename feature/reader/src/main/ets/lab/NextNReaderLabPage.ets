@@ -49,6 +49,8 @@ export struct NextNReaderLabPage {
   @Event onRegisterBackRequest: (request: (() => boolean) | null) => void = () => {}
   @Event onPrepareClose: () => Promise<boolean> = (): Promise<boolean> => Promise.resolve(true)
   @Event onPreparedClose: (animated: boolean) => void = () => {}
+  /** Host-neutral lifecycle notification; the embedding shell owns preview disposal. */
+  @Event onEntrySettled: () => void = () => {}
   @Local private session: ReaderPagedSession | null = null
   private imageShare: ReaderImageShareHost | null = null
   private imageSave: ReaderImageSaveHost | null = null
@@ -73,10 +75,12 @@ export struct NextNReaderLabPage {
   private progressEpoch: number = 0
   private progressPersistence: NextNReaderProgressPersistence | null = null
   private progressFlush: Promise<boolean> | null = null
+  private entrySettledNotified: boolean = false
 
   aboutToAppear(): void {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext
     if (!context.applicationInfo.debug) return
+    this.notifyEntrySettled()
     if (this.embedded) {
       this.onRegisterBackRequest((): boolean => {
         this.closeTrial()
@@ -141,7 +145,7 @@ export struct NextNReaderLabPage {
       const initialPageIndex = await (this.progressPersistence?.restore(
         this.request.work,
         this.request.pageIndex,
-        this.request.thumbnailEntry,
+        this.request.restoreSavedProgress ?? !this.request.thumbnailEntry,
         this.request.progressReadWrite,
       ) ?? Promise.resolve(this.request.pageIndex))
       if (this.volumeDisposed || this.closeRequested || this.hostClosing) return
@@ -179,6 +183,13 @@ export struct NextNReaderLabPage {
       continuous ? this.readerPresentation.tapZoneLayoutContinuous : this.readerPresentation.tapZoneLayoutPaged,
       continuous ? this.readerPresentation.tapZoneInvertContinuous : this.readerPresentation.tapZoneInvertPaged,
       x, y, 1, 1)
+  }
+
+  @Monitor('entryPhase')
+  private notifyEntrySettled(): void {
+    if (this.entrySettledNotified || (this.entryPhase !== 'finished' && this.entryPhase !== 'cancelled')) return
+    this.entrySettledNotified = true
+    this.onEntrySettled()
   }
 
   aboutToDisappear(): void {

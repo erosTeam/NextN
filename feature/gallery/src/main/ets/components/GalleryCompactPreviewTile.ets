@@ -31,7 +31,7 @@ export struct GalleryCompactPreviewTile {
   @Require @Param page: NhGalleryPage
   @Require @Param pageIndex: number
   @Param transitionSourceId: string = ''
-  @Event onOpen?: (pageIndex: number) => void
+  @Event onOpen?: (pageIndex: number, source: ReaderTrialEntrySource) => void
   @Local readerTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
   private sourceMounted: boolean = false
   private sourceMountEpoch: number = 0
@@ -103,7 +103,7 @@ export struct GalleryCompactPreviewTile {
           ReaderThumbnailTransitionCoordinator.sourceSnapshotId(this.transitionSourceId) === snapshotId &&
           this.page.thumbnailUrl === thumbnailUrl && !this.readerTransition.sourceHidden(sourceId)
         if (ReaderTrialEntryRelay.tryOpen(source)) return
-        this.onOpen(this.pageIndex)
+        this.onOpen(this.pageIndex, source)
       }
     })
   }

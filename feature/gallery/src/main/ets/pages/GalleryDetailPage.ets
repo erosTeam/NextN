@@ -82,6 +82,7 @@ import {
   connectTagTranslations,
   connectTagTranslationSettings,
   ReaderOverlayNavigationState,
+  ReaderTrialEntrySource,
   NhReadProgressState,
   connectNhReadProgress,
   supportsCommentTranslation,
@@ -366,6 +367,8 @@ export struct GalleryDetailPage {
     detailSeed: NhGalleryDetail,
   ) => void
   @Event onOpenReader?: (galleryId: number, initialPageIndex: number, animated: boolean) => void
+  /** Entry shell may claim one live compact-thumbnail source for the optional shared Reader. */
+  @Event onOpenSharedReader?: (detailSeed: NhGalleryDetail, source: ReaderTrialEntrySource) => boolean
   @Event onOpenComments?: (galleryId: number, comments: NhComment[], snapshotAvailable: boolean) => void
   @Event onOpenDownloads?: () => void
   @Event onSearchQuery?: (query: string) => void
@@ -862,9 +865,15 @@ export struct GalleryDetailPage {
     }
   }
 
-  private openReaderFromThumbnail(pageIndex: number): void {
+  private openReaderFromThumbnail(pageIndex: number, source?: ReaderTrialEntrySource): void {
     if (pageIndex < 0 || pageIndex >= this.detail.pages.length) {
       return
+    }
+    if (source !== undefined && source.galleryId === this.detail.id && source.pageIndex === pageIndex &&
+      source.isCurrent()) {
+      const claimed: boolean = this.onOpenSharedReader?.(this.detail, source) === true
+      console.info(`[ProductionThumbnailEntry] offered gallery=${source.galleryId} page=${pageIndex} claimed=${claimed}`)
+      if (claimed) return
     }
     ReaderThumbnailTransitionCoordinator.open(
       this.getUIContext(),
@@ -3358,8 +3367,8 @@ export struct GalleryDetailPage {
                   this.readerTransitionScope,
                   pageIndex,
                 ),
-                onOpen: (selectedIndex: number): void => {
-                  this.openReaderFromThumbnail(selectedIndex)
+                onOpen: (selectedIndex: number, source: ReaderTrialEntrySource): void => {
+                  this.openReaderFromThumbnail(selectedIndex, source)
                 },
               })
             }

@@ -19,9 +19,9 @@ export class NextNReaderProgressPersistence {
     return progressReadWrite
   }
 
-  async restore(work: string, pageIndex: number, thumbnailEntry: boolean,
+  async restore(work: string, pageIndex: number, restoreSavedProgress: boolean,
     progressReadWrite: boolean): Promise<number> {
-    if (!this.enabled(progressReadWrite) || thumbnailEntry) return pageIndex
+    if (!this.enabled(progressReadWrite) || !restoreSavedProgress) return pageIndex
     const galleryId = Number(work)
     if (!Number.isSafeInteger(galleryId) || galleryId <= 0) return pageIndex
     try {
