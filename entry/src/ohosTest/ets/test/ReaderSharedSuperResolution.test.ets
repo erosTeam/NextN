@@ -32,9 +32,9 @@ async function waitImage(driver: Driver): Promise<void> {
   expect(false).assertTrue()
 }
 
-async function waitApplied(applied: Set<number>, single: boolean): Promise<void> {
+async function waitApplied(applied: Set<number>, expectedSources: number[]): Promise<void> {
   for (let attempt = 0; attempt < 120; attempt++) {
-    if (single ? applied.has(0) : applied.has(1) && applied.has(2)) return
+    if (expectedSources.every((sourceIndex: number): boolean => applied.has(sourceIndex))) return
     await new Promise<void>((resolve): void => { setTimeout(resolve, 500) })
   }
   expect(false).assertTrue()
@@ -104,7 +104,9 @@ export default function readerSharedSuperResolutionTest(): void {
             readerLabVolumeKeys: 'false' },
         })
         await waitImage(driver)
-        await waitApplied(applied, !spread)
+        // The fixture keeps page 1 paired with page 0 in the canonical first
+        // spread. RTL reverses visual placement, not canonical source indexes.
+        await waitApplied(applied, spread ? [0, 1] : [0])
         await waitImage(driver)
         await capture(driver, spread ? 'spread' : 'single')
         if (!spread) await assertEnhancedInformation(driver)
