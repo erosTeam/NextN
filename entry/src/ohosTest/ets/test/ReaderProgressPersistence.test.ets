@@ -111,11 +111,12 @@ async function waitId(driver: Driver, id: string): Promise<Component> {
   throw new Error('Progress persistence component unavailable: ' + id)
 }
 
-async function waitBody(driver: Driver, pageIndex: number): Promise<Component> {
+async function waitBody(driver: Driver, pageIndex: number, continuous: boolean = false): Promise<Component> {
+  const ownerId = continuous ? `rkit-continuous-page-${pageIndex}` : `rkit-part-${pageIndex}-whole`
   for (let attempt = 0; attempt < 60; attempt++) {
-    const value = await driver.findComponent(ON.type('Image').within(ON.id(`rkit-part-${pageIndex}-whole`)))
+    const value = await driver.findComponent(ON.type('Image').within(ON.id(ownerId)))
     if (value !== null &&
-      await driver.findComponent(ON.type('LoadingProgress').within(ON.id(`rkit-part-${pageIndex}-whole`))) === null) return value
+      await driver.findComponent(ON.type('LoadingProgress').within(ON.id(ownerId))) === null) return value
     await driver.delayMs(250)
   }
   throw new Error('Progress persistence body unavailable: ' + pageIndex)
@@ -198,11 +199,11 @@ async function closeTrial(driver: Driver): Promise<void> {
   throw new Error('Progress persistence trial did not close')
 }
 
-async function launchReadWrite(): Promise<void> {
+async function launchReadWrite(layout: string = 'single', direction: string = 'ltr'): Promise<void> {
   await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
     bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility', parameters: {
       readerLabWork: WORK, readerLabProgressReadWrite: 'true', readerLabChrome: 'true', readerLabVolumeKeys: 'false',
-      readerLabEntryLayout: 'single', readerLabEntryDirection: 'ltr',
+      readerLabEntryLayout: layout, readerLabEntryDirection: direction,
     },
   })
 }
@@ -371,6 +372,71 @@ export default function readerProgressPersistenceTest(): void {
         } catch (error) {
           failed = true
           try { await capture(driver, 'thumbnail-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          probe.cancel(epoch)
+          try { await closeTrial(driver) } catch (error) { if (!failed) throw error as Error }
+          try { await restoreAndVerify(database, original) } finally { removeSnapshotFile() }
+        }
+      })
+    })
+    return
+  }
+  if (selectedClass === 'ReaderProgressPersistenceCrossModeTrial') {
+    describe(selectedClass, (): void => {
+      it('writesCanonicalSpreadAndContinuousSourcePages', 0, async (): Promise<void> => {
+        expect(args['-s readerLabWork']).assertEqual(WORK)
+        const driver = Driver.create()
+        const database = await store(await context(driver))
+        const original = await snapshotHistory(database)
+        writeSnapshot(original)
+        const events: number[] = []
+        const probe = connectNextNReaderObservedProgressProbe()
+        const epoch = probe.arm(WORK, (pageIndex: number): void => { events.push(pageIndex) })
+        let failed = false
+        try {
+          await seedPage(database, 2)
+          await launchReadWrite('spread', 'rtl')
+          await waitId(driver, 'rkit-close'); await waitBody(driver, 2); await waitBody(driver, 3)
+          await waitObserved(driver, events, 2); await waitHistory(database, 2)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('3 / 14')
+          await capture(driver, 'cross-spread-initial')
+          const viewport = await waitId(driver, 'rkit-image-viewport')
+          const spreadBounds = await viewport.getBounds()
+          const spreadWidth = spreadBounds.right - spreadBounds.left
+          const spreadY = Math.round((spreadBounds.top + spreadBounds.bottom) / 2)
+          await driver.swipe(Math.round(spreadBounds.left + spreadWidth * 0.18), spreadY,
+            Math.round(spreadBounds.left + spreadWidth * 0.82), spreadY, 700)
+          await waitBody(driver, 4); await waitBody(driver, 5)
+          await waitObserved(driver, events, 4); await waitHistory(database, 4)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('5 / 14')
+          await capture(driver, 'cross-spread-next')
+          await closeTrial(driver); await waitHistory(database, 4)
+
+          await launchReadWrite('continuous', 'ltr')
+          await waitId(driver, 'rkit-close'); await waitBody(driver, 4, true)
+          await waitObserved(driver, events, 4); await waitHistory(database, 4)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('5 / 14')
+          await capture(driver, 'cross-continuous-initial')
+          const list = await waitId(driver, 'rkit-continuous-list')
+          const listBounds = await list.getBounds()
+          const listX = Math.round((listBounds.left + listBounds.right) / 2)
+          for (let attempt = 0; attempt < 14 && events[events.length - 1] !== 5; attempt++) {
+            await driver.swipe(listX, Math.round(listBounds.top + (listBounds.bottom - listBounds.top) * 0.82),
+              listX, Math.round(listBounds.top + (listBounds.bottom - listBounds.top) * 0.18), 450)
+            await driver.delayMs(180)
+          }
+          await waitBody(driver, 5, true); await waitObserved(driver, events, 5); await waitHistory(database, 5)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('6 / 14')
+          await capture(driver, 'cross-continuous-next')
+          await closeTrial(driver); await waitHistory(database, 5)
+          expect(events.length).assertEqual(4)
+          expect(events[0]).assertEqual(2); expect(events[1]).assertEqual(4)
+          expect(events[2]).assertEqual(4); expect(events[3]).assertEqual(5)
+          console.info('[ReaderProgressPersistenceTest] crossMode events=[2,4,4,5] durable=5 spreadRtl=true continuous=true')
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'cross-mode-exception') } catch (_) {}
           throw error as Error
         } finally {
           probe.cancel(epoch)
