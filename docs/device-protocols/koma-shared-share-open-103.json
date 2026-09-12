@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-shared-share-open-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-share-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-open",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": { "project": "Koma", "codeIdentity": "signed 14553219 bytes sha256 d5a8a14625698e91f601624ef5d35ea25bf18d4d44e3f8839a82e2b61f0a52bd", "page": "Optional shared reader P2 with current-page share action", "deviceAlias": "device103", "deviceModel": "MLR-AL00", "foldState": "not-applicable", "orientation": "portrait", "resolution": "1600x2560", "notes": "Installs with data retention and opens the existing local P2. The share test opens and dismisses the system sheet without selecting a recipient." },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "temporary-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "neutral-unlock", "uiInput": ["swipe", "800", "2300", "800", "1200", "1800"], "pauseAfterMs": 500 },
+    { "name": "install-current-candidate", "hdcArgs": ["install", "-r", "/Users/honjow/git/Koma/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "start-optional-p2", "hdcArgs": ["shell", "aa", "start", "-b", "com.honjow.koma", "-a", "EntryAbility", "--ps", "readerLabWork", "local-archive-komasplitratioqa20260912a", "--ps", "readerLabUnit", "local-archive-komasplitratioqa20260912a-chapter-1", "--ps", "readerLabPage", "1", "--pb", "readerLabChrome", "true"], "pauseAfterMs": 1500 }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "styled-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/koma-shared-share-open.json", "-a"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-share-open.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-share-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-open/layout.json"] },
+    { "name": "screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/koma-shared-share-open.jpeg"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-share-open.jpeg", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-share-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-open/screen.jpeg"] }
+  ]
+}
