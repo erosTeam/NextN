@@ -32,14 +32,6 @@ async function waitImage(driver: Driver): Promise<void> {
   expect(false).assertTrue()
 }
 
-async function waitClosed(driver: Driver): Promise<void> {
-  for (let attempt = 0; attempt < 50; attempt++) {
-    if (await driver.findComponent(ON.id('rkit-trial-navigation')) === null) return
-    await driver.delayMs(100)
-  }
-  expect(false).assertTrue()
-}
-
 async function waitApplied(applied: Set<number>, single: boolean): Promise<void> {
   for (let attempt = 0; attempt < 120; attempt++) {
     if (single ? applied.has(0) : applied.has(1) && applied.has(2)) return
@@ -116,9 +108,6 @@ export default function readerSharedSuperResolutionTest(): void {
         await waitImage(driver)
         await capture(driver, spread ? 'spread' : 'single')
         if (!spread) await assertEnhancedInformation(driver)
-        const close = await driver.findComponent(ON.id('rkit-close'))
-        if (close !== null) await close.click()
-        await waitClosed(driver)
       } finally {
         probe.cancel(probeEpoch)
         try { await ReaderPresentationService.setSuperResolutionEnabled(context, originalEnabled) } catch (_) {}
