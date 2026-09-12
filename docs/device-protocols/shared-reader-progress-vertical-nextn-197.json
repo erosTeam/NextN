@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-progress-vertical-nextn-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main 557bc1b259105556584e2b276f195bf55f2856ada3fc637a467dc1239c42bb17; native 0a6a9374270c88982b68f7556ec50f483c85b1e472bafcabdaaed91d762c5691",
+    "page": "N678049 canonical durable progress through vertical paging and close/reopen",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Explicit debug-only host read/write permission. Test snapshots all eight original history columns, changes only the live optional Reader to vertical paging, verifies same-anchor dedupe and physical next-page persistence, then restores the exact original row or absence in finally."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-vertical-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native",
+  "preflight": [
+    { "name": "install-current-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "install-current-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 },
+    {
+      "name": "native-progress-vertical",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test",
+        "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderProgressPersistenceVerticalTrial",
+        "-s", "readerLabWork", "678049", "-s", "timeout", "180000"],
+      "timeoutSeconds": 210
+    }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "test-log", "hdcArgs": ["shell", "hilog", "-x", "-e", "ReaderProgressPersistenceTest"], "timeoutSeconds": 15 },
+    { "name": "host-log", "hdcArgs": ["shell", "hilog", "-x", "-e", "observed_progress"], "timeoutSeconds": 15 },
+    { "name": "receive-vertical-initial-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-vertical-initial.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-vertical-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/vertical-initial.json"] },
+    { "name": "receive-vertical-initial-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-vertical-initial.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-vertical-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/vertical-initial.png"] },
+    { "name": "receive-vertical-next-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-vertical-next.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-vertical-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/vertical-next.json"] },
+    { "name": "receive-vertical-next-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-vertical-next.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-vertical-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/vertical-next.png"] },
+    { "name": "receive-vertical-reopen-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-vertical-reopen.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-vertical-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/vertical-reopen.json"] },
+    { "name": "receive-vertical-reopen-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-vertical-reopen.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-vertical-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/vertical-reopen.png"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}

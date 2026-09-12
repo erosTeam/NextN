@@ -7,7 +7,7 @@
   "display": { "widthPx": 1260, "heightPx": 2720 },
   "context": {
     "project": "NextN",
-    "codeIdentity": "native 697084ef162d7f743916617bc24b2368508f333253d308cd1fc7c1b9e550e244 independent progress cleanup",
+    "codeIdentity": "native 0a6a9374270c88982b68f7556ec50f483c85b1e472bafcabdaaed91d762c5691 independent progress cleanup",
     "page": "system launcher after exact history cleanup",
     "deviceAlias": "device197",
     "deviceModel": "ALN-AL80",
@@ -16,7 +16,7 @@
     "resolution": "1260x2720",
     "notes": "Idempotent cleanup restores the saved eight-column history row if the thumbnail trial was interrupted. Home is pressed only after cleanup, then final layout, screen timeout, window, and music state are recorded."
   },
-  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-cross-mode-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/08-cross-mode-contract-cleanup",
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-vertical-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-cleanup",
   "preflight": [
     {
       "name": "native-progress-exact-cleanup",
@@ -33,9 +33,9 @@
   },
   "postflight": [
     { "name": "layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/rkit-thumbnail-progress-final.json", "-a"] },
-    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-thumbnail-progress-final.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-cross-mode-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/08-cross-mode-contract-cleanup/layout.json"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-thumbnail-progress-final.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-vertical-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-cleanup/layout.json"] },
     { "name": "screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/rkit-thumbnail-progress-final.jpeg"] },
-    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-thumbnail-progress-final.jpeg", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-cross-mode-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/08-cross-mode-contract-cleanup/screen.jpeg"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-thumbnail-progress-final.jpeg", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-vertical-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-cleanup/screen.jpeg"] },
     { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "10000"] },
     { "name": "cleanup-log", "hdcArgs": ["shell", "hilog", "-x", "-e", "ReaderProgressPersistenceTest"], "timeoutSeconds": 15 },
     { "name": "power", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },

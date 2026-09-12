@@ -208,6 +208,17 @@ async function launchReadWrite(layout: string = 'single', direction: string = 'l
   })
 }
 
+async function swipePaged(driver: Driver, vertical: boolean, forward: boolean): Promise<void> {
+  const bounds = await (await waitId(driver, 'rkit-image-viewport')).getBounds()
+  const x = Math.round((bounds.left + bounds.right) / 2)
+  const y = Math.round((bounds.top + bounds.bottom) / 2)
+  const extent = vertical ? bounds.bottom - bounds.top : bounds.right - bounds.left
+  const offset = Math.round(extent * 0.31) * (forward ? 1 : -1)
+  await driver.swipe(vertical ? x : x + offset, vertical ? y + offset : y,
+    vertical ? x : x - offset, vertical ? y - offset : y, 700)
+  await driver.delayMs(700)
+}
+
 async function armThumbnailReadWrite(pageIndex: number): Promise<void> {
   await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
     bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility', parameters: {
@@ -437,6 +448,56 @@ export default function readerProgressPersistenceTest(): void {
         } catch (error) {
           failed = true
           try { await capture(driver, 'cross-mode-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          probe.cancel(epoch)
+          try { await closeTrial(driver) } catch (error) { if (!failed) throw error as Error }
+          try { await restoreAndVerify(database, original) } finally { removeSnapshotFile() }
+        }
+      })
+    })
+    return
+  }
+  if (selectedClass === 'ReaderProgressPersistenceVerticalTrial') {
+    describe(selectedClass, (): void => {
+      it('writesCanonicalVerticalPageAndRestoresAfterClose', 0, async (): Promise<void> => {
+        expect(args['-s readerLabWork']).assertEqual(WORK)
+        const driver = Driver.create()
+        const database = await store(await context(driver))
+        const original = await snapshotHistory(database)
+        writeSnapshot(original)
+        const events: number[] = []
+        const probe = connectNextNReaderObservedProgressProbe()
+        const epoch = probe.arm(WORK, (pageIndex: number): void => { events.push(pageIndex) })
+        let failed = false
+        try {
+          await seedPage(database, 2)
+          await launchReadWrite()
+          await waitId(driver, 'rkit-close'); await waitBody(driver, 2)
+          await waitObserved(driver, events, 2); await waitHistory(database, 2)
+          await (await waitId(driver, 'rkit-reading-mode')).click()
+          await (await waitId(driver, 'rkit-vertical-paged')).click()
+          await driver.delayMs(600)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('3 / 14')
+          await capture(driver, 'vertical-initial')
+          await swipePaged(driver, true, true); await waitBody(driver, 3)
+          await waitObserved(driver, events, 3); await waitHistory(database, 3)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('4 / 14')
+          await capture(driver, 'vertical-next')
+          await closeTrial(driver); await waitHistory(database, 3)
+
+          await launchReadWrite()
+          await waitId(driver, 'rkit-close'); await waitBody(driver, 3)
+          await waitObserved(driver, events, 3); await waitHistory(database, 3)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('4 / 14')
+          await capture(driver, 'vertical-reopen')
+          await closeTrial(driver); await waitHistory(database, 3)
+          expect(events.length).assertEqual(3)
+          expect(events[0]).assertEqual(2); expect(events[1]).assertEqual(3); expect(events[2]).assertEqual(3)
+          console.info('[ReaderProgressPersistenceTest] vertical events=[2,3,3] durable=3 dedupeSameAnchor=true')
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'vertical-exception') } catch (_) {}
           throw error as Error
         } finally {
           probe.cancel(epoch)
