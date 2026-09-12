@@ -196,3 +196,47 @@ Evidence roots:
 This closes the complete-download production-entry gap only. Partial downloads,
 network fallback, offline thumbnail-rail aspect handling, failure/retry,
 thumbnail-origin transition and default replacement remain open.
+
+## Follow-up: completed-download local share
+
+The completed-download entry now also keeps current-page share source selection
+inside the NextN host adapter. The shared Reader emits the generic current-page
+share action; `NextNReaderLabAdapter` first asks the production data source for
+the verified local page and only falls back to the existing NH cache/network
+path when no complete downloaded page exists. No download-specific path or NH
+URL construction was added to reader-kit.
+
+On 197 the real Downloads-root flow passed 1/1 in 41.431 s:
+
+- gallery `556817` opened through its existing complete 46-page task and logged
+  `detail_source=download`;
+- page `46 / 46` rendered from the local file, and sharing logged
+  `NextNReaderShare source=download` before the system share sheet appeared;
+- the system sheet showed the current page preview; it was cancelled without a
+  recipient or delivery, then the shared Reader recovered on the same
+  `46 / 46` page with its action enabled;
+- closing returned to Downloads, the serialized queue stayed byte-identical,
+  and the selected gallery's eight history columns were restored exactly.
+
+Matching signed artifacts:
+
+- main `a30be0c2bfa46624a3f066323b855cce9faf1ff82e56f3249cfd653dac52ca57`
+  (9.647 s);
+- native `37d34d4052a86788b42b7f44a1ab68a78a69e89fe43ba35e08f23ac572087bb3`
+  (8.808 s).
+
+The independent cleanup test passed 1/1 in 3 ms. NextN was force-stopped,
+Home and the ordinary 10-second timeout were restored, and the lease was
+released. The whole shared-page, system-sheet, recovered-page and Downloads
+captures were inspected; the page remains stable across cancellation and no
+Reader chrome overlap or clipping is visible in these captured states.
+
+Evidence roots:
+
+- `.hermes-artifacts/20260912-shared-production-download-entry-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-local-share`
+- `.hermes-artifacts/20260912-shared-production-download-entry-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/04-local-share-cleanup`
+
+This closes local current-page sharing for a verified complete download only.
+Cache/network fallback sharing, partial downloads, offline thumbnail-rail aspect
+handling, failure/retry, thumbnail-origin transition and default replacement
+remain open.

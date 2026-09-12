@@ -97,17 +97,30 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
     const detail = this.details.get(target.unit.key.unit)
     const source = detail?.pages[target.sourceIndex]
     if (detail === undefined || source === undefined) throw new Error('missing_nh_share_page')
-    const url = NhApiClient.imageUrl(detail.mediaId, target.sourceIndex, source.extension)
-    const key = ReaderImageCacheService.cacheKey(detail.id, detail.mediaId, source.number, source.extension)
-    const result = await ReaderImageCacheService.load(this.context, url, key, false)
-    cancellation.check()
     const title = `${target.unit.title} ${target.sourceIndex + 1}`
     let record: systemShare.SharedRecord
-    if (result.localPath.length > 0 && result.bytes > 0) {
+    const downloadedUri: string = this.source.localPageUri(detail, target.sourceIndex)
+    if (downloadedUri.length > 0) {
+      cancellation.check()
+      const downloadedPath: string = downloadedUri.startsWith('file://')
+        ? downloadedUri.substring('file://'.length)
+        : downloadedUri
+      console.info('[NextNReaderShare] source=download')
       record = { utd: utd.UniformDataType.FILE, title, description: title,
-        uri: fileUri.getUriFromPath(result.localPath) }
+        uri: fileUri.getUriFromPath(downloadedPath) }
     } else {
-      record = { utd: utd.UniformDataType.HYPERLINK, title, content: url }
+      const url = NhApiClient.imageUrl(detail.mediaId, target.sourceIndex, source.extension)
+      const key = ReaderImageCacheService.cacheKey(detail.id, detail.mediaId, source.number, source.extension)
+      const result = await ReaderImageCacheService.load(this.context, url, key, false)
+      cancellation.check()
+      if (result.localPath.length > 0 && result.bytes > 0) {
+        console.info('[NextNReaderShare] source=cache')
+        record = { utd: utd.UniformDataType.FILE, title, description: title,
+          uri: fileUri.getUriFromPath(result.localPath) }
+      } else {
+        console.info('[NextNReaderShare] source=hyperlink')
+        record = { utd: utd.UniformDataType.HYPERLINK, title, content: url }
+      }
     }
     return new ReaderSystemSharePresentation(this.context, new systemShare.SharedData(record), {
       selectionMode: systemShare.SelectionMode.SINGLE, previewMode: systemShare.SharePreviewMode.DEFAULT,

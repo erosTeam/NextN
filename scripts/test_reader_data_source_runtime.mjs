@@ -113,6 +113,10 @@ const adapterSource = fs.readFileSync(
 )
 assert.ok(adapterSource.indexOf('this.source.localPageUri(detail, page.sourceIndex)') <
   adapterSource.indexOf("if (kind === 'thumbnail')"), 'verified downloads must precede remote thumbnails')
+assert.ok(adapterSource.indexOf('this.source.localPageUri(detail, target.sourceIndex)') <
+  adapterSource.indexOf('ReaderImageCacheService.cacheKey(detail.id, detail.mediaId, source.number, source.extension)'),
+  'verified downloads must precede network/cache share preparation')
+assert.match(adapterSource, /\[NextNReaderShare\] source=download/)
 assert.match(adapterSource, /this\.source\.openDetail\(id, cancellation\)/)
 
 console.log('PASS production Reader data source order, one-shot Detail seed, cancellation and local-page precedence')

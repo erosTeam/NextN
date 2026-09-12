@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-production-download-share-cleanup-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "cleanup for main a30be0c2bfa46624a3f066323b855cce9faf1ff82e56f3249cfd653dac52ca57; native 37d34d4052a86788b42b7f44a1ab68a78a69e89fe43ba35e08f23ac572087bb3",
+    "page": "launcher after local-share trial cleanup and legacy backend reset",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Idempotent exact-row cleanup after the local-file share trial. No download task or shared destination is modified."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-download-entry-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/04-local-share-cleanup",
+  "preflight": [
+    {
+      "name": "native-exact-history-cleanup",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test",
+        "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderProductionDownloadEntryCleanupTrial",
+        "-s", "timeout", "60000"],
+      "timeoutSeconds": 90
+    },
+    { "name": "force-stop-nextn-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "10000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "return-device-to-launcher", "uiInput": ["keyEvent", "Home"], "pauseAfterMs": 500 }
+    ]
+  },
+  "postflight": [
+    { "name": "cleanup-log", "hdcArgs": ["shell", "hilog -x | grep -E 'ReaderProductionDownloadEntryTrial' | tail -80"], "timeoutSeconds": 15 },
+    { "name": "power", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}

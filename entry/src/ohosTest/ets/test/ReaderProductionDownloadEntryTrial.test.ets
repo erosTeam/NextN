@@ -3,6 +3,7 @@ import { abilityDelegatorRegistry, Component, Driver, ON } from '@kit.TestKit'
 import { common } from '@kit.AbilityKit'
 import { relationalStore } from '@kit.ArkData'
 import { fileIo } from '@kit.CoreFileKit'
+import { KeyCode } from '@kit.InputKit'
 import { DownloadQueueService, NhDownloadTask } from 'shared'
 
 const CAPTURE_PREFIX: string = 'reader-production-download-entry'
@@ -183,6 +184,26 @@ async function closeSharedReader(driver: Driver): Promise<void> {
   throw new Error('Shared Reader did not return to Downloads')
 }
 
+async function shareCurrentPageAndCancel(driver: Driver, expectedTotal: number): Promise<void> {
+  const share: Component = await waitId(driver, 'rkit-share-image')
+  expect(await share.isEnabled()).assertTrue()
+  await share.click()
+  await driver.delayMs(2500)
+  await capture(driver, 'share-panel')
+  expect(await (await waitId(driver, 'rkit-share-image')).isEnabled()).assertFalse()
+  await driver.triggerKey(KeyCode.KEYCODE_BACK)
+  for (let attempt: number = 0; attempt < 40; attempt += 1) {
+    const current = await driver.findComponent(ON.id('rkit-share-image'))
+    if (current !== null && await current.isEnabled()) {
+      expect(pageTotal(await (await waitId(driver, 'rkit-chrome-page')).getText())).assertEqual(expectedTotal)
+      await capture(driver, 'shared-after-share')
+      return
+    }
+    await driver.delayMs(250)
+  }
+  throw new Error('Reader share action did not recover after system-sheet cancellation')
+}
+
 async function capture(driver: Driver, name: string): Promise<void> {
   const delegator = abilityDelegatorRegistry.getAbilityDelegator()
   const cache: string = delegator.getAppContext().cacheDir
@@ -221,6 +242,7 @@ export default function readerProductionDownloadEntryTrialTest(): void {
         const total: number = await waitSharedReady(driver)
         expect(total).assertEqual(task.pageCount)
         await capture(driver, 'shared-local')
+        await shareCurrentPageAndCancel(driver, total)
 
         await closeSharedReader(driver)
         await waitId(driver, 'nextn-download-queue-root')
@@ -231,7 +253,7 @@ export default function readerProductionDownloadEntryTrialTest(): void {
         restored = true
         removeSnapshot()
         console.info(`[ReaderProductionDownloadEntryTrial] gallery=${task.galleryId} pages=${total} ` +
-          'shared=true localQueueUnchanged=true returned=true historyRestored=true')
+          'shared=true localShareCancelled=true localQueueUnchanged=true returned=true historyRestored=true')
       } catch (error) {
         failed = true
         try { await capture(driver, 'exception') } catch (_) {}
