@@ -4,8 +4,8 @@
   "description": "NextN native reader feature",
   "main": "src/main/ets/Index.ets",
   "dependencies": {
-    "@reader-kit/core": "file:../../../reader-kit/reader-core",
-    "@reader-kit/ui": "file:../../../reader-kit/reader-ui",
+    "@reader-kit/core": "file:../../third_party/reader-kit/reader-core",
+    "@reader-kit/ui": "file:../../third_party/reader-kit/reader-ui",
     "shared": "file:../../shared"
   }
 }
