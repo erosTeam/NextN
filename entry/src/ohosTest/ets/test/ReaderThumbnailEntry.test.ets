@@ -23,8 +23,10 @@ function clearEntryCaptures(names: string[] = captureNames): void {
 }
 
 export async function captureEntry(driver: Driver, name: string): Promise<void> {
+  const delegator = abilityDelegatorRegistry.getAbilityDelegator()
   const cache = abilityDelegatorRegistry.getAbilityDelegator().getAppContext().cacheDir
-  expect(await driver.dumpLayout(`${cache}/rkit-entry-${name}.json`)).assertTrue()
+  expect((await delegator.executeShellCommand(
+    `uitest dumpLayout -p /data/local/tmp/rkit-entry-${name}.json -a`, 15)).exitCode).assertEqual(0)
   expect(await driver.screenCap(`${cache}/rkit-entry-${name}.png`)).assertTrue()
 }
 
@@ -39,37 +41,31 @@ async function armEntry(driver: Driver, delayed: boolean = false): Promise<void>
 }
 
 export async function findFirstDetailThumbnail(driver: Driver): Promise<Component> {
-  // The accepted portrait Detail metadata List fills the current root Navigation.
-  // Select that real owner by its current bounds, never the nested horizontal thumbnail List.
-  let owner: Component | null = null
-  for (let attempt = 0; attempt < 30; attempt++) {
-    const root = await driver.findComponent(ON.id('nextn-root-navigation'))
-    if (root !== null) {
-      const rootBounds = await root.getBounds()
-      const lists = await driver.findComponents(ON.type('List').within(ON.id('nextn-root-navigation')))
-      const owners: Component[] = []
-      for (const list of lists) {
-        const bounds = await list.getBounds()
-        if (bounds.left === rootBounds.left && bounds.right === rootBounds.right &&
-          bounds.top === rootBounds.top && bounds.bottom === rootBounds.bottom) owners.push(list)
+  // The Detail P1 thumbnail has a host-owned, page-specific semantic id. Resolve that
+  // identity directly after recomposition instead of retaining a List handle across
+  // the thumbnail-entry Want, where every existing List wrapper can become stale.
+  const selector = ON.id(FIRST_THUMBNAIL, MatchPattern.REG_EXP)
+  for (let attempt = 0; attempt < 40; attempt++) {
+    try {
+      if (await driver.findComponent(ON.id('nextn-root-navigation')) === null) {
+        await driver.delayMs(300)
+        continue
       }
-      if (owners.length > 1) throw new Error('Ambiguous Detail metadata List; no coordinate fallback')
-      if (owners.length === 1) { owner = owners[0]; break }
+      const settled = await driver.findComponent(selector)
+      if (settled !== null) {
+        const sourceId = await settled.getId()
+        expect(new RegExp(FIRST_THUMBNAIL).test(sourceId)).assertTrue()
+        const bounds = await settled.getBounds()
+        expect(bounds.right > bounds.left && bounds.bottom > bounds.top).assertTrue()
+        return settled
+      }
+    } catch (error) {
+      console.info(`[ReaderEntryTest] Detail P1 recomposed during direct lookup attempt=${attempt + 1} ` +
+        `error=${String(error)}`)
     }
     await driver.delayMs(300)
   }
-  if (owner === null) throw new Error('Current full-height Detail metadata List is unavailable')
-  const selector = ON.id(FIRST_THUMBNAIL, MatchPattern.REG_EXP).within(ON.id('nextn-root-navigation'))
-  const source = await owner.scrollSearch(selector, true)
-  if (source === null) throw new Error('Detail P1 thumbnail was not found by semantic scrollSearch')
-  const matches = await driver.findComponents(selector)
-  if (matches.length !== 1) throw new Error('Detail P1 source identity is not unique')
-  const sourceId = await source.getId()
-  expect(new RegExp(FIRST_THUMBNAIL).test(sourceId)).assertTrue()
-  const bounds = await source.getBounds()
-  expect(bounds.right > bounds.left && bounds.bottom > bounds.top).assertTrue()
-  // Refetch by the resolved source ID after scrolling so the click uses the settled native node.
-  return await driver.findComponent(ON.id(sourceId))
+  throw new Error('Current Detail P1 thumbnail is unavailable after direct semantic lookup')
 }
 
 export async function assertNoReader(driver: Driver): Promise<void> {

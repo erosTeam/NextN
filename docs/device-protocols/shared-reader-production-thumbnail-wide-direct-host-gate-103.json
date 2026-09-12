@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-production-thumbnail-wide-direct-host-gate-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main ac7bc57d462b8187a9cc8eb08616cd946d7ea990771e7c1463c55be45779de92; native ee64f9c55c7c23f78286d24e5f2728462b816620f5862d8376ff1acf99be56b3",
+    "page": "Awake and unlocked tablet gate before the shared direct-host ordinary Detail Read regression",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Wake and neutral unlock precede the authoritative timeout write and PowerManager/window readback. No app data is changed."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-direct-host-gate",
+  "preflight": [
+    { "name": "original-power", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "neutral-lockscreen-unlock", "uiInput": ["swipe", "800", "2300", "800", "1200", "2000"], "pauseAfterMs": 500 }
+    ]
+  },
+  "postflight": [
+    { "name": "temporary-long-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "power-ready", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "window-ready", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}

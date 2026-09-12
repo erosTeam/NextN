@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-production-entry-cancel-gate-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main 43442739e762dd0bc063d6d89074f1345023fc66b0c16c81854eb461559a091c; native 63d2d671092420aef03f0ee7d5cc969037c3273b4f8229a0e4f869cd2ca5241a",
+    "page": "Wake and neutral unlock before current direct-host pending-preview cancellation regression",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Wake, neutral unlock and power/window readback only; no app data or reader settings are changed."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-production-entry-cancel-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/25-focused-regex-gate",
+  "preflight": [
+    { "name": "original-power", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "neutral-lockscreen-unlock", "uiInput": ["swipe", "630", "2450", "630", "1250", "1800"], "pauseAfterMs": 500 }
+    ]
+  },
+  "postflight": [
+    { "name": "temporary-long-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "power-ready", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "window-ready", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}

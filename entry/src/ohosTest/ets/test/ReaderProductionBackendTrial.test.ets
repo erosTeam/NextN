@@ -186,6 +186,14 @@ async function launchBackend(backend: string, directGallery: boolean): Promise<v
   })
 }
 
+async function waitBackendSelection(driver: Driver, backend: string): Promise<void> {
+  for (let attempt = 0; attempt < 80; attempt++) {
+    if (connectNextNReaderBackendSelection().current() === backend) return
+    await driver.delayMs(100)
+  }
+  throw new Error(`Production backend selection did not become ${backend}`)
+}
+
 async function waitId(driver: Driver, id: string, attempts: number = 80): Promise<Component> {
   for (let attempt = 0; attempt < attempts; attempt++) {
     const component = await driver.findComponent(ON.id(id))
@@ -1099,11 +1107,28 @@ export default function readerProductionBackendTrialTest(): void {
           expect(after.bottom).assertEqual(before.bottom)
           await capture(driver, 'wide-closed')
 
+          await launchBackend('legacy', true)
+          await waitBackendSelection(driver, NextNReaderBackend.LEGACY)
+          const legacySource = await findWideDetailThumbnail(driver, 2)
+          const legacySourceId = await legacySource.getId()
+          const legacyBefore = await legacySource.getBounds()
+          await legacySource.click()
+          await waitLegacyReady(driver)
+          await capture(driver, 'wide-legacy')
+          await closeAnyReader(driver)
+          const legacyReturned = await waitId(driver, legacySourceId)
+          const legacyAfter = await legacyReturned.getBounds()
+          expect(legacyAfter.left).assertEqual(legacyBefore.left)
+          expect(legacyAfter.top).assertEqual(legacyBefore.top)
+          expect(legacyAfter.right).assertEqual(legacyBefore.right)
+          expect(legacyAfter.bottom).assertEqual(legacyBefore.bottom)
+          await capture(driver, 'wide-legacy-closed')
+
           await restoreAndVerify(database, original)
           restored = true
           removeSnapshot()
           console.info('[ReaderProductionBackendTrial] thumbnailWideShared=true clicked=2 persistedBefore=6 ' +
-            'sourceRestored=true debugTrialAbsent=true historyRestored=true')
+            'sourceRestored=true debugTrialAbsent=true legacyCompared=true historyRestored=true')
         } catch (error) {
           failed = true
           try { await capture(driver, 'wide-exception') } catch (_) {}
