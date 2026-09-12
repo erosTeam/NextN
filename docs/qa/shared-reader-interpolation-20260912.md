@@ -105,10 +105,18 @@ The corrected full-screen thumbnail-entry run on device 197 is under `.hermes-ar
 - All four whole screenshots were inspected: zoomed portrait, landscape, returned portrait, and post-rotation pan. Original orientation and timeout 10000 ms were restored; the 197 lease was released. No device 237 action occurred.
 - Matching NextE packages: main 62,713,523 bytes, SHA256 `4ae42e70a2ddabf011ce9d2572ee63b9a7229f3db3dd149cda7f54cfcbabe1a0`; native 67,603,800 bytes, SHA256 `d2ebc01388b64fcab8b021e27c13f25c29cac2e21e3e9d5409c626fb29e7393a`. Both builds passed.
 
+The follow-up actual enum run is under `.hermes-artifacts/20260912-interpolation-nexte-continuous-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/`:
+
+- The same real full-screen thumbnail entry reached continuous P1, then the production settings repository changed only `reading.imageScalingQuality` from its original `medium` to Low and High in sequence.
+- The scoped Inspector subtree contained one actual Image. Its retained evidence is exactly `ImageInterpolation.Low` and then `ImageInterpolation.High`; neither result is inferred from a label or shared state snapshot.
+- Native report: 1 run, 0 failure, 0 error, 1 pass. The same entry epoch closed to the retained Detail P1 source. The changed preference was restored to `medium` in `finally`, and the before/after preference snapshots both confirm `reading.imageScalingQuality=medium` (unrelated background sync timestamps make raw-file byte identity unsuitable here).
+- Both whole screenshots were inspected. The continuous page remains full-width with coherent reader chrome at both sampling points. Timeout returned to 10000 ms and the 197 lease was released; device 237 was not used.
+- Matching native HAP: 67,627,018 bytes, SHA256 `96c37188fceeb60d9d5c619470fd9a7545563717918497a4868b0444ed3cca1b`; signed `entry@ohosTest` build passed in 11 s 675 ms. The main HAP is the same package recorded above.
+
 The NextN device-protocol entrypoint now performs a second result gate after the manifest runner: Hypium output must report every test passed with zero failures/errors, and each `file recv` must report no HDC receive failure and produce a non-empty local artifact. This specifically prevents HDC exit code 0 from turning an internal test error or missing capture into a completed acceptance.
 
 ## Accepted and still open
 
-Accepted only for these named paths: shared chain source/build gate; NextN actual Low/Medium/High paged Image leaves and real page turn; NextN local-fixture 103 and real-NH long-strip 197 continuous full-width geometry and vertical reach; Koma canonical medium paged plus low/high normal-UI selection, low/high continuous rendering/scroll, and corrected 1600 px continuous-row regression; NextE optional full-screen continuous entry with fit-width, zoom/pan, portrait-landscape-portrait reflow, and retained-thumbnail close; exact state restoration; NextN final quality-row visual separation on 197.
+Accepted only for these named paths: shared chain source/build gate; NextN actual Low/Medium/High paged Image leaves and real page turn; NextN local-fixture 103 and real-NH long-strip 197 continuous full-width geometry and vertical reach; Koma canonical medium paged plus low/high normal-UI selection, low/high continuous rendering/scroll, and corrected 1600 px continuous-row regression; NextE optional full-screen continuous entry with actual Low/High Image enums, fit-width, zoom/pan, portrait-landscape-portrait reflow, and retained-thumbnail close; exact state restoration; NextN final quality-row visual separation on 197.
 
-Still open: NextE actual Low/High enum sampling, continuous Low/High plus cropped/split-body native enum sampling, failure/retry combinations, and complete default-reader replacement/regression acceptance. These gaps do not justify changing the existing default readers.
+Still open: cropped/split-body native enum sampling, failure/retry combinations, and complete default-reader replacement/regression acceptance. These gaps do not justify changing the existing default readers.
