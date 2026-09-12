@@ -1,14 +1,15 @@
-import { ReaderTrialLayoutCommit, ReaderKeepScreenOn, ReaderTapAction } from '@reader-kit/ui'
+import { ReaderTrialLayoutCommit, ReaderKeepScreenOn, ReaderTapAction, ReaderRuntimePolicyIntent } from '@reader-kit/ui'
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
 import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderLayout,
-  ReaderReadingAnchor } from '@reader-kit/core'
+  ReaderReadingAnchor, ReaderDisplayPolicy } from '@reader-kit/core'
 import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility, ReaderLabAssetProbe, ReaderVolumeKeys } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
-import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea, LayoutSafeAreaState, ThemeDisplayState, ThemeTokens, nextNHdsTitle,
-  ReaderTrialOriginalProbe, ReaderTrialOriginalFacts } from 'shared'
+import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea,
+  LayoutSafeAreaState, ThemeDisplayState, ThemeTokens, nextNHdsTitle, ReaderTrialOriginalProbe,
+  ReaderTrialOriginalFacts, appSheetOptions, AppStrings, NhGalleryExternalOpenService } from 'shared'
 import { NextNReaderOriginalProbeProvider } from './NextNReaderOriginalProbeProvider'
 import { NextNReaderOriginalProbeCatalog } from './NextNReaderOriginalProbeCatalog'
 import { ReaderSystemImageSaveHost } from '@reader-kit/ui'
@@ -30,6 +31,7 @@ import {
   NextNReaderProductionFailureProbeProvider,
 } from './NextNReaderProductionFailureProbe'
 import { NextNReaderImageShareHost } from './NextNReaderImageShareHost'
+import { NextNReaderRuntimePreferences } from './NextNReaderRuntimePreferences'
 
 @ComponentV2
 export struct NextNReaderLabPage {
@@ -43,6 +45,8 @@ export struct NextNReaderLabPage {
   @Param externalRouteActive: boolean = false
   @Param hostClosing: boolean = false
   @Param prepareChrome: ((isCurrent: () => boolean) => Promise<boolean>) | null = null
+  @Param hostSettingsAvailable: boolean = false
+  @BuilderParam settingsSheetContent: (dismiss: () => void) => void = this.EmptySettingsSheetContent
   @Event onClose: () => void = () => {}
   @Event onShown: () => void = () => {}
   @Event onStatusBarVisible: (visible: boolean) => void = () => {}
@@ -65,6 +69,7 @@ export struct NextNReaderLabPage {
   private trialWindow: ReaderTrialWindow = new ReaderTrialWindow(null, true)
   private keepScreenOn: ReaderKeepScreenOn | null = null
   @Local private closeRequested: boolean = false
+  @Local private readerSettingsSheetShown: boolean = false
   @Local private presentationReady: boolean = false
   private volumeDisposed: boolean = false
   private input: ReaderInputPort = new ReaderInputPort()
@@ -346,17 +351,69 @@ export struct NextNReaderLabPage {
   }
 
   @Monitor('routeActive', 'labVisibility.foreground', 'entryPhase', 'readerPresentation.volumeKeyTurn',
-    'presentationReady', 'closeRequested', 'hostClosing', 'session')
+    'presentationReady', 'closeRequested', 'hostClosing', 'readerSettingsSheetShown', 'session')
   syncReaderActivity(): void {
     this.syncKeepScreenOn()
     const enabled = this.request.volumeKeysOverride ?? (this.presentationReady && this.readerPresentation.volumeKeyTurn)
     this.volumeKeys.setActive(!this.volumeDisposed && !this.closeRequested && !this.hostClosing &&
       this.session !== null && this.request.readingChrome && enabled &&
-      this.hostRouteActive() && this.labVisibility.foreground && this.entryPhase !== 'layout')
+      this.hostRouteActive() && this.labVisibility.foreground && !this.readerSettingsSheetShown &&
+      this.entryPhase !== 'layout')
   }
 
   private hostRouteActive(): boolean {
     return this.embedded ? this.externalRouteActive : this.routeActive
+  }
+
+  @Builder
+  private EmptySettingsSheetContent(_dismiss: () => void) {
+    Column() {}
+  }
+
+  private openHostSettings(): void {
+    if (!this.hostSettingsAvailable || !this.request.productionSources || this.closeRequested || this.hostClosing) return
+    this.readerSettingsSheetShown = true
+  }
+
+  private closeHostSettings(): void {
+    this.readerSettingsSheetShown = false
+  }
+
+  private showHostActionUnavailable(key: string): void {
+    try { this.getUIContext().getPromptAction().showToast({ message: AppStrings.get(key) }) } catch (_) {}
+  }
+
+  private async openCurrentGalleryExternally(source: ReaderUnitKey): Promise<void> {
+    const galleryId = Number(source.work)
+    if (!this.request.productionSources || !Number.isSafeInteger(galleryId) || galleryId <= 0 ||
+      source.work !== this.request.work ||
+      !await NhGalleryExternalOpenService.openCanonicalGallery(
+        this.getUIContext().getHostContext() as common.UIAbilityContext,
+        galleryId,
+      )) this.showHostActionUnavailable('gallery_error_external_open_unavailable')
+  }
+
+  private persistRuntimePolicy(policy: ReaderDisplayPolicy, intent: ReaderRuntimePolicyIntent): void {
+    if (!this.request.productionSources) return
+    const context = this.getUIContext().getHostContext() as common.UIAbilityContext
+    if (intent === 'layout') void NextNReaderRuntimePreferences.applyLayout(context, policy)
+    else if (intent === 'direction') void NextNReaderRuntimePreferences.applyDirection(context, policy)
+    else if (intent === 'spread_layout') void NextNReaderRuntimePreferences.applySpreadLayout(context, policy)
+    else if (intent === 'first_page_alone') {
+      const galleryId = Number(this.request.work)
+      if (Number.isSafeInteger(galleryId) && galleryId > 0) {
+        void NextNReaderRuntimePreferences.applyFirstPageAlone(context, galleryId, policy)
+      }
+    }
+  }
+
+  private persistCrop(enabled: boolean, policy: ReaderDisplayPolicy): void {
+    if (!this.request.productionSources) return
+    void NextNReaderRuntimePreferences.applyCrop(
+      this.getUIContext().getHostContext() as common.UIAbilityContext,
+      policy,
+      enabled,
+    )
   }
 
   /** Production inherits the canonical mode-specific choice; debug trials keep their explicit request contract. */
@@ -384,8 +441,14 @@ export struct NextNReaderLabPage {
               showPageNumber: this.readerPresentation.showPageNumber,
               cropBorders: this.initialCropBorders(),
               cropAvailable: !this.request.thumbnailEntry,
+              hostSettingsAvailable: this.hostSettingsAvailable,
+              onHostSettings: (): void => { this.openHostSettings() },
+              externalOpenAvailable: this.request.productionSources === true,
+              onExternalOpen: (source: ReaderUnitKey): void => { void this.openCurrentGalleryExternally(source) },
+              onRuntimePolicy: (policy, intent): void => { this.persistRuntimePolicy(policy, intent) },
+              onCropChanged: (enabled, policy): void => { this.persistCrop(enabled, policy) },
               entryTransition: this.entryTransition, entryPreview: this.entryPreview,
-              active: this.hostRouteActive() && this.labVisibility.foreground,
+              active: this.hostRouteActive() && this.labVisibility.foreground && !this.readerSettingsSheetShown,
               closing: this.closeRequested || this.hostClosing,
               beforeShowChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareChromeShow(isCurrent),
               topInset: this.safeArea.topAvoidHeight, bottomInset: this.safeArea.bottomAvoidHeight,
@@ -404,6 +467,15 @@ export struct NextNReaderLabPage {
     .width('100%').height('100%')
     .padding({ top: this.request.readingChrome ? 0 : this.safeArea.topAvoidHeight + ThemeTokens.TITLE_BAR_HEIGHT,
       bottom: this.request.readingChrome ? 0 : this.safeArea.bottomAvoidHeight })
+    .bindSheet(
+      $$this.readerSettingsSheetShown,
+      this.settingsSheetContent((): void => { this.closeHostSettings() }),
+      appSheetOptions({
+        detents: [SheetSize.MEDIUM, SheetSize.LARGE],
+        showClose: false,
+        onDisappear: (): void => { this.closeHostSettings() },
+      }),
+    )
   }
 
   build() {

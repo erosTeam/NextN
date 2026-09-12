@@ -732,6 +732,76 @@ export default function readerProductionBackendTrialTest(): void {
     })
     return
   }
+  if (selectedClass === 'ReaderProductionHostActionsTrial') {
+    describe(selectedClass, (): void => {
+      it('usesHostSettingsAndExposesExternalOpenWithoutDuplicatingTopRuntimeMenu', 0, async (): Promise<void> => {
+        const driver = Driver.create()
+        let database: relationalStore.RdbStore | null = null
+        let originalHistory: HistorySnapshot | null = null
+        let restored = false
+        let failed = false
+        try {
+          await launchBackend('shared', true)
+          database = await store(await entryContext(driver))
+          originalHistory = await snapshotHistory(database)
+          writeSnapshot(originalHistory)
+          await seedHistoryPage(database, 2)
+
+          await (await waitDetailRead(driver)).click()
+          expect(await waitSharedReady(driver)).assertEqual(2)
+          expect(await waitId(driver, 'rkit-host-settings') !== null).assertTrue()
+          expect(await driver.findComponent(ON.id('rkit-runtime-settings'))).assertNull()
+          expect(await waitId(driver, 'rkit-reading-mode') !== null).assertTrue()
+
+          await (await waitId(driver, 'rkit-host-settings')).click()
+          await waitId(driver, 'HdsTitleBar')
+          for (let attempt = 0; attempt < 80; attempt++) {
+            if (await driver.findComponent(ON.text(AppStrings.get('settings_reader_group_layout'))) !== null) break
+            await driver.delayMs(100)
+          }
+          expect(await driver.findComponent(ON.text(AppStrings.get('settings_reader_group_layout'))) !== null).assertTrue()
+          await capture(driver, 'host-settings')
+          const sheetClose = await driver.findComponent(
+            ON.type('Button').within(ON.type('SheetPage'))
+          )
+          expect(sheetClose !== null).assertTrue()
+          await sheetClose!.click()
+          for (let attempt = 0; attempt < 80; attempt++) {
+            if (await driver.findComponent(ON.type('SheetPage')) === null) break
+            await driver.delayMs(100)
+          }
+          expect(await driver.findComponent(ON.type('SheetPage'))).assertNull()
+          await waitId(driver, 'rkit-host-settings')
+
+          await (await waitId(driver, 'rkit-more')).click()
+          expect(await waitId(driver, 'rkit-open-external') !== null).assertTrue()
+          await capture(driver, 'host-more')
+          await driver.pressBack()
+          await closeAnyReader(driver)
+          await waitDetailRead(driver)
+          await capture(driver, 'host-closed')
+
+          await restoreAndVerify(database, originalHistory)
+          restored = true
+          removeSnapshot()
+          console.info('[ReaderProductionBackendTrial] hostSettings=true topRuntimeDuplicate=false ' +
+            'bottomRuntime=true externalOpen=true historyRestored=true')
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'host-actions-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+          if (!restored && database !== null && originalHistory !== null) {
+            await restoreAndVerify(database, originalHistory)
+            removeSnapshot()
+          }
+          await launchBackend('legacy', false)
+        }
+      })
+    })
+    return
+  }
   if (selectedClass === 'ReaderProductionBackendTrial') {
     describe(selectedClass, (): void => {
       it('routesNormalReadThroughSharedBodyThenRollsBackToLegacyBody', 0, async (): Promise<void> => {

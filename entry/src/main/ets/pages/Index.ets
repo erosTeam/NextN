@@ -3245,6 +3245,10 @@ struct Index {
         externalRouteActive: this.readerDestinationVisible,
         hostClosing: this.readerDestinationClosing,
         prepareChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareSharedReaderChrome(isCurrent),
+        hostSettingsAvailable: true,
+        settingsSheetContent: (dismiss: () => void): void => {
+          this.ReaderSettingsSheet(dismiss)
+        },
         onReaderPresentationChanged: (
           chromeVisible: boolean,
           fullscreen: boolean,
