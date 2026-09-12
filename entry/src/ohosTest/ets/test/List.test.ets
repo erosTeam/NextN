@@ -15,6 +15,7 @@ import readerInitialPolicyTest from './ReaderInitialPolicy.test'
 import readerThumbnailInitialPolicyTest from './ReaderThumbnailInitialPolicy.test'
 import readerTapZonesTest from './ReaderTapZones.test'
 import readerPageNumberTest from './ReaderPageNumber.test'
+import readerInterpolationTest from './ReaderInterpolation.test'
 import readerThumbnailRailTest from './ReaderThumbnailRail.test'
 import readerSliderLifecycleTest from './ReaderSliderLifecycle.test'
 import readerThumbnailRetryTest from './ReaderThumbnailRetry.test'
@@ -42,6 +43,7 @@ export default function testsuite(): void {
   readerThumbnailInitialPolicyTest()
   readerTapZonesTest()
   readerPageNumberTest()
+  readerInterpolationTest()
   readerThumbnailRailTest()
   readerSliderLifecycleTest()
   readerThumbnailRetryTest()

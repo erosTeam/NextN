@@ -214,6 +214,8 @@ export struct NextNReaderLabPage {
         if (this.session !== null) {
           if (this.request.readingChrome) {
             ReaderSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
+              imageInterpolation: this.readerPresentation.imageScalingQuality === 'low' ? ImageInterpolation.Low :
+                this.readerPresentation.imageScalingQuality === 'high' ? ImageInterpolation.High : ImageInterpolation.Medium,
               input: this.input, imageShare: this.imageShare, imageSave: this.imageSave,
               tapZoneResolver: (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout),
               autoReadAvailable: true, autoReadSeconds: this.readerPresentation.autoPageSeconds,
