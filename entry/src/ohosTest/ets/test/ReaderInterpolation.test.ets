@@ -97,11 +97,11 @@ async function assertHost(): Promise<void> {
   expect(r.size.width > 0 && r.size.height > 0).assertTrue()
   console.info('[ReaderInterpolationTest] exitHost=NextN window=' + w.getWindowProperties().id + ' root=' + JSON.stringify(r))
 }
-async function launch(d: Driver, work: string, pageIndex: number): Promise<void> {
+async function launch(d: Driver, work: string, pageIndex: number, continuous: boolean): Promise<void> {
   await abilityDelegatorRegistry.getAbilityDelegator().startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
     parameters: { readerLabWork: work, readerLabPage: String(pageIndex), readerLabChrome: 'true', readerLabVolumeKeys: 'false',
-      readerLabEntryLayout: work === '__rkit_local_fixture__' ? 'continuous' : '' } })
-  await waitId(d, 'rkit-close'); await body(d, pageIndex, work === '__rkit_local_fixture__')
+      readerLabEntryLayout: continuous ? 'continuous' : '' } })
+  await waitId(d, 'rkit-close'); await body(d, pageIndex, continuous)
 }
 
 function safeValue(value: string | number | undefined): string | null {
@@ -191,18 +191,20 @@ async function sample(d: Driver, index: number, canonical: string, name: string,
 export default function readerInterpolationTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
   const selectedClass = args['-s class']
-  if (selectedClass !== 'ReaderInterpolationTrial' && selectedClass !== 'ReaderInterpolationContinuousTrial') return
-  const continuous = selectedClass === 'ReaderInterpolationContinuousTrial'
+  if (selectedClass !== 'ReaderInterpolationTrial' && selectedClass !== 'ReaderInterpolationContinuousTrial' &&
+    selectedClass !== 'ReaderInterpolationContinuousOnlineTrial') return
+  const continuous = selectedClass !== 'ReaderInterpolationTrial'
+  const localFixture = selectedClass === 'ReaderInterpolationContinuousTrial'
   describe(selectedClass, (): void => {
     it('readOnlyScopedInspectorSampling', 0, async (): Promise<void> => {
-      const work = continuous ? '__rkit_local_fixture__' : '678049'
-      const sourceIndex = continuous ? 0 : 2
+      const work = localFixture ? '__rkit_local_fixture__' : '678049'
+      const sourceIndex = localFixture ? 0 : 2
       expect(args['-s readerLabWork']).assertEqual(work)
       const d = Driver.create(), holder = new HostContext(), probe = connectNextNReaderLabContextProbe()
       const epoch = probe.arm(work, (ctx: common.UIAbilityContext): void => { holder.value = ctx })
       let failed = false
       try {
-        await launch(d, work, sourceIndex)
+        await launch(d, work, sourceIndex, continuous)
         for (let i = 0; i < 60 && holder.value === null; i++) await d.delayMs(250)
         const ctx = holder.value
         if (ctx === null) throw new Error('interpolation actual context unavailable')

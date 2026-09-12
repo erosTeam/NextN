@@ -78,8 +78,16 @@ Accepted run `17-local-native-selector` under `.hermes-artifacts/20260912-contin
 - Reader presentation and repository quality signatures are identical before/after the debug override. The trial closes to the NextN host; no persisted mode, progress or reader-default change occurs.
 - Exact tested packages: main 47,070,742 bytes, SHA256 `99127645ba3d072d354983005afeb4309a82a9f0541a0bec89fb2e64fe6b43e1`; native 43,647,891 bytes, SHA256 `d6bd6f45f713d542786a162b7ec970bf609c41c4c84006b35831d611a99e90ab`. Signed builds passed in 8.868 s and 8.430 s respectively.
 
+The matching real-content follow-through on device 197 is `01-online-native` under `.hermes-artifacts/20260912-continuous-fit-width-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/`:
+
+- Native report: 1 run, 0 failure, 0 error, 1 pass; 11.607 s.
+- Real NH source index 2 is a 1260×16756.25 continuous row inside a 1260×2720 Reader/List, replacing the rejected roughly 205 px centered strip at the same device width.
+- The actual Image leaf exposes `ImageInterpolation.Medium`, `fitWidthVerified=true`, and one in-row swipe moves the same row by -1657 px with `verticallyReachable=true`.
+- Whole ordinary/scrolled screenshots were inspected. The large white areas are part of the source page itself; the row and actual Image geometry remain full width. Presentation/repository signatures remain unchanged and the trial closes to the NextN host.
+- Exact native package for this follow-through: 43,647,765 bytes, SHA256 `64dc91749b177486ca6d99466e1366fd41f120dd0e5bdb51fbcef11f16c64378`; build passed in 8.759 s. Main package is unchanged from the 103 run.
+
 ## Accepted and still open
 
-Accepted only for these named paths: shared chain source/build gate; NextN actual Low/Medium/High paged Image leaves and real page turn; NextN local-fixture continuous full-width geometry and vertical reach on 103; Koma canonical medium paged plus low/high normal-UI selection and low/high continuous rendering/scroll; exact state restoration; NextN final quality-row visual separation on 197.
+Accepted only for these named paths: shared chain source/build gate; NextN actual Low/Medium/High paged Image leaves and real page turn; NextN local-fixture 103 and real-NH long-strip 197 continuous full-width geometry and vertical reach; Koma canonical medium paged plus low/high normal-UI selection and low/high continuous rendering/scroll; exact state restoration; NextN final quality-row visual separation on 197.
 
-Still open: NextE device leaf capture, continuous/cropped/split-body native enum sampling, failure/retry combinations, and complete default-reader replacement/regression acceptance. These gaps do not justify changing the existing default readers.
+Still open: NextE device leaf capture, continuous Low/High plus cropped/split-body native enum sampling, failure/retry combinations, and complete default-reader replacement/regression acceptance. These gaps do not justify changing the existing default readers.
