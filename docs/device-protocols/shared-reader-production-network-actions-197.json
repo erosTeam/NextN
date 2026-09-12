@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-production-network-actions-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main 556f17cc3d3a539aa25b17551cc1199be8c547567120573fe2d8598e59c0cf9d; native 470f786f01fe4f5e27df054a09e4ed6ca5e9aec1db011baca639b15bc09788ee",
+    "page": "N678049 normal Detail entry through optional shared production Reader, network thumbnail rail and current cached-page share",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Verifies NH independent cropped thumbnail assets stay inside the shared rail's bounded cover slots without applying original long-strip proportions, opening the rail does not navigate, current-page share reaches the system sheet through the host cache path, cancellation returns to the same page, and the exact history row is restored."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-network-actions-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-image-typed",
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "temporary-long-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "install-current-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "install-current-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 },
+    {
+      "name": "native-production-network-thumbnail-and-share",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test",
+        "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderProductionNetworkActionsTrial",
+        "-s", "timeout", "300000"],
+      "timeoutSeconds": 330
+    }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "source-share-and-test-log", "hdcArgs": ["shell", "hilog -x | grep -E 'ReaderProductionBackendTrial|NextNReaderDataSource|NextNReaderShare' | tail -300"], "timeoutSeconds": 30 },
+    { "name": "receive-network-initial-json", "hdcArgs": ["file", "recv", "/data/local/tmp/reader-production-backend-network-initial.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-network-actions-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-image-typed/network-initial.json"] },
+    { "name": "receive-network-initial-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-network-initial.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-network-actions-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-image-typed/network-initial.png"] },
+    { "name": "receive-network-thumbnail-rail-json", "hdcArgs": ["file", "recv", "/data/local/tmp/reader-production-backend-network-thumbnail-rail.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-network-actions-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-image-typed/network-thumbnail-rail.json"] },
+    { "name": "receive-network-thumbnail-rail-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-network-thumbnail-rail.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-network-actions-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-image-typed/network-thumbnail-rail.png"] },
+    { "name": "receive-network-share-panel-json", "hdcArgs": ["file", "recv", "/data/local/tmp/reader-production-backend-network-share-panel.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-network-actions-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-image-typed/network-share-panel.json"] },
+    { "name": "receive-network-share-panel-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-network-share-panel.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-network-actions-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-image-typed/network-share-panel.png"] },
+    { "name": "receive-network-share-returned-json", "hdcArgs": ["file", "recv", "/data/local/tmp/reader-production-backend-network-share-returned.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-network-actions-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-image-typed/network-share-returned.json"] },
+    { "name": "receive-network-share-returned-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-network-share-returned.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-network-actions-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-image-typed/network-share-returned.png"] },
+    { "name": "receive-network-closed-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-network-closed.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-network-actions-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-image-typed/network-closed.png"] },
+    { "name": "force-stop-nextn-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "10000"] },
+    { "name": "power", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}

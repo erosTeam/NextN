@@ -3,6 +3,7 @@ import { abilityDelegatorRegistry, Component, Driver, ON } from '@kit.TestKit'
 import { common } from '@kit.AbilityKit'
 import { relationalStore } from '@kit.ArkData'
 import { fileIo } from '@kit.CoreFileKit'
+import { KeyCode } from '@kit.InputKit'
 import { connectNhReadProgress } from 'shared'
 
 const GALLERY_ID: number = 678049
@@ -169,6 +170,48 @@ async function waitSharedReady(driver: Driver): Promise<number> {
   throw new Error('Shared production Reader did not become ready')
 }
 
+async function openAndVerifyNetworkThumbnailRail(driver: Driver, expectedPage: number): Promise<string> {
+  await (await waitId(driver, 'rkit-toggle-thumbnails')).click()
+  for (let attempt = 0; attempt < 80; attempt++) {
+    const rail = await driver.findComponent(ON.id('rkit-thumbnail-rail'))
+    const first = await driver.findComponent(ON.id('rkit-thumb-state-0-displayed'))
+    const second = await driver.findComponent(ON.id('rkit-thumb-state-1-displayed'))
+    if (rail !== null && first !== null && second !== null) {
+      const firstBounds = await (await waitId(driver, 'rkit-thumb-image-0')).getBounds()
+      const secondBounds = await (await waitId(driver, 'rkit-thumb-image-1')).getBounds()
+      const firstRatio = (firstBounds.right - firstBounds.left) / (firstBounds.bottom - firstBounds.top)
+      const secondRatio = (secondBounds.right - secondBounds.left) / (secondBounds.bottom - secondBounds.top)
+      expect(firstRatio >= 0.44 && firstRatio <= 1.41).assertTrue()
+      expect(secondRatio >= 0.44 && secondRatio <= 1.41).assertTrue()
+      expect(pageIndex(await (await waitId(driver, 'rkit-chrome-page')).getText())).assertEqual(expectedPage)
+      await capture(driver, 'network-thumbnail-rail')
+      return `${firstRatio.toFixed(3)},${secondRatio.toFixed(3)}`
+    }
+    await driver.delayMs(250)
+  }
+  throw new Error('Production network thumbnail rail did not decode its first two previews')
+}
+
+async function shareCurrentPageAndCancel(driver: Driver, expectedPage: number): Promise<void> {
+  const share = await waitId(driver, 'rkit-share-image')
+  expect(await share.isEnabled()).assertTrue()
+  await share.click()
+  await driver.delayMs(2500)
+  await capture(driver, 'network-share-panel')
+  expect(await (await waitId(driver, 'rkit-share-image')).isEnabled()).assertFalse()
+  await driver.triggerKey(KeyCode.KEYCODE_BACK)
+  for (let attempt = 0; attempt < 40; attempt++) {
+    const current = await driver.findComponent(ON.id('rkit-share-image'))
+    if (current !== null && await current.isEnabled()) {
+      expect(pageIndex(await (await waitId(driver, 'rkit-chrome-page')).getText())).assertEqual(expectedPage)
+      await capture(driver, 'network-share-returned')
+      return
+    }
+    await driver.delayMs(250)
+  }
+  throw new Error('Production network share action did not recover after cancellation')
+}
+
 async function waitDifferentSharedPage(driver: Driver, previous: number): Promise<number> {
   for (let attempt = 0; attempt < 80; attempt++) {
     const page = await driver.findComponent(ON.id('rkit-chrome-page'))
@@ -221,6 +264,52 @@ async function closeAnyReader(driver: Driver): Promise<void> {
 
 export default function readerProductionBackendTrialTest(): void {
   const selectedClass = abilityDelegatorRegistry.getArguments().parameters['-s class']
+  if (selectedClass === 'ReaderProductionNetworkActionsTrial') {
+    describe(selectedClass, (): void => {
+      it('keepsNetworkThumbnailGeometryAndSharesCurrentCachedPage', 0, async (): Promise<void> => {
+        const driver = Driver.create()
+        let database: relationalStore.RdbStore | null = null
+        let original: HistorySnapshot | null = null
+        let restored = false
+        let failed = false
+        try {
+          await launchBackend('shared', true)
+          database = await store(await entryContext(driver))
+          original = await snapshotHistory(database)
+          writeSnapshot(original)
+          await seedFirstPage(database)
+
+          await (await waitDetailRead(driver)).click()
+          const initial = await waitSharedReady(driver)
+          expect(initial).assertEqual(0)
+          await capture(driver, 'network-initial')
+          const ratios = await openAndVerifyNetworkThumbnailRail(driver, initial)
+          await shareCurrentPageAndCancel(driver, initial)
+          await closeAnyReader(driver)
+          await waitDetailRead(driver)
+          await capture(driver, 'network-closed')
+
+          await restoreAndVerify(database, original)
+          restored = true
+          removeSnapshot()
+          console.info(`[ReaderProductionBackendTrial] networkThumbnails=${ratios} current=${initial} ` +
+            'networkShareCancelled=true historyRestored=true')
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'network-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+          if (!restored && database !== null && original !== null) {
+            await restoreAndVerify(database, original)
+            removeSnapshot()
+          }
+          await launchBackend('legacy', false)
+        }
+      })
+    })
+    return
+  }
   if (selectedClass === 'ReaderProductionBackendTrial') {
     describe(selectedClass, (): void => {
       it('routesNormalReadThroughSharedBodyThenRollsBackToLegacyBody', 0, async (): Promise<void> => {

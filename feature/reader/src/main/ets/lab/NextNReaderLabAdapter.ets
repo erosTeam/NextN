@@ -18,6 +18,15 @@ const LOCAL_FIXTURE_PAGE_COUNT: number = 3
 const LOCAL_FIXTURE_WIDTH: number = 1024
 const LOCAL_FIXTURE_HEIGHT: number = 1536
 
+function readerShareImageUtd(extension: string): string {
+  const normalized: string = extension.trim().toLowerCase()
+  if (normalized === 'jpg' || normalized === 'jpeg') return utd.UniformDataType.JPEG
+  if (normalized === 'png') return utd.UniformDataType.PNG
+  if (normalized === 'gif') return utd.UniformDataType.GIF
+  if (normalized === 'bmp') return utd.UniformDataType.BMP
+  return utd.UniformDataType.IMAGE
+}
+
 class NextNReaderCropSource implements ReaderImageCropSource {
   private static sequence: number = 0
   private path: string
@@ -106,7 +115,7 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
         ? downloadedUri.substring('file://'.length)
         : downloadedUri
       console.info('[NextNReaderShare] source=download')
-      record = { utd: utd.UniformDataType.FILE, title, description: title,
+      record = { utd: readerShareImageUtd(source.extension), label: 'IMAGE', title, description: title,
         uri: fileUri.getUriFromPath(downloadedPath) }
     } else {
       const url = NhApiClient.imageUrl(detail.mediaId, target.sourceIndex, source.extension)
@@ -115,7 +124,7 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
       cancellation.check()
       if (result.localPath.length > 0 && result.bytes > 0) {
         console.info('[NextNReaderShare] source=cache')
-        record = { utd: utd.UniformDataType.FILE, title, description: title,
+        record = { utd: readerShareImageUtd(source.extension), label: 'IMAGE', title, description: title,
           uri: fileUri.getUriFromPath(result.localPath) }
       } else {
         console.info('[NextNReaderShare] source=hyperlink')

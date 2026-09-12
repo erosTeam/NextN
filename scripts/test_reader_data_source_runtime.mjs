@@ -117,6 +117,8 @@ assert.ok(adapterSource.indexOf('this.source.localPageUri(detail, target.sourceI
   adapterSource.indexOf('ReaderImageCacheService.cacheKey(detail.id, detail.mediaId, source.number, source.extension)'),
   'verified downloads must precede network/cache share preparation')
 assert.match(adapterSource, /\[NextNReaderShare\] source=download/)
+assert.match(adapterSource, /function readerShareImageUtd\(extension: string\): string/)
+assert.match(adapterSource, /utd: readerShareImageUtd\(source\.extension\), label: 'IMAGE'/)
 assert.match(adapterSource, /this\.source\.openDetail\(id, cancellation\)/)
 
 console.log('PASS production Reader data source order, one-shot Detail seed, cancellation and local-page precedence')

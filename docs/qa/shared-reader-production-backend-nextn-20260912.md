@@ -240,3 +240,49 @@ This closes local current-page sharing for a verified complete download only.
 Cache/network fallback sharing, partial downloads, offline thumbnail-rail aspect
 handling, failure/retry, thumbnail-origin transition and default replacement
 remain open.
+
+## Follow-up: production network thumbnail rail and cached image share
+
+The production network path now has a dedicated device trial covering the two
+NH-specific boundaries that must remain outside the shared Reader core:
+
+- NextN supplies independent NH thumbnail assets and their decoded dimensions;
+  reader-kit only renders the generic bounded thumbnail rail. The first two
+  visible slots measured `0.549,0.549`, rather than inheriting the extremely
+  tall original-page ratio, and the selected source page stayed at zero.
+- NextN classifies cached or downloaded share files with an image UTD derived
+  from their original extension. The shared Reader still emits only a generic
+  current-page share intent and owns no NH URL, cache or system-share typing.
+
+On 197 the accepted rerun passed 1/1 in 41.924 s for gallery `678049`:
+
+- `detail_source=route_seed` opened the optional shared production body at
+  `1 / 14`;
+- the inspected rail showed the independent cropped NH previews at ordinary
+  bounded proportions with page one still selected;
+- sharing logged `NextNReaderShare source=cache`, and the system sheet showed
+  the actual current long-image preview instead of a generic unknown-file icon;
+- cancelling the sheet recovered the same `1 / 14` page and enabled share
+  action; closing returned to the exact Detail page;
+- all eight history columns were restored exactly.
+
+The immediately preceding generic-`FILE` run passed its functional assertions
+but displayed an unknown-file icon in the share card. It is retained as a
+rejected visual diagnostic under `01-network-actions` and is not counted as
+acceptance. The accepted image-typed artifacts are:
+
+- main `556f17cc3d3a539aa25b17551cc1199be8c547567120573fe2d8598e59c0cf9d`
+  (11.163 s);
+- native `470f786f01fe4f5e27df054a09e4ed6ca5e9aec1db011baca639b15bc09788ee`
+  (9.966 s).
+
+Evidence roots:
+
+- `.hermes-artifacts/20260912-shared-production-network-actions-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-image-typed`
+- `.hermes-artifacts/20260912-shared-production-network-actions-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/04-cleanup-after-image-typed`
+
+The independent cleanup passed 1/1 in 2 ms. NextN was force-stopped, Home and
+the ordinary 10-second timeout were restored, and the lease was released. This
+closes production network thumbnail geometry and cached current-page sharing
+for the captured state. Partial downloads, failure/retry through the production
+source, thumbnail-origin transition and default replacement remain open.
