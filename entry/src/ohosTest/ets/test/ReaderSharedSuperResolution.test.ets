@@ -40,6 +40,14 @@ async function waitApplied(applied: Set<number>, expectedSources: number[]): Pro
   expect(false).assertTrue()
 }
 
+async function waitSource(sources: Set<number>, sourceIndex: number): Promise<void> {
+  for (let attempt = 0; attempt < 120; attempt++) {
+    if (sources.has(sourceIndex)) return
+    await new Promise<void>((resolve): void => { setTimeout(resolve, 100) })
+  }
+  expect(false).assertTrue()
+}
+
 async function capture(driver: Driver, name: string): Promise<void> {
   const delegator = abilityDelegatorRegistry.getAbilityDelegator()
   const cache = delegator.getAppContext().cacheDir
@@ -71,6 +79,7 @@ export default function readerSharedSuperResolutionTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
   if (args['-s class'] !== 'ReaderSharedSuperResolutionTrial') return
   const spread = args['-s readerSharedSuperResolutionLayout'] === 'spread'
+  const cancelNavigation = args['-s readerSharedSuperResolutionScenario'] === 'cancel-navigation'
   describe('ReaderSharedSuperResolutionTrial', (): void => {
     it('hostPreparedDerivativeKeepsTheSharedReaderContract', 0, async (): Promise<void> => {
       const delegator = abilityDelegatorRegistry.getAbilityDelegator()
@@ -86,11 +95,15 @@ export default function readerSharedSuperResolutionTest(): void {
       expect(models.length > 0).assertTrue()
       const model = models.includes(originalModel) ? originalModel : models[0]
       const applied: Set<number> = new Set<number>()
+      const prepared: Set<number> = new Set<number>()
+      const cancelled: Set<number> = new Set<number>()
       const probe = connectNextNReaderSuperResolutionProbe()
       const probeEpoch = probe.arm(FIXTURE, (sourceIndex: number, stage: string, identity: string): void => {
         console.info(`[ReaderSharedSuperResolutionTest] source=${sourceIndex} stage=${stage} identity=${identity}`)
         if (stage === 'applied') applied.add(sourceIndex)
-      })
+        else if (stage === 'prepare') prepared.add(sourceIndex)
+        else if (stage === 'cancelled') cancelled.add(sourceIndex)
+      }, cancelNavigation ? 0 : -1)
       try {
         await ReaderPresentationService.setMode(context, spread ? NhReaderMode.PAGED_RTL : NhReaderMode.PAGED)
         await ReaderPresentationService.setDoublePageEnabled(context, spread)
@@ -104,6 +117,20 @@ export default function readerSharedSuperResolutionTest(): void {
             readerLabVolumeKeys: 'false' },
         })
         await waitImage(driver)
+        if (cancelNavigation) {
+          await waitSource(prepared, 0)
+          const viewport = await (await driver.findComponent(ON.id('rkit-image-viewport'))).getBounds()
+          const y = Math.round((viewport.top + viewport.bottom) / 2)
+          const width = viewport.right - viewport.left
+          await driver.swipe(Math.round(viewport.left + width * 0.82), y,
+            Math.round(viewport.left + width * 0.18), y, 600)
+          await waitSource(cancelled, 0)
+          await waitSource(applied, 1)
+          expect(applied.has(0)).assertFalse()
+          await waitImage(driver)
+          await capture(driver, 'cancel-next')
+          return
+        }
         // The fixture keeps page 1 paired with page 0 in the canonical first
         // spread. RTL reverses visual placement, not canonical source indexes.
         await waitApplied(applied, spread ? [0, 1] : [0])

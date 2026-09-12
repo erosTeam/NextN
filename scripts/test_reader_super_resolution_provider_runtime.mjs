@@ -38,7 +38,10 @@ vm.runInNewContext(ts.transpileModule(source, {
     } } }
     if (name === 'shared') return shared
     if (name === './NextNReaderSuperResolutionProbe') return {
-      connectNextNReaderSuperResolutionProbe: () => ({ deliver(...args) { probeEvents.push(args) } }),
+      connectNextNReaderSuperResolutionProbe: () => ({
+        deliver(...args) { probeEvents.push(args) },
+        async pauseBeforeProcess() {},
+      }),
     }
     throw new Error(`unexpected import ${name}`)
   },

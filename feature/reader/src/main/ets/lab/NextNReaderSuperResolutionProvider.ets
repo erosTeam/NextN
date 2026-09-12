@@ -134,8 +134,10 @@ export class NextNReaderSuperResolutionProvider implements ReaderAssetProvider {
     let retained: boolean = false
     try {
       console.info(`[NextNSharedSuperResolution] prepare source=${page.sourceIndex} identity=${identity}`)
-      connectNextNReaderSuperResolutionProbe().deliver(
-        this.context, page.unit.work, page.sourceIndex, 'prepare', identity)
+      const probe = connectNextNReaderSuperResolutionProbe()
+      probe.deliver(this.context, page.unit.work, page.sourceIndex, 'prepare', identity)
+      await probe.pauseBeforeProcess(this.context, page.unit.work, page.sourceIndex, cancellation)
+      cancellation.check()
       const result: ReaderSuperResolutionResult = await ReaderSuperResolutionService.process(
         this.context,
         sourcePath,
