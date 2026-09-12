@@ -6238,6 +6238,7 @@ export struct ReaderPage {
     }
     .width('100%')
     .height('100%')
+    .id('legacy-reader-surface')
     .backgroundColor(Color.Transparent)
     .onAreaChange((_old: Area, next: Area): void => {
       this.onReaderViewportChanged(next.width as number, next.height as number)

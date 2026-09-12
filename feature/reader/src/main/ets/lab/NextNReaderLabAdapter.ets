@@ -11,6 +11,7 @@ import {
   ReaderImageInformation, ReaderImageCropBounds, ReaderImageCropSource,
 } from '@reader-kit/core'
 import { NextNReaderProgressDetailProvider } from './NextNReaderProgressPersistence'
+import { NextNNetworkReaderDataSource, NextNReaderDataSource } from './NextNReaderDataSource'
 
 const LOCAL_FIXTURE_WORK: string = '__rkit_local_fixture__'
 const LOCAL_FIXTURE_PAGE_COUNT: number = 3
@@ -37,8 +38,12 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
   informationSupported: boolean = true
   private context: common.UIAbilityContext
   private details: Map<string, NhGalleryDetail> = new Map()
+  private source: NextNReaderDataSource
 
-  constructor(context: common.UIAbilityContext) { this.context = context }
+  constructor(context: common.UIAbilityContext, source?: NextNReaderDataSource) {
+    this.context = context
+    this.source = source ?? new NextNNetworkReaderDataSource()
+  }
 
   /** Current unit metadata for the optional host progress adapter only. */
   progressDetail(work: string): NhGalleryDetail | null {
@@ -55,8 +60,9 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
     if (key.scope !== 'nh' || key.unit !== key.work || !Number.isSafeInteger(id) || id <= 0) {
       throw new Error('invalid_nh_unit')
     }
-    const detail = await NhApiClient.detail(id)
+    const detail = await this.source.openDetail(id, cancellation)
     cancellation.check()
+    if (detail.id !== id || detail.pages.length === 0) throw new Error('invalid_nh_detail')
     this.details.set(key.unit, detail)
     return new ReaderUnit(key, detail.title, detail.pages.length)
   }
@@ -117,6 +123,15 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
     const detail = this.details.get(page.unit.unit)
     const source = detail?.pages[page.sourceIndex]
     if (detail === undefined || source === undefined) throw new Error('missing_nh_asset')
+    const localUri: string = this.source.localPageUri(detail, page.sourceIndex)
+    if (localUri.length > 0) {
+      const localPath: string = localUri.startsWith('file://') ? localUri.substring('file://'.length) : localUri
+      const facts = new ReaderImageInformation()
+      facts.variant = 'source'
+      const asset = new ReaderAsset(localUri, () => {}, new ReaderFileInformation(localPath, facts))
+      if (localPath.length > 0) asset.crop = new NextNReaderCropSource(localPath)
+      return asset
+    }
     if (kind === 'thumbnail') return new ReaderAsset(source.thumbnailUrl)
     const url = NhApiClient.imageUrl(detail.mediaId, page.sourceIndex, source.extension)
     const cacheKey = ReaderImageCacheService.cacheKey(detail.id, detail.mediaId, source.number, source.extension)

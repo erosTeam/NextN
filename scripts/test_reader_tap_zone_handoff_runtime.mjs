@@ -18,13 +18,13 @@ function compile(source, dependencies = {}, globals = {}) {
   }, ...globals })
   return exports
 }
-function method(file) {
+function method(file, name = 'resolveTapZone') {
   const source = read(file)
-  const start = source.indexOf('  private resolveTapZone(')
+  const start = source.indexOf(`  private ${name}(`)
   assert.ok(start >= 0, file)
   const end = source.indexOf('\n  }', start)
   assert.ok(end > start, file)
-  return source.slice(start, end + 4).replace('private resolveTapZone', 'resolveTapZone')
+  return source.slice(start, end + 4).replace(`private ${name}`, name)
 }
 const n = compile(read('shared/src/main/ets/model/NhReaderTapZone.ets'))
 const e = compile(read('../NextE/shared/src/main/ets/utils/ReaderTapZoneResolver.ets'))
@@ -50,7 +50,8 @@ const cases = [
 ]
 let checks = 0
 for (const [name, file, globals, reference, presets] of cases) {
-  const Host = compile(`export class Host { ${method(file)} }`, {}, globals).Host
+  const hostMethods = method(file) + (name === 'N' ? method(file, 'hostRouteActive') : '')
+  const Host = compile(`export class Host { ${hostMethods} }`, {}, globals).Host
   const host = new Host()
   const state = { hydrated: true, restoreResult: 'applied', mode: 'paged_rtl' }
   Object.assign(host, { presentationReady: true, volumeDisposed: false, closeRequested: false,

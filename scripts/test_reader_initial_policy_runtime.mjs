@@ -35,7 +35,8 @@ function request(extra = {}) {
 for (const mode of Object.values(enums.NhReaderMode)) for (const doublePageEnabled of [false, true]) {
   for (const column of ['odd_left', 'even_left']) for (const spreadLayoutMode of ['joined', 'split']) {
     const r = request(), index = r.pageIndex
-    const p = resolver.resolve({ mode, doublePageEnabled, spreadLayoutMode }, column, r)
+    const p = resolver.resolve({ mode, doublePageEnabled, spreadLayoutMode }, column,
+      r.entryLayoutOverride, r.entryDirectionOverride)
     assert.equal(p.layout, mode === 'vertical' ? 'continuous' :
       ['paged', 'paged_rtl'].includes(mode) && doublePageEnabled ? 'spread' : 'single')
     assert.equal(p.pagingAxis, mode === 'paged_vertical' ? 'vertical' : 'horizontal')
@@ -52,7 +53,8 @@ for (const [layout, direction] of [[undefined, undefined], ['bad', 'bad'], ['sin
   assert.equal(r.entryDirection, direction === 'rtl' ? 'rtl' : 'ltr')
   assert.equal(r.entryLayoutOverride, valid ? layout : null)
   assert.equal(r.entryDirectionOverride, valid ? direction : null)
-  const p = resolver.resolve({ mode: 'paged_rtl', doublePageEnabled: true, spreadLayoutMode: 'split' }, 'even_left', r)
+  const p = resolver.resolve({ mode: 'paged_rtl', doublePageEnabled: true, spreadLayoutMode: 'split' }, 'even_left',
+    r.entryLayoutOverride, r.entryDirectionOverride)
   assert.equal(p.layout, valid ? layout : 'spread'); assert.equal(p.direction, valid ? direction : 'rtl')
   assert.equal(p.pagingAxis, layout === 'continuous' ? 'vertical' : 'horizontal')
 }
@@ -63,12 +65,13 @@ for (const [extra, expectedLayout, expectedDirection, expectedAxis] of [
   [{ readerLabEntryDirection: 'rtl' }, 'single', 'rtl', 'vertical'],
 ]) {
   const r = request(extra)
-  const p = resolver.resolve({ mode: 'paged_vertical', doublePageEnabled: true, spreadLayoutMode: 'split' }, 'even_left', r)
+  const p = resolver.resolve({ mode: 'paged_vertical', doublePageEnabled: true, spreadLayoutMode: 'split' }, 'even_left',
+    r.entryLayoutOverride, r.entryDirectionOverride)
   assert.equal(p.layout, expectedLayout); assert.equal(p.direction, expectedDirection); assert.equal(p.pagingAxis, expectedAxis)
 }
 const tree = ts.createSourceFile('page.ts', pageSource.replace('export struct NextNReaderLabPage', 'export class NextNReaderLabPage'), ts.ScriptTarget.Latest, true)
 const cls = tree.statements.find(ts.isClassDeclaration)
-const methods = ['initializeSession', 'closeTrial', 'finishProgressWrites']
+const methods = ['initializeSession', 'closeTrial', 'finishProgressWrites', 'hostRouteActive']
   .map(name => cls.members.find(m => m.name?.getText(tree) === name).getText(tree)).join('\n')
 const deferred = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b }); return { promise, resolve, reject } }
 const flush = () => new Promise(resolve => setImmediate(resolve))
@@ -82,7 +85,7 @@ function fixture() {
   const host = new Host()
   Object.assign(host, { request: request(), volumeDisposed: false, closeRequested: false, hostClosing: false,
     presentationReady: false, managesTrialWindow: false, progressFlush: null, progressEpoch: 1,
-    progressPersistence: { restore: r => Promise.resolve(r.pageIndex) },
+    progressPersistence: { restore: (_work, pageIndex) => Promise.resolve(pageIndex) },
     progressWrites: { seal() {}, flush: () => Promise.resolve(true) },
     syncReaderActivity: () => events.push('sync'), onClose: () => events.push('close') })
   Object.defineProperty(host, 'session', { set(value) { events.push('publish'); this.published = value } })
@@ -210,7 +213,7 @@ for (const [mode, extra, expected] of [
     connectNextNReaderObservedProgressProbe: () => ({ deliver() {} }),
     NextNReaderProgressPersistence: class {
       save() { return Promise.resolve() }
-      restore(r) { return Promise.resolve(r.pageIndex) }
+      restore(_work, pageIndex) { return Promise.resolve(pageIndex) }
     },
     ReaderKeepScreenOn: Stub, NextNReaderLabAdapter: Stub, ReaderLabShareProbe: Stub,
     ReaderSystemImageSaveHost: Stub, ReaderUnitKey: Stub, ReaderPagedSession: Session,

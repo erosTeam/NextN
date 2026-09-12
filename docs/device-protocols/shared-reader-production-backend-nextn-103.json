@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-production-backend-nextn-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main 50989795d6bca5edea1badb2fb77f4e31f492bf7c56e84e2ddce670ec37f3351; native 2896cbb79c47edef90bcd098ca6ff200de3ed2273513f16ec6d78a0219559be4",
+    "page": "Tablet N678049 normal Detail Read through optional shared body, page seek/progress/close, then explicit legacy rollback",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Same signed candidates and semantic test as the 197 pass. Exact eight-column history restoration; no Koma package or data mutation. Thumbnail entries remain legacy."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-normal-entry",
+  "preflight": [
+    { "name": "install-current-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "install-current-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 },
+    {
+      "name": "native-normal-entry-shared-and-legacy-tablet",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test",
+        "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderProductionBackendTrial",
+        "-s", "timeout", "300000"],
+      "timeoutSeconds": 330
+    }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "test-log", "hdcArgs": ["shell", "hilog -x | grep -E 'ReaderProductionBackendTrial|NextNReaderLab|observed_progress' | tail -260"], "timeoutSeconds": 30 },
+    { "name": "receive-shared-detail-json", "hdcArgs": ["file", "recv", "/data/local/tmp/reader-production-backend-shared-detail.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-normal-entry/shared-detail.json"] },
+    { "name": "receive-shared-detail-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-shared-detail.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-normal-entry/shared-detail.png"] },
+    { "name": "receive-shared-initial-json", "hdcArgs": ["file", "recv", "/data/local/tmp/reader-production-backend-shared-initial.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-normal-entry/shared-initial.json"] },
+    { "name": "receive-shared-initial-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-shared-initial.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-normal-entry/shared-initial.png"] },
+    { "name": "receive-shared-changed-json", "hdcArgs": ["file", "recv", "/data/local/tmp/reader-production-backend-shared-changed.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-normal-entry/shared-changed.json"] },
+    { "name": "receive-shared-changed-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-shared-changed.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-normal-entry/shared-changed.png"] },
+    { "name": "receive-shared-closed-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-shared-closed.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-normal-entry/shared-closed.png"] },
+    { "name": "receive-legacy-reopened-json", "hdcArgs": ["file", "recv", "/data/local/tmp/reader-production-backend-legacy-reopened.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-normal-entry/legacy-reopened.json"] },
+    { "name": "receive-legacy-reopened-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-legacy-reopened.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-normal-entry/legacy-reopened.png"] },
+    { "name": "receive-legacy-closed-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-legacy-closed.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-normal-entry/legacy-closed.png"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}

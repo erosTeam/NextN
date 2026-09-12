@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-production-backend-gate-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "preflight for main 50989795d6bca5edea1badb2fb77f4e31f492bf7c56e84e2ddce670ec37f3351",
+    "page": "Tablet wake/unlock and foreground gate before normal production-shell Reader rehearsal",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Wake and neutral unlock only. No Koma data or settings are touched."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-gate",
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "temporary-long-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "start-nextn", "hdcArgs": ["shell", "aa", "start", "-a", "EntryAbility", "-b", "com.erosteam.nextn"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "neutral-lockscreen-unlock", "uiInput": ["swipe", "800", "2280", "800", "900", "1800"], "pauseAfterMs": 900 }
+    ]
+  },
+  "postflight": [
+    { "name": "layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/shared-production-backend-gate-103.json", "-a"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/shared-production-backend-gate-103.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-gate/layout.json"] },
+    { "name": "screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/shared-production-backend-gate-103.jpeg"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/shared-production-backend-gate-103.jpeg", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-gate/screen.jpeg"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}

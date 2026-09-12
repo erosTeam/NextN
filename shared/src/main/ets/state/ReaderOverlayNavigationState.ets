@@ -70,7 +70,7 @@ export class ReaderOverlayNavigationState {
   open(params: ReaderRouteParams, animated: boolean = true): void {
     const routeEpoch: number = this.nextRouteEpoch + 1
     this.nextRouteEpoch = routeEpoch
-    const routeParams = new ReaderRouteParams(params.galleryId, params.initialPageIndex, routeEpoch)
+    const routeParams = new ReaderRouteParams(params.galleryId, params.initialPageIndex, routeEpoch, params.backend)
     this.attachStagedDetailSeed(routeParams)
     this.stack.clear(false)
     this.stack.pushPathByName('ReaderOverlayBackdrop', null, false)

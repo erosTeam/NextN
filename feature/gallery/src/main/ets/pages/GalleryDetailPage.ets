@@ -3528,6 +3528,7 @@ export struct GalleryDetailPage {
         Row() {
           this.ReadFab()
         }
+        .id('gallery-detail-read-action')
         .height(this.readFabOuterHeight())
         .hitTestBehavior(HitTestMode.Default)
         .translate({ x: this.readFabVisualX() })

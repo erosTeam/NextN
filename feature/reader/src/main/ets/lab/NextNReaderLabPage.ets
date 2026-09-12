@@ -4,7 +4,7 @@ import { HdsNavDestination } from '@kit.UIDesignKit'
 import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderLayout,
   ReaderReadingAnchor } from '@reader-kit/core'
 import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
-import { ReaderLabRequest, ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility, ReaderLabAssetProbe, ReaderVolumeKeys } from '@reader-kit/ui'
+import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility, ReaderLabAssetProbe, ReaderVolumeKeys } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
 import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea, LayoutSafeAreaState, ThemeDisplayState, ThemeTokens, nextNHdsTitle,
@@ -21,19 +21,30 @@ import { NextNReaderObservedProgress } from './NextNReaderObservedProgress'
 import { connectNextNReaderObservedProgressProbe } from './NextNReaderObservedProgressProbe'
 import { NextNReaderProgressWriteGate } from './NextNReaderProgressWriteGate'
 import { NextNReaderProgressPersistence } from './NextNReaderProgressPersistence'
+import { NextNReaderHostRequest } from './NextNReaderHostRequest'
+import { NextNProductionReaderDataSource } from './NextNReaderDataSource'
+import { connectReaderOverlayNavigation } from 'shared'
 
 @ComponentV2
 export struct NextNReaderLabPage {
-  @Require @Param request: ReaderLabRequest
+  @Require @Param request: NextNReaderHostRequest
   @Param entryTransition: ReaderEntryTransition | null = null
   @Param entryPhase: string = 'finished'
   @Param entryPreview: ReaderEntryPreviewSource | null = null
   @Param managesTrialWindow: boolean = true
+  /** The production overlay already owns HdsNavDestination and its lifecycle. */
+  @Param embedded: boolean = false
+  @Param externalRouteActive: boolean = false
   @Param hostClosing: boolean = false
   @Param prepareChrome: ((isCurrent: () => boolean) => Promise<boolean>) | null = null
   @Event onClose: () => void = () => {}
   @Event onShown: () => void = () => {}
   @Event onStatusBarVisible: (visible: boolean) => void = () => {}
+  @Event onReaderPresentationChanged: (chromeVisible: boolean, fullscreen: boolean, canvasDark: boolean) => void =
+    () => {}
+  @Event onRegisterBackRequest: (request: (() => boolean) | null) => void = () => {}
+  @Event onPrepareClose: () => Promise<boolean> = (): Promise<boolean> => Promise.resolve(true)
+  @Event onPreparedClose: (animated: boolean) => void = () => {}
   @Local private session: ReaderPagedSession | null = null
   private imageShare: ReaderImageShareHost | null = null
   private imageSave: ReaderImageSaveHost | null = null
@@ -62,16 +73,34 @@ export struct NextNReaderLabPage {
   aboutToAppear(): void {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext
     if (!context.applicationInfo.debug) return
+    if (this.embedded) {
+      this.onRegisterBackRequest((): boolean => {
+        this.closeTrial()
+        return true
+      })
+    }
     connectNextNReaderLabContextProbe().deliver(this.request.work, context)
     this.volumeDisposed = false
     if (!this.request.readingChrome) void this.restorePresentation(context)
     this.keepScreenOn = new ReaderKeepScreenOn(context)
     if (this.request.readingChrome && this.managesTrialWindow) this.trialWindow.open(context)
-    const adapter = new NextNReaderLabAdapter(context)
+    const adapter = this.request.productionSources === true
+      ? new NextNReaderLabAdapter(context, new NextNProductionReaderDataSource(
+        context,
+        connectReaderOverlayNavigation().consumeDetailSeed(
+          Number(this.request.work),
+          this.request.routeEpoch ?? 0,
+        ),
+      ))
+      : new NextNReaderLabAdapter(context)
     this.progressPersistence = new NextNReaderProgressPersistence(context, adapter)
     this.progressFlush = null
     this.progressEpoch = this.progressWrites.open(this.request.work, (pageIndex: number): Promise<void> => {
-      const operation = this.progressPersistence?.save(this.request, pageIndex) ?? Promise.resolve()
+      const operation = this.progressPersistence?.save(
+        this.request.work,
+        this.request.progressReadWrite,
+        pageIndex,
+      ) ?? Promise.resolve()
       connectNextNReaderObservedProgressProbe().deliver(this.request.work, pageIndex)
       return operation
     })
@@ -99,16 +128,29 @@ export struct NextNReaderLabPage {
       await ReaderPresentationService.restore(context)
       if (this.volumeDisposed || this.closeRequested || this.hostClosing) return
       const galleryId = Number(this.request.work)
-      const initialPageIndex = await (this.progressPersistence?.restore(this.request) ?? Promise.resolve(this.request.pageIndex))
+      const initialPageIndex = await (this.progressPersistence?.restore(
+        this.request.work,
+        this.request.pageIndex,
+        this.request.thumbnailEntry,
+        this.request.progressReadWrite,
+      ) ?? Promise.resolve(this.request.pageIndex))
       if (this.volumeDisposed || this.closeRequested || this.hostClosing) return
       const column = await ReaderSettingsRepository.columnMode(context,
         Number.isSafeInteger(galleryId) && galleryId > 0 ? galleryId : 0)
       if (this.volumeDisposed || this.closeRequested || this.hostClosing) return
-      const policy = NextNReaderInitialPolicy.resolve(ReaderPresentationService.snapshot(), column, this.request)
+      const policy = NextNReaderInitialPolicy.resolve(
+        ReaderPresentationService.snapshot(),
+        column,
+        this.request.entryLayoutOverride,
+        this.request.entryDirectionOverride,
+      )
       session.setPolicy(policy)
       this.request.pageIndex = initialPageIndex
       console.info(`[NextNReaderLab] initial_policy gallery=${galleryId} database=${context.databaseDir} column=${column} cover=${policy.firstPageAlone} layout=${policy.layout} axis=${policy.pagingAxis} direction=${policy.direction} spread=${policy.spreadLayout}`)
       this.presentationReady = true
+      if (this.embedded) {
+        this.onReaderPresentationChanged(true, this.readerPresentation.fullscreen, this.readerCanvasDark())
+      }
       // ReaderSurface opens on mount: never publish a default session and change it after first open.
       this.session = session
       this.syncReaderActivity()
@@ -120,7 +162,7 @@ export struct NextNReaderLabPage {
 
   private resolveTapZone(x: number, y: number, layout: ReaderLayout): ReaderTapAction {
     if (!this.presentationReady || this.volumeDisposed || this.closeRequested || this.hostClosing ||
-      !this.routeActive || !this.labVisibility.foreground || this.session === null) return 'none'
+      !this.hostRouteActive() || !this.labVisibility.foreground || this.session === null) return 'none'
     // The trial can change layout without changing the saved production mode.
     const continuous = layout === 'continuous'
     return NhReaderTapZoneResolver.resolve(
@@ -131,6 +173,7 @@ export struct NextNReaderLabPage {
 
   aboutToDisappear(): void {
     this.volumeDisposed = true
+    if (this.embedded) this.onRegisterBackRequest(null)
     void this.finishProgressWrites()
     this.keepScreenOn?.close()
     this.entryTransition?.cancel(); this.entryPreview?.release()
@@ -142,6 +185,10 @@ export struct NextNReaderLabPage {
   }
 
   private syncChromeVisible(visible: boolean): void {
+    if (this.embedded) {
+      this.onReaderPresentationChanged(visible, this.readerPresentation.fullscreen, this.readerCanvasDark())
+      return
+    }
     if (visible) return // The before-show gate already applied host visibility.
     const statusVisible = !connectReaderPresentation().fullscreen || visible
     if (this.managesTrialWindow) this.trialWindow.setStatusBarVisible(statusVisible)
@@ -150,7 +197,7 @@ export struct NextNReaderLabPage {
 
   private async prepareChromeShow(isCurrent: () => boolean): Promise<boolean> {
     const current = (): boolean => isCurrent() && !this.closeRequested && !this.hostClosing &&
-      this.routeActive && this.labVisibility.foreground
+      this.hostRouteActive() && this.labVisibility.foreground
     if (!current()) return false
     if (!this.managesTrialWindow) return this.prepareChrome === null ? false : this.prepareChrome(current)
     if (!await this.trialWindow.prepareStatusBarVisible() || !current()) return false
@@ -162,11 +209,21 @@ export struct NextNReaderLabPage {
     if (this.closeRequested) return
     this.closeRequested = true
     const progressFlush = this.finishProgressWrites()
+    if (this.embedded) {
+      void this.onPrepareClose().then(async (animated: boolean): Promise<void> => {
+        const saved = await progressFlush
+        if (!saved) console.warn(`[NextNReaderLab] progress_flush_failed gallery=${this.request.work}`)
+        if (this.hostRouteActive() || (initializationFailed && !this.volumeDisposed)) {
+          this.onPreparedClose(animated)
+        }
+      })
+      return
+    }
     if (this.managesTrialWindow) this.trialWindow.close(async (): Promise<boolean> => {
       if (this.trialWindow.getCloseSystemAvoidAreaResult() === 'ready') {
         const ready = await ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string =>
           this.safeArea.topAvoidHeight > 0 ? `${this.safeArea.topAvoidHeight}:${this.safeArea.bottomAvoidHeight}` : '',
-          (): boolean => this.routeActive && this.labVisibility.foreground)
+          (): boolean => this.hostRouteActive() && this.labVisibility.foreground)
         console.info(`[ReaderTrialHost] standalone_close_layout_ready=${ready}`)
         return ready
       }
@@ -174,7 +231,7 @@ export struct NextNReaderLabPage {
     }).then(async (): Promise<void> => {
       const saved = await progressFlush
       if (!saved) console.warn(`[NextNReaderLab] progress_flush_failed gallery=${this.request.work}`)
-      if (this.routeActive || (initializationFailed && !this.volumeDisposed)) this.onClose()
+      if (this.hostRouteActive() || (initializationFailed && !this.volumeDisposed)) this.onClose()
     })
     else void progressFlush.then((saved: boolean): void => {
       if (!saved) console.warn(`[NextNReaderLab] progress_flush_failed gallery=${this.request.work}`)
@@ -242,7 +299,7 @@ export struct NextNReaderLabPage {
   }
 
   syncKeepScreenOn(): void {
-    this.keepScreenOn?.setActive(this.request.readingChrome && this.routeActive && this.labVisibility.foreground &&
+    this.keepScreenOn?.setActive(this.request.readingChrome && this.hostRouteActive() && this.labVisibility.foreground &&
       this.entryPhase !== 'layout' && !this.closeRequested && !this.hostClosing && this.readerPresentation.keepScreenOn)
   }
 
@@ -267,12 +324,16 @@ export struct NextNReaderLabPage {
     const enabled = this.request.volumeKeysOverride ?? (this.presentationReady && this.readerPresentation.volumeKeyTurn)
     this.volumeKeys.setActive(!this.volumeDisposed && !this.closeRequested && !this.hostClosing &&
       this.session !== null && this.request.readingChrome && enabled &&
-      this.routeActive && this.labVisibility.foreground && this.entryPhase !== 'layout')
+      this.hostRouteActive() && this.labVisibility.foreground && this.entryPhase !== 'layout')
   }
 
-  build() {
-    HdsNavDestination() {
-      Column() {
+  private hostRouteActive(): boolean {
+    return this.embedded ? this.externalRouteActive : this.routeActive
+  }
+
+  @Builder
+  private readerContent() {
+    Column() {
         if (this.session !== null) {
           if (this.request.readingChrome) {
             ReaderSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
@@ -286,7 +347,7 @@ export struct NextNReaderLabPage {
               cropBorders: this.request.cropBorders && !this.request.thumbnailEntry,
               cropAvailable: !this.request.thumbnailEntry,
               entryTransition: this.entryTransition, entryPreview: this.entryPreview,
-              active: this.routeActive && this.labVisibility.foreground,
+              active: this.hostRouteActive() && this.labVisibility.foreground,
               closing: this.closeRequested || this.hostClosing,
               beforeShowChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareChromeShow(isCurrent),
               topInset: this.safeArea.topAvoidHeight, bottomInset: this.safeArea.bottomAvoidHeight,
@@ -298,21 +359,30 @@ export struct NextNReaderLabPage {
             failurePage: this.request.failurePage,
             failureLayout: this.request.failureLayout,
             delayedMetricsPage: this.request.delayedMetricsPage,
-            active: this.routeActive && this.labVisibility.foreground })
+            active: this.hostRouteActive() && this.labVisibility.foreground })
           }
         }
-      }
-      .width('100%').height('100%')
-      .padding({ top: this.request.readingChrome ? 0 : this.safeArea.topAvoidHeight + ThemeTokens.TITLE_BAR_HEIGHT,
-        bottom: this.request.readingChrome ? 0 : this.safeArea.bottomAvoidHeight })
-    }.titleBar(nextNHdsTitle($r('app.string.rkit_lab_title')))
-    .hideTitleBar(this.request.readingChrome)
-    .onBackPressed((): boolean => {
-      if (!this.request.readingChrome) return false
-      this.closeTrial()
-      return true
-    })
-    .onShown((): void => { this.routeActive = true; this.onShown() })
-    .onHidden((): void => { this.routeActive = false })
+    }
+    .width('100%').height('100%')
+    .padding({ top: this.request.readingChrome ? 0 : this.safeArea.topAvoidHeight + ThemeTokens.TITLE_BAR_HEIGHT,
+      bottom: this.request.readingChrome ? 0 : this.safeArea.bottomAvoidHeight })
+  }
+
+  build() {
+    if (this.embedded) {
+      this.readerContent()
+    } else {
+      HdsNavDestination() {
+        this.readerContent()
+      }.titleBar(nextNHdsTitle($r('app.string.rkit_lab_title')))
+      .hideTitleBar(this.request.readingChrome)
+      .onBackPressed((): boolean => {
+        if (!this.request.readingChrome) return false
+        this.closeTrial()
+        return true
+      })
+      .onShown((): void => { this.routeActive = true; this.onShown() })
+      .onHidden((): void => { this.routeActive = false })
+    }
   }
 }

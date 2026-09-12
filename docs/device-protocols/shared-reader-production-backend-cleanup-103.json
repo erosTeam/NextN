@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-production-backend-cleanup-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "cleanup for main 50989795d6bca5edea1badb2fb77f4e31f492bf7c56e84e2ddce670ec37f3351; native 2896cbb79c47edef90bcd098ca6ff200de3ed2273513f16ec6d78a0219559be4",
+    "page": "tablet launcher after exact NextN Reader history cleanup and selector reset",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Idempotent NextN-only cleanup. Koma package/data untouched."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/03-cleanup",
+  "preflight": [
+    {
+      "name": "native-exact-history-cleanup",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test",
+        "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderProductionBackendCleanupTrial",
+        "-s", "timeout", "60000"],
+      "timeoutSeconds": 90
+    },
+    { "name": "force-stop-nextn-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "10000"] }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "return-device-to-launcher", "uiInput": ["keyEvent", "Home"], "pauseAfterMs": 500 }
+    ]
+  },
+  "postflight": [
+    { "name": "cleanup-log", "hdcArgs": ["shell", "hilog", "-x", "-e", "ReaderProductionBackendTrial"], "timeoutSeconds": 15 },
+    { "name": "power", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}

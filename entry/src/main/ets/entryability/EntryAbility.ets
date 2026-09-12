@@ -53,6 +53,7 @@ import {
   DiagnosticsSettings,
   BackGuardSettings,
   connectSafeMode,
+  captureNextNReaderBackendWant,
   ReaderTrialOriginalProbe,
 } from 'shared'
 
@@ -100,6 +101,7 @@ export default class EntryAbility extends UIAbility {
 
   onCreate(want: Want, _launchParam: AbilityConstant.LaunchParam): void {
     this.captureReaderOriginalProbe(want)
+    captureNextNReaderBackendWant(want, this.context.applicationInfo.debug)
     captureReaderLabWant(want, this.context.applicationInfo.debug)
     this.galleryDirectLaunchIdAtLaunch = this.galleryDirectLaunchId(want)
     this.galleryDirectLaunchCommentsAtLaunch = this.galleryDirectLaunchWantsComments(want)
@@ -361,6 +363,7 @@ export default class EntryAbility extends UIAbility {
 
   onNewWant(want: Want, _launchParam: AbilityConstant.LaunchParam): void {
     this.captureReaderOriginalProbe(want)
+    captureNextNReaderBackendWant(want, this.context.applicationInfo.debug)
     captureReaderLabWant(want, this.context.applicationInfo.debug)
     if (connectSafeMode().restricted()) {
       return

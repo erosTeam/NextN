@@ -219,6 +219,7 @@ function setup({ deferRestore = false, readiness = 'not-required' } = {}) {
   const { Index } = moduleExports(hostCode, {
     ...shared, ReaderEntryRect, ReaderEntryClaim, NavPathStack, ReaderTrialWindow,
     console: { info: message => logs.push(message) },
+    connectNextNReaderBackendSelection: () => ({ current: () => 'legacy' }),
     ReaderTrialLayoutCommit: { wait(context, measure, current) {
       return new Promise(resolve => layouts.push({ measure, current, resolve }))
     } },
