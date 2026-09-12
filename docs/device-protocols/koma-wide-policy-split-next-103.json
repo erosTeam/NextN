@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-wide-policy-split-next-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-wide-policy-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/04-split-next",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "signed 1e84923320f52bbedcd6d656414f7f1c9e6fc9dac409fa93e8dceedae199507f",
+    "page": "Optional shared reader advances from the first to the second fragment of QA P2",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Confirms both halves are independently reachable in LTR order after host-policy initialization."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "advance-to-second-fragment", "uiInput": ["swipe", "1300", "1300", "300", "1300", "1200"], "pauseAfterMs": 700 }
+    ]
+  },
+  "postflight": [
+    { "name": "styled-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/koma-wide-policy-split-next.json", "-a"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-wide-policy-split-next.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-wide-policy-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/04-split-next/layout.json"] },
+    { "name": "screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/koma-wide-policy-split-next.jpeg"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-wide-policy-split-next.jpeg", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-wide-policy-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/04-split-next/screen.jpeg"] }
+  ]
+}
