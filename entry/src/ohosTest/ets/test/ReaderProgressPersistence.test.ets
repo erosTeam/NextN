@@ -219,12 +219,13 @@ async function swipePaged(driver: Driver, vertical: boolean, forward: boolean): 
   await driver.delayMs(700)
 }
 
-async function armThumbnailReadWrite(pageIndex: number, failurePage: number = pageIndex): Promise<void> {
+async function armThumbnailReadWrite(pageIndex: number, failurePage: number = pageIndex,
+  layout: string = 'single', direction: string = 'ltr'): Promise<void> {
   await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
     bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility', parameters: {
       readerLabWork: WORK, readerLabProgressReadWrite: 'true', readerLabPage: '0', readerLabChrome: 'true',
-      readerLabThumbnailEntry: 'true', readerLabVolumeKeys: 'false', readerLabEntryLayout: 'single',
-      readerLabEntryDirection: 'ltr', readerLabFailPage: failurePage.toString(),
+      readerLabThumbnailEntry: 'true', readerLabVolumeKeys: 'false', readerLabEntryLayout: layout,
+      readerLabEntryDirection: direction, readerLabFailPage: failurePage.toString(),
     },
   })
 }
@@ -569,6 +570,78 @@ export default function readerProgressPersistenceTest(): void {
         } catch (error) {
           failed = true
           try { await capture(driver, 'thumbnail-vertical-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          probe.cancel(epoch)
+          try { await closeTrial(driver) } catch (error) { if (!failed) throw error as Error }
+          try { await restoreAndVerify(database, original) } finally { removeSnapshotFile() }
+        }
+      })
+    })
+    return
+  }
+  if (selectedClass === 'ReaderProgressPersistenceThumbnailSpreadRetryTrial') {
+    describe(selectedClass, (): void => {
+      it('keepsClickedPageAsRtlSpreadAnchorAcrossNeighborRetryAndReopen', 0, async (): Promise<void> => {
+        expect(args['-s readerLabWork']).assertEqual(WORK)
+        const clickedPage = 2
+        const failedNeighbor = 3
+        const nextSpreadAnchor = 4
+        const storedPage = 7
+        const driver = Driver.create()
+        const database = await store(await context(driver))
+        const original = await snapshotHistory(database)
+        writeSnapshot(original)
+        const events: number[] = []
+        const probe = connectNextNReaderObservedProgressProbe()
+        const epoch = probe.arm(WORK, (pageIndex: number): void => { events.push(pageIndex) })
+        let failed = false
+        try {
+          await seedPage(database, storedPage)
+          await armThumbnailReadWrite(clickedPage, failedNeighbor, 'spread', 'rtl')
+          const source = await findDetailThumbnail(driver, clickedPage)
+          await source.click()
+          await waitId(driver, 'rkit-close'); await waitBody(driver, clickedPage)
+          const retry = await waitRetry(driver, failedNeighbor)
+          await waitObserved(driver, events, clickedPage); await waitHistory(database, clickedPage)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('3 / 14')
+          expect(events.length).assertEqual(1); expect(events[0]).assertEqual(clickedPage)
+          await capture(driver, 'thumbnail-spread-neighbor-failure')
+
+          await retry.click(); await waitBody(driver, failedNeighbor)
+          await driver.delayMs(1000)
+          expect(events.length).assertEqual(1); expect(events[0]).assertEqual(clickedPage)
+          expect((await snapshotHistory(database)).lastReadIndex).assertEqual(clickedPage)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('3 / 14')
+          await capture(driver, 'thumbnail-spread-neighbor-retried')
+
+          const viewport = await waitId(driver, 'rkit-image-viewport')
+          const bounds = await viewport.getBounds()
+          const width = bounds.right - bounds.left
+          const y = Math.round((bounds.top + bounds.bottom) / 2)
+          await driver.swipe(Math.round(bounds.left + width * 0.18), y,
+            Math.round(bounds.left + width * 0.82), y, 700)
+          await waitBody(driver, nextSpreadAnchor); await waitBody(driver, nextSpreadAnchor + 1)
+          await waitObserved(driver, events, nextSpreadAnchor); await waitHistory(database, nextSpreadAnchor)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('5 / 14')
+          await capture(driver, 'thumbnail-spread-next')
+          await closeTrial(driver); await waitHistory(database, nextSpreadAnchor)
+
+          await launchReadWrite()
+          await waitId(driver, 'rkit-close'); await waitBody(driver, nextSpreadAnchor)
+          await waitObserved(driver, events, nextSpreadAnchor); await waitHistory(database, nextSpreadAnchor)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('5 / 14')
+          await driver.delayMs(1200); await waitBody(driver, nextSpreadAnchor)
+          await capture(driver, 'thumbnail-spread-reopen')
+          await closeTrial(driver); await waitHistory(database, nextSpreadAnchor)
+          expect(events.length).assertEqual(3)
+          expect(events[0]).assertEqual(clickedPage); expect(events[1]).assertEqual(nextSpreadAnchor)
+          expect(events[2]).assertEqual(nextSpreadAnchor)
+          console.info('[ReaderProgressPersistenceTest] thumbnailSpread stored=7 events=[2,4,4] ' +
+            'neighborFailureDurable=2 nextSpreadDurable=4 rtl=true')
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'thumbnail-spread-exception') } catch (_) {}
           throw error as Error
         } finally {
           probe.cancel(epoch)
