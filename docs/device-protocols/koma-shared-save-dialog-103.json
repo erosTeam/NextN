@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-shared-save-dialog-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-save-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-dialog",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": { "project": "Koma", "codeIdentity": "signed 14547736 bytes sha256 11de35c2306fa7138cdc6f1e3399bcf1065c1eeeb22f813d6303e16ff4ff2014", "page": "System save dialog for optional shared-reader P2", "deviceAlias": "device103", "deviceModel": "MLR-AL00", "foldState": "not-applicable", "orientation": "portrait", "resolution": "1600x2560", "notes": "Opens the save action for the actual local P2. No confirmation is performed." },
+  "preflight": [],
+  "measurement": { "actions": [ { "name": "open-save-dialog", "uiInput": ["click", "90", "2404"], "pauseAfterMs": 1400 } ] },
+  "postflight": [
+    { "name": "styled-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/koma-shared-save-dialog.json", "-a"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-save-dialog.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-save-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-dialog/layout.json"] },
+    { "name": "screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/koma-shared-save-dialog.jpeg"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-save-dialog.jpeg", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-save-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-dialog/screen.jpeg"] }
+  ]
+}
