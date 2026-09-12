@@ -254,10 +254,14 @@ function setup({ deferRestore = false, readiness = 'not-required', backend = 'le
   host.rootNavigationEpoch = 0
   const overlayOpens = []
   const overlaySeeds = []
+  const overlayPresentations = []
+  let overlayEpoch = 0
   host.readerOverlay = {
     visible: false,
+    activeReader: null,
     stageDetailSeed(seed) { overlaySeeds.push(seed) },
-    open(params) { overlayOpens.push(params); this.visible = true },
+    open(params) { overlayOpens.push(params); this.activeReader = params; this.visible = true; return ++overlayEpoch },
+    presentPendingReader(epoch) { overlayPresentations.push(epoch) },
     discardStagedDetailSeed() {},
   }
   host.safeMode = safeMode
@@ -276,6 +280,7 @@ function setup({ deferRestore = false, readiness = 'not-required', backend = 'le
     return request
   }
   return { host, source, arm, restores, layouts, logs, overlayOpens, overlaySeeds,
+    overlayPresentations,
     relay: shared.ReaderTrialEntryRelay, ReaderEntryClaim, ReaderEntryRect,
     measurements: () => measurements, windowOpens: () => windowOpens, windowCloses: () => windowCloses }
 }
@@ -295,6 +300,22 @@ test('production measurement failure opens shared reader without a fabricated tr
   assert.equal(value.overlayOpens[0].galleryId, 678049)
   assert.equal(value.overlayOpens[0].initialPageIndex, 2)
   assert.equal(value.overlayOpens[0].backend, 'shared')
+  assert.equal(value.host.readerDestinationVisible, true)
+  assert.equal(value.host.readerDestinationClosing, false)
+  assert.equal(value.host.readerDestinationCloseDispatched, false)
+  assert.equal(value.host.readerDestinationRouteEpoch, value.host.readerOverlayMountEpoch,
+    'direct shared child must see a current host lifecycle before aboutToAppear')
+  assert.deepEqual(value.overlayPresentations, [])
+  assert.match(index, /@Monitor\('readerOverlayMountEpoch'\)[\s\S]*ReaderTrialLayoutCommit\.wait/)
+  assert.match(index, /this\.readerOverlay\.activeReader !== null\) return/)
+  assert.match(index, /if \(ready\) await this\.readerOverlay\.presentPendingReader\(mountEpoch\)/)
+  assert.match(index, /\(\): boolean => this\.readerEntryVisibility\.foreground && this\.readerOverlay\.visible/)
+  assert.match(index, /if \(this\.readerOverlay\.visible\) \{[\s\S]*ForEach\(\[this\.readerOverlayMountEpoch\]/)
+  assert.match(index, /if \(this\.readerOverlay\.activeReader !== null\) \{[\s\S]*this\.directSharedReaderOverlay/)
+  assert.match(index, /else \{[\s\S]*HdsNavigation\(this\.readerOverlay\.stack\)/)
+  assert.match(index, /readerEntryRect\(`reader-overlay-host-\$\{mountEpoch\}`\)/)
+  assert.match(index, /\.id\(`reader-overlay-host-\$\{_epoch\}`\)/)
+  assert.match(index, /\.id\('reader-overlay-navigation'\)/)
   assert.equal(value.host.productionReaderEntryClaim, null)
   assert.equal(value.host.productionReaderEntryTransition, null)
   assert.equal(value.host.productionReaderEntryPreview, null)

@@ -1,6 +1,7 @@
 import { AppStorageV2 } from '@kit.ArkUI'
 import { NhGalleryDetail, NhGalleryPage, NhTag } from '../model/NhGallery'
 import { ReaderRouteParams } from '../model/ReaderRouteParams'
+import { NextNReaderBackend } from './NextNReaderBackendSelectionState'
 import { connectReaderThumbnailTransition } from './ReaderThumbnailTransitionState'
 
 /**
@@ -12,6 +13,10 @@ import { connectReaderThumbnailTransition } from './ReaderThumbnailTransitionSta
 export class ReaderOverlayNavigationState {
   @Trace visible: boolean = false
   @Trace stack: NavPathStack = new NavPathStack()
+  /** Shared Reader is mounted directly by the shell; HDS remains a legacy-only adapter. */
+  @Trace activeReader: ReaderRouteParams | null = null
+  /** Admission epoch observed by the host before it presents the pending route. */
+  @Trace mountEpoch: number = 0
   // Detail observes the start of the exit transition so it can reveal the
   // already-persisted final progress without reacting to live Reader writes.
   @Trace closing: boolean = false
@@ -67,27 +72,45 @@ export class ReaderOverlayNavigationState {
     return detail
   }
 
-  open(params: ReaderRouteParams, animated: boolean = true): void {
+  open(params: ReaderRouteParams, animated: boolean = true): number {
     const routeEpoch: number = this.nextRouteEpoch + 1
     this.nextRouteEpoch = routeEpoch
     const routeParams = new ReaderRouteParams(params.galleryId, params.initialPageIndex, routeEpoch, params.backend)
     this.attachStagedDetailSeed(routeParams)
-    this.stack.clear(false)
+    // A Reader session owns one private stack. Reusing a stack whose Reader
+    // destination has disappeared lets HDS retain the old destination binding
+    // even though a later push mutates the JS path list. The root Gallery stack
+    // remains independent and mounted throughout this replacement.
+    this.activeReader = routeParams.backend === NextNReaderBackend.SHARED ? routeParams : null
+    this.stack = new NavPathStack()
     this.stack.pushPathByName('ReaderOverlayBackdrop', null, false)
-    this.pendingReader = routeParams
+    this.pendingReader = routeParams.backend === NextNReaderBackend.SHARED ? null : routeParams
     this.pendingReaderAnimated = animated
     this.closing = false
+    this.mountEpoch = routeEpoch
     this.visible = true
+    return routeEpoch
   }
 
-  presentPendingReader(): void {
+  async presentPendingReader(expectedRouteEpoch: number = 0): Promise<boolean> {
     const params: ReaderRouteParams | null = this.pendingReader
-    if (!this.visible || this.closing || params === null) {
-      return
+    if (!this.visible || this.closing || params === null ||
+      (expectedRouteEpoch > 0 && params.routeEpoch !== expectedRouteEpoch)) {
+      return false
     }
     this.pendingReader = null
-    this.stack.pushPathByName('Reader', params, this.pendingReaderAnimated)
+    const animated: boolean = this.pendingReaderAnimated
     this.pendingReaderAnimated = true
+    try {
+      await this.stack.pushDestinationByName(`Reader:${params.routeEpoch}`, params, animated)
+      return true
+    } catch (error) {
+      if (this.visible && !this.closing && this.mountEpoch === params.routeEpoch && this.pendingReader === null) {
+        this.pendingReader = params
+        this.pendingReaderAnimated = animated
+      }
+      return false
+    }
   }
 
   close(animated: boolean = true): void {
@@ -97,6 +120,12 @@ export class ReaderOverlayNavigationState {
     this.pendingReader = null
     this.clearStagedDetailSeed()
     this.clearActiveDetailSeed()
+    if (this.activeReader !== null) {
+      this.closing = true
+      this.activeReader = null
+      this.finishClose()
+      return
+    }
     if (this.stack.getAllPathName().length === 0) {
       this.finishClose()
       return
@@ -111,9 +140,9 @@ export class ReaderOverlayNavigationState {
     }
     this.closing = false
     this.visible = false
+    this.activeReader = null
     this.clearStagedDetailSeed()
     this.clearActiveDetailSeed()
-    this.stack.clear(false)
     this.pendingReaderAnimated = true
     connectReaderThumbnailTransition().reset()
   }
@@ -123,6 +152,7 @@ export class ReaderOverlayNavigationState {
     this.pendingReaderAnimated = true
     this.closing = false
     this.visible = false
+    this.activeReader = null
     this.clearStagedDetailSeed()
     this.clearActiveDetailSeed()
     this.stack.clear(false)

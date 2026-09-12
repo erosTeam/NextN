@@ -759,7 +759,7 @@ struct Index {
     }
     this.readerOverlay.stageDetailSeed(detailSeed)
     try {
-      this.readerOverlay.open(new ReaderRouteParams(
+      this.openReaderOverlay(new ReaderRouteParams(
         source.galleryId,
         source.pageIndex,
         0,
@@ -768,6 +768,37 @@ struct Index {
     } finally {
       this.readerOverlay.discardStagedDetailSeed(source.galleryId)
     }
+  }
+
+  private openReaderOverlay(params: ReaderRouteParams, animated: boolean = true): void {
+    const mountEpoch: number = this.readerOverlay.open(params, animated)
+    if (params.backend === NextNReaderBackend.SHARED) {
+      // A direct child's aboutToAppear precedes its container's onAppear.
+      // Prime the host contract synchronously so a new session never observes
+      // the previous session's closing flag and cancels initialization.
+      this.readerDestinationVisible = true
+      this.readerDestinationClosing = false
+      this.readerDestinationCloseDispatched = false
+      this.readerDestinationRouteEpoch = mountEpoch
+    }
+    this.readerOverlayMountEpoch = mountEpoch
+  }
+
+  @Monitor('readerOverlayMountEpoch')
+  private async presentReaderOverlayAfterMount(): Promise<void> {
+    const mountEpoch: number = this.readerOverlayMountEpoch
+    if (mountEpoch <= 0 || !this.readerOverlay.visible || this.readerOverlay.activeReader !== null) return
+    const ready = await ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string => {
+      if (!this.readerOverlay.visible || this.readerOverlayMountEpoch !== mountEpoch) return ''
+      try {
+        const rect = this.readerEntryRect(`reader-overlay-host-${mountEpoch}`)
+        return rect.valid() ? `${rect.x},${rect.y},${rect.width},${rect.height}` : ''
+      } catch (_) {
+        return ''
+      }
+    }, (): boolean => this.readerEntryVisibility.foreground && this.readerOverlay.visible &&
+      this.readerOverlayMountEpoch === mountEpoch)
+    if (ready) await this.readerOverlay.presentPendingReader(mountEpoch)
   }
 
   @Monitor('readerEntryTransition.phase', 'readerEntryVisibility.foreground')
@@ -1046,6 +1077,7 @@ struct Index {
   @Local private galleryDetailTransition: GalleryDetailTransitionState = connectGalleryDetailTransition()
   @Local private readerThumbnailTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
   @Local private readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
+  @Local private readerOverlayMountEpoch: number = 0
   @Local private settingsNavigation: SettingsNavigationState = connectSettingsNavigation()
   @Local private clipboardLink: NhClipboardLinkState = connectNhClipboardLink()
   @Local private galleryDirectLaunch: GalleryDirectLaunchState = connectGalleryDirectLaunch()
@@ -1706,7 +1738,7 @@ struct Index {
     const selectedBackend = initialPageIndex < 0
       ? this.readerBackendSelection.current()
       : NextNReaderBackend.LEGACY
-    this.readerOverlay.open(new ReaderRouteParams(
+    this.openReaderOverlay(new ReaderRouteParams(
       galleryId,
       initialPageIndex,
       0,
@@ -2662,6 +2694,13 @@ struct Index {
   }
 
   onBackPress(): boolean {
+    // Direct shared Reader has no native destination to consume system Back;
+    // delegate to its registered controller before closing the shell route.
+    if (this.readerOverlay.visible && this.readerOverlay.activeReader !== null) {
+      if (this.readerBackRequest !== null) return this.readerBackRequest()
+      this.closeReaderDestination(true)
+      return true
+    }
     if (this.logicalTabForPhysical(this.activeTab) === 2 && this.stack.getAllPathName().length === 0 &&
       this.downloadQueueActions.selectionMode) {
       DownloadQueueActionBridge.request(DownloadQueueAction.CANCEL_SELECTION)
@@ -3180,50 +3219,112 @@ struct Index {
     .backgroundColor(Color.Transparent)
   }
 
+  /**
+   * Shared Reader content is independent of the shell's navigation adapter.
+   * Both the direct production host and any compatibility destination consume
+   * the same route contract and callbacks here.
+   */
+  @Builder
+  private sharedReaderBody(params: ReaderRouteParams) {
+    ForEach([params.routeEpoch], (_routeEpoch: number) => {
+      NextNReaderLabPage({
+        request: new NextNProductionReaderRequest(
+          params.galleryId,
+          params.initialPageIndex,
+          params.routeEpoch,
+        ),
+        embedded: true,
+        managesTrialWindow: false,
+        entryTransition: this.productionReaderEntryMatches(params) ?
+          this.productionReaderEntryTransition : null,
+        entryPreview: this.productionReaderEntryMatches(params) ?
+          this.productionReaderEntryPreview : null,
+        entryPhase: this.productionReaderEntryMatches(params) ?
+          this.productionReaderEntryTransition?.phase ?? 'finished' : 'finished',
+        onEntrySettled: (): void => { this.finishProductionReaderEntry() },
+        externalRouteActive: this.readerDestinationVisible,
+        hostClosing: this.readerDestinationClosing,
+        prepareChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareSharedReaderChrome(isCurrent),
+        onReaderPresentationChanged: (
+          chromeVisible: boolean,
+          fullscreen: boolean,
+          canvasDark: boolean,
+        ): void => {
+          this.recordReaderPresentation(params.routeEpoch, chromeVisible, fullscreen, canvasDark)
+        },
+        onRegisterBackRequest: (request: (() => boolean) | null): void => {
+          this.readerBackRequest = request
+        },
+        onPrepareClose: (): Promise<boolean> => {
+          return this.prepareReaderDestinationClose(params.galleryId)
+        },
+        onPreparedClose: (animated: boolean): void => {
+          this.finishReaderDestinationClose(animated)
+        },
+      })
+    }, (routeEpoch: number): string => `shared-reader-${routeEpoch}`)
+  }
+
+  private readerRouteShown(params: ReaderRouteParams): void {
+    this.readerDestinationVisible = true
+    this.readerDestinationClosing = false
+    this.readerDestinationCloseDispatched = false
+    this.readerDestinationRouteEpoch = params.routeEpoch
+    this.readerDestinationShownAtMs = Date.now()
+    if (params.backend === NextNReaderBackend.LEGACY) {
+      ReaderThumbnailTransitionCoordinator.startOpening(this.getUIContext(), params.galleryId.toString())
+    }
+    if (this.readerPresentationPending &&
+      this.readerPresentationRouteEpoch === this.readerDestinationRouteEpoch) {
+      this.applyRecordedReaderPresentation()
+      return
+    }
+    this.clearRecordedReaderPresentation()
+  }
+
+  private readerRouteWillHide(): void {
+    this.readerBackRequest = null
+    this.readerDestinationVisible = false
+    this.readerDestinationClosing = true
+    this.readerDestinationShownAtMs = 0
+    this.clearRecordedReaderPresentation()
+    this.restoreAppStatusBar()
+  }
+
+  private readerRouteDisappeared(params: ReaderRouteParams): void {
+    this.readerBackRequest = null
+    this.readerDestinationVisible = false
+    this.readerDestinationShownAtMs = 0
+    this.clearRecordedReaderPresentation()
+    if (this.productionReaderEntryGalleryId === params.galleryId &&
+      this.productionReaderEntryPageIndex === params.initialPageIndex) {
+      this.retireProductionReaderEntry()
+    }
+    this.readerOverlay.finishClose()
+  }
+
+  @Builder
+  private directSharedReaderOverlay(params: ReaderRouteParams) {
+    Stack() {
+      this.sharedReaderBody(params)
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(Color.Transparent)
+    .opacity(this.productionReaderEntryTransition?.phase === 'layout' ? 0 :
+      this.readerThumbnailTransition.overlayOpacity)
+    .animation({ duration: this.productionReaderEntryTransition === null ? 0 : 140, curve: Curve.Linear })
+    .hitTestBehavior(this.productionReaderEntryTransition?.phase === 'layout' ?
+      HitTestMode.None : HitTestMode.Default)
+    .onAppear((): void => { this.readerRouteShown(params) })
+    .onDisAppear((): void => { this.readerRouteDisappeared(params) })
+  }
+
   @Builder
   private readerDestination(param: Object) {
     HdsNavDestination() {
       if (this.readerParams(param).backend === NextNReaderBackend.SHARED) {
-        NextNReaderLabPage({
-          request: new NextNProductionReaderRequest(
-            this.readerParams(param).galleryId,
-            this.readerParams(param).initialPageIndex,
-            this.readerParams(param).routeEpoch,
-          ),
-          embedded: true,
-          managesTrialWindow: false,
-          entryTransition: this.productionReaderEntryMatches(this.readerParams(param)) ?
-            this.productionReaderEntryTransition : null,
-          entryPreview: this.productionReaderEntryMatches(this.readerParams(param)) ?
-            this.productionReaderEntryPreview : null,
-          entryPhase: this.productionReaderEntryMatches(this.readerParams(param)) ?
-            this.productionReaderEntryTransition?.phase ?? 'finished' : 'finished',
-          onEntrySettled: (): void => { this.finishProductionReaderEntry() },
-          externalRouteActive: this.readerDestinationVisible,
-          hostClosing: this.readerDestinationClosing,
-          prepareChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareSharedReaderChrome(isCurrent),
-          onReaderPresentationChanged: (
-            chromeVisible: boolean,
-            fullscreen: boolean,
-            canvasDark: boolean,
-          ): void => {
-            this.recordReaderPresentation(
-              this.readerParams(param).routeEpoch,
-              chromeVisible,
-              fullscreen,
-              canvasDark,
-            )
-          },
-          onRegisterBackRequest: (request: (() => boolean) | null): void => {
-            this.readerBackRequest = request
-          },
-          onPrepareClose: (): Promise<boolean> => {
-            return this.prepareReaderDestinationClose(this.readerParams(param).galleryId)
-          },
-          onPreparedClose: (animated: boolean): void => {
-            this.finishReaderDestinationClose(animated)
-          },
-        })
+        this.sharedReaderBody(this.readerParams(param))
       } else {
         ReaderPage({
         galleryId: this.readerParams(param).galleryId,
@@ -3261,44 +3362,13 @@ struct Index {
       return true
     })
     .onShown((): void => {
-      this.readerDestinationVisible = true
-      this.readerDestinationClosing = false
-      this.readerDestinationCloseDispatched = false
-      this.readerDestinationRouteEpoch = this.readerParams(param).routeEpoch
-      this.readerDestinationShownAtMs = Date.now()
-      if (this.readerParams(param).backend === NextNReaderBackend.LEGACY) {
-        ReaderThumbnailTransitionCoordinator.startOpening(
-          this.getUIContext(),
-          this.readerParams(param).galleryId.toString(),
-        )
-      }
-      if (this.readerPresentationPending &&
-        this.readerPresentationRouteEpoch === this.readerDestinationRouteEpoch) {
-        this.applyRecordedReaderPresentation()
-        return
-      }
-      this.clearRecordedReaderPresentation()
-      // Keep the app status bar stable until this route publishes its restored
-      // presentation. The first immersive hide still observes NextE's entry delay.
+      this.readerRouteShown(this.readerParams(param))
     })
     .onWillHide((): void => {
-      this.readerBackRequest = null
-      this.readerDestinationVisible = false
-      this.readerDestinationClosing = true
-      this.readerDestinationShownAtMs = 0
-      this.clearRecordedReaderPresentation()
-      this.restoreAppStatusBar()
+      this.readerRouteWillHide()
     })
     .onDisAppear((): void => {
-      this.readerBackRequest = null
-      this.readerDestinationVisible = false
-      this.readerDestinationShownAtMs = 0
-      this.clearRecordedReaderPresentation()
-      if (this.productionReaderEntryGalleryId === this.readerParams(param).galleryId &&
-        this.productionReaderEntryPageIndex === this.readerParams(param).initialPageIndex) {
-        this.retireProductionReaderEntry()
-      }
-      this.readerOverlay.finishClose()
+      this.readerRouteDisappeared(this.readerParams(param))
     })
   }
 
@@ -3890,7 +3960,7 @@ struct Index {
   private readerOverlayRouterMap(name: string, param: Object) {
     if (name === ROUTE_READER_OVERLAY_BACKDROP) {
       this.readerOverlayBackdropDestination()
-    } else if (name === ROUTE_READER) {
+    } else if (name === ROUTE_READER || name.startsWith(`${ROUTE_READER}:`)) {
       this.readerDestination(param)
     } else {
       HdsNavDestination() {
@@ -4721,27 +4791,39 @@ struct Index {
           .hitTestBehavior(HitTestMode.None)
       }
 
-      // Reader deliberately owns a private full-window navigation stack. The
-      // root HDS stack remains mounted below it, preserving the active tab,
-      // Gallery detail, or thumbnails state through Reader close.
+      // Shared Reader mounts directly from its route contract. HDS is retained
+      // only as the legacy navigation adapter, so repeated shared sessions do
+      // not inherit native destination cache state.
       if (this.readerOverlay.visible) {
-        HdsNavigation(this.readerOverlay.stack) {
-          Column() {}
-        }
-        .navDestination(this.readerOverlayRouterMap)
-        .hideNavBar(true)
-        .width('100%')
-        .height('100%')
-        .backgroundColor(Color.Transparent)
-        .opacity(this.productionReaderEntryTransition?.phase === 'layout' ? 0 :
-          this.readerThumbnailTransition.overlayOpacity)
-        .animation({ duration: this.productionReaderEntryTransition === null ? 0 : 140, curve: Curve.Linear })
-        .hitTestBehavior(this.productionReaderEntryTransition?.phase === 'layout' ?
-          HitTestMode.None : HitTestMode.Default)
-        .onAppear((): void => {
-          this.readerOverlay.presentPendingReader()
-        })
-        .id('reader-overlay-navigation')
+        ForEach([this.readerOverlayMountEpoch], (_epoch: number) => {
+          Stack() {
+            Stack() {
+              if (this.readerOverlay.activeReader !== null) {
+                this.directSharedReaderOverlay(this.readerOverlay.activeReader as ReaderRouteParams)
+              } else {
+                HdsNavigation(this.readerOverlay.stack) {
+                  Column() {}
+                }
+                .navDestination(this.readerOverlayRouterMap)
+                .hideNavBar(true)
+                .width('100%')
+                .height('100%')
+                .backgroundColor(Color.Transparent)
+                .opacity(this.productionReaderEntryTransition?.phase === 'layout' ? 0 :
+                  this.readerThumbnailTransition.overlayOpacity)
+                .animation({ duration: this.productionReaderEntryTransition === null ? 0 : 140, curve: Curve.Linear })
+                .hitTestBehavior(this.productionReaderEntryTransition?.phase === 'layout' ?
+                  HitTestMode.None : HitTestMode.Default)
+              }
+            }
+            .width('100%')
+            .height('100%')
+            .id('reader-overlay-navigation')
+          }
+          .width('100%')
+          .height('100%')
+          .id(`reader-overlay-host-${_epoch}`)
+        }, (epoch: number): string => `${epoch}`)
       }
       IndexReaderThumbnailTransitionProxy({ state: this.readerThumbnailTransition })
       if (this.readerTrialRequest !== null) {

@@ -67,22 +67,51 @@ const overlay = compile(overlaySource, {
   '@kit.ArkUI': { AppStorageV2: { connect: (_type, _key, create) => create() } },
   '../model/NhGallery': {},
   '../model/ReaderRouteParams': { ReaderRouteParams: params },
+  './NextNReaderBackendSelectionState': state,
   './ReaderThumbnailTransitionState': { connectReaderThumbnailTransition: () => ({ reset() {} }) },
 }, { ObservedV2: value => value, Trace() {}, NavPathStack: class {
   paths = []
   clear() { this.paths = [] }
   pushPathByName(name, value) { this.paths.push([name, value]) }
+  async pushDestinationByName(name, value) { this.paths.push([name, value]) }
   getAllPathName() { return this.paths.map(value => value[0]) }
   pop() { this.paths.pop() }
 } }).ReaderOverlayNavigationState
 
 const navigation = new overlay()
-navigation.open(shared, false)
-navigation.presentPendingReader()
-assert.equal(navigation.stack.paths[1][1].backend, state.NextNReaderBackend.SHARED,
-  'the route must retain the backend selected at open time')
+const sharedEpoch = navigation.open(shared, false)
+assert.equal(navigation.mountEpoch, sharedEpoch)
+assert.equal(navigation.activeReader.backend, state.NextNReaderBackend.SHARED,
+  'shared Reader must be exposed directly to the shell host')
+assert.equal(navigation.activeReader.routeEpoch, sharedEpoch,
+  'the direct shared route must retain its admission identity')
+assert.deepEqual(navigation.stack.paths.map(value => value[0]), ['ReaderOverlayBackdrop'],
+  'shared Reader must not be coupled to an HDS destination')
 selected.select(state.NextNReaderBackend.LEGACY)
-assert.equal(navigation.stack.paths[1][1].backend, state.NextNReaderBackend.SHARED,
+assert.equal(navigation.activeReader.backend, state.NextNReaderBackend.SHARED,
   'an open route must not switch when the process selector changes')
 
-console.log('PASS debug-only backend selection and route snapshot; shared body routing remains separate')
+navigation.close(false)
+assert.equal(navigation.visible, false)
+assert.equal(navigation.activeReader, null)
+assert.deepEqual(navigation.stack.paths.map(value => value[0]), ['ReaderOverlayBackdrop'],
+  'closing direct Reader must leave legacy adapter state isolated')
+const staleEpoch = navigation.open(legacy, false)
+const currentEpoch = navigation.open(shared, false)
+assert.equal(navigation.mountEpoch, currentEpoch,
+  'each admission must expose a distinct host epoch')
+await navigation.presentPendingReader(staleEpoch)
+assert.deepEqual(navigation.stack.paths.map(value => value[0]), ['ReaderOverlayBackdrop'],
+  'a stale frame callback must not present a replacement route')
+assert.equal(navigation.activeReader.routeEpoch, currentEpoch,
+  'the replacement shared session must own a fresh direct route')
+
+navigation.close(false)
+const legacyEpoch = navigation.open(legacy, false)
+await navigation.presentPendingReader(legacyEpoch)
+assert.equal(navigation.stack.paths[1][1].backend, state.NextNReaderBackend.LEGACY,
+  'legacy Reader must retain the backend selected at open time')
+assert.equal(navigation.stack.paths[1][0], `Reader:${legacyEpoch}`,
+  'legacy compatibility navigation still uses a session-unique destination')
+
+console.log('PASS debug-only backend selection; shared direct host and legacy adapter remain separate')

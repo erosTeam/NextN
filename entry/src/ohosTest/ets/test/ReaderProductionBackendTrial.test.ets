@@ -242,17 +242,21 @@ async function findFullThumbnail(driver: Driver, pageIndex: number): Promise<Com
     .within(ON.id('nextn-root-navigation')))
   if (viewAll.length !== 1) throw new Error('Detail View all action is not unique')
   await viewAll[0].click()
+  return findCurrentFullThumbnail(driver, pageIndex)
+}
+
+async function findCurrentFullThumbnail(driver: Driver, pageIndex: number): Promise<Component> {
   const pattern = `^reader-thumb-all-thumbnails-[0-9]+-page-${pageIndex}$`
   const selector = ON.id(pattern, MatchPattern.REG_EXP).within(ON.type('Grid'))
   for (let attempt = 0; attempt < 40; attempt++) {
-    const grids = await driver.findComponents(ON.type('Grid').within(ON.id('nextn-root-navigation')))
+    const grids = await driver.findComponents(ON.type('Grid').within(ON.id('nextn-root-navigation'))) ?? []
     if (grids.length > 1) throw new Error('Ambiguous full-thumbnail Grid; no coordinate fallback')
     if (grids.length === 1) {
-      let matches = await driver.findComponents(selector)
+      let matches = await driver.findComponents(selector) ?? []
       if (matches.length === 0) {
         const found = await grids[0].scrollSearch(selector, true)
         if (found === null) throw new Error(`Full thumbnail unavailable: ${pageIndex}`)
-        matches = await driver.findComponents(selector)
+        matches = await driver.findComponents(selector) ?? []
       }
       expect(matches.length).assertEqual(1)
       const sourceId = await matches[0].getId()
@@ -342,6 +346,72 @@ async function waitProductionSpreadDelivered(driver: Driver, epoch: number,
     await driver.delayMs(100)
   }
   throw new Error('Production spread entry did not finish the real-image handoff')
+}
+
+async function waitProductionSingletonHeld(driver: Driver, epoch: number,
+  pageIndex: number): Promise<ReaderTrialOriginalSnapshot> {
+  const viewportSelector = ON.id('rkit-image-viewport')
+  for (let attempt = 0; attempt < 120; attempt++) {
+    const state = ReaderTrialOriginalProbe.read()
+    expect(state.epoch).assertEqual(epoch)
+    if (state.state === 'cancelled' || state.state === 'failed') {
+      throw new Error(`Production singleton entry became terminal while waiting: ${state.state}`)
+    }
+    if (state.state === 'held' && state.reader.entryPhase === 'waiting' && state.reader.layoutReady &&
+      state.reader.anchor === pageIndex && state.reader.entryId > 0 && state.requestId > 0) {
+      const viewport = await waitId(driver, 'rkit-image-viewport')
+      const selected = await waitId(driver, `rkit-part-${pageIndex}-whole`)
+      const preview = await waitId(driver, 'rkit-entry-preview-image')
+      const parts = await driver.findComponents(
+        ON.id('^rkit-part-[0-9]+-whole$', MatchPattern.REG_EXP).within(viewportSelector))
+      expect(parts.length).assertEqual(1)
+      const viewportBounds = await viewport.getBounds()
+      const selectedBounds = await selected.getBounds()
+      const previewBounds = await preview.getBounds()
+      expect(selectedBounds.left >= viewportBounds.left && selectedBounds.right <= viewportBounds.right &&
+        selectedBounds.top >= viewportBounds.top && selectedBounds.bottom <= viewportBounds.bottom).assertTrue()
+      expect(previewBounds.left >= selectedBounds.left && previewBounds.right <= selectedBounds.right &&
+        previewBounds.top >= selectedBounds.top && previewBounds.bottom <= selectedBounds.bottom).assertTrue()
+      const selectedCenterX = (selectedBounds.left + selectedBounds.right) / 2
+      const previewCenterX = (previewBounds.left + previewBounds.right) / 2
+      const viewportCenterX = (viewportBounds.left + viewportBounds.right) / 2
+      expect(Math.abs(selectedCenterX - viewportCenterX) <= 2).assertTrue()
+      expect(Math.abs(previewCenterX - viewportCenterX) <= 2).assertTrue()
+      expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertEqual(`${pageIndex + 1} / 14`)
+      return state
+    }
+    await driver.delayMs(100)
+  }
+  throw new Error(`Production P${pageIndex + 1} singleton did not reach centered waiting geometry`)
+}
+
+async function waitProductionSingletonDelivered(driver: Driver, epoch: number,
+  requestId: number, entryId: number, pageIndex: number): Promise<void> {
+  const viewportSelector = ON.id('rkit-image-viewport')
+  for (let attempt = 0; attempt < 80; attempt++) {
+    const state = ReaderTrialOriginalProbe.read()
+    expect(state.epoch).assertEqual(epoch)
+    expect(state.requestId).assertEqual(requestId)
+    if (state.state === 'cancelled' || state.state === 'failed') {
+      throw new Error(`Production singleton delivery became terminal: ${state.state}`)
+    }
+    if (state.state !== 'delivered') expect(state.reader.entryId).assertEqual(entryId)
+    else expect(state.reader.entryId === entryId || state.reader.entryId === 0).assertTrue()
+    const selected = await driver.findComponent(
+      ON.type('Image').within(ON.id(`rkit-part-${pageIndex}-whole`)))
+    const parts = await driver.findComponents(
+      ON.id('^rkit-part-[0-9]+-whole$', MatchPattern.REG_EXP).within(viewportSelector))
+    const entrySettled = state.reader.entryId === 0 ||
+      (state.reader.entryPhase === 'finished' && state.reader.decodedReady)
+    if (state.state === 'delivered' && entrySettled && state.reader.anchor === pageIndex &&
+      state.reader.assetPhase === 'displayed' && selected !== null && parts.length === 1 &&
+      await driver.findComponent(ON.id('rkit-entry-preview-image')) === null &&
+      await driver.findComponent(ON.type('LoadingProgress').within(viewportSelector)) === null &&
+      await driver.findComponent(ON.id('^rkit-failure-page-[0-9]+$', MatchPattern.REG_EXP)
+        .within(viewportSelector)) === null) return
+    await driver.delayMs(100)
+  }
+  throw new Error(`Production P${pageIndex + 1} singleton did not finish the real-image handoff`)
 }
 
 async function restoreProductionSpreadSettings(context: common.UIAbilityContext,
@@ -796,6 +866,118 @@ export default function readerProductionBackendTrialTest(): void {
             await launchBackend('legacy', false)
           }
         })
+    })
+    return
+  }
+
+  if (selectedClass === 'ReaderProductionThumbnailSingletonEntryTrial') {
+    describe(selectedClass, (): void => {
+      it('keepsCoverAndTailThumbnailEntriesAsCenteredRtlSingletons', 0, async (): Promise<void> => {
+        const driver = Driver.create()
+        let context: common.UIAbilityContext | null = null
+        let database: relationalStore.RdbStore | null = null
+        let history: HistorySnapshot | null = null
+        let settings: SettingSnapshot[] = []
+        let savedMode: NhReaderMode = NhReaderMode.PAGED
+        let savedDoublePage: boolean = false
+        let savedSpread: NhReaderSpreadLayout = NhReaderSpreadLayout.JOINED
+        let historyRestored = false
+        let settingsRestored = false
+        let probeEpoch = 0
+        let failed = false
+        try {
+          await launchBackend('shared', true)
+          context = await entryContext(driver)
+          database = await store(context)
+          history = await snapshotHistory(database)
+          writeSnapshot(history)
+          await ReaderPresentationService.restore(context)
+          const presentation = ReaderPresentationService.snapshot()
+          savedMode = presentation.mode
+          savedDoublePage = presentation.doublePageEnabled
+          savedSpread = presentation.spreadLayoutMode
+          for (const key of ['reader_mode', 'reader_double_page_enabled', 'reader_spread_layout',
+            `reader_column_mode:${GALLERY_ID}`]) {
+            settings.push(new SettingSnapshot(key, await settingValue(database, key)))
+          }
+          await ReaderPresentationService.setMode(context, NhReaderMode.PAGED_RTL)
+          await ReaderPresentationService.setDoublePageEnabled(context, true)
+          await ReaderPresentationService.setSpreadLayout(context, NhReaderSpreadLayout.SPLIT)
+          await ReaderSettingsRepository.saveColumnMode(context, GALLERY_ID, NhReaderColumnMode.EVEN_LEFT)
+          await seedHistoryPage(database, 6)
+
+          expect(connectNextNReaderBackendSelection().current()).assertEqual(NextNReaderBackend.SHARED)
+          const coverSource = await findFullThumbnail(driver, 0)
+          const coverSourceId = await coverSource.getId()
+          const coverBefore = await coverSource.getBounds()
+          probeEpoch = ReaderTrialOriginalProbe.arm(GALLERY_ID.toString(), 0)
+          await capture(driver, 'singleton-cover-source')
+          await coverSource.click()
+          const coverHeld = await waitProductionSingletonHeld(driver, probeEpoch, 0)
+          expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
+          await capture(driver, 'singleton-cover-waiting')
+          expect(ReaderTrialOriginalProbe.release(probeEpoch, coverHeld.requestId)).assertTrue()
+          await waitProductionSingletonDelivered(driver, probeEpoch,
+            coverHeld.requestId, coverHeld.reader.entryId, 0)
+          await capture(driver, 'singleton-cover-settled')
+          await closeAnyReader(driver)
+          const coverReturned = await waitId(driver, coverSourceId)
+          const coverAfter = await coverReturned.getBounds()
+          expect(coverAfter.left).assertEqual(coverBefore.left)
+          expect(coverAfter.top).assertEqual(coverBefore.top)
+          expect(coverAfter.right).assertEqual(coverBefore.right)
+          expect(coverAfter.bottom).assertEqual(coverBefore.bottom)
+          await capture(driver, 'singleton-cover-closed')
+
+          const tailSource = await findCurrentFullThumbnail(driver, 13)
+          const tailSourceId = await tailSource.getId()
+          const tailBefore = await tailSource.getBounds()
+          probeEpoch = ReaderTrialOriginalProbe.arm(GALLERY_ID.toString(), 13)
+          await capture(driver, 'singleton-tail-source')
+          await tailSource.click()
+          const tailHeld = await waitProductionSingletonHeld(driver, probeEpoch, 13)
+          expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
+          await capture(driver, 'singleton-tail-waiting')
+          expect(ReaderTrialOriginalProbe.release(probeEpoch, tailHeld.requestId)).assertTrue()
+          await waitProductionSingletonDelivered(driver, probeEpoch,
+            tailHeld.requestId, tailHeld.reader.entryId, 13)
+          await capture(driver, 'singleton-tail-settled')
+          await closeAnyReader(driver)
+          const tailReturned = await waitId(driver, tailSourceId)
+          const tailAfter = await tailReturned.getBounds()
+          expect(tailAfter.left).assertEqual(tailBefore.left)
+          expect(tailAfter.top).assertEqual(tailBefore.top)
+          expect(tailAfter.right).assertEqual(tailBefore.right)
+          expect(tailAfter.bottom).assertEqual(tailBefore.bottom)
+          await capture(driver, 'singleton-tail-closed')
+
+          await restoreAndVerify(database, history)
+          historyRestored = true
+          removeSnapshot()
+          await restoreProductionSpreadSettings(context, database, settings,
+            savedMode, savedDoublePage, savedSpread)
+          settingsRestored = true
+          console.info('[ReaderProductionBackendTrial] thumbnailSingletonShared=true cover=0 tail=13 ' +
+            'coverCentered=true tailCentered=true onePartEach=true deliveredBoth=true sourceRestoredBoth=true ' +
+            'historyRestored=true settingsRestored=true')
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'singleton-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          if (probeEpoch !== 0) ReaderTrialOriginalProbe.cancel(probeEpoch)
+          try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+          if (!historyRestored && database !== null && history !== null) {
+            await restoreAndVerify(database, history)
+            removeSnapshot()
+          }
+          if (!settingsRestored && context !== null && database !== null && settings.length > 0) {
+            await restoreProductionSpreadSettings(context, database, settings,
+              savedMode, savedDoublePage, savedSpread)
+          }
+          await launchBackend('legacy', false)
+        }
+      })
     })
     return
   }
