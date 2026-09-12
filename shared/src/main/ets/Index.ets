@@ -765,8 +765,10 @@ export { BackupSecretDenylist } from './backup/BackupSecretDenylist'
 export { DiagnosticLogger } from './diagnostics/DiagnosticLogger'
 export { DiagnosticsLogFileSink, DiagnosticsLogFileInfo } from './diagnostics/DiagnosticsLogFileSink'
 export { DiagnosticsSettings, DiagnosticsSettingsSnapshot } from './settings/DiagnosticsSettings'
+export { BackGuardSettings } from './settings/BackGuardSettings'
 export { DiagnosticsFileExport, DiagnosticsExportFile } from './settings/DiagnosticsFileExport'
 export { DiagnosticsState, connectDiagnostics } from './state/DiagnosticsState'
+export { BackGuardState, connectBackGuard } from './state/BackGuardState'
 export {
   BackupWebDavCredentialGroup,
   BackupPreferencesAdapter,

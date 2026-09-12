@@ -125,6 +125,9 @@ import {
   connectScreenOrientation,
   connectDownloadSettings,
   connectDiagnostics,
+  BackGuardSettings,
+  BackGuardState,
+  connectBackGuard,
   connectHomeTabAutoHide,
   connectImmersiveMaterialSettings,
   connectLanguageState,
@@ -278,6 +281,7 @@ export struct SettingsPage {
   @Local searchPreferencesError: string = ''
   @Local downloadSettings: DownloadSettingsState = connectDownloadSettings()
   @Local diagnostics: DiagnosticsState = connectDiagnostics()
+  @Local backGuard: BackGuardState = connectBackGuard()
   @Local diagnosticsLogCount: number = 0
   @Local diagnosticsLogFiles: DiagnosticsLogFileInfo[] = []
   @Local commentTranslationSettings: CommentTranslationSettingsState = connectCommentTranslationSettings()
@@ -2646,6 +2650,23 @@ export struct SettingsPage {
       })
   }
 
+  /** Back-guard toggle: first home back presses a toast, second within 1s exits the app. */
+  @Builder
+  private BackGuardGroup() {
+    NextNGroupedListSection({ accessibilityId: 'nextn-back-guard-group' }) {
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.arrow_left'),
+        title: AppStrings.get('navigation_back_guard'),
+        hasSwitch: true,
+        checked: this.backGuard.enabled,
+        showChevron: false,
+        onSwitchChange: (value: boolean): void => {
+          BackGuardSettings.setEnabled(this.context(), value)
+        },
+      })
+    }
+  }
+
   @Builder
   private DiagnosticsSettingsGroup() {
     NextNGroupedListSection({ accessibilityId: 'nextn-diagnostics-settings-group' }) {
@@ -4911,6 +4932,9 @@ export struct SettingsPage {
             }
           }
         } else if (this.surface === SettingsSurface.ADVANCED) {
+          ListItem() {
+            this.BackGuardGroup()
+          }
           ListItem() {
             this.ClipboardLinkGroup()
           }

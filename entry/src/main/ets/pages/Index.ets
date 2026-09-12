@@ -91,6 +91,8 @@ import {
   LoginRecoveryLaunchState,
   DownloadQueueAction,
   DownloadQueueActionBridge,
+  BackGuardState,
+  connectBackGuard,
   DownloadQueueActionState,
   FavoritesActionBridge,
   FavoritesActionState,
@@ -900,6 +902,9 @@ struct Index {
   @Local private tabletLayout: TabletLayoutState = connectTabletLayout()
   @Local private layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   @Local private downloadQueueActions: DownloadQueueActionState = connectDownloadQueueActions()
+  @Local private backGuard: BackGuardState = connectBackGuard()
+  private lastBackPressAt: number = 0
+  private readonly BACK_GUARD_BLOCK_WINDOW_MS: number = 1000
   @Local private homeGallerySelection: HomeGallerySelectionState = connectHomeGallerySelection()
   @Local private homeSource: HomeSourceState = connectHomeSource()
   @Local private homeSubtabs: HomeSubtabState = connectHomeSubtabs()
@@ -2512,6 +2517,21 @@ struct Index {
     if (this.logicalTabForPhysical(this.activeTab) === 2 && this.stack.getAllPathName().length === 0 &&
       this.downloadQueueActions.selectionMode) {
       DownloadQueueActionBridge.request(DownloadQueueAction.CANCEL_SELECTION)
+      return true
+    }
+    // Back on a home root (empty route stack): first press shows a toast, a second within
+    // 1s passes through so the system exits the app (port of NextE back-guard / eros_fe
+    // doubleClickBack). Guarded by settings; deeper routes own their own back handling.
+    if (this.backGuard.enabled && this.stack.getAllPathName().length === 0) {
+      const now: number = Date.now()
+      if (now - this.lastBackPressAt < this.BACK_GUARD_BLOCK_WINDOW_MS) {
+        this.lastBackPressAt = 0
+        return false
+      }
+      this.lastBackPressAt = now
+      this.getUIContext().getPromptAction()
+        .openToast({ message: AppStrings.get('navigation_back_guard_toast') })
+        .catch((_toastError: Error) => {})
       return true
     }
     return false

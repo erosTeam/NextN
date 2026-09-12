@@ -51,6 +51,7 @@ import {
   ThemeSettings,
   DiagnosticLogger,
   DiagnosticsSettings,
+  BackGuardSettings,
   connectSafeMode,
   ReaderTrialOriginalProbe,
 } from 'shared'
@@ -168,6 +169,7 @@ export default class EntryAbility extends UIAbility {
 
     Promise.all([
       DiagnosticsSettings.restore(this.context),
+      BackGuardSettings.restore(this.context),
       // Publish the persisted presentation signal before the first component
       // mounts. The platform color-mode call itself remains below
       // `loadContent`, which is the lifecycle point required by ArkUI.

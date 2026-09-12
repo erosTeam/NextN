@@ -1217,6 +1217,8 @@
     { "name": "download_batch_paused", "value": "Paused %1$s; %2$s failed" },
     { "name": "download_batch_deleted", "value": "Deleted %1$s; %2$s failed" },
     { "name": "download_batch_delete_confirm", "value": "Delete %s selected downloads and their local files? Active downloads will be stopped first." },
-    { "name": "download_batch_deleting", "value": "Deleting %s" }
+    { "name": "download_batch_deleting", "value": "Deleting %s" },
+    { "name": "navigation_back_guard", "value": "Double-back to exit" },
+    { "name": "navigation_back_guard_toast", "value": "Press back again to exit" }
   ]
 }

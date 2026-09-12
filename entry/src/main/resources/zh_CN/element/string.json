@@ -1218,6 +1218,8 @@
     { "name": "download_batch_paused", "value": "已暂停 %1$s 项，%2$s 项失败" },
     { "name": "download_batch_deleted", "value": "已删除 %1$s 项，%2$s 项失败" },
     { "name": "download_batch_delete_confirm", "value": "删除选中的 %s 项下载及本地文件？正在进行的下载将先停止。" },
-    { "name": "download_batch_deleting", "value": "正在删除 %s" }
+    { "name": "download_batch_deleting", "value": "正在删除 %s" },
+    { "name": "navigation_back_guard", "value": "双击返回退出" },
+    { "name": "navigation_back_guard_toast", "value": "再按一次返回退出" }
   ]
 }

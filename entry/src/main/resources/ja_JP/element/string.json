@@ -1217,6 +1217,8 @@
     { "name": "download_batch_paused", "value": "%1$s 件を一時停止、%2$s 件失敗" },
     { "name": "download_batch_deleted", "value": "%1$s 件を削除、%2$s 件失敗" },
     { "name": "download_batch_delete_confirm", "value": "選択した %s 件のダウンロードとローカルファイルを削除しますか？実行中のダウンロードは先に停止します。" },
-    { "name": "download_batch_deleting", "value": "削除中 %s" }
+    { "name": "download_batch_deleting", "value": "削除中 %s" },
+    { "name": "navigation_back_guard", "value": "ダブルバックで終了" },
+    { "name": "navigation_back_guard_toast", "value": "一度押して終了します" }
   ]
 }
