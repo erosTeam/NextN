@@ -160,6 +160,9 @@ const claimCode = compile('export ' + section(index, 'class ReaderEntryClaim {',
 const relayCode = compile(read('../shared/src/main/ets/navigation/ReaderTrialEntryRelay.ets'), 'ReaderTrialEntryRelay.ets')
 const rectCode = compile(section(read('../../reader-kit/reader-ui/src/main/ets/ReaderEntryTransition.ets'),
   'export class ReaderEntryRect {', 'export class ReaderEntryTarget {'), 'ReaderEntryTransition.ets')
+const captureSource = read('../entry/src/main/ets/pages/NextNReaderEntryPreviewCapture.ets')
+const captureCode = compile(captureSource.slice(captureSource.indexOf('export class NextNReaderEntryPreviewCapture')),
+  'NextNReaderEntryPreviewCapture.ets')
 
 function moduleExports(code, globals = {}, filename = 'runtime.ets') {
   const exports = {}
@@ -167,10 +170,14 @@ function moduleExports(code, globals = {}, filename = 'runtime.ets') {
   return exports
 }
 
-function setup({ deferRestore = false, readiness = 'not-required' } = {}) {
+function setup({ deferRestore = false, readiness = 'not-required', backend = 'legacy' } = {}) {
   const layouts = [], logs = [], preparations = []
   const shared = moduleExports(relayCode, {}, 'ReaderTrialEntryRelay.ets')
   const { ReaderEntryRect } = moduleExports(rectCode, {}, 'ReaderEntryTransition.ets')
+  const { NextNReaderEntryPreviewCapture } = moduleExports(captureCode, {
+    ReaderEntryRect,
+    ReaderEntryPreviewSource: class {},
+  }, 'NextNReaderEntryPreviewCapture.ets')
   const { ReaderEntryClaim } = moduleExports(claimCode, {}, 'Index.ets')
   const visibility = { foreground: true }
   const safeMode = { restricted: () => false }
@@ -192,6 +199,14 @@ function setup({ deferRestore = false, readiness = 'not-required' } = {}) {
   class NavPathStack {
     clears = 0
     clear() { this.clears++ }
+  }
+  class ReaderRouteParams {
+    constructor(galleryId, initialPageIndex, routeEpoch, selectedBackend) {
+      this.galleryId = galleryId
+      this.initialPageIndex = initialPageIndex
+      this.routeEpoch = routeEpoch
+      this.backend = selectedBackend
+    }
   }
   class ReaderTrialWindow {
     prepareStatusBarVisible() {
@@ -217,9 +232,14 @@ function setup({ deferRestore = false, readiness = 'not-required' } = {}) {
     }
   }
   const { Index } = moduleExports(hostCode, {
-    ...shared, ReaderEntryRect, ReaderEntryClaim, NavPathStack, ReaderTrialWindow,
+    ...shared, ReaderEntryRect, ReaderEntryClaim, NextNReaderEntryPreviewCapture, NavPathStack, ReaderTrialWindow,
     console: { info: message => logs.push(message) },
-    connectNextNReaderBackendSelection: () => ({ current: () => 'legacy' }),
+    ReaderRouteParams,
+    ReaderDisplayPart: class {},
+    ReaderEntryTransition: class {},
+    ReaderUnitKey: class {},
+    NextNReaderBackend: { SHARED: 'shared', LEGACY: 'legacy' },
+    connectNextNReaderBackendSelection: () => ({ current: () => backend }),
     ReaderTrialLayoutCommit: { wait(context, measure, current) {
       return new Promise(resolve => layouts.push({ measure, current, resolve }))
     } },
@@ -232,7 +252,14 @@ function setup({ deferRestore = false, readiness = 'not-required' } = {}) {
   host.testPreparations = preparations
   // Ambient owners outside the extracted reader-entry lane, not replacement host methods.
   host.rootNavigationEpoch = 0
-  host.readerOverlay = { visible: false }
+  const overlayOpens = []
+  const overlaySeeds = []
+  host.readerOverlay = {
+    visible: false,
+    stageDetailSeed(seed) { overlaySeeds.push(seed) },
+    open(params) { overlayOpens.push(params); this.visible = true },
+    discardStagedDetailSeed() {},
+  }
   host.safeMode = safeMode
   host.getUIContext = () => uiContext
   host.context = () => context
@@ -248,9 +275,38 @@ function setup({ deferRestore = false, readiness = 'not-required' } = {}) {
     host.handleReaderLabLaunch()
     return request
   }
-  return { host, source, arm, restores, layouts, logs, relay: shared.ReaderTrialEntryRelay, ReaderEntryClaim, ReaderEntryRect,
+  return { host, source, arm, restores, layouts, logs, overlayOpens, overlaySeeds,
+    relay: shared.ReaderTrialEntryRelay, ReaderEntryClaim, ReaderEntryRect,
     measurements: () => measurements, windowOpens: () => windowOpens, windowCloses: () => windowCloses }
 }
+
+test('production measurement failure opens shared reader without a fabricated transition and retires cleanly', () => {
+  const value = setup({ backend: 'shared' })
+  value.source.pageIndex = 2
+  const detail = {
+    id: 678049,
+    pages: [{}, {}, {}, {}],
+    copy() { return this },
+  }
+  assert.equal(value.host.tryOpenProductionThumbnail(detail, value.source), true)
+  assert.equal(value.measurements(), 1)
+  assert.equal(value.overlayOpens.length, 1)
+  assert.equal(value.overlaySeeds.length, 1)
+  assert.equal(value.overlayOpens[0].galleryId, 678049)
+  assert.equal(value.overlayOpens[0].initialPageIndex, 2)
+  assert.equal(value.overlayOpens[0].backend, 'shared')
+  assert.equal(value.host.productionReaderEntryClaim, null)
+  assert.equal(value.host.productionReaderEntryTransition, null)
+  assert.equal(value.host.productionReaderEntryPreview, null)
+  assert.equal(value.host.productionReaderEntryPendingGalleryId, 0)
+  assert.equal(value.host.productionReaderEntryPendingPageIndex, -1)
+  assert.equal(value.host.productionReaderEntryGalleryId, 678049)
+  assert.equal(value.host.productionReaderEntryPageIndex, 2)
+  assert.equal(value.host.productionReaderEntryMatches(value.overlayOpens[0]), false)
+  value.host.retireProductionReaderEntry()
+  assert.equal(value.host.productionReaderEntryGalleryId, 0)
+  assert.equal(value.host.productionReaderEntryPageIndex, -1)
+})
 
 test('live source measurement failure holds the real relay through fallback and same-frame repeat until close', async () => {
   const value = setup()
