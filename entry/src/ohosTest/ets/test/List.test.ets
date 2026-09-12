@@ -30,6 +30,7 @@ import readerProductionBackendTrialTest from './ReaderProductionBackendTrial.tes
 import readerProductionDownloadSourceTrialTest from './ReaderProductionDownloadSourceTrial.test'
 import readerProductionDownloadEntryTrialTest from './ReaderProductionDownloadEntryTrial.test'
 import readerProductionPartialDownloadFallbackTrialTest from './ReaderProductionPartialDownloadFallbackTrial.test'
+import readerSharedSuperResolutionTest from './ReaderSharedSuperResolution.test'
 
 export default function testsuite(): void {
   backupCipherMetadataGuardTest()
@@ -64,4 +65,5 @@ export default function testsuite(): void {
   readerProductionDownloadSourceTrialTest()
   readerProductionDownloadEntryTrialTest()
   readerProductionPartialDownloadFallbackTrialTest()
+  readerSharedSuperResolutionTest()
 }
