@@ -55,6 +55,9 @@ export struct MainTabIcon {
     .width('100%')
     .height('100%')
     .padding({ top: ThemeTokens.SPACE_SM - 2, bottom: ThemeTokens.SPACE_XS })
+    // Use the logical icon slot rather than the physical tab index so device
+    // acceptance can address Downloads even when Safe Mode removes Favorites.
+    .id(`nextn-root-tab-${this.iconIdx >= 0 ? this.iconIdx : this.idx}`)
     .onClick((): void => {
       if (this.currentIndex === this.idx && this.onSelectedClick) {
         this.onSelectedClick(this.idx)

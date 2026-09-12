@@ -1097,6 +1097,9 @@ export struct DownloadQueuePage {
       .layoutWeight(1)
       .height(DOWNLOAD_TASK_COVER_HEIGHT)
       .justifyContent(FlexAlign.Start)
+      // The cover remains the Gallery target; this semantic surface names the
+      // independent completed-task Reader handoff on the metadata side.
+      .id(`download-task-reader-${task.galleryId}`)
       .accessibilityText(this.taskAccessibilityLabel(task))
       .onTouch((event: TouchEvent) => this.selectionTouch(event))
       .gesture(GestureGroup(GestureMode.Exclusive,
@@ -1279,5 +1282,6 @@ export struct DownloadQueuePage {
     .width('100%')
     .height('100%')
     .backgroundColor(ThemeTokens.SURFACE)
+    .id('nextn-download-queue-root')
   }
 }

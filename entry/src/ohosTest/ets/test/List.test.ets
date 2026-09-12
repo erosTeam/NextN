@@ -28,6 +28,7 @@ import readerObservedProgressTest from './ReaderObservedProgress.test'
 import readerProgressPersistenceTest from './ReaderProgressPersistence.test'
 import readerProductionBackendTrialTest from './ReaderProductionBackendTrial.test'
 import readerProductionDownloadSourceTrialTest from './ReaderProductionDownloadSourceTrial.test'
+import readerProductionDownloadEntryTrialTest from './ReaderProductionDownloadEntryTrial.test'
 
 export default function testsuite(): void {
   backupCipherMetadataGuardTest()
@@ -60,4 +61,5 @@ export default function testsuite(): void {
   readerProgressPersistenceTest()
   readerProductionBackendTrialTest()
   readerProductionDownloadSourceTrialTest()
+  readerProductionDownloadEntryTrialTest()
 }

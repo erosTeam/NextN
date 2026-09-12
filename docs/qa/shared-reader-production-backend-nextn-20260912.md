@@ -8,8 +8,8 @@ Reader remains the default and the explicit rollback path was exercised on both
 the 197 phone and 103 tablet.
 
 This does not accept default replacement. Thumbnail-origin entries remain on the
-legacy path, and local/downloaded source selection plus Detail prefetch handoff
-remain open.
+legacy path. Local/downloaded source selection, Detail prefetch handoff and the
+real Downloads-root entry have since passed the follow-up checks recorded below.
 
 ## Boundary
 
@@ -93,11 +93,11 @@ Accepted in this slice:
 - normal Detail entry to shared body;
 - host-owned progress write and same-page legacy rollback;
 - phone/tablet lifecycle and cleanup;
+- production Downloads-root completed-task entry using verified local files;
 - legacy remains the default and can be selected without migration.
 
 Still open before default replacement:
 
-- Downloads-tab UI entry through the now host-owned local/download source;
 - thumbnail-origin transition into shared Reader;
 - visual parity for system-bar/chrome bounds and remaining modes;
 - complete settings/action/failure/offline matrix;
@@ -154,5 +154,45 @@ Evidence roots:
 
 The device ended on Home with the ordinary 10-second timeout, NextN
 force-stopped and both leases released. This accepts source selection and real
-local-file reachability, not the Downloads-tab-to-shared-body visual/runtime
-entry; that remains the next physical path.
+local-file reachability.
+
+## Follow-up: real Downloads-root entry
+
+The production Downloads entry has now passed on 197 using the existing
+completed task for gallery `556817`:
+
+- the test entered the real root Downloads tab and clicked the completed row's
+  Reader surface, rather than opening a Lab or direct-source fixture;
+- the host data source logged `detail_source=download`;
+- the shared body exposed `46 / 46`, rendered a ready local image and exposed no
+  `legacy-reader-surface`;
+- closing returned to the retained Downloads root at the same list position;
+- the complete serialized queue snapshot was byte-for-byte equivalent before
+  and after the Reader handoff;
+- the selected gallery's eight history columns were restored exactly, the
+  process-local selector was reset to legacy, NextN was force-stopped, the
+  ordinary 10-second timeout and Home were restored, and the lease was released.
+
+Hypium passed 1/1 in 25.575 s. The independent idempotent cleanup test also
+passed 1/1 in 2 ms, confirming no interrupted history snapshot needed recovery.
+Matching artifacts:
+
+- main `177fdbb3b0a64d57df3f48e8ad7c442e1d9121ce04b6d0412bba346b72b1a6dc`
+  (10.808 s);
+- native `4d496aa520de486efa4ea829dfe18c9a2708c4aec04e04dcbe1fab043e3521ff`
+  (8.905 s final rebuild).
+
+The inspected layout records the Downloads root at `[0,124][1260,2720]`, the
+clicked row at `[358,429][1196,787]`, and the shared production surface at
+`[0,124][1260,2720]`. Before/return screenshots are visually equivalent in the
+captured viewport; the Reader screenshot shows the ready final local page and
+complete chrome without overlap or clipping.
+
+Evidence roots:
+
+- `.hermes-artifacts/20260912-shared-production-download-entry-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-entry`
+- `.hermes-artifacts/20260912-shared-production-download-entry-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-cleanup`
+
+This closes the complete-download production-entry gap only. Partial downloads,
+network fallback, offline thumbnail-rail aspect handling, failure/retry,
+thumbnail-origin transition and default replacement remain open.
