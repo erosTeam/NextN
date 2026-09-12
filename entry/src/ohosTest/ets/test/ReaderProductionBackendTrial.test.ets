@@ -653,6 +653,85 @@ export default function readerProductionBackendTrialTest(): void {
     })
     return
   }
+  if (selectedClass === 'ReaderProductionCropInheritanceTrial') {
+    describe(selectedClass, (): void => {
+      it('inheritsSavedPagedCropBeforeSharedProductionSurfaceOpens', 0, async (): Promise<void> => {
+        const driver = Driver.create()
+        let database: relationalStore.RdbStore | null = null
+        let originalHistory: HistorySnapshot | null = null
+        let restored = false
+        let failed = false
+        let originalMode: NhReaderMode = NhReaderMode.PAGED
+        let originalDouble: boolean = false
+        let originalCrop: boolean = false
+        const settings: SettingSnapshot[] = []
+        try {
+          await launchBackend('shared', true)
+          const context = await entryContext(driver)
+          database = await store(context)
+          originalHistory = await snapshotHistory(database)
+          writeSnapshot(originalHistory)
+          await ReaderPresentationService.restore(context)
+          const presentation = ReaderPresentationService.snapshot()
+          originalMode = presentation.mode
+          originalDouble = presentation.doublePageEnabled
+          originalCrop = presentation.cropBordersPaged
+          for (const key of ['reader_mode', 'reader_double_page_enabled', 'reader_crop_borders_paged']) {
+            settings.push(new SettingSnapshot(key, await settingValue(database, key)))
+          }
+          await ReaderPresentationService.setMode(context, NhReaderMode.PAGED)
+          await ReaderPresentationService.setDoublePageEnabled(context, false)
+          await ReaderPresentationService.setCropBordersPaged(context, true)
+          await seedHistoryPage(database, 2)
+
+          await (await waitDetailRead(driver)).click()
+          expect(await waitSharedReady(driver)).assertEqual(2)
+          await (await waitId(driver, 'rkit-runtime-settings')).click()
+          const cropToggle = await waitId(driver, 'rkit-crop-toggle')
+          expect(await cropToggle.getText()).assertEqual('关闭裁边')
+          await driver.pressBack()
+          await capture(driver, 'crop-inherited')
+          await closeAnyReader(driver)
+          await waitDetailRead(driver)
+          await capture(driver, 'crop-inherited-closed')
+
+          await restoreAndVerify(database, originalHistory)
+          await ReaderPresentationService.setMode(context, originalMode)
+          await ReaderPresentationService.setDoublePageEnabled(context, originalDouble)
+          await ReaderPresentationService.setCropBordersPaged(context, originalCrop)
+          for (const setting of settings) await restoreSetting(database, setting)
+          connectReaderPresentation().mode = originalMode
+          connectReaderPresentation().doublePageEnabled = originalDouble
+          connectReaderPresentation().cropBordersPaged = originalCrop
+          restored = true
+          removeSnapshot()
+          console.info('[ReaderProductionBackendTrial] productionCropInherited=true source=2 ' +
+            `originalMode=${originalMode} originalDouble=${originalDouble} originalCrop=${originalCrop} ` +
+            'historyRestored=true settingsRestored=true')
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'crop-inherited-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+          if (!restored && database !== null && originalHistory !== null) {
+            await restoreAndVerify(database, originalHistory)
+            const context = await entryContext(driver)
+            await ReaderPresentationService.setMode(context, originalMode)
+            await ReaderPresentationService.setDoublePageEnabled(context, originalDouble)
+            await ReaderPresentationService.setCropBordersPaged(context, originalCrop)
+            for (const setting of settings) await restoreSetting(database, setting)
+            connectReaderPresentation().mode = originalMode
+            connectReaderPresentation().doublePageEnabled = originalDouble
+            connectReaderPresentation().cropBordersPaged = originalCrop
+            removeSnapshot()
+          }
+          await launchBackend('legacy', false)
+        }
+      })
+    })
+    return
+  }
   if (selectedClass === 'ReaderProductionBackendTrial') {
     describe(selectedClass, (): void => {
       it('routesNormalReadThroughSharedBodyThenRollsBackToLegacyBody', 0, async (): Promise<void> => {

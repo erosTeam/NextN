@@ -7,6 +7,8 @@ export {
 } from './lab/NextNReaderDataSource'
 export { connectNextNReaderLabContextProbe } from './lab/NextNReaderLabContextProbe'
 export { connectNextNReaderObservedProgressProbe } from './lab/NextNReaderObservedProgressProbe'
+export { NextNReaderRuntimePreferences } from './lab/NextNReaderRuntimePreferences'
+export { NextNReaderImageShareHost } from './lab/NextNReaderImageShareHost'
 export {
   NextNReaderProductionFailureFacts,
   NextNReaderProductionFailureProbe,

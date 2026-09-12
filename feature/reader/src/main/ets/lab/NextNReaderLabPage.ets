@@ -14,7 +14,8 @@ import { NextNReaderOriginalProbeCatalog } from './NextNReaderOriginalProbeCatal
 import { ReaderSystemImageSaveHost } from '@reader-kit/ui'
 import { ReaderImageSaveHost } from '@reader-kit/core'
 import { NextNReaderImageSaveDownload } from './NextNReaderImageSaveDownload'
-import { connectThemeDisplay, NhReaderBackgroundMode, ReaderSettingsRepository, NhReaderTapZoneResolver } from 'shared'
+import { connectThemeDisplay, NhReaderBackgroundMode, NhReaderMode, ReaderSettingsRepository,
+  NhReaderTapZoneResolver } from 'shared'
 import { NextNReaderInitialPolicy } from './NextNReaderInitialPolicy'
 import { connectNextNReaderLabContextProbe } from './NextNReaderLabContextProbe'
 import { NextNReaderObservedProgress } from './NextNReaderObservedProgress'
@@ -28,6 +29,7 @@ import {
   NextNReaderProductionFailureProbe,
   NextNReaderProductionFailureProbeProvider,
 } from './NextNReaderProductionFailureProbe'
+import { NextNReaderImageShareHost } from './NextNReaderImageShareHost'
 
 @ComponentV2
 export struct NextNReaderLabPage {
@@ -118,7 +120,10 @@ export struct NextNReaderLabPage {
       connectNextNReaderObservedProgressProbe().deliver(this.request.work, pageIndex)
       return operation
     })
-    this.imageShare = new ReaderLabShareProbe(adapter, this.request.shareProbe)
+    this.imageShare = new ReaderLabShareProbe(
+      new NextNReaderImageShareHost(context, adapter),
+      this.request.shareProbe,
+    )
     this.imageSave = new ReaderSystemImageSaveHost(context,
       (uri: string, path: string): Promise<void> => NextNReaderImageSaveDownload.download(uri, path))
     this.unitKey = new ReaderUnitKey('nh', this.request.work, this.request.work)
@@ -354,6 +359,16 @@ export struct NextNReaderLabPage {
     return this.embedded ? this.externalRouteActive : this.routeActive
   }
 
+  /** Production inherits the canonical mode-specific choice; debug trials keep their explicit request contract. */
+  private initialCropBorders(): boolean {
+    if (this.request.thumbnailEntry) return false
+    if (this.request.cropBorders) return true
+    if (this.request.productionSources !== true) return false
+    return this.readerPresentation.mode === NhReaderMode.VERTICAL
+      ? this.readerPresentation.cropBordersContinuous
+      : this.readerPresentation.cropBordersPaged
+  }
+
   @Builder
   private readerContent() {
     Column() {
@@ -367,7 +382,7 @@ export struct NextNReaderLabPage {
               tapZoneResolver: (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout),
               autoReadAvailable: true, autoReadSeconds: this.readerPresentation.autoPageSeconds,
               showPageNumber: this.readerPresentation.showPageNumber,
-              cropBorders: this.request.cropBorders && !this.request.thumbnailEntry,
+              cropBorders: this.initialCropBorders(),
               cropAvailable: !this.request.thumbnailEntry,
               entryTransition: this.entryTransition, entryPreview: this.entryPreview,
               active: this.hostRouteActive() && this.labVisibility.foreground,

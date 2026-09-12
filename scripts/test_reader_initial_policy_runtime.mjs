@@ -71,7 +71,7 @@ for (const [extra, expectedLayout, expectedDirection, expectedAxis] of [
 }
 const tree = ts.createSourceFile('page.ts', pageSource.replace('export struct NextNReaderLabPage', 'export class NextNReaderLabPage'), ts.ScriptTarget.Latest, true)
 const cls = tree.statements.find(ts.isClassDeclaration)
-const methods = ['initializeSession', 'closeTrial', 'finishProgressWrites', 'hostRouteActive']
+const methods = ['initializeSession', 'closeTrial', 'finishProgressWrites', 'hostRouteActive', 'initialCropBorders']
   .map(name => cls.members.find(m => m.name?.getText(tree) === name).getText(tree)).join('\n')
 const deferred = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b }); return { promise, resolve, reject } }
 const flush = () => new Promise(resolve => setImmediate(resolve))
@@ -162,6 +162,7 @@ const NonDebugHost = compile(`export class Host { ${appear} }`, {}, {
 }).Host
 const nonDebugHost = new NonDebugHost()
 nonDebugHost.getUIContext = () => ({ getHostContext: () => productionContext })
+nonDebugHost.notifyEntrySettled = () => {}
 nonDebugHost.aboutToAppear()
 for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [false, false]]) {
   const events = [], sessions = []
@@ -174,7 +175,7 @@ for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [fal
     connectNextNReaderLabContextProbe: probeModule.connectNextNReaderLabContextProbe,
     connectNextNReaderObservedProgressProbe: () => ({ deliver() {} }),
     NextNReaderProgressPersistence: class { save() { return Promise.resolve() } },
-    ReaderKeepScreenOn: Stub, NextNReaderLabAdapter: Stub,
+    ReaderKeepScreenOn: Stub, NextNReaderLabAdapter: Stub, NextNReaderImageShareHost: Stub,
     ReaderLabShareProbe: Stub, ReaderSystemImageSaveHost: Stub, ReaderUnitKey: Stub,
     ReaderTrialOriginalProbe: { consume: () => 0 }, ReaderPagedSession: Session,
     ReaderLabAssetProbe: Stub, ReaderDisplayPolicy: core.ReaderDisplayPolicy,
@@ -183,6 +184,7 @@ for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [fal
   Object.assign(host, { request: { ...request(), readingChrome, thumbnailEntry,
     entryLayout: 'spread', entryDirection: 'rtl' }, managesTrialWindow: false,
     progressWrites: { open: () => 1 },
+    notifyEntrySettled: () => {},
     getUIContext: () => ({ getHostContext: () => ({ applicationInfo: { debug: true } }) }),
     restorePresentation: () => { events.push('restore'); return Promise.resolve() },
     initializeSession: (_context, session) => { assert.equal(session, sessions[0]); events.push('initialize'); return Promise.resolve() },
@@ -197,6 +199,26 @@ for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [fal
   } else {
     assert.deepEqual(events, ['restore', 'publish']); assert.equal(host.published.policy, undefined)
   }
+}
+const cropMethod = cls.members.find(m => m.name?.getText(tree) === 'initialCropBorders').getText(tree)
+const CropHost = compile(`export class Host { ${cropMethod} }`, {}, { NhReaderMode: enums.NhReaderMode }).Host
+for (const [request, presentation, expected] of [
+  [{ thumbnailEntry: true, cropBorders: true, productionSources: true },
+    { mode: 'vertical', cropBordersContinuous: true, cropBordersPaged: true }, false],
+  [{ thumbnailEntry: false, cropBorders: true, productionSources: false },
+    { mode: 'paged', cropBordersContinuous: false, cropBordersPaged: false }, true],
+  [{ thumbnailEntry: false, cropBorders: false, productionSources: false },
+    { mode: 'vertical', cropBordersContinuous: true, cropBordersPaged: true }, false],
+  [{ thumbnailEntry: false, cropBorders: false, productionSources: true },
+    { mode: 'vertical', cropBordersContinuous: true, cropBordersPaged: false }, true],
+  [{ thumbnailEntry: false, cropBorders: false, productionSources: true },
+    { mode: 'paged_vertical', cropBordersContinuous: true, cropBordersPaged: false }, false],
+  [{ thumbnailEntry: false, cropBorders: false, productionSources: true },
+    { mode: 'paged_rtl', cropBordersContinuous: false, cropBordersPaged: true }, true],
+]) {
+  const host = new CropHost()
+  Object.assign(host, { request, readerPresentation: presentation })
+  assert.equal(host.initialCropBorders(), expected)
 }
 // Compose the real thumbnail entry and initialization methods, with deferred I/O.
 for (const [mode, extra, expected] of [
@@ -215,7 +237,7 @@ for (const [mode, extra, expected] of [
       save() { return Promise.resolve() }
       restore(_work, pageIndex) { return Promise.resolve(pageIndex) }
     },
-    ReaderKeepScreenOn: Stub, NextNReaderLabAdapter: Stub, ReaderLabShareProbe: Stub,
+    ReaderKeepScreenOn: Stub, NextNReaderLabAdapter: Stub, NextNReaderImageShareHost: Stub, ReaderLabShareProbe: Stub,
     ReaderSystemImageSaveHost: Stub, ReaderUnitKey: Stub, ReaderPagedSession: Session,
     ReaderLabAssetProbe: Stub, ReaderTrialOriginalProbe: { consume: () => 0 },
     ReaderPresentationService: { restore: () => { events.push('restore'); return restore.promise },
@@ -228,6 +250,7 @@ for (const [mode, extra, expected] of [
   r.pageIndex = 2
   Object.assign(host, { request: r, closeRequested: false, hostClosing: false, managesTrialWindow: false,
     progressFlush: null, progressWrites: { open: () => 1, seal() {}, flush: () => Promise.resolve(true) },
+    notifyEntrySettled: () => {},
     getUIContext: () => ({ getHostContext: () => debugContext }),
     syncReaderActivity: () => events.push('sync'), onClose: () => events.push('close') })
   Object.defineProperty(host, 'session', { set(s) { this.published = s; events.push('publish') } })
