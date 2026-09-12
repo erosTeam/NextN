@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@ohos/hypium'
-import { abilityDelegatorRegistry, Component, Driver, ON } from '@kit.TestKit'
+import { abilityDelegatorRegistry, Component, Driver, MatchPattern, ON } from '@kit.TestKit'
 import { common } from '@kit.AbilityKit'
 import { relationalStore } from '@kit.ArkData'
 import { fileIo } from '@kit.CoreFileKit'
@@ -122,6 +122,48 @@ async function waitBody(driver: Driver, pageIndex: number): Promise<Component> {
   throw new Error('Progress persistence body unavailable: ' + pageIndex)
 }
 
+async function findDetailThumbnail(driver: Driver, pageIndex: number): Promise<Component> {
+  let owner: Component | null = null
+  for (let attempt = 0; attempt < 60; attempt++) {
+    const root = await driver.findComponent(ON.id('nextn-root-navigation'))
+    if (root !== null) {
+      const rootBounds = await root.getBounds()
+      const lists = await driver.findComponents(ON.type('List').within(ON.id('nextn-root-navigation')))
+      const owners: Component[] = []
+      for (const list of lists) {
+        const bounds = await list.getBounds()
+        if (bounds.left === rootBounds.left && bounds.right === rootBounds.right &&
+          bounds.top === rootBounds.top && bounds.bottom === rootBounds.bottom) owners.push(list)
+      }
+      if (owners.length > 1) throw new Error('Ambiguous Detail metadata List; no coordinate fallback')
+      if (owners.length === 1) { owner = owners[0]; break }
+    }
+    await driver.delayMs(250)
+  }
+  if (owner === null) throw new Error('Detail metadata List unavailable')
+  const pattern = `^reader-thumb-gallery-detail-[0-9]+-page-${pageIndex}$`
+  const selector = ON.id(pattern, MatchPattern.REG_EXP).within(ON.id('nextn-root-navigation'))
+  const source = await owner.scrollSearch(selector, true)
+  if (source === null) throw new Error('Detail thumbnail unavailable: ' + pageIndex)
+  const matches = await driver.findComponents(selector)
+  expect(matches.length).assertEqual(1)
+  const sourceId = await source.getId()
+  expect(new RegExp(pattern).test(sourceId)).assertTrue()
+  return await driver.findComponent(ON.id(sourceId))
+}
+
+async function waitRetry(driver: Driver, pageIndex: number): Promise<Component> {
+  const displayPage = pageIndex + 1
+  for (let attempt = 0; attempt < 80; attempt++) {
+    const retry = await driver.findComponent(
+      ON.id(`rkit-retry-page-${displayPage}`).within(ON.id(`rkit-failure-page-${displayPage}`)))
+    if (retry !== null && await retry.isEnabled() &&
+      await driver.findComponent(ON.id('rkit-entry-preview-image')) === null) return retry
+    await driver.delayMs(250)
+  }
+  throw new Error('Thumbnail progress retry unavailable: ' + displayPage)
+}
+
 async function waitObserved(driver: Driver, events: number[], pageIndex: number): Promise<void> {
   for (let attempt = 0; attempt < 60; attempt++) {
     if (events.length > 0 && events[events.length - 1] === pageIndex) return
@@ -162,6 +204,16 @@ async function launchReadWrite(): Promise<void> {
     bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility', parameters: {
       readerLabWork: WORK, readerLabUnit: READWRITE_UNIT, readerLabChrome: 'true', readerLabVolumeKeys: 'false',
       readerLabEntryLayout: 'single', readerLabEntryDirection: 'ltr',
+    },
+  })
+}
+
+async function armThumbnailReadWrite(pageIndex: number): Promise<void> {
+  await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
+    bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility', parameters: {
+      readerLabWork: WORK, readerLabUnit: READWRITE_UNIT, readerLabPage: '0', readerLabChrome: 'true',
+      readerLabThumbnailEntry: 'true', readerLabVolumeKeys: 'false', readerLabEntryLayout: 'single',
+      readerLabEntryDirection: 'ltr', readerLabFailPage: pageIndex.toString(),
     },
   })
 }
@@ -278,6 +330,53 @@ export default function readerProgressPersistenceTest(): void {
           } finally {
             if (restored) removeSnapshotFile()
           }
+        }
+      })
+    })
+    return
+  }
+  if (selectedClass === 'ReaderProgressPersistenceThumbnailTrial') {
+    describe(selectedClass, (): void => {
+      it('clickedThumbnailBeatsStoredProgressAndWritesOnlyAfterRetryDisplay', 0, async (): Promise<void> => {
+        expect(args['-s readerLabWork']).assertEqual(WORK)
+        const clickedPage = 2
+        const storedPage = 7
+        const driver = Driver.create()
+        const database = await store(await context(driver))
+        const original = await snapshotHistory(database)
+        writeSnapshot(original)
+        const events: number[] = []
+        const probe = connectNextNReaderObservedProgressProbe()
+        const epoch = probe.arm(WORK, (pageIndex: number): void => { events.push(pageIndex) })
+        let failed = false
+        try {
+          await seedPage(database, storedPage)
+          await armThumbnailReadWrite(clickedPage)
+          const source = await findDetailThumbnail(driver, clickedPage)
+          await capture(driver, 'thumbnail-source')
+          await source.click()
+          const retry = await waitRetry(driver, clickedPage)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('3 / 14')
+          await driver.delayMs(1000)
+          expect(events.length).assertEqual(0)
+          expect((await snapshotHistory(database)).lastReadIndex).assertEqual(storedPage)
+          await capture(driver, 'thumbnail-failure')
+          await retry.click()
+          await waitBody(driver, clickedPage); await waitObserved(driver, events, clickedPage)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('3 / 14')
+          await waitHistory(database, clickedPage)
+          await capture(driver, 'thumbnail-retried')
+          await closeTrial(driver); await waitHistory(database, clickedPage)
+          expect(events.length).assertEqual(1); expect(events[0]).assertEqual(clickedPage)
+          console.info('[ReaderProgressPersistenceTest] thumbnail stored=7 clicked=2 failureEvents=[] retryEvents=[2] durable=2')
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'thumbnail-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          probe.cancel(epoch)
+          try { await closeTrial(driver) } catch (error) { if (!failed) throw error as Error }
+          try { await restoreAndVerify(database, original) } finally { removeSnapshotFile() }
         }
       })
     })
