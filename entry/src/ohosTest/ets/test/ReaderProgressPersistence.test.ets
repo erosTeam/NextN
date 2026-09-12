@@ -219,12 +219,12 @@ async function swipePaged(driver: Driver, vertical: boolean, forward: boolean): 
   await driver.delayMs(700)
 }
 
-async function armThumbnailReadWrite(pageIndex: number): Promise<void> {
+async function armThumbnailReadWrite(pageIndex: number, failurePage: number = pageIndex): Promise<void> {
   await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
     bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility', parameters: {
       readerLabWork: WORK, readerLabProgressReadWrite: 'true', readerLabPage: '0', readerLabChrome: 'true',
       readerLabThumbnailEntry: 'true', readerLabVolumeKeys: 'false', readerLabEntryLayout: 'single',
-      readerLabEntryDirection: 'ltr', readerLabFailPage: pageIndex.toString(),
+      readerLabEntryDirection: 'ltr', readerLabFailPage: failurePage.toString(),
     },
   })
 }
@@ -498,6 +498,77 @@ export default function readerProgressPersistenceTest(): void {
         } catch (error) {
           failed = true
           try { await capture(driver, 'vertical-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          probe.cancel(epoch)
+          try { await closeTrial(driver) } catch (error) { if (!failed) throw error as Error }
+          try { await restoreAndVerify(database, original) } finally { removeSnapshotFile() }
+        }
+      })
+    })
+    return
+  }
+  if (selectedClass === 'ReaderProgressPersistenceThumbnailVerticalRetryTrial') {
+    describe(selectedClass, (): void => {
+      it('thumbnailAnchorSurvivesVerticalFailureRetryAndReopen', 0, async (): Promise<void> => {
+        expect(args['-s readerLabWork']).assertEqual(WORK)
+        const clickedPage = 2
+        const failedNextPage = 3
+        const storedPage = 7
+        const driver = Driver.create()
+        const database = await store(await context(driver))
+        const original = await snapshotHistory(database)
+        writeSnapshot(original)
+        const events: number[] = []
+        const probe = connectNextNReaderObservedProgressProbe()
+        const epoch = probe.arm(WORK, (pageIndex: number): void => { events.push(pageIndex) })
+        let failed = false
+        try {
+          await seedPage(database, storedPage)
+          await armThumbnailReadWrite(clickedPage, failedNextPage)
+          const source = await findDetailThumbnail(driver, clickedPage)
+          await source.click()
+          await waitId(driver, 'rkit-close'); await waitBody(driver, clickedPage)
+          await waitObserved(driver, events, clickedPage); await waitHistory(database, clickedPage)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('3 / 14')
+          await capture(driver, 'thumbnail-vertical-selected')
+
+          await (await waitId(driver, 'rkit-reading-mode')).click()
+          await (await waitId(driver, 'rkit-vertical-paged')).click()
+          await driver.delayMs(600)
+          await swipePaged(driver, true, true)
+          const retry = await waitRetry(driver, failedNextPage)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('4 / 14')
+          await driver.delayMs(1000)
+          expect(events.length).assertEqual(1); expect(events[0]).assertEqual(clickedPage)
+          expect((await snapshotHistory(database)).lastReadIndex).assertEqual(clickedPage)
+          await capture(driver, 'thumbnail-vertical-failure')
+
+          await retry.click()
+          await waitBody(driver, failedNextPage); await waitObserved(driver, events, failedNextPage)
+          await waitHistory(database, failedNextPage)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('4 / 14')
+          await capture(driver, 'thumbnail-vertical-retried')
+          await closeTrial(driver); await waitHistory(database, failedNextPage)
+
+          await launchReadWrite()
+          await waitId(driver, 'rkit-close'); await waitBody(driver, failedNextPage)
+          await waitObserved(driver, events, failedNextPage); await waitHistory(database, failedNextPage)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('4 / 14')
+          // The image-ready semantic node can precede the compositor by one frame after relaunch.
+          // Keep the acceptance capture behind a short render-stability gate so a black frame
+          // cannot be mistaken for a restored reader page.
+          await driver.delayMs(1200)
+          await waitBody(driver, failedNextPage)
+          await capture(driver, 'thumbnail-vertical-reopen')
+          await closeTrial(driver); await waitHistory(database, failedNextPage)
+          expect(events.length).assertEqual(3)
+          expect(events[0]).assertEqual(clickedPage); expect(events[1]).assertEqual(failedNextPage)
+          expect(events[2]).assertEqual(failedNextPage)
+          console.info('[ReaderProgressPersistenceTest] thumbnailVertical stored=7 events=[2,3,3] failureDurable=2 retryDurable=3')
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'thumbnail-vertical-exception') } catch (_) {}
           throw error as Error
         } finally {
           probe.cancel(epoch)

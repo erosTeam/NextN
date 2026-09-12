@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-progress-thumbnail-vertical-retry-nextn-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main 557bc1b259105556584e2b276f195bf55f2856ada3fc637a467dc1239c42bb17; native 904547d43eebeee4e431d7b0a4446db53ca305586a7cfc76ddd673398848baa7",
+    "page": "N678049 Detail thumbnail entry, vertical next-page failure/retry and durable reopen",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Explicit debug-only host read/write permission. Real semantic Detail P3 thumbnail overrides stored P8, vertical navigation reaches injected P4 original failure without writing, Retry displays and persists P4, close/reopen restores P4, then exact history is restored in finally."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-thumbnail-vertical-retry-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-native-render-stable",
+  "preflight": [
+    { "name": "install-current-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "install-current-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 },
+    {
+      "name": "native-progress-thumbnail-vertical-retry",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test",
+        "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderProgressPersistenceThumbnailVerticalRetryTrial",
+        "-s", "readerLabWork", "678049", "-s", "timeout", "240000"],
+      "timeoutSeconds": 270
+    }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "test-log", "hdcArgs": ["shell", "hilog", "-x", "-e", "ReaderProgressPersistenceTest"], "timeoutSeconds": 15 },
+    { "name": "host-log", "hdcArgs": ["shell", "hilog", "-x", "-e", "observed_progress"], "timeoutSeconds": 15 },
+    { "name": "receive-selected-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-thumbnail-vertical-selected.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-thumbnail-vertical-retry-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-native-render-stable/selected.json"] },
+    { "name": "receive-selected-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-thumbnail-vertical-selected.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-thumbnail-vertical-retry-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-native-render-stable/selected.png"] },
+    { "name": "receive-failure-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-thumbnail-vertical-failure.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-thumbnail-vertical-retry-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-native-render-stable/failure.json"] },
+    { "name": "receive-failure-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-thumbnail-vertical-failure.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-thumbnail-vertical-retry-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-native-render-stable/failure.png"] },
+    { "name": "receive-retried-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-thumbnail-vertical-retried.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-thumbnail-vertical-retry-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-native-render-stable/retried.json"] },
+    { "name": "receive-retried-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-thumbnail-vertical-retried.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-thumbnail-vertical-retry-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-native-render-stable/retried.png"] },
+    { "name": "receive-reopen-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-thumbnail-vertical-reopen.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-thumbnail-vertical-retry-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-native-render-stable/reopen.json"] },
+    { "name": "receive-reopen-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-thumbnail-vertical-reopen.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-thumbnail-vertical-retry-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-native-render-stable/reopen.png"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}
