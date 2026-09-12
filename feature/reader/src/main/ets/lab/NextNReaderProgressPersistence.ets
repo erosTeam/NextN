@@ -2,8 +2,6 @@ import { common } from '@kit.AbilityKit'
 import { ReaderLabRequest } from '@reader-kit/ui'
 import { HistoryRepository, NhGalleryDetail } from 'shared'
 
-export const NEXTN_READER_PROGRESS_READWRITE_UNIT: string = '__nextn_progress_readwrite__'
-
 export interface NextNReaderProgressDetailProvider {
   progressDetail(work: string): NhGalleryDetail | null
 }
@@ -19,7 +17,7 @@ export class NextNReaderProgressPersistence {
   }
 
   enabled(request: ReaderLabRequest): boolean {
-    return request.unit === NEXTN_READER_PROGRESS_READWRITE_UNIT
+    return request.progressReadWrite
   }
 
   async restore(request: ReaderLabRequest): Promise<number> {

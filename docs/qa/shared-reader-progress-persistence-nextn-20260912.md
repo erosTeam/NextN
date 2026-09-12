@@ -3,15 +3,15 @@
 ## Outcome
 
 LIMITED accepted on phone 197. The optional full-chrome shared Reader can now restore and write NextN's existing
-zero-based NH reading progress when, and only when, the explicit debug sentinel
-`readerLabUnit=__nextn_progress_readwrite__` is supplied. Ordinary shared-Lab launches remain read-only. No default
+zero-based NH reading progress when, and only when, the explicit debug host permission
+`readerLabProgressReadWrite=true` is supplied. Ordinary shared-Lab launches remain read-only. No default
 Reader replacement, settings migration, release entry, or production Reader removal is included.
 
 ## Implementation contract
 
 - `NextNReaderProgressPersistence` is the host adapter around the existing `HistoryRepository`.
 - Thumbnail entry keeps its explicit clicked page and never yields to stored progress.
-- Non-numeric work ids and every request without the exact sentinel retain the requested page and perform no write.
+- Non-numeric work ids and every request without explicit read/write permission retain the requested page and perform no write.
 - The adapter obtains real loaded gallery metadata before calling `HistoryRepository.saveProgress`.
 - Visible-original events still pass through the epoch/seal gate. Closing seals the gate and awaits its durable flush
   before the host removes the Reader overlay.
@@ -22,10 +22,10 @@ Reader replacement, settings migration, release entry, or production Reader remo
 - `test_reader_progress_persistence_runtime.mjs`: PASS.
 - Progress gate, observed-progress mapper, initial-policy lifecycle, and 1,404 tap-zone cases: PASS.
 - `git diff --check`: PASS.
-- Signed main HAP: 47,136,100 bytes,
-  `ad5173efeb93bec437a62881d0fb39ba6e9902ab25a68e2c490d04c913d10a4b`.
-- Signed ohosTest HAP: 43,760,661 bytes,
-  `483c7a8b24a0b36396fa6f38a2b805313811e6f95da7e4dc7e2b0f9d8bccf52d`.
+- Signed main HAP: 47,135,967 bytes,
+  `0e1eb6bbb94ed748ebcf7b8dd27b194585763c104d82039abeb00979f3cb758e`.
+- Signed ohosTest HAP: 43,776,887 bytes,
+  `42f8f88c877cf21b48944488c72b37c772895b88cf0b80ff31508861729c9b73`.
 
 ## Device 197 acceptance
 
@@ -44,21 +44,22 @@ replace-only install, then ran two independent native test invocations separated
 5. The restore test deleted the temporary row because the exact original state was absence. The independent cleanup
    test then passed with no snapshot left to restore.
 
-Hypium summaries were 1/1 PASS for write, 1/1 PASS for cold restore, and 1/1 PASS for independent cleanup. The final
+Hypium summaries were 1/1 PASS in 24.110 seconds for write, 1/1 PASS in 16.034 seconds for cold restore, and 1/1 PASS
+for independent cleanup. The final
 device state is the launcher in portrait, MUSIC volume 3, screen timeout override 10000 ms, and the lease is released.
 
 Evidence:
 
 - Main protocol metadata:
-  `.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-native-rerun4/run-metadata.json`
+  `.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/04-explicit-capability/run-metadata.json`
 - Initial durable restore:
-  `.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-native-rerun4/write-initial.png`
+  `.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/04-explicit-capability/write-initial.png`
 - Durable next page:
-  `.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-native-rerun4/write-next.png`
+  `.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/04-explicit-capability/write-next.png`
 - Cold-process restore:
-  `.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-native-rerun4/cold-restore.png`
+  `.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/04-explicit-capability/cold-restore.png`
 - Cleanup metadata and launcher:
-  `.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-cleanup-rerun4/`
+  `.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/04-explicit-capability-cleanup/`
 
 ## Rejected intermediate evidence
 

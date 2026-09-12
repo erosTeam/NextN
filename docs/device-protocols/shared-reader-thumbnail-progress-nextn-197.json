@@ -7,16 +7,16 @@
   "display": { "widthPx": 1260, "heightPx": 2720 },
   "context": {
     "project": "NextN",
-    "codeIdentity": "main ad5173efeb93bec437a62881d0fb39ba6e9902ab25a68e2c490d04c913d10a4b; native 5393309f5ca9c4f31c63396a977e90b0aa8d796059538a0df0b0ddb0102285dd",
+    "codeIdentity": "main 0e1eb6bbb94ed748ebcf7b8dd27b194585763c104d82039abeb00979f3cb758e; native 42f8f88c877cf21b48944488c72b37c772895b88cf0b80ff31508861729c9b73",
     "page": "gallery 678049 actual Detail P3 thumbnail; stored P8; injected P3 original failure then explicit retry",
     "deviceAlias": "device197",
     "deviceModel": "ALN-AL80",
     "foldState": "not-applicable",
     "orientation": "portrait",
     "resolution": "1260x2720",
-    "notes": "Explicit debug-only readwrite sentinel. The test snapshots all eight original history columns, requires no write while the clicked original is failed, then requires P3 only after retry displays the original, and restores the exact original row or absence in finally."
+    "notes": "Explicit debug-only host read/write permission. The test snapshots all eight original history columns, requires no write while the clicked original is failed, then requires P3 only after retry displays the original, and restores the exact original row or absence in finally."
   },
-  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native",
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-explicit-capability",
   "preflight": [
     { "name": "install-current-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
     { "name": "install-current-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 },
@@ -32,12 +32,12 @@
   "postflight": [
     { "name": "test-log", "hdcArgs": ["shell", "hilog", "-x", "-e", "ReaderProgressPersistenceTest"], "timeoutSeconds": 15 },
     { "name": "host-log", "hdcArgs": ["shell", "hilog", "-x", "-e", "observed_progress"], "timeoutSeconds": 15 },
-    { "name": "receive-source-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-thumbnail-source.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/thumbnail-source.json"] },
-    { "name": "receive-source-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-thumbnail-source.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/thumbnail-source.png"] },
-    { "name": "receive-failure-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-thumbnail-failure.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/thumbnail-failure.json"] },
-    { "name": "receive-failure-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-thumbnail-failure.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/thumbnail-failure.png"] },
-    { "name": "receive-retried-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-thumbnail-retried.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/thumbnail-retried.json"] },
-    { "name": "receive-retried-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-thumbnail-retried.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/thumbnail-retried.png"] },
+    { "name": "receive-source-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-thumbnail-source.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-explicit-capability/thumbnail-source.json"] },
+    { "name": "receive-source-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-thumbnail-source.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-explicit-capability/thumbnail-source.png"] },
+    { "name": "receive-failure-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-thumbnail-failure.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-explicit-capability/thumbnail-failure.json"] },
+    { "name": "receive-failure-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-thumbnail-failure.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-explicit-capability/thumbnail-failure.png"] },
+    { "name": "receive-retried-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-thumbnail-retried.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-explicit-capability/thumbnail-retried.json"] },
+    { "name": "receive-retried-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-thumbnail-retried.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-explicit-capability/thumbnail-retried.png"] },
     { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
   ]
 }

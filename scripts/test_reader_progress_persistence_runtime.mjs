@@ -25,18 +25,17 @@ vm.runInNewContext(output, { exports, require: name => {
 }, console: { warn() {} } })
 
 const Persistence = exports.NextNReaderProgressPersistence
-const sentinel = exports.NEXTN_READER_PROGRESS_READWRITE_UNIT
 const detail = { id: 123 }
 const adapter = { progressDetail: work => work === '123' ? detail : null }
 const persistence = new Persistence({}, adapter)
-const request = { work: '123', unit: '', pageIndex: 2, thumbnailEntry: false }
+const request = { work: '123', unit: '', pageIndex: 2, thumbnailEntry: false, progressReadWrite: false }
 
 assert.equal(persistence.enabled(request), false)
 assert.equal(await persistence.restore(request), 2)
 await persistence.save(request, 3)
 assert.deepEqual(calls, [])
 
-request.unit = sentinel
+request.progressReadWrite = true
 assert.equal(persistence.enabled(request), true)
 assert.equal(await persistence.restore(request), 4)
 assert.deepEqual(calls, [['restore', 123]])
@@ -62,4 +61,4 @@ assert.match(pageSource, /this\.progressPersistence\?\.restore\(this\.request\)/
 assert.match(pageSource, /const progressFlush = this\.finishProgressWrites\(\)/)
 assert.match(pageSource, /const saved = await progressFlush/)
 
-console.log('PASS explicit readwrite sentinel, thumbnail precedence, fallback restore, save and close-flush wiring')
+console.log('PASS explicit host readwrite permission, thumbnail precedence, fallback restore, save and close-flush wiring')

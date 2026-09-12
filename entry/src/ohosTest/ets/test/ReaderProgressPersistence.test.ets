@@ -8,7 +8,6 @@ import { connectNhReadProgress } from 'shared'
 
 const GALLERY_ID: number = 678049
 const WORK: string = '678049'
-const READWRITE_UNIT: string = '__nextn_progress_readwrite__'
 const SNAPSHOT_FILE: string = 'rkit-progress-persistence-original.json'
 
 class HistoryRowSnapshot {
@@ -202,7 +201,7 @@ async function closeTrial(driver: Driver): Promise<void> {
 async function launchReadWrite(): Promise<void> {
   await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
     bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility', parameters: {
-      readerLabWork: WORK, readerLabUnit: READWRITE_UNIT, readerLabChrome: 'true', readerLabVolumeKeys: 'false',
+      readerLabWork: WORK, readerLabProgressReadWrite: 'true', readerLabChrome: 'true', readerLabVolumeKeys: 'false',
       readerLabEntryLayout: 'single', readerLabEntryDirection: 'ltr',
     },
   })
@@ -211,7 +210,7 @@ async function launchReadWrite(): Promise<void> {
 async function armThumbnailReadWrite(pageIndex: number): Promise<void> {
   await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
     bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility', parameters: {
-      readerLabWork: WORK, readerLabUnit: READWRITE_UNIT, readerLabPage: '0', readerLabChrome: 'true',
+      readerLabWork: WORK, readerLabProgressReadWrite: 'true', readerLabPage: '0', readerLabChrome: 'true',
       readerLabThumbnailEntry: 'true', readerLabVolumeKeys: 'false', readerLabEntryLayout: 'single',
       readerLabEntryDirection: 'ltr', readerLabFailPage: pageIndex.toString(),
     },

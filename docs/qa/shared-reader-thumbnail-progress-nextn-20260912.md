@@ -2,7 +2,7 @@
 
 ## Outcome
 
-LIMITED accepted on phone 197. With the explicit debug-only progress sentinel, a real Detail thumbnail click wins over
+LIMITED accepted on phone 197. With explicit debug-only host progress permission, a real Detail thumbnail click wins over
 an older stored progress value. A failed selected original does not publish or persist progress; the clicked page is
 persisted only after explicit Retry displays that original. Ordinary Lab launches and the production Reader remain
 unchanged.
@@ -20,11 +20,11 @@ unchanged.
 ## Source and build checks
 
 - Progress persistence, write-gate, observed-progress and initial-policy host tests: PASS.
-- Signed `entry@ohosTest` build: 8 s 247 ms.
-- Signed main HAP reused from the production-identical progress slice: 47,136,100 bytes,
-  `ad5173efeb93bec437a62881d0fb39ba6e9902ab25a68e2c490d04c913d10a4b`.
-- Signed native HAP: 43,776,939 bytes,
-  `5393309f5ca9c4f31c63396a977e90b0aa8d796059538a0df0b0ddb0102285dd`.
+- Signed `entry@ohosTest` build: 8 s 543 ms.
+- Signed main HAP reused from the production-identical progress slice: 47,135,967 bytes,
+  `0e1eb6bbb94ed748ebcf7b8dd27b194585763c104d82039abeb00979f3cb758e`.
+- Signed native HAP: 43,776,887 bytes,
+  `42f8f88c877cf21b48944488c72b37c772895b88cf0b80ff31508861729c9b73`.
 
 ## Device 197 evidence
 
@@ -41,19 +41,19 @@ Target `192.168.50.197:12345`, ALN-AL80, portrait 1260x2720.
 6. The final whole capture is the system launcher. MUSIC is 3 and screen timeout override is 10000 ms. The lease was
    released.
 
-Hypium result: 1 test, 1 pass, 0 failures, 0 errors in 29.963 seconds. Cleanup: 1 pass, 0 failures/errors.
+Hypium result: 1 test, 1 pass, 0 failures, 0 errors in 28.882 seconds. Cleanup: 1 pass, 0 failures/errors.
 
 Evidence root:
 
-- Main run: `.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/`
-- Exact cleanup/final state: `.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-cleanup/`
+- Main run: `.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-explicit-capability/`
+- Exact cleanup/final state: `.hermes-artifacts/20260912-shared-thumbnail-progress-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/04-explicit-capability-cleanup/`
 
 Key whole captures:
 
 - `thumbnail-source.png`: actual Detail source and old `继续 P8` state.
 - `thumbnail-failure.png`: P3 failure card before any progress write.
 - `thumbnail-retried.png`: displayed P3 original after Retry and the only accepted progress event.
-- `02-cleanup/screen.jpeg`: restored launcher endpoint.
+- `04-explicit-capability-cleanup/screen.jpeg`: restored launcher endpoint.
 
 ## Remaining boundary
 
