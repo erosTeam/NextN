@@ -10,8 +10,8 @@ import {
   connectReaderThumbnailTransition,
 } from 'shared'
 
-// NextE keeps a stable portrait preview frame so a wide or malformed source
-// thumbnail cannot move neighbouring page numbers or destabilise Grid rows.
+// Keep one stable portrait alignment frame so differently shaped NH thumbnail
+// assets cannot move neighbouring page numbers or destabilise Grid rows.
 const PREVIEW_FRAME_ASPECT: number = 1.4
 
 /**
@@ -62,30 +62,51 @@ export struct GalleryVirtualPageThumbnailTile {
   @Require @Param page: NhGalleryPage
   @Require @Param pageIndex: number
   @Param transitionSourceId: string = ''
-  @Event onOpen?: (pageIndex: number) => void
+  @Event onOpen?: (pageIndex: number, source: ReaderTrialEntrySource) => void
   @Local measuredWidth: number = 0
+  @Local decodedThumbnailWidth: number = 0
+  @Local decodedThumbnailHeight: number = 0
   @Local readerTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
   private sourceMounted: boolean = false
   private sourceMountEpoch: number = 0
+
+  @Monitor('page')
+  onThumbnailSourceChanged(): void {
+    this.decodedThumbnailWidth = 0
+    this.decodedThumbnailHeight = 0
+  }
 
   private pageLabel(): string {
     return AppStrings.format('thumbnails_page_label', [(this.pageIndex + 1).toString()])
   }
 
-  private hasSourceSize(): boolean {
-    return this.page.width > 0 && this.page.height > 0
+  private thumbnailSourceWidth(): number {
+    return this.decodedThumbnailWidth > 0
+      ? this.decodedThumbnailWidth
+      : this.page.thumbnailWidth
   }
 
-  private sourceAspect(): number {
-    if (!this.hasSourceSize()) {
+  private thumbnailSourceHeight(): number {
+    return this.decodedThumbnailHeight > 0
+      ? this.decodedThumbnailHeight
+      : this.page.thumbnailHeight
+  }
+
+  private hasThumbnailSourceSize(): boolean {
+    return this.thumbnailSourceWidth() > 0 && this.thumbnailSourceHeight() > 0
+  }
+
+  /** NH thumbnail assets are independent crops; full-page dimensions are invalid here. */
+  private thumbnailAspect(): number {
+    if (!this.hasThumbnailSourceSize()) {
       return 0
     }
-    return this.page.height / this.page.width
+    return this.thumbnailSourceHeight() / this.thumbnailSourceWidth()
   }
 
   /** Contain: fit by height when taller than the frame, else by width. */
   private fitByHeight(): boolean {
-    const aspect: number = this.sourceAspect()
+    const aspect: number = this.thumbnailAspect()
     return aspect > 0 && aspect > PREVIEW_FRAME_ASPECT
   }
 
@@ -98,17 +119,19 @@ export struct GalleryVirtualPageThumbnailTile {
   }
 
   private fittedWidth(): number {
-    if (!this.hasSourceSize() || !this.fitByHeight()) {
+    const aspect: number = this.thumbnailAspect()
+    if (aspect <= 0 || !this.fitByHeight()) {
       return this.frameWidth()
     }
-    return (this.frameHeight() * this.page.width) / this.page.height
+    return this.frameHeight() / aspect
   }
 
   private fittedHeight(): number {
-    if (!this.hasSourceSize() || this.fitByHeight()) {
+    const aspect: number = this.thumbnailAspect()
+    if (aspect <= 0 || this.fitByHeight()) {
       return this.frameHeight()
     }
-    return (this.frameWidth() * this.page.height) / this.page.width
+    return this.frameWidth() * aspect
   }
 
   build() {
@@ -118,7 +141,11 @@ export struct GalleryVirtualPageThumbnailTile {
           Stack({ alignContent: Alignment.Center }) {
             GalleryPageThumbnailSurface({
               src: this.page.thumbnailUrl,
-              objectFit: ImageFit.Fill,
+              objectFit: ImageFit.Contain,
+              onImageInfo: (width: number, height: number): void => {
+                this.decodedThumbnailWidth = width
+                this.decodedThumbnailHeight = height
+              },
             })
           }
           .id(ReaderThumbnailTransitionCoordinator.sourceSnapshotId(this.transitionSourceId))
@@ -171,7 +198,7 @@ export struct GalleryVirtualPageThumbnailTile {
           ReaderThumbnailTransitionCoordinator.sourceSnapshotId(this.transitionSourceId) === snapshotId &&
           this.page.thumbnailUrl === thumbnailUrl && !this.readerTransition.sourceHidden(sourceId)
         if (ReaderTrialEntryRelay.tryOpen(source)) return
-        this.onOpen(this.pageIndex)
+        this.onOpen(this.pageIndex, source)
       }
     })
   }

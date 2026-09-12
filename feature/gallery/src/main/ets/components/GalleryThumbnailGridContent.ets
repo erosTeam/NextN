@@ -7,6 +7,7 @@ import {
   PullRefreshGridScaffold,
   ReaderThumbnailTransitionCoordinator,
   ReaderThumbnailTransitionState,
+  ReaderTrialEntrySource,
   ThemeTokens,
   connectReaderThumbnailTransition,
 } from 'shared'
@@ -31,7 +32,8 @@ export struct GalleryThumbnailGridContent {
   @Param scroller: Scroller = new Scroller()
   @Param bottomPadding: number = ThemeTokens.SPACE_XL
   @Param transitionScope: string = ''
-  @Event onOpenPage?: (pageIndex: number) => void
+  /** Preserve the live virtual-tile source; the host decides whether to claim it. */
+  @Event onOpenPage?: (pageIndex: number, source: ReaderTrialEntrySource) => void
   /** Detail's wide pane may observe only its actual Grid scroll surface. */
   @Event onScrollTouch?: (event: TouchEvent) => void
   @Local itemCount: number = 0
@@ -208,11 +210,11 @@ export struct GalleryThumbnailGridContent {
     }
   }
 
-  private openPage(pageIndex: number): void {
+  private openPage(pageIndex: number, source: ReaderTrialEntrySource): void {
     if (pageIndex < 0 || pageIndex >= this.itemCount || !this.onOpenPage) {
       return
     }
-    this.onOpenPage(pageIndex)
+    this.onOpenPage(pageIndex, source)
   }
 
   @Builder
@@ -247,8 +249,8 @@ export struct GalleryThumbnailGridContent {
                   this.transitionScope,
                   index,
                 ),
-                onOpen: (pageIndex: number): void => {
-                  this.openPage(pageIndex)
+                onOpen: (pageIndex: number, source: ReaderTrialEntrySource): void => {
+                  this.openPage(pageIndex, source)
                 },
               })
             }

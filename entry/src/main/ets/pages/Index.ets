@@ -3326,6 +3326,9 @@ struct Index {
         onOpenReader: (galleryId: number, pageIndex: number, animated: boolean): void => {
           this.pushReader(galleryId, pageIndex, animated)
         },
+        onOpenSharedReader: (detailSeed: NhGalleryDetail, source: ReaderTrialEntrySource): boolean => {
+          return this.tryOpenProductionThumbnail(detailSeed, source)
+        },
       })
     }
     .titleBar(this.thumbnailsTitleBar(this.thumbnailParams(param)))

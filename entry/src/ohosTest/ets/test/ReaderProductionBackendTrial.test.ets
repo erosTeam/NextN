@@ -2,9 +2,10 @@ import { describe, expect, it } from '@ohos/hypium'
 import { abilityDelegatorRegistry, Component, Driver, MatchPattern, ON } from '@kit.TestKit'
 import { common } from '@kit.AbilityKit'
 import { relationalStore } from '@kit.ArkData'
+import { window } from '@kit.ArkUI'
 import { fileIo } from '@kit.CoreFileKit'
 import { KeyCode } from '@kit.InputKit'
-import { connectNhReadProgress, connectNextNReaderBackendSelection, NextNReaderBackend } from 'shared'
+import { AppStrings, connectNhReadProgress, connectNextNReaderBackendSelection, NextNReaderBackend } from 'shared'
 import { NextNReaderProductionFailureFacts, NextNReaderProductionFailureProbe } from 'reader'
 
 const GALLERY_ID: number = 678049
@@ -47,8 +48,10 @@ function removeSnapshot(): void {
 async function entryContext(driver: Driver): Promise<common.UIAbilityContext> {
   const delegator = abilityDelegatorRegistry.getAbilityDelegator()
   for (let attempt = 0; attempt < 80; attempt++) {
-    const ability = await delegator.getCurrentTopAbility()
-    if (ability.context.abilityInfo.name === 'EntryAbility') return ability.context
+    try {
+      const ability = await delegator.getCurrentTopAbility()
+      if (ability.context.abilityInfo.name === 'EntryAbility') return ability.context
+    } catch (_) {}
     await driver.delayMs(100)
   }
   throw new Error('EntryAbility context unavailable')
@@ -192,6 +195,57 @@ async function findDetailThumbnail(driver: Driver, pageIndex: number): Promise<C
   expect(matches.length).assertEqual(1)
   const sourceId = await source.getId()
   expect(new RegExp(pattern).test(sourceId)).assertTrue()
+  return await driver.findComponent(ON.id(sourceId))
+}
+
+async function findFullThumbnail(driver: Driver, pageIndex: number): Promise<Component> {
+  await waitDetailRead(driver)
+  const viewAll = await driver.findComponents(ON.text(AppStrings.get('detail_view_all'))
+    .within(ON.id('nextn-root-navigation')))
+  if (viewAll.length !== 1) throw new Error('Detail View all action is not unique')
+  await viewAll[0].click()
+  const pattern = `^reader-thumb-all-thumbnails-[0-9]+-page-${pageIndex}$`
+  const selector = ON.id(pattern, MatchPattern.REG_EXP).within(ON.type('Grid'))
+  for (let attempt = 0; attempt < 40; attempt++) {
+    const grids = await driver.findComponents(ON.type('Grid').within(ON.id('nextn-root-navigation')))
+    if (grids.length > 1) throw new Error('Ambiguous full-thumbnail Grid; no coordinate fallback')
+    if (grids.length === 1) {
+      let matches = await driver.findComponents(selector)
+      if (matches.length === 0) {
+        const found = await grids[0].scrollSearch(selector, true)
+        if (found === null) throw new Error(`Full thumbnail unavailable: ${pageIndex}`)
+        matches = await driver.findComponents(selector)
+      }
+      expect(matches.length).assertEqual(1)
+      const sourceId = await matches[0].getId()
+      expect(new RegExp(pattern).test(sourceId)).assertTrue()
+      return await driver.findComponent(ON.id(sourceId))
+    }
+    await driver.delayMs(250)
+  }
+  throw new Error('View all did not open the full-thumbnail Grid')
+}
+
+async function findWideDetailThumbnail(driver: Driver, pageIndex: number): Promise<Component> {
+  await waitDetailRead(driver)
+  const pane = await waitId(driver, 'gallery-detail-preview-pane')
+  const grids = await driver.findComponents(ON.type('Grid').within(ON.id('gallery-detail-preview-pane')))
+  if (grids.length !== 1) throw new Error('Wide Detail preview Grid is not unique')
+  const pattern = `^reader-thumb-gallery-detail-[0-9]+-page-${pageIndex}$`
+  const selector = ON.id(pattern, MatchPattern.REG_EXP).within(ON.id('gallery-detail-preview-pane'))
+  let matches = await driver.findComponents(selector)
+  if (matches.length === 0) {
+    const found = await grids[0].scrollSearch(selector, true)
+    if (found === null) throw new Error(`Wide Detail thumbnail unavailable: ${pageIndex}`)
+    matches = await driver.findComponents(selector)
+  }
+  expect(matches.length).assertEqual(1)
+  const sourceId = await matches[0].getId()
+  expect(new RegExp(pattern).test(sourceId)).assertTrue()
+  const paneBounds = await pane.getBounds()
+  const sourceBounds = await matches[0].getBounds()
+  expect(sourceBounds.left >= paneBounds.left && sourceBounds.right <= paneBounds.right &&
+    sourceBounds.top >= paneBounds.top && sourceBounds.bottom <= paneBounds.bottom).assertTrue()
   return await driver.findComponent(ON.id(sourceId))
 }
 
@@ -535,6 +589,151 @@ export default function readerProductionBackendTrialTest(): void {
           throw error as Error
         } finally {
           try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+          if (!restored && database !== null && original !== null) {
+            await restoreAndVerify(database, original)
+            removeSnapshot()
+          }
+          await launchBackend('legacy', false)
+        }
+      })
+    })
+    return
+  }
+
+  if (selectedClass === 'ReaderProductionThumbnailGridEntryTrial') {
+    describe(selectedClass, (): void => {
+      it('opensExactFullGridThumbnailThroughSharedBodyAndReturnsToGrid', 0, async (): Promise<void> => {
+        const driver = Driver.create()
+        let database: relationalStore.RdbStore | null = null
+        let original: HistorySnapshot | null = null
+        let restored = false
+        let failed = false
+        try {
+          await launchBackend('shared', true)
+          database = await store(await entryContext(driver))
+          original = await snapshotHistory(database)
+          writeSnapshot(original)
+          await seedHistoryPage(database, 6)
+
+          expect(connectNextNReaderBackendSelection().current()).assertEqual(NextNReaderBackend.SHARED)
+          const source = await findFullThumbnail(driver, 2)
+          const sourceId = await source.getId()
+          const before = await source.getBounds()
+          await capture(driver, 'grid-source')
+          await source.click()
+          expect(await waitSharedReady(driver)).assertEqual(2)
+          expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
+          expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
+          for (let attempt = 0; attempt < 40; attempt++) {
+            if (await driver.findComponent(ON.id('rkit-entry-preview-image')) === null &&
+              await driver.findComponent(ON.id('rkit-entry-source-pending')) === null) break
+            await driver.delayMs(100)
+          }
+          expect(await driver.findComponent(ON.id('rkit-entry-preview-image'))).assertNull()
+          expect(await driver.findComponent(ON.id('rkit-entry-source-pending'))).assertNull()
+          await capture(driver, 'grid-shared')
+          await closeAnyReader(driver)
+          const returned = await waitId(driver, sourceId)
+          const after = await returned.getBounds()
+          expect(after.left).assertEqual(before.left)
+          expect(after.top).assertEqual(before.top)
+          expect(after.right).assertEqual(before.right)
+          expect(after.bottom).assertEqual(before.bottom)
+          expect((await driver.findComponents(ON.type('Grid').within(ON.id('nextn-root-navigation')))).length)
+            .assertEqual(1)
+          await capture(driver, 'grid-closed')
+
+          await restoreAndVerify(database, original)
+          restored = true
+          removeSnapshot()
+          console.info('[ReaderProductionBackendTrial] thumbnailGridShared=true clicked=2 persistedBefore=6 ' +
+            'sourceRestored=true debugTrialAbsent=true historyRestored=true')
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'grid-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+          if (!restored && database !== null && original !== null) {
+            await restoreAndVerify(database, original)
+            removeSnapshot()
+          }
+          await launchBackend('legacy', false)
+        }
+      })
+    })
+    return
+  }
+
+  if (selectedClass === 'ReaderProductionThumbnailWideEntryTrial') {
+    describe(selectedClass, (): void => {
+      it('opensWideDetailGridThumbnailThroughSharedBodyAndReturnsToPane', 0, async (): Promise<void> => {
+        const driver = Driver.create()
+        let database: relationalStore.RdbStore | null = null
+        let original: HistorySnapshot | null = null
+        let mainWindow: window.Window | null = null
+        let originalOrientation: window.Orientation | undefined = undefined
+        let restored = false
+        let failed = false
+        try {
+          await launchBackend('shared', true)
+          const context = await entryContext(driver)
+          database = await store(context)
+          original = await snapshotHistory(database)
+          writeSnapshot(original)
+          await seedHistoryPage(database, 6)
+
+          mainWindow = await window.getLastWindow(context)
+          originalOrientation = mainWindow.getPreferredOrientation()
+          await mainWindow.setPreferredOrientation(window.Orientation.LANDSCAPE)
+          await driver.delayMs(1600)
+          const display = await driver.getDisplaySize()
+          expect(display.x > display.y).assertTrue()
+
+          expect(connectNextNReaderBackendSelection().current()).assertEqual(NextNReaderBackend.SHARED)
+          const source = await findWideDetailThumbnail(driver, 2)
+          const sourceId = await source.getId()
+          const before = await source.getBounds()
+          await capture(driver, 'wide-source')
+          await source.click()
+          expect(await waitSharedReady(driver)).assertEqual(2)
+          expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
+          expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
+          for (let attempt = 0; attempt < 40; attempt++) {
+            if (await driver.findComponent(ON.id('rkit-entry-preview-image')) === null &&
+              await driver.findComponent(ON.id('rkit-entry-source-pending')) === null) break
+            await driver.delayMs(100)
+          }
+          expect(await driver.findComponent(ON.id('rkit-entry-preview-image'))).assertNull()
+          expect(await driver.findComponent(ON.id('rkit-entry-source-pending'))).assertNull()
+          await capture(driver, 'wide-shared')
+          await closeAnyReader(driver)
+          expect(await driver.findComponent(ON.id('gallery-detail-preview-pane')) !== null).assertTrue()
+          const returned = await waitId(driver, sourceId)
+          const after = await returned.getBounds()
+          expect(after.left).assertEqual(before.left)
+          expect(after.top).assertEqual(before.top)
+          expect(after.right).assertEqual(before.right)
+          expect(after.bottom).assertEqual(before.bottom)
+          await capture(driver, 'wide-closed')
+
+          await restoreAndVerify(database, original)
+          restored = true
+          removeSnapshot()
+          console.info('[ReaderProductionBackendTrial] thumbnailWideShared=true clicked=2 persistedBefore=6 ' +
+            'sourceRestored=true debugTrialAbsent=true historyRestored=true')
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'wide-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+          if (mainWindow !== null && originalOrientation !== undefined) {
+            try {
+              await mainWindow.setPreferredOrientation(originalOrientation)
+              await driver.delayMs(800)
+            } catch (error) { if (!failed) throw error as Error }
+          }
           if (!restored && database !== null && original !== null) {
             await restoreAndVerify(database, original)
             removeSnapshot()

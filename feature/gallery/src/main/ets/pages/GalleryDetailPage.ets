@@ -3666,8 +3666,8 @@ export struct GalleryDetailPage {
       onScrollTouch: (event: TouchEvent): void => {
         this.handleFollowTouch(event)
       },
-      onOpenPage: (pageIndex: number): void => {
-        this.openReaderFromThumbnail(pageIndex)
+      onOpenPage: (pageIndex: number, source: ReaderTrialEntrySource): void => {
+        this.openReaderFromThumbnail(pageIndex, source)
       },
     })
   }

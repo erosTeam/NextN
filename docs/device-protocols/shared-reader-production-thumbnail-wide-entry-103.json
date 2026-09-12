@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-production-thumbnail-wide-entry-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main 4cd978851d02f77ca1d8bbecc11166edc2666011d78eb23c9fb6c304a31e1e0f; native 2d488c794320731442a9c77e6831bb690bbb5b3f4cb9637fe32c31a485456a27",
+    "page": "Production wide Detail thumbnail P3 through the process-local shared Reader backend",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "The test snapshots and restores exact history, selects P3 from the tablet Detail preview pane, requires shared P3 rather than history P7 or legacy/debug Reader, returns to the same pane source bounds, resets the backend to legacy, and preserves app data."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-thumbnail-wide-entry-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/03-landscape",
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "temporary-long-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "install-current-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "install-current-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 },
+    {
+      "name": "native-production-thumbnail-wide-entry",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test",
+        "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderProductionThumbnailWideEntryTrial",
+        "-s", "timeout", "300000"],
+      "timeoutSeconds": 330
+    }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "test-log", "hdcArgs": ["shell", "hilog -x | grep -E 'ProductionThumbnailEntry|ReaderProductionBackendTrial|ReaderEntry|NextNReaderLab' | tail -360"], "timeoutSeconds": 30 },
+    { "name": "receive-source-json", "hdcArgs": ["file", "recv", "/data/local/tmp/reader-production-backend-wide-source.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-thumbnail-wide-entry-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/03-landscape/wide-source.json"] },
+    { "name": "receive-source-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-wide-source.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-thumbnail-wide-entry-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/03-landscape/wide-source.png"] },
+    { "name": "receive-shared-json", "hdcArgs": ["file", "recv", "/data/local/tmp/reader-production-backend-wide-shared.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-thumbnail-wide-entry-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/03-landscape/wide-shared.json"] },
+    { "name": "receive-shared-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-wide-shared.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-thumbnail-wide-entry-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/03-landscape/wide-shared.png"] },
+    { "name": "receive-closed-json", "hdcArgs": ["file", "recv", "/data/local/tmp/reader-production-backend-wide-closed.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-thumbnail-wide-entry-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/03-landscape/wide-closed.json"] },
+    { "name": "receive-closed-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-wide-closed.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-production-thumbnail-wide-entry-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/03-landscape/wide-closed.png"] },
+    { "name": "force-stop-nextn-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "10000"] },
+    { "name": "power", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}

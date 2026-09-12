@@ -105,6 +105,13 @@ const thumbnailPage = read('feature/gallery/src/main/ets/pages/GalleryThumbnails
 const thumbnailGrid = read('feature/gallery/src/main/ets/components/GalleryThumbnailGridContent.ets')
 const virtualThumbnail = read('feature/gallery/src/main/ets/components/GalleryVirtualPageThumbnail.ets')
 const compactThumbnail = read('feature/gallery/src/main/ets/components/GalleryCompactPreviewTile.ets')
+ok('NH all-thumbnails tiles use the independent decoded thumbnail aspect without stretching',
+  !virtualThumbnail.includes('this.page.width') &&
+    !virtualThumbnail.includes('this.page.height') &&
+    /decodedThumbnailWidth/.test(virtualThumbnail) &&
+    /decodedThumbnailHeight/.test(virtualThumbnail) &&
+    /onImageInfo: \(width: number, height: number\)/.test(virtualThumbnail) &&
+    /objectFit: ImageFit\.Contain/.test(virtualThumbnail))
 ok('detail compact preview, detail grid, and all-thumbnails page share Reader transition scopes',
   /ReaderThumbnailTransitionCoordinator\.open/.test(detail) &&
     /transitionScope: this\.readerTransitionScope/.test(detail) &&

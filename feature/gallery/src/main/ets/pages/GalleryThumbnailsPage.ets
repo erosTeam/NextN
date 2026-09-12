@@ -3,6 +3,7 @@ import {
   NhGalleryPage,
   ReaderOverlayNavigationState,
   ReaderThumbnailTransitionCoordinator,
+  ReaderTrialEntrySource,
   connectReaderOverlayNavigation,
 } from 'shared'
 import { GalleryThumbnailGridContent } from '../components/GalleryThumbnailGridContent'
@@ -21,11 +22,18 @@ export struct GalleryThumbnailsPage {
   @Param chrome: GalleryThumbnailsChromeState = new GalleryThumbnailsChromeState()
   @Param scroller: Scroller = new Scroller()
   @Event onOpenReader?: (galleryId: number, pageIndex: number, animated: boolean) => void
+  /** Entry shell may claim the live grid source for the optional shared Reader. */
+  @Event onOpenSharedReader?: (detailSeed: NhGalleryDetail, source: ReaderTrialEntrySource) => boolean
   @Local readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
   private transitionScope: string = ReaderThumbnailTransitionCoordinator.allocateScope('all-thumbnails')
 
-  private openReader(pageIndex: number): void {
+  private openReader(pageIndex: number, source: ReaderTrialEntrySource): void {
     if (this.galleryId <= 0 || pageIndex < 0 || pageIndex >= this.pages.length || !this.onOpenReader) {
+      return
+    }
+    if (this.detailSeed.id === this.galleryId && source.galleryId === this.galleryId &&
+      source.pageIndex === pageIndex && source.isCurrent() &&
+      this.onOpenSharedReader?.(this.detailSeed, source) === true) {
       return
     }
     const page: NhGalleryPage = this.pages[pageIndex]
@@ -57,8 +65,8 @@ export struct GalleryThumbnailsPage {
       chrome: this.chrome,
       scroller: this.scroller,
       transitionScope: this.transitionScope,
-      onOpenPage: (pageIndex: number): void => {
-        this.openReader(pageIndex)
+      onOpenPage: (pageIndex: number, source: ReaderTrialEntrySource): void => {
+        this.openReader(pageIndex, source)
       },
     })
   }
