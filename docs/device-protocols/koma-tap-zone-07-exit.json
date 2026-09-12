@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-tap-zone-07-exit",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260912-koma-tap-zones/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/07-exit",
+  "display": {
+    "widthPx": 1600,
+    "heightPx": 2560
+  },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "Koma11698 signed08:43:37/14527380 sha710c92c24e165fb29f849b83997e529ee6ae011fa45d3469b8fe8c182a4312d0",
+    "page": "07-exit",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Controlled sample tap zones; normal UI restoration required"
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/ktap40.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/ktap40.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260912-koma-tap-zones/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/07-exit/layout.json"
+      ]
+    },
+    {
+      "name": "screen",
+      "hdcArgs": [
+        "shell",
+        "snapshot_display",
+        "-f",
+        "/data/local/tmp/ktap40.jpeg"
+      ]
+    },
+    {
+      "name": "receive-screen",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/ktap40.jpeg",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260912-koma-tap-zones/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/07-exit/screen.jpeg"
+      ]
+    },
+    {
+      "name": "music-readback",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "AudioPolicyService",
+        "-a",
+        "-v"
+      ]
+    },
+    {
+      "name": "logs",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "KomaReaderLab"
+      ]
+    },
+    {
+      "name": "pager",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderPager"
+      ]
+    },
+    {
+      "name": "prefs",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.honjow.koma/haps/entry/preferences/koma_reader_preferences_v1",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260912-koma-tap-zones/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/07-exit/reader-preferences.final"
+      ]
+    },
+    {
+      "name": "hashes",
+      "hdcArgs": [
+        "shell",
+        "sha256sum",
+        "/data/app/el2/100/base/com.honjow.koma/haps/entry/files/library-store.v1.json",
+        "/data/app/el2/100/base/com.honjow.koma/haps/entry/files/reader-sessions.v1.json"
+      ]
+    },
+    {
+      "name": "timeout-restore",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "10000"
+      ]
+    },
+    {
+      "name": "power-readback",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,369 @@
+{
+  "schemaVersion": 1,
+  "name": "reader-tap-zones-candidate-native-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextN+NextE",
+    "codeIdentity": "main64300 sha2564305bae0af857c897917e73cf96010fcb30ad2900a12cf8e34ff3279f5def5bc; native81464 08:49:04/43535318 sha256e9dcc3db0dc20eb9255d2cb6c79b6850c4f0ac00f6f14e7f512bca682a796954",
+    "page": "ReaderTapZonesTrial L-shaped paged/continuous and stable zoom menu",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "No237; preserve E sync; record actual power/window/music and restore after final exit."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native",
+  "preflight": [
+    {
+      "name": "install-main64300",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "name": "install-native81464",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "name": "native-tap-zones",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "test",
+        "-b",
+        "com.erosteam.nextn",
+        "-m",
+        "entry_test",
+        "-s",
+        "unittest",
+        "OpenHarmonyTestRunner",
+        "-s",
+        "class",
+        "ReaderTapZonesTrial",
+        "-s",
+        "readerLabWork",
+        "678049",
+        "-s",
+        "timeout",
+        "360000"
+      ],
+      "timeoutSeconds": 390
+    }
+  ],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "log-ReaderTapZonesTest",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderTapZonesTest"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "log-ReaderViewport",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderViewport"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "log-ReaderPager",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderPager"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "log-NextNReaderLab",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "NextNReaderLab"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "receive-paged-initial-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-tap-zones-paged-initial.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/paged-initial.json"
+      ]
+    },
+    {
+      "name": "receive-paged-initial-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-tap-zones-paged-initial.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/paged-initial.png"
+      ]
+    },
+    {
+      "name": "receive-paged-previous-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-tap-zones-paged-previous.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/paged-previous.json"
+      ]
+    },
+    {
+      "name": "receive-paged-previous-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-tap-zones-paged-previous.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/paged-previous.png"
+      ]
+    },
+    {
+      "name": "receive-paged-next-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-tap-zones-paged-next.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/paged-next.json"
+      ]
+    },
+    {
+      "name": "receive-paged-next-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-tap-zones-paged-next.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/paged-next.png"
+      ]
+    },
+    {
+      "name": "receive-paged-more-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-tap-zones-paged-more.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/paged-more.json"
+      ]
+    },
+    {
+      "name": "receive-paged-more-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-tap-zones-paged-more.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/paged-more.png"
+      ]
+    },
+    {
+      "name": "receive-zoomed-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-tap-zones-zoomed.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/zoomed.json"
+      ]
+    },
+    {
+      "name": "receive-zoomed-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-tap-zones-zoomed.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/zoomed.png"
+      ]
+    },
+    {
+      "name": "receive-zoom-menu-shown-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-tap-zones-zoom-menu-shown.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/zoom-menu-shown.json"
+      ]
+    },
+    {
+      "name": "receive-zoom-menu-shown-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-tap-zones-zoom-menu-shown.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/zoom-menu-shown.png"
+      ]
+    },
+    {
+      "name": "receive-zoom-more-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-tap-zones-zoom-more.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/zoom-more.json"
+      ]
+    },
+    {
+      "name": "receive-zoom-more-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-tap-zones-zoom-more.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/zoom-more.png"
+      ]
+    },
+    {
+      "name": "receive-zoom-menu-hidden-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-tap-zones-zoom-menu-hidden.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/zoom-menu-hidden.json"
+      ]
+    },
+    {
+      "name": "receive-zoom-menu-hidden-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-tap-zones-zoom-menu-hidden.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/zoom-menu-hidden.png"
+      ]
+    },
+    {
+      "name": "receive-continuous-initial-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-tap-zones-continuous-initial.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/continuous-initial.json"
+      ]
+    },
+    {
+      "name": "receive-continuous-initial-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-tap-zones-continuous-initial.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/continuous-initial.png"
+      ]
+    },
+    {
+      "name": "receive-continuous-next-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-tap-zones-continuous-next.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/continuous-next.json"
+      ]
+    },
+    {
+      "name": "receive-continuous-next-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-tap-zones-continuous-next.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/continuous-next.png"
+      ]
+    },
+    {
+      "name": "receive-continuous-previous-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-tap-zones-continuous-previous.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/continuous-previous.json"
+      ]
+    },
+    {
+      "name": "receive-continuous-previous-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-tap-zones-continuous-previous.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/continuous-previous.png"
+      ]
+    },
+    {
+      "name": "receive-continuous-more-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-tap-zones-continuous-more.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/continuous-more.json"
+      ]
+    },
+    {
+      "name": "receive-continuous-more-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-tap-zones-continuous-more.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/continuous-more.png"
+      ]
+    },
+    {
+      "name": "receive-closed-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-tap-zones-closed.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/closed.json"
+      ]
+    },
+    {
+      "name": "receive-closed-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-tap-zones-closed.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/closed.png"
+      ]
+    },
+    {
+      "name": "receive-exception-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-tap-zones-exception.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/exception.json"
+      ]
+    },
+    {
+      "name": "receive-exception-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-tap-zones-exception.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/02-native/exception.png"
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
-import { ReaderTrialLayoutCommit, ReaderKeepScreenOn } from '@reader-kit/ui'
+import { ReaderTrialLayoutCommit, ReaderKeepScreenOn, ReaderTapAction } from '@reader-kit/ui'
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
-import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost } from '@reader-kit/core'
+import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderLayout } from '@reader-kit/core'
 import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabRequest, ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility, ReaderLabAssetProbe, ReaderVolumeKeys } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
@@ -13,7 +13,7 @@ import { NextNReaderOriginalProbeCatalog } from './NextNReaderOriginalProbeCatal
 import { ReaderSystemImageSaveHost } from '@reader-kit/ui'
 import { ReaderImageSaveHost } from '@reader-kit/core'
 import { NextNReaderImageSaveDownload } from './NextNReaderImageSaveDownload'
-import { ReaderSettingsRepository } from 'shared'
+import { ReaderSettingsRepository, NhReaderTapZoneResolver } from 'shared'
 import { NextNReaderInitialPolicy } from './NextNReaderInitialPolicy'
 import { connectNextNReaderLabContextProbe } from './NextNReaderLabContextProbe'
 
@@ -95,6 +95,17 @@ export struct NextNReaderLabPage {
       console.warn('[NextNReaderLab] initial_reader_policy_unavailable')
       if (!this.volumeDisposed && !this.closeRequested && !this.hostClosing) this.closeTrial(true)
     }
+  }
+
+  private resolveTapZone(x: number, y: number, layout: ReaderLayout): ReaderTapAction {
+    if (!this.presentationReady || this.volumeDisposed || this.closeRequested || this.hostClosing ||
+      !this.routeActive || !this.labVisibility.foreground || this.session === null) return 'none'
+    // The trial can change layout without changing the saved production mode.
+    const continuous = layout === 'continuous'
+    return NhReaderTapZoneResolver.resolve(
+      continuous ? this.readerPresentation.tapZoneLayoutContinuous : this.readerPresentation.tapZoneLayoutPaged,
+      continuous ? this.readerPresentation.tapZoneInvertContinuous : this.readerPresentation.tapZoneInvertPaged,
+      x, y, 1, 1)
   }
 
   aboutToDisappear(): void {
@@ -204,6 +215,7 @@ export struct NextNReaderLabPage {
           if (this.request.readingChrome) {
             ReaderSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
               input: this.input, imageShare: this.imageShare, imageSave: this.imageSave,
+              tapZoneResolver: (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout),
               autoReadAvailable: true, autoReadSeconds: this.readerPresentation.autoPageSeconds,
               cropBorders: this.request.cropBorders && !this.request.thumbnailEntry,
               cropAvailable: !this.request.thumbnailEntry,

@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "name": "reader-tap-zones-candidate-gate-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextN+NextE",
+    "codeIdentity": "main64300 sha2564305bae0af857c897917e73cf96010fcb30ad2900a12cf8e34ff3279f5def5bc; native81464 08:49:04/43535318 sha256e9dcc3db0dc20eb9255d2cb6c79b6850c4f0ac00f6f14e7f512bca682a796954",
+    "page": "Read only tap setting and fixed thirds optional Lab baseline",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "No237; preserve E sync; record actual power/window/music and restore after final exit."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/01-gate",
+  "preflight": [
+    {
+      "name": "original-power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "transport-echo",
+      "hdcArgs": [
+        "shell",
+        "echo",
+        "ok"
+      ]
+    },
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "neutral-lockscreen-unlock-below-notifications-end2317",
+        "uiInput": [
+          "swipe",
+          "630",
+          "2450",
+          "630",
+          "1200",
+          "2000"
+        ],
+        "pauseAfterMs": 400
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "post-unlock-timeout",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "86400000"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "music",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "AudioPolicyService",
+        "-a",
+        "-v"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/thumbnail-policy-gate.json",
+        "-a"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/thumbnail-policy-gate.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-tap-zones-candidate-197/01-gate/layout.json"
+      ]
+    }
+  ]
+}
