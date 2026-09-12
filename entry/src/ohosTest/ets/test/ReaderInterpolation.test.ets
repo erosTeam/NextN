@@ -19,14 +19,25 @@ class ImageEvidence {
   candidateKeys: string[] = []
   candidateValues: string[] = []
 }
+class BoxEvidence {
+  id: string = ''
+  x: number = 0
+  y: number = 0
+  width: number = 0
+  height: number = 0
+}
 class SamplingEvidence {
   sourceIndex: number = -1
   windowId: number = -1
   width: number = 0
   height: number = 0
   canonical: string = ''
+  boxes: BoxEvidence[] = []
   images: ImageEvidence[] = []
   samplingVerified: boolean = false
+  fitWidthVerified: boolean = false
+  scrollDeltaY: number = 0
+  verticallyReachable: boolean = false
 }
 async function waitId(d: Driver, id: string): Promise<Component> {
   for (let i = 0; i < 60; i++) {
@@ -36,10 +47,11 @@ async function waitId(d: Driver, id: string): Promise<Component> {
   }
   throw new Error('interpolation missing:' + id)
 }
-async function body(d: Driver, index: number): Promise<void> {
+async function body(d: Driver, index: number, continuous: boolean = false): Promise<void> {
+  const id = continuous ? 'rkit-continuous-page-' + index : 'rkit-part-' + index + '-whole'
   for (let i = 0; i < 60; i++) {
-    const image = await d.findComponent(ON.type('Image').within(ON.id('rkit-part-' + index + '-whole')))
-    if (image !== null && await d.findComponent(ON.type('LoadingProgress').within(ON.id('rkit-part-' + index + '-whole'))) === null) {
+    const image = await d.findComponent(ON.type('Image').within(ON.id(id)))
+    if (image !== null && await d.findComponent(ON.type('LoadingProgress').within(ON.id(id))) === null) {
       const b = await image.getBounds()
       if (b.right > b.left && b.bottom > b.top) {
         console.info('[ReaderInterpolationTest] source=' + index + ' bounds=' + JSON.stringify(b))
@@ -85,10 +97,11 @@ async function assertHost(): Promise<void> {
   expect(r.size.width > 0 && r.size.height > 0).assertTrue()
   console.info('[ReaderInterpolationTest] exitHost=NextN window=' + w.getWindowProperties().id + ' root=' + JSON.stringify(r))
 }
-async function launch(d: Driver): Promise<void> {
+async function launch(d: Driver, work: string, pageIndex: number): Promise<void> {
   await abilityDelegatorRegistry.getAbilityDelegator().startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
-    parameters: { readerLabWork: '678049', readerLabPage: '2', readerLabChrome: 'true', readerLabVolumeKeys: 'false' } })
-  await waitId(d, 'rkit-close'); await body(d, 2)
+    parameters: { readerLabWork: work, readerLabPage: String(pageIndex), readerLabChrome: 'true', readerLabVolumeKeys: 'false',
+      readerLabEntryLayout: work === '__rkit_local_fixture__' ? 'continuous' : '' } })
+  await waitId(d, 'rkit-close'); await body(d, pageIndex, work === '__rkit_local_fixture__')
 }
 
 function safeValue(value: string | number | undefined): string | null {
@@ -125,9 +138,9 @@ function matches(e: ImageEvidence, canonical: string): boolean {
   }
   return false
 }
-async function sample(d: Driver, index: number, canonical: string, name: string): Promise<boolean> {
-  await body(d, index)
-  const id = 'rkit-part-' + index + '-whole'
+async function sample(d: Driver, index: number, canonical: string, name: string, continuous: boolean = false): Promise<boolean> {
+  await body(d, index, continuous)
+  const id = continuous ? 'rkit-continuous-page-' + index : 'rkit-part-' + index + '-whole'
   expect((await d.findComponents(ON.id(id))).length).assertEqual(1)
   const a = abilityDelegatorRegistry.getAbilityDelegator()
   const win = await window.getLastWindow((await a.getCurrentTopAbility()).context)
@@ -141,46 +154,81 @@ async function sample(d: Driver, index: number, canonical: string, name: string)
   const evidence = new SamplingEvidence()
   evidence.sourceIndex = index; evidence.windowId = win.getWindowProperties().id
   evidence.width = rect.size.width; evidence.height = rect.size.height; evidence.canonical = canonical
+  if (continuous) {
+    for (const target of ['rkit-reading-surface', 'rkit-continuous-list', id]) {
+      const value = ui.getComponentUtils().getRectangleById(target)
+      const box = new BoxEvidence()
+      box.id = target; box.x = value.windowOffset.x; box.y = value.windowOffset.y
+      box.width = value.size.width; box.height = value.size.height
+      evidence.boxes.push(box)
+    }
+  }
   inspect(node, evidence.images, 0)
   evidence.samplingVerified = evidence.images.length > 0 && evidence.images.every((image: ImageEvidence): boolean => matches(image, canonical))
+  expect(await d.screenCap(a.getAppContext().cacheDir + '/rkit-interpolation-' + name + '.png')).assertTrue()
+  if (continuous) {
+    const listRect = ui.getComponentUtils().getRectangleById('rkit-continuous-list')
+    evidence.fitWidthVerified = rect.size.width >= listRect.size.width * 0.98 &&
+      Math.abs(rect.size.width - listRect.size.width) <= 2
+    const beforeY = rect.windowOffset.y
+    const centerX = Math.round(listRect.windowOffset.x + listRect.size.width / 2)
+    const lowerY = Math.round(listRect.windowOffset.y + listRect.size.height * 0.78)
+    const upperY = Math.round(listRect.windowOffset.y + listRect.size.height * 0.22)
+    await d.swipe(centerX, lowerY, centerX, upperY, 800)
+    await d.delayMs(700)
+    const after = ui.getComponentUtils().getRectangleById(id)
+    evidence.scrollDeltaY = after.windowOffset.y - beforeY
+    evidence.verticallyReachable = Math.abs(evidence.scrollDeltaY) >= 20
+    expect(await d.screenCap(a.getAppContext().cacheDir + '/rkit-interpolation-scrolled.png')).assertTrue()
+  }
   const safe = JSON.stringify(evidence)
   const path = a.getAppContext().cacheDir + '/rkit-interpolation-' + name + '.json'
   const file = fileIo.openSync(path, fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC)
   try { fileIo.writeSync(file.fd, safe) } finally { fileIo.closeSync(file) }
   console.info('[ReaderInterpolationTest] sample=' + name + ' evidence=' + safe)
-  expect(await d.screenCap(a.getAppContext().cacheDir + '/rkit-interpolation-' + name + '.png')).assertTrue()
-  return evidence.samplingVerified
+  return evidence.samplingVerified && (!continuous || (evidence.fitWidthVerified && evidence.verticallyReachable))
 }
 export default function readerInterpolationTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
-  if (args['-s class'] !== 'ReaderInterpolationTrial') return
-  describe('ReaderInterpolationTrial', (): void => {
+  const selectedClass = args['-s class']
+  if (selectedClass !== 'ReaderInterpolationTrial' && selectedClass !== 'ReaderInterpolationContinuousTrial') return
+  const continuous = selectedClass === 'ReaderInterpolationContinuousTrial'
+  describe(selectedClass, (): void => {
     it('readOnlyScopedInspectorSampling', 0, async (): Promise<void> => {
-      expect(args['-s readerLabWork']).assertEqual('678049')
+      const work = continuous ? '__rkit_local_fixture__' : '678049'
+      const sourceIndex = continuous ? 0 : 2
+      expect(args['-s readerLabWork']).assertEqual(work)
       const d = Driver.create(), holder = new HostContext(), probe = connectNextNReaderLabContextProbe()
-      const epoch = probe.arm('678049', (ctx: common.UIAbilityContext): void => { holder.value = ctx })
+      const epoch = probe.arm(work, (ctx: common.UIAbilityContext): void => { holder.value = ctx })
       let failed = false
       try {
-        await launch(d)
+        await launch(d, work, sourceIndex)
         for (let i = 0; i < 60 && holder.value === null; i++) await d.delayMs(250)
         const ctx = holder.value
         if (ctx === null) throw new Error('interpolation actual context unavailable')
         expect(ctx.databaseDir.endsWith('/entry')).assertTrue()
         const state = ReaderPresentationService.snapshot(), signature = JSON.stringify(state)
         expect(state.imageScalingQuality).assertEqual(await ReaderSettingsRepository.imageScalingQuality(ctx))
-        expect(state.mode === NhReaderMode.PAGED || state.mode === NhReaderMode.PAGED_RTL).assertTrue()
-        expect(state.doublePageEnabled).assertFalse()
-        const first = await sample(d, 2, state.imageScalingQuality, 'ordinary')
-        await center(d)
-        expect(await d.findComponent(ON.id('rkit-chrome-page'))).assertNull()
-        const a = await abilityDelegatorRegistry.getAbilityDelegator().getCurrentTopAbility()
-        const w = await window.getLastWindow(a.context)
-        const r = w.getUIContext().getComponentUtils().getRectangleById('rkit-image-viewport')
-        const left = Math.round(r.windowOffset.x + r.size.width * 0.19), right = Math.round(r.windowOffset.x + r.size.width * 0.81)
-        const y = Math.round(r.windowOffset.y + r.size.height / 2), rtl = state.mode === NhReaderMode.PAGED_RTL
-        await d.swipe(rtl ? left : right, y, rtl ? right : left, y, 700)
-        await d.delayMs(700); await body(d, 3)
-        const second = await sample(d, 3, state.imageScalingQuality, 'turned')
+        if (continuous) {
+          expect(await d.findComponent(ON.id('rkit-continuous-list')) !== null).assertTrue()
+        } else {
+          expect(state.mode === NhReaderMode.PAGED || state.mode === NhReaderMode.PAGED_RTL).assertTrue()
+          expect(state.doublePageEnabled).assertFalse()
+        }
+        const first = await sample(d, sourceIndex, state.imageScalingQuality, 'ordinary', continuous)
+        let second = true
+        if (!continuous) {
+          await center(d)
+          expect(await d.findComponent(ON.id('rkit-chrome-page'))).assertNull()
+          const a = await abilityDelegatorRegistry.getAbilityDelegator().getCurrentTopAbility()
+          const w = await window.getLastWindow(a.context)
+          const r = w.getUIContext().getComponentUtils().getRectangleById('rkit-image-viewport')
+          const left = Math.round(r.windowOffset.x + r.size.width * 0.19), right = Math.round(r.windowOffset.x + r.size.width * 0.81)
+          const y = Math.round(r.windowOffset.y + r.size.height / 2), rtl = state.mode === NhReaderMode.PAGED_RTL
+          await d.swipe(rtl ? left : right, y, rtl ? right : left, y, 700)
+          await d.delayMs(700); await body(d, sourceIndex + 1)
+          second = await sample(d, sourceIndex + 1, state.imageScalingQuality, 'turned')
+        }
         expect(JSON.stringify(ReaderPresentationService.snapshot())).assertEqual(signature)
         expect(await ReaderSettingsRepository.imageScalingQuality(ctx)).assertEqual(state.imageScalingQuality)
         await closeTrial(d); await assertHost()
@@ -189,6 +237,10 @@ export default function readerInterpolationTest(): void {
         if (!first || !second) throw new Error('samplingUNVERIFIED: scoped Inspector does not expose a confirmed matching interpolation field')
       } catch (error) {
         failed = true
+        try {
+          const a = abilityDelegatorRegistry.getAbilityDelegator()
+          expect(await d.screenCap(a.getAppContext().cacheDir + '/rkit-interpolation-failure.png')).assertTrue()
+        } catch (_) {}
         // Do not stringify framework errors: they may contain resource URIs.
         console.error('[ReaderInterpolationTest] trialFailed=true')
         throw error as Error

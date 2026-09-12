@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "reader-continuous-fit-width-local-native-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main 99127645ba3d072d354983005afeb4309a82a9f0541a0bec89fb2e64fe6b43e1; native d6bd6f45f713d542786a162b7ec970bf609c41c4c84006b35831d611a99e90ab",
+    "page": "Assert shared continuous interpolation, fit-width geometry, and vertical reach using the debug-only local fixture",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Deterministic local fixture. The reader-lab launch overrides layout in memory and does not mutate persisted reading settings. Exact evidence files are cleared before execution."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-continuous-fit-width-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/17-local-native-selector",
+  "preflight": [
+    { "name": "install-current-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "install-current-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "clear-prior-scoped-evidence", "hdcArgs": ["shell", "rm", "-f", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-interpolation-ordinary.json", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-interpolation-ordinary.png", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-interpolation-scrolled.png", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-interpolation-failure.png", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-interpolation-exit.png"] },
+    { "name": "native-continuous-fit-width-local-once", "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test", "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderInterpolationContinuousTrial", "-s", "readerLabWork", "__rkit_local_fixture__", "-s", "timeout", "180000"], "timeoutSeconds": 210 }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "receive-fit-width-json", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-interpolation-ordinary.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-continuous-fit-width-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/17-local-native-selector/ordinary.json"] },
+    { "name": "receive-fit-width-screen", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-interpolation-ordinary.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-continuous-fit-width-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/17-local-native-selector/ordinary.png"] },
+    { "name": "receive-scrolled-screen", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-interpolation-scrolled.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-continuous-fit-width-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/17-local-native-selector/scrolled.png"] },
+    { "name": "receive-failure-screen", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-interpolation-failure.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-continuous-fit-width-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/17-local-native-selector/failure.png"] },
+    { "name": "receive-exit-screen", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-interpolation-exit.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-continuous-fit-width-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/17-local-native-selector/exit.png"] },
+    { "name": "reader-local-log", "hdcArgs": ["shell", "hilog -x | grep -E 'NextNReaderLabFixture|NextNReaderLab|ReaderViewport|ReaderContinuous|ReaderInterpolationTest' | tail -400"], "timeoutSeconds": 30 }
+  ]
+}

@@ -14,7 +14,10 @@ export class NextNReaderInitialPolicy {
     policy.direction = presentation.mode === NhReaderMode.PAGED_RTL ? 'rtl' : 'ltr'
     policy.spreadLayout = presentation.spreadLayoutMode === NhReaderSpreadLayout.SPLIT ? 'split' : 'joined'
     policy.firstPageAlone = column === NhReaderColumnMode.EVEN_LEFT
-    if (request.entryLayoutOverride === 'single' || request.entryLayoutOverride === 'spread') {
+    if (request.entryLayoutOverride === 'continuous') {
+      policy.layout = 'continuous'
+      policy.pagingAxis = 'vertical'
+    } else if (request.entryLayoutOverride === 'single' || request.entryLayoutOverride === 'spread') {
       policy.layout = request.entryLayoutOverride
       policy.pagingAxis = 'horizontal'
     }

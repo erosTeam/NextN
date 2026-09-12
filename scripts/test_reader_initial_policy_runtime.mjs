@@ -44,19 +44,22 @@ for (const mode of Object.values(enums.NhReaderMode)) for (const doublePageEnabl
     assert.equal(r.pageIndex, index)
   }
 }
-for (const [layout, direction] of [[undefined, undefined], ['bad', 'bad'], ['single', 'ltr'], ['spread', 'rtl']]) {
+for (const [layout, direction] of [[undefined, undefined], ['bad', 'bad'], ['single', 'ltr'], ['spread', 'rtl'],
+  ['continuous', 'ltr']]) {
   const r = request({ readerLabEntryLayout: layout, readerLabEntryDirection: direction })
-  const valid = layout === 'single' || layout === 'spread'
+  const valid = layout === 'single' || layout === 'spread' || layout === 'continuous'
   assert.equal(r.entryLayout, layout === 'spread' ? 'spread' : 'single')
   assert.equal(r.entryDirection, direction === 'rtl' ? 'rtl' : 'ltr')
   assert.equal(r.entryLayoutOverride, valid ? layout : null)
   assert.equal(r.entryDirectionOverride, valid ? direction : null)
   const p = resolver.resolve({ mode: 'paged_rtl', doublePageEnabled: true, spreadLayoutMode: 'split' }, 'even_left', r)
   assert.equal(p.layout, valid ? layout : 'spread'); assert.equal(p.direction, valid ? direction : 'rtl')
+  assert.equal(p.pagingAxis, layout === 'continuous' ? 'vertical' : 'horizontal')
 }
 const pageSource = fs.readFileSync(path.join(root, 'feature/reader/src/main/ets/lab/NextNReaderLabPage.ets'), 'utf8')
 for (const [extra, expectedLayout, expectedDirection, expectedAxis] of [
   [{ readerLabEntryLayout: 'single' }, 'single', 'ltr', 'horizontal'],
+  [{ readerLabEntryLayout: 'continuous' }, 'continuous', 'ltr', 'vertical'],
   [{ readerLabEntryDirection: 'rtl' }, 'single', 'rtl', 'vertical'],
 ]) {
   const r = request(extra)

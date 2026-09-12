@@ -12,7 +12,7 @@ This is an optional/debug-reader checkpoint, not a default-reader replacement. T
 
 ## Source and build gates
 
-- `node --test --test-reporter=dot tests/*.test.cjs` in reader-kit: 300/300 pass. The new full-chain guard fails if any paged/continuous/cropped original hop drops the parameter or if the ordinary thumbnail branch stops retaining Low sampling.
+- `node --test tests/*.test.cjs` in reader-kit: 302/302 pass. The guards fail if any paged/continuous/cropped original hop drops the parameter, if the ordinary thumbnail branch stops retaining Low sampling, or if a continuous original row stops deriving its full-width height from intrinsic image dimensions.
 - NextN main: final success 9.286 s; signed HAP 47,057,076 bytes; SHA256 `60878cdd574975b0fa77c06ef0089d24be7dc90b2323f42978d2c79b89614f5f`. This final build also shortens the localized quality hint so the value suffix no longer reads as part of the explanatory sentence.
 - NextN native: success 8.578 s; signed HAP 43,617,171 bytes; SHA256 `ccaea693dcd3bbadfea70dc1271ce356a045ff1528f20d552246e781442743f5`.
 - NextE matching main: success 12.858 s; signed HAP 62,704,487 bytes; SHA256 `2a064ef1ca356f23271671429ae58f6ab237219d80e63b7f4d24c3dde070755e`.
@@ -63,8 +63,23 @@ Restoration proof:
 - Reader-session hash before/after: `f0fdbd8fb6f7e315c450b57562380208553eee3c338d87a14adc63f42e1c9cce`.
 - Final viewport is portrait 1600×2560, MUSIC remains 9, `OverrideTimeout=10000ms`, normal Koma Reading settings visible, and the lease is released.
 
+## Device 103 — NextN continuous fit-width correction
+
+The earlier 197 continuous capture exposed a real shared-reader regression: source index 2 occupied only about 205 px of a 1260 px reader instead of using the available width. The continuous List forced a row height while the cell root still requested `height('100%')`; the resulting constraints did not preserve the original image ratio. The correction makes the row itself full width with an intrinsic aspect ratio and lets the image fill that ratio-sized row. Failed rows retain the existing compact 220 vp recovery height.
+
+The first 103 online rerun is retained as a rejected gate: the NH request produced no body response and Hypium reported `interpolation body unavailable:2`. It supplied no width evidence. The replacement gate uses an explicit debug-only, three-page local fixture through the same Reader Lab adapter and shared session. It does not change the saved layout or provide a release entry.
+
+Accepted run `17-local-native-selector` under `.hermes-artifacts/20260912-continuous-fit-width-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/`:
+
+- Native report: 1 run, 0 failure, 0 error, 1 pass; 12.502 s.
+- Reader root and continuous List are both 1600×2560. Source page 0 is 1600×2400 from the fixture's actual 1024×1536 ratio, with no centered narrow strip.
+- The actual Image leaf exposes `ImageInterpolation.Medium`; `samplingVerified=true` and `fitWidthVerified=true`.
+- One in-list swipe moves the first row by -1561 px; `verticallyReachable=true`. Both before/after whole screenshots were inspected and show continuous content above and below the initial viewport.
+- Reader presentation and repository quality signatures are identical before/after the debug override. The trial closes to the NextN host; no persisted mode, progress or reader-default change occurs.
+- Exact tested packages: main 47,070,742 bytes, SHA256 `99127645ba3d072d354983005afeb4309a82a9f0541a0bec89fb2e64fe6b43e1`; native 43,647,891 bytes, SHA256 `d6bd6f45f713d542786a162b7ec970bf609c41c4c84006b35831d611a99e90ab`. Signed builds passed in 8.868 s and 8.430 s respectively.
+
 ## Accepted and still open
 
-Accepted only for these named paths: shared chain source/build gate; NextN actual Low/Medium/High paged Image leaves and real page turn; Koma canonical medium paged plus low/high normal-UI selection and low/high continuous rendering/scroll; exact state restoration; NextN final quality-row visual separation on 197.
+Accepted only for these named paths: shared chain source/build gate; NextN actual Low/Medium/High paged Image leaves and real page turn; NextN local-fixture continuous full-width geometry and vertical reach on 103; Koma canonical medium paged plus low/high normal-UI selection and low/high continuous rendering/scroll; exact state restoration; NextN final quality-row visual separation on 197.
 
 Still open: NextE device leaf capture, continuous/cropped/split-body native enum sampling, failure/retry combinations, and complete default-reader replacement/regression acceptance. These gaps do not justify changing the existing default readers.

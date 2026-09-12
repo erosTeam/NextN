@@ -1,6 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import { uniformTypeDescriptor as utd } from '@kit.ArkData'
-import { fileUri } from '@kit.CoreFileKit'
+import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { systemShare } from '@kit.ShareKit'
 import { ReaderSystemSharePresentation, ReaderFileInformation } from '@reader-kit/ui'
 import { NhApiClient, NhGalleryDetail, ReaderImageCacheService, ReaderPageCropService } from 'shared'
@@ -10,6 +10,11 @@ import {
   ReaderImageShareTarget, ReaderImageSharePresentation,
   ReaderImageInformation, ReaderImageCropBounds, ReaderImageCropSource,
 } from '@reader-kit/core'
+
+const LOCAL_FIXTURE_WORK: string = '__rkit_local_fixture__'
+const LOCAL_FIXTURE_PAGE_COUNT: number = 3
+const LOCAL_FIXTURE_WIDTH: number = 1024
+const LOCAL_FIXTURE_HEIGHT: number = 1536
 
 class NextNReaderCropSource implements ReaderImageCropSource {
   private static sequence: number = 0
@@ -35,6 +40,10 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
 
   async open(key: ReaderUnitKey, cancellation: ReaderCancellation): Promise<ReaderUnit> {
     cancellation.check()
+    if (key.scope === 'nh' && key.unit === key.work && key.work === LOCAL_FIXTURE_WORK) {
+      console.info('[NextNReaderLabFixture] open')
+      return new ReaderUnit(key, 'Reader local fixture', LOCAL_FIXTURE_PAGE_COUNT)
+    }
     const id = Number(key.work)
     if (key.scope !== 'nh' || key.unit !== key.work || !Number.isSafeInteger(id) || id <= 0) {
       throw new Error('invalid_nh_unit')
@@ -47,6 +56,16 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
 
   async page(unit: ReaderUnit, index: number, cancellation: ReaderCancellation): Promise<ReaderPage> {
     cancellation.check()
+    if (unit.key.work === LOCAL_FIXTURE_WORK) {
+      console.info(`[NextNReaderLabFixture] page source=${index}`)
+      if (index < 0 || index >= LOCAL_FIXTURE_PAGE_COUNT) throw new Error('missing_reader_fixture_page')
+      const fixture = new ReaderPage(unit.key, `fixture:${index}`, index)
+      fixture.width = LOCAL_FIXTURE_WIDTH
+      fixture.height = LOCAL_FIXTURE_HEIGHT
+      fixture.thumbnail.width = LOCAL_FIXTURE_WIDTH
+      fixture.thumbnail.height = LOCAL_FIXTURE_HEIGHT
+      return fixture
+    }
     const detail = this.details.get(unit.key.unit)
     const source = detail?.pages[index]
     if (source === undefined || detail === undefined) throw new Error('missing_nh_page')
@@ -84,6 +103,10 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
 
   async load(page: ReaderPage, kind: ReaderAssetKind, cancellation: ReaderCancellation, forceReload: boolean): Promise<ReaderAsset> {
     cancellation.check()
+    if (page.unit.work === LOCAL_FIXTURE_WORK) {
+      console.info(`[NextNReaderLabFixture] load source=${page.sourceIndex} kind=${kind}`)
+      return this.loadFixture(page, cancellation)
+    }
     const detail = this.details.get(page.unit.unit)
     const source = detail?.pages[page.sourceIndex]
     if (detail === undefined || source === undefined) throw new Error('missing_nh_asset')
@@ -98,5 +121,35 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
     const asset = new ReaderAsset(result.displayUri, () => {}, new ReaderFileInformation(result.localPath, facts))
     if (result.localPath.length > 0) asset.crop = new NextNReaderCropSource(result.localPath)
     return asset
+  }
+
+  private async loadFixture(page: ReaderPage, cancellation: ReaderCancellation): Promise<ReaderAsset> {
+    const rawFile = page.sourceIndex % 2 === 0 ? 'comic_translation_live_eval_page_01.jpg' :
+      'comic_translation_live_eval_page_02.jpg'
+    let bytes: Uint8Array
+    try {
+      bytes = await this.context.resourceManager.getRawFileContent(rawFile)
+    } catch (error) {
+      console.error(`[NextNReaderLabFixture] rawfile_failed source=${page.sourceIndex} error=${String(error)}`)
+      throw error as Error
+    }
+    cancellation.check()
+    const path = `${this.context.cacheDir}/rkit-local-fixture-${page.sourceIndex}.jpg`
+    let file: fileIo.File | null = null
+    try {
+      file = fileIo.openSync(path, fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC)
+      const written = fileIo.writeSync(file.fd, bytes.buffer, { length: bytes.byteLength })
+      if (written !== bytes.byteLength) throw new Error('reader_fixture_write_incomplete')
+    } finally {
+      if (file !== null) fileIo.closeSync(file)
+    }
+    cancellation.check()
+    console.info(`[NextNReaderLabFixture] ready source=${page.sourceIndex} bytes=${bytes.byteLength}`)
+    const facts = new ReaderImageInformation()
+    facts.bytes = bytes.byteLength
+    facts.width = LOCAL_FIXTURE_WIDTH
+    facts.height = LOCAL_FIXTURE_HEIGHT
+    facts.variant = 'source'
+    return new ReaderAsset(`file://${path}`, () => {}, new ReaderFileInformation(path, facts))
   }
 }
