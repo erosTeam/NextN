@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-wide-policy-rtl-menu-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-wide-policy-rtl-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-direction-menu-corrected",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "signed 1e84923320f52bbedcd6d656414f7f1c9e6fc9dac409fa93e8dceedae199507f",
+    "page": "Normal Koma Reading direction menu before RTL wide-page validation",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "The first attempt captured the lock screen and is rejected. This corrected replay performs the authorized neutral unlock, reopens the normal Reading settings page, then captures the direction menu without selecting a value."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "temporary-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "baseline-preferences", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.honjow.koma/haps/entry/preferences/koma_reader_preferences_v1", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-wide-policy-rtl-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-direction-menu-corrected/preferences.before"] },
+    { "name": "neutral-unlock", "uiInput": ["swipe", "800", "2300", "800", "1200", "1800"], "pauseAfterMs": 500 },
+    { "name": "force-stop-host", "hdcArgs": ["shell", "aa", "force-stop", "com.honjow.koma"] },
+    { "name": "start-host", "hdcArgs": ["shell", "aa", "start", "-b", "com.honjow.koma", "-a", "EntryAbility"], "pauseAfterMs": 900 },
+    { "name": "settings-tab", "uiInput": ["click", "1036", "2470"], "pauseAfterMs": 400 },
+    { "name": "reading-settings", "uiInput": ["click", "250", "820"], "pauseAfterMs": 600 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "open-reading-direction-menu", "uiInput": ["click", "800", "520"], "pauseAfterMs": 400 }
+    ]
+  },
+  "postflight": [
+    { "name": "styled-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/koma-wide-policy-rtl-menu.json", "-a"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-wide-policy-rtl-menu.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-wide-policy-rtl-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-direction-menu-corrected/layout.json"] },
+    { "name": "screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/koma-wide-policy-rtl-menu.jpeg"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-wide-policy-rtl-menu.jpeg", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-wide-policy-rtl-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-direction-menu-corrected/screen.jpeg"] }
+  ]
+}
