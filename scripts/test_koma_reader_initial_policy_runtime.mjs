@@ -145,6 +145,75 @@ for (const reject of [false, true]) {
   assert.deepEqual(events, ['prepare', 'open']); assert.equal(host.session.policy, runtimePolicy)
   assert.equal(host.chapterBusy, false)
 }
+function chapterDeferred() {
+  let resolve
+  const promise = new Promise(a => { resolve = a })
+  return { promise, resolve }
+}
+function chapterHost(prepare) {
+  const Host = compile(`export class Host { ${methods('readerLab/KomaReaderLabPage.ets',
+    ['switchChapter', 'cancelChapterRequest', 'onChapterActivityChanged'])} }`, {}, {
+    ReaderCancellation: cancellation.ReaderCancellation,
+    Monitor: () => () => {},
+    $r: value => value,
+  }).Host
+  const sourceKey = new content.ReaderUnitKey('koma-local', 'qa', 'a')
+  const target = new content.ReaderUnitKey('koma-local', 'qa', 'b')
+  const events = []
+  let visibleKey = sourceKey
+  const host = new Host()
+  Object.assign(host, {
+    session: {
+      snapshot: () => ({ phase: 'ready', unit: { key: visibleKey } }),
+      open: async key => { assert.ok(key.equals(target)); events.push('open') },
+    },
+    adapter: {
+      adjacent: () => target,
+      prepare: async (...args) => { events.push('prepare'); return prepare(...args) },
+    },
+    chapterBusy: false,
+    chapterRequest: null,
+    readerClosed: false,
+    routeActive: true,
+    labVisibility: { foreground: true },
+    getUIContext: () => ({ getPromptAction: () => ({
+      showToast: ({ message }) => { events.push(`toast:${message}`) },
+    }) }),
+  })
+  return { host, sourceKey, target, events, setVisibleKey: key => { visibleKey = key } }
+}
+{
+  const f = chapterHost(async () => { throw Error('target unavailable') })
+  await f.host.switchChapter('next', f.sourceKey)
+  assert.deepEqual(f.events, ['prepare', 'toast:app.string.manga_detail_chapter_pages_load_failed'])
+  assert.equal(f.host.chapterBusy, false); assert.equal(f.host.chapterRequest, null)
+}
+{
+  const wait = chapterDeferred(), f = chapterHost(() => wait.promise)
+  const first = f.host.switchChapter('next', f.sourceKey)
+  const duplicate = f.host.switchChapter('next', f.sourceKey)
+  await duplicate
+  assert.deepEqual(f.events, ['prepare'])
+  wait.resolve(); await first
+  assert.deepEqual(f.events, ['prepare', 'open']); assert.equal(f.host.chapterBusy, false)
+}
+{
+  const wait = chapterDeferred(), f = chapterHost(() => wait.promise)
+  const task = f.host.switchChapter('next', f.sourceKey)
+  f.setVisibleKey(f.target)
+  wait.resolve(); await task
+  assert.deepEqual(f.events, ['prepare']); assert.equal(f.host.chapterBusy, false)
+}
+for (const inactive of ['background', 'hidden']) {
+  const wait = chapterDeferred(), f = chapterHost(() => wait.promise)
+  const task = f.host.switchChapter('next', f.sourceKey)
+  if (inactive === 'background') f.host.labVisibility.foreground = false
+  else f.host.routeActive = false
+  f.host.onChapterActivityChanged()
+  wait.resolve(); await task
+  assert.deepEqual(f.events, ['prepare']); assert.equal(f.host.chapterBusy, false)
+  assert.equal(f.host.chapterRequest, null)
+}
 {
   const Host = compile(`export class Host { ${methods('readerLab/KomaReaderLabPage.ets',
     ['syncVolumeKeys', 'syncKeepScreenOn'])} }`, {}, { Monitor: () => () => {} }).Host
@@ -166,4 +235,4 @@ for (const reject of [false, true]) {
   host.syncVolumeKeys(); host.syncKeepScreenOn()
   assert.deepEqual(events.splice(0), [['volume', false, true], ['screen', false]])
 }
-console.log('PASS actual Koma policy mapping, initial lifecycle, ready-owner callback and input/screen publication gates; no build or UI/device acceptance')
+console.log('PASS actual Koma policy mapping, initial lifecycle, chapter success/failure/duplicate/stale/inactive gates and input/screen publication; no build or UI/device acceptance')
