@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-shared-auto-read-stopped-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-auto-read-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/05-stopped",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": { "project": "Koma", "codeIdentity": "signed 14547917 bytes sha256 5d37dcfce549e039d85e4f83faf9d4615f865bf9f16e9f5eca23b698a46c7d2d", "page": "Automatic advance remains stopped at chapter-local last page", "deviceAlias": "device103", "deviceModel": "MLR-AL00", "foldState": "not-applicable", "orientation": "portrait", "resolution": "1600x2560", "notes": "Waits another complete interval to prove the reader remains on P3 and the auto-read control returns to its inactive color." },
+  "preflight": [ { "name": "wait-stop-interval", "hdcArgs": ["shell", "sleep", "4"] } ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "styled-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/koma-shared-auto-read-stopped.json", "-a"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-auto-read-stopped.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-auto-read-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/05-stopped/layout.json"] },
+    { "name": "screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/koma-shared-auto-read-stopped.jpeg"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-auto-read-stopped.jpeg", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-auto-read-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/05-stopped/screen.jpeg"] },
+    { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "10000"] }
+  ]
+}

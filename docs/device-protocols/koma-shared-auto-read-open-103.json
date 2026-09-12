@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-shared-auto-read-open-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-auto-read-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-open",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "signed 14547917 bytes sha256 5d37dcfce549e039d85e4f83faf9d4615f865bf9f16e9f5eca23b698a46c7d2d",
+    "page": "Optional shared reader P1 before starting host-configured automatic advance",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Installs with data retention and opens the existing independent three-page QA unit. No normal reader progress is written."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "temporary-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "neutral-unlock", "uiInput": ["swipe", "800", "2300", "800", "1200", "1800"], "pauseAfterMs": 500 },
+    { "name": "install-current-candidate", "hdcArgs": ["install", "-r", "/Users/honjow/git/Koma/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "start-optional-p1", "hdcArgs": ["shell", "aa", "start", "-b", "com.honjow.koma", "-a", "EntryAbility", "--ps", "readerLabWork", "local-archive-komasplitratioqa20260912a", "--ps", "readerLabUnit", "local-archive-komasplitratioqa20260912a-chapter-1", "--ps", "readerLabPage", "0", "--pb", "readerLabChrome", "true"], "pauseAfterMs": 1500 }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "styled-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/koma-shared-auto-read-open.json", "-a"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-auto-read-open.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-auto-read-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-open/layout.json"] },
+    { "name": "screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/koma-shared-auto-read-open.jpeg"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-auto-read-open.jpeg", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-auto-read-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-open/screen.jpeg"] },
+    { "name": "preferences", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.honjow.koma/haps/entry/preferences/koma_reader_preferences_v1", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-auto-read-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-open/preferences"] }
+  ]
+}
