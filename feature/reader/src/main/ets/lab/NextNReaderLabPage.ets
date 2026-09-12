@@ -19,6 +19,7 @@ import { NextNReaderInitialPolicy } from './NextNReaderInitialPolicy'
 import { connectNextNReaderLabContextProbe } from './NextNReaderLabContextProbe'
 import { NextNReaderObservedProgress } from './NextNReaderObservedProgress'
 import { connectNextNReaderObservedProgressProbe } from './NextNReaderObservedProgressProbe'
+import { NextNReaderProgressWriteGate } from './NextNReaderProgressWriteGate'
 
 @ComponentV2
 export struct NextNReaderLabPage {
@@ -52,11 +53,17 @@ export struct NextNReaderLabPage {
   private originalProbe: NextNReaderOriginalProbeProvider | null = null
   private originalProbeHostClosed: boolean = false
   private observedProgress: NextNReaderObservedProgress = new NextNReaderObservedProgress()
+  private progressWrites: NextNReaderProgressWriteGate = new NextNReaderProgressWriteGate()
+  private progressEpoch: number = 0
 
   aboutToAppear(): void {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext
     if (!context.applicationInfo.debug) return
     connectNextNReaderLabContextProbe().deliver(this.request.work, context)
+    this.progressEpoch = this.progressWrites.open(this.request.work, (pageIndex: number): Promise<void> => {
+      connectNextNReaderObservedProgressProbe().deliver(this.request.work, pageIndex)
+      return Promise.resolve()
+    })
     this.volumeDisposed = false
     if (!this.request.readingChrome) void this.restorePresentation(context)
     this.keepScreenOn = new ReaderKeepScreenOn(context)
@@ -115,6 +122,8 @@ export struct NextNReaderLabPage {
 
   aboutToDisappear(): void {
     this.volumeDisposed = true
+    this.progressWrites.seal(this.progressEpoch)
+    void this.progressWrites.flush(this.progressEpoch)
     this.keepScreenOn?.close()
     this.entryTransition?.cancel(); this.entryPreview?.release()
     this.originalProbeHostClosed = true
@@ -207,7 +216,7 @@ export struct NextNReaderLabPage {
     const pageCount = this.session?.snapshot().unit?.pageCount ?? 0
     const pageIndex = this.observedProgress.observe(this.request.work, pageCount, anchor)
     if (pageIndex < 0) return
-    connectNextNReaderObservedProgressProbe().deliver(this.request.work, pageIndex)
+    this.progressWrites.save(this.progressEpoch, this.request.work, pageIndex)
     console.info(`[NextNReaderLab] observed_progress gallery=${this.request.work} page=${pageIndex}`)
   }
 

@@ -165,6 +165,7 @@ for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [fal
   }
   const Host = compile(`export class Host { ${appear} }`, {}, {
     connectNextNReaderLabContextProbe: probeModule.connectNextNReaderLabContextProbe,
+    connectNextNReaderObservedProgressProbe: () => ({ deliver() {} }),
     ReaderKeepScreenOn: Stub, NextNReaderLabAdapter: Stub,
     ReaderLabShareProbe: Stub, ReaderSystemImageSaveHost: Stub, ReaderUnitKey: Stub,
     ReaderTrialOriginalProbe: { consume: () => 0 }, ReaderPagedSession: Session,
@@ -173,6 +174,7 @@ for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [fal
   const host = new Host()
   Object.assign(host, { request: { ...request(), readingChrome, thumbnailEntry,
     entryLayout: 'spread', entryDirection: 'rtl' }, managesTrialWindow: false,
+    progressWrites: { open: () => 1 },
     getUIContext: () => ({ getHostContext: () => ({ applicationInfo: { debug: true } }) }),
     restorePresentation: () => { events.push('restore'); return Promise.resolve() },
     initializeSession: (_context, session) => { assert.equal(session, sessions[0]); events.push('initialize'); return Promise.resolve() },
@@ -200,6 +202,7 @@ for (const [mode, extra, expected] of [
   class Session { setPolicy(p) { this.policy = p; events.push('policy') } }
   const Host = compile(`export class Host { ${appear} ${methods} }`, {}, {
     connectNextNReaderLabContextProbe: probeModule.connectNextNReaderLabContextProbe,
+    connectNextNReaderObservedProgressProbe: () => ({ deliver() {} }),
     ReaderKeepScreenOn: Stub, NextNReaderLabAdapter: Stub, ReaderLabShareProbe: Stub,
     ReaderSystemImageSaveHost: Stub, ReaderUnitKey: Stub, ReaderPagedSession: Session,
     ReaderLabAssetProbe: Stub, ReaderTrialOriginalProbe: { consume: () => 0 },
@@ -212,6 +215,7 @@ for (const [mode, extra, expected] of [
   // Index replaces the requested page with the actual clicked source before mounting.
   r.pageIndex = 2
   Object.assign(host, { request: r, closeRequested: false, hostClosing: false, managesTrialWindow: false,
+    progressWrites: { open: () => 1 },
     getUIContext: () => ({ getHostContext: () => debugContext }),
     syncReaderActivity: () => events.push('sync'), onClose: () => events.push('close') })
   Object.defineProperty(host, 'session', { set(s) { this.published = s; events.push('publish') } })
