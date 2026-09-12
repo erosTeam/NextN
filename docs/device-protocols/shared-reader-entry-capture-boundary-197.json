@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-entry-capture-boundary-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main 7461773f09c7185852dccf70e436848d4af2ee4fd65a61d00f15b07d4217aeda; native 14da6336c163c3b213a8926df6cb2346605a9e255c1e205f67fadcb34c379a45",
+    "page": "Existing optional thumbnail-entry transition after extracting the NextN-owned preview capture boundary",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Behavior-preserving regression: the current Detail thumbnail is captured by the NextN host, hands off to shared Reader P1, and closes to the retained source identity. No persisted reader setting is changed and the legacy Reader remains untouched."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-entry-capture-boundary-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/05-final",
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "temporary-long-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "install-current-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "install-current-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 },
+    {
+      "name": "native-entry-boundary-regression",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test",
+        "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderThumbnailEntryBoundaryTrial",
+        "-s", "timeout", "180000"],
+      "timeoutSeconds": 210
+    }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "entry-log", "hdcArgs": ["shell", "hilog -x | grep -E 'ReaderEntryTest|ReaderEntryProbe|ReaderTrialEntry' | tail -240"], "timeoutSeconds": 30 },
+    { "name": "force-stop-nextn-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "10000"] },
+    { "name": "power", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}

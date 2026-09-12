@@ -123,6 +123,23 @@ export async function waitFreshFirstPage(driver: Driver): Promise<void> {
   throw new Error('Fresh optional P1 did not complete its image handoff')
 }
 
+function readerThumbnailEntryBoundaryTrial(): void {
+  describe('ReaderThumbnailEntryBoundaryTrial', (): void => {
+    it('capturedEntryHandsOffAndClosesToSameSource', 0, async (): Promise<void> => {
+      const driver = Driver.create()
+      await armEntry(driver)
+      const source = await findFirstDetailThumbnail(driver)
+      const sourceId = await source.getId()
+      await source.click()
+      await waitFreshFirstPage(driver)
+      await (await driver.findComponent(ON.id('rkit-close'))).click()
+      await driver.delayMs(700)
+      await assertNoReader(driver)
+      expect(await driver.findComponent(ON.id(sourceId)) !== null).assertTrue()
+    })
+  })
+}
+
 const failureCaptureNames: string[] = ['failure-source', 'failure-reader', 'failure-retried',
   'failure-retried-settled', 'failure-closed', 'failure-exception']
 
@@ -969,6 +986,10 @@ function readerProductionCropTrial(work: string, layout: string): void {
 
 export default function readerThumbnailEntryTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
+  if (args['-s class'] === 'ReaderThumbnailEntryBoundaryTrial') {
+    readerThumbnailEntryBoundaryTrial()
+    return
+  }
   const trial = args['-s class']
   if (trial === 'ReaderProductionCropTrial' || trial === 'ReaderProductionCropSpreadTrial' ||
     trial === 'ReaderProductionCropContinuousTrial') {

@@ -168,6 +168,7 @@ import {
 import { HomeSourceBarCCBuilder } from '../components/HomeSourceBar'
 import { MainTabIcon } from '../components/MainTabIcon'
 import { GalleryWebPage } from './GalleryWebPage'
+import { NextNReaderEntryPreviewCapture } from './NextNReaderEntryPreviewCapture'
 
 const ROUTE_SEARCH: string = 'search'
 const ROUTE_HOME_SUBTAB_MANAGER: string = 'homeSubtabManager'
@@ -597,15 +598,11 @@ struct Index {
   }
 
   private readerEntryRect(componentId: string): ReaderEntryRect {
-    const context = this.getUIContext()
-    const rect = context.getComponentUtils().getRectangleById(componentId)
-    return new ReaderEntryRect(context.px2vp(rect.windowOffset.x), context.px2vp(rect.windowOffset.y),
-      context.px2vp(rect.size.width), context.px2vp(rect.size.height))
+    return NextNReaderEntryPreviewCapture.rect(this.getUIContext(), componentId)
   }
 
   private sameReaderEntryRect(left: ReaderEntryRect, right: ReaderEntryRect): boolean {
-    return left.valid() && right.valid() && left.x === right.x && left.y === right.y &&
-      left.width === right.width && left.height === right.height
+    return NextNReaderEntryPreviewCapture.sameRect(left, right)
   }
 
   private authorizeReaderEntryDeparture(claim: ReaderEntryClaim, entryId: number): boolean {
@@ -736,33 +733,9 @@ struct Index {
     this.readerEntryClaim = claim
     const probe = request.entryProbe === 'delay-once'
     if (probe) ReaderTrialEntryProbe.recordAccepted(epoch)
-    const context = this.getUIContext()
     let preview: ReaderEntryPreviewSource | null = null
-    let captured: image.PixelMap | null = null
-    try {
-      const before = context.getComponentUtils().getRectangleById(source.snapshotComponentId)
-      const pixels = await context.getComponentSnapshot().get(source.snapshotComponentId,
-        { waitUntilRenderFinished: true })
-      captured = pixels
-      const after = context.getComponentUtils().getRectangleById(source.snapshotComponentId)
-      const size = pixels.getImageInfoSync().size
-      const rect = new ReaderEntryRect(context.px2vp(after.windowOffset.x), context.px2vp(after.windowOffset.y),
-        context.px2vp(after.size.width), context.px2vp(after.size.height))
-      if (!rect.valid() || size.width <= 0 || size.height <= 0 ||
-        before.windowOffset.x !== after.windowOffset.x || before.windowOffset.y !== after.windowOffset.y ||
-        before.size.width !== after.size.width || before.size.height !== after.size.height) {
-        void pixels.release(); captured = null
-      } else {
-        // The snapshot's own aspect is authoritative, including the source's existing crop.
-        const height = rect.width * size.height / size.width
-        preview = new ReaderEntryPreviewSource(pixels, new ReaderEntryRect(rect.x, rect.y, rect.width, height),
-          (entryId: number): boolean => this.authorizeReaderEntryDeparture(claim, entryId))
-        captured = null
-      }
-    } catch (_) {
-      if (captured !== null) void captured.release()
-      // A missing/offscreen source still opens the optional reader without inventing a snapshot.
-    }
+    preview = await NextNReaderEntryPreviewCapture.capture(this.getUIContext(), source.snapshotComponentId,
+      (entryId: number): boolean => this.authorizeReaderEntryDeparture(claim, entryId))
     if (probe) {
       request.entryProbe = ''
       ReaderTrialEntryProbe.recordDelayedPreview(epoch, preview !== null)
