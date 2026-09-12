@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-shared-crop-fixture-baseline-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/08-fixture-baseline",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": { "project": "Koma", "codeIdentity": "same installed crop candidate", "page": "Independent white-margin P1 before crop", "deviceAlias": "device103", "deviceModel": "MLR-AL00", "foldState": "not-applicable", "orientation": "portrait", "resolution": "1600x2560", "notes": "Opens the new two-page test unit directly in the optional reader; host crop preference remains false." },
+  "preflight": [
+    { "name": "start-optional-margin-p1", "hdcArgs": ["shell", "aa", "start", "-b", "com.honjow.koma", "-a", "EntryAbility", "--ps", "readerLabWork", "local-archive-komacropmarginqa20260912a", "--ps", "readerLabUnit", "local-archive-komacropmarginqa20260912a-chapter-1", "--ps", "readerLabPage", "0", "--pb", "readerLabChrome", "true"], "pauseAfterMs": 1800 }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/koma-shared-crop-fixture-baseline.json", "-a"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-crop-fixture-baseline.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/08-fixture-baseline/layout.json"] },
+    { "name": "screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/koma-shared-crop-fixture-baseline.jpeg"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-crop-fixture-baseline.jpeg", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/08-fixture-baseline/screen.jpeg"] }
+  ]
+}

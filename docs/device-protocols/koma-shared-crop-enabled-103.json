@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-shared-crop-enabled-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/04-enabled",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": { "project": "Koma", "codeIdentity": "same installed crop candidate", "page": "Optional shared reader P1 after enabling crop", "deviceAlias": "device103", "deviceModel": "MLR-AL00", "foldState": "not-applicable", "orientation": "portrait", "resolution": "1600x2560", "notes": "Selects only the session-local shared crop toggle. Host preference and progress are not written." },
+  "preflight": [],
+  "measurement": { "actions": [
+    { "name": "enable-crop", "uiInput": ["click", "1312", "764"], "pauseAfterMs": 1300 }
+  ] },
+  "postflight": [
+    { "name": "styled-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/koma-shared-crop-enabled.json", "-a"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-crop-enabled.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/04-enabled/layout.json"] },
+    { "name": "screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/koma-shared-crop-enabled.jpeg"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-crop-enabled.jpeg", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/04-enabled/screen.jpeg"] },
+    { "name": "preferences-after", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.honjow.koma/haps/entry/preferences/koma_reader_preferences_v1", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/04-enabled/preferences.after"] }
+  ]
+}

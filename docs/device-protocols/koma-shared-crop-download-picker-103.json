@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-shared-crop-download-picker-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/06-download-picker",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": { "project": "Koma", "codeIdentity": "same installed crop candidate", "page": "Normal picker Download folder", "deviceAlias": "device103", "deviceModel": "MLR-AL00", "foldState": "not-applicable", "orientation": "portrait", "resolution": "1600x2560", "notes": "Navigates only to the shared Download folder before selecting the new archive." },
+  "preflight": [],
+  "measurement": { "actions": [
+    { "name": "my-tablet", "uiInput": ["click", "490", "1512"], "pauseAfterMs": 300 },
+    { "name": "download", "uiInput": ["click", "490", "1438"], "pauseAfterMs": 500 }
+  ] },
+  "postflight": [
+    { "name": "layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/koma-shared-crop-download-picker.json", "-a"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-crop-download-picker.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/06-download-picker/layout.json"] },
+    { "name": "screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/koma-shared-crop-download-picker.jpeg"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-crop-download-picker.jpeg", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/06-download-picker/screen.jpeg"] }
+  ]
+}

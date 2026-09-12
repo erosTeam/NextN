@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-shared-crop-final-exit-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/11-final-exit",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "signed 14581951 bytes sha256 7fbf97d0831997e5635f0e559c6ff1e47c28674216cd2df51a9558b43eff69cf",
+    "page": "Ordinary Koma shelf after optional shared-reader crop validation",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Closes the optional shared reader, returns to the ordinary host entry, records final stores, and restores the original ten-second screen timeout."
+  },
+  "preflight": [
+    { "name": "force-stop-optional-reader", "hdcArgs": ["shell", "aa", "force-stop", "com.honjow.koma"] },
+    { "name": "start-ordinary-host", "hdcArgs": ["shell", "aa", "start", "-b", "com.honjow.koma", "-a", "EntryAbility"], "pauseAfterMs": 1000 }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/koma-shared-crop-final-exit.json", "-a"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-crop-final-exit.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/11-final-exit/layout.json"] },
+    { "name": "screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/koma-shared-crop-final-exit.jpeg"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-crop-final-exit.jpeg", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/11-final-exit/screen.jpeg"] },
+    { "name": "preferences-final", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.honjow.koma/haps/entry/preferences/koma_reader_preferences_v1", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/11-final-exit/preferences.final"] },
+    { "name": "library-final", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.honjow.koma/haps/entry/files/library-store.v1.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/11-final-exit/library.final.json"] },
+    { "name": "sessions-final", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.honjow.koma/haps/entry/files/reader-sessions.v1.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/11-final-exit/sessions.final.json"] },
+    { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "10000"] },
+    { "name": "power-readback", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "window-readback", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}

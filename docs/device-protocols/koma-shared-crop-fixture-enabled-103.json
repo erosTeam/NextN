@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-shared-crop-fixture-enabled-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/09-fixture-enabled",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": { "project": "Koma", "codeIdentity": "same installed crop candidate", "page": "Independent white-margin P1 after crop", "deviceAlias": "device103", "deviceModel": "MLR-AL00", "foldState": "not-applicable", "orientation": "portrait", "resolution": "1600x2560", "notes": "Enables session-local crop; expects outer white frame removed while content and page 1 of 2 remain." },
+  "preflight": [],
+  "measurement": { "actions": [
+    { "name": "open-runtime-menu", "uiInput": ["click", "1425", "170"], "pauseAfterMs": 350 },
+    { "name": "enable-crop", "uiInput": ["click", "1312", "764"], "pauseAfterMs": 1400 }
+  ] },
+  "postflight": [
+    { "name": "layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/koma-shared-crop-fixture-enabled.json", "-a"] },
+    { "name": "receive-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-crop-fixture-enabled.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/09-fixture-enabled/layout.json"] },
+    { "name": "screen", "hdcArgs": ["shell", "snapshot_display", "-f", "/data/local/tmp/koma-shared-crop-fixture-enabled.jpeg"] },
+    { "name": "receive-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/koma-shared-crop-fixture-enabled.jpeg", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/09-fixture-enabled/screen.jpeg"] },
+    { "name": "preferences-after-enable", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.honjow.koma/haps/entry/preferences/koma_reader_preferences_v1", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-koma-shared-crop-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/09-fixture-enabled/preferences.after"] }
+  ]
+}
