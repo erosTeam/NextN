@@ -217,6 +217,7 @@ export struct NextNReaderLabPage {
               input: this.input, imageShare: this.imageShare, imageSave: this.imageSave,
               tapZoneResolver: (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout),
               autoReadAvailable: true, autoReadSeconds: this.readerPresentation.autoPageSeconds,
+              showPageNumber: this.readerPresentation.showPageNumber,
               cropBorders: this.request.cropBorders && !this.request.thumbnailEntry,
               cropAvailable: !this.request.thumbnailEntry,
               entryTransition: this.entryTransition, entryPreview: this.entryPreview,

@@ -1,0 +1,304 @@
+{
+  "schemaVersion": 1,
+  "name": "reader-page-number-nextn-native-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": {
+    "widthPx": 1260,
+    "heightPx": 2720
+  },
+  "context": {
+    "project": "NextN+NextE",
+    "codeIdentity": "N main88873 SHA6e4314870655a55722eafbd982871ed2dbd09342ec1e75e578d5639b925e3e5d; native6842 SHA615b5d835e1459e882e31d576fa9aa3ff3f8f7f7354978f65ed3543c8c9c36ed",
+    "page": "Page number preference normalUI N and readonly E",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "No237; preserve E sync; record actual power/window/music and restore after final exit."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn",
+  "preflight": [
+    {
+      "name": "install-main88873",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "name": "install-native6842",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "name": "native-tap-zones",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "test",
+        "-b",
+        "com.erosteam.nextn",
+        "-m",
+        "entry_test",
+        "-s",
+        "unittest",
+        "OpenHarmonyTestRunner",
+        "-s",
+        "class",
+        "ReaderPageNumberTrial",
+        "-s",
+        "readerLabWork",
+        "678049",
+        "-s",
+        "timeout",
+        "360000"
+      ],
+      "timeoutSeconds": 390
+    }
+  ],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "log-ReaderPageNumberTest",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderPageNumberTest"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "log-NextNReaderLab",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "NextNReaderLab"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "log-ReaderSurface",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-x",
+        "-e",
+        "ReaderSurface"
+      ],
+      "timeoutSeconds": 15
+    },
+    {
+      "name": "receive-false-hidden-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-page-number-false-hidden.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/false-hidden.json"
+      ]
+    },
+    {
+      "name": "receive-false-hidden-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-page-number-false-hidden.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/false-hidden.png"
+      ]
+    },
+    {
+      "name": "receive-false-turned-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-page-number-false-turned.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/false-turned.json"
+      ]
+    },
+    {
+      "name": "receive-false-turned-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-page-number-false-turned.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/false-turned.png"
+      ]
+    },
+    {
+      "name": "receive-false-chrome-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-page-number-false-chrome.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/false-chrome.json"
+      ]
+    },
+    {
+      "name": "receive-false-chrome-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-page-number-false-chrome.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/false-chrome.png"
+      ]
+    },
+    {
+      "name": "receive-true-hidden-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-page-number-true-hidden.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/true-hidden.json"
+      ]
+    },
+    {
+      "name": "receive-true-hidden-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-page-number-true-hidden.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/true-hidden.png"
+      ]
+    },
+    {
+      "name": "receive-true-turned-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-page-number-true-turned.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/true-turned.json"
+      ]
+    },
+    {
+      "name": "receive-true-turned-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-page-number-true-turned.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/true-turned.png"
+      ]
+    },
+    {
+      "name": "receive-true-chrome-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-page-number-true-chrome.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/true-chrome.json"
+      ]
+    },
+    {
+      "name": "receive-true-chrome-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-page-number-true-chrome.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/true-chrome.png"
+      ]
+    },
+    {
+      "name": "receive-readonly-hidden-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-page-number-readonly-hidden.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/readonly-hidden.json"
+      ]
+    },
+    {
+      "name": "receive-readonly-hidden-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-page-number-readonly-hidden.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/readonly-hidden.png"
+      ]
+    },
+    {
+      "name": "receive-readonly-turned-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-page-number-readonly-turned.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/readonly-turned.json"
+      ]
+    },
+    {
+      "name": "receive-readonly-turned-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-page-number-readonly-turned.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/readonly-turned.png"
+      ]
+    },
+    {
+      "name": "receive-readonly-chrome-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-page-number-readonly-chrome.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/readonly-chrome.json"
+      ]
+    },
+    {
+      "name": "receive-readonly-chrome-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-page-number-readonly-chrome.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/readonly-chrome.png"
+      ]
+    },
+    {
+      "name": "receive-exit-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-page-number-exit.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/exit.json"
+      ]
+    },
+    {
+      "name": "receive-exit-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-page-number-exit.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/exit.png"
+      ]
+    },
+    {
+      "name": "receive-exception-json",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/rkit-page-number-exception.json",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/exception.json"
+      ]
+    },
+    {
+      "name": "receive-exception-png",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-page-number-exception.png",
+        "/Users/honjow/git/NextN/.hermes-artifacts/20260912-page-number-197/02-nextn/exception.png"
+      ]
+    }
+  ]
+}

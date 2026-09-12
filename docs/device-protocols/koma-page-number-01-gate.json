@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "name": "koma-page-number-01-gate",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/Koma/.hermes-artifacts/20260912-koma-page-number/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-gate",
+  "display": {
+    "widthPx": 1600,
+    "heightPx": 2560
+  },
+  "context": {
+    "project": "Koma",
+    "codeIdentity": "Before page-number candidate install; original settings only",
+    "page": "01-gate",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Only original readback and wake timeout; await authorized signed page-number candidate"
+  },
+  "preflight": [
+    {
+      "name": "original-power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": [
+      {
+        "name": "neutral-unlock",
+        "uiInput": [
+          "swipe",
+          "800",
+          "2300",
+          "800",
+          "1200",
+          "2000"
+        ],
+        "pauseAfterMs": 400
+      }
+    ]
+  },
+  "postflight": [
+    {
+      "name": "final-timeout",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "timeout",
+        "-o",
+        "86400000"
+      ]
+    },
+    {
+      "name": "power",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "PowerManagerService",
+        "-a",
+        "-s"
+      ]
+    },
+    {
+      "name": "window",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "WindowManagerService",
+        "-a",
+        "-a"
+      ]
+    },
+    {
+      "name": "before-trial-hashes",
+      "hdcArgs": [
+        "shell",
+        "sha256sum",
+        "/data/app/el2/100/base/com.honjow.koma/haps/entry/files/library-store.v1.json",
+        "/data/app/el2/100/base/com.honjow.koma/haps/entry/files/reader-sessions.v1.json"
+      ]
+    },
+    {
+      "name": "music",
+      "hdcArgs": [
+        "shell",
+        "hidumper",
+        "-s",
+        "AudioPolicyService",
+        "-a",
+        "-v"
+      ]
+    },
+    {
+      "name": "layout",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/kpnum-gate.json"
+      ]
+    },
+    {
+      "name": "receive-layout",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/kpnum-gate.json",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260912-koma-page-number/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-gate/layout.json"
+      ]
+    },
+    {
+      "name": "prefs",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/app/el2/100/base/com.honjow.koma/haps/entry/preferences/koma_reader_preferences_v1",
+        "/Users/honjow/git/Koma/.hermes-artifacts/20260912-koma-page-number/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-gate/reader-preferences.original"
+      ]
+    }
+  ]
+}
