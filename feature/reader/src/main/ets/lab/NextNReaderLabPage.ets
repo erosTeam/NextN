@@ -6,14 +6,14 @@ import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabRequest, ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility, ReaderLabAssetProbe, ReaderVolumeKeys } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
-import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea, LayoutSafeAreaState, ThemeTokens, nextNHdsTitle,
+import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea, LayoutSafeAreaState, ThemeDisplayState, ThemeTokens, nextNHdsTitle,
   ReaderTrialOriginalProbe, ReaderTrialOriginalFacts } from 'shared'
 import { NextNReaderOriginalProbeProvider } from './NextNReaderOriginalProbeProvider'
 import { NextNReaderOriginalProbeCatalog } from './NextNReaderOriginalProbeCatalog'
 import { ReaderSystemImageSaveHost } from '@reader-kit/ui'
 import { ReaderImageSaveHost } from '@reader-kit/core'
 import { NextNReaderImageSaveDownload } from './NextNReaderImageSaveDownload'
-import { ReaderSettingsRepository, NhReaderTapZoneResolver } from 'shared'
+import { connectThemeDisplay, NhReaderBackgroundMode, ReaderSettingsRepository, NhReaderTapZoneResolver } from 'shared'
 import { NextNReaderInitialPolicy } from './NextNReaderInitialPolicy'
 import { connectNextNReaderLabContextProbe } from './NextNReaderLabContextProbe'
 
@@ -34,6 +34,7 @@ export struct NextNReaderLabPage {
   private imageSave: ReaderImageSaveHost | null = null
   @Local private labVisibility: ReaderLabVisibilityState = connectReaderLabVisibility()
   @Local private readerPresentation: ReaderPresentationState = connectReaderPresentation()
+  @Local private themeDisplay: ThemeDisplayState = connectThemeDisplay()
   @Local private routeActive: boolean = false
   @Local private safeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private unitKey: ReaderUnitKey = new ReaderUnitKey('', '', '')
@@ -179,6 +180,25 @@ export struct NextNReaderLabPage {
     return facts
   }
 
+  private readerCanvasDark(): boolean {
+    if (this.readerPresentation.backgroundMode === NhReaderBackgroundMode.WHITE) return false
+    if (this.readerPresentation.backgroundMode === NhReaderBackgroundMode.AUTO) return this.themeDisplay.effectiveDark
+    return true
+  }
+
+  private readerCanvasBackground(): ResourceColor {
+    if (this.readerPresentation.backgroundMode === NhReaderBackgroundMode.GRAY) return '#FF303030'
+    if (this.readerPresentation.backgroundMode === NhReaderBackgroundMode.WHITE ||
+      (this.readerPresentation.backgroundMode === NhReaderBackgroundMode.AUTO && !this.themeDisplay.effectiveDark)) {
+      return '#FFFFFFFF'
+    }
+    return '#FF000000'
+  }
+
+  private readerCanvasForeground(): ResourceColor {
+    return this.readerCanvasDark() ? '#FFFFFFFF' : '#FF000000'
+  }
+
   syncKeepScreenOn(): void {
     this.keepScreenOn?.setActive(this.request.readingChrome && this.routeActive && this.labVisibility.foreground &&
       this.entryPhase !== 'layout' && !this.closeRequested && !this.hostClosing && this.readerPresentation.keepScreenOn)
@@ -216,6 +236,7 @@ export struct NextNReaderLabPage {
             ReaderSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
               imageInterpolation: this.readerPresentation.imageScalingQuality === 'low' ? ImageInterpolation.Low :
                 this.readerPresentation.imageScalingQuality === 'high' ? ImageInterpolation.High : ImageInterpolation.Medium,
+              canvasBackground: this.readerCanvasBackground(), canvasForeground: this.readerCanvasForeground(),
               input: this.input, imageShare: this.imageShare, imageSave: this.imageSave,
               tapZoneResolver: (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout),
               autoReadAvailable: true, autoReadSeconds: this.readerPresentation.autoPageSeconds,
