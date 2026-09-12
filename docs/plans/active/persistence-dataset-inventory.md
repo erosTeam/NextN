@@ -19,6 +19,7 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `shared/src/main/ets/settings/AccountListSettings.ets#ACCOUNT_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/ActionAlignmentSettings.ets#LAYOUT_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/AppColorFavoritesSettings.ets#APPEARANCE_STORE` | store | excluded | excluded | Store name only |
+| `shared/src/main/ets/settings/BackGuardSettings.ets#BACK_GUARD_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/ComicVisualProviderSettings.ets#PROVIDER_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/CommentTranslationSettings.ets#SETTINGS_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/CoverBackgroundSettings.ets#LAYOUT_STORE` | store | excluded | excluded | Store name only |
@@ -57,6 +58,7 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `shared/src/main/ets/settings/AccountListSettings.ets#ACTIVE_ACCOUNT_ID_KEY` | account-secret | encrypted-only | excluded | Active saved-account identity |
 | `shared/src/main/ets/settings/ActionAlignmentSettings.ets#ACTION_ALIGNMENT_MODE_KEY` | setting | plaintext | excluded | Action placement |
 | `shared/src/main/ets/settings/AppColorFavoritesSettings.ets#FAVORITES_KEY` | setting | plaintext | excluded | Theme favorites |
+| `shared/src/main/ets/settings/BackGuardSettings.ets#BACK_GUARD_ENABLED_KEY` | setting | plaintext | excluded | Home double-back exit guard toggle |
 | `shared/src/main/ets/settings/ComicVisualProviderSettings.ets#ROUTE_KEY` | setting | plaintext | excluded | Local, self-hosted, or Torii route |
 | `shared/src/main/ets/settings/ComicVisualProviderSettings.ets#MULTIMODAL_ASSIST_KEY` | setting | plaintext | excluded | Multimodal translation policy |
 | `shared/src/main/ets/settings/ComicVisualProviderSettings.ets#TORII_MODEL_KEY` | setting | plaintext | excluded | Torii model |
@@ -151,6 +153,7 @@ backup. Cache/output exclusions are intentional, not omissions.
 
 | Owner | Class | Backup | Sync | Notes |
 | --- | --- | --- | --- | --- |
+| `feature/reader/src/main/ets/lab/NextNReaderLabAdapter.ets` | temporary | excluded | excluded | Lab fixture staging files |
 | `shared/src/main/ets/diagnostics/DiagnosticsLogFileSink.ets` | diagnostics | excluded | excluded | Device-local logs |
 | `shared/src/main/ets/services/ComicLocalVisualBackend.ets` | temporary | excluded | excluded | Derived work files |
 | `shared/src/main/ets/services/ComicRenderedPageRepository.ets` | cache | excluded | excluded | Regenerable rendered pages |
