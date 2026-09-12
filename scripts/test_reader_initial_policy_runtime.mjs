@@ -68,7 +68,8 @@ for (const [extra, expectedLayout, expectedDirection, expectedAxis] of [
 }
 const tree = ts.createSourceFile('page.ts', pageSource.replace('export struct NextNReaderLabPage', 'export class NextNReaderLabPage'), ts.ScriptTarget.Latest, true)
 const cls = tree.statements.find(ts.isClassDeclaration)
-const methods = ['initializeSession', 'closeTrial'].map(name => cls.members.find(m => m.name?.getText(tree) === name).getText(tree)).join('\n')
+const methods = ['initializeSession', 'closeTrial', 'finishProgressWrites']
+  .map(name => cls.members.find(m => m.name?.getText(tree) === name).getText(tree)).join('\n')
 const deferred = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b }); return { promise, resolve, reject } }
 const flush = () => new Promise(resolve => setImmediate(resolve))
 function fixture() {
@@ -80,7 +81,10 @@ function fixture() {
   }).Host
   const host = new Host()
   Object.assign(host, { request: request(), volumeDisposed: false, closeRequested: false, hostClosing: false,
-    presentationReady: false, managesTrialWindow: false, syncReaderActivity: () => events.push('sync'), onClose: () => events.push('close') })
+    presentationReady: false, managesTrialWindow: false, progressFlush: null, progressEpoch: 1,
+    progressPersistence: { restore: r => Promise.resolve(r.pageIndex) },
+    progressWrites: { seal() {}, flush: () => Promise.resolve(true) },
+    syncReaderActivity: () => events.push('sync'), onClose: () => events.push('close') })
   Object.defineProperty(host, 'session', { set(value) { events.push('publish'); this.published = value } })
   const session = { setPolicy(p) { assert.equal(p.layout, 'spread'); events.push('policy') } }
   const task = host.initializeSession({}, session)
@@ -166,6 +170,7 @@ for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [fal
   const Host = compile(`export class Host { ${appear} }`, {}, {
     connectNextNReaderLabContextProbe: probeModule.connectNextNReaderLabContextProbe,
     connectNextNReaderObservedProgressProbe: () => ({ deliver() {} }),
+    NextNReaderProgressPersistence: class { save() { return Promise.resolve() } },
     ReaderKeepScreenOn: Stub, NextNReaderLabAdapter: Stub,
     ReaderLabShareProbe: Stub, ReaderSystemImageSaveHost: Stub, ReaderUnitKey: Stub,
     ReaderTrialOriginalProbe: { consume: () => 0 }, ReaderPagedSession: Session,
@@ -203,6 +208,10 @@ for (const [mode, extra, expected] of [
   const Host = compile(`export class Host { ${appear} ${methods} }`, {}, {
     connectNextNReaderLabContextProbe: probeModule.connectNextNReaderLabContextProbe,
     connectNextNReaderObservedProgressProbe: () => ({ deliver() {} }),
+    NextNReaderProgressPersistence: class {
+      save() { return Promise.resolve() }
+      restore(r) { return Promise.resolve(r.pageIndex) }
+    },
     ReaderKeepScreenOn: Stub, NextNReaderLabAdapter: Stub, ReaderLabShareProbe: Stub,
     ReaderSystemImageSaveHost: Stub, ReaderUnitKey: Stub, ReaderPagedSession: Session,
     ReaderLabAssetProbe: Stub, ReaderTrialOriginalProbe: { consume: () => 0 },
@@ -215,7 +224,7 @@ for (const [mode, extra, expected] of [
   // Index replaces the requested page with the actual clicked source before mounting.
   r.pageIndex = 2
   Object.assign(host, { request: r, closeRequested: false, hostClosing: false, managesTrialWindow: false,
-    progressWrites: { open: () => 1 },
+    progressFlush: null, progressWrites: { open: () => 1, seal() {}, flush: () => Promise.resolve(true) },
     getUIContext: () => ({ getHostContext: () => debugContext }),
     syncReaderActivity: () => events.push('sync'), onClose: () => events.push('close') })
   Object.defineProperty(host, 'session', { set(s) { this.published = s; events.push('publish') } })

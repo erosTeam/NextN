@@ -25,6 +25,7 @@ import readerImageInformationTest from './ReaderImageInformation.test'
 import readerThumbnailEntryTest from './ReaderThumbnailEntry.test'
 import readerThumbnailOriginalProbeTest from './ReaderThumbnailOriginalProbe.test'
 import readerObservedProgressTest from './ReaderObservedProgress.test'
+import readerProgressPersistenceTest from './ReaderProgressPersistence.test'
 
 export default function testsuite(): void {
   backupCipherMetadataGuardTest()
@@ -54,4 +55,5 @@ export default function testsuite(): void {
   readerThumbnailEntryTest()
   readerThumbnailOriginalProbeTest()
   readerObservedProgressTest()
+  readerProgressPersistenceTest()
 }

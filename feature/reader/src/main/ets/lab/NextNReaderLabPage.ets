@@ -20,6 +20,7 @@ import { connectNextNReaderLabContextProbe } from './NextNReaderLabContextProbe'
 import { NextNReaderObservedProgress } from './NextNReaderObservedProgress'
 import { connectNextNReaderObservedProgressProbe } from './NextNReaderObservedProgressProbe'
 import { NextNReaderProgressWriteGate } from './NextNReaderProgressWriteGate'
+import { NextNReaderProgressPersistence } from './NextNReaderProgressPersistence'
 
 @ComponentV2
 export struct NextNReaderLabPage {
@@ -55,20 +56,25 @@ export struct NextNReaderLabPage {
   private observedProgress: NextNReaderObservedProgress = new NextNReaderObservedProgress()
   private progressWrites: NextNReaderProgressWriteGate = new NextNReaderProgressWriteGate()
   private progressEpoch: number = 0
+  private progressPersistence: NextNReaderProgressPersistence | null = null
+  private progressFlush: Promise<boolean> | null = null
 
   aboutToAppear(): void {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext
     if (!context.applicationInfo.debug) return
     connectNextNReaderLabContextProbe().deliver(this.request.work, context)
-    this.progressEpoch = this.progressWrites.open(this.request.work, (pageIndex: number): Promise<void> => {
-      connectNextNReaderObservedProgressProbe().deliver(this.request.work, pageIndex)
-      return Promise.resolve()
-    })
     this.volumeDisposed = false
     if (!this.request.readingChrome) void this.restorePresentation(context)
     this.keepScreenOn = new ReaderKeepScreenOn(context)
     if (this.request.readingChrome && this.managesTrialWindow) this.trialWindow.open(context)
     const adapter = new NextNReaderLabAdapter(context)
+    this.progressPersistence = new NextNReaderProgressPersistence(context, adapter)
+    this.progressFlush = null
+    this.progressEpoch = this.progressWrites.open(this.request.work, (pageIndex: number): Promise<void> => {
+      const operation = this.progressPersistence?.save(this.request, pageIndex) ?? Promise.resolve()
+      connectNextNReaderObservedProgressProbe().deliver(this.request.work, pageIndex)
+      return operation
+    })
     this.imageShare = new ReaderLabShareProbe(adapter, this.request.shareProbe)
     this.imageSave = new ReaderSystemImageSaveHost(context,
       (uri: string, path: string): Promise<void> => NextNReaderImageSaveDownload.download(uri, path))
@@ -93,11 +99,14 @@ export struct NextNReaderLabPage {
       await ReaderPresentationService.restore(context)
       if (this.volumeDisposed || this.closeRequested || this.hostClosing) return
       const galleryId = Number(this.request.work)
+      const initialPageIndex = await (this.progressPersistence?.restore(this.request) ?? Promise.resolve(this.request.pageIndex))
+      if (this.volumeDisposed || this.closeRequested || this.hostClosing) return
       const column = await ReaderSettingsRepository.columnMode(context,
         Number.isSafeInteger(galleryId) && galleryId > 0 ? galleryId : 0)
       if (this.volumeDisposed || this.closeRequested || this.hostClosing) return
       const policy = NextNReaderInitialPolicy.resolve(ReaderPresentationService.snapshot(), column, this.request)
       session.setPolicy(policy)
+      this.request.pageIndex = initialPageIndex
       console.info(`[NextNReaderLab] initial_policy gallery=${galleryId} database=${context.databaseDir} column=${column} cover=${policy.firstPageAlone} layout=${policy.layout} axis=${policy.pagingAxis} direction=${policy.direction} spread=${policy.spreadLayout}`)
       this.presentationReady = true
       // ReaderSurface opens on mount: never publish a default session and change it after first open.
@@ -122,8 +131,7 @@ export struct NextNReaderLabPage {
 
   aboutToDisappear(): void {
     this.volumeDisposed = true
-    this.progressWrites.seal(this.progressEpoch)
-    void this.progressWrites.flush(this.progressEpoch)
+    void this.finishProgressWrites()
     this.keepScreenOn?.close()
     this.entryTransition?.cancel(); this.entryPreview?.release()
     this.originalProbeHostClosed = true
@@ -153,6 +161,7 @@ export struct NextNReaderLabPage {
   private closeTrial(initializationFailed: boolean = false): void {
     if (this.closeRequested) return
     this.closeRequested = true
+    const progressFlush = this.finishProgressWrites()
     if (this.managesTrialWindow) this.trialWindow.close(async (): Promise<boolean> => {
       if (this.trialWindow.getCloseSystemAvoidAreaResult() === 'ready') {
         const ready = await ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string =>
@@ -162,10 +171,22 @@ export struct NextNReaderLabPage {
         return ready
       }
       return true
-    }).then((): void => {
+    }).then(async (): Promise<void> => {
+      const saved = await progressFlush
+      if (!saved) console.warn(`[NextNReaderLab] progress_flush_failed gallery=${this.request.work}`)
       if (this.routeActive || (initializationFailed && !this.volumeDisposed)) this.onClose()
     })
-    else this.onClose()
+    else void progressFlush.then((saved: boolean): void => {
+      if (!saved) console.warn(`[NextNReaderLab] progress_flush_failed gallery=${this.request.work}`)
+      this.onClose()
+    })
+  }
+
+  private finishProgressWrites(): Promise<boolean> {
+    if (this.progressFlush !== null) return this.progressFlush
+    this.progressWrites.seal(this.progressEpoch)
+    this.progressFlush = this.progressWrites.flush(this.progressEpoch)
+    return this.progressFlush
   }
 
   private originalProbeFacts(): ReaderTrialOriginalFacts {

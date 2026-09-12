@@ -10,6 +10,7 @@ import {
   ReaderImageShareTarget, ReaderImageSharePresentation,
   ReaderImageInformation, ReaderImageCropBounds, ReaderImageCropSource,
 } from '@reader-kit/core'
+import { NextNReaderProgressDetailProvider } from './NextNReaderProgressPersistence'
 
 const LOCAL_FIXTURE_WORK: string = '__rkit_local_fixture__'
 const LOCAL_FIXTURE_PAGE_COUNT: number = 3
@@ -30,13 +31,19 @@ class NextNReaderCropSource implements ReaderImageCropSource {
   }
 }
 
-export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider, ReaderImageShareHost {
+export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider, ReaderImageShareHost,
+  NextNReaderProgressDetailProvider {
   cancellationMode: 'consumer-only' | 'transport' = 'consumer-only'
   informationSupported: boolean = true
   private context: common.UIAbilityContext
   private details: Map<string, NhGalleryDetail> = new Map()
 
   constructor(context: common.UIAbilityContext) { this.context = context }
+
+  /** Current unit metadata for the optional host progress adapter only. */
+  progressDetail(work: string): NhGalleryDetail | null {
+    return this.details.get(work) ?? null
+  }
 
   async open(key: ReaderUnitKey, cancellation: ReaderCancellation): Promise<ReaderUnit> {
     cancellation.check()

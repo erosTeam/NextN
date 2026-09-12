@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-progress-persistence-nextn-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main ad5173efeb93bec437a62881d0fb39ba6e9902ab25a68e2c490d04c913d10a4b; native 483c7a8b24a0b36396fa6f38a2b805313811e6f95da7e4dc7e2b0f9d8bccf52d",
+    "page": "N678049 durable P3 to P4 write, force-stop, cold P4 restore, exact original-row restoration",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Explicit debug-only readwrite sentinel. Ordinary shared Lab entry remains read-only. The second phase restores all eight original reading_history columns in finally."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-native-rerun4",
+  "preflight": [
+    { "name": "install-current-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "install-current-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 },
+    {
+      "name": "native-progress-write-phase",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test",
+        "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderProgressPersistenceWriteTrial",
+        "-s", "readerLabWork", "678049", "-s", "timeout", "180000"],
+      "timeoutSeconds": 210
+    },
+    { "name": "cold-process-boundary", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "pauseAfterMs": 1000 },
+    {
+      "name": "native-progress-cold-restore-phase",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test",
+        "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderProgressPersistenceRestoreTrial",
+        "-s", "readerLabWork", "678049", "-s", "timeout", "180000"],
+      "timeoutSeconds": 210
+    }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "test-log", "hdcArgs": ["shell", "hilog", "-x", "-e", "ReaderProgressPersistenceTest"], "timeoutSeconds": 15 },
+    { "name": "host-log", "hdcArgs": ["shell", "hilog", "-x", "-e", "observed_progress"], "timeoutSeconds": 15 },
+    { "name": "receive-write-initial-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-write-initial.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-native-rerun4/write-initial.json"] },
+    { "name": "receive-write-initial-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-write-initial.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-native-rerun4/write-initial.png"] },
+    { "name": "receive-write-next-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-write-next.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-native-rerun4/write-next.json"] },
+    { "name": "receive-write-next-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-write-next.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-native-rerun4/write-next.png"] },
+    { "name": "receive-cold-restore-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-cold-restore.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-native-rerun4/cold-restore.json"] },
+    { "name": "receive-cold-restore-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-cold-restore.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-native-rerun4/cold-restore.png"] },
+    { "name": "receive-restored-exit-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-restored-exit.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-native-rerun4/restored-exit.json"] },
+    { "name": "receive-restored-exit-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-restored-exit.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-persistence-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-native-rerun4/restored-exit.png"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}
