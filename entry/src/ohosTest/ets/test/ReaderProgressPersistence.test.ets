@@ -652,6 +652,70 @@ export default function readerProgressPersistenceTest(): void {
     })
     return
   }
+  if (selectedClass === 'ReaderProgressPersistenceThumbnailContinuousTrial') {
+    describe(selectedClass, (): void => {
+      it('persistsNextFullyVisibleContinuousPageAfterThumbnailEntryAndReopen', 0, async (): Promise<void> => {
+        expect(args['-s readerLabWork']).assertEqual(WORK)
+        const clickedPage = 2
+        const nextPage = 3
+        const storedPage = 7
+        const driver = Driver.create()
+        const database = await store(await context(driver))
+        const original = await snapshotHistory(database)
+        writeSnapshot(original)
+        const events: number[] = []
+        const probe = connectNextNReaderObservedProgressProbe()
+        const epoch = probe.arm(WORK, (pageIndex: number): void => { events.push(pageIndex) })
+        let failed = false
+        try {
+          await seedPage(database, storedPage)
+          await armThumbnailReadWrite(clickedPage, -1, 'continuous', 'ltr')
+          const source = await findDetailThumbnail(driver, clickedPage)
+          await source.click()
+          await waitId(driver, 'rkit-close'); await waitBody(driver, clickedPage, true)
+          await waitObserved(driver, events, clickedPage); await waitHistory(database, clickedPage)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('3 / 14')
+          await capture(driver, 'thumbnail-continuous-initial')
+
+          const list = await waitId(driver, 'rkit-continuous-list')
+          const bounds = await list.getBounds()
+          const x = Math.round((bounds.left + bounds.right) / 2)
+          for (let attempt = 0; attempt < 18 && events[events.length - 1] !== nextPage; attempt++) {
+            await driver.swipe(x, Math.round(bounds.top + (bounds.bottom - bounds.top) * 0.82),
+              x, Math.round(bounds.top + (bounds.bottom - bounds.top) * 0.18), 450)
+            await driver.delayMs(180)
+          }
+          await waitBody(driver, nextPage, true); await waitObserved(driver, events, nextPage)
+          await waitHistory(database, nextPage)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('4 / 14')
+          await capture(driver, 'thumbnail-continuous-next')
+          await closeTrial(driver); await waitHistory(database, nextPage)
+
+          await launchReadWrite('continuous', 'ltr')
+          await waitId(driver, 'rkit-close'); await waitBody(driver, nextPage, true)
+          await waitObserved(driver, events, nextPage); await waitHistory(database, nextPage)
+          expect(await (await waitId(driver, 'rkit-chrome-page')).getText()).assertContain('4 / 14')
+          await driver.delayMs(1200); await waitBody(driver, nextPage, true)
+          await capture(driver, 'thumbnail-continuous-reopen')
+          await closeTrial(driver); await waitHistory(database, nextPage)
+          expect(events.length).assertEqual(3)
+          expect(events[0]).assertEqual(clickedPage); expect(events[1]).assertEqual(nextPage)
+          expect(events[2]).assertEqual(nextPage)
+          console.info('[ReaderProgressPersistenceTest] thumbnailContinuous stored=7 events=[2,3,3] ' +
+            'fullyVisibleNextDurable=3')
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'thumbnail-continuous-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          probe.cancel(epoch)
+          try { await closeTrial(driver) } catch (error) { if (!failed) throw error as Error }
+          try { await restoreAndVerify(database, original) } finally { removeSnapshotFile() }
+        }
+      })
+    })
+    return
+  }
   if (selectedClass === 'ReaderProgressPersistenceCleanupTrial') {
     describe(selectedClass, (): void => {
       it('restoresExactOriginalHistoryIfInterrupted', 0, async (): Promise<void> => {

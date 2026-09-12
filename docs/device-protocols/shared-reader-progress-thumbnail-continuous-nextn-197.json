@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-progress-thumbnail-continuous-nextn-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "main 557bc1b259105556584e2b276f195bf55f2856ada3fc637a467dc1239c42bb17; native e5da5b3601ec4dd9a1cff43bce82daab8dda0b1b60f998e5f2f0497e3d47491f",
+    "page": "N678049 Detail P3 thumbnail into continuous long-strip reading, physical scroll to P4 and durable reopen",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Explicit debug-only host read/write permission. Real semantic Detail P3 thumbnail overrides stored P8, actual continuous scrolling reaches fully-visible P4 and writes only then, close/reopen restores P4, and exact history is restored in finally."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-thumbnail-continuous-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native",
+  "preflight": [
+    { "name": "install-current-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "install-current-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 },
+    {
+      "name": "native-progress-thumbnail-continuous",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test",
+        "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderProgressPersistenceThumbnailContinuousTrial",
+        "-s", "readerLabWork", "678049", "-s", "timeout", "240000"],
+      "timeoutSeconds": 270
+    }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "test-log", "hdcArgs": ["shell", "hilog", "-x", "-e", "ReaderProgressPersistenceTest"], "timeoutSeconds": 15 },
+    { "name": "host-log", "hdcArgs": ["shell", "hilog", "-x", "-e", "observed_progress"], "timeoutSeconds": 15 },
+    { "name": "receive-initial-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-thumbnail-continuous-initial.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-thumbnail-continuous-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/initial.json"] },
+    { "name": "receive-initial-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-thumbnail-continuous-initial.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-thumbnail-continuous-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/initial.png"] },
+    { "name": "receive-next-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-thumbnail-continuous-next.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-thumbnail-continuous-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/next.json"] },
+    { "name": "receive-next-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-thumbnail-continuous-next.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-thumbnail-continuous-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/next.png"] },
+    { "name": "receive-reopen-json", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-progress-persistence-thumbnail-continuous-reopen.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-thumbnail-continuous-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/reopen.json"] },
+    { "name": "receive-reopen-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-progress-persistence-thumbnail-continuous-reopen.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260912-shared-progress-thumbnail-continuous-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-native/reopen.png"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}
