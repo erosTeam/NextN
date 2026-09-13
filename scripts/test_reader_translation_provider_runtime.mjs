@@ -20,6 +20,7 @@ const probeStages = []
 const translationProbe = {
   result() { return probeResultPath },
   unavailable() { return probeUnavailable },
+  async pauseBeforeResult() {},
   deliver(_context, _work, sourceIndex, stage, identity) {
     probeStages.push([sourceIndex, stage, identity])
   },
