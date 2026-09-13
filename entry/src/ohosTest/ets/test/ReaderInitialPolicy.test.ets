@@ -65,6 +65,92 @@ export default function readerInitialPolicyTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
   const work = args['-s readerLabWork']
   const selectedCase = args['-s readerInitialCase']
+  if (args['-s class'] === 'ReaderInitialPolicyRestoreTrial' && typeof work === 'string') {
+    describe('ReaderInitialPolicyRestoreTrial', (): void => {
+      it('restoresRejectedTabletFixtureBaseline', 0, async (): Promise<void> => {
+        const gallery = Number(work)
+        expect(Number.isSafeInteger(gallery) && gallery > 0).assertTrue()
+        const driver = Driver.create(), delegator = abilityDelegatorRegistry.getAbilityDelegator()
+        const holder = new InitialContextHolder()
+        const probe = connectNextNReaderLabContextProbe()
+        const epoch = probe.arm(work, (received: common.UIAbilityContext): void => { holder.context = received })
+        try {
+          await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility', parameters: {
+            readerLabWork: work, readerLabPage: '2', readerLabChrome: 'true', readerLabVolumeKeys: 'false' } })
+          for (let attempt = 0; attempt < 60 && holder.context === null; attempt++) await driver.delayMs(250)
+          expect(holder.context !== null).assertTrue()
+          await initialWait(driver, 'rkit-close')
+        } finally {
+          probe.cancel(epoch)
+          await initialClose(driver)
+        }
+        const context = holder.context
+        if (context === null) throw new Error('No actual Lab context received')
+        await ReaderPresentationService.restore(context)
+        expect(await ReaderSettingsRepository.doublePageEnabled(context)).assertFalse()
+        expect(await ReaderSettingsRepository.spreadLayout(context)).assertEqual(NhReaderSpreadLayout.JOINED)
+        expect(await ReaderSettingsRepository.columnMode(context, gallery)).assertEqual(NhReaderColumnMode.ODD_LEFT)
+        await ReaderPresentationService.setMode(context, NhReaderMode.PAGED_RTL)
+        const live = ReaderPresentationService.snapshot()
+        const exported = await ReaderSettingsRepository.exportForBackup(context)
+        expect(await ReaderSettingsRepository.mode(context)).assertEqual(NhReaderMode.PAGED_RTL)
+        expect(live.mode).assertEqual(NhReaderMode.PAGED_RTL)
+        expect(exported['reader_mode']).assertEqual(NhReaderMode.PAGED_RTL)
+        console.info(`[ReaderInitialPolicyRestoreTest] database=${context.databaseDir} ` +
+          `durable=${await ReaderSettingsRepository.mode(context)} live=${live.mode} raw=${exported['reader_mode']} ` +
+          'unchanged=false,joined,odd_left')
+      })
+    })
+    return
+  }
+  if (args['-s class'] === 'ReaderInitialPolicyReadbackTrial' && typeof work === 'string') {
+    describe('ReaderInitialPolicyReadbackTrial', (): void => {
+      it('readsRestoredEntryPolicyWithoutMutation', 0, async (): Promise<void> => {
+        const gallery = Number(work)
+        expect(Number.isSafeInteger(gallery) && gallery > 0).assertTrue()
+        const driver = Driver.create(), delegator = abilityDelegatorRegistry.getAbilityDelegator()
+        const holder = new InitialContextHolder()
+        const probe = connectNextNReaderLabContextProbe()
+        const epoch = probe.arm(work, (received: common.UIAbilityContext): void => { holder.context = received })
+        try {
+          await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility', parameters: {
+            readerLabWork: work, readerLabPage: '2', readerLabChrome: 'true', readerLabVolumeKeys: 'false' } })
+          for (let attempt = 0; attempt < 60 && holder.context === null; attempt++) await driver.delayMs(250)
+          expect(holder.context !== null).assertTrue()
+          if (holder.context === null) throw new Error('No actual Lab context received')
+          expect(holder.context.databaseDir.endsWith('/entry')).assertTrue()
+          await initialWait(driver, 'rkit-close')
+        } finally {
+          probe.cancel(epoch)
+          await initialClose(driver)
+        }
+        const context = holder.context
+        if (context === null) throw new Error('No actual Lab context received')
+        await ReaderPresentationService.restore(context)
+        const live = ReaderPresentationService.snapshot()
+        const durableMode = await ReaderSettingsRepository.mode(context)
+        const durableDouble = await ReaderSettingsRepository.doublePageEnabled(context)
+        const durableSpread = await ReaderSettingsRepository.spreadLayout(context)
+        const durableColumn = await ReaderSettingsRepository.columnMode(context, gallery)
+        const exported = await ReaderSettingsRepository.exportForBackup(context)
+        console.info(`[ReaderInitialPolicyReadbackTest] database=${context.databaseDir} durable=${durableMode},${durableDouble},${durableSpread},${durableColumn} live=${live.mode},${live.doublePageEnabled},${live.spreadLayoutMode} raw=${exported['reader_mode']},${exported['reader_double_page_enabled']},${exported['reader_spread_layout']},${exported[`reader_column_mode:${gallery}`]}`)
+        expect(durableMode).assertEqual(NhReaderMode.PAGED_RTL)
+        expect(durableDouble).assertFalse()
+        expect(durableSpread).assertEqual(NhReaderSpreadLayout.JOINED)
+        expect(durableColumn).assertEqual(NhReaderColumnMode.ODD_LEFT)
+        expect(live.mode).assertEqual(durableMode)
+        expect(live.doublePageEnabled).assertEqual(durableDouble)
+        expect(live.spreadLayoutMode).assertEqual(durableSpread)
+        expect(exported['reader_mode']).assertEqual(NhReaderMode.PAGED_RTL)
+        expect(exported['reader_double_page_enabled']).assertEqual('false')
+        expect(exported['reader_spread_layout']).assertEqual(NhReaderSpreadLayout.JOINED)
+        const rawColumn = exported[`reader_column_mode:${gallery}`]
+        // odd_left is the repository default, so an untouched gallery may legitimately have no raw row.
+        expect(rawColumn === undefined || rawColumn === NhReaderColumnMode.ODD_LEFT).assertTrue()
+      })
+    })
+    return
+  }
   if (args['-s class'] !== 'ReaderInitialPolicyTrial' || typeof work !== 'string') return
   describe('ReaderInitialPolicyTrial', (): void => {
     it('savedPolicyBeforeFirstSurfaceAndExplicitOverride', 0, async (): Promise<void> => {
