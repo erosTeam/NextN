@@ -39,5 +39,6 @@ assert.match(page, /scheduleNextAutoTranslation\(sourceIndex: number\)[\s\S]*con
 assert.match(page, /translationWindowFrame\(next\)[\s\S]*frame\?\.asset\.phase !== 'displayed'/)
 assert.match(page, /session\.prepareVariantForSource\(next, state\.unit\.key\.copy\(\), state\.navigationRevision,[\s\S]*'translated', identity\)/)
 assert.match(page, /result === 'changed' \|\| result === 'unchanged'[\s\S]*sourceIndex === this\.currentSourceIndex[\s\S]*scheduleNextAutoTranslation\(sourceIndex\)/)
+assert.match(page, /result === 'unavailable'[\s\S]*sourceIndex === this\.currentSourceIndex[\s\S]*translationErrorPage = sourceIndex[\s\S]*scheduleNextAutoTranslation\(sourceIndex\)/)
 
 console.log('PASS NextN shared reader host settings, external open, runtime preference and auto-translation wiring')

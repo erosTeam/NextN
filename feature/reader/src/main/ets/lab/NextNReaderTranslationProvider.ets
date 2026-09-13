@@ -154,6 +154,9 @@ export class NextNReaderTranslationProvider implements ReaderAssetProvider {
         console.info(`[NextNSharedTranslation] prepare source=${page.sourceIndex} identity=${identity} runtime=local-probe`)
         probe.deliver(this.context, page.unit.work, page.sourceIndex, 'prepare', identity)
         cancellation.check()
+        if (probe.unavailable(this.context, page.unit.work, page.sourceIndex)) {
+          throw new Error('reader_translation_probe_unavailable')
+        }
         console.info(`[NextNSharedTranslation] applied source=${page.sourceIndex} identity=${identity} runtime=local-probe`)
         probe.deliver(this.context, page.unit.work, page.sourceIndex, 'applied', identity)
         return new NextNReaderTranslationPlan(page, identity, localResultPath,

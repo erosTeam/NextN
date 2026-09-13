@@ -614,6 +614,7 @@ export struct NextNReaderLabPage {
       }
       if (sourceIndex === this.currentSourceIndex) {
         this.translationErrorPage = sourceIndex
+        this.scheduleNextAutoTranslation(sourceIndex)
       }
       this.translationPreferenceRevision += 1
     }

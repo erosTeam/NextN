@@ -15,9 +15,11 @@ const core = { ...load('ReaderContent'), ...load('ReaderSession'), ...load('Read
 const calls = []
 let runPromise = null
 let probeResultPath = ''
+let probeUnavailable = false
 const probeStages = []
 const translationProbe = {
   result() { return probeResultPath },
+  unavailable() { return probeUnavailable },
   deliver(_context, _work, sourceIndex, stage, identity) {
     probeStages.push([sourceIndex, stage, identity])
   },
@@ -103,6 +105,12 @@ const probeAsset = await probePlan.load(new core.ReaderCancellation(), false)
 assert.equal(probeAsset.uri, 'file:///cache/local-translated.png')
 assert.deepEqual(probeStages.map(value => value.slice(0, 2)), [[0, 'prepare'], [0, 'applied']])
 assert.equal(calls.length, 1)
+probeStages.length = 0
+probeUnavailable = true
+await assert.rejects(provider.prepareVariant(page, 'translated', identity, new core.ReaderCancellation()),
+  /reader_translation_probe_unavailable/)
+assert.deepEqual(probeStages.map(value => value.slice(0, 2)), [[0, 'prepare'], [0, 'unavailable']])
+probeUnavailable = false
 probeResultPath = ''
 
 let resolveRun

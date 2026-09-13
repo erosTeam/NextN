@@ -9,6 +9,7 @@ export class NextNReaderTranslationProbe {
   private localPath: string = ''
   private receiver: ((sourceIndex: number, stage: string, identity: string) => void) | null = null
   private action: ((id: string) => boolean) | null = null
+  private unavailableSources: number[] = []
 
   arm(work: string, localPath: string,
     receiver: (sourceIndex: number, stage: string, identity: string) => void): number {
@@ -17,7 +18,22 @@ export class NextNReaderTranslationProbe {
     this.localPath = localPath
     this.receiver = receiver
     this.action = null
+    this.unavailableSources = []
     return this.epoch
+  }
+
+  setUnavailable(epoch: number, sourceIndex: number, unavailable: boolean): boolean {
+    if (epoch !== this.epoch || !Number.isInteger(sourceIndex) || sourceIndex < 0) return false
+    if (unavailable && !this.unavailableSources.includes(sourceIndex)) {
+      this.unavailableSources = this.unavailableSources.concat([sourceIndex])
+    } else if (!unavailable) {
+      this.unavailableSources = this.unavailableSources.filter((value: number): boolean => value !== sourceIndex)
+    }
+    return true
+  }
+
+  unavailable(context: common.UIAbilityContext, work: string, sourceIndex: number): boolean {
+    return context.applicationInfo.debug && this.work === work && this.unavailableSources.includes(sourceIndex)
   }
 
   bindAction(context: common.UIAbilityContext, work: string, action: (id: string) => boolean): void {
@@ -47,6 +63,7 @@ export class NextNReaderTranslationProbe {
     this.localPath = ''
     this.receiver = null
     this.action = null
+    this.unavailableSources = []
   }
 }
 
