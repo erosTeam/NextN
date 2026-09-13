@@ -46,6 +46,22 @@ deletes user data.
 
 ## Current Package 1 delta
 
+Current owner map:
+
+- `reader-kit` owns slot/request/presentation generations, stale-result fences,
+  retained-frame replacement, released assets, and session teardown on surface
+  disappearance. It never invents a host URL, cache key, or source variant.
+- NextN owns NH remote/local/download selection, immutable reload siblings,
+  cache replacement, and presentation leases. Its transport cancellation is
+  consumer-only; shared generations prevent retired results from presenting.
+- NextE owns EH `/s/?nl=` source selection, per-gallery file cache replacement,
+  and refreshed reload-key persistence. Its transport cancellation is likewise
+  consumer-only; the adapter persists a refreshed source only after the request
+  remains current.
+- Fresh reopen is a new host adapter plus a new shared session. Background and
+  close retire shared presentation state; hosts remain responsible for any
+  longer-lived cache or download work they deliberately retain.
+
 Already established and not to be rerun unless its owner changes:
 
 - `reader-kit` has stable page/source identities, independent adjacent slots,
@@ -53,16 +69,20 @@ Already established and not to be rerun unless its owner changes:
 - NextN has bounded device evidence for complete-download same-URI reload in
   single, continuous, and split-spread layouts.
 - NextE has source switching and the same-URI reload candidate integrated in its
-  optional host; shared tests and matching main/native builds have succeeded.
+  optional host. Current-source comparison found that the optional adapter had
+  been redownloading the selected CDN URL without invoking EH source switching;
+  it now forwards manual reload into `ImageResolveService.resolve(..., true)`
+  and saves the refreshed source only after its cancellation fence.
+- The shared same-URI candidate is frozen at `5e5cb4c`; the central checkout and
+  both NextN/NextE submodules now resolve to that revision.
+- The current focused batch passes: all 358 `reader-kit` tests, NextN reader
+  contract/data-source tests, and NextE resolver/adapter runtime tests.
 
 Still required to close Package 1:
 
-- review and checkpoint the shared same-URI implementation as one revision;
 - finish NextE's consolidated real-host reload/retry/background-close-reopen
   runtime path, proving target request generation changes and an unaffected
   spread partner remains unchanged;
-- compare the current NextN and NextE host adapters for cache invalidation,
-  source scope, in-flight cancellation, release, and fresh-reopen semantics;
 - run the final focused suites and build all three consumers once after the
   candidate is frozen;
 - execute the minimum device set selected by the risk rule above and inspect
@@ -70,10 +90,11 @@ Still required to close Package 1:
 
 ## Single next action
 
-Complete the current-source comparison of NextN and NextE asset providers and
-freeze the Package 1 source candidate. Do not start another device run or
-Package 2 work until that comparison either finds and repairs a lifecycle gap or
-shows that the current candidate covers the full declared path.
+Run one consumer build batch against `5e5cb4c`: NextN main, NextE main plus its
+native reader test HAP, and Koma main. If all four artifacts build, keep that
+source candidate frozen and execute one consolidated NextE Package 1 protocol
+per selected device; do not split reload, retry, background, close, and reopen
+into separate run manifests or commits.
 
 ## Package completion record
 
