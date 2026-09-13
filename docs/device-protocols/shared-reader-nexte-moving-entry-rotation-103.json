@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-nexte-moving-entry-rotation-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "NextE f06022bf; main aa28c677451233404eab070d7ad051d603cd5b8ce9c3ea6e4bcd38e2edaa04cc; native 08b2d63a2e4eacfc69ad8cf2e483a758f3a98acc747931926d08f64809c8e53b",
+    "page": "optional shared reader RTL joined spread rotated while thumbnail entry is moving",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait to landscape to portrait",
+    "resolution": "1600x2560 and 2560x1600",
+    "notes": "Uses the existing ReaderThumbnailMovingRotationTrial. The in-flight preview must be cancelled without a late overlay, the shared reader must recover both real leaves, and the test restores orientation. Default routing, settings and app data remain unchanged."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-moving-entry-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-moving-cancel-reflow",
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "temporary-long-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "power-readback", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "force-stop-before", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nexte"] },
+    { "name": "install-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextE/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "install-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextE/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "clear-bounded-hilog", "hdcArgs": ["shell", "hilog", "-r"] },
+    { "name": "native-shared-reader-nexte-moving-entry-rotation", "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nexte", "-m", "entry_test", "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderThumbnailMovingRotationTrial", "-s", "readerLabWork", "4175844", "-s", "readerLabUnit", "37d7c39ec2", "-s", "timeout", "120000"], "timeoutSeconds": 150 }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "moving-rotation-log", "hdcArgs": ["shell", "hilog -x | grep -E 'ReaderMovingRotation|ReaderTrialEntry|ReaderThumbnailMovingRotationTrial|Tests run|Failure|Error|Pass' | tail -1000"], "timeoutSeconds": 30 },
+    { "name": "receive-source-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-entry-source.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-moving-entry-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-moving-cancel-reflow/source.png"] },
+    { "name": "receive-source-json", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-entry-source.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-moving-entry-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-moving-cancel-reflow/source.json"] },
+    { "name": "receive-rotated-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-entry-rotated.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-moving-entry-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-moving-cancel-reflow/rotated.png"] },
+    { "name": "receive-rotated-json", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-entry-rotated.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-moving-entry-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-moving-cancel-reflow/rotated.json"] },
+    { "name": "receive-late-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-entry-late.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-moving-entry-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-moving-cancel-reflow/late.png"] },
+    { "name": "receive-late-json", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-entry-late.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-moving-entry-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-moving-cancel-reflow/late.json"] },
+    { "name": "receive-restored-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-entry-restored.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-moving-entry-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-moving-cancel-reflow/restored.png"] },
+    { "name": "receive-restored-json", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-entry-restored.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-moving-entry-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-moving-cancel-reflow/restored.json"] },
+    { "name": "receive-closed-png", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-entry-closed.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-moving-entry-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-moving-cancel-reflow/closed.png"] },
+    { "name": "receive-closed-json", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-entry-closed.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-moving-entry-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-moving-cancel-reflow/closed.json"] },
+    { "name": "force-stop-nexte-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nexte"] },
+    { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "10000"] },
+    { "name": "power", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}
