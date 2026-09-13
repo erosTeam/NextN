@@ -775,6 +775,10 @@ export default function readerProductionBackendTrialTest(): void {
 
           await (await waitId(driver, 'rkit-more')).click()
           expect(await waitId(driver, 'rkit-open-external') !== null).assertTrue()
+          const translatePage = await waitId(driver, 'rkit-host-action-translate-page')
+          const translateAuto = await waitId(driver, 'rkit-host-action-translate-auto')
+          const translationConfigured = await translatePage.isEnabled()
+          expect(await translateAuto.isEnabled()).assertEqual(translationConfigured)
           await capture(driver, 'host-more')
           await driver.pressBack()
           await closeAnyReader(driver)
@@ -785,7 +789,8 @@ export default function readerProductionBackendTrialTest(): void {
           restored = true
           removeSnapshot()
           console.info('[ReaderProductionBackendTrial] hostSettings=true topRuntimeDuplicate=false ' +
-            'bottomRuntime=true externalOpen=true historyRestored=true')
+            `bottomRuntime=true externalOpen=true translationActions=true translationConfigured=${translationConfigured} ` +
+            'historyRestored=true')
         } catch (error) {
           failed = true
           try { await capture(driver, 'host-actions-exception') } catch (_) {}
