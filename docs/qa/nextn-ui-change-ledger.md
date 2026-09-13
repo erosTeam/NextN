@@ -11486,3 +11486,28 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Accepted boundary:** this closes the named optional NextN single/spread manual source-reload continuity on 103.
   General cache eviction, offline/download reload, failure/retry variants, NextE/Koma host adoption and default-reader
   replacement remain open. No 237 use, default migration, push or legacy-reader replacement occurred.
+
+## 2026-09-13 — Complete-download same-URI manual reload — LIMITED PASS / replacement OPEN
+
+- **Observed failure before change:** production Downloads opened existing gallery `661990` at page `39/47` through
+  the optional shared body. The page stayed painted after Reload source, but the candidate remained `decoding` and a
+  visible `LoadingProgress` stayed in the semantic tree until the test rejected at `110.227s`. Download queue and
+  reading history cleanup still completed. This is not evidence of a blank page; it is an unclosed presentation epoch.
+- **Cause and shared boundary:** `ReaderPagedCell.syncRetainedFrame()` treated equal displayed/candidate URI strings as
+  proof that no retained frame was needed. The original and candidate then shared one Image call site, and ArkUI did
+  not issue a new `onComplete` for the unchanged local file source. URI equality does not mean presentation equality:
+  the request epoch and callback owner are new even for an immutable host file.
+- **Implementation:** retain the prior frame whenever core supplies a valid prior request, regardless of URI equality.
+  The original Image remains painted under its original request identity; a separate candidate Image owns decoding,
+  post-frame presentation and promotion. This stays in reader-kit presentation code and requires no NextN file copy,
+  cache-busting URI, download mutation or app-specific core branch.
+- **Verification:** platform-free reader-kit suite passes `358/358`; NextN reader contract and production data-source
+  runtime checks pass; signed main/native builds pass with SHA-256 `acc42bea...683b0` / `c4a1763f...146ef`. Device103
+  runs `run02` and `run03` independently pass `ReaderProductionDownloadReloadTrial` 1/1 in `48.374s` and `48.186s`.
+  Both actual runs reload the same local page twice, keep page `39/47`, expose zero visible loading/failure nodes in
+  initial/first/second layouts, close to Downloads, compare the queue snapshot exactly and restore all eight history
+  columns. Whole first/second/return screenshots were inspected.
+- **Boundary:** complete downloaded local-page manual reload is now accepted on 103 only. It does not accept general
+  cache eviction, deleted/corrupt local file recovery, continuous/spread local reload, NextE/Koma adoption, fold or
+  rotation matrices, nor authorize default replacement. Existing complete tasks were read-only and no 237 use/push
+  occurred.

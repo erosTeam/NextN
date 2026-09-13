@@ -61,8 +61,12 @@ async function startLegacyBackend(): Promise<void> {
 async function entryContext(driver: Driver): Promise<common.UIAbilityContext> {
   const delegator = abilityDelegatorRegistry.getAbilityDelegator()
   for (let attempt: number = 0; attempt < 80; attempt += 1) {
-    const ability = await delegator.getCurrentTopAbility()
-    if (ability.context.abilityInfo.name === 'EntryAbility') return ability.context
+    try {
+      const ability = await delegator.getCurrentTopAbility()
+      if (ability.context.abilityInfo.name === 'EntryAbility') return ability.context
+    } catch (_error) {
+      // Ability startup can briefly expose no top ability to the delegator.
+    }
     await driver.delayMs(100)
   }
   throw new Error('EntryAbility context unavailable')
@@ -204,6 +208,24 @@ async function shareCurrentPageAndCancel(driver: Driver, expectedTotal: number):
   throw new Error('Reader share action did not recover after system-sheet cancellation')
 }
 
+async function reloadCurrentLocalPage(driver: Driver, expectedTotal: number, captureName: string): Promise<void> {
+  let more = await driver.findComponent(ON.id('rkit-more'))
+  if (more === null) {
+    const surface: Component = await waitId(driver, 'rkit-reading-surface')
+    const bounds = await surface.getBounds()
+    await driver.click(Math.round((bounds.left + bounds.right) / 2), Math.round((bounds.top + bounds.bottom) / 2))
+    more = await waitId(driver, 'rkit-more')
+  }
+  await more.click()
+  const reload: Component = await waitId(driver, 'rkit-reload-source')
+  expect(await reload.isEnabled()).assertTrue()
+  await reload.click()
+  expect(await waitSharedReady(driver)).assertEqual(expectedTotal)
+  await driver.delayMs(1200)
+  expect(pageTotal(await (await waitId(driver, 'rkit-chrome-page')).getText())).assertEqual(expectedTotal)
+  await capture(driver, captureName)
+}
+
 async function capture(driver: Driver, name: string): Promise<void> {
   const delegator = abilityDelegatorRegistry.getAbilityDelegator()
   const cache: string = delegator.getAppContext().cacheDir
@@ -257,6 +279,59 @@ export default function readerProductionDownloadEntryTrialTest(): void {
       } catch (error) {
         failed = true
         try { await capture(driver, 'exception') } catch (_) {}
+        throw error as Error
+      } finally {
+        try { await closeSharedReader(driver) } catch (error) { if (!failed) throw error as Error }
+        if (!restored && database !== null && original !== null) {
+          await restoreAndVerify(database, original)
+          removeSnapshot()
+        }
+        await startLegacyBackend()
+      }
+    })
+  })
+  if (selectedClass === 'ReaderProductionDownloadReloadTrial') describe(selectedClass, (): void => {
+    it('reloadsCompleteLocalDownloadTwiceWithoutMutatingQueue', 0, async (): Promise<void> => {
+      const driver = Driver.create()
+      let database: relationalStore.RdbStore | null = null
+      let original: HistorySnapshot | null = null
+      let restored: boolean = false
+      let failed: boolean = false
+      try {
+        await startSharedBackend()
+        const context: common.UIAbilityContext = await entryContext(driver)
+        await DownloadQueueService.restore(context)
+        const queueBefore: string = JSON.stringify(DownloadQueueService.snapshot())
+        const complete: NhDownloadTask[] = DownloadQueueService.snapshot()
+          .filter((task: NhDownloadTask): boolean => task.isComplete())
+          .sort((left: NhDownloadTask, right: NhDownloadTask): number => right.createdAt - left.createdAt)
+        if (complete.length === 0) throw new Error('A verified complete download is required')
+        const task: NhDownloadTask = complete[0]
+        database = await store(context)
+        original = await snapshotHistory(database, task.galleryId)
+        writeSnapshot(original)
+
+        await (await waitId(driver, 'nextn-root-tab-2')).click()
+        await (await findDownloadEntry(driver, task.galleryId)).click()
+        const total: number = await waitSharedReady(driver)
+        expect(total).assertEqual(task.pageCount)
+        await capture(driver, 'local-reload-initial')
+        await reloadCurrentLocalPage(driver, total, 'local-reload-first')
+        await reloadCurrentLocalPage(driver, total, 'local-reload-second')
+
+        await closeSharedReader(driver)
+        await waitId(driver, 'nextn-download-queue-root')
+        expect(JSON.stringify(DownloadQueueService.snapshot())).assertEqual(queueBefore)
+        await capture(driver, 'local-reload-return')
+
+        await restoreAndVerify(database, original)
+        restored = true
+        removeSnapshot()
+        console.info(`[ReaderProductionDownloadReloadTrial] gallery=${task.galleryId} pages=${total} ` +
+          'localReloads=2 queueUnchanged=true returned=true historyRestored=true')
+      } catch (error) {
+        failed = true
+        try { await capture(driver, 'local-reload-exception') } catch (_) {}
         throw error as Error
       } finally {
         try { await closeSharedReader(driver) } catch (error) { if (!failed) throw error as Error }

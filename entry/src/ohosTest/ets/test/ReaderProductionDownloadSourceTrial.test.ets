@@ -10,8 +10,12 @@ async function productionContext(driver: Driver): Promise<common.UIAbilityContex
   const delegator = abilityDelegatorRegistry.getAbilityDelegator()
   await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility' })
   for (let attempt: number = 0; attempt < 80; attempt += 1) {
-    const ability = await delegator.getCurrentTopAbility()
-    if (ability.context.abilityInfo.name === 'EntryAbility') return ability.context
+    try {
+      const ability = await delegator.getCurrentTopAbility()
+      if (ability.context.abilityInfo.name === 'EntryAbility') return ability.context
+    } catch (_error) {
+      // The ability manager can briefly expose no top ability during launch.
+    }
     await driver.delayMs(100)
   }
   throw new Error('EntryAbility context unavailable')
