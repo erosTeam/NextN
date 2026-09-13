@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-super-resolution-cancel-navigation-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "commit e88157e9c28251b787a8bb844f3c4850c3faea4e; main 37ea0f0dd8339af232d49578507794bcd3e2d9079701f8f01ae38491d420c6d6; native 40ee23b635a18dba88f10ca0c531806048ac33128a9e562455b4984897aa8209",
+    "page": "optional shared Reader enhancement cancellation on navigation",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Uses local Reader Lab fixtures. A Debug-only in-process gate pauses source 0 before host processing; a real pager swipe must cancel that exact owner, never apply source 0 late, and still apply the configured derivative to source 1. All touched settings are restored by the test."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-super-resolution-cancel/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-navigation",
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "temporary-long-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "install-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "install-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "clear-bounded-hilog", "hdcArgs": ["shell", "hilog", "-r"] },
+    {
+      "name": "native-shared-super-resolution-cancel-navigation",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test",
+        "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderSharedSuperResolutionTrial",
+        "-s", "readerSharedSuperResolutionLayout", "single",
+        "-s", "readerSharedSuperResolutionScenario", "cancel-navigation", "-s", "timeout", "120000"],
+      "timeoutSeconds": 150
+    }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "super-resolution-log", "hdcArgs": ["shell", "hilog -x | grep -E 'NextNSharedSuperResolution|ReaderSurface|ReaderPager' | tail -320"], "timeoutSeconds": 30 },
+    { "name": "receive-cancel-next-screen", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/rkit-shared-super-resolution-cancel-next.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-super-resolution-cancel/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-navigation/cancel-next.png"] },
+    { "name": "receive-cancel-next-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/rkit-shared-super-resolution-cancel-next.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-super-resolution-cancel/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-navigation/cancel-next.json"] },
+    { "name": "force-stop-nextn-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "10000"] },
+    { "name": "power", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}
