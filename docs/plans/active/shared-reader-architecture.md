@@ -1,5 +1,11 @@
 # NextE / NextN / Koma 共享阅读器设计草案
 
+> Execution status moved on 2026-09-14: this document is the architectural and
+> historical evidence base, not the live task queue. The single current queue,
+> package status, and next action are maintained in
+> `shared-reader-replacement-work-order.md`. Older “next step” text below is
+> historical and must not schedule work.
+
 ## 默认替换前的防退化门槛 — 2026-09-12
 
 共享阅读器继续保持显式调试入口。只有下表全部达到 **ACCEPTED**，且没有同边界的已知反例，才允许另开一次“是否切换默认入口”的用户决策；源码存在、方法测试、构建、安装或单张截图均不能单独关闭门槛。

@@ -289,6 +289,38 @@ the project ledger without changing its completion status.
   causal transition. Revert or remove a speculative change once it is shown
   to be unsupported.
 
+### 7.1 Long-running migration execution model
+
+Long-running cross-repository migrations use one outcome-oriented work order,
+not a chronological accumulation of probes and checkpoints.
+
+- Keep exactly one **ACTIVE capability package**. A package must end at a real
+  user route and include the shared owner, every applicable host adapter, the
+  retained legacy fallback, and its bounded acceptance path. A method, button,
+  callback, screenshot, build, device action, or commit is not a package.
+- Finish source mapping and the coherent implementation before starting the
+  package's build/device phase. A counterexample may reopen implementation;
+  ordinary green checks may not cause repeated rebuild/install cycles between
+  neighboring assertions.
+- Validate by risk. Run logic/state suites for every changed owner and compile
+  every consumer of a changed shared library. Use a second device only for a
+  distinct form factor, input path, platform behavior, or reproduced
+  counterexample; do not replay an unchanged non-visual path merely to increase
+  an evidence count.
+- Use one complete local device protocol per package and selected device. Keep
+  run inputs, screenshots, layouts, recordings, and logs in ignored artifact
+  storage. Source control records one current package row and stable conclusions,
+  never one protocol or ledger paragraph per click/run.
+- Commit at coherent capability boundaries. Do not create commits whose only
+  product meaning is one extra assertion, one capture, one device checkpoint,
+  or a restatement of an already accepted boundary.
+- A historical architecture or acceptance document is evidence, not an active
+  queue. The current work order must contain one next action, update rows in
+  place, and retire superseded next-step text instead of appending another one.
+- Report progress as replacement capability gained or remaining host gap. Test
+  counts, commit counts, elapsed runs, and document volume are diagnostics, not
+  progress metrics.
+
 ## 8. Conditional preemption — account persistence P0
 
 Account-persistence P0 is **OPEN whenever current native Account or Favorites
