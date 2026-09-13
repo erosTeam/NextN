@@ -23,6 +23,7 @@
     ]
   },
   "modules": [
+    { "name": "reader_enhancement", "srcPath": "./third_party/reader-enhancement" },
     { "name": "reader_core", "srcPath": "./third_party/reader-kit/reader-core" },
     { "name": "reader_ui", "srcPath": "./third_party/reader-kit/reader-ui" },
     {

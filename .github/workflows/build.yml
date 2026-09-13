@@ -99,6 +99,7 @@ jobs:
       - name: Inspect unsigned HAP
         shell: bash
         run: |
+          python3 scripts/verify_hap_native_libs.py "$HAP_PATH"
           python3 - <<'PY'
           import os
           import zipfile

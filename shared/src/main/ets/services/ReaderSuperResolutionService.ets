@@ -203,7 +203,11 @@ export class ReaderSuperResolutionService {
         continue
       }
       if (inFlight.owners.size === 0) {
-        ReaderNativeSuperResolution.setRequestActive(inFlight.requestId, false)
+        try {
+          ReaderNativeSuperResolution.setRequestActive(inFlight.requestId, false)
+        } catch (_error) {
+          ReaderSuperResolutionService.recordProcessingFailure('request_cancel')
+        }
       }
     }
   }
@@ -249,8 +253,15 @@ export class ReaderSuperResolutionService {
     if (ReaderSuperResolutionService.interactionPaused === effectivePaused) {
       return
     }
-    ReaderSuperResolutionService.interactionPaused = effectivePaused
-    ReaderNativeSuperResolution.setInteractionPaused(effectivePaused)
+    try {
+      ReaderNativeSuperResolution.setInteractionPaused(effectivePaused)
+      ReaderSuperResolutionService.interactionPaused = effectivePaused
+    } catch (_error) {
+      // Reader enhancement is optional. A missing or unloadable native module
+      // must never take down the core Reader interaction path.
+      ReaderSuperResolutionService.interactionPaused = false
+      ReaderSuperResolutionService.recordProcessingFailure('interaction_pause')
+    }
   }
 
   private static rememberOwnerOutcome(

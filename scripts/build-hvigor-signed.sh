@@ -81,3 +81,5 @@ fi
 
 cd "$project_root"
 hvigorw assembleHap --mode module -p product="$product" -p buildMode="$build_mode" --no-daemon
+python3 "$project_root/scripts/verify_hap_native_libs.py" \
+  "$project_root/entry/build/$product/outputs/default/entry-default-signed.hap"
