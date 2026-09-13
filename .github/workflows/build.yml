@@ -50,6 +50,11 @@ jobs:
         run: |
           node scripts/test_persistence_inventory_contract.mjs
 
+      - name: Reject tracked device run manifests
+        shell: bash
+        run: |
+          python3 scripts/test_device_protocol_gate.py
+
       - name: Disable clipboard auto-detection for public self-sign builds
         shell: bash
         run: |

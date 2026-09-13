@@ -25,3 +25,4 @@ __pycache__/
 .clang-tidy
 .clangd
 .device-leases/
+/.hermes-artifacts/

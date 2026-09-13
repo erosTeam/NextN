@@ -29,8 +29,9 @@ business record was replaced.
 
 ## Device 103 evidence
 
-- Checked protocol:
-  `docs/device-protocols/shared-reader-production-download-spread-reload-103.json`.
+- The exact checked protocol used for each run is retained with that run as
+  `protocol-manifest.json`; it is execution evidence rather than a reusable
+  source-controlled scenario definition.
 - Evidence roots:
   `.hvigor/outputs/shared-reader-production-download-spread-reload-103/run01/`
   and `run02/`.

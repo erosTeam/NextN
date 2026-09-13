@@ -9,12 +9,10 @@ from device_lease import CHECKED_PROTOCOL_RUNNER, direct_device_protocol_violati
 
 HDC = "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc"
 TARGET = "192.168.50.237:12345"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 RUN_DEVICE_PROTOCOL = Path(__file__).resolve().parent / "run-device-protocol"
 MANIFEST = str(
-    Path(__file__).resolve().parent.parent
-    / "docs"
-    / "device-protocols"
-    / "public-download-root-recovery-237.json"
+    PROJECT_ROOT / "scripts" / "device_protocol_gate_fixture.json"
 )
 
 
@@ -93,5 +91,26 @@ try:
     assert "manifest authorization mismatch" in wrapper_result.stderr, wrapper_result
 finally:
     Path(mismatch_manifest).unlink(missing_ok=True)
+
+tracked_manifests = subprocess.run(
+    ["git", "ls-files", "--", "docs/device-protocols/*.json"],
+    cwd=PROJECT_ROOT,
+    check=True,
+    capture_output=True,
+    text=True,
+).stdout.splitlines()
+assert tracked_manifests == [], (
+    "run-specific device manifests must stay out of Git; found: "
+    + ", ".join(tracked_manifests)
+)
+
+misplaced_manifests = sorted(
+    str(path.relative_to(PROJECT_ROOT))
+    for path in (PROJECT_ROOT / "docs" / "device-protocols").glob("*.json")
+)
+assert misplaced_manifests == [], (
+    "device run manifests belong in an ignored artifact root; found: "
+    + ", ".join(misplaced_manifests)
+)
 
 print("device protocol gate: pass")

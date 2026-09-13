@@ -38,8 +38,8 @@ geometry, proxy radius or legacy reader implementation was changed.
 
 ## Device 197 — full-thumbnail page
 
-Final protocol:
-`docs/device-protocols/shared-reader-production-thumbnail-grid-entry-197.json`.
+The exact final protocol is retained as `protocol-manifest.json` under the
+local evidence root below.
 
 On 197 (`ALN-AL80`, portrait 1260 x 2720), the matching-hash protocol passed
 1/1 in 29.242 s:
@@ -65,8 +65,8 @@ Evidence root:
 
 ## Device 103 — wide Detail preview grid
 
-Final protocol:
-`docs/device-protocols/shared-reader-production-thumbnail-wide-entry-103.json`.
+The exact final protocol is retained as `protocol-manifest.json` under the
+local evidence root below.
 
 On 103 (`MLR-AL00`), the test retained the device's original portrait setting,
 temporarily rotated into the actual 2560 x 1600 wide layout, then passed 1/1 in

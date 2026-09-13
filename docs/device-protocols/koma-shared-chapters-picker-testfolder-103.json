@@ -1,7 +1,0 @@
-{
- "schemaVersion":1,"name":"koma-shared-chapters-picker-testfolder-103","target":"192.168.50.103:12345","authorizedTarget":"192.168.50.103:12345","hdc":"/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
- "artifactDir":"/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa103-candidate/device103__MLR-AL00/not-applicable/portrait-1600x2560/07-picker-testfolder",
- "display":{"widthPx":1600,"heightPx":2560},"context":{"project":"Koma","codeIdentity":"candidate002812","page":"independent folder authorization discovery","deviceAlias":"device103","deviceModel":"MLR-AL00","foldState":"not-applicable","orientation":"portrait","resolution":"1600x2560","notes":"Current unique KomaReaderValidation20260912 Row265,1051..1335,1184."},
- "preflight":[],"measurement":{"actions":[{"name":"independent-folder","uiInput":["click","800","1117"],"pauseAfterMs":300}]},
- "postflight":[{"name":"layout","hdcArgs":["shell","uitest","dumpLayout","-p","/data/local/tmp/koma103-testfolder.json"]},{"name":"receive-layout","hdcArgs":["file","recv","/data/local/tmp/koma103-testfolder.json","/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa103-candidate/device103__MLR-AL00/not-applicable/portrait-1600x2560/07-picker-testfolder/layout.json"]}]
-}

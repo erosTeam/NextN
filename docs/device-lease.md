@@ -20,12 +20,37 @@ scripts/device-lease --device "$TARGET" run --lease "$LEASE_ID" -- \
   -t "$TARGET" shell echo ok
 
 # After transport recovery, all stateful/evidentiary device work uses one
-# checked project manifest. This entrypoint dry-runs before entering the lease.
+# checked project-owned manifest. A run-specific manifest belongs in an ignored
+# artifact root; this entrypoint dry-runs before entering the lease.
 scripts/run-device-protocol --device "$TARGET" --lease "$LEASE_ID" \
-  docs/device-protocols/example.json
+  .hvigor/outputs/<run>/input-manifest.json
 
 scripts/device-lease --device "$TARGET" release --lease "$LEASE_ID"
 ```
+
+## Manifest ownership and retention
+
+The checked runner requires a project-owned manifest; it does not require every
+manifest to be source controlled. Keep only stable, reusable scenario
+definitions in Git. A manifest tied to one device run, artifact directory,
+build hash, installation, wake, capture, retry, or cleanup step belongs under
+an ignored project artifact root such as `.hvigor/outputs/` or
+`.hermes-artifacts/` and must not be force-added. The runner copies the exact
+input to the evidence directory as `protocol-manifest.json`, so each accepted
+run remains auditable without adding another execution snapshot to
+`docs/device-protocols/`.
+
+Historical manifests remain recoverable from Git history. Current execution
+evidence keeps its exact copied manifest beside `run-metadata.json`; do not add
+run-specific JSON files to `docs/device-protocols/`.
+
+One manifest must describe the complete uninterrupted scenario through its
+preflight, measurement, and postflight phases. Do not split an ordinary route
+into separate `gate`, `install`, `open`, `menu`, `capture`, `final`, or `exit`
+manifests. A distinct manifest is justified only when an explicit decision
+gate changes the next authorized action; it is still a local run input, not a
+source file. `scripts/test_device_protocol_gate.py` and CI reject any JSON
+manifest found or tracked under `docs/device-protocols/`.
 
 Direct lease-wrapped HDC is restricted to target discovery/reconnect,
 `shell echo`, boot-completion readback, and artifact receive. Wake/timeout,

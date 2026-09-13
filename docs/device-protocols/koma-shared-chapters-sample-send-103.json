@@ -1,7 +1,0 @@
-{
- "schemaVersion":1,"name":"koma-shared-chapters-sample-send-103","target":"192.168.50.103:12345","authorizedTarget":"192.168.50.103:12345","hdc":"/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
- "artifactDir":"/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa103-candidate/device103__MLR-AL00/not-applicable/portrait-1600x2560/05-sample-send",
- "display":{"widthPx":1600,"heightPx":2560},"context":{"project":"Koma","codeIdentity":"candidate002812","page":"prepare independent normal folder import","deviceAlias":"device103","deviceModel":"MLR-AL00","foldState":"not-applicable","orientation":"portrait","resolution":"1600x2560","notes":"User expressly authorizes independent test comic through normal import. Only new timestamped public folder; existing neutral QA PNGs copied without edits, 2/3 pages. No app sandbox/library writes. Public Docs/Download established historical import path. -e absence gate stops existing target overwrite."},
- "preflight":[{"name":"target-must-not-exist","hdcArgs":["shell","test","!","-e","/storage/media/100/local/files/Docs/Download/KomaReaderValidation20260912"]},{"name":"send-independent-folder","hdcArgs":["file","send","/private/tmp/KomaReaderValidation20260912","/storage/media/100/local/files/Docs/Download/KomaReaderValidation20260912"],"timeoutSeconds":60}],
- "measurement":{"actions":[]},"postflight":[]
-}

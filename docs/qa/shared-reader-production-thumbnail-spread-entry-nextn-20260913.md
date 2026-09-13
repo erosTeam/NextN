@@ -44,8 +44,8 @@ test below are the evidence for this slice.
 
 ## Device 197 evidence
 
-Final protocol:
-`docs/device-protocols/shared-reader-production-thumbnail-spread-entry-197.json`.
+The exact final protocol is retained as `protocol-manifest.json` under the
+local evidence root below.
 
 On 197 (`ALN-AL80`, portrait 1260 x 2720), the matching-hash protocol completed
 at 2026-09-13 00:34:42 +08:00. Hypium passed 1/1 in 34.465 s:

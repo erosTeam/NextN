@@ -1,7 +1,0 @@
-{
- "schemaVersion":1,"name":"koma-shared-chapters-picker-download-103","target":"192.168.50.103:12345","authorizedTarget":"192.168.50.103:12345","hdc":"/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
- "artifactDir":"/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa103-candidate/device103__MLR-AL00/not-applicable/portrait-1600x2560/06-picker-download",
- "display":{"widthPx":1600,"heightPx":2560},"context":{"project":"Koma","codeIdentity":"candidate002812","page":"select independent folder from normal Download picker","deviceAlias":"device103","deviceModel":"MLR-AL00","foldState":"not-applicable","orientation":"portrait","resolution":"1600x2560","notes":"Current Download Row265,915..1335,1048. No existing folder chosen."},
- "preflight":[],"measurement":{"actions":[{"name":"Download","uiInput":["click","800","980"],"pauseAfterMs":300}]},
- "postflight":[{"name":"layout","hdcArgs":["shell","uitest","dumpLayout","-p","/data/local/tmp/koma103-download.json"]},{"name":"receive-layout","hdcArgs":["file","recv","/data/local/tmp/koma103-download.json","/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa103-candidate/device103__MLR-AL00/not-applicable/portrait-1600x2560/06-picker-download/layout.json"]}]
-}

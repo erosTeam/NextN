@@ -38,8 +38,8 @@ or cached exit geometry was changed.
 
 ## Device evidence
 
-Final protocol:
-`docs/device-protocols/shared-reader-production-thumbnail-entry-197.json`.
+The exact final protocol is retained as `protocol-manifest.json` under the
+local evidence root below.
 
 On device 197 (`ALN-AL80`, portrait 1260 x 2720), the matching-hash protocol
 passed 1/1 in 27.184 s:

@@ -33,8 +33,8 @@ legacy Reader/transition are unchanged by this checkpoint.
 
 ## Device evidence
 
-Final checked protocol:
-`docs/device-protocols/shared-reader-entry-capture-boundary-197.json`.
+The exact checked protocol is retained as `protocol-manifest.json` under the
+final local evidence root below; it is not a source-controlled run instance.
 
 On device 197 (`ALN-AL80`, portrait 1260×2720), the final exact-hash run passed
 1/1 in 9.983 s:

@@ -26,8 +26,8 @@ fresh opt-in. The default backend is not changed.
 
 ### Device 103 — ordinary Detail Read and rollback
 
-- Protocol:
-  `docs/device-protocols/shared-reader-production-backend-nextn-103.json`.
+- Exact protocol: retained as `protocol-manifest.json` under the local evidence
+  root below.
 - Evidence root:
   `.hermes-artifacts/20260913-shared-production-backend-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/02-direct-host-normal-entry/`.
 - Hypium: `Tests run: 1, Failure: 0, Error: 0, Pass: 1`; duration
@@ -39,8 +39,8 @@ fresh opt-in. The default backend is not changed.
 
 ### Device 197 — warmed production failure and exact retry
 
-- Protocol:
-  `docs/device-protocols/shared-reader-production-failure-recovery-197.json`.
+- Exact protocol: retained as `protocol-manifest.json` under the local evidence
+  root below.
 - Evidence root:
   `.hermes-artifacts/20260913-shared-production-failure-recovery-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/04-direct-host/`.
 - Hypium: `Tests run: 1, Failure: 0, Error: 0, Pass: 1`; duration
@@ -54,8 +54,8 @@ fresh opt-in. The default backend is not changed.
 
 ### Device 103 — extreme long page shared-versus-legacy comparator
 
-- Protocol:
-  `docs/device-protocols/shared-reader-production-thumbnail-wide-direct-host-103.json`.
+- Exact protocol: retained as `protocol-manifest.json` under the local evidence
+  root below.
 - Evidence root:
   `.hermes-artifacts/20260913-shared-production-thumbnail-wide-direct-host-103/device103__MLR-AL00/not-applicable/portrait-1600x2560/06-legacy-comparator/`.
 - Hypium: `Tests run: 1, Failure: 0, Error: 0, Pass: 1`; duration
@@ -71,8 +71,8 @@ fresh opt-in. The default backend is not changed.
 
 ### Device 197 — pending-preview cancellation and fresh opt-in
 
-- Protocol:
-  `docs/device-protocols/shared-reader-production-entry-cancel-197.json`.
+- Exact protocol: retained as `protocol-manifest.json` under the local evidence
+  root below.
 - Evidence root:
   `.hermes-artifacts/20260913-shared-production-entry-cancel-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/26-focused-regex/`.
 - Hypium: `Tests run: 1, Failure: 0, Error: 0, Pass: 1`; duration

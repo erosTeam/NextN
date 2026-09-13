@@ -1,7 +1,0 @@
-{
- "schemaVersion":1,"name":"koma-shared-chapters-cbz-select-103","target":"192.168.50.103:12345","authorizedTarget":"192.168.50.103:12345","hdc":"/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
- "artifactDir":"/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa103-candidate/device103__MLR-AL00/not-applicable/portrait-1600x2560/12-cbz-selected",
- "display":{"widthPx":1600,"heightPx":2560},"context":{"project":"Koma","codeIdentity":"candidate002812","page":"select independent CBZ","deviceAlias":"device103","deviceModel":"MLR-AL00","foldState":"not-applicable","orientation":"portrait","resolution":"1600x2560","notes":"Current unique KomaReaderValidation20260912.cbz Text396,996..952,1041."},
- "preflight":[],"measurement":{"actions":[{"name":"independent-cbz","uiInput":["click","700","1018"],"pauseAfterMs":400}]},
- "postflight":[{"name":"layout","hdcArgs":["shell","uitest","dumpLayout","-p","/data/local/tmp/koma103-cbz-selected.json"]},{"name":"receive-layout","hdcArgs":["file","recv","/data/local/tmp/koma103-cbz-selected.json","/Users/honjow/git/Koma/.hermes-artifacts/20260912-shared-chapters/qa103-candidate/device103__MLR-AL00/not-applicable/portrait-1600x2560/12-cbz-selected/layout.json"]}]
-}

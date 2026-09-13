@@ -28,7 +28,8 @@ Status: **LIMITED PASS**. This closes repeated cover/tail singleton entry for th
 
 - Signed main HAP SHA-256: `ac7bc57d462b8187a9cc8eb08616cd946d7ea990771e7c1463c55be45779de92`.
 - Signed ohosTest HAP SHA-256: `abdb73453f853b89fd2ff0c26d1d75e94d7f7c185f81c03dacd9e9088b08f50e`.
-- Protocol: `docs/device-protocols/shared-reader-production-thumbnail-singletons-197.json`.
+- Exact protocol: retained as `protocol-manifest.json` under the local evidence
+  root below.
 - Final artifacts: `.hermes-artifacts/20260913-shared-production-thumbnail-singletons-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/26-final/`.
 - Hypium: `Tests run: 1, Failure: 0, Error: 0, Pass: 1`; duration `77.139s`.
 - Runtime summary: `coverCentered=true`, `tailCentered=true`, `onePartEach=true`, `deliveredBoth=true`, `sourceRestoredBoth=true`, `historyRestored=true`, `settingsRestored=true`.
