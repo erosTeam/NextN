@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-auto-translation-spread-failure-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "commit c3787908 plus spread failure/retry host trial; main 229a4aed694964f05a2269799c37d2cc6a34bf3509d799d25be72041b3ab6d53; native b8582aa29548971c474131bdc8df2b23ebe29921ccef55b16dfb873101db881d",
+    "page": "optional shared Reader automatic translation failure in RTL split spread",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Temporarily selects RTL, split double-page and odd-left for gallery 678049. Source 2 fails while visible source 3 must still translate; explicit retry then restores source 2 without rerunning source 3. Restores exact history, presentation settings, timeout and legacy backend."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-auto-translation-spread-failure/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-current-failed-partner-ready-retry",
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "temporary-long-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "install-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "install-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "clear-bounded-hilog", "hdcArgs": ["shell", "hilog", "-r"] },
+    { "name": "native-shared-reader-auto-translation-spread-failure", "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test", "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderProductionAutoTranslationSpreadFailureTrial", "-s", "timeout", "240000"], "timeoutSeconds": 270 }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "auto-translation-spread-failure-log", "hdcArgs": ["shell", "hilog -x | grep -E 'ReaderProductionBackendTrial|NextNSharedTranslation|ReaderSurface|ComicVisual' | tail -1000"], "timeoutSeconds": 30 },
+    { "name": "receive-spread-failed-screen", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-translation-auto-spread-current-failed-partner-ready.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-auto-translation-spread-failure/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-current-failed-partner-ready-retry/translation-auto-spread-current-failed-partner-ready.png"] },
+    { "name": "receive-spread-recovered-screen", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-translation-auto-spread-current-recovered.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-auto-translation-spread-failure/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-current-failed-partner-ready-retry/translation-auto-spread-current-recovered.png"] },
+    { "name": "force-stop-nextn-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "10000"] },
+    { "name": "power", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}
