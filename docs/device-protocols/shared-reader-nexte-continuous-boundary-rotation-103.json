@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-nexte-continuous-boundary-rotation-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextE",
+    "codeIdentity": "NextE 20b9cbad plus ReaderThumbnailContinuousBoundaryRotationTrial with current-page viewport assertion and no pre-entry orientation rewrite; main aa28c677451233404eab070d7ad051d603cd5b8ce9c3ea6e4bcd38e2edaa04cc; native 787e3d6cd8dffa45f859162f32258aa0b6057ddc7fcb34d344a91f83a705ad07",
+    "page": "optional shared reader continuous physical P1 to P2 boundary and tablet rotation retention",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait to landscape to portrait",
+    "resolution": "1600x2560 and 2560x1600",
+    "notes": "The test-only continuous thumbnail entry uses bounded physical upward swipes to reach the real P2 row, checks the same logical boundary and Image after both rotations, then closes to the retained Detail source. Saved mode, default routing and app data remain unchanged."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-continuous-boundary-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/03-no-preentry-rewrite",
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "temporary-long-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "power-readback", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "force-stop-before", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nexte"] },
+    { "name": "install-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextE/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "install-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextE/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "clear-bounded-hilog", "hdcArgs": ["shell", "hilog", "-r"] },
+    { "name": "native-shared-reader-nexte-continuous-boundary", "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nexte", "-m", "entry_test", "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderThumbnailContinuousBoundaryRotationTrial", "-s", "readerLabWork", "4175844", "-s", "readerLabUnit", "37d7c39ec2", "-s", "timeout", "150000"], "timeoutSeconds": 180 }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "continuous-boundary-log", "hdcArgs": ["shell", "hilog -x | grep -E 'ReaderContinuousReflow|ReaderEntryProbe|ReaderThumbnailContinuousBoundaryRotationTrial|Tests run|Failure|Error|Pass' | tail -1200"], "timeoutSeconds": 30 },
+    { "name": "receive-portrait", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-entry-continuous-boundary-portrait.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-continuous-boundary-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/03-no-preentry-rewrite/portrait.png"] },
+    { "name": "receive-portrait-layout", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-entry-continuous-boundary-portrait.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-continuous-boundary-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/03-no-preentry-rewrite/portrait.json"] },
+    { "name": "receive-landscape", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-entry-continuous-boundary-landscape.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-continuous-boundary-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/03-no-preentry-rewrite/landscape.png"] },
+    { "name": "receive-landscape-layout", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-entry-continuous-boundary-landscape.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-continuous-boundary-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/03-no-preentry-rewrite/landscape.json"] },
+    { "name": "receive-returned", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-entry-continuous-boundary-returned.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-continuous-boundary-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/03-no-preentry-rewrite/returned.png"] },
+    { "name": "receive-returned-layout", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nexte/cache/rkit-entry-continuous-boundary-returned.json", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-nexte-continuous-boundary-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/03-no-preentry-rewrite/returned.json"] },
+    { "name": "force-stop-nexte-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nexte"] },
+    { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "10000"] },
+    { "name": "power", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}
