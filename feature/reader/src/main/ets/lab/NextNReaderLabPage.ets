@@ -47,6 +47,7 @@ import {
   NextNReaderTranslationConfiguration,
   NextNReaderTranslationProvider,
 } from './NextNReaderTranslationProvider'
+import { connectNextNReaderTranslationProbe } from './NextNReaderTranslationProbe'
 
 @ComponentV2
 export struct NextNReaderLabPage {
@@ -183,6 +184,15 @@ export struct NextNReaderLabPage {
       (page: ReaderPage): NextNReaderTranslationConfiguration => this.translationConfiguration(page))
     const session = new ReaderPagedSession(catalog, new ReaderLabAssetProbe(translationProvider, this.request.thumbnailFailurePage,
       this.request.informationProbe, this.request.thumbnailEntry ? this.request.failurePage : -1))
+    connectNextNReaderTranslationProbe().bindAction(context, this.request.work, (id: string): boolean => {
+      const state = this.session?.snapshot()
+      const source = state?.unit?.key
+      const sourceIndex = state?.anchor?.sourceIndexHint ?? -1
+      if (source === null || source === undefined || sourceIndex < 0) return false
+      const revision = this.translationPreferenceRevision
+      this.handleTranslationAction(id, source, state?.navigationRevision ?? -1, sourceIndex)
+      return this.translationPreferenceRevision !== revision
+    })
     if (this.request.readingChrome) void this.initializeSession(context, session)
     else this.session = session
   }

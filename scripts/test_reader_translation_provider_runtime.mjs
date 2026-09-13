@@ -14,6 +14,14 @@ const core = { ...load('ReaderContent'), ...load('ReaderSession'), ...load('Read
   ...load('ReaderImageInformation') }
 const calls = []
 let runPromise = null
+let probeResultPath = ''
+const probeStages = []
+const translationProbe = {
+  result() { return probeResultPath },
+  deliver(_context, _work, sourceIndex, stage, identity) {
+    probeStages.push([sourceIndex, stage, identity])
+  },
+}
 let result = {
   renderedPage: {
     localFilePath: '/cache/translated.png',
@@ -48,6 +56,9 @@ vm.runInNewContext(ts.transpileModule(source, {
       this.file = file; this.facts = facts
     } } }
     if (name === 'shared') return shared
+    if (name === './NextNReaderTranslationProbe') {
+      return { connectNextNReaderTranslationProbe: () => translationProbe }
+    }
     throw new Error(`unexpected import ${name}`)
   },
 })
@@ -84,6 +95,15 @@ assert.equal(translated.originalAvailable, true)
 assert.equal(translated.information.facts.variant, 'translated')
 await provider.prepareVariant(page, 'enhanced', 'enhanced:v1', new core.ReaderCancellation())
 assert.equal(delegated, 1)
+
+probeStages.length = 0
+probeResultPath = '/cache/local-translated.png'
+const probePlan = await provider.prepareVariant(page, 'translated', identity, new core.ReaderCancellation())
+const probeAsset = await probePlan.load(new core.ReaderCancellation(), false)
+assert.equal(probeAsset.uri, 'file:///cache/local-translated.png')
+assert.deepEqual(probeStages.map(value => value.slice(0, 2)), [[0, 'prepare'], [0, 'applied']])
+assert.equal(calls.length, 1)
+probeResultPath = ''
 
 let resolveRun
 runPromise = new Promise(resolve => { resolveRun = resolve })

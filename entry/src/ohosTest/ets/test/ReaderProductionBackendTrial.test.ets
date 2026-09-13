@@ -19,7 +19,11 @@ import {
   ReaderTrialOriginalProbe,
   ReaderTrialOriginalSnapshot,
 } from 'shared'
-import { NextNReaderProductionFailureFacts, NextNReaderProductionFailureProbe } from 'reader'
+import {
+  connectNextNReaderTranslationProbe,
+  NextNReaderProductionFailureFacts,
+  NextNReaderProductionFailureProbe,
+} from 'reader'
 
 const GALLERY_ID: number = 678049
 const SNAPSHOT_FILE: string = 'reader-production-backend-history.json'
@@ -547,6 +551,105 @@ async function closeAnyReader(driver: Driver): Promise<void> {
   throw new Error('Production Reader did not close')
 }
 
+async function visibleText(driver: Driver, value: string): Promise<Component | null> {
+  const component = await driver.findComponent(ON.text(value))
+  if (component === null) return null
+  try {
+    return await component.getText() === value ? component : null
+  } catch (_) {
+    return null
+  }
+}
+
+async function waitTranslationActionLabel(driver: Driver, label: string, attempts: number = 40): Promise<Component> {
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    if (await visibleText(driver, label) !== null) {
+      const expected = await driver.findComponent(ON.id('rkit-host-action-translate-page'))
+      if (expected !== null) {
+        try { await expected.getText(); return expected } catch (_) {}
+      }
+    }
+    const actionLabel = await visibleText(driver, AppStrings.get('reader_comic_translation_action'))
+    const originalLabel = await visibleText(driver, AppStrings.get('reader_comic_translation_show_original'))
+    const resultLabel = await visibleText(driver, AppStrings.get('reader_comic_translation_show_result'))
+    if (actionLabel !== null || originalLabel !== null || resultLabel !== null) await driver.pressBack()
+    const more = await driver.findComponent(ON.id('rkit-more'))
+    if (more !== null) await more.click()
+    await driver.delayMs(200)
+    if (await visibleText(driver, label) !== null) {
+      const expected = await driver.findComponent(ON.id('rkit-host-action-translate-page'))
+      if (expected !== null) {
+        try { await expected.getText(); return expected } catch (_) {}
+      }
+    }
+    if (await visibleText(driver, AppStrings.get('reader_comic_translation_action')) !== null ||
+      await visibleText(driver, AppStrings.get('reader_comic_translation_show_original')) !== null ||
+      await visibleText(driver, AppStrings.get('reader_comic_translation_show_result')) !== null) {
+      await driver.pressBack()
+    }
+    await driver.delayMs(500)
+  }
+  throw new Error(`Translation action did not become ${label}`)
+}
+
+async function closeInformationDialog(driver: Driver): Promise<void> {
+  const button = await driver.findComponent(ON.type('Button').within(ON.type('AlertDialog')))
+  if (button === null) throw new Error('Reader information dialog button unavailable')
+  await button.click()
+  for (let attempt = 0; attempt < 40; attempt++) {
+    if (await driver.findComponent(ON.type('AlertDialog')) === null) return
+    await driver.delayMs(100)
+  }
+  throw new Error('Reader information dialog did not close')
+}
+
+async function waitInformationVariant(driver: Driver, variant: string, name: string,
+  translated: boolean = true): Promise<void> {
+  for (let attempt = 0; attempt < 120; attempt++) {
+    const more = await driver.findComponent(ON.id('rkit-more'))
+    if (more === null) { await driver.delayMs(500); continue }
+    await more.click()
+    await driver.delayMs(200)
+    const information = await driver.findComponent(ON.id('rkit-image-info'))
+    if (information === null || !await information.isEnabled()) {
+      await driver.pressBack()
+      await driver.delayMs(500)
+      continue
+    }
+    await information.click()
+    await driver.delayMs(500)
+    const texts = await driver.findComponents(ON.type('Text'))
+    let found: boolean = false
+    for (const text of texts) {
+      const value = await text.getText()
+      if (translated ? value.includes(variant) : value.includes(AppStrings.get('rkit_info_current')) &&
+        !value.includes(variant)) { found = true; break }
+    }
+    if (found) {
+      await capture(driver, name)
+      await closeInformationDialog(driver)
+      return
+    }
+    await closeInformationDialog(driver)
+    await driver.delayMs(500)
+  }
+  throw new Error(`Reader information did not report expected translation state: ${translated}`)
+}
+
+async function writeTranslationFixture(context: common.UIAbilityContext): Promise<string> {
+  const bytes = await context.resourceManager.getRawFileContent('comic_translation_live_eval_page_02.jpg')
+  const path = `${context.cacheDir}/rkit-local-translation-result.jpg`
+  const file = fileIo.openSync(path,
+    fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC)
+  try {
+    const written = fileIo.writeSync(file.fd, bytes.buffer, { length: bytes.byteLength })
+    expect(written).assertEqual(bytes.byteLength)
+  } finally {
+    fileIo.closeSync(file)
+  }
+  return path
+}
+
 export default function readerProductionBackendTrialTest(): void {
   const selectedClass = abilityDelegatorRegistry.getArguments().parameters['-s class']
   if (selectedClass === 'ReaderProductionFailureRecoveryTrial') {
@@ -801,6 +904,88 @@ export default function readerProductionBackendTrialTest(): void {
             await restoreAndVerify(database, originalHistory)
             removeSnapshot()
           }
+          await launchBackend('legacy', false)
+        }
+      })
+    })
+    return
+  }
+  if (selectedClass === 'ReaderProductionTranslationTrial') {
+    describe(selectedClass, (): void => {
+      it('rendersAndTogglesTheHostOwnedTranslatedResult', 0, async (): Promise<void> => {
+        const driver = Driver.create()
+        let database: relationalStore.RdbStore | null = null
+        let originalHistory: HistorySnapshot | null = null
+        let restored = false
+        let failed = false
+        let fixturePath: string = ''
+        let probeEpoch: number = 0
+        const translationStages: Set<string> = new Set<string>()
+        const translationProbe = connectNextNReaderTranslationProbe()
+        try {
+          await launchBackend('shared', true)
+          const context = await entryContext(driver)
+          fixturePath = await writeTranslationFixture(context)
+          probeEpoch = translationProbe.arm(`${GALLERY_ID}`, fixturePath,
+            (sourceIndex: number, stage: string, _identity: string): void => {
+              translationStages.add(`${sourceIndex}:${stage}`)
+              console.info(`[ReaderProductionBackendTrial] translationProbe source=${sourceIndex} stage=${stage}`)
+            })
+          database = await store(context)
+          originalHistory = await snapshotHistory(database)
+          writeSnapshot(originalHistory)
+          await seedHistoryPage(database, 2)
+
+          await (await waitDetailRead(driver)).click()
+          expect(await waitSharedReady(driver)).assertEqual(2)
+          const translate = await waitTranslationActionLabel(driver,
+            AppStrings.get('reader_comic_translation_action'))
+          expect(await translate.isEnabled()).assertTrue()
+          await translate.click()
+
+          for (let attempt = 0; attempt < 80; attempt++) {
+            if (await driver.findComponent(ON.id('rkit-host-status')) !== null) {
+              await capture(driver, 'translation-running')
+              break
+            }
+            await driver.delayMs(100)
+          }
+          const showOriginal = await waitTranslationActionLabel(driver,
+            AppStrings.get('reader_comic_translation_show_original'))
+          await capture(driver, 'translation-result')
+          expect(translationStages.has('2:prepare')).assertTrue()
+          expect(translationStages.has('2:applied')).assertTrue()
+          console.info('[ReaderProductionBackendTrial] translationStep=result')
+
+          await showOriginal.click()
+          await driver.delayMs(1200)
+          await capture(driver, 'translation-original')
+          console.info('[ReaderProductionBackendTrial] translationStep=original')
+
+          expect(translationProbe.invoke(probeEpoch, 'translate-page')).assertTrue()
+          await driver.delayMs(1200)
+          await capture(driver, 'translation-restored')
+          console.info('[ReaderProductionBackendTrial] translationStep=restored')
+
+          await closeAnyReader(driver)
+          await waitDetailRead(driver)
+          await restoreAndVerify(database, originalHistory)
+          restored = true
+          removeSnapshot()
+          console.info('[ReaderProductionBackendTrial] translationManual=true resultTranslated=true ' +
+            'originalVisible=true resultRestored=true historyRestored=true')
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'translation-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          if (probeEpoch > 0) translationProbe.cancel(probeEpoch)
+          try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+          if (!restored && database !== null && originalHistory !== null) {
+            await restoreAndVerify(database, originalHistory)
+            removeSnapshot()
+          }
+          if (fixturePath.length > 0 && fileIo.accessSync(fixturePath)) fileIo.unlinkSync(fixturePath)
           await launchBackend('legacy', false)
         }
       })

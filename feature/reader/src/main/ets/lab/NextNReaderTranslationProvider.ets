@@ -10,6 +10,7 @@ import {
   ComicTranslationReaderPageInput, ComicTranslationRuntimeService, ComicVisualTranslationRunResult,
   ReaderPageCropService,
 } from 'shared'
+import { connectNextNReaderTranslationProbe } from './NextNReaderTranslationProbe'
 
 class NextNReaderTranslationCropSource implements ReaderImageCropSource {
   private static sequence: number = 0
@@ -143,8 +144,21 @@ export class NextNReaderTranslationProvider implements ReaderAssetProvider {
     if (sourcePath.length === 0) throw new Error('reader_translation_source_unavailable')
     const detach = cancellation.onCancel((): void => {
       console.info(`[NextNSharedTranslation] cancelled source=${page.sourceIndex} identity=${identity}`)
+      connectNextNReaderTranslationProbe().deliver(
+        this.context, page.unit.work, page.sourceIndex, 'cancelled', identity)
     })
     try {
+      const probe = connectNextNReaderTranslationProbe()
+      const localResultPath = probe.result(this.context, page.unit.work)
+      if (localResultPath.length > 0) {
+        console.info(`[NextNSharedTranslation] prepare source=${page.sourceIndex} identity=${identity} runtime=local-probe`)
+        probe.deliver(this.context, page.unit.work, page.sourceIndex, 'prepare', identity)
+        cancellation.check()
+        console.info(`[NextNSharedTranslation] applied source=${page.sourceIndex} identity=${identity} runtime=local-probe`)
+        probe.deliver(this.context, page.unit.work, page.sourceIndex, 'applied', identity)
+        return new NextNReaderTranslationPlan(page, identity, localResultPath,
+          this.provider.prepareOriginal !== undefined)
+      }
       const input = new ComicTranslationReaderPageInput()
       input.projectId = configuration.projectId
       input.pageIndex = page.sourceIndex
@@ -159,10 +173,13 @@ export class NextNReaderTranslationProvider implements ReaderAssetProvider {
       if (this.configuration(page).identity() !== identity || configuration.resultIdentity(result) !== identity ||
         result.renderedPage.localFilePath.length === 0) throw new Error('reader_translation_result_stale')
       console.info(`[NextNSharedTranslation] applied source=${page.sourceIndex} identity=${identity}`)
+      probe.deliver(this.context, page.unit.work, page.sourceIndex, 'applied', identity)
       return new NextNReaderTranslationPlan(page, identity, result.renderedPage.localFilePath,
         this.provider.prepareOriginal !== undefined)
     } catch (error) {
       console.warn(`[NextNSharedTranslation] unavailable source=${page.sourceIndex} identity=${identity} error=${String(error)}`)
+      connectNextNReaderTranslationProbe().deliver(
+        this.context, page.unit.work, page.sourceIndex, 'unavailable', identity)
       throw error as Error
     } finally {
       detach()
