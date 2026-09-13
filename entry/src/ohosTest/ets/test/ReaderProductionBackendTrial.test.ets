@@ -1645,6 +1645,151 @@ export default function readerProductionBackendTrialTest(): void {
     })
     return
   }
+  if (selectedClass === 'ReaderProductionAutoTranslationSpreadCancellationTrial') {
+    describe(selectedClass, (): void => {
+      it('cancelsTheOldSpreadTranslationOnPhysicalRtlTurnAndRecoversOnReturn', 0,
+        async (): Promise<void> => {
+          const driver = Driver.create()
+          let context: common.UIAbilityContext | null = null
+          let database: relationalStore.RdbStore | null = null
+          let originalHistory: HistorySnapshot | null = null
+          let originalMode: NhReaderMode = NhReaderMode.PAGED
+          let originalDouble: boolean = false
+          let originalSpread: NhReaderSpreadLayout = NhReaderSpreadLayout.JOINED
+          let settings: SettingSnapshot[] = []
+          let restored = false
+          let failed = false
+          let fixturePath: string = ''
+          let probeEpoch: number = 0
+          const translationStages: Set<string> = new Set<string>()
+          const prepareCounts: Map<number, number> = new Map<number, number>()
+          const translationProbe = connectNextNReaderTranslationProbe()
+          try {
+            await launchBackend('shared', true)
+            context = await entryContext(driver)
+            fixturePath = await writeTranslationFixture(context)
+            probeEpoch = translationProbe.arm(`${GALLERY_ID}`, fixturePath,
+              (sourceIndex: number, stage: string, _identity: string): void => {
+                translationStages.add(`${sourceIndex}:${stage}`)
+                if (stage === 'prepare') prepareCounts.set(sourceIndex, (prepareCounts.get(sourceIndex) ?? 0) + 1)
+                console.info(`[ReaderProductionBackendTrial] autoSpreadCancellation source=${sourceIndex} stage=${stage}`)
+              }, 2)
+            database = await store(context)
+            originalHistory = await snapshotHistory(database)
+            writeSnapshot(originalHistory)
+            await ReaderPresentationService.restore(context)
+            const presentation = ReaderPresentationService.snapshot()
+            originalMode = presentation.mode
+            originalDouble = presentation.doublePageEnabled
+            originalSpread = presentation.spreadLayoutMode
+            for (const key of ['reader_mode', 'reader_double_page_enabled', 'reader_spread_layout',
+              `reader_column_mode:${GALLERY_ID}`]) {
+              settings.push(new SettingSnapshot(key, await settingValue(database, key)))
+            }
+            await ReaderPresentationService.setMode(context, NhReaderMode.PAGED_RTL)
+            await ReaderPresentationService.setDoublePageEnabled(context, true)
+            await ReaderPresentationService.setSpreadLayout(context, NhReaderSpreadLayout.SPLIT)
+            await ReaderSettingsRepository.saveColumnMode(context, GALLERY_ID, NhReaderColumnMode.ODD_LEFT)
+            connectReaderPresentation().mode = NhReaderMode.PAGED_RTL
+            connectReaderPresentation().doublePageEnabled = true
+            connectReaderPresentation().spreadLayoutMode = NhReaderSpreadLayout.SPLIT
+            await seedHistoryPage(database, 2)
+
+            await (await waitDetailRead(driver)).click()
+            expect(await waitSharedReady(driver)).assertEqual(2)
+            expect(await waitId(driver, 'rkit-part-2-whole') !== null).assertTrue()
+            expect(await waitId(driver, 'rkit-part-3-whole') !== null).assertTrue()
+            expect(translationProbe.invoke(probeEpoch, 'translate-auto')).assertFalse()
+            await clickAlertButton(driver, AppStrings.get('common_on'))
+            for (let attempt = 0; attempt < 80; attempt++) {
+              if (translationStages.has('2:prepare')) break
+              await driver.delayMs(100)
+            }
+            expect(translationStages.has('2:prepare')).assertTrue()
+            expect(translationStages.has('2:applied')).assertFalse()
+            expect(prepareCounts.get(2) ?? 0).assertEqual(1)
+
+            const viewport = await waitId(driver, 'rkit-image-viewport')
+            const bounds = await viewport.getBounds()
+            const width = bounds.right - bounds.left
+            const y = Math.round((bounds.top + bounds.bottom) / 2)
+            await driver.swipe(Math.round(bounds.left + width * 0.18), y,
+              Math.round(bounds.left + width * 0.82), y, 700)
+            expect(await waitDifferentSharedPage(driver, 2)).assertEqual(4)
+            for (let attempt = 0; attempt < 160; attempt++) {
+              if (translationStages.has('2:cancelled') && translationStages.has('4:applied') &&
+                translationStages.has('5:applied')) break
+              await driver.delayMs(100)
+            }
+            expect(translationStages.has('2:cancelled')).assertTrue()
+            expect(translationStages.has('2:applied')).assertFalse()
+            expect(translationStages.has('4:prepare')).assertTrue()
+            expect(translationStages.has('4:applied')).assertTrue()
+            expect(translationStages.has('5:prepare')).assertTrue()
+            expect(translationStages.has('5:applied')).assertTrue()
+            expect(prepareCounts.get(2) ?? 0).assertEqual(1)
+            expect(prepareCounts.get(4) ?? 0).assertEqual(1)
+            expect(prepareCounts.get(5) ?? 0).assertEqual(1)
+            expect(await waitId(driver, 'rkit-part-4-whole') !== null).assertTrue()
+            expect(await waitId(driver, 'rkit-part-5-whole') !== null).assertTrue()
+            expect(await driver.findComponent(ON.id('rkit-host-status'))).assertNull()
+            await capture(driver, 'translation-auto-spread-cancel-next')
+
+            const nextViewport = await waitId(driver, 'rkit-image-viewport')
+            const nextBounds = await nextViewport.getBounds()
+            const nextWidth = nextBounds.right - nextBounds.left
+            const nextY = Math.round((nextBounds.top + nextBounds.bottom) / 2)
+            await driver.swipe(Math.round(nextBounds.left + nextWidth * 0.82), nextY,
+              Math.round(nextBounds.left + nextWidth * 0.18), nextY, 700)
+            expect(await waitDifferentSharedPage(driver, 4)).assertEqual(2)
+            for (let attempt = 0; attempt < 160; attempt++) {
+              if (translationStages.has('2:applied') && translationStages.has('3:applied')) break
+              await driver.delayMs(100)
+            }
+            expect(translationStages.has('2:applied')).assertTrue()
+            expect(translationStages.has('3:prepare')).assertTrue()
+            expect(translationStages.has('3:applied')).assertTrue()
+            expect(prepareCounts.get(2) ?? 0).assertEqual(2)
+            expect(prepareCounts.get(3) ?? 0).assertEqual(1)
+            expect(prepareCounts.get(4) ?? 0).assertEqual(1)
+            expect(prepareCounts.get(5) ?? 0).assertEqual(1)
+            expect(await driver.findComponent(ON.id('rkit-host-status'))).assertNull()
+            expect(await waitId(driver, 'rkit-part-2-whole') !== null).assertTrue()
+            expect(await waitId(driver, 'rkit-part-3-whole') !== null).assertTrue()
+            await capture(driver, 'translation-auto-spread-cancel-return')
+
+            await closeAnyReader(driver)
+            await waitDetailRead(driver)
+            await restoreAndVerify(database, originalHistory)
+            await restoreProductionSpreadSettings(context, database, settings,
+              originalMode, originalDouble, originalSpread)
+            restored = true
+            removeSnapshot()
+            console.info('[ReaderProductionBackendTrial] translationAutoSpreadCancellation=true ' +
+              'lateOldResultRejected=true nextSpreadTranslated=true returnSpreadRecovered=true ' +
+              'hostStatusCleared=true historyRestored=true settingsRestored=true')
+          } catch (error) {
+            failed = true
+            try { await capture(driver, 'translation-auto-spread-cancellation-exception') } catch (_) {}
+            throw error as Error
+          } finally {
+            if (probeEpoch > 0) translationProbe.cancel(probeEpoch)
+            try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+            if (!restored && database !== null && originalHistory !== null) {
+              await restoreAndVerify(database, originalHistory)
+              if (context !== null) {
+                await restoreProductionSpreadSettings(context, database, settings,
+                  originalMode, originalDouble, originalSpread)
+              }
+              removeSnapshot()
+            }
+            if (fixturePath.length > 0 && fileIo.accessSync(fixturePath)) fileIo.unlinkSync(fixturePath)
+            await launchBackend('legacy', false)
+          }
+        })
+    })
+    return
+  }
   if (selectedClass === 'ReaderProductionAutoTranslationContinuousTrial') {
     describe(selectedClass, (): void => {
       it('warmsTheNextTranslationAndReusesItAfterAContinuousThumbnailSeek', 0,

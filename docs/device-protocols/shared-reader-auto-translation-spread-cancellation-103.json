@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-reader-auto-translation-spread-cancellation-103",
+  "target": "192.168.50.103:12345",
+  "authorizedTarget": "192.168.50.103:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "display": { "widthPx": 1600, "heightPx": 2560 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "commit e3d05bdc plus spread physical-turn cancellation trial; main 229a4aed694964f05a2269799c37d2cc6a34bf3509d799d25be72041b3ab6d53; native 1b84412d7cff91400f5656e868cfab0bff352a366653ede076b3804497aec5c7",
+    "page": "optional shared Reader translation cancellation across RTL split-spread navigation",
+    "deviceAlias": "device103",
+    "deviceModel": "MLR-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1600x2560",
+    "notes": "Temporarily selects RTL, split double-page and odd-left for gallery 678049. A one-shot debug gate pauses source 2; a physical RTL spread turn must cancel it, translate sources 4 and 5, and a physical return must freshly translate sources 2 and 3. Restores exact history, presentation settings, timeout and legacy backend."
+  },
+  "artifactDir": "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-auto-translation-spread-cancellation/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-physical-turn-return",
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "temporary-long-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "install-main", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "install-native", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 180 },
+    { "name": "clear-bounded-hilog", "hdcArgs": ["shell", "hilog", "-r"] },
+    { "name": "native-shared-reader-auto-translation-spread-cancellation", "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test", "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderProductionAutoTranslationSpreadCancellationTrial", "-s", "timeout", "240000"], "timeoutSeconds": 270 }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "auto-translation-spread-cancellation-log", "hdcArgs": ["shell", "hilog -x | grep -E 'ReaderProductionBackendTrial|NextNSharedTranslation|ReaderSurface|ComicVisual' | tail -1000"], "timeoutSeconds": 30 },
+    { "name": "receive-spread-cancel-next", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-translation-auto-spread-cancel-next.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-auto-translation-spread-cancellation/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-physical-turn-return/translation-auto-spread-cancel-next.png"] },
+    { "name": "receive-spread-cancel-return", "hdcArgs": ["file", "recv", "/data/app/el2/100/base/com.erosteam.nextn/cache/reader-production-backend-translation-auto-spread-cancel-return.png", "/Users/honjow/git/NextN/.hermes-artifacts/20260913-shared-reader-auto-translation-spread-cancellation/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-physical-turn-return/translation-auto-spread-cancel-return.png"] },
+    { "name": "force-stop-nextn-with-data-preserved", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "10000"] },
+    { "name": "power", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"] },
+    { "name": "window", "hdcArgs": ["shell", "hidumper", "-s", "WindowManagerService", "-a", "-a"] }
+  ]
+}
