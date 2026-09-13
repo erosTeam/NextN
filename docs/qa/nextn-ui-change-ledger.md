@@ -11401,3 +11401,88 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Remaining replacement gates:** downloaded/local source and staged-detail seed, all Reader settings/actions,
   background/foreground and rotation, failure/retry/share/information, thumbnail transitions, and phone/tablet
   layout matrices remain unproven. Device 103 follows only after the first 197 production-shell loop is stable.
+
+## 2026-09-13 — Optional shared Reader exact-source reload continuity — OPEN
+
+- **Why newly actionable:** current device-103 evidence reproduces one exact difference in the same Reader route and
+  source: force-reloading an extreme long image in single-page mode reaches a replacement Image completion callback
+  but leaves the only page visually black, while reloading either source in split spread mode keeps the two pages
+  visible. The rejected single result is retained under
+  `.hvigor/outputs/shared-reader-manual-reload/device103__MLR-AL00/not-applicable/portrait-1600x2560/13-fsync/`.
+- **Whole parent-tree boundary:** `ReaderSurface -> ReaderPagerSurface -> ReaderPagedViewport -> Row -> ForEach ->
+  ReaderPagedCell -> ReaderPagedImage`. Chrome, menu ordering, source selection, image fit, zoom, pager index,
+  transition ownership, failure material, cache policy and the legacy Reader remain unchanged.
+- **Source-proven bad transition:** the frame `ForEach` key currently includes `assetRequestId`. A successful force
+  reload therefore removes and recreates the sole child subtree in single-page mode. In spread mode only one of two
+  child subtrees is replaced, matching the device-only divergence. HarmonyOS documents the key generator as a
+  unique and persistent identity for each data item; the request epoch is a callback fence, not the persistent page
+  slot identity.
+- **Minimal experiment:** keep the key stable for the existing page slot and rendered fragment while continuing to
+  pass `assetRequestId` into the cell and Image callbacks. Do not add a background, delay, opacity transition, new
+  layout branch or fallback bitmap. First replay the exact single/spread force-reload manifest on 103; reject any
+  black/empty frame, index change, stale callback acceptance, or missing requested source.
+- **Unresolved boundary:** a successful exact replay establishes only single/spread reload continuity for this long
+  NH source on 103. It does not accept all cache/retry/failure paths, replace the legacy Reader, or prove NextE/Koma
+  host parity.
+- **Rejected experiment:** run `14-stable-frame-key` removed `assetRequestId` from the `ForEach` key. Both tests
+  correctly rejected the absent replacement identity (`Failure: 2, Pass: 0`), and the pulled images were stale cache
+  artifacts from the prior run rather than new terminal captures. The experiment is reverted. A stable key alone
+  cannot help because the current core first publishes an empty frame, so even a persistent slot disappears before
+  the replacement arrives.
+- **Next minimal experiment:** for a force reload of the currently displayed exact page only, keep the old snapshot
+  and asset alive while the provider fetches its replacement; publish the new request atomically when its URI is
+  ready and retire the old lease only after the new native Image callback. Navigation, failed-asset Retry and initial
+  load keep their existing destructive lifecycle. Clear the four exact test evidence files before every replay so a
+  failed test cannot be mistaken for a fresh screenshot.
+- **Retained-lease result:** fresh run `15-retained-presented` completed both semantic tests (`Pass: 2, Failure: 0`),
+  but whole-frame inspection rejected the visuals: the single terminal frame was black and the spread terminal frame
+  retained only partial top strips. The retained lease proves the old bytes survive the fetch; it does not by itself
+  preserve the native Image subtree while the replacement request is published.
+- **Revised minimal experiment:** combine the non-empty force-reload snapshot with a stable slot/fragment `ForEach`
+  identity. The retained cell resolves its live frame and `assetRequestId` from the reactive snapshot, so the request
+  epoch remains a callback fence without becoming child identity. This is distinct from rejected run 14, where the
+  core still removed the slot and the cell retained the old request captured by the closure.
+- **Stable-live-cell result:** run `16-stable-live-cell` again passed both semantic tests, but fresh terminal captures
+  remained visually invalid: single was black and spread retained only small top fragments. Pulled layout trees show
+  the same native Image hash before/after each reload and unchanged full-height bounds; only its dynamic id/request
+  changed. This rejects missing/recreated outer constraints as the remaining cause and localizes the failure to native
+  pixel continuity while an extreme-ratio Image switches URI.
+- **Current experiment:** publish the previous URI as an explicit, bounded underlay for the same display slot and keep
+  its provider lease until that slot is replaced, fails, navigates away or closes. The new Image remains the only
+  callback owner and renders above it; no color background or failure-card change is introduced. At most one prior
+  asset is retained, and a consecutive replacement retires the older lease before adopting the current one.
+- **New-underlay rejection:** run `17-retained-pixel-underlay` proved that a newly mounted Image pointed at the old,
+  intact cache URI also rendered black/partial. Its node and full bounds were present, so preserving only provider
+  bytes is insufficient for this extreme ratio. The already painted native leaf itself must remain at its original
+  structural position and unchanged URI.
+- **Revised handoff:** the original Image call site now continues to render the retained URI and ignores replacement
+  callbacks; a second Image above it owns the new URI, request id and callbacks. This preserves the only node already
+  known to contain complete pixels, while keeping source acquisition and lifecycle in core and host adapters.
+- **Native-node result:** run `18-preserved-native-underlay` retained the exact pre-reload Image hash and URI, but its
+  dynamic component id changed to the replacement-underlay label; the device still invalidated its pixels. Terminal
+  single/spread captures remained black/partial and are rejected despite 2/2 semantic completion.
+- **Identity-complete experiment:** retain the prior `assetRequestId` in the core snapshot as well as its URI. The
+  original leaf therefore keeps the same hash, URI, bounds and component id; the new upper leaf alone receives the
+  replacement id. No additional lifetime or layout state is introduced.
+- **Accepted implementation:** keep the persistent page-slot/fragment key and the original Image call site; during
+  exact replacement, core exposes the prior URI and its original asset request id as a one-generation underlay while
+  the second Image owns the candidate callbacks. Candidate decode success is promoted after a post-frame callback,
+  then the prior provider asset is released. The NextN host complements this by streaming each force reload into a
+  short immutable `-rN.img` sibling, calling `fsync` before publication, marking only actually presented leases, and
+  excluding live leases from LRU deletion. A byte-identical response still receives a new URI: the same-URI attempt
+  disconnected the new request epoch from the displayed asset identity and failed the close/reopen regression, so
+  that optimization was removed.
+- **Source/build proof:** reader-kit full suite passes `357/357`; the NextN reader contract and production data-source
+  runtime checks pass. Signed main and native-test builds succeed with SHA-256 `a101432f...` and `cfc0f51d...`.
+- **103 device acceptance:** independent fresh artifact runs `37-immutable-uri-handoff` and
+  `38-immutable-uri-stability` each pass both semantic paths. Final run 38 reports
+  `Tests run: 2, Failure: 0, Error: 0, Pass: 2` in `30.941s`: the same extreme-long source survives the first and
+  second exact reload, close/reopen restores it, and reloading one source in split spread leaves both pages complete.
+  Root inspected the whole PNGs plus raw center crops and signal statistics. `finished`, `second-finished`, `reopened`
+  and `spread-finished` have nonempty image distributions; `second-finished` and `reopened` are byte-identical at
+  `8e1497d9...`. Chrome, counter, slider and actions stay present. The desktop image preview transiently rendered an
+  original PNG as all black; the original file, extracted center crop and pixel statistics contradicted that viewer
+  artifact, so it is not accepted as device evidence.
+- **Accepted boundary:** this closes the named optional NextN single/spread manual source-reload continuity on 103.
+  General cache eviction, offline/download reload, failure/retry variants, NextE/Koma host adoption and default-reader
+  replacement remain open. No 237 use, default migration, push or legacy-reader replacement occurred.

@@ -220,6 +220,22 @@ for (const token of ['load(', 'clear(']) {
     throw new Error(`ReaderImageCacheService.ets: missing ${token}`)
   }
 }
+if (/if \(forceReload\) \{\s*ReaderImageCacheService\.removeIfExists\(filePath\)/s.test(cache)) {
+  throw new Error('ReaderImageCacheService: force reload must not delete a file still owned by the current ArkUI Image')
+}
+if (!/fileIo\.fsyncSync\(file\.fd\)[\s\S]*fileIo\.closeSync\(file\)[\s\S]*ReaderImageCacheService\.removeIfExists\(filePath\)[\s\S]*fileIo\.renameSync\(tmpPath, filePath\)/.test(cache)) {
+  throw new Error('ReaderImageCacheService: completed stream must fsync and close before replacing the final file')
+}
+for (const token of ['familyPath', 'reloadPath(filePath)', 'latestPath(filePath)', 'static retain(',
+  'static markPresented(', 'static release(', 'localLeases.get(entries[i].path)']) {
+  if (!cache.includes(token)) throw new Error(`ReaderImageCacheService: missing immutable force-reload lifecycle ${token}`)
+}
+if (!/if \(!lease\.presented\) \{[\s\S]*removeIfExists\(result\.localPath\)[\s\S]*return[\s\S]*maintainAfterStore\(context, result\.bytes\)/.test(cache)) {
+  throw new Error('ReaderImageCacheService: never-presented versions must be deleted while presented versions remain immutable')
+}
+if (!/const latestPath: string = ReaderImageCacheService\.latestPath\(filePath\)[\s\S]*const stageReload: boolean = forceReload &&[\s\S]*downloadAndStore\([\s\S]*storagePath,[\s\S]*!stageReload/.test(cache)) {
+  throw new Error('ReaderImageCacheService: force reload must stage beside a live stable cache file')
+}
 
 const imageActions = await readFile(
   new URL('shared/src/main/ets/services/NhReaderImageActionService.ets', ROOT),

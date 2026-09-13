@@ -35,8 +35,19 @@ export class ReaderImageCacheResult {
   displayUri: string = ''
   /** Private local source when caching succeeded; never populated for a remote fallback. */
   localPath: string = ''
+  /** Stable cache-family base for an immutable force-reload version; empty for ordinary assets. */
+  familyPath: string = ''
   bytes: number = 0
   fromCache: boolean = false
+}
+
+/** One shared-reader ownership token for a resolved private cache file. */
+export class ReaderImageCacheLease {
+  result: ReaderImageCacheResult
+  presented: boolean = false
+  released: boolean = false
+
+  constructor(result: ReaderImageCacheResult) { this.result = result }
 }
 
 /** Aggregate-only view of the private Reader cache; it never exposes page paths or URLs. */
@@ -63,6 +74,8 @@ export class ReaderImageCacheService {
   // scroll path.
   private static maintenanceWritesSincePrune: number = -1
   private static maintenanceBytesSincePrune: number = 0
+  private static reloadEpoch: number = 0
+  private static localLeases: Map<string, number> = new Map<string, number>()
 
   static cacheKey(galleryId: number, mediaId: string, pageNumber: number, extension: string): string {
     return `reader:v2:${galleryId}:${mediaId}:${pageNumber}:${ReaderImageCacheService.normalizedExtension(extension)}`
@@ -91,10 +104,9 @@ export class ReaderImageCacheService {
       } catch (_error) {}
       return await ReaderImageCacheService.load(context, url, cacheKey, true)
     }
-    if (forceReload) {
-      ReaderImageCacheService.removeIfExists(filePath)
-    } else {
-      const cached: ReaderImageCacheResult | null = ReaderImageCacheService.cached(filePath)
+    const latestPath: string = ReaderImageCacheService.latestPath(filePath)
+    if (!forceReload) {
+      const cached: ReaderImageCacheResult | null = ReaderImageCacheService.cached(latestPath)
       if (cached !== null) {
         console.info(`NextNReaderCache hit bytes=${cached.bytes}`)
         return cached
@@ -102,21 +114,70 @@ export class ReaderImageCacheService {
     }
 
     // An explicit Retry is intentionally a fresh, user-triggered GET. It does
-    // not inherit an earlier failed or stale reader source.
+    // not inherit an earlier failed or stale reader source. Keep an existing
+    // final file intact while its replacement streams into .part: the current
+    // ArkUI Image can still own that file until the state emission is rendered.
+    // downloadAndStore swaps the completed file only after the stream closes.
+    const stageReload: boolean = forceReload && ReaderImageCacheService.fileSize(latestPath) > 0
+    const storagePath: string = stageReload ? ReaderImageCacheService.reloadPath(filePath) : filePath
     const download: Promise<ReaderImageCacheResult> = ReaderImageCacheService.downloadAndStore(
       context,
       url,
-      filePath,
+      storagePath,
+      !stageReload,
     )
     ReaderImageCacheService.inFlight.set(filePath, download)
     try {
-      return await download
+      const result = await download
+      if (stageReload && result.localPath.length > 0) result.familyPath = filePath
+      return result
     } finally {
       const active: Promise<ReaderImageCacheResult> | undefined = ReaderImageCacheService.inFlight.get(filePath)
       if (active === download) {
         ReaderImageCacheService.inFlight.delete(filePath)
       }
     }
+  }
+
+  /**
+   * Releases a provider result after reader-kit has retired its Image node.
+   * Force-reload versions remain immutable after presentation. Normal loads
+   * select the latest complete sibling instead of renaming a path that ArkUI
+   * may still cache or decode.
+   */
+  static retain(result: ReaderImageCacheResult): ReaderImageCacheLease {
+    const lease = new ReaderImageCacheLease(result)
+    if (result.localPath.length > 0) {
+      const count: number = ReaderImageCacheService.localLeases.get(result.localPath) ?? 0
+      ReaderImageCacheService.localLeases.set(result.localPath, count + 1)
+    }
+    return lease
+  }
+
+  static markPresented(lease: ReaderImageCacheLease): void {
+    if (!lease.released) lease.presented = true
+  }
+
+  static release(context: common.UIAbilityContext, lease: ReaderImageCacheLease): void {
+    if (lease.released) return
+    lease.released = true
+    const result: ReaderImageCacheResult = lease.result
+    ReaderImageCacheService.releaseLocalLease(result.localPath)
+    const familyPath: string = result.familyPath
+    if (familyPath.length === 0 || result.localPath.length === 0 || result.localPath === familyPath) return
+    if (!lease.presented) {
+      // A source that never reached native presentation is not a valid cache candidate.
+      ReaderImageCacheService.removeIfExists(result.localPath)
+      return
+    }
+    ReaderImageCacheService.maintainAfterStore(context, result.bytes)
+  }
+
+  private static releaseLocalLease(path: string): void {
+    if (path.length === 0) return
+    const count: number = ReaderImageCacheService.localLeases.get(path) ?? 0
+    if (count <= 1) ReaderImageCacheService.localLeases.delete(path)
+    else ReaderImageCacheService.localLeases.set(path, count - 1)
   }
 
   /** Counts only completed private files. Active streams and remote URLs are never included. */
@@ -166,6 +227,7 @@ export class ReaderImageCacheService {
     context: common.UIAbilityContext,
     url: string,
     filePath: string,
+    maintain: boolean,
   ): Promise<ReaderImageCacheResult> {
     const tmpPath: string = `${filePath}.part`
     ReaderImageCacheService.removeIfExists(tmpPath)
@@ -225,6 +287,10 @@ export class ReaderImageCacheService {
       if (written <= 0) {
         throw new Error('Reader image response was empty')
       }
+      // ArkUI can begin decoding immediately after this promise resolves. Make
+      // every streamed byte visible to that independent native reader first;
+      // close/rename alone is insufficient for consecutive extreme-long reloads.
+      fileIo.fsyncSync(file.fd)
       fileIo.closeSync(file)
       file = null
       ReaderImageCacheService.removeIfExists(filePath)
@@ -236,7 +302,7 @@ export class ReaderImageCacheService {
       }
       completed = true
       console.info(`NextNReaderCache stored bytes=${bytes}`)
-      ReaderImageCacheService.maintainAfterStore(context, bytes)
+      if (maintain) ReaderImageCacheService.maintainAfterStore(context, bytes)
       return ReaderImageCacheService.result(filePath, bytes, false)
     } catch (error) {
       // A single page larger than the private-cache budget remains readable:
@@ -339,6 +405,7 @@ export class ReaderImageCacheService {
       if ((totalBytes <= limitBytes && remaining <= limitFiles) || remaining <= 1) {
         break
       }
+      if ((ReaderImageCacheService.localLeases.get(entries[i].path) ?? 0) > 0) continue
       ReaderImageCacheService.removeIfExists(entries[i].path)
       totalBytes -= entries[i].bytes
       remaining -= 1
@@ -385,6 +452,53 @@ export class ReaderImageCacheService {
     const directory: string = ReaderImageCacheService.cacheDir(context)
     ReaderImageCacheService.ensureDir(directory)
     return `${directory}/${ReaderImageCacheService.hash(cacheKey)}.${CACHE_FILE_EXTENSION}`
+  }
+
+  private static reloadPath(filePath: string): string {
+    // Keep the app-private file URI short. The native decoder accepts the same
+    // bytes after promotion to the shorter stable path but can compose blank
+    // pixels from a long timestamped reload URI on extreme-long pages.
+    ReaderImageCacheService.reloadEpoch = Math.max(
+      ReaderImageCacheService.reloadEpoch,
+      ReaderImageCacheService.latestReloadEpoch(filePath),
+    ) + 1
+    const suffix: string = `-r${ReaderImageCacheService.reloadEpoch}.img`
+    return filePath.endsWith(`.${CACHE_FILE_EXTENSION}`)
+      ? `${filePath.substring(0, filePath.length - `.${CACHE_FILE_EXTENSION}`.length)}${suffix}`
+      : `${filePath}${suffix}`
+  }
+
+  private static latestPath(filePath: string): string {
+    const slash: number = filePath.lastIndexOf('/')
+    const directory: string = slash >= 0 ? filePath.substring(0, slash) : ''
+    const name: string = slash >= 0 ? filePath.substring(slash + 1) : filePath
+    const extension: string = `.${CACHE_FILE_EXTENSION}`
+    const stem: string = name.endsWith(extension) ? name.substring(0, name.length - extension.length) : name
+    let selected: string = ReaderImageCacheService.fileSize(filePath) > 0 ? filePath : ''
+    let selectedEpoch: number = 0
+    try {
+      const names: string[] = fileIo.listFileSync(directory)
+      for (let index: number = 0; index < names.length; index++) {
+        if (!names[index].startsWith(`${stem}-r`) || !names[index].endsWith(extension)) continue
+        const raw: string = names[index].substring(stem.length + 2, names[index].length - extension.length)
+        const epoch: number = Number(raw)
+        const candidate: string = `${directory}/${names[index]}`
+        if (Number.isSafeInteger(epoch) && epoch > selectedEpoch && ReaderImageCacheService.fileSize(candidate) > 0) {
+          selected = candidate
+          selectedEpoch = epoch
+        }
+      }
+    } catch (_error) {}
+    return selected.length > 0 ? selected : filePath
+  }
+
+  private static latestReloadEpoch(filePath: string): number {
+    const selected: string = ReaderImageCacheService.latestPath(filePath)
+    const extension: string = `.${CACHE_FILE_EXTENSION}`
+    const marker: number = selected.lastIndexOf('-r')
+    if (marker < 0 || !selected.endsWith(extension)) return 0
+    const epoch: number = Number(selected.substring(marker + 2, selected.length - extension.length))
+    return Number.isSafeInteger(epoch) && epoch > 0 ? epoch : 0
   }
 
   private static cacheDir(context: common.UIAbilityContext): string {

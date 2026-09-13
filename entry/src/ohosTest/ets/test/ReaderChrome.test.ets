@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@ohos/hypium'
-import { abilityDelegatorRegistry, Driver, ON, PointerMatrix } from '@kit.TestKit'
+import { abilityDelegatorRegistry, Driver, MatchPattern, ON, PointerMatrix } from '@kit.TestKit'
 import { fileIo } from '@kit.CoreFileKit'
 
 async function captureChrome(driver: Driver, name: string): Promise<void> {
@@ -20,8 +20,12 @@ async function captureChrome(driver: Driver, name: string): Promise<void> {
 
 async function waitChromeImage(driver: Driver, owner: string): Promise<void> {
   for (let attempt = 0; attempt < 30; attempt++) {
-    if (await driver.findComponent(ON.type('Image').within(ON.id(owner))) !== null &&
-      await driver.findComponent(ON.type('LoadingProgress').within(ON.id(owner))) === null) return
+    try {
+      if (await driver.findComponent(ON.type('Image').within(ON.id(owner))) !== null &&
+        await driver.findComponent(ON.type('LoadingProgress').within(ON.id(owner))) === null) return
+    } catch (_error) {
+      // An Image can retire between the two semantic queries.
+    }
     await driver.delayMs(500)
   }
   expect(false).assertTrue()
@@ -34,6 +38,7 @@ async function chromePage(driver: Driver): Promise<number> {
 
 /** This UI sequence runs only under an explicit named device protocol. */
 export default function readerChromeTest(): void {
+  readerManualReloadTest()
   const args = abilityDelegatorRegistry.getArguments().parameters
   const work = args['-s readerLabWork']
   if (args['-s class'] !== 'ReaderChromeTrial' || typeof work !== 'string' || work.length === 0) return
@@ -133,6 +138,96 @@ export default function readerChromeTest(): void {
       await driver.delayMs(500)
       expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
       await captureChrome(driver, 'navigation-closed')
+    })
+  })
+}
+
+/** A displayed shared-reader source can be force-reloaded without leaving its reading target. */
+function readerManualReloadTest(): void {
+  const args = abilityDelegatorRegistry.getArguments().parameters
+  const work = args['-s readerLabWork']
+  if (args['-s class'] !== 'ReaderManualReloadTrial' || typeof work !== 'string' || work.length === 0) return
+  describe('ReaderManualReloadTrial', (): void => {
+    it('reloadsTheExactVisibleSource', 0, async (): Promise<void> => {
+      const driver = Driver.create()
+      await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
+        bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+        parameters: { readerLabWork: work, readerLabChrome: 'true', readerLabEntryDirection: 'ltr' },
+      })
+      await waitChromeImage(driver, 'rkit-image-viewport')
+      expect(await chromePage(driver)).assertEqual(1)
+      const more = await driver.findComponent(ON.id('rkit-more'))
+      expect(more !== null).assertTrue()
+      if (more !== null) await more.click()
+      const reload = await driver.findComponent(ON.id('rkit-reload-source'))
+      expect(reload !== null).assertTrue()
+      await captureChrome(driver, 'reload-source-menu')
+      if (reload !== null) await reload.click()
+      // The replacement uses a new immutable URI while the previously composed
+      // Image remains available until the candidate survives a rendered frame.
+      await waitChromeImage(driver, 'rkit-image-viewport')
+      await driver.delayMs(1200)
+      expect(await chromePage(driver)).assertEqual(1)
+      await captureChrome(driver, 'reload-source-finished')
+
+      const secondMore = await driver.findComponent(ON.id('rkit-more'))
+      expect(secondMore !== null).assertTrue()
+      if (secondMore !== null) await secondMore.click()
+      const secondReload = await driver.findComponent(ON.id('rkit-reload-source'))
+      expect(secondReload !== null).assertTrue()
+      if (secondReload !== null) await secondReload.click()
+      await waitChromeImage(driver, 'rkit-image-viewport')
+      await driver.delayMs(1200)
+      expect(await chromePage(driver)).assertEqual(1)
+      await captureChrome(driver, 'reload-source-second-finished')
+
+      await (await driver.findComponent(ON.id('rkit-close'))).click()
+      await driver.delayMs(500)
+      expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
+
+      await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
+        bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+        parameters: { readerLabWork: work, readerLabChrome: 'true', readerLabEntryDirection: 'ltr' },
+      })
+      await waitChromeImage(driver, 'rkit-image-viewport')
+      await driver.delayMs(1200)
+      expect(await chromePage(driver)).assertEqual(1)
+      await captureChrome(driver, 'reload-source-reopened')
+      await (await driver.findComponent(ON.id('rkit-close'))).click()
+      await driver.delayMs(500)
+      expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
+    })
+
+    it('reloadsOneExactSpreadSource', 0, async (): Promise<void> => {
+      const driver = Driver.create()
+      await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
+        bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+        parameters: { readerLabWork: work, readerLabPage: '1', readerLabChrome: 'true',
+          readerLabEntryDirection: 'ltr' },
+      })
+      await waitChromeImage(driver, 'rkit-image-viewport')
+      await (await driver.findComponent(ON.id('rkit-toggle-spread'))).click()
+      await driver.delayMs(800)
+      await waitChromeImage(driver, 'rkit-image-viewport')
+      const page = await chromePage(driver)
+      const more = await driver.findComponent(ON.id('rkit-more'))
+      expect(more !== null).assertTrue()
+      if (more !== null) await more.click()
+      const reload = await driver.findComponent(ON.id('rkit-reload-source-spread'))
+      expect(reload !== null).assertTrue()
+      if (reload !== null) await reload.click()
+      await driver.delayMs(300)
+      const choices = await driver.findComponents(ON.id('^rkit-reload-source-[0-9]+$', MatchPattern.REG_EXP))
+      expect(choices.length).assertEqual(2)
+      await captureChrome(driver, 'reload-spread-choice')
+      await choices[0].click()
+      await waitChromeImage(driver, 'rkit-image-viewport')
+      await driver.delayMs(1200)
+      expect(await chromePage(driver)).assertEqual(page)
+      await captureChrome(driver, 'reload-spread-finished')
+      await (await driver.findComponent(ON.id('rkit-close'))).click()
+      await driver.delayMs(500)
+      expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
     })
   })
 }

@@ -3,7 +3,9 @@ import { uniformTypeDescriptor as utd } from '@kit.ArkData'
 import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { systemShare } from '@kit.ShareKit'
 import { ReaderSystemSharePresentation, ReaderFileInformation } from '@reader-kit/ui'
-import { NhApiClient, NhGalleryDetail, ReaderImageCacheService, ReaderPageCropService } from 'shared'
+import {
+  NhApiClient, NhGalleryDetail, ReaderImageCacheLease, ReaderImageCacheService, ReaderPageCropService,
+} from 'shared'
 import {
   ReaderCatalog, ReaderAssetProvider, ReaderUnitKey, ReaderUnit, ReaderPage,
   ReaderCancellation, ReaderAsset, ReaderAssetKind, ReaderImageShareHost,
@@ -162,7 +164,11 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
     const facts = new ReaderImageInformation()
     facts.bytes = result.bytes
     facts.variant = 'source'
-    const asset = new ReaderAsset(result.displayUri, () => {}, new ReaderFileInformation(result.localPath, facts))
+    const lease: ReaderImageCacheLease = ReaderImageCacheService.retain(result)
+    const asset = new ReaderAsset(result.displayUri,
+      (): void => { ReaderImageCacheService.release(this.context, lease) },
+      new ReaderFileInformation(result.localPath, facts),
+      (): void => { ReaderImageCacheService.markPresented(lease) })
     if (result.localPath.length > 0) asset.crop = new NextNReaderCropSource(result.localPath)
     return asset
   }

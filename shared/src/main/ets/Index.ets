@@ -378,7 +378,9 @@ export { NhTagCatalogService } from './services/NhTagCatalogService'
 export { NhGalleryDetailCacheRepository } from './storage/NhGalleryDetailCacheRepository'
 export { GalleryListCacheRepository } from './storage/GalleryListCacheRepository'
 export { NhGalleryDetailCacheService } from './services/NhGalleryDetailCacheService'
-export { ReaderImageCacheService, ReaderImageCacheResult, ReaderImageCacheStatus } from './services/ReaderImageCacheService'
+export {
+  ReaderImageCacheLease, ReaderImageCacheService, ReaderImageCacheResult, ReaderImageCacheStatus,
+} from './services/ReaderImageCacheService'
 export { ReaderImageCacheSettings } from './settings/ReaderImageCacheSettings'
 export { NhPageCacheService } from './services/NhPageCacheService'
 export { GalleryTagStrip } from './components/GalleryTagStrip'
