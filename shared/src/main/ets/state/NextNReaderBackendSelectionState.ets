@@ -40,7 +40,13 @@ export function connectNextNReaderBackendSelection(): NextNReaderBackendSelectio
   )!
 }
 
-/** Explicit debug Want only; absence preserves the current process-local rehearsal mode. */
+/**
+ * Explicit debug Want only.
+ *
+ * A normal launch is also an explicit return to the production-safe backend.
+ * This prevents a failed or interrupted device rehearsal from leaking the
+ * shared backend into later ordinary Reader entries in the same process.
+ */
 export function captureNextNReaderBackendWant(want: Want, debugBuild: boolean): void {
   const state: NextNReaderBackendSelectionState = connectNextNReaderBackendSelection()
   if (!debugBuild) {
@@ -50,7 +56,7 @@ export function captureNextNReaderBackendWant(want: Want, debugBuild: boolean): 
   const value: Object | undefined = want.parameters?.['nextn_reader_backend']
   if (value === NextNReaderBackend.SHARED) {
     state.select(NextNReaderBackend.SHARED)
-  } else if (value === NextNReaderBackend.LEGACY) {
+  } else {
     state.select(NextNReaderBackend.LEGACY)
   }
 }

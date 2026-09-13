@@ -92,7 +92,7 @@ export class ReaderOverlayNavigationState {
     return routeEpoch
   }
 
-  async presentPendingReader(expectedRouteEpoch: number = 0): Promise<boolean> {
+  presentPendingReader(expectedRouteEpoch: number = 0): boolean {
     const params: ReaderRouteParams | null = this.pendingReader
     if (!this.visible || this.closing || params === null ||
       (expectedRouteEpoch > 0 && params.routeEpoch !== expectedRouteEpoch)) {
@@ -101,16 +101,11 @@ export class ReaderOverlayNavigationState {
     this.pendingReader = null
     const animated: boolean = this.pendingReaderAnimated
     this.pendingReaderAnimated = true
-    try {
-      await this.stack.pushDestinationByName(`Reader:${params.routeEpoch}`, params, animated)
-      return true
-    } catch (error) {
-      if (this.visible && !this.closing && this.mountEpoch === params.routeEpoch && this.pendingReader === null) {
-        this.pendingReader = params
-        this.pendingReaderAnimated = animated
-      }
-      return false
-    }
+    // Legacy Reader must retain the accepted v1.0.4 synchronous admission
+    // path. A shared-host layout waiter must never leave a transparent modal
+    // backdrop above the app before the legacy destination is mounted.
+    this.stack.pushPathByName(`Reader:${params.routeEpoch}`, params, animated)
+    return true
   }
 
   close(animated: boolean = true): void {

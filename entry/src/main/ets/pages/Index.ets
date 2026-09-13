@@ -784,23 +784,6 @@ struct Index {
     this.readerOverlayMountEpoch = mountEpoch
   }
 
-  @Monitor('readerOverlayMountEpoch')
-  private async presentReaderOverlayAfterMount(): Promise<void> {
-    const mountEpoch: number = this.readerOverlayMountEpoch
-    if (mountEpoch <= 0 || !this.readerOverlay.visible || this.readerOverlay.activeReader !== null) return
-    const ready = await ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string => {
-      if (!this.readerOverlay.visible || this.readerOverlayMountEpoch !== mountEpoch) return ''
-      try {
-        const rect = this.readerEntryRect(`reader-overlay-host-${mountEpoch}`)
-        return rect.valid() ? `${rect.x},${rect.y},${rect.width},${rect.height}` : ''
-      } catch (_) {
-        return ''
-      }
-    }, (): boolean => this.readerEntryVisibility.foreground && this.readerOverlay.visible &&
-      this.readerOverlayMountEpoch === mountEpoch)
-    if (ready) await this.readerOverlay.presentPendingReader(mountEpoch)
-  }
-
   @Monitor('readerEntryTransition.phase', 'readerEntryVisibility.foreground')
   private syncReaderTrialWindow(): void {
     const claim = this.readerEntryClaim
@@ -4795,39 +4778,34 @@ struct Index {
           .hitTestBehavior(HitTestMode.None)
       }
 
-      // Shared Reader mounts directly from its route contract. HDS is retained
-      // only as the legacy navigation adapter, so repeated shared sessions do
-      // not inherit native destination cache state.
+      // Keep the production-safe legacy route on its accepted synchronous HDS
+      // admission path. Shared Reader owns a separate, explicitly selected
+      // direct host so its layout or initialization can never block legacy.
       if (this.readerOverlay.visible) {
-        ForEach([this.readerOverlayMountEpoch], (_epoch: number) => {
-          Stack() {
+        if (this.readerOverlay.activeReader !== null) {
+          ForEach([this.readerOverlayMountEpoch], (_epoch: number) => {
             Stack() {
-              if (this.readerOverlay.activeReader !== null) {
-                this.directSharedReaderOverlay(this.readerOverlay.activeReader as ReaderRouteParams)
-              } else {
-                HdsNavigation(this.readerOverlay.stack) {
-                  Column() {}
-                }
-                .navDestination(this.readerOverlayRouterMap)
-                .hideNavBar(true)
-                .width('100%')
-                .height('100%')
-                .backgroundColor(Color.Transparent)
-                .opacity(this.productionReaderEntryTransition?.phase === 'layout' ? 0 :
-                  this.readerThumbnailTransition.overlayOpacity)
-                .animation({ duration: this.productionReaderEntryTransition === null ? 0 : 140, curve: Curve.Linear })
-                .hitTestBehavior(this.productionReaderEntryTransition?.phase === 'layout' ?
-                  HitTestMode.None : HitTestMode.Default)
-              }
+              this.directSharedReaderOverlay(this.readerOverlay.activeReader as ReaderRouteParams)
             }
             .width('100%')
             .height('100%')
-            .id('reader-overlay-navigation')
+            .id(`reader-overlay-host-${_epoch}`)
+          }, (epoch: number): string => `${epoch}`)
+        } else {
+          HdsNavigation(this.readerOverlay.stack) {
+            Column() {}
           }
+          .navDestination(this.readerOverlayRouterMap)
+          .hideNavBar(true)
           .width('100%')
           .height('100%')
-          .id(`reader-overlay-host-${_epoch}`)
-        }, (epoch: number): string => `${epoch}`)
+          .backgroundColor(Color.Transparent)
+          .opacity(this.readerThumbnailTransition.overlayOpacity)
+          .onAppear((): void => {
+            this.readerOverlay.presentPendingReader(this.readerOverlayMountEpoch)
+          })
+          .id('reader-overlay-navigation')
+        }
       }
       IndexReaderThumbnailTransitionProxy({ state: this.readerThumbnailTransition })
       if (this.readerTrialRequest !== null) {

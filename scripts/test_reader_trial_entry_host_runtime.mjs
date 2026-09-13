@@ -306,14 +306,13 @@ test('production measurement failure opens shared reader without a fabricated tr
   assert.equal(value.host.readerDestinationRouteEpoch, value.host.readerOverlayMountEpoch,
     'direct shared child must see a current host lifecycle before aboutToAppear')
   assert.deepEqual(value.overlayPresentations, [])
-  assert.match(index, /@Monitor\('readerOverlayMountEpoch'\)[\s\S]*ReaderTrialLayoutCommit\.wait/)
-  assert.match(index, /this\.readerOverlay\.activeReader !== null\) return/)
-  assert.match(index, /if \(ready\) await this\.readerOverlay\.presentPendingReader\(mountEpoch\)/)
-  assert.match(index, /\(\): boolean => this\.readerEntryVisibility\.foreground && this\.readerOverlay\.visible/)
-  assert.match(index, /if \(this\.readerOverlay\.visible\) \{[\s\S]*ForEach\(\[this\.readerOverlayMountEpoch\]/)
-  assert.match(index, /if \(this\.readerOverlay\.activeReader !== null\) \{[\s\S]*this\.directSharedReaderOverlay/)
-  assert.match(index, /else \{[\s\S]*HdsNavigation\(this\.readerOverlay\.stack\)/)
-  assert.match(index, /readerEntryRect\(`reader-overlay-host-\$\{mountEpoch\}`\)/)
+  assert.doesNotMatch(index, /@Monitor\('readerOverlayMountEpoch'\)/,
+    'legacy admission must not wait on the shared host layout')
+  assert.match(index,
+    /if \(this\.readerOverlay\.activeReader !== null\) \{[\s\S]*ForEach\(\[this\.readerOverlayMountEpoch\][\s\S]*this\.directSharedReaderOverlay/)
+  assert.match(index,
+    /else \{[\s\S]*HdsNavigation\(this\.readerOverlay\.stack\)[\s\S]*\.onAppear\(\(\): void => \{[\s\S]*this\.readerOverlay\.presentPendingReader\(this\.readerOverlayMountEpoch\)/,
+    'legacy Reader must mount synchronously from the accepted HDS onAppear path')
   assert.match(index, /\.id\(`reader-overlay-host-\$\{_epoch\}`\)/)
   assert.match(index, /\.id\('reader-overlay-navigation'\)/)
   assert.equal(value.host.productionReaderEntryClaim, null)
