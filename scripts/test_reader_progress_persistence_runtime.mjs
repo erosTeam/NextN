@@ -31,29 +31,29 @@ const persistence = new Persistence({}, adapter)
 const request = { work: '123', unit: '', pageIndex: 2, thumbnailEntry: false, progressReadWrite: false }
 
 assert.equal(persistence.enabled(request.progressReadWrite), false)
-assert.equal(await persistence.restore(request.work, request.pageIndex, request.thumbnailEntry, request.progressReadWrite), 2)
+assert.equal(await persistence.restore(request.work, request.pageIndex, !request.thumbnailEntry, request.progressReadWrite), 2)
 await persistence.save(request.work, request.progressReadWrite, 3)
 assert.deepEqual(calls, [])
 
 request.progressReadWrite = true
 assert.equal(persistence.enabled(request.progressReadWrite), true)
-assert.equal(await persistence.restore(request.work, request.pageIndex, request.thumbnailEntry, request.progressReadWrite), 4)
+assert.equal(await persistence.restore(request.work, request.pageIndex, !request.thumbnailEntry, request.progressReadWrite), 4)
 assert.deepEqual(calls, [['restore', 123]])
 await persistence.save(request.work, request.progressReadWrite, 3)
 assert.deepEqual(calls, [['restore', 123], ['save', 123, 3]])
 
 request.thumbnailEntry = true
-assert.equal(await persistence.restore(request.work, request.pageIndex, request.thumbnailEntry, request.progressReadWrite), 2,
+assert.equal(await persistence.restore(request.work, request.pageIndex, !request.thumbnailEntry, request.progressReadWrite), 2,
   'explicit thumbnail entry must beat stored progress')
 request.thumbnailEntry = false
 request.work = 'bad'
-assert.equal(await persistence.restore(request.work, request.pageIndex, request.thumbnailEntry, request.progressReadWrite), 2)
+assert.equal(await persistence.restore(request.work, request.pageIndex, !request.thumbnailEntry, request.progressReadWrite), 2)
 await assert.rejects(persistence.save(request.work, request.progressReadWrite, 1), /shared_reader_progress_detail_unavailable/)
 
 const failing = new Persistence({}, adapter)
 history.progress = async () => { throw new Error('read failed') }
 request.work = '123'
-assert.equal(await failing.restore(request.work, request.pageIndex, request.thumbnailEntry, request.progressReadWrite), 2,
+assert.equal(await failing.restore(request.work, request.pageIndex, !request.thumbnailEntry, request.progressReadWrite), 2,
   'restore failure retains the explicit request fallback')
 
 const pageSource = fs.readFileSync(path.join(root,

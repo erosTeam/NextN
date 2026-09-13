@@ -825,7 +825,7 @@ export struct NextNReaderLabPage {
               hostStatusText: this.translationBusyPage === this.currentSourceIndex
                 ? AppStrings.get('reader_comic_translation_running')
                 : AppStrings.get('reader_comic_translation_failed'),
-              onRuntimePolicy: (policy, intent): void => { this.persistRuntimePolicy(policy, intent) },
+              onPolicyChanged: (policy, intent): void => { this.persistRuntimePolicy(policy, intent) },
               onCropChanged: (enabled, policy): void => { this.persistCrop(enabled, policy) },
               entryTransition: this.entryTransition, entryPreview: this.entryPreview,
               active: this.hostRouteActive() && this.labVisibility.foreground && !this.readerSettingsSheetShown,

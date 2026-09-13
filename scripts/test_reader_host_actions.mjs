@@ -19,7 +19,7 @@ assert.match(page, /source\.work !== this\.request\.work/)
 assert.match(page, /NhGalleryExternalOpenService\.openCanonicalGallery/)
 assert.match(page, /gallery_error_external_open_unavailable/)
 
-assert.match(page, /onRuntimePolicy: \(policy, intent\): void => \{ this\.persistRuntimePolicy\(policy, intent\) \}/)
+assert.match(page, /onPolicyChanged: \(policy, intent\): void => \{ this\.persistRuntimePolicy\(policy, intent\) \}/)
 assert.match(page, /intent === 'layout'[\s\S]*applyLayout/)
 assert.match(page, /intent === 'direction'[\s\S]*applyDirection/)
 assert.match(page, /intent === 'spread_layout'[\s\S]*applySpreadLayout/)
