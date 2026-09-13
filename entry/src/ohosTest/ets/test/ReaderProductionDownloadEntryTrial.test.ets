@@ -4,7 +4,13 @@ import { common } from '@kit.AbilityKit'
 import { relationalStore } from '@kit.ArkData'
 import { fileIo } from '@kit.CoreFileKit'
 import { KeyCode } from '@kit.InputKit'
-import { DownloadQueueService, NhDownloadTask } from 'shared'
+import {
+  connectReaderPresentation,
+  DownloadQueueService,
+  NhDownloadTask,
+  NhReaderMode,
+  ReaderPresentationService,
+} from 'shared'
 
 const CAPTURE_PREFIX: string = 'reader-production-download-entry'
 const SNAPSHOT_FILE: string = 'reader-production-download-entry-history.json'
@@ -19,6 +25,12 @@ class HistorySnapshot {
   lastReadIndex: number = 0
   hasReadProgress: number = 0
   lastOpenedAt: number = 0
+}
+
+class SettingSnapshot {
+  key: string
+  value: string | null
+  constructor(key: string, value: string | null) { this.key = key; this.value = value }
 }
 
 function snapshotPath(): string {
@@ -127,6 +139,25 @@ async function restoreAndVerify(database: relationalStore.RdbStore, value: Histo
   expect(JSON.stringify(await snapshotHistory(database, value.galleryId))).assertEqual(JSON.stringify(value))
 }
 
+async function settingValue(database: relationalStore.RdbStore, key: string): Promise<string | null> {
+  const rows = await database.querySql('SELECT value FROM reader_settings WHERE key=? LIMIT 1', [key])
+  try {
+    if (!rows.goToFirstRow()) return null
+    return rows.isColumnNull(0) ? '' : rows.getString(0)
+  } finally { rows.close() }
+}
+
+async function restoreSetting(database: relationalStore.RdbStore, value: SettingSnapshot): Promise<void> {
+  if (value.value === null) {
+    await database.executeSql('DELETE FROM reader_settings WHERE key=?', [value.key])
+  } else {
+    await database.executeSql(
+      'INSERT INTO reader_settings (key,value) VALUES (?,?) ' +
+        'ON CONFLICT(key) DO UPDATE SET value=excluded.value', [value.key, value.value])
+  }
+  expect(await settingValue(database, value.key)).assertEqual(value.value)
+}
+
 async function waitId(driver: Driver, id: string, attempts: number = 80): Promise<Component> {
   for (let attempt: number = 0; attempt < attempts; attempt += 1) {
     const component = await driver.findComponent(ON.id(id))
@@ -154,6 +185,12 @@ function pageTotal(text: string): number {
   const match = /^\s*([1-9][0-9]*)\s*\/\s*([1-9][0-9]*)\s*$/.exec(text)
   if (match === null) throw new Error(`Unexpected shared page label: ${text}`)
   return Number(match[2])
+}
+
+function pageCurrent(text: string): number {
+  const match = /^\s*([1-9][0-9]*)\s*\/\s*([1-9][0-9]*)\s*$/.exec(text)
+  if (match === null) throw new Error(`Unexpected shared page label: ${text}`)
+  return Number(match[1]) - 1
 }
 
 async function waitSharedReady(driver: Driver): Promise<number> {
@@ -223,6 +260,42 @@ async function reloadCurrentLocalPage(driver: Driver, expectedTotal: number, cap
   expect(await waitSharedReady(driver)).assertEqual(expectedTotal)
   await driver.delayMs(1200)
   expect(pageTotal(await (await waitId(driver, 'rkit-chrome-page')).getText())).assertEqual(expectedTotal)
+  await capture(driver, captureName)
+}
+
+async function waitContinuousLocalReady(driver: Driver, expectedIndex: number): Promise<void> {
+  const pageId: string = `rkit-continuous-page-${expectedIndex}`
+  for (let attempt: number = 0; attempt < 120; attempt += 1) {
+    const page = await driver.findComponent(ON.id(pageId))
+    const image = await driver.findComponent(ON.type('Image').within(ON.id(pageId)))
+    const loading = await driver.findComponent(ON.type('LoadingProgress').within(ON.id(pageId)))
+    const failure = await driver.findComponent(ON.id(`rkit-failure-page-${expectedIndex + 1}`))
+    if (page !== null && image !== null && loading === null && failure === null &&
+      await driver.findComponent(ON.id('rkit-continuous-list')) !== null &&
+      await driver.findComponent(ON.id('legacy-reader-surface')) === null) return
+    await driver.delayMs(250)
+  }
+  throw new Error(`Shared continuous local page did not settle: ${expectedIndex}`)
+}
+
+async function reloadCurrentContinuousLocalPage(driver: Driver, expectedIndex: number,
+  expectedTotal: number, captureName: string): Promise<void> {
+  let more = await driver.findComponent(ON.id('rkit-more'))
+  if (more === null) {
+    const surface: Component = await waitId(driver, 'rkit-reading-surface')
+    const bounds = await surface.getBounds()
+    await driver.click(Math.round((bounds.left + bounds.right) / 2), Math.round((bounds.top + bounds.bottom) / 2))
+    more = await waitId(driver, 'rkit-more')
+  }
+  await more.click()
+  const reload: Component = await waitId(driver, 'rkit-reload-source')
+  expect(await reload.isEnabled()).assertTrue()
+  await reload.click()
+  await waitContinuousLocalReady(driver, expectedIndex)
+  await driver.delayMs(1200)
+  const label: string = await (await waitId(driver, 'rkit-chrome-page')).getText()
+  expect(pageCurrent(label)).assertEqual(expectedIndex)
+  expect(pageTotal(label)).assertEqual(expectedTotal)
   await capture(driver, captureName)
 }
 
@@ -337,6 +410,75 @@ export default function readerProductionDownloadEntryTrialTest(): void {
         try { await closeSharedReader(driver) } catch (error) { if (!failed) throw error as Error }
         if (!restored && database !== null && original !== null) {
           await restoreAndVerify(database, original)
+          removeSnapshot()
+        }
+        await startLegacyBackend()
+      }
+    })
+  })
+  if (selectedClass === 'ReaderProductionDownloadContinuousReloadTrial') describe(selectedClass, (): void => {
+    it('reloadsCompleteLocalDownloadTwiceInContinuousMode', 0, async (): Promise<void> => {
+      const driver = Driver.create()
+      let context: common.UIAbilityContext | null = null
+      let database: relationalStore.RdbStore | null = null
+      let originalHistory: HistorySnapshot | null = null
+      let originalMode: NhReaderMode = NhReaderMode.PAGED
+      let modeSetting: SettingSnapshot | null = null
+      let restored: boolean = false
+      let failed: boolean = false
+      try {
+        await startSharedBackend()
+        context = await entryContext(driver)
+        await DownloadQueueService.restore(context)
+        const queueBefore: string = JSON.stringify(DownloadQueueService.snapshot())
+        const complete: NhDownloadTask[] = DownloadQueueService.snapshot()
+          .filter((task: NhDownloadTask): boolean => task.isComplete())
+          .sort((left: NhDownloadTask, right: NhDownloadTask): number => right.createdAt - left.createdAt)
+        if (complete.length === 0) throw new Error('A verified complete download is required')
+        const task: NhDownloadTask = complete[0]
+        database = await store(context)
+        originalHistory = await snapshotHistory(database, task.galleryId)
+        writeSnapshot(originalHistory)
+        await ReaderPresentationService.restore(context)
+        originalMode = ReaderPresentationService.snapshot().mode
+        modeSetting = new SettingSnapshot('reader_mode', await settingValue(database, 'reader_mode'))
+        await ReaderPresentationService.setMode(context, NhReaderMode.VERTICAL)
+        connectReaderPresentation().mode = NhReaderMode.VERTICAL
+
+        await (await waitId(driver, 'nextn-root-tab-2')).click()
+        await (await findDownloadEntry(driver, task.galleryId)).click()
+        const label: string = await (await waitId(driver, 'rkit-chrome-page', 120)).getText()
+        const current: number = pageCurrent(label)
+        const total: number = pageTotal(label)
+        expect(total).assertEqual(task.pageCount)
+        await waitContinuousLocalReady(driver, current)
+        await capture(driver, 'continuous-local-reload-initial')
+        await reloadCurrentContinuousLocalPage(driver, current, total, 'continuous-local-reload-first')
+        await reloadCurrentContinuousLocalPage(driver, current, total, 'continuous-local-reload-second')
+
+        await closeSharedReader(driver)
+        await waitId(driver, 'nextn-download-queue-root')
+        expect(JSON.stringify(DownloadQueueService.snapshot())).assertEqual(queueBefore)
+        await restoreAndVerify(database, originalHistory)
+        await ReaderPresentationService.setMode(context, originalMode)
+        await restoreSetting(database, modeSetting)
+        connectReaderPresentation().mode = originalMode
+        restored = true
+        removeSnapshot()
+        await capture(driver, 'continuous-local-reload-return')
+        console.info(`[ReaderProductionDownloadContinuousReloadTrial] gallery=${task.galleryId} pages=${total} ` +
+          `page=${current + 1} localReloads=2 queueUnchanged=true historyRestored=true modeRestored=true`)
+      } catch (error) {
+        failed = true
+        try { await capture(driver, 'continuous-local-reload-exception') } catch (_) {}
+        throw error as Error
+      } finally {
+        try { await closeSharedReader(driver) } catch (error) { if (!failed) throw error as Error }
+        if (!restored && context !== null && database !== null && originalHistory !== null && modeSetting !== null) {
+          await restoreAndVerify(database, originalHistory)
+          await ReaderPresentationService.setMode(context, originalMode)
+          await restoreSetting(database, modeSetting)
+          connectReaderPresentation().mode = originalMode
           removeSnapshot()
         }
         await startLegacyBackend()

@@ -11511,3 +11511,18 @@ authorize an edit, replace a device comparison, or define product completion.
   cache eviction, deleted/corrupt local file recovery, continuous/spread local reload, NextE/Koma adoption, fold or
   rotation matrices, nor authorize default replacement. Existing complete tasks were read-only and no 237 use/push
   occurred.
+
+## 2026-09-13 — Complete-download continuous same-URI reload — LIMITED PASS / replacement OPEN
+
+- **Scope:** temporarily select continuous reading through the production presentation service, open an existing
+  complete task from Downloads, reload its current immutable local row twice, close, then restore the exact raw/live
+  mode and all eight history columns. The task, files, queue, cache and default backend are not mutated.
+- **103 verification:** independent runs `run01` and `run02` pass 1/1 in `49.805s` and `50.860s`. Both report
+  gallery `661990`, page `39/47`, `localReloads=2`, `queueUnchanged=true`, `historyRestored=true` and
+  `modeRestored=true`. Whole initial/first/second/return PNGs were inspected; the full-width continuous row remains
+  painted after both reloads and every Reader layout contains zero visible loading/failure nodes. Downloads still
+  contains the original complete `47/47` and `120/120` tasks after return.
+- **Boundary:** reader-kit `5e5cb4c` is sufficient for this continuous path; no continuous-only product branch was
+  added. Deleted/corrupt files, cache eviction, local spread reload, rotation/fold, NextE/Koma adoption and default
+  replacement remain open. The first two protocol attempts before `run02` were transport-only HDC discovery failures
+  and never launched the test; they are not product evidence.
