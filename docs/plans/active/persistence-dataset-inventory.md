@@ -153,6 +153,7 @@ backup. Cache/output exclusions are intentional, not omissions.
 
 | Owner | Class | Backup | Sync | Notes |
 | --- | --- | --- | --- | --- |
+| `entry/src/ohosTest/ets/test/ReaderProductionBackendTrial.test.ets` | temporary | excluded | excluded | Test-only Reader state snapshot in the app cache directory |
 | `feature/reader/src/main/ets/lab/NextNReaderLabAdapter.ets` | temporary | excluded | excluded | Lab fixture staging files |
 | `shared/src/main/ets/diagnostics/DiagnosticsLogFileSink.ets` | diagnostics | excluded | excluded | Device-local logs |
 | `shared/src/main/ets/services/ComicLocalVisualBackend.ets` | temporary | excluded | excluded | Derived work files |
