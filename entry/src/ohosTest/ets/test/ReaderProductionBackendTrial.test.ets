@@ -2937,6 +2937,158 @@ export default function readerProductionBackendTrialTest(): void {
     return
   }
 
+  if (selectedClass === 'ReaderProductionContinuousRotationTrial') {
+    describe(selectedClass, (): void => {
+      it('keepsContinuousReadingPositionAndBoundaryAcrossTabletRotation', 0,
+        async (): Promise<void> => {
+          const driver = Driver.create()
+          let context: common.UIAbilityContext | null = null
+          let database: relationalStore.RdbStore | null = null
+          let originalHistory: HistorySnapshot | null = null
+          let originalMode: NhReaderMode = NhReaderMode.PAGED
+          let originalDouble: boolean = false
+          let originalOrientation: window.Orientation | undefined = undefined
+          let mainWindow: window.Window | null = null
+          let settings: SettingSnapshot[] = []
+          let restored = false
+          let failed = false
+          try {
+            await launchBackend('shared', true)
+            context = await entryContext(driver)
+            database = await store(context)
+            originalHistory = await snapshotHistory(database)
+            writeSnapshot(originalHistory)
+            await ReaderPresentationService.restore(context)
+            const presentation = ReaderPresentationService.snapshot()
+            originalMode = presentation.mode
+            originalDouble = presentation.doublePageEnabled
+            for (const key of ['reader_mode', 'reader_double_page_enabled']) {
+              settings.push(new SettingSnapshot(key, await settingValue(database, key)))
+            }
+            mainWindow = await window.getLastWindow(context)
+            originalOrientation = mainWindow.getPreferredOrientation()
+            await mainWindow.setPreferredOrientation(window.Orientation.PORTRAIT)
+            await driver.delayMs(1200)
+            const portrait = await driver.getDisplaySize()
+            expect(portrait.y > portrait.x).assertTrue()
+
+            await ReaderPresentationService.setMode(context, NhReaderMode.VERTICAL)
+            await ReaderPresentationService.setDoublePageEnabled(context, false)
+            connectReaderPresentation().mode = NhReaderMode.VERTICAL
+            connectReaderPresentation().doublePageEnabled = false
+            await seedHistoryPage(database, 2)
+
+            await (await waitDetailRead(driver)).click()
+            expect(await waitSharedReady(driver)).assertEqual(2)
+            expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
+            expect(await driver.findComponent(
+              ON.type('Image').within(ON.id('rkit-continuous-page-2'))) !== null).assertTrue()
+            const portraitList = await waitId(driver, 'rkit-continuous-list')
+            const portraitBounds = await portraitList.getBounds()
+            const before = await actualComponentGeometry(driver, 'rkit-continuous-page-2')
+            const portraitX = Math.round((portraitBounds.left + portraitBounds.right) / 2)
+            const portraitFromY = Math.round(portraitBounds.top + (portraitBounds.bottom - portraitBounds.top) * 0.82)
+            const portraitToY = Math.round(portraitBounds.top + (portraitBounds.bottom - portraitBounds.top) * 0.18)
+            await driver.swipe(portraitX, portraitFromY, portraitX, portraitToY, 500)
+            await driver.delayMs(800)
+            const scrolledPortrait = await actualComponentGeometry(driver, 'rkit-continuous-page-2')
+            expect(scrolledPortrait.windowId).assertEqual(before.windowId)
+            expect(before.top - scrolledPortrait.top > 2).assertTrue()
+            expect(await waitSharedReady(driver)).assertEqual(2)
+            await capture(driver, 'continuous-rotation-portrait-scrolled')
+
+            await mainWindow.setPreferredOrientation(window.Orientation.LANDSCAPE)
+            await driver.delayMs(1800)
+            const landscape = await driver.getDisplaySize()
+            expect(landscape.x > landscape.y).assertTrue()
+            expect(await waitSharedReady(driver)).assertEqual(2)
+            expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
+            expect(await driver.findComponent(
+              ON.type('Image').within(ON.id('rkit-continuous-page-2'))) !== null).assertTrue()
+            const reflowed = await actualComponentGeometry(driver, 'rkit-continuous-page-2')
+            expect(reflowed.windowId).assertEqual(before.windowId)
+            expect(reflowed.top < -2).assertTrue()
+            const landscapeList = await waitId(driver, 'rkit-continuous-list')
+            const landscapeBounds = await landscapeList.getBounds()
+            expect(landscapeBounds.right - landscapeBounds.left).assertEqual(landscape.x)
+            await capture(driver, 'continuous-rotation-landscape-retained')
+
+            const landscapeX = Math.round((landscapeBounds.left + landscapeBounds.right) / 2)
+            const landscapeFromY = Math.round(
+              landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.75)
+            const landscapeToY = Math.round(
+              landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.25)
+            let currentPage: number = 2
+            for (let attempt = 0; attempt < 55 && currentPage === 2; attempt++) {
+              await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 900)
+              await driver.delayMs(140)
+              const counter = await driver.findComponent(ON.id('rkit-chrome-page'))
+              if (counter !== null) currentPage = pageIndex(await counter.getText())
+            }
+            expect(currentPage).assertEqual(3)
+            expect(await driver.findComponent(
+              ON.type('Image').within(ON.id('rkit-continuous-page-3'))) !== null).assertTrue()
+            await capture(driver, 'continuous-rotation-landscape-next')
+
+            await mainWindow.setPreferredOrientation(window.Orientation.PORTRAIT)
+            await driver.delayMs(1800)
+            const returnedPortrait = await driver.getDisplaySize()
+            expect(returnedPortrait.y > returnedPortrait.x).assertTrue()
+            expect(await waitSharedReady(driver)).assertEqual(3)
+            expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
+            expect(await driver.findComponent(
+              ON.type('Image').within(ON.id('rkit-continuous-page-3'))) !== null).assertTrue()
+            await capture(driver, 'continuous-rotation-returned-portrait')
+
+            await closeAnyReader(driver)
+            await waitDetailRead(driver)
+            await restoreAndVerify(database, originalHistory)
+            await ReaderPresentationService.setMode(context, originalMode)
+            await ReaderPresentationService.setDoublePageEnabled(context, originalDouble)
+            for (const setting of settings) await restoreSetting(database, setting)
+            connectReaderPresentation().mode = originalMode
+            connectReaderPresentation().doublePageEnabled = originalDouble
+            if (originalOrientation !== undefined) {
+              await mainWindow.setPreferredOrientation(originalOrientation)
+              await driver.delayMs(800)
+              expect(mainWindow.getPreferredOrientation()).assertEqual(originalOrientation)
+            }
+            restored = true
+            removeSnapshot()
+            console.info('[ReaderProductionBackendTrial] continuousRotation=true portraitAnchor=2 ' +
+              `portraitTop=${scrolledPortrait.top} landscapeTop=${reflowed.top} ` +
+              'logicalPositionRetained=true physicalBoundaryReached=3 returnedPortraitAnchor=3 ' +
+              'sourceRestored=true historyRestored=true settingsRestored=true orientationRestored=true')
+          } catch (error) {
+            failed = true
+            try { await capture(driver, 'continuous-rotation-exception') } catch (_) {}
+            throw error as Error
+          } finally {
+            try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+            if (!restored && database !== null && originalHistory !== null) {
+              await restoreAndVerify(database, originalHistory)
+              if (context !== null) {
+                await ReaderPresentationService.setMode(context, originalMode)
+                await ReaderPresentationService.setDoublePageEnabled(context, originalDouble)
+              }
+              for (const setting of settings) await restoreSetting(database, setting)
+              connectReaderPresentation().mode = originalMode
+              connectReaderPresentation().doublePageEnabled = originalDouble
+              removeSnapshot()
+            }
+            if (!restored && mainWindow !== null && originalOrientation !== undefined) {
+              try {
+                await mainWindow.setPreferredOrientation(originalOrientation)
+                await driver.delayMs(800)
+              } catch (error) { if (!failed) throw error as Error }
+            }
+            await launchBackend('legacy', false)
+          }
+        })
+    })
+    return
+  }
+
   if (selectedClass === 'ReaderProductionBackendCleanupTrial') {
     describe(selectedClass, (): void => {
       it('restoresInterruptedProductionBackendHistory', 0, async (): Promise<void> => {
