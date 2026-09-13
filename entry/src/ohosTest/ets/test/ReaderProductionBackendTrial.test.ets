@@ -2809,6 +2809,134 @@ export default function readerProductionBackendTrialTest(): void {
     return
   }
 
+  if (selectedClass === 'ReaderProductionAdaptiveRotationTrial') {
+    describe(selectedClass, (): void => {
+      it('keepsTheSameRtlSplitSpreadAcrossTabletRotationAndPhysicalNavigation', 0,
+        async (): Promise<void> => {
+          const driver = Driver.create()
+          let context: common.UIAbilityContext | null = null
+          let database: relationalStore.RdbStore | null = null
+          let originalHistory: HistorySnapshot | null = null
+          let originalMode: NhReaderMode = NhReaderMode.PAGED
+          let originalDouble: boolean = false
+          let originalSpread: NhReaderSpreadLayout = NhReaderSpreadLayout.JOINED
+          let originalOrientation: window.Orientation | undefined = undefined
+          let mainWindow: window.Window | null = null
+          let settings: SettingSnapshot[] = []
+          let restored = false
+          let failed = false
+          try {
+            await launchBackend('shared', true)
+            context = await entryContext(driver)
+            database = await store(context)
+            originalHistory = await snapshotHistory(database)
+            writeSnapshot(originalHistory)
+            await ReaderPresentationService.restore(context)
+            const presentation = ReaderPresentationService.snapshot()
+            originalMode = presentation.mode
+            originalDouble = presentation.doublePageEnabled
+            originalSpread = presentation.spreadLayoutMode
+            for (const key of ['reader_mode', 'reader_double_page_enabled', 'reader_spread_layout',
+              `reader_column_mode:${GALLERY_ID}`]) {
+              settings.push(new SettingSnapshot(key, await settingValue(database, key)))
+            }
+            mainWindow = await window.getLastWindow(context)
+            originalOrientation = mainWindow.getPreferredOrientation()
+            await mainWindow.setPreferredOrientation(window.Orientation.PORTRAIT)
+            await driver.delayMs(1200)
+            const portrait = await driver.getDisplaySize()
+            expect(portrait.y > portrait.x).assertTrue()
+
+            await ReaderPresentationService.setMode(context, NhReaderMode.PAGED_RTL)
+            await ReaderPresentationService.setDoublePageEnabled(context, true)
+            await ReaderPresentationService.setSpreadLayout(context, NhReaderSpreadLayout.SPLIT)
+            await ReaderSettingsRepository.saveColumnMode(context, GALLERY_ID, NhReaderColumnMode.ODD_LEFT)
+            connectReaderPresentation().mode = NhReaderMode.PAGED_RTL
+            connectReaderPresentation().doublePageEnabled = true
+            connectReaderPresentation().spreadLayoutMode = NhReaderSpreadLayout.SPLIT
+            await seedHistoryPage(database, 2)
+
+            await (await waitDetailRead(driver)).click()
+            expect(await waitSharedReady(driver)).assertEqual(2)
+            expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
+            expect(await driver.findComponent(ON.type('Image').within(ON.id('rkit-part-2-whole'))) !== null).assertTrue()
+            expect(await driver.findComponent(ON.type('Image').within(ON.id('rkit-part-3-whole'))) !== null).assertTrue()
+            await capture(driver, 'adaptive-rotation-portrait-spread')
+
+            await mainWindow.setPreferredOrientation(window.Orientation.LANDSCAPE)
+            await driver.delayMs(1800)
+            const landscape = await driver.getDisplaySize()
+            expect(landscape.x > landscape.y).assertTrue()
+            expect(await waitSharedReady(driver)).assertEqual(2)
+            expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
+            expect(await driver.findComponent(ON.type('Image').within(ON.id('rkit-part-2-whole'))) !== null).assertTrue()
+            expect(await driver.findComponent(ON.type('Image').within(ON.id('rkit-part-3-whole'))) !== null).assertTrue()
+            const landscapeViewport = await waitId(driver, 'rkit-image-viewport')
+            const landscapeBounds = await landscapeViewport.getBounds()
+            expect(landscapeBounds.right - landscapeBounds.left).assertEqual(landscape.x)
+            await capture(driver, 'adaptive-rotation-landscape-spread')
+
+            const width = landscapeBounds.right - landscapeBounds.left
+            const y = Math.round((landscapeBounds.top + landscapeBounds.bottom) / 2)
+            await driver.swipe(Math.round(landscapeBounds.left + width * 0.18), y,
+              Math.round(landscapeBounds.left + width * 0.82), y, 700)
+            expect(await waitDifferentSharedPage(driver, 2)).assertEqual(4)
+            expect(await driver.findComponent(ON.type('Image').within(ON.id('rkit-part-4-whole'))) !== null).assertTrue()
+            expect(await driver.findComponent(ON.type('Image').within(ON.id('rkit-part-5-whole'))) !== null).assertTrue()
+            await capture(driver, 'adaptive-rotation-landscape-next')
+
+            await mainWindow.setPreferredOrientation(window.Orientation.PORTRAIT)
+            await driver.delayMs(1800)
+            const returnedPortrait = await driver.getDisplaySize()
+            expect(returnedPortrait.y > returnedPortrait.x).assertTrue()
+            expect(await waitSharedReady(driver)).assertEqual(4)
+            expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
+            expect(await driver.findComponent(ON.type('Image').within(ON.id('rkit-part-4-whole'))) !== null).assertTrue()
+            expect(await driver.findComponent(ON.type('Image').within(ON.id('rkit-part-5-whole'))) !== null).assertTrue()
+            await capture(driver, 'adaptive-rotation-returned-portrait')
+
+            await closeAnyReader(driver)
+            await waitDetailRead(driver)
+            await restoreAndVerify(database, originalHistory)
+            await restoreProductionSpreadSettings(context, database, settings,
+              originalMode, originalDouble, originalSpread)
+            if (originalOrientation !== undefined) {
+              await mainWindow.setPreferredOrientation(originalOrientation)
+              await driver.delayMs(800)
+              expect(mainWindow.getPreferredOrientation()).assertEqual(originalOrientation)
+            }
+            restored = true
+            removeSnapshot()
+            console.info('[ReaderProductionBackendTrial] adaptiveRotation=true portraitAnchor=2 ' +
+              'landscapeAnchor=2 physicalRtlNext=4 returnedPortraitAnchor=4 bothLeavesRetained=true ' +
+              'sourceRestored=true historyRestored=true settingsRestored=true orientationRestored=true')
+          } catch (error) {
+            failed = true
+            try { await capture(driver, 'adaptive-rotation-exception') } catch (_) {}
+            throw error as Error
+          } finally {
+            try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+            if (!restored && database !== null && originalHistory !== null) {
+              await restoreAndVerify(database, originalHistory)
+              if (context !== null) {
+                await restoreProductionSpreadSettings(context, database, settings,
+                  originalMode, originalDouble, originalSpread)
+              }
+              removeSnapshot()
+            }
+            if (!restored && mainWindow !== null && originalOrientation !== undefined) {
+              try {
+                await mainWindow.setPreferredOrientation(originalOrientation)
+                await driver.delayMs(800)
+              } catch (error) { if (!failed) throw error as Error }
+            }
+            await launchBackend('legacy', false)
+          }
+        })
+    })
+    return
+  }
+
   if (selectedClass === 'ReaderProductionBackendCleanupTrial') {
     describe(selectedClass, (): void => {
       it('restoresInterruptedProductionBackendHistory', 0, async (): Promise<void> => {
