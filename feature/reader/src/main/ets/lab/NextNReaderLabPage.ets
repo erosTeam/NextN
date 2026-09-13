@@ -110,6 +110,7 @@ export struct NextNReaderLabPage {
   @Local private translationBusyPage: number = -1
   @Local private translationErrorPage: number = -1
   @Local private translationPreferenceRevision: number = 0
+  private translationAutoScheduleEpoch: number = 0
   @Local private comicVisualRoute: string = COMIC_VISUAL_ROUTE_LOCAL
   @Local private toriiRuntimeProfileId: string = ''
   @Local private toriiRuntimeModelId: string = ''
@@ -254,6 +255,7 @@ export struct NextNReaderLabPage {
 
   aboutToDisappear(): void {
     this.volumeDisposed = true
+    this.translationAutoScheduleEpoch += 1
     this.translationPreferenceRevision += 1
     this.translationBusyPage = -1
     this.adapter = null
@@ -430,9 +432,63 @@ export struct NextNReaderLabPage {
     ) ?? null
   }
 
+  private translationWindowFrame(sourceIndex: number): ReaderPagedFrame | null {
+    const state = this.session?.snapshot()
+    if (state === null || state === undefined) return null
+    for (const item of state.window) {
+      const frame = item.frames.find(
+        (candidate: ReaderPagedFrame): boolean => candidate.part.sourceIndex === sourceIndex,
+      )
+      if (frame !== undefined) return frame
+    }
+    return null
+  }
+
+  private translationPage(sourceIndex: number): ReaderPage | null {
+    const framePage = this.translationWindowFrame(sourceIndex)?.asset.page
+    if (framePage !== null && framePage !== undefined) return framePage
+    return this.session?.snapshot().pageMetadata.find(
+      (page: ReaderPage): boolean => page.sourceIndex === sourceIndex,
+    ) ?? null
+  }
+
   private translationIdentity(sourceIndex: number): string {
-    const page = this.translationFrame(sourceIndex)?.asset.page
+    const page = this.translationPage(sourceIndex)
     return page === null || page === undefined ? '' : this.translationConfiguration(page).identity()
+  }
+
+  private scheduleNextAutoTranslation(sourceIndex: number): void {
+    const epoch = ++this.translationAutoScheduleEpoch
+    const prepare = (attempt: number): void => {
+      if (epoch !== this.translationAutoScheduleEpoch || !this.translationAutoEnabled ||
+        this.currentSourceIndex !== sourceIndex || this.volumeDisposed || this.closeRequested || this.hostClosing) return
+      const state = this.session?.snapshot()
+      const session = this.session
+      const next = sourceIndex + 1
+      if (session === null || state?.phase !== 'ready' || state.unit === null || next >= state.unit.pageCount ||
+        this.pageIncluded(this.translationAppliedPages, next) ||
+        this.pageIncluded(this.translationAutoFailedPages, next) ||
+        this.pageIncluded(this.translationHiddenPages, next)) return
+      const frame = this.translationWindowFrame(next)
+      if (frame?.asset.phase !== 'displayed') {
+        if (attempt < 20) setTimeout((): void => prepare(attempt + 1), 100)
+        return
+      }
+      const identity = this.translationIdentity(next)
+      if (identity.length === 0) {
+        if (attempt < 20) setTimeout((): void => prepare(attempt + 1), 100)
+        return
+      }
+      this.translationBusyPage = next
+      this.translationPreferenceRevision += 1
+      const preference = new ReaderVariantPreference('translated', identity)
+      void session.prepareVariantForSource(next, state.unit.key.copy(), state.navigationRevision,
+        'translated', identity).then((result: 'changed' | 'unchanged' | 'unavailable' | 'stale'): void => {
+          if (result === 'stale' && this.currentSourceIndex === next) return
+          this.handleVariantSelection(next, preference, result)
+        })
+    }
+    setTimeout((): void => prepare(0), 0)
   }
 
   private pageIncluded(values: number[], sourceIndex: number): boolean {
@@ -514,6 +570,7 @@ export struct NextNReaderLabPage {
     if (this.translationBusyPage >= 0) return
     if (this.translationAutoEnabled) {
       this.translationAutoEnabled = false
+      this.translationAutoScheduleEpoch += 1
       this.translationPreferenceRevision += 1
       return
     }
@@ -529,6 +586,7 @@ export struct NextNReaderLabPage {
           this.translationHiddenPages = this.excludePage(this.translationHiddenPages, sourceIndex)
           this.translationAutoEnabled = true
           if (this.translationFrame(sourceIndex)?.asset.variant !== 'translated') this.translationBusyPage = sourceIndex
+          else this.scheduleNextAutoTranslation(sourceIndex)
           this.translationPreferenceRevision += 1
         },
       },
@@ -544,6 +602,9 @@ export struct NextNReaderLabPage {
       this.translationAppliedPages = this.includePage(this.translationAppliedPages, sourceIndex)
       this.translationAutoFailedPages = this.excludePage(this.translationAutoFailedPages, sourceIndex)
       if (this.translationErrorPage === sourceIndex) this.translationErrorPage = -1
+      if (this.translationAutoEnabled && sourceIndex === this.currentSourceIndex) {
+        this.scheduleNextAutoTranslation(sourceIndex)
+      }
       return
     }
     if (result === 'unavailable') {
@@ -588,6 +649,7 @@ export struct NextNReaderLabPage {
     this.translationAutoFailedPages = []
     this.translationAppliedPages = []
     this.translationErrorPage = -1
+    this.translationAutoScheduleEpoch += 1
     if (this.translationAutoEnabled && this.translationIdentity(this.currentSourceIndex).length === 0) {
       this.translationAutoEnabled = false
       this.translationBusyPage = -1
@@ -619,6 +681,9 @@ export struct NextNReaderLabPage {
       if (this.translationAutoEnabled && !this.pageIncluded(this.translationAutoFailedPages, pageIndex) &&
         !this.pageIncluded(this.translationHiddenPages, pageIndex) &&
         this.translationFrame(pageIndex)?.asset.variant !== 'translated') this.translationBusyPage = pageIndex
+      else if (this.translationAutoEnabled && this.translationFrame(pageIndex)?.asset.variant === 'translated') {
+        this.scheduleNextAutoTranslation(pageIndex)
+      }
       this.translationPreferenceRevision += 1
     }
     this.progressWrites.save(this.progressEpoch, this.request.work, pageIndex)

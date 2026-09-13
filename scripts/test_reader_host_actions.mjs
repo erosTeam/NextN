@@ -35,5 +35,9 @@ assert.match(page, /onVariantSelection:[\s\S]*this\.handleVariantSelection\(sour
 assert.match(page, /hostStatusVisible:[\s\S]*translationBusyPage[\s\S]*translationErrorPage/)
 assert.match(page, /currentTranslationTarget[\s\S]*state\.navigationRevision === navigation/)
 assert.match(page, /translationAutoEnabled && sourceIndex === this\.currentSourceIndex/)
+assert.match(page, /scheduleNextAutoTranslation\(sourceIndex: number\)[\s\S]*const next = sourceIndex \+ 1/)
+assert.match(page, /translationWindowFrame\(next\)[\s\S]*frame\?\.asset\.phase !== 'displayed'/)
+assert.match(page, /session\.prepareVariantForSource\(next, state\.unit\.key\.copy\(\), state\.navigationRevision,[\s\S]*'translated', identity\)/)
+assert.match(page, /result === 'changed' \|\| result === 'unchanged'[\s\S]*sourceIndex === this\.currentSourceIndex[\s\S]*scheduleNextAutoTranslation\(sourceIndex\)/)
 
-console.log('PASS NextN shared reader host settings, external open and runtime preference wiring')
+console.log('PASS NextN shared reader host settings, external open, runtime preference and auto-translation wiring')
