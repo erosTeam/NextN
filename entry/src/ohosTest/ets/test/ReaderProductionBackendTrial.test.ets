@@ -1494,6 +1494,122 @@ export default function readerProductionBackendTrialTest(): void {
     })
     return
   }
+  if (selectedClass === 'ReaderProductionAutoTranslationContinuousTrial') {
+    describe(selectedClass, (): void => {
+      it('warmsTheNextTranslationAndReusesItAfterAContinuousThumbnailSeek', 0,
+        async (): Promise<void> => {
+          const driver = Driver.create()
+          let context: common.UIAbilityContext | null = null
+          let database: relationalStore.RdbStore | null = null
+          let originalHistory: HistorySnapshot | null = null
+          let originalMode: NhReaderMode = NhReaderMode.PAGED
+          let originalDouble: boolean = false
+          let settings: SettingSnapshot[] = []
+          let restored = false
+          let failed = false
+          let fixturePath: string = ''
+          let probeEpoch: number = 0
+          const translationStages: Set<string> = new Set<string>()
+          const prepareCounts: Map<number, number> = new Map<number, number>()
+          const translationProbe = connectNextNReaderTranslationProbe()
+          try {
+            await launchBackend('shared', true)
+            context = await entryContext(driver)
+            fixturePath = await writeTranslationFixture(context)
+            probeEpoch = translationProbe.arm(`${GALLERY_ID}`, fixturePath,
+              (sourceIndex: number, stage: string, _identity: string): void => {
+                translationStages.add(`${sourceIndex}:${stage}`)
+                if (stage === 'prepare') prepareCounts.set(sourceIndex, (prepareCounts.get(sourceIndex) ?? 0) + 1)
+                console.info(`[ReaderProductionBackendTrial] autoContinuous source=${sourceIndex} stage=${stage}`)
+              })
+            database = await store(context)
+            originalHistory = await snapshotHistory(database)
+            writeSnapshot(originalHistory)
+            await ReaderPresentationService.restore(context)
+            const presentation = ReaderPresentationService.snapshot()
+            originalMode = presentation.mode
+            originalDouble = presentation.doublePageEnabled
+            for (const key of ['reader_mode', 'reader_double_page_enabled']) {
+              settings.push(new SettingSnapshot(key, await settingValue(database, key)))
+            }
+            await ReaderPresentationService.setMode(context, NhReaderMode.VERTICAL)
+            await ReaderPresentationService.setDoublePageEnabled(context, false)
+            connectReaderPresentation().mode = NhReaderMode.VERTICAL
+            connectReaderPresentation().doublePageEnabled = false
+            await seedHistoryPage(database, 2)
+
+            await (await waitDetailRead(driver)).click()
+            expect(await waitSharedReady(driver)).assertEqual(2)
+            expect(await waitId(driver, 'rkit-continuous-page-2') !== null).assertTrue()
+            expect(translationProbe.invoke(probeEpoch, 'translate-auto')).assertFalse()
+            await clickAlertButton(driver, AppStrings.get('common_on'))
+            for (let attempt = 0; attempt < 160; attempt++) {
+              if (translationStages.has('2:applied') && translationStages.has('3:applied')) break
+              await driver.delayMs(100)
+            }
+            expect(translationStages.has('2:prepare')).assertTrue()
+            expect(translationStages.has('2:applied')).assertTrue()
+            expect(translationStages.has('3:prepare')).assertTrue()
+            expect(translationStages.has('3:applied')).assertTrue()
+            expect(prepareCounts.get(2) ?? 0).assertEqual(1)
+            expect(prepareCounts.get(3) ?? 0).assertEqual(1)
+            expect(await waitSharedReady(driver)).assertEqual(2)
+            await capture(driver, 'translation-auto-continuous-current')
+
+            await (await waitId(driver, 'rkit-toggle-thumbnails')).click()
+            await waitId(driver, 'rkit-thumbnail-rail')
+            await (await waitId(driver, 'rkit-thumbnail-3')).click()
+            expect(await waitDifferentSharedPage(driver, 2)).assertEqual(3)
+            expect(prepareCounts.get(3) ?? 0).assertEqual(1)
+            expect(await driver.findComponent(ON.type('Image').within(ON.id('rkit-continuous-page-3'))) !== null).assertTrue()
+            if (await driver.findComponent(ON.id('rkit-thumbnail-rail')) !== null) {
+              await (await waitId(driver, 'rkit-toggle-thumbnails')).click()
+            }
+            expect(await driver.findComponent(ON.id('rkit-host-status'))).assertNull()
+            const showOriginal = await waitTranslationActionLabel(driver,
+              AppStrings.get('reader_comic_translation_show_original'))
+            expect(await showOriginal.isEnabled()).assertTrue()
+            await driver.pressBack()
+            await capture(driver, 'translation-auto-continuous-next')
+
+            await closeAnyReader(driver)
+            await waitDetailRead(driver)
+            await restoreAndVerify(database, originalHistory)
+            await ReaderPresentationService.setMode(context, originalMode)
+            await ReaderPresentationService.setDoublePageEnabled(context, originalDouble)
+            for (const setting of settings) await restoreSetting(database, setting)
+            connectReaderPresentation().mode = originalMode
+            connectReaderPresentation().doublePageEnabled = originalDouble
+            restored = true
+            removeSnapshot()
+            console.info('[ReaderProductionBackendTrial] translationAutoContinuous=true nextPrepared=true ' +
+              'thumbnailSeekReachedNext=true nextReusedWithoutPrepare=true hostStatusCleared=true ' +
+              'historyRestored=true settingsRestored=true')
+          } catch (error) {
+            failed = true
+            try { await capture(driver, 'translation-auto-continuous-exception') } catch (_) {}
+            throw error as Error
+          } finally {
+            if (probeEpoch > 0) translationProbe.cancel(probeEpoch)
+            try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+            if (!restored && database !== null && originalHistory !== null) {
+              await restoreAndVerify(database, originalHistory)
+              if (context !== null) {
+                await ReaderPresentationService.setMode(context, originalMode)
+                await ReaderPresentationService.setDoublePageEnabled(context, originalDouble)
+              }
+              for (const setting of settings) await restoreSetting(database, setting)
+              connectReaderPresentation().mode = originalMode
+              connectReaderPresentation().doublePageEnabled = originalDouble
+              removeSnapshot()
+            }
+            if (fixturePath.length > 0 && fileIo.accessSync(fixturePath)) fileIo.unlinkSync(fixturePath)
+            await launchBackend('legacy', false)
+          }
+        })
+    })
+    return
+  }
   if (selectedClass === 'ReaderProductionBackendTrial') {
     describe(selectedClass, (): void => {
       it('routesNormalReadThroughSharedBodyThenRollsBackToLegacyBody', 0, async (): Promise<void> => {
