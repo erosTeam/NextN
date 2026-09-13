@@ -27,4 +27,13 @@ assert.match(page, /intent === 'first_page_alone'[\s\S]*applyFirstPageAlone/)
 assert.match(page, /onCropChanged: \(enabled, policy\): void => \{ this\.persistCrop\(enabled, policy\) \}/)
 assert.match(page, /NextNReaderRuntimePreferences\.applyCrop/)
 
+assert.match(page, /new NextNReaderTranslationProvider\(context, variantProvider/)
+assert.match(page, /hostActions: this\.translationActions\(\)/)
+assert.match(page, /onHostAction:[\s\S]*this\.handleTranslationAction\(id, source, navigation, sourceIndex\)/)
+assert.match(page, /variantPreferenceResolver:[\s\S]*this\.variantPreference\(sourceIndex\)/)
+assert.match(page, /onVariantSelection:[\s\S]*this\.handleVariantSelection\(sourceIndex, preference, result\)/)
+assert.match(page, /hostStatusVisible:[\s\S]*translationBusyPage[\s\S]*translationErrorPage/)
+assert.match(page, /currentTranslationTarget[\s\S]*state\.navigationRevision === navigation/)
+assert.match(page, /translationAutoEnabled && sourceIndex === this\.currentSourceIndex/)
+
 console.log('PASS NextN shared reader host settings, external open and runtime preference wiring')
