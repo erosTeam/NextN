@@ -1,3 +1,5 @@
+- OPEN — Optional production Detail-thumbnail entry to shared Reader (2026-09-12, pre-edit). Newly actionable after commit335931b7 separated NextN snapshot/geometry/aspect/release from `Index` and final197 exact-hash entry handoff passed1/1. Parent remains Detail metadata List → compact thumbnail rail/tile → retained root Navigation → private Reader overlay → shared Reader body; no node, size, crop, label, rail scroll owner or chrome geometry changes. Tile emits the already-live gallery/page/source/snapshot identity; Gallery owns its current validated Detail seed; Index alone snapshots the process-local backend, captures the source, stages that seed and opens the overlay; reader-kit receives only entry preview/transition plus the neutral production request. Before: every explicit thumbnail index is forced legacy. After: only Debug process-local `shared` claims a current Detail compact thumbnail; invalid/stale/capture-cancel paths do not open late, and legacy/default retains the existing `ReaderThumbnailTransitionCoordinator`. The opening preview must target the clicked single page first; shared spread pairing may reveal only after that page handoff, avoiding a half-thumbnail jumping directly into a pair. Close/background/source Back must retire the exact pending preview/claim, restore system bars, and return the retained Detail source. Do not alter REJ-READER-001..004 status-bar ordering, movement requirements, cached close geometry, target eligibility, proxy/root size or radius ownership. Verify source/build first, then197 actual current thumbnail→shared selected page→close/source, pending cancellation/no-late-open, RTL spread clicked-side→pair expansion, exact history/setting restoration and explicit legacy rollback. Full-thumbnail Grid is a separate next source consumer because its existing NH aspect WIP must remain untouched. No237/default migration.
+
 - LIMITED accepted — Optional original-image interpolation (2026-09-12): canonical N/E/K low/medium/high maps through shared Surface→paged/continuous→actual original Image; crop uses the same canonical value, auxiliary thumbnail/sprite/rail sampling remains Low/current. Shared300/300 and matching N/E/K signed builds pass; final N main is SHA256 `60878cdd574975b0fa77c06ef0089d24be7dc90b2323f42978d2c79b89614f5f`. N197 native Inspector now proves Low/Medium/High on actual source2→3 Image leaves with `samplingVerified=true`; Medium was restored through normal UI and independently reconfirmed natively. Whole setting captures caught the long hint visually merging with the suffix; the localized hint was narrowed, and final197 geometry keeps hint `[78,1280][651,1333]` separate from restored value `[756,1246][1108,1299]`. K103 still proves medium paged, low/high selection and low/high continuous scrolling with exact typed settings/library/session restoration. Screenshots support body/layout only, while Inspector proves the exposed interpolation enum. E runtime leaf, continuous/cropped/split native enum sampling and whole replacement stay OPEN. Evidence `shared-reader-interpolation-20260912.md`; no237/default replacement/E-K commit.
 
 - OPEN — Optional passive page-number preference (2026-09-12, pre-edit): production N ReaderPersistentPageStatus gates only numeric status via readerPresentation.showPageNumber; E ReadModeState.showPageNumber gates its passive numeric child independently of enhancement; Koma gates PersistentPageNumber after readerOpen/positive page count/hidden chrome. Existing canonical restore publishes this flag before each optional full reader session. Shared ReaderSurface Stack currently renders ReaderPageStatus whenever chrome is hidden and unit has pages, ignoring that preference. Add default-true showPageNumber Param and gate only this passive leaf; wire existing N/E/K observable canonical flag. No new restore, writeback, layout/theme/font/margin, gestures, chrome navigation count or enhancement behavior changes. N/E rejected and Koma violation searches have no matching prohibition. Verification: three matching consumer builds;197 current readonly E on/off state as available without changing enabled sync;197 N and103 Koma normal settings false/true cases with exact restoration, hidden-chrome passive absence/presence plus shown-chrome navigation count and same actual source. Methods/builds do not accept visible behavior. Existing tap checkpoint shared03e79e8/NextN8e038e8 remains named-path-only; default replacement stays prohibited.
@@ -11074,6 +11076,8 @@ authorize an edit, replace a device comparison, or define product completion.
   fields measured `[91,581][1169,737]`, `[91,849][1169,1005]` and `[91,1118][1169,1274]`, and all three reported the
   same `#0C000000` background with consistent insets. No field or tag was saved. The app was returned to Advanced
   settings and the 197 lease was released. Evidence is under
+  `.hvigor/outputs/mate60pro-lab197__ALN-AL80/not-applicable/portrait-1260x2720/settings-text-field-parity/`.
+
 ## OPEN — Shared ArkWeb JavaScript confirmation handling — 2026-09-04
 
 - **Why newly actionable:** on the authenticated official API-key settings page, both a CDP trusted click and a
@@ -11093,7 +11097,7 @@ authorize an edit, replace a device comparison, or define product completion.
   refresh and require the terminal API-key rejection plus the root recovery surface. Create and promote one
   replacement key only after that rejection evidence, then recheck native Account and Favorites.
 
-## PARTIAL DEVICE PASS / THUMBNAIL OPEN — Reader parity recovery after cross-mode geometry regression — 2026-09-05
+## CLOSED / DEVICE PASS — Reader parity recovery after cross-mode geometry regression — 2026-09-05
 
 - **Why newly actionable:** the user reported that NextN single-page reading sizes a tall strip from the screen width,
   leaving the portions beyond the fixed pager viewport unreachable, while the same content is fully contained in
@@ -11173,20 +11177,30 @@ authorize an edit, replace a device comparison, or define product completion.
   same Reader page and foreground bundle. No Share action was invoked and no Reader setting was changed. Evidence
   is under `.hvigor/outputs/reader-share-affordance-237-20260905/`.
 
-## OPEN — Reader long-strip thumbnail visible geometry — 2026-09-05
+## CLOSED / DEVICE PASS — NH long-strip all-thumbnails visible geometry — 2026-09-05
 
-- **Why newly actionable:** the user reports that the long-strip thumbnail problem is still visible after the prior
-  metadata-based correction. This supersedes the earlier visual-pass interpretation and reopens the Reader thumbnail
-  rail only.
-- **Faulty assumption and impact:** the previous acceptance equated receiving the NH `200x364` thumbnail dimensions
-  with rendering the correct visible thumbnail. That did not separately prove which thumbnail asset was displayed,
-  the tile's measured bounds, clipping, or its `ImageFit` behavior against the known-correct compact detail rail.
-- **Whole parent-tree boundary:** `ReaderBottomBar -> ReaderThumbnailStrip -> ReaderThumbnailTile ->
-  GalleryPageThumbnailSurface`, plus the same gallery page's compact detail thumbnail surface as reference. Reader
-  page image geometry, progress, navigation, selection, loading, cache identity and all other chrome remain frozen.
-- **Next evidence:** on target 237, capture the current long-strip Reader rail and the same gallery's compact detail
-  rail, then map actual asset dimensions, tile bounds and fit/clipping before another source edit. Closure requires
-  the Reader thumbnail's visible proportion to match the cropped NH preview rather than the full strip page.
+- **Why newly actionable:** the user clarified that the still-broken surface is the separate **View all thumbnails**
+  Grid, not the Reader bottom thumbnail rail. NextE's sprite-crop thumbnail contract is not reusable here: NH serves
+  one already-cropped preview file per page, whose aspect may be unrelated to the full page.
+- **Confirmed cause and impact:** on exact target `192.168.50.237:12345`, Gallery `678049` first showed four normal
+  compact-detail previews. Opening View all then rendered each three-column item as a needle-thin strip. Source maps
+  that result directly: `GalleryVirtualPageThumbnailTile` calculates `fittedWidth/fittedHeight` from
+  `NhGalleryPage.width/height` (`720x9245` through `720x10000`) and stretches the independent NH thumbnail into that
+  box with `ImageFit.Fill`.
+- **Whole parent-tree boundary:** `GalleryThumbnailsPage -> GalleryThumbnailGridContent ->
+  GalleryVirtualPageThumbnailTile -> GalleryPageThumbnailSurface`. The fixed responsive Grid cell/frame, labels,
+  density gesture, Reader transition ownership and routes stay unchanged. Reader page geometry and bottom rail are
+  outside this correction.
+- **Exact correction:** the visible thumbnail node now derives its aspect from the decoded NH thumbnail asset, using
+  thumbnail-specific DTO dimensions only as an initial fallback. Full-page dimensions are absent from this component,
+  and `ImageFit.Contain` prevents distortion. A static contract now fails if full-page geometry or `Fill` returns.
+- **Accepted build/device result:** both Gallery/Reader transition and Reader contracts pass. The signed build completed
+  successfully in `9 s 508 ms`; installed HAP SHA-256 is
+  `17a8b70bcd559d87cb0529e936b41af07ecd46d5d53813a49ade8eb07d73ca1c`. On 237, the same first-row Gallery `678049`
+  image nodes changed from `44/40/42 x 560 px` needles to `308 x 560 px` independent cropped previews, with pages
+  1–9 visibly coherent. Ordinary Gallery `677618` remained a stable three-column Grid with `396 x 560 px` first-row
+  images. Foreground bundle and root `1320x2120` viewport were captured for both. Evidence is under
+  `.hvigor/outputs/nextn-all-thumbnails-aspect-237-20260905/`.
 
 ## CLOSED / DEVICE PASS — Detail thumbnail rail browses every page — 2026-09-05
 
@@ -11353,3 +11367,37 @@ authorize an edit, replace a device comparison, or define product completion.
 - Verify: paired E main/native rebuild; standalone no-probe211-equivalent capture and close readback on237, current root and whole capture review versus205. Review equivalent N host before port. Risk: onShown timing may still precede native status activation; if so preserve evidence and do not claim accepted.
 - OPEN — Initial saved-mode handoff (2026-09-12), pre-edit. Production ReaderSpreadResolver permits spreads only for horizontal PAGED/PAGED_RTL, independent of viewport width; per-gallery columnMode controls the cover singleton. Optional NextN currently publishes a default session before asynchronous preferences restore. Preserve Index claim/source preview and shared Surface/Pager/Viewport ownership; resolve read-only initial mode/axis/direction/SPLIT/parity before publishing the full-reader session, with explicit debug overrides winning. Diagnostic surface remains unchanged. No settings/progress writes or default replacement. Initialization failure must close through the existing host owner; disappearance/close while awaiting must suppress publication. Verify actual resolver/parser/lifecycle methods, build, then named197 preference inheritance/override/entry paths with settings restored. Other settings and complete parity remain OPEN.
 - OPEN — Initial handoff scope correction before further installation (2026-09-12). Independent source counter-evidence: continuous branch has no window-space entry target, while Index hides thumbnail overlay during layout; inheriting continuous there can strand the overlay. This slice now inherits saved policy only for non-thumbnail full-chrome entry. The whole thumbnail-entry branch retains its previous explicit single/spread policy, not a mode-specific silent downgrade. Continuous thumbnail geometry/asset/claim lifecycle is a separate required open capability before enabling inheritance there.197 initial six-case suite failed at saved cover parity (actual2/3 vs expected1/2); add a Lab-only resolved policy observation to distinguish storage/mapping from downstream pairing, not change expectations. Original failed captures and exact restoration retained.
+
+## 2026-09-12 — Optional shared continuous full-width geometry — LIMITED PASS
+
+- Parent boundary: ReaderSurface -> ReaderContinuousSurface -> List row -> ReaderContinuousZoomImage -> ReaderPagedImage. Only the continuous row sizing contract changes to full available width plus intrinsic original ratio. Pager/spread ownership, gestures, chrome, failure action, thumbnail rail, persistence and default readers are unchanged.
+- Counterexample retained: 197 showed a roughly205px centered original inside a1260px reader; source/build success was not accepted.
+- Current103 evidence: inspected run17 ordinary/scrolled captures. Row/List widths both1600px, row height2400px for1024x1536 source, scroll delta-1561px, actual Image interpolation Medium, Hypium1/1 pass and settings signature unchanged.
+- Scope fence: debug-only local fixture and in-memory continuous override provide deterministic geometry evidence without changing saved mode. Thumbnail-entry transition to continuous, online NH failure/retry, rotation and replacement-reader parity remain open.
+- Real-content follow-through: 197 run01 uses NH source2 and passes1/11.607s with Reader/List/row width1260, row height16756.25, actual Image Medium and -1657px same-row displacement. Before/after captures inspected; presentation signature unchanged and lease released. This replaces the retained roughly205px counterexample for the exact long-strip geometry path, not the remaining Low/High/crop/split/failure/rotation matrix.
+
+## 2026-09-12 — Optional shared Reader in the production navigation shell — OPEN
+
+- **Authority / outcome:** continue the shared-reader refactor toward eventual replacement of the legacy Reader,
+  while keeping features decoupled and preventing capability regression. This slice is a reversible debug rehearsal,
+  not a default-reader replacement or settings migration.
+- **Parent boundary:** the existing `Index.readerDestination` remains the only Reader overlay, navigation,
+  close-preparation, status-bar and retained-Detail owner. The selector changes only the destination body. It is
+  process-local, defaults to legacy and is snapshotted into each route; `reader-kit` does not know about NextN's
+  backend choice.
+- **Frozen paths:** thumbnail/explicit-page entry remains legacy because shared thumbnail transition, continuous
+  handoff and spread half-to-pair choreography are still separately open. Release builds force legacy. Existing
+  exit geometry, transition ownership, Detail live-progress contract and failure material are unchanged.
+- **Decoupling contract:** the shared body consumes a neutral host request. NextN owns NH catalog loading,
+  saved-mode resolution, history persistence, window chrome and navigation. Progress and initial-policy adapters
+  receive scalar capabilities instead of the Lab debug request, so production hosting does not inherit probes or
+  test-only overrides.
+- **Current evidence:** selector/route snapshot, initial-policy, persistence, observed-progress, write-gate,
+  1,404 tap-zone comparisons and 17 host runtime cases pass; `git diff --check` passes; the signed main HAP builds.
+  These are source/build results only.
+- **Next physical action:** on device 197, explicitly select shared, enter through a normal ready Detail Read action,
+  inspect the whole Reader, turn a page, close to the retained Detail, and verify durable progress. Then explicitly
+  select legacy and repeat the ordinary entry to prove rollback/default isolation. Restore the exact history row.
+- **Remaining replacement gates:** downloaded/local source and staged-detail seed, all Reader settings/actions,
+  background/foreground and rotation, failure/retry/share/information, thumbnail transitions, and phone/tablet
+  layout matrices remain unproven. Device 103 follows only after the first 197 production-shell loop is stable.

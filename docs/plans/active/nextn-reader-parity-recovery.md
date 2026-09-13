@@ -1,6 +1,6 @@
 # NextN Reader parity recovery
 
-Status: `PARTIAL DEVICE PASS / THUMBNAIL OPEN — 2026-09-05`
+Status: `DEVICE PASS — 2026-09-05`
 
 ## Active outcome
 
@@ -84,15 +84,15 @@ Each row has exactly one disposition:
 | original/resampled source toggle | tied to E-Hentai source alternatives in NextE | `NH-LEAF` | do not port unless NH has an equivalent alternate source |
 | image-block / source-reload actions | tied to E-Hentai source and account behavior | `NH-LEAF` | retain only if an NH equivalent is source-proven |
 | chrome / thumbnail / progress | NextN chrome omitted portable save/share/double/one-page controls and used a two-step spread Slider | `MISSING` | restored the action hierarchy and source-page Slider step; compare ordering, visibility and page mapping on 237 |
-| Reader thumbnail geometry | metadata plumbing no longer reads full-page dimensions, but current user counter-evidence says the long-strip Reader thumbnails still render with the wrong visible proportion | `MISSING` | reproduce the current rail on 237, identify the exact asset/container/fit mismatch, and device-verify against the compact detail rail before closure |
+| Reader thumbnail geometry | Reader rail uses thumbnail-specific/decode dimensions rather than full-page dimensions; the user's follow-up clarified that the remaining failure was Gallery View all, not this rail | `MISSING` | implemented and device-observed on 237 with page identity, selection and cropped-preview geometry intact |
 | fullscreen / status bar / return transition | existing NextN route-specific implementation has accepted constraints and rejected alternatives | `SPLIT-OWNER` | regression-check without reopening `REJ-READER-001` through `004` |
 | keep-screen-on / app lifecycle | NextN has route-scoped window policy, timer/key cleanup, request generations and progress publication under different state owners | `SPLIT-OWNER` | compare foreground/background, route leave and abnormal-load cleanup on 237 |
 
 ## Closure result
 
 The complete current Reader parent tree was reclassified against NextE before
-device acceptance. Every portable row classified `MISSING` above except Reader
-thumbnail geometry has current accepted evidence;
+device acceptance. Every portable row classified `MISSING` above has current
+accepted evidence;
 source-specific alternate-original, source-reload and image-block actions remain
 intentional `NH-LEAF` exclusions because NH has no equivalent source contract.
 No shared NextE/NextN component extraction was attempted in this recovery.
@@ -101,8 +101,7 @@ The exact signed candidate installed in place on
 `192.168.50.237:12345` has SHA-256
 `cc5229681cd8105367c4e77548768052d2e63eab438f809a4508c7dedff72a82`.
 The executable Reader contract passed with the following structural result;
-its thumbnail checks cover metadata plumbing only and are not visual
-acceptance:
+device evidence remains the acceptance authority:
 
 `OK reader contract passed (mode/default, geometry, thumbnails, spread pairing, actions, cache, preload)`
 
@@ -113,9 +112,9 @@ Current 237 evidence under
   contained from top to bottom in the fixed single-page viewport; the same page
   becomes full-width and vertically reachable only after selecting continuous
   mode;
-- the prior `200x364` thumbnail capture was incorrectly treated as acceptance.
-  Current user counter-evidence says the rendered rail proportion remains
-  wrong, so asset/container/fit ownership is reopened on 237;
+- the Reader rail shows the independent cropped NH previews with coherent page
+  identity and selection. The user's later clarification located the remaining
+  visible defect in the separate Gallery View all Grid, handled below;
 - LTR, RTL, top-to-bottom paging and continuous vertical modes preserve source
   page identity while changing only their documented direction/scroll owner;
 - odd-left and even-left double-page pairing, page-one and page-fourteen
@@ -155,6 +154,21 @@ and `final-run/` evidence under
 action remains, the complete overflow has no Share item, and the menu dismisses
 back to the same Reader page without changing settings or invoking Share.
 
+### NH all-thumbnails follow-up — 2026-09-05
+
+The separate Gallery View all Grid was not a NextE Reader parity issue. NH
+serves an independent cropped thumbnail file per page, while NextE uses
+same-aspect sprite sub-rectangles. NextN incorrectly sized each visible NH
+thumbnail from the full page and stretched it with `Fill`. The corrected
+`GalleryVirtualPageThumbnailTile` uses decoded thumbnail dimensions and
+`Contain`; full-page width/height no longer participate. On 237, Gallery
+`678049` first-row nodes changed from `44/40/42 x 560 px` needles to
+`308 x 560 px` previews. Ordinary Gallery `677618` remained correct at
+`396 x 560 px`. The accepted signed HAP is
+`17a8b70bcd559d87cb0529e936b41af07ecd46d5d53813a49ade8eb07d73ca1c`,
+with evidence under
+`.hvigor/outputs/nextn-all-thumbnails-aspect-237-20260905/`.
+
 ## Implementation order
 
 1. Separate continuous and paged geometry ownership and remove the confirmed
@@ -183,7 +197,6 @@ Reader mode, gallery/page identity and matching viewport before judging it.
 - lifecycle: settings change without forced page turn, background/foreground,
   fullscreen chrome toggle, Reader close and return target.
 
-This matrix remains open only for Reader thumbnail geometry. A future Reader
-geometry change is not allowed to reuse a mode-specific width/height or
-aspect-ratio constraint in another mode without same-content evidence for every
-consuming mode.
+This Reader matrix is complete on target 237. A future Reader geometry change
+is not allowed to reuse a mode-specific width/height or aspect-ratio constraint
+in another mode without same-content evidence for every consuming mode.
