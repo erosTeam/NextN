@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@ohos/hypium'
-import { abilityDelegatorRegistry, Component, Driver, ON } from '@kit.TestKit'
+import { abilityDelegatorRegistry, Component, Driver, MatchPattern, ON } from '@kit.TestKit'
 import { common } from '@kit.AbilityKit'
 import { relationalStore } from '@kit.ArkData'
 import { fileIo } from '@kit.CoreFileKit'
@@ -9,6 +9,7 @@ import {
   DownloadQueueService,
   NhDownloadTask,
   NhReaderMode,
+  NhReaderSpreadLayout,
   ReaderPresentationService,
 } from 'shared'
 
@@ -263,6 +264,54 @@ async function reloadCurrentLocalPage(driver: Driver, expectedTotal: number, cap
   await capture(driver, captureName)
 }
 
+async function waitSpreadLocalReady(driver: Driver, expectedTotal: number): Promise<number[]> {
+  for (let attempt: number = 0; attempt < 120; attempt += 1) {
+    const page = await driver.findComponent(ON.id('rkit-chrome-page'))
+    const images = await driver.findComponents(ON.type('Image').within(ON.id('rkit-image-viewport')))
+    const parts = await driver.findComponents(
+      ON.id('^rkit-part-[0-9]+-whole$', MatchPattern.REG_EXP).within(ON.id('rkit-image-viewport')),
+    )
+    const loading = await driver.findComponent(ON.type('LoadingProgress').within(ON.id('rkit-image-viewport')))
+    const failure = await driver.findComponent(ON.id('^rkit-failure-page-[0-9]+$', MatchPattern.REG_EXP))
+    if (page !== null && images.length === 2 && parts.length === 2 && loading === null && failure === null &&
+      await driver.findComponent(ON.id('rkit-native-pager')) !== null &&
+      await driver.findComponent(ON.id('legacy-reader-surface')) === null) {
+      expect(pageTotal(await page.getText())).assertEqual(expectedTotal)
+      const sources: number[] = []
+      for (const part of parts) {
+        const id: string = await part.getId()
+        const match = /^rkit-part-([0-9]+)-whole$/.exec(id)
+        if (match === null) throw new Error(`Unexpected spread part id: ${id}`)
+        sources.push(Number(match[1]))
+      }
+      sources.sort((left: number, right: number): number => left - right)
+      return sources
+    }
+    await driver.delayMs(250)
+  }
+  throw new Error('Shared local split spread did not settle with two source images')
+}
+
+async function reloadSpreadLocalSource(driver: Driver, sourceIndex: number,
+  expectedSources: number[], expectedTotal: number, captureName: string): Promise<void> {
+  let more = await driver.findComponent(ON.id('rkit-more'))
+  if (more === null) {
+    const surface: Component = await waitId(driver, 'rkit-reading-surface')
+    const bounds = await surface.getBounds()
+    await driver.click(Math.round((bounds.left + bounds.right) / 2), Math.round((bounds.top + bounds.bottom) / 2))
+    more = await waitId(driver, 'rkit-more')
+  }
+  await more.click()
+  await (await waitId(driver, 'rkit-reload-source-spread')).click()
+  const reload: Component = await waitId(driver, `rkit-reload-source-${sourceIndex}`)
+  expect(await reload.isEnabled()).assertTrue()
+  await reload.click()
+  const sources: number[] = await waitSpreadLocalReady(driver, expectedTotal)
+  expect(JSON.stringify(sources)).assertEqual(JSON.stringify(expectedSources))
+  await driver.delayMs(1200)
+  await capture(driver, captureName)
+}
+
 async function waitContinuousLocalReady(driver: Driver, expectedIndex: number): Promise<void> {
   const pageId: string = `rkit-continuous-page-${expectedIndex}`
   for (let attempt: number = 0; attempt < 120; attempt += 1) {
@@ -410,6 +459,101 @@ export default function readerProductionDownloadEntryTrialTest(): void {
         try { await closeSharedReader(driver) } catch (error) { if (!failed) throw error as Error }
         if (!restored && database !== null && original !== null) {
           await restoreAndVerify(database, original)
+          removeSnapshot()
+        }
+        await startLegacyBackend()
+      }
+    })
+  })
+  if (selectedClass === 'ReaderProductionDownloadSpreadReloadTrial') describe(selectedClass, (): void => {
+    it('reloadsBothCompleteLocalSpreadSourcesWithoutMutatingQueue', 0, async (): Promise<void> => {
+      const driver = Driver.create()
+      let context: common.UIAbilityContext | null = null
+      let database: relationalStore.RdbStore | null = null
+      let originalHistory: HistorySnapshot | null = null
+      let originalMode: NhReaderMode = NhReaderMode.PAGED
+      let originalDouble: boolean = false
+      let originalSpread: NhReaderSpreadLayout = NhReaderSpreadLayout.JOINED
+      let modeSetting: SettingSnapshot | null = null
+      let doubleSetting: SettingSnapshot | null = null
+      let spreadSetting: SettingSnapshot | null = null
+      let restored: boolean = false
+      let failed: boolean = false
+      try {
+        await startSharedBackend()
+        context = await entryContext(driver)
+        await DownloadQueueService.restore(context)
+        const queueBefore: string = JSON.stringify(DownloadQueueService.snapshot())
+        const complete: NhDownloadTask[] = DownloadQueueService.snapshot()
+          .filter((task: NhDownloadTask): boolean => task.isComplete() && task.pageCount >= 4)
+          .sort((left: NhDownloadTask, right: NhDownloadTask): number => right.createdAt - left.createdAt)
+        if (complete.length === 0) throw new Error('A verified complete multi-page download is required')
+        const task: NhDownloadTask = complete[0]
+        database = await store(context)
+        originalHistory = await snapshotHistory(database, task.galleryId)
+        writeSnapshot(originalHistory)
+        await ReaderPresentationService.restore(context)
+        const original = ReaderPresentationService.snapshot()
+        originalMode = original.mode
+        originalDouble = original.doublePageEnabled
+        originalSpread = original.spreadLayoutMode
+        modeSetting = new SettingSnapshot('reader_mode', await settingValue(database, 'reader_mode'))
+        doubleSetting = new SettingSnapshot('reader_double_page_enabled',
+          await settingValue(database, 'reader_double_page_enabled'))
+        spreadSetting = new SettingSnapshot('reader_spread_layout', await settingValue(database, 'reader_spread_layout'))
+        await ReaderPresentationService.setMode(context, NhReaderMode.PAGED_RTL)
+        await ReaderPresentationService.setDoublePageEnabled(context, true)
+        await ReaderPresentationService.setSpreadLayout(context, NhReaderSpreadLayout.SPLIT)
+        connectReaderPresentation().mode = NhReaderMode.PAGED_RTL
+        connectReaderPresentation().doublePageEnabled = true
+        connectReaderPresentation().spreadLayoutMode = NhReaderSpreadLayout.SPLIT
+
+        await (await waitId(driver, 'nextn-root-tab-2')).click()
+        await (await findDownloadEntry(driver, task.galleryId)).click()
+        const label: string = await (await waitId(driver, 'rkit-chrome-page', 120)).getText()
+        const total: number = pageTotal(label)
+        expect(total).assertEqual(task.pageCount)
+        const sources: number[] = await waitSpreadLocalReady(driver, total)
+        await capture(driver, 'spread-local-reload-initial')
+        await reloadSpreadLocalSource(driver, sources[0], sources, total, 'spread-local-reload-first')
+        await reloadSpreadLocalSource(driver, sources[1], sources, total, 'spread-local-reload-second')
+
+        await closeSharedReader(driver)
+        await waitId(driver, 'nextn-download-queue-root')
+        expect(JSON.stringify(DownloadQueueService.snapshot())).assertEqual(queueBefore)
+        await restoreAndVerify(database, originalHistory)
+        await ReaderPresentationService.setMode(context, originalMode)
+        await ReaderPresentationService.setDoublePageEnabled(context, originalDouble)
+        await ReaderPresentationService.setSpreadLayout(context, originalSpread)
+        await restoreSetting(database, modeSetting)
+        await restoreSetting(database, doubleSetting)
+        await restoreSetting(database, spreadSetting)
+        connectReaderPresentation().mode = originalMode
+        connectReaderPresentation().doublePageEnabled = originalDouble
+        connectReaderPresentation().spreadLayoutMode = originalSpread
+        restored = true
+        removeSnapshot()
+        await capture(driver, 'spread-local-reload-return')
+        console.info(`[ReaderProductionDownloadSpreadReloadTrial] gallery=${task.galleryId} pages=${total} ` +
+          `sources=${sources.join(',')} localReloads=2 queueUnchanged=true historyRestored=true settingsRestored=true`)
+      } catch (error) {
+        failed = true
+        try { await capture(driver, 'spread-local-reload-exception') } catch (_) {}
+        throw error as Error
+      } finally {
+        try { await closeSharedReader(driver) } catch (error) { if (!failed) throw error as Error }
+        if (!restored && context !== null && database !== null && originalHistory !== null &&
+          modeSetting !== null && doubleSetting !== null && spreadSetting !== null) {
+          await restoreAndVerify(database, originalHistory)
+          await ReaderPresentationService.setMode(context, originalMode)
+          await ReaderPresentationService.setDoublePageEnabled(context, originalDouble)
+          await ReaderPresentationService.setSpreadLayout(context, originalSpread)
+          await restoreSetting(database, modeSetting)
+          await restoreSetting(database, doubleSetting)
+          await restoreSetting(database, spreadSetting)
+          connectReaderPresentation().mode = originalMode
+          connectReaderPresentation().doublePageEnabled = originalDouble
+          connectReaderPresentation().spreadLayoutMode = originalSpread
           removeSnapshot()
         }
         await startLegacyBackend()
