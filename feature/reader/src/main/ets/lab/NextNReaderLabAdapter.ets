@@ -105,15 +105,22 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
 
   async preload(page: ReaderPage, cancellation: ReaderCancellation): Promise<void> {
     cancellation.check()
-    if (page.unit.work === LOCAL_FIXTURE_WORK) return
+    if (page.unit.work === LOCAL_FIXTURE_WORK) {
+      console.info(`[NextNReaderPreload] source=${page.sourceIndex} result=fixture-skip`)
+      return
+    }
     const detail = this.details.get(page.unit.unit)
     const source = detail?.pages[page.sourceIndex]
     if (detail === undefined || source === undefined) throw new Error('missing_nh_preload_asset')
-    if (this.source.localPageUri(detail, page.sourceIndex).length > 0) return
+    if (this.source.localPageUri(detail, page.sourceIndex).length > 0) {
+      console.info(`[NextNReaderPreload] source=${page.sourceIndex} result=local-skip`)
+      return
+    }
     const url = NhApiClient.imageUrl(detail.mediaId, page.sourceIndex, source.extension)
     const cacheKey = ReaderImageCacheService.cacheKey(detail.id, detail.mediaId, source.number, source.extension)
     await ReaderImageCacheService.load(this.context, url, cacheKey, false)
     cancellation.check()
+    console.info(`[NextNReaderPreload] source=${page.sourceIndex} result=ready`)
   }
 
   async prepare(target: ReaderImageShareTarget, cancellation: ReaderCancellation): Promise<ReaderImageSharePresentation> {
