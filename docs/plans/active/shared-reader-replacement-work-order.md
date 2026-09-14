@@ -197,10 +197,54 @@ Both leases were released. This accepts inherited page-gap rendering in Koma's
 optional shared reader; changing that preference from shared runtime UI and the
 remaining Package 2 capability map remain open.
 
+The next capability-map omission was Koma's persisted `rotateWidePages` policy.
+Shared revisions `7761c16` and `cce3df6` add host-neutral wide-page
+classification and clockwise rendering without coupling reader-kit to Koma's
+preference enum or storage. Rotation uses original source metadata, is mutually
+exclusive with split-page presentation, inverts the visual ratio, and preserves
+crop/zoom/source-coordinate mapping in paged, spread, and continuous surfaces.
+Because the host transition preview remains unrotated, the shared surface
+deliberately cancels that mismatched preview instead of morphing between two
+different orientations. The second revision only adds a strict optional Reader
+Lab override so the policy can be exercised deterministically; an absent or
+invalid Want parameter leaves every production entry unchanged.
+
+Koma revisions `897c7bf7` and `041a4de0` map the existing preference into the
+shared policy and add a packaged wide-page fixture. NextN revisions `a3e2c895`
+and `a641549a`, and NextE revisions `bf25c7bf` and `e7aa2c4c`, only advance the
+shared revision and keep their existing defaults. All 372 reader-kit tests and
+the Koma preference-bridge test pass. Matching NextN complete debug, NextE
+signed debug, and clean Koma signed debug consumers build; NextE's V1 inventory
+reports zero live V1 decorators across 587 ArkTS files. The clean Koma candidate
+at `041a4de0` with reader-kit `cce3df6` has SHA-256
+`629d41a63bb11831c2444ed25fa9c1b1db8c03755013afd165099a557991ef73`.
+
+On 197, the controlled 1920x1080 fixture rendered clockwise as a complete
+1260x2240 blue-over-orange page in both single and continuous modes, and a
+center tap hid the chrome. The inspected captures are
+`.hvigor/outputs/shared-reader-package2-wide-rotation/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-koma-wide-rotation/run/single-screen.png`
+and the unobscured continuous capture under adjacent run
+`02-koma-continuous-rotation-hidden/run/screen.png`. On 103, the independent
+1600x800 QA page rendered clockwise with its full outer border visible in
+single mode; continuous mode showed its full width, and an upward swipe reached
+the page's lower boundary followed by the next unrotated page. Those inspected
+captures are under
+`.hvigor/outputs/shared-reader-package2-wide-rotation/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-koma-wide-rotation/run`.
+Both protocol validators pass, both readers returned to the normal bookshelf,
+the reader-session and library-store hashes remained unchanged, both screen
+timeouts were restored to 10 seconds, and both leases were released. This
+accepts inherited wide-page rotation in Koma's optional shared reader; changing
+the preference from shared runtime UI and the remaining Package 2 capability
+map remain open.
+
 ## Single next action
 
 Resume the Package 2 old-to-shared capability map at the first actual missing
-setting or action after inherited page-gap rendering, while retaining the exact
+setting or action after inherited wide-page rotation, starting with a complete
+legacy/shared comparison of Koma's persisted `imageFitMode`. Preserve long-image
+scrollability while defining any host-neutral fit semantic; do not translate a
+legacy fit option into a fixed viewport that recreates width-based clipping.
+Retain the exact
 NextN boundary: its isolated branch cannot produce a signed matching package
 without copying credentials or changing tracked signing state, so no mismatched
 HAP may be installed merely to claim the remaining preload adapter runtime.
