@@ -401,24 +401,60 @@ seconds and both leases were released. Evidence is under
 and the corresponding
 `device197__ALN-AL80/not-applicable/portrait-1260x2720/` root.
 
+The Koma progress comparison found no current omission. Legacy completion is
+defined by the last source being successfully loaded and actually visible;
+the shared bridge receives `ReaderObservedPosition` only after the current
+original has decoded, completed a presentation frame, and still matches the
+active unit, selection, navigation, slot and request. Koma continues to own the
+existing `ReaderSessionStore`, page/chapter IDs, completion projection and
+flush-on-close. Its store preserves a completed chapter monotonically, so a
+later non-terminal position cannot silently unmark it.
+
+Existing 103 evidence closes the runtime persistence path without another
+broad replay. The final read-only run left the complete session document byte-
+identical; the explicit write run changed the controlled two-page chapter to
+page 2/2 and completed; a cold process restored 2/2; and the separate three-
+page chapter still flushed page 3/3 when the reader was closed immediately,
+then cold-restored 3/3. The four terminal screenshots were re-inspected against
+the persisted rows. Evidence is under
+`/Users/honjow/git/Koma/.hermes-artifacts/20260913-shared-reader-progress/qa103/device103__MLR-AL00/not-applicable/portrait-1600x2560/{01d-readonly-final,02-write,03-restore,04-fast-close,05-fast-close-restore}`.
+
+The remaining Koma image actions also required no implementation change.
+Current reader-kit contracts bind information to the displayed original and
+retire late reads on replacement, retry, navigation, background and close;
+save binds the exact displayed URI/request and owns independent temporary
+copies; share cancels preparation on page, variant, activity or route change
+and retains an already-presented system sheet until dismissal. Focused image
+information/save/share tests pass 37/37.
+
+On 197, the same signed Koma `0399e257` plus reader-kit `5d526ce` candidate
+displayed real PNG information (`9.2 KB`, `1920 x 1080`), opened and cancelled
+the system one-image save confirmation, then opened and cancelled the system
+one-item share panel. The reader returned to the same 1/1 frame and then to the
+normal bookshelf. All information/save/share/restored-reader/host captures were
+inspected; reader-session and library-store hashes remained byte-identical,
+the bounded log contained no reader exception, the timeout returned to 10
+seconds and the lease was released. Evidence is under
+`.hvigor/outputs/shared-reader-package2-koma-actions/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-image-actions/run`.
+
 The legacy/shared action inventory now has equivalents for image information,
 save, share, reload, reset zoom, previous chapter, next chapter and manga
 detail; their placements may differ, but no supported action is silently
-absent. This does not close Package 2 because current progress cold-start/
-writeback and image-action failure/stale semantics still need to be reconciled
-against their existing evidence before the package can be marked done.
+absent. Koma's Package 2 progress and image-action paths are now reconciled;
+Package 2 remains active until the same bounded current-source audit either
+accepts or repairs NextN and NextE host progress/action semantics.
 
 ## Single next action
 
-Continue Package 2 by reconciling the current Koma progress cold-start/
-writeback path and image information/save/share failure and stale-result paths
-against current legacy source plus existing device evidence. Record already
-proven equivalence instead of repeating broad tests; implement only the first
-actual omission, with its owner explicit. Do not move chapter orchestration,
-routes, compatibility-only settings, persistence keys or host business behavior
-into reader-kit. Close the resulting coherent path through focused tests,
-matching affected-consumer builds and only the device shape justified by the
-actual risk. Production defaults remain legacy.
+Continue Package 2 with a bounded NextN then NextE audit of the current legacy
+and optional shared progress and image-action paths. Reuse the substantial
+accepted device evidence already recorded here and in the active acceptance
+ledger; do not replay broad matrices. Implement only the first actual omission,
+with its owner explicit, and otherwise record equivalence. Do not move routes,
+download/cache policy, persistence keys or host business behavior into
+reader-kit. Close each real delta through focused tests, matching affected-
+consumer builds and only the device shape justified by that delta. Production
+defaults remain legacy.
 
 ## Package completion record
 
