@@ -6,7 +6,8 @@ import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, R
   ReaderReadingAnchor, ReaderDisplayPolicy, ReaderPage, ReaderVariantPreference, ReaderAssetProvider } from '@reader-kit/core'
 import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility,
-  ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction, ReaderMediaActions } from '@reader-kit/ui'
+  ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction, ReaderMediaActions,
+  ReaderHostStatus } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
 import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea,
@@ -833,12 +834,12 @@ export struct NextNReaderLabPage {
               onHostAction: (id: string, source: ReaderUnitKey, navigation: number, sourceIndex: number): void => {
                 this.handleTranslationAction(id, source, navigation, sourceIndex)
               },
-              hostStatusVisible: this.currentSourceIndex >= 0 &&
-                (this.translationBusyPage === this.currentSourceIndex || this.translationErrorPage === this.currentSourceIndex),
-              hostStatusBusy: this.translationBusyPage === this.currentSourceIndex,
-              hostStatusText: this.translationBusyPage === this.currentSourceIndex
-                ? AppStrings.get('reader_comic_translation_running')
-                : AppStrings.get('reader_comic_translation_failed'),
+              hostStatus: this.currentSourceIndex >= 0 &&
+                (this.translationBusyPage === this.currentSourceIndex || this.translationErrorPage === this.currentSourceIndex)
+                ? new ReaderHostStatus(this.translationBusyPage === this.currentSourceIndex
+                  ? AppStrings.get('reader_comic_translation_running')
+                  : AppStrings.get('reader_comic_translation_failed'),
+                this.translationBusyPage === this.currentSourceIndex) : null,
               onPolicyChanged: (policy, intent): void => { this.persistRuntimePolicy(policy, intent) },
               onCropChanged: (enabled, policy): void => { this.persistCrop(enabled, policy) },
               entryTransition: this.entryTransition, entryPreview: this.entryPreview,
