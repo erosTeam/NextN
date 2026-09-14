@@ -689,23 +689,29 @@ page identities. The production default and legacy reader route are unchanged.
 The focused catalog/chapter/return/preference suites pass 11/11. A matching
 Debug HAP builds successfully with SHA-256
 `b21c1e350e8c06d5044c69942726e5876a849963f6f8acdc58893db31aa0963b`.
-This is source/build evidence only: no device acceptance is claimed yet. The
-next missing boundary is successful shared chapter commit for a transient
-source title: update the Koma-owned active source request and persist the
-chapter-local observed position without requiring a library record. Failure or
-cancellation must leave both values unchanged.
+This is source/build evidence only: no device acceptance is claimed yet.
+
+Koma commit `54826d82` then closes the source-side commit boundary. A prepared
+chapter does not mutate Koma history. Only the existing shared observation for
+an actually presented original commits the Koma-owned active source request;
+the same immutable chapter configuration then supplies page identity for
+chapter-local progress even when no library record exists. Repeated observations
+are idempotent. Failed, cancelled and retired A-B-C preparations leave the old
+host chapter and progress untouched. The focused suites pass 12/12 and the
+matching Debug HAP builds with SHA-256
+`4b0550bf65502a6318f521ed0c55f24328fff7ce931883694d451a63ac9c2073`.
+This remains source/build evidence until the selected provider device path
+confirms the resolved chapter, displayed original, host history and return.
 
 ## Single next action
 
-Complete the transient provider commit boundary in Koma. On a successfully
-presented shared chapter, advance the Koma-owned active source request and
-persist that chapter's observed page; on preparation failure, cancellation or
-retired A-B-C selection, retain the previously committed chapter and progress.
-Do not add provider state to `reader-kit`, do not duplicate library persistence,
-and do not change the production default route. After the coherent source
-candidate passes focused tests and one matching build, run one selected real
-provider chapter-switch path instead of replaying already accepted local
-fixtures.
+Run one selected real transient-provider chapter switch with Koma commit
+`54826d82`: enter the optional shared route from an un-shelved source title,
+display the initial original, switch chapter, display the new original, verify
+the Koma-owned history/progress identity and return to the host. Preserve the
+device's unrelated library/download data and legacy default. If the source is
+externally unavailable, retain that evidence and choose one other already
+installed provider; do not substitute a local fixture for this boundary.
 
 ## Package completion record
 
