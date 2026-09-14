@@ -167,13 +167,44 @@ The protocol restored the 10-second timeout and the 197 lease was released.
 This accepts the Koma cache-warm adapter path. NextN device runtime and the rest
 of Package 2 remain open.
 
+The next capability-map omission was Koma's persisted `pageGapMode`: the legacy
+reader renders compact, normal, and wide spacing, while the optional shared host
+previously read the preference without applying it. Shared revision `f114c10`
+adds a host-neutral numeric `pageGap`, clamps it to `0..96vp`, and applies the
+same geometry to continuous-list spacing and separated spread slots without
+owning any host enum or persistence key. Koma commit `b9cff3ba` maps its existing
+compact/normal/wide values to `2/8/18vp`; NextN `6ac368e6` and NextE `fbadff2b`
+only advance the shared revision and retain zero as their unchanged default.
+All 367 reader-kit tests and the Koma preference-bridge test pass. Matching
+NextE signed, NextN debug, and Koma signed consumer builds pass; NextE's V1
+inventory reports zero generated V1 artifacts. The clean Koma candidate was
+built at `b9cff3ba` with reader-kit `f114c10`, SHA-256
+`b76478a9a8b9a0a75948c3fbc4f15b2fb5e047ab85510166b7d8c9774cce9261`.
+
+On 103, the optional continuous reader opened the controlled local chapter with
+the inherited normal gap. The adjacent image bounds ended at physical pixel 472
+and resumed at 491, a visible 19-pixel rendering of 8vp on that tablet. Evidence
+is under
+`.hvigor/outputs/shared-reader-package2-page-gap/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-koma-continuous-gap/run`.
+On 197, the same candidate opened the existing four-page remote MangaDex unit;
+the first two image bounds ended at 1726 and resumed at 1752, a visible 26-pixel
+rendering of 8vp on that phone. Evidence is under
+`.hvigor/outputs/shared-reader-package2-page-gap/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-koma-continuous-gap/run`.
+Both full-screen boundary captures were inspected. Their adjacent return runs
+reached the existing bookshelf, restored the 10-second screen timeout, and kept
+the reader-session and library-store hashes unchanged from each run's entry.
+Both leases were released. This accepts inherited page-gap rendering in Koma's
+optional shared reader; changing that preference from shared runtime UI and the
+remaining Package 2 capability map remain open.
+
 ## Single next action
 
 Resume the Package 2 old-to-shared capability map at the first actual missing
-setting or action, while retaining the exact NextN boundary: its isolated branch
-cannot produce a signed matching package without copying credentials or changing
-tracked signing state, so no mismatched HAP may be installed merely to claim the
-remaining preload adapter runtime. Implement and close the next coherent missing
+setting or action after inherited page-gap rendering, while retaining the exact
+NextN boundary: its isolated branch cannot produce a signed matching package
+without copying credentials or changing tracked signing state, so no mismatched
+HAP may be installed merely to claim the remaining preload adapter runtime.
+Implement and close the next coherent missing
 capability through shared state, host adapters, focused tests, matching consumer
 builds, and only the device shapes justified by its risk. Do not change any
 production default or persistence key.
