@@ -145,22 +145,38 @@ the retried single page, finished spread and final host return captures were
 inspected. Evidence is under
 `.hvigor/outputs/shared-reader-package2/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-nexte-preload-lifecycle/run`.
 The protocol restored the 10-second timeout and released its lease. This accepts
-the NextE adapter path only; NextN and Koma cache-warm runtime paths and the rest
+the NextE adapter path.
+
+Koma commit `d0abcfda` repairs the tracked clean-build module graph by declaring
+the two local reader-kit modules without committing its machine-local signing
+profile. A detached clean worktree at that commit and reader-kit `46de8c5`
+produced the signed HAP with SHA-256
+`cd37b65a5a93d145ba73f10c6f7c6c023ba838b984fdff35badeb11f95a01f46`.
+On 197, the normal shared Koma reader opened an existing four-page remote
+MangaDex unit with persisted `preloadPages=2`. The host logged the bounded
+shared request `sources=1,2`, cache hits for both future HTTPS sources, and
+`[KomaReaderPreload] ... result=ready` for each. The visible first page and
+reader chrome were inspected at
+`.hvigor/outputs/shared-reader-package2/device197__ALN-AL80/not-applicable/portrait-1260x2720/08-koma-remote-preload-call/run`.
+After returning to the bookshelf, `reader-sessions.v1.json` remained
+`32b2533f0346f3f996b9aba8b0d622a706b4286a8403cf8bebc30c2da89884cd`
+and `library-store.v1.json` remained
+`a997dba1315adba11d236307a66084c0dde19236a6f4a93062f7cd19725f015c`;
+the final capture is under the adjacent `09-koma-return-host/run` artifact.
+The protocol restored the 10-second timeout and the 197 lease was released.
+This accepts the Koma cache-warm adapter path. NextN device runtime and the rest
 of Package 2 remain open.
 
 ## Single next action
 
-Close the same bounded preload path through one real NextN remote source on 197
-and one real Koma remote source on 103 or 197, using each host's existing optional
-reader entry and cache service. Require the matching persisted depth, bounded
-future source set, successful visible reading, close/return, and exact setting
-restoration; a cache-warm failure must remain isolated from the displayed page.
-If the NextN isolated branch cannot produce a signed matching package without
-copying credentials or modifying tracked signing state, record that exact build
-boundary and continue Koma rather than installing a mismatched artifact. After
-those host paths, resume the Package 2 old-to-shared capability map at the first
-actual missing setting or action. Do not change any production default or
-persistence key.
+Resume the Package 2 old-to-shared capability map at the first actual missing
+setting or action, while retaining the exact NextN boundary: its isolated branch
+cannot produce a signed matching package without copying credentials or changing
+tracked signing state, so no mismatched HAP may be installed merely to claim the
+remaining preload adapter runtime. Implement and close the next coherent missing
+capability through shared state, host adapters, focused tests, matching consumer
+builds, and only the device shapes justified by its risk. Do not change any
+production default or persistence key.
 
 ## Package completion record
 
