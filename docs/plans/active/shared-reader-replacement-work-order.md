@@ -379,20 +379,46 @@ This closes the missing explicit selector in the Package 2 action surface; the
 broader previous/next, failure/cancellation, final-chapter, progress/read-state,
 remote/provider and rotation matrix remains owned by Package 4.
 
+The following old-to-shared action audit confirmed that Koma's previous and
+next chapter menu rows were already present in reader-kit and already delegate
+to the host-owned prepare-before-open path. The first real omission was the
+legacy `漫画详情` action. Koma commit `0399e257` supplies it through the existing
+generic `ReaderHostAction`; reader-kit remains unaware of routes, comic IDs or
+detail models. Koma validates the current unit, navigation revision and source
+index again before delegating to `Index.openLibraryMangaDetail`.
+
+The focused return-to-detail and chapter-selector contracts pass 6/6. A clean
+detached Koma build at `0399e257` plus reader-kit `5d526ce` produced signed HAP
+SHA-256
+`aca9a795abe4a0ada62ece0cf5eb255d506394ab5c1eb3b292bfb55aa45b0f89`.
+On both 103 and 197, the complete More menu showed an enabled `漫画详情` row;
+selecting it opened the correct work detail, Back restored the same shared
+reader frame, and a second Back returned to the normal bookshelf. All four
+states were visually inspected on each device. Reader-session/library hashes
+were byte-identical, exception logs were empty, timeouts were restored to 10
+seconds and both leases were released. Evidence is under
+`.hvigor/outputs/shared-reader-return-detail/device103__MLR-AL00/not-applicable/portrait-1600x2560/{01-open-menu,02-roundtrip}/run`
+and the corresponding
+`device197__ALN-AL80/not-applicable/portrait-1260x2720/` root.
+
+The legacy/shared action inventory now has equivalents for image information,
+save, share, reload, reset zoom, previous chapter, next chapter and manga
+detail; their placements may differ, but no supported action is silently
+absent. This does not close Package 2 because current progress cold-start/
+writeback and image-action failure/stale semantics still need to be reconciled
+against their existing evidence before the package can be marked done.
+
 ## Single next action
 
-Resume the Package 2 old-to-shared capability map after the accepted Koma host
-settings, one-shot tap-zone preview, fullscreen status-bar lifecycle, shared
-reset-zoom action and host-owned arbitrary chapter selector. Compare the
-remaining legacy/shared chrome actions and host-owned navigation surfaces,
-starting with the legacy return-to-detail and previous/next chapter surfaces;
-implement only the first actual omission with its owner explicit. Do not move
-chapter orchestration, compatibility-only settings or other host business
-behavior into reader-kit.
-Implement and close the next coherent missing
-capability through shared state, host adapters, focused tests, matching consumer
-builds, and only the device shapes justified by its risk. Do not change any
-production default or persistence key.
+Continue Package 2 by reconciling the current Koma progress cold-start/
+writeback path and image information/save/share failure and stale-result paths
+against current legacy source plus existing device evidence. Record already
+proven equivalence instead of repeating broad tests; implement only the first
+actual omission, with its owner explicit. Do not move chapter orchestration,
+routes, compatibility-only settings, persistence keys or host business behavior
+into reader-kit. Close the resulting coherent path through focused tests,
+matching affected-consumer builds and only the device shape justified by the
+actual risk. Production defaults remain legacy.
 
 ## Package completion record
 
