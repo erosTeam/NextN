@@ -41,8 +41,8 @@ deletes user data.
 | 1. Resource lifecycle and recovery | Open real content; load visible and adjacent originals; switch/reload the exact visible source; keep unaffected panes; fail and retry one source; retire stale work on navigation, background, close, and fresh reopen. `reader-kit` owns request/slot presentation generations; hosts own URL/file/cache/download and source scope. | Shared state suite; affected-host tests; all three consumers build if shared code changes. Primary runtime on 197 for NextE and NextN; 103 only for spread/reflow-sensitive coverage. Existing legacy routes remain usable afterward. | DONE |
 | 2. Host state and action parity | Enter from normal host state; inherit and change applicable layout/direction/spread/crop/interpolation/auto-read/keep-screen/tap/volume settings; preserve progress; execute every supported image/host action without inventing generic business behavior. | Per-host old-to-shared capability map has no silent omission; persistence cold-start path and legacy return pass; one phone run per host plus 103 only for responsive state. | DONE |
 | 3. Entry, chrome, thumbnails, and return | Detail, all-thumbnails, and reader-rail entry use the correct source identity and thumbnail geometry; single/spread/continuous/long-image UI and failure material remain legible; rotation/window changes keep anchors; close returns to the current source position and restores system UI. | Same-state full-page review on 197 and 103 for changed responsive/transition paths; NH partial thumbnails and EH sprites use their own host contracts; no known visual counterexample. | DONE |
-| 4. Koma chapter orchestration | Open a real multi-chapter title; explicit previous/next chapter preparation, success, failure, cancellation, rapid A-B-C selection, last-chapter semantics, per-chapter progress/read state, local/remote/provider scope, and return all remain host-owned around the shared session. | Focused orchestrator tests, Koma build, 197 phone path, 103 tablet rotation/chapter path, unchanged unrelated library/download data, and legacy Koma reader fallback. | **ACTIVE** |
-| 5. Controlled production replacement | Each app can select the shared host at the normal reader entry without debug Wants, while a single explicit fallback restores its legacy reader. Cold start, repeated entry, upgrade, and rollback preserve settings/progress/data. | One pinned `reader-kit` revision consumed by all hosts; per-app full route matrix accepted on the selected release candidate; fallback verified before any app changes its default. Default selection remains a separate explicit release decision. | QUEUED |
+| 4. Koma chapter orchestration | Open a real multi-chapter title; explicit previous/next chapter preparation, success, failure, cancellation, rapid A-B-C selection, last-chapter semantics, per-chapter progress/read state, local/remote/provider scope, and return all remain host-owned around the shared session. | Focused orchestrator tests, Koma build, 197 phone path, 103 tablet rotation/chapter path, unchanged unrelated library/download data, and legacy Koma reader fallback. | DONE |
+| 5. Controlled production replacement | Each app can select the shared host at the normal reader entry without debug Wants, while a single explicit fallback restores its legacy reader. Cold start, repeated entry, upgrade, and rollback preserve settings/progress/data. | One pinned `reader-kit` revision consumed by all hosts; per-app full route matrix accepted on the selected release candidate; fallback verified before any app changes its default. Default selection remains a separate explicit release decision. | **ACTIVE** |
 
 ## Package 1 completion — 2026-09-14
 
@@ -744,15 +744,43 @@ into a second network dependency before the shared surface can paint. The same
 15/15 focused suites pass and the matching Debug HAP builds with SHA-256
 `c49a8bb1c5f0ad7c636a1e4329a3cde3ee2b4e51043e3914d81bd3b6f46f3480`.
 
+The matching `0887488f` candidate then passed the remaining 197 projection
+check. A cold normal Koma launch opened History after installing the exact HAP;
+the transient DM5 title appeared exactly once under Today with chapter 2 and
+user-visible page `2 / 19`. The previously stale chapter-1 duplicate was absent,
+the bounded exception log was empty, and the unrelated library-store hash
+remained
+`a997dba1315adba11d236307a66084c0dde19236a6f4a93062f7cd19725f015c`.
+The expected value had previously been written as `1 / 19`; that was a work-
+order error because persisted zero-based page index 1 correctly projects as
+user-visible page 2. The inspected terminal capture and layout are under
+`.hvigor/outputs/shared-reader-package4-koma-transient/197-history-projection-fix/run/`.
+The protocol restored the screen timeout to 10 seconds and the device lease was
+released.
+
+Package 4 is DONE. Koma commits `381f5fcd`, `54826d82`, `548725c5`,
+`bd9ec10f`, `ce293938`, and `0887488f` close transient-provider catalog
+resolution, commit-only history mutation, final projection identity,
+unavailable-target rejection, complete manual chapter selection, and reuse of
+the current resolved source snapshot. The 15/15 focused suites and matching
+Debug HAP pass. The current 197 DM5 provider path covers a real unshelved
+multi-chapter switch and final return; the selected 103 local-folder chapter
+roundtrip and portrait/landscape anchor path remain recorded in
+`docs/qa/shared-reader-koma-chapter-handoff-current-20260912.md`. Failure and
+rapid A-B-C cancellation remain focused source/state evidence rather than
+physical-device claims. The production Koma default and legacy fallback remain
+unchanged.
+
 ## Single next action
 
-Install the matching combined Koma `0887488f` candidate on 197 when that shared device is
-available, open the already persisted DM5 chapter-2 history item, and inspect
-one final History return. Accept this slice only if exactly one card appears in
-the correct time group with chapter 2 / `1 / 19`, while the unrelated library
-hash and legacy default remain unchanged. Do not repeat the already accepted
-catalog, picker, switch, or storage assertions unless this narrow projection
-check fails.
+Implement the first Package 5 slice in the isolated NextN reader branch: expose
+the existing process-local reader backend selector through a normal in-app
+debug/rehearsal surface, so a tester can choose the shared backend without an
+external debug Want and can restore the legacy backend with one explicit
+action. Keep the initial and release-build backend legacy, do not persist the
+selection, and do not change the normal Reader route or user data. Close the
+slice with focused selector/route tests and one matching consumer build before
+selecting its bounded device path.
 
 ## Package completion record
 
