@@ -143,6 +143,12 @@ export class GalleryDetailTransitionState {
   private targetCoverRootWidth: number = 0
   private targetCoverRootHeight: number = 0
 
+  /** Split exposes the retained list; only an active flight may own its source pixels there. */
+  hidesSource(componentId: string, isSplitMode: boolean): boolean {
+    return this.sourceComponentId === componentId &&
+      !(isSplitMode && this.phase === GalleryDetailTransitionPhase.OPEN)
+  }
+
   beginSourceHandoff(
     routeToken: string,
     mode: string,

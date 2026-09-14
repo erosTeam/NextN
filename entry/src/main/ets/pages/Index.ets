@@ -1656,6 +1656,9 @@ struct Index {
       if (current !== null && current.galleryId === galleryId) {
         return
       }
+      if (current !== null) {
+        GalleryDetailTransitionCoordinator.discardRouteTransition(current.transitionToken)
+      }
       this.stack.replacePathByName(
         ROUTE_GALLERY,
         new GalleryRouteParams(

@@ -1,3 +1,4 @@
+import gallerySplitTransitionTest from './GallerySplitTransition.test'
 import backupCipherMetadataGuardTest from './BackupCipherMetadataGuard.test'
 import backupLocalDataStructureGuardTest from './BackupLocalDataStructureGuard.test'
 import backupWebDavCredentialGroupTest from './BackupWebDavCredentialGroup.test'
@@ -33,6 +34,7 @@ import readerProductionPartialDownloadFallbackTrialTest from './ReaderProduction
 import readerSharedSuperResolutionTest from './ReaderSharedSuperResolution.test'
 
 export default function testsuite(): void {
+  gallerySplitTransitionTest()
   backupCipherMetadataGuardTest()
   backupLocalDataStructureGuardTest()
   backupWebDavCredentialGroupTest()

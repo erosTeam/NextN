@@ -2,6 +2,7 @@ import {
   connectGalleryDetailTransition,
   GalleryDetailTransitionState,
 } from '../state/GalleryDetailTransitionState'
+import { connectLayoutSafeArea, LayoutSafeAreaState } from '../state/LayoutSafeAreaState'
 
 /**
  * Keeps a virtualized gallery item in layout while the transition proxy owns its visible pixels.
@@ -13,6 +14,7 @@ export struct GalleryDetailTransitionSourceSlot {
   @Require @Param sourceComponentId: string
   @BuilderParam content: () => void
   @Local transitionState: GalleryDetailTransitionState = connectGalleryDetailTransition()
+  @Local layoutSafeArea: LayoutSafeAreaState = connectLayoutSafeArea()
 
   build() {
     Stack() {
@@ -20,7 +22,7 @@ export struct GalleryDetailTransitionSourceSlot {
     }
     .width('100%')
     .visibility(
-      this.transitionState.sourceComponentId === this.sourceComponentId
+      this.transitionState.hidesSource(this.sourceComponentId, this.layoutSafeArea.rootNavigationSplit)
         ? Visibility.Hidden
         : Visibility.Visible,
     )
