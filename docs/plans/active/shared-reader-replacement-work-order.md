@@ -38,13 +38,13 @@ deletes user data.
 
 | Package | Complete user path and ownership boundary | Release evidence | Status |
 | --- | --- | --- | --- |
-| 1. Resource lifecycle and recovery | Open real content; load visible and adjacent originals; switch/reload the exact visible source; keep unaffected panes; fail and retry one source; retire stale work on navigation, background, close, and fresh reopen. `reader-kit` owns request/slot presentation generations; hosts own URL/file/cache/download and source scope. | Shared state suite; affected-host tests; all three consumers build if shared code changes. Primary runtime on 197 for NextE and NextN; 103 only for spread/reflow-sensitive coverage. Existing legacy routes remain usable afterward. | **ACTIVE** |
-| 2. Host state and action parity | Enter from normal host state; inherit and change applicable layout/direction/spread/crop/interpolation/auto-read/keep-screen/tap/volume settings; preserve progress; execute every supported image/host action without inventing generic business behavior. | Per-host old-to-shared capability map has no silent omission; persistence cold-start path and legacy return pass; one phone run per host plus 103 only for responsive state. | QUEUED |
+| 1. Resource lifecycle and recovery | Open real content; load visible and adjacent originals; switch/reload the exact visible source; keep unaffected panes; fail and retry one source; retire stale work on navigation, background, close, and fresh reopen. `reader-kit` owns request/slot presentation generations; hosts own URL/file/cache/download and source scope. | Shared state suite; affected-host tests; all three consumers build if shared code changes. Primary runtime on 197 for NextE and NextN; 103 only for spread/reflow-sensitive coverage. Existing legacy routes remain usable afterward. | DONE |
+| 2. Host state and action parity | Enter from normal host state; inherit and change applicable layout/direction/spread/crop/interpolation/auto-read/keep-screen/tap/volume settings; preserve progress; execute every supported image/host action without inventing generic business behavior. | Per-host old-to-shared capability map has no silent omission; persistence cold-start path and legacy return pass; one phone run per host plus 103 only for responsive state. | **ACTIVE** |
 | 3. Entry, chrome, thumbnails, and return | Detail, all-thumbnails, and reader-rail entry use the correct source identity and thumbnail geometry; single/spread/continuous/long-image UI and failure material remain legible; rotation/window changes keep anchors; close returns to the current source position and restores system UI. | Same-state full-page review on 197 and 103 for changed responsive/transition paths; NH partial thumbnails and EH sprites use their own host contracts; no known visual counterexample. | QUEUED |
 | 4. Koma chapter orchestration | Open a real multi-chapter title; explicit previous/next chapter preparation, success, failure, cancellation, rapid A-B-C selection, last-chapter semantics, per-chapter progress/read state, local/remote/provider scope, and return all remain host-owned around the shared session. | Focused orchestrator tests, Koma build, 197 phone path, 103 tablet rotation/chapter path, unchanged unrelated library/download data, and legacy Koma reader fallback. | QUEUED |
 | 5. Controlled production replacement | Each app can select the shared host at the normal reader entry without debug Wants, while a single explicit fallback restores its legacy reader. Cold start, repeated entry, upgrade, and rollback preserve settings/progress/data. | One pinned `reader-kit` revision consumed by all hosts; per-app full route matrix accepted on the selected release candidate; fallback verified before any app changes its default. Default selection remains a separate explicit release decision. | QUEUED |
 
-## Current Package 1 delta
+## Package 1 completion — 2026-09-14
 
 Current owner map:
 
@@ -62,7 +62,7 @@ Current owner map:
   close retire shared presentation state; hosts remain responsible for any
   longer-lived cache or download work they deliberately retain.
 
-Already established and not to be rerun unless its owner changes:
+Accepted implementation and source evidence:
 
 - `reader-kit` has stable page/source identities, independent adjacent slots,
   cancellation fences, retained-frame handoff, and host-owned asset providers.
@@ -73,32 +73,67 @@ Already established and not to be rerun unless its owner changes:
   been redownloading the selected CDN URL without invoking EH source switching;
   it now forwards manual reload into `ImageResolveService.resolve(..., true)`
   and saves the refreshed source only after its cancellation fence.
-- The shared same-URI baseline is `5e5cb4c`; the NextE Package 1 candidate adds
-  the reload-only More-menu capability gate on its isolated reader-kit branch.
-  It remains uncommitted until the consolidated device path accepts it.
-- The current focused batch passes: all 359 `reader-kit` tests, NextN reader
-  contract/data-source tests, and NextE resolver/adapter runtime tests.
+- Shared revision `1d1f515` exposes the reload-only More-menu path while
+  retaining the same-URI replacement fix from `5e5cb4c`. All 359 reader-kit
+  tests pass.
+- NextE commits `81c0bdfa` and `733a5c2f` add the real-body failure/retry,
+  exact single/spread source reload, background/explicit close, fresh-reopen
+  chain and API-25-compatible evidence capture. Its 24 focused reader/host
+  tests, signed main HAP, and signed `entry@ohosTest` HAP pass.
+- This NextN work-order commit advances `third_party/reader-kit` to `1d1f515`
+  and repairs two runtime fixtures to consume the tracked submodule and current
+  enhancement providers. Reader contract, host-action, initial-policy, and
+  original-probe suites pass; the complete debug HAP consumer build passes.
+  The isolated worktree has no local signing profile, so this consumer result
+  is a compile/package result rather than a new signed-device build.
+- Koma consumes sibling reader-kit `1d1f515`; its shared preference bridge and
+  complete debug HAP consumer build pass without staging or changing its broad
+  unrelated main-branch worktree.
 
-Still required to close Package 1:
+Accepted device evidence:
 
-- rebuild NextE's native test HAP from the latest candidate, then run its one
-  consolidated real-host failure/retry/single-reload/spread-reload/background-
-  close/explicit-close/two-fresh-reopens path; prove target request generation
-  changes and the unaffected spread partner remains unchanged;
-- run the final focused suites and build all three consumers once after the
-  candidate is frozen;
-- execute the minimum device set selected by the risk rule above and inspect
-  terminal full-screen evidence; retain any counterexample in this row.
+- NextN's existing 103 production-download runs retain complete local content
+  through two same-URI reloads in single and continuous modes, and reload the
+  two split-spread sources independently while preserving the partner. Queue,
+  history, temporary settings, and legacy backend are restored afterward; see
+  `docs/qa/nextn-active-acceptance.md` and
+  `docs/qa/shared-reader-production-download-spread-reload-nextn-20260914.md`.
+- NextE 103 passed the consolidated real-host lifecycle at
+  `.hvigor/outputs/shared-reader-package1/device103__MLR-AL00/not-applicable/portrait-1600x2560/18-consolidated-lifecycle`:
+  Hypium 1/1; body failure/retry; exact single reload; one-side spread reload
+  with the partner request unchanged; background close; explicit close; and
+  two fresh reopens. All ten full-screen captures were inspected.
+- NextE 197 passed the same chain at
+  `.hvigor/outputs/shared-reader-package1/device197__ALN-AL80/not-applicable/portrait-1260x2720/22-phone-crosscheck-final`:
+  the protocol validator and internal Hypium both pass 1/1, five terminal
+  captures were inspected, and the screen timeout was restored to 10 seconds.
+  One preserved earlier run reached a genuine transient spread-source load
+  failure; the unchanged HAP then completed the chain twice, once with internal
+  Hypium 1/1 and once with the full protocol validator passing.
+
+Boundary retained: these runs do not claim deterministic reproduction of every
+natural network timeout, deleted/corrupt local file, cache eviction, or download
+queue stall. Those host cache/prefetch policies remain Package 2 inputs. All
+three production defaults remain legacy and every shared entry remains optional
+and reversible.
+
+## Current Package 2 delta
+
+Start with the state owner that is already observably narrower than the legacy
+readers: NextN persists a numeric `preloadPages` depth, while the shared session
+currently exposes only a boolean neighbor-preload switch. Map the corresponding
+NextE and Koma behavior before editing. The shared core may own a bounded
+visible-window depth, but host caches, download queues, transport lifetime, and
+storage eviction remain host capabilities; no shared UI may silently invent
+those policies.
 
 ## Single next action
 
-Build the latest NextE native reader test HAP, then execute the single
-`ReaderLifecycleRecoveryTrial` Package 1 protocol on 103 and inspect both its
-internal Hypium result and retained full-screen captures. If that path passes,
-remove the temporary host-state probe, run the final four-consumer build batch
-against the resulting reader-kit revision, and perform the risk-selected phone
-cross-check. Do not split reload, retry, background, close, and reopen into
-separate acceptance manifests or commits.
+Trace `preloadPages` from each host's saved reader state through its legacy and
+optional shared entry, then replace the shared boolean with the smallest bounded
+depth contract that preserves current defaults and cancellation/resource-slot
+limits. Add core state tests first, then wire only hosts that actually expose a
+depth. Do not change any production default or persistence key.
 
 ## Package completion record
 

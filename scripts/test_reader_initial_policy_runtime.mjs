@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 const require = createRequire(import.meta.url)
 const ts = require('/Applications/DevEco-Studio.app/Contents/tools/hvigor/hvigor/node_modules/typescript')
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const kit = path.resolve(root, '../reader-kit')
+const kit = path.resolve(root, 'third_party/reader-kit')
 const load = require(path.join(kit, 'tests/load-core.cjs'))
 const core = load('ReaderDisplayMap')
 function compile(source, deps = {}, globals = {}) {
@@ -176,6 +176,8 @@ for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [fal
     connectNextNReaderObservedProgressProbe: () => ({ deliver() {} }),
     NextNReaderProgressPersistence: class { save() { return Promise.resolve() } },
     ReaderKeepScreenOn: Stub, NextNReaderLabAdapter: Stub, NextNReaderImageShareHost: Stub,
+    NextNReaderSuperResolutionProvider: Stub, NextNReaderTranslationProvider: Stub,
+    connectNextNReaderTranslationProbe: () => ({ bindAction() {} }),
     ReaderLabShareProbe: Stub, ReaderSystemImageSaveHost: Stub, ReaderUnitKey: Stub,
     ReaderTrialOriginalProbe: { consume: () => 0 }, ReaderPagedSession: Session,
     ReaderLabAssetProbe: Stub, ReaderDisplayPolicy: core.ReaderDisplayPolicy,
@@ -238,6 +240,8 @@ for (const [mode, extra, expected] of [
       restore(_work, pageIndex) { return Promise.resolve(pageIndex) }
     },
     ReaderKeepScreenOn: Stub, NextNReaderLabAdapter: Stub, NextNReaderImageShareHost: Stub, ReaderLabShareProbe: Stub,
+    NextNReaderSuperResolutionProvider: Stub, NextNReaderTranslationProvider: Stub,
+    connectNextNReaderTranslationProbe: () => ({ bindAction() {} }),
     ReaderSystemImageSaveHost: Stub, ReaderUnitKey: Stub, ReaderPagedSession: Session,
     ReaderLabAssetProbe: Stub, ReaderTrialOriginalProbe: { consume: () => 0 },
     ReaderPresentationService: { restore: () => { events.push('restore'); return restore.promise },

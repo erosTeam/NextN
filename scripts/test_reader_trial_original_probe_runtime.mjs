@@ -14,7 +14,7 @@ function compiled(path) {
 const controlCode = compiled('../shared/src/main/ets/navigation/ReaderTrialOriginalProbe.ets')
 const providerCode = compiled('../feature/reader/src/main/ets/lab/NextNReaderOriginalProbeProvider.ets')
 const catalogCode = compiled('../feature/reader/src/main/ets/lab/NextNReaderOriginalProbeCatalog.ets')
-const contentCode = compiled('../../reader-kit/reader-core/src/main/ets/ReaderContent.ets')
+const contentCode = compiled('../third_party/reader-kit/reader-core/src/main/ets/ReaderContent.ets')
 
 // Both state machine and provider wrapper are complete actual modules. Only their external asset provider is fake.
 function setup(timeoutMs = 1000, deferred = false, unknownMetrics = false) {
