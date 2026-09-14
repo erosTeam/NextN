@@ -7,7 +7,7 @@ import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, R
 import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility,
   ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction, ReaderMediaActions,
-  ReaderHostStatus, ReaderObservationSink, ReaderPreferenceSink } from '@reader-kit/ui'
+  ReaderHostStatus, ReaderObservationSink, ReaderPreferenceSink, ReaderActivitySink } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
 import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea,
@@ -852,8 +852,9 @@ export struct NextNReaderLabPage {
               onClose: (context: ReaderCloseContext | null): void => this.closeTrial(false, context),
               observation: new ReaderObservationSink(
                 (anchor: ReaderReadingAnchor): void => this.observeReaderPosition(anchor)),
-              onInteractionBusy: (busy: boolean): void => { this.setEnhancementInteractionBusy(busy) },
-              onChromeVisible: (visible: boolean): void => this.syncChromeVisible(visible) })
+              activitySink: new ReaderActivitySink(
+                (visible: boolean): void => this.syncChromeVisible(visible),
+                (busy: boolean): void => { this.setEnhancementInteractionBusy(busy) }) })
           } else {
           ReaderLabSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
             preloadDepth: this.readerPresentation.preloadPages,
