@@ -237,14 +237,63 @@ accepts inherited wide-page rotation in Koma's optional shared reader; changing
 the preference from shared runtime UI and the remaining Package 2 capability
 map remain open.
 
+The subsequent `imageFitMode` review found no renderer behavior to migrate.
+Koma had already removed that preference from the supported reader contract in
+`748a519d` after the RDR-002 device finding; reintroducing it would create a
+setting with no accepted legacy semantic and risk recreating fixed-viewport
+long-image clipping. It is therefore compatibility-only/non-applicable for the
+replacement map, not a deferred shared-reader feature.
+
+Koma commit `ce627f4c` then reuses its host-owned settings sheet from the
+optional shared route instead of duplicating persistence or application enums
+inside reader-kit. The host maps the existing layout, direction, animation,
+tap-zone preset/inversion, background, page number, fullscreen, keep-awake,
+auto-read interval, preload depth, volume-key and page-gap preferences into
+host-neutral shared inputs. The same signed candidate with SHA-256
+`56b31b4559b9834391d69c10b6691e9ad08e0ea8f02c55c0e97775688c070855`
+passed the phone setting-change/cold-reopen/restore path on 197 and the complete
+responsive upper/lower sheet on 103. Both devices returned to the normal host,
+restored the 10-second timeout and preserved their reader-session and library
+hashes. Evidence is under
+`.hvigor/outputs/shared-reader-package2-host-settings/device197__ALN-AL80/not-applicable/portrait-1260x2720`
+and
+`.hvigor/outputs/shared-reader-package2-host-settings/device103__MLR-AL00/not-applicable/portrait-1600x2560`.
+
+The settings comparison also exposed a visible legacy behavior omitted by the
+shared route: changing a tap-zone preset closes settings and presents the
+resolved colored regions once, with reader chrome hidden and the first tap
+reserved for dismissal. Shared revision `a6396e6` now owns that host-neutral
+presentation, labels, input freeze and one-shot revision fence; hosts continue
+to own preset semantics, normalized region geometry and persistence. Koma
+commit `69a20f13` maps its existing geometry and only increments the preview
+revision when the preset or inversion actually changes. The full reader-kit
+suite and Koma preference-bridge test pass. Matching NextN debug, NextE signed
+debug and clean Koma signed debug consumers build; NextE's V1 inventory remains
+zero across 587 ArkTS files. The exact clean Koma HAP for `69a20f13` plus
+reader-kit `a6396e6` has SHA-256
+`7541ea95117c6948a4e355cf91f4c9dffe514f3482e25737f432fc18fd52183f`.
+
+On 197, changing the observed `right_left` plus horizontal inversion to
+`l_shaped` produced the correctly inverted five-region full-screen preview;
+chrome was absent, one center tap dismissed the preview, and restoring
+`right_left` produced the expected inverted three-region preview. On 103, the
+same path over an existing two-page local chapter started at `1 / 2` and still
+showed `1 / 2` after the dismissal tap, proving that dismissal did not also
+turn the page. Both complete previews and their post-dismissal frames were
+inspected, original tap settings were restored, reader-session/library hashes
+were unchanged, logs contained no reader exception, normal hosts and 10-second
+timeouts were restored, and both leases were released. Evidence is under
+`.hvigor/outputs/shared-reader-tap-preview/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-preview-acceptance/run`
+and
+`.hvigor/outputs/shared-reader-tap-preview/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-preview-page-invariance/run`.
+
 ## Single next action
 
-Resume the Package 2 old-to-shared capability map at the first actual missing
-setting or action after inherited wide-page rotation, starting with a complete
-legacy/shared comparison of Koma's persisted `imageFitMode`. Preserve long-image
-scrollability while defining any host-neutral fit semantic; do not translate a
-legacy fit option into a fixed viewport that recreates width-based clipping.
-Retain the exact
+Resume the Package 2 old-to-shared capability map after the accepted Koma host
+settings and one-shot tap-zone preview. Compare the complete legacy/shared host
+action and system-behavior surfaces in current source, then implement only the
+first actual omission with its owner explicit; do not add compatibility-only
+settings or duplicate host business behavior in reader-kit. Retain the exact
 NextN boundary: its isolated branch cannot produce a signed matching package
 without copying credentials or changing tracked signing state, so no mismatched
 HAP may be installed merely to claim the remaining preload adapter runtime.
