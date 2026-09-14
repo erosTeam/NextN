@@ -3,10 +3,10 @@ import { ReaderTrialLayoutCommit, ReaderKeepScreenOn, ReaderTapAction, ReaderRun
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
 import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderLayout,
-  ReaderReadingAnchor, ReaderDisplayPolicy, ReaderPage, ReaderVariantPreference } from '@reader-kit/core'
+  ReaderReadingAnchor, ReaderDisplayPolicy, ReaderPage, ReaderVariantPreference, ReaderAssetProvider } from '@reader-kit/core'
 import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility,
-  ReaderLabAssetProbe, ReaderVolumeKeys, ReaderHostAction } from '@reader-kit/ui'
+  ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
 import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea,
@@ -53,6 +53,8 @@ import { connectNextNReaderTranslationProbe } from './NextNReaderTranslationProb
 @ComponentV2
 export struct NextNReaderLabPage {
   @Require @Param request: NextNReaderHostRequest
+  /** Present only for an explicit Debug Lab route; production requests never carry probe fields. */
+  @Param labRequest: ReaderLabRequest | null = null
   @Param entryTransition: ReaderEntryTransition | null = null
   @Param entryPhase: string = 'finished'
   @Param entryPreview: ReaderEntryPreviewSource | null = null
@@ -123,7 +125,9 @@ export struct NextNReaderLabPage {
 
   aboutToAppear(): void {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext
-    if (!context.applicationInfo.debug) return
+    const production = this.request.productionSources === true
+    const lab = this.labRequest
+    if (!context.applicationInfo.debug || (!production && lab === null)) return
     this.notifyEntrySettled()
     if (this.embedded) {
       this.onRegisterBackRequest((): boolean => {
@@ -164,10 +168,8 @@ export struct NextNReaderLabPage {
       connectNextNReaderObservedProgressProbe().deliver(this.request.work, pageIndex)
       return operation
     })
-    this.imageShare = new ReaderLabShareProbe(
-      new NextNReaderImageShareHost(context, adapter),
-      this.request.shareProbe,
-    )
+    const imageShare = new NextNReaderImageShareHost(context, adapter)
+    this.imageShare = lab === null ? imageShare : new ReaderLabShareProbe(imageShare, lab.shareProbe)
     this.imageSave = new ReaderSystemImageSaveHost(context,
       (uri: string, path: string): Promise<void> => NextNReaderImageSaveDownload.download(uri, path))
     this.unitKey = new ReaderUnitKey('nh', this.request.work, this.request.work)
@@ -186,8 +188,10 @@ export struct NextNReaderLabPage {
       (): NextNReaderSuperResolutionConfiguration => this.superResolutionConfiguration())
     const translationProvider = new NextNReaderTranslationProvider(context, variantProvider,
       (page: ReaderPage): NextNReaderTranslationConfiguration => this.translationConfiguration(page))
-    const session = new ReaderPagedSession(catalog, new ReaderLabAssetProbe(translationProvider, this.request.thumbnailFailurePage,
-      this.request.informationProbe, this.request.thumbnailEntry ? this.request.failurePage : -1), adapter)
+    const assetProvider: ReaderAssetProvider = lab === null ? translationProvider :
+      new ReaderLabAssetProbe(translationProvider, lab.thumbnailFailurePage,
+        lab.informationProbe, lab.thumbnailEntry ? lab.failurePage : -1)
+    const session = new ReaderPagedSession(catalog, assetProvider, adapter)
     connectNextNReaderTranslationProbe().bindAction(context, this.request.work, (id: string): boolean => {
       const state = this.session?.snapshot()
       const source = state?.unit?.key
@@ -209,7 +213,7 @@ export struct NextNReaderLabPage {
       const initialPageIndex = await (this.progressPersistence?.restore(
         this.request.work,
         this.request.pageIndex,
-        this.request.restoreSavedProgress ?? !this.request.thumbnailEntry,
+        this.request.restoreSavedProgress ?? !(this.labRequest?.thumbnailEntry ?? false),
         this.request.progressReadWrite,
       ) ?? Promise.resolve(this.request.pageIndex))
       if (this.volumeDisposed || this.closeRequested || this.hostClosing) return
@@ -219,8 +223,8 @@ export struct NextNReaderLabPage {
       const policy = NextNReaderInitialPolicy.resolve(
         ReaderPresentationService.snapshot(),
         column,
-        this.request.entryLayoutOverride,
-        this.request.entryDirectionOverride,
+        this.labRequest?.entryLayoutOverride ?? null,
+        this.labRequest?.entryDirectionOverride ?? null,
       )
       session.setPolicy(policy)
       this.request.pageIndex = initialPageIndex
@@ -721,7 +725,8 @@ export struct NextNReaderLabPage {
     'presentationReady', 'closeRequested', 'hostClosing', 'readerSettingsSheetShown', 'session')
   syncReaderActivity(): void {
     this.syncKeepScreenOn()
-    const enabled = this.request.volumeKeysOverride ?? (this.presentationReady && this.readerPresentation.volumeKeyTurn)
+    const enabled = this.labRequest?.volumeKeysOverride ??
+      (this.presentationReady && this.readerPresentation.volumeKeyTurn)
     this.volumeKeys.setActive(!this.volumeDisposed && !this.closeRequested && !this.hostClosing &&
       this.session !== null && this.request.readingChrome && enabled &&
       this.hostRouteActive() && this.labVisibility.foreground && !this.readerSettingsSheetShown &&
@@ -785,7 +790,7 @@ export struct NextNReaderLabPage {
 
   /** Production inherits the canonical mode-specific choice; debug trials keep their explicit request contract. */
   private initialCropBorders(): boolean {
-    if (this.request.cropBorders) return true
+    if (this.labRequest?.cropBorders === true) return true
     if (this.request.productionSources !== true) return false
     return this.readerPresentation.mode === NhReaderMode.VERTICAL
       ? this.readerPresentation.cropBordersContinuous
@@ -804,7 +809,7 @@ export struct NextNReaderLabPage {
               input: this.input, imageShare: this.imageShare, imageSave: this.imageSave,
               tapZoneResolver: (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout),
               autoReadAvailable: true, autoReadSeconds: this.readerPresentation.autoPageSeconds,
-              pageTurnAnimation: this.request.pageTurnAnimationOverride ?? this.readerPresentation.pageTurnAnimation,
+              pageTurnAnimation: this.labRequest?.pageTurnAnimationOverride ?? this.readerPresentation.pageTurnAnimation,
               preloadDepth: this.readerPresentation.preloadPages,
               preferredVariant: this.presentationReady && this.readerPresentation.superResolutionEnabled ? 'enhanced' : 'default',
               preferredVariantIdentity: this.superResolutionIdentity(),
@@ -819,7 +824,7 @@ export struct NextNReaderLabPage {
               cropBorders: this.initialCropBorders(),
               // Entry animation is optional; an incompatible cropped target cancels the flight.
               // Never remove a production reading feature merely because the source was a thumbnail.
-              cropAvailable: this.request.productionSources === true || this.request.cropBorders,
+              cropAvailable: this.request.productionSources === true || this.labRequest?.cropBorders === true,
               hostSettingsAvailable: this.hostSettingsAvailable,
               onHostSettings: (): void => { this.openHostSettings() },
               externalOpenAvailable: this.request.productionSources === true,
@@ -849,9 +854,9 @@ export struct NextNReaderLabPage {
           } else {
           ReaderLabSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
             preloadDepth: this.readerPresentation.preloadPages,
-            failurePage: this.request.failurePage,
-            failureLayout: this.request.failureLayout,
-            delayedMetricsPage: this.request.delayedMetricsPage,
+            failurePage: this.labRequest?.failurePage ?? -1,
+            failureLayout: this.labRequest?.failureLayout ?? 'continuous',
+            delayedMetricsPage: this.labRequest?.delayedMetricsPage ?? -1,
             active: this.hostRouteActive() && this.labVisibility.foreground })
           }
         }

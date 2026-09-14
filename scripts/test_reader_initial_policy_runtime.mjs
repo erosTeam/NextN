@@ -59,6 +59,16 @@ for (const [layout, direction] of [[undefined, undefined], ['bad', 'bad'], ['sin
   assert.equal(p.pagingAxis, layout === 'continuous' ? 'vertical' : 'horizontal')
 }
 const pageSource = fs.readFileSync(path.join(root, 'feature/reader/src/main/ets/lab/NextNReaderLabPage.ets'), 'utf8')
+const hostRequestSource = fs.readFileSync(path.join(root,
+  'feature/reader/src/main/ets/lab/NextNReaderHostRequest.ets'), 'utf8')
+const productionRequestSource = hostRequestSource.slice(hostRequestSource.indexOf('export class NextNProductionReaderRequest'))
+for (const field of ['failurePage', 'thumbnailFailurePage', 'shareProbe', 'informationProbe',
+  'entryLayoutOverride', 'entryDirectionOverride', 'cropBorders', 'pageTurnAnimationOverride']) {
+  assert.doesNotMatch(productionRequestSource, new RegExp(`\\b${field}\\b`))
+}
+assert.match(pageSource, /@Param labRequest: ReaderLabRequest \| null = null/)
+assert.match(pageSource, /lab === null \? translationProvider :\s*new ReaderLabAssetProbe/)
+assert.match(pageSource, /lab === null \? imageShare : new ReaderLabShareProbe/)
 for (const [extra, expectedLayout, expectedDirection, expectedAxis] of [
   [{ readerLabEntryLayout: 'single' }, 'single', 'ltr', 'horizontal'],
   [{ readerLabEntryLayout: 'continuous' }, 'continuous', 'ltr', 'vertical'],
@@ -84,7 +94,8 @@ function fixture() {
     ReaderCloseContext: { from: () => null },
   }).Host
   const host = new Host()
-  Object.assign(host, { request: request(), volumeDisposed: false, closeRequested: false, hostClosing: false,
+  const labRequest = request()
+  Object.assign(host, { request: labRequest, labRequest, volumeDisposed: false, closeRequested: false, hostClosing: false,
     presentationReady: false, managesTrialWindow: false, progressFlush: null, progressEpoch: 1,
     progressPersistence: { restore: (_work, pageIndex) => Promise.resolve(pageIndex) },
     progressWrites: { seal() {}, flush: () => Promise.resolve(true) },
@@ -166,6 +177,7 @@ const NonDebugHost = compile(`export class Host { ${appear} }`, {}, {
 }).Host
 const nonDebugHost = new NonDebugHost()
 nonDebugHost.getUIContext = () => ({ getHostContext: () => productionContext })
+nonDebugHost.request = { productionSources: false }
 nonDebugHost.notifyEntrySettled = () => {}
 nonDebugHost.aboutToAppear()
 for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [false, false]]) {
@@ -187,8 +199,9 @@ for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [fal
     ReaderLabAssetProbe: Stub, ReaderDisplayPolicy: core.ReaderDisplayPolicy,
   }).Host
   const host = new Host()
-  Object.assign(host, { request: { ...request(), readingChrome, thumbnailEntry,
-    entryLayout: 'spread', entryDirection: 'rtl' }, managesTrialWindow: false,
+  const labRequest = { ...request(), readingChrome, thumbnailEntry,
+    entryLayout: 'spread', entryDirection: 'rtl' }
+  Object.assign(host, { request: labRequest, labRequest, managesTrialWindow: false,
     progressWrites: { open: () => 1 },
     notifyEntrySettled: () => {},
     getUIContext: () => ({ getHostContext: () => ({ applicationInfo: { debug: true } }) }),
@@ -211,28 +224,28 @@ for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [fal
 }
 const cropMethod = cls.members.find(m => m.name?.getText(tree) === 'initialCropBorders').getText(tree)
 const CropHost = compile(`export class Host { ${cropMethod} }`, {}, { NhReaderMode: enums.NhReaderMode }).Host
-for (const [request, presentation, expected] of [
-  [{ thumbnailEntry: true, cropBorders: true, productionSources: true },
+for (const [request, labRequest, presentation, expected] of [
+  [{ productionSources: true }, { cropBorders: true },
     { mode: 'vertical', cropBordersContinuous: true, cropBordersPaged: true }, true],
-  [{ thumbnailEntry: true, cropBorders: false, productionSources: true },
+  [{ productionSources: true }, { cropBorders: false },
     { mode: 'paged_rtl', cropBordersContinuous: false, cropBordersPaged: true }, true],
-  [{ thumbnailEntry: false, cropBorders: true, productionSources: false },
+  [{ productionSources: false }, { cropBorders: true },
     { mode: 'paged', cropBordersContinuous: false, cropBordersPaged: false }, true],
-  [{ thumbnailEntry: false, cropBorders: false, productionSources: false },
+  [{ productionSources: false }, { cropBorders: false },
     { mode: 'vertical', cropBordersContinuous: true, cropBordersPaged: true }, false],
-  [{ thumbnailEntry: false, cropBorders: false, productionSources: true },
+  [{ productionSources: true }, { cropBorders: false },
     { mode: 'vertical', cropBordersContinuous: true, cropBordersPaged: false }, true],
-  [{ thumbnailEntry: false, cropBorders: false, productionSources: true },
+  [{ productionSources: true }, { cropBorders: false },
     { mode: 'paged_vertical', cropBordersContinuous: true, cropBordersPaged: false }, false],
-  [{ thumbnailEntry: false, cropBorders: false, productionSources: true },
+  [{ productionSources: true }, { cropBorders: false },
     { mode: 'paged_rtl', cropBordersContinuous: false, cropBordersPaged: true }, true],
 ]) {
   const host = new CropHost()
-  Object.assign(host, { request, readerPresentation: presentation })
+  Object.assign(host, { request, labRequest, readerPresentation: presentation })
   assert.equal(host.initialCropBorders(), expected)
 }
 assert.match(pageSource,
-  /cropAvailable:\s*this\.request\.productionSources === true \|\| this\.request\.cropBorders/,
+  /cropAvailable:\s*this\.request\.productionSources === true \|\| this\.labRequest\?\.cropBorders === true/,
   'thumbnail entry must not disable the production crop control')
 // Compose the real thumbnail entry and initialization methods, with deferred I/O.
 for (const [mode, extra, expected] of [
@@ -265,7 +278,7 @@ for (const [mode, extra, expected] of [
   const host = new Host(), r = request({ readerLabChrome: true, readerLabThumbnailEntry: true, ...extra })
   // Index replaces the requested page with the actual clicked source before mounting.
   r.pageIndex = 2
-  Object.assign(host, { request: r, closeRequested: false, hostClosing: false, managesTrialWindow: false,
+  Object.assign(host, { request: r, labRequest: r, closeRequested: false, hostClosing: false, managesTrialWindow: false,
     progressFlush: null, progressWrites: { open: () => 1, seal() {}, flush: () => Promise.resolve(true) },
     notifyEntrySettled: () => {},
     getUIContext: () => ({ getHostContext: () => debugContext }),
