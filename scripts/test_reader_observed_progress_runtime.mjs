@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 const require = createRequire(import.meta.url)
 const ts = require('/Applications/DevEco-Studio.app/Contents/tools/hvigor/hvigor/node_modules/typescript')
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const kit = path.resolve(root, '../reader-kit')
+const kit = path.resolve(root, 'third_party/reader-kit')
 const load = require(path.join(kit, 'tests/load-core.cjs'))
 const core = { ...load('ReaderContent'), ...load('ReaderDisplayMap') }
 const sourcePath = path.join(root, 'feature/reader/src/main/ets/lab/NextNReaderObservedProgress.ets')

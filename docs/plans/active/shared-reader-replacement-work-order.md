@@ -444,17 +444,48 @@ absent. Koma's Package 2 progress and image-action paths are now reconciled;
 Package 2 remains active until the same bounded current-source audit either
 accepts or repairs NextN and NextE host progress/action semantics.
 
+The bounded NextN comparison also found no product omission in progress or the
+four current-image actions. The legacy reader persists a canonical zero-based
+NH source index from its Swiper/List page-change owner; that callback can precede
+a newly selected image's successful presentation. The optional shared host
+deliberately narrows this boundary and receives an observation
+only after the current original is decoded, presented and still matches the
+active unit, selection, navigation, slot and request; NextN continues to own
+`HistoryRepository`, gallery metadata, thumbnail-entry precedence, immediate
+Detail publication, durable serialization and close flush. Existing accepted
+197 runs cover single, vertical, continuous and RTL-spread persistence, cold
+restore, thumbnail precedence, adjacent failure isolation and selected-page
+retry. They already demonstrate that a prefetched or failed source cannot
+falsely advance history, while a successful Retry writes the selected page.
+
+The same source audit confirms that shared information, save and share operate
+on the actual displayed original rather than thumbnail/catalog geometry. The
+shared spread menu preserves visual left/right/both source identity under LTR
+and RTL. NextN retains its host-owned exact file/cache/download preparation,
+system media dialog, canonical-gallery share fallback and external-open route.
+The legacy-only enhancement/source-origin diagnostic lines are not separate
+actions: the shared dialog reports the active source/enhanced/translated/original
+variant and actual retained file facts, while processing policy and storage
+origin remain NextN-owned. Existing 237 D8-D10 and save runs already cover real
+system dialogs, single/spread selection, positive save, cancellation, failure,
+page replacement, background and close. Current reader-kit observation and
+image-action suites pass 84/84; current NextN progress/persistence/write-gate,
+share-fallback and exact-download host tests pass. No reader implementation or
+device replay was justified. One stale test entry did bypass the pinned
+submodule by resolving a sibling checkout; it now loads
+`third_party/reader-kit`, so isolated-worktree verification uses exact revision
+`5d526ce`.
+
 ## Single next action
 
-Continue Package 2 with a bounded NextN then NextE audit of the current legacy
-and optional shared progress and image-action paths. Reuse the substantial
-accepted device evidence already recorded here and in the active acceptance
-ledger; do not replay broad matrices. Implement only the first actual omission,
-with its owner explicit, and otherwise record equivalence. Do not move routes,
-download/cache policy, persistence keys or host business behavior into
-reader-kit. Close each real delta through focused tests, matching affected-
-consumer builds and only the device shape justified by that delta. Production
-defaults remain legacy.
+Continue Package 2 with the same bounded NextE audit of current legacy and
+optional shared progress and image-action paths. Reuse the accepted device
+evidence already recorded here and in the active acceptance ledger; do not
+replay broad matrices. Implement only the first actual omission, with its owner
+explicit, and otherwise record equivalence. Do not move routes, cache policy,
+persistence keys or host business behavior into reader-kit. Close each real
+delta through focused tests, matching affected-consumer builds and only the
+device shape justified by that delta. Production defaults remain legacy.
 
 ## Package completion record
 
