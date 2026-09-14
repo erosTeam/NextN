@@ -39,8 +39,8 @@ deletes user data.
 | Package | Complete user path and ownership boundary | Release evidence | Status |
 | --- | --- | --- | --- |
 | 1. Resource lifecycle and recovery | Open real content; load visible and adjacent originals; switch/reload the exact visible source; keep unaffected panes; fail and retry one source; retire stale work on navigation, background, close, and fresh reopen. `reader-kit` owns request/slot presentation generations; hosts own URL/file/cache/download and source scope. | Shared state suite; affected-host tests; all three consumers build if shared code changes. Primary runtime on 197 for NextE and NextN; 103 only for spread/reflow-sensitive coverage. Existing legacy routes remain usable afterward. | DONE |
-| 2. Host state and action parity | Enter from normal host state; inherit and change applicable layout/direction/spread/crop/interpolation/auto-read/keep-screen/tap/volume settings; preserve progress; execute every supported image/host action without inventing generic business behavior. | Per-host old-to-shared capability map has no silent omission; persistence cold-start path and legacy return pass; one phone run per host plus 103 only for responsive state. | **ACTIVE** |
-| 3. Entry, chrome, thumbnails, and return | Detail, all-thumbnails, and reader-rail entry use the correct source identity and thumbnail geometry; single/spread/continuous/long-image UI and failure material remain legible; rotation/window changes keep anchors; close returns to the current source position and restores system UI. | Same-state full-page review on 197 and 103 for changed responsive/transition paths; NH partial thumbnails and EH sprites use their own host contracts; no known visual counterexample. | QUEUED |
+| 2. Host state and action parity | Enter from normal host state; inherit and change applicable layout/direction/spread/crop/interpolation/auto-read/keep-screen/tap/volume settings; preserve progress; execute every supported image/host action without inventing generic business behavior. | Per-host old-to-shared capability map has no silent omission; persistence cold-start path and legacy return pass; one phone run per host plus 103 only for responsive state. | DONE |
+| 3. Entry, chrome, thumbnails, and return | Detail, all-thumbnails, and reader-rail entry use the correct source identity and thumbnail geometry; single/spread/continuous/long-image UI and failure material remain legible; rotation/window changes keep anchors; close returns to the current source position and restores system UI. | Same-state full-page review on 197 and 103 for changed responsive/transition paths; NH partial thumbnails and EH sprites use their own host contracts; no known visual counterexample. | **ACTIVE** |
 | 4. Koma chapter orchestration | Open a real multi-chapter title; explicit previous/next chapter preparation, success, failure, cancellation, rapid A-B-C selection, last-chapter semantics, per-chapter progress/read state, local/remote/provider scope, and return all remain host-owned around the shared session. | Focused orchestrator tests, Koma build, 197 phone path, 103 tablet rotation/chapter path, unchanged unrelated library/download data, and legacy Koma reader fallback. | QUEUED |
 | 5. Controlled production replacement | Each app can select the shared host at the normal reader entry without debug Wants, while a single explicit fallback restores its legacy reader. Cold start, repeated entry, upgrade, and rollback preserve settings/progress/data. | One pinned `reader-kit` revision consumed by all hosts; per-app full route matrix accepted on the selected release candidate; fallback verified before any app changes its default. Default selection remains a separate explicit release decision. | QUEUED |
 
@@ -476,16 +476,58 @@ submodule by resolving a sibling checkout; it now loads
 `third_party/reader-kit`, so isolated-worktree verification uses exact revision
 `5d526ce`.
 
+## Package 2 completion — 2026-09-14
+
+The bounded NextE legacy/shared comparison found one real action omission and
+no progress-owner omission. NextE commit `9a300a67` keeps its existing local
+image-block service, rules, cache paths, confirmation and whitelist mutations
+outside reader-kit while adapting the current source into the shared asset
+notice/action boundary. Commit `f3560d18` adds a deterministic Debug-lab probe
+without writing a subscription rule, and advances reader-kit to `1af283e` so a
+suppressed source retains a neutral non-black presentation context. The focused
+image-block, translation and super-resolution provider tests pass. The final
+197 and 103 protocols each pass 1/1; complete action-menu and suppressed-source
+screens were inspected at
+`/Users/honjow/git/NextN/.hvigor/outputs/shared-reader-image-block/2026-09-14/device197/retry5/`
+and the adjacent `device103/retry5/`. They prove the NextE-owned mark action,
+the shared suppressed-source notice and allow action, and stable phone/tablet
+geometry. They do not claim a live downloaded subscription-rule match or a
+decoded backdrop preview: the deterministic rule probe was used and the
+accepted notice uses reader-kit's neutral gradient fallback. No rule, image,
+preference or production route was changed on either device.
+
+Current legacy Reader progress publishes only after its thumbnail handoff has
+settled and flushes through `GalleryReadProgressSettings`; the optional shared
+route narrows publication to the current decoded/presented original while
+retaining the same NextE-owned gallery key, RDB repository, startup restore and
+close flush. Commit `493901fc` adds a two-process device contract around that
+boundary. On 197, process one displayed page 2/46, persisted zero-based page 1
+and flushed it; after an explicit process stop, process two cold-restored the
+same complete page 2/46. Both full captures were inspected and the test finally
+restored the exact original RDB row and removed its recovery file. Both Hypium
+summaries pass 1/1; evidence is under
+`/Users/honjow/git/NextN/.hvigor/outputs/shared-reader-progress/2026-09-14/device197/run4/`.
+The final signed test HAP is
+`b50b93ce75dcdff95e9e7d5d1fcd68bfbfad776be53b5a0b3f19c14203b3e9ce`;
+the matching product HAP remains
+`c9f6c344fdabe3680d4d97431ddb88ff33a07d30dc87afbf511e27651ce1b0a4`.
+
+Together with the previously recorded Koma and NextN maps, all three hosts now
+retain their own progress, cache, settings and business actions while the
+shared surface owns only generic presentation and input. Package 2 is DONE.
+This does not change any production default or accept normal-entry replacement.
+
 ## Single next action
 
-Continue Package 2 with the same bounded NextE audit of current legacy and
-optional shared progress and image-action paths. Reuse the accepted device
-evidence already recorded here and in the active acceptance ledger; do not
-replay broad matrices. Implement only the first actual omission, with its owner
-explicit, and otherwise record equivalence. Do not move routes, cache policy,
-persistence keys or host business behavior into reader-kit. Close each real
-delta through focused tests, matching affected-consumer builds and only the
-device shape justified by that delta. Production defaults remain legacy.
+Start Package 3 with a bounded NextN NH-thumbnail identity/geometry audit across
+Detail's progressive strip, View all, and the optional shared-reader entry and
+rail. Compare against NextN's legacy path and current NH response/cache fields,
+not NextE's sprite contract: an NH partial thumbnail must not be stretched with
+the original full-image ratio, and a source index must remain the same through
+entry, rail selection and return. Reuse existing accepted long-image and
+transition evidence before adding a device replay. Implement only the first
+actual omission and keep gallery loading/cache ownership in NextN. Production
+defaults remain legacy.
 
 ## Package completion record
 

@@ -10,6 +10,24 @@
 > `docs/plans/active/shared-reader-replacement-work-order.md`; add detail here
 > only for a durable counterexample or a final package conclusion.
 
+- Shared reader Package 2 host-state/action parity DONE / replacement OPEN
+  (2026-09-14): Koma, NextN and NextE now have complete bounded legacy/shared
+  capability maps with host-owned persistence, settings, cache and business
+  actions. The final NextE delta keeps image-block rules/confirmation/whitelist
+  in NextE (`9a300a67`, `f3560d18`) and uses reader-kit `1af283e` only for the
+  generic suppressed-source notice. Final 197 and 103 image-block protocols
+  pass 1/1 and their complete menu/notice screens were inspected; the rule was
+  a deterministic no-write Debug probe, so live subscription download/match and
+  decoded backdrop preview are not claimed. A separate two-process 197 protocol
+  for NextE `493901fc` displayed and flushed page2/46, force-stopped the app,
+  cold-restored the same complete page2/46, then restored the exact original RDB
+  row and removed its recovery file; both processes pass1/1 and both full
+  captures were inspected. Evidence:
+  `.hvigor/outputs/shared-reader-image-block/2026-09-14/{device197/retry5,device103/retry5}/`
+  and `.hvigor/outputs/shared-reader-progress/2026-09-14/device197/run4/`.
+  Package3 is now ACTIVE. Production defaults, normal-entry replacement and
+  Package4-5 remain OPEN.
+
 - Shared Koma host-owned chapter picker LIMITED PASS / replacement OPEN
   (2026-09-14): reader-kit `5d526ce` exposes only a stale-target-fenced bottom
   center action slot; Koma `0115e341` retains chapter order, titles, sheet,
