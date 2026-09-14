@@ -287,13 +287,40 @@ timeouts were restored, and both leases were released. Evidence is under
 and
 `.hvigor/outputs/shared-reader-tap-preview/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-preview-page-invariance/run`.
 
+The next source/device comparison found that Koma's shared settings exposed the
+existing default `fullscreen=true` while its optional host constructed a trial
+window with status-visibility control disabled. The legacy reader hides the
+status area whenever chrome is hidden, so this was a real silent omission, not
+a new shared feature. Koma commit `b2465627` now keeps that preference semantic
+in the host: hidden chrome applies the host fullscreen value, and showing chrome
+first restores the status area and waits for the safe-area layout to settle
+before painting controls. reader-kit remains unchanged at `a6396e6` and only
+provides the already shared window-operation sequencing and layout fence.
+
+The focused Koma preference contract and complete Koma debug consumer build
+pass. A detached clean worktree at `b2465627` plus reader-kit `a6396e6`
+produced signed HAP SHA-256
+`cdd59194bdfff4ea80c4b399b9a5cf4d0a35b528b030b47b329a2cebf2492b6b`.
+On 197, the reader root changed from `[0,124][1260,2720]` with chrome/status to
+`[0,0][1260,2720]` without either, then returned to the original safe area and
+complete chrome. On 103 the corresponding roots were
+`[0,105][1600,2560]`, `[0,0][1600,2560]`, and
+`[0,105][1600,2560]`; the real two-page chapter remained at `1 / 2`.
+All four hidden/reshown captures were inspected. Both devices preserved their
+reader-session/library hashes, returned to the normal host, restored the
+10-second timeout and released their leases. Evidence is under
+`.hvigor/outputs/shared-reader-fullscreen-status/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-hide-show-restore/run`
+and
+`.hvigor/outputs/shared-reader-fullscreen-status/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-hide-show-restore/run`.
+
 ## Single next action
 
 Resume the Package 2 old-to-shared capability map after the accepted Koma host
-settings and one-shot tap-zone preview. Compare the complete legacy/shared host
-action and system-behavior surfaces in current source, then implement only the
-first actual omission with its owner explicit; do not add compatibility-only
-settings or duplicate host business behavior in reader-kit. Retain the exact
+settings, one-shot tap-zone preview and fullscreen status-bar lifecycle.
+Compare the remaining legacy/shared chrome actions and host-owned navigation
+surfaces in current source, then implement only the first actual omission with
+its owner explicit; do not add compatibility-only settings or duplicate host
+business behavior in reader-kit. Retain the exact
 NextN boundary: its isolated branch cannot produce a signed matching package
 without copying credentials or changing tracked signing state, so no mismatched
 HAP may be installed merely to claim the remaining preload adapter runtime.
