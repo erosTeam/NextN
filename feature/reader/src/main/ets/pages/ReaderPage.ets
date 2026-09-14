@@ -30,6 +30,7 @@ import {
   ReaderImageCacheResult,
   ReaderImageCacheService,
   ReaderPageCropBounds,
+  ReaderPageCropStrength,
   ReaderPageCropService,
   ReaderSuperResolutionService,
   ComicTranslationReaderPageInput,
@@ -769,6 +770,7 @@ struct ReaderImageSurfaceCore {
   @Param totalPages: number = 0
   @Param continuous: boolean = false
   @Param cropBordersEnabled: boolean = false
+  @Param cropStrength: string = ReaderPageCropStrength.STANDARD
   @Param snapshotId: string = ''
   @Param doubleTapSequence: number = 0
   @Param doubleTapTargetIndex: number = -1
@@ -863,7 +865,7 @@ struct ReaderImageSurfaceCore {
     this.refreshEnhancement()
   }
 
-  @Monitor('cropBordersEnabled', 'continuous', 'pageIndex', 'totalPages')
+  @Monitor('cropBordersEnabled', 'cropStrength', 'continuous', 'pageIndex', 'totalPages')
   onCropPresentationChanged(): void {
     if (!this.cropBordersEnabled) {
       this.resetCropBounds()
@@ -1120,10 +1122,11 @@ struct ReaderImageSurfaceCore {
       return
     }
     const identity: string = `${this.cacheKey}:${this.pageIndex}`
-    const requestKey: string = `${filePath}|${identity}|${this.continuous}|${this.totalPages}`
+    const strength: string = this.cropStrength
+    const requestKey: string = `${filePath}|${identity}|${strength}|${this.continuous}|${this.totalPages}`
     this.cropRequestKey = requestKey
-    const detected: ReaderPageCropBounds = await ReaderPageCropService.detect(filePath, identity)
-    if (this.cropRequestKey !== requestKey || !this.cropBordersEnabled) {
+    const detected: ReaderPageCropBounds = await ReaderPageCropService.detect(filePath, identity, strength)
+    if (this.cropRequestKey !== requestKey || !this.cropBordersEnabled || this.cropStrength !== strength) {
       return
     }
     this.cropBounds = this.continuous
@@ -1458,6 +1461,7 @@ struct ReaderImagePage {
   @Param pageIndex: number = -1
   @Param totalPages: number = 0
   @Param cropBordersEnabled: boolean = false
+  @Param cropStrength: string = ReaderPageCropStrength.STANDARD
   @Param snapshotId: string = ''
   @Param doubleTapSequence: number = 0
   @Param doubleTapTargetIndex: number = -1
@@ -1490,6 +1494,7 @@ struct ReaderImagePage {
         totalPages: this.totalPages,
         continuous: false,
         cropBordersEnabled: this.cropBordersEnabled,
+        cropStrength: this.cropStrength,
         snapshotId: this.snapshotId,
         doubleTapSequence: this.doubleTapSequence,
         doubleTapTargetIndex: this.doubleTapTargetIndex,
@@ -1533,6 +1538,7 @@ struct ReaderVerticalImage {
   @Param pageIndex: number = -1
   @Param totalPages: number = 0
   @Param cropBordersEnabled: boolean = false
+  @Param cropStrength: string = ReaderPageCropStrength.STANDARD
   @Param snapshotId: string = ''
   @Param doubleTapSequence: number = 0
   @Param doubleTapTargetIndex: number = -1
@@ -1581,6 +1587,7 @@ struct ReaderVerticalImage {
         totalPages: this.totalPages,
         continuous: true,
         cropBordersEnabled: this.cropBordersEnabled,
+        cropStrength: this.cropStrength,
         snapshotId: this.snapshotId,
         doubleTapSequence: this.doubleTapSequence,
         doubleTapTargetIndex: this.doubleTapTargetIndex,
@@ -1635,6 +1642,7 @@ struct ReaderSpreadImageLayer {
   @Param controlTint: ResourceColor = READER_CONTROL_TINT_DARK_CANVAS
   @Param pageIndex: number = -1
   @Param cropBordersEnabled: boolean = false
+  @Param cropStrength: string = ReaderPageCropStrength.STANDARD
   @Event onImageLoadStateChanged?: (pageIndex: number, loaded: boolean) => void
   @Event onImageFailureStateChanged?: (pageIndex: number, failed: boolean) => void
   @Event onSourceFileReady?: (pageIndex: number, localPath: string) => void
@@ -1697,7 +1705,7 @@ struct ReaderSpreadImageLayer {
     this.refreshEnhancement()
   }
 
-  @Monitor('cropBordersEnabled')
+  @Monitor('cropBordersEnabled', 'cropStrength')
   onCropBordersEnabledChanged(): void {
     if (!this.cropBordersEnabled) {
       this.resetCropBounds()
@@ -1876,10 +1884,11 @@ struct ReaderSpreadImageLayer {
       return
     }
     const identity: string = `${this.cacheKey}:${this.pageIndex}`
-    const requestKey: string = `${filePath}|${identity}`
+    const strength: string = this.cropStrength
+    const requestKey: string = `${filePath}|${identity}|${strength}`
     this.cropRequestKey = requestKey
-    const bounds: ReaderPageCropBounds = await ReaderPageCropService.detect(filePath, identity)
-    if (this.cropRequestKey !== requestKey || !this.cropBordersEnabled) {
+    const bounds: ReaderPageCropBounds = await ReaderPageCropService.detect(filePath, identity, strength)
+    if (this.cropRequestKey !== requestKey || !this.cropBordersEnabled || this.cropStrength !== strength) {
       return
     }
     this.publishCropBounds(bounds)
@@ -1994,6 +2003,7 @@ struct ReaderSpreadSurface {
   @Param spreadLayoutMode: NhReaderSpreadLayout = NhReaderSpreadLayout.JOINED
   @Param rowReversed: boolean = false
   @Param cropBordersEnabled: boolean = false
+  @Param cropStrength: string = ReaderPageCropStrength.STANDARD
   @Param doubleTapSequence: number = 0
   @Param doubleTapTargetIndex: number = -1
   @Param doubleTapX: number = 0
@@ -2269,6 +2279,7 @@ struct ReaderSpreadSurface {
       controlTint: this.controlTint,
       pageIndex: item.sourceIndex,
       cropBordersEnabled: this.cropBordersEnabled,
+      cropStrength: this.cropStrength,
       cacheKey: ReaderImageCacheService.cacheKey(
         this.galleryId,
         this.mediaId,
@@ -5450,6 +5461,7 @@ export struct ReaderPage {
             pageIndex: item.sourceIndex,
             totalPages: this.detail.pages.length,
             cropBordersEnabled: this.readerPresentation.cropBordersContinuous,
+            cropStrength: this.readerPresentation.cropStrengthContinuous,
             snapshotId: this.readerPageSnapshotId(item.sourceIndex),
             doubleTapSequence: this.doubleTapSequence,
             doubleTapTargetIndex: this.doubleTapTargetIndex,
@@ -5516,6 +5528,7 @@ export struct ReaderPage {
               pageIndex: item.sourceIndex,
               totalPages: this.detail.pages.length,
               cropBordersEnabled: this.readerPresentation.cropBordersPaged,
+              cropStrength: this.readerPresentation.cropStrengthPaged,
               snapshotId: this.readerPageSnapshotId(item.sourceIndex),
               doubleTapSequence: this.doubleTapSequence,
               doubleTapTargetIndex: this.doubleTapTargetIndex,
@@ -5596,6 +5609,7 @@ export struct ReaderPage {
             spreadLayoutMode: this.readerPresentation.spreadLayoutMode,
             rowReversed: this.isRightToLeftPagedMode(),
             cropBordersEnabled: this.readerPresentation.cropBordersPaged,
+            cropStrength: this.readerPresentation.cropStrengthPaged,
             doubleTapSequence: this.doubleTapSequence,
             doubleTapTargetIndex: this.doubleTapTargetIndex,
             doubleTapX: this.readerDoubleTapX,

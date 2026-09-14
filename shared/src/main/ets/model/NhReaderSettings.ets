@@ -1,4 +1,5 @@
 import { NhReaderTapZoneInvert, NhReaderTapZoneLayout } from './NhReaderTapZone'
+import { ReaderPageCropStrength } from './ReaderPageCropBounds'
 
 /**
  * Reader presentation stays wholly on-device. These modes change only how
@@ -92,6 +93,8 @@ export class NhReaderPresentation {
   /** Disabled by default; detection failure always falls back to the untouched page. */
   cropBordersPaged: boolean = false
   cropBordersContinuous: boolean = false
+  cropStrengthPaged: string = ReaderPageCropStrength.STANDARD
+  cropStrengthContinuous: string = ReaderPageCropStrength.STANDARD
   /** Explicit opt-in; the original Reader image always remains available. */
   superResolutionEnabled: boolean = false
   /** Existing installations resolve to the original art model without a migration download. */
@@ -119,6 +122,8 @@ export class NhReaderPresentation {
     result.tapZoneInvertContinuous = this.tapZoneInvertContinuous
     result.cropBordersPaged = this.cropBordersPaged
     result.cropBordersContinuous = this.cropBordersContinuous
+    result.cropStrengthPaged = this.cropStrengthPaged
+    result.cropStrengthContinuous = this.cropStrengthContinuous
     result.superResolutionEnabled = this.superResolutionEnabled
     result.superResolutionModel = this.superResolutionModel
     result.superResolutionMaxHeight = this.superResolutionMaxHeight

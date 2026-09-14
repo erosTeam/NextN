@@ -9,6 +9,7 @@ import {
   READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT,
 } from '../model/NhReaderSettings'
 import { NhReaderTapZoneInvert, NhReaderTapZoneLayout } from '../model/NhReaderTapZone'
+import { ReaderPageCropStrength } from '../model/ReaderPageCropBounds'
 
 /**
  * The live, app-private Reader presentation signal.  Repository reads and
@@ -35,6 +36,8 @@ export class ReaderPresentationState {
   @Trace tapZoneInvertContinuous: NhReaderTapZoneInvert = NhReaderTapZoneInvert.NONE
   @Trace cropBordersPaged: boolean = false
   @Trace cropBordersContinuous: boolean = false
+  @Trace cropStrengthPaged: string = ReaderPageCropStrength.STANDARD
+  @Trace cropStrengthContinuous: string = ReaderPageCropStrength.STANDARD
   @Trace superResolutionEnabled: boolean = false
   @Trace superResolutionModel: NhReaderSuperResolutionModel =
     NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
@@ -59,6 +62,8 @@ export class ReaderPresentationState {
     this.tapZoneInvertContinuous = presentation.tapZoneInvertContinuous
     this.cropBordersPaged = presentation.cropBordersPaged
     this.cropBordersContinuous = presentation.cropBordersContinuous
+    this.cropStrengthPaged = presentation.cropStrengthPaged
+    this.cropStrengthContinuous = presentation.cropStrengthContinuous
     this.superResolutionEnabled = presentation.superResolutionEnabled
     this.superResolutionModel = presentation.superResolutionModel
     this.superResolutionMaxHeight = presentation.superResolutionMaxHeight
@@ -84,6 +89,8 @@ export class ReaderPresentationState {
     result.tapZoneInvertContinuous = this.tapZoneInvertContinuous
     result.cropBordersPaged = this.cropBordersPaged
     result.cropBordersContinuous = this.cropBordersContinuous
+    result.cropStrengthPaged = this.cropStrengthPaged
+    result.cropStrengthContinuous = this.cropStrengthContinuous
     result.superResolutionEnabled = this.superResolutionEnabled
     result.superResolutionModel = this.superResolutionModel
     result.superResolutionMaxHeight = this.superResolutionMaxHeight

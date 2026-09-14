@@ -25,6 +25,7 @@ import {
   NhReaderBackgroundMode,
   NhReaderImageScalingQuality,
   NhReaderMode,
+  ReaderPageCropStrength,
   NhReaderSpreadLayout,
   NhReaderSuperResolutionModel,
   READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES,
@@ -1321,6 +1322,26 @@ export struct SettingsPage {
     return AppStrings.get('settings_reader_tap_zone_invert_none')
   }
 
+  private readerCropStrength(continuous: boolean): string {
+    return continuous
+      ? this.readerPresentation.cropStrengthContinuous
+      : this.readerPresentation.cropStrengthPaged
+  }
+
+  private readerCropStrengthLabel(continuous: boolean): string {
+    return this.readerCropStrengthLabelFor(this.readerCropStrength(continuous))
+  }
+
+  private readerCropStrengthLabelFor(strength: string): string {
+    if (strength === ReaderPageCropStrength.CONSERVATIVE) {
+      return AppStrings.get('settings_reader_crop_strength_conservative')
+    }
+    if (strength === ReaderPageCropStrength.STRONG) {
+      return AppStrings.get('settings_reader_crop_strength_strong')
+    }
+    return AppStrings.get('settings_reader_crop_strength_standard')
+  }
+
   @Builder
   private GalleryConcurrencyMenu(select: (action: () => void) => void) {
     Menu() {
@@ -1862,6 +1883,33 @@ export struct SettingsPage {
   }
 
   @Builder
+  private ReaderCropStrengthMenuItem(
+    continuous: boolean,
+    strength: string,
+    select: (action: () => void) => void,
+  ) {
+    MenuItem({
+      content: this.readerCropStrengthLabelFor(strength),
+      symbolEndIcon: this.readerCropStrength(continuous) === strength
+        ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+        : undefined,
+    }).onClick((): void => {
+      select((): void => {
+        this.saveReaderCropStrength(continuous, strength)
+      })
+    })
+  }
+
+  @Builder
+  private ReaderCropStrengthMenu(continuous: boolean, select: (action: () => void) => void) {
+    Menu() {
+      this.ReaderCropStrengthMenuItem(continuous, ReaderPageCropStrength.CONSERVATIVE, select)
+      this.ReaderCropStrengthMenuItem(continuous, ReaderPageCropStrength.STANDARD, select)
+      this.ReaderCropStrengthMenuItem(continuous, ReaderPageCropStrength.STRONG, select)
+    }
+  }
+
+  @Builder
   private ReadButtonStyleMenu(select: (action: () => void) => void) {
     Menu() {
       MenuItem({
@@ -2212,6 +2260,22 @@ export struct SettingsPage {
       }
     } catch (_error) {
       this.readerModeError = AppStrings.get('settings_reader_crop_borders_save_failed')
+    }
+  }
+
+  private async saveReaderCropStrength(continuous: boolean, strength: string): Promise<void> {
+    if (this.readerCropStrength(continuous) === strength) {
+      return
+    }
+    this.readerModeError = ''
+    try {
+      if (continuous) {
+        await ReaderPresentationService.setCropStrengthContinuous(this.context(), strength)
+      } else {
+        await ReaderPresentationService.setCropStrengthPaged(this.context(), strength)
+      }
+    } catch (_error) {
+      this.readerModeError = AppStrings.get('settings_reader_crop_strength_save_failed')
     }
   }
 
@@ -3534,8 +3598,6 @@ export struct SettingsPage {
         this.RowDivider()
         NextNListRow({
           title: AppStrings.get('reader_crop_borders'),
-          subtitle: AppStrings.get('settings_reader_crop_borders_paged_hint'),
-          subtitleMaxLines: 3,
           hasSwitch: true,
           checked: this.readerPresentation.cropBordersPaged,
           showChevron: false,
@@ -3548,6 +3610,20 @@ export struct SettingsPage {
           onSwitchChange: (value: boolean): void => {
             this.saveReaderCropBorders(false, value)
           },
+        })
+        this.RowDivider()
+        NextNListRow({
+          title: AppStrings.get('settings_reader_crop_strength'),
+          trailingText: this.readerCropStrengthLabel(false),
+          trailingDropdown: true,
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.ReaderCropStrengthMenu(false, select)
+          },
+          isEnabled: this.readerPresentation.cropBordersPaged,
+          accessibilityLabel: AppStrings.format('settings_reader_crop_strength_a11y', [
+            this.readerCropStrengthLabel(false),
+          ]),
         })
       }
     }
@@ -3586,8 +3662,6 @@ export struct SettingsPage {
         this.RowDivider()
         NextNListRow({
           title: AppStrings.get('reader_crop_borders'),
-          subtitle: AppStrings.get('settings_reader_crop_borders_continuous_hint'),
-          subtitleMaxLines: 3,
           hasSwitch: true,
           checked: this.readerPresentation.cropBordersContinuous,
           showChevron: false,
@@ -3600,6 +3674,20 @@ export struct SettingsPage {
           onSwitchChange: (value: boolean): void => {
             this.saveReaderCropBorders(true, value)
           },
+        })
+        this.RowDivider()
+        NextNListRow({
+          title: AppStrings.get('settings_reader_crop_strength'),
+          trailingText: this.readerCropStrengthLabel(true),
+          trailingDropdown: true,
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.ReaderCropStrengthMenu(true, select)
+          },
+          isEnabled: this.readerPresentation.cropBordersContinuous,
+          accessibilityLabel: AppStrings.format('settings_reader_crop_strength_a11y', [
+            this.readerCropStrengthLabel(true),
+          ]),
         })
       }
     }

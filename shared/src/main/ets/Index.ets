@@ -119,7 +119,11 @@ export {
   NhReaderTapZoneRegion,
   NhReaderTapZoneResolver,
 } from './model/NhReaderTapZone'
-export { ReaderPageCropBounds, ReaderPageCropDetector } from './model/ReaderPageCropBounds'
+export {
+  ReaderPageCropBounds,
+  ReaderPageCropDetector,
+  ReaderPageCropStrength,
+} from './model/ReaderPageCropBounds'
 export { ReaderRouteParams } from './model/ReaderRouteParams'
 export { NhBrowsePresentation } from './model/NhBrowsePresentation'
 export { NhContentFilterRule, NhContentFilterType } from './model/NhContentFilter'

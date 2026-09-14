@@ -14,6 +14,7 @@ import {
   NhReaderTapZoneLayout,
   NhReaderTapZoneResolver,
 } from '../model/NhReaderTapZone'
+import { ReaderPageCropDetector } from '../model/ReaderPageCropBounds'
 import { connectReaderPresentation, ReaderPresentationState } from '../state/ReaderPresentationState'
 import { ReaderSettingsRepository } from '../storage/ReaderSettingsRepository'
 
@@ -232,6 +233,28 @@ export class ReaderPresentationService {
     })
   }
 
+  static setCropStrengthPaged(
+    context: common.UIAbilityContext,
+    strength: string,
+  ): Promise<NhReaderPresentation> {
+    return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
+      presentation.cropStrengthPaged = ReaderPageCropDetector.normalizeStrength(strength)
+    }, (presentation: NhReaderPresentation): Promise<void> => {
+      return ReaderSettingsRepository.saveCropStrengthPaged(context, presentation.cropStrengthPaged)
+    })
+  }
+
+  static setCropStrengthContinuous(
+    context: common.UIAbilityContext,
+    strength: string,
+  ): Promise<NhReaderPresentation> {
+    return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
+      presentation.cropStrengthContinuous = ReaderPageCropDetector.normalizeStrength(strength)
+    }, (presentation: NhReaderPresentation): Promise<void> => {
+      return ReaderSettingsRepository.saveCropStrengthContinuous(context, presentation.cropStrengthContinuous)
+    })
+  }
+
   static setSuperResolutionEnabled(
     context: common.UIAbilityContext,
     enabled: boolean,
@@ -302,6 +325,8 @@ export class ReaderPresentationService {
       NhReaderTapZoneInvert,
       boolean,
       boolean,
+      string,
+      string,
       boolean,
       NhReaderSuperResolutionModel,
       number,
@@ -324,6 +349,8 @@ export class ReaderPresentationService {
       ReaderSettingsRepository.tapZoneInvertContinuous(context),
       ReaderSettingsRepository.cropBordersPaged(context),
       ReaderSettingsRepository.cropBordersContinuous(context),
+      ReaderSettingsRepository.cropStrengthPaged(context),
+      ReaderSettingsRepository.cropStrengthContinuous(context),
       ReaderSettingsRepository.superResolutionEnabled(context),
       ReaderSettingsRepository.superResolutionModel(context),
       ReaderSettingsRepository.superResolutionMaxHeight(context),
@@ -347,9 +374,11 @@ export class ReaderPresentationService {
     presentation.tapZoneInvertContinuous = values[15]
     presentation.cropBordersPaged = values[16]
     presentation.cropBordersContinuous = values[17]
-    presentation.superResolutionEnabled = values[18]
-    presentation.superResolutionModel = values[19]
-    presentation.superResolutionMaxHeight = values[20]
+    presentation.cropStrengthPaged = values[18]
+    presentation.cropStrengthContinuous = values[19]
+    presentation.superResolutionEnabled = values[20]
+    presentation.superResolutionModel = values[21]
+    presentation.superResolutionMaxHeight = values[22]
     ReaderPresentationService.state().replace(presentation)
   }
 

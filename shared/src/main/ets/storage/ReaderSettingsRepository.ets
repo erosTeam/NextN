@@ -15,6 +15,7 @@ import {
   NhReaderTapZoneLayout,
   NhReaderTapZoneResolver,
 } from '../model/NhReaderTapZone'
+import { ReaderPageCropDetector, ReaderPageCropStrength } from '../model/ReaderPageCropBounds'
 import { LocalDataStore } from './LocalDataStore'
 
 const READER_MODE_KEY: string = 'reader_mode'
@@ -37,6 +38,8 @@ const READER_TAP_ZONE_LAYOUT_CONTINUOUS_KEY: string = 'reader_tap_zone_layout_co
 const READER_TAP_ZONE_INVERT_CONTINUOUS_KEY: string = 'reader_tap_zone_invert_continuous'
 const READER_CROP_BORDERS_PAGED_KEY: string = 'reader_crop_borders_paged'
 const READER_CROP_BORDERS_CONTINUOUS_KEY: string = 'reader_crop_borders_continuous'
+const READER_CROP_STRENGTH_PAGED_KEY: string = 'reader_crop_strength_paged'
+const READER_CROP_STRENGTH_CONTINUOUS_KEY: string = 'reader_crop_strength_continuous'
 const READER_SUPER_RESOLUTION_ENABLED_KEY: string = 'reader_super_resolution_enabled'
 const READER_SUPER_RESOLUTION_MODEL_KEY: string = 'reader_super_resolution_model'
 const READER_SUPER_RESOLUTION_MAX_HEIGHT_KEY: string = 'reader_super_resolution_max_height'
@@ -251,6 +254,20 @@ export class ReaderSettingsRepository {
     return (await ReaderSettingsRepository.value(context, READER_CROP_BORDERS_CONTINUOUS_KEY)) === 'true'
   }
 
+  static async cropStrengthPaged(context: common.UIAbilityContext): Promise<string> {
+    return ReaderPageCropDetector.normalizeStrength(
+      (await ReaderSettingsRepository.value(context, READER_CROP_STRENGTH_PAGED_KEY)) ??
+        ReaderPageCropStrength.STANDARD,
+    )
+  }
+
+  static async cropStrengthContinuous(context: common.UIAbilityContext): Promise<string> {
+    return ReaderPageCropDetector.normalizeStrength(
+      (await ReaderSettingsRepository.value(context, READER_CROP_STRENGTH_CONTINUOUS_KEY)) ??
+        ReaderPageCropStrength.STANDARD,
+    )
+  }
+
   static async superResolutionEnabled(context: common.UIAbilityContext): Promise<boolean> {
     return (await ReaderSettingsRepository.value(context, READER_SUPER_RESOLUTION_ENABLED_KEY)) === 'true'
   }
@@ -441,6 +458,22 @@ export class ReaderSettingsRepository {
       context,
       READER_CROP_BORDERS_CONTINUOUS_KEY,
       enabled ? 'true' : 'false',
+    )
+  }
+
+  static saveCropStrengthPaged(context: common.UIAbilityContext, strength: string): Promise<void> {
+    return ReaderSettingsRepository.saveValue(
+      context,
+      READER_CROP_STRENGTH_PAGED_KEY,
+      ReaderPageCropDetector.normalizeStrength(strength),
+    )
+  }
+
+  static saveCropStrengthContinuous(context: common.UIAbilityContext, strength: string): Promise<void> {
+    return ReaderSettingsRepository.saveValue(
+      context,
+      READER_CROP_STRENGTH_CONTINUOUS_KEY,
+      ReaderPageCropDetector.normalizeStrength(strength),
     )
   }
 
