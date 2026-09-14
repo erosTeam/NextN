@@ -721,6 +721,20 @@ preference suites pass 14/14, and the matching Debug HAP builds with SHA-256
 The source and build fix is complete; the corrected final History projection is
 not yet claimed as device-accepted.
 
+The same comparison then closed two source-level chapter regressions instead of
+adding more device repetitions. Koma `bd9ec10f` rejects a real provider handoff
+when page resolution returns no pages, so the current readable shared chapter
+remains active and the existing failure toast/retry path is used; an unavailable
+target is no longer opened as a synthetic `source-placeholder://chapter` unit.
+Koma `ce293938` separately restores the legacy manual-picker contract: the
+picker projects every `chapterId`, while only Previous/Next use the host's
+verified `continuationChapterIds`. Chapters outside one automatic continuation
+group therefore remain manually reachable. The combined focused suites pass
+15/15 and the matching Debug HAP builds with SHA-256
+`437ab2658f54205bc58f14987ce0a5cf5c0d880a535b2b86b995c117bba516e6`.
+Neither change alters the production default or moves catalog policy into
+`reader-kit`; current physical-device acceptance remains pending.
+
 ## Single next action
 
 Reinstall the matching `548725c5` candidate on 197 when that shared device is
