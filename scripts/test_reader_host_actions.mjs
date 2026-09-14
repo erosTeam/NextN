@@ -14,7 +14,7 @@ assert.match(page, /this\.openHostSettings\(\)/)
 assert.match(page, /active: this\.hostRouteActive\(\) && this\.labVisibility\.foreground && !this\.readerSettingsSheetShown/)
 assert.match(page, /\.bindSheet\([\s\S]*\$\$this\.readerSettingsSheetShown[\s\S]*this\.settingsSheetContent/)
 
-assert.match(page, /externalOpenAvailable: this\.request\.productionSources === true/)
+assert.match(page, /externalOpen: this\.request\.productionSources === true[\s\S]*new ReaderExternalOpen/)
 assert.match(page, /source\.work !== this\.request\.work/)
 assert.match(page, /NhGalleryExternalOpenService\.openCanonicalGallery/)
 assert.match(page, /gallery_error_external_open_unavailable/)
