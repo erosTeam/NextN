@@ -313,17 +313,45 @@ reader-session/library hashes, returned to the normal host, restored the
 and
 `.hvigor/outputs/shared-reader-fullscreen-status/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-hide-show-restore/run`.
 
+The next legacy/shared action comparison found Koma's enabled `重置缩放`
+command absent from the shared chrome. reader-kit `120bdba` now owns an explicit
+navigation- and topology-fenced reset command and the transient active-viewport
+zoom state; hosts do not receive image transform details. Paged and continuous
+surfaces publish only whether the current viewport is zoomed, and continuous
+identity now includes the existing wide-page rotation bit so the parent accepts
+reports from the actual rotated row. Focused 32/32 tests and the complete
+reader-kit suite pass. Matching NextN signed debug, NextE signed debug and clean
+Koma debug consumer builds pass with HAP SHA-256
+`3a5af85ed0e76fb321643fd692f3e70368cd7f0edfa33d3e3dcda36fb8fa20b0`,
+`89817b89e5f6002f479f8a99dfefc00fd867cdc8c37647e5de92f5882dcb5cf7`,
+and
+`e202a4460f65a8147a8ae7ab55fc5a64aec5b53045ff694b013203e906994fd3b`;
+NextN's final-HAP native-library gate and NextE's zero-V1-decorator inventory
+also pass.
+
+On 197, a one-page paged fixture changed the menu command from disabled to
+enabled after double-tap and returned to the same fitted `1 / 1` frame after
+reset. On 103, a real two-page local comic did the same at `1 / 2`, with byte-
+identical reader-session and library-store hashes across reset. The tablet then
+opened the independently imported rotated continuous fixture: double-tap made
+reset available, reset returned it to the original complete rotated frame and
+disabled the command, and a physical upward swipe subsequently exposed the
+next green page, proving continuous scrolling was released. All before,
+zoomed, reset and scrolled captures were inspected. Both devices returned to
+the normal host with 10-second timeouts and released leases. Evidence is under
+`.hvigor/outputs/shared-reader-zoom-reset/device197__ALN-AL80/not-applicable/portrait-1260x2720/{01-menu-state,02-reset-restore}/run`
+and
+`.hvigor/outputs/shared-reader-zoom-reset/device103__MLR-AL00/not-applicable/portrait-1600x2560/{02-local-comic-menu-state,03-reset-and-continuous-state,04-continuous-reset-restore}/run`.
+
 ## Single next action
 
 Resume the Package 2 old-to-shared capability map after the accepted Koma host
-settings, one-shot tap-zone preview and fullscreen status-bar lifecycle.
+settings, one-shot tap-zone preview, fullscreen status-bar lifecycle and shared
+reset-zoom action.
 Compare the remaining legacy/shared chrome actions and host-owned navigation
 surfaces in current source, then implement only the first actual omission with
 its owner explicit; do not add compatibility-only settings or duplicate host
-business behavior in reader-kit. Retain the exact
-NextN boundary: its isolated branch cannot produce a signed matching package
-without copying credentials or changing tracked signing state, so no mismatched
-HAP may be installed merely to claim the remaining preload adapter runtime.
+business behavior in reader-kit.
 Implement and close the next coherent missing
 capability through shared state, host adapters, focused tests, matching consumer
 builds, and only the device shapes justified by its risk. Do not change any
