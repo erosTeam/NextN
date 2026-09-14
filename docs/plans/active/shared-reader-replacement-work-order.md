@@ -40,8 +40,8 @@ deletes user data.
 | --- | --- | --- | --- |
 | 1. Resource lifecycle and recovery | Open real content; load visible and adjacent originals; switch/reload the exact visible source; keep unaffected panes; fail and retry one source; retire stale work on navigation, background, close, and fresh reopen. `reader-kit` owns request/slot presentation generations; hosts own URL/file/cache/download and source scope. | Shared state suite; affected-host tests; all three consumers build if shared code changes. Primary runtime on 197 for NextE and NextN; 103 only for spread/reflow-sensitive coverage. Existing legacy routes remain usable afterward. | DONE |
 | 2. Host state and action parity | Enter from normal host state; inherit and change applicable layout/direction/spread/crop/interpolation/auto-read/keep-screen/tap/volume settings; preserve progress; execute every supported image/host action without inventing generic business behavior. | Per-host old-to-shared capability map has no silent omission; persistence cold-start path and legacy return pass; one phone run per host plus 103 only for responsive state. | DONE |
-| 3. Entry, chrome, thumbnails, and return | Detail, all-thumbnails, and reader-rail entry use the correct source identity and thumbnail geometry; single/spread/continuous/long-image UI and failure material remain legible; rotation/window changes keep anchors; close returns to the current source position and restores system UI. | Same-state full-page review on 197 and 103 for changed responsive/transition paths; NH partial thumbnails and EH sprites use their own host contracts; no known visual counterexample. | **ACTIVE** |
-| 4. Koma chapter orchestration | Open a real multi-chapter title; explicit previous/next chapter preparation, success, failure, cancellation, rapid A-B-C selection, last-chapter semantics, per-chapter progress/read state, local/remote/provider scope, and return all remain host-owned around the shared session. | Focused orchestrator tests, Koma build, 197 phone path, 103 tablet rotation/chapter path, unchanged unrelated library/download data, and legacy Koma reader fallback. | QUEUED |
+| 3. Entry, chrome, thumbnails, and return | Detail, all-thumbnails, and reader-rail entry use the correct source identity and thumbnail geometry; single/spread/continuous/long-image UI and failure material remain legible; rotation/window changes keep anchors; close returns to the current source position and restores system UI. | Same-state full-page review on 197 and 103 for changed responsive/transition paths; NH partial thumbnails and EH sprites use their own host contracts; no known visual counterexample. | DONE |
+| 4. Koma chapter orchestration | Open a real multi-chapter title; explicit previous/next chapter preparation, success, failure, cancellation, rapid A-B-C selection, last-chapter semantics, per-chapter progress/read state, local/remote/provider scope, and return all remain host-owned around the shared session. | Focused orchestrator tests, Koma build, 197 phone path, 103 tablet rotation/chapter path, unchanged unrelated library/download data, and legacy Koma reader fallback. | **ACTIVE** |
 | 5. Controlled production replacement | Each app can select the shared host at the normal reader entry without debug Wants, while a single explicit fallback restores its legacy reader. Cold start, repeated entry, upgrade, and rollback preserve settings/progress/data. | One pinned `reader-kit` revision consumed by all hosts; per-app full route matrix accepted on the selected release candidate; fallback verified before any app changes its default. Default selection remains a separate explicit release decision. | QUEUED |
 
 ## Package 1 completion — 2026-09-14
@@ -656,23 +656,36 @@ Close returned to the same retained Detail page. All thumbnails uses the same
 coordinator and parameter contract and is source/build-covered, but is not
 separately claimed as physical-device accepted.
 
-Package 3 remains ACTIVE. These runs close retained rail show/hide/reopen on an
+The Koma thumbnail invalidation follow-up found no missing implementation and
+therefore added no duplicate host state. `ReaderSurface` already keys the
+retained rail by scope, work, unit and page count; a committed chapter replaces
+that component, closes its `ReaderThumbnailWindow`, and the window's existing
+unit fence releases retired leases and rejects late callbacks. Shared revision
+`638353d` also encodes the full identity into an ArkUI-safe collection key. The
+current 103 chapter-resume run after that revision visibly committed Chapter2
+at its restored page 3/3; the earlier 197/103 chapter roundtrip and tablet
+rotation paths remain the selected cross-shape evidence. This audit removes a
+stale work-order item rather than manufacturing a Koma-only cache owner.
+
+Package 3 is DONE. These runs close retained rail show/hide/reopen on an
 NH phone and EH-sprite tablet, the current-frame return boundary in both gallery
-hosts, and thumbnail-entry crop inheritance on the selected NextN phone route.
-They do not yet close a separately exercised NextE All thumbnails or archive
-source, Koma's chapter-scoped thumbnail invalidation, or the complete
-rotation/window/system-UI return matrix. All production defaults remain legacy
-and reversible.
+hosts, thumbnail-entry crop inheritance on the selected NextN phone route,
+host-owned source identity on the selected NextE phone route, and the existing
+tablet rotation/window anchor paths. NextE All thumbnails and archive selection
+are source/build-covered through their shared host contracts but are not
+separately claimed as physical-device runs. All production defaults remain
+legacy and reversible.
 
 ## Single next action
 
-Implement the demonstrated Koma chapter-scoped thumbnail invalidation gap. Map
-which host state owns chapter identity and thumbnail windows, then make a
-successful, failed, cancelled or rapidly superseded chapter change unable to
-show thumbnails from the retired chapter. Keep chapter loading and navigation
-in Koma; reader-kit should receive only host-neutral unit identity and retire
-the old window/session state. Validate the focused orchestrator/source contract
-before one matching build and one selected real chapter-switch path.
+Start Package 4 with the real provider boundary rather than more local-fixture
+replay. Compare Koma's legacy transient source-reader path with the optional
+shared adapter: the legacy host can open and change chapters for a source title
+that has not been persisted to the library, while the shared adapter currently
+constructs its catalog only from the on-disk library. Add the narrow host-owned
+chapter-config/preparation seam needed for that transient remote/provider case;
+do not move source runtime, library persistence or chapter ordering into
+reader-kit, and do not change the production default route.
 
 ## Package completion record
 
