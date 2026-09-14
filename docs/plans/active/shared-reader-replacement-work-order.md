@@ -517,17 +517,55 @@ retain their own progress, cache, settings and business actions while the
 shared surface owns only generic presentation and input. Package 2 is DONE.
 This does not change any production default or accept normal-entry replacement.
 
+## Current Package 3 delta
+
+The bounded NH identity/geometry pass is implemented and accepted for NextN's
+Detail progressive strip, View all entry, optional shared entry and reader rail.
+NH partial thumbnails use their decoded thumbnail aspect with bounded `Cover` or
+`Contain` presentation instead of the original full-image ratio; the gallery
+source index remains host-owned through entry, rail selection and return. The
+previously accepted 197 phone and 103 tablet/landscape paths cover a real long
+strip, normal Detail entry, full-grid entry, RTL split destination geometry,
+cover/tail singleton entry, pending-transition cancellation and exact host
+return. This does not reuse or alter NextE's sprite-crop contract.
+
+The next source omission was shared rail lifetime. `ReaderSurface` used to mount
+`ReaderThumbnailRail` only while chrome was visible, so closing the rail also
+closed its `ReaderThumbnailWindow` and released decoded thumbnail assets.
+Reader-kit revisions `8918dc3` and `88cfa2e` keep the rail mounted for the
+current unit, collapse and clip only its wrapper, disable hidden hit testing,
+and animate the 156-to-0 geometry. No host cache, thumbnail provider, source
+ratio or business route moved into reader-kit. The focused host-action UI suite
+passes 12/12 and the complete reader-kit suite passes 388/388.
+
+NextN and NextE both consume `88cfa2e` only on their isolated
+`codex/shared-reader-refactor` branches. Their signed product builds pass with
+SHA-256 `ff33aa91207661b7414c861af5cbc590d31485c7df032a0b7db2a1847718f7c9`
+and `e0e30ffe475bacd555db341042663d6be4c8fbafd66775a8e603c0b48b61c2dc`;
+their final signed test builds also pass. On NextN/197, the final protocol and
+Hypium both pass 1/1 in the `accepted-3` run. On NextE/103, Hypium passes 1/1 in
+the `accepted-2` run. Open, hidden, reopened and closed full-screen captures
+were inspected: hidden chrome contains no thumbnail rail, reopening retains the
+same page and immediately exposes displayed thumbnail state, and close returns
+to the host. The 103 layout export confirms that the clipped wrapper is absent
+from the UI tree; 197 does not expose the API-26 layout-dump method, so its final
+manifest correctly requires screenshots only. Both screen timeouts returned to
+10 seconds and both leases were released.
+
+Package 3 remains ACTIVE. These runs close retained rail show/hide/reopen on an
+NH phone and EH-sprite tablet; they do not yet close every production
+Detail/all-thumbnails transition, Koma's chapter-scoped thumbnail invalidation,
+or the complete rotation/window/system-UI return matrix. All production defaults
+remain legacy and reversible.
+
 ## Single next action
 
-Start Package 3 with a bounded NextN NH-thumbnail identity/geometry audit across
-Detail's progressive strip, View all, and the optional shared-reader entry and
-rail. Compare against NextN's legacy path and current NH response/cache fields,
-not NextE's sprite contract: an NH partial thumbnail must not be stretched with
-the original full-image ratio, and a source index must remain the same through
-entry, rail selection and return. Reuse existing accepted long-image and
-transition evidence before adding a device replay. Implement only the first
-actual omission and keep gallery loading/cache ownership in NextN. Production
-defaults remain legacy.
+Finish the current-source Package 3 entry/chrome/return owner map for NextE and
+Koma, beginning with NextE's production Detail/all-thumbnails transition and
+return path. Reuse the accepted rail lifecycle and responsive evidence; add no
+device replay unless source comparison finds an actual omission. Implement the
+first omission as a host-neutral reader-kit contract or host-owned adapter, then
+run one coherent consumer/build slice. Do not switch a production default.
 
 ## Package completion record
 
