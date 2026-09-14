@@ -10,6 +10,27 @@
 > `docs/plans/active/shared-reader-replacement-work-order.md`; add detail here
 > only for a durable counterexample or a final package conclusion.
 
+- Shared Koma host-owned chapter picker LIMITED PASS / replacement OPEN
+  (2026-09-14): reader-kit `5d526ce` exposes only a stale-target-fenced bottom
+  center action slot; Koma `0115e341` retains chapter order, titles, sheet,
+  asynchronous preparation, cancellation and session switching. All 382 shared
+  tests and the focused Koma 4/4 picker suite pass; matching NextN, NextE and
+  clean Koma debug consumers build. On 103, the inspected local two-chapter
+  title opened the complete sheet, switched Chapter1 `1 / 2` to Chapter2
+  `1 / 3` with the bottom label changing `章节 1 / 2 -> 章节 2 / 2`, then
+  switched back to Chapter1. Logs contain exactly the two intended
+  `chapter_opened` results and no chapter failure. On 197, the one-chapter
+  compact sheet and bottom control were complete and usable. Both devices kept
+  reader-session/library hashes byte-identical, returned to the normal Koma
+  bookshelf, restored 10-second timeouts and released their leases. Evidence:
+  `.hvigor/outputs/shared-reader-chapter-picker/device103__MLR-AL00/not-applicable/portrait-1600x2560/{01-open-picker,02-switch-roundtrip}/run`
+  and
+  `.hvigor/outputs/shared-reader-chapter-picker/device197__ALN-AL80/not-applicable/portrait-1260x2720/{01-open-picker,02-dismiss-restore}/run`.
+  This accepts only explicit arbitrary chapter selection in Koma's optional
+  shared route; previous/next boundary completion, failure/cancellation device
+  paths, last-chapter semantics, progress/read state, rotation and Package 4
+  completion remain OPEN. No production default or persistence key changed.
+
 - Shared Koma tap-zone preview boundary LIMITED PASS / replacement OPEN
   (2026-09-14): reader-kit `a6396e6` owns only the one-shot visual presentation
   and input freeze while Koma `69a20f13` retains preset geometry and persistence.

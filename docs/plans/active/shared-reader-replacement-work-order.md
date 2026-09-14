@@ -343,15 +343,52 @@ the normal host with 10-second timeouts and released leases. Evidence is under
 and
 `.hvigor/outputs/shared-reader-zoom-reset/device103__MLR-AL00/not-applicable/portrait-1600x2560/{02-local-comic-menu-state,03-reset-and-continuous-state,04-continuous-reset-restore}/run`.
 
+The next remaining legacy action was Koma's centered chapter indicator and
+arbitrary chapter sheet. Shared revision `8a85668` first exposed a generic host
+center action; visual source review then caught that placing it in the top bar
+would overlap the independently centered page counter. Revision `5d526ce`
+moves the slot to the bottom action row used by Koma's legacy reader and adds a
+source-position regression assertion. reader-kit owns only placement and an
+exact unit/navigation stale guard. Koma commit `0115e341` owns chapter order,
+titles, sheet rows, asynchronous preparation, cancellation and the final
+session open; rapid B-to-C selection cancels the retired preparation and only
+the latest target may present.
+
+All 382 reader-kit tests and the focused Koma 4/4 chapter-picker suite pass.
+Matching signed NextN (`1c08eaa5`), signed NextE (`29c535fa`) and clean Koma
+debug consumers build with HAP SHA-256
+`4fdc3a5029fe8ac14582b652cd1153238b723e56a657f6e2ade44b329d1ecc97`,
+`9b5e413824415b4fb07571426c932e8dd9e7296275ec7f132b8a653e6c89af2d`,
+and
+`e1f9b60a6cb5e19f575b75cba23dd50ec1a1b2a2880ad53171a86a78c6d32a48`.
+On 103, the real two-chapter local title opened Chapter1's two-row sheet,
+switched to Chapter2 with the body changing from the red two-page chapter to
+the blue three-page chapter and the indicator changing `1 / 2 -> 2 / 2`, then
+reopened the sheet with Chapter2 selected and returned to Chapter1. The two
+exact `chapter_boundary -> chapter_opened` pairs name the expected source and
+target units. On 197, the same candidate kept `章节 1 / 1` complete and
+balanced between the phone action groups, opened the one-row sheet without
+clipping, and dismissed back to the same usable reader. All whole captures
+were inspected. Both devices preserved reader-session/library hashes, returned
+to the normal bookshelf, restored the 10-second timeout and released their
+leases. Evidence is under
+`.hvigor/outputs/shared-reader-chapter-picker/device103__MLR-AL00/not-applicable/portrait-1600x2560/{01-open-picker,02-switch-roundtrip}/run`
+and
+`.hvigor/outputs/shared-reader-chapter-picker/device197__ALN-AL80/not-applicable/portrait-1260x2720/{01-open-picker,02-dismiss-restore}/run`.
+This closes the missing explicit selector in the Package 2 action surface; the
+broader previous/next, failure/cancellation, final-chapter, progress/read-state,
+remote/provider and rotation matrix remains owned by Package 4.
+
 ## Single next action
 
 Resume the Package 2 old-to-shared capability map after the accepted Koma host
-settings, one-shot tap-zone preview, fullscreen status-bar lifecycle and shared
-reset-zoom action.
-Compare the remaining legacy/shared chrome actions and host-owned navigation
-surfaces in current source, then implement only the first actual omission with
-its owner explicit; do not add compatibility-only settings or duplicate host
-business behavior in reader-kit.
+settings, one-shot tap-zone preview, fullscreen status-bar lifecycle, shared
+reset-zoom action and host-owned arbitrary chapter selector. Compare the
+remaining legacy/shared chrome actions and host-owned navigation surfaces,
+starting with the legacy return-to-detail and previous/next chapter surfaces;
+implement only the first actual omission with its owner explicit. Do not move
+chapter orchestration, compatibility-only settings or other host business
+behavior into reader-kit.
 Implement and close the next coherent missing
 capability through shared state, host adapters, focused tests, matching consumer
 builds, and only the device shapes justified by its risk. Do not change any
