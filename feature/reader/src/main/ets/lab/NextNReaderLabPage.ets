@@ -6,7 +6,7 @@ import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, R
   ReaderReadingAnchor, ReaderDisplayPolicy, ReaderPage, ReaderVariantPreference, ReaderAssetProvider } from '@reader-kit/core'
 import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility,
-  ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction } from '@reader-kit/ui'
+  ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction, ReaderMediaActions } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
 import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea,
@@ -21,7 +21,6 @@ import { connectReaderPresentation, ReaderPresentationService, ReaderPresentatio
 import { NextNReaderOriginalProbeProvider } from './NextNReaderOriginalProbeProvider'
 import { NextNReaderOriginalProbeCatalog } from './NextNReaderOriginalProbeCatalog'
 import { ReaderSystemImageSaveHost } from '@reader-kit/ui'
-import { ReaderImageSaveHost } from '@reader-kit/core'
 import { NextNReaderImageSaveDownload } from './NextNReaderImageSaveDownload'
 import { connectThemeDisplay, NhReaderBackgroundMode, NhReaderMode, ReaderSettingsRepository,
   NhReaderTapZoneResolver } from 'shared'
@@ -79,8 +78,7 @@ export struct NextNReaderLabPage {
   /** Host-neutral lifecycle notification; the embedding shell owns preview disposal. */
   @Event onEntrySettled: () => void = () => {}
   @Local private session: ReaderPagedSession | null = null
-  private imageShare: ReaderImageShareHost | null = null
-  private imageSave: ReaderImageSaveHost | null = null
+  private mediaActions: ReaderMediaActions = new ReaderMediaActions()
   @Local private labVisibility: ReaderLabVisibilityState = connectReaderLabVisibility()
   @Local private readerPresentation: ReaderPresentationState = connectReaderPresentation()
   @Local private themeDisplay: ThemeDisplayState = connectThemeDisplay()
@@ -169,9 +167,11 @@ export struct NextNReaderLabPage {
       return operation
     })
     const imageShare = new NextNReaderImageShareHost(context, adapter)
-    this.imageShare = lab === null ? imageShare : new ReaderLabShareProbe(imageShare, lab.shareProbe)
-    this.imageSave = new ReaderSystemImageSaveHost(context,
-      (uri: string, path: string): Promise<void> => NextNReaderImageSaveDownload.download(uri, path))
+    this.mediaActions = new ReaderMediaActions(
+      lab === null ? imageShare : new ReaderLabShareProbe(imageShare, lab.shareProbe),
+      new ReaderSystemImageSaveHost(context,
+        (uri: string, path: string): Promise<void> => NextNReaderImageSaveDownload.download(uri, path)),
+    )
     this.unitKey = new ReaderUnitKey('nh', this.request.work, this.request.work)
     // The probe observes the actual optional entry lifecycle, whether the host
     // labels the request as a Lab thumbnail trial or supplies a production entry.
@@ -806,7 +806,7 @@ export struct NextNReaderLabPage {
               imageInterpolation: this.readerPresentation.imageScalingQuality === 'low' ? ImageInterpolation.Low :
                 this.readerPresentation.imageScalingQuality === 'high' ? ImageInterpolation.High : ImageInterpolation.Medium,
               canvasBackground: this.readerCanvasBackground(), canvasForeground: this.readerCanvasForeground(),
-              input: this.input, imageShare: this.imageShare, imageSave: this.imageSave,
+              input: this.input, mediaActions: this.mediaActions,
               tapZoneResolver: (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout),
               autoReadAvailable: true, autoReadSeconds: this.readerPresentation.autoPageSeconds,
               pageTurnAnimation: this.labRequest?.pageTurnAnimationOverride ?? this.readerPresentation.pageTurnAnimation,

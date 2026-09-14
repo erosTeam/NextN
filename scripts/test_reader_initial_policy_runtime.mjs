@@ -195,6 +195,7 @@ for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [fal
     NextNReaderSuperResolutionProvider: Stub, NextNReaderTranslationProvider: Stub,
     connectNextNReaderTranslationProbe: () => ({ bindAction() {} }),
     ReaderLabShareProbe: Stub, ReaderSystemImageSaveHost: Stub, ReaderUnitKey: Stub,
+    ReaderMediaActions: class { constructor(...args) { this.args = args } },
     ReaderTrialOriginalProbe: { consume: () => 0 }, ReaderPagedSession: Session,
     ReaderLabAssetProbe: Stub, ReaderDisplayPolicy: core.ReaderDisplayPolicy,
   }).Host
@@ -267,7 +268,8 @@ for (const [mode, extra, expected] of [
     ReaderKeepScreenOn: Stub, NextNReaderLabAdapter: Stub, NextNReaderImageShareHost: Stub, ReaderLabShareProbe: Stub,
     NextNReaderSuperResolutionProvider: Stub, NextNReaderTranslationProvider: Stub,
     connectNextNReaderTranslationProbe: () => ({ bindAction() {} }),
-    ReaderSystemImageSaveHost: Stub, ReaderUnitKey: Stub, ReaderPagedSession: Session,
+    ReaderSystemImageSaveHost: Stub, ReaderMediaActions: class { constructor(...args) { this.args = args } },
+    ReaderUnitKey: Stub, ReaderPagedSession: Session,
     ReaderLabAssetProbe: Stub, ReaderTrialOriginalProbe: { consume: () => 0 },
     ReaderPresentationService: { restore: () => { events.push('restore'); return restore.promise },
       snapshot: () => ({ mode, doublePageEnabled: true, spreadLayoutMode: 'split' }) },
