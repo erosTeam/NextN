@@ -676,16 +676,36 @@ are source/build-covered through their shared host contracts but are not
 separately claimed as physical-device runs. All production defaults remain
 legacy and reversible.
 
+## Current Package 4 delta
+
+Koma commit `381f5fcd` adds the missing host-owned catalog seam for a transient
+provider title that has not been persisted into the library. The optional
+shared adapter now asks Koma for an immutable chapter configuration before it
+falls back to its on-disk library snapshot. Koma continues to own provider
+resolution, remote headers, offline/source hydration, library state and local
+folder permission activation; `reader-kit` receives only the resolved unit and
+page identities. The production default and legacy reader route are unchanged.
+
+The focused catalog/chapter/return/preference suites pass 11/11. A matching
+Debug HAP builds successfully with SHA-256
+`b21c1e350e8c06d5044c69942726e5876a849963f6f8acdc58893db31aa0963b`.
+This is source/build evidence only: no device acceptance is claimed yet. The
+next missing boundary is successful shared chapter commit for a transient
+source title: update the Koma-owned active source request and persist the
+chapter-local observed position without requiring a library record. Failure or
+cancellation must leave both values unchanged.
+
 ## Single next action
 
-Start Package 4 with the real provider boundary rather than more local-fixture
-replay. Compare Koma's legacy transient source-reader path with the optional
-shared adapter: the legacy host can open and change chapters for a source title
-that has not been persisted to the library, while the shared adapter currently
-constructs its catalog only from the on-disk library. Add the narrow host-owned
-chapter-config/preparation seam needed for that transient remote/provider case;
-do not move source runtime, library persistence or chapter ordering into
-reader-kit, and do not change the production default route.
+Complete the transient provider commit boundary in Koma. On a successfully
+presented shared chapter, advance the Koma-owned active source request and
+persist that chapter's observed page; on preparation failure, cancellation or
+retired A-B-C selection, retain the previously committed chapter and progress.
+Do not add provider state to `reader-kit`, do not duplicate library persistence,
+and do not change the production default route. After the coherent source
+candidate passes focused tests and one matching build, run one selected real
+provider chapter-switch path instead of replaying already accepted local
+fixtures.
 
 ## Package completion record
 
