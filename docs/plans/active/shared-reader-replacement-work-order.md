@@ -73,16 +73,18 @@ Already established and not to be rerun unless its owner changes:
   been redownloading the selected CDN URL without invoking EH source switching;
   it now forwards manual reload into `ImageResolveService.resolve(..., true)`
   and saves the refreshed source only after its cancellation fence.
-- The shared same-URI candidate is frozen at `5e5cb4c`; the central checkout and
-  both NextN/NextE submodules now resolve to that revision.
-- The current focused batch passes: all 358 `reader-kit` tests, NextN reader
+- The shared same-URI baseline is `5e5cb4c`; the NextE Package 1 candidate adds
+  the reload-only More-menu capability gate on its isolated reader-kit branch.
+  It remains uncommitted until the consolidated device path accepts it.
+- The current focused batch passes: all 359 `reader-kit` tests, NextN reader
   contract/data-source tests, and NextE resolver/adapter runtime tests.
 
 Still required to close Package 1:
 
-- finish NextE's consolidated real-host reload/retry/background-close-reopen
-  runtime path, proving target request generation changes and an unaffected
-  spread partner remains unchanged;
+- rebuild NextE's native test HAP from the latest candidate, then run its one
+  consolidated real-host failure/retry/single-reload/spread-reload/background-
+  close/explicit-close/two-fresh-reopens path; prove target request generation
+  changes and the unaffected spread partner remains unchanged;
 - run the final focused suites and build all three consumers once after the
   candidate is frozen;
 - execute the minimum device set selected by the risk rule above and inspect
@@ -90,11 +92,13 @@ Still required to close Package 1:
 
 ## Single next action
 
-Run one consumer build batch against `5e5cb4c`: NextN main, NextE main plus its
-native reader test HAP, and Koma main. If all four artifacts build, keep that
-source candidate frozen and execute one consolidated NextE Package 1 protocol
-per selected device; do not split reload, retry, background, close, and reopen
-into separate run manifests or commits.
+Build the latest NextE native reader test HAP, then execute the single
+`ReaderLifecycleRecoveryTrial` Package 1 protocol on 103 and inspect both its
+internal Hypium result and retained full-screen captures. If that path passes,
+remove the temporary host-state probe, run the final four-consumer build batch
+against the resulting reader-kit revision, and perform the risk-selected phone
+cross-check. Do not split reload, retry, background, close, and reopen into
+separate acceptance manifests or commits.
 
 ## Package completion record
 
