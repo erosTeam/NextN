@@ -8,7 +8,7 @@ import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility,
   ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction, ReaderMediaActions,
   ReaderHostStatus, ReaderObservationSink, ReaderPreferenceSink, ReaderActivitySink,
-  ReaderHostSettings, ReaderExternalOpen } from '@reader-kit/ui'
+  ReaderHostSettings, ReaderExternalOpen, ReaderHostActions } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
 import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea,
@@ -833,10 +833,10 @@ export struct NextNReaderLabPage {
                 ? new ReaderExternalOpen((source: ReaderUnitKey): void => {
                   void this.openCurrentGalleryExternally(source)
                 }) : null,
-              hostActions: this.translationActions(),
-              onHostAction: (id: string, source: ReaderUnitKey, navigation: number, sourceIndex: number): void => {
-                this.handleTranslationAction(id, source, navigation, sourceIndex)
-              },
+              hostActions: new ReaderHostActions(this.translationActions(),
+                (id: string, source: ReaderUnitKey, navigation: number, sourceIndex: number): void => {
+                  this.handleTranslationAction(id, source, navigation, sourceIndex)
+                }),
               hostStatus: this.currentSourceIndex >= 0 &&
                 (this.translationBusyPage === this.currentSourceIndex || this.translationErrorPage === this.currentSourceIndex)
                 ? new ReaderHostStatus(this.translationBusyPage === this.currentSourceIndex
