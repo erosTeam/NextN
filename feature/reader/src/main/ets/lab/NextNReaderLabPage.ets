@@ -184,7 +184,7 @@ export struct NextNReaderLabPage {
     const translationProvider = new NextNReaderTranslationProvider(context, variantProvider,
       (page: ReaderPage): NextNReaderTranslationConfiguration => this.translationConfiguration(page))
     const session = new ReaderPagedSession(catalog, new ReaderLabAssetProbe(translationProvider, this.request.thumbnailFailurePage,
-      this.request.informationProbe, this.request.thumbnailEntry ? this.request.failurePage : -1))
+      this.request.informationProbe, this.request.thumbnailEntry ? this.request.failurePage : -1), adapter)
     connectNextNReaderTranslationProbe().bindAction(context, this.request.work, (id: string): boolean => {
       const state = this.session?.snapshot()
       const source = state?.unit?.key
@@ -799,6 +799,7 @@ export struct NextNReaderLabPage {
               tapZoneResolver: (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout),
               autoReadAvailable: true, autoReadSeconds: this.readerPresentation.autoPageSeconds,
               pageTurnAnimation: this.request.pageTurnAnimationOverride ?? this.readerPresentation.pageTurnAnimation,
+              preloadDepth: this.readerPresentation.preloadPages,
               preferredVariant: this.presentationReady && this.readerPresentation.superResolutionEnabled ? 'enhanced' : 'default',
               preferredVariantIdentity: this.superResolutionIdentity(),
               variantPreferenceResolver: (sourceIndex: number): ReaderVariantPreference =>
@@ -838,6 +839,7 @@ export struct NextNReaderLabPage {
               onChromeVisible: (visible: boolean): void => this.syncChromeVisible(visible) })
           } else {
           ReaderLabSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
+            preloadDepth: this.readerPresentation.preloadPages,
             failurePage: this.request.failurePage,
             failureLayout: this.request.failureLayout,
             delayedMetricsPage: this.request.delayedMetricsPage,

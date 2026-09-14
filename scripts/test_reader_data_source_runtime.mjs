@@ -113,8 +113,10 @@ const adapterSource = fs.readFileSync(
 )
 assert.ok(adapterSource.indexOf('this.source.localPageUri(detail, page.sourceIndex)') <
   adapterSource.indexOf("if (kind === 'thumbnail')"), 'verified downloads must precede remote thumbnails')
-assert.ok(adapterSource.indexOf('this.source.localPageUri(detail, target.sourceIndex)') <
-  adapterSource.indexOf('ReaderImageCacheService.cacheKey(detail.id, detail.mediaId, source.number, source.extension)'),
+const shareSource = adapterSource.slice(adapterSource.indexOf('async prepare(target:'),
+  adapterSource.indexOf('async load(page:', adapterSource.indexOf('async prepare(target:')))
+assert.ok(shareSource.indexOf('this.source.localPageUri(detail, target.sourceIndex)') <
+  shareSource.indexOf('ReaderImageCacheService.cacheKey(detail.id, detail.mediaId, source.number, source.extension)'),
   'verified downloads must precede network/cache share preparation')
 assert.match(adapterSource, /\[NextNReaderShare\] source=download/)
 assert.match(adapterSource, /function readerShareImageUtd\(extension: string\): string/)
@@ -124,5 +126,14 @@ assert.match(adapterSource, /new ReaderFileInformation\(result\.localPath, facts
 assert.match(adapterSource, /ReaderImageCacheService\.retain\(result\)/)
 assert.match(adapterSource, /ReaderImageCacheService\.release\(this\.context, lease\)/)
 assert.match(adapterSource, /ReaderImageCacheService\.markPresented\(lease\)/)
+assert.match(adapterSource, /implements ReaderCatalog, ReaderAssetProvider, ReaderPreloadHost/)
+assert.match(adapterSource,
+  /async preload\(page: ReaderPage, cancellation: ReaderCancellation\): Promise<void>[\s\S]*?this\.source\.localPageUri\(detail, page\.sourceIndex\)[\s\S]*?ReaderImageCacheService\.load\(this\.context, url, cacheKey, false\)/)
+const pageSource = fs.readFileSync(
+  path.join(root, 'feature/reader/src/main/ets/lab/NextNReaderLabPage.ets'),
+  'utf8',
+)
+assert.match(pageSource, /new ReaderPagedSession\(catalog,[\s\S]*?\), adapter\)/)
+assert.match(pageSource, /preloadDepth: this\.readerPresentation\.preloadPages/)
 
-console.log('PASS production Reader data source order, one-shot Detail seed, cancellation and local-page precedence')
+console.log('PASS production Reader data source, local-page precedence and shared preload wiring')

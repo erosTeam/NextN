@@ -7,7 +7,7 @@ import {
   NhApiClient, NhGalleryDetail, ReaderImageCacheLease, ReaderImageCacheService, ReaderPageCropService,
 } from 'shared'
 import {
-  ReaderCatalog, ReaderAssetProvider, ReaderUnitKey, ReaderUnit, ReaderPage,
+  ReaderCatalog, ReaderAssetProvider, ReaderPreloadHost, ReaderUnitKey, ReaderUnit, ReaderPage,
   ReaderCancellation, ReaderAsset, ReaderAssetKind, ReaderImageShareHost,
   ReaderImageShareTarget, ReaderImageSharePresentation,
   ReaderImageInformation, ReaderImageCropBounds, ReaderImageCropSource,
@@ -43,7 +43,7 @@ class NextNReaderCropSource implements ReaderImageCropSource {
   }
 }
 
-export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider, ReaderImageShareHost,
+export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider, ReaderPreloadHost, ReaderImageShareHost,
   NextNReaderProgressDetailProvider {
   cancellationMode: 'consumer-only' | 'transport' = 'consumer-only'
   informationSupported: boolean = true
@@ -102,6 +102,19 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
   }
 
   adjacent(_unit: ReaderUnit, _direction: 'next' | 'previous'): ReaderUnitKey | null { return null }
+
+  async preload(page: ReaderPage, cancellation: ReaderCancellation): Promise<void> {
+    cancellation.check()
+    if (page.unit.work === LOCAL_FIXTURE_WORK) return
+    const detail = this.details.get(page.unit.unit)
+    const source = detail?.pages[page.sourceIndex]
+    if (detail === undefined || source === undefined) throw new Error('missing_nh_preload_asset')
+    if (this.source.localPageUri(detail, page.sourceIndex).length > 0) return
+    const url = NhApiClient.imageUrl(detail.mediaId, page.sourceIndex, source.extension)
+    const cacheKey = ReaderImageCacheService.cacheKey(detail.id, detail.mediaId, source.number, source.extension)
+    await ReaderImageCacheService.load(this.context, url, cacheKey, false)
+    cancellation.check()
+  }
 
   async prepare(target: ReaderImageShareTarget, cancellation: ReaderCancellation): Promise<ReaderImageSharePresentation> {
     cancellation.check()
