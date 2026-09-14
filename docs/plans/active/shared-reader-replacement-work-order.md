@@ -584,22 +584,54 @@ released. Evidence is under
 This accepts the current-page return on the NextN tablet shape, not NextE or
 Koma adoption and not a production-default change.
 
+NextE commit `a391e19b` now consumes the same close-context contract without
+replacing its EH sprite-crop owner. The optional host maps the observed shared
+frame back to its own gallery image, remeasures the retained live Detail target,
+and lets the existing transition coordinator animate the captured reader frame
+back into that target. The focused host runtime passes 18/18 and matching signed
+main/test builds pass. On 197, the matched-HAP Detail-thumbnail route opened the
+shared spread, captured the actually presented source, closed through the live
+sprite target with unchanged root and target bounds, and returned to the retained
+Detail host. Hypium passes 1/1 and the source, reader and closed full-screen
+captures were inspected under
+`.hvigor/outputs/shared-reader-close-context/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-matched-haps-current-thumbnail-return/`.
+
+The next thumbnail-entry comparison found a separate host regression in both
+gallery adapters: they deliberately forced crop off and removed the crop action
+whenever the entry source was a thumbnail, even though crop is a reader setting,
+not a transition capability. NextN and NextE now resolve the saved host crop
+policy for every production entry. They reuse reader-kit's existing geometry
+gate: when the cropped landing frame cannot map to the captured thumbnail, only
+the optional flight is cancelled while the correctly cropped reader remains
+visible. No thumbnail ratio, sprite crop, source identity, persistence key or
+legacy route moved into shared code. Focused NextN/NextE policy and host-entry
+contracts pass; reader-kit entry/geometry/transition/preview contracts pass
+35/35; both signed product builds pass. On NextN/197, the real Detail P3
+thumbnail opened the optional shared reader with saved paged crop, stayed
+interactive, closed to the retained Detail page, and restored history and all
+temporary settings. Hypium passes 1/1; the two inspected captures and checked
+metadata are under
+`.hvigor/outputs/shared-reader-crop-parity/nextn-197/run-2/`.
+
 Package 3 remains ACTIVE. These runs close retained rail show/hide/reopen on an
-NH phone and EH-sprite tablet; they do not yet close every production
-Detail/all-thumbnails transition, Koma's chapter-scoped thumbnail invalidation,
-or the complete rotation/window/system-UI return matrix. All production defaults
-remain legacy and reversible.
+NH phone and EH-sprite tablet, the current-frame return boundary in both gallery
+hosts, and thumbnail-entry crop inheritance on the selected NextN phone route.
+They do not yet close every NextE production Detail/all-thumbnails entry source,
+Koma's chapter-scoped thumbnail invalidation, or the complete
+rotation/window/system-UI return matrix. All production defaults remain legacy
+and reversible.
 
 ## Single next action
 
-Port the accepted close-context boundary into NextE's optional shared host:
-retain NextE's sprite-crop thumbnail identity and transition coordinator, map
-the observed reader-kit frame back to its EH image, and return to a live current
-Detail/all-thumbnails target without changing the legacy/default reader. Reuse
-the accepted rail and tablet evidence; run one focused host contract and one
-matching signed build before deciding whether a new device replay is needed.
-Koma chapter-scoped thumbnail invalidation follows after the two gallery hosts
-share the same close contract.
+Complete NextE's normal optional thumbnail-entry source boundary rather than
+adding another renderer feature: compare Detail and all-thumbnails ownership for
+remote, cached and downloaded originals; ensure each entry publishes the same EH
+image/source identity used by the legacy reader; and exercise saved crop on that
+host without changing its sprite-crop target or the legacy/default route. Start
+with current-source contracts, implement only a demonstrated missing mapping,
+then run one focused signed consumer build and one selected device path. Koma
+chapter-scoped thumbnail invalidation follows after both gallery hosts have this
+normal-entry boundary.
 
 ## Package completion record
 

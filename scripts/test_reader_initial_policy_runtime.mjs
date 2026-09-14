@@ -81,6 +81,7 @@ function fixture() {
     ReaderPresentationService: { restore: () => restore.promise, snapshot: () => ({ mode: 'paged', doublePageEnabled: true }) },
     ReaderSettingsRepository: { columnMode: (_context, id) => { assert.equal(id, 123); events.push('column'); return column.promise } },
     NextNReaderInitialPolicy: resolver,
+    ReaderCloseContext: { from: () => null },
   }).Host
   const host = new Host()
   Object.assign(host, { request: request(), volumeDisposed: false, closeRequested: false, hostClosing: false,
@@ -88,7 +89,10 @@ function fixture() {
     progressPersistence: { restore: (_work, pageIndex) => Promise.resolve(pageIndex) },
     progressWrites: { seal() {}, flush: () => Promise.resolve(true) },
     syncReaderActivity: () => events.push('sync'), onClose: () => events.push('close') })
-  Object.defineProperty(host, 'session', { set(value) { events.push('publish'); this.published = value } })
+  Object.defineProperty(host, 'session', {
+    get() { return this.published ?? null },
+    set(value) { events.push('publish'); this.published = value },
+  })
   const session = { setPolicy(p) { assert.equal(p.layout, 'spread'); events.push('policy') } }
   const task = host.initializeSession({}, session)
   return { host, restore, column, events, task }
@@ -191,7 +195,10 @@ for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [fal
     restorePresentation: () => { events.push('restore'); return Promise.resolve() },
     initializeSession: (_context, session) => { assert.equal(session, sessions[0]); events.push('initialize'); return Promise.resolve() },
   })
-  Object.defineProperty(host, 'session', { set(value) { host.published = value; events.push('publish') } })
+  Object.defineProperty(host, 'session', {
+    get() { return host.published ?? null },
+    set(value) { host.published = value; events.push('publish') },
+  })
   let handoffs = 0
   probe.arm(host.request.work, value => { assert.equal(value.applicationInfo.debug, true); handoffs++ })
   host.aboutToAppear()
@@ -206,7 +213,9 @@ const cropMethod = cls.members.find(m => m.name?.getText(tree) === 'initialCropB
 const CropHost = compile(`export class Host { ${cropMethod} }`, {}, { NhReaderMode: enums.NhReaderMode }).Host
 for (const [request, presentation, expected] of [
   [{ thumbnailEntry: true, cropBorders: true, productionSources: true },
-    { mode: 'vertical', cropBordersContinuous: true, cropBordersPaged: true }, false],
+    { mode: 'vertical', cropBordersContinuous: true, cropBordersPaged: true }, true],
+  [{ thumbnailEntry: true, cropBorders: false, productionSources: true },
+    { mode: 'paged_rtl', cropBordersContinuous: false, cropBordersPaged: true }, true],
   [{ thumbnailEntry: false, cropBorders: true, productionSources: false },
     { mode: 'paged', cropBordersContinuous: false, cropBordersPaged: false }, true],
   [{ thumbnailEntry: false, cropBorders: false, productionSources: false },
@@ -222,6 +231,9 @@ for (const [request, presentation, expected] of [
   Object.assign(host, { request, readerPresentation: presentation })
   assert.equal(host.initialCropBorders(), expected)
 }
+assert.match(pageSource,
+  /cropAvailable:\s*this\.request\.productionSources === true \|\| this\.request\.cropBorders/,
+  'thumbnail entry must not disable the production crop control')
 // Compose the real thumbnail entry and initialization methods, with deferred I/O.
 for (const [mode, extra, expected] of [
   ['vertical', {}, ['continuous', 'horizontal', 'ltr']],
@@ -248,6 +260,7 @@ for (const [mode, extra, expected] of [
       snapshot: () => ({ mode, doublePageEnabled: true, spreadLayoutMode: 'split' }) },
     ReaderSettingsRepository: { columnMode: () => { events.push('column'); return column.promise } },
     NextNReaderInitialPolicy: resolver,
+    ReaderCloseContext: { from: () => null },
   }).Host
   const host = new Host(), r = request({ readerLabChrome: true, readerLabThumbnailEntry: true, ...extra })
   // Index replaces the requested page with the actual clicked source before mounting.
@@ -257,7 +270,10 @@ for (const [mode, extra, expected] of [
     notifyEntrySettled: () => {},
     getUIContext: () => ({ getHostContext: () => debugContext }),
     syncReaderActivity: () => events.push('sync'), onClose: () => events.push('close') })
-  Object.defineProperty(host, 'session', { set(s) { this.published = s; events.push('publish') } })
+  Object.defineProperty(host, 'session', {
+    get() { return this.published ?? null },
+    set(s) { this.published = s; events.push('publish') },
+  })
   host.aboutToAppear(); assert.deepEqual(events, ['restore']); assert.equal(host.published, undefined)
   restore.resolve(); await flush(); assert.deepEqual(events, ['restore', 'column'])
   assert.equal(host.published, undefined)

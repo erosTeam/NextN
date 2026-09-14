@@ -785,7 +785,6 @@ export struct NextNReaderLabPage {
 
   /** Production inherits the canonical mode-specific choice; debug trials keep their explicit request contract. */
   private initialCropBorders(): boolean {
-    if (this.request.thumbnailEntry) return false
     if (this.request.cropBorders) return true
     if (this.request.productionSources !== true) return false
     return this.readerPresentation.mode === NhReaderMode.VERTICAL
@@ -818,7 +817,9 @@ export struct NextNReaderLabPage {
               },
               showPageNumber: this.readerPresentation.showPageNumber,
               cropBorders: this.initialCropBorders(),
-              cropAvailable: !this.request.thumbnailEntry,
+              // Entry animation is optional; an incompatible cropped target cancels the flight.
+              // Never remove a production reading feature merely because the source was a thumbnail.
+              cropAvailable: this.request.productionSources === true || this.request.cropBorders,
               hostSettingsAvailable: this.hostSettingsAvailable,
               onHostSettings: (): void => { this.openHostSettings() },
               externalOpenAvailable: this.request.productionSources === true,

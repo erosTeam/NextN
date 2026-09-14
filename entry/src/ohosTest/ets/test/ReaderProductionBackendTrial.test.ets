@@ -839,9 +839,9 @@ export default function readerProductionBackendTrialTest(): void {
           await ReaderPresentationService.setCropBordersPaged(context, true)
           await seedHistoryPage(database, 2)
 
-          await (await waitDetailRead(driver)).click()
+          await (await findDetailThumbnail(driver, 2)).click()
           expect(await waitSharedReady(driver)).assertEqual(2)
-          await (await waitId(driver, 'rkit-runtime-settings')).click()
+          await (await waitId(driver, 'rkit-reading-mode')).click()
           const cropToggle = await waitId(driver, 'rkit-crop-toggle')
           expect(await cropToggle.getText()).assertEqual('关闭裁边')
           await driver.pressBack()
