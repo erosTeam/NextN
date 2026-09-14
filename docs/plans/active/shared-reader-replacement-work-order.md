@@ -633,24 +633,46 @@ This closes the demonstrated complete-download omission. The archive selection
 uses the same host service and local-asset branch but is not separately claimed
 as device-accepted.
 
+The normal NextE thumbnail-entry audit then found a second source-ownership
+gap. Detail and All thumbnails already construct the complete legacy
+`ReaderParams`, including the selected index, loaded EH preview images, sprite
+metadata, source language and the exact tapped `/s/` URL, but the optional
+shared entry previously discarded it and refetched gallery detail. NextE commit
+`72f71587` carries that host-owned context through the optional relay and lets
+the adapter initialize from the exact supplied seeds after the existing local
+source check. Direct debug launch retains its old remote-detail fallback.
+Reader-kit remains unaware of EH models, routes and cache policy; the legacy and
+default reader admission are unchanged.
+
+The focused entry/source contracts pass 34/34, the API-26 decorator inventory
+reports zero live V1 decorators across 590 ArkTS files, and matching signed
+product and test builds pass. On 197, the normal retained Detail page opened the
+optional shared spread from its first sprite thumbnail. The in-process source
+assertion and runtime log both report `source=hostEntry`, index 0, 46 pages, 40
+seed images and an exact image-page URL. Hypium and the protocol validator pass
+1/1; the source, reader and closed full-screen captures were inspected under
+`.hvigor/outputs/nexte-shared-host-entry/device197__ALN-AL80/not-applicable/portrait-1260x2720/run-2/`.
+Close returned to the same retained Detail page. All thumbnails uses the same
+coordinator and parameter contract and is source/build-covered, but is not
+separately claimed as physical-device accepted.
+
 Package 3 remains ACTIVE. These runs close retained rail show/hide/reopen on an
 NH phone and EH-sprite tablet, the current-frame return boundary in both gallery
 hosts, and thumbnail-entry crop inheritance on the selected NextN phone route.
-They do not yet close every NextE production Detail/all-thumbnails remote/cache
-entry source or a separately exercised archive source,
-Koma's chapter-scoped thumbnail invalidation, or the complete
+They do not yet close a separately exercised NextE All thumbnails or archive
+source, Koma's chapter-scoped thumbnail invalidation, or the complete
 rotation/window/system-UI return matrix. All production defaults remain legacy
 and reversible.
 
 ## Single next action
 
-Finish the remaining NextE normal optional thumbnail-entry source boundary rather
-than adding another renderer feature: compare Detail and all-thumbnails ownership
-for remote and cached originals, and ensure each entry publishes the same EH
-image/source identity used by the legacy Reader without changing its sprite-crop
-target or the legacy/default route. Start with current-source contracts and
-implement only a demonstrated missing mapping. Koma chapter-scoped thumbnail
-invalidation follows after both gallery hosts have this normal-entry boundary.
+Implement the demonstrated Koma chapter-scoped thumbnail invalidation gap. Map
+which host state owns chapter identity and thumbnail windows, then make a
+successful, failed, cancelled or rapidly superseded chapter change unable to
+show thumbnails from the retired chapter. Keep chapter loading and navigation
+in Koma; reader-kit should receive only host-neutral unit identity and retire
+the old window/session state. Validate the focused orchestrator/source contract
+before one matching build and one selected real chapter-switch path.
 
 ## Package completion record
 
