@@ -119,21 +119,48 @@ and reversible.
 
 ## Current Package 2 delta
 
-Start with the state owner that is already observably narrower than the legacy
-readers: NextN persists a numeric `preloadPages` depth, while the shared session
-currently exposes only a boolean neighbor-preload switch. Map the corresponding
-NextE and Koma behavior before editing. The shared core may own a bounded
-visible-window depth, but host caches, download queues, transport lifetime, and
-storage eviction remain host capabilities; no shared UI may silently invent
-those policies.
+The first Package 2 omission is implemented without enlarging the render tree.
+All three legacy readers persist `preloadPages` as a bounded numeric depth, while
+the old shared path only enabled its immediate native render neighbor. Shared
+revision `46de8c5` now keeps that render-neighbor bound unchanged and separately
+schedules future visual destinations through `ReaderPreloadHost`: complete
+spreads contribute both sources, continuous mode starts after the visible range,
+split fragments deduplicate their source, and navigation, policy, range, depth,
+unit and close changes cancel retired cache demand. Failure is diagnostic only
+and cannot demote the visible session.
+
+Hosts continue to own all cache policy. NextN warms the existing remote private
+cache and skips fixture/downloaded pages; NextE resolves its existing default
+source and warms `ImagePipelineService`; Koma calls its existing remote source
+cache and skips local pages. No shared cache, eviction rule, download task,
+persistence key or production route was added. Core tests pass 363/363; focused
+host tests pass in NextN, NextE 7/7 and Koma; current NextE signed main/native,
+NextN complete debug and Koma complete debug consumers build. NextN's isolated
+worktree has no signing profile, so its result is not a signed-device claim.
+
+On 103, NextE `dc5413ae` with reader-kit `46de8c5` passed the existing complete
+failure/retry/reload/spread/background/close/reopen chain 1/1 in 48.389 seconds.
+The actual host logged successful future cache warms for sources 2, 3 and 4;
+the retried single page, finished spread and final host return captures were
+inspected. Evidence is under
+`.hvigor/outputs/shared-reader-package2/device103__MLR-AL00/not-applicable/portrait-1600x2560/01-nexte-preload-lifecycle/run`.
+The protocol restored the 10-second timeout and released its lease. This accepts
+the NextE adapter path only; NextN and Koma cache-warm runtime paths and the rest
+of Package 2 remain open.
 
 ## Single next action
 
-Trace `preloadPages` from each host's saved reader state through its legacy and
-optional shared entry, then replace the shared boolean with the smallest bounded
-depth contract that preserves current defaults and cancellation/resource-slot
-limits. Add core state tests first, then wire only hosts that actually expose a
-depth. Do not change any production default or persistence key.
+Close the same bounded preload path through one real NextN remote source on 197
+and one real Koma remote source on 103 or 197, using each host's existing optional
+reader entry and cache service. Require the matching persisted depth, bounded
+future source set, successful visible reading, close/return, and exact setting
+restoration; a cache-warm failure must remain isolated from the displayed page.
+If the NextN isolated branch cannot produce a signed matching package without
+copying credentials or modifying tracked signing state, record that exact build
+boundary and continue Koma rather than installing a mismatched artifact. After
+those host paths, resume the Package 2 old-to-shared capability map at the first
+actual missing setting or action. Do not change any production default or
+persistence key.
 
 ## Package completion record
 
