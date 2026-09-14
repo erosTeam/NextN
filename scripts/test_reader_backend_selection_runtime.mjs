@@ -56,6 +56,15 @@ assert.equal(selected.version, 4)
 selected.select(state.NextNReaderBackend.SHARED)
 state.captureNextNReaderBackendWant({ parameters: { nextn_reader_backend: 'shared' } }, false)
 assert.equal(selected.current(), state.NextNReaderBackend.LEGACY, 'release builds must remain legacy')
+selected.selectForRehearsal(state.NextNReaderBackend.SHARED, true)
+assert.equal(selected.current(), state.NextNReaderBackend.SHARED,
+  'the in-app Debug rehearsal may select the shared backend without a Want')
+selected.selectForRehearsal(state.NextNReaderBackend.SHARED, false)
+assert.equal(selected.current(), state.NextNReaderBackend.LEGACY,
+  'the same in-app request must fail closed in a release build')
+selected.selectForRehearsal(state.NextNReaderBackend.LEGACY, true)
+assert.equal(selected.current(), state.NextNReaderBackend.LEGACY,
+  'one explicit Debug selection must restore the legacy backend')
 
 const params = compile(fs.readFileSync(path.join(root,
   'shared/src/main/ets/model/ReaderRouteParams.ets'), 'utf8'), {

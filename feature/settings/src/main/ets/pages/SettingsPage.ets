@@ -28,6 +28,8 @@ import {
   ReaderPageCropStrength,
   NhReaderSpreadLayout,
   NhReaderSuperResolutionModel,
+  NextNReaderBackend,
+  NextNReaderBackendSelectionState,
   READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT_CHOICES,
   NhReaderTapZoneInvert,
   NhReaderTapZoneLayout,
@@ -122,6 +124,7 @@ import {
   connectNhClipboardLink,
   connectReadButtonStyle,
   connectReaderEnhancementModels,
+  connectNextNReaderBackendSelection,
   connectReaderPresentation,
   connectScreenOrientation,
   connectDownloadSettings,
@@ -272,6 +275,8 @@ export struct SettingsPage {
   @Local commentTranslationCacheStatus: CacheStat = new CacheStat()
   @Local comicTranslationCacheStatus: CacheStat = new CacheStat()
   @Local readerPresentation: ReaderPresentationState = connectReaderPresentation()
+  @Local readerBackendSelection: NextNReaderBackendSelectionState = connectNextNReaderBackendSelection()
+  @Local readerBackendRehearsalAvailable: boolean = false
   @Local readerEnhancementModels: ReaderEnhancementModelsState = connectReaderEnhancementModels()
   @Local readerModeError: string = ''
   @Local readerEnhancementInstalledModels: NhReaderSuperResolutionModel[] = []
@@ -358,6 +363,10 @@ export struct SettingsPage {
       return
     }
     if (this.surface === SettingsSurface.READER) {
+      this.readerBackendRehearsalAvailable = this.context().applicationInfo.debug
+      if (!this.readerBackendRehearsalAvailable) {
+        this.readerBackendSelection.selectForRehearsal(NextNReaderBackend.LEGACY, false)
+      }
       this.loadReaderPresentation()
       return
     }
@@ -856,6 +865,18 @@ export struct SettingsPage {
   private async loadAdvancedSettings(): Promise<void> {
     await NhClipboardLinkSettings.restore(this.context())
     this.refreshDiagnosticsState()
+  }
+
+  private readerBackendLabel(): string {
+    // Read the traced revision so the routed Settings row follows a menu selection.
+    const revision: number = this.readerBackendSelection.version
+    return revision >= 0 && this.readerBackendSelection.current() === NextNReaderBackend.SHARED
+      ? AppStrings.get('settings_reader_backend_shared')
+      : AppStrings.get('settings_reader_backend_legacy')
+  }
+
+  private selectReaderBackend(backend: NextNReaderBackend): void {
+    this.readerBackendSelection.selectForRehearsal(backend, this.readerBackendRehearsalAvailable)
   }
 
   private refreshDiagnosticsState(): void {
@@ -3884,6 +3905,51 @@ export struct SettingsPage {
   }
 
   @Builder
+  private ReaderBackendMenu(select: (action: () => void) => void) {
+    Menu() {
+      MenuItem({
+        content: AppStrings.get('settings_reader_backend_legacy'),
+        symbolEndIcon: this.readerBackendSelection.current() === NextNReaderBackend.LEGACY
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        select((): void => this.selectReaderBackend(NextNReaderBackend.LEGACY))
+      })
+      MenuItem({
+        content: AppStrings.get('settings_reader_backend_shared'),
+        symbolEndIcon: this.readerBackendSelection.current() === NextNReaderBackend.SHARED
+          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+          : undefined,
+      }).onClick((): void => {
+        select((): void => this.selectReaderBackend(NextNReaderBackend.SHARED))
+      })
+    }
+  }
+
+  @Builder
+  private ReaderBackendRehearsalGroup() {
+    Column({ space: ThemeTokens.SPACE_XS }) {
+      NextNSectionHeader({ title: AppStrings.get('settings_reader_group_rehearsal') })
+      NextNGroupedListSection({ accessibilityId: 'nextn-reader-backend-rehearsal-group' }) {
+        NextNListRow({
+          title: AppStrings.get('settings_reader_backend'),
+          trailingText: this.readerBackendLabel(),
+          trailingDropdown: true,
+          dropdownMenuEnabled: true,
+          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+            this.ReaderBackendMenu(select)
+          },
+          accessibilityId: 'nextn-reader-backend-rehearsal-row',
+          accessibilityLabel: AppStrings.format('settings_row_a11y', [
+            AppStrings.get('settings_reader_backend'),
+            this.readerBackendLabel(),
+          ]),
+        })
+      }
+    }
+  }
+
+  @Builder
   private ReaderLoadingGroup() {
     Column({ space: ThemeTokens.SPACE_XS }) {
       NextNSectionHeader({ title: AppStrings.get('settings_reader_group_loading') })
@@ -3905,6 +3971,11 @@ export struct SettingsPage {
   /** Shared content for the routed Settings surface and the Reader-owned sheet. */
   @Builder
   private ReaderPresentationListItems() {
+    if (this.readerBackendRehearsalAvailable && !this.sheetPresentation) {
+      ListItem() {
+        this.ReaderBackendRehearsalGroup()
+      }
+    }
     ListItem() {
       this.ReaderLayoutGroup()
     }

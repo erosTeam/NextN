@@ -28,6 +28,17 @@ export class NextNReaderBackendSelectionState {
     this.backend = backend
     this.version += 1
   }
+
+  /**
+   * The in-app rehearsal surface and the external Debug Want share one guard.
+   * A release build can only select Legacy even if a caller supplies Shared.
+   */
+  selectForRehearsal(backend: NextNReaderBackend, debugBuild: boolean): NextNReaderBackend {
+    this.select(debugBuild && backend === NextNReaderBackend.SHARED
+      ? NextNReaderBackend.SHARED
+      : NextNReaderBackend.LEGACY)
+    return this.backend
+  }
 }
 
 const NEXTN_READER_BACKEND_SELECTION_KEY: string = 'nextn_reader_backend_selection'
@@ -50,13 +61,13 @@ export function connectNextNReaderBackendSelection(): NextNReaderBackendSelectio
 export function captureNextNReaderBackendWant(want: Want, debugBuild: boolean): void {
   const state: NextNReaderBackendSelectionState = connectNextNReaderBackendSelection()
   if (!debugBuild) {
-    state.select(NextNReaderBackend.LEGACY)
+    state.selectForRehearsal(NextNReaderBackend.LEGACY, false)
     return
   }
   const value: Object | undefined = want.parameters?.['nextn_reader_backend']
   if (value === NextNReaderBackend.SHARED) {
-    state.select(NextNReaderBackend.SHARED)
+    state.selectForRehearsal(NextNReaderBackend.SHARED, true)
   } else {
-    state.select(NextNReaderBackend.LEGACY)
+    state.selectForRehearsal(NextNReaderBackend.LEGACY, true)
   }
 }
