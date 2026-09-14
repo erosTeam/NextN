@@ -8160,3 +8160,31 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
 - Shared Koma progress and image actions LIMITED PASS / replacement OPEN (2026-09-14): current legacy/shared source comparison found the shared progress signal remains restricted to a successfully decoded and actually presented current original; Koma retains all progress IDs, completion projection, monotonic read state and flush ownership. Re-inspected103 evidence proves byte-identical read-only operation, explicit terminal2/2 write, cold2/2 restore, immediate-close terminal3/3 flush and cold3/3 restore. Current reader-kit information/save/share failure and stale-result contracts pass37/37. On197, exact signed Koma `0399e257` plus reader-kit `5d526ce` displayed real PNG information (`9.2 KB`, `1920 x 1080`), opened/cancelled the system one-image save confirmation, opened/cancelled the system one-item share panel, restored the same1/1 shared frame, then returned to the normal bookshelf. All five whole captures were inspected; reader-session/library hashes stayed `32b2533f...84cd` and `a997dba1...015c`, the bounded log contained no reader exception, timeout10000 and force-stop cleanup completed, and the lease was released. Evidence: `/Users/honjow/git/Koma/.hermes-artifacts/20260913-shared-reader-progress/qa103/.../{01d-readonly-final,02-write,03-restore,04-fast-close,05-fast-close-restore}` and `.hvigor/outputs/shared-reader-package2-koma-actions/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-image-actions/run`. Koma Package2 progress/image actions are reconciled; NextN/NextE bounded action/progress audit, Package3+, normal-entry replacement and all production defaults remain OPEN.
 - Shared NextN progress and image-action audit LIMITED PASS / replacement OPEN (2026-09-14): current legacy/shared source comparison found no product omission. Shared observations require the current decoded/presented original and retain NH unit/selection/navigation/slot/request identity; NextN keeps HistoryRepository, thumbnail precedence, live Detail publication, durable ordering and close flush. Reused accepted197 evidence covers single, vertical, continuous and RTL-spread writes, cold restore, thumbnail precedence, neighbor failure isolation and retry. Current reader-kit observation/information/save/share suites pass84/84 and current NextN progress/persistence/write-gate/share-fallback/exact-download host tests pass. Existing237 D8-D10/save evidence covers actual single/spread information, visual left/right/both selection, system save/share dialogs, positive save, failure and cancellation across navigation/background/close. No product source or device replay was justified. The only correction is test integrity: `test_reader_observed_progress_runtime.mjs` now resolves the pinned `third_party/reader-kit` at `5d526ce` instead of an uncontrolled sibling checkout. NextE's bounded comparison is now the single next Package2 action; Package3+, normal-entry replacement and all production defaults remain OPEN.
 - Shared thumbnail-rail lifetime LIMITED PASS / replacement OPEN (2026-09-14): reader-kit `8918dc3` keeps `ReaderThumbnailRail` and its decoded window alive for the current unit while a clipped zero-height wrapper owns hide/show geometry; `88cfa2e` exposes the wrapper for regression inspection. The focused suite passes12/12 and the complete reader-kit suite passes388/388. NextN/197 final protocol `shared-reader-package3/nextn-197/accepted-3` passes1/1; inspected open/hidden/reopened/closed captures show the rail removed visually while hidden, the same1/14 long-strip page retained, displayed thumbnails immediately present after reopen, and exact host close. NextE/103 `shared-reader-package3/nexte-103/accepted-2` passes1/1 with the same lifecycle on the398-page EH sprite rail; its hidden layout export omits the clipped wrapper from the UI tree, as expected. Matching signed product HAPs are `ff33aa91...18f7c9` and `e0e30ffe...61c2dc`; installed test HAPs were `2870803a...3a0c` and `7dc31730...50c6`, and the final source-clean test rebuilds pass as `4e1a9ea4...ed393` and `f9451c8a...d2cd`. Both timeouts returned to10000ms and both leases were released. This closes retained rail show/hide/reopen only; Package3 production transition/rotation/Koma boundaries and all default replacement remain OPEN.
+
+## Shared Reader Package 5 — NextN in-app replacement rehearsal — 197 — LIMITED PASS / replacement OPEN
+
+- NextN keeps Legacy as the normal cold-start and Release backend. Debug now
+  exposes the process-local selector only at Settings → Reading; the selection
+  is snapshotted for the next normal entry and is not persisted or backed up.
+- Matching signed main `7c1788c5…b0572f` and explicit signed test
+  `86e3681f…51f7e` were installed on `192.168.50.197:12345` (ALN-AL80,
+  1260×2720). The first zero-test run is rejected because the main-only build
+  did not rebuild the stale test HAP. A second run is rejected after the test
+  remained inside the nested Reading destination. Neither contributes product
+  acceptance.
+- Final protocol `shared-reader-package5/nextn-197/run-3` passes Hypium 1/1 in
+  62.939s. With no backend Want it observed Legacy; selected Shared in the app;
+  opened completed gallery556817 at46/46 from the normal Downloads row; touched
+  and closed to Downloads; selected Legacy in the app; reopened, touched and
+  closed the same route. The final log reports both backend roots, both touch
+  responses, both returns, an unchanged queue and exact history restoration.
+- All seven full-screen captures were inspected. Shared and legacy show the
+  same whole local page and counter; both return captures show the same six-task
+  Downloads root. Layout readback places Existing reader and Shared reader at
+  the same `[880,478][1108,531]` bounds inside the rehearsal row, ruling out the
+  apparent desktop-preview truncation as a device layout defect.
+- Postflight force-stopped the test app and restored `OverrideTimeout=10000ms`;
+  lease `20260914-152136-c4668fec` was released. No download, history, account,
+  cache or persistent Reader setting remains changed. This is not permission to
+  switch the default and does not close NextE/Koma adoption, upgrade/rollback,
+  repeated cold entry, or the complete Package5 route matrix.

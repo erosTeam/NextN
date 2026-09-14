@@ -790,21 +790,43 @@ and `c725d7ac602f0fcb353fe2992632f03ca0f873901b323b303393fb0be14feb9d`.
 Normal Detail start, compact thumbnail, all-thumbnails and downloaded-gallery
 routes already converge on the same selector/snapshotted route; a rejected
 shared source claim keeps the existing legacy thumbnail path. This is
-source/build evidence only. The selected 197 in-app selection and explicit
-rollback path remains pending while that shared device has another active
-lease; it has not been replaced by a tablet repetition.
+now joined by the selected phone runtime path.
+
+NextN commits `db65006e` and `843b7a42` add a permanent normal-entry rehearsal. On 197, the
+accepted `run-3` starts without a backend Want and observes Legacy, selects
+Shared from Settings → Reading, opens gallery `556817` from the normal completed
+Downloads row, touches the shared surface, closes back to Downloads, selects
+Legacy in the same row, and repeats the same entry/touch/close path. Hypium
+passes 1/1 in 62.939 seconds. The queue snapshot is byte-equal and the exact
+eight-column history snapshot is restored. All seven full-screen captures were
+inspected; shared and legacy both display the same local page `46 / 46` and
+return to the same Downloads root. The apparent clipped Shared label in the
+desktop preview was checked against the captured device layout: both five-
+character values own the same in-row bounds `[880,478][1108,531]` and remain
+inside the row.
+
+The accepted signed main HAP is `7c1788c5…b0572f`; the explicit signed
+`entry@ohosTest` HAP is `86e3681f…51f7e`. The first run is rejected because the
+main-only build left an old test HAP on disk and therefore registered zero
+Hypium cases. The second run is retained as a test-navigation counterexample
+after selecting Shared, not a product failure. Neither is used as acceptance.
+The final protocol restored the screen timeout to 10 seconds and released the
+197 lease. Release still fails Shared closed to Legacy, cold launch resets
+Legacy, and no preference, backup, migration, download, cache or user data owns
+the selector.
 
 ## Single next action
 
-When 197's current NextE lease is released, install the exact NextN Debug
-candidate and execute one continuous path: cold normal launch → Settings →
-Reading shows Legacy → select Shared → open one retained real gallery through
-its normal start-reading action → interact once and close to the same source →
-select Legacy in the same in-app row → reopen the same normal route and
-interact/close. Accept only the observed selector values, backend-specific
-reader roots, touch response, return source and unchanged relevant
-settings/history; restore the screen timeout and release the lease. Do not
-repeat Package 1-4 capability tests inside this selector slice.
+Implement the equivalent process-local, Debug-only selector boundary in NextE.
+Unlike NextN, current NextE has only ReaderLab/thumbnail-relay debug entries and
+no production shared body behind its normal overlay. First map the existing
+`ReaderParams`/overlay snapshot and add a production-capable shared host that
+consumes the same host-owned detail, sprite, source and local-download context;
+then expose the selector in the existing Reading settings destination. Release
+must fail closed to the untouched legacy body and cold launch must reset
+Legacy. Run focused source/route tests and matching signed main plus explicit
+test builds before selecting one normal 197 entry/rollback path. Do not use a
+debug Want as acceptance and do not repeat Package 1-4 capability matrices.
 
 ## Package completion record
 
