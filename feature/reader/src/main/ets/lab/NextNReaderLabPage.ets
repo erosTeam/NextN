@@ -7,7 +7,7 @@ import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, R
 import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility,
   ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction, ReaderMediaActions,
-  ReaderHostStatus, ReaderObservationSink } from '@reader-kit/ui'
+  ReaderHostStatus, ReaderObservationSink, ReaderPreferenceSink } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
 import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea,
@@ -840,8 +840,9 @@ export struct NextNReaderLabPage {
                   ? AppStrings.get('reader_comic_translation_running')
                   : AppStrings.get('reader_comic_translation_failed'),
                 this.translationBusyPage === this.currentSourceIndex) : null,
-              onPolicyChanged: (policy, intent): void => { this.persistRuntimePolicy(policy, intent) },
-              onCropChanged: (enabled, policy): void => { this.persistCrop(enabled, policy) },
+              preferenceSink: new ReaderPreferenceSink(
+                (policy, intent): void => { this.persistRuntimePolicy(policy, intent) },
+                (enabled, policy): void => { this.persistCrop(enabled, policy) }),
               entryTransition: this.entryTransition, entryPreview: this.entryPreview,
               active: this.hostRouteActive() && this.labVisibility.foreground && !this.readerSettingsSheetShown,
               closing: this.closeRequested || this.hostClosing,
