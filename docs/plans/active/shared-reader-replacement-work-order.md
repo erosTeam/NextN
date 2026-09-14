@@ -700,18 +700,36 @@ are idempotent. Failed, cancelled and retired A-B-C preparations leave the old
 host chapter and progress untouched. The focused suites pass 12/12 and the
 matching Debug HAP builds with SHA-256
 `4b0550bf65502a6318f521ed0c55f24328fff7ce931883694d451a63ac9c2073`.
-This remains source/build evidence until the selected provider device path
-confirms the resolved chapter, displayed original, host history and return.
+On 197, an existing unshelved DM5 history item entered the optional shared
+reader without changing the production default. The host resolved 174 real
+chapters, displayed the first original, switched through the shared chapter
+picker from chapter `1328356` to `1328531`, displayed the new original at
+`1 / 19`, and persisted the new chapter/page identity while the exact library
+store hash remained unchanged. Close returned to the existing History page and
+the screen timeout was restored to 10 seconds. The inspected source, picker,
+new-chapter and return captures are under
+`.hvigor/outputs/shared-reader-package4-koma-transient/`.
+
+That selected run also exposed a real host projection defect: the persisted
+source history was already chapter 2, but `HistoryPage` reused nodes keyed only
+by `comicId` and section name, leaving a stale chapter-1 card visible and briefly
+duplicating the item after it moved from Last 7 days to Today. Koma commit
+`548725c5` keys each row and section by the chapter, page and grouping content
+that actually drives its UI. The focused history/catalog/chapter/return/
+preference suites pass 14/14, and the matching Debug HAP builds with SHA-256
+`d4769aad9899697744dd24ac1a9a61d2694d5949648ce49f4721fc728f6639cc`.
+The source and build fix is complete; the corrected final History projection is
+not yet claimed as device-accepted.
 
 ## Single next action
 
-Run one selected real transient-provider chapter switch with Koma commit
-`54826d82`: enter the optional shared route from an un-shelved source title,
-display the initial original, switch chapter, display the new original, verify
-the Koma-owned history/progress identity and return to the host. Preserve the
-device's unrelated library/download data and legacy default. If the source is
-externally unavailable, retain that evidence and choose one other already
-installed provider; do not substitute a local fixture for this boundary.
+Reinstall the matching `548725c5` candidate on 197 when that shared device is
+available, open the already persisted DM5 chapter-2 history item, and inspect
+one final History return. Accept this slice only if exactly one card appears in
+the correct time group with chapter 2 / `1 / 19`, while the unrelated library
+hash and legacy default remain unchanged. Do not repeat the already accepted
+catalog, picker, switch, or storage assertions unless this narrow projection
+check fails.
 
 ## Package completion record
 
