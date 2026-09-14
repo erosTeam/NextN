@@ -229,6 +229,11 @@ async function selectBackendFromUi(driver: Driver, backend: NextNReaderBackend):
   throw new Error(`In-app Reader backend selection did not become ${backend}`)
 }
 
+async function returnFromReaderSettings(driver: Driver): Promise<void> {
+  await driver.pressBack()
+  await waitId(driver, 'nextn-root-tab-2')
+}
+
 function pageTotal(text: string): number {
   const match = /^\s*([1-9][0-9]*)\s*\/\s*([1-9][0-9]*)\s*$/.exec(text)
   if (match === null) throw new Error(`Unexpected shared page label: ${text}`)
@@ -463,6 +468,7 @@ export default function readerProductionDownloadEntryTrialTest(): void {
         await capture(driver, 'in-app-backend-legacy-setting')
         await selectBackendFromUi(driver, NextNReaderBackend.SHARED)
         await capture(driver, 'in-app-backend-shared-setting')
+        await returnFromReaderSettings(driver)
         await (await waitId(driver, 'nextn-root-tab-2')).click()
         await (await findDownloadEntry(driver, task.galleryId)).click()
         const total: number = await waitSharedReady(driver)
@@ -477,6 +483,7 @@ export default function readerProductionDownloadEntryTrialTest(): void {
         expect(connectNextNReaderBackendSelection().current()).assertEqual(NextNReaderBackend.SHARED)
         await selectBackendFromUi(driver, NextNReaderBackend.LEGACY)
         await capture(driver, 'in-app-backend-legacy-restored-setting')
+        await returnFromReaderSettings(driver)
         await (await waitId(driver, 'nextn-root-tab-2')).click()
         await (await findDownloadEntry(driver, task.galleryId)).click()
         await waitLegacyReady(driver)
