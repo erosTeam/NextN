@@ -737,7 +737,7 @@ Neither change alters the production default or moves catalog policy into
 
 ## Single next action
 
-Reinstall the matching `548725c5` candidate on 197 when that shared device is
+Install the matching combined Koma `ce293938` candidate on 197 when that shared device is
 available, open the already persisted DM5 chapter-2 history item, and inspect
 one final History return. Accept this slice only if exactly one card appears in
 the correct time group with chapter 2 / `1 / 19`, while the unrelated library
