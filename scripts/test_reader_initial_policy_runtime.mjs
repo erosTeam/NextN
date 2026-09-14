@@ -246,7 +246,7 @@ for (const [request, labRequest, presentation, expected] of [
   assert.equal(host.initialCropBorders(), expected)
 }
 assert.match(pageSource,
-  /cropAvailable:\s*this\.request\.productionSources === true \|\| this\.labRequest\?\.cropBorders === true/,
+  /new ReaderCropPolicy\([\s\S]*?this\.request\.productionSources === true \|\| this\.labRequest\?\.cropBorders === true/,
   'thumbnail entry must not disable the production crop control')
 // Compose the real thumbnail entry and initialization methods, with deferred I/O.
 for (const [mode, extra, expected] of [
