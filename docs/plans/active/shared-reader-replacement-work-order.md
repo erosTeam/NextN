@@ -613,25 +613,44 @@ temporary settings. Hypium passes 1/1; the two inspected captures and checked
 metadata are under
 `.hvigor/outputs/shared-reader-crop-parity/nextn-197/run-2/`.
 
+The subsequent NextE source audit corrected an over-broad Package 1 conclusion:
+the legacy Reader calls `ReaderLocalSourceService.preferLocal` before any EH
+request, while the optional shared adapter previously always opened the remote
+gallery detail. NextE now keeps this ownership in the host adapter. A complete
+gallery download is selected before the network, supplies its immutable local
+files to the shared session, skips remote preload, and shares the selected local
+image as an image record; incomplete or unavailable local state still falls back
+to the existing EH request path. Reader-kit remains unaware of download queues,
+archives, EH identities and cache paths. The focused source contract passes 8/8,
+the signed product and test builds pass, and the API-26 decorator inventory is
+zero. On 197, an isolated two-page complete-download fixture opened the optional
+shared Reader at `1 / 2` without any network fallback, displayed the local image,
+closed back to the retained host, restored the exact in-memory queue and removed
+the temporary files. Hypium passes 1/1; both full-screen captures were inspected
+under
+`.hvigor/outputs/nexte-shared-reader-local-source/device197__ALN-AL80/not-applicable/portrait-1260x2720/run/`.
+This closes the demonstrated complete-download omission. The archive selection
+uses the same host service and local-asset branch but is not separately claimed
+as device-accepted.
+
 Package 3 remains ACTIVE. These runs close retained rail show/hide/reopen on an
 NH phone and EH-sprite tablet, the current-frame return boundary in both gallery
 hosts, and thumbnail-entry crop inheritance on the selected NextN phone route.
-They do not yet close every NextE production Detail/all-thumbnails entry source,
+They do not yet close every NextE production Detail/all-thumbnails remote/cache
+entry source or a separately exercised archive source,
 Koma's chapter-scoped thumbnail invalidation, or the complete
 rotation/window/system-UI return matrix. All production defaults remain legacy
 and reversible.
 
 ## Single next action
 
-Complete NextE's normal optional thumbnail-entry source boundary rather than
-adding another renderer feature: compare Detail and all-thumbnails ownership for
-remote, cached and downloaded originals; ensure each entry publishes the same EH
-image/source identity used by the legacy reader; and exercise saved crop on that
-host without changing its sprite-crop target or the legacy/default route. Start
-with current-source contracts, implement only a demonstrated missing mapping,
-then run one focused signed consumer build and one selected device path. Koma
-chapter-scoped thumbnail invalidation follows after both gallery hosts have this
-normal-entry boundary.
+Finish the remaining NextE normal optional thumbnail-entry source boundary rather
+than adding another renderer feature: compare Detail and all-thumbnails ownership
+for remote and cached originals, and ensure each entry publishes the same EH
+image/source identity used by the legacy Reader without changing its sprite-crop
+target or the legacy/default route. Start with current-source contracts and
+implement only a demonstrated missing mapping. Koma chapter-scoped thumbnail
+invalidation follows after both gallery hosts have this normal-entry boundary.
 
 ## Package completion record
 
