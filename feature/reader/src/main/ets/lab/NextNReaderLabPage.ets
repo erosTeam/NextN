@@ -7,7 +7,7 @@ import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, R
 import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility,
   ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction, ReaderMediaActions,
-  ReaderHostStatus } from '@reader-kit/ui'
+  ReaderHostStatus, ReaderObservationSink } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
 import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea,
@@ -849,7 +849,8 @@ export struct NextNReaderLabPage {
               topInset: this.safeArea.topAvoidHeight, bottomInset: this.safeArea.bottomAvoidHeight,
               accent: ThemeTokens.BRAND,
               onClose: (context: ReaderCloseContext | null): void => this.closeTrial(false, context),
-              onObserved: (anchor: ReaderReadingAnchor): void => this.observeReaderPosition(anchor),
+              observation: new ReaderObservationSink(
+                (anchor: ReaderReadingAnchor): void => this.observeReaderPosition(anchor)),
               onInteractionBusy: (busy: boolean): void => { this.setEnhancementInteractionBusy(busy) },
               onChromeVisible: (visible: boolean): void => this.syncChromeVisible(visible) })
           } else {
