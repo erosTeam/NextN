@@ -771,16 +771,40 @@ rapid A-B-C cancellation remain focused source/state evidence rather than
 physical-device claims. The production Koma default and legacy fallback remain
 unchanged.
 
+## Current Package 5 delta
+
+NextN commit `3425a980` exposes its existing process-local backend selector at
+the normal routed Settings → Reading destination in Debug builds. The row uses
+the existing HDS grouped-dropdown grammar and selects either the shared or
+legacy backend for the next normal Reader admission; it is deliberately absent
+from the in-session Reader settings sheet so changing a selector cannot imply
+that an already-open route changed implementation. The route continues to
+snapshot the backend at open time. Release builds fail a shared selection
+closed to Legacy, normal cold launches reset Legacy, and no value enters
+preferences, backup, migration or user data.
+
+The selector/direct-host/legacy-adapter focused test and the 18-case entry-host
+suite pass. Matching signed Debug and Release consumers build successfully with
+SHA-256 `850541b3b1d6167fbec0d2ac285548456deb423c44a9078d47d86e7131d463ee`
+and `c725d7ac602f0fcb353fe2992632f03ca0f873901b323b303393fb0be14feb9d`.
+Normal Detail start, compact thumbnail, all-thumbnails and downloaded-gallery
+routes already converge on the same selector/snapshotted route; a rejected
+shared source claim keeps the existing legacy thumbnail path. This is
+source/build evidence only. The selected 197 in-app selection and explicit
+rollback path remains pending while that shared device has another active
+lease; it has not been replaced by a tablet repetition.
+
 ## Single next action
 
-Implement the first Package 5 slice in the isolated NextN reader branch: expose
-the existing process-local reader backend selector through a normal in-app
-debug/rehearsal surface, so a tester can choose the shared backend without an
-external debug Want and can restore the legacy backend with one explicit
-action. Keep the initial and release-build backend legacy, do not persist the
-selection, and do not change the normal Reader route or user data. Close the
-slice with focused selector/route tests and one matching consumer build before
-selecting its bounded device path.
+When 197's current NextE lease is released, install the exact NextN Debug
+candidate and execute one continuous path: cold normal launch → Settings →
+Reading shows Legacy → select Shared → open one retained real gallery through
+its normal start-reading action → interact once and close to the same source →
+select Legacy in the same in-app row → reopen the same normal route and
+interact/close. Accept only the observed selector values, backend-specific
+reader roots, touch response, return source and unchanged relevant
+settings/history; restore the screen timeout and release the lease. Do not
+repeat Package 1-4 capability tests inside this selector slice.
 
 ## Package completion record
 
