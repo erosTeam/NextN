@@ -735,9 +735,18 @@ group therefore remain manually reachable. The combined focused suites pass
 Neither change alters the production default or moves catalog policy into
 `reader-kit`; current physical-device acceptance remains pending.
 
+Koma `0887488f` then removes a redundant provider round trip on the initial
+shared presentation of an already resolved transient source chapter. Only the
+exact active request and matching complete immutable `readerSessionConfig` are
+reused; any different chapter still goes through Koma's provider preparation
+and cancellation fence. This avoids turning a successful normal source open
+into a second network dependency before the shared surface can paint. The same
+15/15 focused suites pass and the matching Debug HAP builds with SHA-256
+`c49a8bb1c5f0ad7c636a1e4329a3cde3ee2b4e51043e3914d81bd3b6f46f3480`.
+
 ## Single next action
 
-Install the matching combined Koma `ce293938` candidate on 197 when that shared device is
+Install the matching combined Koma `0887488f` candidate on 197 when that shared device is
 available, open the already persisted DM5 chapter-2 history item, and inspect
 one final History return. Accept this slice only if exactly one card appears in
 the correct time group with chapter 2 / `1 / 19`, while the unrelated library
