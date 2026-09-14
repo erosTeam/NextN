@@ -26,6 +26,13 @@ export class ReaderTrialEntrySource {
     this.thumbnailResourceId = `${galleryId}:${pageIndex}:${thumbnailUrl}`
     this.objectFit = origin === 'detail' ? 'cover' : 'contain'
   }
+
+  sourceScope(): string {
+    const suffix = `-page-${this.pageIndex}`
+    return this.sourceComponentId.endsWith(suffix)
+      ? this.sourceComponentId.substring(0, this.sourceComponentId.length - suffix.length)
+      : ''
+  }
 }
 
 /**

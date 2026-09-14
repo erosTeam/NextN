@@ -262,6 +262,39 @@ export class ReaderThumbnailTransitionState {
     this.phase = ReaderThumbnailTransitionPhase.WAITING_READER
   }
 
+  /** Shared Reader owns its forward flight; retain only the live return-target family. */
+  armReturn(
+    sourceScope: string,
+    sourceComponentId: string,
+    galleryId: string,
+    index: number,
+    image: NhGalleryPage,
+    rootWidth: number,
+    rootHeight: number,
+  ): void {
+    this.sourceScope = sourceScope
+    this.sourceComponentId = sourceComponentId
+    this.galleryId = galleryId
+    this.currentIndex = index
+    this.image = image.copy()
+    this.rootWidth = rootWidth
+    this.rootHeight = rootHeight
+    this.overlayOpacity = 1
+    this.backdropOpacity = 1
+    this.openingProxyOpacity = 1
+    this.openingReaderImageOpacity = 1
+    this.closeTargetSnapshotOpacity = 0
+    this.readerImageReady = false
+    this.phase = ReaderThumbnailTransitionPhase.OPEN
+  }
+
+  updateRootSize(width: number, height: number): void {
+    if (width > 0 && height > 0) {
+      this.rootWidth = width
+      this.rootHeight = height
+    }
+  }
+
   prepareOpening(): void {
     // Change ownership outside animateTo. The real thumbnail stops painting while the root proxy is
     // still at the identical source rectangle, so the source itself can never fade under the flight.

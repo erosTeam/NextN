@@ -1,4 +1,5 @@
-import { ReaderTrialLayoutCommit, ReaderKeepScreenOn, ReaderTapAction, ReaderRuntimePolicyIntent } from '@reader-kit/ui'
+import { ReaderTrialLayoutCommit, ReaderKeepScreenOn, ReaderTapAction, ReaderRuntimePolicyIntent,
+  ReaderCloseContext } from '@reader-kit/ui'
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
 import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderLayout,
@@ -16,7 +17,7 @@ import { connectReaderPresentation, ReaderPresentationService, ReaderPresentatio
   COMIC_VISUAL_ROUTE_TORII, connectLanguageState, LanguageState, connectLlmSourceProfiles,
   LlmSourceProfilesState, connectMangaRenderingService, MangaRenderingServiceState,
   supportsMangaTranslation, ToriiFontCatalog, ToriiWholePageConfig, ToriiWholePageSecretStore,
-  TORII_WHOLE_PAGE_SOURCE_REVISION, NhGalleryDetail, NhTag } from 'shared'
+  TORII_WHOLE_PAGE_SOURCE_REVISION, NhGalleryDetail, NhGalleryPage, NhTag } from 'shared'
 import { NextNReaderOriginalProbeProvider } from './NextNReaderOriginalProbeProvider'
 import { NextNReaderOriginalProbeCatalog } from './NextNReaderOriginalProbeCatalog'
 import { ReaderSystemImageSaveHost } from '@reader-kit/ui'
@@ -69,8 +70,10 @@ export struct NextNReaderLabPage {
   @Event onReaderPresentationChanged: (chromeVisible: boolean, fullscreen: boolean, canvasDark: boolean) => void =
     () => {}
   @Event onRegisterBackRequest: (request: (() => boolean) | null) => void = () => {}
-  @Event onPrepareClose: () => Promise<boolean> = (): Promise<boolean> => Promise.resolve(true)
-  @Event onPreparedClose: (animated: boolean) => void = () => {}
+  @Event onPrepareClose: (context: ReaderCloseContext | null, image: NhGalleryPage | null) => Promise<boolean> =
+    (): Promise<boolean> => Promise.resolve(true)
+  @Event onPreparedClose: (context: ReaderCloseContext | null, image: NhGalleryPage | null,
+    targetReady: boolean) => void = () => {}
   /** Host-neutral lifecycle notification; the embedding shell owns preview disposal. */
   @Event onEntrySettled: () => void = () => {}
   @Local private session: ReaderPagedSession | null = null
@@ -294,16 +297,20 @@ export struct NextNReaderLabPage {
       this.safeArea.topAvoidHeight > 0 ? `${this.safeArea.topAvoidHeight}:${this.safeArea.bottomAvoidHeight}` : '', current)
   }
 
-  private closeTrial(initializationFailed: boolean = false): void {
+  private closeTrial(initializationFailed: boolean = false, suppliedContext: ReaderCloseContext | null = null): void {
     if (this.closeRequested) return
     this.closeRequested = true
+    const context: ReaderCloseContext | null = suppliedContext ?? (initializationFailed || this.session === null
+      ? null : ReaderCloseContext.from(this.session.snapshot()))
+    const image: NhGalleryPage | null = context === null ? null : this.adapter?.transitionPage(this.request.work,
+      context.part.sourceIndex) ?? null
     const progressFlush = this.finishProgressWrites()
     if (this.embedded) {
-      void this.onPrepareClose().then(async (animated: boolean): Promise<void> => {
+      void this.onPrepareClose(context, image).then(async (targetReady: boolean): Promise<void> => {
         const saved = await progressFlush
         if (!saved) console.warn(`[NextNReaderLab] progress_flush_failed gallery=${this.request.work}`)
         if (this.hostRouteActive() || (initializationFailed && !this.volumeDisposed)) {
-          this.onPreparedClose(animated)
+          this.onPreparedClose(context, image, targetReady)
         }
       })
       return
@@ -833,7 +840,8 @@ export struct NextNReaderLabPage {
               closing: this.closeRequested || this.hostClosing,
               beforeShowChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareChromeShow(isCurrent),
               topInset: this.safeArea.topAvoidHeight, bottomInset: this.safeArea.bottomAvoidHeight,
-              accent: ThemeTokens.BRAND, onClose: (): void => this.closeTrial(),
+              accent: ThemeTokens.BRAND,
+              onClose: (context: ReaderCloseContext | null): void => this.closeTrial(false, context),
               onObserved: (anchor: ReaderReadingAnchor): void => this.observeReaderPosition(anchor),
               onInteractionBusy: (busy: boolean): void => { this.setEnhancementInteractionBusy(busy) },
               onChromeVisible: (visible: boolean): void => this.syncChromeVisible(visible) })

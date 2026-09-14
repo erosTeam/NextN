@@ -3,6 +3,44 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { test } from 'node:test'
 import vm from 'node:vm'
+
+const require = createRequire(import.meta.url)
+const ts = require('/Applications/DevEco-Studio.app/Contents/tools/hvigor/hvigor/node_modules/typescript/lib/typescript.js')
+const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
+
+function compile(source, filename) {
+  const result = ts.transpileModule(source, { fileName: filename, reportDiagnostics: true,
+    compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS } })
+  const errors = result.diagnostics.filter(value => value.category === ts.DiagnosticCategory.Error)
+  if (errors.length) throw new Error(ts.formatDiagnosticsWithColorAndContext(errors, {
+    getCanonicalFileName: value => value, getCurrentDirectory: () => '', getNewLine: () => '\n',
+  }))
+  return result.outputText
+}
+
+function section(source, start, end) {
+  const first = source.indexOf(start)
+  const last = source.indexOf(end, first + start.length)
+  if (first < 0 || last < 0) throw new Error(`Cannot load source section: ${start}`)
+  return source.slice(first, last)
+}
+
+// Resolve every fixture before node:test starts executing callbacks. The previous
+// declaration order let early tests observe rectCode in its temporal dead zone.
+const index = read('../entry/src/main/ets/pages/Index.ets')
+const hostSource = section(index, 'struct Index {', '\n  @Builder')
+  .replace('struct Index {', 'export class Index {') +
+  section(index, "  @Monitor('readerLabLaunch.version')", '\n  private stack:') +
+  section(index, '  aboutToDisappear(): void {', "  @Monitor('homeTab.autoHide')") + '\n}'
+const hostCode = compile(hostSource.replace(/@Local\s+/g, '').replace(/@Monitor\([^\n]*\)\s*/g, ''), 'Index.ets')
+const claimCode = compile('export ' + section(index, 'class ReaderEntryClaim {', '/** Pending feedback'), 'Index.ets')
+const relayCode = compile(read('../shared/src/main/ets/navigation/ReaderTrialEntryRelay.ets'), 'ReaderTrialEntryRelay.ets')
+const rectCode = compile(section(read('../third_party/reader-kit/reader-ui/src/main/ets/ReaderEntryTransition.ets'),
+  'export class ReaderEntryRect {', 'export class ReaderEntryTarget {'), 'ReaderEntryTransition.ets')
+const captureSource = read('../entry/src/main/ets/pages/NextNReaderEntryPreviewCapture.ets')
+const captureCode = compile(captureSource.slice(captureSource.indexOf('export class NextNReaderEntryPreviewCapture')),
+  'NextNReaderEntryPreviewCapture.ets')
+
 const drainClose = () => new Promise(resolve => setImmediate(resolve))
 function chromeHost() {
   const v = setup({ deferRestore: true })
@@ -127,43 +165,6 @@ test('failed and not-required restoration never report layout readiness', async 
   }
 })
 
-const require = createRequire(import.meta.url)
-const ts = require('/Applications/DevEco-Studio.app/Contents/tools/hvigor/hvigor/node_modules/typescript/lib/typescript.js')
-const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
-
-function compile(source, filename) {
-  const result = ts.transpileModule(source, { fileName: filename, reportDiagnostics: true,
-    compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS } })
-  const errors = result.diagnostics.filter(value => value.category === ts.DiagnosticCategory.Error)
-  if (errors.length) throw new Error(ts.formatDiagnosticsWithColorAndContext(errors, {
-    getCanonicalFileName: value => value, getCurrentDirectory: () => '', getNewLine: () => '\n',
-  }))
-  return result.outputText
-}
-
-function section(source, start, end) {
-  const first = source.indexOf(start)
-  const last = source.indexOf(end, first + start.length)
-  if (first < 0 || last < 0) throw new Error(`Cannot load source section: ${start}`)
-  return source.slice(first, last)
-}
-
-// Load contiguous real host methods, including its actual install handler. Omit only the
-// unrelated ArkUI builders/rest of Index; no method body is copied or rewritten here.
-const index = read('../entry/src/main/ets/pages/Index.ets')
-const hostSource = section(index, 'struct Index {', '\n  @Builder')
-  .replace('struct Index {', 'export class Index {') +
-  section(index, "  @Monitor('readerLabLaunch.version')", '\n  private stack:') +
-  section(index, '  aboutToDisappear(): void {', "  @Monitor('homeTab.autoHide')") + '\n}'
-const hostCode = compile(hostSource.replace(/@Local\s+/g, '').replace(/@Monitor\([^\n]*\)\s*/g, ''), 'Index.ets')
-const claimCode = compile('export ' + section(index, 'class ReaderEntryClaim {', '/** Pending feedback'), 'Index.ets')
-const relayCode = compile(read('../shared/src/main/ets/navigation/ReaderTrialEntryRelay.ets'), 'ReaderTrialEntryRelay.ets')
-const rectCode = compile(section(read('../../reader-kit/reader-ui/src/main/ets/ReaderEntryTransition.ets'),
-  'export class ReaderEntryRect {', 'export class ReaderEntryTarget {'), 'ReaderEntryTransition.ets')
-const captureSource = read('../entry/src/main/ets/pages/NextNReaderEntryPreviewCapture.ets')
-const captureCode = compile(captureSource.slice(captureSource.indexOf('export class NextNReaderEntryPreviewCapture')),
-  'NextNReaderEntryPreviewCapture.ets')
-
 function moduleExports(code, globals = {}, filename = 'runtime.ets') {
   const exports = {}
   vm.runInNewContext(code, { exports, ...globals }, { filename })
@@ -171,7 +172,7 @@ function moduleExports(code, globals = {}, filename = 'runtime.ets') {
 }
 
 function setup({ deferRestore = false, readiness = 'not-required', backend = 'legacy' } = {}) {
-  const layouts = [], logs = [], preparations = []
+  const layouts = [], logs = [], preparations = [], sharedReturnArms = []
   const shared = moduleExports(relayCode, {}, 'ReaderTrialEntryRelay.ets')
   const { ReaderEntryRect } = moduleExports(rectCode, {}, 'ReaderEntryTransition.ets')
   const { NextNReaderEntryPreviewCapture } = moduleExports(captureCode, {
@@ -239,6 +240,12 @@ function setup({ deferRestore = false, readiness = 'not-required', backend = 'le
     ReaderEntryTransition: class {},
     ReaderUnitKey: class {},
     NextNReaderBackend: { SHARED: 'shared', LEGACY: 'legacy' },
+    ReaderThumbnailTransitionCoordinator: class {
+      static armSharedReturn(_uiContext, source, image) {
+        sharedReturnArms.push({ source, image })
+        return true
+      }
+    },
     connectNextNReaderBackendSelection: () => ({ current: () => backend }),
     ReaderTrialLayoutCommit: { wait(context, measure, current) {
       return new Promise(resolve => layouts.push({ measure, current, resolve }))
@@ -280,7 +287,7 @@ function setup({ deferRestore = false, readiness = 'not-required', backend = 'le
     return request
   }
   return { host, source, arm, restores, layouts, logs, overlayOpens, overlaySeeds,
-    overlayPresentations,
+    overlayPresentations, sharedReturnArms,
     relay: shared.ReaderTrialEntryRelay, ReaderEntryClaim, ReaderEntryRect,
     measurements: () => measurements, windowOpens: () => windowOpens, windowCloses: () => windowCloses }
 }
@@ -297,6 +304,9 @@ test('production measurement failure opens shared reader without a fabricated tr
   assert.equal(value.measurements(), 1)
   assert.equal(value.overlayOpens.length, 1)
   assert.equal(value.overlaySeeds.length, 1)
+  assert.equal(value.sharedReturnArms.length, 1)
+  assert.equal(value.sharedReturnArms[0].source, value.source)
+  assert.equal(value.sharedReturnArms[0].image, detail.pages[2])
   assert.equal(value.overlayOpens[0].galleryId, 678049)
   assert.equal(value.overlayOpens[0].initialPageIndex, 2)
   assert.equal(value.overlayOpens[0].backend, 'shared')

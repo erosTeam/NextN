@@ -9,6 +9,7 @@ import {
 } from '../state/ReaderThumbnailTransitionState'
 import { connectLayoutSafeArea } from '../state/LayoutSafeAreaState'
 import { ThemeTokens } from '../theme/ThemeTokens'
+import { ReaderTrialEntrySource } from './ReaderTrialEntryRelay'
 
 const READER_OPEN_CONTENT_HANDOFF_FRACTION: number = 0.22
 const READER_CLOSE_TARGET_HANDOFF_START: number = 0.55
@@ -301,6 +302,34 @@ export class ReaderThumbnailTransitionCoordinator {
     }
   }
 
+  /** Arms only a future return flight; ReaderEntryTransition remains the forward-flight owner. */
+  static armSharedReturn(
+    uiContext: UIContext,
+    source: ReaderTrialEntrySource,
+    image: NhGalleryPage,
+  ): boolean {
+    const transition = connectReaderThumbnailTransition()
+    transition.reset()
+    const sourceScope = source.sourceScope()
+    if (!connectGalleryDetailTransitionSettings().readerThumbnailEnabled || sourceScope.length === 0 ||
+      !source.isCurrent() || !ReaderThumbnailTransitionCoordinator.componentAvailable(uiContext, source.sourceComponentId)) {
+      return false
+    }
+    try {
+      const rootRect = uiContext.getComponentUtils().getRectangleById('nextn-root-navigation')
+      const rootWidth = uiContext.px2vp(rootRect.size.width)
+      const rootHeight = uiContext.px2vp(rootRect.size.height)
+      if (rootWidth <= 0 || rootHeight <= 0) return false
+      transition.armReturn(sourceScope, source.sourceComponentId, source.galleryId.toString(),
+        source.pageIndex, image, rootWidth, rootHeight)
+      transition.markPresentationSettled(source.galleryId.toString())
+      return true
+    } catch (_error) {
+      transition.reset()
+      return false
+    }
+  }
+
   static startOpening(uiContext: UIContext, galleryId: string): void {
     const transition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
     if (transition.waitingReader() && transition.galleryId !== galleryId) {
@@ -489,6 +518,7 @@ export class ReaderThumbnailTransitionCoordinator {
       targetY = uiContext.px2vp(targetRect.windowOffset.y - rootRect.windowOffset.y)
       targetWidth = uiContext.px2vp(targetRect.size.width)
       targetHeight = uiContext.px2vp(targetRect.size.height)
+      transition.updateRootSize(uiContext.px2vp(rootRect.size.width), uiContext.px2vp(rootRect.size.height))
       if (targetWidth <= 0 || targetHeight <= 0) {
         transition.reset()
         return false

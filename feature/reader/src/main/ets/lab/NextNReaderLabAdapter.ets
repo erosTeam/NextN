@@ -4,7 +4,7 @@ import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { systemShare } from '@kit.ShareKit'
 import { ReaderSystemSharePresentation, ReaderFileInformation } from '@reader-kit/ui'
 import {
-  NhApiClient, NhGalleryDetail, ReaderImageCacheLease, ReaderImageCacheService, ReaderPageCropService,
+  NhApiClient, NhGalleryDetail, NhGalleryPage, ReaderImageCacheLease, ReaderImageCacheService, ReaderPageCropService,
 } from 'shared'
 import {
   ReaderCatalog, ReaderAssetProvider, ReaderPreloadHost, ReaderUnitKey, ReaderUnit, ReaderPage,
@@ -59,6 +59,10 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
   /** Current unit metadata for the optional host progress adapter only. */
   progressDetail(work: string): NhGalleryDetail | null {
     return this.details.get(work) ?? null
+  }
+
+  transitionPage(work: string, sourceIndex: number): NhGalleryPage | null {
+    return this.details.get(work)?.pages[sourceIndex]?.copy() ?? null
   }
 
   async open(key: ReaderUnitKey, cancellation: ReaderCancellation): Promise<ReaderUnit> {

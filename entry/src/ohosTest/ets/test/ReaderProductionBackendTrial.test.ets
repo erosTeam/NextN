@@ -2375,7 +2375,7 @@ export default function readerProductionBackendTrialTest(): void {
 
   if (selectedClass === 'ReaderProductionThumbnailEntryTrial') {
     describe(selectedClass, (): void => {
-      it('opensExactCompactThumbnailThroughSharedBodyWithoutDebugFeatureLoss', 0, async (): Promise<void> => {
+      it('returnsTheObservedSharedPageToItsCurrentCompactThumbnail', 0, async (): Promise<void> => {
         const driver = Driver.create()
         let database: relationalStore.RdbStore | null = null
         let original: HistorySnapshot | null = null
@@ -2390,9 +2390,13 @@ export default function readerProductionBackendTrialTest(): void {
 
           await waitDetailRead(driver)
           expect(connectNextNReaderBackendSelection().current()).assertEqual(NextNReaderBackend.SHARED)
+          const previousTarget = await findDetailThumbnail(driver, 1)
+          const previousTargetId = await previousTarget.getId()
+          const previousTargetBefore = await previousTarget.getBounds()
+          const nextTarget = await findDetailThumbnail(driver, 3)
+          const nextTargetId = await nextTarget.getId()
+          const nextTargetBefore = await nextTarget.getBounds()
           const source = await findDetailThumbnail(driver, 2)
-          const sourceId = await source.getId()
-          const before = await source.getBounds()
           await capture(driver, 'thumbnail-source')
           await source.click()
           const initial = await waitSharedReady(driver)
@@ -2406,25 +2410,33 @@ export default function readerProductionBackendTrialTest(): void {
           }
           expect(await driver.findComponent(ON.id('rkit-entry-preview-image'))).assertNull()
           expect(await driver.findComponent(ON.id('rkit-entry-source-pending'))).assertNull()
-          await (await waitId(driver, 'rkit-runtime-settings')).click()
-          expect(await waitId(driver, 'rkit-crop-toggle') !== null).assertTrue()
           await capture(driver, 'thumbnail-shared')
-          await driver.pressBack()
+          const viewport = await waitId(driver, 'rkit-image-viewport')
+          const viewportBounds = await viewport.getBounds()
+          const y = Math.round((viewportBounds.top + viewportBounds.bottom) / 2)
+          await driver.swipe(
+            Math.round(viewportBounds.left + (viewportBounds.right - viewportBounds.left) * 0.82), y,
+            Math.round(viewportBounds.left + (viewportBounds.right - viewportBounds.left) * 0.18), y, 700)
+          const changed = await waitDifferentSharedPage(driver, 2)
+          expect(changed === 1 || changed === 3).assertTrue()
+          const returnTargetId = changed === 1 ? previousTargetId : nextTargetId
+          const returnTargetBefore = changed === 1 ? previousTargetBefore : nextTargetBefore
+          await capture(driver, 'thumbnail-changed')
           await closeAnyReader(driver)
           await waitDetailRead(driver)
-          const returned = await waitId(driver, sourceId)
+          const returned = await waitId(driver, returnTargetId)
           const after = await returned.getBounds()
-          expect(after.left).assertEqual(before.left)
-          expect(after.top).assertEqual(before.top)
-          expect(after.right).assertEqual(before.right)
-          expect(after.bottom).assertEqual(before.bottom)
+          expect(after.left).assertEqual(returnTargetBefore.left)
+          expect(after.top).assertEqual(returnTargetBefore.top)
+          expect(after.right).assertEqual(returnTargetBefore.right)
+          expect(after.bottom).assertEqual(returnTargetBefore.bottom)
           await capture(driver, 'thumbnail-closed')
 
           await restoreAndVerify(database, original)
           restored = true
           removeSnapshot()
-          console.info('[ReaderProductionBackendTrial] thumbnailShared=true clicked=2 persistedBefore=6 ' +
-            'cropAvailable=true sourceRestored=true debugTrialAbsent=true historyRestored=true')
+          console.info(`[ReaderProductionBackendTrial] thumbnailShared=true clicked=2 persistedBefore=6 ` +
+            `changed=${changed} currentTargetRestored=true debugTrialAbsent=true historyRestored=true`)
         } catch (error) {
           failed = true
           try { await capture(driver, 'thumbnail-exception') } catch (_) {}

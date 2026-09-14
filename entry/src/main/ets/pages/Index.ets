@@ -3,7 +3,7 @@ import { HomePage, HomeSubtabManagerPage, PopularPage } from 'home'
 import { NextNProductionReaderRequest, NextNReaderLabPage } from 'reader'
 import { ReaderLabLaunchState, ReaderLabRequest, connectReaderLabLaunch, ReaderTrialWindow } from '@reader-kit/ui'
 import { ReaderEntryTransition, ReaderEntryPreviewSource, ReaderEntryRect,
-  ReaderLabVisibilityState, connectReaderLabVisibility } from '@reader-kit/ui'
+  ReaderLabVisibilityState, connectReaderLabVisibility, ReaderCloseContext } from '@reader-kit/ui'
 import { ReaderDisplayPart, ReaderUnitKey } from '@reader-kit/core'
 import { ReaderTrialEntryRelay, ReaderTrialEntrySource, ReaderTrialEntryProbe } from 'shared'
 import {
@@ -757,6 +757,9 @@ struct Index {
       this.productionReaderEntryPendingGalleryId = 0
       this.productionReaderEntryPendingPageIndex = -1
     }
+    ReaderThumbnailTransitionCoordinator.armSharedReturn(
+      this.getUIContext(), source, detailSeed.pages[source.pageIndex],
+    )
     this.readerOverlay.stageDetailSeed(detailSeed)
     try {
       this.openReaderOverlay(new ReaderRouteParams(
@@ -2147,8 +2150,12 @@ struct Index {
     this.readerPresentationCanvasDark = true
   }
 
-  private prepareReaderDestinationClose(galleryId: number): Promise<boolean> {
+  private prepareReaderDestinationClose(galleryId: number, context: ReaderCloseContext | null = null,
+    image: NhGalleryPage | null = null): Promise<boolean> {
     const readerGalleryId: string = galleryId > 0 ? galleryId.toString() : ''
+    if (context !== null && image !== null && context.unit.work === readerGalleryId) {
+      this.readerThumbnailTransition.updateCurrent(readerGalleryId, context.part.sourceIndex, image)
+    }
     const requireVisibleStatusBarInset: boolean = this.readerPresentationPending &&
       this.readerPresentationFullscreen && !this.readerPresentationChromeVisible
     this.readerDestinationClosing = true
@@ -2167,6 +2174,19 @@ struct Index {
           requireVisibleStatusBarInset,
         )
       })
+  }
+
+  private finishSharedReaderDestinationClose(params: ReaderRouteParams, context: ReaderCloseContext | null,
+    image: NhGalleryPage | null, targetReady: boolean): void {
+    const galleryId = params.galleryId.toString()
+    if (targetReady && context !== null && image !== null && context.unit.scope === 'nh' &&
+      context.unit.work === galleryId && context.contentAspectRatio > 0 &&
+      ReaderThumbnailTransitionCoordinator.close(
+        this.getUIContext(), galleryId, context.part.sourceIndex, image, true,
+        context.captureComponentId, context.contentAspectRatio, 1,
+        (animated: boolean): void => this.finishReaderDestinationClose(animated),
+      )) return
+    this.finishReaderDestinationClose(true)
   }
 
   private finishReaderDestinationClose(animated: boolean): void {
@@ -3245,11 +3265,12 @@ struct Index {
         onRegisterBackRequest: (request: (() => boolean) | null): void => {
           this.readerBackRequest = request
         },
-        onPrepareClose: (): Promise<boolean> => {
-          return this.prepareReaderDestinationClose(params.galleryId)
+        onPrepareClose: (context: ReaderCloseContext | null, image: NhGalleryPage | null): Promise<boolean> => {
+          return this.prepareReaderDestinationClose(params.galleryId, context, image)
         },
-        onPreparedClose: (animated: boolean): void => {
-          this.finishReaderDestinationClose(animated)
+        onPreparedClose: (context: ReaderCloseContext | null, image: NhGalleryPage | null,
+          targetReady: boolean): void => {
+          this.finishSharedReaderDestinationClose(params, context, image, targetReady)
         },
       })
     }, (routeEpoch: number): string => `shared-reader-${routeEpoch}`)

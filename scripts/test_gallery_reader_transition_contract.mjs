@@ -170,10 +170,20 @@ ok('Reader fullscreen close waits for the retained target to settle without requ
     /waitForTargetLayoutCommit\(/.test(readerCoordinator) &&
     !/requireLayoutChange/.test(readerCoordinator) &&
     !/initialLayoutKey/.test(readerCoordinator) &&
-    /prepareReaderDestinationClose\(galleryId: number\)/.test(index) &&
+    /prepareReaderDestinationClose\(galleryId: number, context: ReaderCloseContext \| null = null/.test(index) &&
     /normalCloseReadyFor\(readerGalleryId\)/.test(index) &&
     /requireVisibleStatusBarInset/.test(index) &&
     !/requireTargetLayoutChange/.test(index))
+
+ok('Shared Reader arms a return-only target and closes from its observed reader-kit frame',
+  /armSharedReturn\(/.test(readerCoordinator) &&
+    /transition\.armReturn\(/.test(readerCoordinator) &&
+    /sourceScope\(\): string/.test(read('shared/src/main/ets/navigation/ReaderTrialEntryRelay.ets')) &&
+    /ReaderThumbnailTransitionCoordinator\.armSharedReturn/.test(index) &&
+    /finishSharedReaderDestinationClose/.test(index) &&
+    /context\.captureComponentId/.test(index) &&
+    /context\.contentAspectRatio/.test(index) &&
+    /readerThumbnailTransition\.updateCurrent/.test(index))
 
 const loadReaderBlock = reader.slice(reader.indexOf('private async loadReader()'), reader.indexOf('private visiblePageText'))
 const closeBlock = reader.slice(reader.indexOf('private requestReaderClose()'), reader.indexOf('private isCurrentRequest'))

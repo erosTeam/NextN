@@ -552,6 +552,38 @@ from the UI tree; 197 does not expose the API-26 layout-dump method, so its fina
 manifest correctly requires screenshots only. Both screen timeouts returned to
 10 seconds and both leases were released.
 
+The return-path owner map no longer asks a host to infer which page the shared
+Reader most recently painted. Reader-kit revisions `7e014a7` and `52c80b3`
+capture a close context only from an actually observed presented frame, expose
+its unit/part identity and capture component, and derive its display ratio from
+the same split/crop/rotation-aware calculation used by the viewport. The
+contract remains host-neutral: reader-kit does not import NH/EH models,
+thumbnail scopes, navigation, status-bar policy or target geometry.
+
+NextN now maps that context back to its own `NhGalleryPage`, preserves the
+existing `ReaderEntryTransition` as the forward-flight owner, and arms only a
+return target family for the optional shared route. Close restores the status
+area first, updates the current host page, waits for the live current-thumbnail
+layout, remeasures its current root-relative geometry, and uses the reader-kit
+capture and ratio for the return proxy. Legacy admission, the default backend,
+entry-time geometry, thumbnail radius and target ownership are unchanged.
+The focused host runtime passes 18/18; transition, core, backend, progress,
+data-source and preference contracts pass; signed main and test builds pass
+with SHA-256 `5d4c47f45e779213bb5afeed0ce4643c524ff703111a1189c9fe119ce4464ca7`
+and `4741fa5e60d2e60d28574bdb3b6029f75a47cd0f211ef5bb290436911965e620`.
+
+On 103, the normal Detail P3 compact thumbnail entered the optional shared
+Reader under the device's existing RTL direction, a physical swipe changed the
+observed page to P2, and close returned to the already retained P2 thumbnail.
+The before/after target bounds were identical and Hypium passed 1/1. The full
+source, changed-reader and closed-Detail captures were inspected; the closed
+host reports `Continue P2`. History and backend selection were restored, the
+screen timeout read back as 600000 ms with no override, and the lease was
+released. Evidence is under
+`.hvigor/outputs/shared-reader-close-context/nextn-103/current-page-return-3/`.
+This accepts the current-page return on the NextN tablet shape, not NextE or
+Koma adoption and not a production-default change.
+
 Package 3 remains ACTIVE. These runs close retained rail show/hide/reopen on an
 NH phone and EH-sprite tablet; they do not yet close every production
 Detail/all-thumbnails transition, Koma's chapter-scoped thumbnail invalidation,
@@ -560,12 +592,14 @@ remain legacy and reversible.
 
 ## Single next action
 
-Finish the current-source Package 3 entry/chrome/return owner map for NextE and
-Koma, beginning with NextE's production Detail/all-thumbnails transition and
-return path. Reuse the accepted rail lifecycle and responsive evidence; add no
-device replay unless source comparison finds an actual omission. Implement the
-first omission as a host-neutral reader-kit contract or host-owned adapter, then
-run one coherent consumer/build slice. Do not switch a production default.
+Port the accepted close-context boundary into NextE's optional shared host:
+retain NextE's sprite-crop thumbnail identity and transition coordinator, map
+the observed reader-kit frame back to its EH image, and return to a live current
+Detail/all-thumbnails target without changing the legacy/default reader. Reuse
+the accepted rail and tablet evidence; run one focused host contract and one
+matching signed build before deciding whether a new device replay is needed.
+Koma chapter-scoped thumbnail invalidation follows after the two gallery hosts
+share the same close contract.
 
 ## Package completion record
 
