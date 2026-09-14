@@ -7,7 +7,8 @@ import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, R
 import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility,
   ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction, ReaderMediaActions,
-  ReaderHostStatus, ReaderObservationSink, ReaderPreferenceSink, ReaderActivitySink } from '@reader-kit/ui'
+  ReaderHostStatus, ReaderObservationSink, ReaderPreferenceSink, ReaderActivitySink,
+  ReaderHostSettings } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
 import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea,
@@ -826,8 +827,8 @@ export struct NextNReaderLabPage {
               // Entry animation is optional; an incompatible cropped target cancels the flight.
               // Never remove a production reading feature merely because the source was a thumbnail.
               cropAvailable: this.request.productionSources === true || this.labRequest?.cropBorders === true,
-              hostSettingsAvailable: this.hostSettingsAvailable,
-              onHostSettings: (): void => { this.openHostSettings() },
+              hostSettings: this.hostSettingsAvailable
+                ? new ReaderHostSettings((): void => { this.openHostSettings() }) : null,
               externalOpenAvailable: this.request.productionSources === true,
               onExternalOpen: (source: ReaderUnitKey): void => { void this.openCurrentGalleryExternally(source) },
               hostActions: this.translationActions(),

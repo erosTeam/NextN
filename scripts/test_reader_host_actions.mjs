@@ -9,8 +9,8 @@ const page = fs.readFileSync(path.join(root,
 const shell = fs.readFileSync(path.join(root, 'entry/src/main/ets/pages/Index.ets'), 'utf8')
 
 assert.match(shell, /NextNReaderLabPage\(\{[\s\S]*hostSettingsAvailable: true,[\s\S]*settingsSheetContent:[\s\S]*this\.ReaderSettingsSheet\(dismiss\)/)
-assert.match(page, /hostSettingsAvailable: this\.hostSettingsAvailable/)
-assert.match(page, /onHostSettings: \(\): void => \{ this\.openHostSettings\(\) \}/)
+assert.match(page, /hostSettings: this\.hostSettingsAvailable[\s\S]*new ReaderHostSettings/)
+assert.match(page, /this\.openHostSettings\(\)/)
 assert.match(page, /active: this\.hostRouteActive\(\) && this\.labVisibility\.foreground && !this\.readerSettingsSheetShown/)
 assert.match(page, /\.bindSheet\([\s\S]*\$\$this\.readerSettingsSheetShown[\s\S]*this\.settingsSheetContent/)
 
