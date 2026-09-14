@@ -8,7 +8,7 @@ import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility,
   ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction, ReaderMediaActions,
   ReaderHostStatus, ReaderObservationSink, ReaderPreferenceSink, ReaderActivitySink,
-  ReaderHostSettings, ReaderExternalOpen, ReaderHostActions } from '@reader-kit/ui'
+  ReaderHostSettings, ReaderExternalOpen, ReaderHostActions, ReaderVariantPolicy } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
 import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea,
@@ -813,15 +813,14 @@ export struct NextNReaderLabPage {
               autoReadAvailable: true, autoReadSeconds: this.readerPresentation.autoPageSeconds,
               pageTurnAnimation: this.labRequest?.pageTurnAnimationOverride ?? this.readerPresentation.pageTurnAnimation,
               preloadDepth: this.readerPresentation.preloadPages,
-              preferredVariant: this.presentationReady && this.readerPresentation.superResolutionEnabled ? 'enhanced' : 'default',
-              preferredVariantIdentity: this.superResolutionIdentity(),
-              variantPreferenceResolver: (sourceIndex: number): ReaderVariantPreference =>
-                this.variantPreference(sourceIndex),
-              variantPreferenceRevision: this.translationPreferenceRevision,
-              onVariantSelection: (sourceIndex: number, preference: ReaderVariantPreference,
-                result: 'changed' | 'unchanged' | 'unavailable' | 'stale'): void => {
-                this.handleVariantSelection(sourceIndex, preference, result)
-              },
+              variantPolicy: new ReaderVariantPolicy(new ReaderVariantPreference(
+                this.presentationReady && this.readerPresentation.superResolutionEnabled ? 'enhanced' : 'default',
+                this.superResolutionIdentity()), this.translationPreferenceRevision,
+                (sourceIndex: number): ReaderVariantPreference => this.variantPreference(sourceIndex),
+                (sourceIndex: number, preference: ReaderVariantPreference,
+                  result: 'changed' | 'unchanged' | 'unavailable' | 'stale'): void => {
+                  this.handleVariantSelection(sourceIndex, preference, result)
+                }),
               showPageNumber: this.readerPresentation.showPageNumber,
               cropBorders: this.initialCropBorders(),
               // Entry animation is optional; an incompatible cropped target cancels the flight.
