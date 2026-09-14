@@ -5,8 +5,11 @@ import { relationalStore } from '@kit.ArkData'
 import { fileIo } from '@kit.CoreFileKit'
 import { KeyCode } from '@kit.InputKit'
 import {
+  AppStrings,
+  connectNextNReaderBackendSelection,
   connectReaderPresentation,
   DownloadQueueService,
+  NextNReaderBackend,
   NhDownloadTask,
   NhReaderMode,
   NhReaderSpreadLayout,
@@ -68,6 +71,13 @@ async function startLegacyBackend(): Promise<void> {
     bundleName: 'com.erosteam.nextn',
     abilityName: 'EntryAbility',
     parameters: { nextn_reader_backend: 'legacy' },
+  })
+}
+
+async function startNormalHost(): Promise<void> {
+  await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
+    bundleName: 'com.erosteam.nextn',
+    abilityName: 'EntryAbility',
   })
 }
 
@@ -182,6 +192,43 @@ async function findDownloadEntry(driver: Driver, galleryId: number): Promise<Com
   throw new Error(`Complete download row unavailable: ${galleryId}`)
 }
 
+async function waitText(driver: Driver, key: string, attempts: number = 80): Promise<Component> {
+  const selector = ON.text(AppStrings.get(key))
+  for (let attempt: number = 0; attempt < attempts; attempt += 1) {
+    const direct = await driver.findComponent(selector)
+    if (direct !== null) return direct
+    const lists: Component[] = await driver.findComponents(ON.type('List'))
+    for (const list of lists) {
+      const found = await list.scrollSearch(selector, true)
+      if (found !== null) return found
+    }
+    await driver.delayMs(150)
+  }
+  throw new Error(`Production backend text unavailable: ${key}`)
+}
+
+async function openBackendRehearsal(driver: Driver): Promise<void> {
+  await (await waitId(driver, 'nextn-root-tab-3')).click()
+  await (await waitText(driver, 'settings_reader')).click()
+  await waitId(driver, 'nextn-reader-backend-rehearsal-row')
+}
+
+async function selectBackendFromUi(driver: Driver, backend: NextNReaderBackend): Promise<void> {
+  await (await waitId(driver, 'nextn-reader-backend-rehearsal-row')).click()
+  const key: string = backend === NextNReaderBackend.SHARED
+    ? 'settings_reader_backend_shared'
+    : 'settings_reader_backend_legacy'
+  await (await waitText(driver, key)).click()
+  for (let attempt: number = 0; attempt < 80; attempt += 1) {
+    if (connectNextNReaderBackendSelection().current() === backend) {
+      await waitText(driver, key)
+      return
+    }
+    await driver.delayMs(100)
+  }
+  throw new Error(`In-app Reader backend selection did not become ${backend}`)
+}
+
 function pageTotal(text: string): number {
   const match = /^\s*([1-9][0-9]*)\s*\/\s*([1-9][0-9]*)\s*$/.exec(text)
   if (match === null) throw new Error(`Unexpected shared page label: ${text}`)
@@ -224,6 +271,37 @@ async function closeSharedReader(driver: Driver): Promise<void> {
     await driver.delayMs(250)
   }
   throw new Error('Shared Reader did not return to Downloads')
+}
+
+async function exerciseSharedTouch(driver: Driver): Promise<void> {
+  const surface: Component = await waitId(driver, 'rkit-reading-surface')
+  const bounds = await surface.getBounds()
+  await driver.click(Math.round((bounds.left + bounds.right) / 2), Math.round((bounds.top + bounds.bottom) / 2))
+  await driver.delayMs(400)
+  expect(await driver.findComponent(ON.id('rkit-reading-surface')) !== null).assertTrue()
+}
+
+async function waitLegacyReady(driver: Driver): Promise<Component> {
+  for (let attempt: number = 0; attempt < 120; attempt += 1) {
+    const legacy = await driver.findComponent(ON.id('legacy-reader-surface'))
+    if (legacy !== null && await driver.findComponent(ON.id('rkit-reading-surface')) === null) return legacy
+    await driver.delayMs(250)
+  }
+  throw new Error('Legacy Reader did not open from the normal completed-download entry')
+}
+
+async function exerciseLegacyTouchAndClose(driver: Driver): Promise<void> {
+  const legacy: Component = await waitLegacyReady(driver)
+  const bounds = await legacy.getBounds()
+  await driver.click(Math.round((bounds.left + bounds.right) / 2), Math.round((bounds.top + bounds.bottom) / 2))
+  await driver.delayMs(500)
+  expect(await driver.findComponent(ON.id('legacy-reader-surface')) !== null).assertTrue()
+  await driver.pressBack()
+  for (let attempt: number = 0; attempt < 80; attempt += 1) {
+    if (await driver.findComponent(ON.id('reader-overlay-navigation')) === null) return
+    await driver.delayMs(250)
+  }
+  throw new Error('Legacy Reader did not return to Downloads')
 }
 
 async function shareCurrentPageAndCancel(driver: Driver, expectedTotal: number): Promise<void> {
@@ -358,6 +436,78 @@ async function capture(driver: Driver, name: string): Promise<void> {
 
 export default function readerProductionDownloadEntryTrialTest(): void {
   const selectedClass = abilityDelegatorRegistry.getArguments().parameters['-s class']
+  if (selectedClass === 'ReaderProductionInAppBackendRehearsalTrial') describe(selectedClass, (): void => {
+    it('selectsSharedAndRestoresLegacyThroughNormalInAppEntries', 0, async (): Promise<void> => {
+      const driver = Driver.create()
+      let database: relationalStore.RdbStore | null = null
+      let original: HistorySnapshot | null = null
+      let restored: boolean = false
+      let failed: boolean = false
+      try {
+        await startNormalHost()
+        const context: common.UIAbilityContext = await entryContext(driver)
+        expect(connectNextNReaderBackendSelection().current()).assertEqual(NextNReaderBackend.LEGACY)
+        await DownloadQueueService.restore(context)
+        const queueBefore: string = JSON.stringify(DownloadQueueService.snapshot())
+        const complete: NhDownloadTask[] = DownloadQueueService.snapshot()
+          .filter((task: NhDownloadTask): boolean => task.isComplete())
+          .sort((left: NhDownloadTask, right: NhDownloadTask): number => right.createdAt - left.createdAt)
+        if (complete.length === 0) throw new Error('A verified complete download is required')
+        const task: NhDownloadTask = complete[0]
+        database = await store(context)
+        original = await snapshotHistory(database, task.galleryId)
+        writeSnapshot(original)
+
+        await openBackendRehearsal(driver)
+        await waitText(driver, 'settings_reader_backend_legacy')
+        await capture(driver, 'in-app-backend-legacy-setting')
+        await selectBackendFromUi(driver, NextNReaderBackend.SHARED)
+        await capture(driver, 'in-app-backend-shared-setting')
+        await (await waitId(driver, 'nextn-root-tab-2')).click()
+        await (await findDownloadEntry(driver, task.galleryId)).click()
+        const total: number = await waitSharedReady(driver)
+        expect(total).assertEqual(task.pageCount)
+        await exerciseSharedTouch(driver)
+        await capture(driver, 'in-app-backend-shared-reader')
+        await closeSharedReader(driver)
+        await waitId(driver, 'nextn-download-queue-root')
+        await capture(driver, 'in-app-backend-shared-return')
+
+        await openBackendRehearsal(driver)
+        expect(connectNextNReaderBackendSelection().current()).assertEqual(NextNReaderBackend.SHARED)
+        await selectBackendFromUi(driver, NextNReaderBackend.LEGACY)
+        await capture(driver, 'in-app-backend-legacy-restored-setting')
+        await (await waitId(driver, 'nextn-root-tab-2')).click()
+        await (await findDownloadEntry(driver, task.galleryId)).click()
+        await waitLegacyReady(driver)
+        await capture(driver, 'in-app-backend-legacy-reader')
+        await exerciseLegacyTouchAndClose(driver)
+        await waitId(driver, 'nextn-download-queue-root')
+        expect(JSON.stringify(DownloadQueueService.snapshot())).assertEqual(queueBefore)
+        await restoreAndVerify(database, original)
+        restored = true
+        removeSnapshot()
+        await capture(driver, 'in-app-backend-legacy-return')
+        console.info(`[ReaderProductionInAppBackendRehearsalTrial] gallery=${task.galleryId} pages=${task.pageCount} ` +
+          'initial=legacy sharedSelectedInApp=true sharedTouch=true sharedReturned=true ' +
+          'legacySelectedInApp=true legacyTouch=true legacyReturned=true queueUnchanged=true historyRestored=true')
+      } catch (error) {
+        failed = true
+        try { await capture(driver, 'in-app-backend-exception') } catch (_) {}
+        throw error as Error
+      } finally {
+        try { await closeSharedReader(driver) } catch (error) { if (!failed) throw error as Error }
+        try {
+          if (await driver.findComponent(ON.id('legacy-reader-surface')) !== null) await driver.pressBack()
+        } catch (error) { if (!failed) throw error as Error }
+        if (!restored && database !== null && original !== null) {
+          await restoreAndVerify(database, original)
+          removeSnapshot()
+        }
+        await startLegacyBackend()
+      }
+    })
+  })
   if (selectedClass === 'ReaderProductionDownloadEntryTrial') describe(selectedClass, (): void => {
     it('opensCompleteDownloadThroughSharedProductionBodyAndReturns', 0, async (): Promise<void> => {
       const driver = Driver.create()
