@@ -1066,6 +1066,19 @@ effect, and the launch-free A/B/C run is what isolates the install. This accepts
 the NextN data-preservation boundary only; NextE and Koma upgrade/rollback and
 the tablet viewport remain open.
 
+NextE now has the same boundary. Its durable state is
+`/data/app/el2/100/base/com.erosteam.nexte/haps/entry/preferences/nexte_settings`
+plus `/data/app/el2/100/database/com.erosteam.nexte/entry/rdb/NextE.db`. Three
+consecutive `install -r` replacements with no app launch between reads
+(shared-branch build 67e3636de4c7 -> main build 3b398955c515 -> shared build)
+left both hashes unchanged at all three checkpoints: settings `ec0c18aa…` and RDB
+`f1e78cd3…`. After the final rollback the ordinary cold start reaches
+`com.erosteam.nexte` with all five root tabs and no Reader mounted, and the screen
+timeout was restored to 10000 ms. Evidence:
+`.hvigor/outputs/shared-reader-package5/20260915-nexte-upgrade-rollback/device197__ALN-AL80/not-applicable/portrait-1260x2720/{00-discover,01-abc,02-final-cold}/`.
+NextN and NextE therefore both accept the data-preservation boundary; Koma
+upgrade/rollback and the tablet viewport remain open.
+
 Next, verify optional normal-entry admission on 103's tablet viewport, including
 rotation, chapter/detail return, explicit Legacy fallback and cold-default
 retention, then reconcile the remaining three-host Package 5 entry matrix.
