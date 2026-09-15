@@ -1048,6 +1048,24 @@ on, while no chrome page label is mounted in either state. Evidence:
 The lease was released. This closes the named NextE false branch only; the
 broader per-host preference matrix and default replacement remain open.
 
+Package 5's remaining gate, "upgrade and rollback preserve settings/progress/
+data", now has device evidence for NextN. Durable state lives in
+`/data/app/el2/100/base/com.erosteam.nextn/haps/entry/preferences/nextn_settings`
+and `/data/app/el2/100/database/com.erosteam.nextn/entry/rdb/NextN.db`. Three
+consecutive `install -r` replacements with **no app launch between the reads**
+(shared-branch build 14035287b730 -> main build a0766a2baa96 -> shared build)
+left the settings hash `d000d9be…` and the RDB hash `f8fa29bc…` identical at all
+three checkpoints, so the install step itself does not touch user data in either
+direction. After the final rollback the ordinary cold start reaches
+`com.erosteam.nextn` with all four root tabs and no Reader mounted, and the screen
+timeout was restored to 10000 ms. Evidence:
+`.hvigor/outputs/shared-reader-package5/20260915-nextn-upgrade-rollback/device197__ALN-AL80/not-applicable/portrait-1260x2720/{10-baseline,11-overwrite,12-rollback,13-abc,14-final-cold}/`.
+An earlier readback in that sequence did show a changed RDB hash; that was a
+legitimate write from an app launch placed between the two reads, not an install
+effect, and the launch-free A/B/C run is what isolates the install. This accepts
+the NextN data-preservation boundary only; NextE and Koma upgrade/rollback and
+the tablet viewport remain open.
+
 Next, verify optional normal-entry admission on 103's tablet viewport, including
 rotation, chapter/detail return, explicit Legacy fallback and cold-default
 retention, then reconcile the remaining three-host Package 5 entry matrix.
