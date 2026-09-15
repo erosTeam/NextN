@@ -1092,6 +1092,12 @@ timeout was restored to 10000 ms. Evidence:
 All three hosts now accept the upgrade/rollback data-preservation boundary at the
 pinned revision; the tablet viewport remains the open dimension.
 
+The NextN shared-reader branch has been rebased onto main `ecaafec3`
+(border-crop strengths). All 75 commits apply cleanly; the one conflict in
+`docs/qa/nextn-active-acceptance.md` was resolved by keeping both the
+border-crop acceptance and the Koma progress/image-actions entry. HEAD is now
+`c032b851`. The signed Debug build passes with native library gate intact.
+
 Next, verify optional normal-entry admission on 103's tablet viewport, including
 rotation, chapter/detail return, explicit Legacy fallback and cold-default
 retention, then reconcile the remaining three-host Package 5 entry matrix.
