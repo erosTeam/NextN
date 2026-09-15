@@ -1079,6 +1079,19 @@ timeout was restored to 10000 ms. Evidence:
 NextN and NextE therefore both accept the data-preservation boundary; Koma
 upgrade/rollback and the tablet viewport remain open.
 
+Koma now accepts it too. Its durable state is file-based rather than RDB: the
+library store, reader sessions, reader progress JSON files in `.../haps/entry/files`
+and the `koma_reader_preferences_v1` preference. A/B/C with no app launch between
+reads (shared-branch build 14ff92f7 -> main build 028562a8 -> shared build again)
+left all four hashes identical at every checkpoint — library store
+`a997dba1…`, reader sessions `30bc14ed…`, reader progress `7e5382f0…`, reader
+preferences `860c930d…`. After the final rollback the ordinary cold start reaches
+the Koma shelf (`library-title-layout`) with no Reader mounted, and the screen
+timeout was restored to 10000 ms. Evidence:
+`.hermes-artifacts/20260915-upgrade-rollback/device197__ALN-AL80/not-applicable/portrait-1260x2720/{00-discover,01-abc,02-final-cold}/`.
+All three hosts now accept the upgrade/rollback data-preservation boundary at the
+pinned revision; the tablet viewport remains the open dimension.
+
 Next, verify optional normal-entry admission on 103's tablet viewport, including
 rotation, chapter/detail return, explicit Legacy fallback and cold-default
 retention, then reconcile the remaining three-host Package 5 entry matrix.
