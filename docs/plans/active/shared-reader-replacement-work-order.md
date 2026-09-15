@@ -1034,6 +1034,20 @@ NextE's reader suites pass 9/10, and its single failure
 fixed by `a7f94fa4` (18/18 after the fix). No reader-suite failure remains that
 is attributable to the shared replacement work itself.
 
+The page-number handoff left one named branch open: the earlier NextE 197 run
+only exercised the saved `showPageNumber = true` value. NextE `4d604503` adds
+`ReaderPageNumberToggleTrial`, which drives the existing canonical preference to
+false and then true through `ReadModeSettings.setShowPageNumber` and asserts the
+hidden-chrome passive page number follows while the visible chrome page count is
+preserved. On 197 it passes 1/1 (`offHidden=false onHidden=true
+chromeCountsPreserved=true`) and restores the original value. Independent
+node-level readback of the two hidden-chrome layouts agrees: the
+`rkit-persistent-page` node count is `0` with the preference off and `1` with it
+on, while no chrome page label is mounted in either state. Evidence:
+`.hvigor/outputs/shared-reader-package5/page-number-toggle/device197__ALN-AL80/not-applicable/portrait-1260x2720/{02-toggle,03-layouts}/`.
+The lease was released. This closes the named NextE false branch only; the
+broader per-host preference matrix and default replacement remain open.
+
 Next, verify optional normal-entry admission on 103's tablet viewport, including
 rotation, chapter/detail return, explicit Legacy fallback and cold-default
 retention, then reconcile the remaining three-host Package 5 entry matrix.
