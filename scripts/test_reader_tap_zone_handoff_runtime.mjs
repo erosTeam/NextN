@@ -31,6 +31,10 @@ function method(file, name = 'resolveTapZone') {
   return source.slice(start, end + 4).replace(`private ${name}`, name)
 }
 const n = compile(read('shared/src/main/ets/model/NhReaderTapZone.ets'))
+const tapRegions = compile(read('third_party/reader-kit/reader-ui/src/main/ets/ReaderTapZonePreviewRegion.ets'))
+const { ReaderTapPolicy } = compile(read('third_party/reader-kit/reader-ui/src/main/ets/ReaderTapPolicy.ets'), {
+  './ReaderTapZonePreviewRegion': tapRegions,
+})
 const e = compile(readNextE('shared/src/main/ets/utils/ReaderTapZoneResolver.ets'))
 const prefs = readKoma('entry/src/main/ets/model/ReaderPreferencesStore.ets')
 const parsed = ts.createSourceFile('prefs.ts', prefs, ts.ScriptTarget.Latest, true)
@@ -55,7 +59,7 @@ const cases = [
 let checks = 0
 for (const [name, file, globals, reference, presets] of cases) {
   const source = name === 'N' ? read(file) : name === 'E' ? readNextE(file) : readKoma(file)
-  if (name !== 'K') assert.match(source, /tapPolicy:\s*new ReaderTapPolicy\(/)
+  assert.match(source, /tapPolicy:\s*new ReaderTapPolicy\(/)
   const sourceMethod = (methodName = 'resolveTapZone') => {
     const start = source.indexOf(`  private ${methodName}(`)
     assert.ok(start >= 0, file)
@@ -81,10 +85,11 @@ for (const [name, file, globals, reference, presets] of cases) {
         state.tapZoneLayoutPaged = preset; state.tapZoneInvertPaged = invert
       }
       const before = JSON.stringify(state)
+      const policy = new ReaderTapPolicy((x, y, currentLayout) => host.resolveTapZone(x, y, currentLayout))
       for (const x of [0.1, 0.5, 0.9]) for (const y of [0.1, 0.5, 0.9]) {
         const normalized = name === 'K' ? kPrefs.normalizeReaderTapZonePreset(preset) : preset
         const expected = reference(normalized, invert, x * 1260, y * 2720, 1260, 2720)
-        assert.equal(host.resolveTapZone(x, y, layout), expected, `${name}/${layout}/${preset}/${invert}/${x}/${y}`)
+        assert.equal(policy.resolve(x, y, layout), expected, `${name}/${layout}/${preset}/${invert}/${x}/${y}`)
         checks++
       }
       assert.equal(JSON.stringify(state), before, 'resolver must not write settings or saved mode')

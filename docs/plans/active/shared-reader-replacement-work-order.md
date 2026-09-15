@@ -837,20 +837,35 @@ comparisons and now asserts both consumers use the grouped contract; matching
 signed builds pass with HAP SHA-256
 `67e3636de4c76d1cbd853d954b8595bb059b014319968ec7067467b179fff989`
 and `14035287b7305a46ef2c1a5afe976ca71dc69f0b97e5e348b7738679744be5fb`.
-This slice has no visible or gesture-semantic change and claims no new device
-acceptance.
+Koma `2af9c3db` now adopts the same grouped capability. The cross-host suite
+executes all 1404 resolver comparisons through the actual `ReaderTapPolicy`;
+Koma's preference bridge and matching signed build pass (HAP SHA-256
+`870fd78c6ec2012645a68ba90a88f60323b09270cb7870ae21ab054fb90815eb`).
+On 197, the current before/after candidates both open the same real 23-page
+chapter, reveal the L-shaped horizontally inverted preview, dismiss it without
+moving from `1 / 23`, and advance to `2 / 23` only on the following navigation
+tap. The inspected preview and dismissed screenshots are byte-identical;
+foreground, viewport and unchanged library/session hashes are verified.
+Evidence is retained in Koma's independent worktree under
+`.hermes-artifacts/20260915-tap-policy/device197__ALN-AL80/not-applicable/portrait-1260x2720/{03-replay,04-candidate}`.
+This accepts the zero-visible/gesture-difference Koma adoption, not normal-entry
+replacement or a change to production defaults.
 
 ## Single next action
 
-Use the existing Koma shared-reader device protocol to capture one current 197
-baseline for its tap-zone preview path, then adopt reader-kit `8112355` in the
-independent `codex/koma-reader-refactor` worktree by replacing the resolver,
-preview regions and preview revision scalar inputs with one `ReaderTapPolicy`.
-Run the focused cross-host suite and matching signed build, then repeat the same
-197 path and compare the baseline. The expected visible and gesture-semantic
-diff is zero. Do not remove the reader-kit scalar compatibility inputs until
-all supported consumers have migrated, and do not create one-field wrapper
-protocols for the remaining presentation scalars.
+Close Koma's remaining normal-entry gap in its independent
+`codex/koma-reader-refactor` worktree: add the same process-local Debug-only
+Shared/Legacy selection available in NextN/NextE, snapshot it at normal reader
+entry, and connect the selected shared destination to the existing Index-owned
+chapter preparation, progress and detail/return lifecycle. Current source still
+mounts `ReaderPage` unconditionally from `ReaderDestination`; a Debug Want into
+`ReaderLab` does not accept this normal-entry requirement. Verify the complete
+ordinary entry, interaction, return and explicit Legacy fallback on 197, with
+cold starts and Release retaining Legacy. Keep all source/provider/session
+ownership in the host and do not create one-field wrapper policies. The shared
+revision must also become a tracked, reproducible Koma dependency before the
+final Package 5 release-candidate matrix; the current sibling dependency does
+not meet that requirement.
 
 ## Package completion record
 
