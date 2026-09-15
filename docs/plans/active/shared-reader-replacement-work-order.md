@@ -1105,18 +1105,71 @@ ReaderProductionInAppDetailEntriesTrial passed Tests run: 1, Pass: 1
 TestFinished-ResultCode: 0, ~100 s). Evidence:
 .hvigor/outputs/trial-debug-v2/run-metadata.json.
 Capture artifacts (7 layout JSONs + 7 screen PNGs for in-app-detail-shared /
-in-app-detail-legacy x read/compact/grid + final) exist on device but were
-not retrieved for review. Hypium 1/1, screenshot review OPEN.
+in-app-detail-legacy x read/compact/grid + final) were retrieved on 2026-09-16
+to `.hvigor/outputs/trial-debug-v2/extracted_evidence/` and reviewed. Findings:
+
+- Both backends reached a real reader through the ordinary in-app Detail path.
+  Shared frames carry the shared surface (`rkit-reading-surface`,
+  `rkit-image-viewport`, `rkit-chrome-top/bottom`, `rkit-chrome-page`); Legacy
+  frames carry `legacy-reader-surface` and no shared component. The two
+  backends never rendered the other's surface, so the backend switch is
+  effective at the ordinary entry.
+- Resumed position agrees across backends and entries: read 2/14, compact 1/14,
+  grid 2/14 in both; the final frame is the restored Home root, not a reader.
+- `legacy-read.png` and `legacy-grid.png` are byte-identical (sha256
+  `36fed337…`). This is consistent with both Legacy entries landing on the same
+  page 2 of the same source, not with a missing entry: the Legacy layout dumps
+  for those two captures are different documents (different component counts
+  and ids), and each was produced after its own distinct control was clicked.
+- Window geometry differs by backend and is the one open visual question:
+  Shared frames report `nextn-reader-entry-host`/`rkit-reading-surface` at
+  `[0,124][1260,2720]` with the system status bar visible, while Legacy frames
+  report `[0,0][1260,2720]` with no status bar. Both capture sets were taken
+  with the reader chrome raised. Whether the Shared ordinary entry is expected
+  to keep the status bar visible while Legacy hides it is unresolved; it is
+  recorded here as an open boundary rather than called a defect.
+
+Hypium 1/1, screenshot review DONE, ordinary-entry status-bar geometry OPEN.
 An earlier run reported App died with a ReaderPageCropStrength SyntaxError;
 the root cause of that failure has not been established. The passing run
 supersedes it as the current candidate phone-path trial evidence.
 
 Next Package 5 boundaries:
-- 103 tablet normal-entry admission remains OPEN (device connectivity unknown).
+- 103 tablet normal-entry admission remains OPEN. 103 and 197 were both
+  confirmed `Connected` by an outside-sandbox `hdc list targets -v` readback on
+  2026-09-16, so the earlier "device connectivity unknown" note is stale; the
+  open dimension is the tablet ordinary-entry acceptance itself, not the link.
+  237 remains untouched.
 - The A/B/C file-hash experiments prove only that install -r preserves
   checked durable files between builds; runtime continuity (read, upgrade,
   reopen same page, rollback, reopen same page) remains OPEN for all
   three hosts.
+- NextN runtime continuity is now DONE on 197 with a real version ordering.
+  `entry/src/ohosTest/ets/test/ReaderRuntimeContinuity.test.ets` (registered in
+  `List.test.ets`) drives the ordinary in-app Detail entry, reads the host's own
+  `reading_history` row and persisted settings, and re-derives its expectation
+  from a cache record instead of hardcoding it.
+  Sequence actually executed: write phase on the candidate build ->
+  `install -r` of committed main `ecaafec3` (a different, older revision) ->
+  cold start on that revision -> `install -r` of the candidate again ->
+  cold start -> verify phase. So continuity was not credited to reselecting
+  Shared inside one unchanged package.
+  Result (`.hvigor/outputs/continuity-verify-v7/run-metadata.json`):
+  `Tests run: 1, Failure: 0, Error: 0, Pass: 1`, with the trial reporting
+  `resumed=3 expected=3 legacyFallback=3 media=4156592 settingsRows=16
+  coldStart=legacy`. Asserted facts: cold start is Legacy; `reading_history`
+  keeps the same `media_id` 4156592, title, 14-page count, `last_read_index` 3
+  and `has_read_progress` 1; the persisted reader mode is unchanged; the
+  ordinary entry resumes page 4/14 on Shared; the Legacy fallback through the
+  same ordinary entry also shows 4/14; and the run ends back on Legacy.
+  The cache record survived both `install -r` replacements, and the two cold
+  starts after each replacement landed on the root interface with no reader
+  mounted. Screenshots reviewed for `verify-legacy-3`, `verify-shared-3` and
+  `verify-chrome-3`.
+  Boundary: this covers the NextN phone path on 197 only. Equivalent upgrade /
+  rollback runtime continuity remains OPEN for NextE and Koma, and the 103
+  tablet ordinary-entry path is still unverified. The three drafts under
+  `docs/plans/active/` remain superseded and unintegrated.
 - Production defaults remain Legacy. Phone-path evidence does not establish
   tablet ordinary admission.
 

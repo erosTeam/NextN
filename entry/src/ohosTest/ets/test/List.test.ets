@@ -32,6 +32,7 @@ import readerProductionDownloadSourceTrialTest from './ReaderProductionDownloadS
 import readerProductionDownloadEntryTrialTest from './ReaderProductionDownloadEntryTrial.test'
 import readerProductionPartialDownloadFallbackTrialTest from './ReaderProductionPartialDownloadFallbackTrial.test'
 import readerSharedSuperResolutionTest from './ReaderSharedSuperResolution.test'
+import readerRuntimeContinuityTest from './ReaderRuntimeContinuity.test'
 
 export default function testsuite(): void {
   gallerySplitTransitionTest()
@@ -68,4 +69,5 @@ export default function testsuite(): void {
   readerProductionDownloadEntryTrialTest()
   readerProductionPartialDownloadFallbackTrialTest()
   readerSharedSuperResolutionTest()
+  readerRuntimeContinuityTest()
 }
