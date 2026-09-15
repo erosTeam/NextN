@@ -133,7 +133,10 @@ const pageSource = fs.readFileSync(
   path.join(root, 'feature/reader/src/main/ets/lab/NextNReaderLabPage.ets'),
   'utf8',
 )
-assert.match(pageSource, /new ReaderPagedSession\(catalog,[\s\S]*?\), adapter\)/)
+// The shared session still receives the catalog and the host adapter. The asset
+// provider is hoisted to a local binding, so match the argument roles rather than
+// the previous inline nesting.
+assert.match(pageSource, /new ReaderPagedSession\(catalog,[\s\S]*?,\s*adapter\)/)
 assert.match(pageSource, /preloadDepth: this\.readerPresentation\.preloadPages/)
 
 console.log('PASS production Reader data source, local-page precedence and shared preload wiring')

@@ -954,6 +954,24 @@ preference bridge reports its settings/policy/crop/page-gap/preload mapping wire
 These are logic-level contract results, not device acceptance, and they do not
 replace the per-app device matrix.
 
+Running the wider NextN reader/shared host suites surfaced three distinct
+conditions. Only one was touched, and it was a stale assertion rather than a
+reader regression: `test_reader_data_source_runtime.mjs` pinned the previous
+*inline* `new ReaderPagedSession(catalog, <inline provider>, adapter)` shape, but
+`528cb80f` had hoisted the asset provider into a local binding, so the regex
+matched on neither branch of the truth and the suite failed only on this branch.
+The assertion now checks the argument roles (`catalog` first, `adapter` last)
+while keeping the `preloadDepth` check, and the suite passes. The other two are
+not reader defects and were deliberately left alone: `test_gallery_reader_transition_contract.mjs`
+asserts a `transitionState.sourceComponentId === this.sourceComponentId` line that
+`GalleryDetailTransitionSourceSlot.ets` has not contained since the common
+ancestor, so it fails on `main` as well; and `test_koma_reader_initial_policy_runtime.mjs`
+plus `test_nexte_reader_restore_result_runtime.mjs` hard-code `../../Koma` /
+`../../NextE` sibling paths and compile methods whose cross-repo sources have
+since evolved, so they fail in the shared checkout too. None of the three proves
+degradation in the shared reader; a suite that fails identically on `main` cannot
+be used as branch-specific regression evidence.
+
 Next, verify optional normal-entry admission on 103's tablet viewport, including
 rotation, chapter/detail return, explicit Legacy fallback and cold-default
 retention, then reconcile the remaining three-host Package 5 entry matrix.
