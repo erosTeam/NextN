@@ -981,6 +981,21 @@ introduced by this branch's own production-entry work. NextE `a7f94fa4` mirrors
 `holdPending`/`installProduction`/`clearProduction` in the stub; the suite then
 passes 18/18. No product source was changed.
 
+One architecture-record gap now has evidence instead of only an implementation.
+Section 6.1 requires the NextN adapter to prove cancellation and retry
+de-duplication rather than merely attaching to the shared surface. NextN
+`2d16e7e1` adds `test_reader_image_cache_flight_runtime.cjs`, which pins four
+observable behaviours against the real `ReaderImageCacheService`: a second plain
+load joins the existing flight for one cache key without a duplicate GET; a user
+Retry waits for the current `.part` stream and then issues exactly one fresh GET
+while keeping the stable family path; a settled failure leaves no flight behind
+so the next attempt starts cleanly; and a later ordinary load reuses the stored
+file without another request. All four pass. A one-off negative control that made
+a force reload ignore the running flight failed the suite 3/1 immediately and was
+reverted, so the test does detect that regression. This is logic-level evidence
+for the cache-flight contract, not device acceptance, and the transport-cancel
+boundary remains consumer-only.
+
 Next, verify optional normal-entry admission on 103's tablet viewport, including
 rotation, chapter/detail return, explicit Legacy fallback and cold-default
 retention, then reconcile the remaining three-host Package 5 entry matrix.
