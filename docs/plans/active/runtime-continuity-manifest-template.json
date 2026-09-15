@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "name": "runtime-continuity-197",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/runtime-continuity-197",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "codex/shared-reader-refactor 57ce3a72 reader-kit 8112355",
+    "page": "runtime continuity upgrade/rollback verification",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Three-phase test. Replace CANDIDATE_HAP, TEST_HAP, and TRIAL_CLASS per phase."
+  },
+  "measurement": { "actions": [] },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"] },
+    { "name": "timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"] },
+    { "name": "install-candidate", "hdcArgs": ["install", "-r", "{{CANDIDATE_HAP}}"], "timeoutSeconds": 180 },
+    { "name": "install-test", "hdcArgs": ["install", "-r", "{{TEST_HAP}}"], "timeoutSeconds": 180 },
+    { "name": "clear-log", "hdcArgs": ["shell", "hilog", "-r"] },
+    { "name": "force-stop", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] },
+    { "name": "cold-open", "hdcArgs": ["shell", "aa", "start", "-a", "EntryAbility", "-b", "com.erosteam.nextn"] },
+    { "name": "wait", "hdcArgs": ["shell", "sleep", "3"] },
+    { "name": "run-phase", "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test", "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "{{TRIAL_CLASS}}", "-s", "timeout", "150000"], "timeoutSeconds": 180 }
+  ],
+  "postflight": [
+    { "name": "log", "hdcArgs": ["shell", "hilog -x | grep -E 'Tests run|Failure|Error|Pass|continuity' | tail -100"], "timeoutSeconds": 20 },
+    { "name": "restore", "hdcArgs": ["shell", "power-shell", "timeout", "-r"] },
+    { "name": "stop", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"] }
+  ]
+}
