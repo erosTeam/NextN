@@ -1179,9 +1179,23 @@ Next Package 5 boundaries:
   `gid=4175844 resumed=3 expected=3 coldStart=legacy reset=legacy`. Both cold
   starts landed on the root interface with no reader mounted, the record
   survived both replacements, and the resumed frame shows 4/46.
-  Boundary: the NextE phone path on 197 only; the 103 tablet ordinary-entry
-  path and Koma's equivalent remain OPEN. The three drafts under
-  `docs/plans/active/` remain superseded and unintegrated.
+- Koma runtime continuity remains OPEN, and the next attempt starts from these
+  checked facts rather than re-discovery:
+  - Koma persists reader state through a file adapter, not RDB:
+    `entry/src/main/ets/model/ReaderSessionStore.ets` writes
+    `filesDir/reader-sessions.v1.json` (schema `reader-sessions.v1`).
+    `ReadingProgressStore` itself is still an in-memory interface with no
+    persistence bridge of its own, so the session store is the durable owner.
+  - Koma has no `ohosTest` module, so the NextN/NextE Hypium trial form does not
+    transfer. Its own acceptance form is the manifest-driven shell smoke set
+    under `scripts/run_*_reader_smoke.sh` plus a project manifest.
+  - On 197 the installed Koma is in a clean state: no source packages, no
+    `files/hiappevent`-only files dir, no `reader-sessions.v1.json`, and an
+    empty database directory. A continuity run must therefore first create a
+    real reading state; it cannot rely on pre-existing content.
+  103 tablet ordinary-entry and Koma continuity therefore remain the two open
+  Package 5 dimensions. The three drafts under `docs/plans/active/` remain
+  superseded and unintegrated.
 - Production defaults remain Legacy. Phone-path evidence does not establish
   tablet ordinary admission.
 
