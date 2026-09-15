@@ -1172,7 +1172,18 @@ Next Package 5 boundaries:
   `last_read_index` 3 and `has_read_progress` 1; the persisted reader mode and
   settings row count are unchanged; the ordinary entry resumes 4/14 on Shared;
   the same entry on Legacy also shows 4/14; the cache record survived both
-  replacements. Not verified: any resume inside the main revision.
+  replacements.
+  Main-revision resume check (completed 2026-09-16, NextN): with committed
+  main `ecaafec3` installed, gallery 678049 was opened through the documented
+  direct-route Want, and the Detail page's own Read action reported
+  `继续 P4` — the rollback revision itself resolving the durable page. Tapping
+  that real action produced `legacy-reader-surface` showing `4 / 14`, and the
+  screenshot matches the same gallery content. Evidence:
+  `.hvigor/outputs/main-resume-v1/{detail-layout-before.json,reader-layout.json,reader-screen.png}`
+  and `.hvigor/outputs/main-resume-probe-v1/detail-layout.json`. So the NextN
+  rollback revision does resume the same content at the same page through the
+  ordinary entry. Still not verified for NextN: exiting the main-revision
+  reader and re-reading the durable row written from that revision.
 - NextE replacement-then-restore acceptance on 197 (partial, phone path only).
   NextE `23e4c84f`, same trial file name under NextE's `ohosTest`. It opens the
   newest real History gallery through the ordinary Detail Read action, turns
@@ -1186,7 +1197,9 @@ Next Package 5 boundaries:
   durable page and column mode are unchanged, the ordinary entry resumes the
   same page, and the rehearsal selector returns to Legacy. Not verified: a real
   Legacy reading fallback (the trial only opens Shared, so `reset=legacy` shows
-  selector reset, not a Legacy read), and any resume inside the main revision.
+  selector reset, not a Legacy read), the NextE equivalent of the NextN
+  main-revision resume check above (only NextN has it so far), and the durable
+  row reread after exiting a reader in the main revision.
 - Koma runtime continuity remains OPEN. A previous note here claimed the 197
   install was "clean"; that was wrong and is withdrawn. Those probes only read
   `/data/app/el2/100/base/<bundle>/files`, `cache`, and `database`, which are not
