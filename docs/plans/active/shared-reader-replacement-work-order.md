@@ -925,10 +925,30 @@ Want-driven class is retained unchanged so both sources stay comparable.
 Evidence:
 `.hvigor/outputs/shared-reader-package5/in-app-thumbnail-entry/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-in-app-entry/`.
 
+Correction to the previous Koma note: Koma's accepted 197 ordinary-entry
+evidence was already produced against `8112355`, not an older revision. The
+reader-kit commit is dated 10:07 and the Koma candidate build logs are 11:46 and
+13:01, while that sibling checkout's reflog shows no move after 10:07, so the
+replay was never required. Writing it as an open gap was an error.
+
+What genuinely remained was that no device had run the **tracked-submodule**
+build itself. Koma `33887479` rebuilt through `third_party/reader-kit` produces
+signed Debug HAP
+`14ff92f7f129155b570d8a625e2fcdb54023f16dc36dc9d149b8fa8f72ef84ce`; installed in
+place on 197 it cold-opens the normal bookshelf (`com.honjow.koma`,
+`library-title-layout`), the existing in-app selector still offers Shared, and
+the ordinary Library resume mounts `rkit-reading-surface` (1) with
+`legacy-reader-surface` count 0 and page `6 / 35`, matching the prior baseline.
+The screen timeout was restored to 10000 ms, the app was force-stopped and the
+lease released. Evidence:
+`.hermes-artifacts/20260915-pinned-submodule-build/device197__ALN-AL80/not-applicable/portrait-1260x2720/{01-gate,02-relaunch-gate,03-shared-reader,04-cleanup}/`.
+This is source-plus-device evidence for the pinned Koma consumer, not a change
+to any production default.
+
 Next, verify optional normal-entry admission on 103's tablet viewport, including
 rotation, chapter/detail return, explicit Legacy fallback and cold-default
 retention, then reconcile the remaining three-host Package 5 entry matrix.
-Keep production defaults Legacy. The NextN and NextE phone results do not
+Keep production defaults Legacy. The NextN, NextE and Koma phone results do not
 establish tablet ordinary admission, every provider/history entry, or full
 replacement.
 
