@@ -1098,14 +1098,27 @@ The NextN shared-reader branch has been rebased onto main `ecaafec3`
 border-crop acceptance and the Koma progress/image-actions entry. HEAD is now
 `c032b851`. The signed Debug build passes with native library gate intact.
 
-Next, verify optional normal-entry admission on 103's tablet viewport, including
-rotation, chapter/detail return, explicit Legacy fallback and cold-default
-retention, then reconcile the remaining three-host Package 5 entry matrix.
-`192.168.50.103:12345` remains `Offline` on repeated live discovery and its
-lease-scoped `hdc tconn` recovery returns `Connect failed`, so no 103 install or
-UI action has been performed. Keep production defaults Legacy. The NextN, NextE
-and Koma phone results do not establish tablet ordinary admission, every
-provider/history entry, or full replacement.
+Post-rebase 197 trial verification (2026-09-15 22:20-22:22): clean-build
+HAP at 57ce3a72 / reader-kit 8112355 installed on 197.
+ReaderProductionInAppDetailEntriesTrial passed Tests run: 1, Pass: 1
+(usesInAppBackendForReadCompactAndFullGridThenRestoresLegacy,
+TestFinished-ResultCode: 0, ~100 s). Evidence:
+.hvigor/outputs/trial-debug-v2/run-metadata.json.
+Capture artifacts (7 layout JSONs + 7 screen PNGs for in-app-detail-shared /
+in-app-detail-legacy x read/compact/grid + final) exist on device but were
+not retrieved for review. Hypium 1/1, screenshot review OPEN.
+An earlier run reported App died with a ReaderPageCropStrength SyntaxError;
+the root cause of that failure has not been established. The passing run
+supersedes it as the current candidate phone-path trial evidence.
+
+Next Package 5 boundaries:
+- 103 tablet normal-entry admission remains OPEN (device connectivity unknown).
+- The A/B/C file-hash experiments prove only that install -r preserves
+  checked durable files between builds; runtime continuity (read, upgrade,
+  reopen same page, rollback, reopen same page) remains OPEN for all
+  three hosts.
+- Production defaults remain Legacy. Phone-path evidence does not establish
+  tablet ordinary admission.
 
 ## Package completion record
 
