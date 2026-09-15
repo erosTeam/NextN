@@ -996,6 +996,30 @@ reverted, so the test does detect that regression. This is logic-level evidence
 for the cache-flight contract, not device acceptance, and the transport-cancel
 boundary remains consumer-only.
 
+The remaining section 6.1 rows now have dispositions rather than assumptions.
+NextE already covered its row: `test_reader_original_plan_runtime.mjs` asserts that
+a cancelled older resolver cannot overwrite a newer successful plan source or
+reload key, and that an original-resolution failure never downloads or falls
+back to the default variant; that suite, plus the two ImageResolve and
+download-contract suites, all pass. What was genuinely missing was the
+queue-versus-running transport boundary behind it. NextE `b048ad96` adds
+`test_reader_image_priority_scheduler_runtime.mjs`, which drives the real
+`ReaderImagePriorityScheduler`: one low-priority warmer holds the single slot
+while a second stays queued and is cancellable; a running transfer reports
+`false` from `cancel` rather than being aborted; a visible request starts
+immediately without scheduling a duplicate, and promoting an already-started
+warmer starts nothing twice; promoting a queued warmer starts it exactly once
+and completion releases the low slot. The four cases pass, and a negative control
+that made a running transfer claim cancellability failed the suite 3/1
+immediately and was reverted, so the boundary is genuinely observed.
+
+Koma's 6.1 row does not apply to the current shared path and is recorded as such
+rather than being invented as work: `KomaReaderLabAdapter.ets` states that the D1
+adapter reads local/downloaded chapters only and never fetches chapter pages,
+so there is no per-request source/account scope to bind on the shared reader
+route. That row must be revisited only if a future Koma lane routes network
+sources through the shared reader.
+
 Next, verify optional normal-entry admission on 103's tablet viewport, including
 rotation, chapter/detail return, explicit Legacy fallback and cold-default
 retention, then reconcile the remaining three-host Package 5 entry matrix.
