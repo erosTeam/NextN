@@ -1166,9 +1166,21 @@ Next Package 5 boundaries:
   starts after each replacement landed on the root interface with no reader
   mounted. Screenshots reviewed for `verify-legacy-3`, `verify-shared-3` and
   `verify-chrome-3`.
-  Boundary: this covers the NextN phone path on 197 only. Equivalent upgrade /
-  rollback runtime continuity remains OPEN for NextE and Koma, and the 103
-  tablet ordinary-entry path is still unverified. The three drafts under
+- NextE runtime continuity is also DONE on 197 with a real version ordering
+  (NextE `23e4c84f`, `entry/src/ohosTest/ets/test/ReaderRuntimeContinuity.test.ets`).
+  It opens the newest real History gallery through the ordinary Detail Read
+  action, turns pages with the reader's own tap zones, and reads NextE's
+  `gallery_read_progress` row; the expectation comes from a cache record, not a
+  constant. Ordering: write phase on the candidate (durable page 3 of gid
+  4175844) -> `install -r` of committed main `2bebd112` -> cold start ->
+  `install -r` of the candidate -> cold start -> verify. Result
+  (`.hvigor/outputs/nexte-continuity-verify-v4/run-metadata.json`):
+  `Tests run: 1, Failure: 0, Error: 0, Pass: 1`, trial reporting
+  `gid=4175844 resumed=3 expected=3 coldStart=legacy reset=legacy`. Both cold
+  starts landed on the root interface with no reader mounted, the record
+  survived both replacements, and the resumed frame shows 4/46.
+  Boundary: the NextE phone path on 197 only; the 103 tablet ordinary-entry
+  path and Koma's equivalent remain OPEN. The three drafts under
   `docs/plans/active/` remain superseded and unintegrated.
 - Production defaults remain Legacy. Phone-path evidence does not establish
   tablet ordinary admission.
