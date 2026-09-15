@@ -1,4 +1,4 @@
-import { ReaderTrialLayoutCommit, ReaderKeepScreenOn, ReaderTapAction, ReaderRuntimePolicyIntent,
+import { ReaderTrialLayoutCommit, ReaderKeepScreenOn, ReaderTapAction, ReaderTapPolicy, ReaderRuntimePolicyIntent,
   ReaderCloseContext } from '@reader-kit/ui'
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
@@ -810,7 +810,8 @@ export struct NextNReaderLabPage {
                 this.readerPresentation.imageScalingQuality === 'high' ? ImageInterpolation.High : ImageInterpolation.Medium,
               canvasBackground: this.readerCanvasBackground(), canvasForeground: this.readerCanvasForeground(),
               input: this.input, mediaActions: this.mediaActions,
-              tapZoneResolver: (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout),
+              tapPolicy: new ReaderTapPolicy(
+                (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout)),
               autoReadPolicy: new ReaderAutoReadPolicy(true, this.readerPresentation.autoPageSeconds),
               pageTurnAnimation: this.labRequest?.pageTurnAnimationOverride ?? this.readerPresentation.pageTurnAnimation,
               preloadDepth: this.readerPresentation.preloadPages,

@@ -9,6 +9,10 @@ const require = createRequire(import.meta.url)
 const ts = require('/Applications/DevEco-Studio.app/Contents/tools/hvigor/hvigor/node_modules/typescript')
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const read = file => fs.readFileSync(path.resolve(root, file), 'utf8')
+const nextERoot = process.env.NEXTE_READER_ROOT || path.resolve(root, '../NextE')
+const komaRoot = process.env.KOMA_READER_ROOT || path.resolve(root, '../Koma')
+const readNextE = file => fs.readFileSync(path.resolve(nextERoot, file), 'utf8')
+const readKoma = file => fs.readFileSync(path.resolve(komaRoot, file), 'utf8')
 function compile(source, dependencies = {}, globals = {}) {
   const exports = {}
   vm.runInNewContext(ts.transpileModule(source, { compilerOptions: {
@@ -27,30 +31,39 @@ function method(file, name = 'resolveTapZone') {
   return source.slice(start, end + 4).replace(`private ${name}`, name)
 }
 const n = compile(read('shared/src/main/ets/model/NhReaderTapZone.ets'))
-const e = compile(read('../NextE/shared/src/main/ets/utils/ReaderTapZoneResolver.ets'))
-const prefs = read('../Koma/entry/src/main/ets/model/ReaderPreferencesStore.ets')
+const e = compile(readNextE('shared/src/main/ets/utils/ReaderTapZoneResolver.ets'))
+const prefs = readKoma('entry/src/main/ets/model/ReaderPreferencesStore.ets')
 const parsed = ts.createSourceFile('prefs.ts', prefs, ts.ScriptTarget.Latest, true)
 const normalization = parsed.statements.filter(node => ts.isFunctionDeclaration(node) &&
   ['normalizeReaderTapZonePreset', 'normalizeReaderTapZoneInvert'].includes(node.name?.text))
 assert.equal(normalization.length, 2)
 const kPrefs = compile(normalization.map(node => node.getText(parsed)).join('\n'))
-const k = compile(read('../Koma/entry/src/main/ets/model/ReaderTapZoneGeometry.ets'), {
+const k = compile(readKoma('entry/src/main/ets/model/ReaderTapZoneGeometry.ets'), {
   './ReaderPreferencesStore': kPrefs,
 })
 const cases = [
   ['N', 'feature/reader/src/main/ets/lab/NextNReaderLabPage.ets',
     { NhReaderTapZoneResolver: n.NhReaderTapZoneResolver }, n.NhReaderTapZoneResolver.resolve,
     ['rightLeft', 'lShaped', 'kindle', 'edge']],
-  ['E', '../NextE/feature/reader/src/main/ets/lab/NextEReaderLabPage.ets',
+  ['E', 'feature/reader/src/main/ets/lab/NextEReaderLabPage.ets',
     { ReaderTapZoneResolver: e.ReaderTapZoneResolver }, e.ReaderTapZoneResolver.resolve,
     ['rightLeft', 'lShaped', 'kindle', 'edge']],
-  ['K', '../Koma/entry/src/main/ets/readerLab/KomaReaderLabPage.ets',
+  ['K', 'entry/src/main/ets/readerLab/KomaReaderLabPage.ets',
     { ...kPrefs, resolveReaderTapZoneAction: k.resolveReaderTapZoneAction }, k.resolveReaderTapZoneAction,
     ['right_left', 'l_shaped', 'kindle', 'edge', 'wide_edges']],
 ]
 let checks = 0
 for (const [name, file, globals, reference, presets] of cases) {
-  const hostMethods = method(file) + (name === 'N' ? method(file, 'hostRouteActive') : '')
+  const source = name === 'N' ? read(file) : name === 'E' ? readNextE(file) : readKoma(file)
+  if (name !== 'K') assert.match(source, /tapPolicy:\s*new ReaderTapPolicy\(/)
+  const sourceMethod = (methodName = 'resolveTapZone') => {
+    const start = source.indexOf(`  private ${methodName}(`)
+    assert.ok(start >= 0, file)
+    const end = source.indexOf('\n  }', start)
+    assert.ok(end > start, file)
+    return source.slice(start, end + 4).replace(`private ${methodName}`, methodName)
+  }
+  const hostMethods = sourceMethod() + (name === 'N' ? sourceMethod('hostRouteActive') : '')
   const Host = compile(`export class Host { ${hostMethods} }`, {}, globals).Host
   const host = new Host()
   const state = { hydrated: true, restoreResult: 'applied', mode: 'paged_rtl' }
