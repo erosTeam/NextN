@@ -1144,57 +1144,69 @@ Next Package 5 boundaries:
   checked durable files between builds; runtime continuity (read, upgrade,
   reopen same page, rollback, reopen same page) remains OPEN for all
   three hosts.
-- NextN runtime continuity is now DONE on 197 with a real version ordering.
+- Correction (2026-09-16, after reviewing the raw runs): the NextN and NextE
+  entries previously written as "runtime continuity DONE" overstate what was
+  executed. In both runs the main revision was only installed, cold-opened, and
+  layout-dumped; the same content was never resumed inside the main revision.
+  So what the evidence actually proves is narrower: **after** two `install -r`
+  replacements, the candidate build still restores the same content identity,
+  page, and persisted state through its ordinary entry. It does not prove that
+  a real rolled-back revision can resume the same reading, and a Legacy
+  fallback observed inside the candidate build is not evidence about the main
+  rollback revision. Both remain OPEN; the minimum remaining check is to hold
+  the existing state, resume the same content/page/settings through the
+  ordinary entry **inside the main revision itself**, confirm the progress
+  written on exit, and then restore the candidate.
+- NextN replacement-then-restore acceptance on 197 (partial, phone path only).
   `entry/src/ohosTest/ets/test/ReaderRuntimeContinuity.test.ets` (registered in
   `List.test.ets`) drives the ordinary in-app Detail entry, reads the host's own
-  `reading_history` row and persisted settings, and re-derives its expectation
-  from a cache record instead of hardcoding it.
-  Sequence actually executed: write phase on the candidate build ->
-  `install -r` of committed main `ecaafec3` (a different, older revision) ->
-  cold start on that revision -> `install -r` of the candidate again ->
-  cold start -> verify phase. So continuity was not credited to reselecting
-  Shared inside one unchanged package.
-  Result (`.hvigor/outputs/continuity-verify-v7/run-metadata.json`):
-  `Tests run: 1, Failure: 0, Error: 0, Pass: 1`, with the trial reporting
-  `resumed=3 expected=3 legacyFallback=3 media=4156592 settingsRows=16
-  coldStart=legacy`. Asserted facts: cold start is Legacy; `reading_history`
-  keeps the same `media_id` 4156592, title, 14-page count, `last_read_index` 3
-  and `has_read_progress` 1; the persisted reader mode is unchanged; the
-  ordinary entry resumes page 4/14 on Shared; the Legacy fallback through the
-  same ordinary entry also shows 4/14; and the run ends back on Legacy.
-  The cache record survived both `install -r` replacements, and the two cold
-  starts after each replacement landed on the root interface with no reader
-  mounted. Screenshots reviewed for `verify-legacy-3`, `verify-shared-3` and
-  `verify-chrome-3`.
-- NextE runtime continuity is also DONE on 197 with a real version ordering
-  (NextE `23e4c84f`, `entry/src/ohosTest/ets/test/ReaderRuntimeContinuity.test.ets`).
-  It opens the newest real History gallery through the ordinary Detail Read
-  action, turns pages with the reader's own tap zones, and reads NextE's
-  `gallery_read_progress` row; the expectation comes from a cache record, not a
-  constant. Ordering: write phase on the candidate (durable page 3 of gid
-  4175844) -> `install -r` of committed main `2bebd112` -> cold start ->
+  `reading_history` row and persisted settings, and derives its expectation from
+  a cache record instead of a constant. Executed order: write phase on the
+  candidate -> `install -r` of committed main `ecaafec3` -> cold start ->
   `install -r` of the candidate -> cold start -> verify. Result
+  (`.hvigor/outputs/continuity-verify-v7/run-metadata.json`):
+  `Tests run: 1, Failure: 0, Error: 0, Pass: 1`, trial reporting
+  `resumed=3 expected=3 legacyFallback=3 media=4156592 settingsRows=16
+  coldStart=legacy`. Verified inside the candidate build: cold start is Legacy;
+  `reading_history` keeps `media_id` 4156592, the title, the 14-page count,
+  `last_read_index` 3 and `has_read_progress` 1; the persisted reader mode and
+  settings row count are unchanged; the ordinary entry resumes 4/14 on Shared;
+  the same entry on Legacy also shows 4/14; the cache record survived both
+  replacements. Not verified: any resume inside the main revision.
+- NextE replacement-then-restore acceptance on 197 (partial, phone path only).
+  NextE `23e4c84f`, same trial file name under NextE's `ohosTest`. It opens the
+  newest real History gallery through the ordinary Detail Read action, turns
+  pages with the reader's own tap zones, and reads `gallery_read_progress`;
+  the expectation comes from a cache record. Same ordering shape as NextN with
+  committed main `2bebd112`. Result
   (`.hvigor/outputs/nexte-continuity-verify-v4/run-metadata.json`):
   `Tests run: 1, Failure: 0, Error: 0, Pass: 1`, trial reporting
-  `gid=4175844 resumed=3 expected=3 coldStart=legacy reset=legacy`. Both cold
-  starts landed on the root interface with no reader mounted, the record
-  survived both replacements, and the resumed frame shows 4/46.
-- Koma runtime continuity remains OPEN, and the next attempt starts from these
-  checked facts rather than re-discovery:
-  - Koma persists reader state through a file adapter, not RDB:
-    `entry/src/main/ets/model/ReaderSessionStore.ets` writes
-    `filesDir/reader-sessions.v1.json` (schema `reader-sessions.v1`).
-    `ReadingProgressStore` itself is still an in-memory interface with no
-    persistence bridge of its own, so the session store is the durable owner.
-  - Koma has no `ohosTest` module, so the NextN/NextE Hypium trial form does not
-    transfer. Its own acceptance form is the manifest-driven shell smoke set
-    under `scripts/run_*_reader_smoke.sh` plus a project manifest.
-  - On 197 the installed Koma is in a clean state: no source packages, no
-    `files/hiappevent`-only files dir, no `reader-sessions.v1.json`, and an
-    empty database directory. A continuity run must therefore first create a
-    real reading state; it cannot rely on pre-existing content.
-  103 tablet ordinary-entry and Koma continuity therefore remain the two open
-  Package 5 dimensions. The three drafts under `docs/plans/active/` remain
+  `gid=4175844 resumed=3 expected=3 coldStart=legacy reset=legacy`, resumed
+  frame 4/46. Verified inside the candidate build: cold start is Legacy, the
+  durable page and column mode are unchanged, the ordinary entry resumes the
+  same page, and the rehearsal selector returns to Legacy. Not verified: a real
+  Legacy reading fallback (the trial only opens Shared, so `reset=legacy` shows
+  selector reset, not a Legacy read), and any resume inside the main revision.
+- Koma runtime continuity remains OPEN. A previous note here claimed the 197
+  install was "clean"; that was wrong and is withdrawn. Those probes only read
+  `/data/app/el2/100/base/<bundle>/files`, `cache`, and `database`, which are not
+  the paths Koma actually uses. The real durable location is the module files
+  dir, `/data/app/el2/100/base/com.honjow.koma/haps/entry/files/`, and it already
+  holds real user state: `reader-sessions.v1.json` (schema 3, 11 progress
+  entries plus 21 chapter read-state entries, including `completed: true` for
+  `com.komiic.koma:kic:2861` and a local-folder entry) and an imported local
+  library fixture with three real PNG pages under
+  `import/local-library-folder-smoke-root/extract/Fixture Series/`. Do not
+  rebuild or overwrite that state. Established for the next attempt:
+  `entry/src/main/ets/model/ReaderSessionStore.ets` writes
+  `filesDir/reader-sessions.v1.json`; `ReadingProgressStore` itself is only an
+  in-memory interface, so the session store is the durable owner; Koma has no
+  `ohosTest` module, so the Host trial form does not transfer and its acceptance
+  form is the manifest-driven set under `docs/device-protocols/` plus the
+  `scripts/run_*_reader_smoke.sh` entrypoints.
+  Remaining Package 5 dimensions: the main-revision resume check for NextN and
+  NextE, NextE's real Legacy reading fallback, Koma continuity, and 103 tablet
+  ordinary admission. The three drafts under `docs/plans/active/` remain
   superseded and unintegrated.
 - Production defaults remain Legacy. Phone-path evidence does not establish
   tablet ordinary admission.
