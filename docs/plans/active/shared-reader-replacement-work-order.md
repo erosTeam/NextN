@@ -1243,11 +1243,12 @@ Next Package 5 boundaries:
     through the debug `ReaderLab` route, which does not consult the backend
     selector, so it is evidence about the shared reader surface rather than
     about a selector-driven ordinary entry.
-  - The 1x1-pixel fixture discrepancy is now explained and closed. That fixture
-    is a 70-byte 1x1 transparent PNG, and the legacy reader rejects it at the
-    display stage (`display_ready page=2` then `display_failed page=2`). On real
-    downloaded content the legacy reader is fully healthy, so this was a
-    degenerate-fixture artifact rather than a legacy defect:
+  - The 1x1-pixel fixture discrepancy is no longer being pursued. That fixture
+    is a 70-byte 1x1 transparent PNG and the legacy reader rejects it at the
+    display stage (`display_ready page=2` then `display_failed page=2`). One set
+    of healthy real-content runs does not establish the root cause of that
+    difference, so this note claims only that real content worked and that the
+    degenerate fixture is not being investigated further:
     - Shared reader, ordinary entry on the real downloaded chapter
       (`com.dm5.koma:manga:manhua-chongchongcun`, 6/6 pages downloaded): shelf
       card -> comic Detail -> `开始阅读` mounts `rkit-reading-surface` with
@@ -1260,9 +1261,35 @@ Next Package 5 boundaries:
       `.hermes-artifacts/20260916-koma-real/04-legacy-real/`.
     Both frames render the same real manga page, so the two implementations are
     comparable on real content rather than only on fixture images.
+  Koma install-replacement continuity on real content (2026-09-16). Using the
+  same real chapter `chapter:manhua-chongchongcun:1220470:6` (6/6 pages
+  downloaded) through the ordinary shelf -> Detail -> `开始阅读` path:
+  - Baseline recorded before the change: `pageIndex 0`, `completed false`,
+    chapter `isRead false`. Evidence:
+    `.hermes-artifacts/20260916-koma-replace/01-baseline/`.
+  - A distinguishable position was established (`3 / 6`, durable
+    `pageIndex 2`) so a resume cannot be confused with the start page.
+    Evidence: `.../02-setup/`.
+  - A real `install -r` replacement of the candidate HAP was performed, then the
+    same chapter was opened through the ordinary path with no page override.
+    The reader resumed `3 / 6` and the durable record stayed `pageIndex 2`; the
+    14-comic library store was byte-comparable in identity before and after.
+    Evidence: `.../03-resume/`.
+  - Chapter completion is host-owned and survives the replacement: advancing to
+    the terminal page wrote `pageIndex 5, completed true` and chapter
+    `isRead true`. Evidence: `.../04-complete/`.
+  - Fallback after the replacement: switching back to the existing reader in the
+    same process and re-entering through the ordinary path mounted
+    `reader_key_surface` at `6 / 6` (`rkit-reading-surface` = 0). Evidence:
+    `.../05-fallback/`.
+  - The original user state was restored afterwards. Only one durable entry had
+    been changed by this work, so the restore rewrote that single entry back to
+    its baseline shape; a field-level comparison against the baseline then
+    reported zero differing progress entries, and a cold open read back
+    `pageIndex 0 / completed false / isRead false` with the shelf showing the
+    baseline 17%. Evidence: `.../06-restore/`, `.../07-restore-verify/`.
   Remaining Package 5 dimensions: the main-revision resume check for NextN and
-  NextE, NextE's real Legacy reading fallback, Koma continuity through a
-  selector-driven ordinary entry with real content, and 103 tablet ordinary
+  NextE, NextE's real Legacy reading fallback, and 103 tablet ordinary
   admission. The three drafts under `docs/plans/active/` remain superseded and
   unintegrated.
 - Production defaults remain Legacy. Phone-path evidence does not establish
