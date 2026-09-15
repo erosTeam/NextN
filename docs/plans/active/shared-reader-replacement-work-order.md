@@ -1020,6 +1020,20 @@ so there is no per-request source/account scope to bind on the shared reader
 route. That row must be revisited only if a future Koma lane routes network
 sources through the shared reader.
 
+Per-consumer host-suite baselines at the pinned revision are now recorded so a
+future regression is attributable. NextN's full reader suite set passes 18/18
+when the two cross-repo suites are given their consumer roots
+(`NEXTE_READER_ROOT`/`KOMA_READER_ROOT`). Koma's branch passes all 6
+`test_shared_reader_*.cjs` suites plus 13 others; its one failure,
+`test_data_migration_policy.mjs`, is a stale assertion unrelated to the shared
+reader (it still requires `READER_PROGRESS_PERSISTENCE_SCHEMA_VERSION = 2` while
+`ReaderSessionStore.ets` has moved to `3` with v1/v2/v3 handling) and fails in
+Koma's main checkout too, so it is explicitly not branch-regression evidence.
+NextE's reader suites pass 9/10, and its single failure
+(`test_reader_trial_entry_host_runtime.mjs`) was a branch-introduced stub gap now
+fixed by `a7f94fa4` (18/18 after the fix). No reader-suite failure remains that
+is attributable to the shared replacement work itself.
+
 Next, verify optional normal-entry admission on 103's tablet viewport, including
 rotation, chapter/detail return, explicit Legacy fallback and cold-default
 retention, then reconcile the remaining three-host Package 5 entry matrix.
