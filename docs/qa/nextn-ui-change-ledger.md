@@ -11179,6 +11179,34 @@ authorize an edit, replace a device comparison, or define product completion.
   same Reader page and foreground bundle. No Share action was invoked and no Reader setting was changed. Evidence
   is under `.hvigor/outputs/reader-share-affordance-237-20260905/`.
 
+## OPEN — Long-strip thumbnail proportion: two surfaces disagree — 2026-09-15
+
+- **New authoritative evidence (numeric, no source edit):** on `192.168.50.197:12345
+  (ALN-AL80, 1260x2720)` the same NextN long-strip gallery renders its two thumbnail
+  surfaces with different proportion sources. Detail compact rail tiles
+  (`reader-thumb-gallery-detail-1-page-N`) are all `317x488` = `0.650`, which is exactly
+  `COMPACT_PREVIEW_FALLBACK_ASPECT`; the all-thumbnails Grid tiles
+  (`reader-thumb-all-thumbnails-2-page-N`) are all `290x527` = `0.550`, which is the
+  decoded NH thumbnail-crop aspect. Source maps this directly: `GalleryCompactPreviewTile`
+  derives width from `NhGalleryPage.width/height` and clamps out-of-range results to the
+  fallback, while `GalleryVirtualPageThumbnailTile` derives it from the decoded thumbnail
+  asset / `thumbnailWidth|Height`. The two components therefore cannot agree on a long strip,
+  and the rail never uses the real thumbnail aspect even though NH serves an independent crop.
+- **Why not edited:** this is a visible surface and the compact rail's tile aspect is explicitly
+  preserved by the `2026-08-12` proportion-repair record above. A visible change needs a
+  same-state, same-viewport visual comparison, and the current run had no image-inspection
+  channel available; a numeric-only result is counter-evidence, not visual acceptance.
+- **Retained captures for user judgement (same run, same gallery, same 197 viewport):**
+  `12-compact-vs-grid-aspect/capture-rail-compact.png` (Detail compact rail, page `1 / 14`)
+  and `12-compact-vs-grid-aspect/capture-allthumbnails-grid.png` (all-thumbnails Grid, page `2 / 14`).
+  Both are raw whole-screen captures; no acceptance is claimed here.
+- **Decisive next evidence:** the user's own identification of which of the two captures is
+  correct for a long strip, or any new explicit feedback about this boundary. Until then do not
+  treat the numeric difference as a defect and do not re-derive the rail aspect: the rail tile
+  aspect is frozen by the `2026-08-12` record above, and the Grid is already at its accepted
+  `2026-09-05` crop-aspect state. Reopen only with that identification or a same-state visual
+  comparison obtained with a working image channel.
+
 ## CLOSED / DEVICE PASS — NH long-strip all-thumbnails visible geometry — 2026-09-05
 
 - **Why newly actionable:** the user clarified that the still-broken surface is the separate **View all thumbnails**
