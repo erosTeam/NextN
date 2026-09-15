@@ -815,18 +815,42 @@ The final protocol restored the screen timeout to 10 seconds and released the
 Legacy, and no preference, backup, migration, download, cache or user data owns
 the selector.
 
+NextE commits `63d69c6e` and `29cc7a38` provide the equivalent Debug-only
+process-local selector, normal overlay host and thumbnail-entry relay. The
+accepted 197 `03-normal-entry-rehearsal` run starts in Legacy, selects Shared
+from Settings → Reading, opens the normal completed-download row, interacts
+with and closes the shared surface, then selects Legacy and repeats the same
+entry/interaction/return path. Its seven inspected captures and manifest are
+under `.hvigor/outputs/shared-reader-package5/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-normal-entry-rehearsal/`.
+Release and ordinary cold launches still fail closed to Legacy, and the
+selector remains outside preferences, backup and user data.
+
+After that replacement boundary, the three consumers and reader-kit continued
+to collapse host integration into capability objects without changing their
+production defaults. The current shared revision `8112355` adds
+`ReaderTapPolicy`, grouping the resolver, preview geometry and one-shot preview
+revision that must describe one tap-zone preference snapshot. Existing scalar
+inputs remain source-compatible so an older consumer is not broken by the
+library update. NextE `c1e5eeee` and NextN `26c3bd62` adopt the grouped
+capability. The focused cross-host suite passes 1404 actual resolver/lifecycle
+comparisons and now asserts both consumers use the grouped contract; matching
+signed builds pass with HAP SHA-256
+`67e3636de4c76d1cbd853d954b8595bb059b014319968ec7067467b179fff989`
+and `14035287b7305a46ef2c1a5afe976ca71dc69f0b97e5e348b7738679744be5fb`.
+This slice has no visible or gesture-semantic change and claims no new device
+acceptance.
+
 ## Single next action
 
-Implement the equivalent process-local, Debug-only selector boundary in NextE.
-Unlike NextN, current NextE has only ReaderLab/thumbnail-relay debug entries and
-no production shared body behind its normal overlay. First map the existing
-`ReaderParams`/overlay snapshot and add a production-capable shared host that
-consumes the same host-owned detail, sprite, source and local-download context;
-then expose the selector in the existing Reading settings destination. Release
-must fail closed to the untouched legacy body and cold launch must reset
-Legacy. Run focused source/route tests and matching signed main plus explicit
-test builds before selecting one normal 197 entry/rollback path. Do not use a
-debug Want as acceptance and do not repeat Package 1-4 capability matrices.
+Use the existing Koma shared-reader device protocol to capture one current 197
+baseline for its tap-zone preview path, then adopt reader-kit `8112355` in the
+independent `codex/koma-reader-refactor` worktree by replacing the resolver,
+preview regions and preview revision scalar inputs with one `ReaderTapPolicy`.
+Run the focused cross-host suite and matching signed build, then repeat the same
+197 path and compare the baseline. The expected visible and gesture-semantic
+diff is zero. Do not remove the reader-kit scalar compatibility inputs until
+all supported consumers have migrated, and do not create one-field wrapper
+protocols for the remaining presentation scalars.
 
 ## Package completion record
 
