@@ -904,11 +904,21 @@ handle during recomposition. The first is by design; the other two were test
 harness races. Evidence:
 `.hvigor/outputs/shared-reader-package5/20260915-normal-entry-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/`.
 
+At the pinned revision, NextE's in-app admission was rechecked on 197 because its
+previous acceptance predated `8112355`. `ReaderProductionInAppBackendRehearsalTrial`
+passes Hypium 1/1 on the current signed main plus freshly rebuilt `entry@ohosTest`
+HAP (`02ab79d4fe5a`): initial Legacy, Shared selected in-app, the normal completed
+Downloads row opened/touched/returned, Legacy selected in-app, the same row
+repeated, and the queue snapshot unchanged. Six whole captures were received at
+`1260x2720`. Evidence:
+`.hvigor/outputs/shared-reader-package5/recheck-8112355/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-normal-entry/`.
+
 Next, verify optional normal-entry admission on 103's tablet viewport, including
 rotation, chapter/detail return, explicit Legacy fallback and cold-default
 retention, then reconcile the remaining three-host Package 5 entry matrix.
-Keep production defaults Legacy. This phone result does not establish tablet
-ordinary admission, every provider/history entry, or full replacement.
+Keep production defaults Legacy. The NextN and NextE phone results do not
+establish tablet ordinary admission, every provider/history entry, or full
+replacement.
 
 ## Package completion record
 
