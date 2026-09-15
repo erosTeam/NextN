@@ -972,6 +972,15 @@ since evolved, so they fail in the shared checkout too. None of the three proves
 degradation in the shared reader; a suite that fails identically on `main` cannot
 be used as branch-specific regression evidence.
 
+NextE had one branch-specific case of the same class, and it was genuine but
+test-only: `test_reader_trial_entry_host_runtime.mjs` stubbed
+`ReaderTrialEntryRelay` without the production handoff pair or the pending hold,
+so `Index.aboutToDisappear` threw `clearProduction is not a function` before the
+assertions ran. That suite passes in the NextE main checkout, so the drift was
+introduced by this branch's own production-entry work. NextE `a7f94fa4` mirrors
+`holdPending`/`installProduction`/`clearProduction` in the stub; the suite then
+passes 18/18. No product source was changed.
+
 Next, verify optional normal-entry admission on 103's tablet viewport, including
 rotation, chapter/detail return, explicit Legacy fallback and cold-default
 retention, then reconcile the remaining three-host Package 5 entry matrix.
