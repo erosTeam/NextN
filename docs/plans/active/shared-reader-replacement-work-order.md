@@ -1217,10 +1217,46 @@ Next Package 5 boundaries:
   `ohosTest` module, so the Host trial form does not transfer and its acceptance
   form is the manifest-driven set under `docs/device-protocols/` plus the
   `scripts/run_*_reader_smoke.sh` entrypoints.
+  Koma ordinary-entry acceptance on 197 (2026-09-16, candidate `8f11c550`),
+  with every tap coordinate read from a real layout tree:
+  - The Reader settings subpage carries a real control, `阅读器实现`, whose
+    trailing value is either `现有阅读器` (Legacy) or `共享阅读器` (Shared).
+    The dropdown's item position depends on which value is current, which is
+    why a fixed guess missed it; while Shared is current the `现有阅读器` item
+    sits at `[669,514][1156,670]` and while Legacy is current `共享阅读器` sits
+    at `[669,670][1156,826]`.
+  - Selecting `共享阅读器` and then opening the same chapter from the ordinary
+    shelf `继续阅读` action mounts `rkit-reading-surface`
+    (`rkit-chrome-page` = `2 / 2`, `reader_key_surface` = 0). Evidence:
+    `.hermes-artifacts/20260916-koma-continuity/10-ordinary-shared-v3/`.
+  - Switching back to `现有阅读器` in the same process and re-entering through
+    the same ordinary action mounts `reader_key_surface`
+    (`rkit-reading-surface` = 0). Evidence:
+    `.hermes-artifacts/20260916-koma-continuity/13-ordinary-legacy-v2/`.
+    So the user-facing fallback control does change which reader the ordinary
+    entry mounts on Koma.
+  - `install -r` continuity for the Koma reader path: after replacing the
+    install, opening the same chapter with no page override resumed `2 / 2`
+    while the durable `reader-sessions.v1.json` entry stayed
+    `pageIndex 1, completed true`. Evidence:
+    `.hermes-artifacts/20260916-koma-continuity/03-restore/`. Note this run went
+    through the debug `ReaderLab` route, which does not consult the backend
+    selector, so it is evidence about the shared reader surface rather than
+    about a selector-driven ordinary entry.
+  - Open discrepancy, not yet classified: on this 1x1-pixel local fixture the
+    shared reader renders a page part with no failure node, while the legacy
+    reader logs `display_ready page=2` immediately followed by
+    `display_failed page=2` and shows `无法加载页面`
+    (`.hermes-artifacts/20260916-koma-continuity/15-legacy-failure-log/`). The
+    fixture is a 70-byte 1x1 transparent PNG whose page URIs point inside the
+    app sandbox, so this is not a folder-permission failure. Whether legacy is
+    expected to reject such a degenerate image is unresolved; do not report it
+    as a product defect or as parity without a real-content control.
   Remaining Package 5 dimensions: the main-revision resume check for NextN and
-  NextE, NextE's real Legacy reading fallback, Koma continuity, and 103 tablet
-  ordinary admission. The three drafts under `docs/plans/active/` remain
-  superseded and unintegrated.
+  NextE, NextE's real Legacy reading fallback, Koma continuity through a
+  selector-driven ordinary entry with real content, and 103 tablet ordinary
+  admission. The three drafts under `docs/plans/active/` remain superseded and
+  unintegrated.
 - Production defaults remain Legacy. Phone-path evidence does not establish
   tablet ordinary admission.
 
