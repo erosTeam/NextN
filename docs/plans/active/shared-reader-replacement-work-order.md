@@ -913,6 +913,18 @@ repeated, and the queue snapshot unchanged. Six whole captures were received at
 `1260x2720`. Evidence:
 `.hvigor/outputs/shared-reader-package5/recheck-8112355/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-normal-entry/`.
 
+NextE `a7fc9910` closes the remaining NextE phone entry gap. Its previous
+Detail/all-thumbnails admissions only ran behind a `nexte_reader_backend` Want;
+the new `ReaderProductionInAppThumbnailEntryTrial` uses a plain launch, selects
+Shared through the existing Debug Settings selector inside one process, then
+admits the shared Reader from a real Detail compact thumbnail and from the
+standalone all-thumbnails Grid, each returning to its same source. Hypium passes
+2/2 on the current signed main plus rebuilt `entry@ohosTest` HAP
+(`21951b348d66`); six whole captures were received at `1260x2720`. The original
+Want-driven class is retained unchanged so both sources stay comparable.
+Evidence:
+`.hvigor/outputs/shared-reader-package5/in-app-thumbnail-entry/device197__ALN-AL80/not-applicable/portrait-1260x2720/02-in-app-entry/`.
+
 Next, verify optional normal-entry admission on 103's tablet viewport, including
 rotation, chapter/detail return, explicit Legacy fallback and cold-default
 retention, then reconcile the remaining three-host Package 5 entry matrix.
