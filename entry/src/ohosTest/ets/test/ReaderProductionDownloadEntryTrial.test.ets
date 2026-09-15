@@ -207,13 +207,13 @@ async function waitText(driver: Driver, key: string, attempts: number = 80): Pro
   throw new Error(`Production backend text unavailable: ${key}`)
 }
 
-async function openBackendRehearsal(driver: Driver): Promise<void> {
+export async function openBackendRehearsal(driver: Driver): Promise<void> {
   await (await waitId(driver, 'nextn-root-tab-3')).click()
   await (await waitText(driver, 'settings_reader')).click()
   await waitId(driver, 'nextn-reader-backend-rehearsal-row')
 }
 
-async function selectBackendFromUi(driver: Driver, backend: NextNReaderBackend): Promise<void> {
+export async function selectBackendFromUi(driver: Driver, backend: NextNReaderBackend): Promise<void> {
   await (await waitId(driver, 'nextn-reader-backend-rehearsal-row')).click()
   const key: string = backend === NextNReaderBackend.SHARED
     ? 'settings_reader_backend_shared'
@@ -229,7 +229,7 @@ async function selectBackendFromUi(driver: Driver, backend: NextNReaderBackend):
   throw new Error(`In-app Reader backend selection did not become ${backend}`)
 }
 
-async function returnFromReaderSettings(driver: Driver): Promise<void> {
+export async function returnFromReaderSettings(driver: Driver): Promise<void> {
   await driver.pressBack()
   await waitId(driver, 'nextn-root-tab-2')
 }

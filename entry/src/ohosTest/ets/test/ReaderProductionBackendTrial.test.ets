@@ -5,6 +5,8 @@ import { relationalStore } from '@kit.ArkData'
 import { window } from '@kit.ArkUI'
 import { fileIo } from '@kit.CoreFileKit'
 import { KeyCode } from '@kit.InputKit'
+import { openBackendRehearsal, selectBackendFromUi, returnFromReaderSettings }
+  from './ReaderProductionDownloadEntryTrial.test'
 import {
   AppStrings,
   connectNhReadProgress,
@@ -224,34 +226,62 @@ async function waitDetailRead(driver: Driver): Promise<Component> {
   throw new Error('Ready Detail Read action unavailable')
 }
 
-async function findDetailThumbnail(driver: Driver, pageIndex: number): Promise<Component> {
-  let owner: Component | null = null
-  for (let attempt = 0; attempt < 80; attempt++) {
+/** The single full-size List that owns the Detail metadata and compact rail. */
+async function detailMetadataOwner(driver: Driver): Promise<Component | null> {
+  // A recomposition can invalidate any handle between findComponents and
+  // getBounds, so a stale-handle error is retried rather than fatal.
+  try {
     const root = await driver.findComponent(ON.id('nextn-root-navigation'))
-    if (root !== null) {
-      const rootBounds = await root.getBounds()
-      const lists = await driver.findComponents(ON.type('List').within(ON.id('nextn-root-navigation')))
-      const owners: Component[] = []
-      for (const list of lists) {
+    if (root === null) return null
+    const rootBounds = await root.getBounds()
+    const lists = await driver.findComponents(ON.type('List').within(ON.id('nextn-root-navigation'))) ?? []
+    const owners: Component[] = []
+    for (const list of lists) {
+      try {
         const bounds = await list.getBounds()
         if (bounds.left === rootBounds.left && bounds.right === rootBounds.right &&
           bounds.top === rootBounds.top && bounds.bottom === rootBounds.bottom) owners.push(list)
+      } catch (_error) {
+        // Stale handle during recomposition; the caller retries.
       }
-      if (owners.length > 1) throw new Error('Ambiguous Detail metadata List; no coordinate fallback')
-      if (owners.length === 1) { owner = owners[0]; break }
+    }
+    if (owners.length > 1) throw new Error('Ambiguous Detail metadata List; no coordinate fallback')
+    return owners.length === 1 ? owners[0] : null
+  } catch (error) {
+    if (String(error).includes('Ambiguous')) throw error as Error
+    return null
+  }
+}
+
+async function findDetailThumbnail(driver: Driver, pageIndex: number): Promise<Component> {
+  let owner: Component | null = await detailMetadataOwner(driver)
+  const pattern = `^reader-thumb-gallery-detail-[0-9]+-page-${pageIndex}$`
+  const selector = ON.id(pattern, MatchPattern.REG_EXP).within(ON.id('nextn-root-navigation'))
+  // Closing the Reader recomposes Detail, so the metadata List handle captured
+  // above can become stale. Re-resolve owner and tile together until one pass
+  // observes both, instead of trusting a handle from an earlier layout.
+  for (let attempt = 0; attempt < 40; attempt++) {
+    let current: Component | null = null
+    if (owner !== null) {
+      try {
+        current = await owner.scrollSearch(selector, true)
+      } catch (_error) {
+        current = null
+      }
+    }
+    if (current === null) {
+      owner = await detailMetadataOwner(driver)
+    } else {
+      const matches = await driver.findComponents(selector)
+      expect(matches.length).assertEqual(1)
+      const sourceId = await current.getId()
+      expect(new RegExp(pattern).test(sourceId)).assertTrue()
+      const resolved = await driver.findComponent(ON.id(sourceId))
+      if (resolved !== null) return resolved
     }
     await driver.delayMs(250)
   }
-  if (owner === null) throw new Error('Detail metadata List unavailable')
-  const pattern = `^reader-thumb-gallery-detail-[0-9]+-page-${pageIndex}$`
-  const selector = ON.id(pattern, MatchPattern.REG_EXP).within(ON.id('nextn-root-navigation'))
-  const source = await owner.scrollSearch(selector, true)
-  if (source === null) throw new Error(`Detail thumbnail unavailable: ${pageIndex}`)
-  const matches = await driver.findComponents(selector)
-  expect(matches.length).assertEqual(1)
-  const sourceId = await source.getId()
-  expect(new RegExp(pattern).test(sourceId)).assertTrue()
-  return await driver.findComponent(ON.id(sourceId))
+  throw new Error(`Detail thumbnail unavailable: ${pageIndex}`)
 }
 
 async function findFullThumbnail(driver: Driver, pageIndex: number): Promise<Component> {
@@ -538,6 +568,53 @@ async function waitLegacyReady(driver: Driver): Promise<void> {
   throw new Error('Legacy Reader did not own the production destination')
 }
 
+/**
+ * Any startAbility, including a plain relaunch, is the documented explicit
+ * return to the production-safe backend.
+ * A rehearsal must therefore stay inside one process and reach content through
+ * real in-app navigation instead of launching the gallery route again.
+ */
+async function openDetailFromHistory(driver: Driver, galleryId: number): Promise<void> {
+  await (await waitId(driver, 'nextn-root-tab-3')).click()
+  const historyRows = await driver.findComponents(
+    ON.text(AppStrings.get('tab_history')).within(ON.id('nextn-root-navigation')))
+  expect(historyRows.length).assertEqual(1)
+  await historyRows[0].click()
+  const pattern = `^gallery-list-history-[0-9]+-history-${galleryId}$`
+  const selector = ON.id(pattern, MatchPattern.REG_EXP).within(ON.id('nextn-root-navigation'))
+  for (let attempt: number = 0; attempt < 120; attempt++) {
+    const found = await driver.findComponent(selector)
+    if (found !== null) {
+      await found.click()
+      await waitDetailRead(driver)
+      return
+    }
+    // Re-resolve the scroll owner on every pass: an earlier handle is rebuilt
+    // after a scroll, and the host History List is the only full-size List.
+    const owners = await driver.findComponents(ON.type('Scroll').within(ON.id('nextn-root-navigation'))) ?? []
+    if (owners.length >= 1) {
+      const scrolled = await owners[0].scrollSearch(selector, true)
+      if (scrolled !== null) {
+        await scrolled.click()
+        await waitDetailRead(driver)
+        return
+      }
+    }
+    await driver.delayMs(250)
+  }
+  throw new Error(`Reading history entry unavailable for gallery ${galleryId}`)
+}
+
+async function backToHomeRoot(driver: Driver): Promise<void> {
+  for (let attempt: number = 0; attempt < 14; attempt++) {
+    if (await driver.findComponent(ON.id('nextn-root-tab-3')) !== null &&
+      await driver.findComponent(ON.id('gallery-detail-read-action')) === null) return
+    await driver.pressBack()
+    await driver.delayMs(600)
+  }
+  throw new Error('Home root did not return after the in-app rehearsal route')
+}
+
 async function actualComponentGeometry(driver: Driver, id: string): Promise<ComponentGeometry> {
   await waitId(driver, id)
   expect((await driver.findComponents(ON.id(id))).length).assertEqual(1)
@@ -704,6 +781,99 @@ async function writeTranslationFixture(context: common.UIAbilityContext): Promis
 
 export default function readerProductionBackendTrialTest(): void {
   const selectedClass = abilityDelegatorRegistry.getArguments().parameters['-s class']
+  if (selectedClass === 'ReaderProductionInAppDetailEntriesTrial') {
+    describe(selectedClass, (): void => {
+      it('usesInAppBackendForReadCompactAndFullGridThenRestoresLegacy', 0, async (): Promise<void> => {
+        const driver = Driver.create()
+        const delegator = abilityDelegatorRegistry.getAbilityDelegator()
+        let database: relationalStore.RdbStore | null = null
+        let original: HistorySnapshot | null = null
+        let restored: boolean = false
+        try {
+          // No backend Want, seeded progress, injected asset, or debug reader route.
+          await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility' })
+          database = await store(await entryContext(driver))
+          original = await snapshotHistory(database)
+          writeSnapshot(original)
+          expect(connectNextNReaderBackendSelection().current()).assertEqual(NextNReaderBackend.LEGACY)
+
+          const backends: NextNReaderBackend[] = [NextNReaderBackend.SHARED, NextNReaderBackend.LEGACY]
+          for (const backend of backends) {
+            await openBackendRehearsal(driver)
+            await selectBackendFromUi(driver, backend)
+            await returnFromReaderSettings(driver)
+            // Stay in this process: a relaunch would reset the selector to Legacy.
+            // Detail is reached from real Home navigation and all three Reader
+            // admissions below use real Detail/Grid controls plus the in-app snapshot.
+            await openDetailFromHistory(driver, GALLERY_ID)
+            const read = await waitDetailRead(driver)
+            await read.click()
+            if (backend === NextNReaderBackend.SHARED) await waitSharedReady(driver)
+            else await waitLegacyReady(driver)
+            await capture(driver, `in-app-detail-${backend}-read`)
+            await closeAnyReader(driver)
+            await waitDetailRead(driver)
+
+            const compact = await findDetailThumbnail(driver, 0)
+            const compactId: string = await compact.getId()
+            await compact.click()
+            if (backend === NextNReaderBackend.SHARED) {
+              expect(await waitSharedReady(driver)).assertEqual(0)
+            } else await waitLegacyReady(driver)
+            await capture(driver, `in-app-detail-${backend}-compact`)
+            await closeAnyReader(driver)
+            await waitDetailRead(driver)
+            await waitId(driver, compactId)
+
+            const grid = await findFullThumbnail(driver, 1)
+            const gridId: string = await grid.getId()
+            const before = await grid.getBounds()
+            await grid.click()
+            if (backend === NextNReaderBackend.SHARED) {
+              expect(await waitSharedReady(driver)).assertEqual(1)
+            } else await waitLegacyReady(driver)
+            await capture(driver, `in-app-detail-${backend}-grid`)
+            await closeAnyReader(driver)
+            const returned = await waitId(driver, gridId)
+            const after = await returned.getBounds()
+            expect(after.left).assertEqual(before.left)
+            expect(after.top).assertEqual(before.top)
+            expect(after.right).assertEqual(before.right)
+            expect(after.bottom).assertEqual(before.bottom)
+            expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
+            await driver.pressBack()
+            await waitDetailRead(driver)
+            await driver.pressBack()
+            await backToHomeRoot(driver)
+            console.info(`[ReaderProductionInAppDetailEntriesTrial] backend=${backend} ` +
+              'read=true compact=true grid=true gridReturned=true rootReturned=true')
+          }
+          await restoreAndVerify(database, original)
+          removeSnapshot()
+          restored = true
+          expect(connectNextNReaderBackendSelection().current()).assertEqual(NextNReaderBackend.LEGACY)
+          await capture(driver, 'in-app-detail-final')
+          console.info('[ReaderProductionInAppDetailEntriesTrial] initial=legacy final=legacy ' +
+            'backendWants=false seededProgress=false historyRestored=true')
+        } catch (error) {
+          try { await capture(driver, 'in-app-detail-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          await closeAnyReader(driver)
+          if (!restored && database !== null && original !== null) {
+            await restoreAndVerify(database, original)
+            removeSnapshot()
+          }
+          // The successful route already selected Legacy in the UI. On failure,
+          // reset only the process-local diagnostic selector through its existing API.
+          if (connectNextNReaderBackendSelection().current() !== NextNReaderBackend.LEGACY) {
+            await launchBackend('legacy', false)
+          }
+        }
+      })
+    })
+    return
+  }
   if (selectedClass === 'ReaderProductionFailureRecoveryTrial') {
     describe(selectedClass, (): void => {
       it('retriesProductionCacheAfterNativeDecodeFailure', 0, async (): Promise<void> => {

@@ -870,22 +870,45 @@ especially `21-single-monitor-reader`, `22-legacy-fallback`,
 `@Monitor` overwritten by the later chapter listener caused the initial loading
 stall; one activity listener now owns initialization and chapter cancellation.
 
-Next, make Koma's reader-kit dependency tracked and pinned, reusing the gallery
-hosts' existing submodule/build contract instead of its sibling checkout. Prove
-the clean-checkout build without machine-local dependency paths before the final
-Package 5 three-host release-candidate matrix. Keep all production defaults
-Legacy. The current phone result does not accept tablet ordinary admission,
-every provider/history entry, or the whole replacement matrix.
+Koma `da3c2750` replaces the sibling dependency with the same tracked submodule
+contract as the gallery hosts, pinned to `8112355`. After explicit user approval,
+the verified `3003h` SSH identity fast-forwarded public reader-kit `main` to that
+exact revision; a fresh empty repository fetched it successfully over public
+HTTPS. The global `gh` identity was not changed.
 
-Publication prerequisite (2026-09-15): the public reader-kit `main` advertises
-`5e5cb4c`, while all three development consumers use `8112355` (37 descendant
-commits). A fresh empty repository fetching that exact hash from
-`https://github.com/erosTeam/reader-kit.git` receives `upload-pack: not our ref`;
-a dry-run from a repository already containing the object misleadingly succeeds.
-Do not stage an unfetchable Koma gitlink or claim clean CI readiness. The next
-action requires authorization to publish these later commits, with the intended
-Git author and GitHub account checked first; the earlier explicit publication
-authorization named `c95e2c1`, not this newer history. No new publication occurred.
+A fresh non-local Koma clone at `da3c2750`, recursive public submodule fetch and
+`ohpm install --all` produce Debug and Release HAPs without a sibling reader-kit,
+local signing profile or pre-existing project build/dependency directories.
+The public unsigned Debug HAP is `d394cfb54e1efc91fa326f90fb32af7f79d2cb65b1e3aa891433160a286c9aed`;
+Release is `d4d3488cdbdd9692bef741dc8812d5d57ee60feadfec5ab8673cd6041b69a294`,
+with bundle `com.honjow.koma`, `buildMode=release`, `debug=false`. All 28 focused
+host checks pass and the tracked lockfile stays unchanged. The existing signed
+Debug build also passes. Logs are retained in Koma's ignored
+`.hermes-artifacts/20260915-reader-pin/`. This is clean-checkout build evidence,
+not a cloud CI run or additional device acceptance.
+
+NextN `ReaderProductionInAppDetailEntriesTrial` now covers the in-app admission
+path that the earlier rehearsals only reached through a backend Want: one process,
+Home to Settings selects Shared or Legacy through the existing row, Home History
+opens the same gallery, and Detail Read, the compact thumbnail and the full-grid
+thumbnail each admit a Reader. Hypium passes 1/1 and all seven captures were
+received. Node-level inspection of the same run's layouts shows the two Shared
+admissions render `rkit-reading-surface` (19 `rkit-*` nodes, page 3/14 and 2/14),
+the two Legacy admissions render `legacy-reader-surface` with zero `rkit-*` nodes,
+and the final state is the Home root with no Reader mounted.
+
+Three rejected runs are retained as scaffolding counterexamples, not product
+failures: a relaunch mid-rehearsal resets the documented cold-start Legacy
+default; a sticky List handle after the Reader closes; and an unguarded stale
+handle during recomposition. The first is by design; the other two were test
+harness races. Evidence:
+`.hvigor/outputs/shared-reader-package5/20260915-normal-entry-197/device197__ALN-AL80/not-applicable/portrait-1260x2720/`.
+
+Next, verify optional normal-entry admission on 103's tablet viewport, including
+rotation, chapter/detail return, explicit Legacy fallback and cold-default
+retention, then reconcile the remaining three-host Package 5 entry matrix.
+Keep production defaults Legacy. This phone result does not establish tablet
+ordinary admission, every provider/history entry, or full replacement.
 
 ## Package completion record
 
