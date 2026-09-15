@@ -853,19 +853,39 @@ replacement or a change to production defaults.
 
 ## Single next action
 
-Close Koma's remaining normal-entry gap in its independent
-`codex/koma-reader-refactor` worktree: add the same process-local Debug-only
-Shared/Legacy selection available in NextN/NextE, snapshot it at normal reader
-entry, and connect the selected shared destination to the existing Index-owned
-chapter preparation, progress and detail/return lifecycle. Current source still
-mounts `ReaderPage` unconditionally from `ReaderDestination`; a Debug Want into
-`ReaderLab` does not accept this normal-entry requirement. Verify the complete
-ordinary entry, interaction, return and explicit Legacy fallback on 197, with
-cold starts and Release retaining Legacy. Keep all source/provider/session
-ownership in the host and do not create one-field wrapper policies. The shared
-revision must also become a tracked, reproducible Koma dependency before the
-final Package 5 release-candidate matrix; the current sibling dependency does
-not meet that requirement.
+Koma commit `c670b249` now passes the selected normal-entry 197 route in its independent
+`codex/koma-reader-refactor` worktree. Debug HAP `f16378f7…93a124` opens from the
+normal Settings selector and Library Continue action, displays the restored
+original at 6/35, toggles chrome, swipes 6→7→6, returns through Manga Detail,
+closes/reopens, and selects another chapter from Detail at 1/32 before restoring
+6/35. One close then returns to Library, without an extra Reader destination.
+The same-process explicit Legacy fallback is usable. Release HAP
+`3105cb06…9a8d9f` hides the selector and cold-opens Legacy at 6/35 with working
+touch/close/reopen. The foreground, full originals and legacy baseline comparison
+were inspected; 28 focused checks and both builds pass. No data was cleared or
+backend preference persisted. Evidence is in Koma's ignored
+`.hermes-artifacts/20260915-entry-baseline/device197__ALN-AL80/not-applicable/portrait-1260x2720/`,
+especially `21-single-monitor-reader`, `22-legacy-fallback`,
+`24-detail-selected-chapter`, and `26-release-legacy`. An identical-path
+`@Monitor` overwritten by the later chapter listener caused the initial loading
+stall; one activity listener now owns initialization and chapter cancellation.
+
+Next, make Koma's reader-kit dependency tracked and pinned, reusing the gallery
+hosts' existing submodule/build contract instead of its sibling checkout. Prove
+the clean-checkout build without machine-local dependency paths before the final
+Package 5 three-host release-candidate matrix. Keep all production defaults
+Legacy. The current phone result does not accept tablet ordinary admission,
+every provider/history entry, or the whole replacement matrix.
+
+Publication prerequisite (2026-09-15): the public reader-kit `main` advertises
+`5e5cb4c`, while all three development consumers use `8112355` (37 descendant
+commits). A fresh empty repository fetching that exact hash from
+`https://github.com/erosTeam/reader-kit.git` receives `upload-pack: not our ref`;
+a dry-run from a repository already containing the object misleadingly succeeds.
+Do not stage an unfetchable Koma gitlink or claim clean CI readiness. The next
+action requires authorization to publish these later commits, with the intended
+Git author and GitHub account checked first; the earlier explicit publication
+authorization named `c95e2c1`, not this newer history. No new publication occurred.
 
 ## Package completion record
 
