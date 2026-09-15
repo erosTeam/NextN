@@ -945,12 +945,23 @@ lease released. Evidence:
 This is source-plus-device evidence for the pinned Koma consumer, not a change
 to any production default.
 
+Shared-contract health was re-verified at the pinned revision without any device
+run: `reader-kit` `node --test tests/*.test.cjs` passes 431/431, the cross-host
+tap-zone handoff suite resolves all 1404 host/resolver comparisons and its
+lifecycle/no-write assertions against the three independent consumer branches
+(`NEXTE_READER_ROOT`/`KOMA_READER_ROOT` pointed at the worktrees), and Koma's host
+preference bridge reports its settings/policy/crop/page-gap/preload mapping wired.
+These are logic-level contract results, not device acceptance, and they do not
+replace the per-app device matrix.
+
 Next, verify optional normal-entry admission on 103's tablet viewport, including
 rotation, chapter/detail return, explicit Legacy fallback and cold-default
 retention, then reconcile the remaining three-host Package 5 entry matrix.
-Keep production defaults Legacy. The NextN, NextE and Koma phone results do not
-establish tablet ordinary admission, every provider/history entry, or full
-replacement.
+`192.168.50.103:12345` remains `Offline` on repeated live discovery and its
+lease-scoped `hdc tconn` recovery returns `Connect failed`, so no 103 install or
+UI action has been performed. Keep production defaults Legacy. The NextN, NextE
+and Koma phone results do not establish tablet ordinary admission, every
+provider/history entry, or full replacement.
 
 ## Package completion record
 
