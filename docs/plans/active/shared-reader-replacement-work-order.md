@@ -1243,15 +1243,23 @@ Next Package 5 boundaries:
     through the debug `ReaderLab` route, which does not consult the backend
     selector, so it is evidence about the shared reader surface rather than
     about a selector-driven ordinary entry.
-  - Open discrepancy, not yet classified: on this 1x1-pixel local fixture the
-    shared reader renders a page part with no failure node, while the legacy
-    reader logs `display_ready page=2` immediately followed by
-    `display_failed page=2` and shows `无法加载页面`
-    (`.hermes-artifacts/20260916-koma-continuity/15-legacy-failure-log/`). The
-    fixture is a 70-byte 1x1 transparent PNG whose page URIs point inside the
-    app sandbox, so this is not a folder-permission failure. Whether legacy is
-    expected to reject such a degenerate image is unresolved; do not report it
-    as a product defect or as parity without a real-content control.
+  - The 1x1-pixel fixture discrepancy is now explained and closed. That fixture
+    is a 70-byte 1x1 transparent PNG, and the legacy reader rejects it at the
+    display stage (`display_ready page=2` then `display_failed page=2`). On real
+    downloaded content the legacy reader is fully healthy, so this was a
+    degenerate-fixture artifact rather than a legacy defect:
+    - Shared reader, ordinary entry on the real downloaded chapter
+      (`com.dm5.koma:manga:manhua-chongchongcun`, 6/6 pages downloaded): shelf
+      card -> comic Detail -> `开始阅读` mounts `rkit-reading-surface` with
+      `rkit-part-*` present, no `rkit-failure-*`, page `1 / 6`. Evidence:
+      `.hermes-artifacts/20260916-koma-real/03-shared-real-v2/`.
+    - Existing reader, same ordinary entry on the same real chapter (cold start,
+      so the process-local selector is on its default): mounts
+      `reader_key_surface`, page `1 / 6`, and the log reads
+      `display_ready page=1` then `display_complete page=1`. Evidence:
+      `.hermes-artifacts/20260916-koma-real/04-legacy-real/`.
+    Both frames render the same real manga page, so the two implementations are
+    comparable on real content rather than only on fixture images.
   Remaining Package 5 dimensions: the main-revision resume check for NextN and
   NextE, NextE's real Legacy reading fallback, Koma continuity through a
   selector-driven ordinary entry with real content, and 103 tablet ordinary
