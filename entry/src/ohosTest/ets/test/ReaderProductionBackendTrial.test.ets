@@ -3195,15 +3195,24 @@ export default function readerProductionBackendTrialTest(): void {
 
             const landscapeX = Math.round((landscapeBounds.left + landscapeBounds.right) / 2)
             const landscapeCenterY = Math.round((landscapeBounds.top + landscapeBounds.bottom) / 2)
-            const landscapeFromY = Math.round(
-              landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.78)
+           const landscapeFromY = Math.round(
+             landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.78)
             const landscapeToY = Math.round(
               landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.22)
             let currentPage: number = 2
             const dragLog: string[] = []
+            const compUtils = mainWindow.getUIContext().getComponentUtils()
+            const checkTop = (id: string): number => {
+              const r = compUtils.getRectangleById(id)
+              return (r.size.width > 0 && r.size.height > 0 && Number.isFinite(r.windowOffset.y)) ? Math.round(r.windowOffset.y) : -999999
+            }
             for (let attempt = 0; attempt < 65 && currentPage === 2; attempt++) {
+              const top2Before = checkTop('rkit-continuous-page-2')
               await driver.drag(landscapeX, landscapeFromY, landscapeX, landscapeToY, 2500)
               await driver.delayMs(200)
+              const top2After = checkTop('rkit-continuous-page-2')
+              const top3After = checkTop('rkit-continuous-page-3')
+              const delta2 = (top2Before !== -999999 && top2After !== -999999) ? (top2After - top2Before) : 'none'
               const liveIndex = connectNhReadProgress().index(GALLERY_ID)
               let text = 'null'
               const counter = await driver.findComponent(ON.id('rkit-chrome-page')) ??
@@ -3211,7 +3220,9 @@ export default function readerProductionBackendTrialTest(): void {
               if (counter !== null) {
                 try { text = (await counter.getText()).trim() } catch (_) {}
               }
-              dragLog.push(`att${attempt}:live=${liveIndex}:txt=${text}`)
+              const entry = `att${attempt}:live=${liveIndex}:txt=${text}:top2=${top2After}:d2=${delta2}:top3=${top3After}`
+              dragLog.push(entry)
+              console.info(`[ReaderProductionBackendTrial] continuous_scroll_step ${entry}`)
               if (liveIndex >= 0 && liveIndex !== 2) {
                 currentPage = liveIndex
               } else if (/^[0-9]+\s*\/\s*[0-9]+$/.test(text)) {
