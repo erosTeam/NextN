@@ -3198,16 +3198,18 @@ export default function readerProductionBackendTrialTest(): void {
             const landscapeToY = Math.round(landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.35)
             let currentPage: number = 2
             let page3IntersectsViewport: boolean = false
-            for (let attempt = 0; attempt < 25 && currentPage < 3; attempt++) {
+            for (let attempt = 0; attempt < 20 && currentPage < 3; attempt++) {
               await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 500)
-              await driver.delayMs(700)
-              const counter = await driver.findComponent(ON.id('rkit-persistent-page')) ??
-                await driver.findComponent(ON.id('rkit-chrome-page'))
+              await driver.delayMs(800)
+              let counter = await driver.findComponent(ON.id('rkit-chrome-page'))
+              if (counter === null) {
+                await driver.click(landscapeX, Math.round((landscapeBounds.top + landscapeBounds.bottom) / 2))
+                await driver.delayMs(500)
+                counter = await driver.findComponent(ON.id('rkit-chrome-page'))
+              }
               if (counter !== null) {
-                try {
-                  const text = (await counter.getText()).trim()
-                  if (/^[0-9]+\s*\/\s*[0-9]+$/.test(text)) currentPage = pageIndex(text)
-                } catch (_) {}
+                const text = (await counter.getText()).trim()
+                if (/^[0-9]+\s*\/\s*[0-9]+$/.test(text)) currentPage = pageIndex(text)
               }
               const rect = mainWindow.getUIContext().getComponentUtils().getRectangleById('rkit-continuous-page-3')
               if (rect.size.width > 0 && rect.size.height > 0 && Number.isFinite(rect.windowOffset.y)) {
