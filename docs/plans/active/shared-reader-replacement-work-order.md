@@ -929,7 +929,7 @@ resume, exit-write, and position restore inside the rolled-back revision
 itself; the visual review of the NextN 197 trial's 7 captures; the corrected
 status-bar analysis; the Koma candidate install-replacement record re-read from
 the raw session artifacts (candidate-only, as scoped above); the 237
-large-screen ordinary-entry admission; and the 237 rotation/responsive trial.
+large-screen ordinary-entry admission for NextN and NextE; and the 237 rotation/responsive trial.
 
 ## Earlier Koma normal-entry record
 
@@ -1255,6 +1255,17 @@ reader content, page, and surface ownership.
 An earlier run reported App died with a ReaderPageCropStrength SyntaxError;
 the root cause of that failure has not been established. The passing run
 supersedes it as the current candidate phone-path trial evidence.
+
+- NextE second form factor ordinary-entry confirmed (2026-09-16, device 237 = HUAWEI Pura X
+  `VDE-AL00` `1320x2120`): the `ReaderProductionInAppBackendRehearsalTrial` passed there
+  with `Tests run: 1, Failure: 0, Error: 0, Pass: 1` on candidate `23e4c84f` (HAP `76b44635`,
+  ohosTest `3edf98d2`). All 6 phase captures were retrieved and reviewed: Settings initial
+  `现有阅读器`, in-app select `共享阅读器`, ordinary Downloads queue entry opens Shared reader
+  (`1 / 2` with dual chrome toolbars), close returns to Downloads, Settings select `现有阅读器`,
+  and re-entering opens Legacy reader (`2 / 2`) with clean return. Two earlier attempts hit
+  transient `rkit-close` unmount during chrome hide transitions, which was hardened with robust
+  fallback in `e51f86fb` before the passing run. Evidence:
+  `.hvigor/outputs/nexte-237-formfactor/device237__VDE-AL00/not-applicable/portrait-1320x2120/01-normal-entry-rehearsal/`.
 
 Next Package 5 boundaries:
 - 237 is now an authorized test device (user instruction, 2026-09-16). It is a
