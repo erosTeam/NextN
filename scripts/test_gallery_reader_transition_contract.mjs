@@ -46,11 +46,11 @@ ok('all six browse presentations expose the real cover node to the transition',
     /@Param surfaceId: string = ''/.test(galleryThumbnail) &&
     /\.id\(this\.surfaceId\)/.test(galleryThumbnail) &&
     /GalleryDetailTransitionCoordinator\.open/.test(collection) &&
-    (collection.match(/GalleryDetailTransitionSourceSlot\(\{/g) ?? []).length === 3 &&
-    /sourceComponentId: this\.galleryDetailSourceId\(gallery\)/.test(collection) &&
-    /this\.transitionState\.sourceComponentId === this\.sourceComponentId/.test(
-      galleryTransitionSourceSlot,
-    ))
+   (collection.match(/GalleryDetailTransitionSourceSlot\(\{/g) ?? []).length === 3 &&
+   /sourceComponentId: this\.galleryDetailSourceId\(gallery\)/.test(collection) &&
+   /(hidesSource\(this\.sourceComponentId|this\.transitionState\.sourceComponentId === this\.sourceComponentId)/.test(
+     galleryTransitionSourceSlot,
+   ))
 
 const history = read('feature/user/src/main/ets/pages/HistoryPage.ets')
 ok('history uses the same card and cover ownership contract',
