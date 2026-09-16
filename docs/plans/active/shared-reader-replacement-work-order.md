@@ -857,18 +857,19 @@ State at this handoff. Package 5 stays **ACTIVE**. Every production default is
 still Legacy, and the shared reader remains an explicit, reversible selection.
 Two work items remain open:
 
-1. **Koma cross-version upgrade/rollback continuity — OPEN.** Row 5 requires
-   every host to preserve progress, settings, and data across upgrade and
-   rollback. Koma's `20260916-koma-replace/01..07` record proves only that the
-   *candidate* HAP survives an `install -r` of itself: same build, same
-   chapter, resume/complete/fallback/restore. It contains **no** run inside a
-   *different, older* Koma revision, so it does not show that a rolled-back
-   revision resumes the same chapter/page or writes progress back. NextN and
-   NextE have that evidence (`ecaafec3`, `2bebd112`); Koma does not. Verification
-   requires two distinguishable build identities: confirm the candidate and
-   rollback HAP versions, resume the same real chapter/page through the ordinary
-   entry inside the **other** revision, read the row it writes on exit, then
-   restore the candidate and the original user state.
+1. ~~Koma cross-version upgrade/rollback continuity~~ — **executed 2026-09-16**
+   (detail in the Koma bullet below). Two distinguishable builds were used:
+   candidate `8f11c550` (HAP `14ff92f7`, has the selector) and the older
+   `main` `0399e257` (HAP `028562a8`, no selector). The older revision resumed
+   the candidate-written page through the ordinary entry and left the row
+   unchanged, the candidate was restored, and the touched chapter matches its
+   baseline field-for-field. Row 5's per-host upgrade/rollback requirement is
+   therefore satisfied for all three hosts. What remains unproven for Koma is
+   the *settings* half of that row: this run held progress/data constant but no
+   reader-settings value was changed, migrated and read back across the
+   version change, because Koma's durable progress document carries
+   `columnMode` while its reader preferences live elsewhere. Treat that as the
+   next Koma-specific check if a settings change is required for the row.
 2. **103 tablet ordinary admission — OPEN, externally blocked.** 103 is
    unreachable from this host (`tconn` reports connected while
    `hdc -t 192.168.50.103:12345 shell echo ok` returns `E001005`). 237 is a
@@ -1326,12 +1327,29 @@ Next Package 5 boundaries:
   A durable-row check must therefore receive the `-wal` sidecar and be read
   from a copy that includes it; a `.db`-only readback is not evidence that a
   write did or did not happen.
-- Koma runtime continuity remains OPEN for the cross-version case. What is
-  executed is only the candidate-build `install -r` path (same build on both
-  sides); its durable records were re-read from the raw artifacts on 2026-09-16
-  (see the paragraph below). No run has yet held the durable state while a
-  *different, older* Koma revision was installed, so upgrade and rollback
-  preservation of progress/settings/data is unproven for Koma.
+- Koma cross-version continuity (completed 2026-09-16). Two genuinely
+  different builds were used, not a self-replacement. Candidate
+  `codex/koma-reader-refactor` `8f11c550`, HAP SHA-256 `14ff92f7…84ce`,
+  contains the `阅读器实现` selector (3 occurrences in `resources.index`); the
+  rollback revision `main` `0399e257` (`0399e257` is an ancestor of the
+  candidate), HAP SHA-256 `028562a8…da8b`, contains none (0 occurrences).
+  Sequence on 197 with the real chapter `chapter:manhua-chongchongcun:1220470:6`
+  (6 pages) through the ordinary shelf card -> comic Detail -> `开始阅读` path:
+  candidate install and open advanced the durable row to `pageIndex 2`
+  (reader showing `3 / 6`); `install -r` of the **older** rollback HAP, cold
+  start, and the same ordinary open with no page override resumed `3 / 6` from
+  the candidate-written document and left `pageIndex 2` unchanged on exit; the
+  candidate HAP was then reinstalled with `install -r` and again resumed
+  `3 / 6`. The touched chapter was returned to its pre-run baseline through the
+  reader's own navigation, and the durable document now matches the baseline
+  field-for-field (`pageIndex 0`, `pageId …:0`, `progressRatio 0.1666…`,
+  `completed false`, `columnMode odd_left`); only `updatedAt` differs, which is
+  inherent to having re-read the chapter. Evidence:
+  `.hermes-artifacts/20260916-koma-crossversion/{01-candidate-write,02-rollback-resume,03-restore-candidate,04-restore-baseline}/`
+  in the Koma worktree. Build identity note: the older revision does not
+  compile against the pinned reader-kit, so no fresh HAP was built from it and
+  the existing artifact was used; its content is confirmed by the selector-string
+  absence above rather than by build provenance alone.
   A previous note claimed the 197
   install was "clean"; that was wrong and is withdrawn. Those probes only read
   `/data/app/el2/100/base/<bundle>/files`, `cache`, and `database`, which are not
