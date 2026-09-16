@@ -48,7 +48,7 @@ deletes user data.
 | 2. Host state and action parity | Enter from normal host state; inherit and change applicable layout/direction/spread/crop/interpolation/auto-read/keep-screen/tap/volume settings; preserve progress; execute every supported image/host action without inventing generic business behavior. | Per-host old-to-shared capability map has no silent omission; persistence cold-start path and legacy return pass; one phone run per host plus 103 only for responsive state. | DONE |
 | 3. Entry, chrome, thumbnails, and return | Detail, all-thumbnails, and reader-rail entry use the correct source identity and thumbnail geometry; single/spread/continuous/long-image UI and failure material remain legible; rotation/window changes keep anchors; close returns to the current source position and restores system UI. | Same-state full-page review on 197 and 103 for changed responsive/transition paths; NH partial thumbnails and EH sprites use their own host contracts; no known visual counterexample. | DONE |
 | 4. Koma chapter orchestration | Open a real multi-chapter title; explicit previous/next chapter preparation, success, failure, cancellation, rapid A-B-C selection, last-chapter semantics, per-chapter progress/read state, local/remote/provider scope, and return all remain host-owned around the shared session. | Focused orchestrator tests, Koma build, 197 phone path, 103 tablet rotation/chapter path, unchanged unrelated library/download data, and legacy Koma reader fallback. | DONE |
-| 5. Controlled production replacement | Each app can select the shared host at the normal reader entry without debug Wants, while a single explicit fallback restores its legacy reader. Cold start, repeated entry, upgrade, and rollback preserve settings/progress/data. | One pinned `reader-kit` revision consumed by all hosts; per-app full route matrix accepted on the selected release candidate; fallback verified before any app changes its default. Default selection remains a separate explicit release decision. | **DONE** |
+| 5. Controlled production replacement | Each app can select the shared host at the normal reader entry without debug Wants, while a single explicit fallback restores its legacy reader. Cold start, repeated entry, upgrade, and rollback preserve settings/progress/data. | One pinned `reader-kit` revision consumed by all hosts; per-app full route matrix accepted on the selected release candidate; fallback verified before any app changes its default. Default selection remains a separate explicit release decision. | **ACTIVE** |
 
 ## Package 1 completion — 2026-09-14
 
@@ -1568,17 +1568,20 @@ focused suite result, consumer build result, selected device/artifact roots,
 observed user path, preserved fallback, and explicit untested/non-applicable
 branches. Do not paste command transcripts or create a second status log.
 
-### Package 5 completion — 2026-09-17
+### Package 5 active replacement status and gap inventory — 2026-09-17
 
-- **Shared revision:** `reader-kit` pinned commit `8112355` (60+ core tests 100% pass).
-- **Host commits:**
-  - NextN: `0a0add42` (with continuous rotation passing on `b1375d64`).
-  - NextE: `e0f26b81`.
-  - Koma: `02fd0872`.
-- **Controlled replacement evidence:**
-  - NextN: ordinary entry (Detail / Grid / Compact) passing with 7 group visual captures reviewed (`.hvigor/outputs/trial-debug-v2/`); `install -r` upgrade/rollback runtime continuity passing on 197 (`.hvigor/outputs/continuity-verify-v7/`); large-screen split-spread rotation (`.hvigor/outputs/rotation-237-v1/`) and tall continuous scroll rotation reflow (`.hvigor/outputs/continuous-rotation-237-v5/`) passing on authorized device 237 (`VDE-AL00` `1320x2120`) with 4 whole-screen captures reviewed.
+Package 5 is **ACTIVE** (overall replacement remains **OPEN**; broad completion withdrawn).
+All verified physical and runtime assets remain retained, while open parity/integration gaps are tracked below:
+
+- **Retained verified evidence baseline:**
+  - NextN: ordinary entry (Detail / Grid / Compact) with 7 visual capture groups reviewed (`.hvigor/outputs/trial-debug-v2/`); `install -r` upgrade/rollback runtime continuity passing on 197 (`.hvigor/outputs/continuity-verify-v7/`); large-screen split-spread rotation (`.hvigor/outputs/rotation-237-v1/`) and tall continuous scroll rotation reflow (`.hvigor/outputs/continuous-rotation-237-v5/`) passing on authorized device 237 (`VDE-AL00` `1320x2120`) with 4 whole-screen captures reviewed.
   - NextE: ordinary Downloads entry and return passing on 197 and 237; `install -r` runtime continuity passing on 197 (`.hvigor/outputs/nexte-continuity-verify-v4/`); release mode fail-closed Legacy verification passing on 197.
   - Koma: ordinary Library continue and chapter switch passing on 197 on real content; `install -r` replacement and cross-version settings continuity passing on 197; 6 shared reader contract suites pass.
+  - reader-kit: pinned commit `8112355` with 60+ core tests 100% pass.
+- **Identified implementation and acceptance gaps (Package 5 OPEN):**
+  1. *NextE real translation end-to-end integration:* `ReaderHostTranslationActionsTrial` only verifies menu action exposure; `test_reader_translation_provider_runtime.mjs` mocks `ComicTranslationRuntimeService`. Real translated result rendering, original/translated toggling roundtrip, and real failure recovery on device remain OPEN.
+  2. *Three-host common UI and state alignment:* Although all three hosts mount `ReaderSurface` (NextN:808, NextE:750, Koma:595), parity comparison across common controls, settings sheets, thumbnail rails, host actions, and error/loading states requires explicit side-by-side mapping to distinguish intentional host differences from unintended UI divergence.
+  3. *Extensibility and migration coupling:* `ReaderSession:9-10` hardcodes `enhanced | translated` variant types, `ReaderSurface:158-162` has concrete business branching, and `NextEReaderLabAdapter` still adapts old `ReaderViewModel`. These are managed transition boundaries requiring narrow interface containment without claiming full pluggability.
 - **Preserved fallback:** All three hosts keep cold starts defaulting to Legacy reader; shared reader selection is in-process and reversible; release builds fail closed to Legacy; no user data or persisted settings corrupted.
-- **Device boundaries:** 237 covers large-screen, rotation, and responsive layout; 197 covers primary phone and runtime continuity; 103 designated as optional test support per user directive (2026-09-17).
+- **Device boundaries:** 237 covers large-screen, rotation, and responsive layout; 197 covers primary phone and runtime continuity; 103 designated as optional test support per user directive (2026-09-17) and never blocks progress.
 - **Release authority boundary:** Completion of replacement parity does NOT constitute authorization to flip production defaults; default switching remains a separate user release decision.
