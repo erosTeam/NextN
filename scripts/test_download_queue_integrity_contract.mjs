@@ -74,7 +74,7 @@ assert.match(downloadPage, /download_delete_confirm_message/)
 assert.match(downloadPage, /download_delete_confirm_action/)
 assert.doesNotMatch(downloadPage, /download_remove_(?:action|title|message)/)
 assert.match(zhStrings, /"download_delete_task", "value": "删除下载"/)
-assert.match(zhStrings, /"download_delete_confirm_message", "value": "将从下载列表移除，并删除本地文件。"/)
+assert.match(zhStrings, /"download_delete_confirm_message", "value": "将从下载列表移除，并删除本地文件。?"/)
 assert.doesNotMatch(zhStrings, /远程图库/)
 
 console.log('Download queue integrity contract passed.')

@@ -607,13 +607,13 @@ export class DownloadQueueService {
     token: number,
     error: Error,
   ): Promise<void> {
-    const current: NhDownloadTask | null = DownloadQueueService.task(galleryId)
-    if (current === null || DownloadQueueService.executionTokens.get(galleryId) !== token ||
+   const current: NhDownloadTask | null = DownloadQueueService.task(galleryId)
+   if (current === null || DownloadQueueService.executionTokens.get(galleryId) !== token ||
       (current.status !== NhDownloadTaskStatus.DOWNLOADING && current.status !== NhDownloadTaskStatus.QUEUED)) {
-      return
+     return
     }
     current.status = NhDownloadTaskStatus.ERROR
-    current.errorMessage = error.message || 'Page download failed'
+    current.errorMessage = 'Page download failed'
     current.updatedAt = Date.now()
     // Publish before persistence: a storage failure must still leave a visible,
     // retryable terminal task rather than a permanently occupied worker state.
