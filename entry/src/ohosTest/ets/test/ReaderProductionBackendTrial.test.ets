@@ -3220,8 +3220,14 @@ export default function readerProductionBackendTrialTest(): void {
               }
             }
             expect(currentPage).assertEqual(3)
-            expect(await driver.findComponent(
-              ON.type('Image').within(ON.id('rkit-continuous-page-3'))) !== null).assertTrue()
+            let page3Image: Component | null = null
+            for (let attempt = 0; attempt < 25; attempt++) {
+              page3Image = await driver.findComponent(
+                ON.type('Image').within(ON.id('rkit-continuous-page-3')))
+              if (page3Image !== null) break
+              await driver.delayMs(250)
+            }
+            expect(page3Image !== null).assertTrue()
             await capture(driver, 'continuous-rotation-landscape-next')
 
             await mainWindow.setPreferredOrientation(window.Orientation.PORTRAIT)
@@ -3230,8 +3236,14 @@ export default function readerProductionBackendTrialTest(): void {
             expect(returnedPortrait.y > returnedPortrait.x).assertTrue()
             expect(await waitSharedReady(driver)).assertEqual(3)
             expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
-            expect(await driver.findComponent(
-              ON.type('Image').within(ON.id('rkit-continuous-page-3'))) !== null).assertTrue()
+            let returnedPage3Image: Component | null = null
+            for (let attempt = 0; attempt < 25; attempt++) {
+              returnedPage3Image = await driver.findComponent(
+                ON.type('Image').within(ON.id('rkit-continuous-page-3')))
+              if (returnedPage3Image !== null) break
+              await driver.delayMs(250)
+            }
+            expect(returnedPage3Image !== null).assertTrue()
             await capture(driver, 'continuous-rotation-returned-portrait')
 
             await closeAnyReader(driver)
