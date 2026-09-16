@@ -1186,9 +1186,13 @@ Next Package 5 boundaries:
   authorized, a second large-screen form factor is available for ordinary-entry
   and rotation coverage; 103 remains the named tablet target if it returns.
 - The A/B/C file-hash experiments prove only that install -r preserves
-  checked durable files between builds; runtime continuity (read, upgrade,
-  reopen same page, rollback, reopen same page) remains OPEN for all
-  three hosts.
+  checked durable files between builds. That narrowed statement no longer
+  bounds the whole continuity claim: the read -> upgrade -> reopen-same-page
+  -> rollback -> reopen-same-page path is now executed on both phone hosts
+  inside the rolled-back revision itself (NextN `ecaafec3`, NextE `2bebd112`),
+  with the exit-written durable row read back and the position restored; Koma
+  has its own install-replacement continuity record. The superseded sentence is
+  struck rather than kept as an OPEN row for those three paths.
 - Correction (2026-09-16, after reviewing the raw runs): the NextN and NextE
   entries previously written as "runtime continuity DONE" overstate what was
   executed. In both runs the main revision was only installed, cold-opened, and
@@ -1198,10 +1202,13 @@ Next Package 5 boundaries:
   page, and persisted state through its ordinary entry. It does not prove that
   a real rolled-back revision can resume the same reading, and a Legacy
   fallback observed inside the candidate build is not evidence about the main
-  rollback revision. Both remain OPEN; the minimum remaining check is to hold
-  the existing state, resume the same content/page/settings through the
-  ordinary entry **inside the main revision itself**, confirm the progress
-  written on exit, and then restore the candidate.
+  rollback revision. That minimum check has since been executed on both hosts:
+  each main revision resumed the same content/page through its ordinary entry,
+  the exit-written durable row matched the displayed frame, and the position was
+  then restored through the same path (see the NextN and NextE paragraphs
+  below). The two paragraphs after this one keep the executed detail; this
+  correction is retained as the record of why the earlier DONE wording was
+  withdrawn.
 - NextN replacement-then-restore acceptance on 197 (partial, phone path only).
   `entry/src/ohosTest/ets/test/ReaderRuntimeContinuity.test.ets` (registered in
   `List.test.ets`) drives the ordinary in-app Detail entry, reads the host's own
