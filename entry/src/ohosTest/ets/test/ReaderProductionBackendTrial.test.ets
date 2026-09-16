@@ -3194,27 +3194,30 @@ export default function readerProductionBackendTrialTest(): void {
             await capture(driver, 'continuous-rotation-landscape-retained')
 
             const landscapeX = Math.round((landscapeBounds.left + landscapeBounds.right) / 2)
-            const landscapeFromY = Math.round(
-              landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.75)
-            const landscapeToY = Math.round(
-              landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.25)
+            const centerY = Math.round((landscapeBounds.top + landscapeBounds.bottom) / 2)
+            const landscapeFromY = centerY + 90
+            const landscapeToY = centerY - 90
             let currentPage: number = 2
-            for (let attempt = 0; attempt < 55 && currentPage === 2; attempt++) {
-              await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 600)
-              await driver.delayMs(400)
+            const swipeLog: string[] = []
+            for (let attempt = 0; attempt < 80 && currentPage === 2; attempt++) {
+              await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 300)
+              await driver.delayMs(300)
               const liveIndex = connectNhReadProgress().index(GALLERY_ID)
+              let text = 'null'
+              const counter = await driver.findComponent(ON.id('rkit-chrome-page')) ??
+                await driver.findComponent(ON.id('rkit-persistent-page'))
+              if (counter !== null) {
+                try { text = (await counter.getText()).trim() } catch (_) {}
+              }
+              swipeLog.push(`att${attempt}:live=${liveIndex}:txt=${text}`)
               if (liveIndex >= 0 && liveIndex !== 2) {
                 currentPage = liveIndex
-              } else {
-                const counter = await driver.findComponent(ON.id('rkit-chrome-page')) ??
-                  await driver.findComponent(ON.id('rkit-persistent-page'))
-                if (counter !== null) {
-                  try {
-                    const text = (await counter.getText()).trim()
-                    if (/^[0-9]+\s*\/\s*[0-9]+$/.test(text)) currentPage = pageIndex(text)
-                  } catch (_) {}
-                }
+              } else if (/^[0-9]+\s*\/\s*[0-9]+$/.test(text)) {
+                currentPage = pageIndex(text)
               }
+            }
+            if (currentPage !== 3) {
+              throw new Error(`swipeLog: ${swipeLog.slice(-10).join(' | ')}`)
             }
             expect(currentPage).assertEqual(3)
             expect(connectNhReadProgress().index(GALLERY_ID)).assertEqual(3)
