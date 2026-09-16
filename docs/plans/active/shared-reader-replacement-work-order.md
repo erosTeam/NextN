@@ -1194,12 +1194,17 @@ Next Package 5 boundaries:
   `Tests run: 1, Failure: 0, Error: 0, Pass: 1`, trial reporting
   `gid=4175844 resumed=3 expected=3 coldStart=legacy reset=legacy`, resumed
   frame 4/46. Verified inside the candidate build: cold start is Legacy, the
-  durable page and column mode are unchanged, the ordinary entry resumes the
-  same page, and the rehearsal selector returns to Legacy. Not verified: a real
-  Legacy reading fallback (the trial only opens Shared, so `reset=legacy` shows
-  selector reset, not a Legacy read), the NextE equivalent of the NextN
-  main-revision resume check above (only NextN has it so far), and the durable
-  row reread after exiting a reader in the main revision.
+  same page, and the rehearsal selector returns to Legacy.
+  NextE real Legacy reading fallback verified on 197 (2026-09-16): cold start
+  defaults to Legacy backend without touching Settings; gallery 4175844 opened
+  from History list -> Detail page Read action ("继续 P4") -> mounts
+  `reader_key_surface` (`rkit-reading-surface` = 0), resumes and renders real
+  manga page at `4 / 46`, matching durable `page_index 3` and `column_mode ""`.
+  Pre/post RDB snapshots confirmed durable row unchanged. Evidence:
+  `.hvigor/outputs/nexte-legacy-read/{layout.json,screen.png,NextE-before.db,NextE-after.db}`.
+  Still not verified for NextE: the NextE equivalent of the NextN main-revision
+  resume check (verifying resume inside the committed main revision 2bebd112 itself),
+  and the durable-row reread after exiting a reader in the main revision.
 - Koma runtime continuity remains OPEN. A previous note here claimed the 197
   install was "clean"; that was wrong and is withdrawn. Those probes only read
   `/data/app/el2/100/base/<bundle>/files`, `cache`, and `database`, which are not
