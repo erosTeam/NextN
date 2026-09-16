@@ -3195,26 +3195,26 @@ export default function readerProductionBackendTrialTest(): void {
 
             const landscapeX = Math.round((landscapeBounds.left + landscapeBounds.right) / 2)
             const landscapeCenterY = Math.round((landscapeBounds.top + landscapeBounds.bottom) / 2)
+            const landscapeFromY = Math.round(
+              landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.58)
+           const landscapeToY = Math.round(
+             landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.42)
             let currentPage: number = 2
             const stepLog: string[] = []
-            const compUtils = mainWindow.getUIContext().getComponentUtils()
+           const compUtils = mainWindow.getUIContext().getComponentUtils()
             const checkTop = (id: string): number => {
               const r = compUtils.getRectangleById(id)
               return (r.size.width > 0 && r.size.height > 0 && Number.isFinite(r.windowOffset.y)) ? Math.round(r.windowOffset.y) : -999999
             }
-            for (let attempt = 0; attempt < 75 && currentPage === 2; attempt++) {
-              const top2Before = checkTop('rkit-continuous-page-2')
-              const top3Current = checkTop('rkit-continuous-page-3')
-              const nearBoundary = top3Current !== -999999 && top3Current <= 2500
-              const fromY = Math.round(landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * (nearBoundary ? 0.55 : 0.72))
-              const toY = Math.round(landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * (nearBoundary ? 0.45 : 0.28))
-              await driver.swipe(landscapeX, fromY, landscapeX, toY, nearBoundary ? 350 : 550)
-              await driver.delayMs(300)
-              const top2After = checkTop('rkit-continuous-page-2')
+           for (let attempt = 0; attempt < 135 && currentPage === 2; attempt++) {
+             const top2Before = checkTop('rkit-continuous-page-2')
+             await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 400)
+             await driver.delayMs(250)
+             const top2After = checkTop('rkit-continuous-page-2')
               const top3After = checkTop('rkit-continuous-page-3')
-              const delta2 = (top2Before !== -999999 && top2After !== -999999) ? (top2After - top2Before) : 'none'
+             const delta2 = (top2Before !== -999999 && top2After !== -999999) ? (top2After - top2Before) : 'none'
               const liveIndex = connectNhReadProgress().index(GALLERY_ID)
-              let text = 'null'
+             let text = 'null'
              const counter = await driver.findComponent(ON.id('rkit-chrome-page')) ??
                 await driver.findComponent(ON.id('rkit-persistent-page'))
              if (counter !== null) {
