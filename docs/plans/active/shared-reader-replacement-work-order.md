@@ -1258,13 +1258,15 @@ supersedes it as the current candidate phone-path trial evidence.
 
 - NextE second form factor ordinary-entry confirmed (2026-09-16, device 237 = HUAWEI Pura X
   `VDE-AL00` `1320x2120`): the `ReaderProductionInAppBackendRehearsalTrial` passed there
-  with `Tests run: 1, Failure: 0, Error: 0, Pass: 1` on candidate `23e4c84f` (HAP `76b44635`,
-  ohosTest `3edf98d2`). All 6 phase captures were retrieved and reviewed: Settings initial
+  with `Tests run: 1, Failure: 0, Error: 0, Pass: 1` on candidate commit `e0f26b81`
+  (HAP `76b44635`, ohosTest `1cecaa42`). All 6 phase captures were retrieved and reviewed: Settings initial
   `现有阅读器`, in-app select `共享阅读器`, ordinary Downloads queue entry opens Shared reader
   (`1 / 2` with dual chrome toolbars), close returns to Downloads, Settings select `现有阅读器`,
-  and re-entering opens Legacy reader (`2 / 2`) with clean return. Two earlier attempts hit
-  transient `rkit-close` unmount during chrome hide transitions, which was hardened with robust
-  fallback in `e51f86fb` before the passing run. Evidence:
+  and re-entering opens Legacy reader (`2 / 2`) with clean return. An intermediate attempt
+  (`e51f86fb`) masked unmount timing by falling back to `driver.pressBack`, which did not
+  prove the close button itself; that fallback was removed in `e0f26b81` to strictly assert
+  clicking `rkit-close` (retrying the button click or re-calling the chrome without Back
+  substitution), and the trial cleanly passed 1/1 with `sharedReturned=true`. Evidence:
   `.hvigor/outputs/nexte-237-formfactor/device237__VDE-AL00/not-applicable/portrait-1320x2120/01-normal-entry-rehearsal/`.
 
 Next Package 5 boundaries:
