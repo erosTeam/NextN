@@ -25,9 +25,14 @@ deletes user data.
    the complete `reader-kit` suite when shared code changed, and one matching
    build of every consumer. Do not rebuild between adjacent assertions.
 4. Device coverage follows risk rather than multiplication: use 197 for the
-   primary phone/runtime path and 103 for tablet, rotation, responsive layout,
-   or one selected cross-check. A changed shared visual/layout owner requires
-   both shapes; a non-layout host adapter does not automatically require both.
+   primary phone/runtime path, 237 (HUAWEI Pura X `VDE-AL00`, an authorized
+   test device per the user instruction of 2026-09-16) for large-screen,
+   rotation, and responsive-layout coverage, and 103 for tablet coverage or one
+   selected cross-check. A changed shared visual/layout owner requires both
+   shapes; a non-layout host adapter does not automatically require both. 237
+   carries the other apps' real user state, so runs there must use `install -r`
+   and must not assume an empty store. 103 being unreachable blocks only the
+   tablet dimension; work that 197 or 237 can cover continues.
 5. One ignored artifact directory and one complete protocol manifest belong to
    each package/device run. Git receives no run JSON and no paragraph per run.
 6. Update the table below in place. A counterexample reopens its package; it
@@ -823,7 +828,27 @@ with and closes the shared surface, then selects Legacy and repeats the same
 entry/interaction/return path. Its seven inspected captures and manifest are
 under `.hvigor/outputs/shared-reader-package5/device197__ALN-AL80/not-applicable/portrait-1260x2720/03-normal-entry-rehearsal/`.
 Release and ordinary cold launches still fail closed to Legacy, and the
-selector remains outside preferences, backup and user data.
+selector remains outside preferences, backup and user data. That release half
+now carries its own device evidence instead of a source reading (2026-09-16,
+197). The `product=default buildMode=release` HAP
+`ec9b45dd0f960ceadfbf853c0f8b06cea23580517cdbbc930c85d215c9222bec` installed
+over the running debug build with `install -r`, keeping the debug-signed
+profile so user data survived. Five accepted protocol runs under
+`.hvigor/outputs/nexte-release-failclosed/device197__ALN-AL80/not-applicable/portrait-1260x2720/`
+show: Settings → 阅读 no longer renders the `替换演练` group or
+`nexte-reader-backend-rehearsal-row`, inspected against the 10:04 debug probe
+that did render it; a cold launch through the ordinary Settings → History →
+Detail Read route opened `reader_key_surface` with zero `rkit-*` nodes at
+`4 / 46`; centre tap, Back close, and a reopen kept the same legacy surface and
+page; closing returned to the same Detail pane at `继续 P4`; and the device's
+own `bm dump` reports `debug: false`, `versionCode 39`, `versionName 1.3.4`.
+The durable `gallery_read_progress` row stayed at `page_index 3` throughout.
+197 was then restored to the rebuilt debug candidate
+`76b446355227a700100b80dd4bc00f0e270f52593bb479ebd35fc6ea499c3c17` with
+`debug: true` re-read, and the lease was released. One earlier attempt at the
+close step ran while the device was locked and returned `No Error` while its
+layout showed `ScreenLockRootComponent`; it is kept as
+`04a-locked-attempt-rejected` and is not acceptance.
 
 After that replacement boundary, the three consumers and reader-kit continued
 to collapse host integration into capability objects without changing their
@@ -855,7 +880,8 @@ replacement or a change to production defaults.
 
 State at this handoff. Package 5 stays **ACTIVE**. Every production default is
 still Legacy, and the shared reader remains an explicit, reversible selection.
-One work item remains open (item 2); item 1 was closed later in this session:
+One work item remains open (item 3); items 1 and 2 were closed later in this
+session:
 
 1. ~~Koma cross-version upgrade/rollback continuity~~ — **executed 2026-09-16**
    (detail in the Koma bullet below). Two distinguishable builds were used:
@@ -880,12 +906,22 @@ One work item remains open (item 2); item 1 was closed later in this session:
    and the real `Toggle` bounds were read from the settings layout instead.
    Koma's Row 5 upgrade/rollback obligations are therefore executed for both
    progress and settings.
-2. **103 tablet ordinary admission — OPEN, externally blocked.** 103 is
+2. ~~NextE release fail-closed admission~~ — **executed 2026-09-16** on 197.
+   `product=default buildMode=release` HAP `ec9b45dd0f960cea` installed with
+   `install -r` over the debug build (same debug-signed profile, so user data
+   survived) hid the experimental selector, cold-opened Legacy `4 / 46` through
+   the ordinary Settings → History → Detail Read route, kept Legacy through
+   centre tap, Back close and reopen, returned to the same Detail at
+   `继续 P4`, and reported `debug: false` from the device itself. 197 was
+   restored to the rebuilt debug candidate `76b44635`. Detail and the discarded
+   locked-device attempt are in the release paragraph above.
+3. **103 tablet ordinary admission — OPEN, externally blocked.** 103 is
    unreachable from this host (`tconn` reports connected while
-   `hdc -t 192.168.50.103:12345 shell echo ok` returns `E001005`). 237 is a
-   Pura X foldable authorized for testing on 2026-09-16 and supplies a
-   large-screen form factor, but its evidence does **not** close the named 103
-   tablet requirement.
+   `hdc -t 192.168.50.103:12345 shell echo ok` returns `E001005`; the
+   2026-09-16 14:52 recheck found it still `TCP Offline` and `tconn` produced
+   no output). 237 is a Pura X foldable authorized for testing on 2026-09-16
+   and supplies a large-screen form factor, but its evidence does **not** close
+   the named 103 tablet requirement.
 
 Evidence closed in this session (2026-09-16), each replacing an earlier OPEN
 row or unproven claim: NextN `ecaafec3` and NextE `2bebd112` main-revision
@@ -1227,14 +1263,19 @@ Next Package 5 boundaries:
   `nextn-downloads`, `imageknife-cover-cache`, `diagnostics_logs`), so runs
   there must not assume an empty app. Evidence:
   `.hvigor/outputs/device237-state-run1/` in the NextN checkout.
-- 103 tablet normal-entry admission remains OPEN. 103 is currently `Offline`
-  and unreachable from this host: `hdc tconn 192.168.50.103:12345` answers
+- 103 tablet normal-entry admission remains OPEN. Re-observed 2026-09-16
+  14:52: `hdc list targets -v` still reports `192.168.50.103:12345 TCP Offline`.
+  The reconnect branch ran once under lease `20260916-065206-8300d73a`:
+  `hdc tconn 192.168.50.103:12345` produced no output within the bounded call
+  and the follow-up listing was unchanged, so no `echo ok` was reached. The
+  earlier observation is the same state: `tconn` answers
   `[Info]Target is connected, repeat operation` while a lease-scoped
   `hdc -t 192.168.50.103:12345 shell echo ok` answers
   `[Fail][E001005] Device not found or connected`. The tablet dimension is
-  therefore an external availability block, not a product finding. With 237
-  authorized, a second large-screen form factor is available for ordinary-entry
-  and rotation coverage; 103 remains the named tablet target if it returns.
+  therefore an external availability block, not a product finding; no further
+  retry loop is warranted until the device reappears. With 237 authorized, a
+  second large-screen form factor covers ordinary-entry and rotation; 103
+  remains the named tablet target if it returns.
 - The A/B/C file-hash experiments prove only that install -r preserves
   checked durable files between builds. That narrowed statement no longer
   bounds the whole continuity claim: the read -> upgrade -> reopen-same-page
