@@ -855,20 +855,34 @@ replacement or a change to production defaults.
 
 State at this handoff. Package 5 stays **ACTIVE**. Every production default is
 still Legacy, and the shared reader remains an explicit, reversible selection.
-The one open work item is 103 tablet ordinary admission, which is blocked
-purely on that device being unreachable from this host; 237 now supplies the
-large-screen form factor meanwhile. The next action when a tablet is available
-is the ordinary-entry admission on that tablet, reusing the 237 protocol shape
-rather than writing a new scenario.
+Two work items remain open:
+
+1. **Koma cross-version upgrade/rollback continuity — OPEN.** Row 5 requires
+   every host to preserve progress, settings, and data across upgrade and
+   rollback. Koma's `20260916-koma-replace/01..07` record proves only that the
+   *candidate* HAP survives an `install -r` of itself: same build, same
+   chapter, resume/complete/fallback/restore. It contains **no** run inside a
+   *different, older* Koma revision, so it does not show that a rolled-back
+   revision resumes the same chapter/page or writes progress back. NextN and
+   NextE have that evidence (`ecaafec3`, `2bebd112`); Koma does not. Verification
+   requires two distinguishable build identities: confirm the candidate and
+   rollback HAP versions, resume the same real chapter/page through the ordinary
+   entry inside the **other** revision, read the row it writes on exit, then
+   restore the candidate and the original user state.
+2. **103 tablet ordinary admission — OPEN, externally blocked.** 103 is
+   unreachable from this host (`tconn` reports connected while
+   `hdc -t 192.168.50.103:12345 shell echo ok` returns `E001005`). 237 is a
+   Pura X foldable authorized for testing on 2026-09-16 and supplies a
+   large-screen form factor, but its evidence does **not** close the named 103
+   tablet requirement.
 
 Evidence closed in this session (2026-09-16), each replacing an earlier OPEN
 row or unproven claim: NextN `ecaafec3` and NextE `2bebd112` main-revision
 resume, exit-write, and position restore inside the rolled-back revision
 itself; the visual review of the NextN 197 trial's 7 captures; the corrected
-status-bar analysis; Koma install-replacement continuity re-read from the raw
-session artifacts; the 237 large-screen ordinary-entry admission; and the 237
-rotation/responsive trial. The earlier Koma narrative below is retained as
-history, not as pending work.
+status-bar analysis; the Koma candidate install-replacement record re-read from
+the raw session artifacts (candidate-only, as scoped above); the 237
+large-screen ordinary-entry admission; and the 237 rotation/responsive trial.
 
 ## Earlier Koma normal-entry record
 
@@ -1312,9 +1326,12 @@ Next Package 5 boundaries:
   A durable-row check must therefore receive the `-wal` sidecar and be read
   from a copy that includes it; a `.db`-only readback is not evidence that a
   write did or did not happen.
-- Koma runtime continuity: the install-replacement path is now executed and its
-  durable records were re-read from the raw artifacts on 2026-09-16 (see the
-  paragraph below), so the earlier blanket OPEN header no longer applies to it.
+- Koma runtime continuity remains OPEN for the cross-version case. What is
+  executed is only the candidate-build `install -r` path (same build on both
+  sides); its durable records were re-read from the raw artifacts on 2026-09-16
+  (see the paragraph below). No run has yet held the durable state while a
+  *different, older* Koma revision was installed, so upgrade and rollback
+  preservation of progress/settings/data is unproven for Koma.
   A previous note claimed the 197
   install was "clean"; that was wrong and is withdrawn. Those probes only read
   `/data/app/el2/100/base/<bundle>/files`, `cache`, and `database`, which are not
