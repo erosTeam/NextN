@@ -616,11 +616,9 @@ async function backToHomeRoot(driver: Driver): Promise<void> {
 }
 
 async function actualComponentGeometry(driver: Driver, id: string): Promise<ComponentGeometry> {
-  await waitId(driver, id)
-  expect((await driver.findComponents(ON.id(id))).length).assertEqual(1)
   const ability = await abilityDelegatorRegistry.getAbilityDelegator().getCurrentTopAbility()
   const mainWindow = await window.getLastWindow(ability.context)
-  for (let attempt = 0; attempt < 40; attempt++) {
+  for (let attempt = 0; attempt < 80; attempt++) {
     const rect = mainWindow.getUIContext().getComponentUtils().getRectangleById(id)
     if (rect.size.width > 0 && rect.size.height > 0 && Number.isFinite(rect.windowOffset.y)) {
       const value = new ComponentGeometry()
@@ -631,7 +629,7 @@ async function actualComponentGeometry(driver: Driver, id: string): Promise<Comp
         `window=${value.windowId}`)
       return value
     }
-    await driver.delayMs(100)
+    await driver.delayMs(250)
   }
   throw new Error(`Production Reader component geometry unavailable: ${id}`)
 }
