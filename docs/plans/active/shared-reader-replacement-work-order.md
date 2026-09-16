@@ -1248,6 +1248,24 @@ to `.hvigor/outputs/trial-debug-v2/extracted_evidence/` and reviewed. Findings:
   rotation/responsive dimension on a real second form factor; 103 remains the
   named tablet target if it comes back online.
 
+- Continuous-mode rotation and boundary coverage on the large-screen device
+  (2026-09-17, 237 `VDE-AL00` `1320x2120`): the
+  `ReaderProductionContinuousRotationTrial` passed there with
+  `Tests run: 1, Failure: 0, Error: 0, Pass: 1` in 179 s
+  (`keepsContinuousReadingPositionAndBoundaryAcrossTabletRotation`).
+  Candidate commit `b1375d64` (main HAP `4625ba7e`, ohosTest `eae8c55b`).
+  In vertical continuous mode for webtoon gallery 678049 (page 2 scales to
+  28,193 px height in 2120px landscape), it verifies portrait micro-scrolling
+  retaining P2, portrait-to-landscape reflow with viewport expansion to 2120px,
+  bounded non-flinging physical swipe advancing ~250 px/step across boundary to
+  P3 at step 114 (`top3` reached -135px, live progress 3, page label `4 / 14`),
+  and retention of P3 after returning to portrait. All four whole-screen captures
+  were retrieved and reviewed (`continuous-rotation-portrait-scrolled.png`,
+  `continuous-rotation-landscape-retained.png`, `continuous-rotation-landscape-next.png`,
+  `continuous-rotation-returned-portrait.png`). Evidence:
+  `.hvigor/outputs/continuous-rotation-237-v5/run-metadata.json`. Exact history,
+  reader presentation settings, orientation, and legacy backend restored.
+
 Hypium 1/1 on 197 and 1/1 on 237; screenshot review DONE for both sets.
 The status-bar geometry question is reframed: unproven as a backend contract
 difference, and no longer blocking while every measured viewport agrees on the
