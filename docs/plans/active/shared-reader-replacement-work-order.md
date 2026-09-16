@@ -1147,6 +1147,21 @@ to `.hvigor/outputs/trial-debug-v2/extracted_evidence/` and reviewed. Findings:
   `.hvigor/outputs/trial-debug-237-evidence/`. Installation used `install -r`
   on top of 237's existing data (397 history rows, target gallery present).
 
+- Rotation and responsive-layout coverage on the large-screen device
+  (2026-09-16, 237 `VDE-AL00` `1320x2120`): the existing
+  `ReaderProductionAdaptiveRotationTrial` passed there with
+  `Tests run: 1, Failure: 0, Error: 0, Pass: 1` in 38 s
+  (`keepsTheSameRtlSplitSpreadAcrossTabletRotationAndPhysicalNavigation`).
+  That case asserts the real display is portrait before, landscape during, and
+  portrait again after `setPreferredOrientation`, and that the shared viewport
+  width equals the live landscape width, so the rotation itself is measured
+  rather than assumed. It also turns one physical RTL spread in landscape
+  (page 2 -> 4 with both leaves retained), then restores history, spread
+  settings, and the original preferred orientation. Evidence:
+  `.hvigor/outputs/rotation-237-v1/run-metadata.json`. This is the
+  rotation/responsive dimension on a real second form factor; 103 remains the
+  named tablet target if it comes back online.
+
 Hypium 1/1 on 197 and 1/1 on 237; screenshot review DONE for both sets.
 The status-bar geometry question is reframed: unproven as a backend contract
 difference, and no longer blocking while every measured viewport agrees on the
