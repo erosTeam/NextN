@@ -3194,20 +3194,28 @@ export default function readerProductionBackendTrialTest(): void {
             await capture(driver, 'continuous-rotation-landscape-retained')
 
             const landscapeX = Math.round((landscapeBounds.left + landscapeBounds.right) / 2)
-            const landscapeFromY = Math.round(
-              landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.75)
-            const landscapeToY = Math.round(
-              landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.25)
+            const landscapeFromY = Math.round(landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.60)
+            const landscapeToY = Math.round(landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.45)
             let currentPage: number = 2
-            for (let attempt = 0; attempt < 55 && currentPage === 2; attempt++) {
-              await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 900)
-              await driver.delayMs(140)
+            for (let attempt = 0; attempt < 30; attempt++) {
+              if (await driver.findComponent(ON.type('Image').within(ON.id('rkit-continuous-page-3'))) !== null) {
+                currentPage = 3
+                break
+              }
+              await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 400)
+              await driver.delayMs(300)
               const counter = await driver.findComponent(ON.id('rkit-persistent-page')) ??
                 await driver.findComponent(ON.id('rkit-chrome-page'))
               if (counter !== null) {
                 try {
                   const text = (await counter.getText()).trim()
-                  if (/^[0-9]+\s*\/\s*[0-9]+$/.test(text)) currentPage = pageIndex(text)
+                  if (/^[0-9]+\s*\/\s*[0-9]+$/.test(text)) {
+                    const parsed = pageIndex(text)
+                    if (parsed >= 3) {
+                      currentPage = 3
+                      break
+                    }
+                  }
                 } catch (_) {}
               }
             }
