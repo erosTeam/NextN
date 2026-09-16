@@ -1269,6 +1269,19 @@ supersedes it as the current candidate phone-path trial evidence.
   substitution), and the trial cleanly passed 1/1 with `sharedReturned=true`. Evidence:
   `.hvigor/outputs/nexte-237-formfactor/device237__VDE-AL00/not-applicable/portrait-1320x2120/01-normal-entry-rehearsal/`.
 
+- NextE manga translation host integration audited (2026-09-16): source comparison between legacy
+  `ReaderPage.ets` and shared `NextEReaderLabPage.ets` / `NextEReaderTranslationProvider.ets`
+  confirms the full translation chain is already implemented rather than skeleton-only. The shared
+  reader exposes `rkit-host-action-translate-page` and `translate-auto` through `hostActions()` in
+  the More menu matching legacy label transitions (`reader_comic_translation_action` ->
+  `reader_comic_translation_show_original` / `reader_comic_translation_show_result`); delegates
+  execution to the same singleton `ComicTranslationRuntimeService.runReaderPage`; reports progress
+  via `ReaderHostStatus`; and switches between original and translated rendered local images via
+  `ReaderVariantPreference('translated', identity)` and `NextEReaderTranslationPlan`. Speculative
+  claims of unported translation engines (CTD/AOT/Torii) are retracted as unsupported by the code.
+  The open requirement for this capability is physical-device acceptance of the translation action
+  invocation and toggle path.
+
 Next Package 5 boundaries:
 - 237 is now an authorized test device (user instruction, 2026-09-16). It is a
   HUAWEI Pura X (`VDE-AL00`), `1320x2120`, currently `Connected`. A read-only
