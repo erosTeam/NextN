@@ -1287,7 +1287,10 @@ Next Package 5 boundaries:
   A durable-row check must therefore receive the `-wal` sidecar and be read
   from a copy that includes it; a `.db`-only readback is not evidence that a
   write did or did not happen.
-- Koma runtime continuity remains OPEN. A previous note here claimed the 197
+- Koma runtime continuity: the install-replacement path is now executed and its
+  durable records were re-read from the raw artifacts on 2026-09-16 (see the
+  paragraph below), so the earlier blanket OPEN header no longer applies to it.
+  A previous note claimed the 197
   install was "clean"; that was wrong and is withdrawn. Those probes only read
   `/data/app/el2/100/base/<bundle>/files`, `cache`, and `database`, which are not
   the paths Koma actually uses. The real durable location is the module files
@@ -1375,10 +1378,17 @@ Next Package 5 boundaries:
     reported zero differing progress entries, and a cold open read back
     `pageIndex 0 / completed false / isRead false` with the shelf showing the
     baseline 17%. Evidence: `.../06-restore/`, `.../07-restore-verify/`.
-  Remaining Package 5 dimensions: the main-revision resume check for NextN and
-  NextE, NextE's real Legacy reading fallback, and 103 tablet ordinary
-  admission. The three drafts under `docs/plans/active/` remain superseded and
-  unintegrated.
+  Verified against the raw artifacts (2026-09-16): `chapter:manhua-chongchongcun:1220470:6`
+  goes `pageIndex 0/completed false/isRead false` at baseline, `pageIndex 2`
+  when a distinguishable position is established, stays `pageIndex 2` across the
+  `install -r` replacement and the ordinary reopen, becomes
+  `pageIndex 5/completed true/isRead true` at the terminal page, and returns to
+  `pageIndex 0/completed false/isRead false` after the restore, matching the
+  baseline exactly.
+  Remaining Package 5 dimensions after this run: 103 tablet ordinary admission
+  (blocked on that device's availability) and the tablet rotation/responsive
+  dimension, which 237 now covers for NextN. The three drafts under
+  `docs/plans/active/` remain superseded and unintegrated.
 - Production defaults remain Legacy. Phone-path evidence does not establish
   tablet ordinary admission.
 
