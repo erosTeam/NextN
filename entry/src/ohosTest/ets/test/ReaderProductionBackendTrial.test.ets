@@ -3194,16 +3194,16 @@ export default function readerProductionBackendTrialTest(): void {
             await capture(driver, 'continuous-rotation-landscape-retained')
 
             const landscapeX = Math.round((landscapeBounds.left + landscapeBounds.right) / 2)
-            const landscapeFromY = Math.round(landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.60)
-            const landscapeToY = Math.round(landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.45)
+            const landscapeFromY = Math.round(landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.70)
+            const landscapeToY = Math.round(landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.35)
             let currentPage: number = 2
-            for (let attempt = 0; attempt < 30; attempt++) {
+            for (let attempt = 0; attempt < 35; attempt++) {
+              await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 600)
+              await driver.delayMs(300)
               if (await driver.findComponent(ON.type('Image').within(ON.id('rkit-continuous-page-3'))) !== null) {
                 currentPage = 3
                 break
               }
-              await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 400)
-              await driver.delayMs(300)
               const counter = await driver.findComponent(ON.id('rkit-persistent-page')) ??
                 await driver.findComponent(ON.id('rkit-chrome-page'))
               if (counter !== null) {
