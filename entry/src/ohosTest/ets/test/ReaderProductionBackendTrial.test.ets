@@ -3201,17 +3201,23 @@ export default function readerProductionBackendTrialTest(): void {
             let currentPage: number = 2
             for (let attempt = 0; attempt < 55 && currentPage === 2; attempt++) {
               await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 600)
-              await driver.delayMs(300)
-              const counter = await driver.findComponent(ON.id('rkit-persistent-page')) ??
-                await driver.findComponent(ON.id('rkit-chrome-page'))
-              if (counter !== null) {
-                try {
-                  const text = (await counter.getText()).trim()
-                  if (/^[0-9]+\s*\/\s*[0-9]+$/.test(text)) currentPage = pageIndex(text)
-                } catch (_) {}
+              await driver.delayMs(400)
+              const liveIndex = connectNhReadProgress().index(GALLERY_ID)
+              if (liveIndex >= 0 && liveIndex !== 2) {
+                currentPage = liveIndex
+              } else {
+                const counter = await driver.findComponent(ON.id('rkit-chrome-page')) ??
+                  await driver.findComponent(ON.id('rkit-persistent-page'))
+                if (counter !== null) {
+                  try {
+                    const text = (await counter.getText()).trim()
+                    if (/^[0-9]+\s*\/\s*[0-9]+$/.test(text)) currentPage = pageIndex(text)
+                  } catch (_) {}
+                }
               }
             }
             expect(currentPage).assertEqual(3)
+            expect(connectNhReadProgress().index(GALLERY_ID)).assertEqual(3)
             expect(await driver.findComponent(
               ON.type('Image').within(ON.id('rkit-continuous-page-3'))) !== null).assertTrue()
             await capture(driver, 'continuous-rotation-landscape-next')
