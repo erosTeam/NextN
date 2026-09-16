@@ -1122,15 +1122,21 @@ to `.hvigor/outputs/trial-debug-v2/extracted_evidence/` and reviewed. Findings:
   for those two captures are different documents (different component counts
   and ids), and each was produced after its own distinct control was clicked.
 - Correction to the earlier "both capture sets were taken with the reader chrome
-  raised" reading: they were not in the same chrome state, so the geometry
-  difference is not yet a backend difference. The trial's Shared wait requires
-  `rkit-chrome-page`, i.e. chrome raised, and those frames carry 18 system
-  status-bar nodes(`status_bar_color_picker`, `StatusBarIconWrapper_status_bar_clock`,
+  raised" reading: they were not in the same chrome state, and the geometry
+  difference is the already-accepted contract rather than a new finding. The
+  trial's Shared wait requires `rkit-chrome-page`, i.e. chrome raised, and those
+  frames carry 18 system status-bar nodes (`status_bar_color_picker`,
+  `StatusBarIconWrapper_status_bar_clock`,
   `PluginRootComponent_Stack_status_bar_notification_icon`) with the shared
   surface at `[0,124]`. The Legacy wait only requires `legacy-reader-surface`,
-  and those frames carry 0 system status-bar nodes at `[0,0]`. The measured
-  `[0,124]` vs `[0,0]` therefore tracks the observer's chrome expectation plus
-  the system bar, not a proven Shared-vs-Legacy contract difference.
+  so those frames are chrome-hidden and carry 0 system status-bar nodes at
+  `[0,0]`. That is exactly the behaviour recorded earlier in this document for
+  Koma `b2465627`: "the legacy reader hides the status area whenever chrome is
+  hidden", and hidden chrome applies the host fullscreen value while showing
+  chrome restores the status area - verified there as reader roots moving
+  `[0,124]` -> `[0,0]` -> `[0,124]` on 197 and `[0,105]` -> `[0,0]` -> `[0,105]`
+  on 103. The `[0,124]` vs `[0,0]` pair here is the same behaviour seen from two
+  different chrome states, so it is not a defect and needs no new device run.
 - Second form factor confirmed (2026-09-16, device 237 = HUAWEI Pura X
   `VDE-AL00` `1320x2120`, newly authorized by the user): the same
   `ReaderProductionInAppDetailEntriesTrial` passed there with
