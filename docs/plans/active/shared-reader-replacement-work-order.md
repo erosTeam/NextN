@@ -1279,8 +1279,20 @@ supersedes it as the current candidate phone-path trial evidence.
   via `ReaderHostStatus`; and switches between original and translated rendered local images via
   `ReaderVariantPreference('translated', identity)` and `NextEReaderTranslationPlan`. Speculative
   claims of unported translation engines (CTD/AOT/Torii) are retracted as unsupported by the code.
-  The open requirement for this capability is physical-device acceptance of the translation action
-  invocation and toggle path.
+  On 197, `ReaderHostTranslationActionsTrial` verified on real content 4175844 that the More menu
+  dynamically exposes both `rkit-host-action-translate-page` and `rkit-host-action-translate-auto`
+  (capture at `.hvigor/outputs/nexte-translation-actions/device197__ALN-AL80/not-applicable/portrait-1260x2720/01-host-translation-actions/host-translation-actions.png`).
+  However, architectural boundaries and external dependencies remain explicit:
+  1. Core responsibility remains strictly limited to page identity, request generation, variant
+     presentation, and cancellation/resource disposal. Translation runtime, OCR, model selection,
+     and file lifecycle stay host-owned; refactoring does not expand into OCR or translation engine research.
+  2. Current extensibility boundary: `ReaderSession.ets` restricts processed variants to
+     `'enhanced' | 'translated'` and session/surface code hardcodes both branches, so adding new
+     processing types still touches core/ui rather than being arbitrarily pluggable.
+  3. Migration coexistence: `NextEReaderLabAdapter` continues to adapt the legacy `ReaderViewModel`
+     during transition, so the legacy reader module cannot be deleted.
+  4. Full end-to-end translation acceptance with external service invocation remains OPEN, kept as a
+     host integration requirement without blocking reader core replacement progress.
 
 Next Package 5 boundaries:
 - 237 is now an authorized test device (user instruction, 2026-09-16). It is a
