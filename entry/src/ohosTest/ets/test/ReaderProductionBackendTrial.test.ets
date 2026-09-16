@@ -3202,8 +3202,14 @@ export default function readerProductionBackendTrialTest(): void {
             for (let attempt = 0; attempt < 55 && currentPage === 2; attempt++) {
               await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 900)
               await driver.delayMs(140)
-              const counter = await driver.findComponent(ON.id('rkit-chrome-page'))
-              if (counter !== null) currentPage = pageIndex(await counter.getText())
+              const counter = await driver.findComponent(ON.id('rkit-persistent-page')) ??
+                await driver.findComponent(ON.id('rkit-chrome-page'))
+              if (counter !== null) {
+                try {
+                  const text = (await counter.getText()).trim()
+                  if (/^[0-9]+\s*\/\s*[0-9]+$/.test(text)) currentPage = pageIndex(text)
+                } catch (_) {}
+              }
             }
             expect(currentPage).assertEqual(3)
             expect(await driver.findComponent(
