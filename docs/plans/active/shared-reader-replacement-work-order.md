@@ -851,7 +851,26 @@ Evidence is retained in Koma's independent worktree under
 This accepts the zero-visible/gesture-difference Koma adoption, not normal-entry
 replacement or a change to production defaults.
 
-## Single next action
+## Session handoff — 2026-09-16
+
+State at this handoff. Package 5 stays **ACTIVE**. Every production default is
+still Legacy, and the shared reader remains an explicit, reversible selection.
+The one open work item is 103 tablet ordinary admission, which is blocked
+purely on that device being unreachable from this host; 237 now supplies the
+large-screen form factor meanwhile. The next action when a tablet is available
+is the ordinary-entry admission on that tablet, reusing the 237 protocol shape
+rather than writing a new scenario.
+
+Evidence closed in this session (2026-09-16), each replacing an earlier OPEN
+row or unproven claim: NextN `ecaafec3` and NextE `2bebd112` main-revision
+resume, exit-write, and position restore inside the rolled-back revision
+itself; the visual review of the NextN 197 trial's 7 captures; the corrected
+status-bar analysis; Koma install-replacement continuity re-read from the raw
+session artifacts; the 237 large-screen ordinary-entry admission; and the 237
+rotation/responsive trial. The earlier Koma narrative below is retained as
+history, not as pending work.
+
+## Earlier Koma normal-entry record
 
 Koma commit `c670b249` now passes the selected normal-entry 197 route in its independent
 `codex/koma-reader-refactor` worktree. Debug HAP `f16378f7…93a124` opens from the
