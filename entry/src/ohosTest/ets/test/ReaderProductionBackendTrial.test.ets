@@ -3043,12 +3043,12 @@ export default function readerProductionBackendTrialTest(): void {
             expect(await driver.findComponent(ON.type('Image').within(ON.id('rkit-part-3-whole'))) !== null).assertTrue()
             await capture(driver, 'adaptive-rotation-portrait-spread')
 
-            await mainWindow.setPreferredOrientation(window.Orientation.LANDSCAPE)
-            await driver.delayMs(1800)
-            const landscape = await driver.getDisplaySize()
+           await mainWindow.setPreferredOrientation(window.Orientation.LANDSCAPE)
+           await driver.delayMs(1800)
+           const landscape = await driver.getDisplaySize()
             expect(landscape.x > landscape.y).assertTrue()
             expect(await waitSharedReady(driver)).assertEqual(2)
-            expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
+           expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
             expect(await driver.findComponent(ON.type('Image').within(ON.id('rkit-part-2-whole'))) !== null).assertTrue()
             expect(await driver.findComponent(ON.type('Image').within(ON.id('rkit-part-3-whole'))) !== null).assertTrue()
             const landscapeViewport = await waitId(driver, 'rkit-image-viewport')
@@ -3180,8 +3180,8 @@ export default function readerProductionBackendTrialTest(): void {
             await mainWindow.setPreferredOrientation(window.Orientation.LANDSCAPE)
             await driver.delayMs(1800)
             const landscape = await driver.getDisplaySize()
-            expect(landscape.x > landscape.y).assertTrue()
-            expect(await waitSharedReady(driver)).assertEqual(2)
+           expect(landscape.x > landscape.y).assertTrue()
+           expect(await waitSharedReady(driver)).assertEqual(2)
             expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
             expect(await driver.findComponent(
               ON.type('Image').within(ON.id('rkit-continuous-page-2'))) !== null).assertTrue()
@@ -3195,12 +3195,12 @@ export default function readerProductionBackendTrialTest(): void {
 
             const landscapeX = Math.round((landscapeBounds.left + landscapeBounds.right) / 2)
             const landscapeCenterY = Math.round((landscapeBounds.top + landscapeBounds.bottom) / 2)
-           const landscapeFromY = Math.round(
-             landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.78)
+            const landscapeFromY = Math.round(
+              landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.58)
             const landscapeToY = Math.round(
-              landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.22)
+              landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.42)
             let currentPage: number = 2
-            const dragLog: string[] = []
+            const stepLog: string[] = []
             const compUtils = mainWindow.getUIContext().getComponentUtils()
             const checkTop = (id: string): number => {
               const r = compUtils.getRectangleById(id)
@@ -3208,8 +3208,8 @@ export default function readerProductionBackendTrialTest(): void {
             }
             for (let attempt = 0; attempt < 65 && currentPage === 2; attempt++) {
               const top2Before = checkTop('rkit-continuous-page-2')
-              await driver.drag(landscapeX, landscapeFromY, landscapeX, landscapeToY, 2500)
-              await driver.delayMs(200)
+              await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 400)
+              await driver.delayMs(300)
               const top2After = checkTop('rkit-continuous-page-2')
               const top3After = checkTop('rkit-continuous-page-3')
               const delta2 = (top2Before !== -999999 && top2After !== -999999) ? (top2After - top2Before) : 'none'
@@ -3221,7 +3221,7 @@ export default function readerProductionBackendTrialTest(): void {
                 try { text = (await counter.getText()).trim() } catch (_) {}
               }
               const entry = `att${attempt}:live=${liveIndex}:txt=${text}:top2=${top2After}:d2=${delta2}:top3=${top3After}`
-              dragLog.push(entry)
+              stepLog.push(entry)
               console.info(`[ReaderProductionBackendTrial] continuous_scroll_step ${entry}`)
               if (liveIndex >= 0 && liveIndex !== 2) {
                 currentPage = liveIndex
@@ -3241,7 +3241,7 @@ export default function readerProductionBackendTrialTest(): void {
               }
             }
             if (currentPage !== 3) {
-              throw new Error(`dragLog: ${dragLog.slice(-10).join(' | ')}`)
+              throw new Error(`stepLog: ${stepLog.slice(-10).join(' | ')}`)
             }
             expect(currentPage).assertEqual(3)
             expect(connectNhReadProgress().index(GALLERY_ID)).assertEqual(3)
