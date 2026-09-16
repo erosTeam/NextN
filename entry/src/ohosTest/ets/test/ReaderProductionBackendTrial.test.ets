@@ -3197,37 +3197,30 @@ export default function readerProductionBackendTrialTest(): void {
             const landscapeFromY = Math.round(landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.70)
             const landscapeToY = Math.round(landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.35)
             let currentPage: number = 2
-            for (let attempt = 0; attempt < 35; attempt++) {
-              await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 600)
-              await driver.delayMs(300)
-              if (await driver.findComponent(ON.type('Image').within(ON.id('rkit-continuous-page-3'))) !== null) {
-                currentPage = 3
-                break
-              }
+            let page3IntersectsViewport: boolean = false
+            for (let attempt = 0; attempt < 25 && currentPage < 3; attempt++) {
+              await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 500)
+              await driver.delayMs(700)
               const counter = await driver.findComponent(ON.id('rkit-persistent-page')) ??
                 await driver.findComponent(ON.id('rkit-chrome-page'))
               if (counter !== null) {
                 try {
                   const text = (await counter.getText()).trim()
-                  if (/^[0-9]+\s*\/\s*[0-9]+$/.test(text)) {
-                    const parsed = pageIndex(text)
-                    if (parsed >= 3) {
-                      currentPage = 3
-                      break
-                    }
-                  }
+                  if (/^[0-9]+\s*\/\s*[0-9]+$/.test(text)) currentPage = pageIndex(text)
                 } catch (_) {}
+              }
+              const rect = mainWindow.getUIContext().getComponentUtils().getRectangleById('rkit-continuous-page-3')
+              if (rect.size.width > 0 && rect.size.height > 0 && Number.isFinite(rect.windowOffset.y)) {
+                if (rect.windowOffset.y < landscapeBounds.bottom &&
+                  (rect.windowOffset.y + rect.size.height) > landscapeBounds.top) {
+                  page3IntersectsViewport = true
+                }
               }
             }
             expect(currentPage).assertEqual(3)
-            let page3Image: Component | null = null
-            for (let attempt = 0; attempt < 25; attempt++) {
-              page3Image = await driver.findComponent(
-                ON.type('Image').within(ON.id('rkit-continuous-page-3')))
-              if (page3Image !== null) break
-              await driver.delayMs(250)
-            }
-            expect(page3Image !== null).assertTrue()
+            expect(page3IntersectsViewport).assertTrue()
+            expect(await driver.findComponent(
+              ON.type('Image').within(ON.id('rkit-continuous-page-3'))) !== null).assertTrue()
             await capture(driver, 'continuous-rotation-landscape-next')
 
             await mainWindow.setPreferredOrientation(window.Orientation.PORTRAIT)
@@ -3236,14 +3229,8 @@ export default function readerProductionBackendTrialTest(): void {
             expect(returnedPortrait.y > returnedPortrait.x).assertTrue()
             expect(await waitSharedReady(driver)).assertEqual(3)
             expect(await driver.findComponent(ON.id('legacy-reader-surface'))).assertNull()
-            let returnedPage3Image: Component | null = null
-            for (let attempt = 0; attempt < 25; attempt++) {
-              returnedPage3Image = await driver.findComponent(
-                ON.type('Image').within(ON.id('rkit-continuous-page-3')))
-              if (returnedPage3Image !== null) break
-              await driver.delayMs(250)
-            }
-            expect(returnedPage3Image !== null).assertTrue()
+            expect(await driver.findComponent(
+              ON.type('Image').within(ON.id('rkit-continuous-page-3'))) !== null).assertTrue()
             await capture(driver, 'continuous-rotation-returned-portrait')
 
             await closeAnyReader(driver)
