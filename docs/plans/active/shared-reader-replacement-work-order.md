@@ -1135,11 +1135,20 @@ the root cause of that failure has not been established. The passing run
 supersedes it as the current candidate phone-path trial evidence.
 
 Next Package 5 boundaries:
-- 103 tablet normal-entry admission remains OPEN. 103 and 197 were both
-  confirmed `Connected` by an outside-sandbox `hdc list targets -v` readback on
-  2026-09-16, so the earlier "device connectivity unknown" note is stale; the
-  open dimension is the tablet ordinary-entry acceptance itself, not the link.
-  237 remains untouched.
+- 237 is now an authorized test device (user instruction, 2026-09-16). It is a
+  HUAWEI Pura X (`VDE-AL00`), `1320x2120`, currently `Connected`. A read-only
+  probe confirmed the installed NextN still holds real state (`NextN.db` plus
+  `nextn-downloads`, `imageknife-cover-cache`, `diagnostics_logs`), so runs
+  there must not assume an empty app. Evidence:
+  `.hvigor/outputs/device237-state-run1/` in the NextN checkout.
+- 103 tablet normal-entry admission remains OPEN. 103 is currently `Offline`
+  and unreachable from this host: `hdc tconn 192.168.50.103:12345` answers
+  `[Info]Target is connected, repeat operation` while a lease-scoped
+  `hdc -t 192.168.50.103:12345 shell echo ok` answers
+  `[Fail][E001005] Device not found or connected`. The tablet dimension is
+  therefore an external availability block, not a product finding. With 237
+  authorized, a second large-screen form factor is available for ordinary-entry
+  and rotation coverage; 103 remains the named tablet target if it returns.
 - The A/B/C file-hash experiments prove only that install -r preserves
   checked durable files between builds; runtime continuity (read, upgrade,
   reopen same page, rollback, reopen same page) remains OPEN for all
@@ -1182,8 +1191,19 @@ Next Package 5 boundaries:
   `.hvigor/outputs/main-resume-v1/{detail-layout-before.json,reader-layout.json,reader-screen.png}`
   and `.hvigor/outputs/main-resume-probe-v1/detail-layout.json`. So the NextN
   rollback revision does resume the same content at the same page through the
-  ordinary entry. Still not verified for NextN: exiting the main-revision
-  reader and re-reading the durable row written from that revision.
+  ordinary entry. Main-revision exit-write and durable reread (completed
+  2026-09-16, NextN): with committed main `ecaafec3` installed, the same direct
+  route showed `继续 P4`, the Legacy reader displayed `3 / 14` after one
+  right-zone tap, and the row read back on exit was `gallery_id 678049`,
+  `page_count 14`, `last_read_index 2` — the rollback revision's own exit write
+  matching the frame it had displayed. A second pass inside the same revision
+  restored the starting position through the ordinary path: Detail showed
+  `继续 P3`, the left-zone tap returned the frame to `4 / 14`, and the row
+  written on exit read `last_read_index 3`. Evidence:
+  `.hvigor/outputs/nextn-main-exit-durable/` (with both `NextN-*.db` and their
+  `-wal` sidecars) and `.hvigor/outputs/nextn-main-restore-position-run1/`.
+  The candidate HAP and its ohosTest HAP were reinstalled afterwards with
+  `install -r`.
 - NextE replacement-then-restore acceptance on 197 (partial, phone path only).
   NextE `23e4c84f`, same trial file name under NextE's `ohosTest`. It opens the
   newest real History gallery through the ordinary Detail Read action, turns
@@ -1202,9 +1222,28 @@ Next Package 5 boundaries:
   manga page at `4 / 46`, matching durable `page_index 3` and `column_mode ""`.
   Pre/post RDB snapshots confirmed durable row unchanged. Evidence:
   `.hvigor/outputs/nexte-legacy-read/{layout.json,screen.png,NextE-before.db,NextE-after.db}`.
-  Still not verified for NextE: the NextE equivalent of the NextN main-revision
-  resume check (verifying resume inside the committed main revision 2bebd112 itself),
-  and the durable-row reread after exiting a reader in the main revision.
+  Main-revision resume, exit-write, and restore (completed 2026-09-16, NextE):
+  committed main `2bebd112` was rebuilt from its clean checkout
+  (`scripts/build_hvigor_signed.sh`, `BUILD SUCCESSFUL`) and installed with
+  `install -r`. Cold start, Settings -> History -> gallery 4175844 -> Detail
+  Read action (`继续 P4`) mounted `reader_key_surface` with no
+  `rkit-reading-surface`, rendering the real page at `4 / 46`
+  (`reader-thumb-reader-surface-2-route-1-page-4`) and matching durable
+  `page_index 3`. Exiting that reader wrote `page_index 2` (this gallery reads
+  right-to-left, so the right-zone tap had stepped back) and the Detail page
+  then read `继续 P3`; a third pass restored the position through the same
+  ordinary entry, displaying `4 / 46` and writing `page_index 3` on exit.
+  Evidence: `.hvigor/outputs/nexte-main-resume/`,
+  `.hvigor/outputs/nexte-main-exit-durable/`,
+  `.hvigor/outputs/nexte-main-restore-position/`. The candidate HAP and its
+  ohosTest HAP were reinstalled afterwards with `install -r`.
+- Evidence-method note (2026-09-16, both phone hosts): a copied
+  `NextN.db`/`NextE.db` alone can read stale. Both stores run in WAL mode, and
+  in the NextE resume run the `.db`-only postflight copy still showed the
+  pre-run row while the same store's `-wal` sidecar already held the new page.
+  A durable-row check must therefore receive the `-wal` sidecar and be read
+  from a copy that includes it; a `.db`-only readback is not evidence that a
+  write did or did not happen.
 - Koma runtime continuity remains OPEN. A previous note here claimed the 197
   install was "clean"; that was wrong and is withdrawn. Those probes only read
   `/data/app/el2/100/base/<bundle>/files`, `cache`, and `database`, which are not
