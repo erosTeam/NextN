@@ -864,12 +864,22 @@ Two work items remain open:
    the candidate-written page through the ordinary entry and left the row
    unchanged, the candidate was restored, and the touched chapter matches its
    baseline field-for-field. Row 5's per-host upgrade/rollback requirement is
-   therefore satisfied for all three hosts. What remains unproven for Koma is
-   the *settings* half of that row: this run held progress/data constant but no
-   reader-settings value was changed, migrated and read back across the
-   version change, because Koma's durable progress document carries
-   `columnMode` while its reader preferences live elsewhere. Treat that as the
-   next Koma-specific check if a settings change is required for the row.
+   therefore satisfied for all three hosts. The *settings* half of the same row
+   was then executed too: Koma keeps reader settings in
+   `koma_reader_preferences_v1`, separate from the progress document, and the
+   store name is identical in both revisions. The candidate changed
+   `reader.fullscreen` through the real settings toggle (`true` -> `false`, the
+   rendered `Toggle` reading `checked=false`); the older `0399e257` build then
+   read `reader.fullscreen=false` from the durable store and rendered its second
+   `Toggle` as `checked=false`, while proving it is the older build by having no
+   `阅读器实现` row at all; the candidate was reinstalled and the toggle returned
+   to baseline. The restored store is byte-identical to the pre-run file, so no
+   user setting was left changed. Evidence:
+   `.hermes-artifacts/20260916-koma-crossversion/{05-settings-probe,06b-settings-write,07-rollback-settings,08-restore-settings}/`.
+   A first attempt tapped a guessed point and changed nothing; it was discarded
+   and the real `Toggle` bounds were read from the settings layout instead.
+   Koma's Row 5 upgrade/rollback obligations are therefore executed for both
+   progress and settings.
 2. **103 tablet ordinary admission — OPEN, externally blocked.** 103 is
    unreachable from this host (`tconn` reports connected while
    `hdc -t 192.168.50.103:12345 shell echo ok` returns `E001005`). 237 is a
