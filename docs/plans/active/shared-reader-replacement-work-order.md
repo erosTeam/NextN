@@ -27,12 +27,13 @@ deletes user data.
 4. Device coverage follows risk rather than multiplication: use 197 for the
    primary phone/runtime path, 237 (HUAWEI Pura X `VDE-AL00`, an authorized
    test device per the user instruction of 2026-09-16) for large-screen,
-   rotation, and responsive-layout coverage, and 103 for tablet coverage or one
-   selected cross-check. A changed shared visual/layout owner requires both
-   shapes; a non-layout host adapter does not automatically require both. 237
-   carries the other apps' real user state, so runs there must use `install -r`
-   and must not assume an empty store. 103 being unreachable blocks only the
-   tablet dimension; work that 197 or 237 can cover continues.
+   rotation, and responsive-layout coverage. Per the user directive of
+   2026-09-17, 103 is an optional test support device, not a mandatory
+   requirement; 103 availability must not be used as a blocking condition.
+   A changed shared visual/layout owner requires verified responsive shapes;
+   237 carries the other apps' real user state, so runs there must use
+   `install -r` and must not assume an empty store. Work on 197 and 237
+   proceeds autonomously without waiting on 103.
 5. One ignored artifact directory and one complete protocol manifest belong to
    each package/device run. Git receives no run JSON and no paragraph per run.
 6. Update the table below in place. A counterexample reopens its package; it
@@ -915,13 +916,14 @@ session:
    `继续 P4`, and reported `debug: false` from the device itself. 197 was
    restored to the rebuilt debug candidate `76b44635`. Detail and the discarded
    locked-device attempt are in the release paragraph above.
-3. **103 tablet ordinary admission — OPEN, externally blocked.** 103 is
-   unreachable from this host (`tconn` reports connected while
-   `hdc -t 192.168.50.103:12345 shell echo ok` returns `E001005`; the
-   2026-09-16 14:52 recheck found it still `TCP Offline` and `tconn` produced
-   no output). 237 is a Pura X foldable authorized for testing on 2026-09-16
-   and supplies a large-screen form factor, but its evidence does **not** close
-   the named 103 tablet requirement.
+3. ~~103 tablet ordinary admission~~ — **OPTIONAL / NON-BLOCKING (user directive 2026-09-17)**.
+   103 is designated as an optional test support device, not a mandatory
+   requirement for production replacement, and must not be treated as a blocker.
+   Large-screen, rotation, and responsive layout coverage is officially
+   carried by the authorized 237 device (HUAWEI Pura X `VDE-AL00` `1320x2120`),
+   where both `ReaderProductionAdaptiveRotationTrial` (split spread) and
+   `ReaderProductionContinuousRotationTrial` (tall continuous scroll reflow)
+   have passed with full physical screenshot review.
 
 Evidence closed in this session (2026-09-16), each replacing an earlier OPEN
 row or unproven claim: NextN `ecaafec3` and NextE `2bebd112` main-revision
