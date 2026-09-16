@@ -855,7 +855,7 @@ replacement or a change to production defaults.
 
 State at this handoff. Package 5 stays **ACTIVE**. Every production default is
 still Legacy, and the shared reader remains an explicit, reversible selection.
-Two work items remain open:
+One work item remains open (item 2); item 1 was closed later in this session:
 
 1. ~~Koma cross-version upgrade/rollback continuity~~ — **executed 2026-09-16**
    (detail in the Koma bullet below). Two distinguishable builds were used:
