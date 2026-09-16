@@ -3194,14 +3194,15 @@ export default function readerProductionBackendTrialTest(): void {
             await capture(driver, 'continuous-rotation-landscape-retained')
 
             const landscapeX = Math.round((landscapeBounds.left + landscapeBounds.right) / 2)
-            const centerY = Math.round((landscapeBounds.top + landscapeBounds.bottom) / 2)
-            const landscapeFromY = centerY + 90
-            const landscapeToY = centerY - 90
+            const landscapeFromY = Math.round(
+              landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.75)
+            const landscapeToY = Math.round(
+              landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.25)
             let currentPage: number = 2
             const swipeLog: string[] = []
-            for (let attempt = 0; attempt < 80 && currentPage === 2; attempt++) {
-              await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 300)
-              await driver.delayMs(300)
+            for (let attempt = 0; attempt < 65 && currentPage === 2; attempt++) {
+              await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 450)
+              await driver.delayMs(250)
               const liveIndex = connectNhReadProgress().index(GALLERY_ID)
               let text = 'null'
               const counter = await driver.findComponent(ON.id('rkit-chrome-page')) ??
