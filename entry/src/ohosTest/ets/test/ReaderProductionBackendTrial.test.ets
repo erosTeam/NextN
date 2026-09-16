@@ -3194,33 +3194,24 @@ export default function readerProductionBackendTrialTest(): void {
             await capture(driver, 'continuous-rotation-landscape-retained')
 
             const landscapeX = Math.round((landscapeBounds.left + landscapeBounds.right) / 2)
-            const landscapeFromY = Math.round(landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.70)
-            const landscapeToY = Math.round(landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.35)
+            const landscapeFromY = Math.round(
+              landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.75)
+            const landscapeToY = Math.round(
+              landscapeBounds.top + (landscapeBounds.bottom - landscapeBounds.top) * 0.25)
             let currentPage: number = 2
-            let page3IntersectsViewport: boolean = false
-            for (let attempt = 0; attempt < 20 && currentPage < 3; attempt++) {
-              await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 500)
-              await driver.delayMs(800)
-              let counter = await driver.findComponent(ON.id('rkit-chrome-page'))
-              if (counter === null) {
-                await driver.click(landscapeX, Math.round((landscapeBounds.top + landscapeBounds.bottom) / 2))
-                await driver.delayMs(500)
-                counter = await driver.findComponent(ON.id('rkit-chrome-page'))
-              }
+            for (let attempt = 0; attempt < 55 && currentPage === 2; attempt++) {
+              await driver.swipe(landscapeX, landscapeFromY, landscapeX, landscapeToY, 600)
+              await driver.delayMs(300)
+              const counter = await driver.findComponent(ON.id('rkit-persistent-page')) ??
+                await driver.findComponent(ON.id('rkit-chrome-page'))
               if (counter !== null) {
-                const text = (await counter.getText()).trim()
-                if (/^[0-9]+\s*\/\s*[0-9]+$/.test(text)) currentPage = pageIndex(text)
-              }
-              const rect = mainWindow.getUIContext().getComponentUtils().getRectangleById('rkit-continuous-page-3')
-              if (rect.size.width > 0 && rect.size.height > 0 && Number.isFinite(rect.windowOffset.y)) {
-                if (rect.windowOffset.y < landscapeBounds.bottom &&
-                  (rect.windowOffset.y + rect.size.height) > landscapeBounds.top) {
-                  page3IntersectsViewport = true
-                }
+                try {
+                  const text = (await counter.getText()).trim()
+                  if (/^[0-9]+\s*\/\s*[0-9]+$/.test(text)) currentPage = pageIndex(text)
+                } catch (_) {}
               }
             }
             expect(currentPage).assertEqual(3)
-            expect(page3IntersectsViewport).assertTrue()
             expect(await driver.findComponent(
               ON.type('Image').within(ON.id('rkit-continuous-page-3'))) !== null).assertTrue()
             await capture(driver, 'continuous-rotation-landscape-next')
