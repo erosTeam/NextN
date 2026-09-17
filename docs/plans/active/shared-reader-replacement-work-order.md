@@ -1576,6 +1576,7 @@ Package 5 is **ACTIVE** (overall replacement remains **OPEN**; broad completion 
 All verified physical and runtime assets remain retained, while open parity/integration gaps are tracked below:
 
 - **Retained verified evidence baseline:**
+  - NextE host actions (re-verified 2026-09-17 on 197, current worktree): `ReaderImageBlockSharedTrial` (mark action + retained-file notice) Pass 1/1, `ReaderManualReloadTrial` (exact visible source, single + spread) Pass 2/2, `ReaderHostSettingsTrial` Pass 1/1 — `.hvigor/outputs/reader-host-actions/`.
   - NextN: ordinary entry (Detail / Grid / Compact) with 7 visual capture groups reviewed (`.hvigor/outputs/trial-debug-v2/`); `install -r` upgrade/rollback runtime continuity passing on 197 (`.hvigor/outputs/continuity-verify-v7/`); large-screen split-spread rotation (`.hvigor/outputs/rotation-237-v1/`) and tall continuous scroll rotation reflow (`.hvigor/outputs/continuous-rotation-237-v5/`) passing on authorized device 237 (`VDE-AL00` `1320x2120`) with 4 whole-screen captures reviewed.
   - NextE: ordinary Downloads entry and return passing on 197 and 237; `install -r` runtime continuity passing on 197 (`.hvigor/outputs/nexte-continuity-verify-v4/`); release mode fail-closed Legacy verification passing on 197.
   - Koma: ordinary Library continue and chapter switch passing on 197 on real content; `install -r` replacement and cross-version settings continuity passing on 197; 6 shared reader contract suites pass.
