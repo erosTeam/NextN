@@ -896,6 +896,8 @@ export default function readerProductionBackendTrialTest(): void {
           expect(failedFacts.injectedDecodeFailure).assertTrue()
           expect(failedFacts.retryObserved).assertFalse()
           expect(pageIndex(await (await waitId(driver, 'rkit-chrome-page')).getText())).assertEqual(0)
+          // A native decode failure must also carry NextN host copy, not reader-kit's generic text.
+          expect(await driver.findComponent(ON.text(AppStrings.get('reader_error_image_unavailable'))) !== null).assertTrue()
           await capture(driver, 'production-failure')
 
           await retry.click()
