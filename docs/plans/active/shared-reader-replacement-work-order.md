@@ -1321,19 +1321,15 @@ Next Package 5 boundaries:
   `nextn-downloads`, `imageknife-cover-cache`, `diagnostics_logs`), so runs
   there must not assume an empty app. Evidence:
   `.hvigor/outputs/device237-state-run1/` in the NextN checkout.
-- 103 tablet normal-entry admission remains OPEN. Re-observed 2026-09-16
-  14:52: `hdc list targets -v` still reports `192.168.50.103:12345 TCP Offline`.
-  The reconnect branch ran once under lease `20260916-065206-8300d73a`:
-  `hdc tconn 192.168.50.103:12345` produced no output within the bounded call
-  and the follow-up listing was unchanged, so no `echo ok` was reached. The
-  earlier observation is the same state: `tconn` answers
-  `[Info]Target is connected, repeat operation` while a lease-scoped
-  `hdc -t 192.168.50.103:12345 shell echo ok` answers
-  `[Fail][E001005] Device not found or connected`. The tablet dimension is
-  therefore an external availability block, not a product finding; no further
-  retry loop is warranted until the device reappears. With 237 authorized, a
-  second large-screen form factor covers ordinary-entry and rotation; 103
-  remains the named tablet target if it returns.
+- 103 tablet normal-entry admission is OPTIONAL, not an open blocker (user
+  directive 2026-09-17). 103 has been optional test support since that
+  instruction and must never gate development; 237 now covers the
+  large-screen/rotation/responsive dimension. Last observed 2026-09-16 14:52:
+  `hdc list targets -v` reports `192.168.50.103:12345 TCP Offline`, and a
+  lease-scoped `hdc -t 192.168.50.103:12345 shell echo ok` answers
+  `[Fail][E001005] Device not found or connected`. This is device availability
+  only, not a product finding; no retry loop is warranted. If 103 reappears it
+  can add tablet coverage, but no capability package depends on it.
 - The A/B/C file-hash experiments prove only that install -r preserves
   checked durable files between builds. That narrowed statement no longer
   bounds the whole continuity claim: the read -> upgrade -> reopen-same-page
@@ -1554,12 +1550,13 @@ Next Package 5 boundaries:
   `pageIndex 5/completed true/isRead true` at the terminal page, and returns to
   `pageIndex 0/completed false/isRead false` after the restore, matching the
   baseline exactly.
-  Remaining Package 5 dimensions after this run: 103 tablet ordinary admission
-  (blocked on that device's availability) and the tablet rotation/responsive
-  dimension, which 237 now covers for NextN. The three drafts under
+  Remaining Package 5 dimensions after this run: the large-screen
+  rotation/responsive dimension, which 237 now covers for NextN; 103 tablet
+  admission stays optional and non-blocking per the 2026-09-17 user directive. The three drafts under
   `docs/plans/active/` remain superseded and unintegrated.
-- Production defaults remain Legacy. Phone-path evidence does not establish
-  tablet ordinary admission.
+- Production defaults remain Legacy. Phone-path and 237 large-screen evidence
+  establish ordinary entry and rotation; 103 tablet coverage stays optional and
+  non-blocking, not an unmet gate.
 
 ## Package completion record
 
