@@ -79,6 +79,7 @@ async function informationRecoveryTrial(work: string, unit: string, mode: string
   const delegator = abilityDelegatorRegistry.getAbilityDelegator()
   await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
     parameters: { readerLabWork: work, readerLabUnit: unit, readerLabPage: '1', readerLabChrome: 'true',
+      readerLabEntryLayout: 'single', readerLabEntryDirection: 'ltr',
       readerLabInformationProbe: mode === 'failure' ? 'fail-once' : 'delay-once' } })
   await driver.delayMs(1500); await informationReady(driver)
   expect(await informationPage(driver)).assertEqual(2)
@@ -92,18 +93,24 @@ async function informationRecoveryTrial(work: string, unit: string, mode: string
     expect(await informationPage(driver)).assertEqual(2)
   } else {
     expect(await (await driver.findComponent(ON.id('rkit-more'))).isEnabled()).assertFalse()
-    await captureInformation(driver, 'pending')
     if (mode === 'page') {
+      // Turn the real page with a native swipe while the read is pending, before the slow capture
+      // below consumes the delay window. The shared contract intentionally locks tap input while an
+      // information read is in flight (reader-kit reader-tap-routing), but a real swipe still
+      // navigates and retires the pending request for the new page.
       const bounds = await (await driver.findComponent(ON.id('rkit-image-viewport'))).getBounds()
-      await driver.click(Math.round(bounds.left + (bounds.right - bounds.left) * 0.8),
-        Math.round((bounds.top + bounds.bottom) / 2))
+      const midY = Math.round((bounds.top + bounds.bottom) / 2)
+      await driver.swipe(Math.round(bounds.left + (bounds.right - bounds.left) * 0.82), midY,
+        Math.round(bounds.left + (bounds.right - bounds.left) * 0.18), midY, 3000)
       expectedPage = 3
-      await driver.delayMs(500); await informationReady(driver)
+      await driver.delayMs(800); await captureInformation(driver, 'changed'); await informationReady(driver)
     } else if (mode === 'close') {
+      await captureInformation(driver, 'pending')
       await (await driver.findComponent(ON.id('rkit-close'))).click()
       await driver.delayMs(700)
       expect(await driver.findComponent(ON.id('rkit-trial-navigation'))).assertNull()
     } else {
+      await captureInformation(driver, 'pending')
       const ability = await delegator.getCurrentTopAbility()
       try {
         await delegator.doAbilityBackground(ability); await driver.delayMs(500)
@@ -114,7 +121,7 @@ async function informationRecoveryTrial(work: string, unit: string, mode: string
       }
       await driver.delayMs(700); await informationReady(driver)
     }
-    if (mode !== 'background') await captureInformation(driver, 'changed')
+    if (mode !== 'background' && mode !== 'page') await captureInformation(driver, 'changed')
     await driver.delayMs(3500)
     await captureInformation(driver, 'late')
     expect(await driver.findComponent(ON.type('AlertDialog'))).assertNull()
