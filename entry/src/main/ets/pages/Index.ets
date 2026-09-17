@@ -3043,6 +3043,7 @@ struct Index {
   }
 
   private handleGalleryDetailBackPressed(route: GalleryRouteParams): boolean {
+    if (this.cancelSourceEntryPending(route.galleryId)) return true
     // The shared Reader is mounted as a shell overlay above this Gallery
     // destination, so the system Back reaches this destination before the
     // page-level onBackPress. While a shared Reader is active, close it with
@@ -3054,7 +3055,6 @@ struct Index {
       this.closeReaderDestination(true)
       return true
     }
-    if (this.cancelSourceEntryPending(route.galleryId)) return true
     const alreadyActive: boolean = this.galleryDetailTransition.eligible &&
       route.transitionToken === this.galleryDetailTransition.routeToken
     // A Gallery opened in Stack keeps its transition token when Auto later
