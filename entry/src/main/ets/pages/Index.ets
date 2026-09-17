@@ -3043,6 +3043,17 @@ struct Index {
   }
 
   private handleGalleryDetailBackPressed(route: GalleryRouteParams): boolean {
+    // The shared Reader is mounted as a shell overlay above this Gallery
+    // destination, so the system Back reaches this destination before the
+    // page-level onBackPress. While a shared Reader is active, close it with
+    // its registered controller instead of popping the Gallery beneath it.
+    // Legacy Reader is its own destination (activeReader is null), so this is
+    // inert for the legacy/default backend.
+    if (this.readerOverlay.visible && this.readerOverlay.activeReader !== null) {
+      if (this.readerBackRequest !== null) return this.readerBackRequest()
+      this.closeReaderDestination(true)
+      return true
+    }
     if (this.cancelSourceEntryPending(route.galleryId)) return true
     const alreadyActive: boolean = this.galleryDetailTransition.eligible &&
       route.transitionToken === this.galleryDetailTransition.routeToken
