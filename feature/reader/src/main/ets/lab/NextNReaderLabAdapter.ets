@@ -11,7 +11,9 @@ import {
   ReaderCancellation, ReaderAsset, ReaderAssetKind, ReaderImageShareHost,
   ReaderImageShareTarget, ReaderImageSharePresentation,
   ReaderImageInformation, ReaderImageCropBounds, ReaderImageCropSource,
+  ReaderAssetFailure, ReaderAssetFailureClassifier,
 } from '@reader-kit/core'
+import { NextNReaderFailure } from './NextNReaderFailure'
 import { NextNReaderProgressDetailProvider } from './NextNReaderProgressPersistence'
 import { NextNNetworkReaderDataSource, NextNReaderDataSource } from './NextNReaderDataSource'
 
@@ -44,9 +46,13 @@ class NextNReaderCropSource implements ReaderImageCropSource {
 }
 
 export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider, ReaderPreloadHost, ReaderImageShareHost,
-  NextNReaderProgressDetailProvider {
+  ReaderAssetFailureClassifier, NextNReaderProgressDetailProvider {
   cancellationMode: 'consumer-only' | 'transport' = 'consumer-only'
   informationSupported: boolean = true
+
+  classify(error: Error): ReaderAssetFailure {
+    return NextNReaderFailure.from(error)
+  }
   private context: common.UIAbilityContext
   private details: Map<string, NhGalleryDetail> = new Map()
   private source: NextNReaderDataSource

@@ -194,7 +194,7 @@ export struct NextNReaderLabPage {
     const assetProvider: ReaderAssetProvider = lab === null ? translationProvider :
       new ReaderLabAssetProbe(translationProvider, lab.thumbnailFailurePage,
         lab.informationProbe, lab.thumbnailEntry ? lab.failurePage : -1)
-    const session = new ReaderPagedSession(catalog, assetProvider, adapter)
+    const session = new ReaderPagedSession(catalog, assetProvider, adapter, adapter)
     connectNextNReaderTranslationProbe().bindAction(context, this.request.work, (id: string): boolean => {
       const state = this.session?.snapshot()
       const source = state?.unit?.key
