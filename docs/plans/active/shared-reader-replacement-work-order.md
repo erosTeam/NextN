@@ -1231,7 +1231,7 @@ to `.hvigor/outputs/trial-debug-v2/extracted_evidence/` and reviewed. Findings:
   reproduces at this viewport (`[0,117]` Shared with 16 status-bar nodes vs
   `[0,0]` Legacy with 0), which is why it is recorded as a measurement
   difference rather than a product defect. Evidence:
-  `.hvigor/outputs/trial-debug-237-v1/run-metadata.json` and
+  `.hvigor/outputs/trial-debug-237-v1/run-metadata.json` (that file records `status: failed` only because its postflight hilog decode hit a non-UTF-8 byte; the authoritative Hypium output in the same file is `Tests run: 1, Failure: 0, Error: 0, Pass: 1` with `TestFinished-ResultCode: 0`, so the trial passed) and
   `.hvigor/outputs/trial-debug-237-evidence/`. Installation used `install -r`
   on top of 237's existing data (397 history rows, target gallery present).
 
