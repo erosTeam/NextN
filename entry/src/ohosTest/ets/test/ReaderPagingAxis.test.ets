@@ -56,7 +56,11 @@ export default function readerPagingAxisTest(): void {
       const delegator = abilityDelegatorRegistry.getAbilityDelegator()
       await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
         parameters: { readerLabWork: work, readerLabUnit: typeof unit === 'string' ? unit : '',
-          readerLabPage: '1', readerLabChrome: 'true', readerLabVolumeKeys: 'false' } })
+          readerLabPage: '1', readerLabChrome: 'true', readerLabVolumeKeys: 'false',
+          // This trial asserts LTR screen/gesture geometry ("forward" = leftwards swipe in the
+          // default direction). Pin the Debug-only direction so a device whose persisted direction
+          // is RTL cannot invert the axis and fail on trial geometry rather than product behavior.
+          readerLabEntryDirection: 'ltr' } })
       await driver.delayMs(1800)
       let mainWindow: window.Window | null = null
       let originalOrientation: window.Orientation | null = null
