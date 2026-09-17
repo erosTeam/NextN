@@ -1552,8 +1552,13 @@ Next Package 5 boundaries:
   baseline exactly.
   Remaining Package 5 dimensions after this run: the large-screen
   rotation/responsive dimension, which 237 now covers for NextN; 103 tablet
-  admission stays optional and non-blocking per the 2026-09-17 user directive. The three drafts under
-  `docs/plans/active/` remain superseded and unintegrated.
+  admission stays optional and non-blocking per the 2026-09-17 user directive.
+  The three 2026-09-15 planning drafts under `docs/plans/active/`
+  (`runtime-continuity-test-spec.md`, `reader-runtime-continuity-test.ets`,
+  `runtime-continuity-manifest-template.json`) are superseded: the shipped
+  `entry/src/ohosTest/ets/test/ReaderRuntimeContinuity.test.ets` (c7cd55d1)
+  implements the same Write/Verify trials against real in-app entries and passed
+  on 197.
 - Production defaults remain Legacy. Phone-path and 237 large-screen evidence
   establish ordinary entry and rotation; 103 tablet coverage stays optional and
   non-blocking, not an unmet gate.
