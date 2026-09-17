@@ -1009,13 +1009,50 @@ export default function readerProductionBackendTrialTest(): void {
           await ReaderPresentationService.setMode(context, NhReaderMode.PAGED)
           await ReaderPresentationService.setDoublePageEnabled(context, false)
           await ReaderPresentationService.setCropBordersPaged(context, true)
-          await seedHistoryPage(database, 2)
+          await seedHistoryPage(database, 3)
 
-          await (await findDetailThumbnail(driver, 2)).click()
-          expect(await waitSharedReady(driver)).assertEqual(2)
+          await (await findDetailThumbnail(driver, 3)).click()
+          expect(await waitSharedReady(driver)).assertEqual(3)
           await (await waitId(driver, 'rkit-reading-mode')).click()
           const cropToggle = await waitId(driver, 'rkit-crop-toggle')
           expect(await cropToggle.getText()).assertEqual('关闭裁边')
+          // Exercise the shared runtime-menu crop control through the real
+          // production route: inherited crop on -> off -> on with the same page
+          // retained. A MenuItem dismisses the menu, so reopen it via the shared
+          // reading-mode button before each toggle/label read.
+          const openRuntimeMenu = async (): Promise<void> => {
+            await (await waitId(driver, 'rkit-reading-mode')).click()
+            await waitId(driver, 'rkit-crop-toggle')
+          }
+          const cropToggleLabel = async (): Promise<string> =>
+            (await (await waitId(driver, 'rkit-crop-toggle')).getText())
+          const cropImageId = 'rkit-cropped-image-3-whole'
+          const cropImagePresence = async (present: boolean): Promise<boolean> => {
+            for (let attempt = 0; attempt < 40; attempt++) {
+              const node = await driver.findComponent(ON.id(cropImageId))
+              if ((node !== null) === present) return true
+              await driver.delayMs(200)
+            }
+            return (await driver.findComponent(ON.id(cropImageId)) !== null) === present
+          }
+          // Page index 3 is the real gallery page whose crop detector is positive
+          // (see ReaderCropTrial: 'page=4 detected=true'), so the inherited crop is
+          // genuinely applied and removing it must drop the cropped image node.
+          expect(await cropImagePresence(true)).assertTrue()
+          await cropToggle.click()
+          await driver.delayMs(300)
+          await openRuntimeMenu()
+          expect(await cropToggleLabel()).assertEqual('开启裁边')
+          expect(pageIndex(await (await waitId(driver, 'rkit-chrome-page')).getText())).assertEqual(3)
+          expect(await cropImagePresence(false)).assertTrue()
+          await capture(driver, 'crop-toggled-off')
+          await (await waitId(driver, 'rkit-crop-toggle')).click()
+          await driver.delayMs(300)
+          await openRuntimeMenu()
+          expect(await cropToggleLabel()).assertEqual('关闭裁边')
+          expect(pageIndex(await (await waitId(driver, 'rkit-chrome-page')).getText())).assertEqual(3)
+          expect(await cropImagePresence(true)).assertTrue()
+          await capture(driver, 'crop-toggled-on')
           await driver.pressBack()
           await capture(driver, 'crop-inherited')
           await closeAnyReader(driver)
@@ -1032,7 +1069,7 @@ export default function readerProductionBackendTrialTest(): void {
           connectReaderPresentation().cropBordersPaged = originalCrop
           restored = true
           removeSnapshot()
-          console.info('[ReaderProductionBackendTrial] productionCropInherited=true source=2 ' +
+          console.info('[ReaderProductionBackendTrial] productionCropInherited=true source=3 cropToggleRoundTrip=true ' +
             `originalMode=${originalMode} originalDouble=${originalDouble} originalCrop=${originalCrop} ` +
             'historyRestored=true settingsRestored=true')
         } catch (error) {
