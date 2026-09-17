@@ -349,7 +349,8 @@ export default function readerImageInformationTest(): void {
         try {
           await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
             parameters: { readerLabWork: work, readerLabUnit: typeof unit === 'string' ? unit : '',
-              readerLabPage: '1', readerLabChrome: 'true', readerLabVolumeKeys: 'true' } })
+              readerLabPage: '1', readerLabChrome: 'true', readerLabVolumeKeys: 'true',
+              readerLabEntryDirection: 'ltr' } })
           await informationReady(driver)
           expect(await driver.findComponent(ON.id('rkit-shift-spread'))).assertNull()
           await (await driver.findComponent(ON.id('rkit-runtime-settings'))).click()
