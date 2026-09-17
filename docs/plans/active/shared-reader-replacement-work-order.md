@@ -679,7 +679,10 @@ hosts, thumbnail-entry crop inheritance on the selected NextN phone route,
 host-owned source identity on the selected NextE phone route, and the existing
 tablet rotation/window anchor paths. NextE All thumbnails and archive selection
 are source/build-covered through their shared host contracts but are not
-separately claimed as physical-device runs. All production defaults remain
+separately claimed as physical-device runs; the archive kind shares the identical
+local-serving `load()` branch that the device-verified `ReaderLocalSourceTrial`
+exercises for the gallery-download kind (only the information-dialog source label
+differs), so this is a labelling gap rather than an unverified serving path. All production defaults remain
 legacy and reversible.
 
 ## Current Package 4 delta
@@ -724,8 +727,9 @@ duplicating the item after it moved from Last 7 days to Today. Koma commit
 that actually drives its UI. The focused history/catalog/chapter/return/
 preference suites pass 14/14, and the matching Debug HAP builds with SHA-256
 `d4769aad9899697744dd24ac1a9a61d2694d5949648ce49f4721fc728f6639cc`.
-The source and build fix is complete; the corrected final History projection is
-not yet claimed as device-accepted.
+The source and build fix is complete; the corrected final History projection was
+later device-accepted on 197 through the `0887488f` projection check recorded below
+(the transient title appears exactly once under Today, no stale duplicate).
 
 The same comparison then closed two source-level chapter regressions instead of
 adding more device repetitions. Koma `bd9ec10f` rejects a real provider handoff
