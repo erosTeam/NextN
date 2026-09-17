@@ -9,9 +9,11 @@ import { openBackendRehearsal, selectBackendFromUi, returnFromReaderSettings }
   from './ReaderProductionDownloadEntryTrial.test'
 import {
   AppStrings,
+  connectLayoutSafeArea,
   connectNhReadProgress,
   connectNextNReaderBackendSelection,
   connectReaderPresentation,
+  connectTabletLayout,
   NextNReaderBackend,
   NhReaderColumnMode,
   NhReaderMode,
@@ -2902,6 +2904,7 @@ export default function readerProductionBackendTrialTest(): void {
         let original: HistorySnapshot | null = null
         let mainWindow: window.Window | null = null
         let originalOrientation: window.Orientation | undefined = undefined
+        let originalTabletLayout: string | undefined = undefined
         let restored = false
         let failed = false
         try {
@@ -2914,10 +2917,22 @@ export default function readerProductionBackendTrialTest(): void {
 
           mainWindow = await window.getLastWindow(context)
           originalOrientation = mainWindow.getPreferredOrientation()
+          // A real two-pane Detail workspace requires HDS to resolve the root
+          // navigation to a physical Split; orientation alone is only a window
+          // state. Pin the landscape-only tablet policy (the same precondition
+          // the accepted GallerySplitTransitionTrial uses) and wait for the
+          // HDS-resolved Split signal instead of trusting the display ratio.
+          const tabletLayout = connectTabletLayout()
+          originalTabletLayout = tabletLayout.mode
+          tabletLayout.mode = 'landscapeOnly'
           await mainWindow.setPreferredOrientation(window.Orientation.LANDSCAPE)
           await driver.delayMs(1600)
           const display = await driver.getDisplaySize()
           expect(display.x > display.y).assertTrue()
+          for (let attempt = 0; attempt < 60 && !connectLayoutSafeArea().rootNavigationSplit; attempt++) {
+            await driver.delayMs(200)
+          }
+          expect(connectLayoutSafeArea().rootNavigationSplit).assertTrue()
 
           expect(connectNextNReaderBackendSelection().current()).assertEqual(NextNReaderBackend.SHARED)
           const source = await findWideDetailThumbnail(driver, 2)
@@ -2974,6 +2989,11 @@ export default function readerProductionBackendTrialTest(): void {
           throw error as Error
         } finally {
           try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+          if (originalTabletLayout !== undefined) {
+            try {
+              connectTabletLayout().mode = originalTabletLayout
+            } catch (error) { if (!failed) throw error as Error }
+          }
           if (mainWindow !== null && originalOrientation !== undefined) {
             try {
               await mainWindow.setPreferredOrientation(originalOrientation)
