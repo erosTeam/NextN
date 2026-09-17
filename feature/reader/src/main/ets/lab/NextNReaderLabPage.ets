@@ -193,7 +193,8 @@ export struct NextNReaderLabPage {
       (page: ReaderPage): NextNReaderTranslationConfiguration => this.translationConfiguration(page))
     const assetProvider: ReaderAssetProvider = lab === null ? translationProvider :
       new ReaderLabAssetProbe(translationProvider, lab.thumbnailFailurePage,
-        lab.informationProbe, lab.thumbnailEntry ? lab.failurePage : -1)
+        lab.informationProbe, this.request.readingChrome ? lab.failurePage : -1,
+        lab.originalVariantProbe, lab.assetFailureMessage)
     const session = new ReaderPagedSession(catalog, assetProvider, adapter, adapter)
     connectNextNReaderTranslationProbe().bindAction(context, this.request.work, (id: string): boolean => {
       const state = this.session?.snapshot()
