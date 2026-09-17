@@ -1482,14 +1482,13 @@ Next Package 5 boundaries:
     at `[669,670][1156,826]`.
   - Selecting `共享阅读器` and then opening the same chapter from the ordinary
     shelf `继续阅读` action mounts `rkit-reading-surface`
-    (`rkit-chrome-page` = `2 / 2`, `reader_key_surface` = 0). Original evidence:
-    `.hermes-artifacts/20260916-koma-continuity/10-ordinary-shared-v3/`; that
-    directory's `layout.json`/`screen.png` were accidentally overwritten on
-    2026-09-17 by a rail probe whose receive paths still pointed at it (the
-    gitignored dir could not be restored byte-for-byte), so the same
-    ordinary-entry→shared claim was regenerated the same day at
-    `.hermes-artifacts/20260917-koma-ordinary-shared/01-open/` (shared surface
-    mounted, `reader_key_surface` = 0).
+    (`rkit-chrome-page` = `2 / 2`, `reader_key_surface` = 0). Evidence (regenerated 2026-09-17):
+    `.hermes-artifacts/20260917-koma-ordinary-shared/01-open/` — shared surface
+    mounted from the ordinary shelf entry, `reader_key_surface` = 0. The earlier
+    `20260916-koma-continuity/10-ordinary-shared-v3` `layout.json`/`screen.png`
+    were accidentally overwritten that day by a rail probe whose receive paths
+    still pointed there; the gitignored dir could not be restored byte-for-byte,
+    so this re-run is now the citation.
   - Switching back to `现有阅读器` in the same process and re-entering through
     the same ordinary action mounts `reader_key_surface`
     (`rkit-reading-surface` = 0). Evidence:
