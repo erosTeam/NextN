@@ -1604,6 +1604,14 @@ All verified physical and runtime assets remain retained, while open parity/inte
 - **Device boundaries:** 237 covers large-screen, rotation, and responsive layout; 197 covers primary phone and runtime continuity; 103 designated as optional test support per user directive (2026-09-17) and never blocks progress.
 - **Release authority boundary:** Completion of replacement parity does NOT constitute authorization to flip production defaults; default switching remains a separate user release decision.
 
+### Per-app route matrix re-verified at the pinned revision — 2026-09-17
+
+Package 5 requires the per-app route matrix on the *selected release candidate* (one pinned `reader-kit` revision). The earlier NextN/NextE normal-entry matrices were produced against `8112355`; they are now re-executed against the pinned `f450aad` on 197:
+
+- NextN `ReaderProductionInAppDetailEntriesTrial`: **Pass 1/1**; logs `backend=legacy read=true compact=true grid=true gridReturned=true rootReturned=true` and `initial=legacy final=legacy backendWants=false seededProgress=false historyRestored=true`. The 7 layouts and 7 screenshots were retrieved; the layout audit shows 3 Shared frames each with 19 `rkit-*` nodes and no `legacy-reader-surface`, 3 Legacy frames each with `legacy-reader-surface` and no `rkit-*`, both paging through the same gallery, and the final frame restored to the host root. The page labels differ between the Shared and Legacy `read` frames (`4 / 14` vs `2 / 14`) because the Detail Read action resumes each backend from the progress state written earlier in the same run; the trial's own acceptance is the surface/pager parity plus exact thumbnail-return bounds equality, not equal labels. Artifacts: `.hvigor/outputs/nextn-f450aad-matrix/`.
+- NextE `ReaderProductionInAppBackendRehearsalTrial`: **Pass 1/1** with `initial=legacy sharedSelectedInApp=true sharedTouch=true sharedReturned=true legacySelectedInApp=true legacyTouch=true legacyReturned=true queueUnchanged=true`. Artifacts: `.hvigor/outputs/nexte-f450aad-matrix/`.
+- Koma ordinary shelf entry (same 197 protocol as the earlier record): the current signed candidate at `6553e2df` (pin `f450aad`) opens the shared surface from the ordinary shelf Continue action — the resulting layout has `rkit-reading-surface` + `rkit-native-pager` + `rkit-part-0-whole` + the chapter control `rkit-host-center-action`, with no legacy surface. Artifacts: `.hermes-artifacts/20260917-koma-ordinary-shared-f450aad/`. This supersedes the earlier `8f11c550` ordinary-entry record as the pinned-revision one.
+
 ### Three-host parity matrix and open gap details (Package 5 Active)
 
 | Dimension / Feature | Host / Layer | Legacy Implementation | Shared Implementation | Verified Evidence | Open Gap / Difference Classification |
