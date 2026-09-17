@@ -205,7 +205,7 @@ export default function readerVolumeKeysTest(): void {
       const delegator = abilityDelegatorRegistry.getAbilityDelegator()
       await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
         parameters: { readerLabWork: work, readerLabUnit: typeof unit === 'string' ? unit : '',
-          readerLabChrome: 'true', readerLabVolumeKeys: 'true' } })
+          readerLabChrome: 'true', readerLabVolumeKeys: 'true', readerLabEntryDirection: 'ltr' } })
       await driver.delayMs(1800); await volumeImage(driver)
       expect(await volumePage(driver)).assertEqual(1)
       await captureVolume(driver, 'baseline')
