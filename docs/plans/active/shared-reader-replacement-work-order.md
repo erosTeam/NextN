@@ -38,6 +38,8 @@ deletes user data.
 
 Package 5 的下一动作（收敛，不重跑全矩阵）：只按**实际变更**关联补验——已验过的三宿主普通入口/回退不重复；当前候选的收尾以现有证据 + 有限平板（103）补证为准。默认切换不在本包内。
 
+- **可复用的真实服务缓存清点（2026-09-19，只读）**：237 的 `com.erosteam.nextn` 下存在 3 个真实服务生成的合法译图缓存（`.../haps/entry/cache/comic-translated-pages/`，2 个 PNG + 对应 json，含完整 identity：`route=whole_page_render`、`translationSourceProfileId=torii-whole-page:managed:...`、`translationModelId=gemini-3.1-flash-lite`、`pageIndex`、`sourceImageHash`），全部属 Torii 整页路线；103 上该目录**不存在**（0 条）。结论：237 有可用于“显示与切回”验证的真实缓存素材，103 没有。**但现有普通试次固定打开画廊 678049 且不接受页号**，而这些缓存来自 lab/live-eval 的 projectId，没有现成入口能命中；直接复用需要改试次并精确复现源图哈希，在没有命中保证前不为此扩改试次。
+
 ## 交付状态汇总（每宿主最终结论 + 剩余阻断；不新建队列）
 
 当前可交付候选：三宿主阅读器分支的 reader-kit submodule **同 pin `2594d6f`**（NextN / NextE / Koma 实测一致）；NextN 与 NextE 的本地 `main` 仍 pin `5e5cb4c`/`e4010f9`（不含阅读器迁移）。旧阅读器仍默认且 release fail-closed 可回退，共享阅读器经普通入口可选（现有选择机制未改，未擅翻发布默认）。下列每行给出结论、剩余阻断、证据路径与停止条件；`ACCEPTED` 是记录不是新证明，不为审阅重跑全矩阵。
