@@ -15,6 +15,27 @@ Until Package 5 is accepted, every production default remains the legacy reader
 and every shared route remains optional and reversible. No package migrates or
 deletes user data.
 
+## 能力对等进度板（有限；唯一 ACTIVE 行，其他为参考）
+
+| ID | 宿主/公共 | 旧阅读器真实能力与语义 | 新实现位置 | 已有证据 | 状态 | 唯一下一动作 |
+| --- | --- | --- | --- | --- | --- | --- |
+| P1 | NextN 公共 | 与旧阅读器在**同一状态（同页/同模式/同设置）**下体验一致 | Shared `NextNReaderLabPage` vs Legacy `ReaderPage`（同读 `ReaderPresentationService`+`ReaderSettingsRepository`） | 两后端各自已验收；既有 Shared/Legacy 截图**非同状态**（Shared `4 / 14` vs Legacy 另一状态），体验对等未证 | ACTIVE (IMPLEMENTED-UNVERIFIED) | 197 锁同页同模式各截 Shared/Legacy 一帧对照 |
+| P2 | 公共/reader-core | 进入/立即退出/返回原位置/迟到回调不复活 | `ReaderSurface`/`ReaderSession` | 三宿主 pin 验收 | ACCEPTED | — |
+| P3 | 公共/reader-core | 资源生命周期：原图/缩略图、慢载、逐页失败、精确重试、取消、旧请求退休 | `ReaderPagedSession` | 三宿主 pin 验收 | ACCEPTED | — |
+| P4 | 公共/reader-ui | 布局：单页/双页/连续/长图、LTR/RTL、封面与末页 | `ReaderDisplayMap` 等 | 分页×3×197/237；长图滚动位移；Koma 竖翻 237 | ACCEPTED | — |
+| P5 | 公共/reader-ui | 手势与缩放：点按/反转/双击/双指/拖动/滚动归属/音量键 | `ReaderTapSequence` 等 | 跨轴 3×2；缩放×前后台/旋转；音量键 197+237 | ACCEPTED | — |
+| P6 | 公共/reader-ui | Chrome 与动作：顶底栏/滑条/模式/缩略图/原图/保存/分享/更多 | `ReaderSurface`/`ReaderChrome` | 三宿主 pin 验收（含连续 chrome） | ACCEPTED | — |
+| P7 | 宿主 | 设置承接：模式/方向/双页/裁边/页码/插值/翻页/常亮/点击区/音量 | preference → `ReaderDisplayPolicy` | 三宿主 pin 验收 | ACCEPTED | — |
+| P8 | Koma 宿主 | 「阅读背景」(backgroundMode) 承接 | `canvasBackground` | 源码接通；设备生效未验（需隔离配置） | EXTERNAL-OPEN | 待隔离配置 |
+| P9 | 宿主 | 进度与章节：进度持久化/冷启动；Koma 上下章/失败/取消/末章/读完 | `ReaderProgressPersistence`/`KomaReaderLabPage` | 三宿主 pin 验收 | ACCEPTED | — |
+| P10 | 宿主 | 生命周期与适配：前后台/关闭中/快速重开/旋转 | 宿主 route + `ReaderSession` | keep-screen 197+237；立即退出；旋转含大屏 | ACCEPTED | — |
+| P11 | 宿主 | 数据与回退：数据不迁移；默认旧阅读器、可否决可回退 | release fail-closed + selector gate | 三宿主 release fail-closed；升级/回滚连续性 | ACCEPTED | — |
+| P12 | 宿主(NextE) | 非本地/云端翻译经共享面往返 | `NextEReaderTranslationProvider` | 本地三宿主已验；NextE Torii 往返已闭合 | ACCEPTED | — |
+| P13 | 宿主 | self-hosted 经共享面发布 | 同 P12 链 | 主机侧全链已证；共享面发布未验（需不写真实设置） | EXTERNAL-OPEN | 待隔离配置 |
+| P14 | 宿主(NextN) | NextN 云端(Torii)往返 | `ToriiWholePageRenderBackend` | 请求→云 200，但该模型返回非图像 payload；与 NextE 同代码、仅模型不同 | EXTERNAL-OPEN | 第三方模型/payload |
+
+当前唯一 ACTIVE 行：**P1**（体验对等同状态对照）。
+
 ## Execution contract
 
 1. Exactly one package is `ACTIVE`; all others are `QUEUED` or `DONE`.
