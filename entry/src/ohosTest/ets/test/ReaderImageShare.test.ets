@@ -145,7 +145,8 @@ export default function readerImageShareTest(): void {
       const delegator = abilityDelegatorRegistry.getAbilityDelegator()
       await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
         parameters: { readerLabWork: work, readerLabUnit: typeof unit === 'string' ? unit : '',
-          readerLabPage: '1', readerLabChrome: 'true', readerLabVolumeKeys: 'true' } })
+          readerLabPage: '1', readerLabChrome: 'true', readerLabVolumeKeys: 'true',
+          readerLabEntryLayout: 'single' } })
       await driver.delayMs(1800); await shareImageReady(driver)
       if (args['-s readerShareSpread'] === 'true') {
         await (await driver.findComponent(ON.id('rkit-toggle-spread'))).click()
