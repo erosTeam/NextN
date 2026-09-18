@@ -35,6 +35,7 @@ import readerProductionPartialDownloadFallbackTrialTest from './ReaderProduction
 import readerSharedSuperResolutionTest from './ReaderSharedSuperResolution.test'
 import readerContinuousLegacyParityTrialTest from './ReaderContinuousLegacyParity.test'
 import nhHomeSubtabNameVerifyTrialTest from './NhHomeSubtabNameVerify.test'
+import readerSelfHostedPublishTrialTest from './ReaderSelfHostedPublish.test'
 import readerRuntimeContinuityTest from './ReaderRuntimeContinuity.test'
 
 export default function testsuite(): void {
@@ -74,6 +75,7 @@ export default function testsuite(): void {
   readerSharedSuperResolutionTest()
   readerContinuousLegacyParityTrialTest()
   nhHomeSubtabNameVerifyTrialTest()
+  readerSelfHostedPublishTrialTest()
   readerRuntimeContinuityTest()
   textTranslationPromptProfilesTest()
 }

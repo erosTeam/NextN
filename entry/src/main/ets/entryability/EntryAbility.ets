@@ -56,6 +56,7 @@ import {
   connectSafeMode,
   captureNextNReaderBackendWant,
   ReaderTrialOriginalProbe,
+  ReaderSelfHostedRehearsal,
 } from 'shared'
 
 const ENTRY_PAGE: string = 'pages/Index'
@@ -104,6 +105,7 @@ export default class EntryAbility extends UIAbility {
     this.captureReaderOriginalProbe(want)
     captureNextNReaderBackendWant(want, this.context.applicationInfo.debug)
     captureReaderLabWant(want, this.context.applicationInfo.debug)
+    ReaderSelfHostedRehearsal.capture(want, this.context.applicationInfo.debug)
     this.galleryDirectLaunchIdAtLaunch = this.galleryDirectLaunchId(want)
     this.galleryDirectLaunchCommentsAtLaunch = this.galleryDirectLaunchWantsComments(want)
     const recoveryValue: Object | undefined = want.parameters?.['nextn_login_recovery']
@@ -367,6 +369,7 @@ export default class EntryAbility extends UIAbility {
     this.captureReaderOriginalProbe(want)
     captureNextNReaderBackendWant(want, this.context.applicationInfo.debug)
     captureReaderLabWant(want, this.context.applicationInfo.debug)
+    ReaderSelfHostedRehearsal.capture(want, this.context.applicationInfo.debug)
     if (connectSafeMode().restricted()) {
       return
     }

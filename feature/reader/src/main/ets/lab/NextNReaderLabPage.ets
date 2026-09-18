@@ -18,7 +18,8 @@ import { connectReaderPresentation, ReaderPresentationService, ReaderPresentatio
   ReaderSuperResolutionService, CommentTranslationService, ComicVisualProviderSettings,
   ComicVisualProviderSettingsSnapshot, COMIC_VISUAL_ROUTE_LOCAL, COMIC_VISUAL_ROUTE_SELF_HOSTED,
   COMIC_VISUAL_ROUTE_TORII, connectLanguageState, LanguageState, connectLlmSourceProfiles,
-  LlmSourceProfilesState, connectMangaRenderingService, MangaRenderingServiceState,
+  LlmSourceProfilesState, connectMangaRenderingService, MangaRenderingServiceState, ComicTranslationRuntimeService,
+  ReaderSelfHostedRehearsal,
   supportsMangaTranslation, ToriiFontCatalog, ToriiWholePageConfig, ToriiWholePageSecretStore,
   TORII_WHOLE_PAGE_SOURCE_REVISION, NhGalleryDetail, NhGalleryPage, NhTag } from 'shared'
 import { NextNReaderOriginalProbeProvider } from './NextNReaderOriginalProbeProvider'
@@ -637,6 +638,17 @@ export struct NextNReaderLabPage {
 
   private restoreComicVisualRouteIdentity(): void {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext
+    if (ReaderSelfHostedRehearsal.active()) {
+      // Process-local self-hosted rehearsal: no user setting is written.
+      ComicTranslationRuntimeService.setSelfHostedRuntimeOverrideForRehearsal(
+        context, ReaderSelfHostedRehearsal.currentEndpoint(), ReaderSelfHostedRehearsal.currentUser(),
+        ReaderSelfHostedRehearsal.currentPassword())
+      this.comicVisualRoute = COMIC_VISUAL_ROUTE_SELF_HOSTED
+      this.mangaRenderingService.initialized = true
+      this.mangaRenderingService.enabled = true
+      this.translationPreferenceRevision += 1
+      return
+    }
     ComicVisualProviderSettings.load(context).then((snapshot: ComicVisualProviderSettingsSnapshot): void => {
       if (this.volumeDisposed || this.closeRequested || this.hostClosing) return
       this.comicVisualRoute = snapshot.route

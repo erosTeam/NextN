@@ -310,6 +310,8 @@ export {
   ComicTranslationReaderPageInput,
   ComicTranslationRuntimeService,
 } from './services/ComicTranslationRuntimeService'
+
+export { ReaderSelfHostedRehearsal } from './state/ReaderSelfHostedRehearsal'
 export { ComicTranslationModelService } from './services/ComicTranslationModelService'
 export {
   ComicVisualTranslationRequest,

@@ -130,6 +130,45 @@ export class ComicTranslationRuntimeService {
   private static wholePageOrchestrators: Map<string, ComicWholePageTranslationOrchestrator> =
     new Map<string, ComicWholePageTranslationOrchestrator>()
   private static toriiContextStore: ToriiWholePageContextStore | null = null
+  /**
+   * Process-local, never-persisted self-hosted runtime override for a bounded
+   * rehearsal. When set, backendFor returns it instead of reading persisted
+   * selection/credential, so the shared Reader translation action can publish
+   * through an isolated self-hosted endpoint without writing user settings.
+   */
+  private static selfHostedRuntimeOverride: ComicTranslationRuntimeBackend | null = null
+
+  /**
+   * Process-local, never-persisted self-hosted endpoint for a bounded rehearsal
+   * of the shared Reader translation action. Pass an isolated sidecar endpoint
+   * and account, or null to clear. Nothing here is written to user settings.
+   */
+  static setSelfHostedRuntimeOverrideForRehearsal(
+    context: common.UIAbilityContext,
+    baseUrl: string,
+    username: string,
+    password: string,
+  ): void {
+    if (baseUrl.length === 0 || username.length === 0 || password.length === 0) {
+      ComicTranslationRuntimeService.selfHostedRuntimeOverride = null
+      return
+    }
+    const credential: MangaRenderingServiceCredential = new MangaRenderingServiceCredential()
+    credential.username = username
+    credential.password = password
+    credential.revision = 1
+    const settings: MangaRenderingServiceSettingsSnapshot =
+      new MangaRenderingServiceSettingsSnapshot()
+    const backend: MangaRenderingServiceBackend = new MangaRenderingServiceBackend(
+      context, baseUrl, credential, 'auto', settings.detectionProfile, settings.inpaintingProfile, 1,
+    )
+    ComicTranslationRuntimeService.selfHostedRuntimeOverride = new ComicTranslationRuntimeBackend(
+      backend,
+      credential.revision,
+      ComicTranslationRuntimeService.selfHostedRenderProfile(),
+      ComicTranslationRuntimeService.credentialRuntimeFingerprint(credential),
+    )
+  }
 
   static async runReaderPage(
     context: common.UIAbilityContext,
@@ -382,6 +421,10 @@ export class ComicTranslationRuntimeService {
     context: common.UIAbilityContext,
     input: ComicTranslationReaderPageInput,
   ): Promise<ComicTranslationRuntimeBackend> {
+    const override: ComicTranslationRuntimeBackend | null = ComicTranslationRuntimeService.selfHostedRuntimeOverride
+    if (override !== null) {
+      return override
+    }
     const selection: MangaRenderingServiceState = connectMangaRenderingService()
     const selectionEpoch: number = selection.selectionEpoch
     if (!selection.initialized || !selection.enabled) {
