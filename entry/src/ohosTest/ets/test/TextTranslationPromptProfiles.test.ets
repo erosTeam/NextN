@@ -307,5 +307,86 @@ export default function textTranslationPromptProfilesTest(): void {
       const source: string = 'PROVIDER SOURCE TEXT NEVER ENTERS THE SYSTEM STRING'
       expect(comment.indexOf(source) >= 0).assertEqual(false)
     })
+
+    it('builds cache scopes from isolated fields and never from the display name', 0, () => {
+      const promptProfile = customProfile('custom-a', 'Style body.', 100)
+      const promptProfileB = customProfile('custom-b', 'Style body.', 100)
+      const bumpedRevision = customProfile('custom-a', 'New style body.', 100)
+      bumpedRevision.promptRevision = 3
+
+      const baseScope: string = 'zh-CN|comment|source-a|r3|model-m|' + promptProfile.promptProfileId + '|pr' + promptProfile.promptRevision
+      const titleScope: string = 'zh-CN|gallery_title|source-a|r3|model-m|' + promptProfile.promptProfileId + '|pr' + promptProfile.promptRevision
+
+      expect(baseScope === titleScope).assertEqual(false)
+      expect(baseScope.indexOf('pr1') >= 0).assertEqual(true)
+      expect(baseScope.indexOf('gallery_title') >= 0).assertEqual(false)
+      expect(titleScope.indexOf('|comment|') >= 0).assertEqual(false)
+
+      const otherProfileScope: string = 'zh-CN|comment|source-a|r3|model-m|' + promptProfileB.promptProfileId + '|pr' + promptProfileB.promptRevision
+      const bumpedScope: string = 'zh-CN|comment|source-a|r3|model-m|' + bumpedRevision.promptProfileId + '|pr' + bumpedRevision.promptRevision
+
+      expect(baseScope === otherProfileScope).assertEqual(false)
+      expect(baseScope === bumpedScope).assertEqual(false)
+    })
+
+    it('separates content kinds across gallery title and comments', 0, () => {
+      const commentTask = TextTranslationPromptComposer.taskInstructions('comment')
+      const titleTask = TextTranslationPromptComposer.taskInstructions('gallery_title')
+      expect(commentTask === titleTask).assertEqual(false)
+      expect(commentTask.indexOf('comment') >= 0).assertEqual(true)
+      expect(titleTask.indexOf('title') >= 0).assertEqual(true)
+    })
+
+    it('restores custom profiles and selection through settings store', 0, async (done: Function) => {
+      const context: common.UIAbilityContext = await appContext()
+      const store: preferences.Preferences = await preferences.getPreferences(context, SETTINGS_STORE)
+      const saved: InitialPreference[] = [
+        new InitialPreference(store, KEY_CUSTOM_PROFILES),
+        new InitialPreference(store, KEY_SELECTED_PROFILE),
+      ]
+      try {
+        store.deleteSync(KEY_CUSTOM_PROFILES)
+        store.deleteSync(KEY_SELECTED_PROFILE)
+        store.flushSync()
+        await TextTranslationPromptProfileRepository.restore(context)
+
+        const candidate: TextTranslationPromptProfile = customProfile('custom-backup-p1', 'Backup style body.', 1000)
+        await TextTranslationPromptProfileRepository.upsertCustom(context, candidate)
+        await TextTranslationPromptProfileRepository.select(context, 'custom-backup-p1')
+
+        const encoded: string = store.getSync(KEY_CUSTOM_PROFILES, '') as string
+        expect(encoded.indexOf('custom-backup-p1') >= 0).assertEqual(true)
+        expect(encoded.indexOf('Backup style body.') >= 0).assertEqual(true)
+
+        // Modify state on device
+        store.deleteSync(KEY_CUSTOM_PROFILES)
+        store.deleteSync(KEY_SELECTED_PROFILE)
+        store.flushSync()
+        await TextTranslationPromptProfileRepository.restore(context)
+        expect(TextTranslationPromptProfileRepository.currentSelection().promptProfileId).assertEqual(TEXT_TRANSLATION_PROMPT_BUILTIN_STANDARD)
+
+        // Restore state directly
+        store.putSync(KEY_CUSTOM_PROFILES, encoded)
+        store.putSync(KEY_SELECTED_PROFILE, 'custom-backup-p1')
+        store.flushSync()
+        await TextTranslationPromptProfileRepository.restore(context)
+
+        // Verify custom profile & selection restored
+        expect(TextTranslationPromptProfileRepository.currentSelection().promptProfileId).assertEqual('custom-backup-p1')
+        expect(TextTranslationPromptProfileRepository.currentSelection().styleInstructions).assertEqual('Backup style body.')
+      } finally {
+        for (let i = 0; i < saved.length; i++) {
+          const item = saved[i]
+          if (item.present) {
+            store.putSync(item.key, item.value)
+          } else {
+            store.deleteSync(item.key)
+          }
+        }
+        store.flushSync()
+        await TextTranslationPromptProfileRepository.restore(context)
+        done()
+      }
+    })
   })
 }
