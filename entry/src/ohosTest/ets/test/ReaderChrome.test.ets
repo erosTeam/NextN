@@ -48,7 +48,7 @@ export default function readerChromeTest(): void {
       await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
         bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
         parameters: { readerLabWork: work, readerLabChrome: 'true', readerLabPageTurnAnimation: 'true',
-          readerLabEntryDirection: 'ltr' },
+          readerLabEntryDirection: 'ltr', readerLabEntryLayout: 'single' },
       })
       await waitChromeImage(driver, 'rkit-image-viewport')
       const bounds = await (await driver.findComponent(ON.id('rkit-image-viewport'))).getBounds()
@@ -95,7 +95,7 @@ export default function readerChromeTest(): void {
       await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
         bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
         parameters: { readerLabWork: work, readerLabChrome: 'true', readerLabPageTurnAnimation: 'true',
-          readerLabEntryDirection: 'ltr' },
+          readerLabEntryDirection: 'ltr', readerLabEntryLayout: 'single' },
       })
       await driver.delayMs(1200)
       await waitChromeImage(driver, 'rkit-image-viewport')
@@ -152,7 +152,7 @@ function readerManualReloadTest(): void {
       const driver = Driver.create()
       await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
         bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
-        parameters: { readerLabWork: work, readerLabChrome: 'true', readerLabEntryDirection: 'ltr' },
+        parameters: { readerLabWork: work, readerLabChrome: 'true', readerLabEntryDirection: 'ltr', readerLabEntryLayout: 'single' },
       })
       await waitChromeImage(driver, 'rkit-image-viewport')
       expect(await chromePage(driver)).assertEqual(1)
@@ -187,7 +187,7 @@ function readerManualReloadTest(): void {
 
       await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
         bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
-        parameters: { readerLabWork: work, readerLabChrome: 'true', readerLabEntryDirection: 'ltr' },
+        parameters: { readerLabWork: work, readerLabChrome: 'true', readerLabEntryDirection: 'ltr', readerLabEntryLayout: 'single' },
       })
       await waitChromeImage(driver, 'rkit-image-viewport')
       await driver.delayMs(1200)
@@ -203,7 +203,7 @@ function readerManualReloadTest(): void {
       await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
         bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
         parameters: { readerLabWork: work, readerLabPage: '1', readerLabChrome: 'true',
-          readerLabEntryDirection: 'ltr' },
+          readerLabEntryDirection: 'ltr', readerLabEntryLayout: 'single' },
       })
       await waitChromeImage(driver, 'rkit-image-viewport')
       await (await driver.findComponent(ON.id('rkit-toggle-spread'))).click()
