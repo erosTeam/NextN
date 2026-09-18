@@ -19,24 +19,22 @@ deletes user data.
 
 | ID | 宿主/公共 | 旧阅读器真实能力与语义 | 新实现位置 | 已有证据 | 状态 | 唯一下一动作 |
 | --- | --- | --- | --- | --- | --- | --- |
-| P1 | NextN 公共 | 与旧阅读器在**同一状态**下体验一致 | Shared（`NextNReaderLabPage`/`ReaderSurface`）vs Legacy `ReaderPage` | 单页同页对已实测：compact `1 / 14` 像素 Δ0；grid `2 / 14` 页列位置(532–727)/亮区(0–1859)/逐行剖面相关 0.9887；其余差异为上/底栏 chrome（已记录的 Shared 显示 / Legacy 沉浸取舍）。连续/双页的等效性由**门禁自有证据**覆盖（页顺序/图片边界/导航/横竖屏重排/长图滚动位移，均已有 pin 设备记录），门禁不要求同状态 Shared↔Legacy 截图 | ACCEPTED | — |
+| P1 | NextN 公共 | 与旧阅读器在**同一状态**下体验一致（页身份/几何/交互） | 单页/双页：Shared `ReaderPagedViewport` vs Legacy `ReaderPage`；连续：Shared `ReaderContinuousSurface` vs Legacy 连续滚动 | 仅**单页**同页对实测：compact `1 / 14` 像素 Δ0；grid `2 / 14` 页列位置(532–727)/亮区(0–1859)/剖面相关 0.9887(残余为局部内容差)。**此结论不外推到全部阅读体验** | 待核验(有限) | 连续视口 vs 旧滚动容器的图片范围/当前页/退出位置差异，用确实同状态证据核验（不要求三宿主×全模式×设备笛卡尔积） |
 | P2 | 公共/reader-core | 进入/立即退出/返回原位置/迟到回调不复活 | `ReaderSurface`/`ReaderSession` | 三宿主 pin 验收 | ACCEPTED | — |
 | P3 | 公共/reader-core | 资源生命周期：原图/缩略图、慢载、逐页失败、精确重试、取消、旧请求退休 | `ReaderPagedSession` | 三宿主 pin 验收 | ACCEPTED | — |
 | P4 | 公共/reader-ui | 布局：单页/双页/连续/长图、LTR/RTL、封面与末页 | `ReaderDisplayMap` 等 | 分页×3×197/237；长图滚动位移；Koma 竖翻 237 | ACCEPTED | — |
 | P5 | 公共/reader-ui | 手势与缩放：点按/反转/双击/双指/拖动/滚动归属/音量键 | `ReaderTapSequence` 等 | 跨轴 3×2；缩放×前后台/旋转；音量键 197+237 | ACCEPTED | — |
 | P6 | 公共/reader-ui | Chrome 与动作：顶底栏/滑条/模式/缩略图/原图/保存/分享/更多 | `ReaderSurface`/`ReaderChrome` | 三宿主 pin 验收（含连续 chrome） | ACCEPTED | — |
 | P7 | 宿主 | 设置承接：模式/方向/双页/裁边/页码/插值/翻页/常亮/点击区/音量 | preference → `ReaderDisplayPolicy` | 三宿主 pin 验收 | ACCEPTED | — |
-| P8 | Koma 宿主 | 「阅读背景」(backgroundMode) 承接 | `canvasBackground` | 源码接通；设备生效未验（需隔离配置） | EXTERNAL-OPEN | 待隔离配置 |
-| P9 | 宿主 | 进度与章节：进度持久化/冷启动；Koma 上下章/失败/取消/末章/读完 | `ReaderProgressPersistence`/`KomaReaderLabPage` | 三宿主 pin 验收 | ACCEPTED | — |
+| P8 | Koma 宿主 | 「阅读背景」(backgroundMode) 承接：设置变化即时生效、重进读取正确、恢复原值 | `KomaReaderLabPage.onHostPreferencesChanged` → `hostPreferences` → `canvasBackground`/`canvasForeground`；UI 见 `ReaderSettingsContent.ets:201-204,328` | 源码链完整（本地设置→回调→共享面 canvasBackground）；**尚无设备端可见证据** | ACTIVE (IMPLEMENTED-UNVERIFIED) | 用 197 普通设置 UI 选值并恢复，记录该设置必要值；经同一宿主回调/映射与共享面验证 |
+| P9 | 宿主 | 进度与章节：进度持久化/冷启动；Koma 上下章/失败/取消/末章/读完 | `ReaderProgressPersistence`/`KomaReaderLabPage` | 三宿主 pin 验收为基准；**Koma「读完」值所依赖的原始持久行已在协议清理中删除**，仅保留历史观察与原有效验收——不得用当前页标签+恢复哈希当作新的 completed 持久化证明 | ACCEPTED（保留上述边界注记） | — |
 | P10 | 宿主 | 生命周期与适配：前后台/关闭中/快速重开/旋转 | 宿主 route + `ReaderSession` | keep-screen 197+237；立即退出；旋转含大屏 | ACCEPTED | — |
 | P11 | 宿主 | 数据与回退：数据不迁移；默认旧阅读器、可否决可回退 | release fail-closed + selector gate | 三宿主 release fail-closed；升级/回滚连续性 | ACCEPTED | — |
 | P12 | 宿主(NextE) | 非本地/云端翻译经共享面往返 | `NextEReaderTranslationProvider` | 本地三宿主已验；NextE Torii 往返已闭合 | ACCEPTED | — |
 | P13 | 宿主 | self-hosted 经共享面发布 | 同 P12 链 | 主机侧全链已证；共享面发布未验（需不写真实设置） | EXTERNAL-OPEN | 待隔离配置 |
-| P14 | 宿主(NextN) | NextN 云端(Torii)往返 | `ToriiWholePageRenderBackend` | 请求→云 200，但该模型返回非图像 payload；与 NextE 同代码、仅模型不同 | EXTERNAL-OPEN | 第三方模型/payload |
+| P14 | 宿主(NextN) | NextN 云端(Torii)往返 | `ToriiWholePageRenderBackend` | 共享面发出真实请求→云 200，但宿主链以“图像 MIME 与字节不匹配”拒绝，阅读器如实显示失败；**根因未定**（同服务源码不足以证明新旧传入相同；“仅模型不同”的旧归因已撤回，见工作单 1990 段后半） | EXTERNAL-OPEN | 复现并定位宿主/云侧 payload 差异（非共享回归的判定需证据） |
 
-当前唯一 ACTIVE 行：**（无）**。P1 收敛为 ACCEPTED；P2–P12 为 ACCEPTED，P8/P13/P14 为 EXTERNAL-OPEN。
-本板口径：门禁（防退化门槛表）要求的每一项证据均已有对应 pin 设备记录；不制造门禁未要求的同状态 Shared↔Legacy 截图（对称格），不为验证临时改写用户设置。
-剩余非 ACCEPTED 均为外部/隔离条件：P8 Koma 阅读背景（需隔离配置）、P13 self-hosted 经共享面（需无凭据隔离配置）、P14 NextN 云端往返（第三方模型返回非图像 payload）。
+当前唯一 ACTIVE 行：**P8**（Koma「阅读背景」承接——本地可验证的宿主设置链，非外部服务阻塞）。
 
 - **P1 same-state Shared↔Legacy pixel comparison (2026-09-18, 197, artifact reuse, no new device run)**: the board flagged that the only NextN Shared/Legacy image pair on record was **not** the same state (Shared `4 / 14` continuous vs Legacy `2 / 14`), so experience parity was unproven. Reusing the current-pin set `.hvigor/outputs/nextn-rv-matrix-2594d6f/run/extracted_evidence/` there are in fact two **same-page** pairs: `compact` (Shared `1 / 14` = Legacy `1 / 14`) and `grid` (Shared `2 / 14` = Legacy `2 / 14`). Measured: compact body band (y 340–2200) is **byte-identical** (Δ0, 0 px changed); grid body band differs only in a narrow column and, after normalizing position, the page column sits at x≈532–727 in both (`531..727` legacy, 1 px antialias), the bright page extent is identical (`0..1859`), and the per-row brightness profile correlation is **0.9887** with the top differences confined to a ~250 px band (y≈1677–1923). So at the same page the two backends render the same page at the same place and extent; the residual grid difference is a small local content difference, not a layout/experience regression. This closes the *experience-parity is unproven* doubt for the light path and the top/bottom chrome difference is the already-documented Shared(chrome shown) vs Legacy(immersive) presentation trade-off. Honest scope: this is artifact reuse (no fresh device run) and covers the single-page light path; it does not by itself re-accept the dark/continuous/spread same-state cases, which remain covered by their own records.
 
