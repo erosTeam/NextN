@@ -31,7 +31,7 @@ deletes user data.
 | P10 | 宿主 | 生命周期与适配：前后台/关闭中/快速重开/旋转 | 宿主 route + `ReaderSession` | keep-screen 197+237；立即退出；旋转含大屏 | ACCEPTED | — |
 | P11 | 宿主 | 数据与回退：数据不迁移；默认旧阅读器、可否决可回退 | release fail-closed + selector gate | 三宿主 release fail-closed；升级/回滚连续性 | ACCEPTED | — |
 | P12 | 宿主(NextE) | 非本地/云端翻译经共享面往返 | `NextEReaderTranslationProvider` | 本地三宿主已验；NextE Torii 往返已闭合 | ACCEPTED | — |
-| P13 | 宿主 | self-hosted 经共享面发布 | 同 P12 链 | 主机侧全链已证。隔离入口**已补**：`ComicTranslationRuntimeService.setSelfHostedRuntimeOverrideForRehearsal`（进程内、默认 null、不落盘）+ `ReaderSelfHostedRehearsal`（宿主从 Debug Want 捕获）+ `NextNReaderLabPage` 应用 + `ReaderSelfHostedPublishTrial`（commit `62d88cbe`）。真机首次运行 More 菜单无 translate 动作：共享链仍需设备上已配置的 manga LLM 文本翻译源（与 NextE 宿主翻译往返同一前置），属**环境前置**而非共享面缺口 | IMPLEMENTED-UNVERIFIED | 在已配置 manga LLM source 的设备上跑 `ReaderSelfHostedPublishTrial`；停止条件：一条真机链路显示译图即收，不写真实设置、不建平台 |
+| P13 | 宿主 | self-hosted 经共享面发布 | 同 P12 链 | **2026-09-19 归因纠正**：先前“设备无 manga LLM 源”的判断错误。真机事实（197，只读、不写设置）：设备已有能力齐备且在位的源 `540764f8`（`responses/imageInput/modelCatalog` 全真、`keyPresent=true`、r2），注释翻译本就绑定它（`gpt-5.4-mini`），只有 **manga 绑定为空**；且旧试次走 **Lab 路由**（`productionSources` 非 true），共享翻译配置直接被禁用，因此永远到不了翻译动作。修复两处真缺陷：(a) `runReaderPage` 先读**持久** route 并在 Torii 分支，使隔离 self-hosted 覆盖不可达；(b) 共享宿主适配用**裸** profile id，而运行时写入 `llm-source:<id>:r<rev>`（旧阅读器同款），导致真实结果被判 `reader_translation_result_stale`。修复后 197 上链路真实发布：`prepare source=0 identity=[..."llm-source:540764f8-…:r2"...]` → `applied`（无 stale），动作 `action-present=true enabled=true`。**范围**：进程内绑定既有源，未写任何用户设置；该次运行被试次自身超时截断，未取到译图落地截图。 | IMPLEMENTED-UNVERIFIED | 在 103 或 237（按项目协议取有效租约）跑 `ReaderSelfHostedPublishTrial`，取到译图落地即收；不写真实设置、不建平台 |
 | P14 | 宿主(NextN) | NextN 云端(Torii)往返 | `ToriiWholePageRenderBackend` | **已归因（197 配对对照；不是迁移回归）**：同一构建内先跑共享入口 `ReaderProductionNonLocalTranslationRoundTripTrial`、再跑旧阅读器入口 `ReaderLegacyNonLocalTranslationRoundTripTrial`，同页 gallery 678049 page 1、同源文件。两侧记录到**完全相同的上传源**（`[ToriiWholePage] source bytes=800208 sha256=29bdfc1c72408e6d mime=image/webp`），各自请求→云 200，随后都以**同一条判定**失败：`decode_mismatch declared=image/webp png=false jpeg=true webp=false`（返回体标称 webp、实际字节是 JPEG）。共享侧 `applied=false`、旧阅读器侧 `hostOutcome=failed`，两者均如实显示失败；两试次各 `Tests run: 1, Pass: 1`。结论：这是**云侧返回负载的 MIME 标签错误**（既有条件），不是共享阅读器迁移回归；记为独立已知限制，不作为替代阻断 | EXTERNAL-OPEN（已归因：云侧负载标签） | —（结论已得出；如需修复应改云侧返回标签，属外部服务范围） |
 
 当前唯一 ACTIVE 行：**P13**（self-hosted 经共享面发布的本地隔离接入——复用现有上层服务，非外部阻塞）。
@@ -40,11 +40,11 @@ deletes user data.
 
 当前可交付候选：三宿主阅读器分支的 reader-kit submodule **同 pin `2594d6f`**（NextN / NextE / Koma 实测一致）；NextN 与 NextE 的本地 `main` 仍 pin `5e5cb4c`/`e4010f9`（不含阅读器迁移）。旧阅读器仍默认且 release fail-closed 可回退，共享阅读器经普通入口可选（现有选择机制未改，未擅翻发布默认）。下列每行给出结论、剩余阻断、证据路径与停止条件；`ACCEPTED` 是记录不是新证明，不为审阅重跑全矩阵。
 
-- **NextN** — 结论：候选可替代主路径（进入/退出/返回、单页/双页/连续/长图、手势缩放、chrome/动作、设置承接、进度、数据不迁移与回退）。剩余阻断：P13（self-hosted 经共享面——隔离入口已实现，剩**环境前置**：设备需已配置的 manga LLM 文本翻译源）与 P14（云端 Torii 往返，根因未定）。证据：`.hvigor/outputs/nextn-197-*/`、`nextn-237-*/`、连续同状态 `.hvigor/outputs/nextn-p1-continuous-197b/`；回退 `.hvigor/outputs/nextn-rv-release-*/`。停止条件：P13 一条真机链路通过即收；P14 得出“迁移回归/既有宿主限制”结论即收，不阻塞。
+- **NextN** — 结论：候选可替代主路径（进入/退出/返回、单页/双页/连续/长图、手势缩放、chrome/动作、设置承接、进度、数据不迁移与回退）。剩余阻断：P13 经共享面发布已在 197 跑通到 `applied`（归因纠正：不是缺源，而是 (a) 持久 route 抢先分支、(b) 适配用裸 profile id 被判 stale，两处已修），尚待在 103/237 取到译图落地；P14 已归因为云侧负载标签错误。证据：`.hvigor/outputs/nextn-197-*/`、`nextn-237-*/`、连续同状态 `.hvigor/outputs/nextn-p1-continuous-197b/`；回退 `.hvigor/outputs/nextn-rv-release-*/`。停止条件：P13 一条真机链路通过即收；P14 得出“迁移回归/既有宿主限制”结论即收，不阻塞。
 - **NextE** — 结论：候选可替代主路径（同 NextN 的公共面 + NextE 宿主动作/翻译入口），且**真实超分结果应用已验**：`ReaderEnhancementResultTrial`（197，commit `1297da98`）在共享面把源图 `800x1129` 产出真实增强图 `3200x4516`（`backend=system`、`bytes=3951777`），共享图像信息显示“当前：增强图片 / 图像增强：系统图像超分 · 系统 AI · 已应用”（`hilog process_success`）；`Tests run: 1, Pass: 1`。**范围收窄**：该次只验证真实结果被应用与呈现，图像信息中的“原图：可用”只是可用性文案，**不是切回原图的动作证据**；切回是共享 chrome 的既有行为，本切片未另测，不为它重跑 SR 套件。剩余阻断：非本地/云端翻译的共享面端到端（P12 已闭合 Torii 往返；self-hosted 同 P13 缺口）。证据：`.hvigor/outputs/nexte-enhancement-real-197/`。
 - **Koma** — 结论：候选可替代主路径（章节编排/切换/读完、设置承接含阅读背景、公共阅读面）。剩余阻断：Koma 侧无外部服务阻断；「读完」持久化仅保留历史证据界限（原始行已在协议清理中删除），不为此重跑全套。证据：`.hermes-artifacts/20260917-koma-*/`、`.hvigor/outputs/koma-p8-*/`。停止条件：无新反例即冻结复用。
 
-**结论口径**：在“必要功能仍有未验/失败”时不宣布完整替代。P13 的隔离入口已实现（`62d88cbe`），剩余为**环境前置**（设备无已配置 manga LLM 源，首次真机运行菜单无 translate 动作）。P14 **已归因，不是迁移回归**：197 同构建配对对照（共享入口与旧阅读器入口，同页同源 `sha256=29bdfc1c72408e6d`、`bytes=800208`、`mime=image/webp`）显示两侧发出同一请求、同得云 200、同以 `decode_mismatch declared=image/webp ... jpeg=true webp=false` 失败——云端把 JPEG 字节标成 `image/webp`，属**云侧负载标签的既有条件**。因此既不记为共享替代缺口，也不据此声称云翻译可用；NextN 云端整页翻译当前不可用是该外部服务的独立已知限制。证据：`.hvigor/outputs/nextn-197-rt-paired/`、`nextn-197-rt-legacy-cmp/`。P1 新结果（连续同状态）已记录，待独立核验。
+**结论口径**：在“必要功能仍有未验/失败”时不宣布完整替代。P13 早先“环境前置（设备无 manga LLM 源）”的结论**已被 2026-09-19 真机事实推翻并纠正**：设备本就有可用的 manga 源，真实阻断是共享层 (a) 持久 route 抢先分支使隔离覆盖不可达、(b) 身份用裸 profile id 被判 stale；两处已修，197 上链路已到 `applied`。P14 **已归因，不是迁移回归**：197 同构建配对对照（共享入口与旧阅读器入口，同页同源 `sha256=29bdfc1c72408e6d`、`bytes=800208`、`mime=image/webp`）显示两侧发出同一请求、同得云 200、同以 `decode_mismatch declared=image/webp ... jpeg=true webp=false` 失败——云端把 JPEG 字节标成 `image/webp`，属**云侧负载标签的既有条件**。因此既不记为共享替代缺口，也不据此声称云翻译可用；NextN 云端整页翻译当前不可用是该外部服务的独立已知限制。证据：`.hvigor/outputs/nextn-197-rt-paired/`、`nextn-197-rt-legacy-cmp/`。P1 新结果（连续同状态）已记录，待独立核验。
 
 
 - **P1 same-state Shared↔Legacy pixel comparison (2026-09-18, 197, artifact reuse, no new device run)**: the board flagged that the only NextN Shared/Legacy image pair on record was **not** the same state (Shared `4 / 14` continuous vs Legacy `2 / 14`), so experience parity was unproven. Reusing the current-pin set `.hvigor/outputs/nextn-rv-matrix-2594d6f/run/extracted_evidence/` there are in fact two **same-page** pairs: `compact` (Shared `1 / 14` = Legacy `1 / 14`) and `grid` (Shared `2 / 14` = Legacy `2 / 14`). Measured: compact body band (y 340–2200) is **byte-identical** (Δ0, 0 px changed); grid body band differs only in a narrow column and, after normalizing position, the page column sits at x≈532–727 in both (`531..727` legacy, 1 px antialias), the bright page extent is identical (`0..1859`), and the per-row brightness profile correlation is **0.9887** with the top differences confined to a ~250 px band (y≈1677–1923). So at the same page the two backends render the same page at the same place and extent; the residual grid difference is a small local content difference, not a layout/experience regression. This closes the *experience-parity is unproven* doubt for the light path and the top/bottom chrome difference is the already-documented Shared(chrome shown) vs Legacy(immersive) presentation trade-off. Honest scope: this is artifact reuse (no fresh device run) and covers the single-page light path; it does not by itself re-accept the dark/continuous/spread same-state cases, which remain covered by their own records.
@@ -58,16 +58,19 @@ deletes user data.
 3. Implement the coherent source candidate first. Then run focused state tests,
    the complete `reader-kit` suite when shared code changed, and one matching
    build of every consumer. Do not rebuild between adjacent assertions.
-4. Device coverage follows risk rather than multiplication: use 197 for the
-   primary phone/runtime path, 237 (HUAWEI Pura X `VDE-AL00`, an authorized
-   test device per the user instruction of 2026-09-16) for large-screen,
-   rotation, and responsive-layout coverage. Per the user directive of
-   2026-09-17, 103 is an optional test support device, not a mandatory
-   requirement; 103 availability must not be used as a blocking condition.
-   A changed shared visual/layout owner requires verified responsive shapes;
-   237 carries the other apps' real user state, so runs there must use
-   `install -r` and must not assume an empty store. Work on 197 and 237
-   proceeds autonomously without waiting on 103.
+4. Device coverage follows risk rather than multiplication. **Current
+   arrangement (user instruction 2026-09-19): 197 is withdrawn from
+   acceptance and reserved for other use - do not start new 197 installs,
+   launches, input, captures, or retries. Acceptance runs on 103 (now an
+   authorized acceptance device, superseding the earlier optional-only
+   wording) and 237 (HUAWEI Pura X `VDE-AL00`, authorized 2026-09-16),
+   choosing whichever fits the path. Resolve the full live target through
+   `hdc list targets -v` and take an active lease.** A changed shared
+   visual/layout owner requires verified responsive shapes, so 103 carries
+   the tablet-layout difference check and 237 the large-screen/rotation
+   coverage. 237 carries the other apps' real user state, so runs there must
+   use `install -r` and must not assume an empty store. Existing accepted
+   results stay valid: a device switch does not reopen closed rows.
 5. One ignored artifact directory and one complete protocol manifest belong to
    each package/device run. Git receives no run JSON and no paragraph per run.
 6. Update the table below in place. A counterexample reopens its package; it

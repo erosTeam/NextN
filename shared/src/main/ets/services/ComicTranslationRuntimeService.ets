@@ -180,7 +180,12 @@ export class ComicTranslationRuntimeService {
       await ComicTranslationRuntimeService.fileMetadata(input.imageFilePath)
     const visualSettings: ComicVisualProviderSettingsSnapshot =
       await ComicVisualProviderSettings.load(context)
-    if (visualSettings.route === COMIC_VISUAL_ROUTE_TORII) {
+    // An explicitly installed process-local rehearsal endpoint is authoritative:
+    // the persisted route must not divert the run to another provider, otherwise
+    // the isolated self-hosted seam could never be exercised on a device whose
+    // saved route is Torii.
+    if (ComicTranslationRuntimeService.selfHostedRuntimeOverride === null &&
+      visualSettings.route === COMIC_VISUAL_ROUTE_TORII) {
       return ComicTranslationRuntimeService.runToriiWholePage(
         context,
         input,

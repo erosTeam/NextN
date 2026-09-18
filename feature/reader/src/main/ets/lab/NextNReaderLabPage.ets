@@ -437,8 +437,14 @@ export struct NextNReaderLabPage {
     const rendererReady = this.comicVisualRoute !== COMIC_VISUAL_ROUTE_SELF_HOSTED ||
       (this.mangaRenderingService.initialized && this.mangaRenderingService.enabled)
     const enabled = profile !== null && supportsMangaTranslation(profile) && rendererReady
+    // The runtime writes its own provider-qualified identity into the result
+    // page; match that exact convention so a produced result is not rejected
+    // as stale. The legacy Reader uses the same qualified form.
+    const runtimeProfileId: string = profile === null
+      ? ''
+      : 'llm-source:' + profile.sourceProfileId + ':r' + profile.sourceRevision
     return new NextNReaderTranslationConfiguration(enabled, projectId, targetLanguage,
-      this.translationSourceLanguage(), profile?.sourceProfileId ?? '', profile?.sourceRevision ?? 0,
+      this.translationSourceLanguage(), runtimeProfileId, profile?.sourceRevision ?? 0,
       binding.modelId, this.mangaRenderingService.enabled ? this.mangaRenderingService.selectionEpoch : 0)
   }
 
