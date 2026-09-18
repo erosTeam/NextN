@@ -3,7 +3,7 @@ import { abilityDelegatorRegistry, Component, Driver, ON } from '@kit.TestKit'
 import { common } from '@kit.AbilityKit'
 import {
   AppStrings, ComicTranslationModelCatalogService, connectLlmSourceProfiles, LLM_CONSUMER_MANGA_TRANSLATION,
-  LlmConsumerBinding, LlmSourceSecretVault, supportsMangaTranslation,
+  ComicTranslationRuntimeService, LlmConsumerBinding, LlmSourceSecretVault, supportsMangaTranslation,
 } from 'shared'
 
 /**
@@ -79,7 +79,11 @@ async function waitId(driver: Driver, id: string, attempts: number = 160): Promi
 export default function readerSelfHostedPublishTrialTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
   const work = args['-s readerLabWork']
-  if (args['-s class'] !== 'ReaderSelfHostedPublishTrial' || typeof work !== 'string' || work.length === 0) return
+  const selectedClass = args['-s class']
+  if (typeof work !== 'string' || work.length === 0) return
+  if (selectedClass !== 'ReaderSelfHostedPublishTrial' &&
+    selectedClass !== 'ReaderLegacySelfHostedPublishTrial') return
+  if (selectedClass === 'ReaderSelfHostedPublishTrial') {
   describe('ReaderSelfHostedPublishTrial', (): void => {
     it('publishesTheSelfHostedTranslationThroughTheSharedSurface', 0, async (): Promise<void> => {
       const driver = Driver.create()
@@ -221,6 +225,113 @@ export default function readerSelfHostedPublishTrialTest(): void {
       expect(applied).assertTrue()
       const close = await driver.findComponent(ON.id('rkit-close'))
       if (close !== null) await close.click()
+    })
+  })
+  return
+  }
+  describe('ReaderLegacySelfHostedPublishTrial', (): void => {
+    it('publishesTheSelfHostedTranslationThroughTheLegacyReader', 0, async (): Promise<void> => {
+      const driver = Driver.create()
+      const delegator = abilityDelegatorRegistry.getAbilityDelegator()
+      const endpoint = (args['-s readerLabSelfHostedEndpoint'] as string) ?? ''
+      // Legacy-entry counterpart of ReaderSelfHostedPublishTrial. Same process,
+      // same gallery/page and the same in-process manga binding; the only change
+      // is that the ordinary reader entry is the legacy backend. That isolates
+      // whether the host LLM text-translation 5xx belongs to the shared
+      // migration or is an existing host/external condition.
+      await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+        parameters: { nextn_reader_backend: 'legacy', nextn_gallery_id: Number(work) } })
+      // The gallery Want lands on Detail; the legacy Reader is only reached
+      // through the same ordinary Read action the shared entry uses.
+      await (await waitId(driver, 'gallery-detail-read-action', 160)).click()
+      const surface = await waitId(driver, 'legacy-reader-surface', 240)
+      let context: common.UIAbilityContext | null = null
+      for (let attempt: number = 0; attempt < 80 && context === null; attempt++) {
+        try {
+          const ability = await delegator.getCurrentTopAbility()
+          if (ability.context.abilityInfo.name === 'EntryAbility') {
+            context = ability.context as common.UIAbilityContext
+          }
+        } catch (_) {}
+        if (context === null) await driver.delayMs(100)
+      }
+      if (context === null) throw new Error('EntryAbility context unavailable')
+      // Bind only after the host has restored its own persisted profiles; binding
+      // earlier is overwritten by that restore.
+      const modelOverride = (args['-s readerLabTranslationModel'] as string) ?? ''
+      const boundManga = await bindExistingMangaSourceInProcess(modelOverride)
+      delegator.print('[LegacySelfHostedPublish] bind=' + boundManga)
+      // Reuse the same isolated endpoint the shared entry uses, in-process only.
+      if (endpoint.length > 0) {
+        ComicTranslationRuntimeService.setSelfHostedRuntimeOverrideForRehearsal(
+          context, endpoint, 'nexte_qa', 'QaSidecar0728')
+      }
+      const actionLabel = AppStrings.get('reader_comic_translation_action')
+      const showOriginal = AppStrings.get('reader_comic_translation_show_original')
+      const failedLabel = AppStrings.get('reader_comic_translation_failed')
+      const runningLabel = AppStrings.get('reader_comic_translation_running')
+      let menu: Component | null = null
+      const legacyMore = async (): Promise<Component | null> => {
+        const buttons = await driver.findComponents(
+          ON.type('Button').within(ON.id('legacy-reader-surface'))) ?? []
+        let best: Component | null = null
+        let bestLeft: number = -1
+        for (const button of buttons) {
+          let left: number = -1
+          let inHeader: boolean = false
+          try {
+            const bounds = await button.getBounds()
+            left = bounds.left
+            inHeader = bounds.top < 400 && bounds.right > bounds.left && bounds.bottom > bounds.top
+          } catch (_) { continue }
+          if (inHeader && left > bestLeft) { best = button; bestLeft = left }
+        }
+        return best
+      }
+      for (let attempt: number = 0; attempt < 20 && menu === null; attempt++) {
+        menu = await legacyMore()
+        if (menu === null) {
+          const bounds = await surface.getBounds()
+          await driver.click(Math.round((bounds.left + bounds.right) / 2),
+            Math.round((bounds.top + bounds.bottom) / 2))
+          await driver.delayMs(700)
+        }
+      }
+      if (menu === null) { delegator.print('[LegacySelfHostedPublish] action-present=false'); expect(false).assertTrue(); return }
+      await menu.click()
+      await driver.delayMs(600)
+      let action: Component | null = await driver.findComponent(ON.text(actionLabel))
+      if (action === null) action = await driver.findComponent(ON.text(showOriginal))
+      if (action === null) { delegator.print('[LegacySelfHostedPublish] action-present=false'); expect(false).assertTrue(); return }
+      delegator.print('[LegacySelfHostedPublish] action-present=true enabled=' + String(await action.isEnabled()))
+      expect(await action.isEnabled()).assertTrue()
+      await action.click()
+      let sawRunning = false
+      let applied = false
+      let hostOutcome = ''
+      for (let attempt = 0; attempt < 900; attempt++) {
+        if (await driver.findComponent(ON.text(runningLabel)) !== null) sawRunning = true
+        if (await driver.findComponent(ON.text(failedLabel)) !== null) { hostOutcome = failedLabel; break }
+        if (attempt % 15 === 0) {
+          const reopen = await legacyMore()
+          if (reopen !== null) {
+            await reopen.click()
+            await driver.delayMs(500)
+            if (await driver.findComponent(ON.text(showOriginal)) !== null) { applied = true; break }
+            await driver.pressBack()
+            await driver.delayMs(200)
+          }
+        }
+        await driver.delayMs(1000)
+      }
+      delegator.print('[LegacySelfHostedPublish] manga=' + boundManga +
+        ' sawRunning=' + sawRunning + ' applied=' + applied + ' hostOutcome=' + hostOutcome)
+      // Paired-comparison method (same as the P14 old-vs-new runs): assert only
+      // that the legacy entry dispatched the host translation action, and record
+      // the outcome. A shared-side-only failure must stay visible as a finding
+      // rather than being hidden by an applied assertion.
+      expect(sawRunning || applied || hostOutcome.length > 0).assertTrue()
+      await driver.pressBack()
     })
   })
 }
