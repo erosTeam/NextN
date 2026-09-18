@@ -31,7 +31,7 @@ deletes user data.
 | P10 | 宿主 | 生命周期与适配：前后台/关闭中/快速重开/旋转 | 宿主 route + `ReaderSession` | keep-screen 197+237；立即退出；旋转含大屏 | ACCEPTED | — |
 | P11 | 宿主 | 数据与回退：数据不迁移；默认旧阅读器、可否决可回退 | release fail-closed + selector gate | 三宿主 release fail-closed；升级/回滚连续性 | ACCEPTED | — |
 | P12 | 宿主(NextE) | 非本地/云端翻译经共享面往返 | `NextEReaderTranslationProvider` | 本地三宿主已验；NextE Torii 往返已闭合 | ACCEPTED | — |
-| P13 | 宿主 | self-hosted 经共享面发布 | 同 P12 链 | 主机侧全链已证。**当前为代码缺口（非仅证据缺口）**：`ComicTranslationRuntimeService.backendFor` 只在 `connectMangaRenderingService().initialized && enabled`（持久化选择）时才返回 self-hosted 后端，且需活跃凭据；没有进程内隔离入口，故经共享面发布必然依赖真实设置 | IMPLEMENTATION-GAP | 加一个不落盘的进程内 self-hosted 注入入口（复用现有 `MangaRenderingServiceBackend`），走共享 `translate-page` 到结果显示/切回原图；停止条件：一条真机链路通过即收，不建平台、不改真实设置 |
+| P13 | 宿主 | self-hosted 经共享面发布 | 同 P12 链 | 主机侧全链已证。隔离入口**已补**：`ComicTranslationRuntimeService.setSelfHostedRuntimeOverrideForRehearsal`（进程内、默认 null、不落盘）+ `ReaderSelfHostedRehearsal`（宿主从 Debug Want 捕获）+ `NextNReaderLabPage` 应用 + `ReaderSelfHostedPublishTrial`（commit `62d88cbe`）。真机首次运行 More 菜单无 translate 动作：共享链仍需设备上已配置的 manga LLM 文本翻译源（与 NextE 宿主翻译往返同一前置），属**环境前置**而非共享面缺口 | IMPLEMENTED-UNVERIFIED | 在已配置 manga LLM source 的设备上跑 `ReaderSelfHostedPublishTrial`；停止条件：一条真机链路显示译图即收，不写真实设置、不建平台 |
 | P14 | 宿主(NextN) | NextN 云端(Torii)往返 | `ToriiWholePageRenderBackend` | 共享面发出真实请求→云 200，但宿主链以“图像 MIME 与字节不匹配”拒绝，阅读器如实显示失败；**根因未定**（同服务源码不足以证明新旧传入相同） | EXTERNAL-OPEN | 先用旧/新相同输入与同条件对比判定是否为迁移回归；相同既有宿主问题记为独立已知限制，停止条件：得出“迁移回归/既有宿主限制”明确结论即收，不阻塞其他交付 |
 
 当前唯一 ACTIVE 行：**P13**（self-hosted 经共享面发布的本地隔离接入——复用现有上层服务，非外部阻塞）。
