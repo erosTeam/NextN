@@ -40,6 +40,14 @@ Package 5 的下一动作（收敛，不重跑全矩阵）：只按**实际变�
 
 - **可复用的真实服务缓存清点（2026-09-19，只读）**：237 的 `com.erosteam.nextn` 下存在 3 个真实服务生成的合法译图缓存（`.../haps/entry/cache/comic-translated-pages/`，2 个 PNG + 对应 json，含完整 identity：`route=whole_page_render`、`translationSourceProfileId=torii-whole-page:managed:...`、`translationModelId=gemini-3.1-flash-lite`、`pageIndex`、`sourceImageHash`），全部属 Torii 整页路线；103 上该目录**不存在**（0 条）。结论：237 有可用于“显示与切回”验证的真实缓存素材，103 没有。**但现有普通试次固定打开画廊 678049 且不接受页号**，而这些缓存来自 lab/live-eval 的 projectId，没有现成入口能命中；直接复用需要改试次并精确复现源图哈希，在没有命中保证前不为此扩改试次。
 
+### 候选自洽核对（2026-09-19，源码级；不是替代验收）
+
+- **三宿主 pin 一致**：NextN `78fa08f5` / NextE `1297da98` / Koma `9489ea5e`，三者 `third_party/reader-kit` 均指向 **`2594d6f1837ea05d6be51a565a5fb360b3539ad1`**（实测 `git ls-tree HEAD` 三处一致）。
+- **reader-kit 该 revision 全量套件**：`node --test tests/*.test.cjs` → `tests 437 / pass 437 / fail 0`。
+- **各宿主契约套件**：NextN `scripts/test_reader_*.mjs|.cjs` 0 失败（18 项含 `test_reader_trial_entry_host_runtime.mjs`）；NextE `scripts/test_reader_*.mjs` 11/11；Koma `scripts/test_shared_reader_*.cjs` 7/7。
+- **一处非缺陷环境依赖**：NextN `scripts/test_reader_tap_zone_handoff_runtime.mjs` 默认读 sibling `../NextE`、`../Koma`；在 worktree 布局下未设 `NEXTE_READER_ROOT`/`KOMA_READER_ROOT` 时会 ENOENT。设对路径后 **PASS（1404 项断言）**，与产品或 pin 无关。
+- **范围**：以上只证明源码候选与契约自洽，**不构成真机/视觉验收**，也不改变任何已记录的真机边界。
+
 ## 交付状态汇总（每宿主最终结论 + 剩余阻断；不新建队列）
 
 当前可交付候选：三宿主阅读器分支的 reader-kit submodule **同 pin `2594d6f`**（NextN / NextE / Koma 实测一致）；NextN 与 NextE 的本地 `main` 仍 pin `5e5cb4c`/`e4010f9`（不含阅读器迁移）。旧阅读器仍默认且 release fail-closed 可回退，共享阅读器经普通入口可选（现有选择机制未改，未擅翻发布默认）。下列每行给出结论、剩余阻断、证据路径与停止条件；`ACCEPTED` 是记录不是新证明，不为审阅重跑全矩阵。
