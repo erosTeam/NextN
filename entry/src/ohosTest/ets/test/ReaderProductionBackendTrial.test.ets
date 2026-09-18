@@ -1186,9 +1186,11 @@ export default function readerProductionBackendTrialTest(): void {
           originalHistory = await snapshotHistory(database)
           writeSnapshot(originalHistory)
           // Open an uncached page so a successful result cannot be a previously rendered artifact.
-          await seedHistoryPage(database, 1)
+          const pageArg = abilityDelegatorRegistry.getArguments().parameters['-s readerLabPage']
+          const targetPage = typeof pageArg === 'string' && pageArg.trim().length > 0 ? Math.max(0, Math.floor(Number(pageArg.trim()))) : 1
+          await seedHistoryPage(database, targetPage)
           await (await waitDetailRead(driver)).click()
-          expect(await waitSharedReady(driver)).assertEqual(1)
+          expect(await waitSharedReady(driver)).assertEqual(targetPage)
           const showOriginal = AppStrings.get('reader_comic_translation_show_original')
           const failedLabel = AppStrings.get('reader_comic_translation_failed')
           const runningLabel = AppStrings.get('reader_comic_translation_running')
