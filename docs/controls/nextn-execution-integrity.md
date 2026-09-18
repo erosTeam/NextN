@@ -102,6 +102,34 @@ Never infer a cause from an absence. For example, `record absent` means only
 that the record is absent at that observation; it does not prove which
 historical operation removed it.
 
+### 2.1 A failed transport probe is never device state
+
+The HDC binary is the transport client. Run outside its supported host
+environment it prints `Connect server failed`, returns empty output, or times
+out; none of those outcomes is an observation about the Android/HarmonyOS
+target. They are observations about the probe.
+
+| What was actually observed | Permitted wording | Forbidden wording |
+| --- | --- | --- |
+| One direct probe returned no target | `probe returned no target` | `device offline`, `device unreachable`, `device lost`, `网络不可达` |
+| `hdc list targets -v` row absent in one probe | `that probe showed no row` | any statement that the target is down |
+| Repeated probes all failing after reconnect attempts | `target not reachable from this execution environment` | any claim about the physical device |
+
+Rules:
+
+- Never start a sandboxed or otherwise unproven HDC invocation in order to
+  establish whether a device is online. Availability is established by a
+  successful stateful operation through the checked protocol path, not by a
+  raw `list targets` probe.
+- ICMP loss, an empty result, or a `Connect server failed` line must not be
+  reported to the user as device status. If such an output appears, treat it
+  as a failed command, re-run the same handle, and only then report.
+- A refused, failed, or truncated device command stays `OPEN`. It is not a
+  block and not a licence to mark a package or device path complete.
+- The only visible blocking sentence permitted about a device is: *the
+  checked protocol path could not complete for `<exact target>` with `<exact
+  error>`*, together with the reconnect attempts already made.
+
 ## 3. Root-cause work must precede a fix claim
 
 For a persistence, lifecycle, routing, or data-loss report, map before editing:
