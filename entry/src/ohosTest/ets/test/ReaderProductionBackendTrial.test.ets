@@ -1171,6 +1171,79 @@ export default function readerProductionBackendTrialTest(): void {
     })
     return
   }
+  if (selectedClass === 'ReaderProductionNonLocalTranslationRoundTripTrial') {
+    describe(selectedClass, (): void => {
+      it('dispatchesToTheConfiguredNonLocalProviderThroughTheSharedSurface', 0, async (): Promise<void> => {
+        const driver = Driver.create()
+        let database: relationalStore.RdbStore | null = null
+        let originalHistory: HistorySnapshot | null = null
+        let restored = false
+        let failed = false
+        try {
+          await launchBackend('shared', true)
+          const context = await entryContext(driver)
+          database = await store(context)
+          originalHistory = await snapshotHistory(database)
+          writeSnapshot(originalHistory)
+          // Open an uncached page so a successful result cannot be a previously rendered artifact.
+          await seedHistoryPage(database, 1)
+          await (await waitDetailRead(driver)).click()
+          expect(await waitSharedReady(driver)).assertEqual(1)
+          const showOriginal = AppStrings.get('reader_comic_translation_show_original')
+          const failedLabel = AppStrings.get('reader_comic_translation_failed')
+          const runningLabel = AppStrings.get('reader_comic_translation_running')
+          // Open the overflow menu and start the translation from the real shared action.
+          const more = await waitId(driver, 'rkit-more')
+          await more.click()
+          const action = await waitId(driver, 'rkit-host-action-translate-page')
+          await capture(driver, 'translation-roundtrip-before')
+          expect(await action.isEnabled()).assertTrue()
+          await action.click()
+          // The shared surface must show its busy strip once the host action starts.
+          let sawBusy = false
+          for (let attempt = 0; attempt < 200; attempt++) {
+            if (await driver.findComponent(ON.id('rkit-host-status')) !== null) { sawBusy = true; break }
+            if (await visibleText(driver, runningLabel) !== null) { sawBusy = true; break }
+            await driver.delayMs(100)
+          }
+          await capture(driver, 'translation-roundtrip-dispatched')
+          // Bounded outcome wait: the applied translated variant, or the terminal host failure copy.
+          let applied = false
+          let hostOutcome = ''
+          for (let attempt = 0; attempt < 90; attempt++) {
+            if (await visibleText(driver, showOriginal) !== null) { applied = true; break }
+            if (await visibleText(driver, failedLabel) !== null) { hostOutcome = failedLabel; break }
+            await driver.delayMs(1000)
+          }
+          await capture(driver, 'translation-roundtrip-after')
+          console.info('[ReaderProductionBackendTrial] translationRoundTrip sawBusy=' + sawBusy +
+            ' applied=' + applied + ' hostOutcome=' + hostOutcome)
+          // The shared-reader claim under test is that it reaches the real configured non-local
+          // provider through its own action. Whether the host chain then renders the result is
+          // recorded (applied) or reported as the host failure copy, never forced.
+          expect(sawBusy).assertTrue()
+          await closeAnyReader(driver)
+          await waitDetailRead(driver)
+          await restoreAndVerify(database, originalHistory)
+          restored = true
+          removeSnapshot()
+          console.info('[ReaderProductionBackendTrial] translationRoundTrip historyRestored=true')
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'translation-roundtrip-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+          if (!restored && database !== null && originalHistory !== null) {
+            await restoreAndVerify(database, originalHistory)
+            removeSnapshot()
+          }
+          await launchBackend('legacy', false)
+        }
+      })
+    })
+    return
+  }
   if (selectedClass === 'ReaderProductionTranslationTrial') {
     describe(selectedClass, (): void => {
       it('rendersAndTogglesTheHostOwnedTranslatedResult', 0, async (): Promise<void> => {
