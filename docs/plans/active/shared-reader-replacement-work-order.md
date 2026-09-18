@@ -1218,6 +1218,15 @@ timeout was restored to 10000 ms. Evidence:
 All three hosts now accept the upgrade/rollback data-preservation boundary at the
 pinned revision; the tablet viewport remains the open dimension.
 
+SUPERSEDED SCOPE NOTE (2026-09-19): the three sentences above that name "the tablet
+viewport" as the remaining open dimension describe the 2026-09-15 state. 103
+(MLR-AL00, 1600x2560) is now an authorized acceptance device and has since
+produced tablet-viewport evidence, including the NextN ordinary-entry route
+matrix at the current pin (`.hvigor/outputs/nextn-103-matrix-2594d6f/`) and the
+earlier NextE/Koma 103 records; the tablet viewport is therefore not the single
+remaining open item, and these historical lines are kept as history rather than
+restated as the current gate.
+
 The NextN shared-reader branch has been rebased onto main `ecaafec3`
 (border-crop strengths). All 75 commits apply cleanly; the one conflict in
 `docs/qa/nextn-active-acceptance.md` was resolved by keeping both the
@@ -2022,6 +2031,8 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 
 
 ### Three-host parity matrix and open gap details (Package 5 Active)
+
+- **NextN ordinary-entry route matrix on the authorized tablet 103 at reader-kit `2594d6f`** (2026-09-19, 103 `MLR-AL00` 1600x2560, NextN `a96d7b9f` reader-kit `2594d6f`, `install -r` only): the current-pin ordinary-entry record was phone- and large-screen-only, so the same tracked `ReaderProductionInAppDetailEntriesTrial` (normal Detail Read + compact rail + all-thumbnails grid, each admitted through Shared then Legacy, then a restored host root) is run at the tablet viewport. Result: `Tests run: 1, Failure: 0, Error: 0, Pass: 1`, with the device logs `[ReaderProductionInAppDetailEntriesTrial] backend=legacy read=true compact=true grid=true gridReturned=true rootReturned=true` and `initial=legacy final=legacy backendWants=false seededProgress=false historyRestored=true` - the same verdict as the `2594d6f` phone and 237 runs. So the ordinary production route still admits the shared reader and reversibly falls back to legacy at the tablet viewport at the current pin. Read-only for user data (the trial restores its history snapshot). Artifact: `.hvigor/outputs/nextn-103-matrix-2594d6f/run/run-metadata.json`.
 
 | Dimension / Feature | Host / Layer | Legacy Implementation | Shared Implementation | Verified Evidence | Open Gap / Difference Classification |
 | :--- | :--- | :--- | :--- | :--- | :--- |
