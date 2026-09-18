@@ -1,12 +1,24 @@
 import { common } from '@kit.AbilityKit'
-import { CommentTranslationService } from './CommentTranslationService'
+import {
+  COMMENT_TRANSLATION_PRIORITY_INTERACTIVE,
+  CommentTranslationService,
+} from './CommentTranslationService'
+import { TEXT_TRANSLATION_CONTENT_GALLERY_TITLE } from '../model/TextTranslationPromptProfile'
 
 /**
- * Gallery-title boundary over the existing private text translation pipeline.
- * It deliberately has no independent source, cache, or request policy.
+ * Title-facing boundary over the shared short-text translation pipeline.
+ *
+ * Gallery titles intentionally reuse the existing provider, target-locale, cache, queue, and fallback
+ * behavior used by manual comment translation. Keeping this boundary title-named prevents the gallery
+ * feature from depending on comment UI semantics and leaves room for a title-specific prompt later.
  */
 export class GalleryTitleTranslationService {
-  static translate(context: common.UIAbilityContext, sourceTitle: string): Promise<string> {
-    return CommentTranslationService.translate(context, sourceTitle)
+  static translate(context: common.UIAbilityContext, sourceText: string): Promise<string> {
+    return CommentTranslationService.translate(
+      context,
+      sourceText,
+      COMMENT_TRANSLATION_PRIORITY_INTERACTIVE,
+      TEXT_TRANSLATION_CONTENT_GALLERY_TITLE,
+    )
   }
 }

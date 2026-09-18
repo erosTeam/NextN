@@ -19,6 +19,8 @@ import {
   SecondaryListScaffold,
   ThemeTokens,
   connectCommentTranslationSettings,
+  connectTextTranslationPromptProfiles,
+  TextTranslationPromptProfilesState,
   connectLlmSourceProfiles,
   supportsCommentTranslation,
 } from 'shared'
@@ -39,8 +41,10 @@ export struct CommentTranslationSettingsPage {
   @Local selectedModelId: string = ''
   @Local cacheCount: number = 0
   @Local clearingCache: boolean = false
+  @Local promptProfiles: TextTranslationPromptProfilesState = connectTextTranslationPromptProfiles()
   @Param scroller: Scroller = new Scroller()
   @Event onOpenTranslationSource?: (consumerId: string) => void
+  @Event onOpenPromptProfiles?: () => void
 
   aboutToAppear(): void {
     this.restoreBinding()
@@ -411,6 +415,21 @@ export struct CommentTranslationSettingsPage {
               isEnabled: this.settings.enabled &&
                 this.selectedSourceId.length > 0 && !this.fetchingModels,
               accessibilityLabel: AppStrings.get('comment_translation_model_a11y'),
+            })
+            this.RowDivider()
+            NextNListRow({
+              leadingIcon: $r('sys.symbol.textformat'),
+              title: AppStrings.get('comment_translation_prompt_profile'),
+              subtitle: AppStrings.get('comment_translation_prompt_profile_hint'),
+              trailingText: this.promptProfiles.selectedProfile().displayName,
+              showChevron: true,
+              isEnabled: true,
+              accessibilityLabel: AppStrings.get('comment_translation_prompt_profile'),
+              onAction: (): void => {
+                if (this.onOpenPromptProfiles) {
+                  this.onOpenPromptProfiles()
+                }
+              },
             })
           }
         }

@@ -831,3 +831,33 @@ export { SyncSettings, SyncSettingsSnapshot, WebDavConfigPersistScheduler } from
 export { AccountListState, connectAccountList } from './state/AccountListState'
 export { AccountListSettings } from './settings/AccountListSettings'
 export { StreamingHttpClient } from './network/StreamingHttpClient'
+// Text translation prompt profiles
+export {
+  TEXT_TRANSLATION_PROMPT_SCHEMA_VERSION,
+  TEXT_TRANSLATION_CONTENT_COMMENT,
+  TEXT_TRANSLATION_CONTENT_GALLERY_TITLE,
+  TextTranslationPromptProfile,
+} from './model/TextTranslationPromptProfile'
+export {
+  TEXT_TRANSLATION_PROMPT_BUILTIN_STANDARD,
+  TEXT_TRANSLATION_PROMPT_BUILTIN_FAITHFUL,
+  TEXT_TRANSLATION_PROMPT_BUILTIN_NATURAL,
+  TEXT_TRANSLATION_PROMPT_BUILTIN_PROPER_NOUN_SAFE,
+  TEXT_TRANSLATION_PROMPT_BUILTIN_IDS,
+  TextTranslationPromptCatalog,
+} from './services/TextTranslationPromptCatalog'
+export {
+  MAX_TEXT_TRANSLATION_CUSTOM_PROFILES,
+  MAX_TEXT_TRANSLATION_CUSTOM_STORE_CHARS,
+  MAX_TEXT_TRANSLATION_PROMPT_ID_CHARS,
+  MAX_TEXT_TRANSLATION_PROMPT_NAME_CHARS,
+  MAX_TEXT_TRANSLATION_STYLE_CHARS,
+  TextTranslationPromptContract,
+} from './services/TextTranslationPromptContract'
+export { TextTranslationPromptCodec } from './services/TextTranslationPromptCodec'
+export { TextTranslationPromptComposer } from './services/TextTranslationPromptComposer'
+export {
+  TextTranslationPromptProfilesState,
+  connectTextTranslationPromptProfiles,
+} from './state/TextTranslationPromptProfilesState'
+export { TextTranslationPromptProfileRepository } from './settings/TextTranslationPromptProfileRepository'
