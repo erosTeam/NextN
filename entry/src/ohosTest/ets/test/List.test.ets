@@ -1,3 +1,4 @@
+import textTranslationPromptProfilesTest from './TextTranslationPromptProfiles.test'
 import gallerySplitTransitionTest from './GallerySplitTransition.test'
 import backupCipherMetadataGuardTest from './BackupCipherMetadataGuard.test'
 import backupLocalDataStructureGuardTest from './BackupLocalDataStructureGuard.test'
@@ -70,4 +71,5 @@ export default function testsuite(): void {
   readerProductionPartialDownloadFallbackTrialTest()
   readerSharedSuperResolutionTest()
   readerRuntimeContinuityTest()
+  textTranslationPromptProfilesTest()
 }

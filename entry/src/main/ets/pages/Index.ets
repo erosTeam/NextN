@@ -44,6 +44,8 @@ import {
   AccountPage,
   BrowseDensitySettingsPage,
   CommentTranslationSettingsPage,
+  TextTranslationPromptProfilesPage,
+  TextTranslationPromptProfileDetailPage,
   ComicTranslationSettingsPage,
   LlmSourceDetailPage,
   LlmSourceManagerPage,
@@ -203,6 +205,9 @@ const ROUTE_CACHE_SETTINGS: string = 'cacheSettings'
 const ROUTE_ADVANCED_SETTINGS: string = 'advancedSettings'
 const ROUTE_TAG_TRANSLATION_SETTINGS: string = 'tagTranslationSettings'
 const ROUTE_COMMENT_TRANSLATION_SETTINGS: string = 'commentTranslationSettings'
+const ROUTE_TEXT_TRANSLATION_PROMPT_PROFILES: string = 'textTranslationPromptProfiles'
+const ROUTE_TEXT_TRANSLATION_PROMPT_PROFILE_DETAIL: string = 'textTranslationPromptProfileDetail'
+
 const ROUTE_COMIC_TRANSLATION_SETTINGS: string = 'comicTranslationSettings'
 const ROUTE_TORII_WHOLE_PAGE_LIVE_EVALUATION: string = 'toriiWholePageLiveEvaluation'
 const ROUTE_ABOUT: string = 'about'
@@ -314,6 +319,14 @@ class GalleryWebRouteParams {
 }
 
 class LlmSourceManagerRouteParams {
+}
+
+class TextTranslationPromptProfileDetailRouteParams {
+  promptProfileId: string = ''
+
+  constructor(promptProfileId: string = '') {
+    this.promptProfileId = promptProfileId
+  }
 }
 
 class LlmSourceDetailRouteParams {
@@ -1035,6 +1048,8 @@ struct Index {
   private advancedSettingsScroller: Scroller = new Scroller()
   private tagTranslationSettingsScroller: Scroller = new Scroller()
   private commentTranslationSettingsScroller: Scroller = new Scroller()
+  private promptProfilesScroller: Scroller = new Scroller()
+  private promptProfileDetailScroller: Scroller = new Scroller()
   private comicTranslationSettingsScroller: Scroller = new Scroller()
   private aboutScroller: Scroller = new Scroller()
   private historyScroller: Scroller = new Scroller()
@@ -1872,6 +1887,23 @@ struct Index {
       return
     }
     this.stack.pushPathByName(ROUTE_TAG_TRANSLATION_SETTINGS, '')
+  }
+
+  private pushTextTranslationPromptProfiles(): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
+    this.stack.pushPathByName(ROUTE_TEXT_TRANSLATION_PROMPT_PROFILES, '')
+  }
+
+  private pushTextTranslationPromptProfileDetail(promptProfileId: string): void {
+    if (this.safeMode.restricted()) {
+      return
+    }
+    this.stack.pushPathByName(
+      ROUTE_TEXT_TRANSLATION_PROMPT_PROFILE_DETAIL,
+      new TextTranslationPromptProfileDetailRouteParams(promptProfileId),
+    )
   }
 
   private pushCommentTranslationSettings(): void {
@@ -2945,6 +2977,13 @@ struct Index {
     return new LlmSourceManagerRouteParams()
   }
 
+  private textTranslationPromptProfileDetailParams(param: Object): TextTranslationPromptProfileDetailRouteParams {
+    if (param instanceof TextTranslationPromptProfileDetailRouteParams) {
+      return new TextTranslationPromptProfileDetailRouteParams(param.promptProfileId)
+    }
+    return new TextTranslationPromptProfileDetailRouteParams()
+  }
+
   private llmSourceDetailParams(param: Object): LlmSourceDetailRouteParams {
     if (param instanceof LlmSourceDetailRouteParams) {
       return new LlmSourceDetailRouteParams(param.sourceProfileId)
@@ -3792,12 +3831,53 @@ struct Index {
   }
 
   @Builder
+  @Builder
+  private textTranslationPromptProfilesDestination() {
+    HdsNavDestination() {
+      TextTranslationPromptProfilesPage({
+        scroller: this.promptProfilesScroller,
+        onOpenDetail: (promptProfileId: string): void => {
+          this.pushTextTranslationPromptProfileDetail(promptProfileId)
+        },
+        onOpenNew: (): void => {
+          this.pushTextTranslationPromptProfileDetail('')
+        },
+      })
+    }
+    .titleBar(nextNHdsTitle(AppStrings.get('text_translation_prompt_profiles_title')))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_TEXT_TRANSLATION_PROMPT_PROFILES))
+    .bindToScrollable([this.promptProfilesScroller])
+  }
+
+  @Builder
+  private textTranslationPromptProfileDetailDestination(param: Object) {
+    HdsNavDestination() {
+      TextTranslationPromptProfileDetailPage({
+        scroller: this.promptProfileDetailScroller,
+        requestedPromptProfileId: this.textTranslationPromptProfileDetailParams(param).promptProfileId,
+        onSaved: (): void => {
+          this.stack.pop()
+        },
+        onDeleted: (): void => {
+          this.stack.pop()
+        },
+      })
+    }
+    .titleBar(nextNHdsTitle(AppStrings.get('text_translation_prompt_profiles_title')))
+    .hideBackButton(this.rootDestinationBackButtonHidden(ROUTE_TEXT_TRANSLATION_PROMPT_PROFILE_DETAIL))
+    .bindToScrollable([this.promptProfileDetailScroller])
+  }
+
+    @Builder
   private commentTranslationSettingsDestination() {
     HdsNavDestination() {
       CommentTranslationSettingsPage({
         scroller: this.commentTranslationSettingsScroller,
         onOpenTranslationSource: (consumerId: string): void => {
           this.pushLlmSourceManager()
+        },
+        onOpenPromptProfiles: (): void => {
+          this.pushTextTranslationPromptProfiles()
         },
       })
     }
@@ -3959,6 +4039,10 @@ struct Index {
       this.advancedSettingsDestination()
     } else if (name === ROUTE_TAG_TRANSLATION_SETTINGS) {
       this.tagTranslationSettingsDestination()
+    } else if (name === ROUTE_TEXT_TRANSLATION_PROMPT_PROFILES) {
+      this.textTranslationPromptProfilesDestination()
+    } else if (name === ROUTE_TEXT_TRANSLATION_PROMPT_PROFILE_DETAIL) {
+      this.textTranslationPromptProfileDetailDestination(param)
     } else if (name === ROUTE_COMMENT_TRANSLATION_SETTINGS) {
       this.commentTranslationSettingsDestination()
     } else if (name === ROUTE_COMIC_TRANSLATION_SETTINGS) {

@@ -17,6 +17,7 @@ import {
   LayoutSafeAreaBridge,
   AppStrings,
   CommentTranslationSettings,
+  TextTranslationPromptProfileRepository,
   LanguageSettings,
   LlmSourceProfileRepository,
   MangaRenderingServiceSettings,
@@ -228,6 +229,7 @@ export default class EntryAbility extends UIAbility {
       // Restore the comment-translation policy and the tag-dictionary
       // preference/status summary before their settings surfaces mount.
       CommentTranslationSettings.restore(this.context),
+      TextTranslationPromptProfileRepository.restore(this.context),
       TagTranslationSettings.restore(this.context),
       SearchTranslationSettings.restore(this.context),
       ReaderImageCacheSettings.restore(this.context),

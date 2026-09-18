@@ -1,3 +1,9 @@
+import {
+  TEXT_TRANSLATION_CONTENT_COMMENT,
+  TextTranslationPromptProfile,
+} from '../model/TextTranslationPromptProfile'
+import { TextTranslationPromptComposer } from './TextTranslationPromptComposer'
+import { TextTranslationPromptProfileRepository } from '../settings/TextTranslationPromptProfileRepository'
 import { common } from '@kit.AbilityKit'
 import { relationalStore } from '@kit.ArkData'
 import { cryptoFramework } from '@kit.CryptoArchitectureKit'
@@ -443,6 +449,7 @@ export class CommentTranslationService {
     context: common.UIAbilityContext,
     text: string,
     priority: number = COMMENT_TRANSLATION_PRIORITY_INTERACTIVE,
+    contentKind: string = TEXT_TRANSLATION_CONTENT_COMMENT,
   ): Promise<string> {
     const source: string = text.trim()
     if (source.length === 0) {
@@ -452,8 +459,10 @@ export class CommentTranslationService {
       throw new Error('Comment text is too large to translate')
     }
     const runtime: LlmSourceRuntimeConfig = await LlmSourceRuntimeResolver.resolveComment(context)
+    const promptProfile: TextTranslationPromptProfile =
+      TextTranslationPromptProfileRepository.currentSelection()
     const targetLanguage: string = CommentTranslationService.targetLanguage()
-    const scope: string = `${targetLanguage}|${runtime.requestIdentity()}`
+    const scope: string = `${targetLanguage}|${contentKind}|${runtime.requestIdentity()}|${promptProfile.promptProfileId}|pr${promptProfile.promptRevision}`
     const key: string = CommentTranslationService.cacheKey(scope, source)
     const cached: string = await CommentTranslationService.cached(context, key)
     if (cached.length > 0) {
@@ -477,6 +486,8 @@ export class CommentTranslationService {
         scope,
         key,
         runtime,
+        promptProfile,
+        contentKind,
       ),
       CommentTranslationService.scheduler,
     )
@@ -541,14 +552,21 @@ export class CommentTranslationService {
     scope: string,
     key: string,
     runtime: LlmSourceRuntimeConfig,
+    promptProfile: TextTranslationPromptProfile,
+    contentKind: string,
   ): Promise<string> {
     try {
       const config: OpenAiChatCompletionsConfig = new OpenAiChatCompletionsConfig()
       config.baseUrl = runtime.baseUrl
       config.modelId = runtime.modelId
       config.apiKey = runtime.apiKey
+      const instructions: string = TextTranslationPromptComposer.composeInstructions(
+        targetLanguage,
+        contentKind,
+        promptProfile.styleInstructions,
+      )
       const rawTranslated: string = await OpenAiChatCompletionsClient.requestText(
-        CommentTranslationService.instructions(targetLanguage),
+        instructions,
         source,
         config,
       )
