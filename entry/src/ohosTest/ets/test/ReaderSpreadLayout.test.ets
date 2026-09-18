@@ -109,7 +109,12 @@ export default function readerSpreadLayoutTest(): void {
       try {
         await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
           parameters: { readerLabWork: work, readerLabUnit: typeof unit === 'string' ? unit : '',
-            readerLabPage: String(source), readerLabChrome: 'true', readerLabVolumeKeys: 'false' } })
+            readerLabPage: String(source), readerLabChrome: 'true', readerLabVolumeKeys: 'false',
+            // This case asserts LTR slider geometry (its right edge seeks to the last page). Pin the
+            // Debug-only direction so a device whose persisted direction is RTL does not reverse the
+            // slider and fail on trial geometry rather than product behavior - the same pattern the
+            // NextE twin and the sibling ReaderPagingAxis trial use.
+            readerLabEntryDirection: 'ltr' } })
         await driver.delayMs(1800)
         const ability = await delegator.getCurrentTopAbility()
         mainWindow = await window.getLastWindow(ability.context)

@@ -33,7 +33,11 @@ export default function readerSliderLifecycleTest(): void {
       const delegator = abilityDelegatorRegistry.getAbilityDelegator()
       await delegator.startAbility({
         bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
-        parameters: { readerLabWork: work, readerLabUnit: typeof unit === 'string' ? unit : '', readerLabChrome: 'true' },
+        parameters: { readerLabWork: work, readerLabUnit: typeof unit === 'string' ? unit : '', readerLabChrome: 'true',
+          // This case switches to RTL by clicking the runtime menu's 右->左 row, which only exists
+          // while the session is LTR. Pin the Debug-only direction so a device whose persisted
+          // direction is already RTL does not show 左->右 and fail the lookup on trial geometry.
+          readerLabEntryDirection: 'ltr' },
       })
       await driver.delayMs(1800); await waitSeekOriginal(driver)
       await (await driver.findComponent(ON.id('rkit-runtime-settings'))).click()
