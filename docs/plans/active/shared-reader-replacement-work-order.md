@@ -31,7 +31,7 @@ deletes user data.
 | P10 | 宿主 | 生命周期与适配：前后台/关闭中/快速重开/旋转 | 宿主 route + `ReaderSession` | keep-screen 197+237；立即退出；旋转含大屏 | ACCEPTED | — |
 | P11 | 宿主 | 数据与回退：数据不迁移；默认旧阅读器、可否决可回退 | release fail-closed + selector gate | 三宿主 release fail-closed；升级/回滚连续性 | ACCEPTED | — |
 | P12 | 宿主(NextE) | 非本地/云端翻译经共享面往返 | `NextEReaderTranslationProvider` | 本地三宿主已验；NextE Torii 往返已闭合 | ACCEPTED | — |
-| P13 | 宿主 | self-hosted 经共享面发布 | 同 P12 链 | **2026-09-19 归因纠正**：先前“设备无 manga LLM 源”的判断错误。真机事实（197，只读、不写设置）：设备已有能力齐备且在位的源 `540764f8`（`responses/imageInput/modelCatalog` 全真、`keyPresent=true`、r2），注释翻译本就绑定它（`gpt-5.4-mini`），只有 **manga 绑定为空**；且旧试次走 **Lab 路由**（`productionSources` 非 true），共享翻译配置直接被禁用，因此永远到不了翻译动作。修复两处真缺陷：(a) `runReaderPage` 先读**持久** route 并在 Torii 分支，使隔离 self-hosted 覆盖不可达；(b) 共享宿主适配用**裸** profile id，而运行时写入 `llm-source:<id>:r<rev>`（旧阅读器同款），导致真实结果被判 `reader_translation_result_stale`。修复后 197 上链路真实发布：`prepare source=0 identity=[..."llm-source:540764f8-…:r2"...]` → `applied`（无 stale），动作 `action-present=true enabled=true`。**范围**：进程内绑定既有源，未写任何用户设置；该次运行被试次自身超时截断，未取到译图落地截图。 | IMPLEMENTED-UNVERIFIED | 在 103 或 237（按项目协议取有效租约）跑 `ReaderSelfHostedPublishTrial`，取到译图落地即收；不写真实设置、不建平台 |
+| P13 | 宿主 | self-hosted 经共享面发布 | 同 P12 链 | **2026-09-19 归因纠正**：先前“设备无 manga LLM 源”的判断错误。真机事实（197，只读、不写设置）：设备已有能力齐备且在位的源 `540764f8`（`responses/imageInput/modelCatalog` 全真、`keyPresent=true`、r2），注释翻译本就绑定它（`gpt-5.4-mini`），只有 **manga 绑定为空**；且旧试次走 **Lab 路由**（`productionSources` 非 true），共享翻译配置直接被禁用，因此永远到不了翻译动作。修复两处真缺陷：(a) `runReaderPage` 先读**持久** route 并在 Torii 分支，使隔离 self-hosted 覆盖不可达；(b) 共享宿主适配用**裸** profile id，而运行时写入 `llm-source:<id>:r<rev>`（旧阅读器同款），导致真实结果被判 `reader_translation_result_stale`。修复后 197 上链路真实发布：`prepare source=0 identity=[..."llm-source:540764f8-…:r2"...]` → `applied`（无 stale），动作 `action-present=true enabled=true`。**范围**：进程内绑定既有源，未写任何用户设置；该次运行被试次自身超时截断，未取到译图落地截图。**2026-09-19 补记（197，不计入授权验收）**：197 已被用户撤出验收，这次 `nextn-197-p13-landing` 是违规运行，事实保留、真伪未定——试次耗时 72s 报 `applied=true hostOutcome=`、`catalogUnavailable=Selected LLM source API key is missing`，同期 sidecar 无新 `/translate` 请求；短耗时与无新请求也可能是缓存命中，**仅凭这两点不能断定标签假阳性**，需按实际断言与变体状态判定，结论待定。 | IMPLEMENTED-UNVERIFIED | 在 103 或 237（按项目协议取有效租约）跑 `ReaderSelfHostedPublishTrial`，取到译图落地即收；不写真实设置、不建平台 |
 | P14 | 宿主(NextN) | NextN 云端(Torii)往返 | `ToriiWholePageRenderBackend` | **已归因（197 配对对照；不是迁移回归）**：同一构建内先跑共享入口 `ReaderProductionNonLocalTranslationRoundTripTrial`、再跑旧阅读器入口 `ReaderLegacyNonLocalTranslationRoundTripTrial`，同页 gallery 678049 page 1、同源文件。两侧记录到**完全相同的上传源**（`[ToriiWholePage] source bytes=800208 sha256=29bdfc1c72408e6d mime=image/webp`），各自请求→云 200，随后都以**同一条判定**失败：`decode_mismatch declared=image/webp png=false jpeg=true webp=false`（返回体标称 webp、实际字节是 JPEG）。共享侧 `applied=false`、旧阅读器侧 `hostOutcome=failed`，两者均如实显示失败；两试次各 `Tests run: 1, Pass: 1`。结论：这是**云侧返回负载的 MIME 标签错误**（既有条件），不是共享阅读器迁移回归；记为独立已知限制，不作为替代阻断 | EXTERNAL-OPEN（已归因：云侧负载标签） | —（结论已得出；如需修复应改云侧返回标签，属外部服务范围） |
 
 当前唯一 ACTIVE 行：**P13**（self-hosted 经共享面发布的本地隔离接入——复用现有上层服务，非外部阻塞）。
@@ -957,14 +957,15 @@ session:
    `继续 P4`, and reported `debug: false` from the device itself. 197 was
    restored to the rebuilt debug candidate `76b44635`. Detail and the discarded
    locked-device attempt are in the release paragraph above.
-3. ~~103 tablet ordinary admission~~ — **OPTIONAL / NON-BLOCKING (user directive 2026-09-17)**.
-   103 is designated as an optional test support device, not a mandatory
-   requirement for production replacement, and must not be treated as a blocker.
-   Large-screen, rotation, and responsive layout coverage is officially
-   carried by the authorized 237 device (HUAWEI Pura X `VDE-AL00` `1320x2120`),
-   where both `ReaderProductionAdaptiveRotationTrial` (split spread) and
-   `ReaderProductionContinuousRotationTrial` (tall continuous scroll reflow)
-   have passed with full physical screenshot review.
+3. ~~103 tablet ordinary admission~~ — **SUPERSEDED (user directive 2026-09-19)**.
+   The 2026-09-17 "optional test support / non-blocking" wording no longer
+   describes 103. Under the current arrangement 103 is an authorized
+   acceptance device carrying the tablet/responsive-layout difference check,
+   together with 237 (HUAWEI Pura X `VDE-AL00` `1320x2120`) for
+   large-screen/rotation. Both `ReaderProductionAdaptiveRotationTrial`
+   (split spread) and `ReaderProductionContinuousRotationTrial` (tall
+   continuous scroll reflow) passed on 237 with full physical screenshot
+   review, and those results stay valid. 197 is withdrawn from acceptance.
 
 Evidence closed in this session (2026-09-16), each replacing an earlier OPEN
 row or unproven claim: NextN `ecaafec3` and NextE `2bebd112` main-revision
@@ -1362,15 +1363,13 @@ Next Package 5 boundaries:
   `nextn-downloads`, `imageknife-cover-cache`, `diagnostics_logs`), so runs
   there must not assume an empty app. Evidence:
   `.hvigor/outputs/device237-state-run1/` in the NextN checkout.
-- 103 tablet normal-entry admission is OPTIONAL, not an open blocker (user
-  directive 2026-09-17). 103 has been optional test support since that
-  instruction and must never gate development; 237 now covers the
-  large-screen/rotation/responsive dimension. Last observed 2026-09-16 14:52:
-  `hdc list targets -v` reports `192.168.50.103:12345 TCP Offline`, and a
-  lease-scoped `hdc -t 192.168.50.103:12345 shell echo ok` answers
-  `[Fail][E001005] Device not found or connected`. This is device availability
-  only, not a product finding; no retry loop is warranted. If 103 reappears it
-  can add tablet coverage, but no capability package depends on it.
+- 103 is an **authorized acceptance device** (user directive 2026-09-19),
+  superseding the earlier "optional test support" wording from 2026-09-17.
+  103 carries the tablet/responsive-layout difference check; that is part of
+  the acceptance arrangement, not an optional extra. The 2026-09-17
+  optional-only sentence is struck, not kept as a live row. Its 2026-09-16
+  offline observation is historical device availability only, not a product
+  finding and not a current state.
 - The A/B/C file-hash experiments prove only that install -r preserves
   checked durable files between builds. That narrowed statement no longer
   bounds the whole continuity claim: the read -> upgrade -> reopen-same-page
@@ -1982,7 +1981,7 @@ All verified physical and runtime assets remain retained, while open parity/inte
   4. *NextE spread/paging-axis trials were LTR-geometry-brittle under the device's persisted RTL direction (CLOSED 2026-09-17 — trial fix only, no product change):* on 197 at pin `f450aad`, `ReaderSpreadLayoutTrial` (`:233`, slider right-edge click) and `ReaderPagingAxisTrial` (`:115`, horizontal "forward" swipe) both left the page at 1. Root cause identified by evidence, not speculation: the device's persisted direction is **RTL** (`[NextEReaderLab] initial_policy … direction=rtl`, `.hvigor/outputs/reader-display-modes/.../11-direction-probe/`), and the shared `ReaderChrome` slider is deliberately reversed for RTL (`reverse: this.snapshot.policy.direction === 'rtl'`) — exactly matching legacy NextE (`ReaderPage.ets:4522` `reverse: this.readMode.mode === ReadMode.RTL`). The failing trials hardcode LTR geometry, so in RTL their slider-right click seeks to page 1 and their "forward" horizontal swipe moves backward. This is trial brittleness under the device's direction setting (which those trials do not normalize; it may itself be residue from an earlier direction-setting trial on this device), not a shared-reader/anchor defect, and legacy parity holds. No product change made. CLOSED 2026-09-17: both trials now pin the Debug-only `readerLabEntryDirection=ltr` Want — the same launch-parameter pattern already used by `ReaderInitialPolicy`/`ReaderThumbnailEntry`/`ReaderProgressDurability`, never a persisted setting. On 197 at pin `f450aad` both pass 1/1 (`ReaderSpreadLayoutTrial joinedSplitGestureRotationAndSingleton`, `ReaderPagingAxisTrial verticalNativePagingAndReturnHorizontal`), artifacts under `.hvigor/outputs/nexte-rtl-normalized/`. A read-only re-probe after the runs confirms the device's stored direction is still `rtl`, and RTL navigation remains separately asserted by `ReaderInitialPolicyTrial` case 3 / `ReaderInitialPolicyReadOnlyTrial`, which negate the gesture sign for RTL. NextE commit `734c4a74`. (Investigation detail: an intermediate `ReaderSliderLifecycleTrial` re-run hit separate *trial* brittleness — an unwait-ed async runtime-menu row at `:40`, an unguarded `driver.dumpLayout` in `captureSeek`, and an unmounted `rkit-chrome-page` read at `:17`; those speculative trial edits were reverted, not shipped.)
   5. *Extensibility and migration coupling:* `ReaderSession:9-10` hardcodes `enhanced | translated` variant types, `ReaderSurface:158-162` has concrete business branching, and `NextEReaderLabAdapter` still adapts old `ReaderViewModel`. These are managed transition boundaries requiring narrow interface containment without claiming full pluggability.
 - **Preserved fallback:** All three hosts keep cold starts defaulting to Legacy reader; shared reader selection is in-process and reversible; release builds fail closed to Legacy; no user data or persisted settings corrupted.
-- **Device boundaries:** 237 covers large-screen, rotation, and responsive layout; 197 covers primary phone and runtime continuity; 103 designated as optional test support per user directive (2026-09-17) and never blocks progress.
+- **Device boundaries (current):** acceptance runs on 103 (tablet/responsive layout) and 237 (large-screen, rotation); 197 is withdrawn from acceptance and reserved for other use. 103 is an authorized acceptance device, not the earlier 2026-09-17 "optional test support" designation.
 - **Release authority boundary:** Completion of replacement parity does NOT constitute authorization to flip production defaults; default switching remains a separate user release decision.
 
 ### Per-app route matrix re-verified at the pinned revision — 2026-09-17
