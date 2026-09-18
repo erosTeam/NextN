@@ -38,7 +38,7 @@ deletes user data.
 
 Package 5 的下一动作（收敛，不重跑全矩阵）：只按**实际变更**关联补验——已验过的三宿主普通入口/回退不重复；当前候选的收尾以现有证据 + 有限平板（103）补证为准。默认切换不在本包内。
 
-- **可复用的真实服务缓存清点（2026-09-19，只读）**：237 的 `com.erosteam.nextn` 下存在 3 个真实服务生成的合法译图缓存（`.../haps/entry/cache/comic-translated-pages/`，2 个 PNG + 对应 json，含完整 identity：`route=whole_page_render`、`translationSourceProfileId=torii-whole-page:managed:...`、`translationModelId=gemini-3.1-flash-lite`、`pageIndex`、`sourceImageHash`），全部属 Torii 整页路线；103 上该目录**不存在**（0 条）。结论：237 有可用于“显示与切回”验证的真实缓存素材，103 没有。**但现有普通试次固定打开画廊 678049 且不接受页号**，而这些缓存来自 lab/live-eval 的 projectId，没有现成入口能命中；直接复用需要改试次并精确复现源图哈希，在没有命中保证前不为此扩改试次。
+- **可复用的真实服务缓存清点（2026-09-19，只读）**：237 的 `com.erosteam.nextn` 下存在 3 个真实服务生成的合法译图缓存（`.../haps/entry/cache/comic-translated-pages/`，2 个 PNG + 对应 json，含完整 identity：`route=whole_page_render`、`translationSourceProfileId=torii-whole-page:managed:...`、`translationModelId=gemini-3.1-flash-lite`、`pageIndex`、`sourceImageHash`），全部属 Torii 整页路线；103 上该目录**不存在**（0 条）。结论：237 有可用于“显示与切回”验证的真实缓存素材，103 没有。**2026-09-19 更正（只读复核 `nextn-237-p13-cache3`）**：先前“全部属 lab/live-eval projectId、没有现成入口能命中”的说法**不完全成立**——实读 237 缓存 metadata 有两条：一条 `nexte-original-manga-live-eval-v1:zh-CN`（lab），另一条是**真实画廊** `nh-reader-673508-zh-CN`（`pageIndex=1`、`route=whole_page_render`、`translationModelId=gemini-3.1-flash-lite`、`sourceWidth 1280×1781`、artifactHash 完整）。而宿主的 projectId 构造成 `nh-reader-${work}-${targetLanguage}`（旧 `ReaderPage` 与共享 Lab 页一致），因此**共享面用普通入口打开画廊 673508 第 1 页时，应在发请求前命中该真实缓存**（编排器 `load(lookupKey)` 命中即返回 `cacheHit=true`）。这给出了一条可执行的“显示与切回”验证路径：在 237（Torii 路线 + `comic-torii-context` 在位）走普通入口打开 673508 P1，验证译图显示与切回原图；需 `install -r`（237 有真实用户数据）。**注**：先前“需精确复现源图哈希”的顾虑只对 lab 那条成立，对 673508 这条不成立。
 
 ### 候选自洽核对（2026-09-19，源码级；不是替代验收）
 
