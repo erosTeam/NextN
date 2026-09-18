@@ -11,7 +11,7 @@ import {
  * source; ordinary User Settings own its persisted binding. This derives the
  * binding the shared translation config needs without writing any preference.
  */
-async function bindExistingMangaSourceInProcess(): Promise<string> {
+async function bindExistingMangaSourceInProcess(modelOverride: string): Promise<string> {
   const state = connectLlmSourceProfiles()
   if (state.mangaBinding.configured()) return 'already-bound'
   const comment = state.commentBinding
@@ -36,6 +36,18 @@ async function bindExistingMangaSourceInProcess(): Promise<string> {
     }
   }
   if (sourceProfileId.length === 0) return 'no-capable-source'
+  if (modelOverride.length === 0) {
+    try {
+      const catalog: string[] = await ComicTranslationModelCatalogService.fetchSource(
+        abilityDelegatorRegistry.getAbilityDelegator().getAppContext() as common.UIAbilityContext,
+        sourceProfileId)
+      abilityDelegatorRegistry.getAbilityDelegator().print(
+        '[SelfHostedPublish] catalog=' + catalog.slice(0, 12).join('|'))
+    } catch (error) {
+      abilityDelegatorRegistry.getAbilityDelegator().print(
+        '[SelfHostedPublish] catalogUnavailable=' + String(error))
+    }
+  }
   if (modelId.length === 0) {
     try {
       const models: string[] = await ComicTranslationModelCatalogService.fetchSource(
@@ -44,6 +56,7 @@ async function bindExistingMangaSourceInProcess(): Promise<string> {
       if (models.length > 0) modelId = models[0]
     } catch (_error) {}
   }
+  if (modelOverride.length > 0) modelId = modelOverride
   if (modelId.length === 0) return 'no-model'
   const binding = new LlmConsumerBinding()
   binding.consumerId = LLM_CONSUMER_MANGA_TRANSLATION
@@ -142,7 +155,8 @@ export default function readerSelfHostedPublishTrialTest(): void {
       const surface = await waitId(driver, 'rkit-reading-surface', 240)
       // Bind only after the host has restored its own persisted profiles; binding
       // earlier is overwritten by that restore.
-      const boundManga = await bindExistingMangaSourceInProcess()
+      const modelOverride = (args['-s readerLabTranslationModel'] as string) ?? ''
+      const boundManga = await bindExistingMangaSourceInProcess(modelOverride)
       delegator.print('[SelfHostedPublish] bind=' + boundManga)
       const showOriginal = AppStrings.get('reader_comic_translation_show_original')
       const failedLabel = AppStrings.get('reader_comic_translation_failed')
@@ -184,11 +198,22 @@ export default function readerSelfHostedPublishTrialTest(): void {
       delegator.print('[SelfHostedPublish] action-present=true enabled=' + String(await found.isEnabled()))
       expect(await found.isEnabled()).assertTrue()
       await found.click()
+      // The applied label is a menu item, so poll it by reopening the shared
+      // overflow menu; the failure copy surfaces in the Reader host status strip
+      // and is visible without opening the menu.
       for (let attempt = 0; attempt < 1500; attempt++) {
-        const show = await driver.findComponent(ON.text(showOriginal))
-        if (show !== null) { applied = true; break }
         const failed = await driver.findComponent(ON.text(failedLabel))
         if (failed !== null) { hostOutcome = failedLabel; break }
+        if (attempt % 15 === 0) {
+          const reopen = await driver.findComponent(ON.id('rkit-more'))
+          if (reopen !== null) {
+            await reopen.click()
+            await driver.delayMs(400)
+            if (await driver.findComponent(ON.text(showOriginal)) !== null) { applied = true; break }
+            await driver.pressBack()
+            await driver.delayMs(200)
+          }
+        }
         await driver.delayMs(1000)
       }
       delegator.print('[SelfHostedPublish] manga=' + boundManga +
