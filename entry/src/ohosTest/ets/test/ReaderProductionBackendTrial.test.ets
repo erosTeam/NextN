@@ -1246,6 +1246,109 @@ export default function readerProductionBackendTrialTest(): void {
     })
     return
   }
+  if (selectedClass === 'ReaderLegacyNonLocalTranslationRoundTripTrial') {
+    describe(selectedClass, (): void => {
+      it('dispatchesToTheConfiguredNonLocalProviderThroughTheLegacyReader', 0, async (): Promise<void> => {
+        const driver = Driver.create()
+        let database: relationalStore.RdbStore | null = null
+        let originalHistory: HistorySnapshot | null = null
+        let restored = false
+        let failed = false
+        // The legacy Reader header buttons carry no id; select the rightmost one
+        // contained in the legacy surface (its overflow) rather than a stored
+        // coordinate, so this never re-taps the root HDS navigation bar beneath.
+        const legacyMore = async (): Promise<Component | null> => {
+          const buttons = await driver.findComponents(
+            ON.type('Button').within(ON.id('legacy-reader-surface'))) ?? []
+          let best: Component | null = null
+          let bestLeft: number = -1
+          for (const button of buttons) {
+            let left: number = -1
+            let inHeader: boolean = false
+            try {
+              const bounds = await button.getBounds()
+              left = bounds.left
+              inHeader = bounds.top < 400 && bounds.right > bounds.left && bounds.bottom > bounds.top
+            } catch (_) { continue }
+            if (inHeader && left > bestLeft) { best = button; bestLeft = left }
+          }
+          return best
+        }
+        try {
+          // Pre-migration entry: drive the legacy Reader on the same uncached
+          // gallery/page as the shared-surface probe so the two outcomes can be
+          // compared for a migration regression versus an existing host condition.
+          await launchBackend('legacy', true)
+          const context = await entryContext(driver)
+          database = await store(context)
+          originalHistory = await snapshotHistory(database)
+          writeSnapshot(originalHistory)
+          const pageArg = abilityDelegatorRegistry.getArguments().parameters['-s readerLabPage']
+          const targetPage = typeof pageArg === 'string' && pageArg.trim().length > 0
+            ? Math.max(0, Math.floor(Number(pageArg.trim()))) : 1
+          await seedHistoryPage(database, targetPage)
+          await (await waitDetailRead(driver)).click()
+          await waitLegacyReady(driver)
+          await driver.delayMs(1500)
+          await capture(driver, 'legacy-translation-open')
+          // The legacy header is immersive by default; reveal it by its ordinary
+          // center tap only when its overflow is not already present.
+          let menu: Component | null = await legacyMore()
+          if (menu === null) {
+            const surface: Component = await waitId(driver, 'legacy-reader-surface')
+            const surfaceBounds = await surface.getBounds()
+            await driver.click(Math.round((surfaceBounds.left + surfaceBounds.right) / 2),
+              Math.round((surfaceBounds.top + surfaceBounds.bottom) / 2))
+            await driver.delayMs(700)
+            for (let attempt: number = 0; attempt < 20 && menu === null; attempt++) {
+              menu = await legacyMore()
+              if (menu === null) await driver.delayMs(250)
+            }
+          }
+          expect(menu !== null).assertTrue()
+          await (menu as Component).click()
+          await driver.delayMs(500)
+          const actionLabel = AppStrings.get('reader_comic_translation_action')
+          const showOriginal = AppStrings.get('reader_comic_translation_show_original')
+          const failedLabel = AppStrings.get('reader_comic_translation_failed')
+          const runningLabel = AppStrings.get('reader_comic_translation_running')
+          const unavailableLabel = AppStrings.get('reader_comic_translation_image_unavailable')
+          let action: Component | null = await visibleText(driver, actionLabel)
+          if (action === null) action = await visibleText(driver, showOriginal)
+          await capture(driver, 'legacy-translation-menu')
+          expect(action !== null).assertTrue()
+          await (action as Component).click()
+          // Record whether the legacy Reader even reached its runtime (busy), then
+          // its bounded outcome, so a missing dispatch is not read as a MIME gate.
+          let sawRunning = false
+          let applied = false
+          let hostOutcome = ''
+          for (let attempt: number = 0; attempt < 90; attempt++) {
+            if (await visibleText(driver, runningLabel) !== null) sawRunning = true
+            if (await visibleText(driver, showOriginal) !== null) { applied = true; break }
+            if (await visibleText(driver, failedLabel) !== null) { hostOutcome = 'failed'; break }
+            if (await visibleText(driver, unavailableLabel) !== null) { hostOutcome = 'image_unavailable'; break }
+            await driver.delayMs(1000)
+          }
+          await capture(driver, 'legacy-translation-after')
+          console.info('[ReaderProductionBackendTrial] legacyTranslationRoundTrip page=' + targetPage +
+            ' sawRunning=' + sawRunning + ' applied=' + applied + ' hostOutcome=' + hostOutcome)
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'legacy-translation-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+          if (!restored && database !== null && originalHistory !== null) {
+            await restoreAndVerify(database, originalHistory)
+            removeSnapshot()
+          }
+          await launchBackend('legacy', false)
+        }
+      })
+    })
+    return
+  }
   if (selectedClass === 'ReaderProductionTranslationTrial') {
     describe(selectedClass, (): void => {
       it('rendersAndTogglesTheHostOwnedTranslatedResult', 0, async (): Promise<void> => {

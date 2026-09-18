@@ -529,6 +529,12 @@ export class ToriiWholePageRenderBackend implements ComicWholePageRenderBackend 
     } else {
       throw new Error('Torii source image format is unsupported')
     }
+    // Safe source-identity diagnostic (length + digest prefix + declared MIME only;
+    // never the payload). Both the shared and the legacy Reader upload through this
+    // method, so this records the actual uploaded source for the same page.
+    console.info('[ToriiWholePage] source bytes=' + bytes.length +
+      ' sha256=' + ToriiWholePageRenderBackend.sha256(bytes).substring(0, 16) +
+      ' mime=' + output.mimeType)
     return output
   }
 
@@ -659,6 +665,13 @@ export class ToriiWholePageRenderBackend implements ComicWholePageRenderBackend 
         ? ToriiWholePageRenderBackend.isJpeg(output.bytes)
         : ToriiWholePageRenderBackend.isWebp(output.bytes)
     if (!matchesMime) {
+      // Safe mismatch diagnostic: declared MIME, decoded byte length and magic-byte
+      // booleans only; the image payload is never logged.
+      console.info('[ToriiWholePage] decode_mismatch declared=' + output.mimeType +
+        ' bytes=' + output.bytes.length +
+        ' png=' + String(ToriiWholePageRenderBackend.isPng(output.bytes)) +
+        ' jpeg=' + String(ToriiWholePageRenderBackend.isJpeg(output.bytes)) +
+        ' webp=' + String(ToriiWholePageRenderBackend.isWebp(output.bytes)))
       throw new Error('Torii whole-page image MIME type does not match its bytes')
     }
     return output
