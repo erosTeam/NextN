@@ -57,8 +57,32 @@ ok('builtin names are derived from current resources rather than persisted user 
       read('feature/home/src/main/ets/pages/HomeSubtabManagerPage.ets'),
     ))
 
+
 const store = read('shared/src/main/ets/storage/LocalDataStore.ets')
 const repository = read('shared/src/main/ets/storage/HomeSubtabRepository.ets')
+const names = read('shared/src/main/ets/settings/HomeSubtabNames.ets')
+ok('builtin labels are resource-backed and a raw key is never persisted',
+  /static resourceKey\(uuid: string\): string/.test(names) &&
+    /AppStrings\.get\(key\)/.test(names) &&
+    /if \(name\.length === 0 \|\| name === key\)/.test(names) &&
+    /static assertPersistable\(uuid: string, name: string\): void/.test(names) &&
+    /static isKeyName\(uuid: string, name: string\): boolean/.test(names))
+ok('resolving a builtin name keeps the valid stored label when the resource is not ready',
+  /const resolved: string = HomeSubtabNames\.defaultNameOrEmpty\(key\)[\s\S]*if \(resolved\.length > 0\)[\s\S]*profile\.name = resolved/.test(settings) &&
+    /HomeSubtabNames\.defaultNameOrEmpty\(/.test(settings))
+ok('unresolved required names are not frozen into durable state as blanks',
+  /reservedNamesResolvable\(ensured\)/.test(settings) &&
+    /home_subtabs_names_unresolved/.test(settings) &&
+    /HomeSubtabNames\.defaultNameOrEmpty\(/.test(settings))
+ok('repository refuses a raw reserved key and repairs only exact reserved key rows in place',
+  /HomeSubtabNames\.assertPersistable\(profile\.uuid, profile\.name\)/.test(repository) &&
+    /HomeSubtabNames\.isKeyName\(uuid, name\)/.test(repository) &&
+    /WHERE scope_key = \? AND profile_uuid = \? AND name = \? AND COALESCE\(deleted_at, 0\) = 0/.test(repository) &&
+    /COALESCE\(last_edit_time, 0\) = \?/.test(repository))
+ok('reserved-name repair runs on restore, sync apply and sync refresh',
+  /await HomeSubtabRepository\.repairResourceNames\(context\)/.test(settings) &&
+    /repairResourceNamesWithStore\(store\)/.test(repository))
+
 const schemaVersion = Number(store.match(/SCHEMA_VERSION: number = (\d+)/)?.[1] ?? 0)
 ok('current RDB schema creates ordered profile and selected-profile tables',
   schemaVersion >= 25 &&
@@ -175,6 +199,36 @@ const tombstone = { updatedAt: 0, deletedAt: 200 }
 ok('LWW behavior keeps the newer tombstone over a stale profile', mergeClock(live, tombstone) === tombstone)
 const recreated = { updatedAt: 300, deletedAt: 0 }
 ok('LWW behavior permits an explicitly newer profile to supersede a tombstone', mergeClock(tombstone, recreated) === recreated)
+
+
+// Executable mirrors of the reserved-name repair boundary.
+function isKeyName(baseName, uuid, name) {
+  const key = baseName(uuid)
+  return key.length > 0 && name === key
+}
+function repair(baseName, resolve, uuid, name) {
+  if (!isKeyName(baseName, uuid, name)) return name
+  const r = resolve(name)
+  return r.length > 0 ? r : name
+}
+const baseName = (uuid) => (uuid === 'builtin-latest' ? 'home_source_latest' : uuid === 'builtin-popular' ? 'home_source_popular' : '')
+const ready = (key) => (key === 'home_source_latest' ? '最新' : key === 'home_source_popular' ? '热门' : '')
+const notReady = () => ''
+ok('only a reserved uuid whose name equals its own key is repaired',
+  repair(baseName, ready, 'builtin-latest', 'home_source_latest') === '最新' &&
+    repair(baseName, ready, 'builtin-popular', 'home_source_popular') === '热门')
+ok('a custom name, a custom uuid and an unrelated label are never rewritten',
+  repair(baseName, ready, 'builtin-latest', '我的订阅') === '我的订阅' &&
+    repair(baseName, ready, 'custom-uuid', 'home_source_latest') === 'home_source_latest' &&
+    repair(baseName, ready, 'builtin-latest', '默认') === '默认')
+ok('when the resource is not ready the raw key is not replaced by a key name',
+  repair(baseName, notReady, 'builtin-latest', 'home_source_latest') === 'home_source_latest')
+// The repair clock must beat any incoming future clock so an obsolete polluted
+// remote cannot win the LWW merge after the local name is repaired.
+function repairClock(now, lastEditTime) { return Math.max(now, lastEditTime + 1) }
+const incomingFuture = 9_999_999_999_999
+ok('repair advances past an incoming future clock so the fix wins the merge',
+  repairClock(1000, incomingFuture) > incomingFuture)
 
 if (failures === 0) {
   console.log('OK Home SubTab data contract passed')

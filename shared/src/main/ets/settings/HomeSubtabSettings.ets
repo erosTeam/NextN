@@ -1,5 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import { AppStrings } from '../i18n/AppStrings'
+import { HomeSubtabNames } from './HomeSubtabNames'
 import {
   HOME_SUBTAB_LATEST_UUID,
   HOME_SUBTAB_POPULAR_UUID,
@@ -47,6 +48,9 @@ export class HomeSubtabSettings {
     const state: HomeSubtabState = connectHomeSubtabs()
     try {
       const persisted: boolean = await HomeSubtabRepository.hasPersistedState(context)
+      // Repair any reserved-name key persisted by an older build before reading
+      // state, so a corrupted durable row is restored to its localized label.
+      await HomeSubtabRepository.repairResourceNames(context)
       let profiles: NhHomeSubtabProfile[] = persisted
         ? await HomeSubtabRepository.loadProfiles(context)
         : HomeSubtabSettings.seedDefaults()
@@ -69,6 +73,15 @@ export class HomeSubtabSettings {
       connectHomeSource().selectedKey = selected
       const builtinsAdded: boolean = ensured.length !== profiles.length
       const selectionChanged: boolean = selected !== selection.selectedUuid
+      // A missing resource must not be frozen into durable state as a blank
+      // placeholder. When a required built-in label cannot be resolved yet,
+      // keep the in-memory state and skip persistence so a later restore (once
+      // the resource manager is ready) can seed the real label.
+      if (!HomeSubtabSettings.reservedNamesResolvable(ensured)) {
+        DiagnosticLogger.warn('settings', 'home_subtabs_names_unresolved',
+          `profiles=${ensured.length}`)
+        return
+      }
       if (!persisted || builtinsAdded) {
         await HomeSubtabSettings.enqueueWrite(
           (): Promise<void> => HomeSubtabRepository.replaceAll(context, ensured, selected),
@@ -290,6 +303,7 @@ export class HomeSubtabSettings {
 
   static async refreshFromStorage(context: common.UIAbilityContext): Promise<void> {
     await HomeSubtabSettings.writeTail
+    await HomeSubtabRepository.repairResourceNames(context)
     const storedProfiles: NhHomeSubtabProfile[] = await HomeSubtabRepository.loadProfiles(context)
     const canonicalized: string[] = []
     const profiles: NhHomeSubtabProfile[] = HomeSubtabSettings.ensureBuiltins(storedProfiles, canonicalized)
@@ -365,27 +379,27 @@ export class HomeSubtabSettings {
     const latest: NhHomeSubtabProfile = HomeSubtabSettings.profile(
       HOME_SUBTAB_LATEST_UUID,
       NhHomeSubtabKind.LATEST,
-      AppStrings.get('home_source_latest'),
+      HomeSubtabNames.defaultNameOrEmpty('home_source_latest'),
     )
     const latestPresentation = state.presentationOverrideFor('latest')
     latest.presentation = latestPresentation === null ? HOME_SUBTAB_PRESENTATION_GLOBAL : latestPresentation
     const popular: NhHomeSubtabProfile = HomeSubtabSettings.profile(
       HOME_SUBTAB_POPULAR_UUID,
       NhHomeSubtabKind.POPULAR,
-      AppStrings.get('home_source_popular'),
+      HomeSubtabNames.defaultNameOrEmpty('home_source_popular'),
     )
     const popularPresentation = state.presentationOverrideFor('popular')
     popular.presentation = popularPresentation === null ? HOME_SUBTAB_PRESENTATION_GLOBAL : popularPresentation
     const chinese: NhHomeSubtabProfile = HomeSubtabSettings.profile(
       HOME_SUBTAB_STARTER_CHINESE_UUID,
       NhHomeSubtabKind.SEARCH,
-      AppStrings.get('home_subtab_starter_chinese'),
+      HomeSubtabNames.defaultNameOrEmpty('home_subtab_starter_chinese'),
     )
     chinese.language = NhSearchLanguage.CHINESE
     const favorite: NhHomeSubtabProfile = HomeSubtabSettings.profile(
       HOME_SUBTAB_STARTER_FAVORITED_UUID,
       NhHomeSubtabKind.SEARCH,
-      AppStrings.get('home_subtab_starter_favorited'),
+      HomeSubtabNames.defaultNameOrEmpty('home_subtab_starter_favorited'),
     )
     favorite.query = 'favorites:>=1000'
     favorite.sort = NhSearchSort.RECENT
@@ -401,7 +415,7 @@ export class HomeSubtabSettings {
       out.splice(0, 0, HomeSubtabSettings.profile(
         HOME_SUBTAB_LATEST_UUID,
         NhHomeSubtabKind.LATEST,
-        AppStrings.get('home_source_latest'),
+        HomeSubtabNames.defaultNameOrEmpty('home_source_latest'),
       ))
     }
     if (HomeSubtabSettings.indexOf(out, HOME_SUBTAB_POPULAR_UUID) < 0) {
@@ -409,7 +423,7 @@ export class HomeSubtabSettings {
       out.splice(latestIndex + 1, 0, HomeSubtabSettings.profile(
         HOME_SUBTAB_POPULAR_UUID,
         NhHomeSubtabKind.POPULAR,
-        AppStrings.get('home_source_popular'),
+        HomeSubtabNames.defaultNameOrEmpty('home_source_popular'),
       ))
     }
     const latest: NhHomeSubtabProfile | null = HomeSubtabSettings.find(out, HOME_SUBTAB_LATEST_UUID)
@@ -417,16 +431,49 @@ export class HomeSubtabSettings {
       if (latest.normalizeBuiltinIdentity()) {
         HomeSubtabSettings.markCanonicalized(canonicalized, latest.uuid)
       }
-      latest.name = AppStrings.get('home_source_latest')
+      HomeSubtabSettings.resolveBuiltinName(latest, 'home_source_latest')
     }
     const popular: NhHomeSubtabProfile | null = HomeSubtabSettings.find(out, HOME_SUBTAB_POPULAR_UUID)
     if (popular !== null) {
       if (popular.normalizeBuiltinIdentity()) {
         HomeSubtabSettings.markCanonicalized(canonicalized, popular.uuid)
       }
-      popular.name = AppStrings.get('home_source_popular')
+      HomeSubtabSettings.resolveBuiltinName(popular, 'home_source_popular')
     }
     return out
+  }
+
+  /**
+   * A built-in label is a resource, not user text. When the resource resolves,
+   * the label is normalized to the current value exactly as the original
+   * unconditioned assignment did (so an in-app language switch re-localizes
+   * it). When the resource does NOT resolve (AppStrings returns the key itself
+   * or empty), the stored name must not be overwritten with the key and must
+   * not be blanked here: keep whatever valid label is already stored. A raw key
+   * left by an older build is repaired by
+   * HomeSubtabRepository.repairResourceNames on restore and sync.
+   */
+  private static resolveBuiltinName(profile: NhHomeSubtabProfile, key: string): void {
+    const resolved: string = HomeSubtabNames.defaultNameOrEmpty(key)
+    if (resolved.length > 0) {
+      profile.name = resolved
+    }
+  }
+
+  /**
+   * A reserved built-in/starter row whose label is still missing must not be
+   * frozen into durable state before its resource can be resolved. This checks
+   * only the reserved uuids: an unrelated custom row with an empty name (which
+   * older data can legitimately carry) must never block the whole restore.
+   */
+  private static reservedNamesResolvable(profiles: NhHomeSubtabProfile[]): boolean {
+    for (let index: number = 0; index < profiles.length; index++) {
+      const profile: NhHomeSubtabProfile = profiles[index]
+      if (HomeSubtabNames.resourceKey(profile.uuid).length > 0 && profile.name.length === 0) {
+        return false
+      }
+    }
+    return true
   }
 
   private static markCanonicalized(uuids: string[], uuid: string): void {
