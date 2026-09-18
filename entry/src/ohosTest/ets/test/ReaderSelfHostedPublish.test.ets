@@ -33,10 +33,26 @@ export default function readerSelfHostedPublishTrialTest(): void {
       expect(more !== null).assertTrue()
       await more.click()
       await driver.delayMs(500)
-      const action: Component | null = await driver.findComponent(ON.id(actionId))
-      expect(action !== null).assertTrue()
-      expect(await action.isEnabled()).assertTrue()
-      await action.click()
+      let action: Component | null = null
+      for (let attempt: number = 0; attempt < 20 && action === null; attempt++) {
+        action = await driver.findComponent(ON.id(actionId))
+        if (action !== null) break
+        const menuItems = await driver.findComponents(ON.type('MenuItem')) ?? []
+        const seen: string[] = []
+        for (const item of menuItems) { try { seen.push(await item.getId()) } catch (_) {} }
+        delegator.print('[SelfHostedPublish] menu-try=' + attempt + ' items=' + seen.join(','))
+        const moreRetry = await driver.findComponent(ON.id('rkit-more'))
+        if (moreRetry !== null) { await moreRetry.click(); await driver.delayMs(600) }
+      }
+      const found: Component | null = action
+      if (found === null) {
+        delegator.print('[SelfHostedPublish] action-present=false')
+        expect(false).assertTrue()
+        return
+      }
+      delegator.print('[SelfHostedPublish] action-present=true enabled=' + String(await found.isEnabled()))
+      expect(await found.isEnabled()).assertTrue()
+      await found.click()
       for (let attempt = 0; attempt < 540; attempt++) {
         const show = await driver.findComponent(ON.text(showOriginal))
         if (show !== null) { applied = true; break }
