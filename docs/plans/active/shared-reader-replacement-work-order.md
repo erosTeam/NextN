@@ -19,7 +19,7 @@ deletes user data.
 
 | ID | 宿主/公共 | 旧阅读器真实能力与语义 | 新实现位置 | 已有证据 | 状态 | 唯一下一动作 |
 | --- | --- | --- | --- | --- | --- | --- |
-| P1 | NextN 公共 | 与旧阅读器在**同一状态（同页/同模式）**下体验一致 | Shared `NextNReaderLabPage` vs Legacy `ReaderPage` | 单页浅色同页对已核对（compact `1 / 14` Δ0；grid `2 / 14` 位置/范围一致、剖面相关 0.9887）；**连续/双页/RTL 同状态对尚未核对** | ACTIVE (IMPLEMENTED-UNVERIFIED) | 复用/补齐 197 同页同模式的 continuous/spread/RTL 对并比几何 |
+| P1 | NextN 公共 | 与旧阅读器在**同一状态（同页/同模式）**下体验一致 | 单页: Shared `NextNReaderLabPage` vs Legacy `ReaderPage`；连续: Shared `ReaderContinuousSurface` vs Legacy 连续滚动 | 单页浅色同页对已核对：compact `1 / 14` 像素 Δ0；grid `2 / 14` 位置/范围一致、剖面相关 0.9887。**连续布局为结构性不同组件（共享 `ReaderContinuousSurface` vs 旧滚动），无同状态对照产物** | ACTIVE (IMPLEMENTED-UNVERIFIED) | 197：旧与共享在**同页同连续模式**各截一帧，比页列几何+页身剖面 |
 | P2 | 公共/reader-core | 进入/立即退出/返回原位置/迟到回调不复活 | `ReaderSurface`/`ReaderSession` | 三宿主 pin 验收 | ACCEPTED | — |
 | P3 | 公共/reader-core | 资源生命周期：原图/缩略图、慢载、逐页失败、精确重试、取消、旧请求退休 | `ReaderPagedSession` | 三宿主 pin 验收 | ACCEPTED | — |
 | P4 | 公共/reader-ui | 布局：单页/双页/连续/长图、LTR/RTL、封面与末页 | `ReaderDisplayMap` 等 | 分页×3×197/237；长图滚动位移；Koma 竖翻 237 | ACCEPTED | — |
