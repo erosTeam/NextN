@@ -19,7 +19,7 @@ deletes user data.
 
 | ID | 宿主/公共 | 旧阅读器真实能力与语义 | 新实现位置 | 已有证据 | 状态 | 唯一下一动作 |
 | --- | --- | --- | --- | --- | --- | --- |
-| P1 | NextN 公共 | 与旧阅读器在**同一状态（同页/同模式/同设置）**下体验一致 | Shared `NextNReaderLabPage` vs Legacy `ReaderPage`（同读 `ReaderPresentationService`+`ReaderSettingsRepository`） | 两后端各自已验收；既有 Shared/Legacy 截图**非同状态**（Shared `4 / 14` vs Legacy 另一状态），体验对等未证 | ACTIVE (IMPLEMENTED-UNVERIFIED) | 197 锁同页同模式各截 Shared/Legacy 一帧对照 |
+| P1 | NextN 公共 | 与旧阅读器在**同一状态（同页/同模式）**下体验一致 | Shared `NextNReaderLabPage` vs Legacy `ReaderPage` | 单页浅色同页对已核对（compact `1 / 14` Δ0；grid `2 / 14` 位置/范围一致、剖面相关 0.9887）；**连续/双页/RTL 同状态对尚未核对** | ACTIVE (IMPLEMENTED-UNVERIFIED) | 复用/补齐 197 同页同模式的 continuous/spread/RTL 对并比几何 |
 | P2 | 公共/reader-core | 进入/立即退出/返回原位置/迟到回调不复活 | `ReaderSurface`/`ReaderSession` | 三宿主 pin 验收 | ACCEPTED | — |
 | P3 | 公共/reader-core | 资源生命周期：原图/缩略图、慢载、逐页失败、精确重试、取消、旧请求退休 | `ReaderPagedSession` | 三宿主 pin 验收 | ACCEPTED | — |
 | P4 | 公共/reader-ui | 布局：单页/双页/连续/长图、LTR/RTL、封面与末页 | `ReaderDisplayMap` 等 | 分页×3×197/237；长图滚动位移；Koma 竖翻 237 | ACCEPTED | — |
@@ -35,6 +35,8 @@ deletes user data.
 | P14 | 宿主(NextN) | NextN 云端(Torii)往返 | `ToriiWholePageRenderBackend` | 请求→云 200，但该模型返回非图像 payload；与 NextE 同代码、仅模型不同 | EXTERNAL-OPEN | 第三方模型/payload |
 
 当前唯一 ACTIVE 行：**P1**（体验对等同状态对照）。
+
+- **P1 same-state Shared↔Legacy pixel comparison (2026-09-18, 197, artifact reuse, no new device run)**: the board flagged that the only NextN Shared/Legacy image pair on record was **not** the same state (Shared `4 / 14` continuous vs Legacy `2 / 14`), so experience parity was unproven. Reusing the current-pin set `.hvigor/outputs/nextn-rv-matrix-2594d6f/run/extracted_evidence/` there are in fact two **same-page** pairs: `compact` (Shared `1 / 14` = Legacy `1 / 14`) and `grid` (Shared `2 / 14` = Legacy `2 / 14`). Measured: compact body band (y 340–2200) is **byte-identical** (Δ0, 0 px changed); grid body band differs only in a narrow column and, after normalizing position, the page column sits at x≈532–727 in both (`531..727` legacy, 1 px antialias), the bright page extent is identical (`0..1859`), and the per-row brightness profile correlation is **0.9887** with the top differences confined to a ~250 px band (y≈1677–1923). So at the same page the two backends render the same page at the same place and extent; the residual grid difference is a small local content difference, not a layout/experience regression. This closes the *experience-parity is unproven* doubt for the light path and the top/bottom chrome difference is the already-documented Shared(chrome shown) vs Legacy(immersive) presentation trade-off. Honest scope: this is artifact reuse (no fresh device run) and covers the single-page light path; it does not by itself re-accept the dark/continuous/spread same-state cases, which remain covered by their own records.
 
 ## Execution contract
 
