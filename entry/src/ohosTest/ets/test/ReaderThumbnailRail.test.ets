@@ -39,7 +39,9 @@ export default function readerThumbnailRailTest(): void {
       const driver = Driver.create()
       await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
         bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
-        parameters: { readerLabWork: work, readerLabChrome: 'true' },
+        // Pin the Debug-only entry layout single: the device persists continuous, which has no
+        // rkit-image-viewport, so the paged-viewport preconditions below would fail on trial geometry.
+        parameters: { readerLabWork: work, readerLabChrome: 'true', readerLabEntryLayout: 'single' },
       })
       await driver.delayMs(1600); await waitOriginal(driver)
       const before = await (await driver.findComponent(ON.type('Image').within(ON.id('rkit-image-viewport')))).getBounds()
@@ -111,7 +113,9 @@ export default function readerThumbnailRailTest(): void {
       const driver = Driver.create()
       await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
         bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
-        parameters: { readerLabWork: work, readerLabChrome: 'true' },
+        // Pin the Debug-only entry layout single: the device persists continuous, which has no
+        // rkit-image-viewport, so the paged-viewport preconditions below would fail on trial geometry.
+        parameters: { readerLabWork: work, readerLabChrome: 'true', readerLabEntryLayout: 'single' },
       })
       await driver.delayMs(1600); await waitOriginal(driver)
       const page = await pageNumber(driver)
