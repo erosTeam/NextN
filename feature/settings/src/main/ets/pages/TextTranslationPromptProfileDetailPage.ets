@@ -9,6 +9,7 @@ import {
   MAX_TEXT_TRANSLATION_STYLE_CHARS,
   NextNGroupedListSection,
   NextNListRow,
+  NextNSectionHeader,
   SecondaryListScaffold,
   SettingsTextField,
   TextTranslationPromptContract,
@@ -20,11 +21,9 @@ import {
 } from 'shared'
 
 /**
- * One detail destination for all four profile modes in NextN:
- * - built-in detail: read-only text, primary "use this profile", secondary "copy as custom";
- * - custom detail: editable name + body, primary save, destructive delete;
- * - blank draft: editable, primary create, cancel/back leaves no data;
- * - copy draft: prefilled from the source, editable, default name "source copy".
+ * One detail destination for all profile modes in NextN:
+ * - built-in detail: read-only presentation card + styled prompt block + "use"/"copy" actions;
+ * - custom detail / new: aligned settings form inputs + styled multi-line prompt + save/delete actions.
  * The draft is a local copy only; V2 state is never touched until the repository write succeeds.
  */
 @ComponentV2
@@ -252,6 +251,152 @@ export struct TextTranslationPromptProfileDetailPage {
       .margin({ left: 56, right: 16 })
   }
 
+  @Builder
+  private BuiltInView() {
+    ListItem() {
+      NextNSectionHeader({ title: AppStrings.get('text_translation_prompt_detail_built_in') })
+    }
+    .margin({ top: ThemeTokens.SPACE_XS })
+    ListItem() {
+      NextNGroupedListSection() {
+        NextNListRow({
+          leadingIcon: $r('sys.symbol.doc_plaintext'),
+          title: AppStrings.get('llm_source_name'),
+          trailingText: this.nameDraft,
+          showChevron: false,
+        })
+      }
+    }
+    ListItem() {
+      NextNSectionHeader({ title: AppStrings.get('text_translation_prompt_style_label') })
+    }
+    .margin({ top: ThemeTokens.SPACE_MD })
+    ListItem() {
+      NextNGroupedListSection({ inset: 0 }) {
+        Text(this.styleDraft)
+          .fontSize(ThemeTokens.FONT_SIZE_BODY)
+          .fontColor(ThemeTokens.TEXT_PRIMARY)
+          .lineHeight(22)
+          .width('100%')
+          .padding(ThemeTokens.SPACE_LG)
+          .copyOption(CopyOptions.LocalDevice)
+      }
+    }
+    ListItem() {
+      NextNGroupedListSection() {
+        NextNListRow({
+          title: AppStrings.get(this.primaryLabelKey),
+          leadingIcon: $r('sys.symbol.checkmark_circle'),
+          showChevron: false,
+          isEnabled: !this.saving,
+          onAction: () => {
+            this.useCurrentAsSelection()
+          },
+        })
+        this.RowDivider()
+        NextNListRow({
+          title: AppStrings.get('text_translation_prompt_copy_as_custom'),
+          subtitle: AppStrings.get('text_translation_prompt_copy_as_custom_hint'),
+          leadingIcon: $r('sys.symbol.square_and_pencil'),
+          showChevron: false,
+          onAction: () => {
+            this.copyAsCustom()
+          },
+        })
+      }
+    }
+    .margin({ top: ThemeTokens.SPACE_MD })
+  }
+
+  @Builder
+  private CustomEditView() {
+    ListItem() {
+      NextNSectionHeader({
+        title: AppStrings.get(this.promptProfileId.length > 0
+          ? 'text_translation_prompt_detail_custom'
+          : 'text_translation_prompt_detail_new')
+      })
+    }
+    .margin({ top: ThemeTokens.SPACE_XS })
+    ListItem() {
+      NextNGroupedListSection({ inset: 0 }) {
+        SettingsTextField({
+          label: AppStrings.get('llm_source_name'),
+          value: this.nameDraft,
+          placeholder: AppStrings.get('text_translation_prompt_name_placeholder'),
+          onChange: (value: string) => {
+            this.nameDraft = value
+          },
+        })
+      }
+    }
+    ListItem() {
+      NextNSectionHeader({ title: AppStrings.get('text_translation_prompt_style_label') })
+    }
+    .margin({ top: ThemeTokens.SPACE_MD })
+    ListItem() {
+      NextNGroupedListSection({ inset: 0 }) {
+        Column({ space: ThemeTokens.SPACE_XS }) {
+          TextArea({
+            text: this.styleDraft,
+            placeholder: AppStrings.get('text_translation_prompt_style_placeholder'),
+          })
+            .width('100%')
+            .height(180)
+            .fontSize(ThemeTokens.FONT_SIZE_BODY)
+            .backgroundColor($r('sys.color.ohos_id_color_button_normal'))
+            .borderRadius(ThemeTokens.LIST_ROW_RADIUS)
+            .padding(ThemeTokens.SPACE_SM)
+            .onChange((value: string) => {
+              this.styleDraft = value
+            })
+          Row() {
+            Blank()
+            Text(`${this.styleDraft.length} / ${MAX_TEXT_TRANSLATION_STYLE_CHARS}`)
+              .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
+              .fontColor(ThemeTokens.TEXT_TERTIARY)
+          }
+          .width('100%')
+          .padding({ right: ThemeTokens.SPACE_XS, top: ThemeTokens.SPACE_XS })
+        }
+        .padding({
+          left: ThemeTokens.SPACE_MD,
+          right: ThemeTokens.SPACE_MD,
+          top: ThemeTokens.SPACE_SM,
+          bottom: ThemeTokens.SPACE_SM,
+        })
+        .width('100%')
+      }
+    }
+    ListItem() {
+      NextNGroupedListSection() {
+        NextNListRow({
+          title: AppStrings.get(this.primaryLabelKey),
+          leadingIcon: $r('sys.symbol.checkmark_circle'),
+          showChevron: false,
+          isEnabled: !this.saving && !this.deleting,
+          onAction: () => {
+            this.save()
+          },
+        })
+        if (this.sourceIsCustom && this.promptProfileId.length > 0) {
+          this.RowDivider()
+          NextNListRow({
+            title: AppStrings.get('common_delete'),
+            leadingIcon: $r('sys.symbol.trash'),
+            destructive: true,
+            showChevron: false,
+            isEnabled: !this.saving && !this.deleting,
+            onAction: () => {
+              this.confirmDelete()
+            },
+          })
+        }
+      }
+    }
+    .margin({ top: ThemeTokens.SPACE_MD })
+  }
+
   build() {
     Column() {
       SecondaryListScaffold({
@@ -260,85 +405,10 @@ export struct TextTranslationPromptProfileDetailPage {
         alwaysEnableEdgeSpring: true,
       }) {
         if (this.loaded) {
-          ListItem() {
-            NextNGroupedListSection({ inset: 0 }) {
-              Column({ space: 8 }) {
-                SettingsTextField({
-                  label: AppStrings.get('llm_source_name'),
-                  value: this.nameDraft,
-                  placeholder: AppStrings.get('text_translation_prompt_name_placeholder'),
-                  isEnabled: !this.builtIn,
-                  onChange: (value: string) => {
-                    this.nameDraft = value
-                  },
-                })
-                Text(AppStrings.get('text_translation_prompt_style_label'))
-                  .fontSize(13)
-                  .fontColor($r('sys.color.font_secondary'))
-                  .width('100%')
-                TextArea({
-                  text: this.styleDraft,
-                  placeholder: AppStrings.get('text_translation_prompt_style_placeholder'),
-                })
-                  .width('100%')
-                  .height(180)
-                  .backgroundColor(Color.Transparent)
-                  .enabled(!this.builtIn)
-                  .onChange((value: string) => {
-                    this.styleDraft = value
-                  })
-              }
-              .padding(16)
-              .width('100%')
-            }
-          }
-          ListItem() {
-            NextNGroupedListSection() {
-              if (this.builtIn) {
-                NextNListRow({
-                  title: AppStrings.get(this.primaryLabelKey),
-                  leadingIcon: $r('sys.symbol.checkmark_circle'),
-                  showChevron: false,
-                  isEnabled: !this.saving,
-                  onAction: () => {
-                    this.useCurrentAsSelection()
-                  },
-                })
-                this.RowDivider()
-                NextNListRow({
-                  title: AppStrings.get('text_translation_prompt_copy_as_custom'),
-                  subtitle: AppStrings.get('text_translation_prompt_copy_as_custom_hint'),
-                  leadingIcon: $r('sys.symbol.square_and_pencil'),
-                  showChevron: false,
-                  onAction: () => {
-                    this.copyAsCustom()
-                  },
-                })
-              } else {
-                NextNListRow({
-                  title: AppStrings.get(this.primaryLabelKey),
-                  leadingIcon: $r('sys.symbol.checkmark_circle'),
-                  showChevron: false,
-                  isEnabled: !this.saving && !this.deleting,
-                  onAction: () => {
-                    this.save()
-                  },
-                })
-                if (this.sourceIsCustom) {
-                  this.RowDivider()
-                  NextNListRow({
-                    title: AppStrings.get('common_delete'),
-                    leadingIcon: $r('sys.symbol.trash'),
-                    destructive: true,
-                    showChevron: false,
-                    isEnabled: !this.saving && !this.deleting,
-                    onAction: () => {
-                      this.confirmDelete()
-                    },
-                  })
-                }
-              }
-            }
+          if (this.builtIn) {
+            this.BuiltInView()
+          } else {
+            this.CustomEditView()
           }
         }
       }
@@ -348,3 +418,4 @@ export struct TextTranslationPromptProfileDetailPage {
     .backgroundColor(ThemeTokens.SURFACE_SUB)
   }
 }
+

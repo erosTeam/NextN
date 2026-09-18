@@ -3,6 +3,7 @@ import {
   AppStrings,
   NextNGroupedListSection,
   NextNListRow,
+  NextNSectionHeader,
   SecondaryListScaffold,
   TextTranslationPromptCatalog,
   TextTranslationPromptProfile,
@@ -78,41 +79,41 @@ export struct TextTranslationPromptProfilesPage {
         alwaysEnableEdgeSpring: true,
       }) {
         ListItem() {
+          NextNSectionHeader({ title: AppStrings.get('text_translation_prompt_builtin_group') })
+        }
+        .margin({ top: ThemeTokens.SPACE_XS })
+        ListItem() {
           NextNGroupedListSection() {
-            Text(AppStrings.get('text_translation_prompt_builtin_group'))
-              .fontSize(13)
-              .fontColor($r('sys.color.font_secondary'))
-              .width('100%')
-              .padding({ top: 8, bottom: 8 })
             ForEach(
               TextTranslationPromptCatalog.builtInProfiles(),
               (profile: TextTranslationPromptProfile, index: number) => {
-                this.ProfileRow(profile)
-                if (index < TextTranslationPromptCatalog.builtInProfiles().length - 1) {
+                if (index > 0) {
                   this.RowDivider()
                 }
+                this.ProfileRow(profile)
               },
               (profile: TextTranslationPromptProfile) => profile.promptProfileId,
             )
           }
         }
-        ListItem() {
-          NextNGroupedListSection() {
-            Text(AppStrings.get('text_translation_prompt_custom_group'))
-              .fontSize(13)
-              .fontColor($r('sys.color.font_secondary'))
-              .width('100%')
-              .padding({ top: 8, bottom: 8 })
-            ForEach(
-              this.profiles.customProfiles,
-              (profile: TextTranslationPromptProfile, index: number) => {
-                this.ProfileRow(profile.copy())
-                if (index < this.profiles.customProfiles.length - 1) {
-                  this.RowDivider()
-                }
-              },
-              (profile: TextTranslationPromptProfile) => profile.promptProfileId,
-            )
+        if (this.profiles.customProfiles.length > 0) {
+          ListItem() {
+            NextNSectionHeader({ title: AppStrings.get('text_translation_prompt_custom_group') })
+          }
+          .margin({ top: ThemeTokens.SPACE_MD })
+          ListItem() {
+            NextNGroupedListSection() {
+              ForEach(
+                this.profiles.customProfiles,
+                (profile: TextTranslationPromptProfile, index: number) => {
+                  if (index > 0) {
+                    this.RowDivider()
+                  }
+                  this.ProfileRow(profile.copy())
+                },
+                (profile: TextTranslationPromptProfile) => profile.promptProfileId,
+              )
+            }
           }
         }
         ListItem() {
@@ -120,7 +121,7 @@ export struct TextTranslationPromptProfilesPage {
             NextNListRow({
               title: AppStrings.get('text_translation_prompt_new'),
               leadingIcon: $r('sys.symbol.plus'),
-              showChevron: false,
+              showChevron: true,
               onAction: () => {
                 if (this.onOpenNew) {
                   this.onOpenNew()
@@ -129,6 +130,7 @@ export struct TextTranslationPromptProfilesPage {
             })
           }
         }
+        .margin({ top: ThemeTokens.SPACE_MD })
       }
     }
     .width('100%')
@@ -136,3 +138,4 @@ export struct TextTranslationPromptProfilesPage {
     .backgroundColor(ThemeTokens.SURFACE_SUB)
   }
 }
+
