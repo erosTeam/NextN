@@ -6,6 +6,8 @@ import {
   NhHomeSubtabProfile,
 } from '../model/NhHomeSubtabProfile'
 import { LocalDataStore } from './LocalDataStore'
+import { HomeSubtabNames } from '../settings/HomeSubtabNames'
+import { DiagnosticLogger } from '../diagnostics/DiagnosticLogger'
 
 const SCOPE_GLOBAL: string = 'global'
 const SQL_HAS_PROFILES: string = 'SELECT 1 AS has_state FROM home_subtabs WHERE scope_key = ? LIMIT 1'
@@ -195,9 +197,25 @@ export class HomeSubtabRepository {
         if (record.deletedAt > record.profile.lastEditTime) {
           await HomeSubtabRepository.upsertTombstone(store, record.profile.uuid, record.deletedAt)
         } else {
+          // A remote envelope can carry a reserved uuid whose name is still its
+          // raw resource key. Resolve it in-transaction so the merge stores the
+          // real label; if the resource is not ready yet, skip only this row
+          // (never store the raw key) so one stale polluted row cannot block the
+          // rest of the sync. The clock/tombstone decision above is unchanged.
+          if (HomeSubtabNames.isKeyName(record.profile.uuid, record.profile.name)) {
+            const resolvedName: string = HomeSubtabNames.defaultNameOrEmpty(record.profile.name)
+            if (resolvedName.length === 0) {
+              DiagnosticLogger.warn('sync', 'home_subtab_remote_key_unresolved',
+                `uuid=${record.profile.uuid}`)
+              continue
+            }
+            record.profile.name = resolvedName
+          }
           await HomeSubtabRepository.upsert(store, record.profile, record.positionIndex)
         }
       }
+      // Repair any reserved-key row already stored locally, in the same transaction.
+      await HomeSubtabRepository.repairResourceNamesWithStore(store)
       store.commit()
     } catch (error) {
       store.rollBack()
@@ -259,6 +277,66 @@ export class HomeSubtabRepository {
     return records
   }
 
+  /**
+   * Repair a reserved built-in/starter row whose stored name is still exactly
+   * its own resource key (a raw-key write from an older build). Only those
+   * exact uuids and exact key names are touched; a custom profile, a genuine
+   * rename, order, hidden, query and tombstones are never rewritten. The clock
+   * is advanced past any incoming future clock so the repair wins the LWW merge.
+   */
+  static async repairResourceNames(context: common.UIAbilityContext): Promise<boolean> {
+    const store: relationalStore.RdbStore = await LocalDataStore.open(context)
+    store.beginTransaction()
+    try {
+      const repaired: boolean = await HomeSubtabRepository.repairResourceNamesWithStore(store)
+      store.commit()
+      return repaired
+    } catch (error) {
+      store.rollBack()
+      throw error as Error
+    }
+  }
+
+  /** Caller owns the transaction, including a sync apply. */
+  static async repairResourceNamesWithStore(store: relationalStore.RdbStore): Promise<boolean> {
+    const rows: relationalStore.ResultSet = await store.querySql(SQL_SELECT_ALL, [SCOPE_GLOBAL])
+    const targets: NhHomeSubtabProfile[] = []
+    try {
+      while (rows.goToNextRow()) {
+        const uuid: string = HomeSubtabRepository.stringColumn(rows, 'profile_uuid')
+        const name: string = HomeSubtabRepository.stringColumn(rows, 'name')
+        const deletedAt: number = Math.floor(HomeSubtabRepository.numberColumn(rows, 'deleted_at'))
+        if (deletedAt !== 0 || !HomeSubtabNames.isKeyName(uuid, name)) {
+          continue
+        }
+        const profile: NhHomeSubtabProfile = new NhHomeSubtabProfile()
+        profile.uuid = uuid
+        profile.name = name
+        profile.lastEditTime = Math.floor(HomeSubtabRepository.numberColumn(rows, 'last_edit_time'))
+        targets.push(profile)
+      }
+    } finally {
+      rows.close()
+    }
+    let repaired: boolean = false
+    for (let index: number = 0; index < targets.length; index++) {
+      const target: NhHomeSubtabProfile = targets[index]
+      const resolved: string = HomeSubtabNames.defaultNameOrEmpty(target.name)
+      if (resolved.length === 0) {
+        continue
+      }
+      const clock: number = Math.max(Date.now(), target.lastEditTime + 1)
+      await store.executeSql(
+        'UPDATE home_subtabs SET name = ?, last_edit_time = ? ' +
+        'WHERE scope_key = ? AND profile_uuid = ? AND name = ? AND COALESCE(deleted_at, 0) = 0 ' +
+        'AND COALESCE(last_edit_time, 0) = ?',
+        [resolved, clock, SCOPE_GLOBAL, target.uuid, target.name, target.lastEditTime],
+      )
+      repaired = true
+    }
+    return repaired
+  }
+
   private static async upsert(
     store: relationalStore.RdbStore,
     profile: NhHomeSubtabProfile,
@@ -267,6 +345,7 @@ export class HomeSubtabRepository {
     if (profile.uuid.length === 0) {
       return
     }
+    HomeSubtabNames.assertPersistable(profile.uuid, profile.name)
     await store.executeSql(SQL_UPSERT, [
       SCOPE_GLOBAL,
       profile.uuid,
