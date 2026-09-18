@@ -3,7 +3,9 @@ import { abilityDelegatorRegistry, Component, Driver, ON } from '@kit.TestKit'
 import { common } from '@kit.AbilityKit'
 import {
   AppStrings, ComicTranslationModelCatalogService, connectLlmSourceProfiles, LLM_CONSUMER_MANGA_TRANSLATION,
-  ComicTranslationRuntimeService, LlmConsumerBinding, LlmSourceSecretVault, supportsMangaTranslation,
+  ComicResponsesCallConfig, ComicResponsesClient, ComicTranslationErrorClassifier,
+  ComicTranslationRuntimeService, LlmConsumerBinding, LlmSourceRuntimeResolver, LlmSourceSecretVault,
+  supportsMangaTranslation,
 } from 'shared'
 
 /**
@@ -82,7 +84,8 @@ export default function readerSelfHostedPublishTrialTest(): void {
   const selectedClass = args['-s class']
   if (typeof work !== 'string' || work.length === 0) return
   if (selectedClass !== 'ReaderSelfHostedPublishTrial' &&
-    selectedClass !== 'ReaderLegacySelfHostedPublishTrial') return
+    selectedClass !== 'ReaderLegacySelfHostedPublishTrial' &&
+    selectedClass !== 'ReaderSelfHostedProviderProbeTrial') return
   if (selectedClass === 'ReaderSelfHostedPublishTrial') {
   describe('ReaderSelfHostedPublishTrial', (): void => {
     it('publishesTheSelfHostedTranslationThroughTheSharedSurface', 0, async (): Promise<void> => {
@@ -228,6 +231,58 @@ export default function readerSelfHostedPublishTrialTest(): void {
     })
   })
   return
+  }
+  if (selectedClass === 'ReaderSelfHostedProviderProbeTrial') {
+    describe('ReaderSelfHostedProviderProbeTrial', (): void => {
+      it('classifiesTheBoundMangaSourceTextCall', 0, async (): Promise<void> => {
+        const delegator = abilityDelegatorRegistry.getAbilityDelegator()
+        // The host restores its persisted LLM profiles on EntryAbility create, so
+        // the app must be running before the binding can be derived in-process.
+        await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility' })
+        for (let attempt: number = 0; attempt < 80; attempt++) {
+          if (connectLlmSourceProfiles().profiles.length > 0) break
+          await new Promise<void>((resolve: () => void): void => { setTimeout(resolve, 250) })
+        }
+        // The Reader reads the secret vault through its UIAbility context; an app
+        // context cannot read the same key, so the probe must match the Reader.
+        let context: common.UIAbilityContext | null = null
+        for (let attempt: number = 0; attempt < 80 && context === null; attempt++) {
+          try {
+            const ability = await delegator.getCurrentTopAbility()
+            if (ability.context.abilityInfo.name === 'EntryAbility') {
+              context = ability.context as common.UIAbilityContext
+            }
+          } catch (_) {}
+          if (context === null) await new Promise<void>((resolve: () => void): void => { setTimeout(resolve, 250) })
+        }
+        if (context === null) throw new Error('EntryAbility context unavailable')
+        const boundManga = await bindExistingMangaSourceInProcess('')
+        delegator.print('[ProviderProbe] bind=' + boundManga)
+        // Read-only, non-secret classification of the bound source's own text
+        // call. It reuses the exact resolver and client the Reader uses, with a
+        // tiny text-only prompt, so the recorded code identifies whether the
+        // host LLM 5xx is an endpoint/credential condition rather than a
+        // manga-payload condition. No user setting is written.
+        try {
+          const runtime = await LlmSourceRuntimeResolver.resolveManga(context, false)
+          delegator.print('[ProviderProbe] source=' + runtime.sourceProfileId.substring(0, 8) +
+            ' type=' + runtime.sourceType + ' model=' + runtime.modelId +
+            ' baseScheme=' + (runtime.baseUrl.indexOf('https://') === 0 ? 'https' : 'other'))
+          const config = new ComicResponsesCallConfig()
+          config.providerId = runtime.providerId()
+          config.baseUrl = runtime.baseUrl
+          config.model = runtime.modelId
+          config.accessToken = runtime.apiKey
+          const startedAt = Date.now()
+          await ComicResponsesClient.requestJson('Reply with the single JSON object {"ok":true}.', '', config)
+          delegator.print('[ProviderProbe] textOnly=ok ms=' + (Date.now() - startedAt))
+        } catch (error) {
+          delegator.print('[ProviderProbe] textOnly=failed code=' +
+            ComicTranslationErrorClassifier.classify(error as Error))
+        }
+      })
+    })
+    return
   }
   describe('ReaderLegacySelfHostedPublishTrial', (): void => {
     it('publishesTheSelfHostedTranslationThroughTheLegacyReader', 0, async (): Promise<void> => {
