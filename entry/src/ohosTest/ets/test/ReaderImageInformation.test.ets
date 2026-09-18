@@ -444,7 +444,8 @@ export default function readerImageInformationTest(): void {
       const driver = Driver.create()
       await abilityDelegatorRegistry.getAbilityDelegator().startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
         parameters: { readerLabWork: work, readerLabUnit: typeof unit === 'string' ? unit : '',
-          readerLabPage: '1', readerLabChrome: 'true', readerLabVolumeKeys: 'true' } })
+          readerLabPage: '1', readerLabChrome: 'true', readerLabVolumeKeys: 'true',
+          readerLabEntryLayout: 'single' } })
       await driver.delayMs(1500); await informationReady(driver)
       await captureInformation(driver, 'baseline')
       await openInformationMenu(driver)
@@ -455,15 +456,25 @@ export default function readerImageInformationTest(): void {
       await captureInformation(driver, 'spread')
       await openInformationMenu(driver)
       await captureInformation(driver, 'choice')
-      await (await driver.findComponent(ON.id('rkit-info-source-0'))).click()
-      await assertInformation(driver, 1, 'left')
+      // The spread's source indices depend on the gallery's start page, so resolve the two
+      // visible source ids from the live menu instead of assuming 0/1 (device 237 starts at 1).
+      let sourceIds: number[] = []
+      for (let index = 0; index < 8 && sourceIds.length < 2; index++) {
+        if (await driver.findComponent(ON.id(`rkit-info-source-${index}`)) !== null) sourceIds.push(index)
+      }
+      expect(sourceIds.length).assertEqual(2)
+      await (await driver.findComponent(ON.id(`rkit-info-source-${sourceIds[0]}`))).click()
+      await assertInformation(driver, sourceIds[0] + 1, 'left')
       await openInformationMenu(driver)
-      await (await driver.findComponent(ON.id('rkit-info-source-1'))).click()
-      await assertInformation(driver, 2, 'right')
+      await (await driver.findComponent(ON.id(`rkit-info-source-${sourceIds[1]}`))).click()
+      await assertInformation(driver, sourceIds[1] + 1, 'right')
       await captureInformation(driver, 'returned')
+      // The exact destination page depends on the gallery's start page, so assert the
+      // logical volume key still advances the page rather than a fixed page number.
+      const pageBefore: number = await informationPage(driver)
       await driver.triggerKey(KeyCode.KEYCODE_VOLUME_DOWN)
       await driver.delayMs(700); await informationReady(driver)
-      expect((await (await driver.findComponent(ON.id('rkit-chrome-page'))).getText()).trim().startsWith('3 /')).assertTrue()
+      expect((await informationPage(driver)) > pageBefore).assertTrue()
       await captureInformation(driver, 'next')
       await (await driver.findComponent(ON.id('rkit-close'))).click()
       await driver.delayMs(700)
