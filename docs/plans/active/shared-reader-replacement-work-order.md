@@ -48,6 +48,8 @@ Package 5 的下一动作（收敛，不重跑全矩阵）：只按**实际变�
 - **一处非缺陷环境依赖**：NextN `scripts/test_reader_tap_zone_handoff_runtime.mjs` 默认读 sibling `../NextE`、`../Koma`；在 worktree 布局下未设 `NEXTE_READER_ROOT`/`KOMA_READER_ROOT` 时会 ENOENT。设对路径后 **PASS（1404 项断言）**，与产品或 pin 无关。
 - **范围**：以上只证明源码候选与契约自洽，**不构成真机/视觉验收**，也不改变任何已记录的真机边界。
 
+- **候选无产品源码变更 ⇒ 旧门禁仍有效（2026-09-19 复核）**：自三宿主各自的最后一次产品源码变更点以来，`entry/src/main` + `feature` + `shared/src/main` 的 diff 为 **0 文件**——NextN 自 `752f92fa`（P13 落地记录）起、NextE 自 `e03c22eb`（隐藏页翻译对等修复）起、Koma 无新提交（`9489ea5e`）。因此本会话新增的三端提交全部落在文档/测试侧，reader-kit pin 未变，三宿主 release fail-closed 门禁未被触及，其证据仍有效：`.hvigor/outputs/nextn-rv-release-2594d6f-b/run/reading.json`、`.hvigor/outputs/nexte-rv-release-2594d6f/run6/reading.json`、`.hermes-artifacts/20260918-koma-release-2594d6f/run3/reading.json`（三处实测存在）。这不构成新的真机验收，只说明已记录的门禁未被源码变更作废。
+
 ## 交付状态汇总（每宿主最终结论 + 剩余阻断；不新建队列）
 
 当前可交付候选：三宿主阅读器分支的 reader-kit submodule **同 pin `2594d6f`**（NextN / NextE / Koma 实测一致）；NextN 与 NextE 的本地 `main` 仍 pin `5e5cb4c`/`e4010f9`（不含阅读器迁移）。旧阅读器仍默认且 release fail-closed 可回退，共享阅读器经普通入口可选（现有选择机制未改，未擅翻发布默认）。下列每行给出结论、剩余阻断、证据路径与停止条件；`ACCEPTED` 是记录不是新证明，不为审阅重跑全矩阵。
