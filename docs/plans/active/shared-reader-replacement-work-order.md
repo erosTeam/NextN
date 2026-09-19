@@ -19,6 +19,11 @@ deletes user data.
 
 进度板行状态口径（2026-09-19）：下表 P1—P12 与 **P15** 均为 ACCEPTED。P15「裁边强度」未进入共享裁边链是 2026-09-19 新发现的宿主缺口，已在 237 真机闭合；其行内证据与状态取代任何把它视为未决的旧表述。
 
+P16 三宿主复验状态（2026-09-19，reader-kit 7fbf6b0，三端 pin 均已同步）：
+NextN 在 237 以普通共享入口复验通过（nextn-237-p16-cropsetting2，initialCropped=true croppedAfterHostSwitchOff=false，页码保持 3，Pass 1；修复前同路径为 true 且失败，见 nextn-237-p16-cropsetting）；
+NextE 在 237 以普通入口复验通过（nexte-237-p16-cropsetting，page=4 initialCropped=true croppedAfterHostSwitchOff=false，Pass 1）；
+Koma 经源码核实不适用（其宿主阅读设置面板 ReaderSettingsContent.ets 不含裁边行，ReaderPreferencesStore.saveTrimPageMarginsEnabled 无任何调用者；Koma 用户改裁边只能走共享运行菜单 rkit-crop-toggle，该路径本就走 setCropEnabled，故 P16 描述的宿主设置面板路径在 Koma 不存在）。
+
 | P16 | 公共(reader-kit) | 阅读器内宿主设置面板切换「自动裁剪页面留边」时，共享阅读面应像 legacy 一样**即时**应用开关（在阅读中改设置 → 当前页立刻按新开关显示） | `reader-ui/ReaderSurface.ets` `@Monitor('cropPolicy')` + `reader-core/ReaderPagedSession.setCropEnabled` | **2026-09-19 已闭合（reader-kit `7fbf6b0`）**。源码级反例：legacy `feature/reader/src/main/ets/pages/ReaderPage.ets:868`（分页）与 `:1708`（连续）均有 `@Monitor('cropBordersEnabled', 'cropStrength', ...)` → `updateCropBounds`，宿主设置一变即重算；共享面 `ReaderSurface.onCropPolicyChanged()` 只比较 `cropPolicy.sourceRevision`，revision 未变时提前 return，而 `setCropEnabled` 仅在 `aboutToAppear` 与共享运行菜单 `toggleCrop` 调用，因此「阅读器内宿主设置面板改裁边开关」这条路径不生效。**真机判别（237，`nextn-237-p16-cropsetting`）**：共享面开启裁边后仅翻转宿主 `setCropBordersPaged(false)`，页面仍旧保持裁边 → `initialCropped=true croppedAfterHostSwitchOff=true`，试次失败，证明是真实缺口而非设计无关。**修复**：`onCropPolicyChanged()` 先无条件应用 `setCropEnabled(cropPolicy.enabled)`（值未变时幂等），再按 revision 决定是否 `refreshCrop()`；`reader-kit/tests/reader-surface-input.test.cjs` 的旧断言改为一并断言「开关与 revision 都能到达保留页」，reader-kit 全量 `437/437`。**修复后真机（237，`nextn-237-p16-cropsetting2`，reader-kit `7fbf6b0`）**：同一路径 `initialCropped=true croppedAfterHostSwitchOff=false`，页码保持 `3`，`Tests run: 1, Failure: 0, Error: 0, Pass: 1`。三宿主共用该 `reader-ui`，NextN pin 已更新到 `7fbf6b0`。 | **ACCEPTED（NextN 已复验；NextE/Koma 的 pin 同步后需各自复跑本试次对应路径）** | NextE、Koma 更新 `third_party/reader-kit` pin 到 `7fbf6b0` 并各自复验「阅读器内改裁边开关即时生效」。 |
 
 | ID | 宿主/公共 | 旧阅读器真实能力与语义 | 新实现位置 | 已有证据 | 状态 | 唯一下一动作 |
