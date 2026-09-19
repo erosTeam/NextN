@@ -87,6 +87,7 @@ export struct NextNReaderLabPage {
   @Local private labVisibility: ReaderLabVisibilityState = connectReaderLabVisibility()
   @Local private readerPresentation: ReaderPresentationState = connectReaderPresentation()
   @Local private readerThumbnailTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
+  @Local private chromeRepublishToken: number = 0
   @Local private themeDisplay: ThemeDisplayState = connectThemeDisplay()
   @Local private routeActive: boolean = false
   @Local private safeArea: LayoutSafeAreaState = connectLayoutSafeArea()
@@ -240,7 +241,10 @@ export struct NextNReaderLabPage {
       console.info(`[NextNReaderLab] initial_policy gallery=${galleryId} database=${context.databaseDir} column=${column} cover=${policy.firstPageAlone} layout=${policy.layout} axis=${policy.pagingAxis} direction=${policy.direction} spread=${policy.spreadLayout}`)
       this.presentationReady = true
       if (this.embedded) {
-        this.onReaderPresentationChanged(true, this.readerPresentation.fullscreen, this.readerCanvasDark())
+        // Pre-mount record must match the chrome the surface actually opens with
+        // (initialChromeVisible below); the surface publishes its own initial value
+        // on mount, so the host never keeps a contrary default here.
+        this.onReaderPresentationChanged(false, this.readerPresentation.fullscreen, this.readerCanvasDark())
       }
       // ReaderSurface opens on mount: never publish a default session and change it after first open.
       this.session = session
@@ -402,6 +406,15 @@ export struct NextNReaderLabPage {
     if (this.readerPresentation.backgroundMode === NhReaderBackgroundMode.WHITE) return false
     if (this.readerPresentation.backgroundMode === NhReaderBackgroundMode.AUTO) return this.themeDisplay.effectiveDark
     return true
+  }
+
+  // Mirror the legacy ReaderPage presentation monitors: a fullscreen/background
+  // flip must reach the window through the surface's authoritative chrome event,
+  // not wait for the next chrome toggle.
+  @Monitor('readerPresentation.fullscreen', 'readerPresentation.backgroundMode',
+    'themeDisplay.effectiveDark')
+  syncReaderPresentationWindow(): void {
+    this.chromeRepublishToken += 1
   }
 
   private readerCanvasBackground(): ResourceColor {
@@ -869,11 +882,11 @@ export struct NextNReaderLabPage {
               tapPolicy: new ReaderTapPolicy(
                 (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout)),
               autoReadPolicy: new ReaderAutoReadPolicy(true, this.readerPresentation.autoPageSeconds),
-              // The ordinary production entry must open chrome-hidden exactly like the
-              // legacy ReaderPage. Only the Debug Lab request (labRequest non-null)
-              // asks for the bars on the first frame so automation can reach them
-              // without a synthetic tap.
-              initialChromeVisible: this.labRequest !== null,
+              // Every reader experience entry opens chrome-hidden exactly like the
+              // legacy ReaderPage. Automation that needs the menus reveals them
+              // with a real tap instead of changing the user's initial experience.
+              initialChromeVisible: false,
+              chromeRepublishToken: this.chromeRepublishToken,
               pageTurnAnimation: this.labRequest?.pageTurnAnimationOverride ?? this.readerPresentation.pageTurnAnimation,
               preloadDepth: this.readerPresentation.preloadPages,
               variantPolicy: new ReaderVariantPolicy(new ReaderVariantPreference(
