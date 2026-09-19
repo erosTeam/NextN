@@ -89,9 +89,9 @@ Package 5 的下一动作（2026-09-19 用户收敛约束后修订）：**只做
 
 | 宿主 | 分支 | head | 匹配构建产物（debug） | 相对上次 pin 的产品源码差异 |
 | --- | --- | --- | --- | --- |
-| NextN | `codex/shared-reader-refactor` | `99a6d690` | `entry/build/default/outputs/default/entry-default-signed.hap`（48,165,158 B）+ `ohosTest/entry-ohosTest-signed.hap` | P15 裁边强度入链、P16 pin、合入 main 的 WebDAV 同步修复 |
+| NextN | `codex/shared-reader-refactor` | 产品源码 `fed7f70e`（其后为文档/测试提交 `ade5c584`/`99a6d690`/`15fdd627`/`fe946a5c`） | `entry/build/default/outputs/default/entry-default-signed.hap`（48,165,159 B）+ `ohosTest/entry-ohosTest-signed.hap` | P15 裁边强度入链、P16 pin、合入 main 的 WebDAV 同步修复 |
 | NextE | `codex/shared-reader-refactor` | `5b005dec` | `entry/build/default/outputs/default/entry-default-signed.hap`（63,761,495 B）+ `ohosTest/entry-ohosTest-signed.hap` | 隐藏页翻译动作修复、P16 pin、合入 main 的 WebDAV 同步修复 |
-| Koma | `codex/koma-reader-refactor` | `e36381cf` | `entry/build/default/outputs/default/entry-default-signed.hap`（15,065,667 B） | P16 pin（无该路径，见例外） |
+| Koma | `codex/koma-reader-refactor` | `e36381cf` | `entry/build/default/outputs/default/entry-default-signed.hap`（15,065,670 B） | P16 pin（无该路径，见例外） |
 
 Koma 产物说明：本轮接手时该 HAP 的 mtime（11:38）早于它自己的 pin 提交（`e36381cf`，11:39），所以产物是否对应当前候选需要独立判定。**判定产物不能只看整包 md5**——实测整包 md5 在重编之间不稳定（同一源码连续 3 次重编得同一 md5 `a426a76d`，但更早两次重编得到 `38e7bf0d`，即打包/签名段并不可复现）。改用内容判定：解出 HAP 内 `ets/modules.abc` 比对——当前磁盘产物 `b0afd897…`（7,137,172 B）与**在 `third_party/reader-kit` 检出 `7fbf6b0` 后的构建一致**，而与检出 `2594d6f` 后的构建（`9305de54…`，7,137,032 B）**不同**。故当前产物确为当前候选；这不改变任何已记录的真机结论。
 
