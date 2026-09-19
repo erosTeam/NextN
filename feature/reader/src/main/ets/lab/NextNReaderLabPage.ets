@@ -36,7 +36,7 @@ import { NextNReaderProgressWriteGate } from './NextNReaderProgressWriteGate'
 import { NextNReaderProgressPersistence } from './NextNReaderProgressPersistence'
 import { NextNReaderHostRequest } from './NextNReaderHostRequest'
 import { NextNProductionReaderDataSource } from './NextNReaderDataSource'
-import { connectReaderOverlayNavigation } from 'shared'
+import { connectReaderOverlayNavigation, connectReaderThumbnailTransition, ReaderThumbnailTransitionState } from 'shared'
 import {
   NextNReaderProductionFailureProbe,
   NextNReaderProductionFailureProbeProvider,
@@ -52,6 +52,7 @@ import {
   NextNReaderTranslationProvider,
 } from './NextNReaderTranslationProvider'
 import { connectNextNReaderTranslationProbe } from './NextNReaderTranslationProbe'
+import { ReaderThumbnailTransitionCoordinator } from 'shared'
 
 @ComponentV2
 export struct NextNReaderLabPage {
@@ -85,6 +86,7 @@ export struct NextNReaderLabPage {
   private mediaActions: ReaderMediaActions = new ReaderMediaActions()
   @Local private labVisibility: ReaderLabVisibilityState = connectReaderLabVisibility()
   @Local private readerPresentation: ReaderPresentationState = connectReaderPresentation()
+  @Local private readerThumbnailTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
   @Local private themeDisplay: ThemeDisplayState = connectThemeDisplay()
   @Local private routeActive: boolean = false
   @Local private safeArea: LayoutSafeAreaState = connectLayoutSafeArea()
@@ -246,6 +248,24 @@ export struct NextNReaderLabPage {
     } catch (_error) {
       console.warn('[NextNReaderLab] initial_reader_policy_unavailable')
       if (!this.volumeDisposed && !this.closeRequested && !this.hostClosing) this.closeTrial(true)
+    }
+  }
+
+  @Builder
+  private ReaderOpeningPlaceholder() {
+    if (this.readerThumbnailTransition.readerOpeningProxyVisible() &&
+      this.readerThumbnailTransition.sourceSnapshot !== undefined) {
+      Image(this.readerThumbnailTransition.sourceSnapshot)
+        .width(this.readerThumbnailTransition.proxyWidth)
+        .height(this.readerThumbnailTransition.proxyHeight)
+        .objectFit(ImageFit.Fill)
+        .syncLoad(true)
+        .position({
+          x: this.readerThumbnailTransition.proxyX,
+          y: this.readerThumbnailTransition.proxyY,
+        })
+        .opacity(this.readerThumbnailTransition.openingProxyOpacity)
+        .hitTestBehavior(HitTestMode.None)
     }
   }
 
@@ -726,6 +746,11 @@ export struct NextNReaderLabPage {
       this.translationPreferenceRevision += 1
     }
     this.progressWrites.save(this.progressEpoch, this.request.work, pageIndex)
+    ReaderThumbnailTransitionCoordinator.notifyReaderImageReady(
+      this.getUIContext(),
+      this.request.work,
+      pageIndex + 1,
+    )
     console.info(`[NextNReaderLab] observed_progress gallery=${this.request.work} page=${pageIndex}`)
   }
 
@@ -844,6 +869,11 @@ export struct NextNReaderLabPage {
               tapPolicy: new ReaderTapPolicy(
                 (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout)),
               autoReadPolicy: new ReaderAutoReadPolicy(true, this.readerPresentation.autoPageSeconds),
+              // The ordinary production entry must open chrome-hidden exactly like the
+              // legacy ReaderPage. Only the Debug Lab request (labRequest non-null)
+              // asks for the bars on the first frame so automation can reach them
+              // without a synthetic tap.
+              initialChromeVisible: this.labRequest !== null,
               pageTurnAnimation: this.labRequest?.pageTurnAnimationOverride ?? this.readerPresentation.pageTurnAnimation,
               preloadDepth: this.readerPresentation.preloadPages,
               variantPolicy: new ReaderVariantPolicy(new ReaderVariantPreference(
@@ -880,6 +910,8 @@ export struct NextNReaderLabPage {
                 (policy, intent): void => { this.persistRuntimePolicy(policy, intent) },
                 (enabled, policy): void => { this.persistCrop(enabled, policy) }),
               entryTransition: this.entryTransition, entryPreview: this.entryPreview,
+              contentOpacity: this.readerThumbnailTransition.readerImageOpacity(this.request.pageIndex + 1),
+              openingPlaceholder: (): void => { this.ReaderOpeningPlaceholder() },
               active: this.hostRouteActive() && this.labVisibility.foreground && !this.readerSettingsSheetShown,
               closing: this.closeRequested || this.hostClosing,
               beforeShowChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareChromeShow(isCurrent),

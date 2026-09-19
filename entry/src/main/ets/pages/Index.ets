@@ -761,29 +761,32 @@ struct Index {
     }
     this.productionReaderEntryGalleryId = source.galleryId
     this.productionReaderEntryPageIndex = source.pageIndex
-    this.productionReaderEntryPreview = preview
-    this.productionReaderEntryTransition = preview === null ? null : new ReaderEntryTransition(epoch,
-      new ReaderDisplayPart(new ReaderUnitKey('nh', source.galleryId.toString(), source.galleryId.toString()),
-        null, source.pageIndex))
-    if (preview === null) {
-      this.productionReaderEntryClaim = null
-      this.productionReaderEntryPendingGalleryId = 0
-      this.productionReaderEntryPendingPageIndex = -1
-    }
-    ReaderThumbnailTransitionCoordinator.armSharedReturn(
-      this.getUIContext(), source, detailSeed.pages[source.pageIndex],
+    preview?.release()
+    this.productionReaderEntryPreview = null
+    this.productionReaderEntryClaim = null
+    this.productionReaderEntryPendingGalleryId = 0
+    this.productionReaderEntryPendingPageIndex = -1
+    this.productionReaderEntryTransition = null
+    ReaderThumbnailTransitionCoordinator.open(
+      this.getUIContext(),
+      source.sourceScope(),
+      source.galleryId.toString(),
+      source.pageIndex,
+      detailSeed.pages[source.pageIndex],
+      (animated: boolean): void => {
+        this.readerOverlay.stageDetailSeed(detailSeed)
+        try {
+          this.openReaderOverlay(new ReaderRouteParams(
+            source.galleryId,
+            source.pageIndex,
+            0,
+            NextNReaderBackend.SHARED,
+          ), animated)
+        } finally {
+          this.readerOverlay.discardStagedDetailSeed(source.galleryId)
+        }
+      },
     )
-    this.readerOverlay.stageDetailSeed(detailSeed)
-    try {
-      this.openReaderOverlay(new ReaderRouteParams(
-        source.galleryId,
-        source.pageIndex,
-        0,
-        NextNReaderBackend.SHARED,
-      ), false)
-    } finally {
-      this.readerOverlay.discardStagedDetailSeed(source.galleryId)
-    }
   }
 
   private openReaderOverlay(params: ReaderRouteParams, animated: boolean = true): void {
@@ -2732,8 +2735,11 @@ struct Index {
   }
 
   onBackPress(): boolean {
-    // Direct shared Reader has no native destination to consume system Back;
-    // delegate to its registered controller before closing the shell route.
+    // Both backends own a real HDS destination, and that destination's own
+    // onBackPressed already forwards to the same controller. This shell guard
+    // is the same owner, not a second one: it keeps a Back delivered to the
+    // shell (rather than consumed by the nested overlay navigation) from
+    // closing the route under a live Reader.
     if (this.readerOverlay.visible && this.readerOverlay.activeReader !== null) {
       if (this.readerBackRequest !== null) return this.readerBackRequest()
       this.closeReaderDestination(true)
@@ -3083,12 +3089,11 @@ struct Index {
 
   private handleGalleryDetailBackPressed(route: GalleryRouteParams): boolean {
     if (this.cancelSourceEntryPending(route.galleryId)) return true
-    // The shared Reader is mounted as a shell overlay above this Gallery
-    // destination, so the system Back reaches this destination before the
-    // page-level onBackPress. While a shared Reader is active, close it with
-    // its registered controller instead of popping the Gallery beneath it.
-    // Legacy Reader is its own destination (activeReader is null), so this is
-    // inert for the legacy/default backend.
+    // The Reader overlay is a sibling surface above this Gallery destination in
+    // the root stack, so a Back delivered to this destination while a shared
+    // Reader is live must close the Reader through its registered controller
+    // instead of popping the Gallery beneath it. Legacy Reader keeps
+    // `activeReader === null`, so this stays inert for that backend.
     if (this.readerOverlay.visible && this.readerOverlay.activeReader !== null) {
       if (this.readerBackRequest !== null) return this.readerBackRequest()
       this.closeReaderDestination(true)
@@ -3332,9 +3337,8 @@ struct Index {
     this.readerDestinationCloseDispatched = false
     this.readerDestinationRouteEpoch = params.routeEpoch
     this.readerDestinationShownAtMs = Date.now()
-    if (params.backend === NextNReaderBackend.LEGACY) {
-      ReaderThumbnailTransitionCoordinator.startOpening(this.getUIContext(), params.galleryId.toString())
-    }
+    // Both backends hand off to the root transition flight proxy on shown
+    ReaderThumbnailTransitionCoordinator.startOpening(this.getUIContext(), params.galleryId.toString())
     if (this.readerPresentationPending &&
       this.readerPresentationRouteEpoch === this.readerDestinationRouteEpoch) {
       this.applyRecordedReaderPresentation()
@@ -3362,23 +3366,6 @@ struct Index {
       this.retireProductionReaderEntry()
     }
     this.readerOverlay.finishClose()
-  }
-
-  @Builder
-  private directSharedReaderOverlay(params: ReaderRouteParams) {
-    Stack() {
-      this.sharedReaderBody(params)
-    }
-    .width('100%')
-    .height('100%')
-    .backgroundColor(Color.Transparent)
-    .opacity(this.productionReaderEntryTransition?.phase === 'layout' ? 0 :
-      this.readerThumbnailTransition.overlayOpacity)
-    .animation({ duration: this.productionReaderEntryTransition === null ? 0 : 140, curve: Curve.Linear })
-    .hitTestBehavior(this.productionReaderEntryTransition?.phase === 'layout' ?
-      HitTestMode.None : HitTestMode.Default)
-    .onAppear((): void => { this.readerRouteShown(params) })
-    .onDisAppear((): void => { this.readerRouteDisappeared(params) })
   }
 
   @Builder
@@ -4897,34 +4884,32 @@ struct Index {
           .hitTestBehavior(HitTestMode.None)
       }
 
-      // Keep the production-safe legacy route on its accepted synchronous HDS
-      // admission path. Shared Reader owns a separate, explicitly selected
-      // direct host so its layout or initialization can never block legacy.
+      // Both backends are admitted by the same checked HDS push, so the shared
+      // Reader keeps the host's own destination transition instead of appearing
+      // in a single hard-cut frame. Each session still gets its own Reader
+      // destination because the route name carries the mount epoch.
       if (this.readerOverlay.visible) {
-        if (this.readerOverlay.activeReader !== null) {
-          ForEach([this.readerOverlayMountEpoch], (_epoch: number) => {
-            Stack() {
-              this.directSharedReaderOverlay(this.readerOverlay.activeReader as ReaderRouteParams)
-            }
-            .width('100%')
-            .height('100%')
-            .id(`reader-overlay-host-${_epoch}`)
-          }, (epoch: number): string => `${epoch}`)
-        } else {
-          HdsNavigation(this.readerOverlay.stack) {
-            Column() {}
-          }
-          .navDestination(this.readerOverlayRouterMap)
-          .hideNavBar(true)
-          .width('100%')
-          .height('100%')
-          .backgroundColor(Color.Transparent)
-          .opacity(this.readerThumbnailTransition.overlayOpacity)
-          .onAppear((): void => {
-            this.readerOverlay.presentPendingReader(this.readerOverlayMountEpoch)
-          })
-          .id('reader-overlay-navigation')
+        HdsNavigation(this.readerOverlay.stack) {
+          Column() {}
         }
+        .navDestination(this.readerOverlayRouterMap)
+        .hideNavBar(true)
+        .width('100%')
+        .height('100%')
+        .backgroundColor(Color.Transparent)
+        // The production thumbnail entry arms the forward flight before the
+        // reader content has laid out. While that entry is still in its layout
+        // phase the destination must neither paint over the still-visible
+        // Detail nor take input; the flight proxy owns both until handoff. The
+        // ordinary entry carries no entry transition and is unaffected.
+        .opacity(this.productionReaderEntryTransition?.phase === 'layout' ? 0 :
+          this.readerThumbnailTransition.overlayOpacity)
+        .hitTestBehavior(this.productionReaderEntryTransition?.phase === 'layout' ?
+          HitTestMode.None : HitTestMode.Default)
+        .onAppear((): void => {
+          this.readerOverlay.presentPendingReader(this.readerOverlayMountEpoch)
+        })
+        .id('reader-overlay-navigation')
       }
       IndexReaderThumbnailTransitionProxy({ state: this.readerThumbnailTransition })
       if (this.readerTrialRequest !== null) {

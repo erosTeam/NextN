@@ -237,13 +237,23 @@ function setup({ deferRestore = false, readiness = 'not-required', backend = 'le
     console: { info: message => logs.push(message) },
     ReaderRouteParams,
     ReaderDisplayPart: class {},
-    ReaderEntryTransition: class {},
+    ReaderEntryTransition: class {
+      constructor() { this.phase = 'layout' }
+      arrived() { this.phase = 'waiting' }
+      reveal() { this.phase = 'revealing' }
+      finish() { this.phase = 'finished' }
+      cancel() { this.phase = 'cancelled' }
+    },
     ReaderUnitKey: class {},
     NextNReaderBackend: { SHARED: 'shared', LEGACY: 'legacy' },
     ReaderThumbnailTransitionCoordinator: class {
       static armSharedReturn(_uiContext, source, image) {
         sharedReturnArms.push({ source, image })
         return true
+      }
+      static open(_uiContext, scope, galleryId, pageIndex, image, openReader) {
+        sharedReturnArms.push({ source, image })
+        openReader(true)
       }
     },
     connectNextNReaderBackendSelection: () => ({ current: () => backend }),
@@ -318,12 +328,14 @@ test('production measurement failure opens shared reader without a fabricated tr
   assert.deepEqual(value.overlayPresentations, [])
   assert.doesNotMatch(index, /@Monitor\('readerOverlayMountEpoch'\)/,
     'legacy admission must not wait on the shared host layout')
+  // Both backends are admitted by the same checked HDS push, so the shared Reader
+  // inherits the host's destination transition instead of a direct hard-cut host.
   assert.match(index,
-    /if \(this\.readerOverlay\.activeReader !== null\) \{[\s\S]*ForEach\(\[this\.readerOverlayMountEpoch\][\s\S]*this\.directSharedReaderOverlay/)
-  assert.match(index,
-    /else \{[\s\S]*HdsNavigation\(this\.readerOverlay\.stack\)[\s\S]*\.onAppear\(\(\): void => \{[\s\S]*this\.readerOverlay\.presentPendingReader\(this\.readerOverlayMountEpoch\)/,
-    'legacy Reader must mount synchronously from the accepted HDS onAppear path')
-  assert.match(index, /\.id\(`reader-overlay-host-\$\{_epoch\}`\)/)
+    /if \(this\.readerOverlay\.visible\) \{[\s\S]*HdsNavigation\(this\.readerOverlay\.stack\)[\s\S]*\.onAppear\(\(\): void => \{[\s\S]*this\.readerOverlay\.presentPendingReader\(this\.readerOverlayMountEpoch\)/,
+    'every Reader backend must mount synchronously from the accepted HDS onAppear path')
+  assert.doesNotMatch(index, /directSharedReaderOverlay/,
+    'the shared Reader must not mount outside the host navigation')
+  assert.doesNotMatch(index, /reader-overlay-host-/, 'no separate direct shared host remains')
   assert.match(index, /\.id\('reader-overlay-navigation'\)/)
   assert.equal(value.host.productionReaderEntryClaim, null)
   assert.equal(value.host.productionReaderEntryTransition, null)

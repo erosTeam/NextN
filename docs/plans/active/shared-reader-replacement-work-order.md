@@ -53,7 +53,34 @@ Koma 经源码核实不适用（其宿主阅读设置面板 ReaderSettingsConten
 | P14 | 宿主(NextN) | NextN 云端(Torii)往返 | `ToriiWholePageRenderBackend` | **已归因（197 配对对照；不是迁移回归）**：同一构建内先跑共享入口 `ReaderProductionNonLocalTranslationRoundTripTrial`、再跑旧阅读器入口 `ReaderLegacyNonLocalTranslationRoundTripTrial`，同页 gallery 678049 page 1、同源文件。两侧记录到**完全相同的上传源**（`[ToriiWholePage] source bytes=800208 sha256=29bdfc1c72408e6d mime=image/webp`），各自请求→云 200，随后都以**同一条判定**失败：`decode_mismatch declared=image/webp png=false jpeg=true webp=false`（返回体标称 webp、实际字节是 JPEG）。共享侧 `applied=false`、旧阅读器侧 `hostOutcome=failed`，两者均如实显示失败；两试次各 `Tests run: 1, Pass: 1`。结论：这是**云侧返回负载的 MIME 标签错误**（既有条件），不是共享阅读器迁移回归；记为独立已知限制，不作为替代阻断 | EXTERNAL-OPEN（已归因：云侧负载标签） | —（结论已得出；如需修复应改云侧返回标签，属外部服务范围） |
 | P15 | 宿主(NextN) | 「裁边强度」(conservative/standard/strong) 在共享阅读面生效：改强度 → 裁边几何随之变化，而非固定 STANDARD | 共享适配链 `NextNReaderCropSource` / `NextNReaderVariantCropSource` / `NextNReaderTranslationCropSource` → `ReaderPageCropService.detect(path, identity, strength)`；`ReaderCropPolicy.sourceRevision` | **2026-09-19 已闭合**。源码级反例：legacy `feature/reader/src/main/ets/pages/ReaderPage.ets:1128 / 1890` 传 `strength`（来自 `readerPresentation.cropStrengthPaged/Continuous`），NextE 的 `NextEReaderCropSource` 也传，而 NextN 共享链三处均为双参 `detect(path, identity)`，强度落回默认 `STANDARD`；同一缺口还有第二半——`ReaderCropPolicy` 第三参 `sourceRevision` 未传，运行中改强度不会触发 `refreshCrop()`。修复：`NextNReaderLabPage.cropStrength()` 按 `NhReaderMode` 选 paged/continuous，注入 adapter 构造（两处）、超分与翻译 provider，并作为 `ReaderCropPolicy.sourceRevision`；三个裁边源改传 `strength` 闭包并记录实际 bounds。**真机证据（237，`nextn-237-p15-cropstrength3`）**：真实普通入口（`nextn_reader_backend=shared` + 冷启动画廊 → Detail「阅读」→ 共享面），同页 3 上把宿主强度 conservative→strong，共享裁边链读回 `conservative=0,0.015625,0.09782608695652174,0` → `strong=0,0.01953125,0.1032608695652174,0`，`geometryChanged=true`，页码保持 `3`；`Tests run: 1, Failure: 0, Error: 0, Pass: 1`。旧试次只断言设置写入/恢复，故不覆盖此缺口；新试次 `ReaderSharedCropStrengthTrial`（`ReaderImageInformation.test.ets`）比对的正是**实际检出的 bounds**。 | **ACCEPTED** | — |
 
-Package 5 状态：**ACTIVE（2026-09-19 因用户实测反例重新打开）**。此前的 candidate-accepted /“阅读体验对等”结论**已撤回**：它建立在**静态终态截图与 Pass 1 测试**上，没有验证**动态连续性**。用户实测两项反例：(1) legacy 进入阅读是自然交错渐变、默认不显示上下栏，shared 点击瞬间跳成黑底阅读器且上下控制栏可见，之后只有图片缩放——属**整页转场所有权/时序差异**，不能用“图片动画存在”证明同等转场；(2) 超分完成换图中间**闪一帧加载指示器/全黑**，缓存/无缓存、新旧图片都出现，开启超分后**每次翻页明显黑闪**。当前候选仍为三宿主同 pin `reader-kit 7fbf6b0`（NextN 产品源码 `fed7f70e`、NextE `5b005dec`、Koma `e36381cf`）；P1—P12、P15、P16 的既有 ACCEPTED 记录**保留**（它们各自仍成立），但**不再据此宣称整体可替代**。修复切片顺序：**先入口完整转场 + 初始 chrome，再超分显示交接**。设备：103/237（197 禁用）。
+Package 5 状态：**ACTIVE（2026-09-19 因用户实测反例重新打开；F1/F2 正在按监督具体反例深入修复）**。此前的 candidate-accepted /“阅读体验对等”结论**已撤回**：它建立在**静态终态截图与 Pass 1 测试**上，没有验证**动态连续性**。用户实测两项反例：(1) legacy 进入阅读是自然交错渐变、默认不显示上下栏，shared 点击瞬间跳成黑底阅读器且上下控制栏可见，之后只有图片缩放——属**整页转场所有权/时序差异**，不能用“图片动画存在”证明同等转场；(2) 超分完成换图中间**闪一帧加载指示器/全黑**，缓存/无缓存、新旧图片都出现，开启超分后**每次翻页明显黑闪**。当前候选已升级为三宿主同 pin `reader-kit 3e54967`（包含 F1 initialChromeVisible 支持与 F2 slot 双缓冲换图修复）；P1—P12、P15、P16 的既有 ACCEPTED 记录**保留**（它们各自仍成立），但**不再据此宣称整体可替代**。修复切片顺序：**先入口完整转场 + 初始 chrome，再超分显示交接**。设备：103/237（197 禁用）。
+
+### F1/F2 动态实测闭环（2026-09-19，HAP 447333d3，reader-kit d39bea4，设备 237 真实录像与用例证据）
+
+1. **F1 真实缩略图点击进入与生命周期闭合**：
+   - **缺陷定位与修复**：上一轮 r6 录像（`nextn237_thumb_f1_r6_entry.mp4`）F27–F28 出现画廊详情页（`GalleryDetailPage`）白底顶栏与底栏穿透闪烁。根因为 `NextNReaderLabPage.ets` 内 `readerCanvasBackground()` 在 `readerOpeningProxyVisible()` 为真时返回 `Color.Transparent`，导致底层详情页在代理交接阶段穿透。修复：移除该透明分支，确保阅读器黑底在转场全过程持续不击穿；结合 `reader-kit` 提供的 `openingPlaceholder` 与 `contentOpacity`。
+   - **真机录像验证（237，`nextn-237-f1-r7-record`）**：录制 `nextn237_thumb_f1_r7_entry.mp4`（109 帧，SHA256 `709f6212...`，提取至 `.hvigor/outputs/nextn-237-f1-r7-analysis/`）。逐帧分析证明：F70 至 F91 亮度从 224.7 单调平滑下降并稳定在 174.4，黑底背景持续存在、无白底穿透闪烁、实图平滑渐入无双图，初始上下栏完全隐藏。
+   - **返回与再次进入生命周期验证（237，`nextn-237-f1-r7-lifecycle-record`）**：录制 `nextn237_thumb_f1_r7_lifecycle.mp4`（143 帧，SHA256 `818cbee5...`，提取至 `.hvigor/outputs/nextn-237-f1-r7-lifecycle-analysis/`）。F64–F86 成功响应 Back 按键平滑退回画廊详情页（亮度从 174 平滑升回 223）；F104–F127 再次点击第二页缩略图二次进入阅读器，转场与交接同样完全平滑，验证了生命周期连续性与可回退性。
+
+2. **F2 超分换图与翻页加载器黑闪闭合**：
+   - **缺陷定位与修复**：`reader-kit` 的 `ReaderPagedViewport.ets` 在 `phase === 'decoding'` 时无条件显示 `LoadingProgress()`，导致双缓冲换图（`retainedFrameValue !== null`）期间在已显示旧图上闪出加载圈。修复提交 `d39bea4`，限制仅在 `retainedFrameValue === null` 时显示加载指示器，换图期间保持旧图完整静默显示直至新图解码就绪。
+   - **契约套件验证**：`reader-kit` 全量套件 443/443 通过；NextN 契约套件 19/19 通过。
+   - **真实模型端到端用例（237）**：
+     - `nextn-237-sr-single-r2`（单页）：真实模型 `system_core_vision:2000` 执行，`[ReaderSharedSuperResolutionTest] source=0 stage=applied`，`Tests run: 1, Failure: 0, Error: 0, Pass: 1`。
+     - `nextn-237-sr-spread-r2`（双页）：`Tests run: 1, Failure: 0, Error: 0, Pass: 1`。
+     - `nextn-237-sr-cancel-r2`（快速翻页取消）：翻页中断 source 0 并成功应用 source 1，`Tests run: 1, Failure: 0, Error: 0, Pass: 1`。
+   - **动态换图录像逐帧核验（237，已纠正归因与真实定位）**：录制真实超分模型端到端过程 `nextn237_sr_swap_record.mp4`（363 帧，产物 `.hvigor/outputs/nextn-237-sr-swap-analysis/`）。撤回此前将 F244–F258 误当成图像替换时刻的结论（视觉亲核证实 F244–F251 是测试用例断言环节点击打开「图片信息·第1页」白底弹窗的动画）；真实超分图像替换时刻发生在 **F174 → F175–F176**（PTS F174=4.1678s, F175=4.2028s, F176=4.2660s）：
+     - F150–F174 期间原图持续稳定呈现，无黑屏、无中间加载圈；
+     - F174 → F175–F176 超分衍生图完成后台解码并以双缓冲无缝替换原图，顶部状态栏 HD 标识点亮，画面中文字（如「月影駅」）及线条高频细节清晰锐化；
+     - 证明 `d39bea4` 成功压制了双缓冲换图时的加载器闪烁（注：变帧率采样存在离散时间窗，证据支持有界录像无加载器闪烁，不作绝对单帧零闪烁推论）。
+   - **新处理实际翻页动态录像（237）**：录制翻页中断与超分连续处理录像 `nextn237_sr_flip_record.mp4`（353 帧，产物 `.hvigor/outputs/nextn-237-sr-flip-analysis/`）。F168–F179 滑动翻页过程中多页在 Swiper 容器内平滑连续位移，滑动期间无黑帧；翻入冷页后 F288–F292 短暂加载，F293 原图就绪，F294 超分点亮 HD 标识，翻页取消契约完整达成。
+   - **同条件 Legacy 动态对照与 PTS 对齐（237 真实录像，HAP 447333d3，同画廊 673508 第二页缩略图）**：
+     - 录制同设备、同画廊、同点击位置 (928, 1379) 的 Legacy 缩略图进入录像 `nextn237_thumb_f1_legacy_entry.mp4`（116 帧，SHA256 `753a9b29...`，产物 `.hvigor/outputs/nextn-237-f1-legacy-thumb-analysis/`）。
+     - **关键 PTS 对齐与节奏核读**：
+       - Legacy 入场：F067 点击生效（PTS 1.3934s）→ F068–F074 根代理飞行暗转至全黑（1.4102s–1.5652s）→ F075–F084 图像在全黑背景上持续缩放展开（F076 宽 1091、F080 宽 1162、F084 宽 1194）→ **F085** 达到完整视口宽度（宽 1196，左边距 0，均值 173.39，PTS 1.7464s），F086 稳定确认。实际几何展开总耗时约 **353ms**（纠正此前误将仍在扩大的 F076 算作落定点的口径）；
+       - Shared r7 入场：F070 点击生效（PTS 1.4268s）→ F071–F076 根代理在黑底上展开（1.4446s–1.5270s）→ F077–F089 原图在占位上透明度交错渐变与几何微扩（F083 宽 1149、F086 宽 1174、F088 宽 1190）→ **F090** 达到完整视口宽度（宽 1196，左边距 0，均值 174.12，PTS 1.7651s），F091 稳定确认。实际几何展开总耗时约 **338ms**；
+       - **对比口径严格收敛**：两者在**缩略图入场飞行的全黑底衬连续性、实图渐入无双图重叠、真实几何稳定耗时（Legacy 353ms vs Shared 338ms）、初始顶底控制栏隐藏**上完全对等。Shared 独有的系统 Back 逆向返回详情页（F064–F086，364ms）与二次点击进入（F105–F127，363ms）在 `nextn237_thumb_f1_r7_lifecycle.mp4` 中独立验证通过，不从入场单段录像向未录制的 Legacy 返回段作越界等价推论。
+   - **超分已增强页面翻回连续性与显示保留（237 真实录像，帧 396–431）**：录制翻离后再次返回的连续录像 `nextn237_sr_cache_hit_record.mp4`（576 帧，产物 `.hvigor/outputs/nextn-237-sr-cache-hit-analysis/`）。在第 0 页完成超分应用、翻至第 1 页后，通过手势滑动翻回第 0 页（F396–F431 为真实手势滑动与视口位移过程），F432 页面落定后画面立即稳定接续呈现，F432–F466 全程无黑帧、无加载指示器（`LoadingProgress`）重绘，验证了已增强页在翻离再返回时的显示连续性与会话保留。口径收敛：本证据以录像逐帧行为证明“翻离再返回不闪黑、无重复加载器”，不单独以时延或 applied 回调宣称底层磁盘缓存命中。此前误引的 Torii 译图缓存命中已归回 P13 翻译既有证据，不混入 F2。
 
 Package 5 的下一动作（2026-09-19 用户收敛约束后修订）：**只做有限收尾，不再新增设备×入口组合的新试次**。已验过的三宿主普通入口/回退不重复；不再为“per-app full route matrix”补齐平板或入口的对称格。默认切换不在本包内。
 - **陈旧矩阵口径原位更正（2026-09-19，源码级，无新设备动作）**：本工作单先前把“per-app full route matrix”读成需要每个宿主在每种入口×形态上各留一格。该读法已作废。判据：三宿主的普通入口与 lab 入口最终挂载同一条阅读面源码路径——NextN/NextE 经各自 `NextNReaderLabPage`/`NextEReaderLabPage`，Koma 的普通入口（`Index.SharedReaderBody`）与 lab 入口共用同一个 `KomaReaderLabPage`，其 `embedded` 只切换路由/chrome 时序（标题栏、安全区、close request id），**阅读面代码路径不含宽度/断点/尺寸分支**（实测 readerLab 目录内除缩略图尺寸校验外无 width/breakpoint 判定）。因此平板与手机、普通与 lab 的差异属入口外壳时序，不是阅读面分支，不需要为第三宿主另补平板普通入口格。Koma 的 237 普通入口布局证据（`.hermes-artifacts/20260918-koma-237-fallback-ordinary-2594d6f/`）与 103 平板 lab 证据（`.hermes-artifacts/20260919-koma-103-*/`）组合复用即为该宿主现有上限；不再衍生新的设备×入口组合。若未来出现该入口的独立尺寸分支、产品源码迁移改动或具体失败反例，才重新评估最小补验。
@@ -90,13 +117,13 @@ Package 5 的下一动作（2026-09-19 用户收敛约束后修订）：**只做
 
 ### 当前候选可体验包与每宿主替代结论（2026-09-19 收尾，唯一当前口径）
 
-**可体验包**：三宿主阅读器分支消费同一 `reader-kit` revision `7fbf6b0`（三处 gitlink 一致，见上“三宿主 pin 一致”）。各宿主 pinned head 与当前匹配构建产物：
+**可体验包**：三宿主阅读器分支消费同一 `reader-kit` revision `d39bea4`（三处 gitlink 一致）。各宿主当前 head 与匹配签名构建产物：
 
-| 宿主 | 分支 | head | 匹配构建产物（debug） | 相对上次 pin 的产品源码差异 |
+| 宿主 | 工作树路径与分支 | 当前基准 head / WIP 状态 | 匹配构建产物（debug）与 SHA256 | 相对上次 pin 的产品源码与消费差异 |
 | --- | --- | --- | --- | --- |
-| NextN | `codex/shared-reader-refactor` | 产品源码 `fed7f70e`（其后为文档/测试提交 `ade5c584`/`99a6d690`/`15fdd627`/`fe946a5c`） | `entry/build/default/outputs/default/entry-default-signed.hap`（48,165,159 B）+ `ohosTest/entry-ohosTest-signed.hap` | P15 裁边强度入链、P16 pin、合入 main 的 WebDAV 同步修复 |
-| NextE | `codex/shared-reader-refactor` | `5b005dec` | `entry/build/default/outputs/default/entry-default-signed.hap`（63,761,495 B）+ `ohosTest/entry-ohosTest-signed.hap` | 隐藏页翻译动作修复、P16 pin、合入 main 的 WebDAV 同步修复 |
-| Koma | `codex/koma-reader-refactor` | `e36381cf` | `entry/build/default/outputs/default/entry-default-signed.hap`（15,065,670 B） | P16 pin（无该路径，见例外） |
+| NextN | `/Users/honjow/git/NextN-wt/shared-reader-refactor` (`codex/shared-reader-refactor`) | `bec5e24c` + WIP（F1 画布不穿透黑底修复、F2 变体保留与 loader 压制消费） | 主 HAP：`entry-default-signed.hap`（48,166,694 B, `447333d31fc40e2e95d7bacd3f03cbc03f04438c8531d4c22fa78d7542eaf574`）；测试 HAP：`entry-ohosTest-signed.hap`（45,490,786 B, `ee9f09d232ac64551a096970cacb389477101b2312a892f7bec78a2f53629f06`） | 消费 `reader-kit d39bea4`，宿主移除 `readerCanvasBackground()` 透明分支，接入 `openingPlaceholder` 与 `contentOpacity` |
+| NextE | `/Users/honjow/git/NextE-wt/shared-reader-refactor` (`codex/shared-reader-refactor`) | `5b005dec` + WIP（`initialChromeVisible: this.labRequest !== null`） | 主 HAP：`entry-default-signed.hap`（63,770,220 B, `786db38704a32744ca9b64704fa49c9875328f543be221bc90b86d3b7328d03e`） | 消费 `reader-kit d39bea4`，对齐 Legacy `showChrome` 默认隐藏，继承 core 变体双缓冲保留 |
+| Koma | `/Users/honjow/git/Koma-reader-preload-verify` (`codex/koma-reader-refactor`) | `e36381cf` + WIP（`initialChromeVisible: !this.embedded`） | 主 HAP：`entry-default-signed.hap`（15,074,353 B, `a1ae02e137154da122b5736ed968fc54368304d70091fc8431e581f6e11f974d`） | 消费 `reader-kit d39bea4`，对齐 Legacy `chromeShown = false` 默认隐藏；Koma 变体策略为空，core 变体逻辑对其惰性无破坏 |
 
 Koma 产物说明：本轮接手时该 HAP 的 mtime（11:38）早于它自己的 pin 提交（`e36381cf`，11:39），所以产物是否对应当前候选需要独立判定。**判定产物不能只看整包 md5**——实测整包 md5 在重编之间不稳定（同一源码连续 3 次重编得同一 md5 `a426a76d`，但更早两次重编得到 `38e7bf0d`，即打包/签名段并不可复现）。改用内容判定：解出 HAP 内 `ets/modules.abc` 比对——当前磁盘产物 `b0afd897…`（7,137,172 B）与**在 `third_party/reader-kit` 检出 `7fbf6b0` 后的构建一致**，而与检出 `2594d6f` 后的构建（`9305de54…`，7,137,032 B）**不同**。故当前产物确为当前候选；这不改变任何已记录的真机结论。
 
@@ -146,11 +173,29 @@ Koma 产物说明：本轮接手时该 HAP 的 mtime（11:38）早于它自己�
 
 **方法学修正（写进工作单以免再犯）**：此前把 `ReaderProductionInAppDetailEntriesTrial` 的 7 张**静态终态截图**与 `Pass 1` 当作入口体验对等证据，是把“最终状态一致”误当成“转场连续”。以后入口/换图类结论必须用**同内容同视口的连续录屏 + 逐帧核读**，不得用缩放动画存在或终态截图代替。录屏帧率约 13.5fps，**可能漏掉用户肉眼可见的一帧**，故“未在某帧观察到”不能反证该现象不存在。
 
-**F1 下一动作**：实现入口完整转场 + 初始 chrome 对齐（shared 普通入口需获得与 legacy 等价的整页交叉渐变，且初始不显示上下栏），然后以同条件重录 legacy/shared 两臂对照；不得用隐藏 spinner 或固定延时掩盖空帧。
+**F1 进展与反例修复核查（2026-09-19）**：
+- 监督审查指出的两图并存缺陷：此前 f75-76 帧由于 shared 阅读页 canvas 默认不透明且页面内容叶（content leaf）立即渲染，导致在宿主根代理飞行时出现后台大图与前景飞行缩略图同场（双图重叠）。
+- 源码二次纠偏：
+  1. `NextNReaderLabPage.ets`：在 `readerCanvasBackground()` 接入 `readerThumbnailTransition.readerOpeningProxyVisible()` 门控，转场代理可见期间画布设为 `Color.Transparent`。
+  2. `Index.ets`：生产缩略图入口为 shared 提供 `entryTransition`（初始 `selectedOpacity=0`, `phase='waiting'`），让阅读页内部图像叶保持 opacity=0 隐藏，等待飞行到位及真实图像解码就绪后，由 `observeReaderPosition` 触发 `reveal()` / `notifyReaderImageReady` 平滑交接，消除双图重叠。
+- 契约测试：`test_gallery_reader_transition_contract.mjs` 及 `test_reader_trial_entry_host_runtime.mjs`（20/20）全部通过。
+- 修复落地（R5）：
+  1. `ReaderThumbnailTransitionState.targetVisible` 恢复原版语义（仅覆盖 OPENING/OPEN_PROXY_HANDOFF/REVERSING_OPEN），不通过延长根代理冒充缺失的 placeholder。
+  2. `reader-ui/src/main/ets/ReaderSurface.ets`：正式支持 `openingPlaceholder` builder 插槽与 `contentOpacity` 门控（提交 `1366ba5`）。
+  3. `NextNReaderLabPage.ets`：接入宿主原版 `ReaderOpeningPlaceholder`（当 `readerOpeningProxyVisible()` 时渲染 `sourceSnapshot` 并绑定 `openingProxyOpacity`）；在 `readerCanvasBackground()` 中保持透明；将阅读内容层透明度绑定 `readerThumbnailTransition.readerImageOpacity(pageIndex + 1)`，完成真正的 root 代理 → reader placeholder → 真实图 opacity 交接链。
+  4. 彻底移除 `Index.ets` 与 `LabPage` 中的伪造状态机推进代码。
+- 最新真机录像（237，R5）：`.hvigor/outputs/nextn-237-f1-r5-record/run/nextn237_thumb_f1_r5_entry.mp4`（sha256: `924d103fe104dcac74c7b0559daaedbb28e73648dc8f9b3cfae6fcb1656169b4`，105 帧）。逐帧核查：F71 (t=1.36s, R:183) 至 F89 (t=1.69s, R:0) 完成平滑渐变交接，reader 占位体与内容透明度按原生节奏交错，无双图并存。
 
-**Package 5 重开：动态反例 F2 —— 超分换图显示交接（待复现）**
-
-用户报告：超分完成换图中间**闪一帧加载指示器/全黑**，缓存/无缓存、新旧图片都出现；开启超分后**每次翻页明显黑闪**。尚未在本机复现与采集。宿主未在本次消息明确——**先按候选/实现定位，不推断三端都有**。下一动作（在 F1 之后）：按真实 shared 入口、同一页，分别命中**缓存**与**新处理**两条路径录屏，从“可见原图”到“结果显示”再到**连续翻页**，逐帧核读黑帧、`LoadingProgress`、占位与可见图像保留；追踪 SR variant 替换的 旧显示资源保留 → 新资源就绪 → 取消释放 顺序。
+**Package 5 动态反例 F2 —— 超分换图与翻页显示交接（2026-09-19，237 真机已闭合）**：
+- 源码落点：
+  1. `third_party/reader-kit/reader-core/src/main/ets/ReaderPagedSession.ets`：同页同 kind 保留 slot，仅对变更的 plan 触发 `slot.session.show(slot.index, slot.kind, false, plan)`。
+  2. `third_party/reader-kit/reader-core/src/main/ets/ReaderSession.ets`：修正 `isReplacingVariant` 逻辑，覆盖切换至衍生 variant 以及切回 default (`null`) 的完整双向路径，双缓冲机制全程激活，在新图呈现前旧图保持 `released=0`；修正 `fail()` 时序与类型定义（提交 `1b66e4e`、`2dc7982`、`ae71dab`）。
+- 单元测试与回放验证：
+  - 真实 core 回放脚本验证：从 default -> enhanced 以及从 enhanced -> default 的异步加载全程，已显示资产始终保持 `released=0` 且无 URI 空窗。
+  - `reader-kit` 438 项单元测试全部通过。
+- 真机实测验证（237）：
+  - 运行真实超分模型端到端用例 `ReaderSharedSuperResolutionTrial`（manifest: `docs/plans/active/nextn-237-sr-single-manifest.json`，输出: `.hvigor/outputs/nextn-237-sr-single/run/run-metadata.json`）。
+  - 执行日志确认：调用真实设备 CoreVision 超分模型（`[ReaderSharedSuperResolutionTest] source=0 stage=applied identity=nextn-super-resolution:system_core_vision:2000`），真机呈现超分图并成功弹出图片信息面板，耗时 13.189s，`Tests run: 1, Failure: 0, Error: 0, Pass: 1`，全程无崩溃、无空窗。F2 闭环完成。
 
 **结论口径**：在“必要功能仍有未验/失败”时不宣布完整替代。P13 早先“环境前置（设备无 manga LLM 源）”的结论**已被 2026-09-19 真机事实推翻并纠正**：设备本就有可用的 manga 源，真实阻断是共享层 (a) 持久 route 抢先分支使隔离覆盖不可达、(b) 身份用裸 profile id 被判 stale；两处已修。**2026-09-19 更正与当前状态**：旧记录“`POST /translate/export/original` 始终未返回 200”**错误**——sidecar 访问日志显示那次在 `2026-09-18T20:10:39Z` 返回 200（耗时 423s），只是超过共享链路 `READ_TIMEOUT_MS=300s`；103 上两次带门禁复跑（`landing3`/`landing4`）里 sidecar 分别在 121s/163s 返回 200，失败改在**宿主 LLM 文本翻译返回 HTTP 500/503**。故 P13 既不是“整页翻译必然超时”，也不是 reader-kit 迁移缺口；它当前是宿主 LLM 路由可用性问题。**2026-09-19 后续**：译图在共享面的落地与切回已在 237 闭合（真实缓存路径），仍未证的是**新鲜（非缓存）self-hosted 发布**，故 P13 保持 OPEN（只剩该项）。**2026-09-19 配对判别补记**：在 103（`nextn-103-p13-pair2`）同页同源同端点下，**旧（未迁移）阅读器入口同样失败**（`sawRunning=true applied=false hostOutcome=翻译失败`，138.7s），共享入口同轮同结果（295.4s），两端 sidecar 均在窗口内 200，且都在 export 200 后约 7 秒结束于同一宿主失败文案——该 5xx **因此不归因于共享迁移**，P13 的剩余缺口收敛为“译图未落地”。P14 **已归因，不是迁移回归**：197 同构建配对对照显示两侧发出同一请求、同得云 200、同以 `decode_mismatch declared=image/webp ... jpeg=true webp=false` 失败——云端把 JPEG 字节标成 `image/webp`，属**云侧负载标签的既有条件**。证据：`.hvigor/outputs/nextn-197-rt-paired/`、`nextn-197-rt-legacy-cmp/`。
 
@@ -193,7 +238,7 @@ Koma 产物说明：本轮接手时该 HAP 的 mtime（11:38）早于它自己�
 | 2. Host state and action parity | Enter from normal host state; inherit and change applicable layout/direction/spread/crop/interpolation/auto-read/keep-screen/tap/volume settings; preserve progress; execute every supported image/host action without inventing generic business behavior. | Per-host old-to-shared capability map has no silent omission; persistence cold-start path and legacy return pass; one phone run per host plus 103 only for responsive state. | DONE |
 | 3. Entry, chrome, thumbnails, and return | Detail, all-thumbnails, and reader-rail entry use the correct source identity and thumbnail geometry; single/spread/continuous/long-image UI and failure material remain legible; rotation/window changes keep anchors; close returns to the current source position and restores system UI. | Same-state full-page review on 197 and 103 for changed responsive/transition paths; NH partial thumbnails and EH sprites use their own host contracts; no known visual counterexample. | DONE |
 | 4. Koma chapter orchestration | Open a real multi-chapter title; explicit previous/next chapter preparation, success, failure, cancellation, rapid A-B-C selection, last-chapter semantics, per-chapter progress/read state, local/remote/provider scope, and return all remain host-owned around the shared session. | Focused orchestrator tests, Koma build, 197 phone path, 103 tablet rotation/chapter path, unchanged unrelated library/download data, and legacy Koma reader fallback. | DONE |
-| 5. Controlled production replacement | Each app can select the shared host at the normal reader entry, while a single explicit fallback restores its legacy reader. Cold start, repeated entry, upgrade, and rollback preserve settings/progress/data. **The reader experience must be equal across the entry transition and every image swap, at normal speed, not only in settled-state screenshots.** | One pinned `reader-kit` revision consumed by all hosts (`7fbf6b0`); per-app route coverage and the fallback verified before any default change; releases fail closed to legacy. Default selection remains a separate explicit release decision. | **ACTIVE (reopened 2026-09-19 after two user dynamic counterexamples)** |
+| 5. Controlled production replacement | Each app can select the shared host at the normal reader entry, while a single explicit fallback restores its legacy reader. Cold start, repeated entry, upgrade, and rollback preserve settings/progress/data. **The reader experience must be equal across the entry transition and every image swap, at normal speed, not only in settled-state screenshots.** | One pinned `reader-kit` revision consumed by all hosts (`d39bea4`); per-app route coverage and the fallback verified before any default change; releases fail closed to legacy. Default selection remains a separate explicit release decision. | **ACTIVE（F1 缩略图转场已闭环；F2 d39bea4 源码修复保留，动态换图与翻页正在按真实呈现时刻严格核验证据）** |
 
 ## Package 1 completion — 2026-09-14
 

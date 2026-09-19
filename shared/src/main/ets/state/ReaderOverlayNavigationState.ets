@@ -13,7 +13,11 @@ import { connectReaderThumbnailTransition } from './ReaderThumbnailTransitionSta
 export class ReaderOverlayNavigationState {
   @Trace visible: boolean = false
   @Trace stack: NavPathStack = new NavPathStack()
-  /** Shared Reader is mounted directly by the shell; HDS remains a legacy-only adapter. */
+  /**
+   * Live Reader backend trace. Both backends mount through the overlay's HDS
+   * destination, so this no longer selects a mount host; the shell uses it only
+   * to delegate system Back to the registered shared-Reader controller.
+   */
   @Trace activeReader: ReaderRouteParams | null = null
   /** Admission epoch observed by the host before it presents the pending route. */
   @Trace mountEpoch: number = 0
@@ -77,14 +81,24 @@ export class ReaderOverlayNavigationState {
     this.nextRouteEpoch = routeEpoch
     const routeParams = new ReaderRouteParams(params.galleryId, params.initialPageIndex, routeEpoch, params.backend)
     this.attachStagedDetailSeed(routeParams)
-    // A Reader session owns one private stack. Reusing a stack whose Reader
-    // destination has disappeared lets HDS retain the old destination binding
-    // even though a later push mutates the JS path list. The root Gallery stack
-    // remains independent and mounted throughout this replacement.
     this.activeReader = routeParams.backend === NextNReaderBackend.SHARED ? routeParams : null
+    // A Reader session owns one private stack. The accepted legacy path already
+    // admits with a fresh stack today, so the shared backend joins it unchanged.
+    // Open question, not a settled fact: `docs/qa/
+    // shared-reader-production-thumbnail-singletons-nextn-20260913.md` records
+    // two distinct shared repeated-entry failures. Runs 22-final/23-final lost
+    // the second Reader even with new stacks and unique destination names;
+    // runs 24-final/25-final were the separate `hostClosing` race observed only
+    // after the direct host existed. It is NOT proven that the fresh-stack shape
+    // is safe for shared merely because legacy works; shared repeated entry must
+    // be re-verified on device before this is treated as closed.
     this.stack = new NavPathStack()
     this.stack.pushPathByName('ReaderOverlayBackdrop', null, false)
-    this.pendingReader = routeParams.backend === NextNReaderBackend.SHARED ? null : routeParams
+    // Both backends are admitted by the same checked HDS push. The shared
+    // Reader therefore keeps the host's own destination transition instead of
+    // appearing in a single hard-cut frame, and its readerDestination branch is
+    // no longer dead code.
+    this.pendingReader = routeParams
     this.pendingReaderAnimated = animated
     this.closing = false
     this.mountEpoch = routeEpoch
@@ -115,12 +129,9 @@ export class ReaderOverlayNavigationState {
     this.pendingReader = null
     this.clearStagedDetailSeed()
     this.clearActiveDetailSeed()
-    if (this.activeReader !== null) {
-      this.closing = true
-      this.activeReader = null
-      this.finishClose()
-      return
-    }
+    // Both backends pop the same destination so the shared Reader also gets the
+    // host's close transition; finishClose runs from the destination's own
+    // onDisAppear once the pop has completed.
     if (this.stack.getAllPathName().length === 0) {
       this.finishClose()
       return

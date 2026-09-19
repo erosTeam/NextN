@@ -80,6 +80,7 @@ export default function readerSharedSuperResolutionTest(): void {
   if (args['-s class'] !== 'ReaderSharedSuperResolutionTrial') return
   const spread = args['-s readerSharedSuperResolutionLayout'] === 'spread'
   const cancelNavigation = args['-s readerSharedSuperResolutionScenario'] === 'cancel-navigation'
+  const cacheHit = args['-s readerSharedSuperResolutionScenario'] === 'cache-hit'
   describe('ReaderSharedSuperResolutionTrial', (): void => {
     it('hostPreparedDerivativeKeepsTheSharedReaderContract', 0, async (): Promise<void> => {
       const delegator = abilityDelegatorRegistry.getAbilityDelegator()
@@ -129,6 +130,24 @@ export default function readerSharedSuperResolutionTest(): void {
           expect(applied.has(0)).assertFalse()
           await waitImage(driver)
           await capture(driver, 'cancel-next')
+          return
+        }
+        if (cacheHit) {
+          await waitApplied(applied, [0])
+          const viewport = await (await driver.findComponent(ON.id('rkit-image-viewport'))).getBounds()
+          const y = Math.round((viewport.top + viewport.bottom) / 2)
+          const width = viewport.right - viewport.left
+          await driver.swipe(Math.round(viewport.left + width * 0.82), y,
+            Math.round(viewport.left + width * 0.18), y, 600)
+          await waitApplied(applied, [1])
+          applied.delete(0)
+          const t0 = Date.now()
+          await driver.swipe(Math.round(viewport.left + width * 0.18), y,
+            Math.round(viewport.left + width * 0.82), y, 600)
+          await waitApplied(applied, [0])
+          console.info(`[ReaderSharedSuperResolutionTest] cache_hit_return_duration=${Date.now() - t0}`)
+          await waitImage(driver)
+          await capture(driver, 'cache-hit-return')
           return
         }
         // The fixture keeps page 1 paired with page 0 in the canonical first

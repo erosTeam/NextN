@@ -100,16 +100,26 @@ assert.equal(navigation.activeReader.backend, state.NextNReaderBackend.SHARED,
 assert.equal(navigation.activeReader.routeEpoch, sharedEpoch,
   'the direct shared route must retain its admission identity')
 assert.deepEqual(navigation.stack.paths.map(value => value[0]), ['ReaderOverlayBackdrop'],
-  'shared Reader must not be coupled to an HDS destination')
+  'the Reader destination is admitted after the backdrop, not at open time')
 selected.select(state.NextNReaderBackend.LEGACY)
 assert.equal(navigation.activeReader.backend, state.NextNReaderBackend.SHARED,
   'an open route must not switch when the process selector changes')
 
+// The shared Reader is admitted by the same checked HDS push as legacy, so it
+// inherits the host's own destination transition instead of a hard cut.
+assert.equal(navigation.presentPendingReader(sharedEpoch), true)
+assert.deepEqual(navigation.stack.paths.map(value => value[0]),
+  ['ReaderOverlayBackdrop', `Reader:${sharedEpoch}`],
+  'shared Reader must be presented through the host navigation destination')
+assert.equal(navigation.stack.paths[1][1].backend, state.NextNReaderBackend.SHARED,
+  'the presented HDS destination must still resolve to the shared backend')
+
 navigation.close(false)
+assert.deepEqual(navigation.stack.paths.map(value => value[0]), ['ReaderOverlayBackdrop'],
+  'closing a shared Reader must pop the same destination legacy uses')
+navigation.finishClose()
 assert.equal(navigation.visible, false)
 assert.equal(navigation.activeReader, null)
-assert.deepEqual(navigation.stack.paths.map(value => value[0]), ['ReaderOverlayBackdrop'],
-  'closing direct Reader must leave legacy adapter state isolated')
 const staleEpoch = navigation.open(legacy, false)
 const currentEpoch = navigation.open(shared, false)
 assert.equal(navigation.mountEpoch, currentEpoch,
@@ -119,8 +129,12 @@ assert.deepEqual(navigation.stack.paths.map(value => value[0]), ['ReaderOverlayB
   'a stale frame callback must not present a replacement route')
 assert.equal(navigation.activeReader.routeEpoch, currentEpoch,
   'the replacement shared session must own a fresh direct route')
+assert.equal(navigation.presentPendingReader(currentEpoch), true)
+assert.equal(navigation.stack.paths[1][0], `Reader:${currentEpoch}`,
+  'the replacement shared session must present its own HDS destination')
 
 navigation.close(false)
+navigation.finishClose()
 const legacyEpoch = navigation.open(legacy, false)
 await navigation.presentPendingReader(legacyEpoch)
 assert.equal(navigation.stack.paths[1][1].backend, state.NextNReaderBackend.LEGACY,
@@ -128,4 +142,4 @@ assert.equal(navigation.stack.paths[1][1].backend, state.NextNReaderBackend.LEGA
 assert.equal(navigation.stack.paths[1][0], `Reader:${legacyEpoch}`,
   'legacy compatibility navigation still uses a session-unique destination')
 
-console.log('PASS debug-only backend selection; shared direct host and legacy adapter remain separate')
+console.log('PASS debug-only backend selection; both backends share the checked HDS admission')

@@ -175,11 +175,9 @@ ok('Reader fullscreen close waits for the retained target to settle without requ
     /requireVisibleStatusBarInset/.test(index) &&
     !/requireTargetLayoutChange/.test(index))
 
-ok('Shared Reader arms a return-only target and closes from its observed reader-kit frame',
-  /armSharedReturn\(/.test(readerCoordinator) &&
-    /transition\.armReturn\(/.test(readerCoordinator) &&
+ok('Shared Reader bridges host transition coordinator on open and closes from observed reader-kit frame',
+  /ReaderThumbnailTransitionCoordinator\.open\(/.test(index) &&
     /sourceScope\(\): string/.test(read('shared/src/main/ets/navigation/ReaderTrialEntryRelay.ets')) &&
-    /ReaderThumbnailTransitionCoordinator\.armSharedReturn/.test(index) &&
     /finishSharedReaderDestinationClose/.test(index) &&
     /context\.captureComponentId/.test(index) &&
     /context\.contentAspectRatio/.test(index) &&
