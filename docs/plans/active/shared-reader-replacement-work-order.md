@@ -56,6 +56,7 @@ Package 5 的下一动作（收敛，不重跑全矩阵）：只按**实际变�
 - **NextE** — 结论：候选可替代主路径（同 NextN 的公共面 + NextE 宿主动作/翻译入口），且**真实超分结果应用已验**：`ReaderEnhancementResultTrial`（197，commit `1297da98`）在共享面把源图 `800x1129` 产出真实增强图 `3200x4516`（`backend=system`、`bytes=3951777`），共享图像信息显示“当前：增强图片 / 图像增强：系统图像超分 · 系统 AI · 已应用”（`hilog process_success`）；`Tests run: 1, Pass: 1`。**范围收窄**：该次只验证真实结果被应用与呈现，图像信息中的“原图：可用”只是可用性文案，**不是切回原图的动作证据**；切回是共享 chrome 的既有行为，本切片未另测，不为它重跑 SR 套件。剩余阻断：非本地/云端翻译的共享面端到端（P12 已闭合 Torii 往返；self-hosted 同 P13 缺口）。证据：`.hvigor/outputs/nexte-enhancement-real-197/`。
 **2026-09-19 对等修复（NextE，237 真机）**：NextN 那次 P13 判定发现的“隐藏页仍报译文”宿主缺陷在 NextE 的共享适配里同样存在（`NextEReaderLabPage.translationActions()`/`handleTranslationAction()` 用同一 `translated` 表达式），已按同一最小方式修复（`hidden` 优先，与 legacy 的 `readerTranslatedImageUri()` 语义一致，commit `e03c22eb`）。237 真机验证（`nexte-237-togglefix2`，`install -r`，持久非本地路线原样使用）：`labelAfter=显示原图` → 切回 → `labelAfterOriginal=显示译图` → 再切回 → `labelAfterRestore=显示原图`，`Tests run: 1, Failure: 0, Pass: 1`。Koma 宿主只有「返回详情」一个宿主动作、没有翻译通道，故无同一缺口；不做机械同步。证据：`.hvigor/outputs/nexte-237-togglefix2/`。
 - **Koma** — 结论：候选可替代主路径（章节编排/切换/读完、设置承接含阅读背景、公共阅读面）。剩余阻断：Koma 侧无外部服务阻断；「读完」持久化仅保留历史证据界限（原始行已在协议清理中删除），不为此重跑全套。证据：`.hermes-artifacts/20260917-koma-*/`、`.hvigor/outputs/koma-p8-*/`。停止条件：无新反例即冻结复用。
+  - **Koma 平板（103）当前 pin 证据（2026-09-19 补，闭合此前缺格）**：此前 Koma 在 103 上只有 2026-09-13 旧 pin（`f450aad`）记录，当前 pin（`9489ea5e` / reader-kit `2594d6f`）无平板证据。本轮在 103（MLR-AL00，1600x2560）以 `install -r` 打开设备上真实导入素材 `local-library-folder-series-80f7f03f`（SharedReaderTablet 第 1 章，2 页）的普通 lab 入口，取两条同一阅读面证据：竖屏 `[0,0][1600,2560]` 与调试开关固定横屏 `[0,0][2560,1600]` 均为完整共享面（20 个 `rkit-*` 节点，含 `rkit-reading-surface`/`rkit-native-pager`/`rkit-chrome-top`/`rkit-chrome-bottom`/`rkit-source-slider` 与 Koma-only `rkit-host-center-action`），**无** legacy `reader_key_surface`；两屏页码均 `1 / 2`、章节控制均为 `章节 1 / 2`，横屏时页面重排为居中列（`[726,105][1834,1600]`），chrome 顶/底栏按新宽度铺满。像素审阅两屏逐项复看：真实 fixture 页（红底、奶白边框与圆、`KOMAGA PAGE 1` 等三行文字）完整可见，无裁切、无遮挡、无错层，chrome 与滑条几何正常。范围：仅 `install -r`，只读用户数据（未改偏好/进度），结束后 force-stop 并恢复 10s 超时。证据：`.hermes-artifacts/20260919-koma-103-tablet-2594d6f/run/{portrait,landscape}.{json,png}`、`run-metadata.json`（`status completed`）。
 
 **结论口径**：在“必要功能仍有未验/失败”时不宣布完整替代。P13 早先“环境前置（设备无 manga LLM 源）”的结论**已被 2026-09-19 真机事实推翻并纠正**：设备本就有可用的 manga 源，真实阻断是共享层 (a) 持久 route 抢先分支使隔离覆盖不可达、(b) 身份用裸 profile id 被判 stale；两处已修。**2026-09-19 更正与当前状态**：旧记录“`POST /translate/export/original` 始终未返回 200”**错误**——sidecar 访问日志显示那次在 `2026-09-18T20:10:39Z` 返回 200（耗时 423s），只是超过共享链路 `READ_TIMEOUT_MS=300s`；103 上两次带门禁复跑（`landing3`/`landing4`）里 sidecar 分别在 121s/163s 返回 200，失败改在**宿主 LLM 文本翻译返回 HTTP 500/503**。故 P13 既不是“整页翻译必然超时”，也不是 reader-kit 迁移缺口；它当前是宿主 LLM 路由可用性问题。**2026-09-19 后续**：译图在共享面的落地与切回已在 237 闭合（真实缓存路径），仍未证的是**新鲜（非缓存）self-hosted 发布**，故 P13 保持 OPEN（只剩该项）。**2026-09-19 配对判别补记**：在 103（`nextn-103-p13-pair2`）同页同源同端点下，**旧（未迁移）阅读器入口同样失败**（`sawRunning=true applied=false hostOutcome=翻译失败`，138.7s），共享入口同轮同结果（295.4s），两端 sidecar 均在窗口内 200，且都在 export 200 后约 7 秒结束于同一宿主失败文案——该 5xx **因此不归因于共享迁移**，P13 的剩余缺口收敛为“译图未落地”。P14 **已归因，不是迁移回归**：197 同构建配对对照显示两侧发出同一请求、同得云 200、同以 `decode_mismatch declared=image/webp ... jpeg=true webp=false` 失败——云端把 JPEG 字节标成 `image/webp`，属**云侧负载标签的既有条件**。证据：`.hvigor/outputs/nextn-197-rt-paired/`、`nextn-197-rt-legacy-cmp/`。
 
@@ -1619,7 +1620,11 @@ Next Package 5 boundaries:
   baseline exactly.
   Remaining Package 5 dimensions after this run: the large-screen
   rotation/responsive dimension, which 237 now covers for NextN; 103 tablet
-  admission stays optional and non-blocking per the 2026-09-17 user directive.
+  admission is no longer the outstanding dimension: 103 is an authorized
+  acceptance device (user directive 2026-09-19, superseding the earlier
+  "optional support / non-blocking" wording) and now carries the tablet-layout
+  difference check; Koma's current-pin 103 tablet record was added 2026-09-19
+  (see the Koma row below).
   The three 2026-09-15 planning drafts under `docs/plans/active/`
   (`runtime-continuity-test-spec.md`, `reader-runtime-continuity-test.ets`,
   `runtime-continuity-manifest-template.json`) are superseded: the shipped
@@ -1627,8 +1632,9 @@ Next Package 5 boundaries:
   implements the same Write/Verify trials against real in-app entries and passed
   on 197.
 - Production defaults remain Legacy. Phone-path and 237 large-screen evidence
-  establish ordinary entry and rotation; 103 tablet coverage stays optional and
-  non-blocking, not an unmet gate.
+  establish ordinary entry and rotation; 103 (authorized acceptance device,
+  2026-09-19) carries the tablet-layout check, with current-pin records for
+  NextN, NextE and Koma.
 
 ## Package completion record
 
