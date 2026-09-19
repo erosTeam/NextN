@@ -287,6 +287,82 @@ export default function readerImageInformationTest(): void {
     })
     return
   }
+  if (trial === 'ReaderSharedCropSettingLiveTrial' && typeof work === 'string' && work.length > 0) {
+    describe(trial, (): void => {
+      it('hostCropSettingChangeAppliesToTheOpenSharedPage', 0, async (): Promise<void> => {
+        clearInformationCaptures()
+        const driver = Driver.create(), delegator = abilityDelegatorRegistry.getAbilityDelegator()
+        const presentation = connectReaderPresentation()
+        const previousMode = presentation.mode
+        const previousCrop = presentation.cropBordersPaged
+        const previousStrength = presentation.cropStrengthPaged
+        let context: common.UIAbilityContext | null = null
+        try {
+          await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+            parameters: { nextn_reader_backend: 'shared', nextn_gallery_id: Number(work) } })
+          for (let attempt = 0; attempt < 40; attempt++) {
+            if (await driver.findComponent(ON.id('nextn-root-navigation')) !== null) break
+            await driver.delayMs(250)
+          }
+          expect(await driver.findComponent(ON.id('nextn-root-navigation')) !== null).assertTrue()
+          context = (await delegator.getCurrentTopAbility()).context
+          await ReaderPresentationService.restore(context)
+          await ReaderPresentationService.setSuperResolutionEnabled(context, false)
+          await ReaderPresentationService.setMode(context, NhReaderMode.PAGED)
+          await ReaderPresentationService.setDoublePageEnabled(context, false)
+          // Start with the host crop preference ON so the open page really is cropped.
+          await ReaderPresentationService.setCropStrengthPaged(context, ReaderPageCropStrength.STANDARD)
+          await ReaderPresentationService.setCropBordersPaged(context, true)
+          let read: Component | null = null
+          for (let attempt = 0; attempt < 120; attempt++) {
+            read = await driver.findComponent(ON.id('gallery-detail-read-action'))
+            if (read !== null) break
+            await driver.delayMs(250)
+          }
+          expect(read !== null).assertTrue()
+          await (read as Component).click()
+          await informationReady(driver)
+          const page: number = await informationPage(driver)
+          const cropped = ON.id(`rkit-cropped-image-${page - 1}-whole`)
+          let present = false
+          for (let attempt = 0; attempt < 40; attempt++) {
+            if (await driver.findComponent(cropped) !== null) { present = true; break }
+            await driver.delayMs(250)
+          }
+          await captureInformation(driver, 'strength-before')
+          // Flip ONLY the host crop switch, exactly as the in-reader host settings sheet does.
+          await ReaderPresentationService.setCropBordersPaged(context, false)
+          await driver.delayMs(2000)
+          let stillPresent = true
+          for (let attempt = 0; attempt < 40; attempt++) {
+            if (await driver.findComponent(cropped) === null) { stillPresent = false; break }
+            await driver.delayMs(250)
+          }
+          await captureInformation(driver, 'strength-after')
+          await delegator.print(`ReaderSharedCropSetting page=${page} initialCropped=${present} ` +
+            `croppedAfterHostSwitchOff=${stillPresent}`)
+          expect(await informationPage(driver)).assertEqual(page)
+          // Legacy drops the cropped node when the open reader's crop switch turns off.
+          expect(present).assertTrue()
+          expect(stillPresent).assertFalse()
+          await (await driver.findComponent(ON.id('rkit-close'))).click()
+          await driver.delayMs(800)
+        } catch (error) {
+          await captureInformation(driver, 'exception')
+          throw error as Error
+        } finally {
+          if (context !== null) {
+            await ReaderPresentationService.setCropStrengthPaged(context, previousStrength)
+            await ReaderPresentationService.setCropBordersPaged(context, previousCrop)
+            await ReaderPresentationService.setMode(context, previousMode)
+          }
+          const close = await driver.findComponent(ON.id('rkit-close'))
+          if (close !== null) await close.click()
+        }
+      })
+    })
+    return
+  }
   if ((trial === 'ReaderCropToggleTrial' || trial === 'ReaderCropZoomToggleTrial') && typeof work === 'string' && work.length > 0) {
     describe(trial, (): void => {
       it('runtimeMenuCropOnOffRetainsPageAndRestoresGeometry', 0, async (): Promise<void> => {
