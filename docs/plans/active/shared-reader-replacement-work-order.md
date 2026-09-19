@@ -11,13 +11,18 @@ Ship one shared reader whose core interaction and UI are reused by all three
 apps while each host retains ownership of catalogs, cache/download services,
 settings, progress, actions, navigation, and Koma chapter orchestration.
 
-Until Package 5 is accepted, every production default remains the legacy reader
-and every shared route remains optional and reversible. No package migrates or
-deletes user data.
+Package 5 is **candidate-accepted** (2026-09-19): the three apps consume one
+pinned `reader-kit` revision and the shared reader replaces the legacy reader on
+every main path, verified per host. Every **production default nonetheless stays
+the legacy reader**: the shared route is reachable only through an explicit
+debug-build selector (or the equivalent debug Want), it is process-scoped,
+reversible, and a cold start returns to the legacy reader. Selecting the shared
+reader as the shipped default is a **separate release decision the user has not
+made**; it is not part of this package. No package migrates or deletes user data.
 
-## 能力对等进度板（有限；唯一 ACTIVE 行，其他为参考）
+## 能力对等进度板（有限；Package 5 已 candidate-accepted，不再有 ACTIVE 行）
 
-进度板行状态口径（2026-09-19）：下表 P1—P12 与 **P15** 均为 ACCEPTED。P15「裁边强度」未进入共享裁边链是 2026-09-19 新发现的宿主缺口，已在 237 真机闭合；其行内证据与状态取代任何把它视为未决的旧表述。
+进度板行状态口径（2026-09-19）：下表 P1—P12、**P15**、**P16** 均为 ACCEPTED。P15「裁边强度」未进入共享裁边链是 2026-09-19 新发现的宿主缺口，已在 237 真机闭合；其行内证据与状态取代任何把它视为未决的旧表述。
 
 P15 证据收紧（2026-09-19，reader-kit 7fbf6b0）：因 P16 改了共享 reader-ui，P15 在 237 以 7fbf6b0 复跑（nextn-237-p15-pertrial），并把比对口径从「最近一条日志」收紧为「按裁边源 identity 逐槽比对」：page=3，compared=3 changed=3，三个保留源（reader-lab-asset:1/2/3）在同一页上 conservative→strong 各自改变，Tests run: 1, Failure: 0, Pass: 1。旧口径可能让两个不同槽位互相顶替，故被取代。
 
@@ -48,7 +53,7 @@ Koma 经源码核实不适用（其宿主阅读设置面板 ReaderSettingsConten
 | P14 | 宿主(NextN) | NextN 云端(Torii)往返 | `ToriiWholePageRenderBackend` | **已归因（197 配对对照；不是迁移回归）**：同一构建内先跑共享入口 `ReaderProductionNonLocalTranslationRoundTripTrial`、再跑旧阅读器入口 `ReaderLegacyNonLocalTranslationRoundTripTrial`，同页 gallery 678049 page 1、同源文件。两侧记录到**完全相同的上传源**（`[ToriiWholePage] source bytes=800208 sha256=29bdfc1c72408e6d mime=image/webp`），各自请求→云 200，随后都以**同一条判定**失败：`decode_mismatch declared=image/webp png=false jpeg=true webp=false`（返回体标称 webp、实际字节是 JPEG）。共享侧 `applied=false`、旧阅读器侧 `hostOutcome=failed`，两者均如实显示失败；两试次各 `Tests run: 1, Pass: 1`。结论：这是**云侧返回负载的 MIME 标签错误**（既有条件），不是共享阅读器迁移回归；记为独立已知限制，不作为替代阻断 | EXTERNAL-OPEN（已归因：云侧负载标签） | —（结论已得出；如需修复应改云侧返回标签，属外部服务范围） |
 | P15 | 宿主(NextN) | 「裁边强度」(conservative/standard/strong) 在共享阅读面生效：改强度 → 裁边几何随之变化，而非固定 STANDARD | 共享适配链 `NextNReaderCropSource` / `NextNReaderVariantCropSource` / `NextNReaderTranslationCropSource` → `ReaderPageCropService.detect(path, identity, strength)`；`ReaderCropPolicy.sourceRevision` | **2026-09-19 已闭合**。源码级反例：legacy `feature/reader/src/main/ets/pages/ReaderPage.ets:1128 / 1890` 传 `strength`（来自 `readerPresentation.cropStrengthPaged/Continuous`），NextE 的 `NextEReaderCropSource` 也传，而 NextN 共享链三处均为双参 `detect(path, identity)`，强度落回默认 `STANDARD`；同一缺口还有第二半——`ReaderCropPolicy` 第三参 `sourceRevision` 未传，运行中改强度不会触发 `refreshCrop()`。修复：`NextNReaderLabPage.cropStrength()` 按 `NhReaderMode` 选 paged/continuous，注入 adapter 构造（两处）、超分与翻译 provider，并作为 `ReaderCropPolicy.sourceRevision`；三个裁边源改传 `strength` 闭包并记录实际 bounds。**真机证据（237，`nextn-237-p15-cropstrength3`）**：真实普通入口（`nextn_reader_backend=shared` + 冷启动画廊 → Detail「阅读」→ 共享面），同页 3 上把宿主强度 conservative→strong，共享裁边链读回 `conservative=0,0.015625,0.09782608695652174,0` → `strong=0,0.01953125,0.1032608695652174,0`，`geometryChanged=true`，页码保持 `3`；`Tests run: 1, Failure: 0, Error: 0, Pass: 1`。旧试次只断言设置写入/恢复，故不覆盖此缺口；新试次 `ReaderSharedCropStrengthTrial`（`ReaderImageInformation.test.ets`）比对的正是**实际检出的 bounds**。 | **ACCEPTED** | — |
 
-当前唯一 ACTIVE 行：**Package 5（Controlled production replacement）**。当前候选为三宿主同 pin `reader-kit 7fbf6b0`（NextN `ade5c584` / NextE `5b005dec` / Koma `e36381cf`）；能力对等进度板 P1—P12、P15、P16 为 ACCEPTED。P13 保持 **OPEN**，但边界已收窄到只剩一项：旧记录“`POST /translate/export/original` 始终未返回 200”已被推翻（sidecar 多次在窗口内 200），2026-09-19 的**配对对照**证明该宿主 LLM 文本翻译 5xx **在旧（未迁移）阅读器入口同样出现**、**端点级探针**进一步证明连极小纯文本请求都返回 HTTP 500，故既不是共享迁移缺口、也与漫画负载无关，属**外部端点条件**；**译图在共享面的显示与切回已于 2026-09-19 在 237 闭合**（真实缓存路径），仍未证的是**新鲜（非缓存）self-hosted 发布**。P14 归因为云侧负载标签（EXTERNAL-OPEN）。二者都不阻塞整体。限制（勿扩大）：P13 的设备仅 2 个 LLM profile、第二条 `keyPresent=false`，**不存在第二可用源**，在该端点恢复或用户给出第二条带凭据源之前不再重复探针、不再找源。
+Package 5 状态：**DONE（candidate-accepted，2026-09-19）**，不再是 ACTIVE。当前候选为三宿主同 pin `reader-kit 7fbf6b0`（NextN 产品源码 `fed7f70e`、NextE `5b005dec`、Koma `e36381cf`）；能力对等进度板 P1—P12、P15、P16 为 ACCEPTED。验收的是**候选的替代能力**，不是发布默认：三端 shipped 默认仍是 legacy，切默认属用户单独的发布决定（见下方交付段）。P13 保持 **OPEN**，但边界已收窄到只剩一项：旧记录“`POST /translate/export/original` 始终未返回 200”已被推翻（sidecar 多次在窗口内 200），2026-09-19 的**配对对照**证明该宿主 LLM 文本翻译 5xx **在旧（未迁移）阅读器入口同样出现**、**端点级探针**进一步证明连极小纯文本请求都返回 HTTP 500，故既不是共享迁移缺口、也与漫画负载无关，属**外部端点条件**；**译图在共享面的显示与切回已于 2026-09-19 在 237 闭合**（真实缓存路径），仍未证的是**新鲜（非缓存）self-hosted 发布**。P14 归因为云侧负载标签（EXTERNAL-OPEN）。两者都不阻塞整体，也**不等于“全部服务都正常”**：它们只精确覆盖 self-hosted 译图发布与云侧 Torii 负载标签这两条具体边界。限制（勿扩大）：P13 的设备仅 2 个 LLM profile、第二条 `keyPresent=false`，**不存在第二可用源**，在该端点恢复或用户给出第二条带凭据源之前不再重复探针、不再找源。
 
 Package 5 的下一动作（2026-09-19 用户收敛约束后修订）：**只做有限收尾，不再新增设备×入口组合的新试次**。已验过的三宿主普通入口/回退不重复；不再为“per-app full route matrix”补齐平板或入口的对称格。默认切换不在本包内。
 - **陈旧矩阵口径原位更正（2026-09-19，源码级，无新设备动作）**：本工作单先前把“per-app full route matrix”读成需要每个宿主在每种入口×形态上各留一格。该读法已作废。判据：三宿主的普通入口与 lab 入口最终挂载同一条阅读面源码路径——NextN/NextE 经各自 `NextNReaderLabPage`/`NextEReaderLabPage`，Koma 的普通入口（`Index.SharedReaderBody`）与 lab 入口共用同一个 `KomaReaderLabPage`，其 `embedded` 只切换路由/chrome 时序（标题栏、安全区、close request id），**阅读面代码路径不含宽度/断点/尺寸分支**（实测 readerLab 目录内除缩略图尺寸校验外无 width/breakpoint 判定）。因此平板与手机、普通与 lab 的差异属入口外壳时序，不是阅读面分支，不需要为第三宿主另补平板普通入口格。Koma 的 237 普通入口布局证据（`.hermes-artifacts/20260918-koma-237-fallback-ordinary-2594d6f/`）与 103 平板 lab 证据（`.hermes-artifacts/20260919-koma-103-*/`）组合复用即为该宿主现有上限；不再衍生新的设备×入口组合。若未来出现该入口的独立尺寸分支、产品源码迁移改动或具体失败反例，才重新评估最小补验。
@@ -97,13 +102,27 @@ Koma 产物说明：本轮接手时该 HAP 的 mtime（11:38）早于它自己�
 
 **运行时连续性（P11 门禁）影响分析（2026-09-19 收尾，未重跑）**：`7fbf6b0` 相对 `2594d6f` 只有 P16 一处 product 变更（`ReaderSurface.onCropPolicyChanged` 增加 `setCropEnabled`，不涉及 progress/close/persist）；本会话其余产品改动为 NextN P15 的裁边强度闭包与 NextE 的隐藏页翻译动作标签，二者经 diff 核实都**不含** `progress`/`close`/`persist`/`durable` 语义；main 合入的是 `WebDavSyncService` 同步模块。运行时连续性门禁的链路是「共享入口真实翻一页 → 宿主落盘 durable 行 → `install -r` 换版/回滚 + 冷启动 → 回读同一页」，与上述改动无交集；因此三宿主既有的 `2594d6f` 连续性记录（NextN `.hvigor/outputs/nextn-rv-cont-write-2594d6f/` 与 `nextn-rv-cont-verify-2594d6f/`、NextE `.hvigor/outputs/nexte-rv-cont-write-2594d6f/` 与 `nexte-rv-cont-verify-2594d6f/`、Koma `.hermes-artifacts/20260918-koma-xv-2594d6f/`）**继续有效，不因本会话改动作废**。判据同 release 门禁：改动未触及该链则复用，不机械重跑。
 
-**普通入口与回退**：三宿主的默认阅读器入口仍是 **legacy**；共享阅读器经普通入口（NextN/NextE 的 Detail「阅读」、Koma 的书架「继续阅读」）在 select 后进入，可经同一条显式回退路径回到 legacy。release 构建 fail-closed 到 legacy，冷启动重置为 legacy。**本包不含把默认入口切换为共享阅读器的动作；那是用户单独的发布决定。**
+**三端候选使用说明（select / 进入 / 回退；依据现有实现，未新测）**：三端选择器都是**进程内、不持久化、不参与备份**的 debug 开关，且只在 **debug 构建**可用：release 构建里 `context.applicationInfo.debug` 为假，选择器一律回落 legacy，所以生产包不可能被切到共享阅读器。选择在**打开阅读器时快照**，因此切换选择不会顶替已经打开的阅读器，需要重新进入阅读器才生效。
+
+| 宿主 | 选择/退出入口（debug 构建） | 普通阅读入口（进入后按当前选择生效） | 回到旧阅读器 |
+| --- | --- | --- | --- |
+| NextN (1.0.5/7) | 我的 → 设置「阅读」：「替换演练 → 阅读器实现」下拉，选「共享阅读器」或「现有阅读器」（行 id `nextn-reader-backend-rehearsal-row`）。仅 debug 显示该分组 | 首页 → 我的 → 历史记录 → 点条目进 Detail → 点「继续 P..」/「阅读」 | 把「阅读器实现」改回「现有阅读器」并重新进入；或冷启动（进程选择重置为 legacy） |
+| NextE (1.3.4/39) | 设置 → 「阅读」（`ReaderSettingsPage`）：「替换演练 → 阅读器实现」下拉 | 首页/我的 → 历史记录 → Detail → 「阅读」 | 下拉改回「现有阅读器」并重新进入；或冷启动 |
+| Koma (0.1.0/1) | 设置 → 「阅读」面板顶部「阅读器实现」下拉（仅 debug 显示） | 书架 → 点书继续阅读 / 章节进入阅读 | 下拉改回「现有阅读器」并重新进入；或冷启动 |
+
+调试用 Want 等价入口（可选，不经 UI）：NextN `nextn_reader_backend=shared`、NextE `nexte_reader_backend=shared`；两者都只在 debug 构建被接受，普通/发布启动一律回到 legacy。Koma 无 Want 入口，只用设置面板选择器。**Koma 已知边界**：从外部 fixture/config 会话进入的阅读走 legacy（该会话没有共享适配器所需的 catalog 身份），这是设计行为，不是缺口。
+
+**产物与版本（未合 main、不切生产默认）**：三端交付的是各自 `codex/*` 分支上的 debug 候选（NextN 产品源码 `fed7f70e`、NextE `5b005dec`、Koma `e36381cf`，同 `reader-kit 7fbf6b0`），产物路径见上方「可体验包」表。这些分支**尚未合入各自 main**；NextN/NextE 本地 main 的 reader-kit 仍是旧 pin，不含阅读器迁移。因此**没有任何已发布版本把共享阅读器设为默认**。
+
+**扩展边界（保留，勿当作已消除）**：(1) 公共层仍与宿主既有模块耦合——`reader-core/ReaderSession` 的 `ReaderAssetVariant/ReaderProcessedAssetVariant` 目前**硬编码** `default/original/enhanced/translated` 四类，NextE 的 `NextEReaderLabAdapter` 仍适配其 `ReaderViewModel`；这些耦合被限制在宿主 lab adapter 内，不破坏既有阅读行为，但**完整可插拔化属后续非阻塞清理**，本包未做。(2) 变体类型是**有限枚举**，新增业务变体需同时改公共层枚举与宿主适配，不是纯宿主扩展点。(3) 业务能力（翻译/OCR/超分/注释）仍由宿主提供并注入，公共层不接管。
+
+**普通入口与回退（摘要；可操作步骤见上方「三端候选使用说明」）**：三宿主的默认阅读器入口仍是 **legacy**；共享阅读器经普通入口（NextN/NextE 的 Detail「阅读」、Koma 的书架「继续阅读」）在 debug 构建里 select 后进入，可经同一条显式路径回到 legacy。release 构建 fail-closed 到 legacy，冷启动重置为 legacy。**本包不含把默认入口切换为共享阅读器的动作；那是用户单独的发布决定。**
 
 **每宿主替代结论与必要例外**（逐宿主写清，不外推）：
 
-- **NextN = 主路径可替代**。P1—P12、P15、P16 ACCEPTED。release fail-closed 门禁已在本候选（`7fbf6b0`）于 237 重验：release 构建（`debug: false`）下「我的 → 阅读」设置组**无 rehearsal 选择行**，普通入口（我的 → 历史记录 → Detail → 阅读）落在 **legacy** 阅读面（`legacy-reader-surface`、0 个 `rkit-*`，实拍真实漫画页 `3/88`）。例外（均非迁移缺口）：P13 新鲜 self-hosted 发布受外部端点 5xx 阻塞（下节边界）；P14 云侧 Torii 负载 MIME 标签（EXTERNAL-OPEN）。
-- **NextE = 主路径可替代**。公共面 + NextE 宿主动作/翻译入口，真实超分结果应用已验（见上 NextE 行）。P16 在 `7fbf6b0` 上经 237 普通入口复验通过（`nexte-237-p16-cropsetting`，`page=4 initialCropped=true croppedAfterHostSwitchOff=false`，Pass 1）。**本轮补验**：该 P16 记录早于 NextE 合入 main（"隐藏页翻译动作"修复 + WebDAV 合并，落在 `entry/src/main` 与 `shared/src/main`），故在合并后的当前 head 上重跑同一试次，`nexte-237-merge-p16`：`ReaderSharedCropSetting page=4 initialCropped=true croppedAfterHostSwitchOff=false`，`Tests run: 1, Failure: 0, Error: 0, Pass: 1`（`install -r`、237）。例外：P13 同因外部端点（NextE 无 P15 缺口，"裁边强度"档在其 legacy 与共享链本就都传 strength）。
-- **Koma = 主路径可替代**。章节编排/切换/读完、设置承接（含阅读背景）、公共阅读面均已验。例外：**P16 路径在 Koma 不存在，非缺口**——源码核实其宿主阅读设置面板 `entry/src/main/ets/components/ReaderSettingsContent.ets` 只含阅读模式/方向/双页布局/双页排布/翻页动画/点按区/阅读背景/缩放质量/页码/全屏/常亮/自动翻页/预加载/音量键/页间距/宽图模式这些行，**没有「自动裁剪页面留边」行**；Koma 用户改裁边只能走共享运行菜单 `rkit-crop-toggle`，该路径本就走 `setCropEnabled`，因此 P16 描述的宿主设置面板路径在 Koma 无对应关系，不做机械同步。Koma 无外部服务阻断；「读完」持久化保留历史证据界限（原始行已在协议清理中删除），不为此重跑全套。
+- **NextN = 主路径替代能力成立**（范围限于该宿主普通阅读主路径；不等于所有对外服务/后端都正常）。P1—P12、P15、P16 ACCEPTED。release fail-closed 门禁已在本候选（`7fbf6b0`）于 237 重验：release 构建（`debug: false`）下「我的 → 阅读」设置组**无 rehearsal 选择行**，普通入口（我的 → 历史记录 → Detail → 阅读）落在 **legacy** 阅读面（`legacy-reader-surface`、0 个 `rkit-*`，实拍真实漫画页 `3/88`）。例外（均非迁移缺口）：P13 新鲜 self-hosted 发布受外部端点 5xx 阻塞（下节边界）；P14 云侧 Torii 负载 MIME 标签（EXTERNAL-OPEN）。
+- **NextE = 主路径替代能力成立**（范围限于该宿主普通阅读主路径；不等于所有对外服务/后端都正常）。公共面 + NextE 宿主动作/翻译入口，真实超分结果应用已验（见上 NextE 行）。P16 在 `7fbf6b0` 上经 237 普通入口复验通过（`nexte-237-p16-cropsetting`，`page=4 initialCropped=true croppedAfterHostSwitchOff=false`，Pass 1）。**本轮补验**：该 P16 记录早于 NextE 合入 main（"隐藏页翻译动作"修复 + WebDAV 合并，落在 `entry/src/main` 与 `shared/src/main`），故在合并后的当前 head 上重跑同一试次，`nexte-237-merge-p16`：`ReaderSharedCropSetting page=4 initialCropped=true croppedAfterHostSwitchOff=false`，`Tests run: 1, Failure: 0, Error: 0, Pass: 1`（`install -r`、237）。例外：P13 同因外部端点（NextE 无 P15 缺口，"裁边强度"档在其 legacy 与共享链本就都传 strength）。
+- **Koma = 主路径替代能力成立**（范围限于该宿主普通阅读主路径；不等于所有对外服务/后端都正常）。章节编排/切换/读完、设置承接（含阅读背景）、公共阅读面均已验。例外：**P16 路径在 Koma 不存在，非缺口**——源码核实其宿主阅读设置面板 `entry/src/main/ets/components/ReaderSettingsContent.ets` 只含阅读模式/方向/双页布局/双页排布/翻页动画/点按区/阅读背景/缩放质量/页码/全屏/常亮/自动翻页/预加载/音量键/页间距/宽图模式这些行，**没有「自动裁剪页面留边」行**；Koma 用户改裁边只能走共享运行菜单 `rkit-crop-toggle`，该路径本就走 `setCropEnabled`，因此 P16 描述的宿主设置面板路径在 Koma 无对应关系，不做机械同步。Koma 无外部服务阻断；「读完」持久化保留历史证据界限（原始行已在协议清理中删除），不为此重跑全套。
 
 **P13 的准确边界（不许扩大）**：身份/路由/绑定已在真机到达；sidecar `POST /translate/export/original` 已多次在窗口内 200（121s / 163s；`2594d6f` 期间也有一次 200 但因 423s 超过共享链路 `READ_TIMEOUT_MS=300s` 被判超时）。当前阻断在**宿主 LLM 文本翻译调用返回 5xx**，且已由两项判别收窄：同轮**配对对照**证明旧（未迁移）阅读器入口同样失败；**端点级探针**（复用阅读器同一条 `LlmSourceRuntimeResolver` → `ComicResponsesClient` 链，空图极小纯文本）**1.2s 内即返回 HTTP 500**，说明与漫画负载无关。译图在共享面的**显示与切回**已于 237 闭合（真实缓存路径 `nextn-237-p13-togglefix`）。**仅剩未证**：一条**新鲜（非缓存、经共享面发布）**的 self-hosted 译图落地。设备仅 2 个 LLM profile，第二条 `keyPresent=false`，**不存在第二可用源**；在该端点恢复或用户提供第二条带凭据的源之前，不再重复同一探针、不再寻找第二源。
 
@@ -118,7 +137,7 @@ Koma 产物说明：本轮接手时该 HAP 的 mtime（11:38）早于它自己�
 
 ## Execution contract
 
-1. Exactly one package is `ACTIVE`; all others are `QUEUED` or `DONE`.
+1. At most one package is `ACTIVE`; all others are `QUEUED` or `DONE`. **No package is ACTIVE now**: Package 5 closed as candidate-accepted on 2026-09-19, the shipped default remains legacy, and switching it is a separate user release decision.
 2. A package starts with a current-source owner map and ends with a complete
    user path. Individual controls, callbacks, tests, screenshots, builds, and
    devices are evidence inside the package, not milestones.
@@ -152,7 +171,7 @@ Koma 产物说明：本轮接手时该 HAP 的 mtime（11:38）早于它自己�
 | 2. Host state and action parity | Enter from normal host state; inherit and change applicable layout/direction/spread/crop/interpolation/auto-read/keep-screen/tap/volume settings; preserve progress; execute every supported image/host action without inventing generic business behavior. | Per-host old-to-shared capability map has no silent omission; persistence cold-start path and legacy return pass; one phone run per host plus 103 only for responsive state. | DONE |
 | 3. Entry, chrome, thumbnails, and return | Detail, all-thumbnails, and reader-rail entry use the correct source identity and thumbnail geometry; single/spread/continuous/long-image UI and failure material remain legible; rotation/window changes keep anchors; close returns to the current source position and restores system UI. | Same-state full-page review on 197 and 103 for changed responsive/transition paths; NH partial thumbnails and EH sprites use their own host contracts; no known visual counterexample. | DONE |
 | 4. Koma chapter orchestration | Open a real multi-chapter title; explicit previous/next chapter preparation, success, failure, cancellation, rapid A-B-C selection, last-chapter semantics, per-chapter progress/read state, local/remote/provider scope, and return all remain host-owned around the shared session. | Focused orchestrator tests, Koma build, 197 phone path, 103 tablet rotation/chapter path, unchanged unrelated library/download data, and legacy Koma reader fallback. | DONE |
-| 5. Controlled production replacement | Each app can select the shared host at the normal reader entry without debug Wants, while a single explicit fallback restores its legacy reader. Cold start, repeated entry, upgrade, and rollback preserve settings/progress/data. | One pinned `reader-kit` revision consumed by all hosts; per-app full route matrix accepted on the selected release candidate; fallback verified before any app changes its default. Default selection remains a separate explicit release decision. | **ACTIVE** |
+| 5. Controlled production replacement | Each app can select the shared host at the normal reader entry, while a single explicit fallback restores its legacy reader. Cold start, repeated entry, upgrade, and rollback preserve settings/progress/data. | One pinned `reader-kit` revision consumed by all hosts (`7fbf6b0`); per-app route coverage and the fallback verified before any default change; releases fail closed to legacy. Default selection remains a separate explicit release decision. | **DONE (candidate-accepted 2026-09-19)** — shipped default is still legacy; see the delivery section for the real select/enter/fallback steps |
 
 ## Package 1 completion — 2026-09-14
 
@@ -987,7 +1006,7 @@ replacement or a change to production defaults.
 
 ## Session handoff — 2026-09-16
 
-State at this handoff. Package 5 stays **ACTIVE**. Every production default is
+State at this handoff (2026-09-16; superseded 2026-09-19). Package 5 was **ACTIVE** then, before it closed as candidate-accepted. Every production default is
 still Legacy, and the shared reader remains an explicit, reversible selection.
 One work item remains open (item 3); items 1 and 2 were closed later in this
 session:
@@ -1696,10 +1715,10 @@ focused suite result, consumer build result, selected device/artifact roots,
 observed user path, preserved fallback, and explicit untested/non-applicable
 branches. Do not paste command transcripts or create a second status log.
 
-### Package 5 active replacement status and gap inventory — 2026-09-17
+### Package 5 replacement status and gap inventory — 2026-09-17 (SUPERSEDED 2026-09-19; kept as history)
 
-Package 5 is **ACTIVE** (overall replacement remains **OPEN**; broad completion withdrawn).
-All verified physical and runtime assets remain retained, while open parity/integration gaps are tracked below:
+Package 5 is **DONE (candidate-accepted, 2026-09-19)** — the 2026-09-17 wording (ACTIVE) is superseded; read this section as history. All verified physical and runtime assets remain retained; the parity/integration items open on 2026-09-17 were closed by later records, and only the two precise external boundaries remain OPEN at the current candidate.
+The parity/integration gap list below is the 2026-09-17 snapshot of what was then still open; the later records supersede its OPEN items.
 
 - **Retained verified evidence baseline:**
   - NextE thumbnail rail (verified 2026-09-17 on 197, current worktree, `f86305c1`): `ReaderThumbnailRailTrial` and `ReaderThumbnailRailLifecycleTrial` each pass 1/1 — a 46-page rail selects a tile and navigates to the matching page with the preview aspect preserved, RTL toggle keeps the page, and hide-by-clipping reopens the retained decoded rail. Artifacts: `.hvigor/outputs/reader-thumbnail-rail/`.
