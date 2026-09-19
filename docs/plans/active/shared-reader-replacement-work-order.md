@@ -21,6 +21,8 @@ deletes user data.
 
 P15 证据收紧（2026-09-19，reader-kit 7fbf6b0）：因 P16 改了共享 reader-ui，P15 在 237 以 7fbf6b0 复跑（nextn-237-p15-pertrial），并把比对口径从「最近一条日志」收紧为「按裁边源 identity 逐槽比对」：page=3，compared=3 changed=3，三个保留源（reader-lab-asset:1/2/3）在同一页上 conservative→strong 各自改变，Tests run: 1, Failure: 0, Pass: 1。旧口径可能让两个不同槽位互相顶替，故被取代。
 
+匹配候选（2026-09-19，NextN 分支合入 main 的 WebDAV 同步修复后 fed7f70e，reader-kit 7fbf6b0）：合入的是同步模块、阅读器产品源码未变，但按纪律仍在新 head 上重跑两个阅读器关键真机试次而非沿用旧证据。nextn-237-merge-p15：ReaderSharedCropStrengthTrial page=3 compared=3 changed=3（三源槽位全部随强度改变），Pass 1；nextn-237-merge-p16：ReaderSharedCropSettingLiveTrial page=3 initialCropped=true croppedAfterHostSwitchOff=false，Pass 1。NextN/NextE 合并后四个构建（各 default 与 ohosTest）全部 BUILD SUCCESSFUL。
+
 P16 三宿主复验状态（2026-09-19，reader-kit 7fbf6b0，三端 pin 均已同步）：
 NextN 在 237 以普通共享入口复验通过（nextn-237-p16-cropsetting2，initialCropped=true croppedAfterHostSwitchOff=false，页码保持 3，Pass 1；修复前同路径为 true 且失败，见 nextn-237-p16-cropsetting）；
 NextE 在 237 以普通入口复验通过（nexte-237-p16-cropsetting，page=4 initialCropped=true croppedAfterHostSwitchOff=false，Pass 1）；
