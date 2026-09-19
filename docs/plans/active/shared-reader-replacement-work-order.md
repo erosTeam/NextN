@@ -68,7 +68,7 @@ Package 5 的下一动作（2026-09-19 用户收敛约束后修订）：**只做
 
 - **范围**：以上只证明源码候选与契约自洽，**不构成真机/视觉验收**，也不改变任何已记录的真机边界。
 
-- **候选无产品源码变更 ⇒ 旧门禁仍有效（2026-09-19 复核）**：自三宿主各自的最后一次产品源码变更点以来，`entry/src/main` + `feature` + `shared/src/main` 的 diff 为 **0 文件**——NextN 自 `752f92fa`（P13 落地记录）起、NextE 自 `e03c22eb`（隐藏页翻译对等修复）起、Koma 无新提交（`9489ea5e`）。因此本会话新增的三端提交全部落在文档/测试侧，reader-kit pin 未变，三宿主 release fail-closed 门禁未被触及，其证据仍有效：`.hvigor/outputs/nextn-rv-release-2594d6f-b/run/reading.json`、`.hvigor/outputs/nexte-rv-release-2594d6f/run6/reading.json`、`.hermes-artifacts/20260918-koma-release-2594d6f/run3/reading.json`（三处实测存在）。这不构成新的真机验收，只说明已记录的门禁未被源码变更作废。
+- **release fail-closed 门禁：逐宿主影响判定 + NextN 已重验（2026-09-19 收尾）**。旧条理由“产品源码未变 ⇒ 旧门禁仍有效”在本会话不再成立（NextN 已改 P15/P16 相关 lab 产品源码，NextE 已改隐藏页翻译动作），故不能整段复用。按“先核改动是否触及 release 选择/普通入口/回退链”判定：本会话产品改动全部落在**共享路径**——NextN 的 `NextNReaderLabAdapter`/`NextNReaderLabPage`/`NextNReaderSuperResolutionProvider`/`NextNReaderTranslationProvider`（经 `rg` 核实**不含** `readerBackendSelection`/`selectForRehearsal`/`NextNReaderBackend` 引用）、reader-kit `ReaderSurface`（共享 UI）、NextE 隐藏页翻译动作、以及 main 合入的 `WebDavSyncService` 同步模块。release 选择点在 `entry/src/main/ets/pages/Index.ets`（`readerBackendSelection.current()` → `selectedBackend`）与 `shared/src/main/ets/state/NextNReaderBackendSelectionState.ets`（`selectForRehearsal(…, debugBuild)` 在非 debug 下只能回落 LEGACY），二者本会话均未被改动。结论：**NextE/Koma 的 release 门禁证据未被本会话改动触及，可继续复用**（`.hvigor/outputs/nexte-rv-release-2594d6f/run6/reading.json`、`.hermes-artifacts/20260918-koma-release-2594d6f/run3/reading.json`）；**NextN 侧虽同样未被触及，但因本会话确实改过 NextN 产品源码，按纪律在 `7fbf6b0` 候选上重跑一次门禁而非沿用**：release 构建（`module.json` `debug: false`、`buildMode: release`，实测）安装到 237 后，(i) 「我的 → 阅读」设置组 dump 仅含阅读模式/翻页方向/翻页模式/点按区域/裁边等行，**无任何 `rehearsal` 选择行**（`.hvigor/outputs/nextn-237-rv-release-gate2/run/reading-group.json`）；(ii) 普通入口（我的 → 历史记录 → Detail → 继续/阅读）落在 **legacy** 阅读面：布局含 `legacy-reader-surface`、`rkit-*` 节点数为 **0**，实拍为真实漫画页 `3/88`（`.hvigor/outputs/nextn-237-rv-release-read/run/{reader.json,reader.png}`）。随后已把 237 恢复为 debug 候选（`debug: true` 回读）并释放租约。
 
 ## 交付状态汇总（每宿主最终结论 + 剩余阻断；不新建队列）
 
@@ -93,7 +93,7 @@ Package 5 的下一动作（2026-09-19 用户收敛约束后修订）：**只做
 | NextE | `codex/shared-reader-refactor` | `5b005dec` | `entry/build/default/outputs/default/entry-default-signed.hap`（63,761,495 B）+ `ohosTest/entry-ohosTest-signed.hap` | 隐藏页翻译动作修复、P16 pin、合入 main 的 WebDAV 同步修复 |
 | Koma | `codex/koma-reader-refactor` | `e36381cf` | `entry/build/default/outputs/default/entry-default-signed.hap`（15,065,667 B） | P16 pin（无该路径，见例外） |
 
-Koma 产物说明：本轮接手时该 HAP 的 mtime（11:38）早于它自己的 pin 提交（`e36381cf`，11:39），即磁盘上的产物可能仍是旧 reader-kit；已强制重编（`touch` reader-kit 源码后 `assembleHap`），md5 由 `dd996a3a` 变为 `38e7bf0d`，随后无改动重编 md5 稳定在 `38e7bf0d`，确认当前产物对应当前候选。这不改变任何已记录的真机结论，只修正“产物即候选”这一点。
+Koma 产物说明：本轮接手时该 HAP 的 mtime（11:38）早于它自己的 pin 提交（`e36381cf`，11:39），所以产物是否对应当前候选需要独立判定。**判定产物不能只看整包 md5**——实测整包 md5 在重编之间不稳定（同一源码连续 3 次重编得同一 md5 `a426a76d`，但更早两次重编得到 `38e7bf0d`，即打包/签名段并不可复现）。改用内容判定：解出 HAP 内 `ets/modules.abc` 比对——当前磁盘产物 `b0afd897…`（7,137,172 B）与**在 `third_party/reader-kit` 检出 `7fbf6b0` 后的构建一致**，而与检出 `2594d6f` 后的构建（`9305de54…`，7,137,032 B）**不同**。故当前产物确为当前候选；这不改变任何已记录的真机结论。
 
 **普通入口与回退**：三宿主的默认阅读器入口仍是 **legacy**；共享阅读器经普通入口（NextN/NextE 的 Detail「阅读」、Koma 的书架「继续阅读」）在 select 后进入，可经同一条显式回退路径回到 legacy。release 构建 fail-closed 到 legacy，冷启动重置为 legacy。**本包不含把默认入口切换为共享阅读器的动作；那是用户单独的发布决定。**
 
