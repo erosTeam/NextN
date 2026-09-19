@@ -45,6 +45,7 @@ Package 5 的下一动作（2026-09-19 用户收敛约束后修订）：**只做
 
 ### 候选自洽核对（2026-09-19，源码级；不是替代验收）
 
+- **宿主设置承接：NextN 共享入口逐字段接入 legacy 呈现模型（2026-09-19，源码级）**：`NhReaderPresentation` 的全部呈现字段都在共享页被读取并映射到共享面参数——实测 `readerPresentation.*` 出现 20 个不同字段：`mode` / `doublePageEnabled` / `spreadLayoutMode`（经 `NextNReaderInitialPolicy.resolve` 映射为 layout/pagingAxis/direction/spreadLayout/firstPageAlone）、`showPageNumber`、`backgroundMode`、`imageScalingQuality`（→ `imageInterpolation`）、`pageTurnAnimation`、`autoPageSeconds`（→ `ReaderAutoReadPolicy`）、`preloadPages`、`keepScreenOn`（→ `ReaderKeepScreenOn`）、`fullscreen`（宿主窗口）、`tapZoneLayout{Paged,Continuous}` + `tapZoneInvert{Paged,Continuous}`（→ `ReaderTapPolicy`）、`cropBorders{Paged,Continuous}`（→ `ReaderCropPolicy`）、`volumeKeyTurn`（→ `ReaderVolumeKeys`）、`superResolution{Enabled,Model,MaxHeight}`（→ `ReaderVariantPolicy`）。运行时改动由 `NextNReaderRuntimePreferences.apply*` 与 `persistRuntimePolicy` 回写宿主存储。即 NextN 的设置承接无静默删减；NextE/Koma 的同类逐项映射见各自 `*ReaderInitialPolicy` 与 `*PreferenceBridge`。此条为源码级核对，**不构成真机验收**。
 - **三宿主 pin 一致**：NextN `4d8715da` / NextE `757a7fa3` / Koma `9489ea5e`，三者 `third_party/reader-kit` 均指向 **`2594d6f1837ea05d6be51a565a5fb360b3539ad1`**（实测 `git ls-tree HEAD` 三处一致；2026-09-19 复核更新宿主 HEAD，仅文档与测试侧提交，reader-kit pin 未变）。
 - **reader-kit 该 revision 全量套件**：`node --test tests/*.test.cjs` → `tests 437 / pass 437 / fail 0`。
 - **各宿主契约套件（2026-09-19 复跑）**：NextN `scripts/test_reader_*.mjs|.cjs` **19/19 通过**（含 `test_reader_trial_entry_host_runtime.mjs`）；NextE `scripts/test_reader_*.mjs` **11/11**；Koma `scripts/test_shared_reader_*.cjs` **7/7**。
