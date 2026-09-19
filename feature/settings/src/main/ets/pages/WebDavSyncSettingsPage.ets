@@ -122,16 +122,16 @@ export struct WebDavSyncSettingsPage {
     config.password = this.webdavPasswordDraft
     config.selection = SyncSettings.selection(this.snapshot())
     DiagnosticLogger.info('sync', 'manual_webdav_sync_start', 'provider=webdav')
-    WebDavSyncService.syncNow(this.ctx(), config)
-      .then(() => {
-        SyncSettings.markRun(this.ctx(), SYNC_STATUS_OK)
-        DiagnosticLogger.info('sync', 'manual_webdav_sync_success', 'provider=webdav')
-        this.toast(AppStrings.get('sync_now_done'))
-      })
-      .catch((error: Error) => {
-        SyncSettings.markRun(this.ctx(), SYNC_STATUS_FAILED)
+   WebDavSyncService.syncNow(this.ctx(), config)
+     .then(() => {
+       SyncSettings.markRun(this.ctx(), SYNC_STATUS_OK)
+       DiagnosticLogger.info('sync', 'manual_webdav_sync_success', 'provider=webdav')
+       this.toast(AppStrings.get('sync_now_done'))
+     })
+     .catch((error: Error) => {
+        SyncSettings.markRun(this.ctx(), SYNC_STATUS_FAILED, error.message)
         DiagnosticLogger.warn('sync', 'manual_webdav_sync_failed', error.message)
-        this.toast(AppStrings.get('sync_now_failed'))
+        this.toast(`${AppStrings.get('sync_now_failed')}: ${error.message}`)
       })
   }
 
