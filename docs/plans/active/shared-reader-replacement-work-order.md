@@ -95,6 +95,8 @@ Package 5 的下一动作（2026-09-19 用户收敛约束后修订）：**只做
 
 Koma 产物说明：本轮接手时该 HAP 的 mtime（11:38）早于它自己的 pin 提交（`e36381cf`，11:39），所以产物是否对应当前候选需要独立判定。**判定产物不能只看整包 md5**——实测整包 md5 在重编之间不稳定（同一源码连续 3 次重编得同一 md5 `a426a76d`，但更早两次重编得到 `38e7bf0d`，即打包/签名段并不可复现）。改用内容判定：解出 HAP 内 `ets/modules.abc` 比对——当前磁盘产物 `b0afd897…`（7,137,172 B）与**在 `third_party/reader-kit` 检出 `7fbf6b0` 后的构建一致**，而与检出 `2594d6f` 后的构建（`9305de54…`，7,137,032 B）**不同**。故当前产物确为当前候选；这不改变任何已记录的真机结论。
 
+**运行时连续性（P11 门禁）影响分析（2026-09-19 收尾，未重跑）**：`7fbf6b0` 相对 `2594d6f` 只有 P16 一处 product 变更（`ReaderSurface.onCropPolicyChanged` 增加 `setCropEnabled`，不涉及 progress/close/persist）；本会话其余产品改动为 NextN P15 的裁边强度闭包与 NextE 的隐藏页翻译动作标签，二者经 diff 核实都**不含** `progress`/`close`/`persist`/`durable` 语义；main 合入的是 `WebDavSyncService` 同步模块。运行时连续性门禁的链路是「共享入口真实翻一页 → 宿主落盘 durable 行 → `install -r` 换版/回滚 + 冷启动 → 回读同一页」，与上述改动无交集；因此三宿主既有的 `2594d6f` 连续性记录（NextN `.hvigor/outputs/nextn-rv-cont-write-2594d6f/` 与 `nextn-rv-cont-verify-2594d6f/`、NextE `.hvigor/outputs/nexte-rv-cont-write-2594d6f/` 与 `nexte-rv-cont-verify-2594d6f/`、Koma `.hermes-artifacts/20260918-koma-xv-2594d6f/`）**继续有效，不因本会话改动作废**。判据同 release 门禁：改动未触及该链则复用，不机械重跑。
+
 **普通入口与回退**：三宿主的默认阅读器入口仍是 **legacy**；共享阅读器经普通入口（NextN/NextE 的 Detail「阅读」、Koma 的书架「继续阅读」）在 select 后进入，可经同一条显式回退路径回到 legacy。release 构建 fail-closed 到 legacy，冷启动重置为 legacy。**本包不含把默认入口切换为共享阅读器的动作；那是用户单独的发布决定。**
 
 **每宿主替代结论与必要例外**（逐宿主写清，不外推）：
