@@ -11577,3 +11577,38 @@ authorize an edit, replace a device comparison, or define product completion.
 - **Boundary / cleanup:** accepts the default NextN Reader's named paged production page and detector guards, not every source/style or continuous-layout visual behavior. The protocol restored the screen timeout to10000ms, force-stopped the test app after capture, and released lease `20260914-172002-3019883a`. Final evidence: `.hvigor/outputs/reader-crop-strength-103/run07/evidence/`.
 
 - LIMIT-PASS — Shared Reader single-Back close on the ordinary production route (2026-09-18). Rationale: a real-device counterexample, not polish. On 197, entering the ordinary production shared route (`nextn_reader_backend=shared` + `nextn_gallery_id=678049` → Detail Read action) and pressing the system Back once left the shared reader mounted (19 `rkit-*` nodes, unchanged after 6 s / a warm-up input) and popped the underlying Gallery instead; a second Back then closed the reader. The legacy reader on the same route closes on a single Back with the Detail retained (`legacy-reader-surface` 1→0, `gallery-detail-read-action` still present). Boundary: `Index.handleGalleryDetailBackPressed` only. Before: it had no shared-Reader guard, so the Gallery destination's Back ran while the shared Reader (a shell overlay above that destination, `readerOverlay.activeReader !== null`) stayed mounted. After: the method returns the shared Reader's registered `readerBackRequest()` (→ the existing `closeTrial`) or `closeReaderDestination(true)` when a shared Reader is active, before any Gallery pop. Minimality: additive early-return guarded by `readerOverlay.visible && readerOverlay.activeReader !== null`, placed immediately after the existing `cancelSourceEntryPending(route.galleryId)` first line so that entry-cancel precedence is unchanged; inert for the legacy/default backend (where `activeReader` is null), so the accepted legacy synchronous HDS admission path is unchanged. No geometry, transition, status-bar, or reader-kit change. Visual verification: source build + 197 real-device run — after the fix a single Back closes the shared reader (19→0 `rkit-*`) and returns to the same Detail (`#678049`, `14 页`). Unresolved risk: the guard relies on `readerOverlay.activeReader` being set for the shared backend (it is, at `ReaderOverlayNavigationState.open`); split/tablet Back was not separately re-run here. Evidence: `.hvigor/outputs/nextn-backkey/run4/` (pre-fix two-press), `.hvigor/outputs/nextn-backkey/run5-legacy/` (legacy control), `.hvigor/outputs/nextn-backkey/run9-fixed/` (fixed single-press).
+
+
+## 2026-09-19 — Shared Reader translated-page toggle-back — DEFECT FIXED / DEVICE PASS
+
+- **Boundary:** `feature/reader/src/main/ets/lab/NextNReaderLabPage.ets` -> `translationActions()` and
+  `handleTranslationAction()` only.
+- **Origin:** the P13 landing run on 237 (real gallery 673508 page 1, its own whole-page Torii cache) proved the
+  translated page lands in the shared reader: the shared image-information sheet read back `当前：译图` and the
+  render-cache `lastAccessAt` advanced. Toggling back through the same shared host action did move the shown
+  page to the original (`当前：源图片`), but the action itself kept reading 「显示原图」 with its check mark
+  for the whole settled window, so a user could not return to the translated page from the UI.
+- **Root cause:** `translated` was `frame.asset.variant === 'translated' || appliedPages.includes(i)`. A page
+  that is merely hidden keeps its translated plan, so `frame.asset.variant` stays `translated` and the branch
+  never fell through to the hidden label. The legacy Reader derives the same label from
+  `readerTranslatedImageUri()`, which returns empty while the page is in `readerTranslationHiddenPages`, so
+  legacy correctly shows 「显示译图」 again; the shared adapter lacked that hidden-priority.
+- **Before / after:** before — after toggling to the original the label stayed 「显示原图」 and the only way back
+  was a page turn. After — `hidden` takes priority, the label becomes 「显示译图」, and the same action turns the
+  translation back on.
+- **Minimality:** two boolean expressions inside the existing host action builder/handler. No reader-kit
+  change, no new parameter, no layout, gesture, or persistence change, and no effect on hosts without
+  translation.
+- **Verification (237 `VDE-AL00` 1320x2120, `install -r` only, ordinary shared entry, gallery 673508 page 1):**
+  the extended `ReaderProductionNonLocalTranslationRoundTripTrial` recorded
+  `variantBeforeToggle=译图`, `variantAfterToggle=源图片`, `labelAfterToggle=显示译图`,
+  `labelAfterToggleSettled=显示译图`, and `variantAfterRestore=译图`, with `Tests run: 1, Failure: 0, Pass: 1`.
+  The three whole-screen frames confirm it: `applied` and `restored` are pixel-identical (0.0000 changed) while
+  each differs from `original` by 0.3138; `applied`/`restored` show the Chinese translated page and `original`
+  shows the English original, all on `2 / 83`.
+- **Unresolved risk / boundary:** this closes the land + toggle-back + re-apply path for the NextN production
+  shared route on 237 only. Rotation/large-screen of the same toggle, the sibling host adapters, and the
+  self-hosted route remain outside this record.
+- **Evidence:** `.hvigor/outputs/nextn-237-p13-togglefix/run/run-metadata.json`,
+  `.hvigor/outputs/nextn-237-p13-recv5/run/{applied,original,restored}.png`, and the diagnostic runs
+  `.hvigor/outputs/nextn-237-p13-landed13|landed14/`.

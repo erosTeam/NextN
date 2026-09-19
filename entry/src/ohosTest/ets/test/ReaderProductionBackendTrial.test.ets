@@ -30,12 +30,14 @@ import {
 } from 'reader'
 
 const GALLERY_ID: number = 678049
+/** Per-run override so a trial can target a gallery that already has real data on the device. */
+let ACTIVE_GALLERY_ID: number = GALLERY_ID
 const SNAPSHOT_FILE: string = 'reader-production-backend-history.json'
 const CAPTURE_PREFIX: string = 'reader-production-backend'
 
 class HistorySnapshot {
   present: boolean = false
-  galleryId: number = GALLERY_ID
+  galleryId: number = ACTIVE_GALLERY_ID
   mediaId: string = ''
   title: string = ''
   thumbnailUrl: string = ''
@@ -99,7 +101,7 @@ async function snapshotHistory(database: relationalStore.RdbStore): Promise<Hist
   const value = new HistorySnapshot()
   const row = await database.querySql(
     'SELECT gallery_id,media_id,title,thumbnail_url,page_count,last_read_index,has_read_progress,last_opened_at ' +
-      'FROM reading_history WHERE gallery_id=? LIMIT 1', [GALLERY_ID])
+      'FROM reading_history WHERE gallery_id=? LIMIT 1', [ACTIVE_GALLERY_ID])
   try {
     if (!row.goToFirstRow()) return value
     value.present = true
@@ -119,7 +121,7 @@ async function snapshotHistory(database: relationalStore.RdbStore): Promise<Hist
 
 async function restoreHistory(database: relationalStore.RdbStore, value: HistorySnapshot): Promise<void> {
   if (!value.present) {
-    await database.executeSql('DELETE FROM reading_history WHERE gallery_id=?', [GALLERY_ID])
+    await database.executeSql('DELETE FROM reading_history WHERE gallery_id=?', [ACTIVE_GALLERY_ID])
     return
   }
   await database.executeSql(
@@ -161,14 +163,14 @@ async function seedFirstPage(database: relationalStore.RdbStore): Promise<void> 
   const current = await snapshotHistory(database)
   if (current.present) {
     await database.executeSql(
-      'UPDATE reading_history SET last_read_index=0,has_read_progress=1 WHERE gallery_id=?', [GALLERY_ID])
+      'UPDATE reading_history SET last_read_index=0,has_read_progress=1 WHERE gallery_id=?', [ACTIVE_GALLERY_ID])
   } else {
     await database.executeSql(
       'INSERT INTO reading_history ' +
         '(gallery_id,media_id,title,thumbnail_url,page_count,last_read_index,has_read_progress,last_opened_at) ' +
-        'VALUES (?,?,?,?,?,0,1,?)', [GALLERY_ID, '', '', '', 14, Date.now()])
+        'VALUES (?,?,?,?,?,0,1,?)', [ACTIVE_GALLERY_ID, '', '', '', 14, Date.now()])
   }
-  connectNhReadProgress().set(GALLERY_ID, 0)
+  connectNhReadProgress().set(ACTIVE_GALLERY_ID, 0)
 }
 
 async function seedHistoryPage(database: relationalStore.RdbStore, pageIndex: number): Promise<void> {
@@ -176,21 +178,21 @@ async function seedHistoryPage(database: relationalStore.RdbStore, pageIndex: nu
   if (current.present) {
     await database.executeSql(
       'UPDATE reading_history SET last_read_index=?,has_read_progress=1 WHERE gallery_id=?',
-      [pageIndex, GALLERY_ID])
+      [pageIndex, ACTIVE_GALLERY_ID])
   } else {
     await database.executeSql(
       'INSERT INTO reading_history ' +
         '(gallery_id,media_id,title,thumbnail_url,page_count,last_read_index,has_read_progress,last_opened_at) ' +
-        'VALUES (?,?,?,?,?,?,1,?)', [GALLERY_ID, '', '', '', 14, pageIndex, Date.now()])
+        'VALUES (?,?,?,?,?,?,1,?)', [ACTIVE_GALLERY_ID, '', '', '', 14, pageIndex, Date.now()])
   }
-  connectNhReadProgress().set(GALLERY_ID, pageIndex)
+  connectNhReadProgress().set(ACTIVE_GALLERY_ID, pageIndex)
 }
 
 async function launchBackend(backend: string, directGallery: boolean): Promise<void> {
   if (directGallery) {
     await abilityDelegatorRegistry.getAbilityDelegator().startAbility({
       bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
-      parameters: { nextn_reader_backend: backend, nextn_gallery_id: GALLERY_ID },
+      parameters: { nextn_reader_backend: backend, nextn_gallery_id: ACTIVE_GALLERY_ID },
     })
     return
   }
@@ -696,6 +698,127 @@ async function waitTranslationActionLabel(driver: Driver, label: string, attempt
   throw new Error(`Translation action did not become ${label}`)
 }
 
+/**
+ * Opens the shared overflow menu and returns the translate action's real label,
+ * or '' when the action cannot be reached. Used where the expected post-click
+ * state is itself the question under test, so it must never assert a guess.
+ */
+async function observeTranslationActionLabel(driver: Driver): Promise<string> {
+  // A bindMenu keeps the content it was built with, so an already-open menu can
+  // report a pre-click label. Close any open translation menu first (only when
+  // one of its own labels is on screen, so this can never navigate the reader
+  // away), then reopen it to read the label the host currently builds.
+  const labels: string[] = [
+    AppStrings.get('reader_comic_translation_action'),
+    AppStrings.get('reader_comic_translation_show_original'),
+    AppStrings.get('reader_comic_translation_show_result'),
+  ]
+  for (let attempt: number = 0; attempt < 20; attempt++) {
+    let open = false
+    for (const label of labels) {
+      if (await visibleText(driver, label) !== null) { open = true; break }
+    }
+    if (open) {
+      try { await driver.pressBack() } catch (_) {}
+      await driver.delayMs(400)
+    }
+    const more = await driver.findComponent(ON.id('rkit-more'))
+    if (more === null) { await driver.delayMs(400); continue }
+    try { await more.click() } catch (_) {}
+    await driver.delayMs(600)
+    const action = await driver.findComponent(ON.id('rkit-host-action-translate-page'))
+    if (action !== null) {
+      let text = ''
+      try { text = await action.getText() } catch (_) {}
+      try { await driver.pressBack() } catch (_) {}
+      await driver.delayMs(400)
+      return text
+    }
+    await driver.delayMs(400)
+  }
+  return ''
+}
+
+/** Reveals the shared overflow menu and returns the translate action, or null. */
+async function openTranslationAction(driver: Driver): Promise<Component | null> {
+  for (let attempt: number = 0; attempt < 40; attempt++) {
+    const present = await driver.findComponent(ON.id('rkit-host-action-translate-page'))
+    if (present !== null) return present
+    const more = await driver.findComponent(ON.id('rkit-more'))
+    if (more !== null) {
+      try { await more.click() } catch (_) {}
+      await driver.delayMs(400)
+    }
+    const after = await driver.findComponent(ON.id('rkit-host-action-translate-page'))
+    if (after !== null) return after
+    await driver.delayMs(400)
+  }
+  return null
+}
+
+/** Dispatches the host translate action without presuming which label it carries. */
+async function clickTranslationAction(driver: Driver): Promise<boolean> {
+  const action = await openTranslationAction(driver)
+  if (action === null) return false
+  try {
+    await action.click()
+    return true
+  } catch (_) {
+    return false
+  }
+}
+
+/**
+ * Reads the shared surface's own image-information "当前：<variant>" line and
+ * returns the variant text, or '' when the sheet cannot be read. This reports
+ * the variant the reader actually displays, independent of any menu label.
+ */
+async function observeDisplayedVariant(driver: Driver): Promise<string> {
+  const current = AppStrings.get('rkit_info_current')
+  for (let attempt: number = 0; attempt < 40; attempt++) {
+    const opened = await openMenuAction(driver, 'rkit-image-info')
+    if (opened !== null) {
+      try {
+        if (await opened.isEnabled()) {
+          await opened.click()
+          await driver.delayMs(700)
+          const texts = await driver.findComponents(ON.type('Text'))
+          for (const text of texts) {
+            let value = ''
+            try { value = await text.getText() } catch (_) { continue }
+            const at = value.indexOf(current)
+            if (at >= 0) {
+              const variant = value.substring(at + current.length).trim()
+              try { await closeInformationDialog(driver) } catch (_) {}
+              return variant
+            }
+          }
+          try { await closeInformationDialog(driver) } catch (_) {}
+        }
+      } catch (_) {}
+    }
+    await driver.delayMs(500)
+  }
+  return ''
+}
+
+/** Reveals the shared overflow menu and returns the action with the given id. */
+async function openMenuAction(driver: Driver, id: string): Promise<Component | null> {
+  for (let attempt: number = 0; attempt < 40; attempt++) {
+    const present = await driver.findComponent(ON.id(id))
+    if (present !== null) return present
+    const more = await driver.findComponent(ON.id('rkit-more'))
+    if (more !== null) {
+      try { await more.click() } catch (_) {}
+      await driver.delayMs(400)
+    }
+    const after = await driver.findComponent(ON.id(id))
+    if (after !== null) return after
+    await driver.delayMs(400)
+  }
+  return null
+}
+
 async function closeInformationDialog(driver: Driver): Promise<void> {
   const button = await driver.findComponent(ON.type('Button').within(ON.type('AlertDialog')))
   if (button === null) throw new Error('Reader information dialog button unavailable')
@@ -781,6 +904,13 @@ async function writeTranslationFixture(context: common.UIAbilityContext): Promis
 
 export default function readerProductionBackendTrialTest(): void {
   const selectedClass = abilityDelegatorRegistry.getArguments().parameters['-s class']
+  // Optional Debug-only gallery selector: a trial can target a gallery that
+  // already carries real data on the device (for example one whose translated
+  // page is already cached) without hardcoding a second constant.
+  const galleryArg = abilityDelegatorRegistry.getArguments().parameters['-s readerLabGallery']
+  if (typeof galleryArg === 'string' && /^[1-9][0-9]*$/.test(galleryArg.trim())) {
+    ACTIVE_GALLERY_ID = Number(galleryArg.trim())
+  }
   if (selectedClass === 'ReaderProductionInAppDetailEntriesTrial') {
     describe(selectedClass, (): void => {
       it('usesInAppBackendForReadCompactAndFullGridThenRestoresLegacy', 0, async (): Promise<void> => {
@@ -805,7 +935,7 @@ export default function readerProductionBackendTrialTest(): void {
             // Stay in this process: a relaunch would reset the selector to Legacy.
             // Detail is reached from real Home navigation and all three Reader
             // admissions below use real Detail/Grid controls plus the in-app snapshot.
-            await openDetailFromHistory(driver, GALLERY_ID)
+            await openDetailFromHistory(driver, ACTIVE_GALLERY_ID)
             const read = await waitDetailRead(driver)
             await read.click()
             if (backend === NextNReaderBackend.SHARED) await waitSharedReady(driver)
@@ -888,7 +1018,7 @@ export default function readerProductionBackendTrialTest(): void {
           original = await snapshotHistory(database)
           writeSnapshot(original)
           await seedFirstPage(database)
-          NextNReaderProductionFailureProbe.arm(GALLERY_ID.toString(), 0)
+          NextNReaderProductionFailureProbe.arm(ACTIVE_GALLERY_ID.toString(), 0)
 
           await (await waitDetailRead(driver)).click()
           const retry = await waitId(driver, 'rkit-retry-page-1', 160)
@@ -1209,17 +1339,90 @@ export default function readerProductionBackendTrialTest(): void {
             await driver.delayMs(100)
           }
           await capture(driver, 'translation-roundtrip-dispatched')
-          // Bounded outcome wait: the applied translated variant, or the terminal host failure copy.
-          let applied = false
+          // Bounded outcome wait: the terminal host failure copy surfaces in the
+          // host status strip, so it is visible without opening the menu.
           let hostOutcome = ''
-          for (let attempt = 0; attempt < 90; attempt++) {
-            if (await visibleText(driver, showOriginal) !== null) { applied = true; break }
+          for (let attempt: number = 0; attempt < 240; attempt++) {
             if (await visibleText(driver, failedLabel) !== null) { hostOutcome = failedLabel; break }
             await driver.delayMs(1000)
           }
+          // The applied label is an overflow-menu item, so it is resolved the same
+          // way the manual result trial resolves it. A translated page that merely
+          // appears is not the whole shared-reader claim: the host must also be able
+          // to show the original again and then re-show the result through its own
+          // action.
+          let applied = false
+          let sawOriginal = false
+          let sawResultAgain = false
+          let labelApplied = ''
+          let labelAfterOriginal = ''
+          let labelAfterRestore = ''
+          if (hostOutcome.length === 0) {
+            try {
+              // Poll the real label rather than a fixed expectation: the applied
+              // label lives in the overflow menu.
+              let label = ''
+              for (let attempt: number = 0; attempt < 120; attempt++) {
+                label = await observeTranslationActionLabel(driver)
+                if (label === showOriginal) { applied = true; break }
+                if (label.length > 0 && label !== AppStrings.get('reader_comic_translation_action')) {
+                  applied = label !== AppStrings.get('reader_comic_translation_action')
+                  break
+                }
+                await driver.delayMs(1000)
+              }
+              labelApplied = label
+              await capture(driver, 'translation-roundtrip-applied')
+              const variantApplied = await observeDisplayedVariant(driver)
+              console.info('[ReaderProductionBackendTrial] variantBeforeToggle=' + variantApplied)
+              if (applied) {
+                // Toggle back to the original through the same host action. The
+                // clicked action is dispatched by component, never by a presumed
+                // label, and the resulting state is reported as observed so a
+                // missing transition cannot be confused with a wrong expectation.
+                const clicked = await clickTranslationAction(driver)
+                console.info('[ReaderProductionBackendTrial] translationToggleBack clicked=' + clicked)
+                await driver.delayMs(2500)
+                await capture(driver, 'translation-roundtrip-original')
+                const variantAfterOriginal = await observeDisplayedVariant(driver)
+                console.info('[ReaderProductionBackendTrial] variantAfterToggle=' + variantAfterOriginal)
+                labelAfterOriginal = await observeTranslationActionLabel(driver)
+                console.info('[ReaderProductionBackendTrial] labelAfterToggle=' + labelAfterOriginal)
+                // Re-read after a longer settle so a lagging refresh is
+                // distinguishable from a stable host label.
+                await driver.delayMs(8000)
+                const labelSettled = await observeTranslationActionLabel(driver)
+                console.info('[ReaderProductionBackendTrial] labelAfterToggleSettled=' + labelSettled)
+                // Preserve the exact menu the host builds after the toggle so the
+                // label question is decided from the real layout, not a guess.
+                if (await openTranslationAction(driver) !== null) {
+                  await capture(driver, 'translation-menu-after-toggle')
+                  try { await driver.pressBack() } catch (_) {}
+                  await driver.delayMs(400)
+                }
+                sawOriginal = labelAfterOriginal === AppStrings.get('reader_comic_translation_show_result')
+                if (sawOriginal) {
+                  const clickedBack = await clickTranslationAction(driver)
+                  console.info('[ReaderProductionBackendTrial] translationToggleResult clicked=' + clickedBack)
+                  await driver.delayMs(2500)
+                  await capture(driver, 'translation-roundtrip-restored')
+                  const variantAfterRestore = await observeDisplayedVariant(driver)
+                  console.info('[ReaderProductionBackendTrial] variantAfterRestore=' + variantAfterRestore)
+                  labelAfterRestore = await observeTranslationActionLabel(driver)
+                  sawResultAgain = labelAfterRestore === showOriginal
+                }
+              }
+            } catch (error) {
+              console.info('[ReaderProductionBackendTrial] translationToggle unavailable=' +
+                String(error))
+            }
+          }
           await capture(driver, 'translation-roundtrip-after')
           console.info('[ReaderProductionBackendTrial] translationRoundTrip sawBusy=' + sawBusy +
-            ' applied=' + applied + ' hostOutcome=' + hostOutcome)
+            ' applied=' + applied + ' hostOutcome=' + hostOutcome +
+            ' sawOriginal=' + sawOriginal + ' sawResultAgain=' + sawResultAgain)
+          console.info('[ReaderProductionBackendTrial] translationToggleLabels applied=' + labelApplied +
+            ' afterOriginal=' + labelAfterOriginal + ' afterRestore=' + labelAfterRestore)
           // The shared-reader claim under test is that it reaches the real configured non-local
           // provider through its own action. Whether the host chain then renders the result is
           // recorded (applied) or reported as the host failure copy, never forced.
@@ -1365,7 +1568,7 @@ export default function readerProductionBackendTrialTest(): void {
           await launchBackend('shared', true)
           const context = await entryContext(driver)
           fixturePath = await writeTranslationFixture(context)
-          probeEpoch = translationProbe.arm(`${GALLERY_ID}`, fixturePath,
+          probeEpoch = translationProbe.arm(`${ACTIVE_GALLERY_ID}`, fixturePath,
             (sourceIndex: number, stage: string, _identity: string): void => {
               translationStages.add(`${sourceIndex}:${stage}`)
               console.info(`[ReaderProductionBackendTrial] translationProbe source=${sourceIndex} stage=${stage}`)
@@ -1452,7 +1655,7 @@ export default function readerProductionBackendTrialTest(): void {
           await launchBackend('shared', true)
           context = await entryContext(driver)
           fixturePath = await writeTranslationFixture(context)
-          probeEpoch = translationProbe.arm(`${GALLERY_ID}`, fixturePath,
+          probeEpoch = translationProbe.arm(`${ACTIVE_GALLERY_ID}`, fixturePath,
             (sourceIndex: number, stage: string, _identity: string): void => {
               translationStages.add(`${sourceIndex}:${stage}`)
               if (stage === 'prepare') prepareCounts.set(sourceIndex, (prepareCounts.get(sourceIndex) ?? 0) + 1)
@@ -1563,7 +1766,7 @@ export default function readerProductionBackendTrialTest(): void {
             await launchBackend('shared', true)
             context = await entryContext(driver)
             fixturePath = await writeTranslationFixture(context)
-            probeEpoch = translationProbe.arm(`${GALLERY_ID}`, fixturePath,
+            probeEpoch = translationProbe.arm(`${ACTIVE_GALLERY_ID}`, fixturePath,
               (sourceIndex: number, stage: string, _identity: string): void => {
                 translationStages.add(`${sourceIndex}:${stage}`)
                 if (stage === 'prepare') prepareCounts.set(sourceIndex, (prepareCounts.get(sourceIndex) ?? 0) + 1)
@@ -1690,7 +1893,7 @@ export default function readerProductionBackendTrialTest(): void {
             await launchBackend('shared', true)
             context = await entryContext(driver)
             fixturePath = await writeTranslationFixture(context)
-            probeEpoch = translationProbe.arm(`${GALLERY_ID}`, fixturePath,
+            probeEpoch = translationProbe.arm(`${ACTIVE_GALLERY_ID}`, fixturePath,
               (sourceIndex: number, stage: string, _identity: string): void => {
                 translationStages.add(`${sourceIndex}:${stage}`)
                 if (stage === 'prepare') prepareCounts.set(sourceIndex, (prepareCounts.get(sourceIndex) ?? 0) + 1)
@@ -1823,7 +2026,7 @@ export default function readerProductionBackendTrialTest(): void {
             await launchBackend('shared', true)
             context = await entryContext(driver)
             fixturePath = await writeTranslationFixture(context)
-            probeEpoch = translationProbe.arm(`${GALLERY_ID}`, fixturePath,
+            probeEpoch = translationProbe.arm(`${ACTIVE_GALLERY_ID}`, fixturePath,
               (sourceIndex: number, stage: string, _identity: string): void => {
                 translationStages.add(`${sourceIndex}:${stage}`)
                 if (stage === 'prepare') prepareCounts.set(sourceIndex, (prepareCounts.get(sourceIndex) ?? 0) + 1)
@@ -1838,13 +2041,13 @@ export default function readerProductionBackendTrialTest(): void {
             originalDouble = presentation.doublePageEnabled
             originalSpread = presentation.spreadLayoutMode
             for (const key of ['reader_mode', 'reader_double_page_enabled', 'reader_spread_layout',
-              `reader_column_mode:${GALLERY_ID}`]) {
+              `reader_column_mode:${ACTIVE_GALLERY_ID}`]) {
               settings.push(new SettingSnapshot(key, await settingValue(database, key)))
             }
             await ReaderPresentationService.setMode(context, NhReaderMode.PAGED_RTL)
             await ReaderPresentationService.setDoublePageEnabled(context, true)
             await ReaderPresentationService.setSpreadLayout(context, NhReaderSpreadLayout.SPLIT)
-            await ReaderSettingsRepository.saveColumnMode(context, GALLERY_ID, NhReaderColumnMode.ODD_LEFT)
+            await ReaderSettingsRepository.saveColumnMode(context, ACTIVE_GALLERY_ID, NhReaderColumnMode.ODD_LEFT)
             connectReaderPresentation().mode = NhReaderMode.PAGED_RTL
             connectReaderPresentation().doublePageEnabled = true
             connectReaderPresentation().spreadLayoutMode = NhReaderSpreadLayout.SPLIT
@@ -1931,7 +2134,7 @@ export default function readerProductionBackendTrialTest(): void {
             await launchBackend('shared', true)
             context = await entryContext(driver)
             fixturePath = await writeTranslationFixture(context)
-            probeEpoch = translationProbe.arm(`${GALLERY_ID}`, fixturePath,
+            probeEpoch = translationProbe.arm(`${ACTIVE_GALLERY_ID}`, fixturePath,
               (sourceIndex: number, stage: string, _identity: string): void => {
                 translationStages.add(`${sourceIndex}:${stage}`)
                 if (stage === 'prepare') prepareCounts.set(sourceIndex, (prepareCounts.get(sourceIndex) ?? 0) + 1)
@@ -1947,13 +2150,13 @@ export default function readerProductionBackendTrialTest(): void {
             originalDouble = presentation.doublePageEnabled
             originalSpread = presentation.spreadLayoutMode
             for (const key of ['reader_mode', 'reader_double_page_enabled', 'reader_spread_layout',
-              `reader_column_mode:${GALLERY_ID}`]) {
+              `reader_column_mode:${ACTIVE_GALLERY_ID}`]) {
               settings.push(new SettingSnapshot(key, await settingValue(database, key)))
             }
             await ReaderPresentationService.setMode(context, NhReaderMode.PAGED_RTL)
             await ReaderPresentationService.setDoublePageEnabled(context, true)
             await ReaderPresentationService.setSpreadLayout(context, NhReaderSpreadLayout.SPLIT)
-            await ReaderSettingsRepository.saveColumnMode(context, GALLERY_ID, NhReaderColumnMode.ODD_LEFT)
+            await ReaderSettingsRepository.saveColumnMode(context, ACTIVE_GALLERY_ID, NhReaderColumnMode.ODD_LEFT)
             connectReaderPresentation().mode = NhReaderMode.PAGED_RTL
             connectReaderPresentation().doublePageEnabled = true
             connectReaderPresentation().spreadLayoutMode = NhReaderSpreadLayout.SPLIT
@@ -2055,7 +2258,7 @@ export default function readerProductionBackendTrialTest(): void {
             await launchBackend('shared', true)
             context = await entryContext(driver)
             fixturePath = await writeTranslationFixture(context)
-            probeEpoch = translationProbe.arm(`${GALLERY_ID}`, fixturePath,
+            probeEpoch = translationProbe.arm(`${ACTIVE_GALLERY_ID}`, fixturePath,
               (sourceIndex: number, stage: string, _identity: string): void => {
                 translationStages.add(`${sourceIndex}:${stage}`)
                 if (stage === 'prepare') prepareCounts.set(sourceIndex, (prepareCounts.get(sourceIndex) ?? 0) + 1)
@@ -2070,13 +2273,13 @@ export default function readerProductionBackendTrialTest(): void {
             originalDouble = presentation.doublePageEnabled
             originalSpread = presentation.spreadLayoutMode
             for (const key of ['reader_mode', 'reader_double_page_enabled', 'reader_spread_layout',
-              `reader_column_mode:${GALLERY_ID}`]) {
+              `reader_column_mode:${ACTIVE_GALLERY_ID}`]) {
               settings.push(new SettingSnapshot(key, await settingValue(database, key)))
             }
             await ReaderPresentationService.setMode(context, NhReaderMode.PAGED_RTL)
             await ReaderPresentationService.setDoublePageEnabled(context, true)
             await ReaderPresentationService.setSpreadLayout(context, NhReaderSpreadLayout.SPLIT)
-            await ReaderSettingsRepository.saveColumnMode(context, GALLERY_ID, NhReaderColumnMode.ODD_LEFT)
+            await ReaderSettingsRepository.saveColumnMode(context, ACTIVE_GALLERY_ID, NhReaderColumnMode.ODD_LEFT)
             connectReaderPresentation().mode = NhReaderMode.PAGED_RTL
             connectReaderPresentation().doublePageEnabled = true
             connectReaderPresentation().spreadLayoutMode = NhReaderSpreadLayout.SPLIT
@@ -2199,7 +2402,7 @@ export default function readerProductionBackendTrialTest(): void {
             await launchBackend('shared', true)
             context = await entryContext(driver)
             fixturePath = await writeTranslationFixture(context)
-            probeEpoch = translationProbe.arm(`${GALLERY_ID}`, fixturePath,
+            probeEpoch = translationProbe.arm(`${ACTIVE_GALLERY_ID}`, fixturePath,
               (sourceIndex: number, stage: string, _identity: string): void => {
                 translationStages.add(`${sourceIndex}:${stage}`)
                 if (stage === 'prepare') prepareCounts.set(sourceIndex, (prepareCounts.get(sourceIndex) ?? 0) + 1)
@@ -2315,7 +2518,7 @@ export default function readerProductionBackendTrialTest(): void {
             await launchBackend('shared', true)
             context = await entryContext(driver)
             fixturePath = await writeTranslationFixture(context)
-            probeEpoch = translationProbe.arm(`${GALLERY_ID}`, fixturePath,
+            probeEpoch = translationProbe.arm(`${ACTIVE_GALLERY_ID}`, fixturePath,
               (sourceIndex: number, stage: string, _identity: string): void => {
                 translationStages.add(`${sourceIndex}:${stage}`)
                 if (stage === 'prepare') prepareCounts.set(sourceIndex, (prepareCounts.get(sourceIndex) ?? 0) + 1)
@@ -2459,7 +2662,7 @@ export default function readerProductionBackendTrialTest(): void {
             await launchBackend('shared', true)
             context = await entryContext(driver)
             fixturePath = await writeTranslationFixture(context)
-            probeEpoch = translationProbe.arm(`${GALLERY_ID}`, fixturePath,
+            probeEpoch = translationProbe.arm(`${ACTIVE_GALLERY_ID}`, fixturePath,
               (sourceIndex: number, stage: string, _identity: string): void => {
                 translationStages.add(`${sourceIndex}:${stage}`)
                 if (stage === 'prepare') prepareCounts.set(sourceIndex, (prepareCounts.get(sourceIndex) ?? 0) + 1)
@@ -2584,7 +2787,7 @@ export default function readerProductionBackendTrialTest(): void {
             await launchBackend('shared', true)
             context = await entryContext(driver)
             fixturePath = await writeTranslationFixture(context)
-            probeEpoch = translationProbe.arm(`${GALLERY_ID}`, fixturePath,
+            probeEpoch = translationProbe.arm(`${ACTIVE_GALLERY_ID}`, fixturePath,
               (sourceIndex: number, stage: string, _identity: string): void => {
                 translationStages.add(`${sourceIndex}:${stage}`)
                 if (stage === 'prepare') prepareCounts.set(sourceIndex, (prepareCounts.get(sourceIndex) ?? 0) + 1)
@@ -2869,20 +3072,20 @@ export default function readerProductionBackendTrialTest(): void {
             savedDoublePage = presentation.doublePageEnabled
             savedSpread = presentation.spreadLayoutMode
             for (const key of ['reader_mode', 'reader_double_page_enabled', 'reader_spread_layout',
-              `reader_column_mode:${GALLERY_ID}`]) {
+              `reader_column_mode:${ACTIVE_GALLERY_ID}`]) {
               settings.push(new SettingSnapshot(key, await settingValue(database, key)))
             }
             await ReaderPresentationService.setMode(context, NhReaderMode.PAGED_RTL)
             await ReaderPresentationService.setDoublePageEnabled(context, true)
             await ReaderPresentationService.setSpreadLayout(context, NhReaderSpreadLayout.SPLIT)
-            await ReaderSettingsRepository.saveColumnMode(context, GALLERY_ID, NhReaderColumnMode.ODD_LEFT)
+            await ReaderSettingsRepository.saveColumnMode(context, ACTIVE_GALLERY_ID, NhReaderColumnMode.ODD_LEFT)
             await seedHistoryPage(database, 6)
 
             expect(connectNextNReaderBackendSelection().current()).assertEqual(NextNReaderBackend.SHARED)
             const source = await findFullThumbnail(driver, 2)
             const sourceId = await source.getId()
             const before = await source.getBounds()
-            probeEpoch = ReaderTrialOriginalProbe.arm(GALLERY_ID.toString(), 2)
+            probeEpoch = ReaderTrialOriginalProbe.arm(ACTIVE_GALLERY_ID.toString(), 2)
             await capture(driver, 'spread-source')
             await source.click()
             const held = await waitProductionSpreadHeld(driver, probeEpoch)
@@ -2961,20 +3164,20 @@ export default function readerProductionBackendTrialTest(): void {
           savedDoublePage = presentation.doublePageEnabled
           savedSpread = presentation.spreadLayoutMode
           for (const key of ['reader_mode', 'reader_double_page_enabled', 'reader_spread_layout',
-            `reader_column_mode:${GALLERY_ID}`]) {
+            `reader_column_mode:${ACTIVE_GALLERY_ID}`]) {
             settings.push(new SettingSnapshot(key, await settingValue(database, key)))
           }
           await ReaderPresentationService.setMode(context, NhReaderMode.PAGED_RTL)
           await ReaderPresentationService.setDoublePageEnabled(context, true)
           await ReaderPresentationService.setSpreadLayout(context, NhReaderSpreadLayout.SPLIT)
-          await ReaderSettingsRepository.saveColumnMode(context, GALLERY_ID, NhReaderColumnMode.EVEN_LEFT)
+          await ReaderSettingsRepository.saveColumnMode(context, ACTIVE_GALLERY_ID, NhReaderColumnMode.EVEN_LEFT)
           await seedHistoryPage(database, 6)
 
           expect(connectNextNReaderBackendSelection().current()).assertEqual(NextNReaderBackend.SHARED)
           const coverSource = await findFullThumbnail(driver, 0)
           const coverSourceId = await coverSource.getId()
           const coverBefore = await coverSource.getBounds()
-          probeEpoch = ReaderTrialOriginalProbe.arm(GALLERY_ID.toString(), 0)
+          probeEpoch = ReaderTrialOriginalProbe.arm(ACTIVE_GALLERY_ID.toString(), 0)
           await capture(driver, 'singleton-cover-source')
           await coverSource.click()
           const coverHeld = await waitProductionSingletonHeld(driver, probeEpoch, 0)
@@ -2996,7 +3199,7 @@ export default function readerProductionBackendTrialTest(): void {
           const tailSource = await findCurrentFullThumbnail(driver, 13)
           const tailSourceId = await tailSource.getId()
           const tailBefore = await tailSource.getBounds()
-          probeEpoch = ReaderTrialOriginalProbe.arm(GALLERY_ID.toString(), 13)
+          probeEpoch = ReaderTrialOriginalProbe.arm(ACTIVE_GALLERY_ID.toString(), 13)
           await capture(driver, 'singleton-tail-source')
           await tailSource.click()
           const tailHeld = await waitProductionSingletonHeld(driver, probeEpoch, 13)
@@ -3254,7 +3457,7 @@ export default function readerProductionBackendTrialTest(): void {
             originalDouble = presentation.doublePageEnabled
             originalSpread = presentation.spreadLayoutMode
             for (const key of ['reader_mode', 'reader_double_page_enabled', 'reader_spread_layout',
-              `reader_column_mode:${GALLERY_ID}`]) {
+              `reader_column_mode:${ACTIVE_GALLERY_ID}`]) {
               settings.push(new SettingSnapshot(key, await settingValue(database, key)))
             }
             mainWindow = await window.getLastWindow(context)
@@ -3267,7 +3470,7 @@ export default function readerProductionBackendTrialTest(): void {
             await ReaderPresentationService.setMode(context, NhReaderMode.PAGED_RTL)
             await ReaderPresentationService.setDoublePageEnabled(context, true)
             await ReaderPresentationService.setSpreadLayout(context, NhReaderSpreadLayout.SPLIT)
-            await ReaderSettingsRepository.saveColumnMode(context, GALLERY_ID, NhReaderColumnMode.ODD_LEFT)
+            await ReaderSettingsRepository.saveColumnMode(context, ACTIVE_GALLERY_ID, NhReaderColumnMode.ODD_LEFT)
             connectReaderPresentation().mode = NhReaderMode.PAGED_RTL
             connectReaderPresentation().doublePageEnabled = true
             connectReaderPresentation().spreadLayoutMode = NhReaderSpreadLayout.SPLIT
@@ -3450,7 +3653,7 @@ export default function readerProductionBackendTrialTest(): void {
              const top2After = checkTop('rkit-continuous-page-2')
               const top3After = checkTop('rkit-continuous-page-3')
              const delta2 = (top2Before !== -999999 && top2After !== -999999) ? (top2After - top2Before) : 'none'
-              const liveIndex = connectNhReadProgress().index(GALLERY_ID)
+              const liveIndex = connectNhReadProgress().index(ACTIVE_GALLERY_ID)
              let text = 'null'
              const counter = await driver.findComponent(ON.id('rkit-chrome-page')) ??
                 await driver.findComponent(ON.id('rkit-persistent-page'))
@@ -3481,7 +3684,7 @@ export default function readerProductionBackendTrialTest(): void {
               throw new Error(`stepLog: ${stepLog.slice(-10).join(' | ')}`)
             }
             expect(currentPage).assertEqual(3)
-            expect(connectNhReadProgress().index(GALLERY_ID)).assertEqual(3)
+            expect(connectNhReadProgress().index(ACTIVE_GALLERY_ID)).assertEqual(3)
             expect(await driver.findComponent(
               ON.type('Image').within(ON.id('rkit-continuous-page-3'))) !== null).assertTrue()
             await capture(driver, 'continuous-rotation-landscape-next')
