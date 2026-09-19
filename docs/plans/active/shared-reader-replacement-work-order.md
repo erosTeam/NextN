@@ -19,6 +19,8 @@ deletes user data.
 
 进度板行状态口径（2026-09-19）：下表 P1—P12 与 **P15** 均为 ACCEPTED。P15「裁边强度」未进入共享裁边链是 2026-09-19 新发现的宿主缺口，已在 237 真机闭合；其行内证据与状态取代任何把它视为未决的旧表述。
 
+P15 证据收紧（2026-09-19，reader-kit 7fbf6b0）：因 P16 改了共享 reader-ui，P15 在 237 以 7fbf6b0 复跑（nextn-237-p15-pertrial），并把比对口径从「最近一条日志」收紧为「按裁边源 identity 逐槽比对」：page=3，compared=3 changed=3，三个保留源（reader-lab-asset:1/2/3）在同一页上 conservative→strong 各自改变，Tests run: 1, Failure: 0, Pass: 1。旧口径可能让两个不同槽位互相顶替，故被取代。
+
 P16 三宿主复验状态（2026-09-19，reader-kit 7fbf6b0，三端 pin 均已同步）：
 NextN 在 237 以普通共享入口复验通过（nextn-237-p16-cropsetting2，initialCropped=true croppedAfterHostSwitchOff=false，页码保持 3，Pass 1；修复前同路径为 true 且失败，见 nextn-237-p16-cropsetting）；
 NextE 在 237 以普通入口复验通过（nexte-237-p16-cropsetting，page=4 initialCropped=true croppedAfterHostSwitchOff=false，Pass 1）；

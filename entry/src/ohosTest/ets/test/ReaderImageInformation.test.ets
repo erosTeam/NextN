@@ -93,38 +93,30 @@ async function croppedCellWidth(driver: Driver, context: common.UIAbilityContext
   throw new Error(`Shared page crop geometry unavailable: ${id}`)
 }
 
-class SharedCropObservation {
-  strength: string = ''
-  bounds: string = ''
-}
-
 /**
  * The shared host adapter logs the strength it handed to the detector together
- * with the applied insets. Reading that channel proves the host setting reached
- * the shared crop chain and changed real geometry, instead of trusting a
- * settings write and assuming the wiring.
+ * with the applied insets, per crop-source identity. Keying by identity lets the
+ * trial compare the SAME page slot across strengths instead of whichever source
+ * logged last, which would not prove a per-slot re-detection.
  */
-function sharedDetectObservation(strength: string): SharedCropObservation {
-  const result = new SharedCropObservation()
+function sharedDetectBoundsBySource(strength: string): Map<string, string> {
+  const result: Map<string, string> = new Map<string, string>()
   const lines: string[] = DiagnosticLogger.exportBufferedText().split('\n')
-  for (let index = lines.length - 1; index >= 0; index--) {
-    const match = /reader-crop\.shared_detect\b[^\n]*strength=(\S+) bounds=(\S+)/.exec(lines[index])
-    if (match !== null && match[1] === strength) {
-      result.strength = match[1]
-      result.bounds = match[2]
-      return result
-    }
+  for (const line of lines) {
+    const match = /reader-crop\.shared_detect\b[^\n]*identity=(\S+) strength=(\S+) bounds=(\S+)/.exec(line)
+    if (match !== null && match[2] === strength) result.set(match[1], match[3])
   }
   return result
 }
 
-async function waitSharedDetectObservation(driver: Driver, strength: string): Promise<SharedCropObservation> {
+async function waitSharedDetectBoundsBySource(driver: Driver, strength: string): Promise<Map<string, string>> {
+  let observed: Map<string, string> = new Map<string, string>()
   for (let attempt = 0; attempt < 60; attempt++) {
-    const observed: SharedCropObservation = sharedDetectObservation(strength)
-    if (observed.strength.length > 0) return observed
+    observed = sharedDetectBoundsBySource(strength)
+    if (observed.size > 0) return observed
     await driver.delayMs(250)
   }
-  return new SharedCropObservation()
+  return observed
 }
 
 async function informationRecoveryTrial(work: string, unit: string, mode: string): Promise<void> {
@@ -247,27 +239,39 @@ export default function readerImageInformationTest(): void {
           // page the shared surface actually shows instead of assuming one.
           const openedPage: number = await informationPage(driver)
           const openedIndex: number = openedPage - 1
-          const conservative = await waitSharedDetectObservation(driver, ReaderPageCropStrength.CONSERVATIVE)
+          const conservative = await waitSharedDetectBoundsBySource(driver, ReaderPageCropStrength.CONSERVATIVE)
           const conservativeWidth: number = await croppedCellWidth(driver, context, openedIndex)
-          expect(conservative.strength).assertEqual(ReaderPageCropStrength.CONSERVATIVE)
+          expect(conservative.size > 0).assertTrue()
           await captureInformation(driver, 'strength-before')
           await ReaderPresentationService.setCropStrengthPaged(context, ReaderPageCropStrength.STRONG)
-          const strong = await waitSharedDetectObservation(driver, ReaderPageCropStrength.STRONG)
+          const strong = await waitSharedDetectBoundsBySource(driver, ReaderPageCropStrength.STRONG)
           await driver.delayMs(1200)
           expect(await informationPage(driver)).assertEqual(openedPage)
           const strongWidth: number = await croppedCellWidth(driver, context, openedIndex)
           await captureInformation(driver, 'strength-after')
-          const changed: boolean = conservative.bounds !== strong.bounds
-          await delegator.print(`ReaderSharedCropStrength page=${openedPage} ` +
-            `conservative=${conservative.bounds} strong=${strong.bounds} geometryChanged=${changed} ` +
-            `widthBefore=${conservativeWidth.toFixed(3)} widthAfter=${strongWidth.toFixed(3)}`)
-          // Both values must reach the shared crop chain instead of collapsing to STANDARD.
-          expect(conservative.strength).assertEqual(ReaderPageCropStrength.CONSERVATIVE)
-          expect(strong.strength).assertEqual(ReaderPageCropStrength.STRONG)
-          // The retained page must be re-detected: these thresholds are distinct,
-          // so the same page cannot legitimately report identical insets.
-          expect(conservative.bounds.length > 0).assertTrue()
-          expect(changed).assertTrue()
+          // Compare the SAME source identity across strengths. Comparing only the
+          // most recent line would let two different slots stand in for one page and
+          // would not prove a per-slot re-detection.
+          let compared: number = 0
+          let changed: number = 0
+          const detail: string[] = []
+          conservative.forEach((before: string, identity: string): void => {
+            const after: string | undefined = strong.get(identity)
+            if (after === undefined) return
+            compared += 1
+            if (after !== before) changed += 1
+            detail.push(`${identity}:${before}->${after}`)
+          })
+          await delegator.print(`ReaderSharedCropStrength page=${openedPage} compared=${compared} ` +
+            `changed=${changed} widthBefore=${conservativeWidth.toFixed(3)} widthAfter=${strongWidth.toFixed(3)} ` +
+            `pairs=${detail.join(' ')}`)
+          // Both strengths must reach the shared crop chain instead of collapsing to STANDARD.
+          expect(conservative.size > 0).assertTrue()
+          expect(strong.size > 0).assertTrue()
+          // Those thresholds are distinct, so at least one retained source must
+          // report different insets after the switch.
+          expect(compared > 0).assertTrue()
+          expect(changed > 0).assertTrue()
           await (await driver.findComponent(ON.id('rkit-close'))).click()
           await driver.delayMs(800)
         } catch (error) {
