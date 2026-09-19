@@ -8207,3 +8207,41 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   cache or persistent Reader setting remains changed. This is not permission to
   switch the default and does not close NextE/Koma adoption, upgrade/rollback,
   repeated cold entry, or the complete Package5 route matrix.
+
+
+## Shared Reader P13 — real translated page lands in the shared reader and toggles back — 237 — PASS (device)
+
+- **What was run:** `ReaderProductionNonLocalTranslationRoundTripTrial` on 237
+  (`VDE-AL00`, 1320x2120), ordinary shared entry, `install -r` only, real gallery
+  **673508 page 1** — the page whose whole-page result the real service already
+  cached on this device. No user setting was written; the trial restores the
+  history row it seeded.
+- **Landing:** `[NextNSharedTranslation] prepare`/`applied source=1` completed in
+  18 ms and the window carried no `torii_whole_page_request`, i.e. the shared
+  reader published the device's own cached translated page rather than a new
+  cloud call. The shared surface's own image-information sheet read back
+  `当前：译图` and the frame shows the Chinese translated page at `2 / 83`.
+- **Toggle back and re-apply:** the same host action then returned to the original
+  (`当前：源图片`, English original on the same `2 / 83`) and, after the fix below,
+  offered `显示译图` again and returned the translated page
+  (`variantAfterRestore=译图`). The `applied` and `restored` whole-screen frames
+  are pixel-identical (0.0000 changed) and each differs from `original` by 0.3138.
+- **Defect found and fixed in the same run:** after toggling back, the host action
+  kept reading `显示原图` with its check mark for the whole settled window, so a
+  user could not return to the translation from the UI. `translated` was
+  `frame.asset.variant === 'translated' || appliedPages.includes(i)`, and a merely hidden page
+  keeps its translated plan. `hidden` now takes priority in
+  `NextNReaderLabPage.translationActions()` / `handleTranslationAction()`, matching
+  the legacy Reader's `readerTranslatedImageUri()` semantics. The same defect and
+  fix exist in NextE's adapter (`e03c22eb`, verified on 237 as well); Koma has no
+  translation host action and needs no change.
+- **Hypium:** `Tests run: 1, Failure: 0, Error: 0, Pass: 1`.
+- **Not closed:** a **fresh** (non-cached, shared-surface-published) self-hosted
+  result. That path stays blocked by the external endpoint returning HTTP 500 even
+  for a two-token text-only request, which the paired legacy run reproduces; it is
+  an external condition, not a migration gap. Default replacement remains a
+  separate user decision.
+- **Evidence:** `.hvigor/outputs/nextn-237-p13-togglefix/run/run-metadata.json`,
+  `.hvigor/outputs/nextn-237-p13-recv5/run/{applied,original,restored}.png`,
+  `.hvigor/outputs/nextn-237-p13-provclassify/run/run-metadata.json`,
+  `.hvigor/outputs/nexte-237-togglefix2/run/run-metadata.json`.
