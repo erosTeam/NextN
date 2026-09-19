@@ -89,7 +89,7 @@ Package 5 的下一动作（2026-09-19 用户收敛约束后修订）：**只做
 
 | 宿主 | 分支 | head | 匹配构建产物（debug） | 相对上次 pin 的产品源码差异 |
 | --- | --- | --- | --- | --- |
-| NextN | `codex/shared-reader-refactor` | `ade5c584` | `entry/build/default/outputs/default/entry-default-signed.hap`（48,165,158 B）+ `ohosTest/entry-ohosTest-signed.hap` | P15 裁边强度入链、P16 pin、合入 main 的 WebDAV 同步修复 |
+| NextN | `codex/shared-reader-refactor` | `99a6d690` | `entry/build/default/outputs/default/entry-default-signed.hap`（48,165,158 B）+ `ohosTest/entry-ohosTest-signed.hap` | P15 裁边强度入链、P16 pin、合入 main 的 WebDAV 同步修复 |
 | NextE | `codex/shared-reader-refactor` | `5b005dec` | `entry/build/default/outputs/default/entry-default-signed.hap`（63,761,495 B）+ `ohosTest/entry-ohosTest-signed.hap` | 隐藏页翻译动作修复、P16 pin、合入 main 的 WebDAV 同步修复 |
 | Koma | `codex/koma-reader-refactor` | `e36381cf` | `entry/build/default/outputs/default/entry-default-signed.hap`（15,065,667 B） | P16 pin（无该路径，见例外） |
 
@@ -99,7 +99,7 @@ Koma 产物说明：本轮接手时该 HAP 的 mtime（11:38）早于它自己�
 
 **每宿主替代结论与必要例外**（逐宿主写清，不外推）：
 
-- **NextN = 主路径可替代**。P1—P12、P15、P16 ACCEPTED。例外（均非迁移缺口）：P13 新鲜 self-hosted 发布受外部端点 5xx 阻塞（下节边界）；P14 云侧 Torii 负载 MIME 标签（EXTERNAL-OPEN）。
+- **NextN = 主路径可替代**。P1—P12、P15、P16 ACCEPTED。release fail-closed 门禁已在本候选（`7fbf6b0`）于 237 重验：release 构建（`debug: false`）下「我的 → 阅读」设置组**无 rehearsal 选择行**，普通入口（我的 → 历史记录 → Detail → 阅读）落在 **legacy** 阅读面（`legacy-reader-surface`、0 个 `rkit-*`，实拍真实漫画页 `3/88`）。例外（均非迁移缺口）：P13 新鲜 self-hosted 发布受外部端点 5xx 阻塞（下节边界）；P14 云侧 Torii 负载 MIME 标签（EXTERNAL-OPEN）。
 - **NextE = 主路径可替代**。公共面 + NextE 宿主动作/翻译入口，真实超分结果应用已验（见上 NextE 行）。P16 在 `7fbf6b0` 上经 237 普通入口复验通过（`nexte-237-p16-cropsetting`，`page=4 initialCropped=true croppedAfterHostSwitchOff=false`，Pass 1）。**本轮补验**：该 P16 记录早于 NextE 合入 main（"隐藏页翻译动作"修复 + WebDAV 合并，落在 `entry/src/main` 与 `shared/src/main`），故在合并后的当前 head 上重跑同一试次，`nexte-237-merge-p16`：`ReaderSharedCropSetting page=4 initialCropped=true croppedAfterHostSwitchOff=false`，`Tests run: 1, Failure: 0, Error: 0, Pass: 1`（`install -r`、237）。例外：P13 同因外部端点（NextE 无 P15 缺口，"裁边强度"档在其 legacy 与共享链本就都传 strength）。
 - **Koma = 主路径可替代**。章节编排/切换/读完、设置承接（含阅读背景）、公共阅读面均已验。例外：**P16 路径在 Koma 不存在，非缺口**——源码核实其宿主阅读设置面板 `entry/src/main/ets/components/ReaderSettingsContent.ets` 只含阅读模式/方向/双页布局/双页排布/翻页动画/点按区/阅读背景/缩放质量/页码/全屏/常亮/自动翻页/预加载/音量键/页间距/宽图模式这些行，**没有「自动裁剪页面留边」行**；Koma 用户改裁边只能走共享运行菜单 `rkit-crop-toggle`，该路径本就走 `setCropEnabled`，因此 P16 描述的宿主设置面板路径在 Koma 无对应关系，不做机械同步。Koma 无外部服务阻断；「读完」持久化保留历史证据界限（原始行已在协议清理中删除），不为此重跑全套。
 
