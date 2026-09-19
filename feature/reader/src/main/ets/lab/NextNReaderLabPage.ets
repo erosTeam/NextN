@@ -149,8 +149,8 @@ export struct NextNReaderLabPage {
           Number(this.request.work),
           this.request.routeEpoch ?? 0,
         ),
-      ))
-      : new NextNReaderLabAdapter(context)
+      ), (): string => this.cropStrength())
+      : new NextNReaderLabAdapter(context, undefined, (): string => this.cropStrength())
     this.adapter = adapter
     if (this.request.productionSources === true) this.restoreComicVisualRouteIdentity()
     const productionFailurePage: number = this.request.productionSources === true && context.applicationInfo.debug
@@ -189,9 +189,11 @@ export struct NextNReaderLabPage {
     const catalog = this.originalProbeEpoch !== 0 && ReaderTrialOriginalProbe.read().unknownMetrics ?
       new NextNReaderOriginalProbeCatalog(adapter, this.request.work, this.request.pageIndex) : adapter
     const variantProvider = new NextNReaderSuperResolutionProvider(context, this.originalProbe ?? productionProvider,
-      (): NextNReaderSuperResolutionConfiguration => this.superResolutionConfiguration())
+      (): NextNReaderSuperResolutionConfiguration => this.superResolutionConfiguration(),
+      (): string => this.cropStrength())
     const translationProvider = new NextNReaderTranslationProvider(context, variantProvider,
-      (page: ReaderPage): NextNReaderTranslationConfiguration => this.translationConfiguration(page))
+      (page: ReaderPage): NextNReaderTranslationConfiguration => this.translationConfiguration(page),
+      (): string => this.cropStrength())
     const assetProvider: ReaderAssetProvider = lab === null ? translationProvider :
       new ReaderLabAssetProbe(translationProvider, lab.thumbnailFailurePage,
         lab.informationProbe, this.request.readingChrome ? lab.failurePage : -1,
@@ -822,6 +824,13 @@ export struct NextNReaderLabPage {
       : this.readerPresentation.cropBordersPaged
   }
 
+  /** Mode-specific detection strength; must reach every shared crop source and the crop-policy revision. */
+  private cropStrength(): string {
+    return this.readerPresentation.mode === NhReaderMode.VERTICAL
+      ? this.readerPresentation.cropStrengthContinuous
+      : this.readerPresentation.cropStrengthPaged
+  }
+
   @Builder
   private readerContent() {
     Column() {
@@ -849,7 +858,8 @@ export struct NextNReaderLabPage {
               // Entry animation is optional; an incompatible cropped target cancels the flight.
               // Never remove a production reading feature merely because the source was a thumbnail.
               cropPolicy: new ReaderCropPolicy(this.initialCropBorders(),
-                this.request.productionSources === true || this.labRequest?.cropBorders === true),
+                this.request.productionSources === true || this.labRequest?.cropBorders === true,
+                this.cropStrength()),
               hostSettings: this.hostSettingsAvailable
                 ? new ReaderHostSettings((): void => { this.openHostSettings() }) : null,
               externalOpen: this.request.productionSources === true

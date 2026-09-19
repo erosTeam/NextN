@@ -16,6 +16,7 @@ import {
 import { NextNReaderFailure } from './NextNReaderFailure'
 import { NextNReaderProgressDetailProvider } from './NextNReaderProgressPersistence'
 import { NextNNetworkReaderDataSource, NextNReaderDataSource } from './NextNReaderDataSource'
+import { DiagnosticLogger } from 'shared'
 
 const LOCAL_FIXTURE_WORK: string = '__rkit_local_fixture__'
 const LOCAL_FIXTURE_PAGE_COUNT: number = 3
@@ -35,12 +36,19 @@ class NextNReaderCropSource implements ReaderImageCropSource {
   private static sequence: number = 0
   private path: string
   private identity: string
-  constructor(path: string) {
+  private strength: () => string
+  constructor(path: string, strength: () => string) {
     this.path = path
     this.identity = `reader-lab-asset:${++NextNReaderCropSource.sequence}`
+    this.strength = strength
   }
   async read(): Promise<ReaderImageCropBounds> {
-    const bounds = await ReaderPageCropService.detect(this.path, this.identity)
+    const strength: string = this.strength()
+    const bounds = await ReaderPageCropService.detect(this.path, this.identity, strength)
+    // The applied insets are the observable result of the host strength, so the
+    // trial compares real bounds instead of trusting the requested value.
+    DiagnosticLogger.info('reader-crop', 'shared_detect',
+      `identity=${this.identity} strength=${strength} bounds=${bounds.left},${bounds.top},${bounds.right},${bounds.bottom}`)
     return new ReaderImageCropBounds(bounds.left, bounds.top, bounds.right, bounds.bottom)
   }
 }
@@ -56,10 +64,13 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
   private context: common.UIAbilityContext
   private details: Map<string, NhGalleryDetail> = new Map()
   private source: NextNReaderDataSource
+  private cropStrength: () => string
 
-  constructor(context: common.UIAbilityContext, source?: NextNReaderDataSource) {
+  constructor(context: common.UIAbilityContext, source?: NextNReaderDataSource,
+    cropStrength: () => string = (): string => '') {
     this.context = context
     this.source = source ?? new NextNNetworkReaderDataSource()
+    this.cropStrength = cropStrength
   }
 
   /** Current unit metadata for the optional host progress adapter only. */
@@ -183,7 +194,7 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
       const facts = new ReaderImageInformation()
       facts.variant = 'source'
       const asset = new ReaderAsset(localUri, () => {}, new ReaderFileInformation(localPath, facts))
-      if (localPath.length > 0) asset.crop = new NextNReaderCropSource(localPath)
+      if (localPath.length > 0) asset.crop = new NextNReaderCropSource(localPath, this.cropStrength)
       return asset
     }
     if (kind === 'thumbnail') return new ReaderAsset(source.thumbnailUrl)
@@ -199,7 +210,7 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
       (): void => { ReaderImageCacheService.release(this.context, lease) },
       new ReaderFileInformation(result.localPath, facts),
       (): void => { ReaderImageCacheService.markPresented(lease) })
-    if (result.localPath.length > 0) asset.crop = new NextNReaderCropSource(result.localPath)
+    if (result.localPath.length > 0) asset.crop = new NextNReaderCropSource(result.localPath, this.cropStrength)
     return asset
   }
 

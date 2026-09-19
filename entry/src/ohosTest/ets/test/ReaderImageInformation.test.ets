@@ -1,12 +1,16 @@
 import { describe, expect, it } from '@ohos/hypium'
-import { abilityDelegatorRegistry, Driver, ON } from '@kit.TestKit'
+import { abilityDelegatorRegistry, Component, Driver, ON } from '@kit.TestKit'
+import { common } from '@kit.AbilityKit'
 import { KeyCode } from '@kit.InputKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { window } from '@kit.ArkUI'
-import { connectReaderPresentation } from 'shared'
+import {
+  connectReaderPresentation, DiagnosticLogger, NhReaderMode, ReaderPageCropStrength, ReaderPresentationService,
+} from 'shared'
 
 const captureNames: string[] = ['baseline', 'single', 'single-return', 'spread', 'choice', 'left', 'right', 'returned', 'next', 'closed', 'exception',
-  'recovery-baseline', 'failed', 'pending', 'changed', 'late', 'recovery-info', 'recovery-returned', 'recovery-closed']
+  'recovery-baseline', 'failed', 'pending', 'changed', 'late', 'recovery-info', 'recovery-returned', 'recovery-closed',
+  'strength-before', 'strength-after']
 function clearInformationCaptures(): void {
   const cache = abilityDelegatorRegistry.getAbilityDelegator().getAppContext().cacheDir
   for (const name of captureNames) {
@@ -71,6 +75,56 @@ async function assertInformation(driver: Driver, page: number, name: string): Pr
 
 async function informationPage(driver: Driver): Promise<number> {
   return Number((await (await driver.findComponent(ON.id('rkit-chrome-page'))).getText()).split('/')[0].trim())
+}
+
+/**
+ * Real crop geometry of the retained shared page. The cell aspect ratio is
+ * derived from the applied crop region, so a strength change must move it.
+ */
+async function croppedCellWidth(driver: Driver, context: common.UIAbilityContext,
+  sourceIndex: number): Promise<number> {
+  const utils = (await window.getLastWindow(context)).getUIContext().getComponentUtils()
+  const id = `rkit-part-${sourceIndex}-whole`
+  for (let attempt = 0; attempt < 60; attempt++) {
+    const rect = utils.getRectangleById(id)
+    if (rect.size.width > 0 && rect.size.height > 0) return rect.size.width
+    await driver.delayMs(250)
+  }
+  throw new Error(`Shared page crop geometry unavailable: ${id}`)
+}
+
+class SharedCropObservation {
+  strength: string = ''
+  bounds: string = ''
+}
+
+/**
+ * The shared host adapter logs the strength it handed to the detector together
+ * with the applied insets. Reading that channel proves the host setting reached
+ * the shared crop chain and changed real geometry, instead of trusting a
+ * settings write and assuming the wiring.
+ */
+function sharedDetectObservation(strength: string): SharedCropObservation {
+  const result = new SharedCropObservation()
+  const lines: string[] = DiagnosticLogger.exportBufferedText().split('\n')
+  for (let index = lines.length - 1; index >= 0; index--) {
+    const match = /reader-crop\.shared_detect\b[^\n]*strength=(\S+) bounds=(\S+)/.exec(lines[index])
+    if (match !== null && match[1] === strength) {
+      result.strength = match[1]
+      result.bounds = match[2]
+      return result
+    }
+  }
+  return result
+}
+
+async function waitSharedDetectObservation(driver: Driver, strength: string): Promise<SharedCropObservation> {
+  for (let attempt = 0; attempt < 60; attempt++) {
+    const observed: SharedCropObservation = sharedDetectObservation(strength)
+    if (observed.strength.length > 0) return observed
+    await driver.delayMs(250)
+  }
+  return new SharedCropObservation()
 }
 
 async function informationRecoveryTrial(work: string, unit: string, mode: string): Promise<void> {
@@ -147,6 +201,92 @@ export default function readerImageInformationTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
   const work = args['-s readerLabWork'], unit = args['-s readerLabUnit']
   const trial = args['-s class']
+  if (trial === 'ReaderSharedCropStrengthTrial' && typeof work === 'string' && work.length > 0) {
+    describe(trial, (): void => {
+      it('hostCropStrengthReachesTheSharedCropChainAndKeepsThePage', 0, async (): Promise<void> => {
+        clearInformationCaptures()
+        const driver = Driver.create(), delegator = abilityDelegatorRegistry.getAbilityDelegator()
+        const presentation = connectReaderPresentation()
+        const previousMode = presentation.mode
+        const previousCrop = presentation.cropBordersPaged
+        const previousStrength = presentation.cropStrengthPaged
+        const previousContinuousStrength = presentation.cropStrengthContinuous
+        const sourceIndex = 2
+        let context: common.UIAbilityContext | null = null
+        try {
+          // Real ordinary entry: select the shared backend, then reach Detail from
+          // the gallery cold route and press the real Read action. A direct overlay
+          // call would skip the host admission this trial is meant to cover.
+          await delegator.startAbility({ bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+            parameters: { nextn_reader_backend: 'shared', nextn_gallery_id: Number(work) } })
+          for (let attempt = 0; attempt < 40; attempt++) {
+            if (await driver.findComponent(ON.id('nextn-root-navigation')) !== null) break
+            await driver.delayMs(250)
+          }
+          expect(await driver.findComponent(ON.id('nextn-root-navigation')) !== null).assertTrue()
+          context = (await delegator.getCurrentTopAbility()).context
+          await ReaderPresentationService.restore(context)
+          // Exercise the real production preference: write it, observe the shared
+          // chain, then restore. No in-process substitute stands in for the value.
+          await ReaderPresentationService.setSuperResolutionEnabled(context, false)
+          await ReaderPresentationService.setMode(context, NhReaderMode.PAGED)
+          await ReaderPresentationService.setDoublePageEnabled(context, false)
+          await ReaderPresentationService.setCropBordersPaged(context, true)
+          await ReaderPresentationService.setCropStrengthPaged(context, ReaderPageCropStrength.CONSERVATIVE)
+          DiagnosticLogger.clear()
+          let read: Component | null = null
+          for (let attempt = 0; attempt < 120; attempt++) {
+            read = await driver.findComponent(ON.id('gallery-detail-read-action'))
+            if (read !== null) break
+            await driver.delayMs(250)
+          }
+          expect(read !== null).assertTrue()
+          await (read as Component).click()
+          await informationReady(driver)
+          // The gallery's own start page decides the index, so the trial uses the
+          // page the shared surface actually shows instead of assuming one.
+          const openedPage: number = await informationPage(driver)
+          const openedIndex: number = openedPage - 1
+          const conservative = await waitSharedDetectObservation(driver, ReaderPageCropStrength.CONSERVATIVE)
+          const conservativeWidth: number = await croppedCellWidth(driver, context, openedIndex)
+          expect(conservative.strength).assertEqual(ReaderPageCropStrength.CONSERVATIVE)
+          await captureInformation(driver, 'strength-before')
+          await ReaderPresentationService.setCropStrengthPaged(context, ReaderPageCropStrength.STRONG)
+          const strong = await waitSharedDetectObservation(driver, ReaderPageCropStrength.STRONG)
+          await driver.delayMs(1200)
+          expect(await informationPage(driver)).assertEqual(openedPage)
+          const strongWidth: number = await croppedCellWidth(driver, context, openedIndex)
+          await captureInformation(driver, 'strength-after')
+          const changed: boolean = conservative.bounds !== strong.bounds
+          await delegator.print(`ReaderSharedCropStrength page=${openedPage} ` +
+            `conservative=${conservative.bounds} strong=${strong.bounds} geometryChanged=${changed} ` +
+            `widthBefore=${conservativeWidth.toFixed(3)} widthAfter=${strongWidth.toFixed(3)}`)
+          // Both values must reach the shared crop chain instead of collapsing to STANDARD.
+          expect(conservative.strength).assertEqual(ReaderPageCropStrength.CONSERVATIVE)
+          expect(strong.strength).assertEqual(ReaderPageCropStrength.STRONG)
+          // The retained page must be re-detected: these thresholds are distinct,
+          // so the same page cannot legitimately report identical insets.
+          expect(conservative.bounds.length > 0).assertTrue()
+          expect(changed).assertTrue()
+          await (await driver.findComponent(ON.id('rkit-close'))).click()
+          await driver.delayMs(800)
+        } catch (error) {
+          await captureInformation(driver, 'exception')
+          throw error as Error
+        } finally {
+          if (context !== null) {
+            await ReaderPresentationService.setCropStrengthPaged(context, previousStrength)
+            await ReaderPresentationService.setCropStrengthContinuous(context, previousContinuousStrength)
+            await ReaderPresentationService.setCropBordersPaged(context, previousCrop)
+            await ReaderPresentationService.setMode(context, previousMode)
+          }
+          const close = await driver.findComponent(ON.id('rkit-close'))
+          if (close !== null) await close.click()
+        }
+      })
+    })
+    return
+  }
   if ((trial === 'ReaderCropToggleTrial' || trial === 'ReaderCropZoomToggleTrial') && typeof work === 'string' && work.length > 0) {
     describe(trial, (): void => {
       it('runtimeMenuCropOnOffRetainsPageAndRestoresGeometry', 0, async (): Promise<void> => {

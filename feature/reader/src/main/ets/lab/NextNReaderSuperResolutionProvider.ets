@@ -6,7 +6,7 @@ import {
 } from '@reader-kit/core'
 import { ReaderFileInformation } from '@reader-kit/ui'
 import {
-  NhReaderSuperResolutionModel, ReaderPageCropService, ReaderSuperResolutionResult,
+  DiagnosticLogger, NhReaderSuperResolutionModel, ReaderPageCropService, ReaderSuperResolutionResult,
   ReaderSuperResolutionService,
 } from 'shared'
 import { connectNextNReaderSuperResolutionProbe } from './NextNReaderSuperResolutionProbe'
@@ -15,14 +15,18 @@ class NextNReaderVariantCropSource implements ReaderImageCropSource {
   private static sequence: number = 0
   private path: string
   private identity: string
+  private strength: () => string
 
-  constructor(path: string) {
+  constructor(path: string, strength: () => string) {
     this.path = path
     this.identity = `reader-shared-variant:${++NextNReaderVariantCropSource.sequence}`
+    this.strength = strength
   }
 
   async read(): Promise<ReaderImageCropBounds> {
-    const bounds = await ReaderPageCropService.detect(this.path, this.identity)
+    const strength: string = this.strength()
+    DiagnosticLogger.info('reader-crop', 'shared_detect', `identity=${this.identity} strength=${strength}`)
+    const bounds = await ReaderPageCropService.detect(this.path, this.identity, strength)
     return new ReaderImageCropBounds(bounds.left, bounds.top, bounds.right, bounds.bottom)
   }
 }
@@ -50,13 +54,16 @@ class NextNReaderSuperResolutionPlan implements ReaderVariantAssetPlan {
   private path: string
   private ownerKey: string
   private originalAvailable: boolean
+  private strength: () => string
 
-  constructor(page: ReaderPage, identity: string, path: string, ownerKey: string, originalAvailable: boolean) {
+  constructor(page: ReaderPage, identity: string, path: string, ownerKey: string, originalAvailable: boolean,
+    strength: () => string) {
     this.page = page.copy()
     this.identity = identity
     this.path = path
     this.ownerKey = ownerKey
     this.originalAvailable = originalAvailable
+    this.strength = strength
   }
 
   async load(cancellation: ReaderCancellation, _forceReload: boolean): Promise<ReaderAsset> {
@@ -66,7 +73,7 @@ class NextNReaderSuperResolutionPlan implements ReaderVariantAssetPlan {
     const asset = new ReaderAsset(`file://${this.path}`,
       (): void => { ReaderSuperResolutionService.releaseOwner(this.ownerKey) },
       new ReaderFileInformation(this.path, facts))
-    asset.crop = new NextNReaderVariantCropSource(this.path)
+    asset.crop = new NextNReaderVariantCropSource(this.path, this.strength)
     asset.originalAvailable = this.originalAvailable
     return asset
   }
@@ -86,12 +93,15 @@ export class NextNReaderSuperResolutionProvider implements ReaderAssetProvider {
   private configuration: () => NextNReaderSuperResolutionConfiguration
   private sourcePaths: Map<string, string> = new Map<string, string>()
   private ownerPrefix: string
+  private cropStrength: () => string
 
   constructor(context: common.UIAbilityContext, provider: ReaderAssetProvider,
-    configuration: () => NextNReaderSuperResolutionConfiguration) {
+    configuration: () => NextNReaderSuperResolutionConfiguration,
+    cropStrength: () => string = (): string => '') {
     this.context = context
     this.provider = provider
     this.configuration = configuration
+    this.cropStrength = cropStrength
     this.cancellationMode = provider.cancellationMode
     this.informationSupported = provider.informationSupported === true
     this.ownerPrefix = `reader-shared:${++NextNReaderSuperResolutionProvider.sequence}`
@@ -157,7 +167,7 @@ export class NextNReaderSuperResolutionProvider implements ReaderAssetProvider {
         this.context, page.unit.work, page.sourceIndex, 'applied', identity)
       retained = true
       return new NextNReaderSuperResolutionPlan(page, identity, path, ownerKey,
-        this.provider.prepareOriginal !== undefined)
+        this.provider.prepareOriginal !== undefined, this.cropStrength)
     } catch (error) {
       console.warn(`[NextNSharedSuperResolution] unavailable source=${page.sourceIndex} identity=${identity} error=${String(error)}`)
       connectNextNReaderSuperResolutionProbe().deliver(

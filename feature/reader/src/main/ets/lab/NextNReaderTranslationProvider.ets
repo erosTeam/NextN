@@ -8,7 +8,7 @@ import {
 import { ReaderFileInformation } from '@reader-kit/ui'
 import {
   ComicTranslationReaderPageInput, ComicTranslationRuntimeService, ComicVisualTranslationRunResult,
-  ReaderPageCropService,
+  DiagnosticLogger, ReaderPageCropService,
 } from 'shared'
 import { connectNextNReaderTranslationProbe } from './NextNReaderTranslationProbe'
 
@@ -16,14 +16,18 @@ class NextNReaderTranslationCropSource implements ReaderImageCropSource {
   private static sequence: number = 0
   private path: string
   private identity: string
+  private strength: () => string
 
-  constructor(path: string) {
+  constructor(path: string, strength: () => string) {
     this.path = path
     this.identity = `reader-shared-translation:${++NextNReaderTranslationCropSource.sequence}`
+    this.strength = strength
   }
 
   async read(): Promise<ReaderImageCropBounds> {
-    const bounds = await ReaderPageCropService.detect(this.path, this.identity)
+    const strength: string = this.strength()
+    DiagnosticLogger.info('reader-crop', 'shared_detect', `identity=${this.identity} strength=${strength}`)
+    const bounds = await ReaderPageCropService.detect(this.path, this.identity, strength)
     return new ReaderImageCropBounds(bounds.left, bounds.top, bounds.right, bounds.bottom)
   }
 }
@@ -72,12 +76,14 @@ class NextNReaderTranslationPlan implements ReaderVariantAssetPlan {
   identity: string
   private path: string
   private originalAvailable: boolean
+  private strength: () => string
 
-  constructor(page: ReaderPage, identity: string, path: string, originalAvailable: boolean) {
+  constructor(page: ReaderPage, identity: string, path: string, originalAvailable: boolean, strength: () => string) {
     this.page = page.copy()
     this.identity = identity
     this.path = path
     this.originalAvailable = originalAvailable
+    this.strength = strength
   }
 
   async load(cancellation: ReaderCancellation, _forceReload: boolean): Promise<ReaderAsset> {
@@ -86,7 +92,7 @@ class NextNReaderTranslationPlan implements ReaderVariantAssetPlan {
     facts.variant = 'translated'
     const asset = new ReaderAsset(fileUri.getUriFromPath(this.path), () => {},
       new ReaderFileInformation(this.path, facts))
-    asset.crop = new NextNReaderTranslationCropSource(this.path)
+    asset.crop = new NextNReaderTranslationCropSource(this.path, this.strength)
     asset.originalAvailable = this.originalAvailable
     return asset
   }
@@ -101,12 +107,15 @@ export class NextNReaderTranslationProvider implements ReaderAssetProvider {
   private context: common.UIAbilityContext
   private configuration: (page: ReaderPage) => NextNReaderTranslationConfiguration
   private sourcePaths: Map<string, string> = new Map<string, string>()
+  private cropStrength: () => string
 
   constructor(context: common.UIAbilityContext, provider: ReaderAssetProvider,
-    configuration: (page: ReaderPage) => NextNReaderTranslationConfiguration) {
+    configuration: (page: ReaderPage) => NextNReaderTranslationConfiguration,
+    cropStrength: () => string = (): string => '') {
     this.context = context
     this.provider = provider
     this.configuration = configuration
+    this.cropStrength = cropStrength
     this.cancellationMode = provider.cancellationMode
     this.informationSupported = provider.informationSupported === true
     if (provider.prepareOriginal !== undefined) {
@@ -161,7 +170,7 @@ export class NextNReaderTranslationProvider implements ReaderAssetProvider {
         console.info(`[NextNSharedTranslation] applied source=${page.sourceIndex} identity=${identity} runtime=local-probe`)
         probe.deliver(this.context, page.unit.work, page.sourceIndex, 'applied', identity)
         return new NextNReaderTranslationPlan(page, identity, localResultPath,
-          this.provider.prepareOriginal !== undefined)
+          this.provider.prepareOriginal !== undefined, this.cropStrength)
       }
       const input = new ComicTranslationReaderPageInput()
       input.projectId = configuration.projectId
@@ -179,7 +188,7 @@ export class NextNReaderTranslationProvider implements ReaderAssetProvider {
       console.info(`[NextNSharedTranslation] applied source=${page.sourceIndex} identity=${identity}`)
       probe.deliver(this.context, page.unit.work, page.sourceIndex, 'applied', identity)
       return new NextNReaderTranslationPlan(page, identity, result.renderedPage.localFilePath,
-        this.provider.prepareOriginal !== undefined)
+        this.provider.prepareOriginal !== undefined, this.cropStrength)
     } catch (error) {
       console.warn(`[NextNSharedTranslation] unavailable source=${page.sourceIndex} identity=${identity} error=${String(error)}`)
       connectNextNReaderTranslationProbe().deliver(
