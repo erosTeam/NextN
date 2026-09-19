@@ -42,9 +42,9 @@ Package 5 的下一动作（收敛，不重跑全矩阵）：只按**实际变�
 
 ### 候选自洽核对（2026-09-19，源码级；不是替代验收）
 
-- **三宿主 pin 一致**：NextN `78fa08f5` / NextE `1297da98` / Koma `9489ea5e`，三者 `third_party/reader-kit` 均指向 **`2594d6f1837ea05d6be51a565a5fb360b3539ad1`**（实测 `git ls-tree HEAD` 三处一致）。
+- **三宿主 pin 一致**：NextN `4d8715da` / NextE `757a7fa3` / Koma `9489ea5e`，三者 `third_party/reader-kit` 均指向 **`2594d6f1837ea05d6be51a565a5fb360b3539ad1`**（实测 `git ls-tree HEAD` 三处一致；2026-09-19 复核更新宿主 HEAD，仅文档与测试侧提交，reader-kit pin 未变）。
 - **reader-kit 该 revision 全量套件**：`node --test tests/*.test.cjs` → `tests 437 / pass 437 / fail 0`。
-- **各宿主契约套件**：NextN `scripts/test_reader_*.mjs|.cjs` 0 失败（18 项含 `test_reader_trial_entry_host_runtime.mjs`）；NextE `scripts/test_reader_*.mjs` 11/11；Koma `scripts/test_shared_reader_*.cjs` 7/7。
+- **各宿主契约套件（2026-09-19 复跑）**：NextN `scripts/test_reader_*.mjs|.cjs` **19/19 通过**（含 `test_reader_trial_entry_host_runtime.mjs`）；NextE `scripts/test_reader_*.mjs` **11/11**；Koma `scripts/test_shared_reader_*.cjs` **7/7**。
 - **一处非缺陷环境依赖**：NextN `scripts/test_reader_tap_zone_handoff_runtime.mjs` 默认读 sibling `../NextE`、`../Koma`；在 worktree 布局下未设 `NEXTE_READER_ROOT`/`KOMA_READER_ROOT` 时会 ENOENT。设对路径后 **PASS（1404 项断言）**，与产品或 pin 无关。
 - **范围**：以上只证明源码候选与契约自洽，**不构成真机/视觉验收**，也不改变任何已记录的真机边界。
 
