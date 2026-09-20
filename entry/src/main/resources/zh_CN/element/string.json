@@ -142,6 +142,7 @@
     { "name": "search_sort_popular_all_time", "value": "全部热门" },
     { "name": "search_galleries_placeholder", "value": "搜索图库" },
     { "name": "common_cancel", "value": "取消" },
+    { "name": "common_save", "value": "保存" },
     { "name": "common_delete", "value": "删除" },
     { "name": "common_on", "value": "开启" },
     { "name": "common_clear", "value": "清除" },

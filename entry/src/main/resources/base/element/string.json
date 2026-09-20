@@ -136,6 +136,7 @@
     { "name": "search_sort_popular_all_time", "value": "Popular all time" },
     { "name": "search_galleries_placeholder", "value": "Search galleries" },
     { "name": "common_cancel", "value": "Cancel" },
+    { "name": "common_save", "value": "Save" },
     { "name": "common_delete", "value": "Delete" },
     { "name": "common_on", "value": "On" },
     { "name": "common_clear", "value": "Clear" },

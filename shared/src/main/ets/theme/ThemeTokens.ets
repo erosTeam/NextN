@@ -98,6 +98,8 @@ export class ThemeTokens {
   static readonly ACCOUNT_AVATAR_PREFIX_LEFT_INSET: number = 9
   static readonly ACCOUNT_AVATAR_PREFIX_TEXT_GAP: number = 15
   static readonly LIST_ROW_TEXT_INDENT: number = 8
+  /** Keep a long selected menu value from consuming the HDS row's title and subtitle area. */
+  static readonly LIST_ROW_DROPDOWN_VALUE_MAX_WIDTH: number = 144
 
   // Layout and interaction dimensions. Every tap target is at least 48vp.
   static readonly TITLE_BAR_HEIGHT: number = 56

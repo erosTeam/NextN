@@ -142,6 +142,7 @@
     { "name": "search_sort_popular_all_time", "value": "全期間の人気" },
     { "name": "search_galleries_placeholder", "value": "ギャラリーを検索" },
     { "name": "common_cancel", "value": "キャンセル" },
+    { "name": "common_save", "value": "保存" },
     { "name": "common_delete", "value": "削除" },
     { "name": "common_on", "value": "オン" },
     { "name": "common_clear", "value": "消去" },
