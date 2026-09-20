@@ -15,6 +15,7 @@ class ChatCompletionRequest {
   messages: ChatMessage[] = []
   temperature: number = 0.2
   max_tokens: number = 2048
+  reasoning_effort?: string
 }
 
 class ChatCompletionMessage {
@@ -32,6 +33,7 @@ class ChatCompletionResponse {
 export class OpenAiChatCompletionsConfig {
   baseUrl: string = ''
   modelId: string = ''
+  reasoningEffort: string = ''
   apiKey: string = ''
 }
 
@@ -60,6 +62,9 @@ export class OpenAiChatCompletionsClient {
     const requestBody: ChatCompletionRequest = new ChatCompletionRequest()
     requestBody.model = config.modelId.trim()
     requestBody.messages = [system, user]
+    if (config.reasoningEffort.length > 0) {
+      requestBody.reasoning_effort = config.reasoningEffort
+    }
 
     try {
       const response: AxiosTextResponse = await AxiosHttpClient.requestText(

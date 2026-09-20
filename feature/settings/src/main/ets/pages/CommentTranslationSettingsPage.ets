@@ -10,6 +10,13 @@ import {
   CommentTranslationSettings,
   CommentTranslationSettingsState,
   LLM_CONSUMER_COMMENT_TRANSLATION,
+  LLM_REASONING_EFFORT_HIGH,
+  LLM_REASONING_EFFORT_LOW,
+  LLM_REASONING_EFFORT_MAX,
+  LLM_REASONING_EFFORT_MEDIUM,
+  LLM_REASONING_EFFORT_MINIMAL,
+  LLM_REASONING_EFFORT_NONE,
+  LLM_REASONING_EFFORT_XHIGH,
   LlmConsumerBinding,
   LlmSourceProfile,
   LlmSourceProfileRepository,
@@ -39,6 +46,7 @@ export struct CommentTranslationSettingsPage {
   @Local modelOptions: string[] = []
   @Local selectedSourceId: string = ''
   @Local selectedModelId: string = ''
+  @Local selectedReasoningEffort: string = ''
   @Local cacheCount: number = 0
   @Local clearingCache: boolean = false
   @Local promptProfiles: TextTranslationPromptProfilesState = connectTextTranslationPromptProfiles()
@@ -94,10 +102,12 @@ export struct CommentTranslationSettingsPage {
     if (profile === null || !supportsCommentTranslation(profile) || !binding.configured()) {
       this.selectedSourceId = ''
       this.selectedModelId = ''
+      this.selectedReasoningEffort = ''
       return
     }
     this.selectedSourceId = binding.sourceProfileId
     this.selectedModelId = binding.modelId
+    this.selectedReasoningEffort = binding.reasoningEffort
   }
 
   private selectedSourceText(): string {
@@ -111,6 +121,25 @@ export struct CommentTranslationSettingsPage {
     return this.selectedModelId.length > 0
       ? this.selectedModelId
       : AppStrings.get('llm_binding_not_configured')
+  }
+
+  private reasoningEffortOptions(): string[] {
+    return [
+      '',
+      LLM_REASONING_EFFORT_NONE,
+      LLM_REASONING_EFFORT_MINIMAL,
+      LLM_REASONING_EFFORT_LOW,
+      LLM_REASONING_EFFORT_MEDIUM,
+      LLM_REASONING_EFFORT_HIGH,
+      LLM_REASONING_EFFORT_XHIGH,
+      LLM_REASONING_EFFORT_MAX,
+    ]
+  }
+
+  private reasoningEffortText(reasoningEffort: string = this.selectedReasoningEffort): string {
+    return reasoningEffort.length === 0
+      ? AppStrings.get('llm_reasoning_effort_model_default')
+      : reasoningEffort
   }
 
   private openSourceSelector(): void {
@@ -170,9 +199,30 @@ export struct CommentTranslationSettingsPage {
     binding.consumerId = LLM_CONSUMER_COMMENT_TRANSLATION
     binding.sourceProfileId = this.selectedSourceId
     binding.modelId = modelId
+    binding.reasoningEffort = this.selectedReasoningEffort
     LlmSourceProfileRepository.saveBinding(this.context(), binding)
       .then((): void => {
         this.selectedModelId = modelId
+      })
+      .catch((error: Error): void => {
+        this.getUIContext().getPromptAction().showToast({
+          message: AppStrings.get('llm_binding_save_failed'),
+        })
+      })
+  }
+
+  private selectReasoningEffort(reasoningEffort: string): void {
+    if (this.selectedSourceId.length === 0 || this.selectedModelId.length === 0) {
+      return
+    }
+    const binding: LlmConsumerBinding = new LlmConsumerBinding()
+    binding.consumerId = LLM_CONSUMER_COMMENT_TRANSLATION
+    binding.sourceProfileId = this.selectedSourceId
+    binding.modelId = this.selectedModelId
+    binding.reasoningEffort = reasoningEffort
+    LlmSourceProfileRepository.saveBinding(this.context(), binding)
+      .then((): void => {
+        this.selectedReasoningEffort = reasoningEffort
       })
       .catch((error: Error): void => {
         this.getUIContext().getPromptAction().showToast({
@@ -307,6 +357,29 @@ export struct CommentTranslationSettingsPage {
     }
   }
 
+  @Builder
+  private ReasoningEffortMenu(select: (action: () => void) => void) {
+    Menu() {
+      ForEach(
+        this.reasoningEffortOptions(),
+        (reasoningEffort: string): void => {
+          MenuItem({
+            content: this.reasoningEffortText(reasoningEffort),
+            symbolEndIcon: this.selectedReasoningEffort === reasoningEffort
+              ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
+              : undefined,
+          }).onClick((): void => {
+            select((): void => {
+              this.selectReasoningEffort(reasoningEffort)
+            })
+          })
+        },
+        (reasoningEffort: string): string =>
+          reasoningEffort.length === 0 ? 'model-default' : reasoningEffort,
+      )
+    }
+  }
+
   build() {
     Column() {
       SecondaryListScaffold({
@@ -415,6 +488,24 @@ export struct CommentTranslationSettingsPage {
               isEnabled: this.settings.enabled &&
                 this.selectedSourceId.length > 0 && !this.fetchingModels,
               accessibilityLabel: AppStrings.get('comment_translation_model_a11y'),
+            })
+            this.RowDivider()
+            NextNListRow({
+              leadingIcon: $r('sys.symbol.textformat'),
+              title: AppStrings.get('llm_reasoning_effort'),
+              subtitle: AppStrings.get('llm_reasoning_effort_hint'),
+              trailingText: this.reasoningEffortText(),
+              trailingDropdown: true,
+              dropdownMenuEnabled: true,
+              dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+                this.ReasoningEffortMenu(select)
+              },
+              isEnabled: this.settings.enabled && this.selectedSourceId.length > 0 &&
+                this.selectedModelId.length > 0,
+              accessibilityLabel: AppStrings.format('settings_row_a11y', [
+                AppStrings.get('llm_reasoning_effort'),
+                this.reasoningEffortText(),
+              ]),
             })
             this.RowDivider()
             NextNListRow({

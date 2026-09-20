@@ -559,6 +559,7 @@ export class CommentTranslationService {
       const config: OpenAiChatCompletionsConfig = new OpenAiChatCompletionsConfig()
       config.baseUrl = runtime.baseUrl
       config.modelId = runtime.modelId
+      config.reasoningEffort = runtime.reasoningEffort
       config.apiKey = runtime.apiKey
       const instructions: string = TextTranslationPromptComposer.composeInstructions(
         targetLanguage,
