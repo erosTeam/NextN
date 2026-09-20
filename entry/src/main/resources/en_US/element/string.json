@@ -966,6 +966,8 @@
     { "name": "reader_enhancement_processing", "value": "Image enhancement in progress" },
     { "name": "reader_enhancement_applied", "value": "Image enhancement applied" },
     { "name": "reader_enhancement_not_applied", "value": "Image enhancement unavailable for this page" },
+    { "name": "reader_super_resolution_page_disabled", "value": "Image enhancement turned off" },
+    { "name": "reader_super_resolution_page_enabled", "value": "Image enhancement turned on" },
     { "name": "settings_content_filters", "value": "Content filters" },
     { "name": "settings_content_filters_subtitle", "value": "Hide matched galleries and comments on this device" },
     { "name": "settings_content_filters_a11y", "value": "Open local content filters" },

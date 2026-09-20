@@ -967,6 +967,8 @@
     { "name": "reader_enhancement_processing", "value": "图像增强处理中" },
     { "name": "reader_enhancement_applied", "value": "图像增强已应用" },
     { "name": "reader_enhancement_not_applied", "value": "此页无法应用图像增强" },
+    { "name": "reader_super_resolution_page_disabled", "value": "已关闭超分" },
+    { "name": "reader_super_resolution_page_enabled", "value": "已开启超分" },
     { "name": "settings_content_filters", "value": "内容过滤" },
     { "name": "settings_content_filters_subtitle", "value": "隐藏符合规则的图库和评论" },
     { "name": "settings_content_filters_a11y", "value": "打开本地内容过滤" },
