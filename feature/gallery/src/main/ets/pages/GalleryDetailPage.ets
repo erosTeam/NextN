@@ -2461,7 +2461,7 @@ export struct GalleryDetailPage {
               })
             } else {
               SymbolGlyph($r('sys.symbol.picture'))
-                .fontSize(32)
+                .fontSize(ThemeTokens.SYMBOL_SIZE_LARGE)
                 .fontColor([ThemeTokens.TEXT_TERTIARY])
             }
           }

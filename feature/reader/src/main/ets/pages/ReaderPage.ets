@@ -1244,7 +1244,7 @@ struct ReaderImageSurfaceCore {
           })
         } else {
           SymbolGlyph($r('sys.symbol.exclamationmark_triangle'))
-            .fontSize(32)
+            .fontSize(ThemeTokens.SYMBOL_SIZE_LARGE)
             .fontColor([this.canvasContentColor])
             .opacity(0.84)
           Text(AppStrings.get('reader_error_image_unavailable'))
@@ -1909,7 +1909,7 @@ struct ReaderSpreadImageLayer {
           })
         } else {
           SymbolGlyph($r('sys.symbol.exclamationmark_triangle'))
-            .fontSize(28)
+            .fontSize(ThemeTokens.SYMBOL_SIZE_PROMINENT)
             .fontColor([this.canvasContentColor])
             .opacity(0.84)
           Text(AppStrings.get('reader_error_image_unavailable'))
@@ -5236,7 +5236,7 @@ export struct ReaderPage {
             .color(ThemeTokens.TEXT_ON_BRAND)
         } else {
           SymbolGlyph($r('sys.symbol.exclamationmark_triangle'))
-            .fontSize(18)
+            .fontSize(ThemeTokens.SYMBOL_SIZE_ACTION)
             .fontColor([ThemeTokens.TEXT_ON_BRAND])
         }
         Text(this.readerTranslationStatusText())
@@ -5266,7 +5266,7 @@ export struct ReaderPage {
       Row() {
         Button({ type: ButtonType.Circle }) {
           SymbolGlyph($r('sys.symbol.chevron_left'))
-            .fontSize(22)
+            .fontSize(ThemeTokens.SYMBOL_SIZE_ROW)
             .fontColor([ThemeTokens.TEXT_ON_BRAND])
         }
         .width(44)
@@ -5278,7 +5278,7 @@ export struct ReaderPage {
         Blank()
         Button({ type: ButtonType.Circle }) {
           SymbolGlyph($r('sys.symbol.share'))
-            .fontSize(22)
+            .fontSize(ThemeTokens.SYMBOL_SIZE_ROW)
             .fontColor([ThemeTokens.TEXT_ON_BRAND])
         }
         .width(44)
@@ -5292,7 +5292,7 @@ export struct ReaderPage {
         // not inside the overflow menu as a text item.
         Button({ type: ButtonType.Circle }) {
           SymbolGlyph($r('sys.symbol.gearshape'))
-            .fontSize(22)
+            .fontSize(ThemeTokens.SYMBOL_SIZE_ROW)
             .fontColor([ThemeTokens.TEXT_ON_BRAND])
         }
         .width(44)
@@ -5319,7 +5319,7 @@ export struct ReaderPage {
         // controls intentionally live in ReaderBottomBar with the scrubber.
         Button({ type: ButtonType.Circle }) {
           SymbolGlyph($r('sys.symbol.dot_grid_2x2'))
-            .fontSize(22)
+            .fontSize(ThemeTokens.SYMBOL_SIZE_ROW)
             .fontColor([ThemeTokens.TEXT_ON_BRAND])
         }
         .width(44)
@@ -5381,7 +5381,7 @@ export struct ReaderPage {
   private ReaderFailureState() {
     Column({ space: ThemeTokens.SPACE_MD }) {
       SymbolGlyph($r('sys.symbol.exclamationmark_triangle'))
-        .fontSize(36)
+        .fontSize(ThemeTokens.SYMBOL_SIZE_HERO)
         .fontColor([this.readerCanvasForegroundColor()])
         .opacity(0.84)
       Text(this.errorMessage)
@@ -5761,7 +5761,7 @@ export struct ReaderPage {
             .color(ThemeTokens.TEXT_ON_BRAND)
         } else {
           SymbolGlyph($r('sys.symbol.arrow_down_to_line'))
-            .fontSize(22)
+            .fontSize(ThemeTokens.SYMBOL_SIZE_ROW)
             .fontColor([ThemeTokens.TEXT_ON_BRAND])
         }
       }
@@ -5781,7 +5781,7 @@ export struct ReaderPage {
       }))
       Button({ type: ButtonType.Circle }) {
         SymbolGlyph($r('sys.symbol.clock'))
-          .fontSize(22)
+          .fontSize(ThemeTokens.SYMBOL_SIZE_ROW)
           .fontColor([this.autoReadActive ? ThemeTokens.BRAND : ThemeTokens.TEXT_ON_BRAND])
       }
       .width(READER_BOTTOM_TOOLBAR_HEIGHT)
@@ -5795,7 +5795,7 @@ export struct ReaderPage {
       })
       Button({ type: ButtonType.Circle }) {
         SymbolGlyph($r('sys.symbol.rectangle_grid_2x1'))
-          .fontSize(22)
+          .fontSize(ThemeTokens.SYMBOL_SIZE_ROW)
           .fontColor([this.showThumbnailStrip ? ThemeTokens.BRAND : ThemeTokens.TEXT_ON_BRAND])
       }
       .width(READER_BOTTOM_TOOLBAR_HEIGHT)
@@ -5811,7 +5811,7 @@ export struct ReaderPage {
       if (this.showOnePageStepButton()) {
         Button({ type: ButtonType.Circle }) {
           SymbolGlyph($r('sys.symbol.transfer'))
-            .fontSize(22)
+            .fontSize(ThemeTokens.SYMBOL_SIZE_ROW)
             .fontColor([
               this.canTurnOnePageInDoublePage()
                 ? ThemeTokens.TEXT_ON_BRAND
@@ -5829,7 +5829,7 @@ export struct ReaderPage {
       }
       Button({ type: ButtonType.Circle }) {
         SymbolGlyph($r('sys.symbol.book'))
-          .fontSize(22)
+          .fontSize(ThemeTokens.SYMBOL_SIZE_ROW)
           .fontColor([
             !this.isHorizontalPagedMode()
               ? ThemeTokens.TEXT_TERTIARY
@@ -5848,7 +5848,7 @@ export struct ReaderPage {
       })
       Button({ type: ButtonType.Circle }) {
         SymbolGlyph(this.readerModeIcon(this.readerPresentation.mode))
-          .fontSize(22)
+          .fontSize(ThemeTokens.SYMBOL_SIZE_ROW)
           .fontColor([ThemeTokens.TEXT_ON_BRAND])
       }
       .width(READER_BOTTOM_TOOLBAR_HEIGHT)

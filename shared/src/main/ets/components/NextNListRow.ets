@@ -120,7 +120,7 @@ export struct NextNListRow {
     Row() {
       if (this.leadingIcon !== undefined) {
         SymbolGlyph(this.leadingIcon)
-          .fontSize(22)
+          .fontSize(ThemeTokens.SYMBOL_SIZE_ROW)
           .fontColor([this.destructive ? Color.Red : ThemeTokens.TEXT_SECONDARY])
       }
     }

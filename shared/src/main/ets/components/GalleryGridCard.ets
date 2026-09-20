@@ -290,7 +290,7 @@ export struct GalleryGridCard {
       Row({ space: 2 }) {
         if (this.hasFavoriteMeta()) {
           SymbolGlyph($r('sys.symbol.heart'))
-            .fontSize(12)
+            .fontSize(ThemeTokens.SYMBOL_SIZE_TINY)
             .fontColor([ThemeTokens.TEXT_SECONDARY])
         }
         Text(this.metaText())

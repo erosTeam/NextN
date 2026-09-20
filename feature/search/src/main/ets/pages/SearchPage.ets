@@ -529,7 +529,7 @@ export struct SearchPage {
   private SearchTranslationButton() {
     Button({ type: ButtonType.Circle, stateEffect: true }) {
       SymbolGlyph($r('sys.symbol.translate'))
-        .fontSize(18)
+        .fontSize(ThemeTokens.SYMBOL_SIZE_ACTION)
         .fontColor([
           this.searchTranslation.translateEnabled
             ? ThemeTokens.BRAND
@@ -1559,7 +1559,7 @@ export struct SearchPage {
       ListItem() {
         Row({ space: ThemeTokens.SPACE_MD }) {
           SymbolGlyph($r('sys.symbol.link'))
-            .fontSize(24)
+            .fontSize(ThemeTokens.SYMBOL_SIZE_STANDARD)
             .fontColor([ThemeTokens.BRAND])
           Column({ space: ThemeTokens.SPACE_XS }) {
             Text(AppStrings.get('search_open_gallery_link'))
@@ -1959,7 +1959,7 @@ export struct SearchPage {
   private RecentSearchesClearButton() {
     Button({ type: ButtonType.Circle, stateEffect: true }) {
       SymbolGlyph($r('sys.symbol.trash'))
-        .fontSize(18)
+        .fontSize(ThemeTokens.SYMBOL_SIZE_ACTION)
         .fontColor([ThemeTokens.TEXT_LINK])
     }
     .width(28)
@@ -2147,7 +2147,7 @@ export struct SearchPage {
     // for sibling icons); 24vp matches the other 120px-button icons' ink.
     const filterIcon: SymbolGlyphModifier | Resource = hasActiveFilters
       ? new SymbolGlyphModifier($r('sys.symbol.funnel'))
-        .fontSize(24)
+        .fontSize(ThemeTokens.SYMBOL_SIZE_STANDARD)
         .fontColor([ThemeTokens.BRAND])
       : $r('sys.symbol.funnel')
     const filterAction: Record<string, Object> = {
