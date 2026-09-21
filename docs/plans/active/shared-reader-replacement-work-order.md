@@ -31,6 +31,16 @@ not fill that gap.
 
 The following are finite pending checks inside this one package, not new queues:
 
+#### 标准非H测试内容（2026-09-21 监督指令，后续所有设备链统一使用）
+
+- device237 标准画廊已定：`4203217`（`ff4ccabae3`，Non-H 分类，标题/标签等完整语义锚点、
+  入口路由与全屏链证据见 NextE 侧账本
+  `docs/plans/active/gallery-reader-transition-acceptance.md` 的「2026-09-21 标准非H测试内容」
+  小节，本单不复制全文）。后续所有设备链（含交接）只使用标准非H内容；历史已闭合的 H 内容
+  证据不重开、不改写。
+- device197 标准画廊：未定，须在 197 下一次租约内按同一文本元数据流程实测确定后回填本节。
+
+
 - **Save/share, auto-read, and cache semantics:** their earlier records are
   historical. The remaining gap is matching-current-candidate runtime evidence,
   not a confirmed source defect. **2026-09-21 source recheck:** NextE
