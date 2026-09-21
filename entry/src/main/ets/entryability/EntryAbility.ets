@@ -9,6 +9,7 @@ import {
   GalleryTitleSettings,
   GalleryDetailTransitionSettings,
   HomeSourcePresentationService,
+  ReaderPresentationService,
   HomeSubtabSettings,
   ContentFilterService,
   DownloadQueueService,
@@ -219,6 +220,10 @@ export default class EntryAbility extends UIAbility {
       // Latest and Popular match NextE's active-profile semantics: each may
       // pin a local renderer or explicitly fall back to the global Browse mode.
       HomeSourcePresentationService.restore(this.context),
+      // The persisted reader implementation must be live before any Reader
+      // route can resolve: pushReader reads the presentation signal while
+      // the reader destination is not yet mounted (2026-09-22 197 defect).
+      ReaderPresentationService.restore(this.context),
       // Browse Latest and Search keep independent local defaults. Restore
       // them before either retained catalog surface can start its first GET.
       CatalogPreferencesService.restore(this.context),
