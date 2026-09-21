@@ -35,36 +35,37 @@ const state = compile(fs.readFileSync(path.join(root,
 }, { ObservedV2: value => value, Trace() {} })
 
 const selected = state.connectNextNReaderBackendSelection()
-assert.equal(selected.current(), state.NextNReaderBackend.LEGACY)
+assert.equal(selected.current(), state.NextNReaderBackend.SHARED,
+  'the production default is now the shared reader')
 state.captureNextNReaderBackendWant({ parameters: {} }, true)
-assert.equal(selected.current(), state.NextNReaderBackend.LEGACY)
+assert.equal(selected.current(), state.NextNReaderBackend.SHARED,
+  'a launch without the override keeps the current (persisted-default) selection')
 state.captureNextNReaderBackendWant({ parameters: { nextn_reader_backend: 'shared' } }, true)
 assert.equal(selected.current(), state.NextNReaderBackend.SHARED)
-assert.equal(selected.version, 1)
+assert.equal(selected.version, 0, 're-selecting the current backend is a no-op')
 state.captureNextNReaderBackendWant({ parameters: { nextn_reader_backend: 'invalid' } }, true)
-assert.equal(selected.current(), state.NextNReaderBackend.LEGACY,
-  'an invalid debug launch must fail closed to the production-safe backend')
-assert.equal(selected.version, 2)
-state.captureNextNReaderBackendWant({ parameters: { nextn_reader_backend: 'shared' } }, true)
-assert.equal(selected.current(), state.NextNReaderBackend.SHARED)
-state.captureNextNReaderBackendWant({ parameters: {} }, true)
-assert.equal(selected.current(), state.NextNReaderBackend.LEGACY,
-  'a normal launch must retire a shared rehearsal left by an interrupted test')
+assert.equal(selected.current(), state.NextNReaderBackend.SHARED,
+  'an invalid debug launch keeps the current selection instead of forcing legacy')
+assert.equal(selected.version, 0)
 state.captureNextNReaderBackendWant({ parameters: { nextn_reader_backend: 'legacy' } }, true)
-assert.equal(selected.current(), state.NextNReaderBackend.LEGACY)
-assert.equal(selected.version, 4)
-selected.select(state.NextNReaderBackend.SHARED)
+assert.equal(selected.current(), state.NextNReaderBackend.LEGACY,
+  'an explicit debug Want may route the legacy fallback')
+assert.equal(selected.version, 1)
+state.captureNextNReaderBackendWant({ parameters: {} }, false)
+assert.equal(selected.current(), state.NextNReaderBackend.LEGACY,
+  'a release normal launch keeps the in-process selection')
 state.captureNextNReaderBackendWant({ parameters: { nextn_reader_backend: 'shared' } }, false)
-assert.equal(selected.current(), state.NextNReaderBackend.LEGACY, 'release builds must remain legacy')
+assert.equal(selected.current(), state.NextNReaderBackend.LEGACY,
+  'the debug Want override does not exist in a release build')
+selected.selectForRehearsal(state.NextNReaderBackend.SHARED, false)
+assert.equal(selected.current(), state.NextNReaderBackend.SHARED,
+  'the production settings row may select the shared default in a release build')
+selected.selectForRehearsal(state.NextNReaderBackend.LEGACY, false)
+assert.equal(selected.current(), state.NextNReaderBackend.LEGACY,
+  'the production settings row may select the legacy fallback in a release build')
 selected.selectForRehearsal(state.NextNReaderBackend.SHARED, true)
 assert.equal(selected.current(), state.NextNReaderBackend.SHARED,
-  'the in-app Debug rehearsal may select the shared backend without a Want')
-selected.selectForRehearsal(state.NextNReaderBackend.SHARED, false)
-assert.equal(selected.current(), state.NextNReaderBackend.LEGACY,
-  'the same in-app request must fail closed in a release build')
-selected.selectForRehearsal(state.NextNReaderBackend.LEGACY, true)
-assert.equal(selected.current(), state.NextNReaderBackend.LEGACY,
-  'one explicit Debug selection must restore the legacy backend')
+  'one explicit Debug selection may restore the shared backend')
 
 const params = compile(fs.readFileSync(path.join(root,
   'shared/src/main/ets/model/ReaderRouteParams.ets'), 'utf8'), {

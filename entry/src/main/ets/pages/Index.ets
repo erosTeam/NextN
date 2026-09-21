@@ -151,6 +151,8 @@ import {
   SafeModeState,
   SettingsNavigationState,
   ReaderRouteParams,
+  NhReaderImplementation,
+  connectReaderPresentation,
   NextNReaderBackend,
   NextNReaderBackendSelectionState,
   connectNextNReaderBackendSelection,
@@ -1743,13 +1745,29 @@ struct Index {
     )
   }
 
+  /**
+   * The persisted user choice is the production authority: the shared reader is
+   * the default, and an explicit Legacy choice routes the ordinary entry to the
+   * pre-migration host reader. A Debug-only rehearsal selection (process-local)
+   * can override it for QA; release builds have no such override.
+   */
+  private resolveProductionReaderBackend(): NextNReaderBackend {
+    const rehearsal = this.readerBackendSelection.current()
+    if (this.readerBackendSelection.version > 0) {
+      return rehearsal
+    }
+    return connectReaderPresentation().readerImplementation === NhReaderImplementation.LEGACY
+      ? NextNReaderBackend.LEGACY
+      : NextNReaderBackend.SHARED
+  }
+
   private pushReader(galleryId: number, initialPageIndex: number = -1, animated: boolean = true): void {
     if (galleryId <= 0) {
       return
     }
     if (this.productionReaderEntryActive()) this.retireProductionReaderEntry()
     const selectedBackend = initialPageIndex < 0
-      ? this.readerBackendSelection.current()
+      ? this.resolveProductionReaderBackend()
       : NextNReaderBackend.LEGACY
     this.openReaderOverlay(new ReaderRouteParams(
       galleryId,

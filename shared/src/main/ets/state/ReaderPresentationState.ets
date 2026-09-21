@@ -4,6 +4,7 @@ import {
   NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderPresentation,
+  NhReaderImplementation,
   NhReaderSpreadLayout,
   NhReaderSuperResolutionModel,
   READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT,
@@ -42,6 +43,7 @@ export class ReaderPresentationState {
   @Trace superResolutionModel: NhReaderSuperResolutionModel =
     NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
   @Trace superResolutionMaxHeight: number = READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT
+  @Trace readerImplementation: NhReaderImplementation = NhReaderImplementation.SHARED
 
   replace(presentation: NhReaderPresentation): void {
     this.mode = presentation.mode
@@ -67,6 +69,7 @@ export class ReaderPresentationState {
     this.superResolutionEnabled = presentation.superResolutionEnabled
     this.superResolutionModel = presentation.superResolutionModel
     this.superResolutionMaxHeight = presentation.superResolutionMaxHeight
+    this.readerImplementation = presentation.readerImplementation
   }
 
   snapshot(): NhReaderPresentation {
@@ -94,6 +97,7 @@ export class ReaderPresentationState {
     result.superResolutionEnabled = this.superResolutionEnabled
     result.superResolutionModel = this.superResolutionModel
     result.superResolutionMaxHeight = this.superResolutionMaxHeight
+    result.readerImplementation = this.readerImplementation
     return result
   }
 

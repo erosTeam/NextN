@@ -25,6 +25,7 @@ const READER_SHOW_PAGE_NUMBER_KEY: string = 'reader_show_page_number'
 const READER_BACKGROUND_MODE_KEY: string = 'reader_background_mode'
 const READER_IMAGE_SCALING_QUALITY_KEY: string = 'reader_image_scaling_quality'
 const READER_FULLSCREEN_KEY: string = 'reader_fullscreen'
+const READER_IMPLEMENTATION_KEY: string = 'reader_implementation'
 const READER_AUTO_PAGE_SECONDS_KEY: string = 'reader_auto_page_seconds'
 const READER_VOLUME_KEY_TURN_KEY: string = 'reader_volume_key_turn'
 const READER_DOUBLE_PAGE_ENABLED_KEY: string = 'reader_double_page_enabled'
@@ -177,6 +178,12 @@ export class ReaderSettingsRepository {
     return ReaderSettingsRepository.normalizeImageScalingQuality(
       (await ReaderSettingsRepository.value(context, READER_IMAGE_SCALING_QUALITY_KEY)) ?? '',
     )
+  }
+
+  /** Persisted implementation choice; an absent key resolves to the shared default. */
+  static async readerImplementation(context: common.UIAbilityContext): Promise<string> {
+    const stored: string | null = await ReaderSettingsRepository.value(context, READER_IMPLEMENTATION_KEY)
+    return stored === 'legacy' ? 'legacy' : 'shared'
   }
 
   /** Matches NextE: Reader starts as an immersive canvas unless the user opts out locally. */
@@ -335,6 +342,14 @@ export class ReaderSettingsRepository {
       context,
       READER_IMAGE_SCALING_QUALITY_KEY,
       ReaderSettingsRepository.normalizeImageScalingQuality(quality),
+    )
+  }
+
+  static saveReaderImplementation(context: common.UIAbilityContext, implementation: string): Promise<void> {
+    return ReaderSettingsRepository.saveValue(
+      context,
+      READER_IMPLEMENTATION_KEY,
+      implementation === 'legacy' ? 'legacy' : 'shared',
     )
   }
 

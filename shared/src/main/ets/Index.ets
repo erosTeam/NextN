@@ -105,6 +105,7 @@ export {
   NhReaderBackgroundMode,
   NhReaderColumnMode,
   NhReaderImageScalingQuality,
+  NhReaderImplementation,
   NhReaderMode,
   NhReaderPresentation,
   NhReaderSpreadLayout,

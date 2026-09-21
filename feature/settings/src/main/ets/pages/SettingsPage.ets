@@ -43,6 +43,7 @@ import {
   ReaderImageCacheSettings,
   ReaderSuperResolutionModelService,
   ReaderEnhancementModelsState,
+  NhReaderImplementation,
   ReaderPresentationService,
   ReaderPresentationState,
   DownloadQueueService,
@@ -364,9 +365,6 @@ export struct SettingsPage {
     }
     if (this.surface === SettingsSurface.READER) {
       this.readerBackendRehearsalAvailable = this.context().applicationInfo.debug
-      if (!this.readerBackendRehearsalAvailable) {
-        this.readerBackendSelection.selectForRehearsal(NextNReaderBackend.LEGACY, false)
-      }
       this.loadReaderPresentation()
       return
     }
@@ -868,15 +866,22 @@ export struct SettingsPage {
   }
 
   private readerBackendLabel(): string {
-    // Read the traced revision so the routed Settings row follows a menu selection.
-    const revision: number = this.readerBackendSelection.version
-    return revision >= 0 && this.readerBackendSelection.current() === NextNReaderBackend.SHARED
-      ? AppStrings.get('settings_reader_backend_shared')
-      : AppStrings.get('settings_reader_backend_legacy')
+    const legacy = connectReaderPresentation().readerImplementation === NhReaderImplementation.LEGACY
+    return legacy
+      ? AppStrings.get('settings_reader_backend_legacy')
+      : AppStrings.get('settings_reader_backend_shared')
   }
 
   private selectReaderBackend(backend: NextNReaderBackend): void {
+    // Debug-only rehearsal override for the current process.
     this.readerBackendSelection.selectForRehearsal(backend, this.readerBackendRehearsalAvailable)
+    // The persisted user choice drives the production route on the next entry.
+    const context = this.context()
+    ReaderPresentationService.setReaderImplementation(context,
+      backend === NextNReaderBackend.LEGACY
+        ? NhReaderImplementation.LEGACY
+        : NhReaderImplementation.SHARED,
+    ).catch((): void => {})
   }
 
   private refreshDiagnosticsState(): void {
@@ -3927,10 +3932,10 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ReaderBackendRehearsalGroup() {
+  private ReaderImplementationGroup() {
     Column({ space: ThemeTokens.SPACE_XS }) {
-      NextNSectionHeader({ title: AppStrings.get('settings_reader_group_rehearsal') })
-      NextNGroupedListSection({ accessibilityId: 'nextn-reader-backend-rehearsal-group' }) {
+      NextNSectionHeader({ title: AppStrings.get('settings_reader_group_implementation') })
+      NextNGroupedListSection({ accessibilityId: 'nextn-reader-implementation-group' }) {
         NextNListRow({
           title: AppStrings.get('settings_reader_backend'),
           trailingText: this.readerBackendLabel(),
@@ -3939,7 +3944,7 @@ export struct SettingsPage {
           dropdownMenuBuilder: (select: (action: () => void) => void): void => {
             this.ReaderBackendMenu(select)
           },
-          accessibilityId: 'nextn-reader-backend-rehearsal-row',
+          accessibilityId: 'nextn-reader-implementation-row',
           accessibilityLabel: AppStrings.format('settings_row_a11y', [
             AppStrings.get('settings_reader_backend'),
             this.readerBackendLabel(),
@@ -3971,11 +3976,6 @@ export struct SettingsPage {
   /** Shared content for the routed Settings surface and the Reader-owned sheet. */
   @Builder
   private ReaderPresentationListItems() {
-    if (this.readerBackendRehearsalAvailable && !this.sheetPresentation) {
-      ListItem() {
-        this.ReaderBackendRehearsalGroup()
-      }
-    }
     ListItem() {
       this.ReaderLayoutGroup()
     }
@@ -4000,6 +4000,9 @@ export struct SettingsPage {
     }
     ListItem() {
       this.ReaderLoadingGroup()
+    }
+    ListItem() {
+      this.ReaderImplementationGroup()
     }
     if (this.readerModeError.length > 0) {
       ListItem() {

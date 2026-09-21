@@ -17,7 +17,7 @@ export enum NextNReaderBackend {
 @ObservedV2
 export class NextNReaderBackendSelectionState {
   @Trace version: number = 0
-  private backend: NextNReaderBackend = NextNReaderBackend.LEGACY
+  private backend: NextNReaderBackend = NextNReaderBackend.SHARED
 
   current(): NextNReaderBackend {
     return this.backend
@@ -31,10 +31,12 @@ export class NextNReaderBackendSelectionState {
 
   /**
    * The in-app rehearsal surface and the external Debug Want share one guard.
-   * A release build can only select Legacy even if a caller supplies Shared.
+   * Since the production default flipped to the shared reader, this no longer
+   * fails closed to Legacy in release builds; callers resolve the persisted
+   * user choice before selecting.
    */
-  selectForRehearsal(backend: NextNReaderBackend, debugBuild: boolean): NextNReaderBackend {
-    this.select(debugBuild && backend === NextNReaderBackend.SHARED
+  selectForRehearsal(backend: NextNReaderBackend, _debugBuild: boolean): NextNReaderBackend {
+    this.select(backend === NextNReaderBackend.SHARED
       ? NextNReaderBackend.SHARED
       : NextNReaderBackend.LEGACY)
     return this.backend
@@ -61,13 +63,15 @@ export function connectNextNReaderBackendSelection(): NextNReaderBackendSelectio
 export function captureNextNReaderBackendWant(want: Want, debugBuild: boolean): void {
   const state: NextNReaderBackendSelectionState = connectNextNReaderBackendSelection()
   if (!debugBuild) {
-    state.selectForRehearsal(NextNReaderBackend.LEGACY, false)
+    // A release launch keeps whatever the production entry resolved from the
+    // persisted user choice; the debug Want override does not exist in release.
     return
   }
   const value: Object | undefined = want.parameters?.['nextn_reader_backend']
   if (value === NextNReaderBackend.SHARED) {
     state.selectForRehearsal(NextNReaderBackend.SHARED, true)
-  } else {
+  } else if (value === NextNReaderBackend.LEGACY) {
     state.selectForRehearsal(NextNReaderBackend.LEGACY, true)
   }
+  // An absent parameter keeps the current selection instead of forcing Legacy.
 }

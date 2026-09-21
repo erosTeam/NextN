@@ -15,6 +15,14 @@ export enum NhReaderMode {
 }
 
 /** Per-gallery page pairing parity for horizontal double-page reading. */
+/** Which reader implementation opens the ordinary production Reader route. */
+export enum NhReaderImplementation {
+  /** The shared reader-kit surface; the production default. */
+  SHARED = 'shared',
+  /** The pre-migration host reader; a user-visible temporary fallback. */
+  LEGACY = 'legacy',
+}
+
 export enum NhReaderColumnMode {
   /** Page 1, 3, 5... starts a two-page spread. */
   ODD_LEFT = 'odd_left',
@@ -101,6 +109,8 @@ export class NhReaderPresentation {
   superResolutionModel: NhReaderSuperResolutionModel = NhReaderSuperResolutionModel.WAIFU2X_ART_NOISE0_2X
   /** The largest source edge accepted for local enhancement decoding. */
   superResolutionMaxHeight: number = READER_SUPER_RESOLUTION_MAX_SOURCE_HEIGHT
+  /** Which implementation opens next; defaults to the shared reader for production. */
+  readerImplementation: NhReaderImplementation = NhReaderImplementation.SHARED
 
   copy(): NhReaderPresentation {
     const result: NhReaderPresentation = new NhReaderPresentation()

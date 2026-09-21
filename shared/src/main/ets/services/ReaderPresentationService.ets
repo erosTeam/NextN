@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import {
   NhReaderBackgroundMode,
+  NhReaderImplementation,
   NhReaderImageScalingQuality,
   NhReaderMode,
   NhReaderPresentation,
@@ -101,6 +102,19 @@ export class ReaderPresentationService {
       presentation.backgroundMode = ReaderPresentationService.normalizeBackgroundMode(mode)
     }, (presentation: NhReaderPresentation): Promise<void> => {
       return ReaderSettingsRepository.saveBackgroundMode(context, presentation.backgroundMode)
+    })
+  }
+
+  static setReaderImplementation(
+    context: common.UIAbilityContext,
+    implementation: NhReaderImplementation,
+  ): Promise<NhReaderPresentation> {
+    return ReaderPresentationService.update(context, (presentation: NhReaderPresentation): void => {
+      presentation.readerImplementation = implementation === NhReaderImplementation.LEGACY
+        ? NhReaderImplementation.LEGACY
+        : NhReaderImplementation.SHARED
+    }, (presentation: NhReaderPresentation): Promise<void> => {
+      return ReaderSettingsRepository.saveReaderImplementation(context, presentation.readerImplementation)
     })
   }
 
@@ -330,6 +344,7 @@ export class ReaderPresentationService {
       boolean,
       NhReaderSuperResolutionModel,
       number,
+      string,
     ] = await Promise.all([
       ReaderSettingsRepository.mode(context),
       ReaderSettingsRepository.keepScreenOn(context),
@@ -354,6 +369,7 @@ export class ReaderPresentationService {
       ReaderSettingsRepository.superResolutionEnabled(context),
       ReaderSettingsRepository.superResolutionModel(context),
       ReaderSettingsRepository.superResolutionMaxHeight(context),
+      ReaderSettingsRepository.readerImplementation(context),
     ])
     const presentation: NhReaderPresentation = new NhReaderPresentation()
     presentation.mode = values[0]
@@ -379,6 +395,9 @@ export class ReaderPresentationService {
     presentation.superResolutionEnabled = values[20]
     presentation.superResolutionModel = values[21]
     presentation.superResolutionMaxHeight = values[22]
+    presentation.readerImplementation = values[23] === 'legacy'
+      ? NhReaderImplementation.LEGACY
+      : NhReaderImplementation.SHARED
     ReaderPresentationService.state().replace(presentation)
   }
 
