@@ -812,6 +812,13 @@ The following are finite pending checks inside this one package, not new queues:
   `tests/reader-paged-variant.test.cjs` passes 11/11. This is a source/contract-level integrity check
   only; it does not close any F2 runtime-device item.
 
+  **2026-09-21 harness-drift closure — test infra repaired, suite green.** The attributed action above is
+  done: reader-kit commit `945ebf4` fixes both harness stubs (the isolated `aboutToDisappear`/`onClosingChanged`
+  and `syncPreferredVariant` members now receive `temporaryVariantOverride` with `preference()`,
+  `variantAttempts`, and a stub `reconcileTemporaryVariantOverride`; the wiring regex matches the current
+  block guard with `cancelRetainedProcessedVariantReplacements`). The full reader-kit Node suite now passes
+  **66/66 files, 454 assertions, 0 failures**. No product code changed.
+
   **2026-09-21 NextN fullscreen/chrome runtime chain — bounded device PASS on the 197 standard non-H
   gallery `663205` (this entry supersedes the 2026-09-20 line-890 "STATE OBSERVED — NextN chrome/fullscreen"
   OPEN tail and its two static screenshots; lease `20260921-134024-d00e55f7`, released; runs 01–18 under
