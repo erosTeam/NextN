@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-f2-candidate-20260920-primary-gate-log-capture",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-f2-candidate-20260920-primary-gate-log-capture/run",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "read-only capture for the completed isolated main HAP SHA-256 15882b199fc1a160b5fa3f8961f6bfae2d69a1f59de1eae637b542ab567e89db and preceding ohosTest primary-trial HAP; no package, process, preference, cache, model, or reader-page state is changed by this manifest",
+    "page": "completed ReaderSharedSuperResolutionTrial gate evidence",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Run immediately after the completed primary trial, before any command clears hilog. It only exports the existing initial, applied, restored, and Hypium result lines that were omitted by the old tail -80 postflight. It does not install, launch, stop, clear logs, write a setting, or make any UI input. If any required line is unavailable, stop rather than infer the gate."
+  },
+  "preflight": [],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "capture-complete-primary-gate-log", "hdcArgs": ["shell", "hilog -x | grep -E 'ReaderSharedSuperResolutionTest.*(initial|restored|source=0 stage=applied)|Tests run:|Failure:|Error:|Pass:'"], "timeoutSeconds": 30 }
+  ]
+}

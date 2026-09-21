@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-f2-candidate-20260920-recording-r3",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-f2-candidate-20260920-recording-r3/run",
+  "recordingFileName": "nextn197_f2_same_page_rehearsal_r3.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 1000,
+  "idleRecordMs": 50000,
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "launchAbility": {
+    "name": "open-page3-and-arm-restricted-same-page-rehearsal",
+    "bundleName": "com.erosteam.nextn",
+    "abilityName": "EntryAbility",
+    "parameters": {
+      "readerLabWork": "__rkit_local_fixture__",
+      "readerLabChrome": "true",
+      "readerLabPage": "2",
+      "readerLabVolumeKeys": "false",
+      "readerLabSuperResolutionRecording": "off-on-once"
+    },
+    "pauseAfterMs": 5000
+  },
+  "actions": [],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "requires the r3 isolated main HAP SHA-256 e41472b7000bf3c8f8db82f13c6f2b3a9bbe6cad03714261692ed46cccba1bf0 established by nextn-197-f2-candidate-20260920-on-checkpoint-r3-manifest.json; source base HEAD 732c37a7f514e902c8e7d02d0420e52db4a3fa98 with a candidate-only restricted Debug F2 rehearsal stored on the existing ReaderSelfHostedRehearsal export; reader-kit b5fa38945b34fb37bca91989bb3b696db173618a including F2 d39bea4a2b238055d5055ee167f8e9b3e8d0874e",
+    "page": "shared Reader local-fixture display page 3/source index 2; the app records only after its session reports the currently displayed source-2 asset as enhanced",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "No coordinate action is authorized. The Debug-only request is exact: local fixture, page 3, debug chrome request, and off-on-once. The app waits up to 30 seconds for source 2 to be ready with variant=enhanced and phase=displayed; otherwise it logs precondition_not_met and makes no setting change. Once met it waits 8.5 seconds, invokes the existing ReaderPresentationService to turn enhancement OFF on the same page, keeps that state 7 seconds, and restores ON in finally. After recording, capture the three NextNReaderLab rehearsal log lines (precondition=enhanced, phase=off, phase=on); missing or failed lines reject the video. Review every frame around both transitions: the prior displayed image must remain until its replacement is drawable, with no blank/black body or LoadingProgress flash. This is only a controlled same-page derivative-replacement rehearsal. It does not validate the real host settings control, new processing, disk-cache behavior, an unvisited page, or full F2 acceptance."
+  }
+}

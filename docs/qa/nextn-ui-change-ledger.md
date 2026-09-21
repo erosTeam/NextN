@@ -11579,6 +11579,123 @@ authorize an edit, replace a device comparison, or define product completion.
 - LIMIT-PASS — Shared Reader single-Back close on the ordinary production route (2026-09-18). Rationale: a real-device counterexample, not polish. On 197, entering the ordinary production shared route (`nextn_reader_backend=shared` + `nextn_gallery_id=678049` → Detail Read action) and pressing the system Back once left the shared reader mounted (19 `rkit-*` nodes, unchanged after 6 s / a warm-up input) and popped the underlying Gallery instead; a second Back then closed the reader. The legacy reader on the same route closes on a single Back with the Detail retained (`legacy-reader-surface` 1→0, `gallery-detail-read-action` still present). Boundary: `Index.handleGalleryDetailBackPressed` only. Before: it had no shared-Reader guard, so the Gallery destination's Back ran while the shared Reader (a shell overlay above that destination, `readerOverlay.activeReader !== null`) stayed mounted. After: the method returns the shared Reader's registered `readerBackRequest()` (→ the existing `closeTrial`) or `closeReaderDestination(true)` when a shared Reader is active, before any Gallery pop. Minimality: additive early-return guarded by `readerOverlay.visible && readerOverlay.activeReader !== null`, placed immediately after the existing `cancelSourceEntryPending(route.galleryId)` first line so that entry-cancel precedence is unchanged; inert for the legacy/default backend (where `activeReader` is null), so the accepted legacy synchronous HDS admission path is unchanged. No geometry, transition, status-bar, or reader-kit change. Visual verification: source build + 197 real-device run — after the fix a single Back closes the shared reader (19→0 `rkit-*`) and returns to the same Detail (`#678049`, `14 页`). Unresolved risk: the guard relies on `readerOverlay.activeReader` being set for the shared backend (it is, at `ReaderOverlayNavigationState.open`); split/tablet Back was not separately re-run here. Evidence: `.hvigor/outputs/nextn-backkey/run4/` (pre-fix two-press), `.hvigor/outputs/nextn-backkey/run5-legacy/` (legacy control), `.hvigor/outputs/nextn-backkey/run9-fixed/` (fixed single-press).
 
 
+## 2026-09-21 — Shared production thumbnail entry preserves selected-part flight — LIMITED DEVICE PASS / OPEN
+
+- **Why newly actionable:** user observed on two devices that the shared
+  production double-page entry expands a thumbnail to the full window before
+  replacing it with a spread. That contradicts the existing accepted
+  selected-part/independent-neighbor contract in
+  `shared-reader-production-thumbnail-spread-entry-nextn-20260913.md`.
+- **Whole parent-tree boundary:** retained Detail/Grid source → Index root
+  thumbnail proxy → embedded shared Reader destination → `ReaderSurface` →
+  `ReaderPagerSurface` → `ReaderPagedViewport` → selected/neighbor image
+  leaves. Gallery layout, reader policy, status-bar ordering, root close
+  return, controls, and legacy/default routing stay outside this edit.
+- **Source-proven regression and minimal repair:** current production entry
+  discarded the guarded `ReaderEntryTransition` and sent the root proxy to its
+  implicit fullscreen target. The repair retains that lifecycle only long
+  enough to obtain reader-kit's actual selected content rect; the existing
+  root proxy then targets that rect, and the existing selected/neighbor opacity
+  protocol performs the handoff. No duplicate in-content preview is mounted.
+  If guard or geometry is unavailable, the optional part choreography cancels
+  to the existing root-proxy fallback. That cancellation never marks content
+  ready: the pre-existing decoded-and-visible reader observation remains the
+  only opening-placeholder release signal.
+- **Existing capability preservation:** the route remains hidden until its
+  first proxy frame, source snapshot/placeholder remain the first-image owner,
+  entry cancellation stays fenced by the existing live-source guard, and the
+  close path retains its current live return-target measurement and proxy
+  ownership. Close does not reuse entry geometry: it starts from the same
+  selected-content crop used for its close snapshot, converted into the root
+  proxy's local coordinate space; unavailable crop/proxy geometry keeps the
+  established fullscreen fallback.
+- **r3 disposition and meaningful source check:** independent frame review
+  found the old close path taking that cropped selected image through a
+  fullscreen contain layout before shrinking. The paired host repair carries
+  crop origin and size through `prepareClose()`. The two source contracts cover
+  a letterboxed content crop with a non-zero root offset; this does not accept
+  visual motion. `ReaderImageInformation.test.ets` (including its generic
+  `attempts=40` readiness loop and More → information flows) is explicitly
+  excluded from F1/F2. The immutable r3 recording manifest already records a
+  single source click + Back and no information-dialog action; it is not edited
+  after the run, so its recorded hash remains evidence of what actually ran.
+- **Bounded device result / remaining boundary:** NextN candidate
+  `49d04df9ef1bc181a98a690f8c1b231e914455610192a8fb3975df5796777a94`
+  completed one 197 ordinary path from a freshly measured unique Gallery
+  `673508` thumbnail through the selected two-page Reader and Back to the same
+  source. The 151 original-PTS frames show the close leaving from the selected
+  left part at `n112 / 7.221222s`, then shrinking toward the source; the old
+  fullscreen-contain discontinuity is absent. This accepts only that
+  close-start path, not F1 generally. NextE candidate
+  `690bf46a5333b453d2820c27b4f4ad6ced3f14999d77224dc4cf66f2018c39b0`
+  completed the corresponding 237 ordinary route Shared Home → Search → Gallery
+  `4200057` → detail preview grid. The fresh unique
+  `reader-thumb-gallery-detail-1-page-0` and `-content` nodes are both
+  `[72,1195]-[448,1631]`, centre `[260,1413]`. The immutable 320-frame recording
+  is `abbfe8ca19527df28a194ad37ded61219f934e0e2b8112a94e5a95e173b14365` with
+  manifest `373da6ba8c1df70cad8a8c880de159d038c9d7dc607d489ffc4273b62716258f`.
+  Its only actions are fresh source click, safe centre `[660,1060]` reveal, the
+  same-point hide, Back, and the same fresh-source re-entry; there are no page
+  turns, information/More/settings actions, OhosTest, retry or loop. The PTS
+  record is: grid at `n135 / 2.444922s`; entry begins `n137 / 2.481067s`; stable
+  double page `n168 / 3.079256s`; initial chrome-hidden body `n188 / 8.022422s`;
+  unchanged body with status/top/bottom chrome from `n193 / 8.175311s` through
+  `n199 / 9.132122s`; hide begins `n201 / 9.461733s` and is complete with body
+  retained at `n205 / 9.975322s`; selected-part Back close begins
+  `n213 / 10.652311s`; the same grid returns `n222 / 10.797400s` and is stable
+  after `n240 / 11.177356s`; the same fresh tile re-enters at
+  `n264 / 15.172644s`; and `n294 / 15.673067s` through `n319 / 21.932511s`
+  remain the stable two-page Reader with initial chrome hidden. Thus NextN-197
+  is a bounded close-start pass, while NextE-237 is a bounded current-semantic
+  chrome reveal/hide plus same-source exit/re-entry continuous-path pass. Neither
+  is overall F1 acceptance. Device 103 remains locally blocked because
+  `gallery_detail_favorite_3927` is
+  a unique id, not a lawful gid route; no substitute navigation is used. Unknown
+  dimensions, slow load, failure and cancellation remain OPEN; no source or
+  single-path result claims visual latency is solved.
+- **NextN 237 current-candidate chrome/re-entry — executed but NOT ACCEPTED for
+  the requested two-page chain.** The hash-pinned `49d04df…7a94` HAP (host
+  `732c37a7`, reader-kit `b5fa3894`) ran once through the lawful ordinary
+  Gallery `673508` route after a checked awake gate. Its final layout has one
+  fresh `reader-thumb-gallery-detail-1-page-0-content` at
+  `[72,1144]-[395,1594]`, centre `[233,1369]` (`current-rail.json`
+  `dddde6b1…1eedf`). The continuous MP4 is
+  `fc1194ada9d47b78c357c8707d74a56d822116c8fa3b1aab079e3e4da6490c25`
+  (manifest `e071518e644b857f6addd6ff2e63d8e0641858b415922bdbf3a4858a1c07d7e8`;
+  219 original-PTS frames): fresh source click → centre `[660,1060]` show →
+  same-point hide → Back → same fresh source click. It contains no image
+  information, More, settings, OhosTest, retry, loop, swipe, or page turn. But
+  `n60 / 1.130589s` and re-entry `n179 / 14.947356s` visibly show `1 / 83`
+  **single-page** Reader, rather than the target double-page state. Chrome is
+  visible `n106 / 7.525333s`–`n111 / 9.131156s`, hidden at
+  `n112 / 9.448178s`, Back begins `n127 / 11.239989s`, and the same grid is
+  back at `n136 / 11.391511s`. Preserve it as a bounded single-page observation;
+  do not use it to close the NextN-237 double-page chain or general F1.
+
+- **NextE 237 full-screen/viewport ownership chain — STOPPED before Reader;
+  no acceptance.** On the current signed candidate HAP
+  `690bf46a5333b453d2820c27b4f4ad6ced3f14999d77224dc4cf66f2018c39b0`
+  (host `7866db7824bbabd5d848fd63f443d2d84ca304bf`, reader-kit
+  `b5fa38945b34fb37bca91989bb3b696db173618a`), a fresh lease
+  `20260921-020712-5cd214bf` completed one checked awake/install/cold-Home
+  gate. The fresh Home layout SHA-256 is
+  `27b0c88d8707a3f6c0e016f7a6c0338cd3a88a7c6f64c25848f7ae6517e502f2`. Its
+  unique ordinary-navigation node `hdsNavigationMoreButton` measured
+  `[1152,141]-[1272,261]`; after that one semantic click, `text=搜索` had count
+  **0**. This is a stop condition, not a missing-coordinate invitation: no old
+  point was reused and no guessed menu action was issued. Consequently no
+  Gallery `4200057`, preview thumbnail, Reader, chrome gear, host settings,
+  fullscreen value, viewport observation or continuous recording exists for
+  this item. No information dialog, OhosTest, retry or loop was used. The
+  semantic report SHA-256
+  `3d139a963b30af06661ec738a646cbd4d5f8b446eb5f022c72fbc9627826d0b3` and
+  gate metadata SHA-256
+  `f51e5647acc75bc6bd844523eea8a76ed6fb66e0d61d2b9b9611b1859531c99e` are in
+  `NextE/.hvigor/outputs/device237__VDE-AL00/not-applicable/portrait-1320x2120/nexte-fullscreen-ownership-20260921/`.
+  Lease released. The full-screen/viewport ownership chain remains OPEN and
+  the prior NextE 237 chrome show/hide result must not be relabeled as settings
+  immediacy.
+
 ## 2026-09-19 — Shared Reader translated-page toggle-back — DEFECT FIXED / DEVICE PASS
 
 - **Boundary:** `feature/reader/src/main/ets/lab/NextNReaderLabPage.ets` -> `translationActions()` and

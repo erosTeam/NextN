@@ -11,18 +11,525 @@ Ship one shared reader whose core interaction and UI are reused by all three
 apps while each host retains ownership of catalogs, cache/download services,
 settings, progress, actions, navigation, and Koma chapter orchestration.
 
-Package 5 is **candidate-accepted** (2026-09-19): the three apps consume one
-pinned `reader-kit` revision and the shared reader replaces the legacy reader on
-every main path, verified per host. Every **production default nonetheless stays
-the legacy reader**: the shared route is reachable only through an explicit
-debug-build selector (or the equivalent debug Want), it is process-scoped,
-reversible, and a cold start returns to the legacy reader. Selecting the shared
-reader as the shipped default is a **separate release decision the user has not
-made**; it is not part of this package. No package migrates or deletes user data.
+Package 5 is **ACTIVE**. The 2026-09-19 “candidate-accepted” records below are
+bounded historical evidence, **not** a current replacement conclusion: later
+user-observed F1/F2 counterexamples reopened the package, and source/build
+checks cannot close their runtime continuity requirements. Every **production
+default stays the legacy reader**; the shared route remains an explicit,
+process-scoped, reversible debug route. No package migrates or deletes user
+data.
 
-## 能力对等进度板（有限；唯一 ACTIVE 行，其他为参考）
+### 唯一 ACTIVE 包：有限收尾主线（2026-09-21）
 
-进度板行状态口径（2026-09-19）：下表 P1—P12、**P15**、**P16** 均为 ACCEPTED。P15「裁边强度」未进入共享裁边链是 2026-09-19 新发现的宿主缺口，已在 237 真机闭合；其行内证据与状态取代任何把它视为未决的旧表述。
+The current package is the ordinary reader route, not a collection of isolated
+controls. Its closure path is: ordinary entry and asset handoff → initially
+hidden chrome → full-screen/viewport ownership → exit and re-entry at the same
+source, plus F2 only where a processed replacement is applicable. The current
+candidate still lacks matching runtime evidence for those F1/F2 transitions;
+the historical terminal screenshots and prior Pass results are retained but do
+not fill that gap.
+
+The following are finite pending checks inside this one package, not new queues:
+
+- **Save/share, auto-read, and cache semantics:** their earlier records are
+  historical. The remaining gap is matching-current-candidate runtime evidence,
+  not a confirmed source defect. **2026-09-21 source recheck:** NextE
+  `test_reader_save_source_contract.mjs` and
+  `test_reader_original_plan_runtime.mjs` pass 11/11, including exact legacy
+  export-source retention, cancelled resolver fencing, share fallback, cache
+  warming/preload depth, and the production-vs-Debug `autoReadSourceHost`
+  split. The latter test was updated only to express the existing production
+  `adapter` / Debug `delay-once` probe branch; no reader product source changed.
+  This does not replace the still-missing current-candidate runtime chain.
+- **Remaining legacy capability mapping:** the gap is a bounded source audit of
+  any legacy-only behaviour not already mapped to the shared route; it must not
+  inherit an ACCEPTED result merely from this table.
+- **Current-unit temporary super-resolution icon — confirmed defect, source
+  repaired; build/runtime OPEN.** The r3/r4 device attempts remain discarded:
+  r3 has no branch evidence and r4 used an invalid repeated information-dialog
+  loop. Neither is runtime evidence. The source defect was instead direct:
+  hosts correctly set `ReaderSurface.active=false` while their settings sheet is
+  open to pause input, auto-read and media operations, but `onActiveChanged()`
+  previously also cleared the current-unit temporary enhancement override.
+  Closing the sheet therefore silently restored the host preference instead of
+  preserving the explicit per-current-unit choice.
+  **2026-09-21 repair:** `ReaderSurface` now has a separate
+  `temporaryVariantActive` lifecycle. Operational `active` changes no longer
+  clear the override; only route/foreground loss, close/disappearance, or the
+  explicit temporary-variant lifecycle end does. NextE and NextN pass that
+  route lifecycle without their settings-sheet visibility; Koma has no
+  temporary-super-resolution entry and is untouched. The toggle still selects
+  the default asset only for its current original-image scope, cancels an
+  unfinished retained enhanced replacement, and calls the host toast callback
+  without writing the host super-resolution preference.
+  A new direct `ReaderSurface` contract executes the real methods and covers
+  settings-sheet operational pause retention, OFF/ON, current-unit scope,
+  navigation change, unit change, route-lifecycle clear, retained-candidate
+  cancellation and no host-preference write: `reader-surface-input.test.cjs`
+  passes **20/20**; together with `reader-paged-variant.test.cjs`, **29/29**;
+  `git diff --check` passes. The earlier **28/28** result was only a peripheral
+  existing-regression recovery after fixture alignment, not direct proof of
+  temporary-super-resolution lifecycle behavior.
+  **2026-09-21 consumer build closure:** the actual, non-identical reader-kit
+  WIP trees were synchronized before compilation (not inferred from their
+  common base `b5fa3894`). NextN host contracts plus `reader-surface-input`
+  pass **22/22** and its signed HAP is
+  `entry/build/default/outputs/default/entry-default-signed.hap`, SHA-256
+  `538ce50d92ed13ecc688c51527b488215e8028c769697a1e1ca01ab660e9585b`
+  (host `732c37a7`, reader-kit source-tree
+  `304846c7a3ab68d44c7352d32e6e933d4aceb2e1a34a677638cf4ec638d2fdd9`).
+  NextE host contracts plus the direct lifecycle contract pass **20/20** and
+  its signed HAP SHA-256 is
+  `536212b59497749e23ed10b9351bb7867d3c8a9912cbf1109233ff0da99c6f84`
+  (host `7866db78`, reader-kit source-tree
+  `d6bdff2dddc8aac39f894b96f7e87c70f17ef4c3e908f4705dbac234b3bcf942`).
+  Koma was compiled only from its actual consumer checkout
+  `Koma-reader-preload-verify`, with no temporary-super-resolution capability
+  attached: its host contracts pass **14/14** and its release signed HAP
+  SHA-256 is `30c7dc7bbf91f97285d6458fab4ef838d4178534dc2913c0d0959869be096902`
+  (host `326e9692`, reader-kit source-tree
+  `c444514bc1a54c365a7d0f1166203aa12ed93bd1fae89b3971eff117e02c5344`).
+  Thus source, targeted contracts and all three signed consumer builds are
+  closed; any new device acceptance remains OPEN. No device was started for
+  this repair.
+  **2026-09-21 correction — prior protocol-block statement withdrawn.** The
+  earlier claim that checked protocol could not combine a data-preserving HAP
+  install with a semantic gate was wrong: existing project-owned manifests
+  already use `preflight` `install -r` for setup and a separate checked gate to
+  launch the backend-qualified Gallery and capture the current layout before
+  generating one bounds-derived recording manifest. The lease used for that
+  abandoned claim (`20260921-062021-1f0559c3`) was released without installing
+  or operating the app; it is not device evidence. The active plan is now one
+  fresh 197 setup/gate with the current HAP, no Reader click, no OhosTest, no
+  information UI, and no reused coordinate. Only a unique current layout anchor
+  may authorize a single `repeat=1` continuous recording manifest.
+  **2026-09-21 r2 setup/gate result (not a runtime acceptance):** fresh lease
+  `20260921-062356-bbc890d9` installed the verified current HAP
+  `538ce50d92ed13ecc688c51527b488215e8028c769697a1e1ca01ab660e9585b`
+  using checked `preflight`, force-stopped, then launched Gallery `673508` with
+  `nextn_reader_backend=shared`; every declared command executed once and the
+  protocol passed. The received Detail layout SHA-256 is
+  `e5f126955a90e051d8a73ead55723e01ba088327e888e78773fd58d593c6951f`
+  (screen SHA-256
+  `762750a715eb9463178bbb5aaf480d3d2f6ce717162772e3ae4f8c77bec6e3c1`). It
+  contains exactly one current Reader entry,
+  `gallery-detail-read-action` at `[876,2467][1260,2720]`, under
+  `nextn-reader-entry-host`; that value is newly observed, not reused. Because
+  this deliberately pre-Reader layout contains zero `rkit`, super-resolution,
+  variant, or settings nodes, it cannot by itself supply the post-entry status
+  icon/settings anchors required to make the remaining recording inputs
+  semantic. No Reader click, status/settings action, image-information UI,
+  OhosTest, retry, or repeat was sent. The lease remains active pending an
+  existing project-owned post-entry semantic-gate mechanism or explicit
+  authority to introduce one; no recording manifest has been generated from
+  unknown controls.
+  **2026-09-21 r2 post-entry gate result (stop condition met):** the existing
+  checked measurement/action pattern was then used once, with the freshly
+  derived centre `[1068,2593]` of that sole Detail action; its only action was
+  `repeat=1`, followed by layout/screen receive and power readback. The Reader
+  layout SHA-256 is
+  `ad0ac3d646d7ac79a578184e2ca323e8764250d94b5cef9fb17327dc07c92a0f`
+  (screen SHA-256
+  `4a5e601ca8bccbe0b0ce8a8a50cc0fb0857ffc724054a6058670cb37ed9a2d3d`).
+  It establishes one `rkit-reading-surface`, one `rkit-image-viewport`, one
+  `rkit-persistent-page` (`1 / 83`), and one enabled/clickable
+  `rkit-enhancement-status` at `[660,2532][732,2604]`. Its same-node counts are
+  `chrome=0` and `settings=0`: initial Reader chrome is not mounted in this
+  current state. This is the declared precondition stop, not an OFF/ON result:
+  no enhancement-status input, settings input, image-information UI, recording,
+  OhosTest, retry, or extra input followed. The current lease remains active;
+  the acceptance is OPEN.
+  **2026-09-21 r2 current-unit runtime chain — bounded device PASS.** On the
+  same lease, the one continuous checked recording used only the current unique
+  enhancement-status centre `[696,2568]` and the current Detail action centre
+  `[1068,2593]`: OFF (1800 ms) -> ON (5500 ms) -> OFF (1800 ms) -> Back
+  (3500 ms) -> same Detail re-entry (8000 ms), each exactly once. The run
+  manifest SHA-256 is
+  `30ad722db6bac9b2d23e92685bed67b2a4568b9e779cb4de039bc17375ea6d9b`;
+  the MP4 SHA-256 is
+  `3fc04df91ba6b9f0a17b4bba4aa4fd0a9e7ec06cbf5d686e19bac999bd76d839`.
+  The authority for timing is its 235 `ffprobe` PTS frames (`0.000000` through
+  `23.679822` seconds); ffmpeg emitted an extra `frame-235` with no matching
+  PTS, which is excluded. Frame evidence is exact: `#0` starts global ON with
+  a red icon; `#3`/`0.443s` through about `#21`/`2.254s` show 「已关闭超分」
+  and grey; `#30`/`2.415s` through about `#45`/`2.685s` show 「已开启超分」
+  and red; `#87`/`8.656s` through about `#105`/`10.348s` show 「已关闭超分」
+  and grey. Back begins `#108`/`10.399s`; `#111`/`10.469s` is the same Gallery
+  `673508` Detail and remains so through `#165`/`14.936s`; re-entry begins
+  `#168`/`14.982s`, with stable double-page Reader body by `#171`/`15.032s`.
+  From `#174`/`15.083s` through authoritative final frame
+  `#234`/`23.680s`, the icon is red, proving departure cleared the temporary
+  OFF and re-entry restored global ON. Reader-body per-frame statistics and
+  full visual sampling find no black/empty Reader window; the Detail/transition
+  interval is the deliberate Back/re-entry path, not a blank-body result.
+  This closes the current-unit OFF/ON/OFF plus leave/re-enter core chain for
+  this NextN candidate only. The settings-sheet-open retention remains a
+  separate source/contracts/build PASS with dynamic evidence OPEN because no
+  reliable chrome-reveal semantic anchor is available; that is not a product
+  failure.
+  **2026-09-21 auto-read runtime chain — bounded device PASS.** The work
+  order's next executable OPEN item, the host auto-read
+  source-prepare -> stop/close/navigation -> late-completion check, was run on
+  the same current candidate HAP `538ce50d92ed13ecc688c51527b488215e8028c769697a1e1ca01ab660e9585b`
+  under fresh 197 lease `20260921-072131-dddeaf7f`. Source inspection first
+  bounded the chain: NextN wires
+  `new ReaderPagedSession(catalog, assetProvider, adapter, adapter)` with no
+  fifth `autoReadSourceHost` argument, so this candidate's auto-read is
+  dwell-advance based and the runtime claim is exactly: automatic advance while
+  enabled, no advance after explicit stop, and no late advance after
+  close/re-entry. Three checked gates each acted once from freshly measured
+  unique anchors: the setup gate installed the same verified HAP and launched
+  Gallery `673508` shared; the entry gate clicked the sole
+  `gallery-detail-read-action` centre `[1068,2593]` from this run's own
+  layout; the chrome gate clicked this run's unique `rkit-image-viewport`
+  centre `[630,1360]` once and measured exactly one enabled
+  `rkit-auto-read` at `[195,2434][338,2577]` (top and bottom chrome each
+  exactly one). The one continuous recording then used only, each exactly once:
+  auto-read enable at `[266,2505]` (10 s window), disable at the same point
+  (3 s window), Back, the same Detail re-entry, and one post-re-entry body
+  reveal. Its manifest SHA-256 is
+  `513b4935a4628ce3a944ce562dea55e9aef256959966768a1b36260ccbbee76f`; the
+  MP4 SHA-256 is
+  `3a991461abe1c73ceca2e1295169cd941db2481b50963d5e183deda0e4082ead`.
+  Authority is 631 ffprobe PTS frames (`0.000000`–`30.011733`s). Ledger
+  timings place enable at ~`1.0s`, disable at ~`11.3s`, Back at ~`14.7s`,
+  re-entry at ~`18.6s`, and reveal at ~`27.0s`. Body-region pixel
+  differencing (890x620 crop, 4 Hz, grayscale mean abs diff) shows exactly two
+  change events before disable — turns at ~`3.75–4.0s` and ~`7.5–7.75s`
+  (dwell ≈ 3 s, the persisted default) — and zero body change from
+  `7.75s` through `14.5s` (explicit stop holds) and from `18.75s` through
+  the final frame (no late-completion advance after close/re-entry). After
+  re-entry the persistent label reads `5 / 83` at `19.0s`, `22.0s`, and
+  `25.0s` unchanged; the icon sheet shows the clock accent red at `5.0s`
+  (enabled), white at `12.0s` (stopped), and white again at `29.0s` after
+  re-entry (session-scoped auto-read is off, no revival). Automatic turns
+  advanced Gallery `673508` reading progress to `5 / 83`, consistent with
+  prior accepted page-turning recordings. Declared boundary: a zero-turn
+  outcome would have been evidence-incomplete rather than product failure if
+  the persisted dwell had exceeded the 10 s enable window; the observed dwell
+  was ≈ 3 s, so the window was sufficient. The runner deleted its unique
+  MediaLibrary asset and verified absence; the checked cleanup then force-stopped
+  the app and restored the timeout; the lease was released immediately. This
+  closes the auto-read runtime-chain item for this NextN candidate only; save,
+  share, and cache chains remain OPEN.
+
+### 2026-09-21 current-device ledger
+
+- **NextE F1 ordinary continuity — observed on 237, bounded pass.** The signed
+  candidate HAP was pinned to SHA-256
+  `2733e030b3f88abcce38e2a7522e071a7a59c9cb12eb02aec469c060294994ee` and
+  recorded once on `VDE-AL00` (1320×2120): ordinary gallery thumbnail → reader
+  handoff → initially hidden application chrome → reveal chrome → hide chrome
+  → Back to the same gallery grid → re-enter the same thumbnail. The recording
+  (`a2843d5c95223dc54a55f72d6ad6adc11b13642cd202b25a920822aa463ec714`) and
+  extracted frames are under
+  `NextE/.hvigor/outputs/device237__VDE-AL00/not-applicable/portrait-1320x2120/nexte-f1-current-ordinary-continuity-20260921/`.
+  The reviewed transition frames show a continuous thumbnail proxy handoff and
+  return; no black frame, blank reader canvas, or simultaneous retained page
+  body plus obsolete reader chrome was observed. This is evidence for this
+  single NextE F1 path only, not an F2 result, cross-host parity result, or a
+  reason to change the legacy default.
+- **NextE 103 F1 ordinary continuity — evidence misread; bounded
+  non-counterexample (this entry takes priority).** The retained candidate HAP
+  (`2733e030b3f88abcce38e2a7522e071a7a59c9cb12eb02aec469c060294994ee`), the
+  524-frame original-PTS recording, and video SHA-256
+  `1ae3ee71a4818e823766de24d8719b8363476a2f761efa6afd3eecc2a6ed33ab` remain
+  preserved at
+  `NextE/.hvigor/outputs/device103__MLR-AL00/not-applicable/portrait-1600x2560/nexte-f1-current-ordinary-continuity-20260921/`.
+  The former `FAIL` interpretation of frames `100..120` and `510..523` was
+  wrong: the source-grid tap `[357,218]-[639,400]` selected source image 2,
+  whose pixels are entirely black, while source image 1 is the horizontal
+  four-panel image. In reader frame `100`, `part-1/sourceIndex=1` occupies
+  `[0,941]-[1053,1619]` (the selected black page), and
+  `part-0/sourceIndex=0` occupies `[1053,941]-[1600,1619]` (its adjacent
+  horizontal-panel neighbour). The recording's only non-black content bounds,
+  `(1052,941)-(1600,1619)`, coincide with that `part-0` rectangle and match
+  source image 1. The observed black-plus-lower-right mosaic is therefore the
+  normal selected-black-page plus adjacent-page double-page composition, not a
+  blank surface, resource-size error, or retained transition transform. No
+  product code change or re-recording follows from this correction; it neither
+  closes other F1/F2 conditions nor invalidates the bounded 237 observation.
+- **NextE 237 full-screen/viewport ownership chain — STOPPED before Reader;
+  no acceptance.** The current HAP identity was re-read immediately before the
+  run: `690bf46a5333b453d2820c27b4f4ad6ced3f14999d77224dc4cf66f2018c39b0`,
+  host `7866db7824bbabd5d848fd63f443d2d84ca304bf`, reader-kit
+  `b5fa38945b34fb37bca91989bb3b696db173618a`. A new 237 lease
+  `20260921-020712-5cd214bf` ran the hash-pinned checked wake/install/cold-home
+  gate once and saved a fresh Home layout (SHA-256
+  `27b0c88d8707a3f6c0e016f7a6c0338cd3a88a7c6f64c25848f7ae6517e502f2`).
+  The next ordinary-navigation semantic step found exactly one
+  `hdsNavigationMoreButton` at current bounds `[1152,141]-[1272,261]`, but its
+  opened menu contained **zero** `text=搜索` components. The route therefore
+  cannot be reliably continued to Gallery `4200057` without either guessing a
+  menu item or reusing old coordinates. It stopped there: no Gallery/Reader,
+  gear, settings read, fullscreen mutation, recording, OhosTest, information
+  dialog or loop occurred. The semantic report (SHA-256
+  `3d139a963b30af06661ec738a646cbd4d5f8b446eb5f022c72fbc9627826d0b3`) and
+  checked-gate metadata (SHA-256
+  `f51e5647acc75bc6bd844523eea8a76ed6fb66e0d61d2b9b9611b1859531c99e`) are under
+  `NextE/.hvigor/outputs/device237__VDE-AL00/not-applicable/portrait-1320x2120/nexte-fullscreen-ownership-20260921/`.
+  The lease was released immediately. This leaves the full-screen/viewport
+  ownership chain OPEN; the next work-order item must not treat the existing
+  chrome recording as settings-immediacy evidence.
+- **NextE full-screen capability mapping — source audit complete; runtime
+  evidence still OPEN.** This is the next non-device-dependent finite item,
+  not a replacement for the stopped chain. Legacy `ReaderPage` observes
+  `readMode.fullscreen` and synchronizes its status-bar decision from
+  `!fullscreen || chromeVisible`; the shared `NextEReaderLabPage` observes that
+  same read-mode state, republishes chrome to `ReaderSurface`, and derives the
+  host status-bar request from the same expression. Both routes inject the
+  same host-owned `ReaderSettingsPage` sheet; its existing `全屏` row calls the
+  same `ReadModeSettings.setFullscreen` writer. No legacy-only fullscreen
+  writer or sheet owner was found. Current-source checks passed
+  `test_reader_trial_entry_host_runtime.mjs` (18/18) and
+  `test_read_progress_contract.mjs` (70 assertions). These are source/runtime
+  contracts only: they do not show the actual sheet value, window inset,
+  visible system bars, body geometry, or immediate repaint on 237, so they
+  leave the full-screen/viewport ownership chain OPEN.
+- **NextE remaining legacy capability mapping — bounded source audit complete;
+  no confirmed legacy-only gap.** The audit is limited to `ReaderPage`'s
+  application-owned reader behaviours and their `NextEReaderLabPage` shared
+  host replacements; it does not turn prior source evidence into device
+  acceptance. The concrete mapping is: (1) layout, direction, double-page,
+  spread layout and first-page-alone persist through `ReaderSurface` →
+  `ReaderPreferenceSink` → `NextEReaderRuntimePreferences`; crop keeps the
+  capability but deliberately migrates its entry: legacy `MoreMenu` has
+  `SettingsCheckedMenuItem(reader_crop_borders)`, whereas shared production
+  injects `ReaderHostSettings`, so `ReaderChrome` does not mount `RuntimeMenu`
+  or a duplicate `rkit-crop-toggle`. The same gear opens the host
+  `ReaderSettingsSheet`, whose current-mode crop switch persists through the
+  host sink. This is the accepted host-boundary migration
+  (`topRuntimeDuplicate=false`), not exact menu-position parity;
+  (2) background, interpolation, page number, page-turn animation and preload
+  are supplied from the same `readMode` state as `ReaderSurface` parameters;
+  (3) tap zones and volume-key page turns use the same read-mode preferences
+  through `ReaderTapPolicy` and host-owned `ReaderVolumeKeys`; (4) keep-awake
+  uses `ReaderKeepScreenOn`, gated by the shared route/foreground/settings
+  state and restored on disposal; (5) auto-read receives the same
+  `autoPageSeconds` and source-readiness semantics through
+  `ReaderAutoReadPolicy(..., 'source')`; (6) super-resolution and comic
+  translation (including per-page auto translation/show-original state) are
+  carried by `ReaderVariantPolicy` plus the host actions; (7) share, system
+  save, image-information supplements, reload, host settings, image-block
+  marking and gallery progress are respectively supplied by
+  `ReaderMediaActions`, `ReaderHostSettings`/`ReaderHostActions`, and
+  `ReaderObservationSink`. The legacy overflow audit is now explicit: shared
+  `ReaderChrome` owns exact-frame reload and information plus stale-guarded
+  zoom reset; `ReaderHostActions` carries NextE's translate-current,
+  auto-translate and mark-image-blocked actions. Thus crop is the sole
+  deliberate entry relocation, not a missing overflow capability. No
+  `ReaderPage` action or read-mode field found in this bounded audit lacks a
+  shared owner or persistence path. Current source gates remain green:
+  `test_reader_trial_entry_host_runtime.mjs` 18/18,
+  `test_read_progress_contract.mjs` 70 assertions, and reader-kit
+  `reader-host-actions-capability.test.cjs` plus
+  `reader-host-actions-ui.test.cjs` 14/14. This closes only the remaining
+  source-mapping question; visible settings immediacy and the
+  full-screen/viewport runtime chain remain OPEN.
+- **NextN 197 adjacent-page observation — version-bounded failure, not a
+  current-candidate verdict.** The protected older HAP
+  `1667b5f27dd665fa0d3442c03f745d156dbeac140f20385772361131592952cf`
+  recorded one local-fixture page-1 → page-2 → page-1 sequence. Its reader body
+  remained visible, but a central white `LoadingProgress` appeared in original
+  PTS frames `n=145..153` (`2.947400..3.133556s`) during the forward handoff.
+  Its postflight lost `OverrideTimeout=86400000ms`, independently making this
+  run NOT ACCEPTED. It establishes neither cache/new-processing identity nor a
+  host/shared root cause, and it must not be used to reject a later repaired
+  candidate. The authoritative record is
+  `shared-reader-197-validation/outputs/197-shared-reader-dynamic-recovery-record.md`.
+- **NextN 197 current-candidate normal lifecycle — NOT ACCEPTED, not a product
+  counterexample.** The isolated repaired HAP
+  `8c9506a8a7f32ab4bbaca7b4f1ccff3e3e7ab6600af5c4f5e23d3ffffe90b8bd` passed
+  its recording protocol and retained `AWAKE` plus
+  `OverrideTimeout=86400000ms` before and after. But the 730-frame video starts
+  on Browse and reaches Gallery detail only later; it never establishes the
+  required thumbnail-entry → reader → page-turn → Back → same-thumbnail
+  re-entry chain. The recording is therefore not accepted for F1/F2 despite
+  its successful runner result, and it is not evidence of a product defect.
+  No retry was performed. Artifact:
+  `NextN/.hvigor/outputs/nextn-197-current-unit-sr-public-lifecycle-r1-recording/run/nextn197_current_unit_sr_public_lifecycle_r1.mp4`
+  (`efd87d09e0cbfba5812a5bba8d9a5af8e91870883567f62112455d0dd9aa5ab7`).
+
+- **Shared double-page thumbnail entry — implemented source candidate / bounded
+  selected-part entry, chrome sequence and close-start device passes; remaining runtime evidence OPEN.** This item takes
+  priority over any earlier broad F1 pass wording for production spread entry. The established production
+  contract is that reader-kit supplies the selected image's actual content
+  rectangle, the root proxy lands on that one part, and the neighbor reveals
+  independently; a thumbnail must not first expand across a pair and then
+  split. `7866db78` changed NextE's `Index.presentProductionThumbnail()` to
+  retire that entry lifecycle and call `openClaimed()`, whose state computed a
+  full-root contain target before any reader part existed. NextN's current
+  production caller similarly released its captured lifecycle and called
+  `open()` with the implicit full-root target. This explains the user-observed
+  full-screen-then-spread regression; it does not rely on the unrelated 103
+  black-content observation.
+
+  The replacement candidate keeps the root proxy, hidden destination mount,
+  source snapshot, first-image handoff, cancellation fallback, close-time live
+  target measurement, and existing return owner. It retains the entry only
+  until `ReaderEntryTransition` publishes reader-kit's measured selected part;
+  then the existing root proxy flies to that rect, the existing per-part
+  selected/neighbor opacity protocol reveals the neighbor, and the decoded
+  selected image completes the handoff. If the live departure or measured part
+  is unavailable, the optional part choreography cancels and the pre-existing
+  root-proxy route starts if it has not already started. It does not synthesize
+  an image-ready signal: only reader-kit's existing decoded-and-visible
+  observation may release the opening placeholder. Unknown dimensions without
+  a terminal cancel deliberately retain the existing first-frame wait; their
+  visual behavior is still an open device-evidence boundary. No status-bar ordering, close-target
+  eligibility, cached exit geometry, radius, legacy default, Gallery layout,
+  or reader-kit display-map rule changed.
+
+  Independent review of the 197 r3 original frames found a separate **return**
+  discontinuity: the selected part remains visible during the spread, but the
+  close proxy first becomes a fullscreen single-page contain image before it
+  returns to the source. The close snapshot was already cropped to the selected
+  content region; `prepareClose()` nevertheless re-laid that crop through the
+  full proxy host. The current symmetric NextN/NextE source candidate carries
+  that same crop's window origin and size into `prepareClose()` and starts the
+  proxy there. It preserves the existing full-host fallback only when the crop
+  or proxy rectangle cannot be measured. A source contract covers a letterboxed
+  crop under a non-zero root offset; it is not visual acceptance.
+
+  Affected production callers are all explicitly handled: NextE
+  `Index.presentProductionThumbnail()` retains the guarded lifecycle,
+  `readerOverlayRouterMap(ReaderShared)` suppresses premature `startOpening`,
+  and `NextEReaderLabPage` resolves/uses the measured part; NextN
+  `Index.presentProductionThumbnail()` retains the guarded lifecycle,
+  `sharedReaderBody()` forwards it without mounting a second preview,
+  `readerRouteShown()` suppresses premature `startOpening`, and
+  `NextNReaderLabPage` resolves/uses the measured part. Each host's own
+  `ReaderThumbnailTransitionState` / coordinator receives only the target
+  conversion needed by that host root.
+
+  The newly signed NextN candidate
+  `49d04df9ef1bc181a98a690f8c1b231e914455610192a8fb3975df5796777a94`
+  (host `732c37a7`, reader-kit `b5fa3894`) now has one bounded 197 device
+  observation: the current unique Gallery `673508` thumbnail entered the
+  selected two-page Reader and returned to that source without the old
+  fullscreen-contain close step. Its one-use source measurement, two-action
+  recording manifest, original-PTS frames and cleanup are recorded under
+  `nextn-197-shared-entry-closestart-*`; it accepts that close-start path only.
+  **P7 save-dialog cancellation observation (2026-09-21, 197) — DYNAMIC PASS,
+  bounded to one current left-page save-session cancellation.** The frozen monitor
+  candidate `7310c716d121f44664848076207b7deeb87ad7fa9571ed1208295dc242570231`
+  (host `732c37a7f514e902c8e7d02d0420e52db4a3fa98`, reader-kit
+  `b5fa38945b34fb37bca91989bb3b696db173618a`) was installed once under fresh
+  197 lease `20260921-042350-8748ad53`. Checked gates measured exactly one
+  current Gallery `673508` source node
+  `reader-thumb-gallery-detail-1-page-0-content` at `[78,989]-[428,1477]`,
+  entered its Reader, revealed exactly one enabled `rkit-save-image`, then
+  opened the current save menu with exactly one enabled `rkit-save-left`.
+  The sole recording action selected that left page once, waited 1 second,
+  then sent Back once; it never confirmed a destination. The resulting
+  recording is
+  `.hvigor/outputs/nextn-197-monitor-candidate-p7-save-cancel/recording/nextn197_p7_save_dialog_cancel.mp4`
+  (SHA-256 `71383ffdfa025d14848481b77166ef8ba07db5f0886f8595c754c84f772b18ca`;
+  recording-manifest SHA-256 `1d441fbefdf22a990a52db79ba94040b6c12147e26a61b27bdd9f181c7c65e19`).
+  A continuous 10fps review over `0.30–2.20s` (20 contact samples under
+  `recording/continuous-0p30-2p20/contact.png` SHA-256
+  `578e49015853776eb2346dec055cb0fdba53558777beed52ca60ffad41b6688d`,
+  cross-checked against 88 original video-frame PTS rows in
+  `recording/continuous-0p30-2p20/original-pts.csv` SHA-256
+  `757dde5db799c19b695039dcc8add18a06b3a685bafb21f3346c6badd72dfe5a`)
+  corrects an earlier sparse-frame misread:
+  the system dialog `允许“NextN”保存 1 张图片？` with `禁止 / 允许` is visible
+  from the 1.00s through 1.60s contact samples (original-frame PTS includes
+  `1.004122` through `1.682344`); the 1.70s sample (next original PTS
+  `1.698956`) is back on the same `1 / 83` Reader. Thus this one current
+  left-page request reached the system save session and Back cancelled it;
+  no destination was confirmed and no album write was authorized. The frozen
+  save-target/source identity remains supported by the checked source contract,
+  not by an inferred album landing. No retry, image information/OhosTest, or
+  additional device operation occurred. The next executable OPEN item remains
+  the existing host auto-read
+  source-prepare → stop/close/navigation → late-completion check.
+  NextE `690bf46a5333b453d2820c27b4f4ad6ced3f14999d77224dc4cf66f2018c39b0`
+  (host `7866db78`, reader-kit `b5fa3894`) now has one bounded 237 device
+  observation: Shared Home → Search → Gallery `4200057` → detail preview grid,
+  from the freshly measured unique `reader-thumb-gallery-detail-1-page-0` and
+  `-content` nodes, both `[72,1195]-[448,1631]` with centre `[260,1413]`. Its
+  immutable recording
+  (`abbfe8ca19527df28a194ad37ded61219f934e0e2b8112a94e5a95e173b14365`;
+  manifest `373da6ba8c1df70cad8a8c880de159d038c9d7dc607d489ffc4273b62716258f`)
+  contains exactly the fresh source click, safe centre `[660,1060]` reveal,
+  the same-point hide, Back, and the same fresh-source re-entry; it excludes
+  page turns, image information, More, settings, OhosTest, retry and loops.
+  Across 320 original-PTS frames, `n135 / 2.444922s` remains the grid,
+  `n137 / 2.481067s` begins entry and `n168 / 3.079256s` is the stable double
+  page. `n188 / 8.022422s` has the initial chrome hidden with its double-page
+  body intact; `n193 / 8.175311s` through `n199 / 9.132122s` show status, top
+  and bottom chrome while that body is unchanged; the hide starts at
+  `n201 / 9.461733s` and is complete at `n205 / 9.975322s` with the body still
+  present. The selected-part Back close begins at `n213 / 10.652311s`, returns
+  to the same grid at `n222 / 10.797400s` and is stable after `n240 / 11.177356s`.
+  The re-entry begins from the same fresh tile at `n264 / 15.172644s`; `n294 /
+  15.673067s` through `n319 / 21.932511s` remain a stable two-page Reader with
+  initial chrome hidden. This accepts only that NextE current-semantic
+  selected-part entry, chrome reveal/hide and same-source exit/re-entry
+  continuous path. Device 103 remains locally blocked: its
+  `gallery_detail_favorite_3927` is a unique id rather than a usable gid, and
+  no title/Home-card/token substitute is permitted. Existing reader-kit
+  lifecycle tests cover measured geometry, departure authorization,
+  selected/neighbor opacity and input fencing; they do not accept visual motion.
+  The current NextE source gates also pass: `node scripts/test_read_progress_contract.mjs`
+  reports `70 assertions passed`, and `node scripts/test_reader_trial_entry_host_runtime.mjs`
+  reports `18/18` passing, including chrome preparation, stale-layout fencing
+  and root-flight close ownership. Those are source/runtime contracts only;
+  they do not extend the recorded path to no-flicker/no-jank, settings-immediacy,
+  cancellation, slow-load, failure, other-device or general F1 acceptance.
+
+  **NextN 237 current-candidate chrome/re-entry attempt — NOT ACCEPTED for the
+  requested two-page chain.** On the same lawful ordinary Gallery `673508`
+  route, the current signed `49d04df9ef1bc181a98a690f8c1b231e914455610192a8fb3975df5796777a94`
+  candidate (host `732c37a7`, reader-kit `b5fa3894`) was installed once after
+  the checked awake gate. Its fresh layout has exactly one
+  `reader-thumb-gallery-detail-1-page-0-content`, `[72,1144]-[395,1594]`,
+  centre `[233,1369]` (`current-rail.json` SHA-256
+  `dddde6b1dd209f6d6ae2fe55909273d3e36b8b46aad7d4e4350294e8b131eedf`). The
+  one continuous recording uses only that fresh click, body centre `[660,1060]`
+  to show chrome, the same point to hide it, Back, and the same fresh click to
+  re-enter; it contains no image information, More, settings, OhosTest, retry,
+  loop, swipe, or page turn. Its MP4 SHA-256 is
+  `fc1194ada9d47b78c357c8707d74a56d822116c8fa3b1aab079e3e4da6490c25`
+  (recording manifest `e071518e644b857f6addd6ff2e63d8e0641858b415922bdbf3a4858a1c07d7e8`),
+  with 219 decoded original-PTS frames. However, `n60 / 1.130589s` and the
+  re-entered `n179 / 14.947356s` both visibly show a `1 / 83` **single-page**
+  Reader, not the required double-page state. Chrome is visible at
+  `n106 / 7.525333s` through `n111 / 9.131156s`, hidden at `n112 / 9.448178s`,
+  Back begins at `n127 / 11.239989s`, and the same grid is restored at
+  `n136 / 11.391511s`. The operation therefore demonstrates only a bounded
+  single-page chrome/show-hide/return/re-entry path and is explicitly excluded
+  from the requested two-page acceptance; no repeat, page turn, or setting
+  mutation was attempted.
+
+  **197 evidence correction.** The bounded current-semantic r3 recording is
+  `e15de6d47d0ff2c0a1b14f5e8bf90d01f6121facec66d5009d7cb5ee4e53dc26`:
+  it establishes the measured source-entry and same-source-return route, but
+  exposes the return defect now repaired. Its original PTS frame `n111`
+  (`7.209844s`) is still a double-page reader; `n112` (`7.255967s`) becomes a
+  fullscreen single-page contain image before shrinking. It is not a dynamic
+  pass for the new candidates. The public recording
+  `573a850173c7e3367c3e39da1c40559b237a5b74f3a26edd3519f2ef80a347df`
+  reused stale bounds after a later relaunch/scroll and is protocol-isolation
+  evidence only; it is not a product conclusion and must not be described as
+  an image-information-sheet result. NextE 103 remains blocked because it has
+  no lawful current Gallery route/source anchor; no title or Home-card
+  substitute is permitted. The NextN-197 recording closes its eligible
+  close-start path; the NextE-237 recording additionally covers one declared
+  selected-part entry, chrome reveal/hide and same-source exit/re-entry path.
+  Neither changes the overall F1 result.
+
+  `ReaderImageInformation.test.ets` is excluded from this F1/F2 package and
+  cannot be cited as its validation. Its generic `attempts=40` readiness loop
+  and its More → image-information dialog scenarios test a different surface.
+  The immutable r3 recording manifest itself contains only one source click and
+  one Back action and explicitly excludes information-dialog actions; it is not
+  amended after recording because its recorded hash must remain valid.
+
+## 历史能力对等进度板（仅作参考，不构成当前验收状态）
+
+进度板行状态口径（2026-09-19，历史）：下表 P1—P12、**P15**、**P16** 的 ACCEPTED 是当时的候选记录。它们不得覆盖上文唯一 ACTIVE 包的 F1/F2 运行时反例，也不得被引用为当前的整体替代结论。P15「裁边强度」未进入共享裁边链是 2026-09-19 新发现的宿主缺口，已在 237 真机闭合；其行内证据与状态仅取代当时把它视为未决的旧表述。
 
 P15 证据收紧（2026-09-19，reader-kit 7fbf6b0）：因 P16 改了共享 reader-ui，P15 在 237 以 7fbf6b0 复跑（nextn-237-p15-pertrial），并把比对口径从「最近一条日志」收紧为「按裁边源 identity 逐槽比对」：page=3，compared=3 changed=3，三个保留源（reader-lab-asset:1/2/3）在同一页上 conservative→strong 各自改变，Tests run: 1, Failure: 0, Pass: 1。旧口径可能让两个不同槽位互相顶替，故被取代。
 
@@ -88,6 +595,74 @@ Package 5 的下一动作（2026-09-19 用户收敛约束后修订）：**只做
 - **P13「换另一条可用源复核」已核实为不可执行（2026-09-19，只读；不再作为待办）**：设备上该应用的 LLM profile 实测只有两条（`ReaderSelfHostedPublishTrial` 输出 `profiles=2`）——已绑定的 `540764f8`（`keyPresent=true`，即那个连极小纯文本请求都返回 HTTP 500 的源）与 `e4042519`（`keyPresent=false`，无凭据，不可能发起请求）。**当前设备不存在第二条可用源**，故该“复核”路径不可执行。P13 的具体限制固定为三条：(i) 译图在共享面的显示与切回已在 237 真实缓存路径闭合；(ii) 新鲜（非缓存）self-hosted 发布受该端点 5xx 阻塞，且无第二源可替代复核；(iii) 该 5xx 与共享迁移无关（旧入口同日同构失败 + 端点级探针连平凡文本请求也 500）。P14 具体限制同理固定为：云侧把 JPEG 字节标成 `image/webp`（`decode_mismatch`），属外部负载标签，非迁移回归。**下一动作**：仅在该端点恢复、或用户提供第二条带凭据的源时，才补一条新鲜发布落地；在此之前不再重复同一探针、不再寻找不存在的第二源。
 
 - **可复用的真实服务缓存清点（2026-09-19，只读）**：237 的 `com.erosteam.nextn` 下存在 3 个真实服务生成的合法译图缓存（`.../haps/entry/cache/comic-translated-pages/`，2 个 PNG + 对应 json，含完整 identity：`route=whole_page_render`、`translationSourceProfileId=torii-whole-page:managed:...`、`translationModelId=gemini-3.1-flash-lite`、`pageIndex`、`sourceImageHash`），全部属 Torii 整页路线；103 上该目录**不存在**（0 条）。结论：237 有可用于“显示与切回”验证的真实缓存素材，103 没有。**2026-09-19 更正（只读复核 `nextn-237-p13-cache3`）**：先前“全部属 lab/live-eval projectId、没有现成入口能命中”的说法**不完全成立**——实读 237 缓存 metadata 有两条：一条 `nexte-original-manga-live-eval-v1:zh-CN`（lab），另一条是**真实画廊** `nh-reader-673508-zh-CN`（`pageIndex=1`、`route=whole_page_render`、`translationModelId=gemini-3.1-flash-lite`、`sourceWidth 1280×1781`、artifactHash 完整）。而宿主的 projectId 构造成 `nh-reader-${work}-${targetLanguage}`（旧 `ReaderPage` 与共享 Lab 页一致），因此**共享面用普通入口打开画廊 673508 第 1 页时，应在发请求前命中该真实缓存**（编排器 `load(lookupKey)` 命中即返回 `cacheHit=true`）。这给出了一条可执行的“显示与切回”验证路径：在 237（Torii 路线 + `comic-torii-context` 在位）走普通入口打开 673508 P1，验证译图显示与切回原图；需 `install -r`（237 有真实用户数据）。**注**：先前“需精确复现源图哈希”的顾虑只对 lab 那条成立，对 673508 这条不成立。
+
+### 2026-09-20 当前唯一执行包：公共 canvas/body 收敛与有界后续验证
+
+- **总状态：OPEN；不得把本地改进写成整体通过。** 237 上 NextE 的普通共享同源「进入 → 退出 → 再进入」候选已由监督逐帧查看 **214** 个已解码帧：未见旧的双图、退出全屏正文副本或突发白帧。该结果只覆盖这条正常路径；变帧率录像的 PTS `F91 → F92` 间隙不能证明绝对无卡顿，因而不把它升级为 F1/F2 或产品整体验收。
+- **已否决的根因与明确排除项。** 根代理、共享面与 viewport 的实测几何相符，旧“几何原点差”假设已数值否决；NextE 根拥有关闭代理的正常入口在 `open_finished_atomic` 走原子帧交接。`ReaderEntryTransition` 的 Lab 专用 aspect gate 未被普通入口消费，**不属于本缺陷，也不纳入本轮修复或验收**。
+- **唯一公共实现与三方消费者。** `reader-kit/reader-ui/ReaderSurface.ets` 公开 `canvasBackdropOpacity` 与 `bodyOpacity`：画布承接背景淡出，正文层可独立让位。NextE 的根关闭代理传入动态值；NextN 的关闭代理留在 Reader destination 内、Koma 没有缩略图根代理，二者均显式传 `1/1`，避免把 NextE 的所有权语义机械带入其他宿主。三份 reader-kit `ReaderSurface` 和 canvas 合同测试已对齐；这只是源码合同，尚不是视觉验收。
+- **本轮七个包（严格串行；不重跑已确认的全矩阵）：**
+  1. **SOURCE+BUILD CLOSED（非真机验收）— 公共层和三个宿主消费者：** NextN 与 NextE 已在各自既定树匹配构建成功；此前对 `/Users/honjow/git/Koma` 的构建属于错误工作树，结果无效且不计入本包。正确 Koma 树 `/Users/honjow/git/Koma-reader-preload-verify` 已同步公共 canvas/body 层、显式保持 `1/1` 的宿主调用，并完成签名 debug 构建（`entry-default-signed.hap`，SHA-256 `bdc0424fce0ae4f1a4b40c24eda5f589eb029f898c17ba59c8fb23e96d241609`）。三份 canvas 合同测试均通过；这不替代后续真机包。
+  2. **STATE OBSERVED（静态双态；非链路关闭）— NextN chrome/fullscreen：** 237 `VDE-AL00` 竖屏以当前签名 HAP（SHA-256 `ff6453f985cc899c594ca2d9c9fa10d5fb56b373ff8cc372e27f50455b351fc5`）走普通 Gallery `673508` 的 shared Reader 入口。实际恢复在既有 `7 / 83`，未发起翻页或设置切换；宿主设置 sheet 已读到“全屏”开启。配对截图显示：初始 chrome 隐藏时没有状态栏图标，中心点击显示 chrome 后状态栏与完整顶/底控制栏恢复。两份受控协议均通过并已释放租约：`.hvigor/outputs/nextn-237-chrome-fullscreen-hidden-20260920/run/` 与 `.hvigor/outputs/nextn-237-chrome-fullscreen-20260920/run/`。它们只记录该设备、既有全屏偏好和普通共享入口的两个终态；**仍待同一条连续录像覆盖“隐藏 → 显示 → 再次隐藏”及退出窗口恢复/再入，不得以两张图关闭 chrome/fullscreen 链。**
+  3. **STATE OBSERVED（静态双态；非链路关闭）— NextE chrome/fullscreen：** 237 `VDE-AL00` 竖屏以旧签名 HAP（SHA-256 `2733e030b3f88abcce38e2a7522e071a7a59c9cb12eb02aec469c060294994ee`）从普通 shared Home 搜索并打开 Gallery `4200057`，经 detail 预览网格进入同一 Reader 页 `2 / 315`。初始截图无 status/chrome；中心点击后的配对截图恢复状态栏、顶栏、滑块与底栏。两份受控协议均通过并已释放租约：`.hvigor/outputs/nexte-237-package3-chrome-hidden-20260920/run/` 与 `.hvigor/outputs/nexte-237-package3-chrome-shown-20260920/run/`。它们只记录旧 HAP 的两个终态；当前 `690bf…` 的一次连续“隐藏 → 显示 → 隐藏 → Back 同源 → 再入”证据已在上方唯一 ACTIVE 记录，且仍不外推为完整 chrome/fullscreen 链或 F1。
+  4. **STATE OBSERVED（Lab 公共面静态双态；P4 仍 ACTIVE）— Koma chrome/fullscreen：** 237 `VDE-AL00` 以当前签名 HAP（SHA-256 `a6e0948546d58707d1587c438aabf240027ae4cef86e34d4781a33c1103d4d5c`）运行受控 `readerLabWork` 路线，协议完成且租约已释放：`.hermes-artifacts/20260920-koma-237-package4-chrome-fullscreen-r4/run/`。初始截图有 status/chrome；中心点击后 status/chrome 消失，同时阅读图片仍保持可见，底部仅保留被动 `1 / 10` 页码。此前 r2/r3 观察到图片黑帧而被否决；当前宿主按 legacy 的 500ms 收尾时序再切换 status bar 后，r4 静态终态恢复正常。该记录只覆盖 Lab 公共面的两个静态终态，不含录像，**不能写成 embedded/ordinary 验收**。P4 仍须在可恢复、已授权的数据隔离路径中，以普通入口连续录像覆盖“隐藏 → 显示 → 再隐藏”及退出窗口恢复/再入；不使用错误的 `/Users/honjow/git/Koma` 工作树，也不重跑 Koma 已成功的匹配构建。
+  5. **QUEUED — NextN F2 增强图切换：** 仅对该宿主适用，检验显示保持而非重录未变的 VFR 间隙。
+  6. **QUEUED — NextE F2 增强图切换：** 同样只检验适用的显示交接。
+  7. **OPEN — 宿主业务语义与完整运行时链：** B1 的旧消费者源码缺口已最小闭合：NextN legacy `ReaderPage` 的 `ReaderImageSurfaceCore` 与 `ReaderSpreadImageLayer` 都在 `forceReload` 获得结果后 retain，匹配 URI 的 native `onComplete` 才 mark presented；若 Image 发生原位 `src` 替换，`onDisAppear` 不一定触发，故该完成回调会 release 已退役 lease，`onDisAppear` 仅保留为节点实际移除的回退。这样 staged reload 才由旧消费者实际触发 `maintainAfterStore`，而不是借用新 adapter lease。`test_reader_contract.mjs`、`test_reader_image_cache_flight_runtime.cjs`（5/5，含 staged reload 呈现后退役才进入维护）与初始化契约通过；隔离临时工作树的 Hvigor 签名构建 HAP 为 `942f2789c8224a8f8b367a1ba57f4085115d4d7a2d4d8eadc79752202b9f64be`，不改写 197 的 `1667b5…52cf` 候选；这些仍是源码/Node/隔离构建证据，不是 legacy 真机验收。NextE 保存语义也已更正并由 `test_reader_save_source_contract.mjs`、超分与翻译 provider runtime 测试保护：`ReaderAsset`/`ReaderSnapshot` 另有 `saveUri`（默认等于显示 `uri`），normal/original plan 注入 legacy 导出源；增强/译图只改变显示 URI，保留该 `saveUri`；`ReaderImageSaveTarget` 冻结 save URI 与 asset request identity，不能把处理后的 displayed URI 当作保存源。所谓 `original` 是 frame kind，不等于“未处理资源”。三宿主静态映射、P7 与其余业务链仍 **OPEN**；源码、临时构建或未写相册的普通录像均不得替代完整连续链。
+    - **2026-09-20 NextE 103 更正（仅精确重载与静态布局通过；保存仍 OPEN）。** `nexte-103-manual-reload-saveuri-20260920/r5` 在 `MLR-AL00` 只执行 `ReaderManualReloadTrial` 的单页 `reloadsTheExactVisibleSource` 与双页 `reloadsOneExactSpreadSource`，结果 `Tests run: 2, Failure: 0, Error: 0, Pass: 2`；四张截图证明单页重载后仍为同一帧、双页可选择左侧第 2 页或右侧第 1 页且完成后保留双页布局。它**没有**触发 `ReaderImageSaveTarget`、保存准备、系统保存对话框或相册写入，因而不构成 `saveUri` 目标选择的实机验收。r4 的协议拒绝仅因成功路径不生成的超时诊断图被误列为必需产物；r5 移除该非业务后置项后通过。随后源码运行时验证已覆盖 normal/original 重载（`test_reader_original_plan_runtime.mjs` 10/10）、增强与译图 provider：三者均把处理显示 URI 与 canonical `saveUri` 分离，并让 `ReaderImageSaveTarget` 冻结该源与 request identity；这仅闭合**准备语义**，不包含系统保存对话框、文件/相册写入，故保存验收仍 OPEN。
+    - **2026-09-20 NextN F2 r2 录像拒收（证据编排失败，不是产品失败）。** `nextn-197-f2-candidate-20260920-recording-r2` 虽以本地 fixture 第 3 页正确进入 Reader（MP4 SHA-256 `62fae8b1aa343ba196e13f02de09038e4d4374958c3f2fb6acd3e0114f51bfef`），但标记为“打开运行时设置/滚动到图像增强”的帧段始终保持沉浸阅读正文，未出现设置面板或超分开关。源码复核确认 `rkit-runtime-settings` 仅为布局、方向与裁边运行菜单，不能承载宿主超分设置；因此该录像不能证明 ON→OFF→ON，亦不能判定 F2 显示失败。后续候选不得再使用该坐标假设：仅以受限 Debug 本地 fixture 演练通过既有 `ReaderPresentationService` 做同页 OFF→ON，日志和连续录像均须覆盖前置 ON、OFF、恢复 ON；它只验证当前页既有衍生资产的替换连续性，不替代宿主设置页交互、重新处理、磁盘缓存命中或新页增强的验收。F2 继续 OPEN。
+    - **2026-09-20 NextN F2 r3 录制前拒收（候选加载失败，不是 F2 结果）。** 隔离主 HAP `ac53c175c086a9ee055f65d9679cedd9103f35256c5fb06a0849ea6f54dbe5b6` 与 checkpoint HAP `6cae0947e8c90774d401429cba3188fb74e57b5f17d1e9807ad2b05dbe115478` 的本地哈希均匹配，但 197 租约 `20260920-093246-dfb74967` 上 checkpoint 启动后为 `TestFinished-ResultCode: -1 / App died`，未产生 Hypium 摘要或 page-3 enhanced 前置。同期 hilog 明确报 `shared/src/main/ets/Index` 未导出新增 `ReaderSuperResolutionRecordingRehearsal` 符号，故 r3 录像没有启动、没有 MP4/三阶段日志/帧判据。此条只说明候选运行时可加载性失败，不归因 shared 或宿主实现；租约已释放，F2 保持 OPEN。后续候选复用已稳定导出的 Debug rehearsal 配置类，而不新增 shared runtime export 面。
+    - **2026-09-20 NextN F2 r4 录像拒收（hilog 保留不足与 loading 反例，不是 F2 结果）。** r4 先通过 checkpoint（`Tests run: 1, Failure: 0, Error: 0, Pass: 1`，source 2/page 3 enhanced），且无坐标录制已产出 MP4；但同一租约的只读 post-record hilog gate 只读到 `phase=on source=2 enabled=true`，缺少必须的 `precondition=enhanced` 与 `phase=off`。这不足以证明完整演练序列，故拒收 MP4，不从 transport 成功或末尾 ON 反推前两阶段。逐帧复核还观察到 PTS 10.938289–11.132633（n61–n68）正文仍完整可见但中央出现 `LoadingProgress`；因此即使补聚合日志也不能直接重录 r5。r6 曾假设 raw `retainedUri` 已发布但本地 `retainedFrameValue` 尚未投影，并据此收紧 loading guard；197 r6 仍在第一窗口出现同一反例，故该假设不足，相关 guard 与源码合同已撤回，不能作为根因或修复。下一轮只可先取得 spinner 渲染点以及同时刻 frame/retained identity 的有界证据，再决定产品修复。F2 与真实设置路径继续 OPEN。
+    - **2026-09-20 NextN F2 r6 录像拒收（两个独立门禁）。** 隔离 main HAP `93b3d3166ac9d349a2db90e03032441c612df7a11c20349c0c62b1e4f25bb631`、checkpoint HAP `6cae0947e8c90774d401429cba3188fb74e57b5f17d1e9807ad2b05dbe115478`；checkpoint `ReaderSharedSuperResolutionPreRecordCheckpoint` 1/1 Pass（source 2/page 3 enhanced），无坐标 50 秒 MP4 SHA-256 `64d18371f2690deb28b6d0ace8c25c079cc25d5f3bfaf145cb1a0b9844b481f0`，192 原始 PTS 帧（0.000000–51.071778）。但演练最终 aggregate gate 没有被 hilog 缓冲区保留：广过滤混入无关 OS failed 行、rehearsal scoped 只读捕获为空；这是 missing gate，不能伪写为候选 failed。逐帧有效反例独立存在：第一窗口 n61–n68 / PTS 11.126478–11.309500 正文完整但中央白色 `LoadingProgress` 出现（n60/n69 无）；第二窗口 n90–n96 未见该环。两项均足以拒收 r6，不能给 same-page replacement 或 F2 通过结论。197 已 force-stop、释放租约；未清数据/缓存/账号，未用 103/237，受保护 HAP `1667b5…52cf` 仅核验。证据位于 `.hvigor/outputs/nextn-197-f2-candidate-20260920-recording-r6/{run,analysis}`、`...on-checkpoint-r6/run` 与 refined gate capture；后续不得再以录后 grep 为门禁，须有同期有界日志或可读取的三阶段状态。
+    - **2026-09-20 NextN F2 r7 完成（诊断，不是验收或产品修复）。** r7 撤回 r6 未证实的 reader-kit `LoadingProgress` 抑制 guard，只保留受限 Debug 同页 OFF→ON rehearsal，并在 OFF、ON 各采样 13 个当前 session/frame snapshot：source、slot、asset phase/variant、asset request、aggregate frame 的 retained URI 长度及 retained request。隔离 main HAP `6153bef3ef52b62c5604601859cf3735ec30701eab72282f48b2d94d10fe0b62` 与 checkpoint HAP `6cae0947e8c90774d401429cba3188fb74e57b5f17d1e9807ad2b05dbe115478`；checkpoint `ReaderSharedSuperResolutionPreRecordCheckpoint` 1/1 Pass。`capture_transition_recording.mjs` 同窗保存 `hilog.txt`（SHA-256 `84942f9eb4855d5c33a9b5db250087db302d672abebe67d86284065b2249a7a1`）并在清理路径 SIGTERM 停止，完整保留 precondition、OFF 0..12、ON 0..12 与 aggregate gate，故 r6 的录后 buffer 漏失不再成立。样本事实为：OFF sample 0 是 enhanced/request 3，sample 1..12 为 default/request 4；ON sample 0 为 default/request 4，sample 12 为 enhanced/request 6；**26 个 aggregate session/frame 样本都记录 `retained_uri_length=0 retained_request=0`。** 这只能说明该被采样 aggregate frame 当时没有 raw retained identity，不能证明其他状态持有者也没有。MP4 SHA-256 `76e443b4afe3c49d4803e56486343f039f8721602d450f4741b8bfd1a221ba66`，115 个原始 PTS 帧（0.000000–26.030333s）；中心 32px `LoadingProgress` 在 n62..n68 / PTS 12.686911..12.828511s，n60、n61、n69 与已复核 n90..n96 无。因为录像 PTS 与 hilog wall clock 没有逐帧同步，只能作窗口邻近，不能精确指定为 OFF 或 ON 样本。`ReaderPagedCell` 仍是强源码级 renderer 归属，但 r7 没有 cell-local `retainedFrameValue`/投影状态，因而既不能归因 core 未保留，也不能归因 cell 未投影；下一项仅能新增这个 cell-local 诊断，不能先改 spinner。197 已 force-stop、租约 `20260920-104613-96f9d66f` 已释放；未清数据/缓存/账号，未用 103/237。受保护 HAP 仍为 `1667b5…52cf`。
+    - **2026-09-20 NextN F2 r8 完成（cell-local 诊断，不是验收或产品修复）。** 仅既有受限 Debug 同页 OFF→ON rehearsal 启用的 `ReaderPagedCell` telemetry 保持 default-off，未改 `LoadingProgress` 条件、渲染时序或产品行为。隔离 main HAP `5939f3a8ffd4bdac2c7e7cdf79765321c5ffa4ee5f5a8f6760244cdc6cb5d5a0`、checkpoint HAP `6cae0947e8c90774d401429cba3188fb74e57b5f17d1e9807ad2b05dbe115478` 在租约前复核；checkpoint `ReaderSharedSuperResolutionPreRecordCheckpoint / observesEnabledModelAndEnhancedPageThreeWithoutWritingPreferences` 1/1 Pass。单次无坐标 25 秒 MP4 为 `fa37be75af91257b2c6848ba45e2e97bb6717c7f6043d03efcc73da67af0448a`，同期 `hilog.txt` 为 `0ef06ed3b1c3f088ff4dbff0c635da5087b2be2c059b386955fdb74804fe931d`；source-2 enhanced precondition、OFF 0..12、ON 0..12、aggregate gate 和 source-2 `retained_projection` 均完整。关键 cell 样本为：OFF-side 19:24:45.704 的 source-2/decoding 有 raw URI length 151/request 3、local retained=true/request 3/URI length 151、spinner=false；ON-side 19:24:54.221 的 source-2/decoding 则 raw URI/request=0、local=false/request/URI length=0、spinner=true。因而**未观察到** raw identity 已在而 local 缺失并同时 spinner=true 的组合，不能支持 raw→cell-local 投影缺口；spinner=true 这行只证明该 cell/时刻没有 raw identity，不能指定拥有者或根因。原始 PTS 117 帧（n0 0.000000–n116 25.973778s），中央白色 `LoadingProgress` 仅 n65..n72 / PTS 12.604678–12.815389（n63、n64、n73、n74 无）；它在 wall-clock 上邻近 OFF 尾端并先于 ON-side spinner=true，但 PTS 与 hilog 不逐帧同步，不能硬指派相位或逐帧状态。197 候选已 force-stop、租约已释放；未改源码/构建、未清缓存/数据/账号、未用 103/237，受保护 `1667b5…52cf` 未触及。下一步只能回到 core retained identity 的产生/撤销链做源码归因；F2 与真实宿主设置路径仍 OPEN。
+    - **2026-09-20 NextN F2 r9 完成（根因诊断，不是验收）。** 隔离 main HAP `fca4153c083e3e9e9768203c6336b3dc6eb771d51f4c57fe50f0fd02704daec5`、checkpoint HAP `6cae0947e8c90774d401429cba3188fb74e57b5f17d1e9807ad2b05dbe115478`；checkpoint 1/1 Pass。MP4 `fafe757a2c59f09bb22822a2965f97bc77730f8c7533693b5770e19c44c84eeb`、同期 hilog `9b2e2499fefc4d961d51ae0840b098cfafd673a520e7b14c6616c7da031ab17a`，r8 全部门禁与两侧 core lines 齐全。OFF 的 enhanced→default 与 ON 的 default→enhanced 首次 decision 都是 `phase=displayed`、same unit/source/kind、asset present、`replacing_variant=true retain_displayed=true`；但每次后都出现同一 target 的第二次 `ReaderSession.show()`，其 pre-state 已为 `phase=decoding current_variant=enhanced`，`replacing_variant=false retain_displayed=false`，随后 source-2 cell 才成为 raw/local 空且 spinner=true。源码链由此闭合：`ReaderSession.begin()` 在保留旧帧时先推进 `requestId`，而 `ReaderSurface.syncPreferredVariant()` 用该已推进的 `frame.asset.requestId` 作为尝试 identity；其 reentrant snapshot 仍显示旧 `assetRequestId` 的 default 帧，误再选同一增强 plan，第二次 show 清空 retained。修复只在两 identity 不等时跳过重复策略选择，候选落定后自然重评估；不改变 spinner、retained lifecycle、模型/设置/缓存。115 原始 PTS 帧的中央 `LoadingProgress` 仍覆在完整正文上，故 r9 不是通过。197 已 force-stop、释放租约；不清数据/缓存/账号，未用 103/237，`1667b5…52cf` 未触及。
+    - **2026-09-20 NextN F2 r10 受限修复验证通过（根因与同页替换连续性已收敛，不是完整 F2 验收）。** 根因是 `ReaderSurface.syncPreferredVariant()` 把已推进的 candidate `requestId` 当作当前显示帧身份；原先已显示的 fallback 仍持有旧 `assetRequestId` 时，它会为同一 policy 再次 `selectVariant`，第二个 `ReaderSession.show()` 已处 decoding，因而不再保留 fallback。最小修复仅在 `requestId !== assetRequestId` 的 retained-fallback 区间跳过这次重复选择，待 candidate 成为当前帧再评估。197 单次无坐标 run 安装隔离 main HAP `d9d015d3acf55430d80b40dafd129eb5acde2871a71ceab82ddacf8813b551b3`、checkpoint HAP `6cae0947e8c90774d401429cba3188fb74e57b5f17d1e9807ad2b05dbe115478`；checkpoint `1/1` 通过。OFF 的 enhanced→default 与 ON 的 default→enhanced 各仅一条 `retain_displayed=true` decision；没有 `phase=decoding current_variant=enhanced target_variant=enhanced retain_displayed=false` 的重复 decision。source 2 decoding cell 分别记录 `raw/local retained=151/request 2` 与 `71/request 3`、均 `spinner=false`，随后正常呈现；聚合 gate 为 enhanced→off→on。录像 `nextn197_f2_duplicate_selection_fix_r10.mp4`（SHA-256 `4b2419341b18709693b4d44c9457a9e7b286b1de0732ec3d789d27faa1e58bd7`，109 原始 PTS 帧，`0.000000–26.024444s`）逐帧保持内容页，没有中央 32px `LoadingProgress`；并发 hilog SHA-256 `544ae6b32e155444f39c47fdf72e35aafd09b839b6eb637448422453a60d69f4`。清单为 `nextn-197-f2-fix-20260920-on-checkpoint-r10-manifest.json` / `nextn-197-f2-fix-20260920-recording-r10-manifest.json`，run artifacts 位于 `.hvigor/outputs/nextn-197-f2-fix-20260920-{on-checkpoint,recording}-r10/`。已 force-stop 并释放 197，且工作树保护 HAP 仍为 `1667b5…52cf`。此项只关闭被诊断的同页 Debug replacement 连续性；真实宿主设置交互、重新处理、磁盘缓存、未访问页、F1 与整体迁移验收仍各自 OPEN。
+    - **QUEUED — 当前页临时超分切换（明确的下一项共享能力；不得抢占 F2）。** 用户已授权将 NextE main `93afb6d3` 与 NextN main `15bbea82` 的 legacy-only能力接入 shared Reader，但**只有在 F2 的 cell-local retained 投影诊断与同页替换连续性得到结论之后**才实现；不 cherry-pick 两个 `ReaderPage`，不合回 main、不切默认、不 push。两提交的可保留语义是：点击现有超分状态图标只切换当前可见 Reader unit（spread 的两页为一个 unit），临时覆盖按 canonical source identity 存在 Reader route 内存，关闭全局超分时、离开当前 unit、重建/换画廊、隐藏或关闭 Reader 时清除；它不写全局偏好、不删除缓存，图标仍显示但禁用态降级，Toast 精确为「已关闭超分」/「已开启超分」，迟到处理结果必须以该 unit 的当前 generation/覆盖/identity 丢弃，不能串页或重启处理。共享依赖安排固定为：(1) `reader-kit` core 拥有统一的 current-unit temporary variant override 生命周期与 stale fence；(2) `reader-kit` paged UI 仅在宿主明确声明 capability 时承载状态图标热区、disabled/processing/applied 显示与不冒泡到翻页/chrome 的点击；(3) NextN/NextE 各只桥接已有超分模型能力、资源/variant 服务与本地化 Toast，绝不复制 override 或 Image replacement 机制；(4) Koma 不声明 capability、不显示假按钮，但必须匹配共享消费者构建；(5) main legacy 与 shared 分别保留真实图标点击动态验收，任一方通过均不得替代另一方。实现时复用 F2 已证的同页资源替换/retained 链和同一类原始 PTS 录像；在该链未闭合前，本能力不新增独立设备试次或产品行为改动。
+    - **2026-09-20 当前页临时超分 SOURCE+BUILD（shared 真机验收仍 OPEN）。** 三份 reader-kit consumer 都具备 route-local `ReaderTemporaryVariantOverride`：canonical `unit + source page key + navigationRevision` 限定单页/双页 unit，临时关闭只解析为 default，不写全局偏好、不删缓存且不影响 translated variant。NextN/NextE 仅以 `ReaderTemporaryVariantControl` 接现有模型能力、Toast 和 `ReaderVariantPolicy`；Koma 不传 capability，状态图标因而保持被动。异步取消已纳入发布链：默认图仍展示而 enhanced `prepareVariant` 未完成时，temporary close 通过 `cancelProcessedVariantPreparations` 取消该 processed cancellation；旧 promise 随后完成返回 `stale`，既不加载也不发布，避免“先显示增强再切回”的闪帧。NextN reader-kit 的 38 项定向 Node 测试（含这一可控反例）通过，canonical reader-kit 也通过其 10 项 variant suite；NextN 与 NextE 均在各自隔离树 `assembleHap` 成功。F2 的 `requestId !== assetRequestId` retained-fallback guard 已同步 NextN、NextE 与 canonical reader-kit。Koma 以其当前 `/Users/honjow/git/Koma` checkout 构建仍在独立旧 `ReaderSurface` 参数契约（`imageShare` 等）处失败，早于本能力、也不是临时超分引入；完整 Koma shared-reader 接口迁移未授权，故其 consumer build 仍 OPEN。以上不构成 shared 图标点击、模型处理或任一设备的动态验收；legacy 的独立真机闭环也不得替代它。
+    - **2026-09-20 后续更正（以本条为准）。** Koma 的实际共享 consumer 是 `/Users/honjow/git/Koma-reader-preload-verify/third_party/reader-kit`，不是上一条误用的 `/Users/honjow/git/Koma` checkout；它已同步本能力、宿主未声明 `ReaderTemporaryVariantControl`，32 项既有定向 Node 测试通过，并在隔离副本 `/private/tmp/koma-current-unit-sr.hDOYKt` 以 `assembleHap` 成功（default signed HAP SHA-256 `a89b23794e49a4d9167e09d92e6897a78a888cef0c1d109fbeea3f7ff72e1e39`）。这只关闭 Koma consumer 的源码/构建边界，不增加 Koma 可见入口或动态验收。另更正 legacy 证据口径：不得再称 NextN/NextE“双方完整闭环”。NextN 连续实录 `nextn-reader-sr-continuous-001.mp4`（SHA-256 `7a906bb53ad2d1ecf71fb163cf667b92a9a4c75c844e9c9f34797326773261ee`）覆盖关闭 Toast（PTS 1.020）、开启 Toast（3.036）、翻页可见（4.975）、处理完成后关闭（8.200）及重进终态（10.106）；同步日志证明处理后关闭、迟到回调和重进窗口 cache hit，但未把 hit 精确归属到某页输出。NextE 独立成功链 `nexte-reader-sr-continuous-success-001.mp4`（SHA-256 `2c4d15b22f8d744985479f70227c7c1485568aa02966c9b1588b4277d8fb1760`）只补旧长录像缺失的 off→on 成功段（PTS 1.014/2.846）；其旧录像末次重新开启仍为未定位失败样本。两段不得拼接成同一全闭环，也均不得替代当前 shared 的动态验收。
+    - **2026-09-20 retained replacement 取消修正。** 独立源码复核指出：先前仅把 `requestId` 退回旧 `assetRequestId` 会让 `ReaderSession.current()` 拒绝仍显示 fallback 的图像信息/裁边读取；同时 `ReaderPagedSession` 未清理其 `assetPlans` 与 slot 的 processed recipe，下一次 default 协调可能提前返回 `unchanged` 而遗留错误所有权。三处 consumer 现都在 `cancelRetainedProcessedReplacement()` 取消候选后，为仍显示的 fallback 同步签发新的 `requestId` 和 `assetRequestId`（候选旧 epoch 被拒绝，当前图仍可读）；`cancelRetainedProcessedVariantReplacements()` 同步删除匹配的 enhanced/translated map 与 slot recipe 后再 reconcile。NextN 的 40 项定向 Node 套件增加可控回归：取消后图像信息、crop 仍可用；default 重协调仍可返回 unchanged；同一 identity 必须真实重新 prepare/load 并显示第二次结果。NextE provider/runtime 与 69 项 progress contract、Koma 32 项既有定向 Node 套件均通过。三宿主均在**不含旧 `entry/build` 的新隔离副本**以 `assembleHap` exit 0 编译：NextN `8c9506a8a7f32ab4bbaca7b4f1ccff3e3e7ab6600af5c4f5e23d3ffffe90b8bd`，NextE `a8b33e4aaa1964ecc4982d681ff0975904c1841e466cd009d7e424a316b61e31`，Koma `ee372b868bb496ce012f0a36e63b450cd22e517a89d886a30f725cb87ee051dd`。这仍只是 source/test/build 边界：本轮未安装或操作设备，shared 动态验收、F1 与 F2 均保持 OPEN。
+    - **2026-09-20 197 F2 r9/r10 状态更正。** r9 诊断录像（MP4 SHA-256 `fafe757a2c59f09bb22822a2965f97bc77730f8c7533693b5770e19c44c84eeb`，hilog SHA-256 `9b2e2499fefc4d961d51ae0840b098cfafd673a520e7b14c6616c7da031ab17a`）确认 enhanced→default 与 default→enhanced 的两条 source-2 retained 决策均为 `retain_displayed=true`；随后 decoding/cell 的 raw+local absence 且 spinner=true 只把 release-to-cell 生命周期/时序标为待查，**不是 F2 通过证据**。r10 manifest 已存在，但其要求的 main HAP `d9d015d3acf55430d80b40dafd129eb5acde2871a71ceab82ddacf8813b551b3` 与配置 `/private/tmp` 中的 `ed773a921da31d3a45039cb6f52060a49d73589460d55708c56c5344df2fe8e2` 不同，且未找到匹配 `d9d015…` 的临时 HAP；因此在租用 197 前即停止，**没有 r10 设备动作**。F2 保持 OPEN。
+    - **2026-09-20 197 F2 r9/r10 状态更正。** r9 诊断录像（MP4 SHA-256 `fafe757a2c59f09bb22822a2965f97bc77730f8c7533693b5770e19c44c84eeb`，hilog SHA-256 `9b2e2499fefc4d961d51ae0840b098cfafd673a520e7b14c6616c7da031ab17a`）确认 enhanced→default 与 default→enhanced 的两条 source-2 retained 决策均为 `retain_displayed=true`；随后 decoding/cell 的 raw+local absence 且 spinner=true 只把 release-to-cell 生命周期/时序标为待查，**不是 F2 通过证据**。r10 manifest 已存在，但其要求的 main HAP `d9d015d3acf55430d80b40dafd129eb5acde2871a71ceab82ddacf8813b551b3` 与配置 `/private/tmp` 中的 `ed773a921da31d3a45039cb6f52060a49d73589460d55708c56c5344df2fe8e2` 不同，且未找到匹配 `d9d015…` 的临时 HAP；因此在租用 197 前即停止，**没有 r10 设备动作**。F2 保持 OPEN。
+    - **2026-09-20 r10 记录再更正（本条优先）。** 上段末尾把一份**后续、未执行的同名 checkpoint manifest**误覆盖到了已有录像上，故“没有 r10 设备动作”的结论不成立。已完成的记录是 `.hvigor/outputs/nextn-197-f2-fix-20260920-recording-r10/run/summary.json`：`result=success`，目标 197，实际 hilog 于 `2026-09-20T12:20:55.577Z` 开始，MP4 `nextn197_f2_duplicate_selection_fix_r10.mp4` 的 SHA-256 为 `4b2419341b18709693b4d44c9457a9e7b286b1de0732ec3d789d27faa1e58bd7`，解码 **109** 帧。随附 recording/on-checkpoint manifest 将该已安装的隔离候选标为 main HAP `d9d015d3acf55430d80b40dafd129eb5acde2871a71ceab82ddacf8813b551b3`，且日志 gate 记录 source-2 enhanced 预置、OFF/ON 两阶段完成。这是对“同页 duplicate policy selection”修复的**有界改善证据**，不得扩大为新临时开关、真实设置交互、新处理、缓存、未访问页或完整 F2 的验收。后来发现 `/private/tmp` 已无该候选只能说明那份临时文件现不可复现，不能倒推否定此已落盘的成功记录；不重跑该 fixture。F2 仍 OPEN。
+  - **2026-09-20 B1 legacy cache lease 真机更正（仅该生命周期项）：** 上述“不是 legacy 真机验收”仅适用于当时 `942f…` 的源码/Node/隔离构建记录，已被后续受控试次补充。237 `VDE-AL00` 以另一份隔离临时构建（main HAP SHA-256 `15882b199fc1a160b5fa3f8961f6bfae2d69a1f59de1eae637b542ab567e89db`；ohosTest SHA-256 `4fddcf8e1e334d18d8a4430e408c48e598bfc2d210ecc1dc4997a0e4fea3b898`）执行 `ReaderLegacyCacheLeaseReplacementTrial`，`Tests run: 1, Failure: 0, Error: 0, Pass: 1`，协议产物为 `.hvigor/outputs/nextn-237-b1-legacy-cache-lease-safety-paths-20260920/run/run-metadata.json`，租约已释放。count-only probe 记录 `remoteCache=true enhancementSuppressed=true forceReload=true nativeReleased=0 nodeRemovalReleased=1`：实际走的是清空 `imageSource` 后旧 native Image 节点移除，`onDisAppear` 在节点确已离树后释放退役 lease 的安全路径；它不声称本次观察到了原位替换的 `onComplete` 释放，也不与匹配源才 mark presented 的规则冲突。此条只闭合 B1 的 legacy cache-lease 生命周期动态验证；不关闭 F1/F2/P7、三宿主保存链或相册写入验收。197 的受保护候选 `1667b5…52cf` 未重建、未覆盖、未在本条试次中操作。
+- **2026-09-20 当前更正：237 r2 与 197 端点观察必须并列保留。** 237 `VDE-AL00` 在隔离临时 HAP `942f2789…` 上的 r1 录像第一击落在 Detail 按钮区域之外，始终没有进入 Reader，已作废。r2 使用 layout 已确认的 `gallery-detail-read-action` 中心 `(1100,2002)`，连续录像 SHA-256 `7da518f8db732297b926017720e5fad3a775da6e2b1539e000e086694b32612c`，解码 89 帧；F16 起进入 `7 / 83`，show/hide/show 后正文持续可见，postflight layout 命中 `rkit-reading-surface` 和 `rkit-chrome-page=7 / 83`，且设备仍 `AWAKE`、`OverrideTimeout=86400000ms`。这只覆盖普通共享路径的 body 连续性，不覆盖全屏增强。197 的精确候选 `1667b5…52cf` 则保留一组无录屏端点：全屏与增强均确认开启的 page 3，隐藏 chrome 后截图正文正常（SHA-256 `228cf4ee…e0aa74`）；约 8 秒后同一坐标中心点击显示 chrome，截图为 body 黑、`rkit-reading-surface` 与 `3 / 83` 叠层仍在（SHA-256 `ff6da7e8…c9f87`）。这是已观察到的端点状态异常，不证明其间连续黑体，也不指派根因；其边界由下一条监督复核优先约束。F2/P7 与整体迁移验收仍保持 OPEN。
+  - **2026-09-20 237 候选匹配负向复现：** 为区分包差异与设备/运行时条件，237 在不清数据、不改偏好的前提下短暂安装 197 的精确 HAP `1667b5…52cf`，以 r2 相同 geometry/actions 录制 r3（SHA-256 `0991f7893ead352c7cc07021f53d863fdd944012b8fc598a412ed618b3a763be`，89 帧）。该设备的 Detail → Reader → show/hide/show 全程正文可见，仍未复现黑体；随后已安装回 r2 所用 `942f…64be` 并 force-stop，租约 `20260920-050608-f186db5a` 已释放。此结果只否定“1667 在所有已授权设备上必现”，**不能否定 197 的已保留反例，也不应据此指派根因或关闭 F2/P7。**
+  - **监督复核更正（本条优先于本节任何相反的 197 录像描述）：** 监督重新计算 MP4 `abf4e2463d0b6012cc38af21890862b0d07aeafc7ad6fb47c09b5e46686f7cd6` 的 hash，并原生选择 n61/n62/n66/n71/n73；五帧正文均完整可见。因此撤回将这段录像写成“约两秒 body 黑空”或将其用于 status-bar、viewport、增强图根因推断的全部表述。复核后的无录屏端点对确实同属 197、`1667b5…52cf`、page 3、FullScreen+增强开启，截图间仅执行一次 `(630,1360)` 中心点击；前端正文正常，后端 body 黑且 layout 仍有 `rkit-reading-surface`/`rkit-chrome-page=3 / 83`。但每个点击只取得 `No Error`，没有点击后的语义断言，也没有可证明持续时间的连续媒体；它只能保留为端点状态异常，状态转换与成因未证。**不据此新增产品修复或真机重跑。** 237 r2/r3 则继续只代表各自普通共享路径的实际连续录像，不能冲抵或证明该端点观察。
+  - **停止规则。** 不重跑已无变化的整套矩阵，不以一次局部录像宣称全体通过；任一构建或普通路径反例只打开对应包，不倒灌为 Lab 或其他宿主的推断。
+
+### 2026-09-20 当前增量：自动阅读生命周期、保存与缓存边界（取代任何相反的“整体已闭合”表述）
+
+- **状态仍为 OPEN；F1 只保留有界结论，F2 由监督方独立复核匹配证据。** 237 上当前 NextN 主 HAP 的普通 Detail → 共享阅读器入口可达，自动阅读从 `3 / 83` 前进到 `6 / 83`；关闭后即时与 15 秒采样均为 `7 / 83`。这是 NextN 默认 `current` 目标语义的运行时回归证据，不外推为缩略图转场的接受。旧 ohosTest HAP 的缩略图试次在 P1/P2 交接前即失败，不能拿来证明或否定本次自动阅读改动；普通入口本身仍健康，F1 因而维持“有界、待独立匹配动态证据”的状态。
+- **F1 退出双图反例已纳入当前根因与候选记录（NextE，237；仍为 OPEN）。** 监督逐帧复核否定了此前任何“退出已通过”的表述：原 Shared 同源录像的退出段同时存在缩小中的根代理与全屏 Reader 正文，Legacy 对照只有单一缩小代理；入场/重入时“详情渐隐、代理展开、初始 chrome 隐藏”只保留为局部观察，不能抵消退出反例。源码链路确认根代理在 `PREPARING_CLOSE`/`CLOSING` 已取得关闭快照，但共享 `NextEReaderLabPage` 的 Reader 正文此前没有相同的可见性门控。因此候选只增加 `ReaderThumbnailTransitionState.readerBodyOpacity()`：当且仅当 `rootCloseProxy && closingProxyVisible()` 时，保持路由和既有 close callback 存活、让整个 Reader 正文透明；根代理先完成落点及一帧 handoff 后才由原回调销毁路由。Legacy 路径与 reader-kit 均未改动。
+  - 静态门禁：`git diff --check`，NextE `test_read_progress_contract.mjs` **69 assertions passed**，以及 `test_reader_trial_entry_host_runtime.mjs` + `test_reader_trial_entry_runtime.mjs` **27/27**；NextE 签名 HAP 构建成功，候选 SHA-256 `5694cff7ad1b36673edb3a98b98a9d4603d1181742e41cc262b906049913d2cd`。
+  - 匹配候选录像：237、`VDE-AL00`、非折叠竖屏 `1320x2120`，同一恢复路径和源预条件，连续录制并解码为 **217** 个保留原始 PTS 的帧：`.hvigor/outputs/device237__VDE-AL00/not-applicable/portrait-1320x2120/nexte-f1-shared-exit-body-ownership-20260920/`。退出段为 F120–F144（PTS 6.426967s–7.015722s）。固定左上背景区域相对同次稳定源帧的 PSNR，在 F128/F132/F136/F140 为 **30.98/35.25/38.83/41.92 dB**；被否定的旧 Shared 同位段为 **8.11/14.62/23.96/38.11 dB**。该数值是“正文让出后背景恢复”的辅助差异检查，**不是视觉验收，也不能替代逐帧人审**。
+  - **2026-09-20 修订候选（仍非验收）**：前一版只在 Lab 外层使用 `readerBodyOpacity`，会让整个阅读面（含画布）立即让位；它虽消除了完整正文副本，却跳过了 legacy 的背景淡出，并遗漏 `WAITING_READER` 首帧正文可能与根代理重叠的入口窗口。现将最小改动收束到共享 `ReaderSurface`：`canvasBackdropOpacity` 仅承接既有 state 的 `backdropOpacity`，使 close 动画中的画布按 legacy 节奏淡出；`bodyOpacity` 只在根关闭代理可见时让 Reader 正文与控件让位，路由和既有 close callback 均保留；`readerImageHidden()` 同时将 `WAITING_READER` 纳入根前向代理已武装阶段。NextE 静态门禁仍为 **69 assertions passed** 与 **27/27**，签名 HAP 构建成功（SHA-256 `8d159d1c9a3a41a5c18da42f270b33369e053dde8cd2695f4bd337cee7fa1e28`）。237 上以同一前置条件连续录得 **213** 个保留 PTS 的候选帧（`.hvigor/outputs/device237__VDE-AL00/not-applicable/portrait-1320x2120/nexte-f1-transition-ownership-fix-20260920/`）：退出 F116–F144 的固定左侧画布区域向稳定详情帧单调收敛（F120/F124/F128/F132/F136/F140/F144 的 PSNR 为 **6.969/19.642/27.631/31.828/35.446/38.640/47.122 dB**），入场 F72–F95 也由根代理阶段进入落定后正文显现。上述是全录制离线逐帧信号核对，**不等同于人工视觉逐帧确认**；故 F1 继续 **OPEN**，F2 与自动阅读结论不变。
+  - 下一判据不变：只在独立审阅确认该候选的完整退出段没有“根代理与全屏正文同时可见”后，才可把 F1 的这一个退出反例转为候选修复；在此之前 F1 继续 OPEN，F2 继续独立 OPEN。
+- **失败 → 人工重试 → 自动恢复（237，当前主 HAP；受控、非普通远端内容）。** 采用既有三页本地 ReaderLab fixture，在 P1 只注入一次 original 解码失败：真实失败面板与 `rkit-retry-page-1` 可见；点击其实际 bounds 后失败面板消失、恢复到 `1 / 3`；开启自动阅读 6 秒后到达 `3 / 3`；关闭后即时和 6 秒采样均保持 `3 / 3`。日志同时记录单次 `native_original_decode_failure source=0`，及重试后的 fixture original load/ready。这是当前候选的生命周期恢复证据，不是远端图片服务成功率声明。此前以真实远端源做的相同受控注入在重试后仍失败，已如实排除，不将网络条件伪装成产品回归。
+- **停止/取消边界。** NextE 的既有缩略图自动阅读试次、Koma 的普通本地入口、以及本次 NextN 普通入口均实际验证“运行中停止后页码稳定”；Koma 的 canonical 本地 URI 天生 source-ready，不能将它改写成“真实未就绪预热”证据。对于“尚在进行的 source prepare 后切页”的精确取消，本轮没有向普通内容注入假的慢网络：它仍由 `ReaderPagedSession` 生命周期 generation 测试覆盖，尚非一条新的普通入口动态证明。
+- **保存语义与三宿主缓存所有权（源码与窄测试，不是对用户相册的写入验收）。** `reader-kit` 的 `ReaderImageSaveTarget` 只接受已展示的 original frame，并冻结 unit/navigation/source/slot/request/URI；导航、失焦、关闭或资源变化会在弹窗前取消。`ReaderSystemImageSaveHost` 总是先捕获本地 FD 或把精确远端 URI 复制到独立临时文件，再交给系统相册对话框；release 只清理这批临时文件，绝不清理 reader cache/download。NextN 传入 `NextNReaderImageSaveDownload`，只把精确 HTTPS URI 写入该临时文件（不查询或提升 reader cache）；NextE 同样用 `EhHttpClient` 写独立临时文件；Koma 的 adapter 在交给保存层前已把远端页解析为其 reader remote cache 的 canonical `file://` URI，保存层只复制该文件。缓存维护仍各归宿主：NextN 的 `ReaderImageCacheService` 以 in-flight 去重、原子完成文件、presentation lease 与设置页清理/限额维护；NextE 的 `ReaderImageFileCacheService` 保持自身 durable reader bytes、批量 prune 与 ImageKnife 聚合清理；Koma 的 `RemoteImageCacheStore` 管理 manifest/LRU、可配置自动清理和设置页显式清理，离线下载与本地章节不归缓存清理。验证：reader-kit 保存/媒体窄套件 **27/27**，NextN 保存下载 **4/4** 与缓存飞行/Retry/复用 **4/4**。未在 237 点击保存，因为这会向用户相册新增真实文件，当前授权仅覆盖阅读器运行时验证。
+  - **2026-09-21 资源身份审计（源码/Node；未写入相册，P7 仍 OPEN）。** NextE legacy 的 normal/resampled 读取 `imageUrl`，原图模式读取 `originImageUrl`，保存与分享均用这条当前 source；共享面将该 legacy source 写入 `saveUri`，normal/original plan 分别注入 normal/original source，增强/译图只替换展示 URI 而保留 normal `saveUri`。原图选择与 processed variant 互斥；临时 fallback override 与取消只改选择策略、不改已冻结的 `saveUri`。因此保存、分享仍导出 canonical normal/original source；信息页则读取当前展示文件（normal/original/增强/译图）并附 canonical source 状态——这是“导出资源”和“已展示文件事实”的有意不同。`test_reader_save_source_contract.mjs`、`test_reader_original_plan_runtime.mjs`（10/10）、超分/译图 provider runtime 与 reader-kit save suite（10/10）通过；旧的“shared save 使用 displayed `asset.uri`”根因已不在当前 NextE。
+  - **NextN/Koma 消费者映射与已修 parity。** NextN legacy 的 save/share 优先可见译图，否则 canonical cache/source；增强图仍走 canonical source，信息以该 action path 的尺寸/来源并显示增强或译图状态。共享 NextN 现已同步公共 `saveUri`：增强 plan 保留 canonical source，译图 plan 默认保留 generated URI；`ReaderImageSaveTarget` 冻结该 export URI。分享 target 同时冻结身份匹配、已展示的 URI 与 asset request：仅 `translated` 使用该精确文件，按实际扩展名形成 UTD，文件不存在即 fail-closed（外层至多退 gallery hyperlink）；default/enhanced 维持下载/cache/canonical source。信息仍读取当前展示处理文件，故不被保存/分享选择回退影响。三端 reader-kit save/share 行为套件均 **17/17**；NextN 超分/译图 provider runtime 与 variant-media runtime 通过；NextE/NextN 的 default/debug signed build 和 Koma default/debug `assembleHap` 均成功。Koma 无 original/processed variant：legacy 与共享保存都使用 canonical cached file，分享仅制作一份临时副本、信息读取该 canonical file，资源身份一致。三宿主仍缺少不写入用户相册的系统保存会话观察；这项运行时边界独立保持 OPEN。
+  - **2026-09-21 自动阅读 target-source 行为契约（core/Node，不是设备验收）。** 三份相同的 `ReaderAutoRead`/测试已同步：首次完整 dwell 在 target source 未 ready 时仅发一次 `targetPending`；ready 更新后重新走完整 interval，期满才 next；failure 本身不推进，后续 ready 仍须完整 interval；stop/disable 清等待态，重新启用同一 identity 重新完整计时并只重发一次 pending；close、导航及旧 identity 的迟到结果不推进。最小代码仅在 waiting 时禁止重复 schedule、disable 时清 waiting；未改变 legacy 已确认的“ready 后不立即翻页”时序。P7 后在当前 NextN worktree 再执行 `node --test third_party/reader-kit/tests/reader-auto-read.test.cjs`，13/13 通过：source-target prepare 一次 pending→ready 后完整 dwell、failure→later-ready、stop/close、导航和旧 identity 的迟到完成均明确断言不误推进。该结果只复核当前 host/core fixture；真实宿主的 source prepare→停止/关闭/导航→迟到完成链仍无本轮设备证据，保持 OPEN。
+  - **2026-09-21 NextE source late-result fixture（源码/构建已过；197 动态前置未成立，停止且不重试）。** `ReaderAutoReadPolicy` 的 NextE 目标语义维持 `source`，已有 `NextEReaderLabAdapter.prepareAutoReadSource()` 仍是第五个 `ReaderPagedSession` host bridge；没有改 core、没有把 NextN 的 default `current` 或 Koma canonical 本地 source 改为 source bridge。仅 Debug `readerLabAutoReadSourceProbe=delay-once` 在 `readerLabChrome=true` 时启用 `NextEReaderAutoReadSourceProbe`：先调用真实 adapter 解析 target page，只首次等待 3 秒，再即使 cancellation 已置位也返回已解析 page，让既有 generation/current gate 丢弃迟到结果；缺省/生产请求继续直接使用 adapter。窄契约 `scripts/test_nexte_auto_read_source_late_result_contract.mjs` 3/3、既有 reader-kit Launch/auto-read 26/26、NextE source-readiness 1/1 通过；签名构建成功，HAP SHA-256 `b9ec6c99a6eaa3da1983ac5d4c9131747cf23a8763826264af57fd05c5b9ac9f`（NextE HEAD `7866db7824bbabd5d848fd63f443d2d84ca304bf`，reader-kit `b5fa38945b34fb37bca91989bb3b696db173618a`）。一次 197 checked setup（lease `20260921-045426-eeb6674f`，已释放）安装该 HAP、以显式 Debug Want 打开远端 Gallery `4200057` Page 0；PowerManager 为 `AWAKE` 且 `OverrideTimeout=86400000ms`，但新 layout 只有 `rkit-reading-surface`、没有任何 `rkit-part-*`/`rkit-image-*` 内容或 `rkit-auto-read`。真实远端 body/auto-read 语义前置不成立，故未发送 auto-read/stop/close 输入、未尝试其他页或坐标、未跑 OhosTest/循环，也不能声明动态取消通过或缺陷。证据保留在 `.hvigor/outputs/nexte-197-autoread-source-late-result/setup/`；本项设备链保持 OPEN，待存在当前可展示远端 target 的单次合法入口时再继续。
+  - **2026-09-21 监督复核更正（本条优先于紧邻的旧 setup 叙述）。** 上述 `4200057` setup manifest 漏传 `readerLabUnit`；`NextEReaderLabAdapter.open()` 要求 `key.unit === key.work` 且 token 非空，因而该入口必定落入 `invalid_eh_unit`。故旧 layout 的“仅 Reader 容器/无正文”是**协议前置无效**，不是产品、远端 body 或 auto-read 的反例，也不计作一次动态设备验证。`4200057` 当前没有可证明的合法 unit/token，禁止猜测、补写或重跑该入口。后续仅使用仓库多次真实打开过的 ordinary fixture `readerLabWork=4175844`、`readerLabUnit=37d7c39ec2`，保持本条冻结 HAP 与 Debug-only `delay-once`；先以一次 checked setup 取得唯一真实正文与 `rkit-auto-read`，才在同一租约执行一次启动→首次真实 adapter resolve/3 秒 delay→停止→迟到结果→generation/current gate 的单链。若该 gate 不成立或 probe 不触发，立即停止，不换页、内容、坐标或重试。
+  - **2026-09-21 197 合法 fixture gate（有效，但自动阅读控制当前未呈现；动态链未执行）。** 新 lease `20260921-050633-69f5d189`（已释放）在 `ALN-AL80` / `1260x2720` 安装同一冻结 HAP `b9ec6c99a6eaa3da1983ac5d4c9131747cf23a8763826264af57fd05c5b9ac9f` 后，以 `4175844/37d7c39ec2` 和 `readerLabAutoReadSourceProbe=delay-once` 运行**一次** checked setup manifest SHA-256 `7e54939acaeaa38d002bc006cd5c2aeb053b4671a078d2412f6c24098464f361`。这次 layout SHA-256 `6dce9ec72dd7e5720c1e816aef615e8627a27b2e83337356561ed777f007d1a0` 已证明真实正文：`rkit-part-0-whole` / `rkit-entry-image-0-1-2` 可见，页身份为 `1 / 46`；因此它不是 `invalid_eh_unit` 或“无正文”试次。可是 enabled+visible `rkit-auto-read` 数为 **0**，probe raw log 为空，故既未启动、停止 auto-read，也未取得或等待任何 3 秒迟到结果；不以 absence 推断产品取消正确或错误。随后源码定位其直接原因：`NextEReaderLabPage` 对该 Debug route 仍显式传 `initialChromeVisible: false`，`readerLabChrome` 只启用 chrome 路由、不把控制栏初始呈现；这不是 remote body 或 source-prepare 失败。按 gate 原则没有换页、点阅读面、猜坐标、改内容、重试或跑 OhosTest。随后同 lease 的 cleanup manifest SHA-256 `6c3b3b3884c796faf8efc9d45c36f0b2911d86306c3aa54764a7da45e67af076` 只执行 force-stop 并把 timeout 从本次 86400000 ms 恢复为设备先前报告的 120000 ms（readback `AWAKE`, `OverrideTimeout=120000ms`），再释放租约。原始 layout、command ledger、raw log 在 `.hvigor/outputs/nexte-197-autoread-source-late-result-valid/{setup,cleanup}/`；本条的真机 late-result 结论继续 **OPEN**。
+  - **2026-09-21 监督更正：初始隐藏栏不是 auto-read gate 失败。** 紧邻试次的真实正文和 `1 / 46` 保持有效；但“`rkit-auto-read=0` 因而立即结束”仅是漏做必需显栏前置后的流程中断，**不是**产品控制缺失、remote/source-prepare 失败或动态验证反例。源码事实是 `NextEReaderLabPage` 固定传 `initialChromeVisible: false`，而 `ReaderSurface.build()` 只在 `chromeVisible` 时构建 `ReaderChrome`，`rkit-auto-read` 位于该 chrome 内。允许以同一冻结 HAP、同一合法 fixture 和新租约重新做一次 checked setup；只从这一轮 layout 中唯一 `rkit-reading-surface` 的实时 bounds 取中心，单击一次显栏，再以新 layout 的唯一 enabled+visible `rkit-auto-read` 为后续单链 gate。不得复用旧坐标、换页/内容、循环、OhosTest 或把旧试次写成产品结果。
+  - **2026-09-21 197 显栏续办（有界；late-result 未触发，停止语义本轮不足）。** 新 lease `20260921-051544-205997d3`（已释放）仍使用冻结 HAP `b9ec6c99a6eaa3da1983ac5d4c9131747cf23a8763826264af57fd05c5b9ac9f` 与合法 fixture `4175844/37d7c39ec2`。checked setup manifest `2e390590e4355d692b6608364e2ea2fa700edc9885a713411a1cc51e92646d86` 的当前 layout `374dda9828370fd87ba8d64776053b4f24d849f18ce7407c26d274e09640db83` 只有一个 `rkit-reading-surface [0,0][1260,2720]`、页 `1 / 46`；由这一次实时 bounds 得中心 `(630,1360)` 单击显栏。显栏 manifest `624c262b23884f095289f53ebcf54dba620bab177e648a9ac8ddf033172f0130` 的后置 layout `a90765077e78d69493b83c91df9ea33f1267166ccf274b825d01ad5f2ff603b4` 恰有一个 enabled+visible `rkit-auto-read [338,2434][481,2577]`、页仍 `1 / 46`；再由该当前节点中心 `(409,2505)` 仅启动一次。启动 manifest `098f91bfb6c15265e1fad094abfdb3ecd4725db6665ec8ed042678f0b0de115a` 的唯一 6 秒观察窗中，页随后已前进，但 `NextEReaderAutoReadSourceProbe`/`ReaderAutoRead` 原始过滤日志为空：本 fixture 的 target source 本轮未进入 `delay-once`，所以没有迟到结果、也没有 generation/current gate 的设备结论。停止前 actionless gate layout `92a1f619555e83e9592c8ef8e0cc70acaa16142c268d514f4fdf5ed1be341d88` 读到 `12 / 46`，而真正 stop click 在约一分钟后才执行；stop manifest `0bc3fef711efbb19da7f678813fe2ec7ee4662c69c49fcbd7ab993c76e494169` 只在点击后 4 秒读到 `23 / 46`（layout `a51d17d05ef5d86b98170bde462e2f9aa3ac9ee31482278b0b2a7a27e7216194`），没有紧邻点击前的页身份。**因此不能以 `12→23` 推断 stop 成功或失败，更不是产品反例或修复依据。** 唯一可信结论是显栏后节点存在、启动后自动阅读有推进、probe 未触发、late-result 链未执行、stop 语义本轮证据不足。没有第二次 start/stop、换页/内容、循环或 OhosTest；cleanup manifest `74e67f8183fd5db664d0d74ca266ac825ecebb7beaabc16db572ee6f3646c5e8` force-stop 后将 timeout 复原 120000 ms，readback `AWAKE`/`OverrideTimeout=120000ms`，并释放租约。原始 command ledger/layout/raw log 在 `.hvigor/outputs/nexte-197-autoread-source-late-result-reveal/{setup,reveal,start,stop-gate,stop,cleanup}/`；本条 late-result/stop 真机结论保持 **OPEN**。
+  - **2026-09-21 ArkTS entry Monitor 修复（源码/Node/本地构建，非设备验收）。** 两端宿主页原先非法监控 nullable `entryTransition.target`/`.phase`；各自改为 `rootEntryTarget: ReaderEntryTarget | null` 与覆盖 `layout/moving/waiting/revealing/finished/cancelled` 的 `rootEntryPhase: ReaderEntryPhase` computed 投影，保留 coordinator、route 和 claim fence。target 投影返回整个 target 对象，故 `publishTarget` 以同一 `layoutRevision` 替换 `decodedReady` 时仍能使 `waiting` 阶段同步并触发既有 reveal；没有改为轮询或只投影 layout revision。两端 root `Index` 的 `finishSourceEntryPending` 与 `syncReaderTrialWindow` 同样改为合法的 `readerEntryPhase` computed 投影，仍保留 `readerEntryVisibility.foreground`、claim 与 window fence。双端窄契约加上既有 entry/core/host-runtime 套件各 **30/30**。串行构建扫描目标宿主页与根 Index 的 “needs to monitor state variables that exist” 为 **0**：NextE signed HAP `entry/build/default/outputs/default/entry-default-signed.hap` SHA-256 `f701f6a9d7459594152b8f884e4337368e7b197adad5934587bbb1f93e2a3b4a`，source HEAD `7866db7824bbabd5d848fd63f443d2d84ca304bf`、Lab/Index SHA-256 `d07a1243dc504b2aedfe47d5232307e461361c4203a71dc0a6ae463a89e59ba2`/`8e6482fc3c1b0d6504ff027633f9b0902a505181efa720d67076ad013d2a2ea6`；NextN signed HAP `entry/build/default/outputs/default/entry-default-signed.hap` SHA-256 `7310c716d121f44664848076207b7deeb87ad7fa9571ed1208295dc242570231`，source HEAD `732c37a7f514e902c8e7d02d0420e52db4a3fa98`、Lab/Index SHA-256 `7138e0cbe9bcac8cd20df88146c303a38fc9b8f73680f2e51432d903498e9a7a`/`e8791a6b693f170b915facbba7418079eb70cc97b124829971a3a7ad50038179`。副本已冻结于 `/Users/honjow/Documents/Codex/2026-09-19/shared-reader-recovery/monitor-candidates-jkvY93/`，复制后 SHA 与上述值、四份源码身份均一致。其他既有 ArkTS warning 类别未改动；Koma 无 root transition，未重建；两份 HAP **仅作为本次 Monitor 修复的有界设备候选，整体仍 OPEN**。
+  - **2026-09-21 Monitor 候选真机记录（有界；不关闭 F1/F2 或整体迁移）。** 两份冻结 HAP 分别在独立租约下安装，当前布局门禁、唤醒与 `OverrideTimeout=86400000ms` 均通过。NextN 197 (`ALN-AL80`, `1260x2720`) 的普通 shared Gallery `673508` 先取得唯一可见 source `reader-thumb-gallery-detail-1-page-0-content`，bounds `[78,984,428,1472]`，中心 `[253,1228]`；只录制一次“进入 → Back → 对同一 current source 再进入”。MP4 `nextn197_monitor_candidate_entry_roundtrip.mp4` SHA-256 `85cc9b8a7cd443540ba2a262e515fb0498ef980dac0a81d32c62d2f55c7d576b`，218 个原始 PTS 帧（`0.000000..17.207022s`）。全片离线逐帧审阅：首次交接从详情保留的 source 开始（F52 `1.031844s`，F59 `1.147467s` 仍有 selected source），F75 `1.431956s` 为 selected 左半页与右页都已显示的双页 Reader；中途 Back 后 F150 `10.445322s` 回到同一 preview，第二次交接 F174 `10.939133s` 仍显示 selected source，F185 `11.150489s` 双页显示，F217 `17.207022s` 稳定。两段均未观察到图像消失后才出现替代图的空白/黑 body 帧；Reader 初现只见被动 `1 / 83` 和系统录屏标记，没有应用顶/底 chrome。产物为 `.hvigor/outputs/nextn-197-monitor-candidate-entry-roundtrip/run/`（含清单、命令账本、原始 PTS、帧图与 contact sheets）。这只说明本 Monitor 候选在该一个当前普通入口的两次同源缩略图入场/回退链可见收敛；它不是历史 F1 对照、F2 切换、全部 Reader 入口或总体迁移验收。
+  - **2026-09-21 NextE 237 stop（当前前置不成立，不重试）。** Shared Home 当前布局的首个 live top-bar Button 由 `Index.ets searchMenu()` 顺序锁定为 `openSearch()`，以该运行布局 `[864,141,984,261]` 计算一次性中心 `[924,201]`；Search 页唯一字段为 `appSearchField-0`，提交按钮文本为“搜索”。输入并单次提交 `4200057` 后协议命令均成功，但落盘的当前结果布局只含该字段文本 `4200057`（SHA-256 `01e01473b15bba50549b774fca65c35ef116cb8afcd57ac3cd6daad18f72e8f2`），没有任何 Gallery `4200057` 结果节点。因此没有详情 grid、缩略图、Reader 录制、图片信息、OhosTest 或重试；237 证据止于 `.hvigor/outputs/nexte-237-monitor-candidate-{current-home-gate,search-gate,gallery-4200057-search}/run/`。这既不是 NextE 入场失败结论，也不能用 197 结果替代。
+- **本轮此前设备产物（全为 ignored run artifact；不含上述本地构建）。** NextN 普通入口：`.hvigor/outputs/nextn-autoread-normal-lifecycle-20260920/run/`；它使用真实普通阅读路径，故不声称没有宿主进度写入，但未施加偏好覆盖。受控 fixture 恢复：`.hvigor/outputs/nextn-autoread-retry-fixture-lifecycle-20260920/run/`；其请求未授予进度或偏好写入权限。先前缩略图试次的交接前失败保留在 `.hvigor/outputs/nextn-autoread-lifecycle-20260920/run/`，仅作 F1 有界反例，不混入自动阅读通过结论。
+
+### 2026-09-20 执行路径更正：237 Koma 普通入口与 197 F1/F2 并行（本节优先于任何相反的 r4–r6 解释）
+
+- **并发边界。** 不再把当前工作拆成“七包严格串行”：本任务只占用 237 `VDE-AL00`（`192.168.50.237:12345`，Koma 租约 `20260920-025758-a72a43ea`，本次续期至 `12:17:25 +08:00`），处理 Koma 的普通 Continue → shared Reader chrome/退出/再入链；独立任务 `01a0bccc-0206-7b41-9508-9a5d8ae352af` 负责 197 上的 NextN/NextE F1/F2。197 任务已报告 NextN legacy 对照录像落盘，且监督确认 F1 目前只能作有界保留；该任务正继续阅读中设置、系统栏与超分/缓存/取消链。其实际 device id、lease 和最终候选以其 run metadata 为准，不以 237 或本任务代填。已为其构建的 NextN 候选 HAP 为 SHA-256 `6804e106f69fddb72912955dbe66aa0cb89f5f0e84ce51e5893d9f3fd7b92e2b`，但本节不把构建替代 197 真机验收。
+- **197 F1 原始录像反例与后续候选（2026-09-20）。** 旧候选 `6804e106…b92e2b` 的 shared 生命周期录像在退出 F127–143（11.185222–11.450300s）显示缩回根代理后仍有完整正文与控制栏渐淡；同源 legacy F72（6.883622s）仅余代理和详情。最小修复只补 NextN 宿主对公共 close-owner 投影的消费：根代理可见时 `readerBodyOpacity()` 令 live body/controls 让位，canvas 仍用既有 `backdropOpacity` 退场，非代理路径维持 `1`。新签名 HAP 为 `entry/build/default/outputs/default/entry-default-signed.hap`，SHA-256 `1667b5f27dd665fa0d3442c03f745d156dbeac140f20385772361131592952cf`；`test_reader_initial_policy_runtime.mjs` 与 debug 签名构建均通过。监督已独立重解该新候选原 MP4 的 shared native F108–133：根代理缩回时旧整幅正文/chrome 副本消失，故**这个已发现的退出合成反例已作有界修复**。但配对录像的 legacy 为 `2 / 83`、shared 为 `1 / 83`，不是严格同页；批量 JPG 序号也不能替代 native 帧号。因而此结论只覆盖该反例，**F1 整体与迁移验收仍 OPEN**；构建、源码门禁和本段审阅都不替代其余真机链。
+- **237 Koma 证据更正（P4 仍 OPEN，但 r4–r6 的“初始 chrome 可见”反例撤回）。** 原协议的 Settings tab 坐标 `(900,1864)` 落在真实可点击范围 `[852,1892][1044,2036]` 之外；随后 `(660,1044)`仍停在 Library，第三个 `(660,417)`才命中 Continue 卡片。因此这些 run 在清日志前已开 Reader，测量阶段的点击不是被证实的普通入口点击，不能归因给 shared Reader。校准证据：`settings-flow-r3`、`settings-root-calibration-r4`、`reader-settings-calibration-r5`、`backend-menu-calibration-r6`；Shared 菜单实测范围 `[696,622][1224,766]`。
+- **237 Koma 当前真实候选与已证终态。** 正确工作树 `/Users/honjow/git/Koma-reader-preload-verify` 的当前签名 HAP SHA-256 为 `a9067cbe28f0674930e951c33ccb9fe8ca790d100e765e8a0cfbc0ffcf8d3039`；候选只含既有 status-bar epoch/500ms 收尾修复，未保留任何 `active`、route-token 或生命周期输入延迟门控。`true-ordinary-entry-r7` 逐页记录 Library → Settings → Reader settings → “共享阅读器”回读 → Library，并在清日志后只发出一次 `(660,534)` Continue 点击。其首帧为共享 `rkit-reading-surface`（无 status bar、无顶/底 chrome，仅被动 `1 / 10`），日志由 status true 收敛到 false；会话文件在入场后暂变为 `2a6613d…319bd`，恢复读回精确回到基线 `76c09ae3c87d90c1b20f405d03525eef739104f0d66f92621b272bb08c4fe7bc`。这修正了错误反例，但只是普通入场静态终态，不关闭 P4。
+- **237 Koma 连续链结果（P4 的 chrome/exit/re-entry 范围 CLOSED；不外推为 P7）。** 同一 setup 后的 `true-ordinary-continuous-r8` 成功导出 10.560 秒连续 MP4（SHA-256 `8a8e42c1ec4b3aab7d2cc705f3a17a32fd42821ae9b0aa3761907c929945a528`）：初始隐藏 → reveal → 100ms hide/reveal race → settled hide → 显示 chrome 后 top-back 退出 → Library Continue 再入。命令账本七个测量动作均 exit 0，临时 MediaLibrary 资产的删除及复核均 exit 0；联系表的终态顺序与动作一致，阅读内容 crop 的 `blackdetect` 未报告 black segment。动作后会话哈希为 `7f14e745…dc07`，但恢复读回与 setup 前同为 `76c09ae3c87d90c1b20f405d03525eef739104f0d66f92621b272bb08c4fe7bc`。录像和账本：`.hermes-artifacts/20260920-koma-reader-ordinary-race-device237__VDE-AL00/not-applicable/portrait-1320x2120/true-ordinary-continuous-r8/recording/`；setup/recovery 分别在同级 `true-ordinary-continuous-r8-setup/` 与 `true-ordinary-continuous-r8-recovery/`。该结论只关闭 Koma P4 所要求的普通 chrome/退出/再入连续链；P7 的业务语义仍独立 OPEN，不得以此替代。
+- **后续动作。** 释放 237 Koma 租约；不再为已确认的 P4 chrome 链重复跑矩阵。197 任务完成其自身 PTS/画面审计后，按其独立 run metadata 更新 F1/F2，不将 Koma 的设备或录制外推到 NextN/NextE。
 
 ### 候选自洽核对（2026-09-19，源码级；不是替代验收）
 
@@ -196,15 +771,22 @@ Koma 产物说明：本轮接手时该 HAP 的 mtime（11:38）早于它自己�
 - 真机实测验证（237）：
   - 运行真实超分模型端到端用例 `ReaderSharedSuperResolutionTrial`（manifest: `docs/plans/active/nextn-237-sr-single-manifest.json`，输出: `.hvigor/outputs/nextn-237-sr-single/run/run-metadata.json`）。
   - 执行日志确认：调用真实设备 CoreVision 超分模型（`[ReaderSharedSuperResolutionTest] source=0 stage=applied identity=nextn-super-resolution:system_core_vision:2000`），真机呈现超分图并成功弹出图片信息面板，耗时 13.189s，`Tests run: 1, Failure: 0, Error: 0, Pass: 1`，全程无崩溃、无空窗。F2 闭环完成。
+- **2026-09-20 当前候选重验交付（197，连续录像 OPEN）**：上列是历史 237 候选的证据，不能替代当前源码候选的验收；旧 HAP 不可用是构建/交付工作，不是外部阻塞。已从当前 NextN 工作树的隔离副本构建出可追溯的主/测试 HAP：主 `15882b199fc1a160b5fa3f8961f6bfae2d69a1f59de1eae637b542ab567e89db`，测试 `dab84b0c882e833fce44d4e294994b1297dd3237f01431f966a3ea5fe140048e`；源码为 `732c37a7`、reader-kit `b5fa389`（含 F2 loader/retained-frame 修复 `d39bea4`）。首个 197 试次已真实到达 `source=0 stage=applied`，但测试错误地假设 `rkit-more` 默认可见，故 `assertEnhancedInformation` 在 immersive chrome 下失败；该次不能作为 ON/page-3 前置或任何 F2 视觉结论。测试已只改为对真实内容中心点执行一次唤出 chrome 后再读图片信息，并读回/断言持久化的 ON、模型、最大高度、阅读模式、双页及布局恢复值；另加的不写设置 checkpoint 使用 fixture 的显示页 3（source index 2），并已重建隔离测试 HAP；产品 HAP 未改。197 随后对先前的主试次 harness 真正跑到 `Pass: 1`、`restored enabled=true model=system_core_vision maxHeight=2000 mode=paged double=false spread=joined`，但旧 postflight `tail -80` 漏掉 initial 行，故严格 gate 仍未闭合且没有启动 checkpoint/录像。新的纯 hilog 读取 manifest 先回收 initial/applied/restored/Hypium 行；它不重跑、不安装、不清日志、不改候选。gate 完整后，checkpoint manifest 只更新测试 harness 到上列 SHA（main HAP 不变），再运行显示页 3 的无设置写入检查；最后才录屏。候选、log-capture 与 checkpoint manifest 的 SHA-256 必须以当前文件为准；录像 manifest SHA-256 `f5acdded…b3aa7`。录像仍须逐帧确认旧已呈现帧持续至替代图可绘制、无黑/空 body 帧且无 `LoadingProgress` 闪现；静态终态或 Hypium Pass 均不足以收口。**F2 对当前候选的真机连续录像仍为 OPEN**。
 
 **结论口径**：在“必要功能仍有未验/失败”时不宣布完整替代。P13 早先“环境前置（设备无 manga LLM 源）”的结论**已被 2026-09-19 真机事实推翻并纠正**：设备本就有可用的 manga 源，真实阻断是共享层 (a) 持久 route 抢先分支使隔离覆盖不可达、(b) 身份用裸 profile id 被判 stale；两处已修。**2026-09-19 更正与当前状态**：旧记录“`POST /translate/export/original` 始终未返回 200”**错误**——sidecar 访问日志显示那次在 `2026-09-18T20:10:39Z` 返回 200（耗时 423s），只是超过共享链路 `READ_TIMEOUT_MS=300s`；103 上两次带门禁复跑（`landing3`/`landing4`）里 sidecar 分别在 121s/163s 返回 200，失败改在**宿主 LLM 文本翻译返回 HTTP 500/503**。故 P13 既不是“整页翻译必然超时”，也不是 reader-kit 迁移缺口；它当前是宿主 LLM 路由可用性问题。**2026-09-19 后续**：译图在共享面的落地与切回已在 237 闭合（真实缓存路径），仍未证的是**新鲜（非缓存）self-hosted 发布**，故 P13 保持 OPEN（只剩该项）。**2026-09-19 配对判别补记**：在 103（`nextn-103-p13-pair2`）同页同源同端点下，**旧（未迁移）阅读器入口同样失败**（`sawRunning=true applied=false hostOutcome=翻译失败`，138.7s），共享入口同轮同结果（295.4s），两端 sidecar 均在窗口内 200，且都在 export 200 后约 7 秒结束于同一宿主失败文案——该 5xx **因此不归因于共享迁移**，P13 的剩余缺口收敛为“译图未落地”。P14 **已归因，不是迁移回归**：197 同构建配对对照显示两侧发出同一请求、同得云 200、同以 `decode_mismatch declared=image/webp ... jpeg=true webp=false` 失败——云端把 JPEG 字节标成 `image/webp`，属**云侧负载标签的既有条件**。证据：`.hvigor/outputs/nextn-197-rt-paired/`、`nextn-197-rt-legacy-cmp/`。
 
 
 - **P1 same-state Shared↔Legacy pixel comparison (2026-09-18, 197, artifact reuse, no new device run)**: the board flagged that the only NextN Shared/Legacy image pair on record was **not** the same state (Shared `4 / 14` continuous vs Legacy `2 / 14`), so experience parity was unproven. Reusing the current-pin set `.hvigor/outputs/nextn-rv-matrix-2594d6f/run/extracted_evidence/` there are in fact two **same-page** pairs: `compact` (Shared `1 / 14` = Legacy `1 / 14`) and `grid` (Shared `2 / 14` = Legacy `2 / 14`). Measured: compact body band (y 340–2200) is **byte-identical** (Δ0, 0 px changed); grid body band differs only in a narrow column and, after normalizing position, the page column sits at x≈532–727 in both (`531..727` legacy, 1 px antialias), the bright page extent is identical (`0..1859`), and the per-row brightness profile correlation is **0.9887** with the top differences confined to a ~250 px band (y≈1677–1923). So at the same page the two backends render the same page at the same place and extent; the residual grid difference is a small local content difference, not a layout/experience regression. This closes the *experience-parity is unproven* doubt for the light path and the top/bottom chrome difference is the already-documented Shared(chrome shown) vs Legacy(immersive) presentation trade-off. Honest scope: this is artifact reuse (no fresh device run) and covers the single-page light path; it does not by itself re-accept the dark/continuous/spread same-state cases, which remain covered by their own records.
 
+- **2026-09-20 F2 gate 回收更正（197）：** `nextn-197-f2-candidate-20260920-primary-gate-log-capture-manifest.json` 在新租约下只读 hilog 后，stdout 对 `ReaderSharedSuperResolutionTest` 与 Hypium 结果均为零匹配；initial 已不在环形缓冲，宽泛 `Error:` 只导出无关系统日志。该读取没有安装、启动、停止、清日志、写设置或 UI 输入；197 已释放租约，并没有推断 initial/restored 相等。因此 checkpoint/录像保持未启动。下一动作是重跑更新后的主试次 manifest（同一 main HAP、当前测试 harness、无截断 gate log），在**同一次**运行中保存 initial/applied/restored/Hypium 后才可进入显示页 3 checkpoint。
+
+- **2026-09-20 F2 gate 同尾汇总修正：** 两次通过 primary trial 的设备记录都表明 earliest `initial`/probe `applied` 行会在模型与系统日志后退出 hilog 缓冲，而 `restored` 留在尾部；这不构成产品失败或设置不一致。测试 harness 现于 finally 的恢复断言**之后**写出单行 `gate`，同一行包含 original initial、read-back restored 与由真实 probe set 得出的 `source=0 stage=applied`；普通路径若 probe 未 applied 会使试验失败。新隔离 ohosTest HAP 为 `6cae0947e8c90774d401429cba3188fb74e57b5f17d1e9807ad2b05dbe115478`，main HAP 保持 `15882b199fc1a160b5fa3f8961f6bfae2d69a1f59de1eae637b542ab567e89db`。下一次 primary run 只接受该尾部 gate 行与 Hypium 共同存在；否则仍不进入 checkpoint/录像。
+
+- **2026-09-20 F2 197 录像拒收与 r2 重派：** 当前候选的主试次已在同尾 gate 中给出 `enabled=true`、`model=system_core_vision`、完整 restored read-back 与 `source=0 stage=applied`，随后 page-3 非写入 checkpoint 也以 `Tests run: 1, Failure: 0, Error: 0, Pass: 1` 完成；但首段录制 `nextn197_f2_candidate_variant_and_page_handoff.mp4`（SHA-256 `572db789ff912473265fde5caca2c30b275b11de339edfd7adf87445dc00ddaf`）的 675 个原始 PTS 帧显示录制从桌面开始，坐标输入启动的是桌面应用，随后停在 IT之家首页/登录页，**没有进入 Reader**。它不含 F2 被测状态，故被明确拒收，既不构成通过也不构成产品失败。根因是 checkpoint 正常结束后不承诺 Reader 仍在前台，而旧 recording manifest 没有在启动录像前重启带 `readerLabWork=__rkit_local_fixture__`、display page 3 的 EntryAbility。新 manifest `nextn-197-f2-candidate-20260920-recording-manifest.json`（SHA-256 `3356502af27ef9d7639f4cbf1a24a01bfe1f67788c247af6bf67ce24189e91bb`）在受控录制器的受限 `launchAbility` 步骤中精确启动该 Ability、等待 7 秒后才开始录像，输出目录为新的 `nextn-197-f2-candidate-20260920-recording-r2/run`。它仍只对应隔离主 HAP `15882b199fc1a160b5fa3f8961f6bfae2d69a1f59de1eae637b542ab567e89db` 与 checkpoint 测试 HAP `6cae0947e8c90774d401429cba3188fb74e57b5f17d1e9807ad2b05dbe115478`；未覆盖或改写工作树保护 HAP。r2 已交 197 以新租约先复跑 checkpoint 后执行；只有 r2 录像确实起于 Reader 且逐帧满足 retained-frame/no-LoadingProgress 门槛，才可接受当前候选的 F2。
+
 ## Execution contract
 
-1. At most one package is `ACTIVE`; all others are `QUEUED` or `DONE`. **No package is ACTIVE now**: Package 5 closed as candidate-accepted on 2026-09-19, the shipped default remains legacy, and switching it is a separate user release decision.
+1. At most one package is `ACTIVE`; all others are `QUEUED` or `DONE`. **Package 5 is the sole ACTIVE package**: its 2026-09-19 candidate-accepted wording is historical and withdrawn as a current conclusion. The shipped default remains legacy; switching it is a separate user release decision.
 2. A package starts with a current-source owner map and ends with a complete
    user path. Individual controls, callbacks, tests, screenshots, builds, and
    devices are evidence inside the package, not milestones.
@@ -1836,7 +2418,7 @@ The parity/integration gap list below is the 2026-09-17 snapshot of what was the
 - **Koma ordinary-entry pixel review + an entry-selection caveat (2026-09-17, 197)**: pixel review of the earlier `8f11c550` ordinary entry (`.hermes-artifacts/20260916-koma-real/03-shared-real-v2/screen.png`) confirms the real 虫虫村 chapter renders in the shared reader — actual manga page art, chrome (back, `2 / 6`, reload/settings/more, slider, action row) and Koma's centered `章节 1 / 1`. My pinned-`f450aad` re-run reused the same coordinate-based 197 protocol (`.hermes-artifacts/20260917-koma-ordinary-shared-f450aad/`) but the shelf 'continue' tap landed on a *different* entry — a 2-page / 2-chapter title whose pages are the synthetic lab fixture, so that frame is chrome-only with a black body (`1 / 2`, `章节 1 / 2`). That is a **stale coordinate in the reused protocol**, not a product regression: the click is a hard-coded page coordinate, and the shelf contents/order on the shared device changed between the two runs. A pinned-revision Koma real-content re-check must re-derive the shelf entry rather than reuse the old coordinate. The `f450aad` real-content re-check is now DONE: re-running the protocol against the real 虫虫村 grid tile (not the reused continue-card coordinate) and then its 「继续阅读」 button enters the shared reader on the pinned build and renders the actual manga page (`むしんこ村`, page `2 / 6`) with chrome, slider, action row and Koma's `章节 1 / 1`. Artifacts: `.hermes-artifacts/20260917-koma-real-f450aad/02-shared-real-read/`.
 - **Koma lab fixture limitation noted (not a product defect)**: the `readerLabEntryLayout` display-mode and `readerLabWork=local-library-folder-*` lab runs use a synthetic **1x1** PNG fixture (`SourceRuntimeDeviceSmoke.ets:166` `LOCAL_LIBRARY_FOLDER_SMOKE_PAGE_BASE64`), so those "empty pager" or black-body frames reflect the fixture, not a rendering failure. Real-content Koma device evidence must therefore use the ordinary shelf entry (the 虫虫村 chapter above), which does render the actual page. The 237 Koma mount run is a layout-mount check for that reason and stays labelled as such.
   - Koma: ordinary Library continue and chapter switch passing on 197 on real content;
-- Koma chapter orchestration re-verified at the pinned revision with a real multi-chapter offline title (2026-09-17, 197, candidate `6553e2df` reader-kit `f450aad`): using the stable semantic entry (`readerLabWork=com.dm5.koma:manga:manhua-suiranwoshibuwanmeienv`, `readerLabUnit=chapter:...1451220:40`, i.e. 第28话 of 虽然我是不完美恶女) the shared reader opened the real page art at `1 / 40` with the host chapter control `rkit-host-center-action`, and tapping it raised the chapter picker listing the real neighbouring chapters 第31/30/29/28/27/26/25話 with per-chapter page counts, the current chapter 第28话 highlighted and check-marked. This is the Koma chapter-orchestration semantic (chapter ordinal `章节 17 / 45`, adjacent-chapter list, current-chapter selection) on the pinned revision. Artifacts: `.hermes-artifacts/20260917-koma-chapter-f450aad/12-lab-open-ch28/`. Note for future runs: the shelf/card **coordinates are not stable across runs** (a tap intended for one card landed on 坂本 DAYS in an adjacent run because the scroll offset differed), and the chapter rows sit under the floating bottom nav; the stable route is the lab work/unit parameters, not page coordinates. Koma chapter **switch** re-verified at the pinned revision (2026-09-17, 197, candidate `6553e2df` reader-kit `f450aad`): opened 第28话 (`1 / 40`, `章节 17 / 45`) via the stable lab entry, raised the chapter picker, and tapped 第31话. The shared reader then showed `1 / 33` (33 = 第31话’s page count) with the chapter control `章节 14 / 45` and the new chapter’s real coloured page art — so the host chapter orchestration committed the new unit: the visible content, page count and chapter ordinal all changed together, and the Koma-only centre chapter control `rkit-host-center-action` stayed mounted with `rkit-native-pager`. Artifacts: `.hermes-artifacts/20260917-koma-chapter-f450aad/13-switch-to-ch31/`. Koma per-chapter **read-complete state** re-verified at the pinned revision (2026-09-17, 197, candidate `6553e2df` reader-kit `f450aad`): opening 第28话 at its last page (`readerLabPage=39`) with host progress read/write persisted the durable row `chapter:manhua-suiranwoshibuwanmeienv:1451220:40 -> pageIndex 39, completed true` (the pre-run row for a sibling chapter was `pageIndex 0, completed false`), so the host’s `completed = last readable page shown` semantic survives the shared session. Artifacts: `.hermes-artifacts/20260917-koma-chapter-f450aad/15-completed-write/`. The run only advanced that chapter’s own reading position; no library/download data changed, and the pre-run `reader-sessions.v1.json` was pushed back byte-identically afterwards (the restored file equals the pre-run snapshot; artifact `.hermes-artifacts/20260917-koma-chapter-f450aad/16-restore-progress/`). 
+- Koma chapter orchestration re-verified at the pinned revision with a real multi-chapter offline title (2026-09-17, 197, candidate `6553e2df` reader-kit `f450aad`): using the stable semantic entry (`readerLabWork=com.dm5.koma:manga:manhua-suiranwoshibuwanmeienv`, `readerLabUnit=chapter:...1451220:40`, i.e. 第28话 of 虽然我是不完美恶女) the shared reader opened the real page art at `1 / 40` with the host chapter control `rkit-host-center-action`, and tapping it raised the chapter picker listing the real neighbouring chapters 第31/30/29/28/27/26/25話 with per-chapter page counts, the current chapter 第28话 highlighted and check-marked. This is the Koma chapter-orchestration semantic (chapter ordinal `章节 17 / 45`, adjacent-chapter list, current-chapter selection) on the pinned revision. Artifacts: `.hermes-artifacts/20260917-koma-chapter-f450aad/12-lab-open-ch28/`. Note for future runs: the shelf/card **coordinates are not stable across runs** (a tap intended for one card landed on 坂本 DAYS in an adjacent run because the scroll offset differed), and the chapter rows sit under the floating bottom nav; the stable route is the lab work/unit parameters, not page coordinates. Koma chapter **switch** re-verified at the pinned revision (2026-09-17, 197, candidate `6553e2df` reader-kit `f450aad`): opened 第28话 (`1 / 40`, `章节 17 / 45`) via the stable lab entry, raised the chapter picker, and tapped 第31话. The shared reader then showed `1 / 33` (33 = 第31话’s page count) with the chapter control `章节 14 / 45` and the new chapter’s real coloured page art — so the host chapter orchestration committed the new unit: the visible content, page count and chapter ordinal all changed together, and the Koma-only centre chapter control `rkit-host-center-action` stayed mounted with `rkit-native-pager`. Artifacts: `.hermes-artifacts/20260917-koma-chapter-f450aad/13-switch-to-ch31/`. Koma per-chapter **read-complete state** re-verified at the pinned revision (2026-09-17, 197, candidate `6553e2df` reader-kit `f450aad`): opening 第28话 at its last page (`readerLabPage=39`) with host progress read/write persisted the durable row `chapter:manhua-suiranwoshibuwanmeienv:1451220:40 -> pageIndex 39, completed true` (the pre-run row for a sibling chapter was `pageIndex 0, completed false`), so the host’s `completed = last readable page shown` semantic survives the shared session. Artifacts: `.hermes-artifacts/20260917-koma-chapter-f450aad/15-completed-write/`. The run only advanced that chapter’s own reading position; no library/download data changed, and the pre-run `reader-sessions.v1.json` was pushed back byte-identically afterwards (the restored file equals the pre-run snapshot; artifact `.hermes-artifacts/20260917-koma-chapter-f450aad/16-restore-progress/`).
 - Koma chapter **navigation UI + completed** re-verified at the pinned revision (2026-09-17, 197, candidate `6553e2df` reader-kit `f450aad`): with 第28话 open, the shared More menu renders `rkit-previous-chapter` 「上一章」 and `rkit-next-chapter` 「下一章」 (both enabled at a mid-sequence chapter); tapping 「下一章」 committed the adjacent chapter — the reader moved to `1 / 26` with chapter control `章节 16 / 45`, i.e. the previous chapter in the list order — matching the legacy `onNextChapter`/`onPreviousChapter`/`onOpenChapter` capability (shared `chapterNavigation` + `centerAction`). Boundary enablement is source-defined (`ReaderChrome` disables each item when `snapshot.canPreviousUnit`/`canNextUnit` is false, which `ReaderPagedSession` derives from `catalog.adjacent() !== null`); a true end anchor (动画化, last of 45) showed `rkit-next-chapter` **disabled** on device. The exact disabled state of the *first* anchor was not isolated in that run because that chapter is not downloaded (its page failed to load, so the chrome reflected the failure state rather than a clean boundary); it was later isolated directly — see the two Koma chapter-boundary records above (list-index-0 and the single-chapter work). Artifacts: `.hermes-artifacts/20260917-koma-chapter-f450aad/{17-more-menu,18-next-chapter-button,20-last-ch-more,21-dl-idx1,22-dl-idx16}/`. This closes Package 4’s real-device chapter-switch path on the pinned revision (previous switch evidence was `8f11c550`).
 - **Remaining NextN input-injection trials re-verified at reader-kit `2594d6f`** (2026-09-18, 197 `ALN-AL80` 1260x2720, `install -r` only): continuing the tap/gesture re-verification, the input-injecting trials whose record predated the `ReaderTapSequence` drag fix are re-run at the new pin, each **1/1**. `ReaderVolumeKeysTrial` (`logicalKeysRespectZoomMenuAndRouteLifecycle`) — logical volume keys still turn pages and respect zoom/menu/route lifecycle; `ReaderSpreadShiftTrial` (RTL spread re-pairs one page then turns) — the shared `rkit-shift-spread` control; `ReaderSpreadHorizontalReachTrial` — joined/split pairing and horizontal reach; `ReaderLabPinchPan` and `ReaderLabPinchResetSwipe` — the real multi-pointer pinch/pan and pinch-reset-then-swipe classes, which exercise the `ReaderTapSequence` multi-touch suppression directly. Combined with the earlier tap/gesture batch at this pin (`ReaderTapZonesTrial`, `ReaderChromeTrial`, `ReaderPagingAxisTrial`, and the direction-pinned `ReaderSpreadLayoutTrial`/ `ReaderSliderLifecycleTrial`), the NextN shared-reader tap, drag-guard, pinch/pan, logical-key, spread-shift and reach inputs are all re-confirmed at reader-kit `2594d6f` with no counterexample introduced by the drag fix. Read-only runs (each trial restores any state it touches). Artifacts: `.hvigor/outputs/nextn-rv2-volkeys/run/`, `.hvigor/outputs/nextn-rv2-shift/run/`, `.hvigor/outputs/nextn-rv2-reach/run/`, `.hvigor/outputs/nextn-rv3-pinchpan/run/`, `.hvigor/outputs/nextn-rv3-resetswipe/run/`.
 
@@ -1921,7 +2503,7 @@ The parity/integration gap list below is the 2026-09-17 snapshot of what was the
 - **NextE large-screen (237) keep-screen (keep-awake) verified (large-screen coverage)** (2026-09-18, 237 `VDE-AL00` 1320x2120, NextE `9a3ec400` reader-kit `2594d6f`, `install -r` only): the tracked NextE `ReaderKeepScreenOnTrial` (`foregroundReadingOwnsKeepAwakeAndReleasesOnBackgroundAndClose`) had a 197 record but no large-screen one. Re-run on 237 through the checked protocol: **`Tests run: 1, Failure: 0, Error: 0, Pass: 1`** with the fact line `ReaderKeepScreenOn before=false setting=true` -> `shown=true` -> `background=false` -> `reentered=true` -> `closed=false`. So the shared reader owns the real keep-awake lease while the NextE reader is shown at the large-screen form factor and returns the window to its pre-entry state on background and close, matching the 197 record. Read-only run (reads/sets the transient window keep-screen flag and restores `false`; no progress/preference write). Artifact: `.hvigor/outputs/nexte-237-keepscreen-2594d6f/run/run-metadata.json`.
 - NextE **keep-screen (keep-awake)** verified at the pinned revision (2026-09-17, 197, candidate `516c60ed` reader-kit `f450aad`): the tracked NextE `ReaderKeepScreenOnTrial` (`foregroundReadingOwnsKeepAwakeAndReleasesOnBackgroundAndClose`) passes **1/1** after a trial-only fix (no product change). It reads the real window's `isKeepScreenOn` first (`before=false`), asserts the shared route takes the lease while shown (`shown=true`), releases it on background (`background=false`), re-acquires it on a fresh explicit entry (`reentered=true`), and releases it on close (`closed=false`), with `connectReadMode().keepScreenOn` unchanged. The fix parallels the NextE `ReaderVolumeKeys` change: NextE intentionally retires the shared reader route on app background (asserted by its own `ReaderLifecycleRecoveryTrial`/`ReaderInformationBackgroundTrial`), so the resumed assertion required a fresh explicit lab entry rather than a bare `aa start`. Artifacts: `.hvigor/outputs/nexte-keepscreen-f450aad/run2/run-metadata.json`.
 - NextN large-screen (237) zoom + a paging-trial caveat at the pinned revision (2026-09-17, 237 `VDE-AL00` 1320x2120, candidate `e31ca01c` reader-kit `f450aad`): a direct double-tap probe on the long-image gallery 678049 shows the same page `4 / 14` before and after while the AFTER frame is visibly magnified (the tall page widens, detail enlarges, the top/bottom crop in) — a real >1 viewport transform at an unchanged page/position on the large screen. Artifacts: `.hvigor/outputs/nextn-237-axis/device237__VDE-AL00/not-applicable/portrait-1320x2120/04-doubletap-zoom/`. Caveat recorded honestly: the tracked `ReaderPagingAxisTrial` fails on 237 with `expect 7 equals 3` at its vertical-paged step because it assumes one `0.31 x viewport` swipe advances exactly one page; gallery 678049 is a webtoon long-strip whose page is far taller than the viewport, so a single swipe legitimately crosses several page boundaries (`vertical-p2` shows the narrow strip, `exception` shows `7 / 14`). That is trial brittleness under long-image content + vertical paging, not a product defect; the trial is not a valid large-screen paging acceptance for this gallery and its 197 pass (square-ish content) stands only for that content.
-- NextE `ReaderChromeTrial` (chrome viewport ownership + in-session direction switch) run at the pinned revision (2026-09-17, 197, candidate `64f13264` reader-kit `f450aad`): the trial had **no prior pass record** in this worktree, so it is a written-but-unverified trial, not a regression. Two trial-side fixes made it partly runnable: pinning the Debug-only `readerLabEntryDirection=ltr` (the direction case asserts LTR slider geometry before it switches to RTL itself) and replacing a fixed 2200 ms settle with a wait for `rkit-image-viewport`. After those, case 1 `chromeDoesNotOwnTheViewport` **passes** (the surface renders the real cover at `1 / 46`; chrome shown/hidden, double-tap and pinch-reset all behave — artifacts `.hvigor/outputs/nexte-chrome-f450aad/.../03-chrome-caps/{shown,hidden,double-tap,pinch-reset,navigation-same-source}.png`). Case 2 `sourceSeekAndDirectionRemainReadingIntents` then failed at `:360` (right-third tap did not advance) — **root cause found and fixed**: the case asserts that the viewport’s right/left thirds advance/retreat, which only holds for the edge-based RIGHT_LEFT tap preset with no inversion, but device 197 carries a persisted `lShaped` + `both` preset (verified read-only in `nexte_settings`: `reading.tapZoneLayout=lShaped`, `reading.tapZoneInvert=both`), and inversion mirrors the right-middle `next` region to the left, so the right-third tap correctly does not advance. Pinning the in-memory tap-zone state (`rightLeft`/`none`, restored afterwards, persisted preference untouched) alongside the LTR pin makes the trial **pass 2/2** on 197 at `f450aad`, with pixel evidence of the in-session direction switch: `navigation-ltr` `2 / 46` with the LTR slider `2 ...`; `navigation-rtl` stays `2 / 46` with the slider reversed (`46 ... 2`); `navigation-rtl-next` (RTL left third) advances to `3 / 46`; `navigation-rtl-previous` (right third) returns to `2 / 46`. Source commits: `test(reader): make ReaderChromeTrial robust to device direction and cold decode` (`64f13264`), `test(reader): pin tap-zone preset in the NextE chrome direction case` (`bd740ca8`). Artifacts: `.hvigor/outputs/nexte-chrome-f450aad/.../{09-chrome-tapzone-pinned,10-nav-caps}/`.  Koma explicit fallback re-verified at the pinned revision (2026-09-17, 197, candidate `6553e2df` reader-kit `f450aad`): the in-app Settings → Reading 「阅读器实现」 selector defaults to 「现有阅读器」 (legacy) and additionally offers 「共享阅读器」. Selecting 共享阅读器 and opening the real 第31话 from the ordinary shelf produced the shared surface (20 `rkit-*` nodes, incl. `rkit-chrome-top/bottom`, `rkit-source-slider`, `rkit-host-center-action`, no `reader_key_surface`); selecting 现有阅读器 and reopening the same chapter produced the legacy reader (`reader_key_surface`, zero `rkit-*`, immersive with only the passive `1 / 33` badge). So the shared reader is an explicit, reversible opt-in and the legacy reader is the default and the single-step fallback. Artifacts: `.hermes-artifacts/20260917-koma-chapter-f450aad/{24-backend-menu,28-menu-dump,29-shared-open2,30-legacy-open2}/`. 
+- NextE `ReaderChromeTrial` (chrome viewport ownership + in-session direction switch) run at the pinned revision (2026-09-17, 197, candidate `64f13264` reader-kit `f450aad`): the trial had **no prior pass record** in this worktree, so it is a written-but-unverified trial, not a regression. Two trial-side fixes made it partly runnable: pinning the Debug-only `readerLabEntryDirection=ltr` (the direction case asserts LTR slider geometry before it switches to RTL itself) and replacing a fixed 2200 ms settle with a wait for `rkit-image-viewport`. After those, case 1 `chromeDoesNotOwnTheViewport` **passes** (the surface renders the real cover at `1 / 46`; chrome shown/hidden, double-tap and pinch-reset all behave — artifacts `.hvigor/outputs/nexte-chrome-f450aad/.../03-chrome-caps/{shown,hidden,double-tap,pinch-reset,navigation-same-source}.png`). Case 2 `sourceSeekAndDirectionRemainReadingIntents` then failed at `:360` (right-third tap did not advance) — **root cause found and fixed**: the case asserts that the viewport’s right/left thirds advance/retreat, which only holds for the edge-based RIGHT_LEFT tap preset with no inversion, but device 197 carries a persisted `lShaped` + `both` preset (verified read-only in `nexte_settings`: `reading.tapZoneLayout=lShaped`, `reading.tapZoneInvert=both`), and inversion mirrors the right-middle `next` region to the left, so the right-third tap correctly does not advance. Pinning the in-memory tap-zone state (`rightLeft`/`none`, restored afterwards, persisted preference untouched) alongside the LTR pin makes the trial **pass 2/2** on 197 at `f450aad`, with pixel evidence of the in-session direction switch: `navigation-ltr` `2 / 46` with the LTR slider `2 ...`; `navigation-rtl` stays `2 / 46` with the slider reversed (`46 ... 2`); `navigation-rtl-next` (RTL left third) advances to `3 / 46`; `navigation-rtl-previous` (right third) returns to `2 / 46`. Source commits: `test(reader): make ReaderChromeTrial robust to device direction and cold decode` (`64f13264`), `test(reader): pin tap-zone preset in the NextE chrome direction case` (`bd740ca8`). Artifacts: `.hvigor/outputs/nexte-chrome-f450aad/.../{09-chrome-tapzone-pinned,10-nav-caps}/`.  Koma explicit fallback re-verified at the pinned revision (2026-09-17, 197, candidate `6553e2df` reader-kit `f450aad`): the in-app Settings → Reading 「阅读器实现」 selector defaults to 「现有阅读器」 (legacy) and additionally offers 「共享阅读器」. Selecting 共享阅读器 and opening the real 第31话 from the ordinary shelf produced the shared surface (20 `rkit-*` nodes, incl. `rkit-chrome-top/bottom`, `rkit-source-slider`, `rkit-host-center-action`, no `reader_key_surface`); selecting 现有阅读器 and reopening the same chapter produced the legacy reader (`reader_key_surface`, zero `rkit-*`, immersive with only the passive `1 / 33` badge). So the shared reader is an explicit, reversible opt-in and the legacy reader is the default and the single-step fallback. Artifacts: `.hermes-artifacts/20260917-koma-chapter-f450aad/{24-backend-menu,28-menu-dump,29-shared-open2,30-legacy-open2}/`.
 - Koma close-returns-to-source re-verified at the pinned revision (2026-09-17, 197, candidate `6553e2df` reader-kit `f450aad`): selecting shared and opening from the ordinary shelf continue card, then closing the shared reader, returned to the **shelf** (`书架` header, continue card, root tabs) with `rkit-reading-surface` gone, and the continue card correctly reflected the chapter last read (`虽然我是不完美恶女 · 第31话`), i.e. the close handoff preserves and exposes the same position the reader wrote. Artifacts: `.hermes-artifacts/20260917-koma-chapter-f450aad/23-close-returns/`.
 - Koma cross-version (upgrade/rollback) runtime continuity re-verified at the pinned revision (2026-09-17, 197, candidate `6553e2df` reader-kit `f450aad`, rollback target main `0399e257`): the pinned candidate wrote a non-default position on the real 虫虫村 18 chapter (durable row `chapter:manhua-chongchongcun:1220470:6 pageIndex 1 -> 3`, `totalPages 6`), then `install -r` of committed main `0399e257` + cold start + the ordinary shelf→「继续阅读」 resume read that same row back (`pageIndex 3`, page label `4 / 6`), and restoring the pinned candidate + cold start again read `pageIndex 3` / `4 / 6`. So the candidate-written reading position survives a cross-version replacement **and** the rollback, and the same page resumes through the ordinary entry on both revisions. Artifacts: `.hermes-artifacts/20260917-koma-crossversion-f450aad/{01-candidate-write,02-rollback-resume,03-restore-candidate}/`. This moves the earlier `8f11c550` cross-version record onto the pinned revision.
 - **Koma cross-version (upgrade + rollback) runtime continuity re-verified at reader-kit `2594d6f`** (2026-09-18, 197 `ALN-AL80` 1260x2720, `install -r` only): the continuity gate is a named Package 5 requirement and the shared pin changed, so the sequence is re-run at `2594d6f` against the rollback revision main `0399e257` (an ancestor of the candidate, containing no shared-reader selector). Write (pinned candidate): opening the real 虽然我是不完美恶女 chapter (unit `...1451220:40`) through the shared lab entry with the Debug-only progress-write flag and swiping forward twice moved the live reader to `3 / 40` and the host wrote the durable row `chapter:...1451220:40 pageIndex 2` (the pre-run row for that comic pointed at a different chapter, `...1510031:33`). Rollback: `install -r` of main `0399e257` + cold start, then the ordinary shelf 「继续阅读」 continue card (title 「虽然我是不完美恶女」) opens the **legacy** reader (`reader_key_surface`, zero `rkit-*` — the rollback revision has no shared selector) and resumes `3 / 40`, i.e. the exact candidate-written page survives the cross-version replacement. Restore: `install -r` of the pinned candidate + cold start, and the same ordinary shelf card again resumes `3 / 40` (legacy default at cold start, matching the contract). So content identity and the durable page survive both the cross-version replacement **and** the restore through the ordinary entry. The device durable row was then restored byte-identically: the baseline `reader-sessions.v1.json` (sha256 `99e90be0…`) was pushed back and reads equal afterwards, and the device was left on the debug candidate (`debug: true`). Artifacts: `.hermes-artifacts/20260918-koma-xv-2594d6f/{A-write,B-rollback,B3-discover,B4-resume,C-restore}/` and `.../baseline/reader-sessions.v1.json`. (The settings half of Koma cross-version continuity stays on its earlier `f450aad` record; this re-run covers the progress half at the new pin.)

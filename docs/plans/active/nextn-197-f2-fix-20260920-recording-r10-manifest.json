@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-f2-fix-20260920-recording-r10",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-f2-fix-20260920-recording-r10/run",
+  "recordingFileName": "nextn197_f2_duplicate_selection_fix_r10.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 1000,
+  "idleRecordMs": 25000,
+  "hilog": {
+    "hdcArgs": ["shell", "hilog"],
+    "localFile": "hilog.txt"
+  },
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "launchAbility": {
+    "name": "open-page3-and-validate-restricted-duplicate-selection-fix",
+    "bundleName": "com.erosteam.nextn",
+    "abilityName": "EntryAbility",
+    "parameters": {
+      "readerLabWork": "__rkit_local_fixture__",
+      "readerLabChrome": "true",
+      "readerLabPage": "2",
+      "readerLabVolumeKeys": "false",
+      "readerLabSuperResolutionRecording": "off-on-once"
+    },
+    "pauseAfterMs": 5000
+  },
+  "actions": [],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "requires r10 isolated main HAP SHA-256 d9d015d3acf55430d80b40dafd129eb5acde2871a71ceab82ddacf8813b551b3 established by nextn-197-f2-fix-20260920-on-checkpoint-r10-manifest.json; source base HEAD 732c37a7f514e902c8e7d02d0420e52db4a3fa98 with a single ReaderSurface guard that prevents policy re-selection while requestId differs from the retained frame assetRequestId; Debug cell/core telemetry remains enabled only for this exact Want; no spinner or retained lifecycle condition is modified",
+    "page": "shared Reader local-fixture display page 3/source index 2; the app records only after its session reports the currently displayed source-2 asset as enhanced",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Fix validation r10, bounded to the diagnosed same-page duplicate-selection path and not full F2 acceptance. No coordinate action is authorized. The exact Debug-only request is local fixture, page 3, debug chrome request, and off-on-once. Require the source-2 enhanced precondition, complete OFF/ON sample windows 0..12, aggregate gate, concurrent hilog, and source-2 ReaderPagedCell plus ReaderSession telemetry. Both enhanced-to-default and default-to-enhanced decisions must report retain_displayed=true. Reject a follow-on source-2 decision with phase=decoding/current_variant=enhanced/target_variant=enhanced/retain_displayed=false, because that is the diagnosed duplicate replacement. For both OFF and ON candidate windows, require a source-2 cell record with raw retained identity and local retained identity present while decoding, spinner=false. Offline original-PTS review must find no central 32px circular LoadingProgress during the 25-second capture; if any is visible, reject the fix trial. Video PTS and hilog wall time are not synchronized, so use logs for lifecycle and PTS only for visual presence. Reject any missing gate, missing telemetry, App died, incomplete window, or visible spinner; do not retry. Force-stop and release the lease on every path. This does not validate real host-settings interaction, new enhancement processing, disk-cache behavior, unvisited pages, F1, P7, or overall migration acceptance."
+  }
+}

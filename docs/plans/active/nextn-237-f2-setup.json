@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-237-f2-setup",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-237-f2-setup/run",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "HAP 7e4a36ed (F1 transition bridge + F2 variant slot reconcile retain)",
+    "page": "Install candidate, open gallery 673508 on shared backend directly into reader, wait for load and dump layout",
+    "deviceAlias": "device237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "setup for F2 super-resolution swap and page flip recording"
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    },
+    {
+      "name": "install-main",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN-wt/shared-reader-refactor/entry/build/default/outputs/default/entry-default-signed.hap"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "name": "force-stop",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "force-stop",
+        "com.erosteam.nextn"
+      ]
+    },
+    {
+      "name": "open-reader-shared",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "start",
+        "-b",
+        "com.erosteam.nextn",
+        "-a",
+        "EntryAbility",
+        "--ps",
+        "nextn_reader_backend",
+        "shared",
+        "--pi",
+        "nextn_gallery_id",
+        "673508",
+        "--pi",
+        "nextn_reader_page",
+        "0"
+      ],
+      "timeoutSeconds": 20
+    },
+    {
+      "name": "settle-reader",
+      "hdcArgs": [
+        "shell",
+        "sleep",
+        "6"
+      ]
+    },
+    {
+      "name": "reader-dump",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "dumpLayout",
+        "-p",
+        "/data/local/tmp/reader-f2.json",
+        "-a"
+      ],
+      "timeoutSeconds": 20
+    },
+    {
+      "name": "reader-recv",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/reader-f2.json",
+        "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-237-f2-setup/run/reader.json"
+      ]
+    },
+    {
+      "name": "reader-shot",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "screenCap",
+        "-p",
+        "/data/local/tmp/reader-f2.png"
+      ]
+    },
+    {
+      "name": "reader-recv-shot",
+      "hdcArgs": [
+        "file",
+        "recv",
+        "/data/local/tmp/reader-f2.png",
+        "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-237-f2-setup/run/reader.png"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": []
+}

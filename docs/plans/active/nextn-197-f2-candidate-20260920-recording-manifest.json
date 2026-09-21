@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-f2-candidate-20260920-recording-r2",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-f2-candidate-20260920-recording-r2/run",
+  "recordingFileName": "nextn197_f2_candidate_variant_and_page_handoff_r2.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 1000,
+  "idleRecordMs": 0,
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "launchAbility": {
+    "name": "open-local-reader-page3-before-recording",
+    "bundleName": "com.erosteam.nextn",
+    "abilityName": "EntryAbility",
+    "parameters": {
+      "readerLabWork": "__rkit_local_fixture__",
+      "readerLabChrome": "true",
+      "readerLabPage": "2",
+      "readerLabVolumeKeys": "false"
+    },
+    "pauseAfterMs": 7000
+  },
+  "actions": [
+    { "name": "open-reader-settings-to-disable-enhancement", "uiInput": ["click", "1020", "214"], "pauseAfterMs": 800 },
+    { "name": "scroll-to-image-enhancement", "uiInput": ["swipe", "630", "2380", "630", "760", "800"], "pauseAfterMs": 800 },
+    { "name": "switch-enhancement-off-same-visible-page", "uiInput": ["click", "1123", "2236"], "pauseAfterMs": 800 },
+    { "name": "dismiss-settings-after-off", "uiInput": ["click", "120", "1200"], "pauseAfterMs": 2500 },
+    { "name": "open-reader-settings-to-restore-enhancement", "uiInput": ["click", "1020", "214"], "pauseAfterMs": 800 },
+    { "name": "scroll-to-image-enhancement-for-restore", "uiInput": ["swipe", "630", "2380", "630", "760", "800"], "pauseAfterMs": 800 },
+    { "name": "restore-enhancement-on-same-visible-page", "uiInput": ["click", "1123", "2236"], "pauseAfterMs": 800 },
+    { "name": "dismiss-settings-and-observe-real-enhanced-replacement", "uiInput": ["click", "120", "1200"], "pauseAfterMs": 12000 },
+    { "name": "select-unvisited-nearby-page-through-visible-slider", "uiInput": ["click", "209", "2355"], "pauseAfterMs": 12000 }
+  ],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "isolated main HAP SHA-256 15882b199fc1a160b5fa3f8961f6bfae2d69a1f59de1eae637b542ab567e89db; source HEAD 732c37a7f514e902c8e7d02d0420e52db4a3fa98; reader-kit b5fa38945b34fb37bca91989bb3b696db173618a including F2 d39bea4a2b238055d5055ee167f8e9b3e8d0874e",
+    "page": "shared Reader local-fixture page 3 with chrome visible, image enhancement ON and an installed system model; the exact state is established by the F2 candidate trial followed by nextn-197-f2-candidate-20260920-on-checkpoint-manifest.json",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Run only after the pre-record checkpoint proves enhancement is ON on this exact candidate. The sequence is deliberately reversible: ON -> OFF -> ON on the same visible page, then an unvisited-page selection. Review every frame: the previous presented image must stay visible until its replacement is drawable; no blank/black body frame and no LoadingProgress flash are acceptable. The final ON state restores the verified initial setting. This video is the visual F2 evidence; static final screenshots and a passing trial alone are insufficient."
+  }
+}

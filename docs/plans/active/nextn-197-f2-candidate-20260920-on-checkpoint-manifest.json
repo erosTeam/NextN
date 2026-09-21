@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-f2-candidate-20260920-on-checkpoint",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-f2-candidate-20260920-on-checkpoint/run",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "requires the isolated main HAP SHA-256 15882b199fc1a160b5fa3f8961f6bfae2d69a1f59de1eae637b542ab567e89db from the preceding primary trial; this manifest installs only its ohosTest checkpoint harness SHA-256 6cae0947e8c90774d401429cba3188fb74e57b5f17d1e9807ad2b05dbe115478; source HEAD 732c37a7f514e902c8e7d02d0420e52db4a3fa98; reader-kit b5fa38945b34fb37bca91989bb3b696db173618a including F2 d39bea4a2b238055d5055ee167f8e9b3e8d0874e",
+    "page": "shared Reader local fixture page 3, enhancement already ON with an installed selected system model",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Run only after the preceding candidate trial passes and its initial/restored logs both show enabled=true with matching model and presentation values. It refreshes the ohosTest harness to the explicit checkpoint build but does not replace the main product HAP. The checkpoint itself performs no ReaderPresentationService or settings-repository write: it reads enabled/model state, asserts the selected model remains installed, opens the same shared Reader at display page 3 (fixture source index 2), waits for real system-model application, and asserts the enhanced image-information text. On success it leaves that page ready for the recording manifest."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"], "timeoutSeconds": 8 },
+    { "name": "install-isolated-test-checkpoint-harness", "hdcArgs": ["install", "-r", "/private/tmp/nextn-b1-build.NKRkEJ/NextN/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"], "timeoutSeconds": 300 },
+    { "name": "clear-log", "hdcArgs": ["shell", "hilog", "-r"], "timeoutSeconds": 20 },
+    { "name": "force-stop-before-page-three-checkpoint", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "timeoutSeconds": 20 },
+    {
+      "name": "run-non-writing-page-three-on-checkpoint",
+      "hdcArgs": ["shell", "aa", "test", "-b", "com.erosteam.nextn", "-m", "entry_test", "-s", "unittest", "OpenHarmonyTestRunner", "-s", "class", "ReaderSharedSuperResolutionPreRecordCheckpoint", "-s", "readerLabWork", "__rkit_local_fixture__", "-s", "timeout", "240000"],
+      "timeoutSeconds": 280
+    }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "capture-page-three-checkpoint-log", "hdcArgs": ["shell", "hilog -x | grep -E 'ReaderSharedSuperResolution|Tests run|Failure|Error|Pass' | tail -100"], "timeoutSeconds": 30 }
+  ]
+}

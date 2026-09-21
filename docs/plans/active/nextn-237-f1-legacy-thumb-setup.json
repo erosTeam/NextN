@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-237-f1-legacy-thumb-setup",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-237-f1-legacy-thumb-setup/run",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "HAP 447333d3 (Legacy matched comparison)",
+    "page": "Gallery 673508 detail -> setup and scroll to rail on legacy backend",
+    "deviceAlias": "device237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "setup for legacy authentic thumbnail transition recording"
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    },
+    {
+      "name": "force-stop",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "force-stop",
+        "com.erosteam.nextn"
+      ]
+    },
+    {
+      "name": "cold-open",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "start",
+        "-b",
+        "com.erosteam.nextn",
+        "-a",
+        "EntryAbility",
+        "--ps",
+        "nextn_reader_backend",
+        "legacy",
+        "--pi",
+        "nextn_gallery_id",
+        "673508"
+      ],
+      "timeoutSeconds": 20
+    },
+    {
+      "name": "settle-detail",
+      "hdcArgs": [
+        "shell",
+        "sleep",
+        "6"
+      ]
+    },
+    {
+      "name": "scroll-to-rail",
+      "hdcArgs": [
+        "shell",
+        "uitest",
+        "uiInput",
+        "swipe",
+        "660",
+        "1600",
+        "660",
+        "400",
+        "600"
+      ],
+      "timeoutSeconds": 10
+    },
+    {
+      "name": "settle-rail",
+      "hdcArgs": [
+        "shell",
+        "sleep",
+        "4"
+      ]
+    }
+  ],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": []
+}

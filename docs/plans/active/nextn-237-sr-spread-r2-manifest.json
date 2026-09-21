@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-237-sr-spread-r2",
+  "target": "192.168.50.237:12345",
+  "authorizedTarget": "192.168.50.237:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-237-sr-spread-r2/run",
+  "display": {
+    "widthPx": 1320,
+    "heightPx": 2120
+  },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "HAP 447333d3 (F2 SR spread layout)",
+    "page": "ReaderSharedSuperResolutionTrial (single layout, real SR model execution)",
+    "deviceAlias": "device237",
+    "deviceModel": "VDE-AL00",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1320x2120",
+    "notes": "run hypium test ReaderSharedSuperResolutionTrial to verify real model execution, presentation, and image info dialog"
+  },
+  "preflight": [
+    {
+      "name": "wake",
+      "hdcArgs": [
+        "shell",
+        "power-shell",
+        "wakeup"
+      ]
+    },
+    {
+      "name": "install-main",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN-wt/shared-reader-refactor/entry/build/default/outputs/default/entry-default-signed.hap"
+      ],
+      "timeoutSeconds": 200
+    },
+    {
+      "name": "install-test",
+      "hdcArgs": [
+        "install",
+        "-r",
+        "/Users/honjow/git/NextN-wt/shared-reader-refactor/entry/build/default/outputs/ohosTest/entry-ohosTest-signed.hap"
+      ],
+      "timeoutSeconds": 200
+    },
+    {
+      "name": "clear-log",
+      "hdcArgs": [
+        "shell",
+        "hilog",
+        "-r"
+      ]
+    },
+    {
+      "name": "force-stop",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "force-stop",
+        "com.erosteam.nextn"
+      ]
+    },
+    {
+      "name": "trial",
+      "hdcArgs": [
+        "shell",
+        "aa",
+        "test",
+        "-b",
+        "com.erosteam.nextn",
+        "-m",
+        "entry_test",
+        "-s",
+        "unittest",
+        "OpenHarmonyTestRunner",
+        "-s",
+        "class",
+        "ReaderSharedSuperResolutionTrial",
+        "-s",
+        "readerLabWork",
+        "__rkit_local_fixture__",
+        "-s",
+        "timeout",
+        "240000",
+        "-s",
+        "readerSharedSuperResolutionLayout",
+        "spread"
+      ],
+      "timeoutSeconds": 280
+    }
+  ],
+  "measurement": {
+    "actions": []
+  },
+  "postflight": [
+    {
+      "name": "trial-log",
+      "hdcArgs": [
+        "shell",
+        "hilog -x | grep -E 'ReaderSharedSuperResolution|Tests run|Failure|Error|Pass' | tail -40"
+      ],
+      "timeoutSeconds": 30
+    }
+  ]
+}
