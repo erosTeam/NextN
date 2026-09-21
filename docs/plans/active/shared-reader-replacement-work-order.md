@@ -423,6 +423,27 @@ The following are finite pending checks inside this one package, not new queues:
   contracts only: they do not show the actual sheet value, window inset,
   visible system bars, body geometry, or immediate repaint on 237, so they
   leave the full-screen/viewport ownership chain OPEN.
+- **2026-09-21 NextE full-screen settings runtime chain — bounded device PASS on the standard
+  non-H gallery (this entry supersedes the two OPEN tails above; full detail lives in the NextE
+  ledger `gallery-reader-transition-acceptance.md` 2026-09-21 sections, commit `d0bf24bd`).**
+  Candidate HAP `536212b59497749e23ed10b9351bb7867d3c8a9912cbf1109233ff0da99c6f84` (host
+  `831eb925`, reader-kit `c2c528d`), 237 lease renewed then released, standard gallery `4203217`
+  (`ff4ccabae3`). Original 全屏=开 (sheet Switch checked=true); toggle to 关 observed live:
+  chrome hidden while system status bar stays visible (dump: rkit chrome nodes absent,
+  `status_bar_clock`/`battery` present), matching `statusVisible = !fullscreen || visible`
+  (`NextEReaderLabPage.ets:864`); force-stop + same-param relaunch reproduces it (persistence),
+  sheet re-open shows Switch=false across restart; restore to 开 returns the original signature
+  (chrome hidden AND status bar absent). Route contracts now mandatory for readerLab direct
+  launches: `readerLabWork` must be a string (`--ps`), host settings gear requires
+  `readerLabPreferencesReadWrite=true` (else the gear is `rkit-runtime-settings` menu), and
+  `readerLabUnit`+`readerLabPage` are required for a valid catalog (token from the GalleryInfo
+  page). Earlier same-day "no rkit nodes" gates were protocol-precondition failures (int param /
+  missing unit), not product counterexamples. Artifacts: NextE
+  `.hvigor/outputs/nexte-237-nonh-gallery-20260921/` and
+  `.hvigor/outputs/nexte-237-fullscreen-nonh-20260921/` (runs 01–18). This closes the
+  full-screen/viewport ownership runtime-evidence item for this candidate and route only; F2,
+  thumbnail-entry transitions and the spread-entry recording chain remain their own OPEN items.
+
 - **NextE remaining legacy capability mapping — bounded source audit complete;
   no confirmed legacy-only gap.** The audit is limited to `ReaderPage`'s
   application-owned reader behaviours and their `NextEReaderLabPage` shared
