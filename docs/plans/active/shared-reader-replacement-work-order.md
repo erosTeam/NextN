@@ -637,6 +637,38 @@ The following are finite pending checks inside this one package, not new queues:
   they do not extend the recorded path to no-flicker/no-jank, settings-immediacy,
   cancellation, slow-load, failure, other-device or general F1 acceptance.
 
+  **2026-09-21 NextE spread-entry runtime chain — bounded device PASS on the standard
+  non-H gallery (237, lease `20260921-112851-0e170f35`, released; standard content per the
+  2026-09-21 standard-content section above; this entry supersedes the older `690bf46a`
+  observation for the current candidate line).** Candidate HAP
+  `536212b59497749e23ed10b9351bb7867d3c8a9912cbf1109233ff0da99c6f84` (host HEAD `831eb925`,
+  which contains the root flight proxy / close-start fix `7866db78`; reader-kit `c2c528d`),
+  verified by checked `install -r` of the hash-pinned file plus `bm dump` (`com.erosteam.nexte`,
+  versionName `1.3.4`). Checked staged gates (every coordinate from its own fresh dump) reached
+  the real Detail of `4203217` and revealed the preview grid; the unique entry source was
+  `reader-thumb-gallery-detail-1-page-0` at `[73,781][447,1307]`. One `repeat=1` continuous
+  recording (manifest SHA-256
+  `07e7cdd37dc37749933421b6233e262cceb4cbd57ab72b042a350090f7a6262c`; MP4 SHA-256
+  `0f27165cd3d87594124d15d0b0e478d13aa803fedfda15aadd58a782eb33fc89`; **256 decoded frames,
+  original PTS `0.000000–19.538789s`**) covered exactly: thumbnail entry → stable spread → one
+  Back → same-tile re-entry. Frame review on the PTS timeline: the entry transition `~1.88–2.25s`
+  flies the root proxy from the tile rect onto the measured **left part** (no fullscreen-contain
+  step), and the neighbor page fades in independently right after landing (`~2.3–2.45s`); stable
+  double-page `1 / 124` holds to the Back at `~7.76s`; the close proxy starts at the selected
+  left-part crop (the right page unmounts from the close snapshot) and shrinks directly back onto
+  the source tile with the Detail fading in behind (`~7.76–8.1s`) — no fullscreen single-page
+  contain intermediate; the re-entry tap `~12.2s` repeats the tile→left-part landing
+  (`~12.45–12.9s`) with the neighbor loading independently again (`~13.0–13.2s`), stable to the
+  final frame. No black/empty reader window, no retained dual image, and no system-POP fallback in
+  any of the 256 frames. A post-recording checked dump (zero input) records the still-open Reader
+  at `1 / 124` with `rkit-part-0-whole [0,594][660,1526]` + `rkit-part-1-whole [660,594][1320,1526]`.
+  Artifacts: NextE `.hvigor/outputs/nexte-237-spread-entry-nonh-20260921/` runs 01–06 plus
+  `05-entry-recording/frames/` (original-PTS TSV + contact sheets). Boundary: this accepts the
+  ordinary Detail→preview-grid thumbnail entry/exit/re-entry spread chain for this candidate, this
+  gallery, portrait 237 only; F2 processed replacement, other entries (readerLab, deep link), other
+  orientations, and the NextN/197 sides remain their own OPEN items.
+
+
   **NextN 237 current-candidate chrome/re-entry attempt — NOT ACCEPTED for the
   requested two-page chain.** On the same lawful ordinary Gallery `673508`
   route, the current signed `49d04df9ef1bc181a98a690f8c1b231e914455610192a8fb3975df5796777a94`
