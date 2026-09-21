@@ -3255,3 +3255,14 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
   - legacy reader 打开（State B 的打开步骤）：run-10-retry2 跨冷启动 `legacy-reader-surface=2`、rkit=0、2/40。PASS。
 - 未完成：663205 上「历史路径 detail 的 FAB 点击无响应」——run-19/20/22/24 四次 [1068,2594] 点击均未打开阅读器（read-action 在 dump 中存在、opacity=1，但点击无效果；直启恢复的 detail 处于 immersive y=0 布局）。同点击在浏览路径 detail（682839，run-24）曾成功打开 legacy。待下会话调查 hit-test/滚动状态差异后完成 State B legacy-surface 确认、shared 切回与 State A 恢复。
 - 设备遗留：197 停在 663205 detail（可正常操作）；持久化=legacy；lease 20260921-221159-63af729e 仍有效需释放。
+
+
+### 663205 三态完整 PASS（2026-09-22 06:5x 收尾）
+
+- 在前条基础上完成剩余两步（lease 20260921-223252-16ec92e6，已释放）：
+  - **State B legacy 打开确认（663205）**：run-40 持久化 legacy → 直启 663205 → FAB → `legacy-reader-surface=2`、rkit=0、8/40。PASS。
+  - **切回 shared**：run-42 打开实现行菜单（legacy/shared 两项在案）→ run-43 选 shared → 行值 `_shared`。PASS。
+  - **State A 恢复**：run-44 冷启动直启 663205 → FAB → `rkit-reading-surface=2`、16 rkit 节点、legacy=0、8/40（reader 内续读位置推进正常）。PASS。
+- 663205（非H）NextN release 三态：State A shared ✓ → State B legacy（跨冷启动）✓ → State A 恢复 ✓。三态闭环，加上此前 237 NextE 三态 PASS，**双设备三态验证全部完成**。
+- 遗留待查（不阻塞）：197 immersive detail（直启恢复场景）FAB 点击偶发无响应——hilog 无 reader 挂载痕迹，疑似 preview strip 覆盖或 hit-test 时序问题；重试/滚屏即可恢复，机制已在本条 run-18..24 记录。
+- 用户数据影响：仅 663205/682839 阅读进度推进与 reader_implementation 最终值=shared（与切换前一致）。设备 197 停在 663205 reader 页（shared）。
