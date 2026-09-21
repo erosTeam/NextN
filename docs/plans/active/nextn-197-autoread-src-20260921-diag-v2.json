@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-autoread-src-diag2-gate",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-autoread-src-diag2-gate/run",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "already-installed signed candidate SHA-256 3add724cd9d343574dc576d79a880ac2992bc8270e91b7cacf66f2ea2ea63bb3",
+    "page": "read-only diagnostic v2: relaunch with probe, reveal chrome, enable auto-read, capture hilog",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Diagnostics only, no product re-record: relaunch via the existing readerLab route with the probe, wait 12 s without any input, dump the hilog buffer for the probe/prepare/dwell lines, then force-stop. No UI input, no recording, no retry."
+  },
+  "preflight": [
+    { "name": "force-stop-before-diag", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "timeoutSeconds": 20 },
+    { "name": "clear-log", "hdcArgs": ["shell", "hilog", "-r"], "timeoutSeconds": 10 },
+    { "name": "launch-shared-reader-with-source-probe", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility", "--ps", "readerLabWork", "673508", "--ps", "readerLabChrome", "true", "--ps", "readerLabProgressReadWrite", "true", "--ps", "readerLabAutoReadSourceProbe", "delay-once"], "timeoutSeconds": 30 },
+    { "name": "settle-reader", "hdcArgs": ["shell", "sleep", "8"], "timeoutSeconds": 20 }
+  ],
+  "measurement": {
+    "actions": [
+      { "name": "reveal-chrome", "uiInput": ["click", "630", "1360"], "pauseAfterMs": 2000, "timeoutSeconds": 20 },
+      { "name": "enable-autoread", "uiInput": ["click", "266", "2505"], "pauseAfterMs": 10000, "timeoutSeconds": 20 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-autoread-hilog", "hdcArgs": ["shell", "hilog -x | grep -iE 'AutoReadSource|ReaderAutoRead|autoReadSourceProbe' | tail -40"], "timeoutSeconds": 30 },
+    { "name": "force-stop-after-diag", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "timeoutSeconds": 20 }
+  ]
+}

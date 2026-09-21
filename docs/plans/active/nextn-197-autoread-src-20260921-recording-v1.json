@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-autoread-src-slowload-recording",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-autoread-src-recording/run",
+  "recordingFileName": "nextn197_autoread_src_slowload.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 1000,
+  "idleRecordMs": 0,
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "actions": [
+    { "name": "autoread-enable-source-semantics", "uiInput": ["click", "266", "2505"], "pauseAfterMs": 8000 },
+    { "name": "autoread-disable", "uiInput": ["click", "266", "2505"], "pauseAfterMs": 3000 },
+    { "name": "back-close-reader", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 3000 }
+  ],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "installed signed candidate SHA-256 3add724cd9d343574dc576d79a880ac2992bc8270e91b7cacf66f2ea2ea63bb3 (auto-read source readiness wiring)",
+    "page": "one continuous slow-load auto-read observation on Gallery 673508: enable under the Debug delay-once source probe -> disable -> Back close",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Proves the source-readiness semantics from the legacy-mapping gap: under the Debug delay-once probe the first dwell expiry must NOT turn the page (the shared controller now waits for target source preparation), the turn happens only after the delayed source completes plus a fresh dwell, the disable click stops cleanly with no further turn, and Back closes. The auto-read centre [266,2505] is derived only from this run's chrome gate unique rkit-auto-read bounds [195,2434][338,2577]. The probe is the established Debug-only deterministic slow-load injection (NextE precedent); a real-network slow source is nondeterministic and was not substituted. No image-information UI, More menu, settings-sheet input, OhosTest, repeat, retry, scroll, or additional gesture."
+  }
+}

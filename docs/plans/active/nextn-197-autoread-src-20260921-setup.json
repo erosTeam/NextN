@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-autoread-src-setup-gate",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-autoread-src-setup-gate/run",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "new signed candidate SHA-256 3add724cd9d343574dc576d79a880ac2992bc8270e91b7cacf66f2ea2ea63bb3 (auto-read source readiness wiring; reader-kit bece493 + ReaderLabLaunch probe field)",
+    "page": "direct qualified Reader launch on Gallery 673508 with the Debug delay-once source probe; existing project-owned readerLab route",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "One checked setup/gate: preserve data, install the verified new HAP, force-stop, then launch the shared Reader directly via the existing readerLab want route (readerLabWork 673508, readerLabChrome true, readerLabProgressReadWrite true, readerLabAutoReadSourceProbe delay-once). The probe is the established Debug-only deterministic slow-load injection (NextE precedent); no fake source and no fast-load substitution. Capture Reader layout, screen and power only. No auto-read input, recording, OhosTest, retry, or repeat in this gate."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"], "timeoutSeconds": 8 },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"], "timeoutSeconds": 8 },
+    { "name": "verify-power-before-install", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"], "timeoutSeconds": 20 },
+    { "name": "install-current-signed-candidate", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN-wt/shared-reader-refactor/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 300 },
+    { "name": "force-stop-before-reader-launch", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "timeoutSeconds": 20 },
+    { "name": "launch-shared-reader-with-source-probe", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility", "--ps", "readerLabWork", "673508", "--ps", "readerLabChrome", "true", "--ps", "readerLabProgressReadWrite", "true", "--ps", "readerLabAutoReadSourceProbe", "delay-once"], "timeoutSeconds": 30 },
+    { "name": "settle-reader", "hdcArgs": ["shell", "sleep", "8"], "timeoutSeconds": 20 }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "capture-reader-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-197-autoread-src-reader.json", "-a"], "timeoutSeconds": 30 },
+    { "name": "receive-reader-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-197-autoread-src-reader.json", "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-autoread-src-setup-gate/run/reader.json"], "timeoutSeconds": 30 },
+    { "name": "capture-reader-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-197-autoread-src-reader.png"], "timeoutSeconds": 30 },
+    { "name": "receive-reader-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-197-autoread-src-reader.png", "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-autoread-src-setup-gate/run/reader.png"], "timeoutSeconds": 30 },
+    { "name": "verify-power-after-reader-capture", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"], "timeoutSeconds": 20 }
+  ]
+}

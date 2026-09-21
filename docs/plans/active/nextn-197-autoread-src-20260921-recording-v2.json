@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-autoread-src2-slowload-recording",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-autoread-src2-recording/run",
+  "recordingFileName": "nextn197_autoread_src2_slowload.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 1000,
+  "idleRecordMs": 0,
+  "hilog": { "hdcArgs": ["shell", "hilog"], "localFile": "nextn197_autoread_src2_hilog.txt" },
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "actions": [
+    { "name": "autoread-enable-source-semantics", "uiInput": ["click", "266", "2505"], "pauseAfterMs": 12000 },
+    { "name": "autoread-disable", "uiInput": ["click", "266", "2505"], "pauseAfterMs": 3000 },
+    { "name": "back-close-reader", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 3000 }
+  ],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "installed signed candidate SHA-256 3add724cd9d343574dc576d79a880ac2992bc8270e91b7cacf66f2ea2ea63bb3 (auto-read source readiness wiring)",
+    "page": "one continuous slow-load auto-read observation with hilog: enable (12 s window covering the delayed first source preparation and the following fresh-dwell turn) -> disable -> Back close",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "v2 of the source-readiness evidence with in-recording hilog capture. Expected sequence under the Debug delay-once probe: the first dwell turn targets an already body-source-ready page (no host prepare call, turn at about one dwell), the second dwell expiry calls prepareAutoReadSource on a not-yet-ready future source, the probe injects one 3 s delay (dwell waits, no turn), the delayed result publishes and the following fresh dwell turns the page, the disable click stops cleanly, and Back closes. The auto-read centre [266,2505] and reveal centre [630,1360] derive from this run's chrome gate. No image-information UI, More menu, settings-sheet input, OhosTest, repeat, retry, scroll, or additional gesture."
+  }
+}

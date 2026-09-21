@@ -44,9 +44,9 @@ The following are finite pending checks inside this one package, not new queues:
 - **Remaining legacy capability mapping:** the gap is a bounded source audit of
   any legacy-only behaviour not already mapped to the shared route; it must not
   inherit an ACCEPTED result merely from this table. **2026-09-21 NextN audit
-  complete (below): two real gaps — auto-read target-readiness wiring and the
-  double-page one-page-step affordance; everything else mapped or not
-  applicable.**
+  complete (below): one real gap — auto-read target-readiness wiring (host
+  fix landed, rebuild/动态证据见下); the one-page-step candidate was
+  corrected to already-mapped; everything else mapped or not applicable.**
 - **Current-unit temporary super-resolution icon — confirmed defect, source
   repaired; r2 current-unit chain bounded device PASS on the current candidate
   (below), and the settings-sheet retention likewise device-passed 2026-09-21.**
@@ -292,13 +292,53 @@ The following are finite pending checks inside this one package, not new queues:
   `new ReaderAutoReadPolicy(true, seconds)` whose default targetReadiness
   is `'current'`; reader-kit already supports `'source'` plus the host
   source bridge (NextE wires both), so the fix is host wiring, not
-  reader-kit; visible only on slow-loading next pages. (2) the
-  double-page one-page-step affordance (`showOnePageStepButton`/
-  `turnOnePageInDoublePage`) has no shared chrome equivalent; the slider
-  covers raw single-page positioning but not the one-tap control.
+  reader-kit; visible only on slow-loading next pages. **Correction (same
+  day):** the second gap was wrong — the shared chrome already implements
+  the isomorphic one-page-step affordance as `rkit-shift-spread` (same
+  transfer glyph, spread-layout visibility, `canShiftSpread` guard) backed
+  by `ReaderPagedSession.shiftSpread()` (atomic re-pair with
+  `firstPageAlone = target % 2 === 1`, the same rule as legacy
+  `columnModeForSpreadStart`, runtime-only, covered by the
+  reader-paged-session contracts); the initial audit missed it by searching
+  the legacy `onePageStep` naming. No gap remains there.
   **Not applicable:** chapter previous/next (NextN readers are single-unit
   galleries; the chrome chapter items serve multi-unit hosts); brightness
   gesture (legacy has none).
+  **2026-09-21 gap (1) fixed — auto-read source readiness wired; slow-load
+  dynamic evidence bounded device PASS.** NextN now wires
+  `new ReaderAutoReadPolicy(true, seconds, 'source')` and passes the fifth
+  session argument `autoReadSourceHost`: the production adapter implements
+  `prepareAutoReadSource` (fixture/local fast paths, otherwise
+  `NhApiClient.imageUrl` + `ReaderImageCacheService.load`, returning the
+  page with `bodySourceReady = true`; thumbnails untouched), and a
+  Debug-Want-only `NextNReaderAutoReadSourceProbe` wraps it with a
+  one-shot `delay-once` injection that deliberately returns after
+  cancellation so the session's generation fence owns retirement — the same
+  production/Debug split as NextE. reader-kit `ReaderLabLaunch` gained the
+  matching `readerLabAutoReadSourceProbe` capture field. Contract:
+  `test_reader_auto_read_source_contract.mjs` passes **3/3**. Serial
+  rebuild produced the new signed HAP SHA-256
+  `3add724cd9d343574dc576d79a880ac2992bc8270e91b7cacf66f2ea2ea63bb3`.
+  Dynamic evidence (fresh 197 lease `20260921-085349-26bbf9ac`, the
+  existing readerLab want route with the Debug delay-once probe as the
+  deterministic slow-load; a real-network slow source is nondeterministic
+  and was not substituted): the v2 continuous recording (MP4 SHA-256
+  `22176f9ee9bbd8795c6a686404744bbed00bc0a3f88852856b2d174ff5834913`,
+  507 ffprobe PTS frames to `20.083833s`, actions enable(12 s)/disable
+  (3 s)/Back each once) shows body-diff turn 1 at `3.75–4.0s` (target
+  already body-source-ready, so no host prepare call), then NO turn through
+  the second dwell expiry — the controller held the page waiting for the
+  delayed source preparation — with the in-recording hilog showing
+  `prepare_started source=12 injected=true` at `17:04:08.02`,
+  `prepare_delay`, and `delayed_result cancelled=false` at
+  `17:04:11.03`; turn 2 lands at `12.25–12.75s` (fresh dwell after the
+  published source), the disable click at ~`13.4s` stops cleanly, and Back
+  closes at `16.5s`. A first v1 recording (`4b72eb34…`) was superseded:
+  it lacked in-recording hilog, so its probe engagement could not be
+  verified post hoc; v2 re-ran the same single chain with hilog capture.
+  Runner deleted its media asset and verified absence; checked cleanup
+  force-stopped and restored the timeout; the lease was released. The
+  auto-read mapping gap is closed for this candidate line.
 
 ### 2026-09-21 current-device ledger
 
