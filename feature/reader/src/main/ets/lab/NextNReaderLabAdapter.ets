@@ -8,7 +8,7 @@ import {
 } from 'shared'
 import {
   ReaderCatalog, ReaderAssetProvider, ReaderPreloadHost, ReaderUnitKey, ReaderUnit, ReaderPage,
-  ReaderCancellation, ReaderAsset, ReaderAssetKind, ReaderImageShareHost,
+  ReaderCancellation, ReaderAsset, ReaderAssetKind, ReaderImageShareHost, ReaderAutoReadSourceHost,
   ReaderImageShareTarget, ReaderImageSharePresentation,
   ReaderImageInformation, ReaderImageCropBounds, ReaderImageCropSource,
   ReaderAssetFailure, ReaderAssetFailureClassifier,
@@ -70,7 +70,7 @@ class NextNReaderCropSource implements ReaderImageCropSource {
 }
 
 export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider, ReaderPreloadHost, ReaderImageShareHost,
-  ReaderAssetFailureClassifier, NextNReaderProgressDetailProvider {
+  ReaderAutoReadSourceHost, ReaderAssetFailureClassifier, NextNReaderProgressDetailProvider {
   cancellationMode: 'consumer-only' | 'transport' = 'consumer-only'
   informationSupported: boolean = true
 
@@ -158,6 +158,32 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
     await ReaderImageCacheService.load(this.context, url, cacheKey, false)
     cancellation.check()
     console.info(`[NextNReaderPreload] source=${page.sourceIndex} result=ready`)
+  }
+
+  /** Resolve one automatic-reading target without changing thumbnail availability. */
+  async prepareAutoReadSource(page: ReaderPage, cancellation: ReaderCancellation): Promise<ReaderPage> {
+    cancellation.check()
+    if (page.unit.work === LOCAL_FIXTURE_WORK) {
+      const resolved = page.copy()
+      resolved.bodySourceReady = true
+      return resolved
+    }
+    const detail = this.details.get(page.unit.unit)
+    const source = detail?.pages[page.sourceIndex]
+    if (detail === undefined || source === undefined) throw new Error('missing_nh_auto_read_source')
+    if (this.source.localPageUri(detail, page.sourceIndex).length > 0) {
+      const resolved = page.copy()
+      resolved.bodySourceReady = true
+      return resolved
+    }
+    const url = NhApiClient.imageUrl(detail.mediaId, page.sourceIndex, source.extension)
+    const cacheKey = ReaderImageCacheService.cacheKey(detail.id, detail.mediaId, source.number, source.extension)
+    await ReaderImageCacheService.load(this.context, url, cacheKey, false)
+    cancellation.check()
+    console.info(`[NextNReaderAutoReadSource] source=${page.sourceIndex} result=ready`)
+    const resolved = page.copy()
+    resolved.bodySourceReady = true
+    return resolved
   }
 
   async prepare(target: ReaderImageShareTarget, cancellation: ReaderCancellation): Promise<ReaderImageSharePresentation> {

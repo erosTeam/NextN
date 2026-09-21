@@ -34,6 +34,7 @@ import { NextNReaderObservedProgress } from './NextNReaderObservedProgress'
 import { connectNextNReaderObservedProgressProbe } from './NextNReaderObservedProgressProbe'
 import { NextNReaderProgressWriteGate } from './NextNReaderProgressWriteGate'
 import { NextNReaderProgressPersistence } from './NextNReaderProgressPersistence'
+import { NextNReaderAutoReadSourceProbe } from './NextNReaderAutoReadSourceProbe'
 import { NextNReaderHostRequest } from './NextNReaderHostRequest'
 import { NextNProductionReaderDataSource } from './NextNReaderDataSource'
 import { connectReaderOverlayNavigation, connectReaderThumbnailTransition, ReaderThumbnailTransitionState } from 'shared'
@@ -211,7 +212,9 @@ export struct NextNReaderLabPage {
       new ReaderLabAssetProbe(translationProvider, lab.thumbnailFailurePage,
         lab.informationProbe, this.request.readingChrome ? lab.failurePage : -1,
         lab.originalVariantProbe, lab.assetFailureMessage)
-    const session = new ReaderPagedSession(catalog, assetProvider, adapter, adapter)
+    const autoReadSourceHost = lab?.autoReadSourceProbe === 'delay-once'
+      ? new NextNReaderAutoReadSourceProbe(adapter, lab.autoReadSourceProbe) : adapter
+    const session = new ReaderPagedSession(catalog, assetProvider, adapter, adapter, autoReadSourceHost)
     connectNextNReaderTranslationProbe().bindAction(context, this.request.work, (id: string): boolean => {
       const state = this.session?.snapshot()
       const source = state?.unit?.key
@@ -1044,7 +1047,7 @@ export struct NextNReaderLabPage {
               tapPolicy: new ReaderTapPolicy(
                 (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout)),
               // Legacy waits for target readiness, then starts a fresh full dwell before turning. Reader-kit owns that gate.
-              autoReadPolicy: new ReaderAutoReadPolicy(true, this.readerPresentation.autoPageSeconds),
+              autoReadPolicy: new ReaderAutoReadPolicy(true, this.readerPresentation.autoPageSeconds, 'source'),
               // Every reader experience entry opens chrome-hidden exactly like the
               // legacy ReaderPage. Automation that needs the menus reveals them
               // with a real tap instead of changing the user's initial experience.
