@@ -3223,3 +3223,19 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 - **release 缺陷（阻断默认切换）**：中央点击在 release 共享阅读器上完全不响应（run-05/06/22 三次复现，entry 完全就绪后仍无 chrome 无翻页）。根因（源码证据）：reader-kit `updateReaderLabForeground()` 带 `if (debugBuild)`（NextE pin c2c528d 与 NextN pin 945ebf4 相同），release 下 `labVisibility.foreground` 恒 false；`NextEReaderLabPage`/`NextNReaderLabPage` 的 `active` 依赖它 → 阅读器挂载但交互门全关（tap→chrome、host settings、常亮、音量键均失效）；日志证据 `[ReaderKeepScreenOn] route=true foreground=false`（release 构建，JSAPP 通道后段被裁剪）。NextN 同缺陷（同 gate、同组件结构），197 未测，预计同样复现。修复方向：生产宿主的 active 门应改用非 debug 门控的前台信号（如 `onForeground` 无条件更新、或 host 提供 windowStage 独立信号）；修复后重跑 237 中央点击 chrome 链与 NextN 197 三态。
 - 本次 NextE/NextN release 构建改走项目脚本：NextE `scripts/build_hvigor_signed.sh release`（提交 48dd7fac 补参数化），NextN `scripts/build-hvigor-signed.sh release`。产物 SHA-256：NextE `0eb3cf534e4ec7922166aef89b397bf9f884eeb0708368d16d07da0c631579d2`、NextN `15fa9ca08d1eb6ea5dcd5c385961e673883e5220bc92fcd6247655403f99726f`。
 - 用户数据无变更：三态仅切换 reader 实现与阅读进度（同一画廊 1/25），无下载/收藏/云同步动作。
+
+
+## 2026-09-22 197 三态验证（NextN release 5d7f7e5f，含三项 release 修复）— PASS；foreground/admission/bootstrap 三缺陷修复落账
+
+- 前情：2026-09-22 早间 237 NextE 三态（f50eb081 记录）发现 release 阻断缺陷（reader foreground 门）。监督裁决采用方向 1 最小修复；验证过程中又发现并修复了两个同源缺陷，三个修复均已提交并重新验证。
+- **修复 1（reader-kit b7e744a / d2990b6，两端 submodule bump：NextE cbd030eb、NextN 92ba128b）**：`updateReaderLabForeground` 移除 `if (debugBuild)` 门，前台信号 debug/release 都无条件更新（参数保留以兼容调用方，忽略之）。契约：两端 `scripts/test_reader_lab_visibility_contract.mjs` 3/3（debugBuild=false 时 foreground 仍更新、源码不得再出现 debugBuild 门）。
+- **修复 2（NextN e13c2bc9）**：`NextNReaderLabPage.aboutToAppear` 的 release early-return（`!context.applicationInfo.debug || ...`）导致 session 永不构建，197 run-08 单次干净打开后目的地空壳（hilog：`Reader:1` onShown 但无 rkit 节点）。对齐 NextEReaderLabPage 的 production-safe 守卫（`(!debug && !production) || (!production && lab === null)`）。契约：`scripts/test_nextn_reader_production_admission_contract.mjs` 1/1。
+- **修复 3（NextN 8113bf0f）**：`ReaderPresentationService.restore()` 生产启动路径无人调用，持久化的 reader_implementation 永远到不了 `resolveProductionReaderBackend`（197 run-24：持久化 legacy 后冷启动仍开 shared）。在 EntryAbility bootstrap 的 restore 序列中补 `ReaderPresentationService.restore(this.context)`（与 BrowsePresentationService/HomeSourcePresentationService 同列）。
+- **构建**：全部经参数化项目脚本（NextN `scripts/build-hvigor-signed.sh release`、NextE `scripts/build_hvigor_signed.sh release`；两脚本本次修正为 default product + buildMode=release——`release` product 的签名源设备拒装 9568322，工作单 3153/3157 行既有结论）。`bm dump` 均确认 `debug:false` 且保持设备信任签名。
+- **197 NextN 三态（1260x2720, ALN-AL80, gallery 682839, 54P）**：
+  - State A 默认 shared：`rkit-reading-surface=2`、22 rkit 节点、`reader_key_surface=0`、1/54（run-09）。
+  - 交互链（foreground 修复证据）：中央点击 chrome 出现 `rkit-chrome-top`/`rkit-host-settings`（run-10）；右三分之一翻页 1/54→2/54（run-14，197 预设 right-left）；齿轮 bindSheet 打开（run-11/12 hilog bindsheet 生命周期 + NextNReaderPreload ready + ReaderKeepScreenOn requested=true）。
+  - State B legacy：设置（我的 tab → 阅读 → 末尾实现行 accessibilityId `nextn-reader-implementation-row`）选 现有阅读器（run-21 行值 `_legacy`）→ 冷启动后重开：`legacy-reader-surface=2`、rkit=0、2/54（run-25）。
+  - State A 恢复：选回 共享阅读器（run-29 行值 `_shared`）→ 重开：`rkit-reading-surface=2`、legacy=0、2/54（run-30）。
+- 全程 fresh dump/坐标、禁循环、manifest 驱动 + lease（197 `20260921-204728-e1f756d9` 已释放；237 `20260921-200732-855f3278` 已释放）。产物：NextN-wt `.hvigor/outputs/nextn-197-default-switch-20260922/run-01..30`、NextE-wt `.hvigor/outputs/nexte-237-foreground-fix-20260922/run-01..08`。
+- 结论：foreground 门 + release admission + bootstrap restore 三缺陷修复后，NextN/NextE release 构建的三态（默认 shared → legacy 回退 → 恢复 shared）在 237/197 双设备全部 PASS，交互链（chrome/翻页/设置）恢复。阻断项关闭，待监督核验后放行阶段 3。
