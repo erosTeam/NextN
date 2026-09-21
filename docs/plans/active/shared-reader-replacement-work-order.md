@@ -43,9 +43,14 @@ The following are finite pending checks inside this one package, not new queues:
   This does not replace the still-missing current-candidate runtime chain.
 - **Remaining legacy capability mapping:** the gap is a bounded source audit of
   any legacy-only behaviour not already mapped to the shared route; it must not
-  inherit an ACCEPTED result merely from this table.
+  inherit an ACCEPTED result merely from this table. **2026-09-21 NextN audit
+  complete (below): two real gaps — auto-read target-readiness wiring and the
+  double-page one-page-step affordance; everything else mapped or not
+  applicable.**
 - **Current-unit temporary super-resolution icon — confirmed defect, source
-  repaired; build/runtime OPEN.** The r3/r4 device attempts remain discarded:
+  repaired; r2 current-unit chain bounded device PASS on the current candidate
+  (below), and the settings-sheet retention likewise device-passed 2026-09-21.**
+  The r3/r4 device attempts remain discarded:
   r3 has no branch evidence and r4 used an invalid repeated information-dialog
   loop. Neither is runtime evidence. The source defect was instead direct:
   hosts correctly set `ReaderSurface.active=false` while their settings sheet is
@@ -251,6 +256,49 @@ The following are finite pending checks inside this one package, not new queues:
   cleanup force-stopped the app and restored the timeout; the lease was
   released immediately. This closes the save, share, and cache items of the
   finite list for this NextN candidate.
+  **2026-09-21 NextN remaining legacy capability mapping — bounded source
+  audit complete.** Scope: the ordinary-route legacy `ReaderPage.ets`
+  interactive surface against the current shared host (`NextNReaderLabPage`
+  + reader-kit `bece493`); no historical ACCEPTED result is inherited, and
+  the audit is the same bounded口径 as the completed NextE audit. **Mapped:**
+  close (`rkit-close`); top-bar share (`rkit-share-image`, device PASS
+  today); settings gear + sheet (`rkit-host-settings`, retention PASS
+  today); overflow menu (`rkit-more`); image info incl. spread left/right
+  (`rkit-image-info`/`rkit-image-info-spread`); crop toggle (deliberate
+  relocation to the host sheet row — accepted boundary, P15/P16 closed);
+  open-externally (`ReaderExternalOpen` →
+  `NhGalleryExternalOpenService`, wired lab:1079); translation and
+  auto-translation actions (`ReaderHostActions`); save incl. spread
+  left/right/both (`rkit-save-image` + `rkit-save-left/right/both`,
+  device PASS today); mode menu paged/RTL/paged-vertical/vertical (host
+  sheet reading-mode rows + chrome vertical-paged quick toggle); bottom
+  page slider incl. indeterminate state (chrome slider); thumbnail strip
+  (`rkit-toggle-thumbnails` + `ReaderThumbnailRail`); volume-key turns
+  (host `ReaderVolumeKeys`, lab:108/466/950); keep-screen-on
+  (`ReaderKeepScreenOn`, lab:100/156/928); auto-read dwell turn
+  (`rkit-auto-read`, device PASS today — readiness semantics see gap);
+  progress AND history (same `HistoryRepository`
+  progress/saveProgress via `NextNReaderProgressPersistence:28/39`);
+  error retry (shared retry surface + `rkit-reload-source` superset);
+  zoom/tap/double-tap gestures (P5); entry transition (thumbnail
+  coordinator chain, PASS this round); the presentation-setting set
+  (background/interpolation/page-number/animation/preload/tap-zones/
+  column/spread via `readerPresentation` → `ReaderDisplayPolicy` + host
+  sheet rows visible in the sheetret capture); per-page super-resolution
+  and the temporary per-unit override (`temporaryVariantActive`, closed
+  today). **Unmapped real gaps (in order):** (1) auto-read target
+  readiness — legacy waits for the target page's presentation readiness
+  and restarts a fresh dwell (`autoReadWaitingIndex`), while NextN wires
+  `new ReaderAutoReadPolicy(true, seconds)` whose default targetReadiness
+  is `'current'`; reader-kit already supports `'source'` plus the host
+  source bridge (NextE wires both), so the fix is host wiring, not
+  reader-kit; visible only on slow-loading next pages. (2) the
+  double-page one-page-step affordance (`showOnePageStepButton`/
+  `turnOnePageInDoublePage`) has no shared chrome equivalent; the slider
+  covers raw single-page positioning but not the one-tap control.
+  **Not applicable:** chapter previous/next (NextN readers are single-unit
+  galleries; the chrome chapter items serve multi-unit hosts); brightness
+  gesture (legacy has none).
 
 ### 2026-09-21 current-device ledger
 
