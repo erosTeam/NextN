@@ -59,6 +59,12 @@ for (const [layout, direction] of [[undefined, undefined], ['bad', 'bad'], ['sin
   assert.equal(p.pagingAxis, layout === 'continuous' ? 'vertical' : 'horizontal')
 }
 const pageSource = fs.readFileSync(path.join(root, 'feature/reader/src/main/ets/lab/NextNReaderLabPage.ets'), 'utf8')
+const transitionStateSource = fs.readFileSync(path.join(root,
+  'shared/src/main/ets/state/ReaderThumbnailTransitionState.ets'), 'utf8')
+assert.match(pageSource,
+  /canvasBackdropOpacity: this\.readerThumbnailTransition\.backdropOpacity,[\s\S]*?bodyOpacity: this\.readerThumbnailTransition\.readerBodyOpacity\(\),[\s\S]*?input: this\.input, mediaActions: this\.mediaActions/)
+assert.match(transitionStateSource,
+  /readerBodyOpacity\(\): number \{\s*return this\.closingProxyVisible\(\) \? 0 : 1/)
 const hostRequestSource = fs.readFileSync(path.join(root,
   'feature/reader/src/main/ets/lab/NextNReaderHostRequest.ets'), 'utf8')
 const productionRequestSource = hostRequestSource.slice(hostRequestSource.indexOf('export class NextNProductionReaderRequest'))
@@ -89,6 +95,7 @@ function fixture() {
   const restore = deferred(), column = deferred(), events = []
   const Host = compile(`export class Host { ${methods} }`, {}, {
     ReaderPresentationService: { restore: () => restore.promise, snapshot: () => ({ mode: 'paged', doublePageEnabled: true }) },
+    ReaderSelfHostedRehearsal: { consumeSuperResolutionRecording: () => false },
     ReaderSettingsRepository: { columnMode: (_context, id) => { assert.equal(id, 123); events.push('column'); return column.promise } },
     NextNReaderInitialPolicy: resolver,
     ReaderCloseContext: { from: () => null },
@@ -104,7 +111,10 @@ function fixture() {
     get() { return this.published ?? null },
     set(value) { events.push('publish'); this.published = value },
   })
-  const session = { setPolicy(p) { assert.equal(p.layout, 'spread'); events.push('policy') } }
+  const session = {
+    setPolicy(p) { assert.equal(p.layout, 'spread'); events.push('policy') },
+    setRetainedDecisionDiagnostic() {},
+  }
   const task = host.initializeSession({}, session)
   return { host, restore, column, events, task }
 }
@@ -186,6 +196,7 @@ for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [fal
   class Session {
     constructor() { sessions.push(this) }
     setPolicy(policy) { this.policy = policy; events.push('policy') }
+    setRetainedDecisionDiagnostic() {}
   }
   const Host = compile(`export class Host { ${appear} }`, {}, {
     connectNextNReaderLabContextProbe: probeModule.connectNextNReaderLabContextProbe,
@@ -196,7 +207,7 @@ for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [fal
     connectNextNReaderTranslationProbe: () => ({ bindAction() {} }),
     ReaderLabShareProbe: Stub, ReaderSystemImageSaveHost: Stub, ReaderUnitKey: Stub,
     ReaderMediaActions: class { constructor(...args) { this.args = args } },
-    ReaderTrialOriginalProbe: { consume: () => 0 }, ReaderPagedSession: Session,
+    ReaderTrialOriginalProbe: { consume: () => 0 }, ReaderSelfHostedRehearsal: { consumeSuperResolutionRecording: () => false }, ReaderPagedSession: Session,
     ReaderLabAssetProbe: Stub, ReaderDisplayPolicy: core.ReaderDisplayPolicy,
   }).Host
   const host = new Host()
@@ -257,7 +268,10 @@ for (const [mode, extra, expected] of [
 ]) for (const ending of ['ready', 'close', 'failure']) {
   const restore = deferred(), column = deferred(), events = []
   class Stub {}
-  class Session { setPolicy(p) { this.policy = p; events.push('policy') } }
+  class Session {
+    setPolicy(p) { this.policy = p; events.push('policy') }
+    setRetainedDecisionDiagnostic() {}
+  }
   const Host = compile(`export class Host { ${appear} ${methods} }`, {}, {
     connectNextNReaderLabContextProbe: probeModule.connectNextNReaderLabContextProbe,
     connectNextNReaderObservedProgressProbe: () => ({ deliver() {} }),
@@ -271,6 +285,7 @@ for (const [mode, extra, expected] of [
     ReaderSystemImageSaveHost: Stub, ReaderMediaActions: class { constructor(...args) { this.args = args } },
     ReaderUnitKey: Stub, ReaderPagedSession: Session,
     ReaderLabAssetProbe: Stub, ReaderTrialOriginalProbe: { consume: () => 0 },
+    ReaderSelfHostedRehearsal: { consumeSuperResolutionRecording: () => false },
     ReaderPresentationService: { restore: () => { events.push('restore'); return restore.promise },
       snapshot: () => ({ mode, doublePageEnabled: true, spreadLayoutMode: 'split' }) },
     ReaderSettingsRepository: { columnMode: () => { events.push('column'); return column.promise } },

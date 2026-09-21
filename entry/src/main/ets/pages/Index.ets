@@ -2,7 +2,7 @@ import { ReaderTrialLayoutCommit } from '@reader-kit/ui'
 import { HomePage, HomeSubtabManagerPage, PopularPage } from 'home'
 import { NextNProductionReaderRequest, NextNReaderLabPage } from 'reader'
 import { ReaderLabLaunchState, ReaderLabRequest, connectReaderLabLaunch, ReaderTrialWindow } from '@reader-kit/ui'
-import { ReaderEntryTransition, ReaderEntryPreviewSource, ReaderEntryRect,
+import { ReaderEntryTransition, ReaderEntryPhase, ReaderEntryPreviewSource, ReaderEntryRect,
   ReaderLabVisibilityState, connectReaderLabVisibility, ReaderCloseContext } from '@reader-kit/ui'
 import { ReaderDisplayPart, ReaderUnitKey } from '@reader-kit/core'
 import { ReaderTrialEntryRelay, ReaderTrialEntrySource, ReaderTrialEntryProbe } from 'shared'
@@ -586,6 +586,9 @@ struct Index {
   @Local private readerEntryVisibility: ReaderLabVisibilityState = connectReaderLabVisibility()
   @Local private readerBackendSelection: NextNReaderBackendSelectionState = connectNextNReaderBackendSelection()
 
+  @Computed
+  private get readerEntryPhase(): ReaderEntryPhase { return this.readerEntryTransition?.phase ?? 'finished' }
+
   @Monitor('readerEntryVisibility.foreground')
   private onReaderEntryForeground(): void {
     if (!this.readerEntryVisibility.foreground) {
@@ -609,9 +612,10 @@ struct Index {
     this.productionReaderEntryPageIndex = -1
   }
 
-  @Monitor('readerEntryTransition.phase')
+  @Monitor('readerEntryPhase')
   private finishSourceEntryPending(): void {
-    if (this.readerEntryTransition !== null && this.readerEntryTransition.phase !== 'layout') {
+    const phase = this.readerEntryPhase
+    if (this.readerEntryTransition !== null && phase !== 'layout') {
       const claim = this.readerEntryClaim
       if (claim !== null && !this.authorizeReaderEntryDeparture(claim, claim.epoch)) return
       this.releaseReaderEntryClaim()
@@ -761,12 +765,13 @@ struct Index {
     }
     this.productionReaderEntryGalleryId = source.galleryId
     this.productionReaderEntryPageIndex = source.pageIndex
-    preview?.release()
-    this.productionReaderEntryPreview = null
-    this.productionReaderEntryClaim = null
+    this.productionReaderEntryPreview = preview
+    this.productionReaderEntryTransition = preview === null ? null : new ReaderEntryTransition(epoch,
+      new ReaderDisplayPart(new ReaderUnitKey('nh', source.galleryId.toString(), source.galleryId.toString()), null,
+        source.pageIndex))
+    if (preview === null) this.productionReaderEntryClaim = null
     this.productionReaderEntryPendingGalleryId = 0
     this.productionReaderEntryPendingPageIndex = -1
-    this.productionReaderEntryTransition = null
     ReaderThumbnailTransitionCoordinator.open(
       this.getUIContext(),
       source.sourceScope(),
@@ -803,15 +808,16 @@ struct Index {
     this.readerOverlayMountEpoch = mountEpoch
   }
 
-  @Monitor('readerEntryTransition.phase', 'readerEntryVisibility.foreground')
+  @Monitor('readerEntryPhase', 'readerEntryVisibility.foreground')
   private syncReaderTrialWindow(): void {
+    const phase = this.readerEntryPhase
     const claim = this.readerEntryClaim
-    if (claim !== null && this.readerEntryTransition?.phase === 'cancelled' &&
+    if (claim !== null && phase === 'cancelled' &&
       !this.authorizeReaderEntryDeparture(claim, claim.epoch)) return
     const lease = this.readerTrialWindow
     if (lease === null || this.readerTrialWindowOpened || this.readerTrialWindowEpoch !== this.readerTrialEpoch ||
       this.readerTrialRequest === null || !this.readerTrialRequest.readingChrome ||
-      !this.readerEntryVisibility.foreground || this.readerEntryTransition?.phase === 'layout') return
+      !this.readerEntryVisibility.foreground || phase === 'layout') return
     if (!this.readerTrialRequest.thumbnailEntry && !this.readerTrialDestinationShown) return
     const context = this.context()
     if (!context.applicationInfo.debug) return
@@ -3298,8 +3304,12 @@ struct Index {
         managesTrialWindow: false,
         entryTransition: this.productionReaderEntryMatches(params) ?
           this.productionReaderEntryTransition : null,
-        entryPreview: this.productionReaderEntryMatches(params) ?
+        // Root proxy owns the source pixels. Retain the capture only as the
+        // live departure guard; mounting it again would create a second flight.
+        entryPreview: null,
+        entryDeparturePreview: this.productionReaderEntryMatches(params) ?
           this.productionReaderEntryPreview : null,
+        rootOwnedEntryTarget: this.productionReaderEntryMatches(params),
         entryPhase: this.productionReaderEntryMatches(params) ?
           this.productionReaderEntryTransition?.phase ?? 'finished' : 'finished',
         onEntrySettled: (): void => { this.finishProductionReaderEntry() },
@@ -3337,8 +3347,11 @@ struct Index {
     this.readerDestinationCloseDispatched = false
     this.readerDestinationRouteEpoch = params.routeEpoch
     this.readerDestinationShownAtMs = Date.now()
-    // Both backends hand off to the root transition flight proxy on shown
-    ReaderThumbnailTransitionCoordinator.startOpening(this.getUIContext(), params.galleryId.toString())
+    // A production entry with a captured source first obtains reader-kit's
+    // selected part. Its child starts this same root proxy at that real target.
+    if (!this.productionReaderEntryMatches(params)) {
+      ReaderThumbnailTransitionCoordinator.startOpening(this.getUIContext(), params.galleryId.toString())
+    }
     if (this.readerPresentationPending &&
       this.readerPresentationRouteEpoch === this.readerDestinationRouteEpoch) {
       this.applyRecordedReaderPresentation()

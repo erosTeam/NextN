@@ -4,12 +4,12 @@ import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
 import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderLayout,
   ReaderReadingAnchor, ReaderDisplayPolicy, ReaderPage, ReaderVariantPreference, ReaderAssetProvider } from '@reader-kit/core'
-import { ReaderEntryTransition, ReaderEntryPreviewSource } from '@reader-kit/ui'
+import { ReaderEntryTransition, ReaderEntryTarget, ReaderEntryPhase, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility,
   ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction, ReaderMediaActions,
   ReaderHostStatus, ReaderObservationSink, ReaderPreferenceSink, ReaderActivitySink,
   ReaderHostSettings, ReaderExternalOpen, ReaderHostActions, ReaderVariantPolicy, ReaderCropPolicy,
-  ReaderAutoReadPolicy } from '@reader-kit/ui'
+  ReaderAutoReadPolicy, ReaderTemporaryVariantControl } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
 import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea,
@@ -62,6 +62,10 @@ export struct NextNReaderLabPage {
   @Param entryTransition: ReaderEntryTransition | null = null
   @Param entryPhase: string = 'finished'
   @Param entryPreview: ReaderEntryPreviewSource | null = null
+  /** The root proxy uses this capture only to authorize its live departure. */
+  @Param entryDeparturePreview: ReaderEntryPreviewSource | null = null
+  /** Production root proxy lands on reader-kit's actual selected image part. */
+  @Param rootOwnedEntryTarget: boolean = false
   @Param managesTrialWindow: boolean = true
   /** The production overlay already owns HdsNavDestination and its lifecycle. */
   @Param embedded: boolean = false
@@ -97,6 +101,8 @@ export struct NextNReaderLabPage {
   @Local private closeRequested: boolean = false
   @Local private readerSettingsSheetShown: boolean = false
   @Local private presentationReady: boolean = false
+  /** Exact Debug F2 rehearsal only; never enabled by normal Reader entries. */
+  @Local private superResolutionRehearsalDiagnostic: boolean = false
   private volumeDisposed: boolean = false
   private input: ReaderInputPort = new ReaderInputPort()
   private volumeKeys: ReaderVolumeKeys = new ReaderVolumeKeys(this.input)
@@ -109,6 +115,8 @@ export struct NextNReaderLabPage {
   private progressPersistence: NextNReaderProgressPersistence | null = null
   private progressFlush: Promise<boolean> | null = null
   private entrySettledNotified: boolean = false
+  private rootEntryFlightStarted: boolean = false
+  private rootEntryRevealStarted: boolean = false
   private enhancementInteractionTimer: number = -1
   private adapter: NextNReaderLabAdapter | null = null
   @Local private currentSourceIndex: number = -1
@@ -142,6 +150,8 @@ export struct NextNReaderLabPage {
     }
     connectNextNReaderLabContextProbe().deliver(this.request.work, context)
     this.volumeDisposed = false
+    this.rootEntryFlightStarted = false
+    this.rootEntryRevealStarted = false
     if (!this.request.readingChrome) void this.restorePresentation(context)
     this.keepScreenOn = new ReaderKeepScreenOn(context)
     if (this.request.readingChrome && this.managesTrialWindow) this.trialWindow.open(context)
@@ -246,12 +256,84 @@ export struct NextNReaderLabPage {
         // on mount, so the host never keeps a contrary default here.
         this.onReaderPresentationChanged(false, this.readerPresentation.fullscreen, this.readerCanvasDark())
       }
+      const superResolutionRecording = ReaderSelfHostedRehearsal.consumeSuperResolutionRecording()
+      this.superResolutionRehearsalDiagnostic = superResolutionRecording
+      session.setRetainedDecisionDiagnostic(superResolutionRecording)
       // ReaderSurface opens on mount: never publish a default session and change it after first open.
       this.session = session
       this.syncReaderActivity()
+      if (superResolutionRecording) {
+        void this.runSuperResolutionRecordingRehearsal(context)
+      }
     } catch (_error) {
       console.warn('[NextNReaderLab] initial_reader_policy_unavailable')
       if (!this.volumeDisposed && !this.closeRequested && !this.hostClosing) this.closeTrial(true)
+    }
+  }
+
+  /** Debug-only, bounded snapshot evidence for the restricted F2 rehearsal. */
+  private async logSuperResolutionRehearsalWindow(window: string): Promise<void> {
+    for (let sample = 0; sample < 13; sample++) {
+      if (this.volumeDisposed || this.closeRequested || this.hostClosing) return
+      const snapshot = this.session?.snapshot()
+      const frame = snapshot?.frames.find((candidate: ReaderPagedFrame): boolean =>
+        candidate.part.sourceIndex === 2)
+      const asset = frame?.asset
+      console.info('[NextNReaderLab] super_resolution_rehearsal frame ' +
+        `window=${window} sample=${sample} session_phase=${snapshot?.phase ?? 'none'} ` +
+        `source=${frame?.part.sourceIndex ?? -1} slot=${frame?.slotId ?? -1} ` +
+        `asset_phase=${asset?.phase ?? 'none'} variant=${asset?.variant ?? 'none'} ` +
+        `asset_request=${asset?.assetRequestId ?? 0} retained_uri_length=${asset?.retainedUri.length ?? 0} ` +
+        `retained_request=${asset?.retainedAssetRequestId ?? 0}`)
+      if (sample < 12) {
+        await new Promise<void>((resolve: () => void): void => { setTimeout(resolve, 125) })
+      }
+    }
+  }
+
+  private async runSuperResolutionRecordingRehearsal(context: common.UIAbilityContext): Promise<void> {
+    const initialEnabled = ReaderPresentationService.snapshot().superResolutionEnabled
+    const sourceIndex = this.request.pageIndex
+    if (!initialEnabled || sourceIndex !== 2) {
+      console.warn(`[NextNReaderLab] super_resolution_rehearsal skipped enabled=${initialEnabled} source=${sourceIndex}`)
+      return
+    }
+    let enhancedDisplayed = false
+    for (let attempt = 0; attempt < 60; attempt++) {
+      const snapshot = this.session?.snapshot()
+      enhancedDisplayed = snapshot?.phase === 'ready' && snapshot.anchor?.sourceIndexHint === 2 &&
+        snapshot.frames.some((frame: ReaderPagedFrame): boolean => frame.part.sourceIndex === 2 &&
+          frame.asset.variant === 'enhanced' && frame.asset.phase === 'displayed') === true
+      if (enhancedDisplayed) break
+      await new Promise<void>((resolve: () => void): void => { setTimeout(resolve, 500) })
+    }
+    if (!enhancedDisplayed) {
+      console.warn('[NextNReaderLab] super_resolution_rehearsal precondition_not_met source=2 variant=enhanced')
+      return
+    }
+    let disabled = false
+    try {
+      console.info('[NextNReaderLab] super_resolution_rehearsal precondition=enhanced source=2 enabled=true')
+      await new Promise<void>((resolve: () => void): void => { setTimeout(resolve, 8500) })
+      if (this.volumeDisposed || this.closeRequested || this.hostClosing) return
+      await ReaderPresentationService.setSuperResolutionEnabled(context, false)
+      disabled = true
+      console.info('[NextNReaderLab] super_resolution_rehearsal phase=off source=2 enabled=false')
+      await this.logSuperResolutionRehearsalWindow('off')
+      await new Promise<void>((resolve: () => void): void => { setTimeout(resolve, 7000) })
+    } catch (_error) {
+      console.warn('[NextNReaderLab] super_resolution_rehearsal failed')
+    } finally {
+      if (!disabled) return
+      try {
+        await ReaderPresentationService.setSuperResolutionEnabled(context, true)
+        console.info('[NextNReaderLab] super_resolution_rehearsal phase=on source=2 enabled=true')
+        await this.logSuperResolutionRehearsalWindow('on')
+        console.info('[NextNReaderLab] super_resolution_rehearsal gate precondition=enhanced source=2 enabled=true; ' +
+          'phase=off source=2 enabled=false; phase=on source=2 enabled=true')
+      } catch (_error) {
+        console.warn('[NextNReaderLab] super_resolution_rehearsal restore_failed')
+      }
     }
   }
 
@@ -287,8 +369,82 @@ export struct NextNReaderLabPage {
   @Monitor('entryPhase')
   private notifyEntrySettled(): void {
     if (this.entrySettledNotified || (this.entryPhase !== 'finished' && this.entryPhase !== 'cancelled')) return
+    if (this.entryPhase === 'cancelled' && this.rootOwnedEntryTarget && this.hostRouteActive() &&
+      !this.closeRequested && !this.hostClosing) {
+      // reader-kit can cancel after a deferred layout/asset check. Keep the
+      // existing root flight alive, but never turn that cancellation into an
+      // image-ready signal: only Reader's real visible-content observation may
+      // release the opening placeholder.
+      if (!this.rootEntryFlightStarted) {
+        this.rootEntryFlightStarted = true
+        ReaderThumbnailTransitionCoordinator.startOpening(this.getUIContext(), this.request.work)
+      }
+    }
     this.entrySettledNotified = true
     this.onEntrySettled()
+  }
+
+  @Computed
+  private get rootEntryTarget(): ReaderEntryTarget | null { return this.entryTransition?.target ?? null }
+
+  @Computed
+  private get rootEntryPhase(): ReaderEntryPhase { return this.entryTransition?.phase ?? 'finished' }
+
+  @Monitor('rootEntryTarget', 'rootEntryPhase', 'readerThumbnailTransition.phase',
+    'externalRouteActive', 'routeActive')
+  private syncRootOwnedEntryTarget(): void {
+    const entry = this.entryTransition
+    if (!this.rootOwnedEntryTarget || entry === null || !this.hostRouteActive() ||
+      this.closeRequested || this.hostClosing) {
+      return
+    }
+    const target = this.rootEntryTarget
+    const phase = this.rootEntryPhase
+    if (phase === 'layout') {
+      if (target === null || !target.geometryReady || !target.contentRect.valid()) {
+        return
+      }
+      if (this.rootEntryFlightStarted) {
+        return
+      }
+      this.rootEntryFlightStarted = true
+      if (this.entryDeparturePreview === null ||
+        !this.entryDeparturePreview.authorizeDeparture(entry.entryId) ||
+        !ReaderThumbnailTransitionCoordinator.setOpeningTarget(
+          this.getUIContext(), this.request.work, target.contentRect.x, target.contentRect.y,
+          target.contentRect.width, target.contentRect.height,
+        )) {
+        entry.cancel()
+        ReaderThumbnailTransitionCoordinator.startOpening(this.getUIContext(), this.request.work)
+        return
+      }
+      entry.beginMove()
+      ReaderThumbnailTransitionCoordinator.startOpening(this.getUIContext(), this.request.work, (): void => {
+        if (this.entryTransition === entry && entry.phase === 'moving') {
+          entry.arrived()
+        }
+      })
+      return
+    }
+    if (phase !== 'waiting' || target === null || !target.decodedReady ||
+      !this.readerThumbnailTransition.waitingReaderContent() || this.rootEntryRevealStarted) {
+      return
+    }
+    this.rootEntryRevealStarted = true
+    this.getUIContext().animateTo({
+      duration: 140,
+      curve: Curve.Linear,
+      onFinish: (): void => {
+        if (this.entryTransition !== entry || entry.phase !== 'revealing') {
+          return
+        }
+        entry.finish()
+        ReaderThumbnailTransitionCoordinator.notifyReaderImageReady(
+          this.getUIContext(), this.request.work, target.part.sourceIndex + 1)
+      },
+    }, (): void => {
+      entry.reveal()
+    })
   }
 
   aboutToDisappear(): void {
@@ -759,11 +915,13 @@ export struct NextNReaderLabPage {
       this.translationPreferenceRevision += 1
     }
     this.progressWrites.save(this.progressEpoch, this.request.work, pageIndex)
-    ReaderThumbnailTransitionCoordinator.notifyReaderImageReady(
-      this.getUIContext(),
-      this.request.work,
-      pageIndex + 1,
-    )
+    if (!this.rootOwnedEntryTarget || this.entryTransition === null || !this.entryTransition.pending()) {
+      ReaderThumbnailTransitionCoordinator.notifyReaderImageReady(
+        this.getUIContext(),
+        this.request.work,
+        pageIndex + 1,
+      )
+    }
     console.info(`[NextNReaderLab] observed_progress gallery=${this.request.work} page=${pageIndex}`)
   }
 
@@ -878,9 +1036,14 @@ export struct NextNReaderLabPage {
               imageInterpolation: this.readerPresentation.imageScalingQuality === 'low' ? ImageInterpolation.Low :
                 this.readerPresentation.imageScalingQuality === 'high' ? ImageInterpolation.High : ImageInterpolation.Medium,
               canvasBackground: this.readerCanvasBackground(), canvasForeground: this.readerCanvasForeground(),
+              // The root close proxy owns the moving page. Keep the canvas
+              // fade, but let the live body and controls yield during that flight.
+              canvasBackdropOpacity: this.readerThumbnailTransition.backdropOpacity,
+              bodyOpacity: this.readerThumbnailTransition.readerBodyOpacity(),
               input: this.input, mediaActions: this.mediaActions,
               tapPolicy: new ReaderTapPolicy(
                 (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout)),
+              // Legacy waits for target readiness, then starts a fresh full dwell before turning. Reader-kit owns that gate.
               autoReadPolicy: new ReaderAutoReadPolicy(true, this.readerPresentation.autoPageSeconds),
               // Every reader experience entry opens chrome-hidden exactly like the
               // legacy ReaderPage. Automation that needs the menus reveals them
@@ -889,6 +1052,7 @@ export struct NextNReaderLabPage {
               chromeRepublishToken: this.chromeRepublishToken,
               pageTurnAnimation: this.labRequest?.pageTurnAnimationOverride ?? this.readerPresentation.pageTurnAnimation,
               preloadDepth: this.readerPresentation.preloadPages,
+              retainedProjectionDiagnostic: this.superResolutionRehearsalDiagnostic,
               variantPolicy: new ReaderVariantPolicy(new ReaderVariantPreference(
                 this.presentationReady && this.readerPresentation.superResolutionEnabled ? 'enhanced' : 'default',
                 this.superResolutionIdentity()), this.translationPreferenceRevision,
@@ -896,6 +1060,12 @@ export struct NextNReaderLabPage {
                 (sourceIndex: number, preference: ReaderVariantPreference,
                   result: 'changed' | 'unchanged' | 'unavailable' | 'stale'): void => {
                   this.handleVariantSelection(sourceIndex, preference, result)
+                }),
+              temporaryVariantControl: new ReaderTemporaryVariantControl(
+                this.presentationReady && this.readerPresentation.superResolutionEnabled,
+                (enabled: boolean): void => {
+                  this.showHostActionUnavailable(enabled ? 'reader_super_resolution_page_enabled' :
+                    'reader_super_resolution_page_disabled')
                 }),
               showPageNumber: this.readerPresentation.showPageNumber,
               // Entry animation is optional; an incompatible cropped target cancels the flight.
@@ -923,9 +1093,12 @@ export struct NextNReaderLabPage {
                 (policy, intent): void => { this.persistRuntimePolicy(policy, intent) },
                 (enabled, policy): void => { this.persistCrop(enabled, policy) }),
               entryTransition: this.entryTransition, entryPreview: this.entryPreview,
-              contentOpacity: this.readerThumbnailTransition.readerImageOpacity(this.request.pageIndex + 1),
+              contentOpacity: this.rootOwnedEntryTarget || this.rootEntryRevealStarted ? 1 :
+                this.readerThumbnailTransition.readerImageOpacity(this.request.pageIndex + 1),
               openingPlaceholder: (): void => { this.ReaderOpeningPlaceholder() },
               active: this.hostRouteActive() && this.labVisibility.foreground && !this.readerSettingsSheetShown,
+              temporaryVariantActive: this.hostRouteActive() && this.labVisibility.foreground &&
+                !this.closeRequested && !this.hostClosing,
               closing: this.closeRequested || this.hostClosing,
               beforeShowChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareChromeShow(isCurrent),
               topInset: this.safeArea.topAvoidHeight, bottomInset: this.safeArea.bottomAvoidHeight,

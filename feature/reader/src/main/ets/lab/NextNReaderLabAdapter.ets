@@ -32,6 +32,22 @@ function readerShareImageUtd(extension: string): string {
   return utd.UniformDataType.IMAGE
 }
 
+function readerShareAvailableFilePath(uri: string): string {
+  if (!uri.startsWith('file://')) return ''
+  const path = uri.substring('file://'.length)
+  if (path.length === 0) return ''
+  try {
+    return fileIo.statSync(path).size > 0 ? path : ''
+  } catch (_error) {
+    return ''
+  }
+}
+
+function readerShareImageUtdForPath(path: string): string {
+  const extension = path.lastIndexOf('.')
+  return extension >= 0 ? readerShareImageUtd(path.substring(extension + 1)) : utd.UniformDataType.IMAGE
+}
+
 class NextNReaderCropSource implements ReaderImageCropSource {
   private static sequence: number = 0
   private path: string
@@ -151,27 +167,36 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
     if (detail === undefined || source === undefined) throw new Error('missing_nh_share_page')
     const title = `${target.unit.title} ${target.sourceIndex + 1}`
     let record: systemShare.SharedRecord
-    const downloadedUri: string = this.source.localPageUri(detail, target.sourceIndex)
-    if (downloadedUri.length > 0) {
+    if (target.variant === 'translated') {
+      const translatedPath = readerShareAvailableFilePath(target.uri)
+      if (translatedPath.length === 0) throw new Error('missing_nh_translated_share_file')
       cancellation.check()
-      const downloadedPath: string = downloadedUri.startsWith('file://')
-        ? downloadedUri.substring('file://'.length)
-        : downloadedUri
-      console.info('[NextNReaderShare] source=download')
-      record = { utd: readerShareImageUtd(source.extension), label: 'IMAGE', title, description: title,
-        uri: fileUri.getUriFromPath(downloadedPath) }
+      console.info('[NextNReaderShare] source=translated')
+      record = { utd: readerShareImageUtdForPath(translatedPath), label: 'IMAGE', title, description: title,
+        uri: fileUri.getUriFromPath(translatedPath) }
     } else {
-      const url = NhApiClient.imageUrl(detail.mediaId, target.sourceIndex, source.extension)
-      const key = ReaderImageCacheService.cacheKey(detail.id, detail.mediaId, source.number, source.extension)
-      const result = await ReaderImageCacheService.load(this.context, url, key, false)
-      cancellation.check()
-      if (result.localPath.length > 0 && result.bytes > 0) {
-        console.info('[NextNReaderShare] source=cache')
+      const downloadedUri: string = this.source.localPageUri(detail, target.sourceIndex)
+      if (downloadedUri.length > 0) {
+        cancellation.check()
+        const downloadedPath: string = downloadedUri.startsWith('file://')
+          ? downloadedUri.substring('file://'.length)
+          : downloadedUri
+        console.info('[NextNReaderShare] source=download')
         record = { utd: readerShareImageUtd(source.extension), label: 'IMAGE', title, description: title,
-          uri: fileUri.getUriFromPath(result.localPath) }
+          uri: fileUri.getUriFromPath(downloadedPath) }
       } else {
-        console.info('[NextNReaderShare] source=hyperlink')
-        record = { utd: utd.UniformDataType.HYPERLINK, title, content: url }
+        const url = NhApiClient.imageUrl(detail.mediaId, target.sourceIndex, source.extension)
+        const key = ReaderImageCacheService.cacheKey(detail.id, detail.mediaId, source.number, source.extension)
+        const result = await ReaderImageCacheService.load(this.context, url, key, false)
+        cancellation.check()
+        if (result.localPath.length > 0 && result.bytes > 0) {
+          console.info('[NextNReaderShare] source=cache')
+          record = { utd: readerShareImageUtd(source.extension), label: 'IMAGE', title, description: title,
+            uri: fileUri.getUriFromPath(result.localPath) }
+        } else {
+          console.info('[NextNReaderShare] source=hyperlink')
+          record = { utd: utd.UniformDataType.HYPERLINK, title, content: url }
+        }
       }
     }
     return new ReaderSystemSharePresentation(this.context, new systemShare.SharedData(record), {

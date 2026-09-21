@@ -51,6 +51,7 @@ const unit = new core.ReaderUnitKey('nh', '12', '12')
 const page = new core.ReaderPage(unit, '12:1', 0)
 let configuration = new NextNReaderSuperResolutionConfiguration(true, 'waifu', 2000)
 const sourceAsset = new core.ReaderAsset('file:///cache/source.jpg')
+sourceAsset.saveUri = 'file:///canonical/source.jpg'
 sourceAsset.originalAvailable = true
 const backend = { cancellationMode: 'consumer-only', informationSupported: true,
   async load() { return sourceAsset }, async prepareOriginal(p) { return { page: p, async load() { return sourceAsset } } } }
@@ -67,6 +68,7 @@ assert.equal(calls[0][5], 2000)
 assert.equal(plan.identity, identity)
 const enhanced = await plan.load(new core.ReaderCancellation(), false)
 assert.equal(enhanced.uri, 'file:///cache/enhanced.jpg')
+assert.equal(enhanced.saveUri, 'file:///canonical/source.jpg')
 assert.equal(enhanced.originalAvailable, true)
 enhanced.release(); enhanced.release()
 assert.equal(released.length, 1)

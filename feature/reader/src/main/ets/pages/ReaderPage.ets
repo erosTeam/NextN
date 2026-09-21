@@ -27,6 +27,7 @@ import {
   NhReaderTapZoneRegion,
   NhReaderTapZoneResolver,
   DownloadQueueService,
+  ReaderImageCacheLease,
   ReaderImageCacheResult,
   ReaderImageCacheService,
   ReaderPageCropBounds,
@@ -70,6 +71,7 @@ import {
 } from 'shared'
 import { appMenuOptions } from 'shared'
 import { appSheetOptions } from 'shared'
+import { connectNextNReaderLegacyCacheLeaseProbe } from '../lab/NextNReaderLegacyCacheLeaseProbe'
 
 // Reader chrome remains a dark overlay. Canvas-recovery colors resolve from
 // the Reader's local background choice instead of changing chrome affordance.
@@ -375,7 +377,11 @@ struct ReaderCroppedImage {
   @Param heightValue: Length = '100%'
   @Param cropBounds: ReaderPageCropBounds = ReaderPageCropBounds.none()
   @Param interpolation: ImageInterpolation = ImageInterpolation.Medium
-  @Event onComplete: (event?: ReaderImageLoadEvent) => void = (_event?: ReaderImageLoadEvent): void => {}
+  // Forward the component's currently bound source with native completion so a
+  // parent can distinguish an in-place src replacement without declaring a
+  // local variable in an ArkUI build branch.
+  @Event onComplete: (source: string, event?: ReaderImageLoadEvent) => void =
+    (_source: string, _event?: ReaderImageLoadEvent): void => {}
   @Event onError: () => void = (): void => {}
   @Local componentWidth: number = 0
   @Local componentHeight: number = 0
@@ -431,7 +437,7 @@ struct ReaderCroppedImage {
               .translate({ x: this.sourceOffsetX(), y: this.sourceOffsetY() })
               .draggable(false)
               .onComplete((event?: ReaderImageLoadEvent): void => {
-                this.onComplete(event)
+                this.onComplete(this.src, event)
               })
               .onError((): void => {
                 this.onError()
@@ -456,7 +462,7 @@ struct ReaderCroppedImage {
         .height(this.heightValue)
         .draggable(false)
         .onComplete((event?: ReaderImageLoadEvent): void => {
-          this.onComplete(event)
+          this.onComplete(this.src, event)
         })
         .onError((): void => {
           this.onError()
@@ -801,6 +807,9 @@ struct ReaderImageSurfaceCore {
   private loadGeneration: number = 0
   private resolvedFilePath: string = ''
   private resolvedDisplayUri: string = ''
+  private activeCacheLease: ReaderImageCacheLease | null = null
+  private activeCacheLeaseUri: string = ''
+  private retiredCacheLeases: ReaderImageCacheLease[] = []
   private cropRequestKey: string = ''
   private cropFilePath: string = ''
   private pinchStartScale: number = 1
@@ -820,6 +829,7 @@ struct ReaderImageSurfaceCore {
 
   aboutToDisappear(): void {
     this.loadGeneration += 1
+    this.retireCacheLease()
     this.resetCropBounds()
     ReaderSuperResolutionService.releaseOwner(this.enhancementOwnerKey())
     this.resetZoom()
@@ -888,6 +898,42 @@ struct ReaderImageSurfaceCore {
     return this.getUIContext().getHostContext() as common.UIAbilityContext
   }
 
+  /** The private cache may prune a reload version only after its Image retired. */
+  private retainCacheLease(result: ReaderImageCacheResult): void {
+    this.retireCacheLease()
+    this.activeCacheLease = ReaderImageCacheService.retain(result)
+    this.activeCacheLeaseUri = result.displayUri
+  }
+
+  private retireCacheLease(): void {
+    if (this.activeCacheLease === null) return
+    this.retiredCacheLeases.push(this.activeCacheLease)
+    this.activeCacheLease = null
+    this.activeCacheLeaseUri = ''
+  }
+
+  private releaseRetiredCacheLeases(): number {
+    const retiring: ReaderImageCacheLease[] = this.retiredCacheLeases
+    this.retiredCacheLeases = []
+    for (let index: number = 0; index < retiring.length; index++) {
+      ReaderImageCacheService.release(this.context(), retiring[index])
+    }
+    return retiring.length
+  }
+
+  private releaseUnpresentedCacheResult(result: ReaderImageCacheResult): void {
+    const lease: ReaderImageCacheLease = ReaderImageCacheService.retain(result)
+    ReaderImageCacheService.release(this.context(), lease)
+  }
+
+  private markCacheLeasePresented(uri: string): boolean {
+    if (this.activeCacheLease !== null && this.activeCacheLeaseUri === uri) {
+      ReaderImageCacheService.markPresented(this.activeCacheLease)
+      return true
+    }
+    return false
+  }
+
   private isCurrentLoad(generation: number): boolean {
     return generation === this.loadGeneration
   }
@@ -927,7 +973,9 @@ struct ReaderImageSurfaceCore {
     }
     this.imageSource = this.resolvedDisplayUri
     this.setCropFilePath(this.resolvedFilePath)
-    if (this.enhancementEnabled && this.resolvedFilePath.length > 0) {
+    if (this.enhancementEnabled && this.resolvedFilePath.length > 0 &&
+      !connectNextNReaderLegacyCacheLeaseProbe().shouldSuppressEnhancement(
+        this.context(), 'surface', this.pageIndex)) {
       this.applyEnhancement(this.loadGeneration, this.resolvedFilePath).catch((): void => {})
     }
   }
@@ -974,6 +1022,7 @@ struct ReaderImageSurfaceCore {
   private async loadImage(forceReload: boolean = false): Promise<void> {
     const generation: number = this.loadGeneration + 1
     this.loadGeneration = generation
+    this.retireCacheLease()
     this.hasLoadError = false
     this.notifyImageFailureState(false)
     this.isRetrying = forceReload
@@ -1003,7 +1052,10 @@ struct ReaderImageSurfaceCore {
       this.resolvedDisplayUri = this.localImageUri
       this.setCropFilePath(localPath)
       this.notifySourceFileReady(localPath)
-      this.applyEnhancement(generation, localPath).catch((): void => {})
+      if (!connectNextNReaderLegacyCacheLeaseProbe().shouldSuppressEnhancement(
+        this.context(), 'surface', this.pageIndex)) {
+        this.applyEnhancement(generation, localPath).catch((): void => {})
+      }
       this.isLoading = false
       this.isRetrying = false
       return
@@ -1016,14 +1068,21 @@ struct ReaderImageSurfaceCore {
         forceReload,
       )
       if (!this.isCurrentLoad(generation)) {
+        this.releaseUnpresentedCacheResult(result)
         return
       }
+      this.retainCacheLease(result)
+      connectNextNReaderLegacyCacheLeaseProbe().recordCacheResult(
+        this.context(), 'surface', this.pageIndex, forceReload)
       this.resolvedFilePath = result.localPath
       this.resolvedDisplayUri = result.displayUri
       this.imageSource = result.displayUri
       this.setCropFilePath(result.localPath)
       this.notifySourceFileReady(result.localPath)
-      this.applyEnhancement(generation, result.localPath).catch((): void => {})
+      if (!connectNextNReaderLegacyCacheLeaseProbe().shouldSuppressEnhancement(
+        this.context(), 'surface', this.pageIndex)) {
+        this.applyEnhancement(generation, result.localPath).catch((): void => {})
+      }
     } catch (_error) {
       if (!this.isCurrentLoad(generation)) {
         return
@@ -1294,7 +1353,7 @@ struct ReaderImageSurfaceCore {
         heightValue: '100%',
         cropBounds: this.cropBounds,
         interpolation: readerImageInterpolation(this.imageScalingQuality),
-        onComplete: (event?: ReaderImageLoadEvent): void => {
+        onComplete: (source: string, event?: ReaderImageLoadEvent): void => {
           const bitmapWidth: number | undefined = event ? event.width : undefined
           const bitmapHeight: number | undefined = event ? event.height : undefined
           if (bitmapWidth !== undefined && bitmapHeight !== undefined &&
@@ -1307,12 +1366,30 @@ struct ReaderImageSurfaceCore {
           this.hasLoadError = false
           this.notifyImageFailureState(false)
           this.imageDecoded = true
+          const sourceMatchesActiveLease: boolean = this.markCacheLeasePresented(source)
+          const leaseProbe = connectNextNReaderLegacyCacheLeaseProbe()
+          const scheduleProbeReload: boolean = leaseProbe.consumeReloadAfterMatchingPresentation(
+            this.context(), 'surface', this.pageIndex, sourceMatchesActiveLease)
+          const retiredLeaseCount: number = sourceMatchesActiveLease ? this.retiredCacheLeases.length : 0
+          // A src update can reuse this native node and skip onDisAppear. Once
+          // this replacement has decoded, its previously retired cache source
+          // is no longer needed by ArkUI and may enter staged-reload maintenance.
+          const releasedLeaseCount: number = sourceMatchesActiveLease ? this.releaseRetiredCacheLeases() : 0
+          leaseProbe.recordNativeCompletion(this.context(), 'surface', this.pageIndex,
+            sourceMatchesActiveLease, retiredLeaseCount, releasedLeaseCount)
+          if (scheduleProbeReload) {
+            const completedGeneration: number = this.loadGeneration
+            setTimeout((): void => {
+              if (this.loadGeneration === completedGeneration) void this.loadImage(true)
+            }, 0)
+          }
           this.notifyImageLoadState(true)
         },
         onError: (): void => {
           this.hasLoadError = true
           this.notifyImageFailureState(true)
           this.imageDecoded = false
+          this.retireCacheLease()
           this.imageSource = ''
           this.notifyImageLoadState(false)
         },
@@ -1325,6 +1402,11 @@ struct ReaderImageSurfaceCore {
           curve: Curve.FastOutSlowIn,
         })
         .id(this.snapshotId)
+        .onDisAppear((): void => {
+          const releasedLeaseCount: number = this.releaseRetiredCacheLeases()
+          connectNextNReaderLegacyCacheLeaseProbe().recordNodeRemoval(
+            this.context(), 'surface', this.pageIndex, releasedLeaseCount)
+        })
         .opacity(
           this.imageDecoded
             ? this.readerThumbnailTransition.readerImageOpacity(this.pageIndex + 1)
@@ -1657,6 +1739,9 @@ struct ReaderSpreadImageLayer {
   private loadGeneration: number = 0
   private resolvedFilePath: string = ''
   private resolvedDisplayUri: string = ''
+  private activeCacheLease: ReaderImageCacheLease | null = null
+  private activeCacheLeaseUri: string = ''
+  private retiredCacheLeases: ReaderImageCacheLease[] = []
   private cropRequestKey: string = ''
   private cropFilePath: string = ''
 
@@ -1666,6 +1751,7 @@ struct ReaderSpreadImageLayer {
 
   aboutToDisappear(): void {
     this.loadGeneration += 1
+    this.retireCacheLease()
     this.resetCropBounds()
     ReaderSuperResolutionService.releaseOwner(this.enhancementOwnerKey())
   }
@@ -1718,6 +1804,42 @@ struct ReaderSpreadImageLayer {
     return this.getUIContext().getHostContext() as common.UIAbilityContext
   }
 
+  /** The private cache may prune a reload version only after its Image retired. */
+  private retainCacheLease(result: ReaderImageCacheResult): void {
+    this.retireCacheLease()
+    this.activeCacheLease = ReaderImageCacheService.retain(result)
+    this.activeCacheLeaseUri = result.displayUri
+  }
+
+  private retireCacheLease(): void {
+    if (this.activeCacheLease === null) return
+    this.retiredCacheLeases.push(this.activeCacheLease)
+    this.activeCacheLease = null
+    this.activeCacheLeaseUri = ''
+  }
+
+  private releaseRetiredCacheLeases(): number {
+    const retiring: ReaderImageCacheLease[] = this.retiredCacheLeases
+    this.retiredCacheLeases = []
+    for (let index: number = 0; index < retiring.length; index++) {
+      ReaderImageCacheService.release(this.context(), retiring[index])
+    }
+    return retiring.length
+  }
+
+  private releaseUnpresentedCacheResult(result: ReaderImageCacheResult): void {
+    const lease: ReaderImageCacheLease = ReaderImageCacheService.retain(result)
+    ReaderImageCacheService.release(this.context(), lease)
+  }
+
+  private markCacheLeasePresented(uri: string): boolean {
+    if (this.activeCacheLease !== null && this.activeCacheLeaseUri === uri) {
+      ReaderImageCacheService.markPresented(this.activeCacheLease)
+      return true
+    }
+    return false
+  }
+
   private notifyImageLoadState(loaded: boolean): void {
     if (this.onImageLoadStateChanged && this.pageIndex >= 0) {
       this.onImageLoadStateChanged(this.pageIndex, loaded)
@@ -1753,7 +1875,9 @@ struct ReaderSpreadImageLayer {
     }
     this.imageSource = this.resolvedDisplayUri
     this.setCropFilePath(this.resolvedFilePath)
-    if (this.enhancementEnabled && this.resolvedFilePath.length > 0) {
+    if (this.enhancementEnabled && this.resolvedFilePath.length > 0 &&
+      !connectNextNReaderLegacyCacheLeaseProbe().shouldSuppressEnhancement(
+        this.context(), 'spread', this.pageIndex)) {
       this.applyEnhancement(this.loadGeneration, this.resolvedFilePath).catch((): void => {})
     }
   }
@@ -1800,6 +1924,7 @@ struct ReaderSpreadImageLayer {
   private async loadImage(forceReload: boolean = false): Promise<void> {
     const generation: number = this.loadGeneration + 1
     this.loadGeneration = generation
+    this.retireCacheLease()
     this.hasLoadError = false
     this.notifyImageFailureState(false)
     this.isRetrying = forceReload
@@ -1826,7 +1951,10 @@ struct ReaderSpreadImageLayer {
       this.resolvedDisplayUri = this.localImageUri
       this.setCropFilePath(localPath)
       this.notifySourceFileReady(localPath)
-      this.applyEnhancement(generation, localPath).catch((): void => {})
+      if (!connectNextNReaderLegacyCacheLeaseProbe().shouldSuppressEnhancement(
+        this.context(), 'spread', this.pageIndex)) {
+        this.applyEnhancement(generation, localPath).catch((): void => {})
+      }
       this.isLoading = false
       this.isRetrying = false
       return
@@ -1839,14 +1967,21 @@ struct ReaderSpreadImageLayer {
         forceReload,
       )
       if (generation !== this.loadGeneration) {
+        this.releaseUnpresentedCacheResult(result)
         return
       }
+      this.retainCacheLease(result)
+      connectNextNReaderLegacyCacheLeaseProbe().recordCacheResult(
+        this.context(), 'spread', this.pageIndex, forceReload)
       this.resolvedFilePath = result.localPath
       this.resolvedDisplayUri = result.displayUri
       this.imageSource = result.displayUri
       this.setCropFilePath(result.localPath)
       this.notifySourceFileReady(result.localPath)
-      this.applyEnhancement(generation, result.localPath).catch((): void => {})
+      if (!connectNextNReaderLegacyCacheLeaseProbe().shouldSuppressEnhancement(
+        this.context(), 'spread', this.pageIndex)) {
+        this.applyEnhancement(generation, result.localPath).catch((): void => {})
+      }
     } catch (_error) {
       if (generation !== this.loadGeneration) {
         return
@@ -1954,19 +2089,41 @@ struct ReaderSpreadImageLayer {
           heightValue: '100%',
           cropBounds: this.cropBounds,
           interpolation: readerImageInterpolation(this.imageScalingQuality),
-          onComplete: (): void => {
+          onComplete: (source: string): void => {
             this.hasLoadError = false
             this.notifyImageFailureState(false)
+            const sourceMatchesActiveLease: boolean = this.markCacheLeasePresented(source)
+            const leaseProbe = connectNextNReaderLegacyCacheLeaseProbe()
+            const scheduleProbeReload: boolean = leaseProbe.consumeReloadAfterMatchingPresentation(
+              this.context(), 'spread', this.pageIndex, sourceMatchesActiveLease)
+            const retiredLeaseCount: number = sourceMatchesActiveLease ? this.retiredCacheLeases.length : 0
+            // ReaderCroppedImage can update src in place; native completion is
+            // the release point when no onDisAppear callback will be emitted.
+            const releasedLeaseCount: number = sourceMatchesActiveLease ? this.releaseRetiredCacheLeases() : 0
+            leaseProbe.recordNativeCompletion(this.context(), 'spread', this.pageIndex,
+              sourceMatchesActiveLease, retiredLeaseCount, releasedLeaseCount)
+            if (scheduleProbeReload) {
+              const completedGeneration: number = this.loadGeneration
+              setTimeout((): void => {
+                if (this.loadGeneration === completedGeneration) void this.loadImage(true)
+              }, 0)
+            }
             this.notifyImageLoadState(true)
           },
           onError: (): void => {
             this.hasLoadError = true
             this.notifyImageFailureState(true)
+            this.retireCacheLease()
             this.imageSource = ''
             this.notifyImageLoadState(false)
           },
         })
           .backgroundColor(this.canvasColor)
+          .onDisAppear((): void => {
+            const releasedLeaseCount: number = this.releaseRetiredCacheLeases()
+            connectNextNReaderLegacyCacheLeaseProbe().recordNodeRemoval(
+              this.context(), 'spread', this.pageIndex, releasedLeaseCount)
+          })
       }
       this.ImageRecovery()
     }

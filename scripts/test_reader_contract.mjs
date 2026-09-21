@@ -113,6 +113,54 @@ const spreadLayer = page.slice(spreadLayerStart, spreadLayerEnd)
 if (!spreadLayer.includes('ReaderLoadingStage({')) {
   throw new Error('ReaderSpreadImageLayer: loading recovery must use the shared ReaderLoadingStage')
 }
+const legacyCacheConsumers = [
+  ['ReaderImageSurfaceCore', imageCore],
+  ['ReaderSpreadImageLayer', spreadLayer],
+]
+const legacyLeaseProbe = await readFile(
+  new URL('feature/reader/src/main/ets/lab/NextNReaderLegacyCacheLeaseProbe.ets', ROOT),
+  'utf8',
+)
+for (const token of [
+  'context.applicationInfo.debug',
+  'forceReloadResultCount',
+  'shouldSuppressEnhancement',
+  'enhancementSuppressed',
+  'replacementNativeCompletionCount',
+  'releasedRetiredLeaseCount',
+  'nodeRemovalReleasedRetiredLeaseCount',
+]) {
+  if (!legacyLeaseProbe.includes(token)) {
+    throw new Error(`NextNReaderLegacyCacheLeaseProbe: missing Debug-only B1 fact ${token}`)
+  }
+}
+for (const [name, source] of legacyCacheConsumers) {
+  for (const token of [
+    'ReaderImageCacheService.retain(result)',
+    'ReaderImageCacheService.markPresented(this.activeCacheLease)',
+    'ReaderImageCacheService.release(this.context(), retiring[index])',
+    '.onDisAppear((): void => {',
+    'recordNodeRemoval',
+    'this.releaseRetiredCacheLeases()',
+  ]) {
+    if (!source.includes(token)) {
+      throw new Error(`${name}: legacy force-reload must retain, present, then retire its cache lease`)
+    }
+  }
+}
+for (const [name, source] of legacyCacheConsumers) {
+  const onComplete = source.indexOf('onComplete:')
+  const onError = source.indexOf('onError:', onComplete)
+  const completion = onComplete >= 0 && onError > onComplete ? source.slice(onComplete, onError) : ''
+  if (!completion.includes('this.markCacheLeasePresented(source)') ||
+    !completion.includes('this.releaseRetiredCacheLeases()') ||
+    !completion.includes('leaseProbe.recordNativeCompletion') ||
+    !source.includes('shouldSuppressEnhancement') ||
+    !completion.includes('sourceMatchesActiveLease ? this.releaseRetiredCacheLeases() : 0') ||
+    !completion.includes('void this.loadImage(true)')) {
+    throw new Error(`${name}: an in-place src replacement must release retired cache leases after native completion`)
+  }
+}
 if (/if \(this\.isRetrying \|\| this\.isLoading\) \{\s*LoadingProgress\(\)/s.test(spreadLayer)) {
   throw new Error('ReaderSpreadImageLayer: bare loading progress regresses the shared loading contract')
 }

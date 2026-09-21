@@ -94,6 +94,7 @@ assert.deepEqual([calls[0].projectId, calls[0].pageIndex, calls[0].imageFilePath
 assert.equal(plan.identity, identity)
 const translated = await plan.load(new core.ReaderCancellation(), false)
 assert.equal(translated.uri, 'file:///cache/translated.png')
+assert.equal(translated.saveUri, 'file:///cache/translated.png')
 assert.equal(translated.originalAvailable, true)
 assert.equal(translated.information.facts.variant, 'translated')
 await provider.prepareVariant(page, 'enhanced', 'enhanced:v1', new core.ReaderCancellation())

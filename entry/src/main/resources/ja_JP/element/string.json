@@ -966,6 +966,8 @@
     { "name": "reader_enhancement_processing", "value": "画像補正を処理中" },
     { "name": "reader_enhancement_applied", "value": "画像補正を適用済み" },
     { "name": "reader_enhancement_not_applied", "value": "このページには画像補正を適用できません" },
+    { "name": "reader_super_resolution_page_disabled", "value": "画像補正をオフにしました" },
+    { "name": "reader_super_resolution_page_enabled", "value": "画像補正をオンにしました" },
     { "name": "settings_content_filters", "value": "コンテンツフィルター" },
     { "name": "settings_content_filters_subtitle", "value": "一致したギャラリーとコメントをこの端末で非表示にします" },
     { "name": "settings_content_filters_a11y", "value": "ローカルコンテンツフィルターを開く" },

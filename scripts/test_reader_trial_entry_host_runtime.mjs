@@ -32,7 +32,8 @@ const hostSource = section(index, 'struct Index {', '\n  @Builder')
   .replace('struct Index {', 'export class Index {') +
   section(index, "  @Monitor('readerLabLaunch.version')", '\n  private stack:') +
   section(index, '  aboutToDisappear(): void {', "  @Monitor('homeTab.autoHide')") + '\n}'
-const hostCode = compile(hostSource.replace(/@Local\s+/g, '').replace(/@Monitor\([^\n]*\)\s*/g, ''), 'Index.ets')
+const hostCode = compile(hostSource.replace(/@Local\s+/g, '').replace(/@Computed\s+/g, '')
+  .replace(/@Monitor\([^\n]*\)\s*/g, ''), 'Index.ets')
 const claimCode = compile('export ' + section(index, 'class ReaderEntryClaim {', '/** Pending feedback'), 'Index.ets')
 const relayCode = compile(read('../shared/src/main/ets/navigation/ReaderTrialEntryRelay.ets'), 'ReaderTrialEntryRelay.ets')
 const rectCode = compile(section(read('../third_party/reader-kit/reader-ui/src/main/ets/ReaderEntryTransition.ets'),

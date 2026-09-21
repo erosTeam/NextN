@@ -24,6 +24,8 @@ import {
   ReaderTrialOriginalSnapshot,
 } from 'shared'
 import {
+  connectNextNReaderLegacyCacheLeaseProbe,
+  NextNReaderLegacyCacheLeaseFacts,
   connectNextNReaderTranslationProbe,
   NextNReaderProductionFailureFacts,
   NextNReaderProductionFailureProbe,
@@ -572,6 +574,22 @@ async function waitLegacyReady(driver: Driver): Promise<void> {
   throw new Error('Legacy Reader did not own the production destination')
 }
 
+async function waitLegacyCacheLeaseReplacement(driver: Driver, epoch: number): Promise<NextNReaderLegacyCacheLeaseFacts> {
+  const probe = connectNextNReaderLegacyCacheLeaseProbe()
+  let latest: NextNReaderLegacyCacheLeaseFacts = probe.read()
+  for (let attempt = 0; attempt < 160; attempt++) {
+    latest = probe.read()
+    if (latest.epoch !== epoch) throw new Error('Legacy cache lease probe epoch changed unexpectedly')
+    if (latest.forceReloadResultCount > 0 && latest.matchingNativeCompletionCount >= 2 &&
+      (latest.releasedRetiredLeaseCount + latest.nodeRemovalReleasedRetiredLeaseCount) > 0) return latest
+    await driver.delayMs(250)
+  }
+  throw new Error(`Legacy cache lease replacement did not complete: cacheResults=${latest.cacheResultCount} ` +
+    `forceReloadResults=${latest.forceReloadResultCount} matchingCompletions=${latest.matchingNativeCompletionCount} ` +
+    `replacementCompletions=${latest.replacementNativeCompletionCount} nativeReleased=${latest.releasedRetiredLeaseCount} ` +
+    `nodeRemovalReleased=${latest.nodeRemovalReleasedRetiredLeaseCount}`)
+}
+
 /**
  * Any startAbility, including a plain relaunch, is the documented explicit
  * return to the production-safe backend.
@@ -999,6 +1017,62 @@ export default function readerProductionBackendTrialTest(): void {
           if (connectNextNReaderBackendSelection().current() !== NextNReaderBackend.LEGACY) {
             await launchBackend('legacy', false)
           }
+        }
+      })
+    })
+    return
+  }
+  if (selectedClass === 'ReaderLegacyCacheLeaseReplacementTrial') {
+    describe(selectedClass, (): void => {
+      it('releasesTheRetiredRemoteCacheLeaseAfterItsImageIsNoLongerNative', 0, async (): Promise<void> => {
+        const driver = Driver.create()
+        const probe = connectNextNReaderLegacyCacheLeaseProbe()
+        let database: relationalStore.RdbStore | null = null
+        let original: HistorySnapshot | null = null
+        let probeEpoch: number = 0
+        let restored: boolean = false
+        let failed: boolean = false
+        try {
+          // This uses the production Legacy route. A completed download would
+          // intentionally bypass the cache and therefore cannot satisfy B1.
+          await launchBackend('legacy', true)
+          database = await store(await entryContext(driver))
+          original = await snapshotHistory(database)
+          writeSnapshot(original)
+          await seedFirstPage(database)
+          probeEpoch = probe.arm(0, 'surface')
+
+          await (await waitDetailRead(driver)).click()
+          await waitLegacyReady(driver)
+          const facts: NextNReaderLegacyCacheLeaseFacts = await waitLegacyCacheLeaseReplacement(driver, probeEpoch)
+          expect(facts.armed).assertTrue()
+          expect(facts.cacheResultCount >= 2).assertTrue()
+          expect(facts.reloadScheduledCount).assertEqual(1)
+          expect(facts.enhancementSuppressed).assertTrue()
+          expect(facts.forceReloadResultCount).assertEqual(1)
+          expect(facts.matchingNativeCompletionCount >= 2).assertTrue()
+          expect(facts.releasedRetiredLeaseCount + facts.nodeRemovalReleasedRetiredLeaseCount >= 1).assertTrue()
+          await capture(driver, 'legacy-cache-lease-replacement')
+          console.info('[ReaderLegacyCacheLeaseReplacementTrial] remoteCache=true enhancementSuppressed=true forceReload=true ' +
+            `nativeReleased=${facts.releasedRetiredLeaseCount} nodeRemovalReleased=${facts.nodeRemovalReleasedRetiredLeaseCount}`)
+
+          await closeAnyReader(driver)
+          await waitDetailRead(driver)
+          await restoreAndVerify(database, original)
+          removeSnapshot()
+          restored = true
+        } catch (error) {
+          failed = true
+          try { await capture(driver, 'legacy-cache-lease-replacement-exception') } catch (_) {}
+          throw error as Error
+        } finally {
+          if (probeEpoch > 0) probe.cancel(probeEpoch)
+          try { await closeAnyReader(driver) } catch (error) { if (!failed) throw error as Error }
+          if (!restored && database !== null && original !== null) {
+            await restoreAndVerify(database, original)
+            removeSnapshot()
+          }
+          await launchBackend('legacy', false)
         }
       })
     })

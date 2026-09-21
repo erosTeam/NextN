@@ -46,9 +46,11 @@ function setup() {
       if (value === undefined) throw new Error('missing')
       return { size: value.length, mtime: 1 }
     },
-    listFileSync: (directory) => Array.from(files.keys())
-      .filter((name) => name.startsWith(`${directory}/`))
-      .map((name) => name.substring(directory.length + 1)),
+    listFileSync: (directory) => {
+      return Array.from(files.keys())
+        .filter((name) => name.startsWith(`${directory}/`))
+        .map((name) => name.substring(directory.length + 1))
+    },
     utimes: () => {},
   }
   const stream = {
@@ -71,7 +73,7 @@ function setup() {
   mod._compile(ts.transpileModule(fs.readFileSync(source, 'utf8'), { compilerOptions: {
     module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020,
   } }).outputText, source)
-  return { load: mod.exports.ReaderImageCacheService.load, gets, files }
+  return { service: mod.exports.ReaderImageCacheService, gets, files }
 }
 
 function complete(entry, bytes, statusCode = 200) {
@@ -80,7 +82,8 @@ function complete(entry, bytes, statusCode = 200) {
 }
 
 test('concurrent loads of one key share a single stream and do not duplicate a GET', async () => {
-  const { load, gets } = setup()
+  const { service, gets } = setup()
+  const load = service.load
   const context = { cacheDir: '/cache' }
   const first = load(context, 'https://host/1.jpg', 'reader:v2:1:media:1:jpg', false)
   const second = load(context, 'https://host/1.jpg', 'reader:v2:1:media:1:jpg', false)
@@ -93,7 +96,8 @@ test('concurrent loads of one key share a single stream and do not duplicate a G
 })
 
 test('a user Retry waits for the current flight and then issues exactly one new GET', async () => {
-  const { load, gets } = setup()
+  const { service, gets } = setup()
+  const load = service.load
   const context = { cacheDir: '/cache' }
   const ordinary = load(context, 'https://host/2.jpg', 'reader:v2:1:media:2:jpg', false)
   const retry = load(context, 'https://host/2.jpg', 'reader:v2:1:media:2:jpg', true)
@@ -111,7 +115,8 @@ test('a user Retry waits for the current flight and then issues exactly one new 
 })
 
 test('a failed stream leaves no flight behind so the next attempt retries cleanly', async () => {
-  const { load, gets } = setup()
+  const { service, gets } = setup()
+  const load = service.load
   const context = { cacheDir: '/cache' }
   const failing = load(context, 'https://host/3.jpg', 'reader:v2:1:media:3:jpg', false)
   assert.equal(gets.length, 1)
@@ -125,7 +130,8 @@ test('a failed stream leaves no flight behind so the next attempt retries cleanl
 })
 
 test('a later ordinary load reuses the completed file without another GET', async () => {
-  const { load, gets } = setup()
+  const { service, gets } = setup()
+  const load = service.load
   const context = { cacheDir: '/cache' }
   const first = load(context, 'https://host/4.jpg', 'reader:v2:1:media:4:jpg', false)
   complete(gets[0], 8)
@@ -134,4 +140,28 @@ test('a later ordinary load reuses the completed file without another GET', asyn
   assert.equal(gets.length, 1)
   assert.equal(cached.fromCache, true)
   assert.equal(cached.localPath, stored.localPath)
+})
+
+test('a presented force-reload version starts maintenance only after its lease is retired', async () => {
+  const { service, gets, files } = setup()
+  const context = { cacheDir: '/cache' }
+  const load = service.load
+  const initial = load(context, 'https://host/5.jpg', 'reader:v2:1:media:5:jpg', false)
+  complete(gets[0], 8)
+  await initial
+  assert.equal(service.maintenanceWritesSincePrune, 0)
+
+  const reloading = load(context, 'https://host/5.jpg', 'reader:v2:1:media:5:jpg', true)
+  complete(gets[1], 12)
+  const reloaded = await reloading
+  assert.equal(reloaded.familyPath.length > 0, true)
+  assert.equal(service.maintenanceWritesSincePrune, 0,
+    'a staged reload defers maintenance until its consumer retires the native Image')
+
+  const lease = service.retain(reloaded)
+  service.markPresented(lease)
+  service.release(context, lease)
+  assert.equal(files.has(reloaded.localPath), true, 'a presented immutable version remains selectable')
+  assert.equal(service.maintenanceWritesSincePrune, 1,
+    'retiring the presented lease completes the deferred cache-maintenance chain')
 })

@@ -14,6 +14,34 @@ function ok(name, condition) {
   }
 }
 
+function snapshotCrop(component, intrinsicAspectRatio) {
+  const displayWidth = component.width / component.height > intrinsicAspectRatio
+    ? component.height * intrinsicAspectRatio
+    : component.width
+  const displayHeight = displayWidth / intrinsicAspectRatio
+  const left = Math.max(0, Math.floor((component.width - displayWidth) / 2))
+  const top = Math.max(0, Math.floor((component.height - displayHeight) / 2))
+  const right = Math.min(component.width, Math.ceil(left + displayWidth))
+  const bottom = Math.min(component.height, Math.ceil(top + displayHeight))
+  return {
+    left,
+    top,
+    right,
+    bottom,
+    windowX: component.windowX + left,
+    windowY: component.windowY + top,
+  }
+}
+
+function proxyStart(region, proxyHost) {
+  return {
+    x: region.windowX - proxyHost.windowX,
+    y: region.windowY - proxyHost.windowY,
+    width: region.right - region.left,
+    height: region.bottom - region.top,
+  }
+}
+
 const settings = read('shared/src/main/ets/settings/GalleryDetailTransitionSettings.ets')
 const settingsPage = read('feature/settings/src/main/ets/pages/SettingsPage.ets')
 ok('detail mode and Reader thumbnail switch are independent durable settings',
@@ -141,6 +169,19 @@ ok('Reader close reveals the retained Gallery surface below a root-owned image p
     /this\.state\.rootProxyVisible\(\)/.test(index) &&
     /this\.state\.readerSnapshot/.test(index) &&
     /this\.state\.closeTargetSnapshot/.test(index))
+const letterboxedCloseRegion = snapshotCrop({ windowX: 420, windowY: 300, width: 900, height: 1000 }, 2)
+const letterboxedCloseStart = proxyStart(letterboxedCloseRegion, { windowX: 130, windowY: 80 })
+ok('Reader close starts from the captured content crop under letterboxing and a non-zero root offset',
+  letterboxedCloseRegion.left === 0 && letterboxedCloseRegion.top === 275 &&
+    letterboxedCloseRegion.right === 900 && letterboxedCloseRegion.bottom === 725 &&
+    letterboxedCloseStart.x === 290 && letterboxedCloseStart.y === 495 &&
+    letterboxedCloseStart.width === 900 && letterboxedCloseStart.height === 450 &&
+    /class ReaderSnapshotRegion/.test(readerCoordinator) &&
+    /private static readerSnapshotRegion\(/.test(readerCoordinator) &&
+    /region: \{ left: region\.left, right: region\.right, top: region\.top, bottom: region\.bottom \}/.test(readerCoordinator) &&
+    /readerCapture\.region\.windowX - rootRect\.windowOffset\.x/.test(readerCoordinator) &&
+    /readerCapture\.region\.right - readerCapture\.region\.left/.test(readerCoordinator) &&
+    /readerStartWidth > 0 && readerStartHeight > 0/.test(readerState))
 ok('Reader full-image decode does not block its background or navigation surface with a transition-only loader',
   !/ReaderOpeningLoadingOverlay/.test(reader) &&
     /readerOpeningProxyVisible/.test(reader) &&

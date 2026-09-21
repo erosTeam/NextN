@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@ohos/hypium'
-import { abilityDelegatorRegistry, Driver, ON } from '@kit.TestKit'
+import { abilityDelegatorRegistry, Component, Driver, ON } from '@kit.TestKit'
 import { common } from '@kit.AbilityKit'
 import { fileIo } from '@kit.CoreFileKit'
 import {
@@ -59,7 +59,26 @@ async function capture(driver: Driver, name: string): Promise<void> {
 }
 
 async function assertEnhancedInformation(driver: Driver): Promise<void> {
-  await (await driver.findComponent(ON.id('rkit-more'))).click()
+  // Ordinary shared Reader opens immersive. The menu is a genuine reader
+  // action, so reveal it through the live content centre rather than relying
+  // on a test-only chrome default.
+  let more: Component | null = await driver.findComponent(ON.id('rkit-more'))
+  if (more === null) {
+    const surface = await driver.findComponent(ON.id('rkit-reading-surface'))
+    expect(surface !== null).assertTrue()
+    if (surface !== null) {
+      const bounds = await surface.getBounds()
+      await driver.click(Math.round((bounds.left + bounds.right) / 2),
+        Math.round((bounds.top + bounds.bottom) / 2))
+      await driver.delayMs(600)
+      for (let attempt: number = 0; attempt < 20 && more === null; attempt++) {
+        more = await driver.findComponent(ON.id('rkit-more'))
+        if (more === null) await driver.delayMs(250)
+      }
+    }
+  }
+  expect(more !== null).assertTrue()
+  await (more as Component).click()
   await driver.delayMs(300)
   await (await driver.findComponent(ON.id('rkit-image-info'))).click()
   await driver.delayMs(500)
@@ -77,11 +96,12 @@ async function assertEnhancedInformation(driver: Driver): Promise<void> {
 
 export default function readerSharedSuperResolutionTest(): void {
   const args = abilityDelegatorRegistry.getArguments().parameters
-  if (args['-s class'] !== 'ReaderSharedSuperResolutionTrial') return
+  if (args['-s class'] !== 'ReaderSharedSuperResolutionTrial' &&
+    args['-s class'] !== 'ReaderSharedSuperResolutionPreRecordCheckpoint') return
   const spread = args['-s readerSharedSuperResolutionLayout'] === 'spread'
   const cancelNavigation = args['-s readerSharedSuperResolutionScenario'] === 'cancel-navigation'
   const cacheHit = args['-s readerSharedSuperResolutionScenario'] === 'cache-hit'
-  describe('ReaderSharedSuperResolutionTrial', (): void => {
+  if (args['-s class'] === 'ReaderSharedSuperResolutionTrial') describe('ReaderSharedSuperResolutionTrial', (): void => {
     it('hostPreparedDerivativeKeepsTheSharedReaderContract', 0, async (): Promise<void> => {
       const delegator = abilityDelegatorRegistry.getAbilityDelegator()
       const driver = Driver.create()
@@ -92,6 +112,8 @@ export default function readerSharedSuperResolutionTest(): void {
       const originalEnabled = await ReaderSettingsRepository.superResolutionEnabled(context)
       const originalModel = await ReaderSettingsRepository.superResolutionModel(context)
       const originalMaxHeight = await ReaderSettingsRepository.superResolutionMaxHeight(context)
+      console.info(`[ReaderSharedSuperResolutionTest] initial enabled=${originalEnabled} model=${originalModel} ` +
+        `maxHeight=${originalMaxHeight} mode=${originalMode} double=${originalDouble} spread=${originalSpread}`)
       const models: NhReaderSuperResolutionModel[] = await ReaderSuperResolutionModelService.installedModels(context)
       expect(models.length > 0).assertTrue()
       const model = models.includes(originalModel) ? originalModel : models[0]
@@ -164,7 +186,61 @@ export default function readerSharedSuperResolutionTest(): void {
         try { await ReaderPresentationService.setMode(context, originalMode) } catch (_) {}
         try { await ReaderPresentationService.setDoublePageEnabled(context, originalDouble) } catch (_) {}
         try { await ReaderPresentationService.setSpreadLayout(context, originalSpread) } catch (_) {}
+        const restoredEnabled = await ReaderSettingsRepository.superResolutionEnabled(context)
+        const restoredModel = await ReaderSettingsRepository.superResolutionModel(context)
+        const restoredMaxHeight = await ReaderSettingsRepository.superResolutionMaxHeight(context)
+        const restoredMode = await ReaderSettingsRepository.mode(context)
+        const restoredDouble = await ReaderSettingsRepository.doublePageEnabled(context)
+        const restoredSpread = await ReaderSettingsRepository.spreadLayout(context)
+        console.info(`[ReaderSharedSuperResolutionTest] restored enabled=${restoredEnabled} model=${restoredModel} ` +
+          `maxHeight=${restoredMaxHeight} mode=${restoredMode} double=${restoredDouble} spread=${restoredSpread}`)
+        expect(restoredEnabled).assertEqual(originalEnabled)
+        expect(restoredModel).assertEqual(originalModel)
+        expect(restoredMaxHeight).assertEqual(originalMaxHeight)
+        expect(restoredMode).assertEqual(originalMode)
+        expect(restoredDouble).assertEqual(originalDouble)
+        expect(restoredSpread).assertEqual(originalSpread)
+        const gateStage = applied.has(0) ? 'applied' : 'not_applied'
+        console.info(`[ReaderSharedSuperResolutionTest] gate initial enabled=${originalEnabled} model=${originalModel} ` +
+          `maxHeight=${originalMaxHeight} mode=${originalMode} double=${originalDouble} spread=${originalSpread}; ` +
+          `restored enabled=${restoredEnabled} model=${restoredModel} maxHeight=${restoredMaxHeight} ` +
+          `mode=${restoredMode} double=${restoredDouble} spread=${restoredSpread}; source=0 stage=${gateStage}`)
+        if (!cancelNavigation) expect(applied.has(0)).assertTrue()
       }
     })
   })
+  if (args['-s class'] === 'ReaderSharedSuperResolutionPreRecordCheckpoint') {
+    describe('ReaderSharedSuperResolutionPreRecordCheckpoint', (): void => {
+      it('observesEnabledModelAndEnhancedPageThreeWithoutWritingPreferences', 0, async (): Promise<void> => {
+        const delegator = abilityDelegatorRegistry.getAbilityDelegator()
+        const driver = Driver.create()
+        const context: common.UIAbilityContext = await entryContext(driver)
+        const enabled = await ReaderSettingsRepository.superResolutionEnabled(context)
+        const model = await ReaderSettingsRepository.superResolutionModel(context)
+        const models = await ReaderSuperResolutionModelService.installedModels(context)
+        console.info(`[ReaderSharedSuperResolutionTest] checkpoint enabled=${enabled} model=${model} page=3 source=2`)
+        expect(enabled).assertTrue()
+        expect(models.includes(model)).assertTrue()
+        const applied: Set<number> = new Set<number>()
+        const probe = connectNextNReaderSuperResolutionProbe()
+        const probeEpoch = probe.arm(FIXTURE, (sourceIndex: number, stage: string, identity: string): void => {
+          console.info(`[ReaderSharedSuperResolutionTest] checkpoint source=${sourceIndex} stage=${stage} identity=${identity}`)
+          if (stage === 'applied') applied.add(sourceIndex)
+        })
+        try {
+          await delegator.startAbility({
+            bundleName: 'com.erosteam.nextn', abilityName: 'EntryAbility',
+            parameters: { readerLabWork: FIXTURE, readerLabChrome: 'true', readerLabPage: '2',
+              readerLabVolumeKeys: 'false' },
+          })
+          await waitImage(driver)
+          await waitApplied(applied, [2])
+          await assertEnhancedInformation(driver)
+          await capture(driver, 'page3-info')
+        } finally {
+          probe.cancel(probeEpoch)
+        }
+      })
+    })
+  }
 }

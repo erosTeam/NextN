@@ -55,15 +55,17 @@ class NextNReaderSuperResolutionPlan implements ReaderVariantAssetPlan {
   private ownerKey: string
   private originalAvailable: boolean
   private strength: () => string
+  private saveUri: string
 
   constructor(page: ReaderPage, identity: string, path: string, ownerKey: string, originalAvailable: boolean,
-    strength: () => string) {
+    strength: () => string, saveUri: string) {
     this.page = page.copy()
     this.identity = identity
     this.path = path
     this.ownerKey = ownerKey
     this.originalAvailable = originalAvailable
     this.strength = strength
+    this.saveUri = saveUri
   }
 
   async load(cancellation: ReaderCancellation, _forceReload: boolean): Promise<ReaderAsset> {
@@ -73,6 +75,7 @@ class NextNReaderSuperResolutionPlan implements ReaderVariantAssetPlan {
     const asset = new ReaderAsset(`file://${this.path}`,
       (): void => { ReaderSuperResolutionService.releaseOwner(this.ownerKey) },
       new ReaderFileInformation(this.path, facts))
+    asset.saveUri = this.saveUri
     asset.crop = new NextNReaderVariantCropSource(this.path, this.strength)
     asset.originalAvailable = this.originalAvailable
     return asset
@@ -92,6 +95,7 @@ export class NextNReaderSuperResolutionProvider implements ReaderAssetProvider {
   private context: common.UIAbilityContext
   private configuration: () => NextNReaderSuperResolutionConfiguration
   private sourcePaths: Map<string, string> = new Map<string, string>()
+  private sourceSaveUris: Map<string, string> = new Map<string, string>()
   private ownerPrefix: string
   private cropStrength: () => string
 
@@ -118,9 +122,16 @@ export class NextNReaderSuperResolutionProvider implements ReaderAssetProvider {
     forceReload: boolean): Promise<ReaderAsset> {
     const asset = await this.provider.load(page, kind, cancellation, forceReload)
     if (kind === 'original') {
+      const key = this.pageIdentity(page)
       const path = NextNReaderSuperResolutionProvider.localPath(asset.uri)
-      if (path.length > 0) this.sourcePaths.set(this.pageIdentity(page), path)
-      else this.sourcePaths.delete(this.pageIdentity(page))
+      const saveUri = asset.saveUri.length > 0 ? asset.saveUri : asset.uri
+      if (path.length > 0 && saveUri.length > 0) {
+        this.sourcePaths.set(key, path)
+        this.sourceSaveUris.set(key, saveUri)
+      } else {
+        this.sourcePaths.delete(key)
+        this.sourceSaveUris.delete(key)
+      }
     }
     return asset
   }
@@ -132,8 +143,10 @@ export class NextNReaderSuperResolutionProvider implements ReaderAssetProvider {
     if (variant !== 'enhanced' || !configuration.enabled || configuration.identity() !== identity) {
       throw new Error('reader_variant_unavailable')
     }
-    const sourcePath = this.sourcePaths.get(this.pageIdentity(page)) ?? ''
-    if (sourcePath.length === 0) throw new Error('reader_variant_source_unavailable')
+    const key = this.pageIdentity(page)
+    const sourcePath = this.sourcePaths.get(key) ?? ''
+    const saveUri = this.sourceSaveUris.get(key) ?? ''
+    if (sourcePath.length === 0 || saveUri.length === 0) throw new Error('reader_variant_source_unavailable')
     const ownerKey = `${this.ownerPrefix}:${page.unit.scope}:${page.unit.work}:${page.unit.unit}:${page.key}:${identity}`
     const detach = cancellation.onCancel((): void => {
       console.info(`[NextNSharedSuperResolution] cancelled source=${page.sourceIndex} identity=${identity}`)
@@ -167,7 +180,7 @@ export class NextNReaderSuperResolutionProvider implements ReaderAssetProvider {
         this.context, page.unit.work, page.sourceIndex, 'applied', identity)
       retained = true
       return new NextNReaderSuperResolutionPlan(page, identity, path, ownerKey,
-        this.provider.prepareOriginal !== undefined, this.cropStrength)
+        this.provider.prepareOriginal !== undefined, this.cropStrength, saveUri)
     } catch (error) {
       console.warn(`[NextNSharedSuperResolution] unavailable source=${page.sourceIndex} identity=${identity} error=${String(error)}`)
       connectNextNReaderSuperResolutionProbe().deliver(

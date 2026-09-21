@@ -193,6 +193,15 @@ export class ReaderThumbnailTransitionState {
     return this.readerImageHidden(page) ? 0 : 1
   }
 
+  /**
+   * NextN's root proxy is the visible owner for every armed close flight.
+   * Keep the route mounted for its close callback and retain the canvas for
+   * the backdrop fade; only live Reader content and controls yield to it.
+   */
+  readerBodyOpacity(): number {
+    return this.closingProxyVisible() ? 0 : 1
+  }
+
   private imageRatio(image: NhGalleryPage): number {
     if (image.width > 0 && image.height > 0) {
       return image.width / image.height
@@ -308,6 +317,24 @@ export class ReaderThumbnailTransitionState {
     this.proxyWidth = this.openTargetWidth
     this.proxyHeight = this.openTargetHeight
     this.proxyRadius = this.openTargetRadius
+  }
+
+  /**
+   * A shared Reader entry resolves its selected image after its route mounts.
+   * Keep the root proxy as the flight owner, but use that measured part rather
+   * than treating the whole root as the destination.
+   */
+  setOpeningTarget(x: number, y: number, width: number, height: number): boolean {
+    if (!this.waitingReader() || !Number.isFinite(x) || !Number.isFinite(y) ||
+      !Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+      return false
+    }
+    this.openTargetX = x
+    this.openTargetY = y
+    this.openTargetWidth = width
+    this.openTargetHeight = height
+    this.openTargetRadius = 0
+    return true
   }
 
   finishOpeningFlight(): boolean {
@@ -434,6 +461,10 @@ export class ReaderThumbnailTransitionState {
     targetRadius: number,
     readerSnapshot: image.PixelMap | undefined,
     readerSnapshotAspectRatio: number,
+    readerStartX: number,
+    readerStartY: number,
+    readerStartWidth: number,
+    readerStartHeight: number,
     closeTargetSnapshot: image.PixelMap | undefined,
   ): void {
     this.sourceComponentId = sourceComponentId
@@ -446,6 +477,16 @@ export class ReaderThumbnailTransitionState {
     this.closeTargetSnapshot = closeTargetSnapshot
     this.closeTargetSnapshotOpacity = 0
     this.prepareFullscreenProxy(image, this.readerSnapshotAspectRatio)
+    // A spread can still have a neighboring part visible when close begins. The
+    // captured selected part must therefore start at its live Reader rectangle,
+    // rather than being re-laid out as a newly fullscreen single page.
+    if (readerSnapshot !== undefined && readerStartWidth > 0 && readerStartHeight > 0) {
+      this.proxyX = readerStartX
+      this.proxyY = readerStartY
+      this.proxyWidth = readerStartWidth
+      this.proxyHeight = readerStartHeight
+      this.proxyRadius = 0
+    }
     this.closeTargetX = targetX
     this.closeTargetY = targetY
     this.closeTargetWidth = targetWidth

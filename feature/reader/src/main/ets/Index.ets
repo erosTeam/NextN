@@ -6,6 +6,10 @@ export {
   NextNProductionReaderDataSource,
 } from './lab/NextNReaderDataSource'
 export { connectNextNReaderLabContextProbe } from './lab/NextNReaderLabContextProbe'
+export {
+  connectNextNReaderLegacyCacheLeaseProbe,
+  NextNReaderLegacyCacheLeaseFacts,
+} from './lab/NextNReaderLegacyCacheLeaseProbe'
 export { connectNextNReaderObservedProgressProbe } from './lab/NextNReaderObservedProgressProbe'
 export { connectNextNReaderSuperResolutionProbe } from './lab/NextNReaderSuperResolutionProbe'
 export { connectNextNReaderTranslationProbe } from './lab/NextNReaderTranslationProbe'
