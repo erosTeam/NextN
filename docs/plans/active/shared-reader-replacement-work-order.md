@@ -38,7 +38,13 @@ The following are finite pending checks inside this one package, not new queues:
   `docs/plans/active/gallery-reader-transition-acceptance.md` 的「2026-09-21 标准非H测试内容」
   小节，本单不复制全文）。后续所有设备链（含交接）只使用标准非H内容；历史已闭合的 H 内容
   证据不重开、不改写。
-- device197 标准画廊：未定，须在 197 下一次租约内按同一文本元数据流程实测确定后回填本节。
+- device197 / NextN 标准画廊（2026-09-21 晚间实测，仍未定，NextN 入场链已停）：NextN 该构建
+  无首页 Non-H 页签、home 菜单无搜索项、搜索选项 sheet 无 EH 分类过滤，EH URL want 未被实现
+  （`EntryAbility.galleryDirectLaunchId` 只接受 `--pi nextn_gallery_id` 或 `nextn://gallery/<gid>`）。
+  直启实测标准候选 `4203217`（237 同款）：Detail 路由可达但加载失败（「无法加载此画廊」）；
+  对照直启已知可加载的 `673508` 成功（标题/分类/标签 dump 正常），判定为当日新画廊在该加载路径
+  尚不可解析（直启无 token 参数）。197 标准画廊需选定建龄较老的 EH Non-H 画廊，或等
+  `4203217` 可解析后复测；不得预先指派。
 
 
 - **Save/share, auto-read, and cache semantics:** their earlier records are
@@ -667,6 +673,29 @@ The following are finite pending checks inside this one package, not new queues:
   ordinary Detail→preview-grid thumbnail entry/exit/re-entry spread chain for this candidate, this
   gallery, portrait 237 only; F2 processed replacement, other entries (readerLab, deep link), other
   orientations, and the NextN/197 sides remain their own OPEN items.
+
+  **2026-09-21 NextN spread-entry chain — STOPPED at the standard-gallery setup gate; no
+  recording (this entry records the exact break and preliminary root cause).** Candidate HAP
+  `3add724cd9d343574dc576d79a880ac2992bc8270e91b7cacf66f2ea2ea63bb3` (NextN HEAD `fddc6c39`,
+  close-start/root flight proxy fix `732c37a7` is an ancestor; reader-kit `bece493` base), 197
+  lease `20260921-115704-47844c7b` (released), device `ALN-AL80` 1260x2720. Selection findings:
+  the NextN build has no home Non-H tab, the home menu (列表视图/跳转页面/随机画廊) has no search
+  item, the 搜索选项 sheet has no EH category filter, and the EH URL want is not implemented
+  (`EntryAbility.galleryDirectLaunchId` accepts only `--pi nextn_gallery_id` or
+  `nextn://gallery/<gid>`; the `https://e-hentai.org` want was ignored — dump stayed on Home).
+  The source-checked direct launch `--pi nextn_gallery_id 4203217` DID navigate to the Detail
+  route but the load failed with 无法加载此画廊. A single differential direct launch of the
+  known-good `673508` on the same route loaded fully (title/同人志 category/tags dump), so the
+  route is healthy and the failure is specific to the same-day gallery `4203217` not yet being
+  resolvable through this token-less detail load path — consistent with the 237 observation where
+  the same fresh gallery needed an explicit `readerLabUnit`. Per the stop rule no retry, no
+  content substitution, and no recording were made. Artifacts:
+  NextN `.hvigor/outputs/nextn-197-spread-entry-nonh-20260921/` runs 01–10 (home/menu/favorites/
+  search/filter dumps, both direct-launch detail dumps, cleanup). Reopen condition: a standard
+  non-H gallery that is resolvable on this device (established EH Non-H gallery, or `4203217`
+  once resolvable), entered via the same checked direct launch, then the same single-recording
+  chain as the NextE PASS above.
+
 
 
   **NextN 237 current-candidate chrome/re-entry attempt — NOT ACCEPTED for the
