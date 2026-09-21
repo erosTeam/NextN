@@ -1027,10 +1027,11 @@ Package 5 的下一动作（2026-09-19 用户收敛约束后修订）：**只做
     观察窗后 layout 显示 reader 仍在（parts 4/5，auto-read 节点在场），即自动阅读有推进但迟到结果链
     （prepare_started → prepare_delay → delayed_result → generation/current gate 丢弃）没有可观测的设备证据。
     按既定停止规则：不重试、不换页、不改坐标、不跑 OhosTest。结论口径：**当前候选（`ce4ec1cf` 起）的
-    Debug seam 在 237 真机上无法构造该迟到结果场景**（与 197 两次记录一致，共三次独立 attempt 均未触发），
-    该项的「真机构造 delay-once 迟到结果」子项建议**关闭或转为源码级结论**（窄契约
-    `scripts/test_nexte_auto_read_source_late_result_contract.mjs` 3/3 已覆盖 injected/delayed/discard 语义）；
-    不作为产品缺陷，也不作为自动阅读正确性的动态验收。run-04 force-stop + 恢复
+    Debug seam 在 237 真机上无法构造该迟到结果场景**（与 197 两次记录一致，共三次独立 attempt 均未触发）。
+    监督裁决（本条收尾）：**已关闭：真机构造不可行（3 次尝试零触发）；行为由源码契约覆盖
+    （reader-kit core `reader-auto-read.test.cjs` 13/13 + 窄契约
+    `scripts/test_nexte_auto_read_source_late_result_contract.mjs` 3/3，监督已独立复跑通过）；
+    边界=非设备通过、非产品缺陷、非自动阅读动态验收**。run-04 force-stop + 恢复
     `OverrideTimeout=120000ms`（回读两次），租约立即释放。原始 layout/ledger/hilog 于
     `.hvigor/outputs/nexte-237-autoread-late-result-20260921/{01-setup-gate,02-reveal-chrome,03-start-and-observe,04-cleanup}/`。
   - **2026-09-21 ArkTS entry Monitor 修复（源码/Node/本地构建，非设备验收）。** 两端宿主页原先非法监控 nullable `entryTransition.target`/`.phase`；各自改为 `rootEntryTarget: ReaderEntryTarget | null` 与覆盖 `layout/moving/waiting/revealing/finished/cancelled` 的 `rootEntryPhase: ReaderEntryPhase` computed 投影，保留 coordinator、route 和 claim fence。target 投影返回整个 target 对象，故 `publishTarget` 以同一 `layoutRevision` 替换 `decodedReady` 时仍能使 `waiting` 阶段同步并触发既有 reveal；没有改为轮询或只投影 layout revision。两端 root `Index` 的 `finishSourceEntryPending` 与 `syncReaderTrialWindow` 同样改为合法的 `readerEntryPhase` computed 投影，仍保留 `readerEntryVisibility.foreground`、claim 与 window fence。双端窄契约加上既有 entry/core/host-runtime 套件各 **30/30**。串行构建扫描目标宿主页与根 Index 的 “needs to monitor state variables that exist” 为 **0**：NextE signed HAP `entry/build/default/outputs/default/entry-default-signed.hap` SHA-256 `f701f6a9d7459594152b8f884e4337368e7b197adad5934587bbb1f93e2a3b4a`，source HEAD `7866db7824bbabd5d848fd63f443d2d84ca304bf`、Lab/Index SHA-256 `d07a1243dc504b2aedfe47d5232307e461361c4203a71dc0a6ae463a89e59ba2`/`8e6482fc3c1b0d6504ff027633f9b0902a505181efa720d67076ad013d2a2ea6`；NextN signed HAP `entry/build/default/outputs/default/entry-default-signed.hap` SHA-256 `7310c716d121f44664848076207b7deeb87ad7fa9571ed1208295dc242570231`，source HEAD `732c37a7f514e902c8e7d02d0420e52db4a3fa98`、Lab/Index SHA-256 `7138e0cbe9bcac8cd20df88146c303a38fc9b8f73680f2e51432d903498e9a7a`/`e8791a6b693f170b915facbba7418079eb70cc97b124829971a3a7ad50038179`。副本已冻结于 `/Users/honjow/Documents/Codex/2026-09-19/shared-reader-recovery/monitor-candidates-jkvY93/`，复制后 SHA 与上述值、四份源码身份均一致。其他既有 ArkTS warning 类别未改动；Koma 无 root transition，未重建；两份 HAP **仅作为本次 Monitor 修复的有界设备候选，整体仍 OPEN**。
