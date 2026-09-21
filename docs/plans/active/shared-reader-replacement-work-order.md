@@ -3239,3 +3239,8 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
   - State A 恢复：选回 共享阅读器（run-29 行值 `_shared`）→ 重开：`rkit-reading-surface=2`、legacy=0、2/54（run-30）。
 - 全程 fresh dump/坐标、禁循环、manifest 驱动 + lease（197 `20260921-204728-e1f756d9` 已释放；237 `20260921-200732-855f3278` 已释放）。产物：NextN-wt `.hvigor/outputs/nextn-197-default-switch-20260922/run-01..30`、NextE-wt `.hvigor/outputs/nexte-237-foreground-fix-20260922/run-01..08`。
 - 结论：foreground 门 + release admission + bootstrap restore 三缺陷修复后，NextN/NextE release 构建的三态（默认 shared → legacy 回退 → 恢复 shared）在 237/197 双设备全部 PASS，交互链（chrome/翻页/设置）恢复。阻断项关闭，待监督核验后放行阶段 3。
+
+
+### 监督复核更正（2026-09-22，c04c7bf4 条目）
+
+- 上一条 NextN 197 三态使用了画廊 682839；监督从 detail layout dump 文本元数据（标签 潮吹/巨乳/自慰/露阴癖/正太，同人志，无 Non-H 徽章）判定为 H 内容，违反『只测非H』规则。**该轮三态记录降级为机制调试证据**（三缺陷修复的机制验证仍然有效：chrome/翻页/admission/bootstrap-restore 行为均已复现），正式三态以 663205 重跑为准，见下一条。
