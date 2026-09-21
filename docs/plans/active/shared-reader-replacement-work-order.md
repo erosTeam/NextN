@@ -38,13 +38,18 @@ The following are finite pending checks inside this one package, not new queues:
   `docs/plans/active/gallery-reader-transition-acceptance.md` 的「2026-09-21 标准非H测试内容」
   小节，本单不复制全文）。后续所有设备链（含交接）只使用标准非H内容；历史已闭合的 H 内容
   证据不重开、不改写。
-- device197 / NextN 标准画廊（2026-09-21 晚间实测，仍未定，NextN 入场链已停）：NextN 该构建
-  无首页 Non-H 页签、home 菜单无搜索项、搜索选项 sheet 无 EH 分类过滤，EH URL want 未被实现
-  （`EntryAbility.galleryDirectLaunchId` 只接受 `--pi nextn_gallery_id` 或 `nextn://gallery/<gid>`）。
-  直启实测标准候选 `4203217`（237 同款）：Detail 路由可达但加载失败（「无法加载此画廊」）；
-  对照直启已知可加载的 `673508` 成功（标题/分类/标签 dump 正常），判定为当日新画廊在该加载路径
-  尚不可解析（直启无 token 参数）。197 标准画廊需选定建龄较老的 EH Non-H 画廊，或等
-  `4203217` 可解析后复测；不得预先指派。
+- **device197 / NextN 标准画廊（2026-09-21 晚间选定）：`663205`**（"Bug Bite: Chapter 8"，分类
+  漫画、标签 西方无H + 渣翻 + 原作:宝可梦 + 作者:cuchuflin，汉语翻译，40 页，发布 2026-07-11，
+  收藏 49）。判据为 197 本机 layout dump 文本元数据（NextN 树
+  `.hvigor/outputs/nextn-197-spread-entry-nonh-20260921/14-verify-663205/detail.json`：分类/标签
+  行原文在案），无成人标记；设备可正常加载，gid 取自历史列表节点
+  `gallery-list-history-10-history-663205`。入口语义锚点：直启 `--pi nextn_gallery_id 663205` →
+  Detail 预览网格瓦片 `reader-thumb-gallery-detail-1-page-0`。NextN 详情页无 URL/Token 文本行，
+  token 未取；标准链（直启 gid + 生产详情/阅读器路由）不依赖 token，仅 readerLab want 路由需要，
+  届时另取。路由事实（保留）：NextN 该构建无首页 Non-H 页签、home 菜单无搜索项、搜索选项 sheet
+  无 EH 分类过滤，EH URL want 未被实现（`EntryAbility.galleryDirectLaunchId` 只接受
+  `--pi nextn_gallery_id` 或 `nextn://gallery/<gid>`）；4203217（当日新画廊）直启在该路径暂不可
+  解析、对照 673508 可加载的鉴别记录见 spread-entry 条目。
 
 
 - **Save/share, auto-read, and cache semantics:** their earlier records are
@@ -695,6 +700,40 @@ The following are finite pending checks inside this one package, not new queues:
   non-H gallery that is resolvable on this device (established EH Non-H gallery, or `4203217`
   once resolvable), entered via the same checked direct launch, then the same single-recording
   chain as the NextE PASS above.
+  once resolvable), entered via the same checked direct launch, then the same single-recording
+  chain as the NextE PASS above.
+
+  **2026-09-21 NextN spread-entry runtime chain — bounded device PASS on the 197 standard
+  non-H gallery `663205` (this entry supersedes the stopped record above; same lease session
+  `20260921-121535-527fb7d3`, released; runs 11–17 under
+  `.hvigor/outputs/nextn-197-spread-entry-nonh-20260921/`).** Candidate HAP
+  `3add724cd9d343574dc576d79a880ac2992bc8270e91b7cacf66f2ea2ea63bb3` (NextN HEAD `fddc6c39`,
+  close-start/root flight proxy fix `732c37a7` is an ancestor; reader-kit `bece493` base). After
+  the zero-risk selection found `663205` in device history (text metadata only), the same
+  fresh-dump staged gates reached the Detail preview grid; the unique page-0 tile
+  `reader-thumb-gallery-detail-1-page-0` at `[78,1109][399,1597]` was the single entry source.
+  One `repeat=1` continuous recording (manifest SHA-256
+  `9227548b24654c36fab2229668924d6bcf2f3f2108e4618b0c7746ee60805155`; MP4 SHA-256
+  `735914305374d2bdc0af538a7e28ec2c088cf220c00a6bf7988ecb15a8add9e5`; **690 decoded frames,
+  original PTS `0.000000–20.084767s`**) covered exactly: thumbnail entry → stable spread → one
+  Back → same-tile re-entry. Frame review on the PTS timeline: the tap lands `~1.05s`; the entry
+  transition `~1.1–1.33s` flies the root proxy from the tile rect onto the measured **left part**
+  (colored page 1; no fullscreen-contain step) while the right neighbor area stays an independent
+  placeholder that fades to page 2 (`~2.3–2.45s`); stable double-page `1-2 / 40` holds to the
+  Back at `~7.7s`; the close proxy starts at the selected left-part crop (the right page unmounts
+  from the close snapshot) and shrinks directly back onto the source tile with the Detail fading
+  in behind (`~7.7–8.5s`) — no fullscreen single-page contain intermediate; the re-entry tap
+  `~12.2s` repeats the tile→left-part landing (`~12.45–12.9s`) with the neighbor cross-fading in
+  again (`~13.0–13.2s`), and the reader stays stable (`1-2 / 40`) through the final recorded
+  frame `#689 / 20.084767s` (final frame independently reviewed by the supervisor). No
+  black/empty reader window, no retained dual image, and no system-POP fallback in any of the
+  690 frames. **Observation (no verdict):** between the recording stop and a later evidence
+  dump (~40s, no input), the app was found back on the gallery Detail page (reader no longer
+  mounted in run 17's dump) while the recording shows no exit inside its window; the
+  post-recording return was not investigated further within the stop rule. Boundary: this
+  accepts the ordinary Detail→preview-grid thumbnail entry/exit/re-entry spread chain for this
+  candidate, this gallery, portrait 197 only; F2 processed replacement, other entries (readerLab,
+  deep link), other orientations, and the 237/103 sides remain their own OPEN items.
 
 
 
