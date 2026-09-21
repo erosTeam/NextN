@@ -141,7 +141,10 @@ export struct NextNReaderLabPage {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext
     const production = this.request.productionSources === true
     const lab = this.labRequest
-    if (!context.applicationInfo.debug || (!production && lab === null)) return
+    // Mirror NextEReaderLabPage: release + production sources must build the
+    // session (2026-09-22 197 defect: the release early-return left the reader
+    // destination mounted with a null session and an empty body).
+    if ((!context.applicationInfo.debug && !production) || (!production && lab === null)) return
     this.notifyEntrySettled()
     if (this.embedded) {
       this.onRegisterBackRequest((): boolean => {
