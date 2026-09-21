@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-autoread-r2-hap-setup-gate",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-autoread-r2-hap-setup-gate/run",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "signed current candidate SHA-256 538ce50d92ed13ecc688c51527b488215e8028c769697a1e1ca01ab660e9585b (same HAP as the accepted r2 current-unit chain)",
+    "page": "qualified public Gallery 673508 Detail setup/gate for the auto-read runtime chain; no Reader input",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Work-order next executable OPEN item: host auto-read source-prepare -> stop/close/navigation -> late-completion runtime check. NextN wires autoReadPolicy but no autoReadSourceHost, so the runtime chain is dwell-advance based. One checked setup/gate only: preserve data, install the verified HAP, launch the backend-qualified Gallery detail, capture the current layout. No Reader click, settings action, image-information UI, OhosTest, repeat, or retry. A recording is permitted only if this layout and the following gates provide unambiguous semantic anchors."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"], "timeoutSeconds": 8 },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"], "timeoutSeconds": 8 },
+    { "name": "verify-power-before-install", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"], "timeoutSeconds": 20 },
+    { "name": "install-current-signed-candidate", "hdcArgs": ["install", "-r", "/Users/honjow/git/NextN-wt/shared-reader-refactor/entry/build/default/outputs/default/entry-default-signed.hap"], "timeoutSeconds": 300 },
+    { "name": "force-stop-before-qualified-public-entry", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "timeoutSeconds": 20 },
+    { "name": "open-qualified-public-gallery-detail", "hdcArgs": ["shell", "aa", "start", "-b", "com.erosteam.nextn", "-a", "EntryAbility", "--ps", "nextn_reader_backend", "shared", "--pi", "nextn_gallery_id", "673508"], "timeoutSeconds": 30 },
+    { "name": "settle-qualified-public-gallery-detail", "hdcArgs": ["shell", "sleep", "8"], "timeoutSeconds": 20 }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "capture-current-public-detail-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-197-autoread-detail.json", "-a"], "timeoutSeconds": 30 },
+    { "name": "receive-current-public-detail-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-197-autoread-detail.json", "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-autoread-r2-hap-setup-gate/run/public-detail.json"], "timeoutSeconds": 30 },
+    { "name": "capture-current-public-detail-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-197-autoread-detail.png"], "timeoutSeconds": 30 },
+    { "name": "receive-current-public-detail-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-197-autoread-detail.png", "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-autoread-r2-hap-setup-gate/run/public-detail.png"], "timeoutSeconds": 30 },
+    { "name": "verify-power-after-detail-capture", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"], "timeoutSeconds": 20 }
+  ]
+}

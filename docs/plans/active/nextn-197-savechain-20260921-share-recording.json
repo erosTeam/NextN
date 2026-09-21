@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-savechain-share-cancel-recording",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-savechain-share-recording/run",
+  "recordingFileName": "nextn197_savechain_share_cancel.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 1000,
+  "idleRecordMs": 0,
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "actions": [
+    { "name": "back-cancel-share-session", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 3000 }
+  ],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "installed signed current candidate SHA-256 538ce50d92ed13ecc688c51527b488215e8028c769697a1e1ca01ab660e9585b (committed reader-kit bece493 with the share host bridge)",
+    "page": "one current share session reaching the system share sheet and cancelling it with a single Back before any destination selection",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "The share sheet was opened by the checked share gate (one rkit-share-image click at this run's measured [876,214]) and its gate screenshot shows the system share card with the current gallery title and no selected destination. This recording has exactly one Back action: it dismisses the share sheet, returns to the same 5 / 83 Reader, and sends nothing. No retry, image-information UI, OhosTest, repeat, or additional gesture."
+  }
+}

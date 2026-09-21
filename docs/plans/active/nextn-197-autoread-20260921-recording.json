@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-autoread-r2hap-public-lifecycle-recording",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-autoread-r2hap-recording/run",
+  "recordingFileName": "nextn197_autoread_r2hap_lifecycle.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 1000,
+  "idleRecordMs": 0,
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "actions": [
+    { "name": "autoread-enable", "uiInput": ["click", "266", "2505"], "pauseAfterMs": 10000 },
+    { "name": "autoread-disable", "uiInput": ["click", "266", "2505"], "pauseAfterMs": 3000 },
+    { "name": "back-close-reader", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 3500 },
+    { "name": "reenter-same-qualified-detail", "uiInput": ["click", "1068", "2593"], "pauseAfterMs": 8000 },
+    { "name": "reveal-chrome-after-reentry", "uiInput": ["click", "630", "1360"], "pauseAfterMs": 2500 }
+  ],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "installed signed current candidate SHA-256 538ce50d92ed13ecc688c51527b488215e8028c769697a1e1ca01ab660e9585b; host HEAD 732c37a7f514e902c8e7d02d0420e52db4a3fa98",
+    "page": "one continuous current Reader auto-read lifecycle: enable (10 s dwell window) -> disable (3 s no-turn window) -> Back close -> same qualified Gallery 673508 Detail action re-entry -> body-centre chrome reveal",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Work-order next executable OPEN item: host auto-read source-prepare -> stop/close/navigation -> late-completion runtime check. NextN wires autoReadPolicy without an autoReadSourceHost, so the runtime chain is dwell-advance based and the late-completion claim is: no page advance after disable and none after close/re-entry. The auto-read centre [266,2505] is derived only from this run's chrome-reveal gate unique rkit-auto-read bounds [195,2434][338,2577]. The re-entry centre [1068,2593] is derived from this run's unique gallery-detail-read-action bounds [876,2467][1260,2720]. Both reveal centres [630,1360] are the centre of this run's unique rkit-image-viewport [0,0][1260,2720]. Chrome was revealed once before recording by the checked chrome-reveal gate, so recording action 1 operates an already-visible control. Declared boundary: the device dwell is the persisted autoPageSeconds (default 3 s, clamp 1..60); if the persisted value exceeds the 10 s enable window, zero automatic turns make this evidence incomplete, not a product failure. Automatic turns advance the reading progress of Gallery 673508, consistent with prior accepted page-turning recordings. No launch, layout dump, image-information UI, More menu, settings-sheet input, OhosTest, repeat, retry, scroll, or additional gesture."
+  }
+}

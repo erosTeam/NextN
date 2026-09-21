@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-savechain-menu-gate",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-savechain-menu-gate/run",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "already-installed signed current candidate SHA-256 538ce50d92ed13ecc688c51527b488215e8028c769697a1e1ca01ab660e9585b",
+    "page": "open the current save menu to measure the unique rkit-save-left anchor",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Exactly one rkit-save-image click at this run's revealed-chrome bounds centre. The menu persists into the subsequent single recording, whose only action selects the freshly measured save-left page and then cancels the system dialog with one Back. No recording in this gate; capture after settling only."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "open-save-menu-from-savechain-unique-anchor", "uiInput": ["click", "123", "2505"], "pauseAfterMs": 2000, "timeoutSeconds": 20 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-save-menu-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-197-savechain-menu.json", "-a"], "timeoutSeconds": 30 },
+    { "name": "receive-save-menu-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-197-savechain-menu.json", "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-savechain-menu-gate/run/menu.json"], "timeoutSeconds": 30 },
+    { "name": "capture-save-menu-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-197-savechain-menu.png"], "timeoutSeconds": 30 },
+    { "name": "receive-save-menu-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-197-savechain-menu.png", "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-savechain-menu-gate/run/menu.png"], "timeoutSeconds": 30 },
+    { "name": "verify-awake-after-menu-gate", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"], "timeoutSeconds": 20 }
+  ]
+}

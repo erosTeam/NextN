@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-savechain-share-gate",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-savechain-share-gate/run",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "already-installed signed current candidate SHA-256 538ce50d92ed13ecc688c51527b488215e8028c769697a1e1ca01ab660e9585b",
+    "page": "open the current share sheet to confirm the share session before its single-Back cancellation recording",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Exactly one rkit-share-image click at this run's revealed-chrome bounds centre [876,214] from the chrome-gate dump (same chrome state; the save chain left chrome revealed at 5/83). The share sheet persists into the subsequent single recording whose only action is one Back. No recording in this gate; capture after settling only."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "open-share-sheet-from-savechain-unique-anchor", "uiInput": ["click", "876", "214"], "pauseAfterMs": 2500, "timeoutSeconds": 20 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-share-sheet-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-197-savechain-share.json", "-a"], "timeoutSeconds": 30 },
+    { "name": "receive-share-sheet-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-197-savechain-share.json", "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-savechain-share-gate/run/share.json"], "timeoutSeconds": 30 },
+    { "name": "capture-share-sheet-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-197-savechain-share.png"], "timeoutSeconds": 30 },
+    { "name": "receive-share-sheet-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-197-savechain-share.png", "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-savechain-share-gate/run/share.png"], "timeoutSeconds": 30 },
+    { "name": "verify-awake-after-share-gate", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"], "timeoutSeconds": 20 }
+  ]
+}

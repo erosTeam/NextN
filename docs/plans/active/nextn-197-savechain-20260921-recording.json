@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-savechain-save-cancel-recording",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-savechain-recording/run",
+  "recordingFileName": "nextn197_savechain_cancel.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 1000,
+  "idleRecordMs": 0,
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "actions": [
+    { "name": "select-save-left-current-page", "uiInput": ["click", "308", "2005"], "pauseAfterMs": 1000 },
+    { "name": "back-cancel-save-session", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 3000 }
+  ],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "installed signed current candidate SHA-256 538ce50d92ed13ecc688c51527b488215e8028c769697a1e1ca01ab660e9585b (committed reader-kit bece493 with the save host bridge)",
+    "page": "one current left-page save session reaching the system save dialog and cancelling it before any destination confirmation",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Closes the save-chain gap left by the earlier 7310c716 monitor-candidate observation: the current candidate contains the committed save host bridge, so the earlier evidence is not equivalent. The save-left centre [308,2005] is derived only from this run's save-menu gate unique rkit-save-left bounds [65,1927][552,2083]. The menu was opened by the checked menu gate from this run's unique revealed rkit-save-image [52,2434][195,2577] and persisted into this recording. Expected: system save-permission dialog visible ~1s after the click, one Back cancels the session, no destination confirmation and no album write. No retry, image-information UI, OhosTest, repeat, or additional gesture."
+  }
+}

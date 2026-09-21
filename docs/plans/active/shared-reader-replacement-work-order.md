@@ -210,8 +210,47 @@ The following are finite pending checks inside this one package, not new queues:
   was ≈ 3 s, so the window was sufficient. The runner deleted its unique
   MediaLibrary asset and verified absence; the checked cleanup then force-stopped
   the app and restored the timeout; the lease was released immediately. This
-  closes the auto-read runtime-chain item for this NextN candidate only; save,
-  share, and cache chains remain OPEN.
+  closes the auto-read runtime-chain item for this NextN candidate only.
+  **2026-09-21 save/share runtime chains and cache observation — bounded
+  device PASS.** On the same current candidate HAP
+  `538ce50d92ed13ecc688c51527b488215e8028c769697a1e1ca01ab660e9585b`
+  (committed reader-kit `bece493`, whose save/share host bridges postdate
+  the earlier `7310c716` monitor-candidate save observation, so that record
+  is not equivalent), fresh 197 lease `20260921-080927-6e150787` ran checked
+  gates whose single clicks each came from that run's own measured anchors:
+  setup/install/launch, the sole `gallery-detail-read-action` centre
+  `[1026,2593]`, the unique viewport-centre reveal `[630,1360]`, the
+  revealed `rkit-save-image` `[52,2434][195,2577]`, the unique save menu
+  (`rkit-save-left` `[65,1927][552,2083]` labelled 左侧 第 5 页, plus
+  right and both rows), and the revealed `rkit-share-image`
+  `[805,143][948,286]`. The save recording (manifest
+  `nextn197_savechain_cancel`, MP4 SHA-256
+  `d4aa5e845f115743192c46a27d475b3d9bbf3ea24c97f83d4428dee7e3fb573d`,
+  124 ffprobe PTS frames to `5.759889s`) selected the left page once at
+  ~`1.0s`: the system dialog 允许“NextN”保存 1 张图片？ (禁止/允许) is
+  visible at `2.0s`, one Back at ~`2.44s` cancels the session, and the
+  reader is intact at `5 / 83` with no destination confirmation and no
+  album write. The share recording (manifest
+  `nextn197_savechain_share_cancel`, MP4 SHA-256
+  `0c774c58932485c1741b847c9092f1d5f4986bfc592b49672eaa1dc11a600345`,
+  83 ffprobe PTS frames to `4.462578s`) covers the system share sheet
+  opened by the share gate — its screenshot shows the share card with the
+  current gallery title and no selected destination — and one Back at
+  ~`1.0s` dismisses it back to the same `5 / 83` Reader; nothing was
+  sent. Cache observation (no new recording needed): the same candidate's
+  two accepted 2026-09-21 recordings already bound the warm-cache runtime
+  behavior — in the auto-read recording every automatic turn completed
+  inside its single ≤0.5 s diff window (spikes at ~`3.75–4.0s` and
+  ~`7.5–7.75s`) with zero separate loading window, and after both
+  close/re-entry transitions (`18.75–30.0s`, and the sheet-retention
+  recording `14.0s` onward) the restored `5 / 83` body showed zero
+  pixel churn, i.e. no observable loading phase on resume. Boundary: this
+  is same-session warm-cache evidence only; cold-install continuity
+  remains the separate draft runtime-continuity spec and is not claimed.
+  The runners deleted their media assets and verified absence; the checked
+  cleanup force-stopped the app and restored the timeout; the lease was
+  released immediately. This closes the save, share, and cache items of the
+  finite list for this NextN candidate.
 
 ### 2026-09-21 current-device ledger
 

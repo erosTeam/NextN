@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-sheetret-reader-gate",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-sheetret-reader-gate/run",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "already-installed signed current candidate SHA-256 538ce50d92ed13ecc688c51527b488215e8028c769697a1e1ca01ab660e9585b",
+    "page": "current Reader semantic gate from the sheet-retention qualified Gallery 673508 Detail",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Exactly one current-layout-derived Reader entry click from this run's unique gallery-detail-read-action bounds (centre filled after gate validation). After settling, captures Reader layout, screen and power only. No reveal, settings action, recording, OhosTest, image-information action, retry, or repeat."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "enter-reader-from-sheetret-unique-current-action", "uiInput": ["click", "1026", "2593"], "pauseAfterMs": 8000, "timeoutSeconds": 20 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-current-reader-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-197-sheetret-reader.json", "-a"], "timeoutSeconds": 30 },
+    { "name": "receive-current-reader-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-197-sheetret-reader.json", "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-sheetret-reader-gate/run/reader.json"], "timeoutSeconds": 30 },
+    { "name": "capture-current-reader-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-197-sheetret-reader.png"], "timeoutSeconds": 30 },
+    { "name": "receive-current-reader-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-197-sheetret-reader.png", "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-sheetret-reader-gate/run/reader.png"], "timeoutSeconds": 30 },
+    { "name": "verify-awake-after-reader-gate", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"], "timeoutSeconds": 20 }
+  ]
+}

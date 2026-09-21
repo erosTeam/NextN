@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-savechain-chrome-gate",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-savechain-chrome-gate/run",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "already-installed signed current candidate SHA-256 538ce50d92ed13ecc688c51527b488215e8028c769697a1e1ca01ab660e9585b",
+    "page": "one-time chrome reveal inside the current Reader to measure the unique rkit-save-image anchor",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Exactly one body-centre reveal click at this run's unique rkit-image-viewport centre. After settling, captures layout, screen and power only. No save/share input, recording, OhosTest, image-information action, retry, or repeat. The revealed chrome persists into the save-menu gate."
+  },
+  "preflight": [],
+  "measurement": {
+    "actions": [
+      { "name": "reveal-chrome-at-savechain-unique-viewport-centre", "uiInput": ["click", "630", "1360"], "pauseAfterMs": 2500, "timeoutSeconds": 20 }
+    ]
+  },
+  "postflight": [
+    { "name": "capture-revealed-chrome-layout", "hdcArgs": ["shell", "uitest", "dumpLayout", "-p", "/data/local/tmp/nextn-197-savechain-chrome.json", "-a"], "timeoutSeconds": 30 },
+    { "name": "receive-revealed-chrome-layout", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-197-savechain-chrome.json", "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-savechain-chrome-gate/run/chrome.json"], "timeoutSeconds": 30 },
+    { "name": "capture-revealed-chrome-screen", "hdcArgs": ["shell", "uitest", "screenCap", "-p", "/data/local/tmp/nextn-197-savechain-chrome.png"], "timeoutSeconds": 30 },
+    { "name": "receive-revealed-chrome-screen", "hdcArgs": ["file", "recv", "/data/local/tmp/nextn-197-savechain-chrome.png", "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-savechain-chrome-gate/run/chrome.png"], "timeoutSeconds": 30 },
+    { "name": "verify-awake-after-chrome-gate", "hdcArgs": ["shell", "hidumper", "-s", "PowerManagerService", "-a", "-s"], "timeoutSeconds": 20 }
+  ]
+}

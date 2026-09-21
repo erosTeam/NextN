@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-savechain-cleanup",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-savechain-cleanup/run",
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "cleanup after the accepted nextn197_savechain_cancel.mp4 (d4aa5e845f115743192c46a27d475b3d9bbf3ea24c97f83d4428dee7e3fb573d) and nextn197_savechain_share_cancel.mp4 (0c774c58932485c1741b847c9092f1d5f4986bfc592b49672eaa1dc11a600345) captures",
+    "page": "post-capture cleanup only",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Both recording runners already deleted their unique MediaLibrary assets and verified absence in their own ledgers. This cleanup only force-stops the test app left on the revealed-chrome Reader state and restores the screen-off timeout. It makes no product-data, cache, preference, account, or HAP mutation."
+  },
+  "preflight": [
+    { "name": "wake", "hdcArgs": ["shell", "power-shell", "wakeup"], "timeoutSeconds": 8 },
+    { "name": "keep-awake", "hdcArgs": ["shell", "power-shell", "timeout", "-o", "86400000"], "timeoutSeconds": 8 }
+  ],
+  "measurement": { "actions": [] },
+  "postflight": [
+    { "name": "force-stop-after-accepted-recordings", "hdcArgs": ["shell", "aa", "force-stop", "com.erosteam.nextn"], "timeoutSeconds": 20 },
+    { "name": "restore-timeout", "hdcArgs": ["shell", "power-shell", "timeout", "-r"], "timeoutSeconds": 8 }
+  ]
+}

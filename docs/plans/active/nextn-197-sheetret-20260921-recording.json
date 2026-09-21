@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "nextn-197-sheetret-public-lifecycle-recording",
+  "target": "192.168.50.197:12345",
+  "authorizedTarget": "192.168.50.197:12345",
+  "hdc": "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc",
+  "artifactDir": "/Users/honjow/git/NextN-wt/shared-reader-refactor/.hvigor/outputs/nextn-197-sheetret-recording/run",
+  "recordingFileName": "nextn197_sheetret_lifecycle.mp4",
+  "timeoutMs": 86400000,
+  "warmupMs": 1000,
+  "idleRecordMs": 0,
+  "display": { "widthPx": 1260, "heightPx": 2720 },
+  "actions": [
+    { "name": "enhancement-temporary-off", "uiInput": ["click", "695", "214"], "pauseAfterMs": 2000 },
+    { "name": "open-host-settings-sheet", "uiInput": ["click", "1019", "214"], "pauseAfterMs": 3000 },
+    { "name": "back-dismiss-sheet", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 2500 },
+    { "name": "back-close-reader", "uiInput": ["keyEvent", "Back"], "pauseAfterMs": 3500 },
+    { "name": "reenter-same-qualified-detail", "uiInput": ["click", "1026", "2593"], "pauseAfterMs": 8000 }
+  ],
+  "context": {
+    "project": "NextN",
+    "codeIdentity": "installed signed current candidate SHA-256 538ce50d92ed13ecc688c51527b488215e8028c769697a1e1ca01ab660e9585b (contains the temporaryVariantActive settings-sheet retention repair)",
+    "page": "one continuous current Reader settings-sheet retention lifecycle: temporary OFF -> open host settings sheet -> Back dismiss -> Back close -> same Gallery 673508 Detail re-entry",
+    "deviceAlias": "device197",
+    "deviceModel": "ALN-AL80",
+    "foldState": "not-applicable",
+    "orientation": "portrait",
+    "resolution": "1260x2720",
+    "notes": "Closes the work order's last single-column OPEN item for this candidate: settings-sheet-open retention of the per-current-unit temporary super-resolution choice. The enhancement centre [695,214] is derived only from this run's chrome gate unique revealed top-bar rkit-enhancement-status bounds [659,178][731,250]. The host-settings centre [1019,214] is derived only from this run's unique rkit-host-settings bounds [948,143][1091,286]. The re-entry centre [1026,2593] is derived from this run's unique gallery-detail-read-action bounds [792,2467][1260,2720]. Chrome was revealed once before recording by the checked chrome gate. Expected evidence: dim icon after action 1, sheet visible after action 2, dim icon preserved after action 3 (the repaired retention), reader closed after action 4, and global ON red icon after re-entry. No launch, layout dump, image-information UI, More menu, OhosTest, repeat, retry, scroll, or additional gesture."
+  }
+}
