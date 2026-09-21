@@ -242,7 +242,7 @@ export struct AppColorPicker {
           .borderWidth(1)
           .borderColor(ThemeTokens.DIVIDER)
         SymbolGlyph($r('sys.symbol.plus'))
-          .fontSize(20)
+          .fontSize(ThemeTokens.SYMBOL_SIZE_CONTROL)
           .fontColor([ThemeTokens.TEXT_SECONDARY])
       } else {
         Column()

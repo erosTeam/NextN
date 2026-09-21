@@ -317,7 +317,7 @@ export struct AboutPage {
   AppHeader() {
     Column({ space: ThemeTokens.SPACE_XS }) {
       Text(AppStrings.get('EntryAbility_label'))
-        .fontSize(28)
+        .fontSize(ThemeTokens.FONT_SIZE_DISPLAY)
         .fontWeight(FontWeight.Bold)
         .fontColor(ThemeTokens.TEXT_PRIMARY)
       Text(AppStrings.get('about_tagline'))

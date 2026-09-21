@@ -18,6 +18,7 @@ export class LlmSourceRuntimeConfig {
   sourceType: string = ''
   baseUrl: string = ''
   modelId: string = ''
+  reasoningEffort: string = ''
   apiKey: string = ''
 
   requestIdentity(): string {
@@ -26,6 +27,7 @@ export class LlmSourceRuntimeConfig {
       this.sourceRevision,
       this.sourceType,
       this.modelId,
+      this.reasoningEffort,
     ])
   }
 
@@ -83,7 +85,7 @@ export class LlmSourceRuntimeResolver {
     if (!LlmSourceSecretVault.apiKeyMatchesIdentity(apiKey, profile.accountIdentityHash)) {
       throw new Error('Selected LLM source API key does not match its stored identity')
     }
-    return LlmSourceRuntimeResolver.runtimeConfig(profile, '', apiKey)
+    return LlmSourceRuntimeResolver.runtimeConfig(profile, '', '', apiKey)
   }
 
   private static async resolveConsumer(
@@ -112,7 +114,12 @@ export class LlmSourceRuntimeResolver {
     if (!LlmSourceSecretVault.apiKeyMatchesIdentity(apiKey, current.profile.accountIdentityHash)) {
       throw new Error('Selected LLM source API key does not match its stored identity')
     }
-    return LlmSourceRuntimeResolver.runtimeConfig(current.profile, current.modelId, apiKey)
+    return LlmSourceRuntimeResolver.runtimeConfig(
+      current.profile,
+      current.modelId,
+      current.reasoningEffort,
+      apiKey,
+    )
   }
 
   private static currentResolution(consumerId: string): LlmSourceResolution {
@@ -132,12 +139,14 @@ export class LlmSourceRuntimeResolver {
     return first.profile.sourceProfileId === second.profile.sourceProfileId &&
       first.profile.sourceRevision === second.profile.sourceRevision &&
       first.profile.requestIdentity() === second.profile.requestIdentity() &&
-      first.modelId === second.modelId
+      first.modelId === second.modelId &&
+      first.reasoningEffort === second.reasoningEffort
   }
 
   private static runtimeConfig(
     profile: LlmSourceProfile,
     modelId: string,
+    reasoningEffort: string,
     apiKey: string,
   ): LlmSourceRuntimeConfig {
     if (profile.sourceType !== LLM_SOURCE_TYPE_OPENAI_COMPATIBLE) {
@@ -149,6 +158,7 @@ export class LlmSourceRuntimeResolver {
     config.sourceType = profile.sourceType
     config.baseUrl = profile.baseUrl
     config.modelId = modelId
+    config.reasoningEffort = reasoningEffort
     config.apiKey = apiKey
     return config
   }

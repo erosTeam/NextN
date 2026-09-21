@@ -441,7 +441,7 @@ export struct LocalUserTagsPage {
   private TagStatusPrefix(record: NhLocalUserTag) {
     Row() {
       SymbolGlyph(record.hidden ? $r('sys.symbol.xmark_circle_fill') : $r('sys.symbol.dot_circle'))
-        .fontSize(24)
+        .fontSize(ThemeTokens.SYMBOL_SIZE_STANDARD)
         .fontColor([record.hidden ? Color.Red : ThemeTokens.TEXT_TERTIARY])
     }
     .width(36)

@@ -569,6 +569,10 @@
       "value": "取消"
     },
     {
+      "name": "common_save",
+      "value": "保存"
+    },
+    {
       "name": "common_delete",
       "value": "删除"
     },
@@ -1671,6 +1675,18 @@
     {
       "name": "llm_binding_model_hint",
       "value": "查看该 LLM 源支持的模型"
+    },
+    {
+      "name": "llm_reasoning_effort",
+      "value": "思考深度"
+    },
+    {
+      "name": "llm_reasoning_effort_hint",
+      "value": "不查询模型支持情况，直接发送所选档位"
+    },
+    {
+      "name": "llm_reasoning_effort_model_default",
+      "value": "模型默认"
     },
     {
       "name": "llm_binding_save_failed",
@@ -3315,22 +3331,6 @@
     {
       "name": "settings_reader_layout",
       "value": "翻页方向"
-    },
-    {
-      "name": "settings_reader_group_rehearsal",
-      "value": "替换演练"
-    },
-    {
-      "name": "settings_reader_backend",
-      "value": "阅读器实现"
-    },
-    {
-      "name": "settings_reader_backend_legacy",
-      "value": "旧版阅读器"
-    },
-    {
-      "name": "settings_reader_backend_shared",
-      "value": "新阅读器（默认）"
     },
     {
       "name": "settings_reader_group_layout",
@@ -5063,10 +5063,6 @@
     {
       "name": "comment_translation_prompt_profile_hint",
       "value": "评论与标题共用；仅 AI 路径生效"
-    },
-    {
-      "name": "settings_reader_group_implementation",
-      "value": "阅读器实现"
     }
   ]
 }

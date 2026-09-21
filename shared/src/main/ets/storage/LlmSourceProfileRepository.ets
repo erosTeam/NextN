@@ -23,8 +23,10 @@ const LLM_SOURCE_STORE: string = 'nextn_llm_sources'
 const LLM_SOURCE_PROFILES_KEY: string = 'profiles'
 const COMMENT_SOURCE_KEY: string = 'comment_source'
 const COMMENT_MODEL_KEY: string = 'comment_model'
+const COMMENT_REASONING_EFFORT_KEY: string = 'comment_reasoning_effort'
 const MANGA_SOURCE_KEY: string = 'manga_source'
 const MANGA_MODEL_KEY: string = 'manga_model'
+const MANGA_REASONING_EFFORT_KEY: string = 'manga_reasoning_effort'
 
 /** The only durable owner of non-secret LLM source metadata and consumer bindings. */
 export class LlmSourceProfileRepository {
@@ -216,6 +218,7 @@ export class LlmSourceProfileRepository {
     const value: LlmSourceResolution = new LlmSourceResolution()
     value.profile = profiles[index].copy()
     value.modelId = binding.modelId
+    value.reasoningEffort = binding.reasoningEffort
     return value
   }
 
@@ -302,6 +305,10 @@ export class LlmSourceProfileRepository {
       store.getSync(keys[1], '') as string,
       MAX_LLM_MODEL_ID_CHARS,
     )
+    binding.reasoningEffort = LlmSourceProfileContract.canonicalText(
+      store.getSync(keys[2], '') as string,
+      16,
+    )
     try {
       LlmSourceProfileContract.validateBinding(binding)
       return binding
@@ -312,10 +319,10 @@ export class LlmSourceProfileRepository {
 
   private static bindingKeys(consumerId: string): string[] {
     if (consumerId === LLM_CONSUMER_COMMENT_TRANSLATION) {
-      return [COMMENT_SOURCE_KEY, COMMENT_MODEL_KEY]
+      return [COMMENT_SOURCE_KEY, COMMENT_MODEL_KEY, COMMENT_REASONING_EFFORT_KEY]
     }
     if (consumerId === LLM_CONSUMER_MANGA_TRANSLATION) {
-      return [MANGA_SOURCE_KEY, MANGA_MODEL_KEY]
+      return [MANGA_SOURCE_KEY, MANGA_MODEL_KEY, MANGA_REASONING_EFFORT_KEY]
     }
     throw new Error('Unknown LLM consumer')
   }
@@ -336,10 +343,16 @@ export class LlmSourceProfileRepository {
     if (binding.configured()) {
       store.putSync(keys[0], binding.sourceProfileId)
       store.putSync(keys[1], binding.modelId)
+      if (binding.reasoningEffort.length === 0) {
+        store.deleteSync(keys[2])
+      } else {
+        store.putSync(keys[2], binding.reasoningEffort)
+      }
       return
     }
     store.deleteSync(keys[0])
     store.deleteSync(keys[1])
+    store.deleteSync(keys[2])
   }
 
   private static indexOf(profiles: LlmSourceProfile[], sourceProfileId: string): number {

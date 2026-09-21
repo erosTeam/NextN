@@ -42,6 +42,7 @@ export class OpenAiResponsesComicTextTranslator implements ComicTextTranslator {
     this.config.providerId = runtime.providerId()
     this.config.baseUrl = runtime.baseUrl
     this.config.model = runtime.modelId
+    this.config.reasoningEffort = runtime.reasoningEffort
     this.config.accessToken = runtime.apiKey
     this.revision = runtime.sourceRevision
     this.inputMode = inputMode
@@ -60,9 +61,12 @@ export class OpenAiResponsesComicTextTranslator implements ComicTextTranslator {
   }
 
   promptVersion(): string {
-    return this.inputMode === COMIC_TEXT_TRANSLATION_INPUT_TEXT_ONLY
+    const baseVersion: string = this.inputMode === COMIC_TEXT_TRANSLATION_INPUT_TEXT_ONLY
       ? COMIC_RESPONSES_TEXT_ONLY_TRANSLATION_PROMPT_VERSION
       : COMIC_RESPONSES_TEXT_TRANSLATION_PROMPT_VERSION
+    return this.config.reasoningEffort.length === 0
+      ? baseVersion
+      : baseVersion + ':reasoning=' + this.config.reasoningEffort
   }
 
   contextFingerprint(request: ComicTextTranslationRequest): string {

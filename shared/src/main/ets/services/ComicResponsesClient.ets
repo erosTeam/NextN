@@ -30,6 +30,7 @@ class PublicResponsesRequestBody {
   stream: boolean = false
   store: boolean = false
   max_output_tokens: number = 8192
+  reasoning_effort?: string
 }
 
 export class ComicResponsesLabeledImage {
@@ -84,6 +85,7 @@ export class ComicResponsesCallConfig {
   providerId: string = ''
   baseUrl: string = ''
   model: string = ''
+  reasoningEffort: string = ''
   accessToken: string = ''
 }
 
@@ -101,6 +103,7 @@ export class ComicResponsesClient {
     ComicResponsesClient.validateConfig(config)
     const body: string = ComicResponsesClient.requestBody(
       config.model,
+      config.reasoningEffort,
       prompt,
       imageDataUrl,
       additionalImages,
@@ -152,6 +155,7 @@ export class ComicResponsesClient {
 
   private static requestBody(
     model: string,
+    reasoningEffort: string,
     prompt: string,
     imageDataUrl: string,
     additionalImages: ComicResponsesLabeledImage[],
@@ -179,6 +183,9 @@ export class ComicResponsesClient {
     const body: PublicResponsesRequestBody = new PublicResponsesRequestBody()
     body.model = model
     body.input = [message]
+    if (reasoningEffort.length > 0) {
+      body.reasoning_effort = reasoningEffort
+    }
     return JSON.stringify(body)
   }
 

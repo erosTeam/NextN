@@ -120,7 +120,7 @@ export struct NextNListRow {
     Row() {
       if (this.leadingIcon !== undefined) {
         SymbolGlyph(this.leadingIcon)
-          .fontSize(22)
+          .fontSize(ThemeTokens.SYMBOL_SIZE_ROW)
           .fontColor([this.destructive ? Color.Red : ThemeTokens.TEXT_SECONDARY])
       }
     }
@@ -159,6 +159,7 @@ export struct NextNListRow {
       .fontColor(ThemeTokens.TEXT_SECONDARY)
       .maxLines(1)
       .textOverflow({ overflow: TextOverflow.Ellipsis })
+      .constraintSize({ maxWidth: ThemeTokens.LIST_ROW_DROPDOWN_VALUE_MAX_WIDTH })
     SymbolGlyph($r('sys.symbol.arrowtriangle_down_fill'))
       .fontSize(ThemeTokens.FONT_SIZE_TITLE)
       .fontColor([ThemeTokens.TEXT_TERTIARY])

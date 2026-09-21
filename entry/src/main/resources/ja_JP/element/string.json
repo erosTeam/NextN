@@ -569,6 +569,10 @@
       "value": "キャンセル"
     },
     {
+      "name": "common_save",
+      "value": "保存"
+    },
+    {
       "name": "common_delete",
       "value": "削除"
     },
@@ -1667,6 +1671,18 @@
     {
       "name": "llm_binding_model_hint",
       "value": "このソースを照会してモデルを選択"
+    },
+    {
+      "name": "llm_reasoning_effort",
+      "value": "思考の深さ"
+    },
+    {
+      "name": "llm_reasoning_effort_hint",
+      "value": "モデルの対応状況を照会せず、選択したレベルを送信します"
+    },
+    {
+      "name": "llm_reasoning_effort_model_default",
+      "value": "モデルのデフォルト"
     },
     {
       "name": "llm_binding_save_failed",
@@ -3311,22 +3327,6 @@
     {
       "name": "settings_reader_layout",
       "value": "ページめくり方向"
-    },
-    {
-      "name": "settings_reader_group_rehearsal",
-      "value": "置換リハーサル"
-    },
-    {
-      "name": "settings_reader_backend",
-      "value": "リーダー実装"
-    },
-    {
-      "name": "settings_reader_backend_legacy",
-      "value": "従来のリーダー"
-    },
-    {
-      "name": "settings_reader_backend_shared",
-      "value": "新しいリーダー（デフォルト）"
     },
     {
       "name": "settings_reader_group_layout",
@@ -5059,10 +5059,6 @@
     {
       "name": "comment_translation_prompt_profile_hint",
       "value": "コメントとタイトルで共有；AIパスでのみ有効"
-    },
-    {
-      "name": "settings_reader_group_implementation",
-      "value": "リーダー実装"
     }
   ]
 }

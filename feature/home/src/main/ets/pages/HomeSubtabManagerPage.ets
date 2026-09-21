@@ -128,7 +128,7 @@ export struct HomeSubtabManagerPage {
   private ProfileRow(profile: NhHomeSubtabProfile) {
     Row({ space: ThemeTokens.SPACE_MD }) {
       SymbolGlyph(this.typeIcon(profile))
-        .fontSize(22)
+        .fontSize(ThemeTokens.SYMBOL_SIZE_ROW)
         .fontColor([$r('sys.color.font_secondary')])
       Column({ space: 2 }) {
         Row({ space: ThemeTokens.SPACE_SM }) {

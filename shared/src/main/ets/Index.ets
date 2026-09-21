@@ -164,6 +164,13 @@ export {
   LLM_SOURCE_TYPE_CODEX_OAUTH_EXPERIMENTAL,
   LLM_CONSUMER_COMMENT_TRANSLATION,
   LLM_CONSUMER_MANGA_TRANSLATION,
+  LLM_REASONING_EFFORT_NONE,
+  LLM_REASONING_EFFORT_MINIMAL,
+  LLM_REASONING_EFFORT_LOW,
+  LLM_REASONING_EFFORT_MEDIUM,
+  LLM_REASONING_EFFORT_HIGH,
+  LLM_REASONING_EFFORT_XHIGH,
+  LLM_REASONING_EFFORT_MAX,
   LlmSourceCapabilities,
   LlmSourceProfile,
   LlmConsumerBinding,
@@ -171,6 +178,7 @@ export {
   supportsCommentTranslation,
   supportsMangaTranslation,
   generateLlmSourceProfileId,
+  isLlmReasoningEffort,
 } from './model/LlmSourceProfile'
 export { LlmSourceProfileContract } from './services/LlmSourceProfileContract'
 export { LlmSourceProfileRepository } from './storage/LlmSourceProfileRepository'

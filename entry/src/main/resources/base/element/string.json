@@ -545,6 +545,10 @@
       "value": "Cancel"
     },
     {
+      "name": "common_save",
+      "value": "Save"
+    },
+    {
       "name": "common_delete",
       "value": "Delete"
     },
@@ -1671,6 +1675,18 @@
     {
       "name": "llm_binding_model_hint",
       "value": "Query this source and select a model"
+    },
+    {
+      "name": "llm_reasoning_effort",
+      "value": "Thinking depth"
+    },
+    {
+      "name": "llm_reasoning_effort_hint",
+      "value": "Send the selected level without querying model support"
+    },
+    {
+      "name": "llm_reasoning_effort_model_default",
+      "value": "Model default"
     },
     {
       "name": "llm_binding_save_failed",
@@ -3315,22 +3331,6 @@
     {
       "name": "settings_reader_layout",
       "value": "Page direction"
-    },
-    {
-      "name": "settings_reader_group_rehearsal",
-      "value": "Replacement rehearsal"
-    },
-    {
-      "name": "settings_reader_backend",
-      "value": "Reader implementation"
-    },
-    {
-      "name": "settings_reader_backend_legacy",
-      "value": "Legacy reader"
-    },
-    {
-      "name": "settings_reader_backend_shared",
-      "value": "New reader (default)"
     },
     {
       "name": "settings_reader_group_layout",
@@ -5063,10 +5063,6 @@
     {
       "name": "comment_translation_prompt_profile_hint",
       "value": "Shared for comments and titles; AI path only"
-    },
-    {
-      "name": "settings_reader_group_implementation",
-      "value": "Reader implementation"
     }
   ]
 }

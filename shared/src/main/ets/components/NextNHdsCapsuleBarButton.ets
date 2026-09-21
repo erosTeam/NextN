@@ -38,7 +38,7 @@ export struct NextNHdsCapsuleBarButton {
   @Builder
   DefaultButton() {
     SymbolGlyph($r('sys.symbol.doc_plaintext_fill'))
-      .fontSize(18)
+      .fontSize(ThemeTokens.SYMBOL_SIZE_ACTION)
       .fontColor([ThemeTokens.BRAND])
   }
 

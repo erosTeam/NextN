@@ -39,10 +39,12 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `shared/src/main/ets/settings/SyncSettings.ets#SYNC_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/TabletLayoutSettings.ets#TABLET_LAYOUT_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/TagTranslationSettings.ets#SETTINGS_STORE` | store | excluded | excluded | Store name only |
+| `shared/src/main/ets/settings/TextTranslationPromptProfileRepository.ets#SETTINGS_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/ThemeColorSettings.ets#APPEARANCE_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/ThemeSettings.ets#APPEARANCE_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/storage/LlmSourceProfileRepository.ets#LLM_SOURCE_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/storage/NhCloudBlacklistRepository.ets#BLACKLIST_STORE` | store | excluded | excluded | Store name only |
+| `entry/src/ohosTest/ets/test/TextTranslationPromptProfiles.test.ets#SETTINGS_STORE` | store | excluded | excluded | Test mirror of the production prompt-profile store |
 
 ## Preferences keys
 
@@ -111,14 +113,20 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `shared/src/main/ets/settings/TagTranslationSettings.ets#KEY_USE_CDN` | setting | plaintext | excluded | Translation source policy |
 | `shared/src/main/ets/settings/TagTranslationSettings.ets#KEY_UPDATE_MODE` | setting | plaintext | excluded | Update mode |
 | `shared/src/main/ets/settings/TagTranslationSettings.ets#KEY_INTRO_IMAGE_LEVEL` | setting | plaintext | excluded | Tag detail intro image policy |
+| `shared/src/main/ets/settings/TextTranslationPromptProfileRepository.ets#KEY_CUSTOM_PROFILES` | setting | plaintext | excluded | Custom text-translation prompt profiles |
+| `shared/src/main/ets/settings/TextTranslationPromptProfileRepository.ets#KEY_SELECTED_PROFILE` | setting | plaintext | excluded | Selected text-translation prompt profile |
 | `shared/src/main/ets/settings/ThemeColorSettings.ets#THEME_COLOR_KEY` | setting | plaintext | excluded | Theme accent |
 | `shared/src/main/ets/settings/ThemeSettings.ets#THEME_KEY` | setting | plaintext | excluded | Theme mode |
 | `shared/src/main/ets/storage/LlmSourceProfileRepository.ets#LLM_SOURCE_PROFILES_KEY` | setting | plaintext | excluded | Provider metadata |
 | `shared/src/main/ets/storage/LlmSourceProfileRepository.ets#COMMENT_SOURCE_KEY` | setting | plaintext | excluded | Comment source selection |
 | `shared/src/main/ets/storage/LlmSourceProfileRepository.ets#COMMENT_MODEL_KEY` | setting | plaintext | excluded | Comment model selection |
+| `shared/src/main/ets/storage/LlmSourceProfileRepository.ets#COMMENT_REASONING_EFFORT_KEY` | setting | plaintext | excluded | Comment translation reasoning-effort override |
 | `shared/src/main/ets/storage/LlmSourceProfileRepository.ets#MANGA_SOURCE_KEY` | setting | plaintext | excluded | Manga source selection |
 | `shared/src/main/ets/storage/LlmSourceProfileRepository.ets#MANGA_MODEL_KEY` | setting | plaintext | excluded | Manga model selection |
+| `shared/src/main/ets/storage/LlmSourceProfileRepository.ets#MANGA_REASONING_EFFORT_KEY` | setting | plaintext | excluded | Manga translation reasoning-effort override |
 | `shared/src/main/ets/storage/NhCloudBlacklistRepository.ets#KEY_BLACKLIST_IDS` | account-cache | excluded | excluded | Refreshed from account API |
+| `entry/src/ohosTest/ets/test/TextTranslationPromptProfiles.test.ets#KEY_CUSTOM_PROFILES` | setting | plaintext | excluded | Test mirror of the production custom prompt profiles key |
+| `entry/src/ohosTest/ets/test/TextTranslationPromptProfiles.test.ets#KEY_SELECTED_PROFILE` | setting | plaintext | excluded | Test mirror of the production selected prompt profile key |
 
 ## LocalDataStore tables
 
@@ -172,4 +180,5 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `shared/src/main/ets/services/ToriiWholePageContextStore.ets` | cache | excluded | excluded | Regenerable Torii continuation context |
 | `shared/src/main/ets/services/ToriiWholePageLiveEvaluationService.ets` | temporary | excluded | excluded | Evaluation artifacts |
 | `shared/src/main/ets/services/ToriiWholePageRenderBackend.ets` | temporary | excluded | excluded | Torii render work files |
+| `shared/src/main/ets/sync/WebDavSyncService.ets` | recovery-artifact | excluded | excluded | Local raw manifest snapshots retained only for corruption recovery |
 | `shared/src/main/ets/settings/DiagnosticsFileExport.ets` | user-export | excluded | excluded | Explicit diagnostics export |

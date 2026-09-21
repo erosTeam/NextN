@@ -262,7 +262,7 @@ export struct ContentFiltersPage {
       },
     }) {
       ListItem() {
-        NextNGroupedListSection({ inset: 0 }) {
+        NextNGroupedListSection() {
           NextNListRow({
             leadingIcon: this.typeIcon(this.draftType),
             title: AppStrings.get('content_filter_target_title'),
@@ -309,7 +309,7 @@ export struct ContentFiltersPage {
         }
       }
       ListItem() {
-        NextNGroupedListSection({ inset: 0 }) {
+        NextNGroupedListSection() {
           Column({ space: ThemeTokens.SPACE_SM }) {
             Text(AppStrings.get('content_filter_text_label'))
               .fontSize(ThemeTokens.FONT_SIZE_CAPTION)
