@@ -811,6 +811,52 @@ The following are finite pending checks inside this one package, not new queues:
   (`reader-ui/src/main/ets/ReaderPagedViewport.ets:498-657`); the behavioral contract
   `tests/reader-paged-variant.test.cjs` passes 11/11. This is a source/contract-level integrity check
   only; it does not close any F2 runtime-device item.
+
+  **2026-09-21 NextN fullscreen/chrome runtime chain — bounded device PASS on the 197 standard non-H
+  gallery `663205` (this entry supersedes the 2026-09-20 line-890 "STATE OBSERVED — NextN chrome/fullscreen"
+  OPEN tail and its two static screenshots; lease `20260921-134024-d00e55f7`, released; runs 01–18 under
+  `.hvigor/outputs/nextn-197-fullscreen-nonh-20260921/`).** Candidate HAP
+  `3add724cd9d343574dc576d79a880ac2992bc8270e91b7cacf66f2ea2ea63bb3` (host `9771153e`, reader-kit
+  `d469b13`) installed via checked `install -r` with `bm dump` identity readback (`versionName 1.0.5`,
+  `versionCode 7`). Note: the HAP install reset the 86400000ms screen-off override (post-install readback
+  showed `Timeout=120000ms`); run-02 re-applied the wake/timeout gate and both readbacks confirmed
+  `AWAKE` + `OverrideTimeout=86400000ms` before any UI input. All coordinates are fresh same-session
+  dump measurements; run-03's click landed on the non-secure lock screen (device had re-locked), so run-04
+  performed the accepted neutral-region swipe-up once and the app resumed on the same Detail
+  (`Bug Bite: Chapter 8` `#663205`, sole `gallery-detail-read-action` centre `[1068,2593]` from run-04's
+  own layout). Chain and evidence: (a) run-05 Reader entry — initial chrome hidden (`rkit-chrome-top`=0,
+  `rkit-chrome-bottom`=0), unique `rkit-image-viewport` `[0,0][1260,2720]` centre `[630,1360]`, page
+  `1 / 40`; (b) run-06 one viewport-centre reveal — unique `rkit-host-settings` `[948,143][1091,286]`
+  centre `[1019,214]`, status-bar nodes present; (c) run-07 sheet open — NextN host sheet
+  (`SettingsPage` surface READER) rows 阅读模式…裁边强度 visible; (d) run-08 one in-sheet swipe
+  materialized the 全屏 row, whose `Toggle [1065,2516][1182,2581]` read **checked=true (original ON)**;
+  (e) run-09 one Toggle click → **checked=false**; (f) run-10 Back dismisses the sheet (chrome visible
+  again per `statusVisible = !fullscreen || visible`); run-11 one viewport-centre hide → signature
+  **chrome-top=0, chrome-bottom=0 with 9 `status_bar_*` nodes present**, matching the NextE-mirrored
+  fullscreen=OFF contract; (g) run-12 persistence — force-stop + same-param relaunch of `663205`,
+  fresh Detail read-action (same centre), Reader entry dump shows chrome hidden + status bar visible
+  (fullscreen=OFF persisted across restart); (h) run-13/14 reveal + sheet re-check — the 全屏 row Toggle
+  still **checked=false** after restart; (i) run-15 one Toggle click restores **checked=true** (original
+  user value), verified in the run-15 dump; run-16 Back returns to the pre-chain reader state (chrome
+  visible, sheet gone); (j) run-17 the one continuous `repeat=1` recording
+  (`nextn197_chrome_loop.mp4`, SHA-256 `29bc662f28cbfde35278f012dad186dcc0c24040c41d9d922104f9fa7975579a`,
+  manifest SHA-256 `47720eac3b3516ee2c4c74d5553d07fe248b5d761a118d9592a025702aea5ecd`, 181 ffprobe PTS
+  frames `0.000000–19.239333s`) covered exactly: hide → show → hide → show → Back → same-Detail
+  re-enter, each exactly once; the command ledger timestamps align with the per-frame body-crop luma
+  transitions, and the offline frame review found no black/empty body window, no double-image or residual
+  chrome ghost during the hide/show cycles, and a stable re-entered reader body from ~`13.2s` through the
+  final frame `19.239s`. run-18 force-stopped the app and restored `OverrideTimeout=120000ms` (readback
+  verified twice); the lease was released immediately. Boundary: this closes the chrome/fullscreen runtime
+  chain for this candidate, this gallery, portrait 197 only; it does not close F2 processed-replacement or
+  other-device/orientation coverage.
+
+  **2026-09-21 save/share candidate-difference note (extends the 2026-09-21 save/share bounded device
+  PASS above).** The save/share chains were accepted on HAP `538ce50d…` (reader-kit `bece493`); the
+  current candidate HAP `3add724c…` (reader-kit `d469b13`) differs from `bece493` by exactly one commit,
+  whose diff is `reader-ui/src/main/ets/ReaderLabLaunch.ets` +5 lines of Debug-only lab parameter capture
+  (`autoReadSourceProbe` field and its `readerLabAutoReadSourceProbe` want parsing; supervision-verified
+  `git diff bece493 d469b13 --stat`). No save/share surface, controller, or host bridge is touched, so the
+  save/share PASS carries over to the current candidate.
 ## 历史能力对等进度板（仅作参考，不构成当前验收状态）
 
 进度板行状态口径（2026-09-19，历史）：下表 P1—P12、**P15**、**P16** 的 ACCEPTED 是当时的候选记录。它们不得覆盖上文唯一 ACTIVE 包的 F1/F2 运行时反例，也不得被引用为当前的整体替代结论。P15「裁边强度」未进入共享裁边链是 2026-09-19 新发现的宿主缺口，已在 237 真机闭合；其行内证据与状态仅取代当时把它视为未决的旧表述。
