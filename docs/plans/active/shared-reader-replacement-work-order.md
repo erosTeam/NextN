@@ -3244,3 +3244,14 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 ### 监督复核更正（2026-09-22，c04c7bf4 条目）
 
 - 上一条 NextN 197 三态使用了画廊 682839；监督从 detail layout dump 文本元数据（标签 潮吹/巨乳/自慰/露阴癖/正太，同人志，无 Non-H 徽章）判定为 H 内容，违反『只测非H』规则。**该轮三态记录降级为机制调试证据**（三缺陷修复的机制验证仍然有效：chrome/翻页/admission/bootstrap-restore 行为均已复现），正式三态以 663205 重跑为准，见下一条。
+
+
+### 663205 重验进度（2026-09-22 06:15，未完待续）
+
+- 已验证（nextn-197-nonh-reverify-20260922 run-01..24，全部 manifest+lease+fresh dump）：
+  - State A shared：run-03 `rkit-reading-surface=2`、16 rkit 节点、1/40、legacy=0。PASS。
+  - 交互链：chrome（run-04 rkit-chrome-top=2）、翻页 1→2/40（run-05）、设置 sheet（run-05 hilog bindsheet onAppear, MEDIUM detent）。PASS。
+  - legacy 持久化切换：run-08 菜单两项在案 → run-09 行值 `_legacy`。PASS。
+  - legacy reader 打开（State B 的打开步骤）：run-10-retry2 跨冷启动 `legacy-reader-surface=2`、rkit=0、2/40。PASS。
+- 未完成：663205 上「历史路径 detail 的 FAB 点击无响应」——run-19/20/22/24 四次 [1068,2594] 点击均未打开阅读器（read-action 在 dump 中存在、opacity=1，但点击无效果；直启恢复的 detail 处于 immersive y=0 布局）。同点击在浏览路径 detail（682839，run-24）曾成功打开 legacy。待下会话调查 hit-test/滚动状态差异后完成 State B legacy-surface 确认、shared 切回与 State A 恢复。
+- 设备遗留：197 停在 663205 detail（可正常操作）；持久化=legacy；lease 20260921-221159-63af729e 仍有效需释放。
