@@ -700,8 +700,6 @@ The following are finite pending checks inside this one package, not new queues:
   non-H gallery that is resolvable on this device (established EH Non-H gallery, or `4203217`
   once resolvable), entered via the same checked direct launch, then the same single-recording
   chain as the NextE PASS above.
-  once resolvable), entered via the same checked direct launch, then the same single-recording
-  chain as the NextE PASS above.
 
   **2026-09-21 NextN spread-entry runtime chain — bounded device PASS on the 197 standard
   non-H gallery `663205` (this entry supersedes the stopped record above; same lease session
@@ -785,6 +783,34 @@ The following are finite pending checks inside this one package, not new queues:
   one Back action and explicitly excludes information-dialog actions; it is not
   amended after recording because its recorded hash must remain valid.
 
+
+  **2026-09-21 reader-kit Node suite harness-drift check — test-infra only, no product change.**
+  One finite full-suite pass on the current NextN checkout (reader-kit `d469b13`, host `9771153e`)
+  found 64 of 66 test files fully green (444 assertions) and two files with pre-existing failures:
+  `tests/reader-image-save-ui.test.cjs` (4 pass / 3 fail) and
+  `tests/reader-retained-projection-diagnostic.test.cjs` (1 pass / 2 fail). Supervision independently
+  re-ran the three `reader-image-save-ui` failures and confirmed each is
+  `TypeError: Cannot read properties of undefined (reading 'clear')` inside isolated
+  `Subject.aboutToDisappear` / `Subject.onClosingChanged` extractions — the harness extracts a single
+  class member and stubs it in isolation, but `ReaderSurface` now calls the sibling
+  `temporaryVariantOverride.clear()` added with the temporary-variant lifecycle (`bece493` → `d469b13`),
+  so the stub object is missing. The retained-projection failures are the same drift class: the
+  isolated `syncPreferredVariant` stub lacks `reconcileTemporaryVariantOverride`, and one regex still
+  expects the old single-line `... ) return` guard, while the product guard legitimately grew a
+  `cancelRetainedProcessedVariantReplacements` block. Attributed cause: harness stub drift from the
+  `bece493`/`d469b13` lifecycle commit; no current product regression is claimed by either file.
+  Attributed action (test-infra only, does not touch product code): update the two test files
+  (`reader-image-save-ui.test.cjs`, `reader-retained-projection-diagnostic.test.cjs`) to stub the new
+  sibling members and align the guard regex with the current block form. The F2 retained chain was
+  re-checked complete on `d469b13` / `9771153e`: `ReaderSession.load()` sets `retainDisplayed` for
+  same-unit/index/kind variant replacement while `phase=='displayed'` and double-buffers the actually
+  displayed asset into `state.retainedUri`/`retainedAssetRequestId`
+  (`reader-core/src/main/ets/ReaderSession.ets:466-531`); `ReaderPagedCell.syncRetainedFrame()`
+  projects that retained frame as its own Image node with a higher `zIndex` than the decoding
+  candidate and renders `LoadingProgress` only when the retained frame is absent
+  (`reader-ui/src/main/ets/ReaderPagedViewport.ets:498-657`); the behavioral contract
+  `tests/reader-paged-variant.test.cjs` passes 11/11. This is a source/contract-level integrity check
+  only; it does not close any F2 runtime-device item.
 ## 历史能力对等进度板（仅作参考，不构成当前验收状态）
 
 进度板行状态口径（2026-09-19，历史）：下表 P1—P12、**P15**、**P16** 的 ACCEPTED 是当时的候选记录。它们不得覆盖上文唯一 ACTIVE 包的 F1/F2 运行时反例，也不得被引用为当前的整体替代结论。P15「裁边强度」未进入共享裁边链是 2026-09-19 新发现的宿主缺口，已在 237 真机闭合；其行内证据与状态仅取代当时把它视为未决的旧表述。
