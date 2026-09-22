@@ -4957,9 +4957,7 @@ struct Index {
       if (this.readerEntryClaim !== null) {
         IndexReaderEntryPendingOverlay({ sourceRect: this.readerEntryClaim.sourceRect,
           onViewportChanged: (): void => { if (this.readerEntryClaim !== null) this.closeReaderTrial() } })
-      } else if (this.productionReaderEntryClaim !== null &&
-        (this.productionReaderEntryTransition === null ||
-          this.productionReaderEntryTransition.phase === 'layout')) {
+      } else if (this.productionReaderEntryClaim !== null && this.productionReaderEntryTransition === null) {
         IndexReaderEntryPendingOverlay({ sourceRect: this.productionReaderEntryClaim.sourceRect,
           onViewportChanged: (): void => {
             if (this.productionReaderEntryClaim !== null) this.retireProductionReaderEntry()
