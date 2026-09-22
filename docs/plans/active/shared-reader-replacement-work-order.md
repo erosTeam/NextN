@@ -3359,3 +3359,37 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
   - run-48 chrome 显隐（缺陷#2 修复验证）：中央 tap → `rkit-chrome-top=2`、`rkit-host-settings=2`。**chrome 显示正常**。
   - run-49 翻页：右 1/3 tap → 9/40（从 8/40 推进）。**翻页正常**。
 - NextN 197 + 663205（非H）三态 + 交互 + 翻页：**全部 PASS**。
+
+
+### NextE 237 最终验证（b6e387ce→c01efab1 HAP，缺陷#2 修复交互链 PASS）
+
+- 构建：NextE main `f50da601`（含 foreground 修复 + admission-safe 守卫 + animated seek mirror），default product + buildMode=release，`debug:false` 确认，设备信任签名。HAP SHA `c01efab15ae78adf5e0fbfd346598fbcab800a8871d14ac27b3c2ab3b604aaeb`。
+- 安装：`install -r` 到 237（data-preserving）。
+- 验证链（run-01..05，nexte-237-final-verify，lease 20260922-050740-058332bc）：
+  - run-01: 663205 detail 加载，Non-H 标签/元数据在案 ✓
+  - run-02: Non-H tab 切换确认画廊列表加载 ✓
+  - run-03: 4204866 卡片 → detail → 阅读 FAB 可见 ✓
+  - run-04: FAB tap → **`rkit-reading-surface=2`、`reader_key_surface=0`、24 rkit 节点** → shared reader 正确挂载 ✓
+  - run-05: 中央 tap → **`rkit-chrome-top=2`、`rkit-host-settings=2`** → chrome 显示正常 + 右 1/3 翻页 tap → 页码推进 ✓
+- NextE 缺陷#2（chrome 显隐）+ 翻页修复验证：**PASS**。
+- NextE State B legacy：此前 run-25 系列（663205 轮）已验证 `legacy-reader-surface=2` 跨冷启动。PASS。
+- NextE State A 恢复：此前 run-44 系列已验证 `rkit-reading-surface=2`。PASS。
+- NextE 三态 + 交互 + 翻页：**全部 PASS**。
+
+### 综合状态（双设备 + 全部修复）
+
+| 验证项 | NextE 237 | NextN 197 |
+|---|---|---|
+| State A shared 挂载 | ✅ rkit=2 | ✅ rkit=2 |
+| chrome 显隐（缺陷#2） | ✅ chrome-top=2 | ✅ chrome-top=2 |
+| 翻页 | ✅ | ✅ |
+| State B legacy 跨冷启动 | ✅ legacy-surface=2 | ✅ legacy-surface=2 |
+| State A 恢复 | ✅ rkit=2 | ✅ rkit=2 |
+| i18n 本地化 | ✅ | ✅（本轮修复） |
+| 构建产物身份调和 | ✅ | ✅ |
+| Koma 自查 | N/A | 待做 |
+| 综合录像+PTS | 待做 | 待做 |
+
+- 用户数据影响：仅阅读进度推进（4204866→2页、4204106→47页），无下载/收藏/同步变更。
+- 设备 237：NextE HAP c01efab1，663205 detail 页，shared 模式，翻页至 2/40；持久化=shared。设备 197：NextN HAP c08a3582，663205 detail 页，shared 模式；持久化=shared。
+- 租约状态：237 = 20260922-050740-058332bc（active）；197 = 20260922-045824-7200ee5e（released）。
