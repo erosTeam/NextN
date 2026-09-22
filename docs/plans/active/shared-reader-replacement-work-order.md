@@ -3690,9 +3690,10 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
 
 ### 翻页阻断定案 + NextE 任意距离 seek 移植 + 三端综合录像收官（2026-09-22 15:0x–16:0x）
 
-**1. 「237 NextE 翻页卡死」改判：不是挂载/栅栏缺陷，是 RTL 阅读方向 + 第 1 页边界 tap 的误诊。**
+**1. 「237 NextE 翻页卡死」收口（2026-09-22 勘误定稿：丁丁链实况 LTR、用户真机复测无问题；原「RTL 阅读方向 + 第 1 页边界」改判撤回）。**
 - 分类探针（lease `20260922-064907-21df533b`，read-only）：c01efab1 下在 3/1682（丁丁历险记 4204943）连发右 1/3 tap×2 + 左滑，before/after dump 页码均 3/1682——现场复现「无反应」；但 release HAP 无 JSAPP 日志，hilog 无法分层。
-- 移植修复后的候选上重测拿到方向证据：右 1/3 tap 3→1（后退），左 1/3 tap 1→3（前进）。kit `pageTap` 默认映射为 LTR 左=prev/右=next、RTL 相反；237 该画廊持久化方向为 RTL（日漫模式），spread 渲染 `rkit-part-2-whole` 左 / `rkit-part-3-whole` 右与 RTL 的 visualParts+Row 双重翻转一致。故此前在 1/13 反复 tap 右侧 = 第 1 页边界上的「上一页」= 无动作，全部「翻页失败」样本都由此而来。chrome tap 正常（前台信号无恙）；「pagerCommand 被邻接守卫拒绝后栅栏挂起」假设不成立为独立根因，但守卫缺陷本身真实存在（见下）。
+- 移植修复后的候选上，tap 使页码发生变化（dump 读数 3→1、1→3），新候选点按可翻页。**当时把这两次读数解释为「右点=后退 → 该画廊 RTL（日漫模式）」的叙述撤回**：该 RTL 归属来自 2026-07-16 另一本日漫画廊（Ichi/死神同人）的设置快照（reader-tap-zones-237），被错挂到丁丁链，属跨画廊/跨链混记。丁丁链实况为西式 LTR：chrome 全 LTR（slider 值居左、总数居右，4 左→1682 右），缩略条 4,5,6,7,8 升序左→右（用户实测帧 `/tmp/rtl_frames/t4.png`），用户当日真机复测翻页无问题；旧候选「1/13 无反应」的 RTL 边界根因解释一并撤回，该链按修复候选翻页正常 + 用户复测通过收口。chrome tap 正常（前台信号无恙）；「pagerCommand 被邻接守卫拒绝后栅栏挂起」假设不成立为独立根因，但邻接守卫缺陷本身真实存在（见下）。
+- **术语勘误（原位保留）**：原句「kit `pageTap` 默认映射…」把链路简写错了。准确链路分两条：**共享链** = 宿主 `ReaderTapZoneResolver` 产出动作 → 宿主 `NextEReaderLabPage.resolveTapZone`（tapPolicy 回调）→ kit `ReaderSurface.pageTap`（`third_party/reader-kit/reader-ui/src/main/ets/ReaderSurface.ets:707`，对 LEFT/RIGHT 按 `snapshot.policy.direction` 换算，:727–730）→ native pager；**legacy 链** = 宿主 `ReaderPage.onReaderTap`（`feature/reader/.../ReaderPage.ets:3140`）→ `performTapZoneAction` → `tapLeft:3268`/`tapRight:3277` 按 `readMode.mode` 换算，不经 kit。边界说明：kit 确有 `pageTap` 方法（本工作单 L2831/L2912/L3009 等既有记录亦以此为名），故不采用「kit 无 pageTap」表述。
 
 **2. NextE 缺陷#5 修复移植（此前 NextE kit 1fad07a 只有 animated seek、仍带邻接守卫：所有非相邻缩略条/滑轨 seek 被原生静默丢弃）。**
 - NextE kit 新分支 `codex/defect5-arbitrary-seek` 提交 `7a2e005`（65787ac 同语义：移除邻接守卫、`displayIndexForSource` 加源索引防御、契约测试反向锁定守卫回归；26+/7- 与 NextN 侧逐行同构）。套件 442/445——3 个失败为 `reader-image-save-ui` 关闭反馈用例，已在干净 1fad07a worktree 复验为既有失败，与本改动无关。宿主侧 8 项 seek 结构断言全 PASS。
@@ -3722,15 +3723,23 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
 |---|---|---|---|
 | 三态 A/B/A | ✅ | ✅ | N/A（宿主无后端切换） |
 | chrome 显隐 | ✅ dump+录像 | ✅ dump+录像 | ✅ 录像 |
-| 翻页（tap/swipe） | ✅（RTL 语义） | ✅ | ✅（RTL 语义） |
+| 翻页（tap/swipe） | ✅（LTR 实况，用户复测无问题） | ✅ | ✅（RTL 语义） |
 | 缺陷#5 任意距离 seek 动画 | ✅ 录像+P1579/P85 | ✅ 全链 565 帧 PTS PASS | N/A（pin 无此特性） |
 | 缺陷#1 缩略图入场 | ✅ 录像+dump 半页 | ✅ 录像+hilog+P5 | N/A |
 | i18n | ✅ | ✅ | ✅ 1398×3 全等 |
 | Koma 五类自查 | — | — | ✅ 见上 |
 | 三端综合录像+PTS | ✅ 728 帧 | ✅ 565 帧 + 20s | ✅ 19s |
 
-**7. 移交用户的两个非阻断决策项。**
-1. **NextE RTL spread 视觉序**：RTL 下 visualParts 反转与 Row `Direction.Rtl` 叠加，spread 视觉序与 LTR 相同（page n 左 / n+1 右）。若产品期望 manga RTL 的「偶右奇左」视觉，需要 kit/宿主二选一去掉一层翻转——属产品视觉决策，不是本轮缺陷。
+**7. 决策项状态（2026-09-22 勘误更新）。**
+1. ~~**NextE RTL spread 视觉序**~~ **已撤回，无需用户决策**：该问题的证据基础是被错挂到丁丁链的 7 月另一本日漫画廊 RTL 会话快照，错挂撤销后无有效证据支撑。
 2. **Koma 升级路径**：升级到含前台修复/animated seek/per-source 身份的 kit pin 前，Koma 维持现状可用；release 化 Koma 是硬前提触发条件。
 
 **产物索引**：NextE `.hvigor/outputs/nexte-237-pageturn-probe-20260922/`（分类探针）、`nexte-237-defect5fix-20260922/01–11`（复验全链）；NextN `.hvigor/outputs/nextn-197-defect1-20260922/01–06`、`koma-197-comprehensive-20260922/01–06`；manifest 在两仓 `docs/plans/active/`（按惯例作为未跟踪会话产物保留）。NextE main `8ca6ea07`（wrapper 同步一并提交）、kit `7a2e005`。两台设备超时已还原 120000ms、租约已释放。
+
+
+### 记录勘误与误报撤回落账（2026-09-22，用户实测帧 + 监督核对；仅改记录，不改代码、无设备动作）
+
+- **丁丁链方向归属勘误**：defect5fix 链（`nexte-237-defect5fix-20260922`，1682 页《丁丁历险记》）实况为西式 LTR——chrome 全 LTR（slider 4 左→1682 右）、缩略条 4,5,6,7,8 升序左→右（用户实测帧 `/tmp/rtl_frames/t4.png`），用户真机复测无问题。此前「该画廊持久化方向=RTL（日漫模式）」及「右点 3→1 = 后退 → RTL」的归属撤回：该 direction=从右到左 来自 2026-07-16 另一本日漫画廊（Ichi/死神同人）的设置快照（reader-tap-zones-237），被跨画廊/跨链错挂到丁丁链。
+- **「RTL 方向分裂」缺陷撤回（按误报关闭）**，撤回根因 = 上述跨画廊设置错挂；支撑理由三点：① 支撑 direction=rtl/左右/无反转 的三个设置值全部来自 7/16 旧快照而非当日现场读取；② 当天仅有点按表现外推，ltr + horizontal 反转等组合同样能产生「右点=后退」；③ 用户当日真机实测无问题，前提被推翻；④ 缩略条方向代码（af63446，9/6）本期未修改。**不执行方向源收敛重构、不加方向契约、不重录 07/10。**
+- **决策项撤回**：原「NextE RTL spread 视觉序」产品决策项证据基础失效，一并撤回，用户无需对此做决策（§7 已改）。
+- **术语勘误保留**：§1 已原位改正「kit pageTap 默认映射」的简写，给出共享/legacy 两条链的准确换算位置与行号；同时记录源码边界——kit 存在 `pageTap` 方法（`ReaderSurface.ets:707`），共享链由 kit 按 `snapshot.policy.direction` 换算，legacy 链由宿主 `ReaderPage` 按 `readMode.mode` 换算。
