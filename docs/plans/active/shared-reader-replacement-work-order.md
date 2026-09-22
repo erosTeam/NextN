@@ -3279,3 +3279,18 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
   - NextN：`/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap`，SHA-256 `5d7f7e5f58b5e0f254495062428d5a1600b68c32d1a56836e7bf579379e54ce2`，构建自 NextN `8113bf0f`（含三修复全部）。
   - NextE：`/Users/honjow/git/NextE/entry/build/default/outputs/default/entry-default-signed.hap`，SHA-256 `b6e387ce7153f4902a45c8137d2aede15ad3953d2ff6d330c1114d271c66c634`，构建自 NextE `cbd030eb`（foreground 修复；NextE 不含 admission/bootstrap 缺陷）。
 - 磁盘 HAP 与已验证 HAP 一致性：**一致**（default 目录两份均未在验证后被重建覆盖）。
+
+
+### 宿主桥接全量差异化审计 + 状态栏时序缺陷根因（2026-09-22 07:0x，监督指令【2】落账）
+
+- **状态栏时序缺陷（NextN 跳变）根因定位（源码级，待修复验证）**：NextN 生产路由 `sharedReaderBody`（entry/src/main/ets/pages/Index.ets:3322）向 `NextNReaderLabPage` 传 `managesTrialWindow: false`，而 NextE 生产路由（Index.ets:2211 'ReaderShared'）不传该参数（默认 true）。false 使 lab 页跳过 `trialWindow.prepareStatusBarVisible()`/`setStatusBarVisible()` 的窗口原子准备路径（ReaderTrialWindow.ets:105/135），chrome 可见性提交（ReaderSurface.commitChromeVisible → activitySink.chromeChanged）与系统状态栏显隐不再同帧发布——顶栏 inset 二次重排，正是用户所见跳变。**修复方向**：NextN 生产路由移除 `managesTrialWindow: false`（对齐 NextE 默认 true），或按监督要求在 reader-kit 桥接层把 chrome 可见性+statusVisible 收敛为一次原子发布并加时序契约。NextE 无此问题（true 路径已含同帧准备），回归核对确认公共改动不破坏它。
+- **桥接差异全量清单（NextN ↔ NextE）**：
+  1. 转场协调器 ReaderThumbnailTransitionCoordinator：**0 行差异**（NextE/NextN main、两 wt 四份一致）——此前『170 行分叉』结论基于合并前状态，现已收敛，非漂移。
+  2. ReaderTrialWindow / ReaderSurface / ReaderDisplayMap / ReaderPagedSession / ReaderPagedViewport / ReaderEntryTransition：**0 行差异**，reader-kit 共享层单源。
+  3. 状态栏发布时序：NextN 生产路由 `managesTrialWindow:false` vs NextE 默认 true —— **实现漂移（本缺陷根因，待修）**。
+  4. 后端选择：已统一（NextNReaderBackendSelectionState/NextEReaderBackendSelectionState 同构，持久化驱动），非漂移。
+  5. 设置恢复时序：NextN 缺 bootstrap restore —— **实现漂移（已修，8113bf0f）**。
+  6. 合理产品差异（不算漂移）：宿主路由名（ReaderShared vs Reader:N epoch）、直启参数名（nextn_gallery_id）、历史/浏览入口结构、宿主 id 常量（nextn-*/nexte-*）。
+  汇总：实现漂移 2 项（1 项已修，1 项待修=本缺陷）；合理产品差异 4 类；其余桥接层单源无分叉。
+- **双端验收状态**：NextN 197（663205）与 NextE 237（4203217）的控制栏显示→隐藏→显示逐帧验证、双页左右缩略图转场验证：**待状态栏时序修复完成后一并执行**（修复需重建两 HAP 并重装）。
+- 设备遗留：197 停在 663205 detail、持久化=legacy；lease 20260921-221159-63af729e 已过期需新取。
