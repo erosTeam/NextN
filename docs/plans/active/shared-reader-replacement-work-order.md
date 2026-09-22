@@ -3713,6 +3713,7 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
 - **分叉**：Koma 经 `file:../../reader-kit` 引独立 checkout（分支 `codex/reader-d1` @ `b5fa389` + **432 行未提交回移 WIP**：canvasBackdropOpacity/bodyOpacity、autoRead target readiness、cancelAutoReadSourcePreparations、syncPreferredVariant 等 + 测试 132 行）。该 WIP 为前序会话的 Koma 定向回移，保持未提交原样。相对权威 pin（NextN 4c6cfc0 / NextE 7a2e005）缺：前台信号 release 修复（d2990b6/b7e744a）、auto-read 全链、animated seek、任意距离 seek、per-source 图片信息身份。
 - **本地化**：base/zh_CN/en_US string.json 各 1398 条，集合全等。
 - **动画**：宿主 `ReaderModeState.pageTurnAnimation`（默认 true）→ `KomaReaderLabPage` 传入 ReaderSurface；该 pin 的 tap 走 pager 命令、缩略条/滑条仍直连 `seekSource`（旧行为：立即跳页、无动画），故邻接守卫静默丢弃缺陷在 Koma **不构成功能缺陷**（seek 不产生 pagerCommand），仅为升级 kit 时的潜在回归面。
+  **【口径改判，以此为准】上述“不构成功能缺陷/N/A”口径撤销**：用户明确要求三端两个入口都需动画；Koma 缩略条/滑条无动画作为 OPEN 项纳入本包后续同类检查（待 kit pin 升级后同链录像验证）。
 - **时序**：宿主 `labVisibility.foreground` 门在位；kit 侧 release 前台修复缺失的影响被 197 上 Koma 为 **debug 安装**（appProvisionType=debug）抵消——release 化 Koma 前必须先升级 kit 前台修复（记录为条件性待办，非当前缺陷）。
 - **spread 同源**：b5fa389 pin 无 `rkit-info-source-N` per-source 身份选择（后续 kit 才有）；spread 渲染/翻页本体工作正常（见下）。
 - **真机综合录像**（第三端）：`koma197_comprehensive.mp4` SHA-256 `ead01c3e3fac8cfc926dea52f22cb4b02eb3ccf3ad0eb4fc91305307f09092b2`（19s）：书架 → 继续阅读卡 → 共享阅读器（`reader_key_surface`，1/33，旧 kit 键位时代无 rkit-* id）→ 中心 chrome 显 → 左/右 tap 各一次（RTL：1→2→1，hilog 预载 page=4 吻合）→ chrome 隐 → Back 回书架。重开复核持久页仍 1/33，用户数据零漂移。抽帧存档。
@@ -3724,10 +3725,10 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
 | 三态 A/B/A | ✅ | ✅ | N/A（宿主无后端切换） |
 | chrome 显隐 | ✅ dump+录像 | ✅ dump+录像 | ✅ 录像 |
 | 翻页（tap/swipe） | ✅（LTR 实况，用户复测无问题） | ✅ | ✅（RTL 语义） |
-| 缺陷#5 任意距离 seek 动画 | ✅ 录像+P1579/P85 | ✅ 全链 565 帧 PTS PASS | N/A（pin 无此特性） |
-| 缺陷#1 缩略图入场 | ✅ 录像+dump 半页 | ✅ 录像+hilog+P5 | N/A |
+| 缺陷#5 任意距离 seek 动画 | ✅ 录像+P1579/P85 | ✅ 全链 565 帧 PTS PASS | **OPEN（原 N/A 取消）**：用户要求三端两入口都要动画，Koma 纳入本包后续同类检查 |
+| 缺陷#1 缩略图入场 | **OPEN**（release tile→隐式 legacy=06 反例；shared 动态验收待新录像） | 限范围（该链落点录像+hilog+P5 保留；入场黑帧另 OPEN） | N/A |
 | i18n | ✅ | ✅ | ✅ 1398×3 全等 |
-| Koma 五类自查 | — | — | ✅ 见上 |
+| Koma 五类自查 | — | — | 部分（动画项原 N/A/非缺陷口径撤销→OPEN，纳入本包后续检查） |
 | 三端综合录像+PTS | ✅ 728 帧 | ✅ 565 帧 + 20s | ✅ 19s |
 
 **7. 决策项状态（2026-09-22 勘误更新）。**
@@ -3776,7 +3777,7 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
 - 实况勘误：197 验收前是 **single 布局**（此前把全宽 part 误读为 alone 单页格）；按验收要求开 spread（持久化 doublePage=true），验收后已恢复 single 并 dump 门 PASS（全宽 part-0、无 shift 按钮）。
 - 前置门：pair-left P5 shift 翻 alone → 滑块 x166 回页1 → `1 / 40` 单页格 **PASS**。
 - 主录像 `50ac90bc8e3abad8f1c79de772217ca5a49af896f02b4e3d39bbf97749c6e944`（380 帧）：帧证 f0–9 全宽 [1] 计数 1 → 加载 → f18–35 [1,2] **计数全程 1 = 主证 PASS**；hilog 权威：shift 后 `reading_source=0` 保持、滑块两跳 `seek_source=18→0`、`selected=0`；第 4 动作落在双页格（修复把 alone 翻掉后回页1自然是双格）→ 锁定语义页1→2 → Detail「继续 P2」**对照 PASS**。
-- 边界补录 `4b3766cd36b3d8c20ae5ef909d7997d63810d59beb6ea06b92246e4e8ca656a0`（114 帧）：view_image 显示层两次串图（展示错设备/错录像内容；文件本体 md5/尺寸经独立校验无误），改**纯数值逐帧判定**：f0–14 全宽玉米（左右半均高饱和）、f15–27 黑屏加载、f28–68 左黄右黑白 = [1,2] 配对，**计数器区域相对 f0 全程零变化 = 边界重入 PASS**；Detail 终态「阅读」= index0。
+- 边界补录 `4b3766cd36b3d8c20ae5ef909d7997d63810d59beb6ea06b92246e4e8ca656a0`（114 帧）：view_image 显示层两次串图（展示错设备/错录像内容；文件本体 md5/尺寸经独立校验无误），改**纯数值逐帧判定**：f0–14 全宽玉米（左右半均高饱和）、f15–27 黑体窗口、f28–68 左黄右黑白 = [1,2] 配对，**计数器区域相对 f0 全程零变化 = 边界重入 PASS**；Detail 终态「阅读」= index0。**口径纠正：本行只判边界重入；0.4–2.9s 量级黑体窗口时长是独立 OPEN 项，不因 spinner/阶段组件存在而豁免。**
 - 数据边界：spread 为验收所需设置写入、验收后恢复 single（门 PASS）；阅读进度 5→1（仅进度推进）；超时还原 120000ms。
 
 **边界/遗留（按用户裁定更新）**：① **用户规格为唯一基准，legacy 该按钮同属缺陷并已同修（见“legacy 同修”段）**——不再存在“以 legacy 为基准”或“是否对齐 legacy 的后续项”，shared/legacy 双路径现按同一规格收敛；② Koma 独立 kit checkout（b5fa389 + 未提交 WIP）未升级 pin，不受影响也不受益；③ 滑块在 value≤3 时左端坐标会打中旋钮 no-op（237/197 均实测），属既有交互几何，非本缺陷范围。
@@ -3800,3 +3801,18 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
 - **还原与状态复原**：take2 动作16 已切回共享，G16 只读 dump 实证 trailing=新阅读器（默认）（无旧版残留）；G17 Back+画廊回首页、超时还原 120000ms、电源读回、无锁屏；租约已释放。backend 往返 = 新→旧→新（授权设置写，已还原）；columnMode 终值 ODD_LEFT（=会话前原值）；仅阅读进度推进。
 - **过程事故与恢复（如实记录）**：① 空闲自动锁屏打断 L2/L3（两份 dump 实为锁屏）——按预检中性区解锁分支一个连续 gate 恢复（解锁→重写 86400000→读回→dump），后续保持快节奏未复发；② 协议拒绝复用 artifactDir（02 重跑被拒）——新建 05 目录；③ 两处门断言纵向坐标过拟合 FAIL（单页格全出血 [0,117][1320,2120] vs 预期 [0,593]…）——均改语义判据对同一 dump 离线重判 PASS，零额外设备动作；④ take1 的 Blank 陷阱（见上）——修复为补 Back 的 take2，一次有据重录。
 - **边界**：真机验收在 237/NextE（设置切换链）；NextN legacy 同函数已同修+契约+编译证明，**未单独真机录像**（派发限定一次真机）；Koma 不含此按钮不受影响。
+
+
+### 全闭环口径撤回 + 加载/入场恢复包状态（2026-09-22 22:xx，按用户发布版反例改判，以此段为最新口径）
+
+**撤回声明**：此前矩阵与回执中“全部就绪/六类全闭环/黑屏加载 PASS/缺陷#1 已关”等完成口径**全部撤回**。以下 OPEN 项在按本包完成动态复验前不得关闭：
+
+1. **共享 loading 呈现（源码+CI 已修，动态未验）**：kit 双克隆（NN 4dcb172+286f2f9 / NE 2aa47e1+1930981）恢复 ReaderLoadingStage（legacy 几何逐常量：80%/180/4/2/0.3、220/900ms、space8/font14/pad24），PagedViewport+ContinuousSurface 全站点替换 32px spinner，四语言 rkit_loading_*；ReaderSession 真字节通道（total<=0 拒收）接 assets.load 与 plan.load；NE 宿主 c1f0e5e6 把 loadReaderFile 真 onProgress 接通（四层装饰器透传）。**真机 shared 阶段/百分比呈现未录；core fixture（监督亲跑 real asset progress 项）≠真机。**
+2. **N/E 百分比能力分界（源码定案）**：E=真字节百分比可通；N 的 StreamingHttpResponse（StreamingHttpClient.ets:7–13）无 content-length/total，流内仅每块 written ⇒ **N 只恢复阶段提示+进度条、不造假百分比**；暴露传输 header 为独立后续。NN 宿主本轮 0 产品改动（tryOpenProductionThumbnail:711 本无 debug、带 rejected 日志）。
+3. **黑体窗口/接图黑帧 OPEN**：0.4–2.9s 量级黑体时长、crop/尺寸 cancel、setOpeningTarget 失败全屏 fallback、OPEN_PROXY_HANDOFF→WAITING_READER_CONTENT 占位挂载/层级/坐标与解码交接均**根因未定、不豁免**（不因 spinner/阶段组件存在而豁免，不按猜测改动画时间）。已埋诊断日志待动态取证：Index 回退 4 分支（invalid_rect/stale_after_capture/preview_null/on_shown_not_matches）+ [ThumbTransition] 相位 6 条（open→proxyHandoff→waitingContent→handoff、setOpeningTarget reject、readerImageReady reject）。
+4. **缺陷#1 缩略图入场 OPEN**：**06 录像改判为 release 缩略图隐式 legacy 路由反例**（close_gate 源在 legacy ReaderPage:1074；hilog shared 标记计数=0、component=reader-thumb-reader-surface-*-route-2…；SHA dd531c3fc3c72a620…f9ef3），不是 shared 通过、也不仅是测试前置错误。双生产入口门已修（NE a842a9ab：Index:777 去 debug 门；Overlay.open:49 去 SHARED+active→LEGACY 隐式降级；统一 resolveNextEReaderBackendSelection=rehearsal override(version>0) 优先、否则 durable readerImplementation，绝不覆盖用户显式 legacy；preview 失败链与 claimed 链未动）。监督已只读确认源码移除，**动态验收未做**。
+5. **Koma 动画 OPEN（原 N/A 撤销）**：用户明确三端两个入口都要动画；Koma 缩略条/滑条无动画纳入本包后续同类检查（kit pin 升级后同链录像）。
+6. **197 旧候选动画结果的边界**：3c28312d/4c6cfc0 的任意距离动画结果属**旧候选有界证据**，不覆盖当前加载/黑帧结论；其 0.4–2.9s 黑体不得以 spinner 存在豁免。
+7. **列表卡问题（离线分类，挂起不占主线）**：非 H 列表 row2 卡（4205352/4205266）文本缺失=**屏底截断**（title/tag 在 y2120 之外，row1 同结构完整=数据管线正常），非缺数据；row2 卡 y1888 两次注入零导航（gate01/02/03 diff 仅时钟）原因**未定**，同卡试次已按监督令停止，挂起待后续分类；缓存/未缓存一律以**实际加载/缓存证据**判定（录像内 stage 出现=未缓存、直达=已缓存），不凭是否点过、不清数据。
+
+**当前候选身份**：NE main a842a9ab（HAP b367cc2b3f96c3c8…3483a1f49，已装237）/ NN main 63ef0b29（HAP 78f79383136f6eb5…d0e3a58，未装）；kit 分支 286f2f9 / 1930981；双端 CI（35736984097 / 35736985186）completed success。kit 契约 TAP：nn2.tap 466/466、ne2.tap 453/456（3 败=既有 image-save）。
