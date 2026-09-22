@@ -63,6 +63,20 @@ The following are finite pending checks inside this one package, not new queues:
   that source/origin marker (or fresh `detail_fetch_parsed`) and label the
   entry cache-derived versus freshly parsed; neither source label substitutes
   for video/frame acceptance.
+- **2026-09-23 raw-frame counterexample — F1 remains OPEN.** Supervisory review
+  opened the original NextN 197 frame
+  `/Users/honjow/git/NextN/.hvigor/outputs/nextn-197-preview-geometry-20260923/05-recording/run/frames/frames/frame_000023.png`
+  (candidate `a0fb...655b`, PTS `0.532500`). The single frame visibly combines
+  the in-flight small thumbnail, a large semi-transparent instance of the
+  same image over Detail, and the central `正在准备图片` placeholder. It is not
+  admissible as a single continuous handoff. Cause is **not yet assigned**:
+  audit the actual shared `reader-kit` root-handoff/body/placeholder drawing
+  chain across NextN and NextE before changing product behaviour. Do not
+  restore the previously rejected full-screen staging approach. The completed
+  NextE 237 `e676...` recording is retained under
+  `.hvigor/outputs/device237__VDE-AL00/not-applicable/portrait-1320x2120/nexte-entry-cache-e676-20260923/page0-continuity-recording/`;
+  it has no observed cache-origin marker, and its raw early/return frames do
+  not discharge this 197 counterexample or establish a root cause.
 - `ReaderRootEntryHandoff` is the sole owner for layout-ready departure,
   one-time root-flight start, arrival, decoded reveal, and finish/notify. The
   two labs retain only the narrow bridge to their root proxy, window animation,
