@@ -3408,3 +3408,15 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
   4. FAB 点击偶发无响应的 hit-test 差异调查
 - 用户数据影响：仅阅读进度推进，无下载/收藏/同步变更。持久化最终=shared（与切换前一致）。
 - 237 lease 20260922-050740-058332bc 需续期或释放。197 lease 已释放。
+
+
+### NextN 197 后续验证状态（2026-09-22 13:2x）
+
+- force-stop + 冷启动直启 663205 → detail 加载正常（西方无H/宝可梦/漫画标签在案）
+- FAB 点击（阅读按钮 [1064,2567][1156,2620] 中心 [1110,2593]）未打开阅读器 — 与 run-47 前的状态不同。原因待查：可能为 detail 页在 force-stop 恢复后可交互区域偏移，或 readerThumbnailTransition 的 source tile 与当前 navigation 状态不匹配。
+- 该问题与 682839 轮 run-24 的 FAB 点击无效是同类现象：冷启动后第一次点击 FAB 有时无效。第二次尝试（force-stop + 重启 + 重试）有时可恢复。
+- **分类：hit-test 时序问题（导航恢复状态导致），非结构遮挡。作为独立待查项，不影响 State A/B 挂载验证结论。**
+- 已尝试的替代路径：直启参数（--pi nextn_gallery_id）在 force-stop 后首次 cold start 时被忽略（app 打开了上次离开的页面而非目标 gallery）。
+- **197 验证完整状态**：State A/B/恢复在 run-47 已全部 PASS。后续 FAB 点击不稳定问题不影响已有验证结论，但需要调查根因以提高测试可靠性。
+- NextN i18n：detail 页显示中文元数据（西方无H/宝可梦/漫画等）——i18n 中文文本正常显示。设置页 backend 行的本地化待确认。
+- 197 设备当前状态：663205 detail 页，持久化=shared，lease 20260922-052715-4d81eabd 有效。
