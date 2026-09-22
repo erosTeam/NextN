@@ -3322,7 +3322,7 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 ⑤ **当前 5 项用户实测缺陷清单与责任归属**：
    | # | 缺陷 | 宿主 | 根因 | 修复责任 | 状态 |
    |---|---|---|---|---|---|
-   | 1 | 双页转场左右互斥（飞向半页对/落页错侧） | NextE（用户实测） | spread 排布与转场目标两套推导不同源 | reader-kit core pairFor/fragmentFor 权威计算落地，两宿主消费 | **已修**（coordinator 分叉确认存在，见 06:5x 复测；收敛进公共实现待做，见下方收敛队列） |
+   | 1 | 双页转场左右互斥（飞向半页对/落页错侧） | NextE（用户实测） | spread 排布与转场目标两套推导不同源 | reader-kit core pairFor/fragmentFor 权威计算落地，两宿主消费 | **B：目标计算由 ReaderDisplayMap 共享代码驱动**；用户现象归因于 foreground 门缺陷导致 layout 未稳定（cbd030eb 已修）| 待双端左右缩略图录像确认 |
    | 2 | 切换上下栏时状态栏时机与控制栏不同步、顶栏跳变 | NextN（用户实测；NextE 无） | 生产路由 managesTrialWindow:false 漂移（Index.ets:3322）| NextN 生产路由对齐 NextE 默认 true，或桥接层原子发布+时序契约 | 待修+双端录像 |
    | 3 | 阅读器实现设置行显示原始 key | NextN（用户实测） | 四 locale 全缺 4 个 backend key | 补齐真实翻译（本轮已补 78b7eee1）+ i18n CI 对齐 NextE | i18n 已修待真机核验 |
    | 4 | 共享阅读器缩略图/滑动条换页硬切 | NextN/NextE（用户实测对照） | 未接入 pageTurnAnimation 管线 | 统一接入 + 滑动条按 NextE 旧版完整行为三端统一 | 待修+逐帧录像 |
@@ -3469,3 +3469,14 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 - 工作单提交：`34ad3a67`→`339fe050`→`a1f9ebbc`→`08e267ed`→`50da2f3a`→`d9156e05`
 - 设备状态：237 NextE reader 1/13 open；197 NextN 663205 detail；持久化两端均为 shared
 - 租约：两端均已释放
+
+### 缺陷#5「任意距离跳页」修复真机验证 PASS（2026-09-22 13:3x–13:4x，NextN 197）
+
+- **缺陷性质（本轮新发现，阻断级）**：`25c1815`（以及据此发布的 main `363c154` / NextE `1fad07a`）让缩略图与滑动条 seek 对**任意距离**目标发出 `ReaderPagerCommand`，但 native pager 仍保留 `Math.abs(command.targetIndex - this.snapshot.displayIndex) !== 1` 守卫，且该命令**没有失败回退**。结果：所有非相邻跳页被**静默丢弃** —— 用户点缩略图跳 2 页以上、或拖动滑动条跳页时界面**完全无反应**，比修复前的硬切更糟。旧版语义是任意距离动画跳页（NextE `jumpToPage` → `animateReaderPagerToIndex` → `changeIndex(target, true)`），故该守卫与旧版行为直接冲突。
+- **修复**：reader-kit `65787ac`（`fix(ui): animate arbitrary chrome seeks instead of dropping them`）移除该距离守卫，保留 serial/topology/navigation/bounds/输入态全部栅栏；`displayIndexForSource` 增加源索引越界防御；契约 `reader-page-turn-command-ui.test.cjs` 改为锁定任意距离动画并**反向拒绝**该守卫回归。reader-kit 套件 **455/455**（修复前 453/454，那 1 个失败正是 `25c1815` 引入的过时契约）。
+- **合并历史**：main 侧 kit `363c154` 与分支侧 `65787ac` 为**分叉历史**，已在 `codex/defect5-arbitrary-seek` 合并为 `4c6cfc0`（含 `d2990b6` foreground 修复 + 任意距离跳页修复），冲突仅 `ReaderPagedSession.displayIndexForSource` 一处（取加固版）。
+- **产物**：main + `4c6cfc0` 重建 release HAP SHA-256 `8f9afe489058a4d9ca26f6b1362749fa778390bfdd95db23cc0bd727d0b6e5e9`（`debug=false / buildMode=release`，含 `libreader_enhancement.so`；字节码 `seekWithAnimation`×2、`displayIndexForSource`×5，对照修复前 HAP 该符号为 0）。注意 `scripts/build-hvigor-signed.sh release` 必须走 **default product + buildMode=release**（main `4ceaaeac` 已修正；沿用旧脚本会产出设备拒装 9568322 的 release-product 包）。
+- **入口更正（重要）**：产品「阅读」FAB（`gallery-detail-read-action` 中心 `[1068,2593]`）**不传页码 → 走持久化后端（本机 shared）**；而缩略图入口传页码，按 `pushReader` 设计**强制 legacy**。前一版工作区候选还因分支缺 release 准入修复 `e13c2bc9` 导致阅读器挂载**空壳**（只有 `reader-overlay-navigation`、零 `rkit-*`、界面全白）——该候选的结论全部作废，改以 main 基线重建后重测。
+- **录像与逐帧判定**：单条 `repeat=1` 连续录像 `fc0a0fafd66634f958b5ef801168b27c01059c48fdf879a18375daf1ee51cfc2`（608 帧，`.hvigor/outputs/nextn-197-defect5-main-20260922/06-recording/run/`），场景为「已在 5/40 且缩略条打开 → 缩略图跳页×2 → 滑动条跳页×2 → Back」，无 launch/scroll/翻页。**hilog 权威记录四次请求全部非相邻且全部落地**：`target=8→selected=8`（+3）、`target=12→selected=12`（+3）、`target=36→selected=36`（+24）、`target=0→selected=0`（−36）；页码读数时间线 `5/40→9/40→13/40→37/40→1/40` 与之一致。修复前这四次会被**全部丢弃**、页码不变。
+- **动画形态**：每个跳转窗口为 4–6 帧多帧位移（非单帧硬切）。全片 37 帧 body 均值 <12，分布在四段（f287–289 / f317–344 / f500–503 / f541–542），逐帧核对均为**目标页尚未解码时的加载等待**（页码已先更新、缩略图目标槽为未解码占位、滑动条已定位），不是动画硬切，也非本次修复引入；Reader 段落内无白闪。
+- **边界**：仅关闭「该合并候选 × 197 × 663205 × 竖屏 × shared 后端」的缩略图/滑动条任意距离跳页**可达性与动画存在性**。未覆盖 NextE 237 对应链、连续模式、章节切换、自动阅读、失败/离线页、平板形态。设备无数据清除、无偏好写入（实现偏好本为 shared 保持原样）；197 lease `20260922-052049-196ef219` 已释放，`OverrideTimeout` 还原 120000ms。
