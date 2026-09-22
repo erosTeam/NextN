@@ -3813,6 +3813,6 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
 4. **缺陷#1 缩略图入场 OPEN**：**06 录像改判为 release 缩略图隐式 legacy 路由反例**（close_gate 源在 legacy ReaderPage:1074；hilog shared 标记计数=0、component=reader-thumb-reader-surface-*-route-2…；SHA dd531c3fc3c72a620…f9ef3），不是 shared 通过、也不仅是测试前置错误。双生产入口门已修（NE a842a9ab：Index:777 去 debug 门；Overlay.open:49 去 SHARED+active→LEGACY 隐式降级；统一 resolveNextEReaderBackendSelection=rehearsal override(version>0) 优先、否则 durable readerImplementation，绝不覆盖用户显式 legacy；preview 失败链与 claimed 链未动）。监督已只读确认源码移除，**动态验收未做**。
 5. **Koma 动画 OPEN（原 N/A 撤销）**：用户明确三端两个入口都要动画；Koma 缩略条/滑条无动画纳入本包后续同类检查（kit pin 升级后同链录像）。
 6. **197 旧候选动画结果的边界**：3c28312d/4c6cfc0 的任意距离动画结果属**旧候选有界证据**，不覆盖当前加载/黑帧结论；其 0.4–2.9s 黑体不得以 spinner 存在豁免。
-7. **列表卡问题（离线分类，挂起不占主线）**：非 H 列表 row2 卡（4205352/4205266）文本缺失=**屏底截断**（title/tag 在 y2120 之外，row1 同结构完整=数据管线正常），非缺数据；row2 卡 y1888 两次注入零导航（gate01/02/03 diff 仅时钟）原因**未定**，同卡试次已按监督令停止，挂起待后续分类；缓存/未缓存一律以**实际加载/缓存证据**判定（录像内 stage 出现=未缓存、直达=已缓存），不凭是否点过、不清数据。
+7. **列表卡问题（离线分类，挂起不占主线）**：非 H 列表 row2 卡（4205352/4205266）文本缺失=**屏底截断**（title/tag 在 y2120 之外，row1 同结构完整=数据管线正常），非缺数据；row2 卡 y1888 两次注入零导航（gate01/02/03 diff 仅时钟）原因**未定**，同卡试次已按监督令停止，挂起待后续分类；缓存身份**只认本页本次 load 的明确 hit/miss、磁盘或网络日志**，缺日志一律记 **unknown**，不凭录像内 stage 是否出现、是否点过或直达推断，不清数据。
 
 **当前候选身份**：NE main a842a9ab（HAP b367cc2b3f96c3c8…3483a1f49，已装237）/ NN main 63ef0b29（HAP 78f79383136f6eb5…d0e3a58，未装）；kit 分支 286f2f9 / 1930981；双端 CI（35736984097 / 35736985186）completed success。kit 契约 TAP：nn2.tap 466/466、ne2.tap 453/456（3 败=既有 image-save）。
