@@ -31,6 +31,54 @@ not fill that gap.
 
 The following are finite pending checks inside this one package, not new queues:
 
+#### 2026-09-23 current entry repair — source/build closed; dynamic chain OPEN
+
+- `ReaderPage.previewWidth/previewHeight/previewCoversWholePage` is now the
+  public reader-kit presentation-geometry contract. It may establish the
+  selected part's initial layout only when original dimensions are absent, the
+  asset is an uncropped whole original part, and the host has explicitly
+  attested a complete page preview. It never writes or substitutes original
+  dimensions; the original remains the only decoded-image handoff.
+- NextE's attestation is produced exclusively by the three
+  `EhGalleryImageParser` page-entry branches, preserved through cache, and
+  copied into the live thumbnail snapshot. A transport sprite sub-rectangle is
+  eligible only because the parser bound it to one gallery page; a Reader crop,
+  a sheet-sized image, an old cache record without the flag, or arbitrary
+  metadata remains ineligible. NextN already supplies original page metadata;
+  the new preview path is therefore a no-op there unless a host makes the same
+  explicit contract.
+- `ReaderRootEntryHandoff` is the sole owner for layout-ready departure,
+  one-time root-flight start, arrival, decoded reveal, and finish/notify. The
+  two labs retain only the narrow bridge to their root proxy, window animation,
+  and navigation. Its reveal commit executes inside the hosts' 140ms animation
+  transaction; late or cancelled callbacks cannot reveal, finish, or notify.
+  The cancelled/authorization failure path still starts the pre-existing root
+  fallback and is not accepted continuity evidence.
+- Current source contracts: both consumer kits pass
+  `reader-entry-geometry-gate` **9/9** (including whole-page proof, one
+  departure/reveal sequence, and late-callback fencing) and
+  `reader-spread-layout` **9/9**. NextE's V1 decorator inventory also passes.
+  The post-build source trees are committed as NextE `1244ba17` with kit
+  `34611f6`, and NextN `e860ed1c` with kit `26158c9`.
+- Signed release builds passed from those committed source trees: NextE HAP
+  SHA-256 `f413bca2773ad48dd65dc2d66d031dfcf2fc3b21b49287096c5914de68cee571`;
+  NextN HAP SHA-256
+  `a0fb6c343a4608a4c0f57bf1ab6b9cad47ebd585b8f15d6338077bbad14d655b`.
+  They are build evidence only. Required dynamic acceptance remains OPEN:
+  current whole recording plus decoded native frames/PTS/page identity must
+  prove immediate preview entry, the correct selected part, one continuous
+  flight, and original-image handoff with loading feedback and no black frame.
+  A fresh resolvable device-237 target and lease are still required before that
+  chain may run.
+- Slider and thumbnail rail already call the shared `ReaderSurface`
+  `seekWithAnimation` path for paged layouts; its deliberate raw seek fallback
+  is limited to continuous, absent session metadata, or a wrong unit. This is
+  recorded as the same package's consumer-version/device verification scope,
+  not a second paging implementation. Koma's production default remains
+  legacy `ReaderPage`; its `ReaderLab` consumes `ReaderSurface` only through a
+  separately reachable shared launch state, so it has no new default-route
+  acceptance claim from this repair.
+
 #### 标准非H测试内容（2026-09-21 监督指令，后续所有设备链统一使用）
 
 - device237 标准画廊已定：`4203217`（`ff4ccabae3`，Non-H 分类，标题/标签等完整语义锚点、

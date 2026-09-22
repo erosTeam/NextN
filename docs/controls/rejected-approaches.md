@@ -95,3 +95,23 @@ user explicitly reopens the entry after reviewing its failure evidence.
 - **Evidence:** `git show 930f51a`; `git -C ../NextE show fbc483cd`; the
   2026-09-07 live-progress reversal record in
   `docs/qa/nextn-ui-change-ledger.md`.
+
+## REJ-READER-007 — Stage opening through a thumbnail-ratio fullscreen proxy
+
+- **Status:** `REJECTED`
+- **Lookup keys:** `ReaderThumbnailTransitionState.arm`,
+  `prepareFullscreenProxy`, `setOpeningTarget`, `ReaderEntryGeometryGate`,
+  staged entry, fullscreen-to-part.
+- **Rejected approach:** allow opening to begin from `arm()`'s default
+  `prepareFullscreenProxy(image)` geometry, then align that proxy to the
+  selected Reader part after layout or decoding.
+- **Why rejected:** the current implementation computes that default from
+  `image.thumbWidth / image.thumbHeight` and the whole root, while
+  `setOpeningTarget()` later receives the selected part rectangle. This makes
+  a full-screen/thumbnail-ratio expansion followed by a shrink or jump to the
+  part—the exact discontinuity the active package must eliminate. Renaming it
+  "staged" does not change the behavior. The trial was reverted before merge.
+- **Evidence:** 2026-09-23 source inspection of NextE
+  `shared/src/main/ets/state/ReaderThumbnailTransitionState.ets` lines 212-286
+  and `feature/reader/src/main/ets/lab/NextEReaderLabPage.ets` lines 804-850;
+  active work-order review.
