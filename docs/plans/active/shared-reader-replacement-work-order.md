@@ -3221,7 +3221,7 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 - **State A 恢复 PASS**：run-20 行值恢复=新阅读器（默认）→ run-21 重新进入：`rkit-reading-surface`=2、`rkit-*`=24、`reader_key_surface`=0。
 - 全程 evidence：NextE-wt `.hvigor/outputs/nexte-237-default-switch-20260922/run-05..21/`（每次 run 均为 manifest 驱动 + lease `20260921-182723-7cde71e5` + validate_device_protocol_result pass）。
 - **release 缺陷（阻断默认切换）**：中央点击在 release 共享阅读器上完全不响应（run-05/06/22 三次复现，entry 完全就绪后仍无 chrome 无翻页）。根因（源码证据）：reader-kit `updateReaderLabForeground()` 带 `if (debugBuild)`（NextE pin c2c528d 与 NextN pin 945ebf4 相同），release 下 `labVisibility.foreground` 恒 false；`NextEReaderLabPage`/`NextNReaderLabPage` 的 `active` 依赖它 → 阅读器挂载但交互门全关（tap→chrome、host settings、常亮、音量键均失效）；日志证据 `[ReaderKeepScreenOn] route=true foreground=false`（release 构建，JSAPP 通道后段被裁剪）。NextN 同缺陷（同 gate、同组件结构），197 未测，预计同样复现。修复方向：生产宿主的 active 门应改用非 debug 门控的前台信号（如 `onForeground` 无条件更新、或 host 提供 windowStage 独立信号）；修复后重跑 237 中央点击 chrome 链与 NextN 197 三态。
-- 本次 NextE/NextN release 构建改走项目脚本：NextE `scripts/build_hvigor_signed.sh release`（提交 48dd7fac 补参数化），NextN `scripts/build-hvigor-signed.sh release`。产物 SHA-256：NextE `0eb3cf534e4ec7922166aef89b397bf9f884eeb0708368d16d07da0c631579d2`、NextN `15fa9ca08d1eb6ea5dcd5c385961e673883e5220bc92fcd6247655403f99726f`。
+- 本次 NextE/NextN release 构建改走项目脚本：NextE `scripts/build_hvigor_signed.sh release`（提交 48dd7fac 补参数化），NextN `scripts/build-hvigor-signed.sh release`。产物 SHA-256：NextE `0eb3cf534e4ec7922166aef89b397bf9f884eeb0708368d16d07da0c631579d2`、NextN `15fa9ca08d1eb6ea5dcd5c385961e673883e5220bc92fcd6247655403f99726f`。 【更正 2026-09-22：本行 NextN `15fa9ca0` / NextE `0eb3cf53` 为前台缺陷发现前的缺陷构建（NextN 构建于 02:21，尚未含 foreground/admission/bootstrap 三修复；NextE 0eb3cf53 另有 release-product 签名源拒装问题），均已被后续修复构建取代并废弃，不作为任何验证依据；权威记录见下方构建产物身份调和条目。】
 - 用户数据无变更：三态仅切换 reader 实现与阅读进度（同一画廊 1/25），无下载/收藏/云同步动作。
 
 
@@ -3266,3 +3266,16 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 - 663205（非H）NextN release 三态：State A shared ✓ → State B legacy（跨冷启动）✓ → State A 恢复 ✓。三态闭环，加上此前 237 NextE 三态 PASS，**双设备三态验证全部完成**。
 - 遗留待查（不阻塞）：197 immersive detail（直启恢复场景）FAB 点击偶发无响应——hilog 无 reader 挂载痕迹，疑似 preview strip 覆盖或 hit-test 时序问题；重试/滚屏即可恢复，机制已在本条 run-18..24 记录。
 - 用户数据影响：仅 663205/682839 阅读进度推进与 reader_implementation 最终值=shared（与切换前一致）。设备 197 停在 663205 reader 页（shared）。
+
+
+### 构建产物身份调和（2026-09-22 06:2x，监督复核指令）
+
+- **已验证安装的 HAP（权威记录）**：
+  - **NextE（237 交互恢复链，run-01..08 nexte-237-foreground-fix）**：SHA-256 `b6e387ce7153f4902a45c8137d2aede15ad3953d2ff6d330c1114d271c66c634`，来源 `/Users/honjow/git/NextE/entry/build/default/outputs/default/entry-default-signed.hap`，构建于 04:05（foreground 修复 cbd030eb 之后，default product + buildMode=release）。磁盘现存同文件，SHA 一致。manifest codeIdentity 见 nexte-237-foreground-fix run-01。
+  - **NextN（197 663205 三态重验，run-01..44 nextn-197-nonh-reverify）**：SHA-256 `5d7f7e5f58b5e0f254495062428d5a1600b68c32d1a56836e7bf579379e54ce2`，来源 `/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap`，构建于 05:08（bootstrap 修复 8113bf0f 之后，含全部三修复：foreground bump 92ba128b + admission e13c2bc9 + bootstrap 8113bf0f）。磁盘现存同文件，SHA 一致。manifest codeIdentity 见 nextn-197-nonh-reverify run-01。
+- **构建重建链（git 可溯）**：缺陷构建（NextN `15fa9ca0` 02:21 / NextE `0eb3cf53` 02:26）→ foreground 修复（NextE cbd030eb 03:54 / NextN 92ba128b 03:54）→ NextN admission 修复 e13c2bc9 04:37 → NextN bootstrap 修复 8113bf0f 05:08。每次修复后均重建并重装重验；NextE 无 admission/bootstrap 缺陷（其 aboutToAppear 守卫本就是 production-safe 形式），故 NextE 最终产物只含 foreground 修复。
+- **磁盘 `entry/build/release/outputs/` 目录产物说明（NextN `91f86b6e` 03:56 / NextE `df7a1164` 04:00）**：这两份是**release-product 签名源**（签名证书与设备信任源不同）的产物，安装时被设备以 9568322 拒绝，**从未用于任何验证安装**，仅作为签名源问题的实物证据保留。它们与 15fa9ca0/0eb3cf53（default-product 缺陷构建）无混淆关系：目录不同、时间不同、签名源不同。
+- **用户验收应安装的 HAP（权威）**：
+  - NextN：`/Users/honjow/git/NextN/entry/build/default/outputs/default/entry-default-signed.hap`，SHA-256 `5d7f7e5f58b5e0f254495062428d5a1600b68c32d1a56836e7bf579379e54ce2`，构建自 NextN `8113bf0f`（含三修复全部）。
+  - NextE：`/Users/honjow/git/NextE/entry/build/default/outputs/default/entry-default-signed.hap`，SHA-256 `b6e387ce7153f4902a45c8137d2aede15ad3953d2ff6d330c1114d271c66c634`，构建自 NextE `cbd030eb`（foreground 修复；NextE 不含 admission/bootstrap 缺陷）。
+- 磁盘 HAP 与已验证 HAP 一致性：**一致**（default 目录两份均未在验证后被重建覆盖）。
