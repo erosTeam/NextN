@@ -3420,3 +3420,23 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 - **197 验证完整状态**：State A/B/恢复在 run-47 已全部 PASS。后续 FAB 点击不稳定问题不影响已有验证结论，但需要调查根因以提高测试可靠性。
 - NextN i18n：detail 页显示中文元数据（西方无H/宝可梦/漫画等）——i18n 中文文本正常显示。设置页 backend 行的本地化待确认。
 - 197 设备当前状态：663205 detail 页，持久化=shared，lease 20260922-052715-4d81eabd 有效。
+
+
+### 协调器 170 行差异逐项分类（NextE-wt vs NextN-wt，md5 交叉验证）
+
+ NextN main reader-kit: `945ebf4` → `d2990b6`(StateB fix) → `363c154`(animated seek) = `363c154`
+ NextE main reader-kit: `c2c528d` → `b7e744a`(StateB fix) → `1fad07a`(animated seek) = `1fad07a`
+
+ 差异全量清单（NextE shared/src/main/ets/navigation/ReaderThumbnailTransitionCoordinator.ets 对比 NextN 同路径）：
+
+ **A. 合理宿主差异（不收敛，保留）：**
+  1. imports：NextE 用 `EhGalleryImage`/`ReaderParams`，NextN 用 `NhGalleryPage`/`LayoutSafeAreaState`/`ThemeTokens` —— 模型类型差异，合理
+  2. imports：NextE 额外导出 `ReaderTrialEntrySource`（与 `ReaderTrialEntryRelay` 同行），NextN 分行 —— 格式差异
+  3. `closeProxyHostId()` 仅 NextE 有：NextE 需要在 root proxy (`nexte-root-navigation`) 和 reader-kit proxy (`reader_key_surface`) 间切换，NextN 始终用 `reader_key_surface` —— 宿主导航结构差异
+  4. `proxyHostRect` 坐标换算块（~18 行）：NextE 需要额外获取 proxy host 的 rect 来做坐标映射，NextN 无此需求 —— 宿主布局差异
+  5. `waitForTargetLayoutFrame` 的 `requireVisibleStatusBarInset` 参数：NextE 需要（因为有 status bar 避让检查），NextN 不需要（无 status bar 避让）—— 合理宿主差异
+
+ **B. 行为漂移（须收敛进 reader-kit）：**
+  0 项 —— 经逐行审计，170 行差异全部为合理宿主差异（不同宿主的导航结构/布局/模型类型导致的适配代码），无逻辑或行为分叉。
+
+ **结论：协调器 170 行差异 = 合理宿主差异，不需要收敛。** 两个宿主的共享阅读器转场目标计算已经通过同一 reader-kit 权威代码驱动（ReaderDisplayMap/ReaderPagedSession），差异仅在宿主适配层。前述「协调器 170 行收敛」队列项关闭。
