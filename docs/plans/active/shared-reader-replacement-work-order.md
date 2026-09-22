@@ -110,8 +110,12 @@ The following are finite pending checks inside this one package, not new queues:
   central `正在准备图片` is absent from that new frame, so the narrowed
   `contentOpacity -> readerImageOpacity(...)` repair has visual evidence for
   the specific early-live-body defect. This does **not** close F1: frames
-  12–13 still show a blurred source tile with a small circle; its origin and
-  duration remain uninstrumented, and a maximum VFR interval can omit a one-frame
+  12–13 still show a blurred source tile with a small circle. The sibling spread
+  recording likewise has a clear tile in original frame 13, blurred tile/circle
+  in frames 14–15, then a clear tile in frame 16. Source review assigns this
+  rendering to root `IndexReaderEntryPendingOverlay` during an entry claim,
+  not the Reader loading stage; exact phase timing remains uninstrumented, and
+  a maximum VFR interval can omit a one-frame
   state. The separate double-page `05` recording has now received independent
   full review: all 233 decoded frames/seven contact sheets and originals
   52/53/181/182 were inspected; MP4 SHA-256 is
@@ -149,11 +153,17 @@ The following are finite pending checks inside this one package, not new queues:
   outer `ReaderOpeningPlaceholder`, and inner body-opacity handoff together.
   The first
   entry's frames 36–37 (PTS 0.651644–0.664111s) still show a small source-tile
-  circle. Source inspection identifies that circle as
-  `EhSpriteThumbnail.statusOverlay()` for `!loaded`, used by the current
-  `PreviewThumbTile`, rather than the Reader loading stage; the captured hilog
-  has no tile completion/error or transition-visibility marker to establish
-  its exact cause/duration. The MP4 is VFR and its maximum adjacent PTS gap is
+  circle. **Source-owner correction (2026-09-23):** the earlier attribution to
+  `EhSpriteThumbnail.statusOverlay()` for `!loaded` is withdrawn. Original
+  frames 35/38 show the same thumbnail clearly loaded immediately before/after
+  the blurred 36/37 pair. `EhSpriteThumbnail.statusOverlay()` has no blur,
+  whereas root `IndexReaderEntryPendingOverlay` draws precisely the local blur
+  and small `LoadingProgress` over a claimed source rectangle; both NextE and
+  NextN production paths mount it while capture/layout is pending. This maps
+  the visible owner to the source-side entry claim, not the separate Reader
+  loading stage, but the captured hilog lacks claim/phase markers to prove
+  the exact start/stop cause or lifetime. The MP4 is VFR and its maximum adjacent
+  PTS gap is
   0.979978s (frames 142→143), so an unencoded single-frame state cannot be
   excluded. Slow-load, failure, unknown-size, and loading-feedback acceptance
   therefore remain OPEN; do not turn this local observation into cross-host or
