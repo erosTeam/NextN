@@ -3319,7 +3319,6 @@ struct Index {
           params.routeEpoch,
         ),
         embedded: true,
-        managesTrialWindow: false,
         entryTransition: this.productionReaderEntryMatches(params) ?
           this.productionReaderEntryTransition : null,
         // Root proxy owns the source pixels. Retain the capture only as the
