@@ -50,6 +50,16 @@ jobs:
         run: |
           node scripts/test_persistence_inventory_contract.mjs
 
+      - name: Check locale key parity
+        shell: bash
+        run: |
+          node scripts/test_locale_key_parity_contract.mjs
+
+      - name: Check reader seek animation contract
+        shell: bash
+        run: |
+          node scripts/test_reader_seek_animation_contract.mjs
+
       - name: Reject tracked device run manifests
         shell: bash
         run: |
