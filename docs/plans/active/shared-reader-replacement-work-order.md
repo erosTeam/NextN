@@ -43,10 +43,26 @@ The following are finite pending checks inside this one package, not new queues:
   `EhGalleryImageParser` page-entry branches, preserved through cache, and
   copied into the live thumbnail snapshot. A transport sprite sub-rectangle is
   eligible only because the parser bound it to one gallery page; a Reader crop,
-  a sheet-sized image, an old cache record without the flag, or arbitrary
-  metadata remains ineligible. NextN already supplies original page metadata;
+  a sheet-sized image, or arbitrary metadata remains ineligible. NextN already
+  supplies original page metadata;
   the new preview path is therefore a no-op there unless a host makes the same
   explicit contract.
+- **2026-09-23 legacy cache reachability repair:** cache-first Detail display
+  is reachable before its deferred network refresh: `GalleryDetailViewModel`
+  applies a disk `GalleryDetailResult` to `vm.images`, then the thumbnail click
+  passes that exact seed into `ReaderParams` and the Reader session. There is
+  no guaranteed reparse before the selected page is measured. Old
+  `gallery_detail` records predate the boolean attestation but have a proven
+  writer provenance: the sole cache writer is `GalleryDetailViewModel`, whose
+  detail result comes from `EhApiService.getGalleryDetail()` and
+  `EhGalleryImageParser`. NextE `0688ee92` consequently restores the exact
+  parser predicate only if that serialized field is absent; explicit `false`
+  remains false, and local/download/image-page seeds never use this decoder.
+  The decoder logs `legacy_detail_preview_geometry_restored` with
+  `origin=gallery_detail_parser_cache`. Dynamic device evidence must capture
+  that source/origin marker (or fresh `detail_fetch_parsed`) and label the
+  entry cache-derived versus freshly parsed; neither source label substitutes
+  for video/frame acceptance.
 - `ReaderRootEntryHandoff` is the sole owner for layout-ready departure,
   one-time root-flight start, arrival, decoded reveal, and finish/notify. The
   two labs retain only the narrow bridge to their root proxy, window animation,
@@ -70,6 +86,19 @@ The following are finite pending checks inside this one package, not new queues:
   flight, and original-image handoff with loading feedback and no black frame.
   A fresh resolvable device-237 target and lease are still required before that
   chain may run.
+- The immutable pre-cache-repair HAPs are retained at
+  `/Users/honjow/git/NextE/.hvigor/outputs/nexte-production-entry-geometry-20260923/entry-default-signed.hap`
+  (the `f413...e571` hash above) and
+  `/Users/honjow/git/NextN/.hvigor/outputs/nextn-production-entry-geometry-20260923/entry-default-signed.hap`
+  (`a0fb...655b`). The NextE cache-repair source was then built separately from
+  the same already-committed reader-kit `34611f6` plus host commit `0688ee92`;
+  its fixed candidate is
+  `/Users/honjow/git/NextE/.hvigor/outputs/nexte-production-entry-geometry-cache-20260923/entry-default-signed.hap`,
+  SHA-256 `df7a11644098172dde9156f138244a3f9c9db2a79c3daa0fc4a7634c8440acfb`.
+  Its release build, parser/context contracts, and V1 inventory succeeded;
+  its registered ohosTest migration case is not yet device-run. The prior HAPs
+  remain independent candidates and must not be installed or tested as though
+  they included `0688ee92`.
 - Slider and thumbnail rail already call the shared `ReaderSurface`
   `seekWithAnimation` path for paged layouts; its deliberate raw seek fallback
   is limited to continuous, absent session metadata, or a wrong unit. This is
