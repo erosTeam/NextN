@@ -3337,3 +3337,15 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 - **验证进度（run-45）**：直启 663205 → FAB → shared reader 打开（`rkit-reading-surface=2`，8/40）。chrome 中心 tap 显隐验证与逐帧录像**待续**（本轮 lease TTL 两次耗尽）。
 - **NextE 回归**：无此漂移（生产路由本就走 true 路径），公共层 ReaderTrialWindow/ReaderSurface 0 diff，不受影响。
 - **遗留**：197 停在 663205 reader（shared，8/40）；持久化=shared；lease 20260922-043341-e8727304 有效至 07:02 需释放/续期；chrome 显隐+翻页+sheet 逐帧录像、缺陷#4 真机 dump、缺陷#5 修复、Koma 全量自查均待续。
+
+
+### 缺陷#5 根因实锤 + 修复方案（2026-09-22 08:0x，源码级）
+
+- **根因实锤（NextN reader-ui ReaderSurface.ets:939/1018）**：缩略图 rail 与 source-slider 的 `onSeek` 回调直接调 `this.session.seekSource(index, unit, navigation)`——硬切跳 index；而手势/点按翻页走 `requestMove(intent)` → `pagerCommand = new ReaderPagerCommand(...)` 动画管线（ReaderSurface.ets:754-770，pageTurnAnimation 开启时用 pagerCommand 携带目标 displayIndex，Swiper 过渡动画）。两套换页路径并存 = 硬切根因。
+- **修复方案（下会话执行）**：
+  1. reader-core ReaderPagedSession 增加 `displayIndexForSource(sourceIndex): number|null`（遍历 display map items 匹配 sourceIndex → displayIndex）；
+  2. reader-ui ReaderSurface 的 onSeek 回调改为：非 continuous 且 `session.displayIndexForSource` 可解析时，构造 `ReaderPagerCommand(++serial, targetDisplayIndex, topology, navigation)` 走动画管线（任意距离 Swiper 过渡均有效）；continuous 或解析失败 fallback `seekSource`；
+  3. 产线设置 `pageTurnAnimation=false` 时保持直接 seek（尊重用户关闭动画的选择）；
+  4. 契约：onSeek 走 pagerCommand 断言 + 三宿主接入一致性断言（NextN/NextE ReaderSurface 同源无分叉即可，Koma 无缩略图 rail 不适用）。
+  5. 重建 NextN/NextE HAP → 197/237 录像验证。
+- 设备遗留：197 停在 663205 reader 页（shared，8/40）；持久化=shared；lease 20260922-044343-ece9c4ee 有效至 07:02 需释放。
