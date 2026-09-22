@@ -3301,3 +3301,32 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 - **#4 NextN 阅读器实现设置行无本地化——根因实锤（源码核查完毕，修复待做）**：NextN `entry/src/main/resources/{base,zh_CN,en_US,ja_JP}/element/string.json` **全部缺失** `settings_reader_backend` / `settings_reader_backend_legacy` / `settings_reader_backend_shared` / `settings_reader_group_implementation` 四个 key（grep 计数全 0；`settings_row_a11y` 存在）。AppStrings.get() 键不可解析时返回 key 本身 → UI 显示原始 key。NextE base 值在案（Reader implementation / Legacy reader / New reader (default)）。**修复清单**：NextN 四 locale × 4 key 补真实翻译（zh：阅读器实现 / 现有阅读器 / 共享阅读器，按 NextN 既有 UI 文案风格；en/ja 对应）；NextE 同步核对四 locale 齐全；NextN i18n CI 检查对齐 NextE（build.yml:45 `bash scripts/run_ci_preflight.sh i18n` 模板）；真机两端设置行 dump 文本核验。计入差异化审计已确认差异 #4。
 - **#5 新缺陷（阻断，与前 3 条并列）**：共享阅读器内置缩略图切换与 source-slider 换页均为硬切，无翻页动画。对照基准（旧版）：NextE 旧版缩略图+滑动条均有动画；NextN 旧版缩略图有动画、滑动条无。根因方向：共享 ReaderThumbnailRail/source-slider 换页直接跳 index，未接入 reader-kit 既有 pageTurnAnimation 翻页动画管线（点按/滑动手势翻页所走管线）；三宿主旧版接入点行为不一致 = 三套现象来源。**修复要求**：①提取两宿主旧版缩略图/滑动条换页的真实动画语义（时长/缓动/动画对象）落账；②缩略图+滑动条换页统一走既有翻页动画管线（尊重翻页动画设置），一处实现两宿主消费；③产品统一：滑动条动画按 NextE 旧版完整行为统一（两端都有动画）；④契约：缩略图/滑动条换页与手势翻页共用同一动画管线断言 + 两宿主接入一致性断言；⑤验收：NextN 197（663205）与 NextE 237（4203217）各录 repeat=1——缩略图切换≥2 次 + 滑动条换页≥2 次，逐帧确认有过渡动画、无硬切/黑帧/残影。计入差异化审计第 #5 项。
 - **队列状态**：#1 转场协调器（已收敛 0 diff，证据落账）；#2 状态栏时序（根因=managesTrialWindow 漂移，修复待做+双端验收）；#3 bootstrap restore（已修 8113bf0f，663205 State B 验证使用）；#4 i18n 缺 key（根因实锤，修复待做）；#5 换页硬切（根因方向已给，修复待做）。#2/#4/#5 均阻断最终验收。
+
+
+## ⚠️ 权威验收 gate（2026-09-22 用户最终裁定，原位落账，后续任何项不满足不得交用户验收）
+
+① **用户已停止人工 QA**：此后所有验证由监督方驱动全量自查，自查全部通过后用户只做**一次最终确认**。此前任何『先交用户试』的路径全部作废。
+
+② **动画语义最终裁定**：缩略图切换、滑动条换页、点按/手势翻页、章节切换、自动阅读——**所有换页入口在 NextN/NextE/Koma 三端都必须有翻页动画**。任何入口在任何宿主出现无动画/硬切一律判定为缺陷，不存在按宿主保留无动画的选项。NextN 旧版滑动条无动画不是基准，是待修行为（缺陷 #5）。所有换页入口统一走 pageTurnAnimation 管线，尊重用户翻页动画设置。
+
+③ **动态行为收口标准**：每条修复对应 **repeat=1 连续录像 + 原始 PTS 逐帧审查**（动画存在性/时序/无跳变/无黑帧/无残影）。静态截图、终态布局 dump、hilog 只能作辅助证据，**不能单独收口任何动态行为**。
+
+④ **全量自查五类扩展到 Koma 适用面**（NextN/NextE/Koma 三端）：
+   1. 两宿主+reader-kit 实现分叉对照（已审计落账 97e26956，漂移清单见前条）；
+   2. 本地化键完整性：全部 UI 引用 key 在全部 locale 定义齐全且键集合一致（脚本化全量扫描，非抽查；缺的补真实翻译）；
+   3. 动画管线接入完整性：所有换页入口逐一核对（见②）；
+   4. chrome 可见性/状态栏/inset 状态发布同帧原子性（缺陷 #2 根因，修复待做）；
+   5. 双页 spread 配对与转场目标同源（pairFor/fragmentFor 权威计算落地 + 契约矩阵）。
+   Koma 按其真实旧能力基线（无缩略图转场/无超分），但已有入口（普通阅读/章节切换/设置）同样要求逐帧验收。**三端全部自查通过后才请用户做一次最终确认。**
+
+⑤ **当前 5 项用户实测缺陷清单与责任归属**：
+   | # | 缺陷 | 宿主 | 根因 | 修复责任 | 状态 |
+   |---|---|---|---|---|---|
+   | 1 | 双页转场左右互斥（飞向半页对/落页错侧） | NextE（用户实测） | spread 排布与转场目标两套推导不同源 | reader-kit core pairFor/fragmentFor 权威计算落地，两宿主消费 | 待修（权威计算+契约矩阵，见④-5） |
+   | 2 | 切换上下栏时状态栏时机与控制栏不同步、顶栏跳变 | NextN（用户实测；NextE 无） | 生产路由 managesTrialWindow:false 漂移（Index.ets:3322）| NextN 生产路由对齐 NextE 默认 true，或桥接层原子发布+时序契约 | 待修+双端录像 |
+   | 3 | 阅读器实现设置行显示原始 key | NextN（用户实测） | 四 locale 全缺 4 个 backend key | 补齐真实翻译（本轮已补 78b7eee1）+ i18n CI 对齐 NextE | i18n 已修待真机核验 |
+   | 4 | 共享阅读器缩略图/滑动条换页硬切 | NextN/NextE（用户实测对照） | 未接入 pageTurnAnimation 管线 | 统一接入 + 滑动条按 NextE 旧版完整行为三端统一 | 待修+逐帧录像 |
+   | 5 | 197 直启恢复 detail FAB 点击偶发无响应 | NextN（自查发现） | 待查（hit-test 时序，非结构遮挡） | 独立待查项 | 不阻塞但需结论 |
+   另：bootstrap restore 缺失（NextN）已修 8113bf0f 并经 663205 跨冷启动验证；转场协调器『170 行分叉』经实测为 0 diff（合并后已收敛）。
+
+**gate 执行方式**：上述 ①-⑤ 逐项完成 → 五类自查脚本/契约全绿 → 三端综合录像（NextN 197 663205 / NextE 237 4203217 / Koma 按基线）PTS 逐帧全过 → 工作单原位记录全部证据 → 监督复核 → 用户一次最终确认。任何环节失败原位落账并回到对应修复步骤，不带病闯关。
