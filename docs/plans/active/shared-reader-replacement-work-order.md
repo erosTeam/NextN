@@ -3743,3 +3743,40 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
 - **「RTL 方向分裂」缺陷撤回（按误报关闭）**，撤回根因 = 上述跨画廊设置错挂；支撑理由三点：① 支撑 direction=rtl/左右/无反转 的三个设置值全部来自 7/16 旧快照而非当日现场读取；② 当天仅有点按表现外推，ltr + horizontal 反转等组合同样能产生「右点=后退」；③ 用户当日真机实测无问题，前提被推翻；④ 缩略条方向代码（af63446，9/6）本期未修改。**不执行方向源收敛重构、不加方向契约、不重录 07/10。**
 - **决策项撤回**：原「NextE RTL spread 视觉序」产品决策项证据基础失效，一并撤回，用户无需对此做决策（§7 已改）。
 - **术语勘误保留**：§1 已原位改正「kit pageTap 默认映射」的简写，给出共享/legacy 两条链的准确换算位置与行号；同时记录源码边界——kit 存在 `pageTap` 方法（`ReaderSurface.ets:707`），共享链由 kit 按 `snapshot.policy.direction` 换算，legacy 链由宿主 `ReaderPage` 按 `readMode.mode` 换算。
+
+
+### 用户报的新缺陷：双页『翻一页』单页格先跳页、再点才换配对 — 已修复 + 双端真机验收 PASS（2026-09-22 17:0x–17:5x）
+
+**现象/预期（用户）**：firstPageAlone 组合 `[1] | [2,3] | [4,5]`，停在第 1 页单页格点『翻一页』：预期 = 只换配对、页码保持 1（变为 `[1,2] | [3,4]…`）；实际 = 先跳到 [2,3] 的第 2 页，再点第二次才换配对。范围修正：仅单页格有 bug，双页格行为正常、不许动。
+
+**根因（源码钉死）**：kit `ReaderPagedSession.spreadShiftTarget() = 当前格 parts[0].sourceIndex + 1`。单页格 [1] 时 target=1 → `firstPageAlone = target % 2 === 1` 恰好等于原值（**配对没翻**），而 anchor 被改写为 source1 → 纯跳页；第二次点双页格（target=2）才把布尔翻掉换配对。与用户复现逐字吻合。
+
+**legacy 基准（源码实测，与派发转述不一致，如实落账）**：legacy `ReaderPage.turnOnePageInDoublePage()`（`feature/reader/.../ReaderPage.ets:4032`）= `targetStart = currentDoublePageStart() + 1` → `setCurrentGalleryColumnMode(columnModeForSpreadStart(targetStart))` → `turnTo(targetStart)`——**每个分支（含单页格 [1]）都是“配对起点+1 并前进到该页”**，即 legacy 单页格同样是先跳页，并非派发转述的“保持当前页、循环换配对”。kit 现状原本是 legacy 的忠实移植。本修复按**用户明确期望**改产品语义：单页格 = 纯偏移不跳页，**有意偏离 legacy**（legacy 宿主按钮未改、未验；shared/legacy 单页格语义自此分叉，如需对齐是独立后续项）。
+
+**修复（两 kit 克隆同文提交）**：`shiftSpread()` 单页格分支 = `firstPageAlone` 取反 + anchor 完全不动（`rebuild()` 自动把当前页解析进新配对：[1]→[1,2]、source0 仍 current）；双页格分支逐字保留（配对必翻；当前页在左格→前进到右半兄弟页，在右格→source index 不变）。guard 顺序调整为先取 target/item 再统一校验，失败面不变。NextE kit `80656c8`、NextN kit `d763d26`。
+
+**契约矩阵（6 新增 + 1 更新，先红后绿）**：
+- 单页格修复断言（firstPageAlone=on、page=单独首页）：点按前后 page index 不变、alone 翻转、displayKeys 换配对、frames=[0,1]——**修复前 RED（缺陷复现）**，修复后 GREEN。
+- 双页格回归锁 4 条（on/off × 配对左/右）：在**旧代码上即 GREEN**（校准现行语义 byte 级锁定：左格前进、右格保持）。
+- 边界 1 条：count=1 时 canShiftSpread=false/shift=false + 陈旧 topology/navigation revision 拒绝。
+- 既有测试 `spread shift accepts final pair to singleton` 的 L156 原把“单页格跳到 hint1”写死为期望，随新语义更新为 hint 不变 + alone 翻转；其“final pair→singleton”双页段不受影响。
+- N/A 说明：firstPageAlone=off × 单独首页在 build() 下不存在单页格，矩阵不设该格。
+- 套件：NextE **448/451**（3 个失败为既有 reader-image-save-ui 旧账，干净 1fad07a 可复现）；NextN **461/461 全绿**（455+6）。
+
+**构建**：NextE main `04c8ac3a` + kit `80656c8` → 签名 release HAP `158a0d1ea73f25d0ab8c6d0c097f91d89d4e6c893efa05d1ff40d9c341baaf02`；NextN main `ef7088e5` + kit `d763d26` → `432a3d4bebf09541aa8ff00bd5020cd44516d1114b3602c9d8be8e6091f078a6`（均命令行签名构建、debug:false）。
+
+**237/NextE 真机验收（丁丁 4204943，非 H，1682 页；lease `20260922-090456-3d5974ad` 已释放）**：
+- 前置门：会话内经双页格 shift（锁定语义）把 alone 翻开 → 滑块回页1 → dump 判定唯一全宽 `rkit-part-0-whole` + `1 / 1682` + shift 在位 **PASS**（首个断言误写死纵向坐标报 FAIL，改语义判据对同一 dump 离线重判 PASS，未加设备动作）。
+- 主录像 `945727069053616de4a0ae50b77b45e5d302c743df3ff2fd3828968c3a8482b0`（207 帧 + hilog）：f0–20 全宽 [1] 计数 1 → f21–26 页2解码加载（计数仍 1）→ f27+ **[1,2] 双半、计数全程 1 = 主证 PASS**；f84–107 shift#2 双页对照 [1,2] 页1→[2,3] 页2（锁定语义）**PASS**。
+- 录像中段事故如实记录：第 3 步滑块回退 x=155 在 value=2 时打中旋钮（knob≈x150.6）no-op（hilog `seek_source=1` 佐证），随后 shift 落在双页格页2→3，**边界重入当时未覆盖**；按分类原因（value≥43 时同一坐标 track-empty 可用）以两跳恢复门（x400→x155）回 [1] 单页格 **PASS**。
+- 边界补录 `2e4b12d8fe1369968974f48957410f2f12bc64e668746d037519268563882e69`：f0–17 全宽 [1] 计数 1 → f24+ [1,2] **计数全程 1 = 边界重入 PASS**；Detail 终态按钮回「阅读」(index0)。
+- 数据边界：阅读进度 85→1（仅进度推进）；无设置写入（alone 翻转为会话级、kit shift 不持久化）；超时还原 120000ms。
+
+**197/NextN 真机验收（663205，非 H，40 页；lease `20260922-092529-8d08ce88` 已释放）**：
+- 实况勘误：197 验收前是 **single 布局**（此前把全宽 part 误读为 alone 单页格）；按验收要求开 spread（持久化 doublePage=true），验收后已恢复 single 并 dump 门 PASS（全宽 part-0、无 shift 按钮）。
+- 前置门：pair-left P5 shift 翻 alone → 滑块 x166 回页1 → `1 / 40` 单页格 **PASS**。
+- 主录像 `50ac90bc8e3abad8f1c79de772217ca5a49af896f02b4e3d39bbf97749c6e944`（380 帧）：帧证 f0–9 全宽 [1] 计数 1 → 加载 → f18–35 [1,2] **计数全程 1 = 主证 PASS**；hilog 权威：shift 后 `reading_source=0` 保持、滑块两跳 `seek_source=18→0`、`selected=0`；第 4 动作落在双页格（修复把 alone 翻掉后回页1自然是双格）→ 锁定语义页1→2 → Detail「继续 P2」**对照 PASS**。
+- 边界补录 `4b3766cd36b3d8c20ae5ef909d7997d63810d59beb6ea06b92246e4e8ca656a0`（114 帧）：view_image 显示层两次串图（展示错设备/错录像内容；文件本体 md5/尺寸经独立校验无误），改**纯数值逐帧判定**：f0–14 全宽玉米（左右半均高饱和）、f15–27 黑屏加载、f28–68 左黄右黑白 = [1,2] 配对，**计数器区域相对 f0 全程零变化 = 边界重入 PASS**；Detail 终态「阅读」= index0。
+- 数据边界：spread 为验收所需设置写入、验收后恢复 single（门 PASS）；阅读进度 5→1（仅进度推进）；超时还原 120000ms。
+
+**边界/遗留**：① 本修复按用户指示改变共享层单页格语义，legacy 宿主按钮仍为“前进一页”语义（未改未验），shared/legacy 单页格分叉——是否对齐 legacy 为独立产品后续项；② Koma 独立 kit checkout（b5fa389 + 未提交 WIP）未升级 pin，不受影响也不受益；③ 滑块在 value≤3 时左端坐标会打中旋钮 no-op（237/197 均实测），属既有交互几何，非本缺陷范围。
