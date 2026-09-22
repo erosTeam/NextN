@@ -3480,3 +3480,34 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 - **录像与逐帧判定**：单条 `repeat=1` 连续录像 `fc0a0fafd66634f958b5ef801168b27c01059c48fdf879a18375daf1ee51cfc2`（608 帧，`.hvigor/outputs/nextn-197-defect5-main-20260922/06-recording/run/`），场景为「已在 5/40 且缩略条打开 → 缩略图跳页×2 → 滑动条跳页×2 → Back」，无 launch/scroll/翻页。**hilog 权威记录四次请求全部非相邻且全部落地**：`target=8→selected=8`（+3）、`target=12→selected=12`（+3）、`target=36→selected=36`（+24）、`target=0→selected=0`（−36）；页码读数时间线 `5/40→9/40→13/40→37/40→1/40` 与之一致。修复前这四次会被**全部丢弃**、页码不变。
 - **动画形态**：每个跳转窗口为 4–6 帧多帧位移（非单帧硬切）。全片 37 帧 body 均值 <12，分布在四段（f287–289 / f317–344 / f500–503 / f541–542），逐帧核对均为**目标页尚未解码时的加载等待**（页码已先更新、缩略图目标槽为未解码占位、滑动条已定位），不是动画硬切，也非本次修复引入；Reader 段落内无白闪。
 - **边界**：仅关闭「该合并候选 × 197 × 663205 × 竖屏 × shared 后端」的缩略图/滑动条任意距离跳页**可达性与动画存在性**。未覆盖 NextE 237 对应链、连续模式、章节切换、自动阅读、失败/离线页、平板形态。设备无数据清除、无偏好写入（实现偏好本为 shared 保持原样）；197 lease `20260922-052049-196ef219` 已释放，`OverrideTimeout` 还原 120000ms。
+
+
+### 当前验证矩阵（2026-09-22 14:0x 最终快照）
+
+| 验证项 | 237 NextE | 197 NextN |
+|---|---|---|
+| State A shared 挂载 | ✅ rkit-reading-surface=2 | ✅ rkit-reading-surface=2 |
+| chrome 显隐（缺陷#2 修复） | ✅ rkit-chrome-top=2 | ✅ rkit-chrome-top=2 |
+| 翻页 | ✅ | ✅ |
+| State B legacy 跨冷启动 | ✅ legacy-reader-surface=2 | ✅ legacy-reader-surface=2 |
+| State A 恢复 | ✅ rkit-reading-surface=2 | ✅ rkit-reading-surface=2 |
+| i18n 中文显示 | ✅ | ✅ |
+| 构建产物调和 | ✅ | ✅ |
+| 左右缩略图转场逐帧 | ⬜ 待录像 | ⬜ 待录像 |
+| Koma 自查 | N/A | N/A | ⬜ 待做 |
+
+### 权威 HAP
+- NextE: b6e387ce（cbd030eb, foreground+contract fixes, default+release, debug:false, 设备信任签名）
+- NextN: c08a3582（8113bf0f, foreground+admission+bootstrap+animated seek+contract, default+release, debug:false, 设备信任签名）
+
+### 遗留待做
+1. 双端左右缩略图入场逐帧录像（缺陷#1 决定性验证）
+2. NextN/NextE 缩略图 rail 换页动画确认（缺陷#5 animated seek 已提交，行为待录像确认）
+3. Koma 全量自查
+4. 三端综合录像+PTS
+
+### 提交清单
+- NextN main: 92ba128b → 3c28312d → 705df857 → 3c28312d(bump) → c08a3582
+- NextE main: cbd030eb → 48dd7fac → f50da601
+- NextN-wt rk: 363c154; NextE-wt rk: 1fad07a
+- 工作单: 34ad3a67 → 339fe050 → a1f9ebbc → 08e267ed → 50da2f3a → d9156e05 → 24361b77 → 7f3cf402 → cfe3e0a6 → 4826be7c → 8a8fda0d → b2d3bf48 → cbee361a → 24361b77(更正) → a3782059 → 50da2f3a
