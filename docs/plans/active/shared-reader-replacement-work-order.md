@@ -3393,3 +3393,18 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 - 用户数据影响：仅阅读进度推进（4204866→2页、4204106→47页），无下载/收藏/同步变更。
 - 设备 237：NextE HAP c01efab1，663205 detail 页，shared 模式，翻页至 2/40；持久化=shared。设备 197：NextN HAP c08a3582，663205 detail 页，shared 模式；持久化=shared。
 - 租约状态：237 = 20260922-050740-058332bc（active）；197 = 20260922-045824-7200ee5e（released）。
+
+
+### 237/NextE 最终验证进度 + 遗留（2026-09-22 07:0x，run-05 后）
+
+- chrome 显隐验证 PASS（缺陷#2 修复 NextE 确认）：run-05 中央 tap rkit-chrome-top=2、rkit-host-settings=2。翻页 tap 也执行。后续 dump 确认 52 个 rkit 节点。
+- NextE 237 三态 + 交互链完整 PASS：State A shared 挂载、chrome 显隐、翻页、State B legacy 跨冷启动（前轮 run-25 已验）、State A 恢复（前轮 run-44 已验）。
+- NextN 197 三态 + 交互链完整 PASS：State A shared 挂载、chrome 显隐、翻页、State B legacy 跨冷启动（run-10-retry2）、State A 恢复。
+- 构建产物身份调和（3bca40cc）。i18n 四 locale 补齐（NextN 78b7eee1 + NextE en_US）。
+- 遗留待做（不阻塞当前报告，下会话继续）：
+  1. 双页 spread 左右缩略图转场逐帧录像验证（需要 pairFor/fragmentFor 收敛后验证）
+  2. Koma 全量自查（五类扩展面）
+  3. 三端综合录像 repeat=1 + 原始 PTS 逐帧审查
+  4. FAB 点击偶发无响应的 hit-test 差异调查
+- 用户数据影响：仅阅读进度推进，无下载/收藏/同步变更。持久化最终=shared（与切换前一致）。
+- 237 lease 20260922-050740-058332bc 需续期或释放。197 lease 已释放。
