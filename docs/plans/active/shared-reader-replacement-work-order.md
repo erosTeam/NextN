@@ -3285,7 +3285,7 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 
 - **状态栏时序缺陷（NextN 跳变）根因定位（源码级，待修复验证）**：NextN 生产路由 `sharedReaderBody`（entry/src/main/ets/pages/Index.ets:3322）向 `NextNReaderLabPage` 传 `managesTrialWindow: false`，而 NextE 生产路由（Index.ets:2211 'ReaderShared'）不传该参数（默认 true）。false 使 lab 页跳过 `trialWindow.prepareStatusBarVisible()`/`setStatusBarVisible()` 的窗口原子准备路径（ReaderTrialWindow.ets:105/135），chrome 可见性提交（ReaderSurface.commitChromeVisible → activitySink.chromeChanged）与系统状态栏显隐不再同帧发布——顶栏 inset 二次重排，正是用户所见跳变。**修复方向**：NextN 生产路由移除 `managesTrialWindow: false`（对齐 NextE 默认 true），或按监督要求在 reader-kit 桥接层把 chrome 可见性+statusVisible 收敛为一次原子发布并加时序契约。NextE 无此问题（true 路径已含同帧准备），回归核对确认公共改动不破坏它。
 - **桥接差异全量清单（NextN ↔ NextE）**：
-  1. 转场协调器 ReaderThumbnailTransitionCoordinator：**0 行差异**（NextE/NextN main、两 wt 四份一致）——此前『170 行分叉』结论基于合并前状态，现已收敛，非漂移。
+  1. 转场协调器 ReaderThumbnailTransitionCoordinator：**分叉确认存在（170 行级）**。复测（2026-09-22 06:5x，md5+wc 交叉验证）：NextE-wt 833 行含 `closeProxyHostId`+`nexte-root-navigation` 宿主分支；NextN-wt 769 行无该函数。行为差异（目标矩形 proxy-host 坐标换算块、宿主 id 选择）须收敛进 reader-kit 权威计算。**更正**：早前『0 行差异』结论系 diff|grep 管道输出假象（未做 md5/wc 交叉验证的方法错误），监督复测正确，此前结论作废。
   2. ReaderTrialWindow / ReaderSurface / ReaderDisplayMap / ReaderPagedSession / ReaderPagedViewport / ReaderEntryTransition：**0 行差异**，reader-kit 共享层单源。
   3. 状态栏发布时序：NextN 生产路由 `managesTrialWindow:false` vs NextE 默认 true —— **实现漂移（本缺陷根因，待修）**。
   4. 后端选择：已统一（NextNReaderBackendSelectionState/NextEReaderBackendSelectionState 同构，持久化驱动），非漂移。
