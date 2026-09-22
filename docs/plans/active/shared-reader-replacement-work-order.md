@@ -29,6 +29,27 @@ candidate still lacks matching runtime evidence for those F1/F2 transitions;
 the historical terminal screenshots and prior Pass results are retained but do
 not fill that gap.
 
+**2026-09-23 NextE F1 current candidate — failed QA, package OPEN.** The
+selected device237 (`VDE-AL00`, portrait 1320×2120) was absent from a fresh
+outside-sandbox Connected list. Under its exact-target lease, `hdc tconn
+192.168.50.237:12345` returned `Connect OK`; a fresh list then showed the
+target Connected and targeted `shell echo ok` returned `ok`. The signed NextE
+candidate `1af94722ee0349361034ef109a8c1b41951c9a6518d1de7ce48e3b559c3a29f3`
+was installed without clearing data, cold-opened, and routed to standard Non-H
+gallery 4203217 Detail page-0 preview. Its current layout placed that tile at
+`[73,1237][447,1763]`. The single continuous page-0 entry → Back → same-source
+re-entry recording is retained at
+`/Users/honjow/git/NextE/.hvigor/outputs/device237__VDE-AL00/not-applicable/portrait-1320x2120/nexte-f1-placeholder-top-20260923/normal-nonh-page0-roundtrip-recording/run/`
+(MP4 SHA-256 `40b11a8b79333c3376f96a156bfb468176212bd3bd043227741b4c25ab49c3e0`,
+210 original PTS frames). Original frames 38–39 show the source tile blurred
+with a loading ring before flight. On re-entry, frame 179 at 13.187444s has a
+bright selected page, frame 180 at 13.201400s visibly darkens that same page,
+and frame 181 at 13.248333s restores the bright page and shows its neighbour.
+This rejects the `zIndex(1)`/single-post-frame candidate for F1; no same-condition
+re-recording can turn it into acceptance. The exact source/reader handoff cause
+is not yet established. The device lease was released after capture; F1 remains
+OPEN until a changed candidate passes the same continuous visual boundary.
+
 The following are finite pending checks inside this one package, not new queues:
 
 #### 标准非H测试内容（2026-09-21 监督指令，后续所有设备链统一使用）
