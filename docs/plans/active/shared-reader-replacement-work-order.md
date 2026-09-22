@@ -4083,14 +4083,86 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
   from the `cdd93742` HEAD commit alone.
   The separate `entry/build/release/outputs/default` HAP was stale and
   still hashed `df7a116…`; it was not installed. Three unique project-owned
-  protocol manifests prepare install, the known grid route, and one matched
-  two-entry recording. On the selected target
-  `192.168.50.237:12345`, outside-sandbox HDC `tconn` returned
-  `Connect OK`, but Connected listings still omitted it and leased
-  `shell echo ok` returned `Not match target founded`; TCP port 12345 and
-  ICMP were reachable. The lease was released. **Next action:** when this
-  exact target is Connected again, reacquire its lease, run the checked
-  manifests, and review every entry's adjacent original-resolution frames
-  before any acceptance claim. F1 and the source-tile circle remain OPEN.
+  protocol manifests prepared install, the known grid route, and one matched
+  two-entry recording. A fresh outside-sandbox list omitted the selected
+  `192.168.50.237:12345`; under its exact-target lease, `hdc tconn` returned
+  `Connect OK`, a fresh list showed it Connected, and targeted `shell echo ok`
+  returned `ok`. The checked manifests then installed this exact HAP without
+  clearing data, cold-opened Home, and reached standard Non-H 4203217 Detail
+  page-0 tile `[73,1237][447,1763]`. The one continuous enter → Back → same
+  source re-enter recording is
+  `.hvigor/outputs/device237__VDE-AL00/not-applicable/portrait-1320x2120/nexte-f1-placeholder-top-20260923/normal-nonh-page0-roundtrip-recording/run/nexte237_1af94722_placeholder_top_normal_nonh_page0_roundtrip.mp4`
+  (SHA-256 `40b11a8b79333c3376f96a156bfb468176212bd3bd043227741b4c25ab49c3e0`,
+  210 original PTS frames). Original frames 38–39 show source-tile blur and a
+  loading ring before flight; on re-entry frame 179 (13.187444s) has a bright
+  selected page, frame 180 (13.201400s) materially darkens that page, and
+  frame 181 (13.248333s) restores it beside the neighbour. This candidate
+  **FAILS F1**. The lease was released. The open action is a source change
+  that starts the root-owned flight from the current source without waiting
+  for the asynchronous preview capture, preserves correct selected-part
+  landing and cancellation, and removes the observed handoff dark pulse;
+  only a newly built, identity-bound candidate merits another matched run.
+  F1 and the source-tile circle remain OPEN.
+
+  **2026-09-23 same-target candidate sequence; F1 remains OPEN:** production
+  NextE/NextN Index now skips its preliminary asynchronous PixelMap capture;
+  the existing coordinator takes the single synchronous root snapshot and the
+  exact source/navigation/epoch claim authorizes departure. Both signed builds
+  succeeded. On leased 237, the NextE signed HAP `1f6a9944…` produced one
+  matched 211-frame normal Non-H round trip (video SHA-256 `e66ba28c…`):
+  source blur/loading circle was not seen in sampled click-to-flight originals,
+  but first entry frames 70→71–72→73 and second entry 181→182→183 still
+  visibly dimmed the selected page. The next preserved HAP `596f1bff…`
+  committed selected opacity without the 140 ms reveal animation; its matched
+  213-frame video SHA-256 `2d1dd2a6…` showed **worse** first-entry frame 72
+  (1.669400s) completely black between bright 71/73, plus second-entry 184
+  (13.002878s) dark between bright 183/185. The third preserved HAP
+  `1661dab1…` retained the terminal `ReaderEntryTransition` through route
+  disappearance to keep selected image IDs stable; build and grid gate passed,
+  but its matched 213-frame video SHA-256 `ef61ae33…` still has selected-page
+  dark frame 183 (13.167622s) between bright 182/184. Each recording and
+  same-window hilog lives under its separately named `nexte-f1-*` device237
+  output directory; no prior video was overwritten. The source-tile circle
+  removal is a bounded observation, not proof of click-immediate motion:
+  recorder PTS has a click-window VFR gap, and `ReaderRootEntryHandoff.sync`
+  still gates flight on actual selected-part geometry. F1 remains OPEN. The
+  observed dark/black frame is at root-proxy/Reader-content ownership transfer;
+  extra callback count, opaque reveal, and stable image IDs alone did not
+  eliminate it. The current NextE source therefore holds the root-owned
+  source proxy opaque through `WAITING_READER_CONTENT` and `OPEN_HANDOFF`,
+  lets the inner placeholder yield while the selected original composes
+  beneath that proxy, and removes the proxy only after the original is ready.
+  It retains the actual selected-part target; there is no fullscreen-first
+  staging. The fresh signed HAP at
+  `.hvigor/outputs/nexte-f1-root-proxy-hold-20260923/entry-default-signed.hap`
+  has SHA-256 `bfb5997dfd0f21d84abdf9fc4b8536b7269d3a48e8fae5bd0c630fdb6a8b0a76`.
+  Its checked 237 normal Non-H page-0 enter → Back → same-source re-enter
+  recording has MP4 SHA-256
+  `5f7198f620e65906e1f72b79ecd1f057ed562f17ce04903c9880095da3ce0c1a`
+  (212 original frames; retained under the matching device237 output
+  directory). Every-frame review around both handoffs found no selected-page
+  dark/black pulse: the selected-left-page region stays bright, and the
+  neighbour appears only after the selected page reaches its half-spread
+  target. No source blur/loading ring was seen in sampled click-to-flight
+  frames. This is a bounded **normal-path visual-continuity pass**, not an F1
+  close: the first click window has a 0.439 s VFR PTS gap, so immediate motion
+  is unproved, and `ReaderRootEntryHandoff.sync` still waits for valid measured
+  selected-part geometry. Same-window hilog lacks app transition markers.
+  A separate checked rapid-Back recording of the same HAP (MP4 SHA-256
+  `221b3a5dedf6a4fd32611ade529ada3a3b1f582086ce181397195c647900c6d7`,
+  193 original frames) sent each Back about 0.1 s after its click command
+  completed. Original frames 72/76/80–88 and 145/150/154–168 show two
+  in-flight returns to the same Detail page; the held terminal frames show no
+  late Reader reopen. This covers only that rapid-Back case, not every cancel
+  timing. Both recordings, command ledger and hilog remain in separately
+  named `nexte-f1-root-proxy-hold-20260923` ignored artifact directories;
+  the exact 237 lease was released. NextN current source (single root capture,
+  exact departure claim, terminal transition retention) passed its three
+  scoped source checks and a fresh signed build, but has not received this
+  NextE-specific compositor change or a current on-device acceptance run.
+  **Single active action:** establish click-to-first-motion timing with a
+  synchronized input/frame trace on this exact normal route, then use that
+  evidence to decide whether the measured-geometry gate requires a narrow
+  change; slow/failure/cancel and NextN runtime parity stay OPEN.
 
 **历史 NextE 观测候选（未安装、未动态验收；当前 F1 下一动作以上条为准）**：NE main `8c35d16e` + `cb1f478a`、kit `d99139f1`；签名 HAP SHA-256 `fab1703e57777bd892fb44032a1287f2f97f63b15df53361a560b1bd7a30bf48`，签名构建成功。新增日志只记录 production admission/capture 完成/overlay/phase、layout gate、actual flight-start 和 pending 期间每个 original part 的 slot/宽高；不改转场、几何、fallback 或后端选择。该旧候选的 logger 可采集性和动态证据均未证明，不能替代当前候选的匹配录像。

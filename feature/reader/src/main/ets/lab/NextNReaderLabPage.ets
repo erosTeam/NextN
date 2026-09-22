@@ -63,8 +63,8 @@ export struct NextNReaderLabPage {
   @Param entryTransition: ReaderEntryTransition | null = null
   @Param entryPhase: string = 'finished'
   @Param entryPreview: ReaderEntryPreviewSource | null = null
-  /** The root proxy uses this capture only to authorize its live departure. */
-  @Param entryDeparturePreview: ReaderEntryPreviewSource | null = null
+  /** The root proxy re-checks the exact live source before departure. */
+  @Param entryDepartureGuard: ((entryId: number) => boolean) | null = null
   /** Production root proxy lands on reader-kit's actual selected image part. */
   @Param rootOwnedEntryTarget: boolean = false
   @Param managesTrialWindow: boolean = true
@@ -411,8 +411,8 @@ export struct NextNReaderLabPage {
         return
       }
       this.rootEntryFlightStarted = true
-      if (this.entryDeparturePreview === null ||
-        !this.entryDeparturePreview.authorizeDeparture(entry.entryId) ||
+      if (this.entryDepartureGuard === null ||
+        !this.entryDepartureGuard(entry.entryId) ||
         !ReaderThumbnailTransitionCoordinator.setOpeningTarget(
           this.getUIContext(), this.request.work, target.contentRect.x, target.contentRect.y,
           target.contentRect.width, target.contentRect.height,
