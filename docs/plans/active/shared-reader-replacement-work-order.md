@@ -4043,5 +4043,30 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
   tiny loading circle, slow/failure/cancel paths, other entry modes, and
   independent supervisory review remain OPEN. The earlier `f6dcc…` f178–180
   recording is retained as counterevidence and was not overwritten or replayed.
+- **Current source candidate, physical gate OPEN:** inspection traced the
+  selected part's `ReaderEntryTransition.selectedOpacity` from 0 to 1 through
+  the 140 ms host reveal, while `ReaderSurface` declares the NextE opening
+  placeholder before the pager in the same Stack. The original 186/187/188
+  triad shows page-only darkening with stable page number and chrome. NextE now
+  gives that existing root-owned placeholder `zIndex(1)` for the duration of
+  its existing visibility phase, and removes the disproven second
+  `postFrameCallback` from the root coordinator. This is a source-grounded
+  candidate, not an established visual cause or repair. The V1 inventory is
+  0 files, the existing reader contract passes 71 assertions, and a signed
+  build succeeds. The fresh HAP at
+  `.hvigor/outputs/nexte-f1-placeholder-top-20260923/entry-default-signed.hap`
+  has SHA-256
+  `1af94722ee0349361034ef109a8c1b41951c9a6518d1de7ce48e3b559c3a29f3`.
+  The separate `entry/build/release/outputs/default` HAP was stale and
+  still hashed `df7a116…`; it was not installed. Three unique project-owned
+  protocol manifests prepare install, the known grid route, and one matched
+  two-entry recording. On the selected target
+  `192.168.50.237:12345`, outside-sandbox HDC `tconn` returned
+  `Connect OK`, but Connected listings still omitted it and leased
+  `shell echo ok` returned `Not match target founded`; TCP port 12345 and
+  ICMP were reachable. The lease was released. **Next action:** when this
+  exact target is Connected again, reacquire its lease, run the checked
+  manifests, and review every entry's adjacent original-resolution frames
+  before any acceptance claim. F1 and the source-tile circle remain OPEN.
 
-**NextE 观测候选（未安装、未动态验收）**：NE main `8c35d16e` + `cb1f478a`、kit `d99139f1`；签名 HAP SHA-256 `fab1703e57777bd892fb44032a1287f2f97f63b15df53361a560b1bd7a30bf48`，签名构建成功。新增日志只记录 production admission/capture 完成/overlay/phase、layout gate、actual flight-start 和 pending 期间每个 original part 的 slot/宽高；不改转场、几何、fallback 或后端选择。其下一动作仍是先证明设备 logger 配置与读取路径，再由完整协议安装、同源录像与原帧 PTS 验收。
+**历史 NextE 观测候选（未安装、未动态验收；当前 F1 下一动作以上条为准）**：NE main `8c35d16e` + `cb1f478a`、kit `d99139f1`；签名 HAP SHA-256 `fab1703e57777bd892fb44032a1287f2f97f63b15df53361a560b1bd7a30bf48`，签名构建成功。新增日志只记录 production admission/capture 完成/overlay/phase、layout gate、actual flight-start 和 pending 期间每个 original part 的 slot/宽高；不改转场、几何、fallback 或后端选择。该旧候选的 logger 可采集性和动态证据均未证明，不能替代当前候选的匹配录像。

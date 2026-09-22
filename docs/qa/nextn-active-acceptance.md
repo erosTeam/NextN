@@ -8261,7 +8261,7 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   left page → frame 188 bright recovery with neighbour. Candidate `df7a116…`
   therefore **fails F1**. No re-record is needed to establish the observed
   failure.
-- **Review correction / next action:** the earlier local “no pulse” report
+- **Review correction:** the earlier local “no pulse” report
   failed to demand an original-resolution adjacent-triad check at every
   completed-looking entry. That check is now mandatory before a pass claim.
   Do not mask this with extra frame delay or full-screen staging; trace the
@@ -8270,3 +8270,15 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   modes, slow/failure/cancel paths, and independent supervision stay OPEN. The
   0.999567s maximum VFR gap (frames 147–148) and markerless paired hilog do not
   reinterpret this observed triad.
+- **Current continuation:** NextE's existing opening placeholder now has a
+  higher sibling Z order than the selected pager image, while the failed
+  two-post-frame change is removed. V1 inventory 0, reader contract 71,
+  signed build succeeded; candidate HAP SHA-256
+  `1af94722ee0349361034ef109a8c1b41951c9a6518d1de7ce48e3b559c3a29f3`.
+  No install or UI run occurred for that candidate: `tconn` reported `Connect OK`
+  but HDC Connected still omitted `192.168.50.237:12345`, and leased
+  `shell echo ok` returned `Not match target founded`. TCP and ICMP
+  reached the address; the lease was released. F1 remains OPEN. The next
+  physical action is to resume the prepared install → established source-grid
+  gate → two-entry recording protocol after this exact target registers as
+  Connected, then review each original-resolution entry triad.
