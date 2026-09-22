@@ -3349,3 +3349,13 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
   4. 契约：onSeek 走 pagerCommand 断言 + 三宿主接入一致性断言（NextN/NextE ReaderSurface 同源无分叉即可，Koma 无缩略图 rail 不适用）。
   5. 重建 NextN/NextE HAP → 197/237 录像验证。
 - 设备遗留：197 停在 663205 reader 页（shared，8/40）；持久化=shared；lease 20260922-044343-ece9c4ee 有效至 07:02 需释放。
+
+
+### NextN 197 最终验证（c08a3582 HAP，663205 非H，全部 PASS）
+
+- 构建产物：`c08a3582cd3b82fc546afad8347bd8d51fc2d915e2b966d5ee56acf7bcd5ab33`（NextN main `8113bf0f` + reader-kit `363c154` 含 foreground/admission/bootstrap/animated-seek 四修复；default product, buildMode=release, debug:false, 设备信任签名）。
+- 验证链（run-47..49，nextn-197-nonh-reverify-20260922，lease 20260922-045824-7200ee5e 已释放）：
+  - run-47 State A：直启 663205 → FAB → `rkit-reading-surface=2`、`reader_key_surface=0`、16 rkit 节点、8/40。**shared reader 正确挂载**。
+  - run-48 chrome 显隐（缺陷#2 修复验证）：中央 tap → `rkit-chrome-top=2`、`rkit-host-settings=2`。**chrome 显示正常**。
+  - run-49 翻页：右 1/3 tap → 9/40（从 8/40 推进）。**翻页正常**。
+- NextN 197 + 663205（非H）三态 + 交互 + 翻页：**全部 PASS**。
