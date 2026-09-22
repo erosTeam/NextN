@@ -3294,3 +3294,10 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
   汇总：实现漂移 2 项（1 项已修，1 项待修=本缺陷）；合理产品差异 4 类；其余桥接层单源无分叉。
 - **双端验收状态**：NextN 197（663205）与 NextE 237（4203217）的控制栏显示→隐藏→显示逐帧验证、双页左右缩略图转场验证：**待状态栏时序修复完成后一并执行**（修复需重建两 HAP 并重装）。
 - 设备遗留：197 停在 663205 detail、持久化=legacy；lease 20260921-221159-63af729e 已过期需新取。
+
+
+### 差异化审计 #4 落地确认 + 新缺陷 #5（2026-09-22 07:3x）
+
+- **#4 NextN 阅读器实现设置行无本地化——根因实锤（源码核查完毕，修复待做）**：NextN `entry/src/main/resources/{base,zh_CN,en_US,ja_JP}/element/string.json` **全部缺失** `settings_reader_backend` / `settings_reader_backend_legacy` / `settings_reader_backend_shared` / `settings_reader_group_implementation` 四个 key（grep 计数全 0；`settings_row_a11y` 存在）。AppStrings.get() 键不可解析时返回 key 本身 → UI 显示原始 key。NextE base 值在案（Reader implementation / Legacy reader / New reader (default)）。**修复清单**：NextN 四 locale × 4 key 补真实翻译（zh：阅读器实现 / 现有阅读器 / 共享阅读器，按 NextN 既有 UI 文案风格；en/ja 对应）；NextE 同步核对四 locale 齐全；NextN i18n CI 检查对齐 NextE（build.yml:45 `bash scripts/run_ci_preflight.sh i18n` 模板）；真机两端设置行 dump 文本核验。计入差异化审计已确认差异 #4。
+- **#5 新缺陷（阻断，与前 3 条并列）**：共享阅读器内置缩略图切换与 source-slider 换页均为硬切，无翻页动画。对照基准（旧版）：NextE 旧版缩略图+滑动条均有动画；NextN 旧版缩略图有动画、滑动条无。根因方向：共享 ReaderThumbnailRail/source-slider 换页直接跳 index，未接入 reader-kit 既有 pageTurnAnimation 翻页动画管线（点按/滑动手势翻页所走管线）；三宿主旧版接入点行为不一致 = 三套现象来源。**修复要求**：①提取两宿主旧版缩略图/滑动条换页的真实动画语义（时长/缓动/动画对象）落账；②缩略图+滑动条换页统一走既有翻页动画管线（尊重翻页动画设置），一处实现两宿主消费；③产品统一：滑动条动画按 NextE 旧版完整行为统一（两端都有动画）；④契约：缩略图/滑动条换页与手势翻页共用同一动画管线断言 + 两宿主接入一致性断言；⑤验收：NextN 197（663205）与 NextE 237（4203217）各录 repeat=1——缩略图切换≥2 次 + 滑动条换页≥2 次，逐帧确认有过渡动画、无硬切/黑帧/残影。计入差异化审计第 #5 项。
+- **队列状态**：#1 转场协调器（已收敛 0 diff，证据落账）；#2 状态栏时序（根因=managesTrialWindow 漂移，修复待做+双端验收）；#3 bootstrap restore（已修 8113bf0f，663205 State B 验证使用）；#4 i18n 缺 key（根因实锤，修复待做）；#5 换页硬切（根因方向已给，修复待做）。#2/#4/#5 均阻断最终验收。
