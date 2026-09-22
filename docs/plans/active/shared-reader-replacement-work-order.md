@@ -3511,3 +3511,44 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 - NextE main: cbd030eb → 48dd7fac → f50da601
 - NextN-wt rk: 363c154; NextE-wt rk: 1fad07a
 - 工作单: 34ad3a67 → 339fe050 → a1f9ebbc → 08e267ed → 50da2f3a → d9156e05 → 24361b77 → 7f3cf402 → cfe3e0a6 → 4826be7c → 8a8fda0d → b2d3bf48 → cbee361a → 24361b77(更正) → a3782059 → 50da2f3a
+
+
+### 2026-09-22 13:3x 验证状态总结（原位更新）
+
+**已完成：**
+1. 三项核心修复（foreground 门 / admission 守卫 / bootstrap restore）— NextN/NextE main 均含全部提交
+2. 237 NextE 三态：State A shared 挂载、chrome 显隐、翻页、State B legacy 跨冷启动、State A 恢复 — 全 PASS
+3. 197 NextN 663205 三态：State A shared 挂载、chrome 显隐、翻页、State B legacy 跨冷启动、State A 恢复 — 全 PASS
+4. i18n 四 locale 补齐 + NextE en_US 补齐 + locale 集合全等
+5. 构建产物身份调和（3bca40cc）
+6. 协调器 170 行差异逐项分类（合理宿主差异 a1f9ebbc）
+7. 动画 seek 契约（NextN/NextE 各 3/3 pass）
+
+**遗留待做：**
+1. 双页 spread 左右缩略图转场逐帧录像验证（缺陷#1 决定性验证）
+2. Koma 全量自查（五类扩展面）
+3. 三端综合录像 repeat=1 + 原始 PTS 逐帧审查
+4. FAB 点击偶发无效的 hit-test 差异调查
+
+**当前状态快照（09-22 13:3x）：**
+- 237 NextE：c01efab1 HAP、debug:false、持久化=shared、663205 detail 页
+- 197 NextN：c08a3582 HAP、debug:false、持久化=shared、663205 detail 页
+- NextE main：cbd030eb → 48dd7fac → f50da601
+- NextN main：92ba128b → 3c28312d → 705df857 → 3c28312d(bump) → 8113bf0f
+- reader-kit：NextN 363c154、NextE 1fad07a（均含 foreground/admission/animated seek）
+- 租约：两端均释放
+- 用户数据影响：仅阅读进度推进与 reader_implementation 切换，无下载/收藏/云同步变更
+
+### 缺陷 #4 落地确认（2026-09-22 07:0x→13:5x）
+
+- NextN `entry/src/main/resources/{base,zh_CN,en_US,ja_JP}/element/string.json` 四 locale 补齐 4 个 backend keys + en_US/ja_JP `action_torrent`：提交 78b7eee1
+- NextE `entry/src/main/resources/en_US/element/string.json` 补 `settings_reader_group_implementation`：已存在
+- NextN/NextE locale 集合全等已脚本化确认
+- 真机 dump 核验：两端设置页中文文本正常显示（非原始 key）
+
+### 缺陷 #5 落地确认（2026-09-22 07:0x→13:5x）
+
+- reader-kit NextN `363c154` + NextE `1fad07a` 添加 `displayIndexForSource` + `seekWithAnimation`
+- NextN main bump `3c28312d` + NextE main bump `f50da601`
+- 契约 `test_reader_seek_animation_contract.mjs` 3/3 pass（两端）
+- 真机验证待做
