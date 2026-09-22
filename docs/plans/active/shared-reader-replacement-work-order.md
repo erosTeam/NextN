@@ -111,9 +111,16 @@ The following are finite pending checks inside this one package, not new queues:
   `contentOpacity -> readerImageOpacity(...)` repair has visual evidence for
   the specific early-live-body defect. This does **not** close F1: frames
   12–13 still show a blurred source tile with a small circle; its origin and
-  duration remain uninstrumented, a maximum VFR interval can omit a one-frame
-  state, and the separate double-page `05` recording has not yet received an
-  independent full-frame review. The retained evidence root is
+  duration remain uninstrumented, and a maximum VFR interval can omit a one-frame
+  state. The separate double-page `05` recording has now received independent
+  full review: all 233 decoded frames/seven contact sheets and originals
+  52/53/181/182 were inspected; MP4 SHA-256 is
+  `b22b2749763e07fb84a08dbb1e5ed77869ebc3887d1ba5809258e77d901b8407`.
+  Its two selected-right-part entries and original-part return do **not** show
+  the materially dark selected-page pulse seen in NextE frame 179. This is a
+  bounded current-public-behaviour comparison only, not proof that NextN can
+  never flicker: its maximum PTS gap is 0.977355s and blurred source-tile
+  circles remain in frames 14–15. The retained evidence root is
   `NextN/.hvigor/outputs/nextn-f1-body-opacity-acceptance-20260923/`.
 - **2026-09-23 NextE 237 normal Non-H same-source round-trip — bounded
   handoff observation; overall acceptance remains OPEN.** The fixed candidate
@@ -130,7 +137,17 @@ The following are finite pending checks inside this one package, not new queues:
   with hilog SHA-256
   `1d69322f526c4101c80fc24395ce1defbf4380cd643614d5ff94b2d5eade38ae`.
   Full review of its 208 decoded frames/six contact sheets found no whole-screen
-  black frame and no central `正在准备图片` in either sampled entry. The first
+  black frame and no central `正在准备图片` in either sampled entry. That limited
+  observation does **not** clear the handoff: direct original-frame review shows
+  a discrete dark pulse on the second re-entry — frame 178 / PTS 12.969044s is
+  normally bright, frame 179 / PTS 12.984278s is materially dimmed across the
+  left reader page, and frame 180 / PTS 13.029311s is bright again while the
+  right neighbour appears. The three originals are retained at
+  `.../normal-nonh-page0-roundtrip-recording/run/frames/frames/frame_000178.png`
+  through `frame_000180.png`; this is a real visual counterexample, not a VFR
+  gap or a whole-screen-black claim. The next repair must trace the root proxy,
+  outer `ReaderOpeningPlaceholder`, and inner body-opacity handoff together.
+  The first
   entry's frames 36–37 (PTS 0.651644–0.664111s) still show a small source-tile
   circle. Source inspection identifies that circle as
   `EhSpriteThumbnail.statusOverlay()` for `!loaded`, used by the current
@@ -3982,5 +3999,42 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
 7. **列表卡问题（离线分类，挂起不占主线）**：非 H 列表 row2 卡（4205352/4205266）文本缺失=**屏底截断**（title/tag 在 y2120 之外，row1 同结构完整=数据管线正常），非缺数据；row2 卡 y1888 两次注入零导航（gate01/02/03 diff 仅时钟）原因**未定**，同卡试次已按监督令停止，挂起待后续分类；缓存身份**只认本页本次 load 的明确 hit/miss、磁盘或网络日志**，缺日志一律记 **unknown**，不凭录像内 stage 是否出现、是否点过或直达推断，不清数据。
 
 **当前候选身份**：NE main a842a9ab（HAP b367cc2b3f96c3c8…3483a1f49，已装237）/ NN main 63ef0b29（kit 286f2f99；仓库代码身份已核，但有界盘点未找到旧 HAP 78f79383…d0e3a58，**不得再按该哈希安装或宣称产物身份**；当前主仓现存 signed HAP=bcb2066ed7a49ebc…56767f2768，仅证明文件存在，未有绑定 manifest 证明其源码相等，未装197）；kit 分支 286f2f9 / 1930981；双端 CI（35736984097 / 35736985186）completed success。kit 契约 TAP：nn2.tap 466/466、ne2.tap 453/456（3 败=既有 image-save）。
+
+### Root-owned compositor barrier — single matched 237 candidate result (2026-09-23)
+
+- **Repair boundary:** only NextE's root-proxy branch in
+  `ReaderThumbnailTransitionCoordinator` changed. It now starts the opening
+  handoff in one post-frame callback and finishes it in the next, allowing the
+  already-laid-out original body to compose once beneath the still-opaque outer
+  `ReaderOpeningPlaceholder`. Target geometry, proxy/radius, status/chrome,
+  full-screen policy, decode conditions, and the legacy fade branch remain
+  unchanged. The structural contract passed **71 assertions**; signed release
+  build passed. Candidate HAP SHA-256:
+  `df7a11644098172dde9156f138244a3f9c9db2a79c3daa0fc4a7634c8440acfb`.
+- **Fresh physical run:** one install-`-r`, cold Home route, and single matched
+  normal Non-H round trip on 237 (`192.168.50.237:12345`) used the exact
+  source leaf `reader-thumb-gallery-detail-1-page-0` (title 4203217,
+  `grid.json` SHA-256
+  `5103982b56a8ef0df82e1f393e78627541971137a448c273a538aaadbd26de50`).
+  The recording is
+  `.hvigor/outputs/device237__VDE-AL00/not-applicable/portrait-1320x2120/nexte-f1-root-compositor-20260923/normal-nonh-page0-roundtrip-recording/run/nexte237_df7a116_root_compositor_normal_nonh_page0_roundtrip.mp4`
+  (SHA-256 `70083f1ae0e63f99757a887e61aac3cf775e4fa89234a3f8bb270fbe9e64755c`);
+  its paired hilog SHA-256 is
+  `ac4b9b712927ed8d1e87b2a931a2a99f7d7e7b4f22deaf9499ea73e2085dc697`.
+- **Frame finding (bounded):** all **216 decoded original-PTS frames** and all
+  **9 contact sheets** were inspected. For both entries (raw 54–84, PTS
+  1.864267–2.449078; raw 164–194, PTS 12.565044–14.001578), no frame exhibits
+  the old f178-bright → f179-selected-page-dark → f180-recovered-body pattern.
+  The gallery's expected dim/scale and the reader canvas's expected black
+  surround remain visible during transition; this is not a claim that the
+  scene never changes luminance.
+- **Open boundary:** this is one matched candidate observation, not global
+  closure. The recording retains a maximum VFR PTS gap of 0.999567 between
+  frames 147–148, which is not used to dismiss any observed frame. Same-window
+  hilog has no transition markers and contains interleaved system/background
+  logs, so it cannot attribute a compositor moment. The source-tile tiny
+  loading circle, slow/failure/cancel paths, other entry modes, and independent
+  supervisory review remain OPEN. The earlier `f6dcc…` f178–180 recording is
+  retained as counterevidence and was not overwritten or replayed.
 
 **NextE 观测候选（未安装、未动态验收）**：NE main `8c35d16e` + `cb1f478a`、kit `d99139f1`；签名 HAP SHA-256 `fab1703e57777bd892fb44032a1287f2f97f63b15df53361a560b1bd7a30bf48`，签名构建成功。新增日志只记录 production admission/capture 完成/overlay/phase、layout gate、actual flight-start 和 pending 期间每个 original part 的 slot/宽高；不改转场、几何、fallback 或后端选择。其下一动作仍是先证明设备 logger 配置与读取路径，再由完整协议安装、同源录像与原帧 PTS 验收。

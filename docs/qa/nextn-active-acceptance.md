@@ -8245,3 +8245,21 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   `.hvigor/outputs/nextn-237-p13-recv5/run/{applied,original,restored}.png`,
   `.hvigor/outputs/nextn-237-p13-provclassify/run/run-metadata.json`,
   `.hvigor/outputs/nexte-237-togglefix2/run/run-metadata.json`.
+
+## NextE F1 root-owned compositor barrier — candidate device observation (2026-09-23)
+
+- **Performed:** on leased 237 (`192.168.50.237:12345`), installed the signed
+  NextE candidate with `install -r`, cold-routed to the exact normal Non-H
+  gallery source leaf `reader-thumb-gallery-detail-1-page-0`, then made one
+  two-entry round-trip recording. No data was cleared.
+- **Observed:** the fresh MP4
+  `nexte237_df7a116_root_compositor_normal_nonh_page0_roundtrip.mp4`
+  (SHA-256 `70083f1ae0e63f99757a887e61aac3cf775e4fa89234a3f8bb270fbe9e64755c`)
+  yielded 216 decoded original-PTS frames and 9 reviewed sheets. Neither of its
+  two entry windows (raw 54–84; raw 164–194) reproduces the old verified
+  selected-page f178 bright → f179 dark → f180 recovery pulse.
+- **Still unverified:** this is one matched candidate result only. The source
+  tile's tiny loading circle, other entry modes, slow/failure/cancel paths, and
+  independent supervision stay OPEN. The capture's maximum VFR gap is
+  0.999567s (frames 147–148), and paired hilog has no attributable transition
+  markers; neither fact is used to reinterpret observed frames.
