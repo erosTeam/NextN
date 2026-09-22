@@ -90,15 +90,26 @@ The following are finite pending checks inside this one package, not new queues:
   `/Users/honjow/git/NextE/.hvigor/outputs/nexte-production-entry-geometry-20260923/entry-default-signed.hap`
   (the `f413...e571` hash above) and
   `/Users/honjow/git/NextN/.hvigor/outputs/nextn-production-entry-geometry-20260923/entry-default-signed.hap`
-  (`a0fb...655b`). The NextE cache-repair source was then built separately from
-  the same already-committed reader-kit `34611f6` plus host commit `0688ee92`;
-  its fixed candidate is
-  `/Users/honjow/git/NextE/.hvigor/outputs/nexte-production-entry-geometry-cache-20260923/entry-default-signed.hap`,
-  SHA-256 `df7a11644098172dde9156f138244a3f9c9db2a79c3daa0fc4a7634c8440acfb`.
-  Its release build, parser/context contracts, and V1 inventory succeeded;
-  its registered ohosTest migration case is not yet device-run. The prior HAPs
-  remain independent candidates and must not be installed or tested as though
-  they included `0688ee92`.
+  (`a0fb...655b`). **2026-09-23 artifact-identity correction:** the retained
+  cache-directory file
+  `/Users/honjow/git/NextE/.hvigor/outputs/nexte-production-entry-geometry-cache-20260923/entry-default-signed.hap`
+  is SHA-256 `df7a11644098172dde9156f138244a3f9c9db2a79c3daa0fc4a7634c8440acfb`,
+  identical to the old `entry/build/release/outputs/default` artifact (mtime
+  2026-09-22 04:00:33 +0800). It is **REJECTED** as an installation candidate:
+  `build_hvigor_signed.sh release` maps to `product=default, buildMode=release`,
+  so that release-directory artifact is not this cache-repair build and must
+  remain preserved only as negative identity evidence.
+  The cache-repair source is host commit `0688ee92` with the already-committed
+  reader-kit `34611f6`; its actual default-product release output is
+  `/Users/honjow/git/NextE/entry/build/default/outputs/default/entry-default-signed.hap`,
+  SHA-256 `e676e5b0a0801a3a2533936e78b82a5502937dd99034c98d14a9b4c7134c4fbd`,
+  mtime 2026-09-23 00:37:02 +0800. Its byte-identical immutable candidate copy
+  is `/Users/honjow/git/NextE/.hvigor/outputs/nexte-production-entry-geometry-cache-default-20260923/entry-default-signed.hap`.
+  This is the only candidate eligible for a checked-manifest install after its
+  source/WIP binding is re-read. Its release build, parser/context contracts,
+  and V1 inventory succeeded; its registered ohosTest migration case is not
+  yet device-run. The prior HAPs remain independent candidates and must not be
+  installed or tested as though they included `0688ee92`.
 - Slider and thumbnail rail already call the shared `ReaderSurface`
   `seekWithAnimation` path for paged layouts; its deliberate raw seek fallback
   is limited to continuous, absent session metadata, or a wrong unit. This is
