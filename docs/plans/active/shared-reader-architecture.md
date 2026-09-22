@@ -78,8 +78,8 @@ episode 只仲裁被点中的目标复合 item 与根代理，不锁住连续画
 | 子能力 | 准入及身份 | 交接、取消/失败、释放 | N/E/K 消费边界 |
 | --- | --- | --- | --- |
 | 入口与反向 `EntryEpisode` | 新 route/entry，L1 所选 part，宿主有真实来源则提供 claim；无来源明确走无源入口 | 代理→可绘正文的唯一交接；Back 在输入回调同步 claim 反向，过期捕获与动画 effect 释放；失败显示明确待载/失败面，不露出暗正文 | N/E 普通 Detail 缩略图及无源“阅读”入口；Koma 只在有实际缩略图来源时用有源入口，普通章节可用无源入口 |
-| 同位置资源替换 `AssetSwap` | L1 位置身份不变，L0 新 request/variant epoch 和候选 lease；不以 request 变化重新开 F1 | 旧已显示 lease 保留到新候选实际可绘/上屏，再交接并释放；失败/取消保留旧图、退休候选，迟到结果不得覆盖新变体 | N/E 原图、超分、翻译、精确重载；Koma 原图重试/本地资源更新按同一规则，不经过缩略图 flight |
-| 位置变更 `PositionHandoff` | L1 已接受 Move/Seek/ChapterBoundaryIntent，新 position/navigation revision；L4 可异步准备邻章但不能预先清旧图 | 旧 display item 继续可见到新 item 可绘或明确失败面接管；换向/取消作废旧准备，交接后按 part 释放旧 lease；章节准备失败保留旧可读章 | 三端翻页/跳页；Koma 2→1 和跨章使用本事务，N/E 画廊页间也使用，不伪装成入场 |
+| 同位置资源替换 `AssetSwap` | L1 位置身份不变，L0 新 request/variant epoch 和候选 lease；不以 request 变化重新开 F1 | 旧已显示 lease 保留到新候选 `drawableReady` 后交接、且新前景 `presented` 确认；失败/取消恢复旧主画面并退休候选，迟到结果不得覆盖新变体 | N/E 原图、超分、翻译、精确重载；Koma 原图重试/本地资源更新按同一规则，不经过缩略图 flight |
+| 位置变更 `PositionHandoff` | L1 已接受 Move/Seek/ChapterBoundaryIntent，新 position/navigation revision；L4 可异步准备邻章但不能预先清旧图 | 旧 display item 继续可见到新 item 可绘或明确失败面接管；换向/取消作废旧准备，新前景 `presented` 确认后按 part 释放旧 lease；章节准备失败保留旧可读章 | 三端翻页/跳页；Koma 2→1 和跨章使用本事务，N/E 画廊页间也使用，不伪装成入场 |
 
 同一 display item 的 F2 可以在 F1 中准备候选，但不得另夺可见权或取消
 `EntryEpisode`；待入口交出正文所有权后，`AssetSwap` 才可提交同位置替换。
@@ -95,19 +95,28 @@ episode 只仲裁被点中的目标复合 item 与根代理，不锁住连续画
 `VariantPrepared`、`AssetDecoded`、布局回报均不能单独提升它，更不能因此
 取消 `EntryEpisode`。route、position、layout、asset 各身份仍各自校验：
 布局失效可阻止尚未提交的交接，但不凭一个新布局号自动清掉旧可见画面。
-候选在真实可绘/上屏回执后由 L0 提交为新的 displayed lease，L2 以一次
-仲裁提交该 lease 的可见 claim；确认新 claim 后才令 L0 退休旧 displayed
-lease。若需撤销旧 item 并提交新 item，它们属于同一次串行位置交接，
-分别更新各自的 claim 修订，不留中间无主黑帧。回执必须携带原事务及
-route/position/layout/asset 身份；过期回执仅释放自己的候选/捕获句柄。
+交接分成三个不可混淆的边界：`drawableReady` 是候选已解码、实际目标
+几何与身份可用，只允许申请交接，**不**证明像素可见；L2 随后一次性提交
+候选主画面 claim 并提升 `visualRevision`，L3 按同一快照绘制，旧已显示
+lease 仍由 L0 持有作回退，但旧层不得同时成为第二主画面；提交后的
+`presented(frame/identity/visualRevision)` 才确认新主画面进入合成帧，
+L0 此时把候选记为 displayed，之后才退休旧 lease。若呈现失败或超时，
+L2 以新的 claim 修订恢复旧主画面，L0 只退休失败候选。若需撤销旧 item
+并提交新 item，它们属于同一次串行位置交接，不留中间无主黑帧。
+回执必须携带原事务及 route/position/layout/asset 身份；过期回执仅释放
+自己的候选/捕获句柄。这里的 `presented` 是**目标协议的事后前景确认**：
+现有 `ReaderPagedViewport` 的 `Image.onComplete` 只表示解码，随后
+`postFrameCallback` 触发同名 `onPresented`，使 session 标记 displayed
+并把候选 zIndex 提到旧图前；该回调在提升前到达，不能直接当作新主画面
+已经在前景出现的证明。迁移时须补交接后的同身份帧确认，不能改名即宣称实现。
 
 三条竞速裁决（每条只调用对应子事务，共核只负责可见权和回执顺序）：
 
 | 时序 | 可见权与拒绝/延后条件 |
 | --- | --- |
 | F1 运动中 F2 同位置候选到达 | L0 可准备候选，但源代理的 `EntryEpisode` claim 和 `visualRevision` 不变；`AssetSwap` 的可见提交返回“入口仍持有交接权”，延到 F1 将可绘正文交出后，不能以新 asset request 撤销 F1。 |
-| Back 与 F2 完成竞速 | Back 输入回调先被 L2 串行接纳时，立即冻结并提交反向 claim；随后 F2 上屏回执或旧前向窗口回执因旧 episode/claim 修订被拒绝，只清理各自句柄。若 F1 已先完成且 F2 的新主画面已提交，Back 读取**当前** displayed claim 和当前可见源，走正常关闭或明确降级；不得倒用入场快照。F1 未交接前 F2 不得抢先提交，因此不存在 F2 在运动中独立覆盖代理的合法次序。 |
-| Koma 2→1 seek | L1 接受 seek 并提升 navigation/position revision；L0 准备 1 的候选，L2 的 `PositionHandoff` 继续持有 2 的旧可见 claim，不因 seek 或解码通知提升 `visualRevision`。1 实际可绘/上屏后一次交接新 claim，随后退休 2 的 lease；失败、取消或另一 seek 的迟到回执不得清掉旧可读画面，也不得把未显示的 1 记为已读。该路径不启动 `EntryEpisode` 或伪造缩略图 flight。 |
+| Back 与 F2 完成竞速 | Back 输入回调先被 L2 串行接纳时，立即冻结并提交反向 claim；随后 F2 准备/呈现或旧前向窗口回执因旧 episode/claim 修订被拒绝，只清理各自句柄。若 F1 已完成且 F2 claim 刚提交但尚无 `presented`，Back 冻结该待确认 claim、使用仍持有的旧 displayed lease 作可见回退，再按当前源正常关闭或明确降级；不能退休旧图或倒用入场快照。F2 已确认上屏时 Back 读取新的 displayed claim。F1 未交接前 F2 不得抢先提交，因此不存在 F2 在运动中独立覆盖代理的合法次序。 |
+| Koma 2→1 seek | L1 接受 seek 并提升 navigation/position revision；L0 准备 1 的候选，L2 的 `PositionHandoff` 继续持有 2 的旧可见 claim，不因 seek 或解码通知提升 `visualRevision`。1 达到 `drawableReady` 才申请一次交接，L3 绘制新主画面；同身份 `presented` 确认后 L0 才把 1 记为 displayed 并退休 2 的 lease。交接前失败或交接后未呈现都保留/恢复 2 的旧可读画面；取消或另一 seek 的迟到回执不得将未显示的 1 记为已读。该路径不启动 `EntryEpisode` 或伪造缩略图 flight。 |
 
 组合后的视觉契约边界是 `ReaderIntent + ReaderSessionSnapshot →
 ReaderExperienceSnapshot + Effects`：L3 只消费快照并报告真实布局/解码/上屏观察；
@@ -137,7 +146,8 @@ phase；影子计算只用于比较日志，不能让两个 owner 同时控制�
 标识该场景下可被替换的资源候选。增强图准备、请求重建或 selectionId 变化
 **不能仅因请求号改变就撤销同一位置的入场/当前画面**；只有真实换位置、
 来源失效、明确用户取消或无法继续呈现的几何失效才可能撤销对应 episode。
-候选资源先准备并证实可绘，再原子交接 `VisualOwner`，最后释放旧 lease；
+候选资源先准备并证实可绘，再原子交接 `VisualOwner`，待同身份新前景帧
+确认后才释放旧 lease；
 失败则保留旧画面并公开错误/重试状态。这是待实现契约。NextN 后续
 `59591acc…` 原因码包已证明本次取消由同页超分将 load request 1→2 引起，
 但不自动证明所有类似取消同源，也不使 `90dd2e81…` 候选免于实机验收。
