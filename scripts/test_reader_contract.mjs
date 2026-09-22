@@ -42,6 +42,34 @@ for (const token of requiredPageTokens) {
   }
 }
 
+// User spec (2026-09-22): the legacy one-page-step button must step the
+// pairing offset without moving the page on a single cell. The old
+// spreadStart+1 target jumped the alone page first; lock the new form.
+const turnStart = page.indexOf('private turnOnePageInDoublePage')
+const turnEnd = page.indexOf('private cropBordersEnabledForCurrentMode', turnStart)
+if (turnStart < 0 || turnEnd < 0) {
+  throw new Error('ReaderPage: unable to isolate turnOnePageInDoublePage')
+}
+const turnBody = page.slice(turnStart, turnEnd)
+if (!turnBody.includes('ReaderSpreadResolver.secondForStart(')) {
+  throw new Error('turnOnePageInDoublePage: missing single-cell detection via secondForStart')
+}
+if (!turnBody.includes('singleCell ? start : start + 1')) {
+  throw new Error('turnOnePageInDoublePage: single cell must target the unchanged spread start')
+}
+if (!turnBody.includes('? NhReaderColumnMode.ODD_LEFT')) {
+  throw new Error('turnOnePageInDoublePage: single cell must invert the column mode')
+}
+if (turnBody.includes('readerNavigationIndex(this.visiblePageIndex) + 1')) {
+  throw new Error('turnOnePageInDoublePage: the page-jumping spreadStart+1 target must be gone')
+}
+if (!turnBody.includes(': this.columnModeForSpreadStart(target)')) {
+  throw new Error('turnOnePageInDoublePage: double cell must keep the original column computation')
+}
+if (!turnBody.includes('turnToReaderPage(target, true)')) {
+  throw new Error('turnOnePageInDoublePage: the original turn pipeline must stay intact')
+}
+
 function componentSlice(source, name, nextName) {
   const start = source.indexOf(`struct ${name}`)
   const nextStruct = source.indexOf(`struct ${nextName}`, start)

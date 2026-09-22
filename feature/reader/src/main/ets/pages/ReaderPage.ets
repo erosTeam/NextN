@@ -3913,8 +3913,21 @@ export struct ReaderPage {
     if (!this.canTurnOnePageInDoublePage()) {
       return
     }
-    const target: number = this.readerNavigationIndex(this.visiblePageIndex) + 1
-    this.readerColumnMode = this.columnModeForSpreadStart(target)
+    // User spec (2026-09-22): the button steps the pairing offset only.
+    // Single cell (the leading alone page): flip the pairing and keep the
+    // current source page. Double cell keeps the original advance branch
+    // byte-for-byte (target = spread start + 1), matching the shared
+    // shiftSpread fix (reader-kit d763d26). The old form jumped the page
+    // on the single cell — same defect as NextE legacy.
+    const start: number = this.readerNavigationIndex(this.visiblePageIndex)
+    const singleCell: boolean =
+      ReaderSpreadResolver.secondForStart(this.readerColumnMode, start, this.detail.pages.length) === -1
+    const target: number = singleCell ? start : start + 1
+    this.readerColumnMode = singleCell
+      ? (this.readerColumnMode === NhReaderColumnMode.EVEN_LEFT
+        ? NhReaderColumnMode.ODD_LEFT
+        : NhReaderColumnMode.EVEN_LEFT)
+      : this.columnModeForSpreadStart(target)
     this.clearZoomForNavigation()
     this.rebuildReaderPageDataSources(target)
     this.turnToReaderPage(target, true)
