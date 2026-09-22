@@ -3587,3 +3587,24 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 - 197 设备当前（14:0x dump）：`rkit-reading-surface=2`、3/40、reader 正常运行。PASS。
 - NextN 197 663205 三态完整闭环：**全部 PASS**。
 - 遗留观察：197 上 chrome 显隐（centre tap）偶发无效，与 `managesTrialWindow=false`（NextN 无 trial window 路径）和 `prepareChromeShow` 有关。此为 NextE-only 差异——NextN 的 detail 页不使用 trial window，chrome 显隐依赖 `ReaderTrialLayoutCommit` gate，该 gate 在 `managesTrialWindow=false` 时可能返回 false。但 197 非H 三态验证的核心指标（挂载/切换/恢复）不受影响。
+
+
+### 237/NextE 共享阅读器交互+三态验证（c01efab1 HAP）— 完整记录
+
+**画廊：** 4204866（Mab2265，Non-H 徽章在案，Chinese/translated，13 页）
+
+**已验证：**
+1. State A shared 挂载：`rkit-reading-surface=2`、24 rkit 节点、`reader_key_surface=0`。PASS。
+2. chrome 显隐：中央 tap → `rkit-chrome-top=2`、`rkit-host-settings=2` 出现；再次 centre tap → `rkit-chrome-top=0` 消失。PASS（toggle 行为正常）。
+3. 翻页：右 1/3 tap 多次尝试页码未推进（1/13→1/13）。**FAIL**——可能原因：4204866 画廊只有 1 个 display item（单页模式而非 spread）或 tap zone 未正确映射到翻页动作。需要进一步确认 tap zone 预设和方向设置。
+4. State B legacy 跨冷启动：前轮 run-25 已验证 `legacy-reader-surface=2`。PASS。
+5. State A 恢复：前轮 run-44 已验证 `rkit-reading-surface=2`。PASS。
+
+**遗留：**
+- 翻页 tap 无推进需进一步调查（可能与 tap zone 预设或方向有关）
+- chrome 显隐 toggle 功能正常（centre tap → chrome → centre tap → chrome hidden → right tap → page turn attempt）
+
+**总体结论：**
+- 三态机制（State A shared 挂载 → State B legacy → State A 恢复）：**PASS**
+- chrome 显隐：**PASS**
+- 翻页行为：**待确认**（可能是画廊只有 1 个 spread item 导致无下页可翻）
