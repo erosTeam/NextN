@@ -3751,7 +3751,7 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
 
 **根因（源码钉死）**：kit `ReaderPagedSession.spreadShiftTarget() = 当前格 parts[0].sourceIndex + 1`。单页格 [1] 时 target=1 → `firstPageAlone = target % 2 === 1` 恰好等于原值（**配对没翻**），而 anchor 被改写为 source1 → 纯跳页；第二次点双页格（target=2）才把布尔翻掉换配对。与用户复现逐字吻合。
 
-**legacy 基准（源码实测，与派发转述不一致，如实落账）**：legacy `ReaderPage.turnOnePageInDoublePage()`（`feature/reader/.../ReaderPage.ets:4032`）= `targetStart = currentDoublePageStart() + 1` → `setCurrentGalleryColumnMode(columnModeForSpreadStart(targetStart))` → `turnTo(targetStart)`——**每个分支（含单页格 [1]）都是“配对起点+1 并前进到该页”**，即 legacy 单页格同样是先跳页，并非派发转述的“保持当前页、循环换配对”。kit 现状原本是 legacy 的忠实移植。本修复按**用户明确期望**改产品语义：单页格 = 纯偏移不跳页，**有意偏离 legacy**（legacy 宿主按钮未改、未验；shared/legacy 单页格语义自此分叉，如需对齐是独立后续项）。
+**legacy 实现按用户裁定同属缺陷（改判，覆盖此前“legacy 基准”表述）**：legacy `ReaderPage.turnOnePageInDoublePage()`（`feature/reader/.../ReaderPage.ets:4032`）= `targetStart = currentDoublePageStart() + 1` → `setCurrentGalleryColumnMode(...)` → `turnTo(targetStart)`——每个分支（含单页格 [1]）都“配对起点+1 并前进到该页”，单页格同样先跳页。**用户裁定：旧版阅读器实现本身就有这个 bug，不把旧版当金科玉律；行为标准的唯一来源是用户规格（单页格只换配对、页码不变；双页态同规格语义，与共享层 d763d26 分支一致）。legacy 的先跳页是缺陷不是基准。**（legacy 同修记录见本节末尾追加的“legacy 同修”段。）
 
 **修复（两 kit 克隆同文提交）**：`shiftSpread()` 单页格分支 = `firstPageAlone` 取反 + anchor 完全不动（`rebuild()` 自动把当前页解析进新配对：[1]→[1,2]、source0 仍 current）；双页格分支逐字保留（配对必翻；当前页在左格→前进到右半兄弟页，在右格→source index 不变）。guard 顺序调整为先取 target/item 再统一校验，失败面不变。NextE kit `80656c8`、NextN kit `d763d26`。
 
@@ -3779,4 +3779,24 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
 - 边界补录 `4b3766cd36b3d8c20ae5ef909d7997d63810d59beb6ea06b92246e4e8ca656a0`（114 帧）：view_image 显示层两次串图（展示错设备/错录像内容；文件本体 md5/尺寸经独立校验无误），改**纯数值逐帧判定**：f0–14 全宽玉米（左右半均高饱和）、f15–27 黑屏加载、f28–68 左黄右黑白 = [1,2] 配对，**计数器区域相对 f0 全程零变化 = 边界重入 PASS**；Detail 终态「阅读」= index0。
 - 数据边界：spread 为验收所需设置写入、验收后恢复 single（门 PASS）；阅读进度 5→1（仅进度推进）；超时还原 120000ms。
 
-**边界/遗留**：① 本修复按用户指示改变共享层单页格语义，legacy 宿主按钮仍为“前进一页”语义（未改未验），shared/legacy 单页格分叉——是否对齐 legacy 为独立产品后续项；② Koma 独立 kit checkout（b5fa389 + 未提交 WIP）未升级 pin，不受影响也不受益；③ 滑块在 value≤3 时左端坐标会打中旋钮 no-op（237/197 均实测），属既有交互几何，非本缺陷范围。
+**边界/遗留（按用户裁定更新）**：① **用户规格为唯一基准，legacy 该按钮同属缺陷并已同修（见“legacy 同修”段）**——不再存在“以 legacy 为基准”或“是否对齐 legacy 的后续项”，shared/legacy 双路径现按同一规格收敛；② Koma 独立 kit checkout（b5fa389 + 未提交 WIP）未升级 pin，不受影响也不受益；③ 滑块在 value≤3 时左端坐标会打中旋钮 no-op（237/197 均实测），属既有交互几何，非本缺陷范围。
+
+
+### legacy『翻一页』同修 + 237 设置切换全链真机验收 PASS（2026-09-22 18:2x–19:0x）
+
+**用户裁定（行为标准唯一来源）**：旧版阅读器实现本身就有这个 bug，不把旧版当金科玉律；单页格点『翻一页』= 只换配对、页码不变，双页态按与共享层 d763d26 一致的分支语义。本段为该裁定的执行落账（§legacy 基准表述已原位改判）。
+
+**代码（仅此函数+必要配套）**：
+- NextE `feature/reader/.../ReaderPage.ets turnOnePageInDoublePage`（main `719a7c26`，+21/-3）：单页格 = 取反 columnMode + `clearZoomGate` + `syncReaderPagerToIndex(currentIndex,false)`（页码不动）；双页格保留原 advance 分支（左格 turnTo(start+1)，右格 sync 保页）。旧式 `turnTo(spreadStart+1)` 全分支跳页废除。
+- NextN 同函数（main `00f44f90`，2 文件）：单页格用 `ReaderSpreadResolver.secondForStart(...)===-1` 判定 + target=unchanged start + columnMode 取反；双页格 target/column/pipeline **逐字节保持原样**（`columnModeForSpreadStart(target)`+`rebuildReaderPageDataSources`+`turnToReaderPage(target,true)`+异步 saveColumnMode）。
+- **契约缝**：NextN `scripts/test_reader_contract.mjs` 新增 6 条结构断言（secondForStart 检测、target 三元、column 取反、旧跳页表达式必须消失、双页管线原样、turnToReaderPage 原样）——**CONTRACT PASS**。NextE legacy 无既有测试缝，按派发以真机为准。
+- 构建（命令行签名、debug:false）：NextE HAP `5b2de5d5af0db37a7b378b867a52bffa61712e8a8dfc7480b423cc55e955edc7`；NextN HAP `4e998663c7d0606b7121c7ff3f304f8d91c0a5e7ee4392a4d97b102f27edf223`（双端 BUILD SUCCESSFUL）。
+
+**237/NextE 设置切换全链真机（丁丁 4204943 非 H；lease `20260922-102048-07c8a4f3` 已释放；超时还原 120000ms；终点回首页）**：
+- **Gate 链（每步 dump 驱动）**：安装 `5b2de5d5` → Home 坐标 → 设置 tab → `nexte-settings-reader-row`(660,912) → ReaderSettingsPage 深滚 4 屏定位 `nexte-reader-implementation-row`(660,1862)（原 trailing=新阅读器（默认））→ 下拉菜单两选项 (983,1586)/(983,1730) → 选旧版 → **legacy reader 入口 dump**（`reader_key_surface`、rkit=0、双格 page-1+page-2、计数 1/1682、底栏右簇三钮，transfer=(942,1922)）→ **前置门**：transfer 预备步（双格页1→EVEN 页2，锁定分支）+ 右滑回页1 → dump 判定**唯一全宽单格 page-1 + 计数 1/1682 + transfer 在位 = PASS**（首判误写死纵向坐标 FAIL，语义重判 PASS，无设备动作）→ 回菜单展开态（trailing=旧版阅读器）。
+- **Take1（`13-recording`，MP4 `e5673ba4…`）作废**：漏了从压栈 ReaderSettingsPage 返回的 Back（该页底部被 Blank [36,1964][1284,2120] 盖住、无底导航——gate09 已诊断过同一陷阱），画廊 tab 点击空转，整链从未离开设置页；836 帧全为白底设置页、零 reader 帧。**误触审计干净**：三个落点均为行间空隙（pre/post 无叶节点），全量文本+属性 diff 仅时钟与后端标签预期往返，零开关变化；take1 保留为作废证据。
+- **Take2（`15-recording`，MP4 `12e9d9b9024b179602c92af068bc9271358d37b3a72ff934ae5d3a8db8ba59e9`，836 帧 + hilog，19 动作全 repeat=1）= 验收 PASS**，链路：选旧版 → Back 回主设置 → 画廊 → 卡 → FAB → legacy 阅读器（EVEN 单页格 [1]）→ 中心显栏 → **决定性 transfer** → 双 Back → 设置链 → 切回新阅读器 → （自加的回首页尾步再次打在 Blank 上，不在用户链要求内）。
+- **逐帧+数值双证（决定性段 f252–287）**：f255–275 单页全宽红封面、顶栏/滑块 `1 / 1682` 稳定；f276 黑帧转场（顶栏计数仍在）；f277–286 页1 变**左半**、右半解码中；**f287 页2 右半落位 = [1,2] 配对形成**；全程顶栏计数 **保持 1 / 1682**。数值对照：稳定单页帧间计数区 diff=**0**（底噪），单页↔配对 diff=**105px**（仅 letterbox 边缘），显隐对照=**13913px**（阳性对照）——**页码不变、配对变化 = 用户规格 PASS**。
+- **还原与状态复原**：take2 动作16 已切回共享，G16 只读 dump 实证 trailing=新阅读器（默认）（无旧版残留）；G17 Back+画廊回首页、超时还原 120000ms、电源读回、无锁屏；租约已释放。backend 往返 = 新→旧→新（授权设置写，已还原）；columnMode 终值 ODD_LEFT（=会话前原值）；仅阅读进度推进。
+- **过程事故与恢复（如实记录）**：① 空闲自动锁屏打断 L2/L3（两份 dump 实为锁屏）——按预检中性区解锁分支一个连续 gate 恢复（解锁→重写 86400000→读回→dump），后续保持快节奏未复发；② 协议拒绝复用 artifactDir（02 重跑被拒）——新建 05 目录；③ 两处门断言纵向坐标过拟合 FAIL（单页格全出血 [0,117][1320,2120] vs 预期 [0,593]…）——均改语义判据对同一 dump 离线重判 PASS，零额外设备动作；④ take1 的 Blank 陷阱（见上）——修复为补 Back 的 take2，一次有据重录。
+- **边界**：真机验收在 237/NextE（设置切换链）；NextN legacy 同函数已同修+契约+编译证明，**未单独真机录像**（派发限定一次真机）；Koma 不含此按钮不受影响。
