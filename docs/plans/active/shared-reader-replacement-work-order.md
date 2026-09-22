@@ -4002,15 +4002,21 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
 
 ### Root-owned compositor barrier — single matched 237 candidate result (2026-09-23)
 
-- **Repair boundary:** only NextE's root-proxy branch in
-  `ReaderThumbnailTransitionCoordinator` changed. It now starts the opening
-  handoff in one post-frame callback and finishes it in the next, allowing the
-  already-laid-out original body to compose once beneath the still-opaque outer
-  `ReaderOpeningPlaceholder`. Target geometry, proxy/radius, status/chrome,
-  full-screen policy, decode conditions, and the legacy fade branch remain
-  unchanged. The structural contract passed **71 assertions**; signed release
-  build passed. Candidate HAP SHA-256:
-  `df7a11644098172dde9156f138244a3f9c9db2a79c3daa0fc4a7634c8440acfb`.
+- **Attempted source change and artifact identity correction:** the NextE
+  root-proxy branch was edited to separate `startOpeningHandoff()` and
+  `finishOpeningHandoff()` by one post-frame callback; its structural
+  contract passed 71 assertions and Hvigor reported a signed build. The
+  copied/installed HAP SHA-256 was
+  `df7a11644098172dde9156f138244a3f9c9db2a79c3daa0fc4a7634c8440acfb`,
+  but cross-check on 2026-09-23 proves it is byte-identical to
+  `entry/build/release/outputs/default/entry-default-signed.hap` whose
+  filesystem modification and birth times are **2026-09-22 04:00:33**,
+  before this source edit. The copy at 2026-09-23 02:09:03 did not establish
+  a new build identity. Therefore this recording cannot test the
+  two-callback source change or prove it failed. A later fresh build confirmed
+  that this command writes its current signed HAP under
+  `entry/build/default/outputs/default`; no retained HAP for the earlier
+  two-callback source has been verified.
 - **Fresh physical run:** one install-`-r`, cold Home route, and single matched
   normal Non-H round trip on 237 (`192.168.50.237:12345`) used the exact
   source leaf `reader-thumb-gallery-detail-1-page-0` (title 4203217,
@@ -4027,9 +4033,10 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
   same visual counterexample: `frame_000186.png` is a bright selected left
   page, `frame_000187.png` is materially dark across that selected page, and
   `frame_000188.png` is bright again with the neighbouring page present.
-  Therefore candidate `df7a116…` **FAILS F1**; the MP4 hash and retained
-  evidence path above remain authoritative. No re-record is warranted to
-  prove an already-observed failure.
+  Therefore the **installed `df7a116…` artifact visibly FAILS F1**; the
+  MP4 hash and retained evidence path above remain authoritative. No re-record
+  is warranted to prove this artifact's already-observed failure. The
+  two-callback source experiment has **no valid physical result**.
 - **Review-process correction / open boundary:** the local 216-frame statement
   did not require an adjacent-original-frame triad check for every apparent
   completed entry, and its contact-sheet-oriented pass missed frame 187. The
@@ -4049,7 +4056,7 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
   placeholder before the pager in the same Stack. The original 186/187/188
   triad shows page-only darkening with stable page number and chrome. NextE now
   gives that existing root-owned placeholder `zIndex(1)` for the duration of
-  its existing visibility phase, and removes the disproven second
+  its existing visibility phase, and removes the unverified second
   `postFrameCallback` from the root coordinator. This is a source-grounded
   candidate, not an established visual cause or repair. The V1 inventory is
   0 files, the existing reader contract passes 71 assertions, and a signed
@@ -4057,6 +4064,13 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
   `.hvigor/outputs/nexte-f1-placeholder-top-20260923/entry-default-signed.hap`
   has SHA-256
   `1af94722ee0349361034ef109a8c1b41951c9a6518d1de7ce48e3b559c3a29f3`.
+  Both changed source files were modified at 02:31:39; the actual
+  `entry/build/default/outputs/default` HAP was modified at 02:32:39 and
+  hashes identically to this 02:33:27 evidence copy. Recheck that
+  source → actual build output → retained copy identity before installation.
+  This HAP was built from the current **uncommitted NextE worktree diff**
+  (host `zIndex(1)` plus reversal of `cdd93742`'s double callback), not
+  from the `cdd93742` HEAD commit alone.
   The separate `entry/build/release/outputs/default` HAP was stale and
   still hashed `df7a116…`; it was not installed. Three unique project-owned
   protocol manifests prepare install, the known grid route, and one matched

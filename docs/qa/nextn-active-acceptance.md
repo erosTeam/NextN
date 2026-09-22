@@ -8258,9 +8258,12 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   yielded 216 decoded original-PTS frames and 9 reviewed sheets. Direct
   original-frame re-review confirms the second entry is a counterexample:
   frame 186 bright selected left page → frame 187 materially dark selected
-  left page → frame 188 bright recovery with neighbour. Candidate `df7a116…`
-  therefore **fails F1**. No re-record is needed to establish the observed
-  failure.
+  left page → frame 188 bright recovery with neighbour. The installed
+  `df7a116…` artifact therefore **fails F1**. No re-record is needed to
+  establish its observed failure. Its HAP is byte-identical to an
+  `entry/build/release/outputs/default` file dated 2026-09-22 04:00:33,
+  before the two-post-frame source edit; it cannot validate or falsify that
+  source experiment.
 - **Review correction:** the earlier local “no pulse” report
   failed to demand an original-resolution adjacent-triad check at every
   completed-looking entry. That check is now mandatory before a pass claim.
@@ -8271,10 +8274,11 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   0.999567s maximum VFR gap (frames 147–148) and markerless paired hilog do not
   reinterpret this observed triad.
 - **Current continuation:** NextE's existing opening placeholder now has a
-  higher sibling Z order than the selected pager image, while the failed
+  higher sibling Z order than the selected pager image, while the unverified
   two-post-frame change is removed. V1 inventory 0, reader contract 71,
   signed build succeeded; candidate HAP SHA-256
   `1af94722ee0349361034ef109a8c1b41951c9a6518d1de7ce48e3b559c3a29f3`.
+  It was built from NextE's uncommitted worktree diff, not its HEAD alone.
   No install or UI run occurred for that candidate: `tconn` reported `Connect OK`
   but HDC Connected still omitted `192.168.50.237:12345`, and leased
   `shell echo ok` returned `Not match target founded`. TCP and ICMP
