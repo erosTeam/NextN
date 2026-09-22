@@ -3440,3 +3440,32 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
   0 项 —— 经逐行审计，170 行差异全部为合理宿主差异（不同宿主的导航结构/布局/模型类型导致的适配代码），无逻辑或行为分叉。
 
  **结论：协调器 170 行差异 = 合理宿主差异，不需要收敛。** 两个宿主的共享阅读器转场目标计算已经通过同一 reader-kit 权威代码驱动（ReaderDisplayMap/ReaderPagedSession），差异仅在宿主适配层。前述「协调器 170 行收敛」队列项关闭。
+
+
+### 验收状态总结（2026-09-22 13:3x）
+
+**已完成 ✓：**
+1. 三项代码修复（foreground 门 / admission 守卫 / bootstrap restore）— 提交并经双设备真机验证
+2. 237 NextE 三态：State A shared 挂载 ✓、chrome 显隐 ✓、翻页 ✓、State B legacy ✓、State A 恢复 ✓
+3. 197 NextN 663205 三态：State A shared 挂载 ✓、chrome 显隐 ✓、翻页 ✓、State B legacy 跨冷启动 ✓、State A 恢复 ✓
+4. i18n 四 locale 补齐 + NextE en_US 补齐 + locale 集合全等 ✓
+5. 构建产物身份调和 ✓（权威 HAP SHA 记录在案）
+6. 协调器 170 行差异逐项分类 ✓（全部为合理宿主差异）
+7. 动画 seek 契约 ✓（NextN/NextE 各 3/3 pass）
+8. 构建/安装/验证工具链 ✓（manifest 驱动 + lease + validate）
+
+**待办（需新会话/更多时间）：**
+1. NextE 237 chrome 显隐逐帧录像（dump 已确认 chrome 可出现，需录像+PTS 确认时序）
+2. NextN 197 chrome 显隐逐帧录像（同上）
+3. NextE 237 缩略图/滑动条换页动画确认（修复后需真机确认无硬切）
+4. NextN 197 同上
+5. Koma 全量自查（五类扩展面：分叉/本地化/动画/时序/spread 同源）
+6. 三端综合录像+PTS 逐帧审查
+7. FAB 点击偶发无效的 hit-test 差异调查
+
+**关键产物：**
+- 修复提交：NextN main `8113bf0f`→`3c28312d`→`705df857`；NextE main `cbd030eb`→`48dd7fac`；reader-kit NextE `1fad07a` / NextN `363c154`
+- 权威 HAP：NextE `c01efab1`（debug:false）；NextN `c08a3582`（debug:false）
+- 工作单提交：`34ad3a67`→`339fe050`→`a1f9ebbc`→`08e267ed`→`50da2f3a`→`d9156e05`
+- 设备状态：237 NextE reader 1/13 open；197 NextN 663205 detail；持久化两端均为 shared
+- 租约：两端均已释放
