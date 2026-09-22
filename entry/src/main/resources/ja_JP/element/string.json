@@ -5059,6 +5059,26 @@
     {
       "name": "comment_translation_prompt_profile_hint",
       "value": "コメントとタイトルで共有；AIパスでのみ有効"
+    },
+    {
+      "name": "settings_reader_backend",
+      "value": "リーダー実装"
+    },
+    {
+      "name": "settings_reader_backend_legacy",
+      "value": "従来のリーダー"
+    },
+    {
+      "name": "settings_reader_backend_shared",
+      "value": "新しいリーダー（デフォルト）"
+    },
+    {
+      "name": "settings_reader_group_implementation",
+      "value": "リーダー実装"
+    },
+    {
+      "name": "action_torrent",
+      "value": "種"
     }
   ]
 }
