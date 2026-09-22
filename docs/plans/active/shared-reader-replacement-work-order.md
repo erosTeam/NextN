@@ -91,14 +91,56 @@ The following are finite pending checks inside this one package, not new queues:
   from `e860ed1c` plus this repair, and NextE
   `.hvigor/outputs/nexte-f1-body-opacity-20260923/entry-default-signed.hap`
   (`f6dcc96d83182a2e84ceb4a344e669d40dfb3e6ef285f4bd27dacad03848fc1f`)
-  from `0688ee92` plus this repair. Neither HAP has been installed; a new
-  same-state continuous device recording must still show no early live pager
-  feedback and no black frame through root/body handoff. Do not restore the
-  previously rejected full-screen staging approach. The completed
+  from `0688ee92` plus this repair. This statement described the source/build
+  checkpoint only; subsequent, separately recorded device attempts are below.
+  A candidate must still show no early live-pager feedback and no black frame
+  through root/body handoff. Do not restore the previously rejected full-screen
+  staging approach. The completed
   NextE 237 `e676...` recording is retained under
   `.hvigor/outputs/device237__VDE-AL00/not-applicable/portrait-1320x2120/nexte-entry-cache-e676-20260923/page0-continuity-recording/`;
   it has no observed cache-origin marker, and its raw early/return frames do
   not discharge this 197 counterexample or establish a root cause.
+- **2026-09-23 F1 body-opacity repair — bounded dynamic improvement; overall
+  acceptance remains OPEN.** NextN candidate
+  `6ed8b9e03b0e60a31eb8e0bff1c2e74be6cf368359007c1187c93ad668192600`
+  was exercised on its existing 197 acceptance lane. Its single-page recording
+  is SHA-256 `15fa32a7b883d89b66e672e3889db0b4de8e7b74240f78193cd9c439e66d45af`;
+  supervisory review covered all 218 decoded frames/contact sheets and the
+  raw frame 26. The old 197 counterexample's large same-image composite plus
+  central `正在准备图片` is absent from that new frame, so the narrowed
+  `contentOpacity -> readerImageOpacity(...)` repair has visual evidence for
+  the specific early-live-body defect. This does **not** close F1: frames
+  12–13 still show a blurred source tile with a small circle; its origin and
+  duration remain uninstrumented, a maximum VFR interval can omit a one-frame
+  state, and the separate double-page `05` recording has not yet received an
+  independent full-frame review. The retained evidence root is
+  `NextN/.hvigor/outputs/nextn-f1-body-opacity-acceptance-20260923/`.
+- **2026-09-23 NextE 237 normal Non-H same-source round-trip — bounded
+  handoff observation; overall acceptance remains OPEN.** The fixed candidate
+  HAP `f6dcc96d83182a2e84ceb4a344e669d40dfb3e6ef285f4bd27dacad03848fc1f`
+  (host repair `dc147993`) was installed under the checked 237 protocol. The
+  fresh native route used the observed Home search field, exact title,
+  unique `gallery-list-search-17-waterfall-4203217` result, and current
+  `reader-thumb-gallery-detail-1-page-0 [73,1233][447,1759]` source tile;
+  each page transition was separately layout/screenshot-gated before the
+  final continuous entry → wait → Back → same-source re-entry recording. That
+  recording is
+  `NextE/.hvigor/outputs/device237__VDE-AL00/not-applicable/portrait-1320x2120/nexte-f1-body-opacity-20260923/normal-nonh-page0-roundtrip-recording/run/nexte237_f6dcc_normal_nonh_page0_roundtrip.mp4`,
+  SHA-256 `ea79e72fc758ad69ceb9ec3634456d820497e9e5f5963560a8fec37d9dcbe040`,
+  with hilog SHA-256
+  `1d69322f526c4101c80fc24395ce1defbf4380cd643614d5ff94b2d5eade38ae`.
+  Full review of its 208 decoded frames/six contact sheets found no whole-screen
+  black frame and no central `正在准备图片` in either sampled entry. The first
+  entry's frames 36–37 (PTS 0.651644–0.664111s) still show a small source-tile
+  circle. Source inspection identifies that circle as
+  `EhSpriteThumbnail.statusOverlay()` for `!loaded`, used by the current
+  `PreviewThumbTile`, rather than the Reader loading stage; the captured hilog
+  has no tile completion/error or transition-visibility marker to establish
+  its exact cause/duration. The MP4 is VFR and its maximum adjacent PTS gap is
+  0.979978s (frames 142→143), so an unencoded single-frame state cannot be
+  excluded. Slow-load, failure, unknown-size, and loading-feedback acceptance
+  therefore remain OPEN; do not turn this local observation into cross-host or
+  all-mode F1 acceptance, and do not overwrite the independent e676 recording.
 - `ReaderRootEntryHandoff` is the sole owner for layout-ready departure,
   one-time root-flight start, arrival, decoded reveal, and finish/notify. The
   two labs retain only the narrow bridge to their root proxy, window animation,
