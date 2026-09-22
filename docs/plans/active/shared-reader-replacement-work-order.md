@@ -1397,7 +1397,7 @@ Koma 产物说明：本轮接手时该 HAP 的 mtime（11:38）早于它自己�
 | 2. Host state and action parity | Enter from normal host state; inherit and change applicable layout/direction/spread/crop/interpolation/auto-read/keep-screen/tap/volume settings; preserve progress; execute every supported image/host action without inventing generic business behavior. | Per-host old-to-shared capability map has no silent omission; persistence cold-start path and legacy return pass; one phone run per host plus 103 only for responsive state. | DONE |
 | 3. Entry, chrome, thumbnails, and return | Detail, all-thumbnails, and reader-rail entry use the correct source identity and thumbnail geometry; single/spread/continuous/long-image UI and failure material remain legible; rotation/window changes keep anchors; close returns to the current source position and restores system UI. | Same-state full-page review on 197 and 103 for changed responsive/transition paths; NH partial thumbnails and EH sprites use their own host contracts; no known visual counterexample. | DONE |
 | 4. Koma chapter orchestration | Open a real multi-chapter title; explicit previous/next chapter preparation, success, failure, cancellation, rapid A-B-C selection, last-chapter semantics, per-chapter progress/read state, local/remote/provider scope, and return all remain host-owned around the shared session. | Focused orchestrator tests, Koma build, 197 phone path, 103 tablet rotation/chapter path, unchanged unrelated library/download data, and legacy Koma reader fallback. | DONE |
-| 5. Controlled production replacement | Each app can select the shared host at the normal reader entry, while a single explicit fallback restores its legacy reader. Cold start, repeated entry, upgrade, and rollback preserve settings/progress/data. **The reader experience must be equal across the entry transition and every image swap, at normal speed, not only in settled-state screenshots.** | One pinned `reader-kit` revision consumed by all hosts (`d39bea4`); per-app route coverage and the fallback verified before any default change; releases fail closed to legacy. Default selection remains a separate explicit release decision. | **ACTIVE（F1 缩略图转场已闭环；F2 d39bea4 源码修复保留，动态换图与翻页正在按真实呈现时刻严格核验证据）** |
+| 5. Controlled production replacement | Each app can select the shared host at the normal reader entry, while a single explicit fallback restores its legacy reader. Cold start, repeated entry, upgrade, and rollback preserve settings/progress/data. **The reader experience must be equal across the entry transition and every image swap, at normal speed, not only in settled-state screenshots.** | One pinned `reader-kit` revision consumed by all hosts; per-app route coverage and the fallback verified before any default change; releases fail closed to legacy. Default selection remains a separate explicit release decision. | **ACTIVE / OPEN**：NextN 406fe9f5 在 197 的普通左右入场及正常返回仅限域通过；F1 半途 Back、慢载/失败/取消和 NextE/Koma 同契约仍未验收。F2 仅有独立的 90dd 同页开关限域证据，动态换图与翻页未整体通过。 |
 
 ## Package 1 completion — 2026-09-14
 
@@ -4418,6 +4418,13 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
   dark-pulse boundary. **Next unverified physical action:** same candidate's
   mid-flight Back and slow/failure/cancel entry frames (including delayed
   content), then NextE/Koma same-contract device coverage. The 90dd F2
-  same-page toggle remains separately limited; 406 F2 was not rerun.
+  same-page toggle remains separately limited; 406 F2 was not rerun. A later
+  406 overlap attempt did not hit this boundary: checked command/app times
+  show Back before thumbnail click and before `ReaderEntry moving`; an earlier
+  zero-gap run handled Back after `open_finished`. These are rejected timing
+  samples, not reversal acceptance. Checked postflight restored #663205
+  Detail and its page-0/page-1 tiles, AWAKE/120000ms; lease
+  `20260922-231008-1457ea7e` was released without data clear. The same
+  mid-flight/slow/failure/cancel matrix remains the one runtime action.
 
 **历史 NextE 观测候选（未安装、未动态验收；当前 F1 下一动作以上条为准）**：NE main `8c35d16e` + `cb1f478a`、kit `d99139f1`；签名 HAP SHA-256 `fab1703e57777bd892fb44032a1287f2f97f63b15df53361a560b1bd7a30bf48`，签名构建成功。新增日志只记录 production admission/capture 完成/overlay/phase、layout gate、actual flight-start 和 pending 期间每个 original part 的 slot/宽高；不改转场、几何、fallback 或后端选择。该旧候选的 logger 可采集性和动态证据均未证明，不能替代当前候选的匹配录像。

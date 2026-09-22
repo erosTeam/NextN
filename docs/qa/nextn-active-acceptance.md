@@ -8515,4 +8515,13 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   NextE/Koma coverage remain unverified. The 90dd F2 toggle is only its own
   bounded result; 406 F2 was not rerun. The active runtime action is the
   same-candidate delayed-content/mid-flight Back original-frame matrix, not
-  another source-only declaration.
+  another source-only declaration. A later 406 overlap attempt is **not**
+  mid-flight evidence: in the checked concurrent run, Back started at
+  07:16:42.677869, before the thumbnail click at 07:16:42.716170; the app
+  handled Back at 07:16:43.107, before `ReaderEntry moving` at 07:16:43.321.
+  The earlier sequential zero-gap recording likewise handled Back only after
+  `open_finished`. Neither run changes the F1 status. Postflight checked
+  `aa start` restored #663205 `Bug Bite: Chapter 8` Detail with page-0/page-1
+  source tiles (`reader-thumb-gallery-detail-2-page-{0,1}`); PowerManager
+  read AWAKE and `Timeout=120000ms`. Lease
+  `20260922-231008-1457ea7e` was released without clearing app data.
