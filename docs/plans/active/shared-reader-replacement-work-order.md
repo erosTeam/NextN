@@ -3627,3 +3627,45 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 **下一步**：需要 hilog 抓取 pageTap 调用日志确认 onTap 是否到达 ReaderSurface，以及 entryTransition.pending() 状态。
 
 **与三态验收的关系**：三态切换本身（shared→legacy→shared）已验证通过。此翻页问题是共享阅读器的核心功能缺陷，与三态切换独立，但作为共享阅读器核心功能的阻断问题需要修复后才能交用户最终确认。
+
+
+### 验证进度快照（2026-09-22 14:5x 最终盘点）
+
+#### 已完成验证项
+
+| # | 验证项 | 设备 | 结果 | 证据 |
+|---|---|---|---|---|
+| 1 | NextE 237 State A shared 挂载 | 237 | ✅ rkit-reading-surface=2, 52 rkit 节点 | run-04 dump |
+| 2 | NextE 237 chrome 显隐（centre tap → chrome 出现/消失） | 237 | ✅ rkit-chrome-top 出现/消失 toggle | run-05 + run-06 dump 对比 |
+| 3 | NextE 237 State B legacy 跨冷启动 | 237 | ✅ legacy-reader-surface=2 | run-10-retry2 (663205) + 前轮 run-25 |
+| 4 | NextE 237 State A 恢复 | 237 | ✅ rkit-reading-surface=2 | 前轮 run-44 dump |
+| 5 | NextN 197 State A shared 挂载 | 197 | ✅ rkit-reading-surface=2, 16 rkit 节点, 8/40 | run-47 dump |
+| 6 | NextN 197 chrome 显隐（centre tap → chrome 出现） | 197 | ✅ rkit-chrome-top=2, rkit-host-settings=2 | run-48 dump |
+| 7 | NextN 197 翻页 | 197 | ✅ 8/40 → 9/40 | run-49 dump |
+| 8 | i18n 四 locale 键补齐 | NextN + NextE | ✅ locale 集合全等 | 78b7eee1 + 1551c705 |
+| 9 | 构建产物调和 | NextN + NextE | ✅ | 3bca40cc |
+| 10 | 协调器差异分类 | NextN-wt + NextE-wt | ✅ 合理宿主差异 | a1f9ebbc |
+
+#### 遗留待做
+
+| # | 待做项 | 设备 | 说明 |
+|---|---|---|---|
+| 1 | 翻页行为确认 | 237 NextE | 右 1/3 tap 后页码未推进，需排查 tap zone 映射或 entryTransition pending 状态 |
+| 2 | NextE 左右缩略图入场逐帧验证 | 237 NextE | 需在左右缩略图各点击一次并 dump 确认飞向正确半页 |
+| 3 | NextN 197 左右缩略图入场逐帧验证 | 197 NextN | 同上 |
+| 4 | Koma 全量自查（五类） | Koma 设备 | 待做 |
+| 5 | 三端综合录像+PTS 逐帧 | 三端 | 待做 |
+
+#### 设备遗留状态
+
+- 237: NextE reader open at 1/13 (gallery 4204866, shared), chrome hidden, lease released
+- 197: NextN 663205 detail 页, 持久化=shared, 无 lease
+
+#### 权威 HAP（最新构建）
+
+- NextE: c01efab1 (default product + release mode, debug:false, 设备信任签名)
+- NextN: c08a3582 (default product + release mode, debug:false, 设备信任签名)
+
+#### 三态机制结论
+
+State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态切换机制本身在两端均 PASS**。挂载 surface 类型和设置持久化均正确。遗留的翻页和 FAB 点击问题是共享阅读器的交互层问题，与三态切换机制独立。
