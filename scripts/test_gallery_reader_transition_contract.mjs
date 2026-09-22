@@ -152,6 +152,7 @@ ok('detail compact preview, detail grid, and all-thumbnails page share Reader tr
 const readerState = read('shared/src/main/ets/state/ReaderThumbnailTransitionState.ets')
 const readerCoordinator = read('shared/src/main/ets/navigation/ReaderThumbnailTransitionCoordinator.ets')
 const reader = read('feature/reader/src/main/ets/pages/ReaderPage.ets')
+const sharedReaderLab = read('feature/reader/src/main/ets/lab/NextNReaderLabPage.ets')
 ok('Reader opening captures unclipped pixels and lets the flight proxy animate the corner radius',
   /sourceSnapshotId\(sourceComponentId: string\)/.test(readerCoordinator) &&
     /captureSourceImage\(\s*uiContext,\s*snapshotComponentId/.test(readerCoordinator) &&
@@ -199,6 +200,10 @@ ok('Reader fades the decoded image over an opaque opening thumbnail before relea
     (readerCoordinator.match(
       /ReaderThumbnailTransitionCoordinator\.startOpeningHandoff\(uiContext, transition\)/g,
     ) ?? []).length === 2)
+ok('root-owned entry never exposes the live pager or decode feedback before image handoff',
+  /contentOpacity: this\.readerThumbnailTransition\.readerImageOpacity\(this\.request\.pageIndex \+ 1\)/.test(sharedReaderLab) &&
+    !/contentOpacity: this\.rootOwnedEntryTarget/.test(sharedReaderLab) &&
+    !/contentOpacity: this\.rootEntryHandoff\.revealStartedForEntry/.test(sharedReaderLab))
 ok('Reader return tracks the current page and captures that page for the visible thumbnail target',
   /readerThumbnailTransition\.updateCurrent/.test(reader) &&
     /readerPageSnapshotId\(pageIndex\)/.test(reader) &&

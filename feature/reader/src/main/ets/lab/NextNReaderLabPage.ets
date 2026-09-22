@@ -1096,8 +1096,10 @@ export struct NextNReaderLabPage {
                 (policy, intent): void => { this.persistRuntimePolicy(policy, intent) },
                 (enabled, policy): void => { this.persistCrop(enabled, policy) }),
               entryTransition: this.entryTransition, entryPreview: this.entryPreview,
-              contentOpacity: this.rootOwnedEntryTarget || this.rootEntryHandoff.revealStartedForEntry() ? 1 :
-                this.readerThumbnailTransition.readerImageOpacity(this.request.pageIndex + 1),
+              // The root proxy and the Reader-owned opening placeholder keep the selected image
+              // visible until the state machine starts its image handoff.  Do not expose the
+              // live pager (or its decode feedback) merely because the root route mounted.
+              contentOpacity: this.readerThumbnailTransition.readerImageOpacity(this.request.pageIndex + 1),
               openingPlaceholder: (): void => { this.ReaderOpeningPlaceholder() },
               active: this.hostRouteActive() && this.labVisibility.foreground && !this.readerSettingsSheetShown,
               temporaryVariantActive: this.hostRouteActive() && this.labVisibility.foreground &&
