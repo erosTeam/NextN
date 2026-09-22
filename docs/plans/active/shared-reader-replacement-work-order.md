@@ -3482,6 +3482,23 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 - **边界**：仅关闭「该合并候选 × 197 × 663205 × 竖屏 × shared 后端」的缩略图/滑动条任意距离跳页**可达性与动画存在性**。未覆盖 NextE 237 对应链、连续模式、章节切换、自动阅读、失败/离线页、平板形态。设备无数据清除、无偏好写入（实现偏好本为 shared 保持原样）；197 lease `20260922-052049-196ef219` 已释放，`OverrideTimeout` 还原 120000ms。
 
 
+### 缺陷#5 补链：单条录像覆盖「进入 → 开条 → 非相邻跳页 → 关闭」全链 PASS（2026-09-22 14:12，NextN 197，lease `20260922-054849-4ee71232` 已释放）
+
+上一段的 `06-recording` 只覆盖了「阅读器已打开、缩略条已展开」之后的半链，因此工作单要求的「进入阅读器 → 打开缩略条」两段当时仍缺。本段用**同一条 repeat=1 录像**把全链补齐。
+
+- **第一次补链失败已定位并作废**：`fullchain-02` 的 6 次命令全为 ±1。根因是录像器的 `launchAbility` 只能传**字符串**参数（`--ps`），而 `EntryAbility.galleryDirectLaunchId` 只接受**数字** `nextn_gallery_id`（`--pi`），因此录内重启只是把已打开的阅读器 resume，**没有回到 Detail**，「进入」一段没被录到，后续点击全部落在翻页热区。该录像不作为证据。
+- **改正做法**：把「停在 Detail」交给前置换算门禁。`04-prep` 冷启动 → 阅读器 → 显 chrome → 开缩略条 → dump 轨道几何 → **Back 退出**；`05-precheck` 只读复核（**0 个 `rkit-*` 节点**、`gallery-detail-read-action` 在位）；随后录像**完全不带 `launchAbility`**，从 Detail 开始，无 launch、无 scroll、无状态重置。
+- **产物**：`entry-default-signed.hap` SHA-256 `8f9afe489058a4d9ca26f6b1362749fa778390bfdd95db23cc0bd727d0b6e5e9`（NextN HEAD `3c28312d`，reader-kit `4c6cfc0`）；录像 `nextn197_defect5_fullchain2.mp4` SHA-256 `dafcd0192812a0a139ed6bedc0a9cc6ee902639e4d5100b711a70667c72c4e73`（**565 帧，PTS 0.000000–46.124311s**），并发 hilog SHA-256 `d1e290a25d14768426d56f4d9e8c347192b4a79e7a15dc228d9915003ad407df`；目录 `.hvigor/outputs/nextn-197-defect5-fullchain-20260922/{04-prep,05-precheck,06-recording}/run/`；机读判定 `06-recording/run/pts-verdict.json`。
+- **起止语义**：首帧为 663205 Detail（与末帧同页，body 区差异 **0.80**、id/标题带 **1.79**，仅状态栏时钟变化）；末帧回到同一 Detail。链路分段为 Detail→共享 Reader 进入→显 chrome→开缩略条→3 次非相邻跳页→Back 关闭，全部动作 `repeat=1`。
+- **hilog 权威（3 次跳页全部非相邻且全部落地）**：`ReaderPager` 命令 `index 2→target 5`（+3）、`seek_source=23`（自 5，+18）、`seek_source=0`（自 23，−23）；对应 `observed_progress page=5 / 23 / 0`。`AceSwiper` **3 次 `FireAnimationStartEvent` + 3 次 `FireAnimationEndEvent`**（479ms / 479ms / 647ms）。修复前该距离守卫会把三次**全部丢弃**，页码不动。
+- **逐帧判定（原始 PTS）**：
+  - **滑出是真实位移**：第 1 次跳页的离场页内容质心 `441.5 → 391.8 → 257.1 → 144.6 → 32.0`，对离场页做平移拟合得到 `0 → −100 → −334 → −628 → −872 px`（f130→f134，t 22.394→22.471），亮度像素占比 `79.9% → 70.1% → 50.5% → 48.2% → 27.5% → 5.6% → 0%`；第 2、3 次同样为多帧收窄（`85.3%→25.9%→0%`、`71.4%→12.1%→0%`）。**不是单帧硬切。**
+  - **黑体窗口是解码等待，不是换页切口**：每段黑体的读数区均值 ≈0 但**中心 spinner 亮点在**（255 @ x≈440）、顶/底 chrome 仍在上报，且页码**已先更新**；持续约 0.42s（+3）/ 2.9s（+18）/ 0.80s（−23）。与 `06-recording` 相同结论：正文占位只由真实「已解码且可见」观察释放，未伪造 ready。
+  - **无残影/无硬切**：每段黑体后的首个内容帧与其「同页稳定帧」差异为 **2.37 / 0.44 / 1.63**，而与离场页差异为 **73.9 / 127.8 / 86.9**；到达页身份在互差矩阵中毫无歧义（命中页 0.44–2.37，其他页 74–88）。
+  - **关闭**为 ~25 帧单调增亮（41.50→42.08 之间 body 均值 94.97→221.29），非瞬切。
+- **边界**：仅关闭「该合并候选 × 197 × 663205 × 竖屏 × shared 后端 × 普通入口」的**全链可达性 + 任意距离跳页动画存在性**。远距离跳到未缓存页会出现可感知的解码等待（0.4–2.9s，性能观察，非本缺陷判定项）；「占位→正文」那一帧是否需要改为交叉淡入属产品问题，不在本次范围；录像为变帧率（565 帧/46.14s，≈12.25 fps），次帧级运动未被证否；慢载、失败、未知尺寸、cancel 路径均未纳入。设备无清数据、无偏好写入；`OverrideTimeout` 已还原 120000ms，租约已释放。
+
+
 ### 当前验证矩阵（2026-09-22 14:0x 最终快照）
 
 | 验证项 | 237 NextE | 197 NextN |
@@ -3669,3 +3686,51 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 #### 三态机制结论
 
 State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态切换机制本身在两端均 PASS**。挂载 surface 类型和设置持久化均正确。遗留的翻页和 FAB 点击问题是共享阅读器的交互层问题，与三态切换机制独立。
+
+
+### 翻页阻断定案 + NextE 任意距离 seek 移植 + 三端综合录像收官（2026-09-22 15:0x–16:0x）
+
+**1. 「237 NextE 翻页卡死」改判：不是挂载/栅栏缺陷，是 RTL 阅读方向 + 第 1 页边界 tap 的误诊。**
+- 分类探针（lease `20260922-064907-21df533b`，read-only）：c01efab1 下在 3/1682（丁丁历险记 4204943）连发右 1/3 tap×2 + 左滑，before/after dump 页码均 3/1682——现场复现「无反应」；但 release HAP 无 JSAPP 日志，hilog 无法分层。
+- 移植修复后的候选上重测拿到方向证据：右 1/3 tap 3→1（后退），左 1/3 tap 1→3（前进）。kit `pageTap` 默认映射为 LTR 左=prev/右=next、RTL 相反；237 该画廊持久化方向为 RTL（日漫模式），spread 渲染 `rkit-part-2-whole` 左 / `rkit-part-3-whole` 右与 RTL 的 visualParts+Row 双重翻转一致。故此前在 1/13 反复 tap 右侧 = 第 1 页边界上的「上一页」= 无动作，全部「翻页失败」样本都由此而来。chrome tap 正常（前台信号无恙）；「pagerCommand 被邻接守卫拒绝后栅栏挂起」假设不成立为独立根因，但守卫缺陷本身真实存在（见下）。
+
+**2. NextE 缺陷#5 修复移植（此前 NextE kit 1fad07a 只有 animated seek、仍带邻接守卫：所有非相邻缩略条/滑轨 seek 被原生静默丢弃）。**
+- NextE kit 新分支 `codex/defect5-arbitrary-seek` 提交 `7a2e005`（65787ac 同语义：移除邻接守卫、`displayIndexForSource` 加源索引防御、契约测试反向锁定守卫回归；26+/7- 与 NextN 侧逐行同构）。套件 442/445——3 个失败为 `reader-image-save-ui` 关闭反馈用例，已在干净 1fad07a worktree 复验为既有失败，与本改动无关。宿主侧 8 项 seek 结构断言全 PASS。
+- 顺带修复：NextE `scripts/run-device-protocol` 缺录像分支（与 NextN 版不同步，录像 manifest 会被误投协议 runner），已同步 NextN 已验证版本。
+- NextE main bump `8ca6ea07`；重建签名 release HAP SHA-256 `425f4b6565e86fd3147d963bb7b34c7759d0616bcd832f4af4e228f250390839`，abc 符号 `displayIndexForSource`×4、`seekWithAnimation`×2（新 kit 确认编入）。
+
+**3. 237/NextE 真机复验（新候选，全部 PASS）。**
+- 安装 → 冷启动 → Detail → 「继续 P3」进共享阅读器（rkit 挂载、3/1682）。
+- 综合录像 `nexte237_defect5_defect1_full.mp4` SHA-256 `ca8d35029bf1abd212a4b0d3121b5659c199098dc8f07bf6cec22ed1400d48d2`（30.5s，hilog `40651d21…`）：缩略图 tap→P4、缩略图 tap→P6、滑轨远点、滑轨近左点、中心 chrome 翻转、Back 关闭，全 repeat=1。AceSwiper **3 对 FireAnimationStart/End**（480/780/640ms）；抽帧 728 帧 + PTS timeline（`08-recording/frames/`）。Detail 回显「继续 P1579」——滑轨远点后累计 +1576 页全部落地。
+- 第 4 段 seek 补验（gate 10）：重开（P1579）→ 滑轨 x=250 点击 → `85 / 1682`（−1494 非相邻，直接落地，slider value 85.000000 一致）。缺陷#5 在 NextE 侧关闭。
+- 缺陷#1（左右缩略图入场）：rail tile label 4/6 两点，页码随点随落（hilog 命令 + dump `rkit-part` 半页身份一致），抽帧含飞页过程。
+- 清理：Back 回 Detail（rkit=0），`OverrideTimeout` 还原 120000ms，租约已释放。
+
+**4. 197/NextN 缺陷#1（左右缩略图入场）PASS。** 租约 `20260922-072445-9ad3dee1`；663205 Detail → 阅读 FAB → 共享阅读器 1/40 → chrome+缩略条 → 录像 `nextn197_defect1_thumb_entry.mp4` SHA-256 `656f1685a6670b366d131f4df1cea01aac70e747228a6c5dd82a370e00714b4f`（20s，hilog `7e155723…`）。hilog 权威：`[ReaderPager] command=1 target=1 → FireAnimationStart(0→1) → End → selected=1`（所点 tile=label2，落 P2）；第二次点击坐标对应刷新后 tile（label5，`command=2 target=4 → selected=4`，落 P5）——落页与所点缩略图严格一致；Detail 回显「继续 P5」。抽帧 PTS timeline 存档。注意：缩略条会随当前页刷新可视 tile，跨两次点击复用静态坐标会点到不同 tile——这是 rail 正常行为，不是错位。
+
+**5. Koma 全量自查（五类扩展面）——完成（审计+真机综合录像，无阻断缺陷）。**
+- **分叉**：Koma 经 `file:../../reader-kit` 引独立 checkout（分支 `codex/reader-d1` @ `b5fa389` + **432 行未提交回移 WIP**：canvasBackdropOpacity/bodyOpacity、autoRead target readiness、cancelAutoReadSourcePreparations、syncPreferredVariant 等 + 测试 132 行）。该 WIP 为前序会话的 Koma 定向回移，保持未提交原样。相对权威 pin（NextN 4c6cfc0 / NextE 7a2e005）缺：前台信号 release 修复（d2990b6/b7e744a）、auto-read 全链、animated seek、任意距离 seek、per-source 图片信息身份。
+- **本地化**：base/zh_CN/en_US string.json 各 1398 条，集合全等。
+- **动画**：宿主 `ReaderModeState.pageTurnAnimation`（默认 true）→ `KomaReaderLabPage` 传入 ReaderSurface；该 pin 的 tap 走 pager 命令、缩略条/滑条仍直连 `seekSource`（旧行为：立即跳页、无动画），故邻接守卫静默丢弃缺陷在 Koma **不构成功能缺陷**（seek 不产生 pagerCommand），仅为升级 kit 时的潜在回归面。
+- **时序**：宿主 `labVisibility.foreground` 门在位；kit 侧 release 前台修复缺失的影响被 197 上 Koma 为 **debug 安装**（appProvisionType=debug）抵消——release 化 Koma 前必须先升级 kit 前台修复（记录为条件性待办，非当前缺陷）。
+- **spread 同源**：b5fa389 pin 无 `rkit-info-source-N` per-source 身份选择（后续 kit 才有）；spread 渲染/翻页本体工作正常（见下）。
+- **真机综合录像**（第三端）：`koma197_comprehensive.mp4` SHA-256 `ead01c3e3fac8cfc926dea52f22cb4b02eb3ccf3ad0eb4fc91305307f09092b2`（19s）：书架 → 继续阅读卡 → 共享阅读器（`reader_key_surface`，1/33，旧 kit 键位时代无 rkit-* id）→ 中心 chrome 显 → 左/右 tap 各一次（RTL：1→2→1，hilog 预载 page=4 吻合）→ chrome 隐 → Back 回书架。重开复核持久页仍 1/33，用户数据零漂移。抽帧存档。
+
+**6. 更新后总矩阵（2026-09-22 16:0x）。**
+
+| 验证项 | 237 NextE | 197 NextN | Koma(197) |
+|---|---|---|---|
+| 三态 A/B/A | ✅ | ✅ | N/A（宿主无后端切换） |
+| chrome 显隐 | ✅ dump+录像 | ✅ dump+录像 | ✅ 录像 |
+| 翻页（tap/swipe） | ✅（RTL 语义） | ✅ | ✅（RTL 语义） |
+| 缺陷#5 任意距离 seek 动画 | ✅ 录像+P1579/P85 | ✅ 全链 565 帧 PTS PASS | N/A（pin 无此特性） |
+| 缺陷#1 缩略图入场 | ✅ 录像+dump 半页 | ✅ 录像+hilog+P5 | N/A |
+| i18n | ✅ | ✅ | ✅ 1398×3 全等 |
+| Koma 五类自查 | — | — | ✅ 见上 |
+| 三端综合录像+PTS | ✅ 728 帧 | ✅ 565 帧 + 20s | ✅ 19s |
+
+**7. 移交用户的两个非阻断决策项。**
+1. **NextE RTL spread 视觉序**：RTL 下 visualParts 反转与 Row `Direction.Rtl` 叠加，spread 视觉序与 LTR 相同（page n 左 / n+1 右）。若产品期望 manga RTL 的「偶右奇左」视觉，需要 kit/宿主二选一去掉一层翻转——属产品视觉决策，不是本轮缺陷。
+2. **Koma 升级路径**：升级到含前台修复/animated seek/per-source 身份的 kit pin 前，Koma 维持现状可用；release 化 Koma 是硬前提触发条件。
+
+**产物索引**：NextE `.hvigor/outputs/nexte-237-pageturn-probe-20260922/`（分类探针）、`nexte-237-defect5fix-20260922/01–11`（复验全链）；NextN `.hvigor/outputs/nextn-197-defect1-20260922/01–06`、`koma-197-comprehensive-20260922/01–06`；manifest 在两仓 `docs/plans/active/`（按惯例作为未跟踪会话产物保留）。NextE main `8ca6ea07`（wrapper 同步一并提交）、kit `7a2e005`。两台设备超时已还原 120000ms、租约已释放。
