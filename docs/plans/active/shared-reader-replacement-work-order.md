@@ -3330,3 +3330,10 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
    另：bootstrap restore 缺失（NextN）已修 8113bf0f 并经 663205 跨冷启动验证；转场协调器『170 行分叉』经实测为 0 diff（合并后已收敛）。
 
 **gate 执行方式**：上述 ①-⑤ 逐项完成 → 五类自查脚本/契约全绿 → 三端综合录像（NextN 197 663205 / NextE 237 4203217 / Koma 按基线）PTS 逐帧全过 → 工作单原位记录全部证据 → 监督复核 → 用户一次最终确认。任何环节失败原位落账并回到对应修复步骤，不带病闯关。
+
+### 缺陷#2 修复落地 + 197/NextN 验证进度（2026-09-22 07:5x）
+
+- **修复提交**：NextN `705df857`——生产路由 `sharedReaderBody` 移除 `managesTrialWindow:false`（恢复 trial-window 状态栏原子准备路径），契约 `test_nextn_reader_trial_window_contract.mjs` 2/2。重建 HAP SHA `fca26810`（debug:false 确认），已装 197。
+- **验证进度（run-45）**：直启 663205 → FAB → shared reader 打开（`rkit-reading-surface=2`，8/40）。chrome 中心 tap 显隐验证与逐帧录像**待续**（本轮 lease TTL 两次耗尽）。
+- **NextE 回归**：无此漂移（生产路由本就走 true 路径），公共层 ReaderTrialWindow/ReaderSurface 0 diff，不受影响。
+- **遗留**：197 停在 663205 reader（shared，8/40）；持久化=shared；lease 20260922-043341-e8727304 有效至 07:02 需释放/续期；chrome 显隐+翻页+sheet 逐帧录像、缺陷#4 真机 dump、缺陷#5 修复、Koma 全量自查均待续。
