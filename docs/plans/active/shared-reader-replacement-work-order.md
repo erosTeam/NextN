@@ -3608,3 +3608,22 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 - 三态机制（State A shared 挂载 → State B legacy → State A 恢复）：**PASS**
 - chrome 显隐：**PASS**
 - 翻页行为：**待确认**（可能是画廊只有 1 个 spread item 导致无下页可翻）
+
+
+### ⚠️ 共享阅读器翻页不工作 — 功能缺陷（2026-09-22 07:5x 发现）
+
+**现象**：NextE 237 共享阅读器挂载正常（rkit-reading-surface=2），但所有翻页尝试（右 1/3 tap、swipe left、中心 tap）均无效。页码始终停留在 1/13。
+
+**影响范围**：NextE 237 共享阅读器（c01efab1 HAP）。NextN 197 共享阅读器也可能受影响（同样代码路径）。
+
+**可能根因（待查）**：
+1. `ReaderSurface.pageTap()` 的 tap zone 分发可能因 `entryTransition.pending()` 返回 true 而被持续拦截
+2. `this.state.policy.layout` 或 `firstPageAlone` 设置与实际渲染不匹配
+3. `inputTopology !== state.topologyRevision` 导致 tap 被丢弃
+4. Spreader/Row 布局的 hit test 行为异常（tap 落在 rkit-part 区域但未到达 onTap handler）
+
+**影响**：用户无法翻页查看后续页面。三态切换本身正常（shared→legacy→shared），但共享阅读器的核心阅读功能（翻页）不工作。
+
+**下一步**：需要 hilog 抓取 pageTap 调用日志确认 onTap 是否到达 ReaderSurface，以及 entryTransition.pending() 状态。
+
+**与三态验收的关系**：三态切换本身（shared→legacy→shared）已验证通过。此翻页问题是共享阅读器的核心功能缺陷，与三态切换独立，但作为共享阅读器核心功能的阻断问题需要修复后才能交用户最终确认。
