@@ -3327,7 +3327,7 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
    | 3 | 阅读器实现设置行显示原始 key | NextN（用户实测） | 四 locale 全缺 4 个 backend key | 补齐真实翻译（本轮已补 78b7eee1）+ i18n CI 对齐 NextE | i18n 已修待真机核验 |
    | 4 | 共享阅读器缩略图/滑动条换页硬切 | NextN/NextE（用户实测对照） | 未接入 pageTurnAnimation 管线 | 统一接入 + 滑动条按 NextE 旧版完整行为三端统一 | 待修+逐帧录像 |
    | 5 | 197 直启恢复 detail FAB 点击偶发无响应 | NextN（自查发现） | 待查（hit-test 时序，非结构遮挡） | 独立待查项 | 不阻塞但需结论 |
-   另：bootstrap restore 缺失（NextN）已修 8113bf0f 并经 663205 跨冷启动验证；转场协调器『170 行分叉』经实测为 0 diff（合并后已收敛）。
+   另：bootstrap restore 缺失（NextN）已修 8113bf0f 并经 663205 跨冷启动验证；转场协调器 170 行分叉详见 a1f9ebbc 逐项分类（全部为合理宿主差异，非 0 diff）。
 
 **gate 执行方式**：上述 ①-⑤ 逐项完成 → 五类自查脚本/契约全绿 → 三端综合录像（NextN 197 663205 / NextE 237 4203217 / Koma 按基线）PTS 逐帧全过 → 工作单原位记录全部证据 → 监督复核 → 用户一次最终确认。任何环节失败原位落账并回到对应修复步骤，不带病闯关。
 
