@@ -3552,3 +3552,28 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 - NextN main bump `3c28312d` + NextE main bump `f50da601`
 - 契约 `test_reader_seek_animation_contract.mjs` 3/3 pass（两端）
 - 真机验证待做
+
+
+### 最终验收状态（2026-09-22）
+
+**三态验证矩阵（237/NextE + 197/NextN 双设备）：**
+
+| 验证项 | 237 NextE | 197 NextN |
+|---|---|---|
+| State A shared 挂载 | PASS | PASS |
+| State B legacy 挂载 | PASS | PASS |
+| State A 恢复 | PASS | PASS |
+| i18n 本地化 | PASS | PASS |
+| chrome 显隐 | PASS（dump 确认出现）| PASS |
+| 构建产物调和 | PASS | PASS |
+
+**已知缺陷（不阻塞三态机制验证但需后续关注）：**
+- #1 NextE 转场目标矩形坐标换算（proxy host 坐标）：合理的宿主差异，非行为漂移
+- #2 NextN 197 detail FAB 点击时序问题（冷启动后首次 tap 有时无效，重试即可）
+
+**下一步（阶段3前需完成）：**
+1. 197/NextN 左右缩略图入场→reader 页码变化确认（缺陷#5 修复后行为验证）
+2. 237/NextE 同场景确认
+3. Koma 全量自查（五类扩展面）
+4. 三端综合录像 repeat=1 + 原始 PTS 逐帧审查
+5. 全部通过后工作单原位更新并交用户最终确认
