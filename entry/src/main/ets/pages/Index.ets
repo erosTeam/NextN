@@ -1128,6 +1128,7 @@ struct Index {
   private coverPopDispatching: boolean = false
   private readerBackRequest: (() => boolean) | null = null
   private readerDestinationCloseDispatched: boolean = false
+  private readerDestinationReverseClaimed: boolean = false
 
   aboutToAppear(): void {
     this.readerTrialHostAlive = true
@@ -2215,10 +2216,7 @@ struct Index {
     this.clearRecordedReaderPresentation()
     return this.restoreAppStatusBar()
       .then((): Promise<boolean> => {
-        if (this.readerThumbnailTransition.galleryId === readerGalleryId &&
-          this.readerThumbnailTransition.openingCanReverse()) {
-          return Promise.resolve(true)
-        }
+        if (this.readerDestinationReverseClaimed) return Promise.resolve(false)
         if (!this.readerThumbnailTransition.normalCloseReadyFor(readerGalleryId)) {
           return Promise.resolve(false)
         }
@@ -2231,6 +2229,7 @@ struct Index {
 
   private finishSharedReaderDestinationClose(params: ReaderRouteParams, context: ReaderCloseContext | null,
     image: NhGalleryPage | null, targetReady: boolean): void {
+    if (params.routeEpoch !== this.readerDestinationRouteEpoch || this.readerDestinationReverseClaimed) return
     const galleryId = params.galleryId.toString()
     if (targetReady && context !== null && image !== null && context.unit.scope === 'nh' &&
       context.unit.work === galleryId && context.contentAspectRatio > 0 &&
@@ -3342,6 +3341,20 @@ struct Index {
         onRegisterBackRequest: (request: (() => boolean) | null): void => {
           this.readerBackRequest = request
         },
+        onTryReverseOpening: (context: ReaderCloseContext | null, image: NhGalleryPage | null): boolean => {
+          if (params.routeEpoch !== this.readerDestinationRouteEpoch) return false
+          const reversed = ReaderThumbnailTransitionCoordinator.reverseOpening(this.getUIContext(),
+            params.galleryId.toString(), context?.captureComponentId ?? '',
+            image?.width ?? 0, image?.height ?? 0,
+            (animated: boolean): void => this.finishReaderDestinationClose(animated))
+          if (reversed) {
+            this.readerDestinationReverseClaimed = true
+            this.readerDestinationClosing = true
+            this.clearRecordedReaderPresentation()
+            void this.restoreAppStatusBar()
+          }
+          return reversed
+        },
         onPrepareClose: (context: ReaderCloseContext | null, image: NhGalleryPage | null): Promise<boolean> => {
           return this.prepareReaderDestinationClose(params.galleryId, context, image)
         },
@@ -3357,6 +3370,7 @@ struct Index {
     this.readerDestinationVisible = true
     this.readerDestinationClosing = false
     this.readerDestinationCloseDispatched = false
+    this.readerDestinationReverseClaimed = false
     this.readerDestinationRouteEpoch = params.routeEpoch
     this.readerDestinationShownAtMs = Date.now()
     // A production entry with a captured source first obtains reader-kit's

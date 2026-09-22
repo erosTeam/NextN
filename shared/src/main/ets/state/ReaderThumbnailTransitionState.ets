@@ -138,7 +138,10 @@ export class ReaderThumbnailTransitionState {
   }
 
   rootProxyVisible(): boolean {
-    return this.targetVisible() || this.closingProxyVisible()
+    // The captured image remains the visible owner until the decoded Reader
+    // image has completed its opening handoff. Retiring it at WAITING exposes
+    // the Reader content-opacity ramp against the dark canvas.
+    return this.targetVisible() || this.readerOpeningProxyVisible() || this.closingProxyVisible()
   }
 
   closingProxyVisible(): boolean {

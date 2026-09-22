@@ -152,6 +152,11 @@ ok('detail compact preview, detail grid, and all-thumbnails page share Reader tr
 const readerState = read('shared/src/main/ets/state/ReaderThumbnailTransitionState.ets')
 const readerCoordinator = read('shared/src/main/ets/navigation/ReaderThumbnailTransitionCoordinator.ets')
 const reader = read('feature/reader/src/main/ets/pages/ReaderPage.ets')
+ok('Reader root image proxy remains mounted through content handoff before retiring at OPEN',
+  /rootProxyVisible\(\): boolean \{[\s\S]*?this\.targetVisible\(\) \|\| this\.readerOpeningProxyVisible\(\) \|\| this\.closingProxyVisible\(\)/.test(readerState) &&
+    /readerOpeningProxyVisible\(\): boolean \{[\s\S]*?WAITING_READER_CONTENT[\s\S]*?OPEN_HANDOFF/.test(readerState) &&
+    /finishOpeningHandoff\(\): boolean \{[\s\S]*?this\.phase = ReaderThumbnailTransitionPhase\.OPEN/.test(readerState) &&
+    /this\.state\.rootProxyVisible\(\)/.test(index))
 ok('Reader opening captures unclipped pixels and lets the flight proxy animate the corner radius',
   /sourceSnapshotId\(sourceComponentId: string\)/.test(readerCoordinator) &&
     /captureSourceImage\(\s*uiContext,\s*snapshotComponentId/.test(readerCoordinator) &&
