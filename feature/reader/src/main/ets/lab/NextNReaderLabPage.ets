@@ -418,11 +418,20 @@ export struct NextNReaderLabPage {
   private get rootEntryPhase(): ReaderEntryPhase { return this.entryTransition?.phase ?? 'finished' }
 
   private rootEntryHandoffHost(): ReaderRootEntryHandoffHost {
-    return new NextNRootEntryHandoffHost((entry: ReaderEntryTransition): boolean =>
-        this.entryDepartureGuard !== null && this.entryDepartureGuard(entry.entryId),
-      (target: ReaderEntryTarget): boolean => ReaderThumbnailTransitionCoordinator.setOpeningTarget(
-        this.getUIContext(), this.request.work, target.contentRect.x, target.contentRect.y,
-        target.contentRect.width, target.contentRect.height),
+    return new NextNRootEntryHandoffHost((entry: ReaderEntryTransition): boolean => {
+        const allowed = this.entryDepartureGuard !== null && this.entryDepartureGuard(entry.entryId)
+        if (!allowed) console.info(`[NextNReaderEntry] departure_denied entry=${entry.entryId} ` +
+          `guard=${this.entryDepartureGuard !== null}`)
+        return allowed
+      },
+      (target: ReaderEntryTarget): boolean => {
+        const accepted = ReaderThumbnailTransitionCoordinator.setOpeningTarget(
+          this.getUIContext(), this.request.work, target.contentRect.x, target.contentRect.y,
+          target.contentRect.width, target.contentRect.height)
+        if (!accepted) console.info(`[NextNReaderEntry] target_rejected source=${target.part.sourceIndex} ` +
+          `layout=${target.layoutRevision}`)
+        return accepted
+      },
       (arrived: (() => void) | null): void => {
         ReaderThumbnailTransitionCoordinator.startOpening(this.getUIContext(), this.request.work,
           arrived ?? undefined)
@@ -459,7 +468,7 @@ export struct NextNReaderLabPage {
     if (this.embedded) this.onRegisterBackRequest(null)
     void this.finishProgressWrites()
     this.keepScreenOn?.close()
-    this.entryTransition?.cancel(); this.entryPreview?.release()
+    this.entryTransition?.cancel('lab-disappeared'); this.entryPreview?.release()
     this.originalProbeHostClosed = true
     this.originalProbe?.close()
     if (this.originalProbeEpoch !== 0) ReaderTrialOriginalProbe.detachFacts(this.originalProbeEpoch)

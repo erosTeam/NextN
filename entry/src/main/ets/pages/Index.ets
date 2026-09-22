@@ -593,10 +593,10 @@ struct Index {
   @Monitor('readerEntryVisibility.foreground')
   private onReaderEntryForeground(): void {
     if (!this.readerEntryVisibility.foreground) {
-      if (this.productionReaderEntryActive()) this.retireProductionReaderEntry()
+      if (this.productionReaderEntryActive()) this.retireProductionReaderEntry('foreground-lost')
       this.readerEntryEpoch += 1
       if (this.readerEntryClaim !== null || this.readerEntryTransition?.phase === 'layout') this.closeReaderTrial()
-      else this.readerEntryTransition?.cancel()
+      else this.readerEntryTransition?.cancel('debug-foreground-lost')
     }
   }
 
@@ -634,7 +634,7 @@ struct Index {
   private cancelSourceEntryPending(galleryId: number): boolean {
     if (this.productionReaderEntryPendingGalleryId === galleryId ||
       this.productionReaderEntryClaim?.source.galleryId === galleryId) {
-      this.retireProductionReaderEntry()
+      this.retireProductionReaderEntry('source-pending-cancelled')
       return true
     }
     if (this.readerEntryClaim === null || this.readerEntryClaim.source.galleryId !== galleryId) return false
@@ -668,14 +668,18 @@ struct Index {
       this.productionReaderEntryTransition !== null
   }
 
-  private retireProductionReaderEntry(): void {
+  private retireProductionReaderEntry(reason: string): void {
+    console.info(`[ProductionThumbnailEntry] retire reason=${reason} ` +
+      `claim=${this.productionReaderEntryClaim !== null} ` +
+      `pending=${this.productionReaderEntryPendingGalleryId > 0} ` +
+      `phase=${this.productionReaderEntryTransition?.phase ?? 'none'}`)
     this.productionReaderEntryEpoch += 1
     this.productionReaderEntryClaim = null
     this.productionReaderEntryPendingGalleryId = 0
     this.productionReaderEntryPendingPageIndex = -1
     this.productionReaderEntryGalleryId = 0
     this.productionReaderEntryPageIndex = -1
-    this.productionReaderEntryTransition?.cancel()
+    this.productionReaderEntryTransition?.cancel(`host-retire-${reason}`)
     this.productionReaderEntryTransition = null
   }
 
@@ -691,7 +695,7 @@ struct Index {
         this.sameReaderEntryRect(claim.sourceRect, this.readerEntryRect(claim.source.snapshotComponentId)) &&
         this.sameReaderEntryRect(claim.viewport, this.readerEntryRect('nextn-reader-entry-host'))
     } catch (_) {}
-    if (!valid) this.retireProductionReaderEntry()
+    if (!valid) this.retireProductionReaderEntry('departure-guard-rejected')
     return valid
   }
 
@@ -732,7 +736,7 @@ struct Index {
   private openProductionThumbnail(detailSeed: NhGalleryDetail, source: ReaderTrialEntrySource): void {
     const epoch = ++this.productionReaderEntryEpoch
     const navigation = this.rootNavigationEpoch
-    if (!source.isCurrent()) { this.retireProductionReaderEntry(); return }
+    if (!source.isCurrent()) { this.retireProductionReaderEntry('source-stale-before-capture'); return }
     let sourceRect: ReaderEntryRect = new ReaderEntryRect()
     let viewport: ReaderEntryRect = new ReaderEntryRect()
     try {
@@ -755,7 +759,7 @@ struct Index {
     epoch: number): void {
     if (epoch !== this.productionReaderEntryEpoch || !source.isCurrent() || this.readerOverlay.visible ||
       this.safeMode.restricted()) {
-      this.retireProductionReaderEntry()
+      this.retireProductionReaderEntry('presentation-precondition-lost')
       return
     }
     this.productionReaderEntryGalleryId = source.galleryId
@@ -786,7 +790,7 @@ struct Index {
       },
     )
     if (!this.readerThumbnailTransition.waitingReader()) {
-      this.retireProductionReaderEntry()
+      this.retireProductionReaderEntry('opening-not-waiting-reader')
     }
   }
 
@@ -893,7 +897,7 @@ struct Index {
 
   private clearReaderTrial(): void {
     this.readerTrialRequest = null
-    this.readerEntryTransition?.cancel()
+    this.readerEntryTransition?.cancel('debug-trial-cleared')
     this.readerTrialStack.clear(false)
     this.readerEntryTransition = null
     this.readerEntryPreview = null
@@ -981,7 +985,7 @@ struct Index {
     const request = this.readerLabLaunch.consume()
     const launchEpoch = ++this.readerTrialLaunchEpoch
     if (request !== null && !connectSafeMode().restricted()) {
-      if (this.productionReaderEntryActive()) this.retireProductionReaderEntry()
+      if (this.productionReaderEntryActive()) this.retireProductionReaderEntry('debug-lab-launch')
       ReaderTrialEntryRelay.clear(this.readerEntryToken)
       const closing = this.readerEntryClaim !== null || this.readerTrialRequest !== null ||
         this.readerTrialClosing !== null ? this.closeReaderTrial() : null
@@ -1162,7 +1166,7 @@ struct Index {
     this.syncRootSecondaryBranch(this.stack)
     this.stack.setInterception({
       willShow: (_from, to, _operation, _animated): void => {
-        if (this.productionReaderEntryActive()) this.retireProductionReaderEntry()
+        if (this.productionReaderEntryActive()) this.retireProductionReaderEntry('root-navigation-will-show')
         this.readerEntryEpoch += 1
         if (this.readerEntryClaim !== null || this.readerEntryTransition?.phase === 'layout') this.closeReaderTrial()
         this.cancelRandomGalleryRequest()
@@ -1210,7 +1214,7 @@ struct Index {
     this.retireReaderTrialEntryGuard()
     ReaderTrialEntryRelay.clear(this.readerEntryToken)
     this.readerEntryEpoch += 1
-    if (this.productionReaderEntryActive()) this.retireProductionReaderEntry()
+    if (this.productionReaderEntryActive()) this.retireProductionReaderEntry('root-disappear')
     this.cancelRandomGalleryRequest()
     this.clearHomeTabAnimationGuardTimer()
   }
@@ -1224,7 +1228,7 @@ struct Index {
   onSafeModeChanged(): void {
     let target: number = this.activeTab
     if (this.safeMode.restricted()) {
-      if (this.productionReaderEntryActive()) this.retireProductionReaderEntry()
+      if (this.productionReaderEntryActive()) this.retireProductionReaderEntry('safe-mode-restricted')
       if (this.activeTab === 2) {
         target = 1
       } else if (this.activeTab === 3) {
@@ -1760,7 +1764,7 @@ struct Index {
     if (galleryId <= 0) {
       return
     }
-    if (this.productionReaderEntryActive()) this.retireProductionReaderEntry()
+    if (this.productionReaderEntryActive()) this.retireProductionReaderEntry('other-reader-route-opened')
     const selectedBackend = initialPageIndex < 0
       ? this.resolveProductionReaderBackend()
       : NextNReaderBackend.LEGACY
@@ -3402,7 +3406,7 @@ struct Index {
     this.clearRecordedReaderPresentation()
     if (this.productionReaderEntryGalleryId === params.galleryId &&
       this.productionReaderEntryPageIndex === params.initialPageIndex) {
-      this.retireProductionReaderEntry()
+      this.retireProductionReaderEntry('reader-route-disappeared')
     }
     this.readerOverlay.finishClose()
   }
@@ -4971,7 +4975,7 @@ struct Index {
           this.productionReaderEntryTransition.phase === 'layout')) {
         IndexReaderEntryPendingOverlay({ sourceRect: this.productionReaderEntryClaim.sourceRect,
           onViewportChanged: (): void => {
-            if (this.productionReaderEntryClaim !== null) this.retireProductionReaderEntry()
+            if (this.productionReaderEntryClaim !== null) this.retireProductionReaderEntry('pending-viewport-changed')
           } })
       }
     }
