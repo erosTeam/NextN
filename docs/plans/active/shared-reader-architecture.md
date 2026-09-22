@@ -6,6 +6,224 @@
 > `shared-reader-replacement-work-order.md`. Older “next step” text below is
 > historical and must not schedule work.
 
+## 2026-09-23 分层共用修订提案（设计评审，非实现/放行）
+
+本轮两侧缩略图在 NextE 237 的半途 Back 已有原帧证据，但这只是局部运行结果。
+先前匹配签名包 `98e58e2e…` 的 NextN 197 普通 Non-H 入场提供了相反证据：
+左 page-0 原帧 30–37（PTS 0.669856–0.780478 秒）可同时看到运动代理和
+已铺开的同图 Reader 正文；右 page-1 落定入场录像也出现同类双层曝光。
+`ReaderEntry` 在 `moving` 阶段的取消日志早于应用收到 Back，不能把这次缺陷
+归咎于 Back。源码对照发现 NextN Lab 用 `rootOwnedEntryTarget` 直接强制
+`ReaderSurface.contentOpacity=1`，NextE 则始终读取根转场的
+`readerImageOpacity`。这是一处可复查的双所有权风险，和后来查清的自动取消是两个故障；
+197 的 F1 现为 FAIL，任何修复仍须以新候选原帧证明没有重影或黑屏。
+当前 `reader-core` 的 `ReaderPagedSession` 和 `reader-ui` 的 `ReaderSurface` 已复用，
+新增 `ReaderRootEntryHandoff` 只统一了 94 行入场/反向回调仲裁；N/E 宿主仍各有
+约 600–675 行的 `ReaderThumbnailTransitionState`、约 770–850 行的
+`ReaderThumbnailTransitionCoordinator`，根页还有几乎相同的代理和 pending overlay。
+因此“复用一个 handoff 类”不是用户要的多层能力共用。Koma 当前适配也尚未消费
+这一根层转场契约，不能由 N/E 源码相同推断三端相同。
+
+### 横向能力层：公开契约与唯一状态所有者
+
+依赖只朝基础能力走：L1→L0，L2→L1 的只读会话投影和 L0 的 lease 身份，
+L3→L2 的只读体验快照；L4 以端口实现接入这些契约。`reader-core/reader-ui`
+绝不反向 import 三个 App；L3 的语义输入回送给 L1/L2，而不直接改它们的状态。
+这里的“层”是可独立复用的能力边界，不等于立刻新增五个 HAR。
+
+| 层 / 当前落点 | 对外公开契约 | 唯一状态所有者 | N/E/K 共用与宿主边界；拒绝重复实现的条件 |
+| --- | --- | --- | --- |
+| L0 资源与身份（`reader-core` 的 page/slot/asset） | unit/page/fragment/display-part key、资源候选与已显示 lease、request/variant epoch、`CatalogPort/AssetPort` 结果；不含 ArkUI | kit 的资源账本持有每个 part 的候选、已显示资源、取消/释放 | 三端共用身份与保留/退休规则；N/E 网络缓存/超分/翻译、Koma 本地离线/章节源由端口提供。宿主不得另造同页 request 序号或先释放旧图。 |
+| L1 会话、排版与导航（现有 `ReaderPagedSession`/display map） | `Move/Seek/ChapterBoundaryIntent`、`ReaderSessionSnapshot`、当前位置/布局修订、单/双/连续模式映射与输入仲裁结果 | 一份会话持有位置、selection/navigation/topology revision、可见 display item | 三端共用翻页/跳页/手势/滑条的意图语义；Koma 邻章选择和 N/E 画廊目录仍由 L4。宿主或 UI 不得再维护第二页号或绕开会话直接换图。 |
+| L2 可组合视觉事务（建议 `reader-ui` 非组件控制器） | display-item 可见 claim/lease handle 仲裁、身份栅栏、`ReaderExperienceSnapshot + Effects`；按需组合入口反向、同位置资源替换、位置变更子事务 | 一份仲裁器持有当前 `VisualOwner` 与事务准入/交接；各子事务只持有自己的 phase 和 effect 身份，不另记资源引用账 | N/E 使用有源/无源入口与同页替换；Koma 可直接使用无源入口、页间/跨章事务，不必伪造缩略图 flight。几何/捕获/窗口由 L4 回报；N/E coordinator、Lab、根页不得各推进同义 opacity。 |
+| L3 共享 UI 与交互（`ReaderSurface`、未来共享根父树） | 只读体验/会话快照、布局/解码/实际可见观察、语义动作叶插槽、chrome/错误/加载呈现 | 组件只持有手势瞬态与测量，不能持有阅读位置或 flight 真相 | 三端复用完整父树、触控/chrome/失败投影；EH sprite、NH 独立图、Koma 来源仅替换叶和主题。宿主不得复制根代理/pending 父树或提前露出第二正文。 |
+| L4 宿主业务适配（NextN/NextE/Koma） | 实现目录、资源/处理、源捕获/真实几何、系统栏/路由、进度/设置/动作端口；执行带 episode 身份的 Effects 并回报结果 | 各 App 只持有业务真相和平台句柄，不持有 L0–L2 的同义状态 | NextN/NextE 画廊、Koma 章节编排、鉴权/下载/存储继续各归其主；kit 不按 `isNextN/isNextE/isKoma` 分支，也不替宿主写进度或猜窗口。 |
+
+### 纵向能力包：每项必须从身份贯通到真实宿主
+
+五层是代码责任，不是五批先后完成的组件。可交付单位是以下纵向能力包；
+每包都要列出 L0 资源、L1 会话、L2 事务、L3 呈现、L4 宿主端口，
+旧实现回退和三端适用范围。不能因一个共享方法存在，就宣布该包“已共用”。
+
+| 能力包 | 共用的行为契约 | 宿主保留的差异 | 反例门 |
+| --- | --- | --- | --- |
+| 身份、排版与当前位置 | unit/page/fragment 到 display item 的唯一映射；单页、双页、连续模式的当前位置和实际内容矩形 | EH/NH 画廊来源，Koma 章节目录；各端设置读取 | 宿主再维护独立页号；预览比例代替真实选中 part 几何 |
+| 资源与画面租约 | 原图/增强/翻译的请求代次、候选准备、解码/上屏观察、已显示资源保留、失败/重试/释放 | 鉴权、网络、缓存、下载及具体处理服务 | 变体准备清掉正在显示的图；旧请求覆盖新页；Koma 2→1 黑帧 |
+| 导航与输入 | 点按、手势、缩略条、滑条、音量键收敛为同一页/单元意图；按模式与设置决定动画/缩放/滚动仲裁 | 系统按键订阅、Koma 邻章选择、宿主路由 | 任一入口绕过同一翻页管线，或跨章被伪装成普通下一页 |
+| 入场、退出与可见性 | 同一 episode 处理源 claim、待布局、飞行、正文接管、同步反向、取消；`VisualOwner` 唯一 | 源快照/当前几何、窗口与系统栏、真实导航提交 | 根代理和 Lab 同时显示同图；Back 到达前自行取消；黑屏占位顶掉旧图 |
+| Chrome、错误与动作 | 共用父树、交互状态、加载/失败/重试、页码和动作可用性投影 | EH/NH/Koma 的动作叶、分享/保存/信息/下载实现和主题 token | 宿主复制父树、删掉不方便适配的动作，或仅以源码相似宣称视觉通过 |
+| 设置、进度与生命周期 | 有效设置快照、当前位置事件、迟到回调栅栏、退出/后台 flush 语义 | 既有存储格式、作品/章节进度、账户和同步服务 | 新旧 owner 双写、冷启动回退、章节末端误记整作完成 |
+
+两条贯通链是设计的首批验收标尺：普通缩略图入场由 L4 声明真实来源、
+L1 确定所选 display part、L2 claim episode 并发捕获/窗口 effect、L3
+按同一 `VisualOwner` 画源代理/正文，L0 保留原图直到增强候选可绘，再由
+L4 执行 Back 的窗口/路由 effect。Koma 2→1 缩略图跳页由 L3 发语义 seek，
+L1 统一导航修订，L0 准备新页同时保留旧已显示 lease，L2 在新页可绘前
+仍交出旧画面所有权，L3 绘制，L4 只提供章节/本地源。任何一处跳过中间层，
+例如宿主直接清图或 UI 自改页号，都不是这项能力已共用。
+
+### L2 组合边界：共享仲裁，分离事务
+
+L2 不是一个容纳 F1、F2、翻页、跨章所有 phase 的巨型状态机。其最小共核是
+`displayItemKey + visualRevision → VisualOwner`：按当前可见的每个 display
+item 建立可见 claim（连续模式可同时有多个行/item），并为该 item 的每个
+可见 part 引用 L0 的已显示 lease handle、候选与失败面，核对
+route/position/layout/asset 各级身份，只允许一个事务拥有**可见画面交接权**。
+L0 独占 candidate/displayed lease 的创建、引用计数与最终释放；L2 不复制资源账本，
+只决定哪个带身份的 handle 可见，并向 L0 发提交/退休 effect。入口/反向
+episode 只仲裁被点中的目标复合 item 与根代理，不锁住连续画布上的其他行。
+共核负责准入、
+冲突交接串行化和 effect 回执去重；独立子事务各自处理自己的时间轴：
+
+| 子能力 | 准入及身份 | 交接、取消/失败、释放 | N/E/K 消费边界 |
+| --- | --- | --- | --- |
+| 入口与反向 `EntryEpisode` | 新 route/entry，L1 所选 part，宿主有真实来源则提供 claim；无来源明确走无源入口 | 代理→可绘正文的唯一交接；Back 在输入回调同步 claim 反向，过期捕获与动画 effect 释放；失败显示明确待载/失败面，不露出暗正文 | N/E 普通 Detail 缩略图及无源“阅读”入口；Koma 只在有实际缩略图来源时用有源入口，普通章节可用无源入口 |
+| 同位置资源替换 `AssetSwap` | L1 位置身份不变，L0 新 request/variant epoch 和候选 lease；不以 request 变化重新开 F1 | 旧已显示 lease 保留到新候选实际可绘/上屏，再交接并释放；失败/取消保留旧图、退休候选，迟到结果不得覆盖新变体 | N/E 原图、超分、翻译、精确重载；Koma 原图重试/本地资源更新按同一规则，不经过缩略图 flight |
+| 位置变更 `PositionHandoff` | L1 已接受 Move/Seek/ChapterBoundaryIntent，新 position/navigation revision；L4 可异步准备邻章但不能预先清旧图 | 旧 display item 继续可见到新 item 可绘或明确失败面接管；换向/取消作废旧准备，交接后按 part 释放旧 lease；章节准备失败保留旧可读章 | 三端翻页/跳页；Koma 2→1 和跨章使用本事务，N/E 画廊页间也使用，不伪装成入场 |
+
+同一 display item 的 F2 可以在 F1 中准备候选，但不得另夺可见权或取消
+`EntryEpisode`；待入口交出正文所有权后，`AssetSwap` 才可提交同位置替换。
+位置真的变化时，`PositionHandoff` 作废旧位置的候选与未提交的替换；Back
+优先同步冻结入口/当前画面的归属，迟到资源/窗口回执只清理自身 lease。
+准入被拒绝必须返回显式 reason，而不是暗中开第二套 phase。这样共享的是可组合
+的所有权规则，三端仅消费其真实能力；既不让 Koma 伪造 flight，也不让 F2
+重走 F1。
+
+组合后的视觉契约边界是 `ReaderIntent + ReaderSessionSnapshot →
+ReaderExperienceSnapshot + Effects`：L3 只消费快照并报告真实布局/解码/上屏观察；
+L4 执行带身份的 Effects，再把结果作为观察送回，不能直接改 phase、opacity、
+页号或资源 lease。
+端口按真实能力拆开（目录/资源/处理/进度/动作/源快照/窗口路由），
+不做一个承载所有差异的万能宿主回调，也不按 App 名称分支。
+
+最小事务协议先只冻结语义，不抢先承诺具体类名：
+
+| 事务输入 / 观察 | 唯一判定者 | 输出给谁 |
+| --- | --- | --- |
+| `OpenRequested` + 当前 unit/part 与源 claim | L2 仲裁器准入 `EntryEpisode`，核对 L1 当前位置，决定有源或无源入场 | L4 捕获/窗口 effect；L3 pending 快照 |
+| `SourceCaptured`、`PartMeasured`、`AssetDecoded/Displayed` | L2 分别核 route、layout、asset 身份；真实选中 part 与可绘状态齐备才推进 | L3 代理/正文同一可见性快照 |
+| `VariantPrepared` 或资源失败 | L0 保留旧 lease、校验候选；`AssetSwap` 申请同位置交接或失败投影，不改入口 episode 身份 | L0 资源退休；L3 内容/错误投影 |
+| `Move/Seek/ChapterBoundaryIntent` | L1 统一 display-position 变更，`PositionHandoff` 区分翻页、跳页、跨单元 | L0 选页/布局；L4 邻章准备；L2 页间交接 |
+| `BackRequested`、窗口/来源失效 | L2 仲裁器同步冻结可见权，`EntryEpisode` 反向或普通 close；不等异步进度/系统栏才 claim | L4 当前源测量、系统栏、导航 effect |
+| `EffectCompleted/Failed` | L2 用 episode + effect 身份拒绝迟到结果并释放旧捕获；L1 不回退到旧位置 | L0/L3 新快照或明确降级 |
+
+快照至少区分 `scene/position/entry/layout/asset` 身份、复合 `VisualOwner`、
+每个可见 part 的资源 lease 与可绘状态、chrome/失败/交互状态；effect 必须可按
+episode 去重/作废。过渡期间允许旧组件作为 L4 端口执行器，但不允许它再推进第二套
+phase；影子计算只用于比较日志，不能让两个 owner 同时控制渲染。
+
+身份必须分层：`routeEpoch + entryId + unit/page/fragment` 标识阅读场景和
+当前入场 episode；`layoutRevision` 标识测量；`assetRequestId/variantEpoch`
+标识该场景下可被替换的资源候选。增强图准备、请求重建或 selectionId 变化
+**不能仅因请求号改变就撤销同一位置的入场/当前画面**；只有真实换位置、
+来源失效、明确用户取消或无法继续呈现的几何失效才可能撤销对应 episode。
+候选资源先准备并证实可绘，再原子交接 `VisualOwner`，最后释放旧 lease；
+失败则保留旧画面并公开错误/重试状态。这是待实现契约。NextN 后续
+`59591acc…` 原因码包已证明本次取消由同页超分将 load request 1→2 引起，
+但不自动证明所有类似取消同源，也不使 `90dd2e81…` 候选免于实机验收。
+现有 `reader-entry-transition.test.cjs` 还把运动中的 asset request 替换视作
+必须取消的情况；它证明旧契约被编码，不证明同位置处理图替换的产品行为正确。
+原因码现已命中此分支；修订时须分别覆盖同位置合法变体、真实重试/换源、
+换页和迟到旧请求，不能简单删掉身份栅栏。
+当前 197 `90dd2e81…` 候选把可见 display item 的首轮 preferred-variant
+选择延到入场完成，仅是 F1 冲突窗口的窄修；即使设备通过，也不代表 L2 已能在
+运动中无缝接收任意同位置资源替换。长期契约仍须用上述不同身份和 lease
+证明合法替换、失败保留、取消/换页和 F2 原帧，不能把这个 gate 误写成全能方案。
+该候选的 197 原帧又发现落定接图时 f42→f43 明显压暗、到 f50 回亮；日志虽已
+完整 `moving→finished`，F1 视觉门仍失败。根代理何时退役、Reader 内占位图
+是否实际盖住黑色 pager、part 与外层各自的 opacity 如何合成，必须在同一个
+`VisualOwner` 快照/父树里判定。旧的 moving 早退曾使 selected opacity 直接
+归 1，可能掩盖此问题，但不能把这一相关性当作未经验证的具体图层根因。
+
+同日窄修 `406fe9f5…` 让已有根代理持续持有该复合 item 的画面到
+`OPEN_HANDOFF` 完成，197 同一普通 Non-H 第 0 页的原帧不再出现旧包 f42→f43
+压暗；右侧第 1 页入场/普通返回也在本候选的连续帧中保持正文。这个 A/B 结果支持
+“过早放弃可见 claim”的设计约束，但它仍是 N/197 两个命名样本，不等于 L2
+可组合共核已经实现，不能替代慢载、失败、半途反向及 E/K 的设备门。
+
+`VisualOwner` 的粒度是选中 display item 的**可见复合画面**，不是“全屏只能
+有一张图片”。双页左右 part 分别持有资源 lease/解码/裁切/失败投影；连续模式
+每个可见行也有独立 lease。L0 按 part 和请求退休资源，L2 只仲裁该复合画面
+与根代理的可见交接，L3 不让未选中缓存页抢当前页的上屏观察。某个 part 的
+变体替换不得提升 display item 的位置身份，也不能让左页 ready 覆盖右页；
+根代理与正文即使交接时短暂同挂，也必须只有一个可见主画面。
+
+迁移时每包先画出现有 N/E/Koma 调用路径和第二份状态，做可证伪状态测试，
+再让一个宿主通过薄适配消费共享 owner；真实设备同态通过后删除该宿主
+重复推进逻辑，再接下一个宿主。诊断性日志和局部修补不能成为长期第四套
+状态机。默认入口/持久数据变化仍须独立决策；当前包不得借抽层迁移它们。
+
+这五层先是**责任边界**，不立即新增五个 HAR。保持已有 `reader-core` +
+`reader-ui` 的编译依赖：L0/L1 留在 core，L2/L3 在 UI HAR 内分文件，L4
+在宿主。若将来有不依赖 ArkUI 的事务规则，才将该纯规则下沉 core。
+`ReaderAssetVariant` 的有限枚举、
+NextE 的 sprite、NextN 的独立缩略图与 Koma 的章节/离线源先以真实能力端口
+表达，不为追求“可插拔”提前引入通用插件框架或伪造来源。
+
+一个入场/退出事务必须携带 `routeEpoch + entryId + unit/page/fragment`；
+布局观察另带 `layoutRevision`，资源观察另带 `assetRequestId/variantEpoch`。
+控制器按各自身份核对布局、解码和动画回调；过期结果必须释放其快照/图片
+lease，不能再次 reveal、保存进度或关闭新路由。同位置的资源变体更新不能
+冒充新入场或直接撤销旧入场。Back 在输入
+回调内同步提交 `reverseRequested`，然后宿主才执行状态栏恢复、flush、导航。
+事务还必须公开唯一的 `VisualOwner`（源缩略图、运动代理、已可绘原图、明确失败面）。
+一个时刻不能由 Lab 的布尔值和根代理 phase 分别决定同一正文的可见性；取消也
+不能直接显露被代理遮住的正文。宿主仍负责在应用根层实际挂载/绘制代理，
+共享组件负责同一父树与只读显隐投影，不把路由栈或系统栏操作挪入 HAR。
+正常关闭重新测量**当前可见**源；原源不可见或布局已变则有明确普通关闭降级，
+不得倒用入场坐标。资源 ready、原图 decoded、原图实际上屏是三件事；已显示
+原图在增强/翻译失败或切换中继续保留，除非用户明确切源。
+同一可见性契约也覆盖页间切换：Koma 103 普通章节的独立设备任务报告了
+缩略图点选 2→1 附近约三帧全黑；在原始帧和资源日志独立复核前，这只是
+待核反例，不能据此指定某个资源层根因。L0 要保留前一张已显示资源的 lease，
+L2 要在新页真实可绘或明确失败面接管前保留可见画面，L4 不能用路由/章节
+占位层提前清掉旧图。这是同一 `VisualOwner` 规则的页间应用，不另做 Koma
+专用延时补丁。
+
+L2 对 L4 暴露窄端口：`claimSource/measureVisibleSource`、
+`captureSource/captureDisplayed`（带可释放 lease）、`prepareWindow`、
+`commitRouteClose`；L3 接受只读 `ReaderExperienceSnapshot` 并发布实际布局/解码
+观察。宿主只填端口，不调用状态机内部的 `startOpeningFlight`、
+`finishOpeningHandoff` 或直接写 opacity。根代理的 Stack/裁切/遮罩和 pending
+父树移入共享组件；EH sprite 或 NH/Koma 缩略图作为受限叶插槽，不能替换整个父树。
+普通“阅读”按钮没有缩略图源时明确选择无源转场，而不伪造矩形。
+
+现有代码按所有权迁移，而不是保留两套长期并行：
+
+| 当前代码 | 暂时保留的宿主责任 | 可迁入的共享责任与删除条件 |
+| --- | --- | --- |
+| N/E `ReaderThumbnailTransitionState` + `ReaderThumbnailTransitionCoordinator` | UIContext 像素捕获、当前源可见性测量、系统栏/路由执行留在 L4 | phase、proxy 几何插值、显隐、Back 仲裁、close handoff 交 L2；同宿主帧证据通过后删旧状态字段和推进方法 |
+| N/E `IndexReaderThumbnailTransitionProxy` + `IndexReaderEntryPendingOverlay` | EH sprite/NH 独立图等来源叶和主题值留在 L4 | 根代理/pending 的父树、裁切、遮罩、命中与可见性交 L3；整页同态截图无回归后删重复组件 |
+| N/E `Next*ReaderLabPage` 中的 handoff、`contentOpacity` 与关闭胶水 | 把 L1 session 和 L4 route/window 接入；只发布实际呈现观察 | L2 统一一次 reveal/finish 和同步 reverse；不能再由 Lab 自行决定第二个显隐时钟 |
+| Koma `KomaReaderLabAdapter/Page` 与章节入口 | Catalog/Asset/Progress/UnitNavigator、章节准备和窗口恢复留在 L4 | 用相同 L0/L1/L2/L3 契约消费有来源或无来源入口；不把 Koma 章节排序或持久化移进 kit |
+
+已拒绝的路径是设计约束，不因抽层而重开：REJ-READER-001 不等待状态栏
+恢复后矩形发生变化，稳定的同矩形也可返回；002 保持既有并发/提前的状态栏
+恢复，不在动画后跳变；003 关闭时重测当前源而不用入场缓存；004 不借状态栏
+问题改 proxy/root/radius 所有权；007 不先用缩略图比例铺满屏、再跳到选中
+Reader part。L2 只能在真实选中 part 布局就绪后启动同一连续 flight；若
+来源不合格，显式普通关闭/无源入口，不制造一个看似统一的错误动画。
+
+实施按一个工作单的四个可回退切片推进，不能并行改三端产品树：
+
+1. **契约冻结与基线**：给现有 N/E 根状态、代理、Lab、`ReaderSurface` 和 Koma
+   普通入口画一张事件/所有权表；冻结 N/E 同内容左右来源、半途 Back、正常退出、
+   慢/失败/取消及 Koma 章节/旋转样本。输出只读差异表和失败门，不改 UI。
+2. **共享会话与可组合视觉事务**：先给 L0/L1 的选页/资源 lease 与 L2 共核的
+   准入/可见权/迟到回执做真实状态代码测试，再分别验证入口反向、同页替换、
+   页间/跨章交接及其竞争；
+   N/E 旧呈现暂留，通过薄适配读取同一
+   `ReaderExperienceSnapshot`。状态只保留一个 owner，旧 coordinator 只能执行端口。
+3. **共享根呈现**：以现有完整根代理/pending 父树提取 L3，N/E 仅替换来源叶和
+   平台端口；每次只迁移一个宿主，同状态同视口原帧对比，失败可退回旧呈现。
+   Koma 同期编译试接接口，但不把旧 Debug 直达录像当普通入口验收。
+4. **三端收束与清理**：197 验 NextN 当前签名候选，237 验 NextE，103 验 Koma
+   可追溯候选的普通入口及大屏/旋转；各端再覆盖加载/失败/取消与 F2 资源保留。
+   只有三端对应能力通过、pin/CI/回退门齐全后，才删除宿主重复状态机或讨论
+   Koma 默认入口变化。静态合同、构建和单帧都不能替代命名设备的动态结果。
+
+这是一份设计提案；具体顺序、当前候选和未闭合证据仍只由工作单维护。
+
 ## 默认替换前的防退化门槛 — 2026-09-12
 
 共享阅读器继续保持显式调试入口。只有下表全部达到 **ACCEPTED**，且没有同边界的已知反例，才允许另开一次“是否切换默认入口”的用户决策；源码存在、方法测试、构建、安装或单张截图均不能单独关闭门槛。

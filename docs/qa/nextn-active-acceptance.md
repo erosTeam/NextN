@@ -8286,3 +8286,233 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   physical action is to resume the prepared install → established source-grid
   gate → two-entry recording protocol after this exact target registers as
   Connected, then review each original-resolution entry triad.
+
+## Shared F1 common handoff — 237 physical boundary (2026-09-23)
+
+- The current NextE signed HAP SHA-256 `027b6aa1821acf546ae6d4410b895fb75fbfa9c2eafe5315aed7d9f81aa4e7a6`
+  was installed on leased device 237 without data clear. The checked cold
+  route reached Non-H 4203217 Detail. The exact N/E common handoff source
+  SHA-256 is `6660168aab9c3fedc5202fd2586e07ea20345a44750f2bdcf65e1be698393550`.
+- The 230-original-frame continuous zero-gap recording (MP4 SHA-256
+  `807ef7753bf1837115d6741365e2dd28d5cdf2e96afa5ce8d326b4c40f9426e1`)
+  shows left page-0 and right page-1 proxy expansion and reverse return to
+  their own tiles, plus a settled normal close. This is a bounded reverse-route
+  observation, not a true mid-flight Back: the proxy reached its destination
+  before each Back was delivered.
+- Two separately checked overlapping-input attempts did not meet the timing
+  gate. Their host-launch staggers were 220/500 ms, but their actual command
+  measurement starts were 975/1,992 ms apart, respectively, because they
+  ran as independent checked protocols. The first Back preceded visible
+  opening; the second arrived after the forward proxy had reached its target (156 original
+  frames, MP4 SHA-256 `23eb52f4301c93246aec6e06b81bbfea87ef3a208e4775f6751df73d4f73a438`).
+  Those two runs claim no in-flight reversal, slow/failure/cancel, or current
+  NextN physical parity. NextN source contracts and signed build pass; current NextN HAP
+  SHA-256 is `f6708682488b7b9aaba00f1c4ba3c9fd96727ef2131d17a2dc6cd86475004122`.
+- A third, Back-before-click probe is excluded. A single-host launch of three
+  separately checked protocols then delivered a genuine left page-0 mid-flight
+  Back on 237: click command start `04:43:36.442411`, Back command start
+  `04:43:36.671718` (229 ms apart, before click command completion). The
+  continuous MP4 SHA-256 is
+  `26edf509666c8b46097e0ea17593ea72c18a3296eb46352ada0ffacbe440d418`;
+  original PTS frames 70–78 expand only partway, 79–89 reverse toward the same
+  left tile, and frame 90 (`2.102633` s) onward restores the Detail grid.
+  This accepts only the current NextE page-0 mid-flight path. The reviewed
+  sequence shows no full-screen forward endpoint or selected-page dark pulse.
+- The right page-1 source was tested separately with an actual 197 ms
+  click-start → Back-start gap (`04:49:35.428517` → `04:49:35.625334`). MP4
+  SHA-256 `6953726d52ff826cb12db6f8b729271a6792ce4264a042afe179fe76f5676e1b`
+  shows original PTS frames 70–75 expand partway, 76–92 return to the right
+  thumbnail, and frame 93 (`2.103778` s) onward restore the Detail grid. This
+  is a second bounded NextE mid-flight observation, not a three-host pass.
+  The checked cleanup restored `OverrideTimeout=10000ms`; the 237 lease was
+  released. App data and the Detail route were retained.
+- NextN signed HAP `f6708682…` was older than the 04:15:06 handoff source
+  revision and must not be treated as the current candidate. Source contracts
+  passed again; the fresh signed Debug HAP is preserved at
+  `.hvigor/outputs/f1-common-handoff-20260923/nextn-f1-98e58e2e-signed.hap`,
+  SHA-256 `98e58e2ee370101787d34bab3c57577bf86c7fa4baa2c9602909bf8294ca3c6d`.
+  No NextN device result is asserted here.
+- Active outcome remains F1 OPEN. The next unverified physical action is a
+  current NextN 197 target run and traceable Koma 103 ordinary-entry trial;
+  NextE slow/failure/cancel and click-immediacy also remain open. Earlier
+  launch-stagger attempts do not show ArkUI deferral. The NextN run was not
+  performed in this observation.
+
+## Shared F1 — NextN 197 physical counterexample and narrow source candidate (2026-09-23)
+
+- A separate checked 197 lease installed the exact signed NextN HAP
+  `98e58e2ee370101787d34bab3c57577bf86c7fa4baa2c9602909bf8294ca3c6d`
+  without clearing data, then entered the ordinary Non-H 663205 Detail reader
+  from left page 0 and right page 1. The left continuous recording SHA-256 is
+  `d3660a6b6b393483ba2d49f1e586865d5ca34399362183fcdc6a83a979f1c9a6`;
+  original frames 30–37 / PTS 0.669856–0.780478 s show the same selected
+  picture twice: a full Reader image behind the still-expanding root proxy.
+  The right recording SHA-256 is
+  `47eee7e4dfd2c0a42e8edecb2f961b352815eb00683d63bf76bf29c942e0c263`;
+  original frames 25–35 / PTS 0.559–0.742 s show the same double exposure.
+  Both recordings are under
+  `.hvigor/outputs/device197__ALN-AL80/not-applicable/portrait-1260x2720/nextn-f1-98e58e2e-20260923/`.
+- The left run logs `ReaderEntry phase=moving` at 04:53:12.372 and
+  `cancelled_from=moving` at 12.413; app Navigation receives Back at 12.656
+  and requests reverse at 12.658. Therefore cancellation and overlapping
+  visual owners preceded app Back. The zero-pause command did not establish
+  mid-flight Back consumption. The right run's settled 2/40 Reader returns
+  normally to the same Detail grid; it does not offset the entry failure.
+  Final checked readback retained #663205 Detail with its source tiles, restored
+  the 120000 ms display timeout, and released the 197 lease.
+- **F1 status: FAIL/OPEN for this NextN candidate.** Source comparison found
+  NextN Lab forcing `ReaderSurface.contentOpacity=1` for root-owned entry,
+  bypassing the root phase's selected-image visibility policy; NextE reads
+  the root phase without this override. A single-line candidate removes the
+  NextN override. Its two scoped source contracts and signed build pass;
+  preserved HAP SHA-256 is
+  `a4d1f5c856dd1332eb7b558e51360bdb78316024ba8f7f607014be561149d0e1`
+  at `.hvigor/outputs/f1-single-owner-20260923/nextn-f1-a4d1f5c8-signed.hap`.
+  This exact candidate has not yet produced device evidence in this record;
+  it is not accepted merely because it compiles.
+- At the build-only checkpoint, the outstanding physical action was to inspect
+  the new candidate's ordinary left/right entry and return on leased 197,
+  including original frames for double exposure, empty frames, handoff, and
+  actual Back timing. The continuation below supersedes that checkpoint;
+  the pre-Back `moving` cancellation still needs explanation. The layered
+  design review remains in
+  `docs/plans/active/shared-reader-architecture.md`; Koma 103 full ordinary
+  path and NextE slow/failure/cancel are still open.
+- **Physical continuation, bounded (same 197 lease still active):** the
+  `a4d1f5c8…` package was installed without data clear and ran from the same
+  ordinary #663205 Detail. Left page-0 recording SHA-256
+  `8c74db05398e38585424ee3345610b37814c32711486392b983beab4e816c0fd`
+  has only one selected cover in reviewed original frames 28–36, then the
+  proxy returns to its left thumbnail at 32–50. Right page-1 recording
+  SHA-256 `89825450f16d0aa4ab81e646439eee40ce2dbe0c6622f7bdb929878c77e14c9d`
+  has one selected 2/40 gray page in frames 33–44, no observed dark pulse in
+  that handoff, and a settled ordinary Back into the right thumbnail at
+  62–78. This is a named-window visual improvement over `98e58e2e…`, not
+  full F1 acceptance. Left `ReaderEntry moving` at 05:13:40.774 and
+  `cancelled_from=moving` at 40.828 both precede app Back at 41.045; right
+  moving/cancelled are 05:15:45.129/45.175 before ordinary Back at 46.842.
+  At that checkpoint the pre-Back cancellation cause and real mid-flight Back
+  dispatch remained open; the overlap2 observation below narrows only the
+  latter. A checked timing attempt is ongoing; device timeout restoration and
+  lease release must be recorded when it finishes, not inferred now.
+- **Left-source overlap2 evidence, limited:** another checked recording of the
+  same HAP has SHA-256 `c1c3d98661713e4ed1c174b89c528e5dde12fae0009eb5d20f0a3397afc02255`.
+  Host click-to-Back command starts are 198 ms apart. Original PTS frames
+  76–79 show the single proxy partway expanded and 80–88 shrink it to the
+  left source, with no full-screen arrival in that reviewed span. Same-window
+  `ReaderEntry` moved at 05:23:07.223, cancelled at 07.273, root reverse was
+  requested at 07.277 and finished at 07.735. The inner cancellation preceded
+  root reverse by 4 ms, but `ReaderEntry.cancel()` cannot itself reverse the
+  root proxy; the root coordinator's Back-triggered `reverseOpening()` is the
+  observed reverse path. This is a bounded NextN left-source moving-proxy
+  reverse observation, not a diagnosis of the inner cancellation, a right
+  source mid-flight run, or a three-host F1 pass. The 197 physical task is
+  still active at this checkpoint.
+- **Right-source overlap, limited:** the same signed package's page-1
+  continuous MP4 SHA-256 is
+  `1478932cc6dd4043d1a085588db04e0cdbd6986acfb4d60824fb005a5f6af0d3`.
+  Checked click/Back measurement starts were 05:30:51.029458 and 51.210127
+  (180.669 ms). App `ReaderEntry moving` at 51.768 preceded OnBackPressed
+  at 51.791; root reverse request and inner cancellation were recorded at
+  51.792, reverse completion at 52.261. Original PTS frames 70–77 show one
+  right-source proxy still partway across Detail and beginning to shrink;
+  78–91 return it to the right thumbnail with stable Detail, without the
+  earlier double image or a black frame in that reviewed window. This
+  establishes only the NextN right-source moving-root-proxy Back path; the
+  ordinary-entry self-cancellation cause, slow/failure/cancel matrix, Koma
+  page-turn black report, and overall F1 remain OPEN. Checked device cleanup
+  was still pending at this checkpoint.
+- **197 postflight:** `final-state-restore-run` passed and its final whole
+  screen/layout show the same ordinary #663205 Detail with both source tiles.
+  PowerManager reports `Current State: AWAKE` and
+  `ScreenOffTime Timeout=120000ms OverrideTimeout=120000ms`. Exact lease
+  `20260922-210730-5595c468` was released with exit 0; no app data clear.
+  This supersedes the interim pending-cleanup notes above. The physical
+  left/right handoff and moving-root-proxy reverse observations are limited
+  to the frozen `a4d1f5c8…` HAP on 197; the next unverified runtime issue is
+  the ordinary-entry `ReaderEntry` cancellation before Back, while Koma
+  page-turn and broader F1/F2 remain separately open.
+
+## Shared F1 — NextN 197 ordinary-entry cancellation reason and candidate gate (2026-09-23)
+
+- **Physical diagnosis, exact artifact:** a checked 197 ordinary Non-H #663205
+  left-page run installed the reason-only signed Debug HAP SHA-256
+  `59591acc74a2447a184641deb1d5f493529708f49f72d8ddaeb07375625e3d63`
+  without clearing data. The single same-window hilog records `ReaderEntry`
+  moving at 06:03:15.258, super-resolution prepare at .303 and applied at
+  .305, then `cancelled_from=moving reason=asset-identity-changed
+  slot=1/1 load=1/2 asset=1/1` at .305. This occurred before Back; source
+  traces `ReaderPagedSession.selectAssetVariant → reconcile → ReaderSession.show/begin`
+  raising the replacement load request while the old displayed asset remains.
+  The protocol metadata is completed at
+  `.hvigor/outputs/device197__ALN-AL80/not-applicable/portrait-1260x2720/nextn-f1-59591acc-20260923/one-left-entry-run/`.
+  Its final layout contains the same #663205 Detail and both page-0/page-1
+  source tiles; PowerManager reads AWAKE with `Timeout=120000ms` and
+  `OverrideTimeout=120000ms`. The 197 lease was released. This establishes
+  this ordinary-entry cancellation cause only; it does not visually accept F1.
+- **Candidate source/build record (superseded by the physical result below):** shared `ReaderSurface` now
+  defers both visible spread parts' preferred variants during a pending entry
+  and re-evaluates on `finished`, not on cancellation. 43 relevant tests pass;
+  signed Debug build succeeds without a new monitor warning. Frozen HAP
+  `.hvigor/outputs/f1-variant-gate-20260923/nextn-f1-90dd2e81-signed.hap`
+  has SHA-256 `90dd2e81fd80d8f77f41d6a6ddfb76c0ca4590534f11bed3d9d6246ebfc1740b`.
+  A separately coordinated 197 task subsequently performed the exact-package
+  ordinary-entry and bounded F2 checks recorded below. This source/build
+  checkpoint alone never stood in for runtime acceptance.
+- **90dd2e81 197 result, F1 visual FAIL / F2 limited PASS:** the exact installed package's
+  ordinary left-page same-window log shows `ReaderEntry` moving/waiting/
+  revealing/finished at 06:22:34.026/.463/.477/.617, then super-resolution
+  prepare/applied at .620/.623. This run no longer exhibits the previous
+  moving-phase asset-identity cancellation. Its original continuous recording
+  at `.hvigor/outputs/device197__ALN-AL80/not-applicable/portrait-1260x2720/nextn-f1-90dd2e81-20260923/page0-entry-settled-recording/`
+  visibly darkens the selected page from bright f42 to markedly dark f43
+  (PTS 0.849756→0.865456 s) before recovering through f50. The current
+  F1 handoff is therefore not visually accepted. The independent same-page
+  F2 off→on recording contains 73 encoded original frames, all retaining the
+  selected page; a fixed central region stays at mean brightness 165.8–167.1.
+  The UI reports both “已关闭超分” and “已开启超分”, and same-window logs record
+  enhancement applied after re-enable. This is a **limited pass for one
+  same-page toggle only**: the recording has inter-frame gaps and does not
+  cover F2 failure/cancel, other pages, or F1. Evidence:
+  `.hvigor/outputs/device197__ALN-AL80/not-applicable/portrait-1260x2720/nextn-f1-90dd2e81-20260923/page0-f2-off-on-recording/`
+  (MP4 SHA-256
+  `12e7f3bf9c23e02d523e7fda3a451b51b241223206732126a66f220e115a19b8`).
+  Checked `final-state-restore-run` completed: final layout/screen show the
+  same #663205 Detail and page-0/page-1 source tiles; PowerManager reads
+  AWAKE, `Timeout=120000ms OverrideTimeout=120000ms`. Lease
+  `20260922-221850-476de1b3` was released; no app data clear. The next
+  unverified physical action for F1 is a corrected signed package's ordinary
+  page-0 continuous entry, with original-frame review across the f42→f43
+  equivalent and Back/neighbor checks. Do not close overall F1/F2 from this
+  bounded run.
+- **406fe9f5 root-owner repair, 197 F1 named paths LIMITED PASS / overall
+  OPEN (2026-09-23):** `rootProxyVisible()` now keeps the same measured captured
+  image mounted through `WAITING_READER_CONTENT/OPEN_HANDOFF`, retiring it at
+  `OPEN`; the previous 90dd run had retired it before the outer Reader-image
+  opacity handoff. Contract test and signed Debug build pass. Exact installed
+  HAP SHA-256 is
+  `406fe9f5d4b810697058164a490fbdb0f4c7249056f4f22c5d43b71fd651bb7a`.
+  Same 197 ALN-AL80 portrait 1260×2720 ordinary Non-H #663205 Detail:
+  page-0 continuous recording has 80 original frames; the old f42→f43
+  whole-image dark pulse is absent. Fixed video ROI `(310,690)–(580,1110)`
+  mean luma in old 90dd f42/f43/f50 was 210.3/48.1/209.8, while new 406
+  f39–f53 remains 210.2–210.9. Same-window entry goes
+  `moving→waiting→revealing→finished`, then root `open_finished`, with no
+  early asset-identity cancellation. One normal Back restored the same Detail
+  with both source tile IDs. A right page-1 continuous roundtrip has 108
+  original frames, stable selected-image ROI (186.0 across f35–f50), a
+  settled `2 / 40` body, and normal Back to the same Detail. Evidence:
+  `.hvigor/outputs/device197__ALN-AL80/not-applicable/portrait-1260x2720/nextn-f1-406fe9f5-20260923/{page0-entry-recording,page1-roundtrip-recording}/`;
+  MP4 SHA-256 page0
+  `28a7cd55af7fb59c98d5791a7eaee213bfd44f7ca932efa6a4db459009acfaa6`,
+  page1 `7c39570d81e62c4c40875302c09031c1807d985e8885baf52c943d673a7e6f44`.
+  Page-0 f61→f62 spans a 61 ms PTS gap with a sharpness change, so these
+  encoded frames do not accept every intermediate refinement refresh.
+  Final checked Detail/layout and PowerManager AWAKE,
+  `Timeout=120000ms OverrideTimeout=120000ms`; lease
+  `20260922-225252-b7f2c8da` released, no app data clear. This is not a
+  global F1 pass: same-candidate mid-flight Back, slow/failure/cancel and
+  NextE/Koma coverage remain unverified. The 90dd F2 toggle is only its own
+  bounded result; 406 F2 was not rerun. The active runtime action is the
+  same-candidate delayed-content/mid-flight Back original-frame matrix, not
+  another source-only declaration.
