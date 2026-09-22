@@ -8252,14 +8252,21 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   NextE candidate with `install -r`, cold-routed to the exact normal Non-H
   gallery source leaf `reader-thumb-gallery-detail-1-page-0`, then made one
   two-entry round-trip recording. No data was cleared.
-- **Observed:** the fresh MP4
+- **Corrected result — FAIL:** the fresh MP4
   `nexte237_df7a116_root_compositor_normal_nonh_page0_roundtrip.mp4`
   (SHA-256 `70083f1ae0e63f99757a887e61aac3cf775e4fa89234a3f8bb270fbe9e64755c`)
-  yielded 216 decoded original-PTS frames and 9 reviewed sheets. Neither of its
-  two entry windows (raw 54–84; raw 164–194) reproduces the old verified
-  selected-page f178 bright → f179 dark → f180 recovery pulse.
-- **Still unverified:** this is one matched candidate result only. The source
-  tile's tiny loading circle, other entry modes, slow/failure/cancel paths, and
-  independent supervision stay OPEN. The capture's maximum VFR gap is
-  0.999567s (frames 147–148), and paired hilog has no attributable transition
-  markers; neither fact is used to reinterpret observed frames.
+  yielded 216 decoded original-PTS frames and 9 reviewed sheets. Direct
+  original-frame re-review confirms the second entry is a counterexample:
+  frame 186 bright selected left page → frame 187 materially dark selected
+  left page → frame 188 bright recovery with neighbour. Candidate `df7a116…`
+  therefore **fails F1**. No re-record is needed to establish the observed
+  failure.
+- **Review correction / next action:** the earlier local “no pulse” report
+  failed to demand an original-resolution adjacent-triad check at every
+  completed-looking entry. That check is now mandatory before a pass claim.
+  Do not mask this with extra frame delay or full-screen staging; trace the
+  actual coordinator call together with outer-placeholder and body/image
+  opacity composition. The source tile's tiny loading circle, other entry
+  modes, slow/failure/cancel paths, and independent supervision stay OPEN. The
+  0.999567s maximum VFR gap (frames 147–148) and markerless paired hilog do not
+  reinterpret this observed triad.

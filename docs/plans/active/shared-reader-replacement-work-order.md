@@ -4021,20 +4021,27 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
   (SHA-256 `70083f1ae0e63f99757a887e61aac3cf775e4fa89234a3f8bb270fbe9e64755c`);
   its paired hilog SHA-256 is
   `ac4b9b712927ed8d1e87b2a931a2a99f7d7e7b4f22deaf9499ea73e2085dc697`.
-- **Frame finding (bounded):** all **216 decoded original-PTS frames** and all
-  **9 contact sheets** were inspected. For both entries (raw 54–84, PTS
-  1.864267–2.449078; raw 164–194, PTS 12.565044–14.001578), no frame exhibits
-  the old f178-bright → f179-selected-page-dark → f180-recovered-body pattern.
-  The gallery's expected dim/scale and the reader canvas's expected black
-  surround remain visible during transition; this is not a claim that the
-  scene never changes luminance.
-- **Open boundary:** this is one matched candidate observation, not global
-  closure. The recording retains a maximum VFR PTS gap of 0.999567 between
-  frames 147–148, which is not used to dismiss any observed frame. Same-window
-  hilog has no transition markers and contains interleaved system/background
-  logs, so it cannot attribute a compositor moment. The source-tile tiny
-  loading circle, slow/failure/cancel paths, other entry modes, and independent
-  supervisory review remain OPEN. The earlier `f6dcc…` f178–180 recording is
-  retained as counterevidence and was not overwritten or replayed.
+- **Correction — candidate FAIL:** the initial local claim that both entries
+  lacked the old shape was erroneous. Independent review, then direct
+  re-opening of the three original frames, confirms the second entry has the
+  same visual counterexample: `frame_000186.png` is a bright selected left
+  page, `frame_000187.png` is materially dark across that selected page, and
+  `frame_000188.png` is bright again with the neighbouring page present.
+  Therefore candidate `df7a116…` **FAILS F1**; the MP4 hash and retained
+  evidence path above remain authoritative. No re-record is warranted to
+  prove an already-observed failure.
+- **Review-process correction / open boundary:** the local 216-frame statement
+  did not require an adjacent-original-frame triad check for every apparent
+  completed entry, and its contact-sheet-oriented pass missed frame 187. The
+  revised acceptance step is to inspect and record each selected-page
+  bright/dark/recovery triad at original resolution before any candidate may
+  be described as passing. The maximum VFR gap of 0.999567 between frames
+  147–148 is not used to explain this observed triad. Same-window hilog has no
+  transition markers and contains interleaved system/background logs, so the
+  next source investigation must trace actual root-coordinator calls together
+  with outer-placeholder and body/image opacity composition. The source-tile
+  tiny loading circle, slow/failure/cancel paths, other entry modes, and
+  independent supervisory review remain OPEN. The earlier `f6dcc…` f178–180
+  recording is retained as counterevidence and was not overwritten or replayed.
 
 **NextE 观测候选（未安装、未动态验收）**：NE main `8c35d16e` + `cb1f478a`、kit `d99139f1`；签名 HAP SHA-256 `fab1703e57777bd892fb44032a1287f2f97f63b15df53361a560b1bd7a30bf48`，签名构建成功。新增日志只记录 production admission/capture 完成/overlay/phase、layout gate、actual flight-start 和 pending 期间每个 original part 的 slot/宽高；不改转场、几何、fallback 或后端选择。其下一动作仍是先证明设备 logger 配置与读取路径，再由完整协议安装、同源录像与原帧 PTS 验收。
