@@ -89,6 +89,26 @@ episode 只仲裁被点中的目标复合 item 与根代理，不锁住连续画
 的所有权规则，三端仅消费其真实能力；既不让 Koma 伪造 flight，也不让 F2
 重走 F1。
 
+`visualRevision` 是同一可见 display item 的**主画面 claim 提交序号**，
+不是资源请求、解码、测量或动画帧计数。只有 L2 串行提交一个新主画面 claim
+或撤销现有 claim 时才单调提升；候选创建、`requestId/variantEpoch` 变化、
+`VariantPrepared`、`AssetDecoded`、布局回报均不能单独提升它，更不能因此
+取消 `EntryEpisode`。route、position、layout、asset 各身份仍各自校验：
+布局失效可阻止尚未提交的交接，但不凭一个新布局号自动清掉旧可见画面。
+候选在真实可绘/上屏回执后由 L0 提交为新的 displayed lease，L2 以一次
+仲裁提交该 lease 的可见 claim；确认新 claim 后才令 L0 退休旧 displayed
+lease。若需撤销旧 item 并提交新 item，它们属于同一次串行位置交接，
+分别更新各自的 claim 修订，不留中间无主黑帧。回执必须携带原事务及
+route/position/layout/asset 身份；过期回执仅释放自己的候选/捕获句柄。
+
+三条竞速裁决（每条只调用对应子事务，共核只负责可见权和回执顺序）：
+
+| 时序 | 可见权与拒绝/延后条件 |
+| --- | --- |
+| F1 运动中 F2 同位置候选到达 | L0 可准备候选，但源代理的 `EntryEpisode` claim 和 `visualRevision` 不变；`AssetSwap` 的可见提交返回“入口仍持有交接权”，延到 F1 将可绘正文交出后，不能以新 asset request 撤销 F1。 |
+| Back 与 F2 完成竞速 | Back 输入回调先被 L2 串行接纳时，立即冻结并提交反向 claim；随后 F2 上屏回执或旧前向窗口回执因旧 episode/claim 修订被拒绝，只清理各自句柄。若 F1 已先完成且 F2 的新主画面已提交，Back 读取**当前** displayed claim 和当前可见源，走正常关闭或明确降级；不得倒用入场快照。F1 未交接前 F2 不得抢先提交，因此不存在 F2 在运动中独立覆盖代理的合法次序。 |
+| Koma 2→1 seek | L1 接受 seek 并提升 navigation/position revision；L0 准备 1 的候选，L2 的 `PositionHandoff` 继续持有 2 的旧可见 claim，不因 seek 或解码通知提升 `visualRevision`。1 实际可绘/上屏后一次交接新 claim，随后退休 2 的 lease；失败、取消或另一 seek 的迟到回执不得清掉旧可读画面，也不得把未显示的 1 记为已读。该路径不启动 `EntryEpisode` 或伪造缩略图 flight。 |
+
 组合后的视觉契约边界是 `ReaderIntent + ReaderSessionSnapshot →
 ReaderExperienceSnapshot + Effects`：L3 只消费快照并报告真实布局/解码/上屏观察；
 L4 执行带身份的 Effects，再把结果作为观察送回，不能直接改 phase、opacity、
