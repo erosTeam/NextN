@@ -14,10 +14,10 @@ settings, progress, actions, navigation, and Koma chapter orchestration.
 Package 5 is **ACTIVE**. The 2026-09-19 “candidate-accepted” records below are
 bounded historical evidence, **not** a current replacement conclusion: later
 user-observed F1/F2 counterexamples reopened the package, and source/build
-checks cannot close their runtime continuity requirements. Every **production
-default stays the legacy reader**; the shared route remains an explicit,
-process-scoped, reversible debug route. No package migrates or deletes user
-data.
+checks cannot close their runtime continuity requirements. The authorized
+production default is the ordinary shared-reader route; it is no longer a
+debug-only route. Legacy remains a scoped, reversible recovery fallback, not
+the production default. No package migrates or deletes user data.
 
 ### 唯一 ACTIVE 包：有限收尾主线（2026-09-21）
 
@@ -31,7 +31,7 @@ not fill that gap.
 
 The following are finite pending checks inside this one package, not new queues:
 
-#### 2026-09-23 current entry repair — source/build closed; dynamic chain OPEN
+#### 2026-09-23 current entry repair — cache geometry source/build closed; F1 body-layer repair build/dynamic OPEN
 
 - `ReaderPage.previewWidth/previewHeight/previewCoversWholePage` is now the
   public reader-kit presentation-geometry contract. It may establish the
@@ -69,10 +69,32 @@ The following are finite pending checks inside this one package, not new queues:
   (candidate `a0fb...655b`, PTS `0.532500`). The single frame visibly combines
   the in-flight small thumbnail, a large semi-transparent instance of the
   same image over Detail, and the central `正在准备图片` placeholder. It is not
-  admissible as a single continuous handoff. Cause is **not yet assigned**:
-  audit the actual shared `reader-kit` root-handoff/body/placeholder drawing
-  chain across NextN and NextE before changing product behaviour. Do not
-  restore the previously rejected full-screen staging approach. The completed
+  admissible as a single continuous handoff. **Source assignment (2026-09-23):**
+  production entry passes `entryPreview: null`, so it does not mount a second
+  `ReaderEntryPreview`; the small in-flight source is the root
+  `IndexReaderThumbnailTransitionProxy`. `ReaderSurface` places its host
+  `openingPlaceholder` outside the inner `WithTheme` pager Stack, while the
+  latter contains the preview-geometry page and `ReaderLoadingStage` feedback
+  under `contentOpacity`. Both host labs had overridden that opacity to `1`
+  for `rootOwnedEntryTarget` or a started reveal, so the root flight could
+  expose the live pager and its 「正在准备图片」 feedback early. The paired
+  host repair removes only those overrides and retains
+  `readerImageOpacity(...)` as the owner. The outer opening placeholder remains
+  a separate, intentionally visible proxy-to-placeholder handoff layer in
+  `OPEN_PROXY_HANDOFF`/`WAITING_READER_CONTENT`/`OPEN_HANDOFF`; this repair does
+  **not** claim to alter it or prove the handoff black-frame-free. Source
+  contracts pass (`NextN` gallery/transition; `NextE` read-progress), and both
+  signed release builds pass with their pre-existing API/compatibility warnings.
+  Preserved, uninstalled candidates are NextN
+  `.hvigor/outputs/nextn-f1-body-opacity-20260923/entry-default-signed.hap`
+  (`6ed8b9e03b0e60a31eb8e0bff1c2e74be6cf368359007c1187c93ad668192600`)
+  from `e860ed1c` plus this repair, and NextE
+  `.hvigor/outputs/nexte-f1-body-opacity-20260923/entry-default-signed.hap`
+  (`f6dcc96d83182a2e84ceb4a344e669d40dfb3e6ef285f4bd27dacad03848fc1f`)
+  from `0688ee92` plus this repair. Neither HAP has been installed; a new
+  same-state continuous device recording must still show no early live pager
+  feedback and no black frame through root/body handoff. Do not restore the
+  previously rejected full-screen staging approach. The completed
   NextE 237 `e676...` recording is retained under
   `.hvigor/outputs/device237__VDE-AL00/not-applicable/portrait-1320x2120/nexte-entry-cache-e676-20260923/page0-continuity-recording/`;
   it has no observed cache-origin marker, and its raw early/return frames do
