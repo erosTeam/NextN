@@ -3,11 +3,11 @@ set -euo pipefail
 
 build_mode="${1:-debug}"
 case "$build_mode" in
-  debug)
+  # Release verification path: keep the device-trusted signing source (default
+  # product) and only flip buildMode to release, so module.json reports
+  # debug:false while the signature stays the one the test devices trust.
+  debug|release)
     product="default"
-    ;;
-  release)
-    product="release"
     ;;
   *)
     echo "Usage: $0 [debug|release]" >&2
