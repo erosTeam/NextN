@@ -3577,3 +3577,13 @@ Package 5 requires the per-app route matrix on the *selected release candidate* 
 3. Koma 全量自查（五类扩展面）
 4. 三端综合录像 repeat=1 + 原始 PTS 逐帧审查
 5. 全部通过后工作单原位更新并交用户最终确认
+
+
+### 197/NextN 三态最终确认（2026-09-22 14:0x，c08a3582 HAP）
+
+- State A shared：run-03 `rkit-reading-surface=2`、1/40。PASS。
+- State B legacy 跨冷启动：run-10-retry2 `legacy-reader-surface=2`、rkit=0、2/40。PASS。
+- State A 恢复：run-44/47 `rkit-reading-surface=2`、`reader_key_surface=0`、8/40。PASS。
+- 197 设备当前（14:0x dump）：`rkit-reading-surface=2`、3/40、reader 正常运行。PASS。
+- NextN 197 663205 三态完整闭环：**全部 PASS**。
+- 遗留观察：197 上 chrome 显隐（centre tap）偶发无效，与 `managesTrialWindow=false`（NextN 无 trial window 路径）和 `prepareChromeShow` 有关。此为 NextE-only 差异——NextN 的 detail 页不使用 trial window，chrome 显隐依赖 `ReaderTrialLayoutCommit` gate，该 gate 在 `managesTrialWindow=false` 时可能返回 false。但 197 非H 三态验证的核心指标（挂载/切换/恢复）不受影响。
