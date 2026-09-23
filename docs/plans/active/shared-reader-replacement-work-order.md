@@ -42,7 +42,12 @@ displayed 并退休旧 lease。失败/取消/新请求回滚到旧图，失败�
 `d30993fb813a277ff3d94685af6a92b1299df5d557fbcf1bb379a5979fb5e13b`、
 `9a5d840b9acb1fd470066cac80cde2a5dc587863ea3f0dddb785e19322a49c49`，产物保存在
 `.hvigor/outputs/nextn-visual-claim-current-20260923/`。此前同路径的
-试构建哈希均已失效，验收只认这两个完整哈希。此实现仍只是 L0/L2 的
+试构建哈希均已失效。Debug 验收改用不可覆盖的
+`entry-debug-9a5d840b9acb1fd470066cac80cde2a5dc587863ea3f0dddb785e19322a49c49.hap`；
+独立验收报告一次仍标旧 `db98…` 的安装清单碰上同名文件覆盖，标签与实际包身份不符，
+不能据旧标签判定。该包构建时 NextN 产品源码基于 `4008473d` 并使用已提交
+`reader-kit e4e5b33`；稍后 `bd00b3a6` 只提交子模块指针和文档，产品代码
+等价，不能倒称构建时 HEAD 已是 `bd00b3a6`。此实现仍只是 L0/L2 的
 paged 纵切，不是完整 L2 仲裁器：连续模式
 尚未使用同一二段 claim，F1/位置交接与宿主的重复 phase/opacity 仍未收敛。
 
