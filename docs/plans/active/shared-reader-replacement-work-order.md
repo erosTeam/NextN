@@ -4425,6 +4425,41 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
   samples, not reversal acceptance. Checked postflight restored #663205
   Detail and its page-0/page-1 tiles, AWAKE/120000ms; lease
   `20260922-231008-1457ea7e` was released without data clear. The same
-  mid-flight/slow/failure/cancel matrix remains the one runtime action.
+  mid-flight/slow/failure/cancel matrix remained the runtime action.
+
+  **406fe9f5 independent 197 continuation — one moving Back LIMITED PASS,
+  slow handoff OPEN:** same-window `ReaderEntry moving` at 07:30:14.170,
+  Back at 14.389 and reverse at 14.392 align with original frames 72–108
+  (PTS 1.747722–2.348167 s): one proxy retraced to the left page-0 tile,
+  with no second full Reader body or blank frame. MP4 SHA-256
+  `c882cf5b2d078fea75458d5619b108c8d956680289b4b63453abd4175d48bfd7`.
+  A one-shot original decode failure reached `target-failed` and returned to
+  the same Detail through a brief unavailable/retry notice; this is a failure
+  abort, not an in-Reader retry pass. `hold-once` original and `delay-once`
+  preview probes each cancelled at `layout reason=unattributed` before a
+  valid waiting Back or delayed handoff. Do not infer a resource or geometry
+  cause from that default reason or count the recordings as slow-path passes.
+  Frozen-HAP checked evidence is under
+  `/Users/honjow/.codex/worktrees/1327/NextN/.hvigor/outputs/f1-406-independent-20260923/`.
+  Terminal protocol restored #663205 Detail and AWAKE/120000ms; lease
+  `20260922-232400-b98e9a93` released, no data clear. A bounded 197
+  diagnostic sequence installed three exact signed HAPs: host-retirement
+  labels `6102144d…`, shared cancellation labels `225d45f1…`, and
+  Debug-authorization labels `4325fd1f…`. The last run's same-window
+  08:16:36.131 sequence was `ReaderTrialEntry departure_denied
+  reason=source-rect-changed entry=3` → `ReaderEntryPreviewSource
+  guard-rejected` → `ReaderEntry cancelled_from=layout
+  reason=preview-departure-denied`. This is a source-rectangle mismatch in
+  the **Debug preview authorization**, not a measured production slow-resource
+  fault; no before/after rectangle values were logged. The checked restore
+  reopened ordinary #663205 `Bug Bite: Chapter 8` Detail with both source
+  tiles and PowerManager AWAKE/120000ms, then released lease
+  `20260922-235904-4e87357e` without data clear. Evidence:
+  `.hvigor/outputs/f1-reason-diagnostic-20260923/`.
+  **Current runtime action:** establish a production-source slow-original
+  injection that preserves the ordinary root/Detail entry geometry, then
+  execute its waiting-Back and late-result original-frame protocol on an
+  exact signed candidate. The Debug `hold-once`/`delay-once` runs cannot
+  close that boundary. Overall F1, F2 and other-host coverage remain OPEN.
 
 **历史 NextE 观测候选（未安装、未动态验收；当前 F1 下一动作以上条为准）**：NE main `8c35d16e` + `cb1f478a`、kit `d99139f1`；签名 HAP SHA-256 `fab1703e57777bd892fb44032a1287f2f97f63b15df53361a560b1bd7a30bf48`，签名构建成功。新增日志只记录 production admission/capture 完成/overlay/phase、layout gate、actual flight-start 和 pending 期间每个 original part 的 slot/宽高；不改转场、几何、fallback 或后端选择。该旧候选的 logger 可采集性和动态证据均未证明，不能替代当前候选的匹配录像。

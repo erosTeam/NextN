@@ -136,6 +136,17 @@ L4 执行带身份的 Effects，再把结果作为观察送回，不能直接改
 | `BackRequested`、窗口/来源失效 | L2 仲裁器同步冻结可见权，`EntryEpisode` 反向或普通 close；不等异步进度/系统栏才 claim | L4 当前源测量、系统栏、导航 effect |
 | `EffectCompleted/Failed` | L2 用 episode + effect 身份拒绝迟到结果并释放旧捕获；L1 不回退到旧位置 | L0/L3 新快照或明确降级 |
 
+`SourceCaptured` 不能只携带一张像素图：L4 必须附来源身份、捕获前后
+矩形、所处窗口/布局修订，以及可释放句柄；L2 在真正起飞前重新请求
+`SourceValidated`，用同一来源和当前布局身份判定能否使用这张快照。
+若矩形或窗口修订变化，拒绝这次有源 flight 并显式走可读的无源/普通入口；
+不能复用旧坐标，也不能为凑出连续动画偷偷放宽几何校验。197 的 Debug
+`hold-once` 实测在 layout 阶段给出 `source-rect-changed` →
+`preview-departure-denied`，只证明这条 Debug 来源保护确实拦截了不一致
+几何；它未记录前后矩形，不能推断变化由哪层引起，更不能算生产慢资源反例。
+生产慢载验收必须从普通 Detail 来源进入，把资源延迟放在 L0 的原图候选，
+而不是用改变 L4 来源/窗口时序的 Debug 入口替代。
+
 快照至少区分 `scene/position/entry/layout/asset` 身份、复合 `VisualOwner`、
 每个可见 part 的资源 lease 与可绘状态、chrome/失败/交互状态；effect 必须可按
 episode 去重/作废。过渡期间允许旧组件作为 L4 端口执行器，但不允许它再推进第二套
@@ -255,6 +266,18 @@ Reader part。L2 只能在真实选中 part 布局就绪后启动同一连续 fl
    可追溯候选的普通入口及大屏/旋转；各端再覆盖加载/失败/取消与 F2 资源保留。
    只有三端对应能力通过、pin/CI/回退门齐全后，才删除宿主重复状态机或讨论
    Koma 默认入口变化。静态合同、构建和单帧都不能替代命名设备的动态结果。
+
+首个公共代码切片应是**资源 lease + 可见 claim 的一条纵向链**，而不是先
+抽出一个庞大的通用 Reader 组件。它只承接现有单个 display item 的
+`displayed/candidate` 身份、`drawableReady`、交接 claim 与失败回滚：
+L0 保留/退休资源，L1 提供位置和所选 part，L2 独占可见权，L3 只读绘制，
+L4 提供真实来源、窗口和资源。先在不改变现有父树的情况下用真实状态代码
+测试 F1 中 F2 到达、Back 与 F2 竞速、Koma 2→1、失败/迟到回执；
+再由一个宿主薄接入，并用同状态原帧证明画面与旧路径相同或更好。
+只有这个闭环成立，才把 N/E 重复的根代理/pending 父树迁入 L3；
+每迁一个宿主就删除那一个宿主的同义 phase/opacity 写入，不能长期
+保留“共享仲裁器 + 原 coordinator”两个决策者。这样每个共用能力都有
+实际消费者、唯一 owner 和可退回边界，不靠增加 HAR 数量衡量进度。
 
 这是一份设计提案；具体顺序、当前候选和未闭合证据仍只由工作单维护。
 

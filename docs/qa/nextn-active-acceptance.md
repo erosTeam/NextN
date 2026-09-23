@@ -8525,3 +8525,47 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   source tiles (`reader-thumb-gallery-detail-2-page-{0,1}`); PowerManager
   read AWAKE and `Timeout=120000ms`. Lease
   `20260922-231008-1457ea7e` was released without clearing app data.
+  A separate independent 197 check on the same frozen HAP then captured a
+  genuine page-0 moving-phase Back: `ReaderEntry moving` at 07:30:14.170,
+  Back at 14.389, reverse claim at 14.392; original frames 72–108
+  (PTS 1.747722–2.348167 s) show one proxy retracing to its left tile,
+  without a second full Reader body or blank frame. MP4 SHA-256
+  `c882cf5b2d078fea75458d5619b108c8d956680289b4b63453abd4175d48bfd7`.
+  This accepts that one reversal, not slow/cancel paths. A one-shot original
+  failure logged `native_original_decode_failure source=0` and
+  `cancelled_from=layout reason=target-failed`, then returned to the same
+  Detail after a short unavailable/retry notice; it does not prove in-Reader
+  retry (MP4 `0575fd15d57fdd5b368563232586db484d35d6364a3b6e86b8de1d575424c0c6`).
+  Separate `hold-once` original and `delay-once` preview probes both
+  cancelled before a valid waiting/late handoff, at 07:39:11.110 and
+  07:41:42.020 from `layout reason=unattributed`. Their recordings are
+  retained, but neither is waiting-Back or delayed-delivery acceptance.
+  Evidence: `/Users/honjow/.codex/worktrees/1327/NextN/.hvigor/outputs/f1-406-independent-20260923/`.
+  Checked terminal layout restored #663205 Detail; PowerManager read AWAKE,
+  `OverrideTimeout=120000ms`; lease `20260922-232400-b98e9a93` is released.
+  The subsequent diagnostic sequence was installed on 197, not accepted as
+  a production slow-path test. Host-only `0e6b3cb6` HAP SHA-256
+  `6102144d37a2e4e347feab3dd7b906167ad514c29c0b23f687d1ccc1cb4db060`
+  still logged `cancelled_from=layout reason=unattributed`. Shared kit
+  `c4f75f0` labels cancellation origins; its signed NextN HAP SHA-256
+  `225d45f1912adb52178cb47eecfeaf18f4e0e405c35d2ebd41fc60153ed3dae8`
+  narrowed this Debug `hold-once` run to `preview-departure-denied`.
+  Further reason-only host/source logging in signed HAP SHA-256
+  `4325fd1f88f0f000ca6581e6f2f34e53920333982556dda4d526a3ec22b9d574`
+  produced same-window 08:16:36.131
+  `ReaderTrialEntry departure_denied reason=source-rect-changed entry=3`
+  → `ReaderEntryPreviewSource guard-rejected` →
+  `ReaderEntry cancelled_from=layout reason=preview-departure-denied`.
+  This establishes an exact geometry-guard mismatch in the **Debug preview
+  route**; the reason the rectangle changed was not measured, and this sample
+  says nothing about a production slow-resource handoff. Checked manifests
+  and results are under `.hvigor/outputs/f1-reason-diagnostic-20260923/`.
+  The final checked restore force-stopped only the app, reopened ordinary
+  #663205 `Bug Bite: Chapter 8` Detail, confirmed both page-0/page-1 source
+  tile IDs, and read PowerManager AWAKE with
+  `Timeout=120000ms OverrideTimeout=120000ms`; no app data was cleared.
+  Lease `20260922-235904-4e87357e` was released. The unverified physical
+  boundary is a real production-source slow-original/waiting-Back and late
+  result run on an exact signed candidate, with same-window logs and original
+  frames. Slow handoff, waiting Back, late-result fencing, NextE/Koma and
+  global F1 remain OPEN.
