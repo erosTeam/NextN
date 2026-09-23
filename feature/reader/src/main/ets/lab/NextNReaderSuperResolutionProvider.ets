@@ -73,7 +73,10 @@ class NextNReaderSuperResolutionPlan implements ReaderVariantAssetPlan {
     const facts = new ReaderImageInformation()
     facts.variant = 'enhanced'
     const asset = new ReaderAsset(`file://${this.path}`,
-      (): void => { ReaderSuperResolutionService.releaseOwner(this.ownerKey) },
+      (receiptId: number): void => {
+        ReaderSuperResolutionService.releaseOwner(this.ownerKey)
+        console.info(`[NextNReaderSuperResolutionProvider] owner_release_returned asset_receipt=${receiptId}`)
+      },
       new ReaderFileInformation(this.path, facts))
     asset.saveUri = this.saveUri
     asset.crop = new NextNReaderVariantCropSource(this.path, this.strength)

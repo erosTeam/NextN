@@ -51,6 +51,17 @@ displayed 并退休旧 lease。失败/取消/新请求回滚到旧图，失败�
 paged 纵切，不是完整 L2 仲裁器：连续模式
 尚未使用同一二段 claim，F1/位置交接与宿主的重复 phase/opacity 仍未收敛。
 
+普通入口的第三联资源证据发现缺口：冻结 9a5d 包虽可记录 Debug wrapper 的
+`asset_released`，普通网络缓存与超分 owner 的 release 回调原先没有与
+`ReaderSession` request 对接的身份日志。`reader-kit aa24acc` 现给每个
+`ReaderAsset` 一个进程内 receipt ID，并记录 request→receipt 绑定；精确
+视觉 claim 在旧资产释放回调返回后记录旧/新 request、revision 与 receipt，
+NextN 普通缓存和超分端口
+分别记录同一 receipt 的释放调用结果，既不含 URI/路径，也不改变释放时机。
+共享全套仍 460/460；追加 request→receipt 收据后尚未重建签名包，新包未
+冻结或上 197，9a5d 的任何录像不能补出这些新收据。普通 F2 仍须用新候选原始帧与
+同身份普通 provider 收据联合判断。
+
 当前第一个未证实物动作是用**最后审阅过的签名包**走 NextN 197 普通
 Detail 的 F2 同页 OFF→ON、失败/取消及返回，取得身份、原始帧、资源退休
 三联证据；随后以相同共享修订分别验证 NextE 237 真实 sprite Detail 和

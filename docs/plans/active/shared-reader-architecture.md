@@ -107,6 +107,14 @@ root 代理尚未共同消费一个 `VisualOwner`。不能把这次源码收敛�
 `onIdle` 才匹配候选；这是应用侧组件合成观察，不是 RenderService 的最终
 present fence，普通入口与失败/取消仍需单独以原始帧和 lease 事件验收。
 
+L0 资源退休收据使用进程内不透明 `assetReceiptId`，不记录 URI、路径、
+作品或服务端缓存键。共享会话先记录 request→receipt 绑定，仅在匹配
+request 与 `visualRevision` 的 claim 中、旧 `ReaderAsset.release()` 同步
+回调返回后，关联旧/新 request 与旧/新
+receipt；宿主资源端口在缓存 lease 或处理图 owner 的释放调用返回后记录
+同一个旧 receipt。两层日志匹配只能证明应用层资源释放链按序返回，不能
+独自证明 RenderService 最终上屏、物理文件删除或完整 F2 视觉连续性。
+
 交接分成三个不可混淆的边界：`drawableReady` 是候选已解码、实际目标
 几何与身份可用，只允许申请交接，**不**证明像素可见；L2 随后一次性提交
 候选主画面 claim 并提升 `visualRevision`，L3 按同一快照绘制，旧已显示

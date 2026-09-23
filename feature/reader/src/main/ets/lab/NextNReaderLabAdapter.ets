@@ -244,7 +244,9 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
       const localPath: string = localUri.startsWith('file://') ? localUri.substring('file://'.length) : localUri
       const facts = new ReaderImageInformation()
       facts.variant = 'source'
-      const asset = new ReaderAsset(localUri, () => {}, new ReaderFileInformation(localPath, facts))
+      const asset = new ReaderAsset(localUri, (receiptId: number): void => {
+        console.info(`[NextNReaderLabAdapter] local_asset_release_returned asset_receipt=${receiptId}`)
+      }, new ReaderFileInformation(localPath, facts))
       if (localPath.length > 0) asset.crop = new NextNReaderCropSource(localPath, this.cropStrength)
       return asset
     }
@@ -258,7 +260,12 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
     facts.variant = 'source'
     const lease: ReaderImageCacheLease = ReaderImageCacheService.retain(result)
     const asset = new ReaderAsset(result.displayUri,
-      (): void => { ReaderImageCacheService.release(this.context, lease) },
+      (receiptId: number): void => {
+        const beforeReleased = lease.released
+        ReaderImageCacheService.release(this.context, lease)
+        console.info('[NextNReaderLabAdapter] cache_lease_release_returned ' +
+          `asset_receipt=${receiptId} before_released=${beforeReleased} after_released=${lease.released}`)
+      },
       new ReaderFileInformation(result.localPath, facts),
       (): void => { ReaderImageCacheService.markPresented(lease) })
     if (result.localPath.length > 0) asset.crop = new NextNReaderCropSource(result.localPath, this.cropStrength)
