@@ -266,11 +266,43 @@ lease，不能再次 reveal、保存进度或关闭新路由。同位置的资�
 不得倒用入场坐标。资源 ready、原图 decoded、原图实际上屏是三件事；已显示
 原图在增强/翻译失败或切换中继续保留，除非用户明确切源。
 同一可见性契约也覆盖页间切换：Koma 103 普通章节的独立设备任务报告了
-缩略图点选 2→1 附近约三帧全黑；在原始帧和资源日志独立复核前，这只是
-待核反例，不能据此指定某个资源层根因。L0 要保留前一张已显示资源的 lease，
+缩略图点选 2→1 附近约三帧全黑；原始帧现已复核，但没有同窗资源释放日志，
+不能据此指定某个资源层根因。L0 要保留前一张已显示资源的 lease，
 L2 要在新页真实可绘或明确失败面接管前保留可见画面，L4 不能用路由/章节
 占位层提前清掉旧图。这是同一 `VisualOwner` 规则的页间应用，不另做 Koma
 专用延时补丁。
+
+2026-09-23 追加源码/帧对照：103 报告的原始帧 18→19–21→22 已确认正文
+第 2 页→黑→第 1 页，顶/底 chrome 未消失。Koma 当时 pin `b5fa389` 的
+rail/slider 直接 `seekSource`，会话立即改 `displayIndex`，而
+`ReaderNativePager` 的 `Swiper.index` 同步改为目标：可见旧页的 native
+位置先被撤掉，目标还没有被设备证明成像。须修正上段的资源推断：
+`ReaderSurface.aboutToAppear` 调用 `setNeighborPreload(true)`，两页章节
+2→1 时旧 slot 属于目标的邻页，按源码应继续持有；没有本次同窗资源日志
+证明其提前 release。因此 103 的直接缺口是 L2/L3 可见权，而非已证实的
+L0 提前释放。反证条件是：新候选仍出现黑帧，即使旧 lease 收据完整且目标
+提前 decoded；届时还须检查 Swiper/合成树的 native 交接，不可再归咎于
+`seekSource` 一项。
+
+共享 `ReaderPagedSession` 的第一个 L0/L1 纵切已为更远距离、关闭邻页预载
+等情况保留**最后被观察到**的旧 display item slot，直到新 selection 的
+`reportVisible`；第二次 seek 不把未显示的中间页当旧页，失败/暂停不释放，
+close 和布局/资源模式重置各自清理。这一资源寿命契约通过独立测试及
+NextN 签名 Debug 编译，但对 103 的两页黑帧**不构成修复**。L2/L3 还需
+把旧 native 可见页保持至目标 drawable、动画/无动画路径都能交接且新页
+实际 `reportVisible`，然后 Koma 消费同一 kit 实现并在 103 逐帧验证。
+
+同日的隔离诊断把共享 kit `8e0dee0` 已有的动画 seek 路径移植到原 Koma
+冻结源码快照（只改临时副本，不改 Koma 产品树）：rail/slider 均以受
+unit/navigation 栅栏保护的 `changeIndex(target, true)` 驱动原生 Swiper。
+103 普通入口连续录像 181 帧中，两次 rail 2→1、一次 slider 1→2 都有
+红蓝正文共同出现的位移区间；正文采样区域没有整幅黑帧，最大黑占比仅首轮
+边缘露底帧的 7.4%。这是“旧 `Swiper.index` 瞬时跳变路径可以改由原生
+滑动交接”的实机反例验证，不是完整 PositionHandoff：它没有保证
+**目标未 drawable、动画关闭、远跳、失败/二次 seek** 时的 L2 可见权，也
+不是正式 Koma pin。长期共享接口应将 L1 的 outgoing lease 收据、L2
+的可见 claim、L3 的有动画/无动画呈现策略分别显式化；动画只能是满足
+claim 契约的一种策略，不可当作唯一状态机或任意场景的黑帧遮罩。
 
 L2 对 L4 暴露窄端口：`claimSource/measureVisibleSource`、
 `captureSource/captureDisplayed`（带可释放 lease）、`prepareWindow`、

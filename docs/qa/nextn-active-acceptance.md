@@ -8718,6 +8718,44 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   recording and explicit asset-release receipt, actual underlying-provider
   slow/failure paths, the successful-handoff frame gap and NextE/Koma remain unverified;
   global F1 stays OPEN.
+
+- **PositionHandoff L0/L1 source/build slice only (2026-09-23):** Koma 103's
+  frozen ordinary Chapter 1 rail 2→1 video shows three encoded black-body
+  frames while chrome remains. Source review corrects an early hypothesis:
+  that Koma surface enables neighbor preload, so the two-page old slot is
+  expected to remain leased; the directly evidenced gap is immediate
+  `seekSource`/`Swiper.index` visible-owner change before target pixels.
+  Shared `ReaderPagedSession` now retains the last observed outgoing paged
+  slot across further Move/Seek until matching target `reportVisible`, and
+  rejects stale/failed target retirement. Shared tests pass 466/466; the
+  matching NextN signed Debug build succeeds (HAP SHA-256
+  `19a80f5af3b93fb043268000a64d50175716e937f8ff21a6f3319ad52a49a798`,
+  not installed). **No device-affecting action
+  was performed for this slice** and the installed 197/Koma 103/NextE 237
+  candidates are unchanged. The new build is not visual acceptance: the
+  shared L2/L3 old-native-page handoff, Koma pin consumption and 103
+  original-frame rail/slider verification remain OPEN. Existing 197 F1/F2,
+  default legacy fallback, settings/data and restored-device state remain
+  as recorded in their separate entries.
+- **Koma 103 isolated animated-seek A/B LIMITED PASS (2026-09-23):** A frozen
+  copy of the exact original Koma source received only the shared `8e0dee0`
+  rail/slider native-animation path, with signed Debug HAP SHA-256
+  `edcd2e80685900194ba983e72781b88cf38d46271519569a25b6a8c9153e6cb3`;
+  Koma product WIP was untouched. On 103 `MLR-AL00` 1600×2560 via ordinary
+  bookshelf→Detail→Chapter 1, 181 encoded frames (MP4 SHA-256
+  `590026645054fe266777312e1cf4d86e65b2290a6bf02e2396eab391a80c9d01`)
+  show two rail 2→1 and one slider 1→2 native slide transitions, with no
+  majority-black body ROI frame; f62 has a 7.4% black incoming edge.
+  Three matching pager animation commands appear in the same-window hilog.
+  Artifacts, PTS and checked protocol metadata are under
+  `.hvigor/outputs/koma-103-seek-animation-probe-20260923/`. The original
+  pre-probe Koma HAP `1c2f3a…ba713c` was reinstalled with `-r`, its ordinary
+  bookshelf home captured, app data preserved, unique generated media removed
+  after local export, and power read back `AWAKE`/10000ms; lease released.
+  This validates only the diagnostic animation path on the named two-page
+  fixture. A formal Koma pin with the complete shared L1/L2/L3 ownership
+  contract and 103 animation-off/slow/failed/far-seek checks remain OPEN;
+  NextN 197 F1/F2 and default legacy fallback remain unchanged.
 - **197 valid awake/no-recorder late-result resource fence LIMITED PASS
   (2026-09-23):** signed Debug HAP SHA-256
   `105d0a3f7f44f38b384fd35a0889402e2aac72d3840bd747642e3b0431108496`
