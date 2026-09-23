@@ -8599,3 +8599,31 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   signed Debug build passes. Initial-policy runtime test had a stale class
   selector/fixture after the existing root handoff class was introduced; its
   test-only correction now passes and does not serve as visual evidence.
+- **Ordinary production-source 2.5 s delayed original, one successful
+  handoff LIMITED PASS (2026-09-23):** exact installed signed HAP SHA-256
+  `3e1c0f9db6080256144be99931b82a849aed288da13d73e6b65c2d79a53f20dc`
+  used the same normal #663205 Detail page-0 source, with only its real
+  original asset gated by a one-shot Debug resource timer. Same-window hilog
+  records `ProductionThumbnailEntry offered ... claimed=true` at 08:41:34.956,
+  original held at 35.046, `ReaderEntry moving` at 35.093, `waiting` at
+  35.544, exact request auto-release/delivery at 37.549, `revealing` at
+  37.643, `finished` at 37.785 and root `open_finished` at 37.933. Normal
+  Back followed at 41.871/41.902. The 111 encoded frames were indexed and
+  reviewed: the cover remains visible through the observed waiting frames,
+  the selected page remains present after delivery, and no encoded frame is
+  fully blank or shows a second full body. However the adjacent original
+  frames bracketing the critical release/handoff are f68 PTS 4.115611 s and
+  f69 PTS 4.621644 s, a 0.506033 s encoding gap. Thus this sample proves
+  the runtime state chain and the encoded visible endpoints, **not every
+  compositor refresh inside that gap**; do not elevate it to an unconditional
+  visual acceptance. MP4 SHA-256
+  `6d4619aefbba59b4535b01e94df2a78e1afb2fc1dadf1ca28edfeddf588821e9`;
+  evidence and all-frame sheets:
+  `.hvigor/outputs/f1-reason-diagnostic-20260923/197-production-delay-success-run/`.
+  Checked final restore reopened ordinary `Bug Bite: Chapter 8` Detail with
+  both source tile IDs, PowerManager AWAKE and
+  `Timeout=120000ms OverrideTimeout=120000ms`; lease
+  `20260923-003944-01087f6f` released, no app data clear. The post-Back
+  late underlying-provider completion, NextE/Koma consumers, other sources
+  and global F1 remain OPEN. Probe ownership tests 14/14 and signed Debug
+  build passed; these are not visual proof.

@@ -4470,9 +4470,23 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
   clear. This is a **single waiting-Back LIMITED PASS**, not successful slow
   arrival or late-result acceptance. Evidence:
   `.hvigor/outputs/f1-reason-diagnostic-20260923/197-production-hold-waiting-back-run/`.
-  **Current runtime action:** use the same ordinary production-source resource
-  boundary to prove delayed *successful* original handoff and a post-Back
-  late completion on exact signed candidates, then apply the same ownership
-  contract to NextE/Koma. F2 and global F1 remain OPEN.
+  The same ordinary production source under signed HAP `3e1c0f9d…` then
+  delayed its *real original* 2.5 s and completed one state handoff:
+  held 08:41:35.046 → waiting 35.544 → exact request delivered 37.549 →
+  revealing 37.643 → finished 37.785 → root open finished 37.933, followed
+  by normal Back. All 111 encoded frames were indexed and reviewed without
+  a fully blank frame or second full body, but the critical f68→f69 PTS
+  4.115611→4.621644 s gap leaves those intermediate compositor refreshes
+  unproven. MP4 SHA-256
+  `6d4619aefbba59b4535b01e94df2a78e1afb2fc1dadf1ca28edfeddf588821e9`;
+  checked restore returned ordinary #663205 Detail with both source tiles,
+  AWAKE/120000ms and released lease `20260923-003944-01087f6f`, no data
+  clear. Evidence:
+  `.hvigor/outputs/f1-reason-diagnostic-20260923/197-production-delay-success-run/`.
+  This is a **single state-chain and encoded-endpoint LIMITED PASS** only.
+  **Current runtime action:** prove a post-Back late underlying-provider
+  completion and close the critical visual frame-gap with an appropriate
+  capture/observation, then apply the resource/visible-claim contract to
+  NextE/Koma. F2 and global F1 remain OPEN.
 
 **历史 NextE 观测候选（未安装、未动态验收；当前 F1 下一动作以上条为准）**：NE main `8c35d16e` + `cb1f478a`、kit `d99139f1`；签名 HAP SHA-256 `fab1703e57777bd892fb44032a1287f2f97f63b15df53361a560b1bd7a30bf48`，签名构建成功。新增日志只记录 production admission/capture 完成/overlay/phase、layout gate、actual flight-start 和 pending 期间每个 original part 的 slot/宽高；不改转场、几何、fallback 或后端选择。该旧候选的 logger 可采集性和动态证据均未证明，不能替代当前候选的匹配录像。
