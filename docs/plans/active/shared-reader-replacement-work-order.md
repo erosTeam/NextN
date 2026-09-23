@@ -29,10 +29,12 @@ ReaderPagedSession → ReaderPagedViewport/ReaderSurface → 宿主普通入口`
 “同身份候选已在前景合成”的观察/回执：用前后两张可辨图、旧图压在候选之上
 的受控场景，分别记录 `onComplete`、`postFrameCallback`、主 claim/zIndex
 提交与同身份原帧；若所谓回执发生时旧图仍在前景，就不得叫 `presented`。
-本机 SDK 对 `postFrameCallback` 的说明仅是“下一帧渲染时调用”，签名也不带
-Image 或 claim 身份；当前生产代码在该回调里先调用
-`ReaderSession.reportPresentation(true)`、退休旧资产，然后才由新快照提升
-候选 zIndex。因此**现有回调不是已证明的前景回执**。在确认可行机制前，
+本机 SDK 将 `FrameCallback.onIdle` 定义为后续帧渲染完成后的空闲回调，
+但回调本身不带 Image 或 claim 身份；当前 `ReaderEntryAfterLayout.onIdle`
+发生时旧图仍在候选之上，随后才调用 `ReaderSession.reportPresentation(true)`、
+退休旧资产并由新快照提升候选 zIndex。因此**现有回调不是已证明的候选
+前景回执**；受控实验要核实提升后的下一次同身份 `onIdle` 与实际画面的
+顺序，不能仅凭有帧回调就给候选签收。在确认可行机制前，
 不让候选准备、解码或这个旧回调提前退休当前主画面的 lease。
 
 该观察门确定后，修改**实际** `ReaderSession`/viewport 的候选、已显示与
