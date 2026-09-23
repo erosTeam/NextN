@@ -19,6 +19,39 @@ production default is the ordinary shared-reader route; it is no longer a
 debug-only route. Legacy remains a scoped, reversible recovery fallback, not
 the production default. No package migrates or deletes user data.
 
+### 当前唯一执行切面（2026-09-23；F1/F2 与三端共用仍 OPEN）
+
+本轮不再重复没有新成因的 197 `late-once` wrapper 探针，也不把旧候选的
+SOURCE/BUILD 或旧 PASS 标题当作当前产品验收。执行对象是架构文档中的
+**L0 资源 lease + L2 可见 claim** 纵向链，沿真实 `ReaderSession →
+ReaderPagedSession → ReaderPagedViewport/ReaderSurface → 宿主普通入口` 改进，
+不另养一套影子状态机。当前第一个未证动作是确定可在目标 ArkUI 上**证伪**
+“同身份候选已在前景合成”的观察/回执：用前后两张可辨图、旧图压在候选之上
+的受控场景，分别记录 `onComplete`、`postFrameCallback`、主 claim/zIndex
+提交与同身份原帧；若所谓回执发生时旧图仍在前景，就不得叫 `presented`。
+本机 SDK 对 `postFrameCallback` 的说明仅是“下一帧渲染时调用”，签名也不带
+Image 或 claim 身份；当前生产代码在该回调里先调用
+`ReaderSession.reportPresentation(true)`、退休旧资产，然后才由新快照提升
+候选 zIndex。因此**现有回调不是已证明的前景回执**。在确认可行机制前，
+不让候选准备、解码或这个旧回调提前退休当前主画面的 lease。
+
+该观察门确定后，修改**实际** `ReaderSession`/viewport 的候选、已显示与
+失败/取消回滚，修订当前真实状态测试（旧的 38 项通过只说明旧语义稳定），
+使每次主画面 claim、迟到拒绝和 lease-retired 都有同身份收据；再一次只薄接
+一个宿主，按 NextN 197 普通 Detail、NextE 237 真实 sprite Detail、Koma
+普通章节入口的顺序复验，并删掉已接宿主的同义 phase/opacity 写入。三端宿主
+只提供真实资源/来源、窗口/路由和动作；Koma `source=none` 不伪造 N/E flight。
+
+当前各端未证边界保持分开：NextN 197 的 105d Debug 包只对一例 Back 后
+迟到的**wrapper 交付**给出 `asset_released` 与录像端点，PTS 空档及即时
+layout 裁剪读数不允许全段视觉通过，真实底层 provider 慢/失败和成功接图帧
+仍未证；NextE 237 的局部入场/半途反向样本不覆盖慢/失败/取消、所有入场
+和退出组合；Koma 103 的 2→1 缩略图跳页约三帧黑画面仍只是待独立原帧
+复核的反例，不得由 N/E 的入口动画或旧版本章节 PASS 抵消。每端普通入口
+都须以匹配候选的身份、画面、释放三联证据验收；历史记录留在下文但不排序
+当前动作。设备 197 最近一次受控恢复为普通 #663205 Detail、AWAKE/120000ms，
+租约 `20260923-013201-0003efd8` 已释放，未清数据。
+
 ### 唯一 ACTIVE 包：有限收尾主线（2026-09-21）
 
 The current package is the ordinary reader route, not a collection of isolated
@@ -189,8 +222,10 @@ The following are finite pending checks inside this one package, not new queues:
   current whole recording plus decoded native frames/PTS/page identity must
   prove immediate preview entry, the correct selected part, one continuous
   flight, and original-image handoff with loading feedback and no black frame.
-  A fresh resolvable device-237 target and lease are still required before that
-  chain may run.
+  At this historical checkpoint, a fresh resolvable device-237 target and
+  lease were required before that chain could run. Later checked 237 reconnect
+  and matched recordings below supersede **target availability**, not the
+  still-open visual acceptance gate.
 - The immutable pre-cache-repair HAPs are retained at
   `/Users/honjow/git/NextE/.hvigor/outputs/nexte-production-entry-geometry-20260923/entry-default-signed.hap`
   (the `f413...e571` hash above) and
