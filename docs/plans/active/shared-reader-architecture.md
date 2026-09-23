@@ -15,13 +15,18 @@
 进入 L1，不能把命令发送者误写成当前位置的所有者。每一纵向能力包均需明确
 输入身份、唯一写入点、候选/提交/撤销事件、失败出口和三端适用边界。
 
-当前 `reader-kit d73f762` 只实现 paged `PositionHandoff` 纵切，并非通用
+当前 `reader-kit 5e1bd6d` 含 paged `PositionHandoff` 和 continuous
+`liveSourceEntry` 首图交接两个纵切，并非通用
 `VisualOwnerArbiter`：L0/L1 保留最后已报告可见的旧资源，L2 以目标层与 native
 层各自同身份的稳定回执交接，L3 将同一 presented 位置投影到正文/页码/滑条。
 相邻页可用 240ms 页间过场；远跳页间过场为 0ms，但滑条值和缩略轨自身运动
 不受取消。静默回调失败时保留已证旧页投影与共享失败面；失败态只接受重试或
 退出，不能由下一次 animated seek 把未证 B 当成旧页。这里的稳定回执仍是应用
-侧证据，不是 RenderService 的物理上屏/清晰度证明。
+侧证据，不是 RenderService 的物理上屏/清晰度证明。continuous 首图须同时
+得到当前选中 Image 的精确 stable 回执及 List 实测首个 item 与视口相交的
+几何回执；隐藏根层的测量仅可供 L2 申请交接，不得先写 L1 的 observedAnchor。
+L2 揭示经后续应用帧确认后，才将同身份实测坐标交还 L1。这个契约不等于
+continuous 多 item/滚动/跨章已经共用完整可见权仲裁。
 
 可复用共核的状态机须按 item/part 建账，而非整个阅读器共用一张旧图：
 
@@ -43,7 +48,7 @@ pipeline 也不预解码；`local-skip`/cachedCount 差异不能单独解释已�
 `PositionHandoff` 的相邻翻页、远跳、慢载/失败、二次 seek 和关闭返场，再让
 同位置替换、入口/反向及 continuous 多 item 消费同一 claim 规则；每移走一个
 旧 owner，就删除其渲染写入而保留 legacy/default 回退。当前仅有
-`d73f762` 的源码窄审、共享测试和 NextN 签名构建；NextE 197 连续原帧、
+`5e1bd6d` 的监督窄源码审、共享测试及 NextN 签名构建；NextE 197 连续原帧、
 NextN 普通入口、Koma 103 及三端同候选视觉仍 OPEN。精确候选/包/设备门
 只由唯一工作单记录，不能从本设计文档推断已放行。
 
