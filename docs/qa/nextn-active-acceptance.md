@@ -10,6 +10,28 @@
 > `docs/plans/active/shared-reader-replacement-work-order.md`; add detail here
 > only for a durable counterexample or a final package conclusion.
 
+- Shared reader F2 failure-notice evidence gap / replacement OPEN
+  (2026-09-23): on 197, frozen signed Debug candidate `348d7f5b…03dc`
+  entered ordinary gallery `678049` page index 2 through the Detail
+  thumbnail. Its explicit one-shot production-provider `fail-once` gate
+  reported `reader_debug_variant_failure_once`; all 13 ON and 13 settled
+  samples retained displayed default request 3 after the error. Original
+  video contains 319 PTS frames and shows the page body and `3/14` counter
+  through the encoded failure interval. A separate visible failure notice
+  was not identified in those frames or the same-window app log; notice
+  acceptance remains OPEN. The paired `delay-once` branch observed a 2.5s
+  provider wait, retained default request 3, then bound request 4 / receipt
+  14; its visual claim retired old receipt 13 only after the ordinary cache
+  port returned release. Both are automatic Debug Want rehearsals; they do
+  not cover manual OFF→ON, pending cancellation, or uninstrumented normal
+  timing. Full hashes,
+  original PTS frames, receipt chains, and checked cleanup are under
+  `.hvigor/outputs/f2-348d-independent-20260923/result.md`. The next
+  unverified physical action is a pending-cancellation probe and a separate
+  ordinary no-probe path on a matching candidate. Terminal readback restored
+  ordinary Detail and `AWAKE / OverrideTimeout=120000ms`; the 197 lease was
+  released.
+
 - Shared reader Package 2 host-state/action parity DONE / replacement OPEN
   (2026-09-14): Koma, NextN and NextE now have complete bounded legacy/shared
   capability maps with host-owned persistence, settings, cache and business
