@@ -58,9 +58,29 @@ paged 纵切，不是完整 L2 仲裁器：连续模式
 视觉 claim 在旧资产释放回调返回后记录旧/新 request、revision 与 receipt，
 NextN 普通缓存和超分端口
 分别记录同一 receipt 的释放调用结果，既不含 URI/路径，也不改变释放时机。
-共享全套仍 460/460；追加 request→receipt 收据后尚未重建签名包，新包未
-冻结或上 197，9a5d 的任何录像不能补出这些新收据。普通 F2 仍须用新候选原始帧与
-同身份普通 provider 收据联合判断。
+共享全套仍 460/460；追加 request→receipt 收据的产品提交为 `0100758f`
+（reader-kit `aa24acc`），签名 Release/Debug 构建均成功。不可变 Debug
+候选为 `.hvigor/outputs/nextn-visual-claim-receipts-20260923/entry-debug-0f62aa675d32eb633a89566afff62dd58570f3f154ea313a1379565f3b5e96ed.hap`
+（SHA-256 `0f62aa675d32eb633a89566afff62dd58570f3f154ea313a1379565f3b5e96ed`）；
+不可变 Release 候选 SHA-256 为 `887a63ed224fd0f4cae65bdc7324d5ac4b53135d741d3c84c4f73e8f41c82236`。
+两份不可变文件哈希已复算。此处仅完成源码、测试、构建与产物身份；197
+普通 Detail 对该回执候选的安装、录制及收据配对尚无本工作会话的实测结论，
+9a5d 的任何录像不能补出这些新收据。普通 F2 仍须用新候选原始帧与同身份
+普通 provider 收据联合判断。
+
+独立监督指出首次普通 OFF→ON 的处理约 2ms，不能覆盖旧图已显示时的慢载/失败。
+本会话在此之后增加**已通过源码检查和 Debug 签名构建、尚未设备验证**的受限 Debug 普通 Detail 探针：
+显式 `nextn_gallery_id`、第 3 页和一次性 `delay-once`/`fail-once` 参数才可布置；
+真实增强图先显示，OFF 后恢复 ON 时才在真实超分 `prepareVariant` 边界施加
+2.5s 延迟或一次失败。它不替换缓存、目录、模型服务或 Debug Lab fixture，
+不改变正常/Release 默认行为。脚本
+`test_reader_super_resolution_recording_rehearsal_runtime.mjs` 与
+`test_reader_super_resolution_provider_runtime.mjs` 已通过；包含探针的不可变
+Debug HAP 是 `.hvigor/outputs/nextn-production-f2-gate-20260923/entry-debug-348d7f5bb6cd4f14552680c527b2dc510aa0d9acf5f254f9685e67dc6ece03dc.hap`
+（SHA-256 `348d7f5bb6cd4f14552680c527b2dc510aa0d9acf5f254f9685e67dc6ece03dc`，复制后复算匹配）。
+只有匹配该后续新候选的原帧、同身份释放链与失败/取消状态，才能提高 F2
+证据等级。当前 0f62 包不含这个新探针，不得拿它声明慢/失败覆盖；348d
+也尚无设备实测结论。
 
 当前第一个未证实物动作是用**最后审阅过的签名包**走 NextN 197 普通
 Detail 的 F2 同页 OFF→ON、失败/取消及返回，取得身份、原始帧、资源退休

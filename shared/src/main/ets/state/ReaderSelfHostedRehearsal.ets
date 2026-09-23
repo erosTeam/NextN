@@ -10,6 +10,9 @@ export class ReaderSelfHostedRehearsal {
   private static user: string = ''
   private static password: string = ''
   private static superResolutionRecordingArmed: boolean = false
+  private static productionSuperResolutionWork: string = ''
+  private static productionSuperResolutionPage: number = -1
+  private static productionSuperResolutionScenario: string = ''
 
   static capture(want: Want, debugBuild: boolean): void {
     ReaderSelfHostedRehearsal.clear()
@@ -27,6 +30,17 @@ export class ReaderSelfHostedRehearsal {
       want.parameters['readerLabSuperResolutionRecording'] === 'off-on-once' &&
       want.parameters['readerLabWork'] === '__rkit_local_fixture__' &&
       (chrome === true || chrome === 'true') && pageIndex === 2
+    const galleryId = want.parameters['nextn_gallery_id']
+    const rawProductionPage = want.parameters['readerProductionSuperResolutionPage']
+    const productionPage: number = typeof rawProductionPage === 'number' ? rawProductionPage : -1
+    const rawScenario = want.parameters['readerProductionSuperResolutionScenario']
+    const scenario: string = typeof rawScenario === 'string' ? rawScenario : ''
+    if (typeof galleryId === 'number' && Number.isSafeInteger(galleryId) && galleryId > 0 &&
+      productionPage === 2 && (scenario === 'delay-once' || scenario === 'fail-once')) {
+      ReaderSelfHostedRehearsal.productionSuperResolutionWork = galleryId.toString()
+      ReaderSelfHostedRehearsal.productionSuperResolutionPage = productionPage
+      ReaderSelfHostedRehearsal.productionSuperResolutionScenario = scenario
+    }
   }
 
   static clear(): void {
@@ -34,6 +48,9 @@ export class ReaderSelfHostedRehearsal {
     ReaderSelfHostedRehearsal.user = ''
     ReaderSelfHostedRehearsal.password = ''
     ReaderSelfHostedRehearsal.superResolutionRecordingArmed = false
+    ReaderSelfHostedRehearsal.productionSuperResolutionWork = ''
+    ReaderSelfHostedRehearsal.productionSuperResolutionPage = -1
+    ReaderSelfHostedRehearsal.productionSuperResolutionScenario = ''
   }
 
   static active(): boolean {
@@ -49,5 +66,13 @@ export class ReaderSelfHostedRehearsal {
     const armed = ReaderSelfHostedRehearsal.superResolutionRecordingArmed
     ReaderSelfHostedRehearsal.superResolutionRecordingArmed = false
     return armed
+  }
+
+  static consumeProductionSuperResolutionScenario(work: string, pageIndex: number): string {
+    if (ReaderSelfHostedRehearsal.productionSuperResolutionWork !== work ||
+      ReaderSelfHostedRehearsal.productionSuperResolutionPage !== pageIndex) return ''
+    const scenario = ReaderSelfHostedRehearsal.productionSuperResolutionScenario
+    ReaderSelfHostedRehearsal.productionSuperResolutionScenario = ''
+    return scenario
   }
 }

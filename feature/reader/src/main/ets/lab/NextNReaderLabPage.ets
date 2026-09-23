@@ -49,6 +49,7 @@ import {
   NextNReaderSuperResolutionConfiguration,
   NextNReaderSuperResolutionProvider,
 } from './NextNReaderSuperResolutionProvider'
+import { connectNextNReaderSuperResolutionProbe } from './NextNReaderSuperResolutionProbe'
 import {
   NextNReaderTranslationConfiguration,
   NextNReaderTranslationProvider,
@@ -286,14 +287,17 @@ export struct NextNReaderLabPage {
         // on mount, so the host never keeps a contrary default here.
         this.onReaderPresentationChanged(false, this.readerPresentation.fullscreen, this.readerCanvasDark())
       }
-      const superResolutionRecording = ReaderSelfHostedRehearsal.consumeSuperResolutionRecording()
+      const productionSuperResolutionScenario = this.request.productionSources === true
+        ? ReaderSelfHostedRehearsal.consumeProductionSuperResolutionScenario(this.request.work, initialPageIndex) : ''
+      const superResolutionRecording = ReaderSelfHostedRehearsal.consumeSuperResolutionRecording() ||
+        productionSuperResolutionScenario.length > 0
       this.superResolutionRehearsalDiagnostic = superResolutionRecording
       session.setRetainedDecisionDiagnostic(superResolutionRecording)
       // ReaderSurface opens on mount: never publish a default session and change it after first open.
       this.session = session
       this.syncReaderActivity()
       if (superResolutionRecording) {
-        void this.runSuperResolutionRecordingRehearsal(context)
+        void this.runSuperResolutionRecordingRehearsal(context, productionSuperResolutionScenario)
       }
     } catch (_error) {
       console.warn('[NextNReaderLab] initial_reader_policy_unavailable')
@@ -321,7 +325,8 @@ export struct NextNReaderLabPage {
     }
   }
 
-  private async runSuperResolutionRecordingRehearsal(context: common.UIAbilityContext): Promise<void> {
+  private async runSuperResolutionRecordingRehearsal(context: common.UIAbilityContext,
+    productionScenario: string = ''): Promise<void> {
     const initialEnabled = ReaderPresentationService.snapshot().superResolutionEnabled
     const sourceIndex = this.request.pageIndex
     if (!initialEnabled || sourceIndex !== 2) {
@@ -342,6 +347,7 @@ export struct NextNReaderLabPage {
       return
     }
     let disabled = false
+    let probeEpoch = 0
     try {
       console.info('[NextNReaderLab] super_resolution_rehearsal precondition=enhanced source=2 enabled=true')
       await new Promise<void>((resolve: () => void): void => { setTimeout(resolve, 8500) })
@@ -356,13 +362,24 @@ export struct NextNReaderLabPage {
     } finally {
       if (!disabled) return
       try {
+        if (productionScenario.length > 0 && this.request.productionSources === true) {
+          probeEpoch = connectNextNReaderSuperResolutionProbe().armReplacement(
+            this.request.work, sourceIndex, productionScenario)
+          console.info(`[NextNReaderLab] super_resolution_rehearsal production_gate source=${sourceIndex} mode=${productionScenario}`)
+        }
         await ReaderPresentationService.setSuperResolutionEnabled(context, true)
         console.info('[NextNReaderLab] super_resolution_rehearsal phase=on source=2 enabled=true')
         await this.logSuperResolutionRehearsalWindow('on')
+        if (probeEpoch > 0) {
+          await new Promise<void>((resolve: () => void): void => { setTimeout(resolve, 3000) })
+          await this.logSuperResolutionRehearsalWindow('on-settled')
+        }
         console.info('[NextNReaderLab] super_resolution_rehearsal gate precondition=enhanced source=2 enabled=true; ' +
           'phase=off source=2 enabled=false; phase=on source=2 enabled=true')
       } catch (_error) {
         console.warn('[NextNReaderLab] super_resolution_rehearsal restore_failed')
+      } finally {
+        if (probeEpoch > 0) connectNextNReaderSuperResolutionProbe().cancel(probeEpoch)
       }
     }
   }

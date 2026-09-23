@@ -11,6 +11,8 @@ export class NextNReaderSuperResolutionProbe {
   private pausedSource: number = -1
   private pausedEpoch: number = 0
   private releasePause: (() => void) | null = null
+  private replacementSource: number = -1
+  private replacementMode: string = ''
 
   arm(work: string, receiver: (sourceIndex: number, stage: string, identity: string) => void,
     pausedSource: number = -1): number {
@@ -19,7 +21,19 @@ export class NextNReaderSuperResolutionProbe {
     this.work = work
     this.receiver = receiver
     this.pausedSource = pausedSource
+    this.replacementSource = -1
+    this.replacementMode = ''
     return this.epoch
+  }
+
+  /** One-shot Debug gate on the real host processor, scoped to a production work/page. */
+  armReplacement(work: string, sourceIndex: number, mode: string): number {
+    const epoch = this.arm(work, (): void => {})
+    if (sourceIndex >= 0 && (mode === 'delay-once' || mode === 'fail-once')) {
+      this.replacementSource = sourceIndex
+      this.replacementMode = mode
+    }
+    return epoch
   }
 
   deliver(context: common.UIAbilityContext, work: string, sourceIndex: number, stage: string, identity: string): void {
@@ -30,9 +44,39 @@ export class NextNReaderSuperResolutionProbe {
   /** Deterministic Debug-only gate used to prove navigation cancels an in-flight processor owner. */
   async pauseBeforeProcess(context: common.UIAbilityContext, work: string, sourceIndex: number,
     cancellation: ReaderCancellation): Promise<void> {
-    if (!context.applicationInfo.debug || this.work !== work || this.pausedSource !== sourceIndex) return
+    if (!context.applicationInfo.debug || this.work !== work) return
+    if (this.replacementSource === sourceIndex) {
+      const mode = this.replacementMode
+      this.replacementSource = -1
+      this.replacementMode = ''
+      console.info(`[NextNReaderSuperResolutionProbe] replacement_gate source=${sourceIndex} mode=${mode}`)
+      if (mode === 'fail-once') throw new Error('reader_debug_variant_failure_once')
+      if (mode === 'delay-once') {
+        await new Promise<void>((resolve): void => {
+          let settled = false
+          let detach: () => void = (): void => {}
+          const timer = setTimeout((): void => {
+            if (settled) return
+            settled = true
+            detach()
+            resolve()
+          }, 2500)
+          detach = cancellation.onCancel((): void => {
+            if (settled) return
+            settled = true
+            clearTimeout(timer)
+            resolve()
+          })
+        })
+        cancellation.check()
+      }
+      return
+    }
+    if (this.pausedSource !== sourceIndex) return
     const epoch = this.epoch
     this.pausedSource = -1
+    this.replacementSource = -1
+    this.replacementMode = ''
     this.pausedEpoch = epoch
     await new Promise<void>((resolve): void => {
       let settled: boolean = false
@@ -63,6 +107,8 @@ export class NextNReaderSuperResolutionProbe {
     this.work = ''
     this.receiver = null
     this.pausedSource = -1
+    this.replacementSource = -1
+    this.replacementMode = ''
   }
 
   private releaseCurrentPause(): void {
