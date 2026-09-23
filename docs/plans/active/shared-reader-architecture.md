@@ -28,6 +28,16 @@
 回执只能释放其自身资源。这个接口由 N/E/K 共同消费，不为每个宿主复制一套
 `PositionHandoff`、opacity 或 fallback 计时状态机。
 
+当前源码的准确断点是 `ReaderSurface.seekWithPager()` 发
+`ReaderPagerCommand`，`ReaderPagedSession.preparePositionTarget()` 预留 B，
+而 `displayIndex` 直到 native Swiper `onChange`→`selectDisplay()` 才移动；
+期间 `ReaderSurface.presentedProjection()` 仍把 A 投到正文和页码。这个
+`displayIndex` 不能同时充当“已接受的 B 意图”“native 选中页”和“真实呈现
+位置”。共享会话需要分别输出 `intentPosition(B, revision)`、
+`nativeSelection(revision)` 与 `presentedPosition(receipt)`，后两者不得
+反向取消用户已经接受的 B 意图；失败/取消必须显式给出同 revision 的结果。
+这是一项跨 L1/L2/L3 的能力边界，不是给现有旧页投影再加一层遮罩。
+
 当前 197 目标 37 的证据止于同 slot/request 的 mounted/geometry；7d 置顶且
 透明的 L2 候选也在 15 秒后失败。下一次源码判断必须区分 `Image.onComplete`
 未触发、`onError`、回调后 post-frame 校验拒绝和回执路由丢失，并核对 B 的
