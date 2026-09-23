@@ -26,10 +26,44 @@
   manifest/log/recording identity and verdict are in
   `.hvigor/outputs/nextn-197-f2-cancel-20260923/result.md`. Postflight restored
   ordinary Detail without the probe, AWAKE/120000ms and released lease
-  `20260923-044450-5e2d381a`; no data clear or preference write. The active
-  physical acceptance gap is normal no-probe manual F2 on matching source,
-  while visible failure status, compositor identity, F1, continuous mode and
-  other hosts remain OPEN. The single execution queue is the work order.
+  `20260923-044450-5e2d381a`; no data clear or preference write. A separate
+  independent 197 run then covered ordinary no-probe manual OFF→ON on the same
+  frozen HAP: 264 original PTS frames (MP4 SHA-256
+  `255a9ab7c0efee96353867f5ca3bc0b8180b77779c14e4c9b4f73ecc9ee5f40a`)
+  showed the central long-strip content through the captured switches; same-
+  window request/receipt 2/12 → 3/13 → 4/14 and provider release preceded
+  each visual retirement. Its longest switch-window PTS gap was 0.515201s;
+  it was a settled manual success, not a pending cancellation or Release test.
+  Independent detail:
+  `/Users/honjow/.codex/worktrees/1327/NextN/.hvigor/outputs/f2-348d-independent-20260923/result.md`.
+  Checked postflight again restored no-probe Detail and AWAKE/120000ms,
+  releasing lease `20260923-045229-c87ca761`. The later shared failure-status
+  candidate adds source/navigation-fenced nonblocking feedback without a new
+  asset. Its first 197 `3482…a42` recording showed the failure and retained
+  default page but also exposed a wide chip crossing the narrow comic, while
+  its power readback preceded recorder start; neither is a clean visual pass.
+  On corrected signed Debug HAP `c3318e0289e7ab816c949e4976f27672d7b1cd01c45a2b71fffac637d8cdbd1b`,
+  the checked second run started the recorder first, then read AWAKE and
+  `OverrideTimeout=86400000ms` before input on the same semantic `#678049`
+  Detail page-2 tile. Real `fail-once` reached the super-resolution provider
+  at 13:33:37.262 and returned unavailable at .265; default request 3 stayed
+  displayed, no request 4 bound. The locally verified 40.320-s MP4 SHA-256
+  `f99f59a120a5087a8f7ccd8441437344b77907ca03fa3e271137f6f7a2f00a72`
+  contains 269 original PTS frames/8 contact sheets: the short failure text
+  is visible in the left black gutter, the narrow current comic stays readable
+  through the sampled failure interval, and Back returns to Detail. The largest
+  PTS gap is 0.978488s near the return, not proof of every compositor refresh.
+  Same-window log SHA-256 is
+  `ed7aefe0d7082d326a61b12d56696628968dbdcd0f0b15b176118fb4b61364c1`.
+  After local decode/hash verification, checked cleanup removed only generated
+  media Photo/1005/export and confirmed zero results; checked terminal restore
+  left ordinary no-probe Detail, AWAKE/120000ms, with lease
+  `20260923-053213-247e19df` released, no data clear. Evidence:
+  `.hvigor/outputs/nextn-shared-variant-status-20260923/{04-compact-detail-gate-run,05-compact-corrected-recording-run,06-compact-export-run,07-compact-media-cleanup-run,08-compact-terminal-restore-run}/`.
+  This is a bounded same-page Debug failure-feedback pass only. Full-width
+  feedback layout, natural failure/retry, compositor identity, preparation-time
+  flip/seek cancellation, F1, continuous mode and other hosts remain OPEN. The
+  single execution queue is the work order.
 
 - Shared reader Package 2 host-state/action parity DONE / replacement OPEN
   (2026-09-14): Koma, NextN and NextE now have complete bounded legacy/shared

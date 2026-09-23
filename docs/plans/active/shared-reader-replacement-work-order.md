@@ -132,9 +132,61 @@ PTS 空档不证明每个 compositor 帧。同期日志 SHA-256
 Debug 辅助普通入口的**准备中 Back 取消与旧 lease 持有**，不覆盖正常路径
 时序、准备中的翻页/开关取消或 RenderService 最终呈现身份。
 
-当前未证的同页物动作是用匹配候选对 NextN 197 正常
-无探针手动路径做原始帧/身份/资源三联复核；失败提示先界定产品契约，
-不能用“默认图还在”替代。随后以相同共享修订分别验证 NextE 237 真实
+**197 无探针手动 OFF→ON（2026-09-23，同一 348d HAP，限域通过）。**
+独立任务重新复算并安装冻结包，从仅有 numeric gallery ID 的普通
+`#678049` Detail 点第 3 页，手点当页增强开关 OFF→ON，再 Back；本窗没有
+`super_resolution_rehearsal`。录像 264 原始 PTS 帧（SHA-256
+`255a9ab7c0efee96353867f5ca3bc0b8180b77779c14e4c9b4f73ecc9ee5f40a`），
+同窗日志 SHA-256
+`d33e1e88c9cbdd32105453e3c689056fcf4569e20598bc1206493bb04a357155`。
+原始帧在切换段始终保留长图中央内容与 `3/14`；中央 ROI 的 55 帧
+PTS 6–12s 均非全黑或空白，最大 PTS 空档 0.515201s。OFF 产生 default
+request 3/receipt 13，增强旧 receipt 12 在 claim 退役前由 provider 释放；
+ON 的真实 `system_core_vision` prepare/applied 后绑定 enhanced request 4/
+receipt 14，默认旧 receipt 13 也在 claim 退役前由普通缓存释放；Back 释放
+receipt 14。录屏开始后、输入前读回 AWAKE/86400000ms；最终 checked
+恢复普通 Detail/120000ms，无清数据，lease `20260923-045229-c87ca761`
+已释放。独立结果及原始时间线在
+`/Users/honjow/.codex/worktrees/1327/NextN/.hvigor/outputs/f2-348d-independent-20260923/result.md`。
+这只关闭**该页/该 Debug 包的正常手动成功切换**，不是 Release 验收，
+也不证明 PTS 空档内每一帧或 RenderService 的精确资源身份；不能与
+准备中取消的另一路有界证据拼成“所有 F2 场景 PASS”。
+
+**共享准备失败状态纵切（2026-09-23；NextN 197 窄幅页限域通过，整体 OPEN）。**
+`ReaderPagedSession` 现在按 source/navigation 保存准备失败事实，只将当前可见
+source 投影给 `ReaderSurface`；真实 provider 失败不创建候选 asset，也不退休
+已显示 lease，取消/过期不冒充失败，导航、重新选择、后台及关闭清除旧事实。
+这是 L1 状态与 L3 被动呈现共用，不是 NextN toast，也未实现全体 L2
+仲裁或连续模式同态。共享修订 `1b5ce4a`（状态）及 `8e0dee0`（窄提示）；
+全套测试 463/463 通过，NextN 同源 Debug/Release 签名构建成功。
+冻结 Release HAP SHA-256 为
+`5ba21223f00069211c78c229fe3a2fcca04f8b0ac9a6855d6e6964274c1f6393`，
+Release 尚无设备验收。第一签名 Debug HAP
+`3482c738…a42` 在 197 的 `fail-once` 真机录像已出现提示、保留默认
+request 3/receipt 13 且无 request 4，但宽提示横跨窄幅漫画；此外该录像只在
+开录前读回防熄屏覆盖值，不能用作完整视觉验收。叶子级修正把共享失败文案
+压短并限宽 104vp，不改状态/资源、父树、交互或宿主状态优先级。
+修正候选冻结 Debug HAP SHA-256
+`c3318e0289e7ab816c949e4976f27672d7b1cd01c45a2b71fffac637d8cdbd1b`。
+197 同一普通 `#678049` Detail 第 3 页的 checked 复录先启动录像，**再**
+唤醒、重设并读回 AWAKE/OverrideTimeout=86400000ms，且输入前布局仍有
+`reader-thumb-gallery-detail-1-page-2`。真实 ON `fail-once` 于
+13:33:37.262 到达 provider 门、37.265 返回 unavailable；无新 request 4，
+default request 3 维持已显示。40.320 秒视频（SHA-256
+`f99f59a120a5087a8f7ccd8441437344b77907ca03fa3e271137f6f7a2f00a72`）
+解出 269 帧与 8 张接触表；所审原始帧的短提示在左侧黑色留白内，未遮住
+中间长图，旧页一直可见到 Back，最大 PTS 间隔 0.978488 秒发生在返回末段，
+空档内刷新及 RenderService 最终前景身份仍不宣称。同期日志 SHA-256
+`ed7aefe0d7082d326a61b12d56696628968dbdcd0f0b15b176118fb4b61364c1`。
+受检精确媒体 Photo/1005 仅在本地视频可解码并复算后清理，查询为零；终态
+恢复无探针普通 Detail、AWAKE/120000ms，租约 `20260923-053213-247e19df`
+已释放。完整受检账本、原帧在
+`.hvigor/outputs/nextn-shared-variant-status-20260923/{04-compact-detail-gate-run,05-compact-corrected-recording-run,06-compact-export-run,07-compact-media-cleanup-run,08-compact-terminal-restore-run}/`。
+此结论只覆盖 197 该 Debug 辅助页的失败提示与旧图保留。宽幅/全幅页上
+固定提示可能覆盖内容，通用自适应状态槽、真实非注入失败、失败后重试、
+准备中翻页/开关取消、Release、连续模式和 E/K 消费仍 OPEN。
+
+随后以相同共享修订分别验证 NextE 237 真实
 sprite Detail 和 Koma 普通章节入口，并处理连续模式与共享根层交接。只薄接真实宿主端口，
 三端宿主提供资源/来源、窗口/路由和动作；Koma `source=none` 不伪造 N/E flight。
 
@@ -142,12 +194,18 @@ sprite Detail 和 Koma 普通章节入口，并处理连续模式与共享根层
 迟到的**wrapper 交付**给出 `asset_released` 与录像端点，PTS 空档及即时
 layout 裁剪读数不允许全段视觉通过，真实底层 provider 慢/失败和成功接图帧
 仍未证；NextE 237 的局部入场/半途反向样本不覆盖慢/失败/取消、所有入场
-和退出组合；Koma 103 的 2→1 缩略图跳页约三帧黑画面仍只是待独立原帧
-复核的反例，不得由 N/E 的入口动画或旧版本章节 PASS 抵消。每端普通入口
+和退出组合；Koma 103 候选的普通书架→共享 Reader 缩略图 2→1
+已有独立原帧确认：f19–f21 正文全黑、chrome/缩略轨/底栏仍在，
+PTS 0.328844–0.380133 秒约 51ms；同录屏滑块 1→2 未见黑帧，
+却是瞬切而非动画。录像 SHA-256
+`fb33c74f850ee19c9e1f1557ce823f0bc3d33056ee012433881bb991b19b03e4`，
+报告 `/Users/honjow/.codex/worktrees/f769/Koma/.hermes-artifacts/device103-koma-candidate-20260923/review-103.md`。
+这是当前 `PositionHandoff` 的真实修复门，不得由 N/E 的入口动画或旧版本
+章节 PASS 抵消；原因尚未唯一归到 `seekSource`。每端普通入口
 都须以匹配候选的身份、画面、释放三联证据验收；历史记录留在下文但不排序
-当前动作。设备 197 最近一次受控恢复 force-stop 了 Debug fixture、读回
-AWAKE/120000ms，未清数据或设置；租约 `20260923-024758-d85578e1`
-已释放。此恢复不证明普通 Detail F2。
+当前动作。设备 197 本次已受检恢复至无探针普通 `#678049` Detail、
+AWAKE/120000ms，未清数据或设置；租约 `20260923-053213-247e19df`
+已释放。此恢复只证明本次终态，不替代 E/K、连续模式或 Release 验收。
 
 ### 唯一 ACTIVE 包：有限收尾主线（2026-09-21）
 
