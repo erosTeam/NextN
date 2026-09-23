@@ -8608,7 +8608,8 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   original held at 35.046, `ReaderEntry moving` at 35.093, `waiting` at
   35.544, exact request auto-release/delivery at 37.549, `revealing` at
   37.643, `finished` at 37.785 and root `open_finished` at 37.933. Normal
-  Back followed at 41.871/41.902. The 111 encoded frames were indexed and
+  Back was received at 41.277, then close handoff became ready at 41.871
+  and the Reader route retired at 41.902. The 111 encoded frames were indexed and
   reviewed: the cover remains visible through the observed waiting frames,
   the selected page remains present after delivery, and no encoded frame is
   fully blank or shows a second full body. However the adjacent original
@@ -8627,3 +8628,38 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   late underlying-provider completion, NextE/Koma consumers, other sources
   and global F1 remain OPEN. Probe ownership tests 14/14 and signed Debug
   build passed; these are not visual proof.
+- **Ordinary production-source late wrapper result after Back — diagnostic
+  observation, protocol FAIL / F1 OPEN (2026-09-23):** signed Debug HAP SHA-256
+  `8af75e3eabf31468005717a67acb360b216e1cf06c63d48087346c8174ac1171`
+  ran on 197 from the ordinary #663205 Detail page-0 tile. The one-shot
+  wrapper first obtained the real underlying original asset, then delayed
+  *delivery* by 2500 ms; this does **not** simulate a delayed network or
+  underlying provider completion. Same-window log for the second checked
+  attempt records `delivery_delayed` 08:56:57.607, Reader `moving` .658,
+  `waiting` 58.095, physical Back 59.085 and reverse claim/cancel .087,
+  reverse finished .524, route retired .552, then
+  `delivery_ready request=1 state=cancelled` at 08:57:00.108. The delayed
+  result did not log a new reveal/open. The provider catch path releases its
+  still-owned asset and the actual-method test asserts one release, but this
+  run has no explicit on-device release receipt; do not report a directly
+  measured device release. The received MP4 SHA-256 is
+  `3f4aa89692818850a303cfafd2e9ba13876201fe93c6c7e00ffce7973e14b21f`
+  (126 encoded frames, 7.171 s); a one-second contact sheet shows Detail
+  after Back and still Detail after late delivery, and blackdetect found no
+  fully black encoded interval. The checked recording protocol nevertheless
+  reports **failed**: PowerManager's temporary
+  `OverrideTimeout=86400000ms` was present at preflight but disappeared by
+  postflight. Its summary therefore has `recording=null` despite a received
+  MP4 and successful ledger receive. This evidence is diagnostic, not a
+  complete checked visual pass. The first checked attempt had the same
+  terminal power failure and is not separately accepted. Checked restore
+  force-stopped the one-shot probe, reopened ordinary `Bug Bite: Chapter 8`
+  Detail with page-0/page-1 source tile IDs, and read AWAKE with
+  `Timeout=120000ms OverrideTimeout=120000ms`; lease
+  `20260923-005043-61ee3e0e` released, no data clear. Evidence:
+  `.hvigor/outputs/f1-reason-diagnostic-20260923/197-production-late-after-back-verified-run/`
+  and `197-production-late-restore-run/`. Source/test/build are limited to
+  this Debug-only probe. A protocol-complete late-result recording with
+  explicit asset-release receipt, actual underlying-provider slow/failure
+  paths, the successful-handoff frame gap and NextE/Koma remain unverified;
+  global F1 stays OPEN.

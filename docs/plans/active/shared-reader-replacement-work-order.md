@@ -4484,9 +4484,27 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
   clear. Evidence:
   `.hvigor/outputs/f1-reason-diagnostic-20260923/197-production-delay-success-run/`.
   This is a **single state-chain and encoded-endpoint LIMITED PASS** only.
-  **Current runtime action:** prove a post-Back late underlying-provider
-  completion and close the critical visual frame-gap with an appropriate
-  capture/observation, then apply the resource/visible-claim contract to
-  NextE/Koma. F2 and global F1 remain OPEN.
+  A further Debug-only wrapper-delay candidate used signed HAP
+  `8af75e3e…` on ordinary 197 Detail page-0. Its wrapper already held the
+  real underlying original before waiting 2500 ms to deliver it. In the
+  second checked action window, the Reader reached waiting, Back synchronously
+  cancelled/reversed it, and `delivery_ready ... state=cancelled` arrived
+  after route retirement. The received 126-frame MP4
+  (`3f4aa896…`) shows the Detail after Back and after the late result, but
+  the recording protocol's final result is **FAIL** because the temporary
+  86400000-ms PowerManager override vanished between preflight and
+  postflight. There is no explicit device log of asset release; source catch
+  and actual-method test prove the one-release path only. Checked restore
+  returned ordinary #663205 Detail, both source tiles, AWAKE/120000ms and
+  released lease `20260923-005043-61ee3e0e` without data clear. Exact
+  details and evidence are in `docs/qa/nextn-active-acceptance.md`; neither
+  this diagnostic nor the earlier 3e1c sample closes global F1.
+  **Current unverified physical boundary:** protocol-complete recording with
+  explicit asset-release receipt for post-Back late result, an actual
+  underlying-provider slow/failure completion, the 3e1c successful-handoff
+  visual frame gap, then corresponding NextE/Koma consumer evidence. Keep F2
+  and global F1 OPEN; architecture work proceeds from the five-layer,
+  six-capability design in `shared-reader-architecture.md` without claiming
+  the current diagnostic probe is the shared implementation.
 
 **历史 NextE 观测候选（未安装、未动态验收；当前 F1 下一动作以上条为准）**：NE main `8c35d16e` + `cb1f478a`、kit `d99139f1`；签名 HAP SHA-256 `fab1703e57777bd892fb44032a1287f2f97f63b15df53361a560b1bd7a30bf48`，签名构建成功。新增日志只记录 production admission/capture 完成/overlay/phase、layout gate、actual flight-start 和 pending 期间每个 original part 的 slot/宽高；不改转场、几何、fallback 或后端选择。该旧候选的 logger 可采集性和动态证据均未证明，不能替代当前候选的匹配录像。

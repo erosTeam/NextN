@@ -279,6 +279,33 @@ L4 提供真实来源、窗口和资源。先在不改变现有父树的情况�
 保留“共享仲裁器 + 原 coordinator”两个决策者。这样每个共用能力都有
 实际消费者、唯一 owner 和可退回边界，不靠增加 HAR 数量衡量进度。
 
+### 首个纵切面的接口冻结与迁移验收
+
+本轮源码核对显示，N/E 的普通 Detail、缩略图网格和 Reader 页仍直接调用各自
+`ReaderThumbnailTransitionCoordinator`，根 `Index` 与可选 Lab 同时消费
+`ReaderThumbnailTransitionState`；Koma 可选阅读器通过
+`KomaReaderLabAdapter → ReaderPagedSession → ReaderSurface`，章节切换另由
+`KomaReaderLabPage` 协调。现状因此不是三端已经共享可见画面 owner。
+首切面必须让三种入口都经过同一个**语义**命令/观察协议，同时允许 Koma
+明确声明 `source=none`，而不是为其补一张假的 N/E 缩略图。
+
+| 边界 | 首切面必须暴露的最小数据 | 不得越界的动作 |
+| --- | --- | --- |
+| L4→L1/L2 意图 | `sceneKey`、选中 `displayItem/part`、真实来源句柄或 `none`、Back/Move/Variant 意图 | 宿主不直接设置共享 phase、页号或 opacity；系统栏/路由仍由宿主执行 |
+| L0→L2 资源观察 | `assetRequestId/variantEpoch`、候选 lease、`drawableReady/failed/cancelled`，迟到结果所属 epoch | `ready` 不直接升级为 displayed；已退出结果只释放自己的 lease，不能复活路由 |
+| L2→L3 只读快照 | `visualRevision`、唯一主画面 claim、逐 part lease、代理/正文/失败面的互斥显隐、待执行 effect 身份 | 组件不再自行决定第二套入口或替图时钟 |
+| L3→L2 上屏观察 | 目标 item/part、`visualRevision`、真实前景帧身份与结果 | 解码完成或旧 `onPresented` 回调不能冒充前景合成确认 |
+
+验收以**身份+画面+释放**三联证据判定，而不是只看动画完成日志：
+同位置 F2 在 F1 运动中到达不能重启入口；Back 后迟到的真实资产只能退休，
+不能 reveal/提交进度；Koma 从 2 跳 1 要保留旧可读画面直到新 claim
+前景确认；失败和撤销必须有明确降级面、无第二主画面。每条先做 L0/L1/L2
+实际状态代码测试，再用 L3/L4 薄适配跑 N 的普通 Detail、E 的真实 sprite
+来源和 Koma 的普通章节入口；每端单独核对连续原帧与返回终态。当前 197
+`late-once` 只模拟**底层已返回后 wrapper 延迟交付**，且录制协议收尾失败；它
+支持“取消后不应复活”的设计反例门，却未验证真实网络迟到或设备上一次释放。
+所以首切面要有可审计的 lease-retired 回执，而不沿用“没再显示”推断资源安全。
+
 这是一份设计提案；具体顺序、当前候选和未闭合证据仍只由工作单维护。
 
 ## 默认替换前的防退化门槛 — 2026-09-12
