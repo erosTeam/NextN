@@ -78,6 +78,9 @@ NextN 普通缓存和超分端口
 `test_reader_super_resolution_provider_runtime.mjs` 已通过；包含探针的不可变
 Debug HAP 是 `.hvigor/outputs/nextn-production-f2-gate-20260923/entry-debug-348d7f5bb6cd4f14552680c527b2dc510aa0d9acf5f254f9685e67dc6ece03dc.hap`
 （SHA-256 `348d7f5bb6cd4f14552680c527b2dc510aa0d9acf5f254f9685e67dc6ece03dc`，复制后复算匹配）。
+同源码 Release 签名构建也成功，不可变包 SHA-256 为
+`cba150db05fc2f22734fdbc5684a7af6243f0cd7549e6e413876baf21ae548f7`；
+两种构建均包含原生库，Release 构建成功不替代普通路径的运行门禁。
 只有匹配该后续新候选的原帧、同身份释放链与失败/取消状态，才能提高 F2
 证据等级。当前 0f62 包不含这个新探针，不得拿它声明慢/失败覆盖；348d
 也尚无设备实测结论。
