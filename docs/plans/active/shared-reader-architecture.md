@@ -224,6 +224,20 @@ L4 执行带身份的 Effects，再把结果作为观察送回，不能直接改
 端口按真实能力拆开（目录/资源/处理/进度/动作/源快照/窗口路由），
 不做一个承载所有差异的万能宿主回调，也不按 App 名称分支。
 
+2026-09-24 归档卡片纵切的源码边界：`ReaderSelectedDrawable` 仅提供所选 paged
+复合页所有原图 part 的解码/会话身份事实；新增共享 `ReaderLiveSourceEntry`
+只在宿主声明真实 live-source 入口时，决定宿主画面持有、Reader reveal、
+后续同身份帧回调通知这三段先后。`ReaderSurface.liveSourceEntry` 默认关闭，
+启用时先保持整棵 Reader 树透明但挂载预备；旧 Downloads/card 画面仍由宿主
+负责在根 overlay 下保持可见，失败/取消不交出可见权。普通 Detail 缩略图
+flight 不消费这个无源分支。这个纵切仍需 NextE 真实归档 route 的薄适配与
+同视口原始帧证明；`postFrameCallback` 不是 RenderService present fence，不能
+单凭它判定宿主原画面已安全撤去。现有 animated Swiper 在目标可绘前仍移动、
+页间旧图 handoff 只覆盖 OFF 命令，故翻页 f94–104 的混合帧是独立未修项；
+不得把入口纵切宣称为通用 `PositionHandoff` 完成。下一轮 position 事务须
+复用同一 selected item/request/visualRevision 身份和旧图 lease，不得用冻结
+整屏旧图来掩盖动画，亦不得让黑画布成为候选加载时的第二主画面。
+
 最小事务协议先只冻结语义，不抢先承诺具体类名：
 
 | 事务输入 / 观察 | 唯一判定者 | 输出给谁 |
