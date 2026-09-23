@@ -115,6 +115,33 @@ receipt；宿主资源端口在缓存 lease 或处理图 owner 的释放调用�
 同一个旧 receipt。两层日志匹配只能证明应用层资源释放链按序返回，不能
 独自证明 RenderService 最终上屏、物理文件删除或完整 F2 视觉连续性。
 
+### 2026-09-23 实测后的收敛切面（实施约束，非新队列）
+
+197 普通入口冻结 Debug 包 `348d7f5b…03dc` 的慢成功、一次准备失败和
+准备中 Back 取消，已把 L0/L1 的一个纵切落到真实 NextN 端口：默认图在
+`prepareVariant` 期间仍为 displayed；成功时新 request/receipt 绑定后，
+旧普通缓存 release 回调返回才有可见 claim 退休；失败没有创建候选；Back
+取消则无迟到 candidate `applied`，旧图直到 Reader 关闭才释放。原始 PTS
+录像仍有采样空档，以上不是最终 compositor fence。证据在唯一执行队列及
+`.hvigor/outputs/nextn-197-f2-cancel-20260923/result.md`，不得扩写为连续
+模式、NextE/Koma 或整个 L2 已共用。
+
+把这条纵切推广为多层共用时，代码迁移以**单一所有者**而非同名工具类为门：
+
+| 现有接缝 | 收敛后的唯一契约 | 在三个消费者中怎样证明不是影子实现 |
+| --- | --- | --- |
+| `ReaderSession` 的 request/receipt/retained lease 与 `ReaderPagedSession` 的 source/slot 栅栏 | L0 只管资源代次、候选与最终释放；L1 只管位置/拓扑和当前 part，向 L2 发带 route/position/layout/asset 身份的观察；失败准备不伪造 `ReaderSession.failure` 或新 asset | 相同替换状态机与资源收据测试由三宿主的真实 `AssetPort` 消费；宿主不记录另一套 displayed 布尔值，也不提前调用 release |
+| Paged `ReaderPagedViewport → ReaderSurface.reportPresentation(..., true) → reportVisualClaim`，而 Continuous 仍直接单阶段 `reportPresentation` | L2 的每个可见 display item/part 只有一个 claim 权；两种布局均区分 decode、claim 提交和提交后同身份帧观察。连续多行分别持有 lease，不能把整个 List 当一个资产 | 对同一 request 的 paged/continuous 双模式契约覆盖旧图保留、失败/取消、迟到回执、退出；再由 N/E/K 普通入口各做原帧+收据验证 |
+| `ReaderRootEntryHandoff` 仅统一回调；N/E 的 coordinator、根代理和 Lab 仍分别持有 phase/opacity | L2 仲裁 `EntryEpisode/AssetSwap/PositionHandoff` 的可见权，L3 共享根父树按一个 `VisualOwner` 渲染；L4 只执行捕获、窗口、路由 effects | 先在旧路径旁记录无渲染权的比较日志，逐个撤去重复 owner；任何时刻不能让影子状态驱动第二正文。N/E 有源 flight 必须同视口逐帧；Koma 无源章节入口不伪造 flight |
+| `prepareVariantForSource` / `selectAssetVariant` 抛错只返回 `unavailable`，`ReaderSurface` 只呈现资源加载 failure 或宿主 status | L0 分类“准备失败、用户取消、身份过期、资源加载失败”；L1/L2 以 source/variant/epoch 投影当前 `AssetSwap` 的非阻塞状态，保留旧主画面；L3 共享失败/重试交互，L4 提供本地化原因与处理服务 | 失败样本须证明**旧图可读且用户能区分失败与仍在准备**；取消和过期不得冒充失败提示，重试不能越过当前 source/epoch。未完成 UI 同态验收前不把受限探针的返回值写成用户可见失败已修复 |
+
+迁移不是同时重写五层：先固定每个纵切的输入身份、快照/effect 和资源
+释放不变量，再把 paged/continuous 送入同一 per-item claim；随后把根
+入场与位置交接接到该 claim 仲裁。每移走一个旧 owner，须删除它驱动
+渲染的状态写入并保留 legacy 回退，不能新增一个并行控制器后即宣布共用。
+三宿主验收分别核“相同共享决策 + 各自真实端口 + 同态画面”，不以
+NextN 的 197 Debug PASS 代填 NextE 的 sprite 来源或 Koma 跨章节。
+
 交接分成三个不可混淆的边界：`drawableReady` 是候选已解码、实际目标
 几何与身份可用，只允许申请交接，**不**证明像素可见；L2 随后一次性提交
 候选主画面 claim 并提升 `visualRevision`，L3 按同一快照绘制，旧已显示

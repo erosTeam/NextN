@@ -19,9 +19,10 @@
   retention/rollback coverage, not final replacement acceptance. In the
   cancellation run, default request 3/receipt 13 remained displayed throughout
   13 ON-pending samples; the provider cancelled before any replacement bound,
-  and receipt 13 was released only when the Reader closed. All 260 encoded
-  original-PTS frames/contact sheets were reviewed with no whole-page black
-  sample; VFR gaps up to 1.02866s still limit visual coverage. Detailed
+  and receipt 13 was released only when the Reader closed. The 260 encoded
+  original-PTS frames were indexed; all eight contact sheets and five
+  return-boundary originals were reviewed with no whole-page black sample;
+  VFR gaps up to 1.02866s still limit visual coverage. Detailed
   manifest/log/recording identity and verdict are in
   `.hvigor/outputs/nextn-197-f2-cancel-20260923/result.md`. Postflight restored
   ordinary Detail without the probe, AWAKE/120000ms and released lease
