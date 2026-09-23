@@ -56,6 +56,8 @@ export class NextNReaderOriginalProbeProvider implements ReaderAssetProvider {
       if (owned !== null) {
         owned.release()
         ReaderTrialOriginalProbe.releasedAsset(this.epoch, requestId)
+        console.info(`[ReaderOriginalProbe] asset_released request=${requestId} ` +
+          `state=${ReaderTrialOriginalProbe.read().state}`)
       }
       if (cancellation.isCancelled()) ReaderTrialOriginalProbe.cancel(this.epoch)
       ReaderTrialOriginalProbe.fail(this.epoch, requestId, 'provider')
