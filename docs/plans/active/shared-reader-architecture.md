@@ -296,6 +296,14 @@ L4 提供真实来源、窗口和资源。先在不改变现有父树的情况�
 | L2→L3 只读快照 | `visualRevision`、唯一主画面 claim、逐 part lease、代理/正文/失败面的互斥显隐、待执行 effect 身份 | 组件不再自行决定第二套入口或替图时钟 |
 | L3→L2 上屏观察 | 目标 item/part、`visualRevision`、真实前景帧身份与结果 | 解码完成或旧 `onPresented` 回调不能冒充前景合成确认 |
 
+首切面的现状差距由真实调用链限定，不能用一个新接口名掩盖旧语义：
+
+| 当前实现证据 | 与目标契约的差距 | 首切面可证伪门 |
+| --- | --- | --- |
+| `ReaderSession.load()` 只在已显示图的精确重载/变体替换时保留旧资产；候选拿到后把旧资产放入单个 `retiredAsset`。`fail()`、`reportPresentation(false)` 和 `reportRenderFailure()` 都含有退休旧资产的路径；资源获取失败时旧 `asset` 虽可能仍在，失败状态也会让 `ReaderPagedViewport` 优先画失败面。 | “同位置候选失败时保留旧可读主画面”不是现有普遍行为。L0 须区分旧 displayed lease、候选 lease 和明确失败面；L2 决定失败面是否接管，不能由资源失败顺手退休旧图。 | 用实际 `ReaderSession`/viewport 状态代码证明：候选获取失败、解码失败、连续替换失败都不误释放仍被主 claim 引用的旧 lease；每个失败/取消的候选有一次可审计退休回执。 |
+| `ReaderPagedImage.completed()` 在 `onComplete` 后排一个 `postFrameCallback` 并调用 `onPresented`；`ReaderSession.reportPresentation(true)` 当即标记 displayed、释放旧资产，随后快照使候选 `.zIndex(... ? 1 : 0)` 升到前景。 | 现有回调只完成解码后的调度，不是新 claim 已在前景合成的事后收据；把它原样接入 L2 会过早退休旧 lease。 | 先找出可在目标 ArkUI 运行时证明“同身份新主画面已进入前景帧”的观察方式；在此之前保留旧 lease，不把 `onPresented` 改名算验收。用连续原帧和 lease 日志共同反证早退。 |
+| N/E 根代理、宿主 coordinator 和 Lab 分别推进 phase/opacity，Koma 的普通章节入口没有等价缩略图源。 | 共用不能等同抽取 N/E 动画类，也不能要求 Koma 伪造来源；L2 必须只给一个可见权判定，L4 只执行真实平台 effect。 | N 普通 Detail、E 真实 sprite 和 Koma `source=none` 各跑同一意图/快照合同；每接入一端即删除该端同义写入，不留双 owner 影子路径。 |
+
 验收以**身份+画面+释放**三联证据判定，而不是只看动画完成日志：
 同位置 F2 在 F1 运动中到达不能重启入口；Back 后迟到的真实资产只能退休，
 不能 reveal/提交进度；Koma 从 2 跳 1 要保留旧可读画面直到新 claim
