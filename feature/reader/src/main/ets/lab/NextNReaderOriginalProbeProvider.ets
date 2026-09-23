@@ -41,6 +41,7 @@ export class NextNReaderOriginalProbeProvider implements ReaderAssetProvider {
       if (!released || !ReaderTrialOriginalProbe.delivered(this.epoch, requestId)) {
         throw new Error('reader_original_probe_not_delivered')
       }
+      console.info(`[ReaderOriginalProbe] delivered request=${requestId} page=${this.pageIndex}`)
       const asset = owned
       owned = null // Ownership passes to ReaderSession; host exit must not release it again.
       return asset
@@ -59,15 +60,22 @@ export class NextNReaderOriginalProbeProvider implements ReaderAssetProvider {
     return new Promise<boolean>((resolve): void => {
       let timeout: number = 0
       let cancellationPoll: number = 0
+      let autoRelease: number = 0
       const settle = (released: boolean): void => {
         if (timeout !== 0) clearTimeout(timeout)
         if (cancellationPoll !== 0) clearInterval(cancellationPoll)
+        if (autoRelease !== 0) clearTimeout(autoRelease)
         console.info(`[ReaderOriginalProbe] settled request=${requestId} release=${released} ` +
           `state=${ReaderTrialOriginalProbe.read().state}`)
         resolve(released)
       }
       if (!ReaderTrialOriginalProbe.hold(this.epoch, requestId, settle)) { settle(false); return }
       console.info(`[ReaderOriginalProbe] held request=${requestId} page=${this.pageIndex}`)
+      const autoReleaseMs = ReaderTrialOriginalProbe.read().autoReleaseMs
+      if (autoReleaseMs > 0) autoRelease = setTimeout((): void => {
+        const accepted = ReaderTrialOriginalProbe.release(this.epoch, requestId)
+        console.info(`[ReaderOriginalProbe] auto_release request=${requestId} accepted=${accepted}`)
+      }, autoReleaseMs)
       timeout = setTimeout((): void => {
         ReaderTrialOriginalProbe.fail(this.epoch, requestId, 'timeout')
       }, this.timeoutMs)

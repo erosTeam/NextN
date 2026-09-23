@@ -40,6 +40,7 @@ export class ReaderTrialOriginalSnapshot {
   failureReason: '' | 'timeout' | 'provider' = ''
   assetReleased: boolean = false
   unknownMetrics: boolean = false
+  autoReleaseMs: number = 0
   reader: ReaderTrialOriginalFacts = new ReaderTrialOriginalFacts()
 
   copy(): ReaderTrialOriginalSnapshot {
@@ -48,6 +49,7 @@ export class ReaderTrialOriginalSnapshot {
     value.requestId = this.requestId; value.state = this.state; value.failureReason = this.failureReason
     value.assetReleased = this.assetReleased; value.reader = this.reader.copy()
     value.unknownMetrics = this.unknownMetrics
+    value.autoReleaseMs = this.autoReleaseMs
     return value
   }
 }
@@ -60,13 +62,15 @@ export class ReaderTrialOriginalProbe {
   private static control: ((release: boolean) => void) | null = null
   private static facts: (() => ReaderTrialOriginalFacts) | null = null
 
-  static arm(galleryId: string, pageIndex: number, unknownMetrics: boolean = false): number {
+  static arm(galleryId: string, pageIndex: number, unknownMetrics: boolean = false,
+    autoReleaseMs: number = 0): number {
     ReaderTrialOriginalProbe.cancel(ReaderTrialOriginalProbe.current.epoch)
     ReaderTrialOriginalProbe.facts = null
     const value = new ReaderTrialOriginalSnapshot()
     value.epoch = ++ReaderTrialOriginalProbe.serial
     value.galleryId = galleryId; value.pageIndex = pageIndex; value.state = 'armed'
     value.unknownMetrics = unknownMetrics
+    value.autoReleaseMs = Number.isSafeInteger(autoReleaseMs) && autoReleaseMs > 0 ? autoReleaseMs : 0
     ReaderTrialOriginalProbe.current = value
     return value.epoch
   }
