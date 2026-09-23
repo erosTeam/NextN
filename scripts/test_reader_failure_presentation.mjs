@@ -38,6 +38,6 @@ assert.ok(adapter.includes('NextNReaderFailure.from(error)'))
 
 const host = fs.readFileSync(path.join(root,
   'feature/reader/src/main/ets/lab/NextNReaderLabPage.ets'), 'utf8')
-assert.ok(host.includes('new ReaderPagedSession(catalog, assetProvider, adapter, adapter)'))
+assert.ok(host.includes('new ReaderPagedSession(catalog, assetProvider, adapter, adapter, autoReadSourceHost)'))
 
 console.log('PASS NextN host failure classification and session wiring')
