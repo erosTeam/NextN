@@ -651,15 +651,29 @@ struct Index {
   }
 
   private authorizeReaderEntryDeparture(claim: ReaderEntryClaim, entryId: number): boolean {
-    if (this.readerEntryClaim !== claim || claim.epoch !== entryId || claim.epoch !== this.readerEntryEpoch) return false
-    let valid = false
+    if (this.readerEntryClaim !== claim || claim.epoch !== entryId || claim.epoch !== this.readerEntryEpoch) {
+      console.info(`[ReaderTrialEntry] departure_denied reason=claim-epoch entry=${entryId} ` +
+        `claim=${claim.epoch} active=${this.readerEntryEpoch} sameClaim=${this.readerEntryClaim === claim}`)
+      return false
+    }
+    let denied: string = ''
     try {
-      valid = claim.navigation === this.rootNavigationEpoch && this.readerEntryVisibility.foreground &&
-        !this.readerOverlay.visible && !this.safeMode.restricted() && claim.source.isCurrent() &&
-        this.sameReaderEntryRect(claim.sourceRect, this.readerEntryRect(claim.source.snapshotComponentId)) &&
-        this.sameReaderEntryRect(claim.viewport, this.readerEntryRect('nextn-reader-entry-host'))
-    } catch (_) {}
-    if (!valid) this.closeReaderTrial()
+      if (claim.navigation !== this.rootNavigationEpoch) denied = 'navigation-changed'
+      else if (!this.readerEntryVisibility.foreground) denied = 'foreground-lost'
+      else if (this.readerOverlay.visible) denied = 'overlay-visible'
+      else if (this.safeMode.restricted()) denied = 'safe-mode-restricted'
+      else if (!claim.source.isCurrent()) denied = 'source-stale'
+      else if (!this.sameReaderEntryRect(claim.sourceRect, this.readerEntryRect(claim.source.snapshotComponentId))) {
+        denied = 'source-rect-changed'
+      } else if (!this.sameReaderEntryRect(claim.viewport, this.readerEntryRect('nextn-reader-entry-host'))) {
+        denied = 'viewport-changed'
+      }
+    } catch (_) { denied = 'geometry-read-failed' }
+    const valid = denied.length === 0
+    if (!valid) {
+      console.info(`[ReaderTrialEntry] departure_denied reason=${denied} entry=${entryId}`)
+      this.closeReaderTrial()
+    }
     return valid
   }
 
