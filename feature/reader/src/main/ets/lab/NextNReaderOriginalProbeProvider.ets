@@ -62,9 +62,12 @@ export class NextNReaderOriginalProbeProvider implements ReaderAssetProvider {
       const settle = (released: boolean): void => {
         if (timeout !== 0) clearTimeout(timeout)
         if (cancellationPoll !== 0) clearInterval(cancellationPoll)
+        console.info(`[ReaderOriginalProbe] settled request=${requestId} release=${released} ` +
+          `state=${ReaderTrialOriginalProbe.read().state}`)
         resolve(released)
       }
       if (!ReaderTrialOriginalProbe.hold(this.epoch, requestId, settle)) { settle(false); return }
+      console.info(`[ReaderOriginalProbe] held request=${requestId} page=${this.pageIndex}`)
       timeout = setTimeout((): void => {
         ReaderTrialOriginalProbe.fail(this.epoch, requestId, 'timeout')
       }, this.timeoutMs)

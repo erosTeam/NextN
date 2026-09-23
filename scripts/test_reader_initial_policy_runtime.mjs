@@ -86,7 +86,8 @@ for (const [extra, expectedLayout, expectedDirection, expectedAxis] of [
   assert.equal(p.layout, expectedLayout); assert.equal(p.direction, expectedDirection); assert.equal(p.pagingAxis, expectedAxis)
 }
 const tree = ts.createSourceFile('page.ts', pageSource.replace('export struct NextNReaderLabPage', 'export class NextNReaderLabPage'), ts.ScriptTarget.Latest, true)
-const cls = tree.statements.find(ts.isClassDeclaration)
+const cls = tree.statements.find(statement => ts.isClassDeclaration(statement) &&
+  statement.name?.text === 'NextNReaderLabPage')
 const methods = ['initializeSession', 'closeTrial', 'finishProgressWrites', 'hostRouteActive', 'initialCropBorders']
   .map(name => cls.members.find(m => m.name?.getText(tree) === name).getText(tree)).join('\n')
 const deferred = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b }); return { promise, resolve, reject } }
@@ -214,6 +215,7 @@ for (const [readingChrome, thumbnailEntry] of [[true, false], [true, true], [fal
   const labRequest = { ...request(), readingChrome, thumbnailEntry,
     entryLayout: 'spread', entryDirection: 'rtl' }
   Object.assign(host, { request: labRequest, labRequest, managesTrialWindow: false,
+    rootEntryHandoff: { reset() {} },
     progressWrites: { open: () => 1 },
     notifyEntrySettled: () => {},
     getUIContext: () => ({ getHostContext: () => ({ applicationInfo: { debug: true } }) }),
@@ -296,6 +298,7 @@ for (const [mode, extra, expected] of [
   // Index replaces the requested page with the actual clicked source before mounting.
   r.pageIndex = 2
   Object.assign(host, { request: r, labRequest: r, closeRequested: false, hostClosing: false, managesTrialWindow: false,
+    rootEntryHandoff: { reset() {} },
     progressFlush: null, progressWrites: { open: () => 1, seal() {}, flush: () => Promise.resolve(true) },
     notifyEntrySettled: () => {},
     getUIContext: () => ({ getHostContext: () => debugContext }),

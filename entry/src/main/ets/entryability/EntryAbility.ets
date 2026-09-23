@@ -86,7 +86,21 @@ export default class EntryAbility extends UIAbility {
   private captureReaderOriginalProbe(want: Want): void {
     ReaderTrialOriginalProbe.cancel(ReaderTrialOriginalProbe.read().epoch)
     const parameters = want.parameters
-    if (!this.context.applicationInfo.debug || parameters === undefined ||
+    if (!this.context.applicationInfo.debug || parameters === undefined) return
+    // Exercise the ordinary Detail -> production Reader route while delaying
+    // only the real original asset. The Debug Lab route changes source/window
+    // geometry and cannot establish the production slow-handoff boundary.
+    if (parameters['readerProductionOriginalProbe'] === 'hold-once') {
+      const galleryId = parameters['nextn_gallery_id']
+      const requestedPage = parameters['readerProductionOriginalPage']
+      const page = typeof requestedPage === 'number' ? requestedPage : -1
+      if (typeof galleryId === 'number' && Number.isSafeInteger(galleryId) && galleryId > 0 &&
+        Number.isSafeInteger(page) && page >= 0) {
+        ReaderTrialOriginalProbe.arm(galleryId.toString(), page)
+      }
+      return
+    }
+    if (
       (parameters['readerLabOriginalProbe'] !== 'hold-once' &&
         parameters['readerLabOriginalProbe'] !== 'hold-unknown-metrics-once') ||
       (parameters['readerLabChrome'] !== true && parameters['readerLabChrome'] !== 'true') ||
