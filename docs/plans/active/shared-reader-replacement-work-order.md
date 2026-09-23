@@ -83,12 +83,37 @@ Debug HAP 是 `.hvigor/outputs/nextn-production-f2-gate-20260923/entry-debug-348
 两种构建均包含原生库，Release 构建成功不替代普通路径的运行门禁。
 只有匹配该后续新候选的原帧、同身份释放链与失败/取消状态，才能提高 F2
 证据等级。当前 0f62 包不含这个新探针，不得拿它声明慢/失败覆盖；348d
-也尚无设备实测结论。
+现有以下匹配设备证据，不能倒推给 0f62 或 9a5d。
 
-当前第一个未证实物动作是用**最后审阅过的签名包**走 NextN 197 普通
-Detail 的 F2 同页 OFF→ON、失败/取消及返回，取得身份、原始帧、资源退休
-三联证据；随后以相同共享修订分别验证 NextE 237 真实 sprite Detail 和
-Koma 普通章节入口，并处理连续模式与共享根层交接。只薄接真实宿主端口，
+**197 普通 Detail 受限 Debug F2 结果（2026-09-23；限域通过，整体 OPEN）。**
+独立任务复算冻结 `348d7f5b…03dc` HAP、用无清数据的 checked 安装进入真实
+gallery `678049` Detail，点第 3 页缩略图；两支均以增强图已显示为前置，
+由一次性 Debug Want 自动同页 OFF→ON。延迟支录像 396 原始帧
+（SHA-256 `27d3af4da0622b4307a0c35c3161c554406cc616094fa1dde993660d811369f0`）：
+ON 的 2.5 秒受控等待期间 default request 3 一直 displayed，随后 enhanced
+request 4/receipt 14 绑定；普通缓存先返回旧 default receipt 13 的 release，
+再有匹配的 `visual_claim_retired old_request=3 new_request=4`。OFF 时 enhanced
+receipt 12 同样在 provider/asset 回调返回后退休。失败支录像 319 原始帧
+（SHA-256 `05912eb5ef5dace7faee5e2e6956826547b5176394e5af9ba691fbc9d67c702a`）：
+真实超分准备边界一次性抛错，default request 3 在 ON、on-settled 的 26 个
+状态样本仍 displayed，未产生 replacement request 4，receipt 13 直到 Back
+才释放。两支接触表所审已编码帧中的第 3/14 页窄幅长图持续可见，黑色左右
+留白属于原图版式；原始 PTS 仍有约 0.5 秒的片间空档，不证明空档内每个
+compositor 帧或 RenderService 最终 asset 身份。开录后均读回 AWAKE/
+86400000ms，结束经 checked 协议恢复普通 Detail 与 120000ms，租约
+`20260923-042858-e16246ff` 已释放。原始逐帧、同期日志与终态材料在
+`/Users/honjow/.codex/worktrees/1327/NextN/.hvigor/outputs/f2-348d-independent-20260923/result.md`。
+这只覆盖**带探针的普通入口**：未做准备中的导航/开关取消，也未找到单独的
+可见失败提示。源码核对 `ReaderPagedSession.selectAssetVariant` 在
+`prepareVariant` 抛错时只返回 `unavailable`，没有创建候选 `ReaderAsset`
+或更新 `ReaderSession.failure`；因此不能把“没有新候选释放收据”算作泄漏，
+也不能声称用户已看到失败状态。正常无探针时序、F1、连续模式、NextE 237、
+Koma 103 与三端整体替换仍 OPEN。
+
+当前未证的同页物动作是用匹配候选对 NextN 197 的**准备中取消**及正常
+无探针手动路径做原始帧/身份/资源三联复核；失败提示先界定产品契约，
+不能用“默认图还在”替代。随后以相同共享修订分别验证 NextE 237 真实
+sprite Detail 和 Koma 普通章节入口，并处理连续模式与共享根层交接。只薄接真实宿主端口，
 三端宿主提供资源/来源、窗口/路由和动作；Koma `source=none` 不伪造 N/E flight。
 
 当前各端未证边界保持分开：NextN 197 的 105d Debug 包只对一例 Back 后
