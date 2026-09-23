@@ -8700,3 +8700,69 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   not isolated. Global F1 visual acceptance,
   actual-provider latency/failure, the successful-handoff frame gap and
   NextE/Koma remain OPEN.
+- **197 recorder power gate isolated (2026-09-23):** a separate checked,
+  no-Reader-input stage probe on the same installed 105d HAP read AWAKE and
+  `OverrideTimeout=86400000ms` immediately before starting the system screen
+  recorder, then AWAKE with **no override immediately after recorder start**.
+  The override remained absent after stop and the unique-file media query.
+  This directly locates the old recording protocol's power-gate reset at
+  recorder **start**, not App Back or media export. The probe's unique 2 s
+  recording was resolved to `file://media/Photo/994`, deleted by an exact
+  checked command, and a second query returned `find 0 result`. The stage
+  probe's terminal layout was the lock screen, so no App visual claim is
+  drawn from it. A separate checked restore reopened ordinary #663205
+  `Bug Bite: Chapter 8` Detail with both page source tiles and read
+  AWAKE/`Timeout=120000ms OverrideTimeout=120000ms`; lease
+  `20260923-012405-f3c60671` released, no data clear. Evidence:
+  `.hvigor/outputs/f1-reason-diagnostic-20260923/197-recorder-power-stage-run/`,
+  `197-recorder-power-stage-cleanup-run/` and
+  `197-recorder-power-stage-restore-run/`. This diagnoses the harness
+  prerequisite only; it is not an F1 visual pass. Any subsequent recording
+  must reapply and read the override *after* starting the recorder and
+  confirm an AWAKE ordinary Detail before input.
+- **197 corrected post-recorder recording — late wrapper result LIMITED
+  PASS at observed endpoints / global F1 OPEN (2026-09-23):** exact installed
+  signed Debug HAP SHA-256
+  `105d0a3f7f44f38b384fd35a0889402e2aac72d3840bd747642e3b0431108496`.
+  A project-owned checked manifest rearmed the one-shot probe on ordinary
+  #663205 Detail, started the system recorder, *then* woke and reapplied the
+  86400000-ms guard. Before typed input, PowerManager was AWAKE with that
+  override and the current semantic layout had `Bug Bite: Chapter 8` plus
+  both source tiles; the same override persisted after recorder stop. Its
+  same-window hilog records `delivery_delayed` 09:32:27.961, `moving`
+  28.009, `waiting` 28.458, Back 29.464, reverse/cancel 29.467,
+  reverse finished 29.912, route retired 29.941, then
+  `delivery_ready request=1 state=cancelled` 30.461 and
+  `asset_released request=1 state=cancelled` 30.462. The exact one-result
+  MediaLibrary URI was exported by a second checked manifest; the local
+  139-frame, 8.408-s MP4 SHA-256 is
+  `eedfe7b888589ee0dececad86ee5278b321351bfbeaa046fe3f74a60f2166127`.
+  Representative original frames, including f132 PTS 4.032967,
+  f133 PTS 5.016722, f134 PTS 5.927011 and final f138, show the Detail
+  and full selected source tile after Back and after late delivery; a
+  blackdetect scan found no encoded all-black interval. The f101→f102
+  0.490534-s gap separates a Reader-cover sample from a Detail/reverse-proxy
+  sample; later, already-returned Detail samples f132→f133 and f133→f134
+  have 0.983755-s and 0.910289-s gaps. These PTS gaps are not aligned to
+  the hilog events with enough precision to attribute a particular gap to
+  Back or late delivery; no assertion is made about compositor refreshes
+  inside them. The immediate post-late layout also reported
+  `nextn-reader-entry-host` clipped at x=431 and page-0 tile
+  `bounds=[78,2511][399,2682]` versus
+  `origBounds=[78,2194][399,2682]`, although the encoded endpoint shows
+  a full Detail/tile and the checked normal restore returned full bounds.
+  This layout/recording discrepancy remains a specific visual diagnostic
+  boundary, not evidence of a confirmed user-visible crop or a clean F1
+  return. After verifying the local MP4, checked cleanup deleted only this
+  agent-generated device export and exact media Photo/995, with a zero-result
+  query; the local MP4 remains. The checked terminal restore returned
+  ordinary #663205 Detail, both full source tile IDs and AWAKE with
+  `Timeout=120000ms OverrideTimeout=120000ms`, then lease
+  `20260923-013201-0003efd8` was released. No app data clear. Evidence:
+  `.hvigor/outputs/f1-reason-diagnostic-20260923/197-release-receipt-corrected-recording-run/`,
+  `197-release-receipt-corrected-export-run/`, and
+  `197-release-receipt-corrected-cleanup-run/`. This supports one
+  post-Back late *wrapper-delivery* release and observed encoded endpoints
+  on 197. It does not prove actual underlying provider/network lateness,
+  every visual refresh, other pages/hosts, or the shared L0–L3 architecture;
+  global F1 stays OPEN.

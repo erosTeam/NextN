@@ -4529,4 +4529,49 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
   Overall F1 and the cross-host L0–L3 shared ownership implementation remain
   OPEN; the source/test/build/device distinction is recorded in the QA ledger.
 
+  **197 recorder gate cause isolated:** on a separate checked no-Reader-input
+  stage probe, PowerManager was AWAKE/OverrideTimeout=86400000ms before
+  system screenrecorder start and AWAKE with **no override immediately after
+  start**; it stayed absent after stop/query. Thus the two recording-protocol
+  failures were triggered by recorder start clearing the temporary guard,
+  not by App Back or media export. The one agent-generated 2 s media asset
+  was deleted by its exact URI and a zero-result query; checked restore
+  returned ordinary Detail with both source tiles and AWAKE/120000ms,
+  releasing lease `20260923-012405-f3c60671` without data clear. The
+  corrected recording protocol must start the recorder, **then** reapply
+  and verify the override plus AWAKE/current Detail before any Reader input.
+  This diagnoses the evidence harness; F1 visual and cross-host shared
+  ownership remain OPEN.
+
+  **105d corrected 197 recording — post-Back late wrapper result endpoints
+  LIMITED PASS, F1 visual OPEN:** the checked project-owned protocol started
+  the recorder before reapplying the awake guard, then verified current
+  ordinary #663205 Detail and AWAKE/86400000ms before page-0 input; the
+  override persisted after recorder stop. Same-window hilog shows waiting
+  09:32:28.458 → Back/reverse 29.464/.467 → route retired 29.941 →
+  `delivery_ready ... state=cancelled` 30.461 →
+  `asset_released ... state=cancelled` 30.462. The exact unique media result
+  was exported and locally verified: 139 frames, 8.408 s, MP4 SHA-256
+  `eedfe7b888589ee0dececad86ee5278b321351bfbeaa046fe3f74a60f2166127`.
+  Original f132/f133/f134 and final f138 show Detail/tile at sampled
+  endpoints. f101→f102 has a 0.490534-s gap between Reader-cover and
+  Detail/reverse-proxy samples; later, already-returned Detail samples
+  f132→f133 and f133→f134 have 0.983755-s and 0.910289-s gaps. These
+  gaps cannot be precisely aligned to Back or late delivery from the
+  current evidence, and intermediate compositor refreshes remain unproven.
+  Immediate post-late layout reported root clipping at x=431 and page-0 tile bounds
+  `[78,2511][399,2682]` vs original `[78,2194][399,2682]`; encoded
+  endpoints appear full and final checked restore has full bounds, so this
+  is an unresolved layout/visual discrepancy, neither a confirmed user-visible
+  crop nor a clean return proof. After local evidence verification, checked
+  cleanup deleted only generated Photo/995/export and confirmed zero media
+  results. Final checked restore left ordinary Detail, both full source
+  tiles, AWAKE/120000ms and released lease `20260923-013201-0003efd8`
+  without clearing data. QA ledger has exact manifest/artifact paths.
+  **Unverified:** actual underlying-provider slow/failure completion,
+  continuous return frames and the successful-handoff frame gap, then E/K
+  consumers and the L0–L3 shared owner implementation. F2/global F1 remain
+  OPEN; the Debug wrapper probe cannot stand in for the planned shared
+  multi-layer capability.
+
 **历史 NextE 观测候选（未安装、未动态验收；当前 F1 下一动作以上条为准）**：NE main `8c35d16e` + `cb1f478a`、kit `d99139f1`；签名 HAP SHA-256 `fab1703e57777bd892fb44032a1287f2f97f63b15df53361a560b1bd7a30bf48`，签名构建成功。新增日志只记录 production admission/capture 完成/overlay/phase、layout gate、actual flight-start 和 pending 期间每个 original part 的 slot/宽高；不改转场、几何、fallback 或后端选择。该旧候选的 logger 可采集性和动态证据均未证明，不能替代当前候选的匹配录像。
