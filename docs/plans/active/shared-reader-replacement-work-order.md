@@ -25,26 +25,32 @@ the production default. No package migrates or deletes user data.
 SOURCE/BUILD 或旧 PASS 标题当作当前产品验收。执行对象是架构文档中的
 **L0 资源 lease + L2 可见 claim** 纵向链，沿真实 `ReaderSession →
 ReaderPagedSession → ReaderPagedViewport/ReaderSurface → 宿主普通入口` 改进，
-不另养一套影子状态机。当前第一个未证动作是确定可在目标 ArkUI 上**证伪**
-“同身份候选已在前景合成”的观察/回执：用前后两张可辨图、旧图压在候选之上
-的受控场景，分别记录 `onComplete`、`postFrameCallback`、主 claim/zIndex
-提交与同身份原帧；若所谓回执发生时旧图仍在前景，就不得叫 `presented`。
-本机 SDK 将 `FrameCallback.onIdle` 定义为后续帧渲染完成后的空闲回调，
-但回调本身不带 Image 或 claim 身份；当前 `ReaderEntryAfterLayout.onIdle`
-发生时旧图仍在候选之上，随后才调用 `ReaderSession.reportPresentation(true)`、
-退休旧资产并由新快照提升候选 zIndex。因此**现有回调不是已证明的候选
-前景回执**；受控实验要核实提升后的下一次同身份 `onIdle` 与实际画面的
-顺序，也要区分应用侧帧回调与 Render Service 的最终上屏。SDK 的
-`onIdle` 文案没有承诺单个 Image 像素已上屏，不能仅凭有帧回调就给候选
-签收。在确认可行机制前，
-不让候选准备、解码或这个旧回调提前退休当前主画面的 lease。
+不另养一套影子状态机。197 的受控 Debug 合成探针已证伪旧回调：
+`onComplete`、首次 `onIdle` 和紧接的 claim 状态提交仍观测到旧图；
+提交后的同身份下一次 `onIdle` 才观测到候选。125 帧原始 PTS 录像中
+request 3/4 的相应时段未见明显黑帧，但源图差异不足以从 MP4 单独判定
+每帧图像身份；`FrameCallback` 和组件 snapshot 均不是 RenderService
+present fence，且录屏开始后未立即读回长亮屏超时。该探针只缩窄应用侧
+交接顺序，不是普通入口验收。
 
-该观察门确定后，修改**实际** `ReaderSession`/viewport 的候选、已显示与
-失败/取消回滚，修订当前真实状态测试（旧的 38 项通过只说明旧语义稳定），
-使每次主画面 claim、迟到拒绝和 lease-retired 都有同身份收据；再一次只薄接
-一个宿主，按 NextN 197 普通 Detail、NextE 237 真实 sprite Detail、Koma
-普通章节入口的顺序复验，并删掉已接宿主的同义 phase/opacity 写入。三端宿主
-只提供真实资源/来源、窗口/路由和动作；Koma `source=none` 不伪造 N/E flight。
+实际共享 `ReaderSession`/paged viewport 已改成两段：首次解码后回调只申请
+`visualRevision` claim，旧 asset lease 保留；同身份后续帧观察才提交
+displayed 并退休旧 lease。失败/取消/新请求回滚到旧图，失败候选可重试；
+被屏蔽候选保留原通知操作与旧 lease。用户明确选回默认图可清除失败的
+原图计划。共享修订 `reader-kit e4e5b33` 的全套单测 460/460；从该修订
+生成的 NextN Release/Debug 签名 HAP SHA-256 分别为
+`d30993fb813a277ff3d94685af6a92b1299df5d557fbcf1bb379a5979fb5e13b`、
+`9a5d840b9acb1fd470066cac80cde2a5dc587863ea3f0dddb785e19322a49c49`，产物保存在
+`.hvigor/outputs/nextn-visual-claim-current-20260923/`。此前同路径的
+试构建哈希均已失效，验收只认这两个完整哈希。此实现仍只是 L0/L2 的
+paged 纵切，不是完整 L2 仲裁器：连续模式
+尚未使用同一二段 claim，F1/位置交接与宿主的重复 phase/opacity 仍未收敛。
+
+当前第一个未证实物动作是用**最后审阅过的签名包**走 NextN 197 普通
+Detail 的 F2 同页 OFF→ON、失败/取消及返回，取得身份、原始帧、资源退休
+三联证据；随后以相同共享修订分别验证 NextE 237 真实 sprite Detail 和
+Koma 普通章节入口，并处理连续模式与共享根层交接。只薄接真实宿主端口，
+三端宿主提供资源/来源、窗口/路由和动作；Koma `source=none` 不伪造 N/E flight。
 
 当前各端未证边界保持分开：NextN 197 的 105d Debug 包只对一例 Back 后
 迟到的**wrapper 交付**给出 `asset_released` 与录像端点，PTS 空档及即时
@@ -53,8 +59,9 @@ layout 裁剪读数不允许全段视觉通过，真实底层 provider 慢/失�
 和退出组合；Koma 103 的 2→1 缩略图跳页约三帧黑画面仍只是待独立原帧
 复核的反例，不得由 N/E 的入口动画或旧版本章节 PASS 抵消。每端普通入口
 都须以匹配候选的身份、画面、释放三联证据验收；历史记录留在下文但不排序
-当前动作。设备 197 最近一次受控恢复为普通 #663205 Detail、AWAKE/120000ms，
-租约 `20260923-013201-0003efd8` 已释放，未清数据。
+当前动作。设备 197 最近一次受控恢复 force-stop 了 Debug fixture、读回
+AWAKE/120000ms，未清数据或设置；租约 `20260923-024758-d85578e1`
+已释放。此恢复不证明普通 Detail F2。
 
 ### 唯一 ACTIVE 包：有限收尾主线（2026-09-21）
 

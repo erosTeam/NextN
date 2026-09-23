@@ -95,6 +95,18 @@ episode 只仲裁被点中的目标复合 item 与根代理，不锁住连续画
 `VariantPrepared`、`AssetDecoded`、布局回报均不能单独提升它，更不能因此
 取消 `EntryEpisode`。route、position、layout、asset 各身份仍各自校验：
 布局失效可阻止尚未提交的交接，但不凭一个新布局号自动清掉旧可见画面。
+
+2026-09-23 实现对照：首个 paged `AssetSwap` 纵切把资源账本继续放在
+`ReaderSession`，通过快照暴露候选、旧 lease 和一次 claim 修订；
+`ReaderPagedViewport` 只报告带 slot/request/revision 身份的后续帧观察，
+`ReaderPagedSession` 做当前可见 slot 栅栏。这避免再引入影子状态机，
+但它还不是上表的通用 L2 仲裁器：当前 `visualRevision` 由会话持有、仅覆盖
+同位置 paged replacement，连续模式的多 item、F1 入口、位置交接及宿主
+root 代理尚未共同消费一个 `VisualOwner`。不能把这次源码收敛写成五层或三端
+已经完成。197 Debug 探针中首次 `onIdle` 仍匹配旧图，提升后的同身份后续
+`onIdle` 才匹配候选；这是应用侧组件合成观察，不是 RenderService 的最终
+present fence，普通入口与失败/取消仍需单独以原始帧和 lease 事件验收。
+
 交接分成三个不可混淆的边界：`drawableReady` 是候选已解码、实际目标
 几何与身份可用，只允许申请交接，**不**证明像素可见；L2 随后一次性提交
 候选主画面 claim 并提升 `visualRevision`，L3 按同一快照绘制，旧已显示
