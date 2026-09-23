@@ -304,6 +304,11 @@ L4 提供真实来源、窗口和资源。先在不改变现有父树的情况�
 | `ReaderPagedImage.completed()` 在 `onComplete` 后排一个 `postFrameCallback` 并调用 `onPresented`；`ReaderSession.reportPresentation(true)` 当即标记 displayed、释放旧资产，随后快照使候选 `.zIndex(... ? 1 : 0)` 升到前景。 | 现有回调只完成解码后的调度，不是新 claim 已在前景合成的事后收据；把它原样接入 L2 会过早退休旧 lease。 | 先找出可在目标 ArkUI 运行时证明“同身份新主画面已进入前景帧”的观察方式；在此之前保留旧 lease，不把 `onPresented` 改名算验收。用连续原帧和 lease 日志共同反证早退。 |
 | N/E 根代理、宿主 coordinator 和 Lab 分别推进 phase/opacity，Koma 的普通章节入口没有等价缩略图源。 | 共用不能等同抽取 N/E 动画类，也不能要求 Koma 伪造来源；L2 必须只给一个可见权判定，L4 只执行真实平台 effect。 | N 普通 Detail、E 真实 sprite 和 Koma `source=none` 各跑同一意图/快照合同；每接入一端即删除该端同义写入，不留双 owner 影子路径。 |
 
+现有 `reader-session`、`reader-paged-variant`、`reader-spread-layout` 三组测试
+共 38 项通过，但它们验证的是当前 `reportPresentation`/失败投影语义，不能
+证明上述新前景回执或失败保留契约；迁移时应在这些真实状态测试上修订断言，
+而不是另外写一份与生产调用链脱离的影子状态机测试。
+
 验收以**身份+画面+释放**三联证据判定，而不是只看动画完成日志：
 同位置 F2 在 F1 运动中到达不能重启入口；Back 后迟到的真实资产只能退休，
 不能 reveal/提交进度；Koma 从 2 跳 1 要保留旧可读画面直到新 claim
