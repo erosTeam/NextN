@@ -536,6 +536,27 @@ L2 对 L4 暴露窄端口：`claimSource/measureVisibleSource`、
 
 现有代码按所有权迁移，而不是保留两套长期并行：
 
+2026-09-24 的 197 归档远跳给上述契约增加了一个明确的反例：滑条已提交
+source 37，L2 仍保留旧页正文，但目标始终没有可验证的 stable/visual command；
+旧页清晰不等于远跳完成。这里需要的是跨层的**目标准备票据**，而非再造一个
+宿主专用加载状态。L1 为一次语义 seek 持有 `serial/targetKey/navigationRevision`
+和可取消 reservation；L0 按该票据报告目标 part 的 page、asset、失败/取消
+事实，不能把任意 `asset_bound` 序号归给目标；L2 绑定目标 item 的实际分配
+几何、Image 解码回执与 native owner 回执，独占旧主画面到目标主画面的提交；
+L3 只读呈现 `presentedPosition` 和明确的 `pendingTarget`（包括等待、失败、
+取消），不能让滑条预览刻度或已请求目标冒充已呈现页；L4 只提供本地归档
+文件/网络来源和路由，不自行推进共享页码或替 L2 超时显示新图。连续布局按
+可见行复用同一票据/回执语义，不能硬套 paged Swiper 的实现。
+
+该票据的阶段必须能用同一身份分辨：reservation → target slot/page/asset →
+目标 viewport 实测几何 → 同几何 Image 回执 → L2 target stable → native owner
+→ 实际可见观察。某阶段缺失时保留旧主画面但显式呈现“目标仍未完成”或有界
+失败；不得因旧图稳定而悄悄消除 pending，也不得以固定延时、全书原图预载
+或黑遮罩伪造完成。当前 `c8abbb1` 的旧日志只能证明 `command_wait_drawable`
+后没有目标 visual command，不能判定是 slot、文件、布局、解码还是身份回执
+哪一环；诊断采集仅用于判别断点，不能算功能验收。功能修补须在共享 owner
+中只处理被证明的断点，再让 N/E/Koma 各自以普通路径连续原帧验证相同契约。
+
 | 当前代码 | 暂时保留的宿主责任 | 可迁入的共享责任与删除条件 |
 | --- | --- | --- |
 | N/E `ReaderThumbnailTransitionState` + `ReaderThumbnailTransitionCoordinator` | UIContext 像素捕获、当前源可见性测量、系统栏/路由执行留在 L4 | phase、proxy 几何插值、显隐、Back 仲裁、close handoff 交 L2；同宿主帧证据通过后删旧状态字段和推进方法 |
