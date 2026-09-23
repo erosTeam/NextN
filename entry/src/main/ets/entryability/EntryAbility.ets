@@ -91,14 +91,16 @@ export default class EntryAbility extends UIAbility {
     // only the real original asset. The Debug Lab route changes source/window
     // geometry and cannot establish the production slow-handoff boundary.
     const productionProbe = parameters['readerProductionOriginalProbe']
-    if (productionProbe === 'hold-once' || productionProbe === 'delay-once') {
+    if (productionProbe === 'hold-once' || productionProbe === 'delay-once' ||
+      productionProbe === 'late-once') {
       const galleryId = parameters['nextn_gallery_id']
       const requestedPage = parameters['readerProductionOriginalPage']
       const page = typeof requestedPage === 'number' ? requestedPage : -1
       if (typeof galleryId === 'number' && Number.isSafeInteger(galleryId) && galleryId > 0 &&
         Number.isSafeInteger(page) && page >= 0) {
         ReaderTrialOriginalProbe.arm(galleryId.toString(), page, false,
-          productionProbe === 'delay-once' ? 2500 : 0)
+          productionProbe === 'delay-once' ? 2500 : 0,
+          productionProbe === 'late-once' ? 2500 : 0)
       }
       return
     }

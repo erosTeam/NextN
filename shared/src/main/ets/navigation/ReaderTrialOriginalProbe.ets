@@ -41,6 +41,7 @@ export class ReaderTrialOriginalSnapshot {
   assetReleased: boolean = false
   unknownMetrics: boolean = false
   autoReleaseMs: number = 0
+  deliveryDelayMs: number = 0
   reader: ReaderTrialOriginalFacts = new ReaderTrialOriginalFacts()
 
   copy(): ReaderTrialOriginalSnapshot {
@@ -50,6 +51,7 @@ export class ReaderTrialOriginalSnapshot {
     value.assetReleased = this.assetReleased; value.reader = this.reader.copy()
     value.unknownMetrics = this.unknownMetrics
     value.autoReleaseMs = this.autoReleaseMs
+    value.deliveryDelayMs = this.deliveryDelayMs
     return value
   }
 }
@@ -63,7 +65,7 @@ export class ReaderTrialOriginalProbe {
   private static facts: (() => ReaderTrialOriginalFacts) | null = null
 
   static arm(galleryId: string, pageIndex: number, unknownMetrics: boolean = false,
-    autoReleaseMs: number = 0): number {
+    autoReleaseMs: number = 0, deliveryDelayMs: number = 0): number {
     ReaderTrialOriginalProbe.cancel(ReaderTrialOriginalProbe.current.epoch)
     ReaderTrialOriginalProbe.facts = null
     const value = new ReaderTrialOriginalSnapshot()
@@ -71,6 +73,7 @@ export class ReaderTrialOriginalProbe {
     value.galleryId = galleryId; value.pageIndex = pageIndex; value.state = 'armed'
     value.unknownMetrics = unknownMetrics
     value.autoReleaseMs = Number.isSafeInteger(autoReleaseMs) && autoReleaseMs > 0 ? autoReleaseMs : 0
+    value.deliveryDelayMs = Number.isSafeInteger(deliveryDelayMs) && deliveryDelayMs > 0 ? deliveryDelayMs : 0
     ReaderTrialOriginalProbe.current = value
     return value.epoch
   }

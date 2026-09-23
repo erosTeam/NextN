@@ -17,7 +17,8 @@ const catalogCode = compiled('../feature/reader/src/main/ets/lab/NextNReaderOrig
 const contentCode = compiled('../third_party/reader-kit/reader-core/src/main/ets/ReaderContent.ets')
 
 // Both state machine and provider wrapper are complete actual modules. Only their external asset provider is fake.
-function setup(timeoutMs = 1000, deferred = false, unknownMetrics = false, autoReleaseMs = 0) {
+function setup(timeoutMs = 1000, deferred = false, unknownMetrics = false, autoReleaseMs = 0,
+  deliveryDelayMs = 0) {
   const shared = {}
   vm.runInNewContext(controlCode, { exports: shared }, { filename: 'ReaderTrialOriginalProbe.ets' })
   const exports = {}
@@ -26,7 +27,7 @@ function setup(timeoutMs = 1000, deferred = false, unknownMetrics = false, autoR
     setTimeout, clearTimeout, setInterval, clearInterval,
   }, { filename: 'NextNReaderOriginalProbeProvider.ets' })
   const probe = shared.ReaderTrialOriginalProbe
-  const epoch = probe.arm('678049', 0, unknownMetrics, autoReleaseMs)
+  const epoch = probe.arm('678049', 0, unknownMetrics, autoReleaseMs, deliveryDelayMs)
   assert.equal(probe.consume('678049', 0), epoch)
   let releases = 0
   let calls = 0
@@ -91,6 +92,19 @@ test('cancelled delayed delivery cannot revive or leak its old asset', async () 
   assert.ok((await pending).error)
   await new Promise(resolve => setTimeout(resolve, 60))
   assert.equal(value.probe.read().state, 'cancelled')
+  assert.equal(value.releases(), 1)
+})
+
+test('provider result completing after host exit releases its real asset without delivery', async () => {
+  const value = setup(1000, false, false, 0, 30)
+  const pending = value.load()
+  await flush()
+  assert.equal(value.probe.read().state, 'loading')
+  assert.equal(value.probe.read().deliveryDelayMs, 30)
+  value.provider.close()
+  assert.ok((await pending).error)
+  assert.equal(value.probe.read().state, 'cancelled')
+  assert.equal(value.probe.read().assetReleased, true)
   assert.equal(value.releases(), 1)
 })
 

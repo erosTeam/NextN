@@ -30,10 +30,17 @@ export class NextNReaderOriginalProbeProvider implements ReaderAssetProvider {
     this.claimed = true
     const requestId = ReaderTrialOriginalProbe.beginRequest(this.epoch, this.galleryId, this.pageIndex)
     if (requestId === 0) return this.provider.load(page, kind, cancellation, forceReload)
+    const deliveryDelayMs = ReaderTrialOriginalProbe.read().deliveryDelayMs
     let owned: ReaderAsset | null = null
     try {
       cancellation.check()
       owned = await this.provider.load(page, kind, cancellation, forceReload)
+      if (deliveryDelayMs > 0) {
+        console.info(`[ReaderOriginalProbe] delivery_delayed request=${requestId} ms=${deliveryDelayMs}`)
+        await new Promise<void>((resolve): void => { setTimeout(resolve, deliveryDelayMs) })
+        console.info(`[ReaderOriginalProbe] delivery_ready request=${requestId} ` +
+          `state=${ReaderTrialOriginalProbe.read().state}`)
+      }
       if (cancellation.isCancelled()) ReaderTrialOriginalProbe.cancel(this.epoch)
       if (!ReaderTrialOriginalProbe.isState(this.epoch, requestId, 'loading')) throw new Error('reader_original_probe_cancelled')
       const released = await this.waitForRelease(requestId, cancellation)
