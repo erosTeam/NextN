@@ -313,6 +313,21 @@ native `onChange` 回送后才推进。`ReaderNativePager` 动画中传给 viewp
 `changeIndex` 命令或 `onComplete` 退休旧 lease；必须等原生运动结束、
 目标完整可见的身份匹配观察。此源码和录像不能证明未缓存目标的过渡。
 
+2026-09-23 的 OFF 对照把这条层界进一步缩窄：只让 L3 执行
+`changeIndex(target, false)` 仍在 103 的 f55–57 暴露黑正文；隔离候选在同一
+Swiper 父树增加 L2 `ReaderPositionHandoff` 旧图 claim 后，三次普通 rail/
+slider 切页的 114 个编码帧没有黑正文。与此同时 f69/f83/f108 可见新页码/
+轨道选择领先旧正文一帧，证明“保住图像”不等于“整个体验只受一个可见 owner
+控制”。这是明确的设计反例，不应靠给旧图层另设页码遮罩修补。后续共享
+`ReaderExperienceSnapshot` 必须区分 L1 已接受的 `logicalPosition` 与 L2
+已交出的 `presentedPosition`：前者用于导航、进度和下一次意图裁决，后者
+以同一 `visualRevision` 驱动正文、顶栏页码、轨道当前标记和底栏位置。
+`pendingTarget` 可作为单独、明确的交互状态显示，不得偷偷把目标当作已呈现
+页。L2 独占从旧 `presentedPosition` 到目标的提交；L3 只能按快照绘制，
+L0 只根据确认后的相同身份 `reportVisible` 退休旧 lease，L4 不持有第二个
+页码/显隐状态。这个投影须同时适用于有动画与无动画、单页与双页，并保持
+连续布局每个可见行独立 claim；本次隔离候选尚未实现这一完整契约。
+
 L2 对 L4 暴露窄端口：`claimSource/measureVisibleSource`、
 `captureSource/captureDisplayed`（带可释放 lease）、`prepareWindow`、
 `commitRouteClose`；L3 接受只读 `ReaderExperienceSnapshot` 并发布实际布局/解码
