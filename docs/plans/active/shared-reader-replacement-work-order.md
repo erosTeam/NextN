@@ -34,7 +34,9 @@ ReaderPagedSession → ReaderPagedViewport/ReaderSurface → 宿主普通入口`
 发生时旧图仍在候选之上，随后才调用 `ReaderSession.reportPresentation(true)`、
 退休旧资产并由新快照提升候选 zIndex。因此**现有回调不是已证明的候选
 前景回执**；受控实验要核实提升后的下一次同身份 `onIdle` 与实际画面的
-顺序，不能仅凭有帧回调就给候选签收。在确认可行机制前，
+顺序，也要区分应用侧帧回调与 Render Service 的最终上屏。SDK 的
+`onIdle` 文案没有承诺单个 Image 像素已上屏，不能仅凭有帧回调就给候选
+签收。在确认可行机制前，
 不让候选准备、解码或这个旧回调提前退休当前主画面的 lease。
 
 该观察门确定后，修改**实际** `ReaderSession`/viewport 的候选、已显示与

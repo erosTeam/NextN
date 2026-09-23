@@ -301,7 +301,7 @@ L4 提供真实来源、窗口和资源。先在不改变现有父树的情况�
 | 当前实现证据 | 与目标契约的差距 | 首切面可证伪门 |
 | --- | --- | --- |
 | `ReaderSession.load()` 只在已显示图的精确重载/变体替换时保留旧资产；候选拿到后把旧资产放入单个 `retiredAsset`。`fail()`、`reportPresentation(false)` 和 `reportRenderFailure()` 都含有退休旧资产的路径；资源获取失败时旧 `asset` 虽可能仍在，失败状态也会让 `ReaderPagedViewport` 优先画失败面。 | “同位置候选失败时保留旧可读主画面”不是现有普遍行为。L0 须区分旧 displayed lease、候选 lease 和明确失败面；L2 决定失败面是否接管，不能由资源失败顺手退休旧图。 | 用实际 `ReaderSession`/viewport 状态代码证明：候选获取失败、解码失败、连续替换失败都不误释放仍被主 claim 引用的旧 lease；每个失败/取消的候选有一次可审计退休回执。 |
-| `ReaderPagedImage.completed()` 在 `onComplete` 后排 `ReaderEntryAfterLayout.onIdle` 并调用 `onPresented`；SDK 的 `onIdle` 是帧渲染完成后回调，但此帧的候选仍压在旧图下。`ReaderSession.reportPresentation(true)` 当即标记 displayed、释放旧资产，随后快照才使候选 `.zIndex(... ? 1 : 0)` 升到前景。 | 现有回调不是新 claim 已在前景合成的事后收据；把它原样接入 L2 会过早退休旧 lease。 | 用旧图盖候选的受控场景，核实提升后的下一次同身份 `onIdle` 与真实原帧顺序；在可证伪观察成立前保留旧 lease，不把旧 `onPresented` 改名算验收。 |
+| `ReaderPagedImage.completed()` 在 `onComplete` 后排 `ReaderEntryAfterLayout.onIdle` 并调用 `onPresented`；SDK 的 `onIdle` 是后续帧渲染完成后的回调，但此帧的候选仍压在旧图下。`ReaderSession.reportPresentation(true)` 当即标记 displayed、释放旧资产，随后快照才使候选 `.zIndex(... ? 1 : 0)` 升到前景。 | 现有回调不是新 claim 已在前景合成的事后收据；即使提升后再获 `onIdle`，也须区分应用侧帧与 Render Service 最终上屏，不能直接把它叫像素证明。 | 用旧图盖候选的受控场景，核实提升后的下一次同身份 `onIdle` 与真实原帧顺序；在可证伪观察成立前保留旧 lease，不把旧 `onPresented` 改名算验收。 |
 | N/E 根代理、宿主 coordinator 和 Lab 分别推进 phase/opacity，Koma 的普通章节入口没有等价缩略图源。 | 共用不能等同抽取 N/E 动画类，也不能要求 Koma 伪造来源；L2 必须只给一个可见权判定，L4 只执行真实平台 effect。 | N 普通 Detail、E 真实 sprite 和 Koma `source=none` 各跑同一意图/快照合同；每接入一端即删除该端同义写入，不留双 owner 影子路径。 |
 
 现有 `reader-session`、`reader-paged-variant`、`reader-spread-layout` 三组测试
