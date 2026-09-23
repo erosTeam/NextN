@@ -8754,6 +8754,41 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   back ordinary bookshelf and AWAKE/10000ms, and released lease
   `20260923-072611-931a328a`. Original MP4, logs, frames and manifests
   remain in `.hvigor/outputs/koma-103-position-handoff-probe-20260923/`.
+  A later isolated Koma snapshot `db875f62…dbc8a` added the same shared L1
+  outgoing lease and a diagnostic-only unpreloaded 2.5s red target. On 103
+  ordinary blue page 2, red seek was superseded by blue during the slow load,
+  then red settled. Original 166-frame MP4 `44ce7e98…1a1660` has no black
+  central body sample, but f4–34 (PTS 0.048600–0.579044s) show blue page-2
+  body with top `1 / 2`, red thumbnail selection and slider 1; f35 returns
+  to coherent blue, f163 becomes red. Thus full-parent visual acceptance is
+  **OPEN**, and the unhit no-onChange guard/target failure are still unproven.
+  Matching hilog `ddb0000b…fd5693` confirms the 0.53s command overlap and
+  slow target. Checked run read AWAKE/86400000ms after recording start and
+  before input; exact generated Photo/866 and temporary export were deleted
+  after local hash/166-frame review, the original HAP was restored without
+  data clear, bookshelf/10000ms read back, and lease
+  `20260923-075556-7eaa3570` released. Artifacts remain in
+  `.hvigor/outputs/koma-103-slow-position-probe-20260923/`.
+  The next isolated shared L2 presented-position projection was compiled in
+  NextN signed Debug and in a diagnostic Koma HAP SHA-256 `20ecbe7a…05a1ca`
+  (Koma product tree/pin untouched). On the same ordinary 103 blue-page-2
+  path with disabled neighbor preload and 2.5s red original delay, command2
+  selected red at 16:30:28.711, command3 superseded to blue at 29.243 and
+  retired the old visual at 29.312; command4 selected red at 32.725 and
+  retired at 35.363 after the slow release. The 165 original decoded frames
+  in MP4 SHA-256 `6561a076…edad52f6` have no RGB<16 pixels in central ROI
+  `(400,450)-(1200,1600)` and body/header color claims agree on all frames:
+  f1–161 blue, f162 at PTS 6.666389 red. Original f5/20/35 and f161/162
+  also show page number, rail selection and slider aligned to the body; the
+  prior f4–34 prolonged mixed-position window is absent in this recording.
+  This is a **LIMITED PASS**, not formal Koma pin or global replacement:
+  target-failure and no-onChange return remain untested; N/E device paths
+  remain OPEN. Checked recorder guard was AWAKE/86400000ms before input;
+  only generated Photo/867 and exact device temp export were deleted after
+  local hash/165-frame review. Original device HAP SHA-256 `1c2f3a57…a713c`
+  replace-only restored, ordinary bookshelf and 10000ms read back, lease
+  `20260923-082921-d25bcd7d` released. Checked artifacts and local video
+  remain in `.hvigor/outputs/koma-103-presented-position-20260923/`.
 - **Koma 103 isolated animated-seek A/B LIMITED PASS (2026-09-23):** A frozen
   copy of the exact original Koma source received only the shared `8e0dee0`
   rail/slider native-animation path, with signed Debug HAP SHA-256

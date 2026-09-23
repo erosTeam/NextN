@@ -225,10 +225,56 @@ seek 回旧页若 native 不触发 `onChange`，源码新增一帧后退休重�
 兜底，共享提交 `bc8da4b` 的 469 个共享测试及 NextN 签名 Debug 编译通过；
 冻结 NextN HAP SHA-256 为 `7750fcee1e34d6207907832ac3ed09f7afc5df29a8448c59593e7d8142f917d0`
 （`.hvigor/outputs/shared-position-handoff-bc8da4b/`，未安装），隔离 Koma
-最终兜底编译 HAP SHA-256 为 `9cde6672…b4cd6`（未安装）。**该追加兜底尚未在
-设备上实测**。当前唯一下一证据动作是用含最终兜底的隔离 Koma 包，在
-103 同一普通入口验证快速第二 seek、慢目标和目标失败，并核对混合页码
-窗口；然后才可评估正式 Koma pin 与 NextE/NextN 消费。每端普通入口
+最终兜底编译 HAP SHA-256 为 `9cde6672…b4cd6`（未安装）。随后只在临时
+Koma 快照加入相同共享兜底与 L1 旧 slot lease、关闭邻页预载、对第 1 页
+原图施加 2.5s 受控慢载；隔离 Debug HAP `db875f62…dbc8a` 在 103 的
+普通书架→Detail→Chapter 1 蓝页 2→慢红页 1→快速回蓝 2→再慢红页 1
+跑出真正重叠：16:00:48.676 command2 指红、.693 selected、.694 慢载起；
+49.227 command3 回蓝、.242 selected，.311 退休旧图；52.774 再指红，
+55.292 慢载释放、55.425 退休旧图。166 帧原始 PTS MP4 SHA-256
+`44ce7e9816f3ac08c28203a1001eb8e71193ebcae036ab2a05cc664f2e1a1660`
+（同窗 hilog `ddb0000b…fd5693`）里，中央正文始终非黑：f1–162 为蓝，
+f163 才切红。但 f4–34（PTS 0.048600–0.579044s）在蓝正文上显示
+第 1 页顶栏、红色缩略轨选中及滑条第 1 页，f35（0.597767s）才回到
+第 2 页 chrome；**至少 0.53s 的逻辑页/已呈现页错位是本包新反例**。
+`old_visual_restored` 兜底分支没有被此样本命中，不能算已验。只在隔离
+快照施加慢载，没有更改 Koma 产品源码或用户设置。精确录像留在
+`.hvigor/outputs/koma-103-slow-position-probe-20260923/`；设备内生成的
+Photo/866 与临时导出在本地哈希/逐帧核验后精确清除，原版 HAP replace-only
+复装、普通书架/10000ms 读回，租约 `20260923-075556-7eaa3570` 已释放。
+
+**本轮 L2 presented-position 纵切，103 慢目标 LIMITED PASS：**共享
+`ReaderNativePager` 在 OFF old-image claim 建立/退休时把同一
+`ReaderPositionHandoff` 向父层公布；`ReaderSurface` 仅在同 topology/unit
+的 paged 态取其 `oldProjection`，让正文、顶栏页码、缩略轨选中态、滑块
+及隐藏 chrome 页码共享呈现位置，导航/进度/seek 意图仍只用 L1 逻辑
+snapshot。没有 Koma 专属遮罩或第二套位置判定。reader-kit 472/472
+测试通过，NextN 签名 Debug 构建成功、冻结 HAP
+`.hvigor/outputs/shared-presented-position-3c4cdfc/nextn-presented-854b7033-signed.hap`
+SHA-256 `854b7033d744d729f9a002c11409efbd3d52c4552cc058f91dbdeb7c2620942b`
+（未安装）；独立 Koma 快照保留
+2.5s 红页原图慢载和关闭邻页预载，签名 Debug HAP SHA-256
+`20ecbe7ada70958da86af163b857070d7fae7789c57f01515cc35cb88905a1ca`。
+103 普通书架→Detail→Chapter 1 蓝页 2 起点，16:30:28.696/.711
+红页 command/selected/慢载起，29.227/.243 回蓝 command/selected，
+29.312 旧图退休；32.709/.725 再红，35.227 慢载放行，35.363
+旧图退休。原始 165 帧 MP4 SHA-256
+`6561a076dd17cff7080ac390cbca0664719332f3d73c122c771541ecedad52f6`
+（`.hvigor/outputs/koma-103-presented-position-20260923/export-run/`）逐帧
+中央 ROI `(400,450)-(1200,1600)` 全 RGB<16 黑像素占比最大为 0；
+正文与顶栏颜色分类 165/165 同态，f1–161 蓝、f162（PTS 6.666389）
+同帧切红，抽查旧错位窗口的原帧 f5/20/35 以及切换 f161/162 的
+页码、轨道选中和滑块亦与正文一致。该录像只证明这个编码窗口，不能
+证明所有合成刷新、目标失败或 no-onChange 回旧页兜底。生成的设备
+Photo/867 和精确临时导出在本地哈希/165 帧复核后清除，本地 MP4
+保留；原设备 HAP SHA-256 `1c2f3a57…a713c` replace-only 恢复，
+书架/10000ms 读回，租约 `20260923-082921-d25bcd7d` 已释放。
+
+**当前唯一下一实施/物理动作**：用同一 L2/L3 handoff 合同构造目标原图
+失败分支，先以共享测试证明失败不退休已见旧图 lease、不遗留不可见
+old claim，再用 103 同普通入口受控失败录屏核对失败面和全套位置 chrome；
+未命中的 no-onChange 回旧页兜底、正式 Koma pin、N/E 匹配源码/构建/
+设备消费继续 OPEN。每端普通入口
 都须以匹配候选的身份、画面、释放三联证据验收；历史记录留在下文但不排序
 当前动作。设备 197 本次已受检恢复至无探针普通 `#678049` Detail、
 AWAKE/120000ms，未清数据或设置；租约 `20260923-053213-247e19df`
