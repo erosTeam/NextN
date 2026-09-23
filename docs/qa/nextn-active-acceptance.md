@@ -8659,7 +8659,44 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   `20260923-005043-61ee3e0e` released, no data clear. Evidence:
   `.hvigor/outputs/f1-reason-diagnostic-20260923/197-production-late-after-back-verified-run/`
   and `197-production-late-restore-run/`. Source/test/build are limited to
-  this Debug-only probe. A protocol-complete late-result recording with
-  explicit asset-release receipt, actual underlying-provider slow/failure
-  paths, the successful-handoff frame gap and NextE/Koma remain unverified;
+  this Debug-only probe. At this checkpoint, a protocol-complete late-result
+  recording and explicit asset-release receipt, actual underlying-provider
+  slow/failure paths, the successful-handoff frame gap and NextE/Koma remain unverified;
   global F1 stays OPEN.
+- **197 valid awake/no-recorder late-result resource fence LIMITED PASS
+  (2026-09-23):** signed Debug HAP SHA-256
+  `105d0a3f7f44f38b384fd35a0889402e2aac72d3840bd747642e3b0431108496`
+  differs only by an explicit `asset_released` diagnostic in the existing
+  one-shot probe catch path; focused actual-method probe tests 15/15 and
+  signed Debug build pass. One initial checked power-boundary manifest was
+  **invalid as product evidence** despite command success: its before-click,
+  after-click, after-Back and late readbacks were all `Current State: SLEEP`,
+  and its post-late layout was not the App Detail. No App click/Back effect
+  or release conclusion is drawn from that attempt. A separate checked
+  launch then force-stopped/rearmed the same ordinary #663205 Detail,
+  explicitly woke the device *after* launch, and verified AWAKE,
+  `OverrideTimeout=86400000ms`, `Bug Bite: Chapter 8` and both current
+  page-0/page-1 source tiles before input. In the subsequent checked
+  no-recorder action, the same-window hilog records page-0 offered
+  09:17:30.112, wrapper result held at `delivery_delayed` .175,
+  Reader `moving` .218 and `waiting` .648, Back 31.666,
+  reverse claim/cancel .670/.671, reverse finished 32.123, route retired
+  .148, then `delivery_ready request=1 state=cancelled` 32.676 and
+  **`asset_released request=1 state=cancelled` 32.677**. Post-late layout
+  still has the same Detail title and both source tile IDs; there is no
+  same-window Reader re-open. PowerManager remained AWAKE with the
+  86400000-ms override both before and after the App actions. The checked
+  protocol then force-stopped the Debug probe, reopened ordinary Detail,
+  read AWAKE/`Timeout=120000ms OverrideTimeout=120000ms`, and released
+  lease `20260923-010942-20927dfb`; no data clear. Evidence:
+  `.hvigor/outputs/f1-reason-diagnostic-20260923/197-release-receipt-awake-launch-run/`
+  and `197-release-receipt-awake-action-run/`. This accepts **one**
+  post-Back late *wrapper-delivery* cancellation and device-side asset
+  release on an AWAKE ordinary Detail path. There is no video in this valid
+  action, and underlying provider/network latency is not simulated. The
+  earlier recording protocol's lost override was **not reproduced** by
+  these App click/Back actions without a recorder; recorder/export/cleanup
+  or timing/lock differences remain suspects, and the exact boundary is
+  not isolated. Global F1 visual acceptance,
+  actual-provider latency/failure, the successful-handoff frame gap and
+  NextE/Koma remain OPEN.

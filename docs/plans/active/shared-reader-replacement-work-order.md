@@ -4499,12 +4499,34 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
   released lease `20260923-005043-61ee3e0e` without data clear. Exact
   details and evidence are in `docs/qa/nextn-active-acceptance.md`; neither
   this diagnostic nor the earlier 3e1c sample closes global F1.
-  **Current unverified physical boundary:** protocol-complete recording with
-  explicit asset-release receipt for post-Back late result, an actual
-  underlying-provider slow/failure completion, the 3e1c successful-handoff
+  **At this checkpoint, unverified physical boundary:** protocol-complete
+  recording for post-Back late result, an actual underlying-provider
+  slow/failure completion, the 3e1c successful-handoff
   visual frame gap, then corresponding NextE/Koma consumer evidence. Keep F2
   and global F1 OPEN; architecture work proceeds from the five-layer,
   six-capability design in `shared-reader-architecture.md` without claiming
   the current diagnostic probe is the shared implementation.
+
+  **105d0a3f awake/no-recorder 197 correction — late wrapper asset-release
+  LIMITED PASS, visual F1 OPEN:** the first checked power-boundary run was
+  SLEEP/lock screen despite command exit 0, so none of its click/Back
+  receipts count as App interaction. A separate checked launch rearmed
+  ordinary #663205 Detail, woke *after* launch, and verified AWAKE,
+  86400000-ms override, title and both source tile IDs. The next checked
+  hilog/action window has `waiting` 09:17:30.648, Back/reverse
+  31.666/.670, route retirement 32.148, then delayed wrapper result
+  `state=cancelled` 32.676 and explicit device-side
+  `asset_released request=1 state=cancelled` 32.677. The post-late semantic
+  layout is the original Detail with both source tiles; PowerManager kept
+  AWAKE/86400000ms across the no-recorder App actions. Checked restore
+  reopened ordinary Detail, restored AWAKE/120000ms, and released lease
+  `20260923-010942-20927dfb` without data clear. This proves only the
+  wrapper-held, already-returned real asset's post-Back fence/release;
+  no valid video accompanies this corrected run, and actual underlying
+  provider/network latency remains OPEN. The earlier recording power
+  failure was not reproduced without a recorder; recorder/export/cleanup
+  or timing/lock differences remain suspects, not an isolated cause.
+  Overall F1 and the cross-host L0–L3 shared ownership implementation remain
+  OPEN; the source/test/build/device distinction is recorded in the QA ledger.
 
 **历史 NextE 观测候选（未安装、未动态验收；当前 F1 下一动作以上条为准）**：NE main `8c35d16e` + `cb1f478a`、kit `d99139f1`；签名 HAP SHA-256 `fab1703e57777bd892fb44032a1287f2f97f63b15df53361a560b1bd7a30bf48`，签名构建成功。新增日志只记录 production admission/capture 完成/overlay/phase、layout gate、actual flight-start 和 pending 期间每个 original part 的 slot/宽高；不改转场、几何、fallback 或后端选择。该旧候选的 logger 可采集性和动态证据均未证明，不能替代当前候选的匹配录像。
