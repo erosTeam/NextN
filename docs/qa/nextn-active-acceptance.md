@@ -8934,3 +8934,58 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   on 197. It does not prove actual underlying provider/network lateness,
   every visual refresh, other pages/hosts, or the shared L0–L3 architecture;
   global F1 stays OPEN.
+- **197 same-pin host-API ordinary path — functional endpoints observed,
+  visual seek FAIL / F1 OPEN (2026-09-23):** reader-kit
+  `79eda0aa958c31a71b0fb475812ecae36e9f59f1`, NextN parent
+  `a147c9b6`, immutable signed Debug HAP SHA-256
+  `728f88e8f1bcd06929b907bee61e59fd938b873ad4772883a70e247d85ef23f3`.
+  On leased `192.168.50.197:12345` (ALN-AL80, 1260×2720) a checked
+  replace-only install and force-stop opened ordinary gallery `#678049`
+  Detail without Lab/fault Want, retaining data and settings. The current
+  Detail layout anchored page-2 tile `[764,1960][1081,2448]`; an original
+  recording captured entry to `rkit-reading-surface` and `3 / 14`, with
+  same-window `[ReaderEntry]` moving 19:40:29.095, waiting 29.532,
+  revealing 29.549, finished 29.690. A second recording captured centre-tap
+  chrome and the live `rkit-source-slider` `[490,2291][1097,2421]`.
+  The third recording captured slider seek 3→11, a horizontal page swipe and
+  Back; the Detail returned with `继续 P11`. A fourth captured re-entry from
+  the same current page-2 tile and Back to ordinary Detail. These terminal
+  states establish admission, control response and progress persistence for
+  this one path, **not** a clean visual transition.
+
+  The unedited third MP4 has 331 encoded frames and SHA-256
+  `9bf175fe51744853571c2109cec3ed57043431416b62e8efe2f85d07d0dc1a4f`.
+  At f56 PTS `1.139911`, the slider shows 11 while the old page image is
+  visible; f64 PTS `1.271356` through f88 PTS `1.669800` show the whole
+  central body black while chrome still says `3 / 14`; f96 PTS `1.888300`
+  shows the new page image and `11 / 14`. A crop of the actual content
+  column (encoded 890×1920, x380–499/y300–1499) detects a contiguous black
+  interval PTS `1.190789–1.770789`, duration `0.58s`. During the later swipe
+  the image moves across exposed black canvas; its exact mount/decode/Swiper
+  cause is not established by these frames. The third video's largest encoded
+  PTS gap is `1.011777s` at 7.044756→8.056533, so it cannot prove every
+  compositor refresh during return. Verdict: **candidate visual FAIL**, no
+  three-host acceptance. Do not infer a core root cause merely from the
+  final page or the black interval; inspect shared pager handoff and current
+  asset presentation ownership before a scoped repair.
+
+  Evidence is under
+  `/Users/honjow/.codex/worktrees/c585/NextN/.hvigor/outputs/device197__ALN-AL80/not-applicable/portrait-1260x2720/nextn-host-api-728f88e8-20260923/`:
+  `03-entry-record-run/`, `04-chrome-record-run/`,
+  `05-interaction-return-run/`, `06-reentry-return-run/`, and
+  `07-export-run/{entry,chrome,interaction,reentry}.mp4`. The other local
+  original MP4 SHA-256 values are respectively entry
+  `2db61cf8dbafd226019231dcdec75b843f232f333ca0f0ab95488dbf11eb83f0`,
+  chrome `f44643ea22a8174ff5913bf8a79b446c3e93199ae2e8969357c7201803d84fae`,
+  re-entry `c00abec0f82f4d9cde09d2844edb3b1334dd30230fea9f2ee74b3ec9c121be83`.
+  All four were uniquely resolved as device Photo/1012–1015, exported and
+  locally decoded; checked cleanup removed only those generated media assets
+  and exact temporary exports, with all four name queries returning zero.
+  The checked `09-restore-run/` reinstalled the precise pre-candidate signed
+  HAP SHA-256 `c3318e0289e7ab816c949e4976f27672d7b1cd01c45a2b71fffac637d8cdbd1b`,
+  force-stopped/reopened no-probe ordinary `#678049` Detail, and read
+  `AWAKE`, `Timeout=120000ms OverrideTimeout=120000ms`. Lease
+  `20260923-111939-b9e81323` was released. No data/settings clear. The
+  next unverified runtime action is a cause-bounded shared-layer repair and
+  new same-route visual recording; NextE 237 and Koma 103 same-pin visual
+  counterexamples also remain OPEN, with legacy/default fallback retained.

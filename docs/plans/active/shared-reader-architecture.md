@@ -115,6 +115,30 @@ episode 只仲裁被点中的目标复合 item 与根代理，不锁住连续画
 的所有权规则，三端仅消费其真实能力；既不让 Koma 伪造 flight，也不让 F2
 重走 F1。
 
+**本地下载/归档入口也必须走同一个可见权事务。** NextE 的下载卡片分别经
+`ReaderLocalSourceService.galleryTaskParams`（`GALLERY_DOWNLOAD`）和
+`archiveTaskParams`（`ARCHIVE`）调用 `ReaderOverlayNavigationState.open`；
+它们不经过 Detail 缩略图 claim，不能用修复根缩略图 pending 层代表这两条路径。
+这两种入口的 `EntryEpisode.source` 是 `live-host-surface` 或 `none`，而不是
+凭空生成缩略图或模糊矩形。L4 保持真实下载列表/归档卡片画面可见，L0/L1
+在不可见的目标阅读器中准备本地 `file://` 资产与所选 part，L2 只有在所有
+所选 part 的 decoded/布局身份匹配后才发出 reveal effect；L3 将正文、画布
+和页码作为一个 `visualRevision` 的呈现提交，提交后同身份前景帧回执到达才
+让 L4 撤去旧宿主画面。失败/取消回到原卡片，不用黑底、LoadingProgress 或
+源大小的模糊等待层代替主画面。若平台不能在旧宿主画面仍可见时预备目标，
+该端口必须显式报告 `prepare-unavailable`，不能假装已满足无缝交接。
+
+这里 `asset.phase === 'displayed'` 只说明应用侧解码/会话回调，不是 reader
+在前景合成的证明。现有 `ReaderSurface` 自带黑画布、`ReaderPagedCell` 在无
+`retainedFrame` 的 asset/decoding 阶段显示 LoadingProgress；当前 paged
+`reportVisible` 又在组件回调后发布，无法独自证明根 overlay 的前景帧。
+因此同一个 L2 协议必须分别接纳 `drawableReady`、`revealRequested` 和
+`foregroundObserved`，并把后者的 route/position/layout/asset/visualRevision
+全部核对后再交出旧 claim；页间翻页与首次入口只替换旧 claim 的来源类型。
+命令式、手势、轨道和滑杆均消费这条协议，不能靠某一种 `Swiper` 动画条件
+或旧图垫层声称整条路径已修复。NextE 的两种本地卡片入口、已下载连续翻页
+与 NextN/Koma 普通入口是三种独立运行验收，不从静态状态或单帧外推。
+
 `visualRevision` 是同一可见 display item 的**主画面 claim 提交序号**，
 不是资源请求、解码、测量或动画帧计数。只有 L2 串行提交一个新主画面 claim
 或撤销现有 claim 时才单调提升；候选创建、`requestId/variantEpoch` 变化、
