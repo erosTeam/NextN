@@ -298,17 +298,20 @@ AWAKE/10000ms 读回，租约 `20260923-092924-d3a7ca3d` 释放。Koma 产品
 pin 未动。
 
 **三端可消费的共享候选与当前主门：**reader-kit 精确修订
-`94fafdfb784ee8a8e85346c7ecea1831c4d05b6f` 包含 L1 已见旧页 lease、
+`79eda0aa958c31a71b0fb475812ecae36e9f59f1` 包含 L1 已见旧页 lease、
 L2 `ReaderPositionHandoff`/失败面 handoff、L3 页码/轨道/滑块同一 presented
-投影。NextN 本工作树 pin 至此修订，签名 Debug 重新构建成功；冻结 HAP
-`.hvigor/outputs/shared-failure-94fafdf/nextn-shared-failure-fd2ac67a-signed.hap`
-SHA-256 `fd2ac67a9484f0d8dccbcb543621b69a78ceadb3a000cdf8e488a791a7fd46d6`
-（未安装；不可把此前 `854b7033…` 构建视作同一包）。宿主输入仍为
+投影；相对上一修订 `94fafdfb` 又补上跨宿主合法的完整预览几何、真实
+传输进度可选回调和只读资源呈现观察端口，解决已复现的 NextE 消费
+ArkTS 九处接口不匹配；NextE 自身对此修订的重编译/设备仍未证。
+NextN 本工作树 pin 至此修订，共享 476/476 与签名 Debug 构建成功；
+冻结 HAP `.hvigor/outputs/shared-host-api-79eda0a/nextn-host-api-728f88e8-signed.hap`
+SHA-256 `728f88e8f1bcd06929b907bee61e59fd938b873ad4772883a70e247d85ef23f3`
+（未安装；此前 `fd2ac67a…`、`854b7033…` 构建不是同一包）。宿主输入仍为
 catalog/asset、真实来源/窗口、路由/动作/进度端口；不得由宿主复制 L0–L3
 页号、资源 lease 或可见权。Koma/NextE 必须各自消费该精确修订与自己的
 真实端口，保留 legacy/default 回退，再在普通入口以包身份、原帧/PTS、
-同窗日志和释放证据独立验收。当前共享测试 473/473、NextN 签名构建、
-103 隔离慢载/受控失败仅是各自层级的证据，**三端正式同候选设备消费仍
+同窗日志和释放证据独立验收。当前共享测试/NextN 签名构建、103
+旧修订隔离慢载/受控失败仅是各自层级的证据，**三端正式同候选设备消费仍
 0/3**。NextN 当前产品动作是此冻结包在 197 的普通 Detail→Reader
 进入、翻/跳、主要控件、退出/重进短路径；一旦有致命可见反例先在同一
 路径定位和修复，不扩录旧探针。no-onChange 快速回旧页兜底、失败后重试、
