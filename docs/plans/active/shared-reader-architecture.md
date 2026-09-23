@@ -6,6 +6,47 @@
 > `shared-reader-replacement-work-order.md`. Older “next step” text below is
 > historical and must not schedule work.
 
+## 2026-09-24 分层共用落地边界（设计状态，不是放行）
+
+本设计的“共用”是三端消费**同一决策与状态所有者**，不是各端调用同名 helper，
+也不是立即拆成五个 HAR。规范层号沿用下文：L0 资源与精确 request；L1
+会话、位置/导航与旧页 lease；L2 每个 display item 的唯一可见画面 claim；L3
+共享父树、交互和只读呈现；L4 宿主源/路由/窗口/业务端口。导航命令从 L3
+进入 L1，不能把命令发送者误写成当前位置的所有者。每一纵向能力包均需明确
+输入身份、唯一写入点、候选/提交/撤销事件、失败出口和三端适用边界。
+
+当前 `reader-kit d73f762` 只实现 paged `PositionHandoff` 纵切，并非通用
+`VisualOwnerArbiter`：L0/L1 保留最后已报告可见的旧资源，L2 以目标层与 native
+层各自同身份的稳定回执交接，L3 将同一 presented 位置投影到正文/页码/滑条。
+相邻页可用 240ms 页间过场；远跳页间过场为 0ms，但滑条值和缩略轨自身运动
+不受取消。静默回调失败时保留已证旧页投影与共享失败面；失败态只接受重试或
+退出，不能由下一次 animated seek 把未证 B 当成旧页。这里的稳定回执仍是应用
+侧证据，不是 RenderService 的物理上屏/清晰度证明。
+
+可复用共核的状态机须按 item/part 建账，而非整个阅读器共用一张旧图：
+
+| 事务 | 准入身份 | 唯一可见权交接 | 不得由谁代做 |
+| --- | --- | --- | --- |
+| `EntryEpisode` | route、来源、所选 display part、episode | 真实宿主来源/旧画面 → 阅读正文；Back 反向或取消释放同 episode effects | 宿主根代理与 Reader 同时各自推进 opacity |
+| `AssetSwap` | 同位置、request/variant epoch、旧 lease | 旧已显示资源 → 新同位置资源；失败仍保留旧图 | provider 的 `displayed` 直接退休可见旧图 |
+| `PositionHandoff` | topology/navigation/selection、目标 item/parts、serial | 已证旧 item → 已证新 item 或明确失败面 | slider、native Swiper 或宿主自行改第二份页号 |
+
+L2 只仲裁可见 claim 与 effect 身份，不复制 L0 的资源账本；L1 只发布逻辑
+目标，不因 UI 动画完成就伪造 `reportVisible`；L3 只读同一 presented 投影；
+L4 提供真实资源、源捕获和系统效果，不按宿主名在 kit 内分叉。普通下载/归档
+入口无缩略图来源时，旧宿主卡片就是合法旧画面，不得虚造缩略图或黑底等待层。
+NextE 对照已确认 archive 新旧路径输入同一批解压后的 `file://` 页面，旧版
+pipeline 也不预解码；`local-skip`/cachedCount 差异不能单独解释已清晰 B 又变模糊，
+不得以扩大预载替代可见权诊断。
+
+交付以**纵切 + 三端各自普通入口物理证据**推进：先锁定 paged
+`PositionHandoff` 的相邻翻页、远跳、慢载/失败、二次 seek 和关闭返场，再让
+同位置替换、入口/反向及 continuous 多 item 消费同一 claim 规则；每移走一个
+旧 owner，就删除其渲染写入而保留 legacy/default 回退。当前仅有
+`d73f762` 的源码窄审、共享测试和 NextN 签名构建；NextE 197 连续原帧、
+NextN 普通入口、Koma 103 及三端同候选视觉仍 OPEN。精确候选/包/设备门
+只由唯一工作单记录，不能从本设计文档推断已放行。
+
 ## 2026-09-23 分层共用修订提案（设计评审，非实现/放行）
 
 本轮两侧缩略图在 NextE 237 的半途 Back 已有原帧证据，但这只是局部运行结果。
