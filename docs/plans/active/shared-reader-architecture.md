@@ -232,11 +232,24 @@ L4 执行带身份的 Effects，再把结果作为观察送回，不能直接改
 负责在根 overlay 下保持可见，失败/取消不交出可见权。普通 Detail 缩略图
 flight 不消费这个无源分支。这个纵切仍需 NextE 真实归档 route 的薄适配与
 同视口原始帧证明；`postFrameCallback` 不是 RenderService present fence，不能
-单凭它判定宿主原画面已安全撤去。现有 animated Swiper 在目标可绘前仍移动、
+单凭它判定宿主原画面已安全撤去。此前 animated Swiper 在目标可绘前仍移动、
 页间旧图 handoff 只覆盖 OFF 命令，故翻页 f94–104 的混合帧是独立未修项；
-不得把入口纵切宣称为通用 `PositionHandoff` 完成。下一轮 position 事务须
+不得把入口纵切宣称为通用 `PositionHandoff` 完成。position 事务须
 复用同一 selected item/request/visualRevision 身份和旧图 lease，不得用冻结
 整屏旧图来掩盖动画，亦不得让黑画布成为候选加载时的第二主画面。
+
+2026-09-24 页间共享源码纵切：`ReaderPagedSnapshot.forItem` 保留完整拓扑 key，
+`ReaderPositionHandoff` 复用 `ReaderSelectedDrawable` 的目标原图复合页事实。
+对已在 L1 缓存窗口内的 animated 命令，L2 保持旧位置 claim 和原生旧 cell，
+目标各 part 达到 decoded/displayed 或明确失败/受限面后，在快照更新之后的
+帧回调才启动原有 `changeIndex(target,true)`；动画过程中**不渲染** OFF 专用
+旧图盖层，目标 `onVisible` 或明确终态面才撤 claim。OFF 命令继续原有
+旧图投影协议；缓存窗口外的远跳保留原有 native 动画，不等待一个不存在的
+目标 slot。这个纵切修复一个可审的提前移动转移，但还没有 NextE 同候选
+原始帧，不能断言 f94–104 已消失；手势直接驱动 Swiper、远跳、连续布局和
+RenderService 真正 present 均未覆盖。若目标缓存组件在未选中时不触发
+Image.onComplete，等待分支可能停留在旧清晰页，这必须通过匹配设备包验证，
+而不是用一个超时后露出黑/模糊目标的降级来伪造通过。
 
 最小事务协议先只冻结语义，不抢先承诺具体类名：
 
