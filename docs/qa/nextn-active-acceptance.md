@@ -8789,6 +8789,29 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   replace-only restored, ordinary bookshelf and 10000ms read back, lease
   `20260923-082921-d25bcd7d` released. Checked artifacts and local video
   remain in `.hvigor/outputs/koma-103-presented-position-20260923/`.
+  The next shared L2 failure repair addresses a distinct provider path:
+  `asset.phase=failed` can arrive in a new snapshot without an image-render
+  `onFailed` callback, leaving the native failure face behind the old-image
+  claim. The shared pager now recognizes only the current, serial-fenced
+  failed target and removes that L2 claim after a frame; it does not synthesize
+  L1 target visibility. Shared tests 473/473 and signed NextN/Koma diagnostic
+  builds passed. An isolated Koma HAP SHA-256 `9f3690d6…6d9f01` on ordinary
+  103 Chapter 1 blue page 2 delayed the red target 2.5s and injected provider
+  failure on its second request. Same-window hilog records the selected red
+  target at 17:31:31.715, forced failure at 34.217 and old-visual failure
+  reveal at 34.270. In the 116 original PTS frames of local MP4 SHA-256
+  `2a23f17f…00c07ad`, f111 (2.592911s) is still blue page 2 with page-2
+  rail/slider; f112 (2.597167s) shows the existing “无法加载页面” panel, top
+  1/2, red rail selection and slider page 1. Individually reviewed
+  f108/110/111–116 contain no intervening encoded all-black waiting frame.
+  This is **LIMITED PASS** for the named injected provider-failure window;
+  the ~0.980333s largest PTS gap, real network failures, retry and all
+  compositor refreshes remain unproven. Generated Photo/868 and exact device
+  temp export were deleted after local hash/116-frame review; original HAP
+  `1c2f3a57…a713c` was reinstalled replace-only, ordinary bookshelf and
+  AWAKE/10000ms read back, lease `20260923-092924-d3a7ca3d` released.
+  Checked artifacts remain in `.hvigor/outputs/koma-103-target-failure-20260923/`.
+  No-onChange return, formal Koma pin and N/E same-revision acceptance are OPEN.
 - **Koma 103 isolated animated-seek A/B LIMITED PASS (2026-09-23):** A frozen
   copy of the exact original Koma source received only the shared `8e0dee0`
   rail/slider native-animation path, with signed Debug HAP SHA-256

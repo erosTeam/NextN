@@ -270,10 +270,36 @@ Photo/867 和精确临时导出在本地哈希/165 帧复核后清除，本地 M
 保留；原设备 HAP SHA-256 `1c2f3a57…a713c` replace-only 恢复，
 书架/10000ms 读回，租约 `20260923-082921-d25bcd7d` 已释放。
 
-**当前唯一下一实施/物理动作**：用同一 L2/L3 handoff 合同构造目标原图
-失败分支，先以共享测试证明失败不退休已见旧图 lease、不遗留不可见
-old claim，再用 103 同普通入口受控失败录屏核对失败面和全套位置 chrome；
-未命中的 no-onChange 回旧页兜底、正式 Koma pin、N/E 匹配源码/构建/
+**本轮 L2 失败面纵切，103 受控失败 LIMITED PASS：**共享 pager 原先仅在
+图片渲染 `onFailed` 回调中清除 old-image claim；provider `load` 直接失败
+只发布 `asset.phase=failed` snapshot，不发该回调，旧图会盖住现有失败面板。
+现在 `onNavigationChanged` 观察同一目标的 failed frame，并与渲染失败共用
+`revealFailedTarget`：post-frame 后再次校验 handoff serial、selection、目标
+key、slot 和 asset request，才清除 L2 旧图 claim 并公布 `null` 呈现投影；
+不合成成功可见报告，L1 已见旧页 lease 仍由真实目标可见或 close 退休。
+共享 473/473 测试与 NextN 签名 Debug、隔离 Koma 签名 Debug 编译通过。
+隔离 Koma HAP SHA-256
+`9f3690d6e1124aee9b4e4a416bdc35bcb8c4622182c9a21cf6122a6f716d9f01`
+在 103 普通书架→Detail→Chapter 1 蓝页 2，rail 指红页 1 后用
+2.5s 原图延迟并在第二次红图请求注入 provider 失败。同窗日志
+17:31:31.702 `old_visual_held=true`、.715 选中红页并开始慢载，
+34.217 `forced_target_failure`，34.270 `old_visual_revealed_failure`。
+原始 116 PTS 帧 MP4 SHA-256
+`2a23f17fed6f737fee8cdc6dd9542a4a8880ff7433081b0a8271868e100c07ad`
+（`.hvigor/outputs/koma-103-target-failure-20260923/export-run/`）：f1–111
+蓝正文/2/2，f112（PTS 2.597167；前帧 2.592911）直接成为现有
+“无法加载页面”失败面/1/2，轨道红选中及滑块同帧归属第 1 页；已审
+f108/110/111/112/113/114/115/116 原帧，没有采样到中间全黑等待帧。
+尾段最大 PTS 空档约 0.980333s，不能证明每次 compositor 刷新；受控
+provider 失败也不能代表全部真实网络错误或失败后重试。仅本次生成的
+Photo/868 与设备临时导出在本地视频哈希和 116 帧核验后精确删除，查询
+为零；原版 HAP `1c2f3a57…a713c` replace-only 恢复，冷启动普通书架、
+AWAKE/10000ms 读回，租约 `20260923-092924-d3a7ca3d` 释放。Koma 产品
+pin 未动。
+
+**当前唯一下一实施/物理动作**：同一 shared L2/L3 合同验证
+no-onChange 快速回到旧页兜底；这条 guard 目前只有源码测试和编译，
+不能由受控失败或慢载录像代替。正式 Koma pin、N/E 匹配源码/构建/
 设备消费继续 OPEN。每端普通入口
 都须以匹配候选的身份、画面、释放三联证据验收；历史记录留在下文但不排序
 当前动作。设备 197 本次已受检恢复至无探针普通 `#678049` Detail、
