@@ -8569,3 +8569,33 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   result run on an exact signed candidate, with same-window logs and original
   frames. Slow handoff, waiting Back, late-result fencing, NextE/Koma and
   global F1 remain OPEN.
+- **Ordinary production-source original hold, waiting-Back LIMITED PASS
+  (2026-09-23):** Debug-only `readerProductionOriginalProbe=hold-once` is
+  armed on the normal #663205 Detail direct launch; it does not launch the
+  Debug Lab or alter source/window geometry. The production shared Reader
+  consumes the existing one-shot `ReaderTrialOriginalProbe` through
+  `NextNReaderLabPage`'s `productionSources` adapter and
+  `NextNReaderOriginalProbeProvider`. Exact signed installed HAP SHA-256:
+  `548e04aa04f8cbaf7a23de39c4aa0ae2b327714057289ca9482fa23ebed456c3`.
+  Its checked ordinary Detail layout had current page-0 tile
+  `[78,2194][399,2682]`. The one continuous 197 portrait recording and
+  same-window hilog show `ProductionThumbnailEntry offered ... claimed=true`
+  at 08:28:08.794, the *real original* held at .865, `ReaderEntry moving`
+  at .912, `waiting` at 09.371, Back/reverse claim at 10.928, reverse finished
+  at 11.380 and probe settled with `release=false state=cancelled` at 11.397.
+  All 81 encoded frames were indexed/reviewed; the cover remains visible in
+  the waiting Reader and retraces to its Detail tile after Back, with no
+  fully blank frame in this sample. MP4 SHA-256
+  `d1aa65cda4d738c12ce9f2cd1902243f29db8bbb97ae4bf4ce63054399246106`;
+  evidence and all-frame sheets:
+  `.hvigor/outputs/f1-reason-diagnostic-20260923/197-production-hold-waiting-back-run/`.
+  Checked terminal restore reopened ordinary `Bug Bite: Chapter 8` Detail,
+  confirmed page-0/page-1 source tile IDs, and read PowerManager AWAKE with
+  `Timeout=120000ms OverrideTimeout=120000ms`; no app data clear. Lease
+  `20260923-002525-c259f89d` was released. This accepts only one ordinary
+  page-0 waiting-Back cancellation on this HAP; delayed *successful* original
+  delivery, post-Back late completion, other pages/hosts and global F1 remain
+  OPEN. Focused original-probe 12/12 and gallery transition contract pass;
+  signed Debug build passes. Initial-policy runtime test had a stale class
+  selector/fixture after the existing root handoff class was introduced; its
+  test-only correction now passes and does not serve as visual evidence.

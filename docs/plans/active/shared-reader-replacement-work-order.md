@@ -4456,10 +4456,23 @@ State A shared → State B legacy（跨冷启动）→ State A 恢复：**三态
   tiles and PowerManager AWAKE/120000ms, then released lease
   `20260922-235904-4e87357e` without data clear. Evidence:
   `.hvigor/outputs/f1-reason-diagnostic-20260923/`.
-  **Current runtime action:** establish a production-source slow-original
-  injection that preserves the ordinary root/Detail entry geometry, then
-  execute its waiting-Back and late-result original-frame protocol on an
-  exact signed candidate. The Debug `hold-once`/`delay-once` runs cannot
-  close that boundary. Overall F1, F2 and other-host coverage remain OPEN.
+  A later Debug-only probe on **ordinary production Detail** armed the existing
+  one-shot original provider without altering source geometry. Exact installed
+  HAP `548e04aa…` on 197 logged real original held at 08:28:08.865,
+  `ReaderEntry moving` at .912, `waiting` at 09.371, Back/reverse claimed
+  at 10.928, reverse finished at 11.380, and resource settled
+  `release=false state=cancelled` at 11.397. One 81-frame original recording
+  (SHA-256 `d1aa65cda4d738c12ce9f2cd1902243f29db8bbb97ae4bf4ce63054399246106`)
+  was indexed and reviewed: the cover stayed visible in the held Reader and
+  retraced to its Detail tile, without a fully blank frame in this sample.
+  Checked terminal restore confirmed ordinary #663205 Detail and both source
+  tiles, AWAKE/120000ms; lease `20260923-002525-c259f89d` released, no data
+  clear. This is a **single waiting-Back LIMITED PASS**, not successful slow
+  arrival or late-result acceptance. Evidence:
+  `.hvigor/outputs/f1-reason-diagnostic-20260923/197-production-hold-waiting-back-run/`.
+  **Current runtime action:** use the same ordinary production-source resource
+  boundary to prove delayed *successful* original handoff and a post-Back
+  late completion on exact signed candidates, then apply the same ownership
+  contract to NextE/Koma. F2 and global F1 remain OPEN.
 
 **历史 NextE 观测候选（未安装、未动态验收；当前 F1 下一动作以上条为准）**：NE main `8c35d16e` + `cb1f478a`、kit `d99139f1`；签名 HAP SHA-256 `fab1703e57777bd892fb44032a1287f2f97f63b15df53361a560b1bd7a30bf48`，签名构建成功。新增日志只记录 production admission/capture 完成/overlay/phase、layout gate、actual flight-start 和 pending 期间每个 original part 的 slot/宽高；不改转场、几何、fallback 或后端选择。该旧候选的 logger 可采集性和动态证据均未证明，不能替代当前候选的匹配录像。
