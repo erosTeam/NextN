@@ -69,7 +69,7 @@ NextN 普通缓存和超分端口
 普通 provider 收据联合判断。
 
 独立监督指出首次普通 OFF→ON 的处理约 2ms，不能覆盖旧图已显示时的慢载/失败。
-本会话在此之后增加**已通过源码检查和 Debug 签名构建、尚未设备验证**的受限 Debug 普通 Detail 探针：
+本会话在此之后增加**已通过源码检查、Debug 签名构建和下述限域设备验证**的受限 Debug 普通 Detail 探针：
 显式 `nextn_gallery_id`、第 3 页和一次性 `delay-once`/`fail-once` 参数才可布置；
 真实增强图先显示，OFF 后恢复 ON 时才在真实超分 `prepareVariant` 边界施加
 2.5s 延迟或一次失败。它不替换缓存、目录、模型服务或 Debug Lab fixture，
@@ -103,14 +103,36 @@ compositor 帧或 RenderService 最终 asset 身份。开录后均读回 AWAKE/
 86400000ms，结束经 checked 协议恢复普通 Detail 与 120000ms，租约
 `20260923-042858-e16246ff` 已释放。原始逐帧、同期日志与终态材料在
 `/Users/honjow/.codex/worktrees/1327/NextN/.hvigor/outputs/f2-348d-independent-20260923/result.md`。
-这只覆盖**带探针的普通入口**：未做准备中的导航/开关取消，也未找到单独的
+这只覆盖**带探针的普通入口**：准备中的 Back 取消由下述本会话受控实测补上；尚未做准备中的翻页/开关取消，也未找到单独的
 可见失败提示。源码核对 `ReaderPagedSession.selectAssetVariant` 在
 `prepareVariant` 抛错时只返回 `unavailable`，没有创建候选 `ReaderAsset`
 或更新 `ReaderSession.failure`；因此不能把“没有新候选释放收据”算作泄漏，
 也不能声称用户已看到失败状态。正常无探针时序、F1、连续模式、NextE 237、
 Koma 103 与三端整体替换仍 OPEN。
 
-当前未证的同页物动作是用匹配候选对 NextN 197 的**准备中取消**及正常
+**197 准备中 Back 取消（2026-09-23，同一 348d HAP，限域通过）。**
+本会话以 checked manifest 和完整目标 `192.168.50.197:12345` 的 lease
+`20260923-044450-5e2d381a`，无清数据安装冻结 Debug 包，从普通
+`#678049` Detail 的第 3 页缩略图进入真实 Reader；一次性 OFF→ON 在真实
+超分 `prepareVariant` 边界挂 2.5s 门。增强 request 2/receipt 12 首先已
+显示；OFF 后 default request 3/receipt 13 于 12:48:23.914 完成可见 claim。
+ON 门 12:48:32.069 开，13 个采样直到 33.632 均为 default request 3
+`displayed`；Back 命令 33.512 发出，应用 34.129 收到，provider 34.162
+取消、34.170 返回 `reader_request_cancelled`。无 enhanced request 4 绑定
+或 applied，receipt 13 仅在 34.810 Reader 退出时由普通缓存释放。
+同期 260 帧原始 PTS 录像（SHA-256
+`2350460df8fe26079f48b576081590de9da6a098fbd25ddf7d38199aa6b5003f`）
+全 8 张接触表及退出周边原帧已审：待取消时完整长图可见，所审编码帧未见
+整页黑屏，随后缩回 Detail；静止区约 0.5s 和返回后的最大 1.02866s
+PTS 空档不证明每个 compositor 帧。同期日志 SHA-256
+`21cefcfeb915e96b10e859d8b92d65598a791acc44228503326bd856b1695786`；
+完整 checked manifest、原帧和限域判定见
+`.hvigor/outputs/nextn-197-f2-cancel-20260923/result.md`。终态已无探针重进
+普通 Detail，读回 AWAKE/120000ms，lease 已释放。此 PASS 仅关闭该
+Debug 辅助普通入口的**准备中 Back 取消与旧 lease 持有**，不覆盖正常路径
+时序、准备中的翻页/开关取消或 RenderService 最终呈现身份。
+
+当前未证的同页物动作是用匹配候选对 NextN 197 正常
 无探针手动路径做原始帧/身份/资源三联复核；失败提示先界定产品契约，
 不能用“默认图还在”替代。随后以相同共享修订分别验证 NextE 237 真实
 sprite Detail 和 Koma 普通章节入口，并处理连续模式与共享根层交接。只薄接真实宿主端口，

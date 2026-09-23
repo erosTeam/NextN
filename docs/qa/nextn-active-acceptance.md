@@ -12,6 +12,24 @@
 
 - NextN 197 same-page visual-claim counterexample / replacement OPEN (2026-09-23): the signed Debug fixture HAP `c9169761522036ba760ce34a3400569fa703da8156f7639dbb45a05afd38f7e6` exercised retained-image OFF→ON on source 2. For asset requests 2/3/4, the app-side selected-cell pixel digest at `claim_state_committed` still matched the old image, while `post_claim_idle` matched the candidate; requests 3/4 occurred inside the 125-original-PTS-frame MP4 `4ed4dd31906ba85b46019514b75ba0cb73da6e6edae24bd96119138a4ea31c1a`. The original frames around request 3 (f49–53, PTS 5.695–6.692s) and request 4 (f91–94, PTS 15.231–15.766s) keep the complete same page without an obvious black gap. The source images are not distinguishable enough in MP4 to assign each encoded frame to old versus candidate; recorder start is after request 2, and no immediate post-recorder-start timeout readback proves the 86400000ms guard persisted throughout. This is Debug component-composition/timing evidence only, not a RenderService present fence or ordinary Detail F2 acceptance. Exact local artifacts `.hvigor/outputs/nextn-197-visual-claim-stage-20260923/{setup-run,recording-run,analysis,restore-run}/`; the checked restore force-stopped only the Debug fixture, read back AWAKE/120000ms, preserved app data/settings and installed HAP, and lease `20260923-024758-d85578e1` was released. L0 lease retirement, failure/cancel rollback and ordinary F1/F2 remain OPEN for the final reviewed source and real host path.
 
+  The current ordinary-entry candidate is different: frozen signed Debug HAP
+  `348d7f5bb6cd4f14552680c527b2dc510aa0d9acf5f254f9685e67dc6ece03dc`
+  on real `#678049` Detail. Independent 197 delay/fail evidence and this
+  session's checked pending-Back cancellation now give bounded F2 old-asset
+  retention/rollback coverage, not final replacement acceptance. In the
+  cancellation run, default request 3/receipt 13 remained displayed throughout
+  13 ON-pending samples; the provider cancelled before any replacement bound,
+  and receipt 13 was released only when the Reader closed. All 260 encoded
+  original-PTS frames/contact sheets were reviewed with no whole-page black
+  sample; VFR gaps up to 1.02866s still limit visual coverage. Detailed
+  manifest/log/recording identity and verdict are in
+  `.hvigor/outputs/nextn-197-f2-cancel-20260923/result.md`. Postflight restored
+  ordinary Detail without the probe, AWAKE/120000ms and released lease
+  `20260923-044450-5e2d381a`; no data clear or preference write. The active
+  physical acceptance gap is normal no-probe manual F2 on matching source,
+  while visible failure status, compositor identity, F1, continuous mode and
+  other hosts remain OPEN. The single execution queue is the work order.
+
 - Shared reader Package 2 host-state/action parity DONE / replacement OPEN
   (2026-09-14): Koma, NextN and NextE now have complete bounded legacy/shared
   capability maps with host-owned persistence, settings, cache and business
