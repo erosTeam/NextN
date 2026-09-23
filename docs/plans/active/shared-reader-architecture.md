@@ -6,6 +6,35 @@
 > `shared-reader-replacement-work-order.md`. Older “next step” text below is
 > historical and must not schedule work.
 
+## 2026-09-24 远跳语义修订：B 是导航主人（覆盖下文旧页留屏提案）
+
+用户明确拒绝“已经翻到新页却继续显示旧页 A”。因此下文以
+`held-old → target-visible`、`oldProjection` 覆盖或“保留旧页直到 B 可绘”
+描述远跳的段落，只是旧候选的历史设计/失败证据，**不再是可实施的远跳可见
+行为契约**。L0 仍可暂存 A 的资源 lease 供取消、返回或失败清理，但资源未释放
+不等于 L2 可把 A 画在 B 的位置。黑底、模糊缩略图、全屏 loader、固定计时器也
+不能充当目标 B 的成功画面。旧版 `jumpToPage`/`ReaderPendingPage` 的源码只能
+说明它曾有等待/失败分支，不能凭源码断定用户已接受哪种待载外观；这个边界
+在同状态实机参考证据到位前保持未定，不臆造新的可见策略。
+
+多层共用的最小决策链是：L3 只发 `SeekIntent(B)`；L1 立即以单一
+`navigationRevision` 接受 B 为逻辑目标，并发布 B 的 pending/failed/ready
+状态和统一的页码/滑条语义；L0 为 B 的每个 part 建立带 request 身份的资源
+准备票据，同时独占 lease 与释放；L3 的目标 Image 按同一 ticket 回报
+`mounted → geometry → raw decode/error → post-frame admission`，L2 只核验这组
+同身份事实并决定 B 的可见提交或明确失败，不能把“回调没写日志”当作“回调
+没发生”；L4 仅提供真实文件/网络资源、归档目录和宿主窗口/路由，不自行维护
+第二套页号或遮罩状态。取消、二次 seek、资源失败必须使旧 ticket 失效，迟到
+回执只能释放其自身资源。这个接口由 N/E/K 共同消费，不为每个宿主复制一套
+`PositionHandoff`、opacity 或 fallback 计时状态机。
+
+当前 197 目标 37 的证据止于同 slot/request 的 mounted/geometry；7d 置顶且
+透明的 L2 候选也在 15 秒后失败。下一次源码判断必须区分 `Image.onComplete`
+未触发、`onError`、回调后 post-frame 校验拒绝和回执路由丢失，并核对 B 的
+本地资源可用性。未锁定具体断点前，不提交新的可见行为补丁，也不以另一次
+设备重跑代替成因。这个诊断/修因门与“B 是导航主人”的产品约束同时成立；
+前者不能成为再次让 A 长时间占据正文的借口。
+
 ## 2026-09-24 分层共用落地边界（设计状态，不是放行）
 
 本设计的“共用”是三端消费**同一决策与状态所有者**，不是各端调用同名 helper，
