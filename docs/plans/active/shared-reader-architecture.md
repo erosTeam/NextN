@@ -28,6 +28,19 @@
 L2 揭示经后续应用帧确认后，才将同身份实测坐标交还 L1。这个契约不等于
 continuous 多 item/滚动/跨章已经共用完整可见权仲裁。
 
+197 的 `5e1bd6d` 普通归档原帧已否定该候选的实机交接：远跳时清晰 B→
+模糊 B→清晰 B，重入也先模糊后清晰。系统同源日志在应用
+`Image.onComplete(width=8742,height=11656)` 前记录实际
+`CreatePixelMap dSize=(4,5), sSize=(8742,11656)`，后续才记录
+`dSize=(2185,2913)` 和第二次完成。`onComplete` 的尺寸是源图尺寸，
+**不是本次 native 输出像素的尺寸**；其与 `postFrameCallback` 相邻也不能
+证明目标已清晰合成。L3 应将“当前 item/part/request 的父分配尺寸、
+子 Image 实测尺寸、布局修订与同修订完成回执”作为有身份的
+`GeometryBoundDecode` 输入交给 L2；尺寸变化或 cached→selected 不得借旧回执。
+这只能排除已证的 1×1→4×5 假就绪，不能升格为 RenderService present
+栅栏；L2 仍持有旧 source/B，197 连续原帧仍是最终裁决。接口同时适用于
+`EntryEpisode`、`AssetSwap`、`PositionHandoff`，不在三个宿主各写一套等待。
+
 可复用共核的状态机须按 item/part 建账，而非整个阅读器共用一张旧图：
 
 | 事务 | 准入身份 | 唯一可见权交接 | 不得由谁代做 |
@@ -48,7 +61,7 @@ pipeline 也不预解码；`local-skip`/cachedCount 差异不能单独解释已�
 `PositionHandoff` 的相邻翻页、远跳、慢载/失败、二次 seek 和关闭返场，再让
 同位置替换、入口/反向及 continuous 多 item 消费同一 claim 规则；每移走一个
 旧 owner，就删除其渲染写入而保留 legacy/default 回退。当前仅有
-`5e1bd6d` 的监督窄源码审、共享测试及 NextN 签名构建；NextE 197 连续原帧、
+`5e1bd6d` 的监督窄源码审、共享测试及 NextN 签名构建；NextE 197 连续原帧已判此版 FAIL，
 NextN 普通入口、Koma 103 及三端同候选视觉仍 OPEN。精确候选/包/设备门
 只由唯一工作单记录，不能从本设计文档推断已放行。
 
@@ -165,7 +178,7 @@ NextE 197 普通归档入场在 `ea19f69` 的三次录像里，都先显示模�
 | 事实 / 所属层 | 能证明什么 | 不能越级声称什么 |
 | --- | --- | --- |
 | L0 `acquired(request, lease)` | 当前候选字节/资源和旧已显示资源可同时持有 | 文件存在不等于解码、可绘或可见 |
-| L3 `decoded(request, width, height)` | 同一原生 Image 节点报告解码尺寸，可校准 L1 页面比例 | `onComplete` 不等于清晰像素已进入合成帧 |
+| L3 `decoded(request, sourceWidth, sourceHeight)` | 同一原生 Image 节点报告源图尺寸，可校准 L1 页面比例；需另绑定当前布局修订 | 回调尺寸不等于 native PixelMap 输出尺寸；`onComplete` 不等于清晰像素已进入合成帧 |
 | L3 `nodeLayout(request, box)` | 当前节点经过布局，大小和位置可测 | 固定组件盒子不等于 `Contain` 内容，也不等于上屏 |
 | L3 `composedPixels(request, proof)`（待选技术） | 仅在能绑定具体候选节点和实际像素时，说明该候选画面已由 UI 绘出 | 应用侧快照仍不自动等于 RenderService 物理 present；图像哈希不天然等于清晰度 |
 | L2 `ownerCommitted(item, epoch, owner)` | 在同一 item 的候选证明满足契约后，提交唯一可见 owner 与旧 lease 退休意图 | 提交指令不能替代连续原帧中无黑/模糊/重影的验收 |
