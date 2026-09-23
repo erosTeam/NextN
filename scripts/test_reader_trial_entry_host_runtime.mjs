@@ -267,6 +267,12 @@ function setup({ deferRestore = false, readiness = 'not-required', backend = 'le
   }, 'Index.ets')
   const host = new Index()
   host.layoutSafeArea = { topAvoidHeight: 0, bottomAvoidHeight: 0 }
+  // The extracted host does not instantiate its ArkUI @Local transition owner.
+  // Simulate the coordinator's WAITING_READER handoff after openReader(true).
+  host.readerThumbnailTransition = { waitingReader: () => true }
+  host.productionReaderEntryClaim = null
+  host.productionReaderEntryTransition = null
+  host.productionReaderEntryPreview = null
   host.testPreparations = preparations
   // Ambient owners outside the extracted reader-entry lane, not replacement host methods.
   host.rootNavigationEpoch = 0
