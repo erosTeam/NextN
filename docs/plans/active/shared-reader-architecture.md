@@ -107,6 +107,47 @@ claim 建立前完成解码时，只能由**同一个已解码 Image 节点**在
 布局允许多个 item 同时持有 owner。当前实现还没有完成这项抽取，也没有
 跨 N/E/K 的同候选物理证据，不得把这一纵切当成五层共核已完成。
 
+### 2026-09-24 可见权证据分级与大图边界（设计约束，未实现）
+
+NextE 197 普通归档入场在 `ea19f69` 的三次录像里，都先显示模糊矩形再显示
+清晰原图。`displayed`、原生 `Image.onComplete`、组件的布局矩形、一次应用
+`postFrameCallback` 是四种不同事实；即使把它们串联，也不能推出某一原帧的
+像素已经清晰。尤其整个 Image 节点显式使用视口宽高与 `Contain`，节点矩形
+并非实际绘制内容矩形；用解码尺寸反算的内容矩形也只是预测。曾试作的
+“解码＋节点布局”门禁已撤回，不能作为正式 L2 `visible` 收据。
+
+| 事实 / 所属层 | 能证明什么 | 不能越级声称什么 |
+| --- | --- | --- |
+| L0 `acquired(request, lease)` | 当前候选字节/资源和旧已显示资源可同时持有 | 文件存在不等于解码、可绘或可见 |
+| L3 `decoded(request, width, height)` | 同一原生 Image 节点报告解码尺寸，可校准 L1 页面比例 | `onComplete` 不等于清晰像素已进入合成帧 |
+| L3 `nodeLayout(request, box)` | 当前节点经过布局，大小和位置可测 | 固定组件盒子不等于 `Contain` 内容，也不等于上屏 |
+| L3 `composedPixels(request, proof)`（待选技术） | 仅在能绑定具体候选节点和实际像素时，说明该候选画面已由 UI 绘出 | 应用侧快照仍不自动等于 RenderService 物理 present；图像哈希不天然等于清晰度 |
+| L2 `ownerCommitted(item, epoch, owner)` | 在同一 item 的候选证明满足契约后，提交唯一可见 owner 与旧 lease 退休意图 | 提交指令不能替代连续原帧中无黑/模糊/重影的验收 |
+
+L2 的共享接口应是 `VisualOwnerArbiter`，以
+`(unit, displayItem, selection/navigation epoch)` 建账、以 part 集合原子提交。
+入口、同页增强/翻译替换、Swiper 翻页、缩略条/滑块 seek 都只能提交
+`CandidateVisual`，不得自行维护第二个 opacity、页号或旧资源计数。仲裁器
+只接受带同一 epoch、同一原生节点/资源身份的收据；第二次导航作废旧候选，
+但保留最后真实可见 owner。失败面可显式接管，不得伪造 L1 的“目标原图已见”。
+连续模式为多个可见 item 分别建账，而非用全局单张旧图遮挡列表。
+
+无法取得可靠 native present 收据时，结构性候选是由 L0/L4 的
+`PreparedDrawablePort` 异步交付**已完成的、视口级别**像素源，再由 L3
+一次挂载对应 item 的所有 part；L2 在其可验证的画面证据出现前保留宿主/旧
+原生画面。此方案不能直接解码 11656×8742 全尺寸 PixelMap 或使用
+`Image.syncLoad(true)`：实现必须对输出尺寸、峰值内存、并发个数、取消、
+旋转/裁剪、失败回退和 lease 退休设明确上限，并在 197 实测平台解码峰值；
+仅设置目标输出尺寸不能证明峰值受控。若平台做不到安全有界准备，就必须
+继续持有旧 owner 并报告能力缺口，而不是加固定延时或露黑底。L4 分别提供
+NextN/E 的网络与本地资源、Koma 的离线/章节资源；L2/L3 契约不按宿主名字分支。
+
+197 的这次诊断先把归档 `liveSourceEntry` 实际布尔值、选中缩略/原图
+`onComplete`、L1 `displayed`、L2 reveal/host-release 与原始 PTS 对齐，判定
+f34 模糊像素究竟由旧缩略图、原图 Image 渐进绘制还是宿主层提供。该诊断
+不会自行放行任何候选。每个真实纵向能力包在 N/E/K 各自普通入口都要同时
+保存源码/kit pin、宿主包、设备状态与连续原帧；未覆盖的宿主保持旧实现回退。
+
 ### L2 组合边界：共享仲裁，分离事务
 
 L2 不是一个容纳 F1、F2、翻页、跨章所有 phase 的巨型状态机。其最小共核是
