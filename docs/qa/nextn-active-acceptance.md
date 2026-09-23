@@ -8737,6 +8737,23 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   original-frame rail/slider verification remain OPEN. Existing 197 F1/F2,
   default legacy fallback, settings/data and restored-device state remain
   as recorded in their separate entries.
+  A later isolated L2/L3 Koma OFF candidate `7c7fbd20…4847b` was actually
+  exercised on 103, not on 197: its ordinary two-page rail/slider/rail MP4
+  `13aa888b…fefc38` contains 114 original PTS frames, with blue→red,
+  red→blue and blue→red body changes at f69→70, f83→84 and f108→109.
+  No frame's central body ROI contains any pixel with all RGB channels below
+  16, in contrast to the earlier native-OFF-only candidate's f55–57 black
+  gap. This is a bounded encoded-frame result, not a claim for PTS gaps or
+  compositor presentation. One-frame old-body/new-page-number intervals
+  remain visible; slow/failure/second-seek, the subsequent source-only
+  return-to-old guard, the complete shared L1 path in Koma, formal pin and
+  N/E remain OPEN. The checked run read AWAKE/86400000ms after recording
+  start and before input; checked cleanup removed only agent-created
+  Photo/865 and its device temporary export after local hash/decoder
+  verification, replaced the original Koma HAP without clearing data, read
+  back ordinary bookshelf and AWAKE/10000ms, and released lease
+  `20260923-072611-931a328a`. Original MP4, logs, frames and manifests
+  remain in `.hvigor/outputs/koma-103-position-handoff-probe-20260923/`.
 - **Koma 103 isolated animated-seek A/B LIMITED PASS (2026-09-23):** A frozen
   copy of the exact original Koma source received only the shared `8e0dee0`
   rail/slider native-animation path, with signed Debug HAP SHA-256

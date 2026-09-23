@@ -200,8 +200,35 @@ PTS 0.328844–0.380133 秒约 51ms；同录屏滑块 1→2 未见黑帧，
 却是瞬切而非动画。录像 SHA-256
 `fb33c74f850ee19c9e1f1557ce823f0bc3d33056ee012433881bb991b19b03e4`，
 报告 `/Users/honjow/.codex/worktrees/f769/Koma/.hermes-artifacts/device103-koma-candidate-20260923/review-103.md`。
-这是当前 `PositionHandoff` 的真实修复门，不得由 N/E 的入口动画或旧版本
-章节 PASS 抵消；原因尚未唯一归到 `seekSource`。每端普通入口
+这是 `PositionHandoff` 的真实修复门，不得由 N/E 的入口动画或旧版本
+章节 PASS 抵消。第一次 OFF 原生 `changeIndex(false)` 隔离候选
+`e5239032…b061` 仍在 f55–57（PTS 0.911756–0.942856s）露出黑正文，
+故仅改 L3 路由不足。第二次隔离候选 `7c7fbd20…4847b` 把 L2 旧页图像
+claim 保留至目标选中、可绘且越过一帧，再退休旧图；Koma 产品 pin 未动。
+103 同一普通书架→Detail→Chapter 1、1600×2560、动画 OFF 的 114 帧原始
+MP4（SHA-256 `13aa888b7865a6fd4ffc7907b8bd4f529ad70cb9633aeee0eed6487d06fefc38`）
+中，rail 蓝→红 f69→70、slider 红→蓝 f83→84、rail 蓝→红 f108→109；
+逐帧中央正文 ROI `(400,450)-(1200,1600)` 的 RGB 三通道同时小于 16
+像素占比最大 0，且逐张原帧未见正文黑洞。同窗日志有三组
+`old_visual_held=true` / `old_visual_retired`。这只接受**该隔离包、该双页
+普通路线的已编码画面无黑帧**；f69、f83、f108 仍短暂显示新页码/旧正文，
+录屏 PTS 空档也不证明每次 compositor 刷新。精确视频和 checked 协议在
+`.hvigor/outputs/koma-103-position-handoff-probe-20260923/`；开录后、输入前
+读回 AWAKE/86400000ms，之后已精确清除 Photo/865 与临时导出、原版 HAP
+`1c2f3a57…a713c` replace-only 复装、普通书架/10000ms 读回并释放
+`20260923-072611-931a328a` 租约，本地 MP4 保留。
+
+共享 `ReaderPositionHandoff` 属 L2，可见旧图 claim 与 L1 slot lease 分开；
+`ReaderPagerCommand` 属 L3，用 native 选择承接 ON/OFF；宿主仍只发意图。
+这是一条多层共用纵切，不是 Koma 专属遮罩或新的影子状态机。第二次快速
+seek 回旧页若 native 不触发 `onChange`，源码新增一帧后退休重复旧图的
+兜底，共享提交 `bc8da4b` 的 469 个共享测试及 NextN 签名 Debug 编译通过；
+冻结 NextN HAP SHA-256 为 `7750fcee1e34d6207907832ac3ed09f7afc5df29a8448c59593e7d8142f917d0`
+（`.hvigor/outputs/shared-position-handoff-bc8da4b/`，未安装），隔离 Koma
+最终兜底编译 HAP SHA-256 为 `9cde6672…b4cd6`（未安装）。**该追加兜底尚未在
+设备上实测**。当前唯一下一证据动作是用含最终兜底的隔离 Koma 包，在
+103 同一普通入口验证快速第二 seek、慢目标和目标失败，并核对混合页码
+窗口；然后才可评估正式 Koma pin 与 NextE/NextN 消费。每端普通入口
 都须以匹配候选的身份、画面、释放三联证据验收；历史记录留在下文但不排序
 当前动作。设备 197 本次已受检恢复至无探针普通 `#678049` Detail、
 AWAKE/120000ms，未清数据或设置；租约 `20260923-053213-247e19df`
