@@ -7,6 +7,14 @@ boundaries. Neither may create a second queue.
 
 ## Outcome
 
+### 2026-09-24 current 197 candidate result (supersedes the earlier `c8abbb1` “no physical result” checkpoint below)
+
+The exact NextE signed Debug HAP SHA-256 `758a88de6fdf4367be562b44be5c8be89a19349b1d99c4ee403494cbcc3c032a` consumed shared kit `c8abbb1` and was installed through the checked protocol on 197 ALN-AL80 (1260×2720), without clearing data. On the ordinary Downloads → Archive → first completed gallery path, three entries first showed clear body frames f54 PTS1.065256, f476 PTS18.532389, and f824 PTS40.755378. The old 4×5 enlarged-blur entry did not recur in this recording; this is only a narrow entry improvement, not three-host acceptance.
+
+The first far slider seek **FAILS**: f180 PTS9.714567 shows slider 38/147 while header/body remain on page 130/147; f287 PTS12.744489 and f325 PTS14.004344 remain on that old page. Hilog 06:15:32.275 records `seek_source=37`, .285 `command_wait_drawable target=37`, but no `target_stable`, `visual_command`, or `selected=37` before exit. This is a submitted command stalled before the visible handoff, not a missed gesture or successful retained-page transition. A second near seek 131→130 does complete: f739 PTS34.341444 is 131, f740 PTS34.348700 is 130; hilog 06:15:54.520 `seek_source=129`, 56.907 `visual_command target=129`, 56.922 `selected=129`, 56.984 `native_owner_commit`. Video PTS and hilog wall time have different origins. Generic `asset_bound receipt103` cannot be assigned to target37; the present log does not prove that target's slot/frame phase, L2 viewport layout/decode, or `file://` existence.
+
+Evidence: `/Users/honjow/.codex/worktrees/eceb/NextE/.hvigor/outputs/device197__ALN-AL80/unknown/portrait-1260x2720/archive-c8abbb1-20260924/first-archive-recording-001/nexte197-c8abbb1-first-archive-three-opens-two-far-seeks-20260924.mp4` SHA-256 `c207666224abbeee31b4bc1fd0c79e6738694715b0fb7027760f37417a620ac9`; same-directory `hilog.txt` SHA-256 `efc5965ce586d301822efd4ba44030fcedb524f44f74706c773a1844a1b6bb92`, plus 894-frame PTS timeline. Checked postflight returned Downloads/Archive, and the 197 lease was released; 200 was not used. Active outcome: Archive far seek/loading **FAIL/OPEN**; three-host visual 0/3, F1/F2, and default-replacement acceptance remain OPEN. The concrete diagnostic gate is reservation → target slot/page/asset → L2 viewport/geometry → native callback on the same target identity; only its result licenses a narrow functional correction. Do not treat a diagnostic build as acceptance or use a timer/preload expansion to conceal the wait.
+
 Ship one shared reader whose core interaction and UI are reused by all three
 apps while each host retains ownership of catalogs, cache/download services,
 settings, progress, actions, navigation, and Koma chapter orchestration.
