@@ -62,6 +62,32 @@ L1 统一导航修订，L0 准备新页同时保留旧已显示 lease，L2 在�
 仍交出旧画面所有权，L3 绘制，L4 只提供章节/本地源。任何一处跳过中间层，
 例如宿主直接清图或 UI 自改页号，都不是这项能力已共用。
 
+### 2026-09-23 PositionHandoff 落地切面：把层间契约固定为可复用能力
+
+当前实现不是上表的通用 `VisualOwner` 共核，只是 paged/OFF 的一条真实纵切。
+它已把“逻辑目标”与“已呈现位置”拆开，而且让宿主只供资源，不在 Koma
+另写遮罩或页号。下表同时规定扩展到 N/E/K 时不得退回的所有权边界；
+运行证据和唯一待执行门仍只在 `shared-reader-replacement-work-order.md`。
+
+| 层 | 目前共用落点与输出 | 不得跨越的边界；尚未覆盖的能力 |
+| --- | --- | --- |
+| L0 资源 | `ReaderPageSlot` 的请求/asset 身份与已显示资源；provider 失败发布精确 failed asset | 解码、失败、request 变化本身不表示画面已切；不由宿主提前释放旧图。当前 103 失败是隔离注入，真实网络/本地错误仍待宿主端口验收。 |
+| L1 导航与 lease | `ReaderPagedSession` 接受 seek，维护逻辑 `displayIndex`、selection/navigation/topology 修订，保留最后真实 `reportVisible` 的旧 slot 至新目标真正可见或 close | 失败面可接管 L2 显示，但不能伪造目标成功可见或退休 L1 旧 lease；进度写入仍依真实会话观察，不等同于 chrome 投影。连续多行及跨章需按 item 扩展，不许复制全局旧页号。 |
+| L2 视觉所有权 | `ReaderPositionHandoff` 持有 serial、目标身份和只读 `oldProjection`，不持有 asset；第二次 seek 沿用同一个旧可见来源。`ReaderNativePager` 在目标可绘、同身份 post-frame 或明确失败面接管后才撤销旧图 claim | 这只是 paged/OFF 的局部仲裁。失败时撤销 L2 claim 与保留 L1 lease 是两个动作；不能用透明/黑色遮罩冒充旧图。未来 `EntryEpisode`/`AssetSwap`/`PositionHandoff` 同 item 可见权须串行，而不是三个组件各设 opacity。 |
+| L3 呈现与输入 | `ReaderSurface.presentedProjection()` 把同一旧位置投影到正文、页码、缩略轨、滑块；逻辑 snapshot 仍接收 seek 和动作。ON 使用 native 动画，OFF 使用受栅栏保护的 native 无动画命令 | 只读呈现投影不得反向成为 L1 导航真相。失败面是现有 `ReaderFailurePanel`，不新增父层/遮罩。no-onChange 回旧页兜底尚无物理命中，不能以测试通过替代。 |
+| L4 宿主 | Koma 隔离快照仅以真实普通章节入口和受控慢载/失败资源端口消费共享逻辑；NextN 已编译，同修订 NextE 尚未验 | 产品 Koma pin、NextN/NextE 的真实入口/viewport/默认替换仍独立 OPEN；任何一端须有匹配源、包身份、原帧和释放证据，不能借另一端结论。 |
+
+这个切面建议用一个明确的只读 `PresentedPosition` 契约继续收敛：
+`logicalTarget` 来自 L1，`visibleOwner` 来自 L2，`chromePosition` 是 L3 对
+后者的投影；失败面接管时 L2 发布目标失败位置，但 L1 不发布成功可见。
+跨 item 的状态变化只允许 `held-old → target-visible`、
+`held-old → target-failure` 或 `held-old → restored-old` 三种有身份的结果；
+第二次 seek 作废前一目标而保留最后真实已见旧页。现有 `ReaderPositionHandoff`
+还依赖 pager 组件生命周期，尚不是独立可组合控制器；迁移顺序应先用
+no-onChange、失败后重试与连续多行证据锁定语义，再让根入场和资源替换
+共用同一可见权仲裁，最后删除各宿主重复 owner。每次只搬走一个实际 owner，
+保留旧实现回退直到该宿主普通路径验收，而不是一次性新增五个模块。
+
 ### L2 组合边界：共享仲裁，分离事务
 
 L2 不是一个容纳 F1、F2、翻页、跨章所有 phase 的巨型状态机。其最小共核是
