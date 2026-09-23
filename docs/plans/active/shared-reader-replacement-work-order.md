@@ -297,10 +297,23 @@ Photo/868 与设备临时导出在本地视频哈希和 116 帧核验后精确�
 AWAKE/10000ms 读回，租约 `20260923-092924-d3a7ca3d` 释放。Koma 产品
 pin 未动。
 
-**当前唯一下一实施/物理动作**：同一 shared L2/L3 合同验证
-no-onChange 快速回到旧页兜底；这条 guard 目前只有源码测试和编译，
-不能由受控失败或慢载录像代替。正式 Koma pin、N/E 匹配源码/构建/
-设备消费继续 OPEN。每端普通入口
+**三端可消费的共享候选与当前主门：**reader-kit 精确修订
+`94fafdfb784ee8a8e85346c7ecea1831c4d05b6f` 包含 L1 已见旧页 lease、
+L2 `ReaderPositionHandoff`/失败面 handoff、L3 页码/轨道/滑块同一 presented
+投影。NextN 本工作树 pin 至此修订，签名 Debug 重新构建成功；冻结 HAP
+`.hvigor/outputs/shared-failure-94fafdf/nextn-shared-failure-fd2ac67a-signed.hap`
+SHA-256 `fd2ac67a9484f0d8dccbcb543621b69a78ceadb3a000cdf8e488a791a7fd46d6`
+（未安装；不可把此前 `854b7033…` 构建视作同一包）。宿主输入仍为
+catalog/asset、真实来源/窗口、路由/动作/进度端口；不得由宿主复制 L0–L3
+页号、资源 lease 或可见权。Koma/NextE 必须各自消费该精确修订与自己的
+真实端口，保留 legacy/default 回退，再在普通入口以包身份、原帧/PTS、
+同窗日志和释放证据独立验收。当前共享测试 473/473、NextN 签名构建、
+103 隔离慢载/受控失败仅是各自层级的证据，**三端正式同候选设备消费仍
+0/3**。NextN 当前产品动作是此冻结包在 197 的普通 Detail→Reader
+进入、翻/跳、主要控件、退出/重进短路径；一旦有致命可见反例先在同一
+路径定位和修复，不扩录旧探针。no-onChange 快速回旧页兜底、失败后重试、
+自然 provider 失败、连续模式及 N/E/K 跨端入口仍 OPEN，但 no-onChange
+并非三端正式接入前的独立物理阻塞。每端普通入口
 都须以匹配候选的身份、画面、释放三联证据验收；历史记录留在下文但不排序
 当前动作。设备 197 本次已受检恢复至无探针普通 `#678049` Detail、
 AWAKE/120000ms，未清数据或设置；租约 `20260923-053213-247e19df`
