@@ -303,6 +303,15 @@ unit/navigation 栅栏保护的 `changeIndex(target, true)` 驱动原生 Swiper�
 不是正式 Koma pin。长期共享接口应将 L1 的 outgoing lease 收据、L2
 的可见 claim、L3 的有动画/无动画呈现策略分别显式化；动画只能是满足
 claim 契约的一种策略，不可当作唯一状态机或任意场景的黑帧遮罩。
+共享当前动画实现还有一个必须区分的时序：`ReaderPagerCommand` 先调用
+`controller.changeIndex(target, true)`，而不是先 `seekSource`；会话位置由
+native `onChange` 回送后才推进。`ReaderNativePager` 动画中传给 viewport 的
+`active = !moving && selected` 仅栅栏可见报告/输入等回调；
+`ReaderPagedImage` 的 `Image` 构建并不以 `active` 为条件。103 同窗原帧
+确有旧页和目标页的共同正文，支持这个命名样本的绘制事实。另一方面，
+`active=false` 期间不会确认 target `reportVisible`，所以 L1 不得按
+`changeIndex` 命令或 `onComplete` 退休旧 lease；必须等原生运动结束、
+目标完整可见的身份匹配观察。此源码和录像不能证明未缓存目标的过渡。
 
 L2 对 L4 暴露窄端口：`claimSource/measureVisibleSource`、
 `captureSource/captureDisplayed`（带可释放 lease）、`prepareWindow`、
