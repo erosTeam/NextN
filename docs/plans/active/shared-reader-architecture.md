@@ -1,5 +1,11 @@
 # NextE / NextN / Koma 共享阅读器设计草案
 
+## 2026-09-24 B 像素与宿主策略的硬边界（当前设计门）
+
+远跳必须把 **B 意图**、**B 来源准入**、**B 已解码可绘**、**B 实际可见**分开，不能把文件路径、`Image.onComplete` 或 `Swiper.index(B)` 当作同一事实。NextE Archive 的所有原图 `file://` 已在宿主 `localUnits.seedImages`，这只证明 L4 有原始文件地址；生产 `assetProvider` 仍按 translation → super-resolution → image-block → adapter 包装。`imageBlockProvider.applyDecision` 对本地文件异步查规则，可能把原图改为受限通知。让 core 直接取 adapter 的 URI/Asset 绕过这层，即使解决空槽和黑底，也可能在策略判定前泄出应屏蔽内容，禁止集成。宿主预载同样不得把缓存存在误报为策略准入或清晰像素。
+
+共享契约必须由 L4 **最外层有效资源提供者**交付带 unit/source/variant/request 身份的 `AuthorizedTarget`，同时表明原图、受限通知或失败面三选一；L0 持有其 lease，L1 接受用户的 B 意图，L2 仅在同身份目标可绘收据成立时交接，L3 的 Chrome/Swiper/图片取同一个事务。快滑块 Click/没有 Moving 的 End 和相邻普通翻页没有预热时间；如果准入、I/O 或解码还未完成，源码无法同时保证“立即出现 B 真像素”“不显示 A”“不显示黑/模糊/加载替代物”。这是未解决的产品/技术约束，不能用裸 `file://`、大图 `syncLoad(true)`、定时器或静态测试抹掉。下一候选须先在完整 provider 链下证明这些输入的目标来源和 B 像素交接；否则明确保留反例与开放状态，不放行设备安装或默认替换。
+
 > Execution status moved on 2026-09-14: this document is the architectural and
 > historical evidence base, not the live task queue. The single current queue,
 > package status, and next action are maintained in
