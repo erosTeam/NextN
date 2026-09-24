@@ -10,6 +10,8 @@
 > `docs/plans/active/shared-reader-replacement-work-order.md`; add detail here
 > only for a durable counterexample or a final package conclusion.
 
+- NextE bounded reader repair accepted for the recorded paths (2026-09-25); full replacement remains OPEN. Baseline c94b43fa preserved; current committed host 0b9c12d6 / core 0fd19c3, installed device197 HAP 75a38669a321b10ce95cdebce05c8bc684fa9e20dfd1aaef545c4f16f8f6fec9. Evidence and accepted-binding.json: NextE .hvigor/outputs/reader-retained-entry-20260925. Complete recordings reviewed: uncached thumbnail/loading/original (400 frames), loading-time fast input (334), ordinary local live double-page/selected-slot entry/companion fade (920), downloaded no-thumbnail native entry (238), and live equal/merged layout with source3-preserving double OFF (458). Geometry-key Image remount remains rejected; native Image and Swiper retained. Page-counter diagnostic showed the update follows native animation end, not a proven TextController failure; diagnostic logging removed and final75 reinstalled. No claim for all24 settings, rotation/fold, physical Back midflight, continuous-axis parity or other hosts. Current bounded repairs require no additional unchanged-route rerun; remaining migration coverage stays in the work order. Restored merged layout, double OFF, LTR; timeout120000 read back; lease20260924-202034-bfcb4403 released. Only NextE; no200/Koma or push.
+
 - Shared reader Package 2 host-state/action parity DONE / replacement OPEN
   (2026-09-14): Koma, NextN and NextE now have complete bounded legacy/shared
   capability maps with host-owned persistence, settings, cache and business
