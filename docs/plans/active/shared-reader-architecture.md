@@ -6,6 +6,17 @@
 
 共享契约必须由 L4 **最外层有效资源提供者**交付带 unit/source/variant/request 身份的 `AuthorizedTarget`，同时表明原图、受限通知或失败面三选一；L0 持有其 lease，L1 接受用户的 B 意图，L2 仅在同身份目标可绘收据成立时交接，L3 的 Chrome/Swiper/图片取同一个事务。快滑块 Click/没有 Moving 的 End 和相邻普通翻页没有预热时间；如果准入、I/O 或解码还未完成，源码无法同时保证“立即出现 B 真像素”“不显示 A”“不显示黑/模糊/加载替代物”。这是未解决的产品/技术约束，不能用裸 `file://`、大图 `syncLoad(true)`、定时器或静态测试抹掉。下一候选须先在完整 provider 链下证明这些输入的目标来源和 B 像素交接；否则明确保留反例与开放状态，不放行设备安装或默认替换。
 
+### 可实现的共同交易契约（N/E/K 共用，不是三个宿主各写一个分支）
+
+| 阶段 / 唯一 owner | 输入与产物 | 不变量 |
+| --- | --- | --- |
+| L3 → L1：接受意图 | `SeekIntent(unit, source, variant)` → 单调 `navigationRevision` 的 B ticket | 页码/滑条可表明“目标 B 待定”，但 `observedPosition` 和保存进度不随意图提前前移；A 不得冒充 B 正文。 |
+| L1 → L0/L4：取得资源 | ticket 的每个 part 经最外层 provider 依次做策略、资源与 lease 决策 → `authorized(asset)` / `suppressed(notice)` / `failed(error)` | `immediatePages` 最多提供页元数据；`immediateAsset=null` 时仍调用完整 `assets.load`。本地 seed URI、预载成功及旧 policy 决策都不是授权收据；规则/文件/variant 身份变化使旧收据失效。 |
+| L0 → L2：准备画面 | 被授权 asset 的 slot/request/part、当前实测几何、native 解码与 post-frame 回执 → 同身份 drawable candidate | 回执只能准入候选，不能单独证明 RenderService 已合成清晰像素；`onComplete` 源尺寸、非空 URI 或 `Swiper.index` 均不能越级提交。双页要覆盖所有可见 part。 |
+| L2 → L3/L1：唯一可见提交 | B 的同 revision 候选取得可见权 → 一份 `ExperienceSnapshot` 同时驱动正文、顶栏、轨道和底栏；随后 L1 才报告 observed，L0 才退 A lease | 被替代、取消或迟到的 ticket 只能释放自己的 lease，不能写回当前位置或覆盖后来的画面。`onCommitDirect` 必须先封存 serial/清理旧 claim，再触发会同步 emit 的 session 变更。 |
+
+这形成两条独立验收门：**策略门**证明显示的确实是当前规则允许的 B；**像素门**以普通入口连续原帧证明画面没有 A/黑/模糊/全屏加载替代，不能把应用侧回执冒充物理上屏。NextE 的 metadata-only 宿主草案只缩短 `catalog.page` 一侧的等待，且尚无 kit 入口；它不是 B drawable 票据，也不能释放 `a3388a9`。未经产品决策，`authorized(asset)` 尚未解码时的 B 专属 pending 外观保持未定义：不能偷偷选用被用户拒绝的四种替代画面。
+
 > Execution status moved on 2026-09-14: this document is the architectural and
 > historical evidence base, not the live task queue. The single current queue,
 > package status, and next action are maintained in
