@@ -1,9 +1,9 @@
 import { ReaderTrialLayoutCommit, ReaderKeepScreenOn, ReaderTapAction, ReaderTapPolicy, ReaderRuntimePolicyIntent,
-  ReaderCloseContext } from '@reader-kit/ui'
+  ReaderCloseContext, ReaderThumbnailContentParams, ReaderThumbnailRail } from '@reader-kit/ui'
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
 import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderLayout,
-  ReaderReadingAnchor, ReaderDisplayPolicy, ReaderPage, ReaderVariantPreference, ReaderAssetProvider } from '@reader-kit/core'
+  ReaderReadingAnchor, ReaderDisplayPolicy, ReaderPagedSnapshot, ReaderPage, ReaderVariantPreference, ReaderAssetProvider } from '@reader-kit/core'
 import { ReaderEntryTransition, ReaderEntryTarget, ReaderEntryPhase, ReaderEntryPreviewSource } from '@reader-kit/ui'
 import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility,
   ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction, ReaderMediaActions,
@@ -11,6 +11,7 @@ import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibility
   ReaderHostSettings, ReaderExternalOpen, ReaderHostActions, ReaderVariantPolicy, ReaderCropPolicy,
   ReaderAutoReadPolicy, ReaderTemporaryVariantControl } from '@reader-kit/ui'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
+import { ReaderThumbnailStrip, ReaderThumbnailDataSource } from '../components/ReaderThumbnailStrip'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
 import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea,
   LayoutSafeAreaState, ThemeDisplayState, ThemeTokens, nextNHdsTitle, ReaderTrialOriginalProbe,
@@ -120,6 +121,8 @@ export struct NextNReaderLabPage {
   private rootEntryRevealStarted: boolean = false
   private enhancementInteractionTimer: number = -1
   private adapter: NextNReaderLabAdapter | null = null
+  private thumbnailDataSource: ReaderThumbnailDataSource = new ReaderThumbnailDataSource()
+  private thumbnailScroller: Scroller = new Scroller()
   @Local private currentSourceIndex: number = -1
   @Local private translationRequestedPages: number[] = []
   @Local private translationAppliedPages: number[] = []
@@ -1033,6 +1036,52 @@ export struct NextNReaderLabPage {
       : this.readerPresentation.cropStrengthPaged
   }
 
+  private thumbnailToken(unit: ReaderUnitKey, navigation: number): string {
+    return JSON.stringify([unit.scope, unit.work, unit.unit, navigation.toString()])
+  }
+
+  private seekThumbnailIfCurrent(index: number, token: string, params: ReaderThumbnailContentParams): void {
+    const current: ReaderPagedSnapshot | undefined = this.session?.snapshot()
+    if (current?.unit === null || current?.unit === undefined ||
+      token !== this.thumbnailToken(current.unit.key, current.navigationRevision) ||
+      index < 0 || index >= current.unit.pageCount) return
+    params.onSeek(index)
+  }
+
+  @Builder
+  private HostThumbnailStrip(params: ReaderThumbnailContentParams) {
+    if (this.request.productionSources === true) {
+      ReaderThumbnailStrip({
+        pages: this.adapter?.progressDetail(params.snapshot.unit?.key.work ?? '')?.pages ?? [],
+        dataSource: this.thumbnailDataSource,
+        scroller: this.thumbnailScroller,
+        initialIndex: params.snapshot.anchor?.sourceIndexHint ?? 0,
+        pageCount: params.snapshot.unit?.pageCount ?? 0,
+        rtl: params.snapshot.policy.direction === 'rtl',
+        selectedIndices: params.snapshot.frames.map((frame: ReaderPagedFrame): number => frame.part.sourceIndex),
+        followIndex: params.snapshot.anchor?.sourceIndexHint ?? 0,
+        visible: params.visible,
+        navigationToken: params.snapshot.unit === null ? '' :
+          this.thumbnailToken(params.snapshot.unit.key, params.snapshot.navigationRevision),
+        onSelect: (index: number, token: string): void => {
+          this.seekThumbnailIfCurrent(index, token, params)
+        },
+      })
+    } else if (this.session !== null) {
+      ReaderThumbnailRail({
+        session: this.session,
+        snapshot: params.snapshot,
+        presentedSnapshot: null,
+        accent: ThemeTokens.BRAND,
+        previewIndex: params.previewIndex,
+        previewAnimate: params.previewAnimate,
+        onSeek: (index: number, unit: ReaderUnitKey, navigation: number): void => {
+          this.seekThumbnailIfCurrent(index, this.thumbnailToken(unit, navigation), params)
+        },
+      })
+    }
+  }
+
   @Builder
   private readerContent() {
     Column() {
@@ -1102,6 +1151,7 @@ export struct NextNReaderLabPage {
               contentOpacity: this.rootOwnedEntryTarget || this.rootEntryRevealStarted ? 1 :
                 this.readerThumbnailTransition.readerImageOpacity(this.request.pageIndex + 1),
               openingPlaceholder: (): void => { this.ReaderOpeningPlaceholder() },
+              thumbnailContent: (params: ReaderThumbnailContentParams): void => { this.HostThumbnailStrip(params) },
               active: this.hostRouteActive() && this.labVisibility.foreground && !this.readerSettingsSheetShown,
               temporaryVariantActive: this.hostRouteActive() && this.labVisibility.foreground &&
                 !this.closeRequested && !this.hostClosing,

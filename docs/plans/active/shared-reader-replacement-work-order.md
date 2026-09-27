@@ -5,6 +5,131 @@ readers with `reader-kit`. The architecture document preserves design and prior
 evidence. Per-app QA ledgers preserve durable counterexamples and accepted
 boundaries. Neither may create a second queue.
 
+## 2026-09-27 用户批准：三宿主复用边界收束（限定阶段完成）
+
+用户批准先规划并实施共享边界与三端接入收束。停止追加NextE打开耗时专项优化；原反例与未验收结果保留，不因转换主线变成通过。本节为本工作单唯一当前执行顺序，早期Package及设备记录仅作证据索引，不创建并行队列。
+
+目标：一份共享实现，宿主只承担数据/资源/偏好/业务/路由适配；不得通过三份fork、逐宿主重写算法或统一成NextE外观交付。设备当前只授权197，200禁止；Koma模式控件与原缩略图栏已完成限定路径验收并冻结，NextN原缩略图栏新旧共用也已完成下述限定路径。历史Koma暂停不用于阻挡本次明确批准的接入核查，但其他设备不自动恢复授权。
+
+委派模型约束（当前用户指令）：复杂源码、独立审查与设备执行使用 GPT 6 SOL；构建、日志整理等简单任务使用 GPT 6 Luna；不得创建或重启 Astra 子代理。优先复用已有执行者，仅派有明确边界的任务。
+
+### 有限阶段与退出条件
+
+1. **归属与版本基线（已分类，运行边界逐项保留）**：冻结三个当前checkout、共享revision及WIP身份；列出共享差异和宿主差异，区分应共享/必要适配/无依据改变。完成条件是每个差异都有所有者和处置，不要求三宿主字节相同，也不以编译通过当接入完成。
+2. **接入边界修正**：从第一阶段确证问题选最小切片，先写原因、引用旧组件父树、影响与证伪条件，再修改。第一切片处理已证实的Koma模式菜单接入差异；固定几何假设经父树对照已否决，不改该布局；复用成熟宿主组件，默认共享组件可独立消费。不顺带改菜单动作、缓存策略、预载深度、入场时序或设置持久化。一个切片验收后才能扩大。
+3. **共同候选接入与验收**：共享补丁只在权威kit实现一次，三宿主消费同一可追溯候选。先构建发现接口差异；运行只覆盖修改影响的普通入口及宿主独有边界（N/E资源与设置、Koma章节/来源）。不得把NextE视频外推，或要求三个应用重复重写共享逻辑。拒绝全量覆盖式复制WIP。
+
+结束标准：归属表无未分类差异；三宿主共享候选身份明确；必要适配不复制会话/图片/手势状态；受影响路径有当前证据且没有已知退化。缺少样本/设备时列出精确阻碍及仍可执行动作，不将source/build标为runtime通过。时间投入以切片为单位，每发现扩大影响先更新评估，不能无限追单一性能数字。
+
+### 第一代码切片：Koma 模式控件复用（修改前评估）
+
+依据：独立审查见/tmp/koma-reader-boundary-review.md。Koma components/ReaderChrome.ets:188 ModeMenu的四项为single/dual/vertical/continuous，425–428按钮是该模式菜单入口；现有共享候选ReaderChrome:239/771固定LTR/RTL/vertical/continuous。直接消费候选会改变按钮语义，这是源码证实的接入不兼容，不是性能推测。旧Koma缩略图外框同为156（140+8+8），撤回将该数字本身列为首修的倾向，不增加高度参数。
+
+方案：将Koma既有模式按钮和菜单原样提取为一个宿主ReaderModeControl，旧ReaderChrome与新KomaReaderLabPage共用。仅在reader-ui加入一个可选模式控件Builder插槽，经ReaderSurface透传到ReaderChrome；缺省分支完整保留N/E当前方向菜单，core不新增接口，不识别应用名。插槽收到当前runtime policy、enabled、policy意图回调和menu可见通知。Koma由当前policy推导菜单勾选，把选择映射为同一policy中的layout/pagingAxis，非连续模式之间保留direction；进入连续及从连续离开按旧WEBTOON语义归一为LTR；保留spread/split/rotate等其他字段，经共享既有applyPolicy和Koma preferenceSink写回。禁止从持久偏好派生第二份选中态。
+
+影响：共享Surface/Chrome新增可选接线；N/E不传插槽，现有UI分支不变。Koma旧/新按钮44vp、原图标、四项顺序/文案/勾选、TopRight位置、关闭菜单行为保持；核心资源/章节/缩略图/入场/窗口不改。新宿主menu可见通知继续触发已有输入和自动翻页仲裁。普通页码变化不改key、不替换整栏。默认菜单与共享翻页布局不是一个变更包，禁止借此修复其他28项。
+
+证伪：N/E默认菜单或按钮变化；Koma四项、勾选或选择后实际policy不一致；非连续模式之间切换擅自改变readingDirection，或改变其他非模式字段；菜单关闭后输入不恢复；旧按钮失去原行为，任一出现即否决。恢复边界为本切片精确增量，不回退已有WIP。已有组件引用和BuilderParam用法提供平台依据，不引入新平台API。
+
+验证：逐字对照提取前按钮/菜单，检查Koma旧onModeChange链与共享policy→preferenceSink链；三个宿主编译同一共享候选（Koma先临时消费，不覆盖其旧kit）。运行验收仍需要197上合适安全Koma路径和当前签名产物，不用编译宣称通过；不操作103/200/237。菜单用户路径与本次加载/分页内部差异分开，不以本切片关闭全部共享候选验收。
+
+编译修正依据：Koma的`@Param enabled`与系统CustomComponent方法重名，局部改为`controlEnabled`；shared可选BuilderParam直传引发编译警告，官方arkts-builderparam要求Builder初始化。Surface保留唯一可选公共插槽，内部以@Builder方法转发，Chrome内部单一presence参数决定原默认分支，无新增宿主策略、状态写入或节点key。该修正只解除接线约束，仍须设备观察菜单渲染与选中态。
+
+### 多级复用的实际接入边界
+
+- L1 reader-core：唯一的页/资源/预载/取消/位置状态；三端不得各写一套这些算法。
+- L2 reader-ui：原生翻页、缩放、呈现、默认控件与可选内容插槽；默认外观不是宿主产品契约。宿主不实现第二份图片显示状态机。
+- L3 宿主成熟UI：同一宿主新旧入口共用现有模式控件、缩略图栏；所选页/模式从共享会话读取，用户意图回会话；宿主只适配自己的数据与图片缓存。
+- L4 应用：网络/下载/归档服务、偏好持久化、目录章节、路由和源组件入场。HAR共用不代表跨应用账户、数据或缓存共用。
+
+当前实际接入：NextE沿用已有ReaderThumbStrip插槽；Koma与NextN均已将各自成熟的原缩略图组件接到thumbnailContent，由各自新旧入口共用。不同产品不互相复制外观；共享L1不识别应用名。Koma原模式控件也由新旧入口共用。以下保留各切片修改前设计及否决记录，最终限定结果取对应结果节。
+
+### 模式切片验收与本地候选依赖收束
+
+197当前r3同构建普通shared/legacy路径四项与勾选、选择即时生效通过；shared菜单关闭后上滑18→19，RTL→纵向设置读回仍RTL，RTL→continuous→双页读回LTR。shared/纵向/LTR与120000ms超时已恢复，租约已释放。绝对菜单位置差异保留（shared较legacy +52px/-13px，行尺寸同487×156），布局切换含可见缩放和页位改变；本结果不验收平滑性、全部阅读器或其余异常路径。录像/原图已完整归档至Koma `.hermes-artifacts/20260927-mode-control/qa/sol-candidate/`，保留原始临时证据。16为shared、19为同构建legacy、26为RTL连续模式录像，24/27为方向读回，29/30为恢复。主线程另复核shared菜单原图、接触表004–006及方向layout与恢复原图。
+
+依赖收束的修改前依据：Koma宿主新接口已按同源candidate构建/运行，但本地常规module仍指旧kit；必须让本地依赖与已经安装的候选一致。仅按r3的candidate-source.json逐字hash核对导入29个已分类生产源/资源差异（原28+本次ModeControl），Koma kit操作前clean，authority匹配r3；保留旧文件备份与导入清单，不覆盖主仓或既有WIP，不复制build/oh_modules/签名/tests，不引入Koma私有实现。此操作相对r3安装包不改变运行代码，只消除本地构建路径漂移；不代表其余共享异常状态已验收，也不作为正式发行/远端发布。导入后常规本地模块路径已编译通过（15.610s，无modeControl/BuilderParam警告），与临时消费完整module文件hash一致；恢复字节及清单在Koma `.hermes-artifacts/20260927-shared-mode-local-dependency/`。未推送或宣称正式发行。
+
+### 第二代码切片：Koma 原缩略图栏共用（修改前评估）
+
+用户已授权三宿主接入收束，明确要求复用既有缩略图实现、控制重建范围。当前源码证明Koma新入口未接thumbnailContent，默认栏与旧栏在CENTER/START、完整比例/裁切、宿主PixelMap/临时PNG上不同。此切片仅恢复Koma旧栏契约，不统一三个产品的外观。模式切片已单独审查、运行有界验收并冻结；当前新切片保存独立增量，不混入其diff。
+
+父树与冻结属性：旧ReaderChrome和新ReaderSurface各自保留156vp包装（140+8+8）、chrome位置/显隐与点击命中；搬出旧Tile+List为同一个宿主ReaderThumbnailStrip，旧/新入口共同使用。118vp图高、完整比例、Contain、原圆角/选中边框/页码、16vp两端padding、SPACE_SM、RTL和ScrollAlign.CENTER不改。主体图、入场、模式菜单、共享core、预载和偏好均冻结。197旧栏基线已形成：r3、com.honjow.koma、1260×2720、同书02话10↔11/19、旧/单页/LTR；16次左右swipe中位间隔0.345s。原图与录屏/390原PTS帧在/private/tmp/koma-thumbnail-qa-20260927/05-legacy-midchapter-setup及06-legacy-fast-swipes；设备执行者复核全序列，主线程复核原图及接触表003/006。基线门禁已满足，允许本切片实施；记录帧不作为系统满帧证明。
+
+最小边界：新增components/ReaderThumbnailStrip.ets；ReaderPage仅提取原栏及专属缓存/滚动字段；KomaReaderLabAdapter给既有map添加只读O(1)源/config读取；KomaReaderLabPage经既有thumbnailContent接同一栏。旧sessionConfig克隆接口不改，不在snapshot重发时克隆全章/生成widths数组或getter闭包。旧measuredPageWidths/Heights直接传入，沿用真实尺寸变化才替换的现有机制。各入口仍是唯一页码owner，组件只接selected/preview意图；稳定datasource只在章节/页数变化更新，普通选中与资源通知不reload、不换key。
+
+资源依据：createThumbnailWindow仅由默认ReaderThumbnailRail挂载创建；替换该Builder后不挂载默认栏，从调用边界切断该栏的thumbnail→PNG请求，无共享flag。原Tile租约、缓存界限与source key原样保留。独立源码审查发现旧ReaderChrome隐藏时会卸载BottomBar，故缓存不能随提取栏销毁：旧ReaderPage继续按原换章/离页位置持有并清理缓存；新KomaReaderLabPage在章节prepare成功、session.open之前及route消失时清理自有缓存，Strip只借用。隐藏chrome只释放tile租约，不清缓存。r1虽编译成功但因缓存归属不合格而禁止安装；修正此源码反例后生成新候选。保留原provider供其他明确请求路径，不借此删除未知调用。
+
+证伪/验证：同一197/r3旧栏基线与新候选，同章节/页段/方向/viewport，快速图片滑动约每秒三次并交替；审连续帧中的tile空白、回跳、CENTER跟随、尺寸/圆角/选中，不用结束帧当流畅。先精确diff及Koma构建，再普通新旧入口对比和开关栏/寻页/章节更新有界操作。任一旧入口退化、全列表reload、页位变化复制全章、串源或仍走PNG均拒绝；撤回本切片增量，不覆盖已有模式WIP。未修改kit时不重复编译其他消费者。运行结果当前OPEN。r2设备反例：普通legacy阅读页可进入，中央tap显chrome后Koma离开前台，后续动作停止。编译产物确证ReaderPage的BuilderParam箭头内保留ReaderThumbnailStrip({...})裸函数调用，而导出目标为extends ViewV2的class；移除原私有@Builder包装改变了DSL编译边界。最小修复只恢复页面私有@Builder包装、回调仅调用包装方法；不动资源/缓存/父树。新候选必须核生成代码为组件创建并重走首次显栏及原快滑路径；r2禁止继续验收。
+
+### Koma 原缩略图共用的限定结果
+
+最终thumbnail candidate-r3签名HAP `ffc418fe353524c4013ea57acda7d6d720db4f8dde5363bc103794e50bbbe7dc`，host source digest `e92b6dc953b74b11456f8da9262552629ccb3e57fc8ce0f13b50714914c71282`；kit仍为abf016候选，未改公共源码。构建11.219s通过，生成wrapper内new ReaderThumbnailStrip/ViewV2.create已核实，构建后源码/links/profile一致。r1因cache归属未安装；r2首次显旧chrome反例否决，恢复@Builder后r3普通旧入口首次显chrome通过。异常栈未从保留日志取得，不把产物原因冒充设备fault栈。
+
+197同书02话10↔11/19、单页LTR、16次快速交替图片swipe：旧原基线390原PTS帧，提取后旧402帧，共享399帧；连续帧可见原栏持续呈现、居中跟随，未见空白列表闪烁。新旧隐藏/重显chrome、关/重开栏均观察到；共享thumb点击10→11、slider提交03话10/15、换章02话19页→03话15页的源/数量更新、RTL栏顺序反转已观察。此结果不证明系统每次刷新满帧或PNG/解码调用次数为零。主线程复核快滑接触表003/006、生命周期表002、换章和slider/RTL原图；设备执行者检查完整原帧序列。
+
+几何：基线05与提取后旧25的List [0,1810][1260,2265]与item界限相同；shared32为[0,1784][1260,2239]，完整item均270×455、x位置199/495/791一致。shared父chrome原有26px垂直差异保持，不因叶子复用修改parent。原书02话18/19已恢复，43读回共享/纵向/LTR，44超时120000读回，租约释放。完整证据在Koma `.hermes-artifacts/20260927-thumbnail-reuse/legacy-baseline/`及`candidate-qa/`；独立diff/before/source-review/first-chrome-fault可回溯。此切片冻结，不外推其他旧异常或全部跨端迁移。
+
+### 第三代码切片：NextN 原缩略图栏共用（修改前评估）
+
+修改前评估存档；下述限定增量已实施，结果见当前候选节。当前用户批准三端接入收束，NextN原ReaderPage与共享NextNReaderLabPage仍消费不同缩略图实现，因此该边界重新可执行；不重开已冻结Koma路径。只读设计及独立审查保存于.hvigor/outputs/nextn-thumbnail-reuse-20260927/。197当前baseline HAP 78c9cb18b548f40ae4b33513252680995f1b4276247fc5be1e760a2fb21a15b1经02实际install-r命令成功，14原图/layout确认为com.erosteam.nextn、1260×2720、普通663205旧入口21/40单页LTR原栏。15录屏SHA 6f830634e3a8ccd0a826c21c4bbb0899599911376412f4e4fd622c68330ce3b9含411原PTS帧，root已复核14与接触表003/006，设备执行者继续完整帧及最少双页基线。证据在/private/tmp/nextn-thumbnail-qa-20260927/；部分早期manifest context误留历史SHA/lockscreen文案，保留原文件，身份以02实际安装命令与baseline哈希清单纠正关联，不重写历史记录。
+
+旧父树ReaderPage→ReaderBottomBar→独立缩略图Column保持；shared仍保留ReaderSurface既有156vp/上下8vp slot包装，不移动scrubber/toolbar。提取旧List及Tile为一个宿主组件：140vp栏、100vp图片、Contain、比例0.45–1.4/宽64–152、8vp圆角、品牌色选中框、8vp间距、12vp首尾RTL边距、calc(100% + 24vp)及x=-12vp均保持。原GalleryPageThumbnailSurface与NhGalleryPage.thumbnailUrl不换资源算法。旧ReaderPage继续拥有DataSource/Scroller和原loadReader两处setData、原各滚动触发点；隐藏chrome不缩短这些所有者寿命。保留私有@Builder包装，禁止在BuilderParam箭头内裸调用导出组件。
+
+共享宿主从adapter现有progressDetail取得稳定pages原引用，不新增getter/DTO副本/缓存。所选页读snapshot.frames全部part，anchor只决定滚动目标；转发点击前核对事件所属unit/revision与当前session，fixture保留默认Rail已给出的token，不能把slot使用当前token误称为过期事件校验；源码已证明pending图片也同步建立完整spread slots，无需补选中镜像。普通snapshot/资源通知不能setData或改List身份；新栏只在committed target/visible/方向变化时跟随，滑块preview不提前提交。旧新共用相同Tile/List，宿主只连接现有选择意图。
+
+边界为三个NextN产品文件（ReaderPage、新ReaderThumbnailStrip、NextNReaderLabPage）及reader-ui/Index.ets一行导出ReaderThumbnailRail。新增出口的唯一原因是fixture没有NhGalleryDetail，要在同一个宿主Builder的else复用现有默认栏，避免空栏、复制算法或另挂Surface。确认源文件export struct但包Index尚未re-export，不能声称已有出口。权威kit只新增此出口并精确镜像E/K；三个消费者编译，core/Surface/Chrome/默认Rail实现不动。生产宿主栏挂载后不创建默认ThumbnailWindow；不删除其他provider路径，不以源码替代运行调用次数证明。
+
+证伪：旧栏尺寸/选中/滚动触发改变，页位更新引发全表reload，双页只亮一项，首次显chrome异常，fixture失去原默认栏，或生产图源不再沿旧契约，任一拒绝候选。验证先保存本切片前字节与增量diff、独立审查及生成DSL组件创建，再当前197同书/viewport旧新快swipe连续帧（约3次/秒），及受影响的显隐、选图、双页、RTL、slider提交。构建不构成可见接受；不修改主体图、入退场、菜单、加载或预载。NextE入場耗时专项仍不恢复。
+
+NextN首个源码候选（后因下述回调问题否决）：精确四文件增量SHA `88d3352601606210dd1a2e598ebee50b181552cc74cf111c19b0a0019e5fcc3f`，before/after/source-review在 `.hvigor/outputs/nextn-thumbnail-reuse/`。旧Tile原字节、旧setData两处与原滚动调用点保留。审查在构建前纠正两处显隐跟随问题：重开栏必须恢复当前页；首次已显示挂载不能被下一次翻页误判为显栏而丢动画。最终wasVisible初始化自当前参数，真正显栏/方向变化静态定位，普通committed页变更去重动画。此为源码结论，运行仍OPEN。包出口唯一新增行已按原文件SHA核对精确镜像E/K，三处Index SHA均b361d7ea15e3794a90a9900c682c822340c7242194baeef19f6146b2b6bbfd05；其余E/K文件未改。Luna串行编译三个消费者，197保留旧单页21/40与当前租约，候选构建/DSL核对之后才安装。
+
+编译审查新增阻断及修正前评估：NextN首候选HAP `2d40e1308814f8e9063647a9e723934b05dcda75a3faef2b99a1e771adb9fb1e`构建成功但禁止安装。生成LabPage.ts 1180–1221仅初建设置onSelect，Strip更新仅更新@Param；新工厂闭包捕获首次unit/revision，而PagedSession每次selectDisplay/seekSource递增revision，可能使正常后续点击被过期校验拒绝。此风险是在安装前源码/编译产物审查发现，不以设备试改决定实现。最小修正仍只在现有宿主文件内：一个显式@Param navigationToken携带unit三元组及revision，现有Tile回调在点击时读取Strip当前Param后发给稳定Event；宿主核对当前session后调用原Surface意图。旧入口使用默认空token且原onSelect忽略额外参数，原行为不改；fixture沿原Rail给出的unit/revision构造校验token。不新增镜像、监听、控制器或remount，也不取消过期事件校验。修后必须核生成updateStateVars包含token，再新签名构建与既定197重复点击/翻页/模式改变路径。E/K只有包导出行、不受这条宿主接线修改影响，其已完成构建不重复。
+
+### NextN 当前候选与三消费者构建
+
+当前 r2 的四文件增量 SHA `842bc59d6910cf2a9d8dd9675bc4014efec73e6d89fc45799ac396c6f91ff1f4`；签名 HAP `ba7c8375019cf67b30e11d3d036382c7129642de46c56dadde499c566c3b27a4`，587 个宿主生产文件 digest `cefb7e89a39ed486bcdfe9f638c41879b8a8d147073f0195ddba1db9866d4493`。构建通过，源码/profile/链接身份未漂移。主线程核实生成 DSL：旧/新 Builder 都创建 ReaderThumbnailStrip；Lab 更新分支传 navigationToken，Strip.updateStateVars 更新该 Param，点击回调读取实例当前 token。首候选仅保留为否决证据，未安装。
+
+三个 checkout 的 reader-core/reader-ui 生产源及 Index 共 82 文件 digest 均为 `0950859a19cdff8fde440f4e51d07fdeec641561de49f58f1c3afd3cc3eed4fc`，清单位于 `.hvigor/outputs/nextn-thumbnail-reuse-20260927/common-core-ui-sources.json`，不外推整个 kit。NextE 同候选签名构建通过（HAP `90af39e94d5120b02c137206ec71fdb5fbedd6497c8839bf172e162233a3d290`）；Koma 本地模块 unsigned 构建通过（HAP `173517ef35721cb9165249a3b19a47ae30dc0570c823fe5743d8ed30da4e1fe2`），没有据此重复安装或重开冻结路径。NextE V1 inventory 为 0 文件，NextN 没有该脚本，不伪称执行。改动文件无 BuilderParam/组件警告，既有 ReaderSurface 等警告保留为独立事项。
+
+197 普通旧/共享入口快滑录像分别为391/400原PTS帧，对照旧基线411帧；设备执行者完整复核三组接触表，主线程另核关键连续片段及原图。两入口在16次快速交替图片swipe中缩略图持续呈现、选中跟随21↔22，未见栏级空白闪烁。本证据不等于系统每次刷新满帧或运行PNG/解码次数为零。
+
+共享入口在已有翻页后连续缩略图选择23→26有效；slider提交回21；双页21–22同时高亮并切回单页；RTL首尾分别到1/40及40/40。旧20/21与当前39/40的tile x范围、455px高度、首尾边距相同，仅保留共享父布局y+13px。35–38因滑条坐标不匹配/编写错误不作端点证据，原文件留存。42完整录屏中手动将栏滚到40（正文仍21），关闭重开回当前21，chrome显隐后选中21恢复。主线程核31表002/003、33表001、42表002/004/006及39/40原图与bounds；设备执行者完整复核点击4表、双页3表、生命周期6表。
+
+43读取共享rkit-reading-surface与原1/40；33/41已分别恢复single/LTR，PowerManager读取Timeout/OverrideTimeout均120000ms，租约20260927-034231-ffd91fa4已释放。原始当前候选证据已完整存入 `.hvigor/outputs/nextn-thumbnail-reuse-20260927/device197-candidate-r2-evidence/`（MP4、原PTS帧、layout、原始协议及哈希清单），基线在同级device197-baseline-evidence。此缩略图切片限定验收并冻结。双页主体过渡中第二图稍后出现，旧动态基线缺失，过渡等价保留未验证；fixture、离线资源、加载/入场等其他reader路径不由本结果验收。
+
+Git检查点只记录本次宿主三文件增量和本轮约束/结果，不纳入原有closeContext、其他QA/WIP或整份dirty kit；它不是独立可发布版本。可重现候选以before/after源清单、公共82文件digest和签名HAP绑定，未提交的共享基线依赖仍需在后续正式发布边界独立整理。
+
+### 当前归属与处置（源码边界，不代表运行验收）
+
+基线清单、独立审查完整引用保存于`.hvigor/outputs/shared-reader-boundary-20260927/`，不把临时目录当唯一证据。以下覆盖24个源码差异与4组资源；本次新增modeControl另属上述切片。
+
+| 差异组 | 归属与处置 |
+| --- | --- |
+| ReaderDisplayMap、ReaderPagedSession、ReaderSession | 核心负责页映射、资源窗口和替换生命周期；未发现宿主数据模型依赖。native预载会随选择更新，改变了正常load和host preload的分工，不能把两者回调次数当作预载是否存在。Koma load/preload均经fetchAndCacheReaderRemoteSource，preload无独占必要元数据写入，local分支原本直接skip；保留宿主缓存，不移植NextE服务。 |
+| ReaderPagedViewport、ReaderPagedViewportState、ReaderPagerIdentityMap | native节点身份及局部依赖由共享UI负责；metadata与选择变化不等于换整棵pager。guard/quarantine依赖真实解码尺寸，接入必须满足其契约；不从源码推断帧率。 |
+| ReaderPagerSurface、ReaderPositionHandoff | 当前Pager已不使用旧PositionHandoff，后者及preparePositionTarget是待确认可删除的历史路径；暂不以存在就追加接线。相对于Koma旧kit，远跳动画/旧画面保留是实质变化。当前已映射Koma旧生产路径：ReaderPage缩略图3364以及onPageChange/onSeekPage3463–3464均setPage(index,false)，因此当前远跳规则与这两条旧生产路径相符；不等于图像接替/近页动画已验收。 |
+| ReaderSurface、ReaderLayoutRetention、ReaderSelectedDrawable | 共享呈现/布局留存与可绘制回执职责。确认条件风险：切布局遇suppressed notice时，LayoutRetention只接受failed或displayed original，可能停留旧布局；当前Koma adapter未构造notice，不能说Koma已复现，但该公共能力仍OPEN，须独立最小终态处置。Surface旧有applySync裁边接线也须单列约束审查，不借本次菜单接线改入场。 |
+| ReaderContinuousSurface、ReaderContinuousZoomImage | 稳定List数据源及native图像租约/回执归共享UI；原topology整List重建已移除。加载反馈、live entry守卫、replacement双图交接均为行为变化，Koma连续模式验收只覆盖实际运行路径，不关闭所有异常分支。 |
+| ReaderCloseContext、ReaderContinuousEntryPosition | 每个阅读器的捕获ID作用域，连续阅读退出选最大可见图并统一Back/close几何读取；共享坐标职责，非宿主路由。Koma未启用的退出动画不能由菜单链外推。 |
+| ReaderEntryTransition、ReaderRootEntryHandoff、ReaderLiveSourceEntry | 源图飞行、邻图到达渐显、保留宿主直到native可绘制的共享呈现协议；路由、源组件和系统转场继续宿主所有。不允许以直接全屏后内部缩放替代。liveSource为显式opt-in，Koma未传时不替换普通入场。 |
+| ReaderTrialWindow | 共享窗口状态保存/恢复，先隐藏再设色、返回先恢复源色再显示；改变调用顺序，需其对应入场/退出证据，不以本菜单测试接受。 |
+| ReaderChrome | 默认方向菜单是N/E产品选择，不能覆盖Koma既有模式菜单；当前切片以宿主原控件插槽隔离。其他按钮、slider提交、裁边/缩放入口仍需按实际host能力分类，不能仅因shared就默认外观一致。 |
+| ReaderThumbnailContent、ReaderThumbnailRail | 插槽是复用入口，默认栏仍不等价Koma旧栏；CENTER/START、比例限制、宿主PixelMap与临时PNG派生明确不同。本阶段Koma/NextN已提取旧宿主栏单一实现并接入；默认栏继续供缺少宿主DTO的fixture使用。当前外框156一致，未新增几何参数。 |
+| ReaderLoadingIndicator、reader-ui/Index、4组strings | 共享加载状态呈现与导出/文案。Koma可供文案颜色，但不复制状态机；替换旧spinner是可见变化，不能随kit更新默认为无影响。 |
+
+当前证据：N/E首版插槽编译通过；Koma r3同源unsigned/signed通过且BuilderParam警告消失，候选digest `abf0160302d3a81449e66df591423dc64d92b8a2a4a09c105ade414400145084`，HAP `a02fba4e79015f079693263d54021ca0838b66f570e001debd5c2853f31ae406`。Koma profile与两依赖链接原样恢复；随后按上述已审查清单将本地kit源码对齐该候选，未提交或发布。最终转发修正版N/E已串行重编译通过（12.494s/15.703s），无modeControl/BuilderParam警告；N为unsigned、E签名完成。197菜单限定路径结果见上，不外推其他运行边界。
+
+### 初始源码事实（2026-09-27）
+
+- NextN c585主仓373ef824，共享kit HEAD 8dc64fb且有WIP；NextE eceb主仓9d25f902，共享kit HEAD相同。排除build/oh_modules/.hvigor后两端.ets/.ts/.json5文件对比无差异。
+- Koma f769主仓33ce09d6，kit HEAD79eda0a；与权威kit比较发现24个不同或新增源文件。24不是24个bug，也不直接证明可整包覆盖；需要按具体接口与生命周期逐项归属。
+- 三处缓存精简属于NextE：ReaderImageFileCacheService的目录副作用/日志级别、NextEReaderLabAdapter直接命中进度。它们不是三端公共服务，不通过同步kit传播；检查其他适配器是否提供相同错误事实，再决定是否需要改动。
+- ReaderSurface派生值/ReaderPagedViewport父约束属于共享UI，当前N/E同份实现，Koma未等同。
+- ReaderSurface.thumbnailContent允许宿主内容，但外围仍固定156高和8上下padding；默认ReaderThumbnailRail自身140高；NextE ReaderThumbStrip也140高。因而当前不能称其已导致NextE几何错误；问题是定制内容的父层契约未表达，需对照N/K既有父树后再改，不能凭硬编码一项就改布局。
+
+本次有限阶段结束：归属已分类、三端公共源码候选一致并编译、Koma模式与原缩略图及NextN原缩略图限定路径已验收，设备恢复完毕。既有加载、入场、variant和异常呈现风险仍保留OPEN，不能将本阶段外推为整个共享阅读器替换完成。当前不再追NextE打开耗时、不重测冻结栏，也不把下列历史队列自动恢复为并行任务。
+
 ## Outcome
 
 Ship one shared reader whose core interaction and UI are reused by all three
