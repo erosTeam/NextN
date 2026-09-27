@@ -5,7 +5,7 @@ readers with `reader-kit`. The architecture document preserves design and prior
 evidence. Per-app QA ledgers preserve durable counterexamples and accepted
 boundaries. Neither may create a second queue.
 
-## 2026-09-27 用户批准：三宿主复用边界收束（限定阶段完成）
+## 2026-09-27 用户批准：三宿主复用与剩余生命周期收束（ACTIVE）
 
 用户批准先规划并实施共享边界与三端接入收束。停止追加NextE打开耗时专项优化；原反例与未验收结果保留，不因转换主线变成通过。本节为本工作单唯一当前执行顺序，早期Package及设备记录仅作证据索引，不创建并行队列。
 
@@ -128,7 +128,34 @@ Git检查点只记录本次宿主三文件增量和本轮约束/结果，不纳�
 - ReaderSurface派生值/ReaderPagedViewport父约束属于共享UI，当前N/E同份实现，Koma未等同。
 - ReaderSurface.thumbnailContent允许宿主内容，但外围仍固定156高和8上下padding；默认ReaderThumbnailRail自身140高；NextE ReaderThumbStrip也140高。因而当前不能称其已导致NextE几何错误；问题是定制内容的父层契约未表达，需对照N/K既有父树后再改，不能凭硬编码一项就改布局。
 
-本次有限阶段结束：归属已分类、三端公共源码候选一致并编译、Koma模式与原缩略图及NextN原缩略图限定路径已验收，设备恢复完毕。既有加载、入场、variant和异常呈现风险仍保留OPEN，不能将本阶段外推为整个共享阅读器替换完成。当前不再追NextE打开耗时、不重测冻结栏，也不把下列历史队列自动恢复为并行任务。
+### 公共布局提示终态：事前评估与当前候选（已实施，运行 OPEN）
+
+触发：同unit在paged/continuous之间切换，当前选中页为suppressed且有notice。ReaderSession会把宿主阻止结果发布为该终态；两个renderer都有NoticePanel，但不发原图native稳定回执。LayoutRetention只立即接受failed，其正常reveal要求displayed original，因此旧容器可一直位于zIndex2，目标提示被挡在zIndex1。NextE真实ImageBlockProvider可产生该状态，NextN/Koma当前adapter未发现对应生产者；这是公共源码缺口，不谎称三端均已在设备复现。独立SOL复核见.hvigor/outputs/shared-layout-terminal-20260927/source-review.md。 实际增量已由独立SOL复核（actual-review.md）；只改该类，N/E/K同文件SHA-256为8ba21f776d922bce7145f11bd5264c1edbabd9c00e26bfd10f9ca6a9be9866df。源码方法验证8项通过，仅证明既有native/failure及notice交接判定，非视觉验收。三消费者签名debug构建均成功：N d8391f29、E 826c0f0c、K d395ed21；root逐HAP复核SHA，源码前后身份与公开profile恢复均已记录。K第一次release参数无目标，不计通过；补齐资源后采用当前default/debug产品。当前限定运行结果：197的NextE受限one-shot notice入口已录得P1单页→连续→单页，135个原PTS解码帧中旧单页层让位给连续布局并返回单页；root复核全部5张接触表及8/9/114/115原帧。连续模式图标和标题被展开顶栏遮挡，因此整条提示可读性不通过，不能写全场景通过；最大PTS间隙0.988秒，不证明每次合成刷新无闪烁。录像SHA为3da9aece20b2633c552b88ffa6374c0c1a176ec41efc1dd946cffff56708c598；完整帧与限制记录存于NextE .hvigor/outputs/shared-layout-terminal-20260927/frame-review/review.md。现有生产probe仅由测试侧调用，preferences/progress写回均关闭，不外推普通宿主路线。197已恢复NextN普通663205第3/40页、栏开启及120000ms超时，租约释放。共享精确两文件检查点3809cd4不包含其他kit WIP。后续连续terminal点按接线已在下文实施；顶栏overlay保留证据边界，禁止用猜测padding/高度掩盖。
+
+最小方案：仅改ReaderLayoutRetention。在tryReveal实时读取current当前anchor frame，派生suppressed+非空notice资格，要求pending且positioned && (stable || notice)才reveal；update的pending分支尾调用tryReveal，使“先定位后notice”和“先notice后定位”都能完成。已有failed立即reveal保持，真实图片仍要求原图native稳定回执。不新增terminal镜像、监听、API、宿主判断或重建；notice动作和资源继续由现有host/core所有。
+
+定位依据：目标容器一直挂载；Continuous pendingPosition在scrollToIndex后下一帧解除并报告unlock，不依赖原图绘制，Pager也有现成定位/移动解锁。因此不能直接在notice到达时提前reveal，也不需要新的位置控制器。不同target/topology/navigation切换仍按现有update清positioned/stable，unit切换原路径保持。
+
+影响与证伪：仅公共布局切换遇提示终态；普通图片、同页variant、源缩略图入退场、菜单、预载与三端栏均不改。若未定位就揭示、无notice的suppressed也揭示、旧身份回执揭示新目标、普通图绕过native稳定门禁，任一拒绝。先审精确diff与实际方法状态检查，再三个consumer编译；设备证据必须注明普通host或现成受限异常入口，不能用fixture外推完整宿主路径。用户当前追加的NextN页码/圆角小改先完成安装核对，随后才实施本项，避免改变正在验收的源码候选。
+
+
+连续 terminal 点按接线（修改前评估）：独立源码复核 terminal-tap-review.md 确认旧NextE ReaderVerticalImage 的 compact notice/failure 位于统一 onImageTouch 父层内；当前共享图片接 imageTap，而两个 terminal Stack 没有 tap，List边界滑动和Surface触摸繁忙回调均不补这条路径。此次只在ReaderContinuousCell现有两个terminal Stack补普通手势接线，复用ReaderTapSequence的8vp/多指过滤、active/interactionAllowed和已有onTap→imageTap→pageTap。双击与单击互斥，terminal双击不触发背景动作；不赋予不可见原图缩放行为。子Button保持普通优先级，禁止parallelGesture/priorityGesture造成同时操作。官方多层级手势文档确认普通父子同类手势子优先；手势坐标沿当前windowX/Y到imageTap换算。没有新响应式状态、API、宿主分支、节点身份、尺寸或滚动所有者变化。默认连续tap区由宿主现有策略决定，不能将所有提示背景强制改成toggleChrome。影响仅continuous提示/失败背景；图像、paged、入场、预载、动作按钮实现均保留。证伪：拖动/多指/双击误触背景、按钮同时触发背景、定位/隐藏/滚动中仍执行、或原图分支变化均否决。先审精确增量、实际过滤/路由逻辑检查和三消费者构建，实际增量独立SOL复核未见源码阻断（shared-layout-terminal-20260927/terminal-tap-actual-review.md）；N/E/K同源ReaderContinuousSurface SHA-256 c20e29d095906ea5e73cae3ee9589d6749fd31a55688459a3ec720a5d6df24df。真实terminalTap方法与原输入生命周期24/24通过，不代替UI验收。三端signed debug构建分别产HAP：N 5ab2668b938b7afe143a05bd04129077147d77c42981e87b2da19ee44aa99d5d、E cde558a40d3ccb69062f7ff175b4517eac29e230cf9f358a29a029d59cc09821、K 578acc8c4d1b3ad4ffa985a8c237318709ce347fb966e26f4a3e2716f4d8d66d；root复核六个源/产物哈希，构建前后公开profile与源码身份稳定。197限定运行结果：NextE受限P1 notice录屏08共154原PTS帧（SHA-256 64d0689a1a681aba8930ce50e261068e2e630acc62032964643a7bdf793f3c56），背景首次点按收起顶底chrome、第二次恢复；双击与横向拖动未额外切换，仍为P1/124。P2 failure录屏13共210原PTS帧（SHA-256 01abbe569e526433c42ddf2923b6025b36726144a519b0d7a0c8d03c1e3a3466），背景点按显隐chrome，重试按钮点击后进入“正在加载图片”，chrome保持显示；短录像未覆盖重试目标的最终结果，root复核全部接触表及关键原帧。08/13最大原PTS间隔分别0.881/0.418秒，不能声称全程满帧或无合成空隙。05/06及11录屏因120秒试验驻留到期切回NextN/桌面而拒绝，不作为产品反例。NextE notice“允许此图”会写白名单，本轮未点，按钮竞争仍未验；受限debug-probe也不代替普通在线/归档路径。展开顶栏时连续notice图标/标题仍受覆盖；隐藏chrome后可读，旧版同状态对照缺失，保留EVIDENCE-ONLY，不凭猜测更改全屏父布局。设备恢复NextN普通663205第3/40页、栏可见及120000ms超时，租约已释放。此点按增量仅按所测异常路径限定接受；整体读者替换仍OPEN。
+
+Koma消费者构建恢复（修改前依据）：标准脚本的i18n校验发现en_US缺reader_implementation_title/detail，SettingsPage:233引用它们，base已有完整英文而zh_CN已有中文，en_US资源当前无未提交改动。本次仅把base现有两条英文逐字补入en_US，恢复三资源集完整性，不改设置父树、选项、默认值、状态/持久化。验证为原i18n校验与消费者编译；不宣称英文设备页面已验收。另一次独立编译误用了不存在的release产品，exit0但无HAP，不算通过；当前profile唯一product=default，后续按现有default产品编译，不修改profile产品或脚本来迎合错误命令。
+
+### 整体任务继续：用户纠正阶段收尾（2026-09-27）
+
+用户明确指出剩余工作不止缩略图/模式接入。前次将局部阶段完成作为整轮停止点不符合原任务；整体保持ACTIVE，已验收冻结边界不重开。以下为同一工作单的剩余顺序，不新建平行队列，也不复活已否决方案。
+
+| 顺序 | 剩余结果 | 当前事实与下一动作 |
+| --- | --- | --- |
+| 1 限定路径完成 | 公共布局/终态生命周期 | suppressed notice交接及连续terminal背景点按已由三端同源构建、NextE受限异常原PTS录像和root原帧复核；仅接受该异常路径。notice动作未点、普通宿主入口和顶栏遮挡旧版同状态对照仍OPEN/EVIDENCE-ONLY。顶栏隐藏后内容可读；不猜测修改布局。applySync独立审查表明它是入场结束一次性裁边动画中的同步V2事务，当前不作猜测删除。证据在shared-layout-terminal-20260927/及crop-sync-review.md。 |
+| 2 当前 | 加载与资源替换 | 预载滚动更新、已下载/归档相邻页、无缓存加载提示、同页原图/增强切换仍需按当前源码与各自证据闭合；不将旧反例自动当当前复现，也不以控件通过覆盖这些路径。下一动作：以当前三端同源候选和resource-window-review.md为起点，源码映射连续翻页窗口/宿主资源/离屏绘制的实际转移，界定能证伪原因的普通下载与归档原PTS路径，再决定是否修改。禁止穷举式试改。 |
+| 3 | 入退场连续性 | 保留既有F1/F2否决与红线，源缩略图→目标、双页邻图、退出重入分别核对；不再追逐打开耗时微小差距，不得先开全屏再内部缩放。 |
+| 4 | 跨宿主交付边界 | 公共修复一次实现并让三端消费同源；宿主特有业务语义、当前dirty kit依赖及尚未验收的普通路线仍需收束。保持旧入口与默认开关，不擅自发行/推送。 |
+
+已完成Koma模式/缩略图及NextN原缩略图的限定验收保持有效且冻结，不能扩写为整体验收。第1项只在NextE受限异常路径获得限定结果；顶栏遮挡的旧版同状态对照和普通入口仍保留证据缺口，不以该缺口反复试改。唯一当前实施项为第2项资源加载与替换。每项完成只推进下一项，不能直接结束整个任务。
+
 
 ## Outcome
 

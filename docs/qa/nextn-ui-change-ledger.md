@@ -11759,3 +11759,15 @@ authorize an edit, replace a device comparison, or define product completion.
 用户追加缩略图圆角过大、裁切页面四角的明确反馈：同一Text修改切片扩到Tile的图片Stack圆角叶子，当前ThemeTokens.THUMB_RADIUS=8vp，改为组件局部2vp。保留Contain、宽高、clip、选中框、资源与滚动，禁止修改全局ThemeTokens/封面/详情页。当前期望是减少角部裁切而非更换图片适配；随同数字页码一次构建/安装/截图，避免相邻小改反复安装。其余已冻结几何仍冻结。
 
 限定结果：签名候选f40421722a455de3d51a6ed04e406644c6d4f776ff2f4ffff093e1f80a21a353已安装197；当前普通663205共享入口3/40、1260×2720原图04已由root查看，页码3/4/5/6/7/8为纯数字、图片角部为小圆角，选中态/正文页位/栏位置保持。layout确认com.erosteam.nextn与rkit-reading-surface。旧/新共用同一Tile关系上轮已验收，本轮只核用户当前shared入口，不重复切legacy或快滑，不宣称本轮做了两入口设备验证。原图见.hvigor/outputs/nextn-thumbnail-label-radius-20260927/device197/；设备恢复以该目录交接为准。文本和圆角叶子再次冻结，整体生命周期主线继续。
+
+## OPEN — 2026-09-27 公共布局切换的提示终态（修改前）
+
+整体继续指令下，当前唯一源码切片为工作单已确认的suppressed notice交接缺口。父树仍为ReaderSurface→两原生布局容器→原notice面板；同unit的目标容器保持原节点/滚动定位/资源。只在ReaderLayoutRetention.tryReveal从current当前anchor frame派生非空notice终态，待现有positioned后允许揭示；update末尾补同一判定，覆盖定位与notice到达顺序。failed既有立即路径不改，正常原图仍须native稳定回执；不改SelectedDrawable或源入场，不增加镜像状态/同步刷新/宿主分支。完整因果与影响评估见唯一工作单“公共布局提示终态”；NextE生产provider可达，N/K当前未发现notice生产者，不能宣称三端均复现。源方法验证和三消费者构建之后再以精确标注的普通或受限异常入口验收，旧布局长驻或提前揭示均否决。
+
+限定结果（整体仍OPEN）：公共两文件检查点3809cd4；N/E/K同源候选均签名debug构建。197 NextE受限one-shot P1 notice连续录像135原PTS帧显示单页→连续→单页交接，未出现旧单页层永久盖住连续的现象。连续图标/标题被展开顶栏遮挡，未有改动前同状态证据，不确定其引入时间；不能将整条提示可读性或全部刷新无黑帧判为通过（最大PTS间隙0.988秒）。完整证据在NextE .hvigor/outputs/shared-layout-terminal-20260927/frame-review/review.md；测试不写业务规则、偏好或阅读进度。后续连续terminal点按接线见下文；不改几何猜测。197已恢复NextN 3/40及120000ms超时，租约释放。
+
+
+连续 terminal 点按接线（修改前评估）：独立源码复核 terminal-tap-review.md 确认旧NextE ReaderVerticalImage 的 compact notice/failure 位于统一 onImageTouch 父层内；当前共享图片接 imageTap，而两个 terminal Stack 没有 tap，List边界滑动和Surface触摸繁忙回调均不补这条路径。此次只在ReaderContinuousCell现有两个terminal Stack补普通手势接线，复用ReaderTapSequence的8vp/多指过滤、active/interactionAllowed和已有onTap→imageTap→pageTap。双击与单击互斥，terminal双击不触发背景动作；不赋予不可见原图缩放行为。子Button保持普通优先级，禁止parallelGesture/priorityGesture造成同时操作。官方多层级手势文档确认普通父子同类手势子优先；手势坐标沿当前windowX/Y到imageTap换算。没有新响应式状态、API、宿主分支、节点身份、尺寸或滚动所有者变化。默认连续tap区由宿主现有策略决定，不能将所有提示背景强制改成toggleChrome。影响仅continuous提示/失败背景；图像、paged、入场、预载、动作按钮实现均保留。证伪：拖动/多指/双击误触背景、按钮同时触发背景、定位/隐藏/滚动中仍执行、或原图分支变化均否决。先审精确增量、实际过滤/路由逻辑检查和三消费者构建，后在197受限notice及failure路径核对背景显隐、拖动、子按钮与返回；原135帧只接受布局交接，不提前接受新增tap。顶栏覆盖仍按同父树显隐能力核对，不凭截图加padding。
+
+
+限定运行结果（2026-09-27）：三端同源候选签名构建后，197 NextE受限notice 08录像154原PTS帧显示连续背景单击收起/重显chrome，双击/横拖未误切；failure 13录像210帧显示背景单击显隐，重试按钮单独进入加载，chrome未同步隐藏。短录像未覆盖重试目标最终结果。root审全部接触表及关键原帧；最长PTS间隙0.881/0.418秒，不能宣称满帧。试验到期或前台身份不符的05/06/11已拒绝。顶栏展开时notice图标/标题被覆盖，隐藏后可读，缺旧版同状态对照，留EVIDENCE-ONLY；不以猜测padding改全屏父树。notice允许按钮因会写白名单未操作，按钮竞争结果OPEN。当前仅为受限异常路径，不代替普通在线/归档加载验收；197已恢复NextN普通3/40、120000ms并释放租约。完整证据见NextE .hvigor/outputs/shared-layout-terminal-20260927/terminal-tap-candidate/。
