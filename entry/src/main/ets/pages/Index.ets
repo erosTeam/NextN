@@ -515,6 +515,7 @@ class ReaderEntryClaim {
 @ComponentV2
 struct IndexReaderEntryPendingOverlay {
   @Require @Param sourceRect: ReaderEntryRect
+  @Param showFeedback: boolean = true
   @Event onViewportChanged: () => void = () => {}
   @Local private originX: number = 0
   @Local private originY: number = 0
@@ -522,7 +523,7 @@ struct IndexReaderEntryPendingOverlay {
 
   build() {
     Stack({ alignContent: Alignment.TopStart }) {
-      if (this.measured) {
+      if (this.measured && this.showFeedback) {
         Stack({ alignContent: Alignment.Center }) {
           LoadingProgress().width(20).height(20).color(ThemeTokens.TEXT_TERTIARY)
             .id('rkit-entry-source-loading')
@@ -4969,6 +4970,7 @@ struct Index {
         (this.productionReaderEntryTransition === null ||
           this.productionReaderEntryTransition.phase === 'layout')) {
         IndexReaderEntryPendingOverlay({ sourceRect: this.productionReaderEntryClaim.sourceRect,
+          showFeedback: false,
           onViewportChanged: (): void => {
             if (this.productionReaderEntryClaim !== null) this.retireProductionReaderEntry()
           } })
