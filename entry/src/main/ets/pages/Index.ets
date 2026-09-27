@@ -774,25 +774,33 @@ struct Index {
     if (preview === null) this.productionReaderEntryClaim = null
     this.productionReaderEntryPendingGalleryId = 0
     this.productionReaderEntryPendingPageIndex = -1
+    const openReader = (animated: boolean): void => {
+      this.readerOverlay.stageDetailSeed(detailSeed)
+      try {
+        this.openReaderOverlay(new ReaderRouteParams(
+          source.galleryId,
+          source.pageIndex,
+          0,
+          NextNReaderBackend.SHARED,
+        ), animated)
+      } finally {
+        this.readerOverlay.discardStagedDetailSeed(source.galleryId)
+      }
+    }
+    if (preview === null) {
+      // No live preview means Reader cannot publish a selected-part target.
+      // Keep the native destination animation without arming a root proxy.
+      this.readerThumbnailTransition.reset()
+      openReader(true)
+      return
+    }
     ReaderThumbnailTransitionCoordinator.open(
       this.getUIContext(),
       source.sourceScope(),
       source.galleryId.toString(),
       source.pageIndex,
       detailSeed.pages[source.pageIndex],
-      (animated: boolean): void => {
-        this.readerOverlay.stageDetailSeed(detailSeed)
-        try {
-          this.openReaderOverlay(new ReaderRouteParams(
-            source.galleryId,
-            source.pageIndex,
-            0,
-            NextNReaderBackend.SHARED,
-          ), animated)
-        } finally {
-          this.readerOverlay.discardStagedDetailSeed(source.galleryId)
-        }
-      },
+      openReader,
     )
   }
 

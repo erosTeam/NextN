@@ -11771,3 +11771,9 @@ authorize an edit, replace a device comparison, or define product completion.
 
 
 限定运行结果（2026-09-27）：三端同源候选签名构建后，197 NextE受限notice 08录像154原PTS帧显示连续背景单击收起/重显chrome，双击/横拖未误切；failure 13录像210帧显示背景单击显隐，重试按钮单独进入加载，chrome未同步隐藏。短录像未覆盖重试目标最终结果。root审全部接触表及关键原帧；最长PTS间隙0.881/0.418秒，不能宣称满帧。试验到期或前台身份不符的05/06/11已拒绝。顶栏展开时notice图标/标题被覆盖，隐藏后可读，缺旧版同状态对照，留EVIDENCE-ONLY；不以猜测padding改全屏父树。notice允许按钮因会写白名单未操作，按钮竞争结果OPEN。当前仅为受限异常路径，不代替普通在线/归档加载验收；197已恢复NextN普通3/40、120000ms并释放租约。完整证据见NextE .hvigor/outputs/shared-layout-terminal-20260927/terminal-tap-candidate/。
+
+## OPEN — 2026-09-28 NextN 详情缩略图无预览入场兜底
+
+用户明确禁止“先直接打开全屏阅读器，再在阅读器内部缩放”，并要求有缩略图才缩放、无有效缩略图时走系统默认动画。此前源/影响/证伪记录先写入唯一工作单的“NextN 同型无预览入场兜底（修改前评估）”；本条在源码修改后补录到UI账本，不能假称满足了账本“编辑前”时间要求。完整受影响父树：`GalleryDetailPage`原详情横向List与`GalleryCompactPreviewTile`源图 → `Index`预览抓取、短期Detail seed与根代理 → `ReaderOverlayNavigationState`原生路由 → `NextNReaderLabPage`选中图目标/伴图渐显；详情封面、菜单、原图切换、分页/预载、底栏和旧版入口不变。之前预览为空仍可能由coordinator二次抓图并备好全屏代理，而Reader无法发布相应选中图目标；现在仅空预览分支reset代理并以原同步seed回调`animated=true`打开。有效预览分支保持原缩放和返程。
+
+197当前候选签名包`14b0a9796094acf7fe05e53b6c18dcdb026764f068d237a447869d1bfd424af8`在非H普通画廊663205两次有效预览入退场录屏208帧已复核，未见先全屏后内缩或空白；无预览分支未触发，系统默认动画运行结论仍OPEN。当前同一父树另见被点详情缩略图在根代理飞行前短暂退为模糊占位与加载圈，原因未定，须沿`GalleryPageThumbnailSurface`生命周期、Detail `LazyForEach`数据源和transition状态更新区分后再改；不把构建或两次有效预览通过写作该症状的验收。197已恢复原`3 / 40`及栏开启、120000ms超时。证据与下一动作在唯一工作单本日记录。
