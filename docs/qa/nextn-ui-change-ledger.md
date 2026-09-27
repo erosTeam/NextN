@@ -11751,3 +11751,11 @@ authorize an edit, replace a device comparison, or define product completion.
 
 
 限定结果：r2签名HAP ba7c8375019cf67b30e11d3d036382c7129642de46c56dadde499c566c3b27a4；197普通663205同viewport新旧快速图片swipe、连续两次选图、双页双选中、RTL首尾、slider提交、栏手动远滚后关闭重开及chrome显隐已观察。旧入口List/item与原基线一致；shared同x/尺寸/边距，保留父chrome y+13px。全部快滑/点击/显隐接触表由设备SOL复核，root复核关键原图、bounds及连续表；未见栏级空白闪烁，不宣称系统满帧或零I/O。43恢复shared/single/LTR、原1/40、120000ms并释放租约。此边界冻结；双页主体过渡等价、fixture及其他加载/入场路径未由此验收。完整源/HAP/原始证据与否决候选见唯一工作单当前节及其artifact索引。
+
+## FROZEN — 2026-09-27 NextN 阅读器缩略图页码与小圆角（用户反馈）
+
+用户明确否定每张缩略图下重复“第几页”的文案，只重新打开原冻结组件的可见页码文本。父树仍为各入口原底栏→共用ReaderThumbnailStrip→Tile→Text；旧/共享两入口共用一次修改。pageLabel从AppStrings.format('thumbnails_page_label',...)改为(sourceIndex+1).toString()，显示1、2、3…；无障碍accessibilityText仍保留现有完整操作说明。字体、选中颜色/边框、List/DataSource/Scroller、资源与图片几何均不改，不全局修改同名资源文案。原因：该位置已经表达页码含义，重复前后缀挤占缩略图标注空间。只核精确一行diff和当前构建，随后197当前候选普通入口原图核可见纯数字；未有当前截图前不宣布设备生效。整体生命周期审查暂让位此反馈，完成后返回唯一工作单下一项。
+
+用户追加缩略图圆角过大、裁切页面四角的明确反馈：同一Text修改切片扩到Tile的图片Stack圆角叶子，当前ThemeTokens.THUMB_RADIUS=8vp，改为组件局部2vp。保留Contain、宽高、clip、选中框、资源与滚动，禁止修改全局ThemeTokens/封面/详情页。当前期望是减少角部裁切而非更换图片适配；随同数字页码一次构建/安装/截图，避免相邻小改反复安装。其余已冻结几何仍冻结。
+
+限定结果：签名候选f40421722a455de3d51a6ed04e406644c6d4f776ff2f4ffff093e1f80a21a353已安装197；当前普通663205共享入口3/40、1260×2720原图04已由root查看，页码3/4/5/6/7/8为纯数字、图片角部为小圆角，选中态/正文页位/栏位置保持。layout确认com.erosteam.nextn与rkit-reading-surface。旧/新共用同一Tile关系上轮已验收，本轮只核用户当前shared入口，不重复切legacy或快滑，不宣称本轮做了两入口设备验证。原图见.hvigor/outputs/nextn-thumbnail-label-radius-20260927/device197/；设备恢复以该目录交接为准。文本和圆角叶子再次冻结，整体生命周期主线继续。

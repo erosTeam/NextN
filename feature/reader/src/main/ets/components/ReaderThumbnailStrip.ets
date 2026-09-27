@@ -196,7 +196,7 @@ struct ReaderThumbnailTile {
   }
 
   private pageLabel(): string {
-    return AppStrings.format('thumbnails_page_label', [(this.sourceIndex + 1).toString()])
+    return (this.sourceIndex + 1).toString()
   }
 
   build() {
@@ -221,7 +221,7 @@ struct ReaderThumbnailTile {
         width: this.selected ? 2 : 0,
         color: this.selected ? ThemeTokens.BRAND : Color.Transparent,
       })
-      .borderRadius(ThemeTokens.THUMB_RADIUS)
+      .borderRadius(2)
       .clip(true)
       Text(this.pageLabel())
         .fontSize(ThemeTokens.FONT_SIZE_META)
