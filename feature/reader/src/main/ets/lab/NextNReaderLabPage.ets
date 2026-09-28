@@ -522,11 +522,13 @@ export struct NextNReaderLabPage {
       this.safeArea.topAvoidHeight > 0 ? `${this.safeArea.topAvoidHeight}:${this.safeArea.bottomAvoidHeight}` : '', current)
   }
 
+  private readCloseContext: (() => ReaderCloseContext | null) | null = null
+
   private closeTrial(initializationFailed: boolean = false, suppliedContext: ReaderCloseContext | null = null): void {
     if (this.closeRequested) return
     this.closeRequested = true
     const context: ReaderCloseContext | null = suppliedContext ?? (initializationFailed || this.session === null
-      ? null : ReaderCloseContext.from(this.session.snapshot()))
+      ? null : this.readCloseContext?.() ?? null)
     const image: NhGalleryPage | null = context === null ? null : this.adapter?.transitionPage(this.request.work,
       context.part.sourceIndex) ?? null
     const progressFlush = this.finishProgressWrites()
@@ -1138,6 +1140,10 @@ export struct NextNReaderLabPage {
         if (this.session !== null) {
           if (this.request.readingChrome) {
             ReaderSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
+              scopedCloseCapture: true,
+              onCloseContextReady: (read: (() => ReaderCloseContext | null) | null): void => {
+                this.readCloseContext = read
+              },
               modeControl: (params: ReaderModeControlParams): void => { this.HostModeControl(params) },
               imageInterpolation: this.readerPresentation.imageScalingQuality === 'low' ? ImageInterpolation.Low :
                 this.readerPresentation.imageScalingQuality === 'high' ? ImageInterpolation.High : ImageInterpolation.Medium,
