@@ -8260,14 +8260,20 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   failure boundary. Logs: `$TMPDIR/hdc-20260929-172728536.log`,
   `$TMPDIR/hdc-20260929-172950363.log`, and
   `$TMPDIR/hdc-20260929-175848528.log`.
-- Direct HDC clients in the NextN and Koma lease wrappers now start in an
-  independent process session. A host-only child-process check survived a
-  second Codex command through each wrapper. No live HDC restart was performed
-  for the patch check. Through Koma's corrected lease wrapper, separate
-  current calls reported 197 `TCP Connected` and IP-directed `shell echo ok`;
-  the live host server remained PID 64423.
-- The pending shared-reader replacement is still OPEN. Next physical action is
-  the planned Koma signed-candidate normal-entry protocol on 197 after its
-  current source and build boundary is ready; the transport echo is not Reader
-  acceptance. The patched wrapper's first actual server cold start remains
-  unobserved until the next natural host-server restart.
+- A live cold-start A/B on 197 reproduced the failure. With the committed
+  session-isolation behavior, the leased `tconn` auto-started server PID 75730
+  after a full host-service stop. A separate command found TCP `Connected`,
+  and an IP-directed `shell echo ok` succeeded. With only that session
+  isolation temporarily disabled, the same stop / `tconn` sequence returned
+  `Connect OK`, but no host server remained after the command; the next leased
+  target listing showed only USB. The committed behavior was restored with
+  zero source diff, then a fresh leased `tconn` auto-started PID 76029;
+  independent TCP listing and IP echo again succeeded. The temporary
+  diagnostic allowance for host-service control was removed. This establishes
+  short-lived command process-session ownership as the failure boundary in
+  this executor; the exact termination signal was not observed.
+- The pending shared-reader replacement is still OPEN; TCP recovery does not
+  establish Reader acceptance. The next bounded action is to reconcile the
+  current Koma, NextN, and NextE reader-kit source/pin differences before any
+  further consumer build or changed-artifact device run. Retain the legacy
+  fallback until the relevant normal user paths are accepted.
