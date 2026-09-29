@@ -58,6 +58,14 @@ install/start, UI input, layout/screenshot, logs, traces, and other device-state
 or evidence operations are rejected unless they are executed by the checked
 manifest runner.
 
+Host HDC keeps TCP target registrations in its background server. In a
+short-lived Codex command, an auto-started server can otherwise die with the
+command's process group. `device-lease run` launches direct `hdc` clients in a
+new session so an auto-started server can outlive that command; protocol runners
+retain their normal signal handling. After `tconn`, verify the same full TCP
+target with a **separate** leased `list targets -v` call and then a separate
+IP-directed `shell echo ok`. `Connect OK` alone is not recovery evidence.
+
 Use `renew` during a long-lived scenario. Do not use `--force` without an
 explicit user instruction. The default shared lease root is
 `~/.hermes/device-leases`; `HARMONY_DEVICE_LEASE_DIR` can override it, while

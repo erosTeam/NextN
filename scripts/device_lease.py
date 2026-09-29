@@ -397,7 +397,10 @@ def cmd_run(args: argparse.Namespace) -> int:
         return 2
     if args.print_command:
         print("+ " + " ".join(shlex.quote(part) for part in args.command), file=sys.stderr)
-    return subprocess.call(args.command)
+    # HDC may auto-start its host server; detach the client from a short-lived exec group.
+    return subprocess.call(
+        args.command, start_new_session=Path(args.command[0]).name == "hdc"
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:

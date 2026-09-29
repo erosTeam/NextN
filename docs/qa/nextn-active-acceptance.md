@@ -8247,3 +8247,27 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   `.hvigor/outputs/nextn-237-p13-recv5/run/{applied,original,restored}.png`,
   `.hvigor/outputs/nextn-237-p13-provclassify/run/run-metadata.json`,
   `.hvigor/outputs/nexte-237-togglefix2/run/run-metadata.json`.
+
+## 2026-09-29 — 197 host transport prerequisite — verified current TCP / Reader replacement OPEN
+
+- The user selected `192.168.50.197:12345` and confirmed USB serial
+  `29Q0223919000743` is the same device; USB remains connected.
+- Historical host logs show a Codex-launched HDC server PID 55870 starting at
+  17:27:05, completing the 197 TCP handshake at 17:27:11, and the next HDC
+  command starting a new server PID 55927 at 17:27:28. The user's terminal
+  server PID 60732 instead kept the 17:51:41 TCP registration across later
+  calls. This isolates host-server lifetime, not device availability, as the
+  failure boundary. Logs: `$TMPDIR/hdc-20260929-172728536.log`,
+  `$TMPDIR/hdc-20260929-172950363.log`, and
+  `$TMPDIR/hdc-20260929-175848528.log`.
+- Direct HDC clients in the NextN and Koma lease wrappers now start in an
+  independent process session. A host-only child-process check survived a
+  second Codex command through each wrapper. No live HDC restart was performed
+  for the patch check. Through Koma's corrected lease wrapper, separate
+  current calls reported 197 `TCP Connected` and IP-directed `shell echo ok`;
+  the live host server remained PID 64423.
+- The pending shared-reader replacement is still OPEN. Next physical action is
+  the planned Koma signed-candidate normal-entry protocol on 197 after its
+  current source and build boundary is ready; the transport echo is not Reader
+  acceptance. The patched wrapper's first actual server cold start remains
+  unobserved until the next natural host-server restart.
