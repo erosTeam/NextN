@@ -8272,6 +8272,10 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   diagnostic allowance for host-service control was removed. This establishes
   short-lived command process-session ownership as the failure boundary in
   this executor; the exact termination signal was not observed.
+- At 19:14 local, a new lease `20260929-111419-89c893e6` performed an
+  independent read-only persistence check: HDC still listed
+  `192.168.50.197:12345` as `TCP Connected` alongside the same USB serial,
+  and an IP-directed `shell echo ok` returned `ok`. The lease was released.
 - The pending shared-reader replacement is still OPEN; TCP recovery does not
   establish Reader acceptance. A subsequent read-only comparison of the
   active NextN c585, NextE eceb, and Koma f769 reader-kit working trees found
