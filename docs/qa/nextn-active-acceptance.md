@@ -8273,7 +8273,13 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   short-lived command process-session ownership as the failure boundary in
   this executor; the exact termination signal was not observed.
 - The pending shared-reader replacement is still OPEN; TCP recovery does not
-  establish Reader acceptance. The next bounded action is to reconcile the
-  current Koma, NextN, and NextE reader-kit source/pin differences before any
-  further consumer build or changed-artifact device run. Retain the legacy
-  fallback until the relevant normal user paths are accepted.
+  establish Reader acceptance. A subsequent read-only comparison of the
+  active NextN c585, NextE eceb, and Koma f769 reader-kit working trees found
+  88 production `.ets`/`.json`/`.json5` source/resource files in each, with
+  identical paths and bytes across all three. Their committed pins and host
+  consumption seams differ, so pin equality cannot be inferred from source
+  equality. Do not copy this WIP or change pins merely to make them match.
+  The next bounded Reader action is to identify a current normal-path
+  counterexample with a single shared owner, then assess the three host
+  consumers before any product edit. Retain the legacy fallback until the
+  relevant normal user paths are accepted.
