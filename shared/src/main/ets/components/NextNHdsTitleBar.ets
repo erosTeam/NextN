@@ -1,4 +1,4 @@
-import { BlurStrategy, ScrollEffectType } from '@kit.UIDesignKit'
+import { BlurStrategy, ScrollEffectType, ScrollEffectOptions, SystemMaterialParams, TitleBarStyleOptions } from '@kit.UIDesignKit'
 import {
   ImmersiveMaterialSettings,
   ImmersiveMaterialEffect,
@@ -15,22 +15,22 @@ export function nextNHdsTitleBar(content: Record<string, Object>): Record<string
   const effect: ImmersiveMaterialEffect = ImmersiveMaterialSettings.effect(
     connectImmersiveMaterialSettings().level,
   )
-  const material: Record<string, Object> = {
+  const material: SystemMaterialParams = {
     'materialType': effect.materialType,
     'materialLevel': effect.materialLevel,
   }
-  const scrollEffectOpts: Record<string, Object> = {
+  const scrollEffectOpts: ScrollEffectOptions = {
     'enableScrollEffect': true,
     'scrollEffectType': ScrollEffectType.GRADIENT_BLUR,
   }
-  const style: Record<string, Object> = {
+  const style: TitleBarStyleOptions = {
+    'blurStrategy': BlurStrategy.ENABLE,
     'systemMaterialEffect': material,
     'scrollEffectOpts': scrollEffectOpts,
   }
   return {
     'avoidLayoutSafeArea': true,
     'enableComponentSafeArea': false,
-    'blurStrategy': BlurStrategy.ENABLE,
     'content': content,
     'style': style,
   }
