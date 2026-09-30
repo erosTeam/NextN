@@ -8287,3 +8287,103 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   counterexample with a single shared owner, then assess the three host
   consumers before any product edit. Retain the legacy fallback until the
   relevant normal user paths are accepted.
+
+
+## 2026-10-01 — 197 retained titlebar bottomBuilder blur — read-only counterexample
+
+- **Requested scope:** reproduce and analyze the missing gradient blur when the
+  title collapses without a statusbar. The user explicitly permits investigation
+  records while withholding immediate product-code changes. No product source,
+  build, install, dependency pin, or Reader behavior changed in this investigation.
+- **Target and identity:** authorized `192.168.50.197:12345`, ALN-AL80; leased
+  protocol used throughout. Source HEAD `aab5b0412574e91e631953ff6ad009cfd60de091`.
+  Existing installed `com.erosteam.nextn` was exercised through its normal Home
+  route, preserving the selected source tab. Exact installed-HAP/source binding
+  is **unproven**: the attempted HAP receive failed and was rejected even though
+  the transport process returned exit 0. Runtime and source findings are separate.
+
+### Observed paired states
+
+| Same Home source-selector route | Portrait | Landscape |
+| --- | --- | --- |
+| Actual display | 1260 × 2720 | 2720 × 1260; list pane width 1040 |
+| Settled statusbar | Visible | Hidden, WindowManager ZOrd -1 |
+| Collapsed bottomBuilder bounds | `[0,124][1260,247]` | `[0,0][1040,124]` |
+| Collapsed title original bounds | `[0,-182][1260,247]` | `[0,-182][1040,124]` |
+| Background export | Mask and MaskBlur remain; original bounds `[0,0][1260,351]` | Mask and MaskBlur absent in ordinary and all-node layout exports |
+| Actual image | Background remains below statusbar and behind selector | Selector overlays crisp list images/text with transparent background |
+
+- Landscape expanded state has title bounds `[0,0][1040,306]` and Mask/MaskBlur
+  `[0,0][1040,410]`. On collapse, BottomCustomNode remains visible at opacity 1
+  with a transparent background. Absence from the layout export does **not**
+  establish node destruction/remount, nor the framework's exact height formula.
+- All 200 encoded landscape frames and 216 portrait frames were reviewed through
+  ordered contact sheets; landscape originals 141 and 153 were also inspected.
+  Frame 141 at PTS 4.337411 s retains blur during partial collapse; frame 153 at
+  4.536800 s shows the selector transparently overlapping the content.
+- Recording startup temporarily introduces a system recording indicator. The
+  later collapse and separate settled, nonrecording dumps establish the hidden
+  statusbar/background counterexample. This video is not a 120 Hz scheduling or
+  frame-time measurement.
+- The first landscape recording hit the right-hand split placeholder and did not
+  scroll the list. It is excluded. Valid list gestures used x=600 within the
+  verified left pane, with normal swipe velocity rather than a slow held drag.
+
+### Source findings and causal limits
+
+- `shared/src/main/ets/components/NextNHdsTitleBar.ets:22-35` centralizes the
+  GRADIENT_BLUR title style. `blurStrategy: BlurStrategy.ENABLE` is supplied at
+  the **top level**, whereas the current official SDK declares it on
+  `TitleBarStyleOptions` under **style**; `HdsNavigationTitleBarOptions` has no
+  top-level blurStrategy. The helper's `Record<string, Object>` return and nested
+  dictionaries conceal this API-shape mismatch. This is a confirmed source
+  configuration defect, **not proof that moving it fixes the observed bug**.
+- SDK evidence: `@hms.hds.hdsBaseComponent.d.ets`, TitleBarStyleOptions around
+  lines 1425–1468 and HdsNavigationTitleBarOptions around 1980–2037. The documented
+  style default is ADAPTIVE. The installed runtime's effective strategy and any
+  orientation-dependent adaptive policy were not read back.
+- Home `Index.ets:2298` retains a cached ComponentContent for the source selector.
+  `Index.ets:4721` hides the title area while explicitly retaining bottomBuilder
+  and statusbar (`hideBottomBuilder=false`, `hideStatusBar=false`, SCROLL_UP).
+  HomeSourceBar supplies no independent blur backdrop. No landscape-specific
+  background-clearing branch was found in this audited owner path.
+- Search `SearchPage.ets:2219` uses the same helper and retained-bottom collapse
+  policy. **Search was source-reviewed only, not device-reproduced.**
+- Helper SHA256 `66d2acfd8af48a5e5573ecd7b12c469a956e2fc5ad05108c9f48e29a1b8912c8`
+  matches the b744, primary NextN, and c585 checkouts.
+- **Localized failure boundary:** in the no-statusbar/title-collapse path, the
+  shared HDS gradient background ceases to cover a bottomBuilder that remains
+  visible. This explains the transparent selector overlay. Exact internal HDS
+  clipping/height/strategy logic remains unproven; do not attribute it to Reader,
+  page/list rebuilding, or a particular safe-area formula without evidence.
+- A future repair should first assess the central helper's supported property
+  placement/types, then validate the same paired states. That is a bounded
+  candidate, not an accepted remedy. Per-page duplicate overlays or a title/
+  scrolling rewrite are not justified by this investigation. No repair begun.
+
+### Evidence and restoration
+
+- Local evidence root: `.hvigor/outputs/titlebar-blur-readonly/2026-10-01/`;
+  `findings.json` records facts, exclusions, and restoration separately.
+- Landscape video:
+  `device197__ALN-AL80/not-applicable/landscape-2720x1260/list-collapse/run/nextn_titlebar_landscape_list_20261001_0252.mp4`;
+  SHA256 `bf3150c91d1ca9b9504caddef07441a2ad841818f7d3d86ced6bc8ca90e3f03e`.
+- Portrait video:
+  `device197__ALN-AL80/not-applicable/portrait-1260x2720/list-collapse/run/nextn_titlebar_portrait_list_20261001_0257.mp4`;
+  SHA256 `79b3a5d0c6d9284f0e948cde4d146d343313c7baab14401941e9aabe0d7d607d`.
+- Corresponding landscape-collapsed, collapsed-all, portrait-collapsed protocol
+  outputs contain settled layout/window evidence. Initial invalid recording,
+  failed HAP receive, and unsuccessful power-mode readbacks are excluded.
+- Restored and read back portrait rotation 0 / 1260 × 2720, desktop focus 11,
+  original OverrideTimeout 10000 ms, then SLEEP. Rotation lock was not changed.
+- Operational error: an unnecessary `setmode 602` was issued without recording
+  the original mode. An initial report mistakenly called 602 ordinary mode.
+  Device command help and official SDK independently show 600=normal,
+  601=power-save, **602=performance**. The user confirmed the original setting
+  was high performance; the successful 602 command therefore selected the same
+  mode. No additional mode change was needed. Later service dump attempts did
+  not supply independent current-mode readback; do not present them as proof.
+- Lease `20260930-182938-edea3cb1` released. The requested read-only reproduction/
+  analysis is complete for the Home counterexample; the defect remains unrepaired,
+  and no repair work is authorized by this read-only request. The pre-existing
+  shared-reader replacement remains **OPEN** and was not worked in this lane.
