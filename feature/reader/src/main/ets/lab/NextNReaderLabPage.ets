@@ -289,7 +289,6 @@ export struct NextNReaderLabPage {
       }
       const superResolutionRecording = ReaderSelfHostedRehearsal.consumeSuperResolutionRecording()
       this.superResolutionRehearsalDiagnostic = superResolutionRecording
-      session.setRetainedDecisionDiagnostic(superResolutionRecording)
       // ReaderSurface opens on mount: never publish a default session and change it after first open.
       this.session = session
       this.syncReaderActivity()
@@ -1055,7 +1054,6 @@ export struct NextNReaderLabPage {
               chromeRepublishToken: this.chromeRepublishToken,
               pageTurnAnimation: this.labRequest?.pageTurnAnimationOverride ?? this.readerPresentation.pageTurnAnimation,
               preloadDepth: this.readerPresentation.preloadPages,
-              retainedProjectionDiagnostic: this.superResolutionRehearsalDiagnostic,
               variantPolicy: new ReaderVariantPolicy(new ReaderVariantPreference(
                 this.presentationReady && this.readerPresentation.superResolutionEnabled ? 'enhanced' : 'default',
                 this.superResolutionIdentity()), this.translationPreferenceRevision,
