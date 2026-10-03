@@ -31,11 +31,27 @@ candidate still lacks matching runtime evidence for those F1/F2 transitions;
 the historical terminal screenshots and prior Pass results are retained but do
 not fill that gap.
 
+### 当前总体状态和有限收尾安排（2026-10-04）
+
+- 仍处于三应用替换验收，不能宣称全面替换或性能超越旧版。
+- 已收敛的共享实现：保留分页节点与缩略图栏身份；分页动画启动时进行有界资源准备；
+  当前邻页尺寸修正已成为三应用同一 Kit 提交 `15eb75c`，不增加缓存深度或应用专用分支。
+- 当前收尾已完成：去诊断日志后的三个包构建、安装和普通入口核对已完成；
+  NextN/NextE 返回保留 P38/P3，Koma 书架继续阅读进入本地书籍 1/11。此项仅接受邻页尺寸修正。
+- 已确认的下一处缺口：首次入场时，图片可见而准备提示短暂仍在；先厘清首次尺寸、
+  解码完成和呈现回执的先后，再决定最小改动。此前撤回的微任务方案不重用。
+- 剩余操作路径只做有限核验：原图/处理图切换、旋转与裁切、在线无缓存、转场中断、
+  Koma 章节、网络和自动阅读；既有历史结果不能代替当前版本，但未验证不等于已发现缺陷。
+  只有确认了当前实现差异、用户影响和原因才新增源码修改。
+- 收尾标准：一个明确原因对应一份最小共同改动；三应用保持各自原菜单、数据、设置和
+  导航职责；受影响普通操作及转场没有已知退化，改动提交、产物和运行证据对应。
+  不以追平录像帧数或单软件特调作为持续投入理由；没有新证据时不重复同一检查。
+
 ### Current package5 evidence boundary — 2026-10-03
 
 | Package | Current capability/evidence | Remaining boundary | One next action |
 | --- | --- | --- | --- |
-| **5 ACTIVE / OPEN** | Common clean kit370064c retains animated rail following, guarded interaction epochs and direct chrome seeks; native animation-start target preparation is now shared by N/E/K without changing selection/progress. All three signed final packages are installed. Final ordinary fast-gesture/Back/reentry chains accepted for N38→39→38, E1→3→1 and K real local1→7→1; every original-PTS frame and current terminal root/layout/screen reviewed. Diagnostic K1→11→1 logs separately prove source2-10 decode before preceding selection. Temporary observation logs removed; failed microtask/cached-drawing candidates withdrawn. | Loading continuity remains OPEN: final N image+stage66/219; E image+bar90/339 and incoming black205; K full black206/280 and image+stage87/570. No no-overlap, FPS, equal-cache parity or full replacement conclusion. Same-HAP original eligibility/file identity, NextN F2 unavailable on API26, rotated/cropped/uncached/midflight/chapter/network/auto-read paths remain unproven. Defaults unchanged, simulator only. | Freeze the bounded preparation capability and consumer pins, then trace the shared ordinary Image completion→presentation→loading retirement and stable pager-node lifetime against the native parent. Identify the pixel owner and causal state transition before any edit. No cache-depth, opacity, delay, host-menu/entry redesign or per-app tuning. |
+| **5 ACTIVE / OPEN** | Common kit15eb75c commits the two-file viewport constraint product281faaa7 over preparation baseline370064c. Host pin commits N d93cd854/E0ba58db0/Kbc9cf0f4; clean builds and install-r Nfe0e3649/E053e1a59/K0552cbc7. Diagnostic candidate K9bdb9cb3/894dea37 and N4567415f+d5dba23c/Ebb9f3526+195a58f6 fully reviewed: fitted neighbors complete before selection, direct custom spread flights and companion fade retained, toggles immediate, native K routes retained. Final clean N b079e47b reviewed1-328 (stale leading0 excluded), E7eaa4a18 reviewed0-340; ordinary entry/Back retains DetailP38/P3. Final clean K Bookshelf Continue -> hidden Reader1/11 terminal observed; this unrecorded confirmation is logical evidence only. | Initial tiny source0 and image+stage remain OPEN: clean N102-106 and E116-118, diagnostic K92/674/239. No FPS/equal-cache/no-overlap/full replacement conclusion. Original eligibility/file identity, F2 API26 applicability and rotated/cropped/uncached/midflight/chapter/network/auto-read remain finite pending checks. Defaults unchanged, simulator only. | Trace first-image/decode/presentation/stage ordering and compare existing Native ownership before any next edit. Withdrawn microtask candidate stays withdrawn; no cache-depth, opacity, delay, host-menu/entry redesign or per-app tuning. |
 
 The following are historical finite pending checks inside this one package,
 not independent queues; the current row above governs execution:

@@ -8390,22 +8390,34 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
 
 ## 2026-10-03 — current shared-reader package5 / emulator boundary — OPEN
 
-- Current checkpoint2026-10-04: common clean kit370064c95a5f8f6245afad16117726f33b1d5be7,
-  exact built diffecdb3257; all three final signed builds and73 relevant state
-  checks pass. Installed HAPs N18b5ec5b/Eed607902/K3c57ba39. Final ordinary
-  fast-gesture/Back/reentry routes N38→39→38, E1→3→1 and K real local1→7→1
-  accepted for logical navigation and saved return only. Movies3058c6b4,
-  86267104,15be212e reviewed in order0-335,0-587,0-703 respectively, including
-  raw enlargements and current terminal layout/screen; Detail38/1/1 retained.
-  Loading remains OPEN: N image+stage66/219, E image+bar90/339 and incoming
-  black205, K full black206/280 and image+stage87/570. K raw308 matches original
-  CBZ007.jpg at7/11; no wrong-page claim. Earlier diagnostic730f/254b/movie0cea
-  separately proves early source2-10 decode; temporary logs are now removed.
-  Core displayed state reaches stable Cells, so no stale propagation patch.
-  Failed microtask/cached-drawing behaviors remain withdrawn. Next action:
-  freeze this bounded shared preparation, then source-trace Image completion,
-  presentation/loading retirement and stable pager-node lifetime before edits.
-  Single work-order row governs OPEN; no FPS/parity/full replacement claim.
+- Current checkpoint2026-10-04: common committed kit15eb75c over preparation
+  baseline370064c, exact two-file product281faaa7, diagnostic log removed.
+  Host pins N d93cd854/E0ba58db0/Kbc9cf0f4 and clean installed HAPs
+  Nfe0e3649/E053e1a59/K0552cbc7. Pre-removal candidate K1→7→1/Back/reentry9bdb9cb3 reviewed
+  all0-1022/29 sheets; fitted neighbors prepare before selection without second
+  full-size forward-entry completion. N thumbnail38 entry4567415f and spread
+  d5dba23c reviewed all0-451/0-967, raw112/282/285; terminal com.erosteam.nextn
+  Detail ContinueP38. E thumbnail1bb9f3526 and spread/reentry thumbnail3
+  195a58f6 reviewed all0-452/0-966, raw165/284/288; terminal com.erosteam.nexte
+  Detail ContinueP3. Direct custom flights land in the matching slot, companion
+  fades and OFF applies immediately; no full-black image body observed during
+  these reviewed toggle/fast-swipe chains. K spread894dea37 reviewed
+  all0-680/19 sheets, raw239/372, immediate toggles, native PUSH/POP and terminal
+  com.honjow.koma Detail1/11. Each terminal layout/root[0,117][1320,2232]
+  and raw screen actually reviewed. K initial source0 tiny bootstrap and
+  image+preparing overlays92/674/239 remain OPEN, including initial absence
+  during PUSH235-236. No FPS/parity/seamless-loading/full replacement claim.
+  Final clean N ordinary ContinueP38/Back b079e47b reviewed1-328/all10 sheets
+  (leading0 is stale Koma and excluded), raw102 image+preparing. E ordinary
+  ContinueP3/Back7eaa4a18 reviewed0-340/all10 sheets, raw116 image+100%; terminal
+  roots/screens confirm com.erosteam.nextn/nexte DetailP38/P3. Clean K Bookshelf
+  Continue card enters hidden-chrome shared Reader1/11; rootcom.honjow.koma
+  [0,0][1320,2232] and screen reviewed, no recording/motion claim for that chain.
+  Creation bindings marked installed:false remain historical; separate installed
+  bindings and final review JSONs record current identities in ignored outputs.
+  Next: trace first-image/decode/presentation/stage ordering against Native;
+  no edit until a source-proven transition and impact fence are established.
+  Old final3058c6b4/86267104/15be212e remain historical; sole work-order governs.
 - Active outcome: replace the ordinary reader routes across NextN, NextE and
   Koma without losing entry/asset/chrome/return continuity. Legacy fallback is retained;
   only the process-local shared Want is used. Physical197 is not retried.

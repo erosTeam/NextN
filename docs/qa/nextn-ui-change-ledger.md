@@ -12445,6 +12445,54 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   trace actual Image completion/presentation/loader and node lifetime before
   an edit; do not repeat cache-depth, delay, opacity or per-app experiments.
 
+### 2026-10-04 — shared paged viewport constraints (FROZEN neighbor slice; loading OPEN)
+
+- The existing loading boundary is newly actionable from one observation-only
+  Koma real-local11 chain, kit370064c plus logging-only diff50c24264/HAP09fbab9e,
+  movie04912a4a. PID16263 source2 decoded at05:00:48.157 with content2.197x3,
+  then decoded again at48.621 with content1320x1802.483 while already displayed.
+  Raw237 is black with2/11. These separate clocks do not establish exact pixel
+  event alignment or FPS; 2970 area logs add observation overhead. Temporary
+  logs were reversed in N/E/K; clean Koma3c57 was reinstalled and current
+  com.honjow.koma Detail1/11 at[0,117][1320,2232] was read back.
+- Whole parent: ReaderSurface -> ReaderNativePager/Swiper -> stable lazy item
+  -> ReaderPagedViewport -> Cell -> Image and loading/failure siblings. Native
+  Koma ordinary Image uses100% parent constraints. Shared fitted Row/Cell derives
+  its size from each Viewport's initial1x1 local measurement, including cached
+  items whose real area callback has not run. This permits tiny successful
+  preparation followed by another target-size decode when the page enters.
+- Minimal candidate: one current measured Swiper viewport owns width/height;
+  all its existing Viewports use those two internal UI parameters for the
+  unchanged fit/zoom formulas. Keep plain per-leaf measured bounds for the
+  existing entry resize fence. No host parameter, Core contract, key/reload,
+  cache depth, loading timing, entry ownership, opacity or menu change.
+- Prediction/falsifier: after the parent is measured, prepared neighbors should
+  decode at the target fitted size before selection, rather than2x3 followed
+  by1320x1802. If target preparation still requires the same resize decode,
+  withdraw the candidate instead of tuning cache/timing. One bounded Koma local
+  forward/reverse/Back/reentry chain plus N/E entry counterparts and spread
+  checks cover the affected tree; retain any black or stage overlap as OPEN.
+  Existing state/entry/geometry suites and all three signed builds supplement,
+  never replace, current pixels. Initial entry and resize cancellation remain
+  explicit risks; no seamless-loading or performance conclusion is assumed.
+
+- Candidate result2026-10-04: exact same product281faaa7 plus one completion
+  diagnostic in all three kits. Current N167a/Ef610/Ka1f1 HAP chains completed;
+  finite pixel review records are pager-constraints-{nextn,nexte,koma}-review.json
+  under ignored emulator-reader-20261003. K source1 onward completes at fitted
+  size before preceding selection, without tiny-then-full second completion on
+  forward entry. N/E custom thumbnail flights still land directly in matching
+  spread parts with companion fade; all three toggles apply immediately and
+  return routes remain. K initial tiny source0 and image+stage still counterexamples,
+  so retain only the neighbor sizing conclusion. Diagnostic removed; exact
+  common kit15eb75c committed, three host pins committed, clean signed builds
+  installed Nfe0e3649/E053e1a59/K0552cbc7. Final N ordinary ContinueP38/Back
+  b079e47b reviewed1-328 (stale0 excluded), E ContinueP3/Back7eaa4a18 reviewed
+  0-340; terminal roots/screens retain those sources. K clean Bookshelf Continue
+  enters shared hidden Reader1/11, terminal only/no recording. Clean N102 and
+  E116 still show image+stage. Neighbor constraint slice FROZEN; loading remains
+  OPEN with next source ordering investigation. No loading or FPS acceptance.
+
 ### 2026-10-04 — ordinary decode completion versus retained replacement fence (WITHDRAWN candidate / loading OPEN)
 
 - Newly actionable existing loading boundary: current NextE HAP437116df, kit1ef28d3,
